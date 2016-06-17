@@ -94,6 +94,29 @@ void SceneTreeEditor::_subscene_option(int p_idx) {
 		case SCENE_MENU_CLEAR_INHERITANCE: {
 			clear_inherit_confirm->popup_centered_minsize();
 		} break;
+		case SCENE_MENU_CLEAR_INSTANCING: {
+
+			Node*root=EditorNode::get_singleton()->get_edited_scene();
+			if (!root)
+				break;
+
+
+			ERR_FAIL_COND(node->get_filename()==String());
+
+			undo_redo->create_action("Discard Instancing");
+
+			undo_redo->add_do_method(node,"set_filename","");
+			undo_redo->add_undo_method(node,"set_filename",node->get_filename());
+
+			_node_replace_owner(node,node,root);
+
+			undo_redo->add_do_method(this,"update_tree");
+			undo_redo->add_undo_method(this,"update_tree");
+
+			undo_redo->commit_action();
+
+
+		} break;
 		case SCENE_MENU_OPEN_INHERITED: {
 			if (node && node->get_scene_inherited_state().is_valid()) {
 				emit_signal("open",node->get_scene_inherited_state()->get_path());
@@ -108,8 +131,27 @@ void SceneTreeEditor::_subscene_option(int p_idx) {
 
 		} break;
 
+
 	}
 
+}
+
+
+void SceneTreeEditor::_node_replace_owner(Node* p_base,Node* p_node,Node* p_root) {
+
+	if (p_base!=p_node) {
+
+		if (p_node->get_owner()==p_base) {
+
+			undo_redo->add_do_method(p_node,"set_owner",p_root);
+			undo_redo->add_undo_method(p_node,"set_owner",p_base);
+		}
+	}
+
+	for(int i=0;i<p_node->get_child_count();i++) {
+
+		_node_replace_owner(p_base,p_node->get_child(i),p_root);
+	}
 }
 
 
@@ -168,13 +210,13 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 
 			Spatial *ci = n->cast_to<Spatial>();
 			if (!ci->is_visible() && ci->get_parent_spatial() && !ci->get_parent_spatial()->is_visible()) {
-				error->set_text("This item cannot be made visible because the parent is hidden. Unhide the parent first.");
+				error->set_text(TTR("This item cannot be made visible because the parent is hidden. Unhide the parent first."));
 				error->popup_centered_minsize();
 				return;
 			}
 
 			bool v = !bool(n->call("is_hidden"));
-			undo_redo->create_action("Toggle Spatial Visible");
+			undo_redo->create_action(TTR("Toggle Spatial Visible"));
 			undo_redo->add_do_method(n,"_set_visible_",!v);
 			undo_redo->add_undo_method(n,"_set_visible_",v);
 			undo_redo->commit_action();
@@ -182,12 +224,12 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 
 			CanvasItem *ci = n->cast_to<CanvasItem>();
 			if (!ci->is_visible() && ci->get_parent_item() && !ci->get_parent_item()->is_visible()) {
-				error->set_text("This item cannot be made visible because the parent is hidden. Unhide the parent first.");
+				error->set_text(TTR("This item cannot be made visible because the parent is hidden. Unhide the parent first."));
 				error->popup_centered_minsize();
 				return;
 			}
 			bool v = !bool(n->call("is_hidden"));
-			undo_redo->create_action("Toggle CanvasItem Visible");
+			undo_redo->create_action(TTR("Toggle CanvasItem Visible"));
 			undo_redo->add_do_method(n,v?"hide":"show");
 			undo_redo->add_undo_method(n,v?"show":"hide");
 			undo_redo->commit_action();
@@ -207,13 +249,33 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 			_update_tree();
 			emit_signal("node_changed");
 		}
+	} else if (p_id==BUTTON_WARNING) {
+
+		String config_err = n->get_configuration_warning();
+		if (config_err==String())
+			return;
+		config_err=config_err.world_wrap(80);
+		warning->set_text(config_err);
+		warning->popup_centered_minsize();
+
+	} else if (p_id==BUTTON_SIGNALS) {
+
+		item->select(0);
+		NodeDock::singleton->get_parent()->call("set_current_tab",NodeDock::singleton->get_index());
+		NodeDock::singleton->show_connections();
+
+	} else if (p_id==BUTTON_GROUPS) {
+
+		item->select(0);
+		NodeDock::singleton->get_parent()->call("set_current_tab",NodeDock::singleton->get_index());
+		NodeDock::singleton->show_groups();
 	}
 }
 
-void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
+bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 
 	if (!p_node)
-		return;
+		return false;
 
 	// only owned nodes are editable, since nodes can create their own (manually owned) child nodes,
 	// which the editor needs not to know about.
@@ -227,7 +289,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			part_of_subscene=true;
 			//allow
 		} else {
-			return;
+			return false;
 		}
 	} else {
 		part_of_subscene = p_node!=get_scene_node() && get_scene_node()->get_scene_inherited_state().is_valid() && get_scene_node()->get_scene_inherited_state()->find_node_by_path(get_scene_node()->get_path_to(p_node))>=0;
@@ -276,15 +338,36 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 		}
 	}
 
+
+
+	if (can_rename) { //should be can edit..
+
+		String warning = p_node->get_configuration_warning();
+		if (warning!=String()) {
+			item->add_button(0,get_icon("NodeWarning","EditorIcons"),BUTTON_WARNING);
+		}
+
+		bool has_connections = p_node->has_persistent_signal_connections();
+		bool has_groups = p_node->has_persistent_groups();
+
+		if (has_connections && has_groups) {
+			item->add_button(0,get_icon("ConnectionAndGroups","EditorIcons"),BUTTON_SIGNALS);
+		} else if (has_connections) {
+			item->add_button(0,get_icon("Connect","EditorIcons"),BUTTON_SIGNALS);
+		} else if (has_groups) {
+			item->add_button(0,get_icon("Groups","EditorIcons"),BUTTON_GROUPS);
+		}
+	}
+
 	if (p_node==get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
 		item->add_button(0,get_icon("InstanceOptions","EditorIcons"),BUTTON_SUBSCENE);
-		item->set_tooltip(0,"Inherits: "+p_node->get_scene_inherited_state()->get_path()+"\nType: "+p_node->get_type());
+		item->set_tooltip(0,TTR("Inherits:")+" "+p_node->get_scene_inherited_state()->get_path()+"\n"+TTR("Type:")+" "+p_node->get_type());
 	} else if (p_node!=get_scene_node() && p_node->get_filename()!="" && can_open_instance) {
 
 		item->add_button(0,get_icon("InstanceOptions","EditorIcons"),BUTTON_SUBSCENE);
-		item->set_tooltip(0,"Instance: "+p_node->get_filename()+"\nType: "+p_node->get_type());
+		item->set_tooltip(0,TTR("Instance:")+" "+p_node->get_filename()+"\n"+TTR("Type:")+" "+p_node->get_type());
 	} else {
-		item->set_tooltip(0,String(p_node->get_name())+"\nType: "+p_node->get_type());
+		item->set_tooltip(0,String(p_node->get_name())+"\n"+TTR("Type:")+" "+p_node->get_type());
 	}
 
 	if (can_open_instance) {
@@ -345,10 +428,23 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 		item->set_as_cursor(0);
 	}
 
+	bool keep= (filter.is_subsequence_ofi(String(p_node->get_name())));
+
 	for (int i=0;i<p_node->get_child_count();i++) {
 
-		_add_nodes(p_node->get_child(i),item);
+		bool child_keep = _add_nodes(p_node->get_child(i),item);
+
+		keep = keep || child_keep;
+
 	}
+
+	if (!keep) {
+		memdelete(item);
+		return false;
+	} else {
+		return true;
+	}
+
 }
 
 
@@ -406,6 +502,9 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 }
 
 void SceneTreeEditor::_node_removed(Node *p_node) {
+
+	if (EditorNode::get_singleton()->is_exiting())
+		return; //speed up exit
 
 	if (p_node->is_connected("script_changed",this,"_node_script_changed"))
 		p_node->disconnect("script_changed",this,"_node_script_changed");
@@ -480,6 +579,8 @@ void SceneTreeEditor::_test_update_tree() {
 
 void SceneTreeEditor::_tree_changed() {
 
+	if (EditorNode::get_singleton()->is_exiting())
+		return; //speed up exit
 	if (pending_test_update)
 		return;
 	if (tree_dirty)
@@ -545,10 +646,14 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		get_tree()->connect("tree_changed",this,"_tree_changed");
 		get_tree()->connect("node_removed",this,"_node_removed");
-		instance_menu->set_item_icon(3,get_icon("Load","EditorIcons"));
+		get_tree()->connect("node_configuration_warning_changed",this,"_warning_changed");
+
+		instance_menu->set_item_icon(5,get_icon("Load","EditorIcons"));
 		tree->connect("item_collapsed",this,"_cell_collapsed");
 		inheritance_menu->set_item_icon(2,get_icon("Load","EditorIcons"));
 		clear_inherit_confirm->connect("confirmed",this,"_subscene_option",varray(SCENE_MENU_CLEAR_INHERITANCE_CONFIRM));
+
+		EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
 
 
 //		get_scene()->connect("tree_changed",this,"_tree_changed",Vector<Variant>(),CONNECT_DEFERRED);
@@ -561,6 +666,8 @@ void SceneTreeEditor::_notification(int p_what) {
 		get_tree()->disconnect("node_removed",this,"_node_removed");
 		tree->disconnect("item_collapsed",this,"_cell_collapsed");
 		clear_inherit_confirm->disconnect("confirmed",this,"_subscene_option");
+		get_tree()->disconnect("node_configuration_warning_changed",this,"_warning_changed");
+		EditorSettings::get_singleton()->disconnect("settings_changed",this,"_editor_settings_changed");
 	}
 
 }
@@ -653,7 +760,7 @@ void SceneTreeEditor::_renamed() {
 	String new_name=which->get_text(0);
 	if (new_name.find(".") != -1 || new_name.find("/") != -1) {
 
-		error->set_text("Invalid node name, the following characters are not allowed:\n  \".\", \"/\"");
+		error->set_text(TTR("Invalid node name, the following characters are not allowed:")+"\n  \".\", \"/\"");
 		error->popup_centered_minsize();
 		new_name=n->get_name();
 	}
@@ -666,7 +773,7 @@ void SceneTreeEditor::_renamed() {
 		which->set_metadata(0,n->get_path());
 		emit_signal("node_renamed");
 	} else {
-		undo_redo->create_action("Rename Node");
+		undo_redo->create_action(TTR("Rename Node"));
 		emit_signal("node_prerename",n,new_name);
 		undo_redo->add_do_method(this,"_rename_node",n->get_instance_ID(),new_name);
 		undo_redo->add_undo_method(this,"_rename_node",n->get_instance_ID(),n->get_name());
@@ -699,6 +806,18 @@ void SceneTreeEditor::set_marked(Node *p_marked,bool p_selectable,bool p_childre
 
 
 }
+
+void SceneTreeEditor::set_filter(const String& p_filter) {
+
+	filter=p_filter;
+	_update_tree();
+}
+
+String SceneTreeEditor::get_filter() const {
+
+	return filter;
+}
+
 
 void SceneTreeEditor::set_display_foreign_nodes(bool p_display) {
 
@@ -784,6 +903,167 @@ void SceneTreeEditor::_cell_collapsed(Object *p_obj) {
 
 }
 
+Variant SceneTreeEditor::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+	if (!can_rename)
+		return Variant(); //not editable tree
+
+	Vector<Node*> selected;
+	Vector<Ref<Texture> > icons;
+	TreeItem *next=tree->get_next_selected(NULL);
+	while (next) {
+
+		NodePath np = next->get_metadata(0);
+
+		Node *n=get_node(np);
+		if (n) {
+
+			selected.push_back(n);
+			icons.push_back(next->get_icon(0));
+		}
+		next=tree->get_next_selected(next);
+	}
+
+	if (selected.empty())
+		return Variant();
+
+	VBoxContainer *vb = memnew( VBoxContainer );
+	Array objs;
+	int list_max = 10;
+	float opacity_step = 1.0f / list_max;
+	float opacity_item = 1.0f;
+	for(int i=0;i<selected.size();i++) {
+
+		if (i<list_max){
+			HBoxContainer *hb = memnew( HBoxContainer );
+			TextureFrame *tf = memnew(TextureFrame);
+			tf->set_texture(icons[i]);
+			hb->add_child(tf);
+			Label *label = memnew( Label( selected[i]->get_name() ) );
+			hb->add_child(label);
+			vb->add_child(hb);
+			hb->set_opacity(opacity_item);
+			opacity_item -= opacity_step;
+		}
+		NodePath p = selected[i]->get_path();
+		objs.push_back(p);
+	}
+
+	set_drag_preview(vb);
+	Dictionary drag_data;
+	drag_data["type"]="nodes";
+	drag_data["nodes"]=objs;
+
+	tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN|Tree::DROP_MODE_ON_ITEM);
+
+
+	return drag_data;
+}
+
+bool SceneTreeEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const {
+
+	if (!can_rename)
+		return false; //not editable tree
+	if (filter!=String())
+		return false; //can't rearrange tree with filter turned on
+
+
+	Dictionary d=p_data;
+	if (!d.has("type"))
+		return false;
+
+	if (String(d["type"])=="files") {
+
+		Vector<String> files = d["files"];
+
+		if (files.size()==0)
+			return false; //weird
+
+
+		for(int i=0;i<files.size();i++) {
+			String file = files[0];
+			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+			if (ftype!="PackedScene")
+				return false;
+		}
+
+		tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN|Tree::DROP_MODE_ON_ITEM); //so it works..
+
+		return true;
+	}
+
+
+	if (String(d["type"])=="nodes") {
+		TreeItem *item = tree->get_item_at_pos(p_point);
+		if (!item)
+			return false;
+		int section = tree->get_drop_section_at_pos(p_point);
+		if (section<-1 || (section==-1 && !item->get_parent()))
+			return false;
+
+		return true;
+
+	}
+
+	return false;
+}
+void SceneTreeEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) {
+
+	if (!can_drop_data_fw(p_point,p_data,p_from))
+		return;
+
+	TreeItem *item = tree->get_item_at_pos(p_point);
+	if (!item)
+		return;
+	int section = tree->get_drop_section_at_pos(p_point);
+	if (section<-1)
+		return;
+
+	NodePath np = item->get_metadata(0);
+	Node *n=get_node(np);
+	if (!n)
+		return;
+
+	Dictionary d=p_data;
+
+	if (String(d["type"])=="nodes") {
+		Array nodes=d["nodes"];
+		emit_signal("nodes_rearranged",nodes,np,section);
+	}
+
+	if (String(d["type"])=="files") {
+
+		emit_signal("files_dropped",d["files"],np,section);
+	}
+
+}
+
+void SceneTreeEditor::_rmb_select(const Vector2& p_pos) {
+
+	emit_signal("rmb_pressed",tree->get_global_transform().xform(p_pos));
+}
+
+
+void SceneTreeEditor::_warning_changed(Node* p_for_node) {
+
+	//should use a timer
+	update_timer->start();
+//	print_line("WARNING CHANGED "+String(p_for_node->get_name()));
+
+}
+
+
+void SceneTreeEditor::_editor_settings_changed() {
+	bool enable_rl = EditorSettings::get_singleton()->get("scenetree_editor/draw_relationship_lines");
+	Color rl_color = EditorSettings::get_singleton()->get("scenetree_editor/relationship_line_color");
+
+	if (enable_rl) {
+		tree->add_constant_override("draw_relationship_lines",1);
+		tree->add_color_override("relationship_line_color", rl_color);
+	}
+	else
+		tree->add_constant_override("draw_relationship_lines",0);
+
+}
 
 
 void SceneTreeEditor::_bind_methods() {
@@ -800,14 +1080,27 @@ void SceneTreeEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_cell_button_pressed",&SceneTreeEditor::_cell_button_pressed);
 	ObjectTypeDB::bind_method("_cell_collapsed",&SceneTreeEditor::_cell_collapsed);
 	ObjectTypeDB::bind_method("_subscene_option",&SceneTreeEditor::_subscene_option);
+	ObjectTypeDB::bind_method("_rmb_select",&SceneTreeEditor::_rmb_select);
+	ObjectTypeDB::bind_method("_warning_changed",&SceneTreeEditor::_warning_changed);
 
 	ObjectTypeDB::bind_method("_node_script_changed",&SceneTreeEditor::_node_script_changed);
 	ObjectTypeDB::bind_method("_node_visibility_changed",&SceneTreeEditor::_node_visibility_changed);
+
+	ObjectTypeDB::bind_method("_editor_settings_changed", &SceneTreeEditor::_editor_settings_changed);
+
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &SceneTreeEditor::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &SceneTreeEditor::drop_data_fw);
+
+	ObjectTypeDB::bind_method(_MD("update_tree"), &SceneTreeEditor::update_tree);
 
 	ADD_SIGNAL( MethodInfo("node_selected") );
 	ADD_SIGNAL( MethodInfo("node_renamed") );
 	ADD_SIGNAL( MethodInfo("node_prerename") );
 	ADD_SIGNAL( MethodInfo("node_changed") );
+	ADD_SIGNAL( MethodInfo("nodes_rearranged",PropertyInfo(Variant::ARRAY,"paths"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
+	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
+	ADD_SIGNAL( MethodInfo("rmb_pressed",PropertyInfo(Variant::VECTOR2,"pos")) ) ;
 
 	ADD_SIGNAL( MethodInfo("open") );
 	ADD_SIGNAL( MethodInfo("open_script") );
@@ -833,7 +1126,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	if (p_label) {
 		Label *label = memnew( Label );
 		label->set_pos( Point2(10, 0));
-		label->set_text("Scene Tree (Nodes):");
+		label->set_text(TTR("Scene Tree (Nodes):"));
 
 		add_child(label);
 	}
@@ -846,6 +1139,13 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 
 	add_child( tree );
 
+	tree->set_drag_forwarding(this);
+	if (p_can_rename) {
+		tree->set_allow_rmb_select(true);
+		tree->connect("item_rmb_selected",this,"_rmb_select");
+		tree->connect("empty_tree_rmb_selected",this,"_rmb_select");
+	}
+
 	tree->connect("cell_selected", this,"_selected_changed");
 	tree->connect("item_edited", this,"_renamed",varray(),CONNECT_DEFERRED);
 	tree->connect("multi_selected",this,"_cell_multi_selected");
@@ -855,6 +1155,11 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	error = memnew( AcceptDialog );
 	add_child(error);
 
+	warning = memnew( AcceptDialog );
+	add_child(warning);
+	warning->set_title("Node Configuration Warning!");
+
+
 	show_enabled_subscene=false;
 
 	last_hash=0;
@@ -863,26 +1168,33 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	blocked=0;
 
 	instance_menu = memnew( PopupMenu );
-	instance_menu->add_check_item("Editable Children",SCENE_MENU_EDITABLE_CHILDREN);
-	instance_menu->add_check_item("Load As Placeholder",SCENE_MENU_USE_PLACEHOLDER);
+	instance_menu->add_check_item(TTR("Editable Children"),SCENE_MENU_EDITABLE_CHILDREN);
+	instance_menu->add_check_item(TTR("Load As Placeholder"),SCENE_MENU_USE_PLACEHOLDER);
 	instance_menu->add_separator();
-	instance_menu->add_item("Open in Editor",SCENE_MENU_OPEN);
+	instance_menu->add_item(TTR("Discard Instancing"),SCENE_MENU_CLEAR_INSTANCING);
+	instance_menu->add_separator();
+	instance_menu->add_item(TTR("Open in Editor"),SCENE_MENU_OPEN);
 	instance_menu->connect("item_pressed",this,"_subscene_option");
 	add_child(instance_menu);
 
 	inheritance_menu = memnew( PopupMenu );
-	inheritance_menu->add_item("Clear Inheritance",SCENE_MENU_CLEAR_INHERITANCE);
+	inheritance_menu->add_item(TTR("Clear Inheritance"),SCENE_MENU_CLEAR_INHERITANCE);
 	inheritance_menu->add_separator();
-	inheritance_menu->add_item("Open in Editor",SCENE_MENU_OPEN_INHERITED);
+	inheritance_menu->add_item(TTR("Open in Editor"),SCENE_MENU_OPEN_INHERITED);
 	inheritance_menu->connect("item_pressed",this,"_subscene_option");
 
 	add_child(inheritance_menu);
 
 	clear_inherit_confirm = memnew( ConfirmationDialog );
-	clear_inherit_confirm->set_text("Clear Inheritance? (No Undo!)");
-	clear_inherit_confirm->get_ok()->set_text("Clear!");
+	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
+	clear_inherit_confirm->get_ok()->set_text(TTR("Clear!"));
 	add_child(clear_inherit_confirm);
 
+	update_timer = memnew(Timer);
+	update_timer->connect("timeout",this,"_update_tree");
+	update_timer->set_one_shot(true);
+	update_timer->set_wait_time(0.5);
+	add_child(update_timer);
 
 }
 
@@ -946,7 +1258,7 @@ void SceneTreeDialog::_bind_methods() {
 
 SceneTreeDialog::SceneTreeDialog() {
 
-	set_title("Select a Node");
+	set_title(TTR("Select a Node"));
 
 	tree = memnew( SceneTreeEditor(false,false) );
 	add_child(tree);
@@ -960,4 +1272,3 @@ SceneTreeDialog::SceneTreeDialog() {
 SceneTreeDialog::~SceneTreeDialog()
 {
 }
-

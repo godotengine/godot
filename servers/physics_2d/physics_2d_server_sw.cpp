@@ -31,6 +31,9 @@
 #include "broad_phase_2d_hash_grid.h"
 #include "collision_solver_2d_sw.h"
 #include "globals.h"
+#include "script_language.h"
+#include "os/os.h"
+
 RID Physics2DServerSW::shape_create(ShapeType p_shape) {
 
 	Shape2DSW *shape=NULL;
@@ -1276,6 +1279,8 @@ void Physics2DServerSW::step(float p_step) {
 		active_objects+=E->get()->get_active_objects();
 		collision_pairs+=E->get()->get_collision_pairs();
 	}
+
+
 };
 
 void Physics2DServerSW::sync() {
@@ -1288,6 +1293,7 @@ void Physics2DServerSW::flush_queries() {
 	if (!active)
 		return;
 
+	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
 
 	for( Set<const Space2DSW*>::Element *E=active_spaces.front();E;E=E->next()) {
 
@@ -1295,7 +1301,44 @@ void Physics2DServerSW::flush_queries() {
 		space->call_queries();
 	}
 
-};
+
+	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
+
+		uint64_t total_time[Space2DSW::ELAPSED_TIME_MAX];
+		static const char* time_name[Space2DSW::ELAPSED_TIME_MAX]={
+			"integrate_forces",
+			"generate_islands",
+			"setup_constraints",
+			"solve_constraints",
+			"integrate_velocities"
+		};
+
+		for(int i=0;i<Space2DSW::ELAPSED_TIME_MAX;i++) {
+			total_time[i]=0;
+		}
+
+		for( Set<const Space2DSW*>::Element *E=active_spaces.front();E;E=E->next()) {
+
+			for(int i=0;i<Space2DSW::ELAPSED_TIME_MAX;i++) {
+				total_time[i]+=E->get()->get_elapsed_time(Space2DSW::ElapsedTime(i));
+			}
+
+		}
+
+		Array values;
+		values.resize(Space2DSW::ELAPSED_TIME_MAX*2);
+		for(int i=0;i<Space2DSW::ELAPSED_TIME_MAX;i++) {
+			values[i*2+0]=time_name[i];
+			values[i*2+1]=USEC_TO_SEC(total_time[i]);
+		}
+		values.push_back("flush_queries");
+		values.push_back(USEC_TO_SEC(OS::get_singleton()->get_ticks_usec()-time_beg));
+
+		ScriptDebugger::get_singleton()->add_profiling_frame_data("physics_2d",values);
+
+	}
+
+}
 
 void Physics2DServerSW::end_sync() {
 	doing_sync=false;

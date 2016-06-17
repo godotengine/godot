@@ -35,7 +35,7 @@
 #include "scene/2d/canvas_item.h"
 #include "math_2d.h"
 #include "rid.h"
-
+#include "scene/gui/input_action.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -129,6 +129,7 @@ private:
 		bool stop_mouse;
 
 		Control *parent;
+		ObjectID drag_owner;
 		bool modal;
 		bool modal_exclusive;
 		Ref<Theme> theme;
@@ -168,7 +169,7 @@ private:
 	float _get_range(int p_idx) const;
 	float _s2a(float p_val, AnchorType p_anchor,float p_range) const;
 	float _a2s(float p_val, AnchorType p_anchor,float p_range) const;
-	void _propagate_theme_changed(Control *p_owner);
+	void _propagate_theme_changed(CanvasItem *p_at, Control *p_owner);
 
 	void _change_notify_margins();
 	void _update_minimum_size();
@@ -179,7 +180,8 @@ private:
 	void _size_changed();
 	String _get_tooltip() const;
 
-	void _set_rotation_deg(float p_rot);
+	// Deprecated, should be removed in a future version.
+	void _set_rotation_deg(float p_degrees);
 	float _get_rotation_deg() const;
 
 friend class Viewport;
@@ -229,6 +231,7 @@ public:
 	virtual Size2 get_combined_minimum_size() const;
 	virtual bool has_point(const Point2& p_point) const;
 	virtual bool clips_input() const;
+	virtual void set_drag_forwarding(Control* p_target);
 	virtual Variant get_drag_data(const Point2& p_point);
 	virtual bool can_drop_data(const Point2& p_point,const Variant& p_data) const;
 	virtual void drop_data(const Point2& p_point,const Variant& p_data);
@@ -273,8 +276,10 @@ public:
 	Rect2 get_global_rect() const;
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
 
-	void set_rotation(float p_rotation);
+	void set_rotation(float p_radians);
+	void set_rotation_deg(float p_degrees);
 	float get_rotation() const;
+	float get_rotation_deg() const;
 
 	void set_scale(const Vector2& p_scale);
 	Vector2 get_scale() const;
@@ -335,6 +340,13 @@ public:
 	Ref<Font> get_font(const StringName& p_name,const StringName& p_type=StringName()) const;
 	Color get_color(const StringName& p_name,const StringName& p_type=StringName()) const;
 	int get_constant(const StringName& p_name,const StringName& p_type=StringName()) const;
+
+	bool has_icon_override(const StringName& p_name) const;
+	bool has_shader_override(const StringName& p_name) const;
+	bool has_stylebox_override(const StringName& p_name) const;
+	bool has_font_override(const StringName& p_name) const;
+	bool has_color_override(const StringName& p_name) const;
+	bool has_constant_override(const StringName& p_name) const;
 
 	bool has_icon(const StringName& p_name,const StringName& p_type=StringName()) const;
 	bool has_shader(const StringName& p_name,const StringName& p_type=StringName()) const;

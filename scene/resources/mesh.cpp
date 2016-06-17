@@ -30,7 +30,6 @@
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "surface_tool.h"
-
 static const char*_array_name[]={
 	"vertex_array",
 	"normal_array",
@@ -288,6 +287,7 @@ void Mesh::add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Arr
 
 	triangle_mesh=Ref<TriangleMesh>();
 	_change_notify();
+	emit_changed();
 
 }
 
@@ -387,6 +387,7 @@ void Mesh::surface_remove(int p_idx) {
 	triangle_mesh=Ref<TriangleMesh>();
 	_recompute_aabb();
 	_change_notify();
+	emit_changed();
 }
 
 
@@ -491,6 +492,8 @@ void Mesh::add_surface_from_mesh_data(const Geometry::MeshData& p_mesh_data) {
 
 	surfaces.push_back(s);
 	_change_notify();
+
+	emit_changed();
 }
 
 RID Mesh::get_rid() const {

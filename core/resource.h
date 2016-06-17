@@ -142,7 +142,11 @@ public:
 	Ref<ResourceImportMetadata> get_import_metadata() const;
 
 
+
+
 #ifdef TOOLS_ENABLED
+
+	uint32_t hash_edited_version() const;
 
 	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time=p_time; }
 	uint64_t get_last_modified_time() const { return last_modified_time; }

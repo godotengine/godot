@@ -160,6 +160,7 @@ class VisualServerRaster : public VisualServer {
 		Scenario *scenario;
 		bool update;
 		bool update_aabb;
+		bool update_materials;
 		Instance *update_next;
 		InstanceType base_type;
 
@@ -317,6 +318,8 @@ class VisualServerRaster : public VisualServer {
 			draw_range_end=0;
 			extra_margin=0;
 			visible_in_all_rooms=false;
+			update_aabb=false;
+			update_materials=false;
 
 			baked_light=NULL;
 			baked_light_info=NULL;
@@ -583,8 +586,8 @@ class VisualServerRaster : public VisualServer {
 
 	void _portal_disconnect(Instance *p_portal,bool p_cleanup=false);
 	void _portal_attempt_connect(Instance *p_portal);
-	void _dependency_queue_update(RID p_rid,bool p_update_aabb=false);
-	_FORCE_INLINE_ void _instance_queue_update(Instance *p_instance,bool p_update_aabb=false);
+	void _dependency_queue_update(RID p_rid, bool p_update_aabb=false, bool p_update_materials=false);
+	_FORCE_INLINE_ void _instance_queue_update(Instance *p_instance,bool p_update_aabb=false,bool p_update_materials=false);
 	void _update_instances();
 	void _update_instance_aabb(Instance *p_instance);
 	void _update_instance(Instance *p_instance);
@@ -672,6 +675,8 @@ public:
 	virtual String texture_get_path(RID p_texture) const;
 
 	virtual void texture_debug_usage(List<TextureInfo> *r_info);
+
+	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable);
 
 
 	/* SHADER API */
@@ -1081,6 +1086,9 @@ public:
 	virtual void instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight);
 	virtual float instance_get_morph_target_weight(RID p_instance,int p_shape) const;
 
+	virtual void instance_set_surface_material(RID p_instance,int p_surface, RID p_material);
+
+
 	virtual void instance_set_transform(RID p_instance, const Transform& p_transform);
 	virtual Transform instance_get_transform(RID p_instance) const;
 
@@ -1163,7 +1171,7 @@ public:
 	virtual void canvas_item_add_circle(RID p_item, const Point2& p_pos, float p_radius,const Color& p_color);
 	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile=false,const Color& p_modulate=Color(1,1,1),bool p_transpose=false);
 	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1),bool p_transpose=false);
-	virtual void canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center=true,const Color& p_modulate=Color(1,1,1));
+	virtual void canvas_item_add_style_box(RID p_item, const Rect2& p_rect, const Rect2& p_source, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center=true,const Color& p_modulate=Color(1,1,1));
 	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width=1.0);
 	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), RID p_texture=RID());
 	virtual void canvas_item_add_triangle_array(RID p_item, const Vector<int>& p_indices, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), RID p_texture=RID(), int p_count=-1);

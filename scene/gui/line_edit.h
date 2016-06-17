@@ -30,6 +30,8 @@
 #define LINE_EDIT_H
 
 #include "scene/gui/control.h"
+#include "scene/gui/popup_menu.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -45,6 +47,18 @@ public:
 		ALIGN_RIGHT,
 		ALIGN_FILL
 	};
+
+	enum MenuItems {
+		MENU_CUT,
+		MENU_COPY,
+		MENU_PASTE,
+		MENU_CLEAR,
+		MENU_SELECT_ALL,
+		MENU_UNDO,
+		MENU_MAX
+
+	};
+
 private:
 	Align align;
 
@@ -53,6 +67,8 @@ private:
 
 	String undo_text;
 	String text;
+
+	PopupMenu *menu;
 
 	int cursor_pos;
 	int window_pos;
@@ -85,13 +101,11 @@ private:
 	void clear_internal();
 	void changed_internal();
 
-	void copy_text();
-	void cut_text();
-	void paste_text();
 
 
 	void _input_event(InputEvent p_event);
 	void _notification(int p_what);
+
 
 protected:
 	static void _bind_methods();
@@ -103,6 +117,8 @@ public:
 	virtual bool can_drop_data(const Point2& p_point,const Variant& p_data) const;
 	virtual void drop_data(const Point2& p_point,const Variant& p_data);
 
+	void menu_option(int p_option);
+	PopupMenu *get_menu() const;
 
 	void select_all();
 
@@ -116,6 +132,10 @@ public:
 	void append_at_cursor(String p_text);
 	void clear();
 
+	void copy_text();
+	void cut_text();
+	void paste_text();
+	void undo();
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;
@@ -127,7 +147,7 @@ public:
 
 	virtual Size2 get_minimum_size() const;
 
-    virtual bool is_text_field() const;
+	virtual bool is_text_field() const;
 	LineEdit();
 	~LineEdit();
 

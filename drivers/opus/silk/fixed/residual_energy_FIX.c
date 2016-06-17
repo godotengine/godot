@@ -24,10 +24,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/silk/fixed/main_FIX.h"
 #include "opus/celt/stack_alloc.h"
@@ -42,7 +39,8 @@ void silk_residual_energy_FIX(
     const opus_int32                gains[ MAX_NB_SUBFR ],                  /* I    Quantization gains                                                          */
     const opus_int                  subfr_length,                           /* I    Subframe length                                                             */
     const opus_int                  nb_subfr,                               /* I    Number of subframes                                                         */
-    const opus_int                  LPC_order                               /* I    LPC order                                                                   */
+    const opus_int                  LPC_order,                              /* I    LPC order                                                                   */
+          int                       arch                                    /* I    Run-time architecture                                                       */
 )
 {
     opus_int         offset, i, j, rshift, lz1, lz2;
@@ -60,7 +58,7 @@ void silk_residual_energy_FIX(
     silk_assert( ( nb_subfr >> 1 ) * ( MAX_NB_SUBFR >> 1 ) == nb_subfr );
     for( i = 0; i < nb_subfr >> 1; i++ ) {
         /* Calculate half frame LPC residual signal including preceding samples */
-        silk_LPC_analysis_filter( LPC_res, x_ptr, a_Q12[ i ], ( MAX_NB_SUBFR >> 1 ) * offset, LPC_order );
+        silk_LPC_analysis_filter( LPC_res, x_ptr, a_Q12[ i ], ( MAX_NB_SUBFR >> 1 ) * offset, LPC_order, arch );
 
         /* Point to first subframe of the just calculated LPC residual signal */
         LPC_res_ptr = LPC_res + LPC_order;

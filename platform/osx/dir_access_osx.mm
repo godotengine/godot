@@ -319,10 +319,10 @@ size_t DirAccessOSX::get_space_left() {
 	struct statvfs vfs;
 	if (statvfs(current_dir.utf8().get_data(), &vfs) != 0) {
 
-		return -1;
+		return 0;
 	};
 
-	return vfs.f_bfree * vfs.f_bsize;
+	return (size_t) (vfs.f_bavail * vfs.f_bsize);
 #else
 #warning THIS IS BROKEN
 	return 0;

@@ -32,6 +32,7 @@
 #include "print_string.h"
 #include "math_funcs.h"
 #include "io/md5.h"
+#include "io/sha256.h"
 #include "ucaps.h"
 #include "color.h"
 #include "variant.h"
@@ -849,21 +850,23 @@ const CharType * String::c_str() const {
 }
 
 String String::md5(const uint8_t *p_md5) {
+	return String::hex_encode_buffer(p_md5, 16);
+}
+
+String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
+	static const char hex[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
 
 	String ret;
+	char v[2]={0,0};
 
-	for(int i=0;i<16;i++) {
-
-		static const char hex[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
-		char v[2]={0,0};
-		v[0]=hex[p_md5[i]>>4];
+	for(int i=0;i<p_len;i++) {
+		v[0]=hex[p_buffer[i]>>4];
 		ret+=v;
-		v[0]=hex[p_md5[i]&0xF];
+		v[0]=hex[p_buffer[i]&0xF];
 		ret+=v;
 	}
 
 	return ret;
-
 }
 
 String String::chr(CharType p_char) {
@@ -2389,6 +2392,16 @@ String String::md5_text() const {
 	return String::md5(ctx.digest);
 }
 
+String String::sha256_text() const {
+	CharString cs=utf8();
+	unsigned char hash[32];
+	sha256_context ctx;
+	sha256_init(&ctx);
+	sha256_hash(&ctx,(unsigned char*)cs.ptr(),cs.length());
+	sha256_done(&ctx, hash);
+	return String::hex_encode_buffer(hash, 32);
+}
+
 Vector<uint8_t> String::md5_buffer() const {
 
 	CharString cs=utf8();
@@ -2752,6 +2765,50 @@ bool String::begins_with(const char* p_string) const {
 
 }
 
+bool String::is_subsequence_of(const String& p_string) const {
+
+	return _base_is_subsequence_of(p_string, false);
+}
+
+bool String::is_subsequence_ofi(const String& p_string) const {
+
+	return _base_is_subsequence_of(p_string, true);
+}
+
+bool String::_base_is_subsequence_of(const String& p_string, bool case_insensitive) const {
+
+	int len=length();
+	if (len == 0) {
+		// Technically an empty string is subsequence of any string
+		return true;
+	}
+
+	if (len > p_string.length()) {
+		return false;
+	}
+
+	const CharType *src = &operator[](0);
+	const CharType *tgt = &p_string[0];
+
+	for (;*src && *tgt;tgt++) {
+		bool match = false;
+		if (case_insensitive) {
+			CharType srcc = _find_lower(*src);
+			CharType tgtc = _find_lower(*tgt);
+			match = srcc == tgtc;
+		} else {
+			match = *src == *tgt;
+		}
+		if (match) {
+			src++;
+			if(!*src) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
 
 static bool _wildcard_match(const CharType* p_pattern, const CharType* p_string,bool p_case_sensitive) {
 	switch (*p_pattern) {
@@ -2867,25 +2924,29 @@ CharType String::ord_at(int p_idx) const {
 	return operator[](p_idx);
 }
 
-String String::strip_edges() const {
+String String::strip_edges(bool left, bool right) const {
 
 	int len=length();
 	int beg=0,end=len;
 
-	for (int i=0;i<length();i++) {
+	if(left) {
+		for (int i=0;i<len;i++) {
 
-		if (operator[](i)<=32)
-			beg++;
-		else
-			break;
+			if (operator[](i)<=32)
+				beg++;
+			else
+				break;
+		}
 	}
 
-	for (int i=(int)(length()-1);i>=0;i--) {
+	if(right) {
+		for (int i=(int)(len-1);i>=0;i--) {
 
-		if (operator[](i)<=32)
-			end--;
-		else
-			break;
+			if (operator[](i)<=32)
+				end--;
+			else
+				break;
+		}
 	}
 
 	if (beg==0 && end==len)
@@ -3629,13 +3690,14 @@ String String::percent_decode() const {
 
 	CharString pe;
 
-	for(int i=0;i<length();i++) {
+	CharString cs = utf8();
+	for(int i=0;i<cs.length();i++) {
 
-		uint8_t c=operator[](i);
+		uint8_t c = cs[i];
 		if (c=='%' && i<length()-2) {
 
-			uint8_t a = LOWERCASE(operator[](i+1));
-			uint8_t b = LOWERCASE(operator[](i+2));
+			uint8_t a = LOWERCASE(cs[i+1]);
+			uint8_t b = LOWERCASE(cs[i+2]);
 
 			c=0;
 			if (a>='0' && a<='9')
@@ -3955,3 +4017,34 @@ String String::sprintf(const Array& values, bool* error) const {
 	*error = false;
 	return formatted;
 }
+
+#include "translation.h"
+
+#ifdef TOOLS_ENABLED
+String TTR(const String& p_text) {
+
+	if (TranslationServer::get_singleton()) {
+		return TranslationServer::get_singleton()->tool_translate(p_text);
+	}
+
+	return p_text;
+}
+
+#endif
+
+String RTR(const String& p_text) {
+
+
+
+	if (TranslationServer::get_singleton()) {
+		String rtr = TranslationServer::get_singleton()->tool_translate(p_text);
+		if (rtr==String() || rtr==p_text) {
+			return TranslationServer::get_singleton()->translate(p_text);
+		} else {
+			return rtr;
+		}
+	}
+
+	return p_text;
+}
+

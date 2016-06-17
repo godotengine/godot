@@ -158,12 +158,14 @@ public:
 //	~Sprite3D();
 };
 
+#if 0
 class AnimatedSprite3D : public SpriteBase3D {
 
 	OBJ_TYPE(AnimatedSprite3D,SpriteBase3D);
 	Ref<SpriteFrames> frames;
 
 
+	StringName animation;
 	int frame;
 
 protected:
@@ -185,6 +187,68 @@ public:
 	AnimatedSprite3D();
 //	~AnimatedSprite3D();
 };
+#endif
+
+
+
+
+class AnimatedSprite3D : public SpriteBase3D {
+
+	OBJ_TYPE(AnimatedSprite3D,SpriteBase3D);
+
+	Ref<SpriteFrames> frames;
+	bool playing;
+	StringName animation;
+	int frame;
+
+	bool centered;
+	Point2 offset;
+
+	float timeout;
+
+	bool hflip;
+	bool vflip;
+
+	Color modulate;
+
+	void _res_changed();
+
+	void _reset_timeout();
+	void _set_playing(bool p_playing);
+	bool _is_playing() const;
+
+
+protected:
+
+	virtual void _draw();
+	static void _bind_methods();
+	void _notification(int p_what);
+	virtual void _validate_property(PropertyInfo& property) const;
+
+public:
+
+
+
+	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
+	Ref<SpriteFrames> get_sprite_frames() const;
+
+	void play(const StringName& p_animation=StringName());
+	void stop();
+	bool is_playing() const;
+
+	void set_animation(const StringName& p_animation);
+	StringName get_animation() const;
+
+	void set_frame(int p_frame);
+	int get_frame() const;
+
+
+	virtual Rect2 get_item_rect() const;
+
+	virtual String get_configuration_warning() const;
+	AnimatedSprite3D();
+};
+
 
 VARIANT_ENUM_CAST(SpriteBase3D::DrawFlags);
 VARIANT_ENUM_CAST(SpriteBase3D::AlphaCutMode);

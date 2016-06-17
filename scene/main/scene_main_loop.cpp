@@ -64,7 +64,7 @@ void SceneTree::node_removed(Node *p_node) {
 }
 
 
-void SceneTree::add_to_group(const StringName& p_group, Node *p_node) {
+SceneTree::Group *SceneTree::add_to_group(const StringName& p_group, Node *p_node) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E) {
@@ -73,10 +73,12 @@ void SceneTree::add_to_group(const StringName& p_group, Node *p_node) {
 
 	if (E->get().nodes.find(p_node)!=-1) {
 		ERR_EXPLAIN("Already in group: "+p_group);
-		ERR_FAIL();
+		ERR_FAIL_V(&E->get());
 	}
 	E->get().nodes.push_back(p_node);
-	E->get().last_tree_version=0;
+	//E->get().last_tree_version=0;
+	E->get().changed=true;
+	return &E->get();
 }
 
 void SceneTree::remove_from_group(const StringName& p_group, Node *p_node) {
@@ -125,7 +127,7 @@ void SceneTree::_flush_ugc() {
 
 void SceneTree::_update_group_order(Group& g) {
 
-	if (g.last_tree_version==tree_version)
+	if (!g.changed)
 		return;
 	if (g.nodes.empty())
 		return;
@@ -135,7 +137,8 @@ void SceneTree::_update_group_order(Group& g) {
 
 	SortArray<Node*,Node::Comparator> node_sort;
 	node_sort.sort(nodes,node_count);
-	g.last_tree_version=tree_version;
+	g.changed=false;
+
 }
 
 
@@ -147,8 +150,6 @@ void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const
 	Group &g=E->get();
 	if (g.nodes.empty())
 		return;
-
-	_update_group_order(g);
 
 
 	if (p_call_flags&GROUP_CALL_UNIQUE && !(p_call_flags&GROUP_CALL_REALTIME)) {
@@ -174,6 +175,8 @@ void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const
 		unique_group_calls[ug]=args;
 		return;
 	}
+
+	_update_group_order(g);
 
 	Vector<Node*> nodes_copy = g.nodes;
 	Node **nodes = &nodes_copy[0];
@@ -1002,6 +1005,7 @@ static void _fill_array(Node *p_node, Array& array, int p_level) {
 	array.push_back(p_level);
 	array.push_back(p_node->get_name());
 	array.push_back(p_node->get_type());
+	array.push_back(p_node->get_instance_ID());
 	for(int i=0;i<p_node->get_child_count();i++) {
 
 		_fill_array(p_node->get_child(i),array,p_level+1);
@@ -1592,6 +1596,14 @@ void SceneTree::_live_edit_reparent_node_func(const NodePath& p_at,const NodePat
 
 
 #endif
+
+
+void SceneTree::drop_files(const Vector<String>& p_files,int p_from_screen) {
+
+	emit_signal("files_dropped",p_files,p_from_screen);
+	MainLoop::drop_files(p_files,p_from_screen);
+}
+
 void SceneTree::_bind_methods() {
 
 
@@ -1660,9 +1672,12 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("tree_changed") );
 	ADD_SIGNAL( MethodInfo("node_removed",PropertyInfo( Variant::OBJECT, "node") ) );
 	ADD_SIGNAL( MethodInfo("screen_resized") );
+	ADD_SIGNAL( MethodInfo("node_configuration_warning_changed",PropertyInfo( Variant::OBJECT, "node")) );
 
 	ADD_SIGNAL( MethodInfo("idle_frame"));
 	ADD_SIGNAL( MethodInfo("fixed_frame"));
+
+	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
 
 	BIND_CONSTANT( GROUP_CALL_DEFAULT );
 	BIND_CONSTANT( GROUP_CALL_REVERSE );

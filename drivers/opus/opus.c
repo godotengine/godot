@@ -24,10 +24,7 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/opus.h"
 #include "opus/opus_private.h"
@@ -164,6 +161,27 @@ static int parse_size(const unsigned char *data, opus_int32 len, opus_int16 *siz
       *size = 4*data[1] + data[0];
       return 2;
    }
+}
+
+int opus_packet_get_samples_per_frame(const unsigned char *data,
+      opus_int32 Fs)
+{
+   int audiosize;
+   if (data[0]&0x80)
+   {
+      audiosize = ((data[0]>>3)&0x3);
+      audiosize = (Fs<<audiosize)/400;
+   } else if ((data[0]&0x60) == 0x60)
+   {
+      audiosize = (data[0]&0x08) ? Fs/50 : Fs/100;
+   } else {
+      audiosize = ((data[0]>>3)&0x3);
+      if (audiosize == 3)
+         audiosize = Fs*60/1000;
+      else
+         audiosize = (Fs<<audiosize)/100;
+   }
+   return audiosize;
 }
 
 int opus_packet_parse_impl(const unsigned char *data, opus_int32 len,

@@ -24,23 +24,21 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
-#include "opus/silk/silk_main.h"
+#include "opus/silk/main.h"
 #include "opus/silk/tuning_parameters.h"
 
 void silk_quant_LTP_gains(
     opus_int16                  B_Q14[ MAX_NB_SUBFR * LTP_ORDER ],          /* I/O  (un)quantized LTP gains         */
     opus_int8                   cbk_index[ MAX_NB_SUBFR ],                  /* O    Codebook Index                  */
     opus_int8                   *periodicity_index,                         /* O    Periodicity Index               */
-	opus_int32					*sum_log_gain_Q7,							/* I/O  Cumulative max prediction gain  */
+    opus_int32                  *sum_log_gain_Q7,                           /* I/O  Cumulative max prediction gain  */
     const opus_int32            W_Q18[ MAX_NB_SUBFR*LTP_ORDER*LTP_ORDER ],  /* I    Error Weights in Q18            */
     opus_int                    mu_Q9,                                      /* I    Mu value (R/D tradeoff)         */
     opus_int                    lowComplexity,                              /* I    Flag for low complexity         */
-    const opus_int              nb_subfr                                    /* I    number of subframes             */
+    const opus_int              nb_subfr,                                   /* I    number of subframes             */
+    int                         arch                                        /* I    Run-time architecture           */
 )
 {
     opus_int             j, k, cbk_size;
@@ -51,7 +49,7 @@ void silk_quant_LTP_gains(
     const opus_int16     *b_Q14_ptr;
     const opus_int32     *W_Q18_ptr;
     opus_int32           rate_dist_Q14_subfr, rate_dist_Q14, min_rate_dist_Q14;
-	opus_int32           sum_log_gain_tmp_Q7, best_sum_log_gain_Q7, max_gain_Q7, gain_Q7;
+    opus_int32           sum_log_gain_tmp_Q7, best_sum_log_gain_Q7, max_gain_Q7, gain_Q7;
 
     /***************************************************/
     /* iterate over different codebooks with different */
@@ -74,23 +72,24 @@ void silk_quant_LTP_gains(
         b_Q14_ptr = B_Q14;
 
         rate_dist_Q14 = 0;
-		sum_log_gain_tmp_Q7 = *sum_log_gain_Q7;
+        sum_log_gain_tmp_Q7 = *sum_log_gain_Q7;
         for( j = 0; j < nb_subfr; j++ ) {
-			max_gain_Q7 = silk_log2lin( ( SILK_FIX_CONST( MAX_SUM_LOG_GAIN_DB / 6.0, 7 ) - sum_log_gain_tmp_Q7 ) 
-										+ SILK_FIX_CONST( 7, 7 ) ) - gain_safety;
+            max_gain_Q7 = silk_log2lin( ( SILK_FIX_CONST( MAX_SUM_LOG_GAIN_DB / 6.0, 7 ) - sum_log_gain_tmp_Q7 )
+                                        + SILK_FIX_CONST( 7, 7 ) ) - gain_safety;
 
             silk_VQ_WMat_EC(
                 &temp_idx[ j ],         /* O    index of best codebook vector                           */
                 &rate_dist_Q14_subfr,   /* O    best weighted quantization error + mu * rate            */
-				&gain_Q7,               /* O    sum of absolute LTP coefficients                        */
+                &gain_Q7,               /* O    sum of absolute LTP coefficients                        */
                 b_Q14_ptr,              /* I    input vector to be quantized                            */
                 W_Q18_ptr,              /* I    weighting matrix                                        */
                 cbk_ptr_Q7,             /* I    codebook                                                */
                 cbk_gain_ptr_Q7,        /* I    codebook effective gains                                */
                 cl_ptr_Q5,              /* I    code length for each codebook vector                    */
                 mu_Q9,                  /* I    tradeoff between weighted error and rate                */
-				max_gain_Q7,            /* I    maximum sum of absolute LTP coefficients                */
-                cbk_size                /* I    number of vectors in codebook                           */
+                max_gain_Q7,            /* I    maximum sum of absolute LTP coefficients                */
+                cbk_size,               /* I    number of vectors in codebook                           */
+                arch                    /* I    Run-time architecture                                   */
             );
 
             rate_dist_Q14 = silk_ADD_POS_SAT32( rate_dist_Q14, rate_dist_Q14_subfr );
@@ -108,7 +107,7 @@ void silk_quant_LTP_gains(
             min_rate_dist_Q14 = rate_dist_Q14;
             *periodicity_index = (opus_int8)k;
             silk_memcpy( cbk_index, temp_idx, nb_subfr * sizeof( opus_int8 ) );
-			best_sum_log_gain_Q7 = sum_log_gain_tmp_Q7;
+            best_sum_log_gain_Q7 = sum_log_gain_tmp_Q7;
         }
 
         /* Break early in low-complexity mode if rate distortion is below threshold */
@@ -123,6 +122,5 @@ void silk_quant_LTP_gains(
             B_Q14[ j * LTP_ORDER + k ] = silk_LSHIFT( cbk_ptr_Q7[ cbk_index[ j ] * LTP_ORDER + k ], 7 );
         }
     }
-	*sum_log_gain_Q7 = best_sum_log_gain_Q7;
+    *sum_log_gain_Q7 = best_sum_log_gain_Q7;
 }
-

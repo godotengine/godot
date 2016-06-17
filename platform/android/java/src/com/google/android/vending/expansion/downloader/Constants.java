@@ -33,6 +33,10 @@ public class Constants {
     public static final String EXP_PATH = File.separator + "Android"
             + File.separator + "obb" + File.separator;
     
+    // save to private app's data on Android 6.0 to skip requesting permission.
+    public static final String EXP_PATH_API23 = File.separator + "Android"
+            + File.separator + "data" + File.separator;
+    
     /** The intent that gets sent when the service must wake up for a retry */
     public static final String ACTION_RETRY = "android.intent.action.DOWNLOAD_WAKEUP";
 
@@ -70,7 +74,7 @@ public class Constants {
      * The number of times that the download manager will retry its network
      * operations when no progress is happening before it gives up.
      */
-    public static final int MAX_RETRIES = 5;
+    public static final int MAX_RETRIES = 10;
 
     /**
      * The minimum amount of time that the download manager accepts for

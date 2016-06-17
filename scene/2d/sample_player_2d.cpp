@@ -103,6 +103,7 @@ void SamplePlayer2D::set_sample_library(const Ref<SampleLibrary>& p_library) {
 
 	library=p_library;
 	_change_notify();
+	update_configuration_warning();
 }
 
 Ref<SampleLibrary> SamplePlayer2D::get_sample_library() const {
@@ -207,6 +208,14 @@ float SamplePlayer2D::get_random_pitch_scale() const {
 	return random_pitch_scale;
 }
 
+String SamplePlayer2D::get_configuration_warning() const {
+
+	if (library.is_null()) {
+		return TTR("A SampleLibrary resource must be created or set in the 'samples' property in order for SamplePlayer to play sound.");
+	}
+
+	return String();
+}
 
 void SamplePlayer2D::_bind_methods() {
 

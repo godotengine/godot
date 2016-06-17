@@ -31,6 +31,7 @@
 
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/main/timer.h"
 
 
@@ -87,10 +88,13 @@ class TextEdit : public Control  {
 		Color current_line_color;
 		Color brace_mismatch_color;
 		Color word_highlighted_color;
+		Color search_result_color;
+		Color search_result_border_color;
 
 		int row_height;
 		int line_spacing;
 		int line_number_w;
+		int breakpoint_gutter_width;
 		Size2 size;
 	} cache;
 
@@ -210,6 +214,10 @@ class TextEdit : public Control  {
 	bool syntax_coloring;
 	int tab_size;
 
+	Timer *caret_blink_timer;
+	bool caret_blink_enabled;
+	bool draw_caret;
+
 	bool setting_row;
 	bool wrap;
 	bool draw_tabs;
@@ -217,6 +225,8 @@ class TextEdit : public Control  {
 	bool text_changed_dirty;
 	bool undo_enabled;
 	bool line_numbers;
+	bool draw_breakpoint_gutter;
+	int breakpoint_gutter_width;
 
 	bool highlight_all_occurrences;
 	bool scroll_past_end_of_file_enabled;
@@ -244,6 +254,11 @@ class TextEdit : public Control  {
 	bool callhint_below;
 	Vector2 callhint_offset;
 
+	String search_text;
+	uint32_t search_flags;
+	int search_result_line;
+	int search_result_col;
+
 	int get_visible_rows() const;
 
 	int get_char_count();
@@ -263,9 +278,12 @@ class TextEdit : public Control  {
 	void _scroll_lines_down();
 
 //	void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
-	Size2 get_minimum_size();
+	Size2 get_minimum_size() const;
 
 	int get_row_height() const;
+
+	void _reset_caret_blink_timer();
+	void _toggle_draw_caret();
 
 	void _update_caches();
 	void _cursor_changed_emit();
@@ -279,9 +297,11 @@ class TextEdit : public Control  {
 	String _base_get_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column) const;
 	void _base_remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
 
-	int _get_column_pos_of_word(const String &p_key, const String &p_search, int p_from_column);
+	int _get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column);
 
 	DVector<int> _search_bind(const String &p_key,uint32_t p_search_flags, int p_from_line,int p_from_column) const;
+
+	PopupMenu *menu;
 
 	void _clear();
 	void _cancel_completion();
@@ -309,6 +329,17 @@ protected:
 
 
 public:
+
+	enum MenuItems {
+		MENU_CUT,
+		MENU_COPY,
+		MENU_PASTE,
+		MENU_CLEAR,
+		MENU_SELECT_ALL,
+		MENU_UNDO,
+		MENU_MAX
+
+	};
 
 	enum SearchFlags {
 
@@ -364,6 +395,12 @@ public:
 	int cursor_get_column() const;
 	int cursor_get_line() const;
 
+	bool cursor_get_blink_enabled() const;
+	void cursor_set_blink_enabled(const bool p_enabled);
+
+	float cursor_get_blink_speed() const;
+	void cursor_set_blink_speed(const float p_speed);
+
 	void set_readonly(bool p_readonly);
 
 	void set_max_chars(int p_max_chars);
@@ -380,6 +417,10 @@ public:
 	void select_all();
 	void select(int p_from_line,int p_from_column,int p_to_line,int p_to_column);
 	void deselect();
+
+	void set_search_text(const String& p_search_text);
+	void set_search_flags(uint32_t p_flags);
+	void set_current_search_result(int line, int col);
 
 	void set_highlight_all_occurrences(const bool p_enabled);
 	bool is_selection_active() const;
@@ -420,7 +461,15 @@ public:
 	uint32_t get_saved_version() const;
 	void tag_saved_version();
 
+	void menu_option(int p_option);
+
 	void set_show_line_numbers(bool p_show);
+
+	void set_draw_breakpoint_gutter(bool p_draw);
+	bool is_drawing_breakpoint_gutter() const;
+
+	void set_breakpoint_gutter_width(int p_gutter_width);
+	int get_breakpoint_gutter_width() const;
 
 	void set_tooltip_request_func(Object *p_obj, const StringName& p_function, const Variant& p_udata);
 
@@ -428,6 +477,8 @@ public:
 	void code_complete(const Vector<String> &p_strings);
 	void set_code_hint(const String& p_hint);
 	void query_code_comple();
+
+	PopupMenu *get_menu() const;
 
 	String get_text_for_completion();
 

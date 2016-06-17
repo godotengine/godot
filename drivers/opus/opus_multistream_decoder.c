@@ -24,10 +24,7 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/opus_multistream.h"
 #include "opus/opus.h"
@@ -75,7 +72,7 @@ int opus_multistream_decoder_init(
    char *ptr;
 
    if ((channels>255) || (channels<1) || (coupled_streams>streams) ||
-       (coupled_streams+streams>255) || (streams<1) || (coupled_streams<0))
+       (streams<1) || (coupled_streams<0) || (streams>255-coupled_streams))
       return OPUS_BAD_ARG;
 
    st->layout.nb_channels = channels;
@@ -119,7 +116,7 @@ OpusMSDecoder *opus_multistream_decoder_create(
    int ret;
    OpusMSDecoder *st;
    if ((channels>255) || (channels<1) || (coupled_streams>streams) ||
-       (coupled_streams+streams>255) || (streams<1) || (coupled_streams<0))
+       (streams<1) || (coupled_streams<0) || (streams>255-coupled_streams))
    {
       if (error)
          *error = OPUS_BAD_ARG;
@@ -317,7 +314,7 @@ static void opus_copy_channel_out_float(
    if (src != NULL)
    {
       for (i=0;i<frame_size;i++)
-#if defined(OPUS_FIXED_POINT)
+#if defined(FIXED_POINT)
          float_dst[i*dst_stride+dst_channel] = (1/32768.f)*src[i*src_stride];
 #else
          float_dst[i*dst_stride+dst_channel] = src[i*src_stride];
@@ -346,7 +343,7 @@ static void opus_copy_channel_out_short(
    if (src != NULL)
    {
       for (i=0;i<frame_size;i++)
-#if defined(OPUS_FIXED_POINT)
+#if defined(FIXED_POINT)
          short_dst[i*dst_stride+dst_channel] = src[i*src_stride];
 #else
          short_dst[i*dst_stride+dst_channel] = FLOAT2INT16(src[i*src_stride]);

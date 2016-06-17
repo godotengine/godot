@@ -49,6 +49,7 @@
 #include "tools/editor/call_dialog.h"
 #include "tools/editor/reparent_dialog.h"
 #include "tools/editor/connections_dialog.h"
+#include "tools/editor/node_dock.h"
 #include "tools/editor/settings_config_dialog.h"
 #include "tools/editor/groups_editor.h"
 #include "tools/editor/editor_data.h"
@@ -85,6 +86,7 @@
 
 #include "progress_dialog.h"
 
+#include "editor_scale.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -159,7 +161,7 @@ private:
 		OBJECT_CALL_METHOD,
 		OBJECT_REQUEST_HELP,
 		RUN_PLAY,
-		RUN_PAUSE,
+
 		RUN_STOP,
 		RUN_PLAY_SCENE,
 		RUN_PLAY_NATIVE,
@@ -168,11 +170,12 @@ private:
 		RUN_SETTINGS,
 		RUN_PROJECT_MANAGER,
 		RUN_FILE_SERVER,
-		RUN_DEPLOY_DUMB_CLIENTS,
+		//RUN_DEPLOY_DUMB_CLIENTS,
 		RUN_LIVE_DEBUG,
 		RUN_DEBUG_COLLISONS,
 		RUN_DEBUG_NAVIGATION,
 		RUN_DEPLOY_REMOTE_DEBUG,
+		RUN_RELOAD_SCRIPTS,
 		SETTINGS_UPDATE_ALWAYS,
 		SETTINGS_UPDATE_CHANGES,
 		SETTINGS_IMPORT,
@@ -224,6 +227,7 @@ private:
 	Tabs *scene_tabs;
 	int tab_closing;
 
+	bool exiting;
 
 	int old_split_ofs;
 	VSplitContainer *top_split;
@@ -236,6 +240,7 @@ private:
 
 	//HSplitContainer *editor_hsplit;
 	//VSplitContainer *editor_vsplit;
+	CenterContainer *play_cc;
 	HBoxContainer *menu_hb;
 	Control *viewport;
 	MenuButton *file_menu;
@@ -269,6 +274,8 @@ private:
 	SceneTreeDock *scene_tree_dock;
 	//ResourcesDock *resources_dock;
 	PropertyEditor *property_editor;
+	NodeDock *node_dock;
+	VBoxContainer *prop_editor_vb;
 	ScenesDock *scenes_dock;
 	EditorRunNative *run_native;
 
@@ -348,6 +355,8 @@ private:
 	ToolButton *dock_tab_move_right;
 	int dock_popup_selected;
 	Timer *dock_drag_timer;
+	bool docks_visible;
+	bool distraction_free_mode;
 
 	String _tmp_import_path;
 
@@ -364,6 +373,8 @@ private:
 	bool unsaved_cache;
 	String open_navigate;
 	bool changing_scene;
+
+	bool waiting_for_sources_changed;
 
 	uint32_t circle_step_msec;
 	uint64_t circle_step_frame;
@@ -451,7 +462,7 @@ private:
 	void _display_top_editors(bool p_display);
 	void _set_top_editors(Vector<EditorPlugin*> p_editor_plugins_over);
 	void _set_editing_top_editors(Object * p_current_object);
-        
+
 	void _quick_opened();
 	void _quick_run();
 
@@ -463,6 +474,7 @@ private:
 	void _add_to_recent_scenes(const String& p_scene);
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
+	void _dropped_files(const Vector<String>& p_files,int p_screen);
 	//void _open_recent_scene_confirm();
 	String _recent_scene;
 
@@ -551,7 +563,7 @@ private:
 	void _save_docks_to_config(Ref<ConfigFile> p_layout, const String& p_section);
 	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String& p_section);
 	void _update_dock_slots_visibility();
-
+	void _update_top_menu_visibility();
 
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_idx);
@@ -562,6 +574,7 @@ private:
 
 	void _update_addon_config();
 
+	static void _file_access_close_error_notify(const String& p_str);
 
 protected:
 	void _notification(int p_what);
@@ -580,9 +593,19 @@ public:
 	EditorPlugin *get_editor_plugin_screen() { return editor_plugin_screen; }
 	EditorPluginList *get_editor_plugins_over() { return editor_plugins_over; }
 	PropertyEditor *get_property_editor() { return property_editor; }
+	VBoxContainer *get_property_editor_vb() { return prop_editor_vb; }
 
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
+
+	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE,false); }
+
+
+	void set_docks_visible(bool p_show);
+	bool get_docks_visible() const;
+
+	void set_distraction_free_mode(bool p_enter);
+	bool get_distraction_free_mode() const;
 
 	void add_control_to_dock(DockSlot p_slot,Control* p_control);
 	void remove_control_from_dock(Control* p_control);
@@ -599,7 +622,9 @@ public:
 
 	void save_resource_in_path(const Ref<Resource>& p_resource,const String& p_path);
 	void save_resource(const Ref<Resource>& p_resource);
-	void save_resource_as(const Ref<Resource>& p_resource);
+	void save_resource_as(const Ref<Resource>& p_resource, const String &p_at_path=String());
+
+	void merge_from_scene() { _menu_option_confirm(FILE_IMPORT_SUBSCENE,false); }
 
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 
@@ -641,8 +666,9 @@ public:
 
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 
-	Node* request_instance_scene(const String &p_path);
+	void request_instance_scene(const String &p_path);
 	ScenesDock *get_scenes_dock();
+	SceneTreeDock *get_scene_tree_dock();
 	static UndoRedo* get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }
@@ -667,6 +693,7 @@ public:
 	static void unregister_editor_types();
 
 	Control *get_gui_base() { return gui_base; }
+	Control *get_theme_base() { return gui_base->get_parent_control(); }
 
 	static void add_io_error(const String& p_error);
 
@@ -688,6 +715,10 @@ public:
 
 	void update_keying();
 
+	bool is_exiting() const { return exiting; }
+
+	ToolButton *get_pause_button() { return pause_button; }
+
 
 	ToolButton* add_bottom_panel_item(String p_text,Control *p_item);
 	bool are_bottom_panels_hidden() const;
@@ -695,6 +726,11 @@ public:
 	void raise_bottom_panel_item(Control *p_item);
 	void hide_bottom_panel();
 	void remove_bottom_panel_item(Control *p_item);
+
+	Variant drag_resource(const Ref<Resource>& p_res,Control* p_from);
+	Variant drag_files(const Vector<String>& p_files,Control* p_from);
+	Variant drag_files_and_dirs(const Vector<String>& p_files,Control* p_from);
+
 
 	EditorNode();
 	~EditorNode();
@@ -737,7 +773,7 @@ public:
 	EditorPluginList();
 	~EditorPluginList();
 
-} ; 
+} ;
 
 struct EditorProgressBG {
 

@@ -57,6 +57,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <dlfcn.h>
 
 //stupid linux.h
 #ifdef KEY_TAB
@@ -105,6 +106,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	last_timestamp=0;
 	last_mouse_pos_valid=false;
 	last_keyrelease_time=0;
+	xdnd_version = 0;
 
 	if (get_render_thread_mode()==RENDER_SEPARATE_THREAD) {
 		XInitThreads();
@@ -115,6 +117,37 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	char * modifiers = XSetLocaleModifiers ("@im=none");
 	ERR_FAIL_COND( modifiers == NULL );
+
+	const char* err;
+	xrr_get_monitors = NULL;
+	xrr_free_monitors = NULL;
+	int xrandr_major = 0;
+	int xrandr_minor = 0;
+	int event_base, error_base;
+	xrandr_ext_ok = XRRQueryExtension(x11_display,&event_base, &error_base);
+	xrandr_handle = dlopen("libXrandr.so", RTLD_LAZY);
+	err = dlerror();
+	if (!xrandr_handle) {
+		fprintf(stderr, "could not load libXrandr.so, Error: %s\n", err);
+	}
+	else {
+		XRRQueryVersion(x11_display, &xrandr_major, &xrandr_minor);
+		if (((xrandr_major << 8) | xrandr_minor) >= 0x0105) {
+			xrr_get_monitors = (xrr_get_monitors_t) dlsym(xrandr_handle, "XRRGetMonitors");
+			if (!xrr_get_monitors) {
+				err = dlerror();
+				fprintf(stderr, "could not find symbol XRRGetMonitors\nError: %s\n", err);
+			}
+			else {
+				xrr_free_monitors = (xrr_free_monitors_t) dlsym(xrandr_handle, "XRRFreeMonitors");
+				if (!xrr_free_monitors) {
+					err = dlerror();
+					fprintf(stderr, "could not find XRRFreeMonitors\nError: %s\n", err);
+					xrr_get_monitors = NULL;
+				}
+			}
+		}
+	}
 
 	xim = XOpenIM (x11_display, NULL, NULL, NULL);
 
@@ -415,6 +448,19 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	}
 	set_cursor_shape(CURSOR_BUSY);
 
+	//Set Xdnd (drag & drop) support
+	Atom XdndAware = XInternAtom(x11_display, "XdndAware", False);
+	Atom version=5;
+	XChangeProperty(x11_display, x11_window, XdndAware, XA_ATOM, 32, PropModeReplace, (unsigned char*)&version, 1);
+
+	xdnd_enter = XInternAtom(x11_display, "XdndEnter", False);
+	xdnd_position = XInternAtom(x11_display, "XdndPosition", False);
+	xdnd_status = XInternAtom(x11_display, "XdndStatus", False);
+	xdnd_action_copy = XInternAtom(x11_display, "XdndActionCopy", False);
+	xdnd_drop = XInternAtom(x11_display, "XdndDrop", False);
+	xdnd_finished = XInternAtom(x11_display, "XdndFinished", False);
+	xdnd_selection = XInternAtom(x11_display, "XdndSelection", False);
+	requested = None;
 
 	visual_server->init();
 	//
@@ -465,6 +511,9 @@ void OS_X11::finalize() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
+
+	if (xrandr_handle)
+		dlclose(xrandr_handle);
 
 	XUnmapWindow( x11_display, x11_window );
 	XDestroyWindow( x11_display, x11_window );
@@ -706,6 +755,46 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 	Size2i size = Point2i(xsi[p_screen].width, xsi[p_screen].height);
 	XFree(xsi);
 	return size;
+}
+
+int OS_X11::get_screen_dpi(int p_screen) const {
+
+	//invalid screen?
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
+
+	//Get physical monitor Dimensions through XRandR and calculate dpi
+	Size2 sc = get_screen_size(p_screen);
+	if (xrandr_ext_ok) {
+		int count = 0;
+		if (xrr_get_monitors) {
+			xrr_monitor_info *monitors = xrr_get_monitors(x11_display, x11_window, true, &count);
+			if (p_screen < count) {
+				double xdpi = sc.width  / (double) monitors[p_screen].mwidth  * 25.4;
+				double ydpi = sc.height / (double) monitors[p_screen].mheight * 25.4;
+				xrr_free_monitors(monitors);
+				return (xdpi + ydpi) / 2;
+			}
+			xrr_free_monitors(monitors);
+		}
+		else if (p_screen == 0) {
+			XRRScreenSize *sizes = XRRSizes(x11_display, 0, &count);
+			if (sizes) {
+				double xdpi = sc.width  / (double) sizes[0].mwidth  * 25.4;
+				double ydpi = sc.height / (double) sizes[0].mheight * 25.4;
+				return (xdpi + ydpi) / 2;
+			}
+		}
+	}
+
+	int width_mm  = DisplayWidthMM(x11_display, p_screen);
+	int height_mm = DisplayHeightMM(x11_display, p_screen);
+	double xdpi = (width_mm  ? sc.width  / (double) width_mm  * 25.4 : 0);
+	double ydpi = (height_mm ? sc.height / (double) height_mm * 25.4 : 0);
+	if (xdpi || xdpi)
+		return  (xdpi + ydpi)/(xdpi && ydpi ? 2 : 1);
+
+	//could not get dpi
+	return 96;
 }
 
 Point2 OS_X11::get_window_position() const {
@@ -1166,6 +1255,72 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	input->parse_input_event( event);
 }
 
+struct Property
+{
+	unsigned char *data;
+	int format, nitems;
+	Atom type;
+};
+
+static Property read_property(Display* p_display, Window p_window, Atom p_property) {
+
+	Atom actual_type;
+	int actual_format;
+	unsigned long nitems;
+	unsigned long bytes_after;
+	unsigned char *ret=0;
+
+	int read_bytes = 1024;
+
+	//Keep trying to read the property until there are no
+	//bytes unread.
+	do
+	{
+		if(ret != 0)
+			XFree(ret);
+
+		XGetWindowProperty(p_display, p_window, p_property, 0, read_bytes, False, AnyPropertyType,
+					   &actual_type, &actual_format, &nitems, &bytes_after,
+					   &ret);
+
+		read_bytes *= 2;
+
+	}while(bytes_after != 0);
+
+	Property p = {ret, actual_format, nitems, actual_type};
+
+	return p;
+}
+
+static Atom pick_target_from_list(Display* p_display, Atom *p_list, int p_count) {
+
+	static const char* target_type = "text/uri-list";
+
+	for (int i = 0; i < p_count; i++) {
+
+		Atom atom = p_list[i];
+
+		if (atom != None && String(XGetAtomName(p_display, atom)) == target_type)
+				return atom;
+	}
+	return None;
+}
+
+static Atom pick_target_from_atoms(Display* p_disp, Atom p_t1, Atom p_t2, Atom p_t3) {
+
+	static const char* target_type = "text/uri-list";
+	if (p_t1 != None && String(XGetAtomName(p_disp, p_t1)) == target_type)
+		return p_t1;
+
+	if (p_t2 != None && String(XGetAtomName(p_disp, p_t2)) == target_type)
+		return p_t2;
+
+	if (p_t3 != None && String(XGetAtomName(p_disp, p_t3)) == target_type)
+		return p_t3;
+
+	return None;
+}
+
 void OS_X11::process_xevents() {
 
 	//printf("checking events %i\n", XPending(x11_display));
@@ -1456,11 +1611,96 @@ void OS_X11::process_xevents() {
 			XFlush (x11_display);
 		} break;
 
+		case SelectionNotify:
+
+			if (event.xselection.target == requested) {
+
+				Property p = read_property(x11_display, x11_window, XInternAtom(x11_display, "PRIMARY", 0));
+
+				Vector<String> files = String((char *)p.data).split("\n", false);
+				for (int i = 0; i < files.size(); i++) {
+					files[i] = files[i].replace("file://", "").replace("%20", " ").strip_escapes();
+				}
+				main_loop->drop_files(files);
+
+				//Reply that all is well.
+				XClientMessageEvent m;
+				memset(&m, sizeof(m), 0);
+				m.type = ClientMessage;
+				m.display = x11_display;
+				m.window = xdnd_source_window;
+				m.message_type = xdnd_finished;
+				m.format=32;
+				m.data.l[0] = x11_window;
+				m.data.l[1] = 1;
+				m.data.l[2] = xdnd_action_copy; //We only ever copy.
+
+				XSendEvent(x11_display, xdnd_source_window, False, NoEventMask, (XEvent*)&m);
+			}
+			break;
 
 		case ClientMessage:
 
 			if ((unsigned int)event.xclient.data.l[0]==(unsigned int)wm_delete)
 				main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+
+			else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_enter) {
+
+				//File(s) have been dragged over the window, check for supported target (text/uri-list)
+				xdnd_version = ( event.xclient.data.l[1] >> 24);
+				Window source = event.xclient.data.l[0];
+				bool more_than_3 = event.xclient.data.l[1] & 1;
+				if (more_than_3) {
+					Property p = read_property(x11_display, source, XInternAtom(x11_display, "XdndTypeList", False));
+					requested = pick_target_from_list(x11_display, (Atom*)p.data, p.nitems);
+				}
+				else
+					requested = pick_target_from_atoms(x11_display, event.xclient.data.l[2],event.xclient.data.l[3], event.xclient.data.l[4]);
+			}
+			else if ((unsigned int)event.xclient.message_type == (unsigned int )xdnd_position) {
+
+				//xdnd position event, reply with an XDND status message
+				//just depending on type of data for now
+				XClientMessageEvent m;
+				memset(&m, sizeof(m), 0);
+				m.type = ClientMessage;
+				m.display = event.xclient.display;
+				m.window = event.xclient.data.l[0];
+				m.message_type = xdnd_status;
+				m.format=32;
+				m.data.l[0] = x11_window;
+				m.data.l[1] = (requested != None);
+				m.data.l[2] = 0; //empty rectangle
+				m.data.l[3] = 0;
+				m.data.l[4] = xdnd_action_copy;
+
+				XSendEvent(x11_display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+				XFlush(x11_display);
+			}
+			else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_drop) {
+
+				if (requested != None) {
+					xdnd_source_window = event.xclient.data.l[0];
+					if(xdnd_version >= 1)
+						XConvertSelection(x11_display, xdnd_selection, requested, XInternAtom(x11_display, "PRIMARY", 0), x11_window, event.xclient.data.l[2]);
+					else
+						XConvertSelection(x11_display, xdnd_selection, requested, XInternAtom(x11_display, "PRIMARY", 0), x11_window, CurrentTime);
+				}
+				else {
+					//Reply that we're not interested.
+					XClientMessageEvent m;
+					memset(&m, sizeof(m), 0);
+					m.type = ClientMessage;
+					m.display = event.xclient.display;
+					m.window = event.xclient.data.l[0];
+					m.message_type = xdnd_finished;
+					m.format=32;
+					m.data.l[0] = x11_window;
+					m.data.l[1] = 0;
+					m.data.l[2] = None; //Failed.
+					XSendEvent(x11_display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+				}
+			}
 			break;
 		default:
 			break;
@@ -1786,6 +2026,20 @@ bool OS_X11::is_joy_known(int p_device) {
 String OS_X11::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
+
+void OS_X11::set_use_vsync(bool p_enable) {
+	if (context_gl)
+		return context_gl->set_use_vsync(p_enable);
+}
+
+bool OS_X11::is_vsnc_enabled() const {
+
+	if (context_gl)
+		return context_gl->is_using_vsync();
+
+	return true;
+}
+
 
 void OS_X11::set_context(int p_context) {
 

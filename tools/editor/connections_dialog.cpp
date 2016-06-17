@@ -35,6 +35,7 @@
 #include "print_string.h"
 #include "editor_settings.h"
 #include "editor_node.h"
+#include "plugins/script_editor_plugin.h"
 
 class ConnectDialogBinds : public Object {
 
@@ -94,8 +95,8 @@ void ConnectDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
 
-		RID ci = get_canvas_item();
-		get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
+		//RID ci = get_canvas_item();
+		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
 	}
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
@@ -176,7 +177,7 @@ void ConnectDialog::ok_pressed() {
 
 	if (dst_method->get_text()=="") {
 
-		error->set_text("Method in target Node must be specified!");
+		error->set_text(TTR("Method in target Node must be specified!"));
 		error->popup_centered_minsize();
 		return;
 	}
@@ -294,47 +295,33 @@ void ConnectDialog::_bind_methods() {
 
 ConnectDialog::ConnectDialog() {
 
-	int margin = get_constant("margin","Dialogs");
-	int button_margin = get_constant("button_margin","Dialogs");
+	VBoxContainer *vbc = memnew( VBoxContainer );
+	add_child(vbc);
+	set_child_rect(vbc);
 
+	HBoxContainer *main_hb = memnew( HBoxContainer );
+	vbc->add_child(main_hb);
+	main_hb->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	Label * label = memnew( Label );
-	label->set_pos( Point2( 8,11) );
-	label->set_text("Connect To Node:");
-
-
-	add_child(label);
-	label = memnew( Label );
-	label->set_anchor( MARGIN_LEFT, ANCHOR_RATIO );
-	label->set_pos( Point2( 0.5,11) );
-	label->set_text("Binds (Extra Params):");
-	add_child(label);
+	VBoxContainer *vbc_left = memnew( VBoxContainer );
+	main_hb->add_child(vbc_left);
+	vbc_left->set_h_size_flags(SIZE_EXPAND_FILL);
 
 
 	tree = memnew(SceneTreeEditor(false));
-	tree->set_anchor( MARGIN_RIGHT, ANCHOR_RATIO );
-	tree->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
-	tree->set_begin( Point2( 15,32) );
-	tree->set_end( Point2( 0.5,127 ) );
+	vbc_left->add_margin_child(TTR("Conect To Node:"),tree,true);
 
-	add_child(tree);
 
-	bind_editor = memnew( PropertyEditor );
-	bind_editor->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	bind_editor->set_anchor( MARGIN_LEFT, ANCHOR_RATIO );
-	bind_editor->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
-	bind_editor->set_begin( Point2( 0.51,42) );
-	bind_editor->set_end( Point2( 15,127 ) );
-	bind_editor->get_top_label()->hide();
 
-	add_child(bind_editor);
+	VBoxContainer *vbc_right = memnew( VBoxContainer );
+	main_hb->add_child(vbc_right);
+	vbc_right->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	HBoxContainer *add_bind_hb = memnew( HBoxContainer );
 
 	type_list = memnew( OptionButton );
-	type_list->set_anchor( MARGIN_RIGHT, ANCHOR_RATIO );
-	type_list->set_anchor( MARGIN_LEFT, ANCHOR_RATIO );
-	type_list->set_begin( Point2( 0.51,32) );
-	type_list->set_end( Point2( 0.75,33 ) );
-	add_child(type_list);
+	type_list->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_bind_hb->add_child(type_list);
 
 
 	type_list->add_item("bool",Variant::BOOL);
@@ -356,64 +343,35 @@ ConnectDialog::ConnectDialog() {
 	type_list->select(0);
 
 	Button *add_bind = memnew( Button );
-	add_bind->set_anchor( MARGIN_RIGHT, ANCHOR_RATIO );
-	add_bind->set_anchor( MARGIN_LEFT, ANCHOR_RATIO );
-	add_bind->set_begin( Point2( 0.76,32) );
-	add_bind->set_end( Point2( 0.84,33 ) );
-	add_bind->set_text("Add");
-	add_child(add_bind);
+
+	add_bind->set_text(TTR("Add"));
+	add_bind_hb->add_child(add_bind);
 	add_bind->connect("pressed",this,"_add_bind");
 
 	Button *del_bind = memnew( Button );
-	del_bind->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	del_bind->set_anchor( MARGIN_LEFT, ANCHOR_RATIO );
-	del_bind->set_begin( Point2( 0.85,32) );
-	del_bind->set_end( Point2( 15,33 ) );
-	del_bind->set_text("Remove");
-	add_child(del_bind);
+	del_bind->set_text(TTR("Remove"));
+	add_bind_hb->add_child(del_bind);
 	del_bind->connect("pressed",this,"_remove_bind");
 
+	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"),add_bind_hb);
 
-	label = memnew( Label );
-	label->set_anchor( MARGIN_TOP, ANCHOR_END );
-	label->set_begin( Point2( 8,124) );
-	label->set_end( Point2( 15,99) );
-	label->set_text("Path To Node:");
+	bind_editor = memnew( PropertyEditor );
+	bind_editor->hide_top_label();
 
-	add_child(label);
+	vbc_right->add_margin_child(TTR("Extra Call Arguments:"),bind_editor,true);
+
+
 
 	dst_path = memnew(LineEdit);
-	dst_path->set_anchor( MARGIN_TOP, ANCHOR_END );
-	dst_path->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	dst_path->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
-	dst_path->set_begin( Point2( 15,105) );
-	dst_path->set_end( Point2( 15,80 ) );
-
-	add_child(dst_path);
-
-	label = memnew( Label );
-	label->set_anchor( MARGIN_TOP, ANCHOR_END );
-	label->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	label->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
-	label->set_begin( Point2( 8,78 ) );
-	label->set_end( Point2( 15,52 ) );
-	label->set_text("Method In Node:");
-	add_child(label);
+	vbc->add_margin_child(TTR("Path to Node:"),dst_path);
 
 
 	HBoxContainer *dstm_hb = memnew( HBoxContainer );
-	dstm_hb->set_anchor( MARGIN_TOP, ANCHOR_END );
-	dstm_hb->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	dstm_hb->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
-	dstm_hb->set_begin( Point2( 15,59) );
-	dstm_hb->set_end( Point2( 15,39 ) );
-	add_child(dstm_hb);
+	vbc->add_margin_child("Method In Node:",dstm_hb);
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);
 	dstm_hb->add_child(dst_method);
-
-
 
 	/*dst_method_list = memnew( MenuButton );
 	dst_method_list->set_text("List..");
@@ -429,15 +387,15 @@ ConnectDialog::ConnectDialog() {
 	make_callback = memnew( CheckButton );
 	make_callback->set_toggle_mode(true);
 	make_callback->set_pressed( EDITOR_DEF("text_editor/create_signal_callbacks",true));
-	make_callback->set_text("Make Function  ");
+	make_callback->set_text(TTR("Make Function"));
 	dstm_hb->add_child(make_callback);
 
 	deferred = memnew( CheckButton );
-	deferred->set_text("Deferred");
+	deferred->set_text(TTR("Deferred"));
 	dstm_hb->add_child(deferred);
 
 	oneshot = memnew( CheckButton );
-	oneshot->set_text("Oneshot");
+	oneshot->set_text(TTR("Oneshot"));
 	dstm_hb->add_child(oneshot);
 
 /*
@@ -463,8 +421,8 @@ ConnectDialog::ConnectDialog() {
 
 	error = memnew( ConfirmationDialog );
 	add_child(error);
-	error->get_ok()->set_text("Close");
-	get_ok()->set_text("Connect");
+	error->get_ok()->set_text(TTR("Close"));
+	get_ok()->set_text(TTR("Connect"));
 //	error->get_cancel()->set_text("Close");
 
 
@@ -480,21 +438,21 @@ ConnectDialog::~ConnectDialog()
 
 
 
-void ConnectionsDialog::_notification(int p_what) {
+void ConnectionsDock::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
 
-		RID ci = get_canvas_item();
-		get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
+		//RID ci = get_canvas_item();
+		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
 	}
 }
 
-void ConnectionsDialog::_close() {
+void ConnectionsDock::_close() {
 
 	hide();
 }
 
-void ConnectionsDialog::_connect() {
+void ConnectionsDock::_connect() {
 
 	TreeItem *it = tree->get_selected();
 	ERR_FAIL_COND(!it);
@@ -511,11 +469,14 @@ void ConnectionsDialog::_connect() {
 	StringArray args =  it->get_metadata(0).operator Dictionary()["args"];
 	int flags = CONNECT_PERSIST | (defer?CONNECT_DEFERRED:0) | (oshot?CONNECT_ONESHOT:0);
 
-	undo_redo->create_action("Connect '"+signal+"' to '"+String(dst_method)+"'");
+	undo_redo->create_action(vformat(TTR("Connect '%s' to '%s'"),signal,String(dst_method)));
 	undo_redo->add_do_method(node,"connect",signal,target,dst_method,binds,flags);
 	undo_redo->add_undo_method(node,"disconnect",signal,target,dst_method);
 	undo_redo->add_do_method(this,"update_tree");
 	undo_redo->add_undo_method(this,"update_tree");
+	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
+	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
+
 	undo_redo->commit_action();
 
 
@@ -533,13 +494,13 @@ void ConnectionsDialog::_connect() {
 
 
 
-void ConnectionsDialog::ok_pressed() {
+void ConnectionsDock::_connect_pressed() {
 
 
 	TreeItem *item = tree->get_selected();
 	if (!item) {
 		//no idea how this happened, but disable
-		get_ok()->set_disabled(true);
+		connect_button->set_disabled(true);
 		return;
 	}
 	if (item->get_parent()==tree->get_root() || item->get_parent()->get_parent()==tree->get_root()) {
@@ -564,6 +525,7 @@ void ConnectionsDialog::ok_pressed() {
 
 		connect_dialog->edit(node);
 		connect_dialog->popup_centered_ratio();
+		connect_dialog->set_title(TTR("Connecting Signal:")+" "+signalname);
 		connect_dialog->set_dst_method("_on_"+midname+"_"+signal);
 		connect_dialog->set_dst_node(node->get_owner()?node->get_owner():node);
 
@@ -572,11 +534,13 @@ void ConnectionsDialog::ok_pressed() {
 		Connection c=item->get_metadata(0);
 		ERR_FAIL_COND(c.source!=node); //shouldn't happen but...bugcheck
 
-		undo_redo->create_action("Create Subscription");
+		undo_redo->create_action(TTR("Create Subscription"));
 		undo_redo->add_do_method(node,"disconnect",c.signal,c.target,c.method);
 		undo_redo->add_undo_method(node,"connect",c.signal,c.target,c.method,Vector<Variant>(),c.flags);
 		undo_redo->add_do_method(this,"update_tree");
 		undo_redo->add_undo_method(this,"update_tree");
+		undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
+		undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
 		undo_redo->commit_action();
 
 		c.source->disconnect(c.signal,c.target,c.method);
@@ -584,7 +548,7 @@ void ConnectionsDialog::ok_pressed() {
 	}
 }
 /*
-void ConnectionsDialog::_remove() {
+void ConnectionsDock::_remove() {
 
 	if (!tree->get_selected())
 		return;
@@ -600,7 +564,7 @@ void ConnectionsDialog::_remove() {
 }
 */
 /*
-void ConnectionsDialog::_remove_confirm() {
+void ConnectionsDock::_remove_confirm() {
 
 	if (!tree->get_selected())
 		return;
@@ -620,18 +584,16 @@ void ConnectionsDialog::_remove_confirm() {
 }
 */
 
-struct _ConnectionsDialogMethodInfoSort {
+struct _ConnectionsDockMethodInfoSort {
 
 	_FORCE_INLINE_ bool operator()(const MethodInfo& a, const MethodInfo& b) const {
 		return a.name < b.name;
 	}
 };
 
-void ConnectionsDialog::update_tree() {
+void ConnectionsDock::update_tree() {
 
-	if (!is_visible())
-		return; //don't update if not visible, of course
-	tree->clear();
+	tree->clear();	
 
 	if (!node)
 		return;
@@ -643,7 +605,7 @@ void ConnectionsDialog::update_tree() {
 
 	node->get_signal_list(&node_signals);
 
-	//node_signals.sort_custom<_ConnectionsDialogMethodInfoSort>();
+	//node_signals.sort_custom<_ConnectionsDockMethodInfoSort>();
 	bool did_script=false;
 	StringName base = node->get_type();
 
@@ -773,68 +735,119 @@ void ConnectionsDialog::update_tree() {
 		}
 	}
 
-	get_ok()->set_text("Connect");
-	get_ok()->set_disabled(true);
+	connect_button->set_text(TTR("Connect"));
+	connect_button->set_disabled(true);
 
 }
 
-void ConnectionsDialog::set_node(Node* p_node) {
+void ConnectionsDock::set_node(Node* p_node) {
 
 	node=p_node;
 	update_tree();
 }
 
-void ConnectionsDialog::_something_selected() {
+void ConnectionsDock::_something_selected() {
 
 	TreeItem *item = tree->get_selected();
 	if (!item) {
 		//no idea how this happened, but disable
-		get_ok()->set_text("Connect..");
-		get_ok()->set_disabled(true);
+		connect_button->set_text(TTR("Connect.."));
+		connect_button->set_disabled(true);
 
 	} else if (item->get_parent()==tree->get_root() || item->get_parent()->get_parent()==tree->get_root()) {
 		//a signal - connect
-		get_ok()->set_text("Connect..");
-		get_ok()->set_disabled(false);
+		connect_button->set_text(TTR("Connect.."));
+		connect_button->set_disabled(false);
 
 	} else {
 		//a slot- disconnect
-		get_ok()->set_text("Disconnect");
-		get_ok()->set_disabled(false);
+		connect_button->set_text(TTR("Disconnect"));
+		connect_button->set_disabled(false);
 	}
 
 }
 
-void ConnectionsDialog::_bind_methods() {
+void ConnectionsDock::_something_activated() {
+
+	TreeItem *item = tree->get_selected();
+
+	if (!item)
+		return;
+
+	if (item->get_parent()==tree->get_root() || item->get_parent()->get_parent()==tree->get_root()) {
+		// a signal - connect
+		String signal=item->get_metadata(0).operator Dictionary()["name"];
+		String midname=node->get_name();
+		for(int i=0;i<midname.length();i++) {
+			CharType c = midname[i];
+			if  ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_') {
+				//all good
+			} else if (c==' ') {
+				c='_';
+			} else {
+				midname.remove(i);
+				i--;
+				continue;
+			}
+
+			midname[i]=c;
+		}
+
+		connect_dialog->edit(node);
+		connect_dialog->popup_centered_ratio();
+		connect_dialog->set_dst_method("_on_"+midname+"_"+signal);
+		connect_dialog->set_dst_node(node->get_owner()?node->get_owner():node);
+	} else {
+		// a slot - go to target method
+		Connection c=item->get_metadata(0);
+		ERR_FAIL_COND(c.source!=node); //shouldn't happen but...bugcheck
+
+		if (!c.target)
+			return;
+
+		Ref<Script> script = c.target->get_script();
+
+		if (script.is_valid() && ScriptEditor::get_singleton()->script_go_to_method(script,c.method)) {
+			editor->call("_editor_select",EditorNode::EDITOR_SCRIPT);
+		}
+	}
+}
+
+void ConnectionsDock::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method("_connect",&ConnectionsDialog::_connect);
-	ObjectTypeDB::bind_method("_something_selected",&ConnectionsDialog::_something_selected);
-	ObjectTypeDB::bind_method("_close",&ConnectionsDialog::_close);
-//	ObjectTypeDB::bind_method("_remove_confirm",&ConnectionsDialog::_remove_confirm);
-	ObjectTypeDB::bind_method("update_tree",&ConnectionsDialog::update_tree);
+	ObjectTypeDB::bind_method("_connect",&ConnectionsDock::_connect);
+	ObjectTypeDB::bind_method("_something_selected",&ConnectionsDock::_something_selected);
+	ObjectTypeDB::bind_method("_something_activated",&ConnectionsDock::_something_activated);
+	ObjectTypeDB::bind_method("_close",&ConnectionsDock::_close);
+	ObjectTypeDB::bind_method("_connect_pressed",&ConnectionsDock::_connect_pressed);
+	ObjectTypeDB::bind_method("update_tree",&ConnectionsDock::update_tree);
 
 
 }
 
-ConnectionsDialog::ConnectionsDialog(EditorNode *p_editor) {
+ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 
 	editor=p_editor;
-	set_title("Edit Connections..");
-	set_hide_on_ok(false);
-
-	VBoxContainer *vbc = memnew( VBoxContainer );
-	add_child(vbc);
-	set_child_rect(vbc);
+	set_name(TTR("Signals"));
 
 
+	VBoxContainer *vbc = this;
 
 	tree = memnew( Tree );
 	tree->set_columns(1);
 	tree->set_select_mode(Tree::SELECT_ROW);
 	tree->set_hide_root(true);
-	vbc->add_margin_child("Connections:",tree,true);
+	vbc->add_child(tree);
+	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	connect_button = memnew( Button );
+	connect_button->set_text("Connect");
+	HBoxContainer *hb = memnew( HBoxContainer);
+	vbc->add_child(hb);
+	hb->add_spacer();
+	hb->add_child(connect_button);
+	connect_button->connect("pressed",this,"_connect_pressed");
 //	add_child(tree);
 
 	connect_dialog = memnew( ConnectDialog );
@@ -858,12 +871,13 @@ ConnectionsDialog::ConnectionsDialog(EditorNode *p_editor) {
 	remove_confirm->connect("confirmed", this,"_remove_confirm");
 	connect_dialog->connect("connected", this,"_connect");
 	tree->connect("item_selected", this,"_something_selected");
-	get_cancel()->set_text("Close");
+	tree->connect("item_activated", this,"_something_activated");
 
+	add_constant_override("separation",3*EDSCALE);
 }
 
 
-ConnectionsDialog::~ConnectionsDialog()
+ConnectionsDock::~ConnectionsDock()
 {
 }
 

@@ -63,14 +63,9 @@ elif (os.name=="nt"):
 	if (os.getenv("VSINSTALLDIR")==None or platform_arg=="android"):
 		custom_tools=['mingw']
 
-env_base=Environment(
-	tools=custom_tools,
-	ENV={
-		'PATH' : os.getenv('PATH'),
-		'PKG_CONFIG_PATH' : os.getenv('PKG_CONFIG_PATH')
-});
-
-#env_base=Environment(tools=custom_tools);
+env_base=Environment(tools=custom_tools);
+env_base.AppendENVPath('PATH', os.getenv('PATH'))
+env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
 env_base.global_defaults=global_defaults
 env_base.android_maven_repos=[]
 env_base.android_dependencies=[]
@@ -117,7 +112,7 @@ if profile:
 
 opts=Variables(customs, ARGUMENTS)
 opts.Add('target', 'Compile Target (debug/release_debug/release).', "debug")
-opts.Add('bits', 'Compile Target Bits (default/32/64).', "default")
+opts.Add('bits', 'Compile Target Bits (default/32/64/fat).', "default")
 opts.Add('platform','Platform: '+str(platform_list)+'.',"")
 opts.Add('p','Platform (same as platform=).',"")
 opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
@@ -128,7 +123,7 @@ opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
 opts.Add('squish','Squish BC Texture Compression in editor (yes/no)','yes')
 opts.Add('theora','Theora Video (yes/no)','yes')
 opts.Add('theoralib','Theora Video (yes/no)','no')
-opts.Add('freetype','Freetype support in editor','yes')
+opts.Add('freetype','Freetype support in editor','builtin')
 opts.Add('speex','Speex Audio (yes/no)','yes')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
 opts.Add('png','PNG Image loader support (yes/no)','yes')
@@ -195,6 +190,7 @@ elif env_base['p'] != "":
 	env_base["platform"]=selected_platform
 
 
+
 if selected_platform in platform_list:
 
 	sys.path.append("./platform/"+selected_platform)
@@ -251,6 +247,14 @@ if selected_platform in platform_list:
 	#must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
 	detect.configure(env)
 
+
+	if (env["freetype"]!="no"):
+		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
+		if (env["freetype"]=="builtin"):
+			env.Append(CPPPATH=['#drivers/freetype'])
+			env.Append(CPPPATH=['#drivers/freetype/freetype/include'])
+
+
 	#env['platform_libsuffix'] = env['LIBSUFFIX']
 
 	suffix="."+selected_platform
@@ -276,6 +280,8 @@ if selected_platform in platform_list:
 		suffix+=".32"
 	elif (env["bits"]=="64"):
 		suffix+=".64"
+	elif (env["bits"]=="fat"):
+		suffix+=".fat"
 
 	suffix+=env.extra_suffix
 
@@ -307,10 +313,10 @@ if selected_platform in platform_list:
 	if (env['musepack']=='yes'):
 		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
 
-	if (env['openssl']!='no'):
-		env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
-		if (env['openssl']=="builtin"):
-			env.Append(CPPPATH=['#drivers/builtin_openssl2'])
+	#if (env['openssl']!='no'):
+	#	env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
+	#	if (env['openssl']=="builtin"):
+	#		env.Append(CPPPATH=['#drivers/builtin_openssl2'])
 
 	if (env["builtin_zlib"]=='yes'):
 		env.Append(CPPPATH=['#drivers/builtin_zlib/zlib'])
@@ -394,14 +400,25 @@ if selected_platform in platform_list:
 		AddToVSProject(env.servers_sources)
 		AddToVSProject(env.tool_sources)
 
+		# this env flag won't work, it needs to be set in env_base=Environment(MSVC_VERSION='9.0')
+		# Even then, SCons still seems to ignore it and builds with the latest MSVC...
+		# That said, it's not needed to be set so far but I'm leaving it here so that this comment
+		# has a purpose.
 		#env['MSVS_VERSION']='9.0'
-		env['MSVSBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
-		env['MSVSREBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes vsproj=true"
-		env['MSVSCLEANCOM'] = "scons --clean platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
-
-		debug_variants = ['Debug|Win32']+['Debug|x64']
-		release_variants = ['Release|Win32']+['Release|x64']
-		release_debug_variants = ['Release_Debug|Win32']+['Release_Debug|x64']
+		
+		
+		# Calls a CMD with /C(lose) and /V(delayed environment variable expansion) options.
+		# And runs vcvarsall bat for the propper arhitecture and scons for propper configuration
+		env['MSVSBUILDCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) ^& call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons platform=windows target=$(Configuration) tools=!tools! -j2'
+		env['MSVSREBUILDCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) & call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons platform=windows target=$(Configuration) tools=!tools! vsproj=yes -j2'
+		env['MSVSCLEANCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) ^& call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons --clean platform=windows target=$(Configuration) tools=!tools! -j2'
+		
+		# This version information (Win32, x64, Debug, Release, Release_Debug seems to be
+		# required for Visual Studio to understand that it needs to generate an NMAKE
+		# project. Do not modify without knowing what you are doing.
+		debug_variants = ['debug|Win32']+['debug|x64']
+		release_variants = ['release|Win32']+['release|x64']
+		release_debug_variants = ['release_debug|Win32']+['release_debug|x64']
 		variants = debug_variants + release_variants + release_debug_variants
 		debug_targets = ['Debug']+['Debug']
 		release_targets = ['Release']+['Release']

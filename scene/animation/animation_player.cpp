@@ -1012,7 +1012,7 @@ void AnimationPlayer::play(const StringName& p_name, float p_custom_blend, float
 		queued.clear();
 	_set_process(true); // always process when starting an animation
 	playing = true;
-	
+
 	emit_signal(SceneStringNames::get_singleton()->animation_started, c.assigned);
 
 	if (is_inside_tree() &&  get_tree()->is_editor_hint())
@@ -1298,6 +1298,9 @@ void AnimationPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_animation","name"),&AnimationPlayer::has_animation);
 	ObjectTypeDB::bind_method(_MD("get_animation:Animation","name"),&AnimationPlayer::get_animation);
 	ObjectTypeDB::bind_method(_MD("get_animation_list"),&AnimationPlayer::_get_animation_list);
+
+	ObjectTypeDB::bind_method(_MD("animation_set_next", "anim_from", "anim_to"), &AnimationPlayer::animation_set_next);
+	ObjectTypeDB::bind_method(_MD("animation_get_next", "anim_from"), &AnimationPlayer::animation_get_next);
 
 	ObjectTypeDB::bind_method(_MD("set_blend_time","anim_from","anim_to","sec"),&AnimationPlayer::set_blend_time);
 	ObjectTypeDB::bind_method(_MD("get_blend_time","anim_from","anim_to"),&AnimationPlayer::get_blend_time);

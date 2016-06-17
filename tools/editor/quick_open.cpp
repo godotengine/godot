@@ -126,7 +126,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 			path+="/";
 		if (path!="res://") {
 			path=path.substr(6,path.length());
-			if (path.findn(search_box->get_text())!=-1) {
+			if (search_box->get_text().is_subsequence_ofi(path)) {
 				TreeItem *ti = search_options->create_item(root);
 				ti->set_text(0,path);
 				Ref<Texture> icon = get_icon("folder","FileDialog");
@@ -138,7 +138,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 
 		String file = efsd->get_file_path(i);
 		file=file.substr(6,file.length());
-		if (ObjectTypeDB::is_type(efsd->get_file_type(i),base_type) && (search_box->get_text()=="" || file.findn(search_box->get_text())!=-1)) {
+		if (ObjectTypeDB::is_type(efsd->get_file_type(i),base_type) && (search_box->get_text().is_subsequence_ofi(file))) {
 
 			TreeItem *ti = search_options->create_item(root);
 			ti->set_text(0,file);
@@ -216,12 +216,12 @@ EditorQuickOpen::EditorQuickOpen() {
 	add_child(vbc);
 	set_child_rect(vbc);
 	search_box = memnew( LineEdit );
-	vbc->add_margin_child("Search:",search_box);
+	vbc->add_margin_child(TTR("Search:"),search_box);
 	search_box->connect("text_changed",this,"_text_changed");
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
-	vbc->add_margin_child("Matches:",search_options,true);
-	get_ok()->set_text("Open");
+	vbc->add_margin_child(TTR("Matches:"),search_options,true);
+	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);

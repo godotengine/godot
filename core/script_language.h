@@ -47,6 +47,7 @@ class ScriptServer {
 	static ScriptLanguage *_languages[MAX_LANGUAGES];
 	static int _language_count;
 	static bool scripting_enabled;
+	static bool reload_scripts_on_save;
 public:
 
 	static void set_scripting_enabled(bool p_enabled);
@@ -54,6 +55,9 @@ public:
 	static int get_language_count();
 	static ScriptLanguage *get_language(int p_idx);
 	static void register_language(ScriptLanguage *p_language);
+
+	static void set_reload_scripts_on_save(bool p_enable);
+	static bool is_reload_scripts_on_save_enabled();
 
 	static void init_languages();
 };
@@ -87,7 +91,7 @@ public:
 	virtual bool has_source_code() const=0;
 	virtual String get_source_code() const=0;
 	virtual void set_source_code(const String& p_code)=0;
-	virtual Error reload()=0;
+	virtual Error reload(bool p_keep_state=false)=0;
 
 	virtual bool is_tool() const=0;
 
@@ -126,6 +130,8 @@ public:
 
 
 	virtual Ref<Script> get_script() const=0;
+
+	virtual bool is_placeholder() const { return false; }
 
 	virtual ScriptLanguage *get_language()=0;
 	virtual ~ScriptInstance();
@@ -189,11 +195,28 @@ public:
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() { return Vector<StackInfo>(); }
 
+	virtual void reload_all_scripts()=0;
+	virtual void reload_tool_script(const Ref<Script>& p_script,bool p_soft_reload)=0;
 	/* LOADER FUNCTIONS */
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const=0;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const=0;
 	virtual void get_public_constants(List<Pair<String,Variant> > *p_constants) const=0;
+
+	struct ProfilingInfo {
+		StringName signature;
+		uint64_t call_count;
+		uint64_t total_time;
+		uint64_t self_time;
+
+	};
+
+	virtual void profiling_start()=0;
+	virtual void profiling_stop()=0;
+
+	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr,int p_info_max)=0;
+	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr,int p_info_max)=0;
+
 
 	virtual void frame();
 
@@ -232,6 +255,8 @@ public:
 	Object *get_owner() { return owner; }
 
 	void update(const List<PropertyInfo> &p_properties,const Map<StringName,Variant>& p_values); //likely changed in editor
+
+	virtual bool is_placeholder() const { return true; }
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script,Object *p_owner);
 	~PlaceHolderScriptInstance();
@@ -308,6 +333,13 @@ public:
 
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata) {}
 	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs) {}
+
+	virtual bool is_profiling() const=0;
+	virtual void add_profiling_frame_data(const StringName& p_name,const Array& p_data)=0;
+	virtual void profiling_start()=0;
+	virtual void profiling_end()=0;
+	virtual void profiling_set_frame_times(float p_frame_time,float p_idle_time,float p_fixed_time,float p_fixed_frame_time)=0;
+
 
 	ScriptDebugger();
 	virtual ~ScriptDebugger() {singleton=NULL;}

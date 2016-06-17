@@ -50,7 +50,7 @@ protected:
 
 public:
 
-	virtual RID get_rid();
+	virtual RID get_rid() const;
 
 	void set_bounds( const BSP_Tree& p_bounds );
 	BSP_Tree get_bounds() const;

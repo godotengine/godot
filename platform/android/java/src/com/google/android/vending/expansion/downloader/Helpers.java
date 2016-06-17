@@ -19,6 +19,7 @@ package com.google.android.vending.expansion.downloader;
 import com.godot.game.R;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.os.SystemClock;
@@ -220,8 +221,8 @@ public class Helpers {
 
     static public String getSaveFilePath(Context c) {
         File root = Environment.getExternalStorageDirectory();
-        String path = root.toString() + Constants.EXP_PATH + c.getPackageName();
-        return path;
+        String path = Build.VERSION.SDK_INT >= 23 ? Constants.EXP_PATH_API23 : Constants.EXP_PATH;
+        return root.toString() + path + c.getPackageName();
     }
 
     /**

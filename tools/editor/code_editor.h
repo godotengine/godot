@@ -33,7 +33,9 @@
 #include "scene/gui/text_edit.h"
 #include "scene/gui/dialogs.h"
 #include "scene/main/timer.h"
+#include "scene/gui/tool_button.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
 
 
@@ -58,8 +60,76 @@ public:
 	GotoLineDialog();
 };
 
+class FindReplaceBar : public HBoxContainer {
 
+	OBJ_TYPE(FindReplaceBar,HBoxContainer);
 
+	LineEdit *search_text;
+	ToolButton *find_prev;
+	ToolButton *find_next;
+	CheckBox *case_sensitive;
+	CheckBox *whole_words;
+	Label *error_label;
+	TextureButton *hide_button;
+
+	LineEdit *replace_text;
+	ToolButton *replace;
+	ToolButton *replace_all;
+	CheckBox *selection_only;
+
+	VBoxContainer *text_vbc;
+	HBoxContainer *replace_hbc;
+	HBoxContainer *replace_options_hbc;
+
+	TextEdit *text_edit;
+
+	int result_line;
+	int result_col;
+
+	bool replace_all_mode;
+	bool preserve_cursor;
+
+	void _get_search_from(int& r_line, int& r_col);
+
+	void _show_search();
+	void _hide_bar();
+
+	void _editor_text_changed();
+	void _search_options_changed(bool p_pressed);
+	void _search_text_changed(const String& p_text);
+	void _search_text_entered(const String& p_text);
+
+protected:
+	void _notification(int p_what);
+	void _unhandled_input(const InputEvent &p_event);
+
+	bool _search(uint32_t p_flags, int p_from_line, int p_from_col);
+
+	void _replace();
+	void _replace_all();
+
+	static void _bind_methods();
+
+public:
+	String get_search_text() const;
+	String get_replace_text() const;
+
+	bool is_case_sensitive() const;
+	bool is_whole_words() const;
+	bool is_selection_only() const;
+	void set_error(const String& p_label);
+
+	void set_text_edit(TextEdit *p_text_edit);
+
+	void popup_search();
+	void popup_replace();
+
+	bool search_current();
+	bool search_prev();
+	bool search_next();
+
+	FindReplaceBar();
+};
 
 class FindReplaceDialog : public ConfirmationDialog {
 
@@ -119,11 +189,12 @@ public:
 };
 
 
-class CodeTextEditor : public Control {
+class CodeTextEditor : public VBoxContainer {
 
-	OBJ_TYPE(CodeTextEditor,Control);
+	OBJ_TYPE(CodeTextEditor,VBoxContainer);
 
 	TextEdit *text_editor;
+	FindReplaceBar *find_replace_bar;
 
 	Label *line_col;
 	Label *info;
@@ -135,6 +206,7 @@ class CodeTextEditor : public Control {
 
 	void _on_settings_change();
 
+	void _update_font();
 	void _complete_request();
 protected:
 
@@ -157,6 +229,7 @@ protected:
 public:
 
 	TextEdit *get_text_edit() { return text_editor; }
+	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	virtual void apply_code() {}
 
 	CodeTextEditor();

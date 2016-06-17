@@ -674,7 +674,7 @@ GraphCurveMapEdit::GraphCurveMapEdit(){
 void ShaderGraphView::_scalar_const_changed(double p_value,int p_id) {
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change Scalar Constant",true);
+	ur->create_action(TTR("Change Scalar Constant"),true);
 	ur->add_do_method(graph.ptr(),"scalar_const_node_set_value",type,p_id,p_value);
 	ur->add_undo_method(graph.ptr(),"scalar_const_node_set_value",type,p_id,graph->scalar_const_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -692,7 +692,7 @@ void ShaderGraphView::_vec_const_changed(double p_value, int p_id,Array p_arr){
 	}
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change Vec Constant",true);
+	ur->create_action(TTR("Change Vec Constant"),true);
 	ur->add_do_method(graph.ptr(),"vec_const_node_set_value",type,p_id,val);
 	ur->add_undo_method(graph.ptr(),"vec_const_node_set_value",type,p_id,graph->vec_const_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -705,7 +705,7 @@ void ShaderGraphView::_vec_const_changed(double p_value, int p_id,Array p_arr){
 void ShaderGraphView::_rgb_const_changed(const Color& p_color, int p_id){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change RGB Constant",true);
+	ur->create_action(TTR("Change RGB Constant"),true);
 	ur->add_do_method(graph.ptr(),"rgb_const_node_set_value",type,p_id,p_color);
 	ur->add_undo_method(graph.ptr(),"rgb_const_node_set_value",type,p_id,graph->rgb_const_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -718,7 +718,7 @@ void ShaderGraphView::_rgb_const_changed(const Color& p_color, int p_id){
 void ShaderGraphView::_scalar_op_changed(int p_op, int p_id){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change Scalar Operator");
+	ur->create_action(TTR("Change Scalar Operator"));
 	ur->add_do_method(graph.ptr(),"scalar_op_node_set_op",type,p_id,p_op);
 	ur->add_undo_method(graph.ptr(),"scalar_op_node_set_op",type,p_id,graph->scalar_op_node_get_op(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -731,7 +731,7 @@ void ShaderGraphView::_scalar_op_changed(int p_op, int p_id){
 void ShaderGraphView::_vec_op_changed(int p_op, int p_id){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change Vec Operator");
+	ur->create_action(TTR("Change Vec Operator"));
 	ur->add_do_method(graph.ptr(),"vec_op_node_set_op",type,p_id,p_op);
 	ur->add_undo_method(graph.ptr(),"vec_op_node_set_op",type,p_id,graph->vec_op_node_get_op(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -743,7 +743,7 @@ void ShaderGraphView::_vec_op_changed(int p_op, int p_id){
 void ShaderGraphView::_vec_scalar_op_changed(int p_op, int p_id){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change VecxScalar Operator");
+	ur->create_action(TTR("Change Vec Scalar Operator"));
 	ur->add_do_method(graph.ptr(),"vec_scalar_op_node_set_op",type,p_id,p_op);
 	ur->add_undo_method(graph.ptr(),"vec_scalar_op_node_set_op",type,p_id,graph->vec_scalar_op_node_get_op(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -756,7 +756,7 @@ void ShaderGraphView::_vec_scalar_op_changed(int p_op, int p_id){
 void ShaderGraphView::_rgb_op_changed(int p_op, int p_id){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change RGB Operator");
+	ur->create_action(TTR("Change RGB Operator"));
 	ur->add_do_method(graph.ptr(),"rgb_op_node_set_op",type,p_id,p_op);
 	ur->add_undo_method(graph.ptr(),"rgb_op_node_set_op",type,p_id,graph->rgb_op_node_get_op(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -768,7 +768,7 @@ void ShaderGraphView::_rgb_op_changed(int p_op, int p_id){
 void ShaderGraphView::_xform_inv_rev_changed(bool p_enabled, int p_id){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Toggle Rot Only");
+	ur->create_action(TTR("Toggle Rot Only"));
 	ur->add_do_method(graph.ptr(),"xform_vec_mult_node_set_no_translation",type,p_id,p_enabled);
 	ur->add_undo_method(graph.ptr(),"xform_vec_mult_node_set_no_translation",type,p_id,graph->xform_vec_mult_node_get_no_translation(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -781,7 +781,7 @@ void ShaderGraphView::_scalar_func_changed(int p_func, int p_id){
 
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change Scalar Function");
+	ur->create_action(TTR("Change Scalar Function"));
 	ur->add_do_method(graph.ptr(),"scalar_func_node_set_function",type,p_id,p_func);
 	ur->add_undo_method(graph.ptr(),"scalar_func_node_set_function",type,p_id,graph->scalar_func_node_get_function(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -793,7 +793,7 @@ void ShaderGraphView::_scalar_func_changed(int p_func, int p_id){
 void ShaderGraphView::_vec_func_changed(int p_func, int p_id){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change Vec Function");
+	ur->create_action(TTR("Change Vec Function"));
 	ur->add_do_method(graph.ptr(),"vec_func_node_set_function",type,p_id,p_func);
 	ur->add_undo_method(graph.ptr(),"vec_func_node_set_function",type,p_id,graph->vec_func_node_get_function(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -806,7 +806,7 @@ void ShaderGraphView::_vec_func_changed(int p_func, int p_id){
 void ShaderGraphView::_scalar_input_changed(double p_value,int p_id){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change Scalar Uniform",true);
+	ur->create_action(TTR("Change Scalar Uniform"),true);
 	ur->add_do_method(graph.ptr(),"scalar_input_node_set_value",type,p_id,p_value);
 	ur->add_undo_method(graph.ptr(),"scalar_input_node_set_value",type,p_id,graph->scalar_input_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -824,7 +824,7 @@ void ShaderGraphView::_vec_input_changed(double p_value, int p_id,Array p_arr){
 	}
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change Vec Uniform",true);
+	ur->create_action(TTR("Change Vec Uniform"),true);
 	ur->add_do_method(graph.ptr(),"vec_input_node_set_value",type,p_id,val);
 	ur->add_undo_method(graph.ptr(),"vec_input_node_set_value",type,p_id,graph->vec_input_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -862,7 +862,7 @@ void ShaderGraphView::_rgb_input_changed(const Color& p_color, int p_id){
 
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change RGB Uniform",true);
+	ur->create_action(TTR("Change RGB Uniform"),true);
 	ur->add_do_method(graph.ptr(),"rgb_input_node_set_value",type,p_id,p_color);
 	ur->add_undo_method(graph.ptr(),"rgb_input_node_set_value",type,p_id,graph->rgb_input_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -902,7 +902,7 @@ void ShaderGraphView::_variant_edited() {
 				break;
 			}
 		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action("Change default value");
+		ur->create_action(TTR("Change Default Value"));
 		ur->add_do_method(graph.ptr(),"default_set_value",type,edited_id,edited_def, v);
 		ur->add_undo_method(graph.ptr(),"default_set_value",type,edited_id,edited_def, v2);
 		ur->add_do_method(this,"_update_graph");
@@ -914,7 +914,7 @@ void ShaderGraphView::_variant_edited() {
 	if (graph->node_get_type(type,edited_id)==ShaderGraph::NODE_XFORM_CONST) {
 
 		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action("Change XForm Uniform");
+		ur->create_action(TTR("Change XForm Uniform"));
 		ur->add_do_method(graph.ptr(),"xform_const_node_set_value",type,edited_id,ped_popup->get_variant());
 		ur->add_undo_method(graph.ptr(),"xform_const_node_set_value",type,edited_id,graph->xform_const_node_get_value(type,edited_id));
 		ur->add_do_method(this,"_update_graph");
@@ -926,7 +926,7 @@ void ShaderGraphView::_variant_edited() {
 	if (graph->node_get_type(type,edited_id)==ShaderGraph::NODE_XFORM_INPUT) {
 
 		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action("Change XForm Uniform");
+		ur->create_action(TTR("Change XForm Uniform"));
 		ur->add_do_method(graph.ptr(),"xform_input_node_set_value",type,edited_id,ped_popup->get_variant());
 		ur->add_undo_method(graph.ptr(),"xform_input_node_set_value",type,edited_id,graph->xform_input_node_get_value(type,edited_id));
 		ur->add_do_method(this,"_update_graph");
@@ -937,7 +937,7 @@ void ShaderGraphView::_variant_edited() {
 	if (graph->node_get_type(type,edited_id)==ShaderGraph::NODE_TEXTURE_INPUT) {
 
 		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action("Change Texture Uniform");
+		ur->create_action(TTR("Change Texture Uniform"));
 		ur->add_do_method(graph.ptr(),"texture_input_node_set_value",type,edited_id,ped_popup->get_variant());
 		ur->add_undo_method(graph.ptr(),"texture_input_node_set_value",type,edited_id,graph->texture_input_node_get_value(type,edited_id));
 		ur->add_do_method(this,"_update_graph");
@@ -948,7 +948,7 @@ void ShaderGraphView::_variant_edited() {
 	if (graph->node_get_type(type,edited_id)==ShaderGraph::NODE_CUBEMAP_INPUT) {
 
 		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action("Change Cubemap Uniform");
+		ur->create_action(TTR("Change Cubemap Uniform"));
 		ur->add_do_method(graph.ptr(),"cubemap_input_node_set_value",type,edited_id,ped_popup->get_variant());
 		ur->add_undo_method(graph.ptr(),"cubemap_input_node_set_value",type,edited_id,graph->cubemap_input_node_get_value(type,edited_id));
 		ur->add_do_method(this,"_update_graph");
@@ -962,7 +962,7 @@ void ShaderGraphView::_comment_edited(int p_id,Node* p_button) {
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 	TextEdit *te=p_button->cast_to<TextEdit>();
-	ur->create_action("Change Comment",true);
+	ur->create_action(TTR("Change Comment"),true);
 	ur->add_do_method(graph.ptr(),"comment_node_set_text",type,p_id,te->get_text());
 	ur->add_undo_method(graph.ptr(),"comment_node_set_text",type,p_id,graph->comment_node_get_text(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -1002,9 +1002,9 @@ void ShaderGraphView::_color_ramp_changed(int p_id,Node* p_ramp) {
 	DVector<Color> old_colors=graph->color_ramp_node_get_colors(type,p_id);
 
 	if (old_offsets.size()!=new_offsets.size())
-		ur->create_action("Add/Remove to Color Ramp");
+		ur->create_action(TTR("Add/Remove to Color Ramp"));
 	else
-		ur->create_action("Modify Color Ramp",true);
+		ur->create_action(TTR("Modify Color Ramp"),true);
 
 	ur->add_do_method(graph.ptr(),"color_ramp_node_set_ramp",type,p_id,new_colors,new_offsets);
 	ur->add_undo_method(graph.ptr(),"color_ramp_node_set_ramp",type,p_id,old_colors,old_offsets);
@@ -1038,9 +1038,9 @@ void ShaderGraphView::_curve_changed(int p_id,Node* p_curve) {
 	DVector<Vector2> old_points=graph->curve_map_node_get_points(type,p_id);
 
 	if (old_points.size()!=new_points.size())
-		ur->create_action("Add/Remove to Curve Map");
+		ur->create_action(TTR("Add/Remove to Curve Map"));
 	else
-		ur->create_action("Modify Curve Map",true);
+		ur->create_action(TTR("Modify Curve Map"),true);
 
 	ur->add_do_method(graph.ptr(),"curve_map_node_set_points",type,p_id,new_points);
 	ur->add_undo_method(graph.ptr(),"curve_map_node_set_points",type,p_id,old_points);
@@ -1058,7 +1058,7 @@ void ShaderGraphView::_input_name_changed(const String& p_name, int p_id, Node *
 	ERR_FAIL_COND(!le);
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change Input Name");
+	ur->create_action(TTR("Change Input Name"));
 	ur->add_do_method(graph.ptr(),"input_node_set_name",type,p_id,p_name);
 	ur->add_undo_method(graph.ptr(),"input_node_set_name",type,p_id,graph->input_node_get_name(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -1110,7 +1110,7 @@ void ShaderGraphView::_connection_request(const String& p_from, int p_from_slot,
 	ERR_FAIL_COND(from_idx==-1);
 	ERR_FAIL_COND(to_idx==-1);
 
-	ur->create_action("Connect Graph Nodes");
+	ur->create_action(TTR("Connect Graph Nodes"));
 
 	List<ShaderGraph::Connection> conns;
 
@@ -1152,7 +1152,7 @@ void ShaderGraphView::_disconnection_request(const String& p_from, int p_from_sl
 	if (!graph->is_node_connected(type,from_idx,p_from_slot,to_idx,p_to_slot))
 		return; //nothing to disconnect
 
-	ur->create_action("Disconnect Graph Nodes");
+	ur->create_action(TTR("Disconnect Graph Nodes"));
 
 	List<ShaderGraph::Connection> conns;
 
@@ -1170,7 +1170,7 @@ void ShaderGraphView::_disconnection_request(const String& p_from, int p_from_sl
 void ShaderGraphView::_node_removed(int p_id) {
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Remove Shader Graph Node");
+	ur->create_action(TTR("Remove Shader Graph Node"));
 
 	ur->add_do_method(graph.ptr(),"node_remove",type,p_id);
 	ur->add_undo_method(graph.ptr(),"node_add",type,graph->node_get_type(type,p_id),p_id);
@@ -1193,7 +1193,7 @@ void ShaderGraphView::_node_removed(int p_id) {
 void ShaderGraphView::_begin_node_move()
 {
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Move Shader Graph Node");
+	ur->create_action(TTR("Move Shader Graph Node"));
 }
 
 void ShaderGraphView::_node_moved(const Vector2& p_from, const Vector2& p_to,int p_id) {
@@ -1235,7 +1235,7 @@ void ShaderGraphView::_duplicate_nodes_request()
 		return;
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Duplicate Graph Node(s)");
+	ur->create_action(TTR("Duplicate Graph Node(s)"));
 	ur->add_do_method(this,"_duplicate_nodes",s_id);
 	List<int> n_ids = graph->generate_ids(type, s_id.size());
 	for (List<int>::Element *E=n_ids.front();E;E=E->next())
@@ -1272,7 +1272,7 @@ void ShaderGraphView::_delete_nodes_request()
 		return;
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Delete Shader Graph Node(s)");
+	ur->create_action(TTR("Delete Shader Graph Node(s)"));
 
 	for (List<int>::Element *N=s_id.front();N;N=N->next()) {
 		ur->add_do_method(graph.ptr(),"node_remove",type,N->get());
@@ -1521,15 +1521,15 @@ void ShaderGraphView::_create_node(int p_id) {
 
 		gn->set_title("ScalarOp");
 		static const char* op_name[ShaderGraph::SCALAR_MAX_OP]={
-			"Add",
-			"Sub",
-			"Mul",
-			"Div",
-			"Mod",
-			"Pow",
-			"Max",
-			"Min",
-			"Atan2"
+			("Add"),
+			("Sub"),
+			("Mul"),
+			("Div"),
+			("Mod"),
+			("Pow"),
+			("Max"),
+			("Min"),
+			("Atan2")
 		};
 
 		OptionButton *ob = memnew( OptionButton );
@@ -1569,15 +1569,15 @@ void ShaderGraphView::_create_node(int p_id) {
 
 		gn->set_title("VecOp");
 		static const char* op_name[ShaderGraph::VEC_MAX_OP]={
-			"Add",
-			"Sub",
-			"Mul",
-			"Div",
-			"Mod",
-			"Pow",
-			"Max",
-			"Min",
-			"Cross"
+			("Add"),
+			("Sub"),
+			("Mul"),
+			("Div"),
+			("Mod"),
+			("Pow"),
+			("Max"),
+			("Min"),
+			("Cross")
 		};
 
 		OptionButton *ob = memnew( OptionButton );
@@ -1617,9 +1617,9 @@ void ShaderGraphView::_create_node(int p_id) {
 
 		gn->set_title("VecScalarOp");
 		static const char* op_name[ShaderGraph::VEC_SCALAR_MAX_OP]={
-			"Mul",
-			"Div",
-			"Pow",
+			("Mul"),
+			("Div"),
+			("Pow"),
 		};
 
 		OptionButton *ob = memnew( OptionButton );
@@ -1659,15 +1659,15 @@ void ShaderGraphView::_create_node(int p_id) {
 
 		gn->set_title("RGB Op");
 		static const char* op_name[ShaderGraph::RGB_MAX_OP]={
-			"Screen",
-			"Difference",
-			"Darken",
-			"Lighten",
-			"Overlay",
-			"Dodge",
-			"Burn",
-			"SoftLight",
-			"HardLight"
+			("Screen"),
+			("Difference"),
+			("Darken"),
+			("Lighten"),
+			("Overlay"),
+			("Dodge"),
+			("Burn"),
+			("SoftLight"),
+			("HardLight")
 		};
 
 		OptionButton *ob = memnew( OptionButton );
@@ -1795,26 +1795,26 @@ void ShaderGraphView::_create_node(int p_id) {
 
 		gn->set_title("ScalarFunc");
 		static const char* func_name[ShaderGraph::SCALAR_MAX_FUNC]={
-			"Sin",
-			"Cos",
-			"Tan",
-			"ASin",
-			"ACos",
-			"ATan",
-			"SinH",
-			"CosH",
-			"TanH",
-			"Log",
-			"Exp",
-			"Sqrt",
-			"Abs",
-			"Sign",
-			"Floor",
-			"Round",
-			"Ceil",
-			"Frac",
-			"Satr",
-			"Neg"
+			("Sin"),
+			("Cos"),
+			("Tan"),
+			("ASin"),
+			("ACos"),
+			("ATan"),
+			("SinH"),
+			("CosH"),
+			("TanH"),
+			("Log"),
+			("Exp"),
+			("Sqrt"),
+			("Abs"),
+			("Sign"),
+			("Floor"),
+			("Round"),
+			("Ceil"),
+			("Frac"),
+			("Satr"),
+			("Neg")
 		};
 
 		OptionButton *ob = memnew( OptionButton );
@@ -1848,12 +1848,12 @@ void ShaderGraphView::_create_node(int p_id) {
 
 		gn->set_title("VecFunc");
 		static const char* func_name[ShaderGraph::VEC_MAX_FUNC]={
-			"Normalize",
-			"Saturate",
-			"Negate",
-			"Reciprocal",
-			"RGB to HSV",
-			"HSV to RGB",
+			("Normalize"),
+			("Saturate"),
+			("Negate"),
+			("Reciprocal"),
+			("RGB to HSV"),
+			("HSV to RGB"),
 		};
 
 		OptionButton *ob = memnew( OptionButton );
@@ -2311,7 +2311,9 @@ void ShaderGraphView::_create_node(int p_id) {
 		TextureFrame *tex = memnew( TextureFrame );
 		tex->set_expand(true);
 		tex->set_custom_minimum_size(Size2(80,80));
+		tex->set_drag_forwarding(this);
 		gn->add_child(tex);
+		tex->set_ignore_mouse(false);
 		tex->set_texture(graph->texture_input_node_get_value(type,p_id));
 		ToolButton *edit = memnew( ToolButton );
 		edit->set_text("edit..");
@@ -2512,8 +2514,107 @@ void ShaderGraphView::_sg_updated() {
 		return;
 	switch(graph->get_graph_error(type)) {
 	case ShaderGraph::GRAPH_OK: status->set_text(""); break;
-	case ShaderGraph::GRAPH_ERROR_CYCLIC: status->set_text("Error: Cyclic Connection Link"); break;
-	case ShaderGraph::GRAPH_ERROR_MISSING_CONNECTIONS: status->set_text("Error: Missing Input Connections"); break;
+	case ShaderGraph::GRAPH_ERROR_CYCLIC: status->set_text(TTR("Error: Cyclic Connection Link")); break;
+	case ShaderGraph::GRAPH_ERROR_MISSING_CONNECTIONS: status->set_text(TTR("Error: Missing Input Connections")); break;
+	}
+}
+
+Variant ShaderGraphView::get_drag_data_fw(const Point2 &p_point, Control *p_from)
+{
+	TextureFrame* frame = p_from->cast_to<TextureFrame>();
+	if (!frame)
+		return Variant();
+
+	if (!frame->get_texture().is_valid())
+		return Variant();
+
+	RES res = frame->get_texture();
+	return EditorNode::get_singleton()->drag_resource(res,p_from);
+
+	return Variant();
+}
+
+bool ShaderGraphView::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const
+{
+	if (p_data.get_type() != Variant::DICTIONARY)
+		return false;
+
+	Dictionary d = p_data;
+
+	if (d.has("type")){
+		if (d["type"] == "resource" && d.has("resource")) {
+			Variant val = d["resource"];
+
+			if (val.get_type()==Variant::OBJECT) {
+				RES res = val;
+				if (res.is_valid() && res->cast_to<Texture>())
+					return true;
+			}
+		}
+		else if (d["type"] == "files" && d.has("files")) {
+			Vector<String> files = d["files"];
+			if (files.size() != 1)
+				return false;
+			return (ResourceLoader::get_resource_type(files[0]) == "ImageTexture");
+		}
+	}
+
+	return false;
+}
+
+void ShaderGraphView::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from)
+{
+	if (!can_drop_data_fw(p_point, p_data, p_from))
+		return;
+
+	TextureFrame *frame = p_from->cast_to<TextureFrame>();
+	if (!frame)
+		return;
+
+	Dictionary d = p_data;
+	Ref<Texture> tex;
+
+	if (d.has("type")) {
+		if (d["type"] == "resource" && d.has("resource")){
+			Variant val = d["resource"];
+
+			if (val.get_type()==Variant::OBJECT) {
+				RES res = val;
+				if (res.is_valid())
+					tex = Ref<Texture>(res->cast_to<Texture>());
+			}
+		}
+		else if (d["type"] == "files" && d.has("files")) {
+			Vector<String> files = d["files"];
+			RES res = ResourceLoader::load(files[0]);
+			if (res.is_valid())
+				tex = Ref<Texture>(res->cast_to<Texture>());
+		}
+	}
+
+	if (!tex.is_valid()) return;
+
+	GraphNode *gn = frame->get_parent()->cast_to<GraphNode>();
+	if (!gn) return;
+
+	int id = -1;
+	for(Map<int,GraphNode*>::Element *E = node_map.front();E;E=E->next())
+		if (E->get() == gn) {
+			id = E->key();
+			break;
+		}
+	print_line(String::num(double(id)));
+	if (id < 0) return;
+
+	if (graph->node_get_type(type,id)==ShaderGraph::NODE_TEXTURE_INPUT) {
+
+		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
+		ur->create_action(TTR("Change Texture Uniform"));
+		ur->add_do_method(graph.ptr(),"texture_input_node_set_value",type,id,tex);
+		ur->add_undo_method(graph.ptr(),"texture_input_node_set_value",type,id,graph->texture_input_node_get_value(type,id));
+		ur->add_do_method(this,"_update_graph");
+		ur->add_undo_method(this,"_update_graph");
+		ur->commit_action();
 	}
 }
 
@@ -2573,7 +2674,7 @@ void ShaderGraphView::add_node(int p_type, const Vector2 &location) {
 			break;
 	}
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Add Shader Graph Node");
+	ur->create_action(TTR("Add Shader Graph Node"));
 	ur->add_do_method(graph.ptr(),"node_add",type,p_type,newid);
 	ur->add_do_method(graph.ptr(),"node_set_pos",type,newid,init_ofs);
 	ur->add_undo_method(graph.ptr(),"node_remove",type,newid);
@@ -2622,6 +2723,10 @@ void ShaderGraphView::_bind_methods() {
 	ObjectTypeDB::bind_method("_comment_edited",&ShaderGraphView::_comment_edited);
 	ObjectTypeDB::bind_method("_color_ramp_changed",&ShaderGraphView::_color_ramp_changed);
 	ObjectTypeDB::bind_method("_curve_changed",&ShaderGraphView::_curve_changed);
+
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &ShaderGraphView::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &ShaderGraphView::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &ShaderGraphView::drop_data_fw);
 
 	ObjectTypeDB::bind_method("_sg_updated",&ShaderGraphView::_sg_updated);
 }
@@ -2707,41 +2812,41 @@ void ShaderGraphEditor::_bind_methods() {
 
 
 const char* ShaderGraphEditor::node_names[ShaderGraph::NODE_TYPE_MAX]={
-	"GraphInput:Input", // all inputs (shader type dependent)
-	"GraphScalar:Scalar Constant", //scalar constant
-	"GraphVector:Vector Constant", //vec3 constant
-	"GraphRgb:RGB Constant", //rgb constant (shows a color picker instead)
-	"GraphXform:XForm Constant", // 4x4 matrix constant
-	"GraphTime:Time:", // time in seconds
-	"GraphTexscreen:Screen Sample", // screen texture sampler (takes uv) (only usable in fragment shader)
-	"GraphScalarOp:Scalar Operator", // scalar vs scalar op (mul", add", div", etc)
-	"GraphVecOp:Vector Operator", // vec3 vs vec3 op (mul",ad",div",crossprod",etc)
-	"GraphVecScalarOp:Scalar+Vector Operator", // vec3 vs scalar op (mul", add", div", etc)
-	"GraphRgbOp:RGB Operator:", // vec3 vs vec3 rgb op (with scalar amount)", like brighten", darken", burn", dodge", multiply", etc.
-	"GraphXformMult:XForm Multiply", // mat4 x mat4
-	"GraphXformVecMult:XForm+Vector Multiply", // mat4 x vec3 mult (with no-translation option)
-	"GraphXformVecImult:Form+Vector InvMultiply:", // mat4 x vec3 inverse mult (with no-translation option)
-	"GraphXformScalarFunc:Scalar Function", // scalar function (sin", cos", etc)
-	"GraphXformVecFunc:Vector Function", // vector function (normalize", negate", reciprocal", rgb2hsv", hsv2rgb", etc", etc)
-	"GraphVecLength:Vector Length", // vec3 length
-	"GraphVecDp:Dot Product:", // vec3 . vec3 (dot product -> scalar output)
-	"GraphVecToScalars:Vector -> Scalars", // 1 vec3 input", 3 scalar outputs
-	"GraphScalarsToVec:Scalars -> Vector", // 3 scalar input", 1 vec3 output
-	"GraphXformToVecs:XForm -> Vectors", // 3 vec input", 1 xform output
-	"GraphVecsToXform:Vectors -> XForm:", // 3 vec input", 1 xform output
-	"GraphScalarInterp:Scalar Interpolate", // scalar interpolation (with optional curve)
-	"GraphVecInterp:Vector Interpolate:", // vec3 interpolation  (with optional curve)
-	"GraphColorRamp:Color Ramp", // vec3 interpolation  (with optional curve)
-	"GraphCurveMap:Curve Remap:", // vec3 interpolation  (with optional curve)
-	"GraphScalarUniform:Scalar Uniform", // scalar uniform (assignable in material)
-	"GraphVectorUniform:Vector Uniform", // vec3 uniform (assignable in material)
-	"GraphRgbUniform:RGB Uniform", // color uniform (assignable in material)
-	"GraphXformUniform:XForm Uniform", // mat4 uniform (assignable in material)
-	"GraphTextureUniform:Texture Uniform", // texture input (assignable in material)
-	"GraphCubeUniform:CubeMap Uniform:", // cubemap input (assignable in material)
-	"GraphDefaultTexture:CanvasItem Texture:", // cubemap input (assignable in material)
-	"Output", // output (shader type dependent)
-	"GraphComment:Comment", // comment
+	("GraphInput:Input"), // all inputs (shader type dependent)
+	("GraphScalar:Scalar Constant"), //scalar constant
+	("GraphVector:Vector Constant"), //vec3 constant
+	("GraphRgb:RGB Constant"), //rgb constant (shows a color picker instead)
+	("GraphXform:XForm Constant"), // 4x4 matrix constant
+	("GraphTime:Time:"), // time in seconds
+	("GraphTexscreen:Screen Sample"), // screen texture sampler (takes uv) (only usable in fragment shader)
+	("GraphScalarOp:Scalar Operator"), // scalar vs scalar op (mul", add", div", etc)
+	("GraphVecOp:Vector Operator"), // vec3 vs vec3 op (mul",ad",div",crossprod",etc)
+	("GraphVecScalarOp:Scalar+Vector Operator"), // vec3 vs scalar op (mul", add", div", etc)
+	("GraphRgbOp:RGB Operator:"), // vec3 vs vec3 rgb op (with scalar amount)", like brighten", darken", burn", dodge", multiply", etc.
+	("GraphXformMult:XForm Multiply"), // mat4 x mat4
+	("GraphXformVecMult:XForm+Vector Multiply"), // mat4 x vec3 mult (with no-translation option)
+	("GraphXformVecImult:Form+Vector InvMultiply:"), // mat4 x vec3 inverse mult (with no-translation option)
+	("GraphXformScalarFunc:Scalar Function"), // scalar function (sin", cos", etc)
+	("GraphXformVecFunc:Vector Function"), // vector function (normalize", negate", reciprocal", rgb2hsv", hsv2rgb", etc", etc)
+	("GraphVecLength:Vector Length"), // vec3 length
+	("GraphVecDp:Dot Product:"), // vec3 . vec3 (dot product -> scalar output)
+	("GraphVecToScalars:Vector -> Scalars"), // 1 vec3 input", 3 scalar outputs
+	("GraphScalarsToVec:Scalars -> Vector"), // 3 scalar input", 1 vec3 output
+	("GraphXformToVecs:XForm -> Vectors"), // 3 vec input", 1 xform output
+	("GraphVecsToXform:Vectors -> XForm:"), // 3 vec input", 1 xform output
+	("GraphScalarInterp:Scalar Interpolate"), // scalar interpolation (with optional curve)
+	("GraphVecInterp:Vector Interpolate:"), // vec3 interpolation  (with optional curve)
+	("GraphColorRamp:Color Ramp"), // vec3 interpolation  (with optional curve)
+	("GraphCurveMap:Curve Remap:"), // vec3 interpolation  (with optional curve)
+	("GraphScalarUniform:Scalar Uniform"), // scalar uniform (assignable in material)
+	("GraphVectorUniform:Vector Uniform"), // vec3 uniform (assignable in material)
+	("GraphRgbUniform:RGB Uniform"), // color uniform (assignable in material)
+	("GraphXformUniform:XForm Uniform"), // mat4 uniform (assignable in material)
+	("GraphTextureUniform:Texture Uniform"), // texture input (assignable in material)
+	("GraphCubeUniform:CubeMap Uniform:"), // cubemap input (assignable in material)
+	("GraphDefaultTexture:CanvasItem Texture:"), // cubemap input (assignable in material)
+	("Output"), // output (shader type dependent)
+	("GraphComment:Comment"), // comment
 
 
 };

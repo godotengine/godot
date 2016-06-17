@@ -830,14 +830,14 @@ void LightSpatialGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p_
 	} else if (p_idx==0) {
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-		ur->create_action("Change Light Radius");
+		ur->create_action(TTR("Change Light Radius"));
 		ur->add_do_method(light,"set_parameter",Light::PARAM_RADIUS,light->get_parameter(Light::PARAM_RADIUS));
 		ur->add_undo_method(light,"set_parameter",Light::PARAM_RADIUS,p_restore);
 		ur->commit_action();
 	} else if (p_idx==1) {
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-		ur->create_action("Change Light Radius");
+		ur->create_action(TTR("Change Light Radius"));
 		ur->add_do_method(light,"set_parameter",Light::PARAM_SPOT_ANGLE,light->get_parameter(Light::PARAM_SPOT_ANGLE));
 		ur->add_undo_method(light,"set_parameter",Light::PARAM_SPOT_ANGLE,p_restore);
 		ur->commit_action();
@@ -1024,6 +1024,28 @@ LightSpatialGizmo::LightSpatialGizmo(Light* p_light){
 	set_spatial_node(p_light);
 
 }
+//////
+
+void ListenerSpatialGizmo::redraw() {
+
+	clear();
+
+	add_unscaled_billboard(SpatialEditorGizmos::singleton->listener_icon, 0.05);
+
+	add_mesh(SpatialEditorGizmos::singleton->listener_line_mesh);
+	Vector<Vector3> cursor_points;
+	cursor_points.push_back(Vector3(0, 0, 0));
+	cursor_points.push_back(Vector3(0, 0, -1.0));
+	add_collision_segments(cursor_points);
+
+}
+
+ListenerSpatialGizmo::ListenerSpatialGizmo(Listener* p_listener){
+
+	set_spatial_node(p_listener);
+	listener = p_listener;
+}
+
 
 //////
 
@@ -1080,7 +1102,7 @@ void CameraSpatialGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p
 			camera->set("fov",p_restore);
 		} else {
 			UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-			ur->create_action("Change Camera FOV");
+			ur->create_action(TTR("Change Camera FOV"));
 			ur->add_do_property(camera,"fov",camera->get_fov());
 			ur->add_undo_property(camera,"fov",p_restore);
 			ur->commit_action();
@@ -1093,7 +1115,7 @@ void CameraSpatialGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p
 			camera->set("size",p_restore);
 		} else {
 			UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-			ur->create_action("Change Camera Size");
+			ur->create_action(TTR("Change Camera Size"));
 			ur->add_do_property(camera,"size",camera->get_size());
 			ur->add_undo_property(camera,"size",p_restore);
 			ur->commit_action();
@@ -1838,7 +1860,7 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx,const Variant& p_restor
 		}
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-		ur->create_action("Change Sphere Shape Radius");
+		ur->create_action(TTR("Change Sphere Shape Radius"));
 		ur->add_do_method(ss.ptr(),"set_radius",ss->get_radius());
 		ur->add_undo_method(ss.ptr(),"set_radius",p_restore);
 		ur->commit_action();
@@ -1854,7 +1876,7 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx,const Variant& p_restor
 		}
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-		ur->create_action("Change Box Shape Extents");
+		ur->create_action(TTR("Change Box Shape Extents"));
 		ur->add_do_method(ss.ptr(),"set_extents",ss->get_extents());
 		ur->add_undo_method(ss.ptr(),"set_extents",p_restore);
 		ur->commit_action();
@@ -1873,11 +1895,11 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx,const Variant& p_restor
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
 		if (p_idx==0) {
-			ur->create_action("Change Capsule Shape Radius");
+			ur->create_action(TTR("Change Capsule Shape Radius"));
 			ur->add_do_method(ss.ptr(),"set_radius",ss->get_radius());
 			ur->add_undo_method(ss.ptr(),"set_radius",p_restore);
 		} else {
-			ur->create_action("Change Capsule Shape Height");
+			ur->create_action(TTR("Change Capsule Shape Height"));
 			ur->add_do_method(ss.ptr(),"set_height",ss->get_height());
 			ur->add_undo_method(ss.ptr(),"set_height",p_restore);
 
@@ -1896,7 +1918,7 @@ void CollisionShapeSpatialGizmo::commit_handle(int p_idx,const Variant& p_restor
 		}
 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-		ur->create_action("Change Ray Shape Length");
+		ur->create_action(TTR("Change Ray Shape Length"));
 		ur->add_do_method(ss.ptr(),"set_length",ss->get_length());
 		ur->add_undo_method(ss.ptr(),"set_length",p_restore);
 		ur->commit_action();
@@ -2243,7 +2265,7 @@ void VisibilityNotifierGizmo::commit_handle(int p_idx,const Variant& p_restore,b
 	}
 
 	UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
-	ur->create_action("Change Notifier Extents");
+	ur->create_action(TTR("Change Notifier Extents"));
 	ur->add_do_method(notifier,"set_aabb",notifier->get_aabb());
 	ur->add_undo_method(notifier,"set_aabb",p_restore);
 	ur->commit_action();
@@ -2907,6 +2929,12 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 		return lsg;
 	}
 
+	if (p_spatial->cast_to<Listener>()) {
+
+		Ref<ListenerSpatialGizmo> misg = memnew(ListenerSpatialGizmo(p_spatial->cast_to<Listener>()));
+		return misg;
+	}
+
 	if (p_spatial->cast_to<Camera>()) {
 
 		Ref<CameraSpatialGizmo> lsg = memnew( CameraSpatialGizmo(p_spatial->cast_to<Camera>()) );
@@ -3141,6 +3169,29 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 		pos3d_mesh->surface_set_material(0,mat);
 	}
 
+	listener_line_mesh = Ref<Mesh>(memnew(Mesh));
+	{
+
+		DVector<Vector3> cursor_points;
+		DVector<Color> cursor_colors;
+		cursor_points.push_back(Vector3(0, 0, 0));
+		cursor_points.push_back(Vector3(0, 0, -1.0));
+		cursor_colors.push_back(Color(0.5, 0.5, 0.5, 0.7));
+		cursor_colors.push_back(Color(0.5, 0.5, 0.5, 0.7));
+
+		Ref<FixedMaterial> mat = memnew(FixedMaterial);
+		mat->set_flag(Material::FLAG_UNSHADED, true);
+		mat->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY, true);
+		mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+		mat->set_line_width(3);
+		Array d;
+		d.resize(VS::ARRAY_MAX);
+		d[Mesh::ARRAY_VERTEX] = cursor_points;
+		d[Mesh::ARRAY_COLOR] = cursor_colors;
+		listener_line_mesh->add_surface(Mesh::PRIMITIVE_LINES, d);
+		listener_line_mesh->surface_set_material(0, mat);
+	}
+
 
 	sample_player_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	sample_player_icon->set_flag(Material::FLAG_UNSHADED, true);
@@ -3172,6 +3223,14 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	visibility_notifier_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	visibility_notifier_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	visibility_notifier_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("Visible","EditorIcons"));
+
+	listener_icon = Ref<FixedMaterial>(memnew(FixedMaterial));
+	listener_icon->set_flag(Material::FLAG_UNSHADED, true);
+	listener_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
+	listener_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
+	listener_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	listener_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE, Color(1, 1, 1, 0.9));
+	listener_icon->set_texture(FixedMaterial::PARAM_DIFFUSE, SpatialEditor::get_singleton()->get_icon("GizmoListener", "EditorIcons"));
 
 	{
 

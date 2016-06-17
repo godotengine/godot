@@ -37,6 +37,7 @@
 #include "servers/spatial_sound_2d_server.h"
 #include "scene/gui/control.h"
 #include "scene/3d/camera.h"
+#include "scene/3d/listener.h"
 #include "scene/resources/mesh.h"
 #include "scene/3d/spatial_indexer.h"
 #include "scene/3d/collision_object.h"
@@ -388,6 +389,19 @@ void Viewport::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 #ifndef _3D_DISABLED
+			if (listeners.size() && !listener) {
+				Listener *first=NULL;
+				for(Set<Listener*>::Element *E=listeners.front();E;E=E->next()) {
+
+					if (first==NULL || first->is_greater_than(E->get())) {
+						first=E->get();
+					}
+				}
+
+				if (first)
+					first->make_current();
+			}
+
 			if (cameras.size() && !camera) {
 				//there are cameras but no current camera, pick first in tree and make it current
 				Camera *first=NULL;
@@ -414,7 +428,7 @@ void Viewport::_notification(int p_what) {
 				_vp_exit_tree();
 
 			VisualServer::get_singleton()->viewport_set_scenario(viewport,RID());
-			SpatialSoundServer::get_singleton()->listener_set_space(listener,RID());
+			SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, RID());
 			VisualServer::get_singleton()->viewport_remove_canvas(viewport,current_canvas);
 			if (contact_2d_debug.is_valid()) {
 				VisualServer::get_singleton()->free(contact_2d_debug);
@@ -486,7 +500,7 @@ void Viewport::_notification(int p_what) {
 
 
 
-			if (physics_object_picking) {
+			if (physics_object_picking && (render_target || Input::get_singleton()->get_mouse_mode()!=Input::MOUSE_MODE_CAPTURED)) {
 
 				Vector2 last_pos(1e20,1e20);
 				CollisionObject *last_object;
@@ -740,10 +754,10 @@ Rect2 Viewport::get_rect() const {
 
 void Viewport::_update_listener() {
 
-	if (is_inside_tree() && audio_listener && camera && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))  {
-		SpatialSoundServer::get_singleton()->listener_set_space(listener,find_world()->get_sound_space());
+	if (is_inside_tree() && audio_listener && (camera || listener) && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))  {
+		SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, find_world()->get_sound_space());
 	} else {
-		SpatialSoundServer::get_singleton()->listener_set_space(listener,RID());
+		SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, RID());
 	}
 
 
@@ -752,9 +766,9 @@ void Viewport::_update_listener() {
 void Viewport::_update_listener_2d() {
 
 	if (is_inside_tree() && audio_listener && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))
-		SpatialSound2DServer::get_singleton()->listener_set_space(listener_2d,find_world_2d()->get_sound_space());
+		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, find_world_2d()->get_sound_space());
 	else
-		SpatialSound2DServer::get_singleton()->listener_set_space(listener_2d,RID());
+		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, RID());
 
 }
 
@@ -798,11 +812,11 @@ void Viewport::set_canvas_transform(const Matrix32& p_transform) {
 
 	Matrix32 xform = (global_canvas_transform * canvas_transform).affine_inverse();
 	Size2 ss = get_visible_rect().size;
-	SpatialSound2DServer::get_singleton()->listener_set_transform(listener_2d,Matrix32(0,xform.xform(ss*0.5)));
+	SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Matrix32(0, xform.xform(ss*0.5)));
 	Vector2 ss2 = ss*xform.get_scale();
 	float panrange = MAX(ss2.x,ss2.y);
 
-	SpatialSound2DServer::get_singleton()->listener_set_param(listener_2d,SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE,panrange);
+	SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
 
 
 }
@@ -823,11 +837,11 @@ void Viewport::_update_global_transform() {
 
 	Matrix32 xform = (sxform * canvas_transform).affine_inverse();
 	Size2 ss = get_visible_rect().size;
-	SpatialSound2DServer::get_singleton()->listener_set_transform(listener_2d,Matrix32(0,xform.xform(ss*0.5)));
+	SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Matrix32(0, xform.xform(ss*0.5)));
 	Vector2 ss2 = ss*xform.get_scale();
 	float panrange = MAX(ss2.x,ss2.y);
 
-	SpatialSound2DServer::get_singleton()->listener_set_param(listener_2d,SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE,panrange);
+	SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
 
 }
 
@@ -846,12 +860,75 @@ Matrix32 Viewport::get_global_canvas_transform() const{
 	return global_canvas_transform;
 }
 
+void Viewport::_listener_transform_changed_notify() {
+
+#ifndef _3D_DISABLED
+	if (listener)
+		SpatialSoundServer::get_singleton()->listener_set_transform(internal_listener, listener->get_listener_transform());
+#endif
+}
+
+void Viewport::_listener_set(Listener* p_listener) {
+
+#ifndef _3D_DISABLED
+
+	if (listener == p_listener)
+		return;
+
+	listener = p_listener;
+
+	_update_listener();
+	_listener_transform_changed_notify();
+#endif
+}
+
+bool Viewport::_listener_add(Listener* p_listener) {
+
+	listeners.insert(p_listener);
+	return listeners.size() == 1;
+}
+
+void Viewport::_listener_remove(Listener* p_listener) {
+
+	listeners.erase(p_listener);
+	if (listener == p_listener) {
+		listener = NULL;
+	}
+}
+
+#ifndef _3D_DISABLED
+void Viewport::_listener_make_next_current(Listener* p_exclude) {
+
+	if (listeners.size() > 0) {
+		for (Set<Listener*>::Element *E = listeners.front(); E; E = E->next()) {
+
+			if (p_exclude == E->get())
+				continue;
+			if (!E->get()->is_inside_tree())
+				continue;
+			if (listener != NULL)
+				return;
+
+			E->get()->make_current();
+
+		}
+	}
+	else {
+		// Attempt to reset listener to the camera position
+		if (camera != NULL) {
+			_update_listener();
+			_camera_transform_changed_notify();
+		}
+	}
+}
+#endif
 
 void Viewport::_camera_transform_changed_notify() {
 
 #ifndef _3D_DISABLED
-	if (camera)
-		SpatialSoundServer::get_singleton()->listener_set_transform(listener,camera->get_camera_transform());
+	// If there is an active listener in the scene, it takes priority over the camera
+	if (camera && !listener)
+		SpatialSoundServer::get_singleton()->listener_set_transform(internal_listener, camera->get_camera_transform());
 #endif
 }
 
@@ -985,6 +1062,16 @@ void Viewport::_propagate_enter_world(Node *p_node) {
 	}
 }
 
+void Viewport::_propagate_viewport_notification(Node* p_node,int p_what) {
+
+	p_node->notification(p_what);
+	for(int i=0;i<p_node->get_child_count();i++) {
+		Node *c = p_node->get_child(i);
+		if (c->cast_to<Viewport>())
+			continue;
+		_propagate_viewport_notification(c,p_what);
+	}
+}
 
 void Viewport::_propagate_exit_world(Node *p_node) {
 
@@ -1066,6 +1153,11 @@ Ref<World> Viewport::find_world() const{
 		return Ref<World>();
 }
 
+Listener* Viewport::get_listener() const {
+
+	return listener;
+}
+
 Camera* Viewport::get_camera() const {
 
 	return camera;
@@ -1118,7 +1210,7 @@ void Viewport::set_size_override_stretch(bool p_enable) {
 
 bool Viewport::is_size_override_stretch_enabled() const {
 
-	return size_override;
+	return size_override_stretch;
 }
 
 void Viewport::set_as_render_target(bool p_enable){
@@ -1147,6 +1239,8 @@ void Viewport::set_as_render_target(bool p_enable){
 
 	render_target_texture->set_flags(render_target_texture->flags);
 	render_target_texture->emit_changed();
+
+	update_configuration_warning();
 }
 
 bool Viewport::is_set_as_render_target() const{
@@ -1346,7 +1440,6 @@ void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 
 	if (disable_input)
 		return;
-
 #ifdef TOOLS_ENABLED
 	if (get_tree()->is_editor_hint() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
 		return;
@@ -1481,22 +1574,29 @@ void Viewport::_gui_call_input(Control *p_control,const InputEvent& p_input) {
 
 //	_block();
 
-	while(p_control) {
+	CanvasItem *ci=p_control;
+	while(ci) {
 
-		p_control->call_multilevel(SceneStringNames::get_singleton()->_input_event,p_input);
-		if (gui.key_event_accepted)
-			break;
-		if (!p_control->is_inside_tree())
-			break;
-		p_control->emit_signal(SceneStringNames::get_singleton()->input_event,p_input);
-		if (!p_control->is_inside_tree() || p_control->is_set_as_toplevel()) {
-			break;
+		Control *control = ci->cast_to<Control>();
+		if (control) {
+			control->call_multilevel(SceneStringNames::get_singleton()->_input_event,p_input);
+			if (gui.key_event_accepted)
+				break;
+			if (!control->is_inside_tree())
+				break;
+			control->emit_signal(SceneStringNames::get_singleton()->input_event,p_input);
+			if (!control->is_inside_tree() || control->is_set_as_toplevel())
+				break;
+			if (gui.key_event_accepted)
+				break;
+			if (control->data.stop_mouse && (p_input.type==InputEvent::MOUSE_BUTTON || p_input.type==InputEvent::MOUSE_MOTION))
+				break;
 		}
-		if (gui.key_event_accepted)
+
+		if (ci->is_set_as_toplevel())
 			break;
-		if (p_control->data.stop_mouse && (p_input.type==InputEvent::MOUSE_BUTTON || p_input.type==InputEvent::MOUSE_MOTION))
-			break;
-		p_control=p_control->data.parent;
+
+		ci=ci->get_parent_item();
 	}
 
 	//_unblock();
@@ -1676,6 +1776,9 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 					if (p_event.mouse_button.button_index==BUTTON_LEFT) {
 						gui.drag_accum=Vector2();
 						gui.drag_attempted=false;
+						if (gui.drag_data.get_type()!=Variant::NIL) {
+							_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
+						}
 						gui.drag_data=Variant();
 					}
 
@@ -1736,6 +1839,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 						gui.mouse_over->drop_data(pos,gui.drag_data);
 						gui.drag_data=Variant();
+						_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
 						//change mouse accordingly
 					}
 
@@ -1759,6 +1863,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 				}
 
 				if (gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_button.button_index==BUTTON_LEFT) {
+					_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
 					gui.drag_data=Variant(); //always clear
 				}
 
@@ -1790,6 +1895,10 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 						gui.mouse_focus=NULL;
 					}
 					gui.drag_attempted=true;
+					if (gui.drag_data.get_type()!=Variant::NIL) {
+
+						_propagate_viewport_notification(this,NOTIFICATION_DRAG_BEGIN);
+					}
 				}
 			}
 
@@ -1814,10 +1923,14 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 				}
 			}
 
+
+
 			if (over!=gui.mouse_over) {
 
 				if (gui.mouse_over)
 					gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT);
+
+				_gui_cancel_tooltip();
 
 				if (over)
 					over->notification(Control::NOTIFICATION_MOUSE_ENTER);
@@ -1825,8 +1938,6 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 			}
 
 			gui.mouse_over=over;
-
-			_gui_cancel_tooltip();
 
 			if (gui.drag_preview) {
 				gui.drag_preview->set_pos(mpos);
@@ -1896,7 +2007,15 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 			if (gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_motion.button_mask&BUTTON_MASK_LEFT) {
 
-				/*bool can_drop =*/ over->can_drop_data(pos,gui.drag_data);
+
+				bool can_drop = over->can_drop_data(pos,gui.drag_data);
+
+				if (!can_drop) {
+					OS::get_singleton()->set_cursor_shape( OS::CURSOR_FORBIDDEN );
+				} else {
+					OS::get_singleton()->set_cursor_shape( OS::CURSOR_CAN_DROP );
+
+				}
 				//change mouse accordingly i guess
 			}
 
@@ -2367,6 +2486,21 @@ bool Viewport::is_input_disabled() const {
 	return disable_input;
 }
 
+Variant Viewport::gui_get_drag_data() const {
+	return gui.drag_data;
+}
+
+
+String Viewport::get_configuration_warning() const {
+
+	if (get_parent() && !get_parent()->cast_to<Control>() && !render_target) {
+
+		return TTR("This viewport is not set as render target. If you intend for it to display its contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign its internal texture to some node for display.");
+	}
+
+	return String();
+}
+
 void Viewport::_bind_methods() {
 
 
@@ -2452,6 +2586,7 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"), &Viewport::warp_mouse);
 
 	ObjectTypeDB::bind_method(_MD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
+	ObjectTypeDB::bind_method(_MD("gui_get_drag_data:Variant"), &Viewport::gui_get_drag_data);
 
 	ObjectTypeDB::bind_method(_MD("set_disable_input","disable"), &Viewport::set_disable_input);
 	ObjectTypeDB::bind_method(_MD("is_input_disabled"), &Viewport::is_input_disabled);
@@ -2493,12 +2628,13 @@ Viewport::Viewport() {
 	world_2d = Ref<World2D>( memnew( World2D ));
 
 	viewport = VisualServer::get_singleton()->viewport_create();
-	listener=SpatialSoundServer::get_singleton()->listener_create();
+	internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener=false;
-	listener_2d=SpatialSound2DServer::get_singleton()->listener_create();
+	internal_listener_2d = SpatialSound2DServer::get_singleton()->listener_create();
 	audio_listener_2d=false;
 	transparent_bg=false;
 	parent=NULL;
+	listener=NULL;
 	camera=NULL;
 	size_override=false;
 	size_override_stretch=false;
@@ -2546,8 +2682,8 @@ Viewport::Viewport() {
 Viewport::~Viewport() {
 
 	VisualServer::get_singleton()->free( viewport );
-	SpatialSoundServer::get_singleton()->free(listener);
-	SpatialSound2DServer::get_singleton()->free(listener_2d);
+	SpatialSoundServer::get_singleton()->free(internal_listener);
+	SpatialSound2DServer::get_singleton()->free(internal_listener_2d);
 	if (render_target_texture.is_valid())
 		render_target_texture->vp=NULL; //so if used, will crash
 }

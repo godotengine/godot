@@ -562,7 +562,9 @@ public:
 
 		INFO_ACTIVE_OBJECTS,
 		INFO_COLLISION_PAIRS,
-		INFO_ISLAND_COUNT
+		INFO_ISLAND_COUNT,
+		INFO_STEP_TIME,
+		INFO_BROAD_PHASE_TIME
 	};
 
 	virtual int get_process_info(ProcessInfo p_info)=0;

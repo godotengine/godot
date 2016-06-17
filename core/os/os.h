@@ -60,6 +60,7 @@ class OS {
 	int _target_fps;
 	float _time_scale;
 	bool _pixel_snap;
+	bool _allow_hidpi;
 
 	char *last_error;
 
@@ -160,6 +161,7 @@ public:
 	virtual void set_current_screen(int p_screen) { }
 	virtual Point2 get_screen_position(int p_screen=0) const { return Point2(); }
 	virtual Size2 get_screen_size(int p_screen=0) const { return get_window_size(); }
+	virtual int get_screen_dpi(int p_screen=0) const { return 72; }
 	virtual Point2 get_window_position() const { return Vector2(); }
 	virtual void set_window_position(const Point2& p_position) {}
 	virtual Size2 get_window_size() const=0;
@@ -324,6 +326,7 @@ public:
 
 	virtual String get_locale() const;
 
+	String get_safe_application_name() const;
 	virtual String get_data_dir() const;
 	virtual String get_resource_dir() const;
 
@@ -417,6 +420,10 @@ public:
 
 	virtual void set_context(int p_context);
 
+	virtual void set_use_vsync(bool p_enable);
+	virtual bool is_vsnc_enabled() const;
+
+	bool is_hidpi_allowed() const { return _allow_hidpi; }
 	OS();
 	virtual ~OS();
 

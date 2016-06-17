@@ -182,6 +182,15 @@ public:
 
 	NodePath path_pp;
 
+	StringName _default;
+
+	StringName node_configuration_warning_changed;
+
+	enum {
+		MAX_MATERIALS=32
+	};
+	StringName mesh_materials[MAX_MATERIALS];
+	StringName _mesh_changed;
 
 };
 

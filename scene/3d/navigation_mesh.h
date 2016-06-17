@@ -78,6 +78,8 @@ public:
 	void set_navigation_mesh(const Ref<NavigationMesh>& p_navmesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;
 
+	String get_configuration_warning() const;
+
 	NavigationMeshInstance();
 };
 

@@ -316,13 +316,21 @@ void joystick_linux::setup_joystick_properties(int p_id) {
 			}
 		}
 	}
-}
 
+	joy->force_feedback = false;
+	joy->ff_effect_timestamp = 0;
+	unsigned long ffbit[NBITS(FF_CNT)];
+	if (ioctl(joy->fd, EVIOCGBIT(EV_FF, sizeof(ffbit)), ffbit) != -1) {
+		if (test_bit(FF_RUMBLE, ffbit)) {
+			joy->force_feedback = true;
+		}
+	}
+}
 
 void joystick_linux::open_joystick(const char *p_path) {
 
 	int joy_num = get_free_joy_slot();
-	int fd = open(p_path, O_RDONLY | O_NONBLOCK);
+	int fd = open(p_path, O_RDWR | O_NONBLOCK);
 	if (fd != -1 && joy_num != -1) {
 
 		unsigned long evbit[NBITS(EV_MAX)] = { 0 };
@@ -390,6 +398,55 @@ void joystick_linux::open_joystick(const char *p_path) {
 			input->joy_connection_changed(joy_num, true, name, uidname);
 		}
 	}
+}
+
+void joystick_linux::joystick_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp)
+{
+	Joystick& joy = joysticks[p_id];
+	if (!joy.force_feedback || joy.fd == -1 || p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
+		return;
+	}
+	if (joy.ff_effect_id != -1) {
+		joystick_vibration_stop(p_id, p_timestamp);
+	}
+
+	struct ff_effect effect;
+	effect.type = FF_RUMBLE;
+	effect.id = -1;
+	effect.u.rumble.weak_magnitude = floor(p_weak_magnitude * (float)0xffff);
+	effect.u.rumble.strong_magnitude = floor(p_strong_magnitude * (float)0xffff);
+	effect.replay.length = floor(p_duration * 1000);
+	effect.replay.delay = 0;
+
+	if (ioctl(joy.fd, EVIOCSFF, &effect) < 0) {
+		return;
+	}
+
+	struct input_event play;
+	play.type = EV_FF;
+	play.code = effect.id;
+	play.value = 1;
+	write(joy.fd, (const void*)&play, sizeof(play));
+
+	joy.ff_effect_id = effect.id;
+	joy.ff_effect_timestamp = p_timestamp;
+}
+
+void joystick_linux::joystick_vibration_stop(int p_id, uint64_t p_timestamp)
+{
+	Joystick& joy = joysticks[p_id];
+	if (!joy.force_feedback || joy.fd == -1 || joy.ff_effect_id == -1) {
+		return;
+	}
+
+	struct input_event stop;
+	stop.type = EV_FF;
+	stop.code = joy.ff_effect_id;
+	stop.value = 0;
+	write(joy.fd, (const void*)&stop, sizeof(stop));
+
+	joy.ff_effect_id = -1;
+	joy.ff_effect_timestamp = p_timestamp;
 }
 
 InputDefault::JoyAxis joystick_linux::axis_correct(const input_absinfo *p_abs, int p_value) const {
@@ -485,6 +542,19 @@ uint32_t joystick_linux::process_joysticks(uint32_t p_event_id) {
 		if (len == 0 || (len < 0 && errno != EAGAIN)) {
 			close_joystick(i);
 		};
+
+		if (joy->force_feedback) {
+			uint64_t timestamp = input->get_joy_vibration_timestamp(i);
+			if (timestamp > joy->ff_effect_timestamp) {
+				Vector2 strength = input->get_joy_vibration_strength(i);
+				float duration = input->get_joy_vibration_duration(i);
+				if (strength.x == 0 && strength.y == 0) {
+					joystick_vibration_stop(i, timestamp);
+				} else {
+					joystick_vibration_start(i, strength.x, strength.y, duration, timestamp);
+				}
+			}
+		}
 	}
 	joy_mutex->unlock();
 	return p_event_id;

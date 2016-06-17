@@ -52,7 +52,7 @@ class VisualServer : public Object {
 	void _camera_set_orthogonal(RID p_camera,float p_size,float p_z_near,float p_z_far);
 	void _viewport_set_rect(RID p_viewport,const Rect2& p_rect);
 	Rect2 _viewport_get_rect(RID p_viewport) const;
-	void _canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector<float>& p_margins, const Color& p_modulate=Color(1,1,1));
+	void _canvas_item_add_style_box(RID p_item, const Rect2& p_rect, const Rect2& p_source, RID p_texture,const Vector<float>& p_margins, const Color& p_modulate=Color(1,1,1));
 protected:
 	RID _make_test_cube();
 	void _free_internal_rids();
@@ -137,6 +137,8 @@ public:
 
 	virtual void texture_set_path(RID p_texture,const String& p_path)=0;
 	virtual String texture_get_path(RID p_texture) const=0;
+
+	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable)=0;
 
 	struct TextureInfo {
 		RID texture;
@@ -917,6 +919,8 @@ public:
 	virtual void instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight)=0;
 	virtual float instance_get_morph_target_weight(RID p_instance,int p_shape) const=0;
 
+	virtual void instance_set_surface_material(RID p_instance,int p_surface, RID p_material)=0;
+
 	virtual void instance_attach_skeleton(RID p_instance,RID p_skeleton)=0;
 	virtual RID instance_get_skeleton(RID p_instance) const=0;
 
@@ -1021,7 +1025,7 @@ public:
 	virtual void canvas_item_add_circle(RID p_item, const Point2& p_pos, float p_radius,const Color& p_color)=0;
 	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile=false,const Color& p_modulate=Color(1,1,1),bool p_transpose=false)=0;
 	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1),bool p_transpose=false)=0;
-	virtual void canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center=true,const Color& p_modulate=Color(1,1,1))=0;
+	virtual void canvas_item_add_style_box(RID p_item, const Rect2& p_rect, const Rect2& p_source, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center=true,const Color& p_modulate=Color(1,1,1))=0;
 	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width=1.0)=0;
 	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), RID p_texture=RID())=0;
 	virtual void canvas_item_add_triangle_array(RID p_item, const Vector<int>& p_indices, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), RID p_texture=RID(), int p_count=-1)=0;

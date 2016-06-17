@@ -351,6 +351,12 @@ class DaeExporter:
 		self.writel(S_FX,5,'<technique profile="GOOGLEEARTH">')
 		self.writel(S_FX,6,'<double_sided>'+["0","1"][double_sided_hint]+"</double_sided>")
 		self.writel(S_FX,5,'</technique>')
+
+		if (material.use_shadeless):
+			self.writel(S_FX,5,'<technique profile="GODOT">')
+			self.writel(S_FX,6,'<unshaded>1</unshaded>')
+			self.writel(S_FX,5,'</technique>')
+
 		self.writel(S_FX,4,'</extra>')
 
 		self.writel(S_FX,3,'</technique>')
@@ -1104,6 +1110,14 @@ class DaeExporter:
 
 		self.writel(S_NODES,il,'<instance_light url="#'+lightid+'"/>')
 
+	def export_empty_node(self,node,il):
+
+		self.writel(S_NODES,4,'<extra>')
+		self.writel(S_NODES,5,'<technique profile="GODOT">')
+		self.writel(S_NODES,6,'<empty_draw_type>'+node.empty_draw_type+'</empty_draw_type>')
+		self.writel(S_NODES,5,'</technique>')
+		self.writel(S_NODES,4,'</extra>')
+
 
 	def export_curve(self,curve):
 
@@ -1264,6 +1278,8 @@ class DaeExporter:
 			self.export_camera_node(node,il)
 		elif (node.type=="LAMP"):
 			self.export_lamp_node(node,il)
+		elif (node.type=="EMPTY"):
+			self.export_empty_node(node,il)
 
 		for x in node.children:
 			self.export_node(x,il)

@@ -64,6 +64,7 @@ private:
 	struct GroupData {
 
 		bool persistent;
+		SceneTree::Group *group;
 		GroupData() { persistent=false; }
 	};
 
@@ -91,7 +92,7 @@ private:
 		Viewport *viewport;
 
 
-		HashMap< StringName, GroupData,StringNameHasher>  grouped;
+		Map< StringName, GroupData>  grouped;
 		List<Node*>::Element *OW; // owned element
 		List<Node*> owned;
 
@@ -120,7 +121,7 @@ private:
 	Node *_get_node(const NodePath& p_path) const;
 	Node *_get_child_by_name(const StringName& p_name) const;
 
-
+	void _replace_connections_target(Node* p_new_target);
 
 	void _validate_child_name(Node *p_name, bool p_force_human_readable=false);
 
@@ -180,6 +181,8 @@ public:
 		NOTIFICATION_PARENTED=18,
 		NOTIFICATION_UNPARENTED=19,
 		NOTIFICATION_INSTANCED=20,
+		NOTIFICATION_DRAG_BEGIN=21,
+		NOTIFICATION_DRAG_END=22,
 	};
 
 	/* NODE/TREE */
@@ -188,6 +191,7 @@ public:
 	void set_name(const String& p_name);
 
 	void add_child(Node *p_child,bool p_legible_unique_name=false);
+	void add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name=false);
 	void remove_child(Node *p_child);
 
 	int get_child_count() const;
@@ -220,6 +224,7 @@ public:
 	};
 
 	void get_groups(List<GroupInfo> *p_groups) const;
+	bool has_persistent_groups() const;
 
 	void move_child(Node *p_child,int p_pos);
 	void raise();
@@ -313,6 +318,10 @@ public:
 	void clear_internal_tree_resource_paths();
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
+
+	virtual String get_configuration_warning() const;
+
+	void update_configuration_warning();
 
 	/* CANVAS */
 

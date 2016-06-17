@@ -86,7 +86,7 @@ bool GDParser::_enter_indent_block(BlockNode* p_block) {
 	while(true) {
 
 		if (tokenizer->get_token()!=GDTokenizer::TK_NEWLINE) {
-			print_line("no newline");
+
 			return false; //wtf
 		} else if (tokenizer->get_token(1)!=GDTokenizer::TK_NEWLINE) {
 
@@ -730,7 +730,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 			//find list [ or find dictionary {
 
-			print_line("found bug?");
+			//print_line("found bug?");
 
 			_set_error("Error parsing expression, misplaced: "+String(tokenizer->get_token_name(tokenizer->get_token())));
 			return NULL;		//nothing
@@ -2408,6 +2408,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							return;
 						}
 						current_export.type=type;
+						current_export.usage|=PROPERTY_USAGE_SCRIPT_VARIABLE;
 						tokenizer->advance();
 						if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
 							// hint expected next!
@@ -2782,6 +2783,8 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 						current_export.type=Variant::OBJECT;
 						current_export.hint=PROPERTY_HINT_RESOURCE_TYPE;
+						current_export.usage|=PROPERTY_USAGE_SCRIPT_VARIABLE;
+
 						current_export.hint_string=identifier;
 
 						tokenizer->advance();
@@ -2901,6 +2904,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 								return;
 							}
 							member._export.type=cn->value.get_type();
+							member._export.usage|=PROPERTY_USAGE_SCRIPT_VARIABLE;
 						}
 					}
 #ifdef TOOLS_ENABLED

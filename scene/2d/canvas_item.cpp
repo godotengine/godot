@@ -455,19 +455,14 @@ void CanvasItem::_enter_canvas() {
 	if ((!get_parent() || !get_parent()->cast_to<CanvasItem>()) || toplevel) {
 
 		Node *n = this;
-		Viewport *viewport=NULL;
+
 		canvas_layer=NULL;
 
 		while(n) {
 
-			if (n->cast_to<Viewport>()) {
-
-				viewport = n->cast_to<Viewport>();
+			canvas_layer = n->cast_to<CanvasLayer>();
+			if (canvas_layer) {
 				break;
-			}
-			if (!canvas_layer && n->cast_to<CanvasLayer>()) {
-
-				canvas_layer = n->cast_to<CanvasLayer>();
 			}
 			n=n->get_parent();
 		}
@@ -476,7 +471,7 @@ void CanvasItem::_enter_canvas() {
 		if (canvas_layer)
 			canvas=canvas_layer->get_world_2d()->get_canvas();
 		else
-			canvas=viewport->find_world_2d()->get_canvas();
+			canvas=get_viewport()->find_world_2d()->get_canvas();
 
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,canvas);
 
@@ -488,6 +483,7 @@ void CanvasItem::_enter_canvas() {
 	} else {
 
 		CanvasItem *parent = get_parent_item();
+		canvas_layer=parent->canvas_layer;
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,parent->get_canvas_item());
 		parent->_queue_sort_children();
 	}
@@ -1046,7 +1042,9 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("edit_rotate","degrees"),&CanvasItem::edit_rotate);
 
 	ObjectTypeDB::bind_method(_MD("get_item_rect"),&CanvasItem::get_item_rect);
+	ObjectTypeDB::bind_method(_MD("get_item_and_children_rect"),&CanvasItem::get_item_and_children_rect);
 	//ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
+
 	ObjectTypeDB::bind_method(_MD("get_canvas_item"),&CanvasItem::get_canvas_item);
 
 	ObjectTypeDB::bind_method(_MD("is_visible"),&CanvasItem::is_visible);
@@ -1085,9 +1083,9 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("draw_texture_rect","texture:Texture","rect","tile","modulate","transpose"),&CanvasItem::draw_texture_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_texture_rect_region","texture:Texture","rect","src_rect","modulate","transpose"),&CanvasItem::draw_texture_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_style_box","style_box:StyleBox","rect"),&CanvasItem::draw_style_box);
-	ObjectTypeDB::bind_method(_MD("draw_primitive","points","colors","uvs","texture:Texture","width"),&CanvasItem::draw_primitive,DEFVAL(Array()),DEFVAL(Ref<Texture>()),DEFVAL(1.0));
-	ObjectTypeDB::bind_method(_MD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_polygon,DEFVAL(Array()),DEFVAL(Ref<Texture>()));
-	ObjectTypeDB::bind_method(_MD("draw_colored_polygon","points","color","uvs","texture:Texture"),&CanvasItem::draw_colored_polygon,DEFVAL(Array()),DEFVAL(Ref<Texture>()));
+	ObjectTypeDB::bind_method(_MD("draw_primitive","points","colors","uvs","texture:Texture","width"),&CanvasItem::draw_primitive,DEFVAL(Variant()),DEFVAL(1.0));
+	ObjectTypeDB::bind_method(_MD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_polygon,DEFVAL(Vector2Array()),DEFVAL(Variant()));
+	ObjectTypeDB::bind_method(_MD("draw_colored_polygon","points","color","uvs","texture:Texture"),&CanvasItem::draw_colored_polygon,DEFVAL(Vector2Array()),DEFVAL(Variant()));
 	ObjectTypeDB::bind_method(_MD("draw_string","font:Font","pos","text","modulate","clip_w"),&CanvasItem::draw_string,DEFVAL(Color(1,1,1)),DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("draw_char","font:Font","pos","char","next","modulate"),&CanvasItem::draw_char,DEFVAL(Color(1,1,1)));
 
@@ -1176,11 +1174,9 @@ Matrix32 CanvasItem::get_viewport_transform() const {
 			return canvas_layer->get_transform();
 		}
 
-	} else if (get_viewport()) {
+	} else {
 		return get_viewport()->get_final_transform() * get_viewport()->get_canvas_transform();
 	}
-
-	return Matrix32();
 
 }
 
@@ -1199,6 +1195,23 @@ int CanvasItem::get_canvas_layer() const {
 		return canvas_layer->get_layer();
 	else
 		return 0;
+}
+
+
+Rect2 CanvasItem::get_item_and_children_rect() const {
+
+	Rect2 rect = get_item_rect();
+
+
+	for(int i=0;i<get_child_count();i++) {
+		CanvasItem *c=get_child(i)->cast_to<CanvasItem>();
+		if (c) {
+			Rect2 sir = c->get_transform().xform(c->get_item_and_children_rect());
+			rect = rect.merge(sir);
+		}
+	}
+
+	return rect;
 }
 
 CanvasItem::CanvasItem() : xform_change(this) {

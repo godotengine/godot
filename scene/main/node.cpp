@@ -168,11 +168,8 @@ void Node::_propagate_enter_tree() {
 
 	data.inside_tree=true;
 
-	const StringName *K=NULL;
-
-	while ((K=data.grouped.next(K))) {
-
-		data.tree->add_to_group(*K,this);
+	for (Map< StringName, GroupData>::Element *E=data.grouped.front();E;E=E->next()) {
+		E->get().group=data.tree->add_to_group(E->key(),this);
 	}
 
 
@@ -257,12 +254,12 @@ void Node::_propagate_exit_tree() {
 		data.tree->node_removed(this);
 
 	// exit groups
-	const StringName *K=NULL;
 
-	while ((K=data.grouped.next(K))) {
-
-		data.tree->remove_from_group(*K,this);
+	for (Map< StringName, GroupData>::Element *E=data.grouped.front();E;E=E->next()) {
+		data.tree->remove_from_group(E->key(),this);
+		E->get().group=NULL;
 	}
+
 
 	data.viewport = NULL;
 
@@ -286,7 +283,11 @@ void Node::move_child(Node *p_child,int p_pos) {
 	ERR_FAIL_INDEX( p_pos, data.children.size()+1 );
 	ERR_EXPLAIN("child is not a child of this node.");
 	ERR_FAIL_COND(p_child->data.parent!=this);
-	ERR_FAIL_COND(data.blocked>0);
+	if (data.blocked>0) {
+		ERR_EXPLAIN("Parent node is busy setting up children, move_child() failed. Consider using call_deferred(\"move_child\") instead (or \"popup\" if this is from a popup).");
+		ERR_FAIL_COND(data.blocked>0);
+	}
+
 
 	data.children.remove( p_child->data.pos );
 	data.children.insert( p_pos, p_child );
@@ -306,6 +307,9 @@ void Node::move_child(Node *p_child,int p_pos) {
 	for (int i=0;i<data.children.size();i++) {
 		data.children[i]->notification( NOTIFICATION_MOVED_IN_PARENT );
 
+	}
+	for (const Map< StringName, GroupData>::Element *E=p_child->data.grouped.front();E;E=E->next()) {
+		E->get().group->changed=true;
 	}
 
 	data.blocked--;
@@ -739,6 +743,12 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 	}
 	ERR_EXPLAIN("Can't add child, already has a parent");
 	ERR_FAIL_COND( p_child->data.parent );
+
+	if (data.blocked>0) {
+		ERR_EXPLAIN("Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\",child) instead.");
+		ERR_FAIL_COND(data.blocked>0);
+	}
+
 	ERR_EXPLAIN("Can't add child while a notification is happening");
 	ERR_FAIL_COND( data.blocked > 0 );
 
@@ -747,6 +757,16 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 
 	_add_child_nocheck(p_child,p_child->data.name);
 
+}
+
+void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
+	add_child(p_child, p_legible_unique_name);
+
+	if (is_a_parent_of(p_node)) {
+		move_child(p_child, p_node->get_position_in_parent() + 1);
+	} else {
+		WARN_PRINTS("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent")
+	}
 }
 
 
@@ -790,7 +810,10 @@ void Node::_propagate_validate_owner() {
 void Node::remove_child(Node *p_child) {
 
 	ERR_FAIL_NULL(p_child);
-	ERR_FAIL_COND( data.blocked > 0 );
+	if (data.blocked>0) {
+		ERR_EXPLAIN("Parent node is busy setting up children, remove_node() failed. Consider using call_deferred(\"remove_child\",child) instead.");
+		ERR_FAIL_COND(data.blocked>0);
+	}
 
 	int idx=-1;
 	for (int i=0;i<data.children.size();i++) {
@@ -1183,8 +1206,12 @@ void Node::add_to_group(const StringName& p_identifier,bool p_persistent) {
 
 	GroupData gd;
 
-	if (data.tree)
-		data.tree->add_to_group(p_identifier,this);
+	SceneTree::Group *gptr=NULL;
+	if (data.tree) {
+		gd.group=data.tree->add_to_group(p_identifier,this);
+	} else {
+		gd.group=NULL;
+	}
 
 	gd.persistent=p_persistent;
 
@@ -1197,14 +1224,15 @@ void Node::remove_from_group(const StringName& p_identifier) {
 
 	ERR_FAIL_COND(!data.grouped.has(p_identifier) );
 
-	GroupData *g=data.grouped.getptr(p_identifier);
 
-	ERR_FAIL_COND(!g);
+	Map< StringName, GroupData>::Element *E=data.grouped.find(p_identifier);
+
+	ERR_FAIL_COND(!E);
 
 	if (data.tree)
-		data.tree->remove_from_group(p_identifier,this);
+		data.tree->remove_from_group(E->key(),this);
 
-	data.grouped.erase(p_identifier);
+	data.grouped.erase(E);
 
 }
 
@@ -1222,19 +1250,29 @@ Array Node::_get_groups() const {
 
 void Node::get_groups(List<GroupInfo> *p_groups) const {
 
-	const StringName *K=NULL;
 
-	while ((K=data.grouped.next(K))) {
-
+	for (const Map< StringName, GroupData>::Element *E=data.grouped.front();E;E=E->next()) {
 		GroupInfo gi;
-		gi.name=*K;
-		gi.persistent=data.grouped[*K].persistent;
+		gi.name=E->key();
+		gi.persistent=E->get().persistent;
 		p_groups->push_back(gi);
 	}
 
 }
 
+bool Node::has_persistent_groups() const {
 
+
+	for (const Map< StringName, GroupData>::Element *E=data.grouped.front();E;E=E->next()) {
+		if (E->get().persistent)
+			return true;
+	}
+
+
+	return false;
+
+
+}
 void Node::_print_tree(const Node *p_node) {
 
 	print_line(String(p_node->get_path_to(this)));
@@ -1745,6 +1783,8 @@ void Node::replace_by(Node* p_node,bool p_keep_data) {
 		}
 	}
 
+	_replace_connections_target(p_node);
+
 	if (data.owner) {
 		for(int i=0;i<get_child_count();i++)
 			find_owned_by(data.owner,get_child(i),&owned_by_owner);
@@ -1781,6 +1821,20 @@ void Node::replace_by(Node* p_node,bool p_keep_data) {
 		p_node->set(E->get().name,E->get().value);
 	}
 
+}
+
+void Node::_replace_connections_target(Node* p_new_target) {
+
+	List<Connection> cl;
+	get_signals_connected_to_this(&cl);
+
+	for(List<Connection>::Element *E=cl.front();E;E=E->next()) {
+
+		Connection &c=E->get();
+
+		c.source->disconnect(c.signal,this,c.method);
+		c.source->connect(c.signal,p_new_target,c.method,c.binds,c.flags);
+	}
 }
 
 Vector<Variant> Node::make_binds(VARIANT_ARG_DECLARE) {
@@ -2010,7 +2064,26 @@ void Node::clear_internal_tree_resource_paths() {
 
 }
 
+String Node::get_configuration_warning() const {
+
+	return String();
+}
+
+void Node::update_configuration_warning() {
+
+#ifdef TOOLS_ENABLED
+	if (!is_inside_tree())
+		return;
+	if (get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()==this || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
+		get_tree()->emit_signal(SceneStringNames::get_singleton()->node_configuration_warning_changed,this);
+	}
+#endif
+
+}
+
 void Node::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_add_child_below_node","node:Node","child_node:Node","legible_unique_name"),&Node::add_child_below_node,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("set_name","name"),&Node::set_name);
 	ObjectTypeDB::bind_method(_MD("get_name"),&Node::get_name);
@@ -2022,7 +2095,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_child:Node","idx"),&Node::get_child);
 	ObjectTypeDB::bind_method(_MD("has_node","path"),&Node::has_node);
 	ObjectTypeDB::bind_method(_MD("get_node:Node","path"),&Node::get_node);
-	ObjectTypeDB::bind_method(_MD("get_parent:Parent"),&Node::get_parent);
+	ObjectTypeDB::bind_method(_MD("get_parent:Node"),&Node::get_parent);
 	ObjectTypeDB::bind_method(_MD("find_node:Node","mask","recursive","owned"),&Node::find_node,DEFVAL(true),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("has_node_and_resource","path"),&Node::has_node_and_resource);
 	ObjectTypeDB::bind_method(_MD("get_node_and_resource","path"),&Node::_get_node_and_resource);
@@ -2076,6 +2149,10 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_viewport"),&Node::get_viewport);
 
 	ObjectTypeDB::bind_method(_MD("queue_free"),&Node::queue_delete);
+
+
+
+
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("_set_import_path","import_path"),&Node::set_import_path);
 	ObjectTypeDB::bind_method(_MD("_get_import_path"),&Node::get_import_path);
@@ -2095,6 +2172,8 @@ void Node::_bind_methods() {
 	BIND_CONSTANT( NOTIFICATION_PAUSED );
 	BIND_CONSTANT( NOTIFICATION_UNPAUSED );
 	BIND_CONSTANT( NOTIFICATION_INSTANCED );
+	BIND_CONSTANT( NOTIFICATION_DRAG_BEGIN );
+	BIND_CONSTANT( NOTIFICATION_DRAG_END );
 
 
 

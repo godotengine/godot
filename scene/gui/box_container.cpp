@@ -280,6 +280,7 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 void BoxContainer::add_spacer(bool p_begin) {
 
 	Control *c = memnew( Control );
+	c->set_stop_mouse(false);
 	if (vertical)
 		c->set_v_size_flags(SIZE_EXPAND_FILL);
 	else

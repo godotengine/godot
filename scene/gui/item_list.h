@@ -33,6 +33,7 @@ private:
 		Color custom_bg;
 
 		Rect2 rect_cache;
+		Rect2 min_rect_cache;
 
 		Size2 get_icon_size() const;
 
@@ -44,6 +45,7 @@ private:
 	bool shape_changed;
 
 	bool ensure_selected_visible;
+	bool same_column_width;
 
 	Vector<Item> items;
 	Vector<int> separators;
@@ -59,15 +61,27 @@ private:
 	int fixed_column_width;
 	int max_text_lines;
 	int max_columns;
-	Size2 min_icon_size;
+
+	Size2 fixed_icon_size;
+
+	Size2 max_item_size_cache;
+
+	int defer_select_single;
+
+	bool allow_rmb_select;
+
+	real_t icon_scale;
 
 	void _scroll_changed(double);
 	void _input_event(const InputEvent& p_event);
+
+
 protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
+
 
 	void add_item(const String& p_item,const Ref<Texture>& p_texture=Ref<Texture>(),bool p_selectable=true);
 	void add_icon_item(const Ref<Texture>& p_item,bool p_selectable=true);
@@ -116,6 +130,9 @@ public:
 	void set_fixed_column_width(int p_size);
 	int get_fixed_column_width() const;
 
+	void set_same_column_width(bool p_enable);
+	int is_same_column_width() const;
+
 	void set_max_text_lines(int p_amount);
 	int get_max_text_lines() const;
 
@@ -128,8 +145,11 @@ public:
 	void set_icon_mode(IconMode p_mode);
 	IconMode get_icon_mode() const;
 
-	void set_min_icon_size(const Size2& p_size);
-	Size2 get_min_icon_size() const;
+	void set_fixed_icon_size(const Size2& p_size);
+	Size2 get_fixed_icon_size() const;
+
+	void set_allow_rmb_select(bool p_allow);
+	bool get_allow_rmb_select() const;
 
 	void ensure_current_is_visible();
 
@@ -137,6 +157,10 @@ public:
 	int find_metadata(const Variant& p_metadata) const;
 
 	virtual String get_tooltip(const Point2& p_pos) const;
+	int get_item_at_pos(const Point2& p_pos,bool p_exact=false) const;
+
+	void set_icon_scale(real_t p_scale);
+	real_t get_icon_scale() const;
 
 	ItemList();
 	~ItemList();

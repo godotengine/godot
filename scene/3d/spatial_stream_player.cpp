@@ -329,8 +329,8 @@ int SpatialStreamPlayer::get_buffering_msec() const{
 
 void SpatialStreamPlayer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_stream","stream:Stream"),&SpatialStreamPlayer::set_stream);
-	ObjectTypeDB::bind_method(_MD("get_stream:Stream"),&SpatialStreamPlayer::get_stream);
+	ObjectTypeDB::bind_method(_MD("set_stream","stream:AudioStream"),&SpatialStreamPlayer::set_stream);
+	ObjectTypeDB::bind_method(_MD("get_stream:AudioStream"),&SpatialStreamPlayer::get_stream);
 
 	ObjectTypeDB::bind_method(_MD("play","offset"),&SpatialStreamPlayer::play,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("stop"),&SpatialStreamPlayer::stop);

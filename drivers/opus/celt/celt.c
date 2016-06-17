@@ -26,10 +26,7 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #define CELT_C
 
@@ -39,7 +36,7 @@
 #include "opus/celt/celt.h"
 #include "opus/celt/pitch.h"
 #include "opus/celt/bands.h"
-#include "opus/celt/opus_modes.h"
+#include "opus/celt/modes.h"
 #include "opus/celt/entcode.h"
 #include "opus/celt/quant_bands.h"
 #include "opus/celt/rate.h"
@@ -52,6 +49,10 @@
 
 #ifndef PACKAGE_VERSION
 #define PACKAGE_VERSION "unknown"
+#endif
+
+#if defined(MIPSr1_ASM)
+#include "opus/celt/mips/celt_mipsr1.h"
 #endif
 
 
@@ -85,8 +86,71 @@ int resampling_factor(opus_int32 rate)
    return ret;
 }
 
-#ifndef OVERRIDE_COMB_FILTER_CONST
-static void comb_filter_const(opus_val32 *y, opus_val32 *x, int T, int N,
+#if !defined(OVERRIDE_COMB_FILTER_CONST) || defined(NON_STATIC_COMB_FILTER_CONST_C)
+/* This version should be faster on ARM */
+#ifdef OPUS_ARM_ASM
+#ifndef NON_STATIC_COMB_FILTER_CONST_C
+static
+#endif
+void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
+      opus_val16 g10, opus_val16 g11, opus_val16 g12)
+{
+   opus_val32 x0, x1, x2, x3, x4;
+   int i;
+   x4 = SHL32(x[-T-2], 1);
+   x3 = SHL32(x[-T-1], 1);
+   x2 = SHL32(x[-T], 1);
+   x1 = SHL32(x[-T+1], 1);
+   for (i=0;i<N-4;i+=5)
+   {
+      opus_val32 t;
+      x0=SHL32(x[i-T+2],1);
+      t = MAC16_32_Q16(x[i], g10, x2);
+      t = MAC16_32_Q16(t, g11, ADD32(x1,x3));
+      t = MAC16_32_Q16(t, g12, ADD32(x0,x4));
+      y[i] = t;
+      x4=SHL32(x[i-T+3],1);
+      t = MAC16_32_Q16(x[i+1], g10, x1);
+      t = MAC16_32_Q16(t, g11, ADD32(x0,x2));
+      t = MAC16_32_Q16(t, g12, ADD32(x4,x3));
+      y[i+1] = t;
+      x3=SHL32(x[i-T+4],1);
+      t = MAC16_32_Q16(x[i+2], g10, x0);
+      t = MAC16_32_Q16(t, g11, ADD32(x4,x1));
+      t = MAC16_32_Q16(t, g12, ADD32(x3,x2));
+      y[i+2] = t;
+      x2=SHL32(x[i-T+5],1);
+      t = MAC16_32_Q16(x[i+3], g10, x4);
+      t = MAC16_32_Q16(t, g11, ADD32(x3,x0));
+      t = MAC16_32_Q16(t, g12, ADD32(x2,x1));
+      y[i+3] = t;
+      x1=SHL32(x[i-T+6],1);
+      t = MAC16_32_Q16(x[i+4], g10, x3);
+      t = MAC16_32_Q16(t, g11, ADD32(x2,x4));
+      t = MAC16_32_Q16(t, g12, ADD32(x1,x0));
+      y[i+4] = t;
+   }
+#ifdef CUSTOM_MODES
+   for (;i<N;i++)
+   {
+      opus_val32 t;
+      x0=SHL32(x[i-T+2],1);
+      t = MAC16_32_Q16(x[i], g10, x2);
+      t = MAC16_32_Q16(t, g11, ADD32(x1,x3));
+      t = MAC16_32_Q16(t, g12, ADD32(x0,x4));
+      y[i] = t;
+      x4=x3;
+      x3=x2;
+      x2=x1;
+      x1=x0;
+   }
+#endif
+}
+#else
+#ifndef NON_STATIC_COMB_FILTER_CONST_C
+static
+#endif
+void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
       opus_val16 g10, opus_val16 g11, opus_val16 g12)
 {
    opus_val32 x0, x1, x2, x3, x4;
@@ -110,10 +174,12 @@ static void comb_filter_const(opus_val32 *y, opus_val32 *x, int T, int N,
 
 }
 #endif
+#endif
 
+#ifndef OVERRIDE_comb_filter
 void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
       opus_val16 g0, opus_val16 g1, int tapset0, int tapset1,
-      const opus_val16 *window, int overlap)
+      const opus_val16 *window, int overlap, int arch)
 {
    int i;
    /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */
@@ -131,16 +197,19 @@ void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
          OPUS_MOVE(y, x, N);
       return;
    }
-   g00 = MULT16_16_Q15(g0, gains[tapset0][0]);
-   g01 = MULT16_16_Q15(g0, gains[tapset0][1]);
-   g02 = MULT16_16_Q15(g0, gains[tapset0][2]);
-   g10 = MULT16_16_Q15(g1, gains[tapset1][0]);
-   g11 = MULT16_16_Q15(g1, gains[tapset1][1]);
-   g12 = MULT16_16_Q15(g1, gains[tapset1][2]);
+   g00 = MULT16_16_P15(g0, gains[tapset0][0]);
+   g01 = MULT16_16_P15(g0, gains[tapset0][1]);
+   g02 = MULT16_16_P15(g0, gains[tapset0][2]);
+   g10 = MULT16_16_P15(g1, gains[tapset1][0]);
+   g11 = MULT16_16_P15(g1, gains[tapset1][1]);
+   g12 = MULT16_16_P15(g1, gains[tapset1][2]);
    x1 = x[-T1+1];
    x2 = x[-T1  ];
    x3 = x[-T1-1];
    x4 = x[-T1-2];
+   /* If the filter didn't change, we don't need the overlap */
+   if (g0==g1 && T0==T1 && tapset0==tapset1)
+      overlap=0;
    for (i=0;i<overlap;i++)
    {
       opus_val16 f;
@@ -168,8 +237,9 @@ void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
    }
 
    /* Compute the part with the constant filter. */
-   comb_filter_const(y+i, x+i, T1, N-i, g10, g11, g12);
+   comb_filter_const(y+i, x+i, T1, N-i, g10, g11, g12, arch);
 }
+#endif /* OVERRIDE_comb_filter */
 
 const signed char tf_select_table[4][8] = {
       {0, -1, 0, -1,    0,-1, 0,-1},
@@ -213,6 +283,9 @@ const char *opus_strerror(int error)
 const char *opus_get_version_string(void)
 {
     return "libopus " PACKAGE_VERSION
+    /* Applications may rely on the presence of this substring in the version
+       string to determine if they have a fixed-point or floating-point build
+       at runtime. */
 #ifdef OPUS_FIXED_POINT
           "-fixed"
 #endif

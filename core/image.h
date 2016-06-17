@@ -249,6 +249,8 @@ public:
 	void resize_to_po2(bool p_square=false);
 	void resize( int p_width, int p_height, Interpolation p_interpolation=INTERPOLATE_BILINEAR );
 	Image resized( int p_width, int p_height, int p_interpolation=INTERPOLATE_BILINEAR );
+	void shrink_x2();
+	void expand_x2_hq2x();
 	/**
 	 * Crop the image to a specific size, if larger, then the image is filled by black
 	 */

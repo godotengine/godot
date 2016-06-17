@@ -34,6 +34,7 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/tool_button.h"
+#include "tools/editor/asset_library_editor_plugin.h"
 
 class NewProjectDialog;
 class ProjectListFilter;
@@ -47,6 +48,8 @@ class ProjectManager : public Control {
 
 	FileDialog *scan_dir;
 
+	EditorAssetLibrary *asset_library;
+
 	ProjectListFilter *project_filter;
 
 	ConfirmationDialog *erase_ask;
@@ -59,6 +62,10 @@ class ProjectManager : public Control {
 	String last_clicked;
 	String single_selected_main;
 	bool importing;
+
+	HBoxContainer *projects_hb;
+
+	TabContainer *tabs;
 
 	void _item_doubleclicked();
 

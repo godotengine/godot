@@ -3,6 +3,7 @@
 
 #include "os/input.h"
 
+
 class InputDefault : public Input {
 
 	OBJ_TYPE( InputDefault, Input );
@@ -14,10 +15,21 @@ class InputDefault : public Input {
 	Map<int,float> _joy_axis;
 	Map<StringName,int> custom_action_press;
 	Vector3 accelerometer;
+	Vector3 magnetometer;
 	Vector2 mouse_pos;
 	MainLoop *main_loop;
 
 	bool emulate_touch;
+
+	struct VibrationInfo {
+		float weak_magnitude;
+		float strong_magnitude;
+		float duration; // Duration in seconds
+		uint64_t timestamp;
+	};
+
+	Map<int, VibrationInfo> joy_vibration;
+
 	struct SpeedTrack {
 
 		uint64_t last_tick;
@@ -128,10 +140,14 @@ public:
 
 	virtual float get_joy_axis(int p_device,int p_axis);
 	String get_joy_name(int p_idx);
+	virtual Vector2 get_joy_vibration_strength(int p_device);
+	virtual float get_joy_vibration_duration(int p_device);
+	virtual uint64_t get_joy_vibration_timestamp(int p_device);
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
 	void parse_joystick_mapping(String p_mapping, bool p_update_existing);
 
 	virtual Vector3 get_accelerometer();
+	virtual Vector3 get_magnetometer();
 
 	virtual Point2 get_mouse_pos() const;
 	virtual Point2 get_mouse_speed() const;
@@ -142,7 +158,11 @@ public:
 
 	void parse_input_event(const InputEvent& p_event);
 	void set_accelerometer(const Vector3& p_accel);
+	void set_magnetometer(const Vector3& p_magnetometer);
 	void set_joy_axis(int p_device,int p_axis,float p_value);
+
+	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration);
+	virtual void stop_joy_vibration(int p_device);
 
 	void set_main_loop(MainLoop *main_loop);
 	void set_mouse_pos(const Point2& p_posf);

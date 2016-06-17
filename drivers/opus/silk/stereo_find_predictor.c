@@ -24,12 +24,9 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
-#include "opus/silk/silk_main.h"
+#include "opus/silk/main.h"
 
 /* Find least-squares prediction gain for one signal based on another and quantize it */
 opus_int32 silk_stereo_find_predictor(                          /* O    Returns predictor in Q13                    */

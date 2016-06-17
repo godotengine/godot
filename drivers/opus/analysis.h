@@ -39,6 +39,8 @@
 #define DETECT_SIZE 200
 
 typedef struct {
+   int arch;
+#define TONALITY_ANALYSIS_RESET_START angle
    float angle[240];
    float d_angle[240];
    float d2_angle[240];
@@ -78,8 +80,19 @@ typedef struct {
    AnalysisInfo info[DETECT_SIZE];
 } TonalityAnalysisState;
 
-void tonality_analysis(TonalityAnalysisState *tonal, AnalysisInfo *info,
-     const CELTMode *celt_mode, const void *x, int len, int offset, int c1, int c2, int C, int lsb_depth, downmix_func downmix);
+/** Initialize a TonalityAnalysisState struct.
+ *
+ * This performs some possibly slow initialization steps which should
+ * not be repeated every analysis step. No allocated memory is retained
+ * by the state struct, so no cleanup call is required.
+ */
+void tonality_analysis_init(TonalityAnalysisState *analysis);
+
+/** Reset a TonalityAnalysisState stuct.
+ *
+ * Call this when there's a discontinuity in the data.
+ */
+void tonality_analysis_reset(TonalityAnalysisState *analysis);
 
 void tonality_get_info(TonalityAnalysisState *tonal, AnalysisInfo *info_out, int len);
 

@@ -545,9 +545,19 @@ https://github.com/godotengine/godot/issues/3127
 			}
 
 #endif
-			if (exists && bool(Variant::evaluate(Variant::OP_EQUAL,value,original))) {
-				//exists and did not change
-				continue;
+			if (exists) {
+
+				//check if already exists and did not change
+				if (value.get_type()==Variant::REAL && original.get_type()==Variant::REAL) {
+					//this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
+					float a = value;
+					float b = original;
+
+					if (Math::abs(a-b)<CMP_EPSILON)
+						continue;
+				} else if (bool(Variant::evaluate(Variant::OP_EQUAL,value,original))) {
+					continue;
+				}
 			}
 
 			if (!exists && isdefault) {
@@ -1493,7 +1503,7 @@ int SceneState::get_connection_flags(int p_idx) const{
 
 Array SceneState::get_connection_binds(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx,connections.size(),-1);
+	ERR_FAIL_INDEX_V(p_idx,connections.size(),Array());
 	Array binds;
 	for(int i=0;i<connections[p_idx].binds.size();i++) {
 		binds.push_back(variants[connections[p_idx].binds[i]]);

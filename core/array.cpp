@@ -150,9 +150,54 @@ void Array::erase(const Variant& p_value) {
 	_p->array.erase(p_value);
 }
 
-int Array::find(const Variant& p_value) const {
+int Array::find(const Variant& p_value, int p_from) const {
 
-	return _p->array.find(p_value);
+	return _p->array.find(p_value, p_from);
+}
+
+int Array::rfind(const Variant& p_value, int p_from) const {
+
+	if (_p->array.size() == 0)
+		return -1;
+
+	if (p_from < 0) {
+		// Relative offset from the end
+		p_from = _p->array.size() + p_from;
+	}
+	if (p_from < 0 || p_from >= _p->array.size()) {
+		// Limit to array boundaries
+		p_from = _p->array.size() - 1;
+	}
+
+	for (int i=p_from; i>=0; i--) {
+
+		if(_p->array[i] == p_value){
+			return i;
+		};
+	};
+
+	return -1;
+}
+
+int Array::find_last(const Variant& p_value) const {
+
+	return rfind(p_value);
+}
+
+int Array::count(const Variant& p_value) const {
+
+	if(_p->array.size() == 0)
+		return 0;
+
+	int amount=0;
+	for (int i=0; i<_p->array.size(); i++) {
+
+		if(_p->array[i] == p_value){
+			amount++;
+		};
+	};
+
+	return amount;
 }
 
 void Array::remove(int p_pos) {

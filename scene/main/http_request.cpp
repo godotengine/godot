@@ -480,8 +480,9 @@ void HTTPRequest::_bind_methods() {
 	BIND_CONSTANT( RESULT_NO_RESPONSE );
 	BIND_CONSTANT( RESULT_BODY_SIZE_LIMIT_EXCEEDED );
 	BIND_CONSTANT( RESULT_REQUEST_FAILED );
-	BIND_CONSTANT( RESULT_REDIRECT_LIMIT_REACHED );
+	BIND_CONSTANT( RESULT_DOWNLOAD_FILE_CANT_OPEN );
 	BIND_CONSTANT( RESULT_DOWNLOAD_FILE_WRITE_ERROR );
+	BIND_CONSTANT( RESULT_REDIRECT_LIMIT_REACHED );
 
 }
 
@@ -494,10 +495,11 @@ HTTPRequest::HTTPRequest()
 	max_redirects=8;
 	body_len=-1;
 	got_response=false;
-	validate_ssl=false;	
+	validate_ssl=false;
 	use_ssl=false;
 	response_code=0;
 	request_sent=false;
+	requesting=false;
 	client.instance();
 	use_threads=false;
 	body_size_limit=-1;

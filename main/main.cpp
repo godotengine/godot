@@ -101,13 +101,15 @@ static bool init_fullscreen=false;
 static bool init_use_custom_pos=false;
 static bool debug_collisions=false;
 static bool debug_navigation=false;
+static bool allow_hidpi=true;
 static Vector2 init_custom_pos;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
 static String locale;
-
-
+static bool use_debug_profiler=false;
+static bool force_lowdpi=false;
 static int init_screen=-1;
+static bool use_vsync=true;
 
 static String unescape_cmdline(const String& p_str) {
 
@@ -157,6 +159,8 @@ void Main::print_help(const char* p_binary) {
 		OS::get_singleton()->print("%s",OS::get_singleton()->get_video_driver_name(i));
 	}
 	OS::get_singleton()->print(")\n");
+	OS::get_singleton()->print("\t-ldpi\t : Force low-dpi mode (OSX Only)");
+
 	OS::get_singleton()->print("\t-ad DRIVER\t : Audio Driver (");
 	for (int i=0;i<OS::get_singleton()->get_audio_driver_count();i++) {
 
@@ -257,6 +261,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	Vector<String> breakpoints;
 	bool use_custom_res=true;
 	bool force_res=false;
+	bool profile=false;
 
 	I=args.front();
 
@@ -360,6 +365,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else if (I->get()=="-w") { // video driver
 
 			init_windowed=true;
+		} else if (I->get()=="-profile") { // video driver
+
+			use_debug_profiler=true;
 		} else if (I->get()=="-vd") { // video driver
 
 			if (I->next()) {
@@ -382,6 +390,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				goto error;
 
 			}
+		} else if (I->get()=="-ldpi") { // language
+
+			force_lowdpi=true;
 		} else if (I->get()=="-rfs") { // language
 
 			if (I->next()) {
@@ -588,11 +599,11 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			memdelete(sdr);
 		} else {
 			script_debugger=sdr;
-
 		}
 	} else if (debug_mode=="local") {
 
 		script_debugger = memnew( ScriptDebuggerLocal );
+
 	}
 
 
@@ -678,7 +689,10 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 #endif
 
-	input_map->load_from_globals();
+	if (editor)
+		input_map->load_default(); //keys for editor
+	else
+		input_map->load_from_globals(); //keys for game
 
 	if (video_driver=="") // specified in engine.cfg
 		video_driver=_GLOBAL_DEF("display/driver",Variant((const char*)OS::get_singleton()->get_video_driver_name(0)));
@@ -687,6 +701,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		video_mode.width=globals->get("display/width");
 	if (!force_res &&use_custom_res && globals->has("display/height"))
 		video_mode.height=globals->get("display/height");
+	if (!editor && (!bool(globals->get("display/allow_hidpi")) || force_lowdpi)) {
+		OS::get_singleton()->_allow_hidpi=false;
+	}
 	if (use_custom_res && globals->has("display/fullscreen"))
 		video_mode.fullscreen=globals->get("display/fullscreen");
 	if (use_custom_res && globals->has("display/resizable"))
@@ -706,9 +723,11 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	GLOBAL_DEF("display/width",video_mode.width);
 	GLOBAL_DEF("display/height",video_mode.height);
+	GLOBAL_DEF("display/allow_hidpi",false);
 	GLOBAL_DEF("display/fullscreen",video_mode.fullscreen);
 	GLOBAL_DEF("display/resizable",video_mode.resizable);
 	GLOBAL_DEF("display/borderless_window", video_mode.borderless_window);
+	use_vsync = GLOBAL_DEF("display/use_vsync", use_vsync);
 	GLOBAL_DEF("display/test_width",0);
 	GLOBAL_DEF("display/test_height",0);
 	OS::get_singleton()->_pixel_snap=GLOBAL_DEF("display/use_2d_pixel_snap",false);
@@ -859,6 +878,7 @@ Error Main::setup2() {
 		OS::get_singleton()->set_window_position(init_custom_pos);
 	}
 
+	OS::get_singleton()->set_use_vsync(use_vsync);
 
 	register_core_singletons();
 
@@ -987,6 +1007,9 @@ Error Main::setup2() {
 
 
 
+	if (use_debug_profiler && script_debugger) {
+		script_debugger->profiling_start();
+	}
 	_start_success=true;
 	locale=String();
 
@@ -1494,6 +1517,7 @@ uint32_t Main::frames=0;
 uint32_t Main::frame=0;
 bool Main::force_redraw_requested = false;
 
+//for performance metrics
 static uint64_t fixed_process_max=0;
 static uint64_t idle_process_max=0;
 
@@ -1508,6 +1532,10 @@ bool Main::iteration() {
 
 //	if (time_accum+step < frame_slice)
 //		return false;
+
+
+	uint64_t fixed_process_ticks=0;
+	uint64_t idle_process_ticks=0;
 
 	frame+=ticks_elapsed;
 
@@ -1551,6 +1579,7 @@ bool Main::iteration() {
 		//if (AudioServer::get_singleton())
 		//	AudioServer::get_singleton()->update();
 
+		fixed_process_ticks=MAX(fixed_process_ticks,OS::get_singleton()->get_ticks_usec()-fixed_begin); // keep the largest one for reference
 		fixed_process_max=MAX(OS::get_singleton()->get_ticks_usec()-fixed_begin,fixed_process_max);
 		iters++;
 	}
@@ -1585,14 +1614,20 @@ bool Main::iteration() {
 	if (AudioServer::get_singleton())
 		AudioServer::get_singleton()->update();
 
+	idle_process_ticks=OS::get_singleton()->get_ticks_usec()-idle_begin;
+	idle_process_max=MAX(idle_process_ticks,idle_process_max);
+	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
+
 	for(int i=0;i<ScriptServer::get_language_count();i++) {
 		ScriptServer::get_language(i)->frame();
 	}
 
-	idle_process_max=MAX(OS::get_singleton()->get_ticks_usec()-idle_begin,idle_process_max);
-
-	if (script_debugger)
+	if (script_debugger) {
+		if (script_debugger->is_profiling()) {
+			script_debugger->profiling_set_frame_times(USEC_TO_SEC(frame_time),USEC_TO_SEC(idle_process_ticks),USEC_TO_SEC(fixed_process_ticks),frame_slice);
+		}
 		script_debugger->idle_poll();
+	}
 
 
 	//	x11_delay_usec(10000);
@@ -1605,8 +1640,8 @@ bool Main::iteration() {
 		};
 
 		OS::get_singleton()->_fps=frames;
-		performance->set_process_time(idle_process_max/1000000.0);
-		performance->set_fixed_process_time(fixed_process_max/1000000.0);
+		performance->set_process_time(USEC_TO_SEC(idle_process_max));
+		performance->set_fixed_process_time(USEC_TO_SEC(fixed_process_max));
 		idle_process_max=0;
 		fixed_process_max=0;
 
@@ -1620,7 +1655,7 @@ bool Main::iteration() {
 	}
 
 	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw())
-		OS::get_singleton()->delay_usec(25000); //apply some delay to force idle time
+		OS::get_singleton()->delay_usec(16600); //apply some delay to force idle time (results in about 60 FPS max)
 	else {
 		uint32_t frame_delay = OS::get_singleton()->get_frame_delay();
 		if (frame_delay)
@@ -1650,8 +1685,13 @@ void Main::cleanup() {
 
 	ERR_FAIL_COND(!_start_success);
 
-	if (script_debugger)
+	if (script_debugger) {
+		if (use_debug_profiler) {
+			script_debugger->profiling_end();
+		}
+
 		memdelete(script_debugger);
+	}
 
 	OS::get_singleton()->delete_main_loop();
 

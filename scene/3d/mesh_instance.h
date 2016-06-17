@@ -50,7 +50,9 @@ class MeshInstance : public GeometryInstance {
 	};
 
 	Map<StringName,MorphTrack> morph_tracks;
+	Vector<Ref<Material> > materials;
 
+	void _mesh_changed();
 	void _resolve_skeleton_path();
 
 protected:
@@ -68,6 +70,9 @@ public:
 
 	void set_skeleton_path(const NodePath& p_skeleton);
 	NodePath get_skeleton_path();
+
+	void set_surface_material(int p_surface,const Ref<Material>& p_material);
+	Ref<Material> get_surface_material(int p_surface) const;
 
 	Node* create_trimesh_collision_node();
 	void create_trimesh_collision();

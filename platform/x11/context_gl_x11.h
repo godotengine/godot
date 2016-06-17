@@ -55,6 +55,7 @@ class ContextGL_X11 : public ContextGL {
 	bool direct_render;
 	int glx_minor,glx_major;
 	bool opengl_3_context;
+	bool use_vsync;
 public:
 
 	virtual void release_current();
@@ -64,6 +65,9 @@ public:
 	virtual int get_window_height();
 
 	virtual Error initialize();
+
+	virtual void set_use_vsync(bool p_use);
+	virtual bool is_using_vsync() const;
 
 	ContextGL_X11(::Display *p_x11_display,::Window &p_x11_window,const OS::VideoMode& p_default_video_mode,bool p_opengl_3_context);
 	~ContextGL_X11();

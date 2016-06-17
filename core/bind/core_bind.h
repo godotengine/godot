@@ -117,6 +117,7 @@ public:
 	virtual void set_current_screen(int p_screen);
 	virtual Point2 get_screen_position(int p_screen=0) const;
 	virtual Size2 get_screen_size(int p_screen=0) const;
+	virtual int get_screen_dpi(int p_screen=0) const;
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2& p_position);
 	virtual Size2 get_window_size() const;
@@ -281,6 +282,9 @@ public:
 
 	Error set_thread_name(const String& p_name);
 
+	void set_use_vsync(bool p_enable);
+	bool is_vsnc_enabled() const;
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();
@@ -376,6 +380,7 @@ public:
 	String get_line() const;
 	String get_as_text() const;
 	String get_md5(const String& p_path) const;
+	String get_sha256(const String& p_path) const;
 
 	/**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
 	 * It's not about the current CPU type but file formats.

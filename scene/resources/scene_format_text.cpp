@@ -1263,7 +1263,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 				if ((PE->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero())||(PE->get().usage&PROPERTY_USAGE_STORE_IF_NONONE && value.is_one()) )
 					continue;
 
-				if (PE->get().type==Variant::OBJECT && value.is_zero())
+				if (PE->get().type==Variant::OBJECT && value.is_zero() && (!PE->get().usage&PROPERTY_USAGE_STORE_IF_NULL))
 					continue;
 
 				String vars;

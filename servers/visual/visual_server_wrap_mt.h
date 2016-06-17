@@ -101,6 +101,8 @@ public:
 	FUNC2(texture_set_path,RID,const String&);
 	FUNC1RC(String,texture_get_path,RID);
 
+	FUNC1(texture_set_shrink_all_x2_on_set_data,bool);
+
 	virtual void texture_debug_usage(List<TextureInfo> *r_info) {
 		//pass directly, should lock the server anyway
 		visual_server->texture_debug_usage(r_info);
@@ -523,6 +525,8 @@ public:
 	FUNC3(instance_set_morph_target_weight,RID,int, float);
 	FUNC2RC(float,instance_get_morph_target_weight,RID,int);
 
+	FUNC3(instance_set_surface_material,RID,int, RID);
+
 	FUNC2(instance_set_transform,RID, const Transform&);
 	FUNC1RC(Transform,instance_get_transform,RID);
 
@@ -603,7 +607,7 @@ public:
 	FUNC4(canvas_item_add_circle,RID, const Point2& , float ,const Color& );
 	FUNC6(canvas_item_add_texture_rect,RID, const Rect2& , RID ,bool ,const Color&,bool );
 	FUNC6(canvas_item_add_texture_rect_region,RID, const Rect2& , RID ,const Rect2& ,const Color&,bool );
-	FUNC7(canvas_item_add_style_box,RID, const Rect2& , RID ,const Vector2& ,const Vector2&, bool ,const Color& );
+	FUNC8(canvas_item_add_style_box,RID, const Rect2& , const Rect2&, RID ,const Vector2& ,const Vector2&, bool ,const Color& );
 	FUNC6(canvas_item_add_primitive,RID, const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID ,float );
 	FUNC5(canvas_item_add_polygon,RID, const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID );
 	FUNC7(canvas_item_add_triangle_array,RID, const Vector<int>& , const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID , int );

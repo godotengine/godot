@@ -66,6 +66,7 @@ class String : public Vector<CharType> {
 	void copy_from(const char *p_cstr);
 	void copy_from(const CharType* p_cstr, int p_clip_to=-1);
 	void copy_from(const CharType& p_char);
+	bool _base_is_subsequence_of(const String& p_string, bool case_insensitive) const;
 
 
 public:
@@ -122,6 +123,8 @@ public:
 	bool begins_with(const String& p_string) const;
 	bool begins_with(const char* p_string) const;
 	bool ends_with(const String& p_string) const;
+	bool is_subsequence_of(const String& p_string) const;
+	bool is_subsequence_ofi(const String& p_string) const;
 	String replace_first(String p_key,String p_with) const;
 	String replace(String p_key,String p_with) const;
 	String replacen(String p_key,String p_with) const;
@@ -137,6 +140,7 @@ public:
 	static String num_int64(int64_t p_num,int base=10,bool capitalize_hex=false);
 	static String chr(CharType p_char);
 	static String md5(const uint8_t *p_md5);
+	static String hex_encode_buffer(const uint8_t *p_buffer, int p_len);
 	bool is_numeric() const;
 	double to_double() const;
 	float to_float() const;
@@ -169,7 +173,7 @@ public:
 
 	String left(int p_pos) const;
 	String right(int p_pos) const;
-	String strip_edges() const;
+	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
 	String extension() const;
 	String basename() const;
@@ -190,6 +194,7 @@ public:
 	uint32_t hash() const; /* hash the string */
 	uint64_t hash64() const; /* hash the string */
 	String md5_text() const;
+	String sha256_text() const;
 	Vector<uint8_t> md5_buffer() const;
 
 	inline bool empty() const { return length() == 0; }
@@ -256,5 +261,18 @@ struct NoCaseComparator {
 
  /* end of namespace */
 
+//tool translate
+#ifdef TOOLS_ENABLED
+
+String TTR(const String&);
+
+#else
+
+#define TTR(m_val) (String())
+
+#endif
+
+//tool or regular translate
+String RTR(const String&);
 
 #endif

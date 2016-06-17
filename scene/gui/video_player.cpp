@@ -131,7 +131,7 @@ void VideoPlayer::_notification(int p_notification) {
 			if (!playback->is_playing())
 				return;
 
-			double audio_time = OS::get_singleton()->get_ticks_usec()/1000000.0; //AudioServer::get_singleton()->get_mix_time();
+			double audio_time = USEC_TO_SEC(OS::get_singleton()->get_ticks_usec()); //AudioServer::get_singleton()->get_mix_time();
 
 			double delta = last_audio_time==0?0:audio_time-last_audio_time;
 			last_audio_time=audio_time;
@@ -360,8 +360,8 @@ bool VideoPlayer::has_autoplay() const {
 
 void VideoPlayer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_stream","stream:Stream"),&VideoPlayer::set_stream);
-	ObjectTypeDB::bind_method(_MD("get_stream:Stream"),&VideoPlayer::get_stream);
+	ObjectTypeDB::bind_method(_MD("set_stream","stream:VideoStream"),&VideoPlayer::set_stream);
+	ObjectTypeDB::bind_method(_MD("get_stream:VideoStream"),&VideoPlayer::get_stream);
 
 	ObjectTypeDB::bind_method(_MD("play"),&VideoPlayer::play);
 	ObjectTypeDB::bind_method(_MD("stop"),&VideoPlayer::stop);

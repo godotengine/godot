@@ -9,6 +9,7 @@
 #include "os/file_access.h"
 #include "os/os.h"
 #include "platform/android/logo.h"
+#include <string.h>
 
 
 static const char* android_perms[]={
@@ -231,6 +232,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	void _fix_manifest(Vector<uint8_t>& p_manifest, bool p_give_internet);
 	void _fix_resources(Vector<uint8_t>& p_manifest);
 	static Error save_apk_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
+	static bool _should_compress_asset(const String& p_path, const Vector<uint8_t>& p_data);
 
 protected:
 
@@ -1001,7 +1003,7 @@ Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata,const String& 
 		NULL,
 		0,
 		NULL,
-		Z_DEFLATED,
+		_should_compress_asset(p_path,p_data) ? Z_DEFLATED : 0,
 		Z_DEFAULT_COMPRESSION);
 
 
@@ -1012,13 +1014,58 @@ Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata,const String& 
 
 }
 
+bool EditorExportPlatformAndroid::_should_compress_asset(const String& p_path, const Vector<uint8_t>& p_data) {
+
+	/*
+	 *  By not compressing files with little or not benefit in doing so,
+	 *  a performance gain is expected at runtime. Moreover, if the APK is
+	 *  zip-aligned, assets stored as they are can be efficiently read by
+	 *  Android by memory-mapping them.
+	 */
+
+	// -- Unconditional uncompress to mimic AAPT plus some other
+
+	static const char* unconditional_compress_ext[] = {
+		// From https://github.com/android/platform_frameworks_base/blob/master/tools/aapt/Package.cpp
+		// These formats are already compressed, or don't compress well:
+		".jpg", ".jpeg", ".png", ".gif",
+		".wav", ".mp2", ".mp3", ".ogg", ".aac",
+		".mpg", ".mpeg", ".mid", ".midi", ".smf", ".jet",
+		".rtttl", ".imy", ".xmf", ".mp4", ".m4a",
+		".m4v", ".3gp", ".3gpp", ".3g2", ".3gpp2",
+		".amr", ".awb", ".wma", ".wmv",
+		// Godot-specific:
+		".webp", // Same reasoning as .png
+		".cfb", // Don't let small config files slow-down startup
+		// Trailer for easier processing
+		NULL
+	};
+
+	for (const char** ext=unconditional_compress_ext; *ext; ++ext) {
+		if (p_path.to_lower().ends_with(String(*ext))) {
+			return false;
+		}
+	}
+
+	// -- Compressed resource?
+
+	if (p_data.size() >= 4 && p_data[0]=='R' && p_data[1]=='S' && p_data[2]=='C' && p_data[3]=='C') {
+		// Already compressed
+		return false;
+	}
+
+	// --- TODO: Decide on texture resources according to their image compression setting
+
+	return true;
+}
+
 
 
 Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_debug, int p_flags) {
 
 	String src_apk;
 
-	EditorProgress ep("export","Exporting for Android",104);
+	EditorProgress ep("export","Exporting for Android",105);
 
 	if (p_debug)
 		src_apk=custom_debug_package;
@@ -1058,7 +1105,8 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 	zlib_filefunc_def io2=io;
 	FileAccess *dst_f=NULL;
 	io2.opaque=&dst_f;
-	zipFile	apk=zipOpen2(p_path.utf8().get_data(),APPEND_STATUS_CREATE,NULL,&io2);
+	String unaligned_path=EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpexport-unaligned.apk";
+	zipFile	unaligned_apk=zipOpen2(unaligned_path.utf8().get_data(),APPEND_STATUS_CREATE,NULL,&io2);
 
 
 	while(ret==UNZ_OK) {
@@ -1137,7 +1185,11 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		print_line("ADDING: "+file);
 
 		if (!skip) {
-			zipOpenNewFileInZip(apk,
+
+			// Respect decision on compression made by AAPT for the export template
+			const bool uncompressed = info.compression_method == 0;
+
+			zipOpenNewFileInZip(unaligned_apk,
 				file.utf8().get_data(),
 				NULL,
 				NULL,
@@ -1145,11 +1197,11 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 				NULL,
 				0,
 				NULL,
-				Z_DEFLATED,
+				uncompressed ? 0 : Z_DEFLATED,
 				Z_DEFAULT_COMPRESSION);
 
-			zipWriteInFileInZip(apk,data.ptr(),data.size());
-			zipCloseFileInZip(apk);
+			zipWriteInFileInZip(unaligned_apk,data.ptr(),data.size());
+			zipCloseFileInZip(unaligned_apk);
 		}
 
 		ret = unzGoToNextFile(pkg);
@@ -1206,7 +1258,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 			APKExportData ed;
 			ed.ep=&ep;
-			ed.apk=apk;
+			ed.apk=unaligned_apk;
 
 			err = export_project_files(save_apk_file,&ed,false);
 		}
@@ -1235,7 +1287,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 			print_line(itos(i)+" param: "+cl[i]);
 		}
 
-		zipOpenNewFileInZip(apk,
+		zipOpenNewFileInZip(unaligned_apk,
 			"assets/_cl_",
 			NULL,
 			NULL,
@@ -1243,15 +1295,15 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 			NULL,
 			0,
 			NULL,
-			Z_DEFLATED,
+			0, // No compress (little size gain and potentially slower startup)
 			Z_DEFAULT_COMPRESSION);
 
-		zipWriteInFileInZip(apk,clf.ptr(),clf.size());
-		zipCloseFileInZip(apk);
+		zipWriteInFileInZip(unaligned_apk,clf.ptr(),clf.size());
+		zipCloseFileInZip(unaligned_apk);
 
 	}
 
-	zipClose(apk,NULL);
+	zipClose(unaligned_apk,NULL);
 	unzClose(pkg);
 
 	if (err) {
@@ -1308,7 +1360,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		args.push_back(keystore);
 		args.push_back("-storepass");
 		args.push_back(password);
-		args.push_back(p_path);
+		args.push_back(unaligned_path);
 		args.push_back(user);
 		int retval;
 		int err = OS::get_singleton()->execute(jarsigner,args,true,NULL,NULL,&retval);
@@ -1321,16 +1373,102 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 		args.clear();
 		args.push_back("-verify");
-		args.push_back(p_path);
+		args.push_back(unaligned_path);
 		args.push_back("-verbose");
 
 		err = OS::get_singleton()->execute(jarsigner,args,true,NULL,NULL,&retval);
 		if (retval) {
-			EditorNode::add_io_error("'jarsigner' verificaiton of APK failed. Make sure to use jarsigner from Java 6.");
+			EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use jarsigner from Java 6.");
 			return ERR_CANT_CREATE;
 		}
 
 	}
+
+
+
+	// Let's zip-align (must be done after signing)
+
+	static const int ZIP_ALIGNMENT = 4;
+
+	ep.step("Aligning APK..",105);
+
+	unzFile tmp_unaligned = unzOpen2(unaligned_path.utf8().get_data(), &io);
+	if (!tmp_unaligned) {
+
+		EditorNode::add_io_error("Could not find temp unaligned APK.");
+		return ERR_FILE_NOT_FOUND;
+	}
+
+	ERR_FAIL_COND_V(!tmp_unaligned, ERR_CANT_OPEN);
+	ret = unzGoToFirstFile(tmp_unaligned);
+
+	io2=io;
+	dst_f=NULL;
+	io2.opaque=&dst_f;
+	zipFile	final_apk=zipOpen2(p_path.utf8().get_data(),APPEND_STATUS_CREATE,NULL,&io2);
+
+	// Take files from the unaligned APK and write them out to the aligned one
+	// in raw mode, i.e. not uncompressing and recompressing, aligning them as needed,
+	// following what is done in https://github.com/android/platform_build/blob/master/tools/zipalign/ZipAlign.cpp
+	int bias = 0;
+	while(ret==UNZ_OK) {
+
+		unz_file_info info;
+		memset(&info, 0, sizeof(info));
+
+		char fname[16384];
+		char extra[16384];
+		ret = unzGetCurrentFileInfo(tmp_unaligned,&info,fname,16384,extra,16384-ZIP_ALIGNMENT,NULL,0);
+
+		String file=fname;
+
+		Vector<uint8_t> data;
+		data.resize(info.compressed_size);
+
+		// read
+		int method, level;
+		unzOpenCurrentFile2(tmp_unaligned, &method, &level, 1); // raw read
+		long file_offset = unzGetCurrentFileZStreamPos64(tmp_unaligned);
+		unzReadCurrentFile(tmp_unaligned,data.ptr(),data.size());
+		unzCloseCurrentFile(tmp_unaligned);
+
+		// align
+		int padding = 0;
+		if (!info.compression_method) {
+			// Uncompressed file => Align
+			long new_offset = file_offset + bias;
+            padding = (ZIP_ALIGNMENT - (new_offset % ZIP_ALIGNMENT)) % ZIP_ALIGNMENT;
+		}
+
+		memset(extra + info.size_file_extra, 0, padding);
+
+		// write
+		zipOpenNewFileInZip2(final_apk,
+			file.utf8().get_data(),
+			NULL,
+			extra,
+			info.size_file_extra + padding,
+			NULL,
+			0,
+			NULL,
+			method,
+			level,
+			1); // raw write
+		zipWriteInFileInZip(final_apk,data.ptr(),data.size());
+		zipCloseFileInZipRaw(final_apk,info.uncompressed_size,info.crc);
+
+		bias += padding;
+
+		ret = unzGoToNextFile(tmp_unaligned);
+	}
+
+	zipClose(final_apk,NULL);
+	unzClose(tmp_unaligned);
+
+	if (err) {
+		return err;
+	}
+
 	return OK;
 
 }
@@ -1377,120 +1515,125 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 	while(!ea->quit_request) {
 
 		String adb=EditorSettings::get_singleton()->get("android/adb");
-		if (!FileAccess::exists(adb)) {
-			OS::get_singleton()->delay_usec(3000000);
-			continue; //adb not configured
-		}
+		if (FileAccess::exists(adb)) {
 
-		String devices;
-		List<String> args;
-		args.push_back("devices");
-		int ec;
-		Error err = OS::get_singleton()->execute(adb,args,true,NULL,&devices,&ec);
-		Vector<String> ds = devices.split("\n");
-		Vector<String> ldevices;
-		for(int i=1;i<ds.size();i++) {
+			String devices;
+			List<String> args;
+			args.push_back("devices");
+			int ec;
+			Error err = OS::get_singleton()->execute(adb,args,true,NULL,&devices,&ec);
+			Vector<String> ds = devices.split("\n");
+			Vector<String> ldevices;
+			for(int i=1;i<ds.size();i++) {
 
-			String d = ds[i];
-			int dpos = d.find("device");
-			if (dpos==-1)
-				continue;
-			d=d.substr(0,dpos).strip_edges();
-//			print_line("found devuce: "+d);
-			ldevices.push_back(d);
-		}
-
-		ea->device_lock->lock();
-
-		bool different=false;
-
-		if (devices.size()!=ldevices.size()) {
-
-			different=true;
-		} else {
-
-			for(int i=0;i<ea->devices.size();i++) {
-
-				if (ea->devices[i].id!=ldevices[i]) {
-					different=true;
-					break;
-				}
+				String d = ds[i];
+				int dpos = d.find("device");
+				if (dpos==-1)
+					continue;
+				d=d.substr(0,dpos).strip_edges();
+	//			print_line("found devuce: "+d);
+				ldevices.push_back(d);
 			}
-		}
 
-		if (different) {
+			ea->device_lock->lock();
 
+			bool different=false;
 
-			Vector<Device> ndevices;
+			if (devices.size()!=ldevices.size()) {
 
-			for(int i=0;i<ldevices.size();i++) {
+				different=true;
+			} else {
 
-				Device d;
-				d.id=ldevices[i];
-				for(int j=0;j<ea->devices.size();j++) {
-					if (ea->devices[j].id==ldevices[i]) {
-						d.description=ea->devices[j].description;
-						d.name=ea->devices[j].name;
+				for(int i=0;i<ea->devices.size();i++) {
+
+					if (ea->devices[i].id!=ldevices[i]) {
+						different=true;
+						break;
 					}
 				}
+			}
 
-				if (d.description=="") {
-					//in the oven, request!
-					args.clear();
-					args.push_back("-s");
-					args.push_back(d.id);
-					args.push_back("shell");
-					args.push_back("cat");
-					args.push_back("/system/build.prop");
-					int ec;
-					String dp;
+			if (different) {
 
-					Error err = OS::get_singleton()->execute(adb,args,true,NULL,&dp,&ec);
-					print_line("RV: "+itos(ec));
-					Vector<String> props = dp.split("\n");
-					String vendor;
-					String device;
-					d.description+"Device ID: "+d.id+"\n";
-					for(int j=0;j<props.size();j++) {
 
-						String p = props[j];
-						if (p.begins_with("ro.product.model=")) {
-							device=p.get_slice("=",1).strip_edges();
-						} else if (p.begins_with("ro.product.brand=")) {
-							vendor=p.get_slice("=",1).strip_edges().capitalize();
-						} else if (p.begins_with("ro.build.display.id=")) {
-							d.description+="Build: "+p.get_slice("=",1).strip_edges()+"\n";
-						} else if (p.begins_with("ro.build.version.release=")) {
-							d.description+="Release: "+p.get_slice("=",1).strip_edges()+"\n";
-						} else if (p.begins_with("ro.product.cpu.abi=")) {
-							d.description+="CPU: "+p.get_slice("=",1).strip_edges()+"\n";
-						} else if (p.begins_with("ro.product.manufacturer=")) {
-							d.description+="Manufacturer: "+p.get_slice("=",1).strip_edges()+"\n";
-						} else if (p.begins_with("ro.board.platform=")) {
-							d.description+="Chipset: "+p.get_slice("=",1).strip_edges()+"\n";
-						} else if (p.begins_with("ro.opengles.version=")) {
-							uint32_t opengl = p.get_slice("=",1).to_int();
-							d.description+="OpenGL: "+itos(opengl>>16)+"."+itos((opengl>>8)&0xFF)+"."+itos((opengl)&0xFF)+"\n";
+				Vector<Device> ndevices;
+
+				for(int i=0;i<ldevices.size();i++) {
+
+					Device d;
+					d.id=ldevices[i];
+					for(int j=0;j<ea->devices.size();j++) {
+						if (ea->devices[j].id==ldevices[i]) {
+							d.description=ea->devices[j].description;
+							d.name=ea->devices[j].name;
 						}
 					}
 
-					d.name=vendor+" "+device;
-//					print_line("name: "+d.name);
-//					print_line("description: "+d.description);
+					if (d.description=="") {
+						//in the oven, request!
+						args.clear();
+						args.push_back("-s");
+						args.push_back(d.id);
+						args.push_back("shell");
+						args.push_back("cat");
+						args.push_back("/system/build.prop");
+						int ec;
+						String dp;
+
+						Error err = OS::get_singleton()->execute(adb,args,true,NULL,&dp,&ec);
+						print_line("RV: "+itos(ec));
+						Vector<String> props = dp.split("\n");
+						String vendor;
+						String device;
+						d.description+"Device ID: "+d.id+"\n";
+						for(int j=0;j<props.size();j++) {
+
+							String p = props[j];
+							if (p.begins_with("ro.product.model=")) {
+								device=p.get_slice("=",1).strip_edges();
+							} else if (p.begins_with("ro.product.brand=")) {
+								vendor=p.get_slice("=",1).strip_edges().capitalize();
+							} else if (p.begins_with("ro.build.display.id=")) {
+								d.description+="Build: "+p.get_slice("=",1).strip_edges()+"\n";
+							} else if (p.begins_with("ro.build.version.release=")) {
+								d.description+="Release: "+p.get_slice("=",1).strip_edges()+"\n";
+							} else if (p.begins_with("ro.product.cpu.abi=")) {
+								d.description+="CPU: "+p.get_slice("=",1).strip_edges()+"\n";
+							} else if (p.begins_with("ro.product.manufacturer=")) {
+								d.description+="Manufacturer: "+p.get_slice("=",1).strip_edges()+"\n";
+							} else if (p.begins_with("ro.board.platform=")) {
+								d.description+="Chipset: "+p.get_slice("=",1).strip_edges()+"\n";
+							} else if (p.begins_with("ro.opengles.version=")) {
+								uint32_t opengl = p.get_slice("=",1).to_int();
+								d.description+="OpenGL: "+itos(opengl>>16)+"."+itos((opengl>>8)&0xFF)+"."+itos((opengl)&0xFF)+"\n";
+							}
+						}
+
+						d.name=vendor+" "+device;
+	//					print_line("name: "+d.name);
+	//					print_line("description: "+d.description);
+
+					}
+
+					ndevices.push_back(d);
 
 				}
 
-				ndevices.push_back(d);
-
+				ea->devices=ndevices;
+				ea->devices_changed=true;
 			}
 
-			ea->devices=ndevices;
-			ea->devices_changed=true;
+			ea->device_lock->unlock();
 		}
 
-		ea->device_lock->unlock();
+		uint64_t wait = 3000000;
+		uint64_t time = OS::get_singleton()->get_ticks_usec();
+		while(OS::get_singleton()->get_ticks_usec() - time < wait ) {
+			OS::get_singleton()->delay_usec(1000);
+			if (ea->quit_request)
+				break;
+		}
 
-		OS::get_singleton()->delay_usec(3000000);
 	}
 
 	if (EditorSettings::get_singleton()->get("android/shutdown_adb_on_exit")) {

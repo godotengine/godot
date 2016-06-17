@@ -56,6 +56,10 @@ static bool _is_number(CharType c) {
 	return (c >= '0' && c <= '9');
 }
 
+static bool _is_hex_symbol(CharType c) {
+	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
+}
+
 static bool _is_pair_right_symbol(CharType c) {
 	return
 			c == '"'  ||
@@ -310,6 +314,10 @@ void TextEdit::_update_scrollbars() {
 	if (line_numbers)
 		total_width += cache.line_number_w;
 
+	if (draw_breakpoint_gutter) {
+		total_width += cache.breakpoint_gutter_width;
+	}
+
 	bool use_hscroll=true;
 	bool use_vscroll=true;
 
@@ -408,8 +416,15 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 
 			_update_caches();
-		};
+		} break;
 		case NOTIFICATION_DRAW: {
+
+			if (draw_breakpoint_gutter) {
+				breakpoint_gutter_width = (get_row_height() * 55) / 100;
+				cache.breakpoint_gutter_width = breakpoint_gutter_width;
+			} else {
+				cache.breakpoint_gutter_width = 0;
+			}
 
 			int line_number_char_count=0;
 
@@ -435,7 +450,7 @@ void TextEdit::_notification(int p_what) {
 
 
 			RID ci = get_canvas_item();
-			int xmargin_beg=cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w;
+			int xmargin_beg=cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w+cache.breakpoint_gutter_width;
 			int xmargin_end=cache.size.width-cache.style_normal->get_margin(MARGIN_RIGHT);
 			//let's do it easy for now:
 			cache.style_normal->draw(ci,Rect2(Point2(),cache.size));
@@ -673,22 +688,18 @@ void TextEdit::_notification(int p_what) {
 				bool in_word = false;
 				bool in_function_name = false;
 				bool in_member_variable = false;
+				bool is_hex_notation = false;
 				Color keyword_color;
 
 				// check if line contains highlighted word
 				int highlighted_text_col = -1;
-				if (highlighted_text.length() != 0) {
-					highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, 0);
-				}
+				int search_text_col = -1;
 
-				if (cache.line_number_w) {
-					String fc = String::num(line+1);
-					while (fc.length() < line_number_char_count) {
-						fc="0"+fc;
-					}
+				if (!search_text.empty())
+					search_text_col = _get_column_pos_of_word(search_text, str, search_flags, 0);
 
-					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT),ofs_y+cache.font->get_ascent()),fc,cache.line_number_color);
-				}
+				if (highlighted_text.length() != 0 && highlighted_text != search_text)
+					highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE|SEARCH_WHOLE_WORDS, 0);
 
 				const Map<int,Text::ColorRegionInfo>& cri_map=text.get_color_region_info(line);
 
@@ -703,11 +714,30 @@ void TextEdit::_notification(int p_what) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(xmargin_beg, ofs_y,xmargin_end-xmargin_beg,get_row_height()),cache.breakpoint_color);
 				}
 
-
 				if (line==cursor.line) {
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(0, ofs_y,xmargin_end,get_row_height()),cache.current_line_color);
+				}
 
-					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(xmargin_beg, ofs_y,xmargin_end-xmargin_beg,get_row_height()),cache.current_line_color);
+				// draw breakpoint marker
+				if (text.is_breakpoint(line)) {
+					if (draw_breakpoint_gutter) {
+						int vertical_gap = (get_row_height() * 40) / 100;
+						int horizontal_gap = (cache.breakpoint_gutter_width * 30) / 100;
+						int marker_height = get_row_height() - (vertical_gap * 2);
+						int marker_width = cache.breakpoint_gutter_width - (horizontal_gap * 2);
+						// no transparency on marker
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + horizontal_gap - 2, ofs_y + vertical_gap ,marker_width, marker_height),Color(cache.breakpoint_color.r, cache.breakpoint_color.g, cache.breakpoint_color.b));
+					}
+				}
 
+
+				if (cache.line_number_w) {
+					String fc = String::num(line+1);
+					while (fc.length() < line_number_char_count) {
+						fc="0"+fc;
+					}
+
+					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT)+cache.breakpoint_gutter_width,ofs_y+cache.font->get_ascent()),fc,cache.line_number_color);
 				}
 				for (int j=0;j<str.length();j++) {
 
@@ -731,18 +761,29 @@ void TextEdit::_notification(int p_what) {
 							in_region=-1; //reset regions that end at end of line
 						}
 
+						// allow ABCDEF in hex notation
+						if (is_hex_notation && (_is_hex_symbol(str[j]) || is_number)) {
+							is_number = true;
+						} else {
+							is_hex_notation = false;
+						}
+
+						// check for dot or 'x' for hex notation in floating point number
+						if ((str[j] == '.' || str[j] == 'x') && !in_word && prev_is_number && !is_number)  {
+							is_number = true;
+							is_symbol = false;
+
+							if (str[j] == 'x' && str[j-1] == '0') {
+								is_hex_notation = true;
+							}
+						}
+
 						if (!in_word && _is_char(str[j])) {
 							in_word = true;
 						}
 
-						if (in_keyword || in_word) {
+						if ((in_keyword || in_word) && !is_hex_notation) {
 							is_number = false;
-						}
-
-						// check for dot in floating point number
-						if (str[j] == '.' && !in_word && prev_is_number)  {
-							is_number = true;
-							is_symbol = false;
 						}
 
 						if (is_symbol && str[j] != '.' && in_word) {
@@ -863,12 +904,37 @@ void TextEdit::_notification(int p_what) {
 							break;
 					}
 
-					bool in_selection = (selection.active && line>=selection.from_line && line<=selection.to_line && (line>selection.from_line || j>=selection.from_column) && (line<selection.to_line || j<selection.to_column));
+					bool in_search_result=false;
 
+					if (search_text_col != -1) {
+						// if we are at the end check for new search result on same line
+						if (j >= search_text_col+search_text.length())
+							search_text_col = _get_column_pos_of_word(search_text, str, search_flags, j);
+
+						in_search_result = j >= search_text_col && j < search_text_col+search_text.length();
+
+						if (in_search_result) {
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(char_w, get_row_height())),cache.search_result_color);
+						}
+					}
+
+					bool in_selection = (selection.active && line>=selection.from_line && line<=selection.to_line && (line>selection.from_line || j>=selection.from_column) && (line<selection.to_line || j<selection.to_column));
 
 					if (in_selection) {
 						//inside selection!
 						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(char_w,get_row_height())),cache.selection_color);
+					}
+
+					if (in_search_result) {
+						Color border_color=(line==search_result_line && j>=search_result_col && j<search_result_col+search_text.length())?cache.font_color:cache.search_result_border_color;
+
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(char_w,1)),border_color);
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y+get_row_height()-1 ), Size2i(char_w,1)),border_color);
+
+						if (j==search_text_col)
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(1,get_row_height())),border_color);
+						if (j==search_text_col+search_text.length()-1)
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin+char_w-1, ofs_y ), Size2i(1,get_row_height())),border_color);
 					}
 
 					if (highlight_all_occurrences) {
@@ -876,7 +942,7 @@ void TextEdit::_notification(int p_what) {
 
 							// if we are at the end check for new word on same line
 							if (j > highlighted_text_col+highlighted_text.length()) {
-								highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, j);
+								highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE|SEARCH_WHOLE_WORDS, j);
 							}
 
 							bool in_highlighted_word = (j >= highlighted_text_col && j < highlighted_text_col+highlighted_text.length());
@@ -921,14 +987,18 @@ void TextEdit::_notification(int p_what) {
 					if (cursor.column==j && cursor.line==line) {
 
 						cursor_pos = Point2i( char_ofs+char_margin, ofs_y );
+
 						if (insert_mode) {
 							cursor_pos.y += get_row_height();
-							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.caret_color);
-						} else {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.caret_color);
 						}
 
-
+						if (draw_caret) {
+							if (insert_mode) {
+								VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.caret_color);
+							} else {
+								VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.caret_color);
+							}
+						}
 					}
 					char_ofs+=char_w;
 
@@ -937,12 +1007,18 @@ void TextEdit::_notification(int p_what) {
 				if (cursor.column==str.length() && cursor.line==line && (char_ofs+char_margin)>=xmargin_beg) {
 
 					cursor_pos=Point2i( char_ofs+char_margin, ofs_y );
+
 					if (insert_mode) {
 						cursor_pos.y += get_row_height();
-						int char_w = cache.font->get_char_size(' ').width;
-						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.caret_color);
-					} else {
-						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.caret_color);
+					}
+
+					if (draw_caret) {
+						if (insert_mode) {
+							int char_w = cache.font->get_char_size(' ').width;
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,1)),cache.caret_color);
+						} else {
+							VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.caret_color);
+						}
 					}
 				}
 			}
@@ -1321,7 +1397,7 @@ void TextEdit::_get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) co
 		col=text[row].size();
 	} else {
 
-		col=p_mouse.x-(cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w);
+		col=p_mouse.x-(cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w+cache.breakpoint_gutter_width);
 		col+=cursor.x_ofs;
 		col=get_char_pos_for( col, get_line(row) );
 	}
@@ -1390,8 +1466,19 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				}
 				if (mb.button_index==BUTTON_LEFT) {
 
+					_reset_caret_blink_timer();
+
 					int row,col;
 					_get_mouse_pos(Point2i(mb.x,mb.y), row,col);
+
+					// toggle breakpoint on gutter click
+					if (draw_breakpoint_gutter) {
+						int gutter=cache.style_normal->get_margin(MARGIN_LEFT);
+						if (mb.x > gutter && mb.x <= gutter + cache.breakpoint_gutter_width + 3) {
+							set_line_as_breakpoint(row, !is_line_set_as_breakpoint(row));
+							return;
+						}
+					}
 
 					int prev_col=cursor.column;
 					int prev_line=cursor.line;
@@ -1506,6 +1593,15 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					update();
 				}
+
+				if (mb.button_index==BUTTON_RIGHT) {
+
+					menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+					menu->set_size(Vector2(1,1));
+					menu->popup();
+					grab_focus();
+
+				}
 			} else {
 
 				if (mb.button_index==BUTTON_LEFT)
@@ -1523,6 +1619,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 			if (mm.button_mask&BUTTON_MASK_LEFT) {
 
 				if (selection.selecting_mode!=Selection::MODE_NONE) {
+
+					_reset_caret_blink_timer();
 
 					int row,col;
 					_get_mouse_pos(Point2i(mm.x,mm.y), row,col);
@@ -1644,6 +1742,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 						if (k.scancode==KEY_BACKSPACE) {
 
+							_reset_caret_blink_timer();
+
 							backspace_at_cursor();
 							_update_completion_candidates();
 							accept_event();
@@ -1659,35 +1759,29 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					if (k.unicode>32) {
 
-						if (cursor.column<text[cursor.line].length() && text[cursor.line][cursor.column]==k.unicode) {
-							//same char, move ahead
-							cursor_set_column(cursor.column+1);
+						_reset_caret_blink_timer();
 
+						const CharType chr[2] = {(CharType)k.unicode, 0};
+						if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
+							_consume_pair_symbol(chr[0]);
 						} else {
-							//different char, go back
-							const CharType chr[2] = {(CharType)k.unicode, 0};
-							if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
-								_consume_pair_symbol(chr[0]);
-							} else {
 
-								// remove the old character if in insert mode
-								if (insert_mode) {
-									begin_complex_operation();
+							// remove the old character if in insert mode
+							if (insert_mode) {
+								begin_complex_operation();
 
-									// make sure we don't try and remove empty space
-									if (cursor.column < get_line(cursor.line).length()) {
-										_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
-									}
-								}
-
-								_insert_text_at_cursor(chr);
-
-								if (insert_mode) {
-									end_complex_operation();
+								// make sure we don't try and remove empty space
+								if (cursor.column < get_line(cursor.line).length()) {
+									_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
 								}
 							}
-						}
 
+							_insert_text_at_cursor(chr);
+
+							if (insert_mode) {
+								end_complex_operation();
+							}
+						}
 						_update_completion_candidates();
 						accept_event();
 
@@ -1713,6 +1807,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				k.mod.shift=false;
 			}
 
+			if (!k.mod.command) {
+				_reset_caret_blink_timer();
+			}
 			// save here for insert mode, just in case it is cleared in the following section
 			bool had_selection = selection.active;
 
@@ -1782,7 +1879,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				}
 				if (clear) {
 
-					begin_complex_operation();
+					if (!dobreak) {
+						begin_complex_operation();
+					}
 					selection.active=false;
 					update();
 					_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
@@ -1854,7 +1953,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (completion_hint!="") {
 						completion_hint="";
 						update();
-
+					} else {
+						scancode_handled=false;
 					}
 				} break;
 				case KEY_TAB: {
@@ -2792,7 +2892,7 @@ int TextEdit::get_char_count() {
 	return totalsize; // omit last \n
 }
 
-Size2 TextEdit::get_minimum_size() {
+Size2 TextEdit::get_minimum_size() const {
 
 	return cache.style_normal->get_minimum_size();
 }
@@ -2808,7 +2908,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 	if (cursor.line_ofs>cursor.line)
 		cursor.line_ofs=cursor.line;
 
-	int visible_width=cache.size.width-cache.style_normal->get_minimum_size().width-cache.line_number_w;
+	int visible_width=cache.size.width-cache.style_normal->get_minimum_size().width-cache.line_number_w-cache.breakpoint_gutter_width;
 	if (v_scroll->is_visible())
 		visible_width-=v_scroll->get_combined_minimum_size().width;
 	visible_width-=20; // give it a little more space
@@ -2910,6 +3010,30 @@ int TextEdit::cursor_get_line() const {
 	return cursor.line;
 }
 
+bool TextEdit::cursor_get_blink_enabled() const {
+	return caret_blink_enabled;
+}
+
+void TextEdit::cursor_set_blink_enabled(const bool p_enabled) {
+	caret_blink_enabled = p_enabled;
+
+	if (p_enabled) {
+		caret_blink_timer->start();
+	} else {
+		caret_blink_timer->stop();
+	}
+	draw_caret = true;
+}
+
+
+float TextEdit::cursor_get_blink_speed() const {
+	return caret_blink_timer->get_wait_time();
+}
+
+void TextEdit::cursor_set_blink_speed(const float p_speed) {
+	ERR_FAIL_COND(p_speed <= 0);
+	caret_blink_timer->set_wait_time(p_speed);
+}
 
 
 void TextEdit::_scroll_moved(double p_to_val) {
@@ -3013,7 +3137,8 @@ void TextEdit::insert_text_at_cursor(const String& p_text) {
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2& p_pos) const {
-	if(completion_active && completion_rect.has_point(p_pos)) {
+	int gutter=cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w+cache.breakpoint_gutter_width;
+	if((completion_active && completion_rect.has_point(p_pos)) || p_pos.x < gutter) {
 		return CURSOR_ARROW;
 	}
 	return CURSOR_IBEAM;
@@ -3125,6 +3250,22 @@ void TextEdit::set_max_chars(int p_max_chars) {
 	max_chars=p_max_chars;
 }
 
+void TextEdit::_reset_caret_blink_timer() {
+	if (caret_blink_enabled) {
+		caret_blink_timer->stop();
+		caret_blink_timer->start();
+		draw_caret = true;
+		update();
+	}
+}
+
+void TextEdit::_toggle_draw_caret() {
+	draw_caret = !draw_caret;
+	if (is_visible()) {
+		update();
+	}
+}
+
 void TextEdit::_update_caches() {
 
 	cache.style_normal=get_stylebox("normal");
@@ -3144,6 +3285,8 @@ void TextEdit::_update_caches() {
 	cache.breakpoint_color=get_color("breakpoint_color");
 	cache.brace_mismatch_color=get_color("brace_mismatch_color");
 	cache.word_highlighted_color=get_color("word_highlighted_color");
+	cache.search_result_color=get_color("search_result_color");
+	cache.search_result_border_color=get_color("search_result_border_color");
 	cache.line_spacing=get_constant("line_spacing");
 	cache.row_height = cache.font->get_height() + cache.line_spacing;
 	cache.tab_icon=get_icon("tab");
@@ -3405,12 +3548,26 @@ String TextEdit::get_word_under_cursor() const {
 	return text[cursor.line].substr(prev_cc, next_cc-prev_cc);
 }
 
+void TextEdit::set_search_text(const String &p_search_text) {
+	search_text = p_search_text;
+}
+
+void TextEdit::set_search_flags(uint32_t p_flags) {
+	search_flags = p_flags;
+}
+
+void TextEdit::set_current_search_result(int line, int col) {
+	search_result_line = line;
+	search_result_col = col;
+	update();
+}
+
 void TextEdit::set_highlight_all_occurrences(const bool p_enabled) {
 	highlight_all_occurrences = p_enabled;
 	update();
 }
 
-int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_search, int p_from_column) {
+int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column) {
 	int col = -1;
 
 	if (p_key.length() > 0 && p_search.length() > 0) {
@@ -3418,12 +3575,15 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 			p_from_column = 0;
 		}
 
-		 while (col == -1 && p_from_column <= p_search.length()) {
-			// match case
-			col = p_search.findn(p_key, p_from_column);
+		while (col == -1 && p_from_column <= p_search.length()) {
+			if (p_search_flags&SEARCH_MATCH_CASE) {
+				col = p_search.find(p_key,p_from_column);
+			} else {
+				col = p_search.findn(p_key,p_from_column);
+			}
 
 			// whole words only
-			if (col != -1) {
+			if (col != -1 && p_search_flags&SEARCH_WHOLE_WORDS) {
 				p_from_column=col;
 
 				if (col > 0 && _is_text_char(p_search[col-1])) {
@@ -3489,10 +3649,8 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 				//wrapped
 
 				if (p_search_flags&SEARCH_BACKWARDS) {
-					text_line=text_line.substr(from_column,text_line.length());
 					from_column=text_line.length();
 				} else {
-					text_line=text_line.substr(0,from_column);
 					from_column=0;
 				}
 
@@ -3503,7 +3661,6 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 
 
 		} else {
-			//text_line=text_line.substr(0,p_from_column); //wrap around for missing begining.
 			if (p_search_flags&SEARCH_BACKWARDS)
 				from_column=text_line.length()-1;
 			else
@@ -3512,12 +3669,25 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 
 		pos=-1;
 
-		if (!(p_search_flags&SEARCH_BACKWARDS)) {
+		int pos_from=0;
+		int last_pos=-1;
+		while ((last_pos=(p_search_flags&SEARCH_MATCH_CASE)?text_line.find(p_key,pos_from):text_line.findn(p_key,pos_from))!=-1) {
 
-			pos = (p_search_flags&SEARCH_MATCH_CASE)?text_line.find(p_key,from_column):text_line.findn(p_key,from_column);
-		} else {
+			if (p_search_flags&SEARCH_BACKWARDS) {
 
-			pos = (p_search_flags&SEARCH_MATCH_CASE)?text_line.rfind(p_key,from_column):text_line.rfindn(p_key,from_column);
+				if (last_pos>from_column)
+					break;
+				pos=last_pos;
+
+			} else {
+
+				if (last_pos>=from_column) {
+					pos=last_pos;
+					break;
+				}
+			}
+
+			pos_from=last_pos+p_key.length();
 		}
 
 		if (pos!=-1 && (p_search_flags&SEARCH_WHOLE_WORDS)) {
@@ -3655,12 +3825,16 @@ void TextEdit::undo() {
 	_do_text_op(op, true);
 	current_op.version=op.prev_version;
 	if(undo_stack_pos->get().chain_backward) {
-		do {
+		while(true) {
+			ERR_BREAK(!undo_stack_pos->prev());
 			undo_stack_pos = undo_stack_pos->prev();
 			op = undo_stack_pos->get();
 			_do_text_op(op, true);
 			current_op.version = op.prev_version;
-		} while(!undo_stack_pos->get().chain_forward);
+			if (undo_stack_pos->get().chain_forward) {
+				break;
+			}
+		}
 	}
 
 	cursor_set_line(undo_stack_pos->get().from_line);
@@ -3679,12 +3853,16 @@ void TextEdit::redo() {
 	_do_text_op(op, false);
 	current_op.version = op.version;
 	if(undo_stack_pos->get().chain_forward) {
-		do {
+
+		while(true) {
+			ERR_BREAK(!undo_stack_pos->next());
 			undo_stack_pos=undo_stack_pos->next();
 			op = undo_stack_pos->get();
 			_do_text_op(op, false);
 			current_op.version = op.version;
-		} while(!undo_stack_pos->get().chain_backward);
+			if (undo_stack_pos->get().chain_backward)
+				break;
+		}
 	}
 	cursor_set_line(undo_stack_pos->get().to_line);
 	cursor_set_column(undo_stack_pos->get().to_column);
@@ -3911,6 +4089,9 @@ void TextEdit::_update_completion_candidates() {
 		}
 	}
 
+	if (l[cursor.column - 1] == '(' && !pre_keyword && !completion_strings[0].begins_with("\"")) {
+		cancel = true;
+	}
 
 	update();
 
@@ -3926,6 +4107,10 @@ void TextEdit::_update_completion_candidates() {
 	int ci_match=0;
 	for(int i=0;i<completion_strings.size();i++) {
 		if (completion_strings[i].begins_with(s)) {
+			// don't remove duplicates if no input is provided
+			if (completion_options.find(completion_strings[i]) != -1 && s != "") {
+				continue;
+			}
 			completion_options.push_back(completion_strings[i]);
 			int m=0;
 			int max=MIN(completion_current.length(),completion_strings[i].length());
@@ -4084,10 +4269,60 @@ void TextEdit::set_show_line_numbers(bool p_show) {
 	update();
 }
 
+void TextEdit::set_draw_breakpoint_gutter(bool p_draw) {
+	draw_breakpoint_gutter = p_draw;
+	update();
+}
+
+bool TextEdit::is_drawing_breakpoint_gutter() const {
+	return draw_breakpoint_gutter;
+}
+
+void TextEdit::set_breakpoint_gutter_width(int p_gutter_width) {
+	breakpoint_gutter_width = p_gutter_width;
+	update();
+}
+
+int TextEdit::get_breakpoint_gutter_width() const {
+	return cache.breakpoint_gutter_width;
+}
+
 bool TextEdit::is_text_field() const {
 
     return true;
 }
+
+void TextEdit::menu_option(int p_option) {
+
+	switch( p_option ) {
+		case MENU_CUT: {
+
+			cut();
+		} break;
+		case MENU_COPY: {
+			copy();
+		} break;
+		case MENU_PASTE: {
+
+			paste();
+		} break;
+		case MENU_CLEAR: {
+			clear();
+		} break;
+		case MENU_SELECT_ALL: {
+			select_all();
+		} break;
+		case MENU_UNDO: {
+			undo();
+		} break;
+
+	};
+}
+
+PopupMenu *TextEdit::get_menu() const {
+	return menu;
+}
+
 void TextEdit::_bind_methods() {
 
 
@@ -4097,6 +4332,7 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_text_changed_emit"),&TextEdit::_text_changed_emit);
 	ObjectTypeDB::bind_method(_MD("_push_current_op"),&TextEdit::_push_current_op);
 	ObjectTypeDB::bind_method(_MD("_click_selection_held"),&TextEdit::_click_selection_held);
+	ObjectTypeDB::bind_method(_MD("_toggle_draw_caret"),&TextEdit::_toggle_draw_caret);
 
 	BIND_CONSTANT( SEARCH_MATCH_CASE );
 	BIND_CONSTANT( SEARCH_WHOLE_WORDS );
@@ -4119,7 +4355,10 @@ void TextEdit::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("cursor_get_column"),&TextEdit::cursor_get_column);
 	ObjectTypeDB::bind_method(_MD("cursor_get_line"),&TextEdit::cursor_get_line);
-
+	ObjectTypeDB::bind_method(_MD("cursor_set_blink_enabled", "enable"),&TextEdit::cursor_set_blink_enabled);
+	ObjectTypeDB::bind_method(_MD("cursor_get_blink_enabled"),&TextEdit::cursor_get_blink_enabled);
+	ObjectTypeDB::bind_method(_MD("cursor_set_blink_speed", "blink_speed"),&TextEdit::cursor_set_blink_speed);
+	ObjectTypeDB::bind_method(_MD("cursor_get_blink_speed"),&TextEdit::cursor_get_blink_speed);
 
 	ObjectTypeDB::bind_method(_MD("set_readonly","enable"),&TextEdit::set_readonly);
 	ObjectTypeDB::bind_method(_MD("set_wrap","enable"),&TextEdit::set_wrap);
@@ -4153,11 +4392,24 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_symbol_color","color"),&TextEdit::set_symbol_color);
 	ObjectTypeDB::bind_method(_MD("set_custom_bg_color","color"),&TextEdit::set_custom_bg_color);
 	ObjectTypeDB::bind_method(_MD("clear_colors"),&TextEdit::clear_colors);
+	ObjectTypeDB::bind_method(_MD("menu_option"),&TextEdit::menu_option);
+	ObjectTypeDB::bind_method(_MD("get_menu:PopupMenu"),&TextEdit::get_menu);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret/caret_blink"), _SCS("cursor_set_blink_enabled"), _SCS("cursor_get_blink_enabled"));;
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret/caret_blink_speed",PROPERTY_HINT_RANGE,"0.1,10,0.1"), _SCS("cursor_set_blink_speed"),_SCS("cursor_get_blink_speed") );
 
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
 	ADD_SIGNAL(MethodInfo("text_changed"));
 	ADD_SIGNAL(MethodInfo("request_completion"));
+
+	BIND_CONSTANT( MENU_CUT );
+	BIND_CONSTANT( MENU_COPY );
+	BIND_CONSTANT( MENU_PASTE );
+	BIND_CONSTANT( MENU_CLEAR );
+	BIND_CONSTANT( MENU_SELECT_ALL );
+	BIND_CONSTANT( MENU_UNDO );
+	BIND_CONSTANT( MENU_MAX );
+
 
 }
 
@@ -4166,6 +4418,7 @@ TextEdit::TextEdit()  {
 	readonly=false;
 	setting_row=false;
 	draw_tabs=false;
+	draw_caret=true;
 	max_chars=0;
 	clear();
 	wrap=false;
@@ -4175,6 +4428,8 @@ TextEdit::TextEdit()  {
 	cache.row_height=1;
 	cache.line_spacing=1;
 	cache.line_number_w=1;
+	cache.breakpoint_gutter_width=0;
+	breakpoint_gutter_width = 0;
 
 	tab_size=4;
 	text.set_tab_size(tab_size);
@@ -4204,6 +4459,13 @@ TextEdit::TextEdit()  {
 	selection.selecting_text=false;
 	selection.active=false;
 	syntax_coloring=false;
+
+	caret_blink_enabled=false;
+	caret_blink_timer = memnew(Timer);
+	add_child(caret_blink_timer);
+	caret_blink_timer->set_wait_time(0.65);
+	caret_blink_timer->connect("timeout", this,"_toggle_draw_caret");
+	cursor_set_blink_enabled(false);
 
 	custom_bg_color=Color(0,0,0,0);
 	idle_detect = memnew( Timer );
@@ -4249,12 +4511,27 @@ TextEdit::TextEdit()  {
 	completion_line_ofs=0;
 	tooltip_obj=NULL;
 	line_numbers=false;
+	draw_breakpoint_gutter=false;
 	next_operation_is_complex=false;
 	scroll_past_end_of_file_enabled=false;
 	auto_brace_completion_enabled=false;
 	brace_matching_enabled=false;
 	auto_indent=false;
 	insert_mode = false;
+
+	menu = memnew( PopupMenu );
+	add_child(menu);
+	menu->add_item(TTR("Cut"),MENU_CUT,KEY_MASK_CMD|KEY_X);
+	menu->add_item(TTR("Copy"),MENU_COPY,KEY_MASK_CMD|KEY_C);
+	menu->add_item(TTR("Paste"),MENU_PASTE,KEY_MASK_CMD|KEY_V);
+	menu->add_separator();
+	menu->add_item(TTR("Select All"),MENU_SELECT_ALL,KEY_MASK_CMD|KEY_A);
+	menu->add_item(TTR("Clear"),MENU_CLEAR);
+	menu->add_separator();
+	menu->add_item(TTR("Undo"),MENU_UNDO,KEY_MASK_CMD|KEY_Z);
+	menu->connect("item_pressed",this,"menu_option");
+
+
 }
 
 TextEdit::~TextEdit()

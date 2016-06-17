@@ -84,7 +84,7 @@ void ReparentDialog::_bind_methods() {
 
 ReparentDialog::ReparentDialog() {
 
-	set_title("Reparent Node");
+	set_title(TTR("Reparent Node"));
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
@@ -93,7 +93,7 @@ ReparentDialog::ReparentDialog() {
 	tree = memnew( SceneTreeEditor(false) );
 	tree->set_show_enabled_subscene(true);
 
-	vbc->add_margin_child("Reparent Location (Select new Parent):",tree,true);
+	vbc->add_margin_child(TTR("Reparent Location (Select new Parent):"),tree,true);
 
 	tree->get_scene_tree()->connect("item_activated",this,"_reparent");
 
@@ -102,7 +102,7 @@ ReparentDialog::ReparentDialog() {
 	//label->set_text("Reparent Location (Select new Parent):");
 
 	keep_transform = memnew( CheckBox );
-	keep_transform->set_text("Keep Global Transform");
+	keep_transform->set_text(TTR("Keep Global Transform"));
 	keep_transform->set_pressed(true);
 	vbc->add_child(keep_transform);
 
@@ -111,7 +111,7 @@ ReparentDialog::ReparentDialog() {
 
 	//cancel->connect("pressed", this,"_cancel");
 
-	get_ok()->set_text("Reparent");
+	get_ok()->set_text(TTR("Reparent"));
 
 }
 

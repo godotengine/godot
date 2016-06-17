@@ -53,7 +53,7 @@ void SampleLibraryEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 		load->set_icon( get_icon("Folder","EditorIcons") );
-		load->set_tooltip("Open Sample File(s)");
+		load->set_tooltip(TTR("Open Sample File(s)"));
 	}
 
 	if (p_what==NOTIFICATION_READY) {
@@ -74,10 +74,10 @@ void SampleLibraryEditor::_file_load_request(const DVector<String>& p_path) {
 		String path = p_path[i];
 		Ref<Sample> sample = ResourceLoader::load(path,"Sample");
 		if (sample.is_null()) {
-			dialog->set_text("ERROR: Couldn't load sample!");
-			dialog->set_title("Error!");
+			dialog->set_text(TTR("ERROR: Couldn't load sample!"));
+			dialog->set_title(TTR("Error!"));
 			//dialog->get_cancel()->set_text("Close");
-			dialog->get_ok()->set_text("Close");
+			dialog->get_ok()->set_text(TTR("Close"));
 			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
 		}
@@ -89,7 +89,7 @@ void SampleLibraryEditor::_file_load_request(const DVector<String>& p_path) {
 			name=basename+"_"+itos(counter);
 		}
 
-		undo_redo->create_action("Add Sample");
+		undo_redo->create_action(TTR("Add Sample"));
 		undo_redo->add_do_method(sample_library.operator->(),"add_sample",name,sample);
 		undo_redo->add_undo_method(sample_library.operator->(),"remove_sample",name);
 		undo_redo->add_do_method(this,"_update_library");
@@ -114,7 +114,7 @@ void SampleLibraryEditor::_button_pressed(Object *p_item,int p_column, int p_id)
 		String btn_type;
 		if(!is_playing) {
 			is_playing = true;
-			btn_type = "Stop";
+			btn_type = TTR("Stop");
 			player->play(name,true);
 			last_sample_playing = p_item;
 			set_process(true);
@@ -123,11 +123,11 @@ void SampleLibraryEditor::_button_pressed(Object *p_item,int p_column, int p_id)
 			if(last_sample_playing != p_item){
 				TreeItem *tl=last_sample_playing->cast_to<TreeItem>();
 				tl->set_button(p_column,0,get_icon("Play","EditorIcons"));
-				btn_type = "Stop";
+				btn_type = TTR("Stop");
 				player->play(name,true);
 				last_sample_playing = p_item;
 			} else {
-				btn_type = "Play";
+				btn_type = TTR("Play");
 				is_playing = false;
 			}
 		}
@@ -169,7 +169,7 @@ void SampleLibraryEditor::_item_edited() {
 		}
 
 		Ref<Sample> samp = sample_library->get_sample(old_name);
-		undo_redo->create_action("Rename Sample");
+		undo_redo->create_action(TTR("Rename Sample"));
 		undo_redo->add_do_method(sample_library.operator->(),"remove_sample",old_name);
 		undo_redo->add_do_method(sample_library.operator->(),"add_sample",new_name,samp);
 		undo_redo->add_undo_method(sample_library.operator->(),"remove_sample",new_name);
@@ -199,7 +199,7 @@ void SampleLibraryEditor::_delete_pressed() {
 		return;
 
 	String to_remove = tree->get_selected()->get_text(0);
-	undo_redo->create_action("Delete Sample");
+	undo_redo->create_action(TTR("Delete Sample"));
 	undo_redo->add_do_method(sample_library.operator->(),"remove_sample",to_remove);
 	undo_redo->add_undo_method(sample_library.operator->(),"add_sample",to_remove,sample_library->get_sample(to_remove));
 	undo_redo->add_do_method(this,"_update_library");
@@ -248,7 +248,7 @@ void SampleLibraryEditor::_update_library() {
 		ti->set_cell_mode(2,TreeItem::CELL_MODE_STRING);
 		ti->set_editable(2,false);
 		ti->set_selectable(2,false);
-		ti->set_text(2,String()+/*itos(smp->get_length())+" frames ("+String::num(smp->get_length()/(float)smp->get_mix_rate(),2)+" smp), "+*/(smp->get_format()==Sample::FORMAT_PCM16?"16 Bits, ":(smp->get_format()==Sample::FORMAT_PCM8?"8 bits, ":"IMA-ADPCM,"))+(smp->is_stereo()?"Stereo":"Mono"));
+		ti->set_text(2,String()+(smp->get_format()==Sample::FORMAT_PCM16?TTR("16 Bits")+", ":(smp->get_format()==Sample::FORMAT_PCM8?TTR("8 Bits")+", ":"IMA-ADPCM,"))+(smp->is_stereo()?TTR("Stereo"):TTR("Mono")));
 
 		// Volume dB
 		ti->set_cell_mode(3,TreeItem::CELL_MODE_RANGE);
@@ -290,6 +290,123 @@ void SampleLibraryEditor::edit(Ref<SampleLibrary> p_sample_library) {
 
 }
 
+Variant SampleLibraryEditor::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+
+	TreeItem*ti =tree->get_item_at_pos(p_point);
+	if (!ti)
+		return Variant();
+
+	String name = ti->get_metadata(0);
+
+	RES res = sample_library->get_sample(name);
+	if (!res.is_valid())
+		return Variant();
+
+	return EditorNode::get_singleton()->drag_resource(res,p_from);
+
+
+}
+
+bool SampleLibraryEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const {
+
+
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return false;
+
+	if (d.has("from") && (Object*)(d["from"])==tree)
+		return false;
+
+	if (String(d["type"])=="resource" && d.has("resource")) {
+		RES r=d["resource"];
+
+		Ref<Sample> sample = r;
+
+		if (sample.is_valid()) {
+
+			return true;
+		}
+	}
+
+
+	if (String(d["type"])=="files") {
+
+		Vector<String> files = d["files"];
+
+		if (files.size()==0)
+			return false;
+
+		for(int i=0;i<files.size();i++) {
+			String file = files[0];
+			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+
+			if (ftype!="Sample") {
+				return false;
+			}
+
+		}
+
+		return true;
+
+	}
+	return false;
+}
+
+void SampleLibraryEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) {
+
+	if (!can_drop_data_fw(p_point,p_data,p_from))
+		return;
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return;
+
+
+	if (String(d["type"])=="resource" && d.has("resource")) {
+		RES r=d["resource"];
+
+		Ref<Sample> sample = r;
+
+		if (sample.is_valid()) {
+
+			String basename;
+			if (sample->get_name()!="") {
+				basename=sample->get_name();
+			} else if (sample->get_path().is_resource_file()) {
+				basename = sample->get_path().basename();
+			} else {
+				basename="Sample";
+			}
+
+			String name=basename;
+			int counter=0;
+			while(sample_library->has_sample(name)) {
+				counter++;
+				name=basename+"_"+itos(counter);
+			}
+
+			undo_redo->create_action(TTR("Add Sample"));
+			undo_redo->add_do_method(sample_library.operator->(),"add_sample",name,sample);
+			undo_redo->add_undo_method(sample_library.operator->(),"remove_sample",name);
+			undo_redo->add_do_method(this,"_update_library");
+			undo_redo->add_undo_method(this,"_update_library");
+			undo_redo->commit_action();
+		}
+	}
+
+
+	if (String(d["type"])=="files") {
+
+		DVector<String> files = d["files"];
+
+		_file_load_request(files);
+
+	}
+
+}
 
 
 void SampleLibraryEditor::_bind_methods() {
@@ -301,6 +418,11 @@ void SampleLibraryEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_file_load_request"),&SampleLibraryEditor::_file_load_request);
 	ObjectTypeDB::bind_method(_MD("_update_library"),&SampleLibraryEditor::_update_library);
 	ObjectTypeDB::bind_method(_MD("_button_pressed"),&SampleLibraryEditor::_button_pressed);
+
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &SampleLibraryEditor::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &SampleLibraryEditor::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &SampleLibraryEditor::drop_data_fw);
+
 }
 
 SampleLibraryEditor::SampleLibraryEditor() {
@@ -331,11 +453,11 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	tree->set_anchor_and_margin(MARGIN_TOP,ANCHOR_BEGIN,30);
 	tree->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,5);
 	tree->set_column_titles_visible(true);
-	tree->set_column_title(0,"Name");
-	tree->set_column_title(1,"Preview");
-	tree->set_column_title(2,"Format");
+	tree->set_column_title(0,TTR("Name"));
+	tree->set_column_title(1,TTR("Preview"));
+	tree->set_column_title(2,TTR("Format"));
 	tree->set_column_title(3,"dB");
-	tree->set_column_title(4,"Pitch");
+	tree->set_column_title(4,TTR("Pitch"));
 	tree->set_column_title(5,"");
 
 	tree->set_column_min_width(1,150);
@@ -349,6 +471,8 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	tree->set_column_expand(4,false);
 	tree->set_column_expand(5,false);
 
+	tree->set_drag_forwarding(this);
+
 	dialog = memnew( ConfirmationDialog );
 	add_child( dialog );
 
@@ -357,7 +481,7 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	file->connect("files_selected", this,"_file_load_request");
 	tree->connect("item_edited", this,"_item_edited");
 
-
+	is_playing = false;
 }
 
 

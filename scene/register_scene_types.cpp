@@ -126,11 +126,14 @@
 #include "scene/main/scene_main_loop.h"
 #include "scene/main/resource_preloader.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/main/scene_main_loop.h"
 
 
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/mesh_data_tool.h"
 #include "scene/resources/scene_preloader.h"
+#include "scene/resources/dynamic_font.h"
+#include "scene/resources/dynamic_font_stb.h"
 
 #include "scene/main/timer.h"
 
@@ -190,6 +193,7 @@
 
 #ifndef _3D_DISABLED
 #include "scene/3d/camera.h"
+#include "scene/3d/listener.h"
 
 #include "scene/3d/interpolated_camera.h"
 #include "scene/3d/position_3d.h"
@@ -235,6 +239,8 @@ static ResourceFormatLoaderShader *resource_loader_shader=NULL;
 static ResourceFormatSaverText *resource_saver_text=NULL;
 static ResourceFormatLoaderText *resource_loader_text=NULL;
 
+static ResourceFormatLoaderDynamicFont *resource_loader_dynamic_font=NULL;
+
 //static SceneStringNames *string_names;
 
 void register_scene_types() {
@@ -250,7 +256,8 @@ void register_scene_types() {
 
 	resource_loader_wav = memnew( ResourceFormatLoaderWAV );
 	ResourceLoader::add_resource_format_loader( resource_loader_wav );
-
+	resource_loader_dynamic_font = memnew( ResourceFormatLoaderDynamicFont );
+	ResourceLoader::add_resource_format_loader( resource_loader_dynamic_font );
 
 #ifdef TOOLS_ENABLED
 
@@ -264,7 +271,28 @@ void register_scene_types() {
 	resource_loader_shader = memnew( ResourceFormatLoaderShader );
 	ResourceLoader::add_resource_format_loader( resource_loader_shader );
 
-	make_default_theme();
+	bool default_theme_hidpi=GLOBAL_DEF("display/use_hidpi_theme",false);
+	Globals::get_singleton()->set_custom_property_info("display/use_hidpi_theme",PropertyInfo(Variant::BOOL,"display/use_hidpi_theme",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
+	String theme_path = GLOBAL_DEF("display/custom_theme","");
+	Globals::get_singleton()->set_custom_property_info("display/custom_theme",PropertyInfo(Variant::STRING,"display/custom_theme",PROPERTY_HINT_FILE,"*.tres,*.res",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
+	String font_path = GLOBAL_DEF("display/custom_theme_font","");
+	Globals::get_singleton()->set_custom_property_info("display/custom_theme_font",PropertyInfo(Variant::STRING,"display/custom_theme_font",PROPERTY_HINT_FILE,"*.tres,*.res,*.fnt",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
+
+
+	if (theme_path!=String()) {
+		Ref<Theme> theme = ResourceLoader::load(theme_path);
+		if (theme.is_valid()) {
+			Theme::set_default(theme);
+		}
+	} else {
+
+		Ref<Font> font;
+		if (font_path!=String()) {
+			font=ResourceLoader::load(font_path);
+		}
+		make_default_theme(default_theme_hidpi,font);
+	}
+
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -287,6 +315,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
+	ObjectTypeDB::register_type<ShortCut>();
 	ObjectTypeDB::register_type<Control>();
 //	ObjectTypeDB::register_type<EmptyControl>();
 	ObjectTypeDB::add_compatibility_type("EmptyControl","Control");
@@ -380,6 +409,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<BoneAttachment>();
 	ObjectTypeDB::register_virtual_type<VisualInstance>();
 	ObjectTypeDB::register_type<Camera>();
+	ObjectTypeDB::register_type<Listener>();
 	ObjectTypeDB::register_type<InterpolatedCamera>();
 	ObjectTypeDB::register_type<TestCube>();
 	ObjectTypeDB::register_type<MeshInstance>();
@@ -572,6 +602,10 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Animation>();
 	ObjectTypeDB::register_virtual_type<Font>();
 	ObjectTypeDB::register_type<BitmapFont>();
+
+	ObjectTypeDB::register_type<DynamicFontData>();
+	ObjectTypeDB::register_type<DynamicFont>();
+
 	ObjectTypeDB::register_type<StyleBoxEmpty>();
 	ObjectTypeDB::register_type<StyleBoxTexture>();
 	ObjectTypeDB::register_type<StyleBoxFlat>();
@@ -638,6 +672,8 @@ void unregister_scene_types() {
 
 	memdelete( resource_loader_image );
 	memdelete( resource_loader_wav );
+	memdelete( resource_loader_dynamic_font );
+
 #ifdef TOOLS_ENABLED
 
 

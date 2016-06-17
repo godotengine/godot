@@ -113,6 +113,6 @@
     } \
     while(0)
 
-#endif /* OPUS_FIXED_POINT */
+#endif /* FIXED_POINT */
 
 #endif /* KISS_FFT_GUTS_H */

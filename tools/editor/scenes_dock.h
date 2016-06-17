@@ -39,6 +39,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/split_container.h"
 
 #include "os/dir_access.h"
 #include "os/thread.h"
@@ -54,36 +55,41 @@ class ScenesDock : public VBoxContainer {
 	OBJ_TYPE( ScenesDock, VBoxContainer );
 
 	enum FileMenu {
+		FILE_OPEN,
+		FILE_INSTANCE,
 		FILE_DEPENDENCIES,
 		FILE_OWNERS,
 		FILE_MOVE,
 		FILE_REMOVE,
 		FILE_REIMPORT,
-		FILE_INFO
+		FILE_INFO,
+		FILE_SHOW_IN_EXPLORER,
+		FILE_COPY_PATH
 	};
 
 
 	VBoxContainer *scanning_vb;
 	ProgressBar *scanning_progress;
+	VSplitContainer *split_box;
+	VBoxContainer *file_list_vb;
 
 	EditorNode *editor;
 	Set<String> favorites;
 
 	Button *button_reload;
-	Button *button_instance;
 	Button *button_favorite;
-	Button *button_fav_up;
-	Button *button_fav_down;
-	Button *button_open;
 	Button *button_back;
 	Button *display_mode;
 	Button *button_hist_next;
 	Button *button_hist_prev;
 	LineEdit *current_path;
+	LineEdit *search_box;
+	TextureFrame *search_icon;
 	HBoxContainer *path_hb;
 
-	MenuButton *file_options;
+	bool split_mode;
 
+	PopupMenu *file_options;
 
 	DependencyEditor *deps_editor;
 	DependencyEditorOwners *owners_editor;
@@ -107,8 +113,6 @@ class ScenesDock : public VBoxContainer {
 	Tree * tree; //directories
 	ItemList *files;
 
-	bool tree_mode;
-
 	void _go_to_tree();
 	void _go_to_dir(const String& p_dir);
 	void _select_file(int p_idx);
@@ -131,17 +135,38 @@ class ScenesDock : public VBoxContainer {
 	void _bw_history();
 	void _push_to_history();
 
-	void _fav_up_pressed();
-	void _fav_down_pressed();
+
 	void _dir_selected();
 	void _update_tree();
 	void _rescan();
 	void _set_scannig_mode();
 
-	void _favorites_pressed();
-	void _instance_pressed();
-	void _open_pressed();
 
+	void _favorites_pressed();
+	void _open_pressed();
+	void _search_changed(const String& p_text);
+
+
+	void _files_list_rmb_select(int p_item,const Vector2& p_pos);
+
+
+	struct FileInfo {
+		String name;
+		String path;
+		StringName type;
+		int import_status; //0 not imported, 1 - ok, 2- must reimport, 3- broken
+		Vector<String> sources;
+
+		bool operator<(const FileInfo& fi) const {
+			return name < fi.name;
+		}
+	};
+
+	void _search(EditorFileSystemDirectory *p_path, List<FileInfo>* matches, int p_max_items);
+
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
 
 protected:
 	void _notification(int p_what);
@@ -149,7 +174,9 @@ protected:
 public:
 
 	String get_selected_path() const;
-	void open(const String& p_path);
+
+	String get_current_path() const;
+	void focus_on_filter();
 
 	void fix_dependencies(const String& p_for_file);
 

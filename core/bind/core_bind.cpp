@@ -226,6 +226,11 @@ Size2 _OS::get_screen_size(int p_screen) const {
 	return OS::get_singleton()->get_screen_size(p_screen);
 }
 
+int _OS::get_screen_dpi(int p_screen) const {
+
+	return  OS::get_singleton()->get_screen_dpi(p_screen);
+}
+
 Point2 _OS::get_window_position() const {
 	return OS::get_singleton()->get_window_position();
 }
@@ -431,6 +436,15 @@ Error _OS::set_thread_name(const String& p_name) {
 	return Thread::set_name(p_name);
 };
 
+void _OS::set_use_vsync(bool p_enable) {
+	OS::get_singleton()->set_use_vsync(p_enable);
+}
+
+bool _OS::is_vsnc_enabled() const {
+
+	return OS::get_singleton()->is_vsnc_enabled();
+}
+
 
 /*
 enum Weekday {
@@ -500,9 +514,9 @@ void _OS::set_icon(const Image& p_icon) {
 }
 
 /**
- *  Get current datetime with consideration for utc and 
+ *  Get current datetime with consideration for utc and
  *     dst
- */ 
+ */
 Dictionary _OS::get_datetime(bool utc) const {
 
 	Dictionary dated = get_date(utc);
@@ -564,17 +578,17 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 
 	// Get all time values from the dictionary, set to zero if it doesn't exist.
 	//   Risk incorrect calculation over throwing errors
-	unsigned int second = ((datetime.has(SECOND_KEY))? 
+	unsigned int second = ((datetime.has(SECOND_KEY))?
 			static_cast<unsigned int>(datetime[SECOND_KEY]): 0);
-	unsigned int minute = ((datetime.has(MINUTE_KEY))? 
+	unsigned int minute = ((datetime.has(MINUTE_KEY))?
 			static_cast<unsigned int>(datetime[MINUTE_KEY]): 0);
-	unsigned int hour = ((datetime.has(HOUR_KEY))? 
+	unsigned int hour = ((datetime.has(HOUR_KEY))?
 			static_cast<unsigned int>(datetime[HOUR_KEY]): 0);
-	unsigned int day = ((datetime.has(DAY_KEY))? 
+	unsigned int day = ((datetime.has(DAY_KEY))?
 			static_cast<unsigned int>(datetime[DAY_KEY]): 0);
-	unsigned int month = ((datetime.has(MONTH_KEY))? 
+	unsigned int month = ((datetime.has(MONTH_KEY))?
 			static_cast<unsigned int>(datetime[MONTH_KEY]) -1: 0);
-	unsigned int year = ((datetime.has(YEAR_KEY))? 
+	unsigned int year = ((datetime.has(YEAR_KEY))?
 			static_cast<unsigned int>(datetime[YEAR_KEY]):0);
 
 	/// How many days come before each month (0-12)
@@ -604,7 +618,7 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 	ERR_FAIL_COND_V( day > MONTH_DAYS_TABLE[LEAPYEAR(year)][month], 0);
 
 	// Calculate all the seconds from months past in this year
-	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR = 
+	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR =
 		DAYS_PAST_THIS_YEAR_TABLE[LEAPYEAR(year)][month] * SECONDS_PER_DAY;
 
 	uint64_t SECONDS_FROM_YEARS_PAST = 0;
@@ -614,13 +628,13 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 			SECONDS_PER_DAY;
 	}
 
-	uint64_t epoch = 
-		second + 
-		minute * SECONDS_PER_MINUTE + 
+	uint64_t epoch =
+		second +
+		minute * SECONDS_PER_MINUTE +
 		hour * SECONDS_PER_HOUR +
 		// Subtract 1 from day, since the current day isn't over yet
 		//   and we cannot count all 24 hours.
-		(day-1) * SECONDS_PER_DAY + 
+		(day-1) * SECONDS_PER_DAY +
 		SECONDS_FROM_MONTHS_PAST_THIS_YEAR +
 		SECONDS_FROM_YEARS_PAST;
 	return epoch;
@@ -631,7 +645,7 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
  *  Get a dictionary of time values when given epoch time
  *
  *  Dictionary Time values will be a union if values from #get_time
- *    and #get_date dictionaries (with the exception of dst = 
+ *    and #get_date dictionaries (with the exception of dst =
  *    day light standard time, as it cannot be determined from epoch)
  *
  * @param unix_time_val epoch time to convert
@@ -660,14 +674,14 @@ Dictionary _OS::get_datetime_from_unix_time( uint64_t unix_time_val) const {
 	time.hour = dayclock / 3600;
 
 	/* day 0 was a thursday */
-	date.weekday = static_cast<OS::Weekday>((dayno + 4) % 7);       
+	date.weekday = static_cast<OS::Weekday>((dayno + 4) % 7);
 
 	while (dayno >= YEARSIZE(year)) {
 		dayno -= YEARSIZE(year);
 		year++;
 	}
 
-	date.year = year; 
+	date.year = year;
 
 	size_t imonth = 0;
 
@@ -984,6 +998,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_current_screen","screen"),&_OS::set_current_screen);
 	ObjectTypeDB::bind_method(_MD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_screen_dpi","screen"),&_OS::get_screen_dpi,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
 	ObjectTypeDB::bind_method(_MD("set_window_position","position"),&_OS::set_window_position);
 	ObjectTypeDB::bind_method(_MD("get_window_size"),&_OS::get_window_size);
@@ -1104,6 +1119,8 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_thread_name","name"),&_OS::set_thread_name);
 
+	ObjectTypeDB::bind_method(_MD("set_use_vsync","enable"),&_OS::set_use_vsync);
+	ObjectTypeDB::bind_method(_MD("is_vsnc_enabled"),&_OS::is_vsnc_enabled);
 
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );
@@ -1541,6 +1558,12 @@ String _File::get_md5(const String& p_path) const {
 
 }
 
+String _File::get_sha256(const String& p_path) const {
+
+	return FileAccess::get_sha256(p_path);
+
+}
+
 
 String _File::get_line() const{
 
@@ -1731,6 +1754,7 @@ void _File::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_line"),&_File::get_line);
 	ObjectTypeDB::bind_method(_MD("get_as_text"),&_File::get_as_text);
 	ObjectTypeDB::bind_method(_MD("get_md5","path"),&_File::get_md5);
+	ObjectTypeDB::bind_method(_MD("get_sha256","path"),&_File::get_md5);
 	ObjectTypeDB::bind_method(_MD("get_endian_swap"),&_File::get_endian_swap);
 	ObjectTypeDB::bind_method(_MD("set_endian_swap","enable"),&_File::set_endian_swap);
 	ObjectTypeDB::bind_method(_MD("get_error:Error"),&_File::get_error);
@@ -1893,15 +1917,15 @@ void _Directory::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_drive","idx"),&_Directory::get_drive);
 	ObjectTypeDB::bind_method(_MD("change_dir:Error","todir"),&_Directory::change_dir);
 	ObjectTypeDB::bind_method(_MD("get_current_dir"),&_Directory::get_current_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir:Error","name"),&_Directory::make_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","name"),&_Directory::make_dir_recursive);
-	ObjectTypeDB::bind_method(_MD("file_exists","name"),&_Directory::file_exists);
-	ObjectTypeDB::bind_method(_MD("dir_exists","name"),&_Directory::dir_exists);
+	ObjectTypeDB::bind_method(_MD("make_dir:Error","path"),&_Directory::make_dir);
+	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","path"),&_Directory::make_dir_recursive);
+	ObjectTypeDB::bind_method(_MD("file_exists","path"),&_Directory::file_exists);
+	ObjectTypeDB::bind_method(_MD("dir_exists","path"),&_Directory::dir_exists);
 //	ObjectTypeDB::bind_method(_MD("get_modified_time","file"),&_Directory::get_modified_time);
 	ObjectTypeDB::bind_method(_MD("get_space_left"),&_Directory::get_space_left);
 	ObjectTypeDB::bind_method(_MD("copy:Error","from","to"),&_Directory::copy);
 	ObjectTypeDB::bind_method(_MD("rename:Error","from","to"),&_Directory::rename);
-	ObjectTypeDB::bind_method(_MD("remove:Error","file"),&_Directory::remove);
+	ObjectTypeDB::bind_method(_MD("remove:Error","path"),&_Directory::remove);
 
 }
 

@@ -55,6 +55,7 @@ friend class Physics2DDirectBodyStateSW;
 	bool using_threads;
 
 
+
 	Step2DSW *stepper;
 	Set<const Space2DSW*> active_spaces;
 

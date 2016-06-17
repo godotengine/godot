@@ -65,17 +65,17 @@ for x in env.android_java_dirs:
 gradle_res_dirs_text=""
 
 for x in env.android_res_dirs:
-	gradle_res_dirs_text+=",'"+x+"'"
+	gradle_res_dirs_text+=",'"+x.replace("\\","/")+"'"
 
 gradle_aidl_dirs_text=""
 
 for x in env.android_aidl_dirs:
-	gradle_aidl_dirs_text+=",'"+x+"'"
+	gradle_aidl_dirs_text+=",'"+x.replace("\\","/")+"'"
 
 gradle_jni_dirs_text=""
 
 for x in env.android_jni_dirs:
-	gradle_jni_dirs_text+=",'"+x+"'"
+	gradle_jni_dirs_text+=",'"+x.replace("\\","/")+"'"
 
 gradle_asset_dirs_text=""
 

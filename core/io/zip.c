@@ -7,7 +7,7 @@
          Modifications for Zip64 support
          Copyright (C) 2009-2010 Mathias Svensson ( http://result42.com )
 
-         For more info read MiniZip_info.txt
+         For more info read LICENSE-MiniZip.txt
 
          Changes
    Oct-2009 - Mathias Svensson - Remove old C style function prototypes

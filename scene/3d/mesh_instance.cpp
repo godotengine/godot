@@ -31,8 +31,8 @@
 #include "skeleton.h"
 #include "physics_body.h"
 #include "body_shape.h"
-
-
+#include "scene/scene_string_names.h"
+#include "core_string_names.h"
 bool MeshInstance::_set(const StringName& p_name, const Variant& p_value) {
 
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
@@ -43,13 +43,22 @@ bool MeshInstance::_set(const StringName& p_name, const Variant& p_value) {
 
 
 	Map<StringName,MorphTrack>::Element *E = morph_tracks.find(p_name);
-	if (!E)
-		return false;
+	if (E) {
+		E->get().value=p_value;
+		VisualServer::get_singleton()->instance_set_morph_target_weight(get_instance(),E->get().idx,E->get().value);
+		return true;
+	}
 
-	E->get().value=p_value;
-	VisualServer::get_singleton()->instance_set_morph_target_weight(get_instance(),E->get().idx,E->get().value);
+	if (p_name.operator String().begins_with("material/")) {
+		int idx = p_name.operator String().get_slicec('/',1).to_int();
+		if (idx>=materials.size() || idx<0)
+			return false;
 
-	return true;
+		set_surface_material(idx,p_value);
+		return true;
+	}
+
+	return false;
 }
 
 bool MeshInstance::_get(const StringName& p_name,Variant &r_ret) const {
@@ -59,12 +68,19 @@ bool MeshInstance::_get(const StringName& p_name,Variant &r_ret) const {
 		return false;
 
 	const Map<StringName,MorphTrack>::Element *E = morph_tracks.find(p_name);
-	if (!E)
-		return false;
+	if (E) {
+		r_ret = E->get().value;
+		return true;
+	}
 
-	r_ret = E->get().value;
-
-	return true;
+	if (p_name.operator String().begins_with("material/")) {
+		int idx = p_name.operator String().get_slicec('/',1).to_int();
+		if (idx>=materials.size() || idx<0)
+			return false;
+		r_ret=materials[idx];
+		return true;
+	}
+	return false;
 }
 
 void MeshInstance::_get_property_list( List<PropertyInfo> *p_list) const {
@@ -80,12 +96,26 @@ void MeshInstance::_get_property_list( List<PropertyInfo> *p_list) const {
 	for(List<String>::Element *E=ls.front();E;E=E->next()) {
 		p_list->push_back( PropertyInfo(Variant::REAL,E->get(),PROPERTY_HINT_RANGE,"0,1,0.01"));
 	}
+
+	if (mesh.is_valid()) {
+		for(int i=0;i<mesh->get_surface_count();i++) {
+			p_list->push_back( PropertyInfo(Variant::OBJECT, "material/"+itos(i), PROPERTY_HINT_RESOURCE_TYPE, "Material"));
+		}
+	}
 }
 
 
 
 
 void MeshInstance::set_mesh(const Ref<Mesh>& p_mesh) {
+
+	if (mesh==p_mesh)
+		return;
+
+	if (mesh.is_valid()) {
+		mesh->disconnect(CoreStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_mesh_changed);
+		materials.clear();
+	}
 
 	mesh=p_mesh;
 
@@ -100,13 +130,17 @@ void MeshInstance::set_mesh(const Ref<Mesh>& p_mesh) {
 			mt.value=0;
 			morph_tracks["morph/"+String(mesh->get_morph_target_name(i))]=mt;
 		}
+
+		mesh->connect(CoreStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_mesh_changed);
+		materials.resize(mesh->get_surface_count());
+
 		set_base(mesh->get_rid());
 	} else {
 
 		set_base(RID());
 	}
 
-	_change_notify("mesh");
+	_change_notify();
 }
 Ref<Mesh> MeshInstance::get_mesh() const {
 
@@ -232,6 +266,32 @@ void MeshInstance::_notification(int p_what) {
 }
 
 
+void MeshInstance::set_surface_material(int p_surface,const Ref<Material>& p_material) {
+
+	ERR_FAIL_INDEX(p_surface,materials.size());
+
+	materials[p_surface]=p_material;
+
+	if (materials[p_surface].is_valid())
+		VS::get_singleton()->instance_set_surface_material(get_instance(),p_surface,materials[p_surface]->get_rid());
+	else
+		VS::get_singleton()->instance_set_surface_material(get_instance(),p_surface,RID());
+
+}
+
+Ref<Material> MeshInstance::get_surface_material(int p_surface) const {
+
+	ERR_FAIL_INDEX_V(p_surface,materials.size(),Ref<Material>());
+
+	return materials[p_surface];
+}
+
+
+void MeshInstance::_mesh_changed() {
+
+	materials.resize( mesh->get_surface_count() );
+}
+
 void MeshInstance::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MeshInstance::set_mesh);
@@ -243,6 +303,7 @@ void MeshInstance::_bind_methods() {
 	ObjectTypeDB::set_method_flags("MeshInstance","create_trimesh_collision",METHOD_FLAGS_DEFAULT);
 	ObjectTypeDB::bind_method(_MD("create_convex_collision"),&MeshInstance::create_convex_collision);
 	ObjectTypeDB::set_method_flags("MeshInstance","create_convex_collision",METHOD_FLAGS_DEFAULT);
+	ObjectTypeDB::bind_method(_MD("_mesh_changed"),&MeshInstance::_mesh_changed);
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "mesh/mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh" ), _SCS("set_mesh"), _SCS("get_mesh"));
 	ADD_PROPERTY( PropertyInfo (Variant::NODE_PATH, "mesh/skeleton"), _SCS("set_skeleton_path"), _SCS("get_skeleton_path"));
 }

@@ -24,10 +24,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
-
-#ifdef OPUS_ENABLED
 #include "opus/opus_config.h"
-#endif
 
 #include "opus/silk/fixed/main_FIX.h"
 #include "opus/celt/stack_alloc.h"
@@ -138,9 +135,14 @@ static OPUS_INLINE void limit_warped_coefs(
     silk_assert( 0 );
 }
 
+#if defined(MIPSr1_ASM)
+#include "opus/silk/fixed/mips/noise_shape_analysis_FIX_mipsr1.h"
+#endif
+
 /**************************************************************/
 /* Compute noise shaping coefficients and initial gain values */
 /**************************************************************/
+#ifndef OVERRIDE_silk_noise_shape_analysis_FIX
 void silk_noise_shape_analysis_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Encoder state FIX                                                           */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  Encoder control FIX                                                         */
@@ -443,3 +445,4 @@ void silk_noise_shape_analysis_FIX(
     }
     RESTORE_STACK;
 }
+#endif /* OVERRIDE_silk_noise_shape_analysis_FIX */

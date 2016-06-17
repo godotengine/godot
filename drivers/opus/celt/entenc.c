@@ -24,10 +24,7 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#if defined(OPUS_ENABLED)
-# include "opus/opus_config.h"
-#endif
+#include "opus/opus_config.h"
 #include "opus/celt/os_support.h"
 #include "opus/celt/arch.h"
 #include "opus/celt/entenc.h"
@@ -98,7 +95,7 @@ static void ec_enc_carry_out(ec_enc *_this,int _c){
   else _this->ext++;
 }
 
-static void ec_enc_normalize(ec_enc *_this){
+static OPUS_INLINE void ec_enc_normalize(ec_enc *_this){
   /*If the range is too small, output some bits and rescale it.*/
   while(_this->rng<=EC_CODE_BOT){
     ec_enc_carry_out(_this,(int)(_this->val>>EC_CODE_SHIFT));
@@ -127,7 +124,7 @@ void ec_enc_init(ec_enc *_this,unsigned char *_buf,opus_uint32 _size){
 
 void ec_encode(ec_enc *_this,unsigned _fl,unsigned _fh,unsigned _ft){
   opus_uint32 r;
-  r=_this->rng/_ft;
+  r=celt_udiv(_this->rng,_ft);
   if(_fl>0){
     _this->val+=_this->rng-IMUL32(r,(_ft-_fl));
     _this->rng=IMUL32(r,(_fh-_fl));

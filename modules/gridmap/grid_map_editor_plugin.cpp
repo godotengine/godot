@@ -741,7 +741,7 @@ void GridMapEditor::update_pallete()  {
 	}
 
 	float min_size = EDITOR_DEF("grid_map/preview_size",64);
-	theme_pallete->set_min_icon_size(Size2(min_size, min_size));
+	theme_pallete->set_fixed_icon_size(Size2(min_size, min_size));
 	theme_pallete->set_fixed_column_width(min_size*3/2);
 	theme_pallete->set_max_text_lines(2);
 
@@ -1236,9 +1236,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item("Cursor Rotate X",MENU_OPTION_CURSOR_ROTATE_X,KEY_A);
 	options->get_popup()->add_item("Cursor Rotate Y",MENU_OPTION_CURSOR_ROTATE_Y,KEY_S);
 	options->get_popup()->add_item("Cursor Rotate Z",MENU_OPTION_CURSOR_ROTATE_Z,KEY_D);
-	options->get_popup()->add_item("Cursor Back Rotate X",MENU_OPTION_CURSOR_ROTATE_X,KEY_MASK_SHIFT+KEY_A);
-	options->get_popup()->add_item("Cursor Back Rotate Y",MENU_OPTION_CURSOR_ROTATE_Y,KEY_MASK_SHIFT+KEY_S);
-	options->get_popup()->add_item("Cursor Back Rotate Z",MENU_OPTION_CURSOR_ROTATE_Z,KEY_MASK_SHIFT+KEY_D);
+	options->get_popup()->add_item("Cursor Back Rotate X",MENU_OPTION_CURSOR_BACK_ROTATE_X,KEY_MASK_SHIFT+KEY_A);
+	options->get_popup()->add_item("Cursor Back Rotate Y",MENU_OPTION_CURSOR_BACK_ROTATE_Y,KEY_MASK_SHIFT+KEY_S);
+	options->get_popup()->add_item("Cursor Back Rotate Z",MENU_OPTION_CURSOR_BACK_ROTATE_Z,KEY_MASK_SHIFT+KEY_D);
 	options->get_popup()->add_item("Cursor Clear Rotation",MENU_OPTION_CURSOR_CLEAR_ROTATION,KEY_W);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_check_item("Duplicate Selects",MENU_OPTION_DUPLICATE_SELECTS);
