@@ -32,6 +32,7 @@
 #include "print_string.h"
 #include "math_funcs.h"
 #include "io/md5.h"
+#include "io/sha256.h"
 #include "ucaps.h"
 #include "color.h"
 #include "variant.h"
@@ -849,21 +850,23 @@ const CharType * String::c_str() const {
 }
 
 String String::md5(const uint8_t *p_md5) {
+	return String::hex_encode_buffer(p_md5, 16);
+}
+
+String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
+	static const char hex[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
 
 	String ret;
+	char v[2]={0,0};
 
-	for(int i=0;i<16;i++) {
-
-		static const char hex[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
-		char v[2]={0,0};
-		v[0]=hex[p_md5[i]>>4];
+	for(int i=0;i<p_len;i++) {
+		v[0]=hex[p_buffer[i]>>4];
 		ret+=v;
-		v[0]=hex[p_md5[i]&0xF];
+		v[0]=hex[p_buffer[i]&0xF];
 		ret+=v;
 	}
 
 	return ret;
-
 }
 
 String String::chr(CharType p_char) {
@@ -2387,6 +2390,16 @@ String String::md5_text() const {
 	MD5Update(&ctx,(unsigned char*)cs.ptr(),cs.length());
 	MD5Final(&ctx);
 	return String::md5(ctx.digest);
+}
+
+String String::sha256_text() const {
+	CharString cs=utf8();
+	unsigned char hash[32];
+	sha256_context ctx;
+	sha256_init(&ctx);
+	sha256_hash(&ctx,(unsigned char*)cs.ptr(),cs.length());
+	sha256_done(&ctx, hash);
+	return String::hex_encode_buffer(hash, 32);
 }
 
 Vector<uint8_t> String::md5_buffer() const {

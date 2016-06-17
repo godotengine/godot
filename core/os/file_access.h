@@ -153,6 +153,7 @@ public:
 	static bool is_backup_save_enabled() { return backup_save; };
 
 	static String get_md5(const String& p_file);
+	static String get_sha256(const String& p_file);
 
 	static Vector<uint8_t> get_file_as_array(const String& p_path);
 
