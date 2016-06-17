@@ -1580,7 +1580,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						nav_mode = NAVIGATION_PAN;
 				}
 
-			} else if (EditorSettings::get_singleton()->get("3d_editor/trackpad_hint")) {
+			} else if (EditorSettings::get_singleton()->get("3d_editor/enable_trackpad")) {
 				// Handle trackpad (no external mouse) use case
 				int mod = 0;
 				if (m.mod.shift)
