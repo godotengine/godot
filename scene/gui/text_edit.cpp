@@ -1452,10 +1452,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 			}
 
 			if (mb.pressed) {
-				if (mb.button_index==BUTTON_WHEEL_UP) {
+				if (mb.button_index==BUTTON_WHEEL_UP && !mb.mod.command) {
 					v_scroll->set_val( v_scroll->get_val() -3 );
 				}
-				if (mb.button_index==BUTTON_WHEEL_DOWN) {
+				if (mb.button_index==BUTTON_WHEEL_DOWN && !mb.mod.command) {
 					v_scroll->set_val( v_scroll->get_val() +3 );
 				}
 				if (mb.button_index==BUTTON_WHEEL_LEFT) {

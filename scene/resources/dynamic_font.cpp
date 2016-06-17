@@ -516,7 +516,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 
 		if (tex.texture.is_null()) {
 			tex.texture.instance();
-			tex.texture->create_from_image(img,0/*Texture::FLAG_FILTER*/);
+			tex.texture->create_from_image(img,Texture::FLAG_VIDEO_SURFACE);
 		} else {
 			tex.texture->set_data(img); //update
 		}
