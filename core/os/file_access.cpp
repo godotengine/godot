@@ -31,6 +31,7 @@
 #include "os/os.h"
 #include "core/io/marshalls.h"
 #include "io/md5.h"
+#include "io/sha256.h"
 #include "core/io/file_access_pack.h"
 
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX]={0,0};
@@ -514,6 +515,38 @@ String FileAccess::get_md5(const String& p_file) {
 
 	memdelete(f);
 	return ret;
+
+}
+
+String FileAccess::get_sha256(const String& p_file) {
+
+	FileAccess *f=FileAccess::open(p_file,READ);
+	if (!f)
+		return String();
+
+	sha256_context sha256;
+	sha256_init(&sha256);
+
+	unsigned char step[32768];
+
+	while(true) {
+
+		int br = f->get_buffer(step,32768);
+		if (br>0) {
+
+			sha256_hash(&sha256,step,br);
+		}
+		if (br < 4096)
+			break;
+
+	}
+
+	unsigned char hash[32];
+
+	sha256_done(&sha256, hash);
+
+	memdelete(f);
+	return String::hex_encode_buffer(hash, 32);
 
 }
 

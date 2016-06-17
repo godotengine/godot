@@ -1558,6 +1558,12 @@ String _File::get_md5(const String& p_path) const {
 
 }
 
+String _File::get_sha256(const String& p_path) const {
+
+	return FileAccess::get_sha256(p_path);
+
+}
+
 
 String _File::get_line() const{
 
@@ -1748,6 +1754,7 @@ void _File::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_line"),&_File::get_line);
 	ObjectTypeDB::bind_method(_MD("get_as_text"),&_File::get_as_text);
 	ObjectTypeDB::bind_method(_MD("get_md5","path"),&_File::get_md5);
+	ObjectTypeDB::bind_method(_MD("get_sha256","path"),&_File::get_md5);
 	ObjectTypeDB::bind_method(_MD("get_endian_swap"),&_File::get_endian_swap);
 	ObjectTypeDB::bind_method(_MD("set_endian_swap","enable"),&_File::set_endian_swap);
 	ObjectTypeDB::bind_method(_MD("get_error:Error"),&_File::get_error);
