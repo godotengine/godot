@@ -798,6 +798,13 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 				canvas_item_editor->update();
 			}
 
+			int tile_under = node->get_cell(over_tile.x, over_tile.y);	
+			String tile_name = "none";
+
+			if (node->get_tileset()->has_tile(tile_under))
+				tile_name = node->get_tileset()->tile_get_name(tile_under);
+			tile_info->set_text(String::num(over_tile.x)+", "+String::num(over_tile.y)+" ["+tile_name+"]");
+
 			if (tool==TOOL_PAINTING) {
 
 				int id = get_selected_tile();
@@ -1369,6 +1376,10 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
 	toolbar->set_alignment(BoxContainer::ALIGN_END);
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(toolbar);
+
+	// Tile position
+	tile_info = memnew( Label );
+	toolbar->add_child(tile_info);
 
 	options = memnew( MenuButton );
 	options->set_text("Tile Map");
