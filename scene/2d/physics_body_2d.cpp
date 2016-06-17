@@ -450,6 +450,19 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 	state=(Physics2DDirectBodyState*)p_state; //trust it
 #endif
 
+	set_block_transform_notify(true); // don't want notify (would feedback loop)
+	if (mode!=MODE_KINEMATIC)
+		set_global_transform(state->get_transform());
+	linear_velocity=state->get_linear_velocity();
+	angular_velocity=state->get_angular_velocity();
+	if(sleeping!=state->is_sleeping()) {
+		sleeping=state->is_sleeping();
+		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
+	}
+	if (get_script_instance())
+		get_script_instance()->call("_integrate_forces",state);
+	set_block_transform_notify(false); // want it back
+
 	if (contact_monitor) {
 
 		contact_monitor->locked=true;
@@ -539,18 +552,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 
 	}
 
-	set_block_transform_notify(true); // don't want notify (would feedback loop)
-	if (mode!=MODE_KINEMATIC)
-		set_global_transform(state->get_transform());
-	linear_velocity=state->get_linear_velocity();
-	angular_velocity=state->get_angular_velocity();
-	if(sleeping!=state->is_sleeping()) {
-		sleeping=state->is_sleeping();
-		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
-	}
-	if (get_script_instance())
-		get_script_instance()->call("_integrate_forces",state);
-	set_block_transform_notify(false); // want it back
+
 
 	state=NULL;
 }
