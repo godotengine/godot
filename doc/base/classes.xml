@@ -5922,14 +5922,24 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="button_down">
+			<description>
+				Emitted when the button starts being held down.
+			</description>
+		</signal>
+		<signal name="button_up">
+			<description>
+				Emitted when the button stops being held down.
+			</description>
+		</signal>
 		<signal name="pressed">
 			<description>
-				This signal is emitted every time the button is pressed or toggled.
+				This signal is emitted every time the button is toggled or pressed (i.e. activated, so on [code]button_down[/code] if "Click on press" is active and on [code]button_up[/code] otherwise).
 			</description>
 		</signal>
 		<signal name="released">
 			<description>
-				This signal is emitted when the button was released.
+				Emitted when the button was released. This is only emitted by non-toggle buttons and if "Click on press" is active.
 			</description>
 		</signal>
 		<signal name="toggled">
