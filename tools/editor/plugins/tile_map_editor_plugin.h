@@ -36,6 +36,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/label.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -81,6 +82,7 @@ class TileMapEditor : public VBoxContainer {
 
 	HBoxContainer *toolbar;
 
+	Label *tile_info;
 	MenuButton *options;
 	ToolButton *transp;
 	ToolButton *mirror_x;
