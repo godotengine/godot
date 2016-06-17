@@ -1309,12 +1309,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_SEED: {
-			MethodInfo mi("seed",PropertyInfo(Variant::REAL,"seed"));
+			MethodInfo mi("seed",PropertyInfo(Variant::INT,"seed"));
 			mi.return_val.type=Variant::NIL;
 			return mi;
 		} break;
 		case MATH_RANDSEED: {
-			MethodInfo mi("rand_seed",PropertyInfo(Variant::REAL,"seed"));
+			MethodInfo mi("rand_seed",PropertyInfo(Variant::INT,"seed"));
 			mi.return_val.type=Variant::ARRAY;
 			return mi;
 		} break;

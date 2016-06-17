@@ -313,7 +313,7 @@
 		<method name="seed">
 			<return type="Nil">
 			</return>
-			<argument index="0" name="seed" type="float">
+			<argument index="0" name="seed" type="int">
 			</argument>
 			<description>
 			Set seed for the random number generator.
@@ -322,7 +322,7 @@
 		<method name="rand_seed">
 			<return type="Array">
 			</return>
-			<argument index="0" name="seed" type="float">
+			<argument index="0" name="seed" type="int">
 			</argument>
 			<description>
 			Random from seed, pass a seed and an array with both number and new seed is returned.
@@ -12445,6 +12445,14 @@ This approximation makes straight segments between each point, then subdivides t
 				else, empty String "".
 			</description>
 		</method>
+		<method name="get_sha256" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_endian_swap">
 			<return type="bool">
 			</return>
@@ -23548,10 +23556,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="PacketPeerUDP" inherits="PacketPeer" category="Core">
 	<brief_description>
-		UDP packet peer.
+	UDP packet peer.
 	</brief_description>
 	<description>
-		UDP packet peer. Can be used to send raw UDP packets as well as [Variant]s.
+	UDP packet peer. Can be used to send raw UDP packets as well as [Variant]s.
 	</description>
 	<methods>
 		<method name="listen">
@@ -37594,6 +37602,12 @@ This method controls whether the position between two cached points is interpola
 			Return the right side of the string from a given position.
 			</description>
 		</method>
+		<method name="sha256_text">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="split">
 			<return type="StringArray">
 			</return>
@@ -41177,6 +41191,8 @@ This method controls whether the position between two cached points is interpola
 		</theme_item>
 		<theme_item name="hseparation" type="int">
 		</theme_item>
+		<theme_item name="draw_relationship_lines" type="int">
+		</theme_item>
 		<theme_item name="button_margin" type="int">
 		</theme_item>
 		<theme_item name="title_button_color" type="Color">
@@ -41190,6 +41206,8 @@ This method controls whether the position between two cached points is interpola
 		<theme_item name="font_color_selected" type="Color">
 		</theme_item>
 		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="relationship_line_color" type="Color">
 		</theme_item>
 		<theme_item name="drop_position_color" type="Color">
 		</theme_item>
