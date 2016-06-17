@@ -693,6 +693,7 @@ public:
 	static void unregister_editor_types();
 
 	Control *get_gui_base() { return gui_base; }
+	Control *get_theme_base() { return gui_base->get_parent_control(); }
 
 	static void add_io_error(const String& p_error);
 

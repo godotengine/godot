@@ -454,11 +454,73 @@ void ThemeEditor::_dialog_cbk() {
 void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 
-	if (p_option==POPUP_CREATE_TEMPLATE) {
+	if (p_option==POPUP_CREATE_EMPTY || p_option==POPUP_CREATE_EDITOR_EMPTY) {
 
-		file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-		file_dialog->set_current_path("custom.theme");
-		file_dialog->popup_centered_ratio();
+
+		Ref<Theme> base_theme;
+
+		if (p_option==POPUP_CREATE_EMPTY) {
+			base_theme = Theme::get_default();
+		} else {
+			base_theme = EditorNode::get_singleton()->get_theme_base()->get_theme();
+		}
+
+
+		{
+
+			List<StringName> types;
+			base_theme->get_type_list(&types);
+
+
+			for (List<StringName>::Element *T=types.front();T;T=T->next()) {
+				StringName type = T->get();
+
+				List<StringName> icons;
+				base_theme->get_icon_list(type,&icons);
+
+				for (List<StringName>::Element *E=icons.front();E;E=E->next()) {
+					theme->set_icon(E->get(),type,Ref<Texture>());
+				}
+
+				List<StringName> shaders;
+				base_theme->get_shader_list(type,&shaders);
+
+				for (List<StringName>::Element *E=shaders.front();E;E=E->next()) {
+					theme->set_shader(E->get(),type,Ref<Shader>());
+				}
+
+				List<StringName> styleboxs;
+				base_theme->get_stylebox_list(type,&styleboxs);
+
+				for (List<StringName>::Element *E=styleboxs.front();E;E=E->next()) {
+					theme->set_stylebox(E->get(),type,Ref<StyleBox>());
+				}
+
+				List<StringName> fonts;
+				base_theme->get_font_list(type,&fonts);
+
+				for (List<StringName>::Element *E=fonts.front();E;E=E->next()) {
+					theme->set_font(E->get(),type,Ref<Font>());
+				}
+
+				List<StringName> colors;
+				base_theme->get_color_list(type,&colors);
+
+				for (List<StringName>::Element *E=colors.front();E;E=E->next()) {
+					theme->set_color(E->get(),type,Color());
+				}
+
+
+				List<StringName> constants;
+				base_theme->get_constant_list(type,&constants);
+
+				for (List<StringName>::Element *E=constants.front();E;E=E->next()) {
+					theme->set_constant(E->get(),type,base_theme->get_constant(type,E->get()));
+				}
+
+			}
+
+		}
 		return;
 	}
 
@@ -602,7 +664,9 @@ ThemeEditor::ThemeEditor() {
 	theme_menu->get_popup()->add_item(TTR("Remove Item"),POPUP_REMOVE);
 	theme_menu->get_popup()->add_item(TTR("Remove Class Items"),POPUP_CLASS_REMOVE);
 	theme_menu->get_popup()->add_separator();
-	theme_menu->get_popup()->add_item(TTR("Create Template"),POPUP_CREATE_TEMPLATE);
+	theme_menu->get_popup()->add_item(TTR("Create Empty Template"),POPUP_CREATE_EMPTY);
+	theme_menu->get_popup()->add_item(TTR("Create Empty Editor Template"),POPUP_CREATE_EDITOR_EMPTY);
+
 	hb_menu->add_child(theme_menu);
 	theme_menu->get_popup()->connect("item_pressed", this,"_theme_menu_cbk");
 

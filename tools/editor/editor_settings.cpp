@@ -518,6 +518,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["global/source_font_size"]=PropertyInfo(Variant::INT,"global/source_font_size",PROPERTY_HINT_RANGE,"10,40,1",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
 	set("global/custom_font","");
 	hints["global/custom_font"]=PropertyInfo(Variant::STRING,"global/custom_font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
+	set("global/custom_theme","");
+	hints["global/custom_theme"]=PropertyInfo(Variant::STRING,"global/custom_theme",PROPERTY_HINT_GLOBAL_FILE,"*.res,*.tres,*.theme",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
+
+
 	set("global/autoscan_project_path","");
 	hints["global/autoscan_project_path"]=PropertyInfo(Variant::STRING,"global/autoscan_project_path",PROPERTY_HINT_GLOBAL_DIR);
 	set("global/default_project_path","");

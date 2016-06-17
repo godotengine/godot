@@ -5320,13 +5320,17 @@ EditorNode::EditorNode() {
 	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",true);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeConvexPolygon",true);
 
+	Control *theme_base = memnew( Control );
+	add_child(theme_base);
+	theme_base->set_area_as_parent_rect();
+
 	gui_base = memnew( Panel );
-	add_child(gui_base);
+	theme_base->add_child(gui_base);
 	gui_base->set_area_as_parent_rect();
 
 
 	theme = Ref<Theme>( memnew( Theme ) );
-	gui_base->set_theme( theme );
+	theme_base->set_theme( theme );
 	editor_register_icons(theme);
 	editor_register_fonts(theme);
 
@@ -5341,6 +5345,8 @@ EditorNode::EditorNode() {
 		}
 	}
 
+
+
 	Ref<StyleBoxTexture> focus_sbt=memnew( StyleBoxTexture );
 	focus_sbt->set_texture(theme->get_icon("EditorFocus","EditorIcons"));
 	for(int i=0;i<4;i++) {
@@ -5349,6 +5355,16 @@ EditorNode::EditorNode() {
 	}
 	focus_sbt->set_draw_center(false);
 	theme->set_stylebox("EditorFocus","EditorStyles",focus_sbt);
+
+
+	String custom_theme = EditorSettings::get_singleton()->get("global/custom_theme");
+	if (custom_theme!="") {
+		Ref<Theme> theme = ResourceLoader::load(custom_theme);
+		if (theme.is_valid()) {
+			gui_base->set_theme(theme);
+		}
+	}
+
 
 
 	resource_preview = memnew( EditorResourcePreview );
@@ -6540,12 +6556,12 @@ EditorNode::EditorNode() {
 	{
 		List<StringName> tl;
 		StringName ei = "EditorIcons";
-		gui_base->get_theme()->get_icon_list(ei,&tl);
+		theme_base->get_theme()->get_icon_list(ei,&tl);
 		for(List<StringName>::Element *E=tl.front();E;E=E->next()) {
 
 			if (!ObjectTypeDB::type_exists(E->get()))
 				continue;
-			icon_type_cache[E->get()]=gui_base->get_theme()->get_icon(E->get(),ei);
+			icon_type_cache[E->get()]=theme_base->get_theme()->get_icon(E->get(),ei);
 		}
 	}
 
