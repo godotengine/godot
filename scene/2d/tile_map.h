@@ -54,7 +54,8 @@ public:
 
 	enum TileOrigin {
 		TILE_ORIGIN_TOP_LEFT,
-		TILE_ORIGIN_CENTER
+		TILE_ORIGIN_CENTER,
+		TILE_ORIGIN_BOTTOM_LEFT
 	};
 
 
