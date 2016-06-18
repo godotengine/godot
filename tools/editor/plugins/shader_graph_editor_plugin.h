@@ -33,7 +33,6 @@
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/resources/shader.h"
-#include "servers/visual/shader_graph.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"

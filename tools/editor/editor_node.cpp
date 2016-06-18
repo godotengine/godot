@@ -5224,7 +5224,6 @@ EditorNode::EditorNode() {
 	ObjectTypeDB::set_type_enabled("CollisionShape",true);
 	ObjectTypeDB::set_type_enabled("CollisionShape2D",true);
 	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",true);
-	//ObjectTypeDB::set_type_enabled("BodyVolumeConvexPolygon",true);
 
 	Control *theme_base = memnew( Control );
 	add_child(theme_base);

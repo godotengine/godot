@@ -29,6 +29,9 @@
 #ifndef GIBBERISH_STREAM_H
 #define GIBBERISH_STREAM_H
 
+//TODO: This class needs to be adapted to the new AudioStream API,
+// or dropped if nobody cares about fixing it :) (GH-3307)
+
 #if 0
 #include "scene/resources/audio_stream.h"
 #include "scene/resources/sample_library.h"
