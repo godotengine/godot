@@ -353,6 +353,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(Rect2,has_point);
 	VCALL_LOCALMEM1R(Rect2,grow);
 	VCALL_LOCALMEM1R(Rect2,expand);
+	VCALL_LOCALMEM1R(Rect2,distance_to);
 
 	VCALL_LOCALMEM0R(Vector3, min_axis);
 	VCALL_LOCALMEM0R(Vector3, max_axis);
@@ -1355,6 +1356,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(RECT2,BOOL,Rect2,has_point,VECTOR2,"point",varray());
 	ADDFUNC1(RECT2,RECT2,Rect2,grow,REAL,"by",varray());
 	ADDFUNC1(RECT2,RECT2,Rect2,expand,VECTOR2,"to",varray());
+	ADDFUNC1(RECT2,REAL,Rect2,distance_to,VECTOR2,"b",varray());
 
 	ADDFUNC0(VECTOR3,INT,Vector3,min_axis,varray());
 	ADDFUNC0(VECTOR3,INT,Vector3,max_axis,varray());

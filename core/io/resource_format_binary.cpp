@@ -583,12 +583,26 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			DVector<Vector3> array;
 			array.resize(len);
 			DVector<Vector3>::Write w = array.write();
-			if (sizeof(Vector3)==12) {
-				f->get_buffer((uint8_t*)w.ptr(),len*sizeof(real_t)*3);
+#ifdef USE_QUAD_VECTORS
+			if (sizeof(Vector3) == 16) {
+				for (int i = 0; i<len; i++) {
+					w[i].x = f->get_real();
+					w[i].y = f->get_real();
+					w[i].z = f->get_real();
+					w[i]._unused = 0;
+				}
+#else
+			if (sizeof(Vector3) == 12) {
+				f->get_buffer((uint8_t*)w.ptr(), len*sizeof(real_t)* 3);
+#endif
 #ifdef BIG_ENDIAN_ENABLED
 				{
 					uint32_t *ptr=(uint32_t*)w.ptr();
+#ifdef USE_QUAD_VECTORS
+					for(int i=0;i<len*4;i++) {
+#else
 					for(int i=0;i<len*3;i++) {
+#endif
 
 						ptr[i]=BSWAP32(ptr[i]);
 					}
@@ -597,7 +611,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 #endif
 
 			} else {
-				ERR_EXPLAIN("Vector3 size is NOT 12!");
+				ERR_EXPLAIN("Vector3 size is NOT 16!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
 			}
 			w=DVector<Vector3>::Write();
