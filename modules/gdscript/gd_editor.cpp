@@ -1039,7 +1039,7 @@ static bool _guess_identifier_from_assignment_in_function(GDCompletionContext& c
 
 	for(int i=0;i<func->body->statements.size();i++) {
 
-		if (func->body->statements[i]->line >= p_src_line) {
+		if (func->body->statements[i]->line == p_src_line) {
 			break;
 		}
 
