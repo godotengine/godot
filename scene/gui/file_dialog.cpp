@@ -339,6 +339,11 @@ void FileDialog::update_file_list() {
 		}
 	}
 
+	if (dirs.find("..")==NULL) {
+		//may happen if lacking permissions
+		dirs.push_back("..");
+	}
+
 	dirs.sort_custom<NoCaseComparator>();
 	files.sort_custom<NoCaseComparator>();
 
