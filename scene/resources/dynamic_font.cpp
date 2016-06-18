@@ -66,9 +66,20 @@ void DynamicFontData::set_font_path(const String& p_path) {
 	font_path=p_path;
 }
 
+String DynamicFontData::get_font_path() const {
+	return font_path;
+}
+
 void DynamicFontData::set_force_autohinter(bool p_force) {
 
 	force_autohinter=p_force;
+}
+
+void DynamicFontData::_bind_methods() {
+	ObjectTypeDB::bind_method(_MD("set_font_path","path"),&DynamicFontData::set_font_path);
+	ObjectTypeDB::bind_method(_MD("get_font_path"),&DynamicFontData::get_font_path);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"font_path",PROPERTY_HINT_FILE,"*.ttf,*.otf"),_SCS("set_font_path"),_SCS("get_font_path"));
 }
 
 DynamicFontData::DynamicFontData()

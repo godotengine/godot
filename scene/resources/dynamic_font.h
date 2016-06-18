@@ -60,10 +60,14 @@ friend class DynamicFont;
 
 
 	Ref<DynamicFontAtSize> _get_dynamic_font_at_size(int p_size);
+protected:
+
+	static void _bind_methods();
 public:
 
 	void set_font_ptr(const uint8_t* p_font_mem,int p_font_mem_size);
 	void set_font_path(const String& p_path);
+	String get_font_path() const;
 	void set_force_autohinter(bool p_force);
 
 	DynamicFontData();
