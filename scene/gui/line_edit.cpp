@@ -54,26 +54,36 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 			if (b.pressed) {
 
+				shift_selection_check_pre(b.mod.shift);
+
 				set_cursor_at_pixel_pos(b.x);
 
-				if (b.doubleclick) {
+				if (b.mod.shift) {
 
-					selection.enabled=true;
-					selection.begin=0;
-					selection.end=text.length();
-					selection.doubleclick=true;
-				}
-
-				selection.drag_attempt=false;
-
-				if ((cursor_pos<selection.begin) || (cursor_pos>selection.end) || !selection.enabled)  {
-
-					selection_clear();
-					selection.cursor_start=cursor_pos;
+					selection_fill_at_cursor();
 					selection.creating=true;
-				} else if (selection.enabled) {
 
-					selection.drag_attempt=true;
+				} else {
+
+					if (b.doubleclick) {
+
+						selection.enabled=true;
+						selection.begin=0;
+						selection.end=text.length();
+						selection.doubleclick=true;
+					}
+
+					selection.drag_attempt=false;
+
+					if ((cursor_pos<selection.begin) || (cursor_pos>selection.end) || !selection.enabled)  {
+
+						selection_clear();
+						selection.cursor_start=cursor_pos;
+						selection.creating=true;
+					} else if (selection.enabled) {
+
+						selection.drag_attempt=true;
+					}
 				}
 
 				//			if (!editable)
@@ -339,8 +349,6 @@ void LineEdit::_input_event(InputEvent p_event) {
 					}
 				}
 
-
-				selection.old_shift=k.mod.shift;
 				update();
 
 			}
@@ -577,7 +585,7 @@ void LineEdit::undo() {
 
 void LineEdit::shift_selection_check_pre(bool p_shift) {
 
-	if (!selection.old_shift && p_shift)  {
+	if (!selection.enabled && p_shift)  {
 		selection.cursor_start=cursor_pos;
 	}
 	if (!p_shift)
@@ -820,7 +828,6 @@ void LineEdit::selection_clear() {
 	selection.cursor_start=0;
 	selection.enabled=false;
 	selection.creating=false;
-	selection.old_shift=false;
 	selection.doubleclick=false;
 	update();
 }
@@ -946,7 +953,6 @@ void LineEdit::select(int p_from, int p_to) {
 	selection.begin=p_from;
 	selection.end=p_to;
 	selection.creating=false;
-	selection.old_shift=false;
 	selection.doubleclick=false;
 	update();
 }
