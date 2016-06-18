@@ -1913,7 +1913,7 @@ bool _Directory::dir_exists(String p_dir) {
 int _Directory::get_space_left(){
 
 	ERR_FAIL_COND_V(!d,0);
-	return d->get_space_left();
+	return d->get_space_left()/1024*1024; //return value in megabytes, given binding is int
 }
 
 Error _Directory::copy(String p_from,String p_to){

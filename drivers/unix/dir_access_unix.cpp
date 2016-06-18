@@ -321,7 +321,7 @@ size_t DirAccessUnix::get_space_left() {
 	struct statvfs vfs;
 	if (statvfs(current_dir.utf8().get_data(), &vfs) != 0) {
 
-		return -1;
+		return 0;
 	};
 
 	return vfs.f_bfree * vfs.f_bsize;
