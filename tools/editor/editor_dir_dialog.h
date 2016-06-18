@@ -53,6 +53,8 @@ class EditorDirDialog : public ConfirmationDialog {
 	void _make_dir_confirm();
 
 	void ok_pressed();
+
+
 protected:
 
 	void _notification(int p_what);
