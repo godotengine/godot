@@ -8459,7 +8459,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Resize the array.
+			Set the size of the [ColorArray]. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
 			</description>
 		</method>
 		<method name="set">
@@ -8468,7 +8468,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-			Set an index in the array.
+			Change the [Color] at the given index.
 			</description>
 		</method>
 		<method name="size">
@@ -16981,7 +16981,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Resize the array.
+			Set the size of the [IntArray]. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
 			</description>
 		</method>
 		<method name="set">
@@ -16990,7 +16990,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="integer" type="int">
 			</argument>
 			<description>
-			Set an index in the array.
+			Change the int at the given index.
 			</description>
 		</method>
 		<method name="size">
@@ -20500,22 +20500,27 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="Mutex" inherits="Reference" category="Core">
 	<brief_description>
+	A synchronization Mutex.
 	</brief_description>
 	<description>
+	A synchronization Mutex. Element used in multi-threadding. Basically a binary [Semaphore]. Guarantees that only one thread has this lock, can be used to protect a critical section.
 	</description>
 	<methods>
 		<method name="lock">
 			<description>
+			Lock this [Mutex], blocks until it is unlocked by the current owner.
 			</description>
 		</method>
 		<method name="try_lock">
 			<return type="Error">
 			</return>
 			<description>
+			Try locking this [Mutex], does not block. Returns [OK] on success else [ERR_BUSY].
 			</description>
 		</method>
 		<method name="unlock">
 			<description>
+			Unlock this [Mutex], leaving it to others threads.
 			</description>
 		</method>
 	</methods>
@@ -29997,12 +30002,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="byte" type="int">
 			</argument>
 			<description>
+			Append an element at the end of the array.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Set the size of the [RawArray]. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
 			</description>
 		</method>
 		<method name="set">
@@ -30011,12 +30018,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="byte" type="int">
 			</argument>
 			<description>
+			Change the byte at the given index.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
+			Return the size of the array.
 			</description>
 		</method>
 		<method name="RawArray">
@@ -30025,6 +30034,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
+			Create from a generic array.
 			</description>
 		</method>
 	</methods>
@@ -30338,12 +30348,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
+			Append an element at the end of the array.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			Set the size of the [RealArray]. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
 			</description>
 		</method>
 		<method name="set">
@@ -30352,12 +30364,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+			Change the float at the given index.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
+			Return the size of the array.
 			</description>
 		</method>
 		<method name="RealArray">
@@ -30366,6 +30380,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
+			Create from a generic array.
 			</description>
 		</method>
 	</methods>
@@ -33670,20 +33685,24 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="Semaphore" inherits="Reference" category="Core">
 	<brief_description>
+	A synchronization Semaphore.
 	</brief_description>
 	<description>
+	A synchronization Semaphore. Element used in multi-threadding. Initialized to zero on creation.
 	</description>
 	<methods>
 		<method name="wait">
 			<return type="Error">
 			</return>
 			<description>
+			Tries to wait for the [Semaphore], if it's value is zero, blocks until non-zero.
 			</description>
 		</method>
 		<method name="post">
 			<return type="Error">
 			</return>
 			<description>
+			Lowers the [Semaphore], allowing one more thread in.
 			</description>
 		</method>
 	</methods>
@@ -37731,7 +37750,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Reset the size of the array.
+			Set the size of the [StringArray]. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
 			</description>
 		</method>
 		<method name="set">
@@ -37740,6 +37759,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="string" type="String">
 			</argument>
 			<description>
+			Change the [String] at the given index.
 			</description>
 		</method>
 		<method name="size">
@@ -37755,6 +37775,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
+			Create from a generic array.
 			</description>
 		</method>
 	</methods>
@@ -39655,8 +39676,10 @@ This method controls whether the position between two cached points is interpola
 </class>
 <class name="Thread" inherits="Reference" category="Core">
 	<brief_description>
+	A unit of execution in a process.
 	</brief_description>
 	<description>
+	A unit of execution in a process. Can run methods on [Object]s simultaneously. The use of synchronization via [Mutex], [Semaphore] is advised if working with shared objects.
 	</description>
 	<methods>
 		<method name="start">
@@ -39671,24 +39694,29 @@ This method controls whether the position between two cached points is interpola
 			<argument index="3" name="priority" type="int" default="1">
 			</argument>
 			<description>
+			Start a new [Thread], it will run "method" on object "instance" using "userdata" as an argument and running with "priority", one of PRIORITY_* enum.
+			Returns OK on success, or ERR_CANT_CREATE on failure.
 			</description>
 		</method>
 		<method name="get_id" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+			Return the id of the thread, uniquely identifying it among all threads.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Whether this thread is currently active, an active Thread cannot start work on a new method but can be joined with [method wait_to_finish].
 			</description>
 		</method>
 		<method name="wait_to_finish">
 			<return type="Variant">
 			</return>
 			<description>
+			Joins the [Thread] and waits for it to finish. Returns what the method called returned.
 			</description>
 		</method>
 	</methods>
@@ -42610,14 +42638,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="vector2" type="Vector2">
 			</argument>
 			<description>
-			Inserts a Vector2 at the end.
+			Insert a [Vector2] at the end.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Sets the size of the Vector2Array. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
+			Set the size of the Vector2Array. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
 			</description>
 		</method>
 		<method name="set">
@@ -42626,14 +42654,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="vector2" type="Vector2">
 			</argument>
 			<description>
-			Changes the Vector2 at the given index.
+			Change the [Vector2] at the given index.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
-			Returns the size of the array.
+			Return the size of the array.
 			</description>
 		</method>
 		<method name="Vector2Array">
@@ -42642,7 +42670,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-			Constructs a new Vector2Array. Optionally, you can pass in an Array that will be converted.
+			Construct a new [Vector2Array]. Optionally, you can pass in an Array that will be converted.
 			</description>
 		</method>
 	</methods>
@@ -42869,14 +42897,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="vector3" type="Vector3">
 			</argument>
 			<description>
-			Inserts a Vector3 at the end.
+			Insert a Vector3 at the end.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-			Sets the size of the Vector3Array. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
+			Set the size of the Vector3Array. If larger than the current size it will reserve some space beforehand, and if it is smaller it will cut off the array.
 			</description>
 		</method>
 		<method name="set">
@@ -42885,14 +42913,14 @@ This method controls whether the position between two cached points is interpola
 			<argument index="1" name="vector3" type="Vector3">
 			</argument>
 			<description>
-			Changes the Vector3 at the given index.
+			Change the [Vector3] at the given index.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
-			Returns the size of the array.
+			Return the size of the array.
 			</description>
 		</method>
 		<method name="Vector3Array">
@@ -42901,7 +42929,7 @@ This method controls whether the position between two cached points is interpola
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-			Constructs a new Vector3Array. Optionally, you can pass in an Array that will be converted.
+			Construct a new Vector3Array. Optionally, you can pass in an Array that will be converted.
 			</description>
 		</method>
 	</methods>
