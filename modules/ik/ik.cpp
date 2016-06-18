@@ -1,12 +1,12 @@
 /*************************************************************************/
 /*  ik.cpp                                                               */
+/* Copyright (c) 2016 Sergey Lapin <slapinid@gmail.com>                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
-/* This file is Copyright (c) 2016 Sergey Lapin <slapinid@gmail.com>     */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
