@@ -1512,12 +1512,18 @@ static bool _has_visible_children(Node* p_node) {
 }
 
 
+
 static Node* _find_last_visible(Node*p_node) {
 
 	Node*last=NULL;
-	for(int i=0;i<p_node->get_child_count();i++) {
-		if (_is_node_visible(p_node->get_child(i))) {
-			last=p_node->get_child(i);
+
+	bool collapsed = p_node->has_meta("_editor_collapsed") ? (bool)p_node->get_meta("_editor_collapsed") : false;
+
+	if (!collapsed)	{
+		for(int i=0;i<p_node->get_child_count();i++) {
+			if (_is_node_visible(p_node->get_child(i))) {
+				last=p_node->get_child(i);
+			}
 		}
 	}
 
@@ -1588,18 +1594,27 @@ void SceneTreeDock::_normalize_drop(Node*& to_node, int &to_pos,int p_type) {
 
 			Node* lower_sibling=NULL;
 
-			for(int i=to_node->get_index()+1;i<to_node->get_parent()->get_child_count();i++) {
-				Node *c =to_node->get_parent()->get_child(i);
-				if (_is_node_visible(c)) {
-					lower_sibling=c;
+
+
+			if (_has_visible_children(to_node) ) {
+				to_pos=0;
+			} else {
+
+
+				for(int i=to_node->get_index()+1;i<to_node->get_parent()->get_child_count();i++) {
+					Node *c =to_node->get_parent()->get_child(i);
+					if (_is_node_visible(c)) {
+						lower_sibling=c;
+						break;
+					}
 				}
-			}
 
-			if (lower_sibling) {
-				to_pos=lower_sibling->get_index();
-			}
+				if (lower_sibling) {
+					to_pos=lower_sibling->get_index();
+				}
 
-			to_node=to_node->get_parent();
+				to_node=to_node->get_parent();
+			}
 #if 0
 				//quite complicated, look for next visible in tree
 				upper_sibling=_find_last_visible(upper_sibling);
