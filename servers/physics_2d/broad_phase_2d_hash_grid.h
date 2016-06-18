@@ -55,8 +55,26 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 
 	};
 
+	struct RC {
+
+		int ref;
+
+		_FORCE_INLINE_ int inc() {
+			ref++;
+			return ref;
+		}
+		_FORCE_INLINE_ int dec() {
+			ref--;
+			return ref;
+		}
+
+		_FORCE_INLINE_ RC() {
+			ref=0;
+		}
+	};
 
 	Map<ID,Element> element_map;
+	Map<Element*,RC> large_elements;
 
 	ID current;
 
@@ -86,6 +104,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	Map<PairKey,PairData> pair_map;
 
 	int cell_size;
+	int large_object_min_surface;
 
 	PairCallback pair_callback;
 	void *pair_userdata;
@@ -127,23 +146,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 
 	};
 
-	struct RC {
 
-		int ref;
-
-		_FORCE_INLINE_ int inc() {
-			ref++;
-			return ref;
-		}
-		_FORCE_INLINE_ int dec() {
-			ref--;
-			return ref;
-		}
-
-		_FORCE_INLINE_ RC() {
-			ref=0;
-		}
-	};
 
 	struct PosBin {
 

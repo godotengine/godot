@@ -29,6 +29,8 @@
 #include "broad_phase_2d_hash_grid.h"
 #include "globals.h"
 
+#define LARGE_ELEMENT_FI 1.01239812
+
 void BroadPhase2DHashGrid::_pair_attempt(Element *p_elem, Element* p_with) {
 
 	Map<Element*,PairData*>::Element *E=p_elem->paired.find(p_with);
@@ -102,6 +104,26 @@ void BroadPhase2DHashGrid::_check_motion(Element *p_elem) {
 void BroadPhase2DHashGrid::_enter_grid( Element* p_elem, const Rect2& p_rect,bool p_static) {
 
 
+
+	Vector2 sz = (p_rect.size/cell_size*LARGE_ELEMENT_FI); //use magic number to avoid floating point issues
+	if (sz.width*sz.height > large_object_min_surface) {
+		//large object, do not use grid, must check against all elements
+		for (Map<ID,Element>::Element *E=element_map.front();E;E=E->next()) {
+			if (E->key()==p_elem->self)
+				continue; // do not pair against itself
+			if (E->get().owner == p_elem->owner)
+				continue;
+			if (E->get()._static && p_static)
+				continue;
+
+			_pair_attempt(p_elem,&E->get());
+		}
+
+
+		large_elements[p_elem].inc();
+		return;
+	}
+
 	Point2i from = (p_rect.pos/cell_size).floor();
 	Point2i to = ((p_rect.pos+p_rect.size)/cell_size).floor();
 
@@ -174,11 +196,39 @@ void BroadPhase2DHashGrid::_enter_grid( Element* p_elem, const Rect2& p_rect,boo
 
 	}
 
+	//pair separatedly with large elements
+
+	for (Map<Element*,RC>::Element *E=large_elements.front();E;E=E->next()) {
+
+		if (E->key()==p_elem)
+			continue; // do not pair against itself
+		if (E->key()->owner == p_elem->owner)
+			continue;
+		if (E->key()->_static && p_static)
+			continue;
+
+		_pair_attempt(E->key(),p_elem);
+	}
 
 }
 
 
 void BroadPhase2DHashGrid::_exit_grid( Element* p_elem, const Rect2& p_rect,bool p_static) {
+
+	Vector2 sz = (p_rect.size/cell_size*LARGE_ELEMENT_FI);
+	if (sz.width*sz.height > large_object_min_surface) {
+
+		//unpair all elements, instead of checking all, just check what is already paired, so we at least save from checking static vs static
+		for (Map<Element*,PairData*>::Element *E=p_elem->paired.front();E;E=E->next()) {
+
+			_unpair_attempt(p_elem,E->key());
+		}
+
+		if (large_elements[p_elem].dec()==0) {
+			large_elements.erase(p_elem);
+		}
+		return;
+	}
 
 
 	Point2i from = (p_rect.pos/cell_size).floor();
@@ -273,6 +323,20 @@ void BroadPhase2DHashGrid::_exit_grid( Element* p_elem, const Rect2& p_rect,bool
 		}
 
 	}
+
+
+	for (Map<Element*,RC>::Element *E=large_elements.front();E;E=E->next()) {
+		if (E->key()==p_elem)
+			continue; // do not pair against itself
+		if (E->key()->owner == p_elem->owner)
+			continue;
+		if (E->key()->_static && p_static)
+			continue;
+
+		//unpair from large elements
+		_unpair_attempt(p_elem,E->key());
+	}
+
 
 }
 
@@ -526,6 +590,28 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2& p_from, const Vector2& p_t
 
 	}
 
+	for (Map<Element*,RC>::Element *E=large_elements.front();E;E=E->next()) {
+
+		if (cullcount>=p_max_results)
+			break;
+		if (E->key()->pass==pass)
+			continue;
+
+		E->key()->pass=pass;
+
+//		if (use_aabb && !p_aabb.intersects(E->key()->aabb))
+//			continue;
+
+		if (!E->key()->aabb.intersects_segment(p_from,p_to))
+			continue;
+
+		p_results[cullcount]=E->key()->owner;
+		p_result_indices[cullcount]=E->key()->subindex;
+		cullcount++;
+
+
+	}
+
 	return cullcount;
 }
 
@@ -547,6 +633,27 @@ int BroadPhase2DHashGrid::cull_aabb(const Rect2& p_aabb,CollisionObject2DSW** p_
 
 	}
 
+	for (Map<Element*,RC>::Element *E=large_elements.front();E;E=E->next()) {
+
+		if (cullcount>=p_max_results)
+			break;
+		if (E->key()->pass==pass)
+			continue;
+
+		E->key()->pass=pass;
+
+		if (!p_aabb.intersects(E->key()->aabb))
+			continue;
+
+//		if (!E->key()->aabb.intersects_segment(p_from,p_to))
+//			continue;
+
+		p_results[cullcount]=E->key()->owner;
+		p_result_indices[cullcount]=E->key()->subindex;
+		cullcount++;
+
+
+	}
 	return cullcount;
 }
 
@@ -581,6 +688,7 @@ BroadPhase2DHashGrid::BroadPhase2DHashGrid() {
 	hash_table = memnew_arr( PosBin*, hash_table_size);
 
 	cell_size = GLOBAL_DEF("physics_2d/cell_size",128);
+	large_object_min_surface = GLOBAL_DEF("physics_2d/large_object_surface_treshold_in_cells",512);
 
 	for(int i=0;i<hash_table_size;i++)
 		hash_table[i]=NULL;
