@@ -77,6 +77,7 @@ _FORCE_INLINE_ static void _generate_contacts_point_edge(const Vector2 * p_point
 
 
 struct _generate_contacts_Pair {
+	bool a;
 	int idx;
 	float d;
 	_FORCE_INLINE_ bool operator <(const _generate_contacts_Pair& l) const { return d< l.d; }
@@ -89,11 +90,13 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 * p_points
 	ERR_FAIL_COND( p_point_count_B != 2 ); // circle is actually a 4x3 matrix
 #endif
 
-
+# if 0
 	Vector2 rel_A=p_points_A[1]-p_points_A[0];
 	Vector2 rel_B=p_points_B[1]-p_points_B[0];
 
 	Vector2 t = p_collector->normal.tangent();
+
+	print_line("tangent: "+t);
 
 	real_t dA[2]={t.dot(p_points_A[0]),t.dot(p_points_A[1])};
 	Vector2 pA[2]={p_points_A[0],p_points_A[1]};
@@ -201,40 +204,54 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 * p_points
 		}
 	}
 
+#endif
 
-#if 0
+#if 1
 
-	Vector2 axis = rel_A.normalized();
-	Vector2 axis_B = rel_B.normalized();
-	if (axis.dot(axis_B)<0)
-		axis_B=-axis_B;
-	axis=(axis+axis_B)*0.5;
 
-	Vector2 normal_A = axis.tangent();
-	real_t dA = normal_A.dot(p_points_A[0]);
-	Vector2 normal_B = rel_B.tangent().normalized();
-	real_t dB = normal_A.dot(p_points_B[0]);
 
-	Vector2 A[4]={ normal_A.plane_project(dA,p_points_B[0]), normal_A.plane_project(dA,p_points_B[1]), p_points_A[0], p_points_A[1] };
-	Vector2 B[4]={ p_points_B[0], p_points_B[1], normal_B.plane_project(dB,p_points_A[0]), normal_B.plane_project(dB,p_points_A[1]) };
+
+	Vector2 n = p_collector->normal;
+	Vector2 t = n.tangent();
+	real_t dA = n.dot(p_points_A[0]);
+	real_t dB = n.dot(p_points_B[0]);
 
 	_generate_contacts_Pair dvec[4];
-	for(int i=0;i<4;i++) {
-		dvec[i].d=axis.dot(p_points_A[0]-A[i]);
-		dvec[i].idx=i;
-	}
+
+	dvec[0].d=t.dot(p_points_A[0]);
+	dvec[0].a=true;
+	dvec[0].idx=0;
+	dvec[1].d=t.dot(p_points_A[1]);
+	dvec[1].a=true;
+	dvec[1].idx=1;
+	dvec[2].d=t.dot(p_points_B[0]);
+	dvec[2].a=false;
+	dvec[2].idx=0;
+	dvec[3].d=t.dot(p_points_B[1]);
+	dvec[3].a=false;
+	dvec[3].idx=1;
 
 	SortArray<_generate_contacts_Pair> sa;
 	sa.sort(dvec,4);
 
 	for(int i=1;i<=2;i++) {
 
-		Vector2 a = A[i];
-		Vector2 b = B[i];
-		if (p_collector->normal.dot(a) > p_collector->normal.dot(b)-CMP_EPSILON)
-			continue;
-		p_collector->call(a,b);
+		if (dvec[i].a) {
+			Vector2 a = p_points_A[dvec[i].idx];
+			Vector2 b = n.plane_project(dB,a);
+			if (n.dot(a) > n.dot(b)-CMP_EPSILON)
+				continue;
+			p_collector->call(a,b);
+		} else {
+			Vector2 b = p_points_B[dvec[i].idx];
+			Vector2 a = n.plane_project(dA,b);
+			if (n.dot(a) > n.dot(b)-CMP_EPSILON)
+				continue;
+			p_collector->call(a,b);
+		}
 	}
+
+
 
 #elif 0
 	Vector2 axis = rel_A.normalized(); //make an axis
