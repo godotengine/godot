@@ -151,11 +151,7 @@ private:
 		InputEvent *_input_event;
 		Image *_image;
 		void *_ptr; //generic pointer
-#ifdef USE_QUAD_VECTORS
-		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t)*5) ? sizeof(ObjData) : (sizeof(real_t)*5)]; // plane uses an extra real
-#else
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t)*4) ? sizeof(ObjData) : (sizeof(real_t)*4)];
-#endif
 	} _data;
 
 

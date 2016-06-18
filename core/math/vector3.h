@@ -44,18 +44,6 @@ struct Vector3 {
 	};
 
 	union {
-
-#ifdef USE_QUAD_VECTORS
-
-		struct {
-			real_t x;
-			real_t y;
-			real_t z;
-			real_t _unused;
-		};
-		real_t coord[4];
-#else
-
 		struct {
 			real_t x;
 			real_t y;
@@ -63,7 +51,6 @@ struct Vector3 {
 		};
 
 		real_t coord[3];
-#endif
 	};
 
 	_FORCE_INLINE_ const real_t& operator[](int p_axis) const {
