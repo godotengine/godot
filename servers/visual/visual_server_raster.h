@@ -32,7 +32,7 @@
 
 #include "servers/visual_server.h"
 #include "servers/visual/rasterizer.h"
-#include "balloon_allocator.h"
+#include "allocators.h"
 #include "octree.h"
 
 /**

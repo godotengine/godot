@@ -33,7 +33,6 @@
 #include "os/main_loop.h"
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
-#include "scene/main/scene_singleton.h"
 #include "os/thread_safe.h"
 #include "self_list.h"
 /**

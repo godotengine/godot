@@ -32,11 +32,10 @@
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/box_shape.h"
 #include "scene/resources/capsule_shape.h"
-//#include "scene/resources/cylinder_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/concave_polygon_shape.h"
-#include "scene/resources/height_map_shape.h"
 #include "scene/resources/plane_shape.h"
+//TODO: Implement CylinderShape and HeightMapShape?
 #include "mesh_instance.h"
 #include "physics_body.h"
 #include "quick_hull.h"

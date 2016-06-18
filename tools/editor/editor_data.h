@@ -34,7 +34,6 @@
 #include "list.h"
 #include "undo_redo.h"
 #include "pair.h"
-#include "default_saver.h"
 
 class EditorHistory {
 

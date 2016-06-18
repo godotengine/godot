@@ -33,7 +33,6 @@
 #include "scene/resources/animation.h"
 #include "scene/3d/spatial.h"
 #include "scene/3d/skeleton.h"
-#include "scene/main/misc.h"
 #include "scene/2d/node_2d.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

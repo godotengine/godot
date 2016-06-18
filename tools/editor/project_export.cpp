@@ -36,7 +36,6 @@
 #include "io/resource_saver.h"
 #include "os/os.h"
 #include "scene/gui/box_container.h"
-#include "default_saver.h"
 
 #include "scene/gui/tab_container.h"
 #include "scene/gui/scroll_container.h"
