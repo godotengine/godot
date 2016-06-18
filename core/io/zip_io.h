@@ -39,11 +39,14 @@ static void* zipio_open(void* data, const char* p_fname, int mode) {
 
 	FileAccess *&f = *(FileAccess**)data;
 
+	String fname;
+	fname.parse_utf8(p_fname);
+
 	if (mode & ZLIB_FILEFUNC_MODE_WRITE) {
-		f = FileAccess::open(p_fname,FileAccess::WRITE);
+		f = FileAccess::open(fname,FileAccess::WRITE);
 	} else {
 
-		f = FileAccess::open(p_fname,FileAccess::READ);
+		f = FileAccess::open(fname,FileAccess::READ);
 	}
 
 	if (!f)
