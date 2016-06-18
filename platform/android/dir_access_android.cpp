@@ -43,10 +43,10 @@ bool DirAccessAndroid::list_dir_begin() {
 
 	AAssetDir* aad = AAssetManager_openDir(FileAccessAndroid::asset_manager,current_dir.utf8().get_data());
 	if (!aad)
-		return true; //nothing
+		return false; //nothing
 
 
-	return false;
+	return true;
 }
 
 String DirAccessAndroid::get_next(){

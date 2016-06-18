@@ -55,11 +55,11 @@ bool DirAccessJAndroid::list_dir_begin() {
 	jstring js = env->NewStringUTF(current_dir.utf8().get_data());
 	int res = env->CallIntMethod(io,_dir_open,js);
 	if (res<=0)
-		return true;
+		return false;
 
 	id=res;
 
-	return false;
+	return true;
 }
 
 String DirAccessJAndroid::get_next(){

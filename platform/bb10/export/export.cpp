@@ -329,7 +329,7 @@ Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debu
 
 	bool berr = bar_dir.ends_with("bb10_export");
 	if (berr) {
-		if (da->list_dir_begin()) {
+		if (!da->list_dir_begin()) {
 			EditorNode::add_io_error("Can't ensure that dir is empty:\n"+bar_dir);
 			ERR_FAIL_COND_V(berr,FAILED);
 		};
