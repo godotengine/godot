@@ -122,6 +122,7 @@ public:
 	void select_all();
 
 	void delete_char();
+	void delete_text(int p_from_column, int p_to_column);
 	void set_text(String p_text);
 	String get_text() const;
 	void set_cursor_pos(int p_pos);
