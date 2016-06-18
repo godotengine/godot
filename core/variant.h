@@ -202,9 +202,8 @@ public:
 	operator unsigned long() const;
 #endif
 
-#ifndef	CHARTYPE_16BITS
+
 	operator CharType() const;
-#endif
 	operator float() const;
 	operator double() const;
 	operator String() const;
