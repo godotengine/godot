@@ -1891,6 +1891,13 @@ String _Directory::get_current_dir() {
 Error _Directory::make_dir(String p_dir){
 
 	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
+	if (!p_dir.is_rel_path()) {
+		DirAccess *d = DirAccess::create_for_path(p_dir);
+		Error err = d->make_dir(p_dir);
+		memdelete(d);
+		return err;
+
+	}
 	return d->make_dir(p_dir);
 }
 Error _Directory::make_dir_recursive(String p_dir){
@@ -1902,12 +1909,26 @@ Error _Directory::make_dir_recursive(String p_dir){
 bool _Directory::file_exists(String p_file){
 
 	ERR_FAIL_COND_V(!d,false);
+
+	if (!p_file.is_rel_path()) {
+		return FileAccess::exists(p_file);
+	}
+
 	return d->file_exists(p_file);
 }
 
 bool _Directory::dir_exists(String p_dir) {
 	ERR_FAIL_COND_V(!d,false);
-	return d->dir_exists(p_dir);
+	if (!p_dir.is_rel_path()) {
+
+		DirAccess *d = DirAccess::create_for_path(p_dir);
+		bool exists = d->dir_exists(p_dir);
+		memdelete(d);
+		return exists;
+
+	} else {
+		return d->dir_exists(p_dir);
+	}
 }
 
 int _Directory::get_space_left(){
@@ -1924,12 +1945,26 @@ Error _Directory::copy(String p_from,String p_to){
 Error _Directory::rename(String p_from, String p_to){
 
 	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
+	if (!p_from.is_rel_path()) {
+		DirAccess *d = DirAccess::create_for_path(p_from);
+		Error err = d->rename(p_from,p_to);
+		memdelete(d);
+		return err;
+	}
+
 	return d->rename(p_from,p_to);
 
 }
 Error _Directory::remove(String p_name){
 
 	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
+	if (!p_name.is_rel_path()) {
+		DirAccess *d = DirAccess::create_for_path(p_name);
+		Error err = d->remove(p_name);
+		memdelete(d);
+		return err;
+	}
+
 	return d->remove(p_name);
 }
 
