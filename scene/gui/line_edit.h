@@ -67,7 +67,6 @@ private:
 		int cursor_start;
 		bool enabled;
 		bool creating;
-		bool old_shift;
 		bool doubleclick;
 		bool drag_attempt;
 	} selection;
