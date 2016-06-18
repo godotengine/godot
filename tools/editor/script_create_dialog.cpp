@@ -184,7 +184,7 @@ void ScriptCreateDialog::_built_in_pressed() {
 
 void ScriptCreateDialog::_browse_path() {
 
-	file_browse->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file_browse->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	file_browse->clear_filters();
 	List<String> extensions;
 
