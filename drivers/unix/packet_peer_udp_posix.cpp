@@ -124,7 +124,6 @@ Error PacketPeerUDPPosix::listen(int p_port, int p_recv_buffer_size){
 		close();
 		return ERR_UNAVAILABLE;
 	}
-	printf("UDP Connection listening on port %i  bufsize %i \n", p_port,p_recv_buffer_size);
 	rb.resize(nearest_shift(p_recv_buffer_size));
 	return OK;
 }

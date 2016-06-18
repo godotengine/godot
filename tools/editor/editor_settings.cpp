@@ -63,7 +63,6 @@ bool EditorSettings::_set(const StringName& p_name, const Variant& p_value) {
 
 		Array arr=p_value;
 		ERR_FAIL_COND_V(arr.size() && arr.size()&1,true);
-		print_line("shortcuts: "+Variant(arr).get_construct_string());
 		for(int i=0;i<arr.size();i+=2) {
 
 			String name = arr[i];
@@ -399,14 +398,11 @@ String EditorSettings::get_settings_path() const {
 void EditorSettings::setup_language() {
 
 	String lang = get("global/editor_language");
-	print_line("LANG IS "+lang);
 	if (lang=="en")
 		return; //none to do
 
 	for(int i=0;i<translations.size();i++) {
-		print_line("TESTING "+translations[i]->get_locale());
 		if (translations[i]->get_locale()==lang) {
-			print_line("ok translation");
 			TranslationServer::get_singleton()->set_tool_translation(translations[i]);
 			break;
 		}
@@ -711,7 +707,6 @@ void EditorSettings::notify_changes() {
 		sml = OS::get_singleton()->get_main_loop()->cast_to<SceneTree>();
 
 	if (!sml) {
-		print_line("not SML");
 		return;
 	}
 

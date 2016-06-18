@@ -2201,7 +2201,7 @@ void ScriptEditor::_editor_stop() {
 
 void ScriptEditor::_add_callback(Object *p_obj, const String& p_function, const StringArray& p_args) {
 
-	print_line("add callback! hohoho");
+	//print_line("add callback! hohoho"); kinda sad to remove this
 	ERR_FAIL_COND(!p_obj);
 	Ref<Script> script = p_obj->get_script();
 	ERR_FAIL_COND( !script.is_valid() );
@@ -2243,7 +2243,6 @@ void ScriptEditor::_add_callback(Object *p_obj, const String& p_function, const 
 
 void ScriptEditor::_editor_settings_changed() {
 
-	print_line("settings changed");
 	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/trim_trailing_whitespace_on_save");
 	float autosave_time = EditorSettings::get_singleton()->get("text_editor/autosave_interval_secs");
 	if (autosave_time>0) {
@@ -2284,7 +2283,6 @@ void ScriptEditor::_editor_settings_changed() {
 
 void ScriptEditor::_autosave_scripts() {
 
-	print_line("autosaving");
 	save_all_scripts();
 }
 
