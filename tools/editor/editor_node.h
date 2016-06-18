@@ -65,7 +65,6 @@
 #include "tools/editor/editor_log.h"
 #include "tools/editor/scene_tree_dock.h"
 #include "tools/editor/resources_dock.h"
-#include "tools/editor/optimized_save_dialog.h"
 #include "tools/editor/editor_run_script.h"
 
 #include "tools/editor/editor_run_native.h"

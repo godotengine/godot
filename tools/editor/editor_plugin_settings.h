@@ -32,7 +32,6 @@
 
 #include "scene/gui/dialogs.h"
 #include "property_editor.h"
-#include "optimized_save_dialog.h"
 #include "undo_redo.h"
 #include "editor_data.h"
 

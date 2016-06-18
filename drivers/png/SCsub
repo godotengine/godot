@@ -3,7 +3,6 @@ Import('env_drivers')
 
 
 png_sources = [
-	"png/example.c",
 	"png/png.c",
 	"png/pngerror.c",
 	"png/pngget.c",
