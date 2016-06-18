@@ -191,22 +191,20 @@ Error DirAccessWindows::make_dir(String p_dir) {
 
 #else
 
-	p_dir=fix_path(p_dir);
-
+	if (p_dir.is_rel_path())
+		p_dir=get_current_dir().plus_file(p_dir);
+	else
+		p_dir=fix_path(p_dir);
 	//p_dir.replace("/","\\");
 
 	bool success;
 	int err;
 
-	wchar_t real_current_dir_name[2048];
-	GetCurrentDirectoryW(2048,real_current_dir_name);
-
-	SetCurrentDirectoryW(current_dir.c_str());
+	p_dir="\\\\?\\"+p_dir; //done according to
+// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
 
 	success=CreateDirectoryW(p_dir.c_str(), NULL);
 	err = GetLastError();
-
-	SetCurrentDirectoryW(real_current_dir_name);
 
 	if (success) {
 		return OK;
@@ -314,6 +312,7 @@ Error DirAccessWindows::remove(String p_path)  {
 		p_path=get_current_dir().plus_file(p_path);
 	else
 		p_path=fix_path(p_path);
+
 
 	printf("erasing %s\n",p_path.utf8().get_data());
 	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;

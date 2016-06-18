@@ -66,7 +66,7 @@ bool DirAccessUnix::file_exists(String p_file) {
 
 
 	if (p_file.is_rel_path())
-		p_file=current_dir+"/"+p_file;
+		p_file=current_dir.plus_file(p_file);
 	else
 		p_file=fix_path(p_file);
 
@@ -104,7 +104,7 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 uint64_t DirAccessUnix::get_modified_time(String p_file) {
 
 	if (p_file.is_rel_path())
-		p_file=current_dir+"/"+p_file;
+		p_file=current_dir.plus_file(p_file);
 	else
 		p_file=fix_path(p_file);
 
@@ -138,11 +138,9 @@ String DirAccessUnix::get_next() {
 	//typedef struct stat Stat;
 	struct stat flags;
 
-	String fname;
-	if (fname.parse_utf8(entry->d_name))
-		fname=entry->d_name; //no utf8, maybe latin?
+	String fname = fix_unicode_name(entry->d_name);
 
-	String f=current_dir+"/"+fname;
+	String f=current_dir.plus_file(fname);
 
 	if (stat(f.utf8().get_data(),&flags)==0) {
 
@@ -201,8 +199,17 @@ Error DirAccessUnix::make_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
 
-	p_dir=fix_path(p_dir);
-	
+	if (p_dir.is_rel_path())
+		p_dir=get_current_dir().plus_file(p_dir);
+	else
+		p_dir=fix_path(p_dir);
+#if 1
+
+
+	bool success=(mkdir(p_dir.utf8().get_data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)==0);
+	int err = errno;
+
+#else
 	char real_current_dir_name[2048];
 	getcwd(real_current_dir_name,2048);
 	chdir(current_dir.utf8().get_data()); //ascii since this may be unicode or wathever the host os wants
@@ -211,7 +218,7 @@ Error DirAccessUnix::make_dir(String p_dir) {
 	int err = errno;
 
 	chdir(real_current_dir_name);
-
+#endif
 	if (success) {
 		return OK;
 	};
