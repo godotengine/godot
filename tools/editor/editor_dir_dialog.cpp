@@ -78,6 +78,11 @@ void EditorDirDialog::_update_dir(TreeItem* p_item) {
 
 void EditorDirDialog::reload() {
 
+	if (!is_visible()) {
+		must_reload=true;
+		return;
+	}
+
 	tree->clear();
 	TreeItem *root = tree->create_item();
 	root->set_metadata(0,"res://");
@@ -85,6 +90,8 @@ void EditorDirDialog::reload() {
 	root->set_text(0,"/");
 	_update_dir(root);
 	_item_collapsed(root);
+	must_reload=false;
+
 }
 
 
@@ -95,6 +102,12 @@ void EditorDirDialog::_notification(int p_what) {
 		tree->connect("item_collapsed",this,"_item_collapsed",varray(),CONNECT_DEFERRED);
 		EditorFileSystem::get_singleton()->connect("filesystem_changed",this,"reload");
 
+	}
+
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+		if (must_reload && is_visible()) {
+			reload();
+		}
 	}
 }
 
@@ -242,6 +255,8 @@ EditorDirDialog::EditorDirDialog() {
 	add_child(mkdirerr);
 
 	get_ok()->set_text(TTR("Choose"));
+
+	must_reload=false;
 
 
 
