@@ -1445,12 +1445,12 @@ Variant::operator unsigned char() const {
 
 	return 0;
 }
-#ifndef CHARTYPE_16BITS
+
 Variant::operator CharType() const {
 
 	return operator unsigned int();
 }
-#endif
+
 
 Variant::operator float() const {
 
