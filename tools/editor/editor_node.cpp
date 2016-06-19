@@ -205,6 +205,18 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 			case KEY_F6: _menu_option_confirm(RUN_PLAY_SCENE,true); break;
 			//case KEY_F7: _menu_option_confirm(RUN_PAUSE,true); break;
 			case KEY_F8: _menu_option_confirm(RUN_STOP,true); break;*/
+			case KEY_TAB:
+				if (p_event.key.mod.command) {
+					int current_tab = editor_data.get_edited_scene();
+					int tab_offset = 1;
+					if (p_event.key.mod.shift)
+						tab_offset = -1;
+					int next_tab = current_tab + tab_offset;
+					next_tab = next_tab >= 0 ? next_tab : editor_data.get_edited_scene_count() - 1;
+					next_tab %= editor_data.get_edited_scene_count();
+					_scene_tab_changed(next_tab);
+				}
+			break;
 		}
 
 	}
