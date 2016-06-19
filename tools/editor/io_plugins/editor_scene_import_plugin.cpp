@@ -30,6 +30,7 @@
 #include "globals.h"
 #include "tools/editor/editor_node.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/box_shape.h"
 #include "os/file_access.h"
 #include "scene/3d/path.h"
 #include "scene/animation/animation_player.h"
@@ -1073,7 +1074,7 @@ const EditorSceneImportDialog::FlagInfo EditorSceneImportDialog::scene_flag_name
 	{EditorSceneImportPlugin::SCENE_FLAG_LINEARIZE_DIFFUSE_TEXTURES,("Actions"),"SRGB->Linear Of Diffuse Textures",false},
 	{EditorSceneImportPlugin::SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY,("Actions"),"Convert Normal Maps to XY",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS,("Actions"),"Set Material Lightmap to UV2 if Tex2Array Exists",true},
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,("Create"),"Create Collisions (-col},-colonly)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,("Create"),"Create Collisions and/or Rigid Bodies (-col,-colonly,-rigid)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_PORTALS,("Create"),"Create Portals (-portal)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_ROOMS,("Create"),"Create Rooms (-room)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_SIMPLIFY_ROOMS,("Create"),"Simplify Rooms",false},
@@ -1744,6 +1745,49 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 			sb->add_child(colshape);
 			colshape->set_owner(sb->get_owner());
 		}
+
+	} else if (p_flags&SCENE_FLAG_CREATE_COLLISIONS && _teststr(name,"rigid") && p_node->cast_to<MeshInstance>()) {
+
+		if (isroot)
+			return p_node;
+
+		// get mesh instance and bounding box
+		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		AABB aabb = mi->get_aabb();
+
+		// create a new rigid body collision node
+		RigidBody * rigid_body = memnew( RigidBody );
+		Node * col = rigid_body;
+		ERR_FAIL_COND_V(!col,NULL);
+
+		// remove node name postfix
+		col->set_name(_fixstr(name,"rigid"));
+		// get mesh instance xform matrix to the rigid body collision node
+		col->cast_to<Spatial>()->set_transform(mi->get_transform());
+		// save original node by duplicating it into a new instance and correcting the name
+		Node * mesh = p_node->duplicate();
+		mesh->set_name(_fixstr(name,"rigid"));
+		// reset the xform matrix of the duplicated node so it can inherit parent node xform
+		mesh->cast_to<Spatial>()->set_transform(Transform(Matrix3()));
+		// reparent the new mesh node to the rigid body collision node
+		p_node->add_child(mesh);
+		mesh->set_owner(p_node->get_owner());
+		// replace the original node with the rigid body collision node
+		p_node->replace_by(col);
+		memdelete(p_node);
+		p_node=col;
+
+		// create an alias for the rigid body collision node
+		RigidBody *rb = col->cast_to<RigidBody>();
+		// create a new Box collision shape and set the right extents
+		Ref<BoxShape> shape = memnew( BoxShape );
+		shape->set_extents(aabb.get_size() * 0.5);
+		CollisionShape *colshape = memnew( CollisionShape);
+		colshape->set_name("shape");
+		colshape->set_shape(shape);
+		// reparent the new collision shape to the rigid body collision node
+		rb->add_child(colshape);
+		colshape->set_owner(p_node->get_owner());
 
 	} else if (p_flags&SCENE_FLAG_CREATE_COLLISIONS &&_teststr(name,"col") && p_node->cast_to<MeshInstance>()) {
 
