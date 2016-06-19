@@ -12,7 +12,7 @@ update:
 merge:
 	@for po in $(POFILES); do \
 	  echo -e "\nMerging $$po..."; \
-	  msgmerge -w 80 -C $$po $$po $(TEMPLATE) > "$$po".new; \
+	  msgmerge -w 79 -C $$po $$po $(TEMPLATE) > "$$po".new; \
 	  mv -f "$$po".new $$po; \
 	done
 

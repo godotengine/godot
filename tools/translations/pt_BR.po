@@ -11,8 +11,8 @@ msgstr ""
 "POT-Creation-Date: 2016-05-30\n"
 "PO-Revision-Date: 2016-06-15 01:22+0000\n"
 "Last-Translator: George Marques <georgemjesus@gmail.com>\n"
-"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects"
-"/godot-engine/godot/pt_BR/>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
+"godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,13 +20,55 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 2.7-dev\n"
 
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid type argument to convert(), use TYPE_* constants."
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not enough bytes for decoding bytes, or invalid format."
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "step argument is zero!"
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+#, fuzzy
+msgid "Not a script with an instance"
+msgstr "Nenhuma cena selecionada para instanciar!"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not based on a script"
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+#, fuzzy
+msgid "Not based on a resource file"
+msgstr "Falta recurso de fonte destino!"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (missing @path)"
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (can't load script at @path)"
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (invalid script at @path)"
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary (invalid subclasses)"
+msgstr ""
+
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"Um recurso do tipo SpriteFrames deve ser criado ou definido na propriedade \""
-"Frames\" para que o nó AnimatedSprite mostre quadros."
+"Um recurso do tipo SpriteFrames deve ser criado ou definido na propriedade "
+"\"Frames\" para que o nó AnimatedSprite mostre quadros."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -80,12 +122,13 @@ msgstr ""
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
-"Um polígono de oclusão deve ser definido (ou desenhado) para que este oclusor "
-"tenha efeito."
+"Um polígono de oclusão deve ser definido (ou desenhado) para que este "
+"oclusor tenha efeito."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
-msgstr "O polígono para este oclusor está vazio. Por favor desenhe um polígono!"
+msgstr ""
+"O polígono para este oclusor está vazio. Por favor desenhe um polígono!"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -135,16 +178,16 @@ msgstr ""
 
 #: scene/2d/sprite.cpp
 msgid ""
-"Path property must point to a valid Viewport node to work. Such Viewport must "
-"be set to 'render target' mode."
+"Path property must point to a valid Viewport node to work. Such Viewport "
+"must be set to 'render target' mode."
 msgstr ""
 "A propriedade \"Caminho\" deve apontar a um nó Viewport para funcionar. Tal "
 "Viewport deve estar no modo \"Destino de Render\"."
 
 #: scene/2d/sprite.cpp
 msgid ""
-"The Viewport set in the path property must be set as 'render target' in order "
-"for this sprite to work."
+"The Viewport set in the path property must be set as 'render target' in "
+"order for this sprite to work."
 msgstr ""
 "O nó Viewport definido na propriedade \"Caminho\" deve ser marcado como "
 "\"destino de render\" para que este sprite funcione."
@@ -172,8 +215,8 @@ msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"Uma forma deve ser fornecida para que o nó CollisionShape fucione. Por favor, "
-"crie um recurso de forma a ele!"
+"Uma forma deve ser fornecida para que o nó CollisionShape fucione. Por "
+"favor, crie um recurso de forma a ele!"
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -197,11 +240,11 @@ msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
-"NavigationMeshInstance must be a child or grandchild to a Navigation node. It "
-"only provides navigation data."
+"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
+"It only provides navigation data."
 msgstr ""
-"NavigationMeshInstance deve ser filho ou neto de um nó Navigation. Ele apenas "
-"fornece dados de navegação."
+"NavigationMeshInstance deve ser filho ou neto de um nó Navigation. Ele "
+"apenas fornece dados de navegação."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -223,8 +266,8 @@ msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"Um recurso do tipo SpriteFrames deve ser criado ou definido na propriedade \""
-"Frames\" para que o nó AnimatedSprite mostre quadros."
+"Um recurso do tipo SpriteFrames deve ser criado ou definido na propriedade "
+"\"Frames\" para que o nó AnimatedSprite mostre quadros."
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
@@ -402,7 +445,8 @@ msgstr "Colar"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp tools/editor/project_export.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Select All"
 msgstr "Selecionar Tudo"
 
@@ -422,8 +466,8 @@ msgstr "Desfazer"
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will hide "
-"upon running."
+"functions. Making them visible for editing is fine though, but they will "
+"hide upon running."
 msgstr ""
 "Popups são ocultos por padrão a menos que você chame alguma das funções "
 "popup*(). Torná-los visíveis para editar não causa problema, mas eles "
@@ -538,6 +582,20 @@ msgid "Anim Delete Keys"
 msgstr "Excluir Chaves da Anim"
 
 #: tools/editor/animation_editor.cpp
+#, fuzzy
+msgid "Continuous"
+msgstr "Continuar"
+
+#: tools/editor/animation_editor.cpp
+#, fuzzy
+msgid "Discrete"
+msgstr "Disconectar"
+
+#: tools/editor/animation_editor.cpp
+msgid "Trigger"
+msgstr ""
+
+#: tools/editor/animation_editor.cpp
 msgid "Anim Add Key"
 msgstr "Adicionar Chave na Anim"
 
@@ -645,6 +703,11 @@ msgid "Change Anim Loop"
 msgstr "Mudar Loop da Animação"
 
 #: tools/editor/animation_editor.cpp
+#, fuzzy
+msgid "Change Anim Loop Interpolation"
+msgstr "Mudar Loop da Animação"
+
+#: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
 msgstr "Criar Chave com Valor Definido"
 
@@ -682,6 +745,11 @@ msgstr "Passo de snap do cursor (em segundos)."
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
+msgstr "Habilitar/Desabilitar loop de animação."
+
+#: tools/editor/animation_editor.cpp
+#, fuzzy
+msgid "Enable/Disable interpolation when looping animation."
 msgstr "Habilitar/Desabilitar loop de animação."
 
 #: tools/editor/animation_editor.cpp
@@ -949,12 +1017,9 @@ msgid "Method in target Node must be specified!"
 msgstr "O método no Nó destino precisa ser especificado!"
 
 #: tools/editor/connections_dialog.cpp
-msgid "Connect To Node:"
+#, fuzzy
+msgid "Conect To Node:"
 msgstr "Conectar ao Nó:"
-
-#: tools/editor/connections_dialog.cpp
-msgid "Binds (Extra Params):"
-msgstr "Ligações (Parâmetros Extra):"
 
 #: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
@@ -965,17 +1030,24 @@ msgstr "Adicionar"
 
 #: tools/editor/connections_dialog.cpp tools/editor/dependency_editor.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
-#: tools/editor/plugins/theme_editor_plugin.cpp tools/editor/project_manager.cpp
+#: tools/editor/plugins/theme_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
 msgid "Remove"
 msgstr "Remover"
 
 #: tools/editor/connections_dialog.cpp
-msgid "Path To Node:"
-msgstr "Caminho para o Nó:"
+msgid "Add Extra Call Argument:"
+msgstr ""
 
 #: tools/editor/connections_dialog.cpp
-msgid "Method In Node:"
-msgstr "Método no Nó:"
+#, fuzzy
+msgid "Extra Call Arguments:"
+msgstr "Argumentos:"
+
+#: tools/editor/connections_dialog.cpp
+#, fuzzy
+msgid "Path to Node:"
+msgstr "Caminho para o Nó:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Make Function"
@@ -996,6 +1068,11 @@ msgstr "Conectar"
 #: tools/editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
 msgstr "Conectar \"%s\" a \"%s\""
+
+#: tools/editor/connections_dialog.cpp
+#, fuzzy
+msgid "Connecting Signal:"
+msgstr "Conexões:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Create Subscription"
@@ -1139,7 +1216,8 @@ msgid "Delete selected files?"
 msgstr "Excluir os arquivos selecionados?"
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/item_list_editor_plugin.cpp tools/editor/scenes_dock.cpp
+#: tools/editor/plugins/item_list_editor_plugin.cpp
+#: tools/editor/scenes_dock.cpp
 msgid "Delete"
 msgstr "Excluir"
 
@@ -1336,8 +1414,8 @@ msgstr "Criando Miniatura"
 msgid ""
 "Couldn't save scene. Likely dependencies (instances) couldn't be satisfied."
 msgstr ""
-"Não se pôde salvar a cena. É provável que dependências (instâncias) não foram "
-"satisfeitas."
+"Não se pôde salvar a cena. É provável que dependências (instâncias) não "
+"foram satisfeitas."
 
 #: tools/editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -1522,8 +1600,8 @@ msgstr "Ugh"
 
 #: tools/editor/editor_node.cpp
 msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to open "
-"the scene, then save it inside the project path."
+"Error loading scene, it must be inside the project path. Use 'Import' to "
+"open the scene, then save it inside the project path."
 msgstr ""
 "Erro ao carregar cena, ela deve estar dentro do caminho do projeto. Use "
 "\"Importar\" para abrir a cena e então salve-a dentro do projeto."
@@ -1572,6 +1650,14 @@ msgstr "Cena"
 #: tools/editor/editor_node.cpp
 msgid "Go to previously opened scene."
 msgstr "Ir para cena aberta anteriormente."
+
+#: tools/editor/editor_node.cpp
+msgid "Fullscreen Mode"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid "Distraction Free Mode"
+msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1726,8 +1812,8 @@ msgstr "Instalar Depuração Remota"
 
 #: tools/editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to connect "
-"to the IP of this computer in order to be debugged."
+"When exporting or deploying, the resulting executable will attempt to "
+"connect to the IP of this computer in order to be debugged."
 msgstr ""
 "Quando exportando ou instalando, o programa resultante tentará conectar ao "
 "IP deste computador para poder ser depurado."
@@ -1742,8 +1828,8 @@ msgid ""
 "executable.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This option "
-"speeds up testing for games with a large footprint."
+"On Android, deploy will use the USB cable for faster performance. This "
+"option speeds up testing for games with a large footprint."
 msgstr ""
 "Quando esta opção está habilitada, a exportação ou instalação produzirá um "
 "executável mínimo.\n"
@@ -1859,9 +1945,7 @@ msgstr "Carrega um recurso existente do disco e o edita."
 msgid "Save the currently edited resource."
 msgstr "Salva o recurso editado atualmente."
 
-#: tools/editor/editor_node.cpp
-#: tools/editor/plugins/animation_player_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/editor_node.cpp tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save As.."
 msgstr "Salvar Como..."
 
@@ -2732,7 +2816,8 @@ msgstr "ERRO: Nenhuma animação para editar!"
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr ""
-"Iniciar animação selecionada de trás pra frente a partir da posição atual. (A)"
+"Iniciar animação selecionada de trás pra frente a partir da posição atual. "
+"(A)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from end. (Shift+A)"
@@ -2764,12 +2849,22 @@ msgid "Create new animation in player."
 msgstr "Criar nova animação no player."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Load animation from disk."
+msgstr "Carregar uma animação do disco."
+
+#: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load an animation from disk."
 msgstr "Carregar uma animação do disco."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save the current animation"
 msgstr "Salvar a animação atual"
+
+#: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Save As"
+msgstr "Salvar Como..."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -3895,7 +3990,8 @@ msgstr "Importar Tema"
 msgid "Save Theme As.."
 msgstr "Salvar Tema Como..."
 
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/project_export.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "File"
 msgstr "Arquivo"
 
@@ -3967,12 +4063,9 @@ msgid "Auto Indent"
 msgstr "Auto Recuar"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Reload Tool Script"
+#, fuzzy
+msgid "Soft Reload Script"
 msgstr "Recarregar Tool Script"
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Reload Tool Script (Soft)"
-msgstr "Recarregar Tool Script (suave)"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -4064,7 +4157,8 @@ msgid "Help"
 msgstr "Ajuda"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Contextual"
+#, fuzzy
+msgid "Contextual Help"
 msgstr "Contextual"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -4273,10 +4367,6 @@ msgid "Transform Aborted."
 msgstr "Transformação Abortada."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "View Plane Transform."
-msgstr "Visualizar Transformação do Plano."
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "X-Axis Transform."
 msgstr "Transformação do Eixo-X."
 
@@ -4287,6 +4377,10 @@ msgstr "Transformação do Eixo-Y."
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Z-Axis Transform."
 msgstr "Transformação do Eixo-Z."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "View Plane Transform."
+msgstr "Visualizar Transformação do Plano."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling to %s%%."
@@ -4670,7 +4764,13 @@ msgid "Remove Class Items"
 msgstr "Remover Itens de Classe"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
-msgid "Create Template"
+#, fuzzy
+msgid "Create Empty Template"
+msgstr "Criar Modelo"
+
+#: tools/editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Create Empty Editor Template"
 msgstr "Criar Modelo"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
@@ -4757,6 +4857,30 @@ msgid "Erase TileMap"
 msgstr "Apagar TileMap"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Erase selection"
+msgstr "Apagar Seleção"
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Find tile"
+msgstr "Localizar próximo"
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+msgid "Transpose"
+msgstr "Transpor"
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Mirror X"
+msgstr "Espelhar X (A)"
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Mirror Y"
+msgstr "Espelhar Y (S)"
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Bucket"
 msgstr "Balde"
 
@@ -4767,22 +4891,6 @@ msgstr "Pegar Tile"
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
 msgstr "Selecionar"
-
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Erase Selection"
-msgstr "Apagar Seleção"
-
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Transpose"
-msgstr "Transpor"
-
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror X (A)"
-msgstr "Espelhar X (A)"
-
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror Y (S)"
-msgstr "Espelhar Y (S)"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate 0 degrees"
@@ -4925,8 +5033,8 @@ msgstr "Ação"
 msgid ""
 "Filters to export non-resource files (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
-"Filtros para exportar arquivos que não sejam recursos (separados por vírgula, "
-"e.g.: *.json, *.txt):"
+"Filtros para exportar arquivos que não sejam recursos (separados por "
+"vírgula, e.g.: *.json, *.txt):"
 
 #: tools/editor/project_export.cpp
 msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"
@@ -5322,7 +5430,8 @@ msgstr ""
 #: tools/editor/project_settings.cpp
 msgid "Invalid name. Must not collide with an existing global constant name."
 msgstr ""
-"Nome inválido. Não é permitido utilizar nomes de constantes globais da engine."
+"Nome inválido. Não é permitido utilizar nomes de constantes globais da "
+"engine."
 
 #: tools/editor/project_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -5622,8 +5731,8 @@ msgstr "Ok"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
-"Cannot instance the scene '%s' because the current scene exists within one of "
-"its nodes."
+"Cannot instance the scene '%s' because the current scene exists within one "
+"of its nodes."
 msgstr ""
 "Não se pode instanciar a cena \"%s\" porque a cena atual existe dentro de um "
 "de seus nós."
@@ -5799,6 +5908,10 @@ msgstr "Filhos Editáveis"
 #: tools/editor/scene_tree_editor.cpp
 msgid "Load As Placeholder"
 msgstr "Carregar como Substituto"
+
+#: tools/editor/scene_tree_editor.cpp
+msgid "Discard Instancing"
+msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Open in Editor"
@@ -6136,11 +6249,17 @@ msgstr "Mudar o tamanho do Shape Ray"
 msgid "Change Notifier Extents"
 msgstr "Alterar a Extensão do Notificador"
 
+#~ msgid "Binds (Extra Params):"
+#~ msgstr "Ligações (Parâmetros Extra):"
+
+#~ msgid "Method In Node:"
+#~ msgstr "Método no Nó:"
+
+#~ msgid "Reload Tool Script (Soft)"
+#~ msgstr "Recarregar Tool Script (suave)"
+
 #~ msgid "Edit Connections.."
 #~ msgstr "Editar Conexões..."
-
-#~ msgid "Connections:"
-#~ msgstr "Conexões:"
 
 #~ msgid "Set Params"
 #~ msgstr "Definir Parâmetros"

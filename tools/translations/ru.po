@@ -11,15 +11,57 @@ msgstr ""
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2016-06-10 11:37+0000\n"
 "Last-Translator: DimOkGamer <dimokgamer@gmail.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/godot-"
-"engine/godot/ru/>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<="
-"4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 2.7-dev\n"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid type argument to convert(), use TYPE_* constants."
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not enough bytes for decoding bytes, or invalid format."
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "step argument is zero!"
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+#, fuzzy
+msgid "Not a script with an instance"
+msgstr "Не выбрана сцена!"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not based on a script"
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+#, fuzzy
+msgid "Not based on a resource file"
+msgstr "Нет целевого ресурса шрифта!"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (missing @path)"
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (can't load script at @path)"
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (invalid script at @path)"
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary (invalid subclasses)"
+msgstr ""
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -45,8 +87,8 @@ msgid ""
 msgstr ""
 "CollisionPolygon2D служит только для обеспечения столкновений фигурам типа "
 "CollisionObject2D. Пожалуйста использовать его только в качестве дочернего "
-"для Area2D, StaticBody2D, RigidBody2D, KinematicBody2D и др. чтобы придать им "
-"форму."
+"для Area2D, StaticBody2D, RigidBody2D, KinematicBody2D и др. чтобы придать "
+"им форму."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
@@ -60,8 +102,8 @@ msgid ""
 msgstr ""
 "CollisionShape2D служит только для обеспечения столкновений фигурам типа "
 "CollisionObject2D. Пожалуйста использовать его только в качестве дочернего "
-"для Area2D, StaticBody2D, RigidBody2D, KinematicBody2D и др. чтобы придать им "
-"форму."
+"для Area2D, StaticBody2D, RigidBody2D, KinematicBody2D и др. чтобы придать "
+"им форму."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -110,8 +152,8 @@ msgstr ""
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
-"Нод ParallaxLayer работает только при установке его в качестве дочернего узла "
-"ParallaxBackground."
+"Нод ParallaxLayer работает только при установке его в качестве дочернего "
+"узла ParallaxBackground."
 
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
@@ -126,7 +168,8 @@ msgstr ""
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr "Свойство Path должен указывать на действительный нод Node2D для работы."
+msgstr ""
+"Свойство Path должен указывать на действительный нод Node2D для работы."
 
 #: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
 msgid ""
@@ -138,26 +181,27 @@ msgstr ""
 
 #: scene/2d/sprite.cpp
 msgid ""
-"Path property must point to a valid Viewport node to work. Such Viewport must "
-"be set to 'render target' mode."
+"Path property must point to a valid Viewport node to work. Such Viewport "
+"must be set to 'render target' mode."
 msgstr ""
 "Для работы, параметр Path должен указывать на действительный Нод Viewport. "
 "Такой Viewport должен быть установлен в качестве цели рендеринга."
 
 #: scene/2d/sprite.cpp
 msgid ""
-"The Viewport set in the path property must be set as 'render target' in order "
-"for this sprite to work."
+"The Viewport set in the path property must be set as 'render target' in "
+"order for this sprite to work."
 msgstr ""
-"Области просмотра установленная в свойстве path должна быть назначена \"целью "
-"визуализации\" для того, чтобы этот спрайт работал."
+"Области просмотра установленная в свойстве path должна быть назначена "
+"\"целью визуализации\" для того, чтобы этот спрайт работал."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
-"VisibilityEnable2D работает лучше, когда используется, как дочерний нод корня."
+"VisibilityEnable2D работает лучше, когда используется, как дочерний нод "
+"корня."
 
 #: scene/3d/body_shape.cpp
 msgid ""
@@ -193,12 +237,13 @@ msgstr "Пустой CollisionPolygon не влияет на столкнове�
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr "Ресурс NavigationMesh должен быть установлен или создан для этого нода."
+msgstr ""
+"Ресурс NavigationMesh должен быть установлен или создан для этого нода."
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
-"NavigationMeshInstance must be a child or grandchild to a Navigation node. It "
-"only provides navigation data."
+"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
+"It only provides navigation data."
 msgstr ""
 "NavigationMeshInstance должен быть ребёнком или внуком нода Navigation. Он "
 "обеспечивает только навигационные данные."
@@ -402,7 +447,8 @@ msgstr "Вставить"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp tools/editor/project_export.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Select All"
 msgstr "Выбрать все"
 
@@ -422,8 +468,8 @@ msgstr "Отменить"
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will hide "
-"upon running."
+"functions. Making them visible for editing is fine though, but they will "
+"hide upon running."
 msgstr ""
 "Всплывающие окна будут скрываться по-умолчанию, если Вы не вызовете popup() "
 "или любой из popup*(). Делая их доступными для редактирования хорошая мысль, "
@@ -539,6 +585,20 @@ msgid "Anim Delete Keys"
 msgstr "Ключ удалён"
 
 #: tools/editor/animation_editor.cpp
+#, fuzzy
+msgid "Continuous"
+msgstr "Продолжить"
+
+#: tools/editor/animation_editor.cpp
+#, fuzzy
+msgid "Discrete"
+msgstr "Отсоединить"
+
+#: tools/editor/animation_editor.cpp
+msgid "Trigger"
+msgstr ""
+
+#: tools/editor/animation_editor.cpp
 msgid "Anim Add Key"
 msgstr "Ключ добавлен"
 
@@ -646,6 +706,11 @@ msgid "Change Anim Loop"
 msgstr "Изменено зацикливание анимации"
 
 #: tools/editor/animation_editor.cpp
+#, fuzzy
+msgid "Change Anim Loop Interpolation"
+msgstr "Изменено зацикливание анимации"
+
+#: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
 msgstr "Создан ключ с вводимым значением"
 
@@ -683,6 +748,11 @@ msgstr "Шаг привязки курсора (в секундах)."
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
+msgstr "Включить/отключить зацикливание в анимации."
+
+#: tools/editor/animation_editor.cpp
+#, fuzzy
+msgid "Enable/Disable interpolation when looping animation."
 msgstr "Включить/отключить зацикливание в анимации."
 
 #: tools/editor/animation_editor.cpp
@@ -950,12 +1020,9 @@ msgid "Method in target Node must be specified!"
 msgstr "Метод должен быть указан в целевом Ноде!"
 
 #: tools/editor/connections_dialog.cpp
-msgid "Connect To Node:"
+#, fuzzy
+msgid "Conect To Node:"
 msgstr "Присоединить к ноду:"
-
-#: tools/editor/connections_dialog.cpp
-msgid "Binds (Extra Params):"
-msgstr "Связи (необязательные параметры):"
 
 #: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
@@ -966,17 +1033,24 @@ msgstr "Добавить"
 
 #: tools/editor/connections_dialog.cpp tools/editor/dependency_editor.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
-#: tools/editor/plugins/theme_editor_plugin.cpp tools/editor/project_manager.cpp
+#: tools/editor/plugins/theme_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
 msgid "Remove"
 msgstr "Удалить"
 
 #: tools/editor/connections_dialog.cpp
-msgid "Path To Node:"
-msgstr "Путь к ноду:"
+msgid "Add Extra Call Argument:"
+msgstr ""
 
 #: tools/editor/connections_dialog.cpp
-msgid "Method In Node:"
-msgstr "Название метода:"
+#, fuzzy
+msgid "Extra Call Arguments:"
+msgstr "Аргументы:"
+
+#: tools/editor/connections_dialog.cpp
+#, fuzzy
+msgid "Path to Node:"
+msgstr "Путь к ноду:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Make Function"
@@ -997,6 +1071,11 @@ msgstr "Присоединить"
 #: tools/editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
 msgstr "Присоединить '%s' к '%s'"
+
+#: tools/editor/connections_dialog.cpp
+#, fuzzy
+msgid "Connecting Signal:"
+msgstr "Связи:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Create Subscription"
@@ -1139,7 +1218,8 @@ msgid "Delete selected files?"
 msgstr "Удалить выбранные файлы?"
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/item_list_editor_plugin.cpp tools/editor/scenes_dock.cpp
+#: tools/editor/plugins/item_list_editor_plugin.cpp
+#: tools/editor/scenes_dock.cpp
 msgid "Delete"
 msgstr "Удалить"
 
@@ -1336,8 +1416,8 @@ msgstr "Создание эскизов"
 msgid ""
 "Couldn't save scene. Likely dependencies (instances) couldn't be satisfied."
 msgstr ""
-"Не возможно сохранить сцену. Вероятно, зависимости (экземпляры) не могли быть "
-"удовлетворены."
+"Не возможно сохранить сцену. Вероятно, зависимости (экземпляры) не могли "
+"быть удовлетворены."
 
 #: tools/editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -1523,8 +1603,8 @@ msgstr "Ясно"
 
 #: tools/editor/editor_node.cpp
 msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to open "
-"the scene, then save it inside the project path."
+"Error loading scene, it must be inside the project path. Use 'Import' to "
+"open the scene, then save it inside the project path."
 msgstr ""
 "Ошибка при загрузке сцены, она должна быть внутри каталога проекта. "
 "Используйте \"Импорт\", чтобы открыть сцену, а затем сохраните её в каталоге "
@@ -1574,6 +1654,14 @@ msgstr "Сцена"
 #: tools/editor/editor_node.cpp
 msgid "Go to previously opened scene."
 msgstr "Перейти к предыдущей открытой сцене."
+
+#: tools/editor/editor_node.cpp
+msgid "Fullscreen Mode"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid "Distraction Free Mode"
+msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1728,8 +1816,8 @@ msgstr "Развернуть с удалённой отладкой"
 
 #: tools/editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to connect "
-"to the IP of this computer in order to be debugged."
+"When exporting or deploying, the resulting executable will attempt to "
+"connect to the IP of this computer in order to be debugged."
 msgstr ""
 "При экспорте или развёртывании, полученный исполняемый файл будет пытаться "
 "подключиться к IP этого компьютера с целью отладки."
@@ -1744,8 +1832,8 @@ msgid ""
 "executable.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This option "
-"speeds up testing for games with a large footprint."
+"On Android, deploy will use the USB cable for faster performance. This "
+"option speeds up testing for games with a large footprint."
 msgstr ""
 "Когда эта опция включена, экспорт или развёртывание будет создавать "
 "минимальный исполняемый файл.\n"
@@ -1861,9 +1949,7 @@ msgstr "Загрузить существующий ресурс с диска �
 msgid "Save the currently edited resource."
 msgstr "Сохранить текущий редактируемый ресурс."
 
-#: tools/editor/editor_node.cpp
-#: tools/editor/plugins/animation_player_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/editor_node.cpp tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save As.."
 msgstr "Сохранить как.."
 
@@ -2514,8 +2600,8 @@ msgid ""
 "NOTICE: Importing 2D textures is not mandatory. Just copy png/jpg files to "
 "the project."
 msgstr ""
-"ВНИМАНИЕ: Импортирование 2D текстур не обязательно. Просто скопируйте png/jpg "
-"файлы в папку проекта."
+"ВНИМАНИЕ: Импортирование 2D текстур не обязательно. Просто скопируйте png/"
+"jpg файлы в папку проекта."
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Crop empty space."
@@ -2738,7 +2824,8 @@ msgstr "ОШИБКА: Нет анимации для редактировани�
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr ""
-"Воспроизвести выбранную анимацию в обратном направлении с текущей позиции. (A)"
+"Воспроизвести выбранную анимацию в обратном направлении с текущей позиции. "
+"(A)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from end. (Shift+A)"
@@ -2770,12 +2857,22 @@ msgid "Create new animation in player."
 msgstr "Создать новую анимацию."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Load animation from disk."
+msgstr "Загрузить анимацию с диска."
+
+#: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load an animation from disk."
 msgstr "Загрузить анимацию с диска."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save the current animation"
 msgstr "Сохранить текущую анимацию"
+
+#: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Save As"
+msgstr "Сохранить как.."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -3900,7 +3997,8 @@ msgstr "Импортировать тему"
 msgid "Save Theme As.."
 msgstr "Сохранить тему как.."
 
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/project_export.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "File"
 msgstr "Файл"
 
@@ -3972,12 +4070,9 @@ msgid "Auto Indent"
 msgstr "Автоотступ"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Reload Tool Script"
+#, fuzzy
+msgid "Soft Reload Script"
 msgstr "Перезагрузить инструм. скрипт"
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Reload Tool Script (Soft)"
-msgstr "Перезагрузить инструм. скрипт (мягко)"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -4069,7 +4164,8 @@ msgid "Help"
 msgstr "Справка"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Contextual"
+#, fuzzy
+msgid "Contextual Help"
 msgstr "Контекстная"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -4278,10 +4374,6 @@ msgid "Transform Aborted."
 msgstr "Преобразования прерывается."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "View Plane Transform."
-msgstr "Вид преобразования плоскости."
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "X-Axis Transform."
 msgstr "Преобразование по X."
 
@@ -4292,6 +4384,10 @@ msgstr "Преобразование по Y."
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Z-Axis Transform."
 msgstr "Преобразование по Z."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "View Plane Transform."
+msgstr "Вид преобразования плоскости."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling to %s%%."
@@ -4675,7 +4771,13 @@ msgid "Remove Class Items"
 msgstr "Удалить элемент класса"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
-msgid "Create Template"
+#, fuzzy
+msgid "Create Empty Template"
+msgstr "Создать шаблон"
+
+#: tools/editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Create Empty Editor Template"
 msgstr "Создать шаблон"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
@@ -4762,6 +4864,30 @@ msgid "Erase TileMap"
 msgstr "Стирать карту тайлов"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Erase selection"
+msgstr "Очистить выделенное"
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Find tile"
+msgstr "Найти следующее"
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+msgid "Transpose"
+msgstr "Транспонировать"
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Mirror X"
+msgstr "Зеркально по X (A)"
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Mirror Y"
+msgstr "Зеркально по Y (S)"
+
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Bucket"
 msgstr "Заливка"
 
@@ -4772,22 +4898,6 @@ msgstr "Выбрать тайл"
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
 msgstr "Выделение"
-
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Erase Selection"
-msgstr "Очистить выделенное"
-
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Transpose"
-msgstr "Транспонировать"
-
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror X (A)"
-msgstr "Зеркально по X (A)"
-
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror Y (S)"
-msgstr "Зеркально по Y (S)"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate 0 degrees"
@@ -5316,7 +5426,8 @@ msgstr "Допустимые символы:"
 #: tools/editor/project_settings.cpp
 msgid "Invalid name. Must not collide with an existing engine class name."
 msgstr ""
-"Недопустимое имя. Не должно конфликтовать с существующим именем класса движка."
+"Недопустимое имя. Не должно конфликтовать с существующим именем класса "
+"движка."
 
 #: tools/editor/project_settings.cpp
 msgid "Invalid name. Must not collide with an existing buit-in type name."
@@ -5630,8 +5741,8 @@ msgstr "Ок"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
-"Cannot instance the scene '%s' because the current scene exists within one of "
-"its nodes."
+"Cannot instance the scene '%s' because the current scene exists within one "
+"of its nodes."
 msgstr ""
 "Невозможно добавить сцену %s, потому что текущая сцена существует в одном из "
 "его нодов."
@@ -5765,8 +5876,8 @@ msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
 msgstr ""
-"Добавить файл сцены как нод. Создаёт наследуемую сцену, если корневой узел не "
-"существует."
+"Добавить файл сцены как нод. Создаёт наследуемую сцену, если корневой узел "
+"не существует."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid ""
@@ -5807,6 +5918,10 @@ msgstr "Редактируемые потомки"
 #: tools/editor/scene_tree_editor.cpp
 msgid "Load As Placeholder"
 msgstr "Загрузить как заполнитель"
+
+#: tools/editor/scene_tree_editor.cpp
+msgid "Discard Instancing"
+msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Open in Editor"
@@ -6144,11 +6259,17 @@ msgstr "Изменена длинна луча"
 msgid "Change Notifier Extents"
 msgstr "Изменены границы уведомителя"
 
+#~ msgid "Binds (Extra Params):"
+#~ msgstr "Связи (необязательные параметры):"
+
+#~ msgid "Method In Node:"
+#~ msgstr "Название метода:"
+
+#~ msgid "Reload Tool Script (Soft)"
+#~ msgstr "Перезагрузить инструм. скрипт (мягко)"
+
 #~ msgid "Edit Connections.."
 #~ msgstr "Изменить связи.."
-
-#~ msgid "Connections:"
-#~ msgstr "Связи:"
 
 #~ msgid "Set Params"
 #~ msgstr "Назначить параметры"
