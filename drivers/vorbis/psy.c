@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: psychoacoustics not including preecho
- last mod: $Id: psy.c 17569 2010-10-26 17:09:47Z xiphmont $
+ last mod: $Id: psy.c 18077 2011-09-02 02:49:00Z giles $
 
  ********************************************************************/
 
@@ -1020,7 +1020,9 @@ void _vp_couple_quantize_normalize(int blobno,
   int limit = g->coupling_pointlimit[p->vi->blockflag][blobno];
   float prepoint=stereo_threshholds[g->coupling_prepointamp[blobno]];
   float postpoint=stereo_threshholds[g->coupling_postpointamp[blobno]];
+#if 0
   float de=0.1*p->m_val; /* a blend of the AoTuV M2 and M3 code here and below */
+#endif
 
   /* mdct is our raw mdct output, floor not removed. */
   /* inout passes in the ifloor, passes back quantized result */
@@ -1154,27 +1156,28 @@ void _vp_couple_quantize_normalize(int blobno,
                 reM[j] += reA[j];
                 qeM[j] = fabs(reM[j]);
               }else{
+#if 0
                 /* AoTuV */
                 /** @ M2 **
                     The boost problem by the combination of noise normalization and point stereo is eased.
                     However, this is a temporary patch.
                     by Aoyumi @ 2004/04/18
                 */
-                /*float derate = (1.0 - de*((float)(j-limit+i) / (float)(n-limit))); */
-                /* elliptical 
+                float derate = (1.0 - de*((float)(j-limit+i) / (float)(n-limit)));
+                /* elliptical */
                 if(reM[j]+reA[j]<0){
                   reM[j] = - (qeM[j] = (fabs(reM[j])+fabs(reA[j]))*derate*derate);
                 }else{
                   reM[j] =   (qeM[j] = (fabs(reM[j])+fabs(reA[j]))*derate*derate);
-                  }*/
-
+                }
+#else
                 /* elliptical */
                 if(reM[j]+reA[j]<0){
                   reM[j] = - (qeM[j] = fabs(reM[j])+fabs(reA[j]));
                 }else{
                   reM[j] =   (qeM[j] = fabs(reM[j])+fabs(reA[j]));
                 }
-
+#endif
 
               }
               reA[j]=qeA[j]=0.f;

@@ -11,7 +11,7 @@
  ********************************************************************
 
  function: channel mapping 0 implementation
- last mod: $Id: mapping0.c 17022 2010-03-25 03:45:42Z xiphmont $
+ last mod: $Id: mapping0.c 19441 2015-01-21 01:17:41Z xiphmont $
 
  ********************************************************************/
 
@@ -45,16 +45,6 @@ static void mapping0_free_info(vorbis_info_mapping *i){
   }
 }
 
-static int ilog(unsigned int v){
-  int ret=0;
-  if(v)--v;
-  while(v){
-    ret++;
-    v>>=1;
-  }
-  return(ret);
-}
-
 static void mapping0_pack(vorbis_info *vi,vorbis_info_mapping *vm,
                           oggpack_buffer *opb){
   int i;
@@ -78,8 +68,8 @@ static void mapping0_pack(vorbis_info *vi,vorbis_info_mapping *vm,
     oggpack_write(opb,info->coupling_steps-1,8);
 
     for(i=0;i<info->coupling_steps;i++){
-      oggpack_write(opb,info->coupling_mag[i],ilog(vi->channels));
-      oggpack_write(opb,info->coupling_ang[i],ilog(vi->channels));
+      oggpack_write(opb,info->coupling_mag[i],ov_ilog(vi->channels-1));
+      oggpack_write(opb,info->coupling_ang[i],ov_ilog(vi->channels-1));
     }
   }else
     oggpack_write(opb,0,1);
@@ -104,6 +94,7 @@ static vorbis_info_mapping *mapping0_unpack(vorbis_info *vi,oggpack_buffer *opb)
   vorbis_info_mapping0 *info=_ogg_calloc(1,sizeof(*info));
   codec_setup_info     *ci=vi->codec_setup;
   memset(info,0,sizeof(*info));
+  if(vi->channels<=0)goto err_out;
 
   b=oggpack_read(opb,1);
   if(b<0)goto err_out;
@@ -119,8 +110,11 @@ static vorbis_info_mapping *mapping0_unpack(vorbis_info *vi,oggpack_buffer *opb)
     info->coupling_steps=oggpack_read(opb,8)+1;
     if(info->coupling_steps<=0)goto err_out;
     for(i=0;i<info->coupling_steps;i++){
-      int testM=info->coupling_mag[i]=oggpack_read(opb,ilog(vi->channels));
-      int testA=info->coupling_ang[i]=oggpack_read(opb,ilog(vi->channels));
+      /* vi->channels > 0 is enforced in the caller */
+      int testM=info->coupling_mag[i]=
+        oggpack_read(opb,ov_ilog(vi->channels-1));
+      int testA=info->coupling_ang[i]=
+        oggpack_read(opb,ov_ilog(vi->channels-1));
 
       if(testM<0 ||
          testA<0 ||

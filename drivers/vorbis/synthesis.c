@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2009             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2015             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: single-block PCM synthesis
- last mod: $Id: synthesis.c 17474 2010-09-30 03:41:41Z gmaxwell $
+ last mod: $Id: synthesis.c 19441 2015-01-21 01:17:41Z xiphmont $
 
  ********************************************************************/
 
@@ -145,6 +145,11 @@ long vorbis_packet_blocksize(vorbis_info *vi,ogg_packet *op){
   oggpack_buffer       opb;
   int                  mode;
 
+  if(ci==NULL || ci->modes<=0){
+    /* codec setup not properly intialized */
+    return(OV_EFAULT);
+  }
+
   oggpack_readinit(&opb,op->packet,op->bytes);
 
   /* Check the packet type */
@@ -153,18 +158,9 @@ long vorbis_packet_blocksize(vorbis_info *vi,ogg_packet *op){
     return(OV_ENOTAUDIO);
   }
 
-  {
-    int modebits=0;
-    int v=ci->modes;
-    while(v>1){
-      modebits++;
-      v>>=1;
-    }
-
-    /* read our mode and pre/post windowsize */
-    mode=oggpack_read(&opb,modebits);
-  }
-  if(mode==-1)return(OV_EBADPACKET);
+  /* read our mode and pre/post windowsize */
+  mode=oggpack_read(&opb,ov_ilog(ci->modes-1));
+  if(mode==-1 || !ci->mode_param[mode])return(OV_EBADPACKET);
   return(ci->blocksizes[ci->mode_param[mode]->blockflag]);
 }
 

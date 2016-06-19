@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2010             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2015             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: maintain the info structure, info <-> header packets
- last mod: $Id: info.c 17584 2010-11-01 19:26:16Z xiphmont $
+ last mod: $Id: info.c 19441 2015-01-21 01:17:41Z xiphmont $
 
  ********************************************************************/
 
@@ -31,20 +31,10 @@
 #include "misc.h"
 #include "os.h"
 
-#define GENERAL_VENDOR_STRING "Xiph.Org libVorbis 1.3.2"
-#define ENCODE_VENDOR_STRING "Xiph.Org libVorbis I 20101101 (Schaufenugget)"
+#define GENERAL_VENDOR_STRING "Xiph.Org libVorbis 1.3.5"
+#define ENCODE_VENDOR_STRING "Xiph.Org libVorbis I 20150105 (⛄⛄⛄⛄)"
 
 /* helpers */
-static int ilog2(unsigned int v){
-  int ret=0;
-  if(v)--v;
-  while(v){
-    ret++;
-    v>>=1;
-  }
-  return(ret);
-}
-
 static void _v_writestring(oggpack_buffer *o,const char *s, int bytes){
 
   while(bytes--){
@@ -272,7 +262,6 @@ static int _vorbis_unpack_comment(vorbis_comment *vc,oggpack_buffer *opb){
 static int _vorbis_unpack_books(vorbis_info *vi,oggpack_buffer *opb){
   codec_setup_info     *ci=vi->codec_setup;
   int i;
-  if(!ci)return(OV_EFAULT);
 
   /* codebooks */
   ci->books=oggpack_read(opb,8)+1;
@@ -411,12 +400,24 @@ int vorbis_synthesis_headerin(vorbis_info *vi,vorbis_comment *vc,ogg_packet *op)
           /* um... we didn't get the initial header */
           return(OV_EBADHEADER);
         }
+        if(vc->vendor!=NULL){
+          /* previously initialized comment header */
+          return(OV_EBADHEADER);
+        }
 
         return(_vorbis_unpack_comment(vc,&opb));
 
       case 0x05: /* least significant *bit* is read first */
         if(vi->rate==0 || vc->vendor==NULL){
           /* um... we didn;t get the initial header or comments yet */
+          return(OV_EBADHEADER);
+        }
+        if(vi->codec_setup==NULL){
+          /* improperly initialized vorbis_info */
+          return(OV_EFAULT);
+        }
+        if(((codec_setup_info *)vi->codec_setup)->books>0){
+          /* previously initialized setup header */
           return(OV_EBADHEADER);
         }
 
@@ -436,7 +437,11 @@ int vorbis_synthesis_headerin(vorbis_info *vi,vorbis_comment *vc,ogg_packet *op)
 
 static int _vorbis_pack_info(oggpack_buffer *opb,vorbis_info *vi){
   codec_setup_info     *ci=vi->codec_setup;
-  if(!ci)return(OV_EFAULT);
+  if(!ci||
+     ci->blocksizes[0]<64||
+     ci->blocksizes[1]<ci->blocksizes[0]){
+    return(OV_EFAULT);
+  }
 
   /* preamble */
   oggpack_write(opb,0x01,8);
@@ -451,8 +456,8 @@ static int _vorbis_pack_info(oggpack_buffer *opb,vorbis_info *vi){
   oggpack_write(opb,vi->bitrate_nominal,32);
   oggpack_write(opb,vi->bitrate_lower,32);
 
-  oggpack_write(opb,ilog2(ci->blocksizes[0]),4);
-  oggpack_write(opb,ilog2(ci->blocksizes[1]),4);
+  oggpack_write(opb,ov_ilog(ci->blocksizes[0]-1),4);
+  oggpack_write(opb,ov_ilog(ci->blocksizes[1]-1),4);
   oggpack_write(opb,1,1);
 
   return(0);
@@ -550,7 +555,10 @@ int vorbis_commentheader_out(vorbis_comment *vc,
   oggpack_buffer opb;
 
   oggpack_writeinit(&opb);
-  if(_vorbis_pack_comment(&opb,vc)) return OV_EIMPL;
+  if(_vorbis_pack_comment(&opb,vc)){
+    oggpack_writeclear(&opb);
+    return OV_EIMPL;
+  }
 
   op->packet = _ogg_malloc(oggpack_bytes(&opb));
   memcpy(op->packet, opb.buffer, oggpack_bytes(&opb));
@@ -561,6 +569,7 @@ int vorbis_commentheader_out(vorbis_comment *vc,
   op->granulepos=0;
   op->packetno=1;
 
+  oggpack_writeclear(&opb);
   return 0;
 }
 
@@ -574,7 +583,7 @@ int vorbis_analysis_headerout(vorbis_dsp_state *v,
   oggpack_buffer opb;
   private_state *b=v->backend_state;
 
-  if(!b){
+  if(!b||vi->channels<=0){
     ret=OV_EFAULT;
     goto err_out;
   }

@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2009             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2015             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: floor backend 1 implementation
- last mod: $Id: floor1.c 17555 2010-10-21 18:14:51Z tterribe $
+ last mod: $Id: floor1.c 19457 2015-03-03 00:15:29Z giles $
 
  ********************************************************************/
 
@@ -72,25 +72,6 @@ static void floor1_free_look(vorbis_look_floor *i){
   }
 }
 
-static int ilog(unsigned int v){
-  int ret=0;
-  while(v){
-    ret++;
-    v>>=1;
-  }
-  return(ret);
-}
-
-static int ilog2(unsigned int v){
-  int ret=0;
-  if(v)--v;
-  while(v){
-    ret++;
-    v>>=1;
-  }
-  return(ret);
-}
-
 static void floor1_pack (vorbis_info_floor *i,oggpack_buffer *opb){
   vorbis_info_floor1 *info=(vorbis_info_floor1 *)i;
   int j,k;
@@ -117,8 +98,10 @@ static void floor1_pack (vorbis_info_floor *i,oggpack_buffer *opb){
 
   /* save out the post list */
   oggpack_write(opb,info->mult-1,2);     /* only 1,2,3,4 legal now */
-  oggpack_write(opb,ilog2(maxposit),4);
-  rangebits=ilog2(maxposit);
+  /* maxposit cannot legally be less than 1; this is encode-side, we
+     can assume our setup is OK */
+  oggpack_write(opb,ov_ilog(maxposit-1),4);
+  rangebits=ov_ilog(maxposit-1);
 
   for(j=0,k=0;j<info->partitions;j++){
     count+=info->class_dim[info->partitionclass[j]];
@@ -167,6 +150,7 @@ static vorbis_info_floor *floor1_unpack (vorbis_info *vi,oggpack_buffer *opb){
 
   for(j=0,k=0;j<info->partitions;j++){
     count+=info->class_dim[info->partitionclass[j]];
+    if(count>VIF_POSIT) goto err_out;
     for(;k<count;k++){
       int t=info->postlist[k+2]=oggpack_read(opb,rangebits);
       if(t<0 || t>=(1<<rangebits))
@@ -201,6 +185,8 @@ static vorbis_look_floor *floor1_look(vorbis_dsp_state *vd,
   vorbis_info_floor1 *info=(vorbis_info_floor1 *)in;
   vorbis_look_floor1 *look=_ogg_calloc(1,sizeof(*look));
   int i,j,n=0;
+
+  (void)vd;
 
   look->vi=info;
   look->n=info->postlist[1];
@@ -851,9 +837,9 @@ int floor1_encode(oggpack_buffer *opb,vorbis_block *vb,
 
     /* beginning/end post */
     look->frames++;
-    look->postbits+=ilog(look->quant_q-1)*2;
-    oggpack_write(opb,out[0],ilog(look->quant_q-1));
-    oggpack_write(opb,out[1],ilog(look->quant_q-1));
+    look->postbits+=ov_ilog(look->quant_q-1)*2;
+    oggpack_write(opb,out[0],ov_ilog(look->quant_q-1));
+    oggpack_write(opb,out[1],ov_ilog(look->quant_q-1));
 
 
     /* partition by partition */
@@ -869,7 +855,9 @@ int floor1_encode(oggpack_buffer *opb,vorbis_block *vb,
 
       /* generate the partition's first stage cascade value */
       if(csubbits){
-        int maxval[8];
+        int maxval[8]={0,0,0,0,0,0,0,0}; /* gcc's static analysis
+                                            issues a warning without
+                                            initialization */
         for(k=0;k<csub;k++){
           int booknum=info->class_subbook[class][k];
           if(booknum<0){
@@ -977,8 +965,8 @@ static void *floor1_inverse1(vorbis_block *vb,vorbis_look_floor *in){
   if(oggpack_read(&vb->opb,1)==1){
     int *fit_value=_vorbis_block_alloc(vb,(look->posts)*sizeof(*fit_value));
 
-    fit_value[0]=oggpack_read(&vb->opb,ilog(look->quant_q-1));
-    fit_value[1]=oggpack_read(&vb->opb,ilog(look->quant_q-1));
+    fit_value[0]=oggpack_read(&vb->opb,ov_ilog(look->quant_q-1));
+    fit_value[1]=oggpack_read(&vb->opb,ov_ilog(look->quant_q-1));
 
     /* partition by partition */
     for(i=0,j=2;i<info->partitions;i++){
