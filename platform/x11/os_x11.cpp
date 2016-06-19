@@ -1625,7 +1625,7 @@ void OS_X11::process_xevents() {
 
 				//Reply that all is well.
 				XClientMessageEvent m;
-				memset(&m, sizeof(m), 0);
+				memset(&m, 0, sizeof(m));
 				m.type = ClientMessage;
 				m.display = x11_display;
 				m.window = xdnd_source_window;
@@ -1662,7 +1662,7 @@ void OS_X11::process_xevents() {
 				//xdnd position event, reply with an XDND status message
 				//just depending on type of data for now
 				XClientMessageEvent m;
-				memset(&m, sizeof(m), 0);
+				memset(&m, 0, sizeof(m));
 				m.type = ClientMessage;
 				m.display = event.xclient.display;
 				m.window = event.xclient.data.l[0];
@@ -1689,7 +1689,7 @@ void OS_X11::process_xevents() {
 				else {
 					//Reply that we're not interested.
 					XClientMessageEvent m;
-					memset(&m, sizeof(m), 0);
+					memset(&m, 0, sizeof(m));
 					m.type = ClientMessage;
 					m.display = event.xclient.display;
 					m.window = event.xclient.data.l[0];
