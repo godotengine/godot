@@ -3,36 +3,32 @@
 # This file is distributed under the same license as the Godot source code.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # Geequlim <geequlim@gmail.com>, 2016.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-05-31 23:28+0800\n"
+"PO-Revision-Date: 2016-06-11 11:37+0000\n"
 "Last-Translator: Geequlim <geequlim@gmail.com>\n"
-"Language-Team: 汉语 <geequlim@gmail.com>\n"
+"Language-Team: Chinese (China) <https://hosted.weblate.org/projects/godot-"
+"engine/godot/zh_CN/>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Gtranslator 2.91.7\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 2.7-dev\n"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
-msgstr ""
-"SpriteFrames资源必须是通过AnimatedSprite节点的frames属性创建的，否则无法显示动"
-"画帧。"
+msgstr "SpriteFrames资源必须是通过AnimatedSprite节点的frames属性创建的，否则无法显示动画帧。"
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"每个场景中只允许有一个CanvasModulate类型的节点，场景中的第一个CanvasModulate节"
-"点能正常工作，其余的将被忽略。"
+msgstr "每个场景中只允许有一个CanvasModulate类型的节点，场景中的第一个CanvasModulate节点能正常工作，其余的将被忽略。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -40,8 +36,8 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon2D类型节点只能为CollisionObject2D的派生类提供碰撞形状数据，请"
-"将其放在Area2D、StaticBody2D、RigidBody2D或KinematicBody2D节点下。"
+"CollisionPolygon2D类型节点只能为CollisionObject2D的派生类提供碰撞形状数据，请将其放在Area2D、StaticBody"
+"2D、RigidBody2D或KinematicBody2D节点下。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
@@ -53,8 +49,8 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D类型节点只能为CollisionObject2D的派生类提供碰撞形状数据，请将"
-"其放在Area2D、StaticBody2D、RigidBody2D或者是KinematicBody2D节点下。"
+"CollisionShape2D类型节点只能为CollisionObject2D的派生类提供碰撞形状数据，请将其放在Area2D、StaticBody2D"
+"、RigidBody2D或者是KinematicBody2D节点下。"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -66,7 +62,7 @@ msgstr "形状资源必须是通过CollisionShape2D节点的shape属性创建的
 msgid ""
 "A texture with the shape of the light must be supplied to the 'texture' "
 "property."
-msgstr ""
+msgstr "光照的形状与纹理必须提供给纹理属性。"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
@@ -81,16 +77,13 @@ msgstr "此遮光体的遮光形状为空，请为其绘制一个遮光形状！
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
-msgstr ""
-"请为此节点设置一个NavigationPolygon类型的资源作为形状，这样它才能正常工作。"
+msgstr "请为此节点设置一个NavigationPolygon类型的资源作为形状，这样它才能正常工作。"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
-msgstr ""
-"NavigationPolygonInstance类型的节点必须作为Navigation2D的子孙才能为其提供导航"
-"数据。"
+msgstr "NavigationPolygonInstance类型的节点必须作为Navigation2D的子孙才能为其提供导航数据。"
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
@@ -113,24 +106,19 @@ msgstr "path属性必须指向一个合法的Node2D节点才能正常工作。"
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SamplePlayer to play sound."
-msgstr ""
-"SampleLibrary类型的资源必须是通过SamplePlayer类型节点的samples属性创建的，这样"
-"的资源才能用于播放声音。"
+msgstr "SampleLibrary类型的资源必须是通过SamplePlayer类型节点的samples属性创建的，这样的资源才能用于播放声音。"
 
 #: scene/2d/sprite.cpp
 msgid ""
 "Path property must point to a valid Viewport node to work. Such Viewport must "
 "be set to 'render target' mode."
-msgstr ""
-"Path属性必须指向一个合法的Viewport节点才能工作，同时此Viewport还需要启"
-"用'render target'。"
+msgstr "Path属性必须指向一个合法的Viewport节点才能工作，同时此Viewport还需要启用'render target'。"
 
 #: scene/2d/sprite.cpp
 msgid ""
 "The Viewport set in the path property must be set as 'render target' in order "
 "for this sprite to work."
-msgstr ""
-"为了让此精灵正常工作，它的path属性所指向的Viewport需要开启'render target'。"
+msgstr "为了让此精灵正常工作，它的path属性所指向的Viewport需要开启'render target'。"
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -144,16 +132,14 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionShape类型节点只能为CollisionObject的派生类提供碰撞形状数据，请将其放"
-"在Area、StaticBody、RigidBody或KinematicBody节点下。"
+"CollisionShape类型节点只能为CollisionObject的派生类提供碰撞形状数据，请将其放在Area、StaticBody、RigidBo"
+"dy或KinematicBody节点下。"
 
 #: scene/3d/body_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
-msgstr ""
-"CollisionShape节点必须拥有一个形状才能进行碰撞检测工作，请为它创建一个形状资"
-"源！"
+msgstr "CollisionShape节点必须拥有一个形状才能进行碰撞检测工作，请为它创建一个形状资源！"
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -161,8 +147,8 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon类型节点只能为CollisionObject的派生类提供碰撞形状数据，请将其"
-"放在Area、StaticBody、RigidBody或KinematicBody节点下。"
+"CollisionPolygon类型节点只能为CollisionObject的派生类提供碰撞形状数据，请将其放在Area、StaticBody、Rigid"
+"Body或KinematicBody节点下。"
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
@@ -176,8 +162,7 @@ msgstr "此节点需要设置NavigationMesh资源才能工作。"
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. It "
 "only provides navigation data."
-msgstr ""
-"NavigationMeshInstance类型节点必须作为Navigation节点的子孙才能提供导航数据。"
+msgstr "NavigationMeshInstance类型节点必须作为Navigation节点的子孙才能提供导航数据。"
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -188,18 +173,13 @@ msgstr "每个场景中只允许有一个WorldEnvironment类型的节点。"
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SpatialSamplePlayer to play sound."
-msgstr ""
-"SampleLibrary类型的资源必须通过SpatialSamplePlayer节点的'samples'属性创建才能"
-"正常播放声音。"
+msgstr "SampleLibrary类型的资源必须通过SpatialSamplePlayer节点的'samples'属性创建才能正常播放声音。"
 
 #: scene/3d/sprite_3d.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite3D to display frames."
-msgstr ""
-"SpriteFrames资源必须是通过AnimatedSprite节点的frames属性创建的，否则无法显示动"
-"画帧。"
+msgstr "SpriteFrame资源必须是通过AnimatedSprite3D节点的Frames属性创建的，否则无法显示动画帧。"
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
@@ -215,7 +195,7 @@ msgstr "提示！"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr "请确认"
+msgstr "请确认..."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -237,24 +217,20 @@ msgid "Open"
 msgstr "打开"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a File"
-msgstr "打开声音文件"
+msgstr "打开文件"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open File(s)"
-msgstr "打开声音文件"
+msgstr "打开文件"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a Directory"
-msgstr "选择目录"
+msgstr "打开目录"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a File or Directory"
-msgstr "选择目录"
+msgstr "打开文件或目录"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_node.cpp
@@ -295,7 +271,7 @@ msgstr "筛选："
 #: tools/editor/editor_file_dialog.cpp tools/editor/editor_plugin_settings.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Name:"
-msgstr "名称"
+msgstr "名称:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
@@ -318,7 +294,7 @@ msgstr "Alt+"
 
 #: scene/gui/input_action.cpp
 msgid "Ctrl+"
-msgstr ""
+msgstr "Ctrl+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
@@ -403,9 +379,7 @@ msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
 "functions. Making them visible for editing is fine though, but they will hide "
 "upon running."
-msgstr ""
-"Popup对象在你调用popup()方法之前将保持隐藏，这里设置为可见并不代表执行场景时它"
-"会出现。"
+msgstr "Popup对象在你调用popup()方法之前将保持隐藏，这里设置为可见并不代表执行场景时它会出现。"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -414,6 +388,8 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
+"这个Viewport未设置render target。如果你刻意为之，直接在屏幕上显示其内容，使其成为子控件的所以它可以获取大小。否则请设置render "
+"target，将其内部纹理分配给一些节点显示。"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
@@ -779,26 +755,24 @@ msgid "Site:"
 msgstr "站点："
 
 #: tools/editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Support.."
-msgstr "导出.."
+msgstr "支持.."
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "官方"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "社区"
 
 #: tools/editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Testing"
-msgstr "设置"
+msgstr "测试"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
-msgstr ""
+msgstr "ZIP资源包"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List For '%s':"
@@ -987,9 +961,8 @@ msgid "Disconnect"
 msgstr "删除事件连接"
 
 #: tools/editor/connections_dialog.cpp tools/editor/node_dock.cpp
-#, fuzzy
 msgid "Signals"
-msgstr "事件："
+msgstr "信号"
 
 #: tools/editor/create_dialog.cpp
 msgid "Create New"
@@ -1243,7 +1216,6 @@ msgid "Setting Up.."
 msgstr "配置.."
 
 #: tools/editor/editor_log.cpp
-#, fuzzy
 msgid " Output:"
 msgstr "输出"
 
@@ -1314,11 +1286,11 @@ msgstr "加载资源失败。"
 
 #: tools/editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr ""
+msgstr "无法加载要合并的MeshLibrary"
 
 #: tools/editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr ""
+msgstr "保存MeshLibrary出错！"
 
 #: tools/editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
@@ -1357,7 +1329,6 @@ msgid "Copy Params"
 msgstr "拷贝参数"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Paste Params"
 msgstr "粘贴帧"
 
@@ -1379,9 +1350,8 @@ msgid "Make Sub-Resources Unique"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Open in Help"
-msgstr "打开场景"
+msgstr "查看帮助"
 
 #: tools/editor/editor_node.cpp
 msgid "There is no defined scene to run."
@@ -1392,6 +1362,8 @@ msgid ""
 "No main scene has ever been defined.\n"
 "Select one from \"Project Settings\" under the 'application' category."
 msgstr ""
+"尚未定义主场景。\n"
+"请在项目设置的application分类下设置选择主场景。"
 
 #: tools/editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
@@ -1407,7 +1379,7 @@ msgstr "打开场景"
 
 #: tools/editor/editor_node.cpp
 msgid "Open Base Scene"
-msgstr ""
+msgstr "打开父场景"
 
 #: tools/editor/editor_node.cpp
 msgid "Quick Open Scene.."
@@ -1443,7 +1415,7 @@ msgstr "保存可翻译字符串"
 
 #: tools/editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr ""
+msgstr "导出MeshLibrary"
 
 #: tools/editor/editor_node.cpp
 msgid "Export Tile Set"
@@ -1491,8 +1463,7 @@ msgstr "额"
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to open "
 "the scene, then save it inside the project path."
-msgstr ""
-"加载场景出错，场景必须放在项目目录下。请尝试使用'导入'菜单导入此场景后再试。"
+msgstr "加载场景出错，场景必须放在项目目录下。请尝试使用'导入'菜单导入此场景后再试。"
 
 #: tools/editor/editor_node.cpp
 msgid "Error loading scene."
@@ -1507,9 +1478,8 @@ msgid "Save Layout"
 msgstr "保存布局"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Load Layout"
-msgstr "保存布局"
+msgstr "加载布局"
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Default"
@@ -1573,9 +1543,8 @@ msgid "Open Recent"
 msgstr "最近打开"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Quick Filter Files.."
-msgstr "快速查找文件.."
+msgstr "快速筛选文件.."
 
 #: tools/editor/editor_node.cpp
 msgid "Convert To.."
@@ -1587,7 +1556,7 @@ msgstr "可翻译字符串"
 
 #: tools/editor/editor_node.cpp
 msgid "MeshLibrary.."
-msgstr ""
+msgstr "MeshLibrary.."
 
 #: tools/editor/editor_node.cpp
 msgid "TileSet.."
@@ -1647,7 +1616,6 @@ msgid "Export"
 msgstr "导出"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play the project."
 msgstr "运行此项目（F5）"
 
@@ -1661,14 +1629,12 @@ msgid "Pause the scene"
 msgstr "暂停运行场景"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Pause Scene"
 msgstr "暂停运行场景"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Stop the scene."
-msgstr "停止运行场景（F8）"
+msgstr "停止运行场景"
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
@@ -1676,14 +1642,12 @@ msgid "Stop"
 msgstr "停止"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play the edited scene."
-msgstr "运行打开的场景（F6）"
+msgstr "打开并运行场景"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play Scene"
-msgstr "保存场景"
+msgstr "运行场景"
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
@@ -1694,7 +1658,6 @@ msgid "Debug options"
 msgstr "调试选项"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Deploy with Remote Debug"
 msgstr "部署远程调试"
 
@@ -1702,11 +1665,11 @@ msgstr "部署远程调试"
 msgid ""
 "When exporting or deploying, the resulting executable will attempt to connect "
 "to the IP of this computer in order to be debugged."
-msgstr ""
+msgstr "导出或发布项目时，为了能够调试项目，可执行文件将试图通过本机IP连接到调试器。"
 
 #: tools/editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
-msgstr ""
+msgstr "发布基于网络文件系统的最小应用包"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1717,6 +1680,10 @@ msgid ""
 "On Android, deploy will use the USB cable for faster performance. This option "
 "speeds up testing for games with a large footprint."
 msgstr ""
+"当启用此项后，将在导出或发布项目时生成最小化可自行文件。\n"
+"文件系统将通过网络连接到编辑器来实现。\n"
+"在Android平台，通过USB发布能获得更快的效率。\n"
+"此选项用于加快游戏的测试。"
 
 #: tools/editor/editor_node.cpp
 msgid "Visible Collision Shapes"
@@ -1726,7 +1693,7 @@ msgstr "碰撞区域可见"
 msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
-msgstr ""
+msgstr "如果启用此项，节点的碰撞区域和raycast将在游戏运行时可见。"
 
 #: tools/editor/editor_node.cpp
 msgid "Visible Navigation"
@@ -1736,11 +1703,11 @@ msgstr "Navigation可见"
 msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
-msgstr ""
+msgstr "如果启用此项，用于导航的mesh和多边形将在游戏运行时可见。"
 
 #: tools/editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr ""
+msgstr "同步场景修改"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1749,11 +1716,12 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"开启此项后，在编辑器中对场景的所有修改都会被应用与正在运行的游戏中。\n"
+"当使用远程设备调试时，使用网络文件系统能有效提高编辑效率。"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Sync Script Changes"
-msgstr "有更改时更新UI"
+msgstr "同步脚本变更"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1762,6 +1730,8 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"开启此项后，所有脚本在保存时都会被正在运行的游戏重新加载。\n"
+"当使用远程设备调试时，使用网络文件系统能有效提高编辑效率。"
 
 #: tools/editor/editor_node.cpp tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Settings"
@@ -2023,9 +1993,8 @@ msgid "Imported Resources"
 msgstr "已导入的资源"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
-#, fuzzy
 msgid "No bit masks to import!"
-msgstr "没有要导入的项目！"
+msgstr "没有要导入的bit masks！"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
@@ -2055,9 +2024,8 @@ msgid "Save path is empty!"
 msgstr "保存路径为空！"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
-#, fuzzy
 msgid "Import BitMasks"
-msgstr "导入贴图"
+msgstr "导入BitMask"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
@@ -2201,15 +2169,15 @@ msgstr "动画选项"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Flags"
-msgstr ""
+msgstr "标记"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Bake FPS:"
-msgstr ""
+msgstr "烘培FPS："
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Optimizer"
-msgstr ""
+msgstr "优化"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Max Linear Error"
@@ -2248,7 +2216,7 @@ msgstr "循环"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Filters"
-msgstr ""
+msgstr "筛选"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Source path is empty."
@@ -2292,7 +2260,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Custom Root Node Type:"
-msgstr ""
+msgstr "自定义根节点类型："
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Auto"
@@ -2413,7 +2381,7 @@ msgstr "导入2D精灵集"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Cell Size:"
-msgstr ""
+msgstr "单元尺寸："
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Large Texture"
@@ -2463,8 +2431,7 @@ msgstr "精灵图集"
 msgid ""
 "NOTICE: Importing 2D textures is not mandatory. Just copy png/jpg files to "
 "the project."
-msgstr ""
-"提示：大多数2D贴图并不需要导入操作，只要将png/jpg文件放到项目目录下即可。"
+msgstr "提示：大多数2D贴图并不需要导入操作，只要将png/jpg文件放到项目目录下即可。"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Crop empty space."
@@ -2597,16 +2564,15 @@ msgstr ""
 
 #: tools/editor/node_dock.cpp
 msgid "Node"
-msgstr ""
+msgstr "节点"
 
 #: tools/editor/node_dock.cpp
-#, fuzzy
 msgid "Groups"
 msgstr "分组："
 
 #: tools/editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
-msgstr ""
+msgstr "请选择一个节点来设置信号或分组。"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -2968,11 +2934,11 @@ msgstr ""
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr ""
+msgstr "BakedLightInstance未包含BakedLight资源。"
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Bake!"
-msgstr ""
+msgstr "烘培！"
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Reset the lightmap octree baking process (start over)."
@@ -3138,7 +3104,7 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton.."
-msgstr ""
+msgstr "骨骼.."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make Bones"
@@ -3293,7 +3259,7 @@ msgstr "从场景中导入"
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
-msgstr ""
+msgstr "从场景中更新"
 
 #: tools/editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -3333,7 +3299,7 @@ msgstr "鼠标右键：移除点"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
-msgstr ""
+msgstr "Mesh为空！"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -3727,12 +3693,12 @@ msgstr "清除UV"
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap"
-msgstr ""
+msgstr "吸附"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Enable Snap"
-msgstr ""
+msgstr "启用吸附"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
@@ -3914,13 +3880,12 @@ msgid "Auto Indent"
 msgstr "自动缩进"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Reload Tool Script"
-msgstr "创建脚本"
+msgstr "重新加载Tool脚本"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Reload Tool Script (Soft)"
-msgstr ""
+msgstr "重新加载Tool脚本（Soft）"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -4577,20 +4542,18 @@ msgid "StyleBox Preview:"
 msgstr "StyleBox预览："
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Texture Region Editor"
-msgstr "精灵纹理区域编辑"
+msgstr "纹理区域编辑"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Region Editor"
-msgstr "精灵纹理区域编辑"
+msgstr "缩放区域编辑"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid ""
 "No texture in this node.\n"
 "Set a texture to be able to edit region."
-msgstr ""
+msgstr "此节点没有贴图，请先为它设置贴图后再试。"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
@@ -5111,14 +5074,12 @@ msgid "Remove project from the list? (Folder contents will not be modified)"
 msgstr "移除此项目（项目的文件不受影响）"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Project Manager"
-msgstr "项目名称："
+msgstr "项目管理器"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Project List"
-msgstr "退出到项目列表"
+msgstr "项目列表"
 
 #: tools/editor/project_manager.cpp
 msgid "Run"
@@ -5269,12 +5230,10 @@ msgid "Invalid name. Must not collide with an existing global constant name."
 msgstr "名称非法，与已存在的全局常量名称冲突。"
 
 #: tools/editor/project_settings.cpp
-#, fuzzy
 msgid "Autoload '%s' already exists!"
-msgstr "动作%s已存在！"
+msgstr "Autoload %s已存在！"
 
 #: tools/editor/project_settings.cpp
-#, fuzzy
 msgid "Rename Autoload"
 msgstr "移除Autoload"
 
@@ -5795,9 +5754,8 @@ msgid "View Owners.."
 msgstr "查看所有者"
 
 #: tools/editor/scenes_dock.cpp
-#, fuzzy
 msgid "Copy Path"
-msgstr "拷贝参数"
+msgstr "拷贝路径"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Rename or Move.."
@@ -5885,7 +5843,7 @@ msgstr "必须是项目路径"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Invalid base path"
-msgstr ""
+msgstr "父路径非法"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "File exists"
@@ -6037,7 +5995,7 @@ msgstr "从场景树设置"
 
 #: tools/editor/settings_config_dialog.cpp
 msgid "Shortcuts"
-msgstr ""
+msgstr "快捷键"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
