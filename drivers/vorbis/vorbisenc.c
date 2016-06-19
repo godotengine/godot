@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2009             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2015             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: simple programmatic interface for encoder mode setup
- last mod: $Id: vorbisenc.c 17028 2010-03-25 05:22:15Z xiphmont $
+ last mod: $Id: vorbisenc.c 19457 2015-03-03 00:15:29Z giles $
 
  ********************************************************************/
 
@@ -903,8 +903,12 @@ int vorbis_encode_setup_vbr(vorbis_info *vi,
                             long  channels,
                             long  rate,
                             float quality){
-  codec_setup_info *ci=vi->codec_setup;
-  highlevel_encode_setup *hi=&ci->hi;
+  codec_setup_info *ci;
+  highlevel_encode_setup *hi;
+  if(rate<=0) return OV_EINVAL;
+
+  ci=vi->codec_setup;
+  hi=&ci->hi;
 
   quality+=.0000001;
   if(quality>=1.)quality=.9999;
@@ -948,9 +952,14 @@ int vorbis_encode_setup_managed(vorbis_info *vi,
                                 long nominal_bitrate,
                                 long min_bitrate){
 
-  codec_setup_info *ci=vi->codec_setup;
-  highlevel_encode_setup *hi=&ci->hi;
-  double tnominal=nominal_bitrate;
+  codec_setup_info *ci;
+  highlevel_encode_setup *hi;
+  double tnominal;
+  if(rate<=0) return OV_EINVAL;
+
+  ci=vi->codec_setup;
+  hi=&ci->hi;
+  tnominal=nominal_bitrate;
 
   if(nominal_bitrate<=0.){
     if(max_bitrate>0.){

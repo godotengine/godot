@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2009             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2015             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: PCM data vector blocking, windowing and dis/reassembly
- last mod: $Id: block.c 17561 2010-10-23 10:34:24Z xiphmont $
+ last mod: $Id: block.c 19457 2015-03-03 00:15:29Z giles $
 
  Handle windowing, overlap-add, etc of the PCM vectors.  This is made
  more amusing by Vorbis' current two allowed block sizes.
@@ -30,16 +30,6 @@
 #include "lpc.h"
 #include "registry.h"
 #include "misc.h"
-
-static int ilog2(unsigned int v){
-  int ret=0;
-  if(v)--v;
-  while(v){
-    ret++;
-    v>>=1;
-  }
-  return(ret);
-}
 
 /* pcm accumulator examples (not exhaustive):
 
@@ -184,14 +174,19 @@ static int _vds_shared_init(vorbis_dsp_state *v,vorbis_info *vi,int encp){
   private_state *b=NULL;
   int hs;
 
-  if(ci==NULL) return 1;
+  if(ci==NULL||
+     ci->modes<=0||
+     ci->blocksizes[0]<64||
+     ci->blocksizes[1]<ci->blocksizes[0]){
+    return 1;
+  }
   hs=ci->halfrate_flag;
 
   memset(v,0,sizeof(*v));
   b=v->backend_state=_ogg_calloc(1,sizeof(*b));
 
   v->vi=vi;
-  b->modebits=ilog2(ci->modes);
+  b->modebits=ov_ilog(ci->modes-1);
 
   b->transform[0]=_ogg_calloc(VI_TRANSFORMB,sizeof(*b->transform[0]));
   b->transform[1]=_ogg_calloc(VI_TRANSFORMB,sizeof(*b->transform[1]));
@@ -204,8 +199,14 @@ static int _vds_shared_init(vorbis_dsp_state *v,vorbis_info *vi,int encp){
   mdct_init(b->transform[1][0],ci->blocksizes[1]>>hs);
 
   /* Vorbis I uses only window type 0 */
-  b->window[0]=ilog2(ci->blocksizes[0])-6;
-  b->window[1]=ilog2(ci->blocksizes[1])-6;
+  /* note that the correct computation below is technically:
+       b->window[0]=ov_ilog(ci->blocksizes[0]-1)-6;
+       b->window[1]=ov_ilog(ci->blocksizes[1]-1)-6;
+    but since blocksizes are always powers of two,
+    the below is equivalent.
+   */
+  b->window[0]=ov_ilog(ci->blocksizes[0])-7;
+  b->window[1]=ov_ilog(ci->blocksizes[1])-7;
 
   if(encp){ /* encode/decode differ here */
 
@@ -771,14 +772,14 @@ int vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb){
       if(v->lW){
         if(v->W){
           /* large/large */
-          float *w=_vorbis_window_get(b->window[1]-hs);
+          const float *w=_vorbis_window_get(b->window[1]-hs);
           float *pcm=v->pcm[j]+prevCenter;
           float *p=vb->pcm[j];
           for(i=0;i<n1;i++)
             pcm[i]=pcm[i]*w[n1-i-1] + p[i]*w[i];
         }else{
           /* large/small */
-          float *w=_vorbis_window_get(b->window[0]-hs);
+          const float *w=_vorbis_window_get(b->window[0]-hs);
           float *pcm=v->pcm[j]+prevCenter+n1/2-n0/2;
           float *p=vb->pcm[j];
           for(i=0;i<n0;i++)
@@ -787,7 +788,7 @@ int vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb){
       }else{
         if(v->W){
           /* small/large */
-          float *w=_vorbis_window_get(b->window[0]-hs);
+          const float *w=_vorbis_window_get(b->window[0]-hs);
           float *pcm=v->pcm[j]+prevCenter;
           float *p=vb->pcm[j]+n1/2-n0/2;
           for(i=0;i<n0;i++)
@@ -796,7 +797,7 @@ int vorbis_synthesis_blockin(vorbis_dsp_state *v,vorbis_block *vb){
             pcm[i]=p[i];
         }else{
           /* small/small */
-          float *w=_vorbis_window_get(b->window[0]-hs);
+          const float *w=_vorbis_window_get(b->window[0]-hs);
           float *pcm=v->pcm[j]+prevCenter;
           float *p=vb->pcm[j];
           for(i=0;i<n0;i++)
@@ -1035,7 +1036,7 @@ int vorbis_synthesis_lapout(vorbis_dsp_state *v,float ***pcm){
 
 }
 
-float *vorbis_window(vorbis_dsp_state *v,int W){
+const float *vorbis_window(vorbis_dsp_state *v,int W){
   vorbis_info *vi=v->vi;
   codec_setup_info *ci=vi->codec_setup;
   int hs=ci->halfrate_flag;
