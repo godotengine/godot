@@ -173,6 +173,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 	//MenuButton *menu;
 	SpinBox *length;
 	Button *loop;
+	Button *loop_interpolation;
 	bool keying;
 	ToolButton *edit_button;
 	ToolButton *move_up_button;
@@ -238,6 +239,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 	void _animation_len_changed(float p_len);
 	void _animation_loop_changed();
+	void _animation_loop_interpolation_changed();
 	void _step_changed(float p_len);
 
 	struct InsertData {

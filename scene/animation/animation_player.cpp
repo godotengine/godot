@@ -540,6 +540,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd,float p_delta,flo
 
 	float len=cd.from->animation->get_length();
 	bool loop=cd.from->animation->has_loop();
+	bool loop_interpolation=cd.from->animation->has_loop_interpolation();
 
 	if (!loop) {
 
@@ -565,9 +566,20 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd,float p_delta,flo
 
 		}
 
-	} else {
+	} else if (loop_interpolation) {
 
 		next_pos=Math::fposmod(next_pos,len);
+
+	} else {
+		
+		if (next_pos<0 or next_pos>len) {
+			if (!backwards)
+				next_pos=0;
+			else if (backwards)
+				next_pos=len;
+		}
+		// fix delta - not sure if needed here
+		delta=next_pos-cd.pos;
 
 	}
 

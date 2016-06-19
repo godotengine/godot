@@ -2922,6 +2922,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 				edit_button->connect("pressed",this,"_toggle_edit_curves");
 
 				loop->set_icon(get_icon("Loop","EditorIcons"));
+				loop_interpolation->set_icon(get_icon("LoopInterpolation","EditorIcons"));
 				curve_edit->connect("transition_changed",this,"_curve_transition_changed");
 
 				//edit_button->add_color_override("font_color",get_color("font_color","Tree"));
@@ -3012,6 +3013,7 @@ void AnimationKeyEditor::_update_menu() {
 
 		length->set_val(animation->get_length());
 		loop->set_pressed(animation->has_loop());
+		loop_interpolation->set_pressed(animation->has_loop_interpolation());
 		step->set_val(animation->get_step());
 	}
 
@@ -3467,6 +3469,21 @@ void AnimationKeyEditor::_animation_loop_changed() {
 
 }
 
+void AnimationKeyEditor::_animation_loop_interpolation_changed() {
+
+	if (updating)
+		return;
+
+	if (!animation.is_null()) {
+
+		undo_redo->create_action(TTR("Change Anim Loop Interpolation"));
+		undo_redo->add_do_method(animation.ptr(),"set_loop_interpolation",loop_interpolation->is_pressed());
+		undo_redo->add_undo_method(animation.ptr(),"set_loop_interpolation",!loop_interpolation->is_pressed());
+		undo_redo->commit_action();
+	}
+
+}
+
 
 void AnimationKeyEditor::_create_value_item(int p_type) {
 
@@ -3752,6 +3769,7 @@ void AnimationKeyEditor::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("_animation_loop_changed"),&AnimationKeyEditor::_animation_loop_changed);
+	ObjectTypeDB::bind_method(_MD("_animation_loop_interpolation_changed"),&AnimationKeyEditor::_animation_loop_interpolation_changed);
 	ObjectTypeDB::bind_method(_MD("_animation_len_changed"),&AnimationKeyEditor::_animation_len_changed);
 	ObjectTypeDB::bind_method(_MD("_create_value_item"),&AnimationKeyEditor::_create_value_item);
 	ObjectTypeDB::bind_method(_MD("_pane_drag"),&AnimationKeyEditor::_pane_drag);
@@ -3861,6 +3879,12 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	loop->connect("pressed",this,"_animation_loop_changed");
 	hb->add_child(loop);
 	loop->set_tooltip(TTR("Enable/Disable looping in animation."));
+
+	loop_interpolation = memnew( ToolButton );
+	loop_interpolation->set_toggle_mode(true);
+	loop_interpolation->connect("pressed",this,"_animation_loop_interpolation_changed");
+	hb->add_child(loop_interpolation);
+	loop_interpolation->set_tooltip(TTR("Enable/Disable interpolation when looping animation."));
 
 	hb->add_child( memnew( VSeparator ) );
 
