@@ -1,15 +1,21 @@
-# LANGUAGE translation of the Godot Engine editor
+# Slovak translation of the Godot Engine editor
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# lablazer <avojtus@centrum.sk>, 2016.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"PO-Revision-Date: 2016-06-11 11:23+0000\n"
+"Last-Translator: lablazer <avojtus@centrum.sk>\n"
+"Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/"
+"godot/sk/>\n"
+"Language: sk\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Generator: Weblate 2.7-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -72,7 +78,7 @@ msgstr ""
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr ""
+msgstr "Prázdny CollisionPolygon2D nemá žiaden efekt na kolíziu."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -80,23 +86,30 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionShape2D slúži iba na pridelenie kolízneho tvaru objektu vydedeného "
+"z CollisionObject2D uzlu. Prosím, použite ho iba ako dieťa objektu Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, atď. aby ste im dali tvar."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
+"Musíte nastaviť tvar objektu CollisionShape2D aby fungoval. Prosím, vytvorte "
+"preň tvarový objekt!"
 
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the 'texture' "
 "property."
-msgstr ""
+msgstr "Textúra s tvarom svetla musí mať nastavenú vlastnosť \"textúra\"."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
+"Okluzorový polygón musí byť nastavený (alebo vykreslený) aby sa okluzor "
+"prejavil."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"

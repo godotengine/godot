@@ -1,15 +1,22 @@
-# LANGUAGE translation of the Godot Engine editor
+# Arabic translation of the Godot Engine editor
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Mohammmad Khashashneh <mohammad.rasmi@gmail.com>, 2016.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"PO-Revision-Date: 2016-06-19 08:49+0000\n"
+"Last-Translator: Mohammmad Khashashneh <mohammad.rasmi@gmail.com>\n"
+"Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ar/>\n"
+"Language: ar\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"X-Generator: Weblate 2.7-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -56,6 +63,8 @@ msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
+"ليتم إظهار الأطر (اللقطات) في الAnimatedSprite (النقوش المتحركة), يجب تكوين "
+"مصدر لها من نوع  SpriteFrames و ضبط خاصية الFrames (الأطر) بها. "
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""

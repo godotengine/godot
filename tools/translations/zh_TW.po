@@ -1,15 +1,21 @@
-# LANGUAGE translation of the Godot Engine editor
+# Chinese (Taiwan) translation of the Godot Engine editor
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# popcade <popcade@gmail.com>, 2016.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"PO-Revision-Date: 2016-06-13 13:57+0000\n"
+"Last-Translator: popcade <popcade@gmail.com>\n"
+"Language-Team: Chinese (Taiwan) <https://hosted.weblate.org/projects/godot-"
+"engine/godot/zh_TW/>\n"
+"Language: zh_TW\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 2.7-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -55,13 +61,15 @@ msgstr ""
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
-msgstr ""
+msgstr "SpriteFrames資源必須在Frames屬性中被創建或設置才能夠顯示動畫格。"
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
+"每個場景中僅允許一個可見的CanvasModulate，只有第一個CanvasModulate會有作用，"
+"其餘的將被忽略。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -69,10 +77,12 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon2D只能為CollisionObject2D衍生的節點提供碰撞形狀資訊，請將其使"
+"用於Area2D、StaticBody2D、RigidBody2D、KinematicBody2D這類的節點下。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr ""
+msgstr "空白的CollisionPolygon2D不起碰撞偵測的作用。"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -80,27 +90,29 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionShape2D只能為CollisionObject2D衍生的節點提供碰撞形狀資訊，請將其使用"
+"於Area2D、StaticBody2D、RigidBody2D、KinematicBody2D這類的節點下。"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
-msgstr ""
+msgstr "CollisionShape2D必須被賦予形狀才能運作，請為它建立個形狀吧！"
 
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the 'texture' "
 "property."
-msgstr ""
+msgstr "光照形狀的材質必須被賦與在材質的屬性中。"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
+msgstr "此遮光體必須被建立或設置遮蔽形狀才能發揮遮蔽作用。"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
-msgstr ""
+msgstr "此遮光體沒有被賦予形狀，請繪製一個吧！"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
