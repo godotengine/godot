@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-06-10 11:37+0000\n"
+"PO-Revision-Date: 2016-06-19 17:29+0300\n"
 "Last-Translator: DimOkGamer <dimokgamer@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -19,49 +19,48 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.7-dev\n"
+"X-Generator: Poedit 1.8.8\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "Неверный тип аргумента для convert(), используйте TYPE_* константы."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "Не хватает байтов для декодирования байтов, или неверный формат."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr ""
+msgstr "Аргумент шага равен нулю!"
 
 #: modules/gdscript/gd_functions.cpp
-#, fuzzy
 msgid "Not a script with an instance"
-msgstr "Не выбрана сцена!"
+msgstr "Скрипт без экземпляра"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "Основан не на скрипте"
 
 #: modules/gdscript/gd_functions.cpp
-#, fuzzy
 msgid "Not based on a resource file"
-msgstr "Нет целевого ресурса шрифта!"
+msgstr "Основан не на файле ресурсов"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr ""
+msgstr "Недопустимый формат экземпляра словаря (отсутствует @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
+"Недопустимый формат экземпляра словаря (невозможно загрузить скрипт из @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr ""
+msgstr "Недопустимый формат экземпляра словаря (неверный скрипт в @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr ""
+msgstr "Недопустимый экземпляр словаря (неверные подклассы)"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -585,18 +584,16 @@ msgid "Anim Delete Keys"
 msgstr "Ключ удалён"
 
 #: tools/editor/animation_editor.cpp
-#, fuzzy
 msgid "Continuous"
-msgstr "Продолжить"
+msgstr "Непрерывная"
 
 #: tools/editor/animation_editor.cpp
-#, fuzzy
 msgid "Discrete"
-msgstr "Отсоединить"
+msgstr "Дискретная"
 
 #: tools/editor/animation_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "Триггер"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Key"
@@ -706,9 +703,8 @@ msgid "Change Anim Loop"
 msgstr "Изменено зацикливание анимации"
 
 #: tools/editor/animation_editor.cpp
-#, fuzzy
 msgid "Change Anim Loop Interpolation"
-msgstr "Изменено зацикливание анимации"
+msgstr "Изменена интерполяция анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
@@ -751,9 +747,8 @@ msgid "Enable/Disable looping in animation."
 msgstr "Включить/отключить зацикливание в анимации."
 
 #: tools/editor/animation_editor.cpp
-#, fuzzy
 msgid "Enable/Disable interpolation when looping animation."
-msgstr "Включить/отключить зацикливание в анимации."
+msgstr "Включить/отключить интерполяцию при зацикливании анимации."
 
 #: tools/editor/animation_editor.cpp
 msgid "Add new tracks."
@@ -1020,7 +1015,6 @@ msgid "Method in target Node must be specified!"
 msgstr "Метод должен быть указан в целевом Ноде!"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Conect To Node:"
 msgstr "Присоединить к ноду:"
 
@@ -1040,15 +1034,13 @@ msgstr "Удалить"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "Добавить дополнительный параметр вызова:"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Extra Call Arguments:"
-msgstr "Аргументы:"
+msgstr "Дополнительные параметры вызова:"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Path to Node:"
 msgstr "Путь к ноду:"
 
@@ -1073,9 +1065,8 @@ msgid "Connect '%s' to '%s'"
 msgstr "Присоединить '%s' к '%s'"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connecting Signal:"
-msgstr "Связи:"
+msgstr "Подключение сигнала:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Create Subscription"
@@ -1657,11 +1648,11 @@ msgstr "Перейти к предыдущей открытой сцене."
 
 #: tools/editor/editor_node.cpp
 msgid "Fullscreen Mode"
-msgstr ""
+msgstr "Полноэкранный режим"
 
 #: tools/editor/editor_node.cpp
 msgid "Distraction Free Mode"
-msgstr ""
+msgstr "Свободный режим"
 
 #: tools/editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -2857,22 +2848,20 @@ msgid "Create new animation in player."
 msgstr "Создать новую анимацию."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Load animation from disk."
 msgstr "Загрузить анимацию с диска."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load an animation from disk."
-msgstr "Загрузить анимацию с диска."
+msgstr "Загрузить эту анимацию с диска."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save the current animation"
 msgstr "Сохранить текущую анимацию"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Save As"
-msgstr "Сохранить как.."
+msgstr "Сохранить как"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -4070,9 +4059,8 @@ msgid "Auto Indent"
 msgstr "Автоотступ"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Soft Reload Script"
-msgstr "Перезагрузить инструм. скрипт"
+msgstr "Мягко перезагрузить скрипты"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -4164,9 +4152,8 @@ msgid "Help"
 msgstr "Справка"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Contextual Help"
-msgstr "Контекстная"
+msgstr "Контекстная справка"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Tutorials"
@@ -4771,14 +4758,12 @@ msgid "Remove Class Items"
 msgstr "Удалить элемент класса"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Create Empty Template"
-msgstr "Создать шаблон"
+msgstr "Создать пустой образец"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Create Empty Editor Template"
-msgstr "Создать шаблон"
+msgstr "Создать пустой образец редактора"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "CheckBox Radio1"
@@ -4864,28 +4849,24 @@ msgid "Erase TileMap"
 msgstr "Стирать карту тайлов"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Erase selection"
 msgstr "Очистить выделенное"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Find tile"
-msgstr "Найти следующее"
+msgstr "Найти тайл"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Transpose"
 msgstr "Транспонировать"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Mirror X"
-msgstr "Зеркально по X (A)"
+msgstr "Зеркально по X"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Mirror Y"
-msgstr "Зеркально по Y (S)"
+msgstr "Зеркально по Y"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Bucket"
@@ -5921,7 +5902,7 @@ msgstr "Загрузить как заполнитель"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Discard Instancing"
-msgstr ""
+msgstr "Отбросить инстансинг"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Open in Editor"
