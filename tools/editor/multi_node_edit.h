@@ -41,6 +41,7 @@ class MultiNodeEdit : public Reference {
 		PropertyInfo info;
 	};
 
+
 protected:
 
 	bool _set(const StringName& p_name, const Variant& p_value);

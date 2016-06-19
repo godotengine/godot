@@ -2142,6 +2142,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 
 			if (obj->get( p_name ).get_type() == Variant::NIL || obj->get( p_name ).operator RefPtr().is_null()) {
 				p_item->set_text(1,"<null>");
+				p_item->set_icon(1,Ref<Texture>());
 
 				Dictionary d = p_item->get_metadata(0);
 				int hint=d.has("hint")?d["hint"].operator int():-1;
@@ -3349,6 +3350,7 @@ void PropertyEditor::update_tree() {
 
 				if (obj->get( p.name ).get_type() == Variant::NIL || obj->get( p.name ).operator RefPtr().is_null()) {
 					item->set_text(1,"<null>");
+					item->set_icon(1,Ref<Texture>());
 
 				} else {
 					RES res = obj->get( p.name ).operator RefPtr();
@@ -3934,6 +3936,7 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_filter_changed",&PropertyEditor::_filter_changed);
 	ObjectTypeDB::bind_method( "update_tree",&PropertyEditor::update_tree);
 	ObjectTypeDB::bind_method( "_resource_preview_done",&PropertyEditor::_resource_preview_done);
+	ObjectTypeDB::bind_method( "refresh",&PropertyEditor::refresh);
 
 	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &PropertyEditor::get_drag_data_fw);
 	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &PropertyEditor::can_drop_data_fw);
