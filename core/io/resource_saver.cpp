@@ -43,7 +43,7 @@ Error ResourceSaver::save(const String &p_path,const RES& p_resource,uint32_t p_
 	String extension=p_path.extension();
 	Error err=ERR_FILE_UNRECOGNIZED;
 
-	for (int i=0;i<saver_count;i++) {
+	for (int i=saver_count-1;i>=0;i--) {
 
 		if (!saver[i]->recognize(p_resource))
 			continue;

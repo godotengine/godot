@@ -185,7 +185,7 @@ RES ResourceLoader::load(const String &p_path, const String& p_type_hint, bool p
 	String extension=remapped_path.extension();
 	bool found=false;
 
-	for (int i=0;i<loader_count;i++) {
+	for (int i=loader_count-1; i>=0; i--) {
 
 		if (!loader[i]->recognize(extension))
 			continue;
