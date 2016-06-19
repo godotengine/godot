@@ -15,10 +15,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_favorites.png"
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_area.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
-   sodipodi:docname="icon_rating_no_star.svg">
+   sodipodi:docname="icon_cone_twist_joint.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="32"
-     inkscape:cx="6.5847936"
-     inkscape:cy="10.189102"
+     inkscape:zoom="22.627417"
+     inkscape:cx="8.6908051"
+     inkscape:cy="11.390572"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -39,7 +39,7 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:snap-bbox-midpoints="false"
+     inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
      inkscape:window-width="1920"
@@ -47,14 +47,12 @@
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:object-paths="false"
-     inkscape:snap-intersection-paths="false"
-     inkscape:object-nodes="false"
-     inkscape:snap-smooth-nodes="false">
+     inkscape:snap-midpoints="true"
+     inkscape:snap-smooth-nodes="true"
+     inkscape:object-nodes="true">
     <inkscape:grid
        type="xygrid"
-       id="grid3336"
-       empspacing="4" />
+       id="grid3336" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -64,7 +62,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -73,16 +71,23 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3622)">
-    <g
-       id="layer1-7"
-       inkscape:label="Layer 1"
-       style="fill:#c3ae65;fill-opacity:1">
-      <path
-         id="path4254-1"
-         transform="translate(0,1036.3622)"
-         d="M 8,1.7246094 5.625,5.8222656 1,6.9199219 4.2363281,10.326172 3.8769531,15 8.015625,13.023438 12.173828,14.964844 11.777344,10.3125 15,6.9199219 10.375,5.8222656 8,1.7246094 Z M 8,4 l 1.6582031,2.7773438 3.2324219,0.7441406 -2.25,2.3007812 0.275391,3.1542964 L 8.0117188,11.660156 5.1191406,13 5.3710938,9.8320312 3.109375,7.5214844 6.3417969,6.7773438 8,4 Z"
-         style="opacity:1;fill:#c3ae65;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         inkscape:connector-curvature="0" />
-    </g>
+    <path
+       style="opacity:1;fill:none;fill-opacity:0.99607843;stroke:#fc9c9c;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 8 2 L 2 11 A 6 3 0 0 0 5 13.597656 A 6 3 0 0 0 11 13.597656 A 6 3 0 0 0 14 11 L 8 2 z "
+       transform="translate(0,1036.3622)"
+       id="path4172" />
+    <ellipse
+       style="opacity:1;fill:none;fill-opacity:0.99607843;stroke:#fc9c9c;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path4177"
+       cx="8"
+       cy="1047.3622"
+       rx="6"
+       ry="3" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#fc9c9c;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 8,1039.3622 0,8"
+       id="path4179"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
   </g>
 </svg>
