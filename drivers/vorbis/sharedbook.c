@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2009             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2015             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: basic shared codebook operations
- last mod: $Id: sharedbook.c 17030 2010-03-25 06:52:55Z xiphmont $
+ last mod: $Id: sharedbook.c 19457 2015-03-03 00:15:29Z giles $
 
  ********************************************************************/
 
@@ -26,13 +26,11 @@
 #include "scales.h"
 
 /**** pack/unpack helpers ******************************************/
-int _ilog(unsigned int v){
-  int ret=0;
-  while(v){
-    ret++;
-    v>>=1;
-  }
-  return(ret);
+
+int ov_ilog(ogg_uint32_t v){
+  int ret;
+  for(ret=0;v;ret++)v>>=1;
+  return ret;
 }
 
 /* 32 bit float (not IEEE; nonnormalized mantissa +
@@ -70,7 +68,7 @@ float _float32_unpack(long val){
 /* given a list of word lengths, generate a list of codewords.  Works
    for length ordered or unordered, always assigns the lowest valued
    codewords first.  Extended to handle unused entries (length 0) */
-ogg_uint32_t *_make_words(long *l,long n,long sparsecount){
+ogg_uint32_t *_make_words(char *l,long n,long sparsecount){
   long i,j,count=0;
   ogg_uint32_t marker[33];
   ogg_uint32_t *r=_ogg_malloc((sparsecount?sparsecount:n)*sizeof(*r));
@@ -125,16 +123,15 @@ ogg_uint32_t *_make_words(long *l,long n,long sparsecount){
       if(sparsecount==0)count++;
   }
 
-  /* sanity check the huffman tree; an underpopulated tree must be
-     rejected. The only exception is the one-node pseudo-nil tree,
-     which appears to be underpopulated because the tree doesn't
-     really exist; there's only one possible 'codeword' or zero bits,
-     but the above tree-gen code doesn't mark that. */
-  if(sparsecount != 1){
+  /* any underpopulated tree must be rejected. */
+  /* Single-entry codebooks are a retconned extension to the spec.
+     They have a single codeword '0' of length 1 that results in an
+     underpopulated tree.  Shield that case from the underformed tree check. */
+  if(!(count==1 && marker[2]==2)){
     for(i=1;i<33;i++)
       if(marker[i] & (0xffffffffUL>>(32-i))){
-	_ogg_free(r);
-	return(NULL);
+        _ogg_free(r);
+        return(NULL);
       }
   }
 
@@ -313,9 +310,10 @@ static int sort32a(const void *a,const void *b){
 int vorbis_book_init_decode(codebook *c,const static_codebook *s){
   int i,j,n=0,tabn;
   int *sortindex;
+
   memset(c,0,sizeof(*c));
 
-  /* count actually used entries */
+  /* count actually used entries and find max length */
   for(i=0;i<s->entries;i++)
     if(s->lengthlist[i]>0)
       n++;
@@ -325,7 +323,6 @@ int vorbis_book_init_decode(codebook *c,const static_codebook *s){
   c->dim=s->dim;
 
   if(n>0){
-
     /* two different remappings go on here.
 
     First, we collapse the likely sparse codebook down only to
@@ -361,7 +358,6 @@ int vorbis_book_init_decode(codebook *c,const static_codebook *s){
       c->codelist[sortindex[i]]=codes[i];
     _ogg_free(codes);
 
-
     c->valuelist=_book_unquantize(s,n,sortindex);
     c->dec_index=_ogg_malloc(n*sizeof(*c->dec_index));
 
@@ -370,51 +366,62 @@ int vorbis_book_init_decode(codebook *c,const static_codebook *s){
         c->dec_index[sortindex[n++]]=i;
 
     c->dec_codelengths=_ogg_malloc(n*sizeof(*c->dec_codelengths));
-    for(n=0,i=0;i<s->entries;i++)
-      if(s->lengthlist[i]>0)
-        c->dec_codelengths[sortindex[n++]]=s->lengthlist[i];
-
-    c->dec_firsttablen=_ilog(c->used_entries)-4; /* this is magic */
-    if(c->dec_firsttablen<5)c->dec_firsttablen=5;
-    if(c->dec_firsttablen>8)c->dec_firsttablen=8;
-
-    tabn=1<<c->dec_firsttablen;
-    c->dec_firsttable=_ogg_calloc(tabn,sizeof(*c->dec_firsttable));
     c->dec_maxlength=0;
-
-    for(i=0;i<n;i++){
-      if(c->dec_maxlength<c->dec_codelengths[i])
-        c->dec_maxlength=c->dec_codelengths[i];
-      if(c->dec_codelengths[i]<=c->dec_firsttablen){
-        ogg_uint32_t orig=bitreverse(c->codelist[i]);
-        for(j=0;j<(1<<(c->dec_firsttablen-c->dec_codelengths[i]));j++)
-          c->dec_firsttable[orig|(j<<c->dec_codelengths[i])]=i+1;
+    for(n=0,i=0;i<s->entries;i++)
+      if(s->lengthlist[i]>0){
+        c->dec_codelengths[sortindex[n++]]=s->lengthlist[i];
+        if(s->lengthlist[i]>c->dec_maxlength)
+          c->dec_maxlength=s->lengthlist[i];
       }
-    }
 
-    /* now fill in 'unused' entries in the firsttable with hi/lo search
-       hints for the non-direct-hits */
-    {
-      ogg_uint32_t mask=0xfffffffeUL<<(31-c->dec_firsttablen);
-      long lo=0,hi=0;
+    if(n==1 && c->dec_maxlength==1){
+      /* special case the 'single entry codebook' with a single bit
+       fastpath table (that always returns entry 0 )in order to use
+       unmodified decode paths. */
+      c->dec_firsttablen=1;
+      c->dec_firsttable=_ogg_calloc(2,sizeof(*c->dec_firsttable));
+      c->dec_firsttable[0]=c->dec_firsttable[1]=1;
 
-      for(i=0;i<tabn;i++){
-        ogg_uint32_t word=i<<(32-c->dec_firsttablen);
-        if(c->dec_firsttable[bitreverse(word)]==0){
-          while((lo+1)<n && c->codelist[lo+1]<=word)lo++;
-          while(    hi<n && word>=(c->codelist[hi]&mask))hi++;
+    }else{
+      c->dec_firsttablen=ov_ilog(c->used_entries)-4; /* this is magic */
+      if(c->dec_firsttablen<5)c->dec_firsttablen=5;
+      if(c->dec_firsttablen>8)c->dec_firsttablen=8;
 
-          /* we only actually have 15 bits per hint to play with here.
-             In order to overflow gracefully (nothing breaks, efficiency
-             just drops), encode as the difference from the extremes. */
-          {
-            unsigned long loval=lo;
-            unsigned long hival=n-hi;
+      tabn=1<<c->dec_firsttablen;
+      c->dec_firsttable=_ogg_calloc(tabn,sizeof(*c->dec_firsttable));
 
-            if(loval>0x7fff)loval=0x7fff;
-            if(hival>0x7fff)hival=0x7fff;
-            c->dec_firsttable[bitreverse(word)]=
-              0x80000000UL | (loval<<15) | hival;
+      for(i=0;i<n;i++){
+        if(c->dec_codelengths[i]<=c->dec_firsttablen){
+          ogg_uint32_t orig=bitreverse(c->codelist[i]);
+          for(j=0;j<(1<<(c->dec_firsttablen-c->dec_codelengths[i]));j++)
+            c->dec_firsttable[orig|(j<<c->dec_codelengths[i])]=i+1;
+        }
+      }
+
+      /* now fill in 'unused' entries in the firsttable with hi/lo search
+         hints for the non-direct-hits */
+      {
+        ogg_uint32_t mask=0xfffffffeUL<<(31-c->dec_firsttablen);
+        long lo=0,hi=0;
+
+        for(i=0;i<tabn;i++){
+          ogg_uint32_t word=i<<(32-c->dec_firsttablen);
+          if(c->dec_firsttable[bitreverse(word)]==0){
+            while((lo+1)<n && c->codelist[lo+1]<=word)lo++;
+            while(    hi<n && word>=(c->codelist[hi]&mask))hi++;
+
+            /* we only actually have 15 bits per hint to play with here.
+               In order to overflow gracefully (nothing breaks, efficiency
+               just drops), encode as the difference from the extremes. */
+            {
+              unsigned long loval=lo;
+              unsigned long hival=n-hi;
+
+              if(loval>0x7fff)loval=0x7fff;
+              if(hival>0x7fff)hival=0x7fff;
+              c->dec_firsttable[bitreverse(word)]=
+                0x80000000UL | (loval<<15) | hival;
+            }
           }
         }
       }

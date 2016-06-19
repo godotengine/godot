@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2009             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2015             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: basic codebook pack/unpack/code/decode operations
- last mod: $Id: codebook.c 17553 2010-10-21 17:54:26Z tterribe $
+ last mod: $Id: codebook.c 19457 2015-03-03 00:15:29Z giles $
 
  ********************************************************************/
 
@@ -53,16 +53,16 @@ int vorbis_staticbook_pack(const static_codebook *c,oggpack_buffer *opb){
     oggpack_write(opb,c->lengthlist[0]-1,5); /* 1 to 32 */
 
     for(i=1;i<c->entries;i++){
-      long this=c->lengthlist[i];
-      long last=c->lengthlist[i-1];
+      char this=c->lengthlist[i];
+      char last=c->lengthlist[i-1];
       if(this>last){
         for(j=last;j<this;j++){
-          oggpack_write(opb,i-count,_ilog(c->entries-count));
+          oggpack_write(opb,i-count,ov_ilog(c->entries-count));
           count=i;
         }
       }
     }
-    oggpack_write(opb,i-count,_ilog(c->entries-count));
+    oggpack_write(opb,i-count,ov_ilog(c->entries-count));
 
   }else{
     /* length random.  Again, we don't code the codeword itself, just
@@ -159,7 +159,7 @@ static_codebook *vorbis_staticbook_unpack(oggpack_buffer *opb){
   s->entries=oggpack_read(opb,24);
   if(s->entries==-1)goto _eofout;
 
-  if(_ilog(s->dim)+_ilog(s->entries)>24)goto _eofout;
+  if(ov_ilog(s->dim)+ov_ilog(s->entries)>24)goto _eofout;
 
   /* codeword ordering.... length ordered or unordered? */
   switch((int)oggpack_read(opb,1)){
@@ -203,7 +203,7 @@ static_codebook *vorbis_staticbook_unpack(oggpack_buffer *opb){
       s->lengthlist=_ogg_malloc(sizeof(*s->lengthlist)*s->entries);
 
       for(i=0;i<s->entries;){
-        long num=oggpack_read(opb,_ilog(s->entries-i));
+        long num=oggpack_read(opb,ov_ilog(s->entries-i));
         if(num==-1)goto _eofout;
         if(length>32 || num>s->entries-i ||
            (num>0 && (num-1)>>(length-1)>1)){
@@ -312,6 +312,12 @@ STIN long decode_packed_entry_number(codebook *book, oggpack_buffer *b){
     hi=book->used_entries;
   }
 
+  /* Single entry codebooks use a firsttablen of 1 and a
+     dec_maxlength of 1.  If a single-entry codebook gets here (due to
+     failure to read one bit above), the next look attempt will also
+     fail and we'll correctly kick out instead of trying to walk the
+     underformed tree */
+
   lok = oggpack_look(b, read);
 
   while(lok<0 && read>1)
@@ -367,6 +373,7 @@ long vorbis_book_decode(codebook *book, oggpack_buffer *b){
 }
 
 /* returns 0 on OK or -1 on eof *************************************/
+/* decode vector / dim granularity gaurding is done in the upper layer */
 long vorbis_book_decodevs_add(codebook *book,float *a,oggpack_buffer *b,int n){
   if(book->used_entries>0){
     int step=n/book->dim;
@@ -386,6 +393,7 @@ long vorbis_book_decodevs_add(codebook *book,float *a,oggpack_buffer *b,int n){
   return(0);
 }
 
+/* decode vector / dim granularity gaurding is done in the upper layer */
 long vorbis_book_decodev_add(codebook *book,float *a,oggpack_buffer *b,int n){
   if(book->used_entries>0){
     int i,j,entry;
@@ -431,6 +439,9 @@ long vorbis_book_decodev_add(codebook *book,float *a,oggpack_buffer *b,int n){
   return(0);
 }
 
+/* unlike the others, we guard against n not being an integer number
+   of <dim> internally rather than in the upper layer (called only by
+   floor0) */
 long vorbis_book_decodev_set(codebook *book,float *a,oggpack_buffer *b,int n){
   if(book->used_entries>0){
     int i,j,entry;
@@ -440,15 +451,15 @@ long vorbis_book_decodev_set(codebook *book,float *a,oggpack_buffer *b,int n){
       entry = decode_packed_entry_number(book,b);
       if(entry==-1)return(-1);
       t     = book->valuelist+entry*book->dim;
-      for (j=0;j<book->dim;)
+      for (j=0;i<n && j<book->dim;){
         a[i++]=t[j++];
+      }
     }
   }else{
-    int i,j;
+    int i;
 
     for(i=0;i<n;){
-      for (j=0;j<book->dim;)
-        a[i++]=0.f;
+      a[i++]=0.f;
     }
   }
   return(0);

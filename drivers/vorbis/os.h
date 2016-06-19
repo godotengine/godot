@@ -7,13 +7,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2009             *
+ * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2015             *
  * by the Xiph.Org Foundation http://www.xiph.org/                  *
  *                                                                  *
  ********************************************************************
 
  function: #ifdef jail to whip a few platforms into the UNIX ideal.
- last mod: $Id: os.h 16227 2009-07-08 06:58:46Z xiphmont $
+ last mod: $Id: os.h 19457 2015-03-03 00:15:29Z giles $
 
  ********************************************************************/
 
@@ -119,8 +119,9 @@ static inline int vorbis_ftoi(double f){  /* yes, double!  Otherwise,
 
 
 /* MSVC inline assembly. 32 bit only; inline ASM isn't implemented in the
- * 64 bit compiler */
-#if defined(_MSC_VER) && !defined(_WIN64) && !defined(_WIN32_WCE) && !defined(WINDOWSPHONE_ENABLED)
+ * 64 bit compiler and doesn't work on arm. */
+#if defined(_MSC_VER) && !defined(_WIN64) && \
+      !defined(_WIN32_WCE) && !defined(_M_ARM)
 #  define VORBIS_FPU_CONTROL
 
 typedef ogg_int16_t vorbis_fpu_control;
@@ -135,9 +136,11 @@ static __inline int vorbis_ftoi(double f){
 }
 
 static __inline void vorbis_fpu_setround(vorbis_fpu_control *fpu){
+  (void)fpu;
 }
 
 static __inline void vorbis_fpu_restore(vorbis_fpu_control fpu){
+  (void)fpu;
 }
 
 #endif /* Special MSVC 32 bit implementation */
@@ -156,9 +159,11 @@ static __inline int vorbis_ftoi(double f){
 }
 
 static __inline void vorbis_fpu_setround(vorbis_fpu_control *fpu){
+  (void)fpu;
 }
 
 static __inline void vorbis_fpu_restore(vorbis_fpu_control fpu){
+  (void)fpu;
 }
 
 #endif /* Special MSVC x64 implementation */
