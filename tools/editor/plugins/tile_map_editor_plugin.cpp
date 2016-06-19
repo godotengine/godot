@@ -893,59 +893,53 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 			if (tool!=TOOL_NONE || !mouse_over)
 				return false;
 
-			if (k.scancode==KEY_DELETE) {
-
+			if (ED_IS_SHORTCUT("tile_map_editor/erase_selection", p_event)) {
 				_menu_option(OPTION_ERASE_SELECTION);
 
 				return true;
 			}
+			if (ED_IS_SHORTCUT("tile_map_editor/select", p_event)) {
+				tool=TOOL_SELECTING;
+				selection_active=false;
 
-			if (k.mod.command) {
+				canvas_item_editor->update();
 
-				if (k.scancode==KEY_F) {
+				return true;
+			}
+			if (ED_IS_SHORTCUT("tile_map_editor/duplicate_selection", p_event)) {
+				_update_copydata();
 
-					search_box->select_all();
-					search_box->grab_focus();
-
-					return true;
-				}
-				if (k.scancode==KEY_B) {
-
-					tool=TOOL_SELECTING;
-					selection_active=false;
+				if (selection_active) {
+					tool=TOOL_DUPLICATING;
 
 					canvas_item_editor->update();
 
 					return true;
 				}
-				if (k.scancode==KEY_D) {
+			}
+			if (ED_IS_SHORTCUT("tile_map_editor/find_tile", p_event)) {
+				search_box->select_all();
+				search_box->grab_focus();
 
-					_update_copydata();
-
-					if (selection_active) {
-						tool=TOOL_DUPLICATING;
-
-						canvas_item_editor->update();
-
-						return true;
-					}
-				}
-			} else {
-
-				if (k.scancode==KEY_A) {
-
-					flip_h=!flip_h;
-					mirror_x->set_pressed(flip_h);
-					canvas_item_editor->update();
-					return true;
-				}
-				if (k.scancode==KEY_S) {
-
-					flip_v=!flip_v;
-					mirror_y->set_pressed(flip_v);
-					canvas_item_editor->update();
-					return true;
-				}
+				return true;
+			}
+			if (ED_IS_SHORTCUT("tile_map_editor/mirror_x", p_event)) {
+				flip_h=!flip_h;
+				mirror_x->set_pressed(flip_h);
+				canvas_item_editor->update();
+				return true;
+			}
+			if (ED_IS_SHORTCUT("tile_map_editor/mirror_y", p_event)) {
+				flip_v=!flip_v;
+				mirror_y->set_pressed(flip_v);
+				canvas_item_editor->update();
+				return true;
+			}
+			if (ED_IS_SHORTCUT("tile_map_editor/transpose", p_event)) {
+				transpose = !transpose;
+				transp->set_pressed(transpose);
+				canvas_item_editor->update();
+				return true;
 			}
 		} break;
 	}
@@ -1308,6 +1302,12 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	flip_v=false;
 	transpose=false;
 
+	ED_SHORTCUT("tile_map_editor/erase_selection", TTR("Erase selection"), KEY_DELETE);
+	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find tile"), KEY_MASK_CMD+KEY_F);
+	ED_SHORTCUT("tile_map_editor/transpose", TTR("Transpose"));
+	ED_SHORTCUT("tile_map_editor/mirror_x", TTR("Mirror X"), KEY_A);
+	ED_SHORTCUT("tile_map_editor/mirror_y", TTR("Mirror Y"), KEY_S);
+
 	search_box = memnew( LineEdit );
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_box->connect("text_entered", this, "_text_entered");
@@ -1349,9 +1349,9 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_item(TTR("Pick Tile"), OPTION_PICK_TILE, KEY_CONTROL);
 	p->add_separator();
-	p->add_item(TTR("Select"), OPTION_SELECT, KEY_MASK_CMD+KEY_B);
-	p->add_item(TTR("Duplicate Selection"), OPTION_DUPLICATE, KEY_MASK_CMD+KEY_D);
-	p->add_item(TTR("Erase Selection"), OPTION_ERASE_SELECTION, KEY_DELETE);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/select", TTR("Select"), KEY_MASK_CMD+KEY_B), OPTION_SELECT);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_CMD+KEY_D), OPTION_DUPLICATE);
+	p->add_shortcut(ED_GET_SHORTCUT("tile_map_editor/erase_selection"), OPTION_ERASE_SELECTION);
 
 	p->connect("item_pressed", this, "_menu_option");
 
@@ -1361,19 +1361,19 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	transp = memnew( ToolButton );
 	transp->set_toggle_mode(true);
-	transp->set_tooltip(TTR("Transpose"));
+	transp->set_tooltip(TTR("Transpose") + " ("+ED_GET_SHORTCUT("tile_map_editor/transpose")->get_as_text()+")");
 	transp->set_focus_mode(FOCUS_NONE);
 	transp->connect("pressed", this, "_update_transform_buttons", make_binds(transp));
 	toolbar->add_child(transp);
 	mirror_x = memnew( ToolButton );
 	mirror_x->set_toggle_mode(true);
-	mirror_x->set_tooltip(TTR("Mirror X (A)"));
+	mirror_x->set_tooltip(TTR("Mirror X") + " ("+ED_GET_SHORTCUT("tile_map_editor/mirror_x")->get_as_text()+")");
 	mirror_x->set_focus_mode(FOCUS_NONE);
 	mirror_x->connect("pressed", this, "_update_transform_buttons", make_binds(mirror_x));
 	toolbar->add_child(mirror_x);
 	mirror_y = memnew( ToolButton );
 	mirror_y->set_toggle_mode(true);
-	mirror_y->set_tooltip(TTR("Mirror Y (S)"));
+	mirror_y->set_tooltip(TTR("Mirror Y") + " ("+ED_GET_SHORTCUT("tile_map_editor/mirror_y")->get_as_text()+")");
 	mirror_y->set_focus_mode(FOCUS_NONE);
 	mirror_y->connect("pressed", this, "_update_transform_buttons", make_binds(mirror_y));
 	toolbar->add_child(mirror_y);
