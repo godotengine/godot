@@ -664,10 +664,15 @@ bool ColorPickerButton::is_editing_alpha() const{
 
 }
 
+ColorPicker *ColorPickerButton::get_picker() {
+	return picker;
+}
+
 void ColorPickerButton::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("set_color","color"),&ColorPickerButton::set_color);
 	ObjectTypeDB::bind_method(_MD("get_color"),&ColorPickerButton::get_color);
+	ObjectTypeDB::bind_method(_MD("get_picker:ColorPicker"),&ColorPickerButton::get_picker);
 	ObjectTypeDB::bind_method(_MD("set_edit_alpha","show"),&ColorPickerButton::set_edit_alpha);
 	ObjectTypeDB::bind_method(_MD("is_editing_alpha"),&ColorPickerButton::is_editing_alpha);
 	ObjectTypeDB::bind_method(_MD("_color_changed"),&ColorPickerButton::_color_changed);
