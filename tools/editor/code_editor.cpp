@@ -30,6 +30,7 @@
 #include "editor_settings.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/dynamic_font.h"
 #include "os/keyboard.h"
 
 void GotoLineDialog::popup_find_line(TextEdit *p_edit) {
@@ -974,6 +975,48 @@ FindReplaceDialog::FindReplaceDialog() {
 
 /*** CODE EDITOR ****/
 
+void CodeTextEditor::_text_editor_input_event(const InputEvent& p_event) {
+
+	if (p_event.type==InputEvent::MOUSE_BUTTON) {
+
+		const InputEventMouseButton& mb=p_event.mouse_button;
+
+		if (mb.pressed && mb.mod.command) {
+
+			if (mb.button_index==BUTTON_WHEEL_UP) {
+
+				font_resize_val+=1;
+
+				if (font_resize_timer->get_time_left()==0)
+					font_resize_timer->start();
+
+			} else if (mb.button_index==BUTTON_WHEEL_DOWN) {
+
+				font_resize_val-=1;
+
+				if (font_resize_timer->get_time_left()==0)
+					font_resize_timer->start();
+			}
+		}
+	} else if (p_event.type==InputEvent::KEY) {
+
+		const InputEventKey& k=p_event.key;
+
+		if (k.pressed && k.mod.command) {
+
+			if (k.scancode==KEY_0) { // reset source font size to default
+
+				Ref<DynamicFont> font = text_editor->get_font("font");
+
+				if (font.is_valid()) {
+					EditorSettings::get_singleton()->set("global/source_font_size",14);
+					font->set_size(14);
+				}
+			}
+		}
+	}
+}
+
 void CodeTextEditor::_line_col_changed() {
 
 	String text = String()+TTR("Line:")+" "+itos(text_editor->cursor_get_line()+1)+", "+TTR("Col:")+" "+itos(text_editor->cursor_get_column());
@@ -1011,6 +1054,22 @@ void CodeTextEditor::_complete_request() {
 	text_editor->code_complete(strs);
 }
 
+void CodeTextEditor::_font_resize_timeout() {
+
+	Ref<DynamicFont> font = text_editor->get_font("font");
+
+	if (font.is_valid()) {
+		int size=font->get_size()+font_resize_val;
+
+		if (size>=8 && size<=96) {
+			EditorSettings::get_singleton()->set("global/source_font_size",size);
+			font->set_size(size);
+		}
+
+		font_resize_val=0;
+	}
+}
+
 void CodeTextEditor::set_error(const String& p_error) {
 
 	if (p_error!="") {
@@ -1026,15 +1085,15 @@ void CodeTextEditor::_update_font() {
 
 	// FONTS
 	String editor_font = EDITOR_DEF("text_editor/font", "");
-	bool font_overrode = false;
+	bool font_overridden = false;
 	if (editor_font!="") {
 		Ref<Font> fnt = ResourceLoader::load(editor_font);
 		if (fnt.is_valid()) {
 			text_editor->add_font_override("font",fnt);
-			font_overrode = true;
+			font_overridden = true;
 		}
 	}
-	if(!font_overrode)
+	if(!font_overridden)
 		text_editor->add_font_override("font",get_font("source","EditorFonts"));
 }
 
@@ -1078,12 +1137,14 @@ void CodeTextEditor::_notification(int p_what) {
 
 void CodeTextEditor::_bind_methods() {
 
+	ObjectTypeDB::bind_method("_text_editor_input_event",&CodeTextEditor::_text_editor_input_event);
 	ObjectTypeDB::bind_method("_line_col_changed",&CodeTextEditor::_line_col_changed);
 	ObjectTypeDB::bind_method("_text_changed",&CodeTextEditor::_text_changed);
 	ObjectTypeDB::bind_method("_on_settings_change",&CodeTextEditor::_on_settings_change);
 	ObjectTypeDB::bind_method("_text_changed_idle_timeout",&CodeTextEditor::_text_changed_idle_timeout);
 	ObjectTypeDB::bind_method("_code_complete_timer_timeout",&CodeTextEditor::_code_complete_timer_timeout);
 	ObjectTypeDB::bind_method("_complete_request",&CodeTextEditor::_complete_request);
+	ObjectTypeDB::bind_method("_font_resize_timeout",&CodeTextEditor::_font_resize_timeout);
 }
 
 CodeTextEditor::CodeTextEditor() {
@@ -1139,6 +1200,7 @@ CodeTextEditor::CodeTextEditor() {
 	line_col->set_valign(Label::VALIGN_CENTER);
 
 
+	text_editor->connect("input_event", this,"_text_editor_input_event");
 	text_editor->connect("cursor_changed", this,"_line_col_changed");
 	text_editor->connect("text_changed", this,"_text_changed");
 	text_editor->connect("request_completion", this,"_complete_request");
@@ -1150,6 +1212,13 @@ CodeTextEditor::CodeTextEditor() {
 	idle->connect("timeout", this,"_text_changed_idle_timeout");
 
 	code_complete_timer->connect("timeout", this,"_code_complete_timer_timeout");
+
+	font_resize_val=0;
+	font_resize_timer = memnew(Timer);
+	add_child(font_resize_timer);
+	font_resize_timer->set_one_shot(true);
+	font_resize_timer->set_wait_time(0.07);
+	font_resize_timer->connect("timeout", this, "_font_resize_timeout");
 
 	EditorSettings::get_singleton()->connect("settings_changed",this,"_on_settings_change");
 }

@@ -202,21 +202,26 @@ class CodeTextEditor : public VBoxContainer {
 	Timer *code_complete_timer;
 	bool enable_complete_timer;
 
+	Timer *font_resize_timer;
+	int font_resize_val;
+
 	Label *error;
 
 	void _on_settings_change();
 
 	void _update_font();
 	void _complete_request();
+	void _font_resize_timeout();
+
+	void _text_editor_input_event(const InputEvent& p_event);
+
 protected:
 
 	void set_error(const String& p_error);
 
-
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script()=0;
 	virtual void _code_complete_script(const String& p_code, List<String>* r_options) {};
-
 
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
@@ -224,7 +229,6 @@ protected:
 	void _line_col_changed();
 	void _notification(int);
 	static void _bind_methods();
-
 
 public:
 
