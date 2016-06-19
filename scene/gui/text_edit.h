@@ -217,6 +217,7 @@ class TextEdit : public Control  {
 	Timer *caret_blink_timer;
 	bool caret_blink_enabled;
 	bool draw_caret;
+	bool window_has_focus;
 
 	bool setting_row;
 	bool wrap;

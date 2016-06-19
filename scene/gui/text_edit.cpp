@@ -417,7 +417,21 @@ void TextEdit::_notification(int p_what) {
 
 			_update_caches();
 		} break;
+		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+			window_has_focus = true;
+			draw_caret = true;
+			update();
+		} break;
+		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+			window_has_focus = false;
+			draw_caret = false;
+			update();
+		} break;
 		case NOTIFICATION_DRAW: {
+
+			if ((!has_focus() && !menu->has_focus()) || !window_has_focus) {
+				draw_caret = false;
+			}
 
 			if (draw_breakpoint_gutter) {
 				breakpoint_gutter_width = (get_row_height() * 55) / 100;
@@ -4518,6 +4532,7 @@ TextEdit::TextEdit()  {
 	brace_matching_enabled=false;
 	auto_indent=false;
 	insert_mode = false;
+	window_has_focus=true;
 
 	menu = memnew( PopupMenu );
 	add_child(menu);
