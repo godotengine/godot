@@ -67,7 +67,9 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MERGE_FROM_SCENE,
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
-		TOOL_BUTTON_MAX
+		TOOL_BUTTON_MAX,
+		TOOL_APPLY_CHANGES,
+		TOOL_REVERT_CHANGES
 	};
 
 
@@ -91,6 +93,7 @@ class SceneTreeDock : public VBoxContainer {
 	ScriptCreateDialog *script_create_dialog;
 	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
+	ConfirmationDialog *apply_changes_dialog;
 
 	ReparentDialog *reparent_dialog;
 	EditorFileDialog *file;
@@ -112,6 +115,7 @@ class SceneTreeDock : public VBoxContainer {
 	Node *_duplicate(Node *p_node, Map<Node*,Node*> &duplimap);
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node* p_new_parent, int p_position_in_parent, Vector<Node*> p_nodes, bool p_keep_global_xform);
+	Node *_instance_if_valid(const String& p_path);
 
 	void _set_owners(Node *p_owner, const Array& p_nodes);
 	void _load_request(const String& p_path);
@@ -124,6 +128,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _script_created(Ref<Script> p_script);
 
 	void _delete_confirm();
+	void _apply_changes_confirm();
 
 
 	void _node_prerenamed(Node* p_node, const String& p_new_name);
