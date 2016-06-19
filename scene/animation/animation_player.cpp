@@ -572,7 +572,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd,float p_delta,flo
 
 	} else {
 		
-		if (next_pos<0 or next_pos>len) {
+		if (next_pos<0 || next_pos>len) {
 			if (!backwards)
 				next_pos=0;
 			else if (backwards)
