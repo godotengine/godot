@@ -412,8 +412,9 @@ void TabContainer::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
-			call_deferred("set_current_tab",get_current_tab()); //wait until all changed theme
+			if (get_tab_count() > 0) {
+				call_deferred("set_current_tab",get_current_tab()); //wait until all changed theme
+			}
 		} break;
 	}
 }
