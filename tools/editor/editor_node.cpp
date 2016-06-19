@@ -1158,7 +1158,6 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 		case FILE_RUN_SCRIPT: {
 
-			print_line("RUN: "+p_file);
 			Ref<Script> scr = ResourceLoader::load(p_file,"Script",true);
 			if (scr.is_null()) {
 				add_io_error("Script Failed to Load:\n"+p_file);
@@ -1302,7 +1301,6 @@ void EditorNode::_dialog_action(String p_file) {
 			ret = unzGoToFirstFile(pkg);
 
 			EditorProgress p("ltask",TTR("Loading Export Templates"),fc);
-			print_line("BEGIN IMPORT");
 
 			fc=0;
 
@@ -1332,7 +1330,6 @@ void EditorNode::_dialog_action(String p_file) {
 				file=file.get_file();
 
 				p.step(TTR("Importing:")+" "+file,fc);
-				print_line("IMPORT "+file);
 
 				FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_settings_path()+"/templates/"+file,FileAccess::WRITE);
 
@@ -3551,7 +3548,6 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 	load_errors->clear();
 	String lpath = Globals::get_singleton()->localize_path(p_scene);
 
-	print_line("LOCAL PATH: "+lpath+" from "+p_scene);
 	if (!lpath.begins_with("res://")) {
 
 		current_option=-1;
@@ -4198,7 +4194,6 @@ void EditorNode::_dock_select_input(const InputEvent& p_input) {
 				dock_slot[dock_popup_selected]->set_current_tab(0);
 			}
 
-			print_line("performing reparent");
 			dock_slot[nrect]->add_child(dock);
 			dock_popup_selected=nrect;
 			dock_slot[nrect]->set_current_tab(dock_slot[nrect]->get_tab_count()-1);
@@ -5172,7 +5167,6 @@ EditorNode::EditorNode() {
 		EditorSettings::create();
 	{
 		int dpi_mode = EditorSettings::get_singleton()->get("global/hidpi_mode");
-		print_line("DPI MODE: "+itos(dpi_mode));
 		if (dpi_mode==0) {
 			editor_set_hidpi( OS::get_singleton()->get_screen_dpi(0) > 150 );
 		} else if (dpi_mode==2) {

@@ -67,7 +67,6 @@ void TCPServerPosix::make_default() {
 
 Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
 
-	printf("********* listening on port %i\n", p_port);
 	int sockfd;
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	ERR_FAIL_COND_V(sockfd == -1, FAILED);
@@ -80,8 +79,7 @@ Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_host
 
 	int reuse=1;
 	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
-
-		printf("REUSEADDR failed!");
+		WARN_PRINT("REUSEADDR failed!")
 	}
 
 	struct sockaddr_in my_addr;
@@ -103,14 +101,11 @@ Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_host
 	};
 
 	if (listen_sockfd != -1) {
-
-		printf("FAILED\n");
 		stop();
 	};
 
 	listen_sockfd = sockfd;
 
-	printf("OK! %i\n", listen_sockfd);
 	return OK;
 };
 
@@ -129,7 +124,6 @@ bool TCPServerPosix::is_connection_available() const {
 	ERR_FAIL_COND_V(ret < 0, FAILED);
 
 	if (ret && (pfd.revents & POLLIN)) {
-		printf("has connection!\n");
 		return true;
 	};
 
@@ -164,7 +158,6 @@ Ref<StreamPeerTCP> TCPServerPosix::take_connection() {
 void TCPServerPosix::stop() {
 
 	if (listen_sockfd != -1) {
-		print_line("CLOSING CONNECTION");
 		int ret = close(listen_sockfd);
 		ERR_FAIL_COND(ret!=0);
 	};
