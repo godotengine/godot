@@ -804,10 +804,10 @@
 			Backspace Key
 		</constant>
 		<constant name="KEY_RETURN" value="16777221">
-			Return Key
+			Return Key (On Main Keyboard)
 		</constant>
 		<constant name="KEY_ENTER" value="16777222">
-			Enter Key
+			Enter Key (On Numpad)
 		</constant>
 		<constant name="KEY_INSERT" value="16777223">
 			Insert Key
