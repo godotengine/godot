@@ -26,7 +26,7 @@
 #ifndef SQUISH_SIMD_FLOAT_H
 #define SQUISH_SIMD_FLOAT_H
 
-#include <algorithm>
+#include "algorithm.h"
 
 namespace squish {
 

@@ -33,6 +33,7 @@
 #include "hq2x.h"
 #include "print_string.h"
 #include <stdio.h>
+#include "squish/squish.h"
 
 
 const char* Image::format_names[Image::FORMAT_MAX]={
@@ -1201,7 +1202,7 @@ void Image::create(int p_width, int p_height, int p_mipmaps, Format p_format, co
 		int mm;
 		int size = _get_dst_image_size(p_width,p_height,p_format,mm,p_mipmaps);
 
-		if (size!=p_data.size()) {
+		if (size>p_data.size()) {
 			ERR_EXPLAIN("Expected data size of "+itos(size)+" in Image::create()");
 			ERR_FAIL_COND(p_data.size()!=size);
 		}
@@ -1728,9 +1729,6 @@ int Image::get_format_pallete_size(Format p_format) {
 	return 0;
 }
 
-
-
-
 Error Image::_decompress_bc() {
 
 	print_line("decompressing bc");
@@ -1744,307 +1742,29 @@ Error Image::_decompress_bc() {
 	DVector<uint8_t>::Write w = newdata.write();
 	DVector<uint8_t>::Read r = data.read();
 
-	int rofs=0;
-	int wofs=0;
-	int wd=width,ht=height;
-
-	for(int i=0;i<=mm;i++) {
-
-		switch(format) {
-
-			case FORMAT_BC1: {
-
-				int len = (wd*ht)/16;
-				uint8_t* dst=&w[wofs];
-
-				uint32_t ofs_table[16];
-				for(int x=0;x<4;x++) {
-
-					for(int y=0;y<4;y++) {
-
-						ofs_table[15-(y*4+(3-x))]=(x+y*wd)*4;
-					}
-				}
-
-
-				for(int j=0;j<len;j++) {
-
-					const uint8_t* src=&r[rofs+j*8];
-					uint16_t col_a=src[1];
-					col_a<<=8;
-					col_a|=src[0];
-					uint16_t col_b=src[3];
-					col_b<<=8;
-					col_b|=src[2];
-
-					uint8_t table[4][4]={
-						{ (col_a>>11)<<3, ((col_a>>5)&0x3f)<<2,	((col_a)&0x1f)<<3, 255 },
-						{ (col_b>>11)<<3, ((col_b>>5)&0x3f)<<2,	((col_b)&0x1f)<<3, 255 },
-						{0,0,0,255},
-						{0,0,0,255}
-					};
-
-					if (col_a<col_b) {
-						//punchrough
-						table[2][0]=(int(table[0][0])+int(table[1][0]))>>1;
-						table[2][1]=(int(table[0][1])+int(table[1][1]))>>1;
-						table[2][2]=(int(table[0][2])+int(table[1][2]))>>1;
-						table[3][3]=0; //premul alpha black
-					} else {
-						//gradient
-						table[2][0]=(int(table[0][0])*2+int(table[1][0]))/3;
-						table[2][1]=(int(table[0][1])*2+int(table[1][1]))/3;
-						table[2][2]=(int(table[0][2])*2+int(table[1][2]))/3;
-						table[3][0]=(int(table[0][0])+int(table[1][0])*2)/3;
-						table[3][1]=(int(table[0][1])+int(table[1][1])*2)/3;
-						table[3][2]=(int(table[0][2])+int(table[1][2])*2)/3;
-					}
-
-					uint32_t block=src[4];
-					block<<=8;
-					block|=src[5];
-					block<<=8;
-					block|=src[6];
-					block<<=8;
-					block|=src[7];
-
-					int y = (j/(wd/4))*4;
-					int x = (j%(wd/4))*4;
-					int pixofs = (y*wd+x)*4;
-
-					for(int k=0;k<16;k++) {
-						int idx = pixofs+ofs_table[k];
-						dst[idx+0]=table[block&0x3][0];
-						dst[idx+1]=table[block&0x3][1];
-						dst[idx+2]=table[block&0x3][2];
-						dst[idx+3]=table[block&0x3][3];
-						block>>=2;
-					}
-
-				}
-
-				rofs+=len*8;
-				wofs+=wd*ht*4;
-
-
-				wd/=2;
-				ht/=2;
-
-			} break;
-			case FORMAT_BC2: {
-
-				int len = (wd*ht)/16;
-				uint8_t* dst=&w[wofs];
-
-				uint32_t ofs_table[16];
-				for(int x=0;x<4;x++) {
-
-					for(int y=0;y<4;y++) {
-
-						ofs_table[15-(y*4+(3-x))]=(x+y*wd)*4;
-					}
-				}
-
-
-				for(int j=0;j<len;j++) {
-
-					const uint8_t* src=&r[rofs+j*16];
-
-					uint64_t ablock=src[1];
-					ablock<<=8;
-					ablock|=src[0];
-					ablock<<=8;
-					ablock|=src[3];
-					ablock<<=8;
-					ablock|=src[2];
-					ablock<<=8;
-					ablock|=src[5];
-					ablock<<=8;
-					ablock|=src[4];
-					ablock<<=8;
-					ablock|=src[7];
-					ablock<<=8;
-					ablock|=src[6];
-
-
-					uint16_t col_a=src[8+1];
-					col_a<<=8;
-					col_a|=src[8+0];
-					uint16_t col_b=src[8+3];
-					col_b<<=8;
-					col_b|=src[8+2];
-
-					uint8_t table[4][4]={
-						{ (col_a>>11)<<3, ((col_a>>5)&0x3f)<<2,	((col_a)&0x1f)<<3, 255 },
-						{ (col_b>>11)<<3, ((col_b>>5)&0x3f)<<2,	((col_b)&0x1f)<<3, 255 },
-						{0,0,0,255},
-						{0,0,0,255}
-					};
-
-					//always gradient
-					table[2][0]=(int(table[0][0])*2+int(table[1][0]))/3;
-					table[2][1]=(int(table[0][1])*2+int(table[1][1]))/3;
-					table[2][2]=(int(table[0][2])*2+int(table[1][2]))/3;
-					table[3][0]=(int(table[0][0])+int(table[1][0])*2)/3;
-					table[3][1]=(int(table[0][1])+int(table[1][1])*2)/3;
-					table[3][2]=(int(table[0][2])+int(table[1][2])*2)/3;
-
-					uint32_t block=src[4+8];
-					block<<=8;
-					block|=src[5+8];
-					block<<=8;
-					block|=src[6+8];
-					block<<=8;
-					block|=src[7+8];
-
-					int y = (j/(wd/4))*4;
-					int x = (j%(wd/4))*4;
-					int pixofs = (y*wd+x)*4;
-
-					for(int k=0;k<16;k++) {
-						uint8_t alpha = ablock&0xf;
-						alpha=int(alpha)*255/15; //right way for alpha
-						int idx = pixofs+ofs_table[k];
-						dst[idx+0]=table[block&0x3][0];
-						dst[idx+1]=table[block&0x3][1];
-						dst[idx+2]=table[block&0x3][2];
-						dst[idx+3]=alpha;
-						block>>=2;
-						ablock>>=4;
-					}
-
-				}
-
-				rofs+=len*16;
-				wofs+=wd*ht*4;
-
-
-				wd/=2;
-				ht/=2;
-
-			} break;
-			case FORMAT_BC3: {
-
-				int len = (wd*ht)/16;
-				uint8_t* dst=&w[wofs];
-
-				uint32_t ofs_table[16];
-				for(int x=0;x<4;x++) {
-
-					for(int y=0;y<4;y++) {
-
-						ofs_table[15-(y*4+(3-x))]=(x+y*wd)*4;
-					}
-				}
-
-
-
-				for(int j=0;j<len;j++) {
-
-					const uint8_t* src=&r[rofs+j*16];
-
-					uint8_t a_start=src[1];
-					uint8_t a_end=src[0];
-
-					uint64_t ablock=src[3];
-					ablock<<=8;
-					ablock|=src[2];
-					ablock<<=8;
-					ablock|=src[5];
-					ablock<<=8;
-					ablock|=src[4];
-					ablock<<=8;
-					ablock|=src[7];
-					ablock<<=8;
-					ablock|=src[6];
-
-					uint8_t atable[8];
-
-					if (a_start>a_end) {
-
-						atable[0]=(int(a_start)*7+int(a_end)*0)/7;
-						atable[1]=(int(a_start)*6+int(a_end)*1)/7;
-						atable[2]=(int(a_start)*5+int(a_end)*2)/7;
-						atable[3]=(int(a_start)*4+int(a_end)*3)/7;
-						atable[4]=(int(a_start)*3+int(a_end)*4)/7;
-						atable[5]=(int(a_start)*2+int(a_end)*5)/7;
-						atable[6]=(int(a_start)*1+int(a_end)*6)/7;
-						atable[7]=(int(a_start)*0+int(a_end)*7)/7;
-					} else {
-
-						atable[0]=(int(a_start)*5+int(a_end)*0)/5;
-						atable[1]=(int(a_start)*4+int(a_end)*1)/5;
-						atable[2]=(int(a_start)*3+int(a_end)*2)/5;
-						atable[3]=(int(a_start)*2+int(a_end)*3)/5;
-						atable[4]=(int(a_start)*1+int(a_end)*4)/5;
-						atable[5]=(int(a_start)*0+int(a_end)*5)/5;
-						atable[6]=0;
-						atable[7]=255;
-
-					}
-
-
-					uint16_t col_a=src[8+1];
-					col_a<<=8;
-					col_a|=src[8+0];
-					uint16_t col_b=src[8+3];
-					col_b<<=8;
-					col_b|=src[8+2];
-
-					uint8_t table[4][4]={
-						{ (col_a>>11)<<3, ((col_a>>5)&0x3f)<<2,	((col_a)&0x1f)<<3, 255 },
-						{ (col_b>>11)<<3, ((col_b>>5)&0x3f)<<2,	((col_b)&0x1f)<<3, 255 },
-						{0,0,0,255},
-						{0,0,0,255}
-					};
-
-					//always gradient
-					table[2][0]=(int(table[0][0])*2+int(table[1][0]))/3;
-					table[2][1]=(int(table[0][1])*2+int(table[1][1]))/3;
-					table[2][2]=(int(table[0][2])*2+int(table[1][2]))/3;
-					table[3][0]=(int(table[0][0])+int(table[1][0])*2)/3;
-					table[3][1]=(int(table[0][1])+int(table[1][1])*2)/3;
-					table[3][2]=(int(table[0][2])+int(table[1][2])*2)/3;
-
-
-					uint32_t block=src[4+8];
-					block<<=8;
-					block|=src[5+8];
-					block<<=8;
-					block|=src[6+8];
-					block<<=8;
-					block|=src[7+8];
-
-					int y = (j/(wd/4))*4;
-					int x = (j%(wd/4))*4;
-					int pixofs = (y*wd+x)*4;
-
-
-
-					for(int k=0;k<16;k++) {
-						uint8_t alpha = ablock&0x7;
-						int idx = pixofs+ofs_table[k];
-						dst[idx+0]=table[block&0x3][0];
-						dst[idx+1]=table[block&0x3][1];
-						dst[idx+2]=table[block&0x3][2];
-						dst[idx+3]=atable[alpha];
-						block>>=2;
-						ablock>>=3;
-					}
-
-				}
-
-				rofs+=len*16;
-				wofs+=wd*ht*4;
-
-
-				wd/=2;
-				ht/=2;
-
-			} break;
-		}
-
+	int dxt_format = squish::kDxt1;
+	switch(format) {
+
+	case FORMAT_BC1:
+		dxt_format = squish::kDxt1;
+		break;
+	case FORMAT_BC2:
+		dxt_format = squish::kDxt3;
+		break;
+	case FORMAT_BC3:
+		dxt_format = squish::kDxt5;
+		break;
+	case FORMAT_BC4:
+	case FORMAT_BC5:
+		ERR_EXPLAIN("Cannot decompress FORMAT_BC4/FORMAT_BC5 texture format (for now).");
+		ERR_FAIL_V(ERR_UNAVAILABLE);
+		break;
+	default:
+		ERR_EXPLAIN(String("Cannot decompress Unknown BC texture format:%d.") + String::num(format));
+		ERR_FAIL_V(FAILED);
 	}
+
+	squish::DecompressImage(&w[0], width, height, &r[0], dxt_format);
 
 	w=DVector<uint8_t>::Write();
 	r=DVector<uint8_t>::Read();

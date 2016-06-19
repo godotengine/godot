@@ -112,8 +112,8 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 	uint32_t magic = f->get_32();
 	uint32_t hsize = f->get_32();
 	uint32_t flags = f->get_32();
-	uint32_t width = f->get_32();
 	uint32_t height = f->get_32();
+	uint32_t width = f->get_32();
 	uint32_t pitch = f->get_32();
 	uint32_t depth = f->get_32();
 	uint32_t mipmaps = f->get_32();
@@ -229,7 +229,10 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 	const DDSFormatInfo &info=dds_format_info[dds_format];
 	uint32_t w = width;
 	uint32_t h = height;
-
+	if(w % info.divisor != 0)
+		w = (w + info.divisor) - (w % info.divisor);
+	if(h % info.divisor != 0)
+		h = (h + info.divisor) - (h % info.divisor);
 
 	if (info.compressed) {
 		//compressed bc
