@@ -32,6 +32,11 @@
 #include "print_string.h"
 #include "label.h"
 
+static bool _is_text_char(CharType c) {
+
+	return (c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_';
+}
+
 void LineEdit::_input_event(InputEvent p_event) {
 
 
@@ -54,26 +59,36 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 			if (b.pressed) {
 
+				shift_selection_check_pre(b.mod.shift);
+
 				set_cursor_at_pixel_pos(b.x);
 
-				if (b.doubleclick) {
+				if (b.mod.shift) {
 
-					selection.enabled=true;
-					selection.begin=0;
-					selection.end=text.length();
-					selection.doubleclick=true;
-				}
-
-				selection.drag_attempt=false;
-
-				if ((cursor_pos<selection.begin) || (cursor_pos>selection.end) || !selection.enabled)  {
-
-					selection_clear();
-					selection.cursor_start=cursor_pos;
+					selection_fill_at_cursor();
 					selection.creating=true;
-				} else if (selection.enabled) {
 
-					selection.drag_attempt=true;
+				} else {
+
+					if (b.doubleclick) {
+
+						selection.enabled=true;
+						selection.begin=0;
+						selection.end=text.length();
+						selection.doubleclick=true;
+					}
+
+					selection.drag_attempt=false;
+
+					if ((cursor_pos<selection.begin) || (cursor_pos>selection.end) || !selection.enabled)  {
+
+						selection_clear();
+						selection.cursor_start=cursor_pos;
+						selection.creating=true;
+					} else if (selection.enabled) {
+
+						selection.drag_attempt=true;
+					}
 				}
 
 				//			if (!editable)
@@ -124,7 +139,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 					case (KEY_X): { // CUT
 
-						if(k.mod.command && editable) {
+						if(editable) {
 							cut_text();
 						}
 
@@ -132,15 +147,13 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 					case (KEY_C): { // COPY
 
-						if(k.mod.command) {
-							copy_text();
-						}
+						copy_text();
 
 					} break;
 
 					case (KEY_V): { // PASTE
 
-						if(k.mod.command && editable) {
+						if(editable) {
 
 							paste_text();
 						}
@@ -149,7 +162,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 					case (KEY_Z): { // Simple One level undo
 
-						if( k.mod.command && editable) {
+						if(editable) {
 
 							undo();
 
@@ -160,7 +173,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 					case (KEY_U): { // Delete from start to cursor
 
-						if( k.mod.command && editable) {
+						if(editable) {
 
 							selection_clear();
 							undo_text = text;
@@ -184,7 +197,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 					case (KEY_Y): { // PASTE (Yank for unix users)
 
-						if(k.mod.command && editable) {
+						if(editable) {
 
 							paste_text();
 						}
@@ -192,7 +205,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 					} break;
 					case (KEY_K): { // Delete from cursor_pos to end
 
-						if(k.mod.command && editable) {
+						if(editable) {
 
 							selection_clear();
 							undo_text = text;
@@ -215,7 +228,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 			}
 
 
-			if (!k.mod.alt && !k.mod.meta && !k.mod.command) {
+			if (!k.mod.meta) {
 
 				bool handled=true;
 				switch (code) {
@@ -232,13 +245,45 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 					case KEY_BACKSPACE: {
 
-						if (editable) {
-							undo_text = text;
-							if (selection.enabled)
-								selection_delete();
-							else
-								delete_char();
+						if (!editable)
+							break;
+
+						if (selection.enabled) {
+							undo_text=text;
+							selection_delete();
+							break;
 						}
+
+#ifdef APPLE_STYLE_KEYS
+						if (k.mod.alt) {
+#else
+						if (k.mod.alt) {
+							handled=false;
+							break;
+						} else if (k.mod.command) {
+#endif
+							int cc=cursor_pos;
+							bool prev_char=false;
+
+							while (cc>0) {
+								bool ischar=_is_text_char(text[cc-1]);
+
+								if (prev_char && !ischar)
+									break;
+
+								prev_char=ischar;
+								cc--;
+							}
+
+							delete_text(cc, cursor_pos);
+
+							set_cursor_pos(cc);
+
+						} else {
+							undo_text=text;
+							delete_char();
+						}
+
 					} break;
 					case KEY_KP_4: {
 						if (k.unicode != 0) {
@@ -248,8 +293,39 @@ void LineEdit::_input_event(InputEvent p_event) {
 						// numlock disabled. fallthrough to key_left
 					}
 					case KEY_LEFT: {
+
 						shift_selection_check_pre(k.mod.shift);
-						set_cursor_pos(get_cursor_pos()-1);
+
+#ifdef APPLE_STYLE_KEYS
+						if (k.mod.command) {
+							set_cursor_pos(0);
+						} else if (k.mod.alt) {
+
+#else
+						if (k.mod.alt) {
+							handled=false;
+							break;
+						} else if (k.mod.command) {
+#endif
+							bool prev_char=false;
+							int cc=cursor_pos;
+
+							while (cc>0) {
+								bool ischar=_is_text_char(text[cc-1]);
+
+								if (prev_char && !ischar)
+									break;
+
+								prev_char=ischar;
+								cc--;
+							}
+
+							set_cursor_pos(cc);
+
+						} else {
+							set_cursor_pos(get_cursor_pos()-1);
+						}
+
 						shift_selection_check_post(k.mod.shift);
 
 					} break;
@@ -263,25 +339,88 @@ void LineEdit::_input_event(InputEvent p_event) {
 					case KEY_RIGHT: {
 
 						shift_selection_check_pre(k.mod.shift);
-						set_cursor_pos(get_cursor_pos()+1);
+
+#ifdef APPLE_STYLE_KEYS
+						if (k.mod.command) {
+							set_cursor_pos(text.length());
+						} else if (k.mod.alt) {
+#else
+						if (k.mod.alt) {
+							handled=false;
+							break;
+						} else if (k.mod.command) {
+#endif
+							bool prev_char=false;
+							int cc=cursor_pos;
+
+							while (cc<text.length()) {
+								bool ischar=_is_text_char(text[cc]);
+
+								if (prev_char && !ischar)
+									break;
+
+								prev_char=ischar;
+								cc++;
+							}
+
+							set_cursor_pos(cc);
+
+						} else {
+							set_cursor_pos(get_cursor_pos()+1);
+						}
+
 						shift_selection_check_post(k.mod.shift);
+
 					} break;
 					case KEY_DELETE: {
 
-						if (k.mod.shift && !k.mod.command && !k.mod.alt && editable) {
+						if (!editable)
+							break;
+
+						if (k.mod.shift && !k.mod.command && !k.mod.alt) {
 							cut_text();
 							break;
 						}
 
-						if (editable) {
-							undo_text = text;
-							if (selection.enabled)
-								selection_delete();
-							else if (cursor_pos<text.length()) {
+						if (selection.enabled) {
+							undo_text=text;
+							selection_delete();
+							break;
+						}
 
-								set_cursor_pos(get_cursor_pos()+1);
-								delete_char();
+						int text_len = text.length();
+
+						if (cursor_pos==text_len)
+							break; // nothing to do
+
+#ifdef APPLE_STYLE_KEYS
+						if (k.mod.alt) {
+#else
+						if (k.mod.alt) {
+							handled=false;
+							break;
+						} else if (k.mod.command) {
+#endif
+							int cc=cursor_pos;
+
+							bool prev_char=false;
+
+							while (cc<text.length()) {
+
+								bool ischar=_is_text_char(text[cc]);
+
+								if (prev_char && !ischar)
+									break;
+								prev_char=ischar;
+								cc++;
 							}
+
+							delete_text(cursor_pos,cc);
+
+						} else {
+							undo_text=text;
+							set_cursor_pos(cursor_pos+1);
+							delete_char();
 						}
 
 					} break;
@@ -339,8 +478,6 @@ void LineEdit::_input_event(InputEvent p_event) {
 					}
 				}
 
-
-				selection.old_shift=k.mod.shift;
 				update();
 
 			}
@@ -577,7 +714,7 @@ void LineEdit::undo() {
 
 void LineEdit::shift_selection_check_pre(bool p_shift) {
 
-	if (!selection.old_shift && p_shift)  {
+	if (!selection.enabled && p_shift)  {
 		selection.cursor_start=cursor_pos;
 	}
 	if (!p_shift)
@@ -667,6 +804,39 @@ void LineEdit::delete_char() {
 	if (cursor_pos==window_pos) {
 
 	//	set_window_pos(cursor_pos-get_window_length());
+	}
+
+	emit_signal("text_changed",text);
+	_change_notify("text");
+}
+
+void LineEdit::delete_text(int p_from_column, int p_to_column) {
+
+	undo_text = text;
+
+	if (text.size() > 0)
+	{
+		Ref<Font> font = get_font("font");
+		if (font != NULL) {
+			for (int i = p_from_column; i < p_to_column; i++)
+				cached_width -= font->get_char_size(text[i]).width;
+		}
+	}
+	else
+	{
+		cached_width = 0;
+	}
+
+	text.erase(p_from_column,p_to_column-p_from_column);
+	cursor_pos-=CLAMP( cursor_pos-p_from_column, 0, p_to_column-p_from_column);
+
+	if (cursor_pos>=text.length()) {
+
+		cursor_pos=text.length();
+	}
+	if (window_pos>cursor_pos) {
+
+		window_pos=cursor_pos;
 	}
 
 	emit_signal("text_changed",text);
@@ -820,46 +990,14 @@ void LineEdit::selection_clear() {
 	selection.cursor_start=0;
 	selection.enabled=false;
 	selection.creating=false;
-	selection.old_shift=false;
 	selection.doubleclick=false;
 	update();
 }
 
-
 void LineEdit::selection_delete() {
 
-	if (selection.enabled) {
-
-		undo_text = text;
-
-		if (text.size() > 0)
-		{
-			Ref<Font> font = get_font("font");
-			if (font != NULL) {
-				for (int i = selection.begin; i < selection.end; i++)
-					cached_width -= font->get_char_size(text[i]).width;
-			}
-		}
-		else
-		{
-			cached_width = 0;
-		}
-
-		text.erase(selection.begin,selection.end-selection.begin);
-		cursor_pos-=CLAMP( cursor_pos-selection.begin, 0, selection.end-selection.begin);
-
-		if (cursor_pos>=text.length()) {
-
-			cursor_pos=text.length();
-		}
-		if (window_pos>cursor_pos) {
-
-			window_pos=cursor_pos;
-		}
-
-		emit_signal("text_changed",text);
-		_change_notify("text");
-	};
+	if (selection.enabled)
+		delete_text(selection.begin,selection.end);
 
 	selection_clear();
 }
@@ -946,7 +1084,6 @@ void LineEdit::select(int p_from, int p_to) {
 	selection.begin=p_from;
 	selection.end=p_to;
 	selection.creating=false;
-	selection.old_shift=false;
 	selection.doubleclick=false;
 	update();
 }
