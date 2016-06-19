@@ -15,10 +15,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_favorites.png"
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_button.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
-   sodipodi:docname="icon_rating_no_star.svg">
+   sodipodi:docname="icon_tool_button.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="32"
-     inkscape:cx="6.5847936"
-     inkscape:cy="10.189102"
+     inkscape:cx="8.173168"
+     inkscape:cy="9.7479984"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -39,18 +39,14 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:snap-bbox-midpoints="false"
+     inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
      inkscape:window-width="1920"
      inkscape:window-height="1016"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="1"
-     inkscape:object-paths="false"
-     inkscape:snap-intersection-paths="false"
-     inkscape:object-nodes="false"
-     inkscape:snap-smooth-nodes="false">
+     inkscape:window-maximized="1">
     <inkscape:grid
        type="xygrid"
        id="grid3336"
@@ -64,7 +60,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -73,16 +69,26 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3622)">
-    <g
-       id="layer1-7"
-       inkscape:label="Layer 1"
-       style="fill:#c3ae65;fill-opacity:1">
-      <path
-         id="path4254-1"
-         transform="translate(0,1036.3622)"
-         d="M 8,1.7246094 5.625,5.8222656 1,6.9199219 4.2363281,10.326172 3.8769531,15 8.015625,13.023438 12.173828,14.964844 11.777344,10.3125 15,6.9199219 10.375,5.8222656 8,1.7246094 Z M 8,4 l 1.6582031,2.7773438 3.2324219,0.7441406 -2.25,2.3007812 0.275391,3.1542964 L 8.0117188,11.660156 5.1191406,13 5.3710938,9.8320312 3.109375,7.5214844 6.3417969,6.7773438 8,4 Z"
-         style="opacity:1;fill:#c3ae65;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         inkscape:connector-curvature="0" />
-    </g>
+    <path
+       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 1 3 L 1 11 L 15 11 L 15 3 L 1 3 z M 11 4 A 3 3 0 0 1 13.826172 6 L 11 6 A 1 1 0 0 0 10 7 A 1 1 0 0 0 11 8 L 13.824219 8 A 3 3 0 0 1 11 10 A 3 3 0 0 1 8.1757812 8 L 3 8 A 1 1 0 0 1 2 7 A 1 1 0 0 1 3 6 L 8.1738281 6 A 3 3 0 0 1 11 4 z "
+       transform="translate(0,1036.3622)"
+       id="rect4139" />
+    <rect
+       transform="scale(1,-1)"
+       style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4160"
+       width="14"
+       height="2.0000522"
+       x="1"
+       y="-1049.3622" />
+    <rect
+       y="-1049.3622"
+       x="1"
+       height="2.0000522"
+       width="14"
+       id="rect4142"
+       style="opacity:1;fill:#000000;fill-opacity:0.07843138;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       transform="scale(1,-1)" />
   </g>
 </svg>
