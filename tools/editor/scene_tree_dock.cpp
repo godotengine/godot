@@ -49,11 +49,37 @@ void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 	if (!p_event.key.pressed || p_event.key.echo)
 		return;
 
+	if (ED_IS_SHORTCUT("scene_tree/add_child_node", p_event)) {
+		_tool_selected(TOOL_NEW);
+	}
+	else if (ED_IS_SHORTCUT("scene_tree/instance_scene", p_event)) {
+		_tool_selected(TOOL_INSTANCE);
+	}
+	else if (ED_IS_SHORTCUT("scene_tree/change_node_type", p_event)) {
+		_tool_selected(TOOL_REPLACE);
+	}
+	else if (ED_IS_SHORTCUT("scene_tree/duplicate", p_event)) {
+		_tool_selected(TOOL_DUPLICATE);
+	}
+	else if (ED_IS_SHORTCUT("scene_tree/add_script", p_event)) {
+		_tool_selected(TOOL_SCRIPT);
+	}
+	else if (ED_IS_SHORTCUT("scene_tree/move_up", p_event)) {
+		_tool_selected(TOOL_MOVE_UP);
+	}
+	else if (ED_IS_SHORTCUT("scene_tree/move_down", p_event)) {
+		_tool_selected(TOOL_MOVE_DOWN);
+	}
+	else if (ED_IS_SHORTCUT("scene_tree/reparent", p_event)) {
+		_tool_selected(TOOL_REPARENT);
+	}
+	else if (ED_IS_SHORTCUT("scene_tree/merge_from_scene", p_event)) {
+		_tool_selected(TOOL_MERGE_FROM_SCENE);
+	}
+	else if (ED_IS_SHORTCUT("scene_tree/save_branch_as_scene", p_event)) {
+		_tool_selected(TOOL_NEW_SCENE_FROM);
+	}
 	switch(sc) {
-		case KEY_MASK_CMD|KEY_A: { _tool_selected(TOOL_NEW); } break;
-		case KEY_MASK_CMD|KEY_D: { _tool_selected(TOOL_DUPLICATE); } break;
-		case KEY_MASK_CMD|KEY_UP: { _tool_selected(TOOL_MOVE_UP); } break;
-		case KEY_MASK_CMD|KEY_DOWN: { _tool_selected(TOOL_MOVE_DOWN); } break;
 		case KEY_MASK_SHIFT|KEY_DELETE: { _tool_selected(TOOL_ERASE, true); } break;
 		case KEY_DELETE: { _tool_selected(TOOL_ERASE); } break;
 	}
@@ -1675,13 +1701,11 @@ void SceneTreeDock::_nodes_dragged(Array p_nodes,NodePath p_to,int p_type) {
 }
 
 void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
-
-
 	if (!EditorNode::get_singleton()->get_edited_scene()) {
 
 		menu->clear();
-		menu->add_icon_item(get_icon("Add","EditorIcons"),TTR("New Scene Root"),TOOL_NEW,KEY_MASK_CMD|KEY_A);
-		menu->add_icon_item(get_icon("Instance","EditorIcons"),TTR("Inherit Scene"),TOOL_INSTANCE);
+		menu->add_icon_shortcut(get_icon("Add","EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
+		menu->add_icon_shortcut(get_icon("Instance","EditorIcons"), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANCE);
 
 		menu->set_size(Size2(1,1));
 		menu->set_pos(p_menu_pos);
@@ -1698,31 +1722,31 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 
 
 	if (selection.size()==1) {
-		menu->add_icon_item(get_icon("Add","EditorIcons"),TTR("Add Child Node"),TOOL_NEW,KEY_MASK_CMD|KEY_A);
-		menu->add_icon_item(get_icon("Instance","EditorIcons"),TTR("Instance Child Scene"),TOOL_INSTANCE);
+		menu->add_icon_shortcut(get_icon("Add","EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
+		menu->add_icon_shortcut(get_icon("Instance","EditorIcons"), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANCE);
 		menu->add_separator();
-		menu->add_icon_item(get_icon("Reload","EditorIcons"),TTR("Change Type"),TOOL_REPLACE);
+		menu->add_icon_shortcut(get_icon("Reload","EditorIcons"),ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
 		//menu->add_separator(); moved to their own dock
 		//menu->add_icon_item(get_icon("Groups","EditorIcons"),TTR("Edit Groups"),TOOL_GROUP);
 		//menu->add_icon_item(get_icon("Connect","EditorIcons"),TTR("Edit Connections"),TOOL_CONNECT);
 		menu->add_separator();
-		menu->add_icon_item(get_icon("Script","EditorIcons"),TTR("Add Script"),TOOL_SCRIPT);
+		menu->add_icon_shortcut(get_icon("Script","EditorIcons"),ED_GET_SHORTCUT("scene_tree/add_script"), TOOL_SCRIPT);
 		menu->add_separator();
 	}
 
-	menu->add_icon_item(get_icon("Up","EditorIcons"),TTR("Move Up"),TOOL_MOVE_UP,KEY_MASK_CMD|KEY_UP);
-	menu->add_icon_item(get_icon("Down","EditorIcons"),TTR("Move Down"),TOOL_MOVE_DOWN,KEY_MASK_CMD|KEY_DOWN);
-	menu->add_icon_item(get_icon("Duplicate","EditorIcons"),TTR("Duplicate"),TOOL_DUPLICATE,KEY_MASK_CMD|KEY_D);
-	menu->add_icon_item(get_icon("Reparent","EditorIcons"),TTR("Reparent"),TOOL_REPARENT);
+	menu->add_icon_shortcut(get_icon("Up","EditorIcons"),ED_GET_SHORTCUT("scene_tree/move_up"), TOOL_MOVE_UP);
+	menu->add_icon_shortcut(get_icon("Down","EditorIcons"),ED_GET_SHORTCUT("scene_tree/move_down"), TOOL_MOVE_DOWN);
+	menu->add_icon_shortcut(get_icon("Duplicate","EditorIcons"),ED_GET_SHORTCUT("scene_tree/duplicate"), TOOL_DUPLICATE);
+	menu->add_icon_shortcut(get_icon("Reparent","EditorIcons"),ED_GET_SHORTCUT("scene_tree/reparent"), TOOL_REPARENT);
 
 	if (selection.size()==1) {
 		menu->add_separator();
-		menu->add_icon_item(get_icon("Blend","EditorIcons"),TTR("Merge From Scene"),TOOL_MERGE_FROM_SCENE);
-		menu->add_icon_item(get_icon("Save","EditorIcons"),TTR("Save Branch as Scene"),TOOL_NEW_SCENE_FROM);
+		menu->add_icon_shortcut(get_icon("Blend","EditorIcons"),ED_GET_SHORTCUT("scene_tree/merge_from_scene"), TOOL_MERGE_FROM_SCENE);
+		menu->add_icon_shortcut(get_icon("Save","EditorIcons"),ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
 	}
 	menu->add_separator();
 
-	menu->add_icon_item(get_icon("Remove","EditorIcons"),TTR("Delete Node(s)"),TOOL_ERASE,KEY_DELETE);
+	menu->add_icon_item(get_icon("Remove","EditorIcons"),TTR("Delete Node(s)"), TOOL_ERASE, KEY_DELETE);
 
 	menu->set_size(Size2(1,1));
 	menu->set_pos(p_menu_pos);
@@ -1789,15 +1813,28 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	HBoxContainer *filter_hbc = memnew( HBoxContainer );
 	ToolButton *tb;
 
+	ED_SHORTCUT("scene_tree/add_child_node",TTR("Add Child Node"), KEY_MASK_CMD|KEY_A);
+	ED_SHORTCUT("scene_tree/instance_scene",TTR("Instance Child Scene"));
+	ED_SHORTCUT("scene_tree/change_node_type", TTR("Change Type"));
+	ED_SHORTCUT("scene_tree/add_script", TTR("Add Script"));
+	ED_SHORTCUT("scene_tree/move_up", TTR("Move Up"), KEY_MASK_CMD | KEY_UP);
+	ED_SHORTCUT("scene_tree/move_down", TTR("Move Down"), KEY_MASK_CMD | KEY_DOWN);
+	ED_SHORTCUT("scene_tree/duplicate", TTR("Duplicate"),KEY_MASK_CMD | KEY_D);
+	ED_SHORTCUT("scene_tree/reparent", TTR("Reparent"));
+	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
+	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
+
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW, false));
-	tb->set_tooltip(TTR("Add/Create a New Node")+"\n("+keycode_get_string(KEY_MASK_CMD|KEY_A)+")");
+	tb->set_tooltip(TTR("Add/Create a New Node"));
+	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/add_child_node"));
 	filter_hbc->add_child(tb);
 	button_add=tb;
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_INSTANCE, false));
 	tb->set_tooltip(TTR("Instance a scene file as a Node. Creates an inherited scene if no root node exists."));
+	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/instance_scene"));
 	filter_hbc->add_child(tb);
 	button_instance=tb;
 
