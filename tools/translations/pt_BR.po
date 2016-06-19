@@ -1,7 +1,9 @@
-# LANGUAGE translation of the Godot Engine editor
+# Portuguese (Brazil) translation of the Godot Engine editor
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
+#
 # George Marques <george@gmarqu.es>, 2016.
+# Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
 #
 msgid ""
 msgstr ""

@@ -1,7 +1,11 @@
 # French translation of the Godot Engine editor
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
+#
+# derderder77 <derderder77380@gmail.com>, 2016.
+# finkiki <specialpopol@gmx.fr>, 2016.
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016.
+# Marc <marc.gilleron@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""

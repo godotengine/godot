@@ -1,7 +1,8 @@
-# LANGUAGE translation of the Godot Engine editor
+# Spanish (Argentina) translation of the Godot Engine editor
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+# Lisandro Lorea <lisandrolorea@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
