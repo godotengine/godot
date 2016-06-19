@@ -154,8 +154,20 @@ bool Animation::_set(const StringName& p_name, const Variant& p_value) {
 				Dictionary d = p_value;
 				ERR_FAIL_COND_V(!d.has("times"),false);
 				ERR_FAIL_COND_V(!d.has("values"),false);
-				if (d.has("cont"))
-					vt->continuous=d["cont"];
+				if (d.has("cont")) {
+					bool v = d["cont"];
+					vt->update_mode=v?UPDATE_CONTINUOUS:UPDATE_DISCRETE;
+				}
+
+				if (d.has("update")) {
+					int um =d["update"];
+					if (um<0)
+						um=0;
+					else if (um>2)
+						um=2;
+					vt->update_mode=UpdateMode(um);
+				}
+
 
 				DVector<float> times=d["times"];
 				Array values=d["values"];
@@ -353,7 +365,7 @@ bool Animation::_get(const StringName& p_name,Variant &r_ret) const {
 				d["transitions"]=key_transitions;
 				d["values"]=key_values;
 				if (track_get_type(track)==TYPE_VALUE) {
-					d["cont"]=value_track_is_continuous(track);
+					d["update"]=value_track_get_update_mode(track);
 				}
 
 				r_ret=d;
@@ -394,7 +406,7 @@ bool Animation::_get(const StringName& p_name,Variant &r_ret) const {
 				d["transitions"]=key_transitions;
 				d["values"]=key_values;
 				if (track_get_type(track)==TYPE_VALUE) {
-					d["cont"]=value_track_is_continuous(track);
+					d["update"]=value_track_get_update_mode(track);
 				}
 
 				r_ret=d;
@@ -1373,7 +1385,7 @@ Variant Animation::value_track_interpolate(int p_track, float p_time) const {
 	bool ok;
 
 
-	Variant res = _interpolate( vt->values, p_time, vt->interpolation, &ok );
+	Variant res = _interpolate( vt->values, p_time, vt->update_mode==UPDATE_CONTINUOUS?vt->interpolation:INTERPOLATION_NEAREST, &ok );
 
 
 	if (ok) {
@@ -1461,27 +1473,29 @@ void Animation::value_track_get_key_indices(int p_track, float p_time, float p_d
 
 }
 
-void Animation::value_track_set_continuous(int p_track, bool p_continuous) {
+void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t=tracks[p_track];
 	ERR_FAIL_COND( t->type != TYPE_VALUE );
+	ERR_FAIL_INDEX(p_mode,3);
 
 	ValueTrack * vt = static_cast<ValueTrack*>(t);
-	vt->continuous=p_continuous;
+	vt->update_mode=p_mode;
 
 }
 
-bool Animation::value_track_is_continuous(int p_track) const{
+Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const {
 
-	ERR_FAIL_INDEX_V(p_track, tracks.size(), false);
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), UPDATE_CONTINUOUS);
 	Track *t=tracks[p_track];
-	ERR_FAIL_COND_V( t->type != TYPE_VALUE, false );
+	ERR_FAIL_COND_V( t->type != TYPE_VALUE, UPDATE_CONTINUOUS );
 
 	ValueTrack * vt = static_cast<ValueTrack*>(t);
-	return vt->continuous;
+	return vt->update_mode;
 
 }
+
 
 void Animation::_method_track_get_key_indices_in_range(const MethodTrack * mt, float from_time, float to_time,List<int> *p_indices) const {
 
@@ -1676,8 +1690,8 @@ void Animation::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("transform_track_interpolate","idx","time_sec"),&Animation::_transform_track_interpolate);
-	ObjectTypeDB::bind_method(_MD("value_track_set_continuous","idx","continuous"),&Animation::value_track_set_continuous);
-	ObjectTypeDB::bind_method(_MD("value_track_is_continuous","idx"),&Animation::value_track_is_continuous);
+	ObjectTypeDB::bind_method(_MD("value_track_set_update_mode","idx","mode"),&Animation::value_track_set_update_mode);
+	ObjectTypeDB::bind_method(_MD("value_track_get_update_mode","idx"),&Animation::value_track_get_update_mode);
 
 	ObjectTypeDB::bind_method(_MD("value_track_get_key_indices","idx","time_sec","delta"),&Animation::_value_track_get_key_indices);
 
@@ -1703,6 +1717,11 @@ void Animation::_bind_methods() {
 	BIND_CONSTANT( INTERPOLATION_NEAREST );
 	BIND_CONSTANT( INTERPOLATION_LINEAR );
 	BIND_CONSTANT( INTERPOLATION_CUBIC );
+
+	BIND_CONSTANT( UPDATE_CONTINUOUS );
+	BIND_CONSTANT( UPDATE_DISCRETE );
+	BIND_CONSTANT( UPDATE_TRIGGER );
+
 
 }
 

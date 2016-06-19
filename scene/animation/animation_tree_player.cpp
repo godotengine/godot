@@ -825,7 +825,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 					} break;
 					case Animation::TYPE_VALUE: { ///< Set a value in a property, can be interpolated.
 
-						if (a->value_track_is_continuous(tr.local_track)) {
+						if (a->value_track_get_update_mode(tr.local_track)==Animation::UPDATE_CONTINUOUS) {
 							Variant value = a->value_track_interpolate(tr.local_track,anim_list->time);
 							Variant::blend(tr.track->value,value,blend,tr.track->value);
 						} else {

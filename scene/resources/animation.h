@@ -58,6 +58,13 @@ public:
 		INTERPOLATION_CUBIC
 	};
 
+	enum UpdateMode {
+		UPDATE_CONTINUOUS,
+		UPDATE_DISCRETE,
+		UPDATE_TRIGGER,
+
+	};
+
 private:
 
 	struct Track {
@@ -105,10 +112,11 @@ private:
 
 	struct ValueTrack : public Track {
 
-		bool continuous;
+		UpdateMode update_mode;
+		bool update_on_seek;
 		Vector< TKey<Variant> > values;
 
-		ValueTrack() { type=TYPE_VALUE; continuous=true; }
+		ValueTrack() { type=TYPE_VALUE; update_mode=UPDATE_CONTINUOUS; }
 	};
 
 
@@ -253,8 +261,9 @@ public:
 
 	Variant value_track_interpolate(int p_track, float p_time) const;
 	void value_track_get_key_indices(int p_track, float p_time, float p_delta,List<int> *p_indices) const;
-	void value_track_set_continuous(int p_track, bool p_continuous);
-	bool value_track_is_continuous(int p_track) const;
+	void value_track_set_update_mode(int p_track, UpdateMode p_mode);
+	UpdateMode value_track_get_update_mode(int p_track) const;
+
 
 	void method_track_get_key_indices(int p_track, float p_time, float p_delta,List<int> *p_indices) const;
 	Vector<Variant> method_track_get_params(int p_track,int p_key_idx) const;
@@ -281,5 +290,8 @@ public:
 
 VARIANT_ENUM_CAST( Animation::TrackType );
 VARIANT_ENUM_CAST( Animation::InterpolationType );
+VARIANT_ENUM_CAST( Animation::UpdateMode );
+
+
 
 #endif

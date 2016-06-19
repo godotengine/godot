@@ -952,7 +952,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 
 }
 
-void AnimationPlayerEditor::_seek_value_changed(float p_value) {
+void AnimationPlayerEditor::_seek_value_changed(float p_value,bool p_set) {
 
 	if (updating || !player || player->is_playing()) {
 		return;
@@ -980,13 +980,14 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value) {
 			pos=anim->get_length();
 	}
 
-	if (player->is_valid()) {
+	if (player->is_valid() && !p_set) {
 		float cpos = player->get_current_animation_pos();
 
 		player->seek_delta(pos,pos-cpos);
 	} else {
 		player->seek(pos,true);
 	}
+
 
 	key_editor->set_anim_pos(pos);
 
@@ -1078,6 +1079,7 @@ void AnimationPlayerEditor::_editor_load(){
 
 void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) {
 
+
 	frame->set_max(p_len);
 
 }
@@ -1092,7 +1094,7 @@ void AnimationPlayerEditor::_animation_key_editor_anim_step_changed(float p_len)
 }
 
 
-void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos) {
+void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos,bool p_drag) {
 
 	if (!is_visible())
 		return;
@@ -1102,7 +1104,11 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos) {
 	if (player->is_playing()	)
 		return;
 
-	frame->set_val(p_pos);
+	updating=true;
+	frame->set_val(p_pos);	
+	updating=false;
+	_seek_value_changed(p_pos,!p_drag);
+
 	EditorNode::get_singleton()->get_property_editor()->refresh();
 
 
@@ -1254,7 +1260,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_animation_edit"),&AnimationPlayerEditor::_animation_edit);
 	ObjectTypeDB::bind_method(_MD("_animation_resource_edit"),&AnimationPlayerEditor::_animation_resource_edit);
 	ObjectTypeDB::bind_method(_MD("_dialog_action"),&AnimationPlayerEditor::_dialog_action);
-	ObjectTypeDB::bind_method(_MD("_seek_value_changed"),&AnimationPlayerEditor::_seek_value_changed);
+	ObjectTypeDB::bind_method(_MD("_seek_value_changed"),&AnimationPlayerEditor::_seek_value_changed,DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("_animation_player_changed"),&AnimationPlayerEditor::_animation_player_changed);
 	ObjectTypeDB::bind_method(_MD("_blend_edited"),&AnimationPlayerEditor::_blend_edited);
 //	ObjectTypeDB::bind_method(_MD("_seek_frame_changed"),&AnimationPlayerEditor::_seek_frame_changed);

@@ -174,7 +174,7 @@ void AnimationPlayer::_get_property_list( List<PropertyInfo> *p_list) const {
 			hint+=E->get();
 		}
 
-		p_list->push_back( PropertyInfo( Variant::STRING, "playback/play", PROPERTY_HINT_ENUM, hint,PROPERTY_USAGE_EDITOR) );
+		p_list->push_back( PropertyInfo( Variant::STRING, "playback/play", PROPERTY_HINT_ENUM, hint,PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_ANIMATE_AS_TRIGGER) );
 		p_list->push_back( PropertyInfo( Variant::BOOL, "playback/active", PROPERTY_HINT_NONE,"" ) );
 		p_list->push_back( PropertyInfo( Variant::REAL, "playback/speed", PROPERTY_HINT_RANGE, "-64,64,0.01") );
 
@@ -421,12 +421,13 @@ void AnimationPlayer::_animation_process_animation(AnimationData* p_anim,float p
 				TrackNodeCache::PropertyAnim *pa = &E->get();
 
 
-				if (a->value_track_is_continuous(i) || p_delta==0) { //delta == 0 means seek
+				if (a->value_track_get_update_mode(i)==Animation::UPDATE_CONTINUOUS || (p_delta==0 && a->value_track_get_update_mode(i)==Animation::UPDATE_DISCRETE)) { //delta == 0 means seek
 
 
 					Variant value=a->value_track_interpolate(i,p_time);
-					if (p_delta==0 && value.get_type()==Variant::STRING)
-						continue; // doing this with strings is messy, should find another way
+					//thanks to trigger mode, this should be solved now..
+					//if (p_delta==0 && value.get_type()==Variant::STRING)
+					//	continue; // doing this with strings is messy, should find another way
 					if (pa->accum_pass!=accum_pass) {
 						ERR_CONTINUE( cache_update_prop_size >= NODE_CACHE_UPDATE_MAX );
 						cache_update_prop[cache_update_prop_size++]=pa;
@@ -437,10 +438,11 @@ void AnimationPlayer::_animation_process_animation(AnimationData* p_anim,float p
 					}
 
 
-				} else if (p_allow_discrete) {
+				} else if (p_allow_discrete && p_delta!=0) {
 
 					List<int> indices;
 					a->value_track_get_key_indices(i,p_time,p_delta,&indices);
+
 
 					for(List<int>::Element *F=indices.front();F;F=F->next()) {
 

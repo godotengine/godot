@@ -81,7 +81,7 @@ void SamplePlayer2D::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	p_list->push_back( PropertyInfo( Variant::STRING, "play/play", PROPERTY_HINT_ENUM, en,PROPERTY_USAGE_EDITOR));
+	p_list->push_back( PropertyInfo( Variant::STRING, "play/play", PROPERTY_HINT_ENUM, en,PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_ANIMATE_AS_TRIGGER));
 }
 
 void SamplePlayer2D::_notification(int p_what) {

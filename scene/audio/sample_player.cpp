@@ -152,7 +152,7 @@ void SamplePlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	p_list->push_back( PropertyInfo( Variant::STRING, "play/play", PROPERTY_HINT_ENUM, en,PROPERTY_USAGE_EDITOR));
+	p_list->push_back( PropertyInfo( Variant::STRING, "play/play", PROPERTY_HINT_ENUM, en,PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_ANIMATE_AS_TRIGGER));
 	p_list->push_back( PropertyInfo( Variant::INT, "config/polyphony", PROPERTY_HINT_RANGE, "1,256,1"));
 	p_list->push_back( PropertyInfo( Variant::OBJECT, "config/samples", PROPERTY_HINT_RESOURCE_TYPE, "SampleLibrary"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"));
