@@ -67,6 +67,8 @@ class ProjectManager : public Control {
 
 	TabContainer *tabs;
 
+	Control *gui_base;
+
 	void _item_doubleclicked();
 
 

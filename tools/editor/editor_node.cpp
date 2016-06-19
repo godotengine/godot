@@ -29,8 +29,7 @@
 #include "version.h"
 #include "editor_node.h"
 #include "print_string.h"
-#include "editor_icons.h"
-#include "editor_fonts.h"
+#include "editor_themes.h"
 
 #include "editor_help.h"
 #include "core/io/resource_saver.h"
@@ -5233,44 +5232,9 @@ EditorNode::EditorNode() {
 	theme_base->add_child(gui_base);
 	gui_base->set_area_as_parent_rect();
 
-
-	theme = Ref<Theme>( memnew( Theme ) );
-	theme_base->set_theme( theme );
-	editor_register_icons(theme);
-	editor_register_fonts(theme);
-
-	//theme->set_icon("folder","EditorFileDialog",Theme::get_default()->get_icon("folder","EditorFileDialog"));
-	//theme->set_color("files_disabled","EditorFileDialog",Color(0,0,0,0.7));
-
-	String global_font = EditorSettings::get_singleton()->get("global/custom_font");
-	if (global_font!="") {
-		Ref<Font> fnt = ResourceLoader::load(global_font);
-		if (fnt.is_valid()) {
-			theme->set_default_theme_font(fnt);
-		}
-	}
-
-
-
-	Ref<StyleBoxTexture> focus_sbt=memnew( StyleBoxTexture );
-	focus_sbt->set_texture(theme->get_icon("EditorFocus","EditorIcons"));
-	for(int i=0;i<4;i++) {
-		focus_sbt->set_margin_size(Margin(i),16);
-		focus_sbt->set_default_margin(Margin(i),16);
-	}
-	focus_sbt->set_draw_center(false);
-	theme->set_stylebox("EditorFocus","EditorStyles",focus_sbt);
-
-
-	String custom_theme = EditorSettings::get_singleton()->get("global/custom_theme");
-	if (custom_theme!="") {
-		Ref<Theme> theme = ResourceLoader::load(custom_theme);
-		if (theme.is_valid()) {
-			gui_base->set_theme(theme);
-		}
-	}
-
-
+	theme_base->set_theme( create_default_theme() );
+	theme = create_editor_theme();
+	gui_base->set_theme(theme);
 
 	resource_preview = memnew( EditorResourcePreview );
 	add_child(resource_preview);

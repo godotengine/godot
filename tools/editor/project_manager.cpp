@@ -45,8 +45,7 @@
 #include "scene/gui/margin_container.h"
 #include "io/resource_saver.h"
 
-#include "editor_icons.h"
-#include "editor_fonts.h"
+#include "editor_themes.h"
 
 #include "editor_scale.h"
 
@@ -846,21 +845,16 @@ ProjectManager::ProjectManager() {
 
 	set_area_as_parent_rect();
 
-	Ref<Theme> theme = Ref<Theme>( memnew( Theme ) );
-	set_theme(theme);
-	editor_register_icons(theme);
-	editor_register_fonts(theme);
+	gui_base = memnew( Control );
+	add_child(gui_base);
+	gui_base->set_area_as_parent_rect();
 
-	String global_font = EditorSettings::get_singleton()->get("global/font");
-	if (global_font!="") {
-		Ref<Font> fnt = ResourceLoader::load(global_font);
-		if (fnt.is_valid()) {
-			theme->set_default_theme_font(fnt);
-		}
-	}
+	set_theme(create_default_theme());
+	Ref<Theme> theme = create_editor_theme();
+	gui_base->set_theme(theme);
 
 	Panel *panel = memnew( Panel );
-	add_child(panel);
+	gui_base->add_child(panel);
 	panel->set_area_as_parent_rect();
 
 	VBoxContainer *vb = memnew( VBoxContainer );
@@ -961,7 +955,7 @@ ProjectManager::ProjectManager() {
 	scan_dir->set_access(FileDialog::ACCESS_FILESYSTEM);
 	scan_dir->set_mode(FileDialog::MODE_OPEN_DIR);
 	scan_dir->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_path") );
-	add_child(scan_dir);
+	gui_base->add_child(scan_dir);
 	scan_dir->connect("dir_selected",this,"_scan_begin");
 
 
@@ -1010,26 +1004,26 @@ ProjectManager::ProjectManager() {
 	erase_ask->get_ok()->set_text(TTR("Remove"));
 	erase_ask->get_ok()->connect("pressed", this,"_erase_project_confirm");
 
-	add_child(erase_ask);
+	gui_base->add_child(erase_ask);
 
 	multi_open_ask = memnew( ConfirmationDialog );
 	multi_open_ask->get_ok()->set_text(TTR("Edit"));
 	multi_open_ask->get_ok()->connect("pressed", this, "_open_project_confirm");
 
-	add_child(multi_open_ask);
+	gui_base->add_child(multi_open_ask);
 
 	multi_run_ask = memnew( ConfirmationDialog );
 	multi_run_ask->get_ok()->set_text(TTR("Run"));
 	multi_run_ask->get_ok()->connect("pressed", this, "_run_project_confirm");
 
-	add_child(multi_run_ask);
+	gui_base->add_child(multi_run_ask);
 
 
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
 	npdialog = memnew( NewProjectDialog );
-	add_child(npdialog);
+	gui_base->add_child(npdialog);
 
 	npdialog->connect("project_created", this,"_load_recent_projects");
 	_load_recent_projects();
