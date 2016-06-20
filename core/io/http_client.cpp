@@ -76,6 +76,7 @@ void HTTPClient::set_connection(const Ref<StreamPeer>& p_connection){
 
 	close();
 	connection=p_connection;
+	status=STATUS_CONNECTED;
 
 }
 
