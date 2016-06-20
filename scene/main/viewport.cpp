@@ -2369,8 +2369,8 @@ void Viewport::input(const InputEvent& p_event) {
 	ERR_FAIL_COND(!is_inside_tree());
 
 
-	get_tree()->_call_input_pause(input_group,"_input",p_event);
 	_gui_input_event(p_event);
+	get_tree()->_call_input_pause(input_group,"_input",p_event);
 	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
 }
 
