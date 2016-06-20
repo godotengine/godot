@@ -937,26 +937,32 @@ _VariantCall::ConstantData* _VariantCall::constant_data=NULL;
 Variant Variant::call(const StringName& p_method,const Variant** p_args,int p_argcount,CallError &r_error) {
 
 	Variant ret;
+	call_ptr(p_method,p_args,p_argcount,&ret,r_error);
+	return ret;
+}
+
+void Variant::call_ptr(const StringName& p_method,const Variant** p_args,int p_argcount,Variant* r_ret,CallError &r_error) {
+	Variant ret;
 
 	if (type==Variant::OBJECT) {
 		//call object
 		Object *obj = _get_obj().obj;
 		if (!obj) {
 			r_error.error=CallError::CALL_ERROR_INSTANCE_IS_NULL;
-			return ret;
+			return;
 		}
 #ifdef DEBUG_ENABLED
 		if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
 			//only if debugging!
 			if (!ObjectDB::instance_validate(obj)) {
 				r_error.error=CallError::CALL_ERROR_INSTANCE_IS_NULL;
-				return ret;
+				return;
 			}
 		}
 
 
 #endif
-		return _get_obj().obj->call(p_method,p_args,p_argcount,r_error);
+		ret=_get_obj().obj->call(p_method,p_args,p_argcount,r_error);
 
 	//else if (type==Variant::METHOD) {
 
@@ -968,14 +974,15 @@ Variant Variant::call(const StringName& p_method,const Variant** p_args,int p_ar
 #ifdef DEBUG_ENABLED
 		if (!E) {
 			r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
-			return Variant();
+			return;
 		}
 #endif
 		_VariantCall::FuncData& funcdata = E->get();
 		funcdata.call(ret,*this,p_args,p_argcount,r_error);
 	}
 
-	return ret;
+	if (r_error.error==Variant::CallError::CALL_OK && r_ret)
+		*r_ret=ret;
 }
 
 #define VCALL(m_type,m_method) _VariantCall::_call_##m_type##_##m_method

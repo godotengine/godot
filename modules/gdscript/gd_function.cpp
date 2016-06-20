@@ -654,10 +654,10 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				if (call_ret) {
 
 					GET_VARIANT_PTR(ret,argc);
-					*ret = base->call(*methodname,(const Variant**)argptrs,argc,err);
+					base->call_ptr(*methodname,(const Variant**)argptrs,argc,ret,err);
 				} else {
 
-					base->call(*methodname,(const Variant**)argptrs,argc,err);
+					base->call_ptr(*methodname,(const Variant**)argptrs,argc,NULL,err);
 				}
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {

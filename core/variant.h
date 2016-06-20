@@ -385,6 +385,7 @@ public:
 		Type expected;
 	};
 
+	void call_ptr(const StringName& p_method,const Variant** p_args,int p_argcount,Variant* r_ret,CallError &r_error);
 	Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,CallError &r_error);
 	Variant call(const StringName& p_method,const Variant& p_arg1=Variant(),const Variant& p_arg2=Variant(),const Variant& p_arg3=Variant(),const Variant& p_arg4=Variant(),const Variant& p_arg5=Variant());
 
