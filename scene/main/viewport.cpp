@@ -1836,8 +1836,9 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 						Size2 pos = mpos;
 						pos = gui.focus_inv_xform.xform(pos);
-
-						gui.mouse_over->drop_data(pos,gui.drag_data);
+						if (gui.mouse_over->can_drop_data(pos,gui.drag_data)) {
+							gui.mouse_over->drop_data(pos,gui.drag_data);
+						}
 						gui.drag_data=Variant();
 						_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
 						//change mouse accordingly
