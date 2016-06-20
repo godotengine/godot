@@ -30,6 +30,7 @@
 #include "tools/editor/editor_settings.h"
 
 #include "spatial_editor_plugin.h"
+#include "scene/resources/shader_graph.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/keyboard.h"
@@ -143,8 +144,6 @@ void ShaderTextEditor::_validate_script() {
 	String code=get_text_edit()->get_text();
 	//List<StringName> params;
 	//shader->get_param_list(&params);
-
-	print_line("compile: type: "+itos(type)+" code:\n"+code);
 
 	Error err = ShaderLanguage::compile(code,type,NULL,NULL,&errortxt,&line,&col);
 
@@ -557,34 +556,41 @@ ShaderEditor::ShaderEditor() {
 
 void ShaderEditorPlugin::edit(Object *p_object) {
 
-	if (!p_object->cast_to<Shader>())
+	Shader* s = p_object->cast_to<Shader>();
+	if (!s || s->cast_to<ShaderGraph>()) {
+		shader_editor->hide(); //Dont edit ShaderGraph
 		return;
+	}
 
-	shader_editor->edit(p_object->cast_to<Shader>());
+	if (_2d && s->get_mode()==Shader::MODE_CANVAS_ITEM)
+		shader_editor->edit(s);
+	else if (!_2d && s->get_mode()==Shader::MODE_MATERIAL)
+		shader_editor->edit(s);
 
 }
 
 bool ShaderEditorPlugin::handles(Object *p_object) const {
 
+	bool handles = true;
 	Shader *shader=p_object->cast_to<Shader>();
-	if (!shader)
-		return false;
-	if (_2d)
-		return shader->get_mode()==Shader::MODE_CANVAS_ITEM;
-	else
+	if (!shader || shader->cast_to<ShaderGraph>()) // Dont handle ShaderGraph's
+		handles = false;
+	if (handles && _2d)
+		handles = shader->get_mode()==Shader::MODE_CANVAS_ITEM;
+	else if (handles && !_2d)
 		return shader->get_mode()==Shader::MODE_MATERIAL;
+
+	if (!handles)
+		shader_editor->hide();
+	return handles;
 }
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		shader_editor->show();
-		//shader_editor->set_process(true);
 	} else {
-
 		shader_editor->apply_shaders();
-		//shader_editor->hide();
-		//shader_editor->set_process(false);
 	}
 
 }
