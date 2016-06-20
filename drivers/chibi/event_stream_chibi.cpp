@@ -616,7 +616,7 @@ void CPFileAccessWrapperImpl::store_dword(uint32_t p_dest){
 Error EventStreamPlaybackChibi::_play() {
 
 	last_order=0;
-	loops++;
+	loops=0;
 	player->play_start_song();
 	total_usec=0;
 
