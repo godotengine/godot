@@ -35,8 +35,10 @@
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/button_group.h"
+#include "scene/gui/scroll_container.h"
 
 #include "tools/editor/editor_node.h"
+
 
 
 
@@ -45,6 +47,7 @@ class ThemeEditor : public Control {
 	OBJ_TYPE( ThemeEditor, Control );
 
 
+	ScrollContainer *scroll;
 	VBoxContainer *main_vb;
 	Ref<Theme> theme;
 

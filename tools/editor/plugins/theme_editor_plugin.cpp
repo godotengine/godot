@@ -348,7 +348,7 @@ void ThemeEditor::_dialog_cbk() {
 				names.clear();
 				Theme::get_default()->get_icon_list(fromtype,&names);
 				for(List<StringName>::Element *E=names.front();E;E=E->next()) {
-					theme->set_icon(E->get(),fromtype,Theme::get_default()->get_icon(E->get(),fromtype));
+					theme->set_icon(E->get(),fromtype,Ref<Texture>());
 
 				}
 
@@ -357,7 +357,7 @@ void ThemeEditor::_dialog_cbk() {
 				names.clear();
 				Theme::get_default()->get_stylebox_list(fromtype,&names);
 				for(List<StringName>::Element *E=names.front();E;E=E->next()) {
-					theme->set_stylebox(E->get(),fromtype,Theme::get_default()->get_stylebox(E->get(),fromtype));
+					theme->set_stylebox(E->get(),fromtype,Ref<StyleBox>());
 
 				}
 
@@ -366,7 +366,7 @@ void ThemeEditor::_dialog_cbk() {
 				names.clear();
 				Theme::get_default()->get_font_list(fromtype,&names);
 				for(List<StringName>::Element *E=names.front();E;E=E->next()) {
-					theme->set_font(E->get(),fromtype,Theme::get_default()->get_font(E->get(),fromtype));
+					theme->set_font(E->get(),fromtype,Ref<Font>());
 
 				}
 			}
@@ -537,7 +537,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		add_del_dialog->set_title(TTR("Add Item"));
 		add_del_dialog->get_ok()->set_text(TTR("Add"));
-		add_del_dialog->popup_centered(Size2(490,85));
+		add_del_dialog->popup_centered(Size2(490,85)*EDSCALE);
 
 		base_theme=Theme::get_default();
 
@@ -545,7 +545,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		add_del_dialog->set_title(TTR("Add All Items"));
 		add_del_dialog->get_ok()->set_text(TTR("Add All"));
-		add_del_dialog->popup_centered(Size2(240,85));
+		add_del_dialog->popup_centered(Size2(240,85)*EDSCALE);
 
 		base_theme=Theme::get_default();
 
@@ -559,7 +559,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		add_del_dialog->set_title(TTR("Remove Item"));
 		add_del_dialog->get_ok()->set_text(TTR("Remove"));
-		add_del_dialog->popup_centered(Size2(490,85));
+		add_del_dialog->popup_centered(Size2(490,85)*EDSCALE);
 
 		base_theme=theme;
 
@@ -567,7 +567,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		add_del_dialog->set_title("Remove All Items");
 		add_del_dialog->get_ok()->set_text("Remove All");
-		add_del_dialog->popup_centered(Size2(240,85));
+		add_del_dialog->popup_centered(Size2(240,85)*EDSCALE);
 
 		base_theme=Theme::get_default();
 
@@ -583,12 +583,14 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	List<StringName> types;
 	base_theme->get_type_list(&types);
+
 	type_menu->get_popup()->clear();;
 
 	if (p_option==0 || p_option==1) {//add
 
 		List<StringName> new_types;
 		theme->get_type_list(&new_types);
+
 		//uh kind of sucks
 		for(List<StringName>::Element *F=new_types.front();F;F=F->next()) {
 
@@ -606,8 +608,8 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 		}
 	}
 
-	types.sort();
-
+	//types.sort();
+	types.sort_custom<StringName::AlphCompare>();
 	for(List<StringName>::Element *E=types.front();E;E=E->next()) {
 
 		type_menu->get_popup()->add_item( E->get() );
@@ -641,15 +643,23 @@ ThemeEditor::ThemeEditor() {
 
 	time_left=0;
 
+	scroll = memnew( ScrollContainer );
+	add_child(scroll);
+	scroll->set_area_as_parent_rect(3);
+	scroll->set_margin(MARGIN_TOP,30*EDSCALE);
+	//scroll->set_enable_h_scroll(true);
+	scroll->set_enable_v_scroll(true);
+	scroll->set_enable_h_scroll(false);
+
 	Panel * panel = memnew( Panel );
-	add_child(panel);
-	panel->set_area_as_parent_rect(0);
-	panel->set_margin(MARGIN_TOP,25);
+	scroll->add_child(panel);
+	panel->set_custom_minimum_size(Size2(500,800)*EDSCALE);
 	panel->set_theme(Theme::get_default());
+	panel->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	main_vb= memnew( VBoxContainer );
 	panel->add_child(main_vb);
-	main_vb->set_area_as_parent_rect(4);
+	main_vb->set_area_as_parent_rect(4*EDSCALE);
 
 
 	HBoxContainer *hb_menu = memnew(HBoxContainer);
@@ -667,7 +677,8 @@ ThemeEditor::ThemeEditor() {
 	theme_menu->get_popup()->add_item(TTR("Create Empty Template"),POPUP_CREATE_EMPTY);
 	theme_menu->get_popup()->add_item(TTR("Create Empty Editor Template"),POPUP_CREATE_EDITOR_EMPTY);
 
-	hb_menu->add_child(theme_menu);
+	add_child(theme_menu);
+	theme_menu->set_pos(Vector2(3,3)*EDSCALE);
 	theme_menu->get_popup()->connect("item_pressed", this,"_theme_menu_cbk");
 
 
@@ -742,26 +753,26 @@ ThemeEditor::ThemeEditor() {
 	pb->set_val(50);
 	first_vb->add_child( pb);
 	Panel *pn=memnew( Panel );
-	pn->set_custom_minimum_size(Size2(40,40));
+	pn->set_custom_minimum_size(Size2(40,40)*EDSCALE);
 	first_vb->add_child( pn);
-	first_vb->add_constant_override("separation",10);
+	first_vb->add_constant_override("separation",10*EDSCALE);
 
 	VBoxContainer *second_vb = memnew( VBoxContainer );
 	second_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_hb->add_child(second_vb);
-	second_vb->add_constant_override("separation",10);
+	second_vb->add_constant_override("separation",10*EDSCALE);
 	LineEdit *le =  memnew( LineEdit );
 	le->set_text("LineEdit");
 	second_vb->add_child(le);
 	TextEdit *te =  memnew( TextEdit );
 	te->set_text("TextEdit");
 	//te->set_v_size_flags(SIZE_EXPAND_FILL);
-	te->set_custom_minimum_size(Size2(0,160));
+	te->set_custom_minimum_size(Size2(0,160)*EDSCALE);
 	second_vb->add_child(te);
 
 	Tree *test_tree = memnew(Tree);
 	second_vb->add_child(test_tree);
-	test_tree->set_custom_minimum_size(Size2(0,160));
+	test_tree->set_custom_minimum_size(Size2(0,160)*EDSCALE);
 
 
 	TreeItem *item = test_tree->create_item();
@@ -789,7 +800,7 @@ ThemeEditor::ThemeEditor() {
 	main_hb->add_child(third_vb);
 
 	HBoxContainer *vhb = memnew( HBoxContainer );
-	vhb->set_custom_minimum_size(Size2(0,160));
+	vhb->set_custom_minimum_size(Size2(0,160)*EDSCALE);
 	vhb->add_child(memnew(VSeparator));
 	vhb->add_child(memnew(VSlider));
 	vhb->add_child(memnew(VScrollBar));
@@ -797,7 +808,7 @@ ThemeEditor::ThemeEditor() {
 
 	TabContainer *tc = memnew( TabContainer );
 	third_vb->add_child(tc);
-	tc->set_custom_minimum_size(Size2(0,160));
+	tc->set_custom_minimum_size(Size2(0,160)*EDSCALE);
 	Control *tcc = memnew( Control );
 	tcc->set_name(TTR("Tab 1"));
 	tc->add_child(tcc);
@@ -808,7 +819,7 @@ ThemeEditor::ThemeEditor() {
 	tcc->set_name(TTR("Tab 3"));
 	tc->add_child(tcc);
 
-	main_hb->add_constant_override("separation",20);
+	main_hb->add_constant_override("separation",20*EDSCALE);
 
 
 
@@ -871,37 +882,37 @@ ThemeEditor::ThemeEditor() {
 
 
 	Label *l = memnew( Label );
-	l->set_pos( Point2(5,5) );
+	l->set_pos( Point2(5,5)*EDSCALE );
 	l->set_text(TTR("Type:"));
 	add_del_dialog->add_child(l);
 	dtype_select_label=l;
 
 
 	type_edit = memnew( LineEdit );
-	type_edit->set_pos(Point2(5,25));
-	type_edit->set_size(Point2(150,5));
+	type_edit->set_pos(Point2(5,25)*EDSCALE);
+	type_edit->set_size(Point2(150,5)*EDSCALE);
 	add_del_dialog->add_child(type_edit);
 	type_menu = memnew( MenuButton );
-	type_menu->set_pos(Point2(160,25));
-	type_menu->set_size(Point2(30,5));
+	type_menu->set_pos(Point2(160,25)*EDSCALE);
+	type_menu->set_size(Point2(30,5)*EDSCALE);
 	type_menu->set_text("..");
 	add_del_dialog->add_child(type_menu);
 
 	type_menu->get_popup()->connect("item_pressed", this,"_type_menu_cbk");
 
 	l = memnew( Label );
-	l->set_pos( Point2(200,5) );
+	l->set_pos( Point2(200,5)*EDSCALE );
 	l->set_text(TTR("Name:"));
 	add_del_dialog->add_child(l);
 	name_select_label=l;
 
 	name_edit = memnew( LineEdit );
-	name_edit->set_pos(Point2(200,25));
-	name_edit->set_size(Point2(150,5));
+	name_edit->set_pos(Point2(200,25)*EDSCALE);
+	name_edit->set_size(Point2(150,5)*EDSCALE);
 	add_del_dialog->add_child(name_edit);
 	name_menu = memnew( MenuButton );
-	name_menu->set_pos(Point2(360,25));
-	name_menu->set_size(Point2(30,5));
+	name_menu->set_pos(Point2(360,25)*EDSCALE);
+	name_menu->set_size(Point2(30,5)*EDSCALE);
 	name_menu->set_text("..");
 
 	add_del_dialog->add_child(name_menu);
@@ -910,7 +921,7 @@ ThemeEditor::ThemeEditor() {
 	name_menu->get_popup()->connect("item_pressed", this,"_name_menu_cbk");
 
 	type_select_label= memnew( Label );
-	type_select_label->set_pos( Point2(400,5) );
+	type_select_label->set_pos( Point2(400,5)*EDSCALE );
 	type_select_label->set_text(TTR("Data Type:"));
 	add_del_dialog->add_child(type_select_label);
 
@@ -920,8 +931,8 @@ ThemeEditor::ThemeEditor() {
 	type_select->add_item(TTR("Font"));
 	type_select->add_item(TTR("Color"));
 	type_select->add_item(TTR("Constant"));
-	type_select->set_pos( Point2( 400,25 ) );
-	type_select->set_size( Point2( 80,5 ) );
+	type_select->set_pos( Point2( 400,25 )*EDSCALE );
+	type_select->set_size( Point2( 80,5 )*EDSCALE );
 
 
 	add_del_dialog->add_child(type_select);
@@ -974,7 +985,7 @@ ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	theme_editor = memnew( ThemeEditor );
-	theme_editor->set_custom_minimum_size(Size2(0,500));
+	theme_editor->set_custom_minimum_size(Size2(0,200));
 
 //	p_node->get_viewport()->add_child(theme_editor);
 	button=editor->add_bottom_panel_item("Theme",theme_editor);
