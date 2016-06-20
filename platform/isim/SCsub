@@ -12,9 +12,10 @@ iphone_lib = [
 	'#platform/iphone/view_controller.mm',
 	'#platform/iphone/game_center.mm',
 	'#platform/iphone/in_app_store.mm',
-	'#platform/iphone/Appirater.m',
+	'#platform/iphone/icloud.mm',
+	#'#platform/iphone/Appirater.m',
+	'#platform/iphone/ios.mm',
 ]
-
 
 #env.Depends('#core/math/vector3.h', 'vector3_psp.h')
 
@@ -22,12 +23,14 @@ iphone_lib = [
 
 env_ios = env.Clone();
 
+
 if env['ios_gles22_override'] == "yes":
 	env_ios.Append(CPPFLAGS=['-DGLES2_OVERRIDE'])
 
 
-if env['ios_appirater'] == "yes":
-	env_ios.Append(CPPFLAGS=['-DAPPIRATER_ENABLED'])
+#if env['ios_appirater'] == "yes":
+#	env_ios.Append(CPPFLAGS=['-DAPPIRATER_ENABLED'])
+
 
 obj = env_ios.Object('#platform/iphone/godot_iphone.cpp')
 
