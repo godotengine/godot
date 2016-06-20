@@ -57,6 +57,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 			if (b.button_index!=BUTTON_LEFT)
 				break;
 
+			_reset_caret_blink_timer();
 			if (b.pressed) {
 
 				shift_selection_check_pre(b.mod.shift);
@@ -227,7 +228,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 				}
 			}
 
-
+			_reset_caret_blink_timer();
 			if (!k.mod.meta) {
 
 				bool handled=true;
@@ -627,18 +628,19 @@ void LineEdit::_notification(int p_what) {
 
 				font->draw_char(ci, Point2(x_ofs, y_ofs + font_ascent), cchar, next, selected ? font_color_selected : font_color);
 
-				if (char_ofs==cursor_pos && has_focus())
+				if (char_ofs==cursor_pos && draw_caret) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(
 						Point2( x_ofs , y_ofs ), Size2( 1, y_area ) ), cursor_color );
+				}
 
 				x_ofs+=char_width;
 				char_ofs++;
 			}
 
-			if (char_ofs==cursor_pos && has_focus()) //may be at the end
+			if (char_ofs==cursor_pos && draw_caret) {//may be at the end
 				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(
 					Point2( x_ofs , y_ofs ), Size2( 1, y_area ) ), cursor_color );
-
+			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
 
@@ -787,6 +789,45 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 	set_cursor_pos(window_pos+new_cursor_pos); */
 }
 
+
+bool LineEdit::cursor_get_blink_enabled() const {
+	return caret_blink_enabled;
+}
+
+void LineEdit::cursor_set_blink_enabled(const bool p_enabled) {
+	caret_blink_enabled = p_enabled;
+	if (p_enabled) {
+		caret_blink_timer->start();
+	} else {
+		caret_blink_timer->stop();
+	}
+	draw_caret = true;
+}
+
+float LineEdit::cursor_get_blink_speed() const {
+	return caret_blink_timer->get_wait_time();
+}
+
+void LineEdit::cursor_set_blink_speed(const float p_speed) {
+	ERR_FAIL_COND(p_speed <= 0);
+	caret_blink_timer->set_wait_time(p_speed);
+}
+
+void LineEdit::_reset_caret_blink_timer() {
+	if (caret_blink_enabled) {
+		caret_blink_timer->stop();
+		caret_blink_timer->start();
+		draw_caret = true;
+		update();
+	}
+ }
+
+void LineEdit::_toggle_draw_caret() {
+	draw_caret = !draw_caret;
+	if (is_visible()) {
+		update();
+	}
+}
 
 void LineEdit::delete_char() {
 
@@ -1128,6 +1169,8 @@ PopupMenu *LineEdit::get_menu() const {
 
 void LineEdit::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("_toggle_draw_caret"),&LineEdit::_toggle_draw_caret);
+
 	ObjectTypeDB::bind_method(_MD("set_align", "align"), &LineEdit::set_align);
 	ObjectTypeDB::bind_method(_MD("get_align"), &LineEdit::get_align);
 
@@ -1138,6 +1181,10 @@ void LineEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_text"),&LineEdit::get_text);
 	ObjectTypeDB::bind_method(_MD("set_cursor_pos","pos"),&LineEdit::set_cursor_pos);
 	ObjectTypeDB::bind_method(_MD("get_cursor_pos"),&LineEdit::get_cursor_pos);
+	ObjectTypeDB::bind_method(_MD("cursor_set_blink_enabled", "enable"),&LineEdit::cursor_set_blink_enabled);
+	ObjectTypeDB::bind_method(_MD("cursor_get_blink_enabled"),&LineEdit::cursor_get_blink_enabled);
+	ObjectTypeDB::bind_method(_MD("cursor_set_blink_speed", "blink_speed"),&LineEdit::cursor_set_blink_speed);
+	ObjectTypeDB::bind_method(_MD("cursor_get_blink_speed"),&LineEdit::cursor_get_blink_speed);
 	ObjectTypeDB::bind_method(_MD("set_max_length","chars"),&LineEdit::set_max_length);
 	ObjectTypeDB::bind_method(_MD("get_max_length"),&LineEdit::get_max_length);
 	ObjectTypeDB::bind_method(_MD("append_at_cursor","text"),&LineEdit::append_at_cursor);
@@ -1171,7 +1218,8 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "editable" ), _SCS("set_editable"),_SCS("is_editable") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "secret" ), _SCS("set_secret"),_SCS("is_secret") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT,"focus_mode", PROPERTY_HINT_ENUM, "None,Click,All" ), _SCS("set_focus_mode"), _SCS("get_focus_mode") );
-
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret/caret_blink"), _SCS("cursor_set_blink_enabled"), _SCS("cursor_get_blink_enabled"));;
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret/caret_blink_speed",PROPERTY_HINT_RANGE,"0.1,10,0.1"), _SCS("cursor_set_blink_speed"),_SCS("cursor_get_blink_speed") );
 }
 
 LineEdit::LineEdit() {
@@ -1189,6 +1237,13 @@ LineEdit::LineEdit() {
 	set_default_cursor_shape(CURSOR_IBEAM);
 	set_stop_mouse(true);
 
+	draw_caret=true;
+	caret_blink_enabled=false;
+	caret_blink_timer = memnew(Timer);
+	add_child(caret_blink_timer);
+	caret_blink_timer->set_wait_time(0.65);
+	caret_blink_timer->connect("timeout", this,"_toggle_draw_caret");
+	cursor_set_blink_enabled(false);
 
 	menu = memnew( PopupMenu );
 	add_child(menu);
