@@ -90,6 +90,7 @@ private:
 	Timer *caret_blink_timer;
 	bool caret_blink_enabled;
 	bool draw_caret;
+	bool window_has_focus;
 
 	void shift_selection_check_pre(bool);
 	void shift_selection_check_post(bool);

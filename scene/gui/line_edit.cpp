@@ -550,7 +550,21 @@ void LineEdit::_notification(int p_what) {
 			set_cursor_pos( get_cursor_pos() );
 
 		} break;
+		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+			window_has_focus = true;
+			draw_caret = true;
+			update();
+		} break;
+		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+			window_has_focus = false;
+			draw_caret = false;
+			update();
+		} break;
 		case NOTIFICATION_DRAW: {
+
+			if ((!has_focus() && !menu->has_focus()) || !window_has_focus) {
+				draw_caret = false;
+			}
 
 			int width,height;
 
@@ -643,6 +657,10 @@ void LineEdit::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
+
+			if (!caret_blink_enabled) {
+				draw_caret = true;
+			}
 
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->show_virtual_keyboard(get_text(),get_global_rect());
@@ -1228,6 +1246,7 @@ LineEdit::LineEdit() {
 	cached_width = 0;
 	cursor_pos=0;
 	window_pos=0;
+	window_has_focus=true;
 	max_length = 0;
 	pass=false;
 
