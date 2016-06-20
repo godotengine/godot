@@ -943,7 +943,7 @@ msgid "Method in target Node must be specified!"
 msgstr ""
 
 #: tools/editor/connections_dialog.cpp
-msgid "Conect To Node:"
+msgid "Connect To Node:"
 msgstr ""
 
 #: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
@@ -1526,15 +1526,11 @@ msgid "Save Layout"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Load Layout"
+msgid "Delete Layout"
 msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Default"
-msgstr ""
-
-#: tools/editor/editor_node.cpp
-msgid "Delete Layout"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -2106,6 +2102,12 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "No target font resource!"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_font_import_plugin.cpp
+msgid ""
+"Invalid file extension.\n"
+"Please use .fnt."
 msgstr ""
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
@@ -5661,11 +5663,15 @@ msgid "Error duplicating scene to save it."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "New Scene Root"
+msgid "Edit Groups"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Inherit Scene"
+msgid "Edit Connections"
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
@@ -5681,14 +5687,6 @@ msgid "Change Type"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Edit Groups"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Edit Connections"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "Add Script"
 msgstr ""
 
@@ -5698,10 +5696,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save Branch as Scene"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp

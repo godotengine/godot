@@ -533,7 +533,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		}
 
 		if (dest->get_line_edit()->get_text().extension().to_lower() != "fnt") {
-			error_dialog->set_text(TTR("Invalid file extension. \nPlease use .fnt"));
+			error_dialog->set_text(TTR("Invalid file extension.\nPlease use .fnt."));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}

@@ -309,7 +309,7 @@ ConnectDialog::ConnectDialog() {
 
 
 	tree = memnew(SceneTreeEditor(false));
-	vbc_left->add_margin_child(TTR("Conect To Node:"),tree,true);
+	vbc_left->add_margin_child(TTR("Connect To Node:"),tree,true);
 
 
 
