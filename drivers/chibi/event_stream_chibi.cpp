@@ -628,10 +628,12 @@ bool EventStreamPlaybackChibi::_update(AudioMixer* p_mixer, uint64_t p_usec){
 	total_usec+=p_usec;
 	mixer.process_usecs(p_usec,volume,pitch_scale,tempo_scale);
 	int order=player->get_current_order();
-	if (order<last_order && !loop) {
-		stop();
-	} else {
-		loops++;
+	if (order<last_order) {
+		if (!loop) {
+			stop();
+		} else {
+			loops++;
+		}
 	}
 	last_order=order;
 	return false;
