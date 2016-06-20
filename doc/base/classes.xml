@@ -18895,6 +18895,34 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Set the cursor position inside the [LineEdit], causing it to scroll if needed.
 			</description>
 		</method>
+		<method name="cursor_set_blink_enabled">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			Set the line edit caret to blink.
+			</description>
+		</method>
+		<method name="cursor_get_blink_enabled" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			Gets whether the line edit caret is blinking.
+			</description>
+		</method>
+		<method name="cursor_set_blink_speed">
+			<argument index="0" name="blink_speed" type="float">
+			</argument>
+			<description>
+			Set the line edit caret blink speed. Cannot be less then or equal to 0.
+			</description>
+		</method>
+		<method name="cursor_get_blink_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			Gets the line edit caret blink speed.
+			</description>
+		</method>
 		<method name="set_editable">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
