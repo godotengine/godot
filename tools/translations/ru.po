@@ -11,14 +11,14 @@ msgstr ""
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2016-06-19 17:29+0300\n"
 "Last-Translator: DimOkGamer <dimokgamer@gmail.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
-"godot/ru/>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/godot-"
+"engine/godot/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<="
+"4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Poedit 1.8.8\n"
 
 #: modules/gdscript/gd_functions.cpp
@@ -167,8 +167,7 @@ msgstr ""
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr ""
-"Свойство Path должен указывать на действительный нод Node2D для работы."
+msgstr "Свойство Path должен указывать на действительный нод Node2D для работы."
 
 #: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
 msgid ""
@@ -191,8 +190,8 @@ msgid ""
 "The Viewport set in the path property must be set as 'render target' in "
 "order for this sprite to work."
 msgstr ""
-"Области просмотра установленная в свойстве path должна быть назначена "
-"\"целью визуализации\" для того, чтобы этот спрайт работал."
+"Области просмотра установленная в свойстве path должна быть назначена \""
+"целью визуализации\" для того, чтобы этот спрайт работал."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -236,8 +235,7 @@ msgstr "Пустой CollisionPolygon не влияет на столкнове�
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr ""
-"Ресурс NavigationMesh должен быть установлен или создан для этого нода."
+msgstr "Ресурс NavigationMesh должен быть установлен или создан для этого нода."
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
@@ -5021,8 +5019,8 @@ msgstr "Действие"
 msgid ""
 "Filters to export non-resource files (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
-"Фильтр для экспорта не ресурсных файлов (через запятую, например: *.json, *."
-"txt):"
+"Фильтр для экспорта не ресурсных файлов (через запятую, например: *.json, "
+"*.txt):"
 
 #: tools/editor/project_export.cpp
 msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"

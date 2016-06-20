@@ -11,10 +11,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-06-13 17:52+0000\n"
-"Last-Translator: Hugo Locurcio <hugo.l@openmailbox.org>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
-"godot/fr/>\n"
+"PO-Revision-Date: 2016-06-19 13:17+0000\n"
+"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/godot-"
+"engine/godot/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -35,42 +35,44 @@ msgid "step argument is zero!"
 msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
-#, fuzzy
 msgid "Not a script with an instance"
-msgstr "Pas de scène sélectionnée à instancier !"
+msgstr "N'est pas un script avec une instance"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "N'est pas basé sur un script"
 
 #: modules/gdscript/gd_functions.cpp
-#, fuzzy
 msgid "Not based on a resource file"
-msgstr "Pas de ressource de police de destination !"
+msgstr "N'est pas basé sur un fichier de ressource"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr ""
+msgstr "Instance invalide pour le format de dictionnaire (@path manquant)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
+"Instance invalide pour le format de dictionnaire (impossible de charger le "
+"script depuis @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
 msgstr ""
+"Instance invalide pour le format de dictionnaire (script invalide dans @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr ""
+"Instance invalide pour le format de dictionnaire (sous-classes invalides)"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"Une ressource SpriteFrames doit être créée et assignée à la propriété « "
-"Frames » afin qu'AnimatedSprite les affiche."
+"Une ressource SpriteFrames doit être créée ou assignée à la propriété « "
+"Frames » afin qu'AnimatedSprite affiche les images."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -588,14 +590,12 @@ msgid "Anim Delete Keys"
 msgstr ""
 
 #: tools/editor/animation_editor.cpp
-#, fuzzy
 msgid "Continuous"
-msgstr "Continuer"
+msgstr "Continu"
 
 #: tools/editor/animation_editor.cpp
-#, fuzzy
 msgid "Discrete"
-msgstr "Déconnecter"
+msgstr "Discret"
 
 #: tools/editor/animation_editor.cpp
 msgid "Trigger"
@@ -711,7 +711,7 @@ msgstr ""
 #: tools/editor/animation_editor.cpp
 #, fuzzy
 msgid "Change Anim Loop Interpolation"
-msgstr "Modifier le nom de l'animation :"
+msgstr "Changer l'interpolation de l'animation bouclée"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
@@ -1019,10 +1019,9 @@ msgstr "Colonne :"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr ""
+msgstr "La méthode du nœud cible doit être spécifiée !"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Conect To Node:"
 msgstr "Connecter au nœud :"
 
@@ -1042,15 +1041,13 @@ msgstr "Supprimer"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "Ajouter des arguments supplémentaires :"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Extra Call Arguments:"
-msgstr "Paramètres :"
+msgstr "Arguments supplémentaires :"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Path to Node:"
 msgstr "Chemin vers le nœud :"
 
@@ -1075,9 +1072,8 @@ msgid "Connect '%s' to '%s'"
 msgstr "Connecter « %s » à « %s »"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connecting Signal:"
-msgstr "Connexions :"
+msgstr "Connecter un signal :"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Create Subscription"
@@ -2834,7 +2830,6 @@ msgid "Create new animation in player."
 msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Load animation from disk."
 msgstr "Charger une animation depuis le disque."
 
@@ -2847,9 +2842,8 @@ msgid "Save the current animation"
 msgstr "Enregistrer l'animation actuelle"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Save As"
-msgstr "Enregistrer sous…"
+msgstr "Enregistrer sous"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -4045,7 +4039,7 @@ msgstr "Indentation automatique"
 #: tools/editor/plugins/script_editor_plugin.cpp
 #, fuzzy
 msgid "Soft Reload Script"
-msgstr "Recharger le script outil"
+msgstr "Recharger le script (mode doux)"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -4137,7 +4131,6 @@ msgid "Help"
 msgstr "Aide"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Contextual Help"
 msgstr "Aide contextuelle"
 
@@ -4742,14 +4735,12 @@ msgid "Remove Class Items"
 msgstr ""
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Create Empty Template"
-msgstr "Créer un modèle"
+msgstr "Créer un nouveau modèle"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Create Empty Editor Template"
-msgstr "Créer un modèle"
+msgstr "Créer un nouveau modèle d'éditeur"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "CheckBox Radio1"
@@ -4835,28 +4826,24 @@ msgid "Erase TileMap"
 msgstr ""
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Erase selection"
 msgstr "Supprimer la sélection"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Find tile"
-msgstr "Trouver le suivant"
+msgstr "Chercher une case"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Transpose"
 msgstr "Transposer"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Mirror X"
-msgstr "Miroir X (A)"
+msgstr "Miroir X"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Mirror Y"
-msgstr "Miroir Y (S)"
+msgstr "Miroir Y"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Bucket"
