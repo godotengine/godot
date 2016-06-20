@@ -439,11 +439,9 @@ void joystick_linux::joystick_vibration_stop(int p_id, uint64_t p_timestamp)
 		return;
 	}
 
-	struct input_event stop;
-	stop.type = EV_FF;
-	stop.code = joy.ff_effect_id;
-	stop.value = 0;
-	write(joy.fd, (const void*)&stop, sizeof(stop));
+	if (ioctl(joy.fd, EVIOCRMFF, joy.ff_effect_id) < 0) {
+		return;
+	}
 
 	joy.ff_effect_id = -1;
 	joy.ff_effect_timestamp = p_timestamp;
