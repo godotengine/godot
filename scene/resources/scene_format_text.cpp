@@ -1112,7 +1112,12 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant& p_variant,b
 
 }
 
+static String _valprop(const String& p_name) {
 
+	if (p_name.find("\"")!=-1 || p_name.find("=")!=-1 || p_name.find(" ")!=-1)
+		return "\""+p_name.c_escape()+"\"";
+	return p_name;
+}
 
 Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_resource,uint32_t p_flags) {
 
@@ -1268,7 +1273,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 
 				String vars;
 				VariantWriter::write_to_string(value,vars,_write_resources,this);
-				f->store_string(name+" = "+vars+"\n");
+				f->store_string(_valprop(name)+" = "+vars+"\n");
 			}
 
 
@@ -1342,7 +1347,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 				String vars;
 				VariantWriter::write_to_string(state->get_node_property_value(i,j),vars,_write_resources,this);
 
-				f->store_string(String(state->get_node_property_name(i,j))+" = "+vars+"\n");
+				f->store_string(_valprop(String(state->get_node_property_name(i,j)))+" = "+vars+"\n");
 			}
 
 			if (state->get_node_property_count(i)) {
