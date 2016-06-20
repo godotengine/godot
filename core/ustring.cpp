@@ -2810,6 +2810,50 @@ bool String::_base_is_subsequence_of(const String& p_string, bool case_insensiti
 	return false;
 }
 
+Vector<String> String::bigrams() const {
+	int n_pairs = length() - 1;
+	Vector<String> b;
+	if(n_pairs <= 0) {
+		return b;
+	}
+	b.resize(n_pairs);
+	for(int i = 0; i < n_pairs; i++) {
+		b[i] = substr(i,2);
+	}
+	return b;
+}
+
+// Similarity according to Sorensen-Dice coefficient
+float String::similarity(const String& p_string) const {
+	if(operator==(p_string)) {
+		// Equal strings are totally similar
+		return 1.0f;
+	}
+	if (length() < 2 || p_string.length() < 2) {
+		// No way to calculate similarity without a single bigram
+		return 0.0f;
+	}
+
+	Vector<String> src_bigrams = bigrams();
+	Vector<String> tgt_bigrams = p_string.bigrams();
+
+	int src_size = src_bigrams.size();
+	int tgt_size = tgt_bigrams.size();
+
+	float sum = src_size + tgt_size;
+	float inter = 0;
+	for (int i = 0; i < src_size; i++) {
+		for (int j = 0; j < tgt_size; j++) {
+			if (src_bigrams[i] == tgt_bigrams[j]) {
+				inter++;
+				break;
+			}
+		}
+	}
+
+	return (2.0f * inter)/sum;
+}
+
 static bool _wildcard_match(const CharType* p_pattern, const CharType* p_string,bool p_case_sensitive) {
 	switch (*p_pattern) {
 	case '\0':
