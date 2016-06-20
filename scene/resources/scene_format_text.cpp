@@ -1320,8 +1320,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			Vector<StringName> groups = state->get_node_groups(i);
 
 
-			if (instance.is_valid())
-				print_line("for path "+String(path)+" instance "+instance->get_path());
 
 			String header="[node";
 			header+=" name=\""+String(name)+"\"";
