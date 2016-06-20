@@ -72,7 +72,8 @@ private:
 		TrackType type;
 		InterpolationType interpolation;
 		NodePath path; // path to something
-		Track() { interpolation=INTERPOLATION_LINEAR; }
+		bool imported;
+		Track() { interpolation=INTERPOLATION_LINEAR; imported=false;}
 		virtual ~Track() {}
 	};
 
@@ -240,6 +241,9 @@ public:
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
+
+	void track_set_imported(int p_track,bool p_imported);
+	bool track_is_imported(int p_track) const;
 
 	int transform_track_insert_key(int p_track, float p_time, const Vector3 p_loc, const Quat& p_rot=Quat(), const Vector3& p_scale=Vector3());
 	void track_insert_key(int p_track, float p_time, const Variant& p_key, float p_transition=1);

@@ -74,6 +74,8 @@ bool Animation::_set(const StringName& p_name, const Variant& p_value) {
 			track_set_path(track,p_value);
 		else if (what=="interp")
 			track_set_interpolation_type(track,InterpolationType(p_value.operator int()));
+		else if (what=="imported")
+			track_set_imported(track,p_value);
 		else if (what == "keys" || what=="key_values") {
 
 			if (track_get_type(track)==TYPE_TRANSFORM) {
@@ -169,6 +171,7 @@ bool Animation::_set(const StringName& p_name, const Variant& p_value) {
 						um=2;
 					vt->update_mode=UpdateMode(um);
 				}
+
 
 
 				DVector<float> times=d["times"];
@@ -290,6 +293,8 @@ bool Animation::_get(const StringName& p_name,Variant &r_ret) const {
 			r_ret=track_get_path(track);
 		else if (what=="interp")
 			r_ret = track_get_interpolation_type(track);
+		else if (what=="imported")
+			r_ret = track_is_imported(track);
 		else if (what=="keys") {
 
 			if (track_get_type(track)==TYPE_TRANSFORM) {
@@ -437,6 +442,7 @@ void Animation::_get_property_list( List<PropertyInfo> *p_list) const {
 		p_list->push_back( PropertyInfo( Variant::STRING, "tracks/"+itos(i)+"/type", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 		p_list->push_back( PropertyInfo( Variant::NODE_PATH, "tracks/"+itos(i)+"/path", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 		p_list->push_back( PropertyInfo( Variant::INT, "tracks/"+itos(i)+"/interp", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
+		p_list->push_back( PropertyInfo( Variant::BOOL, "tracks/"+itos(i)+"/imported", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 		p_list->push_back( PropertyInfo( Variant::ARRAY, "tracks/"+itos(i)+"/keys", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 	}
 }
@@ -1648,6 +1654,20 @@ void Animation::track_move_up(int p_track) {
 	emit_changed();
 }
 
+void Animation::track_set_imported(int p_track,bool p_imported) {
+
+	ERR_FAIL_INDEX(p_track,tracks.size());
+	tracks[p_track]->imported=p_imported;
+}
+
+bool Animation::track_is_imported(int p_track) const{
+
+	ERR_FAIL_INDEX_V(p_track,tracks.size(),false);
+	return tracks[p_track]->imported;
+
+}
+
+
 void Animation::track_move_down(int p_track) {
 
 	if (p_track>0 && p_track<tracks.size()) {
@@ -1681,6 +1701,10 @@ void Animation::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("track_move_up","idx"),&Animation::track_move_up);
 	ObjectTypeDB::bind_method(_MD("track_move_down","idx"),&Animation::track_move_down);
+
+	ObjectTypeDB::bind_method(_MD("track_set_imported","idx","imported"),&Animation::track_set_imported);
+	ObjectTypeDB::bind_method(_MD("track_is_imported","idx"),&Animation::track_is_imported);
+
 
 	ObjectTypeDB::bind_method(_MD("transform_track_insert_key","idx","time","loc","rot","scale"),&Animation::transform_track_insert_key);
 	ObjectTypeDB::bind_method(_MD("track_insert_key","idx","time","key","transition"),&Animation::track_insert_key,DEFVAL(1));

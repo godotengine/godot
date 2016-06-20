@@ -1069,11 +1069,13 @@ const EditorSceneImportDialog::FlagInfo EditorSceneImportDialog::scene_flag_name
 	{EditorSceneImportPlugin::SCENE_FLAG_IMPORT_ANIMATIONS,("Actions"),"Import Animations",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_COMPRESS_GEOMETRY,("Actions"),"Compress Geometry",false},
 	{EditorSceneImportPlugin::SCENE_FLAG_GENERATE_TANGENT_ARRAYS,("Actions"),"Force Generation of Tangent Arrays",false},
-	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_ALPHA,("Materials"),"Set Alpha in Materials (-alpha)",true},
-	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_VCOLOR,("Materials"),"Set Vert. Color in Materials (-vcol)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_LINEARIZE_DIFFUSE_TEXTURES,("Actions"),"SRGB->Linear Of Diffuse Textures",false},
 	{EditorSceneImportPlugin::SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY,("Actions"),"Convert Normal Maps to XY",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS,("Actions"),"Set Material Lightmap to UV2 if Tex2Array Exists",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_MERGE_KEEP_MATERIALS,("Merge"),"Keep Materials after first import (delete them for re-import).",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS,("Merge"),"Keep user-added Animation tracks.",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_ALPHA,("Materials"),"Set Alpha in Materials (-alpha)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_VCOLOR,("Materials"),"Set Vert. Color in Materials (-vcol)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,("Create"),"Create Collisions and/or Rigid Bodies (-col,-colonly,-rigid)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_PORTALS,("Create"),"Create Portals (-portal)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_ROOMS,("Create"),"Create Rooms (-room)",true},
@@ -2455,6 +2457,138 @@ void EditorSceneImportPlugin::_optimize_animations(Node *scene, float p_max_lin_
 }
 
 
+void EditorSceneImportPlugin::_find_resources_to_merge(Node *scene, Node *node, bool p_merge_material, Map<String, Ref<Material> > &materials, bool p_merge_anims, Map<String,Ref<Animation> >& merged_anims,Set<Ref<Mesh> > &tested_meshes) {
+
+	if (node->get_owner()!=scene)
+		return;
+
+	String path = scene->get_path_to(node);
+
+	if (p_merge_anims && node->cast_to<AnimationPlayer>()) {
+
+		AnimationPlayer *ap = node->cast_to<AnimationPlayer>();
+		List<StringName> anims;
+		ap->get_animation_list(&anims);
+		for (List<StringName>::Element *E=anims.front();E;E=E->next()) {
+			Ref<Animation> anim = ap->get_animation(E->get());
+			Ref<Animation> clone;
+
+			bool has_user_tracks=false;
+
+			for(int i=0;i<anim->get_track_count();i++) {
+
+				if (!anim->track_is_imported(i)) {
+					has_user_tracks=true;
+					break;
+				}
+			}
+
+			if (has_user_tracks) {
+
+				clone = anim->duplicate();
+				for(int i=0;i<clone->get_track_count();i++) {
+					if (clone->track_is_imported(i)) {
+						clone->remove_track(i);
+						i--;
+					}
+				}
+
+				merged_anims[path+"::"+String(E->get())]=clone;
+			}
+		}
+	}
+
+
+
+	if (p_merge_material && node->cast_to<MeshInstance>()) {
+		MeshInstance *mi=node->cast_to<MeshInstance>();
+		Ref<Mesh> mesh = mi->get_mesh();
+		if (mesh.is_valid() && mesh->get_name()!=String() && !tested_meshes.has(mesh)) {
+
+			for(int i=0;i<mesh->get_surface_count();i++) {
+				Ref<Material> material = mesh->surface_get_material(i);
+				materials[mesh->get_name()+":surf:"+mesh->surface_get_name(i)]=material;
+			}
+
+			tested_meshes.insert(mesh);
+		}
+	}
+
+
+
+	for(int i=0;i<node->get_child_count();i++) {
+		_find_resources_to_merge(scene,node->get_child(i),p_merge_material,materials,p_merge_anims,merged_anims,tested_meshes);
+	}
+
+}
+
+
+void EditorSceneImportPlugin::_merge_found_resources(Node *scene, Node *node, bool p_merge_material, const Map<String, Ref<Material> > &materials, bool p_merge_anims, const Map<String,Ref<Animation> >& merged_anims, Set<Ref<Mesh> > &tested_meshes) {
+
+	if (node->get_owner()!=scene)
+		return;
+
+	String path = scene->get_path_to(node);
+
+	if (node->cast_to<AnimationPlayer>()) {
+
+		AnimationPlayer *ap = node->cast_to<AnimationPlayer>();
+		List<StringName> anims;
+		ap->get_animation_list(&anims);
+		for (List<StringName>::Element *E=anims.front();E;E=E->next()) {
+			Ref<Animation> anim = ap->get_animation(E->get());
+
+			String anim_path = path+"::"+String(E->get());
+
+			if (merged_anims.has(anim_path)) {
+
+				Ref<Animation> user_tracks = merged_anims[anim_path];
+				for(int i=0;i<user_tracks->get_track_count();i++) {
+
+					int idx = anim->get_track_count();
+					anim->add_track(user_tracks->track_get_type(i));
+					anim->track_set_path(idx,user_tracks->track_get_path(i));
+					anim->track_set_interpolation_type(idx,user_tracks->track_get_interpolation_type(i));
+					for(int j=0;j<user_tracks->track_get_key_count(i);j++) {
+
+						float ofs = user_tracks->track_get_key_time(i,j);
+						float trans = user_tracks->track_get_key_transition(i,j);
+						Variant value = user_tracks->track_get_key_value(i,j);
+
+						anim->track_insert_key(idx,ofs,value,trans);
+					}
+				}
+			}
+		}
+	}
+
+
+
+	if (node->cast_to<MeshInstance>()) {
+		MeshInstance *mi=node->cast_to<MeshInstance>();
+		Ref<Mesh> mesh = mi->get_mesh();
+		if (mesh.is_valid() && mesh->get_name()!=String() && !tested_meshes.has(mesh)) {
+
+			for(int i=0;i<mesh->get_surface_count();i++) {
+				String sname = mesh->get_name()+":surf:"+mesh->surface_get_name(i);
+
+				if (materials.has(sname)) {
+					mesh->surface_set_material(i,materials[sname]);
+				}
+			}
+
+			tested_meshes.insert(mesh);
+		}
+	}
+
+
+
+	for(int i=0;i<node->get_child_count();i++) {
+		_merge_found_resources(scene,node->get_child(i),p_merge_material,materials,p_merge_anims,merged_anims,tested_meshes);
+	}
+
+}
+
 Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, const Ref<ResourceImportMetadata>& p_from) {
 
 	Error err=OK;
@@ -2506,6 +2640,28 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	_filter_tracks(scene,animation_filter);
 
 
+	if (scene_flags&(SCENE_FLAG_MERGE_KEEP_MATERIALS|SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS) && FileAccess::exists(p_dest_path)) {
+		//must merge!
+
+		Ref<PackedScene> pscene = ResourceLoader::load(p_dest_path,"PackedScene",true);
+		if (pscene.is_valid()) {
+
+			Node *instance = pscene->instance();
+			if (instance) {
+				Map<String,Ref<Animation> > merged_anims;
+				Map<String,Ref<Material> > merged_materials;
+				Set<Ref<Mesh> > tested_meshes;
+
+				_find_resources_to_merge(instance,instance,scene_flags&SCENE_FLAG_MERGE_KEEP_MATERIALS,merged_materials,scene_flags&SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS,merged_anims,tested_meshes);
+				tested_meshes.clear();
+				_merge_found_resources(instance,instance,scene_flags&SCENE_FLAG_MERGE_KEEP_MATERIALS,merged_materials,scene_flags&SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS,merged_anims,tested_meshes);
+
+				memdelete(instance);
+			}
+
+		}
+
+	}
 
 	/// BEFORE ANYTHING, RUN SCRIPT
 

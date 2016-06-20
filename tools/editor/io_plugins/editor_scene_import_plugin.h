@@ -116,6 +116,10 @@ class EditorSceneImportPlugin : public EditorImportPlugin {
 
 	void _tag_import_paths(Node *p_scene,Node *p_node);
 
+	void _find_resources_to_merge(Node *scene, Node *node, bool p_merge_material, Map<String,Ref<Material> >&materials, bool p_merge_anims, Map<String,Ref<Animation> >& merged_anims, Set<Ref<Mesh> > &tested_meshes);
+	void _merge_found_resources(Node *scene, Node *node, bool p_merge_material, const Map<String, Ref<Material> > &materials, bool p_merge_anims, const Map<String,Ref<Animation> >& merged_anims, Set<Ref<Mesh> > &tested_meshes);
+
+
 public:
 
 	enum SceneFlags {
@@ -134,6 +138,9 @@ public:
 		SCENE_FLAG_CREATE_NAVMESH=1<<17,
 		SCENE_FLAG_DETECT_LIGHTMAP_LAYER=1<<18,
 
+		SCENE_FLAG_MERGE_KEEP_MATERIALS=1<<20,
+		SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS=1<<21,
+
 		SCENE_FLAG_REMOVE_NOIMP=1<<24,
 		SCENE_FLAG_IMPORT_ANIMATIONS=1<<25,
 		SCENE_FLAG_COMPRESS_GEOMETRY=1<<26,
@@ -142,6 +149,7 @@ public:
 		SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS=1<<29,
 		SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY=1<<30,
 	};
+
 
 
 	virtual String get_name() const;

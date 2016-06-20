@@ -2077,6 +2077,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		animation->add_track(Animation::TYPE_TRANSFORM);
 		int track = animation->get_track_count() -1;
 		animation->track_set_path( track , path );
+		animation->track_set_imported( track , true ); //helps merging later
 
 		Vector<float> snapshots = base_snapshots;
 
@@ -2229,6 +2230,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 			animation->add_track(Animation::TYPE_TRANSFORM);
 			int track = animation->get_track_count() -1;
 			animation->track_set_path( track , path );
+			animation->track_set_imported( track , true ); //helps merging later
 
 
 			Transform xform = cn->compute_transform(collada);
@@ -2284,8 +2286,11 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 		animation->add_track(Animation::TYPE_VALUE);
 		int track = animation->get_track_count() -1;
+
 		path = path +":"+at.param;
 		animation->track_set_path( track , path );
+		animation->track_set_imported( track , true ); //helps merging later
+
 
 		for(int i=0;i<at.keys.size();i++) {
 
@@ -2376,6 +2381,7 @@ Node* EditorSceneImporterCollada::import_scene(const String& p_path, uint32_t p_
 
 		state.create_animations(p_flags&IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS);
 		AnimationPlayer *ap = memnew( AnimationPlayer );
+		ap->set_name("animations");
 		for(int i=0;i<state.animations.size();i++) {
 			String name;
 			if (state.animations[i]->get_name()=="")
