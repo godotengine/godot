@@ -76,7 +76,7 @@
 #include "plugins/mesh_instance_editor_plugin.h"
 #include "plugins/mesh_editor_plugin.h"
 #include "plugins/theme_editor_plugin.h"
-
+#include "plugins/raw_text_editor_plugin.h"
 #include "plugins/tile_map_editor_plugin.h"
 #include "plugins/cube_grid_theme_editor_plugin.h"
 #include "plugins/shader_editor_plugin.h"
@@ -6292,6 +6292,8 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,false) ) );
 	add_editor_plugin( memnew( ShaderEditorPlugin(this,true) ) );
 	add_editor_plugin( memnew( ShaderEditorPlugin(this,false) ) );
+	add_editor_plugin( memnew( RawTextEditorPlugin(this, true) ));
+	add_editor_plugin( memnew( RawTextEditorPlugin(this, false) ));
 	add_editor_plugin( memnew( CameraEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleLibraryEditorPlugin(this) ) );
