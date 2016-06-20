@@ -437,10 +437,7 @@ void EditorFileDialog::_item_dc_selected(int p_item) {
 
 	if (d["dir"]) {
 
-		//print_line("change dir: "+String(d["name"]));
 		dir_access->change_dir(d["name"]);
-		if (mode==MODE_OPEN_FILE || mode==MODE_OPEN_FILES || mode==MODE_OPEN_DIR || MODE_OPEN_ANY)
-			file->set_text("");
 		call_deferred("_update_file_list");
 		call_deferred("_update_dir");
 
