@@ -1775,7 +1775,20 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 		}
 
 		if (c>32) {
-			if (c!='=') {
+			if (c=='"') { //quoted
+				p_stream->saved='"';
+				Token tk;
+				Error err = get_token(p_stream,tk,line,r_err_str);
+				if (err)
+					return err;
+				if (tk.type!=TK_STRING) {
+					r_err_str="Error reading quoted string";
+					return err;
+				}
+
+				what=tk.value;
+
+			} else if (c!='=') {
 				what+=String::chr(c);
 			} else {
 				r_assign=what;
