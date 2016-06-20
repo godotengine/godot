@@ -60,7 +60,6 @@ protected:
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
 
-	void _shader_changed();
 	static void _bind_methods();
 
 	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;

@@ -112,20 +112,8 @@ void CanvasItemMaterial::_get_property_list( List<PropertyInfo> *p_list) const {
 void CanvasItemMaterial::set_shader(const Ref<Shader>& p_shader) {
 
 	ERR_FAIL_COND(p_shader.is_valid() && p_shader->get_mode()!=Shader::MODE_CANVAS_ITEM);
-#ifdef TOOLS_ENABLED
 
-	if (shader.is_valid()) {
-		shader->disconnect("changed",this,"_shader_changed");
-	}
-#endif
 	shader=p_shader;
-
-#ifdef TOOLS_ENABLED
-
-	if (shader.is_valid()) {
-		shader->connect("changed",this,"_shader_changed");
-	}
-#endif
 
 	RID rid;
 	if (shader.is_valid())
@@ -149,11 +137,6 @@ void CanvasItemMaterial::set_shader_param(const StringName& p_param,const Varian
 Variant CanvasItemMaterial::get_shader_param(const StringName& p_param) const{
 
 	return VS::get_singleton()->canvas_item_material_get_shader_param(material,p_param);
-}
-
-void CanvasItemMaterial::_shader_changed() {
-
-
 }
 
 RID CanvasItemMaterial::get_rid() const {
