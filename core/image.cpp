@@ -1697,8 +1697,17 @@ Error Image::_decompress_bc() {
 
 	print_line("decompressing bc");
 
+	int wd=width,ht=height;
+	if (wd%4!=0) {
+		wd+=4-(wd%4);
+	}
+	if (ht%4!=0) {
+		ht+=4-(ht%4);
+	}
+
+
 	int mm;
-	int size = _get_dst_image_size(width,height,FORMAT_RGBA,mm,mipmaps);
+	int size = _get_dst_image_size(wd,ht,FORMAT_RGBA,mm,mipmaps);
 
 	DVector<uint8_t> newdata;
 	newdata.resize(size);
@@ -1708,7 +1717,8 @@ Error Image::_decompress_bc() {
 
 	int rofs=0;
 	int wofs=0;
-	int wd=width,ht=height;
+
+	print_line("width: "+itos(wd)+" height: "+itos(ht));
 
 	for(int i=0;i<=mm;i++) {
 
@@ -2013,6 +2023,11 @@ Error Image::_decompress_bc() {
 
 	data=newdata;
 	format=FORMAT_RGBA;
+	if (wd!=width || ht!=height) {
+		//todo, crop
+		width=wd;
+		height=ht;
+	}
 
 	return OK;
 }
