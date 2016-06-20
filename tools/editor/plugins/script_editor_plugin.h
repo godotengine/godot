@@ -232,7 +232,7 @@ class ScriptEditor : public VBoxContainer {
 	void _resave_scripts(const String& p_str);
 	void _reload_scripts();
 
-	bool _test_script_times_on_disk();
+	bool _test_script_times_on_disk(Ref<Script> p_for_script=Ref<Script>());
 
 	void _close_current_tab();
 
@@ -291,7 +291,7 @@ class ScriptEditor : public VBoxContainer {
 	void _go_to_tab(int p_idx);
 	void _update_history_pos(int p_new_pos);
 	void _update_script_colors();
-	void _update_modified_scripts_for_external_editor();
+	void _update_modified_scripts_for_external_editor(Ref<Script> p_for_script=Ref<Script>());
 
 	int file_dialog_option;
 	void _file_dialog_action(String p_file);
