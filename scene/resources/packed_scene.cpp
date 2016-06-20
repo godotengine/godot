@@ -1413,8 +1413,7 @@ NodePath SceneState::get_node_path(int p_idx,bool p_for_parent) const {
 		}
 	}
 
-	for(int i=0;i<base_path.get_name_count();i++) {
-		StringName sn = base_path.get_name(i);
+	for(int i=base_path.get_name_count()-1;i>=0;i--) {
 		sub_path.insert(0,base_path.get_name(i));
 	}
 
