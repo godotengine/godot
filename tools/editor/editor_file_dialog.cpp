@@ -380,7 +380,7 @@ void EditorFileDialog::_action_pressed() {
 
 		}
 
-		if (dir_access->file_exists(f)) {
+		if (dir_access->file_exists(f) && !disable_overwrite_warning) {
 			confirm_save->set_text(TTR("File Exists, Overwrite?"));
 			confirm_save->popup_centered(Size2(200,80));
 		} else {
@@ -1162,6 +1162,8 @@ void EditorFileDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_display_mode","mode"),&EditorFileDialog::set_display_mode);
 	ObjectTypeDB::bind_method(_MD("get_display_mode"),&EditorFileDialog::get_display_mode);
 	ObjectTypeDB::bind_method(_MD("_thumbnail_result"),&EditorFileDialog::_thumbnail_result);
+	ObjectTypeDB::bind_method(_MD("set_disable_overwrite_warning","disable"),&EditorFileDialog::set_disable_overwrite_warning);
+	ObjectTypeDB::bind_method(_MD("is_overwrite_warning_disabled"),&EditorFileDialog::is_overwrite_warning_disabled);
 
 	ObjectTypeDB::bind_method(_MD("_recent_selected"),&EditorFileDialog::_recent_selected);
 	ObjectTypeDB::bind_method(_MD("_go_back"),&EditorFileDialog::_go_back);
@@ -1235,12 +1237,23 @@ void EditorFileDialog::_save_to_recent() {
 
 }
 
+void EditorFileDialog::set_disable_overwrite_warning(bool p_disable) {
+
+	disable_overwrite_warning=p_disable;
+}
+
+bool EditorFileDialog::is_overwrite_warning_disabled() const{
+
+	return disable_overwrite_warning;
+}
+
+
 EditorFileDialog::EditorFileDialog() {
 
 	show_hidden_files=default_show_hidden_files;
 	display_mode=default_display_mode;
 	local_history_pos=0;
-
+	disable_overwrite_warning=false;
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);
@@ -1465,5 +1478,6 @@ EditorLineEditFileChooser::EditorLineEditFileChooser() {
 	dialog->connect("file_selected",this,"_chosen");
 	dialog->connect("dir_selected",this,"_chosen");
 	dialog->connect("files_selected",this,"_chosen");
+
 
 }

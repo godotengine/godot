@@ -130,6 +130,7 @@ private:
 	bool show_hidden_files;
 	DisplayMode display_mode;
 
+	bool disable_overwrite_warning;
 	bool invalidated;
 
 	void update_dir();
@@ -215,6 +216,9 @@ public:
 	static void set_default_display_mode(DisplayMode p_mode);
 
 	void invalidate();
+
+	void set_disable_overwrite_warning(bool p_disable);
+	bool is_overwrite_warning_disabled() const;
 
 	EditorFileDialog();
 	~EditorFileDialog();
