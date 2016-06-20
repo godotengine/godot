@@ -1574,6 +1574,14 @@ void Viewport::_gui_call_input(Control *p_control,const InputEvent& p_input) {
 
 //	_block();
 
+
+	//mouse wheel events can't be stopped
+	bool cant_stop_me_now = (p_input.type==InputEvent::MOUSE_BUTTON &&
+				 (p_input.mouse_button.button_index==BUTTON_WHEEL_DOWN ||
+				  p_input.mouse_button.button_index==BUTTON_WHEEL_UP ||
+				  p_input.mouse_button.button_index==BUTTON_WHEEL_LEFT ||
+				  p_input.mouse_button.button_index==BUTTON_WHEEL_RIGHT ) );
+
 	CanvasItem *ci=p_control;
 	while(ci) {
 
@@ -1589,7 +1597,7 @@ void Viewport::_gui_call_input(Control *p_control,const InputEvent& p_input) {
 				break;
 			if (gui.key_event_accepted)
 				break;
-			if (control->data.stop_mouse && (p_input.type==InputEvent::MOUSE_BUTTON || p_input.type==InputEvent::MOUSE_MOTION))
+			if (!cant_stop_me_now && control->data.stop_mouse && (p_input.type==InputEvent::MOUSE_BUTTON || p_input.type==InputEvent::MOUSE_MOTION))
 				break;
 		}
 
