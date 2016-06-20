@@ -526,8 +526,11 @@ uint32_t AtlasTexture::get_flags() const{
 
 void AtlasTexture::set_atlas(const Ref<Texture>& p_atlas){
 
+	if (atlas==p_atlas)
+		return;
 	atlas=p_atlas;
 	emit_changed();
+	emit_signal("atlas_changed");
 }
 Ref<Texture> AtlasTexture::get_atlas() const{
 
@@ -568,6 +571,8 @@ void AtlasTexture::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_margin","margin"),&AtlasTexture::set_margin);
 	ObjectTypeDB::bind_method(_MD("get_margin"),&AtlasTexture::get_margin);
+
+	ADD_SIGNAL(MethodInfo("atlas_changed"));
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "atlas", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_atlas"),_SCS("get_atlas") );
 	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "region"), _SCS("set_region"),_SCS("get_region") );

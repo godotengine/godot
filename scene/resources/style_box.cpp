@@ -104,7 +104,10 @@ StyleBox::StyleBox() {
 
 void StyleBoxTexture::set_texture(RES p_texture) {
 
+	if (texture==p_texture)
+		return;
 	texture=p_texture;
+	emit_signal("texture_changed");
 	emit_changed();
 
 }
@@ -206,6 +209,8 @@ void StyleBoxTexture::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_draw_center","enable"),&StyleBoxTexture::set_draw_center);
 	ObjectTypeDB::bind_method(_MD("get_draw_center"),&StyleBoxTexture::get_draw_center);
+
+	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture" ), _SCS("set_texture"),_SCS("get_texture") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));

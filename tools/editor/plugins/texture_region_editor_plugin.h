@@ -40,13 +40,9 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
-class TextureRegionEditor : public HBoxContainer {
+class TextureRegionEditor : public Control {
 
-	OBJ_TYPE(TextureRegionEditor, HBoxContainer );
-	enum RegionType {
-		REGION_TEXTURE_REGION,
-		REGION_PATCH_MARGIN
-	};
+	OBJ_TYPE(TextureRegionEditor, Control );
 
 	enum SnapMode {
 		SNAP_NONE,
@@ -56,12 +52,11 @@ class TextureRegionEditor : public HBoxContainer {
 	};
 
 	friend class TextureRegionEditorPlugin;
-	ToolButton *region_button;
 	MenuButton *snap_mode_button;
 	TextureFrame *icon_zoom;
-	Button *zoom_in;
-	Button *zoom_reset;
-	Button *zoom_out;
+	ToolButton *zoom_in;
+	ToolButton *zoom_reset;
+	ToolButton *zoom_out;
 	HBoxContainer * hb_grid; //For showing/hiding the grid controls when changing the SnapMode
 	SpinBox *sb_step_y;
 	SpinBox *sb_step_x;
@@ -75,7 +70,6 @@ class TextureRegionEditor : public HBoxContainer {
 	HScrollBar *hscroll;
 
 	EditorNode *editor;
-	AcceptDialog *dlg_editor;
 	UndoRedo* undo_redo;
 
 	Vector2 draw_ofs;
@@ -87,25 +81,21 @@ class TextureRegionEditor : public HBoxContainer {
 	Vector2 snap_step;
 	Vector2 snap_separation;
 
-
-	String node_type;
 	Patch9Frame *node_patch9;
 	Sprite *node_sprite;
-	StyleBoxTexture *obj_styleBox;
-	AtlasTexture *atlas_tex;
+	Ref<StyleBoxTexture> obj_styleBox;
+	Ref<AtlasTexture> atlas_tex;
 
-	int editing_region;
 	Rect2 rect;
 	Rect2 rect_prev;
-	Rect2 tex_region;
+	float prev_margin;
+	int edited_margin;
 	List<Rect2> autoslice_cache;
 
 	bool drag;
 	bool creating;
 	Vector2 drag_from;
 	int drag_index;
-
-	AcceptDialog *error;
 
 	void _set_snap_mode(int p_mode);
 	void _set_snap_off_x(float p_val);
@@ -128,9 +118,7 @@ protected:
 
 public:
 
-	void _edit_node(int tex_region);
 	void _edit_region();
-	void _edit_margin();
 	void _region_draw();
 	void _region_input(const InputEvent &p_input);
 	void _scroll_changed(float);
@@ -144,11 +132,12 @@ class TextureRegionEditorPlugin : public EditorPlugin
 {
 	OBJ_TYPE( TextureRegionEditorPlugin, EditorPlugin );
 
+	Button *region_button;
 	TextureRegionEditor *region_editor;
 	EditorNode *editor;
 public:
 
-	virtual String get_name() const { return "SpriteRegion"; }
+	virtual String get_name() const { return "TextureRegion"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;
