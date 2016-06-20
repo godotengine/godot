@@ -415,9 +415,16 @@ class RasterizerGLES2 : public Rasterizer {
 		int morph_target_count;
 		VS::MorphTargetMode morph_target_mode;
 		AABB custom_aabb;
+        enum {
+            FORCE_KEEP_DATA_UNKNOWN,
+            FORCE_KEEP_DATA_DISABLED,
+            FORCE_KEEP_DATA_ENABLED,
+        } force_keep_data;
+
+        SelfList<Mesh> purge_data_list;
 
 		mutable uint64_t last_pass;
-		Mesh() {
+		Mesh() : purge_data_list(this) {
 			morph_target_mode=VS::MORPH_MODE_NORMALIZED;
 			morph_target_count=0;
 			last_pass=0;
@@ -425,6 +432,8 @@ class RasterizerGLES2 : public Rasterizer {
 		}
 	};
 	mutable RID_Owner<Mesh> mesh_owner;
+    mutable SelfList<Mesh>::List _mesh_purge_data_list;
+    void _purge_mesh_data(Mesh* p_mesh) const;
 
 	Error _surface_set_arrays(Surface *p_surface, uint8_t *p_mem,uint8_t *p_index_mem,const Array& p_arrays,bool p_main);
 
@@ -1415,6 +1424,9 @@ public:
 
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
+
+	virtual void mesh_set_force_keep_data(RID p_mesh,bool p_force_keep_data);
+	virtual bool mesh_get_force_keep_data(RID p_mesh) const;
 
 	/* MULTIMESH API */
 

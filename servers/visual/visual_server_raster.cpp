@@ -475,6 +475,18 @@ AABB VisualServerRaster::mesh_get_custom_aabb(RID p_mesh) const {
 	return rasterizer->mesh_get_custom_aabb(p_mesh);
 }
 
+void VisualServerRaster::mesh_set_force_keep_data(RID p_mesh,bool p_force_keep_data) {
+
+	VS_CHANGED;
+	rasterizer->mesh_set_force_keep_data(p_mesh,p_force_keep_data);
+
+}
+
+bool VisualServerRaster::mesh_get_force_keep_data(RID p_mesh) const {
+
+	return rasterizer->mesh_get_force_keep_data(p_mesh);
+}
+
 void VisualServerRaster::mesh_clear(RID p_mesh) {
 
 	ERR_FAIL_COND(!rasterizer->is_mesh(p_mesh));

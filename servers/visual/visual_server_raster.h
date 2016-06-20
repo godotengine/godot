@@ -775,6 +775,9 @@ public:
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
 
+	virtual void mesh_set_force_keep_data(RID p_mesh,bool p_force_keep_data);
+	virtual bool mesh_get_force_keep_data(RID p_mesh) const;
+
 	virtual void mesh_clear(RID p_mesh);
 
 	/* MULTIMESH API */

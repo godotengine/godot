@@ -1076,6 +1076,7 @@ const EditorSceneImportDialog::FlagInfo EditorSceneImportDialog::scene_flag_name
 	{EditorSceneImportPlugin::SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS,("Merge"),"Keep user-added Animation tracks.",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_ALPHA,("Materials"),"Set Alpha in Materials (-alpha)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_VCOLOR,("Materials"),"Set Vert. Color in Materials (-vcol)",true},
+    {EditorSceneImportPlugin::SCENE_FLAG_FORCE_KEEP_DATA,("Mesh"),"Force Keep Data (-keepdata)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,("Create"),"Create Collisions and/or Rigid Bodies (-col,-colonly,-rigid)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_PORTALS,("Create"),"Create Portals (-portal)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_ROOMS,("Create"),"Create Rooms (-room)",true},
@@ -1580,6 +1581,18 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 				}
 			}
 
+		}
+	}
+
+
+	if (p_flags&SCENE_FLAG_FORCE_KEEP_DATA && p_node->cast_to<MeshInstance>()) {
+
+		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+
+		Ref<Mesh> m = mi->get_mesh();
+		if (m.is_valid() && (_teststr(m->get_name(),"keepdata"))) {
+			m->set_force_keep_data(true);
+			m->set_name((_fixstr(m->get_name(),"keepdata")));
 		}
 	}
 

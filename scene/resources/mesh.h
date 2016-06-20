@@ -1,3 +1,5 @@
+
+
 /*************************************************************************/
 /*  mesh.h                                                               */
 /*************************************************************************/
@@ -108,6 +110,7 @@ private:
 	MorphTargetMode morph_target_mode;
 	Vector<StringName> morph_targets;
 	AABB custom_aabb;
+	bool force_keep_data;
 
 	mutable Ref<TriangleMesh> triangle_mesh;
 
@@ -159,6 +162,9 @@ public:
 
 	void set_custom_aabb(const AABB& p_custom);
 	AABB get_custom_aabb() const;
+
+	void set_force_keep_data(bool p_force_keep_data);
+	bool get_force_keep_data() const;
 
 	AABB get_aabb() const;
 	virtual RID get_rid() const;

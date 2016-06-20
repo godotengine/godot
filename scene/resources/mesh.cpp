@@ -112,6 +112,12 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 		return true;
 	}
 
+	if (sname=="force_keep_data") {
+
+		set_force_keep_data(p_value);
+		return true;
+	}
+
 	if (!sname.begins_with("surfaces"))
 		return false;
 
@@ -184,6 +190,11 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret=custom_aabb;
 		return true;
 
+	} else if (sname=="force_keep_data") {
+
+		r_ret=get_force_keep_data();
+		return true;
+
 	} else if (!sname.begins_with("surfaces"))
 		return false;
 
@@ -223,6 +234,7 @@ void Mesh::_get_property_list( List<PropertyInfo> *p_list) const {
 	}
 
 	p_list->push_back( PropertyInfo( Variant::_AABB,"custom_aabb/custom_aabb" ) );
+	p_list->push_back( PropertyInfo( Variant::BOOL,"force_keep_data" ) );
 
 }
 
@@ -509,6 +521,17 @@ void Mesh::set_custom_aabb(const AABB& p_custom) {
 AABB Mesh::get_custom_aabb() const {
 
 	return custom_aabb;
+}
+
+void Mesh::set_force_keep_data(bool p_force_keep_data) {
+
+	force_keep_data=p_force_keep_data;
+	VS::get_singleton()->mesh_set_force_keep_data(mesh,p_force_keep_data);
+}
+
+bool Mesh::get_force_keep_data() const {
+
+	return force_keep_data;
 }
 
 
@@ -986,6 +1009,9 @@ void Mesh::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_custom_aabb","aabb"),&Mesh::set_custom_aabb);
 	ObjectTypeDB::bind_method(_MD("get_custom_aabb"),&Mesh::get_custom_aabb);
+
+	ObjectTypeDB::bind_method(_MD("set_force_keep_data","enabled"),&Mesh::set_force_keep_data);
+	ObjectTypeDB::bind_method(_MD("get_force_keep_data"),&Mesh::get_force_keep_data);
 
 
 	BIND_CONSTANT( NO_INDEX_ARRAY );

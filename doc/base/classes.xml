@@ -19956,6 +19956,22 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="set_force_keep_data">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			Enables or disables this mesh for keeping a copy of its source data (geometry and morph data) after it has been uploaded to the GPU.
+			Generally, by default data is dropped on mobile platforms and kept on desktop so this is the only mechanism to guarantee, for instance, that duplication will work regardless the running environment.
+			Enabling this in code is useful solely for meshes created on the fly with [MeshDataTool] of another similar way, enabling it before adding geometry. In any other case you need to set it right in the editor.
+			</description>
+		</method>
+		<method name="get_force_keep_data" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			Return whether this mesh has been enabled to keep a copy of its source data (see [method set_force_keep_data]).
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="ARRAY_VERTEX" value="0">

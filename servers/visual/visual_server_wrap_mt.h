@@ -216,6 +216,9 @@ public:
 	FUNC2(mesh_set_custom_aabb,RID,const AABB&);
 	FUNC1RC(AABB,mesh_get_custom_aabb,RID);
 
+	FUNC2(mesh_set_force_keep_data,RID,bool);
+	FUNC1RC(bool,mesh_get_force_keep_data,RID);
+
 
 	/* MULTIMESH API */
 

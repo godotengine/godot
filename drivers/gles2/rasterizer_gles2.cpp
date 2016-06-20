@@ -2099,9 +2099,19 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 	surface->morph_target_count=mesh->morph_target_count;
 	surface->configured_format=0;
 	surface->mesh=mesh;
-	if (keep_copies) {
-		surface->data=p_arrays;
-		surface->morph_data=p_blend_shapes;
+
+	if (keep_copies || mesh->force_keep_data != Mesh::FORCE_KEEP_DATA_DISABLED) {
+        /* keep data if globally set for the rasterizer or if the mesh is set to keep it or at least not set to not */
+        surface->data = p_arrays;
+        surface->morph_data = p_blend_shapes;
+        if (!keep_copies && mesh->force_keep_data == Mesh::FORCE_KEEP_DATA_UNKNOWN) {
+            /* the rasterizer wouldn't keep the data but the mesh hasn't still been set to keep or not,
+               so add to the purge list with a chance to be set to keep data before the next frame,
+               or ending up opting out from keeping it to clear it even before next render */
+            if (!mesh->purge_data_list.in_list()) {
+                _mesh_purge_data_list.add(&mesh->purge_data_list);
+            }
+        }
 	}
 
 	uint8_t *array_ptr=NULL;
@@ -2871,6 +2881,39 @@ AABB RasterizerGLES2::mesh_get_custom_aabb(RID p_mesh) const {
 	ERR_FAIL_COND_V(!mesh,AABB());
 
 	return mesh->custom_aabb;
+}
+
+
+void RasterizerGLES2::mesh_set_force_keep_data(RID p_mesh,bool p_force_keep_data) {
+
+	Mesh *mesh = mesh_owner.get( p_mesh );
+	ERR_FAIL_COND(!mesh);
+
+	mesh->force_keep_data = p_force_keep_data ? Mesh::FORCE_KEEP_DATA_ENABLED : Mesh::FORCE_KEEP_DATA_DISABLED;
+
+	/* server by default won't keep? */
+	if (!keep_copies) {
+		/* now that the property is explicitly set, we know for sure whether to keep or purge */
+		if (p_force_keep_data) {
+			/* unschedule purge */
+			if (mesh->purge_data_list.in_list()) {
+				_mesh_purge_data_list.remove(&mesh->purge_data_list);
+			}
+		} else {
+			/* data won't be kept so release right now to regain RAM as soon as possible */
+			if (mesh->purge_data_list.in_list()) {
+				_purge_mesh_data(mesh);
+			}
+		}
+	}
+}
+
+bool RasterizerGLES2::mesh_get_force_keep_data(RID p_mesh) const {
+
+	const Mesh *mesh = mesh_owner.get( p_mesh );
+	ERR_FAIL_COND_V(!mesh,false);
+
+	return mesh->force_keep_data == Mesh::FORCE_KEEP_DATA_ENABLED;
 }
 /* MULTIMESH API */
 
@@ -4298,6 +4341,13 @@ void RasterizerGLES2::begin_frame() {
 		_multimesh_dirty_list.remove( _multimesh_dirty_list.first() );
 	}
 
+	while (_mesh_purge_data_list.first()) {
+
+
+		Mesh *s = _mesh_purge_data_list.first()->self();
+		_purge_mesh_data(s);
+	}
+
 
 	draw_next_frame=false;
 //	material_shader.set_uniform_default(MaterialShaderGLES2::SCREENZ_SCALE, Math::fmod(time, 3600.0));
@@ -5361,6 +5411,20 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 }
 
 
+void RasterizerGLES2::_purge_mesh_data(Mesh* p_mesh) const {
+
+	_mesh_purge_data_list.remove(&p_mesh->purge_data_list);
+
+	for (int i = 0; i < p_mesh->surfaces.size(); i++) {
+		// Already purged?
+		ERR_CONTINUE(p_mesh->surfaces[i]->data.empty() && p_mesh->surfaces[i]->morph_data.empty());
+		// They are expected to be non-shared; otherwise purging is pointless (no RAM gain)
+		ERR_CONTINUE(p_mesh->surfaces[i]->data.is_shared() || p_mesh->surfaces[i]->morph_data.is_shared());
+
+		p_mesh->surfaces[i]->data.clear();
+		p_mesh->surfaces[i]->morph_data.clear();
+	}
+}
 
 void RasterizerGLES2::_setup_light(uint16_t p_light) {
 
