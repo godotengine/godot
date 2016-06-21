@@ -1566,13 +1566,20 @@ DVector<uint8_t> _File::get_buffer(int p_length) const{
 
 String _File::get_as_text() const {
 
+	ERR_FAIL_COND_V(!f, String());
+
 	String text;
+	size_t original_pos = f->get_pos();
+	f->seek(0);
+
 	String l = get_line();
 	while(!eof_reached()) {
 		text+=l+"\n";
 		l = get_line();
 	}
 	text+=l;
+
+	f->seek(original_pos);
 
 	return text;
 
