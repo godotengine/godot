@@ -1043,8 +1043,6 @@ void TextEdit::_notification(int p_what) {
 				Ref<StyleBox> csb = get_stylebox("completion");
 				int maxlines = get_constant("completion_lines");
 				int cmax_width = get_constant("completion_max_width")*cache.font->get_char_size('x').x;
-				Color existing = get_color("completion_existing");
-				existing.a=0.2;
 				int scrollw = get_constant("completion_scroll_width");
 				Color scrollc = get_color("completion_scroll_color");
 
@@ -1093,7 +1091,7 @@ void TextEdit::_notification(int p_what) {
 				}
 				int line_from = CLAMP(completion_index - lines/2, 0, completion_options.size() - lines);
 				VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2(completion_rect.pos.x,completion_rect.pos.y+(completion_index-line_from)*get_row_height()),Size2(completion_rect.size.width,get_row_height())),cache.completion_selected_color);
-				draw_rect(Rect2(completion_rect.pos,Size2(nofs,completion_rect.size.height)),existing);
+				draw_rect(Rect2(completion_rect.pos,Size2(nofs,completion_rect.size.height)),cache.completion_existing_color);
 
 
 
@@ -3286,6 +3284,7 @@ void TextEdit::_update_caches() {
 	cache.style_focus=get_stylebox("focus");
 	cache.completion_background_color=get_color("completion_background_color");
 	cache.completion_selected_color=get_color("completion_selected_color");
+	cache.completion_existing_color=get_color("completion_existing_color");
 	cache.font=get_font("font");
 	cache.caret_color=get_color("caret_color");
 	cache.line_number_color=get_color("line_number_color");
