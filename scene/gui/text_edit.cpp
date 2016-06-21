@@ -1089,7 +1089,9 @@ void TextEdit::_notification(int p_what) {
 
 				draw_style_box(csb,Rect2(completion_rect.pos-csb->get_offset(),completion_rect.size+csb->get_minimum_size()+Size2(scrollw,0)));
 
-
+				if (cache.completion_background_color.a>0.01) {
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(completion_rect.pos,completion_rect.size+Size2(scrollw,0)),cache.completion_background_color);
+				}
 				int line_from = CLAMP(completion_index - lines/2, 0, completion_options.size() - lines);
 				draw_style_box(csel,Rect2(Point2(completion_rect.pos.x,completion_rect.pos.y+(completion_index-line_from)*get_row_height()),Size2(completion_rect.size.width,get_row_height())));
 
@@ -3284,6 +3286,7 @@ void TextEdit::_update_caches() {
 
 	cache.style_normal=get_stylebox("normal");
 	cache.style_focus=get_stylebox("focus");
+	cache.completion_background_color=get_color("completion_background_color");
 	cache.font=get_font("font");
 	cache.caret_color=get_color("caret_color");
 	cache.line_number_color=get_color("line_number_color");

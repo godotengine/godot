@@ -287,6 +287,7 @@ void ScriptTextEditor::_load_theme_settings() {
 
 
 	get_text_edit()->set_custom_bg_color(EDITOR_DEF("text_editor/background_color",Color(0,0,0,0)));
+	get_text_edit()->add_color_override("completion_background_color", EDITOR_DEF("text_editor/completion_background_color", Color(0,0,0,0)));
 	get_text_edit()->add_color_override("font_color",EDITOR_DEF("text_editor/text_color",Color(0,0,0)));
 	get_text_edit()->add_color_override("line_number_color",EDITOR_DEF("text_editor/line_number_color",Color(0,0,0)));
 	get_text_edit()->add_color_override("caret_color",EDITOR_DEF("text_editor/caret_color",Color(0,0,0)));

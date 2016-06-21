@@ -674,6 +674,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 void EditorSettings::_load_default_text_editor_theme() {
 	set("text_editor/background_color",Color::html("3b000000"));
+	set("text_editor/completion_background_color", Color::html("2C2A32"));
 	set("text_editor/caret_color",Color::html("aaaaaa"));
 	set("text_editor/line_number_color",Color::html("66aaaaaa"));
 	set("text_editor/text_color",Color::html("aaaaaa"));
@@ -906,6 +907,7 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	String theme_section = "color_theme";
 	Ref<ConfigFile> cf = memnew( ConfigFile );	// hex is better?
 	cf->set_value(theme_section, "background_color", ((Color)get("text_editor/background_color")).to_html());
+	cf->set_value(theme_section, "completion_background_color", ((Color)get("text_editor/completion_background_color")).to_html());
 	cf->set_value(theme_section, "caret_color", ((Color)get("text_editor/caret_color")).to_html());
 	cf->set_value(theme_section, "line_number_color", ((Color)get("text_editor/line_number_color")).to_html());
 	cf->set_value(theme_section, "text_color", ((Color)get("text_editor/text_color")).to_html());

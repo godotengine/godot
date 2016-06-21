@@ -74,6 +74,7 @@ class TextEdit : public Control  {
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
 		Ref<Font> font;
+		Color completion_background_color;
 		Color caret_color;
 		Color line_number_color;
 		Color font_color;
