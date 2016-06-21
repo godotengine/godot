@@ -270,6 +270,8 @@ bool Animation::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= length;
 	else if (name=="loop")
 		r_ret= loop;
+	else if (name=="loop_interpolation")
+		r_ret= loop_interpolation;
 	else if (name=="step")
 		r_ret= step;
 	else if (name.begins_with("tracks/")) {
@@ -435,6 +437,7 @@ void Animation::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	p_list->push_back( PropertyInfo( Variant::REAL, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001"));
 	p_list->push_back( PropertyInfo( Variant::BOOL, "loop" ));
+	p_list->push_back( PropertyInfo( Variant::BOOL, "loop_interpolation"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "step", PROPERTY_HINT_RANGE, "0,4096,0.001" ));
 
 	for (int i=0;i<tracks.size();i++) {
@@ -1639,7 +1642,7 @@ bool Animation::has_loop() const {
 	return loop;
 }
 bool Animation::has_loop_interpolation() const {
-	
+
 	return loop_interpolation;
 }
 
@@ -2039,5 +2042,3 @@ Animation::~Animation() {
 		memdelete( tracks[i] );
 
 }
-
-
