@@ -227,11 +227,12 @@ void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
 	}
 }
 
-void EditorAssetLibraryItemDescription::configure(const String& p_title,int p_asset_id,const String& p_category,int p_category_id,const String& p_author,int p_author_id,int p_rating,const String& p_cost,int p_version,const String& p_version_string,const String& p_description,const String& p_download_url,const String& p_browse_url) {
+void EditorAssetLibraryItemDescription::configure(const String& p_title,int p_asset_id,const String& p_category,int p_category_id,const String& p_author,int p_author_id,int p_rating,const String& p_cost,int p_version,const String& p_version_string,const String& p_description,const String& p_download_url,const String& p_browse_url,const String& p_sha256_hash) {
 
 	asset_id=p_asset_id;
 	title=p_title;
 	download_url=p_download_url;
+	sha256=p_sha256_hash;
 	item->configure(p_title,p_asset_id,p_category,p_category_id,p_author,p_author_id,p_rating,p_cost);
 	description->clear();
 	description->add_text("Version: "+p_version_string+"\n");
@@ -358,9 +359,12 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 			if (p_code!=200) {
 				error_text=("Request failed, return code: "+itos(p_code));
 				status->set_text("Failed: "+itos(p_code));
-			} else {
-
-				//all good
+			} else if(sha256 != "") {
+				String download_sha256 = FileAccess::get_sha256(download->get_download_file());
+				if(sha256 != download_sha256) {
+					error_text="Bad download hash, assuming file has been tampered with.\nExpected: " + sha256 + "\nGot: " + download_sha256;
+					status->set_text("Failed sha256 hash check");
+				}
 			}
 		} break;
 
@@ -384,15 +388,15 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 }
 
 
-void EditorAssetLibraryItemDownload::configure(const String& p_title,int p_asset_id,const Ref<Texture>& p_preview, const String& p_download_url) {
+void EditorAssetLibraryItemDownload::configure(const String& p_title,int p_asset_id,const Ref<Texture>& p_preview, const String& p_download_url, const String& p_sha256_hash) {
 
 	title->set_text(p_title);
 	icon->set_texture(p_preview);
 	asset_id=p_asset_id;
 	if (!p_preview.is_valid())
 		icon->set_texture(get_icon("GodotAssetDefault","EditorIcons"));
-
 	host=p_download_url;
+	sha256=p_sha256_hash;
 	asset_installer->connect("confirmed",this,"_close");
 	dismiss->set_normal_texture( get_icon("Close","EditorIcons"));
 	_make_request();
@@ -604,7 +608,7 @@ void EditorAssetLibrary::_install_asset() {
 
 	EditorAssetLibraryItemDownload * download = memnew( EditorAssetLibraryItemDownload );
 	downloads_hb->add_child(download);
-	download->configure(description->get_title(),description->get_asset_id(),description->get_preview_icon(),description->get_download_url());
+	download->configure(description->get_title(),description->get_asset_id(),description->get_preview_icon(),description->get_download_url(),description->get_sha256());
 
 }
 
@@ -1134,6 +1138,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			ERR_FAIL_COND(!r.has("cost"));
 			ERR_FAIL_COND(!r.has("description"));
 			ERR_FAIL_COND(!r.has("download_url"));
+			ERR_FAIL_COND(!r.has("download_hash"));
 			ERR_FAIL_COND(!r.has("browse_url"));
 
 			if (description) {
@@ -1145,7 +1150,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			description->popup_centered_minsize();
 			description->connect("confirmed",this,"_install_asset");
 
-			description->configure(r["title"],r["asset_id"],category_map[r["category_id"]],r["category_id"],r["author"],r["author_id"],r["rating"],r["cost"],r["version"],r["version_string"],r["description"],r["download_url"],r["browse_url"]);
+			description->configure(r["title"],r["asset_id"],category_map[r["category_id"]],r["category_id"],r["author"],r["author_id"],r["rating"],r["cost"],r["version"],r["version_string"],r["description"],r["download_url"],r["browse_url"], r["download_hash"]);
 			/*item->connect("asset_selected",this,"_select_asset");
 			item->connect("author_selected",this,"_select_author");
 			item->connect("category_selected",this,"_category_selected");*/
