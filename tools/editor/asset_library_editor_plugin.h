@@ -213,7 +213,8 @@ class EditorAssetLibrary : public PanelContainer {
 	enum Support {
 		SUPPORT_OFFICIAL,
 		SUPPORT_COMMUNITY,
-		SUPPORT_TESTING
+		SUPPORT_TESTING,
+		SUPPORT_MAX
 	};
 
 	enum SortOrder {
@@ -228,6 +229,7 @@ class EditorAssetLibrary : public PanelContainer {
 
 	static const char* sort_key[SORT_MAX];
 	static const char* sort_text[SORT_MAX];
+	static const char* support_key[SUPPORT_MAX];
 
 
 	///MainListing
@@ -296,6 +298,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _http_download_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
 
 	void _repository_changed(int p_repository_id);
+	void _support_toggled(int p_support);
 
 friend class EditorAssetLibraryItemDescription;
 friend class EditorAssetLibraryItem;

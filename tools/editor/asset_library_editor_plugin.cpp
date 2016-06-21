@@ -628,6 +628,12 @@ const char* EditorAssetLibrary::sort_text[SORT_MAX]={
 	"Updated"
 };
 
+const char* EditorAssetLibrary::support_key[SUPPORT_MAX]={
+	"official",
+	"community",
+	"testing"
+};
+
 
 void EditorAssetLibrary::_select_author(int p_id) {
 
@@ -839,11 +845,26 @@ void EditorAssetLibrary::_repository_changed(int p_repository_id) {
 	_api_request("configure", REQUESTING_CONFIG);
 }
 
+void EditorAssetLibrary::_support_toggled(int p_support) {
+	print_line(support_key[p_support]);
+	support->get_popup()->set_item_checked(p_support, !support->get_popup()->is_item_checked(p_support));
+}
+
 void EditorAssetLibrary::_search(int p_page) {
 
 	String args;
 
 	args=String()+"?sort="+sort_key[sort->get_selected()];
+	
+	String support_list;
+	for(int i = 0; i < SUPPORT_MAX; i++) {
+		if(support->get_popup()->is_item_checked(i)) {
+			support_list += String(support_key[i]) + "+";
+		}
+	}
+	if(support_list != String()) {
+		args += "&support=" + support_list.substr(0, support_list.length() - 1);
+	}
 
 	if (categories->get_selected()>0) {
 
@@ -1236,6 +1257,7 @@ void EditorAssetLibrary::_bind_methods() {
 	ObjectTypeDB::bind_method("_asset_open",&EditorAssetLibrary::_asset_open);
 	ObjectTypeDB::bind_method("_asset_file_selected",&EditorAssetLibrary::_asset_file_selected);
 	ObjectTypeDB::bind_method("_repository_changed",&EditorAssetLibrary::_repository_changed);
+	ObjectTypeDB::bind_method("_support_toggled",&EditorAssetLibrary::_support_toggled);
 
 }
 
@@ -1345,6 +1367,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	support->get_popup()->add_check_item(TTR("Testing"),SUPPORT_TESTING);
 	support->get_popup()->set_item_checked(SUPPORT_OFFICIAL,true);
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY,true);
+	support->get_popup()->connect("item_pressed",this,"_support_toggled");
 
 	/////////
 
