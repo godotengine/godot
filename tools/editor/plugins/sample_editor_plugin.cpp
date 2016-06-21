@@ -211,7 +211,7 @@ void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<Imag
 
 			for(int j=0;j<h;j++) {
 				float v = (j/(float)h) * 2.0 - 1.0;
-				uint8_t* imgofs = &imgw[(j*w+i)*3];
+				uint8_t* imgofs = &imgw[(uint64_t(j)*w+i)*3];
 				if (v>min[0] && v<max[0]) {
 					imgofs[0]=255;
 					imgofs[1]=150;
@@ -229,8 +229,8 @@ void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<Imag
 			float max[2]={-1e10,-1e10};
 			float min[2]={1e10,1e10};
 			int c=stereo?2:1;
-			int from = i*len/w;
-			int to = (i+1)*len/w;
+			int from = uint64_t(i)*len/w;
+			int to = (uint64_t(i)+1)*len/w;
 			if (to>=len)
 				to=len-1;
 
@@ -241,7 +241,7 @@ void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<Imag
 
 					for(int k=from;k<=to;k++) {
 
-						float v = src[k*c+j]/32768.0;
+						float v = src[uint64_t(k)*c+j]/32768.0;
 						if (v>max[j])
 							max[j]=v;
 						if (v<min[j])
@@ -257,7 +257,7 @@ void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<Imag
 
 					for(int k=from;k<=to;k++) {
 
-						float v = src[k*c+j]/128.0;
+						float v = src[uint64_t(k)*c+j]/128.0;
 						if (v>max[j])
 							max[j]=v;
 						if (v<min[j])
@@ -270,7 +270,7 @@ void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<Imag
 			if (!stereo) {
 				for(int j=0;j<h;j++) {
 					float v = (j/(float)h) * 2.0 - 1.0;
-					uint8_t* imgofs = &imgw[(j*w+i)*3];
+					uint8_t* imgofs = &imgw[(uint64_t(j)*w+i)*3];
 					if (v>min[0] && v<max[0]) {
 						imgofs[0]=255;
 						imgofs[1]=150;
@@ -297,7 +297,7 @@ void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<Imag
 						v = ((j-(h/2))/(float)(h/2)) * 2.0 - 1.0;
 					}
 
-					uint8_t* imgofs = &imgw[(j*w+i)*3];
+					uint8_t* imgofs = &imgw[(uint64_t(j)*w+i)*3];
 					if (v>min[half] && v<max[half]) {
 						imgofs[0]=255;
 						imgofs[1]=150;
