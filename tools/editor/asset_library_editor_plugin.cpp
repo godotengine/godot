@@ -842,19 +842,33 @@ void EditorAssetLibrary::_request_image(ObjectID p_for,String p_image_url,ImageT
 void EditorAssetLibrary::_repository_changed(int p_repository_id) {
 	host=repository->get_item_metadata(p_repository_id);
 	print_line(".." + host);
-	_api_request("configure", REQUESTING_CONFIG);
+	if(templates_only) {
+		_api_request("configure", REQUESTING_CONFIG, "?type=project");
+	} else {
+		_api_request("configure", REQUESTING_CONFIG);
+	}
 }
 
 void EditorAssetLibrary::_support_toggled(int p_support) {
-	print_line(support_key[p_support]);
 	support->get_popup()->set_item_checked(p_support, !support->get_popup()->is_item_checked(p_support));
+	_search();
+}
+
+void EditorAssetLibrary::_rerun_search(int p_ignore) {
+	_search();
 }
 
 void EditorAssetLibrary::_search(int p_page) {
 
 	String args;
 
-	args=String()+"?sort="+sort_key[sort->get_selected()];
+	if(templates_only) {
+		args += "?type=project&";
+	} else {
+		args += "?";
+	}
+	args+=String()+"sort="+sort_key[sort->get_selected()];
+
 	
 	String support_list;
 	for(int i = 0; i < SUPPORT_MAX; i++) {
@@ -1258,6 +1272,7 @@ void EditorAssetLibrary::_bind_methods() {
 	ObjectTypeDB::bind_method("_asset_file_selected",&EditorAssetLibrary::_asset_file_selected);
 	ObjectTypeDB::bind_method("_repository_changed",&EditorAssetLibrary::_repository_changed);
 	ObjectTypeDB::bind_method("_support_toggled",&EditorAssetLibrary::_support_toggled);
+	ObjectTypeDB::bind_method("_rerun_search",&EditorAssetLibrary::_rerun_search);
 
 }
 
@@ -1325,9 +1340,11 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(sort);
 
 	sort->set_h_size_flags(SIZE_EXPAND_FILL);
+	sort->connect("item_selected", this, "_rerun_search");
 
 	reverse = memnew( ToolButton );
 	reverse->set_toggle_mode(true);
+	reverse->connect("toggled", this, "_rerun_search");
 	//reverse->set_text(TTR("Reverse"));
 	search_hb2->add_child(reverse);
 
@@ -1341,6 +1358,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(SIZE_EXPAND_FILL);
 	//search_hb2->add_spacer();
+	categories->connect("item_selected", this, "_rerun_search");
 
 	search_hb2->add_child(memnew(VSeparator));
 

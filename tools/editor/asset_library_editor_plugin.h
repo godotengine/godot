@@ -293,6 +293,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _manage_plugins();
 
 	void _search(int p_page=0);
+	void _rerun_search(int p_ignore);
 	void _api_request(const String& p_request, RequestType p_request_type, const String &p_arguments="");
 	void _http_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
 	void _http_download_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
