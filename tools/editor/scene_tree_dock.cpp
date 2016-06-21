@@ -1388,6 +1388,13 @@ void SceneTreeDock::_create() {
 		}
 
 		String newname=n->get_name();
+
+		List<Node*> to_erase;
+		for(int i=0;i<n->get_child_count();i++) {
+			if (n->get_child(i)->get_owner()==NULL && n->is_owned_by_parent()) {
+				to_erase.push_back(n->get_child(i));
+			}
+		}
 		n->replace_by(newnode,true);
 
 		if (n==edited_scene) {
@@ -1407,6 +1414,11 @@ void SceneTreeDock::_create() {
 		editor->push_item(newnode);
 
 		memdelete(n);
+
+		while(to_erase.front()) {
+			memdelete(to_erase.front()->get());
+			to_erase.pop_front();
+		}
 
 
 

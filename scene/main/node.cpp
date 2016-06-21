@@ -2081,6 +2081,10 @@ void Node::update_configuration_warning() {
 
 }
 
+bool Node::is_owned_by_parent() const {
+	data.parent_owned;
+}
+
 void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_add_child_below_node","node:Node","child_node:Node","legible_unique_name"),&Node::add_child_below_node,DEFVAL(false));
