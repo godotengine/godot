@@ -102,6 +102,7 @@ public:
 
 	bool disable_filter;
 	bool round_advance;
+	bool premultiply_alpha;
 
 
 
@@ -167,6 +168,8 @@ public:
 			round_advance=p_value;
 		else if (n=="advanced/disable_filter")
 			disable_filter=p_value;
+		else if (n=="advanced/premultiply_alpha")
+			premultiply_alpha=p_value;
 		else
 			return false;
 
@@ -235,6 +238,8 @@ public:
 			r_ret=round_advance;
 		else if (n=="advanced/disable_filter")
 			r_ret=disable_filter;
+		else if (n=="advanced/premultiply_alpha")
+			r_ret=premultiply_alpha;
 		else
 			return false;
 
@@ -297,6 +302,7 @@ public:
 
 		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/round_advance"));
 		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/disable_filter"));
+		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/premultiply_alpha"));
 
 	}
 
@@ -336,6 +342,7 @@ public:
 		font_mode=FONT_BITMAP;
 		round_advance=true;
 		disable_filter=false;
+		premultiply_alpha=false;
 
 	}
 
@@ -368,6 +375,7 @@ public:
 
 		round_advance=true;
 		disable_filter=false;
+		premultiply_alpha=false;
 	}
 
 
@@ -1542,11 +1550,29 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 
 	}
 
+	if (from->has_option("advanced/premultiply_alpha") && bool(from->get_option("advanced/premultiply_alpha"))) {
+
+		DVector<uint8_t> data = atlas.get_data();
+		int dl = data.size();
+		{
+			DVector<uint8_t>::Write w = data.write();
+
+			for(int i=0;i<dl;i+=4) {
+
+				w[i+0]= uint8_t(int(w[i+0])*int(w[i+3])/255);
+				w[i+1]= uint8_t(int(w[i+1])*int(w[i+3])/255);
+				w[i+2]= uint8_t(int(w[i+2])*int(w[i+3])/255);
+			}
+		}
+
+		atlas=Image(res_size.x,res_size.y,0,Image::FORMAT_RGBA,data);
+	}
 
 	if (from->has_option("color/monochrome") && bool(from->get_option("color/monochrome"))) {
 
 		atlas.convert(Image::FORMAT_GRAYSCALE_ALPHA);
 	}
+
 
 	if (0) {
 		//debug the texture
