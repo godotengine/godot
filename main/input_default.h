@@ -189,7 +189,7 @@ public:
 	void set_magnetometer(const Vector3& p_magnetometer);
 	void set_joy_axis(int p_device,int p_axis,float p_value);
 
-	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration);
+	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration=0);
 	virtual void stop_joy_vibration(int p_device);
 
 	void set_main_loop(MainLoop *main_loop);
