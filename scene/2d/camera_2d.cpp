@@ -281,11 +281,10 @@ void Camera2D::_notification(int p_what) {
 				inv_camera_transform.xform(Vector2(0, screen_size.height))
 			};
 
-			Matrix32 inv_transform = get_transform().affine_inverse(); // undo global space
-			draw_set_transform(inv_transform.get_origin(), inv_transform.get_rotation(), inv_transform.get_scale());
+			Matrix32 inv_transform = get_global_transform().affine_inverse(); // undo global space
 
 			for(int i=0;i<4;i++) {
-				draw_line(screen_endpoints[i], screen_endpoints[(i+1)%4], area_axis_color, area_axis_width);
+				draw_line(inv_transform.xform(screen_endpoints[i]), inv_transform.xform(screen_endpoints[(i+1)%4]), area_axis_color, area_axis_width);
 			}
 
 		} break;
