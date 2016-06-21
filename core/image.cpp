@@ -1756,7 +1756,7 @@ Error Image::_decompress_bc() {
 	int rofs=0;
 	int wofs=0;
 
-	print_line("width: "+itos(wd)+" height: "+itos(ht));
+	//print_line("width: "+itos(wd)+" height: "+itos(ht));
 
 	for(int i=0;i<=mm;i++) {
 

@@ -1003,11 +1003,14 @@ InputEvent CanvasItem::make_input_local(const InputEvent& p_event) const {
 
 Vector2 CanvasItem::get_global_mouse_pos() const {
 
-	return get_viewport_transform().affine_inverse().xform(Input::get_singleton()->get_mouse_pos());
+	ERR_FAIL_COND_V(!get_viewport(),Vector2());
+	return get_canvas_transform().affine_inverse().xform( get_viewport()->get_mouse_pos() );
 }
 Vector2 CanvasItem::get_local_mouse_pos() const{
 
-	return (get_viewport_transform() * get_global_transform()).affine_inverse().xform(Input::get_singleton()->get_mouse_pos());
+	ERR_FAIL_COND_V(!get_viewport(),Vector2());
+
+	return get_global_transform().affine_inverse().xform( get_global_mouse_pos() );
 }
 
 
