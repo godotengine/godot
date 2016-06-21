@@ -8497,11 +8497,43 @@
 			Create from a generic array.
 			</description>
 		</method>
+		<method name="append">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			Append an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<argument index="0" name="array" type="ColorArray">
+			</argument>
+			<description>
+			Append an [ColorArray] at the end of this array.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
 			Append a value to the array.
+			</description>
+		</method>
+		<method name="remove">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			Remove an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
@@ -17113,11 +17145,43 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Create from a generic array.
 			</description>
 		</method>
+		<method name="append">
+			<argument index="0" name="integer" type="int">
+			</argument>
+			<description>
+			Append an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<argument index="0" name="array" type="IntArray">
+			</argument>
+			<description>
+			Append an [IntArray] at the end of this array.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="integer" type="int">
+			</argument>
+			<description>
+			Insert a new int at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="integer" type="int">
 			</argument>
 			<description>
 			Append a value to the array.
+			</description>
+		</method>
+		<method name="remove">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			Remove an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
@@ -30127,6 +30191,19 @@ A similar effect may be achieved moving this node's descendants.
 			Create from a generic array.
 			</description>
 		</method>
+		<method name="append">
+			<argument index="0" name="byte" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="append_array">
+			<argument index="0" name="array" type="RawArray">
+			</argument>
+			<description>
+			Append an [RawArray] at the end of this array.
+			</description>
+		</method>
 		<method name="get_string_from_ascii">
 			<return type="String">
 			</return>
@@ -30141,11 +30218,29 @@ A similar effect may be achieved moving this node's descendants.
 			Returns a copy of the array's contents formatted as String, assuming the array is formatted as UTF-8. Slower than get_string_from_ascii(), but works for UTF-8. Usually you should prefer this function over get_string_from_ascii() to support international input.
 			</description>
 		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="byte" type="int">
+			</argument>
+			<description>
+			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="byte" type="int">
 			</argument>
 			<description>
 			Append an element at the end of the array.
+			</description>
+		</method>
+		<method name="remove">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			Remove an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
@@ -30487,11 +30582,43 @@ A similar effect may be achieved moving this node's descendants.
 			Create from a generic array.
 			</description>
 		</method>
+		<method name="append">
+			<argument index="0" name="value" type="float">
+			</argument>
+			<description>
+			Append an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<argument index="0" name="array" type="RealArray">
+			</argument>
+			<description>
+			Append an [RealArray] at the end of this array.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
 			Append an element at the end of the array.
+			</description>
+		</method>
+		<method name="remove">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			Remove an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
@@ -37898,11 +38025,43 @@ A similar effect may be achieved moving this node's descendants.
 			Create from a generic array.
 			</description>
 		</method>
+		<method name="append">
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+			Append an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<argument index="0" name="array" type="StringArray">
+			</argument>
+			<description>
+			Append an [StringArray] at the end of this array.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="string" type="String">
+			</argument>
+			<description>
+			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
 			Append a string element at end of the array.
+			</description>
+		</method>
+		<method name="remove">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			Remove an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
@@ -42793,11 +42952,43 @@ A similar effect may be achieved moving this node's descendants.
 			Construct a new [Vector2Array]. Optionally, you can pass in an Array that will be converted.
 			</description>
 		</method>
+		<method name="append">
+			<argument index="0" name="vector2" type="Vector2">
+			</argument>
+			<description>
+			Append an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<argument index="0" name="array" type="Vector2Array">
+			</argument>
+			<description>
+			Append an [Vector2Array] at the end of this array.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="vector2" type="Vector2">
+			</argument>
+			<description>
+			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="vector2" type="Vector2">
 			</argument>
 			<description>
 			Insert a [Vector2] at the end.
+			</description>
+		</method>
+		<method name="remove">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			Remove an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
@@ -43052,11 +43243,43 @@ A similar effect may be achieved moving this node's descendants.
 			Construct a new Vector3Array. Optionally, you can pass in an Array that will be converted.
 			</description>
 		</method>
+		<method name="append">
+			<argument index="0" name="vector3" type="Vector3">
+			</argument>
+			<description>
+			Append an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<argument index="0" name="array" type="Vector3Array">
+			</argument>
+			<description>
+			Append an [Vector3Array] at the end of this array.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="vector3" type="Vector3">
+			</argument>
+			<description>
+			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="vector3" type="Vector3">
 			</argument>
 			<description>
 			Insert a Vector3 at the end.
+			</description>
+		</method>
+		<method name="remove">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			Remove an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
