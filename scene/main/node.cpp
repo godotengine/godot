@@ -2082,7 +2082,7 @@ void Node::update_configuration_warning() {
 }
 
 bool Node::is_owned_by_parent() const {
-	data.parent_owned;
+	return data.parent_owned;
 }
 
 void Node::_bind_methods() {
