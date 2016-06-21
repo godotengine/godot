@@ -1312,21 +1312,30 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			ERR_CONTINUE( !source_map.has(i) );
 			for (List<int>::Element *E=source_map[i].front();E;E=E->next()) {
 
-				String apath = p_path.get_base_dir().plus_file(from->get_source_path(E->get()).get_file().basename()+".atex");
+				String apath;
+				String spath = from->get_source_path(E->get()).get_file();
+
+				if (p_external) {
+					apath = p_path.get_base_dir().plus_file(spath.basename()+"."+from->get_source_path(E->get()).md5_text()+".atex");
+				} else {
+					apath = p_path.get_base_dir().plus_file(spath.basename()+".atex");
+				}
 
 				Ref<AtlasTexture> at;
 
 				if (ResourceCache::has(apath)) {
+
 					at = Ref<AtlasTexture>( ResourceCache::get(apath)->cast_to<AtlasTexture>() );
 				} else {
 
 					at = Ref<AtlasTexture>( memnew( AtlasTexture ) );
+
 				}
 				at->set_region(region);
 				at->set_margin(margin);
 				at->set_path(apath);
 				atlases[E->get()]=at;
-				print_line("Atlas Tex: "+apath);
+
 			}
 		}
 		if (ResourceCache::has(p_path)) {

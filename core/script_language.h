@@ -129,6 +129,10 @@ public:
 	virtual void notification(int p_notification)=0;
 
 
+	//this is used by script languages that keep a reference counter of their own
+	//you can make make Ref<> not die when it reaches zero, so deleting the reference
+	//depends entirely from the script
+
 	virtual void refcount_incremented() {}
 	virtual bool refcount_decremented() { return true; } //return true if it can die
 

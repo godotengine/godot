@@ -861,9 +861,11 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
 			//imd->set_editor();
 
+
 			for (List<StringName>::Element *F=atlas_images.front();F;F=F->next()) {
 
 				imd->add_source(EditorImportPlugin::validate_source_path(F->get()),FileAccess::get_md5(F->get()));
+
 			}
 
 
