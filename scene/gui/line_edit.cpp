@@ -31,6 +31,9 @@
 #include "os/os.h"
 #include "print_string.h"
 #include "label.h"
+#ifdef TOOLS_ENABLED
+#include "tools/editor/editor_settings.h"
+#endif
 
 static bool _is_text_char(CharType c) {
 
@@ -544,7 +547,16 @@ void LineEdit::drop_data(const Point2& p_point,const Variant& p_data){
 void LineEdit::_notification(int p_what) {
 
 	switch(p_what) {
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_ENTER_TREE: {
+			if (get_tree()->is_editor_hint()) {
+				cursor_set_blink_enabled(EDITOR_DEF("text_editor/caret_blink", false));
+				cursor_set_blink_speed(EDITOR_DEF("text_editor/caret_blink_speed", 0.65));
 
+				EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
+			}
+		} break;
+#endif
 		case NOTIFICATION_RESIZED: {
 
 			set_cursor_pos( get_cursor_pos() );
@@ -1185,9 +1197,20 @@ PopupMenu *LineEdit::get_menu() const {
 	return menu;
 }
 
+#ifdef TOOLS_ENABLED
+	void LineEdit::_editor_settings_changed() {
+		cursor_set_blink_enabled(EDITOR_DEF("text_editor/caret_blink", false));
+		cursor_set_blink_speed(EDITOR_DEF("text_editor/caret_blink_speed", 0.65));
+	}
+#endif
+
 void LineEdit::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_toggle_draw_caret"),&LineEdit::_toggle_draw_caret);
+
+#ifdef TOOLS_ENABLED
+	ObjectTypeDB::bind_method("_editor_settings_changed",&LineEdit::_editor_settings_changed);
+#endif
 
 	ObjectTypeDB::bind_method(_MD("set_align", "align"), &LineEdit::set_align);
 	ObjectTypeDB::bind_method(_MD("get_align"), &LineEdit::get_align);

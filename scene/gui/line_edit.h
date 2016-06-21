@@ -108,7 +108,9 @@ private:
 	void clear_internal();
 	void changed_internal();
 
-
+#ifdef TOOLS_ENABLED
+	void _editor_settings_changed();
+#endif
 
 	void _input_event(InputEvent p_event);
 	void _notification(int p_what);
