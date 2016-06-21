@@ -183,6 +183,12 @@ void MeshInstanceEditor::_create_outline_mesh() {
 		return;
 	}
 
+	if (mesh->get_surface_count() == 0) {
+		err_dialog->set_text(TTR("Mesh has not surface to create outlines from!"));
+		err_dialog->popup_centered_minsize();
+		return;
+	}
+
 	Ref<Mesh> mesho = mesh->create_outline(outline_size->get_val());
 
 	if (mesho.is_null()) {
