@@ -111,6 +111,7 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	int asset_id;
 	String download_url;
 	String title;
+	String sha256;
 	Ref<Texture> icon;
 
 	void _link_click(const String& p_url);
@@ -120,13 +121,14 @@ protected:
 	static void _bind_methods();
 public:
 
-	void configure(const String& p_title,int p_asset_id,const String& p_category,int p_category_id,const String& p_author,int p_author_id,int p_rating,const String& p_cost,int p_version,const String& p_version_string,const String& p_description,const String& p_download_url,const String& p_browse_url);
+	void configure(const String& p_title,int p_asset_id,const String& p_category,int p_category_id,const String& p_author,int p_author_id,int p_rating,const String& p_cost,int p_version,const String& p_version_string,const String& p_description,const String& p_download_url,const String& p_browse_url,const String& p_sha256_hash);
 	void add_preview(int p_id, bool p_video,const String& p_url);
 
 	String get_title() { return title; }
 	Ref<Texture> get_preview_icon() { return icon; }
 	String get_download_url() { return download_url; }
 	int get_asset_id() { return asset_id; }
+	String get_sha256() { return sha256; }
 	EditorAssetLibraryItemDescription();
 
 };
@@ -146,6 +148,7 @@ class EditorAssetLibraryItemDownload : public PanelContainer {
 	AcceptDialog *download_error;
 	HTTPRequest *download;
 	String host;
+	String sha256;
 	Label *status;
 
 	int prev_status;
@@ -166,7 +169,7 @@ protected:
 public:
 
 	int get_asset_id() { return asset_id; }
-	void configure(const String& p_title,int p_asset_id,const Ref<Texture>& p_preview, const String& p_download_url);
+	void configure(const String& p_title,int p_asset_id,const Ref<Texture>& p_preview, const String& p_download_url, const String& p_sha256_hash);
 	EditorAssetLibraryItemDownload();
 
 };
@@ -210,7 +213,8 @@ class EditorAssetLibrary : public PanelContainer {
 	enum Support {
 		SUPPORT_OFFICIAL,
 		SUPPORT_COMMUNITY,
-		SUPPORT_TESTING
+		SUPPORT_TESTING,
+		SUPPORT_MAX
 	};
 
 	enum SortOrder {
@@ -225,6 +229,7 @@ class EditorAssetLibrary : public PanelContainer {
 
 	static const char* sort_key[SORT_MAX];
 	static const char* sort_text[SORT_MAX];
+	static const char* support_key[SUPPORT_MAX];
 
 
 	///MainListing
@@ -288,11 +293,13 @@ class EditorAssetLibrary : public PanelContainer {
 	void _manage_plugins();
 
 	void _search(int p_page=0);
+	void _rerun_search(int p_ignore);
 	void _api_request(const String& p_request, RequestType p_request_type, const String &p_arguments="");
 	void _http_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
 	void _http_download_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
 
 	void _repository_changed(int p_repository_id);
+	void _support_toggled(int p_support);
 
 friend class EditorAssetLibraryItemDescription;
 friend class EditorAssetLibraryItem;
