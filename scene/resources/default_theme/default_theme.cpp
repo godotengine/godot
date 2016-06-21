@@ -696,12 +696,6 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	t->set_stylebox("cursor_unfocused","ItemList", focus );
 
 
-	// TextEdit
-
-	t->set_stylebox("completion_selected","TextEdit", tree_selected );
-
-
-
 	// TabContainer
 
 	Ref<StyleBoxTexture> tc_sb = sb_expand( make_stylebox( tab_container_bg_png,4,4,4,4,4,4,4,4),3,3,3,3);
