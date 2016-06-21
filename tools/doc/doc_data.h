@@ -67,6 +67,9 @@ public:
 		String name;
 		String type;
 		String description;
+		bool operator<(const PropertyDoc& p_prop) const {
+			return name<p_prop.name;
+		}
 	};
 
 	struct ClassDoc  {

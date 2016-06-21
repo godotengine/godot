@@ -36,6 +36,21 @@
 #include "io/compression.h"
 #include "scene/resources/theme.h"
 
+struct _ConstantComparator {
+
+	inline bool operator()(const DocData::ConstantDoc &a, const DocData::ConstantDoc &b) const {
+		String left_a = a.name.find("_") == -1 ? a.name : a.name.substr(0, a.name.find("_"));
+		String left_b = b.name.find("_") == -1 ? b.name : b.name.substr(0, b.name.find("_"));
+		if (left_a == left_b) // If they have the same prefix
+			if (a.value == b.value)
+				return a.name < b.name; // Sort by name if the values are the same
+			else
+				return a.value < b.value; // Sort by value otherwise
+		else
+			return left_a < left_b; // Sort by name if the prefixes aren't the same
+	}
+};
+
 void DocData::merge_from(const DocData& p_data) {
 
 	for( Map<String,ClassDoc>::Element *E=class_list.front();E;E=E->next()) {
@@ -942,6 +957,8 @@ Error DocData::save(const String& p_path) {
 		_write_string(f,1,"</description>");
 		_write_string(f,1,"<methods>");
 
+		c.methods.sort();
+
 		for(int i=0;i<c.methods.size();i++) {
 
 			MethodDoc &m=c.methods[i];
@@ -984,6 +1001,8 @@ Error DocData::save(const String& p_path) {
 		if (c.properties.size()) {
 			_write_string(f,1,"<members>");
 
+			c.properties.sort();
+
 			for(int i=0;i<c.properties.size();i++) {
 
 
@@ -998,6 +1017,8 @@ Error DocData::save(const String& p_path) {
 		}
 
 		if (c.signals.size()) {
+
+			c.signals.sort();
 
 			_write_string(f,1,"<signals>");
 			for(int i=0;i<c.signals.size();i++) {
@@ -1025,6 +1046,8 @@ Error DocData::save(const String& p_path) {
 
 		_write_string(f,1,"<constants>");
 
+		c.constants.sort_custom<_ConstantComparator>();
+
 		for(int i=0;i<c.constants.size();i++) {
 
 			ConstantDoc &k=c.constants[i];
@@ -1037,6 +1060,9 @@ Error DocData::save(const String& p_path) {
 		_write_string(f,1,"</constants>");
 
 		if (c.theme_properties.size()) {
+
+			c.theme_properties.sort();
+
 			_write_string(f,1,"<theme_items>");
 			for(int i=0;i<c.theme_properties.size();i++) {
 
