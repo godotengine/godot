@@ -50,6 +50,9 @@ public:
 		String qualifiers;
 		String description;
 		Vector<ArgumentDoc> arguments;
+		bool operator<(const MethodDoc& p_md) const {
+			return name<p_md.name;
+		}
 	};
 
 	struct ConstantDoc {
@@ -64,6 +67,9 @@ public:
 		String name;
 		String type;
 		String description;
+		bool operator<(const PropertyDoc& p_prop) const {
+			return name<p_prop.name;
+		}
 	};
 
 	struct ClassDoc  {
