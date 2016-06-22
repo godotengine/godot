@@ -1,7 +1,7 @@
 
 /* pngstruct.h - header file for PNG reference library
  *
- * Last changed in libpng 1.5.23 [July 23, 2015]
+ * Last changed in libpng 1.6.18 [July 23, 2015]
  * Copyright (c) 1998-2002,2004,2006-2015 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
@@ -23,13 +23,130 @@
  * in this structure and is required for decompressing the LZ compressed
  * data in PNG files.
  */
+#ifndef ZLIB_CONST
+   /* We must ensure that zlib uses 'const' in declarations. */
+#  define ZLIB_CONST
+#endif
 #include "zlib.h"
+#ifdef const
+   /* zlib.h sometimes #defines const to nothing, undo this. */
+#  undef const
+#endif
+
+/* zlib.h has mediocre z_const use before 1.2.6, this stuff is for compatibility
+ * with older builds.
+ */
+#if ZLIB_VERNUM < 0x1260
+#  define PNGZ_MSG_CAST(s) png_constcast(char*,s)
+#  define PNGZ_INPUT_CAST(b) png_constcast(png_bytep,b)
+#else
+#  define PNGZ_MSG_CAST(s) (s)
+#  define PNGZ_INPUT_CAST(b) (b)
+#endif
+
+/* zlib.h declares a magic type 'uInt' that limits the amount of data that zlib
+ * can handle at once.  This type need be no larger than 16 bits (so maximum of
+ * 65535), this define allows us to discover how big it is, but limited by the
+ * maximuum for png_size_t.  The value can be overriden in a library build
+ * (pngusr.h, or set it in CPPFLAGS) and it works to set it to a considerably
+ * lower value (e.g. 255 works).  A lower value may help memory usage (slightly)
+ * and may even improve performance on some systems (and degrade it on others.)
+ */
+#ifndef ZLIB_IO_MAX
+#  define ZLIB_IO_MAX ((uInt)-1)
+#endif
+
+#ifdef PNG_WRITE_SUPPORTED
+/* The type of a compression buffer list used by the write code. */
+typedef struct png_compression_buffer
+{
+   struct png_compression_buffer *next;
+   png_byte                       output[1]; /* actually zbuf_size */
+} png_compression_buffer, *png_compression_bufferp;
+
+#define PNG_COMPRESSION_BUFFER_SIZE(pp)\
+   (offsetof(png_compression_buffer, output) + (pp)->zbuffer_size)
+#endif
+
+/* Colorspace support; structures used in png_struct, png_info and in internal
+ * functions to hold and communicate information about the color space.
+ *
+ * PNG_COLORSPACE_SUPPORTED is only required if the application will perform
+ * colorspace corrections, otherwise all the colorspace information can be
+ * skipped and the size of libpng can be reduced (significantly) by compiling
+ * out the colorspace support.
+ */
+#ifdef PNG_COLORSPACE_SUPPORTED
+/* The chromaticities of the red, green and blue colorants and the chromaticity
+ * of the corresponding white point (i.e. of rgb(1.0,1.0,1.0)).
+ */
+typedef struct png_xy
+{
+   png_fixed_point redx, redy;
+   png_fixed_point greenx, greeny;
+   png_fixed_point bluex, bluey;
+   png_fixed_point whitex, whitey;
+} png_xy;
+
+/* The same data as above but encoded as CIE XYZ values.  When this data comes
+ * from chromaticities the sum of the Y values is assumed to be 1.0
+ */
+typedef struct png_XYZ
+{
+   png_fixed_point red_X, red_Y, red_Z;
+   png_fixed_point green_X, green_Y, green_Z;
+   png_fixed_point blue_X, blue_Y, blue_Z;
+} png_XYZ;
+#endif /* COLORSPACE */
+
+#if defined(PNG_COLORSPACE_SUPPORTED) || defined(PNG_GAMMA_SUPPORTED)
+/* A colorspace is all the above plus, potentially, profile information;
+ * however at present libpng does not use the profile internally so it is only
+ * stored in the png_info struct (if iCCP is supported.)  The rendering intent
+ * is retained here and is checked.
+ *
+ * The file gamma encoding information is also stored here and gamma correction
+ * is done by libpng, whereas color correction must currently be done by the
+ * application.
+ */
+typedef struct png_colorspace
+{
+#ifdef PNG_GAMMA_SUPPORTED
+   png_fixed_point gamma;        /* File gamma */
+#endif
+
+#ifdef PNG_COLORSPACE_SUPPORTED
+   png_xy      end_points_xy;    /* End points as chromaticities */
+   png_XYZ     end_points_XYZ;   /* End points as CIE XYZ colorant values */
+   png_uint_16 rendering_intent; /* Rendering intent of a profile */
+#endif
+
+   /* Flags are always defined to simplify the code. */
+   png_uint_16 flags;            /* As defined below */
+} png_colorspace, * PNG_RESTRICT png_colorspacerp;
+
+typedef const png_colorspace * PNG_RESTRICT png_const_colorspacerp;
+
+/* General flags for the 'flags' field */
+#define PNG_COLORSPACE_HAVE_GAMMA           0x0001
+#define PNG_COLORSPACE_HAVE_ENDPOINTS       0x0002
+#define PNG_COLORSPACE_HAVE_INTENT          0x0004
+#define PNG_COLORSPACE_FROM_gAMA            0x0008
+#define PNG_COLORSPACE_FROM_cHRM            0x0010
+#define PNG_COLORSPACE_FROM_sRGB            0x0020
+#define PNG_COLORSPACE_ENDPOINTS_MATCH_sRGB 0x0040
+#define PNG_COLORSPACE_MATCHES_sRGB         0x0080 /* exact match on profile */
+#define PNG_COLORSPACE_INVALID              0x8000
+#define PNG_COLORSPACE_CANCEL(flags)        (0xffff ^ (flags))
+#endif /* COLORSPACE || GAMMA */
 
 struct png_struct_def
 {
 #ifdef PNG_SETJMP_SUPPORTED
-   jmp_buf longjmp_buffer;    /* used in png_error */
+   jmp_buf jmp_buf_local;     /* New name in 1.6.0 for jmp_buf in png_struct */
    png_longjmp_ptr longjmp_fn;/* setjmp non-local goto function. */
+   jmp_buf *jmp_buf_ptr;      /* passed to longjmp_fn */
+   size_t jmp_buf_size;       /* size of the above, if allocated */
 #endif
    png_error_ptr error_fn;    /* function for printing errors and aborting */
 #ifdef PNG_WARNINGS_SUPPORTED
@@ -62,22 +179,12 @@ struct png_struct_def
    png_uint_32 flags;         /* flags indicating various things to libpng */
    png_uint_32 transformations; /* which transformations to perform */
 
-   z_stream zstream;          /* pointer to decompression structure (below) */
-   png_bytep zbuf;            /* buffer for zlib */
-   uInt zbuf_size;            /* size of zbuf (typically 65536) */
+   png_uint_32 zowner;        /* ID (chunk type) of zstream owner, 0 if none */
+   z_stream    zstream;       /* decompression structure */
+
 #ifdef PNG_WRITE_SUPPORTED
-
-/* Added in 1.5.4: state to keep track of whether the zstream has been
- * initialized and if so whether it is for IDAT or some other chunk.
- */
-#define PNG_ZLIB_UNINITIALIZED 0
-#define PNG_ZLIB_FOR_IDAT      1
-#define PNG_ZLIB_FOR_TEXT      2 /* anything other than IDAT */
-#define PNG_ZLIB_USE_MASK      3 /* bottom two bits */
-#define PNG_ZLIB_IN_USE        4 /* a flag value */
-
-   png_uint_32 zlib_state;       /* State of zlib initialization */
-/* End of material added at libpng 1.5.4 */
+   png_compression_bufferp zbuffer_list; /* Created on demand during write */
+   uInt                    zbuffer_size; /* size of the actual buffer */
 
    int zlib_level;            /* holds zlib compression level */
    int zlib_method;           /* holds zlib compression method */
@@ -86,8 +193,7 @@ struct png_struct_def
    int zlib_strategy;         /* holds zlib compression strategy */
 #endif
 /* Added at libpng 1.5.4 */
-#if defined(PNG_WRITE_COMPRESSED_TEXT_SUPPORTED) || \
-    defined(PNG_WRITE_CUSTOMIZE_ZTXT_COMPRESSION_SUPPORTED)
+#ifdef PNG_WRITE_CUSTOMIZE_ZTXT_COMPRESSION_SUPPORTED
    int zlib_text_level;            /* holds zlib compression level */
    int zlib_text_method;           /* holds zlib compression method */
    int zlib_text_window_bits;      /* holds zlib compression window bits */
@@ -95,6 +201,14 @@ struct png_struct_def
    int zlib_text_strategy;         /* holds zlib compression strategy */
 #endif
 /* End of material added at libpng 1.5.4 */
+/* Added at libpng 1.6.0 */
+#ifdef PNG_WRITE_SUPPORTED
+   int zlib_set_level;        /* Actual values set into the zstream on write */
+   int zlib_set_method;
+   int zlib_set_window_bits;
+   int zlib_set_mem_level;
+   int zlib_set_strategy;
+#endif
 
    png_uint_32 width;         /* width of image in pixels */
    png_uint_32 height;        /* height of image in pixels */
@@ -105,15 +219,19 @@ struct png_struct_def
    png_uint_32 row_number;    /* current row in interlace pass */
    png_uint_32 chunk_name;    /* PNG_CHUNK() id of current chunk */
    png_bytep prev_row;        /* buffer to save previous (unfiltered) row.
-                               * This is a pointer into big_prev_row
+                               * While reading this is a pointer into
+                               * big_prev_row; while writing it is separately
+                               * allocated if needed.
                                */
    png_bytep row_buf;         /* buffer to save current (unfiltered) row.
-                               * This is a pointer into big_row_buf
+                               * While reading, this is a pointer into
+                               * big_row_buf; while writing it is separately
+                               * allocated.
                                */
-   png_bytep sub_row;         /* buffer to save "sub" row when filtering */
-   png_bytep up_row;          /* buffer to save "up" row when filtering */
-   png_bytep avg_row;         /* buffer to save "avg" row when filtering */
-   png_bytep paeth_row;       /* buffer to save "Paeth" row when filtering */
+#ifdef PNG_WRITE_FILTER_SUPPORTED
+   png_bytep try_row;    /* buffer to save trial row when filtering */
+   png_bytep tst_row;    /* buffer to save best trial row when filtering */
+#endif
    png_size_t info_rowbytes;  /* Added in 1.5.4: cache of updated row bytes */
 
    png_uint_32 idat_size;     /* current IDAT size for read */
@@ -137,15 +255,17 @@ struct png_struct_def
    png_byte usr_bit_depth;    /* bit depth of users row: write only */
    png_byte pixel_depth;      /* number of bits per pixel */
    png_byte channels;         /* number of channels in file */
+#ifdef PNG_WRITE_SUPPORTED
    png_byte usr_channels;     /* channels at start of write: write only */
+#endif
    png_byte sig_bytes;        /* magic bytes read/written from start of file */
    png_byte maximum_pixel_depth;
                               /* pixel depth used for the row buffers */
    png_byte transformed_pixel_depth;
                               /* pixel depth after read/write transforms */
-   png_byte io_chunk_string[5];
-                              /* string name of chunk */
-
+#if PNG_ZLIB_VERNUM >= 0x1240
+   png_byte zstream_start;    /* at start of an input zlib stream */
+#endif /* Zlib >= 1.2.4 */
 #if defined(PNG_READ_FILLER_SUPPORTED) || defined(PNG_WRITE_FILLER_SUPPORTED)
    png_uint_16 filler;           /* filler bytes for pixel expansion */
 #endif
@@ -158,7 +278,7 @@ struct png_struct_def
 #ifdef PNG_READ_GAMMA_SUPPORTED
    png_color_16 background_1; /* background normalized to gamma 1.0 */
 #endif
-#endif /* PNG_bKGD_SUPPORTED */
+#endif /* bKGD */
 
 #ifdef PNG_WRITE_FLUSH_SUPPORTED
    png_flush_ptr output_flush_fn; /* Function for flushing output */
@@ -168,7 +288,6 @@ struct png_struct_def
 
 #ifdef PNG_READ_GAMMA_SUPPORTED
    int gamma_shift;      /* number of "insignificant" bits in 16-bit gamma */
-   png_fixed_point gamma;        /* file gamma value */
    png_fixed_point screen_gamma; /* screen gamma value (display_exponent) */
 
    png_bytep gamma_table;     /* gamma table for 8-bit depth files */
@@ -216,7 +335,7 @@ struct png_struct_def
    int process_mode;                 /* what push library is currently doing */
    int cur_palette;                  /* current push library palette index */
 
-#endif /* PNG_PROGRESSIVE_READ_SUPPORTED */
+#endif /* PROGRESSIVE_READ */
 
 #if defined(__TURBOC__) && !defined(_Windows) && !defined(__FLAT__)
 /* For the Borland special 64K segment handler */
@@ -232,13 +351,16 @@ struct png_struct_def
    png_bytep quantize_index; /* index translation for palette files */
 #endif
 
-#if defined(PNG_READ_QUANTIZE_SUPPORTED) || defined(PNG_hIST_SUPPORTED)
-   png_uint_16p hist;                /* histogram */
+/* Options */
+#ifdef PNG_SET_OPTION_SUPPORTED
+   png_byte options;           /* On/off state (up to 4 options) */
 #endif
 
+#if PNG_LIBPNG_VER < 10700
+/* To do: remove this from libpng-1.7 */
 #ifdef PNG_TIME_RFC1123_SUPPORTED
-   /* This is going to be unused in libpng16 and removed from libpng17 */
    char time_buffer[29]; /* String to hold RFC 1123 time text */
+#endif
 #endif
 
 /* New members added in libpng-1.0.6 */
@@ -247,17 +369,16 @@ struct png_struct_def
 
 #ifdef PNG_USER_CHUNKS_SUPPORTED
    png_voidp user_chunk_ptr;
+#ifdef PNG_READ_USER_CHUNKS_SUPPORTED
    png_user_chunk_ptr read_user_chunk_fn; /* user read chunk handler */
 #endif
-
-#ifdef PNG_HANDLE_AS_UNKNOWN_SUPPORTED
-   int num_chunk_list;
-   png_bytep chunk_list;
 #endif
 
-#ifdef PNG_READ_sRGB_SUPPORTED
-   /* Added in 1.5.5 to record an sRGB chunk in the png. */
-   png_byte is_sRGB;
+#ifdef PNG_SET_UNKNOWN_CHUNKS_SUPPORTED
+   int          unknown_default; /* As PNG_HANDLE_* */
+   unsigned int num_chunk_list;  /* Number of entries in the list */
+   png_bytep    chunk_list;      /* List of png_byte[5]; the textual chunk name
+                                  * followed by a PNG_HANDLE_* byte */
 #endif
 
 /* New members added in libpng-1.0.3 */
@@ -322,16 +443,24 @@ struct png_struct_def
 #endif
 
 /* New member added in libpng-1.0.25 and 1.2.17 */
-#ifdef PNG_UNKNOWN_CHUNKS_SUPPORTED
-   /* Storage for unknown chunk that the library doesn't recognize. */
+#ifdef PNG_READ_UNKNOWN_CHUNKS_SUPPORTED
+   /* Temporary storage for unknown chunk that the library doesn't recognize,
+    * used while reading the chunk.
+    */
    png_unknown_chunk unknown_chunk;
 #endif
 
 /* New member added in libpng-1.2.26 */
   png_size_t old_big_row_buf_size;
 
+#ifdef PNG_READ_SUPPORTED
 /* New member added in libpng-1.2.30 */
-  png_charp chunkdata;  /* buffer for reading chunk data */
+  png_bytep        read_buffer;      /* buffer for reading chunk data */
+  png_alloc_size_t read_buffer_size; /* current size of the buffer */
+#endif
+#ifdef PNG_SEQUENTIAL_READ_SUPPORTED
+  uInt             IDAT_read_size;   /* limit on read buffer size for IDAT */
+#endif
 
 #ifdef PNG_IO_STATE_SUPPORTED
 /* New member added in libpng-1.4.0 */
@@ -345,9 +474,10 @@ struct png_struct_def
    void (*read_filter[PNG_FILTER_VALUE_LAST-1])(png_row_infop row_info,
       png_bytep row, png_const_bytep prev_row);
 
-   /* Options */
-#ifdef PNG_SET_OPTION_SUPPORTED
-   png_byte options;           /* On/off state (up to 4 options) */
+#ifdef PNG_READ_SUPPORTED
+#if defined(PNG_COLORSPACE_SUPPORTED) || defined(PNG_GAMMA_SUPPORTED)
+   png_colorspace   colorspace;
+#endif
 #endif
 };
 #endif /* PNGSTRUCT_H */
