@@ -947,10 +947,23 @@ void Object::set_script(const RefPtr& p_script) {
 		script_instance=NULL;
 	}
 
+#ifdef TOOLS_ENABLED
+	if (!script.is_null()) {
+		Ref<Script> s(script);
+		s->set_owner(nullptr);
+	}
+#endif
+
 	script=p_script;
 	Ref<Script> s(script);
 
 	if (!s.is_null() && s->can_instance() ) {
+#ifdef TOOLS_ENABLED
+		// If an internal script, record its owner
+		if (s->get_path()=="" || s->get_path().find("local://")!=-1 || s->get_path().find("::")!=-1) {
+			s->set_owner(this);
+		}
+#endif
 		OBJ_DEBUG_LOCK
 		script_instance = s->instance_create(this);
 
@@ -1828,6 +1841,13 @@ Object::~Object() {
 	if (script_instance)
 		memdelete(script_instance);
 	script_instance=NULL;
+
+#ifdef TOOLS_ENABLED
+	if (!script.is_null()) {
+		Ref<Script> s(script);
+		s->set_owner(nullptr);
+	}
+#endif
 
 
 	List<Connection> sconnections;

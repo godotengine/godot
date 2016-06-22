@@ -425,7 +425,13 @@ String ScriptTextEditor::get_name()  {
 		}
 	} else if (script->get_name()!="")
 		name=script->get_name();
-	else
+	else {
+		Node* owner_node = script->get_owner()->cast_to<Node>();
+		if (owner_node)
+			name=(String)owner_node->get_name()+" <"+TTR("Built-In")+">";
+	}
+
+	if (name.length()==0)
 		name=script->get_type()+"("+itos(script->get_instance_ID())+")";
 
 	return name;
