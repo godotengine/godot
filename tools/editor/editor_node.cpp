@@ -2952,6 +2952,9 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
 		//singleton->main_editor_tabs->add_tab(p_editor->get_name());
 		singleton->editor_table.erase(p_editor);
 	}
+	p_editor->make_visible(false);
+	p_editor->clear();
+	singleton->editor_plugins_over->get_plugins_list().erase(p_editor);
 	singleton->remove_child(p_editor);
 	singleton->editor_data.remove_editor_plugin( p_editor );
 
@@ -3004,7 +3007,7 @@ void EditorNode::set_addon_plugin_enabled(const String& p_addon,bool p_enabled) 
 	if (!p_enabled) {
 
 		EditorPlugin *addon = plugin_addons[p_addon];
-		editor_data.remove_editor_plugin( addon );
+		remove_editor_plugin(addon);
 		memdelete(addon); //bye
 		plugin_addons.erase(p_addon);
 		_update_addon_config();
