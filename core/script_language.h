@@ -64,6 +64,7 @@ public:
 
 
 
+class Node;
 class ScriptInstance;
 class PlaceHolderScriptInstance;
 
@@ -71,6 +72,8 @@ class Script : public Resource {
 
 	OBJ_TYPE( Script, Resource );
 	OBJ_SAVE_TYPE( Script );
+
+	Object* owner;
 
 protected:
 
@@ -105,6 +108,9 @@ public:
 	virtual bool get_property_default_value(const StringName& p_property,Variant& r_value) const=0;
 
 	virtual void update_exports() {} //editor tool
+
+	void set_owner(Object* owner);
+	Object* get_owner();
 
 
 	Script() {}

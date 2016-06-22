@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_language.h"
+#include "scene/main/node.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count=0;
@@ -54,6 +55,17 @@ void Script::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("reload","keep_state"),&Script::reload,DEFVAL(false));
 
 }
+
+void Script::set_owner(Object* p_owner) {
+
+	owner=p_owner;
+}
+
+Object* Script::get_owner() {
+	
+	return owner;
+}
+
 
 void ScriptServer::set_scripting_enabled(bool p_enabled) {
 
