@@ -112,6 +112,7 @@ if profile:
 
 opts=Variables(customs, ARGUMENTS)
 opts.Add('target', 'Compile Target (debug/release_debug/release).', "debug")
+opts.Add('arch', 'Platform dependent architecture (arm/arm64/x86/x64/mips/etc)', "")
 opts.Add('bits', 'Compile Target Bits (default/32/64/fat).', "default")
 opts.Add('platform','Platform: '+str(platform_list)+'.',"")
 opts.Add('p','Platform (same as platform=).',"")
@@ -276,7 +277,9 @@ if selected_platform in platform_list:
 		else:
 			suffix+=".debug"
 
-	if (env["bits"]=="32"):
+	if env["arch"] != "":
+		suffix += "."+env["arch"]
+	elif (env["bits"]=="32"):
 		suffix+=".32"
 	elif (env["bits"]=="64"):
 		suffix+=".64"
