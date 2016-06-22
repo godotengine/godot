@@ -142,6 +142,8 @@ public:
 
 	virtual String get_name();
 
+	virtual void alert(const String& p_alert, const String& p_title="ALERT!");
+
 	virtual void set_cursor_shape(CursorShape p_shape);
 
 	virtual void set_mouse_show(bool p_show);
