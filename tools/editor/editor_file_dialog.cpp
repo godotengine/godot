@@ -98,35 +98,64 @@ void EditorFileDialog::_unhandled_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::KEY && is_window_modal_on_top()) {
 
-		const InputEventKey &k=p_event.key;
+		if (p_event.key.pressed) {
 
-		if (k.pressed) {
+			bool handled=false;
 
-			bool handled=true;
-
-			switch (k.scancode) {
-
-				case KEY_H: {
-
-					if (k.mod.command) {
-
-						bool show=!show_hidden_files;
-						set_show_hidden_files(show);
-						EditorSettings::get_singleton()->set("file_dialog/show_hidden_files",show);
-					} else {
-						handled=false;
-					}
-
-				} break;
-				case KEY_F5: {
-
-					invalidate();
-				} break;
-				default: { handled=false; }
+			if (ED_IS_SHORTCUT("file_dialog/go_back", p_event)) {
+				_go_back();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/go_forward", p_event)) {
+				_go_forward();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/go_up", p_event)) {
+				_go_up();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/refresh", p_event)) {
+				invalidate();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/toggle_hidden_files", p_event)) {
+				bool show=!show_hidden_files;
+				set_show_hidden_files(show);
+				EditorSettings::get_singleton()->set("file_dialog/show_hidden_files",show);
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/toggle_favorite", p_event)) {
+				_favorite_toggled(favorite->is_pressed());
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/toggle_mode", p_event)) {
+				if (mode_thumbnails->is_pressed()) {
+					set_display_mode(DISPLAY_LIST);
+				} else {
+					set_display_mode(DISPLAY_THUMBNAILS);
+				}
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/create_folder", p_event)) {
+				_make_dir();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
+				dir->grab_focus();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/mode_favorite_up", p_event)) {
+				_favorite_move_up();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/mode_favorite_down", p_event)) {
+				_favorite_move_down();
+				handled=true;
 			}
 
-			if (handled)
+			if (handled) {
 				accept_event();
+			}
 		}
 	}
 }
@@ -1260,6 +1289,18 @@ EditorFileDialog::EditorFileDialog() {
 
 	mode=MODE_SAVE_FILE;
 	set_title(TTR("Save a File"));
+
+	ED_SHORTCUT("file_dialog/go_back", TTR("Go Back"), KEY_MASK_ALT|KEY_LEFT);
+	ED_SHORTCUT("file_dialog/go_forward", TTR("Go Forward"), KEY_MASK_ALT|KEY_RIGHT);
+	ED_SHORTCUT("file_dialog/go_up", TTR("Go Up"), KEY_MASK_ALT|KEY_UP);
+	ED_SHORTCUT("file_dialog/refresh", TTR("Refresh"), KEY_MASK_CMD|KEY_F5); // ctrl + f5 else it launches the game as well..
+	ED_SHORTCUT("file_dialog/toggle_hidden_files", TTR("Toggle Hidden Files"), KEY_MASK_CMD|KEY_H);
+	ED_SHORTCUT("file_dialog/toggle_favorite", TTR("Toggle Favorite"), KEY_MASK_ALT|KEY_F);
+	ED_SHORTCUT("file_dialog/toggle_mode", TTR("Toggle Mode"), KEY_MASK_ALT|KEY_V);
+	ED_SHORTCUT("file_dialog/create_folder", TTR("Create Folder"), KEY_MASK_CMD|KEY_N);
+	ED_SHORTCUT("file_dialog/focus_path", TTR("Focus Path"), KEY_MASK_CMD|KEY_D);
+	ED_SHORTCUT("file_dialog/mode_favorite_up", TTR("Mode Favorite Up"), KEY_MASK_CMD|KEY_UP);
+	ED_SHORTCUT("file_dialog/mode_favorite_down", TTR("Mode Favorite Down"), KEY_MASK_CMD|KEY_DOWN);
 
 	HBoxContainer *pathhb = memnew( HBoxContainer );
 
