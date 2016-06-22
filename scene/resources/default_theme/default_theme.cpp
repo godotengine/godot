@@ -470,7 +470,6 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	t->set_font("font","TextEdit", default_font );
 
 	t->set_color("completion_scroll_color","TextEdit", control_font_color_pressed );
-	t->set_color("completion_existing","TextEdit", control_font_color );
 	t->set_color("font_color","TextEdit", control_font_color );
 	t->set_color("font_color_selected","TextEdit", Color(0,0,0) );
 	t->set_color("selection_color","TextEdit", font_color_selection );
@@ -694,12 +693,6 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	t->set_stylebox("selected_focus","ItemList", item_selected );
 	t->set_stylebox("cursor","ItemList", focus );
 	t->set_stylebox("cursor_unfocused","ItemList", focus );
-
-
-	// TextEdit
-
-	t->set_stylebox("completion_selected","TextEdit", tree_selected );
-
 
 
 	// TabContainer
