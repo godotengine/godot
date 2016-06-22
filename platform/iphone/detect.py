@@ -22,8 +22,7 @@ def get_opts():
 	return [
 		('IPHONEPLATFORM', 'name of the iphone platform', 'iPhoneOS'),
 		('IPHONEPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain'),
-		('IOS_SDK_VERSION', 'The SDK version', 'iPhoneOS'),
-		('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/${IOS_SDK_VERSION}.sdk/'),
+		('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/${IPHONEPLATFORM}.platform/Developer/SDKs/${IPHONEPLATFORM}.sdk/'),
 		('game_center', 'Support for game center', 'yes'),
 		('store_kit', 'Support for in-app store', 'yes'),
 		('icloud', 'Support for iCloud', 'yes'),
@@ -31,6 +30,7 @@ def get_opts():
 		('ios_appirater', 'Enable Appirater', 'no'),
 		('ios_exceptions', 'Use exceptions when compiling on playbook', 'yes'),
 		('ios_triple', 'Triple for ios toolchain', ''),
+		('ios_sim', 'Build simulator binary', 'no'),
 	]
 
 def get_flags():
@@ -45,27 +45,47 @@ def get_flags():
 
 def configure(env):
 
-	env.Append(CPPPATH=['#platform/iphone', '#platform/iphone/include'])
+	env.Append(CPPPATH=['#platform/iphone'])
 
 	env['ENV']['PATH'] = env['IPHONEPATH']+"/Developer/usr/bin/:"+env['ENV']['PATH']
 
-#	env['CC'] = '$IPHONEPATH/Developer/usr/bin/gcc'
-#	env['CXX'] = '$IPHONEPATH/Developer/usr/bin/g++'
 	env['CC'] = '$IPHONEPATH/usr/bin/${ios_triple}clang'
 	env['CXX'] = '$IPHONEPATH/usr/bin/${ios_triple}clang++'
 	env['AR'] = '$IPHONEPATH/usr/bin/${ios_triple}ar'
 	env['RANLIB'] = '$IPHONEPATH/usr/bin/${ios_triple}ranlib'
 
 	import string
-	if (env["bits"]=="64"):
-		#env['CCFLAGS'] = string.split('-arch arm64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wshorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -g -Wno-sign-conversion -miphoneos-version-min=5.1.1 -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -Wno-invalid-offsetof -ffast-math -m64 -DDEBUG -D_DEBUG -MMD -MT dependencies -isysroot $IPHONESDK')
+	if (env["ios_sim"]=="yes"): # i386, simulator
+		env['CCFLAGS'] = string.split('-arch i386 -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fasm-blocks  -Wall -D__IPHONE_OS_VERSION_MIN_REQUIRED=40100 -isysroot $IPHONESDK -mios-simulator-version-min=4.3 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"')
+	elif (env["bits"]=="64"): # arm64
 		env['CCFLAGS'] = string.split('-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -Wno-trigraphs -fpascal-strings -Wmissing-prototypes -Wreturn-type -Wparentheses -Wswitch -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-shorten-64-to-32 -fvisibility=hidden -Wno-sign-conversion -MMD -MT dependencies -miphoneos-version-min=5.1.1 -isysroot $IPHONESDK')
 		env.Append(CPPFLAGS=['-DNEED_LONG_INT'])
 		env.Append(CPPFLAGS=['-DLIBYUV_DISABLE_NEON'])
-	else:
+	else: # armv7
 		env['CCFLAGS'] = string.split('-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -Wno-trigraphs -fpascal-strings -Wmissing-prototypes -Wreturn-type -Wparentheses -Wswitch -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-shorten-64-to-32 -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk -fvisibility=hidden -Wno-sign-conversion -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=5.1.1 -MMD -MT dependencies -isysroot $IPHONESDK')
 
-	if (env["bits"]=="64"):
+	if (env["ios_sim"]=="yes"):
+		env.Append(LINKFLAGS=['-arch', 'i386', '-mios-simulator-version-min=4.3',
+							'-isysroot', '$IPHONESDK',
+							#'-mmacosx-version-min=10.6',
+							'-Xlinker',
+							'-objc_abi_version',
+							'-Xlinker', '2',
+							'-framework', 'AudioToolbox',
+							'-framework', 'AVFoundation',
+							'-framework', 'CoreAudio',
+							'-framework', 'CoreGraphics',
+							'-framework', 'CoreMedia',
+							'-framework', 'Foundation',
+							'-framework', 'Security',
+							'-framework', 'UIKit',
+							'-framework', 'MediaPlayer',
+							'-framework', 'OpenGLES',
+							'-framework', 'QuartzCore',
+							'-framework', 'SystemConfiguration',
+							'-F$IPHONESDK',
+							])
+	elif (env["bits"]=="64"):
 		env.Append(LINKFLAGS=['-arch', 'arm64', '-Wl,-dead_strip', '-miphoneos-version-min=5.1.1',
 							'-isysroot', '$IPHONESDK',
 							#'-stdlib=libc++',
@@ -134,7 +154,8 @@ def configure(env):
 		env.Append(CCFLAGS=['-g','-pg', '-Os'])
 		env.Append(LINKFLAGS=['-pg'])
 
-
+	if (env["ios_sim"]=="yes"): #TODO: Check if needed?
+		env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '10.6'
 	env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
 	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DMPC_FIXED_POINT'])
 
@@ -156,5 +177,3 @@ def configure(env):
 	env.Append( BUILDERS = { 'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	env.Append( BUILDERS = { 'GLSL' : env.Builder(action = methods.build_glsl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
-
-
