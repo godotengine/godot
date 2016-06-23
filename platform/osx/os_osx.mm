@@ -1209,6 +1209,22 @@ String OS_OSX::get_name() {
 	return "OSX";
 }
 
+void OS_OSX::alert(const String& p_alert, const String& p_title) {
+	// Set OS X-compliant variables
+	NSAlert *window = [[NSAlert alloc] init];
+	NSString *ns_title = [NSString stringWithUTF8String:p_title.utf8().get_data()];
+	NSString *ns_alert = [NSString stringWithUTF8String:p_alert.utf8().get_data()];
+
+	[window addButtonWithTitle:@"OK"];
+	[window setMessageText:ns_title];
+	[window setInformativeText:ns_alert];
+	[window setAlertStyle:NSWarningAlertStyle];
+
+	// Display it, then release
+	[window runModal];
+	[window release];
+}
+
 void OS_OSX::set_cursor_shape(CursorShape p_shape) {
 
 	if (cursor_shape==p_shape)
