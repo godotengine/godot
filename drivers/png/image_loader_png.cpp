@@ -30,7 +30,7 @@
 
 #include "print_string.h"
 #include "os/os.h"
-
+#include <string.h>
 
 
 void ImageLoaderPNG::_read_png_data(png_structp png_ptr,png_bytep data, png_size_t p_length) {
@@ -104,7 +104,6 @@ Error ImageLoaderPNG::_load_image(void *rf_up,png_rw_ptr p_func,Image *p_image) 
 	png_read_info(png, info);
 	png_get_IHDR(png, info, &width, &height, &depth, &color, NULL, NULL, NULL);
 
-	png_textp t;
 	//https://svn.gov.pt/projects/ccidadao/repository/middleware-offline/trunk/_src/eidmw/FreeImagePTEiD/Source/FreeImage/PluginPNG.cpp
 	//png_get_text(png,info,)
 	/*
@@ -254,7 +253,7 @@ Error ImageLoaderPNG::load_image(Image *p_image,FileAccess *f) {
 }
 
 void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const {
-	
+
 	p_extensions->push_back("png");
 }
 
@@ -362,7 +361,6 @@ static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 	}
 
 	int pngf=0;
-	int pngb=8;
 	int cs=0;
 
 	switch(img.get_format()) {
@@ -451,7 +449,3 @@ ImageLoaderPNG::ImageLoaderPNG() {
 
 
 }
-
-
-
-

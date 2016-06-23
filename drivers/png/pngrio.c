@@ -1,8 +1,8 @@
 
 /* pngrio.c - functions for data input
  *
- * Last changed in libpng 1.5.0 [January 6, 2011]
- * Copyright (c) 1998-2002,2004,2006-2011 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.17 [March 26, 2015]
+ * Copyright (c) 1998-2002,2004,2006-2015 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -26,10 +26,10 @@
  * reads from a file pointer.  Note that this routine sometimes gets called
  * with very small lengths, so you should implement some kind of simple
  * buffering if you are using unbuffered reads.  This should never be asked
- * to read more than 64K on a 16 bit machine.
+ * to read more than 64K on a 16-bit machine.
  */
 void /* PRIVATE */
-png_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
+png_read_data(png_structrp png_ptr, png_bytep data, png_size_t length)
 {
    png_debug1(4, "reading %d bytes", (int)length);
 
@@ -46,7 +46,6 @@ png_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
  * read_data function and use it at run time with png_set_read_fn(), rather
  * than changing the library.
  */
-#  ifndef USE_FAR_KEYWORD
 void PNGCBAPI
 png_default_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
 {
@@ -58,68 +57,11 @@ png_default_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
    /* fread() returns 0 on error, so it is OK to store this in a png_size_t
     * instead of an int, which is what fread() actually returns.
     */
-   check = fread(data, 1, length, (png_FILE_p)png_ptr->io_ptr);
+   check = fread(data, 1, length, png_voidcast(png_FILE_p, png_ptr->io_ptr));
 
    if (check != length)
       png_error(png_ptr, "Read Error");
 }
-#  else
-/* This is the model-independent version. Since the standard I/O library
-   can't handle far buffers in the medium and small models, we have to copy
-   the data.
-*/
-
-#define NEAR_BUF_SIZE 1024
-#define MIN(a,b) (a <= b ? a : b)
-
-static void PNGCBAPI
-png_default_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
-{
-   png_size_t check;
-   png_byte *n_data;
-   png_FILE_p io_ptr;
-
-   if (png_ptr == NULL)
-      return;
-
-   /* Check if data really is near. If so, use usual code. */
-   n_data = (png_byte *)CVT_PTR_NOCHECK(data);
-   io_ptr = (png_FILE_p)CVT_PTR(png_ptr->io_ptr);
-
-   if ((png_bytep)n_data == data)
-   {
-      check = fread(n_data, 1, length, io_ptr);
-   }
-
-   else
-   {
-      png_byte buf[NEAR_BUF_SIZE];
-      png_size_t read, remaining, err;
-      check = 0;
-      remaining = length;
-
-      do
-      {
-         read = MIN(NEAR_BUF_SIZE, remaining);
-         err = fread(buf, 1, read, io_ptr);
-         png_memcpy(data, buf, read); /* copy far buffer to near buffer */
-
-         if (err != read)
-            break;
-
-         else
-            check += err;
-
-         data += read;
-         remaining -= read;
-      }
-      while (remaining != 0);
-   }
-
-   if ((png_uint_32)check != (png_uint_32)length)
-      png_error(png_ptr, "read Error");
-}
-#  endif
 #endif
 
 /* This function allows the application to supply a new input function
@@ -142,7 +84,7 @@ png_default_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
  *                be used.
  */
 void PNGAPI
-png_set_read_fn(png_structp png_ptr, png_voidp io_ptr,
+png_set_read_fn(png_structrp png_ptr, png_voidp io_ptr,
    png_rw_ptr read_data_fn)
 {
    if (png_ptr == NULL)
@@ -160,6 +102,7 @@ png_set_read_fn(png_structp png_ptr, png_voidp io_ptr,
    png_ptr->read_data_fn = read_data_fn;
 #endif
 
+#ifdef PNG_WRITE_SUPPORTED
    /* It is an error to write to a read device */
    if (png_ptr->write_data_fn != NULL)
    {
@@ -168,9 +111,10 @@ png_set_read_fn(png_structp png_ptr, png_voidp io_ptr,
           "Can't set both read_data_fn and write_data_fn in the"
           " same structure");
    }
+#endif
 
 #ifdef PNG_WRITE_FLUSH_SUPPORTED
    png_ptr->output_flush_fn = NULL;
 #endif
 }
-#endif /* PNG_READ_SUPPORTED */
+#endif /* READ */

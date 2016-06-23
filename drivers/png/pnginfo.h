@@ -1,8 +1,8 @@
 
 /* pnginfo.h - header file for PNG reference library
  *
- * Last changed in libpng 1.5.0 [January 6, 2011]
- * Copyright (c) 1998-2002,2004,2006-2011 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.1 [March 28, 2013]
+ * Copyright (c) 1998-2002,2004,2006-2013 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -54,7 +54,7 @@
 
 struct png_info_def
 {
-   /* the following are necessary for every PNG file */
+   /* The following are necessary for every PNG file */
    png_uint_32 width;  /* width of image in pixels (from IHDR) */
    png_uint_32 height; /* height of image in pixels (from IHDR) */
    png_uint_32 valid;  /* valid chunk data (see PNG_INFO_ below) */
@@ -69,11 +69,17 @@ struct png_info_def
    png_byte filter_type;    /* must be PNG_FILTER_TYPE_BASE (from IHDR) */
    png_byte interlace_type; /* One of PNG_INTERLACE_NONE, PNG_INTERLACE_ADAM7 */
 
-   /* The following is informational only on read, and not used on writes. */
+   /* The following are set by png_set_IHDR, called from the application on
+    * write, but the are never actually used by the write code.
+    */
    png_byte channels;       /* number of data channels per pixel (1, 2, 3, 4) */
    png_byte pixel_depth;    /* number of bits per pixel */
    png_byte spare_byte;     /* to align the data, and for future use */
+
+#ifdef PNG_READ_SUPPORTED
+   /* This is never set during write */
    png_byte signature[8];   /* magic bytes read by libpng from start of file */
+#endif
 
    /* The rest of the data is optional.  If you are reading, check the
     * valid field to see if the information in these are valid.  If you
@@ -81,18 +87,25 @@ struct png_info_def
     * and initialize the appropriate fields below.
     */
 
-#if defined(PNG_gAMA_SUPPORTED)
-   /* The gAMA chunk describes the gamma characteristics of the system
-    * on which the image was created, normally in the range [1.0, 2.5].
-    * Data is valid if (valid & PNG_INFO_gAMA) is non-zero.
+#if defined(PNG_COLORSPACE_SUPPORTED) || defined(PNG_GAMMA_SUPPORTED)
+   /* png_colorspace only contains 'flags' if neither GAMMA or COLORSPACE are
+    * defined.  When COLORSPACE is switched on all the colorspace-defining
+    * chunks should be enabled, when GAMMA is switched on all the gamma-defining
+    * chunks should be enabled.  If this is not done it becomes possible to read
+    * inconsistent PNG files and assign a probably incorrect interpretation to
+    * the information.  (In other words, by carefully choosing which chunks to
+    * recognize the system configuration can select an interpretation for PNG
+    * files containing ambiguous data and this will result in inconsistent
+    * behavior between different libpng builds!)
     */
-   png_fixed_point gamma;
+   png_colorspace colorspace;
 #endif
 
-#ifdef PNG_sRGB_SUPPORTED
-    /* GR-P, 0.96a */
-    /* Data valid if (valid & PNG_INFO_sRGB) non-zero. */
-   png_byte srgb_intent; /* sRGB rendering intent [0, 1, 2, or 3] */
+#ifdef PNG_iCCP_SUPPORTED
+   /* iCCP chunk data. */
+   png_charp iccp_name;     /* profile name */
+   png_bytep iccp_profile;  /* International Color Consortium profile data */
+   png_uint_32 iccp_proflen;  /* ICC profile data length */
 #endif
 
 #ifdef PNG_TEXT_SUPPORTED
@@ -107,7 +120,7 @@ struct png_info_def
    int num_text; /* number of comments read or comments to write */
    int max_text; /* current size of text array */
    png_textp text; /* array of comments read or comments to write */
-#endif /* PNG_TEXT_SUPPORTED */
+#endif /* TEXT */
 
 #ifdef PNG_tIME_SUPPORTED
    /* The tIME chunk holds the last time the displayed image data was
@@ -182,23 +195,6 @@ defined(PNG_READ_BACKGROUND_SUPPORTED)
    png_uint_16p hist;
 #endif
 
-#ifdef PNG_cHRM_SUPPORTED
-   /* The cHRM chunk describes the CIE color characteristics of the monitor
-    * on which the PNG was created.  This data allows the viewer to do gamut
-    * mapping of the input image to ensure that the viewer sees the same
-    * colors in the image as the creator.  Values are in the range
-    * [0.0, 0.8].  Data valid if (valid & PNG_INFO_cHRM) non-zero.
-    */
-   png_fixed_point x_white;
-   png_fixed_point y_white;
-   png_fixed_point x_red;
-   png_fixed_point y_red;
-   png_fixed_point x_green;
-   png_fixed_point y_green;
-   png_fixed_point x_blue;
-   png_fixed_point y_blue;
-#endif
-
 #ifdef PNG_pCAL_SUPPORTED
    /* The pCAL chunk describes a transformation between the stored pixel
     * values and original physical data values used to create the image.
@@ -223,25 +219,20 @@ defined(PNG_READ_BACKGROUND_SUPPORTED)
 /* New members added in libpng-1.0.6 */
    png_uint_32 free_me;     /* flags items libpng is responsible for freeing */
 
-#if defined(PNG_UNKNOWN_CHUNKS_SUPPORTED) || \
- defined(PNG_HANDLE_AS_UNKNOWN_SUPPORTED)
+#ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
    /* Storage for unknown chunks that the library doesn't recognize. */
    png_unknown_chunkp unknown_chunks;
-   int unknown_chunks_num;
-#endif
 
-#ifdef PNG_iCCP_SUPPORTED
-   /* iCCP chunk data. */
-   png_charp iccp_name;     /* profile name */
-   png_bytep iccp_profile;  /* International Color Consortium profile data */
-   png_uint_32 iccp_proflen;  /* ICC profile data length */
-   png_byte iccp_compression; /* Always zero */
+   /* The type of this field is limited by the type of
+    * png_struct::user_chunk_cache_max, else overflow can occur.
+    */
+   int                unknown_chunks_num;
 #endif
 
 #ifdef PNG_sPLT_SUPPORTED
    /* Data on sPLT chunks (there may be more than one). */
    png_sPLT_tp splt_palettes;
-   int splt_palettes_num;
+   int         splt_palettes_num; /* Match type returned by png_get API */
 #endif
 
 #ifdef PNG_sCAL_SUPPORTED

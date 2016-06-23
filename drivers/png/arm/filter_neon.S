@@ -1,17 +1,17 @@
 
 /* filter_neon.S - NEON optimised filter functions
  *
- * Copyright (c) 2013 Glenn Randers-Pehrson
+ * Copyright (c) 2014 Glenn Randers-Pehrson
  * Written by Mans Rullgard, 2011.
- * Last changed in libpng 1.5.17 [June 27, 2013]
+ * Last changed in libpng 1.6.16 [December 22, 2014]
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
  * and license in png.h
  */
 
-/* This is required to get the symbol renames, which are #defines, and also
- * includes the definition (or not) of PNG_ARM_NEON_OPT.
+/* This is required to get the symbol renames, which are #defines, and the
+ * definitions (or not) of PNG_ARM_NEON_OPT and PNG_ARM_NEON_IMPLEMENTATION.
  */
 #define PNG_VERSION_INFO_ONLY
 #include "../pngpriv.h"
@@ -19,6 +19,15 @@
 #if defined(__linux__) && defined(__ELF__)
 .section .note.GNU-stack,"",%progbits /* mark stack as non-executable */
 #endif
+
+#ifdef PNG_READ_SUPPORTED
+
+/* Assembler NEON support - only works for 32-bit ARM (i.e. it does not work for
+ * ARM64).  The code in arm/filter_neon_intrinsics.c supports ARM64, however it
+ * only works if -mfpu=neon is specified on the GCC command line.  See pngpriv.h
+ * for the logic which sets PNG_USE_ARM_NEON_ASM:
+ */
+#if PNG_ARM_NEON_IMPLEMENTATION == 2 /* hand-coded assembler */
 
 #if PNG_ARM_NEON_OPT > 0
 
@@ -38,6 +47,13 @@ ELF     .size   \name, . - \name
         .purgem endfunc
     .endm
         .text
+
+        /* Explicitly specifying alignment here because some versions of
+         * GAS don't align code correctly.  This is harmless in correctly
+         * written versions of GAS.
+         */
+        .align 2
+
     .if \export
         .global \name
     .endif
@@ -233,3 +249,5 @@ func    png_read_filter_row_paeth3_neon, export=1
         pop             {r4,pc}
 endfunc
 #endif /* PNG_ARM_NEON_OPT > 0 */
+#endif /* PNG_ARM_NEON_IMPLEMENTATION == 2 (assembler) */
+#endif /* READ */
