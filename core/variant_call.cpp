@@ -511,6 +511,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(ByteArray,get);
 	VCALL_LOCALMEM1(ByteArray,push_back);
 	VCALL_LOCALMEM1(ByteArray,resize);
+	VCALL_LOCALMEM2R(ByteArray,insert);
+	VCALL_LOCALMEM1(ByteArray,remove);
 	VCALL_LOCALMEM1(ByteArray,append);
 	VCALL_LOCALMEM1(ByteArray,append_array);
 
@@ -519,6 +521,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(IntArray,get);
 	VCALL_LOCALMEM1(IntArray,push_back);
 	VCALL_LOCALMEM1(IntArray,resize);
+	VCALL_LOCALMEM2R(IntArray,insert);
+	VCALL_LOCALMEM1(IntArray,remove);
 	VCALL_LOCALMEM1(IntArray,append);
 	VCALL_LOCALMEM1(IntArray,append_array);
 
@@ -527,6 +531,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(RealArray,get);
 	VCALL_LOCALMEM1(RealArray,push_back);
 	VCALL_LOCALMEM1(RealArray,resize);
+	VCALL_LOCALMEM2R(RealArray,insert);
+	VCALL_LOCALMEM1(RealArray,remove);
 	VCALL_LOCALMEM1(RealArray,append);
 	VCALL_LOCALMEM1(RealArray,append_array);
 
@@ -535,6 +541,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(StringArray,get);
 	VCALL_LOCALMEM1(StringArray,push_back);
 	VCALL_LOCALMEM1(StringArray,resize);
+	VCALL_LOCALMEM2R(StringArray,insert);
+	VCALL_LOCALMEM1(StringArray,remove);
 	VCALL_LOCALMEM1(StringArray,append);
 	VCALL_LOCALMEM1(StringArray,append_array);
 
@@ -543,6 +551,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(Vector2Array,get);
 	VCALL_LOCALMEM1(Vector2Array,push_back);
 	VCALL_LOCALMEM1(Vector2Array,resize);
+	VCALL_LOCALMEM2R(Vector2Array,insert);
+	VCALL_LOCALMEM1(Vector2Array,remove);
 	VCALL_LOCALMEM1(Vector2Array,append);
 	VCALL_LOCALMEM1(Vector2Array,append_array);
 
@@ -551,6 +561,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(Vector3Array,get);
 	VCALL_LOCALMEM1(Vector3Array,push_back);
 	VCALL_LOCALMEM1(Vector3Array,resize);
+	VCALL_LOCALMEM2R(Vector3Array,insert);
+	VCALL_LOCALMEM1(Vector3Array,remove);
 	VCALL_LOCALMEM1(Vector3Array,append);
 	VCALL_LOCALMEM1(Vector3Array,append_array);
 
@@ -559,6 +571,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(ColorArray,get);
 	VCALL_LOCALMEM1(ColorArray,push_back);
 	VCALL_LOCALMEM1(ColorArray,resize);
+	VCALL_LOCALMEM2R(ColorArray,insert);
+	VCALL_LOCALMEM1(ColorArray,remove);
 	VCALL_LOCALMEM1(ColorArray,append);
 	VCALL_LOCALMEM1(ColorArray,append_array);
 
@@ -1484,8 +1498,11 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 
 	ADDFUNC0(RAW_ARRAY,INT,ByteArray,size,varray());
 	ADDFUNC2(RAW_ARRAY,NIL,ByteArray,set,INT,"idx",INT,"byte",varray());
-	//ADDFUNC1(RAW_ARRAY,INT,ByteArray,get,INT,"idx",varray());
 	ADDFUNC1(RAW_ARRAY,NIL,ByteArray,push_back,INT,"byte",varray());
+	ADDFUNC1(RAW_ARRAY,NIL,ByteArray,append,INT,"byte",varray());
+	ADDFUNC1(RAW_ARRAY,NIL,ByteArray,append_array,RAW_ARRAY,"array",varray());
+	ADDFUNC1(RAW_ARRAY,NIL,ByteArray,remove,INT,"idx",varray());
+	ADDFUNC2(RAW_ARRAY,INT,ByteArray,insert,INT,"idx",INT,"byte",varray());
 	ADDFUNC1(RAW_ARRAY,NIL,ByteArray,resize,INT,"idx",varray());
 
 	ADDFUNC0(RAW_ARRAY,STRING,ByteArray,get_string_from_ascii,varray());
@@ -1494,38 +1511,56 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 
 	ADDFUNC0(INT_ARRAY,INT,IntArray,size,varray());
 	ADDFUNC2(INT_ARRAY,NIL,IntArray,set,INT,"idx",INT,"integer",varray());
-	//ADDFUNC1(INT_ARRAY,INT,IntArray,get,INT,"idx",varray());
 	ADDFUNC1(INT_ARRAY,NIL,IntArray,push_back,INT,"integer",varray());
+	ADDFUNC1(INT_ARRAY,NIL,IntArray,append,INT,"integer",varray());
+	ADDFUNC1(INT_ARRAY,NIL,IntArray,append_array,INT_ARRAY,"array",varray());
+	ADDFUNC1(INT_ARRAY,NIL,IntArray,remove,INT,"idx",varray());
+	ADDFUNC2(INT_ARRAY,INT,IntArray,insert,INT,"idx",INT,"integer",varray());
 	ADDFUNC1(INT_ARRAY,NIL,IntArray,resize,INT,"idx",varray());
 
 	ADDFUNC0(REAL_ARRAY,INT,RealArray,size,varray());
 	ADDFUNC2(REAL_ARRAY,NIL,RealArray,set,INT,"idx",REAL,"value",varray());
-	//ADDFUNC1(REAL_ARRAY,REAL,RealArray,get,INT,"idx",varray());
 	ADDFUNC1(REAL_ARRAY,NIL,RealArray,push_back,REAL,"value",varray());
+	ADDFUNC1(REAL_ARRAY,NIL,RealArray,append,REAL,"value",varray());
+	ADDFUNC1(REAL_ARRAY,NIL,RealArray,append_array,REAL_ARRAY,"array",varray());
+	ADDFUNC1(REAL_ARRAY,NIL,RealArray,remove,INT,"idx",varray());
+	ADDFUNC2(REAL_ARRAY,INT,RealArray,insert,INT,"idx",REAL,"value",varray());
 	ADDFUNC1(REAL_ARRAY,NIL,RealArray,resize,INT,"idx",varray());
 
 	ADDFUNC0(STRING_ARRAY,INT,StringArray,size,varray());
 	ADDFUNC2(STRING_ARRAY,NIL,StringArray,set,INT,"idx",STRING,"string",varray());
-	//ADDFUNC1(STRING_ARRAY,STRING,StringArray,get,INT,"idx",varray());
 	ADDFUNC1(STRING_ARRAY,NIL,StringArray,push_back,STRING,"string",varray());
+	ADDFUNC1(STRING_ARRAY,NIL,StringArray,append,STRING,"string",varray());
+	ADDFUNC1(STRING_ARRAY,NIL,StringArray,append_array,STRING_ARRAY,"array",varray());
+	ADDFUNC1(STRING_ARRAY,NIL,StringArray,remove,INT,"idx",varray());
+	ADDFUNC2(STRING_ARRAY,INT,StringArray,insert,INT,"idx",STRING,"string",varray());
 	ADDFUNC1(STRING_ARRAY,NIL,StringArray,resize,INT,"idx",varray());
 
 	ADDFUNC0(VECTOR2_ARRAY,INT,Vector2Array,size,varray());
 	ADDFUNC2(VECTOR2_ARRAY,NIL,Vector2Array,set,INT,"idx",VECTOR2,"vector2",varray());
-	//ADDFUNC1(VECTOR2_ARRAY,VECTOR2,Vector2Array,get,INT,"idx",varray());
 	ADDFUNC1(VECTOR2_ARRAY,NIL,Vector2Array,push_back,VECTOR2,"vector2",varray());
+	ADDFUNC1(VECTOR2_ARRAY,NIL,Vector2Array,append,VECTOR2,"vector2",varray());
+	ADDFUNC1(VECTOR2_ARRAY,NIL,Vector2Array,append_array,VECTOR2_ARRAY,"array",varray());
+	ADDFUNC1(VECTOR2_ARRAY,NIL,Vector2Array,remove,INT,"idx",varray());
+	ADDFUNC2(VECTOR2_ARRAY,INT,Vector2Array,insert,INT,"idx",VECTOR2,"vector2",varray());
 	ADDFUNC1(VECTOR2_ARRAY,NIL,Vector2Array,resize,INT,"idx",varray());
 
 	ADDFUNC0(VECTOR3_ARRAY,INT,Vector3Array,size,varray());
 	ADDFUNC2(VECTOR3_ARRAY,NIL,Vector3Array,set,INT,"idx",VECTOR3,"vector3",varray());
-	//ADDFUNC1(VECTOR3_ARRAY,VECTOR3,Vector3Array,get,INT,"idx",varray());
 	ADDFUNC1(VECTOR3_ARRAY,NIL,Vector3Array,push_back,VECTOR3,"vector3",varray());
+	ADDFUNC1(VECTOR3_ARRAY,NIL,Vector3Array,append,VECTOR3,"vector3",varray());
+	ADDFUNC1(VECTOR3_ARRAY,NIL,Vector3Array,append_array,VECTOR3_ARRAY,"array",varray());
+	ADDFUNC1(VECTOR3_ARRAY,NIL,Vector3Array,remove,INT,"idx",varray());
+	ADDFUNC2(VECTOR3_ARRAY,INT,Vector3Array,insert,INT,"idx",VECTOR3,"vector3",varray());
 	ADDFUNC1(VECTOR3_ARRAY,NIL,Vector3Array,resize,INT,"idx",varray());
 
 	ADDFUNC0(COLOR_ARRAY,INT,ColorArray,size,varray());
 	ADDFUNC2(COLOR_ARRAY,NIL,ColorArray,set,INT,"idx",COLOR,"color",varray());
-	//ADDFUNC1(COLOR_ARRAY,COLOR,ColorArray,get,INT,"idx",varray());
 	ADDFUNC1(COLOR_ARRAY,NIL,ColorArray,push_back,COLOR,"color",varray());
+	ADDFUNC1(COLOR_ARRAY,NIL,ColorArray,append,COLOR,"color",varray());
+	ADDFUNC1(COLOR_ARRAY,NIL,ColorArray,append_array,COLOR_ARRAY,"array",varray());
+	ADDFUNC1(COLOR_ARRAY,NIL,ColorArray,remove,INT,"idx",varray());
+	ADDFUNC2(COLOR_ARRAY,INT,ColorArray,insert,INT,"idx",COLOR,"color",varray());
 	ADDFUNC1(COLOR_ARRAY,NIL,ColorArray,resize,INT,"idx",varray());
 
 	//pointerbased
