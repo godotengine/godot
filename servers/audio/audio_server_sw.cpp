@@ -388,7 +388,7 @@ void AudioServerSW::sample_set_data(RID p_sample, const DVector<uint8_t>& p_buff
 	AUDIO_LOCK
 	sample_manager->sample_set_data(p_sample,p_buffer);
 }
-const DVector<uint8_t> AudioServerSW::sample_get_data(RID p_sample) const {
+DVector<uint8_t> AudioServerSW::sample_get_data(RID p_sample) const {
 	AUDIO_LOCK
 	return sample_manager->sample_get_data(p_sample);
 }

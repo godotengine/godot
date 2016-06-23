@@ -329,6 +329,62 @@ public:
 	WeakRef();
 };
 
+#ifdef PTRCALL_ENABLED
+
+template<class T>
+struct PtrToArg< Ref<T> > {
+
+	_FORCE_INLINE_ static Ref<T> convert(const void* p_ptr) {
+
+		return Ref<T>(reinterpret_cast<const T*>(p_ptr));
+	}
+
+	_FORCE_INLINE_ static void encode(Ref<T> p_val,const void* p_ptr) {
+
+		*((T**)p_ptr)=p_val.ptr();
+	}
+
+};
 
 
+template<class T>
+struct PtrToArg< const Ref<T>& > {
+
+	_FORCE_INLINE_ static Ref<T> convert(const void* p_ptr) {
+
+		return Ref<T>(reinterpret_cast<const T*>(p_ptr));
+	}
+
+};
+
+
+//this is for RefPtr
+
+template<>
+struct PtrToArg< RefPtr > {
+
+	_FORCE_INLINE_ static RefPtr convert(const void* p_ptr) {
+
+		return Ref<Reference>(reinterpret_cast<const Reference*>(p_ptr)).get_ref_ptr();
+	}
+
+	_FORCE_INLINE_ static void encode(RefPtr p_val,const void* p_ptr) {
+
+		Ref<Reference> r = p_val;
+		*((Reference**)p_ptr)=r.ptr();
+	}
+
+};
+
+template<>
+struct PtrToArg< const RefPtr& > {
+
+	_FORCE_INLINE_ static RefPtr convert(const void* p_ptr) {
+
+		return Ref<Reference>(reinterpret_cast<const Reference*>(p_ptr)).get_ref_ptr();
+	}
+
+};
+
+#endif
 #endif // REFERENCE_H

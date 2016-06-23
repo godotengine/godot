@@ -33,6 +33,7 @@
 #include "variant.h"
 #include "object.h"
 #include <stdio.h>
+#include "method_ptrcall.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -85,6 +86,32 @@ struct VariantCaster<const T&> {
 	(VariantCaster<P##m_idx>::cast( (m_idx-1)>=p_arg_count?get_default_argument(m_idx-1):*p_args[m_idx-1] ))
 
 //SIMPLE_NUMERIC_TYPE is used to avoid a warning on Variant::get_type_for
+
+#ifdef PTRCALL_ENABLED
+
+
+#define VARIANT_ENUM_CAST( m_enum ) \
+SIMPLE_NUMERIC_TYPE( m_enum );\
+template<> \
+struct VariantCaster<m_enum> {\
+\
+	static _FORCE_INLINE_ m_enum cast(const Variant& p_variant) {\
+		return (m_enum)p_variant.operator int();\
+	}\
+};\
+template<>\
+struct PtrToArg< m_enum > {\
+	_FORCE_INLINE_ static m_enum convert(const void* p_ptr) {\
+		return m_enum(*reinterpret_cast<const int*>(p_ptr));\
+	}\
+	_FORCE_INLINE_ static void encode(m_enum p_val,const void* p_ptr) {\
+		*(int*)p_ptr=p_val;\
+	}\
+};
+
+#else
+
+
 #define VARIANT_ENUM_CAST( m_enum ) \
 SIMPLE_NUMERIC_TYPE( m_enum );\
 template<> \
@@ -94,6 +121,9 @@ struct VariantCaster<m_enum> {\
 		return (m_enum)p_variant.operator int();\
 	}\
 };
+
+
+#endif
 
 
 #define CHECK_ARG(m_arg)\
@@ -222,6 +252,11 @@ public:
 	}
 #endif
 	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error)=0;
+
+#ifdef PTRCALL_ENABLED
+	virtual void ptrcall(Object* p_object,const void** p_args,void* r_ret)=0;
+#endif
+
 	StringName get_name() const;
 	void set_name(const StringName& p_name);
 	_FORCE_INLINE_ int get_method_id() const { return method_id; }
@@ -276,6 +311,11 @@ public:
 		set_argument_types(at);
 #endif
 	}
+
+#ifdef PTRCALL_ENABLED
+	virtual void ptrcall(Object* p_object,const void** p_args,void* r_ret) {} //todo
+#endif
+
 
 	void set_method(NativeCall p_method) { call_method=p_method; }
 	virtual bool is_const() const { return false; }

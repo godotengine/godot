@@ -142,7 +142,7 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char,CharType p_next) const {
 }
 
 
-float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_char,const CharType& p_next,const Color& p_modulate) const {
+float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2& p_pos, CharType p_char,CharType p_next,const Color& p_modulate) const {
 
 	const_cast<DynamicFontAtSize*>(this)->_update_char(p_char);
 
@@ -455,7 +455,7 @@ bool DynamicFont::is_distance_field_hint() const{
 	return false;
 }
 
-float DynamicFont::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_char,const CharType& p_next,const Color& p_modulate) const {
+float DynamicFont::draw_char(RID p_canvas_item, const Point2& p_pos, CharType p_char,CharType p_next,const Color& p_modulate) const {
 
 	if (!data_at_size.is_valid())
 		return 0;

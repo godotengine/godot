@@ -34,8 +34,8 @@
 #include "face3.h"
 #include "vector.h"
 #include "dvector.h"
-
 #include "variant.h"
+#include "method_ptrcall.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -137,5 +137,30 @@ bool BSP_Tree::convex_is_inside(const T& p_convex) const {
 	return _test_convex(nodes,planes,node_count-1,p_convex);
 }
 
+
+#ifdef PTRCALL_ENABLED
+
+
+template<>
+struct PtrToArg<BSP_Tree> {
+	_FORCE_INLINE_ static BSP_Tree convert(const void* p_ptr) {
+		BSP_Tree s( Variant( *reinterpret_cast<const Dictionary*>(p_ptr) ) );
+		return s;
+	}
+	_FORCE_INLINE_ static void encode(BSP_Tree p_val,void* p_ptr) {
+		Dictionary *d = reinterpret_cast<Dictionary*>(p_ptr);
+		*d=Variant(p_val);
+	}
+};
+
+template<>
+struct PtrToArg<const BSP_Tree&> {
+	_FORCE_INLINE_ static BSP_Tree convert(const void* p_ptr) {
+		BSP_Tree s( Variant( *reinterpret_cast<const Dictionary*>(p_ptr) ) );
+		return s;
+	}
+};
+
+#endif
 
 #endif

@@ -116,7 +116,7 @@ void AudioServerJavascript::sample_set_data(RID p_sample, const DVector<uint8_t>
 
 
 }
-const DVector<uint8_t> AudioServerJavascript::sample_get_data(RID p_sample) const{
+DVector<uint8_t> AudioServerJavascript::sample_get_data(RID p_sample) const{
 
 
 	return DVector<uint8_t>();

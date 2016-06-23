@@ -56,7 +56,7 @@ public:
 	BSP_Tree get_bounds() const;
 
 	void set_geometry_hint(const DVector<Face3>& geometry_hint);
-	const DVector<Face3>& get_geometry_hint() const;
+	DVector<Face3> get_geometry_hint() const;
 
 	RoomBounds();
 	~RoomBounds();

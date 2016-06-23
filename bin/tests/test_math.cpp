@@ -40,6 +40,9 @@
 #include "scene/resources/texture.h"
 #include "vmap.h"
 #include "os/os.h"
+
+#include "method_ptrcall.h"
+
 namespace TestMath {
 
 
@@ -105,8 +108,12 @@ uint32_t ihash3( uint32_t a)
     return a;
 }
 
+
+
+
 MainLoop* test() {
 
+	return NULL;
 
 	{
 
