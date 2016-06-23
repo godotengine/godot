@@ -48,12 +48,12 @@ public:
 		$ifnoret return Variant();$
 	}
 
-#ifdef PTRCAL_ENABLED
+#ifdef PTRCALL_ENABLED
 	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) {
-	
+
 		T *instance=p_object->cast_to<T>();
-		$ifret PtrToArg<R>::encode( $ (instance->*method)($arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret)$ ;		
-	} 
+		$ifret PtrToArg<R>::encode( $ (instance->*method)($arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret)$ ;
+	}
 #endif
 	MethodBind$argc$$ifret R$$ifconst C$ () {
 #ifdef DEBUG_METHODS_ENABLED
@@ -129,10 +129,10 @@ public:
 	}
 #ifdef PTRCALL_ENABLED
 	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) {
-		__UnexistingClass *instance = (__UnexistingClass*)p_object;	
-		$ifret PtrToArg<R>::encode( $ (instance->*method)($arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret) $ ;		
-	} 
-#endif	
+		__UnexistingClass *instance = (__UnexistingClass*)p_object;
+		$ifret PtrToArg<R>::encode( $ (instance->*method)($arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret) $ ;
+	}
+#endif
 	MethodBind$argc$$ifret R$$ifconst C$ () {
 #ifdef DEBUG_METHODS_ENABLED
 		_set_const($ifconst true$$ifnoconst false$);
@@ -254,10 +254,3 @@ def run(target, source, env):
 	f=open(target[1].path,"w")
 	f.write(text_ext)
 	f.close()
-
-
-
-
-
-
-
