@@ -225,11 +225,21 @@ void BaseButton::_notification(int p_what) {
 		status.hovering=false;
 		update();
 	}
+	if (p_what==NOTIFICATION_DRAG_BEGIN) {
+
+		if (status.press_attempt) {
+			status.press_attempt=false;
+			status.pressing_button=0;
+			update();
+		}
+	}
+
 	if (p_what==NOTIFICATION_FOCUS_EXIT) {
 
 		if (status.pressing_button && status.press_attempt) {
 			status.press_attempt=false;
 			status.pressing_button=0;
+			update();
 		}
 	}
 

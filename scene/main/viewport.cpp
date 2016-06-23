@@ -1933,7 +1933,6 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 			}
 
 
-
 			if (over!=gui.mouse_over) {
 
 				if (gui.mouse_over)
