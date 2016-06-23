@@ -1023,7 +1023,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_is_visible_"),&CanvasItem::_is_visible_);
 
 	ObjectTypeDB::bind_method(_MD("edit_set_state","state"),&CanvasItem::edit_set_state);
-	ObjectTypeDB::bind_method(_MD("edit_get"),&CanvasItem::edit_get_state);
+	ObjectTypeDB::bind_method(_MD("edit_get_state:Variant"),&CanvasItem::edit_get_state);
 	ObjectTypeDB::bind_method(_MD("edit_set_rect","rect"),&CanvasItem::edit_set_rect);
 	ObjectTypeDB::bind_method(_MD("edit_rotate","degrees"),&CanvasItem::edit_rotate);
 
