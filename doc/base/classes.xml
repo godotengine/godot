@@ -6637,8 +6637,11 @@
 			Draw a textured rectangle region at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
 			</description>
 		</method>
-		<method name="edit_get" qualifiers="const">
+		<method name="edit_get_state" qualifiers="const">
+			<return type="Variant">
+			</return>
 			<description>
+			Used for editing, returns an opaque value representing the transform state.
 			</description>
 		</method>
 		<method name="edit_rotate">
@@ -6658,7 +6661,7 @@
 			<argument index="0" name="state" type="var">
 			</argument>
 			<description>
-			Used for editing, returns an opaque value representing the transform state.
+			Set the transform state of this CanvasItem. For [Node2D], this is an [Array] with (in order) a [Vector2] for position, a float for rotation and another [Vector2] for scale. For [Control] this is a [Rect2] with the position and size.
 			</description>
 		</method>
 		<method name="get_blend_mode" qualifiers="const">
@@ -6672,6 +6675,7 @@
 			<return type="RID">
 			</return>
 			<description>
+			Return the [RID] of the [World2D] canvas where this item is in.
 			</description>
 		</method>
 		<method name="get_canvas_item" qualifiers="const">
@@ -6685,49 +6689,56 @@
 			<return type="Matrix32">
 			</return>
 			<description>
+			Get the transform matrix of this item's canvas.
 			</description>
 		</method>
 		<method name="get_global_mouse_pos" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Get the global position of the mouse.
 			</description>
 		</method>
 		<method name="get_global_transform" qualifiers="const">
 			<return type="Matrix32">
 			</return>
 			<description>
+			Get the global transform matrix of this item.
 			</description>
 		</method>
 		<method name="get_global_transform_with_canvas" qualifiers="const">
 			<return type="Matrix32">
 			</return>
 			<description>
+			Get the global transform matrix of this item in relation to the canvas.
 			</description>
 		</method>
 		<method name="get_item_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
-			Return a rect containing the editable contents of the item.
+			Return a rect containing the editable boundaries of the item.
 			</description>
 		</method>
 		<method name="get_light_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+			Get this item's light mask number.
 			</description>
 		</method>
 		<method name="get_local_mouse_pos" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+			Get the mouse position relative to this item's position.
 			</description>
 		</method>
 		<method name="get_material" qualifiers="const">
 			<return type="CanvasItemMaterial">
 			</return>
 			<description>
+			Get the material of this item.
 			</description>
 		</method>
 		<method name="get_opacity" qualifiers="const">
@@ -6748,30 +6759,35 @@
 			<return type="Matrix32">
 			</return>
 			<description>
+			Get the transform matrix of this item.
 			</description>
 		</method>
 		<method name="get_use_parent_material" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+			Get whether this item uses its parent's material.
 			</description>
 		</method>
 		<method name="get_viewport_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
+			Get the viewport's boundaries as a [Rect2].
 			</description>
 		</method>
 		<method name="get_viewport_transform" qualifiers="const">
 			<return type="Matrix32">
 			</return>
 			<description>
+			Get this item's transform in relation to the viewport.
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
+			Get the [World2D] where this item is in.
 			</description>
 		</method>
 		<method name="hide">
@@ -6813,13 +6829,14 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
+			Takes a global input event and convert to this item's coordinate system.
 			</description>
 		</method>
 		<method name="set_as_toplevel">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Set as toplevel. This means that it will not inherit transform from parent canvas items.
+			Set as top level. This means that it will not inherit transform from parent canvas items.
 			</description>
 		</method>
 		<method name="set_blend_mode">
@@ -6833,25 +6850,28 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Sets whether the canvas item is drawn behind its parent.
+			Set whether the canvas item is drawn behind its parent.
 			</description>
 		</method>
 		<method name="set_hidden">
 			<argument index="0" name="hidden" type="bool">
 			</argument>
 			<description>
+			Set whether this item should be hidden or not. Note that no matter what is set here this item won't be shown if its parent or grandparents nodes are also hidden. A hidden CanvasItem make all children hidden too.
 			</description>
 		</method>
 		<method name="set_light_mask">
 			<argument index="0" name="light_mask" type="int">
 			</argument>
 			<description>
+			Set the ligtht mask number of this item.
 			</description>
 		</method>
 		<method name="set_material">
 			<argument index="0" name="material" type="CanvasItemMaterial">
 			</argument>
 			<description>
+			Set the material of this item.
 			</description>
 		</method>
 		<method name="set_opacity">
@@ -6872,6 +6892,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			Set whether or not this item should use its parent's material.
 			</description>
 		</method>
 		<method name="show">
@@ -6881,7 +6902,7 @@
 		</method>
 		<method name="update">
 			<description>
-			Queue the CanvasItem for update. NOTIFICATION_DRAW will be called on idle time to request redraw.
+			Queue the CanvasItem for update. [code]NOTIFICATION_DRAW[/code] will be called on idle time to request redraw.
 			</description>
 		</method>
 	</methods>
@@ -35161,12 +35182,14 @@ A similar effect may be achieved moving this node's descendants.
 			<return type="String">
 			</return>
 			<description>
+			Return a copy of the string with special characters escaped using the C language standard.
 			</description>
 		</method>
 		<method name="c_unescape">
 			<return type="String">
 			</return>
 			<description>
+			Return a copy of the string with escaped characters replaced by their meanings according to the C language standard.
 			</description>
 		</method>
 		<method name="capitalize">
@@ -35301,6 +35324,7 @@ A similar effect may be achieved moving this node's descendants.
 			<return type="bool">
 			</return>
 			<description>
+			Check whether the string is a valid identifier. As is common in programming languages, a valid identifier may contain only letters, digits and underscores (_) and the first character may not be a digit.
 			</description>
 		</method>
 		<method name="is_valid_integer">
@@ -35321,6 +35345,7 @@ A similar effect may be achieved moving this node's descendants.
 			<return type="String">
 			</return>
 			<description>
+			Return a copy of the string with special characters escaped using the JSON standard.
 			</description>
 		</method>
 		<method name="left">
@@ -35361,12 +35386,14 @@ A similar effect may be achieved moving this node's descendants.
 			<return type="RawArray">
 			</return>
 			<description>
+			Return the MD5 hash of the string as an array of bytes.
 			</description>
 		</method>
 		<method name="md5_text">
 			<return type="String">
 			</return>
 			<description>
+			Return the MD5 hash of the string as a string.
 			</description>
 		</method>
 		<method name="nocasecmp_to">
@@ -35384,7 +35411,7 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="0" name="at" type="int">
 			</argument>
 			<description>
-			Return the character code at position "at".
+			Return the character code at position [code]at[/code].
 			</description>
 		</method>
 		<method name="pad_decimals">
@@ -35393,6 +35420,7 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="0" name="digits" type="int">
 			</argument>
 			<description>
+			Format a number to have an exact number of [code]digits[/code] after the decimal point.
 			</description>
 		</method>
 		<method name="pad_zeros">
@@ -35401,18 +35429,21 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="0" name="digits" type="int">
 			</argument>
 			<description>
+			Format a number to have an exact number of [code]digits[/code] before the decimal point.
 			</description>
 		</method>
 		<method name="percent_decode">
 			<return type="String">
 			</return>
 			<description>
+			Decode a percent-encoded string. See [method percent_encode].
 			</description>
 		</method>
 		<method name="percent_encode">
 			<return type="String">
 			</return>
 			<description>
+			Percent-encode a string. This is meant to encode parameters in a URL when sending a HTTP GET request and bodies of form-urlencoded POST request.
 			</description>
 		</method>
 		<method name="plus_file">
@@ -35421,6 +35452,7 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+			If the string is a path, this concatenates [code]file[/code] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
 			</description>
 		</method>
 		<method name="replace">
@@ -35484,7 +35516,7 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="1" name="allow_empty" type="bool" default="True">
 			</argument>
 			<description>
-			Split the string by a divisor string, return an array of the substrings. Example "One,Two,Three" will return \["One","Two","Three"\] if split by ",".
+			Split the string by a divisor string, return an array of the substrings. Example "One,Two,Three" will return ["One","Two","Three"] if split by ",".
 			</description>
 		</method>
 		<method name="split_floats">
@@ -35495,7 +35527,7 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="1" name="allow_empty" type="bool" default="True">
 			</argument>
 			<description>
-			Split the string in floats by using a divisor string, return an array of the substrings. Example "1,2.5,3" will return \[1,2.5,3\] if split by ",".
+			Split the string in floats by using a divisor string, return an array of the substrings. Example "1,2.5,3" will return [1,2.5,3] if split by ",".
 			</description>
 		</method>
 		<method name="strip_edges">
@@ -35517,7 +35549,7 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="1" name="len" type="int">
 			</argument>
 			<description>
-			Return part of the string from "from", with length "len".
+			Return part of the string from the position [code]from[/code], with length [code]len[/code].
 			</description>
 		</method>
 		<method name="to_ascii">
@@ -35531,14 +35563,14 @@ A similar effect may be achieved moving this node's descendants.
 			<return type="float">
 			</return>
 			<description>
-			Convert a string, containing a decimal number, into a float.
+			Convert a string, containing a decimal number, into a [code]float[/code].
 			</description>
 		</method>
 		<method name="to_int">
 			<return type="int">
 			</return>
 			<description>
-			Convert a string, containing an integer number, into an int.
+			Convert a string, containing an integer number, into an [code]int[/code].
 			</description>
 		</method>
 		<method name="to_lower">
@@ -35566,14 +35598,14 @@ A similar effect may be achieved moving this node's descendants.
 			<return type="String">
 			</return>
 			<description>
-			Perform XML escaping on the string.
+			Return a copy of the string with special characters escaped using the XML standard.
 			</description>
 		</method>
 		<method name="xml_unescape">
 			<return type="String">
 			</return>
 			<description>
-			Perform XML un-escaping of the string.
+			Return a copy of the string with escaped characters replaced by their meanings according to the XML standard.
 			</description>
 		</method>
 	</methods>
