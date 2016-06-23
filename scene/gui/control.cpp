@@ -2460,8 +2460,8 @@ void Control::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"focus/ignore_mouse"), _SCS("set_ignore_mouse"),_SCS("is_ignoring_mouse") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"focus/stop_mouse"), _SCS("set_stop_mouse"),_SCS("is_stopping_mouse") );
 
-	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"size_flags/horizontal", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_h_size_flags"),_SCS("get_h_size_flags") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"size_flags/vertical", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_v_size_flags"),_SCS("get_v_size_flags") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"size_flags/horizontal", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_h_size_flags"),_SCS("get_h_size_flags") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"size_flags/vertical", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_v_size_flags"),_SCS("get_v_size_flags") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags/stretch_ratio", PROPERTY_HINT_RANGE, "1,128,0.01"), _SCS("set_stretch_ratio"),_SCS("get_stretch_ratio") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"theme/theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), _SCS("set_theme"),_SCS("get_theme") );
 
