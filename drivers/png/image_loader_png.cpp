@@ -62,7 +62,7 @@ static void _png_error_function(png_structp, png_const_charp text) {
 
 static void _png_warn_function(png_structp, png_const_charp text) {
 
-	ERR_PRINT(text);
+	WARN_PRINT(text);
 }
 
 typedef void (PNGAPI *png_error_ptr) PNGARG((png_structp, png_const_charp));
