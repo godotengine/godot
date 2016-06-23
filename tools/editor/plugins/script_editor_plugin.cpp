@@ -1138,6 +1138,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (trim_trailing_whitespace_on_save) {
 					_trim_trailing_whitespace(current->get_text_edit());
 				}
+				editor->push_item(current->get_edited_script()->cast_to<Object>());
 				editor->save_resource_as( current->get_edited_script() );
 
 			} break;
