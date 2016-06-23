@@ -196,6 +196,7 @@ public:
 	String md5_text() const;
 	String sha256_text() const;
 	Vector<uint8_t> md5_buffer() const;
+	Vector<uint8_t> sha256_buffer() const;
 
 	inline bool empty() const { return length() == 0; }
 
