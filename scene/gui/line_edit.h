@@ -87,6 +87,11 @@ private:
 		bool drag_attempt;
 	} selection;
 
+	Timer *caret_blink_timer;
+	bool caret_blink_enabled;
+	bool draw_caret;
+	bool window_has_focus;
+
 	void shift_selection_check_pre(bool);
 	void shift_selection_check_post(bool);
 
@@ -97,10 +102,15 @@ private:
 
 	void set_cursor_at_pixel_pos(int p_x);
 
+	void _reset_caret_blink_timer();
+	void _toggle_draw_caret();
+
 	void clear_internal();
 	void changed_internal();
 
-
+#ifdef TOOLS_ENABLED
+	void _editor_settings_changed();
+#endif
 
 	void _input_event(InputEvent p_event);
 	void _notification(int p_what);
@@ -131,6 +141,12 @@ public:
 	int get_max_length() const;
 	void append_at_cursor(String p_text);
 	void clear();
+
+	bool cursor_get_blink_enabled() const;
+	void cursor_set_blink_enabled(const bool p_enabled);
+
+	float cursor_get_blink_speed() const;
+	void cursor_set_blink_speed(const float p_speed);
 
 	void copy_text();
 	void cut_text();
