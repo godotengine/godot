@@ -2639,11 +2639,16 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		} break;
 		case RUN_PLAY_NATIVE: {
-			_menu_option_confirm(RUN_STOP,true);
-			emit_signal("play_pressed");
-			editor_run.run_native_notify();
-
-
+			
+			bool autosave = EDITOR_DEF("run/auto_save_before_running",true);
+			if (autosave) {
+				_menu_option_confirm(FILE_SAVE_SCENE, false);
+			}
+			if (run_native->is_deploy_debug_remote_enabled()){
+				_menu_option_confirm(RUN_STOP,true);
+				emit_signal("play_pressed");
+				editor_run.run_native_notify();
+			}
 		} break;
 		case RUN_SCENE_SETTINGS: {
 
