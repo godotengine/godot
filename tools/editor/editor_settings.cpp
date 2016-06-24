@@ -423,7 +423,7 @@ void EditorSettings::setup_network() {
 		if (ip=="127.0.0.1")
 			continue;
 
-		if (lip!="")
+		if (lip=="")
 			lip=ip;
 		if (ip==current)
 			lip=current; //so it saves
