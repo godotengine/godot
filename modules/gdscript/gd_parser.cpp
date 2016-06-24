@@ -1069,8 +1069,8 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				// can be followed by an unary op in a valid combination,
 				// due to how precedence works, unaries will always dissapear first
 
-				_set_error("Parser bug..");
-
+				_set_error("Unexpected two consecutive operators.");
+				return NULL;
 			}
 
 
