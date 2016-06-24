@@ -469,6 +469,9 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 
 	t->set_font("font","TextEdit", default_font );
 
+	t->set_color("completion_background_color", "TextEdit",Color::html("2C2A32"));
+	t->set_color("completion_selected_color", "TextEdit",Color::html("434244"));
+	t->set_color("completion_existing_color", "TextEdit",Color::html("21dfdfdf"));
 	t->set_color("completion_scroll_color","TextEdit", control_font_color_pressed );
 	t->set_color("font_color","TextEdit", control_font_color );
 	t->set_color("font_color_selected","TextEdit", Color(0,0,0) );
