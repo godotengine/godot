@@ -1563,7 +1563,7 @@ static Variant::Type get_jni_type(const String& p_type) {
 		{"[I",Variant::INT_ARRAY},
 		{"[B",Variant::RAW_ARRAY},
 		{"[F",Variant::REAL_ARRAY},
-		{"[java.lang.String",Variant::STRING_ARRAY},
+		{"[Ljava.lang.String;",Variant::STRING_ARRAY},
 		{"org.godotengine.godot.Dictionary", Variant::DICTIONARY},
 		{NULL,Variant::NIL}
 	};
@@ -1599,7 +1599,7 @@ static const char* get_jni_sig(const String& p_type) {
 		{"[I","[I"},
 		{"[B","[B"},
 		{"[F","[F"},
-		{"[java.lang.String","[Ljava/lang/String;"},
+		{"[Ljava.lang.String;","[Ljava/lang/String;"},
 		{NULL,"V"}
 	};
 
