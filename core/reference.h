@@ -341,7 +341,7 @@ struct PtrToArg< Ref<T> > {
 
 	_FORCE_INLINE_ static void encode(Ref<T> p_val,const void* p_ptr) {
 
-		*((T**)p_ptr)=p_val.ptr();
+		*(Ref<Reference>*)p_ptr=p_val;
 	}
 
 };
@@ -371,7 +371,7 @@ struct PtrToArg< RefPtr > {
 	_FORCE_INLINE_ static void encode(RefPtr p_val,const void* p_ptr) {
 
 		Ref<Reference> r = p_val;
-		*((Reference**)p_ptr)=r.ptr();
+		*(Ref<Reference>*)p_ptr=r;
 	}
 
 };
