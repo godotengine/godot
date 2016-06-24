@@ -604,10 +604,10 @@ void LineEdit::_notification(int p_what) {
 			Color font_color_selected=get_color("font_color_selected");
 			Color cursor_color=get_color("cursor_color");
 
-			const String& t = text.empty() ? memo : text;
-			// draw memo color
+			const String& t = text.empty() ? placeholder : text;
+			// draw placeholder color
 			if(text.empty())
-				font_color.a *= 0.7;
+				font_color.a *= 0.6;
 
 			while(true) {
 
@@ -869,15 +869,15 @@ String LineEdit::get_text() const {
 	return text;
 }
 
-void LineEdit::set_memo(String p_text) {
+void LineEdit::set_placeholder(String p_text) {
 
-	memo = p_text;
+	placeholder = p_text;
 	update();
 }
 
-String LineEdit::get_memo() const {
+String LineEdit::get_placeholder() const {
 
-	return memo;
+	return placeholder;
 }
 
 void LineEdit::set_cursor_pos(int p_pos) {
@@ -1152,8 +1152,8 @@ void LineEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("select_all"),&LineEdit::select_all);
 	ObjectTypeDB::bind_method(_MD("set_text","text"),&LineEdit::set_text);
 	ObjectTypeDB::bind_method(_MD("get_text"),&LineEdit::get_text);
-	ObjectTypeDB::bind_method(_MD("set_memo","text"),&LineEdit::set_memo);
-	ObjectTypeDB::bind_method(_MD("get_memo"),&LineEdit::get_memo);
+	ObjectTypeDB::bind_method(_MD("set_placeholder","text"),&LineEdit::set_placeholder);
+	ObjectTypeDB::bind_method(_MD("get_placeholder"),&LineEdit::get_placeholder);
 	ObjectTypeDB::bind_method(_MD("set_cursor_pos","pos"),&LineEdit::set_cursor_pos);
 	ObjectTypeDB::bind_method(_MD("get_cursor_pos"),&LineEdit::get_cursor_pos);
 	ObjectTypeDB::bind_method(_MD("set_max_length","chars"),&LineEdit::set_max_length);
@@ -1184,7 +1184,7 @@ void LineEdit::_bind_methods() {
 	BIND_CONSTANT( MENU_MAX );
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text" ), _SCS("set_text"),_SCS("get_text") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "memo" ), _SCS("set_memo"),_SCS("get_memo") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "placeholder" ), _SCS("set_placeholder"),_SCS("get_placeholder") );
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), _SCS("set_align"), _SCS("get_align"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "max_length" ), _SCS("set_max_length"),_SCS("get_max_length") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "editable" ), _SCS("set_editable"),_SCS("is_editable") );
