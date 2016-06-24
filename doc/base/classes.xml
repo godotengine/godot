@@ -8211,6 +8211,12 @@
 			Gets the current color
 			</description>
 		</method>
+		<method name="get_picker">
+			<return type="ColorPicker">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_edit_alpha">
 			<argument index="0" name="show" type="bool">
 			</argument>
@@ -21848,10 +21854,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="PacketPeerUDP" inherits="PacketPeer" category="Core">
 	<brief_description>
-		UDP packet peer.
+	UDP packet peer.
 	</brief_description>
 	<description>
-		UDP packet peer. Can be used to send raw UDP packets as well as [Variant]s.
+	UDP packet peer. Can be used to send raw UDP packets as well as [Variant]s.
 	</description>
 	<methods>
 		<method name="listen">
@@ -23723,8 +23729,6 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">
-			<return type="Variant">
-			</return>
 			<argument index="0" name="shape" type="RID">
 			</argument>
 			<description>
@@ -23949,8 +23953,6 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="area_get_param" qualifiers="const">
-			<return type="Variant">
-			</return>
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<argument index="1" name="param" type="int">
@@ -24125,8 +24127,6 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="body_get_shape_metadata" qualifiers="const">
-			<return type="Variant">
-			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<argument index="1" name="shape_idx" type="int">
@@ -24280,8 +24280,6 @@ This method controls whether the position between two cached points is interpola
 			</description>
 		</method>
 		<method name="body_get_state" qualifiers="const">
-			<return type="Variant">
-			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<argument index="1" name="state" type="int">
@@ -24691,15 +24689,6 @@ This method controls whether the position between two cached points is interpola
 		</constant>
 		<constant name="JOINT_DAMPED_SPRING" value="2">
 			Constant to create damped spring joints.
-		</constant>
-		<constant name="JOINT_PARAM_BIAS" value="0">
-			Constant to set/get the solver bias for a joint.
-		</constant>
-		<constant name="JOINT_PARAM_MAX_BIAS" value="1">
-			Constant to set/get the maximum speed at which a joint can correct its bodies.
-		</constant>
-		<constant name="JOINT_PARAM_MAX_FORCE" value="2">
-			Constant to set the maximum force a joint can exert on its bodies.
 		</constant>
 		<constant name="DAMPED_STRING_REST_LENGTH" value="0">
 			Set the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
@@ -34877,16 +34866,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="STATUS_DISCONNECTED" value="0">
-		A status representing a [StreamPeerSSL] that is disconnected.
+			A status representing a [StreamPeerSSL] that is disconnected.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="1">
-		A status representing a [StreamPeerSSL] that is connected to a host.
+			A status representing a [StreamPeerSSL] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR_NO_CERTIFICATE" value="2">
-		An errot status that shows the peer did not present a SSL certificate and validation was requested.
+			An errot status that shows the peer did not present a SSL certificate and validation was requested.
 		</constant>
 		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="3">
-		An error status that shows a mismatch in the SSL certificate domain presented by the host and the domain requested for validation.
+			An error status that shows a mismatch in the SSL certificate domain presented by the host and the domain requested for validation.
 		</constant>
 	</constants>
 </class>
@@ -34945,16 +34934,16 @@ This method controls whether the position between two cached points is interpola
 	</methods>
 	<constants>
 		<constant name="STATUS_NONE" value="0">
-		The initial status of the [StreamPeerTCP], also the status after a disconnect.
+			The initial status of the [StreamPeerTCP], also the status after a disconnect.
 		</constant>
 		<constant name="STATUS_CONNECTING" value="1">
-		A status representing a [StreamPeerTCP] that is connecting to a host.
+			A status representing a [StreamPeerTCP] that is connecting to a host.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="2">
-		A status representing a [StreamPeerTCP] that is connected to a host.
+			A status representing a [StreamPeerTCP] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR" value="3">
-		A staus representing a [StreamPeerTCP] in error state.
+			A staus representing a [StreamPeerTCP] in error state.
 		</constant>
 	</constants>
 </class>
@@ -43026,7 +43015,7 @@ This method controls whether the position between two cached points is interpola
 			<description>
 			</description>
 		</method>
-		<method name="free">
+		<method name="free_rid">
 			<argument index="0" name="arg0" type="RID">
 			</argument>
 			<description>
