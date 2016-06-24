@@ -298,6 +298,9 @@ void LineEdit::_input_event(InputEvent p_event) {
 					}
 					case KEY_LEFT: {
 
+#ifndef APPLE_STYLE_KEYS
+						if (!k.mod.alt)
+#endif
 						shift_selection_check_pre(k.mod.shift);
 
 #ifdef APPLE_STYLE_KEYS

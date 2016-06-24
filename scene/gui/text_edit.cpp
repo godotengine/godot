@@ -2065,6 +2065,12 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					if (k.mod.shift)
 						_pre_shift_selection();
+#ifdef APPLE_STYLE_KEYS
+					else
+#else
+					else if (!k.mod.alt)
+#endif
+						deselect();
 
 #ifdef APPLE_STYLE_KEYS
 					if (k.mod.command) {
@@ -2118,6 +2124,12 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					if (k.mod.shift)
 						_pre_shift_selection();
+#ifdef APPLE_STYLE_KEYS
+					else
+#else
+					else if (!k.mod.alt)
+#endif
+						deselect();
 
 #ifdef APPLE_STYLE_KEYS
 					if (k.mod.command) {
