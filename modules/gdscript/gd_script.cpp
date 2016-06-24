@@ -1709,6 +1709,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"false",
 		"float",
 		"int",
+		"bool",
 		"null",
 		"PI",
 		"self",
