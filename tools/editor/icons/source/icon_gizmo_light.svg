@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
-   viewBox="0 0 32 32"
+   width="128"
+   height="128"
+   viewBox="0 0 128 128"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="15.999999"
-     inkscape:cx="18.311796"
-     inkscape:cy="18.635805"
+     inkscape:zoom="3.9999998"
+     inkscape:cx="47.738891"
+     inkscape:cy="58.814006"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -68,23 +68,23 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-924.3622)">
     <path
        style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 16 1 A 10.000017 10.000017 0 0 0 6 11 A 10.000017 10.000017 0 0 0 16 21 A 10.000017 10.000017 0 0 0 26 11 A 10.000017 10.000017 0 0 0 16 1 z M 16 4 A 7 7 0 0 1 23 11 A 7 7 0 0 1 16 18 A 7 7 0 0 1 9 11 A 7 7 0 0 1 16 4 z "
-       transform="translate(0,1020.3622)"
-       id="path4162" />
+       d="m 64,930.3622 a 40.000068,40.000068 0 0 0 -40,40 40.000068,40.000068 0 0 0 40,40 40.000068,40.000068 0 0 0 40,-40 40.000068,40.000068 0 0 0 -40,-40 z m 0,12 a 28,28 0 0 1 28,28 28,28 0 0 1 -28,28 28,28 0 0 1 -28,-28 28,28 0 0 1 28,-28 z"
+       id="path4162"
+       inkscape:connector-curvature="0" />
     <path
        style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 12 19 L 12 24 A 2 2 0 0 0 14 26 L 18 26 A 2 2 0 0 0 20 24 L 20 19 L 12 19 z "
-       transform="translate(0,1020.3622)"
-       id="rect4164" />
+       d="m 48,1002.3622 0,20 a 8,8 0 0 0 8,8 l 16,0 a 8,8 0 0 0 8,-8 l 0,-20 -32,0 z"
+       id="rect4164"
+       inkscape:connector-curvature="0" />
     <rect
        style="opacity:1;fill:#f7f5cf;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4168"
-       width="4"
-       height="2.0000174"
-       x="14"
-       y="1048.3622" />
+       width="16"
+       height="8.0000696"
+       x="56"
+       y="1038.3622" />
   </g>
 </svg>
