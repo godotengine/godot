@@ -4293,39 +4293,39 @@ msgstr "Changer le nom de l'entrée"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Connect Graph Nodes"
-msgstr ""
+msgstr "Connecté le noeud graphique"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Disconnect Graph Nodes"
-msgstr ""
+msgstr "Déconnecté le noeud graphique"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Remove Shader Graph Node"
-msgstr ""
+msgstr "Retirer le noeud du shader graphique"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Move Shader Graph Node"
-msgstr ""
+msgstr "Déplacer le noeud du shader graphique"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Duplicate Graph Node(s)"
-msgstr ""
+msgstr "Dupliquer le(s) noeud(s) du graphique"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Delete Shader Graph Node(s)"
-msgstr ""
+msgstr "Supprimer le(s) nœud(s) du shader graphique"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Error: Cyclic Connection Link"
-msgstr ""
+msgstr "Erreur: Lien de connexion cyclique"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Error: Missing Input Connections"
-msgstr ""
+msgstr "Erreur: Connexions d'entrée manquant"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Add Shader Graph Node"
-msgstr ""
+msgstr "Ajouter noeud shader graphique"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
@@ -4353,7 +4353,7 @@ msgstr "Transformation sur l'axe Z."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "View Plane Transform."
-msgstr ""
+msgstr "Voir le plan de transformation."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling to %s%%."
@@ -4517,7 +4517,7 @@ msgstr "Utiliser sRGB par défaut"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
-msgstr ""
+msgstr "1 Vues"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports"
@@ -4525,19 +4525,19 @@ msgstr "2 vues"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports (Alt)"
-msgstr ""
+msgstr "2 Vues (Alt)"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports"
-msgstr "3 vues"
+msgstr "3 Vues"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports (Alt)"
-msgstr ""
+msgstr "3 Vues (Alt)"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "4 Viewports"
-msgstr "4 vues"
+msgstr "4 Vues"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
@@ -4653,11 +4653,11 @@ msgstr "Ajouter vide"
 
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Changer boucle d'animation"
 
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation FPS"
-msgstr ""
+msgstr "Changer l'animation FPS"
 
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "(empty)"
@@ -4677,11 +4677,11 @@ msgstr "Trames d'animation"
 
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
-msgstr ""
+msgstr "Insérez vide (Avant)"
 
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (After)"
-msgstr ""
+msgstr "Insérez vide (Après)"
 
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Up"
@@ -4701,13 +4701,11 @@ msgstr "Éditeur de région de texture"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Scale Region Editor"
-msgstr ""
+msgstr "Echelle éditeur de région"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid ""
-"No texture in this node.\n"
-"Set a texture to be able to edit region."
-msgstr ""
+msgid "No texture in this node.\n Set a texture to be able to edit region."
+msgstr "Pas de texture dans ce noeud.\n Définir une texture pour être en mesure de modifier la région."
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
@@ -4715,7 +4713,7 @@ msgstr "Impossible d'enregistrer le thème dans le fichier :"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Add All Items"
-msgstr "Ajouter tous les items"
+msgstr "Ajouter tous les articles"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Add All"
@@ -4724,15 +4722,15 @@ msgstr "Tout ajouter"
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Item"
-msgstr "Supprimer l'item"
+msgstr "Supprimer l'article"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
-msgstr ""
+msgstr "Ajouter classe articles"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
-msgstr ""
+msgstr "Retirer classe articles"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Template"
@@ -4744,23 +4742,23 @@ msgstr "Créer un nouveau modèle d'éditeur"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "CheckBox Radio1"
-msgstr ""
+msgstr "Case à cocher Radio1"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "CheckBox Radio2"
-msgstr ""
+msgstr "Case à cocher Radio2"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Item"
-msgstr "Item"
+msgstr "Article"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Check Item"
-msgstr "Item à cocher"
+msgstr "Article à cocher"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Checked Item"
-msgstr "Item coché"
+msgstr "Article coché"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -4814,7 +4812,7 @@ msgstr "Couleur"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
-msgstr ""
+msgstr "Peindre carte de tuiles"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -4823,7 +4821,7 @@ msgstr "Dupliquer"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase TileMap"
-msgstr ""
+msgstr "Effacer la carte de tuile"
 
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase selection"
@@ -5009,8 +5007,7 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Convert text scenes to binary on export."
-msgstr ""
-"Convertir les scènes en format texte au format binaire à l'exportation."
+msgstr "Convertir les scènes en format texte au format binaire à l'exportation."
 
 #: tools/editor/project_export.cpp
 msgid "Images"
@@ -5186,12 +5183,11 @@ msgstr "Projet importé"
 
 #: tools/editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
-msgstr ""
+msgstr "Chemin de projet non valide (changer quelque chose?)."
 
 #: tools/editor/project_manager.cpp
 msgid "Couldn't create engine.cfg in project path."
-msgstr ""
-"Impossible de créer le fichier engine.cfg dans le répertoire du projet."
+msgstr "Impossible de créer le fichier engine.cfg dans le répertoire du projet."
 
 #: tools/editor/project_manager.cpp
 msgid "Import Existing Project"
@@ -5239,8 +5235,7 @@ msgstr "Voulez-vous vraiment lancer plus d'un projet à la fois ?"
 
 #: tools/editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
-msgstr ""
-"Supprimer le projet de la liste ? (Le contenu du dossier ne sera pas modifié)"
+msgstr "Supprimer le projet de la liste ? (Le contenu du dossier ne sera pas modifié)"
 
 #: tools/editor/project_manager.cpp
 msgid "Project Manager"
@@ -5268,7 +5263,7 @@ msgstr "Quitter"
 
 #: tools/editor/project_settings.cpp
 msgid "Key "
-msgstr ""
+msgstr "Touche"
 
 #: tools/editor/project_settings.cpp
 msgid "Joy Button"
@@ -5388,21 +5383,15 @@ msgstr "Caractères valides :"
 
 #: tools/editor/project_settings.cpp
 msgid "Invalid name. Must not collide with an existing engine class name."
-msgstr ""
-"Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'une classe "
-"moteur existante."
+msgstr "Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'une classe du moteur existant"
 
 #: tools/editor/project_settings.cpp
 msgid "Invalid name. Must not collide with an existing buit-in type name."
-msgstr ""
-"Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'un type "
-"intégré au moteur."
+msgstr "Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'un type intégré au moteur."
 
 #: tools/editor/project_settings.cpp
 msgid "Invalid name. Must not collide with an existing global constant name."
-msgstr ""
-"Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'une "
-"constante globale."
+msgstr "Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'une constante globale."
 
 #: tools/editor/project_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -5434,23 +5423,23 @@ msgstr "Supprimer la traduction"
 
 #: tools/editor/project_settings.cpp
 msgid "Add Remapped Path"
-msgstr "Ajouter un chemin remappé"
+msgstr "Ajouter un chemin réaffectés"
 
 #: tools/editor/project_settings.cpp
 msgid "Resource Remap Add Remap"
-msgstr ""
+msgstr "Ressource ajouter réaffecter"
 
 #: tools/editor/project_settings.cpp
 msgid "Change Resource Remap Language"
-msgstr ""
+msgstr "Changer ressource réaffecter Langue"
 
 #: tools/editor/project_settings.cpp
 msgid "Remove Resource Remap"
-msgstr ""
+msgstr "Retirer réaffecter de la ressource"
 
 #: tools/editor/project_settings.cpp
 msgid "Remove Resource Remap Option"
-msgstr ""
+msgstr "Retirer l'option réaffecter de la ressource"
 
 #: tools/editor/project_settings.cpp
 msgid "Enable"
@@ -5622,7 +5611,7 @@ msgstr "Impossible d'exécuter l'outil PVRTC :"
 
 #: tools/editor/pvrtc_compress.cpp
 msgid "Can't load back converted image using PVRTC tool:"
-msgstr ""
+msgstr "Vous ne pouvez pas charger de retour l'image convertie en utilisant l'outil PVRTC:"
 
 #: tools/editor/reparent_dialog.cpp tools/editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -5678,7 +5667,7 @@ msgstr "Arguments de la scène principale :"
 
 #: tools/editor/run_settings_dialog.cpp
 msgid "Scene Run Settings"
-msgstr ""
+msgstr "Les réglages de scène à exécuter"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "OK :("
@@ -5686,7 +5675,7 @@ msgstr "OK :("
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
-msgstr ""
+msgstr "Aucun parent à l'instance d'un enfant."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
@@ -5716,11 +5705,11 @@ msgstr "Cette opération ne peut être réalisée sur la racine de l'arbre."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Move Node In Parent"
-msgstr ""
+msgstr "Déplacer le nœud parent"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Move Nodes In Parent"
-msgstr ""
+msgstr "Déplacer les nœuds parents"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
@@ -5736,9 +5725,7 @@ msgstr "Cette opération ne peut être réalisée sans une scène."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
-msgstr ""
-"Cette opération ne peut être réalisée uniquement avec un seul nœud "
-"sélectionné."
+msgstr "Cette opération nécessite un seul nœud sélectionné."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
@@ -5780,7 +5767,7 @@ msgstr "Erreur d'enregistrement de la scène."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error duplicating scene to save it."
-msgstr ""
+msgstr "Erreur de duplication, "
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -5880,7 +5867,7 @@ msgstr "Charger en tant que fictif"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Discard Instancing"
-msgstr ""
+msgstr "Jeter l'instance"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Open in Editor"
@@ -6092,7 +6079,7 @@ msgstr "Inspecter l'instance suivante"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Stack Frames"
-msgstr ""
+msgstr "Cadres de pile"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Variable"
@@ -6120,7 +6107,7 @@ msgstr "Propriétés de l'objet distant : "
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Profiler"
-msgstr ""
+msgstr "Profiler"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Monitor"
