@@ -182,6 +182,16 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 		if (ED_IS_SHORTCUT("editor/distraction_free_mode", p_event)) {
 			set_distraction_free_mode(!get_distraction_free_mode());
 		}
+		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
+			int next_tab = editor_data.get_edited_scene() + 1;
+			next_tab %= editor_data.get_edited_scene_count();
+			_scene_tab_changed(next_tab);
+		}
+		if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
+			int next_tab = editor_data.get_edited_scene() - 1;
+			next_tab = next_tab >= 0 ? next_tab : editor_data.get_edited_scene_count() - 1;
+			_scene_tab_changed(next_tab);
+		}
 
 		switch(p_event.key.scancode) {
 
@@ -205,18 +215,7 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 			case KEY_F6: _menu_option_confirm(RUN_PLAY_SCENE,true); break;
 			//case KEY_F7: _menu_option_confirm(RUN_PAUSE,true); break;
 			case KEY_F8: _menu_option_confirm(RUN_STOP,true); break;*/
-			case KEY_TAB:
-				if (p_event.key.mod.command) {
-					int current_tab = editor_data.get_edited_scene();
-					int tab_offset = 1;
-					if (p_event.key.mod.shift)
-						tab_offset = -1;
-					int next_tab = current_tab + tab_offset;
-					next_tab = next_tab >= 0 ? next_tab : editor_data.get_edited_scene_count() - 1;
-					next_tab %= editor_data.get_edited_scene_count();
-					_scene_tab_changed(next_tab);
-				}
-			break;
+
 		}
 
 	}
@@ -5501,6 +5500,11 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT("editor/fullscreen_mode",TTR("Fullscreen Mode"),KEY_MASK_SHIFT|KEY_F11);
 	ED_SHORTCUT("editor/distraction_free_mode",TTR("Distraction Free Mode"),KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_F11);
+
+
+	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD+KEY_TAB);
+	ED_SHORTCUT("editor/prev_tab", TTR("Previous tab"), KEY_MASK_CMD+KEY_MASK_SHIFT+KEY_TAB);
+
 
 	Separator *vs=NULL;
 
