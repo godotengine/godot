@@ -18,6 +18,9 @@ drivers/unix/os_unix_global_settings_path.cpp
 tools/editor/register_exporters.cpp
 tools/editor/doc_data_compressed.h
 tools/editor/editor_icons.cpp
+tools/editor/builtin_fonts.h
+tools/editor/certs_compressed.h
+tools/editor/translations.h
 .fscache
 make.bat
 log.txt
