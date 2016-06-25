@@ -8544,6 +8544,11 @@
 			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
 			</description>
 		</method>
+		<method name="invert">
+			<description>
+			Reverse the order of the elements in the array (so first element will now be the last).
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="color" type="Color">
 			</argument>
@@ -17190,6 +17195,11 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 			Insert a new int at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
+		<method name="invert">
+			<description>
+			Reverse the order of the elements in the array (so first element will now be the last).
 			</description>
 		</method>
 		<method name="push_back">
@@ -30279,6 +30289,11 @@ A similar effect may be achieved moving this node's descendants.
 			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
 			</description>
 		</method>
+		<method name="invert">
+			<description>
+			Reverse the order of the elements in the array (so first element will now be the last).
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="byte" type="int">
 			</argument>
@@ -30655,6 +30670,11 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
+		<method name="invert">
+			<description>
+			Reverse the order of the elements in the array (so first element will now be the last).
 			</description>
 		</method>
 		<method name="push_back">
@@ -38120,6 +38140,11 @@ A similar effect may be achieved moving this node's descendants.
 			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
 			</description>
 		</method>
+		<method name="invert">
+			<description>
+			Reverse the order of the elements in the array (so first element will now be the last).
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="string" type="String">
 			</argument>
@@ -43043,6 +43068,11 @@ A similar effect may be achieved moving this node's descendants.
 			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
 			</description>
 		</method>
+		<method name="invert">
+			<description>
+			Reverse the order of the elements in the array (so first element will now be the last).
+			</description>
+		</method>
 		<method name="push_back">
 			<argument index="0" name="vector2" type="Vector2">
 			</argument>
@@ -43332,6 +43362,11 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 			Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+			</description>
+		</method>
+		<method name="invert">
+			<description>
+			Reverse the order of the elements in the array (so first element will now be the last).
 			</description>
 		</method>
 		<method name="push_back">
