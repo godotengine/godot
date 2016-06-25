@@ -144,57 +144,49 @@ public class PaymentsManager {
 			}
 		}.consumeItAll();
 	}
-	
-	public void requestPurchased(){
-		try{
+
+	public void requestPurchased() {
+		try {
 			PaymentsCache pc = new PaymentsCache(Godot.getInstance());
 
-//			Log.d("godot", "requestPurchased for " + activity.getPackageName());
-			Bundle bundle = mService.getPurchases(3, activity.getPackageName(), "inapp",null);
+			String continueToken = null;
 
-/*			
-			for (String key : bundle.keySet()) {
-			    Object value = bundle.get(key);
-			    Log.d("godot", String.format("%s %s (%s)", key, value.toString(), value.getClass().getName()));
-			}
-*/			
-			
-			if (bundle.getInt("RESPONSE_CODE") == 0){
+			do {
+				Bundle bundle = mService.getPurchases(3, activity.getPackageName(), "inapp", continueToken);
 
-				final ArrayList<String> myPurchases = bundle.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
-				final ArrayList<String> mySignatures = bundle.getStringArrayList("INAPP_DATA_SIGNATURE_LIST");
-				
+				if (bundle.getInt("RESPONSE_CODE") == 0) {
 
-				if (myPurchases == null || myPurchases.size() == 0){
-//					Log.d("godot", "No purchases!");
-					godotPaymentV3.callbackPurchased("", "", "");
-					return;
-				}
-		
-//				Log.d("godot", "# products are purchased:" + myPurchases.size());
-				for (int i=0;i<myPurchases.size();i++)
-				{
-					
-					try{
-						String receipt = myPurchases.get(i);
-						JSONObject inappPurchaseData = new JSONObject(receipt);
-						String sku = inappPurchaseData.getString("productId");
-						String token = inappPurchaseData.getString("purchaseToken");
-						String signature = mySignatures.get(i);
-//						Log.d("godot", "purchased item:" + token + "\n" + receipt);
+					final ArrayList<String> myPurchases = bundle.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
+					final ArrayList<String> mySignatures = bundle.getStringArrayList("INAPP_DATA_SIGNATURE_LIST");
 
-						pc.setConsumableValue("ticket_signautre", sku, signature);
-						pc.setConsumableValue("ticket", sku, receipt);
-						pc.setConsumableFlag("block", sku, true);
-						pc.setConsumableValue("token", sku, token);
+					if (myPurchases == null || myPurchases.size() == 0) {
+						godotPaymentV3.callbackPurchased("", "", "");
+						return;
+					}
 
-						godotPaymentV3.callbackPurchased(receipt, signature, sku);
-					} catch (JSONException e) {
+					for (int i = 0; i < myPurchases.size(); i++) {
+
+						try {
+							String receipt = myPurchases.get(i);
+							JSONObject inappPurchaseData = new JSONObject(receipt);
+							String sku = inappPurchaseData.getString("productId");
+							String token = inappPurchaseData.getString("purchaseToken");
+							String signature = mySignatures.get(i);
+
+							pc.setConsumableValue("ticket_signautre", sku, signature);
+							pc.setConsumableValue("ticket", sku, receipt);
+							pc.setConsumableFlag("block", sku, true);
+							pc.setConsumableValue("token", sku, token);
+
+							godotPaymentV3.callbackPurchased(receipt, signature, sku);
+						} catch (JSONException e) {
+						}
 					}
 				}
-
-			}
-		}catch(Exception e){
+				continueToken = bundle.getString("INAPP_CONTINUATION_TOKEN");
+				Log.d("godot", "continue token = " + continueToken);
+			} while (!TextUtils.isEmpty(continueToken));
+		} catch (Exception e) {
 			Log.d("godot", "Error requesting purchased products:" + e.getClass().getName() + ":" + e.getMessage());
 		}
 	}
