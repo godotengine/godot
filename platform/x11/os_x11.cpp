@@ -344,7 +344,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	/* set the name and class hints for the window manager to use */
 	classHint = XAllocClassHint();
 	if (classHint) {
-		classHint->res_name = (char *)"Godot";
+		classHint->res_name = (char *)"Godot_Engine";
 		classHint->res_class = (char *)"Godot";
 	}
 	XSetClassHint(x11_display, x11_window, classHint);
