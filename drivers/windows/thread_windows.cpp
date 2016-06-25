@@ -31,7 +31,7 @@
 #if defined(WINDOWS_ENABLED) && !defined(WINRT_ENABLED)
 
 #include "os/memory.h"
-#include "script_language.h"
+
 
 Thread::ID ThreadWindows::get_ID() const {
 
