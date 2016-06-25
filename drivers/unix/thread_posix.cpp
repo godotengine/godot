@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "thread_posix.h"
+#include "script_language.h"
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
 
@@ -50,7 +51,13 @@ void *ThreadPosix::thread_callback(void *userdata) {
 
 	ThreadPosix *t=reinterpret_cast<ThreadPosix*>(userdata);
 	t->id=(ID)pthread_self();
+
+	ScriptServer::thread_enter(); //scripts may need to attach a stack
+
 	t->callback(t->user);
+
+	ScriptServer::thread_exit();
+
 	return NULL;
 }
 

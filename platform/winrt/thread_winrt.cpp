@@ -33,6 +33,8 @@
 Thread* ThreadWinrt::create_func_winrt(ThreadCreateCallback p_callback,void *p_user,const Settings&) {
 
 	ThreadWinrt* thread = memnew(ThreadWinrt);
+
+
 	std::thread new_thread(p_callback, p_user);
 	std::swap(thread->thread, new_thread);
 

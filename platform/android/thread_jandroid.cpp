@@ -29,6 +29,7 @@
 #include "thread_jandroid.h"
 
 #include "os/memory.h"
+#include "script_language.h"
 
 Thread::ID ThreadAndroid::get_ID() const {
 
@@ -44,8 +45,10 @@ void *ThreadAndroid::thread_callback(void *userdata) {
 
 	ThreadAndroid *t=reinterpret_cast<ThreadAndroid*>(userdata);
 	setup_thread();
+	ScriptServer::thread_enter(); //scripts may need to attach a stack
 	t->id=(ID)pthread_self();
 	t->callback(t->user);
+	ScriptServer::thread_exit();
 	return NULL;
 }
 

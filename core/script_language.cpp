@@ -102,6 +102,22 @@ bool ScriptServer::is_reload_scripts_on_save_enabled() {
 	return reload_scripts_on_save;
 }
 
+void ScriptServer::thread_enter() {
+
+	for(int i=0;i<_language_count;i++) {
+		_languages[i]->thread_enter();
+	}
+}
+
+void ScriptServer::thread_exit() {
+
+	for(int i=0;i<_language_count;i++) {
+		_languages[i]->thread_exit();
+	}
+
+}
+
+
 void ScriptInstance::get_property_state(List<Pair<StringName, Variant> > &state) {
 
 	List<PropertyInfo> pinfo;
