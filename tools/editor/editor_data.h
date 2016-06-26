@@ -184,15 +184,15 @@ public:
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node* p_root);
 	void set_edited_scene_import_metadata(Ref<ResourceImportMetadata> p_mdata);
-	Ref<ResourceImportMetadata> get_edited_scene_import_metadata() const;
+	Ref<ResourceImportMetadata> get_edited_scene_import_metadata(int p_idx = -1) const;
 	int get_edited_scene() const;
-	Node* get_edited_scene_root();
+	Node* get_edited_scene_root(int p_idx = -1);
 	int get_edited_scene_count() const;
 	String get_scene_title(int p_idx) const;
 	String get_scene_path(int p_idx) const;
 	String get_scene_type(int p_idx) const;
 	Ref<Script> get_scene_root_script(int p_idx) const;
-	void set_edited_scene_version(uint64_t version);
+	void set_edited_scene_version(uint64_t version, int p_scene_idx = -1);
 	uint64_t get_edited_scene_version() const;
 	uint64_t get_scene_version(int p_idx) const;
 	void clear_edited_scenes();

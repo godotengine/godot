@@ -613,11 +613,14 @@ void EditorData::set_edited_scene(int p_idx){
 	current_edited_scene=p_idx;
 	//swap
 }
-Node* EditorData::get_edited_scene_root(){
-
-	ERR_FAIL_INDEX_V(current_edited_scene,edited_scene.size(),NULL);
-
-	return edited_scene[current_edited_scene].root;
+Node* EditorData::get_edited_scene_root(int p_idx){
+	if (p_idx < 0) {
+		ERR_FAIL_INDEX_V(current_edited_scene,edited_scene.size(),NULL);
+		return edited_scene[current_edited_scene].root;
+	} else {
+		ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),NULL);
+		return edited_scene[p_idx].root;
+	}
 }
 void EditorData::set_edited_scene_root(Node* p_root) {
 
@@ -630,9 +633,14 @@ int EditorData::get_edited_scene_count() const {
 	return edited_scene.size();
 }
 
-void EditorData::set_edited_scene_version(uint64_t version) {
+void EditorData::set_edited_scene_version(uint64_t version, int scene_idx) {
 	ERR_FAIL_INDEX(current_edited_scene,edited_scene.size());
-	edited_scene[current_edited_scene].version=version;
+	if (scene_idx < 0) {
+		edited_scene[current_edited_scene].version=version;
+	} else {
+		ERR_FAIL_INDEX(scene_idx,edited_scene.size());
+		edited_scene[scene_idx].version=version;
+	}
 
 }
 
@@ -758,10 +766,15 @@ void EditorData::set_edited_scene_import_metadata(Ref<ResourceImportMetadata> p_
 
 }
 
-Ref<ResourceImportMetadata> EditorData::get_edited_scene_import_metadata() const{
+Ref<ResourceImportMetadata> EditorData::get_edited_scene_import_metadata(int idx) const{
 
 	ERR_FAIL_INDEX_V(current_edited_scene,edited_scene.size(),Ref<ResourceImportMetadata>());
-	return edited_scene[current_edited_scene].medatata;
+	if(idx<0) {
+		return edited_scene[current_edited_scene].medatata;
+	} else {
+		ERR_FAIL_INDEX_V(idx,edited_scene.size(),Ref<ResourceImportMetadata>());
+		return edited_scene[idx].medatata;
+	}
 }
 
 
