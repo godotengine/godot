@@ -104,16 +104,18 @@ void ParallaxBackground::_update_scroll() {
 	}
 	ofs = -ofs;
 
+	final_offset=ofs;
+
 	for(int i=0;i<get_child_count();i++) {
 
 		ParallaxLayer *l=get_child(i)->cast_to<ParallaxLayer>();
 		if (!l)
 			continue;
 
-        if (ignore_camera_zoom)
-            l->set_base_offset_and_scale(ofs, 1.0);
-        else
-            l->set_base_offset_and_scale(ofs, scale);
+		if (ignore_camera_zoom)
+			l->set_base_offset_and_scale(ofs, 1.0);
+		else
+			l->set_base_offset_and_scale(ofs, scale);
 	}
 }
 
@@ -178,6 +180,11 @@ bool ParallaxBackground::is_ignore_camera_zoom(){
 
     return ignore_camera_zoom;
 
+}
+
+Vector2 ParallaxBackground::get_final_offset() const {
+
+	return final_offset;
 }
 
 void ParallaxBackground::_bind_methods() {
