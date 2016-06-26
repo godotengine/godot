@@ -279,6 +279,8 @@ class ScriptEditor : public VBoxContainer {
 
 	void _script_split_dragged(float);
 
+	void _unhandled_input(const InputEvent& p_event);
+
 
 	void _history_forward();
 	void _history_back();

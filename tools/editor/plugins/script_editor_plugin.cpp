@@ -585,7 +585,6 @@ void ScriptTextEditor::_code_complete_script(const String& p_code, List<String>*
 	Error err = script->get_language()->complete_code(p_code,script->get_path().get_base_dir(),base,r_options,hint);
 	if (hint!="") {
 		get_text_edit()->set_code_hint(hint);
-		print_line("hint: "+hint.replace(String::chr(0xFFFF),"|"));
 	}
 
 }
@@ -2316,6 +2315,22 @@ void ScriptEditor::_script_split_dragged(float) {
 	EditorNode::get_singleton()->save_layout();
 }
 
+void ScriptEditor::_unhandled_input(const InputEvent& p_event) {
+	if (p_event.key.pressed || !is_visible()) return;
+	if (ED_IS_SHORTCUT("script_editor/next_script", p_event)) {
+		int next_tab = script_list->get_current() + 1;
+		next_tab %= script_list->get_item_count();
+		_go_to_tab(script_list->get_item_metadata(next_tab));
+		_update_script_names();
+	}
+	if (ED_IS_SHORTCUT("script_editor/prev_script", p_event)) {
+		int next_tab = script_list->get_current() - 1;
+		next_tab = next_tab >= 0 ? next_tab : script_list->get_item_count() - 1;
+		_go_to_tab(script_list->get_item_metadata(next_tab));
+		_update_script_names();
+	}
+}
+
 void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	if (!bool(EDITOR_DEF("text_editor/restore_scripts_on_load",true))) {
@@ -2598,6 +2613,7 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_history_forward",&ScriptEditor::_history_forward);
 	ObjectTypeDB::bind_method("_history_back",&ScriptEditor::_history_back);
 	ObjectTypeDB::bind_method("_live_auto_reload_running_scripts",&ScriptEditor::_live_auto_reload_running_scripts);
+	ObjectTypeDB::bind_method("_unhandled_input",&ScriptEditor::_unhandled_input);
 
 }
 
@@ -2630,6 +2646,10 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 
 	tab_container->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	ED_SHORTCUT("script_editor/next_script", TTR("Next script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_GREATER);
+	ED_SHORTCUT("script_editor/prev_script", TTR("Previous script"), KEY_MASK_CMD | KEY_LESS);
+	set_process_unhandled_input(true);
 
 	file_menu = memnew( MenuButton );
 	menu_hb->add_child(file_menu);
