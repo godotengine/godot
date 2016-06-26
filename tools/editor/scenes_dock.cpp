@@ -164,12 +164,14 @@ void ScenesDock::_notification(int p_what) {
 				if (split_mode) {
 
 					file_list_vb->hide();
+					tree->set_custom_minimum_size(Size2(0,0));
 					tree->set_v_size_flags(SIZE_EXPAND_FILL);
 					button_back->show();
 				} else {
 
 					tree->show();
 					file_list_vb->show();
+					tree->set_custom_minimum_size(Size2(0,200)*EDSCALE);
 					tree->set_v_size_flags(SIZE_FILL);
 					button_back->hide();
 					if (!EditorFileSystem::get_singleton()->is_scanning()) {
@@ -1702,7 +1704,6 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 
 	tree->set_hide_root(true);
 	split_box->add_child(tree);
-	tree->set_custom_minimum_size(Size2(0,200)*EDSCALE);
 	tree->set_drag_forwarding(this);
 
 
