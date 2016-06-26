@@ -604,8 +604,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		} break;
 
 		case WM_SIZE: {
-			video_mode.width=LOWORD(lParam);
-			video_mode.height=HIWORD(lParam);
+			int window_w = LOWORD(lParam);
+			int window_h = HIWORD(lParam);
+			if (window_w > 0 && window_h > 0) {
+				video_mode.width = window_w;
+				video_mode.height = window_h;
+			}
 			//return 0;								// Jump Back
 		} break;
 		case WM_SYSKEYDOWN:
