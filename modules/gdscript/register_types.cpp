@@ -158,7 +158,7 @@ void register_gdscript_types() {
 void unregister_gdscript_types() {
 
 
-
+	ScriptServer::unregister_language(script_language_gd);
 
 	if (script_language_gd)
 		memdelete( script_language_gd );
