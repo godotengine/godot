@@ -77,7 +77,7 @@ env_base.android_manifest_chunk=""
 env_base.android_permission_chunk=""
 env_base.android_appattributes_chunk=""
 env_base.disabled_modules=[]
-
+env_base.use_ptrcall=False
 env_base.split_drivers=False
 
 
@@ -312,6 +312,9 @@ if selected_platform in platform_list:
 		sys.path.remove(tmppath)
 		sys.modules.pop('config')
 
+
+	if (env.use_ptrcall):
+		env.Append(CPPFLAGS=['-DPTRCALL_ENABLED']);
 
 	if (env['musepack']=='yes'):
 		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
