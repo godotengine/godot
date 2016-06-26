@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 
-#if defined(GDAPI_BUILT_IN) or !defined(WINDOWS_ENABLED)
+#if defined(GDAPI_BUILT_IN) || !defined(WINDOWS_ENABLED)
 #define GDAPI
 #elif defined(GDAPI_EXPORTS)
 #define GDAPI __declspec(dllexport)
@@ -207,7 +207,7 @@ void GDAPI godot_byte_array_clear(godot_byte_array p_byte_array);
 typedef void* godot_byte_array_lock;
 
 godot_byte_array_lock GDAPI godot_byte_array_get_lock(godot_byte_array p_byte_array);
-unsigned char* GDAPI godot_byte_array_lock_get_pointer(godot_byte_array_lock p_byte_array_lock);
+unsigned char GDAPI *godot_byte_array_lock_get_pointer(godot_byte_array_lock p_byte_array_lock);
 void GDAPI godot_byte_array_lock_free(godot_byte_array_lock p_byte_array_lock);
 
 
@@ -232,7 +232,7 @@ void GDAPI godot_int_array_clear(godot_int_array p_int_array);
 typedef void* godot_int_array_lock;
 
 godot_int_array_lock GDAPI godot_int_array_get_lock(godot_int_array p_int_array);
-int* GDAPI godot_int_array_lock_get_pointer(godot_int_array_lock p_int_array_lock);
+int GDAPI *godot_int_array_lock_get_pointer(godot_int_array_lock p_int_array_lock);
 void GDAPI godot_int_array_lock_free(godot_int_array_lock p_int_array_lock);
 
 ////// RealArray
@@ -253,7 +253,7 @@ void GDAPI godot_real_array_clear(godot_real_array p_real_array);
 typedef void* godot_real_array_lock;
 
 godot_real_array_lock GDAPI godot_real_array_get_lock(godot_real_array p_real_array);
-float* GDAPI godot_real_array_lock_get_pointer(godot_real_array_lock p_real_array_lock);
+float GDAPI *godot_real_array_lock_get_pointer(godot_real_array_lock p_real_array_lock);
 void GDAPI godot_real_array_lock_free(godot_real_array_lock p_real_array_lock);
 
 
@@ -291,7 +291,7 @@ void GDAPI godot_vector2_array_clear(godot_vector2_array p_vector2_array);
 typedef void* godot_vector2_array_lock;
 
 godot_vector2_array_lock GDAPI godot_vector2_array_get_lock(godot_vector2_array p_vector2_array);
-float* GDAPI godot_vector2_array_lock_get_pointer(godot_vector2_array_lock p_vector2_array_lock);
+float GDAPI *godot_vector2_array_lock_get_pointer(godot_vector2_array_lock p_vector2_array_lock);
 void GDAPI godot_vector2_array_lock_free(godot_vector2_array_lock p_vector2_array_lock);
 
 ////// Vector3Array
@@ -313,7 +313,7 @@ void GDAPI godot_vector3_array_clear(godot_vector3_array p_vector3_array);
 typedef void* godot_vector3_array_lock;
 
 godot_vector3_array_lock GDAPI godot_vector3_array_get_lock(godot_vector3_array p_vector3_array);
-float* GDAPI godot_vector3_array_lock_get_pointer(godot_vector3_array_lock p_vector3_array_lock);
+float GDAPI *godot_vector3_array_lock_get_pointer(godot_vector3_array_lock p_vector3_array_lock);
 void GDAPI godot_vector3_array_lock_free(godot_vector3_array_lock p_vector3_array_lock);
 
 ////// ColorArray
@@ -335,7 +335,7 @@ void GDAPI godot_color_array_clear(godot_color_array p_color_array);
 typedef void* godot_color_array_lock;
 
 godot_color_array_lock GDAPI godot_color_array_get_lock(godot_color_array p_color_array);
-float* GDAPI godot_color_array_lock_get_pointer(godot_color_array_lock p_color_array_lock);
+float GDAPI *godot_color_array_lock_get_pointer(godot_color_array_lock p_color_array_lock);
 void GDAPI godot_color_array_lock_free(godot_color_array_lock p_color_array_lock);
 
 
@@ -421,7 +421,7 @@ void GDAPI godot_variant_get_aabb(godot_variant p_variant,float *p_elems);
 void GDAPI godot_variant_get_matrix3(godot_variant p_variant,float *p_elems);
 void GDAPI godot_variant_get_transform(godot_variant p_variant,float *p_elems);
 void GDAPI godot_variant_get_color(godot_variant p_variant,float *p_elems);
-godot_image *GDAPI godot_variant_get_image(godot_variant p_variant);
+godot_image GDAPI *godot_variant_get_image(godot_variant p_variant);
 int GDAPI godot_variant_get_node_path(godot_variant p_variant,char *p_path, int p_bufsize);
 godot_rid GDAPI godot_variant_get_rid(godot_variant p_variant);
 godot_instance GDAPI godot_variant_get_instance(godot_variant p_variant);
@@ -441,17 +441,17 @@ void GDAPI godot_variant_delete(godot_variant p_variant);
 ////// Class
 ///
 
-char** GDAPI godot_class_get_list(); //get list of classes in array to array of strings, must be freed, use godot_list_free()
+char GDAPI **godot_class_get_list(); //get list of classes in array to array of strings, must be freed, use godot_list_free()
 
 int GDAPI godot_class_get_base(char* p_class,char *p_base,int p_max_len);
 int GDAPI godot_class_get_name(char* p_class,char *p_base,int p_max_len);
 
-char** GDAPI godot_class_get_method_list(char* p_class); //free with godot_list_free()
+char GDAPI **godot_class_get_method_list(char* p_class); //free with godot_list_free()
 int GDAPI godot_class_method_get_argument_count(char* p_class,char *p_method);
 int GDAPI godot_class_method_get_argument_type(char* p_class,char *p_method,int p_argument);
 godot_variant GDAPI godot_class_method_get_argument_default_value(char* p_class,char *p_method,int p_argument);
 
-char** GDAPI godot_class_get_constant_list(char* p_class); //free with godot_list_free()
+char GDAPI **godot_class_get_constant_list(char* p_class); //free with godot_list_free()
 int GDAPI godot_class_constant_get_value(char* p_class,char *p_constant);
 
 
@@ -523,7 +523,7 @@ godot_variant GDAPI godot_instance_get(godot_instance p_instance, char* p_prop);
 #define GODOT_PROPERTY_USAGE_NOEDITOR GODOT_PROPERTY_USAGE_STORAGE|GODOT_PROPERTY_USAGE_NETWORK
 
 
-godot_property_info** GDAPI godot_instance_get_property_list(godot_instance p_instance);
+godot_property_info GDAPI **godot_instance_get_property_list(godot_instance p_instance);
 void GDAPI godot_instance_free_property_list(godot_instance p_instance,godot_property_info** p_list);
 
 
@@ -555,8 +555,8 @@ void GDAPI godot_script_add_listed_property(char* p_name,char* p_path,godot_set_
 ////// System Functions
 
 //using these will help Godot track how much memory is in use in debug mode
-void* GDAPI godot_alloc(int p_bytes);
-void* GDAPI godot_realloc(void* p_ptr,int p_bytes);
+void GDAPI *godot_alloc(int p_bytes);
+void GDAPI *godot_realloc(void* p_ptr,int p_bytes);
 void GDAPI godot_free(void* p_ptr);
 
 
