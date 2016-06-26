@@ -3540,7 +3540,7 @@ void EditorNode::fix_dependencies(const String& p_for_file) {
 	dependency_fixer->edit(p_for_file);
 }
 
-Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bool p_set_inherited) {
+Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bool p_set_inherited,bool p_clear_errors) {
 
 	if (!is_inside_tree()) {
 		defer_load_scene = p_scene;
@@ -3559,7 +3559,9 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 	}
 
 
-	load_errors->clear();
+	if (p_clear_errors)
+		load_errors->clear();
+
 	String lpath = Globals::get_singleton()->localize_path(p_scene);
 
 	if (!lpath.begins_with("res://")) {
@@ -3996,15 +3998,17 @@ bool EditorNode::_find_editing_changed_scene(Node *p_from) {
 
 
 void EditorNode::add_io_error(const String& p_error) {
-	CharString err_ut = p_error.utf8();
-	ERR_PRINT(err_ut.get_data());
+	//CharString err_ut = p_error.utf8();
+	//ERR_PRINT(!err_ut.get_data());
 	_load_error_notify(singleton,p_error);
 }
 
 void EditorNode::_load_error_notify(void* p_ud,const String& p_text) {
 
+
 	EditorNode*en=(EditorNode*)p_ud;
-	en->load_errors->set_text(en->load_errors->get_text()+p_text+"\n");
+	en->load_errors->add_image(en->gui_base->get_icon("Error","EditorIcons"));
+	en->load_errors->add_text(p_text+"\n");
 	en->load_error_dialog->popup_centered_ratio(0.5);
 
 }
@@ -6421,8 +6425,9 @@ EditorNode::EditorNode() {
 	set_process_unhandled_input(true);
 	_playing_edited=false;
 
-	load_errors = memnew( TextEdit );
-	load_errors->set_readonly(true);
+	Panel *errors = memnew( Panel );
+	load_errors = memnew( RichTextLabel );
+//	load_errors->set_readonly(true);
 	load_error_dialog = memnew( AcceptDialog );
 	load_error_dialog->add_child(load_errors);
 	load_error_dialog->set_title(TTR("Load Errors"));

@@ -822,7 +822,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 			return;
 		}
 		if (wip_open)
-			EditorNode::get_singleton()->load_scene(save_file);
+			EditorNode::get_singleton()->load_scene(save_file,false,false,false);
 
 	}
 
@@ -867,7 +867,7 @@ void EditorSceneImportDialog::_import_confirm() {
 	}
 
 	if (wip_open)
-		EditorNode::get_singleton()->load_scene(wip_save_file);
+		EditorNode::get_singleton()->load_scene(wip_save_file,false,false,false);
 	wip_open=false;
 	wip_save_file="";
 
@@ -2680,8 +2680,9 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 			post_import_script = Ref<EditorScenePostImport>( memnew( EditorScenePostImport ) );
 			post_import_script->set_script(scr.get_ref_ptr());
 			if (!post_import_script->get_script_instance()) {
-				EditorNode::add_io_error(TTR("Invalid/broken script for post-import:")+" "+post_import_script_path);
+				EditorNode::add_io_error(TTR("Invalid/broken script for post-import (check console):")+" "+post_import_script_path);
 				post_import_script.unref();
+				return ERR_CANT_CREATE;
 			}
 		}
 	}

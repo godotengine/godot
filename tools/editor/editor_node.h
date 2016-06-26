@@ -261,7 +261,7 @@ private:
 	TextureProgress *audio_vu;
 	//MenuButton *fileserver_menu;
 
-	TextEdit *load_errors;
+	RichTextLabel *load_errors;
 	AcceptDialog *load_error_dialog;
 
 	//Control *scene_root_base;
@@ -652,7 +652,7 @@ public:
 
 	void fix_dependencies(const String& p_for_file);
 	void clear_scene() { _cleanup_scene(); }
-	Error load_scene(const String& p_scene, bool p_ignore_broken_deps=false, bool p_set_inherited=false);
+	Error load_scene(const String& p_scene, bool p_ignore_broken_deps=false, bool p_set_inherited=false, bool p_clear_errors=true);
 	Error load_resource(const String& p_scene);
 
 	bool is_scene_open(const String& p_path);
