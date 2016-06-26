@@ -92,13 +92,23 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2& p_offset,float p_sca
 	Point2 new_ofs = ((orig_offset+p_offset)*motion_scale)*p_scale;
 
 	if (mirroring.x) {
-		double den = mirroring.x*p_scale;
-		new_ofs.x = fmod(new_ofs.x,den) - (mirroring.x > 0 ? den : 0);
+
+		while( new_ofs.x>=0) {
+			new_ofs.x -= mirroring.x*p_scale;
+		}
+		while(new_ofs.x < -mirroring.x*p_scale) {
+			new_ofs.x += mirroring.x*p_scale;
+		}
 	}
 
 	if (mirroring.y) {
-		double den = mirroring.y*p_scale;
-		new_ofs.y = fmod(new_ofs.y,den) - (mirroring.y > 0 ? den : 0);
+
+		while( new_ofs.y>=0) {
+			new_ofs.y -= mirroring.y*p_scale;
+		}
+		while(new_ofs.y < -mirroring.y*p_scale) {
+			new_ofs.y += mirroring.y*p_scale;
+		}
 	}
 
 
