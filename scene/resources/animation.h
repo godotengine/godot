@@ -172,7 +172,6 @@ private:
 	float length;
 	float step;
 	bool loop;
-	bool loop_interpolation;
 
 // bind helpers
 private:
@@ -279,9 +278,7 @@ public:
 	float get_length() const;
 
 	void set_loop(bool p_enabled);
-	void set_loop_interpolation(bool p_enabled);
 	bool has_loop() const;
-	bool has_loop_interpolation() const;
 
 	void set_step(float p_step);
 	float get_step() const;
