@@ -1702,7 +1702,6 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 
 	tree->set_hide_root(true);
 	split_box->add_child(tree);
-	tree->set_custom_minimum_size(Size2(0,200)*EDSCALE);
 	tree->set_drag_forwarding(this);
 
 
