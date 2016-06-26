@@ -222,6 +222,7 @@ public:
 	float draw_char(const Ref<Font>& p_font,const Point2& p_pos, const String& p_char,const String& p_next="",const Color& p_modulate=Color(1,1,1));
 
 	void draw_set_transform(const Point2& p_offset, float p_rot, const Size2& p_scale);
+	void draw_set_transform_matrix(const Matrix32& p_matrix);
 
 	/* RECT / TRANSFORM */
 
