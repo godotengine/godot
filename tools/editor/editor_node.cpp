@@ -6425,7 +6425,7 @@ EditorNode::EditorNode() {
 	set_process_unhandled_input(true);
 	_playing_edited=false;
 
-	Panel *errors = memnew( Panel );
+//	Panel *errors = memnew( Panel );
 	load_errors = memnew( RichTextLabel );
 //	load_errors->set_readonly(true);
 	load_error_dialog = memnew( AcceptDialog );
