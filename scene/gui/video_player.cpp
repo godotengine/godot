@@ -108,8 +108,6 @@ int VideoPlayer::_audio_mix_callback(void* p_udata,const int16_t *p_data,int p_f
 	return todo;
 }
 
-
-
 void VideoPlayer::_notification(int p_notification) {
 
 	switch (p_notification) {
@@ -140,6 +138,8 @@ void VideoPlayer::_notification(int p_notification) {
 
 
 			playback->update(delta);
+			if(!playback->is_playing())
+				emit_signal("finished");
 
 			/*int prev_width = texture->get_width();
 			stream->pop_frame(texture);
@@ -158,7 +158,6 @@ void VideoPlayer::_notification(int p_notification) {
 				return;
 
 			Size2 s=expand?get_size():texture->get_size();
-			RID ci = get_canvas_item();
 			printf("drawing with size %f, %f\n", s.x, s.y);
 			draw_texture_rect(texture,Rect2(Point2(),s),false);
 
@@ -166,9 +165,6 @@ void VideoPlayer::_notification(int p_notification) {
 	};
 
 };
-
-
-
 
 Size2 VideoPlayer::get_minimum_size() const {
 
@@ -189,7 +185,6 @@ bool VideoPlayer::has_expand() const {
 
 	return expand;
 }
-
 
 void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 
@@ -229,12 +224,12 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 
 	update();
 
-};
+}
 
 Ref<VideoStream> VideoPlayer::get_stream() const {
 
 	return stream;
-};
+}
 
 void VideoPlayer::play() {
 
@@ -247,7 +242,9 @@ void VideoPlayer::play() {
 	AudioServer::get_singleton()->stream_set_active(stream_rid,true);
 	AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,volume);
 	last_audio_time=0;
-};
+
+	emit_signal("started");
+}
 
 void VideoPlayer::stop() {
 
@@ -256,12 +253,16 @@ void VideoPlayer::stop() {
 	if (playback.is_null())
 		return;
 
+	bool was_playing = playback->is_playing();
 	playback->stop();
 	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
 	resampler.clear();
 	set_process(false);
 	last_audio_time=0;
-};
+
+	if (was_playing)
+		emit_signal("stopped");
+}
 
 bool VideoPlayer::is_playing() const {
 
@@ -269,17 +270,21 @@ bool VideoPlayer::is_playing() const {
 		return false;
 
 	return playback->is_playing();
-};
+}
 
 void VideoPlayer::set_paused(bool p_paused) {
 
+	bool pause = !paused && p_paused;
 	paused=p_paused;
 	if (playback.is_valid()) {
 		playback->set_paused(p_paused);
 		set_process(!p_paused);
 	};
 	last_audio_time = 0;
-};
+
+	if (pause)
+		emit_signal("paused");
+}
 
 bool VideoPlayer::is_paused() const {
 
@@ -309,12 +314,12 @@ int VideoPlayer::get_audio_track() const {
 void VideoPlayer::set_volume(float p_vol) {
 
 	volume=p_vol;
-};
+}
 
 float VideoPlayer::get_volume() const {
 
 	return volume;
-};
+}
 
 void VideoPlayer::set_volume_db(float p_db) {
 
@@ -322,7 +327,7 @@ void VideoPlayer::set_volume_db(float p_db) {
 		set_volume(0);
 	else
 		set_volume(Math::db2linear(p_db));
-};
+}
 
 float VideoPlayer::get_volume_db() const {
 
@@ -330,7 +335,7 @@ float VideoPlayer::get_volume_db() const {
 		return -80;
 	else
 		return Math::linear2db(volume);
-};
+}
 
 
 String VideoPlayer::get_stream_name() const {
@@ -338,14 +343,14 @@ String VideoPlayer::get_stream_name() const {
 	if (stream.is_null())
 		return "<No Stream>";
 	return stream->get_name();
-};
+}
 
 float VideoPlayer::get_stream_pos() const {
 
 	if (playback.is_null())
 		return 0;
 	return playback->get_pos();
-};
+}
 
 Ref<Texture> VideoPlayer::get_video_texture() {
 
@@ -358,12 +363,12 @@ Ref<Texture> VideoPlayer::get_video_texture() {
 void VideoPlayer::set_autoplay(bool p_enable) {
 
 	autoplay=p_enable;
-};
+}
 
 bool VideoPlayer::has_autoplay() const {
 
 	return autoplay;
-};
+}
 
 void VideoPlayer::_bind_methods() {
 
@@ -409,6 +414,11 @@ void VideoPlayer::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/autoplay"), _SCS("set_autoplay"), _SCS("has_autoplay") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/paused"), _SCS("set_paused"), _SCS("is_paused") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
+
+	ADD_SIGNAL(MethodInfo("started"));
+	ADD_SIGNAL(MethodInfo("paused"));
+	ADD_SIGNAL(MethodInfo("stopped"));
+	ADD_SIGNAL(MethodInfo("finished"));
 }
 
 
@@ -430,11 +440,10 @@ VideoPlayer::VideoPlayer() {
 	stream_rid=AudioServer::get_singleton()->audio_stream_create(&internal_stream);
 	last_audio_time=0;
 
-};
+}
 
 VideoPlayer::~VideoPlayer() {
 
 	if (stream_rid.is_valid())
 		AudioServer::get_singleton()->free(stream_rid);
-};
-
+}
