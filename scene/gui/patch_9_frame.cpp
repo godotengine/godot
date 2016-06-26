@@ -79,6 +79,8 @@ void Patch9Frame::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_draw_center","draw_center"), & Patch9Frame::set_draw_center );
 	ObjectTypeDB::bind_method(_MD("get_draw_center"), & Patch9Frame::get_draw_center );
 
+	ADD_SIGNAL(MethodInfo("texture_changed"));
+
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"),_SCS("get_texture") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "draw_center"), _SCS("set_draw_center"),_SCS("get_draw_center") );
@@ -93,11 +95,14 @@ void Patch9Frame::_bind_methods() {
 
 void Patch9Frame::set_texture(const Ref<Texture>& p_tex) {
 
+	if (texture==p_tex)
+		return;
 	texture=p_tex;
 	update();
 	//if (texture.is_valid())
 	//	texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
 	minimum_size_changed();
+	emit_signal("texture_changed");
 }
 
 Ref<Texture> Patch9Frame::get_texture() const {

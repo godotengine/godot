@@ -120,6 +120,7 @@ void Sprite::set_texture(const Ref<Texture>& p_texture) {
 	}
 #endif
 	update();
+	emit_signal("texture_changed");
 	item_rect_changed();
 }
 
@@ -323,6 +324,7 @@ void Sprite::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_modulate"),&Sprite::get_modulate);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_texture"),_SCS("get_texture"));
 	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));
