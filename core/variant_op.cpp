@@ -2911,6 +2911,14 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 			return ret;
 		} break;
 
+		case STRING: {
+
+			const String *str=reinterpret_cast<const String*>(_data._mem);
+			if (str->empty())
+				return false;
+			r_iter = 0;
+			return true;
+		} break;
 		case DICTIONARY: {
 
 			const Dictionary *dic=reinterpret_cast<const Dictionary*>(_data._mem);
@@ -3027,6 +3035,17 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 			r_iter=ref[0];
 
 			return ret;
+		} break;
+
+		case STRING: {
+
+			const String *str=reinterpret_cast<const String*>(_data._mem);
+			int idx = r_iter;
+			idx++;
+			if (idx >= str->size())
+				return false;
+			r_iter = idx;
+			return true;
 		} break;
 		case DICTIONARY: {
 
@@ -3158,6 +3177,11 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 			return ret;
 		} break;
 
+		case STRING: {
+
+			const String *str=reinterpret_cast<const String*>(_data._mem);
+			return str->substr(r_iter,1);
+		} break;
 		case DICTIONARY: {
 
 			return r_iter; //iterator is the same as the key
