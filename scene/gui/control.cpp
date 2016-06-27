@@ -49,14 +49,22 @@
 
 Variant Control::edit_get_state() const {
 
-	return get_rect();
+	Dictionary s;
+	s["rect"]=get_rect();
+	s["rot"]=get_rotation();
+	s["scale"]=get_scale();
+	return s;
 
 }
 void Control::edit_set_state(const Variant& p_state) {
 
-	Rect2 state=p_state;
+	Dictionary s=p_state;
+
+	Rect2 state=s["rect"];
 	set_pos(state.pos);
 	set_size(state.size);
+	set_rotation(s["rot"]);
+	set_scale(s["scale"]);
 }
 
 void Control::set_custom_minimum_size(const Size2& p_custom) {
