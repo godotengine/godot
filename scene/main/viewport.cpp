@@ -1752,8 +1752,9 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 						Vector2 pos = top->get_global_transform_with_canvas().affine_inverse().xform(mpos);
 						if (!top->has_point(pos)) {
 
-							if (top->data.modal_exclusive) {
+							if (top->data.modal_exclusive || top->data.modal_frame==OS::get_singleton()->get_frames_drawn()) {
 								//cancel event, sorry, modal exclusive EATS UP ALL
+								//alternative, you can't pop out a window the same frame it was made modal (fixes many issues)
 								//get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 								get_tree()->set_input_as_handled();
 								return; // no one gets the event if exclusive NO ONE

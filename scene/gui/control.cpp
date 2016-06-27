@@ -762,6 +762,11 @@ bool Control::is_window_modal_on_top() const {
 	return get_viewport()->_gui_is_modal_on_top(this);
 }
 
+uint64_t Control::get_modal_frame() const {
+
+	return data.modal_frame;
+}
+
 
 
 Size2 Control::get_minimum_size() const {
@@ -1837,6 +1842,7 @@ void Control::show_modal(bool p_exclusive) {
 	raise();
 	data.modal_exclusive=p_exclusive;
 	data.MI=get_viewport()->_gui_show_modal(this);
+	data.modal_frame=OS::get_singleton()->get_frames_drawn();
 
 }
 
@@ -2547,6 +2553,7 @@ Control::Control() {
 	data.parent_canvas_item=NULL;
 	data.scale=Vector2(1,1);
 	data.drag_owner=0;
+	data.modal_frame=0;
 
 
 	for (int i=0;i<4;i++) {

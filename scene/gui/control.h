@@ -132,6 +132,7 @@ private:
 		ObjectID drag_owner;
 		bool modal;
 		bool modal_exclusive;
+		uint64_t modal_frame; //frame used to put something as modal
 		Ref<Theme> theme;
 		Control *theme_owner;
 		String tooltip;
@@ -249,6 +250,7 @@ public:
 	Size2 get_custom_minimum_size() const;
 
 	bool is_window_modal_on_top() const;
+	uint64_t get_modal_frame() const; //frame in which this was made modal
 
 	Control *get_parent_control() const;
 
