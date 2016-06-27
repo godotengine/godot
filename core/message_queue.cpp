@@ -320,7 +320,7 @@ void MessageQueue::_call_function(Object* p_target, const StringName& p_func, co
 void MessageQueue::flush() {
 
 
-	if (buffer_max_used<buffer_end); {
+	if (buffer_end > buffer_max_used) {
 		buffer_max_used=buffer_end;
 		//statistics();
 	}
