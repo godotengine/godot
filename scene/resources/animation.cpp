@@ -38,8 +38,6 @@ bool Animation::_set(const StringName& p_name, const Variant& p_value) {
 		set_length(p_value);
 	else if (name=="loop")
 		set_loop(p_value);
-	else if (name=="loop_interpolation")
-		set_loop_interpolation(p_value);
 	else if (name=="step")
 		set_step(p_value);
 	else if (name.begins_with("tracks/")) {
@@ -270,8 +268,6 @@ bool Animation::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= length;
 	else if (name=="loop")
 		r_ret= loop;
-	else if (name=="loop_interpolation")
-		r_ret= loop_interpolation;
 	else if (name=="step")
 		r_ret= step;
 	else if (name.begins_with("tracks/")) {
@@ -437,7 +433,6 @@ void Animation::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	p_list->push_back( PropertyInfo( Variant::REAL, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001"));
 	p_list->push_back( PropertyInfo( Variant::BOOL, "loop" ));
-	p_list->push_back( PropertyInfo( Variant::BOOL, "loop_interpolation"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "step", PROPERTY_HINT_RANGE, "0,4096,0.001" ));
 
 	for (int i=0;i<tracks.size();i++) {
@@ -1244,7 +1239,7 @@ T Animation::_interpolate( const Vector< TKey<T> >& p_keys, float p_time,  Inter
 	float c=0;
 	// prepare for all cases of interpolation
 
-	if (loop && loop_interpolation) {
+	if (loop) {
 	// loop
 		if (idx>=0) {
 
@@ -1632,18 +1627,9 @@ void Animation::set_loop(bool p_enabled) {
 	loop=p_enabled;
 	emit_changed();
 }
-void Animation::set_loop_interpolation(bool p_enabled) {
-
-	loop_interpolation=p_enabled;
-	emit_changed();
-}
 bool Animation::has_loop() const {
 
 	return loop;
-}
-bool Animation::has_loop_interpolation() const {
-
-	return loop_interpolation;
 }
 
 void Animation::track_move_up(int p_track) {
@@ -1741,9 +1727,7 @@ void Animation::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_length"),&Animation::get_length);
 
 	ObjectTypeDB::bind_method(_MD("set_loop","enabled"),&Animation::set_loop);
-	ObjectTypeDB::bind_method(_MD("set_loop_interpolation","enabled"),&Animation::set_loop_interpolation);
 	ObjectTypeDB::bind_method(_MD("has_loop"),&Animation::has_loop);
-	ObjectTypeDB::bind_method(_MD("has_loop_interpolation"),&Animation::has_loop_interpolation);
 
 	ObjectTypeDB::bind_method(_MD("set_step","size_sec"),&Animation::set_step);
 	ObjectTypeDB::bind_method(_MD("get_step"),&Animation::get_step);
@@ -1771,7 +1755,6 @@ void Animation::clear() {
 		memdelete( tracks[i] );
 	tracks.clear();
 	loop=false;
-	loop_interpolation=true;
 	length=1;
 
 }
@@ -2031,7 +2014,6 @@ Animation::Animation() {
 
 	step=0.1;
 	loop=false;
-	loop_interpolation=true;
 	length=1;
 }
 
@@ -2042,3 +2024,5 @@ Animation::~Animation() {
 		memdelete( tracks[i] );
 
 }
+
+
