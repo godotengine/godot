@@ -1856,6 +1856,28 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 			return;
 		}
 
+		if (!FileAccess::exists(run_filename)) {
+
+			current_option=-1;
+			//accept->get_cancel()->hide();
+			accept->get_ok()->set_text(TTR("I see.."));
+			accept->set_text(TTR("Selected scene '"+run_filename+"' does not exist.\nSelect one from \"Project Settings\" under the 'application' category."));
+			accept->popup_centered_minsize();
+			return;
+
+		}
+
+		if (ResourceLoader::get_resource_type(run_filename)!="PackedScene") {
+
+			current_option=-1;
+			//accept->get_cancel()->hide();
+			accept->get_ok()->set_text(TTR("I see.."));
+			accept->set_text(TTR("Selected scene '"+run_filename+"' is not a scene file.\nSelect a scene from \"Project Settings\" under the 'application' category."));
+			accept->popup_centered_minsize();
+			return;
+
+		}
+
 	}
 
 
