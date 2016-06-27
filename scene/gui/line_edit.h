@@ -67,6 +67,7 @@ private:
 
 	String undo_text;
 	String text;
+	String placeholder;
 
 	PopupMenu *menu;
 
@@ -135,6 +136,8 @@ public:
 	void delete_text(int p_from_column, int p_to_column);
 	void set_text(String p_text);
 	String get_text() const;
+	void set_placeholder(String p_text);
+	String get_placeholder() const;
 	void set_cursor_pos(int p_pos);
 	int get_cursor_pos() const;
 	void set_max_length(int p_max_length);
