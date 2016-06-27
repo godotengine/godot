@@ -199,3 +199,62 @@ uint32_t InputEventKey::get_scancode_with_modifiers() const {
 	return sc;
 
 }
+
+InputEvent InputEvent::xform_by(const Matrix32& p_xform) const {
+
+
+	InputEvent ev=*this;
+
+	switch(ev.type) {
+
+		case InputEvent::MOUSE_BUTTON: {
+
+			Vector2 g = p_xform.xform(Vector2(ev.mouse_button.global_x,ev.mouse_button.global_y));
+			Vector2 l = p_xform.xform(Vector2(ev.mouse_button.x,ev.mouse_button.y));
+			ev.mouse_button.x=l.x;
+			ev.mouse_button.y=l.y;
+			ev.mouse_button.global_x=g.x;
+			ev.mouse_button.global_y=g.y;
+
+		} break;
+		case InputEvent::MOUSE_MOTION: {
+
+			Vector2 g = p_xform.xform(Vector2(ev.mouse_motion.global_x,ev.mouse_motion.global_y));
+			Vector2 l = p_xform.xform(Vector2(ev.mouse_motion.x,ev.mouse_motion.y));
+			Vector2 r = p_xform.basis_xform(Vector2(ev.mouse_motion.relative_x,ev.mouse_motion.relative_y));
+			Vector2 s = p_xform.basis_xform(Vector2(ev.mouse_motion.speed_x,ev.mouse_motion.speed_y));
+			ev.mouse_motion.x=l.x;
+			ev.mouse_motion.y=l.y;
+			ev.mouse_motion.global_x=g.x;
+			ev.mouse_motion.global_y=g.y;
+			ev.mouse_motion.relative_x=r.x;
+			ev.mouse_motion.relative_y=r.y;
+			ev.mouse_motion.speed_x=s.x;
+			ev.mouse_motion.speed_y=s.y;
+
+		} break;
+		case InputEvent::SCREEN_TOUCH: {
+
+
+			Vector2 t = p_xform.xform(Vector2(ev.screen_touch.x,ev.screen_touch.y));
+			ev.screen_touch.x=t.x;
+			ev.screen_touch.y=t.y;
+
+		} break;
+		case InputEvent::SCREEN_DRAG: {
+
+
+			Vector2 t = p_xform.xform(Vector2(ev.screen_drag.x,ev.screen_drag.y));
+			Vector2 r = p_xform.basis_xform(Vector2(ev.screen_drag.relative_x,ev.screen_drag.relative_y));
+			Vector2 s = p_xform.basis_xform(Vector2(ev.screen_drag.speed_x,ev.screen_drag.speed_y));
+			ev.screen_drag.x=t.x;
+			ev.screen_drag.y=t.y;
+			ev.screen_drag.relative_x=r.x;
+			ev.screen_drag.relative_y=r.y;
+			ev.screen_drag.speed_x=s.x;
+			ev.screen_drag.speed_y=s.y;
+		} break;
+	}
+
+	return ev;
+}

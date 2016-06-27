@@ -1575,35 +1575,38 @@ void Viewport::_gui_call_input(Control *p_control,const InputEvent& p_input) {
 //	_block();
 
 
+	InputEvent ev = p_input;
+
 	//mouse wheel events can't be stopped
-	bool cant_stop_me_now = (p_input.type==InputEvent::MOUSE_BUTTON &&
-				 (p_input.mouse_button.button_index==BUTTON_WHEEL_DOWN ||
-				  p_input.mouse_button.button_index==BUTTON_WHEEL_UP ||
-				  p_input.mouse_button.button_index==BUTTON_WHEEL_LEFT ||
-				  p_input.mouse_button.button_index==BUTTON_WHEEL_RIGHT ) );
+	bool cant_stop_me_now = (ev.type==InputEvent::MOUSE_BUTTON &&
+				 (ev.mouse_button.button_index==BUTTON_WHEEL_DOWN ||
+				  ev.mouse_button.button_index==BUTTON_WHEEL_UP ||
+				  ev.mouse_button.button_index==BUTTON_WHEEL_LEFT ||
+				  ev.mouse_button.button_index==BUTTON_WHEEL_RIGHT ) );
 
 	CanvasItem *ci=p_control;
 	while(ci) {
 
 		Control *control = ci->cast_to<Control>();
 		if (control) {
-			control->call_multilevel(SceneStringNames::get_singleton()->_input_event,p_input);
+			control->call_multilevel(SceneStringNames::get_singleton()->_input_event,ev);
 			if (gui.key_event_accepted)
 				break;
 			if (!control->is_inside_tree())
 				break;
-			control->emit_signal(SceneStringNames::get_singleton()->input_event,p_input);
+			control->emit_signal(SceneStringNames::get_singleton()->input_event,ev);
 			if (!control->is_inside_tree() || control->is_set_as_toplevel())
 				break;
 			if (gui.key_event_accepted)
 				break;
-			if (!cant_stop_me_now && control->data.stop_mouse && (p_input.type==InputEvent::MOUSE_BUTTON || p_input.type==InputEvent::MOUSE_MOTION))
+			if (!cant_stop_me_now && control->data.stop_mouse && (ev.type==InputEvent::MOUSE_BUTTON || ev.type==InputEvent::MOUSE_MOTION))
 				break;
 		}
 
 		if (ci->is_set_as_toplevel())
 			break;
 
+		ev=ev.xform_by(ci->get_transform()); //transform event upwards
 		ci=ci->get_parent_item();
 	}
 
