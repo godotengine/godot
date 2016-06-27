@@ -98,10 +98,6 @@ Texture::Texture() {
 
 
 
-bool ImageTexture::can_reload_from_file() {
-
-	return true;
-}
 
 void ImageTexture::reload_from_file() {
 

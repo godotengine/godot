@@ -30,7 +30,7 @@
 #include "core_string_names.h"
 #include <stdio.h>
 #include "os/file_access.h"
-
+#include "io/resource_loader.h"
 
 void ResourceImportMetadata::set_editor(const String& p_editor) {
 
@@ -218,14 +218,36 @@ String Resource::get_name() const {
 	return name;
 }
 
-bool Resource::can_reload_from_file() {
+bool Resource::editor_can_reload_from_file() {
 
-	return false;
+	return true; //by default yes
 }
 
 void Resource::reload_from_file() {
 
 
+	String path=get_path();
+	if (!path.is_resource_file())
+		return;
+
+	Ref<Resource> s = ResourceLoader::load(path,get_type(),true);
+
+	if (!s.is_valid())
+		return;
+
+	List<PropertyInfo> pi;
+	s->get_property_list(&pi);
+
+	for (List<PropertyInfo>::Element *E=pi.front();E;E=E->next()) {
+
+		if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
+			continue;
+		if (E->get().name=="resource/path")
+			continue; //do not change path
+
+		set(E->get().name,s->get(E->get().name));
+
+	}
 }
 
 

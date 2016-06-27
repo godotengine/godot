@@ -2804,10 +2804,12 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			List<Ref<Resource> > cached;
 			ResourceCache::get_cached_resources(&cached);
-
+			//this should probably be done in a thread..
 			for(List<Ref<Resource> >::Element *E=cached.front();E;E=E->next()) {
 
-				if (!E->get()->can_reload_from_file())
+				if (!E->get()->editor_can_reload_from_file())
+					continue;
+				if (!E->get()->get_path().is_resource_file() && !E->get()->get_path().is_abs_path())
 					continue;
 				if (!FileAccess::exists(E->get()->get_path()))
 					continue;

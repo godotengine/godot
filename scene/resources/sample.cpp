@@ -187,6 +187,8 @@ RID Sample::get_rid() const {
 	return sample;
 }
 
+
+
 void Sample::_bind_methods(){
 
 

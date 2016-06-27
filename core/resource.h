@@ -121,7 +121,7 @@ protected:
 	void _take_over_path(const String& p_path);
 public:
 
-	virtual bool can_reload_from_file();
+	virtual bool editor_can_reload_from_file();
 	virtual void reload_from_file();
 
 	void register_owner(Object *p_owner);

@@ -103,7 +103,6 @@ private:
 	float lossy_storage_quality;
 
 protected:
-	virtual bool can_reload_from_file();
 	virtual void reload_from_file();
 
 	bool _set(const StringName& p_name, const Variant& p_value);

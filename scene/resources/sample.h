@@ -75,6 +75,7 @@ protected:
 
 public:
 
+
 	void create(Format p_format, bool p_stereo, int p_length);
 
 	Format get_format() const;
