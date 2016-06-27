@@ -525,6 +525,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("global/default_project_export_path","");
 	hints["global/default_project_export_path"]=PropertyInfo(Variant::STRING,"global/default_project_export_path",PROPERTY_HINT_GLOBAL_DIR);
 	set("global/show_script_in_scene_tabs",false);
+	set("global/show_transform_toolbar_controls",true);
+	set("global/transform_toolbar_controls_position",0);
+	hints["global/transform_toolbar_controls_position"]=PropertyInfo(Variant::INT,"global/transform_toolbar_controls_position",PROPERTY_HINT_ENUM, "Left-hand Side,Right-hand Side,In Viewport");
 
 
 	set("text_editor/color_theme","Default");

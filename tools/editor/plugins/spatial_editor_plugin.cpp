@@ -1348,7 +1348,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 							float scale = (center_inters_dist / center_click_dist)*100.0;
 
-							if (_edit.snap || spatial_editor->is_snap_enabled()) {
+							if (_edit.snap || spatial_editor->is_snap_scaling_enabled()) {
 
 								scale = Math::stepify(scale,spatial_editor->get_scale_snap());
 							}
@@ -1425,7 +1425,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 							float snap=0;
 
-							if (_edit.snap || spatial_editor->is_snap_enabled()) {
+							if (_edit.snap || spatial_editor->is_snap_translation_enabled()) {
 
 								snap = spatial_editor->get_translate_snap();
 								motion.snap(snap);
@@ -1486,7 +1486,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							Vector3 x_axis=plane.normal.cross(y_axis).normalized();
 
 							float angle=Math::atan2( x_axis.dot(intersection-_edit.center), y_axis.dot(intersection-_edit.center) );
-							if (_edit.snap || spatial_editor->is_snap_enabled()) {
+							if (_edit.snap || spatial_editor->is_snap_rotation_enabled()) {
 
 								float snap = spatial_editor->get_rotate_snap();
 
@@ -1817,11 +1817,17 @@ void SpatialEditorViewport::_notification(int p_what) {
 			_update_camera();
 
 		call_deferred("update_transform_gizmo_view");
+
+		if(EditorSettings::get_singleton()->get("global/transform_toolbar_controls_position").operator int() == 2)
+			spatial_editor->call_deferred("_update_transform_toolbar_controls");
 	}
 
 	if (p_what==NOTIFICATION_RESIZED) {
 
 		call_deferred("update_transform_gizmo_view");
+
+		if(EditorSettings::get_singleton()->get("global/transform_toolbar_controls_position").operator int() == 2)
+			spatial_editor->call_deferred("_update_transform_toolbar_controls");
 
 	}
 
@@ -2553,6 +2559,13 @@ void SpatialEditor::select_gizmo_hilight_axis(int p_axis) {
 
 }
 
+void SpatialEditor::_update_transform_toolbar_controls(){
+
+	set_transform_toolbar_ctrls_visibility(EditorSettings::get_singleton()->get("global/show_transform_toolbar_controls"));
+
+	set_transform_toolbar_ctrls_position(EditorSettings::get_singleton()->get("global/transform_toolbar_controls_position").operator int());
+}
+
 void SpatialEditor::update_transform_gizmo() {
 
 	List<Node*> &selection = editor_selection->get_selected_node_list();
@@ -2671,7 +2684,9 @@ Dictionary SpatialEditor::get_state() const {
 
 	Dictionary d;
 
-	d["snap_enabled"]=snap_enabled;
+	d["snap_translation_enabled"] = snap_translation_enabled;
+	d["snap_rotation_enabled"] = snap_rotation_enabled;
+	d["snap_scaling_enabled"] = snap_scaling_enabled;
 	d["translate_snap"]=get_translate_snap();
 	d["rotate_snap"]=get_rotate_snap();
 	d["scale_snap"]=get_scale_snap();
@@ -2719,10 +2734,43 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 
 	Dictionary d = p_state;
 
-	if (d.has("snap_enabled")) {
-		snap_enabled=d["snap_enabled"];
-		int snap_enabled_idx=transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_USE_SNAP);
-		transform_menu->get_popup()->set_item_checked( snap_enabled_idx, snap_enabled );
+	if (d.has("snap_translation_enabled")) {
+		snap_translation_enabled=d["snap_translation_enabled"];
+		int snap_enabled_idx=transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_SNAP_TRANSLATION);
+		transform_menu->get_popup()->set_item_checked( snap_enabled_idx, snap_translation_enabled );
+		if(!snap_translation_enabled){
+			snap_translation_toggle_button->set_icon(get_icon("ToolSnapTranslationOff","EditorIcons"));
+			snap_translation_toggle_button->set_pressed(false);
+		} else {
+			snap_translation_toggle_button->set_icon(get_icon("ToolSnapTranslationOn","EditorIcons"));
+			snap_translation_toggle_button->set_pressed(true);
+		}
+	}
+
+	if (d.has("snap_rotation_enabled")) {
+		snap_rotation_enabled=d["snap_rotation_enabled"];
+		int snap_enabled_idx=transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_SNAP_ROTATION);
+		transform_menu->get_popup()->set_item_checked( snap_enabled_idx, snap_rotation_enabled );
+		if(!snap_rotation_enabled){
+			snap_rotation_toggle_button->set_pressed(false);
+			snap_rotation_toggle_button->set_icon(get_icon("ToolSnapRotationOff","EditorIcons"));
+		} else {
+			snap_rotation_toggle_button->set_pressed(true);
+			snap_rotation_toggle_button->set_icon(get_icon("ToolSnapRotationOn","EditorIcons"));
+		}
+	}
+
+	if (d.has("snap_scaling_enabled")) {
+		snap_scaling_enabled=d["snap_scaling_enabled"];
+		int snap_enabled_idx=transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_SNAP_SCALING);
+		transform_menu->get_popup()->set_item_checked( snap_enabled_idx, snap_scaling_enabled );
+		if(!snap_scaling_enabled){
+			snap_scaling_toggle_button->set_pressed(false);
+			snap_scaling_toggle_button->set_icon(get_icon("ToolSnapScalingOff","EditorIcons"));
+		} else {
+			snap_scaling_toggle_button->set_pressed(true);
+			snap_scaling_toggle_button->set_icon(get_icon("ToolSnapScalingOn","EditorIcons"));
+		}
 	}
 
 	if (d.has("translate_snap"))
@@ -2734,9 +2782,18 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 	if (d.has("scale_snap"))
 		snap_scale->set_text(d["scale_snap"]);
 
+	// update text labels if any saved state is restored
+	if (d.has("translate_snap") || d.has("rotate_snap") || d.has("scale_snap"))
+		_snap_dialog_action();
+
 	if (d.has("local_coords")) {
 		int local_coords_idx=transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_LOCAL_COORDS);
 		transform_menu->get_popup()->set_item_checked( local_coords_idx, d["local_coords"] );
+		if(d["local_coords"]){
+			coords_toggle_button->set_icon(get_icon("ToolLocalCoords","EditorIcons"));
+		} else {
+			coords_toggle_button->set_icon(get_icon("ToolGlobalCoords","EditorIcons"));
+		}
 		update_transform_gizmo();
 	}
 
@@ -2866,6 +2923,47 @@ void SpatialEditor::edit(Spatial *p_spatial) {
 
 }
 
+void SpatialEditor::_snap_dialog_action() {
+
+	String temp_str;
+	temp_str.parse_utf8("5\u00B0");
+
+	if(snap_translate->get_text().is_valid_integer() || snap_translate->get_text().is_valid_float()){
+		snap_translation_menu->set_text(snap_translate->get_text());
+	} else {
+		snap_translate->set_text("1");
+		snap_translation_menu->set_text("1");
+	}
+
+	if(snap_rotate->get_text().is_valid_integer() || snap_rotate->get_text().is_valid_float()){
+		temp_str.parse_utf8("\u00B0");
+		temp_str = snap_rotate->get_text() + temp_str;
+		snap_rotation_menu->set_text(temp_str);
+	} else {
+		snap_rotate->set_text("5");
+		snap_rotation_menu->set_text(temp_str);
+	}
+
+	if(snap_scale->get_text().is_valid_integer() || snap_scale->get_text().is_valid_float()){
+#ifdef OSX_ENABLED
+		snap_scaling_menu->set_text(snap_scale->get_text() + "%");
+#else
+		snap_scaling_menu->set_text(snap_scale->get_text() + "\u0025");
+#endif
+	} else {
+		snap_scale->set_text("10");
+#ifdef OSX_ENABLED
+		snap_scaling_menu->set_text("10%");
+#else
+		snap_scaling_menu->set_text("10\u0025");
+#endif
+	}
+
+	if(EditorSettings::get_singleton()->get("global/transform_toolbar_controls_position").operator int() == 2)
+		_update_transform_toolbar_controls();
+}
+
+
 void SpatialEditor::_xform_dialog_action() {
 
 	Transform t;
@@ -2946,36 +3044,105 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			update_transform_gizmo();
 
 		} break;
-		case MENU_TRANSFORM_USE_SNAP: {
+		case MENU_TRANSFORM_SNAP_TRANSLATION:
+		case BUTTON_SNAP_TRANSLATION_TOGGLE:{
 
-			bool is_checked = transform_menu->get_popup()->is_item_checked( transform_menu->get_popup()->get_item_index(p_option) );
-			snap_enabled=!is_checked;
-			transform_menu->get_popup()->set_item_checked( transform_menu->get_popup()->get_item_index(p_option), snap_enabled );
+			bool is_checked = transform_menu->get_popup()->is_item_checked( transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_SNAP_TRANSLATION) );
+			snap_translation_enabled=!is_checked;
+			transform_menu->get_popup()->set_item_checked( transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_SNAP_TRANSLATION), snap_translation_enabled );
+			if(is_checked){
+				snap_translation_toggle_button->set_icon(get_icon("ToolSnapTranslationOff","EditorIcons"));
+				snap_translation_toggle_button->set_pressed(false);
+			} else {
+				snap_translation_toggle_button->set_icon(get_icon("ToolSnapTranslationOn","EditorIcons"));
+				snap_translation_toggle_button->set_pressed(true);
+			}
+
+		} break;
+		case MENU_TRANSFORM_SNAP_ROTATION:
+		case BUTTON_SNAP_ROTATION_TOGGLE: {
+
+			bool is_checked = transform_menu->get_popup()->is_item_checked( transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_SNAP_ROTATION) );
+			snap_rotation_enabled=!is_checked;
+			transform_menu->get_popup()->set_item_checked( transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_SNAP_ROTATION), snap_rotation_enabled );
+			if(is_checked){
+				snap_rotation_toggle_button->set_icon(get_icon("ToolSnapRotationOff","EditorIcons"));
+				snap_rotation_toggle_button->set_pressed(false);
+			} else {
+				snap_rotation_toggle_button->set_icon(get_icon("ToolSnapRotationOn","EditorIcons"));
+				snap_rotation_toggle_button->set_pressed(true);
+			}
+		} break;
+		case MENU_TRANSFORM_SNAP_SCALING:
+		case BUTTON_SNAP_SCALE_TOGGLE: {
+
+			bool is_checked = transform_menu->get_popup()->is_item_checked( transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_SNAP_SCALING) );
+			snap_scaling_enabled=!is_checked;
+			transform_menu->get_popup()->set_item_checked( transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_SNAP_SCALING), snap_scaling_enabled );
+			if(is_checked){
+				snap_scaling_toggle_button->set_icon(get_icon("ToolSnapScalingOff","EditorIcons"));
+				snap_scaling_toggle_button->set_pressed(false);
+			} else {
+				snap_scaling_toggle_button->set_icon(get_icon("ToolSnapScalingOn","EditorIcons"));
+				snap_scaling_toggle_button->set_pressed(true);
+			}
 		} break;
 		case MENU_TRANSFORM_CONFIGURE_SNAP: {
 
-			snap_dialog->popup_centered(Size2(200,180));
-		} break;
-		case MENU_TRANSFORM_LOCAL_COORDS: {
+			snap_dialog->set_pos(Point2(get_global_mouse_pos().x-snap_dialog->get_size().width/2,get_global_mouse_pos().y));
+			snap_dialog->popup();
 
-			bool is_checked = transform_menu->get_popup()->is_item_checked( transform_menu->get_popup()->get_item_index(p_option) );
-			transform_menu->get_popup()->set_item_checked( transform_menu->get_popup()->get_item_index(p_option), !is_checked );
+		} break;
+		case MENU_TRANSFORM_LOCAL_COORDS:
+		case BUTTON_GLOBAL_LOCAL_COORDS_TOGGLE:{
+
+			bool is_checked = transform_menu->get_popup()->is_item_checked( transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_LOCAL_COORDS) );
+			transform_menu->get_popup()->set_item_checked( transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_LOCAL_COORDS), !is_checked );
 			update_transform_gizmo();
+			if(is_checked){
+				coords_toggle_button->set_icon(get_icon("ToolGlobalCoords","EditorIcons"));
+			} else {
+				coords_toggle_button->set_icon(get_icon("ToolLocalCoords","EditorIcons"));
+			}
 
 		} break;
 		case MENU_TRANSFORM_DIALOG: {
 
 			for(int i=0;i<3;i++) {
 
-
 				xform_translate[i]->set_text("0");
 				xform_rotate[i]->set_text("0");
 				xform_scale[i]->set_text("1");
 
 			}
+			xform_dialog->set_pos(Point2(get_global_mouse_pos().x-xform_dialog->get_size().width/2,get_global_mouse_pos().y));
+			xform_dialog->popup();
 
-			xform_dialog->popup_centered(Size2(200,200));
+		} break;
+		case MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS: {
+			bool is_checked = transform_toolbar_ctrls_menu->is_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS) );
+			EditorSettings::get_singleton()->set("global/show_transform_toolbar_controls",!is_checked);
+		} break;
+		case MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_RIGHT: {
+			bool is_checked = transform_toolbar_ctrls_menu->is_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_RIGHT) );
 
+			if(!is_checked){
+				EditorSettings::get_singleton()->set("global/transform_toolbar_controls_position",1);
+			}
+		} break;
+		case MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_LEFT: {
+			bool is_checked = transform_toolbar_ctrls_menu->is_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_LEFT) );
+
+			if(!is_checked){
+				EditorSettings::get_singleton()->set("global/transform_toolbar_controls_position",0);
+			}
+		} break;
+		case MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_VIEWPORT_BASE: {
+			bool is_checked = transform_toolbar_ctrls_menu->is_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_VIEWPORT_BASE) );
+
+			if(!is_checked){
+				EditorSettings::get_singleton()->set("global/transform_toolbar_controls_position",2);
+			}
 		} break;
 		case MENU_VIEW_USE_DEFAULT_LIGHT: {
 
@@ -3221,9 +3388,89 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		case MENU_VIEW_CAMERA_SETTINGS: {
 
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size()+Size2(50,50));
+        } break;
+	}
+}
+
+void SpatialEditor::_update_snap_settings(int p_option){
+
+	switch(p_option){
+
+		// update translation snap
+		case MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_0:
+		case MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_1:
+		case MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_2:
+		case MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_3:
+		case MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_4:
+		case MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_5:
+		case MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_6:
+		case MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_7:
+		case MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_8:
+		case MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_9: {
+
+			int idx = snap_translation_menu->get_popup()->get_item_index(p_option);
+			snap_translation_menu->set_text(snap_translation_menu->get_popup()->get_item_text(idx));
+			snap_translate->set_text(snap_translation_menu->get_popup()->get_item_text(idx));
+
 		} break;
 
+		// update rotation snap
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_0:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_1:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_2:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_3:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_4:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_5:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_6:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_7:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_8:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_9:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_10:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_11:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_12:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_13: {
+
+			int idx = snap_rotation_menu->get_popup()->get_item_index(p_option);
+			snap_rotation_menu->set_text(snap_rotation_menu->get_popup()->get_item_text(idx));
+			String snap_rotation_str = snap_rotation_menu->get_popup()->get_item_text(idx);
+			snap_rotation_str = snap_rotation_str.substr(0, snap_rotation_str.length()-1);
+			snap_rotate->set_text(snap_rotation_str);
+
+		} break;
+
+		// update scaling snap
+		case MENU_BUTTON_SNAP_SCALING_MENU_ITEM_0:
+		case MENU_BUTTON_SNAP_SCALING_MENU_ITEM_1:
+		case MENU_BUTTON_SNAP_SCALING_MENU_ITEM_2:
+		case MENU_BUTTON_SNAP_SCALING_MENU_ITEM_3:
+		case MENU_BUTTON_SNAP_SCALING_MENU_ITEM_4:
+		case MENU_BUTTON_SNAP_SCALING_MENU_ITEM_5:
+		case MENU_BUTTON_SNAP_SCALING_MENU_ITEM_6:
+		case MENU_BUTTON_SNAP_SCALING_MENU_ITEM_7:
+		case MENU_BUTTON_SNAP_SCALING_MENU_ITEM_8: {
+
+			int idx = snap_scaling_menu->get_popup()->get_item_index(p_option);
+			snap_scaling_menu->set_text(snap_scaling_menu->get_popup()->get_item_text(idx));
+			String snap_scaling_str = snap_scaling_menu->get_popup()->get_item_text(idx);
+			snap_scaling_str = snap_scaling_str.substr(0, snap_scaling_str.length()-1);
+			snap_scale->set_text(snap_scaling_str);
+
+
+		} break;
+
+
+		// open snap settings window
+		case MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_10:
+		case MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_14:
+		case MENU_BUTTON_SNAP_SCALING_MENU_ITEM_9: {
+
+			snap_dialog->set_pos(Point2(get_global_mouse_pos().x-snap_dialog->get_size().width/2,get_global_mouse_pos().y));
+			snap_dialog->popup();
+
+		} break;
 	}
+	if(EditorSettings::get_singleton()->get("global/transform_toolbar_controls_position").operator int() == 2)
+		_update_transform_toolbar_controls();
 }
 
 
@@ -3625,6 +3872,11 @@ void SpatialEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
 
+		coords_toggle_button->set_icon(get_icon("ToolGlobalCoords","EditorIcons"));
+		snap_translation_toggle_button->set_icon(get_icon("ToolSnapTranslationOff","EditorIcons"));
+		snap_rotation_toggle_button->set_icon(get_icon("ToolSnapRotationOff","EditorIcons"));
+		snap_scaling_toggle_button->set_icon(get_icon("ToolSnapScalingOff","EditorIcons"));
+
 		tool_button[SpatialEditor::TOOL_MODE_SELECT]->set_icon( get_icon("ToolSelect","EditorIcons") );
 		tool_button[SpatialEditor::TOOL_MODE_MOVE]->set_icon( get_icon("ToolMove","EditorIcons") );
 		tool_button[SpatialEditor::TOOL_MODE_ROTATE]->set_icon( get_icon("ToolRotate","EditorIcons") );
@@ -3665,8 +3917,7 @@ void SpatialEditor::_notification(int p_what) {
 
 void SpatialEditor::add_control_to_menu_panel(Control *p_control) {
 
-
-	hbc_menu->add_child(p_control);
+	hbc_menu_main_left->add_child(p_control);
 }
 
 void SpatialEditor::set_can_preview(Camera* p_preview) {
@@ -3779,6 +4030,8 @@ void SpatialEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_unhandled_key_input",&SpatialEditor::_unhandled_key_input);
 	ObjectTypeDB::bind_method("_node_removed",&SpatialEditor::_node_removed);
 	ObjectTypeDB::bind_method("_menu_item_pressed",&SpatialEditor::_menu_item_pressed);
+	ObjectTypeDB::bind_method("_update_snap_settings",&SpatialEditor::_update_snap_settings);
+	ObjectTypeDB::bind_method("_snap_dialog_action",&SpatialEditor::_snap_dialog_action);
 	ObjectTypeDB::bind_method("_xform_dialog_action",&SpatialEditor::_xform_dialog_action);
 	ObjectTypeDB::bind_method("_instance_scene",&SpatialEditor::_instance_scene);
 	ObjectTypeDB::bind_method("_get_editor_data",&SpatialEditor::_get_editor_data);
@@ -3786,6 +4039,7 @@ void SpatialEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_default_light_angle_input",&SpatialEditor::_default_light_angle_input);
 	ObjectTypeDB::bind_method("_update_ambient_light_color",&SpatialEditor::_update_ambient_light_color);
 	ObjectTypeDB::bind_method("_toggle_maximize_view",&SpatialEditor::_toggle_maximize_view);
+	ObjectTypeDB::bind_method("_update_transform_toolbar_controls",&SpatialEditor::_update_transform_toolbar_controls);
 
 	ADD_SIGNAL( MethodInfo("transform_key_request") );
 
@@ -3867,6 +4121,63 @@ void SpatialEditor::_default_light_angle_input(const InputEvent& p_event) {
 
 }
 
+void SpatialEditor::set_transform_toolbar_ctrls_visibility(bool visible){
+
+	if(visible){
+		hbc_menu_transform_ctrls->show();
+		show_tranform_toolbar_controls = true;
+		transform_toolbar_ctrls_menu->set_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS), true );
+	} else {
+		hbc_menu_transform_ctrls->hide();
+		show_tranform_toolbar_controls = false;
+		transform_toolbar_ctrls_menu->set_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS), false );
+	}
+}
+
+void SpatialEditor::set_transform_toolbar_ctrls_position(int position){
+
+	transform_toolbar_ctrls_menu->set_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_RIGHT), false );
+	transform_toolbar_ctrls_menu->set_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_LEFT), false );
+	transform_toolbar_ctrls_menu->set_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_VIEWPORT_BASE), false );
+
+	show_tranform_toolbar_controls_on_right_side = false;
+	show_tranform_toolbar_controls_on_left_side = false;
+	show_tranform_toolbar_controls_in_viewport_base = false;
+
+	hbc_menu_transform_ctrls->get_parent()->remove_child(hbc_menu_transform_ctrls);
+
+	switch(position){
+
+	case 0: // left
+		transform_toolbar_ctrls_menu->set_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_LEFT), true );
+		show_tranform_toolbar_controls_on_left_side = true;
+
+		hbc_menu_main_left->add_child_below_node(hbc_menu_main_left->get_child(transform_menu->get_index()-1), hbc_menu_transform_ctrls);
+		hbc_menu_transform_ctrls_right_vs->show();
+		hbc_menu_transform_ctrls->set_opacity(1.0);
+		break;
+
+	case 1: // right
+		transform_toolbar_ctrls_menu->set_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_RIGHT), true );
+		show_tranform_toolbar_controls_on_right_side = true;
+
+		hbc_menu_main_right->add_child(hbc_menu_transform_ctrls);
+		hbc_menu_transform_ctrls_right_vs->hide();
+		hbc_menu_transform_ctrls->set_opacity(1.0);
+		break;
+
+	case 2: // viewport base
+		transform_toolbar_ctrls_menu->set_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_VIEWPORT_BASE), true );
+		show_tranform_toolbar_controls_in_viewport_base = true;
+
+		hbc_menu_transform_ctrls_right_vs->hide();
+		viewport_base->add_child(hbc_menu_transform_ctrls);
+		hbc_menu_transform_ctrls->set_size(hbc_menu_transform_ctrls->get_minimum_size());
+		hbc_menu_transform_ctrls->set_pos(Size2((viewport_base->get_size().width - hbc_menu_transform_ctrls->get_size().width - 4), 4));
+		hbc_menu_transform_ctrls->set_opacity(0.6);
+		break;
+	}
+}
 
 SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
@@ -3883,20 +4194,29 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	editor_selection=editor->get_editor_selection();
 	editor_selection->add_editor_plugin(this);
 
-	snap_enabled=false;
+	snap_translation_enabled=false;
+	snap_rotation_enabled=false;
+	snap_scaling_enabled=false;
 	tool_mode = TOOL_MODE_SELECT;
+
+	show_tranform_toolbar_controls = true;
+	show_tranform_toolbar_controls_on_right_side = false;
+	show_tranform_toolbar_controls_on_left_side = true;
+	show_tranform_toolbar_controls_in_viewport_base = false;
 
 	//set_focus_mode(FOCUS_ALL);
 
-	hbc_menu = memnew( HBoxContainer );
-	vbc->add_child(hbc_menu);
+	hbc_menu_main = memnew( HBoxContainer );
+	vbc->add_child(hbc_menu_main);
 
+	hbc_menu_main_left = memnew( HBoxContainer );
+	hbc_menu_main->add_child(hbc_menu_main_left);
 
 	Vector<Variant> button_binds;
 	button_binds.resize(1);
 
 	tool_button[TOOL_MODE_SELECT] = memnew( ToolButton );
-	hbc_menu->add_child( tool_button[TOOL_MODE_SELECT] );
+	hbc_menu_main_left->add_child( tool_button[TOOL_MODE_SELECT] );
 	tool_button[TOOL_MODE_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SELECT]->set_flat(true);
 	tool_button[TOOL_MODE_SELECT]->set_pressed(true);
@@ -3907,7 +4227,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	tool_button[TOOL_MODE_MOVE] = memnew( ToolButton );
 
-	hbc_menu->add_child( tool_button[TOOL_MODE_MOVE] );
+	hbc_menu_main_left->add_child( tool_button[TOOL_MODE_MOVE] );
 	tool_button[TOOL_MODE_MOVE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_MOVE]->set_flat(true);
 	button_binds[0]=MENU_TOOL_MOVE;
@@ -3915,7 +4235,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_MOVE]->set_tooltip(TTR("Move Mode (W)"));
 
 	tool_button[TOOL_MODE_ROTATE] = memnew( ToolButton );
-	hbc_menu->add_child( tool_button[TOOL_MODE_ROTATE] );
+	hbc_menu_main_left->add_child( tool_button[TOOL_MODE_ROTATE] );
 	tool_button[TOOL_MODE_ROTATE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_ROTATE]->set_flat(true);
 	button_binds[0]=MENU_TOOL_ROTATE;
@@ -3923,7 +4243,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_ROTATE]->set_tooltip(TTR("Rotate Mode (E)"));
 
 	tool_button[TOOL_MODE_SCALE] = memnew( ToolButton );
-	hbc_menu->add_child( tool_button[TOOL_MODE_SCALE] );
+	hbc_menu_main_left->add_child( tool_button[TOOL_MODE_SCALE] );
 	tool_button[TOOL_MODE_SCALE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SCALE]->set_flat(true);
 	button_binds[0]=MENU_TOOL_SCALE;
@@ -3931,16 +4251,16 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_SCALE]->set_tooltip(TTR("Scale Mode (R)"));
 
 	instance_button = memnew( Button );
-	hbc_menu->add_child( instance_button );
+	hbc_menu_main_left->add_child( instance_button );
 	instance_button->set_flat(true);
 	instance_button->connect("pressed",this,"_instance_scene");
 	instance_button->hide();
 
 	VSeparator *vs = memnew( VSeparator );
-	hbc_menu->add_child(vs);
+	hbc_menu_main_left->add_child(vs);
 
 	tool_button[TOOL_MODE_LIST_SELECT] = memnew( ToolButton );
-	hbc_menu->add_child( tool_button[TOOL_MODE_LIST_SELECT] );
+	hbc_menu_main_left->add_child( tool_button[TOOL_MODE_LIST_SELECT] );
 	tool_button[TOOL_MODE_LIST_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_flat(true);
 	button_binds[0]=MENU_TOOL_LIST_SELECT;
@@ -3948,17 +4268,19 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
 
 	vs = memnew( VSeparator );
-	hbc_menu->add_child(vs);
+	hbc_menu_main_left->add_child(vs);
 
 
 	PopupMenu *p;
 
 	transform_menu = memnew( MenuButton );
 	transform_menu->set_text(TTR("Transform"));
-	hbc_menu->add_child( transform_menu );
+	hbc_menu_main_left->add_child( transform_menu );
 
 	p = transform_menu->get_popup();
-	p->add_check_item(TTR("Use Snap"),MENU_TRANSFORM_USE_SNAP);
+	p->add_check_item(TTR("Snap Translation"),MENU_TRANSFORM_SNAP_TRANSLATION);
+	p->add_check_item(TTR("Snap Rotation"),MENU_TRANSFORM_SNAP_ROTATION);
+	p->add_check_item(TTR("Snap Scaling"),MENU_TRANSFORM_SNAP_SCALING);
 	p->add_item(TTR("Configure Snap.."),MENU_TRANSFORM_CONFIGURE_SNAP);
 	p->add_separator();
 	p->add_check_item(TTR("Local Coords"),MENU_TRANSFORM_LOCAL_COORDS);
@@ -3966,12 +4288,27 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_item(TTR("Transform Dialog.."),MENU_TRANSFORM_DIALOG);
 
+	p->add_separator();
+	transform_toolbar_ctrls_menu = memnew( PopupMenu );
+	transform_toolbar_ctrls_menu->set_name("transform_toolbar_ctrls");
+	p->add_child(transform_toolbar_ctrls_menu);
+	p->add_submenu_item(TTR("Toolbar Controls"),"transform_toolbar_ctrls");
+	transform_toolbar_ctrls_menu->add_check_item(TTR("Show Controls"), MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS);
+	transform_toolbar_ctrls_menu->add_separator();
+	transform_toolbar_ctrls_menu->add_check_item(TTR("On Right-hand Side"), MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_RIGHT);
+	transform_toolbar_ctrls_menu->add_check_item(TTR("On Left-hand Side"), MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_LEFT);
+	transform_toolbar_ctrls_menu->add_check_item(TTR("In Viewport"), MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_VIEWPORT_BASE);
+	transform_toolbar_ctrls_menu->connect("item_pressed",this,"_menu_item_pressed");
+
+	transform_toolbar_ctrls_menu->set_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS), true );
+	transform_toolbar_ctrls_menu->set_item_checked( transform_toolbar_ctrls_menu->get_item_index(MENU_TRANSFORM_TRANSFORM_TOOLBAR_CTRLS_LEFT), true );
+
 	p->connect("item_pressed", this,"_menu_item_pressed");
 
 	view_menu = memnew( MenuButton );
 	view_menu->set_text(TTR("View"));
 	view_menu->set_pos( Point2( 212,0) );
-	hbc_menu->add_child( view_menu );
+	hbc_menu_main_left->add_child( view_menu );
 
 	p = view_menu->get_popup();
 
@@ -3997,15 +4334,147 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_item(TTR("Settings"),MENU_VIEW_CAMERA_SETTINGS);
 
-
 	p->set_item_checked( p->get_item_index(MENU_VIEW_USE_DEFAULT_LIGHT), true );
 	p->set_item_checked( p->get_item_index(MENU_VIEW_DISPLAY_NORMAL), true );
 	p->set_item_checked( p->get_item_index(MENU_VIEW_ORIGIN), true );
 	p->set_item_checked( p->get_item_index(MENU_VIEW_GRID), true );
 
-
 	p->connect("item_pressed", this,"_menu_item_pressed");
 
+	hbc_menu_main_right = memnew ( HBoxContainer );
+	hbc_menu_main->add_child(hbc_menu_main_right);
+	hbc_menu_main_right->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc_menu_main_right->set_alignment(ALIGN_END);
+
+	hbc_menu_transform_ctrls = memnew ( HBoxContainer );
+	hbc_menu_main_left->add_child_below_node(hbc_menu_main_left->get_child(transform_menu->get_index()-1), hbc_menu_transform_ctrls);
+
+	snap_translation_toggle_button = memnew ( Button );
+	hbc_menu_transform_ctrls->add_child(snap_translation_toggle_button);
+	snap_translation_toggle_button->set_toggle_mode(true);
+	snap_translation_toggle_button->set_flat(true);
+	snap_translation_toggle_button->set_tooltip(TTR("Toggle translation snap on and off"));
+	button_binds[0]=BUTTON_SNAP_TRANSLATION_TOGGLE;
+	snap_translation_toggle_button->connect("pressed", this,"_menu_item_pressed",button_binds);
+
+	snap_translation_menu = memnew( MenuButton );
+	hbc_menu_transform_ctrls->add_child(snap_translation_menu);
+	snap_translation_menu->set_text("1");
+	snap_translation_menu->get_popup()->add_item("0.01", MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_1);
+	snap_translation_menu->get_popup()->add_item("0.05", MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_2);
+	snap_translation_menu->get_popup()->add_item("0.1", MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_3);
+	snap_translation_menu->get_popup()->add_item("0.5", MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_4);
+	snap_translation_menu->get_popup()->add_item("1", MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_5);
+	snap_translation_menu->get_popup()->add_item("5", MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_6);
+	snap_translation_menu->get_popup()->add_item("10", MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_7);
+	snap_translation_menu->get_popup()->add_item("50", MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_8);
+	snap_translation_menu->get_popup()->add_item("100", MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_9);
+	snap_translation_menu->get_popup()->add_separator();
+	snap_translation_menu->get_popup()->add_item(TTR("Custom"), MENU_BUTTON_SNAP_TRANSLATION_MENU_ITEM_10);
+	snap_translation_menu->get_popup()->connect("item_pressed",this,"_update_snap_settings");
+
+	vs = memnew( VSeparator );
+	hbc_menu_transform_ctrls->add_child(vs);
+
+	snap_rotation_toggle_button = memnew ( Button );
+	hbc_menu_transform_ctrls->add_child(snap_rotation_toggle_button);
+	snap_rotation_toggle_button->set_toggle_mode(true);
+	snap_rotation_toggle_button->set_flat(true);
+	snap_rotation_toggle_button->set_tooltip(TTR("Toggle rotation snap on and off"));
+	button_binds[0]=BUTTON_SNAP_ROTATION_TOGGLE;
+	snap_rotation_toggle_button->connect("pressed", this,"_menu_item_pressed",button_binds);
+
+	snap_rotation_menu = memnew( MenuButton );
+	hbc_menu_transform_ctrls->add_child(snap_rotation_menu);
+	String temp_label_str;
+	temp_label_str.parse_utf8("5\u00B0");
+	snap_rotation_menu->set_text(temp_label_str);
+	snap_rotation_menu->get_popup()->add_item(TTR("Common"), MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_0);
+	snap_rotation_menu->get_popup()->set_item_disabled(0, true);
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_1);
+	temp_label_str.parse_utf8("10\u00B0");
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_2);
+	temp_label_str.parse_utf8("15\u00B0");
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_3);
+	temp_label_str.parse_utf8("30\u00B0");
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_4);
+	temp_label_str.parse_utf8("45\u00B0");
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_5);
+	temp_label_str.parse_utf8("60\u00B0");
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_6);
+	temp_label_str.parse_utf8("90\u00B0");
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_7);
+	temp_label_str.parse_utf8("120\u00B0");
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_8);
+	String divisions_of_360_deg;
+	divisions_of_360_deg.parse_utf8("Divisions of 360\u00B0");
+	snap_rotation_menu->get_popup()->add_item(TTR(divisions_of_360_deg), MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_9);
+	snap_rotation_menu->get_popup()->set_item_disabled(9, true);
+	temp_label_str.parse_utf8("2.812\u00B0");
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_10);
+	temp_label_str.parse_utf8("5.625\u00B0");
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_11);
+	temp_label_str.parse_utf8("11.25\u00B0");
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_12);
+	temp_label_str.parse_utf8("22.5\u00B0");
+	snap_rotation_menu->get_popup()->add_item(temp_label_str, MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_13);
+	snap_rotation_menu->get_popup()->add_separator();
+	snap_rotation_menu->get_popup()->add_item(TTR("Custom"), MENU_BUTTON_SNAP_ROTATION_MENU_ITEM_14);
+	snap_rotation_menu->get_popup()->connect("item_pressed",this,"_update_snap_settings");
+
+	vs = memnew( VSeparator );
+	hbc_menu_transform_ctrls->add_child(vs);
+
+	snap_scaling_toggle_button = memnew ( Button );
+	hbc_menu_transform_ctrls->add_child(snap_scaling_toggle_button);
+	snap_scaling_toggle_button->set_toggle_mode(true);
+	snap_scaling_toggle_button->set_flat(true);
+	snap_scaling_toggle_button->set_tooltip("Toggle scaling snap on and off");
+	button_binds[0]=BUTTON_SNAP_SCALE_TOGGLE;
+	snap_scaling_toggle_button->connect("pressed", this,"_menu_item_pressed",button_binds);
+
+	snap_scaling_menu = memnew( MenuButton );
+	hbc_menu_transform_ctrls->add_child(snap_scaling_menu);
+
+#ifdef OSX_ENABLED
+	snap_scaling_menu->set_text("5%");
+	snap_scaling_menu->get_popup()->add_item("3.125%", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_0);
+	snap_scaling_menu->get_popup()->add_item("5%", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_1);
+	snap_scaling_menu->get_popup()->add_item("6.25%", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_2);
+	snap_scaling_menu->get_popup()->add_item("10%", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_3);
+	snap_scaling_menu->get_popup()->add_item("12.5%", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_4);
+	snap_scaling_menu->get_popup()->add_item("25%", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_5);
+	snap_scaling_menu->get_popup()->add_item("50%", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_6);
+	snap_scaling_menu->get_popup()->add_item("100%", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_7);
+	snap_scaling_menu->get_popup()->add_item("1000%", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_8);
+#else
+	snap_scaling_menu->set_text("5\u0025");
+	snap_scaling_menu->get_popup()->add_item("3.125\u0025", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_0);
+	snap_scaling_menu->get_popup()->add_item("5\u0025", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_1);
+	snap_scaling_menu->get_popup()->add_item("6.25\u0025", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_2);
+	snap_scaling_menu->get_popup()->add_item("10\u0025", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_3);
+	snap_scaling_menu->get_popup()->add_item("12.5\u0025", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_4);
+	snap_scaling_menu->get_popup()->add_item("25\u0025", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_5);
+	snap_scaling_menu->get_popup()->add_item("50\u0025", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_6);
+	snap_scaling_menu->get_popup()->add_item("100\u0025", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_7);
+	snap_scaling_menu->get_popup()->add_item("1000\u0025", MENU_BUTTON_SNAP_SCALING_MENU_ITEM_8);
+#endif
+	snap_scaling_menu->get_popup()->add_separator();
+	snap_scaling_menu->get_popup()->add_item(TTR("Custom"), MENU_BUTTON_SNAP_SCALING_MENU_ITEM_9);
+	snap_scaling_menu->get_popup()->connect("item_pressed",this,"_update_snap_settings");
+
+	vs = memnew( VSeparator );
+	hbc_menu_transform_ctrls->add_child(vs);
+
+	coords_toggle_button = memnew ( Button );
+	hbc_menu_transform_ctrls->add_child(coords_toggle_button);
+	coords_toggle_button->set_flat(true);
+	coords_toggle_button->set_tooltip(TTR("Toggle between global and local coordinates"));
+	button_binds[0]=BUTTON_GLOBAL_LOCAL_COORDS_TOGGLE;
+	coords_toggle_button->connect("pressed", this,"_menu_item_pressed",button_binds);
+
+	hbc_menu_transform_ctrls_right_vs = memnew( VSeparator );
+	hbc_menu_transform_ctrls->add_child(hbc_menu_transform_ctrls_right_vs);
 
 	/* REST OF MENU */
 
@@ -4028,13 +4497,13 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	//vbc->add_child(viewport_base);
 
 
-
-
 	/* SNAP DIALOG */
 
 	snap_dialog = memnew( ConfirmationDialog );
 	snap_dialog->set_title(TTR("Snap Settings"));
+	snap_dialog->set_size(Size2(200,180));
 	add_child(snap_dialog);
+	snap_dialog->connect("confirmed", this,"_snap_dialog_action");
 
 	VBoxContainer *snap_dialog_vbc = memnew( VBoxContainer );
 	snap_dialog->add_child(snap_dialog_vbc);
@@ -4126,6 +4595,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	xform_dialog = memnew( ConfirmationDialog );
 	xform_dialog->set_title(TTR("Transform Change"));
+	xform_dialog->set_size(Size2(200,200));
 	add_child(xform_dialog);
 	Label *l = memnew(Label);
 	l->set_text(TTR("Translate:"));
@@ -4191,6 +4661,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	EDITOR_DEF("3d_editor/manipulator_gizmo_opacity",0.2);
 
 	over_gizmo_handle=-1;
+
+	EditorSettings::get_singleton()->connect("settings_changed",this,"_update_transform_toolbar_controls");
 }
 
 SpatialEditor::~SpatialEditor() {
