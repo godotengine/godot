@@ -39,15 +39,19 @@
 #include "multi_node_edit.h"
 #include "tools/editor/plugins/animation_player_editor_plugin.h"
 #include "animation_editor.h"
-
+#include "scene/main/viewport.h"
 
 
 
 void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 
+	if (get_viewport()->get_modal_stack_top())
+		return; //ignore because of modal window
+
 	uint32_t sc = p_event.key.get_scancode_with_modifiers();
 	if (!p_event.key.pressed || p_event.key.echo)
 		return;
+
 
 	if (ED_IS_SHORTCUT("scene_tree/add_child_node", p_event)) {
 		_tool_selected(TOOL_NEW);

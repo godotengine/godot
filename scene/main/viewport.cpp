@@ -2502,6 +2502,9 @@ Variant Viewport::gui_get_drag_data() const {
 	return gui.drag_data;
 }
 
+Control *Viewport::get_modal_stack_top() const {
+	return gui.modal_stack.size()?gui.modal_stack.back()->get():NULL;
+}
 
 String Viewport::get_configuration_warning() const {
 
