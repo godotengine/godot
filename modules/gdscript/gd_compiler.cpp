@@ -1497,7 +1497,8 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 					String sub = p_class->extends_class[i];
 					if (script->subclasses.has(sub)) {
 
-						script=script->subclasses[sub];
+						Ref<Script> subclass=script->subclasses[sub];
+						script=subclass;
 					} else {
 
 						_set_error("Could not find subclass: "+sub,p_class);
