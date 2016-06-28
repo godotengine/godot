@@ -565,6 +565,8 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 	bool must_reload = _find_updated_instances(edited_scene[p_idx].root,edited_scene[p_idx].root,checked_scenes);
 
+	print_line("MUST RELOAD? "+itos(must_reload));
+
 	if (must_reload) {
 		Ref<PackedScene> pscene;
 		pscene.instance();
@@ -761,6 +763,8 @@ Ref<ResourceImportMetadata> EditorData::get_edited_scene_import_metadata() const
 	ERR_FAIL_INDEX_V(current_edited_scene,edited_scene.size(),Ref<ResourceImportMetadata>());
 	return edited_scene[current_edited_scene].medatata;
 }
+
+
 
 void EditorData::clear_edited_scenes() {
 

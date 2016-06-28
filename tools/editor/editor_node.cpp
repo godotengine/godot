@@ -3429,7 +3429,10 @@ Dictionary EditorNode::_get_main_scene_state() {
 	return state;
 }
 
-void EditorNode::_set_main_scene_state(Dictionary p_state) {
+void EditorNode::_set_main_scene_state(Dictionary p_state,Node* p_for_scene) {
+
+	if (get_edited_scene()!=p_for_scene)
+		return; //not for this scene
 
 	//print_line("set current 7 ");
 	changing_scene=false;
@@ -3573,7 +3576,7 @@ void EditorNode::set_current_scene(int p_idx) {
 	}*/
 	//_set_main_scene_state(state);
 
-	call_deferred("_set_main_scene_state",state); //do after everything else is done setting up
+	call_deferred("_set_main_scene_state",state,get_edited_scene()); //do after everything else is done setting up
 	//print_line("set current 6 ");
 
 
@@ -5114,6 +5117,78 @@ void EditorNode::_file_access_close_error_notify(const String& p_str) {
 
 	add_io_error("Unable to write to file '"+p_str+"', file in use, locked or lacking permissions.");
 }
+
+
+void EditorNode::reload_scene(const String& p_path) {
+
+
+	//first of all, reload textures as they might have changed on disk
+
+	List<Ref<Resource> > cached;
+	ResourceCache::get_cached_resources(&cached);
+	List<Ref<Resource> > to_clear; //clear internal resources from previous scene from being used
+	for(List<Ref<Resource> >::Element *E=cached.front();E;E=E->next()) {
+
+		if (E->get()->get_path().begins_with(p_path+"::")) //subresources of existing scene
+			to_clear.push_back(E->get());
+
+		if (!E->get()->cast_to<Texture>())
+			continue;
+		if (!E->get()->get_path().is_resource_file() && !E->get()->get_path().is_abs_path())
+			continue;
+		if (!FileAccess::exists(E->get()->get_path()))
+			continue;
+		uint64_t mt = FileAccess::get_modified_time(E->get()->get_path());
+		if (mt!=E->get()->get_last_modified_time()) {
+			E->get()->reload_from_file();
+		}
+	}
+
+	//so reload reloads everything, clear subresources of previous scene
+	while(to_clear.front()) {
+		to_clear.front()->get()->set_path("");
+		to_clear.pop_front();
+	}
+
+	int scene_idx=-1;
+	for(int i=0;i<editor_data.get_edited_scene_count();i++) {
+
+		if (editor_data.get_scene_path(i)==p_path) {
+			scene_idx=i;
+			break;
+		}
+	}
+
+	int current_tab = editor_data.get_edited_scene();
+
+
+	if (scene_idx==-1) {
+		if (get_edited_scene()) {
+			//scene is not open, so at it might be instanced, just refresh, set tab to itself and it will reload
+			set_current_scene(current_tab);
+			editor_data.get_undo_redo().clear_history();
+		}
+		return;
+	}
+
+
+	if (current_tab==scene_idx) {
+		editor_data.apply_changes_in_editors();
+		_set_scene_metadata(p_path);
+
+	}
+	//remove scene
+	_remove_scene(scene_idx);
+	//reload scene
+	load_scene(p_path);
+	//adjust index so tab is back a the previous position
+	editor_data.move_edited_scene_to_index(scene_idx);
+	get_undo_redo()->clear_history();
+	//recover the tab
+	scene_tabs->set_current_tab(current_tab);
+	_scene_tab_changed(current_tab);
+}
+
 
 void EditorNode::_bind_methods() {
 

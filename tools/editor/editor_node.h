@@ -555,7 +555,7 @@ private:
 	void _scene_tab_script_edited(int p_tab);
 
 	Dictionary _get_main_scene_state();
-	void _set_main_scene_state(Dictionary p_state);
+	void _set_main_scene_state(Dictionary p_state,Node* p_for_scene);
 
 	int _get_current_main_editor();
 
@@ -715,6 +715,8 @@ public:
 	void save_layout();
 
 	void update_keying();
+
+	void reload_scene(const String& p_path);
 
 	bool is_exiting() const { return exiting; }
 

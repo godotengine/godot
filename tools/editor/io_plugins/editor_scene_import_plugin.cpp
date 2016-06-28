@@ -2790,15 +2790,16 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 	Ref<PackedScene> packer = memnew( PackedScene );
 	packer->pack(scene);
-	packer->set_path(p_dest_path);
+	//packer->set_path(p_dest_path); do not take over, let the changed files reload themselves
 	packer->set_import_metadata(from);
 
 	print_line("SAVING TO: "+p_dest_path);
-	err = ResourceSaver::save(p_dest_path,packer,ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
+	err = ResourceSaver::save(p_dest_path,packer); //do not take over, let the changed files reload themselves
 
 	//EditorFileSystem::get_singleton()->update_resource(packer);
 
 	memdelete(scene);
+
 	/*
 	scene->set_filename(p_dest_path);
 	if (r_scene) {
@@ -2818,6 +2819,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 	*/
 
+	EditorNode::get_singleton()->reload_scene(p_dest_path);
 
 	return err;
 
