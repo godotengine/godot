@@ -1,76 +1,88 @@
-# Arabic translation of the Godot Engine editor
+# Bulgarian translation of the Godot Engine editor
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# Mohammmad Khashashneh <mohammad.rasmi@gmail.com>, 2016.
+# Bojidar Marinov <bojidar.marinov.bg@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-06-20 11:18+0000\n"
-"Last-Translator: Mohammmad Khashashneh <mohammad.rasmi@gmail.com>\n"
-"Language-Team: Arabic <https://hosted.weblate.org/projects/godot-"
-"engine/godot/ar/>\n"
-"Language: ar\n"
+"PO-Revision-Date: 2016-06-27 15:36+0000\n"
+"Last-Translator: Bojidar Marinov <bojidar.marinov.bg@gmail.com>\n"
+"Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-"
+"engine/godot/bg/>\n"
+"Language: bg\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
-"&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 2.7-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
+"Невалиден агрумент тип на convert(), използвайте константите започващи с "
+"TYPE_*."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "Недостатъчно байтове за декодиране на байтовете, или невалиден формат."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr ""
+msgstr "Стъпката на range() е нула!"
 
 #: modules/gdscript/gd_functions.cpp
+#, fuzzy
 msgid "Not a script with an instance"
-msgstr ""
+msgstr "Скриптът няма инстанция"
 
 #: modules/gdscript/gd_functions.cpp
+#, fuzzy
 msgid "Not based on a script"
-msgstr ""
+msgstr "Обектът не е базиран на скрипт"
 
 #: modules/gdscript/gd_functions.cpp
+#, fuzzy
 msgid "Not based on a resource file"
-msgstr ""
+msgstr "Обектът не е базиран на ресурсен файл"
 
 #: modules/gdscript/gd_functions.cpp
+#, fuzzy
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr ""
+msgstr "Невалиден формат на инстанцията в речника (липсва @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
+"Невалиден формат на инстанцията в речника (скриптът в @path не може да бъде "
+"зареден)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
 msgstr ""
+"Невалиден формат на инстанцията в речника (скриптът в @path е невалиден)"
 
 #: modules/gdscript/gd_functions.cpp
+#, fuzzy
 msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr ""
+msgstr "Невалиден формат на инстанцията в речника (невалиден подклас)"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"ليتم إظهار الأطر (اللقطات) في الAnimatedSprite (النقوش المتحركة), يجب تكوين "
-"مصدر لها من نوع  SpriteFrames و ضبط خاصية الFrames (الأطر) بها."
+"За да може AnimatedSprite да показва кадри, първо трябва да му се даде "
+"SpriteFrames ресурс в парамертъра 'Frames'."
 
 #: scene/2d/canvas_modulate.cpp
+#, fuzzy
 msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
+"Може да има само един видим CanvasModulate на сцене (или няколко "
+"инстанцирани сцени). Само първият ще работи, а всички останали - игнорирани."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -78,10 +90,13 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon2D служи само за да даде форма за колизии на "
+"CollisionObject2D. Моля, използвайте го само като наследник на Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, и т.н. за да им дадете форма."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr ""
+msgstr "Празен CollisionPolygon2D няма никакъв ефект на колизията."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -89,68 +104,87 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionShape2D служи само за да даде форма за колизии на "
+"CollisionObject2D. Моля, използвайте го само като наследник на Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, и т.н. за да им дадете форма."
 
 #: scene/2d/collision_shape_2d.cpp
+#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
+"За да работи CollisionShape2D, е нужно да му се даде форма. Моля, създайте "
+"му Shape2D ресурс."
 
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the 'texture' "
 "property."
 msgstr ""
+"Тесктура с нужната форма на светлината трябва да бъде дадена в параметъра "
+"'texture'."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
+"Затъмняващият многоъгълник трябва да бъде зададен (или нарисуван) за да може "
+"да работи тази сянка."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
-msgstr ""
+msgstr "Затъмняващият многоъгълник е празен. Моля, нарисувайте един."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
+"На този нод трябва да бъде даден един NavigationPolygon ресурс. Моля, "
+"задайте или нарисувайте един многоъгълник."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
+"NavigationPolygonInstance трябва да бъде наследник или наследник на "
+"наследник на Navigation2D. Той само дава навигационна информация."
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
+msgstr "ParallaxLayer работи само когато е наследник на ParallaxBackground."
 
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
 msgstr ""
+"Параметъра 'Path' трябва да сочи към работещ Particles2D нод за да работи."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
+msgstr "PathFollow2D работи само когато е наследник на Path2D."
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr ""
+msgstr "Параметъра 'Path' трябва да сочи към Node2D нод за да работи."
 
 #: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SamplePlayer to play sound."
 msgstr ""
+"За да изпълнява звук, SamplePlayer трябва да има един SampleLibrary ресурс в "
+"параметъра 'samples'."
 
 #: scene/2d/sprite.cpp
 msgid ""
 "Path property must point to a valid Viewport node to work. Such Viewport "
 "must be set to 'render target' mode."
 msgstr ""
+"Параметъра 'Path' трябва да сочи към валиден Viewport нод за да работи. Този "
+"Viewport трябва да бъде настройен в режим 'рендъринг цел'(render target)."
 
 #: scene/2d/sprite.cpp
 msgid ""
@@ -952,7 +986,7 @@ msgid "Method in target Node must be specified!"
 msgstr ""
 
 #: tools/editor/connections_dialog.cpp
-msgid "Conect To Node:"
+msgid "Connect To Node:"
 msgstr ""
 
 #: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
@@ -1535,15 +1569,11 @@ msgid "Save Layout"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Load Layout"
+msgid "Delete Layout"
 msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Default"
-msgstr ""
-
-#: tools/editor/editor_node.cpp
-msgid "Delete Layout"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -2115,6 +2145,12 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "No target font resource!"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_font_import_plugin.cpp
+msgid ""
+"Invalid file extension.\n"
+"Please use .fnt."
 msgstr ""
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
@@ -5670,11 +5706,15 @@ msgid "Error duplicating scene to save it."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "New Scene Root"
+msgid "Edit Groups"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Inherit Scene"
+msgid "Edit Connections"
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
@@ -5690,14 +5730,6 @@ msgid "Change Type"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Edit Groups"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Edit Connections"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "Add Script"
 msgstr ""
 
@@ -5707,10 +5739,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save Branch as Scene"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp

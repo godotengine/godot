@@ -3,13 +3,14 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Geequlim <geequlim@gmail.com>, 2016.
+# 纯洁的坏蛋 <tqj.zyy@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-06-11 11:37+0000\n"
-"Last-Translator: Geequlim <geequlim@gmail.com>\n"
+"PO-Revision-Date: 2016-06-25 17:02+0000\n"
+"Last-Translator: 纯洁的坏蛋 <tqj.zyy@gmail.com>\n"
 "Language-Team: Chinese (China) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/zh_CN/>\n"
 "Language: zh_CN\n"
@@ -29,29 +30,28 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr ""
+msgstr "step参数为0！"
 
 #: modules/gdscript/gd_functions.cpp
-#, fuzzy
 msgid "Not a script with an instance"
-msgstr "没有选用要实例化的场景！"
+msgstr "脚本没有实例化"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "没有基于脚本"
 
 #: modules/gdscript/gd_functions.cpp
-#, fuzzy
 msgid "Not based on a resource file"
-msgstr "请设置目标字体资源！"
+msgstr "不是一个资源文件"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr ""
+msgstr "实例字典格式不正确（缺少@path）"
 
 #: modules/gdscript/gd_functions.cpp
+#, fuzzy
 msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr ""
+msgstr "实例字典格式不正确（无法加载脚本@path）"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"

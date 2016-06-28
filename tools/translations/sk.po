@@ -2,15 +2,15 @@
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# lablazer <avojtus@centrum.sk>, 2016.
+# J08nY <johnenter@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-06-11 11:23+0000\n"
-"Last-Translator: lablazer <avojtus@centrum.sk>\n"
-"Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/"
-"godot/sk/>\n"
+"PO-Revision-Date: 2016-06-25 14:16+0000\n"
+"Last-Translator: J08nY <johnenter@gmail.com>\n"
+"Language-Team: Slovak <https://hosted.weblate.org/projects/godot-"
+"engine/godot/sk/>\n"
 "Language: sk\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -19,15 +19,15 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "Chybný argument convert(), použite TYPE_* konštanty."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "Nedostatok bajtov na dekódovanie, možný chybný formát."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr ""
+msgstr "argument \"step\"/krok je nulový!"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
@@ -241,7 +241,7 @@ msgstr ""
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Recognized"
-msgstr ""
+msgstr "Všetko rozpoznané"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Files (*)"
@@ -251,65 +251,103 @@ msgstr ""
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
 #: tools/editor/scenes_dock.cpp
+#: scene/gui/file_dialog.cpp,
+#: tools/editor/editor_file_dialog.cpp,
+#: tools/editor/editor_help.cpp,
+#: tools/editor/editor_node.cpp,
+#: tools/editor/plugins/script_editor_plugin.cpp,
+#: tools/editor/quick_open.cpp,
+#,
 msgid "Open"
-msgstr ""
+msgstr "Otvoriť"
 
 #: scene/gui/file_dialog.cpp
+#,
 msgid "Open a File"
-msgstr ""
+msgstr "Otvoriť súbor"
 
 #: scene/gui/file_dialog.cpp
+#,
 msgid "Open File(s)"
-msgstr ""
+msgstr "Otvoriť súbor(y)"
 
 #: scene/gui/file_dialog.cpp
+#,
 msgid "Open a Directory"
-msgstr ""
+msgstr "Otvorit priečinok"
 
 #: scene/gui/file_dialog.cpp
+#,
 msgid "Open a File or Directory"
-msgstr ""
+msgstr "Otvoriť súbor / priečinok"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
+#: scene/gui/file_dialog.cpp,
+#: tools/editor/editor_file_dialog.cpp,
+#: tools/editor/editor_node.cpp,
+#: tools/editor/plugins/animation_player_editor_plugin.cpp,
+#,
 msgid "Save"
-msgstr ""
+msgstr "Uložiť"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp,
+#,
 msgid "Save a File"
-msgstr ""
+msgstr "Uložiť súbor"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp,
+#: tools/editor/editor_dir_dialog.cpp,
+#,
 msgid "Create Folder"
-msgstr ""
+msgstr "Vytvoriť adresár"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 #: tools/editor/project_settings.cpp tools/editor/script_create_dialog.cpp
+#: scene/gui/file_dialog.cpp,
+#: tools/editor/editor_file_dialog.cpp,
+#: tools/editor/io_plugins/editor_font_import_plugin.cpp,
+#: tools/editor/project_settings.cpp,
+#,
 msgid "Path:"
-msgstr ""
+msgstr "Cesta:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp,
+#,
 msgid "Directories & Files:"
-msgstr ""
+msgstr "Priečinky a Súbory:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/script_editor_debugger.cpp
+#: scene/gui/file_dialog.cpp,
+#: tools/editor/editor_file_dialog.cpp,
+#,
 msgid "File:"
-msgstr ""
+msgstr "Súbor:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp,
+#,
 msgid "Filter:"
-msgstr ""
+msgstr "Filter:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp tools/editor/editor_plugin_settings.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
+#: scene/gui/file_dialog.cpp,
+#: tools/editor/editor_dir_dialog.cpp,
+#: tools/editor/editor_file_dialog.cpp,
+#: tools/editor/editor_plugin_settings.cpp,
+#,
 msgid "Name:"
-msgstr ""
+msgstr "Meno:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
@@ -322,30 +360,44 @@ msgstr ""
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp,
+#: tools/editor/project_settings.cpp,
+#,
 msgid "Shift+"
-msgstr ""
+msgstr "Shift+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp,
+#: tools/editor/project_settings.cpp,
+#,
 msgid "Alt+"
-msgstr ""
+msgstr "Alt+"
 
 #: scene/gui/input_action.cpp
+#,
 msgid "Ctrl+"
-msgstr ""
+msgstr "Ctrl+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp,
+#: tools/editor/project_settings.cpp,
+#,
 msgid "Meta+"
-msgstr ""
+msgstr "Meta+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+#: scene/gui/input_action.cpp,
+#,
 msgid "Device"
-msgstr ""
+msgstr "Zariadenie"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+#: scene/gui/input_action.cpp,
+#,
 msgid "Button"
-msgstr ""
+msgstr "Tlačidlo"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Left Button."
@@ -368,8 +420,10 @@ msgid "Wheel Down."
 msgstr ""
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+#: scene/gui/input_action.cpp,
+#,
 msgid "Axis"
-msgstr ""
+msgstr "Os"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -381,8 +435,14 @@ msgstr ""
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
+#: scene/gui/line_edit.cpp,
+#: scene/gui/text_edit.cpp,
+#: tools/editor/plugins/script_editor_plugin.cpp,
+#: tools/editor/plugins/shader_editor_plugin.cpp,
+#: tools/editor/property_editor.cpp,
+#,
 msgid "Copy"
-msgstr ""
+msgstr "Kopírovať"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
@@ -390,8 +450,16 @@ msgstr ""
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
+#: scene/gui/line_edit.cpp,
+#: scene/gui/text_edit.cpp,
+#: tools/editor/plugins/resource_preloader_editor_plugin.cpp,
+#: tools/editor/plugins/script_editor_plugin.cpp,
+#: tools/editor/plugins/shader_editor_plugin.cpp,
+#: tools/editor/plugins/sprite_frames_editor_plugin.cpp,
+#: tools/editor/property_editor.cpp,
+#,
 msgid "Paste"
-msgstr ""
+msgstr "Vložiť"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -410,8 +478,13 @@ msgstr ""
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp tools/editor/editor_node.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
+#: scene/gui/line_edit.cpp,
+#: scene/gui/text_edit.cpp,
+#: tools/editor/editor_node.cpp,
+#: tools/editor/plugins/script_editor_plugin.cpp,
+#,
 msgid "Undo"
-msgstr ""
+msgstr "Späť"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -454,7 +527,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "All Selection"
-msgstr ""
+msgstr "Všetky vybrané"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Add Key"
@@ -809,7 +882,7 @@ msgstr ""
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Site:"
-msgstr ""
+msgstr "Stránka:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Support.."
@@ -821,7 +894,7 @@ msgstr ""
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "Komunita"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Testing"
@@ -1194,12 +1267,15 @@ msgid "Search Classes"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
+#,
 msgid "Class List:"
-msgstr ""
+msgstr "Zoznam tried:"
 
 #: tools/editor/editor_help.cpp tools/editor/property_editor.cpp
+#: tools/editor/editor_help.cpp,
+#,
 msgid "Class:"
-msgstr ""
+msgstr "Trieda:"
 
 #: tools/editor/editor_help.cpp tools/editor/scene_tree_editor.cpp
 #: tools/editor/script_create_dialog.cpp
@@ -1227,16 +1303,20 @@ msgid "GUI Theme Items:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
+#,
 msgid "Signals:"
-msgstr ""
+msgstr "Signály:"
 
 #: tools/editor/editor_help.cpp
+#,
 msgid "Constants:"
-msgstr ""
+msgstr "Konštanty:"
 
 #: tools/editor/editor_help.cpp tools/editor/script_editor_debugger.cpp
+#: tools/editor/editor_help.cpp,
+#,
 msgid "Description:"
-msgstr ""
+msgstr "Popis:"
 
 #: tools/editor/editor_help.cpp
 msgid "Method Description:"

@@ -2,6 +2,7 @@
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
+# Chenebel Dorian <LoubiTek54@gmail.com>, 2016.
 # derderder77 <derderder77380@gmail.com>, 2016.
 # finkiki <specialpopol@gmx.fr>, 2016.
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016.
@@ -11,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-06-19 13:17+0000\n"
-"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
+"PO-Revision-Date: 2016-06-25 18:35+0000\n"
+"Last-Translator: Chenebel Dorian <LoubiTek54@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-"
 "engine/godot/fr/>\n"
 "Language: fr\n"
@@ -24,11 +25,11 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "Argument invalide de type convertir(), utiliser le TYPE * constantes."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "Pas assez d'octets pour les octets de décodage, ou format non valide."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
@@ -523,43 +524,43 @@ msgstr "Toute la sélection"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Add Key"
-msgstr "Déplacer Ajouter Clé"
+msgstr "Mouvement Ajouter une clé"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Anim Modifier Transition"
+msgstr "Animation Changer la transition"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Anim Modifier Transform"
+msgstr "Animation Changer la transformation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Value"
-msgstr "Anim Modifier Valeur"
+msgstr "Animation Changer la valeur"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr "Anim Modifier Appel"
+msgstr "Animation Changer l'appel"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr "Anim Ajouter Piste"
+msgstr "Animation Ajouter une piste"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr "Monter Piste Anim"
+msgstr "Monter la piste d'animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr "Descendre Piste Anim"
+msgstr "Descendre la piste d'animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr "Supprimer Piste Anim"
+msgstr "Supprimer la piste d'animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Anim Dupliquer Clés"
+msgstr "Animation Dupliquer les clés"
 
 #: tools/editor/animation_editor.cpp
 msgid "Set Transitions to:"
@@ -567,27 +568,27 @@ msgstr "Définir les transitions à :"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "Renommer la piste d'animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr ""
+msgstr "Modifier l'interpolation de la piste d'animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr ""
+msgstr "Modifier le mode de valeur de la piste d'animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "Modifier Courbe du Noeud"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "Modifier la courbe de sélection"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "Animation Supprimer les clés"
 
 #: tools/editor/animation_editor.cpp
 msgid "Continuous"
@@ -603,11 +604,11 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Key"
-msgstr ""
+msgstr "Animation Ajouter une clé"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Move Keys"
-msgstr ""
+msgstr "Animation Déplacer les clés"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale Selection"
@@ -690,15 +691,15 @@ msgstr "Créer"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "Animation Créer et insérer"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr ""
+msgstr "Animation Insérer une piste et une clé"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr ""
+msgstr "Animation Inserer une clé"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Len"
@@ -706,20 +707,19 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr ""
+msgstr "Changer l'animation de la boucle"
 
 #: tools/editor/animation_editor.cpp
-#, fuzzy
 msgid "Change Anim Loop Interpolation"
-msgstr "Changer l'interpolation de l'animation bouclée"
+msgstr "Changer l'interpolation de la boucle d'animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr ""
+msgstr "Animation Créer une clé pour une valeur typée"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr ""
+msgstr "Insérer une animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Scale Keys"
@@ -727,7 +727,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr ""
+msgstr "Animation ajouter une piste d'appel"
 
 #: tools/editor/animation_editor.cpp
 msgid "Animation zoom."
@@ -747,15 +747,15 @@ msgstr "Pas (s) :"
 
 #: tools/editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
-msgstr ""
+msgstr "Pas du curseur (en secondes)."
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr ""
+msgstr "Activer/Désactiver le bouclage de l'animation."
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable interpolation when looping animation."
-msgstr ""
+msgstr "Activer/Désactiver l'interpolation lors de la boucle d'animation."
 
 #: tools/editor/animation_editor.cpp
 msgid "Add new tracks."
@@ -883,11 +883,11 @@ msgstr "Support…"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "Officiel"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "Communauté"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Testing"
@@ -4054,7 +4054,7 @@ msgstr "Trouver le suivant"
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find Previous"
-msgstr ""
+msgstr "trouver précédente"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp

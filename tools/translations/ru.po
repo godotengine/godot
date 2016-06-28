@@ -3,14 +3,15 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # DimOkGamer <dimokgamer@gmail.com>, 2016.
+# Maxim Kim <habamax@gmail.com>, 2016.
 # Maxim toby3d Lebedev <mail@toby3d.ru>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-06-19 17:29+0300\n"
-"Last-Translator: DimOkGamer <dimokgamer@gmail.com>\n"
+"PO-Revision-Date: 2016-06-27 12:43+0000\n"
+"Last-Translator: Maxim Kim <habamax@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-"
 "engine/godot/ru/>\n"
 "Language: ru\n"
@@ -19,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<="
 "4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Poedit 1.8.8\n"
+"X-Generator: Weblate 2.7-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -136,7 +137,7 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
-"Ресурс NavigationPolygon должен быть установлен или создан для этого нода. "
+"Ресурс NavigationPolygon должен быть установлен или создан для этого узла. "
 "Пожалуйста, установите свойство или нарисуйте многоугольник."
 
 #: scene/2d/navigation_polygon.cpp
@@ -144,20 +145,21 @@ msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
-"NavigationPolygonInstance должен быть ребёнком или внуком нода Navigation2D. "
-"Он обеспечивает только навигационные данные."
+"NavigationPolygonInstance должен быть ребёнком или внуком узла Navigation2D. "
+"Он предоставляет только навигационные данные."
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
-"Нод ParallaxLayer работает только при установке его в качестве дочернего "
+"Узел ParallaxLayer работает только при установке его в качестве дочернего "
 "узла ParallaxBackground."
 
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
 msgstr ""
-"Свойство Path должен указывать на действительный нод Particles2D для работы."
+"Для корректной работы свойство Path должно указывать на действующий узел "
+"Particles2D."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -167,7 +169,9 @@ msgstr ""
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr "Свойство Path должен указывать на действительный нод Node2D для работы."
+msgstr ""
+"Для корректной работы свойство Path должно указывать на действующий узел "
+"Node2D."
 
 #: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
 msgid ""
@@ -182,8 +186,8 @@ msgid ""
 "Path property must point to a valid Viewport node to work. Such Viewport "
 "must be set to 'render target' mode."
 msgstr ""
-"Для работы, параметр Path должен указывать на действительный Нод Viewport. "
-"Такой Viewport должен быть установлен в качестве цели рендеринга."
+"Для корректной работы свойство Path должно указывать на действующий узел "
+"Viewport. Такой Viewport должен быть установлен в режим 'цель рендеринга'."
 
 #: scene/2d/sprite.cpp
 msgid ""
@@ -198,8 +202,8 @@ msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
-"VisibilityEnable2D работает лучше, когда используется, как дочерний нод "
-"корня."
+"VisibilityEnable2D работает наилучшим образом при использовании корня "
+"редактируемой сцены, как прямого родителя."
 
 #: scene/3d/body_shape.cpp
 msgid ""
@@ -235,15 +239,15 @@ msgstr "Пустой CollisionPolygon не влияет на столкнове�
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr "Ресурс NavigationMesh должен быть установлен или создан для этого нода."
+msgstr "Ресурс NavigationMesh должен быть установлен или создан для этого узла."
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
-"NavigationMeshInstance должен быть ребёнком или внуком нода Navigation. Он "
-"обеспечивает только навигационные данные."
+"NavigationMeshInstance должен быть дочерним или под-дочерним узлом "
+"Navigation. Он предоставляет только навигационные данные."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -483,7 +487,7 @@ msgstr ""
 "использовать его, чтобы отобразить его содержимое прямо на экране, сделать "
 "его потомком Control'а, чтобы он мог получить размер. В противном случае, "
 "сделайте его  целью рендеринга и передайте его внутренние текстуры какому-то "
-"другому Ноду для отображения."
+"другому узлу для отображения."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
@@ -806,7 +810,7 @@ msgstr "Коэффициент масштабирования:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr "Вызвать функцию в каком ноде?"
+msgstr "Вызвать функции в каком узле?"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove invalid keys"
@@ -1010,11 +1014,11 @@ msgstr "Стлб:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr "Метод должен быть указан в целевом Ноде!"
+msgstr "Метод должен быть указан в целевом Узле!"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Conect To Node:"
-msgstr "Присоединить к ноду:"
+msgstr "Присоединить к узлу:"
 
 #: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
@@ -1040,7 +1044,7 @@ msgstr "Дополнительные параметры вызова:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Path to Node:"
-msgstr "Путь к ноду:"
+msgstr "Путь к Узлу:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Make Function"
@@ -1355,7 +1359,7 @@ msgstr "Импортируется:"
 
 #: tools/editor/editor_node.cpp
 msgid "Node From Scene"
-msgstr "Нод со сцены"
+msgstr "Узел со сцены"
 
 #: tools/editor/editor_node.cpp tools/editor/scenes_dock.cpp
 msgid "Re-Import.."
@@ -1839,7 +1843,7 @@ msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
-"Когда эта опция включена, области соприкосновений и ноды Raycast(в 2D и 3D) "
+"Когда эта опция включена, области соприкосновений и узлы Raycast(в 2D и 3D) "
 "будут видимыми в запущенной игре."
 
 #: tools/editor/editor_node.cpp
@@ -2117,7 +2121,7 @@ msgstr "По-умолчанию (как редактор)"
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr "Выберите нод(ы) для импорта"
+msgstr "Выберите Узлы(ы) для импорта"
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Scene Path:"
@@ -2125,7 +2129,7 @@ msgstr "Путь к сцене:"
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr "Импортировать из нода:"
+msgstr "Импортировать из Узла:"
 
 #: tools/editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
@@ -2415,7 +2419,7 @@ msgstr "Скрипт пост-процесса:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Custom Root Node Type:"
-msgstr "Настраиваемый тип корневого нода:"
+msgstr "Настраиваемый тип корневого узла:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Auto"
@@ -2719,11 +2723,11 @@ msgstr "Перевод"
 
 #: tools/editor/multi_node_edit.cpp
 msgid "MultiNode Set"
-msgstr "Мульти нодовый набор"
+msgstr "Мульти-узловый набор"
 
 #: tools/editor/node_dock.cpp
 msgid "Node"
-msgstr "Нод"
+msgstr "Узел"
 
 #: tools/editor/node_dock.cpp
 msgid "Groups"
@@ -2731,9 +2735,7 @@ msgstr "Группы"
 
 #: tools/editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
-msgstr ""
-"Выберите нод для редактирования\n"
-"сигналов и групп."
+msgstr "Выберите узел для редактирования сигналов и групп."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -3010,39 +3012,39 @@ msgstr "Дерево анимации не действительно."
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation Node"
-msgstr "Animation нод"
+msgstr "Animation узел"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "OneShot Node"
-msgstr "OneShot нод"
+msgstr "OneShot узел"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix Node"
-msgstr "Mix нод"
+msgstr "Mix узел"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr "Blend2 нод"
+msgstr "Blend2 узел"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr "Blend3 нод"
+msgstr "Blend3 узел"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr "Blend4 нод"
+msgstr "Blend4 узел"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr "TimeScale нод"
+msgstr "TimeScale узел"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr "TimeSeek нод"
+msgstr "TimeSeek узел"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Transition Node"
-msgstr "Transition нод"
+msgstr "Transition узел"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations.."
@@ -3050,7 +3052,7 @@ msgstr "Импортировать анимации.."
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr "Редактировать фильтры нода"
+msgstr "Редактировать фильтры узла"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Filters.."
@@ -3543,7 +3545,7 @@ msgstr "Размер обводки:"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
-msgstr "Не указана исходная полисетка (и мульти полисетка не указана в ноде)."
+msgstr "Не указан источник полисетки (и мульти полисетка не указана в узле)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
@@ -3675,11 +3677,11 @@ msgstr "Количество создаваемых точек:"
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry."
-msgstr "Нод не содержит геометрии."
+msgstr "Узел не содержит геометрии."
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry (faces)."
-msgstr "Нод не содержит геометрии (грани)."
+msgstr "Узел не содержит геометрии (грани)."
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -3699,7 +3701,7 @@ msgstr "Создать излучатель из полисетки"
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter From Node"
-msgstr "Создать излучатель из нода"
+msgstr "Создать излучатель из узла"
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Clear Emitter"
@@ -4488,7 +4490,7 @@ msgstr "Вещицы"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Selection (F)"
-msgstr "Показать выбранный нод (F)"
+msgstr "Показать выбранный узел (F)"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Align with view (Ctrl+Shift+F)"
@@ -4727,7 +4729,7 @@ msgid ""
 "No texture in this node.\n"
 "Set a texture to be able to edit region."
 msgstr ""
-"В этом ноде нет текстуры.\n"
+"В этом узле нет текстуры.\n"
 "Выберите текстуру, чтобы редактировать область."
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
@@ -5546,7 +5548,7 @@ msgstr "Автозагрузка"
 
 #: tools/editor/project_settings.cpp
 msgid "Node Name:"
-msgstr "Имя Нода:"
+msgstr "Имя Узла:"
 
 #: tools/editor/project_settings.cpp
 msgid "List:"
@@ -5644,7 +5646,7 @@ msgstr ""
 
 #: tools/editor/reparent_dialog.cpp tools/editor/scene_tree_dock.cpp
 msgid "Reparent Node"
-msgstr "Переподчинить нод"
+msgstr "Переподчинить узел"
 
 #: tools/editor/reparent_dialog.cpp
 msgid "Reparent Location (Select new Parent):"
@@ -5724,7 +5726,7 @@ msgid ""
 "of its nodes."
 msgstr ""
 "Невозможно добавить сцену %s, потому что текущая сцена существует в одном из "
-"его нодов."
+"его узлов."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Instance Scene(s)"
@@ -5736,19 +5738,19 @@ msgstr "Эта операция не может быть произведена 
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Move Node In Parent"
-msgstr "Перемещение нода в Родительский"
+msgstr "Перемещение узла в Родительский"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Move Nodes In Parent"
-msgstr "Перемещение нодов в родительский"
+msgstr "Перемещение узлов в Родительский"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
-msgstr "Дублирован нод(ы)"
+msgstr "Дублировать узел(узлы)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
-msgstr "Удалить нод(ы)?"
+msgstr "Удалить узел(узлы)?"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -5756,7 +5758,7 @@ msgstr "Эта операция не может быть выполнена бе
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
-msgstr "Эта операция требует одного выбранного нода."
+msgstr "Эта операция требует одного выбранного узла."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
@@ -5772,19 +5774,19 @@ msgstr "Уууу круто!"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
-msgstr "Не могу работать с нодами из внешней сцены!"
+msgstr "Не могу работать с узлами из внешней сцены!"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
-msgstr "Невозможно работать с нодами текущей сцены, наследуемой откуда-то!"
+msgstr "Невозможно работать с узлами, от которых унаследована текущая сцена!"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
-msgstr "Удалён нод(ы)"
+msgstr "Удалить узел(узлы)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Create Node"
-msgstr "Создан нод"
+msgstr "Создать узел"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
@@ -5812,7 +5814,7 @@ msgstr "Унаследовать сцену"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add Child Node"
-msgstr "Добавить дочерний нод"
+msgstr "Добавить дочерний узел"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
@@ -5844,7 +5846,7 @@ msgstr "Сохранить ветку, как сцену"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
-msgstr "Удалить нод(ы)"
+msgstr "Удалить узел(узлы)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
@@ -5855,7 +5857,7 @@ msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
 msgstr ""
-"Добавить файл сцены как нод. Создаёт наследуемую сцену, если корневой узел "
+"Добавить файл сцены как узел. Создаёт наследуемую сцену, если корневой узел "
 "не существует."
 
 #: tools/editor/scene_tree_editor.cpp
@@ -5864,7 +5866,7 @@ msgid ""
 "parent first."
 msgstr ""
 "Этот объект не может быть отображён, потому что его родитель скрыт. "
-"Отобразите сначала родительский нод."
+"Отобразите сначала родительский узел."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -5880,15 +5882,15 @@ msgstr "Экземпляр:"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
-msgstr "Недопустимые символы в названии нода:"
+msgstr "Некорректное имя узла, следующие символы недопустимы:"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Rename Node"
-msgstr "Нод переименован"
+msgstr "Переименовать узел"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Scene Tree (Nodes):"
-msgstr "Дерево сцены (ноды):"
+msgstr "Дерево сцены (Узлы):"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Editable Children"
@@ -5920,7 +5922,7 @@ msgstr "Очистить!"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Select a Node"
-msgstr "Выберете нод"
+msgstr "Выбрать узел"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Same source and destination files, doing nothing."
@@ -5996,7 +5998,7 @@ msgstr "Переключить статус папки как избранной
 
 #: tools/editor/scenes_dock.cpp
 msgid "Instance the selected scene(s) as child of the selected node."
-msgstr "Добавить выбранную сцену(сцены), как потомка выбранного нода."
+msgstr "Добавить выбранную сцену(сцены), как потомка выбранного узла."
 
 #: tools/editor/scenes_dock.cpp
 msgid "Move"
@@ -6072,7 +6074,7 @@ msgstr "Встроенный Скрипт"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Create Node Script"
-msgstr "Создать скрипт для нода"
+msgstr "Создать скрипт для узла"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6184,11 +6186,11 @@ msgstr "Прочее"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Clicked Control:"
-msgstr "Нажатый нод:"
+msgstr "Нажатый элемент управления:"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Clicked Control Type:"
-msgstr "Тип нажатого нода:"
+msgstr "Тип нажатого элемента управления:"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Live Edit Root:"
@@ -6196,7 +6198,7 @@ msgstr "Редактирование корня в реальном времен
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Set From Tree"
-msgstr "Установить из дерева нодов"
+msgstr "Установить из дерева"
 
 #: tools/editor/settings_config_dialog.cpp
 msgid "Shortcuts"

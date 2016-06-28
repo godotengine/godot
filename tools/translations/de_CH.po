@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-06-12 13:27+0000\n"
+"PO-Revision-Date: 2016-06-22 14:54+0000\n"
 "Last-Translator: Christian Fisch <christian.fiesel@gmail.com>\n"
 "Language-Team: Swiss High German <https://hosted.weblate.org/projects/godot-"
 "engine/godot/de_CH/>\n"
@@ -58,7 +58,6 @@ msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
@@ -222,7 +221,7 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
-msgstr ""
+msgstr "Abbrechen"
 
 #: scene/gui/dialogs.cpp
 msgid "OK"
@@ -230,15 +229,15 @@ msgstr "Okay"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "Alert!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "Bitte bestätigen..."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "File Exists, Overwrite?"
-msgstr ""
+msgstr "Datei existiert, Überschreiben?"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Recognized"
@@ -246,41 +245,41 @@ msgstr ""
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Files (*)"
-msgstr ""
+msgstr "Alle Dateien (*)"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
 #: tools/editor/scenes_dock.cpp
 msgid "Open"
-msgstr ""
+msgstr "Öffnen"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a File"
-msgstr ""
+msgstr "Datei öffnen"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr ""
+msgstr "Datei(en) öffnen"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a Directory"
-msgstr ""
+msgstr "Verzeichnis öffnen"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a File or Directory"
-msgstr ""
+msgstr "Datei oder Verzeichnis öffnen"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save"
-msgstr ""
+msgstr "Speichern"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Save a File"
-msgstr ""
+msgstr "Datei speichern"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
@@ -431,8 +430,9 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
+#, fuzzy
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "Fehler bei der FreeType Inizialisierung."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
@@ -515,7 +515,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "Node Kurve editieren"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Selection Curve"
@@ -750,7 +750,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr ""
+msgstr "Im welchem Node soll die Funktion aufgerufen werden?"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove invalid keys"
@@ -954,11 +954,11 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr ""
+msgstr "Die Methode muss im Ziel Node definiert werden!"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Conect To Node:"
-msgstr ""
+msgstr "Verbindung zu Node:"
 
 #: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
@@ -984,7 +984,7 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Path to Node:"
-msgstr ""
+msgstr "Pfad zum Node:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Make Function"
@@ -1293,7 +1293,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Node From Scene"
-msgstr ""
+msgstr "Node von Szene"
 
 #: tools/editor/editor_node.cpp tools/editor/scenes_dock.cpp
 msgid "Re-Import.."
@@ -2026,7 +2026,7 @@ msgstr ""
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr ""
+msgstr "Selektiere Node(s) zum Importieren aus"
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Scene Path:"
@@ -2034,7 +2034,7 @@ msgstr ""
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr ""
+msgstr "Importiere von folgendem Node:"
 
 #: tools/editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
@@ -2199,7 +2199,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "Surface %d"
-msgstr ""
+msgstr "Oberfläche %d"
 
 #: tools/editor/io_plugins/editor_sample_import_plugin.cpp
 msgid "No samples to import!"
@@ -2617,20 +2617,22 @@ msgid "Translation"
 msgstr ""
 
 #: tools/editor/multi_node_edit.cpp
+#, fuzzy
 msgid "MultiNode Set"
-msgstr ""
+msgstr "MultiNode Set"
 
 #: tools/editor/node_dock.cpp
 msgid "Node"
-msgstr ""
+msgstr "Node"
 
 #: tools/editor/node_dock.cpp
 msgid "Groups"
 msgstr ""
 
 #: tools/editor/node_dock.cpp
+#, fuzzy
 msgid "Select a Node to edit Signals and Groups."
-msgstr ""
+msgstr "Selektiere ein Node um deren Signale und Gruppen zu ändern."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -2904,39 +2906,39 @@ msgstr ""
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation Node"
-msgstr ""
+msgstr "Animations-Node"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "OneShot Node"
-msgstr ""
+msgstr "OneShot-Node"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix Node"
-msgstr ""
+msgstr "Mix-Node"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr ""
+msgstr "Blend2-Node"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr ""
+msgstr "Blend3-Node"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr ""
+msgstr "Blend4-Node"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr ""
+msgstr "TimeScale-Node"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr ""
+msgstr "TimeSeek-Node"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Transition Node"
-msgstr ""
+msgstr "Transition-Node"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations.."
@@ -2944,7 +2946,7 @@ msgstr ""
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr ""
+msgstr "Node Filter editieren"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Filters.."
@@ -3453,19 +3455,20 @@ msgstr ""
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
-msgstr ""
+msgstr "Keine Oberflächen Quelle spezifiziert."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (invalid path)."
-msgstr ""
+msgstr "Oberflächen Quelle is invalid (invalider Pfad)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no geometry)."
-msgstr ""
+msgstr "Oberflächen Quelle is invalid (keine Form)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
+#, fuzzy
 msgid "Surface source is invalid (no faces)."
-msgstr ""
+msgstr "Oberflächen Quelle is invalid (kein Face)"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Parent has no solid faces to populate."
@@ -3481,7 +3484,7 @@ msgstr ""
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Target Surface:"
-msgstr ""
+msgstr "Wähle eine Ziel Oberfläche aus:"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate Surface"
@@ -3493,7 +3496,7 @@ msgstr ""
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Target Surface:"
-msgstr ""
+msgstr "Ziel Oberfläche:"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Source Mesh:"
@@ -3549,15 +3552,16 @@ msgstr ""
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Set Emission Mask"
-msgstr ""
+msgstr "Emissions-Maske setzen"
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Clear Emission Mask"
-msgstr ""
+msgstr "Inhalt der Emissions-Masken löschen"
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
-msgstr ""
+msgstr "Emissions-Maske laden"
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
@@ -3569,15 +3573,15 @@ msgstr ""
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry (faces)."
-msgstr ""
+msgstr "Node enthält keine Geometrie (Flächen)."
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
-msgstr ""
+msgstr "Flächen enthalten keinen Bereich!"
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "No faces!"
-msgstr ""
+msgstr "Keine Flächen!"
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Generate AABB"
@@ -3609,7 +3613,7 @@ msgstr ""
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Surface"
-msgstr ""
+msgstr "Oberfläche"
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
@@ -4528,7 +4532,7 @@ msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Type"
-msgstr ""
+msgstr "Transformationstyp"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Pre"
@@ -5588,7 +5592,7 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
-msgstr ""
+msgstr "Fehler beim Instanzieren der %s Szene"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Ok"
@@ -5602,11 +5606,12 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Instance Scene(s)"
-msgstr ""
+msgstr "Instanziere Szene(n)"
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "This operation can't be done on the tree root."
-msgstr ""
+msgstr "Das funktioniert nicht beim obersten Node. (tree root)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Move Node In Parent"
@@ -5618,27 +5623,27 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
-msgstr ""
+msgstr "Node(s) duplizieren"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
-msgstr ""
+msgstr "Node(s) löschen?"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr ""
+msgstr "Ohne eine Szene kann das nicht funktionieren."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
-msgstr ""
+msgstr "Bitte nur ein Node selektieren."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
-msgstr ""
+msgstr "Das funktioniert nicht bei einer instanzierten Szene."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save New Scene As.."
-msgstr ""
+msgstr "Neue Szene speichern als..."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Makes Sense!"
@@ -5654,11 +5659,11 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
-msgstr ""
+msgstr "Node(s) entfernen"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Create Node"
-msgstr ""
+msgstr "Node erstellen"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
@@ -5668,7 +5673,7 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error saving scene."
-msgstr ""
+msgstr "Szene kann nicht gespeichert werden."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error duplicating scene to save it."
@@ -5692,7 +5697,7 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Change Type"
-msgstr ""
+msgstr "Typ ändern"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Edit Groups"
@@ -5700,11 +5705,11 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Edit Connections"
-msgstr ""
+msgstr "Connections editieren"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add Script"
-msgstr ""
+msgstr "Script hinzufügen"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -5716,7 +5721,7 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
-msgstr ""
+msgstr "Node(s) löschen"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
