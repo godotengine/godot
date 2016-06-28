@@ -1181,11 +1181,11 @@ msgid "Focus Path"
 msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
-msgid "Mode Favorite Up"
+msgid "Move Favorite Up"
 msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
-msgid "Mode Favorite Down"
+msgid "Move Favorite Down"
 msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
