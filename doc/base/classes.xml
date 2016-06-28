@@ -17511,6 +17511,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<return type="IntArray">
 			</return>
 			<description>
+			Returns a list of selected indexes.
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
