@@ -1867,7 +1867,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 			current_option=-1;
 			//accept->get_cancel()->hide();
-			pick_main_scene->set_text(TTR("Selected scene '"+run_filename+"' does not exist, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."));
+			pick_main_scene->set_text(vformat(TTR("Selected scene '%s' does not exist, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), run_filename));
 			pick_main_scene->popup_centered_minsize();
 			return;
 
@@ -1877,7 +1877,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 			current_option=-1;
 			//accept->get_cancel()->hide();
-			pick_main_scene->set_text(TTR("Selected scene '"+run_filename+"' is not a scene file, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."));
+			pick_main_scene->set_text(vformat(TTR("Selected scene '%s' is not a scene file, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), run_filename));
 			pick_main_scene->popup_centered_minsize();
 			return;
 
