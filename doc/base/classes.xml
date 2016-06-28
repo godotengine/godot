@@ -2517,12 +2517,6 @@
 			Return whether the animation has the loop flag set.
 			</description>
 		</method>
-		<method name="has_loop_interpolation" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="method_track_get_key_indices" qualifiers="const">
 			<return type="IntArray">
 			</return>
@@ -2577,12 +2571,6 @@
 			</argument>
 			<description>
 			Set a flag indicating that the animation must loop. This is uses for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
-			</description>
-		</method>
-		<method name="set_loop_interpolation">
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="set_step">
@@ -4685,6 +4673,12 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="atlas_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
@@ -6992,6 +6986,12 @@
 			</argument>
 			<description>
 			Set a custom transform for drawing. Anything drawn afterwards will be transformed by this.
+			</description>
+		</method>
+		<method name="draw_set_transform_matrix">
+			<argument index="0" name="xform" type="Matrix32">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="draw_string">
@@ -17507,6 +17507,13 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="get_selected_items">
+			<return type="IntArray">
+			</return>
+			<description>
+			Returns a list of selected indexes.
+			</description>
+		</method>
 		<method name="is_item_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -18912,6 +18919,34 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Clear the [LineEdit] text.
 			</description>
 		</method>
+		<method name="cursor_get_blink_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			Gets whether the line edit caret is blinking.
+			</description>
+		</method>
+		<method name="cursor_get_blink_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			Gets the line edit caret blink speed.
+			</description>
+		</method>
+		<method name="cursor_set_blink_enabled">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			Set the line edit caret to blink.
+			</description>
+		</method>
+		<method name="cursor_set_blink_speed">
+			<argument index="0" name="blink_speed" type="float">
+			</argument>
+			<description>
+			Set the line edit caret blink speed. Cannot be less then or equal to 0.
+			</description>
+		</method>
 		<method name="get_align" qualifiers="const">
 			<return type="int">
 			</return>
@@ -18989,34 +19024,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 			Set the cursor position inside the [LineEdit], causing it to scroll if needed.
-			</description>
-		</method>
-		<method name="cursor_set_blink_enabled">
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			Set the line edit caret to blink.
-			</description>
-		</method>
-		<method name="cursor_get_blink_enabled" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			Gets whether the line edit caret is blinking.
-			</description>
-		</method>
-		<method name="cursor_set_blink_speed">
-			<argument index="0" name="blink_speed" type="float">
-			</argument>
-			<description>
-			Set the line edit caret blink speed. Cannot be less then or equal to 0.
-			</description>
-		</method>
-		<method name="cursor_get_blink_speed" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			Gets the line edit caret blink speed.
 			</description>
 		</method>
 		<method name="set_editable">
@@ -24036,6 +24043,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Return the mirroring of the ParallaxLayer.
 			</description>
 		</method>
+		<method name="get_motion_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_motion_scale" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -24048,6 +24061,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 			Set the mirroring of the ParallaxLayer. If an axis is set to 0 then that axis will have no mirroring.
+			</description>
+		</method>
+		<method name="set_motion_offset">
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_motion_scale">
@@ -24882,6 +24901,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="texture_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
@@ -36504,6 +36529,10 @@ A similar effect may be achieved moving this node's descendants.
 			<description>
 			</description>
 		</signal>
+		<signal name="texture_changed">
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<constants>
 	</constants>
@@ -38495,6 +38524,12 @@ A similar effect may be achieved moving this node's descendants.
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="texture_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
@@ -39357,6 +39392,10 @@ A similar effect may be achieved moving this node's descendants.
 		</theme_item>
 		<theme_item name="completion" type="StyleBox">
 		</theme_item>
+		<theme_item name="completion_background_color" type="Color">
+		</theme_item>
+		<theme_item name="completion_existing_color" type="Color">
+		</theme_item>
 		<theme_item name="completion_lines" type="int">
 		</theme_item>
 		<theme_item name="completion_max_width" type="int">
@@ -39364,6 +39403,8 @@ A similar effect may be achieved moving this node's descendants.
 		<theme_item name="completion_scroll_color" type="Color">
 		</theme_item>
 		<theme_item name="completion_scroll_width" type="int">
+		</theme_item>
+		<theme_item name="completion_selected_color" type="Color">
 		</theme_item>
 		<theme_item name="current_line_color" type="Color">
 		</theme_item>
