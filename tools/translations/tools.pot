@@ -1551,7 +1551,7 @@ msgid ""
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Pick a Main Scene"
+msgid "Pick a Manu Scene"
 msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
