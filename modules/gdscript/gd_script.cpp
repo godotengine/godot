@@ -964,11 +964,16 @@ bool GDInstance::get(const StringName& p_name, Variant &r_ret) const {
 		}
 
 		{
-			const Map<StringName,Variant>::Element *E = script->constants.find(p_name);
-			if (E) {
-				r_ret=E->get();
-				return true; //index found
 
+			const GDScript *sl = sptr;
+			while(sl) {
+				const Map<StringName,Variant>::Element *E = sl->constants.find(p_name);
+				if (E) {
+					r_ret=E->get();
+					return true; //index found
+
+				}
+				sl=sl->_base;
 			}
 		}
 
