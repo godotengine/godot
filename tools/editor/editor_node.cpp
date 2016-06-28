@@ -2816,7 +2816,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			if (scene) {
 				file->set_current_path(scene->get_filename());
 			};
-			file->set_title(TTR("Pick a Manu Scene"));
+			file->set_title(TTR("Pick a Main Scene"));
 			file->popup_centered_ratio();
 
 		} break;
