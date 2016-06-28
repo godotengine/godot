@@ -144,11 +144,11 @@ void EditorFileDialog::_unhandled_input(const InputEvent& p_event) {
 				dir->grab_focus();
 				handled=true;
 			}
-			if (ED_IS_SHORTCUT("file_dialog/mode_favorite_up", p_event)) {
+			if (ED_IS_SHORTCUT("file_dialog/move_favorite_up", p_event)) {
 				_favorite_move_up();
 				handled=true;
 			}
-			if (ED_IS_SHORTCUT("file_dialog/mode_favorite_down", p_event)) {
+			if (ED_IS_SHORTCUT("file_dialog/move_favorite_down", p_event)) {
 				_favorite_move_down();
 				handled=true;
 			}
@@ -1290,14 +1290,14 @@ EditorFileDialog::EditorFileDialog() {
 	ED_SHORTCUT("file_dialog/go_back", TTR("Go Back"), KEY_MASK_ALT|KEY_LEFT);
 	ED_SHORTCUT("file_dialog/go_forward", TTR("Go Forward"), KEY_MASK_ALT|KEY_RIGHT);
 	ED_SHORTCUT("file_dialog/go_up", TTR("Go Up"), KEY_MASK_ALT|KEY_UP);
-	ED_SHORTCUT("file_dialog/refresh", TTR("Refresh"), KEY_MASK_CMD|KEY_F5); // ctrl + f5 else it launches the game as well..
+	ED_SHORTCUT("file_dialog/refresh", TTR("Refresh"), KEY_F5);
 	ED_SHORTCUT("file_dialog/toggle_hidden_files", TTR("Toggle Hidden Files"), KEY_MASK_CMD|KEY_H);
 	ED_SHORTCUT("file_dialog/toggle_favorite", TTR("Toggle Favorite"), KEY_MASK_ALT|KEY_F);
 	ED_SHORTCUT("file_dialog/toggle_mode", TTR("Toggle Mode"), KEY_MASK_ALT|KEY_V);
 	ED_SHORTCUT("file_dialog/create_folder", TTR("Create Folder"), KEY_MASK_CMD|KEY_N);
 	ED_SHORTCUT("file_dialog/focus_path", TTR("Focus Path"), KEY_MASK_CMD|KEY_D);
-	ED_SHORTCUT("file_dialog/mode_favorite_up", TTR("Mode Favorite Up"), KEY_MASK_CMD|KEY_UP);
-	ED_SHORTCUT("file_dialog/mode_favorite_down", TTR("Mode Favorite Down"), KEY_MASK_CMD|KEY_DOWN);
+	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KEY_MASK_CMD|KEY_UP);
+	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KEY_MASK_CMD|KEY_DOWN);
 
 	HBoxContainer *pathhb = memnew( HBoxContainer );
 
