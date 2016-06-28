@@ -57,4 +57,23 @@ public:
 	Container();
 };
 
+class ClipContainer : public Container {
+
+	OBJ_TYPE(ClipContainer, Container);
+
+	bool clip;
+
+protected:
+
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+
+	void set_clip(bool p_clip);
+	bool is_clip() const;
+
+	ClipContainer();
+};
+
 #endif // CONTAINER_H
