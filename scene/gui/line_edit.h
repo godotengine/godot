@@ -68,6 +68,7 @@ private:
 	String undo_text;
 	String text;
 	String placeholder;
+	float placeholder_alpha;
 
 	PopupMenu *menu;
 
@@ -138,6 +139,8 @@ public:
 	String get_text() const;
 	void set_placeholder(String p_text);
 	String get_placeholder() const;
+	void set_placeholder_alpha(float p_alpha);
+	float get_placeholder_alpha() const;
 	void set_cursor_pos(int p_pos);
 	int get_cursor_pos() const;
 	void set_max_length(int p_max_length);
