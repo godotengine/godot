@@ -12,14 +12,14 @@ msgstr ""
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2016-06-27 12:43+0000\n"
 "Last-Translator: Maxim Kim <habamax@gmail.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/godot-"
-"engine/godot/ru/>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<="
-"4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 2.7-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
@@ -194,8 +194,8 @@ msgid ""
 "The Viewport set in the path property must be set as 'render target' in "
 "order for this sprite to work."
 msgstr ""
-"Области просмотра установленная в свойстве path должна быть назначена \""
-"целью визуализации\" для того, чтобы этот спрайт работал."
+"Области просмотра установленная в свойстве path должна быть назначена "
+"\"целью визуализации\" для того, чтобы этот спрайт работал."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -239,7 +239,8 @@ msgstr "Пустой CollisionPolygon не влияет на столкнове�
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr "Ресурс NavigationMesh должен быть установлен или создан для этого узла."
+msgstr ""
+"Ресурс NavigationMesh должен быть установлен или создан для этого узла."
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
@@ -705,10 +706,6 @@ msgid "Change Anim Loop"
 msgstr "Изменено зацикливание анимации"
 
 #: tools/editor/animation_editor.cpp
-msgid "Change Anim Loop Interpolation"
-msgstr "Изменена интерполяция анимации"
-
-#: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
 msgstr "Создан ключ с вводимым значением"
 
@@ -747,10 +744,6 @@ msgstr "Шаг привязки курсора (в секундах)."
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
 msgstr "Включить/отключить зацикливание в анимации."
-
-#: tools/editor/animation_editor.cpp
-msgid "Enable/Disable interpolation when looping animation."
-msgstr "Включить/отключить интерполяцию при зацикливании анимации."
 
 #: tools/editor/animation_editor.cpp
 msgid "Add new tracks."
@@ -1017,7 +1010,8 @@ msgid "Method in target Node must be specified!"
 msgstr "Метод должен быть указан в целевом Узле!"
 
 #: tools/editor/connections_dialog.cpp
-msgid "Conect To Node:"
+#, fuzzy
+msgid "Connect To Node:"
 msgstr "Присоединить к узлу:"
 
 #: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
@@ -1235,6 +1229,51 @@ msgstr "Выбрать каталог"
 #: tools/editor/editor_dir_dialog.cpp
 msgid "Choose"
 msgstr "Выбрать"
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Back"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Forward"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Up"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Refresh"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Toggle Hidden Files"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Toggle Favorite"
+msgstr "Точка остановки"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Toggle Mode"
+msgstr "Переключить комментарий"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Focus Path"
+msgstr "Копировать путь"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Mode Favorite Up"
+msgstr "Избранное:"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Mode Favorite Down"
+msgstr "Переместить вниз"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
 msgid "Favorites:"
@@ -1490,9 +1529,33 @@ msgid "There is no defined scene to run."
 msgstr "Нет определённой сцены, чтобы работать."
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"No main scene has ever been defined.\n"
-"Select one from \"Project Settings\" under the 'application' category."
+"No main scene has ever been defined, select one?\n"
+"You can change it later in later in \"Project Settings\" under the "
+"'application' category."
+msgstr ""
+"Не назначена главная сцена.\n"
+"Укажите её в параметре \"main_scene\" расположенном\n"
+"в \"Настройки проекта - Основное - application\"."
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Selected scene '%s' does not exist, select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"Не назначена главная сцена.\n"
+"Укажите её в параметре \"main_scene\" расположенном\n"
+"в \"Настройки проекта - Основное - application\"."
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Selected scene '%s' is not a scene file, select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
 msgstr ""
 "Не назначена главная сцена.\n"
 "Укажите её в параметре \"main_scene\" расположенном\n"
@@ -1590,6 +1653,11 @@ msgstr ""
 "Открыть менеджер проектов? \n"
 "(Несохранённые изменения будут потеряны.)"
 
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Pick a Manu Scene"
+msgstr "Главная сцена"
+
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "Ясно"
@@ -1616,16 +1684,12 @@ msgid "Save Layout"
 msgstr "Сохранить макет"
 
 #: tools/editor/editor_node.cpp
-msgid "Load Layout"
-msgstr "Загрузить макет"
+msgid "Delete Layout"
+msgstr "Удалить макет"
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Default"
 msgstr "По-умолчанию"
-
-#: tools/editor/editor_node.cpp
-msgid "Delete Layout"
-msgstr "Удалить макет"
 
 #: tools/editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -1655,6 +1719,16 @@ msgstr "Полноэкранный режим"
 #: tools/editor/editor_node.cpp
 msgid "Distraction Free Mode"
 msgstr "Свободный режим"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Next tab"
+msgstr "Следующий"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Previous tab"
+msgstr "Предыдущий каталог"
 
 #: tools/editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -2220,6 +2294,12 @@ msgid "No target font resource!"
 msgstr "Нет целевого ресурса шрифта!"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
+msgid ""
+"Invalid file extension.\n"
+"Please use .fnt."
+msgstr ""
+
+#: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Can't load/process source font."
 msgstr "Не удалось загрузить/исполнить исходный шрифт."
 
@@ -2461,7 +2541,8 @@ msgid "Couldn't load post-import script:"
 msgstr "Не могу загрузить скрипт для пост-импорта:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Invalid/broken script for post-import:"
+#, fuzzy
+msgid "Invalid/broken script for post-import (check console):"
 msgstr "Повреждённый/сломанный скрипт для пост-импорта:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
@@ -3129,13 +3210,11 @@ msgstr "Настроить привязку"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Offset:"
 msgstr "Отступ сетку:"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Step:"
 msgstr "Шаг сетки:"
 
@@ -3255,7 +3334,6 @@ msgstr "Использовать привязку"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Show Grid"
 msgstr "Показать сетку"
 
@@ -3506,6 +3584,10 @@ msgstr "Создать полисетку навигации"
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
 msgstr "В MeshInstance нет полисетки!"
+
+#: tools/editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh has not surface to create outlines from!"
+msgstr ""
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -3869,17 +3951,14 @@ msgid "Clear UV"
 msgstr "Очистить UV"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap"
 msgstr "Привязка"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Enable Snap"
 msgstr "Активировать привязку"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid"
 msgstr "Сетка"
 
@@ -4717,20 +4796,51 @@ msgid "StyleBox Preview:"
 msgstr "StyleBox предпросмотр:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid "Texture Region Editor"
+#, fuzzy
+msgid "Snap Mode:"
+msgstr "Режим запуска:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid "<None>"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Pixel Snap"
+msgstr "Использовать попиксельную привязку"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Snap"
+msgstr "Шаг сетки:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid "Auto Slice"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Offset:"
+msgstr "Отступ сетку:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Step:"
+msgstr "Шаг (сек.):"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Separation:"
+msgstr "Разделы:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Texture Region"
 msgstr "Редактор области текстуры"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid "Scale Region Editor"
-msgstr "Редактор масштабируемой области текстуры"
-
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid ""
-"No texture in this node.\n"
-"Set a texture to be able to edit region."
-msgstr ""
-"В этом узле нет текстуры.\n"
-"Выберите текстуру, чтобы редактировать область."
+msgid "Texture Region Editor"
+msgstr "Редактор области текстуры"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
@@ -5021,8 +5131,8 @@ msgstr "Действие"
 msgid ""
 "Filters to export non-resource files (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
-"Фильтр для экспорта не ресурсных файлов (через запятую, например: *.json, "
-"*.txt):"
+"Фильтр для экспорта не ресурсных файлов (через запятую, например: *.json, *."
+"txt):"
 
 #: tools/editor/project_export.cpp
 msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"
@@ -5805,12 +5915,16 @@ msgid "Error duplicating scene to save it."
 msgstr "Ошибка дублирования сцены, чтобы сохранить её."
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "New Scene Root"
-msgstr "Новый корень сцены"
+msgid "Edit Groups"
+msgstr "Редактировать группы"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Inherit Scene"
-msgstr "Унаследовать сцену"
+msgid "Edit Connections"
+msgstr "Редактировать связи"
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr "Удалить узел(узлы)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -5825,14 +5939,6 @@ msgid "Change Type"
 msgstr "Изменить тип"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Edit Groups"
-msgstr "Редактировать группы"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Edit Connections"
-msgstr "Редактировать связи"
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "Add Script"
 msgstr "Добавить скрипт"
 
@@ -5843,10 +5949,6 @@ msgstr "Соединить со сценой"
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save Branch as Scene"
 msgstr "Сохранить ветку, как сцену"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr "Удалить узел(узлы)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
@@ -6239,6 +6341,31 @@ msgstr "Изменена длинна луча"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Изменены границы уведомителя"
+
+#~ msgid "Change Anim Loop Interpolation"
+#~ msgstr "Изменена интерполяция анимации"
+
+#~ msgid "Enable/Disable interpolation when looping animation."
+#~ msgstr "Включить/отключить интерполяцию при зацикливании анимации."
+
+#~ msgid "Load Layout"
+#~ msgstr "Загрузить макет"
+
+#~ msgid "Scale Region Editor"
+#~ msgstr "Редактор масштабируемой области текстуры"
+
+#~ msgid ""
+#~ "No texture in this node.\n"
+#~ "Set a texture to be able to edit region."
+#~ msgstr ""
+#~ "В этом узле нет текстуры.\n"
+#~ "Выберите текстуру, чтобы редактировать область."
+
+#~ msgid "New Scene Root"
+#~ msgstr "Новый корень сцены"
+
+#~ msgid "Inherit Scene"
+#~ msgstr "Унаследовать сцену"
 
 #~ msgid "Binds (Extra Params):"
 #~ msgstr "Связи (необязательные параметры):"

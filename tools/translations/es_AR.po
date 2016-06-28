@@ -10,8 +10,8 @@ msgstr ""
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2016-06-19 12:39+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
-"Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects"
-"/godot-engine/godot/es_AR/>\n"
+"Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
+"godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -699,10 +699,6 @@ msgid "Change Anim Loop"
 msgstr "Cambiar Loop de Anim"
 
 #: tools/editor/animation_editor.cpp
-msgid "Change Anim Loop Interpolation"
-msgstr "Cambiar Interpolación de Loop de Anim"
-
-#: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
 msgstr "Crear Clave de Valor Tipado para Anim"
 
@@ -741,10 +737,6 @@ msgstr "Snap de cursor por pasos (en segundos)."
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
 msgstr "Activar/Desactivar loopeo en la animación."
-
-#: tools/editor/animation_editor.cpp
-msgid "Enable/Disable interpolation when looping animation."
-msgstr "Activar/Desactivar interpolación al loopear animación."
 
 #: tools/editor/animation_editor.cpp
 msgid "Add new tracks."
@@ -1011,7 +1003,8 @@ msgid "Method in target Node must be specified!"
 msgstr "El método en el Nodo objetivo debe ser especificado!"
 
 #: tools/editor/connections_dialog.cpp
-msgid "Conect To Node:"
+#, fuzzy
+msgid "Connect To Node:"
 msgstr "Conectar a Nodo:"
 
 #: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
@@ -1229,6 +1222,51 @@ msgstr "Elegí un Directorio"
 #: tools/editor/editor_dir_dialog.cpp
 msgid "Choose"
 msgstr "Elegir"
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Back"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Forward"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Up"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Refresh"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Toggle Hidden Files"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Toggle Favorite"
+msgstr "Act/Desact. Breakpoint"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Toggle Mode"
+msgstr "Act/Desact. Comentario"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Focus Path"
+msgstr "Copiar Ruta"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Mode Favorite Up"
+msgstr "Favoritos:"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Mode Favorite Down"
+msgstr "Bajar"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
 msgid "Favorites:"
@@ -1484,9 +1522,31 @@ msgid "There is no defined scene to run."
 msgstr "No hay escena definida para ejecutar."
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"No main scene has ever been defined.\n"
-"Select one from \"Project Settings\" under the 'application' category."
+"No main scene has ever been defined, select one?\n"
+"You can change it later in later in \"Project Settings\" under the "
+"'application' category."
+msgstr ""
+"No se ha definido ninguna escena principal.\n"
+"Seleccioná una de \"Ajustes del Proyecto\" bajo la categoria 'aplicacion'."
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Selected scene '%s' does not exist, select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"No se ha definido ninguna escena principal.\n"
+"Seleccioná una de \"Ajustes del Proyecto\" bajo la categoria 'aplicacion'."
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Selected scene '%s' is not a scene file, select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
 msgstr ""
 "No se ha definido ninguna escena principal.\n"
 "Seleccioná una de \"Ajustes del Proyecto\" bajo la categoria 'aplicacion'."
@@ -1582,6 +1642,11 @@ msgid ""
 "(Unsaved changes will be lost)"
 msgstr "Abrir el Gestor de Proyectos? (Los cambios sin guardar se perderán)"
 
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Pick a Manu Scene"
+msgstr "Escena Principal"
+
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "Ugh"
@@ -1608,16 +1673,12 @@ msgid "Save Layout"
 msgstr "Guardar Layout"
 
 #: tools/editor/editor_node.cpp
-msgid "Load Layout"
-msgstr "Cargar Layout"
+msgid "Delete Layout"
+msgstr "Eliminar Layout"
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Default"
 msgstr "Por Defecto"
-
-#: tools/editor/editor_node.cpp
-msgid "Delete Layout"
-msgstr "Eliminar Layout"
 
 #: tools/editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -1647,6 +1708,16 @@ msgstr "Modo Pantalla Completa"
 #: tools/editor/editor_node.cpp
 msgid "Distraction Free Mode"
 msgstr "Modo Sin Distracciones"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Next tab"
+msgstr "Siguiente"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Previous tab"
+msgstr "Directorio Previo"
 
 #: tools/editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -2213,6 +2284,12 @@ msgid "No target font resource!"
 msgstr "Sin recurso de tipografías de destino!"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
+msgid ""
+"Invalid file extension.\n"
+"Please use .fnt."
+msgstr ""
+
+#: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Can't load/process source font."
 msgstr "No se puede cargar/procesar la tipografía de origen."
 
@@ -2452,7 +2529,8 @@ msgid "Couldn't load post-import script:"
 msgstr "No se pudo cargar el script post importación:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Invalid/broken script for post-import:"
+#, fuzzy
+msgid "Invalid/broken script for post-import (check console):"
 msgstr "Script para post importación inválido/roto:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
@@ -3120,13 +3198,11 @@ msgstr "Configurar Snap"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Offset:"
 msgstr "Offset de Grilla:"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Step:"
 msgstr "Setp de Grilla:"
 
@@ -3246,7 +3322,6 @@ msgstr "Usar Snap"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Show Grid"
 msgstr "Mostrar la Grilla"
 
@@ -3497,6 +3572,10 @@ msgstr "Crear Mesh de Navegación"
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
 msgstr "A MeshInstance le falta un Mesh!"
+
+#: tools/editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh has not surface to create outlines from!"
+msgstr ""
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -3861,17 +3940,14 @@ msgid "Clear UV"
 msgstr "Limpiar UV"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap"
 msgstr "Esnapear"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Enable Snap"
 msgstr "Activar Snap"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid"
 msgstr "Grilla"
 
@@ -4709,20 +4785,51 @@ msgid "StyleBox Preview:"
 msgstr "Vista Previa de StyleBox:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid "Texture Region Editor"
+#, fuzzy
+msgid "Snap Mode:"
+msgstr "Modo de Ejecución:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid "<None>"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Pixel Snap"
+msgstr "Usar Pixel Snap"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Snap"
+msgstr "Setp de Grilla:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid "Auto Slice"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Offset:"
+msgstr "Offset de Grilla:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Step:"
+msgstr "Paso (s):"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Separation:"
+msgstr "Selecciones:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Texture Region"
 msgstr "Editor de Regiones de Texturas"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid "Scale Region Editor"
-msgstr "Editor de Regiones de Escalado"
-
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid ""
-"No texture in this node.\n"
-"Set a texture to be able to edit region."
-msgstr ""
-"Sin textura en este nodo.\n"
-"Asigná una textura para poder editar la región."
+msgid "Texture Region Editor"
+msgstr "Editor de Regiones de Texturas"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
@@ -5801,12 +5908,16 @@ msgid "Error duplicating scene to save it."
 msgstr "Error al duplicar escena para guardarla."
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "New Scene Root"
-msgstr "Nueva Raíz de Escena"
+msgid "Edit Groups"
+msgstr "Editar Grupos"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Inherit Scene"
-msgstr "Heredar Escena"
+msgid "Edit Connections"
+msgstr "Editar Conexiones"
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr "Eliminar Nodo(s)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -5821,14 +5932,6 @@ msgid "Change Type"
 msgstr "Cambiar Tipo"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Edit Groups"
-msgstr "Editar Grupos"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Edit Connections"
-msgstr "Editar Conexiones"
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "Add Script"
 msgstr "Agregar Script"
 
@@ -5839,10 +5942,6 @@ msgstr "Mergear Desde Escena"
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save Branch as Scene"
 msgstr "Guardar Rama como Escena"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr "Eliminar Nodo(s)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
@@ -6236,6 +6335,31 @@ msgstr "Cambiar Largo de Shape Rayo"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Cambiar Alcances de Notificadores"
+
+#~ msgid "Change Anim Loop Interpolation"
+#~ msgstr "Cambiar Interpolación de Loop de Anim"
+
+#~ msgid "Enable/Disable interpolation when looping animation."
+#~ msgstr "Activar/Desactivar interpolación al loopear animación."
+
+#~ msgid "Load Layout"
+#~ msgstr "Cargar Layout"
+
+#~ msgid "Scale Region Editor"
+#~ msgstr "Editor de Regiones de Escalado"
+
+#~ msgid ""
+#~ "No texture in this node.\n"
+#~ "Set a texture to be able to edit region."
+#~ msgstr ""
+#~ "Sin textura en este nodo.\n"
+#~ "Asigná una textura para poder editar la región."
+
+#~ msgid "New Scene Root"
+#~ msgstr "Nueva Raíz de Escena"
+
+#~ msgid "Inherit Scene"
+#~ msgstr "Heredar Escena"
 
 #~ msgid "Binds (Extra Params):"
 #~ msgstr "Binds (Parametros Extra):"

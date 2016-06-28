@@ -676,11 +676,6 @@ msgid "Change Anim Loop"
 msgstr "修改动画循环"
 
 #: tools/editor/animation_editor.cpp
-#, fuzzy
-msgid "Change Anim Loop Interpolation"
-msgstr "修改动画循环"
-
-#: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
 msgstr ""
 
@@ -718,11 +713,6 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr "启用/禁用循环"
-
-#: tools/editor/animation_editor.cpp
-#, fuzzy
-msgid "Enable/Disable interpolation when looping animation."
 msgstr "启用/禁用循环"
 
 #: tools/editor/animation_editor.cpp
@@ -991,7 +981,7 @@ msgstr "必须设置方法的对象节点！"
 
 #: tools/editor/connections_dialog.cpp
 #, fuzzy
-msgid "Conect To Node:"
+msgid "Connect To Node:"
 msgstr "连接到节点："
 
 #: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
@@ -1206,6 +1196,51 @@ msgstr "选择目录"
 #: tools/editor/editor_dir_dialog.cpp
 msgid "Choose"
 msgstr "选择"
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Back"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Forward"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Up"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Refresh"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Toggle Hidden Files"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Toggle Favorite"
+msgstr "切换断点"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Toggle Mode"
+msgstr "切换注释"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Focus Path"
+msgstr "拷贝路径"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Mode Favorite Up"
+msgstr "收藏："
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Mode Favorite Down"
+msgstr "向下移动"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
 msgid "Favorites:"
@@ -1459,9 +1494,31 @@ msgid "There is no defined scene to run."
 msgstr "没有设置要执行的场景。"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"No main scene has ever been defined.\n"
-"Select one from \"Project Settings\" under the 'application' category."
+"No main scene has ever been defined, select one?\n"
+"You can change it later in later in \"Project Settings\" under the "
+"'application' category."
+msgstr ""
+"尚未定义主场景。\n"
+"请在项目设置的application分类下设置选择主场景。"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Selected scene '%s' does not exist, select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"尚未定义主场景。\n"
+"请在项目设置的application分类下设置选择主场景。"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Selected scene '%s' is not a scene file, select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
 msgstr ""
 "尚未定义主场景。\n"
 "请在项目设置的application分类下设置选择主场景。"
@@ -1556,6 +1613,11 @@ msgid ""
 "(Unsaved changes will be lost)"
 msgstr "退出到项目管理窗口(未保存的修改将丢失)？"
 
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Pick a Manu Scene"
+msgstr "主场景"
+
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "额"
@@ -1580,16 +1642,12 @@ msgid "Save Layout"
 msgstr "保存布局"
 
 #: tools/editor/editor_node.cpp
-msgid "Load Layout"
-msgstr "加载布局"
+msgid "Delete Layout"
+msgstr "删除布局"
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Default"
 msgstr "默认"
-
-#: tools/editor/editor_node.cpp
-msgid "Delete Layout"
-msgstr "删除布局"
 
 #: tools/editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -1619,6 +1677,16 @@ msgstr ""
 #: tools/editor/editor_node.cpp
 msgid "Distraction Free Mode"
 msgstr ""
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Next tab"
+msgstr "下一项"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Previous tab"
+msgstr "上一个目录："
 
 #: tools/editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -2172,6 +2240,12 @@ msgid "No target font resource!"
 msgstr "请设置目标字体资源！"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
+msgid ""
+"Invalid file extension.\n"
+"Please use .fnt."
+msgstr ""
+
+#: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Can't load/process source font."
 msgstr "无法加载/处理源字体。"
 
@@ -2409,7 +2483,7 @@ msgid "Couldn't load post-import script:"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Invalid/broken script for post-import:"
+msgid "Invalid/broken script for post-import (check console):"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
@@ -3075,13 +3149,11 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Offset:"
 msgstr "网格偏移量："
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Step:"
 msgstr "网格大小："
 
@@ -3197,7 +3269,6 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Show Grid"
 msgstr "显示网格"
 
@@ -3447,6 +3518,10 @@ msgstr ""
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
+msgstr ""
+
+#: tools/editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh has not surface to create outlines from!"
 msgstr ""
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
@@ -3811,17 +3886,14 @@ msgid "Clear UV"
 msgstr "清除UV"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap"
 msgstr "吸附"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Enable Snap"
 msgstr "启用吸附"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid"
 msgstr "网格"
 
@@ -4661,18 +4733,50 @@ msgid "StyleBox Preview:"
 msgstr "StyleBox预览："
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid "Texture Region Editor"
+#, fuzzy
+msgid "Snap Mode:"
+msgstr "运行模式："
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid "<None>"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid "Pixel Snap"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Snap"
+msgstr "网格大小："
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid "Auto Slice"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Offset:"
+msgstr "网格偏移量："
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Step:"
+msgstr "步长（秒）"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Separation:"
+msgstr "选项："
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Texture Region"
 msgstr "纹理区域编辑"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid "Scale Region Editor"
-msgstr "缩放区域编辑"
-
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid ""
-"No texture in this node.\n"
-"Set a texture to be able to edit region."
-msgstr "此节点没有贴图，请先为它设置贴图后再试。"
+msgid "Texture Region Editor"
+msgstr "纹理区域编辑"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
@@ -5739,12 +5843,16 @@ msgid "Error duplicating scene to save it."
 msgstr "复制场景出错。"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "New Scene Root"
-msgstr "创建场景根节点"
+msgid "Edit Groups"
+msgstr "编辑分组"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Inherit Scene"
-msgstr "继承场景"
+msgid "Edit Connections"
+msgstr "编辑事件连接"
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr "删除节点"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -5759,14 +5867,6 @@ msgid "Change Type"
 msgstr "更改类型"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Edit Groups"
-msgstr "编辑分组"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Edit Connections"
-msgstr "编辑事件连接"
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "Add Script"
 msgstr "添加脚本"
 
@@ -5777,10 +5877,6 @@ msgstr "从场景中合并"
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save Branch as Scene"
 msgstr "将分支保存为场景"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr "删除节点"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
@@ -6169,6 +6265,31 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Change Anim Loop Interpolation"
+#~ msgstr "修改动画循环"
+
+#, fuzzy
+#~ msgid "Enable/Disable interpolation when looping animation."
+#~ msgstr "启用/禁用循环"
+
+#~ msgid "Load Layout"
+#~ msgstr "加载布局"
+
+#~ msgid "Scale Region Editor"
+#~ msgstr "缩放区域编辑"
+
+#~ msgid ""
+#~ "No texture in this node.\n"
+#~ "Set a texture to be able to edit region."
+#~ msgstr "此节点没有贴图，请先为它设置贴图后再试。"
+
+#~ msgid "New Scene Root"
+#~ msgstr "创建场景根节点"
+
+#~ msgid "Inherit Scene"
+#~ msgstr "继承场景"
 
 #~ msgid "Binds (Extra Params):"
 #~ msgstr "绑定（附加参数）："

@@ -10,8 +10,8 @@ msgstr ""
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2016-06-19 13:30+0000\n"
 "Last-Translator: 박한얼 <volzhs@gmail.com>\n"
-"Language-Team: Korean <https://hosted.weblate.org/projects/godot-"
-"engine/godot/ko/>\n"
+"Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ko/>\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,7 +21,8 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "convert()하기 위한 인자 타입이 유효하지 않습니다, TYPE_* 상수를 사용하세요."
+msgstr ""
+"convert()하기 위한 인자 타입이 유효하지 않습니다, TYPE_* 상수를 사용하세요."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -49,11 +50,13 @@ msgstr "유효하지 않은 인스턴스 Dictionary 형식 (@path 없음)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr "유효하지 않은 인스턴스 Dictionary 형식 (@path 에서 스크립트를 로드할 수 없음)"
+msgstr ""
+"유효하지 않은 인스턴스 Dictionary 형식 (@path 에서 스크립트를 로드할 수 없음)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "유효하지 않은 인스턴스 Dictionary 형식 (@path의 스크립트가 유효하지 않음)"
+msgstr ""
+"유효하지 않은 인스턴스 Dictionary 형식 (@path의 스크립트가 유효하지 않음)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
@@ -687,10 +690,6 @@ msgid "Change Anim Loop"
 msgstr "애니메이션 루프 변경"
 
 #: tools/editor/animation_editor.cpp
-msgid "Change Anim Loop Interpolation"
-msgstr "애니메이션 루프 보간 변경"
-
-#: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
 msgstr "애니메이션 타입지정 값 키 만들기"
 
@@ -729,10 +728,6 @@ msgstr "커서 단계 스냅 (초)."
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
 msgstr "애니메이션 루프 활성화/비활성화."
-
-#: tools/editor/animation_editor.cpp
-msgid "Enable/Disable interpolation when looping animation."
-msgstr "애니메이션 루프 시 보간 활성화/비활성화."
 
 #: tools/editor/animation_editor.cpp
 msgid "Add new tracks."
@@ -999,7 +994,8 @@ msgid "Method in target Node must be specified!"
 msgstr "대상 노드의 함수를 명시해야합니다!"
 
 #: tools/editor/connections_dialog.cpp
-msgid "Conect To Node:"
+#, fuzzy
+msgid "Connect To Node:"
 msgstr "연결할 노드:"
 
 #: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
@@ -1217,6 +1213,51 @@ msgstr "디렉토리 선택"
 #: tools/editor/editor_dir_dialog.cpp
 msgid "Choose"
 msgstr "선택"
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Back"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Forward"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Go Up"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Refresh"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+msgid "Toggle Hidden Files"
+msgstr ""
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Toggle Favorite"
+msgstr "중단점 토글"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Toggle Mode"
+msgstr "주석 토글"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Focus Path"
+msgstr "경로 복사"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Mode Favorite Up"
+msgstr "즐겨찾기:"
+
+#: tools/editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Mode Favorite Down"
+msgstr "아래로 이동"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
 msgid "Favorites:"
@@ -1471,9 +1512,31 @@ msgid "There is no defined scene to run."
 msgstr "실행하기 위해 정의된 씬이 없습니다."
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"No main scene has ever been defined.\n"
-"Select one from \"Project Settings\" under the 'application' category."
+"No main scene has ever been defined, select one?\n"
+"You can change it later in later in \"Project Settings\" under the "
+"'application' category."
+msgstr ""
+"메인 씬이 지정되지 않았습니다.\n"
+"\"프로젝트 설정\"의 'Application' 항목에서 씬을 하나 선택해 주세요."
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Selected scene '%s' does not exist, select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"메인 씬이 지정되지 않았습니다.\n"
+"\"프로젝트 설정\"의 'Application' 항목에서 씬을 하나 선택해 주세요."
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Selected scene '%s' is not a scene file, select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
 msgstr ""
 "메인 씬이 지정되지 않았습니다.\n"
 "\"프로젝트 설정\"의 'Application' 항목에서 씬을 하나 선택해 주세요."
@@ -1570,6 +1633,11 @@ msgstr ""
 "프로젝트 매니저를 실행하시겠습니까?\n"
 "(저장하지 않은 변경사항은 사라집니다.)"
 
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Pick a Manu Scene"
+msgstr "메인 씬"
+
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "오우"
@@ -1595,16 +1663,12 @@ msgid "Save Layout"
 msgstr "레이아웃 저장"
 
 #: tools/editor/editor_node.cpp
-msgid "Load Layout"
-msgstr "레이아웃 로드"
+msgid "Delete Layout"
+msgstr "레이아웃 삭제"
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Default"
 msgstr "Default"
-
-#: tools/editor/editor_node.cpp
-msgid "Delete Layout"
-msgstr "레이아웃 삭제"
 
 #: tools/editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -1634,6 +1698,16 @@ msgstr "전체화면 모드"
 #: tools/editor/editor_node.cpp
 msgid "Distraction Free Mode"
 msgstr "초집중 모드"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Next tab"
+msgstr "다음"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Previous tab"
+msgstr "이전 디렉토리"
 
 #: tools/editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -2198,6 +2272,12 @@ msgid "No target font resource!"
 msgstr "폰트 리소스 경로가 없습니다!"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
+msgid ""
+"Invalid file extension.\n"
+"Please use .fnt."
+msgstr ""
+
+#: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Can't load/process source font."
 msgstr "소스 폰트를 로드/처리할 수 없습니다."
 
@@ -2433,7 +2513,8 @@ msgid "Couldn't load post-import script:"
 msgstr "가져오기 후 실행할 스크립트를 로드할 수 없습니다:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Invalid/broken script for post-import:"
+#, fuzzy
+msgid "Invalid/broken script for post-import (check console):"
 msgstr "가져오기 후 실행할 스크립트가 유효하지 않거나 깨져있습니다:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
@@ -3098,13 +3179,11 @@ msgstr "스냅 설정"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Offset:"
 msgstr "그리드 오프셋:"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Step:"
 msgstr "그리드 스텝:"
 
@@ -3222,7 +3301,6 @@ msgstr "스냅 사용"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Show Grid"
 msgstr "그리드 보이기"
 
@@ -3473,6 +3551,10 @@ msgstr "네비게이션 메쉬 만들기"
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
 msgstr "MeshInstance에 메쉬가 없습니다!"
+
+#: tools/editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh has not surface to create outlines from!"
+msgstr ""
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -3836,17 +3918,14 @@ msgid "Clear UV"
 msgstr "UV 정리"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap"
 msgstr "스냅"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Enable Snap"
 msgstr "스냅 활성화"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid"
 msgstr "그리드"
 
@@ -4685,20 +4764,51 @@ msgid "StyleBox Preview:"
 msgstr "StyleBox 미리보기:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid "Texture Region Editor"
+#, fuzzy
+msgid "Snap Mode:"
+msgstr "실행 모드:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid "<None>"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Pixel Snap"
+msgstr "픽셀 스냅 사용"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Snap"
+msgstr "그리드 스텝:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+msgid "Auto Slice"
+msgstr ""
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Offset:"
+msgstr "그리드 오프셋:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Step:"
+msgstr "단계 (초):"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Separation:"
+msgstr "부문:"
+
+#: tools/editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Texture Region"
 msgstr "텍스쳐 구역 편집기"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid "Scale Region Editor"
-msgstr "스케일 구역 편집기"
-
-#: tools/editor/plugins/texture_region_editor_plugin.cpp
-msgid ""
-"No texture in this node.\n"
-"Set a texture to be able to edit region."
-msgstr ""
-"이 노드에 텍스쳐가 없습니다.\n"
-"구역을 편집하기 위해서는 텍스쳐를 지정해야합니다."
+msgid "Texture Region Editor"
+msgstr "텍스쳐 구역 편집기"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
@@ -5763,12 +5873,16 @@ msgid "Error duplicating scene to save it."
 msgstr "저장하기 위해 씬을 복제하는 중에 에러가 발생했습니다."
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "New Scene Root"
-msgstr "새로운 씬 루트"
+msgid "Edit Groups"
+msgstr "그룹 편집"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Inherit Scene"
-msgstr "상속 씬"
+msgid "Edit Connections"
+msgstr "연결 편집"
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr "노드 삭제"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -5783,14 +5897,6 @@ msgid "Change Type"
 msgstr "타입 변경"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Edit Groups"
-msgstr "그룹 편집"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Edit Connections"
-msgstr "연결 편집"
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "Add Script"
 msgstr "스크립트 추가"
 
@@ -5801,10 +5907,6 @@ msgstr "다른 씬과 병합"
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save Branch as Scene"
 msgstr "선택 노드를 다른 씬으로 저장"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr "노드 삭제"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
@@ -6196,6 +6298,31 @@ msgstr "Ray Shape 길이 변경"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Notifier 범위 변경"
+
+#~ msgid "Change Anim Loop Interpolation"
+#~ msgstr "애니메이션 루프 보간 변경"
+
+#~ msgid "Enable/Disable interpolation when looping animation."
+#~ msgstr "애니메이션 루프 시 보간 활성화/비활성화."
+
+#~ msgid "Load Layout"
+#~ msgstr "레이아웃 로드"
+
+#~ msgid "Scale Region Editor"
+#~ msgstr "스케일 구역 편집기"
+
+#~ msgid ""
+#~ "No texture in this node.\n"
+#~ "Set a texture to be able to edit region."
+#~ msgstr ""
+#~ "이 노드에 텍스쳐가 없습니다.\n"
+#~ "구역을 편집하기 위해서는 텍스쳐를 지정해야합니다."
+
+#~ msgid "New Scene Root"
+#~ msgstr "새로운 씬 루트"
+
+#~ msgid "Inherit Scene"
+#~ msgstr "상속 씬"
 
 #~ msgid "Binds (Extra Params):"
 #~ msgstr "바인드 (추가 파라미터):"
