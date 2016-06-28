@@ -874,6 +874,10 @@ GDScript::~GDScript() {
 		memdelete( E->get() );
 	}
 
+	for (Map<StringName,Ref<GDScript> >::Element *E=subclasses.front();E;E=E->next()) {
+		E->get()->_owner=NULL; //bye, you are no longer owned cause I died
+	}
+
 #ifdef DEBUG_ENABLED
 	if (GDScriptLanguage::get_singleton()->lock) {
 		GDScriptLanguage::get_singleton()->lock->lock();
