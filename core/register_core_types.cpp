@@ -100,16 +100,16 @@ void register_core_types() {
 	resource_format_po = memnew( TranslationLoaderPO );
 	ResourceLoader::add_resource_format_loader( resource_format_po );
 
+	// Register text formats before to give them precedence on saving
+	resource_saver_text = memnew( ResourceFormatSaverText );
+	ResourceSaver::add_resource_format_saver(resource_saver_text);
+	resource_loader_text = memnew( ResourceFormatLoaderText );
+	ResourceLoader::add_resource_format_loader(resource_loader_text);
 
 	resource_saver_binary = memnew( ResourceFormatSaverBinary );
 	ResourceSaver::add_resource_format_saver(resource_saver_binary);
 	resource_loader_binary = memnew( ResourceFormatLoaderBinary );
 	ResourceLoader::add_resource_format_loader(resource_loader_binary);
-
-	resource_saver_text = memnew( ResourceFormatSaverText );
-	ResourceSaver::add_resource_format_saver(resource_saver_text);
-	resource_loader_text = memnew( ResourceFormatLoaderText );
-	ResourceLoader::add_resource_format_loader(resource_loader_text);
 
 #ifdef XML_ENABLED
 	resource_saver_xml = memnew( ResourceFormatSaverXML );
