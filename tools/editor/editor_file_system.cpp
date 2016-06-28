@@ -783,11 +783,9 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const S
 			}
 
 		}
+
 		da->list_dir_end();
 		memdelete(da);
-
-
-
 
 	}
 

@@ -375,7 +375,7 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 						PackState ps;
 						ps.node=node;
 						ps.state=state;
-						pack_state_stack.push_front(ps);
+						pack_state_stack.push_back(ps);
 						instanced_by_owner=false;
 					}
 				}
@@ -545,6 +545,7 @@ https://github.com/godotengine/godot/issues/3127
 			}
 
 #endif
+
 			if (exists) {
 
 				//check if already exists and did not change
@@ -556,6 +557,7 @@ https://github.com/godotengine/godot/issues/3127
 					if (Math::abs(a-b)<CMP_EPSILON)
 						continue;
 				} else if (bool(Variant::evaluate(Variant::OP_EQUAL,value,original))) {
+
 					continue;
 				}
 			}
