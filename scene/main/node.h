@@ -111,6 +111,7 @@ private:
 		bool in_constructor;
 		bool use_placeholder;
 
+		bool display_folded;
 
 	} data;
 
@@ -325,6 +326,8 @@ public:
 
 	void update_configuration_warning();
 
+	void set_display_folded(bool p_folded);
+	bool is_displayed_folded() const;
 	/* CANVAS */
 
 	Node();

@@ -302,8 +302,15 @@ bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 
 	item->set_selectable(0,true);
 	if (can_rename) {
-
-		bool collapsed = p_node->has_meta("_editor_collapsed") ? (bool)p_node->get_meta("_editor_collapsed") : false;
+#ifdef ENABLE_DEPRECATED
+		if (p_node->has_meta("_editor_collapsed")) {
+			//remove previous way of storing folding, which did not get along with scene inheritance and instancing
+			if ((bool)p_node->get_meta("_editor_collapsed"))
+				p_node->set_display_folded(true);
+			p_node->set_meta("_editor_collapsed",Variant());
+		}
+#endif
+		bool collapsed = p_node->is_displayed_folded();
 		if (collapsed)
 			item->set_collapsed(true);
 	}
@@ -896,10 +903,7 @@ void SceneTreeEditor::_cell_collapsed(Object *p_obj) {
 	Node *n=get_node(np);
 	ERR_FAIL_COND(!n);
 
-	if (collapsed)
-		n->set_meta("_editor_collapsed",true);
-	else
-		n->set_meta("_editor_collapsed",Variant());
+	n->set_display_folded(collapsed);
 
 }
 
