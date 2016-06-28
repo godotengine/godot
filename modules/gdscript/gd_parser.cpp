@@ -477,7 +477,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 		} else if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
 			//identifier (reference)
 
-			const ClassNode* cln = static_cast<const ClassNode*>(get_parse_tree());
+			const ClassNode* cln = current_class;
 			bool             bfn = false;
 			StringName       identifier;
 			if (_get_completable_identifier(COMPLETION_IDENTIFIER,identifier)) {
