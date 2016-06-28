@@ -28,7 +28,7 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 	bool is_scene;
 	String res_type;
 
-
+	bool ignore_resource_parsing;
 
 //	Map<String,String> remaps;
 

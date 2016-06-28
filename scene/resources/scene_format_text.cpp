@@ -39,12 +39,17 @@ Error ResourceInteractiveLoaderText::_parse_sub_resource(VariantParser::Stream* 
 
 	String path = local_path+"::"+itos(index);
 
-	if (!ResourceCache::has(path)) {
-		r_err_str="Can't load cached sub-resource: "+path;
-		return ERR_PARSE_ERROR;
-	}
+	if (!ignore_resource_parsing) {
 
-	r_res=RES(ResourceCache::get(path));
+		if (!ResourceCache::has(path)) {
+			r_err_str="Can't load cached sub-resource: "+path;
+			return ERR_PARSE_ERROR;
+		}
+
+		r_res=RES(ResourceCache::get(path));
+	} else {
+		r_res=RES();
+	}
 
 	VariantParser::get_token(p_stream,token,line,r_err_str);
 	if (token.type!=VariantParser::TK_PARENTHESIS_CLOSE) {
@@ -67,25 +72,29 @@ Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream* 
 
 	int id = token.value;
 
+	if (!ignore_resource_parsing) {
 
-	if (!ext_resources.has(id)) {
-		r_err_str="Can't load cached ext-resource #"+itos(id);
-		return ERR_PARSE_ERROR;
-	}
+		if (!ext_resources.has(id)) {
+			r_err_str="Can't load cached ext-resource #"+itos(id);
+			return ERR_PARSE_ERROR;
+		}
 
-	String path = ext_resources[id].path;
-	String type = ext_resources[id].type;
+		String path = ext_resources[id].path;
+		String type = ext_resources[id].type;
 
-	if (path.find("://")==-1 && path.is_rel_path()) {
-		// path is relative to file being loaded, so convert to a resource path
-		path=Globals::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
+		if (path.find("://")==-1 && path.is_rel_path()) {
+			// path is relative to file being loaded, so convert to a resource path
+			path=Globals::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 
-	}
+		}
 
-	r_res=ResourceLoader::load(path,type);
+		r_res=ResourceLoader::load(path,type);
 
-	if (r_res.is_null()) {
-		WARN_PRINT(String("Couldn't load external resource: "+path).utf8().get_data());
+		if (r_res.is_null()) {
+			WARN_PRINT(String("Couldn't load external resource: "+path).utf8().get_data());
+		}
+	} else {
+		r_res=RES();
 	}
 
 	VariantParser::get_token(p_stream,token,line,r_err_str);
@@ -597,6 +606,7 @@ void ResourceInteractiveLoaderText::get_dependencies(FileAccess *f,List<String> 
 
 
 	open(f);
+	ignore_resource_parsing=true;
 	ERR_FAIL_COND(error!=OK);
 
 	while(next_tag.name=="ext_resource") {
@@ -634,6 +644,7 @@ void ResourceInteractiveLoaderText::get_dependencies(FileAccess *f,List<String> 
 		Error err = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp);
 
 		if (err) {
+			print_line(error_text+" - "+itos(lines));
 			error_text="Unexpected end of file";
 			_printerr();
 			error=ERR_FILE_CORRUPT;
@@ -648,7 +659,7 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 
 	open(p_f,true);
 	ERR_FAIL_COND_V(error!=OK,error);
-
+	ignore_resource_parsing=true;
 	//FileAccess
 
 	FileAccess *fw = NULL;
@@ -766,7 +777,7 @@ void ResourceInteractiveLoaderText::open(FileAccess *p_f,bool p_skip_first_tag) 
 
 	stream.f=f;
 	is_scene=false;
-
+	ignore_resource_parsing=false;
 	resource_current=0;
 
 
@@ -850,6 +861,8 @@ String ResourceInteractiveLoaderText::recognize(FileAccess *p_f) {
 	f=p_f;
 
 	stream.f=f;
+
+	ignore_resource_parsing=true;
 
 
 	VariantParser::Tag tag;
