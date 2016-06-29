@@ -852,6 +852,11 @@ void TextEdit::_notification(int p_what) {
 								k++;
 							}
 
+							// check for space between name and bracket
+							while (k < str.length() && (str[k] == '\t' || str[k] == ' ')) {
+								k++;
+							}
+
 							if (str[k] == '(') {
 								in_function_name = true;
 							}
