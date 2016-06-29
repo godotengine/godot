@@ -3431,7 +3431,7 @@ Dictionary EditorNode::_get_main_scene_state() {
 
 void EditorNode::_set_main_scene_state(Dictionary p_state,Node* p_for_scene) {
 
-	if (get_edited_scene()!=p_for_scene)
+	if (get_edited_scene()!=p_for_scene && p_for_scene!=NULL)
 		return; //not for this scene
 
 	//print_line("set current 7 ");
