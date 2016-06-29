@@ -1404,6 +1404,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	hb->add_child(animation);
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
 	animation->set_tooltip(TTR("Display list of animations in player."));
+	animation->set_clip_text(true);
 
 	autoplay = memnew( ToolButton );
 	hb->add_child(autoplay);
