@@ -415,6 +415,29 @@ void Camera2D::reset_smoothing() {
 	_update_scroll();
 }
 
+void Camera2D::align() {
+
+	Size2 screen_size = get_viewport_rect().size;
+	screen_size=get_viewport_rect().size;
+	Point2 current_camera_pos = get_global_transform().get_origin();
+	if (anchor_mode==ANCHOR_MODE_DRAG_CENTER) {
+		if (h_ofs<0) {
+			camera_pos.x = current_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_RIGHT] * h_ofs;
+		} else {
+			camera_pos.x = current_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_LEFT] * h_ofs;
+		}
+		if (v_ofs<0) {
+			camera_pos.y = current_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_TOP] * v_ofs;
+		} else {
+			camera_pos.y = current_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_BOTTOM] * v_ofs;
+		}
+	} else if (anchor_mode==ANCHOR_MODE_FIXED_TOP_LEFT){
+
+		camera_pos=current_camera_pos;
+	}
+
+	_update_scroll();
+}
 
 void Camera2D::set_follow_smoothing(float p_speed) {
 
@@ -551,6 +574,7 @@ void Camera2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("force_update_scroll"),&Camera2D::force_update_scroll);
 	ObjectTypeDB::bind_method(_MD("reset_smoothing"),&Camera2D::reset_smoothing);
+	ObjectTypeDB::bind_method(_MD("align"),&Camera2D::align);
 
 	ObjectTypeDB::bind_method(_MD("_set_old_smoothing","follow_smoothing"),&Camera2D::_set_old_smoothing);
 
