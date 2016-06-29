@@ -455,6 +455,12 @@ void DocData::generate(bool p_basic_types) {
 	}
 
 
+	{
+		//so it can be documented that it does not exist
+		class_list["Variant"]=ClassDoc();
+		class_list["Variant"].name="Variant";
+	}
+
 	if (!p_basic_types)
 		return;
 
