@@ -64,15 +64,17 @@ bool Skeleton::_set(const StringName& p_path, const Variant& p_value) {
 	else if (what=="bound_childs") {
 		Array children=p_value;
 
-		bones[which].nodes_bound.clear();
+		if (is_inside_tree()) {
+			bones[which].nodes_bound.clear();
 
-		for (int i=0;i<children.size();i++) {
+			for (int i=0;i<children.size();i++) {
 
-			NodePath path=children[i];
-			ERR_CONTINUE( path.operator String()=="" );
-			Node *node = get_node(path);
-			ERR_CONTINUE(!node);
-			bind_child_node_to_bone(which,node);
+				NodePath path=children[i];
+				ERR_CONTINUE( path.operator String()=="" );
+				Node *node = get_node(path);
+				ERR_CONTINUE(!node);
+				bind_child_node_to_bone(which,node);
+			}
 		}
 	} else {
 		return false;
