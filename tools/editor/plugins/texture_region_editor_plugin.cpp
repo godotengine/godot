@@ -302,7 +302,6 @@ void TextureRegionEditor::_region_input(const InputEvent& p_input)
 						}
 					}
 				} else if (edited_margin < 0) {
-					print_line("EDIT RECTANGLE!!!");
 					drag_from=mtx.affine_inverse().xform(Vector2(mb.x,mb.y));
 					if (snap_mode == SNAP_PIXEL)
 						drag_from = drag_from.snapped(Vector2(1,1));
@@ -332,7 +331,6 @@ void TextureRegionEditor::_region_input(const InputEvent& p_input)
 				}
 
 			} else if (drag) {
-				print_line("DRAGING!!!");
 				if (edited_margin >= 0) {
 					undo_redo->create_action("Set Margin");
 					static Margin  m[4] = {MARGIN_TOP,MARGIN_BOTTOM,MARGIN_LEFT,MARGIN_RIGHT};
@@ -776,6 +774,8 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 
 	snap_step=Vector2(10,10);
 	snap_separation = Vector2(0,0);
+	edited_margin = -1;
+	drag_index = -1;
 	drag=false;
 
 	VBoxContainer *main_vb = memnew( VBoxContainer );
