@@ -259,8 +259,7 @@ Variant _jobject_to_variant(JNIEnv * env, jobject obj) {
 
 		for (int i=0; i<stringCount; i++) {
 			jstring string = (jstring) env->GetObjectArrayElement(arr, i);
-			const char *rawString = env->GetStringUTFChars(string, 0);
-			sarr.push_back(String(rawString));
+			sarr.push_back(String::utf8(env->GetStringUTFChars(string, NULL)));
 			env->DeleteLocalRef(string);
 
 		}
@@ -506,7 +505,7 @@ public:
 			} break;
 			case Variant::BOOL: {
 
-				ret = env->CallBooleanMethodA(instance,E->get().method,v);
+				ret = env->CallBooleanMethodA(instance,E->get().method,v)==JNI_TRUE;
 				//print_line("call bool");
 			} break;
 			case Variant::INT: {
@@ -521,8 +520,7 @@ public:
 			case Variant::STRING: {
 
 				jobject o = env->CallObjectMethodA(instance,E->get().method,v);
-				String str = env->GetStringUTFChars((jstring)o, NULL );
-				ret=str;
+				ret = String::utf8(env->GetStringUTFChars((jstring)o, NULL));
 				env->DeleteLocalRef(o);
 			} break;
 			case Variant::STRING_ARRAY: {
