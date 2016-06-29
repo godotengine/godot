@@ -1366,7 +1366,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	repository = memnew( OptionButton );
 
 	repository->add_item("Godot");
-	repository->set_item_metadata(0, "http://godotengine.org/asset-library/api");
+	repository->set_item_metadata(0, "https://godotengine.org/asset-library/api");
 	repository->add_item("Localhost"); // TODO: Maybe remove?
 	repository->set_item_metadata(1, "http://127.0.0.1/asset-library/api");
 	repository->connect("item_selected",this,"_repository_changed");
