@@ -71,6 +71,8 @@ class StreamPlayer : public Node {
 
 	AudioRBResampler resampler;
 
+	void _do_stop();
+
 	bool _play;
 	void _set_play(bool p_play);
 	bool _get_play() const;

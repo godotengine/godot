@@ -77,7 +77,7 @@ void StreamPlayer::sp_update() {
 			if (to_mix==0) {
 				if (!stop_request) {
 					stop_request=true;
-					call_deferred("stop");
+					call_deferred("_do_stop");
 				}
 				return;
 			}
@@ -91,7 +91,10 @@ void StreamPlayer::sp_update() {
 	}
 }
 
-
+void StreamPlayer::_do_stop() {
+	stop();
+	emit_signal("finished");
+}
 
 void StreamPlayer::_notification(int p_what) {
 
@@ -181,7 +184,7 @@ void StreamPlayer::stop() {
 	stop_request=false;
 	playback->stop();
 	resampler.flush();
-	emit_signal("finished");
+	
 
 	//set_idle_process(false);
 }
@@ -381,6 +384,7 @@ void StreamPlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_set_play","play"),&StreamPlayer::_set_play);
 	ObjectTypeDB::bind_method(_MD("_get_play"),&StreamPlayer::_get_play);
+	ObjectTypeDB::bind_method(_MD("_do_stop"),&StreamPlayer::_do_stop);
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "stream/stream", PROPERTY_HINT_RESOURCE_TYPE,"AudioStream"), _SCS("set_stream"), _SCS("get_stream") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/play"), _SCS("_set_play"), _SCS("_get_play") );
