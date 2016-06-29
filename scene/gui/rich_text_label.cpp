@@ -1941,11 +1941,30 @@ bool RichTextLabel::is_using_bbcode() const {
 
 	return use_bbcode;
 }
+
+String RichTextLabel::get_text() {
+	String text = "";
+	Item *it = main;
+	while (it) {
+		if (it->type == ITEM_TEXT) {
+			ItemText *t = static_cast<ItemText*>(it);
+			text += t->text;
+		} else if (it->type == ITEM_NEWLINE) {
+			text += "\n";
+		} else if (it->type == ITEM_INDENT) {
+			text += "\t";
+		}
+		it=_get_next_item(it,true);
+	}
+	return text;
+}
+
 void RichTextLabel::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&RichTextLabel::_input_event);
 	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&RichTextLabel::_scroll_changed);
+	ObjectTypeDB::bind_method(_MD("get_text"),&RichTextLabel::get_text);
 	ObjectTypeDB::bind_method(_MD("add_text","text"),&RichTextLabel::add_text);
 	ObjectTypeDB::bind_method(_MD("add_image","image:Texture"),&RichTextLabel::add_image);
 	ObjectTypeDB::bind_method(_MD("newline"),&RichTextLabel::add_newline);

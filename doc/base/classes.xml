@@ -21631,6 +21631,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Return [i]true[/i] if the "node" argument is a direct or indirect child of the current node, otherwise return [i]false[/i].
 			</description>
 		</method>
+		<method name="is_displayed_folded" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_fixed_processing" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -21748,6 +21754,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 			Replace a node in a scene by a given one. Subscriptions that pass through this node will be lost.
+			</description>
+		</method>
+		<method name="set_display_folded">
+			<argument index="0" name="fold" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_filename">
@@ -31506,6 +31518,13 @@ A similar effect may be achieved moving this node's descendants.
 			<return type="int">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="get_text">
+			<return type="String">
+			</return>
+			<description>
+			Returns the raw text, stripping out the formatting information.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
