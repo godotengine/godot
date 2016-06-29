@@ -24,7 +24,7 @@ def get_opts():
 def get_flags():
 	return [
 		('builtin_zlib', 'no'),
-		#('glew', 'yes'), # TODO: investigate the GLEW situation on Haiku
+		('glew', 'yes'),
 	]
 
 def configure(env):
@@ -38,8 +38,8 @@ def configure(env):
 
 	env.Append(CPPPATH = ['#platform/haiku'])
 
-	env["CC"] = "gcc"
-	env["CXX"] = "g++"
+	env["CC"] = "gcc-x86"
+	env["CXX"] = "g++-x86"
 
 	if (env["target"]=="release"):
 		if (env["debug_release"]=="yes"):
