@@ -31,7 +31,7 @@
 #include "io/resource_loader.h"
 #include "globals.h"
 #include "tools/editor/editor_settings.h"
-
+#include "scene/3d/sprite_3d.h"
 
 
 
@@ -355,6 +355,35 @@ void SpriteFramesEditor::_animation_select() {
 
 }
 
+
+static void _find_anim_sprites(Node* p_node,List<Node*> *r_nodes,Ref<SpriteFrames> p_sfames) {
+
+	Node *edited = EditorNode::get_singleton()->get_edited_scene();
+	if (!edited)
+		return;
+	if (p_node!=edited && p_node->get_owner()!=edited)
+		return;
+
+	{
+		AnimatedSprite *as = p_node->cast_to<AnimatedSprite>();
+		if (as && as->get_sprite_frames()==p_sfames) {
+			r_nodes->push_back(p_node);
+		}
+	}
+
+	{
+		AnimatedSprite3D *as = p_node->cast_to<AnimatedSprite3D>();
+		if (as && as->get_sprite_frames()==p_sfames) {
+			r_nodes->push_back(p_node);
+		}
+	}
+
+	for(int i=0;i<p_node->get_child_count();i++) {
+		_find_anim_sprites(p_node->get_child(i),r_nodes,p_sfames);
+	}
+
+}
+
 void SpriteFramesEditor::_animation_name_edited(){
 
 	if (updating)
@@ -381,9 +410,24 @@ void SpriteFramesEditor::_animation_name_edited(){
 		name=new_name+" "+itos(counter);
 	}
 
+	List<Node*> nodes;
+	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(),&nodes,Ref<SpriteFrames>(frames));
+
 	undo_redo->create_action(TTR("Rename Animation"));
 	undo_redo->add_do_method(frames,"rename_animation",edited_anim,name);
 	undo_redo->add_undo_method(frames,"rename_animation",name,edited_anim);
+
+	for(List<Node*>::Element *E=nodes.front();E;E=E->next()) {
+
+		String current = E->get()->call("get_animation");
+		if (current!=edited_anim)
+			continue;
+
+		undo_redo->add_do_method(E->get(),"set_animation",name);
+		undo_redo->add_undo_method(E->get(),"set_animation",edited_anim);
+
+	}
+
 	undo_redo->add_do_method(this,"_update_library");
 	undo_redo->add_undo_method(this,"_update_library");
 
@@ -406,11 +450,27 @@ void SpriteFramesEditor::_animation_add(){
 		name=new_name+" "+itos(counter);
 	}
 
+	List<Node*> nodes;
+	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(),&nodes,Ref<SpriteFrames>(frames));
+
+
 	undo_redo->create_action(TTR("Add Animation"));
 	undo_redo->add_do_method(frames,"add_animation",name);
 	undo_redo->add_undo_method(frames,"remove_animation",name);
 	undo_redo->add_do_method(this,"_update_library");
 	undo_redo->add_undo_method(this,"_update_library");
+
+
+	for(List<Node*>::Element *E=nodes.front();E;E=E->next()) {
+
+		String current = E->get()->call("get_animation");
+		if (frames->has_animation(current))
+			continue;
+
+		undo_redo->add_do_method(E->get(),"set_animation",name);
+		undo_redo->add_undo_method(E->get(),"set_animation",current);
+
+	}
 
 	edited_anim=new_name;
 
@@ -425,6 +485,7 @@ void SpriteFramesEditor::_animation_remove(){
 
 	if (!frames->has_animation(edited_anim))
 		return;
+
 
 	undo_redo->create_action(TTR("Remove Animation"));
 	undo_redo->add_do_method(frames,"remove_animation",edited_anim);
