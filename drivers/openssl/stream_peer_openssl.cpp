@@ -309,6 +309,9 @@ Error StreamPeerOpenSSL::connect(Ref<StreamPeer> p_base, bool p_validate_certs, 
 	validate_certs=p_validate_certs;
 	validate_hostname=p_for_hostname!="";
 
+
+
+
 	if (p_validate_certs) {
 
 
@@ -379,6 +382,10 @@ Error StreamPeerOpenSSL::connect(Ref<StreamPeer> p_base, bool p_validate_certs, 
 	bio = BIO_new( &_bio_method );
 	bio->ptr = this;
 	SSL_set_bio( ssl, bio, bio );
+
+	if (p_for_hostname!=String()) {
+		SSL_set_tlsext_host_name(ssl,p_for_hostname.utf8().get_data());
+	}
 
 	use_blocking=true; // let handshake use blocking
 	// Set the SSL to automatically retry on failure.
