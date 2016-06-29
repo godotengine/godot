@@ -409,6 +409,12 @@ void Camera2D::force_update_scroll() {
 	_update_scroll();
 }
 
+void Camera2D::reset_smoothing() {
+
+	smoothed_camera_pos = camera_pos;
+	_update_scroll();
+}
+
 
 void Camera2D::set_follow_smoothing(float p_speed) {
 
@@ -544,6 +550,7 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_follow_smoothing_enabled"),&Camera2D::is_follow_smoothing_enabled);
 
 	ObjectTypeDB::bind_method(_MD("force_update_scroll"),&Camera2D::force_update_scroll);
+	ObjectTypeDB::bind_method(_MD("reset_smoothing"),&Camera2D::reset_smoothing);
 
 	ObjectTypeDB::bind_method(_MD("_set_old_smoothing","follow_smoothing"),&Camera2D::_set_old_smoothing);
 
