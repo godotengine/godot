@@ -4541,6 +4541,7 @@ TextEdit::TextEdit()  {
 	scroll_past_end_of_file_enabled=false;
 	auto_brace_completion_enabled=false;
 	brace_matching_enabled=false;
+	highlight_all_occurrences=false;
 	auto_indent=false;
 	insert_mode = false;
 	window_has_focus=true;
