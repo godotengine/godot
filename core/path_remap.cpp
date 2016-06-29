@@ -59,12 +59,20 @@ String PathRemap::get_remap(const String& p_from) const {
 		return p_from;
 	} else {
 
+		const RemapData *ptr2=NULL;
+
 		String locale = TranslationServer::get_singleton()->get_locale();
 
 		if (ptr->locale.has(locale)) {
 			if (OS::get_singleton()->is_stdout_verbose())
 				print_line("remap found: "+p_from+" -> "+ptr->locale[locale]);
-			return ptr->locale[locale];
+
+			ptr2=remap.getptr(ptr->locale[locale]);
+
+			if (ptr2 && ptr2->always!=String()) //may have atlas or export remap too
+				return ptr2->always;
+			else
+				return ptr->locale[locale];
 		}
 
 		int p = locale.find("_");
@@ -73,7 +81,14 @@ String PathRemap::get_remap(const String& p_from) const {
 			if (ptr->locale.has(locale)) {
 				if (OS::get_singleton()->is_stdout_verbose())
 					print_line("remap found: "+p_from+" -> "+ptr->locale[locale]);
-				return ptr->locale[locale];
+
+				ptr2=remap.getptr(ptr->locale[locale]);
+
+				if (ptr2 && ptr2->always!=String()) //may have atlas or export remap too
+					return ptr2->always;
+				else
+					return ptr->locale[locale];
+
 			}
 		}
 
