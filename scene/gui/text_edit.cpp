@@ -1978,6 +1978,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					}
 				} break;
 				case KEY_TAB: {
+					if (k.mod.command) break; // avoid tab when command
 
 					if (readonly)
 						break;
