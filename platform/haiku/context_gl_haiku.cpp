@@ -35,6 +35,8 @@ ContextGL_Haiku::ContextGL_Haiku(HaikuDirectWindow* p_window) {
 
 	uint32 type = BGL_RGB | BGL_DOUBLE | BGL_DEPTH;
 	view = new HaikuGLView(window->Bounds(), type);
+	
+	use_vsync = false;
 }
 
 ContextGL_Haiku::~ContextGL_Haiku() {
@@ -57,7 +59,7 @@ void ContextGL_Haiku::make_current() {
 }
 
 void ContextGL_Haiku::swap_buffers() {
-	view->SwapBuffers();
+	view->SwapBuffers(use_vsync);
 }
 
 int ContextGL_Haiku::get_window_width() {
@@ -66,6 +68,14 @@ int ContextGL_Haiku::get_window_width() {
 
 int ContextGL_Haiku::get_window_height() {
 	return window->Bounds().IntegerHeight();
+}
+
+void ContextGL_Haiku::set_use_vsync(bool p_use) {
+	use_vsync = p_use;
+}
+
+bool ContextGL_Haiku::is_using_vsync() const {
+	return use_vsync;
 }
 
 #endif
