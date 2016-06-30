@@ -283,7 +283,7 @@ void joystick_windows::close_joystick(int id) {
 	d_joysticks[id].attached = false;
 	attached_joysticks[d_joysticks[id].id] = false;
 	d_joysticks[id].guid.Data1 = d_joysticks[id].guid.Data2 = d_joysticks[id].guid.Data3 = 0;
-	input->joy_connection_changed(id, false, "");
+	input->joy_connection_changed(d_joysticks[id].id, false, "");
 	joystick_count--;
 }
 

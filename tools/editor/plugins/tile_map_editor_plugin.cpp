@@ -223,7 +223,7 @@ void TileMapEditor::_update_palette() {
 		String name;
 
 		if (tileset->tile_get_name(E->get())!="") {
-			name = tileset->tile_get_name(E->get());
+			name = itos(E->get())+" - "+tileset->tile_get_name(E->get());
 		} else {
 			name = "#"+itos(E->get());
 		}

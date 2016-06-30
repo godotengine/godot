@@ -852,6 +852,11 @@ void TextEdit::_notification(int p_what) {
 								k++;
 							}
 
+							// check for space between name and bracket
+							while (k < str.length() && (str[k] == '\t' || str[k] == ' ')) {
+								k++;
+							}
+
 							if (str[k] == '(') {
 								in_function_name = true;
 							}
@@ -1973,6 +1978,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					}
 				} break;
 				case KEY_TAB: {
+					if (k.mod.command) break; // avoid tab when command
 
 					if (readonly)
 						break;

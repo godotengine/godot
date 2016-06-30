@@ -40,6 +40,8 @@ class ContextGL_Haiku : public ContextGL {
 private:
 	HaikuGLView* view;
 	HaikuDirectWindow* window;
+	
+	bool use_vsync;
 
 public:
 	ContextGL_Haiku(HaikuDirectWindow* p_window);
@@ -51,6 +53,9 @@ public:
 	virtual void swap_buffers();
 	virtual int get_window_width();
 	virtual int get_window_height();
+	
+	virtual void set_use_vsync(bool p_use);
+	virtual bool is_using_vsync() const;
 };
 
 #endif

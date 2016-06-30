@@ -209,5 +209,7 @@ def configure(env):
 	if (env["use_static_cpp"]=="yes"):
 		env.Append(LINKFLAGS=['-static-libstdc++'])
 
-	env["x86_opt_gcc"]=True
+	list_of_x86 = ['x86_64', 'x86', 'i386', 'i586']
+	if any(platform.machine() in s for s in list_of_x86):
+		env["x86_opt_gcc"]=True
 
