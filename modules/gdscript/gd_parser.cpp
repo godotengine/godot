@@ -31,6 +31,7 @@
 #include "io/resource_loader.h"
 #include "os/file_access.h"
 #include "script_language.h"
+#include "gd_script.h"
 
 template<class T>
 T* GDParser::alloc_node() {
@@ -492,6 +493,14 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 					bfn  = true;
 					break;
 				}
+			}
+
+			if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
+				//check from constants
+				ConstantNode *constant = alloc_node<ConstantNode>();
+				constant->value = GDScriptLanguage::get_singleton()->get_global_array()[ GDScriptLanguage::get_singleton()->get_global_map()[identifier] ];
+				expr=constant;
+				bfn = true;
 			}
 
 			if ( !bfn ) {
