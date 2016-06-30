@@ -156,6 +156,7 @@ void GridContainer::_notification(int p_what) {
 
 void GridContainer::set_columns(int p_columns) {
 
+	ERR_FAIL_COND(p_columns<1);
 	columns=p_columns;
 	queue_sort();
 	minimum_size_changed();
