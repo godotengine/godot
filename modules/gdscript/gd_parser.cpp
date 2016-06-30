@@ -503,7 +503,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 					is_script_object= true;
 
 				// script object cannot be constant-node
-				if(!is_script_object) {
+				if(!is_script_object && value.get_type() != Variant::NIL) {
 
 					ConstantNode *constant = alloc_node<ConstantNode>();
 					constant->value = value;
