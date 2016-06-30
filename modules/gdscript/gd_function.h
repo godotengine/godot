@@ -136,6 +136,9 @@ public:
 
 	struct CallState {
 
+		ObjectID instance_id; //by debug only
+		ObjectID script_id;
+
 		GDInstance *instance;
 		Vector<uint8_t> stack;
 		int stack_size;
