@@ -324,11 +324,12 @@ void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<Imag
 void SampleEditor::_update_sample() {
 
 	player->stop_all();
-	if (sample->get_format()==Sample::FORMAT_IMA_ADPCM)
-		return; //bye or unsupported
 
 	generate_preview_texture(sample,peakdisplay);
 	info_label->set_text(TTR("Length:")+" "+String::num(sample->get_length()/(float)sample->get_mix_rate(),2)+"s");
+
+	if (library->has_sample("default"))
+		library->remove_sample("default");
 
 	library->add_sample("default",sample);
 }
