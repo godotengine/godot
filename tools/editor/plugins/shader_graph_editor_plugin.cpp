@@ -176,7 +176,9 @@ void GraphColorRampEdit::_input_event(const InputEvent& p_event) {
 void GraphColorRampEdit::_notification(int p_what){
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
-		picker->connect("color_changed",this,"_color_changed");
+		if (!picker->is_connected("color_changed",this,"_color_changed")) {
+			picker->connect("color_changed",this,"_color_changed");
+		}
 	}
 	if (p_what==NOTIFICATION_DRAW) {
 

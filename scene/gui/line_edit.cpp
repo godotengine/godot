@@ -556,7 +556,9 @@ void LineEdit::_notification(int p_what) {
 				cursor_set_blink_enabled(EDITOR_DEF("text_editor/caret_blink", false));
 				cursor_set_blink_speed(EDITOR_DEF("text_editor/caret_blink_speed", 0.65));
 
-				EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
+				if (!EditorSettings::get_singleton()->is_connected("settings_changed",this,"_editor_settings_changed")) {
+					EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
+				}
 			}
 		} break;
 #endif
