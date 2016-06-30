@@ -871,9 +871,6 @@ ProjectManager::ProjectManager() {
 
 	HBoxContainer *top_hb = memnew( HBoxContainer);
 	vb->add_child(top_hb);
-	TextureFrame *logo = memnew( TextureFrame );
-	logo->set_texture(theme->get_icon("LogoSmall","EditorIcons"));
-	//top_hb->add_child( logo );
 	CenterContainer *ccl = memnew( CenterContainer );
 	Label *l = memnew( Label );
 	l->set_text(_MKSTR(VERSION_NAME)+String(" - ")+TTR("Project Manager"));
