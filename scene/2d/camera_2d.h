@@ -129,7 +129,7 @@ public:
 	Vector2 get_camera_pos() const;
 	void force_update_scroll();
 	void reset_smoothing();
-	void center();
+	void align();
 
 	Camera2D();
 };
