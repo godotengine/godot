@@ -731,6 +731,7 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 
 	List<MethodInfo> _signals;
 	p_node->get_signal_list(&_signals);
+	_signals.sort();
 
 	//ERR_FAIL_COND_V( !node_map.has(p_node), ERR_BUG);
 	//NodeData &nd = nodes[node_map[p_node]];
@@ -740,6 +741,9 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 
 		List<Node::Connection> conns;
 		p_node->get_signal_connection_list(E->get().name,&conns);
+
+		conns.sort();
+
 		for(List<Node::Connection>::Element *F=conns.front();F;F=F->next()) {
 
 			const Node::Connection &c = F->get();

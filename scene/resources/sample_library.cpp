@@ -122,9 +122,17 @@ bool SampleLibrary::has_sample(const StringName& p_name) const {
 
 void SampleLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 
+
+	List<PropertyInfo> tpl;
 	for(Map<StringName,SampleData>::Element *E=sample_map.front();E;E=E->next()) {
 
-		p_list->push_back( PropertyInfo( Variant::DICTIONARY, "samples/"+E->key(),PROPERTY_HINT_RESOURCE_TYPE,"Sample",PROPERTY_USAGE_NOEDITOR ) );
+		tpl.push_back( PropertyInfo( Variant::DICTIONARY, "samples/"+E->key(),PROPERTY_HINT_RESOURCE_TYPE,"Sample",PROPERTY_USAGE_NOEDITOR ) );
+	}
+
+	tpl.sort();
+	//sort so order is kept
+	for(List<PropertyInfo>::Element *E=tpl.front();E;E=E->next()) {
+		p_list->push_back(E->get());
 	}
 }
 
