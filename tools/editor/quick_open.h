@@ -32,6 +32,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 #include "editor_file_system.h"
+#include "pair.h"
 class EditorQuickOpen : public ConfirmationDialog {
 
 	OBJ_TYPE(EditorQuickOpen,ConfirmationDialog )
@@ -47,7 +48,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 	void _update_search();
 
 	void _sbox_input(const InputEvent& p_ie);
-	void _parse_fs(EditorFileSystemDirectory *efsd);
+	void _parse_fs(EditorFileSystemDirectory *efsd, Vector< Pair< String,Ref <Texture> > > &list);
 
 
 	void _confirmed();
