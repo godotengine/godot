@@ -191,10 +191,14 @@ void EditorDirDialog::ok_pressed() {
 void EditorDirDialog::_make_dir() {
 
 	TreeItem *ti=tree->get_selected();
-	if (!ti)
+	if (!ti) {
+		mkdirerr->set_text("Please select a base directory first");
+		mkdirerr->popup_centered_minsize();
 		return;
+	}
 
 	makedialog->popup_centered_minsize(Size2(250,80));
+	makedirname->grab_focus();
 }
 
 void EditorDirDialog::_make_dir_confirm() {
@@ -204,9 +208,11 @@ void EditorDirDialog::_make_dir_confirm() {
 		return;
 
 	String dir = ti->get_metadata(0);
+
 	DirAccess *d = DirAccess::open(dir);
 	ERR_FAIL_COND(!d);
 	Error err = d->make_dir(makedirname->get_text());
+
 	if (err!=OK) {
 		mkdirerr->popup_centered_minsize(Size2(250,80));
 	} else {

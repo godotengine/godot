@@ -193,8 +193,8 @@ Error DirAccessWindows::make_dir(String p_dir) {
 
 	if (p_dir.is_rel_path())
 		p_dir=get_current_dir().plus_file(p_dir);
-	else
-		p_dir=fix_path(p_dir);
+
+	p_dir=fix_path(p_dir);
 	p_dir = p_dir.replace("/","\\");
 
 	bool success;
@@ -268,8 +268,8 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 
 	if (p_dir.is_rel_path())
 		p_dir=get_current_dir().plus_file(p_dir);
-	else
-		p_dir=fix_path(p_dir);
+
+	p_dir=fix_path(p_dir);
 
 	//p_dir.replace("/","\\");
 
@@ -289,13 +289,13 @@ Error DirAccessWindows::rename(String p_path,String p_new_path) {
 
 	if (p_path.is_rel_path())
 		p_path=get_current_dir().plus_file(p_path);
-	else
-		p_path=fix_path(p_path);
+
+	p_path=fix_path(p_path);
 
 	if (p_new_path.is_rel_path())
 		p_new_path=get_current_dir().plus_file(p_new_path);
-	else
-		p_new_path=fix_path(p_new_path);
+
+	p_new_path=fix_path(p_new_path);
 
 	if (file_exists(p_new_path)) {
 		if (remove(p_new_path) != OK) {
@@ -310,8 +310,8 @@ Error DirAccessWindows::remove(String p_path)  {
 
 	if (p_path.is_rel_path())
 		p_path=get_current_dir().plus_file(p_path);
-	else
-		p_path=fix_path(p_path);
+
+	p_path=fix_path(p_path);
 
 
 	printf("erasing %s\n",p_path.utf8().get_data());

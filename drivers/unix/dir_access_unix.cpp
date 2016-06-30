@@ -67,8 +67,8 @@ bool DirAccessUnix::file_exists(String p_file) {
 
 	if (p_file.is_rel_path())
 		p_file=current_dir.plus_file(p_file);
-	else
-		p_file=fix_path(p_file);
+
+	p_file=fix_path(p_file);
 
 	struct stat flags;
 	bool success = 	(stat(p_file.utf8().get_data(),&flags)==0);
@@ -88,8 +88,8 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 
 	if (p_dir.is_rel_path())
 		p_dir=get_current_dir().plus_file(p_dir);
-	else
-		p_dir=fix_path(p_dir);
+
+	p_dir=fix_path(p_dir);
 
 	struct stat flags;
 	bool success = 	(stat(p_dir.utf8().get_data(),&flags)==0);
@@ -105,8 +105,8 @@ uint64_t DirAccessUnix::get_modified_time(String p_file) {
 
 	if (p_file.is_rel_path())
 		p_file=current_dir.plus_file(p_file);
-	else
-		p_file=fix_path(p_file);
+
+	p_file=fix_path(p_file);
 
 	struct stat flags;
 	bool success = 	(stat(p_file.utf8().get_data(),&flags)==0);
@@ -201,8 +201,11 @@ Error DirAccessUnix::make_dir(String p_dir) {
 
 	if (p_dir.is_rel_path())
 		p_dir=get_current_dir().plus_file(p_dir);
-	else
-		p_dir=fix_path(p_dir);
+
+
+	p_dir=fix_path(p_dir);
+
+
 #if 1
 
 
@@ -287,13 +290,13 @@ Error DirAccessUnix::rename(String p_path,String p_new_path) {
 
 	if (p_path.is_rel_path())
 		p_path=get_current_dir().plus_file(p_path);
-	else
-		p_path=fix_path(p_path);
+
+	p_path=fix_path(p_path);
 
 	if (p_new_path.is_rel_path())
 		p_new_path=get_current_dir().plus_file(p_new_path);
-	else
-		p_new_path=fix_path(p_new_path);
+
+	p_new_path=fix_path(p_new_path);
 
 	return ::rename(p_path.utf8().get_data(),p_new_path.utf8().get_data())==0?OK:FAILED;
 }
@@ -301,8 +304,8 @@ Error DirAccessUnix::remove(String p_path)  {
 
 	if (p_path.is_rel_path())
 		p_path=get_current_dir().plus_file(p_path);
-	else
-		p_path=fix_path(p_path);
+
+	p_path=fix_path(p_path);
 
 	struct stat flags;
 	if ((stat(p_path.utf8().get_data(),&flags)!=0))
