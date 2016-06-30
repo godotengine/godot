@@ -1355,6 +1355,8 @@ void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col
 		switched=true;
 	}
 
+	bool emitted_row=false;
+
 	for (int i=0;i<columns.size();i++) {
 
 		TreeItem::Cell &c=p_current->cells[i];
@@ -1373,7 +1375,10 @@ void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col
 					selected_item=p_selected;
 					selected_col=0;
 					selected_item=p_selected;
-					emit_signal("item_selected");
+					if (!emitted_row) {
+						emit_signal("item_selected");
+						emitted_row=true;
+					}
 					//if (p_col==i)
 					//	p_current->selected_signal.call(p_col);
 				}
