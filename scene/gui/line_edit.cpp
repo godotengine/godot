@@ -108,7 +108,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 				selection.doubleclick=false;
 
 				if (OS::get_singleton()->has_virtual_keyboard())
-					OS::get_singleton()->show_virtual_keyboard(get_text(),get_global_rect());
+					OS::get_singleton()->show_virtual_keyboard(text,get_global_rect());
 			}
 
 			update();
@@ -634,14 +634,19 @@ void LineEdit::_notification(int p_what) {
 			Color font_color_selected=get_color("font_color_selected");
 			Color cursor_color=get_color("cursor_color");
 
+			const String& t = text.empty() ? placeholder : text;
+			// draw placeholder color
+			if(text.empty())
+				font_color.a *= placeholder_alpha;
+
 			while(true) {
 
 		//end of string, break!
-				if (char_ofs>=text.length())
+				if (char_ofs>=t.length())
 					break;
 
-				CharType cchar=pass?'*':text[char_ofs];
-				CharType next=pass?'*':text[char_ofs+1];
+				CharType cchar=pass?'*':t[char_ofs];
+				CharType next=pass?'*':t[char_ofs+1];
 				int char_width=font->get_char_size( cchar,next ).width;
 
 		// end of widget, break!
@@ -678,7 +683,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(get_text(),get_global_rect());
+				OS::get_singleton()->show_virtual_keyboard(text,get_global_rect());
 
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
@@ -936,6 +941,29 @@ void LineEdit::clear() {
 String LineEdit::get_text() const {
 
 	return text;
+}
+
+void LineEdit::set_placeholder(String p_text) {
+
+	placeholder = p_text;
+	update();
+}
+
+String LineEdit::get_placeholder() const {
+
+	return placeholder;
+}
+
+
+void LineEdit::set_placeholder_alpha(float p_alpha) {
+
+	placeholder_alpha = p_alpha;
+	update();
+}
+
+float LineEdit::get_placeholder_alpha() const {
+
+	return placeholder_alpha;
 }
 
 void LineEdit::set_cursor_pos(int p_pos) {
@@ -1223,6 +1251,10 @@ void LineEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("select_all"),&LineEdit::select_all);
 	ObjectTypeDB::bind_method(_MD("set_text","text"),&LineEdit::set_text);
 	ObjectTypeDB::bind_method(_MD("get_text"),&LineEdit::get_text);
+	ObjectTypeDB::bind_method(_MD("set_placeholder","text"),&LineEdit::set_placeholder);
+	ObjectTypeDB::bind_method(_MD("get_placeholder"),&LineEdit::get_placeholder);
+	ObjectTypeDB::bind_method(_MD("set_placeholder_alpha","alpha"),&LineEdit::set_placeholder_alpha);
+	ObjectTypeDB::bind_method(_MD("get_placeholder_alpha"),&LineEdit::get_placeholder_alpha);
 	ObjectTypeDB::bind_method(_MD("set_cursor_pos","pos"),&LineEdit::set_cursor_pos);
 	ObjectTypeDB::bind_method(_MD("get_cursor_pos"),&LineEdit::get_cursor_pos);
 	ObjectTypeDB::bind_method(_MD("cursor_set_blink_enabled", "enable"),&LineEdit::cursor_set_blink_enabled);
@@ -1257,6 +1289,8 @@ void LineEdit::_bind_methods() {
 	BIND_CONSTANT( MENU_MAX );
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text" ), _SCS("set_text"),_SCS("get_text") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "placeholder/text" ), _SCS("set_placeholder"),_SCS("get_placeholder") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::REAL, "placeholder/alpha",PROPERTY_HINT_RANGE,"0,1,0.001" ), _SCS("set_placeholder_alpha"),_SCS("get_placeholder_alpha") );
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), _SCS("set_align"), _SCS("get_align"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "max_length" ), _SCS("set_max_length"),_SCS("get_max_length") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "editable" ), _SCS("set_editable"),_SCS("is_editable") );
@@ -1275,6 +1309,7 @@ LineEdit::LineEdit() {
 	window_has_focus=true;
 	max_length = 0;
 	pass=false;
+	placeholder_alpha=0.6;
 
 	selection_clear();
 	set_focus_mode( FOCUS_ALL );
