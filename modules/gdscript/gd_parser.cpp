@@ -497,10 +497,19 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 			if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
 				//check from constants
-				ConstantNode *constant = alloc_node<ConstantNode>();
-				constant->value = GDScriptLanguage::get_singleton()->get_global_array()[ GDScriptLanguage::get_singleton()->get_global_map()[identifier] ];
-				expr=constant;
-				bfn = true;
+				Variant value = GDScriptLanguage::get_singleton()->get_global_array()[ GDScriptLanguage::get_singleton()->get_global_map()[identifier] ];
+				bool is_script_object = false;
+				if(value.get_type() == Variant::OBJECT && !((Object *) value)->get_script().is_null())
+					is_script_object= true;
+
+				// script object cannot be constant-node
+				if(!is_script_object && value.get_type() != Variant::NIL) {
+
+					ConstantNode *constant = alloc_node<ConstantNode>();
+					constant->value = value;
+					expr=constant;
+					bfn = true;
+				}
 			}
 
 			if ( !bfn ) {
