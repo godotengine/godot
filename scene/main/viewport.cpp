@@ -1788,14 +1788,11 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 					if (p_event.mouse_button.button_index==BUTTON_LEFT) {
 						gui.drag_accum=Vector2();
 						gui.drag_attempted=false;
-						if (gui.drag_data.get_type()!=Variant::NIL) {
-							_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
-						}
-						gui.drag_data=Variant();
 					}
 
 
 				}
+
 
 				p_event.mouse_button.global_x = pos.x;
 				p_event.mouse_button.global_y = pos.y;
@@ -1832,30 +1829,55 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 				get_tree()->set_input_as_handled();
 
+
+				if (gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_button.button_index==BUTTON_LEFT) {
+
+					//alternate drop use (when using force_drag(), as proposed by #5342
+					if (gui.mouse_focus && gui.mouse_focus->can_drop_data(pos,gui.drag_data)) {
+						gui.mouse_focus->drop_data(pos,gui.drag_data);
+					}
+
+					gui.drag_data=Variant();
+
+					if (gui.drag_preview) {
+						memdelete( gui.drag_preview );
+						gui.drag_preview=NULL;
+					}
+					_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
+					//change mouse accordingly
+				}
+
+
+
 				_gui_cancel_tooltip();
 				//gui.tooltip_popup->hide();
 
 			} else {
 
-				if (gui.drag_preview && p_event.mouse_button.button_index==BUTTON_LEFT) {
-					memdelete( gui.drag_preview );
-					gui.drag_preview=NULL;
-				}
 
-				if (!gui.mouse_focus) {
 
-					if (gui.mouse_over && gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_button.button_index==BUTTON_LEFT) {
+				if (gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_button.button_index==BUTTON_LEFT) {
 
+					if (gui.mouse_over) {
 						Size2 pos = mpos;
 						pos = gui.focus_inv_xform.xform(pos);
 						if (gui.mouse_over->can_drop_data(pos,gui.drag_data)) {
 							gui.mouse_over->drop_data(pos,gui.drag_data);
 						}
-						gui.drag_data=Variant();
-						_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
-						//change mouse accordingly
 					}
 
+					if (gui.drag_preview && p_event.mouse_button.button_index==BUTTON_LEFT) {
+						memdelete( gui.drag_preview );
+						gui.drag_preview=NULL;
+					}
+
+					gui.drag_data=Variant();
+					_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
+					//change mouse accordingly
+				}
+
+				if (!gui.mouse_focus) {
+					//release event is only sent if a mouse focus (previously pressed button) exists
 					break;
 				}
 
@@ -1875,10 +1897,10 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 					gui.mouse_focus_button=-1;
 				}
 
-				if (gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_button.button_index==BUTTON_LEFT) {
+				/*if (gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_button.button_index==BUTTON_LEFT) {
 					_propagate_viewport_notification(this,NOTIFICATION_DRAG_END);
 					gui.drag_data=Variant(); //always clear
-				}
+				}*/
 
 
 				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
@@ -2175,6 +2197,9 @@ void Viewport::_gui_remove_from_modal_stack(List<Control*>::Element *MI,ObjectID
 }
 
 void Viewport::_gui_force_drag(Control *p_base, const Variant& p_data, Control *p_control) {
+
+	ERR_EXPLAIN("Drag data must be a value");
+	ERR_FAIL_COND(p_data.get_type()==Variant::NIL);
 
 	gui.drag_data=p_data;
 	gui.mouse_focus=NULL;
