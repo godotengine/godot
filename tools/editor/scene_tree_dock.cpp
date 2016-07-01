@@ -1069,6 +1069,8 @@ void SceneTreeDock::_do_reparent(Node* p_new_parent,int p_position_in_parent,Vec
 
 	List<Pair<NodePath,NodePath> > path_renames;
 
+	int inc=0;
+
 	for(int ni=0;ni<p_nodes.size();ni++) {
 
 		//no undo for now, sorry
@@ -1085,12 +1087,16 @@ void SceneTreeDock::_do_reparent(Node* p_new_parent,int p_position_in_parent,Vec
 		}
 
 
+		if (new_parent==node->get_parent() && node->get_index() < p_position_in_parent+ni) {
+			//if child will generate a gap when moved, adjust
+			inc--;
+		}
 
 		editor_data->get_undo_redo().add_do_method(node->get_parent(),"remove_child",node);
 		editor_data->get_undo_redo().add_do_method(new_parent,"add_child",node);
 
 		if (p_position_in_parent>=0)
-			editor_data->get_undo_redo().add_do_method(new_parent,"move_child",node,p_position_in_parent+ni);
+			editor_data->get_undo_redo().add_do_method(new_parent,"move_child",node,p_position_in_parent+inc);
 
 		ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
 		String new_name = new_parent->validate_child_name(node->get_name());
@@ -1121,6 +1127,8 @@ void SceneTreeDock::_do_reparent(Node* p_new_parent,int p_position_in_parent,Vec
 			editor_data->get_undo_redo().add_do_method(AnimationPlayerEditor::singleton->get_key_editor(),"set_root",node);
 
 		editor_data->get_undo_redo().add_undo_method(new_parent,"remove_child",node);
+
+		inc++;
 
 	}
 
@@ -1583,7 +1591,7 @@ static Node* _find_last_visible(Node*p_node) {
 }
 
 
-void SceneTreeDock::_normalize_drop(Node*& to_node, int &to_pos,int p_type) {
+void SceneTreeDock::_normalize_drop(Node*& to_node, int &to_pos, int p_type) {
 
 	to_pos=-1;
 
@@ -1624,6 +1632,7 @@ void SceneTreeDock::_normalize_drop(Node*& to_node, int &to_pos,int p_type) {
 			//just insert over this node because nothing is above at the same level
 			to_pos=to_node->get_index();
 			to_node=to_node->get_parent();
+
 		}
 
 	} else if (p_type==1) {
@@ -1650,12 +1659,13 @@ void SceneTreeDock::_normalize_drop(Node*& to_node, int &to_pos,int p_type) {
 						break;
 					}
 				}
-
 				if (lower_sibling) {
 					to_pos=lower_sibling->get_index();
 				}
 
 				to_node=to_node->get_parent();
+
+
 			}
 #if 0
 				//quite complicated, look for next visible in tree
