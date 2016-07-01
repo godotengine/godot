@@ -265,12 +265,28 @@ void Label::_notification(int p_what) {
 					if (visible_chars < 0 || chars_total<visible_chars) {
 						CharType c = text[i+pos];
 						CharType n = text[i+pos+1];
+						
+						bool draw_highlighted = false;
+						
+						if (highlight_enabled) {
+							if (c == '&') continue;
+							
+							for (int j = i+pos; j >= 0; j--) {
+								CharType p = text[j];
+								if (p == ' ') break;
+								else if (p == '&') {
+									draw_highlighted = true;
+									break;
+								}
+							}
+						}
+						
 						if (uppercase) {
 							c=String::char_uppercase(c);
 							n=String::char_uppercase(c);
 						}
-
-						x_ofs+=font->draw_char(ci,Point2( x_ofs, y_ofs ), c, n, font_color );
+						
+						x_ofs+=font->draw_char(ci,Point2( x_ofs, y_ofs ), c, n, draw_highlighted ? highlight_color : font_color );
 						chars_total++;
 					}
 
@@ -623,6 +639,28 @@ int Label::get_total_character_count() const {
 	return total_char_cache;
 }
 
+void Label::set_highlight_color(const Color& p_color){
+
+	highlight_color=p_color;
+	update();
+}
+Color Label::get_highlight_color() const {
+
+	return highlight_color;
+}
+
+void Label::set_highlighting_enabled(bool p_highlight){
+
+	highlight_enabled = p_highlight;
+	update();
+}
+
+bool Label::is_highlighting_enabled() const{
+
+	return highlight_enabled;
+}
+
+
 void Label::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_align","align"),&Label::set_align);
@@ -648,6 +686,10 @@ void Label::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_lines_skipped"),&Label::get_lines_skipped);
 	ObjectTypeDB::bind_method(_MD("set_max_lines_visible","lines_visible"),&Label::set_max_lines_visible);
 	ObjectTypeDB::bind_method(_MD("get_max_lines_visible"),&Label::get_max_lines_visible);
+	ObjectTypeDB::bind_method(_MD("set_highlight_color","color"),&Label::set_highlight_color);
+	ObjectTypeDB::bind_method(_MD("get_highlight_color"),&Label::get_highlight_color);
+	ObjectTypeDB::bind_method(_MD("set_highlighting_enabled","color"),&Label::set_highlighting_enabled);
+	ObjectTypeDB::bind_method(_MD("is_highlighting_enabled"),&Label::is_highlighting_enabled);
 
 	BIND_CONSTANT( ALIGN_LEFT );
 	BIND_CONSTANT( ALIGN_CENTER );
@@ -668,7 +710,8 @@ void Label::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE,"0,1,0.001"),_SCS("set_percent_visible"),_SCS("get_percent_visible") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE,"0,999,1"),_SCS("set_lines_skipped"),_SCS("get_lines_skipped") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE,"-1,999,1"),_SCS("set_max_lines_visible"),_SCS("get_max_lines_visible") );
-
+	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "highlight_color"), _SCS("set_highlight_color"), _SCS("get_highlight_color"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "highlighting_enabled"), _SCS("set_highlighting_enabled"), _SCS("is_highlighting_enabled"));
 }
 
 Label::Label(const String &p_text) {
@@ -690,6 +733,8 @@ Label::Label(const String &p_text) {
 	max_lines_visible=-1;
 	set_text(p_text);
 	uppercase=false;
+	highlight_enabled = false;
+	highlight_color=Color(1, 1, 1, 1);
 }
 
 
