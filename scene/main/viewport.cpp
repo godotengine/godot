@@ -2060,14 +2060,6 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 
 			if (gui.key_focus && !gui.key_focus->is_visible()) {
-				Node *c=gui.key_focus;
-				String p;
-				while(c) {
-					p=c->get_type()+"/"+p;
-					c=c->get_parent();
-				}
-				print_line(p);
-				//key focus must always be visible
 				gui.key_focus->release_focus();
 			}
 
@@ -2410,8 +2402,8 @@ void Viewport::input(const InputEvent& p_event) {
 	ERR_FAIL_COND(!is_inside_tree());
 
 
+	get_tree()->_call_input_pause(input_group,"_input",p_event); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
 	_gui_input_event(p_event);
-	get_tree()->_call_input_pause(input_group,"_input",p_event);
 	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
 }
 
