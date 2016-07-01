@@ -90,6 +90,8 @@ private:
 	int visible_chars;
 	int lines_skipped;
 	int max_lines_visible;
+	Color highlight_color;
+	bool highlight_enabled;
 protected:
 	void _notification(int p_what);
 
@@ -132,6 +134,12 @@ public:
 
 	int get_line_height() const;
 	int get_line_count() const;
+	
+	void set_highlight_color(const Color& p_color);
+	Color get_highlight_color() const;
+	
+	void set_highlighting_enabled(bool p_highlight);
+	bool is_highlighting_enabled() const;
 
 	Label(const String& p_text=String());
 	~Label();
