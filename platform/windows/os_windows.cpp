@@ -611,6 +611,20 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			}
 			//return 0;								// Jump Back
 		} break;
+
+		case WM_ENTERSIZEMOVE: {
+			move_timer_id = SetTimer(hWnd, 1, USER_TIMER_MINIMUM,(TIMERPROC) NULL);
+		} break;
+		case WM_EXITSIZEMOVE: {
+			KillTimer(hWnd, move_timer_id);
+		} break;
+		case WM_TIMER: {
+			if (wParam == move_timer_id) {
+				process_key_events();
+				Main::iteration();
+			}
+		} break;
+
 		case WM_SYSKEYDOWN:
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
@@ -1019,7 +1033,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 	_ensure_data_dir();
 
-
+	move_timer_id = 1;
 }
 
 void OS_Windows::set_clipboard(const String& p_text) {
