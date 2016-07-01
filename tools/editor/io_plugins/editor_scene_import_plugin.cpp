@@ -2459,7 +2459,7 @@ void EditorSceneImportPlugin::_optimize_animations(Node *scene, float p_max_lin_
 
 void EditorSceneImportPlugin::_find_resources_to_merge(Node *scene, Node *node, bool p_merge_material, Map<String, Ref<Material> > &materials, bool p_merge_anims, Map<String,Ref<Animation> >& merged_anims,Set<Ref<Mesh> > &tested_meshes) {
 
-	if (node->get_owner()!=scene)
+	if (node!=scene && node->get_owner()!=scene)
 		return;
 
 	String path = scene->get_path_to(node);
@@ -2507,10 +2507,42 @@ void EditorSceneImportPlugin::_find_resources_to_merge(Node *scene, Node *node, 
 
 			for(int i=0;i<mesh->get_surface_count();i++) {
 				Ref<Material> material = mesh->surface_get_material(i);
-				materials[mesh->get_name()+":surf:"+mesh->surface_get_name(i)]=material;
+
+				if (material.is_valid()) {
+
+					String sname = mesh->surface_get_name(i);
+					if (sname=="")
+						sname="surf_"+itos(i);
+
+					sname=mesh->get_name()+":surf:"+sname;
+					materials[sname]=material;
+				}
 			}
 
 			tested_meshes.insert(mesh);
+		}
+
+		if (mesh.is_valid()) {
+
+			for(int i=0;i<mesh->get_surface_count();i++) {
+				Ref<Material> material = mi->get_surface_material(i);
+				if (material.is_valid()) {
+					String sname = mesh->surface_get_name(i);
+					if (sname=="")
+						sname="surf_"+itos(i);
+
+					sname=path+":inst_surf:"+sname;
+					materials[sname]=material;
+				}
+			}
+
+		}
+
+		Ref<Material> override = mi->get_material_override();
+
+		if (override.is_valid()) {
+
+			materials[path+":override"]=override;
 		}
 	}
 
@@ -2525,10 +2557,12 @@ void EditorSceneImportPlugin::_find_resources_to_merge(Node *scene, Node *node, 
 
 void EditorSceneImportPlugin::_merge_found_resources(Node *scene, Node *node, bool p_merge_material, const Map<String, Ref<Material> > &materials, bool p_merge_anims, const Map<String,Ref<Animation> >& merged_anims, Set<Ref<Mesh> > &tested_meshes) {
 
-	if (node->get_owner()!=scene)
+	if (node!=scene && node->get_owner()!=scene)
 		return;
 
 	String path = scene->get_path_to(node);
+
+	print_line("at path: "+path);
 
 	if (node->cast_to<AnimationPlayer>()) {
 
@@ -2570,15 +2604,48 @@ void EditorSceneImportPlugin::_merge_found_resources(Node *scene, Node *node, bo
 		if (mesh.is_valid() && mesh->get_name()!=String() && !tested_meshes.has(mesh)) {
 
 			for(int i=0;i<mesh->get_surface_count();i++) {
-				String sname = mesh->get_name()+":surf:"+mesh->surface_get_name(i);
+
+				String sname = mesh->surface_get_name(i);
+				if (sname=="")
+					sname="surf_"+itos(i);
+
+				sname=mesh->get_name()+":surf:"+sname;
+
 
 				if (materials.has(sname)) {
+
 					mesh->surface_set_material(i,materials[sname]);
 				}
 			}
 
 			tested_meshes.insert(mesh);
 		}
+
+		if (mesh.is_valid()) {
+
+			for(int i=0;i<mesh->get_surface_count();i++) {
+
+				String sname = mesh->surface_get_name(i);
+				if (sname=="")
+					sname="surf_"+itos(i);
+
+				sname=path+":inst_surf:"+sname;
+
+
+				if (materials.has(sname)) {
+
+					mi->set_surface_material(i,materials[sname]);
+				}
+			}
+
+		}
+
+
+		String opath = path+":override";
+		if (materials.has(opath)) {
+			mi->set_material_override(materials[opath]);
+		}
+
 	}
 
 
@@ -2643,6 +2710,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	if (scene_flags&(SCENE_FLAG_MERGE_KEEP_MATERIALS|SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS) && FileAccess::exists(p_dest_path)) {
 		//must merge!
 
+		print_line("MUST MERGE");
 		Ref<PackedScene> pscene = ResourceLoader::load(p_dest_path,"PackedScene",true);
 		if (pscene.is_valid()) {
 
@@ -2653,8 +2721,9 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 				Set<Ref<Mesh> > tested_meshes;
 
 				_find_resources_to_merge(instance,instance,scene_flags&SCENE_FLAG_MERGE_KEEP_MATERIALS,merged_materials,scene_flags&SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS,merged_anims,tested_meshes);
+
 				tested_meshes.clear();
-				_merge_found_resources(instance,instance,scene_flags&SCENE_FLAG_MERGE_KEEP_MATERIALS,merged_materials,scene_flags&SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS,merged_anims,tested_meshes);
+				_merge_found_resources(scene,scene,scene_flags&SCENE_FLAG_MERGE_KEEP_MATERIALS,merged_materials,scene_flags&SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS,merged_anims,tested_meshes);
 
 				memdelete(instance);
 			}
