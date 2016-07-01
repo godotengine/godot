@@ -107,6 +107,7 @@ public:
 	void set_raw_mode(bool p_enabled);
 	bool is_raw_mode() const;
 
+	void set_focus_on_line_edit();
 
 	ColorPicker();
 };

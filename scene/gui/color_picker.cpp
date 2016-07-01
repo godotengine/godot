@@ -72,11 +72,14 @@ void ColorPicker::_notification(int p_what) {
 			_update_color();
 		}
 
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			c_text->call_deferred("grab_focus");
-			c_text->call_deferred("select");
-		} break;
+
 	}
+}
+
+void ColorPicker::set_focus_on_line_edit() {
+
+	c_text->grab_focus();
+	c_text->select();
 }
 
 void ColorPicker::_update_controls() {
@@ -628,6 +631,7 @@ void ColorPickerButton::pressed() {
 	popup->set_pos(get_global_pos()-Size2(0,ms.height));
 	popup->set_size(ms);
 	popup->popup();
+	picker->set_focus_on_line_edit();
 
 
 }

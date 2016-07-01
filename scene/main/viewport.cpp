@@ -2058,7 +2058,15 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 		case InputEvent::JOYSTICK_BUTTON:
 		case InputEvent::KEY: {
 
+
 			if (gui.key_focus && !gui.key_focus->is_visible()) {
+				Node *c=gui.key_focus;
+				String p;
+				while(c) {
+					p=c->get_type()+"/"+p;
+					c=c->get_parent();
+				}
+				print_line(p);
 				//key focus must always be visible
 				gui.key_focus->release_focus();
 			}
