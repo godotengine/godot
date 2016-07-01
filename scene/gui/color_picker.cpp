@@ -137,10 +137,9 @@ void ColorPicker::_value_changed(double) {
 	if (updating)
 		return;
 
-	for(int i=0;i<3;i++) {
+	for(int i=0;i<4;i++) {
 		color.components[i] = scroll[i]->get_val()/(raw_mode_enabled?1.0:255.0);
 	}
-	color.components[3] = scroll[3]->get_val()/255.0;
 
 	set_color(color);
 
@@ -169,12 +168,10 @@ void ColorPicker::_update_color() {
 	updating=true;
 
 	for(int i=0;i<4;i++) {
-		scroll[i]->set_max(255);
+		double max = raw_mode_enabled ? 1.0 : 255;
+		scroll[i]->set_max(max);
 		scroll[i]->set_step(0.01);
-		if (raw_mode_enabled && i != 3)
-			scroll[i]->set_val(color.components[i]);
-		else
-			scroll[i]->set_val(color.components[i]*255);
+		scroll[i]->set_val(color.components[i] * max);
 	}
 
 	if (text_is_constructor) {
