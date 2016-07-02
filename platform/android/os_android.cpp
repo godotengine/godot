@@ -731,7 +731,7 @@ String OS_Android::get_data_dir() const {
 		//restore original dir so we don't mess things up
 		chdir(real_current_dir_name);
 
-		return data_dir_cache
+		return data_dir_cache;
 	}
 
 
