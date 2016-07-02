@@ -200,6 +200,10 @@ int Array::count(const Variant& p_value) const {
 	return amount;
 }
 
+bool Array::has(const Variant& p_value) const {
+	return _p->array.find(p_value, 0) != -1;
+}
+
 void Array::remove(int p_pos) {
 
 	_p->array.remove(p_pos);
