@@ -708,8 +708,33 @@ void OS_Android::set_need_reload_hooks(bool p_needs_them) {
 
 String OS_Android::get_data_dir() const {
 
-	if (get_data_dir_func)
-		return get_data_dir_func();
+	if (data_dir_cache!=String())
+		return data_dir_cache;
+
+	if (get_data_dir_func) {
+		String data_dir=get_data_dir_func();
+
+		//store current dir
+		char real_current_dir_name[2048];
+		getcwd(real_current_dir_name,2048);
+
+		//go to data dir
+		chdir(data_dir.utf8().get_data());
+
+		//get actual data dir, so we resolve potential symlink (Android 6.0+ seems to use symlink)
+		char data_current_dir_name[2048];
+		getcwd(data_current_dir_name,2048);
+
+		//cache by parsing utf8
+		data_dir_cache.parse_utf8(data_current_dir_name);
+
+		//restore original dir so we don't mess things up
+		chdir(real_current_dir_name);
+
+		return data_dir_cache
+	}
+
+
 	return ".";
 	//return Globals::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };

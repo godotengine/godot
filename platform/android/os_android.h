@@ -123,6 +123,8 @@ private:
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 
+	mutable String data_dir_cache;
+
 #if 0
 	AudioDriverAndroid audio_driver_android;
 #else
