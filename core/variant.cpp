@@ -1559,72 +1559,78 @@ Variant::operator String() const {
 		case VECTOR2_ARRAY: {
 
 			DVector<Vector2> vec = operator DVector<Vector2>();
-			String str;
+			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+Variant( vec[i] );
 			}
+			str += "]";
 			return str;
 		} break;
 		case VECTOR3_ARRAY: {
 
 			DVector<Vector3> vec = operator DVector<Vector3>();
-			String str;
+			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+Variant( vec[i] );
 			}
+			str += "]";
 			return str;
 		} break;
 		case STRING_ARRAY: {
 
 			DVector<String> vec = operator DVector<String>();
-			String str;
+			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+vec[i];
 			}
+			str += "]";
 			return str;
 		} break;
 		case INT_ARRAY: {
 
 			DVector<int> vec = operator DVector<int>();
-			String str;
+			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+itos(vec[i]);
 			}
+			str += "]";
 			return str;
 		} break;
 		case REAL_ARRAY: {
 
 			DVector<real_t> vec = operator DVector<real_t>();
-			String str;
+			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+rtos(vec[i]);
 			}
+			str += "]";
 			return str;
 		} break;
 		case ARRAY: {
 
 			Array arr = operator Array();
-			String str;
+			String str("[");
 			for (int i=0; i<arr.size(); i++) {
 				if (i)
 					str+=", ";
 				str += String(arr[i]);
 			};
+			str += "]";
 			return str;
 
 		} break;
