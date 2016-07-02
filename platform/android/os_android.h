@@ -113,6 +113,8 @@ private:
 	bool use_apk_expansion;
 
 	bool use_16bits_fbo;
+	
+	mutable String data_dir_cache;
 
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
