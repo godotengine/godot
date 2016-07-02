@@ -248,7 +248,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 
 	chdir(current_dir.utf8().get_data()); //ascii since this may be unicode or wathever the host os wants
 	bool worked=(chdir(p_dir.utf8().get_data())==0); // we can only give this utf8
-#ifndef IPHONE_ENABLED
+
 	String base = _get_root_path();
 	if (base!="") {
 
@@ -258,7 +258,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 		if (!new_dir.begins_with(base))
 			worked=false;
 	}
-#endif
+
 	if (worked) {
 
 		getcwd(real_current_dir_name,2048);
