@@ -192,6 +192,8 @@ public:
 	Vector<String> get_cmdline_args();
 
 	String get_locale() const;
+	String get_latin_keyboard_variant() const;
+
 	String get_model_name() const;
 	MainLoop *get_main_loop() const;
 

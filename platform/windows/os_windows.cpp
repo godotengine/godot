@@ -2164,6 +2164,68 @@ String OS_Windows::get_locale() const {
 	return "en";
 }
 
+
+OS::LatinKeyboardVariant OS_Windows::get_latin_keyboard_variant() const {
+	
+	unsigned long azerty[] = { 
+		0x00020401, // Arabic (102) AZERTY
+		0x0001080c, // Belgian (Comma)
+		0x0000080c, // Belgian French
+		0x0000040c, // French
+		0 // <--- STOP MARK
+	};
+	unsigned long qwertz[] = {
+		0x0000041a, // Croation
+		0x00000405, // Czech
+		0x00000407, // German
+		0x00010407, // German (IBM)
+		0x0000040e, // Hungarian
+		0x0000046e, // Luxembourgish
+		0x00010415, // Polish (214)
+		0x00000418, // Romanian (Legacy)
+		0x0000081a, // Serbian (Latin)
+		0x0000041b, // Slovak
+		0x00000424, // Slovenian
+		0x0001042e, // Sorbian Extended
+		0x0002042e, // Sorbian Standard
+		0x0000042e, // Sorbian Standard (Legacy)
+		0x0000100c, // Swiss French
+		0x00000807, // Swiss German
+		0 // <--- STOP MARK
+	};
+	unsigned long dvorak[] = {
+		0x00010409, // US-Dvorak
+		0x00030409, // US-Dvorak for left hand
+		0x00040409, // US-Dvorak for right hand
+		0 // <--- STOP MARK
+	};
+
+	char name[ KL_NAMELENGTH + 1 ]; name[0] = 0;
+	GetKeyboardLayoutNameA( name );
+
+	unsigned long hex = strtoul(name, NULL, 16);
+
+	int i=0;
+	while( azerty[i] != 0 ) {
+		if (azerty[i] == hex) return LATIN_KEYBOARD_AZERTY;
+		i++;
+	}
+
+	i = 0;
+	while( qwertz[i] != 0 ) {
+		if (qwertz[i] == hex) return LATIN_KEYBOARD_QWERTZ;
+		i++;
+	}
+	
+	i = 0;
+	while( dvorak[i] != 0 ) {
+		if (dvorak[i] == hex) return LATIN_KEYBOARD_DVORAK;
+		i++; 
+	}
+
+	return LATIN_KEYBOARD_QWERTY;
+}
+
 void OS_Windows::release_rendering_thread() {
 
 	gl_context->release_current();

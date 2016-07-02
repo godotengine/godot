@@ -435,6 +435,18 @@ String _OS::get_locale() const {
 	return OS::get_singleton()->get_locale();
 }
 
+String _OS::get_latin_keyboard_variant() const {
+	switch( OS::get_singleton()->get_latin_keyboard_variant() ) {
+		case OS::LATIN_KEYBOARD_QWERTY: return "QWERTY";
+		case OS::LATIN_KEYBOARD_QWERTZ: return "QWERTZ";
+		case OS::LATIN_KEYBOARD_AZERTY: return "AZERTY";
+		case OS::LATIN_KEYBOARD_QZERTY: return "QZERTY";
+		case OS::LATIN_KEYBOARD_DVORAK: return "DVORAK";
+		case OS::LATIN_KEYBOARD_NEO   : return "NEO";
+		default: return "ERROR";
+	}
+}
+
 String _OS::get_model_name() const {
 
     return OS::get_singleton()->get_model_name();
@@ -1097,6 +1109,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_ticks_msec"),&_OS::get_ticks_msec);
 	ObjectTypeDB::bind_method(_MD("get_splash_tick_msec"),&_OS::get_splash_tick_msec);
 	ObjectTypeDB::bind_method(_MD("get_locale"),&_OS::get_locale);
+	ObjectTypeDB::bind_method(_MD("get_latin_keyboard_variant"),&_OS::get_latin_keyboard_variant);
 	ObjectTypeDB::bind_method(_MD("get_model_name"),&_OS::get_model_name);
 
 	ObjectTypeDB::bind_method(_MD("get_custom_level"),&_OS::get_custom_level);
