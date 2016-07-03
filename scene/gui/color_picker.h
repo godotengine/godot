@@ -80,6 +80,7 @@ private:
 	void _update_controls();
 	void _update_color();
 	void _update_presets();
+	void _update_text_value();
 	void _text_type_toggled();
 	void _sample_draw();
 	void _hsv_draw(int p_wich,Control *c);
