@@ -101,7 +101,6 @@ static bool init_fullscreen=false;
 static bool init_use_custom_pos=false;
 static bool debug_collisions=false;
 static bool debug_navigation=false;
-static bool allow_hidpi=true;
 static Vector2 init_custom_pos;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
@@ -262,7 +261,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	Vector<String> breakpoints;
 	bool use_custom_res=true;
 	bool force_res=false;
-	bool profile=false;
 
 	I=args.front();
 
@@ -916,6 +914,8 @@ Error Main::setup2() {
 		if (boot_logo_path!=String() /*&& FileAccess::exists(boot_logo_path)*/) {
 			print_line("Boot splash path: "+boot_logo_path);
 			Error err = boot_logo.load(boot_logo_path);
+			if (err)
+				ERR_PRINTS("Non-existing or invalid boot splash at: " + boot_logo_path + ". Loading default splash.");
 		}
 
 		if (!boot_logo.empty()) {
@@ -1040,7 +1040,6 @@ bool Main::start() {
 	String _import_script;
 	String dumpstrings;
 	bool noquit=false;
-	bool convert_old=false;
 	bool export_debug=false;
 	bool project_manager_request = false;
 	List<String> args = OS::get_singleton()->get_cmdline_args();
@@ -1050,8 +1049,6 @@ bool Main::start() {
 			doc_base=false;
 		} else if (args[i]=="-noquit") {
 			noquit=true;
-		} else if (args[i]=="-convert_old") {
-			convert_old=true;
 		} else if (args[i]=="-editor" || args[i]=="-e") {
 			editor=true;
 		} else if (args[i] == "-pm" || args[i] == "-project_manager") {

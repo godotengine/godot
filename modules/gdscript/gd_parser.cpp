@@ -514,8 +514,6 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 		} else if (/*tokenizer->get_token()==GDTokenizer::TK_OP_ADD ||*/ tokenizer->get_token()==GDTokenizer::TK_OP_SUB || tokenizer->get_token()==GDTokenizer::TK_OP_NOT || tokenizer->get_token()==GDTokenizer::TK_OP_BIT_INVERT) {
 
 			//single prefix operators like !expr -expr ++expr --expr
-			OperatorNode *op = alloc_node<OperatorNode>();
-
 			Expression e;
 			e.is_op=true;
 

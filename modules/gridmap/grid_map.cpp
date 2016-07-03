@@ -912,7 +912,6 @@ void GridMap::_octant_bake(const OctantKey &p_key, const Ref<TriangleMesh>& p_tm
 						int lc = p_lights.size();
 						const BakeLight* bl = p_lights.ptr();
 						float ofs = cell_size*0.02;
-						float att = 0.2;
 
 
 						for(;V;V=V->next()) {

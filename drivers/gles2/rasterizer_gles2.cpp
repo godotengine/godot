@@ -2205,8 +2205,6 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 				AABB aabb;
 
 				float scale=1;
-				float max=0;
-
 
 
 				if (p_surface->array[VS::ARRAY_VERTEX].datatype==_GL_HALF_FLOAT_OES) {
@@ -5913,8 +5911,7 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 					base = skinned_buffer;
 					//copy stuff and get it ready for the skeleton
 
-					int src_stride = surf->stride;
-						int dst_stride = surf->stride - ( surf->array[VS::ARRAY_BONES].size + surf->array[VS::ARRAY_WEIGHTS].size );
+					int dst_stride = surf->stride - ( surf->array[VS::ARRAY_BONES].size + surf->array[VS::ARRAY_WEIGHTS].size );
 					const uint8_t *src_weights=&surf->array_local[surf->array[VS::ARRAY_WEIGHTS].ofs];
 					const uint8_t *src_bones=&surf->array_local[surf->array[VS::ARRAY_BONES].ofs];
 					const Skeleton::Bone *skeleton = &p_skeleton->bones[0];
@@ -6316,9 +6313,9 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 
 void RasterizerGLES2::_setup_shader_params(const Material *p_material) {
 
+#if 0
 	int idx=0;
 	int tex_idx=0;
-#if 0
 	for(Map<StringName,Variant>::Element *E=p_material->shader_cache->params.front();E;E=E->next(),idx++) {
 
 		Variant v; //
@@ -6384,15 +6381,12 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 	uint16_t prev_light=0x777E;
 	const Geometry *prev_geometry_cmp=NULL;
 	uint8_t prev_light_type=0xEF;
-	const ParamOverrideMap* prev_overrides=NULL; // make it diferent than NULL
 	const Skeleton *prev_skeleton =NULL;
 	uint8_t prev_sort_flags=0xFF;
 	const BakedLightData *prev_baked_light=NULL;
 	RID prev_baked_light_texture;
 	const float *prev_morph_values=NULL;
 	int prev_receive_shadows_state=-1;
-
-	Geometry::Type prev_geometry_type=Geometry::GEOMETRY_INVALID;
 
 	material_shader.set_conditional(MaterialShaderGLES2::USE_VERTEX_LIGHTING,!shadow && !p_fragment_light);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_FRAGMENT_LIGHTING,!shadow && p_fragment_light);
@@ -6450,12 +6444,10 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 				prev_light=0x777E;
 				prev_geometry_cmp=NULL;
 				prev_light_type=0xEF;
-				prev_overrides=NULL; // make it diferent than NULL
 				prev_skeleton =NULL;
 				prev_sort_flags=0xFF;
 				prev_morph_values=NULL;
 				prev_receive_shadows_state=-1;
-				prev_geometry_type=Geometry::GEOMETRY_INVALID;
 				glEnable(GL_BLEND);
 				glDepthMask(GL_TRUE);
 				glEnable(GL_DEPTH_TEST);
@@ -6838,7 +6830,6 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		prev_sort_flags=sort_flags;
 		prev_baked_light=baked_light;
 		prev_morph_values=morph_values;
-//		prev_geometry_type=geometry->type;
 		prev_receive_shadows_state=receive_shadows_state;
 	}
 
@@ -8877,8 +8868,6 @@ void RasterizerGLES2::canvas_light_shadow_buffer_update(RID p_buffer, const Matr
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	canvas_shadow_shader.bind();
 
-	const int vp_height = 10;
-
 	glViewport(0, 0, cls->size,cls->height);
 	_glClearDepth(1.0f);
 	glClearColor(1,1,1,1);
@@ -8919,12 +8908,6 @@ void RasterizerGLES2::canvas_light_shadow_buffer_update(RID p_buffer, const Matr
 
 		Vector3 cam_target=Matrix3(Vector3(0,0,Math_PI*2*(i/4.0))).xform(Vector3(0,1,0));
 		projection = projection * CameraMatrix(Transform().looking_at(cam_target,Vector3(0,0,-1)).affine_inverse());
-
-		//print_line("near: "+rtos(p_near));
-		//print_line("far: "+rtos(p_far));
-		//projection.set_perspective(60,size/float(vp_height),p_near,p_far);
-
-	//	CameraMatrix light_mat = projection * CameraMatrix(camera);
 
 		canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES2::PROJECTION_MATRIX,projection);
 		canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES2::LIGHT_MATRIX,light);
@@ -9501,19 +9484,15 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 		if (ci->copy_back_buffer && framebuffer.active && framebuffer.scale==1) {
 
 			Rect2 rect;
-			int x,y,w,h;
+			int x,y;
 
 			if (ci->copy_back_buffer->full) {
 
 				x = viewport.x;
 				y = window_size.height-(viewport.height+viewport.y);
-				w = viewport.width;
-				h = viewport.height;
 			} else {
 				x = viewport.x+ci->copy_back_buffer->screen_rect.pos.x;
 				y = window_size.height-(viewport.y+ci->copy_back_buffer->screen_rect.pos.y+ci->copy_back_buffer->screen_rect.size.y);
-				w = ci->copy_back_buffer->screen_rect.size.x;
-				h = ci->copy_back_buffer->screen_rect.size.y;
 			}
 			glActiveTexture(GL_TEXTURE0+max_texture_units-1);
 			glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
@@ -9531,9 +9510,6 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 			} else {
 				glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
 			}
-//			if (current_clip) {
-//			//	print_line(" a clip ");
-//			}
 
 			canvas_texscreen_used=true;
 			glActiveTexture(GL_TEXTURE0);
@@ -10496,7 +10472,6 @@ void RasterizerGLES2::_update_framebuffer() {
 
 //	GLuint format_rgba = use_fp16_fb?_GL_RGBA16F_EXT:GL_RGBA;
 	GLuint format_rgba = GL_RGBA;
-	GLuint format_rgb = use_fp16_fb?_GL_RGB16F_EXT:GL_RGB;
 	GLuint format_type = use_fp16_fb?_GL_HALF_FLOAT_OES:GL_UNSIGNED_BYTE;
 	GLuint format_internal=GL_RGBA;
 
@@ -10998,10 +10973,9 @@ void RasterizerGLES2::init() {
 
 	{
 		//shadowmaps
-		OS::VideoMode vm=OS::get_singleton()->get_video_mode();
 
 		//don't use a shadowbuffer too big in GLES, this should be the maximum
-		int max_shadow_size = GLOBAL_DEF("rasterizer/max_shadow_buffer_size",1024);//nearest_power_of_2(MIN(vm.width,vm.height))/2;
+		int max_shadow_size = GLOBAL_DEF("rasterizer/max_shadow_buffer_size",1024);
 		int smsize=max_shadow_size;
 		while(smsize>=16) {
 

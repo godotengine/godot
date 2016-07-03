@@ -133,7 +133,6 @@ Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
 	}
 
 	int pngf=0;
-	int pngb=8;
 	int cs=0;
 
 

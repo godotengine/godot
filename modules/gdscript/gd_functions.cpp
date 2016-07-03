@@ -502,7 +502,6 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 			Ref<FuncRef> fr = memnew( FuncRef);
 
-			Object *obj = *p_args[0];
 			fr->set_instance(*p_args[0]);
 			fr->set_function(*p_args[1]);
 

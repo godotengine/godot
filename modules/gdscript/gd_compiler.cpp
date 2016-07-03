@@ -460,7 +460,6 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 						const GDParser::Node *instance = on->arguments[0];
 
-						bool in_static=false;
 						if (instance->type==GDParser::Node::TYPE_SELF) {
 							//room for optimization
 
@@ -771,8 +770,6 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 						Vector<int> setchain;
 
-						int prev_key_idx=-1;
-
 						for(List<GDParser::OperatorNode*>::Element *E=chain.back();E;E=E->prev()) {
 
 
@@ -822,7 +819,6 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 							setchain.push_back(named ? GDFunction::OPCODE_SET_NAMED : GDFunction::OPCODE_SET);
 
 							prev_pos=dst_pos;
-							prev_key_idx=key_idx;
 
 						}
 
@@ -1211,7 +1207,6 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 
 	if (p_func) {
 		for(int i=0;i<p_func->arguments.size();i++) {
-			int idx = i;
 			codegen.add_stack_identifier(p_func->arguments[i],i);
 #ifdef TOOLS_ENABLED
 			argnames.push_back(p_func->arguments[i]);
@@ -1449,7 +1444,6 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 	p_script->name=p_class->name;
 
 
-	int index_from=0;
 	Ref<GDNativeClass> native;
 
 	if (p_class->extends_used) {

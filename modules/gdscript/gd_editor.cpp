@@ -449,57 +449,21 @@ static Ref<Reference> _get_parent_class(GDCompletionContext& context) {
 			}
 
 			String base=context._class->extends_class[0];
-			const GDParser::ClassNode *p = context._class->owner;
-			Ref<GDScript> base_class;
-#if 0
-			while(p) {
 
-				if (p->subclasses.has(base)) {
+			if (context._class->extends_class.size()>1) {
 
-					base_class=p->subclasses[base];
-					break;
-				}
-				p=p->_owner;
+				return REF();
+
 			}
-#endif
-			if (base_class.is_valid()) {
-#if 0
-				for(int i=1;i<context._class->extends_class.size();i++) {
+			//if not found, try engine classes
+			if (!GDScriptLanguage::get_singleton()->get_global_map().has(base)) {
 
-					String subclass=context._class->extends_class[i];
-
-					if (base_class->subclasses.has(subclass)) {
-
-						base_class=base_class->subclasses[subclass];
-					} else {
-
-						//print_line("Could not find subclass: "+subclass);
-						return _get_type_from_class(context); //fail please
-					}
-				}
-
-				script=base_class;
-#endif
-
-			} else {
-
-				if (context._class->extends_class.size()>1) {
-
-					return REF();
-
-
-				}
-				//if not found, try engine classes
-				if (!GDScriptLanguage::get_singleton()->get_global_map().has(base)) {
-
-					return REF();
-				}
-
-				int base_idx = GDScriptLanguage::get_singleton()->get_global_map()[base];
-				native = GDScriptLanguage::get_singleton()->get_global_array()[base_idx];
-				return native;
+				return REF();
 			}
 
+			int base_idx = GDScriptLanguage::get_singleton()->get_global_map()[base];
+			native = GDScriptLanguage::get_singleton()->get_global_array()[base_idx];
+			return native;
 
 		}
 
@@ -2100,10 +2064,8 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 }
 
 Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base_path, Object*p_owner, List<String>* r_options, String &r_call_hint) {
-	//print_line( p_code.replace(String::chr(0xFFFF),"<cursor>"));
 
 	GDParser p;
-	//Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="",bool p_for_completion=false);
 
 	Error err = p.parse(p_code,p_base_path,false,"",true);
 	bool isfunction=false;
@@ -2204,7 +2166,6 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 								if (code!="") {
 									//if there is code, parse it. This way is slower but updates in real-time
 									GDParser p;
-									//Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="",bool p_for_completion=false);
 
 									Error err = p.parse(scr->get_source_code(),scr->get_path().get_base_dir(),true,"",false);
 

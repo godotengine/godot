@@ -129,6 +129,8 @@ static Image _jpegd_mem_loader_func(const uint8_t* p_png,int p_size) {
 
 	Image img;
 	Error err = jpeg_load_image_from_buffer(&img,p_png,p_size);
+	if (err)
+		ERR_PRINT("Couldn't initialize ImageLoaderJPG with the given resource.");
 
 	return img;
 }
