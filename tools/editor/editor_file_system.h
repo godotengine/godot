@@ -236,6 +236,7 @@ public:
 	EditorFileSystemDirectory *get_path(const String& p_path);
 	String get_file_type(const String& p_file) const;
 	EditorFileSystemDirectory* find_file(const String& p_file,int* r_index) const;
+
 	EditorFileSystem();
 	~EditorFileSystem();
 };

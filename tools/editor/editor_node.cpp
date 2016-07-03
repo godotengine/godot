@@ -2846,6 +2846,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				if (mt!=E->get()->get_last_modified_time()) {
 					E->get()->reload_from_file();
 				}
+
 			}
 
 

@@ -34,6 +34,7 @@
 #include "editor_node.h"
 #include "io/resource_saver.h"
 #include "editor_settings.h"
+#include "editor_resource_preview.h"
 
 EditorFileSystem *EditorFileSystem::singleton=NULL;
 
@@ -848,6 +849,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const S
 			continue;
 
 		}
+
 		if (_check_meta_sources(p_dir->files[i]->meta)) {
 			ItemAction ia;
 			ia.action=ItemAction::ACTION_FILE_SOURCES_CHANGED;
@@ -858,6 +860,8 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const S
 		} else {
 			p_dir->files[i]->meta.sources_changed=false;
 		}
+
+		EditorResourcePreview::get_singleton()->check_for_invalidation(p_dir->get_file_path(i));
 	}
 
 	for(int i=0;i<p_dir->subdirs.size();i++) {
@@ -1328,6 +1332,7 @@ void EditorFileSystem::update_file(const String& p_file) {
 	fs->files[cpos]->modified_time=FileAccess::get_modified_time(p_file);
 	fs->files[cpos]->meta=_get_meta(p_file);
 
+	EditorResourcePreview::get_singleton()->call_deferred("check_for_invalidation",p_file);
 	call_deferred("emit_signal","filesystem_changed"); //update later
 
 }
@@ -1340,6 +1345,8 @@ void EditorFileSystem::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("sources_changed",PropertyInfo(Variant::BOOL,"exist")) );
 
 }
+
+
 
 EditorFileSystem::EditorFileSystem() {
 

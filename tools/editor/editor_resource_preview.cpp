@@ -66,16 +66,20 @@ void EditorResourcePreview::_preview_ready(const String& p_str,const Ref<Texture
 
 	String path = p_str;
 	uint32_t hash=0;
+	uint64_t modified_time=0;
 
 	if (p_str.begins_with("ID:")) {
 		hash=p_str.get_slicec(':',2).to_int();
 		path="ID:"+p_str.get_slicec(':',1);
+	} else {
+		modified_time = FileAccess::get_modified_time(path);
 	}
 
 	Item item;
 	item.order=order++;
 	item.preview=p_texture;
 	item.last_hash=hash;
+	item.modified_time=modified_time;
 
 	cache[path]=item;
 
@@ -263,6 +267,8 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource>& p
 	preview_mutex->lock();
 
 	String path_id = "ID:"+itos(p_res->get_instance_ID());
+
+
 	if (cache.has(path_id) && cache[path_id].last_hash==p_res->hash_edited_version()) {
 
 		cache[path_id].order=order++;
@@ -271,6 +277,8 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource>& p
 		return;
 
 	}
+
+	cache.erase(path_id); //erase if exists, since it will be regen
 
 	//print_line("send to thread "+p_path);
 	QueueItem item;
@@ -322,6 +330,32 @@ EditorResourcePreview* EditorResourcePreview::get_singleton() {
 void EditorResourcePreview::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_preview_ready",&EditorResourcePreview::_preview_ready);
+	ObjectTypeDB::bind_method(_MD("check_for_invalidation","path"),&EditorResourcePreview::check_for_invalidation);
+
+
+	ADD_SIGNAL(MethodInfo("preview_invalidated",PropertyInfo(Variant::STRING,"path")));
+}
+
+bool EditorResourcePreview::check_for_invalidation(const String& p_path) {
+
+	preview_mutex->lock();
+
+	bool call_invalidated=false;
+	if (cache.has(p_path)) {
+
+		uint64_t modified_time = FileAccess::get_modified_time(p_path);
+		if (modified_time!=cache[p_path].modified_time) {
+			cache.erase(p_path);
+			call_invalidated=true;
+		}
+	}
+
+	preview_mutex->unlock();
+
+	if (call_invalidated) {//do outside mutex
+		call_deferred("emit_signal","preview_invalidated",p_path);
+	}
+
 }
 
 EditorResourcePreview::EditorResourcePreview() {
