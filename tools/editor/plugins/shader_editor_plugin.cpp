@@ -499,7 +499,7 @@ ShaderEditor::ShaderEditor() {
 	edit_menu->set_pos(Point2(5,-1));
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/undo", TTR("Undo"), KEY_MASK_CMD|KEY_Z), EDIT_UNDO);
-	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/redo", TTR("Redo"), KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_Z), EDIT_REDO);
+	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/redo", TTR("Redo"), KEY_MASK_CMD|KEY_Y), EDIT_REDO);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/cut", TTR("Cut"), KEY_MASK_CMD|KEY_X), EDIT_CUT);
 	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy", TTR("Copy"), KEY_MASK_CMD|KEY_C), EDIT_COPY);
@@ -519,7 +519,7 @@ ShaderEditor::ShaderEditor() {
 	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/replace", TTR("Replace.."), KEY_MASK_CMD|KEY_R), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
 //	search_menu->get_popup()->add_item("Locate Symbol..",SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
-	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/goto_line", TTR("Goto Line.."), KEY_MASK_CMD|KEY_G), SEARCH_GOTO_LINE);
+	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/goto_line", TTR("Goto Line.."), KEY_MASK_CMD|KEY_L), SEARCH_GOTO_LINE);
 	search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 
