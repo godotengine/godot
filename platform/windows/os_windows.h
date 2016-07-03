@@ -104,6 +104,8 @@ class OS_Windows : public OS {
 	HINSTANCE	hInstance;		// Holds The Instance Of The Application
 	HWND hWnd;
 
+	uint32_t move_timer_id;
+
 	HCURSOR hCursor;
 
 	Size2 window_rect;
