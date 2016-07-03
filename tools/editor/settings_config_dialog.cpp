@@ -97,11 +97,24 @@ void EditorSettingsDialog::_clear_search_box() {
 	property_editor->get_property_editor()->update_tree();
 }
 
+void EditorSettingsDialog::_clear_shortcut_search_box() {
+	if (shortcut_search_box->get_text()=="")
+		return;
+
+	shortcut_search_box->clear();
+}
+
+void EditorSettingsDialog::_filter_shortcuts(const String& p_filter) {
+	shortcut_filter = p_filter;
+	_update_shortcuts();
+}
+
 void EditorSettingsDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		clear_button->set_icon(get_icon("Close","EditorIcons"));
+		shortcut_clear_button->set_icon(get_icon("Close","EditorIcons"));
 	}
 }
 
@@ -137,26 +150,30 @@ void EditorSettingsDialog::_update_shortcuts() {
 			sections[section_name]=section;
 			section->set_custom_bg_color(0,get_color("prop_subsection","Editor"));
 			section->set_custom_bg_color(1,get_color("prop_subsection","Editor"));
-
 		}
 
-		TreeItem *item = shortcuts->create_item(section);
+		if (shortcut_filter.is_subsequence_ofi(sc->get_name())) {
+			TreeItem *item = shortcuts->create_item(section);
 
-
-		item->set_text(0,sc->get_name());
-		item->set_text(1,sc->get_as_text());
-		if (!sc->is_shortcut(original) && !(sc->get_shortcut().type==InputEvent::NONE && original.type==InputEvent::NONE)) {
-			item->add_button(1,get_icon("Reload","EditorIcons"),2);
+			item->set_text(0,sc->get_name());
+			item->set_text(1,sc->get_as_text());
+			if (!sc->is_shortcut(original) && !(sc->get_shortcut().type==InputEvent::NONE && original.type==InputEvent::NONE)) {
+				item->add_button(1,get_icon("Reload","EditorIcons"),2);
+			}
+			item->add_button(1,get_icon("Edit","EditorIcons"),0);
+			item->add_button(1,get_icon("Close","EditorIcons"),1);
+			item->set_tooltip(0,E->get());
+			item->set_metadata(0,E->get());
 		}
-		item->add_button(1,get_icon("Edit","EditorIcons"),0);
-		item->add_button(1,get_icon("Close","EditorIcons"),1);
-		item->set_tooltip(0,E->get());
-		item->set_metadata(0,E->get());
 	}
 
-
-
-
+	// remove sections with no shortcuts
+	for(Map<String,TreeItem*>::Element *E=sections.front();E;E=E->next()) {
+		TreeItem *section = E->get();
+		if (section->get_children() == NULL) {
+			root->remove_child(section);
+		}
+	}
 }
 
 void EditorSettingsDialog::_shortcut_button_pressed(Object* p_item,int p_column,int p_idx) {
@@ -265,7 +282,9 @@ void EditorSettingsDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_settings_save"),&EditorSettingsDialog::_settings_save);
 	ObjectTypeDB::bind_method(_MD("_settings_changed"),&EditorSettingsDialog::_settings_changed);
 	ObjectTypeDB::bind_method(_MD("_clear_search_box"),&EditorSettingsDialog::_clear_search_box);
+	ObjectTypeDB::bind_method(_MD("_clear_shortcut_search_box"),&EditorSettingsDialog::_clear_shortcut_search_box);
 	ObjectTypeDB::bind_method(_MD("_shortcut_button_pressed"),&EditorSettingsDialog::_shortcut_button_pressed);
+	ObjectTypeDB::bind_method(_MD("_filter_shortcuts"),&EditorSettingsDialog::_filter_shortcuts);
 	ObjectTypeDB::bind_method(_MD("_update_shortcuts"),&EditorSettingsDialog::_update_shortcuts);
 	ObjectTypeDB::bind_method(_MD("_press_a_key_confirm"),&EditorSettingsDialog::_press_a_key_confirm);
 	ObjectTypeDB::bind_method(_MD("_wait_for_key"),&EditorSettingsDialog::_wait_for_key);
@@ -310,6 +329,23 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);
 	vbc->set_name(TTR("Shortcuts"));
+
+	hbc = memnew( HBoxContainer );
+	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc->add_child(hbc);
+
+	l = memnew( Label );
+	l->set_text(TTR("Search:")+" ");
+	hbc->add_child(l);
+
+	shortcut_search_box = memnew( LineEdit );
+	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hbc->add_child(shortcut_search_box);
+	shortcut_search_box->connect("text_changed", this, "_filter_shortcuts");
+
+	shortcut_clear_button = memnew( ToolButton );
+	hbc->add_child(shortcut_clear_button);
+	shortcut_clear_button->connect("pressed",this,"_clear_shortcut_search_box");
 
 	shortcuts = memnew( Tree );
 	vbc->add_margin_child("Shortcut List:",shortcuts,true);

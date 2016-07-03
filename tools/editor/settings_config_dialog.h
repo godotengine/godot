@@ -45,7 +45,9 @@ class EditorSettingsDialog : public AcceptDialog {
 	TabContainer *tabs;
 
 	LineEdit *search_box;
+	LineEdit *shortcut_search_box;
 	ToolButton *clear_button;
+	ToolButton *shortcut_clear_button;
 	SectionedPropertyEditor *property_editor;
 
 	Timer *timer;
@@ -56,6 +58,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	Label *press_a_key_label;
 	InputEvent last_wait_for_key;
 	String shortcut_configured;
+	String shortcut_filter;
 
 	virtual void cancel_pressed();
 	virtual void ok_pressed();
@@ -69,7 +72,10 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _press_a_key_confirm();
 	void _wait_for_key(const InputEvent& p_event);
 
+	void _clear_shortcut_search_box();
 	void _clear_search_box();
+
+	void _filter_shortcuts(const String& p_filter);
 
 	void _update_shortcuts();
 	void _shortcut_button_pressed(Object* p_item,int p_column,int p_idx);
