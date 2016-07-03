@@ -4140,6 +4140,11 @@ void TextEdit::_update_completion_candidates() {
 	int ci_match=0;
 	Vector<float> sim_cache;
 	for(int i=0;i<completion_strings.size();i++) {
+		if (s == completion_strings[i]) {
+			// A perfect match, stop completion
+			_cancel_completion();
+			return;
+		}
 		if (s.is_subsequence_ofi(completion_strings[i])) {
 			// don't remove duplicates if no input is provided
 			if (s != "" && completion_options.find(completion_strings[i]) != -1) {
