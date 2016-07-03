@@ -4146,7 +4146,15 @@ void TextEdit::_update_completion_candidates() {
 				continue;
 			}
 			// Calculate the similarity to keep completions in good order
-			float similarity = s.similarity(completion_strings[i]);
+			float similarity;
+			if (completion_strings[i].to_lower().begins_with(s.to_lower())) {
+				// Substrings are the best candidates
+				similarity = 1.1;
+			} else {
+				// Otherwise compute the similarity
+				similarity = s.to_lower().similarity(completion_strings[i].to_lower());
+			}
+
 			int comp_size = completion_options.size();
 			if (comp_size == 0) {
 				completion_options.push_back(completion_strings[i]);
@@ -4156,8 +4164,8 @@ void TextEdit::_update_completion_candidates() {
 				int pos = 0;
 				do {
 					comp_sim = sim_cache[pos++];
-				} while(pos < comp_size && similarity <= comp_sim);
-				pos--; // Pos will be off by one
+				} while(pos < comp_size && similarity < comp_sim);
+				pos = similarity > comp_sim ? pos - 1 : pos; // Pos will be off by one
 				completion_options.insert(pos, completion_strings[i]);
 				sim_cache.insert(pos, similarity);
 			}
