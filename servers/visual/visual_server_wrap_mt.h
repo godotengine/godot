@@ -680,7 +680,7 @@ public:
 
 	/* CURSOR */
 	FUNC2(cursor_set_rotation,float , int ); // radians
-	FUNC3(cursor_set_texture,RID , const Point2 &, int );
+	FUNC4(cursor_set_texture,RID , const Point2 &, int, const Rect2 &);
 	FUNC2(cursor_set_visible,bool , int );
 	FUNC2(cursor_set_pos,const Point2& , int );
 
