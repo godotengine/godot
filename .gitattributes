@@ -1,5 +1,6 @@
 # Properly detect languages on Github
 *.h linguist-language=cpp
+*.inc linguist-language=cpp
 drivers/* linguist-vendored
 
 *.cpp eol=lf
