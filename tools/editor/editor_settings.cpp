@@ -104,12 +104,17 @@ bool EditorSettings::_get(const StringName& p_name,Variant &r_ret) const {
 		for (const Map<String,Ref<ShortCut> >::Element *E=shortcuts.front();E;E=E->next()) {
 
 			Ref<ShortCut> sc=E->get();
-			if (!sc->has_meta("original"))
-				continue; //this came from settings but is not any longer used
 
-			InputEvent original = sc->get_meta("original");
-			if (sc->is_shortcut(original) || (original.type==InputEvent::NONE && sc->get_shortcut().type==InputEvent::NONE))
-				continue; //not changed from default, don't save
+			if (optimize_save) {
+				if (!sc->has_meta("original")) {
+					continue; //this came from settings but is not any longer used
+				}
+
+				InputEvent original = sc->get_meta("original");
+				if (sc->is_shortcut(original) || (original.type==InputEvent::NONE && sc->get_shortcut().type==InputEvent::NONE))
+					continue; //not changed from default, don't save
+			}
+
 			arr.push_back(E->key());
 			arr.push_back(sc->get_shortcut());
 		}
@@ -161,7 +166,7 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	for(Set<_EVCSort>::Element *E=vclist.front();E;E=E->next()) {
 
 		int pinfo = 0;
-		if (E->get().save) {
+		if (E->get().save || !optimize_save) {
 			pinfo|=PROPERTY_USAGE_STORAGE;
 		}
 
@@ -976,6 +981,10 @@ void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
 	}
 }
 
+void EditorSettings::set_optimize_save(bool p_optimize) {
+
+	optimize_save=true;
+}
 
 void EditorSettings::_bind_methods() {
 
@@ -998,6 +1007,7 @@ EditorSettings::EditorSettings() {
 
 	//singleton=this;
 	last_order=0;
+	optimize_save=true;
 	save_changed_setting=true;
 
 	EditorTranslationList *etl=_editor_translations;

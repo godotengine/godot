@@ -830,6 +830,9 @@ ProjectManager::ProjectManager() {
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
 
+
+	EditorSettings::get_singleton()->set_optimize_save(false); //just write settings as they came
+
 	{
 		int dpi_mode = EditorSettings::get_singleton()->get("global/hidpi_mode");
 		if (dpi_mode==0) {

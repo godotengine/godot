@@ -88,6 +88,7 @@ private:
 
 	bool save_changed_setting;
 
+	bool optimize_save; //do not save stuff that came from config but was not set from engine
 
 	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
 	void _load_default_text_editor_theme();
@@ -154,6 +155,8 @@ public:
 	bool is_shortcut(const String&p_name,const InputEvent& p_event) const;
 	Ref<ShortCut> get_shortcut(const String&p_name) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
+
+	void set_optimize_save(bool p_optimize);
 
 	EditorSettings();
 	~EditorSettings();
