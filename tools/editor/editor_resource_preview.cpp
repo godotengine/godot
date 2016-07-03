@@ -356,6 +356,8 @@ void EditorResourcePreview::check_for_invalidation(const String& p_path) {
 		call_deferred("emit_signal","preview_invalidated",p_path);
 	}
 
+	return call_invalidated;
+
 }
 
 EditorResourcePreview::EditorResourcePreview() {
