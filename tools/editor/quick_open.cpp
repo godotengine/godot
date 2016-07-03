@@ -109,16 +109,16 @@ void EditorQuickOpen::_sbox_input(const InputEvent& p_ie) {
 
 }
 
-void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
+void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector< Pair< String, Ref<Texture> > > &list) {
 
 	if (!add_directories) {
 		for(int i=0;i<efsd->get_subdir_count();i++) {
 
-			_parse_fs(efsd->get_subdir(i));
+			_parse_fs(efsd->get_subdir(i), list);
 		}
 	}
 
-	TreeItem *root = search_options->get_root();
+	String search_text = search_box->get_text();
 
 	if (add_directories) {
 		String path = efsd->get_path();
@@ -126,11 +126,26 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 			path+="/";
 		if (path!="res://") {
 			path=path.substr(6,path.length());
-			if (search_box->get_text().is_subsequence_ofi(path)) {
-				TreeItem *ti = search_options->create_item(root);
-				ti->set_text(0,path);
-				Ref<Texture> icon = get_icon("folder","FileDialog");
-				ti->set_icon(0,icon);
+			if (search_text.is_subsequence_ofi(path)) {
+				Pair< String, Ref<Texture> > pair;
+				pair.first = path;
+				pair.second = get_icon("folder", "FileDialog");
+				if (list.size() > 0) {
+
+					float this_sim = search_text.to_lower().similarity(path.to_lower());
+					float other_sim = search_text.to_lower().similarity(list[0].first.to_lower());
+					int pos = 1;
+
+					while (pos < list.size() && this_sim < other_sim) {
+						other_sim = search_text.to_lower().similarity(list[pos++].first.to_lower());
+					}
+
+					pos = this_sim > other_sim ? pos - 1 : pos;
+					list.insert(pos, pair);
+
+				} else {
+					list.push_back(pair);
+				}
 			}
 		}
 	}
@@ -138,12 +153,29 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 
 		String file = efsd->get_file_path(i);
 		file=file.substr(6,file.length());
-		if (ObjectTypeDB::is_type(efsd->get_file_type(i),base_type) && (search_box->get_text().is_subsequence_ofi(file))) {
 
-			TreeItem *ti = search_options->create_item(root);
-			ti->set_text(0,file);
-			Ref<Texture> icon = get_icon( (has_icon(efsd->get_file_type(i),ei)?efsd->get_file_type(i):ot),ei);
-			ti->set_icon(0,icon);
+		if (ObjectTypeDB::is_type(efsd->get_file_type(i),base_type) && (search_text.is_subsequence_ofi(file))) {
+			Pair< String, Ref<Texture> > pair;
+			pair.first = file;
+			pair.second = get_icon((has_icon(efsd->get_file_type(i), ei) ? efsd->get_file_type(i) : ot), ei);
+
+			if (list.size() > 0) {
+
+				float this_sim = search_text.to_lower().similarity(file.to_lower());
+				float other_sim = search_text.to_lower().similarity(list[0].first.to_lower());
+				int pos = 1;
+
+				while (pos < list.size() && this_sim < other_sim) {
+					other_sim = search_text.to_lower().similarity(list[pos++].first.to_lower());
+				}
+
+				pos = this_sim > other_sim ? pos - 1 : pos;
+				list.insert(pos, pair);
+
+			} else {
+
+				list.push_back(pair);
+			}
 		}
 	}
 
@@ -151,7 +183,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 	if (add_directories) {
 		for(int i=0;i<efsd->get_subdir_count();i++) {
 
-			_parse_fs(efsd->get_subdir(i));
+			_parse_fs(efsd->get_subdir(i), list);
 		}
 	}
 
@@ -159,10 +191,20 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 
 void EditorQuickOpen::_update_search() {
 
-
 	search_options->clear();
 	TreeItem *root = search_options->create_item();
-	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
+	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem();
+	Vector< Pair< String, Ref<Texture> > > list;
+
+	_parse_fs(efsd, list);
+
+	//String best_match = list[0];
+
+	for (int i = 0; i < list.size(); i++) {
+		TreeItem *ti = search_options->create_item(root);
+		ti->set_text(0, list[i].first);
+		ti->set_icon(0, list[i].second);
+	}
 
 	if (root->get_children()) {
 		TreeItem *ti = root->get_children();
