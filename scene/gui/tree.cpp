@@ -2279,7 +2279,7 @@ void Tree::_input_event(InputEvent p_event) {
 				update();
 			}
 
-			if (pressing_for_editor && popup_edited_item && popup_edited_item->get_cell_mode(popup_edited_item_col)==TreeItem::CELL_MODE_RANGE) {
+			if (pressing_for_editor && popup_edited_item &&	(popup_edited_item->get_cell_mode(popup_edited_item_col)==TreeItem::CELL_MODE_RANGE || popup_edited_item->get_cell_mode(popup_edited_item_col)==TreeItem::CELL_MODE_RANGE_EXPRESSION)) {
 				//range drag
 
 				if (!range_drag_enabled) {
