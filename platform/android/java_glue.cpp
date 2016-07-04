@@ -238,6 +238,10 @@ String _get_class_name(JNIEnv * env, jclass cls, bool* array) {
 
 Variant _jobject_to_variant(JNIEnv * env, jobject obj) {
 
+	if (obj == NULL) {
+		return Variant();
+	}
+	
 	jclass c = env->GetObjectClass(obj);
 	bool array;
 	String name = _get_class_name(env, c, &array);
