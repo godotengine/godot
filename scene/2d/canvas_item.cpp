@@ -256,6 +256,17 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
 }
 
+void CanvasItem::set_visible(bool p_visible)
+{
+	if (p_visible == !hidden)
+		return;
+
+	if (p_visible)
+		show();
+	else
+		hide();
+}
+
 void CanvasItem::show() {
 
 	if (!hidden)
@@ -992,6 +1003,7 @@ void CanvasItem::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("is_visible"),&CanvasItem::is_visible);
 	ObjectTypeDB::bind_method(_MD("is_hidden"),&CanvasItem::is_hidden);
+	ObjectTypeDB::bind_method(_MD("set_visible","visible"),&CanvasItem::set_visible);
 	ObjectTypeDB::bind_method(_MD("show"),&CanvasItem::show);
 	ObjectTypeDB::bind_method(_MD("hide"),&CanvasItem::hide);
 	ObjectTypeDB::bind_method(_MD("set_hidden","hidden"),&CanvasItem::set_hidden);
