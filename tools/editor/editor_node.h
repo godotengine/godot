@@ -762,7 +762,7 @@ public:
 		plugins_list = p_plugins_list;
 	}
 
-	Vector<EditorPlugin*> get_plugins_list() {
+	Vector<EditorPlugin*>& get_plugins_list() {
 		return plugins_list;
 	}
 
