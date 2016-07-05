@@ -121,7 +121,7 @@ public:
 	void queue_edited_resource_preview(const Ref<Resource>& p_path, Object* p_receiver, const StringName& p_receiver_func, const Variant& p_userdata);
 
 	void add_preview_generator(const Ref<EditorResourcePreviewGenerator>& p_generator);
-	void check_for_invalidation(const String& p_path);
+	bool check_for_invalidation(const String& p_path);
 
 	EditorResourcePreview();
 	~EditorResourcePreview();
