@@ -22729,6 +22729,11 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="request_attention">
+			<description>
+			Request the user attention to the window. It'll flash the taskbar button on Windows or bounce the dock icon on OSX.
+			</description>
+		</method>
 		<method name="set_borderless_window">
 			<argument index="0" name="borderless" type="bool">
 			</argument>

@@ -1683,6 +1683,17 @@ bool OS_Windows::get_borderless_window() {
 	return video_mode.borderless_window;
 }
 
+void OS_Windows::request_attention() {
+
+	FLASHWINFO info;
+	info.cbSize = sizeof(FLASHWINFO);
+	info.hwnd = hWnd;
+	info.dwFlags = FLASHW_TRAY;
+	info.dwTimeout = 0;
+	info.uCount = 2;
+	FlashWindowEx(&info);
+}
+
 void OS_Windows::print_error(const char* p_function, const char* p_file, int p_line, const char* p_code, const char* p_rationale, ErrorType p_type) {
 
 	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);

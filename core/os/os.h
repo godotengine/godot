@@ -174,6 +174,7 @@ public:
 	virtual bool is_window_minimized() const { return false; }
 	virtual void set_window_maximized(bool p_enabled) {}
 	virtual bool is_window_maximized() const { return true; }
+	virtual void request_attention() { }
 
 	virtual void set_borderless_window(int p_borderless) {}
 	virtual bool get_borderless_window() { return 0; }
