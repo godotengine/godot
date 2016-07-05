@@ -57,18 +57,20 @@ protected:
 
 public:
 
-
-
 	void add_sample(const StringName& p_name, const Ref<Sample>& p_sample);
+	void remove_sample(const StringName& p_name);
 	bool has_sample(const StringName& p_name) const;
+	Ref<Sample> get_sample(const StringName& p_name) const;
+
+	Array get_sample_names();
+	int get_sample_count() const;
+	void get_sample_list(List<StringName> *p_samples);
+	StringName get_sample_idx(int p_idx) const;
+
 	void sample_set_volume_db(const StringName& p_name, float p_db);
 	float sample_get_volume_db(const StringName& p_name) const;
 	void sample_set_pitch_scale(const StringName& p_name, float p_pitch);
 	float sample_get_pitch_scale(const StringName& p_name) const;
-	Ref<Sample> get_sample(const StringName& p_name) const;
-	void get_sample_list(List<StringName> *p_samples);
-	void remove_sample(const StringName& p_name);
-	StringName get_sample_idx(int p_idx) const;
 
 	SampleLibrary();
 };
