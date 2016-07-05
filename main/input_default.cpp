@@ -101,7 +101,7 @@ bool InputDefault::is_action_pressed(const StringName& p_action) {
 
 	const List<InputEvent> *alist = InputMap::get_singleton()->get_action_list(p_action);
 	if (!alist)
-		return NULL;
+		return false;
 
 
 	for (const List<InputEvent>::Element *E=alist->front();E;E=E->next()) {
@@ -220,18 +220,18 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 			};
 		};
 		js.uid = uidname;
-		//printf("looking for mappings for guid %ls\n", uidname.c_str());
+		js.connected = true;
 		int mapping = fallback_mapping;
 		for (int i=0; i < map_db.size(); i++) {
 			if (js.uid == map_db[i].uid) {
 				mapping = i;
 				js.name = map_db[i].name;
-				//printf("found mapping\n");
 			};
 		};
 		js.mapping = mapping;
 	}
 	else {
+		js.connected = false;
 		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
 
 			if (i < JOY_AXIS_MAX)
@@ -1038,4 +1038,16 @@ bool InputDefault::is_joy_mapped(int p_device) {
 
 String InputDefault::get_joy_guid_remapped(int p_device) const {
 	return joy_names[p_device].uid;
+}
+
+Array InputDefault::get_connected_joysticks() {
+	Array ret;
+	Map<int, Joystick>::Element *elem = joy_names.front();
+	while (elem) {
+		if (elem->get().connected) {
+			ret.push_back(elem->key());
+		}
+		elem = elem->next();
+	}
+	return ret;
 }

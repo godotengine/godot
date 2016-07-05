@@ -15965,6 +15965,13 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			If the device has an accelerometer, this will return the movement.
 			</description>
 		</method>
+		<method name="get_connected_joysticks">
+			<return type="Array">
+			</return>
+			<description>
+			Returns an [Array] containing the device IDs of all currently connected joysticks.
+			</description>
+		</method>
 		<method name="get_joy_axis">
 			<return type="float">
 			</return>

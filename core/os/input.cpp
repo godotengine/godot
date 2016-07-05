@@ -59,6 +59,7 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_joy_axis","device","axis"),&Input::get_joy_axis);
 	ObjectTypeDB::bind_method(_MD("get_joy_name","device"),&Input::get_joy_name);
 	ObjectTypeDB::bind_method(_MD("get_joy_guid","device"),&Input::get_joy_guid);
+	ObjectTypeDB::bind_method(_MD("get_connected_joysticks"),&Input::get_connected_joysticks);
 	ObjectTypeDB::bind_method(_MD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
 	ObjectTypeDB::bind_method(_MD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
 	ObjectTypeDB::bind_method(_MD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
