@@ -6919,7 +6919,7 @@
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
-			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array()">
+			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array([])">
 			</argument>
 			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
@@ -6945,7 +6945,7 @@
 			</argument>
 			<argument index="1" name="colors" type="ColorArray">
 			</argument>
-			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array()">
+			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array([])">
 			</argument>
 			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
@@ -15232,7 +15232,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</return>
 			<argument index="0" name="url" type="String">
 			</argument>
-			<argument index="1" name="custom_headers" type="StringArray" default="StringArray()">
+			<argument index="1" name="custom_headers" type="StringArray" default="StringArray([])">
 			</argument>
 			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
 			</argument>
@@ -18973,6 +18973,18 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="get_placeholder" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_placeholder_alpha" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_text" qualifiers="const">
 			<return type="String">
 			</return>
@@ -19038,6 +19050,18 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 			Set the maximum amount of characters the [LineEdit] can edit, and cropping existing text in case it exceeds that limit. Setting 0 removes the limit.
+			</description>
+		</method>
+		<method name="set_placeholder">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_placeholder_alpha">
+			<argument index="0" name="alpha" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_secret">
@@ -21631,6 +21655,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Return [i]true[/i] if the "node" argument is a direct or indirect child of the current node, otherwise return [i]false[/i].
 			</description>
 		</method>
+		<method name="is_displayed_folded" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_fixed_processing" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -21748,6 +21778,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 			Replace a node in a scene by a given one. Subscriptions that pass through this node will be lost.
+			</description>
+		</method>
+		<method name="set_display_folded">
+			<argument index="0" name="fold" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_filename">
@@ -32754,6 +32790,20 @@ A similar effect may be achieved moving this node's descendants.
 			Return the sample from the library matching the given text ID. Return null if the sample is not found.
 			</description>
 		</method>
+		<method name="get_sample_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			Return the number of [Sample]s in this [SampleLibrary].
+			</description>
+		</method>
+		<method name="get_sample_names">
+			<return type="Array">
+			</return>
+			<description>
+			Return an [Array] of text IDs representing [Sample]s in this [SampleLibrary].
+			</description>
+		</method>
 		<method name="has_sample" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -38574,13 +38624,13 @@ A similar effect may be achieved moving this node's descendants.
 		<method name="add_triangle_fan">
 			<argument index="0" name="vertexes" type="Vector3Array">
 			</argument>
-			<argument index="1" name="uvs" type="Vector2Array" default="Vector2Array()">
+			<argument index="1" name="uvs" type="Vector2Array" default="Vector2Array([])">
 			</argument>
 			<argument index="2" name="colors" type="ColorArray" default="ColorArray([ColorArray])">
 			</argument>
-			<argument index="3" name="uv2s" type="Vector2Array" default="Vector2Array()">
+			<argument index="3" name="uv2s" type="Vector2Array" default="Vector2Array([])">
 			</argument>
-			<argument index="4" name="normals" type="Vector3Array" default="Vector3Array()">
+			<argument index="4" name="normals" type="Vector3Array" default="Vector3Array([])">
 			</argument>
 			<argument index="5" name="tangents" type="Array" default="Array()">
 			</argument>
@@ -38671,7 +38721,7 @@ A similar effect may be achieved moving this node's descendants.
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="accepted_hosts" type="StringArray" default="StringArray()">
+			<argument index="1" name="accepted_hosts" type="StringArray" default="StringArray([])">
 			</argument>
 			<description>
 			Listen on a port, alternatively give a white-list of accepted hosts.
@@ -42859,6 +42909,16 @@ A similar effect may be achieved moving this node's descendants.
 		<theme_item name="separation" type="int">
 		</theme_item>
 	</theme_items>
+</class>
+<class name="Variant" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
 </class>
 <class name="Vector2" category="Built-In Types">
 	<brief_description>
