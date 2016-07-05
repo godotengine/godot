@@ -760,115 +760,23 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="BUTTON_LEFT" value="1">
-			Left Mouse Button
+		<constant name="MARGIN_LEFT" value="0">
+			Left margin, used usually for [Control] or [StyleBox] derived classes.
 		</constant>
-		<constant name="BUTTON_MASK_LEFT" value="1">
+		<constant name="MARGIN_TOP" value="1">
+			Top margin, used usually for [Control] or [StyleBox] derived classes.
 		</constant>
-		<constant name="BUTTON_MASK_RIGHT" value="2">
+		<constant name="MARGIN_RIGHT" value="2">
+			Right margin, used usually for [Control] or [StyleBox] derived classes.
 		</constant>
-		<constant name="BUTTON_RIGHT" value="2">
-			Right Mouse Button
+		<constant name="MARGIN_BOTTOM" value="3">
+			Bottom margin, used usually for [Control] or [StyleBox] derived classes.
 		</constant>
-		<constant name="BUTTON_MIDDLE" value="3">
-			Middle Mouse Button
+		<constant name="VERTICAL" value="1">
+			General vertical alignment, used usually for [Separator], [ScrollBar], [Slider], etc.
 		</constant>
-		<constant name="BUTTON_MASK_MIDDLE" value="4">
-		</constant>
-		<constant name="BUTTON_WHEEL_UP" value="4">
-			Mouse wheel up
-		</constant>
-		<constant name="BUTTON_WHEEL_DOWN" value="5">
-			Mouse wheel down
-		</constant>
-		<constant name="BUTTON_WHEEL_LEFT" value="6">
-			Mouse wheel left button
-		</constant>
-		<constant name="BUTTON_WHEEL_RIGHT" value="7">
-			Mouse wheel right button
-		</constant>
-		<constant name="ERR_FILE_NO_PERMISSION" value="10">
-		</constant>
-		<constant name="ERR_FILE_ALREADY_IN_USE" value="11">
-		</constant>
-		<constant name="ERR_FILE_CANT_OPEN" value="12">
-		</constant>
-		<constant name="ERR_FILE_CANT_WRITE" value="13">
-		</constant>
-		<constant name="ERR_FILE_CANT_READ" value="14">
-		</constant>
-		<constant name="ERR_FILE_UNRECOGNIZED" value="15">
-		</constant>
-		<constant name="ERR_FILE_CORRUPT" value="16">
-		</constant>
-		<constant name="ERR_FILE_MISSING_DEPENDENCIES" value="17">
-		</constant>
-		<constant name="ERR_FILE_EOF" value="18">
-		</constant>
-		<constant name="ERR_CANT_OPEN" value="19">
-		</constant>
-		<constant name="ERR_UNAVAILABLE" value="2">
-		</constant>
-		<constant name="ERR_CANT_CREATE" value="20">
-		</constant>
-		<constant name="ERR_ALREADY_IN_USE" value="22">
-		</constant>
-		<constant name="ERR_LOCKED" value="23">
-		</constant>
-		<constant name="ERR_TIMEOUT" value="24">
-		</constant>
-		<constant name="ERR_CANT_AQUIRE_RESOURCE" value="28">
-		</constant>
-		<constant name="ERR_UNCONFIGURED" value="3">
-		</constant>
-		<constant name="ERR_INVALID_DATA" value="30">
-		</constant>
-		<constant name="ERR_INVALID_PARAMETER" value="31">
-		</constant>
-		<constant name="ERR_ALREADY_EXISTS" value="32">
-		</constant>
-		<constant name="ERR_DOES_NOT_EXIST" value="33">
-		</constant>
-		<constant name="ERR_DATABASE_CANT_READ" value="34">
-		</constant>
-		<constant name="ERR_DATABASE_CANT_WRITE" value="35">
-		</constant>
-		<constant name="ERR_COMPILATION_FAILED" value="36">
-		</constant>
-		<constant name="ERR_METHOD_NOT_FOUND" value="37">
-		</constant>
-		<constant name="ERR_LINK_FAILED" value="38">
-		</constant>
-		<constant name="ERR_SCRIPT_FAILED" value="39">
-		</constant>
-		<constant name="ERR_UNAUTHORIZED" value="4">
-		</constant>
-		<constant name="ERR_CYCLIC_LINK" value="40">
-		</constant>
-		<constant name="ERR_PARSE_ERROR" value="43">
-		</constant>
-		<constant name="ERR_BUSY" value="44">
-		</constant>
-		<constant name="ERR_HELP" value="46">
-		</constant>
-		<constant name="ERR_BUG" value="47">
-		</constant>
-		<constant name="ERR_WTF" value="49">
-		</constant>
-		<constant name="ERR_PARAMETER_RANGE_ERROR" value="5">
-		</constant>
-		<constant name="ERR_OUT_OF_MEMORY" value="6">
-		</constant>
-		<constant name="ERR_FILE_NOT_FOUND" value="7">
-		</constant>
-		<constant name="ERR_FILE_BAD_DRIVE" value="8">
-		</constant>
-		<constant name="ERR_FILE_BAD_PATH" value="9">
-		</constant>
-		<constant name="ERROR_QUERY_FAILED" value="21">
-		</constant>
-		<constant name="FAILED" value="1">
-			Generic fail return error.
+		<constant name="HORIZONTAL" value="0">
+			General horizontal alignment, used usually for [Separator], [ScrollBar], [Slider], etc.
 		</constant>
 		<constant name="HALIGN_LEFT" value="0">
 			Horizontal left alignment, usually for text-derived classes.
@@ -879,232 +787,17 @@
 		<constant name="HALIGN_RIGHT" value="2">
 			Horizontal right alignment, usually for text-derived classes.
 		</constant>
-		<constant name="HORIZONTAL" value="0">
-			General horizontal alignment, used usually for [Separator], [ScrollBar], [Slider], etc.
+		<constant name="VALIGN_TOP" value="0">
+			Vertical top alignment, usually for text-derived classes.
 		</constant>
-		<constant name="JOY_ANALOG_0_X" value="0">
-			Joystick Left Stick Horizontal Axis
+		<constant name="VALIGN_CENTER" value="1">
+			Vertical center alignment, usually for text-derived classes.
 		</constant>
-		<constant name="JOY_AXIS_0" value="0">
-			Joystick Left Stick Horizontal Axis
+		<constant name="VALIGN_BOTTOM" value="2">
+			Vertical bottom alignment, usually for text-derived classes.
 		</constant>
-		<constant name="JOY_BUTTON_0" value="0">
-			Joystick Button 0
-		</constant>
-		<constant name="JOY_DS_B" value="0">
-		</constant>
-		<constant name="JOY_SEGA_A" value="0">
-			SEGA controller A button
-		</constant>
-		<constant name="JOY_SNES_B" value="0">
-			Super Nintendo Entertaiment System controller B button
-		</constant>
-		<constant name="JOY_SONY_X" value="0">
-			DUALSHOCK X button
-		</constant>
-		<constant name="JOY_XBOX_A" value="0">
-			XBOX controller A button
-		</constant>
-		<constant name="JOY_ANALOG_0_Y" value="1">
-			Joystick Left Stick Vertical Axis
-		</constant>
-		<constant name="JOY_AXIS_1" value="1">
-			Joystick Left Stick Vertical Axis
-		</constant>
-		<constant name="JOY_BUTTON_1" value="1">
-			Joystick Button 1
-		</constant>
-		<constant name="JOY_DS_A" value="1">
-		</constant>
-		<constant name="JOY_SEGA_B" value="1">
-			SEGA controller B button
-		</constant>
-		<constant name="JOY_SNES_A" value="1">
-			Super Nintendo Entertaiment System controller A button
-		</constant>
-		<constant name="JOY_SONY_CIRCLE" value="1">
-			DUALSHOCK circle button
-		</constant>
-		<constant name="JOY_XBOX_B" value="1">
-			XBOX controller B button
-		</constant>
-		<constant name="JOY_BUTTON_10" value="10">
-			Joystick Button 10
-		</constant>
-		<constant name="JOY_SELECT" value="10">
-			Joystick Button Select
-		</constant>
-		<constant name="JOY_BUTTON_11" value="11">
-			Joystick Button 11
-		</constant>
-		<constant name="JOY_START" value="11">
-			Joystick Button Start
-		</constant>
-		<constant name="JOY_BUTTON_12" value="12">
-			Joystick Button 12
-		</constant>
-		<constant name="JOY_DPAD_UP" value="12">
-			Joystick DPad Up
-		</constant>
-		<constant name="JOY_BUTTON_13" value="13">
-			Joystick Button 13
-		</constant>
-		<constant name="JOY_DPAD_DOWN" value="13">
-			Joystick DPad Down
-		</constant>
-		<constant name="JOY_BUTTON_14" value="14">
-			Joystick Button 14
-		</constant>
-		<constant name="JOY_DPAD_LEFT" value="14">
-			Joystick DPad Left
-		</constant>
-		<constant name="JOY_BUTTON_15" value="15">
-			Joystick Button 15
-		</constant>
-		<constant name="JOY_DPAD_RIGHT" value="15">
-			Joystick DPad Right
-		</constant>
-		<constant name="JOY_BUTTON_MAX" value="16">
-			Joystick Button 16
-		</constant>
-		<constant name="JOY_ANALOG_1_X" value="2">
-			Joystick Right Stick Horizontal Axis
-		</constant>
-		<constant name="JOY_AXIS_2" value="2">
-			Joystick Right Stick Horizontal Axis
-		</constant>
-		<constant name="JOY_BUTTON_2" value="2">
-			Joystick Button 2
-		</constant>
-		<constant name="JOY_DS_Y" value="2">
-		</constant>
-		<constant name="JOY_SEGA_X" value="2">
-			SEGA controller X button
-		</constant>
-		<constant name="JOY_SNES_Y" value="2">
-			Super Nintendo Entertaiment System controller Y button
-		</constant>
-		<constant name="JOY_SONY_SQUARE" value="2">
-			DUALSHOCK square button
-		</constant>
-		<constant name="JOY_XBOX_X" value="2">
-			XBOX controller X button
-		</constant>
-		<constant name="JOY_ANALOG_1_Y" value="3">
-			Joystick Right Stick Vertical Axis
-		</constant>
-		<constant name="JOY_AXIS_3" value="3">
-			Joystick Right Stick Vertical Axis
-		</constant>
-		<constant name="JOY_BUTTON_3" value="3">
-			Joystick Button 3
-		</constant>
-		<constant name="JOY_DS_X" value="3">
-		</constant>
-		<constant name="JOY_SEGA_Y" value="3">
-			SEGA controller Y button
-		</constant>
-		<constant name="JOY_SNES_X" value="3">
-			Super Nintendo Entertaiment System controller X button
-		</constant>
-		<constant name="JOY_SONY_TRIANGLE" value="3">
-			DUALSHOCK triangle button
-		</constant>
-		<constant name="JOY_XBOX_Y" value="3">
-			XBOX controller Y button
-		</constant>
-		<constant name="JOY_ANALOG_2_X" value="4">
-		</constant>
-		<constant name="JOY_AXIS_4" value="4">
-		</constant>
-		<constant name="JOY_BUTTON_4" value="4">
-			Joystick Button 4
-		</constant>
-		<constant name="JOY_L" value="4">
-			Joystick Left Shoulder Button
-		</constant>
-		<constant name="JOY_ANALOG_2_Y" value="5">
-		</constant>
-		<constant name="JOY_AXIS_5" value="5">
-		</constant>
-		<constant name="JOY_BUTTON_5" value="5">
-			Joystick Button 5
-		</constant>
-		<constant name="JOY_R" value="5">
-			Joystick Right Shoulder Button
-		</constant>
-		<constant name="JOY_ANALOG_L2" value="6">
-		</constant>
-		<constant name="JOY_AXIS_6" value="6">
-			Joystick Left Trigger Analog Axis
-		</constant>
-		<constant name="JOY_BUTTON_6" value="6">
-			Joystick Button 6
-		</constant>
-		<constant name="JOY_L2" value="6">
-			Joystick Left Trigger
-		</constant>
-		<constant name="JOY_ANALOG_R2" value="7">
-		</constant>
-		<constant name="JOY_AXIS_7" value="7">
-			Joystick Right Trigger Analog Axis
-		</constant>
-		<constant name="JOY_BUTTON_7" value="7">
-			Joystick Button 7
-		</constant>
-		<constant name="JOY_R2" value="7">
-			Joystick Right Trigger
-		</constant>
-		<constant name="JOY_AXIS_MAX" value="8">
-		</constant>
-		<constant name="JOY_BUTTON_8" value="8">
-			Joystick Button 8
-		</constant>
-		<constant name="JOY_L3" value="8">
-			Joystick Left Stick Click
-		</constant>
-		<constant name="JOY_BUTTON_9" value="9">
-			Joystick Button 9
-		</constant>
-		<constant name="JOY_R3" value="9">
-			Joystick Right Stick Click
-		</constant>
-		<constant name="KEY_MODIFIER_MASK" value="-16777216">
-		</constant>
-		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824">
-		</constant>
-		<constant name="KEY_BRACELEFT" value="123">
-			{ key
-		</constant>
-		<constant name="KEY_BAR" value="124">
-			| key
-		</constant>
-		<constant name="KEY_BRACERIGHT" value="125">
-			} key
-		</constant>
-		<constant name="KEY_ASCIITILDE" value="126">
-			~ key
-		</constant>
-		<constant name="KEY_MASK_META" value="134217728">
-		</constant>
-		<constant name="KEY_NOBREAKSPACE" value="160">
-		</constant>
-		<constant name="KEY_EXCLAMDOWN" value="161">
-		</constant>
-		<constant name="KEY_CENT" value="162">
-			¢ key
-		</constant>
-		<constant name="KEY_STERLING" value="163">
-		</constant>
-		<constant name="KEY_CURRENCY" value="164">
-		</constant>
-		<constant name="KEY_YEN" value="165">
-		</constant>
-		<constant name="KEY_BROKENBAR" value="166">
-			¦ key
-		</constant>
-		<constant name="KEY_SECTION" value="167">
-			§ key
+		<constant name="SPKEY" value="16777216">
+			Scancodes with this bit applied are non printable.
 		</constant>
 		<constant name="KEY_ESCAPE" value="16777217">
 			Escape Key
@@ -1232,6 +925,54 @@
 		<constant name="KEY_F16" value="16777259">
 			F16 Key
 		</constant>
+		<constant name="KEY_KP_ENTER" value="16777344">
+			Enter Key on Numpad
+		</constant>
+		<constant name="KEY_KP_MULTIPLY" value="16777345">
+			Multiply Key on Numpad
+		</constant>
+		<constant name="KEY_KP_DIVIDE" value="16777346">
+			Divide Key on Numpad
+		</constant>
+		<constant name="KEY_KP_SUBTRACT" value="16777347">
+			Subtract Key on Numpad
+		</constant>
+		<constant name="KEY_KP_PERIOD" value="16777348">
+			Period Key on Numpad
+		</constant>
+		<constant name="KEY_KP_ADD" value="16777349">
+			Add Key on Numpad
+		</constant>
+		<constant name="KEY_KP_0" value="16777350">
+			Number 0 on Numpad
+		</constant>
+		<constant name="KEY_KP_1" value="16777351">
+			Number 1 on Numpad
+		</constant>
+		<constant name="KEY_KP_2" value="16777352">
+			Number 2 on Numpad
+		</constant>
+		<constant name="KEY_KP_3" value="16777353">
+			Number 3 on Numpad
+		</constant>
+		<constant name="KEY_KP_4" value="16777354">
+			Number 4 on Numpad
+		</constant>
+		<constant name="KEY_KP_5" value="16777355">
+			Number 5 on Numpad
+		</constant>
+		<constant name="KEY_KP_6" value="16777356">
+			Number 6 on Numpad
+		</constant>
+		<constant name="KEY_KP_7" value="16777357">
+			Number 7 on Numpad
+		</constant>
+		<constant name="KEY_KP_8" value="16777358">
+			Number 8 on Numpad
+		</constant>
+		<constant name="KEY_KP_9" value="16777359">
+			Number 9 on Numpad
+		</constant>
 		<constant name="KEY_SUPER_L" value="16777260">
 			Super Left key (windows key)
 		</constant>
@@ -1347,53 +1088,232 @@
 		</constant>
 		<constant name="KEY_LAUNCHF" value="16777319">
 		</constant>
-		<constant name="KEY_KP_ENTER" value="16777344">
-			Enter Key on Numpad
+		<constant name="KEY_UNKNOWN" value="33554431">
 		</constant>
-		<constant name="KEY_KP_MULTIPLY" value="16777345">
-			Multiply Key on Numpad
+		<constant name="KEY_SPACE" value="32">
+			Space Key
 		</constant>
-		<constant name="KEY_KP_DIVIDE" value="16777346">
-			Divide Key on Numpad
+		<constant name="KEY_EXCLAM" value="33">
+			! key
 		</constant>
-		<constant name="KEY_KP_SUBTRACT" value="16777347">
-			Subtract Key on Numpad
+		<constant name="KEY_QUOTEDBL" value="34">
+			" key
 		</constant>
-		<constant name="KEY_KP_PERIOD" value="16777348">
-			Period Key on Numpad
+		<constant name="KEY_NUMBERSIGN" value="35">
+			# key
 		</constant>
-		<constant name="KEY_KP_ADD" value="16777349">
-			Add Key on Numpad
+		<constant name="KEY_DOLLAR" value="36">
+			$ key
 		</constant>
-		<constant name="KEY_KP_0" value="16777350">
-			Number 0 on Numpad
+		<constant name="KEY_PERCENT" value="37">
+			% key
 		</constant>
-		<constant name="KEY_KP_1" value="16777351">
-			Number 1 on Numpad
+		<constant name="KEY_AMPERSAND" value="38">
+			&amp; key
 		</constant>
-		<constant name="KEY_KP_2" value="16777352">
-			Number 2 on Numpad
+		<constant name="KEY_APOSTROPHE" value="39">
+			' key
 		</constant>
-		<constant name="KEY_KP_3" value="16777353">
-			Number 3 on Numpad
+		<constant name="KEY_PARENLEFT" value="40">
+			( key
 		</constant>
-		<constant name="KEY_KP_4" value="16777354">
-			Number 4 on Numpad
+		<constant name="KEY_PARENRIGHT" value="41">
+			) key
 		</constant>
-		<constant name="KEY_KP_5" value="16777355">
-			Number 5 on Numpad
+		<constant name="KEY_ASTERISK" value="42">
+			* key
 		</constant>
-		<constant name="KEY_KP_6" value="16777356">
-			Number 6 on Numpad
+		<constant name="KEY_PLUS" value="43">
+			+ key
 		</constant>
-		<constant name="KEY_KP_7" value="16777357">
-			Number 7 on Numpad
+		<constant name="KEY_COMMA" value="44">
+			, key
 		</constant>
-		<constant name="KEY_KP_8" value="16777358">
-			Number 8 on Numpad
+		<constant name="KEY_MINUS" value="45">
+			- key
 		</constant>
-		<constant name="KEY_KP_9" value="16777359">
-			Number 9 on Numpad
+		<constant name="KEY_PERIOD" value="46">
+			. key
+		</constant>
+		<constant name="KEY_SLASH" value="47">
+			/ key
+		</constant>
+		<constant name="KEY_0" value="48">
+			Number 0
+		</constant>
+		<constant name="KEY_1" value="49">
+			Number 1
+		</constant>
+		<constant name="KEY_2" value="50">
+			Number 2
+		</constant>
+		<constant name="KEY_3" value="51">
+			Number 3
+		</constant>
+		<constant name="KEY_4" value="52">
+			Number 4
+		</constant>
+		<constant name="KEY_5" value="53">
+			Number 5
+		</constant>
+		<constant name="KEY_6" value="54">
+			Number 6
+		</constant>
+		<constant name="KEY_7" value="55">
+			Number 7
+		</constant>
+		<constant name="KEY_8" value="56">
+			Number 8
+		</constant>
+		<constant name="KEY_9" value="57">
+			Number 9
+		</constant>
+		<constant name="KEY_COLON" value="58">
+			: key
+		</constant>
+		<constant name="KEY_SEMICOLON" value="59">
+			; key
+		</constant>
+		<constant name="KEY_LESS" value="60">
+			Lower than key
+		</constant>
+		<constant name="KEY_EQUAL" value="61">
+			= key
+		</constant>
+		<constant name="KEY_GREATER" value="62">
+			Greater than key
+		</constant>
+		<constant name="KEY_QUESTION" value="63">
+			? key
+		</constant>
+		<constant name="KEY_AT" value="64">
+			@ key
+		</constant>
+		<constant name="KEY_A" value="65">
+			A Key
+		</constant>
+		<constant name="KEY_B" value="66">
+			B Key
+		</constant>
+		<constant name="KEY_C" value="67">
+			C Key
+		</constant>
+		<constant name="KEY_D" value="68">
+			D Key
+		</constant>
+		<constant name="KEY_E" value="69">
+			E Key
+		</constant>
+		<constant name="KEY_F" value="70">
+			F Key
+		</constant>
+		<constant name="KEY_G" value="71">
+			G Key
+		</constant>
+		<constant name="KEY_H" value="72">
+			H Key
+		</constant>
+		<constant name="KEY_I" value="73">
+			I Key
+		</constant>
+		<constant name="KEY_J" value="74">
+			J Key
+		</constant>
+		<constant name="KEY_K" value="75">
+			K Key
+		</constant>
+		<constant name="KEY_L" value="76">
+			L Key
+		</constant>
+		<constant name="KEY_M" value="77">
+			M Key
+		</constant>
+		<constant name="KEY_N" value="78">
+			N Key
+		</constant>
+		<constant name="KEY_O" value="79">
+			O Key
+		</constant>
+		<constant name="KEY_P" value="80">
+			P Key
+		</constant>
+		<constant name="KEY_Q" value="81">
+			Q Key
+		</constant>
+		<constant name="KEY_R" value="82">
+			R Key
+		</constant>
+		<constant name="KEY_S" value="83">
+			S Key
+		</constant>
+		<constant name="KEY_T" value="84">
+			T Key
+		</constant>
+		<constant name="KEY_U" value="85">
+			U Key
+		</constant>
+		<constant name="KEY_V" value="86">
+			V Key
+		</constant>
+		<constant name="KEY_W" value="87">
+			W Key
+		</constant>
+		<constant name="KEY_X" value="88">
+			X Key
+		</constant>
+		<constant name="KEY_Y" value="89">
+			Y Key
+		</constant>
+		<constant name="KEY_Z" value="90">
+			Z Key
+		</constant>
+		<constant name="KEY_BRACKETLEFT" value="91">
+			[ key
+		</constant>
+		<constant name="KEY_BACKSLASH" value="92">
+			\ key
+		</constant>
+		<constant name="KEY_BRACKETRIGHT" value="93">
+			] key
+		</constant>
+		<constant name="KEY_ASCIICIRCUM" value="94">
+			^ key
+		</constant>
+		<constant name="KEY_UNDERSCORE" value="95">
+			_ key
+		</constant>
+		<constant name="KEY_QUOTELEFT" value="96">
+		</constant>
+		<constant name="KEY_BRACELEFT" value="123">
+			{ key
+		</constant>
+		<constant name="KEY_BAR" value="124">
+			| key
+		</constant>
+		<constant name="KEY_BRACERIGHT" value="125">
+			} key
+		</constant>
+		<constant name="KEY_ASCIITILDE" value="126">
+			~ key
+		</constant>
+		<constant name="KEY_NOBREAKSPACE" value="160">
+		</constant>
+		<constant name="KEY_EXCLAMDOWN" value="161">
+		</constant>
+		<constant name="KEY_CENT" value="162">
+			¢ key
+		</constant>
+		<constant name="KEY_STERLING" value="163">
+		</constant>
+		<constant name="KEY_CURRENCY" value="164">
+		</constant>
+		<constant name="KEY_YEN" value="165">
+		</constant>
+		<constant name="KEY_BROKENBAR" value="166">
+			¦ key
+		</constant>
+		<constant name="KEY_SECTION" value="167">
+			§ key
 		</constant>
 		<constant name="KEY_DIAERESIS" value="168">
 			¨ key
@@ -1526,244 +1446,323 @@
 		</constant>
 		<constant name="KEY_YDIAERESIS" value="255">
 		</constant>
-		<constant name="KEY_MASK_CMD" value="268435456">
-		</constant>
-		<constant name="KEY_MASK_CTRL" value="268435456">
-		</constant>
-		<constant name="KEY_SPACE" value="32">
-			Space Key
-		</constant>
-		<constant name="KEY_EXCLAM" value="33">
-			! key
-		</constant>
 		<constant name="KEY_CODE_MASK" value="33554431">
 		</constant>
-		<constant name="KEY_UNKNOWN" value="33554431">
+		<constant name="KEY_MODIFIER_MASK" value="-16777216">
 		</constant>
 		<constant name="KEY_MASK_SHIFT" value="33554432">
 		</constant>
-		<constant name="KEY_QUOTEDBL" value="34">
-			" key
+		<constant name="KEY_MASK_ALT" value="67108864">
 		</constant>
-		<constant name="KEY_NUMBERSIGN" value="35">
-			# key
+		<constant name="KEY_MASK_META" value="134217728">
 		</constant>
-		<constant name="KEY_DOLLAR" value="36">
-			$ key
+		<constant name="KEY_MASK_CTRL" value="268435456">
 		</constant>
-		<constant name="KEY_PERCENT" value="37">
-			% key
-		</constant>
-		<constant name="KEY_AMPERSAND" value="38">
-			&amp; key
-		</constant>
-		<constant name="KEY_APOSTROPHE" value="39">
-			' key
-		</constant>
-		<constant name="KEY_PARENLEFT" value="40">
-			( key
-		</constant>
-		<constant name="KEY_PARENRIGHT" value="41">
-			) key
-		</constant>
-		<constant name="KEY_ASTERISK" value="42">
-			* key
-		</constant>
-		<constant name="KEY_PLUS" value="43">
-			+ key
-		</constant>
-		<constant name="KEY_COMMA" value="44">
-			, key
-		</constant>
-		<constant name="KEY_MINUS" value="45">
-			- key
-		</constant>
-		<constant name="KEY_PERIOD" value="46">
-			. key
-		</constant>
-		<constant name="KEY_SLASH" value="47">
-			/ key
-		</constant>
-		<constant name="KEY_0" value="48">
-			Number 0
-		</constant>
-		<constant name="KEY_1" value="49">
-			Number 1
-		</constant>
-		<constant name="KEY_2" value="50">
-			Number 2
-		</constant>
-		<constant name="KEY_3" value="51">
-			Number 3
-		</constant>
-		<constant name="KEY_4" value="52">
-			Number 4
-		</constant>
-		<constant name="KEY_5" value="53">
-			Number 5
+		<constant name="KEY_MASK_CMD" value="268435456">
 		</constant>
 		<constant name="KEY_MASK_KPAD" value="536870912">
 		</constant>
-		<constant name="KEY_6" value="54">
-			Number 6
+		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824">
 		</constant>
-		<constant name="KEY_7" value="55">
-			Number 7
+		<constant name="BUTTON_LEFT" value="1">
+			Left Mouse Button
 		</constant>
-		<constant name="KEY_8" value="56">
-			Number 8
+		<constant name="BUTTON_RIGHT" value="2">
+			Right Mouse Button
 		</constant>
-		<constant name="KEY_9" value="57">
-			Number 9
+		<constant name="BUTTON_MIDDLE" value="3">
+			Middle Mouse Button
 		</constant>
-		<constant name="KEY_COLON" value="58">
-			: key
+		<constant name="BUTTON_WHEEL_UP" value="4">
+			Mouse wheel up
 		</constant>
-		<constant name="KEY_SEMICOLON" value="59">
-			; key
+		<constant name="BUTTON_WHEEL_DOWN" value="5">
+			Mouse wheel down
 		</constant>
-		<constant name="KEY_LESS" value="60">
-			Lower than key
+		<constant name="BUTTON_WHEEL_LEFT" value="6">
+			Mouse wheel left button
 		</constant>
-		<constant name="KEY_EQUAL" value="61">
-			= key
+		<constant name="BUTTON_WHEEL_RIGHT" value="7">
+			Mouse wheel right button
 		</constant>
-		<constant name="KEY_GREATER" value="62">
-			Greater than key
+		<constant name="BUTTON_MASK_LEFT" value="1">
 		</constant>
-		<constant name="KEY_QUESTION" value="63">
-			? key
+		<constant name="BUTTON_MASK_RIGHT" value="2">
 		</constant>
-		<constant name="KEY_AT" value="64">
-			@ key
+		<constant name="BUTTON_MASK_MIDDLE" value="4">
 		</constant>
-		<constant name="KEY_A" value="65">
-			A Key
+		<constant name="JOY_BUTTON_0" value="0">
+			Joystick Button 0
 		</constant>
-		<constant name="KEY_B" value="66">
-			B Key
+		<constant name="JOY_BUTTON_1" value="1">
+			Joystick Button 1
 		</constant>
-		<constant name="KEY_C" value="67">
-			C Key
+		<constant name="JOY_BUTTON_2" value="2">
+			Joystick Button 2
 		</constant>
-		<constant name="KEY_MASK_ALT" value="67108864">
+		<constant name="JOY_BUTTON_3" value="3">
+			Joystick Button 3
 		</constant>
-		<constant name="KEY_D" value="68">
-			D Key
+		<constant name="JOY_BUTTON_4" value="4">
+			Joystick Button 4
 		</constant>
-		<constant name="KEY_E" value="69">
-			E Key
+		<constant name="JOY_BUTTON_5" value="5">
+			Joystick Button 5
 		</constant>
-		<constant name="KEY_F" value="70">
-			F Key
+		<constant name="JOY_BUTTON_6" value="6">
+			Joystick Button 6
 		</constant>
-		<constant name="KEY_G" value="71">
-			G Key
+		<constant name="JOY_BUTTON_7" value="7">
+			Joystick Button 7
 		</constant>
-		<constant name="KEY_H" value="72">
-			H Key
+		<constant name="JOY_BUTTON_8" value="8">
+			Joystick Button 8
 		</constant>
-		<constant name="KEY_I" value="73">
-			I Key
+		<constant name="JOY_BUTTON_9" value="9">
+			Joystick Button 9
 		</constant>
-		<constant name="KEY_J" value="74">
-			J Key
+		<constant name="JOY_BUTTON_10" value="10">
+			Joystick Button 10
 		</constant>
-		<constant name="KEY_K" value="75">
-			K Key
+		<constant name="JOY_BUTTON_11" value="11">
+			Joystick Button 11
 		</constant>
-		<constant name="KEY_L" value="76">
-			L Key
+		<constant name="JOY_BUTTON_12" value="12">
+			Joystick Button 12
 		</constant>
-		<constant name="KEY_M" value="77">
-			M Key
+		<constant name="JOY_BUTTON_13" value="13">
+			Joystick Button 13
 		</constant>
-		<constant name="KEY_N" value="78">
-			N Key
+		<constant name="JOY_BUTTON_14" value="14">
+			Joystick Button 14
 		</constant>
-		<constant name="KEY_O" value="79">
-			O Key
+		<constant name="JOY_BUTTON_15" value="15">
+			Joystick Button 15
 		</constant>
-		<constant name="KEY_P" value="80">
-			P Key
+		<constant name="JOY_BUTTON_MAX" value="16">
+			Joystick Button 16
 		</constant>
-		<constant name="KEY_Q" value="81">
-			Q Key
+		<constant name="JOY_SNES_A" value="1">
+			Super Nintendo Entertaiment System controller A button
 		</constant>
-		<constant name="KEY_R" value="82">
-			R Key
+		<constant name="JOY_SNES_B" value="0">
+			Super Nintendo Entertaiment System controller B button
 		</constant>
-		<constant name="KEY_S" value="83">
-			S Key
+		<constant name="JOY_SNES_X" value="3">
+			Super Nintendo Entertaiment System controller X button
 		</constant>
-		<constant name="KEY_T" value="84">
-			T Key
+		<constant name="JOY_SNES_Y" value="2">
+			Super Nintendo Entertaiment System controller Y button
 		</constant>
-		<constant name="KEY_U" value="85">
-			U Key
+		<constant name="JOY_SONY_CIRCLE" value="1">
+			DUALSHOCK circle button
 		</constant>
-		<constant name="KEY_V" value="86">
-			V Key
+		<constant name="JOY_SONY_X" value="0">
+			DUALSHOCK X button
 		</constant>
-		<constant name="KEY_W" value="87">
-			W Key
+		<constant name="JOY_SONY_SQUARE" value="2">
+			DUALSHOCK square button
 		</constant>
-		<constant name="KEY_X" value="88">
-			X Key
+		<constant name="JOY_SONY_TRIANGLE" value="3">
+			DUALSHOCK triangle button
 		</constant>
-		<constant name="KEY_Y" value="89">
-			Y Key
+		<constant name="JOY_SEGA_B" value="1">
+			SEGA controller B button
 		</constant>
-		<constant name="KEY_Z" value="90">
-			Z Key
+		<constant name="JOY_SEGA_A" value="0">
+			SEGA controller A button
 		</constant>
-		<constant name="KEY_BRACKETLEFT" value="91">
-			[ key
+		<constant name="JOY_SEGA_X" value="2">
+			SEGA controller X button
 		</constant>
-		<constant name="KEY_BACKSLASH" value="92">
-			\ key
+		<constant name="JOY_SEGA_Y" value="3">
+			SEGA controller Y button
 		</constant>
-		<constant name="KEY_BRACKETRIGHT" value="93">
-			] key
+		<constant name="JOY_XBOX_B" value="1">
+			XBOX controller B button
 		</constant>
-		<constant name="KEY_ASCIICIRCUM" value="94">
-			^ key
+		<constant name="JOY_XBOX_A" value="0">
+			XBOX controller A button
 		</constant>
-		<constant name="KEY_UNDERSCORE" value="95">
-			_ key
+		<constant name="JOY_XBOX_X" value="2">
+			XBOX controller X button
 		</constant>
-		<constant name="KEY_QUOTELEFT" value="96">
+		<constant name="JOY_XBOX_Y" value="3">
+			XBOX controller Y button
 		</constant>
-		<constant name="MARGIN_LEFT" value="0">
-			Left margin, used usually for [Control] or [StyleBox] derived classes.
+		<constant name="JOY_DS_A" value="1">
 		</constant>
-		<constant name="MARGIN_TOP" value="1">
-			Top margin, used usually for [Control] or [StyleBox] derived classes.
+		<constant name="JOY_DS_B" value="0">
 		</constant>
-		<constant name="MARGIN_RIGHT" value="2">
-			Right margin, used usually for [Control] or [StyleBox] derived classes.
+		<constant name="JOY_DS_X" value="3">
 		</constant>
-		<constant name="MARGIN_BOTTOM" value="3">
-			Bottom margin, used usually for [Control] or [StyleBox] derived classes.
+		<constant name="JOY_DS_Y" value="2">
 		</constant>
-		<constant name="METHOD_FLAGS_DEFAULT" value="1">
+		<constant name="JOY_SELECT" value="10">
+			Joystick Button Select
 		</constant>
-		<constant name="METHOD_FLAG_NORMAL" value="1">
+		<constant name="JOY_START" value="11">
+			Joystick Button Start
 		</constant>
-		<constant name="METHOD_FLAG_REVERSE" value="16">
+		<constant name="JOY_DPAD_UP" value="12">
+			Joystick DPad Up
 		</constant>
-		<constant name="METHOD_FLAG_EDITOR" value="2">
+		<constant name="JOY_DPAD_DOWN" value="13">
+			Joystick DPad Down
 		</constant>
-		<constant name="METHOD_FLAG_VIRTUAL" value="32">
+		<constant name="JOY_DPAD_LEFT" value="14">
+			Joystick DPad Left
 		</constant>
-		<constant name="METHOD_FLAG_NOSCRIPT" value="4">
+		<constant name="JOY_DPAD_RIGHT" value="15">
+			Joystick DPad Right
 		</constant>
-		<constant name="METHOD_FLAG_FROM_SCRIPT" value="64">
+		<constant name="JOY_L" value="4">
+			Joystick Left Shoulder Button
 		</constant>
-		<constant name="METHOD_FLAG_CONST" value="8">
+		<constant name="JOY_L2" value="6">
+			Joystick Left Trigger
+		</constant>
+		<constant name="JOY_L3" value="8">
+			Joystick Left Stick Click
+		</constant>
+		<constant name="JOY_R" value="5">
+			Joystick Right Shoulder Button
+		</constant>
+		<constant name="JOY_R2" value="7">
+			Joystick Right Trigger
+		</constant>
+		<constant name="JOY_R3" value="9">
+			Joystick Right Stick Click
+		</constant>
+		<constant name="JOY_AXIS_0" value="0">
+			Joystick Left Stick Horizontal Axis
+		</constant>
+		<constant name="JOY_AXIS_1" value="1">
+			Joystick Left Stick Vertical Axis
+		</constant>
+		<constant name="JOY_AXIS_2" value="2">
+			Joystick Right Stick Horizontal Axis
+		</constant>
+		<constant name="JOY_AXIS_3" value="3">
+			Joystick Right Stick Vertical Axis
+		</constant>
+		<constant name="JOY_AXIS_4" value="4">
+		</constant>
+		<constant name="JOY_AXIS_5" value="5">
+		</constant>
+		<constant name="JOY_AXIS_6" value="6">
+			Joystick Left Trigger Analog Axis
+		</constant>
+		<constant name="JOY_AXIS_7" value="7">
+			Joystick Right Trigger Analog Axis
+		</constant>
+		<constant name="JOY_AXIS_MAX" value="8">
+		</constant>
+		<constant name="JOY_ANALOG_0_X" value="0">
+			Joystick Left Stick Horizontal Axis
+		</constant>
+		<constant name="JOY_ANALOG_0_Y" value="1">
+			Joystick Left Stick Vertical Axis
+		</constant>
+		<constant name="JOY_ANALOG_1_X" value="2">
+			Joystick Right Stick Horizontal Axis
+		</constant>
+		<constant name="JOY_ANALOG_1_Y" value="3">
+			Joystick Right Stick Vertical Axis
+		</constant>
+		<constant name="JOY_ANALOG_2_X" value="4">
+		</constant>
+		<constant name="JOY_ANALOG_2_Y" value="5">
+		</constant>
+		<constant name="JOY_ANALOG_L2" value="6">
+		</constant>
+		<constant name="JOY_ANALOG_R2" value="7">
 		</constant>
 		<constant name="OK" value="0">
 			Functions that return Error return OK when everything went ok. Most functions don't return error anyway and/or just print errors to stdout.
+		</constant>
+		<constant name="FAILED" value="1">
+			Generic fail return error.
+		</constant>
+		<constant name="ERR_UNAVAILABLE" value="2">
+		</constant>
+		<constant name="ERR_UNCONFIGURED" value="3">
+		</constant>
+		<constant name="ERR_UNAUTHORIZED" value="4">
+		</constant>
+		<constant name="ERR_PARAMETER_RANGE_ERROR" value="5">
+		</constant>
+		<constant name="ERR_OUT_OF_MEMORY" value="6">
+		</constant>
+		<constant name="ERR_FILE_NOT_FOUND" value="7">
+		</constant>
+		<constant name="ERR_FILE_BAD_DRIVE" value="8">
+		</constant>
+		<constant name="ERR_FILE_BAD_PATH" value="9">
+		</constant>
+		<constant name="ERR_FILE_NO_PERMISSION" value="10">
+		</constant>
+		<constant name="ERR_FILE_ALREADY_IN_USE" value="11">
+		</constant>
+		<constant name="ERR_FILE_CANT_OPEN" value="12">
+		</constant>
+		<constant name="ERR_FILE_CANT_WRITE" value="13">
+		</constant>
+		<constant name="ERR_FILE_CANT_READ" value="14">
+		</constant>
+		<constant name="ERR_FILE_UNRECOGNIZED" value="15">
+		</constant>
+		<constant name="ERR_FILE_CORRUPT" value="16">
+		</constant>
+		<constant name="ERR_FILE_MISSING_DEPENDENCIES" value="17">
+		</constant>
+		<constant name="ERR_FILE_EOF" value="18">
+		</constant>
+		<constant name="ERR_CANT_OPEN" value="19">
+		</constant>
+		<constant name="ERR_CANT_CREATE" value="20">
+		</constant>
+		<constant name="ERR_PARSE_ERROR" value="43">
+		</constant>
+		<constant name="ERROR_QUERY_FAILED" value="21">
+		</constant>
+		<constant name="ERR_ALREADY_IN_USE" value="22">
+		</constant>
+		<constant name="ERR_LOCKED" value="23">
+		</constant>
+		<constant name="ERR_TIMEOUT" value="24">
+		</constant>
+		<constant name="ERR_CANT_AQUIRE_RESOURCE" value="28">
+		</constant>
+		<constant name="ERR_INVALID_DATA" value="30">
+		</constant>
+		<constant name="ERR_INVALID_PARAMETER" value="31">
+		</constant>
+		<constant name="ERR_ALREADY_EXISTS" value="32">
+		</constant>
+		<constant name="ERR_DOES_NOT_EXIST" value="33">
+		</constant>
+		<constant name="ERR_DATABASE_CANT_READ" value="34">
+		</constant>
+		<constant name="ERR_DATABASE_CANT_WRITE" value="35">
+		</constant>
+		<constant name="ERR_COMPILATION_FAILED" value="36">
+		</constant>
+		<constant name="ERR_METHOD_NOT_FOUND" value="37">
+		</constant>
+		<constant name="ERR_LINK_FAILED" value="38">
+		</constant>
+		<constant name="ERR_SCRIPT_FAILED" value="39">
+		</constant>
+		<constant name="ERR_CYCLIC_LINK" value="40">
+		</constant>
+		<constant name="ERR_BUSY" value="44">
+		</constant>
+		<constant name="ERR_HELP" value="46">
+		</constant>
+		<constant name="ERR_BUG" value="47">
+		</constant>
+		<constant name="ERR_WTF" value="49">
 		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0">
 			No hint for edited property.
@@ -1771,20 +1770,31 @@
 		<constant name="PROPERTY_HINT_RANGE" value="1">
 			Hints that the string is a range, defined as "min,max" or "min,max,step". This is valid for integers and floats.
 		</constant>
-		<constant name="PROPERTY_USAGE_STORAGE" value="1">
-			Property will be used as storage (default).
+		<constant name="PROPERTY_HINT_EXP_RANGE" value="2">
+			Hints that the string is an exponential range, defined as "min,max" or "min,max,step". This is valid for integers and floats.
+		</constant>
+		<constant name="PROPERTY_HINT_ENUM" value="3">
+			Property hint for an enumerated value, like "Hello,Something,Else". This is valid for integer, float and string properties.
+		</constant>
+		<constant name="PROPERTY_HINT_EXP_EASING" value="4">
+		</constant>
+		<constant name="PROPERTY_HINT_LENGTH" value="5">
+		</constant>
+		<constant name="PROPERTY_HINT_KEY_ACCEL" value="7">
+		</constant>
+		<constant name="PROPERTY_HINT_FLAGS" value="8">
+			Property hint for a bitmask description, for bits 0,1,2,3 and 5 the hint would be like "Bit0,Bit1,Bit2,Bit3,,Bit5". Valid only for integers.
+		</constant>
+		<constant name="PROPERTY_HINT_ALL_FLAGS" value="9">
+			Property hint for a bitmask description that covers all 32 bits. Valid only for integers.
 		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="10">
 			String property is a file (so pop up a file dialog when edited). Hint string can be a set of wildcards like "*.doc".
-		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NONONE" value="1024">
 		</constant>
 		<constant name="PROPERTY_HINT_DIR" value="11">
 			String property is a directory (so pop up a file dialog when edited).
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="12">
-		</constant>
-		<constant name="PROPERTY_USAGE_BUNDLE" value="128">
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="13">
 		</constant>
@@ -1795,66 +1805,92 @@
 		</constant>
 		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="16">
 		</constant>
-		<constant name="PROPERTY_USAGE_CHECKABLE" value="16">
-		</constant>
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="17">
 		</constant>
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="18">
 		</constant>
-		<constant name="PROPERTY_HINT_EXP_RANGE" value="2">
-			Hints that the string is an exponential range, defined as "min,max" or "min,max,step". This is valid for integers and floats.
+		<constant name="PROPERTY_USAGE_STORAGE" value="1">
+			Property will be used as storage (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR" value="2">
 			Property will be visible in editor (default).
 		</constant>
-		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048">
+		<constant name="PROPERTY_USAGE_NETWORK" value="4">
 		</constant>
-		<constant name="PROPERTY_USAGE_CATEGORY" value="256">
+		<constant name="PROPERTY_USAGE_EDITOR_HELPER" value="8">
 		</constant>
-		<constant name="PROPERTY_HINT_ENUM" value="3">
-			Property hint for an enumerated value, like "Hello,Something,Else". This is valid for integer, float and string properties.
+		<constant name="PROPERTY_USAGE_CHECKABLE" value="16">
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKED" value="32">
 		</constant>
-		<constant name="PROPERTY_HINT_EXP_EASING" value="4">
+		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="64">
 		</constant>
-		<constant name="PROPERTY_USAGE_NETWORK" value="4">
+		<constant name="PROPERTY_USAGE_BUNDLE" value="128">
 		</constant>
-		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="4096">
-		</constant>
-		<constant name="PROPERTY_HINT_LENGTH" value="5">
-		</constant>
-		<constant name="PROPERTY_USAGE_NOEDITOR" value="5">
+		<constant name="PROPERTY_USAGE_CATEGORY" value="256">
 		</constant>
 		<constant name="PROPERTY_USAGE_STORE_IF_NONZERO" value="512">
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="64">
+		<constant name="PROPERTY_USAGE_STORE_IF_NONONE" value="1024">
 		</constant>
-		<constant name="PROPERTY_HINT_KEY_ACCEL" value="7">
+		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048">
+		</constant>
+		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="4096">
+		</constant>
+		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="8192">
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="7">
 			Default usage (storage and editor).
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="71">
 		</constant>
-		<constant name="PROPERTY_HINT_FLAGS" value="8">
-			Property hint for a bitmask description, for bits 0,1,2,3 and 5 the hint would be like "Bit0,Bit1,Bit2,Bit3,,Bit5". Valid only for integers.
+		<constant name="PROPERTY_USAGE_NOEDITOR" value="5">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_HELPER" value="8">
+		<constant name="METHOD_FLAG_NORMAL" value="1">
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="8192">
+		<constant name="METHOD_FLAG_EDITOR" value="2">
 		</constant>
-		<constant name="PROPERTY_HINT_ALL_FLAGS" value="9">
-			Property hint for a bitmask description that covers all 32 bits. Valid only for integers.
+		<constant name="METHOD_FLAG_NOSCRIPT" value="4">
 		</constant>
-		<constant name="SPKEY" value="16777216">
-			Scancodes with this bit applied are non printable.
+		<constant name="METHOD_FLAG_CONST" value="8">
+		</constant>
+		<constant name="METHOD_FLAG_REVERSE" value="16">
+		</constant>
+		<constant name="METHOD_FLAG_VIRTUAL" value="32">
+		</constant>
+		<constant name="METHOD_FLAG_FROM_SCRIPT" value="64">
+		</constant>
+		<constant name="METHOD_FLAGS_DEFAULT" value="1">
 		</constant>
 		<constant name="TYPE_NIL" value="0">
 			Variable is of type nil (only applied for null).
 		</constant>
 		<constant name="TYPE_BOOL" value="1">
 			Variable is of type [bool].
+		</constant>
+		<constant name="TYPE_INT" value="2">
+			Variable is of type [int].
+		</constant>
+		<constant name="TYPE_REAL" value="3">
+			Variable is of type [float]/real.
+		</constant>
+		<constant name="TYPE_STRING" value="4">
+			Variable is of type [String].
+		</constant>
+		<constant name="TYPE_VECTOR2" value="5">
+			Variable is of type [Vector2].
+		</constant>
+		<constant name="TYPE_RECT2" value="6">
+			Variable is of type [Rect2].
+		</constant>
+		<constant name="TYPE_VECTOR3" value="7">
+			Variable is of type [Vector3].
+		</constant>
+		<constant name="TYPE_MATRIX32" value="8">
+			Variable is of type [Matrix32].
+		</constant>
+		<constant name="TYPE_PLANE" value="9">
+			Variable is of type [Plane].
 		</constant>
 		<constant name="TYPE_QUAT" value="10">
 			Variable is of type [Quat].
@@ -1886,9 +1922,6 @@
 		<constant name="TYPE_INPUT_EVENT" value="19">
 			Variable is of type [InputEvent].
 		</constant>
-		<constant name="TYPE_INT" value="2">
-			Variable is of type [int].
-		</constant>
 		<constant name="TYPE_DICTIONARY" value="20">
 			Variable is of type [Dictionary].
 		</constant>
@@ -1910,39 +1943,6 @@
 		<constant name="TYPE_COLOR_ARRAY" value="28">
 		</constant>
 		<constant name="TYPE_MAX" value="29">
-		</constant>
-		<constant name="TYPE_REAL" value="3">
-			Variable is of type [float]/real.
-		</constant>
-		<constant name="TYPE_STRING" value="4">
-			Variable is of type [String].
-		</constant>
-		<constant name="TYPE_VECTOR2" value="5">
-			Variable is of type [Vector2].
-		</constant>
-		<constant name="TYPE_RECT2" value="6">
-			Variable is of type [Rect2].
-		</constant>
-		<constant name="TYPE_VECTOR3" value="7">
-			Variable is of type [Vector3].
-		</constant>
-		<constant name="TYPE_MATRIX32" value="8">
-			Variable is of type [Matrix32].
-		</constant>
-		<constant name="TYPE_PLANE" value="9">
-			Variable is of type [Plane].
-		</constant>
-		<constant name="VALIGN_TOP" value="0">
-			Vertical top alignment, usually for text-derived classes.
-		</constant>
-		<constant name="VALIGN_CENTER" value="1">
-			Vertical center alignment, usually for text-derived classes.
-		</constant>
-		<constant name="VALIGN_BOTTOM" value="2">
-			Vertical bottom alignment, usually for text-derived classes.
-		</constant>
-		<constant name="VERTICAL" value="1">
-			General vertical alignment, used usually for [Separator], [ScrollBar], [Slider], etc.
 		</constant>
 	</constants>
 </class>
@@ -2819,15 +2819,6 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="INTERPOLATION_NEAREST" value="0">
-			No interpolation (nearest value).
-		</constant>
-		<constant name="INTERPOLATION_LINEAR" value="1">
-			Linear interpolation.
-		</constant>
-		<constant name="INTERPOLATION_CUBIC" value="2">
-			Cubic interpolation.
-		</constant>
 		<constant name="TYPE_VALUE" value="0">
 			Value tracks set values in node properties, but only those which can be Interpolated.
 		</constant>
@@ -2836,6 +2827,15 @@
 		</constant>
 		<constant name="TYPE_METHOD" value="2">
 			Method tracks call functions with given arguments per key.
+		</constant>
+		<constant name="INTERPOLATION_NEAREST" value="0">
+			No interpolation (nearest value).
+		</constant>
+		<constant name="INTERPOLATION_LINEAR" value="1">
+			Linear interpolation.
+		</constant>
+		<constant name="INTERPOLATION_CUBIC" value="2">
+			Cubic interpolation.
 		</constant>
 		<constant name="UPDATE_CONTINUOUS" value="0">
 		</constant>
@@ -5111,6 +5111,24 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="SAMPLE_FORMAT_PCM8" value="0">
+			Sample format is 8 bits, signed.
+		</constant>
+		<constant name="SAMPLE_FORMAT_PCM16" value="1">
+			Sample format is 16 bits, little-endian, signed.
+		</constant>
+		<constant name="SAMPLE_FORMAT_IMA_ADPCM" value="2">
+			Sample format is IMA-ADPCM compressed.
+		</constant>
+		<constant name="SAMPLE_LOOP_NONE" value="0">
+			Sample does not loop.
+		</constant>
+		<constant name="SAMPLE_LOOP_FORWARD" value="1">
+			Sample loops in forward mode.
+		</constant>
+		<constant name="SAMPLE_LOOP_PING_PONG" value="2">
+			Sample loops in a bidirectional way.
+		</constant>
 		<constant name="FILTER_NONE" value="0">
 			Filter is disabled.
 		</constant>
@@ -5140,24 +5158,6 @@
 		</constant>
 		<constant name="REVERB_HALL" value="3">
 			Large reverb room with long decay.
-		</constant>
-		<constant name="SAMPLE_FORMAT_PCM8" value="0">
-			Sample format is 8 bits, signed.
-		</constant>
-		<constant name="SAMPLE_LOOP_NONE" value="0">
-			Sample does not loop.
-		</constant>
-		<constant name="SAMPLE_FORMAT_PCM16" value="1">
-			Sample format is 16 bits, little-endian, signed.
-		</constant>
-		<constant name="SAMPLE_LOOP_FORWARD" value="1">
-			Sample loops in forward mode.
-		</constant>
-		<constant name="SAMPLE_FORMAT_IMA_ADPCM" value="2">
-			Sample format is IMA-ADPCM compressed.
-		</constant>
-		<constant name="SAMPLE_LOOP_PING_PONG" value="2">
-			Sample loops in a bidirectional way.
 		</constant>
 	</constants>
 </class>
@@ -5669,6 +5669,10 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="MODE_OCTREE" value="0">
+		</constant>
+		<constant name="MODE_LIGHTMAPS" value="1">
+		</constant>
 		<constant name="BAKE_DIFFUSE" value="0">
 		</constant>
 		<constant name="BAKE_SPECULAR" value="1">
@@ -5678,10 +5682,6 @@
 		<constant name="BAKE_CONSERVE_ENERGY" value="3">
 		</constant>
 		<constant name="BAKE_MAX" value="5">
-		</constant>
-		<constant name="MODE_OCTREE" value="0">
-		</constant>
-		<constant name="MODE_LIGHTMAPS" value="1">
 		</constant>
 	</constants>
 </class>
@@ -6648,15 +6648,15 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="KEEP_WIDTH" value="0">
-		</constant>
-		<constant name="KEEP_HEIGHT" value="1">
-		</constant>
 		<constant name="PROJECTION_PERSPECTIVE" value="0">
 			Perspective Projection (object's size on the screen becomes smaller when far away).
 		</constant>
 		<constant name="PROJECTION_ORTHOGONAL" value="1">
 			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are).
+		</constant>
+		<constant name="KEEP_WIDTH" value="0">
+		</constant>
+		<constant name="KEEP_HEIGHT" value="1">
 		</constant>
 	</constants>
 </class>
@@ -6863,9 +6863,9 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="ANCHOR_MODE_FIXED_TOP_LEFT" value="0">
-		</constant>
 		<constant name="ANCHOR_MODE_DRAG_CENTER" value="1">
+		</constant>
+		<constant name="ANCHOR_MODE_FIXED_TOP_LEFT" value="0">
 		</constant>
 	</constants>
 </class>
@@ -6919,7 +6919,7 @@
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
-			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array()">
+			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array([])">
 			</argument>
 			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
@@ -6945,7 +6945,7 @@
 			</argument>
 			<argument index="1" name="colors" type="ColorArray">
 			</argument>
-			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array()">
+			<argument index="2" name="uvs" type="Vector2Array" default="Vector2Array([])">
 			</argument>
 			<argument index="3" name="texture" type="Texture" default="NULL">
 			</argument>
@@ -7373,9 +7373,6 @@
 		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
 			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
 		</constant>
-		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
-			Canvas item transform has changed. Only received if requested.
-		</constant>
 		<constant name="NOTIFICATION_DRAW" value="30">
 			CanvasItem is requested to draw.
 		</constant>
@@ -7387,6 +7384,9 @@
 		</constant>
 		<constant name="NOTIFICATION_EXIT_CANVAS" value="33">
 			Canvas item has exited the canvas.
+		</constant>
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
+			Canvas item transform has changed. Only received if requested.
 		</constant>
 	</constants>
 </class>
@@ -9858,40 +9858,6 @@
 		</constant>
 		<constant name="ANCHOR_CENTER" value="3">
 		</constant>
-		<constant name="CURSOR_ARROW" value="0">
-		</constant>
-		<constant name="CURSOR_IBEAM" value="1">
-		</constant>
-		<constant name="CURSOR_HSIZE" value="10">
-		</constant>
-		<constant name="CURSOR_BDIAGSIZE" value="11">
-		</constant>
-		<constant name="CURSOR_FDIAGSIZE" value="12">
-		</constant>
-		<constant name="CURSOR_MOVE" value="13">
-		</constant>
-		<constant name="CURSOR_VSPLIT" value="14">
-		</constant>
-		<constant name="CURSOR_HSPLIT" value="15">
-		</constant>
-		<constant name="CURSOR_HELP" value="16">
-		</constant>
-		<constant name="CURSOR_POINTING_HAND" value="2">
-		</constant>
-		<constant name="CURSOR_CROSS" value="3">
-		</constant>
-		<constant name="CURSOR_WAIT" value="4">
-		</constant>
-		<constant name="CURSOR_BUSY" value="5">
-		</constant>
-		<constant name="CURSOR_DRAG" value="6">
-		</constant>
-		<constant name="CURSOR_CAN_DROP" value="7">
-		</constant>
-		<constant name="CURSOR_FORBIDDEN" value="8">
-		</constant>
-		<constant name="CURSOR_VSIZE" value="9">
-		</constant>
 		<constant name="FOCUS_NONE" value="0">
 			Control can't acquire focus.
 		</constant>
@@ -9921,6 +9887,40 @@
 		</constant>
 		<constant name="NOTIFICATION_MODAL_CLOSE" value="46">
 			Modal control was closed.
+		</constant>
+		<constant name="CURSOR_ARROW" value="0">
+		</constant>
+		<constant name="CURSOR_IBEAM" value="1">
+		</constant>
+		<constant name="CURSOR_POINTING_HAND" value="2">
+		</constant>
+		<constant name="CURSOR_CROSS" value="3">
+		</constant>
+		<constant name="CURSOR_WAIT" value="4">
+		</constant>
+		<constant name="CURSOR_BUSY" value="5">
+		</constant>
+		<constant name="CURSOR_DRAG" value="6">
+		</constant>
+		<constant name="CURSOR_CAN_DROP" value="7">
+		</constant>
+		<constant name="CURSOR_FORBIDDEN" value="8">
+		</constant>
+		<constant name="CURSOR_VSIZE" value="9">
+		</constant>
+		<constant name="CURSOR_HSIZE" value="10">
+		</constant>
+		<constant name="CURSOR_BDIAGSIZE" value="11">
+		</constant>
+		<constant name="CURSOR_FDIAGSIZE" value="12">
+		</constant>
+		<constant name="CURSOR_MOVE" value="13">
+		</constant>
+		<constant name="CURSOR_VSPLIT" value="14">
+		</constant>
+		<constant name="CURSOR_HSPLIT" value="15">
+		</constant>
+		<constant name="CURSOR_HELP" value="16">
 		</constant>
 		<constant name="SIZE_EXPAND" value="1">
 		</constant>
@@ -10066,13 +10066,11 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="FLAG_MIPMAPS" value="1">
+		<constant name="STORAGE_RAW" value="0">
 		</constant>
-		<constant name="FLAG_REPEAT" value="2">
+		<constant name="STORAGE_COMPRESS_LOSSY" value="1">
 		</constant>
-		<constant name="FLAG_FILTER" value="4">
-		</constant>
-		<constant name="FLAGS_DEFAULT" value="7">
+		<constant name="STORAGE_COMPRESS_LOSSLESS" value="2">
 		</constant>
 		<constant name="SIDE_LEFT" value="0">
 		</constant>
@@ -10086,11 +10084,13 @@
 		</constant>
 		<constant name="SIDE_BACK" value="5">
 		</constant>
-		<constant name="STORAGE_RAW" value="0">
+		<constant name="FLAG_MIPMAPS" value="1">
 		</constant>
-		<constant name="STORAGE_COMPRESS_LOSSY" value="1">
+		<constant name="FLAG_REPEAT" value="2">
 		</constant>
-		<constant name="STORAGE_COMPRESS_LOSSLESS" value="2">
+		<constant name="FLAG_FILTER" value="4">
+		</constant>
+		<constant name="FLAGS_DEFAULT" value="7">
 		</constant>
 	</constants>
 </class>
@@ -10663,17 +10663,17 @@ This approximation makes straight segments between each point, then subdivides t
 	<constants>
 		<constant name="SHADOW_ORTHOGONAL" value="0">
 		</constant>
-		<constant name="SHADOW_PARAM_MAX_DISTANCE" value="0">
-		</constant>
-		<constant name="SHADOW_PARAM_PSSM_SPLIT_WEIGHT" value="1">
-		</constant>
 		<constant name="SHADOW_PERSPECTIVE" value="1">
 		</constant>
 		<constant name="SHADOW_PARALLEL_2_SPLITS" value="2">
 		</constant>
-		<constant name="SHADOW_PARAM_PSSM_ZOFFSET_SCALE" value="2">
-		</constant>
 		<constant name="SHADOW_PARALLEL_4_SPLITS" value="3">
+		</constant>
+		<constant name="SHADOW_PARAM_MAX_DISTANCE" value="0">
+		</constant>
+		<constant name="SHADOW_PARAM_PSSM_SPLIT_WEIGHT" value="1">
+		</constant>
+		<constant name="SHADOW_PARAM_PSSM_ZOFFSET_SCALE" value="2">
 		</constant>
 	</constants>
 </class>
@@ -11129,12 +11129,6 @@ This approximation makes straight segments between each point, then subdivides t
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ACCESS_RESOURCES" value="0">
-		</constant>
-		<constant name="ACCESS_USERDATA" value="1">
-		</constant>
-		<constant name="ACCESS_FILESYSTEM" value="2">
-		</constant>
 		<constant name="MODE_OPEN_FILE" value="0">
 		</constant>
 		<constant name="MODE_OPEN_FILES" value="1">
@@ -11144,6 +11138,12 @@ This approximation makes straight segments between each point, then subdivides t
 		<constant name="MODE_OPEN_ANY" value="3">
 		</constant>
 		<constant name="MODE_SAVE_FILE" value="4">
+		</constant>
+		<constant name="ACCESS_RESOURCES" value="0">
+		</constant>
+		<constant name="ACCESS_USERDATA" value="1">
+		</constant>
+		<constant name="ACCESS_FILESYSTEM" value="2">
 		</constant>
 	</constants>
 </class>
@@ -12070,27 +12070,27 @@ This approximation makes straight segments between each point, then subdivides t
 	<constants>
 		<constant name="BG_KEEP" value="0">
 		</constant>
-		<constant name="BG_PARAM_CANVAS_MAX_LAYER" value="0">
-		</constant>
 		<constant name="BG_DEFAULT_COLOR" value="1">
 		</constant>
-		<constant name="BG_PARAM_COLOR" value="1">
-		</constant>
 		<constant name="BG_COLOR" value="2">
-		</constant>
-		<constant name="BG_PARAM_TEXTURE" value="2">
-		</constant>
-		<constant name="BG_PARAM_CUBEMAP" value="3">
 		</constant>
 		<constant name="BG_TEXTURE" value="3">
 		</constant>
 		<constant name="BG_CUBEMAP" value="4">
 		</constant>
-		<constant name="BG_PARAM_ENERGY" value="4">
-		</constant>
 		<constant name="BG_CANVAS" value="5">
 		</constant>
 		<constant name="BG_MAX" value="6">
+		</constant>
+		<constant name="BG_PARAM_CANVAS_MAX_LAYER" value="0">
+		</constant>
+		<constant name="BG_PARAM_COLOR" value="1">
+		</constant>
+		<constant name="BG_PARAM_TEXTURE" value="2">
+		</constant>
+		<constant name="BG_PARAM_CUBEMAP" value="3">
+		</constant>
+		<constant name="BG_PARAM_ENERGY" value="4">
 		</constant>
 		<constant name="BG_PARAM_GLOW" value="6">
 		</constant>
@@ -12098,19 +12098,55 @@ This approximation makes straight segments between each point, then subdivides t
 		</constant>
 		<constant name="FX_AMBIENT_LIGHT" value="0">
 		</constant>
+		<constant name="FX_FXAA" value="1">
+		</constant>
+		<constant name="FX_GLOW" value="2">
+		</constant>
+		<constant name="FX_DOF_BLUR" value="3">
+		</constant>
+		<constant name="FX_HDR" value="4">
+		</constant>
+		<constant name="FX_FOG" value="5">
+		</constant>
+		<constant name="FX_BCS" value="6">
+		</constant>
+		<constant name="FX_SRGB" value="7">
+		</constant>
+		<constant name="FX_MAX" value="8">
+		</constant>
 		<constant name="FX_BLUR_BLEND_MODE_ADDITIVE" value="0">
-		</constant>
-		<constant name="FX_HDR_TONE_MAPPER_LINEAR" value="0">
-		</constant>
-		<constant name="FX_PARAM_AMBIENT_LIGHT_COLOR" value="0">
 		</constant>
 		<constant name="FX_BLUR_BLEND_MODE_SCREEN" value="1">
 		</constant>
-		<constant name="FX_FXAA" value="1">
+		<constant name="FX_BLUR_BLEND_MODE_SOFTLIGHT" value="2">
+		</constant>
+		<constant name="FX_HDR_TONE_MAPPER_LINEAR" value="0">
 		</constant>
 		<constant name="FX_HDR_TONE_MAPPER_LOG" value="1">
 		</constant>
+		<constant name="FX_HDR_TONE_MAPPER_REINHARDT" value="2">
+		</constant>
+		<constant name="FX_HDR_TONE_MAPPER_REINHARDT_AUTOWHITE" value="3">
+		</constant>
+		<constant name="FX_PARAM_AMBIENT_LIGHT_COLOR" value="0">
+		</constant>
 		<constant name="FX_PARAM_AMBIENT_LIGHT_ENERGY" value="1">
+		</constant>
+		<constant name="FX_PARAM_GLOW_BLUR_PASSES" value="2">
+		</constant>
+		<constant name="FX_PARAM_GLOW_BLUR_SCALE" value="3">
+		</constant>
+		<constant name="FX_PARAM_GLOW_BLUR_STRENGTH" value="4">
+		</constant>
+		<constant name="FX_PARAM_GLOW_BLUR_BLEND_MODE" value="5">
+		</constant>
+		<constant name="FX_PARAM_GLOW_BLOOM" value="6">
+		</constant>
+		<constant name="FX_PARAM_GLOW_BLOOM_TRESHOLD" value="7">
+		</constant>
+		<constant name="FX_PARAM_DOF_BLUR_PASSES" value="8">
+		</constant>
+		<constant name="FX_PARAM_DOF_BLUR_BEGIN" value="9">
 		</constant>
 		<constant name="FX_PARAM_DOF_BLUR_RANGE" value="10">
 		</constant>
@@ -12132,19 +12168,11 @@ This approximation makes straight segments between each point, then subdivides t
 		</constant>
 		<constant name="FX_PARAM_FOG_BEGIN" value="19">
 		</constant>
-		<constant name="FX_BLUR_BLEND_MODE_SOFTLIGHT" value="2">
-		</constant>
-		<constant name="FX_GLOW" value="2">
-		</constant>
-		<constant name="FX_HDR_TONE_MAPPER_REINHARDT" value="2">
-		</constant>
-		<constant name="FX_PARAM_GLOW_BLUR_PASSES" value="2">
+		<constant name="FX_PARAM_FOG_ATTENUATION" value="22">
 		</constant>
 		<constant name="FX_PARAM_FOG_BEGIN_COLOR" value="20">
 		</constant>
 		<constant name="FX_PARAM_FOG_END_COLOR" value="21">
-		</constant>
-		<constant name="FX_PARAM_FOG_ATTENUATION" value="22">
 		</constant>
 		<constant name="FX_PARAM_FOG_BG" value="23">
 		</constant>
@@ -12155,34 +12183,6 @@ This approximation makes straight segments between each point, then subdivides t
 		<constant name="FX_PARAM_BCS_SATURATION" value="26">
 		</constant>
 		<constant name="FX_PARAM_MAX" value="27">
-		</constant>
-		<constant name="FX_DOF_BLUR" value="3">
-		</constant>
-		<constant name="FX_HDR_TONE_MAPPER_REINHARDT_AUTOWHITE" value="3">
-		</constant>
-		<constant name="FX_PARAM_GLOW_BLUR_SCALE" value="3">
-		</constant>
-		<constant name="FX_HDR" value="4">
-		</constant>
-		<constant name="FX_PARAM_GLOW_BLUR_STRENGTH" value="4">
-		</constant>
-		<constant name="FX_FOG" value="5">
-		</constant>
-		<constant name="FX_PARAM_GLOW_BLUR_BLEND_MODE" value="5">
-		</constant>
-		<constant name="FX_BCS" value="6">
-		</constant>
-		<constant name="FX_PARAM_GLOW_BLOOM" value="6">
-		</constant>
-		<constant name="FX_PARAM_GLOW_BLOOM_TRESHOLD" value="7">
-		</constant>
-		<constant name="FX_SRGB" value="7">
-		</constant>
-		<constant name="FX_MAX" value="8">
-		</constant>
-		<constant name="FX_PARAM_DOF_BLUR_PASSES" value="8">
-		</constant>
-		<constant name="FX_PARAM_DOF_BLUR_BEGIN" value="9">
 		</constant>
 	</constants>
 </class>
@@ -12763,11 +12763,11 @@ This approximation makes straight segments between each point, then subdivides t
 		<constant name="READ" value="1">
 			Open the file for reading.
 		</constant>
-		<constant name="READ_WRITE" value="3">
-			Open the file for reading and writing, without truncating the file.
-		</constant>
 		<constant name="WRITE" value="2">
 			Open the file for writing. Create it if the file not exists and truncate if it exists.
+		</constant>
+		<constant name="READ_WRITE" value="3">
+			Open the file for reading and writing, without truncating the file.
 		</constant>
 		<constant name="WRITE_READ" value="7">
 			Open the file for reading and writing. Create it if the file not exists and truncate if it exists.
@@ -12915,15 +12915,6 @@ This approximation makes straight segments between each point, then subdivides t
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ACCESS_RESOURCES" value="0">
-			The dialog allows the selection of file and directory.
-		</constant>
-		<constant name="ACCESS_USERDATA" value="1">
-			The dialog allows ascess files under [Resource] path(res://) .
-		</constant>
-		<constant name="ACCESS_FILESYSTEM" value="2">
-			The dialog allows ascess files in whole file system.
-		</constant>
 		<constant name="MODE_OPEN_FILE" value="0">
 			The dialog allows the selection of one, and only one file.
 		</constant>
@@ -12938,6 +12929,15 @@ This approximation makes straight segments between each point, then subdivides t
 		</constant>
 		<constant name="MODE_SAVE_FILE" value="4">
 			The dialog will warn when a file exists.
+		</constant>
+		<constant name="ACCESS_RESOURCES" value="0">
+			The dialog allows the selection of file and directory.
+		</constant>
+		<constant name="ACCESS_USERDATA" value="1">
+			The dialog allows ascess files under [Resource] path(res://) .
+		</constant>
+		<constant name="ACCESS_FILESYSTEM" value="2">
+			The dialog allows ascess files in whole file system.
 		</constant>
 	</constants>
 	<theme_items>
@@ -13065,22 +13065,6 @@ This approximation makes straight segments between each point, then subdivides t
 		</method>
 	</methods>
 	<constants>
-		<constant name="FLAG_USE_ALPHA" value="0">
-		</constant>
-		<constant name="FLAG_USE_COLOR_ARRAY" value="1">
-		</constant>
-		<constant name="FLAG_USE_POINT_SIZE" value="2">
-		</constant>
-		<constant name="FLAG_DISCARD_ALPHA" value="3">
-		</constant>
-		<constant name="LIGHT_SHADER_LAMBERT" value="0">
-		</constant>
-		<constant name="LIGHT_SHADER_WRAP" value="1">
-		</constant>
-		<constant name="LIGHT_SHADER_VELVET" value="2">
-		</constant>
-		<constant name="LIGHT_SHADER_TOON" value="3">
-		</constant>
 		<constant name="PARAM_DIFFUSE" value="0">
 			Diffuse Lighting (light scattered from surface).
 		</constant>
@@ -13107,6 +13091,8 @@ This approximation makes straight segments between each point, then subdivides t
 		<constant name="PARAM_MAX" value="8">
 			Maximum amount of parameters.
 		</constant>
+		<constant name="TEXCOORD_SPHERE" value="3">
+		</constant>
 		<constant name="TEXCOORD_UV" value="0">
 			Read texture coordinates from the UV array.
 		</constant>
@@ -13116,7 +13102,21 @@ This approximation makes straight segments between each point, then subdivides t
 		<constant name="TEXCOORD_UV2" value="2">
 			Read texture coordinates from the UV2 array.
 		</constant>
-		<constant name="TEXCOORD_SPHERE" value="3">
+		<constant name="FLAG_USE_ALPHA" value="0">
+		</constant>
+		<constant name="FLAG_USE_COLOR_ARRAY" value="1">
+		</constant>
+		<constant name="FLAG_USE_POINT_SIZE" value="2">
+		</constant>
+		<constant name="FLAG_DISCARD_ALPHA" value="3">
+		</constant>
+		<constant name="LIGHT_SHADER_LAMBERT" value="0">
+		</constant>
+		<constant name="LIGHT_SHADER_WRAP" value="1">
+		</constant>
+		<constant name="LIGHT_SHADER_VELVET" value="2">
+		</constant>
+		<constant name="LIGHT_SHADER_TOON" value="3">
 		</constant>
 	</constants>
 </class>
@@ -13409,27 +13409,9 @@ This approximation makes straight segments between each point, then subdivides t
 		</method>
 	</methods>
 	<constants>
-		<constant name="FLAG_ENABLE_LINEAR_LIMIT" value="0">
-		</constant>
-		<constant name="FLAG_ENABLE_ANGULAR_LIMIT" value="1">
-		</constant>
-		<constant name="FLAG_ENABLE_MOTOR" value="2">
-		</constant>
-		<constant name="FLAG_MAX" value="3">
-		</constant>
 		<constant name="PARAM_LINEAR_LOWER_LIMIT" value="0">
 		</constant>
 		<constant name="PARAM_LINEAR_UPPER_LIMIT" value="1">
-		</constant>
-		<constant name="PARAM_ANGULAR_FORCE_LIMIT" value="10">
-		</constant>
-		<constant name="PARAM_ANGULAR_ERP" value="11">
-		</constant>
-		<constant name="PARAM_ANGULAR_MOTOR_TARGET_VELOCITY" value="12">
-		</constant>
-		<constant name="PARAM_ANGULAR_MOTOR_FORCE_LIMIT" value="13">
-		</constant>
-		<constant name="PARAM_MAX" value="14">
 		</constant>
 		<constant name="PARAM_LINEAR_LIMIT_SOFTNESS" value="2">
 		</constant>
@@ -13446,6 +13428,24 @@ This approximation makes straight segments between each point, then subdivides t
 		<constant name="PARAM_ANGULAR_DAMPING" value="8">
 		</constant>
 		<constant name="PARAM_ANGULAR_RESTITUTION" value="9">
+		</constant>
+		<constant name="PARAM_ANGULAR_FORCE_LIMIT" value="10">
+		</constant>
+		<constant name="PARAM_ANGULAR_ERP" value="11">
+		</constant>
+		<constant name="PARAM_ANGULAR_MOTOR_TARGET_VELOCITY" value="12">
+		</constant>
+		<constant name="PARAM_ANGULAR_MOTOR_FORCE_LIMIT" value="13">
+		</constant>
+		<constant name="PARAM_MAX" value="14">
+		</constant>
+		<constant name="FLAG_ENABLE_LINEAR_LIMIT" value="0">
+		</constant>
+		<constant name="FLAG_ENABLE_ANGULAR_LIMIT" value="1">
+		</constant>
+		<constant name="FLAG_ENABLE_MOTOR" value="2">
+		</constant>
+		<constant name="FLAG_MAX" value="3">
 		</constant>
 	</constants>
 </class>
@@ -13771,13 +13771,13 @@ This approximation makes straight segments between each point, then subdivides t
 	<constants>
 		<constant name="FLAG_VISIBLE" value="0">
 		</constant>
-		<constant name="FLAG_BILLBOARD" value="1">
-		</constant>
-		<constant name="FLAG_BILLBOARD_FIX_Y" value="2">
-		</constant>
 		<constant name="FLAG_CAST_SHADOW" value="3">
 		</constant>
 		<constant name="FLAG_RECEIVE_SHADOWS" value="4">
+		</constant>
+		<constant name="FLAG_BILLBOARD" value="1">
+		</constant>
+		<constant name="FLAG_BILLBOARD_FIX_Y" value="2">
 		</constant>
 		<constant name="FLAG_DEPH_SCALE" value="5">
 		</constant>
@@ -15044,6 +15044,26 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="METHOD_MAX" value="8">
 		</constant>
+		<constant name="STATUS_DISCONNECTED" value="0">
+		</constant>
+		<constant name="STATUS_RESOLVING" value="1">
+		</constant>
+		<constant name="STATUS_CANT_RESOLVE" value="2">
+		</constant>
+		<constant name="STATUS_CONNECTING" value="3">
+		</constant>
+		<constant name="STATUS_CANT_CONNECT" value="4">
+		</constant>
+		<constant name="STATUS_CONNECTED" value="5">
+		</constant>
+		<constant name="STATUS_REQUESTING" value="6">
+		</constant>
+		<constant name="STATUS_BODY" value="7">
+		</constant>
+		<constant name="STATUS_CONNECTION_ERROR" value="8">
+		</constant>
+		<constant name="STATUS_SSL_HANDSHAKE_ERROR" value="9">
+		</constant>
 		<constant name="RESPONSE_CONTINUE" value="100">
 		</constant>
 		<constant name="RESPONSE_SWITCHING_PROTOCOLS" value="101">
@@ -15142,26 +15162,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="RESPONSE_NOT_EXTENDED" value="510">
 		</constant>
-		<constant name="STATUS_DISCONNECTED" value="0">
-		</constant>
-		<constant name="STATUS_RESOLVING" value="1">
-		</constant>
-		<constant name="STATUS_CANT_RESOLVE" value="2">
-		</constant>
-		<constant name="STATUS_CONNECTING" value="3">
-		</constant>
-		<constant name="STATUS_CANT_CONNECT" value="4">
-		</constant>
-		<constant name="STATUS_CONNECTED" value="5">
-		</constant>
-		<constant name="STATUS_REQUESTING" value="6">
-		</constant>
-		<constant name="STATUS_BODY" value="7">
-		</constant>
-		<constant name="STATUS_CONNECTION_ERROR" value="8">
-		</constant>
-		<constant name="STATUS_SSL_HANDSHAKE_ERROR" value="9">
-		</constant>
 	</constants>
 </class>
 <class name="HTTPRequest" inherits="Node" category="Core">
@@ -15232,7 +15232,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</return>
 			<argument index="0" name="url" type="String">
 			</argument>
-			<argument index="1" name="custom_headers" type="StringArray" default="StringArray()">
+			<argument index="1" name="custom_headers" type="StringArray" default="StringArray([])">
 			</argument>
 			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
 			</argument>
@@ -15292,12 +15292,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="RESULT_CHUNKED_BODY_SIZE_MISMATCH" value="1">
 		</constant>
-		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="10">
-			HTTPRequest couldn't write to the download file.
-		</constant>
-		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11">
-			Request reached it's maximum redirect limit, see [method set_max_redirects].
-		</constant>
 		<constant name="RESULT_CANT_CONNECT" value="2">
 			Request failed while connecting.
 		</constant>
@@ -15321,6 +15315,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="9">
 			HTTPRequest couldn't open the download file.
+		</constant>
+		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="10">
+			HTTPRequest couldn't write to the download file.
+		</constant>
+		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11">
+			Request reached it's maximum redirect limit, see [method set_max_redirects].
 		</constant>
 	</constants>
 </class>
@@ -15364,12 +15364,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</method>
 	</methods>
 	<constants>
-		<constant name="FLAG_USE_LIMIT" value="0">
-		</constant>
-		<constant name="FLAG_ENABLE_MOTOR" value="1">
-		</constant>
-		<constant name="FLAG_MAX" value="2">
-		</constant>
 		<constant name="PARAM_BIAS" value="0">
 		</constant>
 		<constant name="PARAM_LIMIT_UPPER" value="1">
@@ -15387,6 +15381,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<constant name="PARAM_MOTOR_MAX_IMPULSE" value="7">
 		</constant>
 		<constant name="PARAM_MAX" value="8">
+		</constant>
+		<constant name="FLAG_USE_LIMIT" value="0">
+		</constant>
+		<constant name="FLAG_ENABLE_MOTOR" value="1">
+		</constant>
+		<constant name="FLAG_MAX" value="2">
 		</constant>
 	</constants>
 </class>
@@ -15449,8 +15449,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</method>
 	</methods>
 	<constants>
-		<constant name="RESOLVER_INVALID_ID" value="-1">
-		</constant>
 		<constant name="RESOLVER_STATUS_NONE" value="0">
 		</constant>
 		<constant name="RESOLVER_STATUS_WAITING" value="1">
@@ -15460,6 +15458,8 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<constant name="RESOLVER_STATUS_ERROR" value="3">
 		</constant>
 		<constant name="RESOLVER_MAX_QUERIES" value="32">
+		</constant>
+		<constant name="RESOLVER_INVALID_ID" value="-1">
 		</constant>
 	</constants>
 </class>
@@ -15682,6 +15682,22 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="FORMAT_INTENSITY" value="1">
 		</constant>
+		<constant name="FORMAT_GRAYSCALE_ALPHA" value="2">
+		</constant>
+		<constant name="FORMAT_RGB" value="3">
+		</constant>
+		<constant name="FORMAT_RGBA" value="4">
+		</constant>
+		<constant name="FORMAT_INDEXED" value="5">
+		</constant>
+		<constant name="FORMAT_INDEXED_ALPHA" value="6">
+		</constant>
+		<constant name="FORMAT_YUV_422" value="7">
+		</constant>
+		<constant name="FORMAT_YUV_444" value="8">
+		</constant>
+		<constant name="FORMAT_BC1" value="9">
+		</constant>
 		<constant name="FORMAT_BC2" value="10">
 		</constant>
 		<constant name="FORMAT_BC3" value="11">
@@ -15702,27 +15718,11 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="FORMAT_ATC" value="19">
 		</constant>
-		<constant name="FORMAT_GRAYSCALE_ALPHA" value="2">
-		</constant>
 		<constant name="FORMAT_ATC_ALPHA_EXPLICIT" value="20">
 		</constant>
 		<constant name="FORMAT_ATC_ALPHA_INTERPOLATED" value="21">
 		</constant>
 		<constant name="FORMAT_CUSTOM" value="22">
-		</constant>
-		<constant name="FORMAT_RGB" value="3">
-		</constant>
-		<constant name="FORMAT_RGBA" value="4">
-		</constant>
-		<constant name="FORMAT_INDEXED" value="5">
-		</constant>
-		<constant name="FORMAT_INDEXED_ALPHA" value="6">
-		</constant>
-		<constant name="FORMAT_YUV_422" value="7">
-		</constant>
-		<constant name="FORMAT_YUV_444" value="8">
-		</constant>
-		<constant name="FORMAT_BC1" value="9">
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0">
 		</constant>
@@ -16236,13 +16236,8 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</member>
 	</members>
 	<constants>
-		<constant name="ACTION" value="8">
-		</constant>
-		<constant name="JOYSTICK_MOTION" value="4">
-			Joystick motion event.
-		</constant>
-		<constant name="JOYSTICK_BUTTON" value="5">
-			Joystick button event.
+		<constant name="NONE" value="0">
+			Empty input event.
 		</constant>
 		<constant name="KEY" value="1">
 			Key event.
@@ -16253,12 +16248,17 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<constant name="MOUSE_BUTTON" value="3">
 			Mouse button event.
 		</constant>
-		<constant name="NONE" value="0">
-			Empty input event.
+		<constant name="JOYSTICK_MOTION" value="4">
+			Joystick motion event.
+		</constant>
+		<constant name="JOYSTICK_BUTTON" value="5">
+			Joystick button event.
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+		</constant>
+		<constant name="ACTION" value="8">
 		</constant>
 	</constants>
 </class>
@@ -16322,11 +16322,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</member>
 	</members>
 	<constants>
-		<constant name="ACTION" value="8">
-		</constant>
-		<constant name="JOYSTICK_MOTION" value="4">
-		</constant>
-		<constant name="JOYSTICK_BUTTON" value="5">
+		<constant name="NONE" value="0">
 		</constant>
 		<constant name="KEY" value="1">
 		</constant>
@@ -16334,11 +16330,15 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
 		</constant>
-		<constant name="NONE" value="0">
+		<constant name="JOYSTICK_MOTION" value="4">
+		</constant>
+		<constant name="JOYSTICK_BUTTON" value="5">
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+		</constant>
+		<constant name="ACTION" value="8">
 		</constant>
 	</constants>
 </class>
@@ -16408,11 +16408,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</member>
 	</members>
 	<constants>
-		<constant name="ACTION" value="8">
-		</constant>
-		<constant name="JOYSTICK_MOTION" value="4">
-		</constant>
-		<constant name="JOYSTICK_BUTTON" value="5">
+		<constant name="NONE" value="0">
 		</constant>
 		<constant name="KEY" value="1">
 		</constant>
@@ -16420,11 +16416,15 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
 		</constant>
-		<constant name="NONE" value="0">
+		<constant name="JOYSTICK_MOTION" value="4">
+		</constant>
+		<constant name="JOYSTICK_BUTTON" value="5">
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+		</constant>
+		<constant name="ACTION" value="8">
 		</constant>
 	</constants>
 </class>
@@ -16492,11 +16492,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</member>
 	</members>
 	<constants>
-		<constant name="ACTION" value="8">
-		</constant>
-		<constant name="JOYSTICK_MOTION" value="4">
-		</constant>
-		<constant name="JOYSTICK_BUTTON" value="5">
+		<constant name="NONE" value="0">
 		</constant>
 		<constant name="KEY" value="1">
 		</constant>
@@ -16504,11 +16500,15 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
 		</constant>
-		<constant name="NONE" value="0">
+		<constant name="JOYSTICK_MOTION" value="4">
+		</constant>
+		<constant name="JOYSTICK_BUTTON" value="5">
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+		</constant>
+		<constant name="ACTION" value="8">
 		</constant>
 	</constants>
 </class>
@@ -16588,11 +16588,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</member>
 	</members>
 	<constants>
-		<constant name="ACTION" value="8">
-		</constant>
-		<constant name="JOYSTICK_MOTION" value="4">
-		</constant>
-		<constant name="JOYSTICK_BUTTON" value="5">
+		<constant name="NONE" value="0">
 		</constant>
 		<constant name="KEY" value="1">
 		</constant>
@@ -16600,11 +16596,15 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
 		</constant>
-		<constant name="NONE" value="0">
+		<constant name="JOYSTICK_MOTION" value="4">
+		</constant>
+		<constant name="JOYSTICK_BUTTON" value="5">
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+		</constant>
+		<constant name="ACTION" value="8">
 		</constant>
 	</constants>
 </class>
@@ -16696,11 +16696,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</member>
 	</members>
 	<constants>
-		<constant name="ACTION" value="8">
-		</constant>
-		<constant name="JOYSTICK_MOTION" value="4">
-		</constant>
-		<constant name="JOYSTICK_BUTTON" value="5">
+		<constant name="NONE" value="0">
 		</constant>
 		<constant name="KEY" value="1">
 		</constant>
@@ -16708,11 +16704,15 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
 		</constant>
-		<constant name="NONE" value="0">
+		<constant name="JOYSTICK_MOTION" value="4">
+		</constant>
+		<constant name="JOYSTICK_BUTTON" value="5">
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+		</constant>
+		<constant name="ACTION" value="8">
 		</constant>
 	</constants>
 </class>
@@ -16810,11 +16810,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</member>
 	</members>
 	<constants>
-		<constant name="ACTION" value="8">
-		</constant>
-		<constant name="JOYSTICK_MOTION" value="4">
-		</constant>
-		<constant name="JOYSTICK_BUTTON" value="5">
+		<constant name="NONE" value="0">
 		</constant>
 		<constant name="KEY" value="1">
 		</constant>
@@ -16822,11 +16818,15 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
 		</constant>
-		<constant name="NONE" value="0">
+		<constant name="JOYSTICK_MOTION" value="4">
+		</constant>
+		<constant name="JOYSTICK_BUTTON" value="5">
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+		</constant>
+		<constant name="ACTION" value="8">
 		</constant>
 	</constants>
 </class>
@@ -16910,11 +16910,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</member>
 	</members>
 	<constants>
-		<constant name="ACTION" value="8">
-		</constant>
-		<constant name="JOYSTICK_MOTION" value="4">
-		</constant>
-		<constant name="JOYSTICK_BUTTON" value="5">
+		<constant name="NONE" value="0">
 		</constant>
 		<constant name="KEY" value="1">
 		</constant>
@@ -16922,11 +16918,15 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
 		</constant>
-		<constant name="NONE" value="0">
+		<constant name="JOYSTICK_MOTION" value="4">
+		</constant>
+		<constant name="JOYSTICK_BUTTON" value="5">
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+		</constant>
+		<constant name="ACTION" value="8">
 		</constant>
 	</constants>
 </class>
@@ -17000,11 +17000,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</member>
 	</members>
 	<constants>
-		<constant name="ACTION" value="8">
-		</constant>
-		<constant name="JOYSTICK_MOTION" value="4">
-		</constant>
-		<constant name="JOYSTICK_BUTTON" value="5">
+		<constant name="NONE" value="0">
 		</constant>
 		<constant name="KEY" value="1">
 		</constant>
@@ -17012,11 +17008,15 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
 		</constant>
-		<constant name="NONE" value="0">
+		<constant name="JOYSTICK_MOTION" value="4">
+		</constant>
+		<constant name="JOYSTICK_BUTTON" value="5">
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+		</constant>
+		<constant name="ACTION" value="8">
 		</constant>
 	</constants>
 </class>
@@ -18555,6 +18555,24 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</method>
 	</methods>
 	<constants>
+		<constant name="PARAM_RADIUS" value="2">
+		</constant>
+		<constant name="PARAM_ENERGY" value="3">
+		</constant>
+		<constant name="PARAM_ATTENUATION" value="4">
+		</constant>
+		<constant name="PARAM_SPOT_ANGLE" value="1">
+		</constant>
+		<constant name="PARAM_SPOT_ATTENUATION" value="0">
+		</constant>
+		<constant name="PARAM_SHADOW_DARKENING" value="5">
+		</constant>
+		<constant name="PARAM_SHADOW_Z_OFFSET" value="6">
+		</constant>
+		<constant name="COLOR_DIFFUSE" value="0">
+		</constant>
+		<constant name="COLOR_SPECULAR" value="1">
+		</constant>
 		<constant name="BAKE_MODE_DISABLED" value="0">
 		</constant>
 		<constant name="BAKE_MODE_INDIRECT" value="1">
@@ -18562,24 +18580,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<constant name="BAKE_MODE_INDIRECT_AND_SHADOWS" value="2">
 		</constant>
 		<constant name="BAKE_MODE_FULL" value="3">
-		</constant>
-		<constant name="COLOR_DIFFUSE" value="0">
-		</constant>
-		<constant name="COLOR_SPECULAR" value="1">
-		</constant>
-		<constant name="PARAM_SPOT_ATTENUATION" value="0">
-		</constant>
-		<constant name="PARAM_SPOT_ANGLE" value="1">
-		</constant>
-		<constant name="PARAM_RADIUS" value="2">
-		</constant>
-		<constant name="PARAM_ENERGY" value="3">
-		</constant>
-		<constant name="PARAM_ATTENUATION" value="4">
-		</constant>
-		<constant name="PARAM_SHADOW_DARKENING" value="5">
-		</constant>
-		<constant name="PARAM_SHADOW_Z_OFFSET" value="6">
 		</constant>
 	</constants>
 </class>
@@ -18973,6 +18973,18 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<description>
 			</description>
 		</method>
+		<method name="get_placeholder" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_placeholder_alpha" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_text" qualifiers="const">
 			<return type="String">
 			</return>
@@ -19038,6 +19050,18 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 			Set the maximum amount of characters the [LineEdit] can edit, and cropping existing text in case it exceeds that limit. Setting 0 removes the limit.
+			</description>
+		</method>
+		<method name="set_placeholder">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_placeholder_alpha">
+			<argument index="0" name="alpha" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_secret">
@@ -19494,27 +19518,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</method>
 	</methods>
 	<constants>
-		<constant name="BLEND_MODE_MIX" value="0">
-			Use the regular alpha blending equation (source and dest colors are faded) (default).
-		</constant>
-		<constant name="BLEND_MODE_ADD" value="1">
-			Use additive blending equation, often used for particle effects such as fire or light decals.
-		</constant>
-		<constant name="BLEND_MODE_SUB" value="2">
-			Use subtractive blending equation, often used for some smoke effects or types of glass.
-		</constant>
-		<constant name="BLEND_MODE_MUL" value="3">
-		</constant>
-		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
-		</constant>
-		<constant name="DEPTH_DRAW_ALWAYS" value="0">
-		</constant>
-		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="1">
-		</constant>
-		<constant name="DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA" value="2">
-		</constant>
-		<constant name="DEPTH_DRAW_NEVER" value="3">
-		</constant>
 		<constant name="FLAG_VISIBLE" value="0">
 			Geometry is visible when this flag is enabled (default).
 		</constant>
@@ -19535,6 +19538,27 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="FLAG_MAX" value="7">
 			Maximum amount of flags.
+		</constant>
+		<constant name="DEPTH_DRAW_ALWAYS" value="0">
+		</constant>
+		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="1">
+		</constant>
+		<constant name="DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA" value="2">
+		</constant>
+		<constant name="DEPTH_DRAW_NEVER" value="3">
+		</constant>
+		<constant name="BLEND_MODE_MIX" value="0">
+			Use the regular alpha blending equation (source and dest colors are faded) (default).
+		</constant>
+		<constant name="BLEND_MODE_ADD" value="1">
+			Use additive blending equation, often used for particle effects such as fire or light decals.
+		</constant>
+		<constant name="BLEND_MODE_SUB" value="2">
+			Use subtractive blending equation, often used for some smoke effects or types of glass.
+		</constant>
+		<constant name="BLEND_MODE_MUL" value="3">
+		</constant>
+		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
 		</constant>
 	</constants>
 </class>
@@ -20089,44 +20113,26 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</method>
 	</methods>
 	<constants>
+		<constant name="NO_INDEX_ARRAY" value="-1">
+			Default value used for index_array_len when no indices are present.
+		</constant>
+		<constant name="ARRAY_WEIGHTS_SIZE" value="4">
+			Amount of weights/bone indices per vertex (always 4).
+		</constant>
 		<constant name="ARRAY_VERTEX" value="0">
 			Vertex array (array of [Vector3] vertices).
-		</constant>
-		<constant name="ARRAY_FORMAT_VERTEX" value="1">
-			Array format will include vertices (mandatory).
 		</constant>
 		<constant name="ARRAY_NORMAL" value="1">
 			Normal array (array of [Vector3] normals).
 		</constant>
-		<constant name="ARRAY_FORMAT_WEIGHTS" value="128">
-			Array format will include bone weights.
-		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV" value="16">
-			Array format will include UVs.
-		</constant>
-		<constant name="ARRAY_FORMAT_NORMAL" value="2">
-			Array format will include normals
-		</constant>
 		<constant name="ARRAY_TANGENT" value="2">
 			Tangent array, array of groups of 4 floats. first 3 floats determine the tangent, and the last the binormal direction as -1 or 1.
-		</constant>
-		<constant name="ARRAY_FORMAT_INDEX" value="256">
-			Index array will be used.
 		</constant>
 		<constant name="ARRAY_COLOR" value="3">
 			Vertex array (array of [Color] colors).
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV2" value="32">
-			Array format will include another set of UVs.
-		</constant>
-		<constant name="ARRAY_FORMAT_TANGENT" value="4">
-			Array format will include tangents
-		</constant>
 		<constant name="ARRAY_TEX_UV" value="4">
 			UV array (array of [Vector3] UVs or float array of groups of 2 floats (u,v)).
-		</constant>
-		<constant name="ARRAY_WEIGHTS_SIZE" value="4">
-			Amount of weights/bone indices per vertex (always 4).
 		</constant>
 		<constant name="ARRAY_TEX_UV2" value="5">
 			Second UV array (array of [Vector3] UVs or float array of groups of 2 floats (u,v)).
@@ -20134,20 +20140,38 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<constant name="ARRAY_BONES" value="6">
 			Array of bone indices, as a float array. Each element in groups of 4 floats.
 		</constant>
-		<constant name="ARRAY_FORMAT_BONES" value="64">
-			Array format will include bone indices.
-		</constant>
 		<constant name="ARRAY_WEIGHTS" value="7">
 			Array of bone weights, as a float array. Each element in groups of 4 floats.
-		</constant>
-		<constant name="ARRAY_FORMAT_COLOR" value="8">
-			Array format will include a color array.
 		</constant>
 		<constant name="ARRAY_INDEX" value="8">
 			Array of integers, used as indices referencing vertices. No index can be beyond the vertex array size.
 		</constant>
-		<constant name="NO_INDEX_ARRAY" value="-1">
-			Default value used for index_array_len when no indices are present.
+		<constant name="ARRAY_FORMAT_VERTEX" value="1">
+			Array format will include vertices (mandatory).
+		</constant>
+		<constant name="ARRAY_FORMAT_NORMAL" value="2">
+			Array format will include normals
+		</constant>
+		<constant name="ARRAY_FORMAT_TANGENT" value="4">
+			Array format will include tangents
+		</constant>
+		<constant name="ARRAY_FORMAT_COLOR" value="8">
+			Array format will include a color array.
+		</constant>
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16">
+			Array format will include UVs.
+		</constant>
+		<constant name="ARRAY_FORMAT_TEX_UV2" value="32">
+			Array format will include another set of UVs.
+		</constant>
+		<constant name="ARRAY_FORMAT_BONES" value="64">
+			Array format will include bone indices.
+		</constant>
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="128">
+			Array format will include bone weights.
+		</constant>
+		<constant name="ARRAY_FORMAT_INDEX" value="256">
+			Index array will be used.
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0">
 			Render array as points (one vertex equals one point).
@@ -21631,6 +21655,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Return [i]true[/i] if the "node" argument is a direct or indirect child of the current node, otherwise return [i]false[/i].
 			</description>
 		</method>
+		<method name="is_displayed_folded" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_fixed_processing" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -21750,6 +21780,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Replace a node in a scene by a given one. Subscriptions that pass through this node will be lost.
 			</description>
 		</method>
+		<method name="set_display_folded">
+			<argument index="0" name="fold" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_filename">
 			<argument index="0" name="filename" type="String">
 			</argument>
@@ -21842,10 +21878,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="NOTIFICATION_READY" value="13">
 		</constant>
-		<constant name="NOTIFICATION_PAUSED" value="14">
-		</constant>
-		<constant name="NOTIFICATION_UNPAUSED" value="15">
-		</constant>
 		<constant name="NOTIFICATION_FIXED_PROCESS" value="16">
 		</constant>
 		<constant name="NOTIFICATION_PROCESS" value="17">
@@ -21856,6 +21888,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="NOTIFICATION_UNPARENTED" value="19">
 			Notification received when a node is unparented (parent removed it from the list of children).
+		</constant>
+		<constant name="NOTIFICATION_PAUSED" value="14">
+		</constant>
+		<constant name="NOTIFICATION_UNPAUSED" value="15">
 		</constant>
 		<constant name="NOTIFICATION_INSTANCED" value="20">
 		</constant>
@@ -22903,12 +22939,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="MONTH_JANUARY" value="1">
 		</constant>
-		<constant name="MONTH_OCTOBER" value="10">
-		</constant>
-		<constant name="MONTH_NOVEMBER" value="11">
-		</constant>
-		<constant name="MONTH_DECEMBER" value="12">
-		</constant>
 		<constant name="MONTH_FEBRUARY" value="2">
 		</constant>
 		<constant name="MONTH_MARCH" value="3">
@@ -22924,6 +22954,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<constant name="MONTH_AUGUST" value="8">
 		</constant>
 		<constant name="MONTH_SEPTEMBER" value="9">
+		</constant>
+		<constant name="MONTH_OCTOBER" value="10">
+		</constant>
+		<constant name="MONTH_NOVEMBER" value="11">
+		</constant>
+		<constant name="MONTH_DECEMBER" value="12">
 		</constant>
 		<constant name="SCREEN_ORIENTATION_LANDSCAPE" value="0">
 		</constant>
@@ -23330,6 +23366,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</signal>
 	</signals>
 	<constants>
+		<constant name="NOTIFICATION_POSTINITIALIZE" value="0">
+			Called right when the object is initialized. Not available in script.
+		</constant>
+		<constant name="NOTIFICATION_PREDELETE" value="1">
+			Called before the object is about to be deleted.
+		</constant>
 		<constant name="CONNECT_DEFERRED" value="1">
 			Connect a signal in deferred mode. This way, signal emissions are stored in a queue, then set on idle time.
 		</constant>
@@ -23338,12 +23380,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="CONNECT_ONESHOT" value="4">
 			One short connections disconnect themselves after emission.
-		</constant>
-		<constant name="NOTIFICATION_POSTINITIALIZE" value="0">
-			Called right when the object is initialized. Not available in script.
-		</constant>
-		<constant name="NOTIFICATION_PREDELETE" value="1">
-			Called before the object is about to be deleted.
 		</constant>
 	</constants>
 </class>
@@ -24404,16 +24440,6 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="VAR_SPREAD" value="1">
 		</constant>
-		<constant name="VAR_FINAL_SIZE" value="10">
-		</constant>
-		<constant name="VAR_INITIAL_ANGLE" value="11">
-		</constant>
-		<constant name="VAR_HEIGHT" value="12">
-		</constant>
-		<constant name="VAR_HEIGHT_SPEED_SCALE" value="13">
-		</constant>
-		<constant name="VAR_MAX" value="14">
-		</constant>
 		<constant name="VAR_GRAVITY" value="2">
 		</constant>
 		<constant name="VAR_LINEAR_VELOCITY" value="3">
@@ -24427,6 +24453,16 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<constant name="VAR_TANGENTIAL_ACCELERATION" value="7">
 		</constant>
 		<constant name="VAR_INITIAL_SIZE" value="9">
+		</constant>
+		<constant name="VAR_FINAL_SIZE" value="10">
+		</constant>
+		<constant name="VAR_INITIAL_ANGLE" value="11">
+		</constant>
+		<constant name="VAR_HEIGHT" value="12">
+		</constant>
+		<constant name="VAR_HEIGHT_SPEED_SCALE" value="13">
+		</constant>
+		<constant name="VAR_MAX" value="14">
 		</constant>
 	</constants>
 </class>
@@ -24782,29 +24818,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</method>
 	</methods>
 	<constants>
-		<constant name="MAX_COLOR_PHASES" value="4">
-		</constant>
 		<constant name="PARAM_DIRECTION" value="0">
 			Direction in radians at which the particles will be launched, Notice that when the direction is set to 0 the particles will be launched to the negative
 		</constant>
 		<constant name="PARAM_SPREAD" value="1">
-		</constant>
-		<constant name="PARAM_INITIAL_ANGLE" value="10">
-			Initial angle in radians at which each particle will be spawned
-		</constant>
-		<constant name="PARAM_INITIAL_SIZE" value="11">
-			Initial size of each particle
-		</constant>
-		<constant name="PARAM_FINAL_SIZE" value="12">
-			Final size of each particle, the particle size will interpolate to this value during its lifetime.
-		</constant>
-		<constant name="PARAM_HUE_VARIATION" value="13">
-		</constant>
-		<constant name="PARAM_ANIM_SPEED_SCALE" value="14">
-		</constant>
-		<constant name="PARAM_ANIM_INITIAL_POS" value="15">
-		</constant>
-		<constant name="PARAM_MAX" value="16">
 		</constant>
 		<constant name="PARAM_LINEAR_VELOCITY" value="2">
 			Velocity at which the particles will be launched.
@@ -24827,6 +24844,25 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		</constant>
 		<constant name="PARAM_DAMPING" value="9">
 			Amount of damping for each particle
+		</constant>
+		<constant name="PARAM_INITIAL_ANGLE" value="10">
+			Initial angle in radians at which each particle will be spawned
+		</constant>
+		<constant name="PARAM_INITIAL_SIZE" value="11">
+			Initial size of each particle
+		</constant>
+		<constant name="PARAM_FINAL_SIZE" value="12">
+			Final size of each particle, the particle size will interpolate to this value during its lifetime.
+		</constant>
+		<constant name="PARAM_HUE_VARIATION" value="13">
+		</constant>
+		<constant name="PARAM_ANIM_SPEED_SCALE" value="14">
+		</constant>
+		<constant name="PARAM_ANIM_INITIAL_POS" value="15">
+		</constant>
+		<constant name="PARAM_MAX" value="16">
+		</constant>
+		<constant name="MAX_COLOR_PHASES" value="4">
 		</constant>
 	</constants>
 </class>
@@ -25271,6 +25307,12 @@ A similar effect may be achieved moving this node's descendants.
 		</method>
 	</methods>
 	<constants>
+		<constant name="TIME_FPS" value="0">
+		</constant>
+		<constant name="TIME_PROCESS" value="1">
+		</constant>
+		<constant name="TIME_FIXED_PROCESS" value="2">
+		</constant>
 		<constant name="MEMORY_STATIC" value="3">
 		</constant>
 		<constant name="MEMORY_DYNAMIC" value="4">
@@ -25281,25 +25323,11 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="MEMORY_MESSAGE_BUFFER_MAX" value="7">
 		</constant>
-		<constant name="MONITOR_MAX" value="27">
-		</constant>
-		<constant name="OBJECT_NODE_COUNT" value="10">
-		</constant>
 		<constant name="OBJECT_COUNT" value="8">
 		</constant>
 		<constant name="OBJECT_RESOURCE_COUNT" value="9">
 		</constant>
-		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="21">
-		</constant>
-		<constant name="PHYSICS_2D_COLLISION_PAIRS" value="22">
-		</constant>
-		<constant name="PHYSICS_2D_ISLAND_COUNT" value="23">
-		</constant>
-		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="24">
-		</constant>
-		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="25">
-		</constant>
-		<constant name="PHYSICS_3D_ISLAND_COUNT" value="26">
+		<constant name="OBJECT_NODE_COUNT" value="10">
 		</constant>
 		<constant name="RENDER_OBJECTS_IN_FRAME" value="11">
 		</constant>
@@ -25313,19 +25341,27 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="RENDER_DRAW_CALLS_IN_FRAME" value="16">
 		</constant>
+		<constant name="RENDER_USAGE_VIDEO_MEM_TOTAL" value="20">
+		</constant>
 		<constant name="RENDER_VIDEO_MEM_USED" value="17">
 		</constant>
 		<constant name="RENDER_TEXTURE_MEM_USED" value="18">
 		</constant>
 		<constant name="RENDER_VERTEX_MEM_USED" value="19">
 		</constant>
-		<constant name="RENDER_USAGE_VIDEO_MEM_TOTAL" value="20">
+		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="21">
 		</constant>
-		<constant name="TIME_FPS" value="0">
+		<constant name="PHYSICS_2D_COLLISION_PAIRS" value="22">
 		</constant>
-		<constant name="TIME_PROCESS" value="1">
+		<constant name="PHYSICS_2D_ISLAND_COUNT" value="23">
 		</constant>
-		<constant name="TIME_FIXED_PROCESS" value="2">
+		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="24">
+		</constant>
+		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="25">
+		</constant>
+		<constant name="PHYSICS_3D_ISLAND_COUNT" value="26">
+		</constant>
+		<constant name="MONITOR_MAX" value="27">
 		</constant>
 	</constants>
 </class>
@@ -25678,12 +25714,6 @@ A similar effect may be achieved moving this node's descendants.
 		<constant name="TYPE_MASK_STATIC_BODY" value="1">
 			Check for collisions with static bodies.
 		</constant>
-		<constant name="TYPE_MASK_COLLISION" value="15">
-			Check for collisions with any kind of bodies (but not areas).
-		</constant>
-		<constant name="TYPE_MASK_AREA" value="16">
-			Check for collisions with areas.
-		</constant>
 		<constant name="TYPE_MASK_KINEMATIC_BODY" value="2">
 			Check for collisions with kinematic bodies.
 		</constant>
@@ -25692,6 +25722,12 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="TYPE_MASK_CHARACTER_BODY" value="8">
 			Check for collisions with rigid bodies in character mode.
+		</constant>
+		<constant name="TYPE_MASK_AREA" value="16">
+			Check for collisions with areas.
+		</constant>
+		<constant name="TYPE_MASK_COLLISION" value="15">
+			Check for collisions with any kind of bodies (but not areas).
 		</constant>
 	</constants>
 </class>
@@ -26562,137 +26598,26 @@ A similar effect may be achieved moving this node's descendants.
 		</method>
 	</methods>
 	<constants>
-		<constant name="AREA_BODY_ADDED" value="0">
-			The value of the first parameter and area callback function receives, when an object enters one of its shapes.
+		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0">
+			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY" value="0">
-			Constant to set/get gravity strength in an area.
+		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1">
+			Constant to set/get the maximum distance a shape can be from another before they are considered separated.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
-			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
+		<constant name="SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION" value="2">
+			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
 		</constant>
-		<constant name="AREA_BODY_REMOVED" value="1">
-			The value of the first parameter and area callback function receives, when an object exits one of its shapes.
+		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD" value="3">
+			Constant to set/get the linear velocity threshold. Bodies slower than this will be marked as potentially inactive.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1">
-			Constant to set/get gravity vector/center in an area.
+		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD" value="4">
+			Constant to set/get the angular velocity threshold. Bodies slower than this will be marked as potentially inactive.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1">
-			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
+		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="5">
+			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2">
-			Constant to set/get whether the gravity vector of an area is a direction, or a center point.
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
-			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3">
-			Constant to set/get the falloff factor for point gravity of an area. The greater this value is, the faster the strength of gravity decreases with the square of distance.
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3">
-			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4">
-			This constant was used to set/get the falloff factor for point gravity. It has been superseded by AREA_PARAM_GRAVITY_DISTANCE_SCALE.
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
-			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
-		</constant>
-		<constant name="AREA_PARAM_LINEAR_DAMP" value="5">
-			Constant to set/get the linear dampening factor of an area.
-		</constant>
-		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6">
-			Constant to set/get the angular dampening factor of an area.
-		</constant>
-		<constant name="AREA_PARAM_PRIORITY" value="7">
-			Constant to set/get the priority (order of processing) of an area.
-		</constant>
-		<constant name="BODY_MODE_STATIC" value="0">
-			Constant for static bodies.
-		</constant>
-		<constant name="BODY_PARAM_BOUNCE" value="0">
-			Constant to set/get a body's bounce factor.
-		</constant>
-		<constant name="BODY_STATE_TRANSFORM" value="0">
-			Constant to set/get the current transform matrix of the body.
-		</constant>
-		<constant name="BODY_MODE_KINEMATIC" value="1">
-			Constant for kinematic bodies.
-		</constant>
-		<constant name="BODY_PARAM_FRICTION" value="1">
-			Constant to set/get a body's friction.
-		</constant>
-		<constant name="BODY_STATE_LINEAR_VELOCITY" value="1">
-			Constant to set/get the current linear velocity of the body.
-		</constant>
-		<constant name="BODY_MODE_RIGID" value="2">
-			Constant for rigid bodies.
-		</constant>
-		<constant name="BODY_PARAM_MASS" value="2">
-			Constant to set/get a body's mass.
-		</constant>
-		<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2">
-			Constant to set/get the current angular velocity of the body.
-		</constant>
-		<constant name="BODY_MODE_CHARACTER" value="3">
-			Constant for rigid bodies in character mode. In this mode, a body can not rotate, and only its linear velocity is affected by physics.
-		</constant>
-		<constant name="BODY_PARAM_INERTIA" value="3">
-			Constant to set/get a body's inertia.
-		</constant>
-		<constant name="BODY_STATE_SLEEPING" value="3">
-			Constant to sleep/wake up a body, or to get whether it is sleeping.
-		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="4">
-			Constant to set/get a body's gravity multiplier.
-		</constant>
-		<constant name="BODY_STATE_CAN_SLEEP" value="4">
-			Constant to set/get whether the body can sleep.
-		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="5">
-			Constant to set/get a body's linear dampening factor.
-		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="6">
-			Constant to set/get a body's angular dampening factor.
-		</constant>
-		<constant name="BODY_PARAM_MAX" value="7">
-			This is the last ID for body parameters. Any attempt to set this property is ignored. Any attempt to get it returns 0.
-		</constant>
-		<constant name="CCD_MODE_DISABLED" value="0">
-			Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
-		</constant>
-		<constant name="CCD_MODE_CAST_RAY" value="1">
-			Enables continuous collision detection by raycasting. It is faster than shapecasting, but less precise.
-		</constant>
-		<constant name="CCD_MODE_CAST_SHAPE" value="2">
-			Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise.
-		</constant>
-		<constant name="DAMPED_STRING_REST_LENGTH" value="0">
-			Set the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
-		</constant>
-		<constant name="DAMPED_STRING_STIFFNESS" value="1">
-			Set the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
-		</constant>
-		<constant name="DAMPED_STRING_DAMPING" value="2">
-			Set the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
-		</constant>
-		<constant name="INFO_ACTIVE_OBJECTS" value="0">
-			Constant to get the number of objects that are not sleeping.
-		</constant>
-		<constant name="INFO_COLLISION_PAIRS" value="1">
-			Constant to get the number of possible collisions.
-		</constant>
-		<constant name="INFO_ISLAND_COUNT" value="2">
-			Constant to get the number of space regions where a collision could occur.
-		</constant>
-		<constant name="JOINT_PIN" value="0">
-			Constant to create pin joints.
-		</constant>
-		<constant name="JOINT_GROOVE" value="1">
-			Constant to create groove joints.
-		</constant>
-		<constant name="JOINT_DAMPED_SPRING" value="2">
-			Constant to create damped spring joints.
+		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="6">
+			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
 		</constant>
 		<constant name="SHAPE_LINE" value="0">
 			This is the constant for creating line shapes. A line shape is an infinite line with an origin point, and a normal. Thus, it can be used for front/behind checks.
@@ -26718,26 +26643,137 @@ A similar effect may be achieved moving this node's descendants.
 		<constant name="SHAPE_CUSTOM" value="8">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
-		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0">
-			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated.
+		<constant name="AREA_PARAM_GRAVITY" value="0">
+			Constant to set/get gravity strength in an area.
 		</constant>
-		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1">
-			Constant to set/get the maximum distance a shape can be from another before they are considered separated.
+		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1">
+			Constant to set/get gravity vector/center in an area.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION" value="2">
-			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
+		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2">
+			Constant to set/get whether the gravity vector of an area is a direction, or a center point.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD" value="3">
-			Constant to set/get the linear velocity threshold. Bodies slower than this will be marked as potentially inactive.
+		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3">
+			Constant to set/get the falloff factor for point gravity of an area. The greater this value is, the faster the strength of gravity decreases with the square of distance.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD" value="4">
-			Constant to set/get the angular velocity threshold. Bodies slower than this will be marked as potentially inactive.
+		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4">
+			This constant was used to set/get the falloff factor for point gravity. It has been superseded by AREA_PARAM_GRAVITY_DISTANCE_SCALE.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="5">
-			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
+		<constant name="AREA_PARAM_LINEAR_DAMP" value="5">
+			Constant to set/get the linear dampening factor of an area.
 		</constant>
-		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="6">
-			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
+		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6">
+			Constant to set/get the angular dampening factor of an area.
+		</constant>
+		<constant name="AREA_PARAM_PRIORITY" value="7">
+			Constant to set/get the priority (order of processing) of an area.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
+			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1">
+			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
+			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3">
+			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
+			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
+		</constant>
+		<constant name="BODY_MODE_STATIC" value="0">
+			Constant for static bodies.
+		</constant>
+		<constant name="BODY_MODE_KINEMATIC" value="1">
+			Constant for kinematic bodies.
+		</constant>
+		<constant name="BODY_MODE_RIGID" value="2">
+			Constant for rigid bodies.
+		</constant>
+		<constant name="BODY_MODE_CHARACTER" value="3">
+			Constant for rigid bodies in character mode. In this mode, a body can not rotate, and only its linear velocity is affected by physics.
+		</constant>
+		<constant name="BODY_PARAM_BOUNCE" value="0">
+			Constant to set/get a body's bounce factor.
+		</constant>
+		<constant name="BODY_PARAM_FRICTION" value="1">
+			Constant to set/get a body's friction.
+		</constant>
+		<constant name="BODY_PARAM_MASS" value="2">
+			Constant to set/get a body's mass.
+		</constant>
+		<constant name="BODY_PARAM_INERTIA" value="3">
+			Constant to set/get a body's inertia.
+		</constant>
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="4">
+			Constant to set/get a body's gravity multiplier.
+		</constant>
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="5">
+			Constant to set/get a body's linear dampening factor.
+		</constant>
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="6">
+			Constant to set/get a body's angular dampening factor.
+		</constant>
+		<constant name="BODY_PARAM_MAX" value="7">
+			This is the last ID for body parameters. Any attempt to set this property is ignored. Any attempt to get it returns 0.
+		</constant>
+		<constant name="BODY_STATE_TRANSFORM" value="0">
+			Constant to set/get the current transform matrix of the body.
+		</constant>
+		<constant name="BODY_STATE_LINEAR_VELOCITY" value="1">
+			Constant to set/get the current linear velocity of the body.
+		</constant>
+		<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2">
+			Constant to set/get the current angular velocity of the body.
+		</constant>
+		<constant name="BODY_STATE_SLEEPING" value="3">
+			Constant to sleep/wake up a body, or to get whether it is sleeping.
+		</constant>
+		<constant name="BODY_STATE_CAN_SLEEP" value="4">
+			Constant to set/get whether the body can sleep.
+		</constant>
+		<constant name="JOINT_PIN" value="0">
+			Constant to create pin joints.
+		</constant>
+		<constant name="JOINT_GROOVE" value="1">
+			Constant to create groove joints.
+		</constant>
+		<constant name="JOINT_DAMPED_SPRING" value="2">
+			Constant to create damped spring joints.
+		</constant>
+		<constant name="DAMPED_STRING_REST_LENGTH" value="0">
+			Set the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
+		</constant>
+		<constant name="DAMPED_STRING_STIFFNESS" value="1">
+			Set the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
+		</constant>
+		<constant name="DAMPED_STRING_DAMPING" value="2">
+			Set the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
+		</constant>
+		<constant name="CCD_MODE_DISABLED" value="0">
+			Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
+		</constant>
+		<constant name="CCD_MODE_CAST_RAY" value="1">
+			Enables continuous collision detection by raycasting. It is faster than shapecasting, but less precise.
+		</constant>
+		<constant name="CCD_MODE_CAST_SHAPE" value="2">
+			Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise.
+		</constant>
+		<constant name="AREA_BODY_ADDED" value="0">
+			The value of the first parameter and area callback function receives, when an object enters one of its shapes.
+		</constant>
+		<constant name="AREA_BODY_REMOVED" value="1">
+			The value of the first parameter and area callback function receives, when an object exits one of its shapes.
+		</constant>
+		<constant name="INFO_ACTIVE_OBJECTS" value="0">
+			Constant to get the number of objects that are not sleeping.
+		</constant>
+		<constant name="INFO_COLLISION_PAIRS" value="1">
+			Constant to get the number of possible collisions.
+		</constant>
+		<constant name="INFO_ISLAND_COUNT" value="2">
+			Constant to get the number of space regions where a collision could occur.
 		</constant>
 	</constants>
 </class>
@@ -27454,15 +27490,15 @@ A similar effect may be achieved moving this node's descendants.
 	<constants>
 		<constant name="TYPE_MASK_STATIC_BODY" value="1">
 		</constant>
-		<constant name="TYPE_MASK_COLLISION" value="15">
-		</constant>
-		<constant name="TYPE_MASK_AREA" value="16">
-		</constant>
 		<constant name="TYPE_MASK_KINEMATIC_BODY" value="2">
 		</constant>
 		<constant name="TYPE_MASK_RIGID_BODY" value="4">
 		</constant>
 		<constant name="TYPE_MASK_CHARACTER_BODY" value="8">
+		</constant>
+		<constant name="TYPE_MASK_AREA" value="16">
+		</constant>
+		<constant name="TYPE_MASK_COLLISION" value="15">
 		</constant>
 	</constants>
 </class>
@@ -28380,143 +28416,6 @@ A similar effect may be achieved moving this node's descendants.
 		</method>
 	</methods>
 	<constants>
-		<constant name="AREA_BODY_ADDED" value="0">
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY" value="0">
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
-			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
-		</constant>
-		<constant name="AREA_BODY_REMOVED" value="1">
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1">
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1">
-			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2">
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
-			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3">
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3">
-			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4">
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
-			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
-		</constant>
-		<constant name="AREA_PARAM_LINEAR_DAMP" value="5">
-		</constant>
-		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6">
-		</constant>
-		<constant name="AREA_PARAM_PRIORITY" value="7">
-		</constant>
-		<constant name="BODY_MODE_STATIC" value="0">
-		</constant>
-		<constant name="BODY_PARAM_BOUNCE" value="0">
-		</constant>
-		<constant name="BODY_STATE_TRANSFORM" value="0">
-		</constant>
-		<constant name="BODY_MODE_KINEMATIC" value="1">
-		</constant>
-		<constant name="BODY_PARAM_FRICTION" value="1">
-		</constant>
-		<constant name="BODY_STATE_LINEAR_VELOCITY" value="1">
-		</constant>
-		<constant name="BODY_MODE_RIGID" value="2">
-		</constant>
-		<constant name="BODY_PARAM_MASS" value="2">
-		</constant>
-		<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2">
-		</constant>
-		<constant name="BODY_MODE_CHARACTER" value="3">
-		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="3">
-		</constant>
-		<constant name="BODY_STATE_SLEEPING" value="3">
-		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="4">
-		</constant>
-		<constant name="BODY_STATE_CAN_SLEEP" value="4">
-		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5">
-		</constant>
-		<constant name="BODY_PARAM_MAX" value="6">
-		</constant>
-		<constant name="CONE_TWIST_JOINT_SWING_SPAN" value="0">
-		</constant>
-		<constant name="CONE_TWIST_JOINT_TWIST_SPAN" value="1">
-		</constant>
-		<constant name="CONE_TWIST_JOINT_BIAS" value="2">
-		</constant>
-		<constant name="CONE_TWIST_JOINT_SOFTNESS" value="3">
-		</constant>
-		<constant name="CONE_TWIST_JOINT_RELAXATION" value="4">
-		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0">
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_LOWER_LIMIT" value="0">
-		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1">
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_UPPER_LIMIT" value="1">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="10">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="11">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="12">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="13">
-		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="2">
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS" value="2">
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_RESTITUTION" value="3">
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_DAMPING" value="4">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="5">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="6">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="7">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="8">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="9">
-		</constant>
-		<constant name="HINGE_JOINT_BIAS" value="0">
-		</constant>
-		<constant name="HINGE_JOINT_FLAG_USE_LIMIT" value="0">
-		</constant>
-		<constant name="HINGE_JOINT_FLAG_ENABLE_MOTOR" value="1">
-		</constant>
-		<constant name="HINGE_JOINT_LIMIT_UPPER" value="1">
-		</constant>
-		<constant name="HINGE_JOINT_LIMIT_LOWER" value="2">
-		</constant>
-		<constant name="HINGE_JOINT_LIMIT_BIAS" value="3">
-		</constant>
-		<constant name="HINGE_JOINT_LIMIT_SOFTNESS" value="4">
-		</constant>
-		<constant name="HINGE_JOINT_LIMIT_RELAXATION" value="5">
-		</constant>
-		<constant name="HINGE_JOINT_MOTOR_TARGET_VELOCITY" value="6">
-		</constant>
-		<constant name="HINGE_JOINT_MOTOR_MAX_IMPULSE" value="7">
-		</constant>
-		<constant name="INFO_ACTIVE_OBJECTS" value="0">
-		</constant>
-		<constant name="INFO_COLLISION_PAIRS" value="1">
-		</constant>
-		<constant name="INFO_ISLAND_COUNT" value="2">
-		</constant>
 		<constant name="JOINT_PIN" value="0">
 		</constant>
 		<constant name="JOINT_HINGE" value="1">
@@ -28533,27 +28432,45 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="PIN_JOINT_IMPULSE_CLAMP" value="2">
 		</constant>
-		<constant name="SHAPE_PLANE" value="0">
+		<constant name="HINGE_JOINT_BIAS" value="0">
 		</constant>
-		<constant name="SHAPE_RAY" value="1">
+		<constant name="HINGE_JOINT_LIMIT_UPPER" value="1">
 		</constant>
-		<constant name="SHAPE_SPHERE" value="2">
+		<constant name="HINGE_JOINT_LIMIT_LOWER" value="2">
 		</constant>
-		<constant name="SHAPE_BOX" value="3">
+		<constant name="HINGE_JOINT_LIMIT_BIAS" value="3">
 		</constant>
-		<constant name="SHAPE_CAPSULE" value="4">
+		<constant name="HINGE_JOINT_LIMIT_SOFTNESS" value="4">
 		</constant>
-		<constant name="SHAPE_CONVEX_POLYGON" value="5">
+		<constant name="HINGE_JOINT_LIMIT_RELAXATION" value="5">
 		</constant>
-		<constant name="SHAPE_CONCAVE_POLYGON" value="6">
+		<constant name="HINGE_JOINT_MOTOR_TARGET_VELOCITY" value="6">
 		</constant>
-		<constant name="SHAPE_HEIGHTMAP" value="7">
+		<constant name="HINGE_JOINT_MOTOR_MAX_IMPULSE" value="7">
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="8">
+		<constant name="HINGE_JOINT_FLAG_USE_LIMIT" value="0">
+		</constant>
+		<constant name="HINGE_JOINT_FLAG_ENABLE_MOTOR" value="1">
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_UPPER" value="0">
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_LOWER" value="1">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS" value="2">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION" value="3">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_DAMPING" value="4">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_MOTION_SOFTNESS" value="5">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_MOTION_RESTITUTION" value="6">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_MOTION_DAMPING" value="7">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS" value="8">
+		</constant>
+		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION" value="9">
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING" value="10">
 		</constant>
@@ -28575,27 +28492,146 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS" value="19">
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS" value="2">
-		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION" value="20">
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING" value="21">
 		</constant>
 		<constant name="SLIDER_JOINT_MAX" value="22">
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION" value="3">
+		<constant name="CONE_TWIST_JOINT_SWING_SPAN" value="0">
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_DAMPING" value="4">
+		<constant name="CONE_TWIST_JOINT_TWIST_SPAN" value="1">
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_MOTION_SOFTNESS" value="5">
+		<constant name="CONE_TWIST_JOINT_BIAS" value="2">
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_MOTION_RESTITUTION" value="6">
+		<constant name="CONE_TWIST_JOINT_SOFTNESS" value="3">
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_MOTION_DAMPING" value="7">
+		<constant name="CONE_TWIST_JOINT_RELAXATION" value="4">
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS" value="8">
+		<constant name="G6DOF_JOINT_LINEAR_LOWER_LIMIT" value="0">
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION" value="9">
+		<constant name="G6DOF_JOINT_LINEAR_UPPER_LIMIT" value="1">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS" value="2">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_RESTITUTION" value="3">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_DAMPING" value="4">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="5">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="6">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="7">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="8">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="9">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="10">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="11">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="12">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="13">
+		</constant>
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0">
+		</constant>
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1">
+		</constant>
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="2">
+		</constant>
+		<constant name="SHAPE_PLANE" value="0">
+		</constant>
+		<constant name="SHAPE_RAY" value="1">
+		</constant>
+		<constant name="SHAPE_SPHERE" value="2">
+		</constant>
+		<constant name="SHAPE_BOX" value="3">
+		</constant>
+		<constant name="SHAPE_CAPSULE" value="4">
+		</constant>
+		<constant name="SHAPE_CONVEX_POLYGON" value="5">
+		</constant>
+		<constant name="SHAPE_CONCAVE_POLYGON" value="6">
+		</constant>
+		<constant name="SHAPE_HEIGHTMAP" value="7">
+		</constant>
+		<constant name="SHAPE_CUSTOM" value="8">
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY" value="0">
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1">
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2">
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3">
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4">
+		</constant>
+		<constant name="AREA_PARAM_LINEAR_DAMP" value="5">
+		</constant>
+		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6">
+		</constant>
+		<constant name="AREA_PARAM_PRIORITY" value="7">
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
+			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1">
+			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
+			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3">
+			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
+		</constant>
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
+			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
+		</constant>
+		<constant name="BODY_MODE_STATIC" value="0">
+		</constant>
+		<constant name="BODY_MODE_KINEMATIC" value="1">
+		</constant>
+		<constant name="BODY_MODE_RIGID" value="2">
+		</constant>
+		<constant name="BODY_MODE_CHARACTER" value="3">
+		</constant>
+		<constant name="BODY_PARAM_BOUNCE" value="0">
+		</constant>
+		<constant name="BODY_PARAM_FRICTION" value="1">
+		</constant>
+		<constant name="BODY_PARAM_MASS" value="2">
+		</constant>
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="3">
+		</constant>
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5">
+		</constant>
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="4">
+		</constant>
+		<constant name="BODY_PARAM_MAX" value="6">
+		</constant>
+		<constant name="BODY_STATE_TRANSFORM" value="0">
+		</constant>
+		<constant name="BODY_STATE_LINEAR_VELOCITY" value="1">
+		</constant>
+		<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2">
+		</constant>
+		<constant name="BODY_STATE_SLEEPING" value="3">
+		</constant>
+		<constant name="BODY_STATE_CAN_SLEEP" value="4">
+		</constant>
+		<constant name="AREA_BODY_ADDED" value="0">
+		</constant>
+		<constant name="AREA_BODY_REMOVED" value="1">
+		</constant>
+		<constant name="INFO_ACTIVE_OBJECTS" value="0">
+		</constant>
+		<constant name="INFO_COLLISION_PAIRS" value="1">
+		</constant>
+		<constant name="INFO_ISLAND_COUNT" value="2">
 		</constant>
 	</constants>
 </class>
@@ -31452,15 +31488,15 @@ A similar effect may be achieved moving this node's descendants.
 	<constants>
 		<constant name="FLAG_RELATIVE_PATHS" value="1">
 		</constant>
-		<constant name="FLAG_SAVE_BIG_ENDIAN" value="16">
-		</constant>
 		<constant name="FLAG_BUNDLE_RESOURCES" value="2">
-		</constant>
-		<constant name="FLAG_COMPRESS" value="32">
 		</constant>
 		<constant name="FLAG_CHANGE_PATH" value="4">
 		</constant>
 		<constant name="FLAG_OMIT_EDITOR_PROPERTIES" value="8">
+		</constant>
+		<constant name="FLAG_SAVE_BIG_ENDIAN" value="16">
+		</constant>
+		<constant name="FLAG_COMPRESS" value="32">
 		</constant>
 	</constants>
 </class>
@@ -31706,11 +31742,15 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="ALIGN_FILL" value="3">
 		</constant>
+		<constant name="LIST_NUMBERS" value="0">
+		</constant>
+		<constant name="LIST_LETTERS" value="1">
+		</constant>
+		<constant name="LIST_DOTS" value="2">
+		</constant>
 		<constant name="ITEM_FRAME" value="0">
 		</constant>
 		<constant name="ITEM_TEXT" value="1">
-		</constant>
-		<constant name="ITEM_META" value="11">
 		</constant>
 		<constant name="ITEM_IMAGE" value="2">
 		</constant>
@@ -31728,11 +31768,7 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="ITEM_LIST" value="9">
 		</constant>
-		<constant name="LIST_NUMBERS" value="0">
-		</constant>
-		<constant name="LIST_LETTERS" value="1">
-		</constant>
-		<constant name="LIST_DOTS" value="2">
+		<constant name="ITEM_META" value="11">
 		</constant>
 	</constants>
 	<theme_items>
@@ -32091,17 +32127,17 @@ A similar effect may be achieved moving this node's descendants.
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_RIGID" value="0">
-			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
-		</constant>
 		<constant name="MODE_STATIC" value="1">
 			Static mode. The body behaves like a [StaticBody], and can only move by user code.
 		</constant>
-		<constant name="MODE_CHARACTER" value="2">
-			Character body. This behaves like a rigid body, but can not rotate.
-		</constant>
 		<constant name="MODE_KINEMATIC" value="3">
 			Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
+		</constant>
+		<constant name="MODE_RIGID" value="0">
+			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
+		</constant>
+		<constant name="MODE_CHARACTER" value="2">
+			Character body. This behaves like a rigid body, but can not rotate.
 		</constant>
 	</constants>
 </class>
@@ -32486,6 +32522,18 @@ A similar effect may be achieved moving this node's descendants.
 		</signal>
 	</signals>
 	<constants>
+		<constant name="MODE_STATIC" value="1">
+			Static mode. The body behaves like a [StaticBody2D], and can only move by user code.
+		</constant>
+		<constant name="MODE_KINEMATIC" value="3">
+			Kinematic body. The body behaves like a [KinematicBody2D], and can only move by user code.
+		</constant>
+		<constant name="MODE_RIGID" value="0">
+			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
+		</constant>
+		<constant name="MODE_CHARACTER" value="2">
+			Character body. This behaves like a rigid body, but can not rotate.
+		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0">
 			Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
 		</constant>
@@ -32494,18 +32542,6 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="CCD_MODE_CAST_SHAPE" value="2">
 			Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise.
-		</constant>
-		<constant name="MODE_RIGID" value="0">
-			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
-		</constant>
-		<constant name="MODE_STATIC" value="1">
-			Static mode. The body behaves like a [StaticBody2D], and can only move by user code.
-		</constant>
-		<constant name="MODE_CHARACTER" value="2">
-			Character body. This behaves like a rigid body, but can not rotate.
-		</constant>
-		<constant name="MODE_KINEMATIC" value="3">
-			Kinematic body. The body behaves like a [KinematicBody2D], and can only move by user code.
 		</constant>
 	</constants>
 </class>
@@ -33287,9 +33323,6 @@ A similar effect may be achieved moving this node's descendants.
 		<constant name="FILTER_HIGH_SHELF" value="8">
 			High-shelf filter is used for voice.
 		</constant>
-		<constant name="INVALID_VOICE_ID" value="-1">
-			Value returned if the voice ID is invalid.
-		</constant>
 		<constant name="REVERB_SMALL" value="0">
 			Small reverberation room (house room).
 		</constant>
@@ -33301,6 +33334,9 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="REVERB_HALL" value="3">
 			Huge reverberation room (cathedral, warehouse).
+		</constant>
+		<constant name="INVALID_VOICE_ID" value="-1">
+			Value returned if the voice ID is invalid.
 		</constant>
 	</constants>
 </class>
@@ -33834,17 +33870,17 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="GROUP_CALL_UNIQUE" value="4">
 		</constant>
-		<constant name="STRETCH_ASPECT_IGNORE" value="0">
-		</constant>
 		<constant name="STRETCH_MODE_DISABLED" value="0">
-		</constant>
-		<constant name="STRETCH_ASPECT_KEEP" value="1">
 		</constant>
 		<constant name="STRETCH_MODE_2D" value="1">
 		</constant>
-		<constant name="STRETCH_ASPECT_KEEP_WIDTH" value="2">
-		</constant>
 		<constant name="STRETCH_MODE_VIEWPORT" value="2">
+		</constant>
+		<constant name="STRETCH_ASPECT_IGNORE" value="0">
+		</constant>
+		<constant name="STRETCH_ASPECT_KEEP" value="1">
+		</constant>
+		<constant name="STRETCH_ASPECT_KEEP_WIDTH" value="2">
 		</constant>
 		<constant name="STRETCH_ASPECT_KEEP_HEIGHT" value="3">
 		</constant>
@@ -34801,15 +34837,25 @@ A similar effect may be achieved moving this node's descendants.
 		</signal>
 	</signals>
 	<constants>
-		<constant name="GRAPH_OK" value="0">
-		</constant>
-		<constant name="GRAPH_ERROR_CYCLIC" value="1">
-		</constant>
-		<constant name="GRAPH_ERROR_MISSING_CONNECTIONS" value="2">
-		</constant>
 		<constant name="NODE_INPUT" value="0">
 		</constant>
 		<constant name="NODE_SCALAR_CONST" value="1">
+		</constant>
+		<constant name="NODE_VEC_CONST" value="2">
+		</constant>
+		<constant name="NODE_RGB_CONST" value="3">
+		</constant>
+		<constant name="NODE_XFORM_CONST" value="4">
+		</constant>
+		<constant name="NODE_TIME" value="5">
+		</constant>
+		<constant name="NODE_SCREEN_TEX" value="6">
+		</constant>
+		<constant name="NODE_SCALAR_OP" value="7">
+		</constant>
+		<constant name="NODE_VEC_OP" value="8">
+		</constant>
+		<constant name="NODE_VEC_SCALAR_OP" value="9">
 		</constant>
 		<constant name="NODE_RGB_OP" value="10">
 		</constant>
@@ -34831,11 +34877,9 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="NODE_SCALAR_TO_VEC" value="19">
 		</constant>
-		<constant name="NODE_VEC_CONST" value="2">
+		<constant name="NODE_VEC_TO_XFORM" value="21">
 		</constant>
 		<constant name="NODE_XFORM_TO_VEC" value="20">
-		</constant>
-		<constant name="NODE_VEC_TO_XFORM" value="21">
 		</constant>
 		<constant name="NODE_SCALAR_INTERP" value="22">
 		</constant>
@@ -34853,8 +34897,6 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="NODE_XFORM_INPUT" value="29">
 		</constant>
-		<constant name="NODE_RGB_CONST" value="3">
-		</constant>
 		<constant name="NODE_TEXTURE_INPUT" value="30">
 		</constant>
 		<constant name="NODE_CUBEMAP_INPUT" value="31">
@@ -34867,17 +34909,81 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="NODE_TYPE_MAX" value="35">
 		</constant>
-		<constant name="NODE_XFORM_CONST" value="4">
+		<constant name="SLOT_TYPE_SCALAR" value="0">
 		</constant>
-		<constant name="NODE_TIME" value="5">
+		<constant name="SLOT_TYPE_VEC" value="1">
 		</constant>
-		<constant name="NODE_SCREEN_TEX" value="6">
+		<constant name="SLOT_TYPE_XFORM" value="2">
 		</constant>
-		<constant name="NODE_SCALAR_OP" value="7">
+		<constant name="SLOT_TYPE_TEXTURE" value="3">
 		</constant>
-		<constant name="NODE_VEC_OP" value="8">
+		<constant name="SLOT_MAX" value="4">
 		</constant>
-		<constant name="NODE_VEC_SCALAR_OP" value="9">
+		<constant name="SHADER_TYPE_VERTEX" value="0">
+		</constant>
+		<constant name="SHADER_TYPE_FRAGMENT" value="1">
+		</constant>
+		<constant name="SHADER_TYPE_LIGHT" value="2">
+		</constant>
+		<constant name="SHADER_TYPE_MAX" value="3">
+		</constant>
+		<constant name="SLOT_IN" value="0">
+		</constant>
+		<constant name="SLOT_OUT" value="1">
+		</constant>
+		<constant name="GRAPH_OK" value="0">
+		</constant>
+		<constant name="GRAPH_ERROR_CYCLIC" value="1">
+		</constant>
+		<constant name="GRAPH_ERROR_MISSING_CONNECTIONS" value="2">
+		</constant>
+		<constant name="SCALAR_OP_ADD" value="0">
+		</constant>
+		<constant name="SCALAR_OP_SUB" value="1">
+		</constant>
+		<constant name="SCALAR_OP_MUL" value="2">
+		</constant>
+		<constant name="SCALAR_OP_DIV" value="3">
+		</constant>
+		<constant name="SCALAR_OP_MOD" value="4">
+		</constant>
+		<constant name="SCALAR_OP_POW" value="5">
+		</constant>
+		<constant name="SCALAR_OP_MAX" value="6">
+		</constant>
+		<constant name="SCALAR_OP_MIN" value="7">
+		</constant>
+		<constant name="SCALAR_OP_ATAN2" value="8">
+		</constant>
+		<constant name="SCALAR_MAX_OP" value="9">
+		</constant>
+		<constant name="VEC_OP_ADD" value="0">
+		</constant>
+		<constant name="VEC_OP_SUB" value="1">
+		</constant>
+		<constant name="VEC_OP_MUL" value="2">
+		</constant>
+		<constant name="VEC_OP_DIV" value="3">
+		</constant>
+		<constant name="VEC_OP_MOD" value="4">
+		</constant>
+		<constant name="VEC_OP_POW" value="5">
+		</constant>
+		<constant name="VEC_OP_MAX" value="6">
+		</constant>
+		<constant name="VEC_OP_MIN" value="7">
+		</constant>
+		<constant name="VEC_OP_CROSS" value="8">
+		</constant>
+		<constant name="VEC_MAX_OP" value="9">
+		</constant>
+		<constant name="VEC_SCALAR_OP_MUL" value="0">
+		</constant>
+		<constant name="VEC_SCALAR_OP_DIV" value="1">
+		</constant>
+		<constant name="VEC_SCALAR_OP_POW" value="2">
+		</constant>
+		<constant name="VEC_SCALAR_MAX_OP" value="3">
 		</constant>
 		<constant name="RGB_OP_SCREEN" value="0">
 		</constant>
@@ -34901,11 +35007,23 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="SCALAR_FUNC_SIN" value="0">
 		</constant>
-		<constant name="SCALAR_OP_ADD" value="0">
-		</constant>
 		<constant name="SCALAR_FUNC_COS" value="1">
 		</constant>
-		<constant name="SCALAR_OP_SUB" value="1">
+		<constant name="SCALAR_FUNC_TAN" value="2">
+		</constant>
+		<constant name="SCALAR_FUNC_ASIN" value="3">
+		</constant>
+		<constant name="SCALAR_FUNC_ACOS" value="4">
+		</constant>
+		<constant name="SCALAR_FUNC_ATAN" value="5">
+		</constant>
+		<constant name="SCALAR_FUNC_SINH" value="6">
+		</constant>
+		<constant name="SCALAR_FUNC_COSH" value="7">
+		</constant>
+		<constant name="SCALAR_FUNC_TANH" value="8">
+		</constant>
+		<constant name="SCALAR_FUNC_LOG" value="9">
 		</constant>
 		<constant name="SCALAR_FUNC_EXP" value="10">
 		</constant>
@@ -34927,103 +35045,21 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="SCALAR_FUNC_NEGATE" value="19">
 		</constant>
-		<constant name="SCALAR_FUNC_TAN" value="2">
-		</constant>
-		<constant name="SCALAR_OP_MUL" value="2">
-		</constant>
 		<constant name="SCALAR_MAX_FUNC" value="20">
-		</constant>
-		<constant name="SCALAR_FUNC_ASIN" value="3">
-		</constant>
-		<constant name="SCALAR_OP_DIV" value="3">
-		</constant>
-		<constant name="SCALAR_FUNC_ACOS" value="4">
-		</constant>
-		<constant name="SCALAR_OP_MOD" value="4">
-		</constant>
-		<constant name="SCALAR_FUNC_ATAN" value="5">
-		</constant>
-		<constant name="SCALAR_OP_POW" value="5">
-		</constant>
-		<constant name="SCALAR_FUNC_SINH" value="6">
-		</constant>
-		<constant name="SCALAR_OP_MAX" value="6">
-		</constant>
-		<constant name="SCALAR_FUNC_COSH" value="7">
-		</constant>
-		<constant name="SCALAR_OP_MIN" value="7">
-		</constant>
-		<constant name="SCALAR_FUNC_TANH" value="8">
-		</constant>
-		<constant name="SCALAR_OP_ATAN2" value="8">
-		</constant>
-		<constant name="SCALAR_FUNC_LOG" value="9">
-		</constant>
-		<constant name="SCALAR_MAX_OP" value="9">
-		</constant>
-		<constant name="SHADER_TYPE_VERTEX" value="0">
-		</constant>
-		<constant name="SHADER_TYPE_FRAGMENT" value="1">
-		</constant>
-		<constant name="SHADER_TYPE_LIGHT" value="2">
-		</constant>
-		<constant name="SHADER_TYPE_MAX" value="3">
-		</constant>
-		<constant name="SLOT_IN" value="0">
-		</constant>
-		<constant name="SLOT_TYPE_SCALAR" value="0">
-		</constant>
-		<constant name="SLOT_OUT" value="1">
-		</constant>
-		<constant name="SLOT_TYPE_VEC" value="1">
-		</constant>
-		<constant name="SLOT_TYPE_XFORM" value="2">
-		</constant>
-		<constant name="SLOT_TYPE_TEXTURE" value="3">
-		</constant>
-		<constant name="SLOT_MAX" value="4">
 		</constant>
 		<constant name="VEC_FUNC_NORMALIZE" value="0">
 		</constant>
-		<constant name="VEC_OP_ADD" value="0">
-		</constant>
-		<constant name="VEC_SCALAR_OP_MUL" value="0">
-		</constant>
 		<constant name="VEC_FUNC_SATURATE" value="1">
-		</constant>
-		<constant name="VEC_OP_SUB" value="1">
-		</constant>
-		<constant name="VEC_SCALAR_OP_DIV" value="1">
 		</constant>
 		<constant name="VEC_FUNC_NEGATE" value="2">
 		</constant>
-		<constant name="VEC_OP_MUL" value="2">
-		</constant>
-		<constant name="VEC_SCALAR_OP_POW" value="2">
-		</constant>
 		<constant name="VEC_FUNC_RECIPROCAL" value="3">
-		</constant>
-		<constant name="VEC_OP_DIV" value="3">
-		</constant>
-		<constant name="VEC_SCALAR_MAX_OP" value="3">
 		</constant>
 		<constant name="VEC_FUNC_RGB2HSV" value="4">
 		</constant>
-		<constant name="VEC_OP_MOD" value="4">
-		</constant>
 		<constant name="VEC_FUNC_HSV2RGB" value="5">
 		</constant>
-		<constant name="VEC_OP_POW" value="5">
-		</constant>
 		<constant name="VEC_MAX_FUNC" value="6">
-		</constant>
-		<constant name="VEC_OP_MAX" value="6">
-		</constant>
-		<constant name="VEC_OP_MIN" value="7">
-		</constant>
-		<constant name="VEC_OP_CROSS" value="8">
-		</constant>
-		<constant name="VEC_MAX_OP" value="9">
 		</constant>
 	</constants>
 </class>
@@ -35470,6 +35506,22 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="PARAM_LINEAR_LIMIT_LOWER" value="1">
 		</constant>
+		<constant name="PARAM_LINEAR_LIMIT_SOFTNESS" value="2">
+		</constant>
+		<constant name="PARAM_LINEAR_LIMIT_RESTITUTION" value="3">
+		</constant>
+		<constant name="PARAM_LINEAR_LIMIT_DAMPING" value="4">
+		</constant>
+		<constant name="PARAM_LINEAR_MOTION_SOFTNESS" value="5">
+		</constant>
+		<constant name="PARAM_LINEAR_MOTION_RESTITUTION" value="6">
+		</constant>
+		<constant name="PARAM_LINEAR_MOTION_DAMPING" value="7">
+		</constant>
+		<constant name="PARAM_LINEAR_ORTHOGONAL_SOFTNESS" value="8">
+		</constant>
+		<constant name="PARAM_LINEAR_ORTHOGONAL_RESTITUTION" value="9">
+		</constant>
 		<constant name="PARAM_LINEAR_ORTHOGONAL_DAMPING" value="10">
 		</constant>
 		<constant name="PARAM_ANGULAR_LIMIT_UPPER" value="11">
@@ -35490,27 +35542,11 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="PARAM_ANGULAR_ORTHOGONAL_SOFTNESS" value="19">
 		</constant>
-		<constant name="PARAM_LINEAR_LIMIT_SOFTNESS" value="2">
-		</constant>
 		<constant name="PARAM_ANGULAR_ORTHOGONAL_RESTITUTION" value="20">
 		</constant>
 		<constant name="PARAM_ANGULAR_ORTHOGONAL_DAMPING" value="21">
 		</constant>
 		<constant name="PARAM_MAX" value="22">
-		</constant>
-		<constant name="PARAM_LINEAR_LIMIT_RESTITUTION" value="3">
-		</constant>
-		<constant name="PARAM_LINEAR_LIMIT_DAMPING" value="4">
-		</constant>
-		<constant name="PARAM_LINEAR_MOTION_SOFTNESS" value="5">
-		</constant>
-		<constant name="PARAM_LINEAR_MOTION_RESTITUTION" value="6">
-		</constant>
-		<constant name="PARAM_LINEAR_MOTION_DAMPING" value="7">
-		</constant>
-		<constant name="PARAM_LINEAR_ORTHOGONAL_SOFTNESS" value="8">
-		</constant>
-		<constant name="PARAM_LINEAR_ORTHOGONAL_RESTITUTION" value="9">
 		</constant>
 	</constants>
 </class>
@@ -36763,17 +36799,17 @@ A similar effect may be achieved moving this node's descendants.
 		</method>
 	</methods>
 	<constants>
-		<constant name="ALPHA_CUT_DISABLED" value="0">
-		</constant>
-		<constant name="ALPHA_CUT_DISCARD" value="1">
-		</constant>
-		<constant name="ALPHA_CUT_OPAQUE_PREPASS" value="2">
-		</constant>
 		<constant name="FLAG_TRANSPARENT" value="0">
 		</constant>
 		<constant name="FLAG_SHADED" value="1">
 		</constant>
 		<constant name="FLAG_MAX" value="2">
+		</constant>
+		<constant name="ALPHA_CUT_DISABLED" value="0">
+		</constant>
+		<constant name="ALPHA_CUT_DISCARD" value="1">
+		</constant>
+		<constant name="ALPHA_CUT_OPAQUE_PREPASS" value="2">
 		</constant>
 	</constants>
 </class>
@@ -38574,13 +38610,13 @@ A similar effect may be achieved moving this node's descendants.
 		<method name="add_triangle_fan">
 			<argument index="0" name="vertexes" type="Vector3Array">
 			</argument>
-			<argument index="1" name="uvs" type="Vector2Array" default="Vector2Array()">
+			<argument index="1" name="uvs" type="Vector2Array" default="Vector2Array([])">
 			</argument>
 			<argument index="2" name="colors" type="ColorArray" default="ColorArray([ColorArray])">
 			</argument>
-			<argument index="3" name="uv2s" type="Vector2Array" default="Vector2Array()">
+			<argument index="3" name="uv2s" type="Vector2Array" default="Vector2Array([])">
 			</argument>
-			<argument index="4" name="normals" type="Vector3Array" default="Vector3Array()">
+			<argument index="4" name="normals" type="Vector3Array" default="Vector3Array([])">
 			</argument>
 			<argument index="5" name="tangents" type="Array" default="Array()">
 			</argument>
@@ -38671,7 +38707,7 @@ A similar effect may be achieved moving this node's descendants.
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="accepted_hosts" type="StringArray" default="StringArray()">
+			<argument index="1" name="accepted_hosts" type="StringArray" default="StringArray([])">
 			</argument>
 			<description>
 			Listen on a port, alternatively give a white-list of accepted hosts.
@@ -38983,11 +39019,11 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2">
 		</constant>
-		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0">
-		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_ACTIVE_ONLY" value="1">
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2">
+		</constant>
+		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0">
 		</constant>
 	</constants>
 	<theme_items>
@@ -39359,6 +39395,15 @@ A similar effect may be achieved moving this node's descendants.
 		</signal>
 	</signals>
 	<constants>
+		<constant name="SEARCH_MATCH_CASE" value="1">
+			Match case when searching.
+		</constant>
+		<constant name="SEARCH_WHOLE_WORDS" value="2">
+			Match whole words when searching.
+		</constant>
+		<constant name="SEARCH_BACKWARDS" value="4">
+			Search from end to beginning.
+		</constant>
 		<constant name="MENU_CUT" value="0">
 		</constant>
 		<constant name="MENU_COPY" value="1">
@@ -39372,15 +39417,6 @@ A similar effect may be achieved moving this node's descendants.
 		<constant name="MENU_UNDO" value="5">
 		</constant>
 		<constant name="MENU_MAX" value="6">
-		</constant>
-		<constant name="SEARCH_MATCH_CASE" value="1">
-			Match case when searching.
-		</constant>
-		<constant name="SEARCH_WHOLE_WORDS" value="2">
-			Match whole words when searching.
-		</constant>
-		<constant name="SEARCH_BACKWARDS" value="4">
-			Search from end to beginning.
 		</constant>
 	</constants>
 	<theme_items>
@@ -39531,12 +39567,8 @@ A similar effect may be achieved moving this node's descendants.
 		<constant name="FLAG_MIPMAPS" value="1">
 			Generate mipmaps, to enable smooth zooming out of the texture.
 		</constant>
-		<constant name="FLAG_CONVERT_TO_LINEAR" value="16">
-		</constant>
 		<constant name="FLAG_REPEAT" value="2">
 			Repeat (instead of clamp to edge).
-		</constant>
-		<constant name="FLAG_MIRRORED_REPEAT" value="32">
 		</constant>
 		<constant name="FLAG_FILTER" value="4">
 			Turn on magnifying filter, to enable smooth zooming in of the texture.
@@ -39544,10 +39576,14 @@ A similar effect may be achieved moving this node's descendants.
 		<constant name="FLAG_VIDEO_SURFACE" value="4096">
 			Texture is a video surface.
 		</constant>
-		<constant name="FLAG_ANISOTROPIC_FILTER" value="8">
-		</constant>
 		<constant name="FLAGS_DEFAULT" value="7">
 			Default flags. Generate mipmaps, repeat, and filter are enabled.
+		</constant>
+		<constant name="FLAG_ANISOTROPIC_FILTER" value="8">
+		</constant>
+		<constant name="FLAG_CONVERT_TO_LINEAR" value="16">
+		</constant>
+		<constant name="FLAG_MIRRORED_REPEAT" value="32">
 		</constant>
 	</constants>
 </class>
@@ -40539,15 +40575,6 @@ A similar effect may be achieved moving this node's descendants.
 		</signal>
 	</signals>
 	<constants>
-		<constant name="HALF_OFFSET_X" value="0">
-			Half offset on the X coordinate.
-		</constant>
-		<constant name="HALF_OFFSET_Y" value="1">
-			Half offset on the Y coordinate.
-		</constant>
-		<constant name="HALF_OFFSET_DISABLED" value="2">
-			Half offset disabled.
-		</constant>
 		<constant name="INVALID_CELL" value="-1">
 			Returned when a cell doesn't exist.
 		</constant>
@@ -40559,6 +40586,15 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="MODE_CUSTOM" value="2">
 			Custom orientation mode.
+		</constant>
+		<constant name="HALF_OFFSET_X" value="0">
+			Half offset on the X coordinate.
+		</constant>
+		<constant name="HALF_OFFSET_Y" value="1">
+			Half offset on the Y coordinate.
+		</constant>
+		<constant name="HALF_OFFSET_DISABLED" value="2">
+			Half offset disabled.
 		</constant>
 		<constant name="TILE_ORIGIN_TOP_LEFT" value="0">
 			Tile origin at its top-left corner.
@@ -41638,17 +41674,17 @@ A similar effect may be achieved moving this node's descendants.
 		</signal>
 	</signals>
 	<constants>
-		<constant name="DROP_MODE_DISABLED" value="0">
-		</constant>
-		<constant name="DROP_MODE_ON_ITEM" value="1">
-		</constant>
-		<constant name="DROP_MODE_INBETWEEN" value="2">
-		</constant>
 		<constant name="SELECT_SINGLE" value="0">
 		</constant>
 		<constant name="SELECT_ROW" value="1">
 		</constant>
 		<constant name="SELECT_MULTI" value="2">
+		</constant>
+		<constant name="DROP_MODE_DISABLED" value="0">
+		</constant>
+		<constant name="DROP_MODE_ON_ITEM" value="1">
+		</constant>
+		<constant name="DROP_MODE_INBETWEEN" value="2">
 		</constant>
 	</constants>
 	<theme_items>
@@ -42523,26 +42559,17 @@ A similar effect may be achieved moving this node's descendants.
 		</signal>
 	</signals>
 	<constants>
-		<constant name="EASE_IN" value="0">
-			Signifies that the interpolation should be focused in the beginning.
+		<constant name="TWEEN_PROCESS_FIXED" value="0">
+			The [Tween] should use [code]_fixed_process[/code] for timekeeping when this is enabled.
 		</constant>
-		<constant name="EASE_OUT" value="1">
-			Signifies that the interpolation should be focused in the end.
-		</constant>
-		<constant name="EASE_IN_OUT" value="2">
-			Signifies that the interpolation should be focused in both ends.
-		</constant>
-		<constant name="EASE_OUT_IN" value="3">
-			Signifies that the interpolation should be focused in both ends, but they should be switched (a bit hard to explain, try it for yourself to be sure).
+		<constant name="TWEEN_PROCESS_IDLE" value="1">
+			The [Tween] should use [code]_process[/code] for timekeeping when this is enabled (default).
 		</constant>
 		<constant name="TRANS_LINEAR" value="0">
 			Means that the animation is interpolated linearly.
 		</constant>
 		<constant name="TRANS_SINE" value="1">
 			Means that the animation is interpolated using a sine wave.
-		</constant>
-		<constant name="TRANS_BACK" value="10">
-			Means that the animation is interpolated backing out at edges.
 		</constant>
 		<constant name="TRANS_QUINT" value="2">
 			Means that the animation is interpolated with a quinary (to the power of 5) function.
@@ -42568,11 +42595,20 @@ A similar effect may be achieved moving this node's descendants.
 		<constant name="TRANS_BOUNCE" value="9">
 			Means that the animation is interpolated by bouncing at, but never surpassing, the end.
 		</constant>
-		<constant name="TWEEN_PROCESS_FIXED" value="0">
-			The [Tween] should use [code]_fixed_process[/code] for timekeeping when this is enabled.
+		<constant name="TRANS_BACK" value="10">
+			Means that the animation is interpolated backing out at edges.
 		</constant>
-		<constant name="TWEEN_PROCESS_IDLE" value="1">
-			The [Tween] should use [code]_process[/code] for timekeeping when this is enabled (default).
+		<constant name="EASE_IN" value="0">
+			Signifies that the interpolation should be focused in the beginning.
+		</constant>
+		<constant name="EASE_OUT" value="1">
+			Signifies that the interpolation should be focused in the end.
+		</constant>
+		<constant name="EASE_IN_OUT" value="2">
+			Signifies that the interpolation should be focused in both ends.
+		</constant>
+		<constant name="EASE_OUT_IN" value="3">
+			Signifies that the interpolation should be focused in both ends, but they should be switched (a bit hard to explain, try it for yourself to be sure).
 		</constant>
 	</constants>
 </class>
@@ -42859,6 +42895,16 @@ A similar effect may be achieved moving this node's descendants.
 		<theme_item name="separation" type="int">
 		</theme_item>
 	</theme_items>
+</class>
+<class name="Variant" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
 </class>
 <class name="Vector2" category="Built-In Types">
 	<brief_description>
@@ -44333,11 +44379,11 @@ A similar effect may be achieved moving this node's descendants.
 		</method>
 	</methods>
 	<constants>
-		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
-			This enabler will pause [AnimationPlayer] nodes.
-		</constant>
 		<constant name="ENABLER_FREEZE_BODIES" value="1">
 			This enabler will freeze [RigidBody] nodes.
+		</constant>
+		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
+			This enabler will pause [AnimationPlayer] nodes.
 		</constant>
 		<constant name="ENABLER_MAX" value="2">
 		</constant>
@@ -44371,22 +44417,22 @@ A similar effect may be achieved moving this node's descendants.
 		</method>
 	</methods>
 	<constants>
-		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
-			This enabler will pause [AnimationPlayer] nodes.
-		</constant>
 		<constant name="ENABLER_FREEZE_BODIES" value="1">
 			This enabler will freeze [RigidBody2D] nodes.
 		</constant>
+		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
+			This enabler will pause [AnimationPlayer] nodes.
+		</constant>
 		<constant name="ENABLER_PAUSE_PARTICLES" value="2">
 			This enabler will stop [Particles2D] nodes.
+		</constant>
+		<constant name="ENABLER_PAUSE_ANIMATED_SPRITES" value="5">
 		</constant>
 		<constant name="ENABLER_PARENT_PROCESS" value="3">
 			This enabler will stop the parent's _process function.
 		</constant>
 		<constant name="ENABLER_PARENT_FIXED_PROCESS" value="4">
 			This enabler will stop the parent's _fixed_process function.
-		</constant>
-		<constant name="ENABLER_PAUSE_ANIMATED_SPRITES" value="5">
 		</constant>
 		<constant name="ENABLER_MAX" value="6">
 		</constant>
@@ -45947,41 +45993,27 @@ A similar effect may be achieved moving this node's descendants.
 		</method>
 	</methods>
 	<constants>
-		<constant name="ARRAY_VERTEX" value="0">
+		<constant name="NO_INDEX_ARRAY" value="-1">
 		</constant>
-		<constant name="ARRAY_FORMAT_VERTEX" value="1">
-		</constant>
-		<constant name="ARRAY_NORMAL" value="1">
-		</constant>
-		<constant name="ARRAY_FORMAT_WEIGHTS" value="128">
-		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV" value="16">
-		</constant>
-		<constant name="ARRAY_FORMAT_NORMAL" value="2">
-		</constant>
-		<constant name="ARRAY_TANGENT" value="2">
-		</constant>
-		<constant name="ARRAY_FORMAT_INDEX" value="256">
-		</constant>
-		<constant name="ARRAY_COLOR" value="3">
-		</constant>
-		<constant name="ARRAY_FORMAT_TANGENT" value="4">
-		</constant>
-		<constant name="ARRAY_TEX_UV" value="4">
+		<constant name="CUSTOM_ARRAY_SIZE" value="8">
 		</constant>
 		<constant name="ARRAY_WEIGHTS_SIZE" value="4">
 		</constant>
-		<constant name="ARRAY_BONES" value="6">
+		<constant name="MAX_PARTICLE_COLOR_PHASES" value="4">
 		</constant>
-		<constant name="ARRAY_FORMAT_BONES" value="64">
+		<constant name="MAX_PARTICLE_ATTRACTORS" value="4">
 		</constant>
-		<constant name="ARRAY_WEIGHTS" value="7">
+		<constant name="MAX_CURSORS" value="8">
 		</constant>
-		<constant name="ARRAY_FORMAT_COLOR" value="8">
+		<constant name="TEXTURE_FLAG_MIPMAPS" value="1">
 		</constant>
-		<constant name="ARRAY_INDEX" value="8">
+		<constant name="TEXTURE_FLAG_REPEAT" value="2">
 		</constant>
-		<constant name="ARRAY_MAX" value="9">
+		<constant name="TEXTURE_FLAG_FILTER" value="4">
+		</constant>
+		<constant name="TEXTURE_FLAG_CUBEMAP" value="2048">
+		</constant>
+		<constant name="TEXTURE_FLAGS_DEFAULT" value="7">
 		</constant>
 		<constant name="CUBEMAP_LEFT" value="0">
 		</constant>
@@ -45995,23 +46027,37 @@ A similar effect may be achieved moving this node's descendants.
 		</constant>
 		<constant name="CUBEMAP_BACK" value="5">
 		</constant>
-		<constant name="CUSTOM_ARRAY_SIZE" value="8">
+		<constant name="SHADER_MATERIAL" value="0">
+		</constant>
+		<constant name="SHADER_POST_PROCESS" value="2">
+		</constant>
+		<constant name="MATERIAL_FLAG_VISIBLE" value="0">
+		</constant>
+		<constant name="MATERIAL_FLAG_DOUBLE_SIDED" value="1">
+		</constant>
+		<constant name="MATERIAL_FLAG_INVERT_FACES" value="2">
+		</constant>
+		<constant name="MATERIAL_FLAG_UNSHADED" value="3">
+		</constant>
+		<constant name="MATERIAL_FLAG_ONTOP" value="4">
+		</constant>
+		<constant name="MATERIAL_FLAG_MAX" value="7">
+		</constant>
+		<constant name="MATERIAL_BLEND_MODE_MIX" value="0">
+		</constant>
+		<constant name="MATERIAL_BLEND_MODE_ADD" value="1">
+		</constant>
+		<constant name="MATERIAL_BLEND_MODE_SUB" value="2">
+		</constant>
+		<constant name="MATERIAL_BLEND_MODE_MUL" value="3">
 		</constant>
 		<constant name="FIXED_MATERIAL_PARAM_DIFFUSE" value="0">
 		</constant>
-		<constant name="FIXED_MATERIAL_TEXCOORD_UV" value="0">
-		</constant>
 		<constant name="FIXED_MATERIAL_PARAM_DETAIL" value="1">
-		</constant>
-		<constant name="FIXED_MATERIAL_TEXCOORD_UV_TRANSFORM" value="1">
 		</constant>
 		<constant name="FIXED_MATERIAL_PARAM_SPECULAR" value="2">
 		</constant>
-		<constant name="FIXED_MATERIAL_TEXCOORD_UV2" value="2">
-		</constant>
 		<constant name="FIXED_MATERIAL_PARAM_EMISSION" value="3">
-		</constant>
-		<constant name="FIXED_MATERIAL_TEXCOORD_SPHERE" value="3">
 		</constant>
 		<constant name="FIXED_MATERIAL_PARAM_SPECULAR_EXP" value="4">
 		</constant>
@@ -46022,6 +46068,134 @@ A similar effect may be achieved moving this node's descendants.
 		<constant name="FIXED_MATERIAL_PARAM_SHADE_PARAM" value="7">
 		</constant>
 		<constant name="FIXED_MATERIAL_PARAM_MAX" value="8">
+		</constant>
+		<constant name="FIXED_MATERIAL_TEXCOORD_SPHERE" value="3">
+		</constant>
+		<constant name="FIXED_MATERIAL_TEXCOORD_UV" value="0">
+		</constant>
+		<constant name="FIXED_MATERIAL_TEXCOORD_UV_TRANSFORM" value="1">
+		</constant>
+		<constant name="FIXED_MATERIAL_TEXCOORD_UV2" value="2">
+		</constant>
+		<constant name="ARRAY_VERTEX" value="0">
+		</constant>
+		<constant name="ARRAY_NORMAL" value="1">
+		</constant>
+		<constant name="ARRAY_TANGENT" value="2">
+		</constant>
+		<constant name="ARRAY_COLOR" value="3">
+		</constant>
+		<constant name="ARRAY_TEX_UV" value="4">
+		</constant>
+		<constant name="ARRAY_BONES" value="6">
+		</constant>
+		<constant name="ARRAY_WEIGHTS" value="7">
+		</constant>
+		<constant name="ARRAY_INDEX" value="8">
+		</constant>
+		<constant name="ARRAY_MAX" value="9">
+		</constant>
+		<constant name="ARRAY_FORMAT_VERTEX" value="1">
+		</constant>
+		<constant name="ARRAY_FORMAT_NORMAL" value="2">
+		</constant>
+		<constant name="ARRAY_FORMAT_TANGENT" value="4">
+		</constant>
+		<constant name="ARRAY_FORMAT_COLOR" value="8">
+		</constant>
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16">
+		</constant>
+		<constant name="ARRAY_FORMAT_BONES" value="64">
+		</constant>
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="128">
+		</constant>
+		<constant name="ARRAY_FORMAT_INDEX" value="256">
+		</constant>
+		<constant name="PRIMITIVE_POINTS" value="0">
+		</constant>
+		<constant name="PRIMITIVE_LINES" value="1">
+		</constant>
+		<constant name="PRIMITIVE_LINE_STRIP" value="2">
+		</constant>
+		<constant name="PRIMITIVE_LINE_LOOP" value="3">
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLES" value="4">
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5">
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6">
+		</constant>
+		<constant name="PRIMITIVE_MAX" value="7">
+		</constant>
+		<constant name="PARTICLE_LIFETIME" value="0">
+		</constant>
+		<constant name="PARTICLE_SPREAD" value="1">
+		</constant>
+		<constant name="PARTICLE_GRAVITY" value="2">
+		</constant>
+		<constant name="PARTICLE_LINEAR_VELOCITY" value="3">
+		</constant>
+		<constant name="PARTICLE_ANGULAR_VELOCITY" value="4">
+		</constant>
+		<constant name="PARTICLE_LINEAR_ACCELERATION" value="5">
+		</constant>
+		<constant name="PARTICLE_RADIAL_ACCELERATION" value="6">
+		</constant>
+		<constant name="PARTICLE_TANGENTIAL_ACCELERATION" value="7">
+		</constant>
+		<constant name="PARTICLE_INITIAL_SIZE" value="9">
+		</constant>
+		<constant name="PARTICLE_FINAL_SIZE" value="10">
+		</constant>
+		<constant name="PARTICLE_INITIAL_ANGLE" value="11">
+		</constant>
+		<constant name="PARTICLE_HEIGHT" value="12">
+		</constant>
+		<constant name="PARTICLE_HEIGHT_SPEED_SCALE" value="13">
+		</constant>
+		<constant name="PARTICLE_VAR_MAX" value="14">
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL" value="0">
+		</constant>
+		<constant name="LIGHT_OMNI" value="1">
+		</constant>
+		<constant name="LIGHT_SPOT" value="2">
+		</constant>
+		<constant name="LIGHT_COLOR_DIFFUSE" value="0">
+		</constant>
+		<constant name="LIGHT_COLOR_SPECULAR" value="1">
+		</constant>
+		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="0">
+		</constant>
+		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="1">
+		</constant>
+		<constant name="LIGHT_PARAM_RADIUS" value="2">
+		</constant>
+		<constant name="LIGHT_PARAM_ENERGY" value="3">
+		</constant>
+		<constant name="LIGHT_PARAM_ATTENUATION" value="4">
+		</constant>
+		<constant name="LIGHT_PARAM_MAX" value="10">
+		</constant>
+		<constant name="SCENARIO_DEBUG_DISABLED" value="0">
+		</constant>
+		<constant name="SCENARIO_DEBUG_WIREFRAME" value="1">
+		</constant>
+		<constant name="SCENARIO_DEBUG_OVERDRAW" value="2">
+		</constant>
+		<constant name="INSTANCE_MESH" value="1">
+		</constant>
+		<constant name="INSTANCE_MULTIMESH" value="2">
+		</constant>
+		<constant name="INSTANCE_PARTICLES" value="4">
+		</constant>
+		<constant name="INSTANCE_LIGHT" value="5">
+		</constant>
+		<constant name="INSTANCE_ROOM" value="6">
+		</constant>
+		<constant name="INSTANCE_PORTAL" value="7">
+		</constant>
+		<constant name="INSTANCE_GEOMETRY_MASK" value="30">
 		</constant>
 		<constant name="INFO_OBJECTS_IN_FRAME" value="0">
 		</constant>
@@ -46042,134 +46216,6 @@ A similar effect may be achieved moving this node's descendants.
 		<constant name="INFO_TEXTURE_MEM_USED" value="8">
 		</constant>
 		<constant name="INFO_VERTEX_MEM_USED" value="9">
-		</constant>
-		<constant name="INSTANCE_MESH" value="1">
-		</constant>
-		<constant name="INSTANCE_MULTIMESH" value="2">
-		</constant>
-		<constant name="INSTANCE_GEOMETRY_MASK" value="30">
-		</constant>
-		<constant name="INSTANCE_PARTICLES" value="4">
-		</constant>
-		<constant name="INSTANCE_LIGHT" value="5">
-		</constant>
-		<constant name="INSTANCE_ROOM" value="6">
-		</constant>
-		<constant name="INSTANCE_PORTAL" value="7">
-		</constant>
-		<constant name="LIGHT_COLOR_DIFFUSE" value="0">
-		</constant>
-		<constant name="LIGHT_DIRECTIONAL" value="0">
-		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="0">
-		</constant>
-		<constant name="LIGHT_COLOR_SPECULAR" value="1">
-		</constant>
-		<constant name="LIGHT_OMNI" value="1">
-		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="1">
-		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="10">
-		</constant>
-		<constant name="LIGHT_PARAM_RADIUS" value="2">
-		</constant>
-		<constant name="LIGHT_SPOT" value="2">
-		</constant>
-		<constant name="LIGHT_PARAM_ENERGY" value="3">
-		</constant>
-		<constant name="LIGHT_PARAM_ATTENUATION" value="4">
-		</constant>
-		<constant name="MATERIAL_BLEND_MODE_MIX" value="0">
-		</constant>
-		<constant name="MATERIAL_FLAG_VISIBLE" value="0">
-		</constant>
-		<constant name="MATERIAL_BLEND_MODE_ADD" value="1">
-		</constant>
-		<constant name="MATERIAL_FLAG_DOUBLE_SIDED" value="1">
-		</constant>
-		<constant name="MATERIAL_BLEND_MODE_SUB" value="2">
-		</constant>
-		<constant name="MATERIAL_FLAG_INVERT_FACES" value="2">
-		</constant>
-		<constant name="MATERIAL_BLEND_MODE_MUL" value="3">
-		</constant>
-		<constant name="MATERIAL_FLAG_UNSHADED" value="3">
-		</constant>
-		<constant name="MATERIAL_FLAG_ONTOP" value="4">
-		</constant>
-		<constant name="MATERIAL_FLAG_MAX" value="7">
-		</constant>
-		<constant name="MAX_PARTICLE_ATTRACTORS" value="4">
-		</constant>
-		<constant name="MAX_PARTICLE_COLOR_PHASES" value="4">
-		</constant>
-		<constant name="MAX_CURSORS" value="8">
-		</constant>
-		<constant name="NO_INDEX_ARRAY" value="-1">
-		</constant>
-		<constant name="PARTICLE_LIFETIME" value="0">
-		</constant>
-		<constant name="PARTICLE_SPREAD" value="1">
-		</constant>
-		<constant name="PARTICLE_FINAL_SIZE" value="10">
-		</constant>
-		<constant name="PARTICLE_INITIAL_ANGLE" value="11">
-		</constant>
-		<constant name="PARTICLE_HEIGHT" value="12">
-		</constant>
-		<constant name="PARTICLE_HEIGHT_SPEED_SCALE" value="13">
-		</constant>
-		<constant name="PARTICLE_VAR_MAX" value="14">
-		</constant>
-		<constant name="PARTICLE_GRAVITY" value="2">
-		</constant>
-		<constant name="PARTICLE_LINEAR_VELOCITY" value="3">
-		</constant>
-		<constant name="PARTICLE_ANGULAR_VELOCITY" value="4">
-		</constant>
-		<constant name="PARTICLE_LINEAR_ACCELERATION" value="5">
-		</constant>
-		<constant name="PARTICLE_RADIAL_ACCELERATION" value="6">
-		</constant>
-		<constant name="PARTICLE_TANGENTIAL_ACCELERATION" value="7">
-		</constant>
-		<constant name="PARTICLE_INITIAL_SIZE" value="9">
-		</constant>
-		<constant name="PRIMITIVE_POINTS" value="0">
-		</constant>
-		<constant name="PRIMITIVE_LINES" value="1">
-		</constant>
-		<constant name="PRIMITIVE_LINE_STRIP" value="2">
-		</constant>
-		<constant name="PRIMITIVE_LINE_LOOP" value="3">
-		</constant>
-		<constant name="PRIMITIVE_TRIANGLES" value="4">
-		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5">
-		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6">
-		</constant>
-		<constant name="PRIMITIVE_MAX" value="7">
-		</constant>
-		<constant name="SCENARIO_DEBUG_DISABLED" value="0">
-		</constant>
-		<constant name="SCENARIO_DEBUG_WIREFRAME" value="1">
-		</constant>
-		<constant name="SCENARIO_DEBUG_OVERDRAW" value="2">
-		</constant>
-		<constant name="SHADER_MATERIAL" value="0">
-		</constant>
-		<constant name="SHADER_POST_PROCESS" value="2">
-		</constant>
-		<constant name="TEXTURE_FLAG_MIPMAPS" value="1">
-		</constant>
-		<constant name="TEXTURE_FLAG_REPEAT" value="2">
-		</constant>
-		<constant name="TEXTURE_FLAG_CUBEMAP" value="2048">
-		</constant>
-		<constant name="TEXTURE_FLAG_FILTER" value="4">
-		</constant>
-		<constant name="TEXTURE_FLAGS_DEFAULT" value="7">
 		</constant>
 	</constants>
 </class>
