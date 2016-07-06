@@ -37689,7 +37689,7 @@ A similar effect may be achieved moving this node's descendants.
 			<return type="String">
 			</return>
 			<description>
-			Return the string in uppercase.
+			Change the case of some letters. Replace underscores with spaces, convert all letters to lowercase then capitalize first and every letter following the space character. For [code]capitalize camelCase mixed_with_underscores[/code] it will return [code]Capitalize Camelcase Mixed With Underscores[/code].
 			</description>
 		</method>
 		<method name="casecmp_to">
