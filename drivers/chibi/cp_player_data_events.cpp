@@ -325,8 +325,6 @@ void CPPlayer::update_mixer() {
 		printf("cgb %i\n",(int)v.master_channel->channel_global_volume);
 */
 
-
-		int cv=v.master_channel->channel_global_volume;
 		
 		tmpvol=(uint64_t)v.fadeout_volume;    /* max 1024 - 10 bits */
 		tmpvol*=(uint64_t)v.channel_volume;    /* * max 64 - 6 bits */
@@ -338,13 +336,9 @@ void CPPlayer::update_mixer() {
 		tmpvol*=(uint64_t)song->get_mixing_volume(); /* max 128 - 7 bits */
 		tmpvol*=(uint64_t)control.global_volume;   /* max 128 - 7 bits*/
 				/* total 10+6+8+6+7+7=44 bits */
-		uint64_t preshift=tmpvol;
+
 		tmpvol>>=43; /* Move back to 8 bits range , 44-19+8=43*/
 		
-		/*
-		if (!tmpvol && preshift>>35)
-			tmpvol=1; // even if the volume should be inaudible, some people WANTS to hear this.
-		*/
 		if (tmpvol>CP_VOL_MAX)
 			tmpvol=CP_VOL_MAX;
 		

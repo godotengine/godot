@@ -69,8 +69,7 @@ int AudioStreamPlaybackSpeex::mix(int16_t* p_buffer,int p_frames) {
 		return 0;
 	};
 
-	int eos = 0;	
-	bool reloaded=false;
+	int eos = 0;
 
 	while (todo > page_size) {
 
@@ -100,7 +99,6 @@ int AudioStreamPlaybackSpeex::mix(int16_t* p_buffer,int p_frames) {
 				packets_available=true;
 			}
 			/*Extract all available packets*/
-			//int packet_no=0;
 			while (todo > page_size && !eos) {
 
 				if (ogg_stream_packetout(&os, &op)!=1) {
@@ -157,7 +155,6 @@ int AudioStreamPlaybackSpeex::mix(int16_t* p_buffer,int p_frames) {
 
 					{
 
-						int frame_offset = 0;
 						int new_frame_size = frame_size;
 
 						/*printf ("packet %d %d\n", packet_no, skip_samples);*/
@@ -165,7 +162,6 @@ int AudioStreamPlaybackSpeex::mix(int16_t* p_buffer,int p_frames) {
 						{
 							/*printf ("chopping first packet\n");*/
 							new_frame_size -= skip_samples;
-							frame_offset = skip_samples;
 						}
 						if (packet_no == page_nb_packets && skip_samples < 0)
 						{
@@ -241,10 +237,8 @@ void AudioStreamPlaybackSpeex::unload() {
 
 void *AudioStreamPlaybackSpeex::process_header(ogg_packet *op, int *frame_size, int *rate, int *nframes, int *channels, int *extra_headers) {
 
-	void *st;
 	SpeexHeader *header;
 	int modeID;
-	SpeexCallback callback;
 
 	header = speex_packet_to_header((char*)op->packet, op->bytes);
 	if (!header)
@@ -353,7 +347,6 @@ void AudioStreamPlaybackSpeex::reload() {
 		/*Loop for all complete pages we got (most likely only one)*/
 		while (ogg_sync_pageout(&oy, &og)==1) {
 
-			int packet_no;
 			if (stream_init == 0) {
 				ogg_stream_init(&os, ogg_page_serialno(&og));
 				stream_init = 1;
@@ -377,7 +370,6 @@ void AudioStreamPlaybackSpeex::reload() {
 
 			last_granule = page_granule;
 			/*Extract all available packets*/
-			packet_no=0;
 			while (!eos && ogg_stream_packetout(&os, &op)==1)
 			{
 				/*If first packet, process as Speex header*/

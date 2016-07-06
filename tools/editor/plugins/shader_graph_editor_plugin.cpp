@@ -186,9 +186,8 @@ void GraphColorRampEdit::_notification(int p_what){
 		Point prev;
 		prev.offset=0;
 		prev.color=Color(0,0,0);
-		int w = get_size().x;
-		int h = get_size().y;
 
+		int h = get_size().y;
 		int total_w = get_size().width-get_size().height-3;
 
 		for(int i=-1;i<points.size();i++) {

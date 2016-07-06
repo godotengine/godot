@@ -1940,8 +1940,6 @@ void CanvasItemEditor::_viewport_draw() {
 
 	Map<Node*,Object*> &selection = editor_selection->get_selection();
 
-	CanvasItem *single_item=NULL;
-
 	bool pivot_found=false;
 
 	for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
@@ -1961,15 +1959,6 @@ void CanvasItemEditor::_viewport_draw() {
 
 		Matrix32 xform=transform * canvas_item->get_global_transform_with_canvas();
 		VisualServer::get_singleton()->canvas_item_add_set_transform(ci,xform);
-		Point2 ofs=Point2();//get_global_pos();
-		Rect2 draw_rect=rect;
-		Color light_edit_color=Color(1.0,0.8,0.8);
-		Color dark_edit_color=Color(0.4,0.1,0.1);
-		Size2 handle_size=Size2(handle_len,handle_len);
-
-		//select_sb->draw(ci,draw_rect.grow(2));
-		//DRAW_EMPTY_RECT( draw_rect.grow(2), light_edit_color );
-		//DRAW_EMPTY_RECT( draw_rect.grow(1), dark_edit_color );
 
 		Vector2 endpoints[4]={
 

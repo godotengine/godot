@@ -85,7 +85,6 @@ private:
 			int points = 48;
 			if (mode==MODE_MULTIPLE) {
 
-				int max_draw = 16;
 				Color mcolor=color;
 				mcolor.a*=0.3;
 
@@ -1356,7 +1355,6 @@ void AnimationKeyEditor::_track_editor_draw() {
 		}
 	}
 
-	Color sep_color=color;
 	color.a*=0.5;
 
 	for(int i=0;i<fit;i++) {
@@ -1806,8 +1804,6 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 	Ref<Font> font = te->get_font("font","Tree");
 	int sep = get_constant("vseparation","Tree");
 	int hsep = get_constant("hseparation","Tree");
-	Color color = get_color("font_color","Tree");
-	Color sepcolor = get_color("guide_color","Tree");
 	Ref<Texture> remove_icon = get_icon("Remove","EditorIcons");
 	Ref<Texture> move_up_icon = get_icon("MoveUp","EditorIcons");
 	Ref<Texture> move_down_icon = get_icon("MoveDown","EditorIcons");
@@ -3007,7 +3003,6 @@ void AnimationKeyEditor::_update_menu() {
 
 	updating=true;
 
-	bool empty= !animation.is_valid();
 	if (animation.is_valid()) {
 
 		length->set_val(animation->get_length());

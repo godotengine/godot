@@ -560,8 +560,7 @@ CPLoader::Error CPLoader_XM::load_instrument_internal(CPInstrument *p_instr,bool
 			if (s_idx==-1) ABORT_LOAD;
 			//printf("free sample: %i\n",s_idx);
 			
-			
-			char auxb;
+
 			CPSample& sample=*song->get_sample(s_idx);
 			
 			int sample_size=file->get_dword();
@@ -611,6 +610,7 @@ CPLoader::Error CPLoader_XM::load_instrument_internal(CPInstrument *p_instr,bool
 			sm->set_c5_freq( sample_data, CPTables::get_linear_frequency(CPTables::get_linear_period(note_offset<<1,finetune)) );
 			//printf("NOTE %i,fine %i\n",note_offset,finetune);
 
+			char auxb;
 			auxb=file->get_byte(); //reserved?
 			file->get_byte_array((uint8_t*)instrname,22);
 			sample.set_name(instrname);

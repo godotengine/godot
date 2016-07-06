@@ -81,12 +81,12 @@ int VideoStreamPlaybackTheora::queue_page(ogg_page *page){
 
 void VideoStreamPlaybackTheora::video_write(void){
 	th_ycbcr_buffer yuv;
-	int y_offset, uv_offset;
 	th_decode_ycbcr_out(td,yuv);
 
+	/*
+	int y_offset, uv_offset;
 	y_offset=(ti.pic_x&~1)+yuv[0].stride*(ti.pic_y&~1);
 
-	/*
 	{
 		int pixels = size.x * size.y;
 		frame_data.resize(pixels * 4);
@@ -117,7 +117,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 		DVector<uint8_t>::Write w = frame_data.write();
 		char* dst = (char*)w.ptr();
 
-		uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
+		//uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
 
 		if (px_fmt == TH_PF_444) {
 
@@ -543,16 +543,10 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 	bool frame_done=false;
 	bool audio_done=!vorbis_p;
 
-	bool theora_done=false;
-
 	while (!frame_done || (!audio_done && !vorbis_eos)) {
 		//a frame needs to be produced
 
 		ogg_packet op;
-		bool audio_pending = false;
-
-
-		bool no_vorbis=false;
 		bool no_theora=false;
 
 
@@ -604,8 +598,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 				int tr = vorbis_synthesis_read(&vd, ret-to_read);
 
-				audio_pending=true;
-
 
 				if (vd.granulepos>=0) {
 				//	print_line("wrote: "+itos(audio_frames_wrote)+" gpos: "+itos(vd.granulepos));
@@ -627,7 +619,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 					}
 				} else {  /* we need more data; break out to suck in another page */
 					//printf("need moar data\n");
-					no_vorbis=true;
 					break;
 				};
 			}

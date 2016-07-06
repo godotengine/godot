@@ -424,16 +424,11 @@ bool EditorSpatialGizmo::intersect_ray(const Camera *p_camera,const Point2& p_po
 		}
 		Transform ti=t.affine_inverse();
 
-		Vector3 ray_from=ti.xform(p_camera->project_ray_origin(p_point));
-		Vector3 ray_dir=t.basis.xform_inv(p_camera->project_ray_normal(p_point)).normalized();
-		Vector3 ray_to = ray_from+ray_dir*4096;
 
 		float min_d=1e20;
 		int idx=-1;
 
 		for(int i=0;i<secondary_handles.size();i++) {
-#if 1
-
 
 			Vector3 hpos = t.xform(secondary_handles[i]);
 			Vector2 p = p_camera->unproject_position(hpos);
@@ -449,31 +444,7 @@ bool EditorSpatialGizmo::intersect_ray(const Camera *p_camera,const Point2& p_po
 					idx=i+handles.size();
 
 				}
-
 			}
-
-#else
-			AABB aabb;
-			aabb.pos=Vector3(-1,-1,-1)*HANDLE_HALF_SIZE;
-			aabb.size=aabb.pos*-2;
-			aabb.pos+=secondary_handles[i];
-
-
-			Vector3 rpos,rnorm;
-
-			if (aabb.intersects_segment(ray_from,ray_to,&rpos,&rnorm)) {
-
-				real_t dp = ray_dir.dot(rpos);
-				if (dp<min_d) {
-
-					r_pos=t.xform(rpos);
-					r_normal=ti.basis.xform_inv(rnorm).normalized();
-					min_d=dp;
-					idx=i+handles.size();
-
-				}
-			}
-#endif
 		}
 
 		if (p_sec_first && idx!=-1) {
@@ -485,9 +456,6 @@ bool EditorSpatialGizmo::intersect_ray(const Camera *p_camera,const Point2& p_po
 		min_d=1e20;
 
 		for(int i=0;i<handles.size();i++) {
-
-#if 1
-
 
 			Vector3 hpos = t.xform(handles[i]);
 			Vector2 p = p_camera->unproject_position(hpos);
@@ -503,32 +471,7 @@ bool EditorSpatialGizmo::intersect_ray(const Camera *p_camera,const Point2& p_po
 					idx=i;
 
 				}
-
 			}
-
-#else
-
-			AABB aabb;
-			aabb.pos=Vector3(-1,-1,-1)*HANDLE_HALF_SIZE;
-			aabb.size=aabb.pos*-2;
-			aabb.pos+=handles[i];
-
-
-			Vector3 rpos,rnorm;
-
-			if (aabb.intersects_segment(ray_from,ray_to,&rpos,&rnorm)) {
-
-				real_t dp = ray_dir.dot(rpos);
-				if (dp<min_d) {
-
-					r_pos=t.xform(rpos);
-					r_normal=ti.basis.xform_inv(rnorm).normalized();
-					min_d=dp;
-					idx=i;
-
-				}
-			}
-#endif
 		}
 
 		if (idx>=0) {
@@ -612,9 +555,6 @@ bool EditorSpatialGizmo::intersect_ray(const Camera *p_camera,const Point2& p_po
 		Vector3 ray_dir=ai.basis.xform(p_camera->project_ray_normal(p_point)).normalized();
 		Vector3 rpos,rnorm;
 
-#if 1
-
-
 
 		if (collision_mesh->intersect_ray(ray_from,ray_dir,rpos,rnorm)) {
 
@@ -622,16 +562,6 @@ bool EditorSpatialGizmo::intersect_ray(const Camera *p_camera,const Point2& p_po
 			r_normal=gt.basis.xform(rnorm).normalized();
 			return true;
 		}
-#else
-
-		if (collision_mesh->intersect_segment(ray_from,ray_from+ray_dir*4906.0,rpos,rnorm)) {
-
-			r_pos=gt.xform(rpos);
-			r_normal=gt.basis.xform(rnorm).normalized();
-			return true;
-		}
-
-#endif
 	}
 
 	return false;
@@ -2250,7 +2180,6 @@ void VisibilityNotifierGizmo::set_handle(int p_idx,Camera *p_camera, const Point
 	if (d<0.001)
 		d=0.001;
 
-	Vector3 he = aabb.size;
 	aabb.pos[p_idx]=(aabb.pos[p_idx]+aabb.size[p_idx]*0.5)-d;
 	aabb.size[p_idx]=d*2;
 	notifier->set_aabb(aabb);
@@ -2456,8 +2385,6 @@ void HingeJointSpatialGizmo::redraw() {
 	if (p3d->get_flag(HingeJoint::FLAG_USE_LIMIT) && ll<ul) {
 
 		const int points = 32;
-		float step = (ul-ll)/points;
-
 
 		for(int i=0;i<points;i++) {
 
@@ -2573,8 +2500,6 @@ void SliderJointSpatialGizmo::redraw() {
 	if (ll<ul) {
 
 		const int points = 32;
-		float step = (ul-ll)/points;
-
 
 		for(int i=0;i<points;i++) {
 
@@ -2641,7 +2566,6 @@ SliderJointSpatialGizmo::SliderJointSpatialGizmo(SliderJoint* p_p3d) {
 void ConeTwistJointSpatialGizmo::redraw() {
 
 	clear();
-	float cs = 0.25;
 	Vector<Vector3> points;
 
 	float r = 1.0;
@@ -2837,8 +2761,6 @@ void Generic6DOFJointSpatialGizmo::redraw() {
 		if (enable_ang && ll<=ul) {
 
 			const int points = 32;
-			float step = (ul-ll)/points;
-
 
 			for(int i=0;i<points;i++) {
 

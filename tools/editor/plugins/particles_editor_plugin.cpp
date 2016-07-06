@@ -283,7 +283,6 @@ void ParticlesEditor::_generate_emission_points() {
 				ofs=(Vector3(1,1,1)-dir)*Vector3(Math::randf(),Math::randf(),Math::randf())*aabb.size;
 				ofs+=aabb.pos;
 
-				Vector3 dirv = -dir;
 				Vector3 ofsv = ofs + aabb.size * dir;
 
 				//space it a little

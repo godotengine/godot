@@ -37,6 +37,8 @@
 
 #include "editor_settings.h"
 #include "scene/main/viewport.h"
+
+
 bool ScenesDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir) {
 
 
@@ -56,61 +58,6 @@ bool ScenesDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_di
 	if (lpath==path) {
 		item->select(0);
 	}
-
-
-	//item->set_custom_bg_color(0,get_color("prop_subsection","Editor"));
-
-	bool has_items=false;
-
-	for(int i=0;i<p_dir->get_subdir_count();i++) {
-
-		if (_create_tree(item,p_dir->get_subdir(i)))
-			has_items=true;
-	}
-#if 0
-	for (int i=0;i<p_dir->get_file_count();i++) {
-
-		String file_name = p_dir->get_file(i);
-		String file_path = p_dir->get_file_path(i);
-
-		// ScenesDockFilter::FILTER_PATH
-		String search_from = file_path.right(6); // trim "res://"
-		if (file_filter == ScenesDockFilter::FILTER_NAME)
-			 search_from = file_name;
-		else if (file_filter == ScenesDockFilter::FILTER_FOLDER)
-			search_from = file_path.right(6).get_base_dir();
-
-		if (search_term!="" && search_from.findn(search_term)==-1)
-			continue;
-
-		bool isfave = favorites.has(file_path);
-		if (button_favorite->is_pressed() && !isfave)
-			continue;
-
-		TreeItem *fitem = tree->create_item(item);
-		fitem->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
-		fitem->set_editable(0,true);
-		fitem->set_checked(0,isfave);
-		fitem->set_text(0,file_name);
-
-		Ref<Texture> icon = get_icon( (has_icon(p_dir->get_file_type(i),"EditorIcons")?p_dir->get_file_type(i):String("Object")),"EditorIcons");
-		fitem->set_icon(0, icon );
-
-
-		fitem->set_metadata(0,file_path);
-		//if (p_dir->files[i]->icon.is_valid()) {
-//			fitem->set_icon(0,p_dir->files[i]->icon);
-//		}
-		has_items=true;
-
-	}
-#endif
-	/*if (!has_items) {
-
-		memdelete(item);
-		return false;
-
-	}*/
 
 	return true;
 }

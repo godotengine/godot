@@ -823,9 +823,6 @@ void ProjectManager::_bind_methods() {
 
 ProjectManager::ProjectManager() {
 
-	int margin = get_constant("margin","Dialogs");
-	int button_margin = get_constant("button_margin","Dialogs");
-
 	// load settings
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();

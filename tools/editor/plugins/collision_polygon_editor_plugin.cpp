@@ -381,8 +381,6 @@ void CollisionPolygonEditor::_polygon_draw() {
 		poly=node->get_polygon();
 
 
-
-	int len = poly.size();
 	float depth = node->get_depth()*0.5;
 
 	imgeom->clear();

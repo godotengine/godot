@@ -359,7 +359,6 @@ uint8_t CPEnvelope::get_node_count() {
 
 const CPEnvelope::Point& CPEnvelope::get_node(int p_idx) {
 	
-	static Point errpoint;
 	if (p_idx<0 || p_idx>=node_count)
 		return node[node_count-1];
 	

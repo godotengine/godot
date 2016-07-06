@@ -407,7 +407,6 @@ void AnimationPlayerEditor::_animation_save(const Ref<Resource>& p_resource) {
 void AnimationPlayerEditor::_animation_save_as(const Ref<Resource>& p_resource) {
 
 	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-	bool relpaths = (p_resource->has_meta("__editor_relpaths__") && p_resource->get_meta("__editor_relpaths__").operator bool());
 
 	List<String> extensions;
 	ResourceSaver::get_recognized_extensions(p_resource, &extensions);

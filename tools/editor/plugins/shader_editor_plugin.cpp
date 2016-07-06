@@ -118,9 +118,10 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	get_text_edit()->add_color_region("/*","*/",comment_color,false);
 	get_text_edit()->add_color_region("//","",comment_color,false);
-	//colorize strings
+
+	/*//colorize strings
 	Color string_color = EDITOR_DEF("text_editor/string_color",Color::hex(0x6b6f00ff));
-	/*
+
 	List<String> strings;
 	shader->get_shader_mode()->get_string_delimiters(&strings);
 

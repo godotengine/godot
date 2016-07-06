@@ -427,8 +427,6 @@ void NavigationPolygonEditor::_canvas_draw() {
 			poly = Variant(node->get_navigation_polygon()->get_outline(j));
 		}
 
-		int len = poly.size();
-
 		for(int i=0;i<poly.size();i++) {
 
 

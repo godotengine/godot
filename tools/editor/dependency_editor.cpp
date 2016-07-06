@@ -80,8 +80,6 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 			continue;
 
 		String path = efsd->get_file_path(i);
-		Map<String,String> &ss = candidates[file];
-
 
 		for(Map<String,String>::Element *E=candidates[file].front();E;E=E->next()) {
 
@@ -420,7 +418,6 @@ void DependencyRemoveDialog::show(const Vector<String> &to_erase) {
 	exist=false;
 	owners->clear();
 	files.clear();
-	TreeItem *root=owners->create_item();
 	for(int i=0;i<to_erase.size();i++) {
 		files[to_erase[i]]=NULL;
 	}
