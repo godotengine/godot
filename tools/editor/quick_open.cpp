@@ -109,6 +109,17 @@ void EditorQuickOpen::_sbox_input(const InputEvent& p_ie) {
 
 }
 
+float EditorQuickOpen::_path_cmp(String search, String path) const {
+
+	if (search == path) {
+		return 1.2f;
+	}
+	if (path.findn(search) != -1) {
+		return 1.1f;
+	}
+	return path.to_lower().similarity(search.to_lower());
+}
+
 void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector< Pair< String, Ref<Texture> > > &list) {
 
 	if (!add_directories) {
@@ -130,17 +141,18 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector< Pair< S
 				Pair< String, Ref<Texture> > pair;
 				pair.first = path;
 				pair.second = get_icon("folder", "FileDialog");
-				if (list.size() > 0) {
 
-					float this_sim = search_text.to_lower().similarity(path.to_lower());
-					float other_sim = search_text.to_lower().similarity(list[0].first.to_lower());
+				if (search_text != String() && list.size() > 0) {
+
+					float this_sim = _path_cmp(search_text, path);
+					float other_sim = _path_cmp(list[0].first, path);
 					int pos = 1;
 
-					while (pos < list.size() && this_sim < other_sim) {
-						other_sim = search_text.to_lower().similarity(list[pos++].first.to_lower());
+					while (pos < list.size() && this_sim <= other_sim) {
+						other_sim = _path_cmp(list[pos++].first, path);
 					}
 
-					pos = this_sim > other_sim ? pos - 1 : pos;
+					pos = this_sim >= other_sim ? pos - 1 : pos;
 					list.insert(pos, pair);
 
 				} else {
@@ -159,17 +171,17 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector< Pair< S
 			pair.first = file;
 			pair.second = get_icon((has_icon(efsd->get_file_type(i), ei) ? efsd->get_file_type(i) : ot), ei);
 
-			if (list.size() > 0) {
+			if (search_text != String() && list.size() > 0) {
 
-				float this_sim = search_text.to_lower().similarity(file.to_lower());
-				float other_sim = search_text.to_lower().similarity(list[0].first.to_lower());
+				float this_sim = _path_cmp(search_text, file);
+				float other_sim = _path_cmp(list[0].first, file);
 				int pos = 1;
 
-				while (pos < list.size() && this_sim < other_sim) {
-					other_sim = search_text.to_lower().similarity(list[pos++].first.to_lower());
+				while (pos < list.size() && this_sim <= other_sim) {
+					other_sim = _path_cmp(list[pos++].first, file);
 				}
 
-				pos = this_sim > other_sim ? pos - 1 : pos;
+				pos = this_sim >= other_sim ? pos - 1 : pos;
 				list.insert(pos, pair);
 
 			} else {
@@ -197,8 +209,6 @@ void EditorQuickOpen::_update_search() {
 	Vector< Pair< String, Ref<Texture> > > list;
 
 	_parse_fs(efsd, list);
-
-	//String best_match = list[0];
 
 	for (int i = 0; i < list.size(); i++) {
 		TreeItem *ti = search_options->create_item(root);
