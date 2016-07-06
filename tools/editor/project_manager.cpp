@@ -46,7 +46,7 @@
 #include "io/resource_saver.h"
 
 #include "editor_themes.h"
-
+#include "editor_initialize_ssl.h"
 #include "editor_scale.h"
 
 class NewProjectDialog : public ConfirmationDialog {
@@ -1102,6 +1102,8 @@ void ProjectListFilter::_bind_methods() {
 }
 
 ProjectListFilter::ProjectListFilter() {
+
+	editor_initialize_certificates(); //for asset sharing
 
 	_current_filter = FILTER_NAME;
 
