@@ -39,6 +39,7 @@
 */
 
 class Camera;
+class Camera2D;
 class Listener;
 class Control;
 class CanvasItem;

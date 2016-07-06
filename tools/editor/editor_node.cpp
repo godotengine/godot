@@ -3133,6 +3133,11 @@ void EditorNode::_remove_edited_scene() {
 		new_index=1;
 	}
 
+
+
+	if (editor_data.get_scene_path(old_index)!=String()) {
+		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(editor_data.get_scene_path(old_index));
+	}
 	_scene_tab_changed(new_index);
 	editor_data.remove_scene(old_index);
 	editor_data.get_undo_redo().clear_history();

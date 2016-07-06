@@ -43,6 +43,28 @@
 /*** SCRIPT EDITOR ****/
 
 
+static bool _can_open_in_editor(Script* p_script) {
+
+	String path = p_script->get_path();
+
+	if (path.find("::")!=-1) {
+		//refuse handling this if it can't be edited
+
+		bool valid=false;
+		for(int i=0;i<EditorNode::get_singleton()->get_editor_data().get_edited_scene_count();i++) {
+			if (path.begins_with(EditorNode::get_singleton()->get_editor_data().get_scene_path(i))) {
+				valid=true;
+				break;
+			}
+		}
+
+		return valid;
+	}
+
+	return true;
+}
+
+
 class EditorScriptCodeCompletionCache : public ScriptCodeCompletionCache {
 
 
@@ -747,9 +769,9 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	_update_script_colors();
 }
 
-void ScriptEditor::_close_current_tab() {
+void ScriptEditor::_close_tab(int p_idx) {
 
-	int selected = tab_container->get_current_tab();
+	int selected = p_idx;
 	if (selected<0 || selected>=tab_container->get_child_count())
 		return;
 
@@ -795,6 +817,11 @@ void ScriptEditor::_close_current_tab() {
 
 	_update_script_names();
 	EditorNode::get_singleton()->save_layout();
+}
+
+void ScriptEditor::_close_current_tab() {
+
+	_close_tab(tab_container->get_current_tab());
 
 }
 
@@ -1681,6 +1708,33 @@ void ScriptEditor::_notification(int p_what) {
 
 }
 
+
+void ScriptEditor::close_builtin_scripts_from_scene(const String& p_scene) {
+
+
+
+	for(int i=0;i<tab_container->get_child_count();i++) {
+
+		ScriptTextEditor *ste = tab_container->get_child(i)->cast_to<ScriptTextEditor>();
+
+		if (ste) {
+
+			Ref<Script> script = ste->get_edited_script();
+			if (!script.is_valid())
+				continue;
+
+			if (script->get_path().find("::")!=-1 && script->get_path().begins_with(p_scene)) { //is an internal script and belongs to scene being closed
+				_close_tab(i);
+				i--;
+
+			}
+		}
+
+	}
+
+
+}
+
 void ScriptEditor::edited_scene_changed() {
 
 	_update_modified_scripts_for_external_editor();
@@ -2059,10 +2113,17 @@ void ScriptEditor::_update_script_names() {
 
 }
 
+
+
 void ScriptEditor::edit(const Ref<Script>& p_script) {
 
 	if (p_script.is_null())
 		return;
+
+	// refuse to open built-in if scene is not loaded
+
+
+
 
 	// see if already has it
 
@@ -2527,7 +2588,7 @@ void ScriptEditor::set_scene_root_script( Ref<Script> p_script ) {
 	if (bool(EditorSettings::get_singleton()->get("external_editor/use_external_editor")))
 		return;
 
-	if (open_dominant && p_script.is_valid()) {
+	if (open_dominant && p_script.is_valid() && _can_open_in_editor(p_script.ptr())) {
 		edit(p_script);
 	}
 }
@@ -2914,6 +2975,16 @@ void ScriptEditorPlugin::edit(Object *p_object) {
 }
 
 bool ScriptEditorPlugin::handles(Object *p_object) const {
+
+	if (p_object->cast_to<Script>()) {
+
+		bool valid = _can_open_in_editor(p_object->cast_to<Script>());
+
+		if (!valid) { //user tried to open it by clicking
+			EditorNode::get_singleton()->show_warning(TTR("Built-in scripts can only be edited when the scene they belong to is loaded"));
+		}
+		return valid;
+	}
 
 	return p_object->is_type("Script");
 }
