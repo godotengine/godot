@@ -1551,7 +1551,7 @@ static bool _has_visible_children(Node* p_node) {
 	for(int i=0;i<p_node->get_child_count();i++) {
 
 		Node* child = p_node->get_child(i);
-		if (!_is_node_visible(p_node))
+		if (!_is_node_visible(child))
 			continue;
 
 		return true;
@@ -1563,9 +1563,9 @@ static bool _has_visible_children(Node* p_node) {
 
 
 
-static Node* _find_last_visible(Node*p_node) {
+static Node* _find_last_visible(Node* p_node) {
 
-	Node*last=NULL;
+	Node* last=NULL;
 
 	bool collapsed = p_node->has_meta("_editor_collapsed") ? (bool)p_node->get_meta("_editor_collapsed") : false;
 
