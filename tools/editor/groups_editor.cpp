@@ -31,7 +31,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "editor_node.h"
-
+#include "scene/resources/packed_scene.h"
 void GroupsEditor::_add_group(const String& p_group) {
 
 	if (!node)
@@ -107,9 +107,35 @@ void GroupsEditor::update_tree() {
 		if (!gi.persistent)
 			continue;
 
+		Node *n = node;
+		bool can_be_deleted=true;
+
+		while(n) {
+
+			Ref<SceneState> ss = (n==EditorNode::get_singleton()->get_edited_scene()) ? n->get_scene_inherited_state() : n->get_scene_instance_state();
+
+			if (ss.is_valid()) {
+
+				int path = ss->find_node_by_path(n->get_path_to(node));
+				if (path!=-1) {
+					if (ss->is_node_in_group(path,gi.name)) {
+						can_be_deleted=false;
+					}
+				}
+			}
+
+			n=n->get_owner();
+		}
+
+
 		TreeItem *item=tree->create_item(root);
 		item->set_text(0, gi.name);
-		item->add_button(0, get_icon("Remove", "EditorIcons"), 0);
+		if (can_be_deleted) {
+			item->add_button(0, get_icon("Remove", "EditorIcons"), 0);
+		} else {
+			item->set_selectable(0,false);
+		}
+
 	}
 }
 
