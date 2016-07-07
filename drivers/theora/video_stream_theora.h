@@ -124,7 +124,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 protected:
 
 	void clear();
-	
+
 public:
 
 	virtual void play();
