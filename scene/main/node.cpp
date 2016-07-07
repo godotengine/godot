@@ -1513,7 +1513,7 @@ int Node::get_position_in_parent() const {
 
 
 
-Node *Node::duplicate(bool p_use_instancing) const {
+Node *Node::_duplicate(bool p_use_instancing) const {
 
 
 	Node *node=NULL;
@@ -1592,7 +1592,19 @@ Node *Node::duplicate(bool p_use_instancing) const {
 		node->add_child(dup);
 	}
 
+
 	return node;
+}
+
+Node *Node::duplicate(bool p_use_instancing) const {
+
+	Node* dupe = _duplicate(p_use_instancing);
+
+	if (dupe) {
+		_duplicate_signals(this,dupe);
+	}
+
+	return dupe;
 }
 
 
@@ -1664,11 +1676,12 @@ void Node::_duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_re
 
 void Node::_duplicate_signals(const Node* p_original,Node* p_copy) const {
 
-	if (this!=p_original && get_owner()!=p_original)
+	if (this!=p_original && (get_owner()!=p_original && get_owner()!=p_original->get_owner()))
 		return;
 
 	List<Connection> conns;
 	get_all_signal_connections(&conns);
+
 
 	for (List<Connection>::Element *E=conns.front();E;E=E->next()) {
 
@@ -1678,14 +1691,17 @@ void Node::_duplicate_signals(const Node* p_original,Node* p_copy) const {
 			Node *copy = p_copy->get_node(p);
 
 			Node *target = E->get().target->cast_to<Node>();
-			if (!target)
+			if (!target) {
 				continue;
+			}
 			NodePath ptarget = p_original->get_path_to(target);
 			Node *copytarget = p_copy->get_node(ptarget);
+
 
 			if (copy && copytarget) {
 				copy->connect(E->get().signal,copytarget,E->get().method,E->get().binds,CONNECT_PERSIST);
 			}
+
 		}
 	}
 
