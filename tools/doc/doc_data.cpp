@@ -940,11 +940,11 @@ Error DocData::save(const String& p_path) {
 		_write_string(f,0,header);
 		_write_string(f,1,"<brief_description>");
 		if (c.brief_description!="")
-			_write_string(f,1,c.brief_description.xml_escape());
+			_write_string(f,2,c.brief_description.xml_escape());
 		_write_string(f,1,"</brief_description>");
 		_write_string(f,1,"<description>");
 		if (c.description!="")
-			_write_string(f,1,c.description.xml_escape());
+			_write_string(f,2,c.description.xml_escape());
 		_write_string(f,1,"</description>");
 		_write_string(f,1,"<methods>");
 
@@ -980,7 +980,7 @@ Error DocData::save(const String& p_path) {
 
 			_write_string(f,3,"<description>");
 			if (m.description!="")
-				_write_string(f,3,m.description.xml_escape());
+				_write_string(f,4,m.description.xml_escape());
 			_write_string(f,3,"</description>");
 
 			_write_string(f,2,"</method>");
@@ -1026,7 +1026,7 @@ Error DocData::save(const String& p_path) {
 
 				_write_string(f,3,"<description>");
 				if (m.description!="")
-					_write_string(f,3,m.description.xml_escape());
+					_write_string(f,4,m.description.xml_escape());
 				_write_string(f,3,"</description>");
 
 				_write_string(f,2,"</signal>");
