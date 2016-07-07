@@ -307,10 +307,6 @@ bool BodyPairSW::setup(float p_step) {
 		}
 #endif
 
-
-		int gather_A = A->can_report_contacts();
-		int gather_B = B->can_report_contacts();
-
 		c.rA = global_A;
 		c.rB = global_B-offset_B;
 

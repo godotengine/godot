@@ -44,7 +44,6 @@ void Camera2D::_update_scroll() {
 	if (current) {
 		Matrix32 xform = get_camera_transform();
 
-		RID vp =  viewport->get_viewport();
 		if (viewport) {
 		       viewport->set_canvas_transform( xform );
 		}

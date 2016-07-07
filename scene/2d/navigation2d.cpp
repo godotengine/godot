@@ -552,7 +552,6 @@ debug path
 		if (p_optimize) {
 			//string pulling
 
-			Polygon *apex_poly=end_poly;
 			Vector2 apex_point=end_point;
 			Vector2 portal_left=apex_point;
 			Vector2 portal_right=apex_point;
@@ -613,12 +612,9 @@ debug path
 						//print_line("***ADVANCE LEFT");
 					} else {
 
-						//_clip_path(path,apex_poly,portal_right,right_poly);
-
 						apex_point=portal_right;
 						p=right_poly;
 						left_poly=p;
-						apex_poly=p;
 						portal_left=apex_point;
 						portal_right=apex_point;
 						if (path[path.size()-1].distance_to(apex_point)>CMP_EPSILON)
@@ -637,12 +633,9 @@ debug path
 						//print_line("***ADVANCE RIGHT");
 					} else {
 
-						//_clip_path(path,apex_poly,portal_left,left_poly);
-
 						apex_point=portal_left;
 						p=left_poly;
 						right_poly=p;
-						apex_poly=p;
 						portal_right=apex_point;
 						portal_left=apex_point;
 						if (path[path.size()-1].distance_to(apex_point)>CMP_EPSILON)

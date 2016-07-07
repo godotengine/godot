@@ -243,7 +243,6 @@ bool SegmentShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p
 	if (!Geometry::segment_intersects_segment_2d(p_begin,p_end,a,b,&r_point))
 		return false;
 
-	Vector2 d = p_end-p_begin;
 	if (n.dot(p_begin) > n.dot(a)) {
 		r_normal=n;
 	} else {
@@ -825,7 +824,6 @@ bool ConcavePolygonShape2DSW::intersect_segment(const Vector2& p_begin,const Vec
 	const Segment *segmentptr=&segments[0];
 	const Vector2 *pointptr=&points[0];
 	const BVH *bvhptr = &bvh[0];
-	int pos=bvh.size()-1;
 
 
 	stack[0]=0;
@@ -1088,7 +1086,6 @@ void ConcavePolygonShape2DSW::cull(const Rect2& p_local_aabb,Callback p_callback
 	const Segment *segmentptr=&segments[0];
 	const Vector2 *pointptr=&points[0];
 	const BVH *bvhptr = &bvh[0];
-	int pos=bvh.size()-1;
 
 
 	stack[0]=0;

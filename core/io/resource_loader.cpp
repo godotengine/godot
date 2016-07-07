@@ -443,7 +443,6 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
 	String extension=remapped_path.extension();
 
-	bool found=false;
 	for (int i=0;i<loader_count;i++) {
 
 		String result = loader[i]->get_resource_type(local_path);

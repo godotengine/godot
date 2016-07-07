@@ -766,7 +766,6 @@ bool ConvexPolygonShapeSW::intersect_segment(const Vector3& p_begin,const Vector
 	int fc = mesh.faces.size();
 
 	const Vector3 *vertices = mesh.vertices.ptr();
-	int vc = mesh.vertices.size();
 
 	Vector3 n = p_end-p_begin;
 	float min = 1e20;
@@ -873,14 +872,11 @@ void FaceShapeSW::project_range(const Vector3& p_normal, const Transform& p_tran
 Vector3 FaceShapeSW::get_support(const Vector3& p_normal) const {
 
 
-	Vector3 n=p_normal;
-
 	int vert_support_idx=-1;
 	float support_max;
 
 	for (int i=0;i<3;i++) {
 
-		//float d=n.dot(vertex[i]);
 		float d=p_normal.dot(vertex[i]);
 
 		if (i==0 || d > support_max) {

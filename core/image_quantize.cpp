@@ -59,7 +59,6 @@ int Image::MCBlock::get_longest_axis_index() const {
 	for(int i=0;i<4;i++) {
 
 		int d = max_color.color.col[i]-min_color.color.col[i];
-		//printf(" ai:%i - %i\n",i,d);
 		if (d>max_dist) {
 			max_index=i;
 			max_dist=d;
@@ -71,13 +70,11 @@ int Image::MCBlock::get_longest_axis_index() const {
 int Image::MCBlock::get_longest_axis_length() const {
 
 	int max_dist=-1;
-	int max_index=0;
 
 	for(int i=0;i<4;i++) {
 
 		int d = max_color.color.col[i]-min_color.color.col[i];
 		if (d>max_dist) {
-			max_index=i;
 			max_dist=d;
 		}
 	}
@@ -116,8 +113,6 @@ void Image::MCBlock::shrink() {
 
 
 void Image::quantize() {
-
-	Image::Format orig_format=format;
 
 	bool has_alpha = detect_alpha()!=ALPHA_NONE;
 

@@ -150,7 +150,6 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transfo
 
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,SpaceSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
 
-	bool collided=false;
 	int cc=0;
 
 	//Transform ai = p_xform.affine_inverse();
@@ -269,7 +268,6 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform&
 
 		for(int i=0;i<8;i++) { //steps should be customizable..
 
-			Transform xfa = p_xform;
 			float ofs = (low+hi)*0.5;
 
 			Vector3 sep=mnormal; //important optimization for this to work fast enough
@@ -337,7 +335,6 @@ bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform& p_sh
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,SpaceSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
 
 	bool collided=false;
-	int cc=0;
 	r_result_count=0;
 
 	PhysicsServerSW::CollCbkData cbk;
@@ -457,7 +454,6 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform& p_shape_
 	if (rcd.best_object->get_type()==CollisionObjectSW::TYPE_BODY) {
 
 		const BodySW *body = static_cast<const BodySW*>(rcd.best_object);
-		Vector3 rel_vec = r_info->point-body->get_transform().get_origin();
 		r_info->linear_velocity = body->get_linear_velocity() +
 				(body->get_angular_velocity()).cross(body->get_transform().origin-rcd.best_contact);// * mPos);
 

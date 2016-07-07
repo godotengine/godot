@@ -471,15 +471,12 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 		}
 	}
 #endif
-	int subscene_prop_search_from=0;
 
 	// all setup, we then proceed to check all properties for the node
 	// and save the ones that are worth saving
 
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
-
-	bool saved_script=false;
 
 	for (List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
 
@@ -528,23 +525,7 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 					break;
 				}
 			}
-#if 0
-// this workaround ended up causing problems:
-https://github.com/godotengine/godot/issues/3127
-			if (saved_script && exists && p_node->get_script_instance()) {
-				//if this is an overriden value by another script, save it anyway
-				//as the script change will erase it
-				//https://github.com/godotengine/godot/issues/2958
 
-				bool valid=false;
-				p_node->get_script_instance()->get_property_type(name,&valid);
-				if (valid) {
-					exists=false;
-					isdefault=false;
-				}
-			}
-
-#endif
 
 			if (exists) {
 
@@ -576,9 +557,6 @@ https://github.com/godotengine/godot/issues/3127
 				continue;
 			}
 		}
-
-		if (name=="script/script")
-			saved_script=true;
 
 		NodeData::Property prop;
 		prop.name=_nm_get_string( name,name_map);

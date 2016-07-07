@@ -418,6 +418,7 @@ void DependencyRemoveDialog::show(const Vector<String> &to_erase) {
 	exist=false;
 	owners->clear();
 	files.clear();
+	owners->create_item(); // root
 	for(int i=0;i<to_erase.size();i++) {
 		files[to_erase[i]]=NULL;
 	}
