@@ -4191,6 +4191,8 @@ public:
 void SectionedPropertyEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_section_selected",&SectionedPropertyEditor::_section_selected);
+
+	ObjectTypeDB::bind_method("update_category_list", &SectionedPropertyEditor::update_category_list);
 }
 
 void SectionedPropertyEditor::_section_selected(int p_which) {

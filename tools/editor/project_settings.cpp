@@ -616,10 +616,26 @@ void ProjectSettings::_item_add() {
 
 	String name = catname!="" ? catname+"/"+propname : propname;
 
-	Globals::get_singleton()->set(name,value);
+	undo_redo->create_action("Add Global Property");
+
+	undo_redo->add_do_property(Globals::get_singleton(), name, value);
+	undo_redo->add_do_method(Globals::get_singleton(), "set_persisting", name, true);
+
+	if (Globals::get_singleton()->has(name)) {
+		undo_redo->add_undo_property(Globals::get_singleton(), name, Globals::get_singleton()->get(name));
+	} else {
+		undo_redo->add_undo_property(Globals::get_singleton(), name, Variant());
+	}
+
+	undo_redo->add_do_method(globals_editor, "update_category_list");
+	undo_redo->add_undo_method(globals_editor, "update_category_list");
+
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+
+	undo_redo->commit_action();
 
 	globals_editor->set_current_section(catname);
-	globals_editor->update_category_list();
 
 	_settings_changed();
 }
@@ -633,10 +649,20 @@ void ProjectSettings::_item_del() {
 
 	String name = catname!="" ? catname+"/"+propname : propname;
 
-	Globals::get_singleton()->set(name,Variant());
+	undo_redo->create_action("Delete Global Property");
 
-	globals_editor->set_current_section(catname);
-	globals_editor->update_category_list();
+	undo_redo->add_do_property(Globals::get_singleton(), name, Variant());
+
+	undo_redo->add_undo_property(Globals::get_singleton(), name, Globals::get_singleton()->get(name));
+	undo_redo->add_undo_method(Globals::get_singleton(), "set_persisting", name, Globals::get_singleton()->is_persisting(name));
+
+	undo_redo->add_do_method(globals_editor, "update_category_list");
+	undo_redo->add_undo_method(globals_editor, "update_category_list");
+
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+
+	undo_redo->commit_action();
 
 	_settings_changed();
 }
