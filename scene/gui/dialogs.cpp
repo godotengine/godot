@@ -62,7 +62,6 @@ void WindowDialog::_input_event(const InputEvent& p_event) {
 
 		Point2 rel( p_event.mouse_motion.relative_x, p_event.mouse_motion.relative_y );
 		Point2 pos = get_pos();
-		Size2 size = get_size();
 
 		pos+=rel;
 
@@ -409,7 +408,6 @@ AcceptDialog::AcceptDialog() {
 	ok->set_text(RTR("OK"));
 	hbc->add_child(ok);
 	hbc->add_spacer();
-	//add_child(ok);
 
 
 	ok->connect("pressed", this,"_ok");

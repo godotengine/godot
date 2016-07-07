@@ -425,7 +425,6 @@ Error EditorTranslationImportPlugin::import(const String& p_path, const Ref<Reso
 
 	ERR_FAIL_COND_V( !f, ERR_INVALID_PARAMETER );
 
-	bool first=false;
 	bool skip_first = from->get_option("skip_first");
 	int index = from->get_option("index");
 	index+=1;
@@ -438,7 +437,6 @@ Error EditorTranslationImportPlugin::import(const String& p_path, const Ref<Reso
 	Vector<String> line = f->get_csv_line();
 
 	while(line.size()>1) {
-
 
 		if (!skip_first) {
 			ERR_FAIL_INDEX_V(index,line.size(),ERR_INVALID_DATA );

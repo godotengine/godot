@@ -2278,12 +2278,6 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		NodeMap &nm = node_map[at.target];
 		String path = scene->get_path_to(nm.node);
 
-		Collada::Node *cn = collada.state.scene_map[at.target];
-		//if (cn->ignore_anim) {
-		//	print_line("warning, ignoring property animation on node: "+nm.path);
-			//continue;
-		//}
-
 		animation->add_track(Animation::TYPE_VALUE);
 		int track = animation->get_track_count() -1;
 

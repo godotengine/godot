@@ -681,9 +681,6 @@ void Collada::_parse_effect_material(XMLParser& parser,Effect &effect,String &id
 											} else {
 												String uri = effect.params[surface];
 
-												int channel=0;
-												//if (parser.has_attribute("texcoord"))
-
 
 												if (what=="diffuse") {
 													effect.diffuse.texture=uri;
@@ -758,9 +755,6 @@ void Collada::_parse_effect_material(XMLParser& parser,Effect &effect,String &id
 									ERR_PRINT(String("Couldn't find surface: "+surface+" in material:"+id).utf8().get_data());
 								} else {
 									String uri = effect.params[surface];
-
-									int channel=0;
-									//if (parser.has_attribute("texcoord"))
 
 									if (parser.has_attribute("bumptype") && parser.get_attribute_value("bumptype")!="NORMALMAP") {
 										WARN_PRINT("'bump' texture type is not NORMALMAP, only NORMALMAP is supported.")
@@ -2636,7 +2630,6 @@ void Collada::_find_morph_nodes(VisualScene *p_vscene,Node *p_node) {
 					base=sk.base;
 				} else if (state.morph_controller_data_map.has(base)) {
 
-					MorphControllerData &sk = state.morph_controller_data_map[base];
 					state.morph_ownership_map[base]=nj->id;
 					break;
 				} else {

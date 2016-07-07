@@ -76,10 +76,7 @@ void TextureButton::_notification(int p_what) {
 	switch( p_what ) {
 
 		case NOTIFICATION_DRAW: {
-			RID canvas_item = get_canvas_item();
 			DrawMode draw_mode = get_draw_mode();
-//			if (normal.is_null())
-//				break;
 
 			Ref<Texture> texdraw;
 

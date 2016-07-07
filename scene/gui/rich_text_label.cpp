@@ -270,7 +270,6 @@ if (m_height > line_height) {\
 					if (p_mode!=PROCESS_CACHE) {
 						lh=line<l.height_caches.size()?l.height_caches[line]:1;
 					}
-					bool found_space=false;
 
 					while (c[end]!=0 && !(end && c[end-1]==' ' && c[end]!=' ')) {
 
@@ -284,30 +283,13 @@ if (m_height > line_height) {\
 						}
 
 						w+=cw;
-
-						if (c[end]==' ') {
-
-							fw+=cw;
-							/*
-							if (p_mode==PROCESS_CACHE) {
-								fw+=cw;
-							} else if (align==ALIGN_FILL && line<l.space_caches.size() && l.space_caches[line]>0) {
-								//print_line(String(c,end)+": "+itos(l.offset_caches[line])+"/"+itos(l.space_caches[line]));
-								//sub_space=cw;
-								found_space=true;
-							} else {
-								fw+=cw;
-							}*/
-						} else {
-							fw+=cw;
-						}
+						fw+=cw;
 
 						end++;
 					}
 
 					ENSURE_WIDTH(w);
 
-					//print_line("END: "+String::chr(c[end])+".");
 					if (end && c[end-1]==' ') {
 						if (p_mode==PROCESS_CACHE) {
 							spaces_size+=font->get_char_size(' ').width;
@@ -319,25 +301,15 @@ if (m_height > line_height) {\
 						}
 						spaces++;
 
-						/*
-						if (found_space) {
-							int ln = MIN(l.offset_caches.size()-1,line);
-
-							fw+=l.offset_caches[ln]/l.space_caches[ln];
-						}*/
-
 					}
 
 
 					{
 
-
 						int ofs=0;
 
 						for(int i=0;i<end;i++) {
 							int pofs=wofs+ofs;
-
-
 
 
 							if (p_mode==PROCESS_POINTER && r_click_char && p_click_pos.y>=p_ofs.y+y && p_click_pos.y<=p_ofs.y+y+lh) {
@@ -354,15 +326,6 @@ if (m_height > line_height) {\
 								if (p_click_pos.x-cw/2>p_ofs.x+align_ofs+pofs) {
 
 									rchar=int((&c[i])-cf);
-									//print_line("GOT: "+itos(rchar));
-
-
-									//if (i==end-1 && p_click_pos.x+cw/2 > pofs)
-									//	rchar++;
-									//int o = (wofs+w)-p_click_pos.x;
-
-								//	if (o>cw/2)
-								//		rchar++;
 								}
 
 
@@ -402,12 +365,9 @@ if (m_height > line_height) {\
 								}
 
 
-								//print_line("draw char: "+String::chr(c[i]));
-
 								if (underline) {
 									Color uc=color;
 									uc.a*=0.5;
-									//VS::get_singleton()->canvas_item_add_line(ci,Point2(pofs,y+ascent+2),Point2(pofs+cw,y+ascent+2),uc);
 									int uy = y+lh-fh+ascent+2;
 									VS::get_singleton()->canvas_item_add_line(ci,p_ofs+Point2(align_ofs+pofs,uy),p_ofs+Point2(align_ofs+pofs+cw,uy),uc);
 								}
@@ -462,28 +422,6 @@ if (m_height > line_height) {\
 				if (p_mode!=PROCESS_CACHE)
 					lh = line<l.height_caches.size()?l.height_caches[line]:1;
 
-
-#if 0
-				if (p_mode==PROCESS_POINTER && r_click_item ) {
-					//previous last "wrapped" line
-					int pl = line-1;
-					if (pl<0 || lines[pl].height_caches.size()==0)
-						break;
-					int py=lines[pl].offset_caches[ lines[pl].offset_caches.size() -1 ];
-					int ph=lines[pl].height_caches[ lines[pl].height_caches.size() -1 ];
-					print_line("py: "+itos(py));
-					print_line("ph: "+itos(ph));
-
-					rchar=0;
-					if (p_click_pos.y>=py && p_click_pos.y<=py+ph) {
-						if (r_outside) *r_outside=true;
-						*r_click_item=it;
-						*r_click_char=rchar;
-						return;
-					}
-				}
-
-#endif
 			} break;
 			case ITEM_TABLE: {
 
@@ -493,7 +431,6 @@ if (m_height > line_height) {\
 				int vseparation=get_constant("table_vseparation");
 				Color ccolor = _find_color(table,p_base_color);
 				Vector2 draw_ofs = Point2(wofs,y);
-				int max_y=get_size().height;
 
 				if (p_mode==PROCESS_CACHE) {
 
@@ -1825,7 +1762,6 @@ bool RichTextLabel::search(const String& p_string,bool p_from_selection) {
 		charidx=selection.to_char+1;
 	}
 
-	int line=-1;
 	while(it) {
 
 		if (it->type==ITEM_TEXT) {

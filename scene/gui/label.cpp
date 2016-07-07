@@ -144,7 +144,6 @@ void Label::_notification(int p_what) {
 		if (!wc)
 			return;
 
-		int c = 0;
 		int line=0;
 		int line_to=lines_skipped + (lines_visible>0?lines_visible:1);
 		while(wc) {
