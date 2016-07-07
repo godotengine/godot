@@ -288,6 +288,17 @@ Rect2 Sprite::get_item_rect() const {
 }
 
 
+
+void Sprite::_validate_property(PropertyInfo& property) const {
+
+	if (property.name=="frame") {
+
+		property.hint=PROPERTY_HINT_SPRITE_FRAME;
+
+		property.hint_string="0,"+itos(vframes*hframes-1)+",1";
+	}
+}
+
 void Sprite::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_texture","texture:Texture"),&Sprite::set_texture);

@@ -61,6 +61,8 @@ protected:
 
 	static void _bind_methods();;
 
+	virtual void _validate_property(PropertyInfo& property) const;
+
 public:
 
 	virtual void edit_set_pivot(const Point2& p_pivot);

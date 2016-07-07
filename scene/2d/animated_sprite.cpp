@@ -318,7 +318,7 @@ void AnimatedSprite::_validate_property(PropertyInfo& property) const {
 
 	if (property.name=="frame") {
 
-		property.hint=PROPERTY_HINT_RANGE;
+		property.hint=PROPERTY_HINT_SPRITE_FRAME;
 
 		if (frames->has_animation(animation)) {
 			property.hint_string="0,"+itos(frames->get_frame_count(animation)-1)+",1";

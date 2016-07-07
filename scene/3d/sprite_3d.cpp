@@ -585,6 +585,17 @@ Rect2 Sprite3D::get_item_rect() const {
 	return Rect2(ofs,s);
 }
 
+
+void Sprite3D::_validate_property(PropertyInfo& property) const {
+
+	if (property.name=="frame") {
+
+		property.hint=PROPERTY_HINT_SPRITE_FRAME;
+
+		property.hint_string="0,"+itos(vframes*hframes-1)+",1";
+	}
+}
+
 void Sprite3D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_texture","texture:Texture"),&Sprite3D::set_texture);

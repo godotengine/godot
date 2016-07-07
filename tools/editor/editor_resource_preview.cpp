@@ -336,7 +336,7 @@ void EditorResourcePreview::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("preview_invalidated",PropertyInfo(Variant::STRING,"path")));
 }
 
-bool EditorResourcePreview::check_for_invalidation(const String& p_path) {
+void EditorResourcePreview::check_for_invalidation(const String& p_path) {
 
 	preview_mutex->lock();
 
