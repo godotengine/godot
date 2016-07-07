@@ -241,7 +241,7 @@ void InverseKinematics::_notification(int p_what)
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
-			float delta = get_process_delta_time();
+
 			Spatial *sksp = skel->cast_to<Spatial>();
 			if (!bound)
 				break;

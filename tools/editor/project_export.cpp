@@ -431,7 +431,6 @@ void ProjectExportDialog::_validate_platform() {
 
 void ProjectExportDialog::_export_mode_changed(int p_idx) {
 
-	bool do_all = p_idx==0;
 	if (EditorImportExport::get_singleton()->get_export_filter()==p_idx)
 		return;
 	EditorImportExport::get_singleton()->set_export_filter(EditorImportExport::ExportFilter(p_idx));

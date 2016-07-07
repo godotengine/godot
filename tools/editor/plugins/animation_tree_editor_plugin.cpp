@@ -90,7 +90,6 @@ Size2 AnimationTreeEditor::get_node_size(const StringName& p_node) const {
 
 	Ref<StyleBox> style = get_stylebox("panel","PopupMenu");
 	Ref<Font> font = get_font("font","PopupMenu");
-	Color font_color = get_color("font_color","PopupMenu");
 
 	Size2 size = style->get_minimum_size();
 
@@ -633,7 +632,6 @@ AnimationTreeEditor::ClickType AnimationTreeEditor::_locate_click(const Point2& 
 
 	Ref<StyleBox> style = get_stylebox("panel","PopupMenu");
 	Ref<Font> font = get_font("font","PopupMenu");
-	Color font_color = get_color("font_color","PopupMenu");
 
 	float h = (font->get_height()+get_constant("vseparation","PopupMenu"));
 

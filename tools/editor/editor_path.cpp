@@ -38,7 +38,6 @@ void EditorPath::_notification(int p_what) {
 
 			RID ci=get_canvas_item();
 			Ref<Font> label_font = get_font("font","Label");
-			Color label_color = get_color("font_color","Label");
 			Size2i size = get_size();
 			Ref<Texture> sn = get_icon("SmallNext","EditorIcons");
 

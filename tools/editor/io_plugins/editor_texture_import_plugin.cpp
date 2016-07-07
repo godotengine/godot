@@ -1192,8 +1192,6 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		}
 		ep.step(TTR("Converting Images"),sources.size());
 
-		int base_index=0;
-
 
 		Map<uint64_t,int> source_md5;
 		Map<int,List<int> > source_map;
@@ -1760,7 +1758,6 @@ void EditorTextureImportPlugin::reimport_multiple_files(const Vector<String>& p_
 	Vector<String> valid;
 
 
-	bool warning=false;
 	for(int i=0;i<p_list.size();i++) {
 
 		Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(p_list[i]);
@@ -1768,7 +1765,6 @@ void EditorTextureImportPlugin::reimport_multiple_files(const Vector<String>& p_
 		if (type=="texture" || type.begins_with("texture_")) {
 
 			if ((rimd->has_option("atlas") && rimd->get_option("atlas")) || (rimd->has_option("large") && rimd->get_option("large"))) {
-				warning=true;
 				continue;
 			}
 

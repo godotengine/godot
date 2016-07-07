@@ -1156,7 +1156,6 @@ Vector<uint8_t> GDTokenizerBuffer::parse_code_string(const String& p_code) {
 	GDTokenizerText tt;
 	tt.set_code(p_code);
 	int line=-1;
-	int col=0;
 
 	while(true) {
 

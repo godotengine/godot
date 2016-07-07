@@ -774,7 +774,6 @@ void GraphEdit::set_zoom(float p_zoom) {
 
 	Vector2 sbofs = (Vector2( h_scroll->get_val(), v_scroll->get_val() ) + get_size()/2)/zoom;
 
-	float prev_zoom = zoom;
 	zoom = p_zoom;
 	top_layer->update();
 

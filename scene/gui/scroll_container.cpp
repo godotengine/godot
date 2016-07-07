@@ -177,7 +177,6 @@ void ScrollContainer::_input_event(const InputEvent& p_input_event) {
 
 void ScrollContainer::_update_scrollbar_pos() {
 
-	Size2 size = get_size();
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 

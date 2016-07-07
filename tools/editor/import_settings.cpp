@@ -36,21 +36,6 @@ void ImportSettingsDialog::_item_pressed(int p_idx) {
 		return;
 
 	String p=edited->get_metadata(0);
-#if 0
-	if (EditorImportDB::get_singleton()->is_image(p)) {
-
-		uint32_t flags = EditorImportDB::get_singleton()->get_image_flags(p);
-		bool pressed = !popup->is_item_checked(p_idx);
-		if (pressed)
-			flags|=(1<<p_idx);
-		else
-			flags&=~(1<<p_idx);
-
-
-		EditorImportDB::get_singleton()->set_image_flags(p,flags);
-		edited->set_text(2,_str_from_flags(flags));
-	}
-#endif
 }
 
 void ImportSettingsDialog::_item_edited() {
@@ -58,38 +43,8 @@ void ImportSettingsDialog::_item_edited() {
 	if (updating)
 		return;
 	TreeItem *it=tree->get_selected();
-	int ec=tree->get_edited_column();
 
 	String p=it->get_metadata(0);
-#if 0
-	if (EditorImportDB::get_singleton()->is_image(p)) {
-
-		if (ec==1) {
-
-
-			EditorImportDB::get_singleton()->set_image_format(p,EditorImport::ImageFormat(int(it->get_range(1))));
-
-		} else if (ec==2) {
-
-
-			int flags = EditorImportDB::get_singleton()->get_image_flags(p);
-			for(int i=0;i<popup->get_item_count();i++) {
-
-				popup->set_item_checked(i,flags&(1<<i));
-			}
-
-			Rect2 r = tree->get_custom_popup_rect();
-			popup->set_size(Size2(r.size.width,1));
-			popup->set_pos(/*tree->get_global_pos()+*/r.pos+Point2(0,r.size.height));
-			popup->popup();
-		}
-
-		edited=it;
-
-	}
-#endif
-
-
 }
 
 
@@ -166,42 +121,6 @@ bool ImportSettingsDialog::_generate_fs(TreeItem *p_parent,EditorFileSystemDirec
 		ti->set_tooltip(1,tt);
 
 	}
-
-#if 0
-		if (!EditorImportDB::get_singleton()->is_image(path) && !EditorImportDB::get_singleton()->is_scene(path))
-			continue;
-
-		String f = p_dir->get_file(i);
-		TreeItem *ti = tree->create_item(p_parent);
-		ti->set_text(0,f);
-		String type = p_dir->get_file_type(i);
-		Ref<Texture> icon = get_icon( (has_icon(type,"EditorIcons")?type:String("Object")),"EditorIcons");
-
-
-		if (EditorImportDB::get_singleton()->is_image(path)) {
-
-
-			ti->set_tooltip(0,"Type: Image\nSource: "+EditorImportDB::get_singleton()->get_file_source(path)+"\nSource MD5: "+EditorImportDB::get_singleton()->get_file_md5(path));
-			ti->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
-			ti->set_editable(1,true);
-			ti->set_range_config(1,0,3,1);
-			ti->set_range(1,EditorImportDB::get_singleton()->get_image_format(path));
-			ti->set_text(1,texformat);
-			ti->set_cell_mode(2,TreeItem::CELL_MODE_CUSTOM);
-			ti->set_editable(2,true);
-			ti->set_metadata(0,path);
-
-			String txt;
-			uint32_t flags=EditorImportDB::get_singleton()->get_image_flags(path);
-			txt=_str_from_flags(flags);
-
-			ti->set_text(2,txt);
-		}
-
-		ti->set_icon(0, icon);
-		valid=true;
-#endif
-
 
 	return valid;
 }

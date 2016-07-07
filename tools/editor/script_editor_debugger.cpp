@@ -819,7 +819,6 @@ void ScriptEditorDebugger::_performance_draw() {
 	if(which.empty())
 		return;
 
-	Color graph_color=get_color("font_color","TextEdit");
 	Ref<StyleBox> graph_sb = get_stylebox("normal","TextEdit");
 	Ref<Font> graph_font = get_font("font","TextEdit");
 

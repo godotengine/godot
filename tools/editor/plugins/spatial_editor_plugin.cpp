@@ -53,8 +53,6 @@
 
 void SpatialEditorViewport::_update_camera() {
 	if (orthogonal) {
-		Size2 size = get_size();
-		Size2 vpsize = Point2(cursor.distance*size.get_aspect(), cursor.distance / size.get_aspect());
 		//camera->set_orthogonal(size.width*cursor.distance,get_znear(),get_zfar());
 		camera->set_orthogonal(2 * cursor.distance, 0.1, 8192);
 	}
@@ -276,10 +274,6 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,b
 	r_includes_current=false;
 
 	List<_RayResult> results;
-	Vector3 cn=_get_camera_normal();
-	Plane cplane(pos,cn.normalized());
-
-	float min_d=1e20;
 
 	for (int i=0;i<instances.size();i++) {
 
@@ -649,21 +643,8 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2& p_screenpos,bool p_hili
 	Vector3 ray_pos=_get_ray_pos( Vector2( p_screenpos.x, p_screenpos.y ) );
 	Vector3 ray=_get_ray( Vector2( p_screenpos.x, p_screenpos.y ) );
 
-	Vector3 cn=_get_camera_normal();
-	Plane cplane(ray_pos,cn.normalized());
-
 	Transform gt = spatial_editor->get_gizmo_transform();
 	float gs=gizmo_scale;
-	/*
-	if (orthogonal) {
-		gs= cursor.distance/surface->get_size().get_aspect();
-
-	} else {
-		gs = cplane.distance_to(gt.origin);
-	}
-
-	gs*=GIZMO_SCALE_DEFAULT;
-*/
 
 	if (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_MOVE) {
 
@@ -1268,16 +1249,6 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 			if (_edit.gizmo.is_valid()) {
 
-				Plane plane=Plane(_edit.gizmo_initial_pos,_get_camera_normal());
-
-
-				Vector3 ray_pos=_get_ray_pos( Vector2( m.x, m.y ) );
-				Vector3 ray=_get_ray( Vector2( m.x, m.y ) );
-
-				//Vector3 intersection;
-				//if (!plane.intersects_ray(ray_pos,ray,&intersection))
-				//	break;
-
 				_edit.gizmo->set_handle(_edit.gizmo_handle,camera,Vector2(m.x,m.y));
 				Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle);
 				String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle);
@@ -1808,16 +1779,6 @@ void SpatialEditorViewport::_notification(int p_what) {
 				continue;
 
 
-			/*
-			  ??
-			if (!se->poly_instance.is_valid())
-				continue;
-			if (!ObjectDB::get_instance( E->key() )) {
-				VisualServer::get_singleton()->free( se->poly_instance );
-				se->poly_instance=RID();
-				continue;
-			}
-			*/
 			VisualInstance *vi=sp->cast_to<VisualInstance>();
 
 
@@ -1854,35 +1815,6 @@ void SpatialEditorViewport::_notification(int p_what) {
 			if (message_time<0)
 				surface->update();
 		}
-
-		//grid
-		Vector3 grid_cam_axis=_get_camera_normal();
-		/*
-		for(int i=0;i<3;i++) {
-
-
-			Vector3 axis;
-			axis[i]=1;
-
-			bool should_be_visible= grid_enabled && (grid_enable[i] || (Math::abs(grid_cam_axis.dot(axis))>0.99 && orthogonal));
-
-			if (should_be_visible!=grid_visible[i]) {
-
-				VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,should_be_visible);
-				grid_visible[i]=should_be_visible;
-			}
-		}
-
-		if (last_grid_snap!=spatial_editor->get_translate_snap()) {
-
-
-			last_grid_snap=spatial_editor->get_translate_snap()
-			Transform gridt;
-			gridt.basis.scale(Vector3(last_grid_snap,last_grid_snap,last_grid_snap));
-			for(int i=0;i<3;i++)
-				VisualServer::get_singleton()->instance_set_transform(grid_instance[i],gridt);
-
-		}*/
 
 	}
 
@@ -2565,15 +2497,8 @@ Object *SpatialEditor::_get_editor_data(Object *p_what) {
 	si->sbox_instance=VisualServer::get_singleton()->instance_create2(selection_box->get_rid(),sp->get_world()->get_scenario());
 	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(si->sbox_instance, VS::SHADOW_CASTING_SETTING_OFF);
 
-	RID inst = sp->call("_get_visual_instance_rid");
-
-//	if (inst.is_valid())
-//		si->aabb = VisualServer::get_singleton()->instance_get_base_aabb(inst);
-
-
 	if (get_tree()->is_editor_hint())
 		editor->call("edit_node",sp);
-
 
 	return si;
 }

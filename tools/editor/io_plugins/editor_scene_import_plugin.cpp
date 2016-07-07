@@ -2680,12 +2680,6 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	progress.step(TTR("Importing Scene.."),2);
 
 
-	bool reimport = bool(from->get_option("reimport"));
-	int this_time_action = from->get_option("import_this_time");
-	int next_time_action = from->get_option("import_next_time");
-
-	int import_action = reimport?this_time_action:next_time_action;
-
 	from->set_source_md5(0,FileAccess::get_md5(src_path));
 	from->set_editor(get_name());
 
@@ -2693,8 +2687,6 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	String target_res_path=p_dest_path.get_base_dir();
 
 	Map<Ref<Mesh>,Ref<Shape> > collision_map;
-
-	Ref<ResourceImportMetadata> imd = memnew(ResourceImportMetadata);
 
 	Map< Ref<ImageTexture>,TextureRole > imagemap;
 
@@ -2811,7 +2803,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 			target_path=target_path.basename()+".tex";
 
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
-			print_line("flags: "+itos(image_flags));
+
 			uint32_t flags = image_flags;
 			if (E->get()==TEXTURE_ROLE_DIFFUSE && scene_flags&SCENE_FLAG_LINEARIZE_DIFFUSE_TEXTURES)
 				flags|=EditorTextureImportPlugin::IMAGE_FLAG_CONVERT_TO_LINEAR;

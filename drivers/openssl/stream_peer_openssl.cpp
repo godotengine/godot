@@ -469,7 +469,6 @@ Error StreamPeerOpenSSL::put_partial_data(const uint8_t* p_data,int p_bytes, int
 	if (p_bytes==0)
 		return OK;
 
-	int s=0;
 	Error err = put_data(p_data,p_bytes);
 	if (err!=OK)
 		return err;

@@ -82,7 +82,6 @@ void EditorAtlas::fit(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, S
 
 		//place them
 		int ofs=0;
-		int limit_h=0;
 
 		for(int j=0;j<wrects.size();j++) {
 
@@ -106,8 +105,6 @@ void EditorAtlas::fit(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, S
 
 			int end_h = from_y+wrects[j].s.height;
 			int end_w = ofs+wrects[j].s.width;
-			if (ofs==0)
-				limit_h=end_h;
 
 			for(int k=0;k<wrects[j].s.width;k++) {
 
@@ -120,8 +117,7 @@ void EditorAtlas::fit(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, S
 			if (end_w > max_w)
 				max_w=end_w;
 
-			//if (ofs==0 || end_h>limit_h ) //while h limit not reched, keep stacking
-				ofs+=wrects[j].s.width;
+			ofs+=wrects[j].s.width;
 
 		}
 

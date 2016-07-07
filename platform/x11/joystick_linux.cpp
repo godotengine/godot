@@ -45,7 +45,9 @@
 #define test_bit(nr, addr)  (((1UL << ((nr) % LONG_BITS)) & ((addr)[(nr) / LONG_BITS])) != 0)
 #define NBITS(x) ((((x)-1)/LONG_BITS)+1)
 
+#ifdef UDEV_ENABLED
 static const char* ignore_str = "/dev/input/js";
+#endif
 
 joystick_linux::Joystick::Joystick() {
 	fd = -1;
@@ -198,7 +200,6 @@ void joystick_linux::monitor_joysticks(udev *p_udev) {
 		}
 		usleep(50000);
 	}
-	//printf("exit udev\n");
 	udev_monitor_unref(mon);
 }
 #endif

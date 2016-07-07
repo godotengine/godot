@@ -37,9 +37,6 @@ void TextureFrame::_notification(int p_what) {
 			return;
 
 
-
-		RID ci = get_canvas_item();
-
 		switch(stretch_mode) {
 			case STRETCH_SCALE_ON_EXPAND: {
 				Size2 s=expand?get_size():texture->get_size();
@@ -85,23 +82,6 @@ void TextureFrame::_notification(int p_what) {
 
 		}
 
-
-/*
-		Vector<Point2> points;
-		points.resize(4);
-		points[0]=Point2(0,0);
-		points[1]=Point2(s.x,0);
-		points[2]=Point2(s.x,s.y);
-		points[3]=Point2(0,s.y);
-		Vector<Point2> uvs;
-		uvs.resize(4);
-		uvs[0]=Point2(0,0);
-		uvs[1]=Point2(1,0);
-		uvs[2]=Point2(1,1);
-		uvs[3]=Point2(0,1);
-
-		VisualServer::get_singleton()->canvas_item_add_primitive(ci,points,Vector<Color>(),uvs,texture->get_rid());
-*/
 	}
 }
 

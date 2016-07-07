@@ -714,7 +714,6 @@ Error EditorExportPlatformBB10::run(int p_device, int p_flags) {
 	args.push_back("-installApp");
 	args.push_back("-launchApp");
 	args.push_back("-device");
-	int idx = devices[p_device].index;
 	String host = EditorSettings::get_singleton()->get("blackberry/device_"+itos(p_device+1)+"/host");
 	String pass = EditorSettings::get_singleton()->get("blackberry/device_"+itos(p_device+1)+"/password");
 	args.push_back(host);

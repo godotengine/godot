@@ -382,11 +382,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				ERR_FAIL_COND(!top_node->get_parent());
 				ERR_FAIL_COND(!bottom_node->get_parent());
 
-				int top_node_pos = top_node->get_index();
 				int bottom_node_pos = bottom_node->get_index();
-
-				int top_node_pos_next = top_node_pos + (MOVING_DOWN ? 1 : -1);
-				int bottom_node_pos_next = bottom_node_pos + (MOVING_DOWN ? 1 : -1);
+				int top_node_pos_next = top_node->get_index() + (MOVING_DOWN ? 1 : -1);
 
 				editor_data->get_undo_redo().add_do_method(top_node->get_parent(), "move_child", top_node, top_node_pos_next);
 				editor_data->get_undo_redo().add_undo_method(bottom_node->get_parent(), "move_child", bottom_node, bottom_node_pos);
@@ -1108,17 +1105,8 @@ void SceneTreeDock::_do_reparent(Node* p_new_parent,int p_position_in_parent,Vec
 				editor_data->get_undo_redo().add_do_method(node,"set_global_transform",node->cast_to<Node2D>()->get_global_transform());
 			if (node->cast_to<Spatial>())
 				editor_data->get_undo_redo().add_do_method(node,"set_global_transform",node->cast_to<Spatial>()->get_global_transform());
-			if (node->cast_to<Control>()) {
-				bool can_do_it=false;
-				Control *c=node->cast_to<Control>();
-				if (c->get_parent()->cast_to<Container>())
-					can_do_it=false;
-				for(int i=0;i<4;i++) {
-					if (c->get_anchor(Margin(i))!=ANCHOR_BEGIN)
-						can_do_it=false;
-				}
+			if (node->cast_to<Control>())
 				editor_data->get_undo_redo().add_do_method(node,"set_global_pos",node->cast_to<Control>()->get_global_pos());
-			}
 		}
 
 		editor_data->get_undo_redo().add_do_method(this,"_set_owners",edited_scene,owners);
@@ -1161,17 +1149,8 @@ void SceneTreeDock::_do_reparent(Node* p_new_parent,int p_position_in_parent,Vec
 				editor_data->get_undo_redo().add_undo_method(node,"set_transform",node->cast_to<Node2D>()->get_transform());
 			if (node->cast_to<Spatial>())
 				editor_data->get_undo_redo().add_undo_method(node,"set_transform",node->cast_to<Spatial>()->get_transform());
-			if (node->cast_to<Control>()) {
-				bool can_do_it=false;
-				Control *c=node->cast_to<Control>();
-				if (c->get_parent()->cast_to<Container>())
-					can_do_it=false;
-				for(int i=0;i<4;i++) {
-					if (c->get_anchor(Margin(i))!=ANCHOR_BEGIN)
-						can_do_it=false;
-				}
+			if (node->cast_to<Control>())
 				editor_data->get_undo_redo().add_undo_method(node,"set_pos",node->cast_to<Control>()->get_pos());
-			}
 		}
 
 

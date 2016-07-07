@@ -116,7 +116,6 @@ void VideoPlayer::_notification(int p_notification) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			//set_idle_process(false); //don't annoy
 			if (stream.is_valid() && autoplay && !get_tree()->is_editor_hint()) {
 				play();
 			}
@@ -141,13 +140,6 @@ void VideoPlayer::_notification(int p_notification) {
 
 			playback->update(delta);
 
-			/*int prev_width = texture->get_width();
-			stream->pop_frame(texture);
-			if (prev_width == 0) {
-				update();
-				minimum_size_changed();
-			};*/
-
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -158,8 +150,6 @@ void VideoPlayer::_notification(int p_notification) {
 				return;
 
 			Size2 s=expand?get_size():texture->get_size();
-			RID ci = get_canvas_item();
-			printf("drawing with size %f, %f\n", s.x, s.y);
 			draw_texture_rect(texture,Rect2(Point2(),s),false);
 
 		} break;

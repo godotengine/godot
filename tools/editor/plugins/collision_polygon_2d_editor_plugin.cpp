@@ -349,8 +349,6 @@ void CollisionPolygon2DEditor::_canvas_draw() {
 	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 
-	int len = poly.size();
-
 	for(int i=0;i<poly.size();i++) {
 
 

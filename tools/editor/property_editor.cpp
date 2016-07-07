@@ -389,7 +389,6 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				List<String> names;
 				names.push_back("value:");
 				config_value_editors(1,1,50,names);
-				Vector3 vec=v;
 				value_editor[0]->set_text( String::num(v) );
 			}
 
@@ -436,7 +435,6 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				List<String> names;
 				names.push_back("string:");
 				config_value_editors(1,1,50,names);
-				Vector3 vec=v;
 				value_editor[0]->set_text( v );
 			}
 
@@ -3345,7 +3343,6 @@ void PropertyEditor::update_tree() {
 				String type;
 				if (p.hint==PROPERTY_HINT_RESOURCE_TYPE)
 					type=p.hint_string;
-				bool notnil=false;
 
 				if (obj->get( p.name ).get_type() == Variant::NIL || obj->get( p.name ).operator RefPtr().is_null()) {
 					item->set_text(1,"<null>");
@@ -3368,8 +3365,7 @@ void PropertyEditor::update_tree() {
 
 					} else {
 						item->set_text(1,"<"+res->get_type()+">");
-					};
-					notnil=true;
+					}
 
 					if (has_icon(res->get_type(),"EditorIcons")) {
 						type=res->get_type();
