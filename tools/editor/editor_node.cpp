@@ -740,7 +740,7 @@ void EditorNode::_set_scene_metadata(const String& p_file, int p_idx) {
 	Ref<ConfigFile> cf;
 	cf.instance();
 
-	Dictionary md = editor_data.get_editor_states();
+	Dictionary md = editor_data.get_edited_scene()==p_idx?editor_data.get_editor_states():editor_data.get_scene_editor_states(p_idx);
 	List<Variant> keys;
 	md.get_key_list(&keys);
 
@@ -970,7 +970,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	editor_data.apply_changes_in_editors();
 
-	_set_scene_metadata(p_file);
+	_set_scene_metadata(p_file,idx);
 
 
 	Ref<PackedScene> sdata;

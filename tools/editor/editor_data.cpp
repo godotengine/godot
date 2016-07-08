@@ -326,6 +326,13 @@ Dictionary EditorData::get_editor_states() const {
 
 }
 
+Dictionary EditorData::get_scene_editor_states(int p_idx) const
+{
+	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),Dictionary());
+	EditedScene es = edited_scene[p_idx];
+	return es.editor_states;
+}
+
 void EditorData::set_editor_states(const Dictionary& p_states) {
 
 	List<Variant> keys;

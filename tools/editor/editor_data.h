@@ -156,6 +156,7 @@ public:
 	void paste_object_params(Object *p_object);
 
 	Dictionary get_editor_states() const;
+	Dictionary get_scene_editor_states(int p_idx) const;
 	void set_editor_states(const Dictionary& p_states);
 	void get_editor_breakpoints(List<String> *p_breakpoints);
 	void clear_editor_states();
