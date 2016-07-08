@@ -508,8 +508,6 @@ void EditorNode::_rebuild_import_menu()
 	for (int i = 0; i < editor_import_export->get_import_plugin_count(); i++) {
 		p->add_item(editor_import_export->get_import_plugin(i)->get_visible_name(), IMPORT_PLUGIN_BASE + i);
 	}
-	//p->add_separator();
-	//p->add_item(TTR("Re-Import.."), SETTINGS_IMPORT);
 }
 
 void EditorNode::_node_renamed() {
@@ -2778,10 +2776,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		case SETTINGS_PREFERENCES: {
 
 			settings_config_dialog->popup_edit_settings();
-		} break;
-		case SETTINGS_IMPORT: {
-
-			import_settings->popup_import_settings();
 		} break;
 		case SETTINGS_OPTIMIZED_PRESETS: {
 
@@ -6289,8 +6283,6 @@ EditorNode::EditorNode() {
 	open_recent_confirmation->connect("confirmed",this,"_open_recent_scene_confirm");
 
 
-	import_settings= memnew(ImportSettingsDialog(this));
-	gui_base->add_child(import_settings);
 	run_settings_dialog = memnew( RunSettingsDialog );
 	gui_base->add_child( run_settings_dialog );
 

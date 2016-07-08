@@ -74,7 +74,6 @@
 #include "tools/editor/editor_sub_scene.h"
 #include "editor_import_export.h"
 #include "editor_reimport_dialog.h"
-#include "import_settings.h"
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_name_dialog.h"
 
@@ -177,7 +176,6 @@ private:
 		RUN_RELOAD_SCRIPTS,
 		SETTINGS_UPDATE_ALWAYS,
 		SETTINGS_UPDATE_CHANGES,
-		SETTINGS_IMPORT,
 		SETTINGS_EXPORT_PREFERENCES,
 		SETTINGS_PREFERENCES,
 		SETTINGS_OPTIMIZED_PRESETS,
@@ -338,7 +336,6 @@ private:
 	Vector<EditorPlugin*> editor_table;
 
 	EditorReImportDialog *reimport_dialog;
-	ImportSettingsDialog *import_settings;
 
 	ProgressDialog *progress_dialog;
 	BackgroundProgress *progress_hb;
