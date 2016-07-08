@@ -2411,6 +2411,8 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 	for(int i=0;i<scripts.size();i++) {
 
 		String path = scripts[i];
+		if (!FileAccess::exists(path))
+			continue;
 		Ref<Script> scr = ResourceLoader::load(path);
 		if (scr.is_valid()) {
 			edit(scr);
