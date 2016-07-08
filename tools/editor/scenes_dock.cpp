@@ -59,6 +59,9 @@ bool ScenesDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_di
 		item->select(0);
 	}
 
+	for(int i=0;i<p_dir->get_subdir_count();i++)
+		_create_tree(item,p_dir->get_subdir(i));
+
 	return true;
 }
 
