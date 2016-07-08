@@ -48,6 +48,11 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	String custom_release_package;
 	String custom_debug_package;
 
+	enum BitsMode {
+		BITS_FAT,
+		BITS_64,
+		BITS_32
+	};
 
 	int version_code;
 
@@ -59,8 +64,7 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	String version;
 	String signature;
 	String copyright;
-	bool use64;
-	bool useFat;
+	BitsMode bits_mode;
 	bool high_resolution;
 
 	Ref<ImageTexture> logo;
@@ -83,7 +87,7 @@ public:
 
 
 	virtual bool poll_devices() { return false;}
-	virtual int get_device_count() const { return 0; };
+	virtual int get_device_count() const { return 0; }
 	virtual String get_device_name(int p_device) const  { return String(); }
 	virtual String get_device_info(int p_device) const { return String(); }
 	virtual Error run(int p_device,int p_flags=0);
@@ -122,10 +126,8 @@ bool EditorExportPlatformOSX::_set(const StringName& p_name, const Variant& p_va
 		version=p_value;
 	else if (n=="application/copyright")
 		copyright=p_value;
-	else if (n=="application/64_bits")
-		use64=p_value;
-	else if (n=="application/fat_bits")
-		useFat=p_value;
+	else if (n=="application/bits_mode")
+		bits_mode=BitsMode(int(p_value));
 	else if (n=="display/high_res")
 		high_resolution=p_value;
 	else
@@ -158,10 +160,8 @@ bool EditorExportPlatformOSX::_get(const StringName& p_name,Variant &r_ret) cons
 		r_ret=version;
 	else if (n=="application/copyright")
 		r_ret=copyright;
-	else if (n=="application/64_bits")
-		r_ret=use64;
-	else if (n=="application/fat_bits")
-		r_ret=useFat;
+	else if (n=="application/bits_mode")
+		r_ret=bits_mode;
 	else if (n=="display/high_res")
 		r_ret=high_resolution;
 	else
@@ -182,12 +182,8 @@ void EditorExportPlatformOSX::_get_property_list( List<PropertyInfo> *p_list) co
 	p_list->push_back( PropertyInfo( Variant::STRING, "application/short_version") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "application/version") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "application/copyright") );
-	p_list->push_back( PropertyInfo( Variant::BOOL, "application/64_bits") );
-	p_list->push_back( PropertyInfo( Variant::BOOL, "application/fat_bits") );
+	p_list->push_back( PropertyInfo( Variant::INT, "application/bits_mode", PROPERTY_HINT_ENUM, "Fat (32 & 64 bits),64 bits,32 bits") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "display/high_res") );
-
-
-	//p_list->push_back( PropertyInfo( Variant::INT, "resources/pack_mode", PROPERTY_HINT_ENUM,"Copy,Single Exec.,Pack (.pck),Bundles (Optical)"));
 
 }
 
@@ -321,7 +317,8 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 	io2.opaque=&dst_f;
 	zipFile	dpkg=zipOpen2(p_path.utf8().get_data(),APPEND_STATUS_CREATE,NULL,&io2);
 
-	String binary_to_use="godot_osx_"+String(p_debug?"debug":"release")+"."+String(useFat?"fat":use64?"64":"32");
+	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".";
+	binary_to_use += String(bits_mode==BITS_FAT ? "fat" : bits_mode==BITS_64 ? "64" : "32");
 
 	print_line("binary: "+binary_to_use);
 	String pkg_name;
@@ -332,6 +329,8 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 	else
 		pkg_name="Unnamed";
 
+
+	bool found_binary = false;
 
 	while(ret==UNZ_OK) {
 
@@ -366,6 +365,7 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 				ret = unzGoToNextFile(pkg);
 				continue; //ignore!
 			}
+			found_binary = true;
 			file="Contents/MacOS/"+pkg_name;
 		}
 
@@ -418,6 +418,13 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 		}
 
 		ret = unzGoToNextFile(pkg);
+	}
+
+	if (!found_binary) {
+		ERR_PRINTS("Requested template binary '"+binary_to_use+"' not found. It might be missing from your template archive.");
+		zipClose(dpkg,NULL);
+		unzClose(pkg);
+		return ERR_FILE_NOT_FOUND;
 	}
 
 
@@ -487,13 +494,12 @@ EditorExportPlatformOSX::EditorExportPlatformOSX() {
 	logo = Ref<ImageTexture>( memnew( ImageTexture ));
 	logo->create_from_image(img);
 
-	info="This Game is Nice";
-	identifier="com.godot.macgame";
+	info="Made with Godot Engine";
+	identifier="org.godotengine.macgame";
 	signature="godotmacgame";
 	short_version="1.0";
 	version="1.0";
-	use64=false;
-	useFat=false;
+	bits_mode=BITS_FAT;
 	high_resolution=false;
 
 }
