@@ -1083,7 +1083,7 @@ void Viewport::_propagate_exit_world(Node *p_node) {
 		Spatial *s = p_node->cast_to<Spatial>();
 		if (s) {
 
-			s->notification(Spatial::NOTIFICATION_EXIT_WORLD,false);
+			s->notification(Spatial::NOTIFICATION_EXIT_WORLD, true);
 		} else {
 			Viewport *v = p_node->cast_to<Viewport>();
 			if (v) {
