@@ -11701,8 +11701,6 @@ This approximation makes straight segments between each point, then subdivides t
 		<constant name="PARAM_MAX" value="8">
 			Maximum amount of parameters.
 		</constant>
-		<constant name="TEXCOORD_SPHERE" value="3">
-		</constant>
 		<constant name="TEXCOORD_UV" value="0">
 			Read texture coordinates from the UV array.
 		</constant>
@@ -11711,6 +11709,8 @@ This approximation makes straight segments between each point, then subdivides t
 		</constant>
 		<constant name="TEXCOORD_UV2" value="2">
 			Read texture coordinates from the UV2 array.
+		</constant>
+		<constant name="TEXCOORD_SPHERE" value="3">
 		</constant>
 		<constant name="FLAG_USE_ALPHA" value="0">
 		</constant>
@@ -14666,7 +14666,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_pressed">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_pressed" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -14674,7 +14674,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_released">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_released" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -14754,7 +14754,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_pressed">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_pressed" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -14762,7 +14762,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_released">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_released" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -14834,7 +14834,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_pressed">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_pressed" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -14842,7 +14842,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_released">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_released" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -14920,7 +14920,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_pressed">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_pressed" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -14928,7 +14928,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_released">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_released" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -15004,7 +15004,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_pressed">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_pressed" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -15012,7 +15012,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_released">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_released" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -15100,7 +15100,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_pressed">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_pressed" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -15108,7 +15108,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_released">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_released" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -15208,7 +15208,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_pressed">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_pressed" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -15216,7 +15216,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_released">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_released" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -15322,7 +15322,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_pressed">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_pressed" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -15330,7 +15330,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_released">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_released" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -15422,7 +15422,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_pressed">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_pressed" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
@@ -15430,7 +15430,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		<method name="is_action_released">
 			<return type="bool">
 			</return>
-			<argument index="0" name="is_action_released" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
 			</description>
