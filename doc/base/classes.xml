@@ -14638,8 +14638,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 </class>
 <class name="InputDefault" inherits="Input" category="Core">
 	<brief_description>
+	Default implementation of the [Input] class.
 	</brief_description>
 	<description>
+	Default implementation of the [Input] class, used internally by the editor and games for default input management.
 	</description>
 	<methods>
 	</methods>
@@ -14651,7 +14653,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	Built-in input event data.
 	</brief_description>
 	<description>
-	Built-in input event data. InputEvent is a built-in engine datatype, given that it's passed around and used so much. Depending on it's type, the members contained can be different, so read the documentation well!. Input events can also represent actions (editable from the project settings).
+	Built-in input event data. InputEvent is a built-in engine datatype, given that it's passed around and used so much. Depending on its type, the members contained can be different, so read the documentation well! Input events can also represent actions (editable from the project settings).
 	</description>
 	<methods>
 		<method name="is_action">
@@ -14669,6 +14671,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is being pressed (and is not an echo event for KEY events). Not relevant for the event types MOUSE_MOTION, SCREEN_DRAG and NONE.
 			</description>
 		</method>
 		<method name="is_action_released">
@@ -14677,20 +14680,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is released (i.e. not pressed). Not relevant for the event types MOUSE_MOTION, SCREEN_DRAG and NONE.
 			</description>
 		</method>
 		<method name="is_echo">
 			<return type="bool">
 			</return>
 			<description>
-			Return if this input event is an echo event (usually for key events).
+			Return if this input event is an echo event (only for events of type KEY, it will return false for other types).
 			</description>
 		</method>
 		<method name="is_pressed">
 			<return type="bool">
 			</return>
 			<description>
-			Return if this input event is pressed (for key, mouse, joy button or screen press events).
+			Return if this input event is pressed. Not relevant for the event types MOUSE_MOTION, SCREEN_DRAG and NONE.
 			</description>
 		</method>
 		<method name="set_as_action">
@@ -14699,15 +14703,19 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="pressed" type="bool">
 			</argument>
 			<description>
+			Change the input event to an action event of the given name, regardless of its initial type, with the pressed status passed as argument.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="ID" type="int">
+			Event identifier, positive integer increased at each new event.
 		</member>
 		<member name="device" type="int">
+			Device identifier.
 		</member>
 		<member name="type" type="int">
+			Type of event (one of the [InputEvent] constants).
 		</member>
 	</members>
 	<constants>
@@ -14730,17 +14738,22 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			Joystick button event.
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
+			Screen touch event.
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+			Screen drag event.
 		</constant>
 		<constant name="ACTION" value="8">
+			Pre-defined action event (see [InputMap]).
 		</constant>
 	</constants>
 </class>
 <class name="InputEventAction" category="Built-In Types">
 	<brief_description>
+	Built-in input event type for actions.
 	</brief_description>
 	<description>
+	Input event type for actions that extends the global [InputEvent] type.
 	</description>
 	<methods>
 		<method name="is_action">
@@ -14749,6 +14762,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return if this input event matches a pre-defined action, i.e. always true for InputEventAction.
 			</description>
 		</method>
 		<method name="is_action_pressed">
@@ -14757,6 +14771,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is being pressed.
 			</description>
 		</method>
 		<method name="is_action_released">
@@ -14765,18 +14780,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is released (i.e. not pressed).
 			</description>
 		</method>
 		<method name="is_echo">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is an echo event (only for events of type KEY, i.e. always false for this type).
 			</description>
 		</method>
 		<method name="is_pressed">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is pressed.
 			</description>
 		</method>
 		<method name="set_as_action">
@@ -14785,42 +14803,57 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="pressed" type="bool">
 			</argument>
 			<description>
+			Change the input event to an action event of the given name with the pressed status passed as argument.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="ID" type="int">
+			Event identifier, positive integer increased at each new event.
 		</member>
 		<member name="device" type="int">
+			Device identifier.
 		</member>
 		<member name="type" type="int">
+			Type of event (one of the [InputEvent] constants).
 		</member>
 	</members>
 	<constants>
 		<constant name="NONE" value="0">
+			Empty input event.
 		</constant>
 		<constant name="KEY" value="1">
+			Key event.
 		</constant>
 		<constant name="MOUSE_MOTION" value="2">
+			Mouse motion event.
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
+			Mouse button event.
 		</constant>
 		<constant name="JOYSTICK_MOTION" value="4">
+			Joystick motion event.
 		</constant>
 		<constant name="JOYSTICK_BUTTON" value="5">
+			Joystick button event.
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
+			Screen touch event.
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+			Screen drag event.
 		</constant>
 		<constant name="ACTION" value="8">
+			Pre-defined action event (see [InputMap]).
 		</constant>
 	</constants>
 </class>
 <class name="InputEventJoystickButton" category="Built-In Types">
 	<brief_description>
+	Built-in input event type for joystick button events.
 	</brief_description>
 	<description>
+	Input event type for joystick button events that extends the global [InputEvent] type.
 	</description>
 	<methods>
 		<method name="is_action">
@@ -14829,6 +14862,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return if this input event matches a pre-defined action.
 			</description>
 		</method>
 		<method name="is_action_pressed">
@@ -14837,6 +14871,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is being pressed.
 			</description>
 		</method>
 		<method name="is_action_released">
@@ -14845,18 +14880,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is released (i.e. not pressed).
 			</description>
 		</method>
 		<method name="is_echo">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is an echo event (only for events of type KEY, i.e. always false for this type).
 			</description>
 		</method>
 		<method name="is_pressed">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is pressed.
 			</description>
 		</method>
 		<method name="set_as_action">
@@ -14865,48 +14903,66 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="pressed" type="bool">
 			</argument>
 			<description>
+			Change the input event to an action event of the given name with the pressed status passed as argument.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="ID" type="int">
+			Event identifier, positive integer increased at each new event.
 		</member>
 		<member name="button_index" type="int">
+			Joystick button identifier, one of the JOY_BUTTON_* constants in [@Global Scope].
 		</member>
 		<member name="device" type="int">
+			Device identifier.
 		</member>
 		<member name="pressed" type="bool">
+			Pressed state of the joystick button.
 		</member>
 		<member name="pressure" type="float">
+			Intensity of the button pressure, ranges from 0 to 1.0.
 		</member>
 		<member name="type" type="int">
+			Type of event (one of the [InputEvent] constants).
 		</member>
 	</members>
 	<constants>
 		<constant name="NONE" value="0">
+			Empty input event.
 		</constant>
 		<constant name="KEY" value="1">
+			Key event.
 		</constant>
 		<constant name="MOUSE_MOTION" value="2">
+			Mouse motion event.
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
+			Mouse button event.
 		</constant>
 		<constant name="JOYSTICK_MOTION" value="4">
+			Joystick motion event.
 		</constant>
 		<constant name="JOYSTICK_BUTTON" value="5">
+			Joystick button event.
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
+			Screen touch event.
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+			Screen drag event.
 		</constant>
 		<constant name="ACTION" value="8">
+			Pre-defined action event (see [InputMap]).
 		</constant>
 	</constants>
 </class>
 <class name="InputEventJoystickMotion" category="Built-In Types">
 	<brief_description>
+	Built-in input event type for joystick motion/axis events.
 	</brief_description>
 	<description>
+	Input event type for joystick motion/axis events that extends the global [InputEvent] type.
 	</description>
 	<methods>
 		<method name="is_action">
@@ -14923,6 +14979,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is being pressed.
 			</description>
 		</method>
 		<method name="is_action_released">
@@ -14931,18 +14988,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is released (i.e. not pressed).
 			</description>
 		</method>
 		<method name="is_echo">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is an echo event (only for events of type KEY, i.e. always false for this type).
 			</description>
 		</method>
 		<method name="is_pressed">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is pressed.
 			</description>
 		</method>
 		<method name="set_as_action">
@@ -14951,46 +15011,63 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="pressed" type="bool">
 			</argument>
 			<description>
+			Change the input event to an action event of the given name with the pressed status passed as argument.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="ID" type="int">
+			Event identifier, positive integer increased at each new event.
 		</member>
 		<member name="axis" type="int">
+			Joystick axis identifier, one of the JOY_AXIS_* constants in [@Global Scope].
 		</member>
 		<member name="device" type="int">
+			Device identifier.
 		</member>
 		<member name="type" type="int">
+			Type of event (one of the [InputEvent] constants).
 		</member>
 		<member name="value" type="float">
+			Position of the axis, ranging from -1.0 to 1.0. A value of 0 means that the axis is in its neutral position.
 		</member>
 	</members>
 	<constants>
 		<constant name="NONE" value="0">
+			Empty input event.
 		</constant>
 		<constant name="KEY" value="1">
+			Key event.
 		</constant>
 		<constant name="MOUSE_MOTION" value="2">
+			Mouse motion event.
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
+			Mouse button event.
 		</constant>
 		<constant name="JOYSTICK_MOTION" value="4">
+			Joystick motion event.
 		</constant>
 		<constant name="JOYSTICK_BUTTON" value="5">
+			Joystick button event.
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
+			Screen touch event.
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+			Screen drag event.
 		</constant>
 		<constant name="ACTION" value="8">
+			Pre-defined action event (see [InputMap]).
 		</constant>
 	</constants>
 </class>
 <class name="InputEventKey" category="Built-In Types">
 	<brief_description>
+	Built-in input event type for keyboard events.
 	</brief_description>
 	<description>
+	Input event type for keyboard events that extends the global [InputEvent] type.
 	</description>
 	<methods>
 		<method name="is_action">
@@ -14999,6 +15076,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return if this input event matches a pre-defined action.
 			</description>
 		</method>
 		<method name="is_action_pressed">
@@ -15007,6 +15085,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is being pressed.
 			</description>
 		</method>
 		<method name="is_action_released">
@@ -15015,18 +15094,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is released (i.e. not pressed).
 			</description>
 		</method>
 		<method name="is_echo">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is an echo event.
 			</description>
 		</method>
 		<method name="is_pressed">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is pressed.
 			</description>
 		</method>
 		<method name="set_as_action">
@@ -15035,58 +15117,81 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="pressed" type="bool">
 			</argument>
 			<description>
+			Change the input event to an action event of the given name with the pressed status passed as argument.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="ID" type="int">
+			Event identifier, positive integer increased at each new event.
 		</member>
 		<member name="alt" type="bool">
+			State of the Alt modifier.
 		</member>
 		<member name="control" type="bool">
+			State of the Ctrl modifier.
 		</member>
 		<member name="device" type="int">
+			Device identifier.
 		</member>
 		<member name="echo" type="bool">
+			Echo state of the key, i.e. whether it's a repeat event or not.
 		</member>
 		<member name="meta" type="bool">
+			State of the Meta modifier.
 		</member>
 		<member name="pressed" type="bool">
+			Pressed state of the key.
 		</member>
 		<member name="scancode" type="int">
+			Scancode of the key, one of the KEY_* constants in [@Global Scope].
 		</member>
 		<member name="shift" type="bool">
+			State of the Shift modifier.
 		</member>
 		<member name="type" type="int">
+			Type of event (one of the [InputEvent] constants).
 		</member>
 		<member name="unicode" type="int">
+			Unicode identifier of the key (when relevant).
 		</member>
 	</members>
 	<constants>
 		<constant name="NONE" value="0">
+			Empty input event.
 		</constant>
 		<constant name="KEY" value="1">
+			Key event.
 		</constant>
 		<constant name="MOUSE_MOTION" value="2">
+			Mouse motion event.
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
+			Mouse button event.
 		</constant>
 		<constant name="JOYSTICK_MOTION" value="4">
+			Joystick motion event.
 		</constant>
 		<constant name="JOYSTICK_BUTTON" value="5">
+			Joystick button event.
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
+			Screen touch event.
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+			Screen drag event.
 		</constant>
 		<constant name="ACTION" value="8">
+			Pre-defined action event (see [InputMap]).
 		</constant>
 	</constants>
 </class>
 <class name="InputEventMouseButton" category="Built-In Types">
 	<brief_description>
+	Built-in input event type for mouse button events.
 	</brief_description>
 	<description>
+	Input event type for mouse button events that extends the global [InputEvent] type.
 	</description>
 	<methods>
 		<method name="is_action">
@@ -15095,6 +15200,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return if this input event matches a pre-defined action.
 			</description>
 		</method>
 		<method name="is_action_pressed">
@@ -15103,6 +15209,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is being pressed.
 			</description>
 		</method>
 		<method name="is_action_released">
@@ -15111,18 +15218,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is released (i.e. not pressed).
 			</description>
 		</method>
 		<method name="is_echo">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is an echo event (only for events of type KEY, i.e. always false for this type).
 			</description>
 		</method>
 		<method name="is_pressed">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is pressed.
 			</description>
 		</method>
 		<method name="set_as_action">
@@ -15131,70 +15241,99 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="pressed" type="bool">
 			</argument>
 			<description>
+			Change the input event to an action event of the given name with the pressed status passed as argument.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="ID" type="int">
+			Event identifier, positive integer increased at each new event.
 		</member>
 		<member name="alt" type="bool">
+			State of the Alt modifier.
 		</member>
 		<member name="button_index" type="int">
+			Mouse button identifier, one of the BUTTON_* or BUTTON_WHEEL_* constants in [@Global Scope].
 		</member>
 		<member name="button_mask" type="int">
+			Mouse button mask identifier, one of or a bitwise combination of the BUTTON_MASK_* constants in [@Global Scope].
 		</member>
 		<member name="control" type="bool">
+			State of the Control modifier.
 		</member>
 		<member name="device" type="int">
+			Device identifier.
 		</member>
 		<member name="doubleclick" type="bool">
+			Whether the event is a double-click.
 		</member>
 		<member name="global_pos" type="Vector2">
+			Global position of the mouse click.
 		</member>
 		<member name="global_x" type="int">
+			Global X coordinate of the mouse click.
 		</member>
 		<member name="global_y" type="int">
+			Global Y coordinate of the mouse click.
 		</member>
 		<member name="meta" type="bool">
+			State of the Meta modifier.
 		</member>
 		<member name="pos" type="Vector2">
+			Local position of the mouse click.
 		</member>
 		<member name="pressed" type="bool">
+			Pressed state of the mouse button.
 		</member>
 		<member name="shift" type="bool">
+			State of the Shift modifier.
 		</member>
 		<member name="type" type="int">
+			Type of event (one of the [InputEvent] constants).
 		</member>
 		<member name="x" type="int">
+			Local X coordinate of the mouse click.
 		</member>
 		<member name="y" type="int">
+			Local Y coordinate of the mouse click.
 		</member>
 	</members>
 	<constants>
 		<constant name="NONE" value="0">
+			Empty input event.
 		</constant>
 		<constant name="KEY" value="1">
+			Key event.
 		</constant>
 		<constant name="MOUSE_MOTION" value="2">
+			Mouse motion event.
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
+			Mouse button event.
 		</constant>
 		<constant name="JOYSTICK_MOTION" value="4">
+			Joystick motion event.
 		</constant>
 		<constant name="JOYSTICK_BUTTON" value="5">
+			Joystick button event.
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
+			Screen touch event.
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+			Screen drag event.
 		</constant>
 		<constant name="ACTION" value="8">
+			Pre-defined action event (see [InputMap]).
 		</constant>
 	</constants>
 </class>
 <class name="InputEventMouseMotion" category="Built-In Types">
 	<brief_description>
+	Built-in input event type for mouse motion events.
 	</brief_description>
 	<description>
+	Input event type for mouse motion events that extends the global [InputEvent] type.
 	</description>
 	<methods>
 		<method name="is_action">
@@ -15203,6 +15342,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return if this input event matches a pre-defined action.
 			</description>
 		</method>
 		<method name="is_action_pressed">
@@ -15211,6 +15351,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is being pressed. Not relevant for MOUSE_MOTION events, always false.
 			</description>
 		</method>
 		<method name="is_action_released">
@@ -15219,18 +15360,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is released (i.e. not pressed). Not relevant for MOUSE_MOTION events, can be true or false depending on whether [method is_action] is true.
 			</description>
 		</method>
 		<method name="is_echo">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is an echo event (only for events of type KEY, i.e. always false for this type).
 			</description>
 		</method>
 		<method name="is_pressed">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is pressed. Not relevant for MOUSE_MOTION events, always false.
 			</description>
 		</method>
 		<method name="set_as_action">
@@ -15239,76 +15383,108 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="pressed" type="bool">
 			</argument>
 			<description>
+			Change the input event to an action event of the given name with the (irrelevant for this type) pressed status passed as argument.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="ID" type="int">
+			Event identifier, positive integer increased at each new event.
 		</member>
 		<member name="alt" type="bool">
+			State of the Alt modifier.
 		</member>
 		<member name="button_mask" type="int">
+			Mouse button mask identifier, one of or a bitwise combination of the BUTTON_MASK_* constants in [@Global Scope].
 		</member>
 		<member name="control" type="bool">
+			State of the Ctrl modifier.
 		</member>
 		<member name="device" type="int">
+			Device identifier.
 		</member>
 		<member name="global_pos" type="Vector2">
+			Global position of the mouse pointer.
 		</member>
 		<member name="global_x" type="int">
+			Global X coordinate of the mouse pointer.
 		</member>
 		<member name="global_y" type="int">
+			Global Y coordinate of the mouse pointer.
 		</member>
 		<member name="meta" type="bool">
+			State of the Meta modifier.
 		</member>
 		<member name="pos" type="Vector2">
+			Local position of the mouse pointer.
 		</member>
 		<member name="relative_pos" type="Vector2">
+			Position of the mouse pointer relative to the previous mouse position.
 		</member>
 		<member name="relative_x" type="int">
+			X coordinate of the mouse pointer relative to the previous mouse position.
 		</member>
 		<member name="relative_y" type="int">
+			Y coordinate of the mouse pointer relative to the previous mouse position.
 		</member>
 		<member name="shift" type="bool">
+			State of the Shift modifier.
 		</member>
 		<member name="speed" type="Vector2">
+			Speed of the mouse pointer.
 		</member>
 		<member name="speed_x" type="float">
+			Speed of the mouse pointer on the X axis.
 		</member>
 		<member name="speed_y" type="float">
+			Speed of the mouse pointer on the Y axis.
 		</member>
 		<member name="type" type="int">
+			Type of event (one of the [InputEvent] constants).
 		</member>
 		<member name="x" type="int">
+			Local X coordinate of the mouse pointer.
 		</member>
 		<member name="y" type="int">
+			Local Y coordinate of the mouse pointer.
 		</member>
 	</members>
 	<constants>
 		<constant name="NONE" value="0">
+			Empty input event.
 		</constant>
 		<constant name="KEY" value="1">
+			Key event.
 		</constant>
 		<constant name="MOUSE_MOTION" value="2">
+			Mouse motion event.
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
+			Mouse button event.
 		</constant>
 		<constant name="JOYSTICK_MOTION" value="4">
+			Joystick motion event.
 		</constant>
 		<constant name="JOYSTICK_BUTTON" value="5">
+			Joystick button event.
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
+			Screen touch event.
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+			Screen drag event.
 		</constant>
 		<constant name="ACTION" value="8">
+			Pre-defined action event (see [InputMap]).
 		</constant>
 	</constants>
 </class>
 <class name="InputEventScreenDrag" category="Built-In Types">
 	<brief_description>
+	Built-in input event type for screen drag events.
 	</brief_description>
 	<description>
+	Input event type for screen drag events that extends the global [InputEvent] type.
 	</description>
 	<methods>
 		<method name="is_action">
@@ -15317,6 +15493,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return if this input event matches a pre-defined action.
 			</description>
 		</method>
 		<method name="is_action_pressed">
@@ -15325,6 +15502,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is being pressed. Not relevant for SCREEN_DRAG events, always false.
 			</description>
 		</method>
 		<method name="is_action_released">
@@ -15333,18 +15511,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is released (i.e. not pressed). Not relevant for SCREEN_DRAG events, can be true or false depending on whether [method is_action] is true.
 			</description>
 		</method>
 		<method name="is_echo">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is an echo event (only for events of type KEY, i.e. always false for this type).
 			</description>
 		</method>
 		<method name="is_pressed">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is pressed. Not relevant for SCREEN_DRAG events, always false.
 			</description>
 		</method>
 		<method name="set_as_action">
@@ -15353,62 +15534,87 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="pressed" type="bool">
 			</argument>
 			<description>
+			Change the input event to an action event of the given name with the (irrelevant for this type) pressed status passed as argument.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="ID" type="int">
+			Event identifier, positive integer increased at each new event.
 		</member>
 		<member name="device" type="int">
+			Device identifier.
 		</member>
 		<member name="index" type="int">
+			Drag event index in the case of a multi-drag event.
 		</member>
 		<member name="pos" type="Vector2">
+			Position of the drag event.
 		</member>
 		<member name="relative_pos" type="Vector2">
+			Position of the drag event relative to its start position.
 		</member>
 		<member name="relative_x" type="float">
+			X coordinate of the drag event relative to its start position.
 		</member>
 		<member name="relative_y" type="float">
+			Y coordinate of the drag event relative to its start position.
 		</member>
 		<member name="speed" type="Vector2">
+			Speed of the drag event.
 		</member>
 		<member name="speed_x" type="float">
+			Speed of the drag event on the X axis.
 		</member>
 		<member name="speed_y" type="float">
+			Speed of the drag event on the Y axis.
 		</member>
 		<member name="type" type="int">
+			Type of event (one of the [InputEvent] constants).
 		</member>
 		<member name="x" type="float">
+			X coordinate of the drag event.
 		</member>
 		<member name="y" type="float">
+			Y coordinate of the drag event.
 		</member>
 	</members>
 	<constants>
 		<constant name="NONE" value="0">
+			Empty input event.
 		</constant>
 		<constant name="KEY" value="1">
+			Key event.
 		</constant>
 		<constant name="MOUSE_MOTION" value="2">
+			Mouse motion event.
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
+			Mouse button event.
 		</constant>
 		<constant name="JOYSTICK_MOTION" value="4">
+			Joystick motion event.
 		</constant>
 		<constant name="JOYSTICK_BUTTON" value="5">
+			Joystick button event.
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
+			Screen touch event.
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+			Screen drag event.
 		</constant>
 		<constant name="ACTION" value="8">
+			Pre-defined action event (see [InputMap]).
 		</constant>
 	</constants>
 </class>
 <class name="InputEventScreenTouch" category="Built-In Types">
 	<brief_description>
+	Built-in input event type for touchscreen drag events.
 	</brief_description>
 	<description>
+	Input event type for touchscreen drag events that extends the global [InputEvent] type.
 	</description>
 	<methods>
 		<method name="is_action">
@@ -15417,6 +15623,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return if this input event matches a pre-defined action.
 			</description>
 		</method>
 		<method name="is_action_pressed">
@@ -15425,6 +15632,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is being pressed.
 			</description>
 		</method>
 		<method name="is_action_released">
@@ -15433,18 +15641,21 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given action is released (i.e. not pressed).
 			</description>
 		</method>
 		<method name="is_echo">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is an echo event (only for events of type KEY, i.e. always false for this type).
 			</description>
 		</method>
 		<method name="is_pressed">
 			<return type="bool">
 			</return>
 			<description>
+			Return if this input event is pressed.
 			</description>
 		</method>
 		<method name="set_as_action">
@@ -15453,45 +15664,63 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="pressed" type="bool">
 			</argument>
 			<description>
+			Change the input event to an action event of the given name with the pressed status passed as argument.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="ID" type="int">
+			Event identifier, positive integer increased at each new event.
 		</member>
 		<member name="device" type="int">
+			Device identifier.
 		</member>
 		<member name="index" type="int">
+			Touch event index in the case of a multi-touch event.
 		</member>
 		<member name="pos" type="Vector2">
+			Position of the touch event.
 		</member>
 		<member name="pressed" type="bool">
+			Pressed state of the touch event.
 		</member>
 		<member name="type" type="int">
+			Type of event (one of the [InputEvent] constants).
 		</member>
 		<member name="x" type="float">
+			X coordinate of the touch event.
 		</member>
 		<member name="y" type="float">
+			Y coordinate of the touch event.
 		</member>
 	</members>
 	<constants>
 		<constant name="NONE" value="0">
+			Empty input event.
 		</constant>
 		<constant name="KEY" value="1">
+			Key event.
 		</constant>
 		<constant name="MOUSE_MOTION" value="2">
+			Mouse motion event.
 		</constant>
 		<constant name="MOUSE_BUTTON" value="3">
+			Mouse button event.
 		</constant>
 		<constant name="JOYSTICK_MOTION" value="4">
+			Joystick motion event.
 		</constant>
 		<constant name="JOYSTICK_BUTTON" value="5">
+			Joystick button event.
 		</constant>
 		<constant name="SCREEN_TOUCH" value="6">
+			Screen touch event.
 		</constant>
 		<constant name="SCREEN_DRAG" value="7">
+			Screen drag event.
 		</constant>
 		<constant name="ACTION" value="8">
+			Pre-defined action event (see [InputMap]).
 		</constant>
 	</constants>
 </class>
@@ -15509,7 +15738,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
-			Add an [InputEvent] to action. This [InputEvent] will trigger the action.
+			Add an [InputEvent] to an action. This [InputEvent] will trigger the action.
 			</description>
 		</method>
 		<method name="action_erase_event">
@@ -15536,7 +15765,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-			Add an action to the [InputMap].
+			Add an (empty) action to the [InputMap]. An [InputEvent] can then be added to this action with [method action_add_event].
 			</description>
 		</method>
 		<method name="erase_action">
@@ -15554,6 +15783,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="1" name="action" type="String">
 			</argument>
 			<description>
+			Return whether the given event is part of an existing action.
 			</description>
 		</method>
 		<method name="get_action_from_id" qualifiers="const">
@@ -15562,7 +15792,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-			Return the action from an id.
+			Return the action corresponding to the identifier.
 			</description>
 		</method>
 		<method name="get_action_id" qualifiers="const">
@@ -15571,7 +15801,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-			Return the id of an action.
+			Return the identifier of the given action.
 			</description>
 		</method>
 		<method name="get_action_list">
@@ -15580,14 +15810,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-			Return an [Array] of [InputEvent]s associated with an action.
+			Return an array of InputEvents associated with a given action.
 			</description>
 		</method>
 		<method name="get_actions">
 			<return type="Array">
 			</return>
 			<description>
-			Return an [Array] of all actions in the [InputMap].
+			Return an array of all actions in the [InputMap].
 			</description>
 		</method>
 		<method name="has_action" qualifiers="const">
@@ -15596,12 +15826,12 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-			Whether this InputMap has an action with name "action".
+			Whether this InputMap has a registered action with the given name.
 			</description>
 		</method>
 		<method name="load_from_globals">
 			<description>
-			Clears the [InputMap] and loads it from [Globals].
+			Clear the [InputMap] and load it anew from [Globals].
 			</description>
 		</method>
 	</methods>
