@@ -661,8 +661,7 @@
 			</argument>
 			<description>
 				Stop the function execution and return the current state. Call resume on the state to resume execution. This makes the state invalid.
-			Returns anything that was passed to the resume function call.
-			If passed an object and a signal, the execution is resumed when the object's signal is emmited.
+				Returns anything that was passed to the resume function call. If passed an object and a signal, the execution is resumed when the object's signal is emmited.
 			</description>
 		</method>
 	</methods>
@@ -678,7 +677,7 @@
 	</brief_description>
 	<description>
 		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, scancodes, property hints, etc. It's not much.
-	Singletons are also documented here, since they can be accessed from anywhere.
+		Singletons are also documented here, since they can be accessed from anywhere.
 	</description>
 	<methods>
 	</methods>
@@ -2163,7 +2162,7 @@
 			</argument>
 			<description>
 				Add custom button to the dialog and return the created button.
-			The button titled with [i]text[/i] and the [i]action[/i] will be passed to [custom_action] signal when it is pressed.
+				The button titled with [i]text[/i] and the [i]action[/i] will be passed to [custom_action] signal when it is pressed.
 			</description>
 		</method>
 		<method name="add_cancel">
@@ -2463,7 +2462,7 @@
 	</brief_description>
 	<description>
 		An Animation resource contains data used to animate everything in the engine. Animations are divided into tracks, and each track must be linked to a node. The state of that node can be changed through time, by adding timed keys (events) to the track.
-	Animations are just data containers, and must be added to odes such as an [AnimationPlayer] or [AnimationTreePlayer] to be played back.
+		Animations are just data containers, and must be added to odes such as an [AnimationPlayer] or [AnimationTreePlayer] to be played back.
 	</description>
 	<methods>
 		<method name="add_track">
@@ -3077,8 +3076,7 @@
 			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
-				Set the player as active (playing). If false, it
-			will do nothing.
+				Set the player as active (playing). If false, it will do nothing.
 			</description>
 		</method>
 		<method name="set_animation_process_mode">
@@ -3865,7 +3863,7 @@
 			</argument>
 			<description>
 				Set the rate at which objects stop spinning in this area, if there are not any other forces making it spin. The value is a fraction of its current speed, lost per second. Thus, a value of 1.0 should mean stopping immediately, and 0.0 means the object never stops.
-			In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
+				In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
 			</description>
 		</method>
 		<method name="set_collision_mask">
@@ -3896,7 +3894,7 @@
 			</argument>
 			<description>
 				Set the gravity intensity. This is useful to alter the force of gravity without altering its direction.
-			This value multiplies the gravity vector, whether it is the given vector ([method set_gravity_vector]), or a calculated one (when using a center of gravity).
+				This value multiplies the gravity vector, whether it is the given vector ([method set_gravity_vector]), or a calculated one (when using a center of gravity).
 			</description>
 		</method>
 		<method name="set_gravity_distance_scale">
@@ -3918,7 +3916,7 @@
 			</argument>
 			<description>
 				Set the gravity vector. This vector does not have to be normalized.
-			If gravity is a point (see [method is_gravity_a_point]), this will be the attraction center.
+				If gravity is a point (see [method is_gravity_a_point]), this will be the attraction center.
 			</description>
 		</method>
 		<method name="set_layer_mask">
@@ -3926,8 +3924,8 @@
 			</argument>
 			<description>
 				Set the physics layers this area is in.
-			Collidable objects can exist in any of 32 different layers. These layers are not visual, but more of a tagging system instead. A collidable can use these layers/tags to select with which objects it can collide, using [method set_collision_mask].
-			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
+				Collidable objects can exist in any of 32 different layers. These layers are not visual, but more of a tagging system instead. A collidable can use these layers/tags to select with which objects it can collide, using [method set_collision_mask].
+				A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
 			</description>
 		</method>
 		<method name="set_layer_mask_bit">
@@ -3944,7 +3942,7 @@
 			</argument>
 			<description>
 				Set the rate at which objects stop moving in this area, if there are not any other forces moving it. The value is a fraction of its current speed, lost per second. Thus, a value of 1.0 should mean stopping immediately, and 0.0 means the object never stops.
-			In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
+				In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
 			</description>
 		</method>
 		<method name="set_monitorable">
@@ -3959,7 +3957,7 @@
 			</argument>
 			<description>
 				Set the order in which the area is processed. Greater values mean the area gets processed first. This is useful for areas which have an space override different from AREA_SPACE_OVERRIDE_DISABLED or AREA_SPACE_OVERRIDE_COMBINE, as they replace values, and are thus order-dependent.
-			Areas with the same priority value get evaluated in an unpredictable order, and should be differentiated if evaluation order is to be important.
+				Areas with the same priority value get evaluated in an unpredictable order, and should be differentiated if evaluation order is to be important.
 			</description>
 		</method>
 		<method name="set_space_override_mode">
@@ -3967,11 +3965,11 @@
 			</argument>
 			<description>
 				Set the space override mode. This mode controls how an area affects gravity and damp.
-			AREA_SPACE_OVERRIDE_DISABLED: This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
-			AREA_SPACE_OVERRIDE_COMBINE: This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
-			AREA_SPACE_OVERRIDE_COMBINE_REPLACE: This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
-			AREA_SPACE_OVERRIDE_REPLACE: This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
-			AREA_SPACE_OVERRIDE_REPLACE_COMBINE: This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
+				AREA_SPACE_OVERRIDE_DISABLED: This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
+				AREA_SPACE_OVERRIDE_COMBINE: This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
+				AREA_SPACE_OVERRIDE_COMBINE_REPLACE: This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
+				AREA_SPACE_OVERRIDE_REPLACE: This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
+				AREA_SPACE_OVERRIDE_REPLACE_COMBINE: This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
 			</description>
 		</method>
 	</methods>
@@ -4207,7 +4205,7 @@
 			</argument>
 			<description>
 				Set the rate at which objects stop spinning in this area, if there are not any other forces making it spin. The value is a fraction of its current speed, lost per second. Thus, a value of 1.0 should mean stopping immediately, and 0.0 means the object never stops.
-			In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
+				In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
 			</description>
 		</method>
 		<method name="set_collision_mask">
@@ -4238,7 +4236,7 @@
 			</argument>
 			<description>
 				Set the gravity intensity. This is useful to alter the force of gravity without altering its direction.
-			This value multiplies the gravity vector, whether it is the given vector ([method set_gravity_vector]), or a calculated one (when using a center of gravity).
+				This value multiplies the gravity vector, whether it is the given vector ([method set_gravity_vector]), or a calculated one (when using a center of gravity).
 			</description>
 		</method>
 		<method name="set_gravity_distance_scale">
@@ -4260,7 +4258,7 @@
 			</argument>
 			<description>
 				Set the gravity vector. This vector does not have to be normalized.
-			If gravity is a point (see [method is_gravity_a_point]), this will be the attraction center.
+				If gravity is a point (see [method is_gravity_a_point]), this will be the attraction center.
 			</description>
 		</method>
 		<method name="set_layer_mask">
@@ -4268,8 +4266,8 @@
 			</argument>
 			<description>
 				Set the physics layers this area is in.
-			Collidable objects can exist in any of 32 different layers. These layers are not visual, but more of a tagging system instead. A collidable can use these layers/tags to select with which objects it can collide, using [method set_collision_mask].
-			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
+				Collidable objects can exist in any of 32 different layers. These layers are not visual, but more of a tagging system instead. A collidable can use these layers/tags to select with which objects it can collide, using [method set_collision_mask].
+				A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
 			</description>
 		</method>
 		<method name="set_layer_mask_bit">
@@ -4286,7 +4284,7 @@
 			</argument>
 			<description>
 				Set the rate at which objects stop moving in this area, if there are not any other forces moving it. The value is a fraction of its current speed, lost per second. Thus, a value of 1.0 should mean stopping immediately, and 0.0 means the object never stops.
-			In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
+				In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
 			</description>
 		</method>
 		<method name="set_monitorable">
@@ -4301,7 +4299,7 @@
 			</argument>
 			<description>
 				Set the order in which the area is processed. Greater values mean the area gets processed first. This is useful for areas which have an space override different from AREA_SPACE_OVERRIDE_DISABLED or AREA_SPACE_OVERRIDE_COMBINE, as they replace values, and are thus order-dependent.
-			Areas with the same priority value get evaluated in an unpredictable order, and should be differentiated if evaluation order is to be important.
+				Areas with the same priority value get evaluated in an unpredictable order, and should be differentiated if evaluation order is to be important.
 			</description>
 		</method>
 		<method name="set_space_override_mode">
@@ -4309,11 +4307,11 @@
 			</argument>
 			<description>
 				Set the space override mode. This mode controls how an area affects gravity and damp.
-			AREA_SPACE_OVERRIDE_DISABLED: This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
-			AREA_SPACE_OVERRIDE_COMBINE: This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
-			AREA_SPACE_OVERRIDE_COMBINE_REPLACE: This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
-			AREA_SPACE_OVERRIDE_REPLACE: This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
-			AREA_SPACE_OVERRIDE_REPLACE_COMBINE: This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
+				AREA_SPACE_OVERRIDE_DISABLED: This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
+				AREA_SPACE_OVERRIDE_COMBINE: This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
+				AREA_SPACE_OVERRIDE_COMBINE_REPLACE: This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
+				AREA_SPACE_OVERRIDE_REPLACE: This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
+				AREA_SPACE_OVERRIDE_REPLACE_COMBINE: This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
 			</description>
 		</method>
 	</methods>
@@ -4729,7 +4727,7 @@
 			</argument>
 			<description>
 				Create an audio sample, return a [RID] referencing it. The sample will be created with a given format (from the SAMPLE_FORMAT_* enum), a total length (in samples, not bytes), in either stereo or mono.
-			Even if a stereo sample consists of a left sample and a right sample, it still counts as one sample for length purposes.
+				Even if a stereo sample consists of a left sample and a right sample, it still counts as one sample for length purposes.
 			</description>
 		</method>
 		<method name="sample_get_data" qualifiers="const">
@@ -4820,10 +4818,10 @@
 			</argument>
 			<description>
 				Set the sample data for a given sample as an array of bytes. The length must be equal to the sample length expected in bytes or an error will be produced. The byte length can be calculated as follows:
-			Get the sample length ([method sample_get_length]).
-			If the sample format is SAMPLE_FORMAT_PCM16, multiply it by 2.
-			If the sample format is SAMPLE_FORMAT_IMA_ADPCM, divide it by 2 (rounding any fraction up), then add 4.
-			If the sample is stereo ([method sample_is_stereo]), multiply it by 2.
+				Get the sample length ([method sample_get_length]).
+				If the sample format is SAMPLE_FORMAT_PCM16, multiply it by 2.
+				If the sample format is SAMPLE_FORMAT_IMA_ADPCM, divide it by 2 (rounding any fraction up), then add 4.
+				If the sample is stereo ([method sample_is_stereo]), multiply it by 2.
 			</description>
 		</method>
 		<method name="sample_set_description">
@@ -4878,8 +4876,8 @@
 			</argument>
 			<description>
 				Set the sample data for a given sample as an array of floats. The length must be equal to the sample length or an error will be produced.
-			For this method, a stereo sample is made from two samples. Thus, in case of a stereo sample, the array length must be twice the length returned by [method sample_get_length].
-			Trying to alter a SAMPLE_FORMAT_IMA_ADPCM sample is not supported. It will throw an error to the console, but will not alter the sample data.
+				For this method, a stereo sample is made from two samples. Thus, in case of a stereo sample, the array length must be twice the length returned by [method sample_get_length].
+				Trying to alter a SAMPLE_FORMAT_IMA_ADPCM sample is not supported. It will throw an error to the console, but will not alter the sample data.
 			</description>
 		</method>
 		<method name="set_event_voice_global_volume_scale">
@@ -5167,7 +5165,7 @@
 	</brief_description>
 	<description>
 		This is a software audio server. It does not use any kind of hardware acceleration.
-	This class does not expose any new method.
+		This class does not expose any new method.
 	</description>
 	<methods>
 	</methods>
@@ -6125,7 +6123,7 @@
 			</argument>
 			<description>
 				Add a control to the box as a spacer.
-			If [i]begin[/i] is true the spacer control will be inserted in front of other children.
+				If [i]begin[/i] is true the spacer control will be inserted in front of other children.
 			</description>
 		</method>
 		<method name="get_alignment" qualifiers="const">
@@ -6302,7 +6300,7 @@
 	</brief_description>
 	<description>
 		Array of Buttons. A ButtonArray is useful to have an array of buttons laid out vertically or horizontally. Only one button can be selected, and is referenced by its index in the array (first button is 0, second button is 1, etc.).
-	This is useful [i]e.g.[/i] for joypad-friendly interfaces and option menus.
+		This is useful [i]e.g.[/i] for joypad-friendly interfaces and option menus.
 	</description>
 	<methods>
 		<method name="add_button">
@@ -6666,7 +6664,7 @@
 	</brief_description>
 	<description>
 		Camera node for 2D scenes. It forces the screen (current layer) to scroll following this node. This makes it easier (and faster) to program scrollable scenes than manually changing the position of [CanvasItem] based nodes.
-	This node is intended to be a simple helper get get things going quickly and it may happen often that more functionality is desired to change how the camera works. To make your own custom camera node, simply inherit from [Node2D] and change the transform of the canvas by calling get_viewport().set_canvas_transform(m) in [Viewport].
+		This node is intended to be a simple helper get get things going quickly and it may happen often that more functionality is desired to change how the camera works. To make your own custom camera node, simply inherit from [Node2D] and change the transform of the canvas by calling get_viewport().set_canvas_transform(m) in [Viewport].
 	</description>
 	<methods>
 		<method name="clear_current">
@@ -6875,10 +6873,10 @@
 	</brief_description>
 	<description>
 		Base class of anything 2D. Canvas items are laid out in a tree and children inherit and extend the transform of their parent. CanvasItem is extended by [Control], for anything GUI related, and by [Node2D] for anything 2D engine related.
-	Any CanvasItem can draw. For this, the "update" function must be called, then NOTIFICATION_DRAW will be received on idle time to request redraw. Because of this, canvas items don't need to be redraw on every frame, improving the performance significantly. Several functions for drawing on the CanvasItem are provided (see draw_* functions). They can only be used inside the notification, signal or _draw() overrides function, though.
-	Canvas items are draw in tree order. By default, children are on top of their parents so a root CanvasItem will be drawn behind everything (this can be changed per item though).
-	Canvas items can also be hidden (hiding also their subtree). They provide many means for changing standard parameters such as opacity (for it and the subtree) and self opacity, blend mode.
-	Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
+		Any CanvasItem can draw. For this, the "update" function must be called, then NOTIFICATION_DRAW will be received on idle time to request redraw. Because of this, canvas items don't need to be redraw on every frame, improving the performance significantly. Several functions for drawing on the CanvasItem are provided (see draw_* functions). They can only be used inside the notification, signal or _draw() overrides function, though.
+		Canvas items are draw in tree order. By default, children are on top of their parents so a root CanvasItem will be drawn behind everything (this can be changed per item though).
+		Canvas items can also be hidden (hiding also their subtree). They provide many means for changing standard parameters such as opacity (for it and the subtree) and self opacity, blend mode.
+		Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
 	</description>
 	<methods>
 		<method name="_draw" qualifiers="virtual">
@@ -8197,8 +8195,8 @@
 			</return>
 			<description>
 				Return the index of the first shape generated by the editor.
-			When [code]build_mode[/code] is set to generate convex polygons, the shape shown in the editor may be decomposed into many convex polygons. In that case, a range of indexes is needed to directly access the [Shape2D].
-			When [code]build_mode[/code] is set to generate concave polygons, there is only one [Shape2D] generated, so the start index and the end index are the same.
+				When [code]build_mode[/code] is set to generate convex polygons, the shape shown in the editor may be decomposed into many convex polygons. In that case, a range of indexes is needed to directly access the [Shape2D].
+				When [code]build_mode[/code] is set to generate concave polygons, there is only one [Shape2D] generated, so the start index and the end index are the same.
 			</description>
 		</method>
 		<method name="get_collision_object_last_shape" qualifiers="const">
@@ -8234,7 +8232,7 @@
 			</argument>
 			<description>
 				Set the array of points forming the polygon.
-			When editing the point list via the editor, depending on [method get_build_mode], it has to be a list of points (for [code]build_mode==0[/code]), or a list of lines (for [code]build_mode==1[/code]). In the second case, the even elements of the array define the start point of the line, and the odd elements the end point.
+				When editing the point list via the editor, depending on [method get_build_mode], it has to be a list of points (for [code]build_mode==0[/code]), or a list of lines (for [code]build_mode==1[/code]). In the second case, the even elements of the array define the start point of the line, and the odd elements the end point.
 			</description>
 		</method>
 		<method name="set_trigger">
@@ -8895,7 +8893,7 @@
 	</brief_description>
 	<description>
 		Concave polygon 2D shape resource for physics. It is made out of segments and is very optimal for complex polygonal concave collisions. It is really not advised to use for [RigidBody2D] nodes. A CollisionPolygon2D in convex decomposition mode (solids) or several convex objects are advised for that instead. Otherwise, a concave polygon 2D shape is better for static collisions.
-	The main difference between a [ConvexPolygonShape2D] and a [ConcavePolygonShape2D] is that a concave polygon assumes it is concave and uses a more complex method of collision detection, and a convex one forces itself to be convex in order to speed up collision detection.
+		The main difference between a [ConvexPolygonShape2D] and a [ConcavePolygonShape2D] is that a concave polygon assumes it is concave and uses a more complex method of collision detection, and a convex one forces itself to be convex in order to speed up collision detection.
 	</description>
 	<methods>
 		<method name="get_segments" qualifiers="const">
@@ -8960,19 +8958,19 @@
 	</brief_description>
 	<description>
 		This helper class can be used to store [Variant] values on the filesystem using an INI-style formatting. The stored values as referenced by a section and a key. The stored data can be saved to or parsed from a file, though ConfigFile objects can also be used directly with accessing the filesystem.
-	The following example shows how to parse a INI-style file from the system, read its contents and store new values in it:
-	[codeblock]
-	var config = ConfigFile.new()
-	var err = config.load("user://settings.cfg")
-	if err == OK: # if not, something went wrong with the file loading
-	    # Look for the display/width pair, and default to 1024 if missing
-	    var screen_width = get_value("display", "width", 1024)
-	    # Store a variable if and only it hasn't been defined yet
-		if not config.has_section_key("audio", "mute"):
-		    config.set_value("audio", "mute", false)
-	    # Save the changes by overwriting the previous file
-		config.save("user://settings.cfg")
-	[/codeblock]
+		The following example shows how to parse a INI-style file from the system, read its contents and store new values in it:
+		[codeblock]
+		var config = ConfigFile.new()
+		var err = config.load("user://settings.cfg")
+		if err == OK: # if not, something went wrong with the file loading
+		    # Look for the display/width pair, and default to 1024 if missing
+		    var screen_width = get_value("display", "width", 1024)
+		    # Store a variable if and only it hasn't been defined yet
+		    if not config.has_section_key("audio", "mute"):
+		        config.set_value("audio", "mute", false)
+		    # Save the changes by overwriting the previous file
+		    config.save("user://settings.cfg")
+		[/codeblock]
 	</description>
 	<methods>
 		<method name="get_section_keys" qualifiers="const">
@@ -9040,7 +9038,7 @@
 			</argument>
 			<description>
 				Save the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure.
-			The return value is one of the OK, FAILED or ERR_* constants listed in [@Global Scope] (if the save was successful, it returns OK).
+				The return value is one of the OK, FAILED or ERR_* constants listed in [@Global Scope] (if the save was successful, it returns OK).
 			</description>
 		</method>
 		<method name="set_value">
@@ -9083,7 +9081,7 @@
 	</brief_description>
 	<description>
 		Base node for containers. A [Container] contains other controls and automatically arranges them in a certain way.
-	A Control can inherit this to create custom container classes.
+		A Control can inherit this to create custom container classes.
 	</description>
 	<methods>
 		<method name="fit_child_in_rect">
@@ -9120,12 +9118,12 @@
 	</brief_description>
 	<description>
 		Control is the base class Node for all the GUI components. Every GUI component inherits from it, directly or indirectly. In this way, sections of the scene tree made of contiguous control nodes, become user interfaces.
-	Controls are relative to the parent position and size by using anchors and margins. This ensures that they can adapt easily in most situation to changing dialog and screen sizes. When more flexibility is desired, [Container] derived nodes can be used.
-	Anchors work by defining which margin do they follow, and a value relative to it. Allowed anchoring modes are ANCHOR_BEGIN, where the margin is relative to the top or left margins of the parent (in pixels), ANCHOR_END for the right and bottom margins of the parent and ANCHOR_RATIO, which is a ratio from 0 to 1 in the parent range.
-	Input device events ([InputEvent]) are first sent to the root controls via the [method Node._input], which distribute it through the tree, then delivers them to the adequate one (under cursor or keyboard focus based) by calling [method MainLoop._input_event]. There is no need to enable input processing on controls to receive such events. To ensure that no one else will receive the event (not even [method Node._unhandled_input]), the control can accept it by calling [method accept_event].
-	Only one control can hold the keyboard focus (receiving keyboard events), for that the control must define the focus mode with [method set_focus_mode]. Focus is lost when another control gains it, or the current focus owner is hidden.
-	It is sometimes desired for a control to ignore mouse/pointer events. This is often the case when placing other controls on top of a button, in such cases. Calling [method set_ignore_mouse] enables this function.
-	Finally, controls are skinned according to a [Theme]. Setting a [Theme] on a control will propagate all the skinning down the tree. Optionally, skinning can be overridden per each control by calling the add_*_override functions, or from the editor.
+		Controls are relative to the parent position and size by using anchors and margins. This ensures that they can adapt easily in most situation to changing dialog and screen sizes. When more flexibility is desired, [Container] derived nodes can be used.
+		Anchors work by defining which margin do they follow, and a value relative to it. Allowed anchoring modes are ANCHOR_BEGIN, where the margin is relative to the top or left margins of the parent (in pixels), ANCHOR_END for the right and bottom margins of the parent and ANCHOR_RATIO, which is a ratio from 0 to 1 in the parent range.
+		Input device events ([InputEvent]) are first sent to the root controls via the [method Node._input], which distribute it through the tree, then delivers them to the adequate one (under cursor or keyboard focus based) by calling [method MainLoop._input_event]. There is no need to enable input processing on controls to receive such events. To ensure that no one else will receive the event (not even [method Node._unhandled_input]), the control can accept it by calling [method accept_event].
+		Only one control can hold the keyboard focus (receiving keyboard events), for that the control must define the focus mode with [method set_focus_mode]. Focus is lost when another control gains it, or the current focus owner is hidden.
+		It is sometimes desired for a control to ignore mouse/pointer events. This is often the case when placing other controls on top of a button, in such cases. Calling [method set_ignore_mouse] enables this function.
+		Finally, controls are skinned according to a [Theme]. Setting a [Theme] on a control will propagate all the skinning down the tree. Optionally, skinning can be overridden per each control by calling the add_*_override functions, or from the editor.
 	</description>
 	<methods>
 		<method name="_input_event" qualifiers="virtual">
@@ -9611,8 +9609,7 @@
 			</argument>
 			<description>
 				Change the anchor (ANCHOR_BEGIN, ANCHOR_END, ANCHOR_RATIO) type for a margin (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM). Changing the anchor mode converts the current margin offset from the previous anchor mode to the new one, so margin offsets ([method set_margin]) must be done after setting anchors, or at the same time ([method set_anchor_and_margin])
-
-			Additionally, [code]keep_margin[/code] controls whether margins should be left the same, or changed to keep the same position and size on-screen.
+				Additionally, [code]keep_margin[/code] controls whether margins should be left the same, or changed to keep the same position and size on-screen.
 			</description>
 		</method>
 		<method name="set_anchor_and_margin">
@@ -9960,7 +9957,7 @@
 	</brief_description>
 	<description>
 		Convex Polygon Shape for 2D physics. A convex polygon, whatever its shape, is internally decomposed into as many convex polygons as needed to ensure all collision checks against it are always done on convex polygons (which are faster to check).
-	The main difference between a [ConvexPolygonShape2D] and a [ConcavePolygonShape2D] is that a concave polygon assumes it is concave and uses a more complex method of collision detection, and a convex one forces itself to be convex in order to speed up collision detection.
+		The main difference between a [ConvexPolygonShape2D] and a [ConcavePolygonShape2D] is that a concave polygon assumes it is concave and uses a more complex method of collision detection, and a convex one forces itself to be convex in order to speed up collision detection.
 	</description>
 	<methods>
 		<method name="get_points" qualifiers="const">
@@ -10100,7 +10097,7 @@
 	</brief_description>
 	<description>
 		This class describes a Bezier curve in 2D space. It is mainly used to give a shape to a [Path2D], but can be manually sampled for other purposes.
-It keeps a cache of precalculated points along the curve, to speed further calculations up.
+		It keeps a cache of precalculated points along the curve, to speed further calculations up.
 	</description>
 	<methods>
 		<method name="add_point">
@@ -10114,7 +10111,7 @@ It keeps a cache of precalculated points along the curve, to speed further calcu
 			</argument>
 			<description>
 				Adds a point to a curve, at position "pos", with control points "in" and "out".
-If "atpos" is given, the point is inserted before the point number "atpos", moving that point (and every point after) after the inserted point. If "atpos" is not given, or is an illegal value (atpos &lt;0 or atpos &gt;= [method get_point_count]), the point will be appended at the end of the point list.
+				If "atpos" is given, the point is inserted before the point number "atpos", moving that point (and every point after) after the inserted point. If "atpos" is not given, or is an illegal value (atpos &lt;0 or atpos &gt;= [method get_point_count]), the point will be appended at the end of the point list.
 			</description>
 		</method>
 		<method name="get_bake_interval" qualifiers="const">
@@ -10181,7 +10178,7 @@ If "atpos" is given, the point is inserted before the point number "atpos", movi
 			</argument>
 			<description>
 				Returns the position between the vertex "idx" and the vertex "idx"+1, where "t" controls if the point is the first vertex (t = 0.0), the last vertex (t = 1.0), or in between. Values of "t" outside the range (0.0 &gt;= t  &lt;=1) give strange, but predictable results.
-If "idx" is out of bounds it is truncated to the first or last vertex, and "t" is ignored. If the curve has no points, the function sends an error to the console, and returns (0, 0).
+				If "idx" is out of bounds it is truncated to the first or last vertex, and "t" is ignored. If the curve has no points, the function sends an error to the console, and returns (0, 0).
 			</description>
 		</method>
 		<method name="interpolate_baked" qualifiers="const">
@@ -10193,8 +10190,8 @@ If "idx" is out of bounds it is truncated to the first or last vertex, and "t" i
 			</argument>
 			<description>
 				Returns a point within the curve at position "offset", where "offset" is measured as a pixel distance along the curve.
-To do that, it finds the two cached points where the "offset" lies between, then interpolates the values. This interpolation is cubic if "cubic" is set to true, or linear if set to false.
-Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
+				To do that, it finds the two cached points where the "offset" lies between, then interpolates the values. This interpolation is cubic if "cubic" is set to true, or linear if set to false.
+				Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
 			</description>
 		</method>
 		<method name="interpolatef" qualifiers="const">
@@ -10256,9 +10253,9 @@ Cubic interpolation tends to follow the curves better, but linear is faster (and
 			</argument>
 			<description>
 				Returns a list of points along the curve, with a curvature controlled point density. That is, the curvier parts will have more points than the straighter parts.
-This approximation makes straight segments between each point, then subdivides those segments until the resulting shape is similar enough.
-"max_stages" controls how many subdivisions a curve segment may face before it is considered approximate enough. Each subdivision splits the segment in half, so the default 5 stages may mean up to 32 subdivisions per curve segment. Increase with care!
-"tolerance_degrees" controls how many degrees the midpoint of a segment may deviate from the real curve, before the segment has to be subdivided.
+				This approximation makes straight segments between each point, then subdivides those segments until the resulting shape is similar enough.
+				"max_stages" controls how many subdivisions a curve segment may face before it is considered approximate enough. Each subdivision splits the segment in half, so the default 5 stages may mean up to 32 subdivisions per curve segment. Increase with care!
+				"tolerance_degrees" controls how many degrees the midpoint of a segment may deviate from the real curve, before the segment has to be subdivided.
 			</description>
 		</method>
 	</methods>
@@ -10271,7 +10268,7 @@ This approximation makes straight segments between each point, then subdivides t
 	</brief_description>
 	<description>
 		This class describes a Bezier curve in 3D space. It is mainly used to give a shape to a [Path], but can be manually sampled for other purposes.
-It keeps a cache of precalculated points along the curve, to speed further calculations up.
+		It keeps a cache of precalculated points along the curve, to speed further calculations up.
 	</description>
 	<methods>
 		<method name="add_point">
@@ -10285,7 +10282,7 @@ It keeps a cache of precalculated points along the curve, to speed further calcu
 			</argument>
 			<description>
 				Adds a point to a curve, at position "pos", with control points "in" and "out".
-If "atpos" is given, the point is inserted before the point number "atpos", moving that point (and every point after) after the inserted point. If "atpos" is not given, or is an illegal value (atpos &lt;0 or atpos &gt;= [method get_point_count]), the point will be appended at the end of the point list.
+				If "atpos" is given, the point is inserted before the point number "atpos", moving that point (and every point after) after the inserted point. If "atpos" is not given, or is an illegal value (atpos &lt;0 or atpos &gt;= [method get_point_count]), the point will be appended at the end of the point list.
 			</description>
 		</method>
 		<method name="get_bake_interval" qualifiers="const">
@@ -10368,7 +10365,7 @@ If "atpos" is given, the point is inserted before the point number "atpos", movi
 			</argument>
 			<description>
 				Returns the position between the vertex "idx" and the vertex "idx"+1, where "t" controls if the point is the first vertex (t = 0.0), the last vertex (t = 1.0), or in between. Values of "t" outside the range (0.0 &gt;= t  &lt;=1) give strange, but predictable results.
-If "idx" is out of bounds it is truncated to the first or last vertex, and "t" is ignored. If the curve has no points, the function sends an error to the console, and returns (0, 0, 0).
+				If "idx" is out of bounds it is truncated to the first or last vertex, and "t" is ignored. If the curve has no points, the function sends an error to the console, and returns (0, 0, 0).
 			</description>
 		</method>
 		<method name="interpolate_baked" qualifiers="const">
@@ -10380,8 +10377,8 @@ If "idx" is out of bounds it is truncated to the first or last vertex, and "t" i
 			</argument>
 			<description>
 				Returns a point within the curve at position "offset", where "offset" is measured as a distance in 3D units along the curve.
-To do that, it finds the two cached points where the "offset" lies between, then interpolates the values. This interpolation is cubic if "cubic" is set to true, or linear if set to false.
-Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
+				To do that, it finds the two cached points where the "offset" lies between, then interpolates the values. This interpolation is cubic if "cubic" is set to true, or linear if set to false.
+				Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
 			</description>
 		</method>
 		<method name="interpolatef" qualifiers="const">
@@ -10441,7 +10438,7 @@ Cubic interpolation tends to follow the curves better, but linear is faster (and
 			</argument>
 			<description>
 				Sets the tilt angle in radians for the point "idx". If the index is out of bounds, the function sends an error to the console.
-The tilt controls the rotation along the look-at axis an object traveling the path would have. In the case of a curve controlling a [PathFollow], this tilt is an offset over the natural tilt the PathFollow calculates.
+				The tilt controls the rotation along the look-at axis an object traveling the path would have. In the case of a curve controlling a [PathFollow], this tilt is an offset over the natural tilt the PathFollow calculates.
 			</description>
 		</method>
 		<method name="tesselate" qualifiers="const">
@@ -10453,9 +10450,9 @@ The tilt controls the rotation along the look-at axis an object traveling the pa
 			</argument>
 			<description>
 				Returns a list of points along the curve, with a curvature controlled point density. That is, the curvier parts will have more points than the straighter parts.
-This approximation makes straight segments between each point, then subdivides those segments until the resulting shape is similar enough.
-"max_stages" controls how many subdivisions a curve segment may face before it is considered approximate enough. Each subdivision splits the segment in half, so the default 5 stages may mean up to 32 subdivisions per curve segment. Increase with care!
-"tolerance_degrees" controls how many degrees the midpoint of a segment may deviate from the real curve, before the segment has to be subdivided.
+				This approximation makes straight segments between each point, then subdivides those segments until the resulting shape is similar enough.
+				"max_stages" controls how many subdivisions a curve segment may face before it is considered approximate enough. Each subdivision splits the segment in half, so the default 5 stages may mean up to 32 subdivisions per curve segment. Increase with care!
+				"tolerance_degrees" controls how many degrees the midpoint of a segment may deviate from the real curve, before the segment has to be subdivided.
 			</description>
 		</method>
 	</methods>
@@ -10683,22 +10680,22 @@ This approximation makes straight segments between each point, then subdivides t
 	</brief_description>
 	<description>
 		Directory type. It is used to manage directories and their content (not restricted to the project folder).
-	Here is an example on how to iterate through the files of a directory:
-	[codeblock]
-	func dir_contents(path):
-	    var dir = Directory.new()
-	    if dir.open(path) == OK:
-	        dir.list_dir_begin()
-	        var file_name = dir.get_next()
-	        while (file_name != ""):
-	            if dir.current_is_dir():
-	                print("Found directory: " + file_name)
-	            else:
-	                print("Found file: " + file_name)
-	            file_name = dir.get_next()
-	    else:
-	        print("An error occurred when trying to access the path.")
-	[/codeblock]
+		Here is an example on how to iterate through the files of a directory:
+		[codeblock]
+		func dir_contents(path):
+		    var dir = Directory.new()
+		    if dir.open(path) == OK:
+		        dir.list_dir_begin()
+		        var file_name = dir.get_next()
+		        while (file_name != ""):
+		            if dir.current_is_dir():
+		                print("Found directory: " + file_name)
+		            else:
+		                print("Found file: " + file_name)
+		            file_name = dir.get_next()
+		    else:
+		        print("An error occurred when trying to access the path.")
+		[/codeblock]
 	</description>
 	<methods>
 		<method name="change_dir">
@@ -10708,7 +10705,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 				Change the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
-			The method returns one of the error code constants defined in [@Global Scope] (OK or ERR_*).
+				The method returns one of the error code constants defined in [@Global Scope] (OK or ERR_*).
 			</description>
 		</method>
 		<method name="copy">
@@ -10720,7 +10717,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 				Copy the [i]from[/i] file to the [i]to[/i] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
-			Returns one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
+				Returns one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
 			</description>
 		</method>
 		<method name="current_is_dir" qualifiers="const">
@@ -10790,7 +10787,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</return>
 			<description>
 				Initialise the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
-			Return false if the stream could not be initialised.
+				Return false if the stream could not be initialised.
 			</description>
 		</method>
 		<method name="list_dir_end">
@@ -10805,7 +10802,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 				Create a directory. The argument can be relative to the current directory, or an absolute path. The target directory should be placed in an already existing directory (to create the full path recursively, see [method make_dir_recursive]).
-			The method returns one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
+				The method returns one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
 			</description>
 		</method>
 		<method name="make_dir_recursive">
@@ -10815,7 +10812,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 				Create a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
-			Returns one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
+				Return one of the error code constants defined in [@Global Scope] (OK, FAILED or ERR_*).
 			</description>
 		</method>
 		<method name="open">
@@ -10825,7 +10822,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 				Open an existing directory of the filesystem. The [i]path[/i] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
-			The method returns one of the error code constants defined in [@Global Scope] (OK or ERR_*).
+				The method returns one of the error code constants defined in [@Global Scope] (OK or ERR_*).
 			</description>
 		</method>
 		<method name="remove">
@@ -10835,7 +10832,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 				Delete the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
-			Returns one of the error code constants defined in [@Global Scope] (OK or FAILED).
+				Return one of the error code constants defined in [@Global Scope] (OK or FAILED).
 			</description>
 		</method>
 		<method name="rename">
@@ -10847,7 +10844,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 				Rename (move) the [i]from[/i] file to the [i]to[/i] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
-			Returns one of the error code constants defined in [@Global Scope] (OK or FAILED).
+				Return one of the error code constants defined in [@Global Scope] (OK or FAILED).
 			</description>
 		</method>
 	</methods>
@@ -10949,8 +10946,7 @@ This approximation makes straight segments between each point, then subdivides t
 		Editor plugin to control the export process.
 	</brief_description>
 	<description>
-		This plugin is added into EditorImportExport and allows to modify
-	the behavior of the export process for individual files.
+		This plugin is added into EditorImportExport and allows to modify the behavior of the export process for individual files.
 	</description>
 	<methods>
 		<method name="custom_export" qualifiers="virtual">
@@ -10961,24 +10957,10 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="1" name="platform" type="EditorExportPlatform">
 			</argument>
 			<description>
-				This function is called for each file exported and
-			depending from the return value one of many things
-			might happen.
-
-			1) If returned value is null, the file is exported
-			as is.
-
-			2) If the returned value is a RawAray (array of
-			bytes), the content of that array becomes the new
-			file being exported.
-
-			3) If the file must also change it's name when
-			exported, then a [Dictionary] must be returned with
-			two fields: 'name' with the new filename and 'data'
-			with a [RawArray] containing the raw contents of the
-			file. Even if the name is changed, the run-time will
-			redirect the old file to the new file automatically
-			when accessed.
+				This function is called for each file exported and depending from the return value one of many things might happen.
+				1) If returned value is null, the file is exported as is.
+				2) If the returned value is a RawAray (array of bytes), the content of that array becomes the new file being exported.
+				3) If the file must also change it's name when exported, then a [Dictionary] must be returned with two fields: 'name' with the new filename and 'data' with a [RawArray] containing the raw contents of the file. Even if the name is changed, the run-time will redirect the old file to the new file automatically when accessed.
 			</description>
 		</method>
 	</methods>
@@ -11152,11 +11134,7 @@ This approximation makes straight segments between each point, then subdivides t
 		Import plugin for editor
 	</brief_description>
 	<description>
-		Import plugins make it easy to handle importing of external assets
-	into a project.
-
-	They way they work is not that obvious though, so please make sure
-	to read the documentation, tutorials and examples.
+		Import plugins make it easy to handle importing of external assets into a project. They way they work is not that obvious though, so please make sure to read the documentation, tutorials and examples.
 	</description>
 	<methods>
 		<method name="can_reimport_multiple_files" qualifiers="virtual">
@@ -11173,14 +11151,8 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="1" name="platform" type="EditorExportPlatform">
 			</argument>
 			<description>
-				Generally, files that are imported stay the same
-			when exported. The only exception is in some cases
-			when the file must be re-imported for different
-			platforms (ie. texture compression).
-
-			If you want to customize the export process, it's
-			recommended to use [EditorExportPlugin.custom_export]
-			instead.
+				Generally, files that are imported stay the same when exported. The only exception is in some cases when the file must be re-imported for different platforms (ie. texture compression).
+				If you want to customize the export process, it's recommended to use [method EditorExportPlugin.custom_export] instead.
 			</description>
 		</method>
 		<method name="expand_source_path">
@@ -11195,18 +11167,14 @@ This approximation makes straight segments between each point, then subdivides t
 			<return type="String">
 			</return>
 			<description>
-				Get the name of the import plugin, which will be
-			used to identify content imported by this plugin.
-
-			Try to use lowecase and underscores if possible.
+				Get the name of the import plugin, which will be used to identify content imported by this plugin. Try to use lowercase and underscores if possible.
 			</description>
 		</method>
 		<method name="get_visible_name" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
-				Visible name for this plugin, which will be shown on
-			the import menu.
+				Visible name for this plugin, which will be shown on the import menu.
 			</description>
 		</method>
 		<method name="import" qualifiers="virtual">
@@ -11217,51 +11185,21 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="1" name="from" type="ResourceImportMetadata">
 			</argument>
 			<description>
-				Perform an import of an external resources into the
-			project. This function is both called on import
-			(from the dialog) or re-import
-			(manual or automatic when external source files
-			changed).
-
-			An import process generally works like this:
-
-			1) Check the metadata for source files and options.
-			Metadata is either generated in the import dialog or
-			taken from an existing resource upon reimport.
-
-			2) Perform the import process into a new resource.
-			Some times the resource being re-imported may be already loaded
-			and in use, so checking for this by using
-			[ResourceLoader.has] is recommended. Otherwise
-			create a new resource.
-
-			3) Set the metadata from the argument into the existing or new
-			resource being created using
-			[Resource.set_import_metadata].
-
-			4) Save the resource into 'path' (function argument)
+				Perform an import of an external resources into the project. This function is both called on import (from the dialog) or re-import (manual or automatic when external source files changed).
+				An import process generally works like this:
+				1) Check the metadata for source files and options. Metadata is either generated in the import dialog or taken from an existing resource upon reimport.
+				2) Perform the import process into a new resource. Some times the resource being re-imported may be already loaded and in use, so checking for this by using [method ResourceLoader.has] is recommended. Otherwise create a new resource.
+				3) Set the metadata from the argument into the existing or new resource being created using [method Resource.set_import_metadata].
+				4) Save the resource into 'path' (function argument)
 			</description>
 		</method>
 		<method name="import_dialog" qualifiers="virtual">
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
-				This function is called when either the user chooses
-			to import a resource of this type (Import menu), or
-			when the user chooses to re-import the resource
-			(from filesystem). In the later case, the path for
-			the existing file is supplied in the argument.
-
-			If the path is supplied, it is recommended to read
-			the import metadata with
-			[ResourceLoader.load_import_metadata] and fill in
-			the fields with the values contained there.
-
-			The dialog can be shown in any way (just use a
-			ConfirmationDialog and pop it up). Upon
-			confirmation, fill up a ResourceImportMetadata and
-			call the [EditorImportPlugin.import] function with
-			this information.
+				This function is called when either the user chooses to import a resource of this type (Import menu), or when the user chooses to re-import the resource (from filesystem). In the later case, the path for the existing file is supplied in the argument.
+				If the path is supplied, it is recommended to read the import metadata with [method ResourceLoader.load_import_metadata] and fill in the fields with the values contained there.
+				The dialog can be shown in any way (just use a ConfirmationDialog and pop it up). Upon confirmation, fill up a ResourceImportMetadata and call the [method EditorImportPlugin.import] function with this information.
 			</description>
 		</method>
 		<method name="import_from_drop" qualifiers="virtual">
@@ -11295,9 +11233,7 @@ This approximation makes straight segments between each point, then subdivides t
 		Used by the editor to extend it's functionality.
 	</brief_description>
 	<description>
-		Plugins are used by the editor to extend functionality. The most
-	common types of plugins are those which edit a given node or
-	resource type, import plugins and export plugins.
+		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins.
 	</description>
 	<methods>
 		<method name="add_control_to_bottom_panel">
@@ -11306,12 +11242,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-				Add a control to the bottom panel (together with
-			Output, Debug, Animation, etc).
-
-			If your plugin is being removed, also make sure to
-			remove your control by calling [method
-			remove_control_from_bottom_panel].
+				Add a control to the bottom panel (together with Output, Debug, Animation, etc). If your plugin is being removed, also make sure to remove your control by calling [method remove_control_from_bottom_panel].
 			</description>
 		</method>
 		<method name="add_control_to_container">
@@ -11320,16 +11251,9 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="1" name="control" type="Control">
 			</argument>
 			<description>
-				Add a custom control to a container (see
-			CONTAINER_* enum). There are many locations where
-			custom controls can be added in the editor UI.
-
-			Please remember that you have to manage the
-			visibility of your custom controls yourself (and likely
-			hide it after adding it).
-
-			If your plugin is being removed, also make sure to
-			remove your custom controls too.
+				Add a custom control to a container (see CONTAINER_* enum). There are many locations where custom controls can be added in the editor UI.
+				Please remember that you have to manage the visibility of your custom controls yourself (and likely hide it after adding it).
+				If your plugin is being removed, also make sure to remove your custom controls too.
 			</description>
 		</method>
 		<method name="add_control_to_dock">
@@ -11338,16 +11262,9 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="1" name="control" type="Control">
 			</argument>
 			<description>
-				Add the control to a specific dock slot (see DOCK_*
-			enum for options).
-
-			If the dock is repositioned and as long as the
-			plugin is active, the editor will save the dock
-			position on further sessions.
-
-			If your plugin is being removed, also make sure to
-			remove your control by calling [method
-			remove_control_from_docks].
+				Add the control to a specific dock slot (see DOCK_* enum for options).
+				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
+				If your plugin is being removed, also make sure to remove your control by calling [method remove_control_from_docks].
 			</description>
 		</method>
 		<method name="add_custom_type">
@@ -11360,63 +11277,36 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="3" name="icon" type="Texture">
 			</argument>
 			<description>
-				Add a custom type, which will appear in the list of
-			nodes or resources. An icon can be optionally
-			passed.
-
-			When given node or resource is selected, the base
-			type will be instanced (ie, "Spatial", "Control",
-			"Resource"), then the script will be loaded and set
-			to this object.
-
-			You can use the [EditorPlugin.handles] to check if
-			your custom object is being edited by checking the
-			script or using 'extends' keyword.
-
-			During run-time, this will be a simple object with a
-			script so this function does not need to be called
-			then.
+				Add a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
+				When given node or resource is selected, the base type will be instanced (ie, "Spatial", "Control", "Resource"), then the script will be loaded and set to this object.
+				You can use the [method EditorPlugin.handles] to check if your custom object is being edited by checking the script or using 'extends' keyword.
+				During run-time, this will be a simple object with a script so this function does not need to be called then.
 			</description>
 		</method>
 		<method name="add_export_plugin">
 			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
-				Add an export plugin. Plugins of this kind can
-			change files being exported. On exit don't forget to
-			call [method remove_export_plugin].
+				Add an export plugin. Plugins of this kind can change files being exported. On exit don't forget to call [method remove_export_plugin].
 			</description>
 		</method>
 		<method name="add_import_plugin">
 			<argument index="0" name="plugin" type="EditorImportPlugin">
 			</argument>
 			<description>
-				Add an import plugin. These plugins manage importing
-			external content (from outside the project) into
-			formats the engine can understand.
-
-			On exit, don't forget to remove the plugin by
-			calling [method remove_import_plugin]
+				Add an import plugin. These plugins manage importing external content (from outside the project) into formats the engine can understand.
+				On exit, don't forget to remove the plugin by calling [method remove_import_plugin]
 			</description>
 		</method>
 		<method name="apply_changes" qualifiers="virtual">
 			<description>
-				This method is called when the editor is about to
-			save the project, switch to another tab, etc. It
-			asks the plugin to apply any pending state changes
-			to ensure consistency.
-
-			This is used, for example, in shader editors to let
-			the plugin know that it must apply the shader code
-			being written by the user to the object.
+				This method is called when the editor is about to save the project, switch to another tab, etc. It asks the plugin to apply any pending state changes to ensure consistency.
+				This is used, for example, in shader editors to let the plugin know that it must apply the shader code being written by the user to the object.
 			</description>
 		</method>
 		<method name="clear" qualifiers="virtual">
 			<description>
-				Clear all the state and reset the object being
-			edited to zero. This ensures your plugin does not
-			keep editing a currently existing node, or a node
-			fromt the wrong scene.
+				Clear all the state and reset the object being edited to zero. This ensures your plugin does not keep editing a currently existing node, or a node from the wrong scene.
 			</description>
 		</method>
 		<method name="create_spatial_gizmo" qualifiers="virtual">
@@ -11425,18 +11315,14 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="for_spatial" type="Spatial">
 			</argument>
 			<description>
-				This is used for plugins that create gizmos used by
-			the spatial editor. Just check that the node passed
-			in the "for_spatial" argument matches your plugin.
+				This is used for plugins that create gizmos used by the spatial editor. Just check that the node passed in the "for_spatial" argument matches your plugin.
 			</description>
 		</method>
 		<method name="edit" qualifiers="virtual">
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
-				This function is used for plugins that edit specific
-			object types (nodes or resources). It requests the
-			editor to edit the given object.
+				This function is used for plugins that edit specific object types (nodes or resources). It requests the editor to edit the given object.
 			</description>
 		</method>
 		<method name="forward_input_event" qualifiers="virtual">
@@ -11445,13 +11331,8 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				This is a low level function for plugins that edit a given
-			object type derived from CanvasItem to capture the input in the 2D editor
-			viewport. The function is only being called if your
-			object is being edited.
-
-			Return true if you want to capture the input,
-			otherwise false.
+				This is a low level function for plugins that edit a given object type derived from CanvasItem to capture the input in the 2D editor viewport. The function is only being called if your object is being edited.
+				Return true if you want to capture the input, otherwise false.
 			</description>
 		</method>
 		<method name="forward_spatial_input_event" qualifiers="virtual">
@@ -11462,80 +11343,58 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
-				This is a low level function for plugins that edit a
-			given objet type derived from Spatial to capture the
-			input of the viewport. The function is only being
-			called if your object is being edited.
-
-			By using the [InputEvent] and the [Camera] arguments
-			it's pretty easy to do raycasts into space using
-			Camera functions.
-
-			Return true if you want to capture the input,
-			otherwise false.
+				This is a low level function for plugins that edit a given objet type derived from Spatial to capture the input of the viewport. The function is only being called if your object is being edited.
+				By using the [InputEvent] and the [Camera] arguments it's pretty easy to do raycasts into space using Camera functions.
+				Return true if you want to capture the input, otherwise false.
 			</description>
 		</method>
 		<method name="get_base_control">
 			<return type="Control">
 			</return>
 			<description>
-				Get a base control where it's safe to place dialogs.
-			Many plugins open dialogs and they need a control as
-			a base to make sure they use the editor icons and
-			theme.
+				Get a base control where it's safe to place dialogs. Many plugins open dialogs and they need a control as a base to make sure they use the editor icons and theme.
 			</description>
 		</method>
 		<method name="get_breakpoints" qualifiers="virtual">
 			<return type="StringArray">
 			</return>
 			<description>
-				This is for editors that edit script based objects.
-			You can return a list of breakpoints in the format
-			(script:line), for example: res://path_to_script.gd:25
+				This is for editors that edit script based objects. You can return a list of breakpoints in the format (script:line), for example: res://path_to_script.gd:25
 			</description>
 		</method>
 		<method name="get_editor_settings">
 			<return type="EditorSettings">
 			</return>
 			<description>
-				Get the general settings for the editor (the same
-			window that appears in the Settings menu).
+				Get the general settings for the editor (the same window that appears in the Settings menu).
 			</description>
 		</method>
 		<method name="get_name" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
-				Get the name of the editor plugin. For main scren
-			plugins this is what will appear in the selector
-			(which by default is 2D, 3D, Script).
+				Get the name of the editor plugin. For main scren plugins this is what will appear in the selector (which by default is 2D, 3D, Script).
 			</description>
 		</method>
 		<method name="get_selection">
 			<return type="EditorSelection">
 			</return>
 			<description>
-				Get the object that handles the selection of nodes
-			in the Scene Tree editor.
+				Get the object that handles the selection of nodes in the Scene Tree editor.
 			</description>
 		</method>
 		<method name="get_state" qualifiers="virtual">
 			<return type="Dictionary">
 			</return>
 			<description>
-				Get the state of your plugin editor. This is used
-			when saving the scene (so state is kept when opening
-			it again) and for switching tabs (so state can be
-			restored when the tab returns).
+				Get the state of your plugin editor. This is used when saving the scene (so state is kept when opening it again) and for switching tabs (so state can be restored when the tab returns).
 			</description>
 		</method>
 		<method name="get_undo_redo">
 			<return type="UndoRedo">
 			</return>
 			<description>
-				Get the undo/redo object. Most actions in the editor
-			can be undoable, so use this object to make sure
-			this happens when it's worth it.
+				Get the undo/redo object. Most actions in the editor can be undoable, so use this object to make sure this happens when it's worth it.
 			</description>
 		</method>
 		<method name="handles" qualifiers="virtual">
@@ -11544,81 +11403,64 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
-				Implement this function if your plugin edits a
-			specific type of object (Resource or Node). If you
-			return true, then you will get the functions
-			[EditorPlugin.edit] and [EditorPlugin.make_visible]
-			called when the editor requests them.
+				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return true, then you will get the functions [method EditorPlugin.edit] and [method EditorPlugin.make_visible] called when the editor requests them.
 			</description>
 		</method>
 		<method name="has_main_screen" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if this is a main screen editor plugin
-			(it goes in the main screen selector together with
-			2D, 3D, Script).
+				Return true if this is a main screen editor plugin (it goes in the main screen selector together with 2D, 3D, Script).
 			</description>
 		</method>
 		<method name="make_visible" qualifiers="virtual">
 			<argument index="0" name="visible" type="bool">
 			</argument>
 			<description>
-				This function will be called when the editor is
-			requested to become visible. It is used for plugins
-			that edit a specific object type.
-
-			Remember that you have to manage the visibility of
-			all your editor controls manually.
+				This function will be called when the editor is requested to become visible. It is used for plugins that edit a specific object type.
+				Remember that you have to manage the visibility of all your editor controls manually.
 			</description>
 		</method>
 		<method name="remove_control_from_bottom_panel">
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Remove the control from the bottom panel. Don't forget
-			to call this if you added one, so the editor can
-			remove it cleanly.
+				Remove the control from the bottom panel. Don't forget to call this if you added one, so the editor can remove it cleanly.
 			</description>
 		</method>
 		<method name="remove_control_from_docks">
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Remove the control from the dock. Don't forget to
-			call this if you added one, so the editor can save
-			the layout and remove it cleanly.
+				Remove the control from the dock. Don't forget to call this if you added one, so the editor can save the layout and remove it cleanly.
 			</description>
 		</method>
 		<method name="remove_custom_type">
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Remove a custom type added by
-			[EditorPlugin.add_custom_type]
+				Remove a custom type added by [method EditorPlugin.add_custom_type]
 			</description>
 		</method>
 		<method name="remove_export_plugin">
 			<argument index="0" name="plugin" type="EditorExportPlugin">
 			</argument>
 			<description>
-				Remove the export plugin, don't forget to call this
-			on exit.
+				Remove the export plugin, don't forget to call this on exit.
 			</description>
 		</method>
 		<method name="remove_import_plugin">
 			<argument index="0" name="plugin" type="EditorImportPlugin">
 			</argument>
 			<description>
-				Remove the import plugin, don't forget to call this
-			on exit.
+				Remove the import plugin, don't forget to call this on exit.
 			</description>
 		</method>
 		<method name="set_state" qualifiers="virtual">
 			<argument index="0" name="state" type="Dictionary">
 			</argument>
 			<description>
-				Restore the state saved by [EditorPlugin.get_state].
+				Restore the state saved by [method EditorPlugin.get_state].
 			</description>
 		</method>
 	</methods>
@@ -11662,20 +11504,15 @@ This approximation makes straight segments between each point, then subdivides t
 		Base script for post-processing scenes being imported.
 	</brief_description>
 	<description>
-		These scripts can modify scenes after being imported by the 3D Scene
-	import option of the Import menu.
+		These scripts can modify scenes after being imported by the 3D Scene import option of the Import menu.
 	</description>
 	<methods>
 		<method name="post_import" qualifiers="virtual">
 			<argument index="0" name="scene" type="Object">
 			</argument>
 			<description>
-				This function is called upon import with the
-			imported scene.
-
-			Just do any changes desired to the scene and return
-			it. If null is returned, import will fail and throw
-			an error to the user.
+				This function is called upon import with the imported scene.
+				Just do any changes desired to the scene and return it. If null is returned, import will fail and throw an error to the user.
 			</description>
 		</method>
 	</methods>
@@ -11760,17 +11597,13 @@ This approximation makes straight segments between each point, then subdivides t
 		Object that holds the project-independent editor settings.
 	</brief_description>
 	<description>
-		Object that holds the project-independent editor settings. These
-	settings are generally visible in the Editor Settings menu.
-
-	Accessing the settings is done by using the regular [Object] API,
-	such as.
-
-	settings.set(prop,value)
-
-	settings.get(prop)
-
-	list_of_settings = settings.get_property_list()
+		Object that holds the project-independent editor settings. These settings are generally visible in the Editor Settings menu.
+		Accessing the settings is done by using the regular [Object] API, such as:
+		[codeblock]
+		settings.set(prop,value)
+		settings.get(prop)
+		list_of_settings = settings.get_property_list()
+		[/codeblock]
 	</description>
 	<methods>
 		<method name="erase">
@@ -11784,54 +11617,44 @@ This approximation makes straight segments between each point, then subdivides t
 			<return type="StringArray">
 			</return>
 			<description>
-				Get the list of favorite directories for this
-			project.
+				Get the list of favorite directories for this project.
 			</description>
 		</method>
 		<method name="get_project_settings_path" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Get the specific project settings path. Projects all
-			have an unique sub-directory inside the settings
-			path where project specific settings are saved.
+				Get the specific project settings path. Projects all have an unique sub-directory inside the settings path where project specific settings are saved.
 			</description>
 		</method>
 		<method name="get_recent_dirs" qualifiers="const">
 			<return type="StringArray">
 			</return>
 			<description>
-				Get the list of recently visited folders in the file
-			dialog for this project.
+				Get the list of recently visited folders in the file dialog for this project.
 			</description>
 		</method>
 		<method name="get_settings_path" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Get the global settings path for the engine. Inside
-			this path you can find some standard paths such as:
-
-			settings/tmp - used for temporary storage of files
-
-			settings/templates - where export templates are
-			located
+				Get the global settings path for the engine. Inside this path you can find some standard paths such as:
+				settings/tmp - used for temporary storage of files
+				settings/templates - where export templates are located
 			</description>
 		</method>
 		<method name="set_favorite_dirs">
 			<argument index="0" name="dirs" type="StringArray">
 			</argument>
 			<description>
-				Set the list of favorite directories for this
-			project.
+				Set the list of favorite directories for this project.
 			</description>
 		</method>
 		<method name="set_recent_dirs">
 			<argument index="0" name="dirs" type="StringArray">
 			</argument>
 			<description>
-				Set the list of recently visited folders in the file
-			dialog for this project.
+				Set the list of recently visited folders in the file dialog for this project.
 			</description>
 		</method>
 	</methods>
@@ -11849,9 +11672,7 @@ This approximation makes straight segments between each point, then subdivides t
 		Custom gizmo for editing Spatial objects.
 	</brief_description>
 	<description>
-		Custom gizmo that is used for providing custom visualization and
-	editing (handles) for 3D Spatial objects. These are created by
-	[method EditorPlugin.create_spatial_gizmo].
+		Custom gizmo that is used for providing custom visualization and editing (handles) for 3D Spatial objects. These are created by [method EditorPlugin.create_spatial_gizmo].
 	</description>
 	<methods>
 		<method name="add_collision_segments">
@@ -11864,11 +11685,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="triangles" type="TriangleMesh">
 			</argument>
 			<description>
-				Add collision triangles to the gizmo for picking. A
-			[TriangleMesh] can be generated from a regular
-			[Mesh] too.
-
-			Call this function during [method redraw].
+				Add collision triangles to the gizmo for picking. A [TriangleMesh] can be generated from a regular [Mesh] too. Call this function during [method redraw].
 			</description>
 		</method>
 		<method name="add_handles">
@@ -11879,13 +11696,8 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="2" name="secondary" type="bool" default="false">
 			</argument>
 			<description>
-				Add a list of handles (points) which can be used to
-			deform the object being edited.
-
-			There are virtual functions which will be called
-			upon editing of these handles.
-
-			Call this function during [method redraw].
+				Add a list of handles (points) which can be used to deform the object being edited.
+				There are virtual functions which will be called upon editing of these handles. Call this function during [method redraw].
 			</description>
 		</method>
 		<method name="add_lines">
@@ -11896,11 +11708,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="2" name="billboard" type="bool" default="false">
 			</argument>
 			<description>
-				Add lines to the gizmo (as sets of 2 points), with a
-			given material. The lines are used for visualizing
-			the gizmo.
-
-			Call this function during [method redraw].
+				Add lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this function during [method redraw].
 			</description>
 		</method>
 		<method name="add_mesh">
@@ -11911,10 +11719,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="2" name="skeleton" type="RID" default="RID()">
 			</argument>
 			<description>
-				Add a mesh to the gizmo, this is used for
-			visualization.
-
-			Call this function during [method redraw].
+				Add a mesh to the gizmo, this is used for visualization. Call this function during [method redraw].
 			</description>
 		</method>
 		<method name="add_unscaled_billboard">
@@ -11923,9 +11728,7 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="1" name="default_scale" type="float" default="1">
 			</argument>
 			<description>
-				Add an unscaled billboard for visualization.
-
-			Call this function during [method redraw].
+				Add an unscaled billboard for visualization. Call this function during [method redraw].
 			</description>
 		</method>
 		<method name="commit_handle" qualifiers="virtual">
@@ -11936,12 +11739,8 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="2" name="cancel" type="bool">
 			</argument>
 			<description>
-				Commit a handle being edited (handles must have been
-			prevously added by [method add_handles]).
-
-			If the cancel parameter is true, an option to
-			restore the edited value to the original is
-			provided.
+				Commit a handle being edited (handles must have been prevously added by [method add_handles]).
+				If the cancel parameter is true, an option to restore the edited value to the original is provided.
 			</description>
 		</method>
 		<method name="get_handle_name" qualifiers="virtual">
@@ -11950,10 +11749,8 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Get the name of an edited handle (handles must have
-			been previously added by [method add_handles]).
-
-			Handles can be named for reference to the user when editing.
+				Get the name of an edited handle (handles must have been previously added by [method add_handles]).
+				Handles can be named for reference to the user when editing.
 			</description>
 		</method>
 		<method name="get_handle_value" qualifiers="virtual">
@@ -11962,16 +11759,12 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Get actual value of a handle. This value can be
-			anything and used for eventually undoing the motion
-			when calling [method commit_handle]
+				Get actual value of a handle. This value can be anything and used for eventually undoing the motion when calling [method commit_handle]
 			</description>
 		</method>
 		<method name="redraw" qualifiers="virtual">
 			<description>
-				This function is called when the Spatial this gizmo
-			refers to changes (the [method Spatial.update_gizmo]
-			is called).
+				This function is called when the Spatial this gizmo refers to changes (the [method Spatial.update_gizmo] is called).
 			</description>
 		</method>
 		<method name="set_handle" qualifiers="virtual">
@@ -11982,22 +11775,15 @@ This approximation makes straight segments between each point, then subdivides t
 			<argument index="2" name="point" type="Vector2">
 			</argument>
 			<description>
-				This function is used when the user drags a gizmo
-			handle (previously added with [method add_handles])
-			in screen coordinates.
-
-			The [Camera] is also provided
-			so screen coordinates can be converted to raycasts.
+				This function is used when the user drags a gizmo handle (previously added with [method add_handles]) in screen coordinates.
+				The [Camera] is also provided so screen coordinates can be converted to raycasts.
 			</description>
 		</method>
 		<method name="set_spatial_node">
 			<argument index="0" name="node" type="Spatial">
 			</argument>
 			<description>
-				Call this function once and upon creation of the
-			gizmo, otherwise no other function will work.
-
-			The argument is the node being edited by the gizmo.
+				Call this function once and upon creation of the gizmo, otherwise no other function will work. The argument is the node being edited by the gizmo.
 			</description>
 		</method>
 	</methods>
@@ -12192,7 +11978,7 @@ This approximation makes straight segments between each point, then subdivides t
 	</brief_description>
 	<description>
 		Class for event stream playback. Event streams are music expressed as a series of events (note on, note off, instrument change...), as opposed to audio streams, which are just audio data. Examples of event-based streams are MIDI files, or MOD music.
-	Currently, only MOD, S3M, IT, and XM music is supported.
+		Currently, only MOD, S3M, IT, and XM music is supported.
 	</description>
 	<methods>
 		<method name="get_channel_last_note_time" qualifiers="const">
@@ -12330,7 +12116,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 				Set the volume scale for an individual channel of the stream, with the same value range as [method set_volume]. The channel number depends on the stream format. For example, MIDIs range from 0 to 15, and MODs from 0 to 63.
-			Many stream formats are multichannel, so this allows to affect only a part of the music.
+				Many stream formats are multichannel, so this allows to affect only a part of the music.
 			</description>
 		</method>
 		<method name="set_loop">
@@ -12373,7 +12159,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 				Set the playback volume for this player. This is a float between 0.0 (silent) and 1.0 (full volume). Values over 1.0 may amplify sound even more, but may introduce distortion. Negative values may just invert the output waveform, which produces no audible difference.
-			The effect of these special values ultimately depends on the low-level implementation of the file format being played.
+				The effect of these special values ultimately depends on the low-level implementation of the file format being played.
 			</description>
 		</method>
 		<method name="set_volume_db">
@@ -12398,7 +12184,7 @@ This approximation makes straight segments between each point, then subdivides t
 	</brief_description>
 	<description>
 		Base class for all event-based stream drivers. Event streams are music expressed as a series of events (note on, note off, instrument change...), as opposed to audio streams, which are just audio data. Examples of event-based streams are MIDI files, of MOD music.
-	This class exposes no methods.
+		This class exposes no methods.
 	</description>
 	<methods>
 	</methods>
@@ -12411,11 +12197,11 @@ This approximation makes straight segments between each point, then subdivides t
 	</brief_description>
 	<description>
 		This driver plays MOD music. MOD music, as all event-based streams, is a music format defined by note events occurring at defined moments, instead of a stream of audio samples.
-	Currently, this driver supports the MOD, S3M, IT, and XM formats.
-	This class exposes no methods.
-	This class can return its playback position in seconds, but does not allow to set it, failing with only a console warning.
-	This class can not return its song length, returning 1.0 when queried.
-	This class does not limit its volume settings, allowing for overflow/distortion and wave inversion.
+		Currently, this driver supports the MOD, S3M, IT, and XM formats.
+		This class exposes no methods.
+		This class can return its playback position in seconds, but does not allow to set it, failing with only a console warning.
+		This class can not return its song length, returning 1.0 when queried.
+		This class does not limit its volume settings, allowing for overflow/distortion and wave inversion.
 	</description>
 	<methods>
 	</methods>
@@ -12428,23 +12214,21 @@ This approximation makes straight segments between each point, then subdivides t
 	</brief_description>
 	<description>
 		File type. This is used to permanently store data into the user device's file system and to read from it. This can be used to store game save data or player configuration files, for example.
-
-	Here's a sample on how to write and read from a file:
-
-	[codeblock]
-	func save(content):
-	    var file = File.new()
-	    file.open("user://save_game.dat", file.WRITE)
-	    file.store_string(content)
-	    file.close()
-
-	func load():
-	    var file = File.new()
-	    file.open("user://save_game.dat", file.READ)
-	    var content = file.get_as_text()
-	    file.close()
-	    return content
-	[/codeblock]
+		Here's a sample on how to write and read from a file:
+		[codeblock]
+		func save(content):
+		    var file = File.new()
+		    file.open("user://save_game.dat", file.WRITE)
+		    file.store_string(content)
+		    file.close()
+		
+		func load():
+		    var file = File.new()
+		    file.open("user://save_game.dat", file.READ)
+		    var content = file.get_as_text()
+		    file.close()
+		    return content
+		[/codeblock]
 	</description>
 	<methods>
 		<method name="close">
@@ -12670,8 +12454,7 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 				Set whether to swap the endianess of the file. Enable this if you're dealing with files written in big endian machines.
-
-            Note that this is about the file format, not CPU type. This is always reseted to [code]false[/code] whenever you open the file.
+				Note that this is about the file format, not CPU type. This is always reseted to [code]false[/code] whenever you open the file.
 			</description>
 		</method>
 		<method name="store_16">
@@ -13921,7 +13704,7 @@ This approximation makes straight segments between each point, then subdivides t
 	</brief_description>
 	<description>
 		GraphEdit manages the showing of GraphNodes it contains, as well as connections an disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNodes slots is disabled by default.
-	It is greatly advised to enable low processor usage mode (see [method OS.set_low_processor_usage_mode]) when using GraphEdits.
+		It is greatly advised to enable low processor usage mode (see [method OS.set_low_processor_usage_mode]) when using GraphEdits.
 	</description>
 	<methods>
 		<method name="connect_node">
@@ -14827,7 +14610,7 @@ This approximation makes straight segments between each point, then subdivides t
 	</brief_description>
 	<description>
 		Hyper-text transfer protocol client. Supports SSL and SSL server certificate verification.
-	Can be reused to connect to different hosts and make many requests.
+		Can be reused to connect to different hosts and make many requests.
 	</description>
 	<methods>
 		<method name="close">
@@ -14848,8 +14631,8 @@ This approximation makes straight segments between each point, then subdivides t
 			</argument>
 			<description>
 				Connect to a host. This needs to be done before any requests are sent.
-			The host should not have http:// prepended but will strip the protocol identifier if provided.
-			verify_host will check the SSL identity of the host if set to true.
+				The host should not have http:// prepended but will strip the protocol identifier if provided.
+				verify_host will check the SSL identity of the host if set to true.
 			</description>
 		</method>
 		<method name="get_connection" qualifiers="const">
@@ -14885,8 +14668,8 @@ This approximation makes straight segments between each point, then subdivides t
 			</return>
 			<description>
 				Returns all response headers as dictionary where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
-Structure: ("key":"value1; value2")
-Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
+				Structure: ("key":"value1; value2")
+				Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
@@ -14931,11 +14714,11 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 				Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
-			[codeblock]
-			var fields = {"username": "user", "password": "pass"}
-			String queryString = httpClient.query_string_from_dict(fields)
-			returns:= "username=user&amp;password=pass"
-			[/codeblock]
+				[codeblock]
+				var fields = {"username": "user", "password": "pass"}
+				String queryString = httpClient.query_string_from_dict(fields)
+				returns:= "username=user&amp;password=pass"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="read_response_body_chunk">
@@ -14958,14 +14741,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 				Sends a request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], url would be "index.php".
-			Headers are HTTP request headers.
-			To create a POST request with query strings to push to the server, do:
-			[codeblock]
-			var fields = {"username" : "user", "password" : "pass"}
-			var queryString = httpClient.query_string_from_dict(fields)
-			var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(queryString.length())]
-			var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, queryString)
-			[/codeblock]
+				Headers are HTTP request headers.
+				To create a POST request with query strings to push to the server, do:
+				[codeblock]
+				var fields = {"username" : "user", "password" : "pass"}
+				var queryString = httpClient.query_string_from_dict(fields)
+				var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(queryString.length())]
+				var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, queryString)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="request_raw">
@@ -14981,8 +14764,8 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 				Sends a raw request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], url would be "index.php".
-			Headers are HTTP request headers.
-			Sends body raw, as a byte array, does not encode it in any way.
+				Headers are HTTP request headers.
+				Sends body raw, as a byte array, does not encode it in any way.
 			</description>
 		</method>
 		<method name="send_body_data">
@@ -15170,7 +14953,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</brief_description>
 	<description>
 		A Node with the ability to send HTTP requests. Uses a [HTTPClient] internally, supports HTTPS.
-	Can be used to make HTTP requests or download files via HTTP.
+		Can be used to make HTTP requests or download files via HTTP.
 	</description>
 	<methods>
 		<method name="cancel_request">
@@ -15238,8 +15021,8 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 				Make a HTTP GET request. The url is the complete url including "http://" or "https://" which will be parsed for a host and a port.
-			The custom_headers are HTTP request headers which will be used. If User-Agent is not specified a Godot specific will be used.
-			The ssl_validate_domain specifies if in case of HTTPS the server certificate should be verified.
+				The custom_headers are HTTP request headers which will be used. If User-Agent is not specified a Godot specific will be used.
+				The ssl_validate_domain specifies if in case of HTTPS the server certificate should be verified.
 			</description>
 		</method>
 		<method name="set_body_size_limit">
@@ -15751,8 +15534,8 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 				Create a new [ImageTexture] with "width" and "height".
-			"format" one of [Image].FORMAT_*.
-			"flags" one or more of [Texture].FLAG_*.
+				"format" one of [Image].FORMAT_*.
+				"flags" one or more of [Texture].FLAG_*.
 			</description>
 		</method>
 		<method name="create_from_image">
@@ -17886,8 +17669,8 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</brief_description>
 	<description>
 		Kinematic bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all (to other types of bodies, such a character or a rigid body, these are the same as a static body). They have however, two main uses:
-	Simulated Motion: When these bodies are moved manually, either from code or from an AnimationPlayer (with process mode set to fixed), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
-	Kinematic Characters: KinematicBody also has an api for moving objects (the [method move] method) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
+		Simulated Motion: When these bodies are moved manually, either from code or from an AnimationPlayer (with process mode set to fixed), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
+		Kinematic Characters: KinematicBody also has an api for moving objects (the [method move] method) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
 	</description>
 	<methods>
 		<method name="can_collide_with_character_bodies" qualifiers="const">
@@ -18039,8 +17822,8 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</brief_description>
 	<description>
 		Kinematic bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all (to other types of bodies, such a character or a rigid body, these are the same as a static body). They have however, two main uses:
-	Simulated Motion: When these bodies are moved manually, either from code or from an AnimationPlayer (with process mode set to fixed), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
-	Kinematic Characters: KinematicBody2D also has an api for moving objects (the [method move] method) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
+		Simulated Motion: When these bodies are moved manually, either from code or from an AnimationPlayer (with process mode set to fixed), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
+		Kinematic Characters: KinematicBody2D also has an api for moving objects (the [method move] method) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
 	</description>
 	<methods>
 		<method name="get_collider" qualifiers="const">
@@ -18368,7 +18151,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</brief_description>
 	<description>
 		A Texture capable of storing many smaller Textures with offsets.
-	You can dynamically add pieces(Textures) to this fLargeTexture] using different offsets.
+		You can dynamically add pieces(Textures) to this fLargeTexture] using different offsets.
 	</description>
 	<methods>
 		<method name="add_piece">
@@ -19973,8 +19756,8 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 				Create a new surface ([method get_surface_count] that will become surf_idx for this.
-			Surfaces are created to be rendered using a "primitive", which may be PRIMITIVE_POINTS, PRIMITIVE_LINES, PRIMITIVE_LINE_STRIP, PRIMITIVE_LINE_LOOP, PRIMITIVE_TRIANGLES, PRIMITIVE_TRIANGLE_STRIP, PRIMITIVE_TRIANGLE_FAN. (As a note, when using indices, it is recommended to only use just points, lines or triangles).
-			The format of a surface determines which arrays it will allocate and hold, so "format" is a combination of ARRAY_FORMAT_* mask constants ORed together. ARRAY_FORMAT_VERTEX must be always present. "array_len" determines the amount of vertices in the array (not primitives!). if ARRAY_FORMAT_INDEX is in the format mask, then it means that an index array will be allocated and "index_array_len" must be passed.
+				Surfaces are created to be rendered using a "primitive", which may be PRIMITIVE_POINTS, PRIMITIVE_LINES, PRIMITIVE_LINE_STRIP, PRIMITIVE_LINE_LOOP, PRIMITIVE_TRIANGLES, PRIMITIVE_TRIANGLE_STRIP, PRIMITIVE_TRIANGLE_FAN. (As a note, when using indices, it is recommended to only use just points, lines or triangles).
+				The format of a surface determines which arrays it will allocate and hold, so "format" is a combination of ARRAY_FORMAT_* mask constants ORed together. ARRAY_FORMAT_VERTEX must be always present. "array_len" determines the amount of vertices in the array (not primitives!). if ARRAY_FORMAT_INDEX is in the format mask, then it means that an index array will be allocated and "index_array_len" must be passed.
 			</description>
 		</method>
 		<method name="center_geometry">
@@ -20669,9 +20452,9 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</brief_description>
 	<description>
 		MultiMesh provides low level mesh instancing. If the amount of [Mesh] instances needed goes from hundreds to thousands (and most need to be visible at close proximity) creating such a large amount of [MeshInstance] nodes may affect performance by using too much CPU or video memory.
-	For this case a MultiMesh becomes very useful, as it can draw thousands of instances with little API overhead.
-	As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
-	Since instances may have any behavior, the AABB used for visibility must be provided by the user, or generated with [method generate_aabb].
+		For this case a MultiMesh becomes very useful, as it can draw thousands of instances with little API overhead.
+		As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
+		Since instances may have any behavior, the AABB used for visibility must be provided by the user, or generated with [method generate_aabb].
 	</description>
 	<methods>
 		<method name="generate_aabb">
@@ -21370,14 +21153,14 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</brief_description>
 	<description>
 		Nodes can be set as children of other nodes, resulting in a tree arrangement. Any tree of nodes is called a "Scene".
-	Scenes can be saved to disk, and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects.
-	[SceneTree] contains the "active" tree of nodes, and a node becomes active (receiving NOTIFICATION_ENTER_SCENE) when added to that tree.
-	A node can contain any number of nodes as a children (but there is only one tree root) with the requirement that no two children with the same name can exist.
-	Nodes can, optionally, be added to groups. This makes it easy to reach a number of nodes from the code (for example an "enemies" group).
-	Nodes can be set to "process" state, so they constantly receive a callback requesting them to process (do anything). Normal processing ([method _process]) happens as fast as possible and is dependent on the frame rate, so the processing time delta is variable. Fixed processing ([method _fixed_process]) happens a fixed amount of times per second (by default 60) and is useful to link itself to the physics.
-	Nodes can also process input events. When set, the [method _input] function will be called with every input that the program receives. Since this is usually too overkill (unless used for simple projects), an [method _unhandled_input] function is called when the input was not handled by anyone else (usually, GUI [Control] nodes).
-	To keep track of the scene hierarchy (specially when instancing scenes into scenes) an "owner" can be set to a node. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
-	Finally, when a node is freed, it will free all its children nodes too.
+		Scenes can be saved to disk, and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects.
+		[SceneTree] contains the "active" tree of nodes, and a node becomes active (receiving NOTIFICATION_ENTER_SCENE) when added to that tree.
+		A node can contain any number of nodes as a children (but there is only one tree root) with the requirement that no two children with the same name can exist.
+		Nodes can, optionally, be added to groups. This makes it easy to reach a number of nodes from the code (for example an "enemies" group).
+		Nodes can be set to "process" state, so they constantly receive a callback requesting them to process (do anything). Normal processing ([method _process]) happens as fast as possible and is dependent on the frame rate, so the processing time delta is variable. Fixed processing ([method _fixed_process]) happens a fixed amount of times per second (by default 60) and is useful to link itself to the physics.
+		Nodes can also process input events. When set, the [method _input] function will be called with every input that the program receives. Since this is usually too overkill (unless used for simple projects), an [method _unhandled_input] function is called when the input was not handled by anyone else (usually, GUI [Control] nodes).
+		To keep track of the scene hierarchy (specially when instancing scenes into scenes) an "owner" can be set to a node. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
+		Finally, when a node is freed, it will free all its children nodes too.
 	</description>
 	<methods>
 		<method name="_enter_tree" qualifiers="virtual">
@@ -21435,7 +21218,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 				Add a child [Node]. Nodes can have as many children as they want, but every child must have a unique name. Children nodes are automatically deleted when the parent node is deleted, so deleting a whole scene is performed by deleting its topmost node.
-			The optional boolean argument enforces creating child node with human-readable names, based on the name of node being instanced instead of its type only.
+				The optional boolean argument enforces creating child node with human-readable names, based on the name of node being instanced instead of its type only.
 			</description>
 		</method>
 		<method name="add_to_group">
@@ -21538,21 +21321,24 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 				Fetch a node. NodePath must be valid (or else error will occur) and can be either the path to child node, a relative path (from the current node to another node), or an absolute path to a node.
-			Note: fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]). Examples. Assume your current node is Character and following tree:[br]
- root/
- root/Character
- root/Character/Sword
- root/Character/Backpack/Dagger
- root/MyGame
- root/Swamp/Alligator
- root/Swamp/Mosquito
- root/Swamp/Goblin
-
- Possible paths are:
- - get_node("Sword")
- - get_node("Backpack/Dagger")
- - get_node("../Swamp/Alligator")
- - get_node("/root/MyGame")
+				Note: fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]). Examples. Assume your current node is Character and following tree:
+				[codeblock]
+				root/
+				root/Character
+				root/Character/Sword
+				root/Character/Backpack/Dagger
+				root/MyGame
+				root/Swamp/Alligator
+				root/Swamp/Mosquito
+				root/Swamp/Goblin
+				[/codeblock]
+				Possible paths are:
+				[codeblock]
+				get_node("Sword")
+				get_node("Backpack/Dagger")
+				get_node("../Swamp/Alligator")
+				get_node("/root/MyGame")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_node_and_resource">
@@ -22114,8 +21900,8 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</brief_description>
 	<description>
 		A pre-parsed relative or absolute path in a scene tree, for use with [method Node.get_node] and similar functions. It can reference a node, a resource within a node, or a property of a node or resource. For instance, [code]"Path2D/PathFollow2D/Sprite:texture:size"[/code] would refer to the size property of the texture resource on the node named "Sprite" which is a child of the other named nodes in the path. Note that if you want to get a resource, you must end the path with a colon, otherwise the last element will be used as a property name.
-	You will usually just pass a string to [method Node.get_node] and it will be automatically converted, but you may occasionally want to parse a path ahead of time with [NodePath] or the literal syntax [code]@"path"[/code]. Exporting a [NodePath] variable will give you a node selection widget in the properties panel of the editor, which can often be useful.
-	A [NodePath] is made up of a list of node names, a list of "subnode" (resource) names, and the name of a property in the final node or resource.
+		You will usually just pass a string to [method Node.get_node] and it will be automatically converted, but you may occasionally want to parse a path ahead of time with [NodePath] or the literal syntax [code]@"path"[/code]. Exporting a [NodePath] variable will give you a node selection widget in the properties panel of the editor, which can often be useful.
+		A [NodePath] is made up of a list of node names, a list of "subnode" (resource) names, and the name of a property in the final node or resource.
 	</description>
 	<methods>
 		<method name="NodePath">
@@ -22189,16 +21975,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 		Operating System functions.
 	</brief_description>
 	<description>
-		Operating System functions. OS Wraps the most common functionality to communicate with the host Operating System, such as:
- -Mouse Grabbing
- -Mouse Cursors
- -Clipboard
- -Video Mode
- -Date " Time
- -Timers
- -Environment Variables
- -Execution of Binaries
- -Command Line
+		Operating System functions. OS Wraps the most common functionality to communicate with the host Operating System, such as: mouse grabbing, mouse cursors, clipboard, video mode, date and time, timers, environment variables, execution of binaries, command line, etc.
 	</description>
 	<methods>
 		<method name="alert">
@@ -22336,7 +22113,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 				Get a dictionary of time values when given epoch time.
-			Dictionary Time values will be a union of values from [method get_time] and [method get_date] dictionaries (with the exception of dst = day light standard time, as it cannot be determined from epoch).
+				Dictionary Time values will be a union of values from [method get_time] and [method get_date] dictionaries (with the exception of dst = day light standard time, as it cannot be determined from epoch).
 			</description>
 		</method>
 		<method name="get_dynamic_memory_usage" qualifiers="const">
@@ -22567,8 +22344,8 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 			</argument>
 			<description>
 				Get an epoch time value from a dictionary of time values.
-			[code]datetime[/code] must be populated with the following keys: year, month, day, hour, minute, second.
-			You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight savings time (dst), if present, is ignored.
+				[code]datetime[/code] must be populated with the following keys: year, month, day, hour, minute, second.
+				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight savings time (dst), if present, is ignored.
 			</description>
 		</method>
 		<method name="get_video_mode_size" qualifiers="const">
@@ -22999,10 +22776,10 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</brief_description>
 	<description>
 		Base class for all non built-in types. Everything not a built-in type starts the inheritance chain from this class.
-	Objects do not manage memory, if inheriting from one the object will most likely have to be deleted manually (call the [method free] function from the script or delete from C++).
-	Some derivates add memory management, such as [Reference] (which keeps a reference count and deletes itself automatically when no longer referenced) and [Node], which deletes the children tree when deleted.
-	Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simpler means to export them.
-	Objects also receive notifications ([method _notification]). Notifications are a simple way to notify the object about simple events, so they can all be handled together.
+		Objects do not manage memory, if inheriting from one the object will most likely have to be deleted manually (call the [method free] function from the script or delete from C++).
+		Some derivates add memory management, such as [Reference] (which keeps a reference count and deletes itself automatically when no longer referenced) and [Node], which deletes the children tree when deleted.
+		Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simpler means to export them.
+		Objects also receive notifications ([method _notification]). Notifications are a simple way to notify the object about simple events, so they can all be handled together.
 	</description>
 	<methods>
 		<method name="XL_MESSAGE" qualifiers="const">
@@ -25004,7 +24781,7 @@ Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
 	</brief_description>
 	<description>
 		This node takes its parent [Path], and returns the coordinates of a point within it, given a distance from the first vertex.
-It is useful for making other nodes follow a path, without coding the movement pattern. For that, the nodes must be descendants of this node. Then, when setting an offset in this node, the descendant nodes will move accordingly.
+		It is useful for making other nodes follow a path, without coding the movement pattern. For that, the nodes must be descendants of this node. Then, when setting an offset in this node, the descendant nodes will move accordingly.
 	</description>
 	<methods>
 		<method name="get_cubic_interpolation" qualifiers="const">
@@ -25061,8 +24838,8 @@ It is useful for making other nodes follow a path, without coding the movement p
 			</argument>
 			<description>
 				The points along the [Curve3D] of the [Path] are precomputed before use, for faster calculations. The point at the requested offset is then calculated interpolating between two adjacent cached points. This may present a problem if the curve makes sharp turns, as the cached points may not follow the curve closely enough.
-There are two answers to this problem: Either increase the number of cached points and increase memory consumption, or make a cubic interpolation between two points at the cost of (slightly) slower calculations.
-This method controls whether the position between two cached points is interpolated linearly, or cubicly.
+				There are two answers to this problem: Either increase the number of cached points and increase memory consumption, or make a cubic interpolation between two points at the cost of (slightly) slower calculations.
+				This method controls whether the position between two cached points is interpolated linearly, or cubicly.
 			</description>
 		</method>
 		<method name="set_h_offset">
@@ -25070,7 +24847,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 				Moves this node in the X axis. As this node's position will be set every time its offset is set, this allows many PathFollow to share the same curve (and thus the same movement pattern), yet not return the same position for a given path offset.
-A similar effect may be achieved moving the this node's descendants.
+				A similar effect may be achieved moving the this node's descendants.
 			</description>
 		</method>
 		<method name="set_loop">
@@ -25130,7 +24907,7 @@ A similar effect may be achieved moving the this node's descendants.
 	</brief_description>
 	<description>
 		This node takes its parent [Path2D], and returns the coordinates of a point within it, given a distance from the first vertex.
-It is useful for making other nodes follow a path, without coding the movement pattern. For that, the nodes must be descendants of this node. Then, when setting an offset in this node, the descendant nodes will move accordingly.
+		It is useful for making other nodes follow a path, without coding the movement pattern. For that, the nodes must be descendants of this node. Then, when setting an offset in this node, the descendant nodes will move accordingly.
 	</description>
 	<methods>
 		<method name="get_cubic_interpolation" qualifiers="const">
@@ -25187,8 +24964,8 @@ It is useful for making other nodes follow a path, without coding the movement p
 			</argument>
 			<description>
 				The points along the [Curve2D] of the [Path2D] are precomputed before use, for faster calculations. The point at the requested offset is then calculated interpolating between two adjacent cached points. This may present a problem if the curve makes sharp turns, as the cached points may not follow the curve closely enough.
-There are two answers to this problem: Either increase the number of cached points and increase memory consumption, or make a cubic interpolation between two points at the cost of (slightly) slower calculations.
-This method controls whether the position between two cached points is interpolated linearly, or cubicly.
+				There are two answers to this problem: Either increase the number of cached points and increase memory consumption, or make a cubic interpolation between two points at the cost of (slightly) slower calculations.
+				This method controls whether the position between two cached points is interpolated linearly, or cubicly.
 			</description>
 		</method>
 		<method name="set_h_offset">
@@ -25196,7 +24973,7 @@ This method controls whether the position between two cached points is interpola
 			</argument>
 			<description>
 				Moves this node horizontally. As this node's position will be set every time its offset is set, this allows many PathFollow2D to share the same curve (and thus the same movement pattern), yet not return the same position for a given path offset.
-A similar effect may be achieved moving this node's descendants.
+				A similar effect may be achieved moving this node's descendants.
 			</description>
 		</method>
 		<method name="set_loop">
@@ -25632,15 +25409,15 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Check the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. If it collides with more than a shape, the nearest one is selected. The returned object is a dictionary containing the following fields:
-		pointo: Place where the shapes intersect.
-		normal: Normal of the object at the point where the shapes intersect.
-		shape: Shape index within the object against which the shape intersected.
-		metadata: Metadata of the shape against which the shape intersected. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
-		collider_id: Id of the object against which the shape intersected.
-		collider: Object against which the shape intersected.
-		rid: [RID] of the object against which the shape intersected.
-		linear_velocity: The movement vector of the object the shape intersected, if it was a body. If it was an area, it is (0,0).
-	If the shape did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead.
+				pointo: Place where the shapes intersect.
+				normal: Normal of the object at the point where the shapes intersect.
+				shape: Shape index within the object against which the shape intersected.
+				metadata: Metadata of the shape against which the shape intersected. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
+				collider_id: Id of the object against which the shape intersected.
+				collider: Object against which the shape intersected.
+				rid: [RID] of the object against which the shape intersected.
+				linear_velocity: The movement vector of the object the shape intersected, if it was a body. If it was an area, it is (0,0).
+				If the shape did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead.
 			</description>
 		</method>
 		<method name="intersect_point">
@@ -25658,12 +25435,12 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Check whether a point is inside any shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
-		shape: Shape index within the object the point is in.
-		metadata: Metadata of the shape the point is in. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
-		collider_id: Id of the object the point is in.
-		collider: Object the point is inside of.
-		rid: [RID] of the object the point is in.
-	Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
+				shape: Shape index within the object the point is in.
+				metadata: Metadata of the shape the point is in. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
+				collider_id: Id of the object the point is in.
+				collider: Object the point is inside of.
+				rid: [RID] of the object the point is in.
+				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
 			</description>
 		</method>
 		<method name="intersect_ray">
@@ -25681,15 +25458,15 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Intersect a ray in a given space. The returned object is a dictionary with the following fields:
-		position: Place where ray is stopped.
-		normal: Normal of the object at the point where the ray was stopped.
-		shape: Shape index within the object against which the ray was stopped.
-		metadata: Metadata of the shape against which the ray was stopped. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
-		collider_id: Id of the object against which the ray was stopped.
-		collider: Object against which the ray was stopped.
-		rid: [RID] of the object against which the ray was stopped.
-	If the ray did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead.
-	Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
+				position: Place where ray is stopped.
+				normal: Normal of the object at the point where the ray was stopped.
+				shape: Shape index within the object against which the ray was stopped.
+				metadata: Metadata of the shape against which the ray was stopped. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
+				collider_id: Id of the object against which the ray was stopped.
+				collider: Object against which the ray was stopped.
+				rid: [RID] of the object against which the ray was stopped.
+				If the ray did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead.
+				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
 			</description>
 		</method>
 		<method name="intersect_shape">
@@ -25701,12 +25478,12 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Check the intersections of a shape, given through a [Physics2DShapeQueryParameters] object, against the space. The intersected shapes are returned in an array containing dictionaries with the following fields:
-		shape: Shape index within the object the shape intersected.
-		metadata: Metadata of the shape intersected by the shape given through the [Physics2DShapeQueryParameters]. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
-		collider_id: Id of the object the shape intersected.
-		collider: Object the shape intersected.
-		rid: [RID] of the object the shape intersected.
-	The number of intersections can be limited with the second paramater, to reduce the processing time.
+				shape: Shape index within the object the shape intersected.
+				metadata: Metadata of the shape intersected by the shape given through the [Physics2DShapeQueryParameters]. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
+				collider_id: Id of the object the shape intersected.
+				collider: Object the shape intersected.
+				rid: [RID] of the object the shape intersected.
+				The number of intersections can be limited with the second paramater, to reduce the processing time.
 			</description>
 		</method>
 	</methods>
@@ -25885,11 +25662,11 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
-		1: AREA_BODY_ADDED or AREA_BODY_REMOVED, depending on whether the object entered or exited the area.
-		2: [RID] of the object that entered/exited the area.
-		3: Instance ID of the object that entered/exited the area.
-		4: The shape index of the object that entered/exited the area.
-		5: The shape index of the area where the object entered/exited.
+				1: AREA_BODY_ADDED or AREA_BODY_REMOVED, depending on whether the object entered or exited the area.
+				2: [RID] of the object that entered/exited the area.
+				3: Instance ID of the object that entered/exited the area.
+				4: The shape index of the object that entered/exited the area.
+				5: The shape index of the area where the object entered/exited.
 			</description>
 		</method>
 		<method name="area_set_param">
@@ -26225,7 +26002,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the continuous collision detection mode from any of the CCD_MODE_* constants.
-			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
+				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>
 		<method name="body_set_force_integration_callback">
@@ -27187,8 +26964,8 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the physics layers this area is in.
-			Collidable objects can exist in any of 32 different layers. These layers are not visual, but more of a tagging system instead. A collidable can use these layers/tags to select with which objects it can collide, using [method set_collision_mask].
-			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
+				Collidable objects can exist in any of 32 different layers. These layers are not visual, but more of a tagging system instead. A collidable can use these layers/tags to select with which objects it can collide, using [method set_collision_mask].
+				A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
 			</description>
 		</method>
 		<method name="set_layer_mask_bit">
@@ -30983,9 +30760,9 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		Class for finding text patterns in a string using regular expressions. Regular expressions are a way to define patterns of text to be searched.
-	This class only finds patterns in a string. It can not perform replacements.
-	Usage of regular expressions is too long to be explained here, but Internet is full of tutorials and detailed explanations.
-	Currently supported features:
+		This class only finds patterns in a string. It can not perform replacements.
+		Usage of regular expressions is too long to be explained here, but Internet is full of tutorials and detailed explanations.
+		Currently supported features:
 		Capturing [code]()[/code] and non-capturing [code](?:)[/code] groups
 		Any character [code].[/code]
 		Shorthand character classes [code]\w \W \s \S \d \D[/code]
@@ -31988,7 +31765,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the body ability to fall asleep when not moving. This saves an enormous amount of processor time when there are plenty of rigid bodies (non static) in a scene.
-			Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] / [method set_applied_force] wakes them up. Until then, they behave like a static body.
+				Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] / [method set_applied_force] wakes them up. Until then, they behave like a static body.
 			</description>
 		</method>
 		<method name="set_contact_monitor">
@@ -32059,7 +31836,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the continuous collision detection mode from the enum CCD_MODE_*.
-			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
+				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
 			</description>
 		</method>
 		<method name="set_use_custom_integrator">
@@ -32096,7 +31873,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
-			This signal not only receives the body that collided with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body collided with.
+				This signal not only receives the body that collided with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body collided with.
 			</description>
 		</signal>
 		<signal name="body_exit">
@@ -32117,7 +31894,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
-			This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
+				This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">
@@ -32147,8 +31924,8 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		Rigid body 2D node. This node is used for placing rigid bodies in the scene. It can contain a number of shapes, and also shift state between regular Rigid body, Kinematic, Character or Static.
-	Character mode forbids the node from being rotated. This node can have a custom force integrator function, for writing complex physics motion behavior per node.
-	As a warning, don't change this node position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
+		Character mode forbids the node from being rotated. This node can have a custom force integrator function, for writing complex physics motion behavior per node.
+		As a warning, don't change this node position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
 	</description>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
@@ -32363,7 +32140,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the body ability to fall asleep when not moving. This saves an enormous amount of processor time when there are plenty of rigid bodies (non static) in a scene.
-			Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] / [method set_applied_force] wakes them up. Until then, they behave like a static body.
+				Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] / [method set_applied_force] wakes them up. Until then, they behave like a static body.
 			</description>
 		</method>
 		<method name="set_contact_monitor">
@@ -32378,7 +32155,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the continuous collision detection mode from the enum CCD_MODE_*.
-			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
+				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
 			</description>
 		</method>
 		<method name="set_friction">
@@ -32491,7 +32268,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
-			This signal not only receives the body that collided with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body collided with.
+				This signal not only receives the body that collided with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body collided with.
 			</description>
 		</signal>
 		<signal name="body_exit">
@@ -32512,7 +32289,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
-			This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
+				This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">
@@ -32644,7 +32421,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Create new data for the sample, with format (see FORMAT_* constants), stereo hint, and length in samples (not bytes).
-			Calling this method overrides previously existing data. Stereo samples are interleaved pairs of left and right points (in that order), but count as one sample for length purposes.
+				Calling this method overrides previously existing data. Stereo samples are interleaved pairs of left and right points (in that order), but count as one sample for length purposes.
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
@@ -32708,10 +32485,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set sample data. Data must be little endian, no matter the host platform, and exactly as long as to fit all samples. The length of this array can be calculated as follows:
-			Get the sample length ([method get_length]).
-			If the sample format is FORMAT_PCM16, multiply it by 2.
-			If the sample format is FORMAT_IMA_ADPCM, divide it by 2 (rounding any fraction up), then add 4.
-			If the sample is stereo ([method is_stereo]), multiply it by 2.
+				Get the sample length ([method get_length]). If the sample format is FORMAT_PCM16, multiply it by 2. If the sample format is FORMAT_IMA_ADPCM, divide it by 2 (rounding any fraction up), then add 4. If the sample is stereo ([method is_stereo]), multiply it by 2.
 			</description>
 		</method>
 		<method name="set_loop_begin">
@@ -33110,7 +32884,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Play a sample referenced by its name.
-			Optionally, the playback can be made "unique" to force stopping all other samples currently played. The voices allocated for playback will then be returned.
+				Optionally, the playback can be made "unique" to force stopping all other samples currently played. The voices allocated for playback will then be returned.
 			</description>
 		</method>
 		<method name="set_chorus">
@@ -33152,7 +32926,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the default panning of the player. Panning goes from -1.0 (left) to +1.0 (right).
-			Optionally, for hardware than support 3D sound, one can also set depth and height (also in range -1.0 to +1.0).
+				Optionally, for hardware than support 3D sound, one can also set depth and height (also in range -1.0 to +1.0).
 			</description>
 		</method>
 		<method name="set_default_pitch_scale">
@@ -33176,8 +32950,8 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the default volume of the player using a linear scale.
-			The "volume" argument should be a positive factor ranging from 0.0 (mute) up to 16.0 (i.e. 24 dB).
-			A factor of 1.0 means that the voice will be played at normal system volume. Factors above 1.0 might be limited by the platform's audio output.
+				The "volume" argument should be a positive factor ranging from 0.0 (mute) up to 16.0 (i.e. 24 dB).
+				A factor of 1.0 means that the voice will be played at normal system volume. Factors above 1.0 might be limited by the platform's audio output.
 			</description>
 		</method>
 		<method name="set_default_volume_db">
@@ -33185,7 +32959,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the default volume of the player in dB.
-			The "dB" argument can range from -80 to 24 dB, 0 dB being the maximum volume. Every 6 dB (resp. -6 dB), the volume is increased (resp. reduced) by half.
+				The "dB" argument can range from -80 to 24 dB, 0 dB being the maximum volume. Every 6 dB (resp. -6 dB), the volume is increased (resp. reduced) by half.
 			</description>
 		</method>
 		<method name="set_filter">
@@ -33201,7 +32975,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the filter for a given voice, using the given type (see FILTER_* constants), cutoff frequency (from 20 to 16,384 Hz) and resonance (from 0 to 4.0).
-			Optionally, a gain can also be given (from 0 to 2.0).
+				Optionally, a gain can also be given (from 0 to 2.0).
 			</description>
 		</method>
 		<method name="set_mix_rate">
@@ -33224,7 +32998,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the panning of a voice. Panning goes from -1.0 (left) to +1.0 (right).
-			Optionally, for hardware than support 3D sound, one can also set depth and height (also in range -1.0 to +1.0).
+				Optionally, for hardware than support 3D sound, one can also set depth and height (also in range -1.0 to +1.0).
 			</description>
 		</method>
 		<method name="set_pitch_scale">
@@ -33268,8 +33042,8 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the volume of a given voice using a linear scale.
-			The "volume" argument should be a positive factor ranging from 0.0 (mute) up to 16.0 (i.e. 24 dB).
-			A factor of 1.0 means that the voice will be played at normal system volume. Factors above 1.0 might be limited by the platform's audio output.
+				The "volume" argument should be a positive factor ranging from 0.0 (mute) up to 16.0 (i.e. 24 dB).
+				A factor of 1.0 means that the voice will be played at normal system volume. Factors above 1.0 might be limited by the platform's audio output.
 			</description>
 		</method>
 		<method name="set_volume_db">
@@ -33279,7 +33053,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the volume of a given voice in dB.
-			The "dB" argument can range from -80 to 24 dB, 0 dB being the maximum volume. Every 6 dB (resp. -6 dB), the volume is increased (resp. reduced) by half.
+				The "dB" argument can range from -80 to 24 dB, 0 dB being the maximum volume. Every 6 dB (resp. -6 dB), the volume is increased (resp. reduced) by half.
 			</description>
 		</method>
 		<method name="stop">
@@ -33387,7 +33161,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Play a sample. An internal polyphony ID can optionally be passed, or defaults to NEXT_VOICE.
-			Return a voice ID which can be used to modify the voice parameters, or INVALID_VOICE if the voice or sample are invalid.
+				Return a voice ID which can be used to modify the voice parameters, or INVALID_VOICE if the voice or sample are invalid.
 			</description>
 		</method>
 		<method name="set_polyphony">
@@ -33402,9 +33176,9 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the amplitude for random pitch scale variations. If different from zero, the pitch scale will vary randomly around 1.0 in a range defined by val.
-			The actual pitch scale will be, with "variation" ranging from -val to val:
-			* variation &gt; 0: 1.0 + variation
-			* variation &lt; 0: 1.0/(1.0 - variation)
+				The actual pitch scale will be, with "variation" ranging from -val to val:
+				* variation &gt; 0: 1.0 + variation
+				* variation &lt; 0: 1.0/(1.0 - variation)
 			</description>
 		</method>
 		<method name="set_sample_library">
@@ -35130,7 +34904,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Return whether this shape is colliding with another.
-			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the shape to check collisions with ([code]with_shape[/code]), and the transformation matrix of that shape ([code]shape_xform[/code]).
+				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the shape to check collisions with ([code]with_shape[/code]), and the transformation matrix of that shape ([code]shape_xform[/code]).
 			</description>
 		</method>
 		<method name="collide_and_get_contacts">
@@ -35144,7 +34918,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Return a list of the points where this shape touches another. If there are no collisions, the list is empty.
-			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the shape to check collisions with ([code]with_shape[/code]), and the transformation matrix of that shape ([code]shape_xform[/code]).
+				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the shape to check collisions with ([code]with_shape[/code]), and the transformation matrix of that shape ([code]shape_xform[/code]).
 			</description>
 		</method>
 		<method name="collide_with_motion">
@@ -35162,7 +34936,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Return whether this shape would collide with another, if a given movement was applied.
-			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
+				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
 			</description>
 		</method>
 		<method name="collide_with_motion_and_get_contacts">
@@ -35180,7 +34954,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Return a list of the points where this shape would touch another, if a given movement was applied. If there are no collisions, the list is empty.
-			This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
+				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
 			</description>
 		</method>
 		<method name="get_custom_solver_bias" qualifiers="const">
@@ -35195,7 +34969,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Use a custom solver bias. No need to change this unless you really know what you are doing.
-			The solver bias is a factor controlling how much two objects "rebound" off each other, when colliding, to avoid them getting into each other because of numerical imprecision.
+				The solver bias is a factor controlling how much two objects "rebound" off each other, when colliding, to avoid them getting into each other because of numerical imprecision.
 			</description>
 		</method>
 	</methods>
@@ -36947,8 +36721,8 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		Static body for 3D Physics. A static body is a simple body that is not intended to move. They don't consume any CPU resources in contrast to a [RigidBody3D] so they are great for scenario collision.
-	A static body can also be animated by using simulated motion mode. This is useful for implementing functionalities such as moving platforms. When this mode is active the body can be animated and automatically computes linear and angular velocity to apply in that frame and to influence other bodies.
-	Alternatively, a constant linear or angular velocity can be set for the static body, so even if it doesn't move, it affects other bodies as if it was moving (this is useful for simulating conveyor belts or conveyor wheels).
+		A static body can also be animated by using simulated motion mode. This is useful for implementing functionalities such as moving platforms. When this mode is active the body can be animated and automatically computes linear and angular velocity to apply in that frame and to influence other bodies.
+		Alternatively, a constant linear or angular velocity can be set for the static body, so even if it doesn't move, it affects other bodies as if it was moving (this is useful for simulating conveyor belts or conveyor wheels).
 	</description>
 	<methods>
 		<method name="get_bounce" qualifiers="const">
@@ -37017,8 +36791,8 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		Static body for 2D Physics. A static body is a simple body that is not intended to move. They don't consume any CPU resources in contrast to a [RigidBody2D] so they are great for scenario collision.
-	A static body can also be animated by using simulated motion mode. This is useful for implementing functionalities such as moving platforms. When this mode is active the body can be animated and automatically computes linear and angular velocity to apply in that frame and to influence other bodies.
-	Alternatively, a constant linear or angular velocity can be set for the static body, so even if it doesn't move, it affects other bodies as if it was moving (this is useful for simulating conveyor belts or conveyor wheels).
+		A static body can also be animated by using simulated motion mode. This is useful for implementing functionalities such as moving platforms. When this mode is active the body can be animated and automatically computes linear and angular velocity to apply in that frame and to influence other bodies.
+		Alternatively, a constant linear or angular velocity can be set for the static body, so even if it doesn't move, it affects other bodies as if it was moving (this is useful for simulating conveyor belts or conveyor wheels).
 	</description>
 	<methods>
 		<method name="get_bounce" qualifiers="const">
@@ -37579,7 +37353,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the size (in milliseconds) of the audio buffer. A long audio buffer protects better against slowdowns, but responds worse to changes (in volume, stream played...). A shorter buffer takes less time to respond to changes, but may stutter if the application suffers some slowdown.
-			Default is 500 milliseconds.
+				Default is 500 milliseconds.
 			</description>
 		</method>
 		<method name="set_loop">
@@ -38735,7 +38509,7 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		Tabbed Container. Contains several children controls, but shows only one at the same time. Clicking on the top tabs allows to change the currently visible one.
-	Children controls of this one automatically.
+		Children controls of this one automatically.
 	</description>
 	<methods>
 		<method name="are_tabs_visible" qualifiers="const">
@@ -39593,7 +39367,7 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		Button that can be themed with textures. This is like a regular [Button] but can be themed by assigning textures to it. This button is intended to be easy to theme, however a regular button can expand (that uses styleboxes) and still be better if the interface is expect to have internationalization of texts.
-	Only the normal texture is required, the others are optional.
+		Only the normal texture is required, the others are optional.
 	</description>
 	<methods>
 		<method name="get_click_mask" qualifiers="const">
@@ -39884,7 +39658,7 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		Theme for skinning controls. Controls can be skinned individually, but for complex applications it's more efficient to just create a global theme that defines everything. This theme can be applied to any [Control], and it and its children will automatically use it.
-	Theme resources can be alternatively loaded by writing them in a .theme file, see wiki for more info.
+		Theme resources can be alternatively loaded by writing them in a .theme file, see docs for more info.
 	</description>
 	<methods>
 		<method name="clear_color">
@@ -40186,7 +39960,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Start a new [Thread], it will run "method" on object "instance" using "userdata" as an argument and running with "priority", one of PRIORITY_* enum.
-			Returns OK on success, or ERR_CANT_CREATE on failure.
+				Returns OK on success, or ERR_CANT_CREATE on failure.
 			</description>
 		</method>
 		<method name="wait_to_finish">
@@ -40212,7 +39986,7 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		Node for 2D tile-based games. Tilemaps use a [TileSet] which contain a list of tiles (textures, their rect and a collision) and are used to create complex grid-based maps.
-	To optimize drawing and culling (sort of like [GridMap]), you can specify a quadrant size, so chunks of the map will be batched together at drawing time.
+		To optimize drawing and culling (sort of like [GridMap]), you can specify a quadrant size, so chunks of the map will be batched together at drawing time.
 	</description>
 	<methods>
 		<method name="clear">
@@ -40400,7 +40174,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Return the absolute world position corresponding to the tilemap (grid-based) coordinates given as an argument.
-			Optionally, the tilemap's potential half offset can be ignored.
+				Optionally, the tilemap's potential half offset can be ignored.
 			</description>
 		</method>
 		<method name="set_cell">
@@ -40418,8 +40192,8 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the tile index for the cell referenced by its grid-based X and Y coordinates.
-			A tile index of -1 clears the cell.
-			Optionally, the tile can also be flipped over the X and Y coordinates or transposed.
+				A tile index of -1 clears the cell.
+				Optionally, the tile can also be flipped over the X and Y coordinates or transposed.
 			</description>
 		</method>
 		<method name="set_cell_size">
@@ -40442,8 +40216,8 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the tile index for the cell referenced by a Vector2 of grid-based coordinates.
-			A tile index of -1 clears the cell.
-			Optionally, the tile can also be flipped over the X and Y axes or transposed.
+				A tile index of -1 clears the cell.
+				Optionally, the tile can also be flipped over the X and Y axes or transposed.
 			</description>
 		</method>
 		<method name="set_center_x">
@@ -40464,16 +40238,14 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Set the collision bounce parameter.
-			Allowable values range from 0 to 1.
+				Set the collision bounce parameter. Allowable values range from 0 to 1.
 			</description>
 		</method>
 		<method name="set_collision_friction">
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Set the collision friction parameter.
-			Allowable values range from 0 to 1.
+				Set the collision friction parameter. Allowable values range from 0 to 1.
 			</description>
 		</method>
 		<method name="set_collision_layer">
@@ -40481,7 +40253,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the collision layer.
-			Layers are referenced by binary indexes, so allowable values to describe the 20 available layers range from 0 to 2^20-1.
+				Layers are referenced by binary indexes, so allowable values to describe the 20 available layers range from 0 to 2^20-1.
 			</description>
 		</method>
 		<method name="set_collision_mask">
@@ -40489,7 +40261,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the collision masks.
-			Masks are referenced by binary indexes, so allowable values to describe the 20 available masks range from 0 to 2^20-1.
+				Masks are referenced by binary indexes, so allowable values to describe the 20 available masks range from 0 to 2^20-1.
 			</description>
 		</method>
 		<method name="set_collision_use_kinematic">
@@ -40511,7 +40283,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set an half offset on the X coordinate, Y coordinate, or none (use HALF_OFFSET_* constants as argument).
-			Half offset sets every other tile off by a half tile size in the specified direction.
+				Half offset sets every other tile off by a half tile size in the specified direction.
 			</description>
 		</method>
 		<method name="set_mode">
@@ -40532,7 +40304,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the quadrant size, this optimizes drawing by batching chunks of map at draw/cull time.
-			Allowed values are integers ranging from 1 to 128.
+				Allowed values are integers ranging from 1 to 128.
 			</description>
 		</method>
 		<method name="set_tile_origin">
@@ -40554,7 +40326,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Set the Y sort mode. Enabled Y sort mode means that children of the tilemap will be drawn in the order defined by their Y coordinate.
-			A tile with a higher Y coordinate will therefore be drawn later, potentially covering up the tile(s) above it if its sprite is higher than its cell size.
+				A tile with a higher Y coordinate will therefore be drawn later, potentially covering up the tile(s) above it if its sprite is higher than its cell size.
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">
@@ -40610,7 +40382,7 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		A TileSet is a library of tiles for a [TileMap]. It contains a list of tiles, each consisting of a sprite and optional collision shapes.
-	Tiles are referenced by a unique integer ID.
+		Tiles are referenced by a unique integer ID.
 	</description>
 	<methods>
 		<method name="clear">
@@ -42158,14 +41930,14 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		Node useful for animations with unknown start and end points, procedural animations, making one node follow another, and other simple behavior.
-	Because it is easy to get it wrong, here is a quick usage example:
-	[codeblock]
-	var tween = get_node("Tween")
-	tween.interpolate_property(get_node("Node2D_to_move"), "transform/pos", Vector2(0,0), Vector2(100,100), Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-	tween.start()
-	[/codeblock]
-	Some of the methods of this class require a property name. You can get the property name by hovering over the property in the inspector of the editor.
-	Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an TRANS_* constant, and refers to the way the timing of the animation is handled (you might want to see [code]http://easings.net/[/code] for some examples). The second accepts an EASE_* constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the begining, the end, or both). If you don't know which transision and easing to pick, you can try different TRANS_* constants with EASE_IN_OUT, and use the one that looks best.
+		Because it is easy to get it wrong, here is a quick usage example:
+		[codeblock]
+		var tween = get_node("Tween")
+		tween.interpolate_property(get_node("Node2D_to_move"), "transform/pos", Vector2(0,0), Vector2(100,100), Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.start()
+		[/codeblock]
+		Some of the methods of this class require a property name. You can get the property name by hovering over the property in the inspector of the editor.
+		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an TRANS_* constant, and refers to the way the timing of the animation is handled (you might want to see [code]http://easings.net/[/code] for some examples). The second accepts an EASE_* constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the begining, the end, or both). If you don't know which transision and easing to pick, you can try different TRANS_* constants with EASE_IN_OUT, and use the one that looks best.
 	</description>
 	<methods>
 		<method name="follow_method">
@@ -42191,7 +41963,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Follow [code]method[/code] of [code]object[/code] and apply the returned value on [code]target_method[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] later. Methods are animated by calling them with consequitive values.
-			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="follow_property">
@@ -42217,7 +41989,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Follow [code]property[/code] of [code]object[/code] and apply it on [code]target_property[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later. Note that [code]target:target_property[/code] would equal [code]object:property[/code] at the end of the tween.
-			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="get_runtime" qualifiers="const">
@@ -42308,7 +42080,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Animate [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
-			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="interpolate_property">
@@ -42332,7 +42104,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Animate [code]property[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later.
-			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
@@ -42488,7 +42260,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Animate [code]method[/code] of [code]object[/code] from the value returned by [code]initial.initial_method[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
-			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="targeting_property">
@@ -42514,7 +42286,7 @@ A similar effect may be achieved moving this node's descendants.
 			</argument>
 			<description>
 				Animate [code]property[/code] of [code]object[/code] from the current value of the [code]initial_val[/code] property of [code]initial[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later.
-			[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="tell" qualifiers="const">
@@ -42617,11 +42389,8 @@ A similar effect may be achieved moving this node's descendants.
 		Helper to manage UndoRedo in the editor or custom tools.
 	</brief_description>
 	<description>
-		Helper to maange UndoRedo in the editor or custom tools. It works by
-	storing calls to functions in both 'do' an 'undo' lists.
-
-	Common behavior is to create an action, then add do/undo calls to
-	functions or property changes, then commiting the action.
+		Helper to maange UndoRedo in the editor or custom tools. It works by storing calls to functions in both 'do' an 'undo' lists.
+		Common behavior is to create an action, then add do/undo calls to functions or property changes, then commiting the action.
 	</description>
 	<methods>
 		<method name="add_do_method">
@@ -42659,9 +42428,7 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
-				Add a 'do' reference that will be erased if the 'do'
-			history is lost. This is useful mostly for new nodes
-			created for the 'do' call. Do not use for resources.
+				Add a 'do' reference that will be erased if the 'do' history is lost. This is useful mostly for new nodes created for the 'do' call. Do not use for resources.
 			</description>
 		</method>
 		<method name="add_undo_method">
@@ -42680,9 +42447,7 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="6" name="arg4" type="Variant" default="NULL">
 			</argument>
 			<description>
-				Add a call to an undo method in a given object with
-			custom arguments. Undo calls are used to revert 'do'
-			calls.
+				Add a call to an undo method in a given object with custom arguments. Undo calls are used to revert 'do' calls.
 			</description>
 		</method>
 		<method name="add_undo_property">
@@ -42700,10 +42465,7 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
-				Add an 'undo' reference that will be erased if the
-			'undo' history is lost. This is useful mostly for
-			nodes rmoved with the 'do' call (not the 'undo'
-			call!).
+				Add an 'undo' reference that will be erased if the 'undo' history is lost. This is useful mostly for nodes rmoved with the 'do' call (not the 'undo' call!).
 			</description>
 		</method>
 		<method name="clear_history">
@@ -42714,8 +42476,7 @@ A similar effect may be achieved moving this node's descendants.
 		</method>
 		<method name="commit_action">
 			<description>
-				Commit the action. All 'do' methods/properties are
-			called/set when this function is called.
+				Commit the action. All 'do' methods/properties are called/set when this function is called.
 			</description>
 		</method>
 		<method name="create_action">
@@ -42724,10 +42485,7 @@ A similar effect may be achieved moving this node's descendants.
 			<argument index="1" name="mergeable" type="bool" default="false">
 			</argument>
 			<description>
-				Create a new action. After this is called, do all
-			your calls to [method add_do_method],
-			[method add_undo_method], [method add_do_property]
-			and [method add_undo_property].
+				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property] and [method add_undo_property].
 			</description>
 		</method>
 		<method name="get_current_action_name" qualifiers="const">
@@ -42741,12 +42499,8 @@ A similar effect may be achieved moving this node's descendants.
 			<return type="int">
 			</return>
 			<description>
-				Get the version, each time a new action is commited,
-			the version number of the UndoRedo is increased
-			automatically.
-
-			This is useful mostly to check if something changed
-			from a saved version.
+				Get the version, each time a new action is commited, the version number of the UndoRedo is increased automatically.
+				This is useful mostly to check if something changed from a saved version.
 			</description>
 		</method>
 	</methods>
@@ -42936,7 +42690,7 @@ A similar effect may be achieved moving this node's descendants.
 			</return>
 			<description>
 				Returns the result of atan2 when called with the Vector's x and y as parameters (Math::atan2(x,y)).
-			Be aware that it therefore returns an angle oriented clockwise with regard to the (0, 1) unit vector, and not an angle oriented counter-clockwise with regard to the (1, 0) unit vector (which would be the typical trigonometric representation of the angle when calling Math::atan2(y,x)).
+				Be aware that it therefore returns an angle oriented clockwise with regard to the (0, 1) unit vector, and not an angle oriented counter-clockwise with regard to the (1, 0) unit vector (which would be the typical trigonometric representation of the angle when calling Math::atan2(y,x)).
 			</description>
 		</method>
 		<method name="angle_to">
@@ -43526,10 +43280,10 @@ A similar effect may be achieved moving this node's descendants.
 			</return>
 			<description>
 				Returns the VehicleBody's velocity vector. To get the absolute speed in scalar value, get the length of the return vector in pixels/second. Example:
-			[codeblock]
-			# vehicle is an instance of VehicleBody
-			var speed = vehicle.get_linear_velocity().length()
-			[/codeblock]
+				[codeblock]
+				# vehicle is an instance of VehicleBody
+				var speed = vehicle.get_linear_velocity().length()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_mass" qualifiers="const">
@@ -43872,11 +43626,11 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		A Viewport creates a different view into the screen, or a sub-view inside another viewport. Children 2D Nodes will display on it, and children Camera 3D nodes will render on it too.
-	Optionally, a viewport can have its own 2D or 3D world, so they don't share what they draw with other viewports.
-	If a viewport is a child of a [Control], it will automatically take up its same rect and position, otherwise they must be set manually.
-	Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
-	Also, viewports can be assigned to different screens in case the devices have multiple screens.
-	Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
+		Optionally, a viewport can have its own 2D or 3D world, so they don't share what they draw with other viewports.
+		If a viewport is a child of a [Control], it will automatically take up its same rect and position, otherwise they must be set manually.
+		Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
+		Also, viewports can be assigned to different screens in case the devices have multiple screens.
+		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
 	</description>
 	<methods>
 		<method name="find_world" qualifiers="const">
@@ -44590,7 +44344,7 @@ A similar effect may be achieved moving this node's descendants.
 	</brief_description>
 	<description>
 		Server for anything visible. The visual server is the API backend for everything visible. The whole scene system mounts on it to display.
-	The visual server is completely opaque, the internals are entirely implementation specific and cannot be accessed.
+		The visual server is completely opaque, the internals are entirely implementation specific and cannot be accessed.
 	</description>
 	<methods>
 		<method name="black_bars_set_images">
