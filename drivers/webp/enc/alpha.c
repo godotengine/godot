@@ -19,7 +19,7 @@
 #include "../utils/filters.h"
 #include "../utils/quant_levels.h"
 #include "../utils/utils.h"
-#include "../webp/format_constants.h"
+#include "webp/format_constants.h"
 
 // -----------------------------------------------------------------------------
 // Encodes the given alpha data via specified compression method 'method'.

@@ -15,7 +15,7 @@
 #ifndef WEBP_UTILS_COLOR_CACHE_H_
 #define WEBP_UTILS_COLOR_CACHE_H_
 
-#include "../webp/types.h"
+#include "webp/types.h"
 
 #ifdef __cplusplus
 extern "C" {

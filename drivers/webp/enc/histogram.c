@@ -10,7 +10,7 @@
 // Author: Jyrki Alakuijala (jyrki@google.com)
 //
 #ifdef HAVE_CONFIG_H
-#include "../webp/config.h"
+#include "webp/config.h"
 #endif
 
 #include <math.h>

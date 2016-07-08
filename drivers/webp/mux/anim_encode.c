@@ -17,10 +17,10 @@
 #include <stdlib.h>  // for abs()
 
 #include "../utils/utils.h"
-#include "../webp/decode.h"
-#include "../webp/encode.h"
-#include "../webp/format_constants.h"
-#include "../webp/mux.h"
+#include "webp/decode.h"
+#include "webp/encode.h"
+#include "webp/format_constants.h"
+#include "webp/mux.h"
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf _snprintf

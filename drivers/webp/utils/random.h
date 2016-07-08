@@ -15,7 +15,7 @@
 #define WEBP_UTILS_RANDOM_H_
 
 #include <assert.h>
-#include "../webp/types.h"
+#include "webp/types.h"
 
 #ifdef __cplusplus
 extern "C" {

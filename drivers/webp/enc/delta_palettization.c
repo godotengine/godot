@@ -13,7 +13,7 @@
 #include "./delta_palettization.h"
 
 #ifdef WEBP_EXPERIMENTAL_FEATURES
-#include "../webp/types.h"
+#include "webp/types.h"
 #include "../dsp/lossless.h"
 
 #define MK_COL(r, g, b) (((r) << 16) + ((g) << 8) + (b))

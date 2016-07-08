@@ -14,7 +14,7 @@
 #ifndef WEBP_WEBP_DECODE_VP8_H_
 #define WEBP_WEBP_DECODE_VP8_H_
 
-#include "../webp/decode.h"
+#include "webp/decode.h"
 
 #ifdef __cplusplus
 extern "C" {

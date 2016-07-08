@@ -13,9 +13,9 @@
 
 #include <stdlib.h>
 #include <string.h>  // for memcpy()
-#include "../webp/decode.h"
-#include "../webp/encode.h"
-#include "../webp/format_constants.h"  // for MAX_PALETTE_SIZE
+#include "webp/decode.h"
+#include "webp/encode.h"
+#include "webp/format_constants.h"  // for MAX_PALETTE_SIZE
 #include "./utils.h"
 
 // If PRINT_MEM_INFO is defined, extra info (like total memory used, number of

@@ -16,13 +16,13 @@
 #define WEBP_UTILS_UTILS_H_
 
 #ifdef HAVE_CONFIG_H
-#include "../webp/config.h"
+#include "webp/config.h"
 #endif
 
 #include <assert.h>
 
 #include "../dsp/dsp.h"
-#include "../webp/types.h"
+#include "webp/types.h"
 
 #ifdef __cplusplus
 extern "C" {
