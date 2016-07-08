@@ -415,6 +415,9 @@ void OS_JavaScript::push_input(const InputEvent& p_ev) {
 
 	InputEvent ev = p_ev;
 	ev.ID=last_id++;
+	if (ev.type==InputEvent::MOUSE_MOTION) {
+		input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+	}
 	input->parse_input_event(p_ev);
 }
 
