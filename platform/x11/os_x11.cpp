@@ -116,7 +116,9 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	x11_display = XOpenDisplay(NULL);
 
 	char * modifiers = XSetLocaleModifiers ("@im=none");
-	ERR_FAIL_COND( modifiers == NULL );
+	if (modifiers==NULL) {
+		WARN_PRINT("Error setting locale modifiers");
+	}
 
 	const char* err;
 	xrr_get_monitors = NULL;
