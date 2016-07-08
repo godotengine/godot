@@ -1667,10 +1667,10 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 
 	ADDFUNC0(INPUT_EVENT,BOOL,InputEvent,is_pressed,varray());
 	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action,STRING,"action",varray());
-	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action_pressed,STRING,"is_action_pressed",varray());
-	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action_released,STRING,"is_action_released",varray());
+	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action_pressed,STRING,"action",varray());
+	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action_released,STRING,"action",varray());
 	ADDFUNC0(INPUT_EVENT,BOOL,InputEvent,is_echo,varray());
-    ADDFUNC2(INPUT_EVENT,NIL,InputEvent,set_as_action,STRING,"action",BOOL,"pressed",varray());
+	ADDFUNC2(INPUT_EVENT,NIL,InputEvent,set_as_action,STRING,"action",BOOL,"pressed",varray());
 
 	/* REGISTER CONSTRUCTORS */
 
@@ -1689,7 +1689,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	_VariantCall::add_constructor(_VariantCall::Plane_init3,Variant::PLANE,"normal",Variant::VECTOR3,"d",Variant::REAL);
 
 	_VariantCall::add_constructor(_VariantCall::Quat_init1,Variant::QUAT,"x",Variant::REAL,"y",Variant::REAL,"z",Variant::REAL,"w",Variant::REAL);
-    _VariantCall::add_constructor(_VariantCall::Quat_init2,Variant::QUAT,"axis",Variant::VECTOR3,"angle",Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Quat_init2,Variant::QUAT,"axis",Variant::VECTOR3,"angle",Variant::REAL);
 
 	_VariantCall::add_constructor(_VariantCall::Color_init1,Variant::COLOR,"r",Variant::REAL,"g",Variant::REAL,"b",Variant::REAL,"a",Variant::REAL);
 	_VariantCall::add_constructor(_VariantCall::Color_init2,Variant::COLOR,"r",Variant::REAL,"g",Variant::REAL,"b",Variant::REAL);
