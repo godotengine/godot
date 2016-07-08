@@ -21,7 +21,9 @@
 // #define USE_TRANSFORM_AC3
 
 #include <emmintrin.h>
+#include "./common_sse2.h"
 #include "../dec/vp8i.h"
+#include "../utils/utils.h"
 
 //------------------------------------------------------------------------------
 // Transforms (Paragraph 14.4)
@@ -102,34 +104,7 @@ static void Transform(const int16_t* in, uint8_t* dst, int do_two) {
     const __m128i tmp3 = _mm_sub_epi16(a, d);
 
     // Transpose the two 4x4.
-    // a00 a01 a02 a03   b00 b01 b02 b03
-    // a10 a11 a12 a13   b10 b11 b12 b13
-    // a20 a21 a22 a23   b20 b21 b22 b23
-    // a30 a31 a32 a33   b30 b31 b32 b33
-    const __m128i transpose0_0 = _mm_unpacklo_epi16(tmp0, tmp1);
-    const __m128i transpose0_1 = _mm_unpacklo_epi16(tmp2, tmp3);
-    const __m128i transpose0_2 = _mm_unpackhi_epi16(tmp0, tmp1);
-    const __m128i transpose0_3 = _mm_unpackhi_epi16(tmp2, tmp3);
-    // a00 a10 a01 a11   a02 a12 a03 a13
-    // a20 a30 a21 a31   a22 a32 a23 a33
-    // b00 b10 b01 b11   b02 b12 b03 b13
-    // b20 b30 b21 b31   b22 b32 b23 b33
-    const __m128i transpose1_0 = _mm_unpacklo_epi32(transpose0_0, transpose0_1);
-    const __m128i transpose1_1 = _mm_unpacklo_epi32(transpose0_2, transpose0_3);
-    const __m128i transpose1_2 = _mm_unpackhi_epi32(transpose0_0, transpose0_1);
-    const __m128i transpose1_3 = _mm_unpackhi_epi32(transpose0_2, transpose0_3);
-    // a00 a10 a20 a30 a01 a11 a21 a31
-    // b00 b10 b20 b30 b01 b11 b21 b31
-    // a02 a12 a22 a32 a03 a13 a23 a33
-    // b02 b12 a22 b32 b03 b13 b23 b33
-    T0 = _mm_unpacklo_epi64(transpose1_0, transpose1_1);
-    T1 = _mm_unpackhi_epi64(transpose1_0, transpose1_1);
-    T2 = _mm_unpacklo_epi64(transpose1_2, transpose1_3);
-    T3 = _mm_unpackhi_epi64(transpose1_2, transpose1_3);
-    // a00 a10 a20 a30   b00 b10 b20 b30
-    // a01 a11 a21 a31   b01 b11 b21 b31
-    // a02 a12 a22 a32   b02 b12 b22 b32
-    // a03 a13 a23 a33   b03 b13 b23 b33
+    VP8Transpose_2_4x4_16b(&tmp0, &tmp1, &tmp2, &tmp3, &T0, &T1, &T2, &T3);
   }
 
   // Horizontal pass and subsequent transpose.
@@ -164,34 +139,8 @@ static void Transform(const int16_t* in, uint8_t* dst, int do_two) {
     const __m128i shifted3 = _mm_srai_epi16(tmp3, 3);
 
     // Transpose the two 4x4.
-    // a00 a01 a02 a03   b00 b01 b02 b03
-    // a10 a11 a12 a13   b10 b11 b12 b13
-    // a20 a21 a22 a23   b20 b21 b22 b23
-    // a30 a31 a32 a33   b30 b31 b32 b33
-    const __m128i transpose0_0 = _mm_unpacklo_epi16(shifted0, shifted1);
-    const __m128i transpose0_1 = _mm_unpacklo_epi16(shifted2, shifted3);
-    const __m128i transpose0_2 = _mm_unpackhi_epi16(shifted0, shifted1);
-    const __m128i transpose0_3 = _mm_unpackhi_epi16(shifted2, shifted3);
-    // a00 a10 a01 a11   a02 a12 a03 a13
-    // a20 a30 a21 a31   a22 a32 a23 a33
-    // b00 b10 b01 b11   b02 b12 b03 b13
-    // b20 b30 b21 b31   b22 b32 b23 b33
-    const __m128i transpose1_0 = _mm_unpacklo_epi32(transpose0_0, transpose0_1);
-    const __m128i transpose1_1 = _mm_unpacklo_epi32(transpose0_2, transpose0_3);
-    const __m128i transpose1_2 = _mm_unpackhi_epi32(transpose0_0, transpose0_1);
-    const __m128i transpose1_3 = _mm_unpackhi_epi32(transpose0_2, transpose0_3);
-    // a00 a10 a20 a30 a01 a11 a21 a31
-    // b00 b10 b20 b30 b01 b11 b21 b31
-    // a02 a12 a22 a32 a03 a13 a23 a33
-    // b02 b12 a22 b32 b03 b13 b23 b33
-    T0 = _mm_unpacklo_epi64(transpose1_0, transpose1_1);
-    T1 = _mm_unpackhi_epi64(transpose1_0, transpose1_1);
-    T2 = _mm_unpacklo_epi64(transpose1_2, transpose1_3);
-    T3 = _mm_unpackhi_epi64(transpose1_2, transpose1_3);
-    // a00 a10 a20 a30   b00 b10 b20 b30
-    // a01 a11 a21 a31   b01 b11 b21 b31
-    // a02 a12 a22 a32   b02 b12 b22 b32
-    // a03 a13 a23 a33   b03 b13 b23 b33
+    VP8Transpose_2_4x4_16b(&shifted0, &shifted1, &shifted2, &shifted3, &T0, &T1,
+                        &T2, &T3);
   }
 
   // Add inverse transform to 'dst' and store.
@@ -207,10 +156,10 @@ static void Transform(const int16_t* in, uint8_t* dst, int do_two) {
       dst3 = _mm_loadl_epi64((__m128i*)(dst + 3 * BPS));
     } else {
       // Load four bytes/pixels per line.
-      dst0 = _mm_cvtsi32_si128(*(int*)(dst + 0 * BPS));
-      dst1 = _mm_cvtsi32_si128(*(int*)(dst + 1 * BPS));
-      dst2 = _mm_cvtsi32_si128(*(int*)(dst + 2 * BPS));
-      dst3 = _mm_cvtsi32_si128(*(int*)(dst + 3 * BPS));
+      dst0 = _mm_cvtsi32_si128(WebPMemToUint32(dst + 0 * BPS));
+      dst1 = _mm_cvtsi32_si128(WebPMemToUint32(dst + 1 * BPS));
+      dst2 = _mm_cvtsi32_si128(WebPMemToUint32(dst + 2 * BPS));
+      dst3 = _mm_cvtsi32_si128(WebPMemToUint32(dst + 3 * BPS));
     }
     // Convert to 16b.
     dst0 = _mm_unpacklo_epi8(dst0, zero);
@@ -236,10 +185,10 @@ static void Transform(const int16_t* in, uint8_t* dst, int do_two) {
       _mm_storel_epi64((__m128i*)(dst + 3 * BPS), dst3);
     } else {
       // Store four bytes/pixels per line.
-      *(int*)(dst + 0 * BPS) = _mm_cvtsi128_si32(dst0);
-      *(int*)(dst + 1 * BPS) = _mm_cvtsi128_si32(dst1);
-      *(int*)(dst + 2 * BPS) = _mm_cvtsi128_si32(dst2);
-      *(int*)(dst + 3 * BPS) = _mm_cvtsi128_si32(dst3);
+      WebPUint32ToMem(dst + 0 * BPS, _mm_cvtsi128_si32(dst0));
+      WebPUint32ToMem(dst + 1 * BPS, _mm_cvtsi128_si32(dst1));
+      WebPUint32ToMem(dst + 2 * BPS, _mm_cvtsi128_si32(dst2));
+      WebPUint32ToMem(dst + 3 * BPS, _mm_cvtsi128_si32(dst3));
     }
   }
 }
@@ -262,10 +211,10 @@ static void TransformAC3(const int16_t* in, uint8_t* dst) {
   const __m128i m3 = _mm_subs_epi16(B, d4);
   const __m128i zero = _mm_setzero_si128();
   // Load the source pixels.
-  __m128i dst0 = _mm_cvtsi32_si128(*(int*)(dst + 0 * BPS));
-  __m128i dst1 = _mm_cvtsi32_si128(*(int*)(dst + 1 * BPS));
-  __m128i dst2 = _mm_cvtsi32_si128(*(int*)(dst + 2 * BPS));
-  __m128i dst3 = _mm_cvtsi32_si128(*(int*)(dst + 3 * BPS));
+  __m128i dst0 = _mm_cvtsi32_si128(WebPMemToUint32(dst + 0 * BPS));
+  __m128i dst1 = _mm_cvtsi32_si128(WebPMemToUint32(dst + 1 * BPS));
+  __m128i dst2 = _mm_cvtsi32_si128(WebPMemToUint32(dst + 2 * BPS));
+  __m128i dst3 = _mm_cvtsi32_si128(WebPMemToUint32(dst + 3 * BPS));
   // Convert to 16b.
   dst0 = _mm_unpacklo_epi8(dst0, zero);
   dst1 = _mm_unpacklo_epi8(dst1, zero);
@@ -282,10 +231,10 @@ static void TransformAC3(const int16_t* in, uint8_t* dst) {
   dst2 = _mm_packus_epi16(dst2, dst2);
   dst3 = _mm_packus_epi16(dst3, dst3);
   // Store the results.
-  *(int*)(dst + 0 * BPS) = _mm_cvtsi128_si32(dst0);
-  *(int*)(dst + 1 * BPS) = _mm_cvtsi128_si32(dst1);
-  *(int*)(dst + 2 * BPS) = _mm_cvtsi128_si32(dst2);
-  *(int*)(dst + 3 * BPS) = _mm_cvtsi128_si32(dst3);
+  WebPUint32ToMem(dst + 0 * BPS, _mm_cvtsi128_si32(dst0));
+  WebPUint32ToMem(dst + 1 * BPS, _mm_cvtsi128_si32(dst1));
+  WebPUint32ToMem(dst + 2 * BPS, _mm_cvtsi128_si32(dst2));
+  WebPUint32ToMem(dst + 3 * BPS, _mm_cvtsi128_si32(dst3));
 }
 #undef MUL
 #endif   // USE_TRANSFORM_AC3
@@ -517,24 +466,17 @@ static WEBP_INLINE void DoFilter6(__m128i* const p2, __m128i* const p1,
   }
 }
 
-// memcpy() is the safe way of moving potentially unaligned 32b memory.
-static WEBP_INLINE uint32_t MemToUint32(const uint8_t* const ptr) {
-  uint32_t A;
-  memcpy(&A, (const int*)ptr, sizeof(A));
-  return A;
-}
-
 // reads 8 rows across a vertical edge.
 static WEBP_INLINE void Load8x4(const uint8_t* const b, int stride,
                                 __m128i* const p, __m128i* const q) {
   // A0 = 63 62 61 60 23 22 21 20 43 42 41 40 03 02 01 00
   // A1 = 73 72 71 70 33 32 31 30 53 52 51 50 13 12 11 10
   const __m128i A0 = _mm_set_epi32(
-      MemToUint32(&b[6 * stride]), MemToUint32(&b[2 * stride]),
-      MemToUint32(&b[4 * stride]), MemToUint32(&b[0 * stride]));
+      WebPMemToUint32(&b[6 * stride]), WebPMemToUint32(&b[2 * stride]),
+      WebPMemToUint32(&b[4 * stride]), WebPMemToUint32(&b[0 * stride]));
   const __m128i A1 = _mm_set_epi32(
-      MemToUint32(&b[7 * stride]), MemToUint32(&b[3 * stride]),
-      MemToUint32(&b[5 * stride]), MemToUint32(&b[1 * stride]));
+      WebPMemToUint32(&b[7 * stride]), WebPMemToUint32(&b[3 * stride]),
+      WebPMemToUint32(&b[5 * stride]), WebPMemToUint32(&b[1 * stride]));
 
   // B0 = 53 43 52 42 51 41 50 40 13 03 12 02 11 01 10 00
   // B1 = 73 63 72 62 71 61 70 60 33 23 32 22 31 21 30 20
@@ -592,7 +534,7 @@ static WEBP_INLINE void Load16x4(const uint8_t* const r0,
 static WEBP_INLINE void Store4x4(__m128i* const x, uint8_t* dst, int stride) {
   int i;
   for (i = 0; i < 4; ++i, dst += stride) {
-    *((int32_t*)dst) = _mm_cvtsi128_si32(*x);
+    WebPUint32ToMem(dst, _mm_cvtsi128_si32(*x));
     *x = _mm_srli_si128(*x, 4);
   }
 }
@@ -963,7 +905,7 @@ static void VE4(uint8_t* dst) {    // vertical
   const uint32_t vals = _mm_cvtsi128_si32(avg);
   int i;
   for (i = 0; i < 4; ++i) {
-    *(uint32_t*)(dst + i * BPS) = vals;
+    WebPUint32ToMem(dst + i * BPS, vals);
   }
 }
 
@@ -977,10 +919,10 @@ static void LD4(uint8_t* dst) {   // Down-Left
   const __m128i lsb = _mm_and_si128(_mm_xor_si128(ABCDEFGH, CDEFGHH0), one);
   const __m128i avg2 = _mm_subs_epu8(avg1, lsb);
   const __m128i abcdefg = _mm_avg_epu8(avg2, BCDEFGH0);
-  *(uint32_t*)(dst + 0 * BPS) = _mm_cvtsi128_si32(               abcdefg    );
-  *(uint32_t*)(dst + 1 * BPS) = _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 1));
-  *(uint32_t*)(dst + 2 * BPS) = _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 2));
-  *(uint32_t*)(dst + 3 * BPS) = _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 3));
+  WebPUint32ToMem(dst + 0 * BPS, _mm_cvtsi128_si32(               abcdefg    ));
+  WebPUint32ToMem(dst + 1 * BPS, _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 1)));
+  WebPUint32ToMem(dst + 2 * BPS, _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 2)));
+  WebPUint32ToMem(dst + 3 * BPS, _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 3)));
 }
 
 static void VR4(uint8_t* dst) {   // Vertical-Right
@@ -998,10 +940,10 @@ static void VR4(uint8_t* dst) {   // Vertical-Right
   const __m128i lsb = _mm_and_si128(_mm_xor_si128(IXABCD, ABCD0), one);
   const __m128i avg2 = _mm_subs_epu8(avg1, lsb);
   const __m128i efgh = _mm_avg_epu8(avg2, XABCD);
-  *(uint32_t*)(dst + 0 * BPS) = _mm_cvtsi128_si32(               abcd    );
-  *(uint32_t*)(dst + 1 * BPS) = _mm_cvtsi128_si32(               efgh    );
-  *(uint32_t*)(dst + 2 * BPS) = _mm_cvtsi128_si32(_mm_slli_si128(abcd, 1));
-  *(uint32_t*)(dst + 3 * BPS) = _mm_cvtsi128_si32(_mm_slli_si128(efgh, 1));
+  WebPUint32ToMem(dst + 0 * BPS, _mm_cvtsi128_si32(               abcd    ));
+  WebPUint32ToMem(dst + 1 * BPS, _mm_cvtsi128_si32(               efgh    ));
+  WebPUint32ToMem(dst + 2 * BPS, _mm_cvtsi128_si32(_mm_slli_si128(abcd, 1)));
+  WebPUint32ToMem(dst + 3 * BPS, _mm_cvtsi128_si32(_mm_slli_si128(efgh, 1)));
 
   // these two are hard to implement in SSE2, so we keep the C-version:
   DST(0, 2) = AVG3(J, I, X);
@@ -1023,10 +965,10 @@ static void VL4(uint8_t* dst) {   // Vertical-Left
   const __m128i lsb2 = _mm_and_si128(abbc, lsb1);
   const __m128i avg4 = _mm_subs_epu8(avg3, lsb2);
   const uint32_t extra_out = _mm_cvtsi128_si32(_mm_srli_si128(avg4, 4));
-  *(uint32_t*)(dst + 0 * BPS) = _mm_cvtsi128_si32(               avg1    );
-  *(uint32_t*)(dst + 1 * BPS) = _mm_cvtsi128_si32(               avg4    );
-  *(uint32_t*)(dst + 2 * BPS) = _mm_cvtsi128_si32(_mm_srli_si128(avg1, 1));
-  *(uint32_t*)(dst + 3 * BPS) = _mm_cvtsi128_si32(_mm_srli_si128(avg4, 1));
+  WebPUint32ToMem(dst + 0 * BPS, _mm_cvtsi128_si32(               avg1    ));
+  WebPUint32ToMem(dst + 1 * BPS, _mm_cvtsi128_si32(               avg4    ));
+  WebPUint32ToMem(dst + 2 * BPS, _mm_cvtsi128_si32(_mm_srli_si128(avg1, 1)));
+  WebPUint32ToMem(dst + 3 * BPS, _mm_cvtsi128_si32(_mm_srli_si128(avg4, 1)));
 
   // these two are hard to get and irregular
   DST(3, 2) = (extra_out >> 0) & 0xff;
@@ -1050,10 +992,10 @@ static void RD4(uint8_t* dst) {   // Down-right
   const __m128i lsb = _mm_and_si128(_mm_xor_si128(JIXABCD__, LKJIXABCD), one);
   const __m128i avg2 = _mm_subs_epu8(avg1, lsb);
   const __m128i abcdefg = _mm_avg_epu8(avg2, KJIXABCD_);
-  *(uint32_t*)(dst + 3 * BPS) = _mm_cvtsi128_si32(               abcdefg    );
-  *(uint32_t*)(dst + 2 * BPS) = _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 1));
-  *(uint32_t*)(dst + 1 * BPS) = _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 2));
-  *(uint32_t*)(dst + 0 * BPS) = _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 3));
+  WebPUint32ToMem(dst + 3 * BPS, _mm_cvtsi128_si32(               abcdefg    ));
+  WebPUint32ToMem(dst + 2 * BPS, _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 1)));
+  WebPUint32ToMem(dst + 1 * BPS, _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 2)));
+  WebPUint32ToMem(dst + 0 * BPS, _mm_cvtsi128_si32(_mm_srli_si128(abcdefg, 3)));
 }
 
 #undef DST
@@ -1067,13 +1009,13 @@ static WEBP_INLINE void TrueMotion(uint8_t* dst, int size) {
   const __m128i zero = _mm_setzero_si128();
   int y;
   if (size == 4) {
-    const __m128i top_values = _mm_cvtsi32_si128(MemToUint32(top));
+    const __m128i top_values = _mm_cvtsi32_si128(WebPMemToUint32(top));
     const __m128i top_base = _mm_unpacklo_epi8(top_values, zero);
     for (y = 0; y < 4; ++y, dst += BPS) {
       const int val = dst[-1] - top[-1];
       const __m128i base = _mm_set1_epi16(val);
       const __m128i out = _mm_packus_epi16(_mm_add_epi16(base, top_base), zero);
-      *(int*)dst = _mm_cvtsi128_si32(out);
+      WebPUint32ToMem(dst, _mm_cvtsi128_si32(out));
     }
   } else if (size == 8) {
     const __m128i top_values = _mm_loadl_epi64((const __m128i*)top);

@@ -92,7 +92,7 @@ static VP8StatusCode AllocateBuffer(WebPDecBuffer* const buffer) {
     return VP8_STATUS_INVALID_PARAM;
   }
 
-  if (!buffer->is_external_memory && buffer->private_memory == NULL) {
+  if (buffer->is_external_memory <= 0 && buffer->private_memory == NULL) {
     uint8_t* output;
     int uv_stride = 0, a_stride = 0;
     uint64_t uv_size = 0, a_size = 0, total_size;
@@ -227,7 +227,7 @@ int WebPInitDecBufferInternal(WebPDecBuffer* buffer, int version) {
 
 void WebPFreeDecBuffer(WebPDecBuffer* buffer) {
   if (buffer != NULL) {
-    if (!buffer->is_external_memory) {
+    if (buffer->is_external_memory <= 0) {
       WebPSafeFree(buffer->private_memory);
     }
     buffer->private_memory = NULL;
@@ -256,5 +256,45 @@ void WebPGrabDecBuffer(WebPDecBuffer* const src, WebPDecBuffer* const dst) {
   }
 }
 
-//------------------------------------------------------------------------------
+VP8StatusCode WebPCopyDecBufferPixels(const WebPDecBuffer* const src_buf,
+                                      WebPDecBuffer* const dst_buf) {
+  assert(src_buf != NULL && dst_buf != NULL);
+  assert(src_buf->colorspace == dst_buf->colorspace);
 
+  dst_buf->width = src_buf->width;
+  dst_buf->height = src_buf->height;
+  if (CheckDecBuffer(dst_buf) != VP8_STATUS_OK) {
+    return VP8_STATUS_INVALID_PARAM;
+  }
+  if (WebPIsRGBMode(src_buf->colorspace)) {
+    const WebPRGBABuffer* const src = &src_buf->u.RGBA;
+    const WebPRGBABuffer* const dst = &dst_buf->u.RGBA;
+    WebPCopyPlane(src->rgba, src->stride, dst->rgba, dst->stride,
+                  src_buf->width * kModeBpp[src_buf->colorspace],
+                  src_buf->height);
+  } else {
+    const WebPYUVABuffer* const src = &src_buf->u.YUVA;
+    const WebPYUVABuffer* const dst = &dst_buf->u.YUVA;
+    WebPCopyPlane(src->y, src->y_stride, dst->y, dst->y_stride,
+                  src_buf->width, src_buf->height);
+    WebPCopyPlane(src->u, src->u_stride, dst->u, dst->u_stride,
+                  (src_buf->width + 1) / 2, (src_buf->height + 1) / 2);
+    WebPCopyPlane(src->v, src->v_stride, dst->v, dst->v_stride,
+                  (src_buf->width + 1) / 2, (src_buf->height + 1) / 2);
+    if (WebPIsAlphaMode(src_buf->colorspace)) {
+      WebPCopyPlane(src->a, src->a_stride, dst->a, dst->a_stride,
+                    src_buf->width, src_buf->height);
+    }
+  }
+  return VP8_STATUS_OK;
+}
+
+int WebPAvoidSlowMemory(const WebPDecBuffer* const output,
+                        const WebPBitstreamFeatures* const features) {
+  assert(output != NULL);
+  return (output->is_external_memory >= 2) &&
+         WebPIsPremultipliedMode(output->colorspace) &&
+         (features != NULL && features->has_alpha);
+}
+
+//------------------------------------------------------------------------------

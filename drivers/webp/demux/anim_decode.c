@@ -11,15 +11,15 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "webp/config.h"
+#include "../webp/config.h"
 #endif
 
 #include <assert.h>
 #include <string.h>
 
 #include "../utils/utils.h"
-#include "webp/decode.h"
-#include "webp/demux.h"
+#include "../webp/decode.h"
+#include "../webp/demux.h"
 
 #define NUM_CHANNELS 4
 
@@ -51,7 +51,7 @@ static void DefaultDecoderOptions(WebPAnimDecoderOptions* const dec_options) {
 }
 
 int WebPAnimDecoderOptionsInitInternal(WebPAnimDecoderOptions* dec_options,
-                                            int abi_version) {
+                                       int abi_version) {
   if (dec_options == NULL ||
       WEBP_ABI_IS_INCOMPATIBLE(abi_version, WEBP_DEMUX_ABI_VERSION)) {
     return 0;
@@ -380,12 +380,12 @@ int WebPAnimDecoderGetNext(WebPAnimDecoder* dec,
         if (width1 > 0) {
           const size_t offset1 = canvas_y * width + left1;
           blend_row((uint32_t*)dec->curr_frame_ + offset1,
-                        (uint32_t*)dec->prev_frame_disposed_ + offset1, width1);
+                    (uint32_t*)dec->prev_frame_disposed_ + offset1, width1);
         }
         if (width2 > 0) {
           const size_t offset2 = canvas_y * width + left2;
           blend_row((uint32_t*)dec->curr_frame_ + offset2,
-                        (uint32_t*)dec->prev_frame_disposed_ + offset2, width2);
+                    (uint32_t*)dec->prev_frame_disposed_ + offset2, width2);
         }
       }
     }

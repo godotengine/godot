@@ -251,6 +251,131 @@ static void HistogramAdd(const VP8LHistogram* const a,
 }
 
 //------------------------------------------------------------------------------
+// Entropy
+
+// Checks whether the X or Y contribution is worth computing and adding.
+// Used in loop unrolling.
+#define ANALYZE_X_OR_Y(x_or_y, j)                                   \
+  do {                                                              \
+    if (x_or_y[i + j] != 0) retval -= VP8LFastSLog2(x_or_y[i + j]); \
+  } while (0)
+
+// Checks whether the X + Y contribution is worth computing and adding.
+// Used in loop unrolling.
+#define ANALYZE_XY(j)                  \
+  do {                                 \
+    if (tmp[j] != 0) {                 \
+      retval -= VP8LFastSLog2(tmp[j]); \
+      ANALYZE_X_OR_Y(X, j);            \
+    }                                  \
+  } while (0)
+
+static float CombinedShannonEntropy(const int X[256], const int Y[256]) {
+  int i;
+  double retval = 0.;
+  int sumX, sumXY;
+  int32_t tmp[4];
+  __m128i zero = _mm_setzero_si128();
+  // Sums up X + Y, 4 ints at a time (and will merge it at the end for sumXY).
+  __m128i sumXY_128 = zero;
+  __m128i sumX_128 = zero;
+
+  for (i = 0; i < 256; i += 4) {
+    const __m128i x = _mm_loadu_si128((const __m128i*)(X + i));
+    const __m128i y = _mm_loadu_si128((const __m128i*)(Y + i));
+
+    // Check if any X is non-zero: this actually provides a speedup as X is
+    // usually sparse.
+    if (_mm_movemask_epi8(_mm_cmpeq_epi32(x, zero)) != 0xFFFF) {
+      const __m128i xy_128 = _mm_add_epi32(x, y);
+      sumXY_128 = _mm_add_epi32(sumXY_128, xy_128);
+
+      sumX_128 = _mm_add_epi32(sumX_128, x);
+
+      // Analyze the different X + Y.
+      _mm_storeu_si128((__m128i*)tmp, xy_128);
+
+      ANALYZE_XY(0);
+      ANALYZE_XY(1);
+      ANALYZE_XY(2);
+      ANALYZE_XY(3);
+    } else {
+      // X is fully 0, so only deal with Y.
+      sumXY_128 = _mm_add_epi32(sumXY_128, y);
+
+      ANALYZE_X_OR_Y(Y, 0);
+      ANALYZE_X_OR_Y(Y, 1);
+      ANALYZE_X_OR_Y(Y, 2);
+      ANALYZE_X_OR_Y(Y, 3);
+    }
+  }
+
+  // Sum up sumX_128 to get sumX.
+  _mm_storeu_si128((__m128i*)tmp, sumX_128);
+  sumX = tmp[3] + tmp[2] + tmp[1] + tmp[0];
+
+  // Sum up sumXY_128 to get sumXY.
+  _mm_storeu_si128((__m128i*)tmp, sumXY_128);
+  sumXY = tmp[3] + tmp[2] + tmp[1] + tmp[0];
+
+  retval += VP8LFastSLog2(sumX) + VP8LFastSLog2(sumXY);
+  return (float)retval;
+}
+#undef ANALYZE_X_OR_Y
+#undef ANALYZE_XY
+
+//------------------------------------------------------------------------------
+
+static int VectorMismatch(const uint32_t* const array1,
+                          const uint32_t* const array2, int length) {
+  int match_len;
+
+  if (length >= 12) {
+    __m128i A0 = _mm_loadu_si128((const __m128i*)&array1[0]);
+    __m128i A1 = _mm_loadu_si128((const __m128i*)&array2[0]);
+    match_len = 0;
+    do {
+      // Loop unrolling and early load both provide a speedup of 10% for the
+      // current function. Also, max_limit can be MAX_LENGTH=4096 at most.
+      const __m128i cmpA = _mm_cmpeq_epi32(A0, A1);
+      const __m128i B0 =
+          _mm_loadu_si128((const __m128i*)&array1[match_len + 4]);
+      const __m128i B1 =
+          _mm_loadu_si128((const __m128i*)&array2[match_len + 4]);
+      if (_mm_movemask_epi8(cmpA) != 0xffff) break;
+      match_len += 4;
+
+      {
+        const __m128i cmpB = _mm_cmpeq_epi32(B0, B1);
+        A0 = _mm_loadu_si128((const __m128i*)&array1[match_len + 4]);
+        A1 = _mm_loadu_si128((const __m128i*)&array2[match_len + 4]);
+        if (_mm_movemask_epi8(cmpB) != 0xffff) break;
+        match_len += 4;
+      }
+    } while (match_len + 12 < length);
+  } else {
+    match_len = 0;
+    // Unroll the potential first two loops.
+    if (length >= 4 &&
+        _mm_movemask_epi8(_mm_cmpeq_epi32(
+            _mm_loadu_si128((const __m128i*)&array1[0]),
+            _mm_loadu_si128((const __m128i*)&array2[0]))) == 0xffff) {
+      match_len = 4;
+      if (length >= 8 &&
+          _mm_movemask_epi8(_mm_cmpeq_epi32(
+              _mm_loadu_si128((const __m128i*)&array1[4]),
+              _mm_loadu_si128((const __m128i*)&array2[4]))) == 0xffff)
+        match_len = 8;
+    }
+  }
+
+  while (match_len < length && array1[match_len] == array2[match_len]) {
+    ++match_len;
+  }
+  return match_len;
+}
+
+//------------------------------------------------------------------------------
 // Entry point
 
 extern void VP8LEncDspInitSSE2(void);
@@ -261,6 +386,8 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8LEncDspInitSSE2(void) {
   VP8LCollectColorBlueTransforms = CollectColorBlueTransforms;
   VP8LCollectColorRedTransforms = CollectColorRedTransforms;
   VP8LHistogramAdd = HistogramAdd;
+  VP8LCombinedShannonEntropy = CombinedShannonEntropy;
+  VP8LVectorMismatch = VectorMismatch;
 }
 
 #else  // !WEBP_USE_SSE2

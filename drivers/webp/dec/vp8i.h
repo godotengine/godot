@@ -31,8 +31,8 @@ extern "C" {
 
 // version numbers
 #define DEC_MAJ_VERSION 0
-#define DEC_MIN_VERSION 4
-#define DEC_REV_VERSION 4
+#define DEC_MIN_VERSION 5
+#define DEC_REV_VERSION 1
 
 // YUV-cache parameters. Cache is 32-bytes wide (= one cacheline).
 // Constraints are: We need to store one 16x16 block of luma samples (y),
@@ -209,8 +209,8 @@ struct VP8Decoder {
   int tl_mb_x_, tl_mb_y_;  // top-left MB that must be in-loop filtered
   int br_mb_x_, br_mb_y_;  // last bottom-right MB that must be decoded
 
-  // number of partitions.
-  int num_parts_;
+  // number of partitions minus one.
+  uint32_t num_parts_minus_one_;
   // per-partition boolean decoders.
   VP8BitReader parts_[MAX_NUM_PARTITIONS];
 
@@ -258,9 +258,11 @@ struct VP8Decoder {
   struct ALPHDecoder* alph_dec_;  // alpha-plane decoder object
   const uint8_t* alpha_data_;     // compressed alpha data (if present)
   size_t alpha_data_size_;
-  int is_alpha_decoded_;  // true if alpha_data_ is decoded in alpha_plane_
-  uint8_t* alpha_plane_;  // output. Persistent, contains the whole data.
-  int alpha_dithering_;   // derived from decoding options (0=off, 100=full).
+  int is_alpha_decoded_;      // true if alpha_data_ is decoded in alpha_plane_
+  uint8_t* alpha_plane_mem_;  // memory allocated for alpha_plane_
+  uint8_t* alpha_plane_;      // output. Persistent, contains the whole data.
+  const uint8_t* alpha_prev_line_;  // last decoded alpha row (or NULL)
+  int alpha_dithering_;       // derived from decoding options (0=off, 100=full)
 };
 
 //------------------------------------------------------------------------------
@@ -306,6 +308,7 @@ int VP8DecodeMB(VP8Decoder* const dec, VP8BitReader* const token_br);
 
 // in alpha.c
 const uint8_t* VP8DecompressAlphaRows(VP8Decoder* const dec,
+                                      const VP8Io* const io,
                                       int row, int num_rows);
 
 //------------------------------------------------------------------------------

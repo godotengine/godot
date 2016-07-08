@@ -100,8 +100,7 @@ struct ALPHDecoder;  // Defined in dec/alphai.h.
 // Decodes image header for alpha data stored using lossless compression.
 // Returns false in case of error.
 int VP8LDecodeAlphaHeader(struct ALPHDecoder* const alph_dec,
-                          const uint8_t* const data, size_t data_size,
-                          uint8_t* const output);
+                          const uint8_t* const data, size_t data_size);
 
 // Decodes *at least* 'last_row' rows of alpha. If some of the initial rows are
 // already decoded in previous call(s), it will resume decoding from where it

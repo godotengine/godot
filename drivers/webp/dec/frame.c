@@ -316,6 +316,9 @@ static void PrecomputeFilterStrengths(VP8Decoder* const dec) {
 //------------------------------------------------------------------------------
 // Dithering
 
+// minimal amp that will provide a non-zero dithering effect
+#define MIN_DITHER_AMP 4
+
 #define DITHER_AMP_TAB_SIZE 12
 static const int kQuantToDitherAmp[DITHER_AMP_TAB_SIZE] = {
   // roughly, it's dqm->uv_mat_[1]
@@ -356,27 +359,14 @@ void VP8InitDithering(const WebPDecoderOptions* const options,
   }
 }
 
-// minimal amp that will provide a non-zero dithering effect
-#define MIN_DITHER_AMP 4
-#define DITHER_DESCALE 4
-#define DITHER_DESCALE_ROUNDER (1 << (DITHER_DESCALE - 1))
-#define DITHER_AMP_BITS 8
-#define DITHER_AMP_CENTER (1 << DITHER_AMP_BITS)
-
+// Convert to range: [-2,2] for dither=50, [-4,4] for dither=100
 static void Dither8x8(VP8Random* const rg, uint8_t* dst, int bps, int amp) {
-  int i, j;
-  for (j = 0; j < 8; ++j) {
-    for (i = 0; i < 8; ++i) {
-      // TODO: could be made faster with SSE2
-      const int bits =
-          VP8RandomBits2(rg, DITHER_AMP_BITS + 1, amp) - DITHER_AMP_CENTER;
-      // Convert to range: [-2,2] for dither=50, [-4,4] for dither=100
-      const int delta = (bits + DITHER_DESCALE_ROUNDER) >> DITHER_DESCALE;
-      const int v = (int)dst[i] + delta;
-      dst[i] = (v < 0) ? 0 : (v > 255) ? 255u : (uint8_t)v;
-    }
-    dst += bps;
+  uint8_t dither[64];
+  int i;
+  for (i = 0; i < 8 * 8; ++i) {
+    dither[i] = VP8RandomBits2(rg, VP8_DITHER_AMP_BITS + 1, amp);
   }
+  VP8DitherCombine8x8(dither, dst, bps);
 }
 
 static void DitherRow(VP8Decoder* const dec) {
@@ -462,7 +452,7 @@ static int FinishRow(VP8Decoder* const dec, VP8Io* const io) {
     if (dec->alpha_data_ != NULL && y_start < y_end) {
       // TODO(skal): testing presence of alpha with dec->alpha_data_ is not a
       // good idea.
-      io->a = VP8DecompressAlphaRows(dec, y_start, y_end - y_start);
+      io->a = VP8DecompressAlphaRows(dec, io, y_start, y_end - y_start);
       if (io->a == NULL) {
         return VP8SetError(dec, VP8_STATUS_BITSTREAM_ERROR,
                            "Could not decode alpha data.");

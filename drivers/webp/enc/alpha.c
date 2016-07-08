@@ -19,7 +19,7 @@
 #include "../utils/filters.h"
 #include "../utils/quant_levels.h"
 #include "../utils/utils.h"
-#include "webp/format_constants.h"
+#include "../webp/format_constants.h"
 
 // -----------------------------------------------------------------------------
 // Encodes the given alpha data via specified compression method 'method'.
@@ -67,6 +67,11 @@ static int EncodeLossless(const uint8_t* const data, int width, int height,
 
   WebPConfigInit(&config);
   config.lossless = 1;
+  // Enable exact, or it would alter RGB values of transparent alpha, which is
+  // normally OK but not here since we are not encoding the input image but  an
+  // internal encoding-related image containing necessary exact information in
+  // RGB channels.
+  config.exact = 1;
   config.method = effort_level;  // impact is very small
   // Set a low default quality for encoding alpha. Ensure that Alpha quality at
   // lower methods (3 and below) is less than the threshold for triggering
@@ -74,7 +79,11 @@ static int EncodeLossless(const uint8_t* const data, int width, int height,
   config.quality = 8.f * effort_level;
   assert(config.quality >= 0 && config.quality <= 100.f);
 
-  ok = (VP8LEncodeStream(&config, &picture, bw) == VP8_ENC_OK);
+  // TODO(urvang): Temporary fix to avoid generating images that trigger
+  // a decoder bug related to alpha with color cache.
+  // See: https://code.google.com/p/webp/issues/detail?id=239
+  // Need to re-enable this later.
+  ok = (VP8LEncodeStream(&config, &picture, bw, 0 /*use_cache*/) == VP8_ENC_OK);
   WebPPictureFree(&picture);
   ok = ok && !bw->error_;
   if (!ok) {
@@ -113,7 +122,6 @@ static int EncodeAlphaInternal(const uint8_t* const data, int width, int height,
   assert(method >= ALPHA_NO_COMPRESSION);
   assert(method <= ALPHA_LOSSLESS_COMPRESSION);
   assert(sizeof(header) == ALPHA_HEADER_LEN);
-  // TODO(skal): have a common function and #define's to validate alpha params.
 
   filter_func = WebPFilters[filter];
   if (filter_func != NULL) {

@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include "../utils/rescaler.h"
+#include "../utils/utils.h"
 
 //------------------------------------------------------------------------------
 // Implementations of critical functions ImportRow / ExportRow
@@ -84,7 +85,8 @@ static void RescalerImportRowExpandSSE2(WebPRescaler* const wrk,
     while (1) {
       const __m128i mult = _mm_cvtsi32_si128(((x_add - accum) << 16) | accum);
       const __m128i out = _mm_madd_epi16(cur_pixels, mult);
-      *(uint32_t*)frow = _mm_cvtsi128_si32(out);
+      assert(sizeof(*frow) == sizeof(uint32_t));
+      WebPUint32ToMem((uint8_t*)frow, _mm_cvtsi128_si32(out));
       frow += 1;
       if (frow >= frow_end) break;
       accum -= wrk->x_sub;
@@ -131,7 +133,7 @@ static void RescalerImportRowShrinkSSE2(WebPRescaler* const wrk,
     __m128i base = zero;
     accum += wrk->x_add;
     while (accum > 0) {
-      const __m128i A = _mm_cvtsi32_si128(*(int*)src);
+      const __m128i A = _mm_cvtsi32_si128(WebPMemToUint32(src));
       src += 4;
       base = _mm_unpacklo_epi8(A, zero);
       // To avoid overflow, we need: base * x_add / x_sub < 32768

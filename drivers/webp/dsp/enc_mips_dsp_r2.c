@@ -1393,8 +1393,6 @@ static void FTransformWHT(const int16_t* in, int16_t* out) {
   "absq_s.ph  %[temp1],  %[temp1]                      \n\t"                   \
   "absq_s.ph  %[temp2],  %[temp2]                      \n\t"                   \
   "absq_s.ph  %[temp3],  %[temp3]                      \n\t"                   \
-  /* TODO(skal): add rounding ? shra_r.ph : shra.ph */                         \
-  /*             for following 4 instructions       */                         \
   "shra.ph    %[temp0],  %[temp0],    3                \n\t"                   \
   "shra.ph    %[temp1],  %[temp1],    3                \n\t"                   \
   "shra.ph    %[temp2],  %[temp2],    3                \n\t"                   \

@@ -28,9 +28,7 @@
 
 // In-place sum of each component with mod 256.
 static WEBP_INLINE void AddPixelsEq(uint32_t* a, uint32_t b) {
-  const uint32_t alpha_and_green = (*a & 0xff00ff00u) + (b & 0xff00ff00u);
-  const uint32_t red_and_blue = (*a & 0x00ff00ffu) + (b & 0x00ff00ffu);
-  *a = (alpha_and_green & 0xff00ff00u) | (red_and_blue & 0x00ff00ffu);
+  *a = VP8LAddPixels(*a, b);
 }
 
 static WEBP_INLINE uint32_t Average2(uint32_t a0, uint32_t a1) {
@@ -490,7 +488,7 @@ static void CopyOrSwap(const uint32_t* src, int num_pixels, uint8_t* dst,
 
 #if !defined(WORDS_BIGENDIAN)
 #if !defined(WEBP_REFERENCE_IMPLEMENTATION)
-      *(uint32_t*)dst = BSwap32(argb);
+      WebPUint32ToMem(dst, BSwap32(argb));
 #else  // WEBP_REFERENCE_IMPLEMENTATION
       dst[0] = (argb >> 24) & 0xff;
       dst[1] = (argb >> 16) & 0xff;

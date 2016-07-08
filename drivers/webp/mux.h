@@ -462,7 +462,7 @@ WEBP_EXTERN(WebPAnimEncoder*) WebPAnimEncoderNewInternal(
 // Parameters:
 //   width/height - (in) canvas width and height of the animation.
 //   enc_options - (in) encoding options; can be passed NULL to pick
-//                     reasonable defaults.
+//                      reasonable defaults.
 // Returns:
 //   A pointer to the newly created WebPAnimEncoder object.
 //   Or NULL in case of memory error.

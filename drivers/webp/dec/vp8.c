@@ -50,7 +50,7 @@ VP8Decoder* VP8New(void) {
     SetOk(dec);
     WebPGetWorkerInterface()->Init(&dec->worker_);
     dec->ready_ = 0;
-    dec->num_parts_ = 1;
+    dec->num_parts_minus_one_ = 0;
   }
   return dec;
 }
@@ -194,8 +194,8 @@ static VP8StatusCode ParsePartitions(VP8Decoder* const dec,
   size_t last_part;
   size_t p;
 
-  dec->num_parts_ = 1 << VP8GetValue(br, 2);
-  last_part = dec->num_parts_ - 1;
+  dec->num_parts_minus_one_ = (1 << VP8GetValue(br, 2)) - 1;
+  last_part = dec->num_parts_minus_one_;
   if (size < 3 * last_part) {
     // we can't even read the sizes with sz[]! That's a failure.
     return VP8_STATUS_NOT_ENOUGH_DATA;
@@ -303,15 +303,22 @@ int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io) {
 
     dec->mb_w_ = (pic_hdr->width_ + 15) >> 4;
     dec->mb_h_ = (pic_hdr->height_ + 15) >> 4;
+
     // Setup default output area (can be later modified during io->setup())
     io->width = pic_hdr->width_;
     io->height = pic_hdr->height_;
-    io->use_scaling  = 0;
+    // IMPORTANT! use some sane dimensions in crop_* and scaled_* fields.
+    // So they can be used interchangeably without always testing for
+    // 'use_cropping'.
     io->use_cropping = 0;
     io->crop_top  = 0;
     io->crop_left = 0;
     io->crop_right  = io->width;
     io->crop_bottom = io->height;
+    io->use_scaling  = 0;
+    io->scaled_width = io->width;
+    io->scaled_height = io->height;
+
     io->mb_w = io->width;   // sanity check
     io->mb_h = io->height;  // ditto
 
@@ -579,7 +586,7 @@ static int ParseFrame(VP8Decoder* const dec, VP8Io* io) {
   for (dec->mb_y_ = 0; dec->mb_y_ < dec->br_mb_y_; ++dec->mb_y_) {
     // Parse bitstream for this row.
     VP8BitReader* const token_br =
-        &dec->parts_[dec->mb_y_ & (dec->num_parts_ - 1)];
+        &dec->parts_[dec->mb_y_ & dec->num_parts_minus_one_];
     if (!VP8ParseIntraModeRow(&dec->br_, dec)) {
       return VP8SetError(dec, VP8_STATUS_NOT_ENOUGH_DATA,
                          "Premature end-of-partition0 encountered.");
@@ -649,8 +656,7 @@ void VP8Clear(VP8Decoder* const dec) {
     return;
   }
   WebPGetWorkerInterface()->End(&dec->worker_);
-  ALPHDelete(dec->alph_dec_);
-  dec->alph_dec_ = NULL;
+  WebPDeallocateAlphaMemory(dec);
   WebPSafeFree(dec->mem_);
   dec->mem_ = NULL;
   dec->mem_size_ = 0;
@@ -659,4 +665,3 @@ void VP8Clear(VP8Decoder* const dec) {
 }
 
 //------------------------------------------------------------------------------
-

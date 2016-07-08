@@ -558,8 +558,8 @@ static WebPMuxError CreateVP8XChunk(WebPMux* const mux) {
     height = mux->canvas_height_;
   }
 
-  if (flags == 0) {
-    // For Simple Image, VP8X chunk should not be added.
+  if (flags == 0 && mux->unknown_ == NULL) {
+    // For simple file format, VP8X chunk should not be added.
     return WEBP_MUX_OK;
   }
 

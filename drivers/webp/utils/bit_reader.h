@@ -19,7 +19,7 @@
 #ifdef _MSC_VER
 #include <stdlib.h>  // _byteswap_ulong
 #endif
-#include "webp/types.h"
+#include "../webp/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,24 +37,18 @@ extern "C" {
 // BITS can be any multiple of 8 from 8 to 56 (inclusive).
 // Pick values that fit natural register size.
 
-#ifdef JAVASCRIPT_ENABLED
-
-#define BITS 16
-
-#else
-
 #if defined(__i386__) || defined(_M_IX86)      // x86 32bit
 #define BITS 24
 #elif defined(__x86_64__) || defined(_M_X64)   // x86 64bit
 #define BITS 56
 #elif defined(__arm__) || defined(_M_ARM)      // ARM
 #define BITS 24
+#elif defined(__aarch64__)                     // ARM 64bit
+#define BITS 56
 #elif defined(__mips__)                        // MIPS
 #define BITS 24
 #else                                          // reasonable default
-#define BITS 24  // TODO(skal): test aarch64 and find the proper BITS value.
-#endif
-
+#define BITS 24
 #endif
 
 //------------------------------------------------------------------------------

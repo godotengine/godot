@@ -30,8 +30,6 @@
 #define SNS_TO_DQ 0.9     // Scaling constant between the sns value and the QP
                           // power-law modulation. Must be strictly less than 1.
 
-#define I4_PENALTY 4000   // Rate-penalty for quick i4/i16 decision
-
 // number of non-zero coeffs below which we consider the block very flat
 // (and apply a penalty to complex predictions)
 #define FLATNESS_LIMIT_I16 10      // I16 mode
@@ -40,6 +38,8 @@
 #define FLATNESS_PENALTY   140     // roughly ~1bit per block
 
 #define MULT_8B(a, b) (((a) * (b) + 128) >> 8)
+
+#define RD_DISTO_MULT      256  // distortion multiplier (equivalent of lambda)
 
 // #define DEBUG_BLOCK
 
@@ -54,15 +54,37 @@ static void PrintBlockInfo(const VP8EncIterator* const it,
                            const VP8ModeScore* const rd) {
   int i, j;
   const int is_i16 = (it->mb_->type_ == 1);
+  const uint8_t* const y_in = it->yuv_in_ + Y_OFF_ENC;
+  const uint8_t* const y_out = it->yuv_out_ + Y_OFF_ENC;
+  const uint8_t* const uv_in = it->yuv_in_ + U_OFF_ENC;
+  const uint8_t* const uv_out = it->yuv_out_ + U_OFF_ENC;
   printf("SOURCE / OUTPUT / ABS DELTA\n");
-  for (j = 0; j < 24; ++j) {
-    if (j == 16) printf("\n");   // newline before the U/V block
-    for (i = 0; i < 16; ++i) printf("%3d ", it->yuv_in_[i + j * BPS]);
+  for (j = 0; j < 16; ++j) {
+    for (i = 0; i < 16; ++i) printf("%3d ", y_in[i + j * BPS]);
     printf("     ");
-    for (i = 0; i < 16; ++i) printf("%3d ", it->yuv_out_[i + j * BPS]);
+    for (i = 0; i < 16; ++i) printf("%3d ", y_out[i + j * BPS]);
     printf("     ");
     for (i = 0; i < 16; ++i) {
-      printf("%1d ", abs(it->yuv_out_[i + j * BPS] - it->yuv_in_[i + j * BPS]));
+      printf("%1d ", abs(y_in[i + j * BPS] - y_out[i + j * BPS]));
+    }
+    printf("\n");
+  }
+  printf("\n");   // newline before the U/V block
+  for (j = 0; j < 8; ++j) {
+    for (i = 0; i < 8; ++i) printf("%3d ", uv_in[i + j * BPS]);
+    printf(" ");
+    for (i = 8; i < 16; ++i) printf("%3d ", uv_in[i + j * BPS]);
+    printf("    ");
+    for (i = 0; i < 8; ++i) printf("%3d ", uv_out[i + j * BPS]);
+    printf(" ");
+    for (i = 8; i < 16; ++i) printf("%3d ", uv_out[i + j * BPS]);
+    printf("   ");
+    for (i = 0; i < 8; ++i) {
+      printf("%1d ", abs(uv_out[i + j * BPS] - uv_in[i + j * BPS]));
+    }
+    printf(" ");
+    for (i = 8; i < 16; ++i) {
+      printf("%1d ", abs(uv_out[i + j * BPS] - uv_in[i + j * BPS]));
     }
     printf("\n");
   }
@@ -212,6 +234,8 @@ static int ExpandMatrix(VP8Matrix* const m, int type) {
   return (sum + 8) >> 4;
 }
 
+static void CheckLambdaValue(int* const v) { if (*v < 1) *v = 1; }
+
 static void SetupMatrices(VP8Encoder* enc) {
   int i;
   const int tlambda_scale =
@@ -221,7 +245,7 @@ static void SetupMatrices(VP8Encoder* enc) {
   for (i = 0; i < num_segments; ++i) {
     VP8SegmentInfo* const m = &enc->dqm_[i];
     const int q = m->quant_;
-    int q4, q16, quv;
+    int q_i4, q_i16, q_uv;
     m->y1_.q_[0] = kDcTable[clip(q + enc->dq_y1_dc_, 0, 127)];
     m->y1_.q_[1] = kAcTable[clip(q,                  0, 127)];
 
@@ -231,21 +255,33 @@ static void SetupMatrices(VP8Encoder* enc) {
     m->uv_.q_[0] = kDcTable[clip(q + enc->dq_uv_dc_, 0, 117)];
     m->uv_.q_[1] = kAcTable[clip(q + enc->dq_uv_ac_, 0, 127)];
 
-    q4  = ExpandMatrix(&m->y1_, 0);
-    q16 = ExpandMatrix(&m->y2_, 1);
-    quv = ExpandMatrix(&m->uv_, 2);
+    q_i4  = ExpandMatrix(&m->y1_, 0);
+    q_i16 = ExpandMatrix(&m->y2_, 1);
+    q_uv  = ExpandMatrix(&m->uv_, 2);
 
-    m->lambda_i4_          = (3 * q4 * q4) >> 7;
-    m->lambda_i16_         = (3 * q16 * q16);
-    m->lambda_uv_          = (3 * quv * quv) >> 6;
-    m->lambda_mode_        = (1 * q4 * q4) >> 7;
-    m->lambda_trellis_i4_  = (7 * q4 * q4) >> 3;
-    m->lambda_trellis_i16_ = (q16 * q16) >> 2;
-    m->lambda_trellis_uv_  = (quv *quv) << 1;
-    m->tlambda_            = (tlambda_scale * q4) >> 5;
+    m->lambda_i4_          = (3 * q_i4 * q_i4) >> 7;
+    m->lambda_i16_         = (3 * q_i16 * q_i16);
+    m->lambda_uv_          = (3 * q_uv * q_uv) >> 6;
+    m->lambda_mode_        = (1 * q_i4 * q_i4) >> 7;
+    m->lambda_trellis_i4_  = (7 * q_i4 * q_i4) >> 3;
+    m->lambda_trellis_i16_ = (q_i16 * q_i16) >> 2;
+    m->lambda_trellis_uv_  = (q_uv * q_uv) << 1;
+    m->tlambda_            = (tlambda_scale * q_i4) >> 5;
+
+    // none of these constants should be < 1
+    CheckLambdaValue(&m->lambda_i4_);
+    CheckLambdaValue(&m->lambda_i16_);
+    CheckLambdaValue(&m->lambda_uv_);
+    CheckLambdaValue(&m->lambda_mode_);
+    CheckLambdaValue(&m->lambda_trellis_i4_);
+    CheckLambdaValue(&m->lambda_trellis_i16_);
+    CheckLambdaValue(&m->lambda_trellis_uv_);
+    CheckLambdaValue(&m->tlambda_);
 
     m->min_disto_ = 10 * m->y1_.q_[0];   // quantization-aware min disto
     m->max_edge_  = 0;
+
+    m->i4_penalty_ = 1000 * q_i4 * q_i4;
   }
 }
 
@@ -324,7 +360,12 @@ static int SegmentsAreEquivalent(const VP8SegmentInfo* const S1,
 
 static void SimplifySegments(VP8Encoder* const enc) {
   int map[NUM_MB_SEGMENTS] = { 0, 1, 2, 3 };
-  const int num_segments = enc->segment_hdr_.num_segments_;
+  // 'num_segments_' is previously validated and <= NUM_MB_SEGMENTS, but an
+  // explicit check is needed to avoid a spurious warning about 'i' exceeding
+  // array bounds of 'dqm_' with some compilers (noticed with gcc-4.9).
+  const int num_segments = (enc->segment_hdr_.num_segments_ < NUM_MB_SEGMENTS)
+                               ? enc->segment_hdr_.num_segments_
+                               : NUM_MB_SEGMENTS;
   int num_final_segments = 1;
   int s1, s2;
   for (s1 = 1; s1 < num_segments; ++s1) {    // find similar segments
@@ -535,13 +576,12 @@ typedef struct {
 #define SCORE_STATE(n, l) (score_states[n][(l) + MIN_DELTA])
 
 static WEBP_INLINE void SetRDScore(int lambda, VP8ModeScore* const rd) {
-  // TODO: incorporate the "* 256" in the tables?
-  rd->score = (rd->R + rd->H) * lambda + 256 * (rd->D + rd->SD);
+  rd->score = (rd->R + rd->H) * lambda + RD_DISTO_MULT * (rd->D + rd->SD);
 }
 
 static WEBP_INLINE score_t RDScoreTrellis(int lambda, score_t rate,
                                           score_t distortion) {
-  return rate * lambda + 256 * distortion;
+  return rate * lambda + RD_DISTO_MULT * distortion;
 }
 
 static int TrellisQuantizeBlock(const VP8Encoder* const enc,
@@ -1050,7 +1090,7 @@ static void PickBestUV(VP8EncIterator* const it, VP8ModeScore* const rd) {
 
     // Compute RD-score
     rd_uv.D  = VP8SSE16x8(src, tmp_dst);
-    rd_uv.SD = 0;    // TODO: should we call TDisto? it tends to flatten areas.
+    rd_uv.SD = 0;    // not calling TDisto here: it tends to flatten areas.
     rd_uv.H  = VP8FixedCostsUV[mode];
     rd_uv.R  = VP8GetCostUV(it, &rd_uv);
     if (mode > 0 && IsFlat(rd_uv.uv_levels[0], kNumBlocks, FLATNESS_LIMIT_UV)) {
@@ -1100,56 +1140,108 @@ static void SimpleQuantize(VP8EncIterator* const it, VP8ModeScore* const rd) {
 }
 
 // Refine intra16/intra4 sub-modes based on distortion only (not rate).
-static void DistoRefine(VP8EncIterator* const it, int try_both_i4_i16) {
-  const int is_i16 = (it->mb_->type_ == 1);
+static void RefineUsingDistortion(VP8EncIterator* const it,
+                                  int try_both_modes, int refine_uv_mode,
+                                  VP8ModeScore* const rd) {
   score_t best_score = MAX_COST;
+  int nz = 0;
+  int mode;
+  int is_i16 = try_both_modes || (it->mb_->type_ == 1);
 
-  if (try_both_i4_i16 || is_i16) {
-    int mode;
+  const VP8SegmentInfo* const dqm = &it->enc_->dqm_[it->mb_->segment_];
+  // Some empiric constants, of approximate order of magnitude.
+  const int lambda_d_i16 = 106;
+  const int lambda_d_i4 = 11;
+  const int lambda_d_uv = 120;
+  score_t score_i4 = dqm->i4_penalty_;
+  score_t i4_bit_sum = 0;
+  const score_t bit_limit = it->enc_->mb_header_limit_;
+
+  if (is_i16) {   // First, evaluate Intra16 distortion
     int best_mode = -1;
+    const uint8_t* const src = it->yuv_in_ + Y_OFF_ENC;
     for (mode = 0; mode < NUM_PRED_MODES; ++mode) {
       const uint8_t* const ref = it->yuv_p_ + VP8I16ModeOffsets[mode];
-      const uint8_t* const src = it->yuv_in_ + Y_OFF_ENC;
-      const score_t score = VP8SSE16x16(src, ref);
+      const score_t score = VP8SSE16x16(src, ref) * RD_DISTO_MULT
+                          + VP8FixedCostsI16[mode] * lambda_d_i16;
+      if (mode > 0 && VP8FixedCostsI16[mode] > bit_limit) {
+        continue;
+      }
       if (score < best_score) {
         best_mode = mode;
         best_score = score;
       }
     }
     VP8SetIntra16Mode(it, best_mode);
+    // we'll reconstruct later, if i16 mode actually gets selected
   }
-  if (try_both_i4_i16 || !is_i16) {
-    uint8_t modes_i4[16];
+
+  // Next, evaluate Intra4
+  if (try_both_modes || !is_i16) {
     // We don't evaluate the rate here, but just account for it through a
     // constant penalty (i4 mode usually needs more bits compared to i16).
-    score_t score_i4 = (score_t)I4_PENALTY;
-
+    is_i16 = 0;
     VP8IteratorStartI4(it);
     do {
-      int mode;
-      int best_sub_mode = -1;
-      score_t best_sub_score = MAX_COST;
+      int best_i4_mode = -1;
+      score_t best_i4_score = MAX_COST;
       const uint8_t* const src = it->yuv_in_ + Y_OFF_ENC + VP8Scan[it->i4_];
+      const uint16_t* const mode_costs = GetCostModeI4(it, rd->modes_i4);
 
-      // TODO(skal): we don't really need the prediction pixels here,
-      // but just the distortion against 'src'.
       VP8MakeIntra4Preds(it);
       for (mode = 0; mode < NUM_BMODES; ++mode) {
         const uint8_t* const ref = it->yuv_p_ + VP8I4ModeOffsets[mode];
-        const score_t score = VP8SSE4x4(src, ref);
-        if (score < best_sub_score) {
-          best_sub_mode = mode;
-          best_sub_score = score;
+        const score_t score = VP8SSE4x4(src, ref) * RD_DISTO_MULT
+                            + mode_costs[mode] * lambda_d_i4;
+        if (score < best_i4_score) {
+          best_i4_mode = mode;
+          best_i4_score = score;
         }
       }
-      modes_i4[it->i4_] = best_sub_mode;
-      score_i4 += best_sub_score;
-      if (score_i4 >= best_score) break;
-    } while (VP8IteratorRotateI4(it, it->yuv_in_ + Y_OFF_ENC));
-    if (score_i4 < best_score) {
-      VP8SetIntra4Mode(it, modes_i4);
-    }
+      i4_bit_sum += mode_costs[best_i4_mode];
+      rd->modes_i4[it->i4_] = best_i4_mode;
+      score_i4 += best_i4_score;
+      if (score_i4 >= best_score || i4_bit_sum > bit_limit) {
+        // Intra4 won't be better than Intra16. Bail out and pick Intra16.
+        is_i16 = 1;
+        break;
+      } else {  // reconstruct partial block inside yuv_out2_ buffer
+        uint8_t* const tmp_dst = it->yuv_out2_ + Y_OFF_ENC + VP8Scan[it->i4_];
+        nz |= ReconstructIntra4(it, rd->y_ac_levels[it->i4_],
+                                src, tmp_dst, best_i4_mode) << it->i4_;
+      }
+    } while (VP8IteratorRotateI4(it, it->yuv_out2_ + Y_OFF_ENC));
   }
+
+  // Final reconstruction, depending on which mode is selected.
+  if (!is_i16) {
+    VP8SetIntra4Mode(it, rd->modes_i4);
+    SwapOut(it);
+    best_score = score_i4;
+  } else {
+    nz = ReconstructIntra16(it, rd, it->yuv_out_ + Y_OFF_ENC, it->preds_[0]);
+  }
+
+  // ... and UV!
+  if (refine_uv_mode) {
+    int best_mode = -1;
+    score_t best_uv_score = MAX_COST;
+    const uint8_t* const src = it->yuv_in_ + U_OFF_ENC;
+    for (mode = 0; mode < NUM_PRED_MODES; ++mode) {
+      const uint8_t* const ref = it->yuv_p_ + VP8UVModeOffsets[mode];
+      const score_t score = VP8SSE16x8(src, ref) * RD_DISTO_MULT
+                          + VP8FixedCostsUV[mode] * lambda_d_uv;
+      if (score < best_uv_score) {
+        best_mode = mode;
+        best_uv_score = score;
+      }
+    }
+    VP8SetIntraUVMode(it, best_mode);
+  }
+  nz |= ReconstructUV(it, rd, it->yuv_out_ + U_OFF_ENC, it->mb_->uv_mode_);
+
+  rd->nz = nz;
+  rd->score = best_score;
 }
 
 //------------------------------------------------------------------------------
@@ -1179,13 +1271,13 @@ int VP8Decimate(VP8EncIterator* const it, VP8ModeScore* const rd,
       SimpleQuantize(it, rd);
     }
   } else {
-    // For method == 2, pick the best intra4/intra16 based on SSE (~tad slower).
-    // For method <= 1, we refine intra4 or intra16 (but don't re-examine mode).
-    DistoRefine(it, (method >= 2));
-    SimpleQuantize(it, rd);
+    // At this point we have heuristically decided intra16 / intra4.
+    // For method >= 2, pick the best intra4/intra16 based on SSE (~tad slower).
+    // For method <= 1, we don't re-examine the decision but just go ahead with
+    // quantization/reconstruction.
+    RefineUsingDistortion(it, (method >= 2), (method >= 1), rd);
   }
   is_skipped = (rd->nz == 0);
   VP8SetSkip(it, is_skipped);
   return is_skipped;
 }
-
