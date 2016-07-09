@@ -77,21 +77,30 @@ void SpatialEditorViewport::_update_camera() {
 
 String SpatialEditorGizmo::get_handle_name(int p_idx) const {
 
+	if (get_script_instance() && get_script_instance()->has_method("get_handle_name"))
+		return get_script_instance()->call("get_handle_name", p_idx);
+
 	return "";
 }
 
 Variant SpatialEditorGizmo::get_handle_value(int p_idx) const{
+
+	if (get_script_instance() && get_script_instance()->has_method("get_handle_value"))
+		return get_script_instance()->call("get_handle_value", p_idx);
 
 	return Variant();
 }
 
 void SpatialEditorGizmo::set_handle(int p_idx,Camera *p_camera, const Point2& p_point) {
 
+	if (get_script_instance() && get_script_instance()->has_method("set_handle"))
+		get_script_instance()->call("set_handle", p_idx, p_camera, p_point);
 }
 
 void SpatialEditorGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p_cancel){
 
-
+	if (get_script_instance() && get_script_instance()->has_method("commit_handle"))
+		get_script_instance()->call("commit_handle", p_idx, p_restore, p_cancel);
 }
 
 bool SpatialEditorGizmo::intersect_frustum(const Camera *p_camera,const Vector<Plane> &p_frustum) {
