@@ -36,6 +36,7 @@ import os
 from bpy.app.handlers import persistent
 from mathutils import Vector, Matrix
 
+
 class godot_export_manager(bpy.types.Panel):
     bl_label = "Godot Export Manager"
     bl_space_type = 'PROPERTIES'
@@ -62,12 +63,9 @@ class godot_export_manager(bpy.types.Panel):
 
         op = col.operator("scene.godot_delete_objects_from_group",text="Delete selected objects from Group",icon="PASTEDOWN")
 
-
-
         row = layout.row()
         col = row.column()
         col.label(text="Export Groups:")
-
 
         row = layout.row()
         col = row.column()
@@ -114,6 +112,7 @@ class godot_export_manager(bpy.types.Panel):
             col.prop(group,"anim_optimize_precision")
             col.prop(group,"use_metadata")
 
+
 ### Custom template_list look
 class UI_List_Godot(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
@@ -150,7 +149,6 @@ class add_objects_to_group(bpy.types.Operator):
                     else:
                         objects_str += ", "+object.name
 
-
             self.report({'INFO'}, objects_str + " added to group." )
             if self.undo:
                 bpy.ops.ed.undo_push(message="Objects added to group")
@@ -178,13 +176,11 @@ class del_objects_from_group(bpy.types.Operator):
                 if node.name in selected_objects:
                     scene.godot_export_groups[scene.godot_export_groups_index].nodes.remove(i)
 
-
                     if j == 0:
                             objects_str += object.name
                     else:
                         objects_str += ", "+object.name
                     j+=1
-
 
             self.report({'INFO'}, objects_str + " deleted from group." )
             bpy.ops.ed.undo_push(message="Objects deleted from group")
@@ -209,6 +205,7 @@ class select_group_objects(bpy.types.Operator):
                 context.scene.objects.active = bpy.data.objects[node.name]
         return{'FINISHED'}
 
+
 class export_groups_autosave(bpy.types.Operator):
     bl_idname = "scene.godot_export_groups_autosave"
     bl_label = "Export All Groups"
@@ -223,6 +220,7 @@ class export_groups_autosave(bpy.types.Operator):
         self.report({'INFO'}, "All Groups exported." )
         bpy.ops.ed.undo_push(message="Export all Groups")
         return{'FINISHED'}
+
 
 class export_all_groups(bpy.types.Operator):
     bl_idname = "scene.godot_export_all_groups"
@@ -246,7 +244,6 @@ class export_group(bpy.types.Operator):
 
     idx = IntProperty(default=0)
     export_all = BoolProperty(default=False)
-
 
     def copy_object_recursive(self,ob,parent,single_user = True):
         new_ob = bpy.data.objects[ob.name].copy()
@@ -310,7 +307,6 @@ class export_group(bpy.types.Operator):
 
             context.scene.layers = [True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True]
 
-
             if group[self.idx].export_name.endswith(".dae"):
                 path = os.path.join(path,group[self.idx].export_name)
             else:
@@ -363,6 +359,7 @@ class export_group(bpy.types.Operator):
             self.report({'INFO'}, "Define Export Name and Export Path." )
         return{'FINISHED'}
 
+
 class add_export_group(bpy.types.Operator):
     bl_idname = "scene.godot_add_export_group"
     bl_label = "Adds a new export Group"
@@ -379,6 +376,7 @@ class add_export_group(bpy.types.Operator):
         scene.godot_export_groups_index = len(scene.godot_export_groups)-1
         bpy.ops.ed.undo_push(message="Create New Export Group")
         return{'FINISHED'}
+
 
 class del_export_group(bpy.types.Operator):
     bl_idname = "scene.godot_delete_export_group"
@@ -398,8 +396,10 @@ class del_export_group(bpy.types.Operator):
         bpy.ops.ed.undo_push(message="Delete Export Group")
         return{'FINISHED'}
 
+
 class godot_node_list(bpy.types.PropertyGroup):
     name = StringProperty()
+
 
 class godot_export_groups(bpy.types.PropertyGroup):
     name = StringProperty(name="Group Name")
@@ -431,6 +431,7 @@ class godot_export_groups(bpy.types.PropertyGroup):
     use_metadata = BoolProperty(name="Use Metadata",default=True,options={'HIDDEN'})
     use_include_particle_duplicates = BoolProperty(name="Include Particle Duplicates",default=True)
 
+
 def register():
     bpy.utils.register_class(godot_export_manager)
     bpy.utils.register_class(godot_node_list)
@@ -448,6 +449,7 @@ def register():
     bpy.types.Scene.godot_export_groups = CollectionProperty(type=godot_export_groups)
     bpy.types.Scene.godot_export_groups_index = IntProperty(default=0,min=0)
 
+
 def unregister():
     bpy.utils.unregister_class(godot_export_manager)
     bpy.utils.unregister_class(godot_node_list)
@@ -461,6 +463,7 @@ def unregister():
     bpy.utils.unregister_class(del_objects_from_group)
     bpy.utils.unregister_class(select_group_objects)
     bpy.utils.unregister_class(UI_List_Godot)
+
 
 @persistent
 def auto_export(dummy):
