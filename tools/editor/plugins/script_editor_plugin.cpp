@@ -874,6 +874,15 @@ void ScriptEditor::_reload_scripts(){
 		}
 
 
+		uint64_t last_date = script->get_last_modified_time();
+		uint64_t date = FileAccess::get_modified_time(script->get_path());
+
+		//printf("last date: %lli vs date: %lli\n",last_date,date);
+		if (last_date==date) {
+			continue;
+		}
+
+
 		Ref<Script> rel_script = ResourceLoader::load(script->get_path(),script->get_type(),true);
 		ERR_CONTINUE(!rel_script.is_valid());
 		script->set_source_code( rel_script->get_source_code() );
