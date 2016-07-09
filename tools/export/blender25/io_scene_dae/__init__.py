@@ -69,7 +69,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
                ('MESH', "Mesh", ""),
                ('CURVE', "Curve", ""),
                ),
-        default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH','CURVE'},
+        default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH', 'CURVE'},
         )
 
     use_export_selected = BoolProperty(
