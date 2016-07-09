@@ -32,6 +32,7 @@
 #include "scene/gui/separator.h"
 #include "scene/resources/dynamic_font.h"
 #include "os/keyboard.h"
+#include "tools/editor/editor_scale.h"
 
 void GotoLineDialog::popup_find_line(TextEdit *p_edit) {
 
@@ -1198,6 +1199,10 @@ CodeTextEditor::CodeTextEditor() {
 	line_col = memnew( Label );
 	status_bar->add_child(line_col);
 	line_col->set_valign(Label::VALIGN_CENTER);
+	line_col->set_autowrap(true);
+	line_col->set_v_size_flags(SIZE_FILL);
+	line_col->set_custom_minimum_size(Size2(100,1)*EDSCALE);
+	status_bar->add_child( memnew( Label ) ); //to keep the height if the other labels are not visible
 
 
 	text_editor->connect("input_event", this,"_text_editor_input_event");

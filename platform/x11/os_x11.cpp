@@ -1773,7 +1773,6 @@ static String _get_clipboard(Atom p_source, Window x11_window, ::Display* x11_di
 
 	if (Sown == x11_window) {
 
-		printf("returning internal clipboard\n");
 		return p_internal_clipboard;
 	};
 

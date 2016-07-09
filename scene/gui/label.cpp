@@ -535,7 +535,9 @@ void Label::set_text(const String& p_string) {
 	if (percent_visible<1)
 		visible_chars=get_total_character_count()*percent_visible;
 	update();
-	minimum_size_changed();
+	if (!autowrap) {
+		minimum_size_changed();
+	}
 
 }
 
