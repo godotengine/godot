@@ -520,7 +520,7 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 				//new object/surface
 				if (generate_normals || force_smooth)
 					surf_tool->generate_normals();
-				if (uvs.size() && (normals.size() || generate_normals))
+				if (uvs.size() && (normals.size() || generate_normals) && generate_tangents)
 					surf_tool->generate_tangents();
 
 				surf_tool->index();
