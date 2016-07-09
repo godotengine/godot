@@ -1335,7 +1335,7 @@ int Tree::_count_selected_items(TreeItem* p_from) const {
 	return count;
 
 }
-void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col,TreeItem *p_prev,bool *r_in_range) {
+void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev, bool *r_in_range, bool p_force_deselect) {
 
 	TreeItem::Cell &selected_cell=p_selected->cells[p_col];
 
@@ -1409,7 +1409,7 @@ void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col
 			} else {
 
 
-				if (r_in_range && *r_in_range) {
+				if (r_in_range && *r_in_range && !p_force_deselect) {
 
 
 					if (!c.selected && c.selectable) {
@@ -1417,7 +1417,7 @@ void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col
 						emit_signal("multi_selected",p_current,i,true);
 					}
 
-				} else if (!r_in_range){
+				} else if (!r_in_range || p_force_deselect){
 					if (select_mode==SELECT_MULTI && c.selected)
 						emit_signal("multi_selected",p_current,i,false);
 					c.selected=false;
@@ -1436,7 +1436,7 @@ void Tree::select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col
 
 	while (c) {
 
-		select_single_item(p_selected,c,p_col,p_prev,r_in_range);
+		select_single_item(p_selected,c,p_col,p_prev,r_in_range,p_current->is_collapsed() || p_force_deselect);
 		c=c->next;
 	}
 

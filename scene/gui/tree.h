@@ -331,7 +331,7 @@ friend class TreeItem;
 //	void draw_item_text(String p_text,const Ref<Texture>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
 	void draw_item_rect(const TreeItem::Cell& p_cell,const Rect2i& p_rect,const Color& p_color);
 	int draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& p_draw_size,TreeItem *p_item);
-	void select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col,TreeItem *p_prev=NULL,bool *r_in_range=NULL);
+	void select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col,TreeItem *p_prev=NULL,bool *r_in_range=NULL,bool p_force_deselect=false);
 	int propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_doubleclick,TreeItem *p_item,int p_button,const InputModifierState& p_mod);
 	void text_editor_enter(String p_text);
 	void _text_editor_modal_close();
