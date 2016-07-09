@@ -101,6 +101,7 @@ static bool init_fullscreen=false;
 static bool init_use_custom_pos=false;
 static bool debug_collisions=false;
 static bool debug_navigation=false;
+static int frame_delay=0;
 static Vector2 init_custom_pos;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
@@ -488,7 +489,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 			if (I->next()) {
 
-				OS::get_singleton()->set_frame_delay(I->next()->get().to_int());
+				frame_delay=I->next()->get().to_int();
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -805,11 +806,18 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_LANDSCAPE);
 	}
 
+
 	OS::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/fixed_fps",60));
-	OS::get_singleton()->set_target_fps(GLOBAL_DEF("application/target_fps",0));
+	OS::get_singleton()->set_target_fps(GLOBAL_DEF("debug/force_fps",0));
 
 	if (!OS::get_singleton()->_verbose_stdout) //overrided
 		OS::get_singleton()->_verbose_stdout=GLOBAL_DEF("debug/verbose_stdout",false);
+
+	if (frame_delay==0) {
+		frame_delay=GLOBAL_DEF("application/frame_delay_msec",0);
+	}
+
+	OS::get_singleton()->set_frame_delay(frame_delay);
 
 	message_queue = memnew( MessageQueue );
 
