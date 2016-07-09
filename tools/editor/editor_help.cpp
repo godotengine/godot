@@ -331,7 +331,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated",this,"_confirmed");
-	set_title("Search Classes");
+	set_title("Search Help");
 
 //	search_options->set_hide_root(true);
 
@@ -525,6 +525,7 @@ EditorHelpIndex::EditorHelpIndex() {
 	class_list->connect("item_activated",this,"_tree_item_selected");
 
 	get_ok()->set_text("Open");
+	set_title("Search Classes");
 }
 
 
