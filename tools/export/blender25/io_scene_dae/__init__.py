@@ -18,33 +18,28 @@
 
 # <pep8-80 compliant>
 
+import bpy
+from bpy.props import StringProperty, BoolProperty, FloatProperty, EnumProperty
+
+from bpy_extras.io_utils import ExportHelper
 bl_info = {
     "name": "Better Collada Exporter",
     "author": "Juan Linietsky",
     "blender": (2, 5, 8),
     "api": 38691,
     "location": "File > Import-Export",
-    "description": ("Export DAE Scenes, This plugin actually works better! otherwise contact me."),
+    "description": ("Export DAE Scenes, This plugin actually works better! "
+                    "otherwise contact me."),
     "warning": "",
     "wiki_url": ("http://www.godotengine.org"),
     "tracker_url": "",
     "support": 'OFFICIAL',
     "category": "Import-Export"}
 
-
 if "bpy" in locals():
     import imp
     if "export_dae" in locals():
         imp.reload(export_dae)
-
-
-import bpy
-from bpy.props import StringProperty, BoolProperty, FloatProperty, EnumProperty
-
-from bpy_extras.io_utils import (ExportHelper,
-                                 path_reference_mode,
-                                 axis_conversion,
-                                 )
 
 
 class ExportDAE(bpy.types.Operator, ExportHelper):
@@ -59,90 +54,94 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
     # List of operator properties, the attributes will be assigned
     # to the class instance from the operator settings before calling.
 
-
     object_types = EnumProperty(
-            name="Object Types",
-            options={'ENUM_FLAG'},
-            items=(('EMPTY', "Empty", ""),
-                   ('CAMERA', "Camera", ""),
-                   ('LAMP', "Lamp", ""),
-                   ('ARMATURE', "Armature", ""),
-                   ('MESH', "Mesh", ""),
-                   ('CURVE', "Curve", ""),
-                   ),
-            default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH','CURVE'},
-            )
+        name="Object Types",
+        options={'ENUM_FLAG'},
+        items=(('EMPTY', "Empty", ""),
+               ('CAMERA', "Camera", ""),
+               ('LAMP', "Lamp", ""),
+               ('ARMATURE', "Armature", ""),
+               ('MESH', "Mesh", ""),
+               ('CURVE', "Curve", ""),
+               ),
+        default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH', 'CURVE'},
+        )
 
     use_export_selected = BoolProperty(
-            name="Selected Objects",
-            description="Export only selected objects (and visible in active layers if that applies).",
-            default=False,
-            )
+        name="Selected Objects",
+        description="Export only selected objects (and visible in active "
+                    "layers if that applies).",
+        default=False,
+        )
     use_mesh_modifiers = BoolProperty(
-            name="Apply Modifiers",
-            description="Apply modifiers to mesh objects (on a copy!).",
-	    default=False,
-            )
+        name="Apply Modifiers",
+        description="Apply modifiers to mesh objects (on a copy!).",
+        default=False,
+        )
     use_tangent_arrays = BoolProperty(
-	    name="Tangent Arrays",
-	    description="Export Tangent and Binormal arrays (for normalmapping).",
-	    default=False,
-	    )
+        name="Tangent Arrays",
+        description="Export Tangent and Binormal arrays "
+                    "(for normalmapping).",
+        default=False,
+        )
     use_triangles = BoolProperty(
-	    name="Triangulate",
-	    description="Export Triangles instead of Polygons.",
-	    default=False,
-	    )
+        name="Triangulate",
+        description="Export Triangles instead of Polygons.",
+        default=False,
+        )
 
     use_copy_images = BoolProperty(
-            name="Copy Images",
-            description="Copy Images (create images/ subfolder)",
-            default=False,
-            )
+        name="Copy Images",
+        description="Copy Images (create images/ subfolder)",
+        default=False,
+        )
     use_active_layers = BoolProperty(
-            name="Active Layers",
-            description="Export only objects on the active layers.",
-            default=True,
-            )
+        name="Active Layers",
+        description="Export only objects on the active layers.",
+        default=True,
+        )
     use_anim = BoolProperty(
-            name="Export Animation",
-            description="Export keyframe animation",
-            default=False,
-            )
+        name="Export Animation",
+        description="Export keyframe animation",
+        default=False,
+        )
     use_anim_action_all = BoolProperty(
-            name="All Actions",
-            description=("Export all actions for the first armature found in separate DAE files"),
-            default=False,
-            )
+        name="All Actions",
+        description=("Export all actions for the first armature found "
+                     "in separate DAE files"),
+        default=False,
+        )
     use_anim_skip_noexp = BoolProperty(
-	    name="Skip (-noexp) Actions",
-	    description="Skip exporting of actions whose name end in (-noexp). Useful to skip control animations.",
-	    default=True,
-	    )
+        name="Skip (-noexp) Actions",
+        description="Skip exporting of actions whose name end in (-noexp)."
+                    " Useful to skip control animations.",
+        default=True,
+        )
     use_anim_optimize = BoolProperty(
-            name="Optimize Keyframes",
-            description="Remove double keyframes",
-            default=True,
-            )
+        name="Optimize Keyframes",
+        description="Remove double keyframes",
+        default=True,
+        )
 
     anim_optimize_precision = FloatProperty(
-            name="Precision",
-            description=("Tolerence for comparing double keyframes "
-                        "(higher for greater accuracy)"),
-            min=1, max=16,
-            soft_min=1, soft_max=16,
-            default=6.0,
-            )
+        name="Precision",
+        description=("Tolerence for comparing double keyframes "
+                     "(higher for greater accuracy)"),
+        min=1, max=16,
+        soft_min=1, soft_max=16,
+        default=6.0,
+        )
 
     use_metadata = BoolProperty(
-            name="Use Metadata",
-            default=True,
-            options={'HIDDEN'},
-            )
+        name="Use Metadata",
+        default=True,
+        options={'HIDDEN'},
+        )
 
     @property
     def check_extension(self):
-        return True#return self.batch_mode == 'OFF'
+        # return self.batch_mode == 'OFF'
+        return True
 
     def check(self, context):
         return True
