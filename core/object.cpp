@@ -1495,7 +1495,7 @@ void Object::disconnect(const StringName& p_signal, Object *p_to_object, const S
 		ERR_EXPLAIN("Disconnecting nonexistent signal '"+p_signal+"', slot: "+itos(target._id)+":"+target.method);
 		ERR_FAIL();
 	}
-	int prev = p_to_object->connections.size();
+
 	p_to_object->connections.erase(s->slot_map[target].cE);
 	s->slot_map.erase(target);
 

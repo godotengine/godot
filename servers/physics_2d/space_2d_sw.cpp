@@ -200,7 +200,6 @@ int Physics2DDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Matri
 
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,p_result_max,space->intersection_query_subindex_results);
 
-	bool collided=false;
 	int cc=0;
 
 	for(int i=0;i<amount;i++) {
@@ -307,7 +306,6 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Matrix32
 
 		for(int i=0;i<8;i++) { //steps should be customizable..
 
-			Matrix32 xfa = p_xform;
 			float ofs = (low+hi)*0.5;
 
 			Vector2 sep=mnormal; //important optimization for this to work fast enough
@@ -377,7 +375,6 @@ bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Matrix32& p_s
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,Space2DSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
 
 	bool collided=false;
-	int cc=0;
 	r_result_count=0;
 
 	Physics2DServerSW::CollCbkData cbk;
@@ -768,7 +765,6 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 
 				for(int i=0;i<8;i++) { //steps should be customizable..
 
-					//Matrix32 xfa = p_xform;
 					float ofs = (low+hi)*0.5;
 
 					Vector2 sep=mnormal; //important optimization for this to work fast enough

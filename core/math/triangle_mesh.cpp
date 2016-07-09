@@ -195,9 +195,6 @@ Vector3 TriangleMesh::get_area_normal(const AABB& p_aabb) const {
 	int n_count=0;
 	Vector3 n;
 
-	//for(int i=0;i<max_depth;i++)
-	//	stack[i]=0;
-
 	int level=0;
 
 	DVector<Triangle>::Read trianglesr = triangles.read();
@@ -205,7 +202,6 @@ Vector3 TriangleMesh::get_area_normal(const AABB& p_aabb) const {
 	DVector<BVH>::Read bvhr=bvh.read();
 
 	const Triangle *triangleptr=trianglesr.ptr();
-	const Vector3 *vertexptr=verticesr.ptr();
 	int pos=bvh.size()-1;
 	const BVH *bvhptr = bvhr.ptr();
 
@@ -301,14 +297,7 @@ bool TriangleMesh::intersect_segment(const Vector3& p_begin,const Vector3& p_end
 	real_t d=1e10;
 	bool inters=false;
 
-	//for(int i=0;i<max_depth;i++)
-	//	stack[i]=0;
-
 	int level=0;
-	//AABB ray_aabb;
-	//ray_aabb.pos=p_begin;
-	//ray_aabb.expand_to(p_end);
-
 
 	DVector<Triangle>::Read trianglesr = triangles.read();
 	DVector<Vector3>::Read verticesr=vertices.read();
@@ -430,9 +419,6 @@ bool TriangleMesh::intersect_ray(const Vector3& p_begin,const Vector3& p_dir,Vec
 	Vector3 n = p_dir;
 	real_t d=1e20;
 	bool inters=false;
-
-	//for(int i=0;i<max_depth;i++)
-	//	stack[i]=0;
 
 	int level=0;
 

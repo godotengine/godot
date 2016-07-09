@@ -757,7 +757,6 @@ void VisualServer::mesh_add_surface_from_mesh_data( RID p_mesh, const Geometry::
 		}
 	}
 
-	int s = mesh_get_surface_count(p_mesh);
 	Array d;
 	d.resize(VS::ARRAY_MAX);
 	d[ARRAY_VERTEX]=vertices;

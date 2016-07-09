@@ -270,9 +270,6 @@ void VisibilityEnabler2D::_notification(int p_what){
 			return;
 
 
-		Node *from = this;
-		//find where current scene starts
-
 		for (Map<Node*,Variant>::Element *E=nodes.front();E;E=E->next()) {
 
 			if (!visible)
@@ -293,14 +290,7 @@ void VisibilityEnabler2D::_change_node_state(Node* p_node,bool p_enabled) {
 		RigidBody2D *rb = p_node->cast_to<RigidBody2D>();
 		if (rb) {
 
-			if (p_enabled) {
-				RigidBody2D::Mode mode = RigidBody2D::Mode(nodes[p_node].operator int());
-				//rb->set_mode(mode);
-				rb->set_sleeping(false);
-			} else {
-				//rb->set_mode(RigidBody2D::MODE_STATIC);
-				rb->set_sleeping(true);
-			}
+			rb->set_sleeping(!p_enabled);
 		}
 	}
 

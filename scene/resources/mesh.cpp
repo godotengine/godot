@@ -30,7 +30,8 @@
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "surface_tool.h"
-static const char*_array_name[]={
+
+static const char* _array_name[]={
 	"vertex_array",
 	"normal_array",
 	"tangent_array",
@@ -847,7 +848,6 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 	}
 
 	{
-		int tc=0;
 		DVector<int>::Write ir;
 		DVector<int> indices =arrays[ARRAY_INDEX];
 		bool has_indices=false;

@@ -75,7 +75,7 @@ void AudioMixerSW::do_resample(const Depth* p_src, int32_t *p_dst, ResamplerStat
 				for(int i=0;i<(is_stereo?2:1);i++) {
 
 
-					int16_t nibble,signed_nibble,diff,step;
+					int16_t nibble,diff,step;
 
 					p_state->ima_adpcm[i].last_nibble++;
 					const uint8_t *src_ptr=p_state->ima_adpcm[i].ptr;
@@ -91,10 +91,6 @@ void AudioMixerSW::do_resample(const Depth* p_src, int32_t *p_dst, ResamplerStat
 						p_state->ima_adpcm[i].step_index=0;
 					if (p_state->ima_adpcm[i].step_index>88)
 						p_state->ima_adpcm[i].step_index=88;
-
-					/*
-					signed_nibble = (nibble&7) * ((nibble&8)?-1:1);
-					diff = (2 * signed_nibble + 1) * step / 4; */
 
 					diff = step >> 3 ;
 					if (nibble & 1)

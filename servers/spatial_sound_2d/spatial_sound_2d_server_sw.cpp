@@ -851,23 +851,6 @@ void SpatialSound2DServerSW::update(float p_delta) {
 		//this could be optimized at some point... am not sure
 		Space *space=space_owner.get(source->space);
 		Room *room=room_owner.get(space->default_room);
-		int max_level=-0x80000000;
-		/*
-		int rooms_culled = space->octree.cull_point(source->transform.origin,cull_rooms,MAX_CULL_ROOMS);
-		for(int i=0;i<rooms_culled;i++) {
-
-			Room *r=cull_rooms[i];
-			ERR_CONTINUE( r->bounds.is_empty() ); // how did this happen??
-			if (r->level<=max_level) //ignore optimization (level too low)
-				continue;
-			Vector2 local_point = r->inverse_transform.xform(source->transform.origin);
-			if (!r->bounds.point_is_inside(local_point))
-				continue;
-			room=r;
-			max_level=r->level;
-
-		}
-		*/
 
 		//compute mixing weights (support for multiple listeners in the same output)
 		float total_distance=0;

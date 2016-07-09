@@ -434,7 +434,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 
 	int w = slot->bitmap.width;
 	int h = slot->bitmap.rows;
-	int p = slot->bitmap.pitch;
+	//int p = slot->bitmap.pitch;
 	int yofs=slot->bitmap_top;
 	int xofs=slot->bitmap_left;
 	int advance=slot->advance.x>>6;

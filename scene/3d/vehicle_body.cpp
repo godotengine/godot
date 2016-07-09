@@ -488,7 +488,6 @@ real_t VehicleBody::_ray_cast(int p_idx,PhysicsDirectBodyState *s) {
 void	VehicleBody::_update_suspension(PhysicsDirectBodyState *s)
 {
 
-	real_t deltaTime = s->get_step();
 	real_t chassisMass = mass;
 
 	for (int w_it=0; w_it<wheels.size(); w_it++)
@@ -596,21 +595,16 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 			    b2invinertia,
 			    b2invmass);
 
-	real_t jacDiagAB = jac.getDiagonal();
-	real_t jacDiagABInv = real_t(1.) / jacDiagAB;
-
 	real_t rel_vel = jac.getRelativeVelocity(
 				s->get_linear_velocity(),
 				s->get_transform().basis.transposed().xform(s->get_angular_velocity()),
 				b2lv,
 				b2trans.xform(b2av));
-	real_t a;
-	a=jacDiagABInv;
 
 
 	rel_vel = normal.dot(vel);
 
-	//todo: move this into proper structure
+	//TODO: move this into proper structure
 	real_t contactDamping = real_t(0.4);
 #define ONLY_USE_LINEAR_MASS
 #ifdef ONLY_USE_LINEAR_MASS
@@ -642,16 +636,16 @@ VehicleBody::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDirec
 		denom0= s->get_inverse_mass() + frictionDirectionWorld.dot(vec);
 	}
 
+	/* TODO: Why is this code unused?
 	if (body1) {
 
 		Vector3 r0 = frictionPosWorld - body1->get_global_transform().origin;
 		Vector3 c0 = (r0).cross(frictionDirectionWorld);
 		Vector3 vec = s->get_inverse_inertia_tensor().xform_inv(c0).cross(r0);
 		//denom1= body1->get_inverse_mass() + frictionDirectionWorld.dot(vec);
-		denom1=0;
 
 	}
-
+	*/
 
 	real_t	relaxation = 1.f;
 	m_jacDiagABInv = relaxation/(denom0+denom1);

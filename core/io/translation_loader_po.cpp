@@ -47,7 +47,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 	String msg_id;
 	String msg_str;
 	String config;
-	int msg_line=0;
 
 	if (r_error)
 		*r_error=ERR_FILE_CORRUPT;
@@ -97,7 +96,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 			status=STATUS_READING_ID;
 			msg_id="";
 			msg_str="";
-			msg_line=line;
 		}
 
 		if (l.begins_with("msgstr")) {
@@ -111,7 +109,6 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 
 			l=l.substr(6,l.length()).strip_edges();
 			status=STATUS_READING_STRING;
-			msg_line=line;
 		}
 
 		if (l=="" || l.begins_with("#")) {

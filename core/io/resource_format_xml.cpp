@@ -1862,8 +1862,6 @@ void ResourceInteractiveLoaderXML::open(FileAccess *p_f) {
 	}
 
 	int major = version.get_slicec('.',0).to_int();
-	int minor = version.get_slicec('.',1).to_int();
-
 	if (major>VERSION_MAJOR) {
 
 		error=ERR_FILE_UNRECOGNIZED;
