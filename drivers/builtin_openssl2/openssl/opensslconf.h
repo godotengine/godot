@@ -213,8 +213,13 @@ extern "C" {
 
 #ifdef OPENSSL_USE_64_BITS
 
-#define SIXTY_FOUR_BIT_LONG
-#undef SIXTY_FOUR_BIT
+# ifdef _WIN32
+#  undef SIXTY_FOUR_BIT_LONG
+#  define SIXTY_FOUR_BIT
+# else
+#  define SIXTY_FOUR_BIT_LONG
+#  undef SIXTY_FOUR_BIT
+# endif
 #undef THIRTY_TWO_BIT
 
 #else
