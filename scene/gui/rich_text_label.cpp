@@ -662,8 +662,7 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (use_bbcode)
-				parse_bbcode(bbcode);
+			set_bbcode(bbcode);
 			main->first_invalid_line=0; //invalidate ALL
 			update();
 
@@ -1440,7 +1439,6 @@ bool RichTextLabel::is_scroll_following() const {
 
 Error RichTextLabel::parse_bbcode(const String& p_bbcode) {
 
-
 	clear();
 	return append_bbcode(p_bbcode);
 }
@@ -1858,6 +1856,10 @@ void RichTextLabel::set_bbcode(const String& p_bbcode) {
 	bbcode=p_bbcode;
 	if (is_inside_tree() && use_bbcode)
 		parse_bbcode(p_bbcode);
+	else { // raw text
+		clear();
+		add_text(p_bbcode);
+	}
 }
 
 String RichTextLabel::get_bbcode() const {
@@ -1869,8 +1871,7 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	if (use_bbcode==p_enable)
 		return;
 	use_bbcode=p_enable;
-	if (is_inside_tree() && use_bbcode)
-		parse_bbcode(bbcode);
+	set_bbcode(bbcode);
 }
 
 bool RichTextLabel::is_using_bbcode() const {
