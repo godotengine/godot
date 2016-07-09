@@ -33,6 +33,7 @@
 #include "io/resource_saver.h"
 #include "globals.h"
 #include "editor_scale.h"
+#include "message_queue.h"
 
 Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String& p_path) {
 
@@ -83,12 +84,10 @@ void EditorResourcePreview::_preview_ready(const String& p_str,const Ref<Texture
 
 	cache[path]=item;
 
-	Object *recv = ObjectDB::get_instance(id);
-	if (recv) {
-		recv->call_deferred(p_func,path,p_texture,p_ud);
-	}
-
 	preview_mutex->unlock();
+
+	MessageQueue::get_singleton()->push_call(id,p_func,path,p_texture,p_ud);
+
 }
 
 Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,const String& cache_base) {
@@ -107,6 +106,7 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,co
 	Ref<Texture> generated;
 
 	for(int i=0;i<preview_generators.size();i++) {
+
 		if (!preview_generators[i]->handles(type))
 			continue;
 		if (p_item.resource.is_valid()) {
@@ -157,98 +157,106 @@ void EditorResourcePreview::_thread() {
 
 			QueueItem item = queue.front()->get();
 			queue.pop_front();
-			preview_mutex->unlock();
-
-			Ref<Texture> texture;
-
-			//print_line("pop from queue "+item.path);
-
-			int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
-			thumbnail_size*=EDSCALE;
 
 			if (cache.has(item.path)) {
 				//already has it because someone loaded it, just let it know it's ready
 				if (item.resource.is_valid()) {
 					item.path+=":"+itos(cache[item.path].last_hash); //keep last hash (see description of what this is in condition below)
 				}
-				call_deferred("_preview_ready",item.path,cache[item.path].preview,item.id,item.function,item.userdata);
 
-			} else if (item.resource.is_valid()){
+				_preview_ready(item.path,cache[item.path].preview,item.id,item.function,item.userdata);
 
-				texture=_generate_preview(item,String());
-				//adding hash to the end of path (should be ID:<objid>:<hash>) because of 5 argument limit to call_deferred
-				call_deferred("_preview_ready",item.path+":"+itos(item.resource->hash_edited_version()),texture,item.id,item.function,item.userdata);
-
+				preview_mutex->unlock();
 			} else {
+				preview_mutex->unlock();
 
 
-				String temp_path=EditorSettings::get_singleton()->get_settings_path().plus_file("tmp");
-				String cache_base = Globals::get_singleton()->globalize_path(item.path).md5_text();
-				cache_base = temp_path.plus_file("resthumb-"+cache_base);
+				Ref<Texture> texture;
 
-				//does not have it, try to load a cached thumbnail
+				//print_line("pop from queue "+item.path);
 
-				String file = cache_base+".txt";
-				//print_line("cachetxt at "+file);
-				FileAccess *f=FileAccess::open(file,FileAccess::READ);
-				if (!f) {
+				int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+				thumbnail_size*=EDSCALE;
 
-					//print_line("generate because not cached");
 
-					//generate
-					texture=_generate_preview(item,cache_base);
+				if (item.resource.is_valid()){
+
+					texture=_generate_preview(item,String());
+					//adding hash to the end of path (should be ID:<objid>:<hash>) because of 5 argument limit to call_deferred
+					_preview_ready(item.path+":"+itos(item.resource->hash_edited_version()),texture,item.id,item.function,item.userdata);
+
 				} else {
 
-					uint64_t modtime = FileAccess::get_modified_time(item.path);
-					int tsize = f->get_line().to_int64();
-					uint64_t last_modtime = f->get_line().to_int64();
 
-					bool cache_valid = true;
+					String temp_path=EditorSettings::get_singleton()->get_settings_path().plus_file("tmp");
+					String cache_base = Globals::get_singleton()->globalize_path(item.path).md5_text();
+					cache_base = temp_path.plus_file("resthumb-"+cache_base);
 
-					if (tsize!=thumbnail_size) {
-						cache_valid=false;
-						memdelete(f);
-					} else if (last_modtime!=modtime) {
+					//does not have it, try to load a cached thumbnail
 
-						String last_md5 = f->get_line();
-						String md5 = FileAccess::get_md5(item.path);
-						memdelete(f);
+					String file = cache_base+".txt";
+					//print_line("cachetxt at "+file);
+					FileAccess *f=FileAccess::open(file,FileAccess::READ);
+					if (!f) {
 
-						if (last_md5!=md5) {
+						//print_line("generate because not cached");
 
+						//generate
+						texture=_generate_preview(item,cache_base);
+					} else {
+
+						uint64_t modtime = FileAccess::get_modified_time(item.path);
+						int tsize = f->get_line().to_int64();
+						uint64_t last_modtime = f->get_line().to_int64();
+
+						bool cache_valid = true;
+
+						if (tsize!=thumbnail_size) {
 							cache_valid=false;
-						} else {
-							//update modified time
+							memdelete(f);
+						} else if (last_modtime!=modtime) {
 
-							f=FileAccess::open(file,FileAccess::WRITE);
-							f->store_line(itos(modtime));
-							f->store_line(md5);
+							String last_md5 = f->get_line();
+							String md5 = FileAccess::get_md5(item.path);
+							memdelete(f);
+
+							if (last_md5!=md5) {
+
+								cache_valid=false;
+							} else {
+								//update modified time
+
+								f=FileAccess::open(file,FileAccess::WRITE);
+								f->store_line(itos(modtime));
+								f->store_line(md5);
+								memdelete(f);
+							}
+						} else {
 							memdelete(f);
 						}
-					} else {
-						memdelete(f);
-					}
 
-					if (cache_valid) {
+						if (cache_valid) {
 
-						texture = ResourceLoader::load(cache_base+".png","ImageTexture",true);
-						if (!texture.is_valid()) {
-							//well fuck
-							cache_valid=false;
+							texture = ResourceLoader::load(cache_base+".png","ImageTexture",true);
+							if (!texture.is_valid()) {
+								//well fuck
+								cache_valid=false;
+							}
 						}
+
+						if (!cache_valid) {
+
+							texture=_generate_preview(item,cache_base);
+						}
+
 					}
 
-					if (!cache_valid) {
-
-						texture=_generate_preview(item,cache_base);
-					}
+					//print_line("notify of preview ready");
+					_preview_ready(item.path,texture,item.id,item.function,item.userdata);
 
 				}
-
-				//print_line("notify of preview ready");
-				call_deferred("_preview_ready",item.path,texture,item.id,item.function,item.userdata);
-
 			}
+
 
 		} else {
 			preview_mutex->unlock();
