@@ -1611,6 +1611,7 @@ void EditorNode::_edit_current() {
 	object_menu->set_disabled(true);
 
 	bool is_resource = current_obj->is_type("Resource");
+	bool is_node = current_obj->is_type("Node");
 	resource_save_button->set_disabled(!is_resource);
 
 	if (is_resource) {
@@ -1627,7 +1628,7 @@ void EditorNode::_edit_current() {
 
 
 		//top_pallete->set_current_tab(1);
-	} else if (current_obj->is_type("Node")) {
+	} else if (is_node) {
 
 		Node * current_node = current_obj->cast_to<Node>();
 		ERR_FAIL_COND(!current_node);
@@ -1723,10 +1724,14 @@ void EditorNode::_edit_current() {
 		p->add_shortcut(ED_SHORTCUT("property_editor/copy_resource",TTR("Copy Resource")),RESOURCE_COPY);
 		p->add_shortcut(ED_SHORTCUT("property_editor/unref_resource",TTR("Make Built-In")),RESOURCE_UNREF);
 	}
-	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("property_editor/make_subresources_unique",TTR("Make Sub-Resources Unique")),OBJECT_UNIQUE_RESOURCES);
-	p->add_separator();
-	p->add_icon_shortcut(gui_base->get_icon("Help","EditorIcons"),ED_SHORTCUT("property_editor/open_help",TTR("Open in Help")),OBJECT_REQUEST_HELP);
+
+	if (is_resource || is_node) {
+		p->add_separator();
+		p->add_shortcut(ED_SHORTCUT("property_editor/make_subresources_unique",TTR("Make Sub-Resources Unique")),OBJECT_UNIQUE_RESOURCES);
+		p->add_separator();
+		p->add_icon_shortcut(gui_base->get_icon("Help","EditorIcons"),ED_SHORTCUT("property_editor/open_help",TTR("Open in Help")),OBJECT_REQUEST_HELP);
+	}
+
 	List<MethodInfo> methods;
 	current_obj->get_method_list(&methods);
 
