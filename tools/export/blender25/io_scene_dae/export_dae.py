@@ -1131,10 +1131,10 @@ class DaeExporter:
                     bonesid + '" name="' + bone.name + '" type="JOINT">')
         il += 1
         xform = bone.matrix_local
-        si["bone_bind_poses"].append((si["armature_xform"] * xform).inverted())
+        si["bone_bind_poses"].append((si["armature_xform"] * xform).inverted_safe())
 
         if (bone.parent is not None):
-            xform = bone.parent.matrix_local.inverted() * xform
+            xform = bone.parent.matrix_local.inverted_safe() * xform
         else:
             si["skeleton_nodes"].append(boneid)
 
@@ -1697,7 +1697,7 @@ class DaeExporter:
 
                     mtx = node.matrix_world.copy()
                     if (node.parent):
-                        mtx = node.parent.matrix_world.inverted() * mtx
+                        mtx = node.parent.matrix_world.inverted_safe() * mtx
 
                     xform_cache[name].append((key, mtx))
 
@@ -1725,7 +1725,7 @@ class DaeExporter:
                                     parent_invisible = True
 
                             if (not parent_invisible):
-                                mtx = parent_posebone.matrix.inverted() * mtx
+                                mtx = parent_posebone.matrix.inverted_safe() * mtx
 
                         xform_cache[bone_name].append((key, mtx))
 
