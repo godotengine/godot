@@ -99,6 +99,12 @@ class AnimationKeyEditor : public VBoxContainer  {
 		CURVE_SET_CONSTANT
 	};
 
+	enum {
+		RIGHT_MENU_DUPLICATE,
+		RIGHT_MENU_DUPLICATE_TRANSPOSE,
+		RIGHT_MENU_REMOVE
+	};
+
 	struct MouseOver {
 
 		enum Over {
@@ -312,6 +318,9 @@ class AnimationKeyEditor : public VBoxContainer  {
 	void _animation_len_update();
 
 	void _add_call_track(const NodePath& p_base);
+
+	void _anim_duplicate_keys(bool transpose = false);
+	void _anim_delete_keys();
 
 	void _root_removed();
 protected:
