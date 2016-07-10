@@ -1504,6 +1504,8 @@ bool Main::start() {
 		if (project_manager_request || (script=="" && test=="" && game_path=="" && !editor)) {
 
 			ProjectManager *pmanager = memnew( ProjectManager );
+			ProgressDialog *progress_dialog = memnew( ProgressDialog );
+			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
 			OS::get_singleton()->set_context(OS::CONTEXT_PROJECTMAN);
 		}

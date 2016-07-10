@@ -600,7 +600,8 @@ void EditorAssetLibrary::_install_asset() {
 		EditorAssetLibraryItemDownload *d  = downloads_hb->get_child(i)->cast_to<EditorAssetLibraryItemDownload>();
 		if (d && d->get_asset_id() == description->get_asset_id()) {
 
-			EditorNode::get_singleton()->show_warning("Download for this asset is already in progress!");
+			if (EditorNode::get_singleton() != NULL)
+				EditorNode::get_singleton()->show_warning("Download for this asset is already in progress!");
 			return;
 		}
 	}

@@ -317,9 +317,11 @@ void EditorAssetInstaller::ok_pressed() {
 			}
 			msg+=failed_files[i];
 		}
-		EditorNode::get_singleton()->show_warning(msg);
+		if (EditorNode::get_singleton() != NULL)
+			EditorNode::get_singleton()->show_warning(msg);
 	} else {
-		EditorNode::get_singleton()->show_warning("Package Installed Successfully!","Success!");
+		if (EditorNode::get_singleton() != NULL)
+			EditorNode::get_singleton()->show_warning("Package Installed Successfully!","Success!");
 	}
 
 
