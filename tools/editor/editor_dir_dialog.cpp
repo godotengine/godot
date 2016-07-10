@@ -30,7 +30,6 @@
 #include "os/os.h"
 #include "os/keyboard.h"
 #include "tools/editor/editor_settings.h"
-#include "tools/editor/editor_file_system.h"
 
 
 void EditorDirDialog::_update_dir(TreeItem* p_item) {
@@ -87,14 +86,11 @@ void EditorDirDialog::reload() {
 	_item_collapsed(root);
 }
 
-
 void EditorDirDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 		reload();
 		tree->connect("item_collapsed",this,"_item_collapsed",varray(),CONNECT_DEFERRED);
-		EditorFileSystem::get_singleton()->connect("filesystem_changed",this,"reload");
-
 	}
 }
 
@@ -202,7 +198,6 @@ void EditorDirDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_item_collapsed"),&EditorDirDialog::_item_collapsed);
 	ObjectTypeDB::bind_method(_MD("_make_dir"),&EditorDirDialog::_make_dir);
 	ObjectTypeDB::bind_method(_MD("_make_dir_confirm"),&EditorDirDialog::_make_dir_confirm);
-	ObjectTypeDB::bind_method(_MD("reload"),&EditorDirDialog::reload);
 
 	ADD_SIGNAL(MethodInfo("dir_selected",PropertyInfo(Variant::STRING,"dir")));
 }
@@ -242,7 +237,5 @@ EditorDirDialog::EditorDirDialog() {
 	add_child(mkdirerr);
 
 	get_ok()->set_text("Choose");
-
-
 
 }
