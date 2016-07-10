@@ -6676,6 +6676,17 @@
 				Force the camera to update scroll immediately.
 			</description>
 		</method>
+		<method name="reset_smoothing">
+			<description>
+			Set the camera's position immediately to its current smoothing destination.
+			This has no effect if smoothing is disabled.
+			</description>
+		</method>
+		<method name="align">
+			<description>
+			Align the camera to the tracked node
+			</description>
+		</method>
 		<method name="get_anchor_mode" qualifiers="const">
 			<return type="int">
 			</return>
