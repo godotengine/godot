@@ -31,6 +31,7 @@
 #include "os/os.h"
 #include "print_string.h"
 #include "label.h"
+#include "translation.h"
 #ifdef TOOLS_ENABLED
 #include "tools/editor/editor_settings.h"
 #endif
@@ -947,7 +948,7 @@ String LineEdit::get_text() const {
 
 void LineEdit::set_placeholder(String p_text) {
 
-	placeholder = p_text;
+	placeholder = XL_MESSAGE(p_text);
 	update();
 }
 
