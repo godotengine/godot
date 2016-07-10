@@ -412,6 +412,24 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h
 	if (node->get_tile_origin()==TileMap::TILE_ORIGIN_TOP_LEFT) {
 
 		rect.pos+=tile_ofs;
+	} else if (node->get_tile_origin()==TileMap::TILE_ORIGIN_BOTTOM_LEFT) {
+		Size2 cell_size = node->get_cell_size();
+		
+		rect.pos+=tile_ofs;
+		
+		if(p_transpose)
+		{
+			if(p_flip_h)
+				rect.pos.x-=cell_size.x;
+			else
+				rect.pos.x+=cell_size.x;
+		} else {
+			if(p_flip_v)
+				rect.pos.y-=cell_size.y;
+			else
+				rect.pos.y+=cell_size.y;
+		}
+
 	} else if (node->get_tile_origin()==TileMap::TILE_ORIGIN_CENTER) {
 		rect.pos+=node->get_cell_size()/2;
 		Vector2 s = r.size;

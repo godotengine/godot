@@ -222,6 +222,10 @@ void TileMap::_fix_cell_transform(Matrix32& xform,const Cell& p_cell, const Vect
 
 	Size2 s=p_sc;
 	Vector2 offset = p_offset;
+	
+	if (tile_origin==TILE_ORIGIN_BOTTOM_LEFT)
+		offset.y+=cell_size.y;
+
 
 	if (s.y > s.x) {
 		if ((p_cell.flip_h && (p_cell.flip_v || p_cell.transpose)) || (p_cell.flip_v && !p_cell.transpose))
@@ -240,7 +244,7 @@ void TileMap::_fix_cell_transform(Matrix32& xform,const Cell& p_cell, const Vect
 	if (p_cell.flip_h) {
 		xform.elements[0].x=-xform.elements[0].x;
 		xform.elements[1].x=-xform.elements[1].x;
-		if (tile_origin==TILE_ORIGIN_TOP_LEFT)
+		if (tile_origin==TILE_ORIGIN_TOP_LEFT || tile_origin==TILE_ORIGIN_BOTTOM_LEFT)
 			offset.x=s.x-offset.x;
 	}
 	if (p_cell.flip_v) {
@@ -248,6 +252,12 @@ void TileMap::_fix_cell_transform(Matrix32& xform,const Cell& p_cell, const Vect
 		xform.elements[1].y=-xform.elements[1].y;
 		if (tile_origin==TILE_ORIGIN_TOP_LEFT)
 			offset.y=s.y-offset.y;
+		else if (tile_origin==TILE_ORIGIN_BOTTOM_LEFT) {
+			if(p_cell.transpose)
+				offset.y+=s.y;
+			else
+				offset.y-=s.y;
+		}
 	}
 	xform.elements[2].x+=offset.x;
 	xform.elements[2].y+=offset.y;
@@ -411,6 +421,24 @@ void TileMap::_update_dirty_quadrants() {
 
 			if (tile_origin==TILE_ORIGIN_TOP_LEFT) {
 				rect.pos+=tile_ofs;
+				
+			} else if (tile_origin==TILE_ORIGIN_BOTTOM_LEFT) {
+								
+				rect.pos+=tile_ofs;
+				
+				if(c.transpose)
+				{
+					if(c.flip_h)
+						rect.pos.x-=cell_size.x;
+					else
+						rect.pos.x+=cell_size.x;
+				} else {
+					if(c.flip_v)
+						rect.pos.y-=cell_size.y;
+					else
+						rect.pos.y+=cell_size.y;
+				}
+				
 			} else if (tile_origin==TILE_ORIGIN_CENTER) {
 				rect.pos+=tcenter;
 
@@ -584,6 +612,9 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	q.pos+=get_cell_draw_offset();
 	if (tile_origin==TILE_ORIGIN_CENTER)
 		q.pos+=cell_size/2;
+	else if (tile_origin==TILE_ORIGIN_BOTTOM_LEFT)
+		q.pos.y+=cell_size.y;
+	
 
 	xform.set_origin( q.pos );
 //	q.canvas_item = VisualServer::get_singleton()->canvas_item_create();
@@ -1242,7 +1273,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),_SCS("set_quadrant_size"),_SCS("get_quadrant_size"));
 	ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"cell/custom_transform"),_SCS("set_custom_transform"),_SCS("get_custom_transform"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/half_offset",PROPERTY_HINT_ENUM,"Offset X,Offset Y,Disabled"),_SCS("set_half_offset"),_SCS("get_half_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/tile_origin",PROPERTY_HINT_ENUM,"Top Left,Center"),_SCS("set_tile_origin"),_SCS("get_tile_origin"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/tile_origin",PROPERTY_HINT_ENUM,"Top Left,Center,Bottom Left"),_SCS("set_tile_origin"),_SCS("get_tile_origin"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"cell/y_sort"),_SCS("set_y_sort_mode"),_SCS("is_y_sort_mode_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collision/use_kinematic",PROPERTY_HINT_NONE,""),_SCS("set_collision_use_kinematic"),_SCS("get_collision_use_kinematic"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_friction"),_SCS("get_collision_friction"));
@@ -1264,6 +1295,7 @@ void TileMap::_bind_methods() {
 	BIND_CONSTANT( HALF_OFFSET_DISABLED );
 	BIND_CONSTANT( TILE_ORIGIN_TOP_LEFT );
 	BIND_CONSTANT( TILE_ORIGIN_CENTER );
+	BIND_CONSTANT( TILE_ORIGIN_BOTTOM_LEFT );
 
 }
 
