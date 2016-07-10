@@ -79,6 +79,11 @@ for x in env.android_jni_dirs:
 
 gradle_asset_dirs_text=""
 
+gradle_default_config_text=""
+
+for x in env.android_default_config:
+	gradle_default_config_text+=x+"\n\t\t"
+
 gradle_text = gradle_text.replace("$$GRADLE_REPOSITORY_URLS$$",gradle_maven_repos_text)
 gradle_text = gradle_text.replace("$$GRADLE_DEPENDENCIES$$",gradle_maven_dependencies_text)
 gradle_text = gradle_text.replace("$$GRADLE_JAVA_DIRS$$",gradle_java_dirs_text)
@@ -86,6 +91,7 @@ gradle_text = gradle_text.replace("$$GRADLE_RES_DIRS$$",gradle_res_dirs_text)
 gradle_text = gradle_text.replace("$$GRADLE_ASSET_DIRS$$",gradle_asset_dirs_text)
 gradle_text = gradle_text.replace("$$GRADLE_AIDL_DIRS$$",gradle_aidl_dirs_text)
 gradle_text = gradle_text.replace("$$GRADLE_JNI_DIRS$$",gradle_jni_dirs_text)
+gradle_text = gradle_text.replace("$$GRADLE_DEFAULT_CONFIG$$",gradle_default_config_text)
 
 
 gradle_baseout.write( gradle_text )

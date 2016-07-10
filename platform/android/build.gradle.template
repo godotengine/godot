@@ -39,6 +39,7 @@ android {
 	defaultConfig {
 		minSdkVersion 14
 		targetSdkVersion 23
+		$$GRADLE_DEFAULT_CONFIG$$
 	}
 	sourceSets {
 		main {
