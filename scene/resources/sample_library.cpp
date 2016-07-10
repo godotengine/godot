@@ -106,9 +106,9 @@ void SampleLibrary::remove_sample(const StringName& p_name) {
 	sample_map.erase(p_name);
 }
 
-void SampleLibrary::get_sample_list(List<StringName> *p_samples) {
+void SampleLibrary::get_sample_list(List<StringName> *p_samples) const {
 
-	for(Map<StringName,SampleData >::Element *E=sample_map.front();E;E=E->next()) {
+	for(const Map<StringName,SampleData >::Element *E=sample_map.front();E;E=E->next()) {
 
 		p_samples->push_back(E->key());
 	}
@@ -177,7 +177,20 @@ float SampleLibrary::sample_get_pitch_scale(const StringName& p_name) const{
 	return sample_map[p_name].pitch_scale;
 }
 
+Array SampleLibrary::_get_sample_list() const {
 
+	List<StringName> snames;
+	get_sample_list(&snames);
+
+	snames.sort_custom<StringName::AlphCompare>();
+
+	Array ret;
+	for (List<StringName>::Element *E=snames.front();E;E=E->next()) {
+		ret.push_back(E->get());
+	}
+
+	return ret;
+}
 
 void SampleLibrary::_bind_methods() {
 
@@ -185,6 +198,8 @@ void SampleLibrary::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_sample:Sample","name"),&SampleLibrary::get_sample );
 	ObjectTypeDB::bind_method(_MD("has_sample","name"),&SampleLibrary::has_sample );
 	ObjectTypeDB::bind_method(_MD("remove_sample","name"),&SampleLibrary::remove_sample );
+
+	ObjectTypeDB::bind_method(_MD("get_sample_list"),&SampleLibrary::_get_sample_list );
 
 	ObjectTypeDB::bind_method(_MD("sample_set_volume_db","name","db"),&SampleLibrary::sample_set_volume_db );
 	ObjectTypeDB::bind_method(_MD("sample_get_volume_db","name"),&SampleLibrary::sample_get_volume_db );
