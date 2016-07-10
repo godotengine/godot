@@ -19088,6 +19088,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_placeholder">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_placeholder_alpha">
+			<argument index="0" name="alpha" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_secret">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
@@ -21694,6 +21706,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_displayed_folded" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_fixed_processing" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -21811,6 +21829,12 @@
 			</argument>
 			<description>
 				Replace a node in a scene by a given one. Subscriptions that pass through this node will be lost.
+			</description>
+		</method>
+		<method name="set_display_folded">
+			<argument index="0" name="fold" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_display_folded">
@@ -32822,6 +32846,20 @@
 			</argument>
 			<description>
 				Return the sample from the library matching the given text ID. Return null if the sample is not found.
+			</description>
+		</method>
+		<method name="get_sample_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			Return the number of [Sample]s in this [SampleLibrary].
+			</description>
+		</method>
+		<method name="get_sample_names">
+			<return type="Array">
+			</return>
+			<description>
+			Return an [Array] of text IDs representing [Sample]s in this [SampleLibrary].
 			</description>
 		</method>
 		<method name="has_sample" qualifiers="const">
