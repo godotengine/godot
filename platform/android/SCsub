@@ -109,4 +109,22 @@ pp_baseout.write( manifest )
 
 env_android.SharedLibrary("#bin/libgodot",[android_objects],SHLIBSUFFIX=env["SHLIBSUFFIX"])
 
-#env.Command('#bin/libgodot_android.so', '#platform/android/libgodot_android.so', Copy('bin/libgodot_android.so', 'platform/android/libgodot_android.so'))
+
+lib_arch_dir = ''
+if env['android_arch'] == 'armv6':
+	lib_arch_dir = 'armeabi'
+elif env['android_arch'] == 'armv7':
+	lib_arch_dir = 'armeabi-v7a'
+elif env['android_arch'] == 'x86':
+	lib_arch_dir = 'x86'
+else:
+	print 'WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin'
+
+if lib_arch_dir != '':
+	if env['target'] == 'release':
+		lib_type_dir = 'release'
+	else: # release_debug, debug
+		lib_type_dir = 'debug'
+		
+	out_dir = '#platform/android/java/libs/'+lib_type_dir+'/'+lib_arch_dir
+	env_android.Command(out_dir+'/libgodot_android.so', '#bin/libgodot'+env['SHLIBSUFFIX'], Move("$TARGET", "$SOURCE"))
