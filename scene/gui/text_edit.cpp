@@ -965,6 +965,12 @@ void TextEdit::_notification(int p_what) {
 							}
 
 							bool in_highlighted_word = (j >= highlighted_text_col && j < highlighted_text_col+highlighted_text.length());
+
+							/* if this is the original highlighted text we don't want to highlight it again */
+							if (cursor.line==line && (cursor.column >= highlighted_text_col && cursor.column <= highlighted_text_col+highlighted_text.length())) {
+								in_highlighted_word = false;
+							}
+
 							if (in_highlighted_word) {
 								VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(char_w, get_row_height())),cache.word_highlighted_color);
 							}
