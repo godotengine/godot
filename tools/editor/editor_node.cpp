@@ -2678,7 +2678,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			
 			bool autosave = EDITOR_DEF("run/auto_save_before_running",true);
 			if (autosave) {
-				_menu_option_confirm(FILE_SAVE_SCENE, false);
+				_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
 			}
 			if (run_native->is_deploy_debug_remote_enabled()){
 				_menu_option_confirm(RUN_STOP,true);
