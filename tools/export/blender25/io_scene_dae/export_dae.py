@@ -31,7 +31,6 @@ http://www.khronos.org/collada/
 # Materials & Textures
 # Optionally export Vertex Colors
 # Morph Targets
-# Control bone removal
 # Copy textures
 # Export Keyframe Optimization
 # --
@@ -1112,38 +1111,52 @@ class DaeExporter:
             self.writel(S_NODES, il, '</instance_geometry>')
 
     def export_armature_bone(self, bone, il, si):
-        boneid = self.new_id("bone")
-        boneidx = si["bone_count"]
-        si["bone_count"] += 1
-        bonesid = si["id"] + "-" + str(boneidx)
-        if (bone.name in self.used_bones):
-            if (self.config["use_anim_action_all"]):
-                self.operator.report({'WARNING'}, 'Bone name "' + bone.name +
-                                     '" used in more than one skeleton. '
-                                     'Actions might export wrong.')
-        else:
-            self.used_bones.append(bone.name)
+        is_ctrl_bone = (bone.name.startswith("ctrl") and self.config["use_exclude_ctrl_bones"])
+        if (bone.parent is None and is_ctrl_bone is True):
+            self.operator.report({'WARNING'},'Root bone cannot be a control bone.')
+            is_ctrl_bone = False
 
-        si["bone_index"][bone.name] = boneidx
-        si["bone_ids"][bone] = boneid
-        si["bone_names"].append(bonesid)
-        self.writel(S_NODES, il, '<node id="' + boneid + '" sid="' +
-                    bonesid + '" name="' + bone.name + '" type="JOINT">')
-        il += 1
+        if (is_ctrl_bone is False):
+            boneid = self.new_id("bone")
+            boneidx = si["bone_count"]
+            si["bone_count"] += 1
+            bonesid = si["id"] + "-" + str(boneidx)
+            if (bone.name in self.used_bones):
+                if (self.config["use_anim_action_all"]):
+                    self.operator.report({'WARNING'}, 'Bone name "' + bone.name +
+                                         '" used in more than one skeleton. '
+                                         'Actions might export wrong.')
+            else:
+                self.used_bones.append(bone.name)
+
+            si["bone_index"][bone.name] = boneidx
+            si["bone_ids"][bone] = boneid
+            si["bone_names"].append(bonesid)
+            self.writel(S_NODES, il, '<node id="' + boneid + '" sid="' +
+                        bonesid + '" name="' + bone.name + '" type="JOINT">')
+
+        if (is_ctrl_bone is False):
+            il += 1
+
         xform = bone.matrix_local
-        si["bone_bind_poses"].append((si["armature_xform"] * xform).inverted())
+        if (is_ctrl_bone is False):
+            si["bone_bind_poses"].append((si["armature_xform"] * xform).inverted_safe())
 
         if (bone.parent is not None):
-            xform = bone.parent.matrix_local.inverted() * xform
+            xform = bone.parent.matrix_local.inverted_safe() * xform
         else:
             si["skeleton_nodes"].append(boneid)
 
-        self.writel(S_NODES, il, '<matrix sid="transform">' +
-                    strmtx(xform) + '</matrix>')
+        if (is_ctrl_bone is False):
+            self.writel(S_NODES, il, '<matrix sid="transform">' +
+                        strmtx(xform) + '</matrix>')
+
         for c in bone.children:
             self.export_armature_bone(c, il, si)
-        il -= 1
-        self.writel(S_NODES, il, '</node>')
+
+        if (is_ctrl_bone is False):
+            il -= 1
+            self.writel(S_NODES, il, '</node>')
 
     def export_armature_node(self, node, il):
         if (node.data is None):
@@ -1697,7 +1710,7 @@ class DaeExporter:
 
                     mtx = node.matrix_world.copy()
                     if (node.parent):
-                        mtx = node.parent.matrix_world.inverted() * mtx
+                        mtx = node.parent.matrix_world.inverted_safe() * mtx
 
                     xform_cache[name].append((key, mtx))
 
@@ -1705,7 +1718,9 @@ class DaeExporter:
                     # All bones exported for now
 
                     for bone in node.data.bones:
-
+                        if((bone.name.startswith("ctrl") and self.config["use_exclude_ctrl_bones"])):
+                            continue
+                            
                         bone_name = self.skeleton_info[node]["bone_ids"][bone]
 
                         if (not (bone_name in xform_cache)):
@@ -1717,7 +1732,13 @@ class DaeExporter:
 
                         mtx = posebone.matrix.copy()
                         if (bone.parent):
-                            parent_posebone = node.pose.bones[bone.parent.name]
+                            if (self.config["use_exclude_ctrl_bones"]):
+                                current_parent_posebone = bone.parent
+                                while (current_parent_posebone.name.startswith("ctrl") and current_parent_posebone.parent):
+                                    current_parent_posebone = current_parent_posebone.parent
+                                parent_posebone = node.pose.bones[current_parent_posebone.name]
+                            else:
+                                parent_posebone = node.pose.bones[bone.parent.name]
                             parent_invisible = False
 
                             for i in range(3):
@@ -1725,7 +1746,7 @@ class DaeExporter:
                                     parent_invisible = True
 
                             if (not parent_invisible):
-                                mtx = parent_posebone.matrix.inverted() * mtx
+                                mtx = parent_posebone.matrix.inverted_safe() * mtx
 
                         xform_cache[bone_name].append((key, mtx))
 
