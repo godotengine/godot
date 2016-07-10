@@ -75,6 +75,7 @@ class InputDefault : public Input {
 	struct Joystick {
 		StringName name;
 		StringName uid;
+		bool connected;
 		bool last_buttons[JOY_BUTTON_MAX + 19]; //apparently SDL specifies 35 possible buttons on android
 		float last_axis[JOY_AXIS_MAX];
 		float filter;
@@ -93,6 +94,7 @@ class InputDefault : public Input {
 
 				last_buttons[i] = false;
 			}
+			connected = false;
 			last_hat = HAT_MASK_CENTER;
 			filter = 0.01f;
 			mapping = -1;
@@ -168,6 +170,7 @@ public:
 
 	virtual float get_joy_axis(int p_device,int p_axis);
 	String get_joy_name(int p_idx);
+	virtual Array get_connected_joysticks();
 	virtual Vector2 get_joy_vibration_strength(int p_device);
 	virtual float get_joy_vibration_duration(int p_device);
 	virtual uint64_t get_joy_vibration_timestamp(int p_device);
