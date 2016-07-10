@@ -243,7 +243,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			//if (!_validate_no_foreign())
 			//	break;
-			create_dialog->popup_centered_ratio();
+			create_dialog->popup(true);
 		} break;
 		case TOOL_INSTANCE: {
 
@@ -281,7 +281,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_REPLACE: {
 
-			create_dialog->popup_centered_ratio();
+			create_dialog->popup(false);
 		} break;
 		case TOOL_CONNECT: {
 

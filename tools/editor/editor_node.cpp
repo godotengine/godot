@@ -2494,7 +2494,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 #endif
 		case RESOURCE_NEW: {
 
-			create_dialog->popup_centered_ratio();
+			create_dialog->popup(true);
 		} break;
 		case RESOURCE_LOAD: {
 
