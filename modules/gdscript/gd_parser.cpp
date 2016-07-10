@@ -1536,6 +1536,10 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 					return;
 				}
 				tokenizer->advance();
+				if(tokenizer->get_token()==GDTokenizer::TK_SEMICOLON) {
+					// Ignore semicolon after 'pass'
+					tokenizer->advance();
+				}
 			} break;
 			case GDTokenizer::TK_PR_VAR: {
 				//variale declaration and (eventual) initialization
