@@ -124,6 +124,7 @@ private:
 		FILE_OPEN_SCENE,
 		FILE_SAVE_SCENE,
 		FILE_SAVE_AS_SCENE,
+		FILE_SAVE_ALL_SCENES,
 		FILE_SAVE_BEFORE_RUN,
 		FILE_SAVE_AND_RUN,
 		FILE_IMPORT_SUBSCENE,
@@ -438,7 +439,7 @@ private:
 
 	void _node_renamed();
 	void _editor_select(int p_which);
-	void _set_scene_metadata(const String &p_file);
+	void _set_scene_metadata(const String &p_file, int p_idx=-1);
 	void _get_scene_metadata(const String& p_file);
 	void _update_title();
 	void _update_scene_tabs();
@@ -448,7 +449,7 @@ private:
 
 	void _rebuild_import_menu();
 
-	void _save_scene(String p_file);
+	void _save_scene(String p_file, int idx = -1);
 
 
 	void _instance_request(const String& p_path);

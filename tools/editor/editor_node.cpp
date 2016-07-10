@@ -725,9 +725,9 @@ void EditorNode::_get_scene_metadata(const String& p_file) {
 
 }
 
-void EditorNode::_set_scene_metadata(const String& p_file) {
+void EditorNode::_set_scene_metadata(const String& p_file, int p_idx) {
 
-	Node *scene = editor_data.get_edited_scene_root();
+	Node *scene = editor_data.get_edited_scene_root(p_idx);
 
 	if (!scene)
 		return;
@@ -740,7 +740,7 @@ void EditorNode::_set_scene_metadata(const String& p_file) {
 	Ref<ConfigFile> cf;
 	cf.instance();
 
-	Dictionary md = editor_data.get_editor_states();
+	Dictionary md = editor_data.get_edited_scene()==p_idx?editor_data.get_editor_states():editor_data.get_scene_editor_states(p_idx);
 	List<Variant> keys;
 	md.get_key_list(&keys);
 
@@ -954,9 +954,9 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 }
 
 
-void EditorNode::_save_scene(String p_file) {
+void EditorNode::_save_scene(String p_file, int idx) {
 
-	Node *scene = editor_data.get_edited_scene_root();
+	Node *scene = editor_data.get_edited_scene_root(idx);
 
 	if (!scene) {
 
@@ -970,7 +970,7 @@ void EditorNode::_save_scene(String p_file) {
 
 	editor_data.apply_changes_in_editors();
 
-	_set_scene_metadata(p_file);
+	_set_scene_metadata(p_file,idx);
 
 
 	Ref<PackedScene> sdata;
@@ -1001,7 +1001,7 @@ void EditorNode::_save_scene(String p_file) {
 		return;
 	}
 
-	sdata->set_import_metadata(editor_data.get_edited_scene_import_metadata());
+	sdata->set_import_metadata(editor_data.get_edited_scene_import_metadata(idx));
 	int flg=0;
 	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
 		flg|=ResourceSaver::FLAG_COMPRESS;
@@ -1017,7 +1017,10 @@ void EditorNode::_save_scene(String p_file) {
 	if (err==OK) {
 		scene->set_filename( Globals::get_singleton()->localize_path(p_file) );
 		//EditorFileSystem::get_singleton()->update_file(p_file,sdata->get_type());
-		set_current_version(editor_data.get_undo_redo().get_version());
+		if (idx < 0 || idx == editor_data.get_edited_scene())
+			set_current_version(editor_data.get_undo_redo().get_version());
+		else
+			editor_data.set_edited_scene_version(0,idx);
 		_update_title();
 		_update_scene_tabs();
 	} else {
@@ -1810,7 +1813,6 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 	String args;
 
 
-
 	if (p_current || (editor_data.get_edited_scene_root() && p_custom==editor_data.get_edited_scene_root()->get_filename())) {
 
 		Node *scene = editor_data.get_edited_scene_root();
@@ -1833,12 +1835,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 		}
 
-		bool autosave = EDITOR_DEF("run/auto_save_before_running",true);
 
-		if (autosave) {
-
-			_menu_option(FILE_SAVE_SCENE);
-		}
 
 		if (run_settings_dialog->get_run_mode()==RunSettingsDialog::RUN_LOCAL_SCENE) {
 
@@ -1911,7 +1908,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 				_save_scene_with_preview(scene->get_filename());
 			}
 		}
-
+		_menu_option(FILE_SAVE_ALL_SCENES);
 		editor_data.save_editor_external_data();
 	}
 
@@ -2167,6 +2164,19 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		} break;
 
+		case FILE_SAVE_ALL_SCENES: {
+			for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+				Node *scene = editor_data.get_edited_scene_root(i);
+				if (scene && scene->get_filename()!="") {
+					// save in background if in the script editor
+					if (i != editor_data.get_edited_scene() || _get_current_main_editor() == EDITOR_SCRIPT) {
+						_save_scene(scene->get_filename(), i);
+					} else {
+						_save_scene_with_preview(scene->get_filename());
+					}
+				}// else: ignore new scenes
+			}
+		} break;
 		case FILE_SAVE_BEFORE_RUN: {
 			if (!p_confirmed) {
 				accept->get_ok()->set_text(TTR("Yes"));
@@ -5648,6 +5658,7 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/save_scene",TTR("Save Scene"),KEY_MASK_CMD+KEY_S),FILE_SAVE_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/save_scene_as",TTR("Save Scene As.."),KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_S),FILE_SAVE_AS_SCENE);
+	p->add_shortcut(ED_SHORTCUT("editor/save_all_scenes",TTR("Save all Scenes"),KEY_MASK_ALT+KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_S),FILE_SAVE_ALL_SCENES);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/close_scene",TTR("Close Scene"),KEY_MASK_SHIFT+KEY_MASK_CTRL+KEY_W),FILE_CLOSE);
 	p->add_separator();
