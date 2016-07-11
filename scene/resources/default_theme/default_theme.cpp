@@ -473,6 +473,8 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	t->set_color("completion_selected_color", "TextEdit",Color::html("434244"));
 	t->set_color("completion_existing_color", "TextEdit",Color::html("21dfdfdf"));
 	t->set_color("completion_scroll_color","TextEdit", control_font_color_pressed );
+	t->set_color("completion_scroll_color","TextEdit", Color::html("ffffff"));
+	t->set_color("completion_font_color","TextEdit", Color::html("aaaaaa"));
 	t->set_color("font_color","TextEdit", control_font_color );
 	t->set_color("font_color_selected","TextEdit", Color(0,0,0) );
 	t->set_color("selection_color","TextEdit", font_color_selection );
@@ -482,6 +484,11 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	t->set_color("caret_color","TextEdit", control_font_color );
 	t->set_color("symbol_color","TextEdit", control_font_color_hover );
 	t->set_color("brace_mismatch_color","TextEdit", Color(1,0.2,0.2) );
+	t->set_color("line_number_color","TextEdit",Color::html("66aaaaaa"));
+	t->set_color("function_color","TextEdit",Color::html("66a2ce"));
+	t->set_color("member_variable_color","TextEdit",Color::html("e64e59"));
+	t->set_color("number_color","TextEdit",Color::html("EB9532"));
+	t->set_color("word_highlighted_color","TextEdit",Color(0.8,0.9,0.9,0.15));
 
 	t->set_constant("completion_lines","TextEdit", 7 );
 	t->set_constant("completion_max_width","TextEdit", 50 );
