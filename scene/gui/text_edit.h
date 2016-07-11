@@ -428,6 +428,7 @@ public:
 	void set_current_search_result(int line, int col);
 
 	void set_highlight_all_occurrences(const bool p_enabled);
+	bool is_highlight_all_occurrences_enabled() const;
 	bool is_selection_active() const;
 	int get_selection_from_line() const;
     int get_selection_from_column() const;

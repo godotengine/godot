@@ -3610,6 +3610,10 @@ void TextEdit::set_highlight_all_occurrences(const bool p_enabled) {
 	update();
 }
 
+bool TextEdit::is_highlight_all_occurrences_enabled() const {
+	return highlight_all_occurrences;
+}
+
 int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column) {
 	int col = -1;
 
@@ -4440,6 +4444,9 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_show_line_numbers", "enable"), &TextEdit::set_show_line_numbers);
 	ObjectTypeDB::bind_method(_MD("is_show_line_numbers_enabled"), &TextEdit::is_show_line_numbers_enabled);
 
+	ObjectTypeDB::bind_method(_MD("set_highlight_all_occurrences", "enable"), &TextEdit::set_highlight_all_occurrences);
+	ObjectTypeDB::bind_method(_MD("is_highlight_all_occurrences_enabled"), &TextEdit::is_highlight_all_occurrences_enabled);
+
 	ObjectTypeDB::bind_method(_MD("set_syntax_coloring","enable"),&TextEdit::set_syntax_coloring);
 	ObjectTypeDB::bind_method(_MD("is_syntax_coloring_enabled"),&TextEdit::is_syntax_coloring_enabled);
 
@@ -4453,6 +4460,7 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_menu:PopupMenu"),&TextEdit::get_menu);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), _SCS("set_show_line_numbers"), _SCS("is_show_line_numbers_enabled"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), _SCS("set_highlight_all_occurrences"), _SCS("is_highlight_all_occurrences_enabled"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret/caret_blink"), _SCS("cursor_set_blink_enabled"), _SCS("cursor_get_blink_enabled"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret/caret_blink_speed",PROPERTY_HINT_RANGE,"0.1,10,0.1"), _SCS("cursor_set_blink_speed"),_SCS("cursor_get_blink_speed") );
