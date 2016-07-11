@@ -182,8 +182,10 @@ bool FileAccessJAndroid::file_exists(const String& p_path) {
 
 	jstring js = env->NewStringUTF(path.utf8().get_data());
 	int res = env->CallIntMethod(io,_file_open,js,false);
-	if (res<=0)
+	if (res<=0) {
+		env->DeleteLocalRef(js);
 		return false;
+	}
 	env->CallVoidMethod(io,_file_close,res);
 	env->DeleteLocalRef(js);
 	return true;
