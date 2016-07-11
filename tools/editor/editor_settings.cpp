@@ -683,6 +683,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	set("text_editor/completion_background_color", Color::html("2C2A32"));
 	set("text_editor/completion_selected_color", Color::html("434244"));
 	set("text_editor/completion_existing_color", Color::html("21dfdfdf"));
+	set("text_editor/completion_scroll_color", Color::html("ffffff"));
 	set("text_editor/caret_color",Color::html("aaaaaa"));
 	set("text_editor/line_number_color",Color::html("66aaaaaa"));
 	set("text_editor/text_color",Color::html("aaaaaa"));
@@ -918,6 +919,7 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	cf->set_value(theme_section, "completion_background_color", ((Color)get("text_editor/completion_background_color")).to_html());
 	cf->set_value(theme_section, "completion_selected_color", ((Color)get("text_editor/completion_selected_color")).to_html());
 	cf->set_value(theme_section, "completion_existing_color", ((Color)get("text_editor/completion_existing_color")).to_html());
+	cf->set_value(theme_section, "completion_scroll_color", ((Color)get("text_editor/completion_scroll_color")).to_html());
 	cf->set_value(theme_section, "caret_color", ((Color)get("text_editor/caret_color")).to_html());
 	cf->set_value(theme_section, "line_number_color", ((Color)get("text_editor/line_number_color")).to_html());
 	cf->set_value(theme_section, "text_color", ((Color)get("text_editor/text_color")).to_html());
