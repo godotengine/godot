@@ -77,6 +77,7 @@ class TextEdit : public Control  {
 		Color completion_background_color;
 		Color completion_selected_color;
 		Color completion_existing_color;
+		Color completion_font_color;
 		Color caret_color;
 		Color line_number_color;
 		Color font_color;

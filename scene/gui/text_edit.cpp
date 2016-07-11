@@ -1111,7 +1111,7 @@ void TextEdit::_notification(int p_what) {
 
 					int l = line_from + i;
 					ERR_CONTINUE( l < 0 || l>= completion_options.size());
-					Color text_color = cache.font_color;
+					Color text_color = cache.completion_font_color;
 					for(int j=0;j<color_regions.size();j++) {
 						if (completion_options[l].begins_with(color_regions[j].begin_key)) {
 							text_color=color_regions[j].color;
@@ -3312,6 +3312,7 @@ void TextEdit::_update_caches() {
 	cache.completion_background_color=get_color("completion_background_color");
 	cache.completion_selected_color=get_color("completion_selected_color");
 	cache.completion_existing_color=get_color("completion_existing_color");
+	cache.completion_font_color=get_color("completion_font_color");
 	cache.font=get_font("font");
 	cache.caret_color=get_color("caret_color");
 	cache.line_number_color=get_color("line_number_color");

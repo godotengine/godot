@@ -313,6 +313,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	get_text_edit()->add_color_override("completion_selected_color", EDITOR_DEF("text_editor/completion_selected_color", Color::html("434244")));
 	get_text_edit()->add_color_override("completion_existing_color", EDITOR_DEF("text_editor/completion_existing_color", Color::html("21dfdfdf")));
 	get_text_edit()->add_color_override("completion_scroll_color", EDITOR_DEF("text_editor/completion_scroll_color", Color::html("ffffff")));
+	get_text_edit()->add_color_override("completion_font_color", EDITOR_DEF("text_editor/completion_font_color", Color::html("aaaaaa")));
 	get_text_edit()->add_color_override("font_color",EDITOR_DEF("text_editor/text_color",Color(0,0,0)));
 	get_text_edit()->add_color_override("line_number_color",EDITOR_DEF("text_editor/line_number_color",Color(0,0,0)));
 	get_text_edit()->add_color_override("caret_color",EDITOR_DEF("text_editor/caret_color",Color(0,0,0)));
