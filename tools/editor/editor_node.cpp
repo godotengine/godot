@@ -5856,7 +5856,8 @@ EditorNode::EditorNode() {
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom","EditorIcons"));
 	play_custom_scene_button->connect("pressed", this,"_menu_option",make_binds(RUN_PLAY_CUSTOM_SCENE));
-	play_custom_scene_button->set_tooltip(TTR("Play custom scene")+" ("+keycode_get_string(KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_F5)+").");
+	play_custom_scene_button->set_tooltip(TTR("Play custom scene"));
+	play_custom_scene_button->set_shortcut(ED_SHORTCUT("editor/play_custom_scene",TTR("Play Custom Scene"),KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_F5));
 
 	debug_button = memnew( MenuButton );
 	debug_button->set_flat(true);
