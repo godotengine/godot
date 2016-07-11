@@ -469,6 +469,7 @@ public:
 	void menu_option(int p_option);
 
 	void set_show_line_numbers(bool p_show);
+	bool is_show_line_numbers_enabled() const;
 
 	void set_draw_breakpoint_gutter(bool p_draw);
 	bool is_drawing_breakpoint_gutter() const;
