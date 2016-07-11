@@ -2900,6 +2900,68 @@ bool String::matchn(const String& p_wildcard) const {
 
 }
 
+String String::format(Array values,String placeholder) const {
+
+    String new_string = String( this->ptr() );
+
+    for(int i=0;i<values.size();i++) {
+        String i_as_str = String::num_int64( i );
+
+        if( values[i].get_type() == Variant::ARRAY ) {
+            Array value_arr = values[i];
+            if( value_arr.size()==2 ) {
+                Variant v_key = value_arr[0];
+                String key;
+                if( v_key.get_type() == Variant::STRING ) {
+                    key = v_key;
+                }else if( v_key.get_type() == Variant::INT ) {
+                    key = String::num_int64( v_key );
+                }else if( v_key.get_type() == Variant::REAL ) {
+                    key = String::num_scientific( v_key );
+                }else {
+                    ERR_PRINT(String("STRING.format Key type not supported index: " + i_as_str).ascii().get_data());
+                    continue;
+                }
+
+                Variant v_val = value_arr[1];
+                String val;
+                if( v_val.get_type() == Variant::STRING ) {
+                    val = v_val;
+                }else if( v_val.get_type() == Variant::INT ) {
+                    val = String::num_int64( v_val );
+                }else if( v_val.get_type() == Variant::REAL ) {
+                    val = String::num_scientific( v_val );
+                }else {
+                    ERR_PRINT(String("STRING.format Value type not supported index: " + i_as_str).ascii().get_data());
+                    continue;
+                }
+
+                new_string = new_string.replacen( placeholder.replace("_", key ), val );
+            }else {
+                
+            }
+        } else {
+
+            String val;
+            if( values[i].get_type() == Variant::STRING ) {
+                val = values[i];
+            }else if( values[i].get_type() == Variant::INT ) {
+                val = String::num_int64( values[i] );
+            }else if( values[i].get_type() == Variant::REAL ) {
+                val = String::num_scientific( values[i] );
+            }else {
+                ERR_PRINT(String("STRING.format Value type not supported index: " + i_as_str).ascii().get_data());
+                continue;
+            }
+
+            new_string = new_string.replacen( placeholder.replace("_", i_as_str ), val );
+                        
+        }
+   }
+
+    return new_string;
+}
+
 String String::replace(String p_key,String p_with) const {
 
 	String new_string;
