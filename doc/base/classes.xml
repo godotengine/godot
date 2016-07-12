@@ -39408,6 +39408,34 @@
 				Set the color for symbols.
 			</description>
 		</method>
+		<method name="set_show_line_numbers">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set to enable showing line numbers.
+			</description>
+		</method>
+		<method name="is_show_line_numbers_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if line numbers are enabled.
+			</description>
+		</method>
+		<method name="set_highlight_all_occurrences">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set to enable highlighting all occurrences of the current selection.
+			</description>
+		</method>
+		<method name="is_highlight_all_occurrences_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if highlight all occurrences is enabled.
+			</description>
+		</method>
 		<method name="set_syntax_coloring">
 			<argument index="0" name="enable" type="bool">
 			</argument>
@@ -39489,6 +39517,8 @@
 		</theme_item>
 		<theme_item name="completion_existing_color" type="Color">
 		</theme_item>
+		<theme_item name="completion_font_color" type="Color">
+		</theme_item>
 		<theme_item name="completion_lines" type="int">
 		</theme_item>
 		<theme_item name="completion_max_width" type="int">
@@ -39509,17 +39539,27 @@
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color">
 		</theme_item>
+		<theme_item name="function_color" type="Color">
+		</theme_item>
+		<theme_item name="line_number_color" type="Color">
+		</theme_item>
 		<theme_item name="line_spacing" type="int">
 		</theme_item>
 		<theme_item name="mark_color" type="Color">
 		</theme_item>
+		<theme_item name="member_variable_color" type="Color">
+		</theme_item>
 		<theme_item name="normal" type="StyleBox">
+		</theme_item>
+		<theme_item name="number_color" type="Color">
 		</theme_item>
 		<theme_item name="selection_color" type="Color">
 		</theme_item>
 		<theme_item name="symbol_color" type="Color">
 		</theme_item>
 		<theme_item name="tab" type="Texture">
+		</theme_item>
+		<theme_item name="word_highlighted_color" type="Color">
 		</theme_item>
 	</theme_items>
 </class>
