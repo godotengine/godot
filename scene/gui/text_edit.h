@@ -79,6 +79,7 @@ class TextEdit : public Control  {
 		Color completion_existing_color;
 		Color completion_font_color;
 		Color caret_color;
+		Color caret_background_color;
 		Color line_number_color;
 		Color font_color;
 		Color font_selected_color;
@@ -222,6 +223,7 @@ class TextEdit : public Control  {
 	bool caret_blink_enabled;
 	bool draw_caret;
 	bool window_has_focus;
+	bool block_caret;
 
 	bool setting_row;
 	bool wrap;
@@ -405,6 +407,9 @@ public:
 
 	float cursor_get_blink_speed() const;
 	void cursor_set_blink_speed(const float p_speed);
+
+	void cursor_set_block_mode(const bool p_enable);
+	bool cursor_is_block_mode() const;
 
 	void set_readonly(bool p_readonly);
 
