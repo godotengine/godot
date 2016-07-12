@@ -88,6 +88,8 @@ class ProjectManager : public Control {
 	void _load_recent_projects();
 	void _scan_dir(DirAccess *da,float pos, float total,List<String> *r_projects);
 
+	void _install_project(const String& p_zip_path,const String& p_title);
+
 	void _panel_draw(Node *p_hb);
 	void _panel_input(const InputEvent& p_ev,Node *p_hb);
 	void _favorite_pressed(Node *p_hb);

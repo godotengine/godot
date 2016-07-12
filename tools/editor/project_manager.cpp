@@ -49,17 +49,30 @@
 #include "editor_initialize_ssl.h"
 #include "editor_scale.h"
 
+#include "io/zip_io.h"
+
 class NewProjectDialog : public ConfirmationDialog {
 
 	OBJ_TYPE(NewProjectDialog,ConfirmationDialog);
 
+public:
 
-	bool import_mode;
+	enum Mode {
+		MODE_NEW,
+		MODE_IMPORT,
+		MODE_INSTALL
+	};
+private:
+
+	Mode mode;
 	Label *pp,*pn;
 	Label *error;
 	LineEdit *project_path;
 	LineEdit *project_name;
 	FileDialog *fdialog;
+	String zip_path;
+	String zip_title;
+	AcceptDialog *dialog_error;
 
 	bool _test_path() {
 
@@ -72,7 +85,7 @@ class NewProjectDialog : public ConfirmationDialog {
 			return false;
 		}
 
-		if (!import_mode) {
+		if (mode!=MODE_IMPORT) {
 
 			if (d->file_exists("engine.cfg")) {
 
@@ -109,7 +122,7 @@ class NewProjectDialog : public ConfirmationDialog {
 			if (lidx!=-1) {
 				sp=sp.substr(lidx+1,sp.length());
 			}
-			if (sp=="" && import_mode )
+			if (sp=="" && mode==MODE_IMPORT )
 				sp=TTR("Imported Project");
 
 			project_name->set_text(sp);
@@ -119,7 +132,7 @@ class NewProjectDialog : public ConfirmationDialog {
 	void _file_selected(const String& p_path) {
 
 		String p = p_path;
-		if (import_mode) {
+		if (mode==MODE_IMPORT) {
 			if (p.ends_with("engine.cfg")) {
 
 				p=p.get_base_dir();
@@ -141,7 +154,7 @@ class NewProjectDialog : public ConfirmationDialog {
 
 	void _browse_path() {
 
-		if (import_mode) {
+		if (mode==MODE_IMPORT) {
 
 			fdialog->set_mode(FileDialog::MODE_OPEN_FILE);
 			fdialog->clear_filters();
@@ -163,7 +176,7 @@ class NewProjectDialog : public ConfirmationDialog {
 
 		String dir;
 
-		if (import_mode) {
+		if (mode==MODE_IMPORT) {
 			dir=project_path->get_text();
 
 
@@ -179,26 +192,130 @@ class NewProjectDialog : public ConfirmationDialog {
 			dir=d->get_current_dir();
 			memdelete(d);
 
-			FileAccess *f = FileAccess::open(dir.plus_file("/engine.cfg"),FileAccess::WRITE);
-			if (!f) {
-				error->set_text(TTR("Couldn't create engine.cfg in project path."));
-			} else {
+			if (mode==MODE_NEW) {
 
-				f->store_line("; Engine configuration file.");
-				f->store_line("; It's best to edit using the editor UI, not directly,");
-				f->store_line("; becausethe parameters that go here are not obvious.");
-				f->store_line("; ");
-				f->store_line("; Format: ");
-				f->store_line(";   [section] ; section goes between []");
-				f->store_line(";   param=value ; assign values to parameters");
-				f->store_line("\n");
-				f->store_line("[application]");
-				f->store_line("name=\""+project_name->get_text()+"\"");
-				f->store_line("icon=\"res://icon.png\"");
 
-				memdelete(f);
 
-				ResourceSaver::save(dir.plus_file("/icon.png"),get_icon("DefaultProjectIcon","EditorIcons"));
+
+				FileAccess *f = FileAccess::open(dir.plus_file("/engine.cfg"),FileAccess::WRITE);
+				if (!f) {
+					error->set_text(TTR("Couldn't create engine.cfg in project path."));
+				} else {
+
+					f->store_line("; Engine configuration file.");
+					f->store_line("; It's best to edit using the editor UI, not directly,");
+					f->store_line("; becausethe parameters that go here are not obvious.");
+					f->store_line("; ");
+					f->store_line("; Format: ");
+					f->store_line(";   [section] ; section goes between []");
+					f->store_line(";   param=value ; assign values to parameters");
+					f->store_line("\n");
+					f->store_line("[application]");
+					f->store_line("name=\""+project_name->get_text()+"\"");
+					f->store_line("icon=\"res://icon.png\"");
+
+					memdelete(f);
+
+					ResourceSaver::save(dir.plus_file("/icon.png"),get_icon("DefaultProjectIcon","EditorIcons"));
+				}
+
+			} else if (mode==MODE_INSTALL) {
+
+
+				FileAccess *src_f=NULL;
+				zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+
+				unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
+				if (!pkg) {
+
+					dialog_error->set_text("Error opening package file, not in zip format.");
+					return;
+				}
+
+				int ret = unzGoToFirstFile(pkg);
+
+				Vector<String> failed_files;
+
+				int idx=0;
+				while(ret==UNZ_OK) {
+
+					//get filename
+					unz_file_info info;
+					char fname[16384];
+					ret = unzGetCurrentFileInfo(pkg,&info,fname,16384,NULL,0,NULL,0);
+
+					String path=fname;
+
+					int depth=1; //stuff from github comes with tag
+					bool skip=false;
+					while(depth>0) {
+						int pp = path.find("/");
+						if (pp==-1) {
+							skip=true;
+							break;
+						}
+						path=path.substr(pp+1,path.length());
+						depth--;
+					}
+
+
+					if (skip || path==String()) {
+						//
+					} else if (path.ends_with("/")) { // a dir
+
+						path=path.substr(0,path.length()-1);
+
+						DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+						da->make_dir(dir.plus_file(path));
+						memdelete(da);
+
+					} else {
+
+						Vector<uint8_t> data;
+						data.resize(info.uncompressed_size);
+
+						//read
+						unzOpenCurrentFile(pkg);
+						unzReadCurrentFile(pkg,data.ptr(),data.size());
+						unzCloseCurrentFile(pkg);
+
+						FileAccess *f=FileAccess::open(dir.plus_file(path),FileAccess::WRITE);
+
+						if (f) {
+							f->store_buffer(data.ptr(),data.size());
+							memdelete(f);
+						} else {
+							failed_files.push_back(path);
+						}
+
+
+					}
+
+					idx++;
+					ret = unzGoToNextFile(pkg);
+				}
+
+				unzClose(pkg);
+
+				if (failed_files.size()) {
+					String msg=TTR("The following files failed extraction from package:")+"\n\n";
+					for(int i=0;i<failed_files.size();i++) {
+
+						if (i>15) {
+							msg+="\nAnd "+itos(failed_files.size()-i)+" more files.";
+							break;
+						}
+						msg+=failed_files[i]+"\n";
+					}
+
+					dialog_error->set_text(msg);
+					dialog_error->popup_centered_minsize();
+
+				} else {
+					dialog_error->set_text(TTR("Package Installed Successfully!"));
+					dialog_error->popup_centered_minsize();
+				}
+
 			}
 
 
@@ -233,10 +350,16 @@ protected:
 
 public:
 
+	void set_zip_path(const String& p_path) {
+		zip_path=p_path;
+	}
+	void set_zip_title(const String& p_title) {
+		zip_title=p_title;
+	}
 
-	void set_import_mode(bool p_import ) {
+	void set_mode(Mode p_mode) {
 
-		import_mode=p_import;
+		mode=p_mode;
 	}
 
 	void show_dialog() {
@@ -245,7 +368,7 @@ public:
 		project_path->clear();
 		project_name->clear();
 
-		if (import_mode) {
+		if (mode==MODE_IMPORT) {
 			set_title(TTR("Import Existing Project"));
 			get_ok()->set_text(TTR("Import"));
 			pp->set_text(TTR("Project Path (Must Exist):"));
@@ -253,9 +376,10 @@ public:
 			pn->hide();
 			project_name->hide();
 
-			popup_centered(Size2(500,125));
+			popup_centered(Size2(500,125)*EDSCALE);
 
-		} else {
+		} else if (mode==MODE_NEW){
+
 			set_title(TTR("Create New Project"));
 			get_ok()->set_text(TTR("Create"));
 			pp->set_text(TTR("Project Path:"));
@@ -263,7 +387,16 @@ public:
 			pn->show();
 			project_name->show();
 
-			popup_centered(Size2(500,145));
+			popup_centered(Size2(500,145)*EDSCALE);
+		} else if (mode==MODE_INSTALL){
+
+			set_title(TTR("Install Project: ")+zip_title);
+			get_ok()->set_text(TTR("Install"));
+			pp->set_text(TTR("Project Path:"));
+			pn->hide();
+			project_name->hide();
+
+			popup_centered(Size2(500,125)*EDSCALE);
 
 		}
 
@@ -329,7 +462,10 @@ public:
 		fdialog->connect("dir_selected", this,"_path_selected");
 		fdialog->connect("file_selected", this,"_file_selected");
 		set_hide_on_ok(false);
-		import_mode=false;
+		mode=MODE_NEW;
+
+		dialog_error = memnew( AcceptDialog );
+		add_child(dialog_error);
 	}
 
 
@@ -616,6 +752,8 @@ void ProjectManager::_load_recent_projects() {
 	run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));
 
 	EditorSettings::get_singleton()->save();
+
+	tabs->set_current_tab(0);
 }
 
 void ProjectManager::_open_project_confirm() {
@@ -755,14 +893,14 @@ void ProjectManager::_scan_projects() {
 
 void ProjectManager::_new_project()  {
 
-	npdialog->set_import_mode(false);
+	npdialog->set_mode(NewProjectDialog::MODE_NEW);
 	npdialog->show_dialog();
 }
 
 
 void ProjectManager::_import_project()  {
 
-	npdialog->set_import_mode(true);
+	npdialog->set_mode(NewProjectDialog::MODE_IMPORT);
 	npdialog->show_dialog();
 }
 
@@ -800,6 +938,15 @@ void ProjectManager::_exit_dialog()  {
 	get_tree()->quit();
 }
 
+
+void ProjectManager::_install_project(const String& p_zip_path,const String& p_title) {
+
+	npdialog->set_mode(NewProjectDialog::MODE_INSTALL);
+	npdialog->set_zip_path(p_zip_path);
+	npdialog->set_zip_title(p_title);
+	npdialog->show_dialog();
+}
+
 void ProjectManager::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_open_project",&ProjectManager::_open_project);
@@ -817,6 +964,7 @@ void ProjectManager::_bind_methods() {
 	ObjectTypeDB::bind_method("_panel_draw",&ProjectManager::_panel_draw);
 	ObjectTypeDB::bind_method("_panel_input",&ProjectManager::_panel_input);
 	ObjectTypeDB::bind_method("_favorite_pressed",&ProjectManager::_favorite_pressed);
+	ObjectTypeDB::bind_method("_install_project",&ProjectManager::_install_project);
 
 
 }
@@ -1016,6 +1164,7 @@ ProjectManager::ProjectManager() {
 	gui_base->add_child(multi_run_ask);
 
 
+	asset_library->connect("install_asset",this,"_install_project");
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
