@@ -2906,7 +2906,6 @@ String String::format(Array values,String placeholder) const {
 
     for(int i=0;i<values.size();i++) {
         String i_as_str = String::num_int64( i );
-
         if( values[i].get_type() == Variant::ARRAY ) {
             Array value_arr = values[i];
             if( value_arr.size()==2 ) {
@@ -2941,14 +2940,14 @@ String String::format(Array values,String placeholder) const {
                 
             }
         } else {
-
+            Variant v_val = values[i];
             String val;
-            if( values[i].get_type() == Variant::STRING ) {
-                val = values[i];
-            }else if( values[i].get_type() == Variant::INT ) {
-                val = String::num_int64( values[i] );
-            }else if( values[i].get_type() == Variant::REAL ) {
-                val = String::num_scientific( values[i] );
+            if( v_val.get_type() == Variant::STRING ) {
+                val = v_val;
+            }else if( v_val.get_type() == Variant::INT ) {
+                val = String::num_int64( v_val );
+            }else if( v_val.get_type() == Variant::REAL ) {
+                val = String::num_scientific( v_val );
             }else {
                 ERR_PRINT(String("STRING.format Value type not supported index: " + i_as_str).ascii().get_data());
                 continue;

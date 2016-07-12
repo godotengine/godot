@@ -1327,7 +1327,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(STRING,STRING_ARRAY,String,bigrams,varray());
 	ADDFUNC1(STRING,REAL,String,similarity,STRING,"text",varray());
 
-	ADDFUNC2(STRING,STRING,String,format,ARRAY,"values",STRING,"placeholder",varray("%_"));
+	ADDFUNC2(STRING,STRING,String,format,ARRAY,"values",STRING,"placeholder",varray("{_}"));
 	ADDFUNC2(STRING,STRING,String,replace,STRING,"what",STRING,"forwhat",varray());
 	ADDFUNC2(STRING,STRING,String,replacen,STRING,"what",STRING,"forwhat",varray());
 	ADDFUNC2(STRING,STRING,String,insert,INT,"pos",STRING,"what",varray());
