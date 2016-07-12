@@ -115,7 +115,6 @@ bool EditorSettings::_get(const StringName& p_name,Variant &r_ret) const {
 					continue; //not changed from default, don't save
 			}
 
-			print_line("SAVING: "+E->key());
 			arr.push_back(E->key());
 			arr.push_back(sc->get_shortcut());
 		}
