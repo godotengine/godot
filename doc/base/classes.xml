@@ -39219,6 +39219,20 @@
 				Set the text editor caret blink speed. Cannot be less then or equal to 0.
 			</description>
 		</method>
+		<method name="cursor_set_block_mode">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set the text editor caret to block mode.
+			</description>
+		</method>
+		<method name="cursor_is_block_mode" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Gets whether the text editor caret is in block mode.
+			</description>
+		</method>
 		<method name="cursor_set_column">
 			<argument index="0" name="column" type="int">
 			</argument>
@@ -39508,6 +39522,8 @@
 		<theme_item name="brace_mismatch_color" type="Color">
 		</theme_item>
 		<theme_item name="breakpoint_color" type="Color">
+		</theme_item>
+		<theme_item name="caret_background_color" type="Color">
 		</theme_item>
 		<theme_item name="caret_color" type="Color">
 		</theme_item>
