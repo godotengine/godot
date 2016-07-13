@@ -305,9 +305,11 @@ public:
 	RID get_viewport() const;
 
 	void set_world(const Ref<World>& p_world);
+	void set_world_2d(const Ref<World2D>& p_world_2d);
 	Ref<World> get_world() const;
 	Ref<World> find_world() const;
 
+	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;
 
 

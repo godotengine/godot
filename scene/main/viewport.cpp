@@ -359,13 +359,7 @@ void Viewport::_notification(int p_what) {
 			_update_listener_2d();
 			_update_rect();
 
-			if (world_2d.is_valid()) {
-				find_world_2d()->_register_viewport(this,Rect2());
-//best to defer this and not do it here, as it can annoy a lot of setup logic if user
-//adds a node and then moves it, will get enter/exit screen/viewport notifications
-//unnecesarily
-//				update_worlds();
-			}
+			find_world_2d()->_register_viewport(this,Rect2());
 
 			add_to_group("_viewports");
 			if (get_tree()->is_debugging_collisions_hint()) {
@@ -1001,19 +995,34 @@ bool Viewport::has_transparent_background() const {
 	return transparent_bg;
 }
 
-#if 0
 void Viewport::set_world_2d(const Ref<World2D>& p_world_2d) {
+	if (world_2d==p_world_2d)
+		return;
 
-	world_2d=p_world_2d;
-	_update_listener_2d();
-
-	if (is_inside_scene()) {
-		if (current_canvas.is_valid())
-			VisualServer::get_singleton()->viewport_remove_canvas(viewport,current_canvas);
-		current_canvas=find_world_2d()->get_canvas();
-		VisualServer::get_singleton()->viewport_attach_canvas(viewport,current_canvas);
+	if (parent && parent->find_world_2d()==p_world_2d) {
+		WARN_PRINT("Unable to use parent world as world_2d");
+		return;
 	}
 
+	if (is_inside_tree()) {
+		find_world_2d()->_remove_viewport(this);
+		VisualServer::get_singleton()->viewport_remove_canvas(viewport,current_canvas);
+	}
+
+	if (p_world_2d.is_valid())
+		world_2d=p_world_2d;
+	else {
+		WARN_PRINT("Invalid world");
+		world_2d=Ref<World2D>( memnew( World2D ));
+	}
+
+	_update_listener_2d();
+
+	if (is_inside_tree()) {
+		current_canvas=find_world_2d()->get_canvas();
+		VisualServer::get_singleton()->viewport_attach_canvas(viewport,current_canvas);
+		find_world_2d()->_register_viewport(this,Rect2());
+	}
 }
 
 Ref<World2D> Viewport::find_world_2d() const{
@@ -1025,13 +1034,6 @@ Ref<World2D> Viewport::find_world_2d() const{
 	else
 		return Ref<World2D>();
 }
-#endif
-
-Ref<World2D> Viewport::find_world_2d() const{
-
-	return world_2d;
-}
-
 
 void Viewport::_propagate_enter_world(Node *p_node) {
 
@@ -1139,6 +1141,11 @@ void Viewport::set_world(const Ref<World>& p_world) {
 Ref<World> Viewport::get_world() const{
 
 	return world;
+}
+
+Ref<World2D> Viewport::get_world_2d() const{
+
+	return world_2d;
 }
 
 Ref<World> Viewport::find_world() const{
@@ -1302,6 +1309,9 @@ void Viewport::render_target_clear() {
 }
 
 void Viewport::set_render_target_filter(bool p_enable) {
+
+	if(!render_target)
+		return;
 
 	render_target_texture->set_flags(p_enable?int(Texture::FLAG_FILTER):int(0));
 
@@ -2587,8 +2597,8 @@ void Viewport::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_rect","rect"), &Viewport::set_rect);
 	ObjectTypeDB::bind_method(_MD("get_rect"), &Viewport::get_rect);
-	//ObjectTypeDB::bind_method(_MD("set_world_2d","world_2d:World2D"), &Viewport::set_world_2d);
-	//ObjectTypeDB::bind_method(_MD("get_world_2d:World2D"), &Viewport::get_world_2d);
+	ObjectTypeDB::bind_method(_MD("set_world_2d","world_2d:World2D"), &Viewport::set_world_2d);
+	ObjectTypeDB::bind_method(_MD("get_world_2d:World2D"), &Viewport::get_world_2d);
 	ObjectTypeDB::bind_method(_MD("find_world_2d:World2D"), &Viewport::find_world_2d);
 	ObjectTypeDB::bind_method(_MD("set_world","world:World"), &Viewport::set_world);
 	ObjectTypeDB::bind_method(_MD("get_world:World"), &Viewport::get_world);
