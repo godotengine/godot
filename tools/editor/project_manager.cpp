@@ -1129,7 +1129,7 @@ ProjectManager::ProjectManager() {
 		asset_library = memnew( EditorAssetLibrary(true) );
 		asset_library->set_name("Templates");
 		tabs->add_child(asset_library);
-        asset_library->connect("install_asset",this,"_install_project");
+		asset_library->connect("install_asset",this,"_install_project");
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
