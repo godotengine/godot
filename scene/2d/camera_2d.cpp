@@ -29,6 +29,8 @@
 #include "camera_2d.h"
 #include "scene/scene_string_names.h"
 #include "servers/visual_server.h"
+#include "core/math/math_funcs.h"
+#include <editor/editor_node.h>
 
 void Camera2D::_update_scroll() {
 
@@ -114,7 +116,25 @@ Matrix32 Camera2D::get_camera_transform()  {
 			camera_pos=new_camera_pos;
 		}
 
+		Point2 screen_offset = (anchor_mode==ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom) : Point2());
+		Rect2 screen_rect(-screen_offset+camera_pos,screen_size*zoom);
+		
+		if (offset!=Vector2()) 
+			screen_rect.pos+=offset;
+		
+		if (limit_smoothing_enabled) {
+			if (screen_rect.pos.x < limit[MARGIN_LEFT])
+				camera_pos.x -= screen_rect.pos.x - limit[MARGIN_LEFT];
+			
+			if (screen_rect.pos.x + screen_rect.size.x > limit[MARGIN_RIGHT])
+				camera_pos.x -= screen_rect.pos.x + screen_rect.size.x - limit[MARGIN_RIGHT];
 
+			if (screen_rect.pos.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
+				camera_pos.y -= screen_rect.pos.y + screen_rect.size.y - limit[MARGIN_BOTTOM];
+
+			if (screen_rect.pos.y < limit[MARGIN_TOP])
+				camera_pos.y -= screen_rect.pos.y - limit[MARGIN_TOP];
+		}
 
 		if (smoothing_enabled && !get_tree()->is_editor_hint()) {
 
@@ -144,19 +164,19 @@ Matrix32 Camera2D::get_camera_transform()  {
 	}
 
 	Rect2 screen_rect(-screen_offset+ret_camera_pos,screen_size*zoom);
+	if (screen_rect.pos.x < limit[MARGIN_LEFT])
+		screen_rect.pos.x = limit[MARGIN_LEFT];
+	
 	if (screen_rect.pos.x + screen_rect.size.x > limit[MARGIN_RIGHT])
 		screen_rect.pos.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
 
 	if (screen_rect.pos.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
 		screen_rect.pos.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
 
-
-	if (screen_rect.pos.x < limit[MARGIN_LEFT])
-		screen_rect.pos.x=limit[MARGIN_LEFT];
-
 	if (screen_rect.pos.y < limit[MARGIN_TOP])
 		screen_rect.pos.y =limit[MARGIN_TOP];
-
+	
+	
 	if (offset!=Vector2()) {
 
 		screen_rect.pos+=offset;
@@ -382,6 +402,17 @@ int Camera2D::get_limit(Margin p_margin) const{
 
 }
 
+void Camera2D::set_limit_smoothing_enabled(bool enable) {
+
+	limit_smoothing_enabled = enable;
+	_update_scroll();
+}
+
+bool Camera2D::is_limit_smoothing_enabled() const{
+
+	return limit_smoothing_enabled;
+}
+
 void Camera2D::set_drag_margin(Margin p_margin,float p_drag_margin) {
 
 	ERR_FAIL_INDEX(p_margin,4);
@@ -536,12 +567,14 @@ void Camera2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_update_scroll"),&Camera2D::_update_scroll);
 
-
 	ObjectTypeDB::bind_method(_MD("_set_current","current"),&Camera2D::_set_current);
 	ObjectTypeDB::bind_method(_MD("is_current"),&Camera2D::is_current);
 
 	ObjectTypeDB::bind_method(_MD("set_limit","margin","limit"),&Camera2D::set_limit);
 	ObjectTypeDB::bind_method(_MD("get_limit","margin"),&Camera2D::get_limit);
+
+	ObjectTypeDB::bind_method(_MD("set_limit_smoothing_enabled","limit_smoothing_enabled"),&Camera2D::set_limit_smoothing_enabled);
+	ObjectTypeDB::bind_method(_MD("is_limit_smoothing_enabled"),&Camera2D::is_limit_smoothing_enabled);
 
 	ObjectTypeDB::bind_method(_MD("set_v_drag_enabled","enabled"),&Camera2D::set_v_drag_enabled);
 	ObjectTypeDB::bind_method(_MD("is_v_drag_enabled"),&Camera2D::is_v_drag_enabled);
@@ -587,6 +620,7 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit/top"),_SCS("set_limit"),_SCS("get_limit"),MARGIN_TOP);
 	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit/right"),_SCS("set_limit"),_SCS("get_limit"),MARGIN_RIGHT);
 	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit/bottom"),_SCS("set_limit"),_SCS("get_limit"),MARGIN_BOTTOM);
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"limit/smoothed"),_SCS("set_limit_smoothing_enabled"),_SCS("is_limit_smoothing_enabled") );
 
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"drag_margin/h_enabled"),_SCS("set_h_drag_enabled"),_SCS("is_h_drag_enabled") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"drag_margin/v_enabled"),_SCS("set_v_drag_enabled"),_SCS("is_v_drag_enabled") );
@@ -619,6 +653,7 @@ Camera2D::Camera2D() {
 	limit[MARGIN_TOP]=-10000000;
 	limit[MARGIN_RIGHT]=10000000;
 	limit[MARGIN_BOTTOM]=10000000;
+	
 	drag_margin[MARGIN_LEFT]=0.2;
 	drag_margin[MARGIN_TOP]=0.2;
 	drag_margin[MARGIN_RIGHT]=0.2;
@@ -626,6 +661,7 @@ Camera2D::Camera2D() {
 	camera_pos=Vector2();
 	first=true;
 	smoothing_enabled=false;
+	limit_smoothing_enabled=false;
 
 	smoothing=5.0;
 	zoom = Vector2(1, 1);
