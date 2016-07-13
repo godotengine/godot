@@ -1126,10 +1126,10 @@ ProjectManager::ProjectManager() {
 
 
 	if (StreamPeerSSL::is_available()) {
-
 		asset_library = memnew( EditorAssetLibrary(true) );
 		asset_library->set_name("Templates");
 		tabs->add_child(asset_library);
+		asset_library->connect("install_asset",this,"_install_project");
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
@@ -1162,9 +1162,6 @@ ProjectManager::ProjectManager() {
 	multi_run_ask->get_ok()->connect("pressed", this, "_run_project_confirm");
 
 	gui_base->add_child(multi_run_ask);
-
-
-	asset_library->connect("install_asset",this,"_install_project");
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
