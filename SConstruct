@@ -285,7 +285,7 @@ if selected_platform in platform_list:
 
 	if env["arch"] != "":
 		suffix += "."+env["arch"]
-	elif (env["bits"]=="32"):
+	if (env["bits"]=="32"):
 		suffix+=".32"
 	elif (env["bits"]=="64"):
 		suffix+=".64"
