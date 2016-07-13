@@ -2375,7 +2375,6 @@ Node* EditorSceneImporterCollada::import_scene(const String& p_path, uint32_t p_
 
 		state.create_animations(p_flags&IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS);
 		AnimationPlayer *ap = memnew( AnimationPlayer );
-		ap->set_name("animations");
 		for(int i=0;i<state.animations.size();i++) {
 			String name;
 			if (state.animations[i]->get_name()=="")
