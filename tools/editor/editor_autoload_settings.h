@@ -44,7 +44,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 		BUTTON_DELETE
 	};
 
-	static StringName autoload_changed;
+	String autoload_changed;
 
 	struct AutoLoadInfo {
 		String name;
