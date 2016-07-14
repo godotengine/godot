@@ -240,6 +240,9 @@ node_modules/
 # KDE
 .directory
 
+#Kdevelop project files
+*.kdev4
+
 # RIA/Silverlight projects
 Generated_Code/
 
