@@ -315,6 +315,8 @@ public:
 	void set_use_vsync(bool p_enable);
 	bool is_vsnc_enabled() const;
 
+	Dictionary get_engine_version() const;
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();
