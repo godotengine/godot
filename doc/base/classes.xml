@@ -2255,6 +2255,7 @@
 			<return type="String">
 			</return>
 			<description>
+				Return the name of the current animation set to the node.
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const">
@@ -2310,18 +2311,21 @@
 			<return type="bool">
 			</return>
 			<description>
+				Return true if an animation if currently being played.
 			</description>
 		</method>
 		<method name="play">
 			<argument index="0" name="anim" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+				Play the animation set in parameter. If no parameter is provided, the current animation is played.
 			</description>
 		</method>
 		<method name="set_animation">
 			<argument index="0" name="animation" type="String">
 			</argument>
 			<description>
+				Set the current animation of the node and reinits the frame counter of the animation.
 			</description>
 		</method>
 		<method name="set_centered">
@@ -2375,13 +2379,14 @@
 		</method>
 		<method name="stop">
 			<description>
+				Stop the current animation (does not reset the frame counter).
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="frame_changed">
 			<description>
-				Emmited when frame is changed.
+				Emitted when frame is changed.
 			</description>
 		</signal>
 	</signals>
@@ -2398,58 +2403,68 @@
 			<return type="String">
 			</return>
 			<description>
+				Return the name of the current animation set to the node.
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Return the visible frame index.
 			</description>
 		</method>
 		<method name="get_sprite_frames" qualifiers="const">
 			<return type="SpriteFrames">
 			</return>
 			<description>
+				Get the [SpriteFrames] resource, which contains all frames.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Return true if an animation if currently being played.
 			</description>
 		</method>
 		<method name="play">
 			<argument index="0" name="anim" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+				Play the animation set in parameter. If no parameter is provided, the current animation is played.
 			</description>
 		</method>
 		<method name="set_animation">
 			<argument index="0" name="animation" type="String">
 			</argument>
 			<description>
+				Set the current animation of the node and reinits the frame counter of the animation.
 			</description>
 		</method>
 		<method name="set_frame">
 			<argument index="0" name="frame" type="int">
 			</argument>
 			<description>
+				Set the visible sprite frame index (from the list of frames inside the [SpriteFrames] resource).
 			</description>
 		</method>
 		<method name="set_sprite_frames">
 			<argument index="0" name="sprite_frames" type="SpriteFrames">
 			</argument>
 			<description>
+				Set the [SpriteFrames] resource, which contains all frames.
 			</description>
 		</method>
 		<method name="stop">
 			<description>
+				Stop the current animation (does not reset the frame counter).
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="frame_changed">
 			<description>
+				Emitted when frame is changed.
 			</description>
 		</signal>
 	</signals>
@@ -2487,6 +2502,7 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
+				Return the index of the specified track. If the track is not found, return -1.
 			</description>
 		</method>
 		<method name="get_length" qualifiers="const">
@@ -2500,6 +2516,7 @@
 			<return type="float">
 			</return>
 			<description>
+				Get the animation step value.
 			</description>
 		</method>
 		<method name="get_track_count" qualifiers="const">
@@ -2576,6 +2593,7 @@
 			<argument index="0" name="size_sec" type="float">
 			</argument>
 			<description>
+				Set the animation step value.
 			</description>
 		</method>
 		<method name="track_find_key" qualifiers="const">
@@ -2677,6 +2695,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return true if the given track is imported. Else, return false.
 			</description>
 		</method>
 		<method name="track_move_down">
@@ -2717,6 +2736,7 @@
 			<argument index="1" name="imported" type="bool">
 			</argument>
 			<description>
+				Set the given track as imported or not.
 			</description>
 		</method>
 		<method name="track_set_interpolation_type">
