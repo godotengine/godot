@@ -7270,6 +7270,17 @@
 				Takes a global input event and convert to this item's coordinate system.
 			</description>
 		</method>
+		<method name="make_screen_coord_local" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="screen_point" type="Vector2">
+			</argument>
+			<description>
+				Take a 2d screen point and convert to 2D local coords relative to this Canvas
+				 item.  If this CanvasItem is the root of a Scene, its essentially the
+				 world coords for that scene.
+			</description>
+		</method>
 		<method name="set_as_toplevel">
 			<argument index="0" name="enable" type="bool">
 			</argument>
@@ -7339,22 +7350,6 @@
 			</description>
 		</method>
 		<method name="update">
-		<method name="make_screen_coord_local" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="screen_point" type="Vector2">
-			</argument>
-			<description>
-				Take a 2d screen point and convert to 2D local coords relative to this Canvas
-				 item.  If this CanvasItem is the root of a Scene, its essentially the 
-				 world coords for that scene.
-			</description>
-		</method>
-		<method name="make_input_local" qualifiers="const">
-			<return type="InputEvent">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
 			<description>
 				Queue the CanvasItem for update. [code]NOTIFICATION_DRAW[/code] will be called on idle time to request redraw.
 			</description>
