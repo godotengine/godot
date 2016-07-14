@@ -36,8 +36,6 @@
 
 #define PREVIEW_LIST_MAX_SIZE 10
 
-StringName EditorAutoloadSettings::autoload_changed = StringName();
-
 void EditorAutoloadSettings::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
