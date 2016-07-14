@@ -55,7 +55,8 @@ void VP8LoadFinalBytes(VP8BitReader* const br);
 // Inlined critical functions
 
 // makes sure br->value_ has at least BITS bits worth of data
-static WEBP_INLINE void VP8LoadNewBytes(VP8BitReader* const br) {
+static WEBP_UBSAN_IGNORE_UNDEF WEBP_INLINE
+void VP8LoadNewBytes(VP8BitReader* const br) {
   assert(br != NULL && br->buf_ != NULL);
   // Read 'BITS' bits at a time if possible.
   if (br->buf_ < br->buf_max_) {

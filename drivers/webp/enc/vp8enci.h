@@ -22,10 +22,6 @@
 #include "../utils/utils.h"
 #include "webp/encode.h"
 
-#ifdef WEBP_EXPERIMENTAL_FEATURES
-#include "./vp8li.h"
-#endif  // WEBP_EXPERIMENTAL_FEATURES
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,8 +31,8 @@ extern "C" {
 
 // version numbers
 #define ENC_MAJ_VERSION 0
-#define ENC_MIN_VERSION 4
-#define ENC_REV_VERSION 4
+#define ENC_MIN_VERSION 5
+#define ENC_REV_VERSION 1
 
 enum { MAX_LF_LEVELS = 64,       // Maximum loop filter level
        MAX_VARIABLE_LEVEL = 67,  // last (inclusive) level with variable cost
@@ -200,6 +196,9 @@ typedef struct {
   int lambda_i16_, lambda_i4_, lambda_uv_;
   int lambda_mode_, lambda_trellis_, tlambda_;
   int lambda_trellis_i16_, lambda_trellis_i4_, lambda_trellis_uv_;
+
+  // lambda values for distortion-based evaluation
+  score_t i4_penalty_;   // penalty for using Intra4
 } VP8SegmentInfo;
 
 // Handy transient struct to accumulate score and info during RD-optimization
@@ -395,6 +394,7 @@ struct VP8Encoder {
   int method_;               // 0=fastest, 6=best/slowest.
   VP8RDLevel rd_opt_level_;  // Deduced from method_.
   int max_i4_header_bits_;   // partition #0 safeness factor
+  int mb_header_limit_;      // rough limit for header bits per MB
   int thread_level_;         // derived from config->thread_level
   int do_search_;            // derived from config->target_XXX
   int use_tokens_;           // if true, use token buffer
@@ -477,17 +477,12 @@ int VP8EncFinishAlpha(VP8Encoder* const enc);   // finalize compressed data
 int VP8EncDeleteAlpha(VP8Encoder* const enc);   // delete compressed data
 
   // in filter.c
-
-// SSIM utils
-typedef struct {
-  double w, xm, ym, xxm, xym, yym;
-} DistoStats;
-void VP8SSIMAddStats(const DistoStats* const src, DistoStats* const dst);
+void VP8SSIMAddStats(const VP8DistoStats* const src, VP8DistoStats* const dst);
 void VP8SSIMAccumulatePlane(const uint8_t* src1, int stride1,
                             const uint8_t* src2, int stride2,
-                            int W, int H, DistoStats* const stats);
-double VP8SSIMGet(const DistoStats* const stats);
-double VP8SSIMGetSquaredError(const DistoStats* const stats);
+                            int W, int H, VP8DistoStats* const stats);
+double VP8SSIMGet(const VP8DistoStats* const stats);
+double VP8SSIMGetSquaredError(const VP8DistoStats* const stats);
 
 // autofilter
 void VP8InitFilter(VP8EncIterator* const it);
@@ -513,6 +508,10 @@ int WebPPictureAllocARGB(WebPPicture* const picture, int width, int height);
 // Preserves the ARGB buffer.
 // Returns false in case of error (invalid param, out-of-memory).
 int WebPPictureAllocYUVA(WebPPicture* const picture, int width, int height);
+
+// Clean-up the RGB samples under fully transparent area, to help lossless
+// compressibility (no guarantee, though). Assumes that pic->use_argb is true.
+void WebPCleanupTransparentAreaLossless(WebPPicture* const pic);
 
   // in near_lossless.c
 // Near lossless preprocessing in RGB color-space.

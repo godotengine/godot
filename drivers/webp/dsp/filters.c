@@ -184,19 +184,40 @@ static void GradientFilter(const uint8_t* data, int width, int height,
 
 //------------------------------------------------------------------------------
 
-static void VerticalUnfilter(int width, int height, int stride, int row,
-                             int num_rows, uint8_t* data) {
-  DoVerticalFilter(data, width, height, stride, row, num_rows, 1, data);
+static void HorizontalUnfilter(const uint8_t* prev, const uint8_t* in,
+                               uint8_t* out, int width) {
+  uint8_t pred = (prev == NULL) ? 0 : prev[0];
+  int i;
+  for (i = 0; i < width; ++i) {
+    out[i] = pred + in[i];
+    pred = out[i];
+  }
 }
 
-static void HorizontalUnfilter(int width, int height, int stride, int row,
-                               int num_rows, uint8_t* data) {
-  DoHorizontalFilter(data, width, height, stride, row, num_rows, 1, data);
+static void VerticalUnfilter(const uint8_t* prev, const uint8_t* in,
+                             uint8_t* out, int width) {
+  if (prev == NULL) {
+    HorizontalUnfilter(NULL, in, out, width);
+  } else {
+    int i;
+    for (i = 0; i < width; ++i) out[i] = prev[i] + in[i];
+  }
 }
 
-static void GradientUnfilter(int width, int height, int stride, int row,
-                             int num_rows, uint8_t* data) {
-  DoGradientFilter(data, width, height, stride, row, num_rows, 1, data);
+static void GradientUnfilter(const uint8_t* prev, const uint8_t* in,
+                             uint8_t* out, int width) {
+  if (prev == NULL) {
+    HorizontalUnfilter(NULL, in, out, width);
+  } else {
+    uint8_t top = prev[0], top_left = top, left = top;
+    int i;
+    for (i = 0; i < width; ++i) {
+      top = prev[i];  // need to read this first, in case prev==out
+      left = in[i] + GradientPredictor(left, top, top_left);
+      top_left = top;
+      out[i] = left;
+    }
+  }
 }
 
 //------------------------------------------------------------------------------

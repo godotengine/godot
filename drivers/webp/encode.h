@@ -134,8 +134,8 @@ struct WebPConfig {
   int thread_level;       // If non-zero, try and use multi-threaded encoding.
   int low_memory;         // If set, reduce memory usage (but increase CPU use).
 
-  int near_lossless;      // Near lossless encoding [0 = off(default) .. 100].
-                          // This feature is experimental.
+  int near_lossless;      // Near lossless encoding [0 = max loss .. 100 = off
+                          // (default)].
   int exact;              // if non-zero, preserve the exact RGB values under
                           // transparent area. Otherwise, discard this invisible
                           // RGB information for better compression. The default

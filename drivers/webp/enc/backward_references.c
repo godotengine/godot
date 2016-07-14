@@ -16,6 +16,7 @@
 #include "./backward_references.h"
 #include "./histogram.h"
 #include "../dsp/lossless.h"
+#include "../dsp/dsp.h"
 #include "../utils/color_cache.h"
 #include "../utils/utils.h"
 
@@ -26,11 +27,19 @@
 #define MAX_ENTROPY    (1e30f)
 
 // 1M window (4M bytes) minus 120 special codes for short distances.
-#define WINDOW_SIZE ((1 << 20) - 120)
+#define WINDOW_SIZE_BITS 20
+#define WINDOW_SIZE ((1 << WINDOW_SIZE_BITS) - 120)
 
 // Bounds for the match length.
 #define MIN_LENGTH 2
-#define MAX_LENGTH 4096
+// If you change this, you need MAX_LENGTH_BITS + WINDOW_SIZE_BITS <= 32 as it
+// is used in VP8LHashChain.
+#define MAX_LENGTH_BITS 12
+// We want the max value to be attainable and stored in MAX_LENGTH_BITS bits.
+#define MAX_LENGTH ((1 << MAX_LENGTH_BITS) - 1)
+#if MAX_LENGTH_BITS + WINDOW_SIZE_BITS > 32
+#error "MAX_LENGTH_BITS + WINDOW_SIZE_BITS > 32"
+#endif
 
 // -----------------------------------------------------------------------------
 
@@ -56,46 +65,19 @@ static int DistanceToPlaneCode(int xsize, int dist) {
   return dist + 120;
 }
 
+// Returns the exact index where array1 and array2 are different. For an index
+// inferior or equal to best_len_match, the return value just has to be strictly
+// inferior to best_len_match. The current behavior is to return 0 if this index
+// is best_len_match, and the index itself otherwise.
+// If no two elements are the same, it returns max_limit.
 static WEBP_INLINE int FindMatchLength(const uint32_t* const array1,
                                        const uint32_t* const array2,
-                                       int best_len_match,
-                                       int max_limit) {
-#if !defined(__x86_64__)
-  // TODO(vrabaud): Compare on other architectures.
-  int match_len = 0;
-  // Before 'expensive' linear match, check if the two arrays match at the
-  // current best length index.
-  if (array1[best_len_match] != array2[best_len_match]) return 0;
-  while (match_len < max_limit && array1[match_len] == array2[match_len]) {
-    ++match_len;
-  }
-  return match_len;
-#else
-  const uint32_t* array1_32 = array1;
-  const uint32_t* array2_32 = array2;
-  // max value is aligned to (uint64_t*) array1
-  const uint32_t* const array1_32_max = array1 + (max_limit & ~1);
-
+                                       int best_len_match, int max_limit) {
   // Before 'expensive' linear match, check if the two arrays match at the
   // current best length index.
   if (array1[best_len_match] != array2[best_len_match]) return 0;
 
-  // TODO(vrabaud): add __predict_true on bound checking?
-  while (array1_32 < array1_32_max) {
-    if (*(uint64_t*)array1_32 == *(uint64_t*)array2_32) {
-      array1_32 += 2;
-      array2_32 += 2;
-    } else {
-      // if the uint32_t pointed to are the same, then the following ones have
-      // to be different
-      return (array1_32 - array1) + (*array1_32 == *array2_32);
-    }
-  }
-
-  // Deal with the potential last uint32_t.
-  if ((max_limit & 1) && (*array1_32 != *array2_32)) return max_limit - 1;
-  return max_limit;
-#endif
+  return VP8LVectorMismatch(array1, array2, max_limit);
 }
 
 // -----------------------------------------------------------------------------
@@ -207,34 +189,24 @@ int VP8LBackwardRefsCopy(const VP8LBackwardRefs* const src,
 // -----------------------------------------------------------------------------
 // Hash chains
 
-// initialize as empty
-static void HashChainReset(VP8LHashChain* const p) {
-  int i;
-  assert(p != NULL);
-  for (i = 0; i < p->size_; ++i) {
-    p->chain_[i] = -1;
-  }
-  for (i = 0; i < HASH_SIZE; ++i) {
-    p->hash_to_first_index_[i] = -1;
-  }
-}
-
 int VP8LHashChainInit(VP8LHashChain* const p, int size) {
   assert(p->size_ == 0);
-  assert(p->chain_ == NULL);
+  assert(p->offset_length_ == NULL);
   assert(size > 0);
-  p->chain_ = (int*)WebPSafeMalloc(size, sizeof(*p->chain_));
-  if (p->chain_ == NULL) return 0;
+  p->offset_length_ =
+      (uint32_t*)WebPSafeMalloc(size, sizeof(*p->offset_length_));
+  if (p->offset_length_ == NULL) return 0;
   p->size_ = size;
-  HashChainReset(p);
+
   return 1;
 }
 
 void VP8LHashChainClear(VP8LHashChain* const p) {
   assert(p != NULL);
-  WebPSafeFree(p->chain_);
+  WebPSafeFree(p->offset_length_);
+
   p->size_ = 0;
-  p->chain_ = NULL;
+  p->offset_length_ = NULL;
 }
 
 // -----------------------------------------------------------------------------
@@ -250,18 +222,10 @@ static WEBP_INLINE uint32_t GetPixPairHash64(const uint32_t* const argb) {
   return key;
 }
 
-// Insertion of two pixels at a time.
-static void HashChainInsert(VP8LHashChain* const p,
-                            const uint32_t* const argb, int pos) {
-  const uint32_t hash_code = GetPixPairHash64(argb);
-  p->chain_[pos] = p->hash_to_first_index_[hash_code];
-  p->hash_to_first_index_[hash_code] = pos;
-}
-
 // Returns the maximum number of hash chain lookups to do for a
-// given compression quality. Return value in range [6, 86].
-static int GetMaxItersForQuality(int quality, int low_effort) {
-  return (low_effort ? 6 : 8) + (quality * quality) / 128;
+// given compression quality. Return value in range [8, 86].
+static int GetMaxItersForQuality(int quality) {
+  return 8 + (quality * quality) / 128;
 }
 
 static int GetWindowSizeForHashChain(int quality, int xsize) {
@@ -277,63 +241,120 @@ static WEBP_INLINE int MaxFindCopyLength(int len) {
   return (len < MAX_LENGTH) ? len : MAX_LENGTH;
 }
 
-static void HashChainFindOffset(const VP8LHashChain* const p, int base_position,
-                                const uint32_t* const argb, int len,
-                                int window_size, int* const distance_ptr) {
-  const uint32_t* const argb_start = argb + base_position;
-  const int min_pos =
-      (base_position > window_size) ? base_position - window_size : 0;
+int VP8LHashChainFill(VP8LHashChain* const p, int quality,
+                      const uint32_t* const argb, int xsize, int ysize) {
+  const int size = xsize * ysize;
+  const int iter_max = GetMaxItersForQuality(quality);
+  const int iter_min = iter_max - quality / 10;
+  const uint32_t window_size = GetWindowSizeForHashChain(quality, xsize);
   int pos;
-  assert(len <= MAX_LENGTH);
-  for (pos = p->hash_to_first_index_[GetPixPairHash64(argb_start)];
-       pos >= min_pos;
-       pos = p->chain_[pos]) {
-    const int curr_length =
-        FindMatchLength(argb + pos, argb_start, len - 1, len);
-    if (curr_length == len) break;
-  }
-  *distance_ptr = base_position - pos;
-}
+  uint32_t base_position;
+  int32_t* hash_to_first_index;
+  // Temporarily use the p->offset_length_ as a hash chain.
+  int32_t* chain = (int32_t*)p->offset_length_;
+  assert(p->size_ != 0);
+  assert(p->offset_length_ != NULL);
 
-static int HashChainFindCopy(const VP8LHashChain* const p,
-                             int base_position,
-                             const uint32_t* const argb, int max_len,
-                             int window_size, int iter_max,
-                             int* const distance_ptr,
-                             int* const length_ptr) {
-  const uint32_t* const argb_start = argb + base_position;
-  int iter = iter_max;
-  int best_length = 0;
-  int best_distance = 0;
-  const int min_pos =
-      (base_position > window_size) ? base_position - window_size : 0;
-  int pos;
-  int length_max = 256;
-  if (max_len < length_max) {
-    length_max = max_len;
-  }
-  for (pos = p->hash_to_first_index_[GetPixPairHash64(argb_start)];
-       pos >= min_pos;
-       pos = p->chain_[pos]) {
-    int curr_length;
-    int distance;
-    if (--iter < 0) {
-      break;
-    }
+  hash_to_first_index =
+      (int32_t*)WebPSafeMalloc(HASH_SIZE, sizeof(*hash_to_first_index));
+  if (hash_to_first_index == NULL) return 0;
 
-    curr_length = FindMatchLength(argb + pos, argb_start, best_length, max_len);
-    if (best_length < curr_length) {
-      distance = base_position - pos;
-      best_length = curr_length;
-      best_distance = distance;
-      if (curr_length >= length_max) {
+  // Set the int32_t array to -1.
+  memset(hash_to_first_index, 0xff, HASH_SIZE * sizeof(*hash_to_first_index));
+  // Fill the chain linking pixels with the same hash.
+  for (pos = 0; pos < size - 1; ++pos) {
+    const uint32_t hash_code = GetPixPairHash64(argb + pos);
+    chain[pos] = hash_to_first_index[hash_code];
+    hash_to_first_index[hash_code] = pos;
+  }
+  WebPSafeFree(hash_to_first_index);
+
+  // Find the best match interval at each pixel, defined by an offset to the
+  // pixel and a length. The right-most pixel cannot match anything to the right
+  // (hence a best length of 0) and the left-most pixel nothing to the left
+  // (hence an offset of 0).
+  p->offset_length_[0] = p->offset_length_[size - 1] = 0;
+  for (base_position = size - 2 < 0 ? 0 : size - 2; base_position > 0;) {
+    const int max_len = MaxFindCopyLength(size - 1 - base_position);
+    const uint32_t* const argb_start = argb + base_position;
+    int iter = iter_max;
+    int best_length = 0;
+    uint32_t best_distance = 0;
+    const int min_pos =
+        (base_position > window_size) ? base_position - window_size : 0;
+    const int length_max = (max_len < 256) ? max_len : 256;
+    uint32_t max_base_position;
+
+    for (pos = chain[base_position]; pos >= min_pos; pos = chain[pos]) {
+      int curr_length;
+      if (--iter < 0) {
         break;
+      }
+      assert(base_position > (uint32_t)pos);
+
+      curr_length =
+          FindMatchLength(argb + pos, argb_start, best_length, max_len);
+      if (best_length < curr_length) {
+        best_length = curr_length;
+        best_distance = base_position - pos;
+        // Stop if we have reached the maximum length. Otherwise, make sure
+        // we have executed a minimum number of iterations depending on the
+        // quality.
+        if ((best_length == MAX_LENGTH) ||
+            (curr_length >= length_max && iter < iter_min)) {
+          break;
+        }
+      }
+    }
+    // We have the best match but in case the two intervals continue matching
+    // to the left, we have the best matches for the left-extended pixels.
+    max_base_position = base_position;
+    while (1) {
+      assert(best_length <= MAX_LENGTH);
+      assert(best_distance <= WINDOW_SIZE);
+      p->offset_length_[base_position] =
+          (best_distance << MAX_LENGTH_BITS) | (uint32_t)best_length;
+      --base_position;
+      // Stop if we don't have a match or if we are out of bounds.
+      if (best_distance == 0 || base_position == 0) break;
+      // Stop if we cannot extend the matching intervals to the left.
+      if (base_position < best_distance ||
+          argb[base_position - best_distance] != argb[base_position]) {
+        break;
+      }
+      // Stop if we are matching at its limit because there could be a closer
+      // matching interval with the same maximum length. Then again, if the
+      // matching interval is as close as possible (best_distance == 1), we will
+      // never find anything better so let's continue.
+      if (best_length == MAX_LENGTH && best_distance != 1 &&
+          base_position + MAX_LENGTH < max_base_position) {
+        break;
+      }
+      if (best_length < MAX_LENGTH) {
+        ++best_length;
+        max_base_position = base_position;
       }
     }
   }
-  *distance_ptr = best_distance;
-  *length_ptr = best_length;
-  return (best_length >= MIN_LENGTH);
+  return 1;
+}
+
+static WEBP_INLINE int HashChainFindOffset(const VP8LHashChain* const p,
+                                           const int base_position) {
+  return p->offset_length_[base_position] >> MAX_LENGTH_BITS;
+}
+
+static WEBP_INLINE int HashChainFindLength(const VP8LHashChain* const p,
+                                           const int base_position) {
+  return p->offset_length_[base_position] & ((1U << MAX_LENGTH_BITS) - 1);
+}
+
+static WEBP_INLINE void HashChainFindCopy(const VP8LHashChain* const p,
+                                          int base_position,
+                                          int* const offset_ptr,
+                                          int* const length_ptr) {
+  *offset_ptr = HashChainFindOffset(p, base_position);
+  *length_ptr = HashChainFindLength(p, base_position);
 }
 
 static WEBP_INLINE void AddSingleLiteral(uint32_t pixel, int use_color_cache,
@@ -400,84 +421,62 @@ static int BackwardReferencesRle(int xsize, int ysize,
 
 static int BackwardReferencesLz77(int xsize, int ysize,
                                   const uint32_t* const argb, int cache_bits,
-                                  int quality, int low_effort,
-                                  VP8LHashChain* const hash_chain,
+                                  const VP8LHashChain* const hash_chain,
                                   VP8LBackwardRefs* const refs) {
   int i;
+  int i_last_check = -1;
   int ok = 0;
   int cc_init = 0;
   const int use_color_cache = (cache_bits > 0);
   const int pix_count = xsize * ysize;
   VP8LColorCache hashers;
-  int iter_max = GetMaxItersForQuality(quality, low_effort);
-  const int window_size = GetWindowSizeForHashChain(quality, xsize);
-  int min_matches = 32;
 
   if (use_color_cache) {
     cc_init = VP8LColorCacheInit(&hashers, cache_bits);
     if (!cc_init) goto Error;
   }
   ClearBackwardRefs(refs);
-  HashChainReset(hash_chain);
-  for (i = 0; i < pix_count - 2; ) {
+  for (i = 0; i < pix_count;) {
     // Alternative#1: Code the pixels starting at 'i' using backward reference.
     int offset = 0;
     int len = 0;
-    const int max_len = MaxFindCopyLength(pix_count - i);
-    HashChainFindCopy(hash_chain, i, argb, max_len, window_size,
-                      iter_max, &offset, &len);
-    if (len > MIN_LENGTH || (len == MIN_LENGTH && offset <= 512)) {
-      int offset2 = 0;
-      int len2 = 0;
-      int k;
-      min_matches = 8;
-      HashChainInsert(hash_chain, &argb[i], i);
-      if ((len < (max_len >> 2)) && !low_effort) {
-        // Evaluate Alternative#2: Insert the pixel at 'i' as literal, and code
-        // the pixels starting at 'i + 1' using backward reference.
-        HashChainFindCopy(hash_chain, i + 1, argb, max_len - 1,
-                          window_size, iter_max, &offset2,
-                          &len2);
-        if (len2 > len + 1) {
-          AddSingleLiteral(argb[i], use_color_cache, &hashers, refs);
-          i++;  // Backward reference to be done for next pixel.
-          len = len2;
-          offset = offset2;
+    int j;
+    HashChainFindCopy(hash_chain, i, &offset, &len);
+    if (len > MIN_LENGTH + 1) {
+      const int len_ini = len;
+      int max_reach = 0;
+      assert(i + len < pix_count);
+      // Only start from what we have not checked already.
+      i_last_check = (i > i_last_check) ? i : i_last_check;
+      // We know the best match for the current pixel but we try to find the
+      // best matches for the current pixel AND the next one combined.
+      // The naive method would use the intervals:
+      // [i,i+len) + [i+len, length of best match at i+len)
+      // while we check if we can use:
+      // [i,j) (where j<=i+len) + [j, length of best match at j)
+      for (j = i_last_check + 1; j <= i + len_ini; ++j) {
+        const int len_j = HashChainFindLength(hash_chain, j);
+        const int reach =
+            j + (len_j > MIN_LENGTH + 1 ? len_j : 1);  // 1 for single literal.
+        if (reach > max_reach) {
+          len = j - i;
+          max_reach = reach;
         }
       }
+    } else {
+      len = 1;
+    }
+    // Go with literal or backward reference.
+    assert(len > 0);
+    if (len == 1) {
+      AddSingleLiteral(argb[i], use_color_cache, &hashers, refs);
+    } else {
       BackwardRefsCursorAdd(refs, PixOrCopyCreateCopy(offset, len));
       if (use_color_cache) {
-        for (k = 0; k < len; ++k) {
-          VP8LColorCacheInsert(&hashers, argb[i + k]);
-        }
-      }
-      // Add to the hash_chain (but cannot add the last pixel).
-      if (offset >= 3 && offset != xsize) {
-        const int last = (len < pix_count - 1 - i) ? len : pix_count - 1 - i;
-        for (k = 2; k < last - 8; k += 2) {
-          HashChainInsert(hash_chain, &argb[i + k], i + k);
-        }
-        for (; k < last; ++k) {
-          HashChainInsert(hash_chain, &argb[i + k], i + k);
-        }
-      }
-      i += len;
-    } else {
-      AddSingleLiteral(argb[i], use_color_cache, &hashers, refs);
-      HashChainInsert(hash_chain, &argb[i], i);
-      ++i;
-      --min_matches;
-      if (min_matches <= 0) {
-        AddSingleLiteral(argb[i], use_color_cache, &hashers, refs);
-        HashChainInsert(hash_chain, &argb[i], i);
-        ++i;
+        for (j = i; j < i + len; ++j) VP8LColorCacheInsert(&hashers, argb[j]);
       }
     }
-  }
-  while (i < pix_count) {
-    // Handle the last pixel(s).
-    AddSingleLiteral(argb[i], use_color_cache, &hashers, refs);
-    ++i;
+    i += len;
   }
 
   ok = !refs->error_;
@@ -498,7 +497,7 @@ typedef struct {
 
 static int BackwardReferencesTraceBackwards(
     int xsize, int ysize, const uint32_t* const argb, int quality,
-    int cache_bits, VP8LHashChain* const hash_chain,
+    int cache_bits, const VP8LHashChain* const hash_chain,
     VP8LBackwardRefs* const refs);
 
 static void ConvertPopulationCountTableToBitEstimates(
@@ -574,16 +573,14 @@ static WEBP_INLINE double GetDistanceCost(const CostModel* const m,
   return m->distance_[code] + extra_bits;
 }
 
-static void AddSingleLiteralWithCostModel(
-    const uint32_t* const argb, VP8LHashChain* const hash_chain,
-    VP8LColorCache* const hashers, const CostModel* const cost_model, int idx,
-    int is_last, int use_color_cache, double prev_cost, float* const cost,
-    uint16_t* const dist_array) {
+static void AddSingleLiteralWithCostModel(const uint32_t* const argb,
+                                          VP8LColorCache* const hashers,
+                                          const CostModel* const cost_model,
+                                          int idx, int use_color_cache,
+                                          double prev_cost, float* const cost,
+                                          uint16_t* const dist_array) {
   double cost_val = prev_cost;
   const uint32_t color = argb[0];
-  if (!is_last) {
-    HashChainInsert(hash_chain, argb, idx);
-  }
   if (use_color_cache && VP8LColorCacheContains(hashers, color)) {
     const double mul0 = 0.68;
     const int ix = VP8LColorCacheGetIndex(hashers, color);
@@ -599,30 +596,598 @@ static void AddSingleLiteralWithCostModel(
   }
 }
 
+// -----------------------------------------------------------------------------
+// CostManager and interval handling
+
+// Empirical value to avoid high memory consumption but good for performance.
+#define COST_CACHE_INTERVAL_SIZE_MAX 100
+
+// To perform backward reference every pixel at index index_ is considered and
+// the cost for the MAX_LENGTH following pixels computed. Those following pixels
+// at index index_ + k (k from 0 to MAX_LENGTH) have a cost of:
+//     distance_cost_ at index_ + GetLengthCost(cost_model, k)
+//            (named cost)            (named cached cost)
+// and the minimum value is kept. GetLengthCost(cost_model, k) is cached in an
+// array of size MAX_LENGTH.
+// Instead of performing MAX_LENGTH comparisons per pixel, we keep track of the
+// minimal values using intervals, for which lower_ and upper_ bounds are kept.
+// An interval is defined by the index_ of the pixel that generated it and
+// is only useful in a range of indices from start_ to end_ (exclusive), i.e.
+// it contains the minimum value for pixels between start_ and end_.
+// Intervals are stored in a linked list and ordered by start_. When a new
+// interval has a better minimum, old intervals are split or removed.
+typedef struct CostInterval CostInterval;
+struct CostInterval {
+  double lower_;
+  double upper_;
+  int start_;
+  int end_;
+  double distance_cost_;
+  int index_;
+  CostInterval* previous_;
+  CostInterval* next_;
+};
+
+// The GetLengthCost(cost_model, k) part of the costs is also bounded for
+// efficiency in a set of intervals of a different type.
+// If those intervals are small enough, they are not used for comparison and
+// written into the costs right away.
+typedef struct {
+  double lower_;  // Lower bound of the interval.
+  double upper_;  // Upper bound of the interval.
+  int start_;
+  int end_;       // Exclusive.
+  int do_write_;  // If !=0, the interval is saved to cost instead of being kept
+                  // for comparison.
+} CostCacheInterval;
+
+// This structure is in charge of managing intervals and costs.
+// It caches the different CostCacheInterval, caches the different
+// GetLengthCost(cost_model, k) in cost_cache_ and the CostInterval's (whose
+// count_ is limited by COST_CACHE_INTERVAL_SIZE_MAX).
+#define COST_MANAGER_MAX_FREE_LIST 10
+typedef struct {
+  CostInterval* head_;
+  int count_;  // The number of stored intervals.
+  CostCacheInterval* cache_intervals_;
+  size_t cache_intervals_size_;
+  double cost_cache_[MAX_LENGTH];  // Contains the GetLengthCost(cost_model, k).
+  double min_cost_cache_;          // The minimum value in cost_cache_[1:].
+  double max_cost_cache_;          // The maximum value in cost_cache_[1:].
+  float* costs_;
+  uint16_t* dist_array_;
+  // Most of the time, we only need few intervals -> use a free-list, to avoid
+  // fragmentation with small allocs in most common cases.
+  CostInterval intervals_[COST_MANAGER_MAX_FREE_LIST];
+  CostInterval* free_intervals_;
+  // These are regularly malloc'd remains. This list can't grow larger than than
+  // size COST_CACHE_INTERVAL_SIZE_MAX - COST_MANAGER_MAX_FREE_LIST, note.
+  CostInterval* recycled_intervals_;
+  // Buffer used in BackwardReferencesHashChainDistanceOnly to store the ends
+  // of the intervals that can have impacted the cost at a pixel.
+  int* interval_ends_;
+  int interval_ends_size_;
+} CostManager;
+
+static int IsCostCacheIntervalWritable(int start, int end) {
+  // 100 is the length for which we consider an interval for comparison, and not
+  // for writing.
+  // The first intervals are very small and go in increasing size. This constant
+  // helps merging them into one big interval (up to index 150/200 usually from
+  // which intervals start getting much bigger).
+  // This value is empirical.
+  return (end - start + 1 < 100);
+}
+
+static void CostIntervalAddToFreeList(CostManager* const manager,
+                                      CostInterval* const interval) {
+  interval->next_ = manager->free_intervals_;
+  manager->free_intervals_ = interval;
+}
+
+static int CostIntervalIsInFreeList(const CostManager* const manager,
+                                    const CostInterval* const interval) {
+  return (interval >= &manager->intervals_[0] &&
+          interval <= &manager->intervals_[COST_MANAGER_MAX_FREE_LIST - 1]);
+}
+
+static void CostManagerInitFreeList(CostManager* const manager) {
+  int i;
+  manager->free_intervals_ = NULL;
+  for (i = 0; i < COST_MANAGER_MAX_FREE_LIST; ++i) {
+    CostIntervalAddToFreeList(manager, &manager->intervals_[i]);
+  }
+}
+
+static void DeleteIntervalList(CostManager* const manager,
+                               const CostInterval* interval) {
+  while (interval != NULL) {
+    const CostInterval* const next = interval->next_;
+    if (!CostIntervalIsInFreeList(manager, interval)) {
+      WebPSafeFree((void*)interval);
+    }  // else: do nothing
+    interval = next;
+  }
+}
+
+static void CostManagerClear(CostManager* const manager) {
+  if (manager == NULL) return;
+
+  WebPSafeFree(manager->costs_);
+  WebPSafeFree(manager->cache_intervals_);
+  WebPSafeFree(manager->interval_ends_);
+
+  // Clear the interval lists.
+  DeleteIntervalList(manager, manager->head_);
+  manager->head_ = NULL;
+  DeleteIntervalList(manager, manager->recycled_intervals_);
+  manager->recycled_intervals_ = NULL;
+
+  // Reset pointers, count_ and cache_intervals_size_.
+  memset(manager, 0, sizeof(*manager));
+  CostManagerInitFreeList(manager);
+}
+
+static int CostManagerInit(CostManager* const manager,
+                           uint16_t* const dist_array, int pix_count,
+                           const CostModel* const cost_model) {
+  int i;
+  const int cost_cache_size = (pix_count > MAX_LENGTH) ? MAX_LENGTH : pix_count;
+  // This constant is tied to the cost_model we use.
+  // Empirically, differences between intervals is usually of more than 1.
+  const double min_cost_diff = 0.1;
+
+  manager->costs_ = NULL;
+  manager->cache_intervals_ = NULL;
+  manager->interval_ends_ = NULL;
+  manager->head_ = NULL;
+  manager->recycled_intervals_ = NULL;
+  manager->count_ = 0;
+  manager->dist_array_ = dist_array;
+  CostManagerInitFreeList(manager);
+
+  // Fill in the cost_cache_.
+  manager->cache_intervals_size_ = 1;
+  manager->cost_cache_[0] = 0;
+  for (i = 1; i < cost_cache_size; ++i) {
+    manager->cost_cache_[i] = GetLengthCost(cost_model, i);
+    // Get an approximation of the number of bound intervals.
+    if (fabs(manager->cost_cache_[i] - manager->cost_cache_[i - 1]) >
+        min_cost_diff) {
+      ++manager->cache_intervals_size_;
+    }
+    // Compute the minimum of cost_cache_.
+    if (i == 1) {
+      manager->min_cost_cache_ = manager->cost_cache_[1];
+      manager->max_cost_cache_ = manager->cost_cache_[1];
+    } else if (manager->cost_cache_[i] < manager->min_cost_cache_) {
+      manager->min_cost_cache_ = manager->cost_cache_[i];
+    } else if (manager->cost_cache_[i] > manager->max_cost_cache_) {
+      manager->max_cost_cache_ = manager->cost_cache_[i];
+    }
+  }
+
+  // With the current cost models, we have 15 intervals, so we are safe by
+  // setting a maximum of COST_CACHE_INTERVAL_SIZE_MAX.
+  if (manager->cache_intervals_size_ > COST_CACHE_INTERVAL_SIZE_MAX) {
+    manager->cache_intervals_size_ = COST_CACHE_INTERVAL_SIZE_MAX;
+  }
+  manager->cache_intervals_ = (CostCacheInterval*)WebPSafeMalloc(
+      manager->cache_intervals_size_, sizeof(*manager->cache_intervals_));
+  if (manager->cache_intervals_ == NULL) {
+    CostManagerClear(manager);
+    return 0;
+  }
+
+  // Fill in the cache_intervals_.
+  {
+    double cost_prev = -1e38f;  // unprobably low initial value
+    CostCacheInterval* prev = NULL;
+    CostCacheInterval* cur = manager->cache_intervals_;
+    const CostCacheInterval* const end =
+        manager->cache_intervals_ + manager->cache_intervals_size_;
+
+    // Consecutive values in cost_cache_ are compared and if a big enough
+    // difference is found, a new interval is created and bounded.
+    for (i = 0; i < cost_cache_size; ++i) {
+      const double cost_val = manager->cost_cache_[i];
+      if (i == 0 ||
+          (fabs(cost_val - cost_prev) > min_cost_diff && cur + 1 < end)) {
+        if (i > 1) {
+          const int is_writable =
+              IsCostCacheIntervalWritable(cur->start_, cur->end_);
+          // Merge with the previous interval if both are writable.
+          if (is_writable && cur != manager->cache_intervals_ &&
+              prev->do_write_) {
+            // Update the previous interval.
+            prev->end_ = cur->end_;
+            if (cur->lower_ < prev->lower_) {
+              prev->lower_ = cur->lower_;
+            } else if (cur->upper_ > prev->upper_) {
+              prev->upper_ = cur->upper_;
+            }
+          } else {
+            cur->do_write_ = is_writable;
+            prev = cur;
+            ++cur;
+          }
+        }
+        // Initialize an interval.
+        cur->start_ = i;
+        cur->do_write_ = 0;
+        cur->lower_ = cost_val;
+        cur->upper_ = cost_val;
+      } else {
+        // Update the current interval bounds.
+        if (cost_val < cur->lower_) {
+          cur->lower_ = cost_val;
+        } else if (cost_val > cur->upper_) {
+          cur->upper_ = cost_val;
+        }
+      }
+      cur->end_ = i + 1;
+      cost_prev = cost_val;
+    }
+    manager->cache_intervals_size_ = cur + 1 - manager->cache_intervals_;
+  }
+
+  manager->costs_ = (float*)WebPSafeMalloc(pix_count, sizeof(*manager->costs_));
+  if (manager->costs_ == NULL) {
+    CostManagerClear(manager);
+    return 0;
+  }
+  // Set the initial costs_ high for every pixel as we will keep the minimum.
+  for (i = 0; i < pix_count; ++i) manager->costs_[i] = 1e38f;
+
+  // The cost at pixel is influenced by the cost intervals from previous pixels.
+  // Let us take the specific case where the offset is the same (which actually
+  // happens a lot in case of uniform regions).
+  // pixel i contributes to j>i a cost of: offset cost + cost_cache_[j-i]
+  // pixel i+1 contributes to j>i a cost of: 2*offset cost + cost_cache_[j-i-1]
+  // pixel i+2 contributes to j>i a cost of: 3*offset cost + cost_cache_[j-i-2]
+  // and so on.
+  // A pixel i influences the following length(j) < MAX_LENGTH pixels. What is
+  // the value of j such that pixel i + j cannot influence any of those pixels?
+  // This value is such that:
+  //               max of cost_cache_ < j*offset cost + min of cost_cache_
+  // (pixel i + j 's cost cannot beat the worst cost given by pixel i).
+  // This value will be used to optimize the cost computation in
+  // BackwardReferencesHashChainDistanceOnly.
+  {
+    // The offset cost is computed in GetDistanceCost and has a minimum value of
+    // the minimum in cost_model->distance_. The case where the offset cost is 0
+    // will be dealt with differently later so we are only interested in the
+    // minimum non-zero offset cost.
+    double offset_cost_min = 0.;
+    int size;
+    for (i = 0; i < NUM_DISTANCE_CODES; ++i) {
+      if (cost_model->distance_[i] != 0) {
+        if (offset_cost_min == 0.) {
+          offset_cost_min = cost_model->distance_[i];
+        } else if (cost_model->distance_[i] < offset_cost_min) {
+          offset_cost_min = cost_model->distance_[i];
+        }
+      }
+    }
+    // In case all the cost_model->distance_ is 0, the next non-zero cost we
+    // can have is from the extra bit in GetDistanceCost, hence 1.
+    if (offset_cost_min < 1.) offset_cost_min = 1.;
+
+    size = 1 + (int)ceil((manager->max_cost_cache_ - manager->min_cost_cache_) /
+                         offset_cost_min);
+    // Empirically, we usually end up with a value below 100.
+    if (size > MAX_LENGTH) size = MAX_LENGTH;
+
+    manager->interval_ends_ =
+        (int*)WebPSafeMalloc(size, sizeof(*manager->interval_ends_));
+    if (manager->interval_ends_ == NULL) {
+      CostManagerClear(manager);
+      return 0;
+    }
+    manager->interval_ends_size_ = size;
+  }
+
+  return 1;
+}
+
+// Given the distance_cost for pixel 'index', update the cost at pixel 'i' if it
+// is smaller than the previously computed value.
+static WEBP_INLINE void UpdateCost(CostManager* const manager, int i, int index,
+                                   double distance_cost) {
+  int k = i - index;
+  double cost_tmp;
+  assert(k >= 0 && k < MAX_LENGTH);
+  cost_tmp = distance_cost + manager->cost_cache_[k];
+
+  if (manager->costs_[i] > cost_tmp) {
+    manager->costs_[i] = (float)cost_tmp;
+    manager->dist_array_[i] = k + 1;
+  }
+}
+
+// Given the distance_cost for pixel 'index', update the cost for all the pixels
+// between 'start' and 'end' excluded.
+static WEBP_INLINE void UpdateCostPerInterval(CostManager* const manager,
+                                              int start, int end, int index,
+                                              double distance_cost) {
+  int i;
+  for (i = start; i < end; ++i) UpdateCost(manager, i, index, distance_cost);
+}
+
+// Given two intervals, make 'prev' be the previous one of 'next' in 'manager'.
+static WEBP_INLINE void ConnectIntervals(CostManager* const manager,
+                                         CostInterval* const prev,
+                                         CostInterval* const next) {
+  if (prev != NULL) {
+    prev->next_ = next;
+  } else {
+    manager->head_ = next;
+  }
+
+  if (next != NULL) next->previous_ = prev;
+}
+
+// Pop an interval in the manager.
+static WEBP_INLINE void PopInterval(CostManager* const manager,
+                                    CostInterval* const interval) {
+  CostInterval* const next = interval->next_;
+
+  if (interval == NULL) return;
+
+  ConnectIntervals(manager, interval->previous_, next);
+  if (CostIntervalIsInFreeList(manager, interval)) {
+    CostIntervalAddToFreeList(manager, interval);
+  } else {  // recycle regularly malloc'd intervals too
+    interval->next_ = manager->recycled_intervals_;
+    manager->recycled_intervals_ = interval;
+  }
+  --manager->count_;
+  assert(manager->count_ >= 0);
+}
+
+// Update the cost at index i by going over all the stored intervals that
+// overlap with i.
+static WEBP_INLINE void UpdateCostPerIndex(CostManager* const manager, int i) {
+  CostInterval* current = manager->head_;
+
+  while (current != NULL && current->start_ <= i) {
+    if (current->end_ <= i) {
+      // We have an outdated interval, remove it.
+      CostInterval* next = current->next_;
+      PopInterval(manager, current);
+      current = next;
+    } else {
+      UpdateCost(manager, i, current->index_, current->distance_cost_);
+      current = current->next_;
+    }
+  }
+}
+
+// Given a current orphan interval and its previous interval, before
+// it was orphaned (which can be NULL), set it at the right place in the list
+// of intervals using the start_ ordering and the previous interval as a hint.
+static WEBP_INLINE void PositionOrphanInterval(CostManager* const manager,
+                                               CostInterval* const current,
+                                               CostInterval* previous) {
+  assert(current != NULL);
+
+  if (previous == NULL) previous = manager->head_;
+  while (previous != NULL && current->start_ < previous->start_) {
+    previous = previous->previous_;
+  }
+  while (previous != NULL && previous->next_ != NULL &&
+         previous->next_->start_ < current->start_) {
+    previous = previous->next_;
+  }
+
+  if (previous != NULL) {
+    ConnectIntervals(manager, current, previous->next_);
+  } else {
+    ConnectIntervals(manager, current, manager->head_);
+  }
+  ConnectIntervals(manager, previous, current);
+}
+
+// Insert an interval in the list contained in the manager by starting at
+// interval_in as a hint. The intervals are sorted by start_ value.
+static WEBP_INLINE void InsertInterval(CostManager* const manager,
+                                       CostInterval* const interval_in,
+                                       double distance_cost, double lower,
+                                       double upper, int index, int start,
+                                       int end) {
+  CostInterval* interval_new;
+
+  if (IsCostCacheIntervalWritable(start, end) ||
+      manager->count_ >= COST_CACHE_INTERVAL_SIZE_MAX) {
+    // Write down the interval if it is too small.
+    UpdateCostPerInterval(manager, start, end, index, distance_cost);
+    return;
+  }
+  if (manager->free_intervals_ != NULL) {
+    interval_new = manager->free_intervals_;
+    manager->free_intervals_ = interval_new->next_;
+  } else if (manager->recycled_intervals_ != NULL) {
+    interval_new = manager->recycled_intervals_;
+    manager->recycled_intervals_ = interval_new->next_;
+  } else {   // malloc for good
+    interval_new = (CostInterval*)WebPSafeMalloc(1, sizeof(*interval_new));
+    if (interval_new == NULL) {
+      // Write down the interval if we cannot create it.
+      UpdateCostPerInterval(manager, start, end, index, distance_cost);
+      return;
+    }
+  }
+
+  interval_new->distance_cost_ = distance_cost;
+  interval_new->lower_ = lower;
+  interval_new->upper_ = upper;
+  interval_new->index_ = index;
+  interval_new->start_ = start;
+  interval_new->end_ = end;
+  PositionOrphanInterval(manager, interval_new, interval_in);
+
+  ++manager->count_;
+}
+
+// When an interval has its start_ or end_ modified, it needs to be
+// repositioned in the linked list.
+static WEBP_INLINE void RepositionInterval(CostManager* const manager,
+                                           CostInterval* const interval) {
+  if (IsCostCacheIntervalWritable(interval->start_, interval->end_)) {
+    // Maybe interval has been resized and is small enough to be removed.
+    UpdateCostPerInterval(manager, interval->start_, interval->end_,
+                          interval->index_, interval->distance_cost_);
+    PopInterval(manager, interval);
+    return;
+  }
+
+  // Early exit if interval is at the right spot.
+  if ((interval->previous_ == NULL ||
+       interval->previous_->start_ <= interval->start_) &&
+      (interval->next_ == NULL ||
+       interval->start_ <= interval->next_->start_)) {
+    return;
+  }
+
+  ConnectIntervals(manager, interval->previous_, interval->next_);
+  PositionOrphanInterval(manager, interval, interval->previous_);
+}
+
+// Given a new cost interval defined by its start at index, its last value and
+// distance_cost, add its contributions to the previous intervals and costs.
+// If handling the interval or one of its subintervals becomes to heavy, its
+// contribution is added to the costs right away.
+static WEBP_INLINE void PushInterval(CostManager* const manager,
+                                     double distance_cost, int index,
+                                     int last) {
+  size_t i;
+  CostInterval* interval = manager->head_;
+  CostInterval* interval_next;
+  const CostCacheInterval* const cost_cache_intervals =
+      manager->cache_intervals_;
+
+  for (i = 0; i < manager->cache_intervals_size_ &&
+              cost_cache_intervals[i].start_ < last;
+       ++i) {
+    // Define the intersection of the ith interval with the new one.
+    int start = index + cost_cache_intervals[i].start_;
+    const int end = index + (cost_cache_intervals[i].end_ > last
+                                 ? last
+                                 : cost_cache_intervals[i].end_);
+    const double lower_in = cost_cache_intervals[i].lower_;
+    const double upper_in = cost_cache_intervals[i].upper_;
+    const double lower_full_in = distance_cost + lower_in;
+    const double upper_full_in = distance_cost + upper_in;
+
+    if (cost_cache_intervals[i].do_write_) {
+      UpdateCostPerInterval(manager, start, end, index, distance_cost);
+      continue;
+    }
+
+    for (; interval != NULL && interval->start_ < end && start < end;
+         interval = interval_next) {
+      const double lower_full_interval =
+          interval->distance_cost_ + interval->lower_;
+      const double upper_full_interval =
+          interval->distance_cost_ + interval->upper_;
+
+      interval_next = interval->next_;
+
+      // Make sure we have some overlap
+      if (start >= interval->end_) continue;
+
+      if (lower_full_in >= upper_full_interval) {
+        // When intervals are represented, the lower, the better.
+        // [**********************************************************]
+        // start                                                    end
+        //                   [----------------------------------]
+        //                   interval->start_       interval->end_
+        // If we are worse than what we already have, add whatever we have so
+        // far up to interval.
+        const int start_new = interval->end_;
+        InsertInterval(manager, interval, distance_cost, lower_in, upper_in,
+                       index, start, interval->start_);
+        start = start_new;
+        continue;
+      }
+
+      // We know the two intervals intersect.
+      if (upper_full_in >= lower_full_interval) {
+        // There is no clear cut on which is best, so let's keep both.
+        // [*********[*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*]***********]
+        // start     interval->start_     interval->end_         end
+        // OR
+        // [*********[*-*-*-*-*-*-*-*-*-*-*-]----------------------]
+        // start     interval->start_     end          interval->end_
+        const int end_new = (interval->end_ <= end) ? interval->end_ : end;
+        InsertInterval(manager, interval, distance_cost, lower_in, upper_in,
+                       index, start, end_new);
+        start = end_new;
+      } else if (start <= interval->start_ && interval->end_ <= end) {
+        //                   [----------------------------------]
+        //                   interval->start_       interval->end_
+        // [**************************************************************]
+        // start                                                        end
+        // We can safely remove the old interval as it is fully included.
+        PopInterval(manager, interval);
+      } else {
+        if (interval->start_ <= start && end <= interval->end_) {
+          // [--------------------------------------------------------------]
+          // interval->start_                                  interval->end_
+          //                     [*****************************]
+          //                     start                       end
+          // We have to split the old interval as it fully contains the new one.
+          const int end_original = interval->end_;
+          interval->end_ = start;
+          InsertInterval(manager, interval, interval->distance_cost_,
+                         interval->lower_, interval->upper_, interval->index_,
+                         end, end_original);
+        } else if (interval->start_ < start) {
+          // [------------------------------------]
+          // interval->start_        interval->end_
+          //                     [*****************************]
+          //                     start                       end
+          interval->end_ = start;
+        } else {
+          //              [------------------------------------]
+          //              interval->start_        interval->end_
+          // [*****************************]
+          // start                       end
+          interval->start_ = end;
+        }
+
+        // The interval has been modified, we need to reposition it or write it.
+        RepositionInterval(manager, interval);
+      }
+    }
+    // Insert the remaining interval from start to end.
+    InsertInterval(manager, interval, distance_cost, lower_in, upper_in, index,
+                   start, end);
+  }
+}
+
 static int BackwardReferencesHashChainDistanceOnly(
-    int xsize, int ysize, const uint32_t* const argb,
-    int quality, int cache_bits, VP8LHashChain* const hash_chain,
+    int xsize, int ysize, const uint32_t* const argb, int quality,
+    int cache_bits, const VP8LHashChain* const hash_chain,
     VP8LBackwardRefs* const refs, uint16_t* const dist_array) {
   int i;
   int ok = 0;
   int cc_init = 0;
   const int pix_count = xsize * ysize;
   const int use_color_cache = (cache_bits > 0);
-  float* const cost =
-      (float*)WebPSafeMalloc(pix_count, sizeof(*cost));
   const size_t literal_array_size = sizeof(double) *
       (NUM_LITERAL_CODES + NUM_LENGTH_CODES +
        ((cache_bits > 0) ? (1 << cache_bits) : 0));
   const size_t cost_model_size = sizeof(CostModel) + literal_array_size;
   CostModel* const cost_model =
-      (CostModel*)WebPSafeMalloc(1ULL, cost_model_size);
+      (CostModel*)WebPSafeCalloc(1ULL, cost_model_size);
   VP8LColorCache hashers;
   const int skip_length = 32 + quality;
   const int skip_min_distance_code = 2;
-  int iter_max = GetMaxItersForQuality(quality, 0);
-  const int window_size = GetWindowSizeForHashChain(quality, xsize);
+  CostManager* cost_manager =
+      (CostManager*)WebPSafeMalloc(1ULL, sizeof(*cost_manager));
 
-  if (cost == NULL || cost_model == NULL) goto Error;
+  if (cost_model == NULL || cost_manager == NULL) goto Error;
 
   cost_model->literal_ = (double*)(cost_model + 1);
   if (use_color_cache) {
@@ -634,34 +1199,91 @@ static int BackwardReferencesHashChainDistanceOnly(
     goto Error;
   }
 
-  for (i = 0; i < pix_count; ++i) cost[i] = 1e38f;
+  if (!CostManagerInit(cost_manager, dist_array, pix_count, cost_model)) {
+    goto Error;
+  }
 
   // We loop one pixel at a time, but store all currently best points to
   // non-processed locations from this point.
   dist_array[0] = 0;
-  HashChainReset(hash_chain);
   // Add first pixel as literal.
-  AddSingleLiteralWithCostModel(argb + 0, hash_chain, &hashers, cost_model, 0,
-                                0, use_color_cache, 0.0, cost, dist_array);
+  AddSingleLiteralWithCostModel(argb + 0, &hashers, cost_model, 0,
+                                use_color_cache, 0.0, cost_manager->costs_,
+                                dist_array);
+
   for (i = 1; i < pix_count - 1; ++i) {
-    int offset = 0;
-    int len = 0;
-    double prev_cost = cost[i - 1];
-    const int max_len = MaxFindCopyLength(pix_count - i);
-    HashChainFindCopy(hash_chain, i, argb, max_len, window_size,
-                      iter_max, &offset, &len);
+    int offset = 0, len = 0;
+    double prev_cost = cost_manager->costs_[i - 1];
+    HashChainFindCopy(hash_chain, i, &offset, &len);
     if (len >= MIN_LENGTH) {
       const int code = DistanceToPlaneCode(xsize, offset);
-      const double distance_cost =
-          prev_cost + GetDistanceCost(cost_model, code);
-      int k;
-      for (k = 1; k < len; ++k) {
-        const double cost_val = distance_cost + GetLengthCost(cost_model, k);
-        if (cost[i + k] > cost_val) {
-          cost[i + k] = (float)cost_val;
-          dist_array[i + k] = k + 1;
+      const double offset_cost = GetDistanceCost(cost_model, code);
+      const int first_i = i;
+      int j_max = 0, interval_ends_index = 0;
+      const int is_offset_zero = (offset_cost == 0.);
+
+      if (!is_offset_zero) {
+        j_max = (int)ceil(
+            (cost_manager->max_cost_cache_ - cost_manager->min_cost_cache_) /
+            offset_cost);
+        if (j_max < 1) {
+          j_max = 1;
+        } else if (j_max > cost_manager->interval_ends_size_ - 1) {
+          // This could only happen in the case of MAX_LENGTH.
+          j_max = cost_manager->interval_ends_size_ - 1;
         }
+      }  // else j_max is unused anyway.
+
+      // Instead of considering all contributions from a pixel i by calling:
+      //         PushInterval(cost_manager, prev_cost + offset_cost, i, len);
+      // we optimize these contributions in case offset_cost stays the same for
+      // consecutive pixels. This describes a set of pixels similar to a
+      // previous set (e.g. constant color regions).
+      for (; i < pix_count - 1; ++i) {
+        int offset_next, len_next;
+        prev_cost = cost_manager->costs_[i - 1];
+
+        if (is_offset_zero) {
+          // No optimization can be made so we just push all of the
+          // contributions from i.
+          PushInterval(cost_manager, prev_cost, i, len);
+        } else {
+          // j_max is chosen as the smallest j such that:
+          //       max of cost_cache_ < j*offset cost + min of cost_cache_
+          // Therefore, the pixel influenced by i-j_max, cannot be influenced
+          // by i. Only the costs after the end of what i contributed need to be
+          // updated. cost_manager->interval_ends_ is a circular buffer that
+          // stores those ends.
+          const double distance_cost = prev_cost + offset_cost;
+          int j = cost_manager->interval_ends_[interval_ends_index];
+          if (i - first_i <= j_max ||
+              !IsCostCacheIntervalWritable(j, i + len)) {
+            PushInterval(cost_manager, distance_cost, i, len);
+          } else {
+            for (; j < i + len; ++j) {
+              UpdateCost(cost_manager, j, i, distance_cost);
+            }
+          }
+          // Store the new end in the circular buffer.
+          assert(interval_ends_index < cost_manager->interval_ends_size_);
+          cost_manager->interval_ends_[interval_ends_index] = i + len;
+          if (++interval_ends_index > j_max) interval_ends_index = 0;
+        }
+
+        // Check whether i is the last pixel to consider, as it is handled
+        // differently.
+        if (i + 1 >= pix_count - 1) break;
+        HashChainFindCopy(hash_chain, i + 1, &offset_next, &len_next);
+        if (offset_next != offset) break;
+        len = len_next;
+        UpdateCostPerIndex(cost_manager, i);
+        AddSingleLiteralWithCostModel(argb + i, &hashers, cost_model, i,
+                                      use_color_cache, prev_cost,
+                                      cost_manager->costs_, dist_array);
       }
+      // Submit the last pixel.
+      UpdateCostPerIndex(cost_manager, i + 1);
+
       // This if is for speedup only. It roughly doubles the speed, and
       // makes compression worse by .1 %.
       if (len >= skip_length && code <= skip_min_distance_code) {
@@ -669,53 +1291,55 @@ static int BackwardReferencesHashChainDistanceOnly(
         // lookups for better copies.
         // 1) insert the hashes.
         if (use_color_cache) {
+          int k;
           for (k = 0; k < len; ++k) {
             VP8LColorCacheInsert(&hashers, argb[i + k]);
           }
         }
-        // 2) Add to the hash_chain (but cannot add the last pixel)
+        // 2) jump.
         {
-          const int last = (len + i < pix_count - 1) ? len + i
-                                                     : pix_count - 1;
-          for (k = i; k < last; ++k) {
-            HashChainInsert(hash_chain, &argb[k], k);
-          }
+          const int i_next = i + len - 1;  // for loop does ++i, thus -1 here.
+          for (; i <= i_next; ++i) UpdateCostPerIndex(cost_manager, i + 1);
+          i = i_next;
         }
-        // 3) jump.
-        i += len - 1;  // for loop does ++i, thus -1 here.
         goto next_symbol;
       }
-      if (len != MIN_LENGTH) {
+      if (len > MIN_LENGTH) {
         int code_min_length;
         double cost_total;
-        HashChainFindOffset(hash_chain, i, argb, MIN_LENGTH, window_size,
-                            &offset);
+        offset = HashChainFindOffset(hash_chain, i);
         code_min_length = DistanceToPlaneCode(xsize, offset);
         cost_total = prev_cost +
             GetDistanceCost(cost_model, code_min_length) +
             GetLengthCost(cost_model, 1);
-        if (cost[i + 1] > cost_total) {
-          cost[i + 1] = (float)cost_total;
+        if (cost_manager->costs_[i + 1] > cost_total) {
+          cost_manager->costs_[i + 1] = (float)cost_total;
           dist_array[i + 1] = 2;
         }
       }
+    } else {    // len < MIN_LENGTH
+      UpdateCostPerIndex(cost_manager, i + 1);
     }
-    AddSingleLiteralWithCostModel(argb + i, hash_chain, &hashers, cost_model, i,
-                                  0, use_color_cache, prev_cost, cost,
-                                  dist_array);
+
+    AddSingleLiteralWithCostModel(argb + i, &hashers, cost_model, i,
+                                  use_color_cache, prev_cost,
+                                  cost_manager->costs_, dist_array);
+
  next_symbol: ;
   }
   // Handle the last pixel.
   if (i == (pix_count - 1)) {
-    AddSingleLiteralWithCostModel(argb + i, hash_chain, &hashers, cost_model, i,
-                                  1, use_color_cache, cost[pix_count - 2], cost,
-                                  dist_array);
+    AddSingleLiteralWithCostModel(
+        argb + i, &hashers, cost_model, i, use_color_cache,
+        cost_manager->costs_[pix_count - 2], cost_manager->costs_, dist_array);
   }
+
   ok = !refs->error_;
  Error:
   if (cc_init) VP8LColorCacheClear(&hashers);
+  CostManagerClear(cost_manager);
   WebPSafeFree(cost_model);
-  WebPSafeFree(cost);
+  WebPSafeFree(cost_manager);
   return ok;
 }
 
@@ -739,18 +1363,14 @@ static void TraceBackwards(uint16_t* const dist_array,
 }
 
 static int BackwardReferencesHashChainFollowChosenPath(
-    int xsize, int ysize, const uint32_t* const argb,
-    int quality, int cache_bits,
+    const uint32_t* const argb, int cache_bits,
     const uint16_t* const chosen_path, int chosen_path_size,
-    VP8LHashChain* const hash_chain,
-    VP8LBackwardRefs* const refs) {
-  const int pix_count = xsize * ysize;
+    const VP8LHashChain* const hash_chain, VP8LBackwardRefs* const refs) {
   const int use_color_cache = (cache_bits > 0);
   int ix;
   int i = 0;
   int ok = 0;
   int cc_init = 0;
-  const int window_size = GetWindowSizeForHashChain(quality, xsize);
   VP8LColorCache hashers;
 
   if (use_color_cache) {
@@ -759,23 +1379,15 @@ static int BackwardReferencesHashChainFollowChosenPath(
   }
 
   ClearBackwardRefs(refs);
-  HashChainReset(hash_chain);
   for (ix = 0; ix < chosen_path_size; ++ix) {
-    int offset = 0;
     const int len = chosen_path[ix];
     if (len != 1) {
       int k;
-      HashChainFindOffset(hash_chain, i, argb, len, window_size, &offset);
+      const int offset = HashChainFindOffset(hash_chain, i);
       BackwardRefsCursorAdd(refs, PixOrCopyCreateCopy(offset, len));
       if (use_color_cache) {
         for (k = 0; k < len; ++k) {
           VP8LColorCacheInsert(&hashers, argb[i + k]);
-        }
-      }
-      {
-        const int last = (len < pix_count - 1 - i) ? len : pix_count - 1 - i;
-        for (k = 0; k < last; ++k) {
-          HashChainInsert(hash_chain, &argb[i + k], i + k);
         }
       }
       i += len;
@@ -790,9 +1402,6 @@ static int BackwardReferencesHashChainFollowChosenPath(
         v = PixOrCopyCreateLiteral(argb[i]);
       }
       BackwardRefsCursorAdd(refs, v);
-      if (i + 1 < pix_count) {
-        HashChainInsert(hash_chain, &argb[i], i);
-      }
       ++i;
     }
   }
@@ -803,11 +1412,10 @@ static int BackwardReferencesHashChainFollowChosenPath(
 }
 
 // Returns 1 on success.
-static int BackwardReferencesTraceBackwards(int xsize, int ysize,
-                                            const uint32_t* const argb,
-                                            int quality, int cache_bits,
-                                            VP8LHashChain* const hash_chain,
-                                            VP8LBackwardRefs* const refs) {
+static int BackwardReferencesTraceBackwards(
+    int xsize, int ysize, const uint32_t* const argb, int quality,
+    int cache_bits, const VP8LHashChain* const hash_chain,
+    VP8LBackwardRefs* const refs) {
   int ok = 0;
   const int dist_array_size = xsize * ysize;
   uint16_t* chosen_path = NULL;
@@ -824,8 +1432,7 @@ static int BackwardReferencesTraceBackwards(int xsize, int ysize,
   }
   TraceBackwards(dist_array, dist_array_size, &chosen_path, &chosen_path_size);
   if (!BackwardReferencesHashChainFollowChosenPath(
-      xsize, ysize, argb, quality, cache_bits, chosen_path, chosen_path_size,
-      hash_chain, refs)) {
+          argb, cache_bits, chosen_path, chosen_path_size, hash_chain, refs)) {
     goto Error;
   }
   ok = 1;
@@ -913,7 +1520,7 @@ static double ComputeCacheEntropy(const uint32_t* argb,
 // Returns 0 in case of memory error.
 static int CalculateBestCacheSize(const uint32_t* const argb,
                                   int xsize, int ysize, int quality,
-                                  VP8LHashChain* const hash_chain,
+                                  const VP8LHashChain* const hash_chain,
                                   VP8LBackwardRefs* const refs,
                                   int* const lz77_computed,
                                   int* const best_cache_bits) {
@@ -933,8 +1540,8 @@ static int CalculateBestCacheSize(const uint32_t* const argb,
     // Local color cache is disabled.
     return 1;
   }
-  if (!BackwardReferencesLz77(xsize, ysize, argb, cache_bits_low, quality, 0,
-                              hash_chain, refs)) {
+  if (!BackwardReferencesLz77(xsize, ysize, argb, cache_bits_low, hash_chain,
+                              refs)) {
     return 0;
   }
   // Do a binary search to find the optimal entropy for cache_bits.
@@ -999,13 +1606,12 @@ static int BackwardRefsWithLocalCache(const uint32_t* const argb,
 }
 
 static VP8LBackwardRefs* GetBackwardReferencesLowEffort(
-    int width, int height, const uint32_t* const argb, int quality,
-    int* const cache_bits, VP8LHashChain* const hash_chain,
+    int width, int height, const uint32_t* const argb,
+    int* const cache_bits, const VP8LHashChain* const hash_chain,
     VP8LBackwardRefs refs_array[2]) {
   VP8LBackwardRefs* refs_lz77 = &refs_array[0];
   *cache_bits = 0;
-  if (!BackwardReferencesLz77(width, height, argb, 0, quality,
-                              1 /* Low effort. */, hash_chain, refs_lz77)) {
+  if (!BackwardReferencesLz77(width, height, argb, 0, hash_chain, refs_lz77)) {
     return NULL;
   }
   BackwardReferences2DLocality(width, refs_lz77);
@@ -1014,7 +1620,7 @@ static VP8LBackwardRefs* GetBackwardReferencesLowEffort(
 
 static VP8LBackwardRefs* GetBackwardReferences(
     int width, int height, const uint32_t* const argb, int quality,
-    int* const cache_bits, VP8LHashChain* const hash_chain,
+    int* const cache_bits, const VP8LHashChain* const hash_chain,
     VP8LBackwardRefs refs_array[2]) {
   int lz77_is_useful;
   int lz77_computed;
@@ -1037,8 +1643,8 @@ static VP8LBackwardRefs* GetBackwardReferences(
       }
     }
   } else {
-    if (!BackwardReferencesLz77(width, height, argb, *cache_bits, quality,
-                                0 /* Low effort. */, hash_chain, refs_lz77)) {
+    if (!BackwardReferencesLz77(width, height, argb, *cache_bits, hash_chain,
+                                refs_lz77)) {
       goto Error;
     }
   }
@@ -1097,11 +1703,11 @@ static VP8LBackwardRefs* GetBackwardReferences(
 
 VP8LBackwardRefs* VP8LGetBackwardReferences(
     int width, int height, const uint32_t* const argb, int quality,
-    int low_effort, int* const cache_bits, VP8LHashChain* const hash_chain,
-    VP8LBackwardRefs refs_array[2]) {
+    int low_effort, int* const cache_bits,
+    const VP8LHashChain* const hash_chain, VP8LBackwardRefs refs_array[2]) {
   if (low_effort) {
-    return GetBackwardReferencesLowEffort(width, height, argb, quality,
-                                          cache_bits, hash_chain, refs_array);
+    return GetBackwardReferencesLowEffort(width, height, argb, cache_bits,
+                                          hash_chain, refs_array);
   } else {
     return GetBackwardReferences(width, height, argb, quality, cache_bits,
                                  hash_chain, refs_array);

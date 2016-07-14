@@ -25,14 +25,17 @@ extern "C" {
 #endif
 
 typedef struct {
-  const WebPConfig* config_;    // user configuration and parameters
-  const WebPPicture* pic_;      // input picture.
+  const WebPConfig* config_;      // user configuration and parameters
+  const WebPPicture* pic_;        // input picture.
 
-  uint32_t* argb_;              // Transformed argb image data.
-  uint32_t* argb_scratch_;      // Scratch memory for argb rows
-                                // (used for prediction).
-  uint32_t* transform_data_;    // Scratch memory for transform data.
-  int       current_width_;     // Corresponds to packed image width.
+  uint32_t* argb_;                // Transformed argb image data.
+  uint32_t* argb_scratch_;        // Scratch memory for argb rows
+                                  // (used for prediction).
+  uint32_t* transform_data_;      // Scratch memory for transform data.
+  uint32_t* transform_mem_;       // Currently allocated memory.
+  size_t    transform_mem_size_;  // Currently allocated memory size.
+
+  int       current_width_;       // Corresponds to packed image width.
 
   // Encoding parameters derived from quality parameter.
   int histo_bits_;
@@ -64,9 +67,10 @@ int VP8LEncodeImage(const WebPConfig* const config,
                     const WebPPicture* const picture);
 
 // Encodes the main image stream using the supplied bit writer.
+// If 'use_cache' is false, disables the use of color cache.
 WebPEncodingError VP8LEncodeStream(const WebPConfig* const config,
                                    const WebPPicture* const picture,
-                                   VP8LBitWriter* const bw);
+                                   VP8LBitWriter* const bw, int use_cache);
 
 //------------------------------------------------------------------------------
 

@@ -29,9 +29,6 @@ extern "C" {
 #include "../enc/delta_palettization.h"
 #endif  // WEBP_EXPERIMENTAL_FEATURES
 
-// Not a trivial literal symbol.
-#define VP8L_NON_TRIVIAL_SYM (0xffffffff)
-
 //------------------------------------------------------------------------------
 // Decoding
 
@@ -161,7 +158,8 @@ void VP8LCollectColorBlueTransforms_C(const uint32_t* argb, int stride,
 
 void VP8LResidualImage(int width, int height, int bits, int low_effort,
                        uint32_t* const argb, uint32_t* const argb_scratch,
-                       uint32_t* const image);
+                       uint32_t* const image, int near_lossless, int exact,
+                       int used_subtract_green);
 
 void VP8LColorSpaceTransform(int width, int height, int bits, int quality,
                              uint32_t* const argb, uint32_t* image);
@@ -175,8 +173,27 @@ static WEBP_INLINE uint32_t VP8LSubSampleSize(uint32_t size,
   return (size + (1 << sampling_bits) - 1) >> sampling_bits;
 }
 
+// Converts near lossless quality into max number of bits shaved off.
+static WEBP_INLINE int VP8LNearLosslessBits(int near_lossless_quality) {
+  //    100 -> 0
+  // 80..99 -> 1
+  // 60..79 -> 2
+  // 40..59 -> 3
+  // 20..39 -> 4
+  //  0..19 -> 5
+  return 5 - near_lossless_quality / 20;
+}
+
 // -----------------------------------------------------------------------------
 // Faster logarithm for integers. Small values use a look-up table.
+
+// The threshold till approximate version of log_2 can be used.
+// Practically, we can get rid of the call to log() as the two values match to
+// very high degree (the ratio of these two is 0.99999x).
+// Keeping a high threshold for now.
+#define APPROX_LOG_WITH_CORRECTION_MAX  65536
+#define APPROX_LOG_MAX                   4096
+#define LOG_2_RECIPROCAL 1.44269504088896338700465094007086
 #define LOG_LOOKUP_IDX_MAX 256
 extern const float kLog2Table[LOG_LOOKUP_IDX_MAX];
 extern const float kSLog2Table[LOG_LOOKUP_IDX_MAX];
@@ -199,42 +216,55 @@ static WEBP_INLINE float VP8LFastSLog2(uint32_t v) {
 typedef double (*VP8LCostFunc)(const uint32_t* population, int length);
 typedef double (*VP8LCostCombinedFunc)(const uint32_t* X, const uint32_t* Y,
                                        int length);
+typedef float (*VP8LCombinedShannonEntropyFunc)(const int X[256],
+                                                const int Y[256]);
 
 extern VP8LCostFunc VP8LExtraCost;
 extern VP8LCostCombinedFunc VP8LExtraCostCombined;
+extern VP8LCombinedShannonEntropyFunc VP8LCombinedShannonEntropy;
 
 typedef struct {        // small struct to hold counters
   int counts[2];        // index: 0=zero steak, 1=non-zero streak
   int streaks[2][2];    // [zero/non-zero][streak<3 / streak>=3]
 } VP8LStreaks;
 
-typedef VP8LStreaks (*VP8LCostCountFunc)(const uint32_t* population,
-                                         int length);
 typedef VP8LStreaks (*VP8LCostCombinedCountFunc)(const uint32_t* X,
                                                  const uint32_t* Y, int length);
 
-extern VP8LCostCountFunc VP8LHuffmanCostCount;
 extern VP8LCostCombinedCountFunc VP8LHuffmanCostCombinedCount;
 
-// Get the symbol entropy for the distribution 'population'.
-// Set 'trivial_sym', if there's only one symbol present in the distribution.
-double VP8LPopulationCost(const uint32_t* const population, int length,
-                          uint32_t* const trivial_sym);
+typedef struct {            // small struct to hold bit entropy results
+  double entropy;           // entropy
+  uint32_t sum;             // sum of the population
+  int nonzeros;             // number of non-zero elements in the population
+  uint32_t max_val;         // maximum value in the population
+  uint32_t nonzero_code;    // index of the last non-zero in the population
+} VP8LBitEntropy;
 
-// Get the combined symbol entropy for the distributions 'X' and 'Y'.
-double VP8LGetCombinedEntropy(const uint32_t* const X,
-                              const uint32_t* const Y, int length);
+void VP8LBitEntropyInit(VP8LBitEntropy* const entropy);
 
-double VP8LBitsEntropy(const uint32_t* const array, int n,
-                       uint32_t* const trivial_symbol);
+// Get the combined symbol bit entropy and Huffman cost stats for the
+// distributions 'X' and 'Y'. Those results can then be refined according to
+// codec specific heuristics.
+void VP8LGetCombinedEntropyUnrefined(const uint32_t* const X,
+                                     const uint32_t* const Y, int length,
+                                     VP8LBitEntropy* const bit_entropy,
+                                     VP8LStreaks* const stats);
+// Get the entropy for the distribution 'X'.
+void VP8LGetEntropyUnrefined(const uint32_t* const X, int length,
+                             VP8LBitEntropy* const bit_entropy,
+                             VP8LStreaks* const stats);
 
-// Estimate how many bits the combined entropy of literals and distance
-// approximately maps to.
-double VP8LHistogramEstimateBits(const VP8LHistogram* const p);
+void VP8LBitsEntropyUnrefined(const uint32_t* const array, int n,
+                              VP8LBitEntropy* const entropy);
 
-// This function estimates the cost in bits excluding the bits needed to
-// represent the entropy code itself.
-double VP8LHistogramEstimateBitsBulk(const VP8LHistogram* const p);
+typedef void (*GetEntropyUnrefinedHelperFunc)(uint32_t val, int i,
+                                              uint32_t* const val_prev,
+                                              int* const i_prev,
+                                              VP8LBitEntropy* const bit_entropy,
+                                              VP8LStreaks* const stats);
+// Internal function used by VP8LGet*EntropyUnrefined.
+extern GetEntropyUnrefinedHelperFunc VP8LGetEntropyUnrefinedHelper;
 
 typedef void (*VP8LHistogramAddFunc)(const VP8LHistogram* const a,
                                      const VP8LHistogram* const b,
@@ -243,6 +273,11 @@ extern VP8LHistogramAddFunc VP8LHistogramAdd;
 
 // -----------------------------------------------------------------------------
 // PrefixEncode()
+
+typedef int (*VP8LVectorMismatchFunc)(const uint32_t* const array1,
+                                      const uint32_t* const array2, int length);
+// Returns the first index where array1 and array2 are different.
+extern VP8LVectorMismatchFunc VP8LVectorMismatch;
 
 static WEBP_INLINE int VP8LBitsLog2Ceiling(uint32_t n) {
   const int log_floor = BitsLog2Floor(n);
@@ -306,7 +341,14 @@ static WEBP_INLINE void VP8LPrefixEncode(int distance, int* const code,
   }
 }
 
-// In-place difference of each component with mod 256.
+// Sum of each component, mod 256.
+static WEBP_INLINE uint32_t VP8LAddPixels(uint32_t a, uint32_t b) {
+  const uint32_t alpha_and_green = (a & 0xff00ff00u) + (b & 0xff00ff00u);
+  const uint32_t red_and_blue = (a & 0x00ff00ffu) + (b & 0x00ff00ffu);
+  return (alpha_and_green & 0xff00ff00u) | (red_and_blue & 0x00ff00ffu);
+}
+
+// Difference of each component, mod 256.
 static WEBP_INLINE uint32_t VP8LSubPixels(uint32_t a, uint32_t b) {
   const uint32_t alpha_and_green =
       0x00ff00ffu + (a & 0xff00ff00u) - (b & 0xff00ff00u);

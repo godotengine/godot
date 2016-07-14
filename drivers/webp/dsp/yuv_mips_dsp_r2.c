@@ -30,10 +30,10 @@
   "mul              %[temp2],   %[t_con_3],     %[temp4]        \n\t"          \
   "mul              %[temp4],   %[t_con_4],     %[temp4]        \n\t"          \
   "mul              %[temp0],   %[t_con_5],     %[temp0]        \n\t"          \
-  "addu             %[temp1],   %[temp1],       %[t_con_6]      \n\t"          \
+  "subu             %[temp1],   %[temp1],       %[t_con_6]      \n\t"          \
   "subu             %[temp3],   %[temp3],       %[t_con_7]      \n\t"          \
   "addu             %[temp2],   %[temp2],       %[temp3]        \n\t"          \
-  "addu             %[temp4],   %[temp4],       %[t_con_8]      \n\t"          \
+  "subu             %[temp4],   %[temp4],       %[t_con_8]      \n\t"          \
 
 #define ROW_FUNC_PART_2(R, G, B, K)                                            \
   "addu             %[temp5],   %[temp0],       %[temp1]        \n\t"          \
@@ -42,12 +42,12 @@
 ".if " #K "                                                     \n\t"          \
   "lbu              %[temp0],   1(%[y])                         \n\t"          \
 ".endif                                                         \n\t"          \
-  "shll_s.w         %[temp5],   %[temp5],       9               \n\t"          \
-  "shll_s.w         %[temp6],   %[temp6],       9               \n\t"          \
+  "shll_s.w         %[temp5],   %[temp5],       17              \n\t"          \
+  "shll_s.w         %[temp6],   %[temp6],       17              \n\t"          \
 ".if " #K "                                                     \n\t"          \
   "mul              %[temp0],   %[t_con_5],     %[temp0]        \n\t"          \
 ".endif                                                         \n\t"          \
-  "shll_s.w         %[temp7],   %[temp7],       9               \n\t"          \
+  "shll_s.w         %[temp7],   %[temp7],       17              \n\t"          \
   "precrqu_s.qb.ph  %[temp5],   %[temp5],       $zero           \n\t"          \
   "precrqu_s.qb.ph  %[temp6],   %[temp6],       $zero           \n\t"          \
   "precrqu_s.qb.ph  %[temp7],   %[temp7],       $zero           \n\t"          \
@@ -74,14 +74,14 @@ static void FUNC_NAME(const uint8_t* y,                                        \
                       uint8_t* dst, int len) {                                 \
   int i;                                                                       \
   uint32_t temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;             \
-  const int t_con_1 = kVToR;                                                   \
-  const int t_con_2 = kVToG;                                                   \
-  const int t_con_3 = kUToG;                                                   \
-  const int t_con_4 = kUToB;                                                   \
-  const int t_con_5 = kYScale;                                                 \
-  const int t_con_6 = kRCst;                                                   \
-  const int t_con_7 = kGCst;                                                   \
-  const int t_con_8 = kBCst;                                                   \
+  const int t_con_1 = 26149;                                                   \
+  const int t_con_2 = 13320;                                                   \
+  const int t_con_3 = 6419;                                                    \
+  const int t_con_4 = 33050;                                                   \
+  const int t_con_5 = 19077;                                                   \
+  const int t_con_6 = 14234;                                                   \
+  const int t_con_7 = 8708;                                                    \
+  const int t_con_8 = 17685;                                                   \
   for (i = 0; i < (len >> 1); i++) {                                           \
     __asm__ volatile (                                                         \
       ROW_FUNC_PART_1()                                                        \

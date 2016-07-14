@@ -21,16 +21,15 @@
 //   G = 1.164 * (Y-16) - 0.813 * (V-128) - 0.391 * (U-128)
 //   B = 1.164 * (Y-16)                   + 2.018 * (U-128)
 // where Y is in the [16,235] range, and U/V in the [16,240] range.
-// In the table-lookup version (WEBP_YUV_USE_TABLE), the common factor
-// "1.164 * (Y-16)" can be handled as an offset in the VP8kClip[] table.
-// So in this case the formulae should read:
-//   R = 1.164 * [Y + 1.371 * (V-128)                  ] - 18.624
-//   G = 1.164 * [Y - 0.698 * (V-128) - 0.336 * (U-128)] - 18.624
-//   B = 1.164 * [Y                   + 1.733 * (U-128)] - 18.624
-// once factorized.
-// For YUV->RGB conversion, only 14bit fixed precision is used (YUV_FIX2).
-// That's the maximum possible for a convenient ARM implementation.
 //
+// The fixed-point implementation used here is:
+//  R = (19077 . y             + 26149 . v - 14234) >> 6
+//  G = (19077 . y -  6419 . u - 13320 . v +  8708) >> 6
+//  B = (19077 . y + 33050 . u             - 17685) >> 6
+// where the '.' operator is the mulhi_epu16 variant:
+//   a . b = ((a << 8) * b) >> 16
+// that preserves 8 bits of fractional precision before final descaling.
+
 // Author: Skal (pascal.massimino@gmail.com)
 
 #ifndef WEBP_DSP_YUV_H_
@@ -38,9 +37,6 @@
 
 #include "./dsp.h"
 #include "../dec/decode_vp8.h"
-
-// Define the following to use the LUT-based code:
-// #define WEBP_YUV_USE_TABLE
 
 #if defined(WEBP_EXPERIMENTAL_FEATURES)
 // Do NOT activate this feature for real compression. This is only experimental!
@@ -66,41 +62,32 @@ enum {
   YUV_RANGE_MIN = -227,            // min value of r/g/b output
   YUV_RANGE_MAX = 256 + 226,       // max value of r/g/b output
 
-  YUV_FIX2 = 14,                   // fixed-point precision for YUV->RGB
-  YUV_HALF2 = 1 << (YUV_FIX2 - 1),
+  YUV_FIX2 = 6,                   // fixed-point precision for YUV->RGB
+  YUV_HALF2 = 1 << YUV_FIX2 >> 1,
   YUV_MASK2 = (256 << YUV_FIX2) - 1
 };
 
-// These constants are 14b fixed-point version of ITU-R BT.601 constants.
-#define kYScale 19077    // 1.164 = 255 / 219
-#define kVToR   26149    // 1.596 = 255 / 112 * 0.701
-#define kUToG   6419     // 0.391 = 255 / 112 * 0.886 * 0.114 / 0.587
-#define kVToG   13320    // 0.813 = 255 / 112 * 0.701 * 0.299 / 0.587
-#define kUToB   33050    // 2.018 = 255 / 112 * 0.886
-#define kRCst (-kYScale * 16 - kVToR * 128 + YUV_HALF2)
-#define kGCst (-kYScale * 16 + kUToG * 128 + kVToG * 128 + YUV_HALF2)
-#define kBCst (-kYScale * 16 - kUToB * 128 + YUV_HALF2)
-
 //------------------------------------------------------------------------------
+// slower on x86 by ~7-8%, but bit-exact with the SSE2/NEON version
 
-#if !defined(WEBP_YUV_USE_TABLE)
-
-// slower on x86 by ~7-8%, but bit-exact with the SSE2 version
+static WEBP_INLINE int MultHi(int v, int coeff) {   // _mm_mulhi_epu16 emulation
+  return (v * coeff) >> 8;
+}
 
 static WEBP_INLINE int VP8Clip8(int v) {
   return ((v & ~YUV_MASK2) == 0) ? (v >> YUV_FIX2) : (v < 0) ? 0 : 255;
 }
 
 static WEBP_INLINE int VP8YUVToR(int y, int v) {
-  return VP8Clip8(kYScale * y + kVToR * v + kRCst);
+  return VP8Clip8(MultHi(y, 19077) + MultHi(v, 26149) - 14234);
 }
 
 static WEBP_INLINE int VP8YUVToG(int y, int u, int v) {
-  return VP8Clip8(kYScale * y - kUToG * u - kVToG * v + kGCst);
+  return VP8Clip8(MultHi(y, 19077) - MultHi(u, 6419) - MultHi(v, 13320) + 8708);
 }
 
 static WEBP_INLINE int VP8YUVToB(int y, int u) {
-  return VP8Clip8(kYScale * y + kUToB * u + kBCst);
+  return VP8Clip8(MultHi(y, 19077) + MultHi(u, 33050) - 17685);
 }
 
 static WEBP_INLINE void VP8YuvToRgb(int y, int u, int v,
@@ -149,73 +136,6 @@ static WEBP_INLINE void VP8YuvToRgba4444(int y, int u, int v,
 #endif
 }
 
-#else
-
-// Table-based version, not totally equivalent to the SSE2 version.
-// Rounding diff is only +/-1 though.
-
-extern int16_t VP8kVToR[256], VP8kUToB[256];
-extern int32_t VP8kVToG[256], VP8kUToG[256];
-extern uint8_t VP8kClip[YUV_RANGE_MAX - YUV_RANGE_MIN];
-extern uint8_t VP8kClip4Bits[YUV_RANGE_MAX - YUV_RANGE_MIN];
-
-static WEBP_INLINE void VP8YuvToRgb(int y, int u, int v,
-                                    uint8_t* const rgb) {
-  const int r_off = VP8kVToR[v];
-  const int g_off = (VP8kVToG[v] + VP8kUToG[u]) >> YUV_FIX;
-  const int b_off = VP8kUToB[u];
-  rgb[0] = VP8kClip[y + r_off - YUV_RANGE_MIN];
-  rgb[1] = VP8kClip[y + g_off - YUV_RANGE_MIN];
-  rgb[2] = VP8kClip[y + b_off - YUV_RANGE_MIN];
-}
-
-static WEBP_INLINE void VP8YuvToBgr(int y, int u, int v,
-                                    uint8_t* const bgr) {
-  const int r_off = VP8kVToR[v];
-  const int g_off = (VP8kVToG[v] + VP8kUToG[u]) >> YUV_FIX;
-  const int b_off = VP8kUToB[u];
-  bgr[0] = VP8kClip[y + b_off - YUV_RANGE_MIN];
-  bgr[1] = VP8kClip[y + g_off - YUV_RANGE_MIN];
-  bgr[2] = VP8kClip[y + r_off - YUV_RANGE_MIN];
-}
-
-static WEBP_INLINE void VP8YuvToRgb565(int y, int u, int v,
-                                       uint8_t* const rgb) {
-  const int r_off = VP8kVToR[v];
-  const int g_off = (VP8kVToG[v] + VP8kUToG[u]) >> YUV_FIX;
-  const int b_off = VP8kUToB[u];
-  const int rg = ((VP8kClip[y + r_off - YUV_RANGE_MIN] & 0xf8) |
-                  (VP8kClip[y + g_off - YUV_RANGE_MIN] >> 5));
-  const int gb = (((VP8kClip[y + g_off - YUV_RANGE_MIN] << 3) & 0xe0) |
-                   (VP8kClip[y + b_off - YUV_RANGE_MIN] >> 3));
-#ifdef WEBP_SWAP_16BIT_CSP
-  rgb[0] = gb;
-  rgb[1] = rg;
-#else
-  rgb[0] = rg;
-  rgb[1] = gb;
-#endif
-}
-
-static WEBP_INLINE void VP8YuvToRgba4444(int y, int u, int v,
-                                         uint8_t* const argb) {
-  const int r_off = VP8kVToR[v];
-  const int g_off = (VP8kVToG[v] + VP8kUToG[u]) >> YUV_FIX;
-  const int b_off = VP8kUToB[u];
-  const int rg = ((VP8kClip4Bits[y + r_off - YUV_RANGE_MIN] << 4) |
-                   VP8kClip4Bits[y + g_off - YUV_RANGE_MIN]);
-  const int ba = (VP8kClip4Bits[y + b_off - YUV_RANGE_MIN] << 4) | 0x0f;
-#ifdef WEBP_SWAP_16BIT_CSP
-  argb[0] = ba;
-  argb[1] = rg;
-#else
-  argb[0] = rg;
-  argb[1] = ba;
-#endif
-}
-
-#endif  // WEBP_YUV_USE_TABLE
-
 //-----------------------------------------------------------------------------
 // Alpha handling variants
 
@@ -245,11 +165,7 @@ void VP8YUVInit(void);
 
 #if defined(WEBP_USE_SSE2)
 
-// When the following is defined, tables are initialized statically, adding ~12k
-// to the binary size. Otherwise, they are initialized at run-time (small cost).
-#define WEBP_YUV_USE_SSE2_TABLES
-
-// Process 32 pixels and store the result (24b or 32b per pixel) in *dst.
+// Process 32 pixels and store the result (16b, 24b or 32b per pixel) in *dst.
 void VP8YuvToRgba32(const uint8_t* y, const uint8_t* u, const uint8_t* v,
                     uint8_t* dst);
 void VP8YuvToRgb32(const uint8_t* y, const uint8_t* u, const uint8_t* v,
@@ -258,9 +174,12 @@ void VP8YuvToBgra32(const uint8_t* y, const uint8_t* u, const uint8_t* v,
                     uint8_t* dst);
 void VP8YuvToBgr32(const uint8_t* y, const uint8_t* u, const uint8_t* v,
                    uint8_t* dst);
-
-// Must be called to initialize tables before using the functions.
-void VP8YUVInitSSE2(void);
+void VP8YuvToArgb32(const uint8_t* y, const uint8_t* u, const uint8_t* v,
+                    uint8_t* dst);
+void VP8YuvToRgba444432(const uint8_t* y, const uint8_t* u, const uint8_t* v,
+                        uint8_t* dst);
+void VP8YuvToRgb56532(const uint8_t* y, const uint8_t* u, const uint8_t* v,
+                      uint8_t* dst);
 
 #endif    // WEBP_USE_SSE2
 

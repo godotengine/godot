@@ -55,7 +55,7 @@
 extern "C" {
 #endif
 
-#define WEBP_DEMUX_ABI_VERSION 0x0105    // MAJOR(8b) + MINOR(8b)
+#define WEBP_DEMUX_ABI_VERSION 0x0107    // MAJOR(8b) + MINOR(8b)
 
 // Note: forward declaring enumerations is not allowed in (strict) C and C++,
 // the types are left here for reference.
@@ -88,7 +88,8 @@ typedef enum WebPDemuxState {
 WEBP_EXTERN(WebPDemuxer*) WebPDemuxInternal(
     const WebPData*, int, WebPDemuxState*, int);
 
-// Parses the full WebP file given by 'data'.
+// Parses the full WebP file given by 'data'. For single images the WebP file
+// header alone or the file header and the chunk header may be absent.
 // Returns a WebPDemuxer object on successful parse, NULL otherwise.
 static WEBP_INLINE WebPDemuxer* WebPDemux(const WebPData* data) {
   return WebPDemuxInternal(data, 0, NULL, WEBP_DEMUX_ABI_VERSION);
@@ -137,17 +138,15 @@ WEBP_EXTERN(uint32_t) WebPDemuxGetI(
 struct WebPIterator {
   int frame_num;
   int num_frames;          // equivalent to WEBP_FF_FRAME_COUNT.
-  int fragment_num;
-  int num_fragments;
   int x_offset, y_offset;  // offset relative to the canvas.
-  int width, height;       // dimensions of this frame or fragment.
+  int width, height;       // dimensions of this frame.
   int duration;            // display duration in milliseconds.
   WebPMuxAnimDispose dispose_method;  // dispose method for the frame.
   int complete;   // true if 'fragment' contains a full frame. partial images
                   // may still be decoded with the WebP incremental decoder.
-  WebPData fragment;  // The frame or fragment given by 'frame_num' and
-                      // 'fragment_num'.
-  int has_alpha;      // True if the frame or fragment contains transparency.
+  WebPData fragment;  // The frame given by 'frame_num'. Note for historical
+                      // reasons this is called a fragment.
+  int has_alpha;      // True if the frame contains transparency.
   WebPMuxAnimBlend blend_method;  // Blend operation for the frame.
 
   uint32_t pad[2];         // padding for later use.
@@ -155,8 +154,7 @@ struct WebPIterator {
 };
 
 // Retrieves frame 'frame_number' from 'dmux'.
-// 'iter->fragment' points to the first fragment on return from this function.
-// Individual fragments may be extracted using WebPDemuxSelectFragment().
+// 'iter->fragment' points to the frame on return from this function.
 // Setting 'frame_number' equal to 0 will return the last frame of the image.
 // Returns false if 'dmux' is NULL or frame 'frame_number' is not present.
 // Call WebPDemuxReleaseIterator() when use of the iterator is complete.
@@ -169,10 +167,6 @@ WEBP_EXTERN(int) WebPDemuxGetFrame(
 // Returns true on success, false otherwise.
 WEBP_EXTERN(int) WebPDemuxNextFrame(WebPIterator* iter);
 WEBP_EXTERN(int) WebPDemuxPrevFrame(WebPIterator* iter);
-
-// Sets 'iter->fragment' to reflect fragment number 'fragment_num'.
-// Returns true if fragment 'fragment_num' is present, false otherwise.
-WEBP_EXTERN(int) WebPDemuxSelectFragment(WebPIterator* iter, int fragment_num);
 
 // Releases any memory associated with 'iter'.
 // Must be called before any subsequent calls to WebPDemuxGetChunk() on the same

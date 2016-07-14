@@ -15,6 +15,7 @@
 #include <string.h>  // for memcpy()
 #include "webp/decode.h"
 #include "webp/encode.h"
+#include "webp/format_constants.h"  // for MAX_PALETTE_SIZE
 #include "./utils.h"
 
 // If PRINT_MEM_INFO is defined, extra info (like total memory used, number of
@@ -235,5 +236,70 @@ void WebPCopyPixels(const WebPPicture* const src, WebPPicture* const dst) {
   WebPCopyPlane((uint8_t*)src->argb, 4 * src->argb_stride, (uint8_t*)dst->argb,
                 4 * dst->argb_stride, 4 * src->width, src->height);
 }
+
+//------------------------------------------------------------------------------
+
+#define MAX_COLOR_COUNT         MAX_PALETTE_SIZE
+#define COLOR_HASH_SIZE         (MAX_COLOR_COUNT * 4)
+#define COLOR_HASH_RIGHT_SHIFT  22  // 32 - log2(COLOR_HASH_SIZE).
+
+int WebPGetColorPalette(const WebPPicture* const pic, uint32_t* const palette) {
+  int i;
+  int x, y;
+  int num_colors = 0;
+  uint8_t in_use[COLOR_HASH_SIZE] = { 0 };
+  uint32_t colors[COLOR_HASH_SIZE];
+  static const uint32_t kHashMul = 0x1e35a7bdU;
+  const uint32_t* argb = pic->argb;
+  const int width = pic->width;
+  const int height = pic->height;
+  uint32_t last_pix = ~argb[0];   // so we're sure that last_pix != argb[0]
+  assert(pic != NULL);
+  assert(pic->use_argb);
+
+  for (y = 0; y < height; ++y) {
+    for (x = 0; x < width; ++x) {
+      int key;
+      if (argb[x] == last_pix) {
+        continue;
+      }
+      last_pix = argb[x];
+      key = (kHashMul * last_pix) >> COLOR_HASH_RIGHT_SHIFT;
+      while (1) {
+        if (!in_use[key]) {
+          colors[key] = last_pix;
+          in_use[key] = 1;
+          ++num_colors;
+          if (num_colors > MAX_COLOR_COUNT) {
+            return MAX_COLOR_COUNT + 1;  // Exact count not needed.
+          }
+          break;
+        } else if (colors[key] == last_pix) {
+          break;  // The color is already there.
+        } else {
+          // Some other color sits here, so do linear conflict resolution.
+          ++key;
+          key &= (COLOR_HASH_SIZE - 1);  // Key mask.
+        }
+      }
+    }
+    argb += pic->argb_stride;
+  }
+
+  if (palette != NULL) {  // Fill the colors into palette.
+    num_colors = 0;
+    for (i = 0; i < COLOR_HASH_SIZE; ++i) {
+      if (in_use[i]) {
+        palette[num_colors] = colors[i];
+        ++num_colors;
+      }
+    }
+  }
+  return num_colors;
+}
+
+#undef MAX_COLOR_COUNT
+#undef COLOR_HASH_SIZE
+#undef COLOR_HASH_RIGHT_SHIFT
 
 //------------------------------------------------------------------------------

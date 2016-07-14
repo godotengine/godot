@@ -49,10 +49,12 @@ extern "C" {
 #define BITS 56
 #elif defined(__arm__) || defined(_M_ARM)      // ARM
 #define BITS 24
+#elif defined(__aarch64__)                     // ARM 64bit
+#define BITS 56
 #elif defined(__mips__)                        // MIPS
 #define BITS 24
 #else                                          // reasonable default
-#define BITS 24  // TODO(skal): test aarch64 and find the proper BITS value.
+#define BITS 24
 #endif
 
 #endif

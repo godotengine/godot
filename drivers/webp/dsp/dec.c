@@ -13,6 +13,7 @@
 
 #include "./dsp.h"
 #include "../dec/vp8i.h"
+#include "../utils/utils.h"
 
 //------------------------------------------------------------------------------
 
@@ -261,10 +262,10 @@ static void HE4(uint8_t* dst) {    // horizontal
   const int C = dst[-1 + BPS];
   const int D = dst[-1 + 2 * BPS];
   const int E = dst[-1 + 3 * BPS];
-  *(uint32_t*)(dst + 0 * BPS) = 0x01010101U * AVG3(A, B, C);
-  *(uint32_t*)(dst + 1 * BPS) = 0x01010101U * AVG3(B, C, D);
-  *(uint32_t*)(dst + 2 * BPS) = 0x01010101U * AVG3(C, D, E);
-  *(uint32_t*)(dst + 3 * BPS) = 0x01010101U * AVG3(D, E, E);
+  WebPUint32ToMem(dst + 0 * BPS, 0x01010101U * AVG3(A, B, C));
+  WebPUint32ToMem(dst + 1 * BPS, 0x01010101U * AVG3(B, C, D));
+  WebPUint32ToMem(dst + 2 * BPS, 0x01010101U * AVG3(C, D, E));
+  WebPUint32ToMem(dst + 3 * BPS, 0x01010101U * AVG3(D, E, E));
 }
 
 static void DC4(uint8_t* dst) {   // DC
@@ -654,6 +655,23 @@ static void HFilter8i(uint8_t* u, uint8_t* v, int stride,
 
 //------------------------------------------------------------------------------
 
+static void DitherCombine8x8(const uint8_t* dither, uint8_t* dst,
+                             int dst_stride) {
+  int i, j;
+  for (j = 0; j < 8; ++j) {
+    for (i = 0; i < 8; ++i) {
+      const int delta0 = dither[i] - VP8_DITHER_AMP_CENTER;
+      const int delta1 =
+          (delta0 + VP8_DITHER_DESCALE_ROUNDER) >> VP8_DITHER_DESCALE;
+      dst[i] = clip_8b((int)dst[i] + delta1);
+    }
+    dst += dst_stride;
+    dither += 8;
+  }
+}
+
+//------------------------------------------------------------------------------
+
 VP8DecIdct2 VP8Transform;
 VP8DecIdct VP8TransformAC3;
 VP8DecIdct VP8TransformUV;
@@ -673,11 +691,15 @@ VP8SimpleFilterFunc VP8SimpleHFilter16;
 VP8SimpleFilterFunc VP8SimpleVFilter16i;
 VP8SimpleFilterFunc VP8SimpleHFilter16i;
 
+void (*VP8DitherCombine8x8)(const uint8_t* dither, uint8_t* dst,
+                            int dst_stride);
+
 extern void VP8DspInitSSE2(void);
 extern void VP8DspInitSSE41(void);
 extern void VP8DspInitNEON(void);
 extern void VP8DspInitMIPS32(void);
 extern void VP8DspInitMIPSdspR2(void);
+extern void VP8DspInitMSA(void);
 
 static volatile VP8CPUInfo dec_last_cpuinfo_used =
     (VP8CPUInfo)&dec_last_cpuinfo_used;
@@ -734,6 +756,8 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8DspInit(void) {
   VP8PredChroma8[5] = DC8uvNoLeft;
   VP8PredChroma8[6] = DC8uvNoTopLeft;
 
+  VP8DitherCombine8x8 = DitherCombine8x8;
+
   // If defined, use CPUInfo() to overwrite some pointers with faster versions.
   if (VP8GetCPUInfo != NULL) {
 #if defined(WEBP_USE_SSE2)
@@ -759,6 +783,11 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8DspInit(void) {
 #if defined(WEBP_USE_MIPS_DSP_R2)
     if (VP8GetCPUInfo(kMIPSdspR2)) {
       VP8DspInitMIPSdspR2();
+    }
+#endif
+#if defined(WEBP_USE_MSA)
+    if (VP8GetCPUInfo(kMSA)) {
+      VP8DspInitMSA();
     }
 #endif
   }

@@ -237,6 +237,8 @@ static size_t Encode(const uint8_t* rgba, int width, int height, int stride,
   WebPMemoryWriter wrt;
   int ok;
 
+  if (output == NULL) return 0;
+
   if (!WebPConfigPreset(&config, WEBP_PRESET_DEFAULT, quality_factor) ||
       !WebPPictureInit(&pic)) {
     return 0;  // shouldn't happen, except if system installation is broken

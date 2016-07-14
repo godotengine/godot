@@ -16,8 +16,7 @@
 #endif
 
 #include "./bit_reader_inl.h"
-
-#define JAVASCRIPT_ENABLED // testing
+#include "../utils/utils.h"
 
 //------------------------------------------------------------------------------
 // VP8BitReader
@@ -42,10 +41,9 @@ void VP8InitBitReader(VP8BitReader* const br,
   br->bits_    = -8;   // to load the very first 8bits
   br->eof_     = 0;
   VP8BitReaderSetBuffer(br, start, size);
-
 #ifdef JAVASCRIPT_ENABLED // html5 required aligned reads
   while(((uintptr_t)br->buf_ & 1) != 0 && !br->eof_)
-	VP8LoadFinalBytes(br);
+    VP8LoadFinalBytes(br);
 #else
   VP8LoadNewBytes(br);
 #endif
@@ -127,11 +125,10 @@ int32_t VP8GetSignedValue(VP8BitReader* const br, int bits) {
 
 #define VP8L_LOG8_WBITS 4  // Number of bytes needed to store VP8L_WBITS bits.
 
-#if !defined(WEBP_FORCE_ALIGNED) && \
-    (defined(__arm__) || defined(_M_ARM) || defined(__aarch64__) || \
-     defined(__i386__) || defined(_M_IX86) || \
-     defined(__x86_64__) || defined(_M_X64))
-#define VP8L_USE_UNALIGNED_LOAD
+#if defined(__arm__) || defined(_M_ARM) || defined(__aarch64__) || \
+    defined(__i386__) || defined(_M_IX86) || \
+    defined(__x86_64__) || defined(_M_X64)
+#define VP8L_USE_FAST_LOAD
 #endif
 
 static const uint32_t kBitMask[VP8L_MAX_NUM_BIT_READ + 1] = {
@@ -199,15 +196,11 @@ static void ShiftBytes(VP8LBitReader* const br) {
 
 void VP8LDoFillBitWindow(VP8LBitReader* const br) {
   assert(br->bit_pos_ >= VP8L_WBITS);
-  // TODO(jzern): given the fixed read size it may be possible to force
-  //              alignment in this block.
-#if defined(VP8L_USE_UNALIGNED_LOAD)
+#if defined(VP8L_USE_FAST_LOAD)
   if (br->pos_ + sizeof(br->val_) < br->len_) {
     br->val_ >>= VP8L_WBITS;
     br->bit_pos_ -= VP8L_WBITS;
-    // The expression below needs a little-endian arch to work correctly.
-    // This gives a large speedup for decoding speed.
-    br->val_ |= (vp8l_val_t)*(const uint32_t*)(br->buf_ + br->pos_) <<
+    br->val_ |= (vp8l_val_t)HToLE32(WebPMemToUint32(br->buf_ + br->pos_)) <<
                 (VP8L_LBITS - VP8L_WBITS);
     br->pos_ += VP8L_LOG8_WBITS;
     return;
