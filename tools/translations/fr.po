@@ -15,8 +15,8 @@ msgstr ""
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2016-07-13 18:14+0000\n"
 "Last-Translator: Chenebel Dorian <LoubiTek54@gmail.com>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/godot-"
-"engine/godot/fr/>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
+"godot/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -345,9 +345,10 @@ msgstr "Enregistrer un fichier"
 msgid "Create Folder"
 msgstr "Créer un dossier"
 
-#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp tools/editor/editor_autoload_settings.cpp
+#: tools/editor/editor_file_dialog.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: tools/editor/project_settings.cpp tools/editor/script_create_dialog.cpp
+#: tools/editor/script_create_dialog.cpp
 msgid "Path:"
 msgstr "Chemin :"
 
@@ -548,6 +549,10 @@ msgid "Anim Add Track"
 msgstr "Animation Ajouter une piste"
 
 #: tools/editor/animation_editor.cpp
+msgid "Anim Duplicate Keys"
+msgstr "Animation Dupliquer les clés"
+
+#: tools/editor/animation_editor.cpp
 msgid "Move Anim Track Up"
 msgstr "Monter la piste d'animation"
 
@@ -558,10 +563,6 @@ msgstr "Descendre la piste d'animation"
 #: tools/editor/animation_editor.cpp
 msgid "Remove Anim Track"
 msgstr "Supprimer la piste d'animation"
-
-#: tools/editor/animation_editor.cpp
-msgid "Anim Duplicate Keys"
-msgstr "Animation Dupliquer les clés"
 
 #: tools/editor/animation_editor.cpp
 msgid "Set Transitions to:"
@@ -592,6 +593,20 @@ msgid "Anim Delete Keys"
 msgstr "Animation Supprimer les clés"
 
 #: tools/editor/animation_editor.cpp
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+msgid "Duplicate Selection"
+msgstr "Dupliquer la sélection"
+
+#: tools/editor/animation_editor.cpp
+msgid "Duplicate Transposed"
+msgstr ""
+
+#: tools/editor/animation_editor.cpp
+#, fuzzy
+msgid "Remove Selection"
+msgstr "Mettre à l'échelle la sélection"
+
+#: tools/editor/animation_editor.cpp
 msgid "Continuous"
 msgstr "Continu"
 
@@ -619,15 +634,6 @@ msgstr "Mettre à l'échelle la sélection"
 #: tools/editor/animation_editor.cpp
 msgid "Scale From Cursor"
 msgstr "Echelle Du Curseur"
-
-#: tools/editor/animation_editor.cpp
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Duplicate Selection"
-msgstr "Dupliquer la sélection"
-
-#: tools/editor/animation_editor.cpp
-msgid "Duplicate Transposed"
-msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Next Step"
@@ -905,7 +911,6 @@ msgid "Call"
 msgstr "Appel"
 
 #: tools/editor/call_dialog.cpp tools/editor/connections_dialog.cpp
-#: tools/editor/import_settings.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
@@ -1025,7 +1030,8 @@ msgstr "La méthode du nœud cible doit être spécifiée !"
 msgid "Connect To Node:"
 msgstr "Connecter au nœud :"
 
-#: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
+#: tools/editor/connections_dialog.cpp
+#: tools/editor/editor_autoload_settings.cpp tools/editor/groups_editor.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
@@ -1133,8 +1139,8 @@ msgstr "Dépendances"
 msgid "Resource"
 msgstr "Ressource"
 
-#: tools/editor/dependency_editor.cpp tools/editor/project_manager.cpp
-#: tools/editor/project_settings.cpp
+#: tools/editor/dependency_editor.cpp tools/editor/editor_autoload_settings.cpp
+#: tools/editor/project_manager.cpp tools/editor/project_settings.cpp
 msgid "Path"
 msgstr "Chemin"
 
@@ -1229,6 +1235,100 @@ msgstr "Supprimer les fichiers sélectionnés ?"
 msgid "Delete"
 msgstr "Supprimer"
 
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name."
+msgstr "Nom invalide."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Valid characters:"
+msgstr "Caractères valides :"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing engine class name."
+msgstr ""
+"Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'une classe "
+"moteur existante."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing buit-in type name."
+msgstr ""
+"Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'un type "
+"intégré au moteur."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing global constant name."
+msgstr ""
+"Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'une "
+"constante globale."
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Invalid Path."
+msgstr "Chemin invalide !"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "File does not exist."
+msgstr "Le fichier existe"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Not in resource path."
+msgstr "Chemin de la ressource"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Add AutoLoad"
+msgstr "Ajouter un AutoLoad"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Autoload '%s' already exists!"
+msgstr "L'autoload « %s » existe déjà !"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Rename Autoload"
+msgstr "Renommer l'AutoLoad"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Toggle AutoLoad Globals"
+msgstr "Activer les variables globales AutoLoad"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Move Autoload"
+msgstr "Déplacer l'AutoLoad"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Remove Autoload"
+msgstr "Supprimer l'AutoLoad"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Enable"
+msgstr "Activer"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Rearrange Autoloads"
+msgstr "Renommer l'AutoLoad"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Node Name:"
+msgstr "Nom de nœud :"
+
+#: tools/editor/editor_autoload_settings.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
+msgid "Name"
+msgstr "Nom"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Singleton"
+msgstr "Singleton"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "List:"
+msgstr "Liste :"
+
 #: tools/editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Mise à jour de la scène"
@@ -1286,12 +1386,12 @@ msgstr "Copier le chemin"
 
 #: tools/editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Mode Favorite Up"
+msgid "Move Favorite Up"
 msgstr "Déplacer le favori vers le haut"
 
 #: tools/editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Mode Favorite Down"
+msgid "Move Favorite Down"
 msgstr "Déplacer le favori vers le bas"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
@@ -1314,13 +1414,17 @@ msgstr "Impossible d'aller dans le sous-répertoire :"
 msgid "ScanSources"
 msgstr "Scanner les sources"
 
-#: tools/editor/editor_help.cpp
-msgid "Search Classes"
-msgstr "Chercher dans les classes"
+#: tools/editor/editor_help.cpp tools/editor/plugins/script_editor_plugin.cpp
+msgid "Search Help"
+msgstr "Chercher dans l'aide"
 
 #: tools/editor/editor_help.cpp
 msgid "Class List:"
 msgstr "Liste des classes :"
+
+#: tools/editor/editor_help.cpp
+msgid "Search Classes"
+msgstr "Chercher dans les classes"
 
 #: tools/editor/editor_help.cpp tools/editor/property_editor.cpp
 msgid "Class:"
@@ -1419,10 +1523,6 @@ msgstr "Importation :"
 #: tools/editor/editor_node.cpp
 msgid "Node From Scene"
 msgstr "Nœud à partir d'une scène"
-
-#: tools/editor/editor_node.cpp tools/editor/scenes_dock.cpp
-msgid "Re-Import.."
-msgstr "Ré-importer…"
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
@@ -1679,7 +1779,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 #, fuzzy
-msgid "Pick a Manu Scene"
+msgid "Pick a Main Scene"
 msgstr "Scène principale"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
@@ -1773,6 +1873,11 @@ msgstr "Ouvrir une scène…"
 
 #: tools/editor/editor_node.cpp
 msgid "Save Scene"
+msgstr "Enregistrer la scène"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Save all Scenes"
 msgstr "Enregistrer la scène"
 
 #: tools/editor/editor_node.cpp
@@ -1896,6 +2001,11 @@ msgstr "Lancer la scène"
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
+msgstr "Jouer une scène personnalisée"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Play Custom Scene"
 msgstr "Jouer une scène personnalisée"
 
 #: tools/editor/editor_node.cpp
@@ -2080,7 +2190,6 @@ msgid "Output"
 msgstr "Sortie"
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
-#: tools/editor/import_settings.cpp
 msgid "Re-Import"
 msgstr "Ré-importer"
 
@@ -2262,10 +2371,6 @@ msgstr "Ajouter au groupe"
 #: tools/editor/groups_editor.cpp
 msgid "Remove from Group"
 msgstr "Supprimer du groupe"
-
-#: tools/editor/import_settings.cpp
-msgid "Imported Resources"
-msgstr "Ressources importées"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
 msgid "No bit masks to import!"
@@ -2479,12 +2584,6 @@ msgstr "Angle maximal"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Clips"
 msgstr "Séquences"
-
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-#: tools/editor/project_manager.cpp tools/editor/project_settings.cpp
-msgid "Name"
-msgstr "Nom"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Start(s)"
@@ -3464,8 +3563,9 @@ msgid "Anchor"
 msgstr "Ancre"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert Keys (Ins)"
-msgstr ""
+#, fuzzy
+msgid "Insert Keys"
+msgstr "Animation Inserer une clé"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
@@ -4003,6 +4103,7 @@ msgid "Clear UV"
 msgstr "Effacer l'UV"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
 msgstr "Aligner"
 
@@ -4116,6 +4217,16 @@ msgstr "Improter un thème"
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."
 msgstr "Enregistrer le thème sous…"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Next script"
+msgstr "Créer un script"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Previous script"
+msgstr "Répertoire précédent"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/project_export.cpp
@@ -4304,10 +4415,6 @@ msgid "Search the class hierarchy."
 msgstr "Cherche dans la hiérarchie des classes."
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Search Help"
-msgstr "Chercher dans l'aide"
-
-#: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Cherche dans la documentation de référence."
 
@@ -4343,6 +4450,11 @@ msgstr "Ré-enregistrer"
 #: tools/editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Débogueur"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid ""
+"Built-in scripts can only be edited when the scene they belong to is loaded"
+msgstr ""
 
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Vertex"
@@ -4577,38 +4689,6 @@ msgid "Align with view"
 msgstr "Aligner avec la vue"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Top (Num7)"
-msgstr "Dessus (Pavé num. 7)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom (Shift+Num7)"
-msgstr "Dessous (Maj+Pavé num. 7)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Left (Num3)"
-msgstr "Gauche (Pavé num. 3)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Right (Shift+Num3)"
-msgstr "Droite (Maj+Pavé num. 3)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Front (Num1)"
-msgstr "Devant (Pavé num. 1)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear (Shift+Num1)"
-msgstr "Arrière (Maj+Pavé num. 1)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Perspective (Num5)"
-msgstr "Perspective (Pavé num. 5)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Orthogonal (Num5)"
-msgstr "Orthogonale (Pavé num. 5)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Environment"
 msgstr "Environnement"
 
@@ -4619,14 +4699,6 @@ msgstr "Écouteur audio"
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
 msgstr "Gizmos"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Selection (F)"
-msgstr "Sélection (F)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view (Ctrl+Shift+F)"
-msgstr "Aligner avec la vue (Ctrl+Maj+F)"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -4647,6 +4719,55 @@ msgstr "Impossible d'instancier la scène !"
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
 msgstr "Mode de mise à l'échelle (R)"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom View"
+msgstr "Vue de dessous."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top View"
+msgstr "Vue de dessus."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear View"
+msgstr "Vue arrière."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front View"
+msgstr "Vue avant."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Left View"
+msgstr "Vue de gauche."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right View"
+msgstr "Vue de droite."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Switch Perspective/Orthogonal view"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Insert Animation Key"
+msgstr "Coller l'animation"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Focus Selection"
+msgstr "Mettre à l'échelle la sélection"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Selection With View"
+msgstr "Aligner avec la vue"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform"
@@ -5380,6 +5501,17 @@ msgstr ""
 "Impossible de créer le fichier engine.cfg dans le répertoire du projet."
 
 #: tools/editor/project_manager.cpp
+#, fuzzy
+msgid "The following files failed extraction from package:"
+msgstr ""
+"Les fichiers suivants sont plus récents sur le disque.\n"
+"Quelle action doit être prise ? :"
+
+#: tools/editor/project_manager.cpp
+msgid "Package Installed Successfully!"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
 msgid "Import Existing Project"
 msgstr "Importer un projet existant"
 
@@ -5398,6 +5530,16 @@ msgstr "Créer un nouveau projet"
 #: tools/editor/project_manager.cpp
 msgid "Project Path:"
 msgstr "Chemin du projet :"
+
+#: tools/editor/project_manager.cpp
+#, fuzzy
+msgid "Install Project:"
+msgstr "Projets récents :"
+
+#: tools/editor/project_manager.cpp
+#, fuzzy
+msgid "Install"
+msgstr "Instance"
 
 #: tools/editor/project_manager.cpp
 msgid "Browse"
@@ -5565,56 +5707,6 @@ msgid "Add Translation"
 msgstr "Ajouter une traduction"
 
 #: tools/editor/project_settings.cpp
-msgid "Invalid name."
-msgstr "Nom invalide."
-
-#: tools/editor/project_settings.cpp
-msgid "Valid characters:"
-msgstr "Caractères valides :"
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing engine class name."
-msgstr ""
-"Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'une classe "
-"moteur existante."
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing buit-in type name."
-msgstr ""
-"Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'un type "
-"intégré au moteur."
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing global constant name."
-msgstr ""
-"Nom invalide. Le nom ne doit pas rentrer en conflit avec le nom d'une "
-"constante globale."
-
-#: tools/editor/project_settings.cpp
-msgid "Autoload '%s' already exists!"
-msgstr "L'autoload « %s » existe déjà !"
-
-#: tools/editor/project_settings.cpp
-msgid "Rename Autoload"
-msgstr "Renommer l'AutoLoad"
-
-#: tools/editor/project_settings.cpp
-msgid "Toggle AutoLoad Globals"
-msgstr "Activer les variables globales AutoLoad"
-
-#: tools/editor/project_settings.cpp
-msgid "Add Autoload"
-msgstr "Ajouter un AutoLoad"
-
-#: tools/editor/project_settings.cpp
-msgid "Remove Autoload"
-msgstr "Supprimer l'AutoLoad"
-
-#: tools/editor/project_settings.cpp
-msgid "Move Autoload"
-msgstr "Déplacer l'AutoLoad"
-
-#: tools/editor/project_settings.cpp
 msgid "Remove Translation"
 msgstr "Supprimer la traduction"
 
@@ -5637,10 +5729,6 @@ msgstr ""
 #: tools/editor/project_settings.cpp
 msgid "Remove Resource Remap Option"
 msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Enable"
-msgstr "Activer"
 
 #: tools/editor/project_settings.cpp
 msgid "Project Settings (engine.cfg)"
@@ -5713,18 +5801,6 @@ msgstr "Langue"
 #: tools/editor/project_settings.cpp
 msgid "AutoLoad"
 msgstr "AutoLoad"
-
-#: tools/editor/project_settings.cpp
-msgid "Node Name:"
-msgstr "Nom de nœud :"
-
-#: tools/editor/project_settings.cpp
-msgid "List:"
-msgstr "Liste :"
-
-#: tools/editor/project_settings.cpp
-msgid "Singleton"
-msgstr "Singleton"
 
 #: tools/editor/project_settings.cpp
 msgid "Plugins"
@@ -6137,6 +6213,10 @@ msgid "Show In File Manager"
 msgstr "Montrer dans le gestionnaire de fichiers"
 
 #: tools/editor/scenes_dock.cpp
+msgid "Re-Import.."
+msgstr "Ré-importer…"
+
+#: tools/editor/scenes_dock.cpp
 msgid "Previous Directory"
 msgstr "Répertoire précédent"
 
@@ -6396,6 +6476,39 @@ msgstr "Changer la longueur d'une forme en rayon"
 msgid "Change Notifier Extents"
 msgstr "Changer les extents d'un notificateur"
 
+#~ msgid "Imported Resources"
+#~ msgstr "Ressources importées"
+
+#~ msgid "Top (Num7)"
+#~ msgstr "Dessus (Pavé num. 7)"
+
+#~ msgid "Bottom (Shift+Num7)"
+#~ msgstr "Dessous (Maj+Pavé num. 7)"
+
+#~ msgid "Left (Num3)"
+#~ msgstr "Gauche (Pavé num. 3)"
+
+#~ msgid "Right (Shift+Num3)"
+#~ msgstr "Droite (Maj+Pavé num. 3)"
+
+#~ msgid "Front (Num1)"
+#~ msgstr "Devant (Pavé num. 1)"
+
+#~ msgid "Rear (Shift+Num1)"
+#~ msgstr "Arrière (Maj+Pavé num. 1)"
+
+#~ msgid "Perspective (Num5)"
+#~ msgstr "Perspective (Pavé num. 5)"
+
+#~ msgid "Orthogonal (Num5)"
+#~ msgstr "Orthogonale (Pavé num. 5)"
+
+#~ msgid "Selection (F)"
+#~ msgstr "Sélection (F)"
+
+#~ msgid "Align with view (Ctrl+Shift+F)"
+#~ msgstr "Aligner avec la vue (Ctrl+Maj+F)"
+
 #~ msgid "Change Anim Loop Interpolation"
 #~ msgstr "Changer l'interpolation de la boucle d'animation"
 
@@ -6434,9 +6547,6 @@ msgstr "Changer les extents d'un notificateur"
 
 #~ msgid "Node Group(s)"
 #~ msgstr "Groupes de nœuds"
-
-#~ msgid "Recent Projects:"
-#~ msgstr "Projets récents :"
 
 #~ msgid "Plugin List:"
 #~ msgstr "Liste d'extensions :"

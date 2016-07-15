@@ -12,14 +12,14 @@ msgstr ""
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2016-07-01 17:28+0000\n"
 "Last-Translator: DimOkGamer <dimokgamer@gmail.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/godot-"
-"engine/godot/ru/>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<="
-"4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 2.7-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
@@ -340,9 +340,10 @@ msgstr "Сохранить файл"
 msgid "Create Folder"
 msgstr "Создать папку"
 
-#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp tools/editor/editor_autoload_settings.cpp
+#: tools/editor/editor_file_dialog.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: tools/editor/project_settings.cpp tools/editor/script_create_dialog.cpp
+#: tools/editor/script_create_dialog.cpp
 msgid "Path:"
 msgstr "Путь:"
 
@@ -543,6 +544,10 @@ msgid "Anim Add Track"
 msgstr "Добавлен новый трек"
 
 #: tools/editor/animation_editor.cpp
+msgid "Anim Duplicate Keys"
+msgstr "Дублированы ключи анимации"
+
+#: tools/editor/animation_editor.cpp
 msgid "Move Anim Track Up"
 msgstr "Трек передвинут вверх"
 
@@ -553,10 +558,6 @@ msgstr "Трек передвинут вниз"
 #: tools/editor/animation_editor.cpp
 msgid "Remove Anim Track"
 msgstr "Трек удалён"
-
-#: tools/editor/animation_editor.cpp
-msgid "Anim Duplicate Keys"
-msgstr "Дублированы ключи анимации"
 
 #: tools/editor/animation_editor.cpp
 msgid "Set Transitions to:"
@@ -587,6 +588,20 @@ msgid "Anim Delete Keys"
 msgstr "Ключ удалён"
 
 #: tools/editor/animation_editor.cpp
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+msgid "Duplicate Selection"
+msgstr "Дублировать выделенное"
+
+#: tools/editor/animation_editor.cpp
+msgid "Duplicate Transposed"
+msgstr "Дублировать перемещённый"
+
+#: tools/editor/animation_editor.cpp
+#, fuzzy
+msgid "Remove Selection"
+msgstr "Кадрировать выбранное"
+
+#: tools/editor/animation_editor.cpp
 msgid "Continuous"
 msgstr "Непрерывная"
 
@@ -613,15 +628,6 @@ msgstr "Масштаб выбранного промежутка"
 #: tools/editor/animation_editor.cpp
 msgid "Scale From Cursor"
 msgstr "Масштаб относительно курсора"
-
-#: tools/editor/animation_editor.cpp
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Duplicate Selection"
-msgstr "Дублировать выделенное"
-
-#: tools/editor/animation_editor.cpp
-msgid "Duplicate Transposed"
-msgstr "Дублировать перемещённый"
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Next Step"
@@ -894,7 +900,6 @@ msgid "Call"
 msgstr "Вызов"
 
 #: tools/editor/call_dialog.cpp tools/editor/connections_dialog.cpp
-#: tools/editor/import_settings.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
@@ -1013,7 +1018,8 @@ msgstr "Метод должен быть указан в целевом Узле
 msgid "Connect To Node:"
 msgstr "Присоединить к узлу:"
 
-#: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
+#: tools/editor/connections_dialog.cpp
+#: tools/editor/editor_autoload_settings.cpp tools/editor/groups_editor.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
@@ -1121,8 +1127,8 @@ msgstr "Зависимости"
 msgid "Resource"
 msgstr "Ресурс"
 
-#: tools/editor/dependency_editor.cpp tools/editor/project_manager.cpp
-#: tools/editor/project_settings.cpp
+#: tools/editor/dependency_editor.cpp tools/editor/editor_autoload_settings.cpp
+#: tools/editor/project_manager.cpp tools/editor/project_settings.cpp
 msgid "Path"
 msgstr "Путь"
 
@@ -1209,6 +1215,100 @@ msgstr "Удалить выбранные файлы?"
 msgid "Delete"
 msgstr "Удалить"
 
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name."
+msgstr "Недопустимое имя."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Valid characters:"
+msgstr "Допустимые символы:"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing engine class name."
+msgstr ""
+"Недопустимое имя. Не должно конфликтовать с существующим именем класса "
+"движка."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing buit-in type name."
+msgstr ""
+"Недопустимое имя. Не должно конфликтовать с существующим встроенным именем "
+"типа."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing global constant name."
+msgstr ""
+"Недопустимое имя. Не должно конфликтовать с существующим глобальным именем "
+"константы."
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Invalid Path."
+msgstr "Недопустимый путь!"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "File does not exist."
+msgstr "Файл существует"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Not in resource path."
+msgstr "Путь ресурса"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Add AutoLoad"
+msgstr "Добавлена автозагрузка"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Autoload '%s' already exists!"
+msgstr "Автозагрузка '%s' уже существует!"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Rename Autoload"
+msgstr "Переименовать автозагрузку"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Toggle AutoLoad Globals"
+msgstr "Переключена автозагрузка глобальных скриптов"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Move Autoload"
+msgstr "Передвинута автозагрузка"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Remove Autoload"
+msgstr "Удалена автозагрузка"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Enable"
+msgstr "Включить"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Rearrange Autoloads"
+msgstr "Переименовать автозагрузку"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Node Name:"
+msgstr "Имя Узла:"
+
+#: tools/editor/editor_autoload_settings.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
+msgid "Name"
+msgstr "Имя"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Singleton"
+msgstr "Синглтон"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "List:"
+msgstr "Список:"
+
 #: tools/editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Обновление сцены"
@@ -1262,11 +1362,13 @@ msgid "Focus Path"
 msgstr "Фокус на пути"
 
 #: tools/editor/editor_file_dialog.cpp
-msgid "Mode Favorite Up"
+#, fuzzy
+msgid "Move Favorite Up"
 msgstr "Избранное по порядку"
 
 #: tools/editor/editor_file_dialog.cpp
-msgid "Mode Favorite Down"
+#, fuzzy
+msgid "Move Favorite Down"
 msgstr "Избранное в обратном порядке"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
@@ -1289,13 +1391,17 @@ msgstr "Невозможно перейти в подпапку:"
 msgid "ScanSources"
 msgstr "Просканировать исходники"
 
-#: tools/editor/editor_help.cpp
-msgid "Search Classes"
-msgstr "Поиск классов"
+#: tools/editor/editor_help.cpp tools/editor/plugins/script_editor_plugin.cpp
+msgid "Search Help"
+msgstr "Поиск внутри классов"
 
 #: tools/editor/editor_help.cpp
 msgid "Class List:"
 msgstr "Список классов:"
+
+#: tools/editor/editor_help.cpp
+msgid "Search Classes"
+msgstr "Поиск классов"
 
 #: tools/editor/editor_help.cpp tools/editor/property_editor.cpp
 msgid "Class:"
@@ -1393,10 +1499,6 @@ msgstr "Импортируется:"
 #: tools/editor/editor_node.cpp
 msgid "Node From Scene"
 msgstr "Узел со сцены"
-
-#: tools/editor/editor_node.cpp tools/editor/scenes_dock.cpp
-msgid "Re-Import.."
-msgstr "Переимпортировать.."
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
@@ -1645,7 +1747,8 @@ msgstr ""
 "(Несохранённые изменения будут потеряны.)"
 
 #: tools/editor/editor_node.cpp
-msgid "Pick a Manu Scene"
+#, fuzzy
+msgid "Pick a Main Scene"
 msgstr "Выберите главную сцену"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
@@ -1736,6 +1839,11 @@ msgstr "Открыть сцену.."
 
 #: tools/editor/editor_node.cpp
 msgid "Save Scene"
+msgstr "Сохранить сцену"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Save all Scenes"
 msgstr "Сохранить сцену"
 
 #: tools/editor/editor_node.cpp
@@ -1859,6 +1967,11 @@ msgstr "Запустить сцену"
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
+msgstr "Запустить выборочную сцену"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Play Custom Scene"
 msgstr "Запустить выборочную сцену"
 
 #: tools/editor/editor_node.cpp
@@ -2033,7 +2146,6 @@ msgid "Output"
 msgstr "Вывод"
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
-#: tools/editor/import_settings.cpp
 msgid "Re-Import"
 msgstr "Импортировать снова"
 
@@ -2206,10 +2318,6 @@ msgstr "Добавить в группу"
 #: tools/editor/groups_editor.cpp
 msgid "Remove from Group"
 msgstr "Удалить из группы"
-
-#: tools/editor/import_settings.cpp
-msgid "Imported Resources"
-msgstr "Импортированные ресурсы"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
 msgid "No bit masks to import!"
@@ -2423,12 +2531,6 @@ msgstr "Макс. угол"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Clips"
 msgstr "Клипы"
-
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-#: tools/editor/project_manager.cpp tools/editor/project_settings.cpp
-msgid "Name"
-msgstr "Имя"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Start(s)"
@@ -3401,8 +3503,9 @@ msgid "Anchor"
 msgstr "Привязка"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert Keys (Ins)"
-msgstr "Вставить ключи (Ins)"
+#, fuzzy
+msgid "Insert Keys"
+msgstr "Вставить ключ"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
@@ -3940,6 +4043,7 @@ msgid "Clear UV"
 msgstr "Очистить UV"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
 msgstr "Привязка"
 
@@ -4053,6 +4157,16 @@ msgstr "Импортировать тему"
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."
 msgstr "Сохранить тему как.."
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Next script"
+msgstr "Создать скрипт"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Previous script"
+msgstr "Предыдущая вкладка"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/project_export.cpp
@@ -4240,10 +4354,6 @@ msgid "Search the class hierarchy."
 msgstr "Поиск в классовой иерархии."
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Search Help"
-msgstr "Поиск внутри классов"
-
-#: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Поиск справочной документации."
 
@@ -4279,6 +4389,11 @@ msgstr "Пересохранить"
 #: tools/editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Отладчик"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid ""
+"Built-in scripts can only be edited when the scene they belong to is loaded"
+msgstr ""
 
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Vertex"
@@ -4513,38 +4628,6 @@ msgid "Align with view"
 msgstr "Совместить с видом"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Top (Num7)"
-msgstr "Вид сверху (Num 7)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom (Shift+Num7)"
-msgstr "Вид снизу (Shift+Num7)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Left (Num3)"
-msgstr "Вид слева (Num3)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Right (Shift+Num3)"
-msgstr "Вид справа (Shift+)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Front (Num1)"
-msgstr "Вид спереди (Num1)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear (Shift+Num1)"
-msgstr "Вид сзади (Shift+Num1)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Perspective (Num5)"
-msgstr "Перспектива (Num5)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Orthogonal (Num5)"
-msgstr "Ортогонально (Num5)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Environment"
 msgstr "Окружение"
 
@@ -4555,14 +4638,6 @@ msgstr "Прослушиватель звука"
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
 msgstr "Вещицы"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Selection (F)"
-msgstr "Показать выбранный узел (F)"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view (Ctrl+Shift+F)"
-msgstr "Совместите с видом (Ctrl+Shift+F)"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -4583,6 +4658,55 @@ msgstr "Не возможно добавить сцену!"
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
 msgstr "Режим масштабирования (R)"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom View"
+msgstr "Вид Снизу."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top View"
+msgstr "Вид сверху."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear View"
+msgstr "Вид сзади."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Front View"
+msgstr "Вид спереди."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Left View"
+msgstr "Вид слева."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Right View"
+msgstr "Вид справа."
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Switch Perspective/Orthogonal view"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Insert Animation Key"
+msgstr "Вставить анимацию"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Focus Selection"
+msgstr "Масштаб выбранного промежутка"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Selection With View"
+msgstr "Совместить с видом"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform"
@@ -5305,6 +5429,17 @@ msgid "Couldn't create engine.cfg in project path."
 msgstr "Не могу создать engine.cfg в папке проекта."
 
 #: tools/editor/project_manager.cpp
+#, fuzzy
+msgid "The following files failed extraction from package:"
+msgstr ""
+"Следующие файлы новее на диске.\n"
+"Какие меры должны быть приняты?:"
+
+#: tools/editor/project_manager.cpp
+msgid "Package Installed Successfully!"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
 msgid "Import Existing Project"
 msgstr "Импортировать существующий проект"
 
@@ -5323,6 +5458,16 @@ msgstr "Создать новый проект"
 #: tools/editor/project_manager.cpp
 msgid "Project Path:"
 msgstr "Путь к проекту:"
+
+#: tools/editor/project_manager.cpp
+#, fuzzy
+msgid "Install Project:"
+msgstr "Последние проекты:"
+
+#: tools/editor/project_manager.cpp
+#, fuzzy
+msgid "Install"
+msgstr "Добавить экземпляр"
 
 #: tools/editor/project_manager.cpp
 msgid "Browse"
@@ -5489,56 +5634,6 @@ msgid "Add Translation"
 msgstr "Добавлен перевод"
 
 #: tools/editor/project_settings.cpp
-msgid "Invalid name."
-msgstr "Недопустимое имя."
-
-#: tools/editor/project_settings.cpp
-msgid "Valid characters:"
-msgstr "Допустимые символы:"
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing engine class name."
-msgstr ""
-"Недопустимое имя. Не должно конфликтовать с существующим именем класса "
-"движка."
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing buit-in type name."
-msgstr ""
-"Недопустимое имя. Не должно конфликтовать с существующим встроенным именем "
-"типа."
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing global constant name."
-msgstr ""
-"Недопустимое имя. Не должно конфликтовать с существующим глобальным именем "
-"константы."
-
-#: tools/editor/project_settings.cpp
-msgid "Autoload '%s' already exists!"
-msgstr "Автозагрузка '%s' уже существует!"
-
-#: tools/editor/project_settings.cpp
-msgid "Rename Autoload"
-msgstr "Переименовать автозагрузку"
-
-#: tools/editor/project_settings.cpp
-msgid "Toggle AutoLoad Globals"
-msgstr "Переключена автозагрузка глобальных скриптов"
-
-#: tools/editor/project_settings.cpp
-msgid "Add Autoload"
-msgstr "Добавлена автозагрузка"
-
-#: tools/editor/project_settings.cpp
-msgid "Remove Autoload"
-msgstr "Удалена автозагрузка"
-
-#: tools/editor/project_settings.cpp
-msgid "Move Autoload"
-msgstr "Передвинута автозагрузка"
-
-#: tools/editor/project_settings.cpp
 msgid "Remove Translation"
 msgstr "Перевод удалён"
 
@@ -5561,10 +5656,6 @@ msgstr "Удалён ресурс перенаправления"
 #: tools/editor/project_settings.cpp
 msgid "Remove Resource Remap Option"
 msgstr "Удалён параметр ресурса перенаправления"
-
-#: tools/editor/project_settings.cpp
-msgid "Enable"
-msgstr "Включить"
 
 #: tools/editor/project_settings.cpp
 msgid "Project Settings (engine.cfg)"
@@ -5637,18 +5728,6 @@ msgstr "Язык"
 #: tools/editor/project_settings.cpp
 msgid "AutoLoad"
 msgstr "Автозагрузка"
-
-#: tools/editor/project_settings.cpp
-msgid "Node Name:"
-msgstr "Имя Узла:"
-
-#: tools/editor/project_settings.cpp
-msgid "List:"
-msgstr "Список:"
-
-#: tools/editor/project_settings.cpp
-msgid "Singleton"
-msgstr "Синглтон"
 
 #: tools/editor/project_settings.cpp
 msgid "Plugins"
@@ -6065,6 +6144,10 @@ msgid "Show In File Manager"
 msgstr "Просмотреть в проводнике"
 
 #: tools/editor/scenes_dock.cpp
+msgid "Re-Import.."
+msgstr "Переимпортировать.."
+
+#: tools/editor/scenes_dock.cpp
 msgid "Previous Directory"
 msgstr "Предыдущий каталог"
 
@@ -6324,6 +6407,42 @@ msgstr "Изменена длинна луча"
 msgid "Change Notifier Extents"
 msgstr "Изменены границы уведомителя"
 
+#~ msgid "Imported Resources"
+#~ msgstr "Импортированные ресурсы"
+
+#~ msgid "Insert Keys (Ins)"
+#~ msgstr "Вставить ключи (Ins)"
+
+#~ msgid "Top (Num7)"
+#~ msgstr "Вид сверху (Num 7)"
+
+#~ msgid "Bottom (Shift+Num7)"
+#~ msgstr "Вид снизу (Shift+Num7)"
+
+#~ msgid "Left (Num3)"
+#~ msgstr "Вид слева (Num3)"
+
+#~ msgid "Right (Shift+Num3)"
+#~ msgstr "Вид справа (Shift+)"
+
+#~ msgid "Front (Num1)"
+#~ msgstr "Вид спереди (Num1)"
+
+#~ msgid "Rear (Shift+Num1)"
+#~ msgstr "Вид сзади (Shift+Num1)"
+
+#~ msgid "Perspective (Num5)"
+#~ msgstr "Перспектива (Num5)"
+
+#~ msgid "Orthogonal (Num5)"
+#~ msgstr "Ортогонально (Num5)"
+
+#~ msgid "Selection (F)"
+#~ msgstr "Показать выбранный узел (F)"
+
+#~ msgid "Align with view (Ctrl+Shift+F)"
+#~ msgstr "Совместите с видом (Ctrl+Shift+F)"
+
 #~ msgid "Change Anim Loop Interpolation"
 #~ msgstr "Изменена интерполяция анимации"
 
@@ -6381,9 +6500,6 @@ msgstr "Изменены границы уведомителя"
 
 #~ msgid "Set region_rect"
 #~ msgstr "Установить прямоугольник региона"
-
-#~ msgid "Recent Projects:"
-#~ msgstr "Последние проекты:"
 
 #~ msgid "Plugin List:"
 #~ msgstr "Список плагинов:"

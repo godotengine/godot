@@ -311,9 +311,10 @@ msgstr "保存文件"
 msgid "Create Folder"
 msgstr "新建目录"
 
-#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp tools/editor/editor_autoload_settings.cpp
+#: tools/editor/editor_file_dialog.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: tools/editor/project_settings.cpp tools/editor/script_create_dialog.cpp
+#: tools/editor/script_create_dialog.cpp
 msgid "Path:"
 msgstr "路径："
 
@@ -511,6 +512,10 @@ msgid "Anim Add Track"
 msgstr "添加轨道"
 
 #: tools/editor/animation_editor.cpp
+msgid "Anim Duplicate Keys"
+msgstr "复制关键帧"
+
+#: tools/editor/animation_editor.cpp
 msgid "Move Anim Track Up"
 msgstr "上移轨道"
 
@@ -521,10 +526,6 @@ msgstr "下移轨道"
 #: tools/editor/animation_editor.cpp
 msgid "Remove Anim Track"
 msgstr "移除轨道"
-
-#: tools/editor/animation_editor.cpp
-msgid "Anim Duplicate Keys"
-msgstr "复制关键帧"
 
 #: tools/editor/animation_editor.cpp
 msgid "Set Transitions to:"
@@ -555,6 +556,20 @@ msgid "Anim Delete Keys"
 msgstr "删除关键帧"
 
 #: tools/editor/animation_editor.cpp
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+msgid "Duplicate Selection"
+msgstr "复制选中项"
+
+#: tools/editor/animation_editor.cpp
+msgid "Duplicate Transposed"
+msgstr "复制并转置"
+
+#: tools/editor/animation_editor.cpp
+#, fuzzy
+msgid "Remove Selection"
+msgstr "最大化显示选中节点"
+
+#: tools/editor/animation_editor.cpp
 #, fuzzy
 msgid "Continuous"
 msgstr "继续"
@@ -583,15 +598,6 @@ msgstr "缩放选中项"
 #: tools/editor/animation_editor.cpp
 msgid "Scale From Cursor"
 msgstr "通过光标缩放"
-
-#: tools/editor/animation_editor.cpp
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Duplicate Selection"
-msgstr "复制选中项"
-
-#: tools/editor/animation_editor.cpp
-msgid "Duplicate Transposed"
-msgstr "复制并转置"
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Next Step"
@@ -864,7 +870,6 @@ msgid "Call"
 msgstr "调用"
 
 #: tools/editor/call_dialog.cpp tools/editor/connections_dialog.cpp
-#: tools/editor/import_settings.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
@@ -984,7 +989,8 @@ msgstr "必须设置方法的对象节点！"
 msgid "Connect To Node:"
 msgstr "连接到节点："
 
-#: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
+#: tools/editor/connections_dialog.cpp
+#: tools/editor/editor_autoload_settings.cpp tools/editor/groups_editor.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
@@ -1091,8 +1097,8 @@ msgstr "依赖"
 msgid "Resource"
 msgstr "资源"
 
-#: tools/editor/dependency_editor.cpp tools/editor/project_manager.cpp
-#: tools/editor/project_settings.cpp
+#: tools/editor/dependency_editor.cpp tools/editor/editor_autoload_settings.cpp
+#: tools/editor/project_manager.cpp tools/editor/project_settings.cpp
 msgid "Path"
 msgstr "路径"
 
@@ -1177,6 +1183,94 @@ msgstr "删除选中的文件？"
 msgid "Delete"
 msgstr "删除"
 
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name."
+msgstr "名称非法："
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Valid characters:"
+msgstr "字符合法："
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing engine class name."
+msgstr "名称非法，与引擎内置类型名称冲突。"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing buit-in type name."
+msgstr "名称非法，与引擎内置类型名称冲突。"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing global constant name."
+msgstr "名称非法，与已存在的全局常量名称冲突。"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Invalid Path."
+msgstr "路径非法！"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "File does not exist."
+msgstr "文件已存在"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Not in resource path."
+msgstr "资源路径"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Add AutoLoad"
+msgstr "添加Autoload"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Autoload '%s' already exists!"
+msgstr "Autoload %s已存在！"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Rename Autoload"
+msgstr "移除Autoload"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Toggle AutoLoad Globals"
+msgstr "切换全局AutoLoad"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Move Autoload"
+msgstr "移动Autoload"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Remove Autoload"
+msgstr "移除Autoload"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Enable"
+msgstr "启用"
+
+#: tools/editor/editor_autoload_settings.cpp
+#, fuzzy
+msgid "Rearrange Autoloads"
+msgstr "移除Autoload"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Node Name:"
+msgstr "节点名称："
+
+#: tools/editor/editor_autoload_settings.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
+msgid "Name"
+msgstr "名称"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Singleton"
+msgstr "单例"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "List:"
+msgstr "列表："
+
 #: tools/editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "更新场景"
@@ -1234,12 +1328,12 @@ msgstr "拷贝路径"
 
 #: tools/editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Mode Favorite Up"
+msgid "Move Favorite Up"
 msgstr "收藏："
 
 #: tools/editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Mode Favorite Down"
+msgid "Move Favorite Down"
 msgstr "向下移动"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
@@ -1262,13 +1356,17 @@ msgstr "无法打开目录："
 msgid "ScanSources"
 msgstr ""
 
-#: tools/editor/editor_help.cpp
-msgid "Search Classes"
-msgstr "搜索类型"
+#: tools/editor/editor_help.cpp tools/editor/plugins/script_editor_plugin.cpp
+msgid "Search Help"
+msgstr "搜索帮助"
 
 #: tools/editor/editor_help.cpp
 msgid "Class List:"
 msgstr "类型列表"
+
+#: tools/editor/editor_help.cpp
+msgid "Search Classes"
+msgstr "搜索类型"
 
 #: tools/editor/editor_help.cpp tools/editor/property_editor.cpp
 msgid "Class:"
@@ -1366,10 +1464,6 @@ msgstr "导入："
 #: tools/editor/editor_node.cpp
 msgid "Node From Scene"
 msgstr ""
-
-#: tools/editor/editor_node.cpp tools/editor/scenes_dock.cpp
-msgid "Re-Import.."
-msgstr "重新导入.."
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
@@ -1615,7 +1709,7 @@ msgstr "退出到项目管理窗口(未保存的修改将丢失)？"
 
 #: tools/editor/editor_node.cpp
 #, fuzzy
-msgid "Pick a Manu Scene"
+msgid "Pick a Main Scene"
 msgstr "主场景"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
@@ -1706,6 +1800,11 @@ msgstr "打开场景"
 
 #: tools/editor/editor_node.cpp
 msgid "Save Scene"
+msgstr "保存场景"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Save all Scenes"
 msgstr "保存场景"
 
 #: tools/editor/editor_node.cpp
@@ -1829,6 +1928,11 @@ msgstr "运行场景"
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
+msgstr "运行自定义场景"
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Play Custom Scene"
 msgstr "运行自定义场景"
 
 #: tools/editor/editor_node.cpp
@@ -1993,7 +2097,6 @@ msgid "Output"
 msgstr "输出"
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
-#: tools/editor/import_settings.cpp
 msgid "Re-Import"
 msgstr "重新导入"
 
@@ -2164,10 +2267,6 @@ msgstr "添加到分组"
 #: tools/editor/groups_editor.cpp
 msgid "Remove from Group"
 msgstr "从分组中移除"
-
-#: tools/editor/import_settings.cpp
-msgid "Imported Resources"
-msgstr "已导入的资源"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
 msgid "No bit masks to import!"
@@ -2377,12 +2476,6 @@ msgstr ""
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Clips"
 msgstr ""
-
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-#: tools/editor/project_manager.cpp tools/editor/project_settings.cpp
-msgid "Name"
-msgstr "名称"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Start(s)"
@@ -3347,8 +3440,9 @@ msgid "Anchor"
 msgstr "锚点"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert Keys (Ins)"
-msgstr "插入关键帧（ 创建轨道）"
+#, fuzzy
+msgid "Insert Keys"
+msgstr "插入关键帧"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
@@ -3886,6 +3980,7 @@ msgid "Clear UV"
 msgstr "清除UV"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
 msgstr "吸附"
 
@@ -3999,6 +4094,16 @@ msgstr "导入主题"
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."
 msgstr "主题另存为"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Next script"
+msgstr "创建脚本"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Previous script"
+msgstr "上一个目录："
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/project_export.cpp
@@ -4188,10 +4293,6 @@ msgid "Search the class hierarchy."
 msgstr "搜索类"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Search Help"
-msgstr "搜索帮助"
-
-#: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "搜索文档"
 
@@ -4227,6 +4328,11 @@ msgstr "重新保存"
 #: tools/editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "调试器"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid ""
+"Built-in scripts can only be edited when the scene they belong to is loaded"
+msgstr ""
 
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Vertex"
@@ -4461,38 +4567,6 @@ msgid "Align with view"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Top (Num7)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom (Shift+Num7)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Left (Num3)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Right (Shift+Num3)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Front (Num1)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear (Shift+Num1)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Perspective (Num5)"
-msgstr "透视（Num5）"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Orthogonal (Num5)"
-msgstr "正交（Num5）"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Environment"
 msgstr "环境"
 
@@ -4502,14 +4576,6 @@ msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Selection (F)"
-msgstr "选中项（F）"
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view (Ctrl+Shift+F)"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -4531,6 +4597,52 @@ msgstr "无法实例化场景！"
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
 msgstr "缩放模式（R）"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Bottom View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Top View"
+msgstr "视图"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Rear View"
+msgstr "视图"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Front View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Left View"
+msgstr "视图"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Right View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Switch Perspective/Orthogonal view"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Insert Animation Key"
+msgstr "粘贴动画"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Focus Selection"
+msgstr "缩放选中项"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Selection With View"
+msgstr "所有选项"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform"
@@ -5263,6 +5375,17 @@ msgid "Couldn't create engine.cfg in project path."
 msgstr "无法在项目目录下创建engine.cfg文件。"
 
 #: tools/editor/project_manager.cpp
+#, fuzzy
+msgid "The following files failed extraction from package:"
+msgstr ""
+"磁盘中的下列文件已更新。\n"
+"请选择执行那项操作？："
+
+#: tools/editor/project_manager.cpp
+msgid "Package Installed Successfully!"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
 msgid "Import Existing Project"
 msgstr "导入现有项目"
 
@@ -5281,6 +5404,16 @@ msgstr "新建项目"
 #: tools/editor/project_manager.cpp
 msgid "Project Path:"
 msgstr "项目目录"
+
+#: tools/editor/project_manager.cpp
+#, fuzzy
+msgid "Install Project:"
+msgstr "最近打开的项目："
+
+#: tools/editor/project_manager.cpp
+#, fuzzy
+msgid "Install"
+msgstr "创建实例节点"
 
 #: tools/editor/project_manager.cpp
 msgid "Browse"
@@ -5447,50 +5580,6 @@ msgid "Add Translation"
 msgstr "添加语言"
 
 #: tools/editor/project_settings.cpp
-msgid "Invalid name."
-msgstr "名称非法："
-
-#: tools/editor/project_settings.cpp
-msgid "Valid characters:"
-msgstr "字符合法："
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing engine class name."
-msgstr "名称非法，与引擎内置类型名称冲突。"
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing buit-in type name."
-msgstr "名称非法，与引擎内置类型名称冲突。"
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing global constant name."
-msgstr "名称非法，与已存在的全局常量名称冲突。"
-
-#: tools/editor/project_settings.cpp
-msgid "Autoload '%s' already exists!"
-msgstr "Autoload %s已存在！"
-
-#: tools/editor/project_settings.cpp
-msgid "Rename Autoload"
-msgstr "移除Autoload"
-
-#: tools/editor/project_settings.cpp
-msgid "Toggle AutoLoad Globals"
-msgstr "切换全局AutoLoad"
-
-#: tools/editor/project_settings.cpp
-msgid "Add Autoload"
-msgstr "添加Autoload"
-
-#: tools/editor/project_settings.cpp
-msgid "Remove Autoload"
-msgstr "移除Autoload"
-
-#: tools/editor/project_settings.cpp
-msgid "Move Autoload"
-msgstr "移动Autoload"
-
-#: tools/editor/project_settings.cpp
 msgid "Remove Translation"
 msgstr "移除语言"
 
@@ -5513,10 +5602,6 @@ msgstr "移除资源重定向"
 #: tools/editor/project_settings.cpp
 msgid "Remove Resource Remap Option"
 msgstr "移除资源重定向选项"
-
-#: tools/editor/project_settings.cpp
-msgid "Enable"
-msgstr "启用"
 
 #: tools/editor/project_settings.cpp
 msgid "Project Settings (engine.cfg)"
@@ -5589,18 +5674,6 @@ msgstr "地区"
 #: tools/editor/project_settings.cpp
 msgid "AutoLoad"
 msgstr "AutoLoad"
-
-#: tools/editor/project_settings.cpp
-msgid "Node Name:"
-msgstr "节点名称："
-
-#: tools/editor/project_settings.cpp
-msgid "List:"
-msgstr "列表："
-
-#: tools/editor/project_settings.cpp
-msgid "Singleton"
-msgstr "单例"
 
 #: tools/editor/project_settings.cpp
 msgid "Plugins"
@@ -6007,6 +6080,10 @@ msgid "Show In File Manager"
 msgstr "在资源管理器中打开"
 
 #: tools/editor/scenes_dock.cpp
+msgid "Re-Import.."
+msgstr "重新导入.."
+
+#: tools/editor/scenes_dock.cpp
 msgid "Previous Directory"
 msgstr "上一个目录："
 
@@ -6266,6 +6343,21 @@ msgstr ""
 msgid "Change Notifier Extents"
 msgstr ""
 
+#~ msgid "Imported Resources"
+#~ msgstr "已导入的资源"
+
+#~ msgid "Insert Keys (Ins)"
+#~ msgstr "插入关键帧（ 创建轨道）"
+
+#~ msgid "Perspective (Num5)"
+#~ msgstr "透视（Num5）"
+
+#~ msgid "Orthogonal (Num5)"
+#~ msgstr "正交（Num5）"
+
+#~ msgid "Selection (F)"
+#~ msgstr "选中项（F）"
+
 #, fuzzy
 #~ msgid "Change Anim Loop Interpolation"
 #~ msgstr "修改动画循环"
@@ -6323,9 +6415,6 @@ msgstr ""
 
 #~ msgid "Set region_rect"
 #~ msgstr "设置纹理区域"
-
-#~ msgid "Recent Projects:"
-#~ msgstr "最近打开的项目："
 
 #~ msgid "Plugin List:"
 #~ msgstr "插件列表"
