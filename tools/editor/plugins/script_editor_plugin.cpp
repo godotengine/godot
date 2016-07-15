@@ -1012,6 +1012,18 @@ void ScriptEditor::swap_lines(TextEdit *tx, int line1, int line2)
     tx->cursor_set_line(line2);
 }
 
+void ScriptEditor::_breakpoint_toggled(const int p_row) {
+	int selected = tab_container->get_current_tab();
+	if (selected<0 || selected>=tab_container->get_child_count()) {
+		return;
+	}
+
+	ScriptTextEditor *current = tab_container->get_child(selected)->cast_to<ScriptTextEditor>();
+	if (current) {
+		get_debugger()->set_breakpoint(current->get_edited_script()->get_path(),p_row+1,current->get_text_edit()->is_line_set_as_breakpoint(p_row));
+	}
+}
+
 void ScriptEditor::_file_dialog_action(String p_file) {
 
 	switch (file_dialog_option) {
@@ -2198,6 +2210,7 @@ void ScriptEditor::edit(const Ref<Script>& p_script) {
 	ste->get_text_edit()->set_callhint_settings(
 		EditorSettings::get_singleton()->get("text_editor/put_callhint_tooltip_below_current_line"),
 		EditorSettings::get_singleton()->get("text_editor/callhint_tooltip_offset"));
+	ste->get_text_edit()->connect("breakpoint_toggled", this, "_breakpoint_toggled");
 	tab_container->add_child(ste);
 	_go_to_tab(tab_container->get_tab_count()-1);
 
@@ -2671,6 +2684,7 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_res_saved_callback",&ScriptEditor::_res_saved_callback);
 	ObjectTypeDB::bind_method("_goto_script_line",&ScriptEditor::_goto_script_line);
 	ObjectTypeDB::bind_method("_goto_script_line2",&ScriptEditor::_goto_script_line2);
+	ObjectTypeDB::bind_method("_breakpoint_toggled", &ScriptEditor::_breakpoint_toggled);
 	ObjectTypeDB::bind_method("_breaked",&ScriptEditor::_breaked);
 	ObjectTypeDB::bind_method("_show_debugger",&ScriptEditor::_show_debugger);
 	ObjectTypeDB::bind_method("_get_debug_tooltip",&ScriptEditor::_get_debug_tooltip);
