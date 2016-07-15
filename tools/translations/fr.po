@@ -7,21 +7,22 @@
 # finkiki <specialpopol@gmx.fr>, 2016.
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016.
 # Marc <marc.gilleron@gmail.com>, 2016.
+# Onyx Steinheim <thevoxelmanonyx@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-06-25 18:35+0000\n"
+"PO-Revision-Date: 2016-07-13 18:14+0000\n"
 "Last-Translator: Chenebel Dorian <LoubiTek54@gmail.com>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
-"godot/fr/>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/godot-"
+"engine/godot/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.7-dev\n"
+"X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -599,8 +600,9 @@ msgid "Discrete"
 msgstr "Discret"
 
 #: tools/editor/animation_editor.cpp
+#, fuzzy
 msgid "Trigger"
-msgstr ""
+msgstr "Déclencheur"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Key"
@@ -616,7 +618,7 @@ msgstr "Mettre à l'échelle la sélection"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale From Cursor"
-msgstr ""
+msgstr "Echelle Du Curseur"
 
 #: tools/editor/animation_editor.cpp
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
@@ -629,11 +631,12 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr ""
+msgstr "Aller à l'étape suivante"
 
 #: tools/editor/animation_editor.cpp
+#, fuzzy
 msgid "Goto Prev Step"
-msgstr ""
+msgstr "Revenir à l'étape précédente"
 
 #: tools/editor/animation_editor.cpp tools/editor/property_editor.cpp
 msgid "Linear"
@@ -702,8 +705,9 @@ msgid "Anim Insert Key"
 msgstr "Animation Inserer une clé"
 
 #: tools/editor/animation_editor.cpp
+#, fuzzy
 msgid "Change Anim Len"
-msgstr ""
+msgstr "Change le format de l'animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Loop"
@@ -718,8 +722,9 @@ msgid "Anim Insert"
 msgstr "Insérer une animation"
 
 #: tools/editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "Touches de l'échelle de l'animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Call Track"
@@ -834,12 +839,14 @@ msgid "Resize Array"
 msgstr "Redimensionner le tableau"
 
 #: tools/editor/array_property_edit.cpp
+#, fuzzy
 msgid "Change Array Value Type"
-msgstr ""
+msgstr "Changer les valeurs types d'un tableau"
 
 #: tools/editor/array_property_edit.cpp
+#, fuzzy
 msgid "Change Array Value"
-msgstr ""
+msgstr "Changer la valeur d'un tableau"
 
 #: tools/editor/asset_library_editor_plugin.cpp tools/editor/create_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
@@ -1145,26 +1152,34 @@ msgstr "Éditeur de dépendances"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
-msgstr ""
+msgstr "Recherche une ressource de remplacement:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Owners Of:"
 msgstr "Propriétaires de :"
 
 #: tools/editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
+"Les fichiers supprimés sont requis par d'autres ressources pour leur "
+"fonctionnement.\n"
+"Les supprimez-vous quand même ? (aucune annulation possible)"
 
 #: tools/editor/dependency_editor.cpp
+#, fuzzy
 msgid "Remove selected files from the project? (no undo)"
 msgstr ""
+"Supprimer les fichiers sélectionnés dans le projet ? (aucune annulation "
+"possible)"
 
 #: tools/editor/dependency_editor.cpp
+#, fuzzy
 msgid "Error loading:"
-msgstr ""
+msgstr "Erreur de chargement:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Scene failed to load due to missing dependencies:"
@@ -1236,23 +1251,23 @@ msgstr "Choisir"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr ""
+msgstr "Revenir"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Forward"
-msgstr ""
+msgstr "Avancer"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Up"
-msgstr ""
+msgstr "Monter"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Refresh"
-msgstr ""
+msgstr "Rafraîchir"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr ""
+msgstr "Basculer les fichiers cachés"
 
 #: tools/editor/editor_file_dialog.cpp
 #, fuzzy
@@ -1369,8 +1384,9 @@ msgid "Error saving atlas:"
 msgstr "Erreur de sauvegarde de l'atlas :"
 
 #: tools/editor/editor_import_export.cpp
+#, fuzzy
 msgid "Could not save atlas subtexture:"
-msgstr ""
+msgstr "Impossible d'enregistrer la sous-texture atlas :"
 
 #: tools/editor/editor_import_export.cpp
 msgid "Storing File:"
@@ -1533,25 +1549,38 @@ msgid "There is no defined scene to run."
 msgstr "Il n'y a pas de scène définie pour être lancée."
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in later in \"Project Settings\" under the "
 "'application' category."
 msgstr ""
+"Aucune scène principale n'a jamais été définie, en sélectionner une?\n"
+"Vous pouvez modifier ultérieurement dans 'Paramètres du projet' dans la "
+"catégorie «application»."
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Selected scene '%s' does not exist, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"La scène sélectionnée '%s' n'existe pas, en sélectionner une valide?\n"
+"Vous pouvez modifier ultérieurement dans 'Paramètres du projet' dans la "
+"catégorie «application»."
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Selected scene '%s' is not a scene file, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"La scène sélectionnée '%s' n'est pas un fichier de scène, en sélectionner "
+"une valide?\n"
+"Vous pouvez modifier ultérieurement dans 'Paramètres du projet' dans la "
+"catégorie «application»."
 
 #: tools/editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
@@ -1709,11 +1738,12 @@ msgstr "Aller à la scène ouverte précédemment."
 
 #: tools/editor/editor_node.cpp
 msgid "Fullscreen Mode"
-msgstr ""
+msgstr "Mode plein écran"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "Distraction Free Mode"
-msgstr ""
+msgstr "Mode distraction libre"
 
 #: tools/editor/editor_node.cpp
 #, fuzzy
@@ -1877,16 +1907,21 @@ msgid "Deploy with Remote Debug"
 msgstr "Déployer avec le débogage distant"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "When exporting or deploying, the resulting executable will attempt to "
 "connect to the IP of this computer in order to be debugged."
 msgstr ""
+"Lors de l'exportation ou du déploiement, l'exécutable tentera de se "
+"connecter à l'adresse IP de cet ordinateur afin de procéder au débogage."
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "Small Deploy with Network FS"
-msgstr ""
+msgstr "Petit déploiement avec le réseau FS"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "When this option is enabled, export or deploy will produce a minimal "
 "executable.\n"
@@ -1895,50 +1930,74 @@ msgid ""
 "On Android, deploy will use the USB cable for faster performance. This "
 "option speeds up testing for games with a large footprint."
 msgstr ""
+"Lorsque cette option est activée, l'exportation ou le déploiement produira "
+"un exécutable minimal.\n"
+"Le système de fichiers sera fourni à partir du projet par l'éditeur sur le "
+"réseau.\n"
+"Sur Androïd, le déploiement va utiliser le câble USB pour une meilleure "
+"performance. Cette option accélère les tests pour les jeux avec une grande "
+"empreinte."
 
 #: tools/editor/editor_node.cpp
 msgid "Visible Collision Shapes"
 msgstr "Formes de collision visibles"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
+"Les formes de collision et les noeuds de raycast (pour 2D et 3D) seront "
+"visibles en jeu si cette option est activée."
 
 #: tools/editor/editor_node.cpp
 msgid "Visible Navigation"
 msgstr "Navigation visible"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
 msgstr ""
+"la navigation des maillages et des polygones sera visible en jeu si cette "
+"option est activée."
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "Sync Scene Changes"
-msgstr ""
+msgstr "Changement de synchronisation de scène"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "When this option is turned on, any changes made to the scene in the editor "
 "will be replicated in the running game.\n"
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"Lorsque cette option est activée, toutes les modifications apportées à la "
+"scène dans l'éditeur seront reproduites en jeu.\n"
+"Lorsque c'est utilisé à distance sur un périphérique, c'est plus efficace "
+"avec le système de fichiers réseau."
 
 #: tools/editor/editor_node.cpp
 msgid "Sync Script Changes"
 msgstr "Synchroniser les modifications de script"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "When this option is turned on, any script that is saved will be reloaded on "
 "the running game.\n"
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"Lorsque cette option est activée, chaque script enregistré sera rechargé en "
+"jeu.\n"
+"Lorsque c'est utilisé à distance sur un périphérique, c'est plus efficace "
+"avec le système de fichiers réseau."
 
 #: tools/editor/editor_node.cpp tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Settings"
@@ -2082,32 +2141,39 @@ msgid "Status:"
 msgstr "État :"
 
 #: tools/editor/editor_profiler.cpp
+#, fuzzy
 msgid "Stop Profiling"
-msgstr ""
+msgstr "Arrêt du profilage"
 
 #: tools/editor/editor_profiler.cpp
+#, fuzzy
 msgid "Start Profiling"
-msgstr ""
+msgstr "Démarrage du profilage"
 
 #: tools/editor/editor_profiler.cpp
+#, fuzzy
 msgid "Measure:"
-msgstr ""
+msgstr "Quantité:"
 
 #: tools/editor/editor_profiler.cpp
+#, fuzzy
 msgid "Frame Time (sec)"
-msgstr ""
+msgstr "Image par seconde"
 
 #: tools/editor/editor_profiler.cpp
+#, fuzzy
 msgid "Average Time (sec)"
-msgstr ""
+msgstr "Temps moyen (sec)"
 
 #: tools/editor/editor_profiler.cpp
+#, fuzzy
 msgid "Frame %"
-msgstr ""
+msgstr "Image %"
 
 #: tools/editor/editor_profiler.cpp
+#, fuzzy
 msgid "Fixed Frame %"
-msgstr ""
+msgstr "Cadre prédéfini %"
 
 #: tools/editor/editor_profiler.cpp tools/editor/script_editor_debugger.cpp
 msgid "Time:"
@@ -2118,12 +2184,14 @@ msgid "Inclusive"
 msgstr "Inclusif"
 
 #: tools/editor/editor_profiler.cpp
+#, fuzzy
 msgid "Self"
-msgstr ""
+msgstr "Soi-même"
 
 #: tools/editor/editor_profiler.cpp
+#, fuzzy
 msgid "Frame #:"
-msgstr ""
+msgstr "Image #:"
 
 #: tools/editor/editor_reimport_dialog.cpp
 msgid "Please wait for scan to complete."
@@ -2259,8 +2327,9 @@ msgid "Accept"
 msgstr "Accepter"
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
+#, fuzzy
 msgid "Bit Mask"
-msgstr ""
+msgstr "Masque de bits"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "No source font file!"
@@ -2275,6 +2344,8 @@ msgid ""
 "Invalid file extension.\n"
 "Please use .fnt."
 msgstr ""
+"Extension de fichier non valide.\n"
+"Veuillez utiliser .fnt."
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Can't load/process source font."
@@ -2351,7 +2422,7 @@ msgstr "Maillage(s) source :"
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
-msgstr ""
+msgstr "Maillage"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "Surface %d"
@@ -2473,8 +2544,9 @@ msgid "Post-Process Script:"
 msgstr "Script de post-traitement :"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
 msgid "Custom Root Node Type:"
-msgstr ""
+msgstr "Type de racine de nœud personnalisé:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Auto"
@@ -2778,20 +2850,22 @@ msgid "Translation"
 msgstr "Traduction"
 
 #: tools/editor/multi_node_edit.cpp
+#, fuzzy
 msgid "MultiNode Set"
-msgstr ""
+msgstr "Réglage multi-nœuds"
 
 #: tools/editor/node_dock.cpp
 msgid "Node"
-msgstr ""
+msgstr "Nœud"
 
 #: tools/editor/node_dock.cpp
 msgid "Groups"
 msgstr "Groupes"
 
 #: tools/editor/node_dock.cpp
+#, fuzzy
 msgid "Select a Node to edit Signals and Groups."
-msgstr ""
+msgstr "Sélectionnez un nœud pour modifier des signaux et des groupes."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -2833,12 +2907,14 @@ msgid "Add Animation"
 msgstr "Ajouter une animation"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Blend Next Changed"
-msgstr ""
+msgstr "Mélange Suivant Changé"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Change Blend Time"
-msgstr ""
+msgstr "Changer le temps de mélange"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
@@ -2869,36 +2945,41 @@ msgid "ERROR: No animation to edit!"
 msgstr "ERREUR : Pas d'animation à modifier !"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Play selected animation backwards from current pos. (A)"
-msgstr ""
+msgstr "Lire l'animation sélectionnée à rebours de la position actuelle. (A)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr ""
+msgstr "Lire l'animation sélectionnée à rebours de la fin. (Maj + A)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
 msgstr "Arrêter la lecture de l'animation. (S)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Play selected animation from start. (Shift+D)"
-msgstr ""
+msgstr "Lire l'animation sélectionnée depuis le début. (Maj + D)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Play selected animation from current pos. (D)"
-msgstr ""
+msgstr "Lire l'animation sélectionnée à sa position actuelle. (D)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation position (in seconds)."
 msgstr "Position de l'animation (en secondes)."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Scale animation playback globally for the node."
-msgstr ""
+msgstr "Echelle de lecture de l'animation dans sa globalité pour le noeud."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create new animation in player."
-msgstr ""
+msgstr "Créer une nouvelle animation dans le lecteur."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load animation from disk."
@@ -2925,8 +3006,9 @@ msgid "Autoplay on Load"
 msgstr "Lecture automatique au chargement"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Edit Target Blend Times"
-msgstr ""
+msgstr "Modifier les temps de mélange des cibles"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
@@ -2934,7 +3016,7 @@ msgstr "Outils d'animation"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Copy Animation"
-msgstr ""
+msgstr "Copier l'animation"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -2953,16 +3035,18 @@ msgid "Error!"
 msgstr "Erreur !"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Blend Times:"
-msgstr ""
+msgstr "Temps de mélange"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Next (Auto Queue):"
-msgstr ""
+msgstr "Suivant (file d'attente automatique):"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Cross-Animation Blend Times"
-msgstr ""
+msgstr "Temps de mélange des Cross-animation"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -2996,15 +3080,15 @@ msgstr "Mixer"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Auto Restart:"
-msgstr ""
+msgstr "Redémarrage automatique:"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Restart (s):"
-msgstr ""
+msgstr "Redémarrer (s):"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Random Restart (s):"
-msgstr ""
+msgstr "Redémarrage aléatoire (s):"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Start!"

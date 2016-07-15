@@ -3,25 +3,25 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Lisandro Lorea <lisandrolorea@gmail.com>, 2016.
+# Sebastian Silva <sebastian@fuentelibre.org>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-06-14 14:10+0000\n"
-"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
-"Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
-"godot/es/>\n"
+"PO-Revision-Date: 2016-07-14 01:33-0500\n"
+"Last-Translator: Sebastian Silva <sebastian@fuentelibre.org>\n"
+"Language-Team: SomosAzucar.Org\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.7-dev\n"
+"X-Generator: Virtaal 0.7.1\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argumento de tipo inválido para convert(), usá constantes TYPE_*."
+msgstr "Argumento de tipo inválido para convert(), use constantes TYPE_*."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -68,7 +68,7 @@ msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"Un recurso SpriteFrames debe ser creado o seteado en la propiedad 'Frames' "
+"Un recurso SpriteFrames debe ser creado o definido en la propiedad 'Frames' "
 "para que AnimatedSprite pueda mostrar frames."
 
 #: scene/2d/canvas_modulate.cpp
@@ -123,7 +123,7 @@ msgstr ""
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
-"Se debe setear(o dibujar) un polígono oclusor para que este oclusor tenga "
+"Se debe definir(o dibujar) un polígono oclusor para que este oclusor tenga "
 "efecto."
 
 #: scene/2d/light_occluder_2d.cpp
@@ -135,7 +135,7 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
-"Se debe crear o setear un recurso NavigationPolygon para que este nodo "
+"Se debe crear o definir un recurso NavigationPolygon para que este nodo "
 "funcione. Por favor creá una propiedad o dibujá un polígono."
 
 #: scene/2d/navigation_polygon.cpp
@@ -150,7 +150,7 @@ msgstr ""
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
-"ParallaxLayer node solo funciona cuando esta seteado como hijo de un nodo "
+"ParallaxLayer node solo funciona cuando esta definido como hijo de un nodo "
 "ParallaxBackground."
 
 #: scene/2d/particles_2d.cpp
@@ -161,7 +161,7 @@ msgstr ""
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr ""
-"PathFollow2D solo funciona cuando está seteado como hijo de un nodo Path2D."
+"PathFollow2D solo funciona cuando está definido como hijo de un nodo Path2D."
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
@@ -172,8 +172,8 @@ msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SamplePlayer to play sound."
 msgstr ""
-"Un recurso SampleLibrary debe ser creado o seteado en la propiedad 'samples' "
-"de modo que SamplePlayer pueda reproducir sonido."
+"Un recurso SampleLibrary debe ser creado o definido en la propiedad "
+"'samples' de modo que SamplePlayer pueda reproducir sonido."
 
 #: scene/2d/sprite.cpp
 msgid ""
@@ -181,15 +181,15 @@ msgid ""
 "must be set to 'render target' mode."
 msgstr ""
 "La propiedad Path debe apuntar a un nodo Viewport válido para funcionar. "
-"Dicho Viewport debe ser seteado a modo 'render target'."
+"Dicho Viewport debe estar configurado a modo 'render target'."
 
 #: scene/2d/sprite.cpp
 msgid ""
 "The Viewport set in the path property must be set as 'render target' in "
 "order for this sprite to work."
 msgstr ""
-"El Viewport seteado en la propiedad path debe ser seteado como 'render "
-"target' para que este sprite funcione."
+"El Viewport definido en la propiedad path debe estar configurado como "
+"'render target' para que este sprite funcione."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -234,7 +234,8 @@ msgstr "Un CollisionPolygon vacio no tiene ningún efecto en la colisión."
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
-"Se debe crear o setear un recurso NavigationMesh para que este nodo funcione."
+"Se debe crear o definir un recurso NavigationMesh para que este nodo "
+"funcione."
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
@@ -256,8 +257,8 @@ msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SpatialSamplePlayer to play sound."
 msgstr ""
-"Un recurso SampleLibrary debe ser creado o seteado en la propiedad 'samples' "
-"de modo que SpatialSamplePlayer puede reproducir sonido."
+"Un recurso SampleLibrary debe ser creado o definido en la propiedad "
+"'samples' de modo que SpatialSamplePlayer puede reproducir sonido."
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -281,7 +282,7 @@ msgstr "Alerta!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr "Confirmá, por favor..."
+msgstr "Confirma, por favor..."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -478,9 +479,9 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
-"Este viewport no está seteado como render target. Si tenés intención de que "
-"muestre contenidos directo a la pantalla, hacelo un hijo de un Control para "
-"que pueda obtener un tamaño. Alternativamente, hacelo un RenderTarget y "
+"Este viewport no está configurado como render target. Si tenés intención de "
+"que muestre contenidos directo a la pantalla, hacelo un hijo de un Control "
+"para que pueda obtener un tamaño. Alternativamente, hacelo un RenderTarget y "
 "asigná su textura interna a algún otro nodo para mostrar."
 
 #: scene/resources/dynamic_font.cpp
@@ -553,7 +554,7 @@ msgstr "Duplicar Claves de Anim"
 
 #: tools/editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr "Setear Transiciones a:"
+msgstr "Definir Transiciones a:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Rename"
@@ -1003,7 +1004,6 @@ msgid "Method in target Node must be specified!"
 msgstr "El método en el Nodo objetivo debe ser especificado!"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect To Node:"
 msgstr "Conectar a Nodo:"
 
@@ -1217,7 +1217,7 @@ msgstr "Actualizando escena.."
 
 #: tools/editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
-msgstr "Elegí un Directorio"
+msgstr "Elige un Directorio"
 
 #: tools/editor/editor_dir_dialog.cpp
 msgid "Choose"
@@ -1225,48 +1225,43 @@ msgstr "Elegir"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr ""
+msgstr "Retroceder"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Forward"
-msgstr ""
+msgstr "Avanzar"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Up"
-msgstr ""
+msgstr "Subir"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Refresh"
-msgstr ""
+msgstr "Refrescar"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr ""
+msgstr "Act/Desact. Archivos Ocultos"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Toggle Favorite"
-msgstr "Act/Desact. Breakpoint"
+msgstr "Act/Desact. Favorito"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Toggle Mode"
-msgstr "Act/Desact. Comentario"
+msgstr "Act/Desact. Modo"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Focus Path"
-msgstr "Copiar Ruta"
+msgstr "Foco en Ruta"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Mode Favorite Up"
-msgstr "Favoritos:"
+msgstr "Mover Favorito Hacia Arriba"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Mode Favorite Down"
-msgstr "Bajar"
+msgstr "Mover Favorito Hacia Abajo"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
 msgid "Favorites:"
@@ -1450,7 +1445,7 @@ msgstr "Fallo al cargar recurso."
 
 #: tools/editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr "No se puede cargar MeshLibrary para hacer merge!"
+msgstr "No se puede cargar MeshLibrary para fusionar!"
 
 #: tools/editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
@@ -1458,7 +1453,7 @@ msgstr "Error guardando MeshLibrary!"
 
 #: tools/editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
-msgstr "No se puede cargar TileSet para hacer merge!"
+msgstr "No se puede cargar TileSet para fusio!"
 
 #: tools/editor/editor_node.cpp
 msgid "Error saving TileSet!"
@@ -1522,39 +1517,39 @@ msgid "There is no defined scene to run."
 msgstr "No hay escena definida para ejecutar."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in later in \"Project Settings\" under the "
 "'application' category."
 msgstr ""
-"No se ha definido ninguna escena principal.\n"
-"Seleccioná una de \"Ajustes del Proyecto\" bajo la categoria 'aplicacion'."
+"No se ha definido ninguna escena principal, ¿elegir una?\n"
+"Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoria "
+"'aplicacion'."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Selected scene '%s' does not exist, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"No se ha definido ninguna escena principal.\n"
-"Seleccioná una de \"Ajustes del Proyecto\" bajo la categoria 'aplicacion'."
+"La escena '%s' seleccionada no existe, ¿seleccionar una válida?\n"
+"Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoria "
+"'aplicacion'."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Selected scene '%s' is not a scene file, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"No se ha definido ninguna escena principal.\n"
-"Seleccioná una de \"Ajustes del Proyecto\" bajo la categoria 'aplicacion'."
+"La escena '%s' seleccionada no es un archivo de escena, ¿seleccionar uno "
+"válido?\n"
+"Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoria "
+"'aplicacion'."
 
 #: tools/editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"La escena actual nunca se guardó. Favor de guardarla antes de ejecutar."
+msgstr "La escena actual nunca se guardó. Favor de guardarla antes de ejecutar."
 
 #: tools/editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -1643,9 +1638,8 @@ msgid ""
 msgstr "Abrir el Gestor de Proyectos? (Los cambios sin guardar se perderán)"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Pick a Manu Scene"
-msgstr "Escena Principal"
+msgstr "Elegí una Escena Principal"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
@@ -1710,14 +1704,12 @@ msgid "Distraction Free Mode"
 msgstr "Modo Sin Distracciones"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Next tab"
-msgstr "Siguiente"
+msgstr "Pestaña siguiente"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Previous tab"
-msgstr "Directorio Previo"
+msgstr "Pestaña anterior"
 
 #: tools/editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1864,11 +1856,11 @@ msgstr "Reproducir escena personalizada"
 
 #: tools/editor/editor_node.cpp
 msgid "Debug options"
-msgstr "Opciones de debugueo"
+msgstr "Opciones de depuración"
 
 #: tools/editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
-msgstr "Hacer Deploy con Debug Remoto"
+msgstr "Transferir con Depuración Remota"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1876,7 +1868,7 @@ msgid ""
 "connect to the IP of this computer in order to be debugged."
 msgstr ""
 "Al exportar o hacer deploy, el ejecutable resultante tratara de contectarse "
-"a la IP de esta computadora de manera de ser debugueado."
+"a la IP de esta computadora de manera de ser depurado."
 
 #: tools/editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
@@ -2065,7 +2057,7 @@ msgstr "Exportar Libreria"
 
 #: tools/editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr "Mergear Con Existentes"
+msgstr "Fusionar Con Existentes"
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Password:"
@@ -2288,6 +2280,8 @@ msgid ""
 "Invalid file extension.\n"
 "Please use .fnt."
 msgstr ""
+"Extension de archivo inválida.\n"
+"Usá .fnt, por favor."
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Can't load/process source font."
@@ -2529,9 +2523,8 @@ msgid "Couldn't load post-import script:"
 msgstr "No se pudo cargar el script post importación:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Invalid/broken script for post-import (check console):"
-msgstr "Script para post importación inválido/roto:"
+msgstr "Script para post importación inválido/roto (revisá la consola):"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Error running post-import script:"
@@ -2792,7 +2785,7 @@ msgstr "Traducción"
 
 #: tools/editor/multi_node_edit.cpp
 msgid "MultiNode Set"
-msgstr "Setear MultiNodo"
+msgstr "Definir MultiNodo"
 
 #: tools/editor/node_dock.cpp
 msgid "Node"
@@ -3060,7 +3053,7 @@ msgstr "Limpiar Auto Avanzar"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Set Auto-Advance"
-msgstr "Setear Auto Avanzar"
+msgstr "Activa Auto-Avanzar"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Delete Input"
@@ -3185,7 +3178,8 @@ msgstr "Hacer Bake!"
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Reset the lightmap octree baking process (start over)."
 msgstr ""
-"Resetear el proceso de bake del octree de mapa de luces (empezar de nuevo)."
+"Reestablecer el proceso de bake del octree de mapa de luces (empezar de "
+"nuevo)."
 
 #: tools/editor/plugins/camera_editor_plugin.cpp
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
@@ -3385,7 +3379,7 @@ msgstr "Resetear Zoom"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom Set.."
-msgstr "Setear Zoom.."
+msgstr "Establecer Zoom.."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3421,7 +3415,7 @@ msgstr "Reestablecer Pose"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set a Value"
-msgstr "Setear un Valor"
+msgstr "Definir un Valor"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
@@ -3464,7 +3458,7 @@ msgstr "Crear Poly3D"
 
 #: tools/editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
-msgstr "Setear Handle"
+msgstr "Definir Handle"
 
 #: tools/editor/plugins/color_ramp_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
@@ -3503,7 +3497,7 @@ msgstr "Importar desde Escena"
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
-msgstr "Acutalizar desde Escena"
+msgstr "Actualizar desde Escena"
 
 #: tools/editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -3575,7 +3569,7 @@ msgstr "A MeshInstance le falta un Mesh!"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
-msgstr ""
+msgstr "El mesh no tiene una superficie de donde crear contornos(outlines)!"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -3616,7 +3610,7 @@ msgstr "Tamaño de Outline:"
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
 msgstr ""
-"No se especificó mesh de origen (y no hay MultiMesh seteado en el nodo)."
+"No se especificó mesh de origen (y no hay MultiMesh definido en el nodo)."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
@@ -3732,7 +3726,7 @@ msgstr "Sin pixeles con transparencia > 128 en imagen.."
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Set Emission Mask"
-msgstr "Setear Máscara de Emisión"
+msgstr "Definir Máscara de Emisión"
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
@@ -3869,15 +3863,15 @@ msgstr "Punto # de Curva"
 
 #: tools/editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve Point Pos"
-msgstr "Setear Pos. de Punto de Curva"
+msgstr "Definir Pos. de Punto de Curva"
 
 #: tools/editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve In Pos"
-msgstr "Setear Pos. In de Curva"
+msgstr "Definir Pos. In de Curva"
 
 #: tools/editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve Out Pos"
-msgstr "Setear Pos. Out de Curva"
+msgstr "Definir Pos. Out de Curva"
 
 #: tools/editor/plugins/path_editor_plugin.cpp
 msgid "Split Path"
@@ -4161,7 +4155,7 @@ msgstr "Ir a Línea.."
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr "Debuguear"
+msgstr "Depurar"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Breakpoint"
@@ -4201,7 +4195,7 @@ msgstr "Continuar"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
-msgstr "Mantener el Debugger Abierto"
+msgstr "Mantener el Depurador Abierto"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Window"
@@ -4278,7 +4272,7 @@ msgstr "Volver a Guardar"
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/script_editor_debugger.cpp
 msgid "Debugger"
-msgstr "Debugger"
+msgstr "Depurador"
 
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Vertex"
@@ -4450,7 +4444,7 @@ msgstr "Escalando a %s%%."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
-msgstr "Torando %s grados."
+msgstr "Rotando %s grados."
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View."
@@ -4785,47 +4779,40 @@ msgid "StyleBox Preview:"
 msgstr "Vista Previa de StyleBox:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Mode:"
-msgstr "Modo de Ejecución:"
+msgstr "Modo Snap:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "<None>"
-msgstr ""
+msgstr "<Ninguno>"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Pixel Snap"
-msgstr "Usar Pixel Snap"
+msgstr "Pixel Snap"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Grid Snap"
-msgstr "Setp de Grilla:"
+msgstr "Snap de Grilla"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
-msgstr ""
+msgstr "Auto Rebanar"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Offset:"
-msgstr "Offset de Grilla:"
+msgstr "Offset:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Step:"
-msgstr "Paso (s):"
+msgstr "Paso:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Separation:"
-msgstr "Selecciones:"
+msgstr "Separación:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Texture Region"
-msgstr "Editor de Regiones de Texturas"
+msgstr "Región de Textura"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Texture Region Editor"
@@ -5009,7 +4996,7 @@ msgstr "¿Crear desde escena?"
 
 #: tools/editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
-msgstr "¿Mergear desde escena?"
+msgstr "¿Fusionar desde escena?"
 
 #: tools/editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -5017,7 +5004,7 @@ msgstr "Crear desde Escena"
 
 #: tools/editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from Scene"
-msgstr "Mergear desde Escena"
+msgstr "Fusionar desde Escena"
 
 #: tools/editor/plugins/tile_set_editor_plugin.cpp
 #: tools/editor/script_editor_debugger.cpp
@@ -5030,15 +5017,15 @@ msgstr "Editar Opciones de Script"
 
 #: tools/editor/project_export.cpp
 msgid "Please export outside the project folder!"
-msgstr "Por favor exportá afuera de la carpeta de proyecto!"
+msgstr "Por favor exporte afuera de la carpeta de proyecto!"
 
 #: tools/editor/project_export.cpp
 msgid "Error exporting project!"
-msgstr "Error al exportar el proyecto!"
+msgstr "¡Error al exportar el proyecto!"
 
 #: tools/editor/project_export.cpp
 msgid "Error writing the project PCK!"
-msgstr "Error al escribir el PCK de proyecto!"
+msgstr "¡Error al escribir el PCK de proyecto!"
 
 #: tools/editor/project_export.cpp
 msgid "No exporter for platform '%s' yet."
@@ -5126,8 +5113,8 @@ msgstr ""
 #: tools/editor/project_export.cpp
 msgid "Filters to exclude from export (comma-separated, e.g.: *.json, *.txt):"
 msgstr ""
-"Filtros para excluir de la exportación (separados por comas, ej: *.json, *."
-"txt):"
+"Filtros para excluir de la exportación (separados por comas, ej: *.json, "
+"*.txt):"
 
 #: tools/editor/project_export.cpp
 msgid "Convert text scenes to binary on export."
@@ -5393,7 +5380,7 @@ msgstr "Tecla "
 
 #: tools/editor/project_settings.cpp
 msgid "Joy Button"
-msgstr "Bottón de Joystick"
+msgstr "Botón de Joystick"
 
 #: tools/editor/project_settings.cpp
 msgid "Joy Axis"
@@ -5723,7 +5710,7 @@ msgstr "On"
 
 #: tools/editor/property_editor.cpp
 msgid "Set"
-msgstr "Setear"
+msgstr "Definir"
 
 #: tools/editor/property_editor.cpp
 msgid "Properties:"
@@ -5880,8 +5867,7 @@ msgstr "No se puede operar sobre los nodos de una escena externa!"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
-msgstr ""
-"No se puede operar sobre los nodos de los cual hereda la escena actual!"
+msgstr "No se puede operar sobre los nodos de los cual hereda la escena actual!"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -5937,7 +5923,7 @@ msgstr "Agregar Script"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
-msgstr "Mergear Desde Escena"
+msgstr "Fusionar Desde Escena"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save Branch as Scene"
@@ -6294,7 +6280,7 @@ msgstr "Raíz de Edición en Vivo:"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Set From Tree"
-msgstr "Setear Desde Arbol"
+msgstr "Definir Desde Arbol"
 
 #: tools/editor/settings_config_dialog.cpp
 msgid "Shortcuts"

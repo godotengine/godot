@@ -9,16 +9,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2016-06-20 01:48+0000\n"
-"Last-Translator: George Marques <georgemjesus@gmail.com>\n"
-"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
-"godot-engine/godot/pt_BR/>\n"
+"PO-Revision-Date: 2016-07-12 12:59+0000\n"
+"Last-Translator: Danilo Castro <danilo.moreira94@gmail.com>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects"
+"/godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.7-dev\n"
+"X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -1005,7 +1005,6 @@ msgid "Method in target Node must be specified!"
 msgstr "O método no Nó destino precisa ser especificado!"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect To Node:"
 msgstr "Conectar ao Nó:"
 
@@ -1228,46 +1227,41 @@ msgstr "Escolher"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr ""
+msgstr "Voltar"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Forward"
-msgstr ""
+msgstr "Avançar"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Up"
-msgstr ""
+msgstr "Acima"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Refresh"
-msgstr ""
+msgstr "Atualizar"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr ""
+msgstr "Alternar Arquivos Ocultos"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Toggle Favorite"
-msgstr "Mover Favorito Acima"
+msgstr "Alternar Favorito"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Toggle Mode"
-msgstr "Alternar Comentário"
+msgstr "Alternar Modo"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Focus Path"
-msgstr "Copiar Caminho"
+msgstr "Focar no Caminho"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Mode Favorite Up"
 msgstr "Mover Favorito Acima"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Mode Favorite Down"
 msgstr "Mover Favorito Abaixo"
 
@@ -1525,34 +1519,34 @@ msgid "There is no defined scene to run."
 msgstr "Não há cena definida para rodar."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in later in \"Project Settings\" under the "
 "'application' category."
 msgstr ""
-"A cena principal não foi definida.\n"
-"Selecione uma nas \"Configurações do Projeto\" na categoria \"application\"."
+"A cena principal não foi definida, selecionar uma?\n"
+"Você pode alterá-la mais tarde nas \"Configurações do Projeto\" na categoria "
+"\"application\"."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Selected scene '%s' does not exist, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"A cena principal não foi definida.\n"
-"Selecione uma nas \"Configurações do Projeto\" na categoria \"application\"."
+"A cena selecionada \"%s\" não existe, selecionar uma válida?\n"
+"Você pode alterá-la mais tarde nas \"Configurações do Projeto\" na categoria "
+"\"application\"."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Selected scene '%s' is not a scene file, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"A cena principal não foi definida.\n"
-"Selecione uma nas \"Configurações do Projeto\" na categoria \"application\"."
+"A cena selecionada \"%s\" não é um arquivo de cena, selecionar uma válida?\n"
+"Você pode alterá-la mais tarde nas \"Configurações do Projeto\" na categoria "
+"\"application\"."
 
 #: tools/editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
@@ -1647,9 +1641,8 @@ msgstr ""
 "(Mudanças não salvas serão perdidas)"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Pick a Manu Scene"
-msgstr "Cena Principal"
+msgstr "Escolha uma Cena Principal"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
@@ -1713,14 +1706,12 @@ msgid "Distraction Free Mode"
 msgstr "Modo Sem Distrações"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Next tab"
-msgstr "Próximo"
+msgstr "Próxima guia"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Previous tab"
-msgstr "Diretório Anterior"
+msgstr "Guia anterior"
 
 #: tools/editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -2290,6 +2281,8 @@ msgid ""
 "Invalid file extension.\n"
 "Please use .fnt."
 msgstr ""
+"Extensão de arquivo inválida.\n"
+"Por favor use .fnt."
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Can't load/process source font."
@@ -2531,9 +2524,8 @@ msgid "Couldn't load post-import script:"
 msgstr "Não se pôde carregar script pós-importação:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Invalid/broken script for post-import (check console):"
-msgstr "Script pós-importação inválido/quebrado:"
+msgstr "Script pós-importação inválido/quebrado (verifique o console):"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Error running post-import script:"
@@ -3577,7 +3569,7 @@ msgstr "Falta uma MeshInstance na Mesh!"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
-msgstr ""
+msgstr "Mesh não tem superfície para criar contornos!"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -4787,47 +4779,40 @@ msgid "StyleBox Preview:"
 msgstr "Pré-Visualização do StyleBox:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Mode:"
-msgstr "Modo de Início:"
+msgstr "Modo Snap:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "<None>"
-msgstr ""
+msgstr "<Nenhum>"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Pixel Snap"
-msgstr "Usar Snap de Pixel"
+msgstr "Snap de Pixel"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Grid Snap"
-msgstr "Passo de grade:"
+msgstr "Snap de Grade"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
-msgstr ""
+msgstr "Auto Fatiar"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Offset:"
-msgstr "Deslocamento da grade:"
+msgstr "Deslocamento:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Step:"
-msgstr "Passo (s):"
+msgstr "Passo:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Separation:"
-msgstr "Seções:"
+msgstr "Separação:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Texture Region"
-msgstr "Editor de Região da Textura"
+msgstr "Região da Textura"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Texture Region Editor"

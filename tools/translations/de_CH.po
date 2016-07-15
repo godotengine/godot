@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-06-22 14:54+0000\n"
+"PO-Revision-Date: 2016-06-30 13:47+0000\n"
 "Last-Translator: Christian Fisch <christian.fiesel@gmail.com>\n"
 "Language-Team: Swiss High German <https://hosted.weblate.org/projects/godot-"
 "engine/godot/de_CH/>\n"
@@ -62,8 +62,8 @@ msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"Damit das AnimatedSprite node Frames anzeigen kann, muss eine SpriteFrame "
-"Resource unter Frames gesetzt sein."
+"Damit AnimatedSprite Frames anzeigen kann, muss eine SpriteFrame Resource "
+"unter der 'Frames' Property erstellt oder gesetzt sein."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -108,16 +108,23 @@ msgstr ""
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
+"Ein Okkluder Polygon muss gesetzt oder gezeichnet werden, damit dieser "
+"Okkluder funktioniert."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
 msgstr ""
+"Das Okkluder Polygon für diesen Okkluder ist leer. Bitte zeichne ein Polygon!"
 
 #: scene/2d/navigation_polygon.cpp
+#, fuzzy
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
+"Eine NavigationPolygon Ressource muss für diesen Node gesetzt oder erstellt "
+"werden, damit er funktioniert. Bitte setze eine Variable oder zeichne ein "
+"Polygon."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -134,21 +141,27 @@ msgstr ""
 
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
-msgstr ""
+msgstr "Die Pfad-Variable muss auf einen gültigen Particles2D Node verweisen."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr ""
+"PathFollow2D funktioniert nur, wenn sie als Unterobjekt eines Path2D Nodes "
+"gesetzt wird."
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
+"Die Pfad-Variable muss auf einen gültigen Node2D Node zeigen um zu "
+"funktionieren."
 
 #: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SamplePlayer to play sound."
 msgstr ""
+"Damit SamplePlayer einen Sound abspielen kann, muss eine SampleLibrary "
+"Ressource in der 'samples' Property erzeugt oder definiert werden."
 
 #: scene/2d/sprite.cpp
 msgid ""
@@ -163,10 +176,13 @@ msgid ""
 msgstr ""
 
 #: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
+"VisibilityEnable2D funktioniert am besten, wenn es ein Unterobjekt erster "
+"Ordnung der bearbeiteten Hauptszene ist."
 
 #: scene/3d/body_shape.cpp
 msgid ""
@@ -212,6 +228,9 @@ msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SpatialSamplePlayer to play sound."
 msgstr ""
+"Damit SpatialSamplePlayer einen Sound abspielen kann, muss eine "
+"SampleLibrary Ressource in der 'samples' Eigenschaft erzeugt oder definiert "
+"werden."
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -1743,12 +1762,12 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Play the project."
-msgstr ""
+msgstr "Projekt starten."
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
 msgid "Play"
-msgstr ""
+msgstr "Abspielen"
 
 #: tools/editor/editor_node.cpp
 msgid "Pause the scene"
@@ -1769,15 +1788,15 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Play the edited scene."
-msgstr ""
+msgstr "Spiele die editierte Szene."
 
 #: tools/editor/editor_node.cpp
 msgid "Play Scene"
-msgstr ""
+msgstr "Szene starten"
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr ""
+msgstr "Spiele angepasste Szene"
 
 #: tools/editor/editor_node.cpp
 msgid "Debug options"
@@ -1812,10 +1831,13 @@ msgid "Visible Collision Shapes"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
+"Collision-Formen und Raycast Nodes (für 2D und 3D) werden im laufenden Spiel "
+"angezeigt, falls diese Option aktiviert ist."
 
 #: tools/editor/editor_node.cpp
 msgid "Visible Navigation"
@@ -2497,7 +2519,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Textures for Atlas (2D)"
-msgstr ""
+msgstr "Importiere Texturen für Atlas (2D)"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Cell Size:"
@@ -2509,7 +2531,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Large Textures (2D)"
-msgstr ""
+msgstr "Importiere Große Texturen (2D)"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Source Texture"
@@ -2525,7 +2547,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Textures for 2D"
-msgstr ""
+msgstr "Importiere Texturen für 2D"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Textures for 3D"
@@ -2537,7 +2559,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "2D Texture"
-msgstr ""
+msgstr "2D-Textur"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "3D Texture"
@@ -2548,10 +2570,13 @@ msgid "Atlas Texture"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
+#, fuzzy
 msgid ""
 "NOTICE: Importing 2D textures is not mandatory. Just copy png/jpg files to "
 "the project."
 msgstr ""
+"MERKE: Das importieren von 2D Texturen ist nicht zwingend notwendig. Kopiere "
+"einfach png/jpg Dateien in das Projekt."
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Crop empty space."
@@ -2698,7 +2723,7 @@ msgstr "Selektiere ein Node um deren Signale und Gruppen zu ändern."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
-msgstr ""
+msgstr "Autoplay Umschalten"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Animation Name:"
@@ -2772,24 +2797,28 @@ msgid "ERROR: No animation to edit!"
 msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Play selected animation backwards from current pos. (A)"
-msgstr ""
+msgstr "Spiele ausgewählte Animation rückwärts von aktueller Position. (A)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr ""
+msgstr "Spiele ausgewählte Animation rückwärts vom Ende. (Shift+A)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
-msgstr ""
+msgstr "Stoppe Animations-Wiedergabe. (S)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Play selected animation from start. (Shift+D)"
-msgstr ""
+msgstr "Spiele ausgewählte Animation vom Start. (Shift+D)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Play selected animation from current pos. (D)"
-msgstr ""
+msgstr "Ausgewählte Animation von der aktueller Position aus abspielen. (D)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation position (in seconds)."
@@ -2801,7 +2830,7 @@ msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create new animation in player."
-msgstr ""
+msgstr "Neue Animation erstellen."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load animation from disk."
@@ -2821,11 +2850,11 @@ msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
-msgstr ""
+msgstr "Liste der Animationen anzeigen."
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
-msgstr ""
+msgstr "Beim Laden automatisch abpielen"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Target Blend Times"
@@ -3781,7 +3810,7 @@ msgstr ""
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
-msgstr ""
+msgstr "Polygon 2D UV Editor"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Move Point"

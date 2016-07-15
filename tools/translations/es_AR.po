@@ -8,10 +8,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-06-19 12:39+0000\n"
+"PO-Revision-Date: 2016-06-30 13:09+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
-"Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
-"godot-engine/godot/es_AR/>\n"
+"Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects"
+"/godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1003,7 +1003,6 @@ msgid "Method in target Node must be specified!"
 msgstr "El método en el Nodo objetivo debe ser especificado!"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect To Node:"
 msgstr "Conectar a Nodo:"
 
@@ -1225,48 +1224,43 @@ msgstr "Elegir"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr ""
+msgstr "Retroceder"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Forward"
-msgstr ""
+msgstr "Avanzar"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Up"
-msgstr ""
+msgstr "Subir"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Refresh"
-msgstr ""
+msgstr "Refrescar"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr ""
+msgstr "Act/Desact. Archivos Ocultos"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Toggle Favorite"
-msgstr "Act/Desact. Breakpoint"
+msgstr "Act/Desact. Favorito"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Toggle Mode"
-msgstr "Act/Desact. Comentario"
+msgstr "Act/Desact. Modo"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Focus Path"
-msgstr "Copiar Ruta"
+msgstr "Foco en Ruta"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Mode Favorite Up"
-msgstr "Favoritos:"
+msgstr "Mover Favorito Hacia Arriba"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Mode Favorite Down"
-msgstr "Bajar"
+msgstr "Mover Favorito Hacia Abajo"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
 msgid "Favorites:"
@@ -1522,34 +1516,35 @@ msgid "There is no defined scene to run."
 msgstr "No hay escena definida para ejecutar."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in later in \"Project Settings\" under the "
 "'application' category."
 msgstr ""
-"No se ha definido ninguna escena principal.\n"
-"Seleccioná una de \"Ajustes del Proyecto\" bajo la categoria 'aplicacion'."
+"No se ha definido ninguna escena principal, ¿elegir una?\n"
+"Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoria "
+"'aplicacion'."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Selected scene '%s' does not exist, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"No se ha definido ninguna escena principal.\n"
-"Seleccioná una de \"Ajustes del Proyecto\" bajo la categoria 'aplicacion'."
+"La escena '%s' seleccionada no existe, ¿seleccionar una válida?\n"
+"Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoria "
+"'aplicacion'."
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Selected scene '%s' is not a scene file, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"No se ha definido ninguna escena principal.\n"
-"Seleccioná una de \"Ajustes del Proyecto\" bajo la categoria 'aplicacion'."
+"La escena '%s' seleccionada no es un archivo de escena, ¿seleccionar uno "
+"válido?\n"
+"Es posible cambiarla más tarde en \"Ajustes del Proyecto\" bajo la categoria "
+"'aplicacion'."
 
 #: tools/editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
@@ -1643,9 +1638,8 @@ msgid ""
 msgstr "Abrir el Gestor de Proyectos? (Los cambios sin guardar se perderán)"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Pick a Manu Scene"
-msgstr "Escena Principal"
+msgstr "Elegí una Escena Principal"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
@@ -1710,14 +1704,12 @@ msgid "Distraction Free Mode"
 msgstr "Modo Sin Distracciones"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Next tab"
-msgstr "Siguiente"
+msgstr "Pestaña siguiente"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Previous tab"
-msgstr "Directorio Previo"
+msgstr "Pestaña anterior"
 
 #: tools/editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -2288,6 +2280,8 @@ msgid ""
 "Invalid file extension.\n"
 "Please use .fnt."
 msgstr ""
+"Extension de archivo inválida.\n"
+"Usá .fnt, por favor."
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Can't load/process source font."
@@ -2529,9 +2523,8 @@ msgid "Couldn't load post-import script:"
 msgstr "No se pudo cargar el script post importación:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Invalid/broken script for post-import (check console):"
-msgstr "Script para post importación inválido/roto:"
+msgstr "Script para post importación inválido/roto (revisá la consola):"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Error running post-import script:"
@@ -3204,7 +3197,7 @@ msgstr "Offset de Grilla:"
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Step:"
-msgstr "Setp de Grilla:"
+msgstr "Step de Grilla:"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
@@ -3575,7 +3568,7 @@ msgstr "A MeshInstance le falta un Mesh!"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
-msgstr ""
+msgstr "El mesh no tiene una superficie de donde crear contornos(outlines)!"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -4785,47 +4778,40 @@ msgid "StyleBox Preview:"
 msgstr "Vista Previa de StyleBox:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Mode:"
-msgstr "Modo de Ejecución:"
+msgstr "Modo Snap:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "<None>"
-msgstr ""
+msgstr "<Ninguno>"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Pixel Snap"
-msgstr "Usar Pixel Snap"
+msgstr "Pixel Snap"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Grid Snap"
-msgstr "Setp de Grilla:"
+msgstr "Snap de Grilla"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
-msgstr ""
+msgstr "Auto Rebanar"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Offset:"
-msgstr "Offset de Grilla:"
+msgstr "Offset:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Step:"
-msgstr "Paso (s):"
+msgstr "Paso:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Separation:"
-msgstr "Selecciones:"
+msgstr "Separación:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Texture Region"
-msgstr "Editor de Regiones de Texturas"
+msgstr "Región de Textura"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Texture Region Editor"
