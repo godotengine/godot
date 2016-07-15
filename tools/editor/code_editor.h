@@ -214,6 +214,9 @@ class CodeTextEditor : public VBoxContainer {
 	void _font_resize_timeout();
 
 	void _text_editor_input_event(const InputEvent& p_event);
+	void _zoom_in();
+	void _zoom_out();
+	void _reset_zoom();
 
 protected:
 
