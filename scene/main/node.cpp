@@ -354,6 +354,8 @@ void Node::move_child_notify(Node *p_child) {
 
 void Node::set_fixed_process(bool p_process) {
 
+	if (is_queued_for_deletion())
+		return;
 	if (data.fixed_process==p_process)
 		return;
 
@@ -450,6 +452,8 @@ float Node::get_fixed_process_delta_time() const {
 
 void Node::set_process(bool p_idle_process) {
 
+	if (is_queued_for_deletion())
+		return;
 	if (data.idle_process==p_idle_process)
 		return;
 
@@ -2020,6 +2024,8 @@ void Node::print_stray_nodes() {
 void Node::queue_delete() {
 
 	ERR_FAIL_COND( !is_inside_tree() );
+	set_process(false);
+	set_fixed_process(false);
 	get_tree()->queue_delete(this);
 }
 
