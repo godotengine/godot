@@ -614,6 +614,11 @@ void OS_Android::process_magnetometer(const Vector3& p_magnetometer) {
 	input->set_magnetometer(p_magnetometer);
 }
 
+void OS_Android::process_gyroscope(const Vector3& p_gyroscope) {
+
+	input->set_gyroscope(p_gyroscope);
+}
+
 bool OS_Android::has_touchscreen_ui_hint() const {
 
 	return true;

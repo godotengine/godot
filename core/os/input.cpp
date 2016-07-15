@@ -66,6 +66,7 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
 	ObjectTypeDB::bind_method(_MD("get_accelerometer"),&Input::get_accelerometer);
 	ObjectTypeDB::bind_method(_MD("get_magnetometer"),&Input::get_magnetometer);
+	ObjectTypeDB::bind_method(_MD("get_gyroscope"),&Input::get_gyroscope);
 	//ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos); - this is not the function you want
 	ObjectTypeDB::bind_method(_MD("get_mouse_speed"),&Input::get_mouse_speed);
 	ObjectTypeDB::bind_method(_MD("get_mouse_button_mask"),&Input::get_mouse_button_mask);
