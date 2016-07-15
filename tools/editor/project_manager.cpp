@@ -390,7 +390,7 @@ public:
 			popup_centered(Size2(500,145)*EDSCALE);
 		} else if (mode==MODE_INSTALL){
 
-			set_title(TTR("Install Project: ")+zip_title);
+			set_title(TTR("Install Project:")+" "+zip_title);
 			get_ok()->set_text(TTR("Install"));
 			pp->set_text(TTR("Project Path:"));
 			pn->hide();
