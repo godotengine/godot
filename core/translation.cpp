@@ -54,6 +54,9 @@ static const char* locale_list[]={
 "be_BY", //  Belarusian (Belarus)
 "bg", //  Bulgarian
 "bg_BG", //  Bulgarian (Bulgaria)
+"bn", //  Bengali
+"bn_BD", //  Bengali (Bangladesh)
+"bn_IN", //  Bengali (India)
 "ca", //  Catalan
 "ca_ES", //  Catalan (Spain)
 "cs", //  Czech
@@ -178,6 +181,9 @@ static const char* locale_list[]={
 "tr_TR", //  Turkish (Turkey)
 "uk", //  Ukrainian
 "uk_UA", //  Ukrainian (Ukraine)
+"ur", //  Urdu
+"ur_IN", //  Urdu (India)
+"ur_PK", //  Urdu (Pakistan)
 "vi", //  Vietnamese
 "vi_VN", //  Vietnamese (Vietnam)
 "zh", //  Chinese
@@ -211,6 +217,9 @@ static const char* locale_names[]={
 "Belarusian (Belarus)",
 "Bulgarian",
 "Bulgarian (Bulgaria)",
+"Bengali",
+"Bengali (Bangladesh)",
+"Bengali (India)",
 "Catalan",
 "Catalan (Spain)",
 "Czech",
@@ -335,6 +344,9 @@ static const char* locale_names[]={
 "Turkish (Turkey)",
 "Ukrainian",
 "Ukrainian (Ukraine)",
+"Urdu",
+"Urdu (India)",
+"Urdu (Pakistan)",
 "Vietnamese",
 "Vietnamese (Vietnam)",
 "Chinese",
