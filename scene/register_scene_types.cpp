@@ -222,8 +222,6 @@
 #include "scene/3d/collision_polygon.h"
 #endif
 
-#include "scene/resources/scene_format_text.h"
-
 static ResourceFormatLoaderImage *resource_loader_image=NULL;
 static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
 
@@ -234,9 +232,6 @@ static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
 #endif
 static ResourceFormatLoaderTheme *resource_loader_theme=NULL;
 static ResourceFormatLoaderShader *resource_loader_shader=NULL;
-
-static ResourceFormatSaverText *resource_saver_text=NULL;
-static ResourceFormatLoaderText *resource_loader_text=NULL;
 
 static ResourceFormatLoaderDynamicFont *resource_loader_dynamic_font=NULL;
 
@@ -635,13 +630,6 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-
-	resource_saver_text = memnew( ResourceFormatSaverText );
-	ResourceSaver::add_resource_format_saver(resource_saver_text);
-
-	resource_loader_text = memnew( ResourceFormatLoaderText );
-	ResourceLoader::add_resource_format_loader(resource_loader_text);
-
 }
 
 void unregister_scene_types() {
@@ -661,11 +649,5 @@ void unregister_scene_types() {
 	memdelete( resource_loader_theme );
 	memdelete( resource_loader_shader );
 
-	if (resource_saver_text) {
-		memdelete(resource_saver_text);
-	}
-	if (resource_loader_text) {
-		memdelete(resource_loader_text);
-	}
 	SceneStringNames::free();
 }

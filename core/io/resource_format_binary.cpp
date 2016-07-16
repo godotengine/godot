@@ -1105,13 +1105,8 @@ void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String
 
 	for(List<String>::Element *E=extensions.front();E;E=E->next()) {
 		String ext = E->get().to_lower();
-		if (ext=="res")
-			continue;
-//		p_extensions->push_back("x"+ext);
 		p_extensions->push_back(ext);
 	}
-
-	p_extensions->push_back("res");
 
 }
 void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *p_extensions) const{
@@ -1122,12 +1117,9 @@ void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *p_exten
 
 	for(List<String>::Element *E=extensions.front();E;E=E->next()) {
 		String ext = E->get().to_lower();
-		if (ext=="res")
-			continue;
 		p_extensions->push_back(ext);
 	}
 
-	p_extensions->push_back("res");
 }
 
 bool ResourceFormatLoaderBinary::handles_type(const String& p_type) const{
@@ -2270,16 +2262,8 @@ bool ResourceFormatSaverBinary::recognize(const RES& p_resource) const {
 
 void ResourceFormatSaverBinary::get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const {
 
-
-	//here comes the sun, lalalala
 	String base = p_resource->get_base_extension().to_lower();
-	if (base!="res") {
-
-		p_extensions->push_back(base);
-	}
-
-	p_extensions->push_back("res");
-
+	p_extensions->push_back(base);
 
 }
 
