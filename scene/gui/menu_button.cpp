@@ -39,7 +39,7 @@ void MenuButton::_unhandled_key_input(InputEvent p_event) {
 			return;
 
 
-		if (popup->activate_item_by_accelerator(code))
+		if (popup->activate_item_by_event(p_event))
 			accept_event();
 	}
 }
