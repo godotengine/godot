@@ -147,8 +147,6 @@ void EditorImportTextureOptions::_changed() {
 
 void EditorImportTextureOptions::_bind_methods() {
 
-	print_line("bind toptions");
-
 	ObjectTypeDB::bind_method("_changed",&EditorImportTextureOptions::_changed);
 	ObjectTypeDB::bind_method("_changedp",&EditorImportTextureOptions::_changedp);
 

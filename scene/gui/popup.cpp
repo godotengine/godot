@@ -125,8 +125,6 @@ void Popup::set_as_minsize() {
 
 		}
 
-		print_line(String(c->get_type())+": "+minsize);
-
 		total_minsize.width = MAX( total_minsize.width, minsize.width );
 		total_minsize.height = MAX( total_minsize.height, minsize.height );
 	}
@@ -167,8 +165,6 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 				minsize[j]+=margin_end;
 
 		}
-
-		print_line(String(c->get_type())+": "+minsize);
 
 		total_minsize.width = MAX( total_minsize.width, minsize.width );
 		total_minsize.height = MAX( total_minsize.height, minsize.height );

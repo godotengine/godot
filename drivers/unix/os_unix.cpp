@@ -357,7 +357,6 @@ Error OS_Unix::execute(const String& p_path, const List<String>& p_arguments,boo
 
 	pid_t pid = fork();
 	ERR_FAIL_COND_V(pid<0,ERR_CANT_FORK);
-	//print("execute: %s\n",p_path.utf8().get_data());
 
 
 	if (pid==0) {
@@ -394,8 +393,6 @@ Error OS_Unix::execute(const String& p_path, const List<String>& p_arguments,boo
 		pid_t rpid = waitpid(pid,&status,0);
 		if (r_exitcode)
 			*r_exitcode=WEXITSTATUS(status);
-
-		print("returned: %i, waiting for: %i\n",rpid,pid);
 	} else {
 
 		if (r_child_id)
@@ -498,7 +495,6 @@ String OS_Unix::get_executable_path() const {
 	char buf[256];
 	memset(buf,0,256);
 	readlink("/proc/self/exe", buf, sizeof(buf));
-	//print_line("Exec path is:"+String(buf));
 	String b;
 	b.parse_utf8(buf);
 	if (b=="") {
