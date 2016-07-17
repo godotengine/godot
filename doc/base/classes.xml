@@ -39500,6 +39500,11 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="breakpoint_toggled">
+			<description>
+				Emitted when a breakpoint is placed via the breakpoint gutter.
+			</description>
+		</signal>
 		<signal name="cursor_changed">
 			<description>
 				Emitted when the cursor changes.

@@ -1509,6 +1509,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						int gutter=cache.style_normal->get_margin(MARGIN_LEFT);
 						if (mb.x > gutter && mb.x <= gutter + cache.breakpoint_gutter_width + 3) {
 							set_line_as_breakpoint(row, !is_line_set_as_breakpoint(row));
+							emit_signal("breakpoint_toggled", row);
 							return;
 						}
 					}
@@ -4488,6 +4489,7 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
 	ADD_SIGNAL(MethodInfo("text_changed"));
 	ADD_SIGNAL(MethodInfo("request_completion"));
+	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo( Variant::INT, "row")));
 
 	BIND_CONSTANT( MENU_CUT );
 	BIND_CONSTANT( MENU_COPY );

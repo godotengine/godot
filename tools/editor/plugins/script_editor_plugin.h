@@ -321,6 +321,7 @@ public:
 	void get_breakpoints(List<String> *p_breakpoints);
 
 	void swap_lines(TextEdit *tx, int line1, int line2);
+	void _breakpoint_toggled(const int p_row);
 
 	void save_all_scripts();
 
