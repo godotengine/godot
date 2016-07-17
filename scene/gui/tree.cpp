@@ -693,6 +693,7 @@ void TreeItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_button","column","button:Texture","button_idx","disabled"),&TreeItem::add_button,DEFVAL(-1),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_button_count","column"),&TreeItem::get_button_count);
 	ObjectTypeDB::bind_method(_MD("get_button:Texture","column","button_idx"),&TreeItem::get_button);
+	ObjectTypeDB::bind_method(_MD("set_button","column","button_idx","button:Texture"),&TreeItem::set_button);
 	ObjectTypeDB::bind_method(_MD("erase_button","column","button_idx"),&TreeItem::erase_button);
 	ObjectTypeDB::bind_method(_MD("is_button_disabled","column","button_idx"),&TreeItem::is_button_disabled);
 
