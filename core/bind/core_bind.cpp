@@ -1002,6 +1002,11 @@ void _OS::alert(const String& p_alert,const String& p_title) {
 	OS::get_singleton()->alert(p_alert,p_title);
 }
 
+Dictionary _OS::get_engine_version() const {
+
+	return OS::get_singleton()->get_engine_version();
+}
+
 _OS *_OS::singleton=NULL;
 
 void _OS::_bind_methods() {
@@ -1148,6 +1153,8 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_use_vsync","enable"),&_OS::set_use_vsync);
 	ObjectTypeDB::bind_method(_MD("is_vsnc_enabled"),&_OS::is_vsnc_enabled);
+
+	ObjectTypeDB::bind_method(_MD("get_engine_version"),&_OS::get_engine_version);
 
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );
