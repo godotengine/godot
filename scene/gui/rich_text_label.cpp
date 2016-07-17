@@ -662,7 +662,9 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			set_bbcode(bbcode);
+			if (bbcode != "")
+				set_bbcode(bbcode);
+
 			main->first_invalid_line=0; //invalidate ALL
 			update();
 
