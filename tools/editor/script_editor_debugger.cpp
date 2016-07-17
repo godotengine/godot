@@ -338,8 +338,9 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		docontinue->set_disabled(false);
 		emit_signal("breaked",true,can_continue);
 		OS::get_singleton()->move_window_to_foreground();
-		if (!profiler->is_seeking())
+		if (error!="") {
 			tabs->set_current_tab(0);
+		}
 
 		profiler->set_enabled(false);
 
