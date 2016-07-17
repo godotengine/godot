@@ -15797,6 +15797,13 @@
 			Returns an [Array] containing the device IDs of all currently connected joysticks.
 			</description>
 		</method>
+		<method name="get_gyroscope">
+			<return type="Vector3">
+			</return>
+			<description>
+				If the device has a gyroscope, this will return the rate of rotation in rad/s around a device's x, y, and z axis.
+			</description>
+		</method>
 		<method name="get_joy_axis">
 			<return type="float">
 			</return>

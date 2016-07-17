@@ -217,6 +217,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 	private Sensor mMagnetometer;
+	private Sensor mGyroscope;
 
 	public FrameLayout layout;
 	public RelativeLayout adLayout;
@@ -387,6 +388,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
 		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
+		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 
 		result_callback = null;
 
@@ -604,6 +607,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mView.onResume();
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
 		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
+		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 		GodotLib.focusin();
 		if(use_immersive && Build.VERSION.SDK_INT >= 19.0){ // check if the application runs on an android 4.4+
 			Window window = getWindow();
@@ -669,6 +673,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 		if (typeOfSensor == event.sensor.TYPE_MAGNETIC_FIELD) {
 			GodotLib.magnetometer(x,y,z);
+		}
+		if (typeOfSensor == event.sensor.TYPE_GYROSCOPE) {
+			GodotLib.gyroscope(x,y,z);
 		}
 	}
 

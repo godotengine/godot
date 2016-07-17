@@ -82,6 +82,7 @@ public:
 
 	virtual Vector3 get_accelerometer()=0;
 	virtual Vector3 get_magnetometer()=0;
+	virtual Vector3 get_gyroscope()=0;
 
 	virtual void action_press(const StringName& p_action)=0;
 	virtual void action_release(const StringName& p_action)=0;

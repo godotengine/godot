@@ -44,6 +44,7 @@ class InputDefault : public Input {
 	Map<StringName,int> custom_action_press;
 	Vector3 accelerometer;
 	Vector3 magnetometer;
+	Vector3 gyroscope;
 	Vector2 mouse_pos;
 	MainLoop *main_loop;
 
@@ -179,6 +180,7 @@ public:
 
 	virtual Vector3 get_accelerometer();
 	virtual Vector3 get_magnetometer();
+	virtual Vector3 get_gyroscope();
 
 	virtual Point2 get_mouse_pos() const;
 	virtual Point2 get_mouse_speed() const;
@@ -190,6 +192,7 @@ public:
 	void parse_input_event(const InputEvent& p_event);
 	void set_accelerometer(const Vector3& p_accel);
 	void set_magnetometer(const Vector3& p_magnetometer);
+	void set_gyroscope(const Vector3& p_gyroscope);
 	void set_joy_axis(int p_device,int p_axis,float p_value);
 
 	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration=0);
