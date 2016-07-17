@@ -704,7 +704,7 @@ void EditorNode::_get_scene_metadata(const String& p_file) {
 	cf.instance();
 
 	Error err = cf->load(path);
-	if (err!=OK)
+	if (err!=OK || !cf->has_section("editor_states"))
 		return; //must not exist
 
 	List<String> esl;
@@ -740,7 +740,14 @@ void EditorNode::_set_scene_metadata(const String& p_file, int p_idx) {
 	Ref<ConfigFile> cf;
 	cf.instance();
 
-	Dictionary md = editor_data.get_edited_scene()==p_idx?editor_data.get_editor_states():editor_data.get_scene_editor_states(p_idx);
+	Dictionary md;
+
+	if (p_idx<0 || editor_data.get_edited_scene()==p_idx) {
+		md = editor_data.get_editor_states();
+	} else {
+		md = editor_data.get_scene_editor_states(p_idx);
+	}
+
 	List<Variant> keys;
 	md.get_key_list(&keys);
 
