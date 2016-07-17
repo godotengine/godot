@@ -481,6 +481,7 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	t->set_color("breakpoint_color","TextEdit", Color(0.8,0.8,0.4,0.2) );
 	t->set_color("current_line_color","TextEdit", Color(0.25,0.25,0.26,0.8) );
 	t->set_color("caret_color","TextEdit", control_font_color );
+	t->set_color("caret_background_color", "TextEdit", Color::html("000000"));
 	t->set_color("symbol_color","TextEdit", control_font_color_hover );
 	t->set_color("brace_mismatch_color","TextEdit", Color(1,0.2,0.2) );
 	t->set_color("line_number_color","TextEdit",Color::html("66aaaaaa"));
