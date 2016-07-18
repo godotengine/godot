@@ -1481,7 +1481,9 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (scr.is_null())
 					return;
 				scr->set_source_code(te->get_text());
-				scr->get_language()->reload_tool_script(scr,p_option==FILE_TOOL_RELOAD_SOFT);
+				bool soft = p_option==FILE_TOOL_RELOAD_SOFT || scr->get_instance_base_type()=="EditorPlugin"; //always soft-reload editor plugins
+
+				scr->get_language()->reload_tool_script(scr,soft);
 			} break;
 			case EDIT_TRIM_TRAILING_WHITESAPCE: {
 				_trim_trailing_whitespace(current->get_text_edit());
