@@ -4232,19 +4232,32 @@ String SectionedPropertyEditor::get_full_item_path(const String& p_item) {
 
 void SectionedPropertyEditor::edit(Object* p_object) {
 
-	if (p_object) {
-		obj=p_object->get_instance_ID();
-		update_category_list();
-	} else {
+	if (!p_object) {
+		obj = -1;
 		sections->clear();
+
+		filter->set_edited(NULL);
+		editor->edit(NULL);
+
+		return;
 	}
 
-	filter->set_edited(p_object);
-	editor->edit(filter);
+	ObjectID id = p_object->get_instance_ID();
 
-	sections->select(0);
-	_section_selected(0);
+	if (obj != id) {
 
+		obj = id;
+		update_category_list();
+
+		filter->set_edited(p_object);
+		editor->edit(filter);
+
+		sections->select(0);
+		_section_selected(0);
+	} else {
+
+		update_category_list();
+	}
 }
 
 void SectionedPropertyEditor::update_category_list() {
@@ -4299,6 +4312,8 @@ PropertyEditor *SectionedPropertyEditor::get_property_editor() {
 }
 
 SectionedPropertyEditor::SectionedPropertyEditor() {
+
+	obj = -1;
 
 	VBoxContainer *left_vb = memnew( VBoxContainer);
 	left_vb->set_custom_minimum_size(Size2(160,0)*EDSCALE);
