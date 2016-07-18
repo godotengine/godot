@@ -1007,12 +1007,13 @@ void TextEdit::_notification(int p_what) {
 							cursor_pos.y += (get_row_height() - 3);
 						}
 
+					        int caret_w = (str[j]=='\t') ? cache.font->get_char_size(' ').width : char_w;
 						if (draw_caret) {
 							if (insert_mode) {
 								int caret_h = (block_caret) ? 4 : 1;
-								VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(char_w,caret_h)),cache.caret_color);
+								VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(caret_w,caret_h)),cache.caret_color);
 							} else {
-								int caret_w = (block_caret) ? char_w : 1;
+								caret_w = (block_caret) ? caret_w : 1;
 								VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(caret_w,get_row_height())),cache.caret_color);
 							}
 						}
