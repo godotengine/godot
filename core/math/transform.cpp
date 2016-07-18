@@ -113,6 +113,41 @@ void Transform::set_look_at( const Vector3& p_eye, const Vector3& p_target, cons
 
 }
 
+Transform Transform::looking_at_dir( const Vector3& p_target, const Vector3& p_up ) const {
+	Transform t = *this;
+	t.set_look_at_dir(p_target,p_up);
+	return t;
+}
+
+void Transform::set_look_at_dir(const Vector3& p_target, const Vector3& p_up ) {
+
+	// Reference: MESA source code
+	Vector3 v_x, v_y, v_z;
+
+	/* Make rotation matrix */
+
+	/* Z vector */
+	v_z = -p_target;
+	
+	v_z.normalize();
+
+	v_y = p_up;
+
+
+	v_x=v_y.cross(v_z);
+
+	/* Recompute Y = Z cross X */
+	v_y=v_z.cross(v_x);
+
+	v_x.normalize();
+	v_y.normalize();
+
+	basis.set_axis(0,v_x);
+	basis.set_axis(1,v_y);
+	basis.set_axis(2,v_z);
+}
+
+
 Transform Transform::interpolate_with(const Transform& p_transform, float p_c) const {
 
 	/* not sure if very "efficient" but good enough? */
