@@ -64,6 +64,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	virtual void ok_pressed();
 
 	void _settings_changed();
+	void _settings_property_edited(const String& p_name);
 	void _settings_save();
 
 	void _notification(int p_what);
