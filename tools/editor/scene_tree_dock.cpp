@@ -1574,14 +1574,12 @@ void SceneTreeDock::_normalize_drop(Node*& to_node, int &to_pos, int p_type) {
 
 	to_pos=-1;
 
-	if (p_type==1 && to_node==EditorNode::get_singleton()->get_edited_scene()) {
-		//if at lower sibling of root node
-		to_pos=0; //just insert at begining of root node
-	} else if (p_type==-1) {
+	if (p_type==-1) {
 		//drop at above selected node
 		if (to_node==EditorNode::get_singleton()->get_edited_scene()) {
 			to_node=NULL;
-			ERR_FAIL_COND(to_node==EditorNode::get_singleton()->get_edited_scene());
+			ERR_EXPLAIN("Cannot perform drop above the root node!");
+			ERR_FAIL();
 		}
 		Node* upper_sibling=NULL;
 
@@ -1617,8 +1615,9 @@ void SceneTreeDock::_normalize_drop(Node*& to_node, int &to_pos, int p_type) {
 	} else if (p_type==1) {
 			//drop at below selected node
 			if (to_node==EditorNode::get_singleton()->get_edited_scene()) {
-				to_node=NULL;
-				ERR_FAIL_COND(to_node==EditorNode::get_singleton()->get_edited_scene());
+				//if at lower sibling of root node
+				to_pos=0; //just insert at begining of root node
+				return;
 			}
 
 
