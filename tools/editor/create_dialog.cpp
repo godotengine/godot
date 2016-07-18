@@ -154,6 +154,9 @@ void CreateDialog::_update_search() {
 	TreeItem *root = search_options->create_item();
 
 	root->set_text(0,base_type);
+	if (has_icon(base_type,"EditorIcons")) {
+		root->set_icon(0,get_icon(base_type,"EditorIcons"));
+	}
 
 	List<StringName>::Element *I=type_list.front();
 	TreeItem *to_select=NULL;
