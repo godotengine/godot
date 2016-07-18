@@ -756,7 +756,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	}
 
 
-	String save_file = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+".scn");
+	String save_file = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+".tscn");
 	print_line("Saving to: "+save_file);
 
 
