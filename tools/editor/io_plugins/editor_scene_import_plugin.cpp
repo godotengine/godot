@@ -756,7 +756,9 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	}
 
 
-	String save_file = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+".tscn");
+	// Scenes should always be imported as binary format since vertex data is large and would take
+	// up a lot of space and time to load if imported as text format (GH-5778)
+	String save_file = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+".scn");
 	print_line("Saving to: "+save_file);
 
 
