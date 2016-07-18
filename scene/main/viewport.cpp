@@ -2007,8 +2007,16 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 				}
 
+				bool is_tooltip_shown = false;
 
-				if (can_tooltip) {
+				if (can_tooltip && gui.tooltip_popup) {
+					String tooltip = over->get_tooltip(gui.tooltip->get_global_transform().xform_inv(mpos));
+
+					if (gui.tooltip_popup && tooltip == gui.tooltip_label->get_text())
+						is_tooltip_shown = true;
+				}
+
+				if (can_tooltip && !is_tooltip_shown) {
 
 					gui.tooltip=over;
 					gui.tooltip_pos=mpos;//(parent_xform * get_transform()).affine_inverse().xform(pos);
