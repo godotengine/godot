@@ -41,12 +41,13 @@ bool MeshInstance::_set(const StringName& p_name, const Variant& p_value) {
 	if (!get_instance().is_valid())
 		return false;
 
-
-	Map<StringName,MorphTrack>::Element *E = morph_tracks.find(p_name);
-	if (E) {
-		E->get().value=p_value;
-		VisualServer::get_singleton()->instance_set_morph_target_weight(get_instance(),E->get().idx,E->get().value);
-		return true;
+	if (p_name.operator String().begins_with("morph/")) {
+		String morph_name = p_name.operator String().get_slicec('/', 1);
+		int morph_track_idx = get_morph_track_index(morph_name);
+		if (morph_track_idx != -1) {
+			set_morph_track_value(morph_track_idx, p_value);
+			return true;
+		}
 	}
 
 	if (p_name.operator String().begins_with("material/")) {
@@ -67,10 +68,13 @@ bool MeshInstance::_get(const StringName& p_name,Variant &r_ret) const {
 	if (!get_instance().is_valid())
 		return false;
 
-	const Map<StringName,MorphTrack>::Element *E = morph_tracks.find(p_name);
-	if (E) {
-		r_ret = E->get().value;
-		return true;
+	if (p_name.operator String().begins_with("morph/")) {
+		String morph_name = p_name.operator String().get_slicec('/', 1);
+		int morph_track_idx = get_morph_track_index(morph_name);
+		if (morph_track_idx != -1) {
+			r_ret = get_morph_track_value(morph_track_idx);
+			return true;
+		}
 	}
 
 	if (p_name.operator String().begins_with("material/")) {
@@ -86,9 +90,8 @@ bool MeshInstance::_get(const StringName& p_name,Variant &r_ret) const {
 void MeshInstance::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	List<String> ls;
-	for(const Map<StringName,MorphTrack>::Element *E=morph_tracks.front();E;E=E->next()) {
-
-		ls.push_back(E->key());
+	for(int i=0;i<morph_tracks.size();i++) {
+		ls.push_back("morph/"+morph_tracks[i].name);
 	}
 
 	ls.sort();;
@@ -122,13 +125,14 @@ void MeshInstance::set_mesh(const Ref<Mesh>& p_mesh) {
 	morph_tracks.clear();
 	if (mesh.is_valid()) {
 
-
-		for(int i=0;i<mesh->get_morph_target_count();i++) {
+		int morph_track_count = mesh->get_morph_target_count();
+		morph_tracks.resize(morph_track_count);
+		for(int i=0;i<morph_track_count;i++) {
 
 			MorphTrack mt;
-			mt.idx=i;
 			mt.value=0;
-			morph_tracks["morph/"+String(mesh->get_morph_target_name(i))]=mt;
+			mt.name=StringName(mesh->get_morph_target_name(i));
+			morph_tracks[i]=mt;
 		}
 
 		mesh->connect(CoreStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_mesh_changed);
@@ -140,12 +144,48 @@ void MeshInstance::set_mesh(const Ref<Mesh>& p_mesh) {
 		set_base(RID());
 	}
 
+	emit_signal("mesh_changed");
+
 	_change_notify();
 }
 Ref<Mesh> MeshInstance::get_mesh() const {
 
 	return mesh;
 }
+
+void MeshInstance::set_morph_track_value(const int p_idx, float p_value) {
+	ERR_FAIL_COND(p_idx < 0);
+	ERR_FAIL_COND(p_idx >= morph_tracks.size());
+
+	morph_tracks[p_idx].value = p_value;
+
+	VisualServer::get_singleton()->instance_set_morph_target_weight(get_instance(), p_idx, p_value);
+}
+
+float MeshInstance::get_morph_track_value(const int p_idx) const {
+	ERR_FAIL_COND_V(p_idx < 0, 0.0f);
+	ERR_FAIL_COND_V(p_idx >= morph_tracks.size(), 0.0f);
+
+	return morph_tracks[p_idx].value;
+}
+
+StringName MeshInstance::get_morph_track_name(const int p_idx) const {
+	ERR_FAIL_COND_V(p_idx < 0, "");
+	ERR_FAIL_COND_V(p_idx >= morph_tracks.size(), "");
+
+	return morph_tracks[p_idx].name;
+}
+
+int MeshInstance::get_morph_track_index(const StringName &p_name) const {
+	for(int i=0;i<morph_tracks.size();i++) {
+		if (p_name == morph_tracks[i].name) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 
 void MeshInstance::_resolve_skeleton_path(){
 
@@ -289,13 +329,33 @@ Ref<Material> MeshInstance::get_surface_material(int p_surface) const {
 
 void MeshInstance::_mesh_changed() {
 
+	int morph_track_count = mesh->get_morph_target_count();
+	morph_tracks.resize(morph_track_count);
+	for (int i = 0; i<morph_track_count; i++) {
+
+		MorphTrack mt;
+		mt.value = 0;
+		mt.name = String(mesh->get_morph_target_name(i));
+		morph_tracks[i] = mt;
+	}
+
 	materials.resize( mesh->get_surface_count() );
+
+	emit_signal("mesh_changed");
 }
 
 void MeshInstance::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MeshInstance::set_mesh);
 	ObjectTypeDB::bind_method(_MD("get_mesh:Mesh"),&MeshInstance::get_mesh);
+
+	ObjectTypeDB::bind_method(_MD("set_morph_track_value","idx","value"),&MeshInstance::set_morph_track_value);
+	ObjectTypeDB::bind_method(_MD("get_morph_track_value","idx"), &MeshInstance::get_morph_track_value);
+
+	ObjectTypeDB::bind_method(_MD("get_morph_track_name", "idx"), &MeshInstance::get_morph_track_name);
+	ObjectTypeDB::bind_method(_MD("get_morph_track_index", "name"), &MeshInstance::get_morph_track_index);
+
+
 	ObjectTypeDB::bind_method(_MD("set_skeleton_path","skeleton_path:NodePath"),&MeshInstance::set_skeleton_path);
 	ObjectTypeDB::bind_method(_MD("get_skeleton_path:NodePath"),&MeshInstance::get_skeleton_path);
 	ObjectTypeDB::bind_method(_MD("get_aabb"),&MeshInstance::get_aabb);
@@ -306,6 +366,8 @@ void MeshInstance::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_mesh_changed"),&MeshInstance::_mesh_changed);
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "mesh/mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh" ), _SCS("set_mesh"), _SCS("get_mesh"));
 	ADD_PROPERTY( PropertyInfo (Variant::NODE_PATH, "mesh/skeleton"), _SCS("set_skeleton_path"), _SCS("get_skeleton_path"));
+
+	ADD_SIGNAL(MethodInfo("mesh_changed"));
 }
 
 MeshInstance::MeshInstance()

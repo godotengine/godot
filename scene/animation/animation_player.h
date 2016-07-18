@@ -33,6 +33,7 @@
 #include "scene/resources/animation.h"
 #include "scene/3d/spatial.h"
 #include "scene/3d/skeleton.h"
+#include "scene/3d/mesh_instance.h"
 #include "scene/2d/node_2d.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -63,6 +64,7 @@ private:
 		SP_NODE2D_POS,
 		SP_NODE2D_ROT,
 		SP_NODE2D_SCALE,
+		SP_MORPH_TRACK
 	};
 
 	struct TrackNodeCache {
@@ -74,7 +76,8 @@ private:
 		Spatial* spatial;
 		Node2D* node_2d;
 		Skeleton *skeleton;
-		int bone_idx;
+		MeshInstance *mesh_instance;
+		int idx;
 		// accumulated transforms
 
 		Vector3 loc_accum;
@@ -95,15 +98,14 @@ private:
 
 		Map<StringName,PropertyAnim> property_anim;
 
-
-		TrackNodeCache() { skeleton=NULL; spatial=NULL; node=NULL; accum_pass=0; bone_idx=-1; node_2d=NULL; }
+		TrackNodeCache() { skeleton=NULL; spatial=NULL; node=NULL; accum_pass=0; idx=-1; node_2d=NULL; mesh_instance=NULL; }
 
 	};
 
 	struct TrackNodeCacheKey {
 
 		uint32_t id;
-		int bone_idx;
+		int idx;
 
 		inline bool operator<(const TrackNodeCacheKey& p_right) const {
 
@@ -112,7 +114,7 @@ private:
 			else if (id>p_right.id)
 				return false;
 			else
-				return bone_idx<p_right.bone_idx;
+				return idx<p_right.idx;
 		}
 	};
 
@@ -206,6 +208,7 @@ private:
 	void _animation_process(float p_delta);
 
 	void _node_removed(Node *p_node);
+	void _mesh_changed(Node *p_node);
 
 // bind helpers
 	DVector<String> _get_animation_list() const {
