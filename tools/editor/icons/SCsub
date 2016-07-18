@@ -65,7 +65,7 @@ def make_editor_icons_action(target, source, env):
 	s.write("static Ref<ImageTexture> make_icon(const uint8_t* p_png,const uint8_t* p_hidpi_png) {\n")
 	s.write("\tRef<ImageTexture> texture( memnew( ImageTexture ) );\n")
 	s.write("\tImage img((editor_is_hidpi()&&p_hidpi_png)?p_hidpi_png:p_png);\n")
-	s.write("\tif (editor_is_hidpi() && !p_hidpi_png) img.expand_x2_hq2x();\n")
+	s.write("\tif (editor_is_hidpi() && !p_hidpi_png) { img.convert(Image::FORMAT_RGBA); img.expand_x2_hq2x(); }\n")
 	s.write("\ttexture->create_from_image( img,ImageTexture::FLAG_FILTER );\n")
 	s.write("\treturn texture;\n")
 	s.write("}\n\n")

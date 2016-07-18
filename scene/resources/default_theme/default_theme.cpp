@@ -54,8 +54,10 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src,float p_left, float p_top, flo
 
 		texture = Ref<ImageTexture>( memnew( ImageTexture ) );
 		Image img(p_src);
-		if (scale>1)
+		if (scale>1) {
+			img.convert(Image::FORMAT_RGBA);
 			img.expand_x2_hq2x();
+		}
 		texture->create_from_image( img,ImageTexture::FLAG_FILTER );
 		(*tex_cache)[p_src]=texture;
 	}
@@ -92,8 +94,10 @@ static Ref<Texture> make_icon(T p_src) {
 
 	Ref<ImageTexture> texture( memnew( ImageTexture ) );
 	Image img = Image(p_src);
-	if (scale>1)
+	if (scale>1) {
+		img.convert(Image::FORMAT_RGBA);
 		img.expand_x2_hq2x();
+	}
 	texture->create_from_image( img,ImageTexture::FLAG_FILTER );
 
 	return texture;
