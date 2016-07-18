@@ -140,14 +140,13 @@ void ColorPicker::_value_changed(double) {
 	if (updating)
 		return;
 
-	for(int i=0;i<3;i++) {
+	for(int i=0;i<4;i++) {
 		color.components[i] = scroll[i]->get_val()/(raw_mode_enabled?1.0:255.0);
 	}
-	color.components[3] = scroll[3]->get_val()/255.0;
 
 	set_color(color);
 
-	c_text->set_text(color.to_html(edit_alpha && color.a<1));
+	_update_text_value();
 
 	emit_signal("color_changed",color);
 
@@ -174,22 +173,16 @@ void ColorPicker::_update_color() {
 	for(int i=0;i<4;i++) {
 		scroll[i]->set_max(255);
 		scroll[i]->set_step(0.01);
-		if (raw_mode_enabled && i != 3)
+		if (raw_mode_enabled) {
+			if (i == 3)
+				scroll[i]->set_max(1);
 			scroll[i]->set_val(color.components[i]);
-		else
-			scroll[i]->set_val(color.components[i]*255);
+		} else {
+			scroll[i]->set_val(color.components[i] * 255);
+		}
 	}
 
-	if (text_is_constructor) {
-		String t = "Color("+String::num(color.r)+","+String::num(color.g)+","+String::num(color.b);
-		if (edit_alpha && color.a<1)
-			t+=(","+String::num(color.a)+")") ;
-		else
-			t+=")";
-		c_text->set_text(t);
-	} else {
-		c_text->set_text(color.to_html(edit_alpha && color.a<1));
-	}
+	_update_text_value();
 
 	sample->update();
 	updating=false;
@@ -262,6 +255,20 @@ bool ColorPicker::is_raw_mode() const {
 	return raw_mode_enabled;
 }
 
+
+void ColorPicker::_update_text_value() {
+	if (text_is_constructor) {
+		String t = "Color("+String::num(color.r)+","+String::num(color.g)+","+String::num(color.b);
+		if (edit_alpha && color.a<1)
+			t+=(","+String::num(color.a)+")") ;
+		else
+			t+=")";
+		c_text->set_text(t);
+	} else {
+		c_text->set_text(color.to_html(edit_alpha && color.a<1));
+	}
+}
+
 void ColorPicker::_sample_draw() {
 	sample->draw_rect(Rect2(Point2(),Size2(256,20)),color);
 }
@@ -271,12 +278,12 @@ void ColorPicker::_hsv_draw(int p_wich,Control* c)
 	if (!c)
 		return;
 	if (p_wich==0) {
-		int x=c->get_size().x*s;
-		int y=c->get_size().y-c->get_size().y*v;
+		int x = CLAMP(c->get_size().x * s, 0, c->get_size().x);
+		int y = CLAMP(c->get_size().y-c->get_size().y * v, 0, c->get_size().y);
 		Color col = color;
 		col.a=1;
 		c->draw_line(Point2(x,0),Point2(x,c->get_size().y),col.inverted());
-		c->draw_line(Point2(0,y),Point2(c->get_size().x,y),col.inverted());
+		c->draw_line(Point2(0, y),Point2(c->get_size().x, y),col.inverted());
 		c->draw_line(Point2(x,y),Point2(x,y),Color(1,1,1),2);
 	} else if (p_wich==1) {
 		int y=c->get_size().y-c->get_size().y*h;

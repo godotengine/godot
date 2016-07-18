@@ -8663,7 +8663,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this color picker is in raw mode or not
+			Returns whether this color picker is in raw mode or not, raw mode will allow the color R, G, B component values to go beyond 1, you have to consider that the max value for color components is 1, going beyond that value will not have effect in the color, but can be used for special operations that require it (like tinting without darkening or rendering sprites in HDR).
 			</description>
 		</method>
 		<method name="set_color">
@@ -8684,7 +8684,7 @@
 			<argument index="0" name="mode" type="bool">
 			</argument>
 			<description>
-				When set to true, every color channel will be represented as a value from 0 to 1, insetead of 0, 255.
+			Set whether this color picker is using raw mode or not, see [method is_raw_mode].
 			</description>
 		</method>
 	</methods>
