@@ -162,20 +162,20 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 
 	DDSFormat dds_format;
 
-	if (format_flags&DDPF_FOURCC && format_fourcc=='1TXD') {
+	if (format_flags&DDPF_FOURCC && format_fourcc==0x31545844) { //'1TXD'
 
 		dds_format=DDS_DXT1;
-	} else if (format_flags&DDPF_FOURCC && format_fourcc=='3TXD') {
+	} else if (format_flags&DDPF_FOURCC && format_fourcc==0x33545844) { //'3TXD'
 
 		dds_format=DDS_DXT3;
 
-	} else if (format_flags&DDPF_FOURCC && format_fourcc=='5TXD') {
+	} else if (format_flags&DDPF_FOURCC && format_fourcc==0x35545844) { //'5TXD'
 
 		dds_format=DDS_DXT5;
-	} else if (format_flags&DDPF_FOURCC && format_fourcc=='1ITA') {
+	} else if (format_flags&DDPF_FOURCC && format_fourcc==0x31495441) { //'1ITA'
 
 		dds_format=DDS_ATI1;
-	} else if (format_flags&DDPF_FOURCC && format_fourcc=='2ITA') {
+	} else if (format_flags&DDPF_FOURCC && format_fourcc==0x32495441) { //'2ITA'
 
 		dds_format=DDS_ATI2;
 
