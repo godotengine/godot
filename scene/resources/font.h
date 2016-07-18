@@ -61,6 +61,7 @@ public:
 	void draw_halign(RID p_canvas_item, const Point2& p_pos, HAlign p_align,float p_width,const String& p_text,const Color& p_modulate=Color(1,1,1)) const;
 	virtual float draw_char(RID p_canvas_item, const Point2& p_pos,  CharType p_char, CharType p_next=0,const Color& p_modulate=Color(1,1,1)) const=0;
 
+	void update_changes();
 	Font();
 
 };

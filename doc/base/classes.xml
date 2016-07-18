@@ -12999,6 +12999,11 @@
 				Return the font descent (number of pixels below the baseline).
 			</description>
 		</method>
+		<method name="update_changes">
+			<description>
+				After editing a font (changing size, ascent, char rects, etc.). Call this function to propagate changes to controls that might use it.
+			</description>
+		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="float">
 			</return>
