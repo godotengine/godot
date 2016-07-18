@@ -118,7 +118,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 			const InputEventMouseMotion& m=p_event.mouse_motion;
 
-			if (m.button_mask&1) {
+			if (m.button_mask&BUTTON_LEFT) {
 
 				if (selection.creating) {
 					set_cursor_at_pixel_pos(m.x);
@@ -616,11 +616,11 @@ void LineEdit::_notification(int p_what) {
 				} break;
 				case ALIGN_CENTER: {
 
-					x_ofs=x_ofs=int(size.width-(cached_width))/2;
+					x_ofs=int(size.width-(cached_width))/2;
 				} break;
 				case ALIGN_RIGHT: {
 
-					x_ofs=x_ofs=int(size.width-style->get_offset().x-(cached_width));
+					x_ofs=int(size.width-style->get_offset().x-(cached_width));
 				} break;
 			}
 
@@ -811,6 +811,9 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 			if ( (pixel_ofs-p_x) < (char_w >> 1 ) ) {
 
 				ofs+=1;
+			} else if ( (pixel_ofs-p_x) > (char_w >> 1 ) ) {
+
+				ofs-=1;
 			}
 
 			break;
