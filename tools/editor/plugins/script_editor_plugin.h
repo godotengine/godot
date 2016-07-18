@@ -268,6 +268,7 @@ class ScriptEditor : public VBoxContainer {
 	void _update_window_menu();
 	void _script_created(Ref<Script> p_script);
 
+	void _save_layout();
 	void _editor_settings_changed();
 	void _autosave_scripts();
 

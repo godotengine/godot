@@ -819,7 +819,7 @@ void ScriptEditor::_close_tab(int p_idx) {
 
 
 	_update_script_names();
-	EditorNode::get_singleton()->save_layout();
+	_save_layout();
 }
 
 void ScriptEditor::_close_current_tab() {
@@ -2057,6 +2057,9 @@ void ScriptEditor::_update_script_colors() {
 
 void ScriptEditor::_update_script_names() {
 
+	if (restoring_layout)
+		return;
+
 	waiting_update_names=false;
 	Set<Ref<Script> > used;
 	Node* edited = EditorNode::get_singleton()->get_edited_scene();
@@ -2220,10 +2223,8 @@ void ScriptEditor::edit(const Ref<Script>& p_script) {
 
 
 	_update_script_names();
+	_save_layout();
 	ste->connect("name_changed",this,"_update_script_names");
-	if (!restoring_layout) {
-		EditorNode::get_singleton()->save_layout();
-	}
 
 	//test for modification, maybe the script was not edited but was loaded
 
@@ -2343,6 +2344,15 @@ void ScriptEditor::_add_callback(Object *p_obj, const String& p_function, const 
 
 }
 
+void ScriptEditor::_save_layout() {
+
+	if (restoring_layout) {
+		return;
+	}
+
+	editor->save_layout();
+}
+
 void ScriptEditor::_editor_settings_changed() {
 
 	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/trim_trailing_whitespace_on_save");
@@ -2400,7 +2410,7 @@ void ScriptEditor::_tree_changed() {
 
 void ScriptEditor::_script_split_dragged(float) {
 
-	EditorNode::get_singleton()->save_layout();
+	_save_layout();
 }
 
 void ScriptEditor::_unhandled_input(const InputEvent& p_event) {
@@ -2446,7 +2456,6 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		}
 	}
 
-
 	for(int i=0;i<helps.size();i++) {
 
 		String path = helps[i];
@@ -2462,9 +2471,9 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		script_split->set_split_offset(p_layout->get_value("ScriptEditor","split_offset"));
 	}
 
-
 	restoring_layout=false;
 
+	_update_script_names();
 }
 
 void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
@@ -2524,7 +2533,7 @@ void ScriptEditor::_help_class_open(const String& p_class) {
 	eh->go_to_class(p_class,0);
 	eh->connect("go_to_help",this,"_help_class_goto");
 	_update_script_names();
-
+	_save_layout();
 }
 
 void ScriptEditor::_help_class_goto(const String& p_desc) {
@@ -2553,7 +2562,7 @@ void ScriptEditor::_help_class_goto(const String& p_desc) {
 	eh->go_to_help(p_desc);
 	eh->connect("go_to_help",this,"_help_class_goto");
 	_update_script_names();
-
+	_save_layout();
 }
 
 void ScriptEditor::_update_history_pos(int p_new_pos) {
