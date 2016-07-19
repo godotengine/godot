@@ -15882,7 +15882,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the mouse speed.
+				Returns the mouse speed for the last time the cursor was moved, and this until the next frame where the mouse moves. This means that even if the mouse is not moving, this function will still return the value of the last motion.
 			</description>
 		</method>
 		<method name="is_action_pressed">
@@ -21447,66 +21447,78 @@
 </class>
 <class name="Node" inherits="Object" category="Core">
 	<brief_description>
-		Base class for all the "Scene" elements.
+		Base class for all the [i]scene[/i] elements.
 	</brief_description>
 	<description>
-		Nodes can be set as children of other nodes, resulting in a tree arrangement. Any tree of nodes is called a "Scene".
-		Scenes can be saved to disk, and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects.
-		[SceneTree] contains the "active" tree of nodes, and a node becomes active (receiving NOTIFICATION_ENTER_SCENE) when added to that tree.
-		A node can contain any number of nodes as a children (but there is only one tree root) with the requirement that no two children with the same name can exist.
-		Nodes can, optionally, be added to groups. This makes it easy to reach a number of nodes from the code (for example an "enemies" group).
-		Nodes can be set to "process" state, so they constantly receive a callback requesting them to process (do anything). Normal processing ([method _process]) happens as fast as possible and is dependent on the frame rate, so the processing time delta is variable. Fixed processing ([method _fixed_process]) happens a fixed amount of times per second (by default 60) and is useful to link itself to the physics.
-		Nodes can also process input events. When set, the [method _input] function will be called with every input that the program receives. Since this is usually too overkill (unless used for simple projects), an [method _unhandled_input] function is called when the input was not handled by anyone else (usually, GUI [Control] nodes).
-		To keep track of the scene hierarchy (specially when instancing scenes into scenes) an "owner" can be set to a node. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
-		Finally, when a node is freed, it will free all its children nodes too.
+		Nodes are the base bricks with which Godot games are developed. They can be set as children of other nodes, resulting in a tree arrangement. A given node can contain any number of nodes as children (but there is only one scene tree root node) with the requirement that all siblings (direct children of a node) should have unique names.
+		Any tree of nodes is called a [i]scene[/i]. Scenes can be saved to the disk and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects. Nodes can optionally be added to groups. This makes it easy to reach a number of nodes from the code (for example an "enemies" group) to perform grouped actions.
+		[b]Scene tree:[/b] The [SceneTree] contains the active tree of nodes. When a node is added to the scene tree, it receives the NOTIFICATION_ENTER_TREE notification and its [method _enter_tree] callback is triggered. Children nodes are always added [i]after[/i] their parent node, i.e. the [method _enter_tree] callback of a parent node will be triggered before its child's.
+		Once all nodes have been added in the scene tree, they receive the NOTIFICATION_READY notification and their respective [method _ready] callbacks are triggered. For groups of nodes, the [method _ready] callback is called in reverse order, from the children up to the parent nodes.
+		It means that when adding a scene to the scene tree, the following order will be used for the callbacks: [method _enter_tree] of the parent, [method _enter_tree] of the children, [method _ready] of the children and finally [method _ready] of the parent (and that recursively for the whole scene).
+		[b]Processing:[/b] Nodes can be set to the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback [method _process], toggled with [method set_process]) happens as fast as possible and is dependent on the frame rate, so the processing time [i]delta[/i] is variable. Fixed processing (callback [method _fixed_process], toggled with [method set_fixed_process]) happens a fixed amount of times per second (by default 60) and is useful to link itself to the physics.
+		Nodes can also process input events. When set, the [method _input] function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the [method _unhandled_input] function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI [Control] nodes), ensuring that the node only receives the events that were meant for it.
+		To keep track of the scene hierarchy (especially when instancing scenes into other scenes), an "owner" can be set for the node with [method set_owner]. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
+		Finally, when a node is freed with [method free] or [method queue_free], it will also free all its children.
 	</description>
 	<methods>
 		<method name="_enter_tree" qualifiers="virtual">
 			<description>
+				Called when the node enters the [SceneTree] (e.g. upon instancing, scene changing or after calling [method add_child] in a script). If the node has children, its [method _enter_tree] callback will be called first, and then that of the children.
+				Corresponds to the NOTIFICATION_ENTER_TREE notification in [method Object._notification].
 			</description>
 		</method>
 		<method name="_exit_tree" qualifiers="virtual">
 			<description>
+				Called when the node leaves the [SceneTree] (e.g. upon freeing, scene changing or after calling [method remove_child] in a script). If the node has children, its [method _exit_tree] callback will be called last, after all its children have left the tree.
+				Corresponds to the NOTIFICATION_EXIT_TREE notification in [method Object._notification].
 			</description>
 		</method>
 		<method name="_fixed_process" qualifiers="virtual">
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Called for fixed processing (synced to the physics).
+				Called during the fixed processing step of the main loop. Fixed processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
+				It is only called if fixed processing has been enabled with [method set_fixed_process].
+				Corresponds to the NOTIFICATION_FIXED_PROCESS notification in [method Object._notification].
 			</description>
 		</method>
 		<method name="_input" qualifiers="virtual">
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Called when any input happens (also must enable with [method set_process_input] or the property).
+				Called for every input event.
+				It has to be enabled with [method set_process_input] or the corresponding property in the inspector.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Called for processing. This is called every frame, with the delta time from the previous frame.
+				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant.
+				It is only called if processing has been enabled with [method set_process].
+				Corresponds to the NOTIFICATION_PROCESS notification in [method Object._notification].
 			</description>
 		</method>
 		<method name="_ready" qualifiers="virtual">
 			<description>
-				Called when ready (entered scene and children entered too).
+				Called when the node is "ready", i.e. when both the node and its children have entered the scene tree. If the node has children, their [method _ready] callback gets triggered first, and the node will receive the ready notification only afterwards.
+				Corresponds to the NOTIFICATION_READY notification in [method Object._notification].
 			</description>
 		</method>
 		<method name="_unhandled_input" qualifiers="virtual">
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Called when any input happens that was not handled by something else (also must enable with [method set_process_unhandled_input] or the property).
+				Called for every input event that has not already been handled by another node.
+				It has to be enabled with [method set_process_unhandled_input] or the corresponding property in the inspector.
 			</description>
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
 			<argument index="0" name="key_event" type="InputEvent">
 			</argument>
 			<description>
-				Called when any key input happens that was not handled by something else.
+				Called for every [i]key[/i] input event that has not already been handled by another node.
+				It has to be enabled with [method set_process_unhandled_key_input] or the corresponding property in the inspector.
 			</description>
 		</method>
 		<method name="add_child">
@@ -21516,7 +21528,7 @@
 			</argument>
 			<description>
 				Add a child [Node]. Nodes can have as many children as they want, but every child must have a unique name. Children nodes are automatically deleted when the parent node is deleted, so deleting a whole scene is performed by deleting its topmost node.
-				The optional boolean argument enforces creating child node with human-readable names, based on the name of node being instanced instead of its type only.
+				The optional boolean argument enforces creating child nodes with human-readable names, based on the name of the node being instanced instead of its type only.
 			</description>
 		</method>
 		<method name="add_to_group">
@@ -21525,14 +21537,14 @@
 			<argument index="1" name="persistent" type="bool" default="false">
 			</argument>
 			<description>
-				Add a node to a group. Groups are helpers to name and organize group of nodes, like for example: "Enemies", "Collectables", etc. A [Node] can be in any number of groups. Nodes can be assigned a group at any time, but will not be added to it until they are inside the scene tree (see [method is_inside_tree]).
+				Add a node to a group. Groups are helpers to name and organize a subset of nodes, like for example "enemies" or "collectables". A [Node] can be in any number of groups. Nodes can be assigned a group at any time, but will not be added to it until they are inside the scene tree (see [method is_inside_tree]).
 			</description>
 		</method>
 		<method name="can_process" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the node can process.
+				Return true if the node can process, i.e. whether its pause mode allows processing while the scene tree is paused (see [method set_pause_mode]). Always returns true if the scene tree is not paused, and false if the node is not in the tree. FIXME: Why FAIL_COND?
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
@@ -21541,6 +21553,7 @@
 			<argument index="0" name="use_instancing" type="bool" default="false">
 			</argument>
 			<description>
+				Duplicate the node, returning a new [Node]. If [code]use_instancing[/code] is true, the duplicated node will be a new instance of the original [PackedScene], if not it will be an independent node. The duplicated node has the same group assignments and signals as the original one.
 			</description>
 		</method>
 		<method name="find_node" qualifiers="const">
@@ -21562,54 +21575,56 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return a children node by it's index (see [method get_child_count]). This method is often used for iterating all children of a node.
+				Return a child node by its index (see [method get_child_count]). This method is often used for iterating all children of a node.
 			</description>
 		</method>
 		<method name="get_child_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of children nodes.
+				Return the amount of child nodes.
 			</description>
 		</method>
 		<method name="get_children" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+				Return an array of references ([Node]) to the child nodes.
 			</description>
 		</method>
 		<method name="get_filename" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return a filename that may be containedA node can contained by the node. When a scene is instanced from a file, it topmost node contains the filename from where it was loaded (see [method set_filename]).
+				Return a filename that may be contained by the node. When a scene is instanced from a file, it topmost node contains the filename from where it was loaded (see [method set_filename]).
 			</description>
 		</method>
 		<method name="get_fixed_process_delta_time" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Return the time elapsed since the last fixed frame. This is always the same in fixed processing unless the frames per second is changed in [OS].
+				Return the time elapsed since the last fixed frame (see [method _fixed_process]). This is always the same in fixed processing unless the frames per second is changed in [OS].
 			</description>
 		</method>
 		<method name="get_groups" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+				Return an array listing the groups that the node is part of.
 			</description>
 		</method>
 		<method name="get_index" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the node index in the parent (assuming it has a parent).
+				Get the node index, i.e. its position among the siblings of its parent.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the name of the [Node]. Name is be unique within parent.
+				Return the name of the node. This name is unique among the siblings (other child nodes from the same parent).
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
@@ -21618,17 +21633,18 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
-				Fetch a node. NodePath must be valid (or else error will occur) and can be either the path to child node, a relative path (from the current node to another node), or an absolute path to a node.
-				Note: fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]). Examples. Assume your current node is Character and following tree:
+				Fetch a node. The [NodePath] must be valid (or else an error will be raised) and can be either the path to child node, a relative path (from the current node to another node), or an absolute path to a node.
+				Note: fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
+				[i]Example:[/i] Assume your current node is Character and the following tree:
 				[codeblock]
-				root/
-				root/Character
-				root/Character/Sword
-				root/Character/Backpack/Dagger
-				root/MyGame
-				root/Swamp/Alligator
-				root/Swamp/Mosquito
-				root/Swamp/Goblin
+				/root
+				/root/Character
+				/root/Character/Sword
+				/root/Character/Backpack/Dagger
+				/root/MyGame
+				/root/Swamp/Alligator
+				/root/Swamp/Mosquito
+				/root/Swamp/Goblin
 				[/codeblock]
 				Possible paths are:
 				[codeblock]
@@ -21658,7 +21674,7 @@
 			<return type="Node">
 			</return>
 			<description>
-				Return the parent [Node] of the current [Node], or an empty Object if the node lacks a parent.
+				Return the parent node of the current node, or an empty [Node] if the node lacks a parent.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
