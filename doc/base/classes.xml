@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.1.alpha.custom_build" name="Engine Types">
+<doc version="2.1.beta.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 		Built-in GDScript functions.
@@ -6687,6 +6687,11 @@
 		This node is intended to be a simple helper get get things going quickly and it may happen often that more functionality is desired to change how the camera works. To make your own custom camera node, simply inherit from [Node2D] and change the transform of the canvas by calling get_viewport().set_canvas_transform(m) in [Viewport].
 	</description>
 	<methods>
+		<method name="align">
+			<description>
+				Align the camera to the tracked node
+			</description>
+		</method>
 		<method name="clear_current">
 			<description>
 			</description>
@@ -6694,17 +6699,6 @@
 		<method name="force_update_scroll">
 			<description>
 				Force the camera to update scroll immediately.
-			</description>
-		</method>
-		<method name="reset_smoothing">
-			<description>
-			Set the camera's position immediately to its current smoothing destination.
-			This has no effect if smoothing is disabled.
-			</description>
-		</method>
-		<method name="align">
-			<description>
-			Align the camera to the tracked node
 			</description>
 		</method>
 		<method name="get_anchor_mode" qualifiers="const">
@@ -6809,6 +6803,12 @@
 		<method name="make_current">
 			<description>
 				Make this the current 2D camera for the scene (viewport and layer), in case there's many cameras in the scene.
+			</description>
+		</method>
+		<method name="reset_smoothing">
+			<description>
+				Set the camera's position immediately to its current smoothing destination.
+				This has no effect if smoothing is disabled.
 			</description>
 		</method>
 		<method name="set_anchor_mode">
@@ -7281,6 +7281,14 @@
 				Return true if this CanvasItem is visible. It may be invisible because itself or a parent canvas item is hidden.
 			</description>
 		</method>
+		<method name="make_canvas_pos_local" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="screen_point" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="make_input_local" qualifiers="const">
 			<return type="InputEvent">
 			</return>
@@ -7288,17 +7296,6 @@
 			</argument>
 			<description>
 				Takes a global input event and convert to this item's coordinate system.
-			</description>
-		</method>
-		<method name="make_screen_coord_local" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="screen_point" type="Vector2">
-			</argument>
-			<description>
-				Take a 2d screen point and convert to 2D local coords relative to this Canvas
-				 item.  If this CanvasItem is the root of a Scene, its essentially the
-				 world coords for that scene.
 			</description>
 		</method>
 		<method name="set_as_toplevel">
@@ -8663,7 +8660,7 @@
 			<return type="bool">
 			</return>
 			<description>
-			Returns whether this color picker is in raw mode or not, raw mode will allow the color R, G, B component values to go beyond 1, you have to consider that the max value for color components is 1, going beyond that value will not have effect in the color, but can be used for special operations that require it (like tinting without darkening or rendering sprites in HDR).
+				Returns whether this color picker is in raw mode or not, raw mode will allow the color R, G, B component values to go beyond 1, you have to consider that the max value for color components is 1, going beyond that value will not have effect in the color, but can be used for special operations that require it (like tinting without darkening or rendering sprites in HDR).
 			</description>
 		</method>
 		<method name="set_color">
@@ -8684,7 +8681,7 @@
 			<argument index="0" name="mode" type="bool">
 			</argument>
 			<description>
-			Set whether this color picker is using raw mode or not, see [method is_raw_mode].
+				Set whether this color picker is using raw mode or not, see [method is_raw_mode].
 			</description>
 		</method>
 	</methods>
@@ -11773,6 +11770,10 @@
 				Add an unscaled billboard for visualization. Call this function during [method redraw].
 			</description>
 		</method>
+		<method name="clear">
+			<description>
+			</description>
+		</method>
 		<method name="commit_handle" qualifiers="virtual">
 			<argument index="0" name="index" type="int">
 			</argument>
@@ -12999,11 +13000,6 @@
 				Return the font descent (number of pixels below the baseline).
 			</description>
 		</method>
-		<method name="update_changes">
-			<description>
-				After editing a font (changing size, ascent, char rects, etc.). Call this function to propagate changes to controls that might use it.
-			</description>
-		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="float">
 			</return>
@@ -13024,6 +13020,11 @@
 			<return type="bool">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="update_changes">
+			<description>
+				After editing a font (changing size, ascent, char rects, etc.). Call this function to propagate changes to controls that might use it.
 			</description>
 		</method>
 	</methods>
@@ -15799,7 +15800,7 @@
 			<return type="Array">
 			</return>
 			<description>
-			Returns an [Array] containing the device IDs of all currently connected joysticks.
+				Returns an [Array] containing the device IDs of all currently connected joysticks.
 			</description>
 		</method>
 		<method name="get_gyroscope">
@@ -18299,6 +18300,12 @@
 			</return>
 			<description>
 				Return the restricted number of characters to display. Returns -1 if unrestricted.
+			</description>
+		</method>
+		<method name="get_visible_line_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="has_autowrap" qualifiers="const">
@@ -21738,12 +21745,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_displayed_folded" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="is_fixed_processing" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -21861,12 +21862,6 @@
 			</argument>
 			<description>
 				Replace a node in a scene by a given one. Subscriptions that pass through this node will be lost.
-			</description>
-		</method>
-		<method name="set_display_folded">
-			<argument index="0" name="fold" type="bool">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="set_display_folded">
@@ -22426,6 +22421,12 @@
 				Return the total amount of dynamic memory used (only works in debug).
 			</description>
 		</method>
+		<method name="get_engine_version" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_environment" qualifiers="const">
 			<return type="String">
 			</return>
@@ -22470,6 +22471,12 @@
 			</return>
 			<description>
 				Return the amount of fixed iterations per second (for fixed process and physics).
+			</description>
+		</method>
+		<method name="get_latin_keyboard_variant" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
@@ -31628,7 +31635,7 @@
 			<return type="String">
 			</return>
 			<description>
-			Returns the raw text, stripping out the formatting information.
+				Returns the raw text, stripping out the formatting information.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
@@ -32872,6 +32879,12 @@
 			</argument>
 			<description>
 				Return the sample from the library matching the given text ID. Return null if the sample is not found.
+			</description>
+		</method>
+		<method name="get_sample_list" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="has_sample" qualifiers="const">
@@ -39232,6 +39245,13 @@
 				Return the line the editing cursor is at.
 			</description>
 		</method>
+		<method name="cursor_is_block_mode" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Gets whether the text editor caret is in block mode.
+			</description>
+		</method>
 		<method name="cursor_set_blink_enabled">
 			<argument index="0" name="enable" type="bool">
 			</argument>
@@ -39251,13 +39271,6 @@
 			</argument>
 			<description>
 				Set the text editor caret to block mode.
-			</description>
-		</method>
-		<method name="cursor_is_block_mode" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Gets whether the text editor caret is in block mode.
 			</description>
 		</method>
 		<method name="cursor_set_column">
@@ -39358,11 +39371,25 @@
 				Insert a given text at the cursor position.
 			</description>
 		</method>
+		<method name="is_highlight_all_occurrences_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if highlight all occurrences is enabled.
+			</description>
+		</method>
 		<method name="is_selection_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Return true if the selection is active.
+			</description>
+		</method>
+		<method name="is_show_line_numbers_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if line numbers are enabled.
 			</description>
 		</method>
 		<method name="is_syntax_coloring_enabled" qualifiers="const">
@@ -39428,6 +39455,13 @@
 				Set a custom background color. A background color with alpha==0 disables this.
 			</description>
 		</method>
+		<method name="set_highlight_all_occurrences">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set to enable highlighting all occurrences of the current selection.
+			</description>
+		</method>
 		<method name="set_max_chars">
 			<argument index="0" name="amount" type="int">
 			</argument>
@@ -39442,13 +39476,6 @@
 				Set the text editor as read-only. Text can be displayed but not edited.
 			</description>
 		</method>
-		<method name="set_symbol_color">
-			<argument index="0" name="color" type="Color">
-			</argument>
-			<description>
-				Set the color for symbols.
-			</description>
-		</method>
 		<method name="set_show_line_numbers">
 			<argument index="0" name="enable" type="bool">
 			</argument>
@@ -39456,25 +39483,11 @@
 				Set to enable showing line numbers.
 			</description>
 		</method>
-		<method name="is_show_line_numbers_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if line numbers are enabled.
-			</description>
-		</method>
-		<method name="set_highlight_all_occurrences">
-			<argument index="0" name="enable" type="bool">
+		<method name="set_symbol_color">
+			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Set to enable highlighting all occurrences of the current selection.
-			</description>
-		</method>
-		<method name="is_highlight_all_occurrences_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if highlight all occurrences is enabled.
+				Set the color for symbols.
 			</description>
 		</method>
 		<method name="set_syntax_coloring">
@@ -39506,6 +39519,8 @@
 	</methods>
 	<signals>
 		<signal name="breakpoint_toggled">
+			<argument index="0" name="row" type="int">
+			</argument>
 			<description>
 				Emitted when a breakpoint is placed via the breakpoint gutter.
 			</description>
@@ -40744,6 +40759,8 @@
 		</constant>
 		<constant name="TILE_ORIGIN_CENTER" value="1">
 			Tile origin at its center.
+		</constant>
+		<constant name="TILE_ORIGIN_BOTTOM_LEFT" value="2">
 		</constant>
 	</constants>
 </class>
@@ -42139,6 +42156,16 @@
 		</method>
 		<method name="select">
 			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_button">
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="button_idx" type="int">
+			</argument>
+			<argument index="2" name="button" type="Texture">
 			</argument>
 			<description>
 			</description>
@@ -44996,6 +45023,8 @@
 			<argument index="1" name="arg1" type="Vector2">
 			</argument>
 			<argument index="2" name="arg2" type="int">
+			</argument>
+			<argument index="3" name="arg3" type="Rect2">
 			</argument>
 			<description>
 			</description>
