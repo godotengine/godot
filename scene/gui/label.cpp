@@ -356,6 +356,21 @@ int Label::get_line_count() const {
 	return line_count;
 }
 
+int Label::get_visible_line_count() const {
+
+	int line_spacing = get_constant("line_spacing");
+	int font_h = get_font("font")->get_height()+line_spacing;
+	int lines_visible = (get_size().y+line_spacing)/font_h;
+
+	if (lines_visible > line_count)
+		lines_visible = line_count;
+
+	if (max_lines_visible >= 0 && lines_visible > max_lines_visible)
+		lines_visible = max_lines_visible;
+
+	return lines_visible;
+}
+
 void Label::regenerate_word_cache() {
 
 	while (word_cache) {
@@ -640,6 +655,7 @@ void Label::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_uppercase"),&Label::is_uppercase);
 	ObjectTypeDB::bind_method(_MD("get_line_height"),&Label::get_line_height);
 	ObjectTypeDB::bind_method(_MD("get_line_count"),&Label::get_line_count);
+	ObjectTypeDB::bind_method(_MD("get_visible_line_count"),&Label::get_visible_line_count);
 	ObjectTypeDB::bind_method(_MD("get_total_character_count"),&Label::get_total_character_count);
 	ObjectTypeDB::bind_method(_MD("set_visible_characters","amount"),&Label::set_visible_characters);
 	ObjectTypeDB::bind_method(_MD("get_visible_characters"),&Label::get_visible_characters);
