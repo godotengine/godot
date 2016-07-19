@@ -203,14 +203,15 @@ private:
 				} else {
 
 					f->store_line("; Engine configuration file.");
-					f->store_line("; It's best to edit using the editor UI, not directly,");
-					f->store_line("; becausethe parameters that go here are not obvious.");
+					f->store_line("; It's best edited using the editor UI and not directly,");
+					f->store_line("; since the parameters that go here are not all obvious.");
 					f->store_line("; ");
 					f->store_line("; Format: ");
 					f->store_line(";   [section] ; section goes between []");
 					f->store_line(";   param=value ; assign values to parameters");
 					f->store_line("\n");
 					f->store_line("[application]");
+					f->store_line("\n");
 					f->store_line("name=\""+project_name->get_text()+"\"");
 					f->store_line("icon=\"res://icon.png\"");
 
