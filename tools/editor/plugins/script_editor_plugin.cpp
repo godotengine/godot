@@ -828,6 +828,22 @@ void ScriptEditor::_close_current_tab() {
 
 }
 
+void ScriptEditor::_close_docs_tab() {
+
+	int child_count = tab_container->get_child_count();
+	for (int i = child_count-1; i>=0; i--) {
+
+		EditorHelp *ste = tab_container->get_child(i)->cast_to<EditorHelp>();
+
+		if (ste) {
+			_close_tab(i);
+		}
+
+	}
+
+}
+
+
 
 void ScriptEditor::_resave_scripts(const String& p_str) {
 
@@ -1613,6 +1629,9 @@ void ScriptEditor::_menu_option(int p_option) {
 					_close_current_tab();
 				}
 			} break;
+			case CLOSE_DOCS: {
+				_close_docs_tab();
+			} break;
 			case WINDOW_MOVE_LEFT: {
 
 				if (tab_container->get_current_tab()>0) {
@@ -1659,6 +1678,9 @@ void ScriptEditor::_menu_option(int p_option) {
 			} break;
 			case FILE_CLOSE: {
 				_close_current_tab();
+			} break;
+			case CLOSE_DOCS: {
+				_close_docs_tab();
 			} break;
 
 
@@ -2689,6 +2711,7 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_tab_changed",&ScriptEditor::_tab_changed);
 	ObjectTypeDB::bind_method("_menu_option",&ScriptEditor::_menu_option);
 	ObjectTypeDB::bind_method("_close_current_tab",&ScriptEditor::_close_current_tab);
+	ObjectTypeDB::bind_method("_close_docs_tab", &ScriptEditor::_close_docs_tab);
 	ObjectTypeDB::bind_method("_editor_play",&ScriptEditor::_editor_play);
 	ObjectTypeDB::bind_method("_editor_pause",&ScriptEditor::_editor_pause);
 	ObjectTypeDB::bind_method("_editor_stop",&ScriptEditor::_editor_stop);
@@ -2771,7 +2794,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), FILE_SAVE_THEME);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As")), FILE_SAVE_THEME_AS);
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD|KEY_W), FILE_CLOSE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
 	file_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	edit_menu = memnew( MenuButton );
