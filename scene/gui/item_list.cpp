@@ -461,7 +461,6 @@ void ItemList::_input_event(const InputEvent& p_event) {
 		pos.y+=scroll_bar->get_val();
 
 		int closest = -1;
-		int closest_dist=0x7FFFFFFF;
 
 		for(int i=0;i<items.size();i++) {
 
@@ -473,12 +472,6 @@ void ItemList::_input_event(const InputEvent& p_event) {
 			if (rc.has_point(pos)) {
 				closest=i;
 				break;
-			}
-
-			float dist = rc.distance_to(pos);
-			if (dist<closest_dist) {
-				closest=i;
-				closest_dist=dist;
 			}
 		}
 
@@ -546,6 +539,11 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 
 			return;
+		} else {
+			Vector<int> sItems = get_selected_items();
+			for(int i = 0; i < sItems.size(); i++) {
+				unselect(sItems[i]);
+			}
 		}
 	}
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_WHEEL_UP && p_event.mouse_button.pressed) {
@@ -823,7 +821,7 @@ void ItemList::_notification(int p_what) {
 		}
 
 		if (shape_changed) {
-			
+
 			float max_column_width = 0;
 
 			//1- compute item minimum sizes
@@ -914,11 +912,11 @@ void ItemList::_notification(int p_what) {
 
 						if (i<items.size()-1)
 							separators.push_back(ofs.y+max_h+vseparation/2);
-						
+
 						for(int j=i;j>=0 && col>0;j--, col--) {
 							items[j].rect_cache.size.y = max_h;
 						}
-						
+
 						ofs.x=0;
 						ofs.y+=max_h+vseparation;
 						col=0;
@@ -1386,4 +1384,3 @@ ItemList::ItemList() {
 ItemList::~ItemList() {
 
 }
-
