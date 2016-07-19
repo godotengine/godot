@@ -42,7 +42,6 @@
 #include "translation.h"
 #include "compressed_translation.h"
 #include "io/translation_loader_po.h"
-#include "io/resource_format_text.h"
 #include "io/resource_format_xml.h"
 #include "io/resource_format_binary.h"
 #include "io/stream_peer_ssl.h"
@@ -54,9 +53,6 @@
 #include "input_map.h"
 #include "undo_redo.h"
 
-
-static ResourceFormatSaverText *resource_saver_text=NULL;
-static ResourceFormatLoaderText *resource_loader_text=NULL;
 #ifdef XML_ENABLED
 static ResourceFormatSaverXML *resource_saver_xml=NULL;
 static ResourceFormatLoaderXML *resource_loader_xml=NULL;
@@ -100,11 +96,6 @@ void register_core_types() {
 	resource_format_po = memnew( TranslationLoaderPO );
 	ResourceLoader::add_resource_format_loader( resource_format_po );
 
-	// Register text formats before to give them precedence on saving
-	resource_saver_text = memnew( ResourceFormatSaverText );
-	ResourceSaver::add_resource_format_saver(resource_saver_text);
-	resource_loader_text = memnew( ResourceFormatLoaderText );
-	ResourceLoader::add_resource_format_loader(resource_loader_text);
 
 	resource_saver_binary = memnew( ResourceFormatSaverBinary );
 	ResourceSaver::add_resource_format_saver(resource_saver_binary);
@@ -210,11 +201,6 @@ void unregister_core_types() {
 		memdelete(resource_saver_binary);
 	if (resource_loader_binary)
 		memdelete(resource_loader_binary);
-
-	if (resource_saver_text)
-		memdelete(resource_saver_text);
-	if (resource_loader_text)
-		memdelete(resource_loader_text);
 
 
 	memdelete( resource_format_po );
