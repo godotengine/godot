@@ -732,20 +732,79 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 			// only connections that originate or end into main saved scene are saved
 			// everything else is discarded
 
-			Node *n=c.target->cast_to<Node>();
-			if (!n) {
+
+			Node *target=c.target->cast_to<Node>();
+
+
+			if (!target) {
 				continue;
 			}
 
-			//source node is outside saved scene?
-			bool src_is_out = p_node!=p_owner && (p_node->get_filename()!=String() || p_node->get_owner()!=p_owner);
-			//target node is outside saved scene?
-			bool dst_is_out = n!=p_owner && (n->get_filename()!=String() || n->get_owner()!=p_owner);
+			//find if this connection already exists
+			Node *common_parent = target->find_common_parent_with(p_node);
 
-			//if both are out, ignore connection
-			if (src_is_out && dst_is_out) {
+			ERR_CONTINUE(!common_parent);
+
+			if (common_parent!=p_owner && common_parent->get_filename()==String()) {
+				common_parent=common_parent->get_owner();
+			}
+
+			bool exists=false;
+
+			//go through ownership chain to see if this exists
+			while(common_parent) {
+
+
+
+				print_line("AT : "+String(p_owner->get_path_to(target)));
+				print_line("CP : "+String(p_owner->get_path_to(common_parent)));
+				Ref<SceneState> ps;
+
+				if (common_parent==p_owner)
+					ps=common_parent->get_scene_inherited_state();
+				else
+					ps=common_parent->get_scene_instance_state();
+
+
+				if (ps.is_valid()) {
+
+					print_line("PS VALID");
+
+					NodePath signal_from = common_parent->get_path_to(p_node);
+					NodePath signal_to = common_parent->get_path_to(target);
+
+					int path_from = ps->find_node_by_path(signal_from);
+					int path_to = ps->find_node_by_path(signal_to);
+					int signal_name = ps->find_name(c.signal);
+					int method_name = ps->find_name(c.method);
+
+					print_line("path_from "+itos(path_from));
+					print_line("path_to "+itos(path_to));
+					print_line("signal_name "+itos(signal_name));
+					print_line("method_name "+itos(method_name));
+
+					if (path_from>=0 && path_to>=0 && signal_name>=0 && method_name>=0) {
+						//if valid
+						print_line("EXISTS");
+						if (ps->has_connection(path_from,signal_name,path_to,method_name)) {
+							print_line("YES");
+							exists=true;
+							break;
+						}
+					}
+
+				}
+
+				if (common_parent==p_owner)
+					break;
+				else
+					common_parent=common_parent->get_owner();
+			}
+
+			if (exists) { //already exists (comes from instance or inheritance), so don't save
 				continue;
 			}
+
 
 
 			{
@@ -760,7 +819,7 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 						Ref<SceneState> state = nl->get_scene_inherited_state();
 						if (state.is_valid()) {
 							int from_node = state->find_node_by_path(nl->get_path_to(p_node));
-							int to_node = state->find_node_by_path(nl->get_path_to(n));
+							int to_node = state->find_node_by_path(nl->get_path_to(target));
 
 							if (from_node>=0 && to_node>=0) {
 								//this one has state for this node, save
@@ -778,7 +837,7 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 							Ref<SceneState> state = nl->get_scene_instance_state();
 							if (state.is_valid()) {
 								int from_node = state->find_node_by_path(nl->get_path_to(p_node));
-								int to_node = state->find_node_by_path(nl->get_path_to(n));
+								int to_node = state->find_node_by_path(nl->get_path_to(target));
 
 								if (from_node>=0 && to_node>=0) {
 									//this one has state for this node, save
@@ -819,14 +878,14 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 
 			int target_id;
 
-			if (node_map.has(n)) {
-				target_id=node_map[n];
+			if (node_map.has(target)) {
+				target_id=node_map[target];
 			} else {
-				if (nodepath_map.has(n)) {
-					target_id=FLAG_ID_IS_PATH|nodepath_map[n];
+				if (nodepath_map.has(target)) {
+					target_id=FLAG_ID_IS_PATH|nodepath_map[target];
 				} else {
 					int sidx=nodepath_map.size();
-					nodepath_map[n]=sidx;
+					nodepath_map[target]=sidx;
 					target_id=FLAG_ID_IS_PATH|sidx;
 				}
 			}
@@ -1478,6 +1537,8 @@ StringName SceneState::get_connection_method(int p_idx) const{
 	return names[connections[p_idx].method];
 
 }
+
+
 int SceneState::get_connection_flags(int p_idx) const{
 
 	ERR_FAIL_INDEX_V(p_idx,connections.size(),-1);
@@ -1494,6 +1555,24 @@ Array SceneState::get_connection_binds(int p_idx) const {
 	return binds;
 }
 
+bool SceneState::has_connection(int p_node_from, int p_signal, int p_node_to, int p_method) const {
+
+	for(int i=0;i<connections.size();i++) {
+		const ConnectionData &c = connections[i];
+
+		print_line("from: "+itos(c.from)+" vs "+itos(p_node_from));
+		print_line("to: "+itos(c.to)+" vs "+itos(p_node_to));
+		print_line("signal: "+itos(c.signal)+" vs "+itos(p_signal));
+		print_line("method: "+itos(c.method)+" vs "+itos(p_method));
+
+		if (c.from==p_node_from && c.signal==p_signal && c.to==p_node_to && c.method==p_method) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 Vector<NodePath> SceneState::get_editable_instances() const {
 	return editable_instances;
 }
@@ -1503,6 +1582,16 @@ int SceneState::add_name(const StringName& p_name) {
 
 	names.push_back(p_name);
 	return names.size()-1;
+}
+
+int SceneState::find_name(const StringName& p_name) const {
+
+	for(int i=0;i<names.size();i++) {
+		if (names[i]==p_name)
+			return i;
+	}
+
+	return -1;
 }
 
 int SceneState::add_value(const Variant& p_value) {

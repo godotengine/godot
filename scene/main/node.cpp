@@ -1121,6 +1121,38 @@ Node *Node::get_owner() const {
 	return data.owner;
 }
 
+
+Node* Node::find_common_parent_with(const Node *p_node) const {
+
+	if (this==p_node)
+		return const_cast<Node*>(p_node);
+
+	Set<const Node*> visited;
+
+	const Node *n=this;
+
+	while(n) {
+
+		visited.insert(n);
+		n=n->data.parent;
+	}
+
+	const Node *common_parent=p_node;
+
+	while(common_parent) {
+
+		if (visited.has(common_parent))
+			break;
+		common_parent=common_parent->data.parent;
+	}
+
+	if (!common_parent)
+		return NULL;
+
+	return const_cast<Node*>(common_parent);
+
+}
+
 NodePath Node::get_path_to(const Node *p_node) const {
 
 	ERR_FAIL_NULL_V(p_node,NodePath());

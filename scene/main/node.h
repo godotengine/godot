@@ -215,6 +215,7 @@ public:
 
 	NodePath get_path() const;
 	NodePath get_path_to(const Node *p_node) const;
+	Node* find_common_parent_with(const Node *p_node) const;
 
 	void add_to_group(const StringName& p_identifier,bool p_persistent=false);
 	void remove_from_group(const StringName& p_identifier);
