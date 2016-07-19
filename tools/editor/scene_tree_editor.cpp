@@ -983,6 +983,14 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_da
 	if (!d.has("type"))
 		return false;
 
+	TreeItem *item = tree->get_item_at_pos(p_point);
+	if (!item)
+		return false;
+
+	int section = tree->get_drop_section_at_pos(p_point);
+	if (section<-1 || (section==-1 && !item->get_parent()))
+		return false;
+
 	if (String(d["type"])=="files") {
 
 		Vector<String> files = d["files"];
@@ -1005,15 +1013,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_da
 
 
 	if (String(d["type"])=="nodes") {
-		TreeItem *item = tree->get_item_at_pos(p_point);
-		if (!item)
-			return false;
-		int section = tree->get_drop_section_at_pos(p_point);
-		if (section<-1 || (section==-1 && !item->get_parent()))
-			return false;
-
 		return true;
-
 	}
 
 	return false;
