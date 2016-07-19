@@ -35,12 +35,12 @@
 */
 
 template<class T>
-struct _DefaultComparator {
+struct DefaultComparator {
 
 	inline bool operator()(const T&a,const T&b) const { return (a<b); }
 };
 
-template<class T, class Comparator=_DefaultComparator<T> >
+template<class T, class Comparator=DefaultComparator<T> >
 class SortArray {
 
 	enum {

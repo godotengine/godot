@@ -33,7 +33,7 @@
 #include "os/os.h"
 #include "io/ip_address.h"
 
-struct _IP_ResolverPrivate;
+struct IP_ResolverPrivate;
 
 class IP : public Object {
 	OBJ_TYPE( IP, Object );
@@ -59,7 +59,7 @@ public:
 
 private:
 
-	_IP_ResolverPrivate *resolver;
+    IP_ResolverPrivate *resolver;
 protected:
 
 	static IP*singleton;

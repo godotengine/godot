@@ -33,7 +33,7 @@ StaticCString StaticCString::create(const char *p_ptr) {
 	StaticCString scs; scs.ptr=p_ptr; return scs;
 }
 
-StringName::_Data *StringName::_table[STRING_TABLE_LEN];
+StringName::Data *StringName::_table[STRING_TABLE_LEN];
 
 StringName _scs_create(const char *p_chr) {
 
@@ -60,7 +60,7 @@ void StringName::cleanup() {
 
 		while(_table[i]) {
 
-			_Data*d=_table[i];
+            Data*d=_table[i];
 			lost_strings++;
 			if (OS::get_singleton()->is_stdout_verbose()) {
 
@@ -212,7 +212,7 @@ StringName::StringName(const char *p_name) {
 		}
 	}
 
-	_data = memnew( _Data );
+    _data = memnew( Data );
 	_data->name=p_name;
 	_data->refcount.init();
 	_data->hash=hash;
@@ -264,7 +264,7 @@ StringName::StringName(const StaticCString& p_static_string) {
 		}
 	}
 
-	_data = memnew( _Data );
+    _data = memnew( Data );
 
 	_data->refcount.init();
 	_data->hash=hash;
@@ -316,7 +316,7 @@ StringName::StringName(const String& p_name) {
 	}
 
 
-	_data = memnew( _Data );
+    _data = memnew( Data );
 	_data->name=p_name;
 	_data->refcount.init();
 	_data->hash=hash;
@@ -346,7 +346,7 @@ StringName StringName::search(const char *p_name) {
 
 	uint32_t idx=hash&STRING_TABLE_MASK;
 
-	_Data *_data=_table[idx];
+    Data *_data=_table[idx];
 
 	while(_data) {
 
@@ -382,7 +382,7 @@ StringName StringName::search(const CharType *p_name) {
 
 	uint32_t idx=hash&STRING_TABLE_MASK;
 
-	_Data *_data=_table[idx];
+    Data *_data=_table[idx];
 
 	while(_data) {
 
@@ -412,7 +412,7 @@ StringName StringName::search(const String &p_name) {
 
 	uint32_t idx=hash&STRING_TABLE_MASK;
 
-	_Data *_data=_table[idx];
+    Data *_data=_table[idx];
 
 	while(_data) {
 

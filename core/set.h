@@ -47,7 +47,7 @@ class Set {
 		RED,
 		BLACK
 	};
-	struct _Data;
+    struct Data;
 public:
 
 
@@ -63,7 +63,7 @@ public:
 		Element* _next;
 		Element* _prev;
 		T value;
-		//_Data *data;
+        //Data *data;
 
 	public:
 
@@ -99,21 +99,21 @@ public:
 
 private:
 
-	struct _Data {
+    struct Data {
 
 		Element* _root;
 		Element* _nil;
 		int size_cache;
 
 
-		_Data() {
+        Data() {
 #ifdef GLOBALNIL_DISABLED
 			_nil = memnew_allocator( Element,A );
 			_nil->parent=_nil->left=_nil->right=_nil;
 			_nil->color=BLACK;
 #else
 
-			_nil=(Element*)&_GlobalNilClass::_nil;
+            _nil=(Element*)&GlobalNilClass::_nil;
 #endif
 			_root = NULL;
 
@@ -135,7 +135,7 @@ private:
 			}
 		}
 
-		~_Data() {
+        ~Data() {
 
 			_free_root();
 #ifdef GLOBALNIL_DISABLED
@@ -145,7 +145,7 @@ private:
 		}
 	};
 
-	_Data _data;
+    Data _data;
 
 	inline void _set_color(Element *p_node, int p_color) {
 

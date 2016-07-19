@@ -36,7 +36,7 @@ VARIANT_ENUM_CAST(IP::ResolverStatus);
 /************* RESOLVER ******************/
 
 
-struct _IP_ResolverPrivate {
+struct IP_ResolverPrivate {
 
 	struct QueueItem {
 
@@ -91,7 +91,7 @@ struct _IP_ResolverPrivate {
 
 	static void _thread_function(void *self) {
 
-		_IP_ResolverPrivate *ipr=(_IP_ResolverPrivate*)self;
+        IP_ResolverPrivate *ipr=(IP_ResolverPrivate*)self;
 
 		while(!ipr->thread_abort) {
 
@@ -240,7 +240,7 @@ IP* IP::create() {
 IP::IP() {
 
 	singleton=this;
-	resolver = memnew( _IP_ResolverPrivate );
+    resolver = memnew( IP_ResolverPrivate );
 	resolver->sem=NULL;
 
 #ifndef NO_THREADS
@@ -251,7 +251,7 @@ IP::IP() {
 	if (resolver->sem) {
 		resolver->thread_abort=false;
 
-		resolver->thread = Thread::create( _IP_ResolverPrivate::_thread_function,resolver );
+        resolver->thread = Thread::create( IP_ResolverPrivate::_thread_function,resolver );
 
 		if (!resolver->thread)
 			memdelete(resolver->sem); //wtf

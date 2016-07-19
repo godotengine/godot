@@ -31,7 +31,7 @@
 #include "os/keyboard.h"
 #include "object.h"
 
-struct _GlobalConstant {
+struct GlobalConstant {
 
 	const char *name;
 	int value;
@@ -40,7 +40,7 @@ struct _GlobalConstant {
 #define BIND_GLOBAL_CONSTANT(m_constant)  {#m_constant,m_constant}
 
 
-static _GlobalConstant _global_constants[]={
+static GlobalConstant _global_constants[]={
 
 //{ KEY_BACKSPACE, VK_BACK },// (0x08) // backspace
 

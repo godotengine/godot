@@ -35,14 +35,14 @@
 template<class T,class V>
 class VMap {
 
-	struct _Pair {
+    struct Pair {
 
 		T key;
 		V value;
 
-		_FORCE_INLINE_ _Pair() {}
+        _FORCE_INLINE_ Pair() {}
 
-		_FORCE_INLINE_ _Pair(const T& p_key, const V& p_value) {
+        _FORCE_INLINE_ Pair(const T& p_key, const V& p_value) {
 
 			key=p_key;
 			value=p_value;
@@ -50,7 +50,7 @@ class VMap {
 
 	};
 
-	Vector<_Pair> _data;
+    Vector<Pair> _data;
 
 	_FORCE_INLINE_ int _find(const T& p_val,bool &r_exact) const {
 
@@ -61,7 +61,7 @@ class VMap {
 		int low = 0;
 		int high = _data.size() -1;
 		int middle;
-		const _Pair *a=&_data[0];
+        const Pair *a=&_data[0];
 
 		while( low <= high )
 		{
@@ -91,7 +91,7 @@ class VMap {
 		int low = 0;
 		int high = _data.size() -1;
 		int middle;
-		const _Pair *a=&_data[0];
+        const Pair *a=&_data[0];
 
 		while( low <= high )
 		{
@@ -119,7 +119,7 @@ public:
 			_data[pos].value=p_val;
 			return pos;
 		}
-		_data.insert(pos,_Pair(p_key,p_val));
+        _data.insert(pos,Pair(p_key,p_val));
 		return pos;
 	}
 
@@ -153,12 +153,12 @@ public:
 	_FORCE_INLINE_ bool empty() const { return _data.empty(); }
 
 
-	const _Pair *get_array() const {
+    const Pair *get_array() const {
 
 		return _data.ptr();
 	}
 
-	_Pair *get_array() {
+    Pair *get_array() {
 
 		return _data.ptr();
 	}

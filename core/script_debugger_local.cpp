@@ -179,7 +179,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 	}
 }
 
-struct _ScriptDebuggerLocalProfileInfoSort {
+struct ScriptDebuggerLocalProfileInfoSort {
 
 	bool operator()(const ScriptLanguage::ProfilingInfo &A,const ScriptLanguage::ProfilingInfo &B) const {
 		return A.total_time > B.total_time;
@@ -214,7 +214,7 @@ void ScriptDebuggerLocal::idle_poll() {
 		ofs+=ScriptServer::get_language(i)->profiling_get_frame_data(&pinfo[ofs],pinfo.size()-ofs);
 	}
 
-	SortArray<ScriptLanguage::ProfilingInfo,_ScriptDebuggerLocalProfileInfoSort> sort;
+    SortArray<ScriptLanguage::ProfilingInfo,ScriptDebuggerLocalProfileInfoSort> sort;
 	sort.sort(pinfo.ptr(),ofs);
 
 	//falta el frame time
@@ -273,7 +273,7 @@ void ScriptDebuggerLocal::profiling_end() {
 		ofs+=ScriptServer::get_language(i)->profiling_get_accumulated_data(&pinfo[ofs],pinfo.size()-ofs);
 	}
 
-	SortArray<ScriptLanguage::ProfilingInfo,_ScriptDebuggerLocalProfileInfoSort> sort;
+    SortArray<ScriptLanguage::ProfilingInfo,ScriptDebuggerLocalProfileInfoSort> sort;
 	sort.sort(pinfo.ptr(),ofs);
 
 	uint64_t total_us=0;

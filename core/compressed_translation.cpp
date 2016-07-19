@@ -242,7 +242,7 @@ static int smaz_decompress(const char *in, int inlen, char *out, int outlen) {
 
 /////////// END OF SMAZ /////////////
 
-struct _PHashTranslationCmp {
+struct PHashTranslationCmp {
 
 	int orig_len;
 	CharString compressed;
@@ -261,7 +261,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	Vector< Vector< Pair<int,CharString> > > buckets;
 	Vector< Map< uint32_t, int > > table;
 	Vector< uint32_t > hfunc_table;
-	Vector< _PHashTranslationCmp > compressed;
+    Vector< PHashTranslationCmp > compressed;
 
 	table.resize(size);
 	hfunc_table.resize(size);
@@ -284,7 +284,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 
 		//compress string
 		CharString src_s = p_from->get_message(E->get()).operator String().utf8();
-		_PHashTranslationCmp ps;
+        PHashTranslationCmp ps;
 		ps.orig_len=src_s.size();
 		ps.offset=total_compression_size;
 

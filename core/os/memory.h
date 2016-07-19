@@ -347,20 +347,20 @@ void memdelete_arr(T *p_class) {
 }
 
 
-struct _GlobalNil {
+struct GlobalNil {
 
 	int color;
-	_GlobalNil *right;
-	_GlobalNil *left;
-	_GlobalNil *parent;
+    GlobalNil *right;
+    GlobalNil *left;
+    GlobalNil *parent;
 
-	_GlobalNil();
+    GlobalNil();
 
 };
 
-struct _GlobalNilClass {
+struct GlobalNilClass {
 
-	static _GlobalNil _nil;
+    static GlobalNil _nil;
 };
 
 
