@@ -2262,6 +2262,7 @@ void Control::set_rotation(float p_radians) {
 	data.rotation=p_radians;
 	update();
 	_notify_transform();
+	_change_notify("rect/rotation");
 }
 
 float Control::get_rotation() const{
