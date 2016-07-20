@@ -756,8 +756,6 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 
 
 
-				print_line("AT : "+String(p_owner->get_path_to(target)));
-				print_line("CP : "+String(p_owner->get_path_to(common_parent)));
 				Ref<SceneState> ps;
 
 				if (common_parent==p_owner)
@@ -768,29 +766,12 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 
 				if (ps.is_valid()) {
 
-					print_line("PS VALID");
-
 					NodePath signal_from = common_parent->get_path_to(p_node);
 					NodePath signal_to = common_parent->get_path_to(target);
 
-					int path_from = ps->find_node_by_path(signal_from);
-					int path_to = ps->find_node_by_path(signal_to);
-					int signal_name = ps->find_name(c.signal);
-					int method_name = ps->find_name(c.method);
-
-					print_line("path_from "+itos(path_from));
-					print_line("path_to "+itos(path_to));
-					print_line("signal_name "+itos(signal_name));
-					print_line("method_name "+itos(method_name));
-
-					if (path_from>=0 && path_to>=0 && signal_name>=0 && method_name>=0) {
-						//if valid
-						print_line("EXISTS");
-						if (ps->has_connection(path_from,signal_name,path_to,method_name)) {
-							print_line("YES");
-							exists=true;
-							break;
-						}
+					if (ps->has_connection(signal_from,c.signal,signal_to,c.method)) {
+						exists=true;
+						break;
 					}
 
 				}
@@ -1555,17 +1536,31 @@ Array SceneState::get_connection_binds(int p_idx) const {
 	return binds;
 }
 
-bool SceneState::has_connection(int p_node_from, int p_signal, int p_node_to, int p_method) const {
+bool SceneState::has_connection(const NodePath& p_node_from, const StringName& p_signal, const NodePath& p_node_to, const StringName& p_method) const {
 
 	for(int i=0;i<connections.size();i++) {
 		const ConnectionData &c = connections[i];
 
-		print_line("from: "+itos(c.from)+" vs "+itos(p_node_from));
-		print_line("to: "+itos(c.to)+" vs "+itos(p_node_to));
-		print_line("signal: "+itos(c.signal)+" vs "+itos(p_signal));
-		print_line("method: "+itos(c.method)+" vs "+itos(p_method));
+		NodePath np_from;
 
-		if (c.from==p_node_from && c.signal==p_signal && c.to==p_node_to && c.method==p_method) {
+		if (c.from&FLAG_ID_IS_PATH) {
+			np_from=node_paths[c.from&FLAG_MASK];
+		} else {
+			np_from=get_node_path(c.from);
+		}
+
+		NodePath np_to;
+
+		if (c.to&FLAG_ID_IS_PATH) {
+			np_to=node_paths[c.to&FLAG_MASK];
+		} else {
+			np_to=get_node_path(c.to);
+		}
+
+		StringName sn_signal=names[c.signal];
+		StringName sn_method=names[c.method];
+
+		if (np_from==p_node_from && sn_signal==p_signal && np_to==p_node_to && sn_method==p_method) {
 			return true;
 		}
 	}

@@ -1573,7 +1573,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 						String dp;
 
 						Error err = OS::get_singleton()->execute(adb,args,true,NULL,&dp,&ec);
-						print_line("RV: "+itos(ec));
+
 						Vector<String> props = dp.split("\n");
 						String vendor;
 						String device;

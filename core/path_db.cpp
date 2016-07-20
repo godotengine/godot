@@ -53,6 +53,12 @@ uint32_t NodePath::hash() const {
 
 }
 
+void NodePath::prepend_period() {
+
+	if (data->path.size() && data->path[0].operator String()!=".") {
+		data->path.insert(0,".");
+	}
+}
 
 bool NodePath::is_absolute() const {
 
