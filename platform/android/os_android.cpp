@@ -705,6 +705,13 @@ String OS_Android::get_model_name() const {
     return OS_Unix::get_model_name();
 }
 
+int OS_Android::get_screen_dpi(int p_screen) const {
+
+	if (get_screen_dpi_func) {
+		return get_screen_dpi_func();
+	}
+	return 160;
+}
 
 void OS_Android::set_need_reload_hooks(bool p_needs_them) {
 
@@ -808,7 +815,7 @@ String OS_Android::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion) {
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion) {
 
 
 	use_apk_expansion=p_use_apk_expansion;
@@ -829,6 +836,7 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFu
 	get_data_dir_func=p_get_data_dir_func;
 	get_locale_func=p_get_locale_func;
 	get_model_func=p_get_model_func;
+	get_screen_dpi_func = p_get_screen_dpi_func;
 	get_unique_id_func=p_get_unique_id;
 	get_system_dir_func=p_get_sdir_func;
 

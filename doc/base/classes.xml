@@ -22534,6 +22534,15 @@
 			<argument index="0" name="screen" type="int" default="0">
 			</argument>
 			<description>
+				Returns the dots per inch density of the specified screen.
+
+				On Android Devices, the actual screen densities are grouped into six generalized densities:
+					ldpi    - 120 dpi
+					mdpi    - 160 dpi
+					hdpi    - 240 dpi
+					xhdpi   - 320 dpi
+					xxhdpi  - 480 dpi
+					xxxhdpi - 640 dpi
 			</description>
 		</method>
 		<method name="get_screen_orientation" qualifiers="const">
