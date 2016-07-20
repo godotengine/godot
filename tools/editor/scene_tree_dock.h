@@ -148,6 +148,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _filter_changed(const String& p_filter);
 
+	void _perform_instance_scenes(const Vector<String>& p_files,Node* parent,int p_pos);
+
 protected:
 
 	void _notification(int p_what);
@@ -160,7 +162,7 @@ public:
 	void import_subscene();
 	void set_edited_scene(Node* p_scene);
 	void instance(const String& p_path);
-	void instance_scenes(const Vector<String>& p_files,Node* parent,int p_pos);
+	void instance_scenes(const Vector<String>& p_files, Node *p_parent=NULL);
 	void set_selected(Node *p_node, bool p_emit_selected=false);
 	void fill_path_renames(Node* p_node, Node *p_new_parent, List<Pair<NodePath,NodePath> > *p_renames);
 	void perform_node_renames(Node* p_base,List<Pair<NodePath,NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims=NULL);
