@@ -360,10 +360,18 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 
 }
 
-void ResourceLoader::add_resource_format_loader(ResourceFormatLoader *p_format_loader) {
+void ResourceLoader::add_resource_format_loader(ResourceFormatLoader *p_format_loader, bool p_at_front) {
 
 	ERR_FAIL_COND( loader_count >= MAX_LOADERS );
-	loader[loader_count++]=p_format_loader;
+	if (p_at_front) {
+		for(int i=loader_count;i>0;i--) {
+			loader[i]=loader[i-1];
+		}
+		loader[0]=p_format_loader;
+		loader_count++;
+	} else {
+		loader[loader_count++]=p_format_loader;
+	}
 }
 
 void ResourceLoader::get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types) {

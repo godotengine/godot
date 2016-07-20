@@ -637,10 +637,10 @@ void register_scene_types() {
 
 
 	resource_saver_text = memnew( ResourceFormatSaverText );
-	ResourceSaver::add_resource_format_saver(resource_saver_text);
+	ResourceSaver::add_resource_format_saver(resource_saver_text,true);
 
 	resource_loader_text = memnew( ResourceFormatLoaderText );
-	ResourceLoader::add_resource_format_loader(resource_loader_text);
+	ResourceLoader::add_resource_format_loader(resource_loader_text,true);
 
 }
 

@@ -102,7 +102,7 @@ public:
 	static Ref<ResourceImportMetadata> load_import_metadata(const String &p_path);
 
 	static void get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions);
-	static void add_resource_format_loader(ResourceFormatLoader *p_format_loader);
+	static void add_resource_format_loader(ResourceFormatLoader *p_format_loader,bool p_at_front=false);
 	static String get_resource_type(const String &p_path);
 	static void get_dependencies(const String& p_path,List<String> *p_dependencies,bool p_add_types=false);
 	static Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
