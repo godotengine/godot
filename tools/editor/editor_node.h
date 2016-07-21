@@ -42,7 +42,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/texture_progress.h"
-#include "tools/editor/scenes_dock.h"
+#include "tools/editor/filesystem_dock.h"
 #include "tools/editor/scene_tree_editor.h"
 #include "tools/editor/property_editor.h"
 #include "tools/editor/create_dialog.h"
@@ -275,7 +275,7 @@ private:
 	PropertyEditor *property_editor;
 	NodeDock *node_dock;
 	VBoxContainer *prop_editor_vb;
-	ScenesDock *scenes_dock;
+	FileSystemDock *scenes_dock;
 	EditorRunNative *run_native;
 
 	HBoxContainer *search_bar;
@@ -666,7 +666,7 @@ public:
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 
 	void request_instance_scene(const String &p_path);
-	ScenesDock *get_scenes_dock();
+	FileSystemDock *get_scenes_dock();
 	SceneTreeDock *get_scene_tree_dock();
 	static UndoRedo* get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 

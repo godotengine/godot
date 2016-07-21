@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef SCENES_DOCK_H
-#define SCENES_DOCK_H
+#ifndef FILESYSTEM_DOCK_H
+#define FILESYSTEM_DOCK_H
 
 #include "scene/main/timer.h"
 #include "scene/gui/control.h"
@@ -51,8 +51,8 @@
 class EditorNode;
 
 
-class ScenesDock : public VBoxContainer {
-	OBJ_TYPE( ScenesDock, VBoxContainer );
+class FileSystemDock : public VBoxContainer {
+	OBJ_TYPE( FileSystemDock, VBoxContainer );
 
 	enum FileMenu {
 		FILE_OPEN,
@@ -184,8 +184,8 @@ public:
 
 	void set_use_thumbnails(bool p_use);
 
-	ScenesDock(EditorNode *p_editor);
-	~ScenesDock();
+	FileSystemDock(EditorNode *p_editor);
+	~FileSystemDock();
 };
 
 

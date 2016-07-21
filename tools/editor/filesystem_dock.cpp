@@ -26,7 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "scenes_dock.h"
+#include "filesystem_dock.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
 #include "globals.h"
@@ -39,7 +39,7 @@
 #include "scene/main/viewport.h"
 
 
-bool ScenesDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir) {
+bool FileSystemDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir) {
 
 
 	TreeItem *item = tree->create_item(p_parent);
@@ -66,7 +66,7 @@ bool ScenesDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_di
 }
 
 
-void ScenesDock::_update_tree() {
+void FileSystemDock::_update_tree() {
 
 	tree->clear();
 	updating_tree=true;
@@ -97,7 +97,7 @@ void ScenesDock::_update_tree() {
 }
 
 
-void ScenesDock::_notification(int p_what) {
+void FileSystemDock::_notification(int p_what) {
 
 	switch(p_what) {
 
@@ -208,7 +208,7 @@ void ScenesDock::_notification(int p_what) {
 
 
 
-void ScenesDock::_dir_selected() {
+void FileSystemDock::_dir_selected() {
 
 	TreeItem *ti = tree->get_selected();
 	if (!ti)
@@ -241,7 +241,7 @@ void ScenesDock::_dir_selected() {
 }
 
 
-void ScenesDock::_favorites_pressed() {
+void FileSystemDock::_favorites_pressed() {
 
 	TreeItem *sel = tree->get_selected();
 	if (!sel)
@@ -270,7 +270,7 @@ void ScenesDock::_favorites_pressed() {
 
 }
 
-String ScenesDock::get_selected_path() const {
+String FileSystemDock::get_selected_path() const {
 
 	TreeItem *sel = tree->get_selected();
 	if (!sel)
@@ -279,12 +279,12 @@ String ScenesDock::get_selected_path() const {
 	return "res://"+path;
 }
 
-String ScenesDock::get_current_path() const {
+String FileSystemDock::get_current_path() const {
 
 	return path;
 }
 
-void ScenesDock::_thumbnail_done(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata) {
+void FileSystemDock::_thumbnail_done(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata) {
 
 	bool valid=false;
 
@@ -312,7 +312,7 @@ void ScenesDock::_thumbnail_done(const String& p_path,const Ref<Texture>& p_prev
 
 }
 
-void ScenesDock::_change_file_display() {
+void FileSystemDock::_change_file_display() {
 
 	if (display_mode->is_pressed()) {
 		display_mode->set_icon( get_icon("FileThumbnail","EditorIcons"));
@@ -324,7 +324,7 @@ void ScenesDock::_change_file_display() {
 	_update_files(true);
 }
 
-void ScenesDock::_search(EditorFileSystemDirectory *p_path,List<FileInfo>* matches,int p_max_items) {
+void FileSystemDock::_search(EditorFileSystemDirectory *p_path,List<FileInfo>* matches,int p_max_items) {
 
 	if (matches->size()>p_max_items)
 		return;
@@ -371,7 +371,7 @@ void ScenesDock::_search(EditorFileSystemDirectory *p_path,List<FileInfo>* match
 	}
 }
 
-void ScenesDock::_update_files(bool p_keep_selection) {
+void FileSystemDock::_update_files(bool p_keep_selection) {
 
 	Set<String> cselection;
 
@@ -584,13 +584,13 @@ void ScenesDock::_update_files(bool p_keep_selection) {
 
 }
 
-void ScenesDock::_select_file(int p_idx) {
+void FileSystemDock::_select_file(int p_idx) {
 
 	files->select(p_idx,true);
 	_file_option(FILE_OPEN);
 }
 
-void ScenesDock::_go_to_tree() {
+void FileSystemDock::_go_to_tree() {
 
 	tree->show();
 	file_list_vb->hide();
@@ -602,7 +602,7 @@ void ScenesDock::_go_to_tree() {
 	//file_options->hide();
 }
 
-void ScenesDock::_go_to_dir(const String& p_dir){
+void FileSystemDock::_go_to_dir(const String& p_dir){
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (da->change_dir(p_dir)==OK) {
@@ -615,7 +615,7 @@ void ScenesDock::_go_to_dir(const String& p_dir){
 
 }
 
-void ScenesDock::_preview_invalidated(const String& p_path) {
+void FileSystemDock::_preview_invalidated(const String& p_path) {
 
 	if (p_path.get_base_dir()==path && search_box->get_text()==String() && file_list_vb->is_visible()) {
 
@@ -635,7 +635,7 @@ void ScenesDock::_preview_invalidated(const String& p_path) {
 	}
 }
 
-void ScenesDock::_fs_changed() {
+void FileSystemDock::_fs_changed() {
 
 	button_hist_prev->set_disabled(history_pos==0);
 	button_hist_next->set_disabled(history_pos+1==history.size());
@@ -656,7 +656,7 @@ void ScenesDock::_fs_changed() {
 	set_process(false);
 }
 
-void ScenesDock::_set_scannig_mode() {
+void FileSystemDock::_set_scannig_mode() {
 
 	split_box->hide();
 	button_hist_prev->set_disabled(true);
@@ -671,7 +671,7 @@ void ScenesDock::_set_scannig_mode() {
 
 }
 
-void ScenesDock::_fw_history() {
+void FileSystemDock::_fw_history() {
 
 	if (history_pos<history.size()-1)
 		history_pos++;
@@ -695,7 +695,7 @@ void ScenesDock::_fw_history() {
 
 }
 
-void ScenesDock::_bw_history() {
+void FileSystemDock::_bw_history() {
 
 	if (history_pos>0)
 		history_pos--;
@@ -719,7 +719,7 @@ void ScenesDock::_bw_history() {
 
 }
 
-void ScenesDock::_push_to_history() {
+void FileSystemDock::_push_to_history() {
 
 	history.resize(history_pos+1);
 	if (history[history_pos]!=path) {
@@ -733,7 +733,7 @@ void ScenesDock::_push_to_history() {
 }
 
 
-void ScenesDock::_find_inside_move_files(EditorFileSystemDirectory *efsd,Vector<String>& files) {
+void FileSystemDock::_find_inside_move_files(EditorFileSystemDirectory *efsd,Vector<String>& files) {
 
 	for(int i=0;i<efsd->get_subdir_count();i++) {
 		_find_inside_move_files(efsd->get_subdir(i),files);
@@ -744,7 +744,7 @@ void ScenesDock::_find_inside_move_files(EditorFileSystemDirectory *efsd,Vector<
 
 }
 
-void ScenesDock::_find_remaps(EditorFileSystemDirectory *efsd,Map<String,String> &renames,List<String>& to_remaps) {
+void FileSystemDock::_find_remaps(EditorFileSystemDirectory *efsd,Map<String,String> &renames,List<String>& to_remaps) {
 
 	for(int i=0;i<efsd->get_subdir_count();i++) {
 		_find_remaps(efsd->get_subdir(i),renames,to_remaps);
@@ -761,7 +761,7 @@ void ScenesDock::_find_remaps(EditorFileSystemDirectory *efsd,Map<String,String>
 }
 
 
-void ScenesDock::_rename_operation(const String& p_to_path) {
+void FileSystemDock::_rename_operation(const String& p_to_path) {
 
 	if (move_files[0]==p_to_path) {
 		EditorNode::get_singleton()->show_warning(TTR("Same source and destination files, doing nothing."));
@@ -808,7 +808,7 @@ void ScenesDock::_rename_operation(const String& p_to_path) {
 }
 
 
-void ScenesDock::_move_operation(const String& p_to_path) {
+void FileSystemDock::_move_operation(const String& p_to_path) {
 
 	if (p_to_path==path) {
 		EditorNode::get_singleton()->show_warning(TTR("Same source and destination paths, doing nothing."));
@@ -901,7 +901,7 @@ void ScenesDock::_move_operation(const String& p_to_path) {
 
 }
 
-void ScenesDock::_file_option(int p_option) {
+void FileSystemDock::_file_option(int p_option) {
 
 	switch(p_option) {
 
@@ -1085,7 +1085,7 @@ void ScenesDock::_file_option(int p_option) {
 	}
 }
 
-void ScenesDock::_open_pressed(){
+void FileSystemDock::_open_pressed(){
 
 
 	TreeItem *sel = tree->get_selected();
@@ -1116,7 +1116,7 @@ void ScenesDock::_open_pressed(){
 }
 
 
-void ScenesDock::_search_changed(const String& p_text) {
+void FileSystemDock::_search_changed(const String& p_text) {
 
 	if (!search_box->is_visible())
 		return; //wtf
@@ -1124,29 +1124,29 @@ void ScenesDock::_search_changed(const String& p_text) {
 	_update_files(false);
 }
 
-void ScenesDock::_rescan() {
+void FileSystemDock::_rescan() {
 
 	_set_scannig_mode();
 	EditorFileSystem::get_singleton()->scan();
 
 }
 
-void ScenesDock::fix_dependencies(const String& p_for_file) {
+void FileSystemDock::fix_dependencies(const String& p_for_file) {
 	deps_editor->edit(p_for_file);
 }
 
 
-void ScenesDock::focus_on_filter() {
+void FileSystemDock::focus_on_filter() {
 
 }
 
-void ScenesDock::set_use_thumbnails(bool p_use) {
+void FileSystemDock::set_use_thumbnails(bool p_use) {
 
 	display_mode->set_pressed(!p_use);
 }
 
 
-Variant ScenesDock::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+Variant FileSystemDock::get_drag_data_fw(const Point2& p_point,Control* p_from) {
 
 	if (p_from==tree) {
 
@@ -1223,7 +1223,7 @@ Variant ScenesDock::get_drag_data_fw(const Point2& p_point,Control* p_from) {
 	return Variant();
 }
 
-bool ScenesDock::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const{
+bool FileSystemDock::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const{
 
 	Dictionary drag_data = p_data;
 
@@ -1289,7 +1289,7 @@ bool ScenesDock::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Co
 	return false;
 }
 
-void ScenesDock::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from){
+void FileSystemDock::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from){
 
 	if (!can_drop_data_fw(p_point,p_data,p_from))
 		return;
@@ -1441,7 +1441,7 @@ void ScenesDock::drop_data_fw(const Point2& p_point,const Variant& p_data,Contro
 
 }
 
-void ScenesDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
+void FileSystemDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 
 	Vector<String> filenames;
 
@@ -1564,35 +1564,35 @@ void ScenesDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 
 }
 
-void ScenesDock::_bind_methods() {
+void FileSystemDock::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_update_tree"),&ScenesDock::_update_tree);
-	ObjectTypeDB::bind_method(_MD("_rescan"),&ScenesDock::_rescan);
-	ObjectTypeDB::bind_method(_MD("_favorites_pressed"),&ScenesDock::_favorites_pressed);
+	ObjectTypeDB::bind_method(_MD("_update_tree"),&FileSystemDock::_update_tree);
+	ObjectTypeDB::bind_method(_MD("_rescan"),&FileSystemDock::_rescan);
+	ObjectTypeDB::bind_method(_MD("_favorites_pressed"),&FileSystemDock::_favorites_pressed);
 //	ObjectTypeDB::bind_method(_MD("_instance_pressed"),&ScenesDock::_instance_pressed);
-	ObjectTypeDB::bind_method(_MD("_open_pressed"),&ScenesDock::_open_pressed);
+	ObjectTypeDB::bind_method(_MD("_open_pressed"),&FileSystemDock::_open_pressed);
 
-	ObjectTypeDB::bind_method(_MD("_thumbnail_done"),&ScenesDock::_thumbnail_done);
-	ObjectTypeDB::bind_method(_MD("_select_file"), &ScenesDock::_select_file);
-	ObjectTypeDB::bind_method(_MD("_go_to_tree"), &ScenesDock::_go_to_tree);
-	ObjectTypeDB::bind_method(_MD("_go_to_dir"), &ScenesDock::_go_to_dir);
-	ObjectTypeDB::bind_method(_MD("_change_file_display"), &ScenesDock::_change_file_display);
-	ObjectTypeDB::bind_method(_MD("_fw_history"), &ScenesDock::_fw_history);
-	ObjectTypeDB::bind_method(_MD("_bw_history"), &ScenesDock::_bw_history);
-	ObjectTypeDB::bind_method(_MD("_fs_changed"), &ScenesDock::_fs_changed);
-	ObjectTypeDB::bind_method(_MD("_dir_selected"), &ScenesDock::_dir_selected);
-	ObjectTypeDB::bind_method(_MD("_file_option"), &ScenesDock::_file_option);
-	ObjectTypeDB::bind_method(_MD("_move_operation"), &ScenesDock::_move_operation);
-	ObjectTypeDB::bind_method(_MD("_rename_operation"), &ScenesDock::_rename_operation);
+	ObjectTypeDB::bind_method(_MD("_thumbnail_done"),&FileSystemDock::_thumbnail_done);
+	ObjectTypeDB::bind_method(_MD("_select_file"), &FileSystemDock::_select_file);
+	ObjectTypeDB::bind_method(_MD("_go_to_tree"), &FileSystemDock::_go_to_tree);
+	ObjectTypeDB::bind_method(_MD("_go_to_dir"), &FileSystemDock::_go_to_dir);
+	ObjectTypeDB::bind_method(_MD("_change_file_display"), &FileSystemDock::_change_file_display);
+	ObjectTypeDB::bind_method(_MD("_fw_history"), &FileSystemDock::_fw_history);
+	ObjectTypeDB::bind_method(_MD("_bw_history"), &FileSystemDock::_bw_history);
+	ObjectTypeDB::bind_method(_MD("_fs_changed"), &FileSystemDock::_fs_changed);
+	ObjectTypeDB::bind_method(_MD("_dir_selected"), &FileSystemDock::_dir_selected);
+	ObjectTypeDB::bind_method(_MD("_file_option"), &FileSystemDock::_file_option);
+	ObjectTypeDB::bind_method(_MD("_move_operation"), &FileSystemDock::_move_operation);
+	ObjectTypeDB::bind_method(_MD("_rename_operation"), &FileSystemDock::_rename_operation);
 
-	ObjectTypeDB::bind_method(_MD("_search_changed"), &ScenesDock::_search_changed);
+	ObjectTypeDB::bind_method(_MD("_search_changed"), &FileSystemDock::_search_changed);
 
-	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &ScenesDock::get_drag_data_fw);
-	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &ScenesDock::can_drop_data_fw);
-	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &ScenesDock::drop_data_fw);
-	ObjectTypeDB::bind_method(_MD("_files_list_rmb_select"),&ScenesDock::_files_list_rmb_select);
+	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &FileSystemDock::get_drag_data_fw);
+	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &FileSystemDock::can_drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &FileSystemDock::drop_data_fw);
+	ObjectTypeDB::bind_method(_MD("_files_list_rmb_select"),&FileSystemDock::_files_list_rmb_select);
 
-	ObjectTypeDB::bind_method(_MD("_preview_invalidated"),&ScenesDock::_preview_invalidated);
+	ObjectTypeDB::bind_method(_MD("_preview_invalidated"),&FileSystemDock::_preview_invalidated);
 
 
 	ADD_SIGNAL(MethodInfo("instance"));
@@ -1600,7 +1600,7 @@ void ScenesDock::_bind_methods() {
 
 }
 
-ScenesDock::ScenesDock(EditorNode *p_editor) {
+FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	editor=p_editor;
 
@@ -1766,6 +1766,6 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	add_constant_override("separation",3);
 }
 
-ScenesDock::~ScenesDock() {
+FileSystemDock::~FileSystemDock() {
 
 }

@@ -3822,7 +3822,7 @@ void EditorNode::request_instance_scene(const String &p_path) {
 
 }
 
-ScenesDock *EditorNode::get_scenes_dock() {
+FileSystemDock *EditorNode::get_scenes_dock() {
 
 	return scenes_dock;
 }
@@ -6162,7 +6162,7 @@ EditorNode::EditorNode() {
 	//node_dock->set_undoredo(&editor_data.get_undo_redo());
 	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(node_dock);
 
-	scenes_dock = memnew( ScenesDock(this) );
+	scenes_dock = memnew( FileSystemDock(this) );
 	scenes_dock->set_name(TTR("FileSystem"));
 	scenes_dock->set_use_thumbnails(int(EditorSettings::get_singleton()->get("file_dialog/display_mode"))==EditorFileDialog::DISPLAY_THUMBNAILS);
 	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(scenes_dock);
