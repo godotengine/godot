@@ -58,7 +58,7 @@ extern "C" {
     JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv * env, jobject obj, jstring path);
 	JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv * env, jobject obj, jint ID, jstring method, jobjectArray params);
 	JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv * env, jobject obj, jint ID, jstring method, jobjectArray params);
-};
+}
 
 
 #endif

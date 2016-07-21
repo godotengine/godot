@@ -1482,6 +1482,7 @@ int EditorExportPlatformAndroid::get_device_count() const {
 	return dc;
 
 }
+
 String EditorExportPlatformAndroid::get_device_name(int p_device) const {
 
 	ERR_FAIL_INDEX_V(p_device,devices.size(),"");
@@ -1490,6 +1491,7 @@ String EditorExportPlatformAndroid::get_device_name(int p_device) const {
 	device_lock->unlock();
 	return s;
 }
+
 String EditorExportPlatformAndroid::get_device_info(int p_device) const {
 
 	ERR_FAIL_INDEX_V(p_device,devices.size(),"");
@@ -1883,7 +1885,6 @@ bool EditorExportPlatformAndroid::can_export(String *r_error) const {
 
 EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 
-
 	quit_request=true;
 	Thread::wait_to_finish(device_thread);
 	memdelete(device_lock);
@@ -1911,7 +1912,6 @@ void register_android_exporter() {
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>( memnew(EditorExportPlatformAndroid) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
-
 
 }
 

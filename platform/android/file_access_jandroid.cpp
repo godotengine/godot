@@ -90,6 +90,7 @@ void FileAccessJAndroid::close() {
 	id=0;
 
 }
+
 bool FileAccessJAndroid::is_open() const {
 
 	return id!=0;
@@ -102,6 +103,7 @@ void FileAccessJAndroid::seek(size_t p_position) {
 	ERR_FAIL_COND(!is_open());
 	env->CallVoidMethod(io,_file_seek,id,p_position);
 }
+
 void FileAccessJAndroid::seek_end(int64_t p_position) {
 
 	ERR_FAIL_COND(!is_open());
@@ -109,6 +111,7 @@ void FileAccessJAndroid::seek_end(int64_t p_position) {
 	seek(get_len());
 
 }
+
 size_t FileAccessJAndroid::get_pos() const {
 
 	JNIEnv *env = ThreadAndroid::get_env();
@@ -116,12 +119,12 @@ size_t FileAccessJAndroid::get_pos() const {
 	return env->CallIntMethod(io,_file_tell,id);
 
 }
+
 size_t FileAccessJAndroid::get_len() const {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 	ERR_FAIL_COND_V(!is_open(),0);
 	return env->CallIntMethod(io,_file_get_size,id);
-
 
 }
 
@@ -167,7 +170,6 @@ Error FileAccessJAndroid::get_error() const {
 
 void FileAccessJAndroid::store_8(uint8_t p_dest) {
 
-
 }
 
 bool FileAccessJAndroid::file_exists(const String& p_path) {
@@ -194,7 +196,6 @@ bool FileAccessJAndroid::file_exists(const String& p_path) {
 
 
 void FileAccessJAndroid::setup(  jobject p_io) {
-
 
 	io=p_io;
 	JNIEnv *env = ThreadAndroid::get_env();
@@ -239,14 +240,12 @@ void FileAccessJAndroid::setup(  jobject p_io) {
 }
 
 
-FileAccessJAndroid::FileAccessJAndroid()
-{
+FileAccessJAndroid::FileAccessJAndroid() {
 
 	id=0;
 }
 
-FileAccessJAndroid::~FileAccessJAndroid()
-{
+FileAccessJAndroid::~FileAccessJAndroid() {
 
 	if (is_open())
 		close();
