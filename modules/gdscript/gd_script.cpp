@@ -1643,13 +1643,16 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script>& p_script,bool p_sof
 			}
 #endif
 
+			for(Map<ObjectID,List<Pair<StringName,Variant> > >::Element *F=E->get()->pending_reload_state.front();F;F=F->next()) {
+				map[F->key()]=F->get(); //pending to reload, use this one instead
+			}
 		}
 	}
 
 	for(Map< Ref<GDScript>, Map<ObjectID,List<Pair<StringName,Variant> > > >::Element *E=to_reload.front();E;E=E->next()) {
 
 		Ref<GDScript> scr = E->key();
-		scr->reload(true);
+		scr->reload(p_soft_reload);
 
 		//restore state if saved
 		for (Map<ObjectID,List<Pair<StringName,Variant> > >::Element *F=E->get().front();F;F=F->next()) {
@@ -1658,13 +1661,24 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script>& p_script,bool p_sof
 			if (!obj)
 				continue;
 
+			if (!p_soft_reload) {
+				//clear it just in case (may be a pending reload state)
+				obj->set_script(RefPtr());
+			}
 			obj->set_script(scr.get_ref_ptr());
-			if (!obj->get_script_instance())
+			if (!obj->get_script_instance()) {
+				//failed, save reload state for next time if not saved
+				if (!scr->pending_reload_state.has(obj->get_instance_ID())) {
+					scr->pending_reload_state[obj->get_instance_ID()]=F->get();
+				}
 				continue;
+			}
 
 			for (List<Pair<StringName,Variant> >::Element *G=F->get().front();G;G=G->next()) {
 				obj->get_script_instance()->set(G->get().first,G->get().second);
 			}
+
+			scr->pending_reload_state.erase(obj->get_instance_ID()); //as it reloaded, remove pending state
 		}
 
 		//if instance states were saved, set them!

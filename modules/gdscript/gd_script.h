@@ -120,7 +120,11 @@ friend class GDScriptLanguage;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 #endif
 
+#ifdef DEBUG_ENABLED
 
+	Map<ObjectID,List<Pair<StringName,Variant> > > pending_reload_state;
+
+#endif
 
 	bool _update_exports();
 
@@ -264,6 +268,8 @@ class GDScriptLanguage : public ScriptLanguage {
 
 
 	Mutex *lock;
+
+
 
 friend class GDScript;
 
