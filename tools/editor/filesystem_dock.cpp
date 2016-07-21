@@ -951,7 +951,8 @@ void FileSystemDock::_file_option(int p_option) {
 		case FILE_INSTANCE: {
 
 			for (int i = 0; i<files->get_item_count(); i++) {
-
+				if (!files->is_selected(i))
+					continue;
 				String path =files->get_item_metadata(i);
 				if (EditorFileSystem::get_singleton()->get_file_type(path)=="PackedScene") {
 					emit_signal("instance",path);
