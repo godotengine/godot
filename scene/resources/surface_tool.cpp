@@ -752,8 +752,6 @@ void SurfaceTool::generate_normals() {
 	if (smooth_groups.has(0))
 		smooth=smooth_groups[0];
 
-	print_line("SMOOTH BEGIN? "+itos(smooth));
-
 	List< Vertex >::Element *B=vertex_array.front();
 	for(List< Vertex >::Element *E=B;E;) {
 
