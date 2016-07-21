@@ -944,6 +944,11 @@ void _OS::native_video_stop() {
 	OS::get_singleton()->native_video_stop();
 };
 
+void _OS::request_attention() {
+
+	OS::get_singleton()->request_attention();
+}
+
 bool _OS::is_debug_build() const {
 
 #ifdef DEBUG_ENABLED
@@ -1042,6 +1047,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_window_minimized"),&_OS::is_window_minimized);
 	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
 	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
+	ObjectTypeDB::bind_method(_MD("request_attention"), &_OS::request_attention);
 
 	ObjectTypeDB::bind_method(_MD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
 	ObjectTypeDB::bind_method(_MD("get_borderless_window"), &_OS::get_borderless_window);
