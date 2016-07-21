@@ -894,6 +894,17 @@ void _OS::print_resources_by_type(const Vector<String>& p_types) {
 
 };
 
+bool _OS::has_virtual_keyboard() const {
+	return OS::get_singleton()->has_virtual_keyboard();
+}
+
+void _OS::show_virtual_keyboard(const String& p_existing_text) {
+	OS::get_singleton()->show_virtual_keyboard(p_existing_text, Rect2());
+}
+
+void _OS::hide_virtual_keyboard() {
+	OS::get_singleton()->hide_virtual_keyboard();
+}
 
 void _OS::print_all_resources(const String& p_to_file ) {
 
@@ -1117,6 +1128,9 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("dump_memory_to_file","file"),&_OS::dump_memory_to_file);
 	ObjectTypeDB::bind_method(_MD("dump_resources_to_file","file"),&_OS::dump_resources_to_file);
+	ObjectTypeDB::bind_method(_MD("has_virtual_keyboard"),&_OS::has_virtual_keyboard);
+	ObjectTypeDB::bind_method(_MD("show_virtual_keyboard", "existing_text"),&_OS::show_virtual_keyboard,DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("hide_virtual_keyboard"),&_OS::hide_virtual_keyboard);
 	ObjectTypeDB::bind_method(_MD("print_resources_in_use","short"),&_OS::print_resources_in_use,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("print_all_resources","tofile"),&_OS::print_all_resources,DEFVAL(""));
 
