@@ -199,16 +199,12 @@ void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 
 	if (!is_visible() || get_viewport()->gui_has_modal_stack())
 		return;
+
 	if (p_ev.key.mod.control)
-		// prevent to change tool mode when control key is pressed
 		return;
-	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_Q)
-		_tool_select(TOOL_SELECT);
-	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_W)
-		_tool_select(TOOL_MOVE);
-	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_E)
-		_tool_select(TOOL_ROTATE);
+
 	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_V && drag==DRAG_NONE && can_move_pivot) {
+
 		if (p_ev.key.mod.shift) {
 			//move drag pivot
 			drag=DRAG_PIVOT;
@@ -3296,20 +3292,23 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(select_button);
 	select_button->connect("pressed",this,"_tool_select",make_binds(TOOL_SELECT));
 	select_button->set_pressed(true);
-	select_button->set_tooltip(TTR("Select Mode (Q)")+"\n"+keycode_get_string(KEY_MASK_CMD)+TTR("Drag: Rotate")+"\n"+TTR("Alt+Drag: Move")+"\n"+TTR("Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).")+"\n"+TTR("Alt+RMB: Depth list selection"));
+	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode",TTR("Select Mode"),KEY_Q));
+	select_button->set_tooltip(TTR("Select Mode")+" $sc\n"+keycode_get_string(KEY_MASK_CMD)+TTR("Drag: Rotate")+"\n"+TTR("Alt+Drag: Move")+"\n"+TTR("Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).")+"\n"+TTR("Alt+RMB: Depth list selection"));
 
 
 	move_button = memnew( ToolButton );
 	move_button->set_toggle_mode(true);
 	hb->add_child(move_button);
 	move_button->connect("pressed",this,"_tool_select",make_binds(TOOL_MOVE));
-	move_button->set_tooltip(TTR("Move Mode (W)"));
+	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode",TTR("Move Mode"),KEY_W));
+	move_button->set_tooltip(TTR("Move Mode"));
 
 	rotate_button = memnew( ToolButton );
 	rotate_button->set_toggle_mode(true);
 	hb->add_child(rotate_button);
 	rotate_button->connect("pressed",this,"_tool_select",make_binds(TOOL_ROTATE));
-	rotate_button->set_tooltip(TTR("Rotate Mode (E)"));
+	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode",TTR("Rotate Mode"),KEY_E));
+	rotate_button->set_tooltip(TTR("Rotate Mode"));
 
 	hb->add_child(memnew(VSeparator));
 
