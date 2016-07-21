@@ -581,11 +581,14 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 				}
 			} else if (mouse_mode!=MOUSE_MODE_CAPTURED) {
 				// for reasons unknown to mankind, wheel comes in screen cordinates
-				RECT rect;
-				GetWindowRect(hWnd,&rect);
-				mb.x-=rect.left;
-				mb.y-=rect.top;
+				POINT coords;
+				coords.x = mb.x;
+				coords.y = mb.y;
 
+				ScreenToClient(hWnd, &coords);
+
+				mb.x = coords.x;
+				mb.y = coords.y;
 			}
 
 			if (main_loop) {
