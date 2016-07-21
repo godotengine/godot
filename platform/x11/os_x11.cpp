@@ -1043,6 +1043,26 @@ bool OS_X11::is_window_maximized() const {
 	return false;
 }
 
+void OS_X11::request_attention() {
+	// Using EWMH -- Extended Window Manager Hints
+	//
+	// Sets the _NET_WM_STATE_DEMANDS_ATTENTION atom for WM_STATE
+	// Will be unset by the window manager after user react on the request for attention
+	//
+	XEvent xev;
+	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+	Atom wm_attention = XInternAtom(x11_display, "_NET_WM_STATE_DEMANDS_ATTENTION", False);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = x11_window;
+	xev.xclient.message_type = wm_state;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = _NET_WM_STATE_ADD;
+	xev.xclient.data.l[1] = wm_attention;
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+}
 
 InputModifierState OS_X11::get_key_modifier_state(unsigned int p_x11_state) {
 
