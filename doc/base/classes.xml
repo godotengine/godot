@@ -31099,24 +31099,29 @@
 		Simple regular expression matcher.
 	</brief_description>
 	<description>
-		Class for finding text patterns in a string using regular expressions. Regular expressions are a way to define patterns of text to be searched.
-		This class only finds patterns in a string. It can not perform replacements.
-		Usage of regular expressions is too long to be explained here, but Internet is full of tutorials and detailed explanations.
+		Class for finding text patterns in a string using regular expressions. It can not perform replacements. Regular expressions are a way to define patterns of text to be searched. Details on writing patterns are too long to explain here but the Internet is full of tutorials and detailed explanations.
+		Once created, the RegEx object needs to be compiled with the pattern before it can be used. The pattern must be escaped first for gdscript before it is escaped for the expression. For example:
+		[code]var exp = RegEx.new()[/code]
+		[code]exp.compile("\\d+")[/code]
+		would be read by RegEx as [code]\d+[/code]
+		Similarly:
+		[code]exp.compile("\"(?:\\\\.|[^\"])*\"")[/code]
+		would be read as [code]"(?:\\.|[^"])*"[/code]
 		Currently supported features:
-		Capturing [code]()[/code] and non-capturing [code](?:)[/code] groups
-		Any character [code].[/code]
-		Shorthand character classes [code]\w \W \s \S \d \D[/code]
-		User-defined character classes such as [code][A-Za-z][/code]
-		Simple quantifiers [code]?[/code], [code]*[/code] and [code]+[/code]
-		Range quantifiers [code]{x,y}[/code]
-		Lazy (non-greedy) quantifiers [code]*?[/code]
-		Beginning [code]^[/code] and end [code]$[/code] anchors
-		Alternation [code]|[/code]
-		Backreferences [code]\1[/code] and [code]\g{1}[/code]
-		POSIX character classes [code][[:alnum:]][/code]
-		Lookahead [code](?=)[/code], [code](?!)[/code] and lookbehind [code](?&lt;=)[/code], [code](?&lt;!)[/code]
-		ASCII [code]\xFF[/code] and Unicode [code]\uFFFF[/code] code points (in a style similar to Python)
-		Word boundaries [code]\b[/code], [code]\B[/code]
+		* Capturing [code]()[/code] and non-capturing [code](?:)[/code] groups
+		* Any character [code].[/code]
+		* Shorthand character classes [code]\w \W \s \S \d \D[/code]
+		* User-defined character classes such as [code][A-Za-z][/code]
+		* Simple quantifiers [code]?[/code], [code]*[/code] and [code]+[/code]
+		* Range quantifiers [code]{x,y}[/code]
+		* Lazy (non-greedy) quantifiers [code]*?[/code]
+		* Beginning [code]^[/code] and end [code]$[/code] anchors
+		* Alternation [code]|[/code]
+		* Backreferences [code]\1[/code] and [code]\g{1}[/code]
+		* POSIX character classes [code][[:alnum:]][/code]
+		* Lookahead [code](?=)[/code], [code](?!)[/code] and lookbehind [code](?&lt;=)[/code], [code](?&lt;!)[/code]
+		* ASCII [code]\xFF[/code] and Unicode [code]\uFFFF[/code] code points (in a style similar to Python)
+		* Word boundaries [code]\b[/code], [code]\B[/code]
 	</description>
 	<methods>
 		<method name="clear">
