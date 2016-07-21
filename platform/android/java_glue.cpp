@@ -668,6 +668,7 @@ static jmethodID _openURI=0;
 static jmethodID _getDataDir=0;
 static jmethodID _getLocale=0;
 static jmethodID _getModel=0;
+static jmethodID _getScreenDPI=0;
 static jmethodID _showKeyboard=0;
 static jmethodID _hideKeyboard=0;
 static jmethodID _setScreenOrientation=0;
@@ -710,6 +711,12 @@ static String _get_model() {
     JNIEnv *env = ThreadAndroid::get_env();
     jstring s =(jstring)env->CallObjectMethod(godot_io,_getModel);
     return String(env->GetStringUTFChars( s, NULL ));
+}
+
+static int _get_screen_dpi() {
+
+	JNIEnv *env = ThreadAndroid::get_env();
+	return env->CallIntMethod(godot_io,_getScreenDPI);
 }
 
 static String _get_unique_id() {
@@ -821,6 +828,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv * e
 			_getDataDir = env->GetMethodID(c,"getDataDir","()Ljava/lang/String;");
 			_getLocale = env->GetMethodID(c,"getLocale","()Ljava/lang/String;");
 			_getModel = env->GetMethodID(c,"getModel","()Ljava/lang/String;");
+			_getScreenDPI = env->GetMethodID(c, "getScreenDPI","()I");
 			_getUniqueID = env->GetMethodID(c,"getUniqueID","()Ljava/lang/String;");
 			_showKeyboard = env->GetMethodID(c,"showKeyboard","(Ljava/lang/String;)V");
 			_hideKeyboard = env->GetMethodID(c,"hideKeyboard","()V");
@@ -875,7 +883,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv * e
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","CMDLINE LEN %i - APK EXPANSION %I\n",cmdlen,int(use_apk_expansion));
 
-	os_android = new OS_Android(_gfx_init_func,env,_open_uri,_get_data_dir,_get_locale, _get_model,_show_vk, _hide_vk,_set_screen_orient,_get_unique_id, _get_system_dir, _play_video,_is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, use_apk_expansion);
+	os_android = new OS_Android(_gfx_init_func,env,_open_uri,_get_data_dir,_get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk,_set_screen_orient,_get_unique_id, _get_system_dir, _play_video,_is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, use_apk_expansion);
 	os_android->set_need_reload_hooks(p_need_reload_hook);
 
 	char wd[500];
