@@ -191,7 +191,7 @@ void ItemList::set_item_disabled(int p_idx,bool p_disabled){
 	ERR_FAIL_INDEX(p_idx,items.size());
 
 	items[p_idx].disabled=p_disabled;
-
+	update();
 
 }
 
@@ -225,7 +225,7 @@ void ItemList::select(int p_idx,bool p_single){
 
 	if (p_single || select_mode==SELECT_SINGLE) {
 
-		if (!items[p_idx].selectable) {
+		if (!items[p_idx].selectable || items[p_idx].disabled) {
 			return;
 		}
 
@@ -237,7 +237,7 @@ void ItemList::select(int p_idx,bool p_single){
 		ensure_selected_visible=false;
 	} else {
 
-		if (items[p_idx].selectable) {
+		if (items[p_idx].selectable && !items[p_idx].disabled) {
 			items[p_idx].selected=true;
 		}
 	}
@@ -510,7 +510,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 				}
 			} else {
 
-				if (!mb.doubleclick && !mb.mod.command && select_mode==SELECT_MULTI && items[i].selectable && items[i].selected && p_event.mouse_button.button_index==BUTTON_LEFT) {
+				if (!mb.doubleclick && !mb.mod.command && select_mode==SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && p_event.mouse_button.button_index==BUTTON_LEFT) {
 					defer_select_single=i;
 					return;
 				}
@@ -694,7 +694,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 
 			if (select_mode==SELECT_MULTI && current>=0 && current<items.size()) {
-				if (items[current].selectable && !items[current].selected) {
+				if (items[current].selectable && !items[current].disabled && !items[current].selected) {
 					select(current,false);
 					emit_signal("multi_selected",current,true);
 				} else if (items[current].selected) {
@@ -1029,10 +1029,14 @@ void ItemList::_notification(int p_what) {
 					draw_rect.size=adj.size;
 				}
 
+				Color modulate=Color(1,1,1,1);
+				if (items[i].disabled)
+					modulate.a*=0.5;
+
 				if (items[i].icon_region.has_no_area())
-					draw_texture_rect(items[i].icon, draw_rect );
+					draw_texture_rect(items[i].icon, draw_rect,false,modulate );
 				else
-					draw_texture_rect_region(items[i].icon, draw_rect, items[i].icon_region);
+					draw_texture_rect_region(items[i].icon, draw_rect, items[i].icon_region,modulate);
 
 			}
 
@@ -1052,6 +1056,10 @@ void ItemList::_notification(int p_what) {
 					max_len=items[i].rect_cache.size.x;
 				else
 					max_len=size.x;
+
+				Color modulate=items[i].selected?font_color_selected:font_color;
+				if (items[i].disabled)
+					modulate.a*=0.5;
 
 				if (icon_mode==ICON_MODE_TOP && max_text_lines>0) {
 
@@ -1090,7 +1098,7 @@ void ItemList::_notification(int p_what) {
 							if (line>=max_text_lines)
 								break;
 						}
-						ofs+=font->draw_char(get_canvas_item(),text_ofs+Vector2(ofs+(max_len-line_size_cache[line])/2,line*(font_height+line_separation)).floor(),items[i].text[j],items[i].text[j+1],items[i].selected?font_color_selected:font_color);
+						ofs+=font->draw_char(get_canvas_item(),text_ofs+Vector2(ofs+(max_len-line_size_cache[line])/2,line*(font_height+line_separation)).floor(),items[i].text[j],items[i].text[j+1],modulate);
 					}
 
 					//special multiline mode
@@ -1110,7 +1118,7 @@ void ItemList::_notification(int p_what) {
 					text_ofs+=base_ofs;
 					text_ofs+=items[i].rect_cache.pos;
 
-					draw_string(font,text_ofs,items[i].text,items[i].selected?font_color_selected:font_color,max_len+1);
+					draw_string(font,text_ofs,items[i].text,modulate,max_len+1);
 				}
 
 
