@@ -215,7 +215,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant* p_a
 
 	}
 	return v;
-};
+}
 
 String _get_class_name(JNIEnv * env, jclass cls, bool* array) {
 
@@ -233,7 +233,7 @@ String _get_class_name(JNIEnv * env, jclass cls, bool* array) {
 
 	return name;
 
-};
+}
 
 
 Variant _jobject_to_variant(JNIEnv * env, jobject obj) {
@@ -406,7 +406,7 @@ Variant _jobject_to_variant(JNIEnv * env, jobject obj) {
 	env->DeleteLocalRef(c);
 
 	return Variant();
-};
+}
 
 class JNISingleton : public Object {
 
@@ -731,27 +731,27 @@ static void _show_vk(const String& p_existing) {
 	JNIEnv* env = ThreadAndroid::get_env();
 	jstring jStr = env->NewStringUTF(p_existing.utf8().get_data());
 	env->CallVoidMethod(godot_io, _showKeyboard, jStr);
-};
+}
 
 static void _set_screen_orient(int p_orient) {
 
 	JNIEnv* env = ThreadAndroid::get_env();
 	env->CallVoidMethod(godot_io, _setScreenOrientation, p_orient );
-};
+}
 
 static String _get_system_dir(int p_dir) {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 	jstring s =(jstring)env->CallObjectMethod(godot_io,_getSystemDir,p_dir);
 	return String(env->GetStringUTFChars( s, NULL ));
-};
+}
 
 
 static void _hide_vk() {
 
 	JNIEnv* env = ThreadAndroid::get_env();
 	env->CallVoidMethod(godot_io, _hideKeyboard);
-};
+}
 
 // virtual Error native_video_play(String p_path);
 // virtual bool native_video_is_playing();
@@ -953,7 +953,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv * e
 		os_android->reload_gfx();
 	}
 
-
 }
 
 
@@ -967,7 +966,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_quit(JNIEnv * env, jo
 }
 
 static void _initialize_java_modules() {
-
 
 	String modules = Globals::get_singleton()->get("android/modules");
 	Vector<String> mods = modules.split(",",false);
@@ -1417,7 +1415,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv * en
 	input_mutex->lock();
 	joy_events.push_back(jevent);
 	input_mutex->unlock();
-};
+}
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv * env, jobject obj, jint p_device, jint p_axis, jfloat p_value) {
 
@@ -1430,7 +1428,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv * env,
 	input_mutex->lock();
 	joy_events.push_back(jevent);
 	input_mutex->unlock();
-};
+}
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv * env, jobject obj, jint p_device, jint p_hat_x, jint p_hat_y) {
 	OS_Android::JoystickEvent jevent;
@@ -1493,7 +1491,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv * env, job
 	input_mutex->lock();
 	key_events.push_back(ievent);
 	input_mutex->unlock();
-};
+}
 
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv * env, jobject obj,  jfloat x, jfloat y, jfloat z) {
@@ -1722,7 +1720,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv * e
 
 	env->PopLocalFrame(NULL);
 
-};
+}
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv * env, jobject p_obj, jint ID, jstring method, jobjectArray params) {
 
@@ -1757,7 +1755,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 	// something
 	env->PopLocalFrame(NULL);
 
-};
+}
 
 //Main::cleanup();
 
