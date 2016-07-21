@@ -879,6 +879,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 Error Main::setup2() {
 
+	video_mode.maximized = init_maximized;
+	video_mode.fullscreen = init_fullscreen;
 
 	OS::get_singleton()->initialize(video_mode,video_driver_idx,audio_driver_idx);
 	if (init_use_custom_pos) {
