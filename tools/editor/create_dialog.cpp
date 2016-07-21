@@ -164,8 +164,11 @@ void CreateDialog::_update_search() {
 	for(;I;I=I->next()) {
 
 
+
 		String type=I->get();
 
+		if (base_type=="Node" && type.begins_with("Editor"))
+			continue; // do not show editor nodes
 
 		if (!ObjectTypeDB::can_instance(type))
 			continue; // cant create what can't be instanced
