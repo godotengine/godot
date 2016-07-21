@@ -235,19 +235,20 @@ struct SpatialIndexer2D {
 			List<VisibilityNotifier2D*> added;
 			List<VisibilityNotifier2D*> removed;
 
-			for(int i=begin.x;i<=end.x;i++) {
+			int visible_cells=(end.x-begin.x)*(end.y-begin.y);
 
-				for(int j=begin.y;j<=end.y;j++) {
+			if (visible_cells>10000) {
 
-					CellKey ck;
-					ck.x=i;
-					ck.y=j;
+				//well you zoomed out a lot, it's your problem. To avoid freezing in the for loops below, we'll manually check cell by cell
 
-					Map<CellKey,CellData>::Element *F=cells.find(ck);
-					if (!F) {
+				for (Map<CellKey,CellData>::Element *F=cells.front();F;F=F->next()) {
+
+					const CellKey &ck=F->key();
+
+					if (ck.x<begin.x || ck.x>end.x)
 						continue;
-					}
-
+					if (ck.y<begin.y || ck.y>end.y)
+						continue;
 
 					//notifiers in cell
 					for (Map<VisibilityNotifier2D*,CellRef>::Element *G=F->get().notifiers.front();G;G=G->next()) {
@@ -259,6 +260,38 @@ struct SpatialIndexer2D {
 							added.push_back(G->key());
 						} else {
 							H->get()=pass;
+						}
+					}
+				}
+
+			} else {
+
+				//check cells in grid fashion
+				for(int i=begin.x;i<=end.x;i++) {
+
+					for(int j=begin.y;j<=end.y;j++) {
+
+						CellKey ck;
+						ck.x=i;
+						ck.y=j;
+
+						Map<CellKey,CellData>::Element *F=cells.find(ck);
+						if (!F) {
+							continue;
+						}
+
+
+						//notifiers in cell
+						for (Map<VisibilityNotifier2D*,CellRef>::Element *G=F->get().notifiers.front();G;G=G->next()) {
+
+							Map<VisibilityNotifier2D*,uint64_t>::Element *H=E->get().notifiers.find(G->key());
+							if (!H) {
+
+								H=E->get().notifiers.insert(G->key(),pass);
+								added.push_back(G->key());
+							} else {
+								H->get()=pass;
+							}
 						}
 					}
 				}

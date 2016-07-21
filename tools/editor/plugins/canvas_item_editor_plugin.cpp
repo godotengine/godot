@@ -41,6 +41,11 @@
 #include "tools/editor/plugins/animation_player_editor_plugin.h"
 #include "scene/resources/packed_scene.h"
 
+
+#define MIN_ZOOM 0.01
+#define MAX_ZOOM 100
+
+
 class SnapDialog : public ConfirmationDialog {
 
 	OBJ_TYPE(SnapDialog,ConfirmationDialog);
@@ -1062,6 +1067,9 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 		if (b.button_index==BUTTON_WHEEL_DOWN) {
 
+			if (zoom<MIN_ZOOM)
+				return;
+
 			float prev_zoom=zoom;
 			zoom=zoom*0.95;
 			{
@@ -1076,6 +1084,9 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 		}
 
 		if (b.button_index==BUTTON_WHEEL_UP) {
+
+			if (zoom>MAX_ZOOM)
+				return;
 
 			float prev_zoom=zoom;
 			zoom=zoom*(1.0/0.95);
@@ -2526,12 +2537,17 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_dialog->popup_centered(Size2(220,160));
 		} break;
 		case ZOOM_IN: {
+			if (zoom>MAX_ZOOM)
+				return;
 			zoom=zoom*(1.0/0.5);
 			_update_scroll(0);
 			viewport->update();
 			return;
 		} break;
 		case ZOOM_OUT: {
+			if (zoom<MIN_ZOOM)
+				return;
+
 			zoom=zoom*0.5;
 			_update_scroll(0);
 			viewport->update();
