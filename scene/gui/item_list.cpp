@@ -336,6 +336,7 @@ void ItemList::clear(){
 	current=-1;
 	ensure_selected_visible=false;
 	update();
+	shape_changed=true;
 	defer_select_single=-1;
 
 }
