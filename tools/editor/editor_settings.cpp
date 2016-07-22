@@ -611,8 +611,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("on_save/compress_binary_resources",true);
 	set("on_save/save_modified_external_resources",true);
-	set("on_save/save_paths_as_relative",false);
-	set("on_save/save_paths_without_extension",false);
+	//set("on_save/save_paths_as_relative",false);
+	//set("on_save/save_paths_without_extension",false);
 
 	set("text_editor/create_signal_callbacks",true);
 

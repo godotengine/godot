@@ -1489,8 +1489,8 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 		int flg=0;
 		if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
 			flg|=ResourceSaver::FLAG_COMPRESS;
-		if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
-			flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
+		//if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+		//	flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
 
 
 		err = ResourceSaver::save(p_file,sdata,flg);
