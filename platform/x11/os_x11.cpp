@@ -216,8 +216,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
 
-#if 1
-	// NEW_WM_API
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
 	// needed for lxde/openbox, possibly others
@@ -267,22 +265,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XSetWMNormalHints(x11_display, x11_window, xsh);
 		XFree(xsh);
 	}
-#else
-	capture_idle = 0;
-	minimized = false;
-	maximized = false;
-
-	if (current_videomode.fullscreen) {
-		//set_wm_border(false);
-		set_wm_fullscreen(true);
-	}
-	if (!current_videomode.resizable) {
-		int screen = get_current_screen();
-		Size2i screen_size = get_screen_size(screen);
-		set_window_size(screen_size);
-		set_window_resizable(false);
-	}
-#endif
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -440,7 +422,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		 XFreeGC(x11_display, gc);
 
 
-
 		 if (cursor == None)
 		 {
 			 ERR_PRINT("FAILED CREATING CURSOR");
@@ -579,7 +560,7 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 				    ButtonPressMask | ButtonReleaseMask |
 				    PointerMotionMask, GrabModeAsync, GrabModeAsync,
 				    x11_window, None, CurrentTime) !=
-		       GrabSuccess)  {
+				GrabSuccess)  {
 			ERR_PRINT("NO GRAB");
 		}
 
@@ -642,22 +623,6 @@ OS::VideoMode OS_X11::get_video_mode(int p_screen) const {
 
 void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 }
-
-//#ifdef NEW_WM_API
-#if 0
-// Just now not needed. Can be used for a possible OS.set_border(bool) method
-void OS_X11::set_wm_border(bool p_enabled) {
-	// needed for lxde/openbox, possibly others
-	Hints hints;
-	Atom property;
-	hints.flags = 2;
-	hints.decorations = p_enabled ? 1L : 0L;
-	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-	XMapRaised(x11_display, x11_window);
-	//XMoveResizeWindow(x11_display, x11_window, 0, 0, 800, 800);
-}
-#endif
 
 void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	// Using EWMH -- Extened Window Manager Hints
@@ -811,54 +776,7 @@ Point2 OS_X11::get_window_position() const {
 }
 
 void OS_X11::set_window_position(const Point2& p_position) {
-	// Using EWMH -- Extended Window Manager Hints
-	// to get the size of the decoration
-#if 0
-	Atom property = XInternAtom(x11_display,"_NET_FRAME_EXTENTS", True);
-	Atom type;
-	int format;
-	unsigned long len;
-	unsigned long remaining;
-	unsigned char *data = NULL;
-	int result;
-
-	result = XGetWindowProperty(
-		x11_display,
-		x11_window,
-		property,
-		0,
-		32,
-		False,
-		AnyPropertyType,
-		&type,
-		&format,
-		&len,
-		&remaining,
-		&data
-	);
-
-	long left = 0L;
-	long top = 0L;
-
-	if( result == Success ) {
-		long *extends = (long *) data;
-
-		left = extends[0];
-		top = extends[2];
-
-		XFree(data);
-	}
-
-	int screen = get_current_screen();
-	Point2i screen_position = get_screen_position(screen);
-
-	left -= screen_position.x;
-	top -= screen_position.y;
-
-	XMoveWindow(x11_display,x11_window,p_position.x - left,p_position.y - top);
-#else
 	XMoveWindow(x11_display,x11_window,p_position.x,p_position.y);
-#endif
 }
 
 Size2 OS_X11::get_window_size() const {
@@ -902,20 +820,19 @@ bool OS_X11::is_window_resizable() const {
 }
 
 void OS_X11::set_window_minimized(bool p_enabled) {
-        // Using ICCCM -- Inter-Client Communication Conventions Manual
-        XEvent xev;
-        Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
+	// Using ICCCM -- Inter-Client Communication Conventions Manual
+	XEvent xev;
+	Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
 
-        memset(&xev, 0, sizeof(xev));
-        xev.type = ClientMessage;
-        xev.xclient.window = x11_window;
-        xev.xclient.message_type = wm_change;
-        xev.xclient.format = 32;
-        xev.xclient.data.l[0] = p_enabled ? WM_IconicState : WM_NormalState;
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = x11_window;
+	xev.xclient.message_type = wm_change;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = p_enabled ? WM_IconicState : WM_NormalState;
 
-        XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
-        //XEvent xev;
 	Atom wm_state     =  XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_hidden    =  XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False);
 
@@ -979,47 +896,33 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 	xev.xclient.data.l[2] = wm_max_vert;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-/* sorry this does not fix it, fails on multi monitor
-	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
-	current_videomode.width = xwa.width;
-	current_videomode.height = xwa.height;
-//*/
-
-//	current_videomode.width = wm_max_horz;
-//	current_videomode.height = wm_max_vert;
-
-	//Size2 ss = get_screen_size(get_current_screen());
-	//current_videomode.width=ss.width;
-	//current_videomode.height=ss.height;
-
 
 	maximized = p_enabled;
 }
 
 bool OS_X11::is_window_maximized() const {
 	// Using EWMH -- Extended Window Manager Hints
-        Atom property = XInternAtom(x11_display,"_NET_WM_STATE",False );
-        Atom type;
-        int format;
-        unsigned long len;
-        unsigned long remaining;
-        unsigned char *data = NULL;
+	Atom property = XInternAtom(x11_display,"_NET_WM_STATE",False );
+	Atom type;
+	int format;
+	unsigned long len;
+	unsigned long remaining;
+	unsigned char *data = NULL;
 
-        int result = XGetWindowProperty(
-                x11_display,
-                x11_window,
-                property,
-                0,
-                1024,
-                False,
-                XA_ATOM,
-                &type,
-                &format,
-                &len,
-                &remaining,
-                &data
-        );
+	int result = XGetWindowProperty(
+			x11_display,
+			x11_window,
+			property,
+			0,
+			1024,
+			False,
+			XA_ATOM,
+			&type,
+			&format,
+			&len,
+			&remaining,
+			&data
+	);
 
 	if(result == Success) {
 		Atom *atoms = (Atom*) data;
@@ -1383,11 +1286,6 @@ void OS_X11::process_xevents() {
 		} break;
 		case FocusIn:
 			minimized = false;
-#ifdef NEW_WM_API
-			if(current_videomode.fullscreen) {
-				set_wm_fullscreen(true);
-			}
-#endif
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 				XGrabPointer(x11_display, x11_window, True,
@@ -1398,12 +1296,6 @@ void OS_X11::process_xevents() {
 			break;
 
 		case FocusOut:
-#ifdef NEW_WM_API
-			if(current_videomode.fullscreen) {
-				set_wm_fullscreen(false);
-				set_window_minimized(true);
-			}
-#endif
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 				//dear X11, I try, I really try, but you never work, you do whathever you want.
@@ -1546,13 +1438,6 @@ void OS_X11::process_xevents() {
 			}
 
 			Point2i rel = pos - last_mouse_pos;
-
-#ifdef NEW_WM_API
-			if (mouse_mode==MOUSE_MODE_CAPTURED) {
-				pos.x = current_videomode.width / 2;
-				pos.y = current_videomode.height / 2;
-			}
-#endif
 
 			InputEvent motion_event;
 			motion_event.ID=++event_id;
@@ -1836,7 +1721,7 @@ static String _get_clipboard(Atom p_source, Window x11_window, ::Display* x11_di
 
 	return ret;
 
-};
+}
 
 String OS_X11::get_clipboard() const {
 
@@ -1848,7 +1733,7 @@ String OS_X11::get_clipboard() const {
 	};
 
 	return ret;
-};
+}
 
 String OS_X11::get_name() {
 
@@ -2095,4 +1980,4 @@ OS_X11::OS_X11() {
 	minimized = false;
 	xim_style=0L;
 	mouse_mode=MOUSE_MODE_VISIBLE;
-};
+}
