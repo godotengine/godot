@@ -49,11 +49,11 @@ ft_sources=[\
 
 
 if (env["freetype"]=="builtin"):
-#fix for windows command line i too long, split in two libraries
+	# fix for Windows' shell miserably failing on long lines, split in two libraries
 	half1=[]
 	half2=[]
 	for x in ft_sources:
-		if (x.find("freetype/src/base")==0):
+		if (x.find("freetype/src/base")==0 or x.find("freetype/src/sfnt")==0):
 			half2.append(x)
 		else:
 			half1.append(x)
@@ -63,9 +63,7 @@ if (env["freetype"]=="builtin"):
 	lib = env.Library("freetype_builtin2",half1)
 	env.Append(LIBS=[lib])
 
-#   lib = env.Library("freetype_builtin",ft_sources)
-#   env.Prepend(LIBS=[lib])
-
+	env.Append(CPPPATH=["#drivers/freetype/freetype/include"])
 
 
 Export('env')

@@ -148,7 +148,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
   /*                                                                       */
-#define FT_CONFIG_OPTION_USE_LZW
+/* #define FT_CONFIG_OPTION_USE_LZW */ // -GODOT-
 
 
   /*************************************************************************/
@@ -163,7 +163,7 @@ FT_BEGIN_HEADER
   /*   Define this macro if you want to enable this `feature'.  See also   */
   /*   the macro FT_CONFIG_OPTION_SYSTEM_ZLIB below.                       */
   /*                                                                       */
-#define FT_CONFIG_OPTION_USE_ZLIB
+/* #define FT_CONFIG_OPTION_USE_ZLIB */ // -GODOT-
 
 
   /*************************************************************************/
@@ -765,7 +765,7 @@ FT_BEGIN_HEADER
   /* switch between the two engines using the `hinting-engine' property of */
   /* the cff driver module.                                                */
   /*                                                                       */
-#define CFF_CONFIG_OPTION_OLD_ENGINE
+/* #define CFF_CONFIG_OPTION_OLD_ENGINE */ // -GODOT-
 
 
   /*************************************************************************/
