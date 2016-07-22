@@ -446,7 +446,6 @@ void ItemList::_input_event(const InputEvent& p_event) {
 		pos.y += scroll_bar->get_val();
 
 		int closest = -1;
-		int closest_dist = 0x7FFFFFFF;
 
 		for (int i=0;i<items.size();i++) {
 			Rect2 rc = items[i].rect_cache;
@@ -457,12 +456,6 @@ void ItemList::_input_event(const InputEvent& p_event) {
 			if (rc.has_point(pos)) {
 				closest=i;
 				break;
-			}
-
-			float dist = rc.distance_to(pos);
-			if (dist<closest_dist) {
-				closest=i;
-				closest_dist=dist;
 			}
 		}
 
