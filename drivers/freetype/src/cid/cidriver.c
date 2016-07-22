@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    CID driver interface (body).                                         */
 /*                                                                         */
-/*  Copyright 1996-2004, 2006, 2008, 2009, 2011, 2013 by                   */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -24,7 +24,7 @@
 #include "ciderrs.h"
 
 #include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_XFREE86_NAME_H
+#include FT_SERVICE_FONT_FORMAT_H
 #include FT_SERVICE_POSTSCRIPT_INFO_H
 #include FT_SERVICE_CID_H
 
@@ -59,7 +59,7 @@
 
   static const FT_Service_PsFontNameRec  cid_service_ps_name =
   {
-    (FT_PsName_GetFunc) cid_get_postscript_name
+    (FT_PsName_GetFunc)cid_get_postscript_name    /* get_ps_font_name */
   };
 
 
@@ -88,11 +88,14 @@
 
   static const FT_Service_PsInfoRec  cid_service_ps_info =
   {
-    (PS_GetFontInfoFunc)   cid_ps_get_font_info,
-    (PS_GetFontExtraFunc)  cid_ps_get_font_extra,
-    (PS_HasGlyphNamesFunc) NULL,        /* unsupported with CID fonts */
-    (PS_GetFontPrivateFunc)NULL,        /* unsupported                */
-    (PS_GetFontValueFunc)  NULL         /* not implemented            */
+    (PS_GetFontInfoFunc)   cid_ps_get_font_info,   /* ps_get_font_info    */
+    (PS_GetFontExtraFunc)  cid_ps_get_font_extra,  /* ps_get_font_extra   */
+    /* unsupported with CID fonts */
+    (PS_HasGlyphNamesFunc) NULL,                   /* ps_has_glyph_names  */
+    /* unsupported                */
+    (PS_GetFontPrivateFunc)NULL,                   /* ps_get_font_private */
+    /* not implemented            */
+    (PS_GetFontValueFunc)  NULL                    /* ps_get_font_value   */
   };
 
 
@@ -155,9 +158,12 @@
 
   static const FT_Service_CIDRec  cid_service_cid_info =
   {
-     (FT_CID_GetRegistryOrderingSupplementFunc)cid_get_ros,
-     (FT_CID_GetIsInternallyCIDKeyedFunc)      cid_get_is_cid,
-     (FT_CID_GetCIDFromGlyphIndexFunc)         cid_get_cid_from_glyph_index
+    (FT_CID_GetRegistryOrderingSupplementFunc)
+      cid_get_ros,                             /* get_ros                  */
+    (FT_CID_GetIsInternallyCIDKeyedFunc)
+      cid_get_is_cid,                          /* get_is_cid               */
+    (FT_CID_GetCIDFromGlyphIndexFunc)
+      cid_get_cid_from_glyph_index             /* get_cid_from_glyph_index */
   };
 
 
@@ -168,7 +174,7 @@
 
   static const FT_ServiceDescRec  cid_services[] =
   {
-    { FT_SERVICE_ID_XF86_NAME,            FT_XF86_FORMAT_CID },
+    { FT_SERVICE_ID_FONT_FORMAT,          FT_FONT_FORMAT_CID },
     { FT_SERVICE_ID_POSTSCRIPT_FONT_NAME, &cid_service_ps_name },
     { FT_SERVICE_ID_POSTSCRIPT_INFO,      &cid_service_ps_info },
     { FT_SERVICE_ID_CID,                  &cid_service_cid_info },
@@ -190,46 +196,42 @@
   FT_CALLBACK_TABLE_DEF
   const FT_Driver_ClassRec  t1cid_driver_class =
   {
-    /* first of all, the FT_Module_Class fields */
     {
       FT_MODULE_FONT_DRIVER       |
       FT_MODULE_DRIVER_SCALABLE   |
       FT_MODULE_DRIVER_HAS_HINTER,
-
       sizeof ( FT_DriverRec ),
+
       "t1cid",   /* module name           */
       0x10000L,  /* version 1.0 of driver */
       0x20000L,  /* requires FreeType 2.0 */
 
-      0,
+      0,    /* module-specific interface */
 
-      cid_driver_init,
-      cid_driver_done,
-      cid_get_interface
+      cid_driver_init,          /* FT_Module_Constructor  module_init   */
+      cid_driver_done,          /* FT_Module_Destructor   module_done   */
+      cid_get_interface         /* FT_Module_Requester    get_interface */
     },
 
-    /* then the other font drivers fields */
     sizeof ( CID_FaceRec ),
     sizeof ( CID_SizeRec ),
     sizeof ( CID_GlyphSlotRec ),
 
-    cid_face_init,
-    cid_face_done,
+    cid_face_init,              /* FT_Face_InitFunc  init_face */
+    cid_face_done,              /* FT_Face_DoneFunc  done_face */
+    cid_size_init,              /* FT_Size_InitFunc  init_size */
+    cid_size_done,              /* FT_Size_DoneFunc  done_size */
+    cid_slot_init,              /* FT_Slot_InitFunc  init_slot */
+    cid_slot_done,              /* FT_Slot_DoneFunc  done_slot */
 
-    cid_size_init,
-    cid_size_done,
-    cid_slot_init,
-    cid_slot_done,
+    cid_slot_load_glyph,        /* FT_Slot_LoadFunc  load_glyph */
 
-    cid_slot_load_glyph,
+    0,                          /* FT_Face_GetKerningFunc   get_kerning  */
+    0,                          /* FT_Face_AttachFunc       attach_file  */
+    0,                          /* FT_Face_GetAdvancesFunc  get_advances */
 
-    0,                      /* FT_Face_GetKerningFunc  */
-    0,                      /* FT_Face_AttachFunc      */
-
-    0,                      /* FT_Face_GetAdvancesFunc */
-
-    cid_size_request,
-    0                       /* FT_Size_SelectFunc      */
+    cid_size_request,           /* FT_Size_RequestFunc  request_size */
+    0                           /* FT_Size_SelectFunc   select_size  */
   };
 
 

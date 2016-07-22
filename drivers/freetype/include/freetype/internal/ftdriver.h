@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType font driver interface (specification).                      */
 /*                                                                         */
-/*  Copyright 1996-2003, 2006, 2008, 2011-2013 by                          */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTDRIVER_H__
-#define __FTDRIVER_H__
+#ifndef FTDRIVER_H_
+#define FTDRIVER_H_
 
 
 #include <ft2build.h>
@@ -213,7 +213,7 @@ FT_BEGIN_HEADER
   /*    And when it is no longer needed a `destroy' function needs to be   */
   /*    called to release that allocation.                                 */
   /*                                                                       */
-  /*    `fcinit.c' (ft_create_default_module_classes) already contains a   */
+  /*    `ftinit.c' (ft_create_default_module_classes) already contains a   */
   /*    mechanism to call these functions for the default modules          */
   /*    described in `ftmodule.h'.                                         */
   /*                                                                       */
@@ -403,7 +403,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTDRIVER_H__ */
+#endif /* FTDRIVER_H_ */
 
 
 /* END */

@@ -5,7 +5,8 @@
 /*    TrueTypeGX/AAT morx table validation                                 */
 /*    body for type0 (Indic Script Rearrangement) subtable.                */
 /*                                                                         */
-/*  Copyright 2005 by suzuki toshiya, Masatake YAMATO, Red Hat K.K.,       */
+/*  Copyright 2005-2016 by                                                 */
+/*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -45,7 +46,7 @@
     GXV_XStateTable_GlyphOffsetCPtr  glyphOffset_p,
     FT_Bytes                         table,
     FT_Bytes                         limit,
-    GXV_Validator                    valid )
+    GXV_Validator                    gxvalid )
   {
 #ifdef GXV_LOAD_UNUSED_VARS
     FT_UShort  markFirst;
@@ -85,7 +86,7 @@
   FT_LOCAL_DEF( void )
   gxv_morx_subtable_type0_validate( FT_Bytes       table,
                                     FT_Bytes       limit,
-                                    GXV_Validator  valid )
+                                    GXV_Validator  gxvalid )
   {
     FT_Bytes  p = table;
 
@@ -95,14 +96,14 @@
 
     GXV_LIMIT_CHECK( GXV_STATETABLE_HEADER_SIZE );
 
-    valid->xstatetable.optdata               = NULL;
-    valid->xstatetable.optdata_load_func     = NULL;
-    valid->xstatetable.subtable_setup_func   = NULL;
-    valid->xstatetable.entry_glyphoffset_fmt = GXV_GLYPHOFFSET_NONE;
-    valid->xstatetable.entry_validate_func =
+    gxvalid->xstatetable.optdata               = NULL;
+    gxvalid->xstatetable.optdata_load_func     = NULL;
+    gxvalid->xstatetable.subtable_setup_func   = NULL;
+    gxvalid->xstatetable.entry_glyphoffset_fmt = GXV_GLYPHOFFSET_NONE;
+    gxvalid->xstatetable.entry_validate_func =
       gxv_morx_subtable_type0_entry_validate;
 
-    gxv_XStateTable_validate( p, limit, valid );
+    gxv_XStateTable_validate( p, limit, gxvalid );
 
     GXV_EXIT;
   }

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType Kerning service (specification).                        */
 /*                                                                         */
-/*  Copyright 2006 by                                                      */
+/*  Copyright 2006-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __SVKERN_H__
-#define __SVKERN_H__
+#ifndef SVKERN_H_
+#define SVKERN_H_
 
 #include FT_INTERNAL_SERVICE_H
 #include FT_TRUETYPE_TABLES_H
@@ -45,7 +45,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __SVKERN_H__ */
+#endif /* SVKERN_H_ */
 
 
 /* END */

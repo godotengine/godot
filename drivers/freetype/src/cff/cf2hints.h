@@ -36,8 +36,8 @@
 /***************************************************************************/
 
 
-#ifndef __CF2HINTS_H__
-#define __CF2HINTS_H__
+#ifndef CF2HINTS_H_
+#define CF2HINTS_H_
 
 
 FT_BEGIN_HEADER
@@ -204,6 +204,7 @@ FT_BEGIN_HEADER
 #endif
 
     FT_Bool  pathIsOpen;     /* true after MoveTo                     */
+    FT_Bool  pathIsClosing;  /* true when synthesizing closepath line */
     FT_Bool  darken;         /* true if stem darkening                */
     FT_Bool  moveIsPending;  /* true between MoveTo and offset MoveTo */
 
@@ -219,7 +220,7 @@ FT_BEGIN_HEADER
 
     /* character space miter limit threshold */
     CF2_Fixed  miterLimit;
-    /* vertical/horzizontal snap distance in character space */
+    /* vertical/horizontal snap distance in character space */
     CF2_Fixed  snapThreshold;
 
     FT_Vector  offsetStart0;  /* first and second points of first */
@@ -229,7 +230,8 @@ FT_BEGIN_HEADER
     FT_Vector  currentCS;
     /* current point, device space */
     FT_Vector  currentDS;
-    FT_Vector  start;         /* start point of subpath */
+    /* start point of subpath, character space */
+    FT_Vector  start;
 
     /* the following members constitute the `queue' of one element */
     FT_Bool  elemIsQueued;
@@ -281,7 +283,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __CF2HINTS_H__ */
+#endif /* CF2HINTS_H_ */
 
 
 /* END */

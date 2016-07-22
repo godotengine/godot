@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType PostScript Hinting module                                   */
 /*                                                                         */
-/*  Copyright 2001, 2003 by                                                */
+/*  Copyright 2001-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */

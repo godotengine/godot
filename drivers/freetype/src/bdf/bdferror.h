@@ -26,12 +26,12 @@
   /*                                                                       */
   /*************************************************************************/
 
-#ifndef __BDFERROR_H__
-#define __BDFERROR_H__
+#ifndef BDFERROR_H_
+#define BDFERROR_H_
 
 #include FT_MODULE_ERRORS_H
 
-#undef __FTERRORS_H__
+#undef FTERRORS_H_
 
 #undef  FT_ERR_PREFIX
 #define FT_ERR_PREFIX  BDF_Err_
@@ -39,7 +39,7 @@
 
 #include FT_ERRORS_H
 
-#endif /* __BDFERROR_H__ */
+#endif /* BDFERROR_H_ */
 
 
 /* END */

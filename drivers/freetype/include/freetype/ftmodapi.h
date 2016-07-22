@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType modules public interface (specification).                   */
 /*                                                                         */
-/*  Copyright 1996-2003, 2006, 2008-2010, 2012, 2013 by                    */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTMODAPI_H__
-#define __FTMODAPI_H__
+#ifndef FTMODAPI_H_
+#define FTMODAPI_H_
 
 
 #include <ft2build.h>
@@ -63,7 +63,7 @@ FT_BEGIN_HEADER
   /*      psaux                                                            */
   /*      pshinter                                                         */
   /*      psnames                                                          */
-  /*      raster1, raster5                                                 */
+  /*      raster1                                                          */
   /*      sfnt                                                             */
   /*      smooth, smooth-lcd, smooth-lcdv                                  */
   /*      truetype                                                         */
@@ -75,6 +75,33 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    Note that the FreeType Cache sub-system is not a FreeType module.  */
   /*                                                                       */
+  /* <Order>                                                               */
+  /*    FT_Module                                                          */
+  /*    FT_Module_Constructor                                              */
+  /*    FT_Module_Destructor                                               */
+  /*    FT_Module_Requester                                                */
+  /*    FT_Module_Class                                                    */
+  /*                                                                       */
+  /*    FT_Add_Module                                                      */
+  /*    FT_Get_Module                                                      */
+  /*    FT_Remove_Module                                                   */
+  /*    FT_Add_Default_Modules                                             */
+  /*                                                                       */
+  /*    FT_Property_Set                                                    */
+  /*    FT_Property_Get                                                    */
+  /*                                                                       */
+  /*    FT_New_Library                                                     */
+  /*    FT_Done_Library                                                    */
+  /*    FT_Reference_Library                                               */
+  /*                                                                       */
+  /*    FT_Renderer                                                        */
+  /*    FT_Renderer_Class                                                  */
+  /*                                                                       */
+  /*    FT_Get_Renderer                                                    */
+  /*    FT_Set_Renderer                                                    */
+  /*                                                                       */
+  /*    FT_Set_Debug_Hook                                                  */
+  /*                                                                       */
   /*************************************************************************/
 
 
@@ -84,12 +111,14 @@ FT_BEGIN_HEADER
 #define FT_MODULE_HINTER              4  /* this module is a glyph hinter */
 #define FT_MODULE_STYLER              8  /* this module is a styler       */
 
-#define FT_MODULE_DRIVER_SCALABLE     0x100   /* the driver supports      */
+#define FT_MODULE_DRIVER_SCALABLE      0x100  /* the driver supports      */
                                               /* scalable fonts           */
-#define FT_MODULE_DRIVER_NO_OUTLINES  0x200   /* the driver does not      */
+#define FT_MODULE_DRIVER_NO_OUTLINES   0x200  /* the driver does not      */
                                               /* support vector outlines  */
-#define FT_MODULE_DRIVER_HAS_HINTER   0x400   /* the driver provides its  */
+#define FT_MODULE_DRIVER_HAS_HINTER    0x400  /* the driver provides its  */
                                               /* own hinter               */
+#define FT_MODULE_DRIVER_HINTS_LIGHTLY 0x800  /* the driver's hinter      */
+                                              /* produces LIGHT hints     */
 
 
   /* deprecated values */
@@ -98,9 +127,10 @@ FT_BEGIN_HEADER
 #define ft_module_hinter              FT_MODULE_HINTER
 #define ft_module_styler              FT_MODULE_STYLER
 
-#define ft_module_driver_scalable     FT_MODULE_DRIVER_SCALABLE
-#define ft_module_driver_no_outlines  FT_MODULE_DRIVER_NO_OUTLINES
-#define ft_module_driver_has_hinter   FT_MODULE_DRIVER_HAS_HINTER
+#define ft_module_driver_scalable       FT_MODULE_DRIVER_SCALABLE
+#define ft_module_driver_no_outlines    FT_MODULE_DRIVER_NO_OUTLINES
+#define ft_module_driver_has_hinter     FT_MODULE_DRIVER_HAS_HINTER
+#define ft_module_driver_hints_lightly  FT_MODULE_DRIVER_HINTS_LIGHTLY
 
 
   typedef FT_Pointer  FT_Module_Interface;
@@ -298,7 +328,7 @@ FT_BEGIN_HEADER
    *       Note that only a few modules have properties.
    *
    *    value ::
-   *       A generic pointer to a variable or structure which gives the new
+   *       A generic pointer to a variable or structure that gives the new
    *       value of the property.  The exact definition of `value' is
    *       dependent on the property; see the `Synopsis' subsection of the
    *       module's documentation.
@@ -364,7 +394,7 @@ FT_BEGIN_HEADER
    *
    * @inout:
    *    value ::
-   *       A generic pointer to a variable or structure which gives the
+   *       A generic pointer to a variable or structure that gives the
    *       value of the property.  The exact definition of `value' is
    *       dependent on the property; see the `Synopsis' subsection of the
    *       module's documentation.
@@ -418,7 +448,7 @@ FT_BEGIN_HEADER
   /*    @FT_Done_Library then only destroys a library if the counter is~1, */
   /*    otherwise it simply decrements the counter.                        */
   /*                                                                       */
-  /*    This function helps in managing life-cycles of structures which    */
+  /*    This function helps in managing life-cycles of structures that     */
   /*    reference @FT_Library objects.                                     */
   /*                                                                       */
   /* <Input>                                                               */
@@ -442,7 +472,9 @@ FT_BEGIN_HEADER
   /* <Description>                                                         */
   /*    This function is used to create a new FreeType library instance    */
   /*    from a given memory object.  It is thus possible to use libraries  */
-  /*    with distinct memory allocators within the same program.           */
+  /*    with distinct memory allocators within the same program.  Note,    */
+  /*    however, that the used @FT_Memory structure is expected to remain  */
+  /*    valid for the life of the @FT_Library object.                      */
   /*                                                                       */
   /*    Normally, you would call this function (followed by a call to      */
   /*    @FT_Add_Default_Modules or a series of calls to @FT_Add_Module)    */
@@ -491,7 +523,7 @@ FT_BEGIN_HEADER
   FT_EXPORT( FT_Error )
   FT_Done_Library( FT_Library  library );
 
-/* */
+  /* */
 
   typedef void
   (*FT_DebugHook_Func)( void*  arg );
@@ -581,12 +613,7 @@ FT_BEGIN_HEADER
    *       The library doesn't implement any kind of bytecode interpreter.
    *
    *     FT_TRUETYPE_ENGINE_TYPE_UNPATENTED ::
-   *       The library implements a bytecode interpreter that doesn't
-   *       support the patented operations of the TrueType virtual machine.
-   *
-   *       Its main use is to load certain Asian fonts which position and
-   *       scale glyph components with bytecode instructions.  It produces
-   *       bad output for most other fonts.
+   *       Deprecated and removed.
    *
    *     FT_TRUETYPE_ENGINE_TYPE_PATENTED ::
    *       The library implements a bytecode interpreter that covers
@@ -629,13 +656,12 @@ FT_BEGIN_HEADER
   FT_EXPORT( FT_TrueTypeEngineType )
   FT_Get_TrueType_Engine_Type( FT_Library  library );
 
-
   /* */
 
 
 FT_END_HEADER
 
-#endif /* __FTMODAPI_H__ */
+#endif /* FTMODAPI_H_ */
 
 
 /* END */

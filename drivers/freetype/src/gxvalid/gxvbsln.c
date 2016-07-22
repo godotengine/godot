@@ -4,7 +4,8 @@
 /*                                                                         */
 /*    TrueTypeGX/AAT bsln table validation (body).                         */
 /*                                                                         */
-/*  Copyright 2004, 2005 by suzuki toshiya, Masatake YAMATO, Red Hat K.K., */
+/*  Copyright 2004-2016 by                                                 */
+/*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -72,10 +73,10 @@
   static void
   gxv_bsln_LookupValue_validate( FT_UShort            glyph,
                                  GXV_LookupValueCPtr  value_p,
-                                 GXV_Validator        valid )
+                                 GXV_Validator        gxvalid )
   {
-    FT_UShort   v = value_p->u;
-    FT_UShort*  ctlPoints;
+    FT_UShort     v = value_p->u;
+    FT_UShort*    ctlPoints;
 
     FT_UNUSED( glyph );
 
@@ -124,7 +125,7 @@
   gxv_bsln_LookupFmt4_transit( FT_UShort            relative_gindex,
                                GXV_LookupValueCPtr  base_value_p,
                                FT_Bytes             lookuptbl_limit,
-                               GXV_Validator        valid )
+                               GXV_Validator        gxvalid )
   {
     FT_Bytes             p;
     FT_Bytes             limit;
@@ -135,7 +136,7 @@
     offset = (FT_UShort)( base_value_p->u +
                           ( relative_gindex * sizeof ( FT_UShort ) ) );
 
-    p     = valid->lookuptbl_head + offset;
+    p     = gxvalid->lookuptbl_head + offset;
     limit = lookuptbl_limit;
     GXV_LIMIT_CHECK( 2 );
 
@@ -148,7 +149,7 @@
   static void
   gxv_bsln_parts_fmt0_validate( FT_Bytes       tables,
                                 FT_Bytes       limit,
-                                GXV_Validator  valid )
+                                GXV_Validator  gxvalid )
   {
     FT_Bytes  p = tables;
 
@@ -158,7 +159,7 @@
     /* deltas */
     GXV_LIMIT_CHECK( 2 * GXV_BSLN_VALUE_COUNT );
 
-    valid->table_data = NULL;      /* No ctlPoints here. */
+    gxvalid->table_data = NULL;      /* No ctlPoints here. */
 
     GXV_EXIT;
   }
@@ -167,7 +168,7 @@
   static void
   gxv_bsln_parts_fmt1_validate( FT_Bytes       tables,
                                 FT_Bytes       limit,
-                                GXV_Validator  valid )
+                                GXV_Validator  gxvalid )
   {
     FT_Bytes  p = tables;
 
@@ -175,15 +176,15 @@
     GXV_NAME_ENTER( "parts format 1" );
 
     /* deltas */
-    gxv_bsln_parts_fmt0_validate( p, limit, valid );
+    gxv_bsln_parts_fmt0_validate( p, limit, gxvalid );
 
     /* mappingData */
-    valid->lookupval_sign   = GXV_LOOKUPVALUE_UNSIGNED;
-    valid->lookupval_func   = gxv_bsln_LookupValue_validate;
-    valid->lookupfmt4_trans = gxv_bsln_LookupFmt4_transit;
+    gxvalid->lookupval_sign   = GXV_LOOKUPVALUE_UNSIGNED;
+    gxvalid->lookupval_func   = gxv_bsln_LookupValue_validate;
+    gxvalid->lookupfmt4_trans = gxv_bsln_LookupFmt4_transit;
     gxv_LookupTable_validate( p + 2 * GXV_BSLN_VALUE_COUNT,
                               limit,
-                              valid );
+                              gxvalid );
 
     GXV_EXIT;
   }
@@ -192,7 +193,7 @@
   static void
   gxv_bsln_parts_fmt2_validate( FT_Bytes       tables,
                                 FT_Bytes       limit,
-                                GXV_Validator  valid )
+                                GXV_Validator  gxvalid )
   {
     FT_Bytes   p = tables;
 
@@ -211,7 +212,7 @@
     stdGlyph = FT_NEXT_USHORT( p );
     GXV_TRACE(( " (stdGlyph = %u)\n", stdGlyph ));
 
-    gxv_glyphid_validate( stdGlyph, valid );
+    gxv_glyphid_validate( stdGlyph, gxvalid );
 
     /* Record the position of ctlPoints */
     GXV_BSLN_DATA( ctlPoints_p ) = p;
@@ -226,7 +227,7 @@
           FT_INVALID_DATA;
       }
       else
-        gxv_ctlPoint_validate( stdGlyph, (FT_Short)ctlPoint, valid );
+        gxv_ctlPoint_validate( stdGlyph, ctlPoint, gxvalid );
     }
 
     GXV_EXIT;
@@ -236,7 +237,7 @@
   static void
   gxv_bsln_parts_fmt3_validate( FT_Bytes       tables,
                                 FT_Bytes       limit,
-                                GXV_Validator  valid)
+                                GXV_Validator  gxvalid)
   {
     FT_Bytes  p = tables;
 
@@ -244,15 +245,15 @@
     GXV_NAME_ENTER( "parts format 3" );
 
     /* stdGlyph + ctlPoints */
-    gxv_bsln_parts_fmt2_validate( p, limit, valid );
+    gxv_bsln_parts_fmt2_validate( p, limit, gxvalid );
 
     /* mappingData */
-    valid->lookupval_sign   = GXV_LOOKUPVALUE_UNSIGNED;
-    valid->lookupval_func   = gxv_bsln_LookupValue_validate;
-    valid->lookupfmt4_trans = gxv_bsln_LookupFmt4_transit;
+    gxvalid->lookupval_sign   = GXV_LOOKUPVALUE_UNSIGNED;
+    gxvalid->lookupval_func   = gxv_bsln_LookupValue_validate;
+    gxvalid->lookupfmt4_trans = gxv_bsln_LookupFmt4_transit;
     gxv_LookupTable_validate( p + ( 2 + 2 * GXV_BSLN_VALUE_COUNT ),
                               limit,
-                              valid );
+                              gxvalid );
 
     GXV_EXIT;
   }
@@ -271,8 +272,8 @@
                      FT_Face       face,
                      FT_Validator  ftvalid )
   {
-    GXV_ValidatorRec  validrec;
-    GXV_Validator     valid = &validrec;
+    GXV_ValidatorRec  gxvalidrec;
+    GXV_Validator     gxvalid = &gxvalidrec;
 
     GXV_bsln_DataRec  bslnrec;
     GXV_bsln_Data     bsln = &bslnrec;
@@ -293,9 +294,9 @@
     };
 
 
-    valid->root       = ftvalid;
-    valid->table_data = bsln;
-    valid->face       = face;
+    gxvalid->root       = ftvalid;
+    gxvalid->table_data = bsln;
+    gxvalid->face       = face;
 
     FT_TRACE3(( "validating `bsln' table\n" ));
     GXV_INIT;
@@ -320,7 +321,7 @@
 
     bsln->defaultBaseline = defaultBaseline;
 
-    fmt_funcs_table[format]( p, limit, valid );
+    fmt_funcs_table[format]( p, limit, gxvalid );
 
     FT_TRACE4(( "\n" ));
   }

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType glyph loader (body).                                    */
 /*                                                                         */
-/*  Copyright 2002-2006, 2010, 2013 by                                     */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg                       */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -212,7 +212,8 @@
 
 
     /* check points & tags */
-    new_max = base->n_points + current->n_points + n_points;
+    new_max = (FT_UInt)base->n_points + (FT_UInt)current->n_points +
+              n_points;
     old_max = loader->max_points;
 
     if ( new_max > old_max )
@@ -245,7 +246,7 @@
 
     /* check contours */
     old_max = loader->max_contours;
-    new_max = base->n_contours + current->n_contours +
+    new_max = (FT_UInt)base->n_contours + (FT_UInt)current->n_contours +
               n_contours;
     if ( new_max > old_max )
     {
@@ -329,9 +330,9 @@
     FT_GlyphLoad  base;
     FT_GlyphLoad  current;
 
-    FT_UInt       n_curr_contours;
-    FT_UInt       n_base_points;
-    FT_UInt       n;
+    FT_Int        n_curr_contours;
+    FT_Int        n_base_points;
+    FT_Int        n;
 
 
     if ( !loader )
@@ -365,8 +366,8 @@
                              FT_GlyphLoader  source )
   {
     FT_Error  error;
-    FT_UInt   num_points   = source->base.outline.n_points;
-    FT_UInt   num_contours = source->base.outline.n_contours;
+    FT_UInt   num_points   = (FT_UInt)source->base.outline.n_points;
+    FT_UInt   num_contours = (FT_UInt)source->base.outline.n_contours;
 
 
     error = FT_GlyphLoader_CheckPoints( target, num_points, num_contours );

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType API for accessing BDF-specific strings (specification).     */
 /*                                                                         */
-/*  Copyright 2002, 2003, 2004, 2006, 2009 by                              */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTBDF_H__
-#define __FTBDF_H__
+#ifndef FTBDF_H_
+#define FTBDF_H_
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -53,7 +53,7 @@ FT_BEGIN_HEADER
   /**********************************************************************
    *
    * @enum:
-   *    FT_PropertyType
+   *    BDF_PropertyType
    *
    * @description:
    *    A list of BDF property types.
@@ -106,7 +106,8 @@ FT_BEGIN_HEADER
   *      The property type.
   *
   *    u.atom ::
-  *      The atom string, if type is @BDF_PROPERTY_TYPE_ATOM.
+  *      The atom string, if type is @BDF_PROPERTY_TYPE_ATOM.  May be
+  *      NULL, indicating an empty string.
   *
   *    u.integer ::
   *      A signed integer, if type is @BDF_PROPERTY_TYPE_INTEGER.
@@ -199,11 +200,11 @@ FT_BEGIN_HEADER
                        const char*       prop_name,
                        BDF_PropertyRec  *aproperty );
 
- /* */
+  /* */
 
 FT_END_HEADER
 
-#endif /* __FTBDF_H__ */
+#endif /* FTBDF_H_ */
 
 
 /* END */

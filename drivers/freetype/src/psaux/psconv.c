@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Some convenience conversions (body).                                 */
 /*                                                                         */
-/*  Copyright 2006, 2008, 2009, 2012-2013 by                               */
+/*  Copyright 2006-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -124,7 +124,7 @@
       if ( IS_PS_SPACE( *p ) || *p OP 0x80 )
         break;
 
-      c = ft_char_table[*p & 0x7f];
+      c = ft_char_table[*p & 0x7F];
 
       if ( c < 0 || c >= base )
         break;
@@ -245,12 +245,13 @@
         if ( IS_PS_SPACE( *p ) || *p OP 0x80 )
           break;
 
-        c = ft_char_table[*p & 0x7f];
+        c = ft_char_table[*p & 0x7F];
 
         if ( c < 0 || c >= 10 )
           break;
 
-        if ( decimal < 0xCCCCCCCL )
+        /* only add digit if we don't overflow */
+        if ( divider < 0xCCCCCCCL && decimal < 0xCCCCCCCL )
         {
           decimal = decimal * 10 + c;
 
@@ -488,8 +489,8 @@
       if ( c OP 0x80 )
         break;
 
-      c = ft_char_table[c & 0x7F];
-      if ( (unsigned)c >= 16 )
+      c = (FT_UInt)ft_char_table[c & 0x7F];
+      if ( c >= 16 )
         break;
 
       pad = ( pad << 4 ) | c;
@@ -520,7 +521,7 @@
       if ( *p OP 0x80 )
         break;
 
-      c = ft_char_table[*p & 0x7f];
+      c = ft_char_table[*p & 0x7F];
 
       if ( (unsigned)c >= 16 )
         break;

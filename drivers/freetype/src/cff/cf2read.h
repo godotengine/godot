@@ -36,8 +36,8 @@
 /***************************************************************************/
 
 
-#ifndef __CF2READ_H__
-#define __CF2READ_H__
+#ifndef CF2READ_H_
+#define CF2READ_H_
 
 
 FT_BEGIN_HEADER
@@ -62,7 +62,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __CF2READ_H__ */
+#endif /* CF2READ_H_ */
 
 
 /* END */

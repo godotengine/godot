@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 character map support (body).                                 */
 /*                                                                         */
-/*  Copyright 2002, 2003, 2006, 2007, 2012 by                              */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -39,7 +39,7 @@
     FT_Service_PsCMaps  psnames = (FT_Service_PsCMaps)face->psnames;
 
 
-    cmap->num_glyphs    = face->type1.num_glyphs;
+    cmap->num_glyphs    = (FT_UInt)face->type1.num_glyphs;
     cmap->glyph_names   = (const char* const*)face->type1.glyph_names;
     cmap->sid_to_string = psnames->adobe_std_strings;
     cmap->code_to_sid   = is_expert ? psnames->adobe_expert_encoding
@@ -120,8 +120,12 @@
 
 
   FT_CALLBACK_DEF( FT_Error )
-  t1_cmap_standard_init( T1_CMapStd  cmap )
+  t1_cmap_standard_init( T1_CMapStd  cmap,
+                         FT_Pointer  pointer )
   {
+    FT_UNUSED( pointer );
+
+
     t1_cmap_std_init( cmap, 0 );
     return 0;
   }
@@ -142,8 +146,12 @@
 
 
   FT_CALLBACK_DEF( FT_Error )
-  t1_cmap_expert_init( T1_CMapStd  cmap )
+  t1_cmap_expert_init( T1_CMapStd  cmap,
+                       FT_Pointer  pointer )
   {
+    FT_UNUSED( pointer );
+
+
     t1_cmap_std_init( cmap, 1 );
     return 0;
   }
@@ -172,14 +180,17 @@
 
 
   FT_CALLBACK_DEF( FT_Error )
-  t1_cmap_custom_init( T1_CMapCustom  cmap )
+  t1_cmap_custom_init( T1_CMapCustom  cmap,
+                       FT_Pointer     pointer )
   {
     T1_Face      face     = (T1_Face)FT_CMAP_FACE( cmap );
     T1_Encoding  encoding = &face->type1.encoding;
 
+    FT_UNUSED( pointer );
 
-    cmap->first   = encoding->code_first;
-    cmap->count   = (FT_UInt)( encoding->code_last - cmap->first );
+
+    cmap->first   = (FT_UInt)encoding->code_first;
+    cmap->count   = (FT_UInt)encoding->code_last - cmap->first;
     cmap->indices = encoding->char_index;
 
     FT_ASSERT( cmap->indices != NULL );
@@ -272,16 +283,19 @@
 
 
   FT_CALLBACK_DEF( FT_Error )
-  t1_cmap_unicode_init( PS_Unicodes  unicodes )
+  t1_cmap_unicode_init( PS_Unicodes  unicodes,
+                        FT_Pointer   pointer )
   {
     T1_Face             face    = (T1_Face)FT_CMAP_FACE( unicodes );
     FT_Memory           memory  = FT_FACE_MEMORY( face );
     FT_Service_PsCMaps  psnames = (FT_Service_PsCMaps)face->psnames;
 
+    FT_UNUSED( pointer );
+
 
     return psnames->unicodes_init( memory,
                                    unicodes,
-                                   face->type1.num_glyphs,
+                                   (FT_UInt)face->type1.num_glyphs,
                                    (PS_GetGlyphNameFunc)&psaux_get_glyph_name,
                                    (PS_FreeGlyphNameFunc)NULL,
                                    (FT_Pointer)face );

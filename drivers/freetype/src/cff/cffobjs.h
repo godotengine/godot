@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType objects manager (specification).                            */
 /*                                                                         */
-/*  Copyright 1996-2004, 2006-2008, 2013 by                                */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __CFFOBJS_H__
-#define __CFFOBJS_H__
+#ifndef CFFOBJS_H_
+#define CFFOBJS_H_
 
 
 #include <ft2build.h>
@@ -121,6 +121,8 @@ FT_BEGIN_HEADER
     FT_UInt  hinting_engine;
     FT_Bool  no_stem_darkening;
 
+    FT_Int  darken_params[8];
+
   } CFF_DriverRec;
 
 
@@ -177,7 +179,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __CFFOBJS_H__ */
+#endif /* CFFOBJS_H_ */
 
 
 /* END */

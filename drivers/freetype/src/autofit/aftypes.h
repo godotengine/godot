@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter types (specification only).                              */
 /*                                                                         */
-/*  Copyright 2003-2009, 2011-2012 by                                      */
+/*  Copyright 2003-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -20,20 +20,17 @@
    *
    *  The auto-fitter is a complete rewrite of the old auto-hinter.
    *  Its main feature is the ability to differentiate between different
-   *  scripts in order to apply language-specific rules.
+   *  writing systems and scripts in order to apply specific rules.
    *
-   *  The code has also been compartmentized into several entities that
+   *  The code has also been compartmentalized into several entities that
    *  should make algorithmic experimentation easier than with the old
    *  code.
-   *
-   *  Finally, we get rid of the Catharon license, since this code is
-   *  released under the FreeType one.
    *
    *************************************************************************/
 
 
-#ifndef __AFTYPES_H__
-#define __AFTYPES_H__
+#ifndef AFTYPES_H_
+#define AFTYPES_H_
 
 #include <ft2build.h>
 
@@ -41,6 +38,12 @@
 #include FT_OUTLINE_H
 #include FT_INTERNAL_OBJECTS_H
 #include FT_INTERNAL_DEBUG_H
+
+#include "afblue.h"
+
+#ifdef FT_DEBUG_AUTOFIT
+#include FT_CONFIG_STANDARD_LIBRARY_H
+#endif
 
 
 FT_BEGIN_HEADER
@@ -54,8 +57,6 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 #ifdef FT_DEBUG_AUTOFIT
-
-#include FT_CONFIG_STANDARD_LIBRARY_H
 
 extern int    _af_debug_disable_horz_hints;
 extern int    _af_debug_disable_vert_hints;
@@ -139,11 +140,10 @@ extern void*  _af_debug_hints;
     AF_Angle  _delta = (angle2) - (angle1);     \
                                                 \
                                                 \
-    _delta %= AF_ANGLE_2PI;                     \
-    if ( _delta < 0 )                           \
+    while ( _delta <= -AF_ANGLE_PI )            \
       _delta += AF_ANGLE_2PI;                   \
                                                 \
-    if ( _delta > AF_ANGLE_PI )                 \
+    while ( _delta > AF_ANGLE_PI )              \
       _delta -= AF_ANGLE_2PI;                   \
                                                 \
     result = _delta;                            \
@@ -169,13 +169,10 @@ extern void*  _af_debug_hints;
    *  auto-hinted glyph image.
    */
 
-  typedef enum  AF_ScalerFlags_
-  {
-    AF_SCALER_FLAG_NO_HORIZONTAL = 1,  /* disable horizontal hinting */
-    AF_SCALER_FLAG_NO_VERTICAL   = 2,  /* disable vertical hinting   */
-    AF_SCALER_FLAG_NO_ADVANCE    = 4   /* disable advance hinting    */
-
-  } AF_ScalerFlags;
+#define AF_SCALER_FLAG_NO_HORIZONTAL  1U /* disable horizontal hinting */
+#define AF_SCALER_FLAG_NO_VERTICAL    2U /* disable vertical hinting   */
+#define AF_SCALER_FLAG_NO_ADVANCE     4U /* disable advance hinting    */
+#define AF_SCALER_FLAG_NO_WARPER      8U /* disable warper             */
 
 
   typedef struct  AF_ScalerRec_
@@ -198,90 +195,132 @@ extern void*  _af_debug_hints;
             (a)->y_delta == (b)->y_delta )
 
 
+  typedef struct AF_StyleMetricsRec_*  AF_StyleMetrics;
+
+  /*  This function parses an FT_Face to compute global metrics for
+   *  a specific style.
+   */
+  typedef FT_Error
+  (*AF_WritingSystem_InitMetricsFunc)( AF_StyleMetrics  metrics,
+                                       FT_Face          face );
+
+  typedef void
+  (*AF_WritingSystem_ScaleMetricsFunc)( AF_StyleMetrics  metrics,
+                                        AF_Scaler        scaler );
+
+  typedef void
+  (*AF_WritingSystem_DoneMetricsFunc)( AF_StyleMetrics  metrics );
+
+  typedef void
+  (*AF_WritingSystem_GetStdWidthsFunc)( AF_StyleMetrics  metrics,
+                                        FT_Pos*          stdHW,
+                                        FT_Pos*          stdVW );
+
+
+  typedef FT_Error
+  (*AF_WritingSystem_InitHintsFunc)( AF_GlyphHints    hints,
+                                     AF_StyleMetrics  metrics );
+
+  typedef void
+  (*AF_WritingSystem_ApplyHintsFunc)( FT_UInt          glyph_index,
+                                      AF_GlyphHints    hints,
+                                      FT_Outline*      outline,
+                                      AF_StyleMetrics  metrics );
+
+
   /*************************************************************************/
   /*************************************************************************/
   /*****                                                               *****/
-  /*****                       S C R I P T S                           *****/
+  /*****                W R I T I N G   S Y S T E M S                  *****/
   /*****                                                               *****/
   /*************************************************************************/
   /*************************************************************************/
 
   /*
-   *  The list of known scripts.  Each different script corresponds to the
-   *  following information:
+   *  For the auto-hinter, a writing system consists of multiple scripts that
+   *  can be handled similarly *in a typographical way*; the relationship is
+   *  not based on history.  For example, both the Greek and the unrelated
+   *  Armenian scripts share the same features like ascender, descender,
+   *  x-height, etc.  Essentially, a writing system is covered by a
+   *  submodule of the auto-fitter; it contains
    *
-   *   - A set of Unicode ranges to test whether the face supports the
-   *     script.
+   *  - a specific global analyzer that computes global metrics specific to
+   *    the script (based on script-specific characters to identify ascender
+   *    height, x-height, etc.),
    *
-   *   - A specific global analyzer that will compute global metrics
-   *     specific to the script.
+   *  - a specific glyph analyzer that computes segments and edges for each
+   *    glyph covered by the script,
    *
-   *   - A specific glyph analyzer that will compute segments and
-   *     edges for each glyph covered by the script.
-   *
-   *   - A specific grid-fitting algorithm that will distort the
-   *     scaled glyph outline according to the results of the glyph
-   *     analyzer.
-   *
-   *  Note that a given analyzer and/or grid-fitting algorithm can be
-   *  used by more than one script.
+   *  - a specific grid-fitting algorithm that distorts the scaled glyph
+   *    outline according to the results of the glyph analyzer.
    */
 
+#define AFWRTSYS_H_  /* don't load header files */
+#undef  WRITING_SYSTEM
+#define WRITING_SYSTEM( ws, WS )    \
+          AF_WRITING_SYSTEM_ ## WS,
+
+  /* The list of known writing systems. */
+  typedef enum  AF_WritingSystem_
+  {
+
+#include "afwrtsys.h"
+
+    AF_WRITING_SYSTEM_MAX   /* do not remove */
+
+  } AF_WritingSystem;
+
+#undef  AFWRTSYS_H_
+
+
+  typedef struct  AF_WritingSystemClassRec_
+  {
+    AF_WritingSystem  writing_system;
+
+    FT_Offset                          style_metrics_size;
+    AF_WritingSystem_InitMetricsFunc   style_metrics_init;
+    AF_WritingSystem_ScaleMetricsFunc  style_metrics_scale;
+    AF_WritingSystem_DoneMetricsFunc   style_metrics_done;
+    AF_WritingSystem_GetStdWidthsFunc  style_metrics_getstdw;
+
+    AF_WritingSystem_InitHintsFunc     style_hints_init;
+    AF_WritingSystem_ApplyHintsFunc    style_hints_apply;
+
+  } AF_WritingSystemClassRec;
+
+  typedef const AF_WritingSystemClassRec*  AF_WritingSystemClass;
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****                        S C R I P T S                          *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+  /*
+   *  Each script is associated with two sets of Unicode ranges to test
+   *  whether the font face supports the script, and which non-base
+   *  characters the script contains.
+   *
+   *  We use four-letter script tags from the OpenType specification,
+   *  extended by `NONE', which indicates `no script'.
+   */
+
+#undef  SCRIPT
+#define SCRIPT( s, S, d, h, H, ss ) \
+          AF_SCRIPT_ ## S,
+
+  /* The list of known scripts. */
   typedef enum  AF_Script_
   {
-    AF_SCRIPT_DUMMY = 0,
-    AF_SCRIPT_LATIN = 1,
-    AF_SCRIPT_CJK   = 2,
-    AF_SCRIPT_INDIC = 3,
-#ifdef FT_OPTION_AUTOFIT2
-    AF_SCRIPT_LATIN2 = 4,
-#endif
 
-    /* add new scripts here.  Don't forget to update the list in */
-    /* `afglobal.c'.                                             */
+#include "afscript.h"
 
     AF_SCRIPT_MAX   /* do not remove */
 
   } AF_Script;
-
-
-  typedef struct AF_ScriptClassRec_ const*  AF_ScriptClass;
-  typedef struct AF_FaceGlobalsRec_*        AF_FaceGlobals;
-
-  typedef struct  AF_ScriptMetricsRec_
-  {
-    AF_ScriptClass  clazz;
-    AF_ScalerRec    scaler;
-    FT_Bool         digits_have_same_width;
-
-    AF_FaceGlobals  globals;    /* to access properties */
-
-  } AF_ScriptMetricsRec, *AF_ScriptMetrics;
-
-
-  /*  This function parses an FT_Face to compute global metrics for
-   *  a specific script.
-   */
-  typedef FT_Error
-  (*AF_Script_InitMetricsFunc)( AF_ScriptMetrics  metrics,
-                                FT_Face           face );
-
-  typedef void
-  (*AF_Script_ScaleMetricsFunc)( AF_ScriptMetrics  metrics,
-                                 AF_Scaler         scaler );
-
-  typedef void
-  (*AF_Script_DoneMetricsFunc)( AF_ScriptMetrics  metrics );
-
-
-  typedef FT_Error
-  (*AF_Script_InitHintsFunc)( AF_GlyphHints     hints,
-                              AF_ScriptMetrics  metrics );
-
-  typedef void
-  (*AF_Script_ApplyHintsFunc)( AF_GlyphHints     hints,
-                               FT_Outline*       outline,
-                               AF_ScriptMetrics  metrics );
 
 
   typedef struct  AF_Script_UniRangeRec_
@@ -293,76 +332,309 @@ extern void*  _af_debug_hints;
 
 #define AF_UNIRANGE_REC( a, b ) { (FT_UInt32)(a), (FT_UInt32)(b) }
 
-  typedef const AF_Script_UniRangeRec  *AF_Script_UniRange;
+  typedef const AF_Script_UniRangeRec*  AF_Script_UniRange;
 
 
   typedef struct  AF_ScriptClassRec_
   {
-    AF_Script           script;
-    AF_Script_UniRange  script_uni_ranges; /* last must be { 0, 0 }        */
-    FT_UInt32           standard_char;     /* for default width and height */
+    AF_Script  script;
 
-    FT_Offset                   script_metrics_size;
-    AF_Script_InitMetricsFunc   script_metrics_init;
-    AF_Script_ScaleMetricsFunc  script_metrics_scale;
-    AF_Script_DoneMetricsFunc   script_metrics_done;
+    /* last element in the ranges must be { 0, 0 } */
+    AF_Script_UniRange  script_uni_ranges;
+    AF_Script_UniRange  script_uni_nonbase_ranges;
 
-    AF_Script_InitHintsFunc     script_hints_init;
-    AF_Script_ApplyHintsFunc    script_hints_apply;
+    FT_Bool  top_to_bottom_hinting;
+
+    const char*  standard_charstring;      /* for default width and height */
 
   } AF_ScriptClassRec;
+
+  typedef const AF_ScriptClassRec*  AF_ScriptClass;
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****                      C O V E R A G E S                        *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+  /*
+   *  Usually, a font contains more glyphs than can be addressed by its
+   *  character map.
+   *
+   *  In the PostScript font world, encoding vectors specific to a given
+   *  task are used to select such glyphs, and these glyphs can be often
+   *  recognized by having a suffix in its glyph names.  For example, a
+   *  superscript glyph `A' might be called `A.sup'.  Unfortunately, this
+   *  naming scheme is not standardized and thus unusable for us.
+   *
+   *  In the OpenType world, a better solution was invented, namely
+   *  `features', which cleanly separate a character's input encoding from
+   *  the corresponding glyph's appearance, and which don't use glyph names
+   *  at all.  For our purposes, and slightly generalized, an OpenType
+   *  feature is a name of a mapping that maps character codes to
+   *  non-standard glyph indices (features get used for other things also).
+   *  For example, the `sups' feature provides superscript glyphs, thus
+   *  mapping character codes like `A' or `B' to superscript glyph
+   *  representation forms.  How this mapping happens is completely
+   *  uninteresting to us.
+   *
+   *  For the auto-hinter, a `coverage' represents all glyphs of an OpenType
+   *  feature collected in a set (as listed below) that can be hinted
+   *  together.  To continue the above example, superscript glyphs must not
+   *  be hinted together with normal glyphs because the blue zones
+   *  completely differ.
+   *
+   *  Note that FreeType itself doesn't compute coverages; it only provides
+   *  the glyphs addressable by the default Unicode character map.  Instead,
+   *  we use the HarfBuzz library (if available), which has many functions
+   *  exactly for this purpose.
+   *
+   *  AF_COVERAGE_DEFAULT is special: It should cover everything that isn't
+   *  listed separately (including the glyphs addressable by the character
+   *  map).  In case HarfBuzz isn't available, it exactly covers the glyphs
+   *  addressable by the character map.
+   *
+   */
+
+#undef  COVERAGE
+#define COVERAGE( name, NAME, description, \
+                  tag1, tag2, tag3, tag4 ) \
+          AF_COVERAGE_ ## NAME,
+
+
+  typedef enum  AF_Coverage_
+  {
+#include "afcover.h"
+
+    AF_COVERAGE_DEFAULT
+
+  } AF_Coverage;
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****                         S T Y L E S                           *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+  /*
+   *  The topmost structure for modelling the auto-hinter glyph input data
+   *  is a `style class', grouping everything together.
+   */
+
+#undef  STYLE
+#define STYLE( s, S, d, ws, sc, ss, c ) \
+          AF_STYLE_ ## S,
+
+  /* The list of known styles. */
+  typedef enum  AF_Style_
+  {
+
+#include "afstyles.h"
+
+    AF_STYLE_MAX   /* do not remove */
+
+  } AF_Style;
+
+
+  typedef struct  AF_StyleClassRec_
+  {
+    AF_Style  style;
+
+    AF_WritingSystem   writing_system;
+    AF_Script          script;
+    AF_Blue_Stringset  blue_stringset;
+    AF_Coverage        coverage;
+
+  } AF_StyleClassRec;
+
+  typedef const AF_StyleClassRec*  AF_StyleClass;
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****                   S T Y L E   M E T R I C S                   *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+  typedef struct AF_FaceGlobalsRec_*  AF_FaceGlobals;
+
+  /* This is the main structure that combines everything.  Autofit modules */
+  /* specific to writing systems derive their structures from it, for      */
+  /* example `AF_LatinMetrics'.                                            */
+
+  typedef struct  AF_StyleMetricsRec_
+  {
+    AF_StyleClass   style_class;
+    AF_ScalerRec    scaler;
+    FT_Bool         digits_have_same_width;
+
+    AF_FaceGlobals  globals;    /* to access properties */
+
+  } AF_StyleMetricsRec;
+
+
+#define AF_HINTING_BOTTOM_TO_TOP  0
+#define AF_HINTING_TOP_TO_BOTTOM  1
 
 
   /* Declare and define vtables for classes */
 #ifndef FT_CONFIG_OPTION_PIC
 
+#define AF_DECLARE_WRITING_SYSTEM_CLASS( writing_system_class ) \
+  FT_CALLBACK_TABLE const AF_WritingSystemClassRec              \
+  writing_system_class;
+
+#define AF_DEFINE_WRITING_SYSTEM_CLASS(                  \
+          writing_system_class,                          \
+          system,                                        \
+          m_size,                                        \
+          m_init,                                        \
+          m_scale,                                       \
+          m_done,                                        \
+          m_stdw,                                        \
+          h_init,                                        \
+          h_apply )                                      \
+  FT_CALLBACK_TABLE_DEF                                  \
+  const AF_WritingSystemClassRec  writing_system_class = \
+  {                                                      \
+    system,                                              \
+                                                         \
+    m_size,                                              \
+                                                         \
+    m_init,                                              \
+    m_scale,                                             \
+    m_done,                                              \
+    m_stdw,                                              \
+                                                         \
+    h_init,                                              \
+    h_apply                                              \
+  };
+
+
 #define AF_DECLARE_SCRIPT_CLASS( script_class ) \
   FT_CALLBACK_TABLE const AF_ScriptClassRec     \
   script_class;
 
-#define AF_DEFINE_SCRIPT_CLASS( script_class, script_, ranges, def_char,   \
-                                m_size,                                    \
-                                m_init, m_scale, m_done, h_init, h_apply ) \
-  FT_CALLBACK_TABLE_DEF const AF_ScriptClassRec  script_class =            \
-  {                                                                        \
-    script_,                                                               \
-    ranges,                                                                \
-    def_char,                                                              \
-                                                                           \
-    m_size,                                                                \
-                                                                           \
-    m_init,                                                                \
-    m_scale,                                                               \
-    m_done,                                                                \
-                                                                           \
-    h_init,                                                                \
-    h_apply                                                                \
+#define AF_DEFINE_SCRIPT_CLASS(           \
+          script_class,                   \
+          script,                         \
+          ranges,                         \
+          nonbase_ranges,                 \
+          top_to_bottom,                  \
+          std_charstring )                \
+  FT_CALLBACK_TABLE_DEF                   \
+  const AF_ScriptClassRec  script_class = \
+  {                                       \
+    script,                               \
+    ranges,                               \
+    nonbase_ranges,                       \
+    top_to_bottom,                        \
+    std_charstring,                       \
+  };
+
+
+#define AF_DECLARE_STYLE_CLASS( style_class ) \
+  FT_CALLBACK_TABLE const AF_StyleClassRec    \
+  style_class;
+
+#define AF_DEFINE_STYLE_CLASS(          \
+          style_class,                  \
+          style,                        \
+          writing_system,               \
+          script,                       \
+          blue_stringset,               \
+          coverage )                    \
+  FT_CALLBACK_TABLE_DEF                 \
+  const AF_StyleClassRec  style_class = \
+  {                                     \
+    style,                              \
+    writing_system,                     \
+    script,                             \
+    blue_stringset,                     \
+    coverage                            \
   };
 
 #else /* FT_CONFIG_OPTION_PIC */
+
+#define AF_DECLARE_WRITING_SYSTEM_CLASS( writing_system_class )            \
+  FT_LOCAL( void )                                                         \
+  FT_Init_Class_ ## writing_system_class( AF_WritingSystemClassRec*  ac );
+
+#define AF_DEFINE_WRITING_SYSTEM_CLASS(                                   \
+          writing_system_class,                                           \
+          system,                                                         \
+          m_size,                                                         \
+          m_init,                                                         \
+          m_scale,                                                        \
+          m_done,                                                         \
+          h_init,                                                         \
+          h_apply )                                                       \
+  FT_LOCAL_DEF( void )                                                    \
+  FT_Init_Class_ ## writing_system_class( AF_WritingSystemClassRec*  ac ) \
+  {                                                                       \
+    ac->writing_system        = system;                                   \
+                                                                          \
+    ac->style_metrics_size    = m_size;                                   \
+                                                                          \
+    ac->style_metrics_init    = m_init;                                   \
+    ac->style_metrics_scale   = m_scale;                                  \
+    ac->style_metrics_done    = m_done;                                   \
+    ac->style_metrics_getstdw = m_stdw;                                   \
+                                                                          \
+    ac->style_hints_init      = h_init;                                   \
+    ac->style_hints_apply     = h_apply;                                  \
+  }
+
 
 #define AF_DECLARE_SCRIPT_CLASS( script_class )             \
   FT_LOCAL( void )                                          \
   FT_Init_Class_ ## script_class( AF_ScriptClassRec*  ac );
 
-#define AF_DEFINE_SCRIPT_CLASS( script_class, script_, ranges, def_char,   \
-                                m_size,                                    \
-                                m_init, m_scale, m_done, h_init, h_apply ) \
-  FT_LOCAL_DEF( void )                                                     \
-  FT_Init_Class_ ## script_class( AF_ScriptClassRec*  ac )                 \
-  {                                                                        \
-    ac->script               = script_;                                    \
-    ac->script_uni_ranges    = ranges;                                     \
-    ac->default_char         = def_char;                                   \
-                                                                           \
-    ac->script_metrics_size  = m_size;                                     \
-                                                                           \
-    ac->script_metrics_init  = m_init;                                     \
-    ac->script_metrics_scale = m_scale;                                    \
-    ac->script_metrics_done  = m_done;                                     \
-                                                                           \
-    ac->script_hints_init    = h_init;                                     \
-    ac->script_hints_apply   = h_apply;                                    \
+#define AF_DEFINE_SCRIPT_CLASS(                            \
+          script_class,                                    \
+          script_,                                         \
+          ranges,                                          \
+          nonbase_ranges,                                  \
+          top_to_bottom,                                   \
+          std_charstring )                                 \
+  FT_LOCAL_DEF( void )                                     \
+  FT_Init_Class_ ## script_class( AF_ScriptClassRec*  ac ) \
+  {                                                        \
+    ac->script                    = script_;               \
+    ac->script_uni_ranges         = ranges;                \
+    ac->script_uni_nonbase_ranges = nonbase_ranges;        \
+    ac->top_to_bottom_hinting     = top_to_bottom;         \
+    ac->standard_charstring       = std_charstring;        \
+  }
+
+
+#define AF_DECLARE_STYLE_CLASS( style_class )             \
+  FT_LOCAL( void )                                        \
+  FT_Init_Class_ ## style_class( AF_StyleClassRec*  ac );
+
+#define AF_DEFINE_STYLE_CLASS(                           \
+          style_class,                                   \
+          style_,                                        \
+          writing_system_,                               \
+          script_,                                       \
+          blue_stringset_,                               \
+          coverage_ )                                    \
+  FT_LOCAL_DEF( void )                                   \
+  FT_Init_Class_ ## style_class( AF_StyleClassRec*  ac ) \
+  {                                                      \
+    ac->style          = style_;                         \
+    ac->writing_system = writing_system_;                \
+    ac->script         = script_;                        \
+    ac->blue_stringset = blue_stringset_;                \
+    ac->coverage       = coverage_;                      \
   }
 
 #endif /* FT_CONFIG_OPTION_PIC */
@@ -372,7 +644,7 @@ extern void*  _af_debug_hints;
 
 FT_END_HEADER
 
-#endif /* __AFTYPES_H__ */
+#endif /* AFTYPES_H_ */
 
 
 /* END */

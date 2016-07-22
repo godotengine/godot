@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Tracing handling (specification only).                               */
 /*                                                                         */
-/*  Copyright 2002, 2004-2007, 2009, 2011-2013 by                          */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -148,5 +148,7 @@ FT_TRACE_DEF( afcjk )
 FT_TRACE_DEF( aflatin )
 FT_TRACE_DEF( aflatin2 )
 FT_TRACE_DEF( afwarp )
+FT_TRACE_DEF( afshaper )
+FT_TRACE_DEF( afglobal )
 
 /* END */

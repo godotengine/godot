@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType property service (specification).                       */
 /*                                                                         */
-/*  Copyright 2012 by                                                      */
+/*  Copyright 2012-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __SVPROP_H__
-#define __SVPROP_H__
+#ifndef SVPROP_H_
+#define SVPROP_H_
 
 
 FT_BEGIN_HEADER
@@ -75,7 +75,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __SVPROP_H__ */
+#endif /* SVPROP_H_ */
 
 
 /* END */

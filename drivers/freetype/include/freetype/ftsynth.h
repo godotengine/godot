@@ -5,7 +5,7 @@
 /*    FreeType synthesizing code for emboldening and slanting              */
 /*    (specification).                                                     */
 /*                                                                         */
-/*  Copyright 2000-2001, 2003, 2006, 2008, 2012 by                         */
+/*  Copyright 2000-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -37,12 +37,12 @@
   /* Main reason for not lifting the functions in this module to a  */
   /* `standard' API is that the used parameters for emboldening and */
   /* slanting are not configurable.  Consider the functions as a    */
-  /* code resource which should be copied into the application and  */
+  /* code resource that should be copied into the application and   */
   /* adapted to the particular needs.                               */
 
 
-#ifndef __FTSYNTH_H__
-#define __FTSYNTH_H__
+#ifndef FTSYNTH_H_
+#define FTSYNTH_H_
 
 
 #include <ft2build.h>
@@ -62,8 +62,10 @@ FT_BEGIN_HEADER
   /* a wrapper for @FT_Outline_Embolden and @FT_Bitmap_Embolden.           */
   /*                                                                       */
   /* For emboldened outlines the height, width, and advance metrics are    */
-  /* increased by the strength of the emboldening.  You can also call      */
-  /* @FT_Outline_Get_CBox to get precise values.                           */
+  /* increased by the strength of the emboldening -- this even affects     */
+  /* mono-width fonts!                                                     */
+  /*                                                                       */
+  /* You can also call @FT_Outline_Get_CBox to get precise values.         */
   FT_EXPORT( void )
   FT_GlyphSlot_Embolden( FT_GlyphSlot  slot );
 
@@ -73,9 +75,10 @@ FT_BEGIN_HEADER
 
   /* */
 
+
 FT_END_HEADER
 
-#endif /* __FTSYNTH_H__ */
+#endif /* FTSYNTH_H_ */
 
 
 /* END */

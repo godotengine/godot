@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType utility file for PS names support (body).                   */
 /*                                                                         */
-/*  Copyright 2002-2004, 2011 by                                           */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -17,6 +17,7 @@
 
 
 #include <ft2build.h>
+#include FT_INTERNAL_DEBUG_H
 #include FT_INTERNAL_OBJECTS_H
 #include FT_INTERNAL_SERVICE_H
 #include FT_SERVICE_POSTSCRIPT_INFO_H
@@ -28,19 +29,22 @@
   FT_Get_PS_Font_Info( FT_Face          face,
                        PS_FontInfoRec*  afont_info )
   {
-    FT_Error  error = FT_ERR( Invalid_Argument );
+    FT_Error           error;
+    FT_Service_PsInfo  service;
 
 
-    if ( face )
-    {
-      FT_Service_PsInfo  service = NULL;
+    if ( !face )
+      return FT_THROW( Invalid_Face_Handle );
 
+    if ( !afont_info )
+      return FT_THROW( Invalid_Argument );
 
-      FT_FACE_FIND_SERVICE( face, service, POSTSCRIPT_INFO );
+    FT_FACE_FIND_SERVICE( face, service, POSTSCRIPT_INFO );
 
-      if ( service && service->ps_get_font_info )
-        error = service->ps_get_font_info( face, afont_info );
-    }
+    if ( service && service->ps_get_font_info )
+      error = service->ps_get_font_info( face, afont_info );
+    else
+      error = FT_THROW( Invalid_Argument );
 
     return error;
   }
@@ -51,8 +55,8 @@
   FT_EXPORT_DEF( FT_Int )
   FT_Has_PS_Glyph_Names( FT_Face  face )
   {
-    FT_Int             result  = 0;
-    FT_Service_PsInfo  service = NULL;
+    FT_Int             result = 0;
+    FT_Service_PsInfo  service;
 
 
     if ( face )
@@ -73,19 +77,22 @@
   FT_Get_PS_Font_Private( FT_Face         face,
                           PS_PrivateRec*  afont_private )
   {
-    FT_Error  error = FT_ERR( Invalid_Argument );
+    FT_Error           error;
+    FT_Service_PsInfo  service;
 
 
-    if ( face )
-    {
-      FT_Service_PsInfo  service = NULL;
+    if ( !face )
+      return FT_THROW( Invalid_Face_Handle );
 
+    if ( !afont_private )
+      return FT_THROW( Invalid_Argument );
 
-      FT_FACE_FIND_SERVICE( face, service, POSTSCRIPT_INFO );
+    FT_FACE_FIND_SERVICE( face, service, POSTSCRIPT_INFO );
 
-      if ( service && service->ps_get_font_private )
-        error = service->ps_get_font_private( face, afont_private );
-    }
+    if ( service && service->ps_get_font_private )
+      error = service->ps_get_font_private( face, afont_private );
+    else
+      error = FT_THROW( Invalid_Argument );
 
     return error;
   }

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter warping algorithm (specification).                       */
 /*                                                                         */
-/*  Copyright 2006, 2007 by                                                */
+/*  Copyright 2006-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __AFWARP_H__
-#define __AFWARP_H__
+#ifndef AFWARP_H_
+#define AFWARP_H_
 
 #include "afhints.h"
 
@@ -25,7 +25,7 @@ FT_BEGIN_HEADER
 
 #define AF_WARPER_SCALE
 
-#define AF_WARPER_FLOOR( x )  ( (x) & ~63 )
+#define AF_WARPER_FLOOR( x )  ( (x) & ~FT_TYPEOF( x )63 )
 #define AF_WARPER_CEIL( x )   AF_WARPER_FLOOR( (x) + 63 )
 
 
@@ -58,7 +58,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __AFWARP_H__ */
+#endif /* AFWARP_H_ */
 
 
 /* END */

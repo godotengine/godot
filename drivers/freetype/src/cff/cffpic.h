@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType position independent code services for cff module.      */
 /*                                                                         */
-/*  Copyright 2009, 2012, 2013 by                                          */
+/*  Copyright 2009-2016 by                                                 */
 /*  Oran Agra and Mickey Gabel.                                            */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,11 +16,9 @@
 /***************************************************************************/
 
 
-#ifndef __CFFPIC_H__
-#define __CFFPIC_H__
+#ifndef CFFPIC_H_
+#define CFFPIC_H_
 
-
-FT_BEGIN_HEADER
 
 #include FT_INTERNAL_PIC_H
 
@@ -48,6 +46,8 @@ FT_BEGIN_HEADER
 #include FT_SERVICE_CID_H
 #include FT_SERVICE_PROPERTIES_H
 
+
+FT_BEGIN_HEADER
 
   typedef struct  CffModulePIC_
   {
@@ -96,13 +96,13 @@ FT_BEGIN_HEADER
   FT_Error
   cff_driver_class_pic_init( FT_Library  library );
 
+FT_END_HEADER
+
 #endif /* FT_CONFIG_OPTION_PIC */
 
  /* */
 
-FT_END_HEADER
-
-#endif /* __CFFPIC_H__ */
+#endif /* CFFPIC_H_ */
 
 
 /* END */

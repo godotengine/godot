@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType auxiliary PostScript module implementation (specification). */
 /*                                                                         */
-/*  Copyright 2000-2001 by                                                 */
+/*  Copyright 2000-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __PSAUXMOD_H__
-#define __PSAUXMOD_H__
+#ifndef PSAUXMOD_H_
+#define PSAUXMOD_H_
 
 
 #include <ft2build.h>
@@ -36,7 +36,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __PSAUXMOD_H__ */
+#endif /* PSAUXMOD_H_ */
 
 
 /* END */

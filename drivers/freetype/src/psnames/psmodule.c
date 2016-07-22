@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    PSNames module implementation (body).                                */
 /*                                                                         */
-/*  Copyright 1996-2003, 2005-2008, 2012, 2013 by                          */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -312,7 +312,7 @@
 
     /* we first allocate the table */
     table->num_maps = 0;
-    table->maps     = 0;
+    table->maps     = NULL;
 
     if ( !FT_NEW_ARRAY( table->maps, num_glyphs + EXTRA_GLYPH_LIST_SIZE ) )
     {
@@ -525,31 +525,31 @@
 
   FT_DEFINE_SERVICE_PSCMAPSREC(
     pscmaps_interface,
-    (PS_Unicode_ValueFunc)     ps_unicode_value,
-    (PS_Unicodes_InitFunc)     ps_unicodes_init,
-    (PS_Unicodes_CharIndexFunc)ps_unicodes_char_index,
-    (PS_Unicodes_CharNextFunc) ps_unicodes_char_next,
+    (PS_Unicode_ValueFunc)     ps_unicode_value,        /* unicode_value         */
+    (PS_Unicodes_InitFunc)     ps_unicodes_init,        /* unicodes_init         */
+    (PS_Unicodes_CharIndexFunc)ps_unicodes_char_index,  /* unicodes_char_index   */
+    (PS_Unicodes_CharNextFunc) ps_unicodes_char_next,   /* unicodes_char_next    */
 
-    (PS_Macintosh_NameFunc)    ps_get_macintosh_name,
-    (PS_Adobe_Std_StringsFunc) ps_get_standard_strings,
+    (PS_Macintosh_NameFunc)    ps_get_macintosh_name,   /* macintosh_name        */
+    (PS_Adobe_Std_StringsFunc) ps_get_standard_strings, /* adobe_std_strings     */
 
-    t1_standard_encoding,
-    t1_expert_encoding )
+    t1_standard_encoding,                               /* adobe_std_encoding    */
+    t1_expert_encoding )                                /* adobe_expert_encoding */
 
 #else
 
   FT_DEFINE_SERVICE_PSCMAPSREC(
     pscmaps_interface,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
+    NULL,                                               /* unicode_value         */
+    NULL,                                               /* unicodes_init         */
+    NULL,                                               /* unicodes_char_index   */
+    NULL,                                               /* unicodes_char_next    */
 
-    (PS_Macintosh_NameFunc)    ps_get_macintosh_name,
-    (PS_Adobe_Std_StringsFunc) ps_get_standard_strings,
+    (PS_Macintosh_NameFunc)    ps_get_macintosh_name,   /* macintosh_name        */
+    (PS_Adobe_Std_StringsFunc) ps_get_standard_strings, /* adobe_std_strings     */
 
-    t1_standard_encoding,
-    t1_expert_encoding )
+    t1_standard_encoding,                               /* adobe_std_encoding    */
+    t1_expert_encoding )                                /* adobe_expert_encoding */
 
 #endif /* FT_CONFIG_OPTION_ADOBE_GLYPH_LIST */
 
@@ -563,7 +563,7 @@
   psnames_get_service( FT_Module    module,
                        const char*  service_id )
   {
-    /* PSCMAPS_SERVICES_GET derefers `library' in PIC mode */
+    /* PSCMAPS_SERVICES_GET dereferences `library' in PIC mode */
 #ifdef FT_CONFIG_OPTION_PIC
     FT_Library  library;
 

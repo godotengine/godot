@@ -1,6 +1,6 @@
 # FreeType 2 src/pfr Jamfile
 #
-# Copyright 2002 by
+# Copyright 2002-2016 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -16,7 +16,13 @@ SubDir  FT2_TOP $(FT2_SRC_DIR) pfr ;
 
   if $(FT2_MULTI)
   {
-    _sources = pfrdrivr pfrgload pfrload pfrobjs pfrcmap pfrsbit ;
+    _sources = pfrcmap
+               pfrdrivr
+               pfrgload
+               pfrload
+               pfrobjs
+               pfrsbit
+               ;
   }
   else
   {

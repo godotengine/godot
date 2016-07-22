@@ -1,6 +1,6 @@
 # FreeType 2 src/base Jamfile
 #
-# Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 by
+# Copyright 2001-2016 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -17,10 +17,20 @@ SubDir  FT2_TOP $(FT2_SRC_DIR) base ;
 
   if $(FT2_MULTI)
   {
-    _sources = ftadvanc ftcalc   ftdbgmem ftgloadr
-               ftobjs   ftoutln  ftrfork  ftsnames
-               ftstream fttrigon ftutil
-               basepic  ftpic
+    _sources = basepic
+               ftadvanc
+               ftcalc
+               ftdbgmem
+               ftgloadr
+               fthash
+               ftobjs
+               ftoutln
+               ftpic
+               ftrfork
+               ftsnames
+               ftstream
+               fttrigon
+               ftutil
                ;
   }
   else
@@ -34,13 +44,31 @@ SubDir  FT2_TOP $(FT2_SRC_DIR) base ;
 # Add the optional/replaceable files.
 #
 {
-  local  _sources = bbox   bdf    bitmap debug  gasp
-                    glyph  gxval  init   lcdfil mm
-                    otval  pfr    stroke synth  system
-                    type1  winfnt xf86   patent
+  local  _sources = ftapi
+                    ftbbox
+                    ftbdf
+                    ftbitmap
+                    ftcid
+                    ftdebug
+                    ftfntfmt
+                    ftfstype
+                    ftgasp
+                    ftglyph
+                    ftgxval
+                    ftinit
+                    ftlcdfil
+                    ftmm
+                    ftotval
+                    ftpatent
+                    ftpfr
+                    ftstroke
+                    ftsynth
+                    ftsystem
+                    fttype1
+                    ftwinfnt
                     ;
 
-  Library  $(FT2_LIB) : ft$(_sources).c ;
+  Library  $(FT2_LIB) : $(_sources).c ;
 }
 
 # Add Macintosh-specific file to the library when necessary.

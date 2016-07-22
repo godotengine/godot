@@ -3,7 +3,7 @@
 #
 
 
-# Copyright 2002, 2003, 2008 by
+# Copyright 2002-2016 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -20,7 +20,10 @@ T42_DIR := $(SRC_DIR)/type42
 
 # compilation flags for the driver
 #
-T42_COMPILE := $(FT_COMPILE) $I$(subst /,$(COMPILER_SEP),$(T42_DIR))
+T42_COMPILE := $(CC) $(ANSIFLAGS)                            \
+                     $I$(subst /,$(COMPILER_SEP),$(T42_DIR)) \
+                     $(INCLUDE_FLAGS)                        \
+                     $(FT_CFLAGS)
 
 
 # Type42 driver source

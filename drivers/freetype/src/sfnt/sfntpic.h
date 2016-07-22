@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType position independent code services for sfnt module.     */
 /*                                                                         */
-/*  Copyright 2009, 2012 by                                                */
+/*  Copyright 2009-2016 by                                                 */
 /*  Oran Agra and Mickey Gabel.                                            */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,11 +16,9 @@
 /***************************************************************************/
 
 
-#ifndef __SFNTPIC_H__
-#define __SFNTPIC_H__
+#ifndef SFNTPIC_H_
+#define SFNTPIC_H_
 
-
-FT_BEGIN_HEADER
 
 #include FT_INTERNAL_PIC_H
 
@@ -31,7 +29,6 @@ FT_BEGIN_HEADER
 #define SFNT_SERVICE_GLYPH_DICT_GET  sfnt_service_glyph_dict
 #define SFNT_SERVICE_PS_NAME_GET     sfnt_service_ps_name
 #define TT_SERVICE_CMAP_INFO_GET     tt_service_get_cmap_info
-#define SFNT_SERVICES_GET            sfnt_services
 #define TT_CMAP_CLASSES_GET          tt_cmap_classes
 #define SFNT_SERVICE_SFNT_TABLE_GET  sfnt_service_sfnt_table
 #define SFNT_SERVICE_BDF_GET         sfnt_service_bdf
@@ -55,6 +52,8 @@ FT_BEGIN_HEADER
 #include FT_INTERNAL_SFNT_H
 #include "ttcmap.h"
 
+
+FT_BEGIN_HEADER
 
   typedef struct  sfntModulePIC_
   {
@@ -83,8 +82,6 @@ FT_BEGIN_HEADER
           ( GET_PIC( library )->sfnt_service_ps_name )
 #define TT_SERVICE_CMAP_INFO_GET                           \
           ( GET_PIC( library )->tt_service_get_cmap_info )
-#define SFNT_SERVICES_GET                       \
-          ( GET_PIC( library )->sfnt_services )
 #define TT_CMAP_CLASSES_GET                       \
           ( GET_PIC( library )->tt_cmap_classes )
 #define SFNT_SERVICE_SFNT_TABLE_GET                       \
@@ -102,13 +99,14 @@ FT_BEGIN_HEADER
   FT_Error
   sfnt_module_class_pic_init( FT_Library  library );
 
+
+FT_END_HEADER
+
 #endif /* FT_CONFIG_OPTION_PIC */
 
   /* */
 
-FT_END_HEADER
-
-#endif /* __SFNTPIC_H__ */
+#endif /* SFNTPIC_H_ */
 
 
 /* END */

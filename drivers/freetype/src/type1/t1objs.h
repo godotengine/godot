@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 objects manager (specification).                              */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2006, 2011 by                               */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __T1OBJS_H__
-#define __T1OBJS_H__
+#ifndef T1OBJS_H_
+#define T1OBJS_H_
 
 
 #include <ft2build.h>
@@ -154,7 +154,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __T1OBJS_H__ */
+#endif /* T1OBJS_H_ */
 
 
 /* END */

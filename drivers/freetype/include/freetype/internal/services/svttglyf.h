@@ -4,7 +4,8 @@
 /*                                                                         */
 /*    The FreeType TrueType glyph service.                                 */
 /*                                                                         */
-/*  Copyright 2007, 2009, 2012 by David Turner.                            */
+/*  Copyright 2007-2016 by                                                 */
+/*  David Turner.                                                          */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
 /*  modified, and distributed under the terms of the FreeType project      */
@@ -14,8 +15,8 @@
 /*                                                                         */
 /***************************************************************************/
 
-#ifndef __SVTTGLYF_H__
-#define __SVTTGLYF_H__
+#ifndef SVTTGLYF_H_
+#define SVTTGLYF_H_
 
 #include FT_INTERNAL_SERVICE_H
 #include FT_TRUETYPE_TABLES_H
@@ -62,7 +63,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __SVTTGLYF_H__ */
+#endif /* SVTTGLYF_H_ */
 
 
 /* END */

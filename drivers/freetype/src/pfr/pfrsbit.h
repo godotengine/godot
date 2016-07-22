@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType PFR bitmap loader (specification).                          */
 /*                                                                         */
-/*  Copyright 2002 by                                                      */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __PFRSBIT_H__
-#define __PFRSBIT_H__
+#ifndef PFRSBIT_H_
+#define PFRSBIT_H_
 
 #include "pfrobjs.h"
 
@@ -30,7 +30,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __PFR_SBIT_H__ */
+#endif /* PFRSBIT_H_ */
 
 
 /* END */

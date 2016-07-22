@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType API for color filtering of subpixel bitmap glyphs (body).   */
 /*                                                                         */
-/*  Copyright 2006, 2008-2010, 2013 by                                     */
+/*  Copyright 2006-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -46,9 +46,16 @@
       FT_Byte*  line = bitmap->buffer;
 
 
+      /* take care of bitmap flow */
+      if ( bitmap->pitch < 0 )
+        line -= bitmap->pitch * (FT_Int)( bitmap->rows - 1 );
+
+      /* `fir' and `pix' must be at least 32 bit wide, since the sum of */
+      /* the values in `weights' can exceed 0xFF                        */
+
       for ( ; height > 0; height--, line += bitmap->pitch )
       {
-        FT_UInt  fir[5];
+        FT_UInt  fir[4];        /* below, `pix' is used as the 5th element */
         FT_UInt  val1, xx;
 
 
@@ -57,7 +64,6 @@
         fir[1] = weights[3] * val1;
         fir[2] = weights[4] * val1;
         fir[3] = 0;
-        fir[4] = 0;
 
         val1    = line[1];
         fir[0] += weights[1] * val1;
@@ -78,7 +84,7 @@
           fir[3] =          weights[4] * val;
 
           pix        >>= 8;
-          pix         |= -( pix >> 8 );
+          pix         |= (FT_UInt)-(FT_Int)( pix >> 8 );
           line[xx - 2] = (FT_Byte)pix;
         }
 
@@ -87,11 +93,11 @@
 
 
           pix          = fir[0] >> 8;
-          pix         |= -( pix >> 8 );
+          pix         |= (FT_UInt)-(FT_Int)( pix >> 8 );
           line[xx - 2] = (FT_Byte)pix;
 
           pix          = fir[1] >> 8;
-          pix         |= -( pix >> 8 );
+          pix         |= (FT_UInt)-(FT_Int)( pix >> 8 );
           line[xx - 1] = (FT_Byte)pix;
         }
       }
@@ -104,10 +110,14 @@
       FT_Int    pitch  = bitmap->pitch;
 
 
+      /* take care of bitmap flow */
+      if ( bitmap->pitch < 0 )
+        column -= bitmap->pitch * (FT_Int)( bitmap->rows - 1 );
+
       for ( ; width > 0; width--, column++ )
       {
         FT_Byte*  col = column;
-        FT_UInt   fir[5];
+        FT_UInt   fir[4];       /* below, `pix' is used as the 5th element */
         FT_UInt   val1, yy;
 
 
@@ -116,7 +126,6 @@
         fir[1] = weights[3] * val1;
         fir[2] = weights[4] * val1;
         fir[3] = 0;
-        fir[4] = 0;
         col   += pitch;
 
         val1    = col[0];
@@ -139,7 +148,7 @@
           fir[3] =          weights[4] * val;
 
           pix           >>= 8;
-          pix            |= -( pix >> 8 );
+          pix            |= (FT_UInt)-(FT_Int)( pix >> 8 );
           col[-2 * pitch] = (FT_Byte)pix;
           col            += pitch;
         }
@@ -149,11 +158,11 @@
 
 
           pix             = fir[0] >> 8;
-          pix            |= -( pix >> 8 );
+          pix            |= (FT_UInt)-(FT_Int)( pix >> 8 );
           col[-2 * pitch] = (FT_Byte)pix;
 
           pix         = fir[1] >> 8;
-          pix        |= -( pix >> 8 );
+          pix        |= (FT_UInt)-(FT_Int)( pix >> 8 );
           col[-pitch] = (FT_Byte)pix;
         }
       }
@@ -173,7 +182,7 @@
     FT_UInt  height = (FT_UInt)bitmap->rows;
     FT_Int   pitch  = bitmap->pitch;
 
-    static const int  filters[3][3] =
+    static const unsigned int  filters[3][3] =
     {
       { 65538 * 9/13, 65538 * 1/6, 65538 * 1/13 },
       { 65538 * 3/13, 65538 * 4/6, 65538 * 3/13 },
@@ -188,6 +197,10 @@
     {
       FT_Byte*  line = bitmap->buffer;
 
+
+      /* take care of bitmap flow */
+      if ( bitmap->pitch < 0 )
+        line -= bitmap->pitch * (FT_Int)( bitmap->rows - 1 );
 
       for ( ; height > 0; height--, line += pitch )
       {
@@ -228,10 +241,14 @@
       FT_Byte*  column = bitmap->buffer;
 
 
+      /* take care of bitmap flow */
+      if ( bitmap->pitch < 0 )
+        column -= bitmap->pitch * (FT_Int)( bitmap->rows - 1 );
+
       for ( ; width > 0; width--, column++ )
       {
         FT_Byte*  col     = column;
-        FT_Byte*  col_end = col + height * pitch;
+        FT_Byte*  col_end = col + (FT_Int)height * pitch;
 
 
         for ( ; col < col_end; col += 3 * pitch )
@@ -272,10 +289,15 @@
   FT_Library_SetLcdFilterWeights( FT_Library      library,
                                   unsigned char  *weights )
   {
-    if ( !library || !weights )
+    if ( !library )
+      return FT_THROW( Invalid_Library_Handle );
+
+    if ( !weights )
       return FT_THROW( Invalid_Argument );
 
     ft_memcpy( library->lcd_weights, weights, 5 );
+    library->lcd_filter_func = _ft_lcd_filter_fir;
+    library->lcd_extra       = 2;
 
     return FT_Err_Ok;
   }
@@ -285,16 +307,14 @@
   FT_Library_SetLcdFilter( FT_Library    library,
                            FT_LcdFilter  filter )
   {
+    static const FT_Byte  default_filter[5] =
+                            { 0x08, 0x4d, 0x56, 0x4d, 0x08 };
     static const FT_Byte  light_filter[5] =
                             { 0x00, 0x55, 0x56, 0x55, 0x00 };
-    /* the values here sum up to a value larger than 256, */
-    /* providing a cheap gamma correction                 */
-    static const FT_Byte  default_filter[5] =
-                            { 0x10, 0x40, 0x70, 0x40, 0x10 };
 
 
     if ( !library )
-      return FT_THROW( Invalid_Argument );
+      return FT_THROW( Invalid_Library_Handle );
 
     switch ( filter )
     {
@@ -304,25 +324,9 @@
       break;
 
     case FT_LCD_FILTER_DEFAULT:
-#if defined( FT_FORCE_LEGACY_LCD_FILTER )
-
-      library->lcd_filter_func = _ft_lcd_filter_legacy;
-      library->lcd_extra       = 0;
-
-#elif defined( FT_FORCE_LIGHT_LCD_FILTER )
-
-      ft_memcpy( library->lcd_weights, light_filter, 5 );
-      library->lcd_filter_func = _ft_lcd_filter_fir;
-      library->lcd_extra       = 2;
-
-#else
-
       ft_memcpy( library->lcd_weights, default_filter, 5 );
       library->lcd_filter_func = _ft_lcd_filter_fir;
       library->lcd_extra       = 2;
-
-#endif
-
       break;
 
     case FT_LCD_FILTER_LIGHT:
@@ -334,6 +338,7 @@
 #ifdef USE_LEGACY
 
     case FT_LCD_FILTER_LEGACY:
+    case FT_LCD_FILTER_LEGACY1:
       library->lcd_filter_func = _ft_lcd_filter_legacy;
       library->lcd_extra       = 0;
       break;

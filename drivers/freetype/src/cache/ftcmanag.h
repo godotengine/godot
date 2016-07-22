@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType Cache Manager (specification).                              */
 /*                                                                         */
-/*  Copyright 2000-2001, 2003, 2004, 2006, 2010, 2013 by                   */
+/*  Copyright 2000-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -59,8 +59,8 @@
   /*************************************************************************/
 
 
-#ifndef __FTCMANAG_H__
-#define __FTCMANAG_H__
+#ifndef FTCMANAG_H_
+#define FTCMANAG_H_
 
 
 #include <ft2build.h>
@@ -161,7 +161,7 @@ FT_BEGIN_HEADER
           (a)->y_res == (b)->y_res ) ) )
 
 #define FTC_SCALER_HASH( q )                                 \
-    ( _FTC_FACE_ID_HASH( (q)->face_id ) +                     \
+    ( FTC_FACE_ID_HASH( (q)->face_id ) +                     \
       (q)->width + (q)->height*7 +                           \
       ( (q)->pixel ? 0 : ( (q)->x_res*33 ^ (q)->y_res*61 ) ) )
 
@@ -169,7 +169,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTCMANAG_H__ */
+#endif /* FTCMANAG_H_ */
 
 
 /* END */

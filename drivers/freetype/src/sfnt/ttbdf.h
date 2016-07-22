@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType and OpenType embedded BDF properties (specification).       */
 /*                                                                         */
-/*  Copyright 2005 by                                                      */
+/*  Copyright 2005-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __TTBDF_H__
-#define __TTBDF_H__
+#ifndef TTBDF_H_
+#define TTBDF_H_
 
 
 #include <ft2build.h>
@@ -40,7 +40,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __TTBDF_H__ */
+#endif /* TTBDF_H_ */
 
 
 /* END */

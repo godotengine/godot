@@ -2,9 +2,10 @@
 /*                                                                         */
 /*  ttunpat.h                                                              */
 /*                                                                         */
-/*    Definitions for the unpatented TrueType hinting system               */
+/*    Definitions for the unpatented TrueType hinting system.              */
+/*    Obsolete, retained for backwards compatibility.                      */
 /*                                                                         */
-/*  Copyright 2003, 2006 by                                                */
+/*  Copyright 2003-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  Written by Graham Asher <graham.asher@btinternet.com>                  */
@@ -18,8 +19,8 @@
 /***************************************************************************/
 
 
-#ifndef __TTUNPAT_H__
-#define __TTUNPAT_H__
+#ifndef TTUNPAT_H_
+#define TTUNPAT_H_
 
 
 #include <ft2build.h>
@@ -41,19 +42,22 @@ FT_BEGIN_HEADER
   *   FT_PARAM_TAG_UNPATENTED_HINTING
   *
   * @description:
-  *   A constant used as the tag of an @FT_Parameter structure to indicate
-  *   that unpatented methods only should be used by the TrueType bytecode
-  *   interpreter for a typeface opened by @FT_Open_Face.
+  *   Deprecated.
+  *
+  *   Previously: A constant used as the tag of an @FT_Parameter structure to
+  *   indicate that unpatented methods only should be used by the TrueType
+  *   bytecode interpreter for a typeface opened by @FT_Open_Face.
   *
   */
 #define FT_PARAM_TAG_UNPATENTED_HINTING  FT_MAKE_TAG( 'u', 'n', 'p', 'a' )
 
- /* */
+  /* */
+
 
 FT_END_HEADER
 
 
-#endif /* __TTUNPAT_H__ */
+#endif /* TTUNPAT_H_ */
 
 
 /* END */

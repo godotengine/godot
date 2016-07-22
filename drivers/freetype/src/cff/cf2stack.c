@@ -145,7 +145,7 @@
 
 
   /* Note: type mismatch is silently cast */
-  /* TODO: check this */
+  /* TODO: check this                     */
   FT_LOCAL_DEF( CF2_Fixed )
   cf2_stack_popFixed( CF2_Stack  stack )
   {
@@ -170,7 +170,7 @@
 
 
   /* Note: type mismatch is silently cast */
-  /* TODO: check this */
+  /* TODO: check this                     */
   FT_LOCAL_DEF( CF2_Fixed )
   cf2_stack_getReal( CF2_Stack  stack,
                      CF2_UInt   idx )
@@ -191,6 +191,86 @@
       return cf2_fracToFixed( stack->buffer[idx].u.f );
     default:
       return stack->buffer[idx].u.r;
+    }
+  }
+
+
+  FT_LOCAL( void )
+  cf2_stack_roll( CF2_Stack  stack,
+                  CF2_Int    count,
+                  CF2_Int    shift )
+  {
+    /* we initialize this variable to avoid compiler warnings */
+    CF2_StackNumber  last = { { 0 }, CF2_NumberInt };
+
+    CF2_Int  start_idx, idx, i;
+
+
+    if ( count < 2 )
+      return; /* nothing to do (values 0 and 1), or undefined value */
+
+    if ( (CF2_UInt)count > cf2_stack_count( stack ) )
+    {
+      CF2_SET_ERROR( stack->error, Stack_Overflow );
+      return;
+    }
+
+    if ( shift < 0 )
+      shift = -( ( -shift ) % count );
+    else
+      shift %= count;
+
+    if ( shift == 0 )
+      return; /* nothing to do */
+
+    /* We use the following algorithm to do the rolling, */
+    /* which needs two temporary variables only.         */
+    /*                                                   */
+    /* Example:                                          */
+    /*                                                   */
+    /*   count = 8                                       */
+    /*   shift = 2                                       */
+    /*                                                   */
+    /*   stack indices before roll:  7 6 5 4 3 2 1 0     */
+    /*   stack indices after roll:   1 0 7 6 5 4 3 2     */
+    /*                                                   */
+    /* The value of index 0 gets moved to index 2, while */
+    /* the old value of index 2 gets moved to index 4,   */
+    /* and so on.  We thus have the following copying    */
+    /* chains for shift value 2.                         */
+    /*                                                   */
+    /*   0 -> 2 -> 4 -> 6 -> 0                           */
+    /*   1 -> 3 -> 5 -> 7 -> 1                           */
+    /*                                                   */
+    /* If `count' and `shift' are incommensurable, we    */
+    /* have a single chain only.  Otherwise, increase    */
+    /* the start index by 1 after the first chain, then  */
+    /* do the next chain until all elements in all       */
+    /* chains are handled.                               */
+
+    start_idx = -1;
+    idx       = -1;
+    for ( i = 0; i < count; i++ )
+    {
+      CF2_StackNumber  tmp;
+
+
+      if ( start_idx == idx )
+      {
+        start_idx++;
+        idx  = start_idx;
+        last = stack->buffer[idx];
+      }
+
+      idx += shift;
+      if ( idx >= count )
+        idx -= count;
+      else if ( idx < 0 )
+        idx += count;
+
+      tmp                = stack->buffer[idx];
+      stack->buffer[idx] = last;
+      last               = tmp;
     }
   }
 

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType initialization layer (body).                                */
 /*                                                                         */
-/*  Copyright 1996-2002, 2005, 2007, 2009, 2012, 2013 by                   */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -138,7 +138,7 @@
 #include FT_CONFIG_MODULES_H
 
     FT_FREE( classes );
-    pic_container->default_module_classes = 0;
+    pic_container->default_module_classes = NULL;
   }
 
 
@@ -164,7 +164,7 @@
 
     memory = library->memory;
 
-    pic_container->default_module_classes = 0;
+    pic_container->default_module_classes = NULL;
 
     if ( FT_ALLOC( classes, sizeof ( FT_Module_Class* ) *
                               ( FT_NUM_MODULE_CLASSES + 1 ) ) )
@@ -172,8 +172,8 @@
 
     /* initialize all pointers to 0, especially the last one */
     for ( i = 0; i < FT_NUM_MODULE_CLASSES; i++ )
-      classes[i] = 0;
-    classes[FT_NUM_MODULE_CLASSES] = 0;
+      classes[i] = NULL;
+    classes[FT_NUM_MODULE_CLASSES] = NULL;
 
     i = 0;
 
@@ -235,6 +235,8 @@
     FT_Memory  memory;
 
 
+    /* check of `alibrary' delayed to `FT_New_Library' */
+
     /* First of all, allocate a new system object -- this function is part */
     /* of the system-specific component, i.e. `ftsystem.c'.                */
 
@@ -263,17 +265,19 @@
   FT_EXPORT_DEF( FT_Error )
   FT_Done_FreeType( FT_Library  library )
   {
-    if ( library )
-    {
-      FT_Memory  memory = library->memory;
+    FT_Memory  memory;
 
 
-      /* Discard the library object */
-      FT_Done_Library( library );
+    if ( !library )
+      return FT_THROW( Invalid_Library_Handle );
 
-      /* discard memory manager */
-      FT_Done_Memory( memory );
-    }
+    memory = library->memory;
+
+    /* Discard the library object */
+    FT_Done_Library( library );
+
+    /* discard memory manager */
+    FT_Done_Memory( memory );
 
     return FT_Err_Ok;
   }

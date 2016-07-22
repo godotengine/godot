@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType utility functions for bitmaps (specification).              */
 /*                                                                         */
-/*  Copyright 2004-2006, 2008, 2013 by                                     */
+/*  Copyright 2004-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTBITMAP_H__
-#define __FTBITMAP_H__
+#ifndef FTBITMAP_H_
+#define FTBITMAP_H_
 
 
 #include <ft2build.h>
@@ -45,7 +45,9 @@ FT_BEGIN_HEADER
   /*    Handling FT_Bitmap objects.                                        */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    This section contains functions for converting FT_Bitmap objects.  */
+  /*    This section contains functions for handling @FT_Bitmap objects.   */
+  /*    Note that none of the functions changes the bitmap's `flow' (as    */
+  /*    indicated by the sign of the `pitch' field in `FT_Bitmap').        */
   /*                                                                       */
   /*************************************************************************/
 
@@ -53,7 +55,7 @@ FT_BEGIN_HEADER
   /*************************************************************************/
   /*                                                                       */
   /* <Function>                                                            */
-  /*    FT_Bitmap_New                                                      */
+  /*    FT_Bitmap_Init                                                     */
   /*                                                                       */
   /* <Description>                                                         */
   /*    Initialize a pointer to an @FT_Bitmap structure.                   */
@@ -61,6 +63,14 @@ FT_BEGIN_HEADER
   /* <InOut>                                                               */
   /*    abitmap :: A pointer to the bitmap structure.                      */
   /*                                                                       */
+  /* <Note>                                                                */
+  /*    A deprecated name for the same function is `FT_Bitmap_New'.        */
+  /*                                                                       */
+  FT_EXPORT( void )
+  FT_Bitmap_Init( FT_Bitmap  *abitmap );
+
+
+  /* deprecated */
   FT_EXPORT( void )
   FT_Bitmap_New( FT_Bitmap  *abitmap );
 
@@ -121,6 +131,9 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    If you want to embolden the bitmap owned by a @FT_GlyphSlotRec,    */
   /*    you should call @FT_GlyphSlot_Own_Bitmap on the slot first.        */
+  /*                                                                       */
+  /*    Bitmaps in @FT_PIXEL_MODE_GRAY2 and @FT_PIXEL_MODE_GRAY@ format    */
+  /*    are converted to @FT_PIXEL_MODE_GRAY format (i.e., 8bpp).          */
   /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Bitmap_Embolden( FT_Library  library,
@@ -197,7 +210,7 @@ FT_BEGIN_HEADER
   /*    FT_Bitmap_Done                                                     */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    Destroy a bitmap object created with @FT_Bitmap_New.               */
+  /*    Destroy a bitmap object initialized with @FT_Bitmap_Init.          */
   /*                                                                       */
   /* <Input>                                                               */
   /*    library :: A handle to a library object.                           */
@@ -221,7 +234,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTBITMAP_H__ */
+#endif /* FTBITMAP_H_ */
 
 
 /* END */

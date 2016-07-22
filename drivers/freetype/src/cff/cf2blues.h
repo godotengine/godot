@@ -65,8 +65,8 @@
    */
 
 
-#ifndef __CF2BLUES_H__
-#define __CF2BLUES_H__
+#ifndef CF2BLUES_H_
+#define CF2BLUES_H_
 
 
 #include "cf2glue.h"
@@ -179,7 +179,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __CF2BLUES_H__ */
+#endif /* CF2BLUES_H_ */
 
 
 /* END */

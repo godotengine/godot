@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType GX Font Variation loader (specification)                    */
 /*                                                                         */
-/*  Copyright 2004 by                                                      */
+/*  Copyright 2004-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, Werner Lemberg and George Williams.      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __TTGXVAR_H__
-#define __TTGXVAR_H__
+#ifndef TTGXVAR_H_
+#define TTGXVAR_H_
 
 
 #include <ft2build.h>
@@ -95,6 +95,8 @@ FT_BEGIN_HEADER
     FT_UInt         gv_glyphcnt;
     FT_ULong*       glyphoffsets;
 
+    FT_ULong        gvar_size;
+
   } GX_BlendRec;
 
 
@@ -162,10 +164,10 @@ FT_BEGIN_HEADER
 
 
   FT_LOCAL( FT_Error )
-  TT_Vary_Get_Glyph_Deltas( TT_Face      face,
-                            FT_UInt      glyph_index,
-                            FT_Vector*  *deltas,
-                            FT_UInt      n_points );
+  TT_Vary_Apply_Glyph_Deltas( TT_Face      face,
+                              FT_UInt      glyph_index,
+                              FT_Outline*  outline,
+                              FT_UInt      n_points );
 
 
   FT_LOCAL( void )
@@ -176,7 +178,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __TTGXVAR_H__ */
+#endif /* TTGXVAR_H_ */
 
 
 /* END */

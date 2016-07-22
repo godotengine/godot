@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueTypeGX/AAT morx table validation (body).                         */
 /*                                                                         */
-/*  Copyright 2005, 2008, 2013 by                                          */
+/*  Copyright 2005-2016 by                                                 */
 /*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
@@ -42,7 +42,7 @@
   gxv_morx_subtables_validate( FT_Bytes       table,
                                FT_Bytes       limit,
                                FT_UShort      nSubtables,
-                               GXV_Validator  valid )
+                               GXV_Validator  gxvalid )
   {
     FT_Bytes  p = table;
 
@@ -93,7 +93,7 @@
 
       /* morx coverage consists of mort_coverage & 16bit padding */
       gxv_mort_coverage_validate( (FT_UShort)( ( coverage >> 16 ) | coverage ),
-                                  valid );
+                                  gxvalid );
       if ( type > 5 )
         FT_INVALID_FORMAT;
 
@@ -101,13 +101,13 @@
       if ( func == NULL )
         GXV_TRACE(( "morx type %d is reserved\n", type ));
 
-      func( p, p + rest, valid );
+      func( p, p + rest, gxvalid );
 
       /* TODO: subFeatureFlags should be unique in a table? */
       p += rest;
     }
 
-    valid->subtable_length = p - table;
+    gxvalid->subtable_length = (FT_ULong)( p - table );
 
     GXV_EXIT;
   }
@@ -116,7 +116,7 @@
   static void
   gxv_morx_chain_validate( FT_Bytes       table,
                            FT_Bytes       limit,
-                           GXV_Validator  valid )
+                           GXV_Validator  gxvalid )
   {
     FT_Bytes  p = table;
 #ifdef GXV_LOAD_UNUSED_VARS
@@ -140,16 +140,16 @@
     nSubtables    = FT_NEXT_ULONG( p );
 
     /* feature-array of morx is same with that of mort */
-    gxv_mort_featurearray_validate( p, limit, nFeatureFlags, valid );
-    p += valid->subtable_length;
+    gxv_mort_featurearray_validate( p, limit, nFeatureFlags, gxvalid );
+    p += gxvalid->subtable_length;
 
     if ( nSubtables >= 0x10000L )
       FT_INVALID_DATA;
 
     gxv_morx_subtables_validate( p, table + chainLength,
-                                 (FT_UShort)nSubtables, valid );
+                                 (FT_UShort)nSubtables, gxvalid );
 
-    valid->subtable_length = chainLength;
+    gxvalid->subtable_length = chainLength;
 
     /* TODO: defaultFlags should be compared with the flags in tables */
 
@@ -162,8 +162,8 @@
                      FT_Face       face,
                      FT_Validator  ftvalid )
   {
-    GXV_ValidatorRec  validrec;
-    GXV_Validator     valid = &validrec;
+    GXV_ValidatorRec  gxvalidrec;
+    GXV_Validator     gxvalid = &gxvalidrec;
     FT_Bytes          p     = table;
     FT_Bytes          limit = 0;
     FT_ULong          version;
@@ -171,8 +171,8 @@
     FT_ULong          i;
 
 
-    valid->root = ftvalid;
-    valid->face = face;
+    gxvalid->root = ftvalid;
+    gxvalid->face = face;
 
     FT_TRACE3(( "validating `morx' table\n" ));
     GXV_INIT;
@@ -188,8 +188,8 @@
     {
       GXV_TRACE(( "validating chain %d/%d\n", i + 1, nChains ));
       GXV_32BIT_ALIGNMENT_VALIDATE( p - table );
-      gxv_morx_chain_validate( p, limit, valid );
-      p += valid->subtable_length;
+      gxv_morx_chain_validate( p, limit, gxvalid );
+      p += gxvalid->subtable_length;
     }
 
     FT_TRACE4(( "\n" ));

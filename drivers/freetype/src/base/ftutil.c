@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType utility file for memory and list management (body).         */
 /*                                                                         */
-/*  Copyright 2002, 2004-2007, 2013 by                                     */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -180,7 +180,7 @@
               FT_Error    *p_error )
   {
     FT_Error    error;
-    FT_Pointer  p = ft_mem_qalloc( memory, size, &error );
+    FT_Pointer  p = ft_mem_qalloc( memory, (FT_Long)size, &error );
 
 
     if ( !error && address )
@@ -245,6 +245,9 @@
     FT_ListNode  cur;
 
 
+    if ( !list )
+      return NULL;
+
     cur = list->head;
     while ( cur )
     {
@@ -254,7 +257,7 @@
       cur = cur->next;
     }
 
-    return (FT_ListNode)0;
+    return NULL;
   }
 
 
@@ -264,10 +267,15 @@
   FT_List_Add( FT_List      list,
                FT_ListNode  node )
   {
-    FT_ListNode  before = list->tail;
+    FT_ListNode  before;
 
 
-    node->next = 0;
+    if ( !list || !node )
+      return;
+
+    before = list->tail;
+
+    node->next = NULL;
     node->prev = before;
 
     if ( before )
@@ -285,11 +293,16 @@
   FT_List_Insert( FT_List      list,
                   FT_ListNode  node )
   {
-    FT_ListNode  after = list->head;
+    FT_ListNode  after;
 
+
+    if ( !list || !node )
+      return;
+
+    after = list->head;
 
     node->next = after;
-    node->prev = 0;
+    node->prev = NULL;
 
     if ( !after )
       list->tail = node;
@@ -308,6 +321,9 @@
   {
     FT_ListNode  before, after;
 
+
+    if ( !list || !node )
+      return;
 
     before = node->prev;
     after  = node->next;
@@ -333,6 +349,9 @@
     FT_ListNode  before, after;
 
 
+    if ( !list || !node )
+      return;
+
     before = node->prev;
     after  = node->next;
 
@@ -347,7 +366,7 @@
     else
       list->tail = before;
 
-    node->prev       = 0;
+    node->prev       = NULL;
     node->next       = list->head;
     list->head->prev = node;
     list->head       = node;
@@ -357,13 +376,18 @@
   /* documentation is in ftlist.h */
 
   FT_EXPORT_DEF( FT_Error )
-  FT_List_Iterate( FT_List            list,
-                   FT_List_Iterator   iterator,
-                   void*              user )
+  FT_List_Iterate( FT_List           list,
+                   FT_List_Iterator  iterator,
+                   void*             user )
   {
-    FT_ListNode  cur   = list->head;
+    FT_ListNode  cur;
     FT_Error     error = FT_Err_Ok;
 
+
+    if ( !list || !iterator )
+      return FT_THROW( Invalid_Argument );
+
+    cur = list->head;
 
     while ( cur )
     {
@@ -392,6 +416,9 @@
     FT_ListNode  cur;
 
 
+    if ( !list || !memory )
+      return;
+
     cur = list->head;
     while ( cur )
     {
@@ -406,30 +433,8 @@
       cur = next;
     }
 
-    list->head = 0;
-    list->tail = 0;
-  }
-
-
-  FT_BASE_DEF( FT_UInt32 )
-  ft_highpow2( FT_UInt32  value )
-  {
-    FT_UInt32  value2;
-
-
-    /*
-     *  We simply clear the lowest bit in each iteration.  When
-     *  we reach 0, we know that the previous value was our result.
-     */
-    for ( ;; )
-    {
-      value2 = value & (value - 1);  /* clear lowest bit */
-      if ( value2 == 0 )
-        break;
-
-      value = value2;
-    }
-    return value;
+    list->head = NULL;
+    list->tail = NULL;
   }
 
 

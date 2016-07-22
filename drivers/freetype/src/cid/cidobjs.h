@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    CID objects manager (specification).                                 */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2004, 2006 by                               */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __CIDOBJS_H__
-#define __CIDOBJS_H__
+#ifndef CIDOBJS_H_
+#define CIDOBJS_H_
 
 
 #include <ft2build.h>
@@ -148,7 +148,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __CIDOBJS_H__ */
+#endif /* CIDOBJS_H_ */
 
 
 /* END */

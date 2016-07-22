@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TT CMAP classes definitions (specification only).                    */
 /*                                                                         */
-/*  Copyright 2009 by                                                      */
+/*  Copyright 2009-2016 by                                                 */
 /*  Oran Agra and Mickey Gabel.                                            */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */

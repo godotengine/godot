@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType glyph rasterizer (specification).                       */
 /*                                                                         */
-/*  Copyright 1996-2001 by                                                 */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used        */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTRASTER_H__
-#define __FTRASTER_H__
+#ifndef FTRASTER_H_
+#define FTRASTER_H_
 
 
 #include <ft2build.h>
@@ -33,14 +33,14 @@ FT_BEGIN_HEADER
   /* Uncomment the following line if you are using ftraster.c as a         */
   /* standalone module, fully independent of FreeType.                     */
   /*                                                                       */
-/* #define _STANDALONE_ */
+/* #define STANDALONE_ */
 
   FT_EXPORT_VAR( const FT_Raster_Funcs )  ft_standard_raster;
 
 
 FT_END_HEADER
 
-#endif /* __FTRASTER_H__ */
+#endif /* FTRASTER_H_ */
 
 
 /* END */

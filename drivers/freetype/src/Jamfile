@@ -1,6 +1,6 @@
 # FreeType 2 src Jamfile
 #
-# Copyright 2001, 2002 by
+# Copyright 2001-2016 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -10,12 +10,6 @@
 # fully.
 
 SubDir  FT2_TOP $(FT2_SRC_DIR) ;
-
-# The file <freetype/internal/internal.h> is used to define macros that are
-# later used in #include statements.  It needs to be parsed in order to
-# record these definitions.
-#
-HDRMACRO  [ FT2_SubDir $(FT2_INCLUDE_DIR) internal internal.h ] ;
 
 for xx in $(FT2_COMPONENTS)
 {

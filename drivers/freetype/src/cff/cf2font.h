@@ -36,8 +36,8 @@
 /***************************************************************************/
 
 
-#ifndef __CF2FONT_H__
-#define __CF2FONT_H__
+#ifndef CF2FONT_H_
+#define CF2FONT_H_
 
 
 #include "cf2ft.h"
@@ -48,7 +48,13 @@ FT_BEGIN_HEADER
 
 
 #define CF2_OPERAND_STACK_SIZE  48
-#define CF2_MAX_SUBR            10 /* maximum subroutine nesting */
+#define CF2_MAX_SUBR            16 /* maximum subroutine nesting;         */
+                                   /* only 10 are allowed but there exist */
+                                   /* fonts like `HiraKakuProN-W3.ttf'    */
+                                   /* (Hiragino Kaku Gothic ProN W3;      */
+                                   /* 8.2d6e1; 2014-12-19) that exceed    */
+                                   /* this limit                          */
+#define CF2_STORAGE_SIZE        32
 
 
   /* typedef is in `cf2glue.h' */
@@ -85,6 +91,8 @@ FT_BEGIN_HEADER
                              /* i.e. darkenX != 0 || darkenY != 0      */
     FT_Bool  stemDarkened;
 
+    FT_Int  darkenParams[8];              /* 1000 unit character space */
+
     /* variables that depend on both FontDict and Transform */
     CF2_Fixed  stdVW;     /* in character space; depends on dict entry */
     CF2_Fixed  stdHW;     /* in character space; depends on dict entry */
@@ -108,7 +116,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __CF2FONT_H__ */
+#endif /* CF2FONT_H_ */
 
 
 /* END */

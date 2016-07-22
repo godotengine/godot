@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Some convenience conversions (specification).                        */
 /*                                                                         */
-/*  Copyright 2006, 2012 by                                                */
+/*  Copyright 2006-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __PSCONV_H__
-#define __PSCONV_H__
+#ifndef PSCONV_H_
+#define PSCONV_H_
 
 
 #include <ft2build.h>
@@ -65,7 +65,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __PSCONV_H__ */
+#endif /* PSCONV_H_ */
 
 
 /* END */

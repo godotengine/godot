@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType Image cache (body).                                         */
 /*                                                                         */
-/*  Copyright 2000-2001, 2003, 2004, 2006, 2010 by                         */
+/*  Copyright 2000-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -20,6 +20,7 @@
 #include FT_CACHE_H
 #include "ftcimage.h"
 #include FT_INTERNAL_MEMORY_H
+#include FT_INTERNAL_OBJECTS_H
 
 #include "ftccback.h"
 #include "ftcerror.h"
@@ -69,7 +70,7 @@
       FTC_GNode         gnode  = FTC_GNODE( inode );
       FTC_Family        family = gquery->family;
       FT_UInt           gindex = gquery->gindex;
-      FTC_IFamilyClass  clazz  = FTC_CACHE__IFAMILY_CLASS( cache );
+      FTC_IFamilyClass  clazz  = FTC_CACHE_IFAMILY_CLASS( cache );
 
 
       /* initialize its inner fields */
@@ -122,7 +123,7 @@
 
 
         bitg = (FT_BitmapGlyph)glyph;
-        size = bitg->bitmap.rows * ft_labs( bitg->bitmap.pitch ) +
+        size = bitg->bitmap.rows * (FT_Offset)FT_ABS( bitg->bitmap.pitch ) +
                sizeof ( *bitg );
       }
       break;
@@ -133,9 +134,9 @@
 
 
         outg = (FT_OutlineGlyph)glyph;
-        size = outg->outline.n_points *
+        size = (FT_Offset)outg->outline.n_points *
                  ( sizeof ( FT_Vector ) + sizeof ( FT_Byte ) ) +
-               outg->outline.n_contours * sizeof ( FT_Short ) +
+               (FT_Offset)outg->outline.n_contours * sizeof ( FT_Short ) +
                sizeof ( *outg );
       }
       break;

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType table validation (specification only).                      */
 /*                                                                         */
-/*  Copyright 2004, 2008 by                                                */
+/*  Copyright 2004-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __OTVALID_H__
-#define __OTVALID_H__
+#ifndef OTVALID_H_
+#define OTVALID_H_
 
 
 #include <ft2build.h>
@@ -72,7 +72,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __OTVALID_H__ */
+#endif /* OTVALID_H_ */
 
 
 /* END */

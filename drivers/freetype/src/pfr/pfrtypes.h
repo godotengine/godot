@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType PFR data structures (specification only).                   */
 /*                                                                         */
-/*  Copyright 2002, 2003, 2005, 2007 by                                    */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __PFRTYPES_H__
-#define __PFRTYPES_H__
+#ifndef PFRTYPES_H_
+#define PFRTYPES_H_
 
 #include <ft2build.h>
 #include FT_INTERNAL_OBJECTS_H
@@ -69,12 +69,8 @@ FT_BEGIN_HEADER
 
 
   /* used in `color_flags' field of the PFR_Header */
-  typedef enum  PFR_HeaderFlags_
-  {
-    PFR_FLAG_BLACK_PIXEL   = 1,
-    PFR_FLAG_INVERT_BITMAP = 2
-
-  } PFR_HeaderFlags;
+#define PFR_FLAG_BLACK_PIXEL    0x01U
+#define PFR_FLAG_INVERT_BITMAP  0x02U
 
 
   /************************************************************************/
@@ -96,36 +92,27 @@ FT_BEGIN_HEADER
   } PFR_LogFontRec, *PFR_LogFont;
 
 
-  typedef enum  PFR_LogFlags_
-  {
-    PFR_LOG_EXTRA_ITEMS  = 0x40,
-    PFR_LOG_2BYTE_BOLD   = 0x20,
-    PFR_LOG_BOLD         = 0x10,
-    PFR_LOG_2BYTE_STROKE = 8,
-    PFR_LOG_STROKE       = 4,
-    PFR_LINE_JOIN_MASK   = 3
+#define PFR_LINE_JOIN_MITER   0x00U
+#define PFR_LINE_JOIN_ROUND   0x01U
+#define PFR_LINE_JOIN_BEVEL   0x02U
+#define PFR_LINE_JOIN_MASK    ( PFR_LINE_JOIN_ROUND | PFR_LINE_JOIN_BEVEL )
 
-  } PFR_LogFlags;
-
-
-  typedef enum  PFR_LineJoinFlags_
-  {
-    PFR_LINE_JOIN_MITER = 0,
-    PFR_LINE_JOIN_ROUND = 1,
-    PFR_LINE_JOIN_BEVEL = 2
-
-  } PFR_LineJoinFlags;
+#define PFR_LOG_STROKE        0x04U
+#define PFR_LOG_2BYTE_STROKE  0x08U
+#define PFR_LOG_BOLD          0x10U
+#define PFR_LOG_2BYTE_BOLD    0x20U
+#define PFR_LOG_EXTRA_ITEMS   0x40U
 
 
   /************************************************************************/
 
-  typedef enum  PFR_BitmapFlags_
-  {
-    PFR_BITMAP_3BYTE_OFFSET   = 4,
-    PFR_BITMAP_2BYTE_SIZE     = 2,
-    PFR_BITMAP_2BYTE_CHARCODE = 1
+#define PFR_BITMAP_2BYTE_CHARCODE  0x01U
+#define PFR_BITMAP_2BYTE_SIZE      0x02U
+#define PFR_BITMAP_3BYTE_OFFSET    0x04U
 
-  } PFR_BitmapFlags;
+  /*not part of the specification but used for implementation */
+#define PFR_BITMAP_CHARCODES_VALIDATED  0x40U
+#define PFR_BITMAP_VALID_CHARCODES      0x80U
 
 
   typedef struct  PFR_BitmapCharRec_
@@ -137,15 +124,11 @@ FT_BEGIN_HEADER
   } PFR_BitmapCharRec, *PFR_BitmapChar;
 
 
-  typedef enum  PFR_StrikeFlags_
-  {
-    PFR_STRIKE_2BYTE_COUNT  = 0x10,
-    PFR_STRIKE_3BYTE_OFFSET = 0x08,
-    PFR_STRIKE_3BYTE_SIZE   = 0x04,
-    PFR_STRIKE_2BYTE_YPPM   = 0x02,
-    PFR_STRIKE_2BYTE_XPPM   = 0x01
-
-  } PFR_StrikeFlags;
+#define PFR_STRIKE_2BYTE_XPPM    0x01U
+#define PFR_STRIKE_2BYTE_YPPM    0x02U
+#define PFR_STRIKE_3BYTE_SIZE    0x04U
+#define PFR_STRIKE_3BYTE_OFFSET  0x08U
+#define PFR_STRIKE_2BYTE_COUNT   0x10U
 
 
   typedef struct  PFR_StrikeRec_
@@ -229,7 +212,7 @@ FT_BEGIN_HEADER
     FT_UInt            metrics_resolution;
     FT_BBox            bbox;
     FT_UInt            flags;
-    FT_UInt            standard_advance;
+    FT_Int             standard_advance;
 
     FT_Int             ascent;   /* optional, bbox.yMax if not present */
     FT_Int             descent;  /* optional, bbox.yMin if not present */
@@ -260,44 +243,35 @@ FT_BEGIN_HEADER
     PFR_KernItem*      kern_items_tail;
 
     /* not part of the spec, but used during load */
-    FT_Long            bct_offset;
+    FT_ULong           bct_offset;
     FT_Byte*           cursor;
 
   } PFR_PhyFontRec, *PFR_PhyFont;
 
 
-  typedef enum  PFR_PhyFlags_
-  {
-    PFR_PHY_EXTRA_ITEMS      = 0x80,
-    PFR_PHY_3BYTE_GPS_OFFSET = 0x20,
-    PFR_PHY_2BYTE_GPS_SIZE   = 0x10,
-    PFR_PHY_ASCII_CODE       = 0x08,
-    PFR_PHY_PROPORTIONAL     = 0x04,
-    PFR_PHY_2BYTE_CHARCODE   = 0x02,
-    PFR_PHY_VERTICAL         = 0x01
-
-  } PFR_PhyFlags;
+#define PFR_PHY_VERTICAL          0x01U
+#define PFR_PHY_2BYTE_CHARCODE    0x02U
+#define PFR_PHY_PROPORTIONAL      0x04U
+#define PFR_PHY_ASCII_CODE        0x08U
+#define PFR_PHY_2BYTE_GPS_SIZE    0x10U
+#define PFR_PHY_3BYTE_GPS_OFFSET  0x20U
+#define PFR_PHY_EXTRA_ITEMS       0x80U
 
 
-  typedef enum PFR_KernFlags_
-  {
-    PFR_KERN_2BYTE_CHAR  = 0x01,
-    PFR_KERN_2BYTE_ADJ   = 0x02
-
-  } PFR_KernFlags;
+#define PFR_KERN_2BYTE_CHAR  0x01U
+#define PFR_KERN_2BYTE_ADJ   0x02U
 
 
   /************************************************************************/
 
-  typedef enum  PFR_GlyphFlags_
-  {
-    PFR_GLYPH_IS_COMPOUND   = 0x80,
-    PFR_GLYPH_EXTRA_ITEMS   = 0x08,
-    PFR_GLYPH_1BYTE_XYCOUNT = 0x04,
-    PFR_GLYPH_XCOUNT        = 0x02,
-    PFR_GLYPH_YCOUNT        = 0x01
+#define PFR_GLYPH_YCOUNT         0x01U
+#define PFR_GLYPH_XCOUNT         0x02U
+#define PFR_GLYPH_1BYTE_XYCOUNT  0x04U
 
-  } PFR_GlyphFlags;
+#define PFR_GLYPH_SINGLE_EXTRA_ITEMS    0x08U
+#define PFR_GLYPH_COMPOUND_EXTRA_ITEMS  0x40U
+
+#define PFR_GLYPH_IS_COMPOUND  0x80U
 
 
   /* controlled coordinate */
@@ -321,14 +295,10 @@ FT_BEGIN_HEADER
   } PFR_SubGlyphRec, *PFR_SubGlyph;
 
 
-  typedef enum  PFR_SubgGlyphFlags_
-  {
-    PFR_SUBGLYPH_3BYTE_OFFSET = 0x80,
-    PFR_SUBGLYPH_2BYTE_SIZE   = 0x40,
-    PFR_SUBGLYPH_YSCALE       = 0x20,
-    PFR_SUBGLYPH_XSCALE       = 0x10
-
-  } PFR_SubGlyphFlags;
+#define PFR_SUBGLYPH_XSCALE        0x10U
+#define PFR_SUBGLYPH_YSCALE        0x20U
+#define PFR_SUBGLYPH_2BYTE_SIZE    0x40U
+#define PFR_SUBGLYPH_3BYTE_OFFSET  0x80U
 
 
   typedef struct  PFR_GlyphRec_
@@ -356,7 +326,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __PFRTYPES_H__ */
+#endif /* PFRTYPES_H_ */
 
 
 /* END */

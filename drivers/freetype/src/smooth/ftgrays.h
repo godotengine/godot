@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType smooth renderer declaration                                 */
 /*                                                                         */
-/*  Copyright 1996-2001 by                                                 */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,15 +16,15 @@
 /***************************************************************************/
 
 
-#ifndef __FTGRAYS_H__
-#define __FTGRAYS_H__
+#ifndef FTGRAYS_H_
+#define FTGRAYS_H_
 
 #ifdef __cplusplus
   extern "C" {
 #endif
 
 
-#ifdef _STANDALONE_
+#ifdef STANDALONE_
 #include "ftimage.h"
 #else
 #include <ft2build.h>
@@ -52,7 +52,7 @@
   }
 #endif
 
-#endif /* __FTGRAYS_H__ */
+#endif /* FTGRAYS_H_ */
 
 
 /* END */

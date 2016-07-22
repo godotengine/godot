@@ -3,7 +3,7 @@
 #
 
 
-# Copyright 2004, 2006 by
+# Copyright 2004-2016 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,

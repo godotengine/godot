@@ -30,7 +30,10 @@
 PCF_DIR := $(SRC_DIR)/pcf
 
 
-PCF_COMPILE := $(FT_COMPILE) $I$(subst /,$(COMPILER_SEP),$(PCF_DIR))
+PCF_COMPILE := $(CC) $(ANSIFLAGS)                            \
+                     $I$(subst /,$(COMPILER_SEP),$(PCF_DIR)) \
+                     $(INCLUDE_FLAGS)                        \
+                     $(FT_CFLAGS)
 
 
 # pcf driver sources (i.e., C files)

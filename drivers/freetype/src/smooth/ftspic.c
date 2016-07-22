@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType position independent code services for smooth module.   */
 /*                                                                         */
-/*  Copyright 2009, 2010, 2012, 2013 by                                    */
+/*  Copyright 2009-2016 by                                                 */
 /*  Oran Agra and Mickey Gabel.                                            */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */

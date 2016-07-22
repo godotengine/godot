@@ -5,7 +5,8 @@
 /*    TrueTypeGX/AAT mort table validation                                 */
 /*    body for type4 (Non-Contextual Glyph Substitution) subtable.         */
 /*                                                                         */
-/*  Copyright 2005 by suzuki toshiya, Masatake YAMATO, Red Hat K.K.,       */
+/*  Copyright 2005-2016 by                                                 */
+/*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -41,11 +42,11 @@
   static void
   gxv_mort_subtable_type4_lookupval_validate( FT_UShort            glyph,
                                               GXV_LookupValueCPtr  value_p,
-                                              GXV_Validator        valid )
+                                              GXV_Validator        gxvalid )
   {
     FT_UNUSED( glyph );
 
-    gxv_glyphid_validate( value_p->u, valid );
+    gxv_glyphid_validate( value_p->u, gxvalid );
   }
 
   /*
@@ -80,7 +81,7 @@
     FT_UShort            relative_gindex,
     GXV_LookupValueCPtr  base_value_p,
     FT_Bytes             lookuptbl_limit,
-    GXV_Validator        valid )
+    GXV_Validator        gxvalid )
   {
     FT_Bytes             p;
     FT_Bytes             limit;
@@ -91,7 +92,7 @@
     offset = (FT_UShort)( base_value_p->u +
                           relative_gindex * sizeof ( FT_UShort ) );
 
-    p     = valid->lookuptbl_head + offset;
+    p     = gxvalid->lookuptbl_head + offset;
     limit = lookuptbl_limit;
 
     GXV_LIMIT_CHECK( 2 );
@@ -104,7 +105,7 @@
   FT_LOCAL_DEF( void )
   gxv_mort_subtable_type4_validate( FT_Bytes       table,
                                     FT_Bytes       limit,
-                                    GXV_Validator  valid )
+                                    GXV_Validator  gxvalid )
   {
     FT_Bytes  p = table;
 
@@ -112,11 +113,11 @@
     GXV_NAME_ENTER( "mort chain subtable type4 "
                     "(Non-Contextual Glyph Substitution)" );
 
-    valid->lookupval_sign   = GXV_LOOKUPVALUE_UNSIGNED;
-    valid->lookupval_func   = gxv_mort_subtable_type4_lookupval_validate;
-    valid->lookupfmt4_trans = gxv_mort_subtable_type4_lookupfmt4_transit;
+    gxvalid->lookupval_sign   = GXV_LOOKUPVALUE_UNSIGNED;
+    gxvalid->lookupval_func   = gxv_mort_subtable_type4_lookupval_validate;
+    gxvalid->lookupfmt4_trans = gxv_mort_subtable_type4_lookupfmt4_transit;
 
-    gxv_LookupTable_validate( p, limit, valid );
+    gxv_LookupTable_validate( p, limit, gxvalid );
 
     GXV_EXIT;
   }

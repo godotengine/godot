@@ -3,7 +3,7 @@
 #
 
 
-# Copyright 1996-2000, 2001, 2003, 2011 by
+# Copyright 1996-2016 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -20,7 +20,10 @@ PSNAMES_DIR := $(SRC_DIR)/psnames
 
 # compilation flags for the driver
 #
-PSNAMES_COMPILE := $(FT_COMPILE) $I$(subst /,$(COMPILER_SEP),$(PSNAMES_DIR))
+PSNAMES_COMPILE := $(CC) $(ANSIFLAGS)                                \
+                         $I$(subst /,$(COMPILER_SEP),$(PSNAMES_DIR)) \
+                         $(INCLUDE_FLAGS)                            \
+                         $(FT_CFLAGS)
 
 
 # PSNames driver sources (i.e., C files)
@@ -46,7 +49,7 @@ PSNAMES_DRV_OBJ_S := $(OBJ_DIR)/psnames.$O
 
 # PSNames driver source file for single build
 #
-PSNAMES_DRV_SRC_S := $(PSNAMES_DIR)/psmodule.c
+PSNAMES_DRV_SRC_S := $(PSNAMES_DIR)/psnames.c
 
 
 # PSNames driver - single object

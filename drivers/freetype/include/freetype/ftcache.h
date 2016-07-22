@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType Cache subsystem (specification).                            */
 /*                                                                         */
-/*  Copyright 1996-2008, 2010, 2013 by                                     */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTCACHE_H__
-#define __FTCACHE_H__
+#ifndef FTCACHE_H_
+#define FTCACHE_H_
 
 
 #include <ft2build.h>
@@ -156,7 +156,7 @@ FT_BEGIN_HEADER
    * @note:
    *   Never use NULL as a valid @FTC_FaceID.
    *
-   *   Face IDs are passed by the client to the cache manager, which calls,
+   *   Face IDs are passed by the client to the cache manager that calls,
    *   when needed, the @FTC_Face_Requester to translate them into new
    *   @FT_Face objects.
    *
@@ -209,10 +209,10 @@ FT_BEGIN_HEADER
   typedef FT_Error
   (*FTC_Face_Requester)( FTC_FaceID  face_id,
                          FT_Library  library,
-                         FT_Pointer  request_data,
+                         FT_Pointer  req_data,
                          FT_Face*    aface );
 
- /* */
+  /* */
 
 
   /*************************************************************************/
@@ -667,8 +667,8 @@ FT_BEGIN_HEADER
   typedef struct  FTC_ImageTypeRec_
   {
     FTC_FaceID  face_id;
-    FT_Int      width;
-    FT_Int      height;
+    FT_UInt     width;
+    FT_UInt     height;
     FT_Int32    flags;
 
   } FTC_ImageTypeRec;
@@ -749,7 +749,7 @@ FT_BEGIN_HEADER
   /*    aglyph :: The corresponding @FT_Glyph object.  0~in case of        */
   /*              failure.                                                 */
   /*                                                                       */
-  /*    anode  :: Used to return the address of of the corresponding cache */
+  /*    anode  :: Used to return the address of the corresponding cache    */
   /*              node after incrementing its reference count (see note    */
   /*              below).                                                  */
   /*                                                                       */
@@ -802,7 +802,7 @@ FT_BEGIN_HEADER
   /*    aglyph     :: The corresponding @FT_Glyph object.  0~in case of    */
   /*                  failure.                                             */
   /*                                                                       */
-  /*    anode      :: Used to return the address of of the corresponding   */
+  /*    anode      :: Used to return the address of the corresponding      */
   /*                  cache node after incrementing its reference count    */
   /*                  (see note below).                                    */
   /*                                                                       */
@@ -957,7 +957,7 @@ FT_BEGIN_HEADER
   /* <Output>                                                              */
   /*    sbit   :: A handle to a small bitmap descriptor.                   */
   /*                                                                       */
-  /*    anode  :: Used to return the address of of the corresponding cache */
+  /*    anode  :: Used to return the address of the corresponding cache    */
   /*              node after incrementing its reference count (see note    */
   /*              below).                                                  */
   /*                                                                       */
@@ -1012,7 +1012,7 @@ FT_BEGIN_HEADER
   /* <Output>                                                              */
   /*    sbit       :: A handle to a small bitmap descriptor.               */
   /*                                                                       */
-  /*    anode      :: Used to return the address of of the corresponding   */
+  /*    anode      :: Used to return the address of the corresponding      */
   /*                  cache node after incrementing its reference count    */
   /*                  (see note below).                                    */
   /*                                                                       */
@@ -1046,12 +1046,12 @@ FT_BEGIN_HEADER
                               FTC_SBit      *sbit,
                               FTC_Node      *anode );
 
+  /* */
 
- /* */
 
 FT_END_HEADER
 
-#endif /* __FTCACHE_H__ */
+#endif /* FTCACHE_H_ */
 
 
 /* END */

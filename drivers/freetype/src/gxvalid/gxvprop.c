@@ -4,7 +4,8 @@
 /*                                                                         */
 /*    TrueTypeGX/AAT prop table validation (body).                         */
 /*                                                                         */
-/*  Copyright 2004, 2005 by suzuki toshiya, Masatake YAMATO, Red Hat K.K., */
+/*  Copyright 2004-2016 by                                                 */
+/*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -75,7 +76,7 @@
 
   static void
   gxv_prop_zero_advance_validate( FT_UShort      gid,
-                                  GXV_Validator  valid )
+                                  GXV_Validator  gxvalid )
   {
     FT_Face       face;
     FT_Error      error;
@@ -84,7 +85,7 @@
 
     GXV_NAME_ENTER( "zero advance" );
 
-    face = valid->face;
+    face = gxvalid->face;
 
     error = FT_Load_Glyph( face,
                            gid,
@@ -109,10 +110,10 @@
   static void
   gxv_prop_property_validate( FT_UShort      property,
                               FT_UShort      glyph,
-                              GXV_Validator  valid )
+                              GXV_Validator  gxvalid )
   {
     if ( glyph != 0 && ( property & GXV_PROP_FLOATER ) )
-      gxv_prop_zero_advance_validate( glyph, valid );
+      gxv_prop_zero_advance_validate( glyph, gxvalid );
 
     if ( property & GXV_PROP_USE_COMPLEMENTARY_BRACKET )
     {
@@ -145,7 +146,7 @@
       else
       {
         /* The gid for complement must be the face. */
-        gxv_glyphid_validate( (FT_UShort)( glyph + complement ), valid );
+        gxv_glyphid_validate( (FT_UShort)( glyph + complement ), gxvalid );
       }
     }
     else
@@ -187,9 +188,9 @@
   static void
   gxv_prop_LookupValue_validate( FT_UShort            glyph,
                                  GXV_LookupValueCPtr  value_p,
-                                 GXV_Validator        valid )
+                                 GXV_Validator        gxvalid )
   {
-    gxv_prop_property_validate( value_p->u, glyph, valid );
+    gxv_prop_property_validate( value_p->u, glyph, gxvalid );
   }
 
 
@@ -224,7 +225,7 @@
   gxv_prop_LookupFmt4_transit( FT_UShort            relative_gindex,
                                GXV_LookupValueCPtr  base_value_p,
                                FT_Bytes             lookuptbl_limit,
-                               GXV_Validator        valid )
+                               GXV_Validator        gxvalid )
   {
     FT_Bytes             p;
     FT_Bytes             limit;
@@ -234,7 +235,7 @@
     /* XXX: check range? */
     offset = (FT_UShort)( base_value_p->u +
                           relative_gindex * sizeof ( FT_UShort ) );
-    p      = valid->lookuptbl_head + offset;
+    p      = gxvalid->lookuptbl_head + offset;
     limit  = lookuptbl_limit;
 
     GXV_LIMIT_CHECK ( 2 );
@@ -259,8 +260,8 @@
   {
     FT_Bytes          p     = table;
     FT_Bytes          limit = 0;
-    GXV_ValidatorRec  validrec;
-    GXV_Validator     valid = &validrec;
+    GXV_ValidatorRec  gxvalidrec;
+    GXV_Validator     gxvalid = &gxvalidrec;
 
     GXV_prop_DataRec  proprec;
     GXV_prop_Data     prop = &proprec;
@@ -270,15 +271,15 @@
     FT_UShort         defaultProp;
 
 
-    valid->root       = ftvalid;
-    valid->table_data = prop;
-    valid->face       = face;
+    gxvalid->root       = ftvalid;
+    gxvalid->table_data = prop;
+    gxvalid->face       = face;
 
     FT_TRACE3(( "validating `prop' table\n" ));
     GXV_INIT;
 
     GXV_LIMIT_CHECK( 4 + 2 + 2 );
-    version     = FT_NEXT_ULONG( p );
+    version     = FT_NEXT_LONG( p );
     format      = FT_NEXT_USHORT( p );
     defaultProp = FT_NEXT_USHORT( p );
 
@@ -303,7 +304,7 @@
       FT_INVALID_FORMAT;
     }
 
-    gxv_prop_property_validate( defaultProp, 0, valid );
+    gxv_prop_property_validate( defaultProp, 0, gxvalid );
 
     if ( format == 0 )
     {
@@ -315,11 +316,11 @@
     /* format == 1 */
     GXV_PROP_DATA( version ) = version;
 
-    valid->lookupval_sign   = GXV_LOOKUPVALUE_UNSIGNED;
-    valid->lookupval_func   = gxv_prop_LookupValue_validate;
-    valid->lookupfmt4_trans = gxv_prop_LookupFmt4_transit;
+    gxvalid->lookupval_sign   = GXV_LOOKUPVALUE_UNSIGNED;
+    gxvalid->lookupval_func   = gxv_prop_LookupValue_validate;
+    gxvalid->lookupfmt4_trans = gxv_prop_LookupFmt4_transit;
 
-    gxv_LookupTable_validate( p, limit, valid );
+    gxv_LookupTable_validate( p, limit, gxvalid );
 
   Exit:
     FT_TRACE4(( "\n" ));

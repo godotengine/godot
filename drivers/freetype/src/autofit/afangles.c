@@ -5,7 +5,7 @@
 /*    Routines used to compute vector angles with limited accuracy         */
 /*    and very high speed.  It also contains sorting routines (body).      */
 /*                                                                         */
-/*  Copyright 2003-2006, 2011-2012 by                                      */
+/*  Copyright 2003-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -18,66 +18,6 @@
 
 
 #include "aftypes.h"
-
-
-#if 0
-
-  FT_LOCAL_DEF( FT_Int )
-  af_corner_is_flat( FT_Pos  x_in,
-                     FT_Pos  y_in,
-                     FT_Pos  x_out,
-                     FT_Pos  y_out )
-  {
-    FT_Pos  ax = x_in;
-    FT_Pos  ay = y_in;
-
-    FT_Pos  d_in, d_out, d_corner;
-
-
-    if ( ax < 0 )
-      ax = -ax;
-    if ( ay < 0 )
-      ay = -ay;
-    d_in = ax + ay;
-
-    ax = x_out;
-    if ( ax < 0 )
-      ax = -ax;
-    ay = y_out;
-    if ( ay < 0 )
-      ay = -ay;
-    d_out = ax + ay;
-
-    ax = x_out + x_in;
-    if ( ax < 0 )
-      ax = -ax;
-    ay = y_out + y_in;
-    if ( ay < 0 )
-      ay = -ay;
-    d_corner = ax + ay;
-
-    return ( d_in + d_out - d_corner ) < ( d_corner >> 4 );
-  }
-
-
-  FT_LOCAL_DEF( FT_Int )
-  af_corner_orientation( FT_Pos  x_in,
-                         FT_Pos  y_in,
-                         FT_Pos  x_out,
-                         FT_Pos  y_out )
-  {
-    FT_Pos  delta;
-
-
-    delta = x_in * y_out - y_in * x_out;
-
-    if ( delta == 0 )
-      return 0;
-    else
-      return 1 - 2 * ( delta < 0 );
-  }
-
-#endif /* 0 */
 
 
   /*
@@ -319,7 +259,7 @@
           sum         += table[j].org;
           table[j].org = 0;
         }
-        table[cur_idx].org = sum / j;
+        table[cur_idx].org = sum / (FT_Pos)j;
 
         if ( i < *count - 1 )
         {

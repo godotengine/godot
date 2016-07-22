@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType BASE table validation (body).                               */
 /*                                                                         */
-/*  Copyright 2004, 2007 by                                                */
+/*  Copyright 2004-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -32,7 +32,7 @@
 
   static void
   otv_BaseCoord_validate( FT_Bytes       table,
-                          OTV_Validator  valid )
+                          OTV_Validator  otvalid )
   {
     FT_Bytes  p = table;
     FT_UInt   BaseCoordFormat;
@@ -58,7 +58,7 @@
     case 3:     /* BaseCoordFormat3 */
       OTV_LIMIT_CHECK( 2 );
       /* DeviceTable */
-      otv_Device_validate( table + FT_NEXT_USHORT( p ), valid );
+      otv_Device_validate( table + FT_NEXT_USHORT( p ), otvalid );
       break;
 
     default:
@@ -71,7 +71,7 @@
 
   static void
   otv_BaseTagList_validate( FT_Bytes       table,
-                            OTV_Validator  valid )
+                            OTV_Validator  otvalid )
   {
     FT_Bytes  p = table;
     FT_UInt   BaseTagCount;
@@ -93,7 +93,7 @@
 
   static void
   otv_BaseValues_validate( FT_Bytes       table,
-                           OTV_Validator  valid )
+                           OTV_Validator  otvalid )
   {
     FT_Bytes  p = table;
     FT_UInt   BaseCoordCount;
@@ -112,7 +112,7 @@
 
     /* BaseCoord */
     for ( ; BaseCoordCount > 0; BaseCoordCount-- )
-      otv_BaseCoord_validate( table + FT_NEXT_USHORT( p ), valid );
+      otv_BaseCoord_validate( table + FT_NEXT_USHORT( p ), otvalid );
 
     OTV_EXIT;
   }
@@ -120,7 +120,7 @@
 
   static void
   otv_MinMax_validate( FT_Bytes       table,
-                       OTV_Validator  valid )
+                       OTV_Validator  otvalid )
   {
     FT_Bytes  p = table;
     FT_UInt   table_size;
@@ -144,11 +144,11 @@
 
     OTV_SIZE_CHECK( MinCoord );
     if ( MinCoord )
-      otv_BaseCoord_validate( table + MinCoord, valid );
+      otv_BaseCoord_validate( table + MinCoord, otvalid );
 
     OTV_SIZE_CHECK( MaxCoord );
     if ( MaxCoord )
-      otv_BaseCoord_validate( table + MaxCoord, valid );
+      otv_BaseCoord_validate( table + MaxCoord, otvalid );
 
     OTV_LIMIT_CHECK( FeatMinMaxCount * 8 );
 
@@ -162,11 +162,11 @@
 
       OTV_SIZE_CHECK( MinCoord );
       if ( MinCoord )
-        otv_BaseCoord_validate( table + MinCoord, valid );
+        otv_BaseCoord_validate( table + MinCoord, otvalid );
 
       OTV_SIZE_CHECK( MaxCoord );
       if ( MaxCoord )
-        otv_BaseCoord_validate( table + MaxCoord, valid );
+        otv_BaseCoord_validate( table + MaxCoord, otvalid );
     }
 
     OTV_EXIT;
@@ -175,7 +175,7 @@
 
   static void
   otv_BaseScript_validate( FT_Bytes       table,
-                           OTV_Validator  valid )
+                           OTV_Validator  otvalid )
   {
     FT_Bytes  p = table;
     FT_UInt   table_size;
@@ -198,11 +198,11 @@
 
     OTV_SIZE_CHECK( BaseValues );
     if ( BaseValues )
-      otv_BaseValues_validate( table + BaseValues, valid );
+      otv_BaseValues_validate( table + BaseValues, otvalid );
 
     OTV_SIZE_CHECK( DefaultMinMax );
     if ( DefaultMinMax )
-      otv_MinMax_validate( table + DefaultMinMax, valid );
+      otv_MinMax_validate( table + DefaultMinMax, otvalid );
 
     OTV_LIMIT_CHECK( BaseLangSysCount * 6 );
 
@@ -211,7 +211,7 @@
     {
       p += 4;       /* skip BaseLangSysTag */
 
-      otv_MinMax_validate( table + FT_NEXT_USHORT( p ), valid );
+      otv_MinMax_validate( table + FT_NEXT_USHORT( p ), otvalid );
     }
 
     OTV_EXIT;
@@ -220,7 +220,7 @@
 
   static void
   otv_BaseScriptList_validate( FT_Bytes       table,
-                               OTV_Validator  valid )
+                               OTV_Validator  otvalid )
   {
     FT_Bytes  p = table;
     FT_UInt   BaseScriptCount;
@@ -241,7 +241,7 @@
       p += 4;       /* skip BaseScriptTag */
 
       /* BaseScript */
-      otv_BaseScript_validate( table + FT_NEXT_USHORT( p ), valid );
+      otv_BaseScript_validate( table + FT_NEXT_USHORT( p ), otvalid );
     }
 
     OTV_EXIT;
@@ -250,7 +250,7 @@
 
   static void
   otv_Axis_validate( FT_Bytes       table,
-                     OTV_Validator  valid )
+                     OTV_Validator  otvalid )
   {
     FT_Bytes  p = table;
     FT_UInt   table_size;
@@ -267,10 +267,10 @@
 
     OTV_SIZE_CHECK( BaseTagList );
     if ( BaseTagList )
-      otv_BaseTagList_validate( table + BaseTagList, valid );
+      otv_BaseTagList_validate( table + BaseTagList, otvalid );
 
     /* BaseScriptList */
-    otv_BaseScriptList_validate( table + FT_NEXT_USHORT( p ), valid );
+    otv_BaseScriptList_validate( table + FT_NEXT_USHORT( p ), otvalid );
 
     OTV_EXIT;
   }
@@ -280,16 +280,16 @@
   otv_BASE_validate( FT_Bytes      table,
                      FT_Validator  ftvalid )
   {
-    OTV_ValidatorRec  validrec;
-    OTV_Validator     valid = &validrec;
-    FT_Bytes          p     = table;
+    OTV_ValidatorRec  otvalidrec;
+    OTV_Validator     otvalid = &otvalidrec;
+    FT_Bytes          p       = table;
     FT_UInt           table_size;
 
     OTV_OPTIONAL_TABLE( HorizAxis );
     OTV_OPTIONAL_TABLE( VertAxis  );
 
 
-    valid->root = ftvalid;
+    otvalid->root = ftvalid;
 
     FT_TRACE3(( "validating BASE table\n" ));
     OTV_INIT;
@@ -304,12 +304,12 @@
     OTV_OPTIONAL_OFFSET( HorizAxis );
     OTV_SIZE_CHECK( HorizAxis );
     if ( HorizAxis )
-      otv_Axis_validate( table + HorizAxis, valid );
+      otv_Axis_validate( table + HorizAxis, otvalid );
 
     OTV_OPTIONAL_OFFSET( VertAxis );
     OTV_SIZE_CHECK( VertAxis );
     if ( VertAxis )
-      otv_Axis_validate( table + VertAxis, valid );
+      otv_Axis_validate( table + VertAxis, otvalid );
 
     FT_TRACE4(( "\n" ));
   }

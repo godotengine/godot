@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    CFF token definitions (specification only).                          */
 /*                                                                         */
-/*  Copyright 1996-2003, 2011 by                                           */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -38,6 +38,9 @@
   CFF_FIELD_NUM     ( 13,    unique_id,           "UniqueID" )
   CFF_FIELD_CALLBACK( 5,     font_bbox,           "FontBBox" )
   CFF_FIELD_NUM     ( 0x108, stroke_width,        "StrokeWidth" )
+#if 0
+  CFF_FIELD_DELTA   ( 14,    xuid, 16,            "XUID" )
+#endif
   CFF_FIELD_NUM     ( 15,    charset_offset,      "charset" )
   CFF_FIELD_NUM     ( 16,    encoding_offset,     "Encoding" )
   CFF_FIELD_NUM     ( 17,    charstrings_offset,  "CharStrings" )
@@ -48,8 +51,13 @@
 #if 0
   CFF_FIELD_STRING  ( 0x116, base_font_name,      "BaseFontName" )
   CFF_FIELD_DELTA   ( 0x117, base_font_blend, 16, "BaseFontBlend" )
+#endif
+
+  /* the next two operators were removed from the Type2 specification */
+  /* in version 16-March-2000                                         */
   CFF_FIELD_CALLBACK( 0x118, multiple_master,     "MultipleMaster" )
-  CFF_FIELD_CALLBACK( 0x119, blend_axis_types,    "BlendAxisTypes" )
+#if 0
+  CFF_FIELD_CALLBACK( 0x11A, blend_axis_types,    "BlendAxisTypes" )
 #endif
 
   CFF_FIELD_CALLBACK( 0x11E, cid_ros,              "ROS" )

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType trigonometric functions (specification).                    */
 /*                                                                         */
-/*  Copyright 2001, 2003, 2005, 2007, 2013 by                              */
+/*  Copyright 2001-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTTRIGON_H__
-#define __FTTRIGON_H__
+#ifndef FTTRIGON_H_
+#define FTTRIGON_H_
 
 #include FT_FREETYPE_H
 
@@ -225,8 +225,8 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   Return the unit vector corresponding to a given angle.  After the
-   *   call, the value of `vec.x' will be `sin(angle)', and the value of
-   *   `vec.y' will be `cos(angle)'.
+   *   call, the value of `vec.x' will be `cos(angle)', and the value of
+   *   `vec.y' will be `sin(angle)'.
    *
    *   This function is useful to retrieve both the sinus and cosinus of a
    *   given angle quickly.
@@ -237,7 +237,7 @@ FT_BEGIN_HEADER
    *
    * @input:
    *   angle ::
-   *     The address of angle.
+   *     The input angle.
    *
    */
   FT_EXPORT( void )
@@ -259,7 +259,7 @@ FT_BEGIN_HEADER
    *
    * @input:
    *   angle ::
-   *     The address of angle.
+   *     The input angle.
    *
    */
   FT_EXPORT( void )
@@ -344,7 +344,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTTRIGON_H__ */
+#endif /* FTTRIGON_H_ */
 
 
 /* END */

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Load the metrics tables common to TTF and OTF fonts (body).          */
 /*                                                                         */
-/*  Copyright 2006-2009, 2011-2013 by                                      */
+/*  Copyright 2006-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -183,22 +183,25 @@
   /*    tt_face_get_metrics                                                */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    Returns the horizontal or vertical metrics in font units for a     */
-  /*    given glyph.  The metrics are the left side bearing (resp. top     */
-  /*    side bearing) and advance width (resp. advance height).            */
+  /*    Return the horizontal or vertical metrics in font units for a      */
+  /*    given glyph.  The values are the left side bearing (top side       */
+  /*    bearing for vertical metrics) and advance width (advance height    */
+  /*    for vertical metrics).                                             */
   /*                                                                       */
   /* <Input>                                                               */
-  /*    header  :: A pointer to either the horizontal or vertical metrics  */
-  /*               structure.                                              */
+  /*    face     :: A pointer to the TrueType face structure.              */
   /*                                                                       */
-  /*    idx     :: The glyph index.                                        */
+  /*    vertical :: If set to TRUE, get vertical metrics.                  */
+  /*                                                                       */
+  /*    gindex   :: The glyph index.                                       */
   /*                                                                       */
   /* <Output>                                                              */
-  /*    bearing :: The bearing, either left side or top side.              */
+  /*    abearing :: The bearing, either left side or top side.             */
   /*                                                                       */
-  /*    advance :: The advance width resp. advance height.                 */
+  /*    aadvance :: The advance width or advance height, depending on      */
+  /*                the `vertical' flag.                                   */
   /*                                                                       */
-  FT_LOCAL_DEF( FT_Error )
+  FT_LOCAL_DEF( void )
   tt_face_get_metrics( TT_Face     face,
                        FT_Bool     vertical,
                        FT_UInt     gindex,
@@ -271,8 +274,6 @@
       *abearing = 0;
       *aadvance = 0;
     }
-
-    return FT_Err_Ok;
   }
 
 

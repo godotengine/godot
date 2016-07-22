@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Internal PFR service functions (specification).                      */
 /*                                                                         */
-/*  Copyright 2003, 2006 by                                                */
+/*  Copyright 2003-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __SVPFR_H__
-#define __SVPFR_H__
+#ifndef SVPFR_H_
+#define SVPFR_H_
 
 #include FT_PFR_H
 #include FT_INTERNAL_SERVICE_H
@@ -60,7 +60,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __SVPFR_H__ */
+#endif /* SVPFR_H_ */
 
 
 /* END */

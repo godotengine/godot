@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Debugging and logging component (specification).                     */
 /*                                                                         */
-/*  Copyright 1996-2002, 2004, 2006-2009, 2013 by                          */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -21,8 +21,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTDEBUG_H__
-#define __FTDEBUG_H__
+#ifndef FTDEBUG_H_
+#define FTDEBUG_H_
 
 
 #include <ft2build.h>
@@ -140,7 +140,7 @@ FT_BEGIN_HEADER
   /*    This function may be useful if you want to control FreeType 2's    */
   /*    debug level in your application.                                   */
   /*                                                                       */
-  FT_BASE( const char * )
+  FT_BASE( const char* )
   FT_Trace_Get_Name( FT_Int  idx );
 
 
@@ -249,7 +249,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTDEBUG_H__ */
+#endif /* FTDEBUG_H_ */
 
 
 /* END */

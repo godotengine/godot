@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    A small-bitmap cache (specification).                                */
 /*                                                                         */
-/*  Copyright 2000-2001, 2002, 2003, 2006, 2011 by                         */
+/*  Copyright 2000-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTCSBITS_H__
-#define __FTCSBITS_H__
+#ifndef FTCSBITS_H_
+#define FTCSBITS_H_
 
 
 #include <ft2build.h>
@@ -64,8 +64,8 @@ FT_BEGIN_HEADER
 
 #define FTC_SFAMILY_CLASS( x )  ((FTC_SFamilyClass)(x))
 
-#define FTC_CACHE__SFAMILY_CLASS( x )  \
-          FTC_SFAMILY_CLASS( FTC_CACHE__GCACHE_CLASS( x )->family_class )
+#define FTC_CACHE_SFAMILY_CLASS( x )  \
+          FTC_SFAMILY_CLASS( FTC_CACHE_GCACHE_CLASS( x )->family_class )
 
 
   FT_LOCAL( void )
@@ -97,7 +97,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTCSBITS_H__ */
+#endif /* FTCSBITS_H_ */
 
 
 /* END */

@@ -4,7 +4,8 @@
 /*                                                                         */
 /*    TrueTypeGX/AAT opbd table validation (body).                         */
 /*                                                                         */
-/*  Copyright 2004, 2005 by suzuki toshiya, Masatake YAMATO, Red Hat K.K., */
+/*  Copyright 2004-2016 by                                                 */
+/*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -68,11 +69,11 @@
   static void
   gxv_opbd_LookupValue_validate( FT_UShort            glyph,
                                  GXV_LookupValueCPtr  value_p,
-                                 GXV_Validator        valid )
+                                 GXV_Validator        gxvalid )
   {
     /* offset in LookupTable is measured from the head of opbd table */
-    FT_Bytes   p     = valid->root->base + value_p->u;
-    FT_Bytes   limit = valid->root->limit;
+    FT_Bytes   p     = gxvalid->root->base + value_p->u;
+    FT_Bytes   limit = gxvalid->root->limit;
     FT_Short   delta_value;
     int        i;
 
@@ -90,7 +91,7 @@
         if ( delta_value == -1 )
           continue;
 
-        gxv_ctlPoint_validate( glyph, delta_value, valid );
+        gxv_ctlPoint_validate( glyph, (FT_UShort)delta_value, gxvalid );
       }
       else                              /* format 0, value is distance */
         continue;
@@ -134,12 +135,12 @@
   gxv_opbd_LookupFmt4_transit( FT_UShort            relative_gindex,
                                GXV_LookupValueCPtr  base_value_p,
                                FT_Bytes             lookuptbl_limit,
-                               GXV_Validator        valid )
+                               GXV_Validator        gxvalid )
   {
     GXV_LookupValueDesc  value;
 
     FT_UNUSED( lookuptbl_limit );
-    FT_UNUSED( valid );
+    FT_UNUSED( gxvalid );
 
     /* XXX: check range? */
     value.u = (FT_UShort)( base_value_p->u +
@@ -162,8 +163,8 @@
                      FT_Face       face,
                      FT_Validator  ftvalid )
   {
-    GXV_ValidatorRec  validrec;
-    GXV_Validator     valid = &validrec;
+    GXV_ValidatorRec  gxvalidrec;
+    GXV_Validator     gxvalid = &gxvalidrec;
     GXV_opbd_DataRec  opbdrec;
     GXV_opbd_Data     opbd  = &opbdrec;
     FT_Bytes          p     = table;
@@ -172,9 +173,9 @@
     FT_ULong  version;
 
 
-    valid->root       = ftvalid;
-    valid->table_data = opbd;
-    valid->face       = face;
+    gxvalid->root       = ftvalid;
+    gxvalid->table_data = opbd;
+    gxvalid->face       = face;
 
     FT_TRACE3(( "validating `opbd' table\n" ));
     GXV_INIT;
@@ -196,12 +197,12 @@
     if ( 0x0001 < GXV_OPBD_DATA( format ) )
       FT_INVALID_FORMAT;
 
-    valid->lookupval_sign   = GXV_LOOKUPVALUE_UNSIGNED;
-    valid->lookupval_func   = gxv_opbd_LookupValue_validate;
-    valid->lookupfmt4_trans = gxv_opbd_LookupFmt4_transit;
+    gxvalid->lookupval_sign   = GXV_LOOKUPVALUE_UNSIGNED;
+    gxvalid->lookupval_func   = gxv_opbd_LookupValue_validate;
+    gxvalid->lookupfmt4_trans = gxv_opbd_LookupFmt4_transit;
 
-    gxv_LookupTable_validate( p, limit, valid );
-    p += valid->subtable_length;
+    gxv_LookupTable_validate( p, limit, gxvalid );
+    p += gxvalid->subtable_length;
 
     if ( p > table + GXV_OPBD_DATA( valueOffset_min ) )
     {

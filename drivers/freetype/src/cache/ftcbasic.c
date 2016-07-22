@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType basic cache interface (body).                           */
 /*                                                                         */
-/*  Copyright 2003-2007, 2009-2011, 2013 by                                */
+/*  Copyright 2003-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -45,8 +45,8 @@
           FT_BOOL( FTC_SCALER_COMPARE( &(a)->scaler, &(b)->scaler ) && \
                    (a)->load_flags == (b)->load_flags               )
 
-#define FTC_BASIC_ATTR_HASH( a )                                   \
-          ( FTC_SCALER_HASH( &(a)->scaler ) + 31*(a)->load_flags )
+#define FTC_BASIC_ATTR_HASH( a )                                     \
+          ( FTC_SCALER_HASH( &(a)->scaler ) + 31 * (a)->load_flags )
 
 
   typedef struct  FTC_BasicQueryRec_
@@ -110,10 +110,9 @@
       return result;
 
     if ( (FT_ULong)face->num_glyphs > FT_UINT_MAX || 0 > face->num_glyphs )
-    {
-      FT_TRACE1(( "ftc_basic_family_get_count: too large number of glyphs " ));
-      FT_TRACE1(( "in this face, truncated\n", face->num_glyphs ));
-    }
+      FT_TRACE1(( "ftc_basic_family_get_count:"
+                  " too large number of glyphs in this face, truncated\n",
+                  face->num_glyphs ));
 
     if ( !error )
       result = (FT_UInt)face->num_glyphs;
@@ -139,8 +138,10 @@
       FT_Face  face = size->face;
 
 
-      error = FT_Load_Glyph( face, gindex,
-                             family->attrs.load_flags | FT_LOAD_RENDER );
+      error = FT_Load_Glyph(
+                face,
+                gindex,
+                (FT_Int)family->attrs.load_flags | FT_LOAD_RENDER );
       if ( !error )
         *aface = face;
     }
@@ -170,7 +171,9 @@
     {
       face = size->face;
 
-      error = FT_Load_Glyph( face, gindex, family->attrs.load_flags );
+      error = FT_Load_Glyph( face,
+                             gindex,
+                             (FT_Int)family->attrs.load_flags );
       if ( !error )
       {
         if ( face->glyph->format == FT_GLYPH_FORMAT_BITMAP  ||
@@ -229,7 +232,7 @@
   *
   */
 
-  FT_CALLBACK_TABLE_DEF
+  static
   const FTC_IFamilyClassRec  ftc_basic_image_family_class =
   {
     {
@@ -243,7 +246,7 @@
   };
 
 
-  FT_CALLBACK_TABLE_DEF
+  static
   const FTC_GCacheClassRec  ftc_basic_image_cache_class =
   {
     {
@@ -284,10 +287,10 @@
     FTC_BasicQueryRec  query;
     FTC_Node           node = 0; /* make compiler happy */
     FT_Error           error;
-    FT_PtrDist         hash;
+    FT_Offset          hash;
 
 
-    /* some argument checks are delayed to FTC_Cache_Lookup */
+    /* some argument checks are delayed to `FTC_Cache_Lookup' */
     if ( !aglyph )
     {
       error = FT_THROW( Invalid_Argument );
@@ -298,18 +301,15 @@
     if ( anode )
       *anode  = NULL;
 
-    {
-      if ( (FT_ULong)(type->flags - FT_INT_MIN) > FT_UINT_MAX )
-      {
-        FT_TRACE1(( "FTC_ImageCache_Lookup: higher bits in load_flags" ));
-        FT_TRACE1(( "0x%x are dropped\n", (type->flags & ~((FT_ULong)FT_UINT_MAX)) ));
-      }
+    if ( (FT_ULong)( type->flags - FT_INT_MIN ) > FT_UINT_MAX )
+      FT_TRACE1(( "FTC_ImageCache_Lookup:"
+                  " higher bits in load_flags 0x%x are dropped\n",
+                  (FT_ULong)type->flags & ~((FT_ULong)FT_UINT_MAX) ));
 
-      query.attrs.scaler.face_id = type->face_id;
-      query.attrs.scaler.width   = type->width;
-      query.attrs.scaler.height  = type->height;
-      query.attrs.load_flags     = (FT_UInt)type->flags;
-    }
+    query.attrs.scaler.face_id = type->face_id;
+    query.attrs.scaler.width   = type->width;
+    query.attrs.scaler.height  = type->height;
+    query.attrs.load_flags     = (FT_UInt)type->flags;
 
     query.attrs.scaler.pixel = 1;
     query.attrs.scaler.x_res = 0;  /* make compilers happy */
@@ -360,10 +360,10 @@
     FTC_BasicQueryRec  query;
     FTC_Node           node = 0; /* make compiler happy */
     FT_Error           error;
-    FT_PtrDist         hash;
+    FT_Offset          hash;
 
 
-    /* some argument checks are delayed to FTC_Cache_Lookup */
+    /* some argument checks are delayed to `FTC_Cache_Lookup' */
     if ( !aglyph || !scaler )
     {
       error = FT_THROW( Invalid_Argument );
@@ -374,12 +374,11 @@
     if ( anode )
       *anode  = NULL;
 
-    /* FT_Load_Glyph(), FT_Load_Char() take FT_UInt flags */
+    /* `FT_Load_Glyph' and `FT_Load_Char' take FT_UInt flags */
     if ( load_flags > FT_UINT_MAX )
-    {
-      FT_TRACE1(( "FTC_ImageCache_LookupScaler: higher bits in load_flags" ));
-      FT_TRACE1(( "0x%x are dropped\n", (load_flags & ~((FT_ULong)FT_UINT_MAX)) ));
-    }
+      FT_TRACE1(( "FTC_ImageCache_LookupScaler:"
+                  " higher bits in load_flags 0x%x are dropped\n",
+                  load_flags & ~((FT_ULong)FT_UINT_MAX) ));
 
     query.attrs.scaler     = scaler[0];
     query.attrs.load_flags = (FT_UInt)load_flags;
@@ -415,7 +414,7 @@
    *
    */
 
-  FT_CALLBACK_TABLE_DEF
+  static
   const FTC_SFamilyClassRec  ftc_basic_sbit_family_class =
   {
     {
@@ -430,7 +429,7 @@
   };
 
 
-  FT_CALLBACK_TABLE_DEF
+  static
   const FTC_GCacheClassRec  ftc_basic_sbit_cache_class =
   {
     {
@@ -471,30 +470,27 @@
     FT_Error           error;
     FTC_BasicQueryRec  query;
     FTC_Node           node = 0; /* make compiler happy */
-    FT_PtrDist         hash;
+    FT_Offset          hash;
 
 
     if ( anode )
       *anode = NULL;
 
-    /* other argument checks delayed to FTC_Cache_Lookup */
+    /* other argument checks delayed to `FTC_Cache_Lookup' */
     if ( !ansbit )
       return FT_THROW( Invalid_Argument );
 
     *ansbit = NULL;
 
-    {
-      if ( (FT_ULong)(type->flags - FT_INT_MIN) > FT_UINT_MAX )
-      {
-        FT_TRACE1(( "FTC_ImageCache_Lookup: higher bits in load_flags" ));
-        FT_TRACE1(( "0x%x are dropped\n", (type->flags & ~((FT_ULong)FT_UINT_MAX)) ));
-      }
+    if ( (FT_ULong)( type->flags - FT_INT_MIN ) > FT_UINT_MAX )
+      FT_TRACE1(( "FTC_ImageCache_Lookup:"
+                  " higher bits in load_flags 0x%x are dropped\n",
+                  (FT_ULong)type->flags & ~((FT_ULong)FT_UINT_MAX) ));
 
-      query.attrs.scaler.face_id = type->face_id;
-      query.attrs.scaler.width   = type->width;
-      query.attrs.scaler.height  = type->height;
-      query.attrs.load_flags     = (FT_UInt)type->flags;
-    }
+    query.attrs.scaler.face_id = type->face_id;
+    query.attrs.scaler.width   = type->width;
+    query.attrs.scaler.height  = type->height;
+    query.attrs.load_flags     = (FT_UInt)type->flags;
 
     query.attrs.scaler.pixel = 1;
     query.attrs.scaler.x_res = 0;  /* make compilers happy */
@@ -549,24 +545,23 @@
     FT_Error           error;
     FTC_BasicQueryRec  query;
     FTC_Node           node = 0; /* make compiler happy */
-    FT_PtrDist         hash;
+    FT_Offset          hash;
 
 
     if ( anode )
         *anode = NULL;
 
-    /* other argument checks delayed to FTC_Cache_Lookup */
+    /* other argument checks delayed to `FTC_Cache_Lookup' */
     if ( !ansbit || !scaler )
         return FT_THROW( Invalid_Argument );
 
     *ansbit = NULL;
 
-    /* FT_Load_Glyph(), FT_Load_Char() take FT_UInt flags */
+    /* `FT_Load_Glyph' and `FT_Load_Char' take FT_UInt flags */
     if ( load_flags > FT_UINT_MAX )
-    {
-      FT_TRACE1(( "FTC_ImageCache_LookupScaler: higher bits in load_flags" ));
-      FT_TRACE1(( "0x%x are dropped\n", (load_flags & ~((FT_ULong)FT_UINT_MAX)) ));
-    }
+      FT_TRACE1(( "FTC_ImageCache_LookupScaler:"
+                  " higher bits in load_flags 0x%x are dropped\n",
+                  load_flags & ~((FT_ULong)FT_UINT_MAX) ));
 
     query.attrs.scaler     = scaler[0];
     query.attrs.load_flags = (FT_UInt)load_flags;

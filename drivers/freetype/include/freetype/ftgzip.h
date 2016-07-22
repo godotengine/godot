@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Gzip-compressed stream support.                                      */
 /*                                                                         */
-/*  Copyright 2002, 2003, 2004, 2006 by                                    */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTGZIP_H__
-#define __FTGZIP_H__
+#ifndef FTGZIP_H_
+#define FTGZIP_H_
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -91,12 +91,58 @@ FT_BEGIN_HEADER
   FT_Stream_OpenGzip( FT_Stream  stream,
                       FT_Stream  source );
 
- /* */
+
+ /************************************************************************
+  *
+  * @function:
+  *   FT_Gzip_Uncompress
+  *
+  * @description:
+  *   Decompress a zipped input buffer into an output buffer.  This function
+  *   is modeled after zlib's `uncompress' function.
+  *
+  * @input:
+  *   memory ::
+  *     A FreeType memory handle.
+  *
+  *   input ::
+  *     The input buffer.
+  *
+  *   input_len ::
+  *     The length of the input buffer.
+  *
+  * @output:
+  *   output::
+  *     The output buffer.
+  *
+  * @inout:
+  *   output_len ::
+  *     Before calling the function, this is the total size of the output
+  *     buffer, which must be large enough to hold the entire uncompressed
+  *     data (so the size of the uncompressed data must be known in
+  *     advance).  After calling the function, `output_len' is the size of
+  *     the used data in `output'.
+  *
+  * @return:
+  *   FreeType error code.  0~means success.
+  *
+  * @note:
+  *   This function may return `FT_Err_Unimplemented_Feature' if your build
+  *   of FreeType was not compiled with zlib support.
+  */
+  FT_EXPORT( FT_Error )
+  FT_Gzip_Uncompress( FT_Memory       memory,
+                      FT_Byte*        output,
+                      FT_ULong*       output_len,
+                      const FT_Byte*  input,
+                      FT_ULong        input_len );
+
+  /* */
 
 
 FT_END_HEADER
 
-#endif /* __FTGZIP_H__ */
+#endif /* FTGZIP_H_ */
 
 
 /* END */

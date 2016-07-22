@@ -36,8 +36,8 @@
 /***************************************************************************/
 
 
-#ifndef __CF2TYPES_H__
-#define __CF2TYPES_H__
+#ifndef CF2TYPES_H_
+#define CF2TYPES_H_
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -72,7 +72,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __CF2TYPES_H__ */
+#endif /* CF2TYPES_H_ */
 
 
 /* END */

@@ -3,7 +3,8 @@
 #
 
 
-# Copyright 2004, 2005 by suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
+# Copyright 2004-2016 by
+# suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -20,7 +21,10 @@ GXV_DIR := $(SRC_DIR)/gxvalid
 
 # compilation flags for the driver
 #
-GXV_COMPILE := $(FT_COMPILE) $I$(subst /,$(COMPILER_SEP),$(GXV_DIR))
+GXV_COMPILE := $(CC) $(ANSIFLAGS)                            \
+                     $I$(subst /,$(COMPILER_SEP),$(GXV_DIR)) \
+                     $(INCLUDE_FLAGS)                        \
+                     $(FT_CFLAGS)
 
 
 # GXV driver sources (i.e., C files)

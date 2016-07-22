@@ -36,13 +36,13 @@
 /***************************************************************************/
 
 
-#ifndef __CF2ERROR_H__
-#define __CF2ERROR_H__
+#ifndef CF2ERROR_H_
+#define CF2ERROR_H_
 
 
 #include FT_MODULE_ERRORS_H
 
-#undef __FTERRORS_H__
+#undef FTERRORS_H_
 
 #undef  FT_ERR_PREFIX
 #define FT_ERR_PREFIX  CF2_Err_
@@ -70,7 +70,7 @@ FT_BEGIN_HEADER
    * Upon a function call if the error code is anything other than
    * `FT_Err_Ok', which is guaranteed to be zero, we
    * will return without altering that error.  This will allow the
-   * error to propogate and be handled at the appropriate location in
+   * error to propagate and be handled at the appropriate location in
    * the code.
    *
    * This allows a style of code where the error code is initialized
@@ -113,7 +113,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __CF2ERROR_H__ */
+#endif /* CF2ERROR_H_ */
 
 
 /* END */

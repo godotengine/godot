@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType name ID definitions (specification only).                   */
 /*                                                                         */
-/*  Copyright 1996-2004, 2006-2008, 2012 by                                */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __TTNAMEID_H__
-#define __TTNAMEID_H__
+#ifndef TTNAMEID_H_
+#define TTNAMEID_H_
 
 
 #include <ft2build.h>
@@ -321,7 +321,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* The canonical source for the Apple assigned Language ID's is at       */
   /*                                                                       */
-  /*   https://developer.apple.com/fonts/TTRefMan/RM06/Chap6name.html      */
+  /*   https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6name.html */
   /*                                                                       */
 #define TT_MAC_LANGID_ENGLISH                       0
 #define TT_MAC_LANGID_FRENCH                        1
@@ -470,26 +470,26 @@ FT_BEGIN_HEADER
 #define TT_MS_LANGID_ARABIC_GENERAL                    0x0001
 #define TT_MS_LANGID_ARABIC_SAUDI_ARABIA               0x0401
 #define TT_MS_LANGID_ARABIC_IRAQ                       0x0801
-#define TT_MS_LANGID_ARABIC_EGYPT                      0x0c01
+#define TT_MS_LANGID_ARABIC_EGYPT                      0x0C01
 #define TT_MS_LANGID_ARABIC_LIBYA                      0x1001
 #define TT_MS_LANGID_ARABIC_ALGERIA                    0x1401
 #define TT_MS_LANGID_ARABIC_MOROCCO                    0x1801
-#define TT_MS_LANGID_ARABIC_TUNISIA                    0x1c01
+#define TT_MS_LANGID_ARABIC_TUNISIA                    0x1C01
 #define TT_MS_LANGID_ARABIC_OMAN                       0x2001
 #define TT_MS_LANGID_ARABIC_YEMEN                      0x2401
 #define TT_MS_LANGID_ARABIC_SYRIA                      0x2801
-#define TT_MS_LANGID_ARABIC_JORDAN                     0x2c01
+#define TT_MS_LANGID_ARABIC_JORDAN                     0x2C01
 #define TT_MS_LANGID_ARABIC_LEBANON                    0x3001
 #define TT_MS_LANGID_ARABIC_KUWAIT                     0x3401
 #define TT_MS_LANGID_ARABIC_UAE                        0x3801
-#define TT_MS_LANGID_ARABIC_BAHRAIN                    0x3c01
+#define TT_MS_LANGID_ARABIC_BAHRAIN                    0x3C01
 #define TT_MS_LANGID_ARABIC_QATAR                      0x4001
 #define TT_MS_LANGID_BULGARIAN_BULGARIA                0x0402
 #define TT_MS_LANGID_CATALAN_SPAIN                     0x0403
 #define TT_MS_LANGID_CHINESE_GENERAL                   0x0004
 #define TT_MS_LANGID_CHINESE_TAIWAN                    0x0404
 #define TT_MS_LANGID_CHINESE_PRC                       0x0804
-#define TT_MS_LANGID_CHINESE_HONG_KONG                 0x0c04
+#define TT_MS_LANGID_CHINESE_HONG_KONG                 0x0C04
 #define TT_MS_LANGID_CHINESE_SINGAPORE                 0x1004
 
 #if 1  /* this looks like the correct value */
@@ -507,7 +507,7 @@ FT_BEGIN_HEADER
 #define TT_MS_LANGID_DANISH_DENMARK                    0x0406
 #define TT_MS_LANGID_GERMAN_GERMANY                    0x0407
 #define TT_MS_LANGID_GERMAN_SWITZERLAND                0x0807
-#define TT_MS_LANGID_GERMAN_AUSTRIA                    0x0c07
+#define TT_MS_LANGID_GERMAN_AUSTRIA                    0x0C07
 #define TT_MS_LANGID_GERMAN_LUXEMBOURG                 0x1007
 #define TT_MS_LANGID_GERMAN_LIECHTENSTEI               0x1407
 #define TT_MS_LANGID_GREEK_GREECE                      0x0408
@@ -520,69 +520,69 @@ FT_BEGIN_HEADER
 #define TT_MS_LANGID_ENGLISH_GENERAL                   0x0009
 #define TT_MS_LANGID_ENGLISH_UNITED_STATES             0x0409
 #define TT_MS_LANGID_ENGLISH_UNITED_KINGDOM            0x0809
-#define TT_MS_LANGID_ENGLISH_AUSTRALIA                 0x0c09
+#define TT_MS_LANGID_ENGLISH_AUSTRALIA                 0x0C09
 #define TT_MS_LANGID_ENGLISH_CANADA                    0x1009
 #define TT_MS_LANGID_ENGLISH_NEW_ZEALAND               0x1409
 #define TT_MS_LANGID_ENGLISH_IRELAND                   0x1809
-#define TT_MS_LANGID_ENGLISH_SOUTH_AFRICA              0x1c09
+#define TT_MS_LANGID_ENGLISH_SOUTH_AFRICA              0x1C09
 #define TT_MS_LANGID_ENGLISH_JAMAICA                   0x2009
 #define TT_MS_LANGID_ENGLISH_CARIBBEAN                 0x2409
 #define TT_MS_LANGID_ENGLISH_BELIZE                    0x2809
-#define TT_MS_LANGID_ENGLISH_TRINIDAD                  0x2c09
+#define TT_MS_LANGID_ENGLISH_TRINIDAD                  0x2C09
 #define TT_MS_LANGID_ENGLISH_ZIMBABWE                  0x3009
 #define TT_MS_LANGID_ENGLISH_PHILIPPINES               0x3409
 #define TT_MS_LANGID_ENGLISH_INDONESIA                 0x3809
-#define TT_MS_LANGID_ENGLISH_HONG_KONG                 0x3c09
+#define TT_MS_LANGID_ENGLISH_HONG_KONG                 0x3C09
 #define TT_MS_LANGID_ENGLISH_INDIA                     0x4009
 #define TT_MS_LANGID_ENGLISH_MALAYSIA                  0x4409
 #define TT_MS_LANGID_ENGLISH_SINGAPORE                 0x4809
-#define TT_MS_LANGID_SPANISH_SPAIN_TRADITIONAL_SORT    0x040a
-#define TT_MS_LANGID_SPANISH_MEXICO                    0x080a
-#define TT_MS_LANGID_SPANISH_SPAIN_INTERNATIONAL_SORT  0x0c0a
-#define TT_MS_LANGID_SPANISH_GUATEMALA                 0x100a
-#define TT_MS_LANGID_SPANISH_COSTA_RICA                0x140a
-#define TT_MS_LANGID_SPANISH_PANAMA                    0x180a
-#define TT_MS_LANGID_SPANISH_DOMINICAN_REPUBLIC        0x1c0a
-#define TT_MS_LANGID_SPANISH_VENEZUELA                 0x200a
-#define TT_MS_LANGID_SPANISH_COLOMBIA                  0x240a
-#define TT_MS_LANGID_SPANISH_PERU                      0x280a
-#define TT_MS_LANGID_SPANISH_ARGENTINA                 0x2c0a
-#define TT_MS_LANGID_SPANISH_ECUADOR                   0x300a
-#define TT_MS_LANGID_SPANISH_CHILE                     0x340a
-#define TT_MS_LANGID_SPANISH_URUGUAY                   0x380a
-#define TT_MS_LANGID_SPANISH_PARAGUAY                  0x3c0a
-#define TT_MS_LANGID_SPANISH_BOLIVIA                   0x400a
-#define TT_MS_LANGID_SPANISH_EL_SALVADOR               0x440a
-#define TT_MS_LANGID_SPANISH_HONDURAS                  0x480a
-#define TT_MS_LANGID_SPANISH_NICARAGUA                 0x4c0a
-#define TT_MS_LANGID_SPANISH_PUERTO_RICO               0x500a
-#define TT_MS_LANGID_SPANISH_UNITED_STATES             0x540a
+#define TT_MS_LANGID_SPANISH_SPAIN_TRADITIONAL_SORT    0x040A
+#define TT_MS_LANGID_SPANISH_MEXICO                    0x080A
+#define TT_MS_LANGID_SPANISH_SPAIN_INTERNATIONAL_SORT  0x0C0A
+#define TT_MS_LANGID_SPANISH_GUATEMALA                 0x100A
+#define TT_MS_LANGID_SPANISH_COSTA_RICA                0x140A
+#define TT_MS_LANGID_SPANISH_PANAMA                    0x180A
+#define TT_MS_LANGID_SPANISH_DOMINICAN_REPUBLIC        0x1C0A
+#define TT_MS_LANGID_SPANISH_VENEZUELA                 0x200A
+#define TT_MS_LANGID_SPANISH_COLOMBIA                  0x240A
+#define TT_MS_LANGID_SPANISH_PERU                      0x280A
+#define TT_MS_LANGID_SPANISH_ARGENTINA                 0x2C0A
+#define TT_MS_LANGID_SPANISH_ECUADOR                   0x300A
+#define TT_MS_LANGID_SPANISH_CHILE                     0x340A
+#define TT_MS_LANGID_SPANISH_URUGUAY                   0x380A
+#define TT_MS_LANGID_SPANISH_PARAGUAY                  0x3C0A
+#define TT_MS_LANGID_SPANISH_BOLIVIA                   0x400A
+#define TT_MS_LANGID_SPANISH_EL_SALVADOR               0x440A
+#define TT_MS_LANGID_SPANISH_HONDURAS                  0x480A
+#define TT_MS_LANGID_SPANISH_NICARAGUA                 0x4C0A
+#define TT_MS_LANGID_SPANISH_PUERTO_RICO               0x500A
+#define TT_MS_LANGID_SPANISH_UNITED_STATES             0x540A
   /* The following ID blatantly violate MS specs by using a */
   /* sublanguage > 0x1F.                                    */
-#define TT_MS_LANGID_SPANISH_LATIN_AMERICA             0xE40aU
-#define TT_MS_LANGID_FINNISH_FINLAND                   0x040b
-#define TT_MS_LANGID_FRENCH_FRANCE                     0x040c
-#define TT_MS_LANGID_FRENCH_BELGIUM                    0x080c
-#define TT_MS_LANGID_FRENCH_CANADA                     0x0c0c
-#define TT_MS_LANGID_FRENCH_SWITZERLAND                0x100c
-#define TT_MS_LANGID_FRENCH_LUXEMBOURG                 0x140c
-#define TT_MS_LANGID_FRENCH_MONACO                     0x180c
-#define TT_MS_LANGID_FRENCH_WEST_INDIES                0x1c0c
-#define TT_MS_LANGID_FRENCH_REUNION                    0x200c
-#define TT_MS_LANGID_FRENCH_CONGO                      0x240c
+#define TT_MS_LANGID_SPANISH_LATIN_AMERICA             0xE40AU
+#define TT_MS_LANGID_FINNISH_FINLAND                   0x040B
+#define TT_MS_LANGID_FRENCH_FRANCE                     0x040C
+#define TT_MS_LANGID_FRENCH_BELGIUM                    0x080C
+#define TT_MS_LANGID_FRENCH_CANADA                     0x0C0C
+#define TT_MS_LANGID_FRENCH_SWITZERLAND                0x100C
+#define TT_MS_LANGID_FRENCH_LUXEMBOURG                 0x140C
+#define TT_MS_LANGID_FRENCH_MONACO                     0x180C
+#define TT_MS_LANGID_FRENCH_WEST_INDIES                0x1C0C
+#define TT_MS_LANGID_FRENCH_REUNION                    0x200C
+#define TT_MS_LANGID_FRENCH_CONGO                      0x240C
   /* which was formerly: */
 #define TT_MS_LANGID_FRENCH_ZAIRE  TT_MS_LANGID_FRENCH_CONGO
-#define TT_MS_LANGID_FRENCH_SENEGAL                    0x280c
-#define TT_MS_LANGID_FRENCH_CAMEROON                   0x2c0c
-#define TT_MS_LANGID_FRENCH_COTE_D_IVOIRE              0x300c
-#define TT_MS_LANGID_FRENCH_MALI                       0x340c
-#define TT_MS_LANGID_FRENCH_MOROCCO                    0x380c
-#define TT_MS_LANGID_FRENCH_HAITI                      0x3c0c
-  /* and another violation of the spec (see 0xE40aU) */
-#define TT_MS_LANGID_FRENCH_NORTH_AFRICA               0xE40cU
-#define TT_MS_LANGID_HEBREW_ISRAEL                     0x040d
-#define TT_MS_LANGID_HUNGARIAN_HUNGARY                 0x040e
-#define TT_MS_LANGID_ICELANDIC_ICELAND                 0x040f
+#define TT_MS_LANGID_FRENCH_SENEGAL                    0x280C
+#define TT_MS_LANGID_FRENCH_CAMEROON                   0x2C0C
+#define TT_MS_LANGID_FRENCH_COTE_D_IVOIRE              0x300C
+#define TT_MS_LANGID_FRENCH_MALI                       0x340C
+#define TT_MS_LANGID_FRENCH_MOROCCO                    0x380C
+#define TT_MS_LANGID_FRENCH_HAITI                      0x3C0C
+  /* and another violation of the spec (see 0xE40AU) */
+#define TT_MS_LANGID_FRENCH_NORTH_AFRICA               0xE40CU
+#define TT_MS_LANGID_HEBREW_ISRAEL                     0x040D
+#define TT_MS_LANGID_HUNGARIAN_HUNGARY                 0x040E
+#define TT_MS_LANGID_ICELANDIC_ICELAND                 0x040F
 #define TT_MS_LANGID_ITALIAN_ITALY                     0x0410
 #define TT_MS_LANGID_ITALIAN_SWITZERLAND               0x0810
 #define TT_MS_LANGID_JAPANESE_JAPAN                    0x0411
@@ -600,27 +600,27 @@ FT_BEGIN_HEADER
 #define TT_MS_LANGID_MOLDAVIAN_MOLDAVIA                0x0818
 #define TT_MS_LANGID_RUSSIAN_RUSSIA                    0x0419
 #define TT_MS_LANGID_RUSSIAN_MOLDAVIA                  0x0819
-#define TT_MS_LANGID_CROATIAN_CROATIA                  0x041a
-#define TT_MS_LANGID_SERBIAN_SERBIA_LATIN              0x081a
-#define TT_MS_LANGID_SERBIAN_SERBIA_CYRILLIC           0x0c1a
+#define TT_MS_LANGID_CROATIAN_CROATIA                  0x041A
+#define TT_MS_LANGID_SERBIAN_SERBIA_LATIN              0x081A
+#define TT_MS_LANGID_SERBIAN_SERBIA_CYRILLIC           0x0C1A
 
 #if 0  /* this used to be this value, but it looks like we were wrong */
-#define TT_MS_LANGID_BOSNIAN_BOSNIA_HERZEGOVINA        0x101a
+#define TT_MS_LANGID_BOSNIAN_BOSNIA_HERZEGOVINA        0x101A
 #else  /* current sources say */
-#define TT_MS_LANGID_CROATIAN_BOSNIA_HERZEGOVINA       0x101a
-#define TT_MS_LANGID_BOSNIAN_BOSNIA_HERZEGOVINA        0x141a
+#define TT_MS_LANGID_CROATIAN_BOSNIA_HERZEGOVINA       0x101A
+#define TT_MS_LANGID_BOSNIAN_BOSNIA_HERZEGOVINA        0x141A
        /* and XPsp2 Platform SDK added (2004-07-26) */
        /* Names are shortened to be significant within 40 chars. */
-#define TT_MS_LANGID_SERBIAN_BOSNIA_HERZ_LATIN         0x181a
-#define TT_MS_LANGID_SERBIAN_BOSNIA_HERZ_CYRILLIC      0x181a
+#define TT_MS_LANGID_SERBIAN_BOSNIA_HERZ_LATIN         0x181A
+#define TT_MS_LANGID_SERBIAN_BOSNIA_HERZ_CYRILLIC      0x181A
 #endif
 
-#define TT_MS_LANGID_SLOVAK_SLOVAKIA                   0x041b
-#define TT_MS_LANGID_ALBANIAN_ALBANIA                  0x041c
-#define TT_MS_LANGID_SWEDISH_SWEDEN                    0x041d
-#define TT_MS_LANGID_SWEDISH_FINLAND                   0x081d
-#define TT_MS_LANGID_THAI_THAILAND                     0x041e
-#define TT_MS_LANGID_TURKISH_TURKEY                    0x041f
+#define TT_MS_LANGID_SLOVAK_SLOVAKIA                   0x041B
+#define TT_MS_LANGID_ALBANIAN_ALBANIA                  0x041C
+#define TT_MS_LANGID_SWEDISH_SWEDEN                    0x041D
+#define TT_MS_LANGID_SWEDISH_FINLAND                   0x081D
+#define TT_MS_LANGID_THAI_THAILAND                     0x041E
+#define TT_MS_LANGID_TURKISH_TURKEY                    0x041F
 #define TT_MS_LANGID_URDU_PAKISTAN                     0x0420
 #define TT_MS_LANGID_URDU_INDIA                        0x0820
 #define TT_MS_LANGID_INDONESIAN_INDONESIA              0x0421
@@ -633,13 +633,13 @@ FT_BEGIN_HEADER
 #define TT_MS_LANGID_CLASSIC_LITHUANIAN_LITHUANIA      0x0827
 #define TT_MS_LANGID_TAJIK_TAJIKISTAN                  0x0428
 #define TT_MS_LANGID_FARSI_IRAN                        0x0429
-#define TT_MS_LANGID_VIETNAMESE_VIET_NAM               0x042a
-#define TT_MS_LANGID_ARMENIAN_ARMENIA                  0x042b
-#define TT_MS_LANGID_AZERI_AZERBAIJAN_LATIN            0x042c
-#define TT_MS_LANGID_AZERI_AZERBAIJAN_CYRILLIC         0x082c
-#define TT_MS_LANGID_BASQUE_SPAIN                      0x042d
-#define TT_MS_LANGID_SORBIAN_GERMANY                   0x042e
-#define TT_MS_LANGID_MACEDONIAN_MACEDONIA              0x042f
+#define TT_MS_LANGID_VIETNAMESE_VIET_NAM               0x042A
+#define TT_MS_LANGID_ARMENIAN_ARMENIA                  0x042B
+#define TT_MS_LANGID_AZERI_AZERBAIJAN_LATIN            0x042C
+#define TT_MS_LANGID_AZERI_AZERBAIJAN_CYRILLIC         0x082C
+#define TT_MS_LANGID_BASQUE_SPAIN                      0x042D
+#define TT_MS_LANGID_SORBIAN_GERMANY                   0x042E
+#define TT_MS_LANGID_MACEDONIAN_MACEDONIA              0x042F
 #define TT_MS_LANGID_SUTU_SOUTH_AFRICA                 0x0430
 #define TT_MS_LANGID_TSONGA_SOUTH_AFRICA               0x0431
 #define TT_MS_LANGID_TSWANA_SOUTH_AFRICA               0x0432
@@ -650,32 +650,32 @@ FT_BEGIN_HEADER
 #define TT_MS_LANGID_GEORGIAN_GEORGIA                  0x0437
 #define TT_MS_LANGID_FAEROESE_FAEROE_ISLANDS           0x0438
 #define TT_MS_LANGID_HINDI_INDIA                       0x0439
-#define TT_MS_LANGID_MALTESE_MALTA                     0x043a
+#define TT_MS_LANGID_MALTESE_MALTA                     0x043A
   /* Added by XPsp2 Platform SDK (2004-07-26) */
-#define TT_MS_LANGID_SAMI_NORTHERN_NORWAY              0x043b
-#define TT_MS_LANGID_SAMI_NORTHERN_SWEDEN              0x083b
-#define TT_MS_LANGID_SAMI_NORTHERN_FINLAND             0x0C3b
-#define TT_MS_LANGID_SAMI_LULE_NORWAY                  0x103b
-#define TT_MS_LANGID_SAMI_LULE_SWEDEN                  0x143b
-#define TT_MS_LANGID_SAMI_SOUTHERN_NORWAY              0x183b
-#define TT_MS_LANGID_SAMI_SOUTHERN_SWEDEN              0x1C3b
-#define TT_MS_LANGID_SAMI_SKOLT_FINLAND                0x203b
-#define TT_MS_LANGID_SAMI_INARI_FINLAND                0x243b
+#define TT_MS_LANGID_SAMI_NORTHERN_NORWAY              0x043B
+#define TT_MS_LANGID_SAMI_NORTHERN_SWEDEN              0x083B
+#define TT_MS_LANGID_SAMI_NORTHERN_FINLAND             0x0C3B
+#define TT_MS_LANGID_SAMI_LULE_NORWAY                  0x103B
+#define TT_MS_LANGID_SAMI_LULE_SWEDEN                  0x143B
+#define TT_MS_LANGID_SAMI_SOUTHERN_NORWAY              0x183B
+#define TT_MS_LANGID_SAMI_SOUTHERN_SWEDEN              0x1C3B
+#define TT_MS_LANGID_SAMI_SKOLT_FINLAND                0x203B
+#define TT_MS_LANGID_SAMI_INARI_FINLAND                0x243B
   /* ... and we also keep our old identifier... */
-#define TT_MS_LANGID_SAAMI_LAPONIA                     0x043b
+#define TT_MS_LANGID_SAAMI_LAPONIA                     0x043B
 
 #if 0 /* this seems to be a previous inversion */
-#define TT_MS_LANGID_IRISH_GAELIC_IRELAND              0x043c
-#define TT_MS_LANGID_SCOTTISH_GAELIC_UNITED_KINGDOM    0x083c
+#define TT_MS_LANGID_IRISH_GAELIC_IRELAND              0x043C
+#define TT_MS_LANGID_SCOTTISH_GAELIC_UNITED_KINGDOM    0x083C
 #else
-#define TT_MS_LANGID_SCOTTISH_GAELIC_UNITED_KINGDOM    0x083c
-#define TT_MS_LANGID_IRISH_GAELIC_IRELAND              0x043c
+#define TT_MS_LANGID_SCOTTISH_GAELIC_UNITED_KINGDOM    0x083C
+#define TT_MS_LANGID_IRISH_GAELIC_IRELAND              0x043C
 #endif
 
-#define TT_MS_LANGID_YIDDISH_GERMANY                   0x043d
-#define TT_MS_LANGID_MALAY_MALAYSIA                    0x043e
-#define TT_MS_LANGID_MALAY_BRUNEI_DARUSSALAM           0x083e
-#define TT_MS_LANGID_KAZAK_KAZAKSTAN                   0x043f
+#define TT_MS_LANGID_YIDDISH_GERMANY                   0x043D
+#define TT_MS_LANGID_MALAY_MALAYSIA                    0x043E
+#define TT_MS_LANGID_MALAY_BRUNEI_DARUSSALAM           0x083E
+#define TT_MS_LANGID_KAZAK_KAZAKSTAN                   0x043F
 #define TT_MS_LANGID_KIRGHIZ_KIRGHIZSTAN /* Cyrillic*/ 0x0440
   /* alias declared in Windows 2000 */
 #define TT_MS_LANGID_KIRGHIZ_KIRGHIZ_REPUBLIC \
@@ -693,12 +693,12 @@ FT_BEGIN_HEADER
 #define TT_MS_LANGID_GUJARATI_INDIA                    0x0447
 #define TT_MS_LANGID_ORIYA_INDIA                       0x0448
 #define TT_MS_LANGID_TAMIL_INDIA                       0x0449
-#define TT_MS_LANGID_TELUGU_INDIA                      0x044a
-#define TT_MS_LANGID_KANNADA_INDIA                     0x044b
-#define TT_MS_LANGID_MALAYALAM_INDIA                   0x044c
-#define TT_MS_LANGID_ASSAMESE_INDIA                    0x044d
-#define TT_MS_LANGID_MARATHI_INDIA                     0x044e
-#define TT_MS_LANGID_SANSKRIT_INDIA                    0x044f
+#define TT_MS_LANGID_TELUGU_INDIA                      0x044A
+#define TT_MS_LANGID_KANNADA_INDIA                     0x044B
+#define TT_MS_LANGID_MALAYALAM_INDIA                   0x044C
+#define TT_MS_LANGID_ASSAMESE_INDIA                    0x044D
+#define TT_MS_LANGID_MARATHI_INDIA                     0x044E
+#define TT_MS_LANGID_SANSKRIT_INDIA                    0x044F
 #define TT_MS_LANGID_MONGOLIAN_MONGOLIA /* Cyrillic */ 0x0450
 #define TT_MS_LANGID_MONGOLIAN_MONGOLIA_MONGOLIAN      0x0850
 #define TT_MS_LANGID_TIBETAN_CHINA                     0x0451
@@ -732,13 +732,13 @@ FT_BEGIN_HEADER
 #define TT_MS_LANGID_SINDHI_INDIA /* Arabic */         0x0459
 #define TT_MS_LANGID_SINDHI_PAKISTAN                   0x0859
   /* Missing a LCID for Sindhi in Devanagari script */
-#define TT_MS_LANGID_SYRIAC_SYRIA                      0x045a
-#define TT_MS_LANGID_SINHALESE_SRI_LANKA               0x045b
-#define TT_MS_LANGID_CHEROKEE_UNITED_STATES            0x045c
-#define TT_MS_LANGID_INUKTITUT_CANADA                  0x045d
-#define TT_MS_LANGID_AMHARIC_ETHIOPIA                  0x045e
-#define TT_MS_LANGID_TAMAZIGHT_MOROCCO /* Arabic */    0x045f
-#define TT_MS_LANGID_TAMAZIGHT_MOROCCO_LATIN           0x085f
+#define TT_MS_LANGID_SYRIAC_SYRIA                      0x045A
+#define TT_MS_LANGID_SINHALESE_SRI_LANKA               0x045B
+#define TT_MS_LANGID_CHEROKEE_UNITED_STATES            0x045C
+#define TT_MS_LANGID_INUKTITUT_CANADA                  0x045D
+#define TT_MS_LANGID_AMHARIC_ETHIOPIA                  0x045E
+#define TT_MS_LANGID_TAMAZIGHT_MOROCCO /* Arabic */    0x045F
+#define TT_MS_LANGID_TAMAZIGHT_MOROCCO_LATIN           0x085F
   /* Missing a LCID for Tifinagh script */
 #define TT_MS_LANGID_KASHMIRI_PAKISTAN /* Arabic */    0x0460
   /* Spelled this way by XPsp2 Platform SDK (2004-07-26) */
@@ -758,15 +758,15 @@ FT_BEGIN_HEADER
 #define TT_MS_LANGID_FULFULDE_NIGERIA                  0x0467
 #define TT_MS_LANGID_HAUSA_NIGERIA                     0x0468
 #define TT_MS_LANGID_IBIBIO_NIGERIA                    0x0469
-#define TT_MS_LANGID_YORUBA_NIGERIA                    0x046a
-#define TT_MS_LANGID_QUECHUA_BOLIVIA                   0x046b
-#define TT_MS_LANGID_QUECHUA_ECUADOR                   0x086b
-#define TT_MS_LANGID_QUECHUA_PERU                      0x0c6b
-#define TT_MS_LANGID_SEPEDI_SOUTH_AFRICA               0x046c
+#define TT_MS_LANGID_YORUBA_NIGERIA                    0x046A
+#define TT_MS_LANGID_QUECHUA_BOLIVIA                   0x046B
+#define TT_MS_LANGID_QUECHUA_ECUADOR                   0x086B
+#define TT_MS_LANGID_QUECHUA_PERU                      0x0C6B
+#define TT_MS_LANGID_SEPEDI_SOUTH_AFRICA               0x046C
   /* Also spelled by XPsp2 Platform SDK (2004-07-26) */
 #define TT_MS_LANGID_SOTHO_SOUTHERN_SOUTH_AFRICA \
           TT_MS_LANGID_SEPEDI_SOUTH_AFRICA
-  /* language codes 0x046d, 0x046e and 0x046f are (still) unknown. */
+  /* language codes 0x046D, 0x046E and 0x046F are (still) unknown. */
 #define TT_MS_LANGID_IGBO_NIGERIA                      0x0470
 #define TT_MS_LANGID_KANURI_NIGERIA                    0x0471
 #define TT_MS_LANGID_OROMO_ETHIOPIA                    0x0472
@@ -783,12 +783,12 @@ FT_BEGIN_HEADER
   /*       studying).                                                     */
 #define TT_MS_LANGID_YI_CHINA                          0x0478
 #define TT_MS_LANGID_PAPIAMENTU_NETHERLANDS_ANTILLES   0x0479
-  /* language codes from 0x047a to 0x047f are (still) unknown. */
+  /* language codes from 0x047A to 0x047F are (still) unknown. */
 #define TT_MS_LANGID_UIGHUR_CHINA                      0x0480
 #define TT_MS_LANGID_MAORI_NEW_ZEALAND                 0x0481
 
 #if 0  /* not deemed useful for fonts */
-#define TT_MS_LANGID_HUMAN_INTERFACE_DEVICE            0x04ff
+#define TT_MS_LANGID_HUMAN_INTERFACE_DEVICE            0x04FF
 #endif
 
 
@@ -1208,7 +1208,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* Here some alias #defines in order to be clearer.                      */
   /*                                                                       */
-  /* These are not always #defined to stay within the 31~character limit   */
+  /* These are not always #defined to stay within the 31~character limit,  */
   /* which some compilers have.                                            */
   /*                                                                       */
   /* Credits go to Dave Hoo <dhoo@flash.net> for pointing out that modern  */
@@ -1231,7 +1231,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __TTNAMEID_H__ */
+#endif /* TTNAMEID_H_ */
 
 
 /* END */

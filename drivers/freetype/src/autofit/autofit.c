@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter module (body).                                           */
 /*                                                                         */
-/*  Copyright 2003-2007, 2011 by                                           */
+/*  Copyright 2003-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -20,8 +20,11 @@
 #include <ft2build.h>
 #include "afpic.c"
 #include "afangles.c"
+#include "afblue.c"
 #include "afglobal.c"
 #include "afhints.c"
+
+#include "afranges.c"
 
 #include "afdummy.c"
 #include "aflatin.c"
@@ -30,6 +33,8 @@
 #endif
 #include "afcjk.c"
 #include "afindic.c"
+
+#include "afshaper.c"
 
 #include "afloader.c"
 #include "afmodule.c"

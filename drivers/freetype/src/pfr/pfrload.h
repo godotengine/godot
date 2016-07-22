@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType PFR loader (specification).                                 */
 /*                                                                         */
-/*  Copyright 2002 by                                                      */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __PFRLOAD_H__
-#define __PFRLOAD_H__
+#ifndef PFRLOAD_H_
+#define PFRLOAD_H_
 
 #include "pfrobjs.h"
 #include FT_INTERNAL_STREAM_H
@@ -25,14 +25,19 @@
 
 FT_BEGIN_HEADER
 
+  /* some size checks should be always done (mainly to prevent */
+  /* excessive allocation for malformed data), ...             */
+#define PFR_CHECK_SIZE( x )  do                       \
+                             {                        \
+                               if ( p + (x) > limit ) \
+                                 goto Too_Short;      \
+                             } while ( 0 )
+
+  /* ... and some only if intensive checking is explicitly requested */
 #ifdef PFR_CONFIG_NO_CHECKS
 #define PFR_CHECK( x )  do { } while ( 0 )
 #else
-#define PFR_CHECK( x )  do                       \
-                        {                        \
-                          if ( p + (x) > limit ) \
-                            goto Too_Short;      \
-                        } while ( 0 )
+#define PFR_CHECK  PFR_CHECK_SIZE
 #endif
 
 #define PFR_NEXT_BYTE( p )    FT_NEXT_BYTE( p )
@@ -85,7 +90,7 @@ FT_BEGIN_HEADER
   FT_LOCAL( FT_Error )
   pfr_log_font_count( FT_Stream   stream,
                       FT_UInt32   log_section_offset,
-                      FT_UInt    *acount );
+                      FT_Long    *acount );
 
   /* load a pfr logical font entry */
   FT_LOCAL( FT_Error )
@@ -112,7 +117,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __PFRLOAD_H__ */
+#endif /* PFRLOAD_H_ */
 
 
 /* END */

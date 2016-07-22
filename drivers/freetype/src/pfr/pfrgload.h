@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType PFR glyph loader (specification).                           */
 /*                                                                         */
-/*  Copyright 2002 by                                                      */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __PFRGLOAD_H__
-#define __PFRGLOAD_H__
+#ifndef PFRGLOAD_H_
+#define PFRGLOAD_H_
 
 #include "pfrtypes.h"
 
@@ -43,7 +43,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __PFRGLOAD_H__ */
+#endif /* PFRGLOAD_H_ */
 
 
 /* END */

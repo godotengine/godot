@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    PostScript hinting algorithm (specification).                        */
 /*                                                                         */
-/*  Copyright 2001-2003, 2008, 2013 by                                     */
+/*  Copyright 2001-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __PSHALGO_H__
-#define __PSHALGO_H__
+#ifndef PSHALGO_H_
+#define PSHALGO_H_
 
 
 #include "pshrec.h"
@@ -30,15 +30,12 @@ FT_BEGIN_HEADER
   /* handle to Hint structure */
   typedef struct PSH_HintRec_*  PSH_Hint;
 
-  /* hint bit-flags */
-  typedef enum  PSH_Hint_Flags_
-  {
-    PSH_HINT_GHOST  = PS_HINT_FLAG_GHOST,
-    PSH_HINT_BOTTOM = PS_HINT_FLAG_BOTTOM,
-    PSH_HINT_ACTIVE = 4,
-    PSH_HINT_FITTED = 8
 
-  } PSH_Hint_Flags;
+  /* hint bit-flags */
+#define PSH_HINT_GHOST   PS_HINT_FLAG_GHOST
+#define PSH_HINT_BOTTOM  PS_HINT_FLAG_BOTTOM
+#define PSH_HINT_ACTIVE  4U
+#define PSH_HINT_FITTED  8U
 
 
 #define psh_hint_is_active( x )  ( ( (x)->flags & PSH_HINT_ACTIVE ) != 0 )
@@ -48,6 +45,7 @@ FT_BEGIN_HEADER
 #define psh_hint_activate( x )    (x)->flags |=  PSH_HINT_ACTIVE
 #define psh_hint_deactivate( x )  (x)->flags &= ~PSH_HINT_ACTIVE
 #define psh_hint_set_fitted( x )  (x)->flags |=  PSH_HINT_FITTED
+
 
   /* hint structure */
   typedef struct  PSH_HintRec_
@@ -112,14 +110,12 @@ FT_BEGIN_HEADER
 #define PSH_DIR_IS_VERTICAL( d )    PSH_DIR_COMPARE( d, PSH_DIR_VERTICAL )
 
 
- /* the following bit-flags are computed once by the glyph */
- /* analyzer, for both dimensions                          */
-  enum
-  {
-    PSH_POINT_OFF    = 1,   /* point is off the curve */
-    PSH_POINT_SMOOTH = 2,   /* point is smooth        */
-    PSH_POINT_INFLEX = 4    /* point is inflection    */
-  };
+  /* the following bit-flags are computed once by the glyph */
+  /* analyzer, for both dimensions                          */
+#define PSH_POINT_OFF     1U      /* point is off the curve */
+#define PSH_POINT_SMOOTH  2U      /* point is smooth        */
+#define PSH_POINT_INFLEX  4U      /* point is inflection    */
+
 
 #define psh_point_is_smooth( p )  ( (p)->flags & PSH_POINT_SMOOTH )
 #define psh_point_is_off( p )     ( (p)->flags & PSH_POINT_OFF    )
@@ -129,17 +125,16 @@ FT_BEGIN_HEADER
 #define psh_point_set_off( p )     (p)->flags |= PSH_POINT_OFF
 #define psh_point_set_inflex( p )  (p)->flags |= PSH_POINT_INFLEX
 
+
   /* the following bit-flags are re-computed for each dimension */
-  enum
-  {
-    PSH_POINT_STRONG   = 16,   /* point is strong                           */
-    PSH_POINT_FITTED   = 32,   /* point is already fitted                   */
-    PSH_POINT_EXTREMUM = 64,   /* point is local extremum                   */
-    PSH_POINT_POSITIVE = 128,  /* extremum has positive contour flow        */
-    PSH_POINT_NEGATIVE = 256,  /* extremum has negative contour flow        */
-    PSH_POINT_EDGE_MIN = 512,  /* point is aligned to left/bottom stem edge */
-    PSH_POINT_EDGE_MAX = 1024  /* point is aligned to top/right stem edge   */
-  };
+#define PSH_POINT_STRONG      16U /* point is strong                           */
+#define PSH_POINT_FITTED      32U /* point is already fitted                   */
+#define PSH_POINT_EXTREMUM    64U /* point is local extremum                   */
+#define PSH_POINT_POSITIVE   128U /* extremum has positive contour flow        */
+#define PSH_POINT_NEGATIVE   256U /* extremum has negative contour flow        */
+#define PSH_POINT_EDGE_MIN   512U /* point is aligned to left/bottom stem edge */
+#define PSH_POINT_EDGE_MAX  1024U /* point is aligned to top/right stem edge   */
+
 
 #define psh_point_is_strong( p )    ( (p)->flags2 & PSH_POINT_STRONG )
 #define psh_point_is_fitted( p )    ( (p)->flags2 & PSH_POINT_FITTED )
@@ -240,7 +235,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __PSHALGO_H__ */
+#endif /* PSHALGO_H_ */
 
 
 /* END */

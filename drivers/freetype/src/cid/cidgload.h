@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType Glyph Loader (specification).                               */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2004 by                                     */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __CIDGLOAD_H__
-#define __CIDGLOAD_H__
+#ifndef CIDGLOAD_H_
+#define CIDGLOAD_H_
 
 
 #include <ft2build.h>
@@ -45,7 +45,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __CIDGLOAD_H__ */
+#endif /* CIDGLOAD_H_ */
 
 
 /* END */

@@ -2,7 +2,7 @@
 
     FreeType font driver for bdf files
 
-    Copyright (C) 2001-2008, 2011, 2013 by
+    Copyright (C) 2001-2008, 2011, 2013, 2014 by
     Francesco Zappa Nardelli
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include FT_TRUETYPE_IDS_H
 
 #include FT_SERVICE_BDF_H
-#include FT_SERVICE_XFREE86_NAME_H
+#include FT_SERVICE_FONT_FORMAT_H
 
 #include "bdf.h"
 #include "bdfdrivr.h"
@@ -106,7 +106,7 @@ THE SOFTWARE.
 
 
       mid  = ( min + max ) >> 1;
-      code = encodings[mid].enc;
+      code = (FT_ULong)encodings[mid].enc;
 
       if ( charcode == code )
       {
@@ -146,7 +146,7 @@ THE SOFTWARE.
 
 
       mid  = ( min + max ) >> 1;
-      code = encodings[mid].enc;
+      code = (FT_ULong)encodings[mid].enc;
 
       if ( charcode == code )
       {
@@ -165,7 +165,7 @@ THE SOFTWARE.
     charcode = 0;
     if ( min < cmap->num_encodings )
     {
-      charcode = encodings[min].enc;
+      charcode = (FT_ULong)encodings[min].enc;
       result   = encodings[min].glyph + 1;
     }
 
@@ -182,7 +182,7 @@ THE SOFTWARE.
   }
 
 
-  FT_CALLBACK_TABLE_DEF
+  static
   const FT_CMap_ClassRec  bdf_cmap_class =
   {
     sizeof ( BDF_CMapRec ),
@@ -242,8 +242,6 @@ THE SOFTWARE.
          prop->value.atom && *(prop->value.atom)                       &&
          !( *(prop->value.atom) == 'N' || *(prop->value.atom) == 'n' ) )
       strings[0] = (char *)(prop->value.atom);
-
-    len = 0;
 
     for ( len = 0, nn = 0; nn < 4; nn++ )
     {
@@ -351,7 +349,6 @@ THE SOFTWARE.
 
     FT_UNUSED( num_params );
     FT_UNUSED( params );
-    FT_UNUSED( face_index );
 
 
     FT_TRACE2(( "BDF driver\n" ));
@@ -375,6 +372,20 @@ THE SOFTWARE.
 
     /* we have a bdf font: let's construct the face object */
     face->bdffont = font;
+
+    /* BDF could not have multiple face in single font file.
+     * XXX: non-zero face_index is already invalid argument, but
+     *      Type1, Type42 driver has a convention to return
+     *      an invalid argument error when the font could be
+     *      opened by the specified driver.
+     */
+    if ( face_index > 0 && ( face_index & 0xFFFF ) > 0 )
+    {
+      FT_ERROR(( "BDF_Face_Init: invalid face index\n" ));
+      BDF_Face_Done( bdfface );
+      return FT_THROW( Invalid_Argument );
+    }
+
     {
       bdf_property_t*  prop = NULL;
 
@@ -388,9 +399,10 @@ THE SOFTWARE.
 
       bdfface->num_faces  = 1;
       bdfface->face_index = 0;
-      bdfface->face_flags = FT_FACE_FLAG_FIXED_SIZES |
-                            FT_FACE_FLAG_HORIZONTAL  |
-                            FT_FACE_FLAG_FAST_GLYPHS;
+
+      bdfface->face_flags |= FT_FACE_FLAG_FIXED_SIZES |
+                             FT_FACE_FLAG_HORIZONTAL  |
+                             FT_FACE_FLAG_FAST_GLYPHS;
 
       prop = bdf_get_font_property( font, "SPACING" );
       if ( prop && prop->format == BDF_ATOM                             &&
@@ -409,14 +421,14 @@ THE SOFTWARE.
           goto Exit;
       }
       else
-        bdfface->family_name = 0;
+        bdfface->family_name = NULL;
 
       if ( ( error = bdf_interpret_style( face ) ) != 0 )
         goto Exit;
 
       /* the number of glyphs (with one slot for the undefined glyph */
       /* at position 0 and all unencoded glyphs)                     */
-      bdfface->num_glyphs = font->glyphs_size + 1;
+      bdfface->num_glyphs = (FT_Long)( font->glyphs_size + 1 );
 
       bdfface->num_fixed_sizes = 1;
       if ( FT_NEW_ARRAY( bdfface->available_sizes, 1 ) )
@@ -483,7 +495,7 @@ THE SOFTWARE.
         {
           (face->en_table[n]).enc = cur[n].encoding;
           FT_TRACE4(( "  idx %d, val 0x%lX\n", n, cur[n].encoding ));
-          (face->en_table[n]).glyph = (FT_Short)n;
+          (face->en_table[n]).glyph = (FT_UShort)n;
 
           if ( cur[n].encoding == font->default_char )
           {
@@ -498,7 +510,7 @@ THE SOFTWARE.
 
       /* charmaps */
       {
-        bdf_property_t  *charset_registry = 0, *charset_encoding = 0;
+        bdf_property_t  *charset_registry, *charset_encoding;
         FT_Bool          unicode_charmap  = 0;
 
 
@@ -604,9 +616,9 @@ THE SOFTWARE.
 
     FT_Select_Metrics( size->face, strike_index );
 
-    size->metrics.ascender    = bdffont->font_ascent << 6;
-    size->metrics.descender   = -bdffont->font_descent << 6;
-    size->metrics.max_advance = bdffont->bbx.width << 6;
+    size->metrics.ascender    = bdffont->font_ascent * 64;
+    size->metrics.descender   = -bdffont->font_descent * 64;
+    size->metrics.max_advance = bdffont->bbx.width * 64;
 
     return FT_Err_Ok;
   }
@@ -668,11 +680,19 @@ THE SOFTWARE.
     FT_UNUSED( load_flags );
 
 
-    if ( !face || glyph_index >= (FT_UInt)face->num_glyphs )
+    if ( !face )
+    {
+      error = FT_THROW( Invalid_Face_Handle );
+      goto Exit;
+    }
+
+    if ( glyph_index >= (FT_UInt)face->num_glyphs )
     {
       error = FT_THROW( Invalid_Argument );
       goto Exit;
     }
+
+    FT_TRACE1(( "BDF_Glyph_Load: glyph index %d\n", glyph_index ));
 
     /* index 0 is the undefined glyph */
     if ( glyph_index == 0 )
@@ -715,18 +735,18 @@ THE SOFTWARE.
     slot->bitmap_left = glyph.bbx.x_offset;
     slot->bitmap_top  = glyph.bbx.ascent;
 
-    slot->metrics.horiAdvance  = glyph.dwidth << 6;
-    slot->metrics.horiBearingX = glyph.bbx.x_offset << 6;
-    slot->metrics.horiBearingY = glyph.bbx.ascent << 6;
-    slot->metrics.width        = bitmap->width << 6;
-    slot->metrics.height       = bitmap->rows << 6;
+    slot->metrics.horiAdvance  = (FT_Pos)( glyph.dwidth * 64 );
+    slot->metrics.horiBearingX = (FT_Pos)( glyph.bbx.x_offset * 64 );
+    slot->metrics.horiBearingY = (FT_Pos)( glyph.bbx.ascent * 64 );
+    slot->metrics.width        = (FT_Pos)( bitmap->width * 64 );
+    slot->metrics.height       = (FT_Pos)( bitmap->rows * 64 );
 
     /*
      * XXX DWIDTH1 and VVECTOR should be parsed and
      * used here, provided such fonts do exist.
      */
     ft_synthesize_vertical_metrics( &slot->metrics,
-                                    bdf->bdffont->bbx.height << 6 );
+                                    bdf->bdffont->bbx.height * 64 );
 
   Exit:
     return error;
@@ -804,8 +824,8 @@ THE SOFTWARE.
 
   static const FT_Service_BDFRec  bdf_service_bdf =
   {
-    (FT_BDF_GetCharsetIdFunc)bdf_get_charset_id,
-    (FT_BDF_GetPropertyFunc) bdf_get_bdf_property
+    (FT_BDF_GetCharsetIdFunc)bdf_get_charset_id,       /* get_charset_id */
+    (FT_BDF_GetPropertyFunc) bdf_get_bdf_property      /* get_property   */
   };
 
 
@@ -817,8 +837,8 @@ THE SOFTWARE.
 
   static const FT_ServiceDescRec  bdf_services[] =
   {
-    { FT_SERVICE_ID_BDF,       &bdf_service_bdf },
-    { FT_SERVICE_ID_XF86_NAME, FT_XF86_FORMAT_BDF },
+    { FT_SERVICE_ID_BDF,         &bdf_service_bdf },
+    { FT_SERVICE_ID_FONT_FORMAT, FT_FONT_FORMAT_BDF },
     { NULL, NULL }
   };
 
@@ -846,32 +866,32 @@ THE SOFTWARE.
       0x10000L,
       0x20000L,
 
-      0,
+      0,    /* module-specific interface */
 
-      0,                        /* FT_Module_Constructor */
-      0,                        /* FT_Module_Destructor  */
-      bdf_driver_requester
+      0,                        /* FT_Module_Constructor  module_init   */
+      0,                        /* FT_Module_Destructor   module_done   */
+      bdf_driver_requester      /* FT_Module_Requester    get_interface */
     },
 
     sizeof ( BDF_FaceRec ),
     sizeof ( FT_SizeRec ),
     sizeof ( FT_GlyphSlotRec ),
 
-    BDF_Face_Init,
-    BDF_Face_Done,
-    0,                          /* FT_Size_InitFunc */
-    0,                          /* FT_Size_DoneFunc */
-    0,                          /* FT_Slot_InitFunc */
-    0,                          /* FT_Slot_DoneFunc */
+    BDF_Face_Init,              /* FT_Face_InitFunc  init_face */
+    BDF_Face_Done,              /* FT_Face_DoneFunc  done_face */
+    0,                          /* FT_Size_InitFunc  init_size */
+    0,                          /* FT_Size_DoneFunc  done_size */
+    0,                          /* FT_Slot_InitFunc  init_slot */
+    0,                          /* FT_Slot_DoneFunc  done_slot */
 
-    BDF_Glyph_Load,
+    BDF_Glyph_Load,             /* FT_Slot_LoadFunc  load_glyph */
 
-    0,                          /* FT_Face_GetKerningFunc  */
-    0,                          /* FT_Face_AttachFunc      */
-    0,                          /* FT_Face_GetAdvancesFunc */
+    0,                          /* FT_Face_GetKerningFunc   get_kerning  */
+    0,                          /* FT_Face_AttachFunc       attach_file  */
+    0,                          /* FT_Face_GetAdvancesFunc  get_advances */
 
-    BDF_Size_Request,
-    BDF_Size_Select
+    BDF_Size_Request,           /* FT_Size_RequestFunc  request_size */
+    BDF_Size_Select             /* FT_Size_SelectFunc   select_size  */
   };
 
 

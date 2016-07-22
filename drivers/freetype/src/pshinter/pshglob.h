@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    PostScript hinter global hinting management.                         */
 /*                                                                         */
-/*  Copyright 2001, 2002, 2003 by                                          */
+/*  Copyright 2001-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __PSHGLOB_H__
-#define __PSHGLOB_H__
+#ifndef PSHGLOB_H_
+#define PSHGLOB_H_
 
 
 #include FT_FREETYPE_H
@@ -167,7 +167,7 @@ FT_BEGIN_HEADER
                             FT_Int         org_width );
 #endif
 
-  FT_LOCAL( FT_Error )
+  FT_LOCAL( void )
   psh_globals_set_scale( PSH_Globals  globals,
                          FT_Fixed     x_scale,
                          FT_Fixed     y_scale,
@@ -190,7 +190,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __PSHGLOB_H__ */
+#endif /* PSHGLOB_H_ */
 
 
 /* END */

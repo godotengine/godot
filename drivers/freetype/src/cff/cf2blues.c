@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Adobe's code for handling Blue Zones (body).                         */
 /*                                                                         */
-/*  Copyright 2009-2013 Adobe Systems Incorporated.                        */
+/*  Copyright 2009-2014 Adobe Systems Incorporated.                        */
 /*                                                                         */
 /*  This software, and all works of authorship, whether in source or       */
 /*  object code form as indicated by the copyright notice(s) included      */
@@ -86,11 +86,13 @@
     size_t     i;
     CF2_Fixed  emBoxBottom, emBoxTop;
 
+#if 0
     CF2_Int  unitsPerEm = font->unitsPerEm;
 
 
     if ( unitsPerEm == 0 )
       unitsPerEm = 1000;
+#endif
 
     FT_ZERO( blues );
     blues->scale = font->innerTransform.d;
@@ -406,11 +408,10 @@
       /* Note: constant changed from 0.5 to 0.6 to avoid a problem with */
       /*       10ppem Arial                                             */
 
-      blues->boost = FT_MulFix(
-                       cf2_floatToFixed( .6 ),
-                       ( cf2_intToFixed( 1 ) -
-                         FT_DivFix( blues->scale,
-                                    blues->blueScale ) ) );
+      blues->boost = cf2_floatToFixed( .6 ) -
+                       FT_MulDiv( cf2_floatToFixed ( .6 ),
+                                  blues->scale,
+                                  blues->blueScale );
       if ( blues->boost > 0x7FFF )
       {
         /* boost must remain less than 0.5, or baseline could go negative */

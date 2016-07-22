@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType Multiple Masters and GX var services (specification).   */
 /*                                                                         */
-/*  Copyright 2003, 2004, 2009, 2012 by                                    */
+/*  Copyright 2003-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __SVMM_H__
-#define __SVMM_H__
+#ifndef SVMM_H_
+#define SVMM_H_
 
 #include FT_INTERNAL_SERVICE_H
 
@@ -107,7 +107,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __SVMM_H__ */
+#endif /* SVMM_H_ */
 
 
 /* END */

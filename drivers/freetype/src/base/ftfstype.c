@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType utility file to access FSType data (body).                  */
 /*                                                                         */
-/*  Copyright 2008, 2009 by                                                */
+/*  Copyright 2008-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -51,7 +51,7 @@
 
     /* look at FSType before fsType for Type42 */
 
-    if ( ( os2 = (TT_OS2*)FT_Get_Sfnt_Table( face, ft_sfnt_os2 ) ) != NULL &&
+    if ( ( os2 = (TT_OS2*)FT_Get_Sfnt_Table( face, FT_SFNT_OS2 ) ) != NULL &&
          os2->version != 0xFFFFU                                           )
       return os2->fsType;
 

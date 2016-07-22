@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType API for accessing Windows FNT specific info (body).         */
 /*                                                                         */
-/*  Copyright 2003, 2004 by                                                */
+/*  Copyright 2003-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -17,6 +17,7 @@
 
 
 #include <ft2build.h>
+#include FT_INTERNAL_DEBUG_H
 #include FT_WINFONTS_H
 #include FT_INTERNAL_OBJECTS_H
 #include FT_SERVICE_WINFNT_H
@@ -32,17 +33,18 @@
     FT_Error           error;
 
 
-    error = FT_ERR( Invalid_Argument );
+    if ( !face )
+      return FT_THROW( Invalid_Face_Handle );
 
-    if ( face != NULL )
-    {
-      FT_FACE_LOOKUP_SERVICE( face, service, WINFNT );
+    if ( !header )
+      return FT_THROW( Invalid_Argument );
 
-      if ( service != NULL )
-      {
-        error = service->get_header( face, header );
-      }
-    }
+    FT_FACE_LOOKUP_SERVICE( face, service, WINFNT );
+
+    if ( service )
+      error = service->get_header( face, header );
+    else
+      error = FT_THROW( Invalid_Argument );
 
     return error;
   }

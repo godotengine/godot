@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType position independent code services (body).              */
 /*                                                                         */
-/*  Copyright 2009 by                                                      */
+/*  Copyright 2009-2016 by                                                 */
 /*  Oran Agra and Mickey Gabel.                                            */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -29,7 +29,7 @@
   ft_pic_container_init( FT_Library  library )
   {
     FT_PIC_Container*  pic_container = &library->pic_container;
-    FT_Error           error         = FT_Err_Ok;
+    FT_Error           error;
 
 
     FT_MEM_SET( pic_container, 0, sizeof ( *pic_container ) );

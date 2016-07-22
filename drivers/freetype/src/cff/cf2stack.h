@@ -36,8 +36,8 @@
 /***************************************************************************/
 
 
-#ifndef __CF2STACK_H__
-#define __CF2STACK_H__
+#ifndef CF2STACK_H_
+#define CF2STACK_H_
 
 
 FT_BEGIN_HEADER
@@ -94,13 +94,18 @@ FT_BEGIN_HEADER
                      CF2_UInt   idx );
 
   FT_LOCAL( void )
+  cf2_stack_roll( CF2_Stack  stack,
+                  CF2_Int    count,
+                  CF2_Int    idx );
+
+  FT_LOCAL( void )
   cf2_stack_clear( CF2_Stack  stack );
 
 
 FT_END_HEADER
 
 
-#endif /* __CF2STACK_H__ */
+#endif /* CF2STACK_H_ */
 
 
 /* END */

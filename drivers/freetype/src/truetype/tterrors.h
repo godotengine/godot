@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType error codes (specification only).                           */
 /*                                                                         */
-/*  Copyright 2001, 2012 by                                                */
+/*  Copyright 2001-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -23,12 +23,12 @@
   /*                                                                       */
   /*************************************************************************/
 
-#ifndef __TTERRORS_H__
-#define __TTERRORS_H__
+#ifndef TTERRORS_H_
+#define TTERRORS_H_
 
 #include FT_MODULE_ERRORS_H
 
-#undef __FTERRORS_H__
+#undef FTERRORS_H_
 
 #undef  FT_ERR_PREFIX
 #define FT_ERR_PREFIX  TT_Err_
@@ -36,6 +36,7 @@
 
 #include FT_ERRORS_H
 
-#endif /* __TTERRORS_H__ */
+#endif /* TTERRORS_H_ */
+
 
 /* END */

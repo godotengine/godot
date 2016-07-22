@@ -36,8 +36,8 @@
 /***************************************************************************/
 
 
-#ifndef __CF2ARRST_H__
-#define __CF2ARRST_H__
+#ifndef CF2ARRST_H_
+#define CF2ARRST_H_
 
 
 #include "cf2error.h"
@@ -94,7 +94,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __CF2ARRST_H__ */
+#endif /* CF2ARRST_H_ */
 
 
 /* END */

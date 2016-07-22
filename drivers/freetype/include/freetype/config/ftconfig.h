@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    ANSI-specific configuration file (specification only).               */
 /*                                                                         */
-/*  Copyright 1996-2004, 2006-2008, 2010-2011, 2013 by                     */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -27,16 +27,16 @@
   /* Note however that if some specific modifications are needed, we       */
   /* advise you to place a modified copy in your build directory.          */
   /*                                                                       */
-  /* The build directory is usually `freetype/builds/<system>', and        */
-  /* contains system-specific files that are always included first when    */
-  /* building the library.                                                 */
+  /* The build directory is usually `builds/<system>', and contains        */
+  /* system-specific files that are always included first when building    */
+  /* the library.                                                          */
   /*                                                                       */
-  /* This ANSI version should stay in `include/freetype/config'.           */
+  /* This ANSI version should stay in `include/config/'.                   */
   /*                                                                       */
   /*************************************************************************/
 
-#ifndef __FTCONFIG_H__
-#define __FTCONFIG_H__
+#ifndef FTCONFIG_H_
+#define FTCONFIG_H_
 
 #include <ft2build.h>
 #include FT_CONFIG_OPTIONS_H
@@ -53,7 +53,7 @@ FT_BEGIN_HEADER
   /* These macros can be toggled to suit a specific system.  The current   */
   /* ones are defaults used to compile FreeType in an ANSI C environment   */
   /* (16bit compilers are also supported).  Copy this file to your own     */
-  /* `freetype/builds/<system>' directory, and edit it to port the engine. */
+  /* `builds/<system>' directory, and edit it to port the engine.          */
   /*                                                                       */
   /*************************************************************************/
 
@@ -266,6 +266,21 @@ FT_BEGIN_HEADER
 #define FT_INT64   long
 #define FT_UINT64  unsigned long
 
+  /*************************************************************************/
+  /*                                                                       */
+  /* A 64-bit data type may create compilation problems if you compile     */
+  /* in strict ANSI mode.  To avoid them, we disable other 64-bit data     */
+  /* types if __STDC__ is defined.  You can however ignore this rule       */
+  /* by defining the FT_CONFIG_OPTION_FORCE_INT64 configuration macro.     */
+  /*                                                                       */
+#elif !defined( __STDC__ ) || defined( FT_CONFIG_OPTION_FORCE_INT64 )
+
+#if defined( __STDC_VERSION__ ) && __STDC_VERSION__ >= 199901L
+
+#define FT_LONG64
+#define FT_INT64   long long int
+#define FT_UINT64  unsigned long long int
+
 #elif defined( _MSC_VER ) && _MSC_VER >= 900  /* Visual C++ (and Intel C++) */
 
   /* this compiler provides the __int64 type */
@@ -300,27 +315,9 @@ FT_BEGIN_HEADER
 #define FT_INT64   long long int
 #define FT_UINT64  unsigned long long int
 
+#endif /* __STDC_VERSION__ >= 199901L */
+
 #endif /* FT_SIZEOF_LONG == (64 / FT_CHAR_BIT) */
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* A 64-bit data type will create compilation problems if you compile    */
-  /* in strict ANSI mode.  To avoid them, we disable its use if __STDC__   */
-  /* is defined.  You can however ignore this rule by defining the         */
-  /* FT_CONFIG_OPTION_FORCE_INT64 configuration macro.                     */
-  /*                                                                       */
-#if defined( FT_LONG64 ) && !defined( FT_CONFIG_OPTION_FORCE_INT64 )
-
-#ifdef __STDC__
-
-  /* undefine the 64-bit macros in strict ANSI compilation mode */
-#undef FT_LONG64
-#undef FT_INT64
-
-#endif /* __STDC__ */
-
-#endif /* FT_LONG64 && !FT_CONFIG_OPTION_FORCE_INT64 */
 
 #ifdef FT_LONG64
   typedef FT_INT64   FT_Int64;
@@ -328,150 +325,25 @@ FT_BEGIN_HEADER
 #endif
 
 
+  /*************************************************************************/
+  /*                                                                       */
+  /* miscellaneous                                                         */
+  /*                                                                       */
+  /*************************************************************************/
+
+
 #define FT_BEGIN_STMNT  do {
 #define FT_END_STMNT    } while ( 0 )
 #define FT_DUMMY_STMNT  FT_BEGIN_STMNT FT_END_STMNT
 
 
-#ifndef  FT_CONFIG_OPTION_NO_ASSEMBLER
-  /* Provide assembler fragments for performance-critical functions. */
-  /* These must be defined `static __inline__' with GCC.             */
-
-#if defined( __CC_ARM ) || defined( __ARMCC__ )  /* RVCT */
-#define FT_MULFIX_ASSEMBLER  FT_MulFix_arm
-
-  /* documentation is in freetype.h */
-
-  static __inline FT_Int32
-  FT_MulFix_arm( FT_Int32  a,
-                 FT_Int32  b )
-  {
-    register FT_Int32  t, t2;
-
-
-    __asm
-    {
-      smull t2, t,  b,  a           /* (lo=t2,hi=t) = a*b */
-      mov   a,  t,  asr #31         /* a   = (hi >> 31) */
-      add   a,  a,  #0x8000         /* a  += 0x8000 */
-      adds  t2, t2, a               /* t2 += a */
-      adc   t,  t,  #0              /* t  += carry */
-      mov   a,  t2, lsr #16         /* a   = t2 >> 16 */
-      orr   a,  a,  t,  lsl #16     /* a  |= t << 16 */
-    }
-    return a;
-  }
-
-#endif /* __CC_ARM || __ARMCC__ */
-
-
-#ifdef __GNUC__
-
-#if defined( __arm__ ) && !defined( __thumb__ )    && \
-    !( defined( __CC_ARM ) || defined( __ARMCC__ ) )
-#define FT_MULFIX_ASSEMBLER  FT_MulFix_arm
-
-  /* documentation is in freetype.h */
-
-  static __inline__ FT_Int32
-  FT_MulFix_arm( FT_Int32  a,
-                 FT_Int32  b )
-  {
-    register FT_Int32  t, t2;
-
-
-    __asm__ __volatile__ (
-      "smull  %1, %2, %4, %3\n\t"       /* (lo=%1,hi=%2) = a*b */
-      "mov    %0, %2, asr #31\n\t"      /* %0  = (hi >> 31) */
-      "add    %0, %0, #0x8000\n\t"      /* %0 += 0x8000 */
-      "adds   %1, %1, %0\n\t"           /* %1 += %0 */
-      "adc    %2, %2, #0\n\t"           /* %2 += carry */
-      "mov    %0, %1, lsr #16\n\t"      /* %0  = %1 >> 16 */
-      "orr    %0, %0, %2, lsl #16\n\t"  /* %0 |= %2 << 16 */
-      : "=r"(a), "=&r"(t2), "=&r"(t)
-      : "r"(a), "r"(b)
-      : "cc" );
-    return a;
-  }
-
-#endif /* __arm__ && !__thumb__ && !( __CC_ARM || __ARMCC__ ) */
-
-#if defined( __i386__ )
-#define FT_MULFIX_ASSEMBLER  FT_MulFix_i386
-
-  /* documentation is in freetype.h */
-
-  static __inline__ FT_Int32
-  FT_MulFix_i386( FT_Int32  a,
-                  FT_Int32  b )
-  {
-    register FT_Int32  result;
-
-
-    __asm__ __volatile__ (
-      "imul  %%edx\n"
-      "movl  %%edx, %%ecx\n"
-      "sarl  $31, %%ecx\n"
-      "addl  $0x8000, %%ecx\n"
-      "addl  %%ecx, %%eax\n"
-      "adcl  $0, %%edx\n"
-      "shrl  $16, %%eax\n"
-      "shll  $16, %%edx\n"
-      "addl  %%edx, %%eax\n"
-      : "=a"(result), "=d"(b)
-      : "a"(a), "d"(b)
-      : "%ecx", "cc" );
-    return result;
-  }
-
-#endif /* i386 */
-
-#endif /* __GNUC__ */
-
-
-#ifdef _MSC_VER /* Visual C++ */
-
-#ifdef _M_IX86
-
-#define FT_MULFIX_ASSEMBLER  FT_MulFix_i386
-
-  /* documentation is in freetype.h */
-
-  static __inline FT_Int32
-  FT_MulFix_i386( FT_Int32  a,
-                  FT_Int32  b )
-  {
-    register FT_Int32  result;
-
-    __asm
-    {
-      mov eax, a
-      mov edx, b
-      imul edx
-      mov ecx, edx
-      sar ecx, 31
-      add ecx, 8000h
-      add eax, ecx
-      adc edx, 0
-      shr eax, 16
-      shl edx, 16
-      add eax, edx
-      mov result, eax
-    }
-    return result;
-  }
-
-#endif /* _M_IX86 */
-
-#endif /* _MSC_VER */
-
-#endif /* !FT_CONFIG_OPTION_NO_ASSEMBLER */
-
-
-#ifdef FT_CONFIG_OPTION_INLINE_MULFIX
-#ifdef FT_MULFIX_ASSEMBLER
-#define FT_MULFIX_INLINED  FT_MULFIX_ASSEMBLER
-#endif
+  /* typeof condition taken from gnulib's `intprops.h' header file */
+#if ( __GNUC__ >= 2                         || \
+      defined( __IBM__TYPEOF__ )            || \
+      ( __SUNPRO_C >= 0x5110 && !__STDC__ ) )
+#define FT_TYPEOF( type )  (__typeof__ (type))
+#else
+#define FT_TYPEOF( type )  /* empty */
 #endif
 
 
@@ -491,6 +363,9 @@ FT_BEGIN_HEADER
 #endif
 
 #endif /* FT_MAKE_OPTION_SINGLE_OBJECT */
+
+#define FT_LOCAL_ARRAY( x )      extern const  x
+#define FT_LOCAL_ARRAY_DEF( x )  const  x
 
 
 #ifndef FT_BASE
@@ -592,7 +467,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __FTCONFIG_H__ */
+#endif /* FTCONFIG_H_ */
 
 
 /* END */

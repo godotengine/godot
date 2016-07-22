@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 error codes (specification only).                             */
 /*                                                                         */
-/*  Copyright 2001, 2012 by                                                */
+/*  Copyright 2001-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -22,12 +22,12 @@
   /*                                                                       */
   /*************************************************************************/
 
-#ifndef __T1ERRORS_H__
-#define __T1ERRORS_H__
+#ifndef T1ERRORS_H_
+#define T1ERRORS_H_
 
 #include FT_MODULE_ERRORS_H
 
-#undef __FTERRORS_H__
+#undef FTERRORS_H_
 
 #undef  FT_ERR_PREFIX
 #define FT_ERR_PREFIX  T1_Err_
@@ -35,7 +35,7 @@
 
 #include FT_ERRORS_H
 
-#endif /* __T1ERRORS_H__ */
+#endif /* T1ERRORS_H_ */
 
 
 /* END */

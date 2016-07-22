@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 42 error codes (specification only).                            */
 /*                                                                         */
-/*  Copyright 2002, 2003, 2012 by                                          */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -22,12 +22,12 @@
   /*                                                                       */
   /*************************************************************************/
 
-#ifndef __T42ERROR_H__
-#define __T42ERROR_H__
+#ifndef T42ERROR_H_
+#define T42ERROR_H_
 
 #include FT_MODULE_ERRORS_H
 
-#undef __FTERRORS_H__
+#undef FTERRORS_H_
 
 #undef  FT_ERR_PREFIX
 #define FT_ERR_PREFIX  T42_Err_
@@ -35,7 +35,7 @@
 
 #include FT_ERRORS_H
 
-#endif /* __T42ERROR_H__ */
+#endif /* T42ERROR_H_ */
 
 
 /* END */

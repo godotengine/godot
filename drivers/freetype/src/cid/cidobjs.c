@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    CID objects manager (body).                                          */
 /*                                                                         */
-/*  Copyright 1996-2006, 2008, 2010-2011, 2013 by                          */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -49,7 +49,7 @@
   FT_LOCAL_DEF( void )
   cid_slot_done( FT_GlyphSlot  slot )
   {
-    slot->internal->glyph_hints = 0;
+    slot->internal->glyph_hints = NULL;
   }
 
 
@@ -122,7 +122,7 @@
       if ( funcs )
         funcs->destroy( (PSH_Globals)cidsize->internal );
 
-      cidsize->internal = 0;
+      cidsize->internal = NULL;
     }
   }
 
@@ -243,8 +243,8 @@
     FT_FREE( cid->registry );
     FT_FREE( cid->ordering );
 
-    cidface->family_name = 0;
-    cidface->style_name  = 0;
+    cidface->family_name = NULL;
+    cidface->style_name  = NULL;
 
     FT_FREE( face->binary_data );
     FT_FREE( face->cid_stream );
@@ -334,7 +334,7 @@
 
     /* check the face index */
     /* XXX: handle CID fonts with more than a single face */
-    if ( face_index != 0 )
+    if ( ( face_index & 0xFFFF ) != 0 )
     {
       FT_ERROR(( "cid_face_init: invalid face index\n" ));
       error = FT_THROW( Invalid_Argument );
@@ -351,13 +351,14 @@
       PS_FontInfo   info = &cid->font_info;
 
 
-      cidface->num_glyphs   = cid->cid_count;
+      cidface->num_glyphs   = (FT_Long)cid->cid_count;
       cidface->num_charmaps = 0;
 
-      cidface->face_index = face_index;
-      cidface->face_flags = FT_FACE_FLAG_SCALABLE   | /* scalable outlines */
-                            FT_FACE_FLAG_HORIZONTAL | /* horizontal data   */
-                            FT_FACE_FLAG_HINTER;      /* has native hinter */
+      cidface->face_index = face_index & 0xFFFF;
+
+      cidface->face_flags |= FT_FACE_FLAG_SCALABLE   | /* scalable outlines */
+                             FT_FACE_FLAG_HORIZONTAL | /* horizontal data   */
+                             FT_FACE_FLAG_HINTER;      /* has native hinter */
 
       if ( info->is_fixed_pitch )
         cidface->face_flags |= FT_FACE_FLAG_FIXED_WIDTH;
@@ -420,7 +421,7 @@
 
       /* no embedded bitmap support */
       cidface->num_fixed_sizes = 0;
-      cidface->available_sizes = 0;
+      cidface->available_sizes = NULL;
 
       cidface->bbox.xMin =   cid->font_bbox.xMin            >> 16;
       cidface->bbox.yMin =   cid->font_bbox.yMin            >> 16;

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 parser (body).                                                */
 /*                                                                         */
-/*  Copyright 1996-2005, 2008, 2009, 2012, 2013 by                         */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -143,13 +143,13 @@
     FT_ULong   size;
 
 
-    psaux->ps_parser_funcs->init( &parser->root, 0, 0, memory );
+    psaux->ps_parser_funcs->init( &parser->root, NULL, NULL, memory );
 
     parser->stream       = stream;
     parser->base_len     = 0;
-    parser->base_dict    = 0;
+    parser->base_dict    = NULL;
     parser->private_len  = 0;
-    parser->private_dict = 0;
+    parser->private_dict = NULL;
     parser->in_pfb       = 0;
     parser->in_memory    = 0;
     parser->single_block = 0;
@@ -273,7 +273,7 @@
       /* made of several segments.  We thus first read the number of   */
       /* segments to compute the total size of the private dictionary  */
       /* then re-read them into memory.                                */
-      FT_Long    start_pos = FT_STREAM_POS();
+      FT_ULong   start_pos = FT_STREAM_POS();
       FT_UShort  tag;
 
 
@@ -332,17 +332,18 @@
       /* dictionary block in the heap.                                 */
 
       /* first of all, look at the `eexec' keyword */
-      FT_Byte*  cur   = parser->base_dict;
-      FT_Byte*  limit = cur + parser->base_len;
-      FT_Byte   c;
+      FT_Byte*    cur   = parser->base_dict;
+      FT_Byte*    limit = cur + parser->base_len;
+      FT_Pointer  pos_lf;
+      FT_Bool     test_cr;
 
 
     Again:
       for (;;)
       {
-        c = cur[0];
-        if ( c == 'e' && cur + 9 < limit )  /* 9 = 5 letters for `eexec' + */
-                                            /* whitespace + 4 chars        */
+        if ( cur[0] == 'e'   &&
+             cur + 9 < limit )      /* 9 = 5 letters for `eexec' + */
+                                    /* whitespace + 4 chars        */
         {
           if ( cur[1] == 'e' &&
                cur[2] == 'x' &&
@@ -372,8 +373,15 @@
 
       while ( cur < limit )
       {
-        if ( *cur == 'e' && ft_strncmp( (char*)cur, "eexec", 5 ) == 0 )
-          goto Found;
+        if ( cur[0] == 'e'   &&
+             cur + 5 < limit )
+        {
+          if ( cur[1] == 'e' &&
+               cur[2] == 'x' &&
+               cur[3] == 'e' &&
+               cur[4] == 'c' )
+            goto Found;
+        }
 
         T1_Skip_PS_Token( parser );
         if ( parser->root.error )
@@ -387,6 +395,15 @@
 
       cur   = limit;
       limit = parser->base_dict + parser->base_len;
+
+      if ( cur >= limit )
+      {
+        FT_ERROR(( "T1_Get_Private_Dict:"
+                   " premature end in private dictionary\n" ));
+        error = FT_THROW( Invalid_File_Format );
+        goto Exit;
+      }
+
       goto Again;
 
       /* now determine where to write the _encrypted_ binary private  */
@@ -400,15 +417,26 @@
       cur   = parser->root.cursor;
       limit = parser->root.limit;
 
-      /* according to the Type1 spec, the first cipher byte must not be  */
+      /* According to the Type 1 spec, the first cipher byte must not be */
       /* an ASCII whitespace character code (blank, tab, carriage return */
       /* or line feed).  We have seen Type 1 fonts with two line feed    */
       /* characters...  So skip now all whitespace character codes.      */
-      while ( cur < limit       &&
-              ( *cur == ' '  ||
-                *cur == '\t' ||
-                *cur == '\r' ||
-                *cur == '\n' ) )
+      /*                                                                 */
+      /* On the other hand, Adobe's Type 1 parser handles fonts just     */
+      /* fine that are violating this limitation, so we add a heuristic  */
+      /* test to stop at \r only if it is not used for EOL.              */
+
+      pos_lf  = ft_memchr( cur, '\n', (size_t)( limit - cur ) );
+      test_cr = FT_BOOL( !pos_lf                                       ||
+                         pos_lf > ft_memchr( cur,
+                                             '\r',
+                                             (size_t)( limit - cur ) ) );
+
+      while ( cur < limit                    &&
+              ( *cur == ' '                ||
+                *cur == '\t'               ||
+                (test_cr && *cur == '\r' ) ||
+                *cur == '\n'               ) )
         ++cur;
       if ( cur >= limit )
       {
@@ -418,7 +446,7 @@
         goto Exit;
       }
 
-      size = (FT_ULong)( parser->base_len - ( cur - parser->base_dict ) );
+      size = parser->base_len - (FT_ULong)( cur - parser->base_dict );
 
       if ( parser->in_memory )
       {
@@ -432,7 +460,7 @@
         parser->single_block = 1;
         parser->private_dict = parser->base_dict;
         parser->private_len  = size;
-        parser->base_dict    = 0;
+        parser->base_dict    = NULL;
         parser->base_len     = 0;
       }
 
@@ -448,7 +476,7 @@
            ft_isxdigit( cur[2] ) && ft_isxdigit( cur[3] ) )
       {
         /* ASCII hexadecimal encoding */
-        FT_Long  len;
+        FT_ULong  len;
 
 
         parser->root.cursor = cur;

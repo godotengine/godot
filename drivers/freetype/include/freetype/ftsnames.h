@@ -7,7 +7,7 @@
 /*                                                                         */
 /*    This is _not_ used to retrieve glyph names!                          */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2003, 2006, 2009, 2010 by                   */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -19,8 +19,8 @@
 /***************************************************************************/
 
 
-#ifndef __FT_SFNT_NAMES_H__
-#define __FT_SFNT_NAMES_H__
+#ifndef FTSNAMES_H_
+#define FTSNAMES_H_
 
 
 #include <ft2build.h>
@@ -169,7 +169,7 @@ FT_BEGIN_HEADER
    *   A constant used as the tag of @FT_Parameter structures to make
    *   FT_Open_Face() ignore preferred family subfamily names in `name'
    *   table since OpenType version 1.4.  For backwards compatibility with
-   *   legacy systems which has 4-face-per-family restriction.
+   *   legacy systems that have a 4-face-per-family restriction.
    *
    */
 #define FT_PARAM_TAG_IGNORE_PREFERRED_FAMILY  FT_MAKE_TAG( 'i', 'g', 'p', 'f' )
@@ -184,7 +184,7 @@ FT_BEGIN_HEADER
    *   A constant used as the tag of @FT_Parameter structures to make
    *   FT_Open_Face() ignore preferred subfamily names in `name' table since
    *   OpenType version 1.4.  For backwards compatibility with legacy
-   *   systems which has 4-face-per-family restriction.
+   *   systems that have a 4-face-per-family restriction.
    *
    */
 #define FT_PARAM_TAG_IGNORE_PREFERRED_SUBFAMILY  FT_MAKE_TAG( 'i', 'g', 'p', 's' )
@@ -194,7 +194,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FT_SFNT_NAMES_H__ */
+#endif /* FTSNAMES_H_ */
 
 
 /* END */

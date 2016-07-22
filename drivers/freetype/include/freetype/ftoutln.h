@@ -5,7 +5,7 @@
 /*    Support for the FT_Outline type used to store glyph shapes of        */
 /*    most scalable font formats (specification).                          */
 /*                                                                         */
-/*  Copyright 1996-2003, 2005-2012 by                                      */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -17,8 +17,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTOUTLN_H__
-#define __FTOUTLN_H__
+#ifndef FTOUTLN_H_
+#define FTOUTLN_H_
 
 
 #include <ft2build.h>
@@ -52,7 +52,6 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Order>                                                               */
   /*    FT_Outline                                                         */
-  /*    FT_OUTLINE_FLAGS                                                   */
   /*    FT_Outline_New                                                     */
   /*    FT_Outline_Done                                                    */
   /*    FT_Outline_Copy                                                    */
@@ -68,13 +67,17 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    FT_Outline_Get_Bitmap                                              */
   /*    FT_Outline_Render                                                  */
-  /*                                                                       */
   /*    FT_Outline_Decompose                                               */
   /*    FT_Outline_Funcs                                                   */
-  /*    FT_Outline_MoveTo_Func                                             */
-  /*    FT_Outline_LineTo_Func                                             */
-  /*    FT_Outline_ConicTo_Func                                            */
-  /*    FT_Outline_CubicTo_Func                                            */
+  /*    FT_Outline_MoveToFunc                                              */
+  /*    FT_Outline_LineToFunc                                              */
+  /*    FT_Outline_ConicToFunc                                             */
+  /*    FT_Outline_CubicToFunc                                             */
+  /*                                                                       */
+  /*    FT_Orientation                                                     */
+  /*    FT_Outline_Get_Orientation                                         */
+  /*                                                                       */
+  /*    FT_OUTLINE_XXX                                                     */
   /*                                                                       */
   /*************************************************************************/
 
@@ -97,13 +100,20 @@ FT_BEGIN_HEADER
   /*                      operations.                                      */
   /*                                                                       */
   /* <InOut>                                                               */
-  /*    user           :: A typeless pointer which is passed to each       */
+  /*    user           :: A typeless pointer that is passed to each        */
   /*                      emitter during the decomposition.  It can be     */
   /*                      used to store the state during the               */
   /*                      decomposition.                                   */
   /*                                                                       */
   /* <Return>                                                              */
   /*    FreeType error code.  0~means success.                             */
+  /*                                                                       */
+  /* <Note>                                                                */
+  /*    A contour that contains a single point only is represented by a    */
+  /*    `move to' operation followed by `line to' to the same point.  In   */
+  /*    most cases, it is best to filter this out before using the         */
+  /*    outline for stroking purposes (otherwise it would result in a      */
+  /*    visible dot when round caps are used).                             */
   /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Outline_Decompose( FT_Outline*              outline,
@@ -217,12 +227,12 @@ FT_BEGIN_HEADER
   /*    the outline's points, including Bézier control points.  Though it  */
   /*    coincides with the exact bounding box for most glyphs, it can be   */
   /*    slightly larger in some situations (like when rotating an outline  */
-  /*    which contains Bézier outside arcs).                               */
+  /*    that contains Bézier outside arcs).                                */
   /*                                                                       */
   /*    Computing the control box is very fast, while getting the bounding */
   /*    box can take much more time as it needs to walk over all segments  */
   /*    and arcs in the outline.  To get the latter, you can use the       */
-  /*    `ftbbox' component which is dedicated to this single task.         */
+  /*    `ftbbox' component, which is dedicated to this single task.        */
   /*                                                                       */
   /* <Input>                                                               */
   /*    outline :: A pointer to the source outline descriptor.             */
@@ -344,9 +354,12 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    {                                                                  */
   /*      FT_Load_Glyph( face, index, FT_LOAD_DEFAULT );                   */
-  /*      if ( face->slot->format == FT_GLYPH_FORMAT_OUTLINE )             */
-  /*        FT_Outline_Embolden( &face->slot->outline, strength );         */
+  /*      if ( face->glyph->format == FT_GLYPH_FORMAT_OUTLINE )            */
+  /*        FT_Outline_Embolden( &face->glyph->outline, strength );        */
   /*    }                                                                  */
+  /*                                                                       */
+  /*    To get meaningful results, font scaling values must be set with    */
+  /*    functions like @FT_Set_Char_Size before calling FT_Render_Glyph.   */
   /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Outline_Embolden( FT_Outline*  outline,
@@ -525,9 +538,11 @@ FT_BEGIN_HEADER
   *
   * @description:
   *   This function analyzes a glyph outline and tries to compute its
-  *   fill orientation (see @FT_Orientation).  This is done by computing
-  *   the direction of each global horizontal and/or vertical extrema
-  *   within the outline.
+  *   fill orientation (see @FT_Orientation).  This is done by integrating
+  *   the total area covered by the outline. The positive integral
+  *   corresponds to the clockwise orientation and @FT_ORIENTATION_POSTSCRIPT
+  *   is returned. The negative integral corresponds to the counter-clockwise
+  *   orientation and @FT_ORIENTATION_TRUETYPE is returned.
   *
   *   Note that this will return @FT_ORIENTATION_TRUETYPE for empty
   *   outlines.
@@ -543,13 +558,12 @@ FT_BEGIN_HEADER
   FT_EXPORT( FT_Orientation )
   FT_Outline_Get_Orientation( FT_Outline*  outline );
 
-
   /* */
 
 
 FT_END_HEADER
 
-#endif /* __FTOUTLN_H__ */
+#endif /* FTOUTLN_H_ */
 
 
 /* END */

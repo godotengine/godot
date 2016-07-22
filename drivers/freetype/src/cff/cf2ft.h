@@ -36,8 +36,8 @@
 /***************************************************************************/
 
 
-#ifndef __CF2FT_H__
-#define __CF2FT_H__
+#ifndef CF2FT_H_
+#define CF2FT_H_
 
 
 #include "cf2types.h"
@@ -99,18 +99,18 @@ FT_BEGIN_HEADER
 
   FT_LOCAL( CF2_Int )
   cf2_initGlobalRegionBuffer( CFF_Decoder*  decoder,
-                              CF2_UInt      idx,
+                              CF2_Int       subrNum,
                               CF2_Buffer    buf );
   FT_LOCAL( FT_Error )
   cf2_getSeacComponent( CFF_Decoder*  decoder,
-                        CF2_UInt      code,
+                        CF2_Int       code,
                         CF2_Buffer    buf );
   FT_LOCAL( void )
   cf2_freeSeacComponent( CFF_Decoder*  decoder,
                          CF2_Buffer    buf );
   FT_LOCAL( CF2_Int )
   cf2_initLocalRegionBuffer( CFF_Decoder*  decoder,
-                             CF2_UInt      idx,
+                             CF2_Int       subrNum,
                              CF2_Buffer    buf );
 
   FT_LOCAL( CF2_Fixed )
@@ -141,7 +141,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __CF2FT_H__ */
+#endif /* CF2FT_H_ */
 
 
 /* END */

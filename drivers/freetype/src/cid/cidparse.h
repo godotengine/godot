@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    CID-keyed Type1 parser (specification).                              */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2003, 2004 by                               */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __CIDPARSE_H__
-#define __CIDPARSE_H__
+#ifndef CIDPARSE_H_
+#define CIDPARSE_H_
 
 
 #include <ft2build.h>
@@ -64,11 +64,11 @@ FT_BEGIN_HEADER
     FT_Stream     stream;
 
     FT_Byte*      postscript;
-    FT_Long       postscript_len;
+    FT_ULong      postscript_len;
 
     FT_ULong      data_offset;
 
-    FT_Long       binary_length;
+    FT_ULong      binary_length;
 
     CID_FaceInfo  cid;
     FT_Int        num_dict;
@@ -92,32 +92,32 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*************************************************************************/
 
-#define cid_parser_skip_spaces( p ) \
+#define cid_parser_skip_spaces( p )                 \
           (p)->root.funcs.skip_spaces( &(p)->root )
-#define cid_parser_skip_PS_token( p ) \
+#define cid_parser_skip_PS_token( p )                 \
           (p)->root.funcs.skip_PS_token( &(p)->root )
 
-#define cid_parser_to_int( p )        (p)->root.funcs.to_int( &(p)->root )
-#define cid_parser_to_fixed( p, t )   (p)->root.funcs.to_fixed( &(p)->root, t )
+#define cid_parser_to_int( p )       (p)->root.funcs.to_int( &(p)->root )
+#define cid_parser_to_fixed( p, t )  (p)->root.funcs.to_fixed( &(p)->root, t )
 
-#define cid_parser_to_coord_array( p, m, c )                          \
+#define cid_parser_to_coord_array( p, m, c )                 \
           (p)->root.funcs.to_coord_array( &(p)->root, m, c )
-#define cid_parser_to_fixed_array( p, m, f, t )                          \
+#define cid_parser_to_fixed_array( p, m, f, t )                 \
           (p)->root.funcs.to_fixed_array( &(p)->root, m, f, t )
-#define cid_parser_to_token( p, t )                         \
+#define cid_parser_to_token( p, t )                 \
           (p)->root.funcs.to_token( &(p)->root, t )
-#define cid_parser_to_token_array( p, t, m, c )                          \
+#define cid_parser_to_token_array( p, t, m, c )                 \
           (p)->root.funcs.to_token_array( &(p)->root, t, m, c )
 
-#define cid_parser_load_field( p, f, o )                              \
+#define cid_parser_load_field( p, f, o )                       \
           (p)->root.funcs.load_field( &(p)->root, f, o, 0, 0 )
-#define cid_parser_load_field_table( p, f, o )                              \
+#define cid_parser_load_field_table( p, f, o )                       \
           (p)->root.funcs.load_field_table( &(p)->root, f, o, 0, 0 )
 
 
 FT_END_HEADER
 
-#endif /* __CIDPARSE_H__ */
+#endif /* CIDPARSE_H_ */
 
 
 /* END */

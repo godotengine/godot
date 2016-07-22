@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Single object library component.                                     */
 /*                                                                         */
-/*  Copyright 1996-2006, 2013 by                                           */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */

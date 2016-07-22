@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType error code handling (specification).                        */
 /*                                                                         */
-/*  Copyright 1996-2002, 2004, 2007, 2013 by                               */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -18,70 +18,98 @@
 
   /*************************************************************************/
   /*                                                                       */
-  /* This special header file is used to define the handling of FT2        */
-  /* enumeration constants.  It can also be used to generate error message */
-  /* strings with a small macro trick explained below.                     */
+  /* <Section>                                                             */
+  /*   error_enumerations                                                  */
   /*                                                                       */
-  /* I - Error Formats                                                     */
-  /* -----------------                                                     */
+  /* <Title>                                                               */
+  /*   Error Enumerations                                                  */
+  /*                                                                       */
+  /* <Abstract>                                                            */
+  /*   How to handle errors and error strings.                             */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*   The header file `fterrors.h' (which is automatically included by    */
+  /*   `freetype.h' defines the handling of FreeType's enumeration         */
+  /*   constants.  It can also be used to generate error message strings   */
+  /*   with a small macro trick explained below.                           */
+  /*                                                                       */
+  /*   *Error* *Formats*                                                   */
   /*                                                                       */
   /*   The configuration macro FT_CONFIG_OPTION_USE_MODULE_ERRORS can be   */
-  /*   defined in ftoption.h in order to make the higher byte indicate     */
+  /*   defined in `ftoption.h' in order to make the higher byte indicate   */
   /*   the module where the error has happened (this is not compatible     */
-  /*   with standard builds of FreeType 2).  See the file `ftmoderr.h' for */
-  /*   more details.                                                       */
+  /*   with standard builds of FreeType&nbsp;2, however).  See the file    */
+  /*   `ftmoderr.h' for more details.                                      */
   /*                                                                       */
+  /*   *Error* *Message* *Strings*                                         */
   /*                                                                       */
-  /* II - Error Message strings                                            */
-  /* --------------------------                                            */
-  /*                                                                       */
-  /*   The error definitions below are made through special macros that    */
-  /*   allow client applications to build a table of error message strings */
-  /*   if they need it.  The strings are not included in a normal build of */
-  /*   FreeType 2 to save space (most client applications do not use       */
-  /*   them).                                                              */
+  /*   Error definitions are set up with special macros that allow client  */
+  /*   applications to build a table of error message strings.  The        */
+  /*   strings are not included in a normal build of FreeType&nbsp;2 to    */
+  /*   save space (most client applications do not use them).              */
   /*                                                                       */
   /*   To do so, you have to define the following macros before including  */
-  /*   this file:                                                          */
-  /*                                                                       */
-  /*   FT_ERROR_START_LIST ::                                              */
-  /*     This macro is called before anything else to define the start of  */
-  /*     the error list.  It is followed by several FT_ERROR_DEF calls     */
-  /*     (see below).                                                      */
-  /*                                                                       */
-  /*   FT_ERROR_DEF( e, v, s ) ::                                          */
-  /*     This macro is called to define one single error.                  */
-  /*     `e' is the error code identifier (e.g. FT_Err_Invalid_Argument).  */
-  /*     `v' is the error numerical value.                                 */
-  /*     `s' is the corresponding error string.                            */
-  /*                                                                       */
-  /*   FT_ERROR_END_LIST ::                                                */
-  /*     This macro ends the list.                                         */
-  /*                                                                       */
-  /*   Additionally, you have to undefine __FTERRORS_H__ before #including */
   /*   this file.                                                          */
   /*                                                                       */
-  /*   Here is a simple example:                                           */
+  /*   {                                                                   */
+  /*     FT_ERROR_START_LIST                                               */
+  /*   }                                                                   */
   /*                                                                       */
+  /*   This macro is called before anything else to define the start of    */
+  /*   the error list.  It is followed by several FT_ERROR_DEF calls.      */
+  /*                                                                       */
+  /*   {                                                                   */
+  /*     FT_ERROR_DEF( e, v, s )                                           */
+  /*   }                                                                   */
+  /*                                                                       */
+  /*   This macro is called to define one single error.  `e' is the error  */
+  /*   code identifier (e.g., `Invalid_Argument'), `v' is the error's      */
+  /*   numerical value, and `s' is the corresponding error string.         */
+  /*                                                                       */
+  /*   {                                                                   */
+  /*     FT_ERROR_END_LIST                                                 */
+  /*   }                                                                   */
+  /*                                                                       */
+  /*   This macro ends the list.                                           */
+  /*                                                                       */
+  /*   Additionally, you have to undefine `FTERRORS_H_' before #including  */
+  /*   this file.                                                          */
+  /*                                                                       */
+  /*   Here is a simple example.                                           */
+  /*                                                                       */
+  /*   {                                                                   */
+  /*     #undef FTERRORS_H_                                                */
+  /*     #define FT_ERRORDEF( e, v, s )  { e, s },                         */
+  /*     #define FT_ERROR_START_LIST     {                                 */
+  /*     #define FT_ERROR_END_LIST       { 0, NULL } };                    */
+  /*                                                                       */
+  /*     const struct                                                      */
   /*     {                                                                 */
-  /*       #undef __FTERRORS_H__                                           */
-  /*       #define FT_ERRORDEF( e, v, s )  { e, s },                       */
-  /*       #define FT_ERROR_START_LIST     {                               */
-  /*       #define FT_ERROR_END_LIST       { 0, 0 } };                     */
+  /*       int          err_code;                                          */
+  /*       const char*  err_msg;                                           */
+  /*     } ft_errors[] =                                                   */
   /*                                                                       */
-  /*       const struct                                                    */
-  /*       {                                                               */
-  /*         int          err_code;                                        */
-  /*         const char*  err_msg;                                         */
-  /*       } ft_errors[] =                                                 */
+  /*     #include FT_ERRORS_H                                              */
+  /*   }                                                                   */
   /*                                                                       */
-  /*       #include FT_ERRORS_H                                            */
-  /*     }                                                                 */
+  /*   Note that `FT_Err_Ok' is _not_ defined with `FT_ERRORDEF' but with  */
+  /*   `FT_NOERRORDEF'; it is always zero.                                 */
   /*                                                                       */
   /*************************************************************************/
 
+  /* */
 
-#ifndef __FTERRORS_H__
+  /* In previous FreeType versions we used `__FTERRORS_H__'.  However, */
+  /* using two successive underscores in a non-system symbol name      */
+  /* violates the C (and C++) standard, so it was changed to the       */
+  /* current form.  In spite of this, we have to make                  */
+  /*                                                                   */
+  /*   #undefine __FTERRORS_H__                                        */
+  /*                                                                   */
+  /* work for backwards compatibility.                                 */
+  /*                                                                   */
+#if !( defined( FTERRORS_H_ ) && defined ( __FTERRORS_H__ ) )
+#define FTERRORS_H_
 #define __FTERRORS_H__
 
 
@@ -192,7 +220,7 @@
 #undef FT_ERR_PREFIX
 #endif
 
-#endif /* __FTERRORS_H__ */
+#endif /* !(FTERRORS_H_ && __FTERRORS_H__) */
 
 
 /* END */

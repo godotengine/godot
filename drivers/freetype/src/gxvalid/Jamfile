@@ -1,6 +1,6 @@
 # FreeType 2 src/gxvalid Jamfile
 #
-# Copyright 2005 by
+# Copyright 2005-2016 by
 # suzuki toshiya, Masatake YAMATO and Red Hat K.K.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -17,10 +17,29 @@ SubDir  FT2_TOP $(FT2_SRC_DIR) gxvalid ;
 
   if $(FT2_MULTI)
   {
-    _sources = gxvcommn gxvfeat  gxvbsln  gxvtrak  gxvopbd  gxvprop
-               gxvmort  gxvmort0 gxvmort1 gxvmort2 gxvmort4 gxvmort5
-               gxvmorx  gxvmorx0 gxvmorx1 gxvmorx2 gxvmorx4 gxvmorx5
-               gxvlcar  gxvkern  gxvmod   gxvjust  ;
+    _sources = gxvbsln
+               gxvcommn
+               gxvfeat
+               gxvjust
+               gxvkern
+               gxvlcar
+               gxvmod
+               gxvmort
+               gxvmort0
+               gxvmort1
+               gxvmort2
+               gxvmort4
+               gxvmort5
+               gxvmorx
+               gxvmorx0
+               gxvmorx1
+               gxvmorx2
+               gxvmorx4
+               gxvmorx5
+               gxvopbd
+               gxvprop
+               gxvtrak
+               ;
   }
   else
   {

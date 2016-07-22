@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Stream handling (specification).                                     */
 /*                                                                         */
-/*  Copyright 1996-2002, 2004-2006, 2011, 2013 by                          */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __FTSTREAM_H__
-#define __FTSTREAM_H__
+#ifndef FTSTREAM_H_
+#define FTSTREAM_H_
 
 
 #include <ft2build.h>
@@ -361,7 +361,7 @@ FT_BEGIN_HEADER
                   FT_Long    distance );
 
   /* return current stream position */
-  FT_BASE( FT_Long )
+  FT_BASE( FT_ULong )
   FT_Stream_Pos( FT_Stream  stream );
 
   /* read bytes from a stream into a user-allocated buffer, returns an */
@@ -530,7 +530,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __FTSTREAM_H__ */
+#endif /* FTSTREAM_H_ */
 
 
 /* END */

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Embedded resource forks accessor (body).                             */
 /*                                                                         */
-/*  Copyright 2004-2010, 2013 by                                           */
+/*  Copyright 2004-2016 by                                                 */
 /*  Masatake YAMATO and Redhat K.K.                                        */
 /*                                                                         */
 /*  FT_Raccess_Get_HeaderInfo() and raccess_guess_darwin_hfsplus() are     */
@@ -29,6 +29,7 @@
 #include FT_INTERNAL_STREAM_H
 #include FT_INTERNAL_RFORK_H
 #include "basepic.h"
+#include "ftbase.h"
 
 #undef  FT_COMPONENT
 #define FT_COMPONENT  trace_raccess
@@ -62,7 +63,7 @@
     FT_UNUSED( library );
 
 
-    error = FT_Stream_Seek( stream, rfork_offset );
+    error = FT_Stream_Seek( stream, (FT_ULong)rfork_offset );
     if ( error )
       return error;
 
@@ -70,25 +71,36 @@
     if ( error )
       return error;
 
-    *rdata_pos = rfork_offset + ( ( head[0] << 24 ) |
-                                  ( head[1] << 16 ) |
-                                  ( head[2] <<  8 ) |
-                                    head[3]         );
-    map_pos    = rfork_offset + ( ( head[4] << 24 ) |
-                                  ( head[5] << 16 ) |
-                                  ( head[6] <<  8 ) |
-                                    head[7]         );
-    rdata_len = ( head[ 8] << 24 ) |
-                ( head[ 9] << 16 ) |
-                ( head[10] <<  8 ) |
-                  head[11];
+    /* ensure positive values */
+    if ( head[0] >= 0x80 || head[4] >= 0x80 || head[8] >= 0x80 )
+      return FT_THROW( Unknown_File_Format );
+
+    *rdata_pos = ( head[ 0] << 24 ) |
+                 ( head[ 1] << 16 ) |
+                 ( head[ 2] <<  8 ) |
+                   head[ 3];
+    map_pos    = ( head[ 4] << 24 ) |
+                 ( head[ 5] << 16 ) |
+                 ( head[ 6] <<  8 ) |
+                   head[ 7];
+    rdata_len  = ( head[ 8] << 24 ) |
+                 ( head[ 9] << 16 ) |
+                 ( head[10] <<  8 ) |
+                   head[11];
 
     /* map_len = head[12] .. head[15] */
 
-    if ( *rdata_pos + rdata_len != map_pos || map_pos == rfork_offset )
+    if ( *rdata_pos != map_pos - rdata_len || map_pos == 0 )
       return FT_THROW( Unknown_File_Format );
 
-    error = FT_Stream_Seek( stream, map_pos );
+    if ( FT_LONG_MAX - rfork_offset < *rdata_pos ||
+         FT_LONG_MAX - rfork_offset < map_pos    )
+      return FT_THROW( Unknown_File_Format );
+
+    *rdata_pos += rfork_offset;
+    map_pos    += rfork_offset;
+
+    error = FT_Stream_Seek( stream, (FT_ULong)map_pos );
     if ( error )
       return error;
 
@@ -123,7 +135,7 @@
     if ( type_list == -1 )
       return FT_THROW( Unknown_File_Format );
 
-    error = FT_Stream_Seek( stream, map_pos + type_list );
+    error = FT_Stream_Seek( stream, (FT_ULong)( map_pos + type_list ) );
     if ( error )
       return error;
 
@@ -151,6 +163,7 @@
                               FT_Long     map_offset,
                               FT_Long     rdata_pos,
                               FT_Long     tag,
+                              FT_Bool     sort_by_res_id,
                               FT_Long   **offsets,
                               FT_Long    *count )
   {
@@ -163,7 +176,8 @@
     FT_RFork_Ref  *ref = NULL;
 
 
-    error = FT_Stream_Seek( stream, map_offset );
+    FT_TRACE3(( "\n" ));
+    error = FT_Stream_Seek( stream, (FT_ULong)map_offset );
     if ( error )
       return error;
 
@@ -179,17 +193,19 @@
         return error;
 
       FT_TRACE2(( "Resource tags: %c%c%c%c\n",
-                  (char)( 0xff & ( tag_internal >> 24 ) ),
-                  (char)( 0xff & ( tag_internal >> 16 ) ),
-                  (char)( 0xff & ( tag_internal >>  8 ) ),
-                  (char)( 0xff & ( tag_internal >>  0 ) ) ));
+                  (char)( 0xFF & ( tag_internal >> 24 ) ),
+                  (char)( 0xFF & ( tag_internal >> 16 ) ),
+                  (char)( 0xFF & ( tag_internal >>  8 ) ),
+                  (char)( 0xFF & ( tag_internal >>  0 ) ) ));
+      FT_TRACE3(( "             : subcount=%d, suboffset=0x%04x\n",
+                  subcnt, rpos ));
 
       if ( tag_internal == tag )
       {
         *count = subcnt + 1;
         rpos  += map_offset;
 
-        error = FT_Stream_Seek( stream, rpos );
+        error = FT_Stream_Seek( stream, (FT_ULong)rpos );
         if ( error )
           return error;
 
@@ -208,11 +224,24 @@
             goto Exit;
 
           ref[j].offset = temp & 0xFFFFFFL;
+          FT_TRACE3(( "             [%d]:"
+                      " resource_id=0x%04x, offset=0x%08x\n",
+                      j, ref[j].res_id, ref[j].offset ));
         }
 
-        ft_qsort( ref, *count, sizeof ( FT_RFork_Ref ),
-                  ( int(*)(const void*, const void*) )
-                  ft_raccess_sort_ref_by_id );
+        if (sort_by_res_id)
+        {
+          ft_qsort( ref, (size_t)*count, sizeof ( FT_RFork_Ref ),
+                    ( int(*)(const void*, const void*) )
+                    ft_raccess_sort_ref_by_id );
+
+          FT_TRACE3(( "             -- sort resources by their ids --\n" ));
+          for ( j = 0; j < *count; ++ j ) {
+            FT_TRACE3(( "             [%d]:"
+                        " resource_id=0x%04x, offset=0x%08x\n",
+                        j, ref[j].res_id, ref[j].offset ));
+          }
+        }
 
         if ( FT_NEW_ARRAY( offsets_internal, *count ) )
           goto Exit;
@@ -374,7 +403,7 @@
         errors[i] = FT_Err_Ok;
 
       if ( errors[i] )
-        continue ;
+        continue;
 
       errors[i] = (FT_RACCESS_GUESS_TABLE_GET[i].func)( library,
                                                  stream, base_name,
@@ -695,9 +724,9 @@
     FT_UShort  n_of_entries;
 
     int        i;
-    FT_UInt32  entry_id, entry_offset, entry_length = 0;
+    FT_Int32   entry_id, entry_offset, entry_length = 0;
 
-    const FT_UInt32  resource_fork_entry_id = 0x2;
+    const FT_Int32  resource_fork_entry_id = 0x2;
 
     FT_UNUSED( library );
     FT_UNUSED( base_file_name );
@@ -795,7 +824,9 @@
     tmp = ft_strrchr( original_name, '/' );
     if ( tmp )
     {
-      ft_strncpy( new_name, original_name, tmp - original_name + 1 );
+      ft_strncpy( new_name,
+                  original_name,
+                  (size_t)( tmp - original_name + 1 ) );
       new_name[tmp - original_name + 1] = '\0';
       slash = tmp + 1;
     }

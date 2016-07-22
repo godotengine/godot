@@ -1,6 +1,6 @@
 # FreeType 2 src/type42 Jamfile
 #
-# Copyright 2002 by
+# Copyright 2002-2016 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -16,7 +16,10 @@ SubDir  FT2_TOP $(FT2_SRC_DIR) type42 ;
 
   if $(FT2_MULTI)
   {
-    _sources = t42objs t42parse t42drivr ;
+    _sources = t42drivr
+               t42objs
+               t42parse
+               ;
   }
   else
   {

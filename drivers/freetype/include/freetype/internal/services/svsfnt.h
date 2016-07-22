@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType SFNT table loading service (specification).             */
 /*                                                                         */
-/*  Copyright 2003, 2004, 2009, 2012 by                                    */
+/*  Copyright 2003-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __SVSFNT_H__
-#define __SVSFNT_H__
+#ifndef SVSFNT_H_
+#define SVSFNT_H_
 
 #include FT_INTERNAL_SERVICE_H
 #include FT_TRUETYPE_TABLES_H
@@ -97,7 +97,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __SVSFNT_H__ */
+#endif /* SVSFNT_H_ */
 
 
 /* END */

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Generic list support for FreeType (specification).                   */
 /*                                                                         */
-/*  Copyright 1996-2001, 2003, 2007, 2010 by                               */
+/*  Copyright 1996-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -24,8 +24,8 @@
   /*************************************************************************/
 
 
-#ifndef __FTLIST_H__
-#define __FTLIST_H__
+#ifndef FTLIST_H_
+#define FTLIST_H_
 
 
 #include <ft2build.h>
@@ -173,7 +173,7 @@ FT_BEGIN_HEADER
   /*    FT_List_Iterator                                                   */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    An FT_List iterator function which is called during a list parse   */
+  /*    An FT_List iterator function that is called during a list parse    */
   /*    by @FT_List_Iterate.                                               */
   /*                                                                       */
   /* <Input>                                                               */
@@ -200,7 +200,7 @@ FT_BEGIN_HEADER
   /* <Input>                                                               */
   /*    list     :: A handle to the list.                                  */
   /*    iterator :: An iterator function, called on each node of the list. */
-  /*    user     :: A user-supplied field which is passed as the second    */
+  /*    user     :: A user-supplied field that is passed as the second     */
   /*                argument to the iterator.                              */
   /*                                                                       */
   /* <Return>                                                              */
@@ -218,7 +218,7 @@ FT_BEGIN_HEADER
   /*    FT_List_Destructor                                                 */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    An @FT_List iterator function which is called during a list        */
+  /*    An @FT_List iterator function that is called during a list         */
   /*    finalization by @FT_List_Finalize to destroy all elements in a     */
   /*    given list.                                                        */
   /*                                                                       */
@@ -248,11 +248,11 @@ FT_BEGIN_HEADER
   /*    list    :: A handle to the list.                                   */
   /*                                                                       */
   /*    destroy :: A list destructor that will be applied to each element  */
-  /*               of the list.                                            */
+  /*               of the list.  Set this to NULL if not needed.           */
   /*                                                                       */
-  /*    memory  :: The current memory object which handles deallocation.   */
+  /*    memory  :: The current memory object that handles deallocation.    */
   /*                                                                       */
-  /*    user    :: A user-supplied field which is passed as the last       */
+  /*    user    :: A user-supplied field that is passed as the last        */
   /*               argument to the destructor.                             */
   /*                                                                       */
   /* <Note>                                                                */
@@ -265,13 +265,12 @@ FT_BEGIN_HEADER
                     FT_Memory           memory,
                     void*               user );
 
-
   /* */
 
 
 FT_END_HEADER
 
-#endif /* __FTLIST_H__ */
+#endif /* FTLIST_H_ */
 
 
 /* END */

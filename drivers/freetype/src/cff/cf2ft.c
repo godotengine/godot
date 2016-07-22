@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType Glue Component to Adobe's Interpreter (body).               */
 /*                                                                         */
-/*  Copyright 2013 Adobe Systems Incorporated.                             */
+/*  Copyright 2013-2014 Adobe Systems Incorporated.                        */
 /*                                                                         */
 /*  This software, and all works of authorship, whether in source or       */
 /*  object code form as indicated by the copyright notice(s) included      */
@@ -61,7 +61,9 @@
 
     FT_ASSERT( unitsPerEm > 0 );
 
-    FT_ASSERT( transform->a > 0 && transform->d > 0 );
+    if ( transform->a <= 0 || transform->d <= 0 )
+      return FT_THROW( Invalid_Size_Handle );
+
     FT_ASSERT( transform->b == 0 && transform->c == 0 );
     FT_ASSERT( transform->tx == 0 && transform->ty == 0 );
 
@@ -140,6 +142,8 @@
   cf2_builder_lineTo( CF2_OutlineCallbacks      callbacks,
                       const CF2_CallbackParams  params )
   {
+    FT_Error  error;
+
     /* downcast the object pointer */
     CF2_Outline   outline = (CF2_Outline)callbacks;
     CFF_Builder*  builder;
@@ -154,15 +158,27 @@
     {
       /* record the move before the line; also check points and set */
       /* `path_begun'                                               */
-      cff_builder_start_point( builder,
-                               params->pt0.x,
-                               params->pt0.y );
+      error = cff_builder_start_point( builder,
+                                       params->pt0.x,
+                                       params->pt0.y );
+      if ( error )
+      {
+        if ( !*callbacks->error )
+          *callbacks->error =  error;
+        return;
+      }
     }
 
     /* `cff_builder_add_point1' includes a check_points call for one point */
-    cff_builder_add_point1( builder,
-                            params->pt1.x,
-                            params->pt1.y );
+    error = cff_builder_add_point1( builder,
+                                    params->pt1.x,
+                                    params->pt1.y );
+    if ( error )
+    {
+      if ( !*callbacks->error )
+        *callbacks->error =  error;
+      return;
+    }
   }
 
 
@@ -170,6 +186,8 @@
   cf2_builder_cubeTo( CF2_OutlineCallbacks      callbacks,
                       const CF2_CallbackParams  params )
   {
+    FT_Error  error;
+
     /* downcast the object pointer */
     CF2_Outline   outline = (CF2_Outline)callbacks;
     CFF_Builder*  builder;
@@ -184,13 +202,25 @@
     {
       /* record the move before the line; also check points and set */
       /* `path_begun'                                               */
-      cff_builder_start_point( builder,
-                               params->pt0.x,
-                               params->pt0.y );
+      error = cff_builder_start_point( builder,
+                                       params->pt0.x,
+                                       params->pt0.y );
+      if ( error )
+      {
+        if ( !*callbacks->error )
+          *callbacks->error =  error;
+        return;
+      }
     }
 
     /* prepare room for 3 points: 2 off-curve, 1 on-curve */
-    cff_check_points( builder, 3 );
+    error = cff_check_points( builder, 3 );
+    if ( error )
+    {
+      if ( !*callbacks->error )
+        *callbacks->error =  error;
+      return;
+    }
 
     cff_builder_add_point( builder,
                            params->pt1.x,
@@ -236,10 +266,8 @@
 
     if ( *hinted )
     {
-      *x_scale = FT_DivFix( decoder->builder.glyph->x_scale,
-                            cf2_intToFixed( 64 ) );
-      *y_scale = FT_DivFix( decoder->builder.glyph->y_scale,
-                            cf2_intToFixed( 64 ) );
+      *x_scale = ( decoder->builder.glyph->x_scale + 32 ) / 64;
+      *y_scale = ( decoder->builder.glyph->y_scale + 32 ) / 64;
     }
     else
     {
@@ -344,13 +372,25 @@
       if ( scaled && !driver->no_stem_darkening )
         font->renderingFlags |= CF2_FlagsDarkened;
 
+      font->darkenParams[0] = driver->darken_params[0];
+      font->darkenParams[1] = driver->darken_params[1];
+      font->darkenParams[2] = driver->darken_params[2];
+      font->darkenParams[3] = driver->darken_params[3];
+      font->darkenParams[4] = driver->darken_params[4];
+      font->darkenParams[5] = driver->darken_params[5];
+      font->darkenParams[6] = driver->darken_params[6];
+      font->darkenParams[7] = driver->darken_params[7];
+
       /* now get an outline for this glyph;      */
       /* also get units per em to validate scale */
       font->unitsPerEm = (CF2_Int)cf2_getUnitsPerEm( decoder );
 
-      error2 = cf2_checkTransform( &transform, font->unitsPerEm );
-      if ( error2 )
-        return error2;
+      if ( scaled )
+      {
+        error2 = cf2_checkTransform( &transform, font->unitsPerEm );
+        if ( error2 )
+          return error2;
+      }
 
       error2 = cf2_getGlyphOutline( font, &buf, &transform, &glyphWidth );
       if ( error2 )
@@ -380,8 +420,16 @@
     FT_ASSERT( decoder                          &&
                decoder->builder.face            &&
                decoder->builder.face->root.size );
-    FT_ASSERT( decoder->builder.face->root.size->metrics.y_ppem );
 
+    /*
+     * Note that `y_ppem' can be zero if there wasn't a call to
+     * `FT_Set_Char_Size' or something similar.  However, this isn't a
+     * problem since we come to this place in the code only if
+     * FT_LOAD_NO_SCALE is set (the other case gets caught by
+     * `cf2_checkTransform').  The ppem value is needed to compute the stem
+     * darkening, which is disabled for getting the unscaled outline.
+     *
+     */
     return cf2_intToFixed(
              decoder->builder.face->root.size->metrics.y_ppem );
   }
@@ -496,16 +544,21 @@
   /* return 0 on success                                   */
   FT_LOCAL_DEF( CF2_Int )
   cf2_initGlobalRegionBuffer( CFF_Decoder*  decoder,
-                              CF2_UInt      idx,
+                              CF2_Int       subrNum,
                               CF2_Buffer    buf )
   {
-    FT_ASSERT( decoder && decoder->globals );
+    CF2_UInt  idx;
+
+
+    FT_ASSERT( decoder );
 
     FT_ZERO( buf );
 
-    idx += decoder->globals_bias;
+    idx = (CF2_UInt)( subrNum + decoder->globals_bias );
     if ( idx >= decoder->num_globals )
       return TRUE;     /* error */
+
+    FT_ASSERT( decoder->globals );
 
     buf->start =
     buf->ptr   = decoder->globals[idx];
@@ -519,7 +572,7 @@
   /* used for seac component                           */
   FT_LOCAL_DEF( FT_Error )
   cf2_getSeacComponent( CFF_Decoder*  decoder,
-                        CF2_UInt      code,
+                        CF2_Int       code,
                         CF2_Buffer    buf )
   {
     CF2_Int   gid;
@@ -532,12 +585,21 @@
 
     FT_ZERO( buf );
 
-    gid = cff_lookup_glyph_by_stdcharcode( decoder->cff, code );
-    if ( gid < 0 )
-      return FT_THROW( Invalid_Glyph_Format );
+#ifdef FT_CONFIG_OPTION_INCREMENTAL
+    /* Incremental fonts don't necessarily have valid charsets.        */
+    /* They use the character code, not the glyph index, in this case. */
+    if ( decoder->builder.face->root.internal->incremental_interface )
+      gid = code;
+    else
+#endif /* FT_CONFIG_OPTION_INCREMENTAL */
+    {
+      gid = cff_lookup_glyph_by_stdcharcode( decoder->cff, code );
+      if ( gid < 0 )
+        return FT_THROW( Invalid_Glyph_Format );
+    }
 
     error = cff_get_glyph_data( decoder->builder.face,
-                                gid,
+                                (CF2_UInt)gid,
                                 &charstring,
                                 &len );
     /* TODO: for now, just pass the FreeType error through */
@@ -569,16 +631,21 @@
 
   FT_LOCAL_DEF( CF2_Int )
   cf2_initLocalRegionBuffer( CFF_Decoder*  decoder,
-                             CF2_UInt      idx,
+                             CF2_Int       subrNum,
                              CF2_Buffer    buf )
   {
-    FT_ASSERT( decoder && decoder->locals );
+    CF2_UInt  idx;
+
+
+    FT_ASSERT( decoder );
 
     FT_ZERO( buf );
 
-    idx += decoder->locals_bias;
+    idx = (CF2_UInt)( subrNum + decoder->locals_bias );
     if ( idx >= decoder->num_locals )
       return TRUE;     /* error */
+
+    FT_ASSERT( decoder->locals );
 
     buf->start =
     buf->ptr   = decoder->locals[idx];

@@ -3,7 +3,7 @@
 #
 
 
-# Copyright 1996-2001, 2003, 2011, 2013 by
+# Copyright 1996-2016 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -18,7 +18,10 @@
 CFF_DIR := $(SRC_DIR)/cff
 
 
-CFF_COMPILE := $(FT_COMPILE) $I$(subst /,$(COMPILER_SEP),$(CFF_DIR))
+CFF_COMPILE := $(CC) $(ANSIFLAGS)                            \
+                     $I$(subst /,$(COMPILER_SEP),$(CFF_DIR)) \
+                     $(INCLUDE_FLAGS)                        \
+                     $(FT_CFLAGS)
 
 
 # CFF driver sources (i.e., C files)

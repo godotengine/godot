@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType module error offsets (specification).                       */
 /*                                                                         */
-/*  Copyright 2001-2005, 2010, 2013 by                                     */
+/*  Copyright 2001-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -74,7 +74,7 @@
   /* with something like                                                   */
   /*                                                                       */
   /*   {                                                                   */
-  /*     #undef __FTMODERR_H__                                             */
+  /*     #undef FTMODERR_H_                                                */
   /*     #define FT_MODERRDEF( e, v, s )  { FT_Mod_Err_ ## e, s },         */
   /*     #define FT_MODERR_START_LIST     {                                */
   /*     #define FT_MODERR_END_LIST       { 0, 0 } };                      */
@@ -91,8 +91,8 @@
   /*************************************************************************/
 
 
-#ifndef __FTMODERR_H__
-#define __FTMODERR_H__
+#ifndef FTMODERR_H_
+#define FTMODERR_H_
 
 
   /*******************************************************************/
@@ -188,7 +188,7 @@
 #undef FT_NEED_EXTERN_C
 
 
-#endif /* __FTMODERR_H__ */
+#endif /* FTMODERR_H_ */
 
 
 /* END */

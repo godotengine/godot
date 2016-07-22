@@ -1,6 +1,6 @@
 # FreeType 2 src/cache Jamfile
 #
-# Copyright 2001, 2003, 2004 by
+# Copyright 2001-2016 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -11,25 +11,19 @@
 
 SubDir  FT2_TOP $(FT2_SRC_DIR) cache ;
 
-# The file <freetype/ftcache.h> contains some macro definitions that are
-# later used in #include statements related to the cache sub-system.  It
-# needs to be parsed through a HDRMACRO rule for macro definitions.
-#
-HDRMACRO  [ FT2_SubDir  include ftcache.h ] ;
-
 {
   local  _sources ;
 
   if $(FT2_MULTI)
   {
-    _sources = ftcmru
-               ftcmanag
+    _sources = ftcbasic
                ftccache
                ftcglyph
-               ftcsbits
                ftcimage
-               ftcbasic
+               ftcmanag
                ftccmap
+               ftcmru
+               ftcsbits
                ;
   }
   else

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Adobe's code for font instances (body).                              */
 /*                                                                         */
-/*  Copyright 2007-2013 Adobe Systems Incorporated.                        */
+/*  Copyright 2007-2014 Adobe Systems Incorporated.                        */
 /*                                                                         */
 /*  This software, and all works of authorship, whether in source or       */
 /*  object code form as indicated by the copyright notice(s) included      */
@@ -36,6 +36,9 @@
 /***************************************************************************/
 
 
+#include <ft2build.h>
+#include FT_INTERNAL_CALC_H
+
 #include "cf2ft.h"
 
 #include "cf2glue.h"
@@ -51,11 +54,61 @@
                         CF2_Fixed   stemWidth,
                         CF2_Fixed*  darkenAmount,
                         CF2_Fixed   boldenAmount,
-                        FT_Bool     stemDarkened )
+                        FT_Bool     stemDarkened,
+                        FT_Int*     darkenParams )
   {
+    /*
+     * Total darkening amount is computed in 1000 unit character space
+     * using the modified 5 part curve as Adobe's Avalon rasterizer.
+     * The darkening amount is smaller for thicker stems.
+     * It becomes zero when the stem is thicker than 2.333 pixels.
+     *
+     * By default, we use
+     *
+     *   darkenAmount = 0.4 pixels   if scaledStem <= 0.5 pixels,
+     *   darkenAmount = 0.275 pixels if 1 <= scaledStem <= 1.667 pixels,
+     *   darkenAmount = 0 pixel      if scaledStem >= 2.333 pixels,
+     *
+     * and piecewise linear in-between:
+     *
+     *
+     *   darkening
+     *       ^
+     *       |
+     *       |      (x1,y1)
+     *       |--------+
+     *       |         \
+     *       |          \
+     *       |           \          (x3,y3)
+     *       |            +----------+
+     *       |        (x2,y2)         \
+     *       |                         \
+     *       |                          \
+     *       |                           +-----------------
+     *       |                         (x4,y4)
+     *       +--------------------------------------------->   stem
+     *                                                       thickness
+     *
+     *
+     * This corresponds to the following values for the
+     * `darkening-parameters' property:
+     *
+     *   (x1, y1) = (500, 400)
+     *   (x2, y2) = (1000, 275)
+     *   (x3, y3) = (1667, 275)
+     *   (x4, y4) = (2333, 0)
+     *
+     */
+
     /* Internal calculations are done in units per thousand for */
-    /* convenience.                                             */
+    /* convenience. The x axis is scaled stem width in          */
+    /* thousandths of a pixel. That is, 1000 is 1 pixel.        */
+    /* The y axis is darkening amount in thousandths of a pixel.*/
+    /* In the code, below, dividing by ppem and                 */
+    /* adjusting for emRatio converts darkenAmount to character */
+    /* space (font units).                                      */
     CF2_Fixed  stemWidthPer1000, scaledStem;
+    FT_Int     logBase2;
 
 
     *darkenAmount = 0;
@@ -69,59 +122,107 @@
 
     if ( stemDarkened )
     {
+      FT_Int  x1 = darkenParams[0];
+      FT_Int  y1 = darkenParams[1];
+      FT_Int  x2 = darkenParams[2];
+      FT_Int  y2 = darkenParams[3];
+      FT_Int  x3 = darkenParams[4];
+      FT_Int  y3 = darkenParams[5];
+      FT_Int  x4 = darkenParams[6];
+      FT_Int  y4 = darkenParams[7];
+
+
       /* convert from true character space to 1000 unit character space; */
       /* add synthetic emboldening effect                                */
 
-      /* we have to assure that the computation of `scaledStem' */
-      /* and `stemWidthPer1000' don't overflow                  */
+      /* `stemWidthPer1000' will not overflow for a legitimate font      */
 
       stemWidthPer1000 = FT_MulFix( stemWidth + boldenAmount, emRatio );
 
-      if ( emRatio > CF2_FIXED_ONE                          &&
-           stemWidthPer1000 <= ( stemWidth + boldenAmount ) )
-      {
-        stemWidthPer1000 = 0;                      /* to pacify compiler */
-        scaledStem       = cf2_intToFixed( 2333 );
-      }
+      /* `scaledStem' can easily overflow, so we must clamp its maximum  */
+      /* value; the test doesn't need to be precise, but must be         */
+      /* conservative.  The clamp value (default 2333) where             */
+      /* `darkenAmount' is zero is well below the overflow value of      */
+      /* 32767.                                                          */
+      /*                                                                 */
+      /* FT_MSB computes the integer part of the base 2 logarithm.  The  */
+      /* number of bits for the product is 1 or 2 more than the sum of   */
+      /* logarithms; remembering that the 16 lowest bits of the fraction */
+      /* are dropped this is correct to within a factor of almost 4.     */
+      /* For example, 0x80.0000 * 0x80.0000 = 0x4000.0000 is 23+23 and   */
+      /* is flagged as possible overflow because 0xFF.FFFF * 0xFF.FFFF = */
+      /* 0xFFFF.FE00 is also 23+23.                                      */
+
+      logBase2 = FT_MSB( (FT_UInt32)stemWidthPer1000 ) +
+                   FT_MSB( (FT_UInt32)ppem );
+
+      if ( logBase2 >= 46 )
+        /* possible overflow */
+        scaledStem = cf2_intToFixed( x4 );
       else
-      {
         scaledStem = FT_MulFix( stemWidthPer1000, ppem );
 
-        if ( ppem > CF2_FIXED_ONE           &&
-             scaledStem <= stemWidthPer1000 )
-          scaledStem = cf2_intToFixed( 2333 );
+      /* now apply the darkening parameters */
+
+      if ( scaledStem < cf2_intToFixed( x1 ) )
+        *darkenAmount = FT_DivFix( cf2_intToFixed( y1 ), ppem );
+
+      else if ( scaledStem < cf2_intToFixed( x2 ) )
+      {
+        FT_Int  xdelta = x2 - x1;
+        FT_Int  ydelta = y2 - y1;
+        FT_Int  x      = stemWidthPer1000 -
+                           FT_DivFix( cf2_intToFixed( x1 ), ppem );
+
+
+        if ( !xdelta )
+          goto Try_x3;
+
+        *darkenAmount = FT_MulDiv( x, ydelta, xdelta ) +
+                          FT_DivFix( cf2_intToFixed( y1 ), ppem );
       }
 
-      /*
-       * Total darkening amount is computed in 1000 unit character space
-       * using the modified 5 part curve as Avalon rasterizer.
-       * The darkening amount is smaller for thicker stems.
-       * It becomes zero when the stem is thicker than 2.333 pixels.
-       *
-       * In Avalon rasterizer,
-       *
-       *   darkenAmount = 0.5 pixels   if scaledStem <= 0.5 pixels,
-       *   darkenAmount = 0.333 pixels if 1 <= scaledStem <= 1.667 pixels,
-       *   darkenAmount = 0 pixel      if scaledStem >= 2.333 pixels,
-       *
-       * and piecewise linear in-between.
-       *
-       */
-      if ( scaledStem < cf2_intToFixed( 500 ) )
-        *darkenAmount = FT_DivFix( cf2_intToFixed( 400 ), ppem );
+      else if ( scaledStem < cf2_intToFixed( x3 ) )
+      {
+      Try_x3:
+        {
+          FT_Int  xdelta = x3 - x2;
+          FT_Int  ydelta = y3 - y2;
+          FT_Int  x      = stemWidthPer1000 -
+                             FT_DivFix( cf2_intToFixed( x2 ), ppem );
 
-      else if ( scaledStem < cf2_intToFixed( 1000 ) )
-        *darkenAmount = FT_DivFix( cf2_intToFixed( 525 ), ppem ) -
-                          FT_MulFix( stemWidthPer1000,
-                                     cf2_floatToFixed( .25 ) );
 
-      else if ( scaledStem < cf2_intToFixed( 1667 ) )
-        *darkenAmount = FT_DivFix( cf2_intToFixed( 275 ), ppem );
+          if ( !xdelta )
+            goto Try_x4;
 
-      else if ( scaledStem < cf2_intToFixed( 2333 ) )
-        *darkenAmount = FT_DivFix( cf2_intToFixed( 963 ), ppem ) -
-                          FT_MulFix( stemWidthPer1000,
-                                     cf2_floatToFixed( .413 ) );
+          *darkenAmount = FT_MulDiv( x, ydelta, xdelta ) +
+                            FT_DivFix( cf2_intToFixed( y2 ), ppem );
+        }
+      }
+
+      else if ( scaledStem < cf2_intToFixed( x4 ) )
+      {
+      Try_x4:
+        {
+          FT_Int  xdelta = x4 - x3;
+          FT_Int  ydelta = y4 - y3;
+          FT_Int  x      = stemWidthPer1000 -
+                             FT_DivFix( cf2_intToFixed( x3 ), ppem );
+
+
+          if ( !xdelta )
+            goto Use_y4;
+
+          *darkenAmount = FT_MulDiv( x, ydelta, xdelta ) +
+                            FT_DivFix( cf2_intToFixed( y3 ), ppem );
+        }
+      }
+
+      else
+      {
+      Use_y4:
+        *darkenAmount = FT_DivFix( cf2_intToFixed( y4 ), ppem );
+      }
 
       /* use half the amount on each side and convert back to true */
       /* character space                                           */
@@ -143,13 +244,14 @@
     /* pointer to parsed font object */
     CFF_Decoder*  decoder = font->decoder;
 
-    FT_Bool  needExtraSetup;
+    FT_Bool  needExtraSetup = FALSE;
 
     /* character space units */
     CF2_Fixed  boldenX = font->syntheticEmboldeningAmountX;
     CF2_Fixed  boldenY = font->syntheticEmboldeningAmountY;
 
-    CF2_Fixed  ppem;
+    CFF_SubFont  subFont;
+    CF2_Fixed    ppem;
 
 
     /* clear previous error */
@@ -157,8 +259,12 @@
 
     /* if a CID fontDict has changed, we need to recompute some cached */
     /* data                                                            */
-    needExtraSetup =
-      (FT_Bool)( font->lastSubfont != cf2_getSubfont( decoder ) );
+    subFont = cf2_getSubfont( decoder );
+    if ( font->lastSubfont != subFont )
+    {
+      font->lastSubfont = subFont;
+      needExtraSetup    = TRUE;
+    }
 
     /* if ppem has changed, we need to recompute some cached data         */
     /* note: because of CID font matrix concatenation, ppem and transform */
@@ -268,7 +374,8 @@
                               font->stdVW,
                               &font->darkenX,
                               boldenX,
-                              FALSE );
+                              FALSE,
+                              font->darkenParams );
       }
       else
         cf2_computeDarkening( emRatio,
@@ -276,7 +383,8 @@
                               font->stdVW,
                               &font->darkenX,
                               0,
-                              font->stemDarkened );
+                              font->stemDarkened,
+                              font->darkenParams );
 
 #if 0
       /* since hstem is measured in the y-direction, we use the `d' member */
@@ -303,7 +411,8 @@
                             font->stdHW,
                             &font->darkenY,
                             boldenY,
-                            font->stemDarkened );
+                            font->stemDarkened,
+                            font->darkenParams );
 
       if ( font->darkenX != 0 || font->darkenY != 0 )
         font->darkened = TRUE;

@@ -1,10 +1,10 @@
 /***************************************************************************/
 /*                                                                         */
-/*  ftxf86.c                                                               */
+/*  afblue.c                                                               */
 /*                                                                         */
-/*    FreeType utility file for X11 support (body).                        */
+/*    Auto-fitter data for blue strings (body).                            */
 /*                                                                         */
-/*  Copyright 2002, 2003, 2004 by                                          */
+/*  Copyright 2013-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,25 +16,24 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_XFREE86_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_SERVICE_XFREE86_NAME_H
+#include "aftypes.h"
 
 
-  /* documentation is in ftxf86.h */
-
-  FT_EXPORT_DEF( const char* )
-  FT_Get_X11_Font_Format( FT_Face  face )
+  FT_LOCAL_ARRAY_DEF( char )
+  af_blue_strings[] =
   {
-    const char*  result = NULL;
+    /* */
+@AF_BLUE_STRINGS_ARRAY@
+  };
 
 
-    if ( face )
-      FT_FACE_FIND_SERVICE( face, result, XF86_NAME );
-
-    return result;
-  }
+  /* stringsets are specific to styles */
+  FT_LOCAL_ARRAY_DEF( AF_Blue_StringRec )
+  af_blue_stringsets[] =
+  {
+    /* */
+@AF_BLUE_STRINGSETS_ARRAY@
+  };
 
 
 /* END */

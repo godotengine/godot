@@ -6,7 +6,7 @@
 /*    recorders (specification only).  These are used to support native    */
 /*    T1/T2 hints in the `type1', `cid', and `cff' font drivers.           */
 /*                                                                         */
-/*  Copyright 2001-2003, 2005-2007, 2009, 2012 by                          */
+/*  Copyright 2001-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -18,8 +18,8 @@
 /***************************************************************************/
 
 
-#ifndef __PSHINTS_H__
-#define __PSHINTS_H__
+#ifndef PSHINTS_H_
+#define PSHINTS_H_
 
 
 #include <ft2build.h>
@@ -45,7 +45,7 @@ FT_BEGIN_HEADER
                           T1_Private*   private_dict,
                           PSH_Globals*  aglobals );
 
-  typedef FT_Error
+  typedef void
   (*PSH_Globals_SetScaleFunc)( PSH_Globals  globals,
                                FT_Fixed     x_scale,
                                FT_Fixed     y_scale,
@@ -465,7 +465,7 @@ FT_BEGIN_HEADER
   typedef void
   (*T2_Hints_StemsFunc)( T2_Hints   hints,
                          FT_UInt    dimension,
-                         FT_UInt    count,
+                         FT_Int     count,
                          FT_Fixed*  coordinates );
 
 
@@ -716,7 +716,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __PSHINTS_H__ */
+#endif /* PSHINTS_H_ */
 
 
 /* END */

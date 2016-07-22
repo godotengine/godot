@@ -3,7 +3,7 @@
 #
 
 
-# Copyright 2000, 2001, 2003, 2004, 2006, 2008 by
+# Copyright 2000-2016 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -17,9 +17,13 @@
 #
 CACHE_DIR   := $(SRC_DIR)/cache
 
+
 # compilation flags for the driver
 #
-CACHE_COMPILE := $(FT_COMPILE) $I$(subst /,$(COMPILER_SEP),$(CACHE_DIR))
+CACHE_COMPILE := $(CC) $(ANSIFLAGS)                              \
+                       $I$(subst /,$(COMPILER_SEP),$(CACHE_DIR)) \
+                       $(INCLUDE_FLAGS)                          \
+                       $(FT_CFLAGS)
 
 
 # Cache driver sources (i.e., C files)
@@ -32,6 +36,7 @@ CACHE_DRV_SRC := $(CACHE_DIR)/ftcbasic.c \
                  $(CACHE_DIR)/ftcmanag.c \
                  $(CACHE_DIR)/ftcmru.c   \
                  $(CACHE_DIR)/ftcsbits.c
+
 
 # Cache driver headers
 #

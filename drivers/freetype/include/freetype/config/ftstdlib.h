@@ -5,7 +5,7 @@
 /*    ANSI-specific library and header configuration file (specification   */
 /*    only).                                                               */
 /*                                                                         */
-/*  Copyright 2002-2007, 2009, 2011-2012 by                                */
+/*  Copyright 2002-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -23,14 +23,13 @@
   /* FreeType normally requires.  It also defines macros to rename the     */
   /* standard functions within the FreeType source code.                   */
   /*                                                                       */
-  /* Load a file which defines __FTSTDLIB_H__ before this one to override  */
-  /* it.                                                                   */
+  /* Load a file which defines FTSTDLIB_H_ before this one to override it. */
   /*                                                                       */
   /*************************************************************************/
 
 
-#ifndef __FTSTDLIB_H__
-#define __FTSTDLIB_H__
+#ifndef FTSTDLIB_H_
+#define FTSTDLIB_H_
 
 
 #include <stddef.h>
@@ -64,6 +63,8 @@
 #define FT_INT_MAX     INT_MAX
 #define FT_INT_MIN     INT_MIN
 #define FT_UINT_MAX    UINT_MAX
+#define FT_LONG_MIN    LONG_MIN
+#define FT_LONG_MAX    LONG_MAX
 #define FT_ULONG_MAX   ULONG_MAX
 
 
@@ -141,8 +142,7 @@
   /**********************************************************************/
 
 
-#define ft_atol   atol
-#define ft_labs   labs
+#define ft_atol  atol
 
 
   /**********************************************************************/
@@ -168,7 +168,7 @@
 #include <stdarg.h>
 
 
-#endif /* __FTSTDLIB_H__ */
+#endif /* FTSTDLIB_H_ */
 
 
 /* END */

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType position independent code services for raster module.   */
 /*                                                                         */
-/*  Copyright 2009 by                                                      */
+/*  Copyright 2009-2016 by                                                 */
 /*  Oran Agra and Mickey Gabel.                                            */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,14 +16,14 @@
 /***************************************************************************/
 
 
-#ifndef __RASTPIC_H__
-#define __RASTPIC_H__
+#ifndef RASTPIC_H_
+#define RASTPIC_H_
 
-
-FT_BEGIN_HEADER
 
 #include FT_INTERNAL_PIC_H
 
+
+FT_BEGIN_HEADER
 
 #ifndef FT_CONFIG_OPTION_PIC
 
@@ -48,14 +48,8 @@ FT_BEGIN_HEADER
   void
   ft_raster1_renderer_class_pic_free( FT_Library  library );
 
-  void
-  ft_raster5_renderer_class_pic_free( FT_Library  library );
-
   FT_Error
   ft_raster1_renderer_class_pic_init( FT_Library  library );
-
-  FT_Error
-  ft_raster5_renderer_class_pic_init( FT_Library  library );
 
 #endif /* FT_CONFIG_OPTION_PIC */
 
@@ -63,7 +57,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* __RASTPIC_H__ */
+#endif /* RASTPIC_H_ */
 
 
 /* END */

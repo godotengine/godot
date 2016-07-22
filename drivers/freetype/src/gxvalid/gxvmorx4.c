@@ -5,7 +5,8 @@
 /*    TrueTypeGX/AAT morx table validation                                 */
 /*    body for "morx" type4 (Non-Contextual Glyph Substitution) subtable.  */
 /*                                                                         */
-/*  Copyright 2005 by suzuki toshiya, Masatake YAMATO, Red Hat K.K.,       */
+/*  Copyright 2005-2016 by                                                 */
+/*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -41,12 +42,12 @@
   FT_LOCAL_DEF( void )
   gxv_morx_subtable_type4_validate( FT_Bytes       table,
                                     FT_Bytes       limit,
-                                    GXV_Validator  valid )
+                                    GXV_Validator  gxvalid )
   {
     GXV_NAME_ENTER( "morx chain subtable type4 "
                     "(Non-Contextual Glyph Substitution)" );
 
-    gxv_mort_subtable_type4_validate( table, limit, valid );
+    gxv_mort_subtable_type4_validate( table, limit, gxvalid );
 
     GXV_EXIT;
   }

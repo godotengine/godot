@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    smooth renderer error codes (specification only).                    */
 /*                                                                         */
-/*  Copyright 2001, 2012 by                                                */
+/*  Copyright 2001-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -23,12 +23,12 @@
   /*                                                                       */
   /*************************************************************************/
 
-#ifndef __FTSMERRS_H__
-#define __FTSMERRS_H__
+#ifndef FTSMERRS_H_
+#define FTSMERRS_H_
 
 #include FT_MODULE_ERRORS_H
 
-#undef __FTERRORS_H__
+#undef FTERRORS_H_
 
 #undef  FT_ERR_PREFIX
 #define FT_ERR_PREFIX  Smooth_Err_
@@ -36,7 +36,7 @@
 
 #include FT_ERRORS_H
 
-#endif /* __FTSMERRS_H__ */
+#endif /* FTSMERRS_H_ */
 
 
 /* END */

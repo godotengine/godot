@@ -36,8 +36,8 @@
 /***************************************************************************/
 
 
-#ifndef __CF2GLUE_H__
-#define __CF2GLUE_H__
+#ifndef CF2GLUE_H_
+#define CF2GLUE_H_
 
 
 /* common includes for other modules */
@@ -138,7 +138,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __CF2GLUE_H__ */
+#endif /* CF2GLUE_H_ */
 
 
 /* END */

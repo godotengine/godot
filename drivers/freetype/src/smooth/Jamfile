@@ -1,6 +1,6 @@
 # FreeType 2 src/smooth Jamfile
 #
-# Copyright 2001 by
+# Copyright 2001-2016 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -16,7 +16,10 @@ SubDir  FT2_TOP $(FT2_SRC_DIR) smooth ;
 
   if $(FT2_MULTI)
   {
-    _sources = ftgrays ftsmooth ftspic ;
+    _sources = ftgrays
+               ftsmooth
+               ftspic
+               ;
   }
   else
   {

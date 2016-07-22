@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType BDF services (specification).                           */
 /*                                                                         */
-/*  Copyright 2003, 2009, 2012 by                                          */
+/*  Copyright 2003-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef __SVBDF_H__
-#define __SVBDF_H__
+#ifndef SVBDF_H_
+#define SVBDF_H_
 
 #include FT_BDF_H
 #include FT_INTERNAL_SERVICE_H
@@ -76,7 +76,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* __SVBDF_H__ */
+#endif /* SVBDF_H_ */
 
 
 /* END */
