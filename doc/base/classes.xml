@@ -34134,28 +34134,28 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true if horizontal scrool is allowed.
+				Return true if horizontal scroll is allowed.
 			</description>
 		</method>
 		<method name="is_v_scroll_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if vertical scrool is allowed.
+				Return true if vertical scroll is allowed.
 			</description>
 		</method>
 		<method name="set_enable_h_scroll">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set allows horizontal scrool.
+				Set allows horizontal scroll.
 			</description>
 		</method>
 		<method name="set_enable_v_scroll">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set allows vertical scrool.
+				Set allows vertical scroll.
 			</description>
 		</method>
 		<method name="set_h_scroll">
