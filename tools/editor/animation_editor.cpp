@@ -4075,11 +4075,21 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	track_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 
 
+
 	track_pos = memnew( Control );
 	track_pos->set_area_as_parent_rect();
 	track_pos->set_ignore_mouse(true);
 	track_editor->add_child(track_pos);
 	track_pos->connect("draw",this,"_track_pos_draw");
+
+	select_anim_warning = memnew( Label );
+	track_editor->add_child(select_anim_warning);
+	select_anim_warning->set_area_as_parent_rect();
+	select_anim_warning->set_text(TTR("Select an AnimationPlayer from the Scene Tree to edit animations."));
+	select_anim_warning->set_autowrap(true);
+	select_anim_warning->set_align(Label::ALIGN_CENTER);
+	select_anim_warning->set_valign(Label::VALIGN_CENTER);
+
 
 
 	v_scroll = memnew( VScrollBar );

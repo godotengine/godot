@@ -43,6 +43,7 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 
 		key_editor->set_animation(Ref<Animation>());
 		key_editor->set_root(NULL);
+		key_editor->show_select_node_warning(true);
 		_update_player();
 		//editor->animation_editor_make_visible(false);
 
@@ -832,6 +833,7 @@ void AnimationPlayerEditor::_update_player() {
 	remove_anim->set_disabled(animlist.size()==0);
 	resource_edit_anim->set_disabled(animlist.size()==0);
 	save_anim->set_disabled(animlist.size() == 0);
+	tool_anim->set_disabled(player==NULL);
 
 
 	int active_idx=-1;
@@ -889,9 +891,11 @@ void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 		return; //ignore, pinned
 	player=p_player;
 
-	if (player)
+	if (player) {
 		_update_player();
-	else {
+		key_editor->show_select_node_warning(false);
+	} else {
+		key_editor->show_select_node_warning(true);
 
 //		hide();
 
@@ -1123,6 +1127,7 @@ void AnimationPlayerEditor::_hide_anim_editors() {
 
 	key_editor->set_animation(Ref<Animation>());
 	key_editor->set_root(NULL);
+	key_editor->show_select_node_warning(true);
 //		editor->animation_editor_make_visible(false);
 
 }
@@ -1531,6 +1536,8 @@ void AnimationPlayerEditorPlugin::edit(Object *p_object) {
 	if (!p_object)
 		return;
 	anim_editor->edit(p_object->cast_to<AnimationPlayer>());
+
+
 }
 
 bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
