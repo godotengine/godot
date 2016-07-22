@@ -79,7 +79,6 @@ String ItemList::get_item_text(int p_idx) const{
 
 	ERR_FAIL_INDEX_V(p_idx,items.size(),String());
 	return items[p_idx].text;
-
 }
 
 void ItemList::set_item_tooltip(int p_idx,const String& p_tooltip){
@@ -89,14 +88,12 @@ void ItemList::set_item_tooltip(int p_idx,const String& p_tooltip){
 	items[p_idx].tooltip=p_tooltip;
 	update();
 	shape_changed=true;
-
 }
 
 String ItemList::get_item_tooltip(int p_idx) const{
 
 	ERR_FAIL_INDEX_V(p_idx,items.size(),String());
 	return items[p_idx].tooltip;
-
 }
 
 void ItemList::set_item_icon(int p_idx,const Ref<Texture>& p_icon){
@@ -106,8 +103,6 @@ void ItemList::set_item_icon(int p_idx,const Ref<Texture>& p_icon){
 	items[p_idx].icon=p_icon;
 	update();
 	shape_changed=true;
-
-
 }
 
 Ref<Texture> ItemList::get_item_icon(int p_idx) const{
@@ -115,7 +110,6 @@ Ref<Texture> ItemList::get_item_icon(int p_idx) const{
 	ERR_FAIL_INDEX_V(p_idx,items.size(),Ref<Texture>());
 
 	return items[p_idx].icon;
-
 }
 
 void ItemList::set_item_icon_region(int p_idx,const Rect2& p_region) {
@@ -159,15 +153,13 @@ void ItemList::set_item_tag_icon(int p_idx,const Ref<Texture>& p_tag_icon){
 	items[p_idx].tag_icon=p_tag_icon;
 	update();
 	shape_changed=true;
-
-
 }
+
 Ref<Texture> ItemList::get_item_tag_icon(int p_idx) const{
 
 	ERR_FAIL_INDEX_V(p_idx,items.size(),Ref<Texture>());
 
 	return items[p_idx].tag_icon;
-
 }
 
 void ItemList::set_item_selectable(int p_idx,bool p_selectable){
@@ -192,7 +184,6 @@ void ItemList::set_item_disabled(int p_idx,bool p_disabled){
 
 	items[p_idx].disabled=p_disabled;
 	update();
-
 }
 
 
@@ -210,7 +201,6 @@ void ItemList::set_item_metadata(int p_idx,const Variant& p_metadata){
 	items[p_idx].metadata=p_metadata;
 	update();
 	shape_changed=true;
-
 }
 
 Variant ItemList::get_item_metadata(int p_idx) const{
@@ -229,7 +219,7 @@ void ItemList::select(int p_idx,bool p_single){
 			return;
 		}
 
-		for(int i=0;i<items.size();i++) {
+		for (int i=0;i<items.size();i++) {
 			items[i].selected=p_idx==i;
 		}
 
@@ -241,9 +231,8 @@ void ItemList::select(int p_idx,bool p_single){
 			items[p_idx].selected=true;
 		}
 	}
+
 	update();
-
-
 }
 void ItemList::unselect(int p_idx){
 
@@ -255,15 +244,14 @@ void ItemList::unselect(int p_idx){
 	} else {
 		items[p_idx].selected=false;
 	}
-	update();
 
+	update();
 }
 bool ItemList::is_selected(int p_idx) const{
 
 	ERR_FAIL_INDEX_V(p_idx,items.size(),false);
 
 	return items[p_idx].selected;
-
 }
 
 void ItemList::set_current(int p_current) {
@@ -310,7 +298,6 @@ void ItemList::move_item(int p_item,int p_to_pos) {
 		current++;
 	}
 
-
 	update();
 }
 
@@ -326,8 +313,6 @@ void ItemList::remove_item(int p_idx){
 	update();
 	shape_changed=true;
 	defer_select_single=-1;
-
-
 }
 
 void ItemList::clear(){
@@ -337,7 +322,6 @@ void ItemList::clear(){
 	ensure_selected_visible=false;
 	update();
 	defer_select_single=-1;
-
 }
 
 void ItemList::set_fixed_column_width(int p_size){
@@ -346,8 +330,8 @@ void ItemList::set_fixed_column_width(int p_size){
 	fixed_column_width=p_size;
 	update();
 	shape_changed=true;
-
 }
+
 int ItemList::get_fixed_column_width() const{
 
 	return fixed_column_width;
@@ -358,8 +342,8 @@ void ItemList::set_same_column_width(bool p_enable){
 	same_column_width=p_enable;
 	update();
 	shape_changed=true;
-
 }
+
 int ItemList::is_same_column_width() const{
 
 	return same_column_width;
@@ -371,8 +355,8 @@ void ItemList::set_max_text_lines(int p_lines){
 	max_text_lines=p_lines;
 	update();
 	shape_changed=true;
-
 }
+
 int ItemList::get_max_text_lines() const{
 
 	return max_text_lines;
@@ -384,6 +368,7 @@ void ItemList::set_max_columns(int p_amount){
 	max_columns=p_amount;
 	update();
 }
+
 int ItemList::get_max_columns() const{
 
 	return max_columns;
@@ -454,19 +439,18 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 		const InputEventMouseButton &mb = p_event.mouse_button;
 
-		search_string=""; //any mousepress cancels
+		search_string = ""; //any mousepress cancels
 		Vector2 pos(mb.x,mb.y);
 		Ref<StyleBox> bg = get_stylebox("bg");
-		pos-=bg->get_offset();
-		pos.y+=scroll_bar->get_val();
+		pos -= bg->get_offset();
+		pos.y += scroll_bar->get_val();
 
 		int closest = -1;
-		int closest_dist=0x7FFFFFFF;
+		int closest_dist = 0x7FFFFFFF;
 
-		for(int i=0;i<items.size();i++) {
-
+		for (int i=0;i<items.size();i++) {
 			Rect2 rc = items[i].rect_cache;
-			if (i%current_columns==current_columns-1) {
+			if (i % current_columns==current_columns-1) {
 				rc.size.width=get_size().width; //not right but works
 			}
 
@@ -494,10 +478,12 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 				int from = current;
 				int to = i;
-				if (i<current) {
+
+				if (i < current) {
 					SWAP(from,to);
 				}
-				for(int j=from;j<=to;j++) {
+
+				for (int j=from;j<=to;j++) {
 					bool selected = !items[j].selected;
 					select(j,false);
 					if (selected)
@@ -516,21 +502,19 @@ void ItemList::_input_event(const InputEvent& p_event) {
 				}
 
 				if (items[i].selected && p_event.mouse_button.button_index==BUTTON_RIGHT) {
-
 					emit_signal("item_rmb_selected",i,Vector2(mb.x,mb.y));
 				} else {
-					bool selected = !items[i].selected;
 
+					bool selected = !items[i].selected;
 
 					select(i,select_mode==SELECT_SINGLE || !mb.mod.command);
 
 					if (selected) {
 						if (select_mode==SELECT_SINGLE) {
 							emit_signal("item_selected",i);
-						} else
+						} else {
 							emit_signal("multi_selected",i,true);
-
-
+						}
 					}
 
 					if (p_event.mouse_button.button_index==BUTTON_RIGHT) {
@@ -539,24 +523,21 @@ void ItemList::_input_event(const InputEvent& p_event) {
 					} else if (/*select_mode==SELECT_SINGLE &&*/ mb.doubleclick) {
 
 						emit_signal("item_activated",i);
-
 					}
 				}
 			}
 
-
 			return;
 		}
 	}
+
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_WHEEL_UP && p_event.mouse_button.pressed) {
 
 		scroll_bar->set_val( scroll_bar->get_val()-scroll_bar->get_page()/8 );
-
 	}
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_WHEEL_DOWN && p_event.mouse_button.pressed) {
 
 		scroll_bar->set_val( scroll_bar->get_val()+scroll_bar->get_page()/8 );
-
 	}
 
 	if (p_event.is_pressed() && items.size()>0) {
@@ -569,7 +550,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 				if (diff<int(Globals::get_singleton()->get("gui/incr_search_max_interval_msec"))*2) {
 
-					for(int i=current-1;i>=0;i--) {
+					for (int i=current-1;i>=0;i--) {
 
 						if (items[i].text.begins_with(search_string)) {
 
@@ -583,6 +564,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 							break;
 						}
 					}
+
 					accept_event();
 					return;
 				}
@@ -591,9 +573,11 @@ void ItemList::_input_event(const InputEvent& p_event) {
 			if (current>=current_columns) {
 				set_current(current-current_columns);
 				ensure_current_is_visible();
+
 				if (select_mode==SELECT_SINGLE) {
 					emit_signal("item_selected",current);
 				}
+
 				accept_event();
 			}
 		} else if (p_event.is_action("ui_down")) {
@@ -605,7 +589,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 				if (diff<int(Globals::get_singleton()->get("gui/incr_search_max_interval_msec"))*2) {
 
-					for(int i=current+1;i<items.size();i++) {
+					for (int i=current+1;i<items.size();i++) {
 
 						if (items[i].text.begins_with(search_string)) {
 
@@ -635,7 +619,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 			search_string=""; //any mousepress cancels
 
-			for(int i=4;i>0;i--) {
+			for (int i=4;i>0;i--) {
 				if (current-current_columns*i >=0 ) {
 					set_current( current- current_columns*i);
 					ensure_current_is_visible();
@@ -650,7 +634,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 			search_string=""; //any mousepress cancels
 
-			for(int i=4;i>0;i--) {
+			for (int i=4;i>0;i--) {
 				if (current+current_columns*i < items.size() ) {
 					set_current( current+ current_columns*i);
 					ensure_current_is_visible();
@@ -682,9 +666,11 @@ void ItemList::_input_event(const InputEvent& p_event) {
 			if (current%current_columns!=(current_columns-1)) {
 				set_current(current+1);
 				ensure_current_is_visible();
+
 				if (select_mode==SELECT_SINGLE) {
 					emit_signal("item_selected",current);
 				}
+
 				accept_event();
 
 			}
@@ -722,7 +708,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 				}
 
 				search_string+=String::chr(p_event.key.unicode);
-				for(int i=0;i<items.size();i++) {
+				for (int i=0;i<items.size();i++) {
 					if (items[i].text.begins_with(search_string)) {
 						set_current(i);
 						ensure_current_is_visible();
@@ -737,10 +723,6 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 		}
 	}
-
-
-
-
 }
 
 void ItemList::ensure_current_is_visible() {
@@ -764,8 +746,6 @@ static Rect2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size) {
 	int ofs_y=(size.height - tex_height)/2;
 
 	return Rect2(ofs_x,ofs_y,tex_width,tex_height);
-
-
 }
 
 void ItemList::_notification(int p_what) {
@@ -827,7 +807,7 @@ void ItemList::_notification(int p_what) {
 			float max_column_width = 0;
 
 			//1- compute item minimum sizes
-			for(int i=0;i<items.size();i++) {
+			for (int i=0;i<items.size();i++) {
 
 				Size2 minsize;
 				if (items[i].icon.is_valid()) {
@@ -852,8 +832,6 @@ void ItemList::_notification(int p_what) {
 					Size2 s = font->get_string_size(items[i].text);
 					//s.width=MIN(s.width,fixed_column_width);
 
-
-
 					if (icon_mode==ICON_MODE_TOP) {
 						minsize.x=MAX(minsize.x,s.width);
 						if (max_text_lines>0) {
@@ -867,7 +845,6 @@ void ItemList::_notification(int p_what) {
 						minsize.x+=s.width;
 					}
 				}
-
 
 				if (fixed_column_width>0)
 					minsize.x=fixed_column_width;
@@ -884,7 +861,6 @@ void ItemList::_notification(int p_what) {
 			if (max_columns>0)
 				current_columns=max_columns;
 
-
 			while(true) {
 				//repeat util all fits
 				//print_line("try with "+itos(current_columns));
@@ -893,7 +869,7 @@ void ItemList::_notification(int p_what) {
 				int col=0;
 				int max_h=0;
 				separators.clear();;
-				for(int i=0;i<items.size();i++) {
+				for (int i=0;i<items.size();i++) {
 
 					if (current_columns>1 && items[i].rect_cache.size.width+ofs.x > fit_size) {
 						//went past
@@ -903,7 +879,7 @@ void ItemList::_notification(int p_what) {
 					}
 
 					items[i].rect_cache=items[i].min_rect_cache;
-					if(same_column_width)
+					if (same_column_width)
 						items[i].rect_cache.size.x=max_column_width;
 					items[i].rect_cache.pos=ofs;
 					max_h=MAX(max_h,items[i].rect_cache.size.y);
@@ -915,7 +891,7 @@ void ItemList::_notification(int p_what) {
 						if (i<items.size()-1)
 							separators.push_back(ofs.y+max_h+vseparation/2);
 						
-						for(int j=i;j>=0 && col>0;j--, col--) {
+						for (int j=i;j>=0 && col>0;j--, col--) {
 							items[j].rect_cache.size.y = max_h;
 						}
 						
@@ -926,7 +902,7 @@ void ItemList::_notification(int p_what) {
 					}
 				}
 
-				for(int j=items.size()-1;j>=0 && col>0;j--, col--) {
+				for (int j=items.size()-1;j>=0 && col>0;j--, col--) {
 					items[j].rect_cache.size.y = max_h;
 				}
 
@@ -940,6 +916,7 @@ void ItemList::_notification(int p_what) {
 					} else {
 						scroll_bar->show();
 					}
+
 					break;
 				}
 			}
@@ -955,7 +932,7 @@ void ItemList::_notification(int p_what) {
 
 		Rect2 clip(Point2(),size-bg->get_minimum_size()+Vector2(0,scroll_bar->get_val()));
 
-		for(int i=0;i<items.size();i++) {
+		for (int i=0;i<items.size();i++) {
 
 
 			Rect2 rcache = items[i].rect_cache;
@@ -988,7 +965,6 @@ void ItemList::_notification(int p_what) {
 				draw_rect(r,items[i].custom_bg);
 			}
 
-
 			Vector2 text_ofs;
 			if (items[i].icon.is_valid()) {
 
@@ -996,10 +972,11 @@ void ItemList::_notification(int p_what) {
 				//= _adjust_to_max_size(items[i].get_icon_size(),fixed_icon_size) * icon_scale;
 
 				if (fixed_icon_size.x>0 && fixed_icon_size.y>0) {
+
 					icon_size=fixed_icon_size* icon_scale;
 				} else {
-					icon_size=items[i].get_icon_size() *icon_scale;
 
+					icon_size=items[i].get_icon_size() *icon_scale;
 				}
 
 				Vector2 icon_ofs;
@@ -1052,7 +1029,7 @@ void ItemList::_notification(int p_what) {
 				Vector2 size = font->get_string_size(items[i].text);
 				if (fixed_column_width)
 					max_len=fixed_column_width;
-				else if(same_column_width)
+				else if (same_column_width)
 					max_len=items[i].rect_cache.size.x;
 				else
 					max_len=size.x;
@@ -1066,7 +1043,7 @@ void ItemList::_notification(int p_what) {
 					int ss = items[i].text.length();
 					float ofs=0;
 					int line=0;
-					for(int j=0;j<=ss;j++) {
+					for (int j=0;j<=ss;j++) {
 
 						int cs = j<ss?font->get_char_size(items[i].text[j],items[i].text[j+1]).x:0;
 						if (ofs+cs>max_len || j==ss) {
@@ -1090,9 +1067,10 @@ void ItemList::_notification(int p_what) {
 					text_ofs+=base_ofs;
 					text_ofs+=items[i].rect_cache.pos;
 
-					for(int j=0;j<ss;j++) {
+					for (int j=0;j<ss;j++) {
 
 						if (j==line_limit_cache[line]) {
+
 							line++;
 							ofs=0;
 							if (line>=max_text_lines)
@@ -1133,7 +1111,7 @@ void ItemList::_notification(int p_what) {
 			}
 		}
 
-		for(int i=0;i<separators.size();i++) {
+		for (int i=0;i<separators.size();i++) {
 			draw_line(Vector2(bg->get_margin(MARGIN_LEFT),base_ofs.y+separators[i]),Vector2(size.width-bg->get_margin(MARGIN_LEFT),base_ofs.y+separators[i]),guide_color);
 		}
 
@@ -1154,7 +1132,6 @@ void ItemList::_notification(int p_what) {
 		}
 
 		ensure_selected_visible=false;
-
 	}
 }
 
@@ -1172,7 +1149,7 @@ int ItemList::get_item_at_pos(const Point2& p_pos, bool p_exact) const {
 	int closest = -1;
 	int closest_dist=0x7FFFFFFF;
 
-	for(int i=0;i<items.size();i++) {
+	for (int i=0;i<items.size();i++) {
 
 		Rect2 rc = items[i].rect_cache;
 		if (i%current_columns==current_columns-1) {
@@ -1217,8 +1194,10 @@ void ItemList::sort_items_by_text() {
 	shape_changed=true;
 
 	if (select_mode==SELECT_SINGLE) {
-		for(int i=0;i<items.size();i++) {
+
+		for (int i=0;i<items.size();i++) {
 			if (items[i].selected) {
+
 				select(i);
 				return;
 			}
@@ -1228,7 +1207,7 @@ void ItemList::sort_items_by_text() {
 
 int ItemList::find_metadata(const Variant& p_metadata) const {
 
-	for(int i=0;i<items.size();i++) {
+	for (int i=0;i<items.size();i++) {
 		if (items[i].metadata==p_metadata) {
 			return i;
 		}
@@ -1240,6 +1219,7 @@ int ItemList::find_metadata(const Variant& p_metadata) const {
 
 
 void ItemList::set_allow_rmb_select(bool p_allow) {
+
 	allow_rmb_select=p_allow;
 }
 
@@ -1249,15 +1229,19 @@ bool ItemList::get_allow_rmb_select() const {
 }
 
 void ItemList::set_icon_scale(real_t p_scale) {
+
 	icon_scale = p_scale;
 }
 
 real_t ItemList::get_icon_scale() const {
+
 	return icon_scale;
 }
 
 Vector<int> ItemList::get_selected_items() {
+
 	Vector<int> selected;
+
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].selected) {
 			selected.push_back(i);
@@ -1266,6 +1250,7 @@ Vector<int> ItemList::get_selected_items() {
 			}
 		}
 	}
+
 	return selected;
 }
 
