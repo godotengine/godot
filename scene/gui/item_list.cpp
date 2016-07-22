@@ -1211,8 +1211,11 @@ String ItemList::get_tooltip(const Point2& p_pos) const {
 }
 
 void ItemList::sort_items_by_text() {
+
 	items.sort();
 	update();
+	shape_changed=true;
+
 	if (select_mode==SELECT_SINGLE) {
 		for(int i=0;i<items.size();i++) {
 			if (items[i].selected) {
@@ -1304,7 +1307,7 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("remove_item","idx"),&ItemList::remove_item);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&ItemList::clear);
-	ObjectTypeDB::bind_method(_MD("sort_items_by_text"),&ItemList::clear);
+	ObjectTypeDB::bind_method(_MD("sort_items_by_text"),&ItemList::sort_items_by_text);
 
 	ObjectTypeDB::bind_method(_MD("set_fixed_column_width","width"),&ItemList::set_fixed_column_width);
 	ObjectTypeDB::bind_method(_MD("get_fixed_column_width"),&ItemList::get_fixed_column_width);
