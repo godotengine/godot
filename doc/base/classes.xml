@@ -22721,6 +22721,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="has_virtual_keyboard" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if the platform has a virtual keyboard, false otherwise.
+			</description>
+		</method>
+		<method name="hide_virtual_keyboard">
+			<description>
+				Hides the virtual keyboard if it is shown, does nothing otherwise.
+			</description>
+		</method>
 		<method name="is_debug_build" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -23036,6 +23048,13 @@
 			<argument index="0" name="uri" type="String">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="show_virtual_keyboard">
+			<argument index="0" name="existing_text" type="String">
+			</argument>
+			<description>
+				Shows the virtual keyboard if the platform has one. The [i]existing_text[/i] parameter is useful for implementing your own LineEdit, as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
 			</description>
 		</method>
 	</methods>
