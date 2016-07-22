@@ -415,11 +415,12 @@ void ColorPicker::_screen_pick_pressed()
 	if (!screen) {
 		screen=memnew( Control );
 		r->add_child(screen);
+		screen->set_as_toplevel(true);
 		screen->set_area_as_parent_rect();
 		screen->connect("input_event",this,"_screen_input");
 	}
 	screen->raise();
-	screen->show();
+	screen->show_modal();
 	r->queue_screen_capture();
 }
 
