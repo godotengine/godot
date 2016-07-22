@@ -226,6 +226,8 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 	Node *expr=NULL;
 
+	int op_line = tokenizer->get_token_line(); // when operators are created at the bottom, the line might have been changed (\n found)
+
 	while(true) {
 
 
@@ -1051,6 +1053,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				OperatorNode *op = alloc_node<OperatorNode>();
 				op->op=expression[i].op;
 				op->arguments.push_back(expression[i+1].node);
+				op->line=op_line; //line might have been changed from a \n
 				expression[i].is_op=false;
 				expression[i].node=op;
 				expression.remove(i+1);
@@ -1066,6 +1069,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 			OperatorNode *op = alloc_node<OperatorNode>();
 			op->op=expression[next_op].op;
+			op->line=op_line; //line might have been changed from a \n
 
 			if (expression[next_op-1].is_op) {
 
@@ -1268,6 +1272,8 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 							} break;
 						}
 
+						error_line=op->line;
+
 						return p_node;
 					}
 
@@ -1303,6 +1309,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 					Variant v = ca->value.get(cb->value,&valid);
 					if (!valid) {
 						_set_error("invalid index in constant expression");
+						error_line=op->line;
 						return op;
 					}
 
@@ -1340,6 +1347,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 					Variant v = ca->value.get_named(ib->name,&valid);
 					if (!valid) {
 						_set_error("invalid index '"+String(ib->name)+"' in constant expression");
+						error_line=op->line;
 						return op;
 					}
 
@@ -1369,6 +1377,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 
 					if (op->arguments[0]->type==Node::TYPE_CONSTANT) {
 						_set_error("Can't assign to constant",tokenizer->get_token_line()-1);
+						error_line=op->line;
 						return op;
 					}
 
@@ -1384,6 +1393,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 	Variant::evaluate(m_vop,static_cast<ConstantNode*>(op->arguments[0])->value,Variant(),res,valid);\
 	if (!valid) {\
 		_set_error("Invalid operand for unary operator");\
+		error_line=op->line;\
 		return p_node;\
 	}\
 	ConstantNode *cn = alloc_node<ConstantNode>();\
@@ -1396,6 +1406,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 	Variant::evaluate(m_vop,static_cast<ConstantNode*>(op->arguments[0])->value,static_cast<ConstantNode*>(op->arguments[1])->value,res,valid);\
 	if (!valid) {\
 		_set_error("Invalid operands for operator");\
+		error_line=op->line;\
 		return p_node;\
 	}\
 	ConstantNode *cn = alloc_node<ConstantNode>();\
