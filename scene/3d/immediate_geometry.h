@@ -47,7 +47,7 @@ protected:
 public:
 
 
-	void begin(Mesh::PrimitiveType p_primitive,const Ref<Texture>& p_texture);
+	void begin(Mesh::PrimitiveType p_primitive,const Ref<Texture>& p_texture=Ref<Texture>());
 	void set_normal(const Vector3& p_normal);
 	void set_tangent(const Plane& p_tangent);
 	void set_color(const Color& p_color);
