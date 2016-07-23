@@ -4,15 +4,19 @@
 // For more information Ericsson Texture Compression (ETC/ETC1), see:
 // http://www.khronos.org/registry/gles/extensions/OES/OES_compressed_ETC1_RGB8_texture.txt
 //
+// v1.04 - 5/15/14 - Fix signed vs. unsigned subtraction problem (noticed when compiled with gcc) in pack_etc1_block_init(). 
+//         This issue would cause an assert when this func. was called in debug. (Note this module was developed/testing with MSVC, 
+//         I still need to test it throughly when compiled with gcc.)
+//
 // v1.03 - 5/12/13 - Initial public release
 #include "rg_etc1.h"
 
 #include <stdlib.h>
-#include <string.h>
+#include <memory.h>
 #include <assert.h>
 //#include <stdio.h>
 #include <math.h>
-#include <stdio.h>
+
 #pragma warning (disable: 4201) //  nonstandard extension used : nameless struct/union
 
 #if defined(_DEBUG) || defined(DEBUG)
@@ -23,16 +27,6 @@
 
 namespace rg_etc1
 {
-
-   inline long labs(long val) {
-        return val < 0 ? -val : val;
-   }
-
-   inline int intabs(int val) {
-
-       return val<0?-val:val;
-   }
-
    typedef unsigned char uint8;
    typedef unsigned short uint16;
    typedef unsigned int uint;
@@ -372,7 +366,6 @@ namespace rg_etc1
    
    static uint8 g_quant5_tab[256+16];
 
-
    static const int g_etc1_inten_tables[cETC1IntenModifierValues][cETC1SelectorValues] = 
    { 
       { -8,  -2,   2,   8 }, { -17,  -5,  5,  17 }, { -29,  -9,   9,  29 }, {  -42, -13, 13,  42 }, 
@@ -437,7 +430,7 @@ namespace rg_etc1
       0x0428, 0x071C, 0x0735, 0x0E05, 0x0C17, 0xFFFF }, { 0x0520, 0x0A23, 0x0927, 0xFFFF }, { 0x0B11, 0x1209, 0x013B, 0x052F,
       0xFFFF }, { 0x0616, 0x081E, 0x0D19, 0xFFFF }, { 0x0522, 0x0704, 0x0A0A, 0x0A31, 0x0D03, 0x0C15, 0x1007, 0x082B, 0x072D,
       0x0F1D, 0xFFFF }, { 0x0C01, 0x0933, 0x0A25, 0x0637, 0x0E1B, 0xFFFF }, { 0x042A, 0x0B21, 0x0929, 0x180D, 0xFFFF }, {
-	      0x0530, 0x0614, 0x0336, 0x0908, 0x0439, 0x150B, 0x111F, 0xFFFF }, { 0x0600, 0x0524, 0x0806, 0x0238, 0x0C13, 0x0F05,
+      0x0530, 0x0614, 0x0336, 0x0908, 0x0439, 0x150B, 0x111F, 0xFFFF }, { 0x0600, 0x0524, 0x0806, 0x0238, 0x0C13, 0x0F05,
       0x0D17, 0xFFFF }, { 0x071A, 0x0B23, 0x0835, 0x0A27, 0xFFFF }, { 0x1309, 0x023B, 0x062F, 0xFFFF }, { 0x0612, 0x0434,
       0x013A, 0x0C11, 0x0E19, 0xFFFF }, { 0x0526, 0x0C0C, 0x032E, 0x0B31, 0x0E03, 0x0D15, 0x1107, 0x092B, 0xFFFF }, { 0x0D01,
       0x0A33, 0x0B25, 0x0737, 0x0F1B, 0x082D, 0x101D, 0xFFFF }, { 0x0610, 0x0A29, 0x190D, 0xFFFF }, { 0x0718, 0x042C, 0x0C21,
@@ -1810,7 +1803,7 @@ namespace rg_etc1
          {
             if (block_inten[0] > m_pSorted_luma[n - 1])
             {
-           const uint min_error = intabs(block_inten[0] - m_pSorted_luma[n - 1]);
+               const uint min_error = labs(block_inten[0] - m_pSorted_luma[n - 1]);
                if (min_error >= trial_solution.m_error)
                   continue;
             }
@@ -1824,7 +1817,7 @@ namespace rg_etc1
          {
             if (m_pSorted_luma[0] > block_inten[3])
             {
-           const uint min_error = intabs(m_pSorted_luma[0] - block_inten[3]);
+               const uint min_error = labs(m_pSorted_luma[0] - block_inten[3]);
                if (min_error >= trial_solution.m_error)
                   continue;
             }
@@ -1917,7 +1910,6 @@ done:
                   {
                      int v = etc1_decode_value(diff, inten, selector, packed_c);
                      uint err = labs(v - static_cast<int>(color));
-		     //printf("err: %d - %u = %u\n",v,color,err);
                      if (err < best_error)
                      {
                         best_error = err;
@@ -2370,7 +2362,7 @@ found_perfect_match:
       int dr = best_results[1].m_block_color_unscaled.r - best_results[0].m_block_color_unscaled.r;
       int dg = best_results[1].m_block_color_unscaled.g - best_results[0].m_block_color_unscaled.g;
       int db = best_results[1].m_block_color_unscaled.b - best_results[0].m_block_color_unscaled.b;
-      RG_ETC1_ASSERT(best_use_color4 || ((rg_etc1::minimum(dr, dg, db) >= cETC1ColorDeltaMin) && (rg_etc1::maximum(dr, dg, db) <= cETC1ColorDeltaMax)));
+      RG_ETC1_ASSERT(best_use_color4 || (rg_etc1::minimum(dr, dg, db) >= cETC1ColorDeltaMin) && (rg_etc1::maximum(dr, dg, db) <= cETC1ColorDeltaMax));
            
       if (best_use_color4)
       {
