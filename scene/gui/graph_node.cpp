@@ -559,7 +559,12 @@ Color GraphNode::get_connection_output_color(int p_idx) {
 void GraphNode::_input_event(const InputEvent& p_ev) {
 
 	if (p_ev.type==InputEvent::MOUSE_BUTTON) {
+
+		ERR_EXPLAIN("GraphNode must be the child of a GraphEdit node.");
+		ERR_FAIL_COND(get_parent_control() == NULL);
+
 		get_parent_control()->grab_focus();
+
 		if(p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
 
 			Vector2 mpos = Vector2(p_ev.mouse_button.x,p_ev.mouse_button.y);
