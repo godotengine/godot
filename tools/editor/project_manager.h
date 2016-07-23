@@ -92,6 +92,7 @@ class ProjectManager : public Control {
 
 	void _panel_draw(Node *p_hb);
 	void _panel_input(const InputEvent& p_ev,Node *p_hb);
+	void _unhandled_input(const InputEvent& p_ev);
 	void _favorite_pressed(Node *p_hb);
 
 protected:
