@@ -3822,6 +3822,11 @@ void EditorNode::request_instance_scene(const String &p_path) {
 
 }
 
+void EditorNode::request_instance_scenes(const Vector<String>& p_files) {
+
+	scene_tree_dock->instance_scenes(p_files);
+}
+
 FileSystemDock *EditorNode::get_scenes_dock() {
 
 	return scenes_dock;
@@ -3831,10 +3836,9 @@ SceneTreeDock *EditorNode::get_scene_tree_dock() {
 	return scene_tree_dock;
 }
 
-void EditorNode::_instance_request(const String& p_path){
+void EditorNode::_instance_request(const Vector<String>& p_files) {
 
-
-	request_instance_scene(p_path);
+	request_instance_scenes(p_files);
 }
 
 void EditorNode::_property_keyed(const String& p_keyed,const Variant& p_value,bool p_advance) {

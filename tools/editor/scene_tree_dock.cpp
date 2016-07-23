@@ -106,11 +106,30 @@ void SceneTreeDock::instance(const String& p_file) {
 
 	Vector<String> scenes;
 	scenes.push_back(p_file);
-	instance_scenes(scenes,parent,-1);
+	_perform_instance_scenes(scenes,parent,-1);
 
 }
 
-void SceneTreeDock::instance_scenes(const Vector<String>& p_files,Node* parent,int p_pos) {
+void SceneTreeDock::instance_scenes(const Vector<String>& p_files, Node *p_parent) {
+
+	Node *parent = p_parent;
+
+	if (!parent) {
+		parent = scene_tree->get_selected();
+	}
+
+	if (!parent || !edited_scene) {
+
+		accept->get_ok()->set_text(TTR("OK"));
+		accept->set_text(TTR("No parent to instance the scenes at."));
+		accept->popup_centered_minsize();
+		return;
+	};
+
+	_perform_instance_scenes(p_files, parent, -1);
+}
+
+void SceneTreeDock::_perform_instance_scenes(const Vector<String>& p_files,Node* parent,int p_pos) {
 
 
 
@@ -1677,7 +1696,7 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files,NodePath p_to,int p_ty
 
 	int to_pos=-1;
 	_normalize_drop(node,to_pos,p_type);
-	instance_scenes(p_files,node,to_pos);
+	_perform_instance_scenes(p_files,node,to_pos);
 }
 
 void SceneTreeDock::_nodes_dragged(Array p_nodes,NodePath p_to,int p_type) {
