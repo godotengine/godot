@@ -600,6 +600,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 						case REAL: {
 							_RETURN( *reinterpret_cast<const Quat*>(p_a._data._mem) * p_b._data._real);
 						} break;
+						default: {}
 					};
 					r_valid=false;
 					return;
@@ -618,6 +619,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 							_RETURN( *p_a._data._matrix3 * *p_b._data._matrix3 );
 
 						};
+						default: {}
 					} ;
 					r_valid=false;
 					return;
@@ -635,6 +637,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 							_RETURN( *p_a._data._transform * *p_b._data._transform );
 
 						};
+						default: {}
 					} ;
 					r_valid=false;
 					return;
@@ -999,7 +1002,7 @@ Variant Variant::get_named(const StringName& p_index, bool *r_valid) const {
 	DEFAULT_OP_ARRAY_CMD(m_name, DVector<dv_type>, if(skip_cond) return;, arr->set(index, p_value);return)
 
 #define DEFAULT_OP_DVECTOR_GET(m_name, dv_type)\
-	DEFAULT_OP_ARRAY_CMD(m_name, const DVector<dv_type>, 0, return arr->get(index))
+	DEFAULT_OP_ARRAY_CMD(m_name, const DVector<dv_type>, ;, return arr->get(index))
 
 void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid) {
 
@@ -2417,7 +2420,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				return *res;
 			}
 		} break;		// 20
-		DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, 0, return (*arr)[index])
+		DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, ;, return (*arr)[index])
 		DEFAULT_OP_DVECTOR_GET(RAW_ARRAY, uint8_t)
 		DEFAULT_OP_DVECTOR_GET(INT_ARRAY, int)
 		DEFAULT_OP_DVECTOR_GET(REAL_ARRAY, real_t)
@@ -2994,6 +2997,7 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 			return true;
 
 		} break;
+		default: {}
 
 	}
 
@@ -3137,6 +3141,7 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 			r_iter=idx;
 			return true;
 		} break;
+		default: {}
 
 	}
 
@@ -3279,6 +3284,7 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
+		default: {}
 
 	}
 
