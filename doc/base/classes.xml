@@ -15688,9 +15688,14 @@
 </class>
 <class name="ImmediateGeometry" inherits="GeometryInstance" category="Core">
 	<brief_description>
+	Node to draw simple geometry from code, ala OpenGL 1.x
 	</brief_description>
 	<description>
 	</description>
+	ImmediateGeometry is a node used for displaying simple geometry created from code, very similar to how glBegin() and glEnd() worked in old versions of OpenGL (1.x). 
+	Simply call [method begin()], and add vertices. For custom vertex colors, uvs, normal, etc. call one of the set_ functions below before adding each vertex. When done, call [method end]
+	Calls to begin/end are accumulative and all geometry is added together. To clear all the geometry, call [method clear].
+	If a material override is set, and this material contains a texture, it's possible to override the texture used in this material for every begin/end set of calls.
 	<methods>
 		<method name="add_sphere">
 			<argument index="0" name="lats" type="int">
@@ -15700,12 +15705,14 @@
 			<argument index="2" name="radius" type="float">
 			</argument>
 			<description>
+			Simple helper to draw an uvsphere, with given latitudes, longitude and radius.
 			</description>
 		</method>
 		<method name="add_vertex">
 			<argument index="0" name="pos" type="Vector3">
 			</argument>
 			<description>
+			Add a vertex with the currently set color/uv/etc.
 			</description>
 		</method>
 		<method name="begin">
@@ -15714,44 +15721,53 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
+			Begin drawing (And optionally pass a texture override). When done call end(). For more information on how this works, search for glBegin() glEnd() references.
+			For the type of primitive, use the [Mesh].PRIMITIVE_* enumerations.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
+			Clear everything that was drawn using begin/end.
 			</description>
 		</method>
 		<method name="end">
 			<description>
+			Call this when done adding a batch of geometry, otherwise it can't be displayed.
 			</description>
 		</method>
 		<method name="set_color">
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+			Set the color that the next vertex will use to be drawn.
 			</description>
 		</method>
 		<method name="set_normal">
 			<argument index="0" name="normal" type="Vector3">
 			</argument>
 			<description>
+			Set the normal that the next vertex will use to be drawn.
 			</description>
 		</method>
 		<method name="set_tangent">
 			<argument index="0" name="tangent" type="Plane">
 			</argument>
 			<description>
+			Set the tangent (and binormal facing) that the next vertex will use to be drawn.
 			</description>
 		</method>
 		<method name="set_uv">
 			<argument index="0" name="uv" type="Vector2">
 			</argument>
 			<description>
+			Set the UV that the next vertex will use to be drawn.
 			</description>
 		</method>
 		<method name="set_uv2">
 			<argument index="0" name="uv" type="Vector2">
 			</argument>
 			<description>
+			Set the second layer of UV that the next vertex will use to be drawn.
 			</description>
 		</method>
 	</methods>
