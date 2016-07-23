@@ -1119,6 +1119,8 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	input = memnew( InputDefault );
 	joypad_osx = memnew( JoypadOSX );
 
+	power_manager = memnew( power_osx );
+
 	_ensure_data_dir();
 
 	NSArray *screenArray = [NSScreen screens];
@@ -1758,8 +1760,21 @@ OS::MouseMode OS_OSX::get_mouse_mode() const {
     return mouse_mode;
 }
 
+
 String OS_OSX::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
+}
+
+PowerState OS_OSX::get_power_state() {
+	return power_manager->get_power_state();
+}
+
+int OS_OSX::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OS_OSX::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
 }
 
 OS_OSX* OS_OSX::singleton=NULL;

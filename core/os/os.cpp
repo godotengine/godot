@@ -513,6 +513,16 @@ bool OS::is_vsync_enabled() const{
 }
 
 
+PowerState OS::get_power_state() {
+	return POWERSTATE_UNKNOWN;
+}
+int OS::get_power_seconds_left() {
+	return -1;
+}
+int OS::get_power_percent_left() {
+	return -1;
+}
+
 OS::OS() {
 	last_error=NULL;
 	singleton=this;

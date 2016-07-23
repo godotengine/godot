@@ -10,6 +10,7 @@ files = [
     #	'context_gl_osx.cpp',
     'dir_access_osx.mm',
     'joypad_osx.cpp',
+    'power_osx.cpp',
 ]
 
 env.Program('#bin/godot', files)

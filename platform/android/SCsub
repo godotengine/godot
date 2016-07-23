@@ -20,6 +20,7 @@ android_files = [
     'java_glue.cpp',
     'cpu-features.c',
     'java_class_wrapper.cpp'
+	'power_android.cpp'
 ]
 
 # env.Depends('#core/math/vector3.h', 'vector3_psp.h')

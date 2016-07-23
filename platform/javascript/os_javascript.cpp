@@ -259,6 +259,8 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
+	
+	power_manager = memnew( PowerJavascript );
 
 #define EM_CHECK(ev) if (result!=EMSCRIPTEN_RESULT_SUCCESS)\
 	ERR_PRINTS("Error while setting " #ev " callback: Code " + itos(result))
@@ -853,8 +855,19 @@ String OS_JavaScript::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
-OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func) {
+PowerState OS_JavaScript::get_power_state() {
+	return power_manager->get_power_state();
+}
 
+int OS_JavaScript::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OS_JavaScript::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
+}
+
+OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func) {
 	gfx_init_func=p_gfx_init_func;
 	gfx_init_ud=p_gfx_init_ud;
 	last_button_mask=0;

@@ -31,6 +31,7 @@
 
 #include "os/input.h"
 #include "os/os.h"
+#include "power_windows.h"
 #include "context_gl_win.h"
 #include "servers/visual_server.h"
 #include "servers/visual/rasterizer.h"
@@ -124,6 +125,8 @@ class OS_Windows : public OS {
 
 	InputDefault *input;
 	JoypadWindows *joypad;
+
+	PowerWindows *power_manager;
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
@@ -284,6 +287,10 @@ public:
 
 	virtual void set_use_vsync(bool p_enable);
 	virtual bool is_vsync_enabled() const;
+
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
 	virtual bool check_feature_support(const String& p_feature);
 

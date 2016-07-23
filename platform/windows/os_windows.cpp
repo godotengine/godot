@@ -1134,6 +1134,8 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	input = memnew( InputDefault );
 	joypad = memnew (JoypadWindows(input, &hWnd));
 
+	power_manager = memnew( PowerWindows );
+
 	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
 	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
@@ -2391,6 +2393,18 @@ bool OS_Windows::is_vsync_enabled() const{
 		return gl_context->is_using_vsync();
 
 	return true;
+}
+
+PowerState OS_Windows::get_power_state() {
+	return power_manager->get_power_state();
+}
+
+int OS_Windows::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OS_Windows::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
 }
 
 bool OS_Windows::check_feature_support(const String& p_feature) {

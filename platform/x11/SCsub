@@ -8,6 +8,7 @@ common_x11 = [\
     "os_x11.cpp",\
     "key_mapping_x11.cpp",\
     "joypad_linux.cpp",\
+	"power_x11.cpp",\
 ]
 
 env.Program('#bin/godot', ['godot_x11.cpp'] + common_x11)

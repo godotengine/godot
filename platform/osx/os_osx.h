@@ -32,6 +32,7 @@
 
 #include "os/input.h"
 #include "joypad_osx.h"
+#include "power_osx.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
 #include "servers/visual_server.h"
@@ -107,6 +108,8 @@ public:
 	Size2 window_size;
 	int current_screen;
 	Rect2 restore_rect;
+	
+	power_osx *power_manager;
 
 	float _mouse_scale(float p_scale) {
 		if (display_scale>1.0)
@@ -200,6 +203,10 @@ public:
 	virtual bool is_window_maximized() const;
 	virtual void request_attention();
 	virtual String get_joy_guid(int p_device) const;
+	
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
 	void run();
 

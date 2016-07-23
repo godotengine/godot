@@ -450,6 +450,17 @@ bool _OS::is_vsync_enabled() const {
 	return OS::get_singleton()->is_vsync_enabled();
 }
 
+PowerState _OS::get_power_state() {
+	return OS::get_singleton()->get_power_state();
+}
+
+int _OS::get_power_seconds_left() {
+	return OS::get_singleton()->get_power_seconds_left();
+}
+
+int _OS::get_power_percent_left() {
+	return OS::get_singleton()->get_power_percent_left();
+}
 
 /*
 enum Weekday {
@@ -1113,6 +1124,10 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_vsync","enable"),&_OS::set_use_vsync);
 	ClassDB::bind_method(D_METHOD("is_vsync_enabled"),&_OS::is_vsync_enabled);
 
+	ClassDB::bind_method(D_METHOD("get_power_state"),&_OS::get_power_state);
+	ClassDB::bind_method(D_METHOD("get_power_seconds_left"),&_OS::get_power_seconds_left);
+	ClassDB::bind_method(D_METHOD("get_power_percent_left"),&_OS::get_power_percent_left);
+
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );
 	BIND_CONSTANT( DAY_TUESDAY );
@@ -1150,6 +1165,12 @@ void _OS::_bind_methods() {
 	BIND_CONSTANT( SYSTEM_DIR_MUSIC );
 	BIND_CONSTANT( SYSTEM_DIR_PICTURES );
 	BIND_CONSTANT( SYSTEM_DIR_RINGTONES );
+	
+	BIND_CONSTANT( POWERSTATE_UNKNOWN );
+	BIND_CONSTANT( POWERSTATE_ON_BATTERY );
+	BIND_CONSTANT( POWERSTATE_NO_BATTERY );
+	BIND_CONSTANT( POWERSTATE_CHARGING );
+	BIND_CONSTANT( POWERSTATE_CHARGED );
 
 }
 

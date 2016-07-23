@@ -2007,6 +2007,18 @@ void OS_X11::set_context(int p_context) {
 	}
 }
 
+PowerState OS_X11::get_power_state() {
+	return power_manager->get_power_state();
+}
+
+int OS_X11::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OS_X11::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
+}
+
 OS_X11::OS_X11() {
 
 #ifdef RTAUDIO_ENABLED

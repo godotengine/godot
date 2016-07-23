@@ -143,6 +143,8 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	if (AudioDriverManager::get_driver(p_audio_driver)->init() != OK) {
 		ERR_PRINT("Initializing audio failed.");
 	}
+	
+	power_manager = memnew( PowerHaiku );
 }
 
 void OS_Haiku::finalize() {
