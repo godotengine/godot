@@ -657,7 +657,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess 
 				da->change_dir("..");
 			}
 		} else {
-			ERR_PRINTS(TTR("Cannot go into subdir:")+" "+E->get());
+			ERR_PRINTS("Cannot go into subdir: "+E->get());
 		}
 
 		p_progress.update(idx,total);

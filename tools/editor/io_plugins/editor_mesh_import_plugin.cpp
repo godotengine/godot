@@ -496,7 +496,6 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 					}
 
 					int vtx = face[idx][0].to_int()-1;
-					print_line("vtx: "+itos(vtx)+"/"+itos(vertices.size()));
 					ERR_FAIL_INDEX_V(vtx,vertices.size(),ERR_PARSE_ERROR);
 
 					Vector3 vertex = vertices[vtx];
