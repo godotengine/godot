@@ -1,0 +1,718 @@
+//  afblue.dat
+//
+//    Auto-fitter data for blue strings.
+//
+//  Copyright 2013-2016 by
+//  David Turner, Robert Wilhelm, and Werner Lemberg.
+//
+//  This file is part of the FreeType project, and may only be used,
+//  modified, and distributed under the terms of the FreeType project
+//  license, LICENSE.TXT.  By continuing to use, modify, or distribute
+//  this file you indicate that you have read the license and
+//  understand and accept it fully.
+
+
+// This file contains data specific to blue zones.  It gets processed by
+// a script to simulate `jagged arrays', with enumeration values holding
+// offsets into the arrays.
+//
+// The format of the file is rather simple:  A section starts with three
+// labels separated by whitespace and followed by a colon (everything in a
+// single line); the first label gives the name of the enumeration template,
+// the second the name of the array template, and the third the name of the
+// `maximum' template.  The script then fills the corresponding templates
+// (indicated by `@' characters around the name).
+//
+// A section contains one or more data records.  Each data record consists
+// of two or more lines.  The first line holds the enumeration name, and the
+// remaining lines the corresponding array data.
+//
+// There are two possible representations for array data.
+//
+// - A string of characters or character clusters (for example, representing
+//   Aksharas, Devanagari syllables) in UTF-8 encoding enclosed in double
+//   quotes, using C syntax, where the elements are separated by spaces.
+//   There can be only one string per line, thus the starting and ending
+//   double quote must be the first and last character in the line,
+//   respectively, ignoring whitespace before and after the string.  If
+//   there are multiple strings (in multiple lines), they are concatenated
+//   to a single string.  In the output, a string gets represented as a
+//   series of singles bytes, followed by a zero byte.  The enumeration
+//   values simply hold byte offsets to the start of the corresponding
+//   strings.
+//
+//   For strings, the `maximum' template holds the maximum number of
+//   non-space characters in all strings.
+//
+// - Data blocks enclosed in balanced braces, which get copied verbatim and
+//   which can span multiple lines.  The opening brace of a block must be
+//   the first character of a line (ignoring whitespace), and the closing
+//   brace the last (ignoring whitespace also).  The script appends a comma
+//   character after each block and counts the number of blocks to set the
+//   enumeration values.
+//
+//   For data blocks, the `maximum' template holds the maximum number of
+//   array elements.
+//
+// A section can contain either strings only or data blocks only.
+//
+// A comment line starts with `//'; it gets removed.  A preprocessor
+// directive line (using the standard syntax of `cpp') starts with `#' and
+// gets copied verbatim to both the enumeration and the array.  Whitespace
+// outside of a string is insignificant.
+//
+// Preprocessor directives are ignored while the script computes maximum
+// values; this essentially means that the maximum values can easily be too
+// large.  Given that the purpose of those values is to create local
+// fixed-size arrays at compile time for further processing of the blue zone
+// data, this isn't a problem.  Note the final zero byte of a string is not
+// counted.  Note also that the count holds the number of UTF-8 encoded
+// characters, not bytes.
+
+
+// The blue zone string data, to be used in the blue stringsets below.
+
+AF_BLUE_STRING_ENUM AF_BLUE_STRINGS_ARRAY AF_BLUE_STRING_MAX_LEN:
+
+  AF_BLUE_STRING_ARABIC_TOP
+    "ا إ ل ك ط ظ"
+  AF_BLUE_STRING_ARABIC_BOTTOM
+    "ت ث ط ظ ك"
+  // We don't necessarily have access to medial forms via Unicode in case
+  // Arabic presentational forms are missing.  The only character that is
+  // guaranteed to have the same vertical position with joining (this is,
+  // non-isolated) forms is U+0640, ARABIC TATWEEL, which must join both
+  // round and flat curves.
+  AF_BLUE_STRING_ARABIC_JOIN
+    "ـ"
+
+  AF_BLUE_STRING_ARMENIAN_CAPITAL_TOP
+    "Ա Մ Ւ Փ Բ Գ Դ Օ"
+  AF_BLUE_STRING_ARMENIAN_CAPITAL_BOTTOM
+    "Ւ Ո Փ Ճ Շ Ս Տ Օ"
+  AF_BLUE_STRING_ARMENIAN_SMALL_ASCENDER
+    "ե է ի մ վ փ ֆ փ"
+  AF_BLUE_STRING_ARMENIAN_SMALL_TOP
+    "ա յ ւ ս գ ջ ր օ"
+  AF_BLUE_STRING_ARMENIAN_SMALL_BOTTOM
+    "հ ո ճ ա ե ծ ս օ"
+  AF_BLUE_STRING_ARMENIAN_SMALL_DESCENDER
+    "բ ը ի լ ղ պ փ ց"
+
+  AF_BLUE_STRING_BENGALI_BASE
+    "অ ড ত ন ব ভ ল ক"
+  AF_BLUE_STRING_BENGALI_TOP
+    "ই ট ঠ ি ী ৈ ৗ"
+  AF_BLUE_STRING_BENGALI_HEAD
+    "ও এ ড ত ন ব ল ক"
+
+  AF_BLUE_STRING_CHEROKEE_CAPITAL
+    "Ꮖ Ꮋ Ꭼ Ꮓ Ꭴ Ꮳ Ꭶ Ꮥ"
+  AF_BLUE_STRING_CHEROKEE_SMALL_ASCENDER
+    "ꮒ ꮤ ꮶ ꭴ ꭾ ꮗ ꮝ ꮿ"
+  AF_BLUE_STRING_CHEROKEE_SMALL
+    "ꮖ ꭼ ꮓ ꮠ ꮳ ꭶ ꮥ ꮻ"
+  AF_BLUE_STRING_CHEROKEE_SMALL_DESCENDER
+    "ᏸ ꮐ ꭹ ꭻ"
+
+  AF_BLUE_STRING_CYRILLIC_CAPITAL_TOP
+    "Б В Е П З О С Э"
+  AF_BLUE_STRING_CYRILLIC_CAPITAL_BOTTOM
+    "Б В Е Ш З О С Э"
+  AF_BLUE_STRING_CYRILLIC_SMALL
+    "х п н ш е з о с"
+  AF_BLUE_STRING_CYRILLIC_SMALL_DESCENDER
+    "р у ф"
+
+  AF_BLUE_STRING_DEVANAGARI_BASE
+    "क म अ आ थ ध भ श"
+  AF_BLUE_STRING_DEVANAGARI_TOP
+    "ई ऐ ओ औ ि ी ो ौ"
+  // note that some fonts have extreme variation in the height of the
+  // round head elements; for this reason we also define the `base'
+  // blue zone, which must be always present
+  AF_BLUE_STRING_DEVANAGARI_HEAD
+    "क म अ आ थ ध भ श"
+  AF_BLUE_STRING_DEVANAGARI_BOTTOM
+    "ु ृ"
+
+  AF_BLUE_STRING_ETHIOPIC_TOP
+    "ሀ ሃ ዘ ፐ ማ በ ዋ ዐ"
+  AF_BLUE_STRING_ETHIOPIC_BOTTOM
+    "ለ ሐ በ ዘ ሀ ሪ ዐ ጨ"
+
+  AF_BLUE_STRING_GEORGIAN_MKHEDRULI_TOP
+    "გ დ ე ვ თ ი ო ღ"
+  AF_BLUE_STRING_GEORGIAN_MKHEDRULI_BOTTOM
+    "ა ზ მ ს შ ძ ხ პ"
+  AF_BLUE_STRING_GEORGIAN_MKHEDRULI_ASCENDER
+    "ს ხ ქ ზ მ შ ჩ წ"
+  AF_BLUE_STRING_GEORGIAN_MKHEDRULI_DESCENDER
+    "ე ვ ჟ ტ უ ფ ქ ყ"
+
+  AF_BLUE_STRING_GEORGIAN_ASOMTAVRULI_TOP
+    "Ⴑ Ⴇ Ⴙ Ⴜ Ⴄ Ⴅ Ⴓ Ⴚ"
+  AF_BLUE_STRING_GEORGIAN_ASOMTAVRULI_BOTTOM
+    "Ⴄ Ⴅ Ⴇ Ⴈ Ⴆ Ⴑ Ⴊ Ⴋ"
+
+  AF_BLUE_STRING_GEORGIAN_NUSKHURI_TOP
+    "ⴁ ⴗ ⴂ ⴄ ⴅ ⴇ ⴔ ⴖ"
+  AF_BLUE_STRING_GEORGIAN_NUSKHURI_BOTTOM
+    "ⴈ ⴌ ⴖ ⴎ ⴃ ⴆ ⴋ ⴢ"
+  AF_BLUE_STRING_GEORGIAN_NUSKHURI_ASCENDER
+    "ⴐ ⴑ ⴓ ⴕ ⴙ ⴛ ⴡ ⴣ"
+  AF_BLUE_STRING_GEORGIAN_NUSKHURI_DESCENDER
+    "ⴄ ⴅ ⴔ ⴕ ⴁ ⴂ ⴘ ⴝ"
+
+  AF_BLUE_STRING_GREEK_CAPITAL_TOP
+    "Γ Β Ε Ζ Θ Ο Ω"
+  AF_BLUE_STRING_GREEK_CAPITAL_BOTTOM
+    "Β Δ Ζ Ξ Θ Ο"
+  AF_BLUE_STRING_GREEK_SMALL_BETA_TOP
+    "β θ δ ζ λ ξ"
+  AF_BLUE_STRING_GREEK_SMALL
+    "α ε ι ο π σ τ ω"
+  AF_BLUE_STRING_GREEK_SMALL_DESCENDER
+    "β γ η μ ρ φ χ ψ"
+
+  AF_BLUE_STRING_GUJARATI_TOP
+    "ત ન ઋ ઌ છ ટ ર ૦"
+  AF_BLUE_STRING_GUJARATI_BOTTOM
+    "ખ ગ ઘ ઞ ઇ ઈ ઠ જ"
+  AF_BLUE_STRING_GUJARATI_ASCENDER
+    "ઈ ઊ િ ી લી શ્ચિ જિ સી"
+  AF_BLUE_STRING_GUJARATI_DESCENDER
+    "ુ ૃ ૄ ખુ છૃ છૄ"
+  AF_BLUE_STRING_GUJARATI_DIGIT_TOP
+    "૦ ૧ ૨ ૩ ૭"
+
+  AF_BLUE_STRING_GURMUKHI_BASE
+    "ਕ ਗ ਙ ਚ ਜ ਤ ਧ ਸ"
+  AF_BLUE_STRING_GURMUKHI_HEAD
+    "ਕ ਗ ਙ ਚ ਜ ਤ ਧ ਸ"
+  AF_BLUE_STRING_GURMUKHI_TOP
+    "ਇ ਈ ਉ ਏ ਓ ੳ ਿ ੀ"
+  AF_BLUE_STRING_GURMUKHI_BOTTOM
+    "ਅ ਏ ਓ ਗ ਜ ਠ ਰ ਸ"
+  AF_BLUE_STRING_GURMUKHI_DIGIT_TOP
+    "੦ ੧ ੨ ੩ ੭"
+
+  AF_BLUE_STRING_HEBREW_TOP
+    "ב ד ה ח ך כ ם ס"
+  AF_BLUE_STRING_HEBREW_BOTTOM
+    "ב ט כ ם ס צ"
+  AF_BLUE_STRING_HEBREW_DESCENDER
+    "ק ך ן ף ץ"
+
+  AF_BLUE_STRING_KANNADA_TOP
+    "ಇ ಊ ಐ ಣ ಸಾ ನಾ ದಾ ರಾ"
+  AF_BLUE_STRING_KANNADA_BOTTOM
+    "ಅ ಉ ಎ ಲ ೦ ೨ ೬ ೭"
+
+  AF_BLUE_STRING_KHMER_TOP
+    "ខ ទ ន ឧ ឩ ា"
+  AF_BLUE_STRING_KHMER_SUBSCRIPT_TOP
+    "ក្ក ក្ខ ក្គ ក្ថ"
+  AF_BLUE_STRING_KHMER_BOTTOM
+    "ខ ឃ ច ឋ ប ម យ ឲ"
+  AF_BLUE_STRING_KHMER_DESCENDER
+    "ត្រ រៀ ឲ្យ អឿ"
+  AF_BLUE_STRING_KHMER_LARGE_DESCENDER
+    "ន្ត្រៃ ង្ខ្យ ក្បៀ ច្រៀ ន្តឿ ល្បឿ"
+
+  AF_BLUE_STRING_KHMER_SYMBOLS_WAXING_TOP
+    "᧠ ᧡"
+  AF_BLUE_STRING_KHMER_SYMBOLS_WANING_BOTTOM
+    "᧶ ᧹"
+
+  AF_BLUE_STRING_LAO_TOP
+    "າ ດ ອ ມ ລ ວ ຣ ງ"
+  AF_BLUE_STRING_LAO_BOTTOM
+    "າ ອ ບ ຍ ຣ ຮ ວ ຢ"
+  AF_BLUE_STRING_LAO_ASCENDER
+    "ປ ຢ ຟ ຝ"
+  AF_BLUE_STRING_LAO_LARGE_ASCENDER
+    "ໂ ໄ ໃ"
+  AF_BLUE_STRING_LAO_DESCENDER
+    "ງ ຊ ຖ ຽ ໆ ຯ"
+
+  AF_BLUE_STRING_LATIN_CAPITAL_TOP
+    "T H E Z O C Q S"
+  AF_BLUE_STRING_LATIN_CAPITAL_BOTTOM
+    "H E Z L O C U S"
+  AF_BLUE_STRING_LATIN_SMALL_F_TOP
+    "f i j k d b h"
+  AF_BLUE_STRING_LATIN_SMALL
+    "x z r o e s c"
+  AF_BLUE_STRING_LATIN_SMALL_DESCENDER
+    "p q g j y"
+
+  // we assume that both the subscript and superscript ranges
+  // don't contain oldstyle digits (actually, most fonts probably
+  // have digits only in those ranges)
+  AF_BLUE_STRING_LATIN_SUBS_CAPITAL_TOP
+    "₀ ₃ ₅ ₇ ₈"
+  AF_BLUE_STRING_LATIN_SUBS_CAPITAL_BOTTOM
+    "₀ ₁ ₂ ₃ ₈"
+  AF_BLUE_STRING_LATIN_SUBS_SMALL_F_TOP
+    "ᵢ ⱼ ₕ ₖ ₗ"
+  AF_BLUE_STRING_LATIN_SUBS_SMALL
+    "ₐ ₑ ₒ ₓ ₙ ₛ ᵥ ᵤ ᵣ"
+  AF_BLUE_STRING_LATIN_SUBS_SMALL_DESCENDER
+    "ᵦ ᵧ ᵨ ᵩ ₚ"
+
+  AF_BLUE_STRING_LATIN_SUPS_CAPITAL_TOP
+    "⁰ ³ ⁵ ⁷ ᵀ ᴴ ᴱ ᴼ"
+  AF_BLUE_STRING_LATIN_SUPS_CAPITAL_BOTTOM
+    "⁰ ¹ ² ³ ᴱ ᴸ ᴼ ᵁ"
+  AF_BLUE_STRING_LATIN_SUPS_SMALL_F_TOP
+    "ᵇ ᵈ ᵏ ʰ ʲ ᶠ ⁱ"
+  AF_BLUE_STRING_LATIN_SUPS_SMALL
+    "ᵉ ᵒ ʳ ˢ ˣ ᶜ ᶻ"
+  AF_BLUE_STRING_LATIN_SUPS_SMALL_DESCENDER
+    "ᵖ ʸ ᵍ"
+
+  AF_BLUE_STRING_MALAYALAM_TOP
+    "ഒ ട ഠ റ ച പ ച്ച പ്പ"
+  AF_BLUE_STRING_MALAYALAM_BOTTOM
+    "ട ഠ ധ ശ ഘ ച ഥ ല"
+
+  AF_BLUE_STRING_MYANMAR_TOP
+    "ခ ဂ င ဒ ဝ ၥ ၊ ။"
+  AF_BLUE_STRING_MYANMAR_BOTTOM
+    "င ဎ ဒ ပ ဗ ဝ ၊ ။"
+  AF_BLUE_STRING_MYANMAR_ASCENDER
+    "ဩ ြ ၍ ၏ ၆ ါ ိ"
+  AF_BLUE_STRING_MYANMAR_DESCENDER
+    "ဉ ည ဥ ဩ ဨ ၂ ၅ ၉"
+
+  AF_BLUE_STRING_SINHALA_TOP
+    "ඉ ක ඝ ඳ ප ය ල ෆ"
+  AF_BLUE_STRING_SINHALA_BOTTOM
+    "එ ඔ ඝ ජ ට ථ ධ ර"
+  AF_BLUE_STRING_SINHALA_DESCENDER
+    "ද ඳ උ ල තූ තු බු දු"
+
+  AF_BLUE_STRING_TAMIL_TOP
+    "உ ஒ ஓ ற ஈ க ங ச"
+  AF_BLUE_STRING_TAMIL_BOTTOM
+    "க ச ல ஶ உ ங ட ப"
+
+  AF_BLUE_STRING_TELUGU_TOP
+    "ఇ ఌ ఙ ఞ ణ ఱ ౯"
+  AF_BLUE_STRING_TELUGU_BOTTOM
+    "అ క చ ర ఽ ౨ ౬"
+
+  AF_BLUE_STRING_THAI_TOP
+    "บ เ แ อ ก า"
+  AF_BLUE_STRING_THAI_BOTTOM
+    "บ ป ษ ฯ อ ย ฮ"
+  AF_BLUE_STRING_THAI_ASCENDER
+    "ป ฝ ฟ"
+  AF_BLUE_STRING_THAI_LARGE_ASCENDER
+    "โ ใ ไ"
+  AF_BLUE_STRING_THAI_DESCENDER
+    "ฎ ฏ ฤ ฦ"
+  AF_BLUE_STRING_THAI_LARGE_DESCENDER
+    "ญ ฐ"
+  AF_BLUE_STRING_THAI_DIGIT_TOP
+    "๐ ๑ ๓"
+
+
+#ifdef AF_CONFIG_OPTION_CJK
+
+  AF_BLUE_STRING_CJK_TOP
+    "他 们 你 來 們 到 和 地"
+    " 对 對 就 席 我 时 時 會"
+    " 来 為 能 舰 說 说 这 這"
+    " 齊 |"
+    " 军 同 已 愿 既 星 是 景"
+    " 民 照 现 現 理 用 置 要"
+    " 軍 那 配 里 開 雷 露 面"
+    " 顾"
+  AF_BLUE_STRING_CJK_BOTTOM
+    "个 为 人 他 以 们 你 來"
+    " 個 們 到 和 大 对 對 就"
+    " 我 时 時 有 来 為 要 說"
+    " 说 |"
+    " 主 些 因 它 想 意 理 生"
+    " 當 看 着 置 者 自 著 裡"
+    " 过 还 进 進 過 道 還 里"
+    " 面"
+
+#ifdef AF_CONFIG_OPTION_CJK_BLUE_HANI_VERT
+
+  AF_BLUE_STRING_CJK_LEFT
+    " 些 们 你 來 們 到 和 地"
+    " 她 将 將 就 年 得 情 最"
+    " 样 樣 理 能 說 说 这 這"
+    " 通 |"
+    " 即 吗 吧 听 呢 品 响 嗎"
+    " 师 師 收 断 斷 明 眼 間"
+    " 间 际 陈 限 除 陳 随 際"
+    " 隨"
+  AF_BLUE_STRING_CJK_RIGHT
+    "事 前 學 将 將 情 想 或"
+    " 政 斯 新 样 樣 民 沒 没"
+    " 然 特 现 現 球 第 經 谁"
+    " 起 |"
+    " 例 別 别 制 动 動 吗 嗎"
+    " 增 指 明 朝 期 构 物 确"
+    " 种 調 调 費 费 那 都 間"
+    " 间"
+
+#endif /* AF_CONFIG_OPTION_CJK_BLUE_HANI_VERT */
+
+#endif /* AF_CONFIG_OPTION_CJK                */
+
+
+// The blue zone stringsets, as used in the script styles, cf. `afstyles.h'.
+//
+// The AF_BLUE_PROPERTY_XXX flags are defined in `afblue.h'; here some
+// explanations.
+//
+// A blue zone in general is defined by a reference and an overshoot line.
+// During the hinting process, all coordinate values between those two lines
+// are set equal to the reference value, provided that the blue zone is not
+// wider than 0.75 pixels (otherwise the blue zone gets ignored).  All
+// entries must have `AF_BLUE_STRING_MAX' as the final line.
+//
+// During the glyph analysis, edges are sorted from bottom to top, and then
+// sequentially checked, edge by edge, against the blue zones in the order
+// given below.
+//
+//
+// latin auto-hinter
+// -----------------
+//
+// Characters in a blue string are automatically classified as having a flat
+// (reference) or a round (overshoot) extremum.  The blue zone is then set
+// up by the mean values of all flat extrema and all round extrema,
+// respectively.  Only horizontal blue zones (i.e., adjusting vertical
+// coordinate values) are supported.
+//
+// Some scripts like Khmer need character composition to get all necessary
+// blue zones, since Unicode only provides an abstract data model that
+// doesn't represent all possible glyph shapes.  For such character
+// clusters, the HarfBuzz library is used to convert them into the
+// corresponding glyphs.  The largest glyph element (where `largest' can be
+// either `largest ascender' or `largest descender') then defines the
+// corresponding flat or round extremum.
+//
+// For the latin auto-hinter, the overshoot should be larger than the
+// reference for top zones, and vice versa for bottom zones.
+//
+//   LATIN_TOP
+//     Take the maximum flat and round coordinate values of the blue string
+//     characters for computing the blue zone's reference and overshoot
+//     values.
+//
+//     If not set, take the minimum values.
+//
+//     Mutually exclusive with `LATIN_SUB_TOP'.
+//
+//   LATIN_SUB_TOP
+//     For all glyphs of a character cluster, compute the maximum flat
+//     and round coordinate values of each component, then take the
+//     smallest of the maximum values.  The idea is to get the top of
+//     subscript glyphs, as used in Khmer, for example.  Note that
+//     this mechanism doesn't work for ordinary ligatures.
+//
+//     This flags indicates a secondary blue zone: It gets removed if
+//     there is a non-LATIN_SUB_TOP blue zone at the same coordinate
+//     value (after scaling).
+//
+//     Mutually exclusive with `LATIN_TOP'.
+//
+//   LATIN_NEUTRAL
+//     Ignore round extrema and define the blue zone with flat values only.
+//     Both top and bottom of contours can match.  This is useful for
+//     scripts like Devanagari where vowel signs attach to the base
+//     character and are implemented as components of composite glyphs.
+//
+//     If not set, both round and flat extrema are taken into account.
+//     Additionally, only the top or the bottom of a contour can match,
+//     depending on the LATIN_TOP flag.
+//
+//     Neutral blue zones should always follow non-neutral blue zones.
+//
+//   LATIN_X_HEIGHT
+//     Scale all glyphs vertically from the corresponding script to make the
+//     reference line of this blue zone align on the grid.  The scaling
+//     takes place before all other blue zones get aligned to the grid.
+//     Only one blue character string of a script style can have this flag.
+//
+//   LATIN_LONG
+//     Apply an additional constraint for blue zone values: Don't
+//     necessarily use the extremum as-is but a segment of the topmost (or
+//     bottommost) contour that is longer than a heuristic threshold, and
+//     which is not too far away vertically from the real extremum.  This
+//     ensures that small bumps in the outline are ignored (for example, the
+//     `vertical serifs' found in many Hebrew glyph designs).
+//
+//     The segment must be at least EM/25 font units long, and the distance
+//     to the extremum must be smaller than EM/4.
+//
+//
+// cjk auto-hinter
+// ---------------
+//
+// Characters in a blue string are *not* automatically classified.  Instead,
+// first come the characters used for the overshoot value, then the
+// character `|', then the characters used for the reference value
+// (everything separated by space characters).  The blue zone is then set up
+// by the mean values of all reference values and all overshoot values,
+// respectively.  Both horizontal and vertical blue zones (i.e., adjusting
+// vertical and horizontal coordinate values, respectively) are supported.
+//
+// For the cjk auto-hinter, the overshoot should be smaller than the
+// reference for top zones, and vice versa for bottom zones.
+//
+//   CJK_TOP
+//     Take the maximum flat and round coordinate values of the blue string
+//     characters.  If not set, take the minimum values.
+//
+//   CJK_RIGHT
+//     A synonym for CJK_TOP.  If CJK_HORIZ is set, this flag indicates the
+//     right blue zone, taking horizontal maximum values.
+//
+//   CJK_HORIZ
+//     Define a blue zone for horizontal hinting (i.e., vertical blue
+//     zones).  If not set, this is a blue zone for vertical hinting.
+
+
+AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
+
+  AF_BLUE_STRINGSET_ARAB
+    { AF_BLUE_STRING_ARABIC_TOP,    AF_BLUE_PROPERTY_LATIN_TOP     }
+    { AF_BLUE_STRING_ARABIC_BOTTOM, 0                              }
+    { AF_BLUE_STRING_ARABIC_JOIN,   AF_BLUE_PROPERTY_LATIN_NEUTRAL }
+    { AF_BLUE_STRING_MAX,           0                              }
+
+  AF_BLUE_STRINGSET_ARMN
+    { AF_BLUE_STRING_ARMENIAN_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_ARMENIAN_CAPITAL_BOTTOM,  0                                 }
+    { AF_BLUE_STRING_ARMENIAN_SMALL_ASCENDER,  AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_ARMENIAN_SMALL_TOP,       AF_BLUE_PROPERTY_LATIN_TOP      |
+                                               AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_ARMENIAN_SMALL_BOTTOM,    0                                 }
+    { AF_BLUE_STRING_ARMENIAN_SMALL_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MAX,                      0                                 }
+
+  AF_BLUE_STRINGSET_BENG
+    { AF_BLUE_STRING_BENGALI_TOP,  AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_BENGALI_HEAD, AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_BENGALI_BASE, AF_BLUE_PROPERTY_LATIN_TOP      |
+                                   AF_BLUE_PROPERTY_LATIN_NEUTRAL  |
+                                   AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_BENGALI_BASE, 0                                 }
+    { AF_BLUE_STRING_MAX,          0                                 }
+
+  AF_BLUE_STRINGSET_CHER
+    { AF_BLUE_STRING_CHEROKEE_CAPITAL,         AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_CHEROKEE_CAPITAL,         0                                 }
+    { AF_BLUE_STRING_CHEROKEE_SMALL_ASCENDER,  AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_CHEROKEE_SMALL,           AF_BLUE_PROPERTY_LATIN_TOP      |
+                                               AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_CHEROKEE_SMALL,           0                                 }
+    { AF_BLUE_STRING_CHEROKEE_SMALL_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MAX,                      0                                 }
+
+  AF_BLUE_STRINGSET_CYRL
+    { AF_BLUE_STRING_CYRILLIC_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_CYRILLIC_CAPITAL_BOTTOM,  0                                 }
+    { AF_BLUE_STRING_CYRILLIC_SMALL,           AF_BLUE_PROPERTY_LATIN_TOP      |
+                                               AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_CYRILLIC_SMALL,           0                                 }
+    { AF_BLUE_STRING_CYRILLIC_SMALL_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MAX,                      0                                 }
+
+  AF_BLUE_STRINGSET_DEVA
+    { AF_BLUE_STRING_DEVANAGARI_TOP,    AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_DEVANAGARI_HEAD,   AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_DEVANAGARI_BASE,   AF_BLUE_PROPERTY_LATIN_TOP      |
+                                        AF_BLUE_PROPERTY_LATIN_NEUTRAL  |
+                                        AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_DEVANAGARI_BASE,   0                                 }
+    { AF_BLUE_STRING_DEVANAGARI_BOTTOM, 0                                 }
+    { AF_BLUE_STRING_MAX,               0                                 }
+
+  AF_BLUE_STRINGSET_ETHI
+    { AF_BLUE_STRING_ETHIOPIC_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
+    { AF_BLUE_STRING_ETHIOPIC_BOTTOM, 0                          }
+    { AF_BLUE_STRING_MAX,             0                          }
+
+  // blue zones for Mtavruli are missing (not yet defined in Unicode)
+  AF_BLUE_STRINGSET_GEOR
+    { AF_BLUE_STRING_GEORGIAN_MKHEDRULI_TOP,       AF_BLUE_PROPERTY_LATIN_TOP      |
+                                                   AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_GEORGIAN_MKHEDRULI_BOTTOM,    0                                 }
+    { AF_BLUE_STRING_GEORGIAN_MKHEDRULI_ASCENDER,  AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_GEORGIAN_MKHEDRULI_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MAX,                          0                                 }
+
+  AF_BLUE_STRINGSET_GEOK
+    { AF_BLUE_STRING_GEORGIAN_ASOMTAVRULI_TOP,    AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_GEORGIAN_ASOMTAVRULI_BOTTOM, 0                                 }
+    { AF_BLUE_STRING_GEORGIAN_NUSKHURI_TOP,       AF_BLUE_PROPERTY_LATIN_TOP      |
+                                                  AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_GEORGIAN_NUSKHURI_BOTTOM,    0                                 }
+    { AF_BLUE_STRING_GEORGIAN_NUSKHURI_ASCENDER,  AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_GEORGIAN_NUSKHURI_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MAX,                         0                                 }
+
+  AF_BLUE_STRINGSET_GREK
+    { AF_BLUE_STRING_GREEK_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_GREEK_CAPITAL_BOTTOM,  0                                 }
+    { AF_BLUE_STRING_GREEK_SMALL_BETA_TOP,  AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_GREEK_SMALL,           AF_BLUE_PROPERTY_LATIN_TOP      |
+                                            AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_GREEK_SMALL,           0                                 }
+    { AF_BLUE_STRING_GREEK_SMALL_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MAX,                   0                                 }
+
+  AF_BLUE_STRINGSET_GUJR
+    { AF_BLUE_STRING_GUJARATI_TOP,       AF_BLUE_PROPERTY_LATIN_TOP      |
+                                         AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_GUJARATI_BOTTOM,    0                                 }
+    { AF_BLUE_STRING_GUJARATI_ASCENDER,  AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_GUJARATI_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_GUJARATI_DIGIT_TOP, AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_MAX,                0                                 }
+
+  AF_BLUE_STRINGSET_GURU
+    { AF_BLUE_STRING_GURMUKHI_TOP,       AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_GURMUKHI_HEAD,      AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_GURMUKHI_BASE,      AF_BLUE_PROPERTY_LATIN_TOP      |
+                                         AF_BLUE_PROPERTY_LATIN_NEUTRAL  |
+                                         AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_GURMUKHI_BOTTOM,    0                                 }
+    { AF_BLUE_STRING_GURMUKHI_DIGIT_TOP, AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_MAX,                0                                 }
+
+  AF_BLUE_STRINGSET_HEBR
+    { AF_BLUE_STRING_HEBREW_TOP,       AF_BLUE_PROPERTY_LATIN_TOP  |
+                                       AF_BLUE_PROPERTY_LATIN_LONG   }
+    { AF_BLUE_STRING_HEBREW_BOTTOM,    0                             }
+    { AF_BLUE_STRING_HEBREW_DESCENDER, 0                             }
+    { AF_BLUE_STRING_MAX,              0                             }
+
+  AF_BLUE_STRINGSET_KNDA
+    { AF_BLUE_STRING_KANNADA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
+    { AF_BLUE_STRING_KANNADA_BOTTOM, 0                          }
+    { AF_BLUE_STRING_MAX,            0                          }
+
+  AF_BLUE_STRINGSET_KHMR
+    { AF_BLUE_STRING_KHMER_TOP,             AF_BLUE_PROPERTY_LATIN_TOP      |
+                                            AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_KHMER_SUBSCRIPT_TOP,   AF_BLUE_PROPERTY_LATIN_SUB_TOP    }
+    { AF_BLUE_STRING_KHMER_BOTTOM,          0                                 }
+    { AF_BLUE_STRING_KHMER_DESCENDER,       0                                 }
+    { AF_BLUE_STRING_KHMER_LARGE_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MAX,                   0                                 }
+
+  AF_BLUE_STRINGSET_KHMS
+    { AF_BLUE_STRING_KHMER_SYMBOLS_WAXING_TOP,    AF_BLUE_PROPERTY_LATIN_TOP      |
+                                                  AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_KHMER_SYMBOLS_WANING_BOTTOM, 0                                 }
+    { AF_BLUE_STRING_MAX,                         0                                 }
+
+  AF_BLUE_STRINGSET_LAO
+    { AF_BLUE_STRING_LAO_TOP,            AF_BLUE_PROPERTY_LATIN_TOP      |
+                                         AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_LAO_BOTTOM,         0                                 }
+    { AF_BLUE_STRING_LAO_ASCENDER,       AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_LAO_LARGE_ASCENDER, AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_LAO_DESCENDER,      0                                 }
+    { AF_BLUE_STRING_MAX,                0                                 }
+
+  AF_BLUE_STRINGSET_LATN
+    { AF_BLUE_STRING_LATIN_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_LATIN_CAPITAL_BOTTOM,  0                                 }
+    { AF_BLUE_STRING_LATIN_SMALL_F_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_LATIN_SMALL,           AF_BLUE_PROPERTY_LATIN_TOP      |
+                                            AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_LATIN_SMALL,           0                                 }
+    { AF_BLUE_STRING_LATIN_SMALL_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MAX,                   0                                 }
+
+  AF_BLUE_STRINGSET_LATB
+    { AF_BLUE_STRING_LATIN_SUBS_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_LATIN_SUBS_CAPITAL_BOTTOM,  0                                 }
+    { AF_BLUE_STRING_LATIN_SUBS_SMALL_F_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_LATIN_SUBS_SMALL,           AF_BLUE_PROPERTY_LATIN_TOP      |
+                                                 AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_LATIN_SUBS_SMALL,           0                                 }
+    { AF_BLUE_STRING_LATIN_SUBS_SMALL_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MAX,                        0                                 }
+
+  AF_BLUE_STRINGSET_LATP
+    { AF_BLUE_STRING_LATIN_SUPS_CAPITAL_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_LATIN_SUPS_CAPITAL_BOTTOM,  0                                 }
+    { AF_BLUE_STRING_LATIN_SUPS_SMALL_F_TOP,     AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_LATIN_SUPS_SMALL,           AF_BLUE_PROPERTY_LATIN_TOP      |
+                                                 AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_LATIN_SUPS_SMALL,           0                                 }
+    { AF_BLUE_STRING_LATIN_SUPS_SMALL_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MAX,                        0                                 }
+
+  AF_BLUE_STRINGSET_MLYM
+    { AF_BLUE_STRING_MALAYALAM_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
+    { AF_BLUE_STRING_MALAYALAM_BOTTOM, 0                          }
+    { AF_BLUE_STRING_MAX,              0                          }
+
+  AF_BLUE_STRINGSET_MYMR
+    { AF_BLUE_STRING_MYANMAR_TOP,       AF_BLUE_PROPERTY_LATIN_TOP      |
+                                        AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_MYANMAR_BOTTOM,    0                                 }
+    { AF_BLUE_STRING_MYANMAR_ASCENDER,  AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_MYANMAR_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_MAX,               0                                 }
+
+  AF_BLUE_STRINGSET_NONE
+    { AF_BLUE_STRING_MAX, 0 }
+
+  AF_BLUE_STRINGSET_SINH
+    { AF_BLUE_STRING_SINHALA_TOP,       AF_BLUE_PROPERTY_LATIN_TOP }
+    { AF_BLUE_STRING_SINHALA_BOTTOM,    0                          }
+    { AF_BLUE_STRING_SINHALA_DESCENDER, 0                          }
+    { AF_BLUE_STRING_MAX,               0                          }
+
+  AF_BLUE_STRINGSET_TAML
+    { AF_BLUE_STRING_TAMIL_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
+    { AF_BLUE_STRING_TAMIL_BOTTOM, 0                          }
+    { AF_BLUE_STRING_MAX,          0                          }
+
+  AF_BLUE_STRINGSET_TELU
+    { AF_BLUE_STRING_TELUGU_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
+    { AF_BLUE_STRING_TELUGU_BOTTOM, 0                          }
+    { AF_BLUE_STRING_MAX,           0                          }
+
+  AF_BLUE_STRINGSET_THAI
+    { AF_BLUE_STRING_THAI_TOP,             AF_BLUE_PROPERTY_LATIN_TOP      |
+                                           AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
+    { AF_BLUE_STRING_THAI_BOTTOM,          0                                 }
+    { AF_BLUE_STRING_THAI_ASCENDER,        AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_THAI_LARGE_ASCENDER,  AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_THAI_DESCENDER,       0                                 }
+    { AF_BLUE_STRING_THAI_LARGE_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_THAI_DIGIT_TOP,       0                                 }
+    { AF_BLUE_STRING_MAX,                  0                                 }
+
+
+#ifdef AF_CONFIG_OPTION_CJK
+
+  AF_BLUE_STRINGSET_HANI
+    { AF_BLUE_STRING_CJK_TOP,    AF_BLUE_PROPERTY_CJK_TOP     }
+    { AF_BLUE_STRING_CJK_BOTTOM, 0                            }
+#ifdef AF_CONFIG_OPTION_CJK_BLUE_HANI_VERT
+    { AF_BLUE_STRING_CJK_LEFT,   AF_BLUE_PROPERTY_CJK_HORIZ   }
+    { AF_BLUE_STRING_CJK_RIGHT,  AF_BLUE_PROPERTY_CJK_HORIZ |
+                                 AF_BLUE_PROPERTY_CJK_RIGHT   }
+#endif /* AF_CONFIG_OPTION_CJK_BLUE_HANI_VERT */
+    { AF_BLUE_STRING_MAX,        0                            }
+
+#endif /* AF_CONFIG_OPTION_CJK                */
+
+
+// END

@@ -1,0 +1,32 @@
+# FreeType 2 src/pcf Jamfile
+#
+# Copyright 2001-2016 by
+# David Turner, Robert Wilhelm, and Werner Lemberg.
+#
+# This file is part of the FreeType project, and may only be used, modified,
+# and distributed under the terms of the FreeType project license,
+# LICENSE.TXT.  By continuing to use, modify, or distribute this file you
+# indicate that you have read the license and understand and accept it
+# fully.
+
+SubDir  FT2_TOP $(FT2_SRC_DIR) pcf ;
+
+{
+  local  _sources ;
+
+  if $(FT2_MULTI)
+  {
+    _sources = pcfdrivr
+               pcfread
+               pcfutil
+               ;
+  }
+  else
+  {
+    _sources = pcf ;
+  }
+
+  Library  $(FT2_LIB) : $(_sources).c ;
+}
+
+# end of src/pcf Jamfile
