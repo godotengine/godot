@@ -396,6 +396,8 @@ public:
 	}
 	void set_auto_indent(bool p_auto_indent);
 
+	void center_viewport_to_cursor();
+
 	void cursor_set_column(int p_col, bool p_adjust_viewport=true);
 	void cursor_set_line(int p_row, bool p_adjust_viewport=true);
 

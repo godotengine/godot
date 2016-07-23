@@ -133,8 +133,9 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 
 	if (found) {
 		if (!preserve_cursor) {
-			text_edit->cursor_set_line(line);
-			text_edit->cursor_set_column(col+text.length());
+			text_edit->cursor_set_line(line, false);
+			text_edit->cursor_set_column(col+text.length(), false);
+			text_edit->center_viewport_to_cursor();
 		}
 
 		text_edit->set_search_text(text);
