@@ -703,14 +703,24 @@ void TextureRegionEditor::_edit_region()
 							bool merged = true;
 							while (merged) {
 								merged = false;
+								bool queue_erase = false;
 								for (List<Rect2>::Element *F = autoslice_cache.front(); F; F=F->next()) {
+									if (queue_erase){
+										autoslice_cache.erase(F->prev());
+										queue_erase = false;
+									}
 									if (F==E)
 										continue;
 									if (E->get().grow(1).intersects(F->get())) {
 										E->get().expand_to(F->get().pos);
 										E->get().expand_to(F->get().pos+F->get().size);
-										F=F->prev();
-										autoslice_cache.erase(F->next());
+										if (F->prev()) {
+											F=F->prev();
+											autoslice_cache.erase(F->next());
+										} else {
+											queue_erase = true;
+											//Cant delete the first rect in the list.
+										}
 										merged = true;
 									}
 								}
