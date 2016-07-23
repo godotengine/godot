@@ -34,7 +34,9 @@
 #include "vector.h"
 #include "engine.h"
 #include "os/main_loop.h"
+#include "power.h"
 #include <stdarg.h>
+
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -401,6 +403,10 @@ public:
 
 	virtual void set_use_vsync(bool p_enable);
 	virtual bool is_vsync_enabled() const;
+	
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
 	OS();

@@ -32,6 +32,7 @@
 #include "os/input.h"
 #include "drivers/unix/os_unix.h"
 #include "os/main_loop.h"
+#include "power_javascript.h"
 #include "servers/physics/physics_server_sw.h"
 #include "servers/spatial_sound/spatial_sound_server_sw.h"
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
@@ -83,6 +84,8 @@ private:
 	MainLoop * main_loop;
 
 	GetDataDirFunc get_data_dir_func;
+
+	PowerJavascript *power_manager;
 
 #ifdef JAVASCRIPT_EVAL_ENABLED
 	JavaScript* javascript_eval;
@@ -179,6 +182,10 @@ public:
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
 	bool joy_connection_changed(int p_type, const EmscriptenGamepadEvent *p_event);
+	
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
 	OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func);
 	~OS_JavaScript();

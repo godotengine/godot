@@ -42,11 +42,13 @@
 #include "core/ustring.h"
 #include "main/input_default.h"
 #include "joypad_uwp.h"
+#include "power_winrt.h"
 
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
 #include <stdio.h>
+
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -110,6 +112,8 @@ private:
 	MainLoop *main_loop;
 
 	AudioDriverXAudio2 audio_driver;
+
+	PowerWinRT *power_manager;
 
 	MouseMode mouse_mode;
 	bool alt_mem;
@@ -260,6 +264,10 @@ public:
 	virtual bool get_swap_ok_cancel() { return true; }
 
 	void input_event(InputEvent &p_event);
+	
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
 	void queue_key_event(KeyEvent &p_event);
 

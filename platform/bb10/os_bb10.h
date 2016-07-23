@@ -39,6 +39,7 @@
 #include "servers/visual/rasterizer.h"
 #include "audio_driver_bb10.h"
 #include "payment_service.h"
+#include "power_bb10.h"
 
 #include <screen/screen.h>
 #include <sys/platform.h>
@@ -58,6 +59,7 @@ class OSBB10 : public OS_Unix {
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 	AudioDriverBB10* audio_driver;
+	PowerBB10 *power_manager;
 
 #ifdef PAYMENT_SERVICE_ENABLED
 	PaymentService* payment_service;
@@ -141,6 +143,10 @@ public:
 	virtual Error shell_open(String p_uri);
 
 	void run();
+
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
 	OSBB10();
 	~OSBB10();

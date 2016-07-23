@@ -100,3 +100,4 @@ def configure(env):
     #env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.h',src_suffix = '.hlsl') } )
 
     env["x86_libtheora_opt_gcc"] = True
+    

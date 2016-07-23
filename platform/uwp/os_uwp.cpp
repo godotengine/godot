@@ -292,6 +292,8 @@ void OSUWP::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio
 		ERR_PRINT("Initializing audio failed.");
 	}
 
+	power_manager = memnew ( PowerWinRT );
+
 	managed_object->update_clipboard();
 
 	Clipboard::ContentChanged += ref new EventHandler<Platform::Object^>(managed_object, &ManagedType::on_clipboard_changed);
@@ -917,6 +919,18 @@ String OSUWP::get_data_dir() const {
 	Windows::Storage::StorageFolder ^data_folder = Windows::Storage::ApplicationData::Current->LocalFolder;
 
 	return String(data_folder->Path->Data()).replace("\\", "/");
+}
+
+PowerState OSWinrt::get_power_state() {
+	return power_manager->get_power_state();
+}
+
+int OSWinrt::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OSWinrt::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
 }
 
 

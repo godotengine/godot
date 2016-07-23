@@ -146,6 +146,8 @@ void OSBB10::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
+	
+	power_manager = memnew( PowerBB10 );
 
 	#ifdef PAYMENT_SERVICE_ENABLED
 	payment_service = memnew(PaymentService);
@@ -585,6 +587,18 @@ String OSBB10::get_data_dir() const {
 
 Size2 OSBB10::get_window_size() const {
 	return Vector2(default_videomode.width, default_videomode.height);
+}
+
+PowerState OSBB10::get_power_state() {
+	return power_manager->get_power_state();
+}
+
+int OSBB10::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OSBB10::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
 }
 
 OSBB10::OSBB10() {
