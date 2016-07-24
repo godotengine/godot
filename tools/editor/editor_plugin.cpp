@@ -284,7 +284,7 @@ Control *EditorPlugin::get_base_control() {
 void EditorPlugin::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("add_control_to_container","container","control:Control"),&EditorPlugin::add_control_to_container);
-	ObjectTypeDB::bind_method(_MD("add_control_to_bottom_panel","control:Control","title"),&EditorPlugin::add_control_to_bottom_panel);
+	ObjectTypeDB::bind_method(_MD("add_control_to_bottom_panel:ToolButton","control:Control","title"),&EditorPlugin::add_control_to_bottom_panel);
 	ObjectTypeDB::bind_method(_MD("add_control_to_dock","slot","control:Control"),&EditorPlugin::add_control_to_dock);
 	ObjectTypeDB::bind_method(_MD("remove_control_from_docks","control:Control"),&EditorPlugin::remove_control_from_docks);
 	ObjectTypeDB::bind_method(_MD("remove_control_from_bottom_panel","control:Control"),&EditorPlugin::remove_control_from_bottom_panel);
