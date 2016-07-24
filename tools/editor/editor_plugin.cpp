@@ -44,9 +44,9 @@ void EditorPlugin::remove_custom_type(const String& p_type){
 }
 
 
-void EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
+ToolButton * EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
 
-	EditorNode::get_singleton()->add_bottom_panel_item(p_title,p_control);
+	return EditorNode::get_singleton()->add_bottom_panel_item(p_title,p_control);
 }
 
 void EditorPlugin::add_control_to_dock(DockSlot p_slot,Control *p_control) {

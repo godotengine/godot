@@ -29,6 +29,7 @@
 #ifndef EDITOR_PLUGIN_H
 #define EDITOR_PLUGIN_H
 
+#include "scene/gui/tool_button.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "undo_redo.h"
@@ -92,7 +93,7 @@ public:
 	//TODO: send a resoucre for editing to the editor node?
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
-	void add_control_to_bottom_panel(Control *p_control, const String &p_title);
+	ToolButton *add_control_to_bottom_panel(Control *p_control, const String &p_title);
 	void add_control_to_dock(DockSlot p_slot,Control *p_control);
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
