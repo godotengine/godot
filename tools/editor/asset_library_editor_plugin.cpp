@@ -325,6 +325,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 
 
 	String error_text;
+	print_line("COMPLETED: "+itos(p_status)+" code: "+itos(p_code)+" data size: "+itos(p_data.size()));
 
 	switch(p_status) {
 
@@ -383,7 +384,9 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	print_line("max: "+itos(download->get_body_size())+" bytes: "+itos(download->get_downloaded_bytes()));
 	install->set_disabled(false);
 
-	status->set_text("Success!");
+	progress->set_val(download->get_downloaded_bytes());
+
+	status->set_text("Success! ("+String::humanize_size(download->get_downloaded_bytes())+")");
 	set_process(false);
 }
 
@@ -411,6 +414,10 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 		progress->set_val(download->get_downloaded_bytes());
 
 		int cstatus = download->get_http_client_status();
+
+		if (cstatus==HTTPClient::STATUS_BODY)
+			status->set_text("Fetching: "+String::humanize_size(download->get_downloaded_bytes()));
+
 		if (cstatus!=prev_status) {
 			switch(cstatus) {
 
@@ -422,9 +429,6 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 				} break;
 				case HTTPClient::STATUS_REQUESTING: {
 					status->set_text("Requesting..");
-				} break;
-				case HTTPClient::STATUS_BODY: {
-					status->set_text("Downloading..");
 				} break;
 				default: {}
 			}
