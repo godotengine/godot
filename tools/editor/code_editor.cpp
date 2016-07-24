@@ -1032,8 +1032,8 @@ void CodeTextEditor::_reset_zoom() {
 
 void CodeTextEditor::_line_col_changed() {
 
-	String text = String()+TTR("Line:")+" "+itos(text_editor->cursor_get_line()+1)+", "+TTR("Col:")+" "+itos(text_editor->cursor_get_column());
-	line_col->set_text(text);
+	line_nb->set_text(itos(text_editor->cursor_get_line() + 1));
+	col_nb->set_text(itos(text_editor->cursor_get_column()));
 }
 
 void CodeTextEditor::_text_changed() {
@@ -1191,6 +1191,7 @@ CodeTextEditor::CodeTextEditor() {
 	HBoxContainer *status_bar = memnew( HBoxContainer );
 	status_mc->add_child(status_bar);
 	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
+	status_bar->add_child( memnew( Label ) ); //to keep the height if the other labels are not visible
 
 	idle = memnew( Timer );
 	add_child(idle);
@@ -1212,14 +1213,33 @@ CodeTextEditor::CodeTextEditor() {
 
 	status_bar->add_spacer();
 
-	line_col = memnew( Label );
-	status_bar->add_child(line_col);
-	line_col->set_valign(Label::VALIGN_CENTER);
-	line_col->set_autowrap(true);
-	line_col->set_v_size_flags(SIZE_FILL);
-	line_col->set_custom_minimum_size(Size2(100,1)*EDSCALE);
-	status_bar->add_child( memnew( Label ) ); //to keep the height if the other labels are not visible
+	Label *line_txt = memnew( Label );
+	status_bar->add_child(line_txt);
+	line_txt->set_align(Label::ALIGN_RIGHT);
+	line_txt->set_valign(Label::VALIGN_CENTER);
+	line_txt->set_v_size_flags(SIZE_FILL);
+	line_txt->set_text(TTR("Line:"));
 
+	line_nb = memnew( Label );
+	status_bar->add_child(line_nb);
+	line_nb->set_valign(Label::VALIGN_CENTER);
+	line_nb->set_v_size_flags(SIZE_FILL);
+	line_nb->set_autowrap(true); // workaround to prevent resizing the label on each change
+	line_nb->set_custom_minimum_size(Size2(40,1)*EDSCALE);
+
+	Label *col_txt = memnew( Label );
+	status_bar->add_child(col_txt);
+	col_txt->set_align(Label::ALIGN_RIGHT);
+	col_txt->set_valign(Label::VALIGN_CENTER);
+	col_txt->set_v_size_flags(SIZE_FILL);
+	col_txt->set_text(TTR("Col:"));
+
+	col_nb = memnew( Label );
+	status_bar->add_child(col_nb);
+	col_nb->set_valign(Label::VALIGN_CENTER);
+	col_nb->set_v_size_flags(SIZE_FILL);
+	col_nb->set_autowrap(true); // workaround to prevent resizing the label on each change
+	col_nb->set_custom_minimum_size(Size2(40,1)*EDSCALE);
 
 	text_editor->connect("input_event", this,"_text_editor_input_event");
 	text_editor->connect("cursor_changed", this,"_line_col_changed");
