@@ -134,13 +134,13 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	category = memnew( LinkButton );
 	category->set_text("Editor Tools");
 	category->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	title->connect("pressed",this,"_category_clicked");
+	category->connect("pressed",this,"_category_clicked");
 	vb->add_child(category);
 
 	author = memnew( LinkButton );
 	author->set_text("Johny Tolengo");
 	author->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	title->connect("pressed",this,"_author_clicked");
+	author->connect("pressed",this,"_author_clicked");
 	vb->add_child(author);
 
 	HBoxContainer *rating_hb = memnew( HBoxContainer );
@@ -461,6 +461,7 @@ void EditorAssetLibraryItemDownload::_install() {
 void EditorAssetLibraryItemDownload::_make_request() {
 	download->cancel_request();
 	download->set_download_file(EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("tmp_asset_"+itos(asset_id))+".zip");
+
 	Error err = download->request(host);
 	if(err!=OK) {
 		status->set_text("Error making request");
@@ -1011,6 +1012,7 @@ void EditorAssetLibrary::_api_request(const String& p_request, RequestType p_req
 	if (requesting!=REQUESTING_NONE) {
 		request->cancel_request();
 	}
+
 	requesting=p_request_type;
 
 	error_hb->hide();
@@ -1469,6 +1471,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	request = memnew( HTTPRequest );
 	add_child(request);
+	request->set_use_threads(EDITOR_DEF("asset_library/use_threads",true));
 	request->connect("request_completed",this,"_http_request_completed");
 
 	last_queue_id=0;
