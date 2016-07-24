@@ -2034,8 +2034,22 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 				}
 
+				bool is_tooltip_shown = false;
 
-				if (can_tooltip) {
+				if (gui.tooltip_popup) {
+					if (can_tooltip) {
+						String tooltip = over->get_tooltip(gui.tooltip->get_global_transform().xform_inv(mpos));
+
+						if (tooltip.length() == 0)
+							_gui_cancel_tooltip();
+						else if (tooltip == gui.tooltip_label->get_text())
+							is_tooltip_shown = true;
+					}
+					else
+						_gui_cancel_tooltip();
+				}
+
+				if (can_tooltip && !is_tooltip_shown) {
 
 					gui.tooltip=over;
 					gui.tooltip_pos=mpos;//(parent_xform * get_transform()).affine_inverse().xform(pos);
