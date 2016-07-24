@@ -323,13 +323,13 @@ bool BodyPairSW::setup(float p_step) {
 #endif
 
 		if (A->can_report_contacts()) {
-			Vector3 crB = A->get_angular_velocity().cross( c.rA ) + A->get_linear_velocity();
-			A->add_contact(global_A,-c.normal,depth,shape_A,global_B,shape_B,B->get_instance_id(),B->get_self(),crB);
+			Vector3 crA = A->get_angular_velocity().cross( c.rA ) + A->get_linear_velocity();
+			A->add_contact(global_A,-c.normal,depth,shape_A,global_B,shape_B,B->get_instance_id(),B->get_self(),crA);
 		}
 
 		if (B->can_report_contacts()) {
-			Vector3 crA = A->get_angular_velocity().cross( c.rB ) + A->get_linear_velocity();
-			B->add_contact(global_B,c.normal,depth,shape_B,global_A,shape_A,A->get_instance_id(),A->get_self(),crA);
+			Vector3 crB = B->get_angular_velocity().cross( c.rB ) + B->get_linear_velocity();
+			B->add_contact(global_B,c.normal,depth,shape_B,global_A,shape_A,A->get_instance_id(),A->get_self(),crB);
 		}
 
 		if (A->is_shape_set_as_trigger(shape_A) || B->is_shape_set_as_trigger(shape_B) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC)) {
