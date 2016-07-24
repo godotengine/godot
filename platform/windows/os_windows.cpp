@@ -1476,6 +1476,7 @@ Point2 OS_Windows::get_window_position() const{
 }
 void OS_Windows::set_window_position(const Point2& p_position){
 
+	if (video_mode.fullscreen) return;
 	RECT r;
 	GetWindowRect(hWnd,&r);
 	MoveWindow(hWnd,p_position.x,p_position.y,r.right-r.left,r.bottom-r.top,TRUE);
