@@ -644,7 +644,7 @@ Vector2 Curve2D::interpolate_baked(float p_offset,bool p_cubic) const{
 	if (p_offset>=baked_max_ofs)
 		return r[bpc-1];
 
-	int idx = Math::floor(p_offset/bake_interval);
+	int idx = Math::floor((double)p_offset/(double)bake_interval);
 	float frac = Math::fmod(p_offset,bake_interval);
 
 	if (idx>=bpc-1) {
@@ -1117,7 +1117,7 @@ Vector3 Curve3D::interpolate_baked(float p_offset,bool p_cubic) const{
 	if (p_offset>=baked_max_ofs)
 		return r[bpc-1];
 
-	int idx = Math::floor(p_offset/bake_interval);
+	int idx = Math::floor((double)p_offset/(double)bake_interval);
 	float frac = Math::fmod(p_offset,bake_interval);
 
 	if (idx>=bpc-1) {
@@ -1161,7 +1161,7 @@ float Curve3D::interpolate_baked_tilt(float p_offset) const{
 	if (p_offset>=baked_max_ofs)
 		return r[bpc-1];
 
-	int idx = Math::floor(p_offset/bake_interval);
+	int idx = Math::floor((double)p_offset/(double)bake_interval);
 	float frac = Math::fmod(p_offset,bake_interval);
 
 	if (idx>=bpc-1) {
