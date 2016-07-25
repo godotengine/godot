@@ -901,6 +901,7 @@ void ShaderGraphView::_variant_edited() {
 			case Variant::COLOR:
 				v2=Color();
 				break;
+			default: {}
 			}
 		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Default Value"));
@@ -1321,6 +1322,7 @@ void ShaderGraphView::_default_changed(int p_id, Node *p_button, int p_param, in
 			h=PROPERTY_HINT_COLOR_NO_ALPHA;
 			v=Color();
 			break;
+		default: {}
 		}
 
 	ped_popup->edit(NULL,"",vt,v,h,p_hint);
@@ -1347,6 +1349,8 @@ ToolButton *ShaderGraphView::make_label(String text, Variant::Type v_type) {
 		break;
 	case Variant::COLOR:
 		l->set_icon(ped_popup->get_icon("Color", "EditorIcons"));
+		break;
+	default: {}
 	}
 	return l;
 }
@@ -1372,7 +1376,7 @@ ToolButton *ShaderGraphView::make_editor(String text,GraphNode* gn,int p_id,int 
 	case Variant::TRANSFORM:
 		edit->set_icon(ped_popup->get_icon("Matrix", "EditorIcons"));
 		break;
-	case Variant::COLOR:
+	case Variant::COLOR: {
 		Image icon_color = Image(15,15,false,Image::FORMAT_RGB);
 		Color c = graph->default_get_value(type,p_id,param);
 		for (int x=1;x<14;x++)
@@ -1382,7 +1386,8 @@ ToolButton *ShaderGraphView::make_editor(String text,GraphNode* gn,int p_id,int 
 		t.instance();
 		t->create_from_image(icon_color);
 		edit->set_icon(t);
-		break;
+	} break;
+	default: {}
 	}
 	return edit;
 }

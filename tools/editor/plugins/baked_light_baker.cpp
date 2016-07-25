@@ -1177,8 +1177,6 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 		diffuse_at_point.g=res_light.g*diffuse_at_point.g;
 		diffuse_at_point.b=res_light.b*diffuse_at_point.b;
 
-		float ret=1e6;
-
 		if (p_bounces>0) {
 
 
@@ -1220,7 +1218,7 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 #endif
 
 
-				ret=_throw_ray(thread_stack,p_bake_direct,r_point,r_point+rn*p_rest,p_rest,diffuse_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1);
+				_throw_ray(thread_stack,p_bake_direct,r_point,r_point+rn*p_rest,p_rest,diffuse_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1);
 			}
 
 			if (use_specular && (specular_at_point.r>CMP_EPSILON || specular_at_point.g>CMP_EPSILON || specular_at_point.b>CMP_EPSILON)) {

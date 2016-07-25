@@ -422,8 +422,6 @@ bool EditorSpatialGizmo::intersect_ray(const Camera *p_camera,const Point2& p_po
 		if (billboard_handle) {
 			t.set_look_at(t.origin,t.origin+p_camera->get_transform().basis.get_axis(2),p_camera->get_transform().basis.get_axis(1));
 		}
-		Transform ti=t.affine_inverse();
-
 
 		float min_d=1e20;
 		int idx=-1;
