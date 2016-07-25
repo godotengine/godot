@@ -12264,7 +12264,7 @@
 		    file.open("user://save_game.dat", file.WRITE)
 		    file.store_string(content)
 		    file.close()
-		
+
 		func load():
 		    var file = File.new()
 		    file.open("user://save_game.dat", file.READ)
@@ -15692,7 +15692,7 @@
 	</brief_description>
 	<description>
 	</description>
-	ImmediateGeometry is a node used for displaying simple geometry created from code, very similar to how glBegin() and glEnd() worked in old versions of OpenGL (1.x). 
+	ImmediateGeometry is a node used for displaying simple geometry created from code, very similar to how glBegin() and glEnd() worked in old versions of OpenGL (1.x).
 	Simply call [method begin()], and add vertices. For custom vertex colors, uvs, normal, etc. call one of the set_ functions below before adding each vertex. When done, call [method end]
 	Calls to begin/end are accumulative and all geometry is added together. To clear all the geometry, call [method clear].
 	If a material override is set, and this material contains a texture, it's possible to override the texture used in this material for every begin/end set of calls.
@@ -42401,7 +42401,7 @@
 		Because it is easy to get it wrong, here is a quick usage example:
 		[codeblock]
 		var tween = get_node("Tween")
-		tween.interpolate_property(get_node("Node2D_to_move"), "transform/pos", Vector2(0,0), Vector2(100,100), Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.interpolate_property(get_node("Node2D_to_move"), "transform/pos", Vector2(0,0), Vector2(100,100), 1, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 		tween.start()
 		[/codeblock]
 		Some of the methods of this class require a property name. You can get the property name by hovering over the property in the inspector of the editor.
