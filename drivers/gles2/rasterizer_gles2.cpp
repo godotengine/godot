@@ -10788,8 +10788,17 @@ void RasterizerGLES2::init() {
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line(String("GLES2: Using GLEW ") + (const char*) glewGetString(GLEW_VERSION));
 	}
-#endif
 
+	// Check for GL 2.1 compatibility, if not bail out
+	if (!glewIsSupported("GL_VERSION_2_1")) {
+		ERR_PRINT("Your system's graphic drivers seem not to support OpenGL 2.1 / GLES 2.0, sorry :(\n"
+			  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
+		OS::get_singleton()->alert("Your system's graphic drivers seem not to support OpenGL 2.1 / GLES 2.0, sorry :(\n"
+					   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
+					   "Fatal error: Insufficient OpenGL / GLES drivers");
+		// TODO: If it's even possible, we should stop the execution without segfault and memory leaks :)
+	}
+#endif
 
 
 
