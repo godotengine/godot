@@ -11281,7 +11281,7 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-				Add a control to the bottom panel (together with Output, Debug, Animation, etc). If your plugin is being removed, also make sure to remove your control by calling [method remove_control_from_bottom_panel].
+				Add a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. If your plugin is being removed, also make sure to remove your control by calling [method remove_control_from_bottom_panel].
 			</description>
 		</method>
 		<method name="add_control_to_container">
