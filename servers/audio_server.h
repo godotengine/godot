@@ -65,7 +65,8 @@ public:
 		REVERB_SMALL,
 		REVERB_MEDIUM,
 		REVERB_LARGE,
-		REVERB_HALL
+		REVERB_HALL,
+		MAX_REVERBS
 	};
 
 	virtual ChannelID channel_alloc(RID p_sample)=0;
