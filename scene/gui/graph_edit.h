@@ -92,6 +92,7 @@ private:
 	bool dragging;
 	bool just_selected;
 	Vector2 drag_accum;
+	Point2 drag_origin; // Workaround for GH-5907
 
 	float zoom;
 
