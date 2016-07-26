@@ -692,6 +692,10 @@ void ProjectManager::_unhandled_input(const InputEvent& p_ev) {
 				}
 
 			} break;
+			case KEY_F: {
+				if (k.mod.command) this->project_filter->search_box->grab_focus();
+				else scancode_handled = false;
+			} break;
 			default: {
 				scancode_handled = false;
 			} break;
