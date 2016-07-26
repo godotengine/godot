@@ -1129,9 +1129,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(_MD("set_use_vsync","enable"),&_OS::set_use_vsync);
 	ClassDB::bind_method(_MD("is_vsync_enabled"),&_OS::is_vsync_enabled);
 	
-	ObjectTypeDB::bind_method(_MD("get_power_state"),&_OS::get_power_state);
-	ObjectTypeDB::bind_method(_MD("get_power_seconds_left"),&_OS::get_power_seconds_left);
-	ObjectTypeDB::bind_method(_MD("get_power_percent_left"),&_OS::get_power_percent_left);
+	ClassDB::bind_method(_MD("get_power_state"),&_OS::get_power_state);
+	ClassDB::bind_method(_MD("get_power_seconds_left"),&_OS::get_power_seconds_left);
+	ClassDB::bind_method(_MD("get_power_percent_left"),&_OS::get_power_percent_left);
 
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );

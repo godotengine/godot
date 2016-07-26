@@ -31,6 +31,53 @@
 
 #include "power_android.h"
 
+static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder) {
+    if (refholder->m_env) {
+        JNIEnv* env = refholder->m_env;
+        (*env)->PopLocalFrame(env, NULL);
+        --s_active;
+    }
+}
+
+static struct LocalReferenceHolder LocalReferenceHolder_Setup(const char *func)
+{
+    struct LocalReferenceHolder refholder;
+    refholder.m_env = NULL;
+    refholder.m_func = func;
+    return refholder;
+}
+
+static bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder, JNIEnv *env)
+{
+    const int capacity = 16;
+    if ((*env)->PushLocalFrame(env, capacity) < 0) {
+        return false;
+    }
+    ++s_active;
+    refholder->m_env = env;
+    return true;
+}
+
+
+static SDL_bool LocalReferenceHolder_IsActive(void)
+{
+    return s_active > 0;
+}
+
+ANativeWindow* Android_JNI_GetNativeWindow(void)
+{
+    ANativeWindow* anw;
+    jobject s;
+    JNIEnv *env = Android_JNI_GetEnv();
+
+    s = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetNativeSurface);
+    anw = ANativeWindow_fromSurface(env, s);
+    (*env)->DeleteLocalRef(env, s);
+  
+    return anw;
+}
+
+
 /* 
  *  CODE CHUNK IMPORTED FROM SDL 2.0
  * returns 0 on success or -1 on error (others undefined then)
@@ -39,19 +86,9 @@
  */
 int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seconds, int* percent)
 {
+	env = Android_JNI_GetEnv();
+	refs = LocalReferenceHolder_Setup(__FUNCTION__);
 	
-	struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
-	JNIEnv* env = Android_JNI_GetEnv();
-	jmethodID mid;
-	jobject context;
-	jstring action;
-	jclass cls;
-	jobject filter;
-	jobject intent;
-	jstring iname;
-	jmethodID imid;
-	jstring bname;
-	jmethodID bmid;
 	if (!LocalReferenceHolder_Init(&refs, env)) {
 		LocalReferenceHolder_Cleanup(&refs);
 		return -1;

@@ -31,10 +31,31 @@
 #define PLATFORM_ANDROID_POWER_ANDROID_H_
 
 #include "os/power.h"
+#include <android/native_window_jni.h>
 
 class power_android {
 
+struct LocalReferenceHolder
+{
+    JNIEnv *m_env;
+    const char *m_func;
+};
+
 private:
+	static struct LocalReferenceHolder refs;
+	static JNIEnv* env;
+	static jmethodID mid;
+	static jobject context;
+	static jstring action;
+	static jclass cls;
+	static jobject filter;
+	static jobject intent;
+	static jstring iname;
+	static jmethodID imid;
+	static jstring bname;
+	static jmethodID bmid;
+
+
 	int nsecs_left;
 	int percent_left;
 	PowerState power_state;
@@ -43,8 +64,15 @@ private:
 	bool UpdatePowerInfo();
 
 public:
+	
+	static int s_active;
+	
+
 	power_android();
 	virtual ~power_android();
+	static bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder, JNIEnv *env);
+	static struct LocalReferenceHolder LocalReferenceHolder_Setup(const char *func);
+	static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder);
 
 	PowerState get_power_state();
 	int get_power_seconds_left();
