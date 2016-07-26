@@ -222,6 +222,7 @@ static String _parser_expr(const GDParser::Node *p_expr) {
 				case GDParser::OperatorNode::OP_BIT_AND: { txt=_parser_expr(c_node->arguments[0])+"&"+_parser_expr(c_node->arguments[1]); } break;;
 				case GDParser::OperatorNode::OP_BIT_OR: { txt=_parser_expr(c_node->arguments[0])+"|"+_parser_expr(c_node->arguments[1]); } break;
 				case GDParser::OperatorNode::OP_BIT_XOR: { txt=_parser_expr(c_node->arguments[0])+"^"+_parser_expr(c_node->arguments[1]); } break;
+				default: {}
 
 			}
 
