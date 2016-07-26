@@ -660,7 +660,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 	uint32_t filesize = decode_uint32(&p_manifest[ofs+4]);
 	ofs+=8;
 
-//	print_line("FILESIZE: "+itos(filesize)+" ACTUAL: "+itos(p_manifest.size()));
+	//print_line("FILESIZE: "+itos(filesize)+" ACTUAL: "+itos(p_manifest.size()));
 
 	uint32_t string_count;
 	uint32_t styles_count;
@@ -687,7 +687,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 
 				string_count=decode_uint32(&p_manifest[iofs]);
 				styles_count=decode_uint32(&p_manifest[iofs+4]);
-				uint32_t string_flags=decode_uint32(&p_manifest[iofs+8]);
+				string_flags=decode_uint32(&p_manifest[iofs+8]);
 				string_data_offset=decode_uint32(&p_manifest[iofs+12]);
 				styles_offset=decode_uint32(&p_manifest[iofs+16]);
 /*
@@ -1355,7 +1355,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		args.push_back(unaligned_path);
 		args.push_back(user);
 		int retval;
-		int err = OS::get_singleton()->execute(jarsigner,args,true,NULL,NULL,&retval);
+		OS::get_singleton()->execute(jarsigner,args,true,NULL,NULL,&retval);
 		if (retval) {
 			EditorNode::add_io_error("'jarsigner' returned with error #"+itos(retval));
 			return ERR_CANT_CREATE;
@@ -1368,7 +1368,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		args.push_back(unaligned_path);
 		args.push_back("-verbose");
 
-		err = OS::get_singleton()->execute(jarsigner,args,true,NULL,NULL,&retval);
+		OS::get_singleton()->execute(jarsigner,args,true,NULL,NULL,&retval);
 		if (retval) {
 			EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use jarsigner from Java 6.");
 			return ERR_CANT_CREATE;
@@ -1515,7 +1515,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 			List<String> args;
 			args.push_back("devices");
 			int ec;
-			Error err = OS::get_singleton()->execute(adb,args,true,NULL,&devices,&ec);
+			OS::get_singleton()->execute(adb,args,true,NULL,&devices,&ec);
 			Vector<String> ds = devices.split("\n");
 			Vector<String> ldevices;
 			for(int i=1;i<ds.size();i++) {
@@ -1574,7 +1574,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 						int ec;
 						String dp;
 
-						Error err = OS::get_singleton()->execute(adb,args,true,NULL,&dp,&ec);
+						OS::get_singleton()->execute(adb,args,true,NULL,&dp,&ec);
 
 						Vector<String> props = dp.split("\n");
 						String vendor;

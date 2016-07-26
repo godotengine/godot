@@ -2067,7 +2067,7 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 
 	GDParser p;
 
-	Error err = p.parse(p_code,p_base_path,false,"",true);
+	p.parse(p_code,p_base_path,false,"",true);
 	bool isfunction=false;
 	Set<String> options;
 

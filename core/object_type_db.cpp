@@ -849,21 +849,14 @@ MethodBind* ObjectTypeDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind , c
 
 	Vector<Variant> defvals;
 
-#define PARSE_DEFVAL(m_defval)\
-if (d##m_defval.used) defvals.insert(0,d##m_defval.val);\
-else goto set_defvals;
-
 	defvals.resize(p_defcount);
 	for(int i=0;i<p_defcount;i++) {
 
 		defvals[i]=*p_defs[p_defcount-i-1];
 	}
 
-	set_defvals:
-
 	p_bind->set_default_arguments(defvals);
 	p_bind->set_hint_flags(p_flags);
-#undef PARSE_DEFVAL
 	return p_bind;
 
 }
