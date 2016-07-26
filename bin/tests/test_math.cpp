@@ -113,6 +113,7 @@ uint32_t ihash3( uint32_t a)
 
 MainLoop* test() {
 
+	print_line(itos(Math::step_decimals( 0.0001 )));
 	return NULL;
 
 	{

@@ -206,25 +206,29 @@ double Math::ceil(double p_x) {
 	return ::ceil(p_x);
 }
 
-int Math::decimals(double p_step) {
+int Math::step_decimals(double p_step) {
 
-	int max=4;
-	double llimit = Math::pow(0.1,max);
-	double ulimit = 1.0-llimit;
-	int i=0;
-	while( max) {
+	static const int maxn=9;
+	static const double sd[maxn]={
+		0.9999, // somehow compensate for floating point error
+		0.09999,
+		0.009999,
+		0.0009999,
+		0.00009999,
+		0.000009999,
+		0.0000009999,
+		0.00000009999,
+		0.000000009999
+	};
 
-		float d = absf(p_step) - Math::floor(absf(p_step));
-
-		if (d<llimit || d>ulimit)
-			break;
-		p_step*=10.0;
-		max--;
-		i++;
+	double as=absf(p_step);
+	for(int i=0;i<maxn;i++) {
+		if (as>=sd[i]) {
+			return i;
+		}
 	}
 
-	return i;
-
+	return maxn;
 }
 
 double Math::ease(double p_x, double p_c) {
