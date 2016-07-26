@@ -1148,6 +1148,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	tree->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
 	tree->set_begin( Point2(0,p_label?18:0 ));
 	tree->set_end( Point2(0,0 ));
+	tree->set_search_enabled(false);
 
 	add_child( tree );
 
