@@ -330,8 +330,8 @@ public:
 
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() {
-	    if (Thread::get_main_ID()!=Thread::get_caller_ID())
-		return Vector<StackInfo>();
+		if (Thread::get_main_ID()!=Thread::get_caller_ID())
+			return Vector<StackInfo>();
 
 		Vector<StackInfo> csi;
 		csi.resize(_debug_call_stack_pos);
