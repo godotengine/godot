@@ -36,16 +36,19 @@ android {
 		exclude 'META-INF/LICENSE'
 		exclude 'META-INF/NOTICE'
 	}
+
 	defaultConfig {
 		minSdkVersion 14
 		targetSdkVersion 23
 		$$GRADLE_DEFAULT_CONFIG$$
 	}
+
 	// Both signing and zip-aligning will be done at export time
 	buildTypes.all { buildType ->
 		buildType.zipAlignEnabled false
 		buildType.signingConfig null
 	}
+
 	sourceSets {
 		main {
 			manifest.srcFile 'AndroidManifest.xml'
@@ -53,14 +56,14 @@ android {
 				$$GRADLE_JAVA_DIRS$$
 			]
 			resources.srcDirs = [
-				'res'
-				$$GRADLE_RES_DIRS$$  
+				'src'
+				$$GRADLE_RES_DIRS$$
 			]
 			res.srcDirs = ['res']
 		//            libs.srcDirs = ['libs']
 			aidl.srcDirs = [
 				'aidl'
-				$$GRADLE_AIDL_DIRS$$   
+				$$GRADLE_AIDL_DIRS$$
 			]
 			assets.srcDirs = [
 				'assets'
@@ -71,17 +74,21 @@ android {
 				$$GRADLE_JNI_DIRS$$
 			]
 		}
+
 		debug.jniLibs.srcDirs = [
 			'libs/debug'
 			$$GRADLE_JNI_DIRS$$
 		]
+
 		release.jniLibs.srcDirs = [
 			'libs/release'
 			$$GRADLE_JNI_DIRS$$
 		]
 	}
+
 	applicationVariants.all { variant ->
 		// ApplicationVariant is undocumented, but this method is widely used; may break with another version of the Android Gradle plugin
 		variant.outputs.get(0).setOutputFile(new File("${projectDir}/../../../bin", "android_${variant.name}.apk"))
 	}
+
 }
