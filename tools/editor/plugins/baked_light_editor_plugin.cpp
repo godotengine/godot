@@ -206,8 +206,9 @@ void BakedLightEditor::_menu_option(int p_option) {
 void BakedLightEditor::_bake_pressed() {
 
 	ERR_FAIL_COND(!node);
-	if (node->get_baked_light().is_null()) {
-		err_dialog->set_text(TTR("BakedLightInstance does not contain a BakedLight resource."));
+	const String conf_warning = node->get_configuration_warning();
+	if (!conf_warning.empty()) {
+		err_dialog->set_text(conf_warning);
 		err_dialog->popup_centered_minsize();
 		button_bake->set_pressed(false);
 		return;
@@ -236,6 +237,7 @@ void BakedLightEditor::_bake_pressed() {
 		update_timeout=0;
 
 		last_rays_time=0;
+		button_bake->set_pressed(false);
 
 		set_process(true);
 	}

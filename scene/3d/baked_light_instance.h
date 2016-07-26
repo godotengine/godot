@@ -55,6 +55,8 @@ public:
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
+	String get_configuration_warning() const;
+
 	BakedLightInstance();
 };
 

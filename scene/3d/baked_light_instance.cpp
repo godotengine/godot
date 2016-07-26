@@ -60,6 +60,8 @@ void BakedLightInstance::set_baked_light(const Ref<BakedLight>& p_baked_light) {
 //			VS::get_singleton()->instance_geometry_set_baked_light(E->get()->get_instance(),baked_light.is_valid()?get_instance():RID());
 //		}
 	}
+
+	update_configuration_warning();
 }
 
 Ref<BakedLight> BakedLightInstance::get_baked_light() const{
@@ -74,6 +76,14 @@ AABB BakedLightInstance::get_aabb() const {
 DVector<Face3> BakedLightInstance::get_faces(uint32_t p_usage_flags) const {
 
 	return DVector<Face3>();
+}
+
+
+String BakedLightInstance::get_configuration_warning() const {
+	if (get_baked_light().is_null()) {
+		return TTR("BakedLightInstance does not contain a BakedLight resource.");
+	}
+	return String();
 }
 
 
