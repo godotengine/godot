@@ -658,5 +658,5 @@ Matrix32 Matrix32::interpolate_with(const Matrix32& p_transform, float p_c) cons
 
 Matrix32::operator String() const {
 
-	return String(String()+elements[0]+", "+elements[1]+", "+elements[2]);
+	return "("+String(String()+elements[0]+", "+elements[1]+", "+elements[2])+")";
 }

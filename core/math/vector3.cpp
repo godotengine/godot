@@ -182,5 +182,5 @@ Vector3 Vector3::cubic_interpolate(const Vector3& p_b,const Vector3& p_pre_a, co
 # endif
 Vector3::operator String() const {
 
-	return (rtos(x)+", "+rtos(y)+", "+rtos(z));
+	return "("+(rtos(x)+", "+rtos(y)+", "+rtos(z))+")";
 }
