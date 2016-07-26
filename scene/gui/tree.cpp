@@ -2182,16 +2182,17 @@ void Tree::_input_event(InputEvent p_event) {
 
 				} break;
 				default: {
+					if (search_enabled) {
+						if (p_event.key.unicode>0) {
 
-					if (p_event.key.unicode>0) {
+							_do_incr_search(String::chr(p_event.key.unicode));
+							accept_event();
 
-						_do_incr_search(String::chr(p_event.key.unicode));
-						accept_event();
-
-						return;
-					} else {
-						if (p_event.key.scancode!=KEY_SHIFT)
-							last_keypress=0;
+							return;
+						} else {
+							if (p_event.key.scancode!=KEY_SHIFT)
+								last_keypress=0;
+						}
 					}
 				} break;
 
@@ -3503,6 +3504,19 @@ bool Tree::get_allow_rmb_select() const{
 	return allow_rmb_select;
 }
 
+
+void Tree::set_search_enabled(bool enabled) {
+
+	search_enabled = enabled;
+}
+
+
+bool Tree::is_search_enabled() const {
+
+	return search_enabled;
+}
+
+
 void Tree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_range_click_timeout"),&Tree::_range_click_timeout);
@@ -3555,6 +3569,9 @@ void Tree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_allow_rmb_select","allow"),&Tree::set_allow_rmb_select);
 	ObjectTypeDB::bind_method(_MD("get_allow_rmb_select"),&Tree::get_allow_rmb_select);
+
+	ObjectTypeDB::bind_method(_MD("set_search_enabled","enable"),&Tree::set_search_enabled);
+	ObjectTypeDB::bind_method(_MD("is_search_enabled"),&Tree::is_search_enabled);
 
 
 	ObjectTypeDB::bind_method(_MD("set_single_select_cell_editing_only_when_already_selected","enable"),&Tree::set_single_select_cell_editing_only_when_already_selected);
@@ -3669,6 +3686,8 @@ Tree::Tree() {
 	force_select_on_already_selected=false;
 
 	allow_rmb_select=false;
+
+	search_enabled = true;
 }
 
 
