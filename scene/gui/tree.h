@@ -446,6 +446,8 @@ friend class TreeItem;
 
 	bool hide_folding;
 
+	bool search_enabled;  // enable searchable nodes using keyboard
+
 	ValueEvaluator *evaluator;
 
 	int _count_selected_items(TreeItem* p_from) const;
@@ -526,6 +528,9 @@ public:
 	bool get_allow_rmb_select() const;
 
 	void set_value_evaluator(ValueEvaluator *p_evaluator);
+
+	void set_search_enabled(bool searchable);
+	bool is_search_enabled() const;
 
 	Tree();
 	~Tree();
