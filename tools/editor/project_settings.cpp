@@ -1375,34 +1375,35 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	input_base->set_area_as_parent_rect();;
 	tab_container->add_child(input_base);
 
+	VBoxContainer *vbc = memnew( VBoxContainer );
+	input_base->add_child(vbc);
+	vbc->set_anchor_and_margin(MARGIN_TOP,ANCHOR_BEGIN, 5 );
+	vbc->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END, 5 );
+	vbc->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN, 5 );
+	vbc->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END, 5 );
+
 	l = memnew( Label );
-	input_base->add_child(l);
+	vbc->add_child(l);
 	l->set_pos(Point2(6,5));
 	l->set_text(TTR("Action:"));
 
+	hbc = memnew( HBoxContainer );
+	vbc->add_child(hbc);
+
 	action_name = memnew( LineEdit );
-	action_name->set_anchor(MARGIN_RIGHT,ANCHOR_RATIO);
-	action_name->set_begin( Point2(5,25) );
-	action_name->set_end( Point2(0.85,26) );
-	input_base->add_child(action_name);
+	action_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->add_child(action_name);
 	action_name->connect("text_entered",this,"_action_adds");
 
 	add = memnew( Button );
-	input_base->add_child(add);
-	add->set_anchor(MARGIN_LEFT,ANCHOR_RATIO);
-	add->set_begin( Point2(0.86,25) );
-	add->set_anchor(MARGIN_RIGHT,ANCHOR_END);
-	add->set_end( Point2(5,26) );
+	hbc->add_child(add);
+	add->set_custom_minimum_size(Size2(150, 0));
 	add->set_text(TTR("Add"));
 	add->connect("pressed",this,"_action_add");
 
 	input_editor = memnew( Tree );
-	input_base->add_child(input_editor);
-	input_editor->set_area_as_parent_rect();
-	input_editor->set_anchor_and_margin(MARGIN_TOP,ANCHOR_BEGIN, 55 );
-	input_editor->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END, 35 );
-	input_editor->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN, 5 );
-	input_editor->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END, 5 );
+	vbc->add_child(input_editor);
+	input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	input_editor->connect("item_edited",this,"_action_edited");
 	input_editor->connect("cell_selected",this,"_action_selected");
 	input_editor->connect("button_pressed",this,"_action_button_pressed");
