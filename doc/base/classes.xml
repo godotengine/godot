@@ -4546,6 +4546,15 @@
 				Searches the array in reverse order for a value and returns its index or -1 if not found.
 			</description>
 		</method>
+		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+				Return true if the array contains given value. [code][ "inside", 7 ].has("inside") == true, [ "inside", 7 ].has("outside") == false, [ "inside", 7 ].has(7) == true, [ "inside", 7 ].has("7") == false[/code]
+			</description>
+		</method>
 		<method name="hash">
 			<return type="int">
 			</return>
