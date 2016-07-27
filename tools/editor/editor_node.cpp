@@ -2842,7 +2842,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case SETTINGS_ABOUT: {
 
-			about->popup_centered(Size2(500,130)*EDSCALE);
+			about->popup_centered_minsize(Size2(500,130)*EDSCALE);
 		} break;
 		case SOURCES_REIMPORT: {
 
