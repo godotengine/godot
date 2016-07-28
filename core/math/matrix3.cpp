@@ -233,26 +233,19 @@ bool Matrix3::operator!=(const Matrix3& p_matrix) const {
 
 Matrix3::operator String() const {
 
-	String mtx("(");
+	String mtx;
 	for (int i=0;i<3;i++) {
-
-		if (i!=0)
-			mtx+=", ";
-
-		mtx+="(";
 
 		for (int j=0;j<3;j++) {
 
-			if (j!=0)
+			if (i!=0 || j!=0)
 				mtx+=", ";
 
 			mtx+=rtos( elements[i][j] );
 		}
-
-		mtx+=")";
 	}
 
-	return mtx+")";
+	return mtx;
 }
 
 Matrix3::operator Quat() const {

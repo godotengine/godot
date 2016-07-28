@@ -1515,15 +1515,43 @@ Variant::operator String() const {
 		case INT: return String::num(_data._int);
 		case REAL: return String::num(_data._real);
 		case STRING: return *reinterpret_cast<const String*>(_data._mem);
-		case VECTOR2: return operator Vector2();
-		case RECT2: return operator Rect2();
-		case MATRIX32: return operator Matrix32();
-		case VECTOR3: return operator Vector3();
+		case VECTOR2: return "("+operator Vector2()+")";
+		case RECT2: return "("+operator Rect2()+")";
+		case MATRIX32: {
+
+			Matrix32 mat32 = operator Matrix32();
+			return "("+Variant(mat32.elements[0]).operator String()+", "+Variant(mat32.elements[1]).operator String()+", "+Variant(mat32.elements[2]).operator String()+")";
+		} break;
+		case VECTOR3: return "("+operator Vector3()+")";
 		case PLANE: return operator Plane();
 		//case QUAT:
 		case _AABB: return operator AABB();
-		case QUAT: return operator Quat();
-		case MATRIX3: return operator Matrix3();
+		case QUAT: return "("+operator Quat()+")";
+		case MATRIX3: {
+
+			Matrix3 mat3 = operator Matrix3();
+
+			String mtx("(");
+			for (int i=0;i<3;i++) {
+
+				if (i!=0)
+					mtx+=", ";
+
+				mtx+="(";
+
+				for (int j=0;j<3;j++) {
+
+					if (j!=0)
+						mtx+=", ";
+
+					mtx+=Variant( mat3.elements[i][j] ).operator String();
+				}
+
+				mtx+=")";
+			}
+
+			return mtx+")";
+		} break;
 		case TRANSFORM: return operator Transform();
 		case NODE_PATH: return operator NodePath();
 		case INPUT_EVENT: return operator InputEvent();
