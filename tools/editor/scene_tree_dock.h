@@ -163,6 +163,8 @@ public:
 	String get_filter();
 	void set_filter(const String& p_filter);
 
+	void _focus_node();
+
 	void import_subscene();
 	void set_edited_scene(Node* p_scene);
 	void instance(const String& p_path);

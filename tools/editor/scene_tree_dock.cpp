@@ -33,6 +33,7 @@
 #include "scene/resources/packed_scene.h"
 #include "editor_settings.h"
 #include "tools/editor/plugins/canvas_item_editor_plugin.h"
+#include "tools/editor/plugins/spatial_editor_plugin.h"
 #include "script_editor_debugger.h"
 #include "tools/editor/plugins/script_editor_plugin.h"
 #include "core/io/resource_saver.h"
@@ -1825,6 +1826,21 @@ void SceneTreeDock::set_filter(const String& p_filter){
 	scene_tree->set_filter(p_filter);
 }
 
+
+void SceneTreeDock::_focus_node() {
+
+	Node *node = scene_tree->get_selected();
+	ERR_FAIL_COND(!node);
+
+	if (node->is_type("CanvasItem")) {
+		CanvasItemEditorPlugin *editor = editor_data->get_editor("2D")->cast_to<CanvasItemEditorPlugin>();
+		editor->get_canvas_item_editor()->focus_selection();
+	} else {
+		SpatialEditorPlugin *editor = editor_data->get_editor("3D")->cast_to<SpatialEditorPlugin>();
+		editor->get_spatial_editor()->get_editor_viewport(0)->focus_selection();
+	}
+}
+
 void SceneTreeDock::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected,DEFVAL(false));
@@ -1849,6 +1865,7 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_files_dropped"),&SceneTreeDock::_files_dropped);
 	ObjectTypeDB::bind_method(_MD("_tree_rmb"),&SceneTreeDock::_tree_rmb);
 	ObjectTypeDB::bind_method(_MD("_filter_changed"),&SceneTreeDock::_filter_changed);
+	ObjectTypeDB::bind_method(_MD("_focus_node"),&SceneTreeDock::_focus_node);
 
 
 	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
@@ -1929,6 +1946,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	scene_tree->connect("nodes_rearranged",this,"_nodes_dragged");
 	scene_tree->connect("files_dropped",this,"_files_dropped");
 	scene_tree->connect("nodes_dragged",this,"_nodes_drag_begin");
+
+	scene_tree->get_scene_tree()->connect("item_double_clicked", this, "_focus_node");
+	scene_tree->get_scene_tree()->set_delayed_text_editor(true);
 
 	scene_tree->set_undo_redo(&editor_data->get_undo_redo());
 	scene_tree->set_editor_selection(editor_selection);
