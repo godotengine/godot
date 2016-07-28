@@ -1980,33 +1980,8 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_CENTER_TO_SELECTION: {
 
-			if (!get_selected_count())
-				break;
+			focus_selection();
 
-			Vector3 center;
-			int count=0;
-
-			List<Node*> &selection = editor_selection->get_selected_node_list();
-
-			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
-
-				Spatial *sp = E->get()->cast_to<Spatial>();
-				if (!sp)
-					continue;
-
-				SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
-				if (!se)
-					continue;
-
-				center+=sp->get_global_transform().origin;
-				count++;
-			}
-
-			if( count != 0 ) {
-				center/=float(count);
-			}
-
-			cursor.pos=center;
 		} break;
 		case VIEW_ALIGN_SELECTION_WITH_VIEW: {
 
@@ -2322,6 +2297,38 @@ void SpatialEditorViewport::reset() {
 	cursor.region_select=false;
 	_update_name();
 }
+
+
+void SpatialEditorViewport::focus_selection() {
+	if (!get_selected_count())
+		return;
+
+	Vector3 center;
+	int count=0;
+
+	List<Node*> &selection = editor_selection->get_selected_node_list();
+
+	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+		Spatial *sp = E->get()->cast_to<Spatial>();
+		if (!sp)
+			continue;
+
+		SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
+		if (!se)
+			continue;
+
+		center+=sp->get_global_transform().origin;
+		count++;
+	}
+
+	if( count != 0 ) {
+		center/=float(count);
+	}
+
+	cursor.pos=center;
+}
+
 
 SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, EditorNode *p_editor, int p_index) {
 

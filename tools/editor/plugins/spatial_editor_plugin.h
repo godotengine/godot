@@ -253,6 +253,9 @@ public:
 	void set_state(const Dictionary& p_state);
 	Dictionary get_state() const;
 	void reset();
+
+	void focus_selection();
+
 	Viewport *get_viewport_node() { return viewport; }
 
 
