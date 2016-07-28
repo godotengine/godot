@@ -35,6 +35,9 @@ android {
 	packagingOptions {
 		exclude 'META-INF/LICENSE'
 		exclude 'META-INF/NOTICE'
+		exclude 'res/drawable/icon.png'
+		exclude 'res/layout/downloading_expansion.xml'
+		exclude 'res/layout/status_bar_ongoing_event_progress_bar.xml'
 	}
 
 	defaultConfig {
@@ -59,7 +62,7 @@ android {
 				'src'
 				$$GRADLE_RES_DIRS$$
 			]
-			res.srcDirs = ['res']
+			res.srcDirs = ['src/res']
 		//            libs.srcDirs = ['libs']
 			aidl.srcDirs = [
 				'aidl'
