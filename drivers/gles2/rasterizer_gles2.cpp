@@ -6778,7 +6778,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			}
 		}
 
-		if (e->instance->billboard || e->instance->depth_scale) {
+		if (e->instance->billboard || e->instance->billboard_y || e->instance->depth_scale) {
 
 			Transform xf=e->instance->transform;
 			if (e->instance->depth_scale) {
@@ -6807,6 +6807,21 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 					xf.set_look_at(xf.origin, xf.origin + p_view_transform.get_basis().get_axis(2), p_view_transform.get_basis().get_axis(1));
 				}
 
+				xf.basis.scale(scale);
+			}
+			
+			if (e->instance->billboard_y) {
+				
+				Vector3 scale = xf.basis.get_scale();
+				Vector3 look_at =  p_view_transform.get_origin();
+				look_at.y = 0.0;
+				Vector3 look_at_norm = look_at.normalized();
+				
+				if (current_rt && current_rt_vflip) {
+					xf.set_look_at(xf.origin,xf.origin + look_at_norm, Vector3(0.0, -1.0, 0.0));
+				} else {
+					xf.set_look_at(xf.origin,xf.origin + look_at_norm, Vector3(0.0, 1.0, 0.0));
+				}
 				xf.basis.scale(scale);
 			}
 			material_shader.set_uniform(MaterialShaderGLES2::WORLD_TRANSFORM, xf);
