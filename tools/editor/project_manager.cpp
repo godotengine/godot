@@ -364,6 +364,12 @@ public:
 		mode=p_mode;
 	}
 
+	void import_from_file(const String& p_file) {
+		mode=MODE_IMPORT;
+		_file_selected(p_file);
+		ok_pressed();
+	}
+
 	void show_dialog() {
 
 
@@ -1097,6 +1103,14 @@ void ProjectManager::_install_project(const String& p_zip_path,const String& p_t
 	npdialog->show_dialog();
 }
 
+void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
+	for (int i = 0; i < p_files.size(); i++) {
+		if (p_files[i].ends_with("engine.cfg")) {
+			npdialog->import_from_file(p_files[i]);
+		}
+	}
+}
+
 void ProjectManager::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_open_project",&ProjectManager::_open_project);
@@ -1116,6 +1130,7 @@ void ProjectManager::_bind_methods() {
 	ObjectTypeDB::bind_method("_unhandled_input",&ProjectManager::_unhandled_input);
 	ObjectTypeDB::bind_method("_favorite_pressed",&ProjectManager::_favorite_pressed);
 	ObjectTypeDB::bind_method("_install_project",&ProjectManager::_install_project);
+	ObjectTypeDB::bind_method("_files_dropped",&ProjectManager::_files_dropped);
 
 
 }
@@ -1330,6 +1345,8 @@ ProjectManager::ProjectManager() {
 	//get_ok()->set_text("Exit");
 
 	last_clicked = "";
+
+	SceneTree::get_singleton()->connect("files_dropped", this, "_files_dropped");
 }
 
 
