@@ -82,6 +82,7 @@ class ProjectManager : public Control {
 	void _new_project();
 	void _erase_project();
 	void _erase_project_confirm();
+	void _update_project_buttons();
 	void _exit_dialog();
 	void _scan_begin(const String& p_base);
 
