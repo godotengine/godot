@@ -2749,6 +2749,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	completion_cache = memnew( EditorScriptCodeCompletionCache );
 	restoring_layout=false;
 	waiting_update_names=false;
+	pending_auto_reload=false;
 	auto_reload_running_scripts=false;
 	editor=p_editor;
 
