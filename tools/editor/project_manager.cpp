@@ -510,6 +510,27 @@ void ProjectManager::_panel_draw(Node *p_hb) {
 	}
 }
 
+void ProjectManager::_update_project_buttons()
+{
+	String single_selected = "";
+	if (selected_list.size() == 1) {
+		single_selected = selected_list.front()->key();
+	}
+
+	single_selected_main = "";
+	for(int i=0;i<scroll_childs->get_child_count();i++) {
+		CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
+		item->update();
+
+		if (single_selected!="" && single_selected == item->get_meta("name"))
+			single_selected_main = item->get_meta("main_scene");
+	}
+
+	erase_btn->set_disabled(selected_list.size()<1);
+	open_btn->set_disabled(selected_list.size()<1);
+	run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));	
+}
+
 void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
 
 	if (p_ev.type==InputEvent::MOUSE_BUTTON && p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
@@ -557,23 +578,7 @@ void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
 			}
 		}
 
-		String single_selected = "";
-		if (selected_list.size() == 1) {
-			single_selected = selected_list.front()->key();
-		}
-
-		single_selected_main = "";
-		for(int i=0;i<scroll_childs->get_child_count();i++) {
-			CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
-			item->update();
-
-			if (single_selected!="" && single_selected == item->get_meta("name"))
-				single_selected_main = item->get_meta("main_scene");
-		}
-
-		erase_btn->set_disabled(selected_list.size()<1);
-		open_btn->set_disabled(selected_list.size()<1);
-		run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));
+		_update_project_buttons();
 
 		if (p_ev.mouse_button.doubleclick)
 			_open_project(); //open if doubleclicked
@@ -739,6 +744,8 @@ void ProjectManager::_load_recent_projects() {
 		memdelete( scroll_childs->get_child(0));
 	}
 
+	Map<String, String> selected_list_copy = selected_list;
+
 	List<PropertyInfo> properties;
 	EditorSettings::get_singleton()->get_property_list(&properties);
 
@@ -845,6 +852,8 @@ void ProjectManager::_load_recent_projects() {
 			main_scene = cf->get_value("application","main_scene");
 		}
 
+		selected_list_copy.erase(project);
+
 		HBoxContainer *hb = memnew( HBoxContainer );
 		hb->set_meta("name",project);
 		hb->set_meta("main_scene",main_scene);
@@ -882,12 +891,15 @@ void ProjectManager::_load_recent_projects() {
 
 		scroll_childs->add_child(hb);
 	}
-
+	
+	for (Map<String,String>::Element *E = selected_list_copy.front();E;E = E->next()) {
+		String key = E->key();
+		selected_list.erase(key);
+	}
+	
 	scroll->set_v_scroll(0);
-
-	erase_btn->set_disabled(selected_list.size()<1);
-	open_btn->set_disabled(selected_list.size()<1);
-	run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));
+	
+	_update_project_buttons();
 
 	EditorSettings::get_singleton()->save();
 
