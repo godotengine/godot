@@ -37,12 +37,9 @@ def make_editor_icons_action(target, source, env):
 
 		pngf.close();
 		var_str=os.path.basename(x)[:-4]+"_hidpi_png";
-#print("TRY OPEN: "+os.path.dirname(x)+"/2x/"+os.path.basename(x)+"\n")
 		try:
 
-			pngf = open(os.path.dirname(x)+"/2x/"+os.path.basename(x))
-
-			#print(var_str)
+			pngf = open(os.path.dirname(x)+"/2x/"+os.path.basename(x), "rb")
 
 			s.write("static const unsigned char "+ var_str +"[]={\n");
 
