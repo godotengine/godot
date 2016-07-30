@@ -1104,10 +1104,16 @@ void ProjectManager::_install_project(const String& p_zip_path,const String& p_t
 }
 
 void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
+	bool import_project_file = false;
 	for (int i = 0; i < p_files.size(); i++) {
 		if (p_files[i].ends_with("engine.cfg")) {
 			npdialog->import_from_file(p_files[i]);
+			import_project_file = true;
 		}
+	}
+	if (!import_project_file && p_files.size() > 0) {
+		scan_dir->set_current_dir(p_files[0]);
+		scan_dir->popup_centered_ratio();
 	}
 }
 
