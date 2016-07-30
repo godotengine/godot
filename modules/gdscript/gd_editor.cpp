@@ -297,7 +297,7 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 	}
 	{
 		MethodInfo mi;
-		mi.name="yield";
+		mi.name="yield:GDFunctionState";
 		mi.arguments.push_back(PropertyInfo(Variant::OBJECT,"object"));
 		mi.arguments.push_back(PropertyInfo(Variant::STRING,"signal"));
 		mi.default_arguments.push_back(Variant::NIL);
