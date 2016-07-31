@@ -55,6 +55,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *erase_ask;
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
+	ConfirmationDialog *multi_scan_ask;
 	NewProjectDialog *npdialog;
 	ScrollContainer *scroll;
 	VBoxContainer *scroll_childs;
@@ -93,6 +94,7 @@ class ProjectManager : public Control {
 	void _unhandled_input(const InputEvent& p_ev);
 	void _favorite_pressed(Node *p_hb);
 	void _files_dropped(StringArray p_files, int p_screen);
+	void _scan_multiple_folders(StringArray p_files);
 
 protected:
 

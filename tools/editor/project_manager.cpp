@@ -1103,16 +1103,50 @@ void ProjectManager::_install_project(const String& p_zip_path,const String& p_t
 }
 
 void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
-	bool import_project_file = false;
+	Set<String> folders_set;
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	for (int i = 0; i < p_files.size(); i++) {
-		if (p_files[i].ends_with("engine.cfg")) {
-			npdialog->import_from_file(p_files[i]);
-			import_project_file = true;
+		String file = p_files[i];
+		folders_set.insert(da->dir_exists(file) ? file : file.get_base_dir());
+	}
+	memdelete(da);
+	if (folders_set.size()>0) {
+		StringArray folders;
+		for (Set<String>::Element *E=folders_set.front();E;E=E->next()) {
+			folders.append(E->get());
+		}
+
+		bool confirm = true;
+		if (folders.size()==1) {
+			DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			if (dir->change_dir(folders[0])==OK) {
+				dir->list_dir_begin();
+				String file = dir->get_next();
+				while(confirm && file!=String()) {
+					if (!da->current_is_dir() && file.ends_with("engine.cfg")) {
+						confirm = false;
+					}
+					file = dir->get_next();
+				}
+				dir->list_dir_end();
+			}
+			memdelete(dir);
+		}
+		if (confirm) {
+			multi_scan_ask->get_ok()->disconnect("pressed", this, "_scan_multiple_folders");
+			multi_scan_ask->get_ok()->connect("pressed", this, "_scan_multiple_folders", varray(folders));
+			multi_scan_ask->set_text(vformat(TTR("You are about the scan %s folders for existing Godot projects. Do you confirm?"), folders.size()));
+			multi_scan_ask->popup_centered_minsize();
+		} else {
+			_scan_multiple_folders(folders);
 		}
 	}
-	if (!import_project_file && p_files.size() > 0) {
-		scan_dir->set_current_dir(p_files[0]);
-		scan_dir->popup_centered_ratio();
+}
+
+void ProjectManager::_scan_multiple_folders(StringArray p_files)
+{
+	for (int i = 0; i < p_files.size(); i++) {
+		_scan_begin(p_files.get(i));
 	}
 }
 
@@ -1136,6 +1170,7 @@ void ProjectManager::_bind_methods() {
 	ObjectTypeDB::bind_method("_favorite_pressed",&ProjectManager::_favorite_pressed);
 	ObjectTypeDB::bind_method("_install_project",&ProjectManager::_install_project);
 	ObjectTypeDB::bind_method("_files_dropped",&ProjectManager::_files_dropped);
+	ObjectTypeDB::bind_method(_MD("_scan_multiple_folders", "files"),&ProjectManager::_scan_multiple_folders);
 
 
 }
@@ -1332,8 +1367,13 @@ ProjectManager::ProjectManager() {
 	multi_run_ask = memnew( ConfirmationDialog );
 	multi_run_ask->get_ok()->set_text(TTR("Run"));
 	multi_run_ask->get_ok()->connect("pressed", this, "_run_project_confirm");
-
+	
 	gui_base->add_child(multi_run_ask);
+	
+	multi_scan_ask = memnew( ConfirmationDialog );
+	multi_scan_ask->get_ok()->set_text(TTR("Scan"));
+
+	gui_base->add_child(multi_scan_ask);
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
