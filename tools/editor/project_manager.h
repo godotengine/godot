@@ -60,7 +60,6 @@ class ProjectManager : public Control {
 	VBoxContainer *scroll_childs;
 	Map<String, String> selected_list; // name -> main_scene
 	String last_clicked;
-	String single_selected_main;
 	bool importing;
 
 	HBoxContainer *projects_hb;
@@ -68,8 +67,6 @@ class ProjectManager : public Control {
 	TabContainer *tabs;
 
 	Control *gui_base;
-
-	void _item_doubleclicked();
 
 
 
