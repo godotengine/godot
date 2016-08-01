@@ -48,10 +48,8 @@ void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 	if (get_viewport()->get_modal_stack_top())
 		return; //ignore because of modal window
 
-	uint32_t sc = p_event.key.get_scancode_with_modifiers();
 	if (!p_event.key.pressed || p_event.key.echo)
 		return;
-
 
 	if (ED_IS_SHORTCUT("scene_tree/add_child_node", p_event)) {
 		_tool_selected(TOOL_NEW);
@@ -83,9 +81,11 @@ void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 	else if (ED_IS_SHORTCUT("scene_tree/save_branch_as_scene", p_event)) {
 		_tool_selected(TOOL_NEW_SCENE_FROM);
 	}
-	switch(sc) {
-		case KEY_MASK_SHIFT|KEY_DELETE: { _tool_selected(TOOL_ERASE, true); } break;
-		case KEY_DELETE: { _tool_selected(TOOL_ERASE); } break;
+	else if (ED_IS_SHORTCUT("scene_tree/delete_no_confirm", p_event)) {
+		_tool_selected(TOOL_ERASE, true);
+	}
+	else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
+		_tool_selected(TOOL_ERASE);
 	}
 }
 
@@ -1769,7 +1769,7 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 	}
 	menu->add_separator();
 
-	menu->add_icon_item(get_icon("Remove","EditorIcons"),TTR("Delete Node(s)"), TOOL_ERASE, KEY_DELETE);
+	menu->add_icon_shortcut(get_icon("Remove","EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
 
 	menu->set_size(Size2(1,1));
 	menu->set_pos(p_menu_pos);
@@ -1846,6 +1846,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	ED_SHORTCUT("scene_tree/reparent", TTR("Reparent"));
 	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
+	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KEY_MASK_SHIFT|KEY_DELETE);
+	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), KEY_DELETE);
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW, false));
