@@ -943,10 +943,9 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 			class_desc->add_newline();
 		}
 
-		class_desc->add_newline();
+
 		class_desc->pop();
-
-
+		class_desc->add_newline();
 	}
 
 	if (cd.theme_properties.size()) {
@@ -987,11 +986,10 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 			class_desc->add_newline();
 		}
 
-		class_desc->add_newline();
 		class_desc->pop();
-
-
+		class_desc->add_newline();
 	}
+
 	if (cd.signals.size()) {
 
 		if (sort_methods) {
