@@ -703,12 +703,43 @@ void DynamicFont::set_use_filter(bool p_enable){
 	_update_texture_flags();
 }
 
+int DynamicFont::get_spacing(int p_type) const{
+
+	if (p_type == SPACING_TOP){
+		return spacing_top;
+	}else if (p_type == SPACING_BOTTOM){
+		return spacing_bottom;
+	}else if (p_type == SPACING_CHAR){
+		return spacing_char;
+	}else if (p_type == SPACING_SPACE){
+		return spacing_space;
+	}
+
+	return 0;
+}
+
+void DynamicFont::set_spacing(int p_type, int p_value){
+
+	if (p_type == SPACING_TOP){
+		spacing_top=p_value;
+	}else if (p_type == SPACING_BOTTOM){
+		spacing_bottom=p_value;
+	}else if (p_type == SPACING_CHAR){
+		spacing_char=p_value;
+	}else if (p_type == SPACING_SPACE){
+		spacing_space=p_value;
+	}
+
+	emit_changed();
+	_change_notify();
+}
+
 float DynamicFont::get_height() const{
 
 	if (!data_at_size.is_valid())
 		return 1;
 
-	return data_at_size->get_height();
+	return data_at_size->get_height()+spacing_top+spacing_bottom;
 }
 
 float DynamicFont::get_ascent() const{
@@ -716,7 +747,7 @@ float DynamicFont::get_ascent() const{
 	if (!data_at_size.is_valid())
 		return 1;
 
-	return data_at_size->get_ascent();
+	return data_at_size->get_ascent()+spacing_top;
 }
 
 float DynamicFont::get_descent() const{
@@ -724,7 +755,7 @@ float DynamicFont::get_descent() const{
 	if (!data_at_size.is_valid())
 		return 1;
 
-	return data_at_size->get_descent();
+	return data_at_size->get_descent()+spacing_bottom;
 
 }
 
@@ -733,7 +764,13 @@ Size2 DynamicFont::get_char_size(CharType p_char,CharType p_next) const{
 	if (!data_at_size.is_valid())
 		return Size2(1,1);
 
-	return data_at_size->get_char_size(p_char,p_next,fallback_data_at_size);
+	Size2 ret=data_at_size->get_char_size(p_char,p_next,fallback_data_at_size);
+	if (p_char==' ')
+		ret.width+=spacing_space+spacing_char;
+	else if (p_next)
+		ret.width+=spacing_char;
+
+	return ret;
 
 }
 
@@ -747,7 +784,7 @@ float DynamicFont::draw_char(RID p_canvas_item, const Point2& p_pos, CharType p_
 	if (!data_at_size.is_valid())
 		return 0;
 
-	return data_at_size->draw_char(p_canvas_item,p_pos,p_char,p_next,p_modulate,fallback_data_at_size);
+	return data_at_size->draw_char(p_canvas_item,p_pos,p_char,p_next,p_modulate,fallback_data_at_size)+spacing_char;
 
 }
 void DynamicFont::set_fallback(int p_idx,const Ref<DynamicFontData>& p_data) {
@@ -854,6 +891,8 @@ void DynamicFont::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_use_mipmaps"),&DynamicFont::get_use_mipmaps);
 	ObjectTypeDB::bind_method(_MD("set_use_filter","enable"),&DynamicFont::set_use_filter);
 	ObjectTypeDB::bind_method(_MD("get_use_filter"),&DynamicFont::get_use_filter);
+	ObjectTypeDB::bind_method(_MD("set_spacing","type","value"),&DynamicFont::set_spacing);
+	ObjectTypeDB::bind_method(_MD("get_spacing","type"),&DynamicFont::get_spacing);
 
 	ObjectTypeDB::bind_method(_MD("add_fallback","data:DynamicFontData"),&DynamicFont::add_fallback);
 	ObjectTypeDB::bind_method(_MD("set_fallback","idx","data:DynamicFontData"),&DynamicFont::set_fallback);
@@ -863,14 +902,27 @@ void DynamicFont::_bind_methods() {
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"font/size"),_SCS("set_size"),_SCS("get_size"));
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing/top"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_TOP);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing/bottom"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_BOTTOM);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing/char"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_CHAR);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing/space"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_SPACE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"font/use_mipmaps"),_SCS("set_use_mipmaps"),_SCS("get_use_mipmaps"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"font/use_filter"),_SCS("set_use_filter"),_SCS("get_use_filter"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"font/font",PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"),_SCS("set_font_data"),_SCS("get_font_data"));
+
+	BIND_CONSTANT( SPACING_TOP );
+	BIND_CONSTANT( SPACING_BOTTOM );
+	BIND_CONSTANT( SPACING_CHAR );
+	BIND_CONSTANT( SPACING_SPACE );
 }
 
 DynamicFont::DynamicFont() {
 
 	size=16;
+	spacing_top=0;
+	spacing_bottom=0;
+	spacing_char=0;
+	spacing_space=0;
 	use_mipmaps=false;
 	use_filter=false;
 	texture_flags=0;

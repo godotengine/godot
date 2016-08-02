@@ -159,6 +159,17 @@ class DynamicFont : public Font {
 
 	OBJ_TYPE( DynamicFont, Font );
 
+public:
+
+	enum SpacingType{
+		SPACING_TOP,
+		SPACING_BOTTOM,
+		SPACING_CHAR,
+		SPACING_SPACE
+	};
+
+private:
+
 	Ref<DynamicFontData> data;
 	Ref<DynamicFontAtSize> data_at_size;
 
@@ -168,6 +179,10 @@ class DynamicFont : public Font {
 
 	int size;
 	bool valid;
+	int spacing_top;
+	int spacing_bottom;
+	int spacing_char;
+	int spacing_space;
 	bool use_mipmaps;
 	bool use_filter;
 	uint32_t texture_flags;
@@ -195,6 +210,9 @@ public:
 
 	bool get_use_filter() const;
 	void set_use_filter(bool p_enable);
+
+	int get_spacing(int p_type) const;
+	void set_spacing(int p_type, int p_value);
 
 	void add_fallback(const Ref<DynamicFontData>& p_data);
 	void set_fallback(int p_idx,const Ref<DynamicFontData>& p_data);
