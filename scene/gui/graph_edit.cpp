@@ -592,7 +592,9 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 	if (p_ev.type==InputEvent::MOUSE_MOTION && dragging) {
 
 		just_selected=true;
-		drag_accum+=Vector2(p_ev.mouse_motion.relative_x,p_ev.mouse_motion.relative_y);
+		// TODO: Remove local mouse pos hack if/when InputEventMouseMotion is fixed to support floats
+		//drag_accum+=Vector2(p_ev.mouse_motion.relative_x,p_ev.mouse_motion.relative_y);
+		drag_accum = get_local_mouse_pos() - drag_origin;
 		for(int i=get_child_count()-1;i>=0;i--) {
 			GraphNode *gn=get_child(i)->cast_to<GraphNode>();
 			if (gn && gn->is_selected())
@@ -709,6 +711,7 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 
 				dragging = true;
 				drag_accum = Vector2();
+				drag_origin = get_local_mouse_pos();
 				just_selected = !gn->is_selected();
 				if(!gn->is_selected() && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 					for (int i = 0; i < get_child_count(); i++) {

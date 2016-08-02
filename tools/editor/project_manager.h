@@ -55,12 +55,12 @@ class ProjectManager : public Control {
 	ConfirmationDialog *erase_ask;
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
+	ConfirmationDialog *multi_scan_ask;
 	NewProjectDialog *npdialog;
 	ScrollContainer *scroll;
 	VBoxContainer *scroll_childs;
 	Map<String, String> selected_list; // name -> main_scene
 	String last_clicked;
-	String single_selected_main;
 	bool importing;
 
 	HBoxContainer *projects_hb;
@@ -68,8 +68,6 @@ class ProjectManager : public Control {
 	TabContainer *tabs;
 
 	Control *gui_base;
-
-	void _item_doubleclicked();
 
 
 
@@ -82,6 +80,7 @@ class ProjectManager : public Control {
 	void _new_project();
 	void _erase_project();
 	void _erase_project_confirm();
+	void _update_project_buttons();
 	void _exit_dialog();
 	void _scan_begin(const String& p_base);
 
@@ -92,7 +91,10 @@ class ProjectManager : public Control {
 
 	void _panel_draw(Node *p_hb);
 	void _panel_input(const InputEvent& p_ev,Node *p_hb);
+	void _unhandled_input(const InputEvent& p_ev);
 	void _favorite_pressed(Node *p_hb);
+	void _files_dropped(StringArray p_files, int p_screen);
+	void _scan_multiple_folders(StringArray p_files);
 
 protected:
 

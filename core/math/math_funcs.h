@@ -66,7 +66,7 @@ public:
 	static double floor(double p_x);
 	static double ceil(double p_x);
 	static double ease(double p_x, double p_c);
-	static int decimals(double p_step);
+	static int step_decimals(double p_step);
 	static double stepify(double p_value,double p_step);
 	static void seed(uint32_t x=0);
 	static void randomize();

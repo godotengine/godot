@@ -950,13 +950,19 @@ void FileSystemDock::_file_option(int p_option) {
 		} break;
 		case FILE_INSTANCE: {
 
+			Vector<String> paths;
+
 			for (int i = 0; i<files->get_item_count(); i++) {
 				if (!files->is_selected(i))
 					continue;
 				String path =files->get_item_metadata(i);
 				if (EditorFileSystem::get_singleton()->get_file_type(path)=="PackedScene") {
-					emit_signal("instance",path);
+					paths.push_back(path);
 				}
+			}
+
+			if (!paths.empty()) {
+				emit_signal("instance", paths);
 			}
 		} break;
 		case FILE_DEPENDENCIES: {
@@ -1596,7 +1602,7 @@ void FileSystemDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_preview_invalidated"),&FileSystemDock::_preview_invalidated);
 
 
-	ADD_SIGNAL(MethodInfo("instance"));
+	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("open"));
 
 }

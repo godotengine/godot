@@ -3491,7 +3491,7 @@ bool String::is_valid_integer() const {
 		return false;
 
 	int from=0;
-	if (operator[](0)=='+' || operator[](0)=='-')
+	if (len!=1 && (operator[](0)=='+' || operator[](0)=='-'))
 		from++;
 
 	for(int i=from;i<len;i++) {

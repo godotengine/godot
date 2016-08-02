@@ -1782,7 +1782,6 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 							if (top->data.modal_exclusive || top->data.modal_frame==OS::get_singleton()->get_frames_drawn()) {
 								//cancel event, sorry, modal exclusive EATS UP ALL
 								//alternative, you can't pop out a window the same frame it was made modal (fixes many issues)
-								//get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 								get_tree()->set_input_as_handled();
 								return; // no one gets the event if exclusive NO ONE
 							}
@@ -2034,8 +2033,22 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 				}
 
+				bool is_tooltip_shown = false;
 
-				if (can_tooltip) {
+				if (gui.tooltip_popup) {
+					if (can_tooltip) {
+						String tooltip = over->get_tooltip(gui.tooltip->get_global_transform().xform_inv(mpos));
+
+						if (tooltip.length() == 0)
+							_gui_cancel_tooltip();
+						else if (tooltip == gui.tooltip_label->get_text())
+							is_tooltip_shown = true;
+					}
+					else
+						_gui_cancel_tooltip();
+				}
+
+				if (can_tooltip && !is_tooltip_shown) {
 
 					gui.tooltip=over;
 					gui.tooltip_pos=mpos;//(parent_xform * get_transform()).affine_inverse().xform(pos);
@@ -2062,7 +2075,6 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 
 
-			//get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 			get_tree()->set_input_as_handled();
 
 
@@ -2083,6 +2095,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 		} break;
 		case InputEvent::ACTION:
 		case InputEvent::JOYSTICK_BUTTON:
+		case InputEvent::JOYSTICK_MOTION:
 		case InputEvent::KEY: {
 
 
@@ -2102,7 +2115,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 				if (gui.key_event_accepted) {
 
-					get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+					get_tree()->set_input_as_handled();
 					break;
 				}
 			}
@@ -2162,7 +2175,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 				if (next) {
 					next->grab_focus();
-					get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+					get_tree()->set_input_as_handled();
 				}
 			}
 
@@ -2355,8 +2368,7 @@ void Viewport::_gui_control_grab_focus(Control* p_control) {
 	if (gui.key_focus && gui.key_focus==p_control)
 		return;
 
-	_gui_remove_focus();
-	get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_gui_remove_focus");
+	get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"_viewports","_gui_remove_focus");
 	gui.key_focus=p_control;
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
 	p_control->update();
@@ -2664,6 +2676,7 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_input_disabled"), &Viewport::is_input_disabled);
 
 	ObjectTypeDB::bind_method(_MD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
+	ObjectTypeDB::bind_method(_MD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
 
 	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"), _SCS("set_rect"), _SCS("get_rect") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"own_world"), _SCS("set_use_own_world"), _SCS("is_using_own_world") );

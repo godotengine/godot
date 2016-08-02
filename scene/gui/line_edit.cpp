@@ -468,7 +468,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 				if (handled) {
 					accept_event();
-				} else {
+				} else if (!k.mod.alt && !k.mod.command) {
 					if (k.unicode>=32 && k.scancode!=KEY_DELETE) {
 
 						if (editable) {

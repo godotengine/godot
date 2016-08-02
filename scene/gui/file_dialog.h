@@ -131,6 +131,8 @@ public:
 
 	void clear_filters();
 	void add_filter(const String& p_filter);
+	void set_filters(const Vector<String>& p_filters);
+	Vector<String> get_filters() const;
 
 	void set_enable_multiple_selection(bool p_enable);
 	Vector<String> get_selected_files() const;

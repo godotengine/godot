@@ -45,21 +45,32 @@ class DynamicFontData : public Resource {
 
 	OBJ_TYPE(DynamicFontData,Resource);
 
+public:
 
+	struct CacheID{
+
+		int size;
+		bool mipmaps;
+		bool filter;
+
+		bool operator< (CacheID right) const;
+		CacheID() { size=16; mipmaps=false; filter=false; }
+	};
+
+private:
 
 	const uint8_t *font_mem;
 	int font_mem_size;
 	bool force_autohinter;
 
 	String font_path;
-	Map<int,DynamicFontAtSize*> size_cache;
+	Map<CacheID,DynamicFontAtSize*> size_cache;
 
 	friend class DynamicFontAtSize;
 
 friend class DynamicFont;
 
-
-	Ref<DynamicFontAtSize> _get_dynamic_font_at_size(int p_size);
+	Ref<DynamicFontAtSize> _get_dynamic_font_at_size(CacheID p_cache);
 protected:
 
 	static void _bind_methods();
@@ -89,6 +100,8 @@ class DynamicFontAtSize : public Reference {
 	int descent;
 	int linegap;
 	int rect_margin;
+
+	uint32_t texture_flags;
 
 	bool valid;
 
@@ -124,7 +137,7 @@ class DynamicFontAtSize : public Reference {
 
 friend class DynamicFontData;
 	Ref<DynamicFontData> font;
-	int size;
+	DynamicFontData::CacheID id;
 
 
 
@@ -145,7 +158,7 @@ public:
 
 	float draw_char(RID p_canvas_item, const Point2& p_pos, CharType p_char,CharType p_next,const Color& p_modulate,const Vector<Ref<DynamicFontAtSize> >& p_fallbacks) const;
 
-
+	void set_texture_flags(uint32_t p_flags);
 
 	DynamicFontAtSize();
 	~DynamicFontAtSize();
@@ -157,17 +170,34 @@ class DynamicFont : public Font {
 
 	OBJ_TYPE( DynamicFont, Font );
 
-	Ref<DynamicFontData> data;	
+public:
+
+	enum SpacingType{
+		SPACING_TOP,
+		SPACING_BOTTOM,
+		SPACING_CHAR,
+		SPACING_SPACE
+	};
+
+private:
+
+	Ref<DynamicFontData> data;
 	Ref<DynamicFontAtSize> data_at_size;
 
 	Vector< Ref<DynamicFontData> > fallbacks;
 	Vector< Ref<DynamicFontAtSize> > fallback_data_at_size;
 
 
-	int size;
+	DynamicFontData::CacheID cache_id;
 	bool valid;
+	int spacing_top;
+	int spacing_bottom;
+	int spacing_char;
+	int spacing_space;
 
 protected:
+
+	void _reload_cache();
 
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
@@ -183,6 +213,14 @@ public:
 	void set_size(int p_size);
 	int get_size() const;
 
+	bool get_use_mipmaps() const;
+	void set_use_mipmaps(bool p_enable);
+
+	bool get_use_filter() const;
+	void set_use_filter(bool p_enable);
+
+	int get_spacing(int p_type) const;
+	void set_spacing(int p_type, int p_value);
 
 	void add_fallback(const Ref<DynamicFontData>& p_data);
 	void set_fallback(int p_idx,const Ref<DynamicFontData>& p_data);

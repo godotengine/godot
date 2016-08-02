@@ -1233,7 +1233,9 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				}
 				get_token(p_stream,token,line,r_err_str);
 
-				if (token.type!=TK_STRING) {
+				if (token.type==TK_PARENTHESIS_CLOSE) {
+					break;
+				} else if (token.type!=TK_STRING) {
 					r_err_str="Expected string";
 					return ERR_PARSE_ERROR;
 				}

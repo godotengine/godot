@@ -828,7 +828,7 @@ MethodBind* ObjectTypeDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind , c
 
 	TypeInfo *type=types.getptr(instance_type);
 	if (!type) {
-		print_line("couldn't bind method "+mdname+" for instance: "+instance_type);
+		ERR_PRINTS("Couldn't bind method '"+mdname+"' for instance: "+instance_type);
 		memdelete(p_bind);
 		ERR_FAIL_COND_V(!type,NULL);
 	}

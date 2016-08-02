@@ -198,7 +198,8 @@ class CodeTextEditor : public VBoxContainer {
 	TextEdit *text_editor;
 	FindReplaceBar *find_replace_bar;
 
-	Label *line_col;
+	Label *line_nb;
+	Label *col_nb;
 	Label *info;
 	Timer *idle;
 	Timer *code_complete_timer;

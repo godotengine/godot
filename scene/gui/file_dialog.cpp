@@ -475,7 +475,7 @@ void FileDialog::update_filters() {
 		String flt=filters[i].get_slice(";",0).strip_edges();
 		String desc=filters[i].get_slice(";",1).strip_edges();
 		if (desc.length())
-			filter->add_item(desc+" ( "+flt+" )");
+			filter->add_item(String(XL_MESSAGE(desc))+" ( "+flt+" )");
 		else
 			filter->add_item("( "+flt+" )");
 	}
@@ -496,6 +496,16 @@ void FileDialog::add_filter(const String& p_filter) {
 	update_filters();
 	invalidate();
 
+}
+
+void FileDialog::set_filters(const Vector<String>& p_filters){
+	filters=p_filters;
+	update_filters();
+	invalidate();
+}
+
+Vector<String> FileDialog::get_filters() const{
+	return filters;
 }
 
 String FileDialog::get_current_dir() const {
@@ -686,6 +696,8 @@ void FileDialog::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("clear_filters"),&FileDialog::clear_filters);
 	ObjectTypeDB::bind_method(_MD("add_filter","filter"),&FileDialog::add_filter);
+	ObjectTypeDB::bind_method(_MD("set_filters","filters"),&FileDialog::set_filters);
+	ObjectTypeDB::bind_method(_MD("get_filters"),&FileDialog::get_filters);
 	ObjectTypeDB::bind_method(_MD("get_current_dir"),&FileDialog::get_current_dir);
 	ObjectTypeDB::bind_method(_MD("get_current_file"),&FileDialog::get_current_file);
 	ObjectTypeDB::bind_method(_MD("get_current_path"),&FileDialog::get_current_path);
@@ -721,6 +733,11 @@ void FileDialog::_bind_methods() {
 	BIND_CONSTANT( ACCESS_RESOURCES );
 	BIND_CONSTANT( ACCESS_USERDATA );
 	BIND_CONSTANT( ACCESS_FILESYSTEM );
+
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"),_SCS("set_mode"),_SCS("get_mode") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"),_SCS("set_access"),_SCS("get_access") );
+	ADD_PROPERTY( PropertyInfo(Variant::STRING_ARRAY, "filters"),_SCS("set_filters"),_SCS("get_filters") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "show_hidden_files"),_SCS("set_show_hidden_files"),_SCS("is_showing_hidden_files") );
 
 }
 

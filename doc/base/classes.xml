@@ -660,7 +660,7 @@
 			<argument index="1" name="signal" type="String">
 			</argument>
 			<description>
-				Stop the function execution and return the current state. Call resume on the state to resume execution. This makes the state invalid.
+				Stop the function execution and return the current state. Call [method GDFunctionState.resume] on the state to resume execution. This invalidates the state.
 				Returns anything that was passed to the resume function call. If passed an object and a signal, the execution is resumed when the object's signal is emmited.
 			</description>
 		</method>
@@ -4544,6 +4544,15 @@
 			</argument>
 			<description>
 				Searches the array in reverse order for a value and returns its index or -1 if not found.
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+				Return true if the array contains given value. [code][ "inside", 7 ].has("inside") == true, [ "inside", 7 ].has("outside") == false, [ "inside", 7 ].has(7) == true, [ "inside", 7 ].has("7") == false[/code]
 			</description>
 		</method>
 		<method name="hash">
@@ -11281,7 +11290,7 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-				Add a control to the bottom panel (together with Output, Debug, Animation, etc). If your plugin is being removed, also make sure to remove your control by calling [method remove_control_from_bottom_panel].
+				Add a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. If your plugin is being removed, also make sure to remove your control by calling [method remove_control_from_bottom_panel].
 			</description>
 		</method>
 		<method name="add_control_to_container">
@@ -12264,7 +12273,7 @@
 		    file.open("user://save_game.dat", file.WRITE)
 		    file.store_string(content)
 		    file.close()
-		
+
 		func load():
 		    var file = File.new()
 		    file.open("user://save_game.dat", file.READ)
@@ -13033,8 +13042,11 @@
 </class>
 <class name="FuncRef" inherits="Reference" category="Core">
 	<brief_description>
+		Reference to a function in an object.
 	</brief_description>
 	<description>
+		In GDScript, functions are not [i]first-class objects[/i]. This means it is impossible to store them directly as variables, return them from another function, or pass them as arguments.
+		However, by creating a [FuncRef] using the [method @GDScript.funcref] function, a reference to a function in a given object can be created, passed around and called.
 	</description>
 	<methods>
 		<method name="call_func">
@@ -13059,18 +13071,21 @@
 			<argument index="9" name="arg9" type="Variant" default="NULL">
 			</argument>
 			<description>
+				Call the referenced function with the given arguments. The argument count must correspond to the required number of arguments in the function. Returns the return value of the function call.
 			</description>
 		</method>
 		<method name="set_function">
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Set the name of the function to call on the object, without parentheses or any parameters.
 			</description>
 		</method>
 		<method name="set_instance">
 			<argument index="0" name="instance" type="Object">
 			</argument>
 			<description>
+				Set the object on which to call the referenced function. This object must be of a type actually inheriting from [Object], not a built-in type such as [int], [Vector2] or [Dictionary].
 			</description>
 		</method>
 	</methods>
@@ -13079,15 +13094,17 @@
 </class>
 <class name="GDFunctionState" inherits="Reference" category="Core">
 	<brief_description>
+		State of a function call after yielding.
 	</brief_description>
 	<description>
+		Calling [method @GDScript.yield] within a function will cause that function to yield and return its current state as an object of this type. The yielded function call can then be resumed later by calling [method resume] on this state object.
 	</description>
 	<methods>
 		<method name="is_valid" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Should put children to the top left corner instead of center of the container.
+				Check whether the function call may be resumed. This is not the case if the function state was already resumed.
 			</description>
 		</method>
 		<method name="resume">
@@ -13096,6 +13113,9 @@
 			<argument index="0" name="arg" type="Variant" default="NULL">
 			</argument>
 			<description>
+				Resume execution of the yielded function call.
+				If handed an argument, return the argument from the [method @GDScript.yield] call in the yielded function call. You can pass e.g. an [Array] to hand multiple arguments.
+				This function returns what the resumed function call returns, possibly another function state if yielded again.
 			</description>
 		</method>
 	</methods>
@@ -15692,7 +15712,7 @@
 	</brief_description>
 	<description>
 	</description>
-	ImmediateGeometry is a node used for displaying simple geometry created from code, very similar to how glBegin() and glEnd() worked in old versions of OpenGL (1.x). 
+	ImmediateGeometry is a node used for displaying simple geometry created from code, very similar to how glBegin() and glEnd() worked in old versions of OpenGL (1.x).
 	Simply call [method begin()], and add vertices. For custom vertex colors, uvs, normal, etc. call one of the set_ functions below before adding each vertex. When done, call [method end]
 	Calls to begin/end are accumulative and all geometry is added together. To clear all the geometry, call [method clear].
 	If a material override is set, and this material contains a texture, it's possible to override the texture used in this material for every begin/end set of calls.
@@ -17226,20 +17246,25 @@
 </class>
 <class name="InstancePlaceholder" inherits="Node" category="Core">
 	<brief_description>
+		Placeholder for the root [Node] of a [PackedScene].
 	</brief_description>
 	<description>
+		Turning on the option [b]Load As Placeholder[/b] for an instanced scene in the editor causes it to be replaced by an InstacePlaceholder when running the game. This makes it possible to delay actually loading the scene until calling [method replace_by_instance]. This is useful to avoid loading large scenes all at once by loading parts of it selectively.
+		The InstancePlaceholder does not have a transform. This causes any child nodes to be positioned relatively to the Viewport from point (0,0), rather than their parent as displayed in the editor. Replacing the placeholder with a scene with a transform will transform children relatively to their parent again.
 	</description>
 	<methods>
 		<method name="get_instance_path" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Retrieve the path to the [PackedScene] resource file that is loaded by default when calling [method replace_by_instance].
 			</description>
 		</method>
 		<method name="replace_by_instance">
 			<argument index="0" name="custom_scene" type="PackedScene" default="NULL">
 			</argument>
 			<description>
+				Replace this placeholder by the scene handed as an argument, or the original scene if no argument is given. As for all resources, the scene is loaded only if it's not loaded already. By manually loading the scene beforehand, delays caused by this function can be avoided.
 			</description>
 		</method>
 	</methods>
@@ -30271,8 +30296,10 @@
 </class>
 <class name="RID" category="Built-In Types">
 	<brief_description>
+		Handle for a [Resource]'s unique ID.
 	</brief_description>
 	<description>
+		The RID type is used to access the unique integer ID of a resource.  They are opaque, so they do not grant access to the associated resource by themselves. They are used by and with the low-level Server classes such as [VisualServer].
 	</description>
 	<methods>
 		<method name="RID">
@@ -30281,12 +30308,14 @@
 			<argument index="0" name="from" type="Object">
 			</argument>
 			<description>
+				Create a new RID instance with the ID of a given resource. When not handed a valid resource, silently stores the unused ID 0.
 			</description>
 		</method>
 		<method name="get_id">
 			<return type="int">
 			</return>
 			<description>
+				Retrieve the ID of the referenced resource.
 			</description>
 		</method>
 	</methods>
@@ -42401,7 +42430,7 @@
 		Because it is easy to get it wrong, here is a quick usage example:
 		[codeblock]
 		var tween = get_node("Tween")
-		tween.interpolate_property(get_node("Node2D_to_move"), "transform/pos", Vector2(0,0), Vector2(100,100), Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+		tween.interpolate_property(get_node("Node2D_to_move"), "transform/pos", Vector2(0,0), Vector2(100,100), 1, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 		tween.start()
 		[/codeblock]
 		Some of the methods of this class require a property name. You can get the property name by hovering over the property in the inspector of the editor.
@@ -46575,24 +46604,28 @@
 			<return type="RID">
 			</return>
 			<description>
+				Retrieve the [RID] of this world's canvas resource. Used by the [VisualServer] for 2D drawing.
 			</description>
 		</method>
 		<method name="get_direct_space_state">
 			<return type="Physics2DDirectSpaceState">
 			</return>
 			<description>
+				Retrieve the state of this world's physics space. This allows arbitrary querying for collision.
 			</description>
 		</method>
 		<method name="get_sound_space">
 			<return type="RID">
 			</return>
 			<description>
+				Retrieve the [RID] of this world's sound space resource. Used by the [SpatialSound2DServer] for 2D spatial audio.
 			</description>
 		</method>
 		<method name="get_space">
 			<return type="RID">
 			</return>
 			<description>
+				Retrieve the [RID] of this world's physics space resource. Used by the [Physics2DServer] for 2D physics, treating it as both a space and an area.
 			</description>
 		</method>
 	</methods>

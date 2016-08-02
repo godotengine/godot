@@ -1772,6 +1772,10 @@ void BakedLightBaker::bake(const Ref<BakedLight> &p_light, Node* p_node) {
 	mat_map.clear();
 	tex_map.clear();
 	print_line("\ttotal triangles: "+itos(triangles.size()));
+	// no geometry
+	if (triangles.size() == 0) {
+		return;
+	}
 	ep.step(TTR("Fixing Lights"),1);
 	_fix_lights();
 	ep.step(TTR("Making BVH"),2);

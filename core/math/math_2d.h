@@ -157,7 +157,7 @@ struct Vector2 {
 	float get_aspect() const { return width/height; }
 
 
-	operator String() const { return String::num(x)+","+String::num(y); }
+	operator String() const { return String::num(x)+", "+String::num(y); }
 
 	_FORCE_INLINE_ Vector2(float p_x,float p_y) { x=p_x; y=p_y; }
 	_FORCE_INLINE_ Vector2() { x=0; y=0; }
@@ -356,7 +356,7 @@ struct Rect2 {
 	}
 
 
-	operator String() const { return String(pos)+","+String(size); }
+	operator String() const { return String(pos)+", "+String(size); }
 
 	Rect2() {}
 	Rect2( float p_x, float p_y, float p_width, float p_height) { pos=Point2(p_x,p_y); size=Size2( p_width, p_height ); }
@@ -409,7 +409,7 @@ struct Point2i {
 
 	float get_aspect() const { return width/(float)height; }
 
-	operator String() const { return String::num(x)+","+String::num(y); }
+	operator String() const { return String::num(x)+", "+String::num(y); }
 
 	operator Vector2() const { return Vector2(x,y); }
 	inline Point2i(const Vector2& p_vec2) { x=(int)p_vec2.x; y=(int)p_vec2.y; }
@@ -540,7 +540,7 @@ struct Rect2i {
 	}
 
 
-	operator String() const { return String(pos)+","+String(size); }
+	operator String() const { return String(pos)+", "+String(size); }
 
 	operator Rect2() const { return Rect2(pos,size); }
 	Rect2i(const Rect2& p_r2) { pos=p_r2.pos; size=p_r2.size; }

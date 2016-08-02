@@ -31,6 +31,7 @@
 #include "os/os.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
+#include "os/keyboard.h"
 #include "editor_settings.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tool_button.h"
@@ -363,6 +364,12 @@ public:
 		mode=p_mode;
 	}
 
+	void import_from_file(const String& p_file) {
+		mode=MODE_IMPORT;
+		_file_selected(p_file);
+		ok_pressed();
+	}
+
 	void show_dialog() {
 
 
@@ -491,6 +498,10 @@ void ProjectManager::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		get_tree()->set_editor_hint(true);
+
+	} else if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+
+		set_process_unhandled_input(is_visible());
 	}
 }
 
@@ -503,6 +514,27 @@ void ProjectManager::_panel_draw(Node *p_hb) {
 	if (selected_list.has(hb->get_meta("name"))) {
 		hb->draw_style_box(get_stylebox("selected","Tree"),Rect2(Point2(),hb->get_size()-Size2(10,0)));
 	}
+}
+
+void ProjectManager::_update_project_buttons()
+{
+	for(int i=0;i<scroll_childs->get_child_count();i++) {
+		
+		CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
+		item->update();
+	}
+	
+	bool has_runnable_scene = false;
+	for (Map<String,String>::Element *E=selected_list.front(); E; E=E->next()) {
+		const String &selected_main = E->get();
+		if (selected_main == "") continue;
+		has_runnable_scene = true;
+		break;
+	}
+
+	erase_btn->set_disabled(selected_list.size()<1);
+	open_btn->set_disabled(selected_list.size()<1);
+	run_btn->set_disabled(!has_runnable_scene);	
 }
 
 void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
@@ -552,27 +584,143 @@ void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
 			}
 		}
 
-		String single_selected = "";
-		if (selected_list.size() == 1) {
-			single_selected = selected_list.front()->key();
-		}
-
-		single_selected_main = "";
-		for(int i=0;i<scroll_childs->get_child_count();i++) {
-			CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
-			item->update();
-
-			if (single_selected!="" && single_selected == item->get_meta("name"))
-				single_selected_main = item->get_meta("main_scene");
-		}
-
-		erase_btn->set_disabled(selected_list.size()<1);
-		open_btn->set_disabled(selected_list.size()<1);
-		run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));
+		_update_project_buttons();
 
 		if (p_ev.mouse_button.doubleclick)
 			_open_project(); //open if doubleclicked
 
+	}
+}
+
+void ProjectManager::_unhandled_input(const InputEvent& p_ev) {
+
+	if (p_ev.type==InputEvent::KEY) {
+
+		const InputEventKey &k = p_ev.key;
+
+		if (!k.pressed)
+			return;
+
+		bool scancode_handled = true;
+
+		switch (k.scancode) {
+
+			case KEY_HOME: {
+
+				for (int i=0; i<scroll_childs->get_child_count(); i++) {
+
+					HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+					if (hb) {
+						selected_list.clear();
+						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
+						scroll->set_v_scroll(0);
+						break;
+					}
+				}
+
+			} break;
+			case KEY_END: {
+
+				for (int i=scroll_childs->get_child_count()-1; i>=0; i--) {
+
+					HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+					if (hb) {
+						selected_list.clear();
+						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
+						scroll->set_v_scroll(scroll_childs->get_size().y);
+						break;
+					}
+				}
+
+			} break;
+			case KEY_UP: {
+
+				if (k.mod.shift)
+					break;
+
+				if (selected_list.size()) {
+
+					bool found = false;
+
+					for (int i=scroll_childs->get_child_count()-1; i>=0; i--) {
+
+						HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+						if (!hb) continue;
+
+						String current = hb->get_meta("name");
+
+						if (found) {
+							selected_list.clear();
+							selected_list.insert(current, hb->get_meta("main_scene"));
+
+							int offset_diff = scroll->get_v_scroll() - hb->get_pos().y;
+
+							if (offset_diff > 0)
+								scroll->set_v_scroll(scroll->get_v_scroll() - offset_diff);
+
+							break;
+
+						} else if (current==selected_list.back()->key()) {
+
+							found = true;
+						}
+					}
+
+					break;
+				}
+				// else fallthrough to key_down
+			}
+			case KEY_DOWN: {
+
+				if (k.mod.shift)
+					break;
+
+				bool found = selected_list.empty();
+
+				for (int i=0; i<scroll_childs->get_child_count(); i++) {
+
+					HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+					if (!hb) continue;
+
+					String current = hb->get_meta("name");
+
+					if (found) {
+						selected_list.clear();
+						selected_list.insert(current, hb->get_meta("main_scene"));
+
+						int last_y_visible = scroll->get_v_scroll() + scroll->get_size().y;
+						int offset_diff = (hb->get_pos().y + hb->get_size().y) - last_y_visible;
+
+						if (offset_diff > 0)
+							scroll->set_v_scroll(scroll->get_v_scroll() + offset_diff);
+
+						break;
+
+					} else if (current==selected_list.back()->key()) {
+
+						found = true;
+					}
+				}
+
+			} break;
+			case KEY_F: {
+				if (k.mod.command) this->project_filter->search_box->grab_focus();
+				else scancode_handled = false;
+			} break;
+			default: {
+				scancode_handled = false;
+			} break;
+		}
+
+		if (scancode_handled) {
+			accept_event();
+
+			for(int i=0;i<scroll_childs->get_child_count();i++) {
+				CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
+				if (item)
+					item->update();
+			}
+		}
 	}
 }
 
@@ -601,6 +749,8 @@ void ProjectManager::_load_recent_projects() {
 	while(scroll_childs->get_child_count()>0) {
 		memdelete( scroll_childs->get_child(0));
 	}
+
+	Map<String, String> selected_list_copy = selected_list;
 
 	List<PropertyInfo> properties;
 	EditorSettings::get_singleton()->get_property_list(&properties);
@@ -708,6 +858,8 @@ void ProjectManager::_load_recent_projects() {
 			main_scene = cf->get_value("application","main_scene");
 		}
 
+		selected_list_copy.erase(project);
+
 		HBoxContainer *hb = memnew( HBoxContainer );
 		hb->set_meta("name",project);
 		hb->set_meta("main_scene",main_scene);
@@ -745,12 +897,15 @@ void ProjectManager::_load_recent_projects() {
 
 		scroll_childs->add_child(hb);
 	}
-
+	
+	for (Map<String,String>::Element *E = selected_list_copy.front();E;E = E->next()) {
+		String key = E->key();
+		selected_list.erase(key);
+	}
+	
 	scroll->set_v_scroll(0);
-
-	erase_btn->set_disabled(selected_list.size()<1);
-	open_btn->set_disabled(selected_list.size()<1);
-	run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));
+	
+	_update_project_buttons();
 
 	EditorSettings::get_singleton()->save();
 
@@ -917,7 +1072,6 @@ void ProjectManager::_erase_project_confirm()  {
 	EditorSettings::get_singleton()->save();
 	selected_list.clear();
 	last_clicked = "";
-	single_selected_main="";
 	_load_recent_projects();
 
 }
@@ -948,6 +1102,54 @@ void ProjectManager::_install_project(const String& p_zip_path,const String& p_t
 	npdialog->show_dialog();
 }
 
+void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
+	Set<String> folders_set;
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	for (int i = 0; i < p_files.size(); i++) {
+		String file = p_files[i];
+		folders_set.insert(da->dir_exists(file) ? file : file.get_base_dir());
+	}
+	memdelete(da);
+	if (folders_set.size()>0) {
+		StringArray folders;
+		for (Set<String>::Element *E=folders_set.front();E;E=E->next()) {
+			folders.append(E->get());
+		}
+
+		bool confirm = true;
+		if (folders.size()==1) {
+			DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			if (dir->change_dir(folders[0])==OK) {
+				dir->list_dir_begin();
+				String file = dir->get_next();
+				while(confirm && file!=String()) {
+					if (!da->current_is_dir() && file.ends_with("engine.cfg")) {
+						confirm = false;
+					}
+					file = dir->get_next();
+				}
+				dir->list_dir_end();
+			}
+			memdelete(dir);
+		}
+		if (confirm) {
+			multi_scan_ask->get_ok()->disconnect("pressed", this, "_scan_multiple_folders");
+			multi_scan_ask->get_ok()->connect("pressed", this, "_scan_multiple_folders", varray(folders));
+			multi_scan_ask->set_text(vformat(TTR("You are about the scan %s folders for existing Godot projects. Do you confirm?"), folders.size()));
+			multi_scan_ask->popup_centered_minsize();
+		} else {
+			_scan_multiple_folders(folders);
+		}
+	}
+}
+
+void ProjectManager::_scan_multiple_folders(StringArray p_files)
+{
+	for (int i = 0; i < p_files.size(); i++) {
+		_scan_begin(p_files.get(i));
+	}
+}
+
 void ProjectManager::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_open_project",&ProjectManager::_open_project);
@@ -964,8 +1166,11 @@ void ProjectManager::_bind_methods() {
 	ObjectTypeDB::bind_method("_load_recent_projects",&ProjectManager::_load_recent_projects);
 	ObjectTypeDB::bind_method("_panel_draw",&ProjectManager::_panel_draw);
 	ObjectTypeDB::bind_method("_panel_input",&ProjectManager::_panel_input);
+	ObjectTypeDB::bind_method("_unhandled_input",&ProjectManager::_unhandled_input);
 	ObjectTypeDB::bind_method("_favorite_pressed",&ProjectManager::_favorite_pressed);
 	ObjectTypeDB::bind_method("_install_project",&ProjectManager::_install_project);
+	ObjectTypeDB::bind_method("_files_dropped",&ProjectManager::_files_dropped);
+	ObjectTypeDB::bind_method(_MD("_scan_multiple_folders", "files"),&ProjectManager::_scan_multiple_folders);
 
 
 }
@@ -1100,6 +1305,7 @@ ProjectManager::ProjectManager() {
 	scan_dir = memnew( FileDialog );
 	scan_dir->set_access(FileDialog::ACCESS_FILESYSTEM);
 	scan_dir->set_mode(FileDialog::MODE_OPEN_DIR);
+	scan_dir->set_title(TTR("Select a Folder to Scan")); // must be after mode or it's overridden
 	scan_dir->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_path") );
 	gui_base->add_child(scan_dir);
 	scan_dir->connect("dir_selected",this,"_scan_begin");
@@ -1161,8 +1367,13 @@ ProjectManager::ProjectManager() {
 	multi_run_ask = memnew( ConfirmationDialog );
 	multi_run_ask->get_ok()->set_text(TTR("Run"));
 	multi_run_ask->get_ok()->connect("pressed", this, "_run_project_confirm");
-
+	
 	gui_base->add_child(multi_run_ask);
+	
+	multi_scan_ask = memnew( ConfirmationDialog );
+	multi_scan_ask->get_ok()->set_text(TTR("Scan"));
+
+	gui_base->add_child(multi_scan_ask);
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
@@ -1180,6 +1391,8 @@ ProjectManager::ProjectManager() {
 	//get_ok()->set_text("Exit");
 
 	last_clicked = "";
+
+	SceneTree::get_singleton()->connect("files_dropped", this, "_files_dropped");
 }
 
 

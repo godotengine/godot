@@ -252,7 +252,7 @@ Quat Quat::cubic_slerp(const Quat& q, const Quat& prep, const Quat& postq,const 
 
 Quat::operator String() const {
 
-	return String::num(x)+","+String::num(y)+","+ String::num(z)+","+ String::num(w);
+	return String::num(x)+", "+String::num(y)+", "+ String::num(z)+", "+ String::num(w);
 }
 
 Quat::Quat(const Vector3& axis, const real_t& angle) {

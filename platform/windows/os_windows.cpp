@@ -1343,7 +1343,7 @@ void OS_Windows::vprint(const char* p_format, va_list p_list, bool p_stderr) {
 void OS_Windows::alert(const String& p_alert,const String& p_title) {
 
 	if (!is_no_window_mode_enabled())
-		MessageBoxW(NULL,p_alert.c_str(),p_title.c_str(),MB_OK|MB_ICONEXCLAMATION);
+		MessageBoxW(NULL, p_alert.c_str(), p_title.c_str(), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
 	else
 		print_line("ALERT: "+p_alert);
 }
@@ -1476,6 +1476,7 @@ Point2 OS_Windows::get_window_position() const{
 }
 void OS_Windows::set_window_position(const Point2& p_position){
 
+	if (video_mode.fullscreen) return;
 	RECT r;
 	GetWindowRect(hWnd,&r);
 	MoveWindow(hWnd,p_position.x,p_position.y,r.right-r.left,r.bottom-r.top,TRUE);

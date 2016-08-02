@@ -2993,6 +2993,34 @@ void TextEdit::adjust_viewport_to_cursor() {
 
 }
 
+void TextEdit::center_viewport_to_cursor() {
+
+	if (cursor.line_ofs>cursor.line)
+		cursor.line_ofs=cursor.line;
+
+	int visible_width=cache.size.width-cache.style_normal->get_minimum_size().width-cache.line_number_w-cache.breakpoint_gutter_width;
+	if (v_scroll->is_visible())
+		visible_width-=v_scroll->get_combined_minimum_size().width;
+	visible_width-=20; // give it a little more space
+
+	int visible_rows = get_visible_rows();
+	if (h_scroll->is_visible())
+		visible_rows-=((h_scroll->get_combined_minimum_size().height-1)/get_row_height());
+
+	int max_ofs = text.size()-(scroll_past_end_of_file_enabled?1:visible_rows);
+	cursor.line_ofs=CLAMP(cursor.line-(visible_rows/2),0,max_ofs);
+
+	int cursor_x = get_column_x_offset( cursor.column, text[cursor.line] );
+
+	if (cursor_x>(cursor.x_ofs+visible_width))
+		cursor.x_ofs=cursor_x-visible_width+1;
+
+	if (cursor_x < cursor.x_ofs)
+		cursor.x_ofs=cursor_x;
+
+	update();
+}
+
 void TextEdit::cursor_set_column(int p_col, bool p_adjust_viewport) {
 
 	if (p_col<0)
@@ -4480,6 +4508,7 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("menu_option"),&TextEdit::menu_option);
 	ObjectTypeDB::bind_method(_MD("get_menu:PopupMenu"),&TextEdit::get_menu);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "syntax_highlighting"), _SCS("set_syntax_coloring"), _SCS("is_syntax_coloring_enabled"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), _SCS("set_show_line_numbers"), _SCS("is_show_line_numbers_enabled"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), _SCS("set_highlight_all_occurrences"), _SCS("is_highlight_all_occurrences_enabled"));
 

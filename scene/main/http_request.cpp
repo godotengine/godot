@@ -105,6 +105,9 @@ Error HTTPRequest::request(const String& p_url, const Vector<String>& p_custom_h
 	}
 
 	Error err = _parse_url(p_url);
+	if (err)
+		return err;
+
 	validate_ssl=p_ssl_validate_domain;
 
 	bool has_user_agent=false;
@@ -127,18 +130,51 @@ Error HTTPRequest::request(const String& p_url, const Vector<String>& p_custom_h
 		headers.push_back("Accept: */*");
 	}
 
+	requesting=true;
 
-	err = _request();
+	if (use_threads) {
 
-	if (err==OK) {
+		thread_done=false;
+		thread_request_quit=false;
+		client->set_blocking_mode(true);
+		thread=Thread::create(_thread_func,this);
+	} else {
+		client->set_blocking_mode(false);
+		err = _request();
+		if (err!=OK) {
+			call_deferred("_request_done",RESULT_CANT_CONNECT,0,StringArray(),ByteArray());
+			return ERR_CANT_CONNECT;
+		}
+
 		set_process(true);
-		requesting=true;
+
 	}
 
 
-	return err;
+	return OK;
 }
 
+
+void HTTPRequest::_thread_func(void *p_userdata) {
+
+	HTTPRequest *hr = (HTTPRequest*)p_userdata;
+
+	Error err = hr->_request();
+
+	if (err!=OK) {
+		hr->call_deferred("_request_done",RESULT_CANT_CONNECT,0,StringArray(),ByteArray());
+	} else {
+		while(!hr->thread_request_quit) {
+
+			bool exit = hr->_update_connection();
+			if (exit)
+				break;
+			OS::get_singleton()->delay_usec(1);
+		}
+	}
+
+	hr->thread_done=true;
+}
 
 void HTTPRequest::cancel_request() {
 
@@ -147,6 +183,11 @@ void HTTPRequest::cancel_request() {
 
 	if (!use_threads) {
 		set_process(false);
+	} else {
+		thread_request_quit=true;
+		Thread::wait_to_finish(thread);
+		memdelete(thread);
+		thread=NULL;
 	}
 
 	if (file) {
@@ -167,7 +208,7 @@ void HTTPRequest::cancel_request() {
 bool HTTPRequest::_handle_response(bool *ret_value) {
 
 	if (!client->has_response()) {
-		call_deferred("emit_signal","request_completed",RESULT_NO_RESPONSE,0,StringArray(),ByteArray());
+		call_deferred("_request_done",RESULT_NO_RESPONSE,0,StringArray(),ByteArray());
 		*ret_value=true;
 		return true;
 	}
@@ -187,7 +228,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		//redirect
 		if (max_redirects>=0 && redirections>=max_redirects) {
 
-			call_deferred("emit_signal","request_completed",RESULT_REDIRECT_LIMIT_REACHED,response_code,response_headers,ByteArray());
+			call_deferred("_request_done",RESULT_REDIRECT_LIMIT_REACHED,response_code,response_headers,ByteArray());
 			*ret_value=true;
 			return true;
 		}
@@ -239,7 +280,8 @@ bool HTTPRequest::_update_connection() {
 
 	switch( client->get_status() ) {
 		case HTTPClient::STATUS_DISCONNECTED: {
-			return true; //end it, since it's doing something
+			call_deferred("_request_done",RESULT_CANT_CONNECT,0,StringArray(),ByteArray());
+			return true; //end it, since it's doing something			
 		} break;
 		case HTTPClient::STATUS_RESOLVING: {
 			client->poll();
@@ -247,7 +289,7 @@ bool HTTPRequest::_update_connection() {
 			return false;
 		} break;
 		case HTTPClient::STATUS_CANT_RESOLVE: {
-			call_deferred("emit_signal","request_completed",RESULT_CANT_RESOLVE,0,StringArray(),ByteArray());
+			call_deferred("_request_done",RESULT_CANT_RESOLVE,0,StringArray(),ByteArray());
 			return true;
 
 		} break;
@@ -258,7 +300,7 @@ bool HTTPRequest::_update_connection() {
 		} break; //connecting to ip
 		case HTTPClient::STATUS_CANT_CONNECT: {
 
-			call_deferred("emit_signal","request_completed",RESULT_CANT_CONNECT,0,StringArray(),ByteArray());
+			call_deferred("_request_done",RESULT_CANT_CONNECT,0,StringArray(),ByteArray());
 			return true;
 
 		} break;
@@ -276,17 +318,17 @@ bool HTTPRequest::_update_connection() {
 						return ret_value;
 
 
-					call_deferred("emit_signal","request_completed",RESULT_SUCCESS,response_code,response_headers,ByteArray());
+					call_deferred("_request_done",RESULT_SUCCESS,response_code,response_headers,ByteArray());
 					return true;
 				}
 				if (got_response && body_len<0) {
 					//chunked transfer is done
-					call_deferred("emit_signal","request_completed",RESULT_SUCCESS,response_code,response_headers,body);
+					call_deferred("_request_done",RESULT_SUCCESS,response_code,response_headers,body);
 					return true;
 
 				}
 
-				call_deferred("emit_signal","request_completed",RESULT_CHUNKED_BODY_SIZE_MISMATCH,response_code,response_headers,ByteArray());
+				call_deferred("_request_done",RESULT_CHUNKED_BODY_SIZE_MISMATCH,response_code,response_headers,ByteArray());
 				return true;
 				//request migh have been done
 			} else {
@@ -294,7 +336,7 @@ bool HTTPRequest::_update_connection() {
 
 				Error err = client->request(HTTPClient::METHOD_GET,request_string,headers);
 				if (err!=OK) {
-					call_deferred("emit_signal","request_completed",RESULT_CONNECTION_ERROR,0,StringArray(),ByteArray());
+					call_deferred("_request_done",RESULT_CONNECTION_ERROR,0,StringArray(),ByteArray());
 					return true;
 				}
 
@@ -320,7 +362,7 @@ bool HTTPRequest::_update_connection() {
 
 				if (!client->is_response_chunked() && client->get_response_body_length()==0) {
 
-					call_deferred("emit_signal","request_completed",RESULT_SUCCESS,response_code,response_headers,ByteArray());
+					call_deferred("_request_done",RESULT_SUCCESS,response_code,response_headers,ByteArray());
 					return true;
 				}
 
@@ -331,7 +373,7 @@ bool HTTPRequest::_update_connection() {
 					body_len=client->get_response_body_length();
 
 					if (body_size_limit>=0 && body_len>body_size_limit) {
-						call_deferred("emit_signal","request_completed",RESULT_BODY_SIZE_LIMIT_EXCEEDED,response_code,response_headers,ByteArray());
+						call_deferred("_request_done",RESULT_BODY_SIZE_LIMIT_EXCEEDED,response_code,response_headers,ByteArray());
 						return true;
 					}
 				}
@@ -340,7 +382,8 @@ bool HTTPRequest::_update_connection() {
 					file=FileAccess::open(download_to_file,FileAccess::WRITE);
 					if (!file) {
 
-						call_deferred("emit_signal","request_completed",RESULT_DOWNLOAD_FILE_CANT_OPEN,response_code,response_headers,ByteArray());
+						call_deferred("_request_done",RESULT_DOWNLOAD_FILE_CANT_OPEN,response_code,response_headers,ByteArray());
+						return true;
 					}
 				}
 			}
@@ -356,7 +399,7 @@ bool HTTPRequest::_update_connection() {
 				ByteArray::Read r=chunk.read();
 				file->store_buffer(r.ptr(),chunk.size());
 				if (file->get_error()!=OK) {
-					call_deferred("emit_signal","request_completed",RESULT_DOWNLOAD_FILE_WRITE_ERROR,response_code,response_headers,ByteArray());
+					call_deferred("_request_done",RESULT_DOWNLOAD_FILE_WRITE_ERROR,response_code,response_headers,ByteArray());
 					return true;
 				}
 			} else {
@@ -364,18 +407,18 @@ bool HTTPRequest::_update_connection() {
 			}
 
 			if (body_size_limit>=0 && downloaded>body_size_limit) {
-				call_deferred("emit_signal","request_completed",RESULT_BODY_SIZE_LIMIT_EXCEEDED,response_code,response_headers,ByteArray());
+				call_deferred("_request_done",RESULT_BODY_SIZE_LIMIT_EXCEEDED,response_code,response_headers,ByteArray());
 				return true;
 			}
 
 			if (body_len>=0) {
 
 				if (downloaded==body_len) {
-					call_deferred("emit_signal","request_completed",RESULT_SUCCESS,response_code,response_headers,body);
+					call_deferred("_request_done",RESULT_SUCCESS,response_code,response_headers,body);
 					return true;
 				}
 				/*if (body.size()>=body_len) {
-					call_deferred("emit_signal","request_completed",RESULT_BODY_SIZE_MISMATCH,response_code,response_headers,ByteArray());
+					call_deferred("_request_done",RESULT_BODY_SIZE_MISMATCH,response_code,response_headers,ByteArray());
 					return true;
 				}*/
 			}
@@ -384,11 +427,11 @@ bool HTTPRequest::_update_connection() {
 
 		} break; // request resulted in body: { } break which must be read
 		case HTTPClient::STATUS_CONNECTION_ERROR: {
-			call_deferred("emit_signal","request_completed",RESULT_CONNECTION_ERROR,0,StringArray(),ByteArray());
+			call_deferred("_request_done",RESULT_CONNECTION_ERROR,0,StringArray(),ByteArray());
 			return true;
 		} break;
 		case HTTPClient::STATUS_SSL_HANDSHAKE_ERROR: {
-			call_deferred("emit_signal","request_completed",RESULT_SSL_HANDSHAKE_ERROR,0,StringArray(),ByteArray());
+			call_deferred("_request_done",RESULT_SSL_HANDSHAKE_ERROR,0,StringArray(),ByteArray());
 			return true;
 		} break;
 
@@ -397,17 +440,35 @@ bool HTTPRequest::_update_connection() {
 	ERR_FAIL_V(false);
 }
 
+
+void HTTPRequest::_request_done(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
+
+
+	cancel_request();
+	emit_signal("request_completed",p_status,p_code,headers,p_data);
+}
+
+
 void HTTPRequest::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_PROCESS) {
 
+		if (use_threads)
+			return;
 		bool done = _update_connection();
 		if (done) {
 
 			set_process(false);
+			//cancel_request(); called from _request done now
+		}
+	}
+
+	if (p_what==NOTIFICATION_EXIT_TREE) {
+		if (requesting) {
 			cancel_request();
 		}
 	}
+
 }
 
 void HTTPRequest::set_use_threads(bool p_use) {
@@ -491,6 +552,7 @@ void HTTPRequest::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_body_size"),&HTTPRequest::get_body_size);
 
 	ObjectTypeDB::bind_method(_MD("_redirect_request"),&HTTPRequest::_redirect_request);
+	ObjectTypeDB::bind_method(_MD("_request_done"),&HTTPRequest::_request_done);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"use_threads"),_SCS("set_use_threads"),_SCS("is_using_threads"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"body_size_limit",PROPERTY_HINT_RANGE,"-1,2000000000"),_SCS("set_body_size_limit"),_SCS("get_body_size_limit"));
@@ -517,6 +579,7 @@ void HTTPRequest::_bind_methods() {
 HTTPRequest::HTTPRequest()
 {
 
+	thread=NULL;
 
 	port=80;
 	redirections=0;
@@ -530,6 +593,7 @@ HTTPRequest::HTTPRequest()
 	requesting=false;
 	client.instance();
 	use_threads=false;
+	thread_done=false;
 	body_size_limit=-1;
 	file=NULL;
 	status=HTTPClient::STATUS_DISCONNECTED;

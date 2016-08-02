@@ -334,7 +334,7 @@ int Label::get_longest_line_width() const {
 			}
 		} else {
 
-			int char_width=font->get_char_size(current).width;
+			int char_width=font->get_char_size(current,text[i+1]).width;
 			line_width+=char_width;
 		}
 
@@ -454,7 +454,7 @@ void Label::regenerate_word_cache() {
 				word_pos=i;
 			}
 
-			char_width=font->get_char_size(current).width;
+			char_width=font->get_char_size(current,text[i+1]).width;
 			current_word_size+=char_width;
 			line_width+=char_width;
 			total_char_cache++;

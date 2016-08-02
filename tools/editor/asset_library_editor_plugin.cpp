@@ -134,13 +134,13 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	category = memnew( LinkButton );
 	category->set_text("Editor Tools");
 	category->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	title->connect("pressed",this,"_category_clicked");
+	category->connect("pressed",this,"_category_clicked");
 	vb->add_child(category);
 
 	author = memnew( LinkButton );
 	author->set_text("Johny Tolengo");
 	author->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	title->connect("pressed",this,"_author_clicked");
+	author->connect("pressed",this,"_author_clicked");
 	vb->add_child(author);
 
 	HBoxContainer *rating_hb = memnew( HBoxContainer );
@@ -325,6 +325,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 
 
 	String error_text;
+	print_line("COMPLETED: "+itos(p_status)+" code: "+itos(p_code)+" data size: "+itos(p_data.size()));
 
 	switch(p_status) {
 
@@ -383,7 +384,9 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	print_line("max: "+itos(download->get_body_size())+" bytes: "+itos(download->get_downloaded_bytes()));
 	install->set_disabled(false);
 
-	status->set_text("Success!");
+	progress->set_val(download->get_downloaded_bytes());
+
+	status->set_text("Success! ("+String::humanize_size(download->get_downloaded_bytes())+")");
 	set_process(false);
 }
 
@@ -411,6 +414,10 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 		progress->set_val(download->get_downloaded_bytes());
 
 		int cstatus = download->get_http_client_status();
+
+		if (cstatus==HTTPClient::STATUS_BODY)
+			status->set_text("Fetching: "+String::humanize_size(download->get_downloaded_bytes()));
+
 		if (cstatus!=prev_status) {
 			switch(cstatus) {
 
@@ -422,9 +429,6 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 				} break;
 				case HTTPClient::STATUS_REQUESTING: {
 					status->set_text("Requesting..");
-				} break;
-				case HTTPClient::STATUS_BODY: {
-					status->set_text("Downloading..");
 				} break;
 				default: {}
 			}
@@ -457,6 +461,7 @@ void EditorAssetLibraryItemDownload::_install() {
 void EditorAssetLibraryItemDownload::_make_request() {
 	download->cancel_request();
 	download->set_download_file(EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("tmp_asset_"+itos(asset_id))+".zip");
+
 	Error err = download->request(host);
 	if(err!=OK) {
 		status->set_text("Error making request");
@@ -1007,6 +1012,7 @@ void EditorAssetLibrary::_api_request(const String& p_request, RequestType p_req
 	if (requesting!=REQUESTING_NONE) {
 		request->cancel_request();
 	}
+
 	requesting=p_request_type;
 
 	error_hb->hide();
@@ -1465,6 +1471,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	request = memnew( HTTPRequest );
 	add_child(request);
+	request->set_use_threads(EDITOR_DEF("asset_library/use_threads",true));
 	request->connect("request_completed",this,"_http_request_completed");
 
 	last_queue_id=0;

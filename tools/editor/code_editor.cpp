@@ -133,8 +133,9 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 
 	if (found) {
 		if (!preserve_cursor) {
-			text_edit->cursor_set_line(line);
-			text_edit->cursor_set_column(col+text.length());
+			text_edit->cursor_set_line(line, false);
+			text_edit->cursor_set_column(col+text.length(), false);
+			text_edit->center_viewport_to_cursor();
 		}
 
 		text_edit->set_search_text(text);
@@ -187,7 +188,9 @@ void FindReplaceBar::_replace_all() {
 	text_edit->cursor_set_line(0);
 	text_edit->cursor_set_column(0);
 
+	String replace_text=get_replace_text();
 	int search_text_len=get_search_text().length();
+
 	int rc=0;
 
 	replace_all_mode = true;
@@ -203,7 +206,7 @@ void FindReplaceBar::_replace_all() {
 		if (match_from < prev_match)
 			break; // done
 
-		prev_match=match_to;
+		prev_match=Point2i(result_line,result_col+replace_text.length());
 
 		text_edit->select(result_line,result_col,result_line,match_to.y);
 
@@ -213,12 +216,12 @@ void FindReplaceBar::_replace_all() {
 				continue;
 
 			// replace but adjust selection bounds
-			text_edit->insert_text_at_cursor(get_replace_text());
+			text_edit->insert_text_at_cursor(replace_text);
 			if (match_to.x==selection_end.x)
-				selection_end.y+=get_replace_text().length() - get_search_text().length();
+				selection_end.y+=replace_text.length()-search_text_len;
 		} else {
 			// just replace
-			text_edit->insert_text_at_cursor(get_replace_text());
+			text_edit->insert_text_at_cursor(replace_text);
 		}
 
 		rc++;
@@ -1031,8 +1034,8 @@ void CodeTextEditor::_reset_zoom() {
 
 void CodeTextEditor::_line_col_changed() {
 
-	String text = String()+TTR("Line:")+" "+itos(text_editor->cursor_get_line()+1)+", "+TTR("Col:")+" "+itos(text_editor->cursor_get_column());
-	line_col->set_text(text);
+	line_nb->set_text(itos(text_editor->cursor_get_line() + 1));
+	col_nb->set_text(itos(text_editor->cursor_get_column()));
 }
 
 void CodeTextEditor::_text_changed() {
@@ -1208,6 +1211,7 @@ CodeTextEditor::CodeTextEditor() {
 	HBoxContainer *status_bar = memnew( HBoxContainer );
 	status_mc->add_child(status_bar);
 	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
+	status_bar->add_child( memnew( Label ) ); //to keep the height if the other labels are not visible
 
 	idle = memnew( Timer );
 	add_child(idle);
@@ -1229,14 +1233,33 @@ CodeTextEditor::CodeTextEditor() {
 
 	status_bar->add_spacer();
 
-	line_col = memnew( Label );
-	status_bar->add_child(line_col);
-	line_col->set_valign(Label::VALIGN_CENTER);
-	line_col->set_autowrap(true);
-	line_col->set_v_size_flags(SIZE_FILL);
-	line_col->set_custom_minimum_size(Size2(100,1)*EDSCALE);
-	status_bar->add_child( memnew( Label ) ); //to keep the height if the other labels are not visible
+	Label *line_txt = memnew( Label );
+	status_bar->add_child(line_txt);
+	line_txt->set_align(Label::ALIGN_RIGHT);
+	line_txt->set_valign(Label::VALIGN_CENTER);
+	line_txt->set_v_size_flags(SIZE_FILL);
+	line_txt->set_text(TTR("Line:"));
 
+	line_nb = memnew( Label );
+	status_bar->add_child(line_nb);
+	line_nb->set_valign(Label::VALIGN_CENTER);
+	line_nb->set_v_size_flags(SIZE_FILL);
+	line_nb->set_autowrap(true); // workaround to prevent resizing the label on each change
+	line_nb->set_custom_minimum_size(Size2(40,1)*EDSCALE);
+
+	Label *col_txt = memnew( Label );
+	status_bar->add_child(col_txt);
+	col_txt->set_align(Label::ALIGN_RIGHT);
+	col_txt->set_valign(Label::VALIGN_CENTER);
+	col_txt->set_v_size_flags(SIZE_FILL);
+	col_txt->set_text(TTR("Col:"));
+
+	col_nb = memnew( Label );
+	status_bar->add_child(col_nb);
+	col_nb->set_valign(Label::VALIGN_CENTER);
+	col_nb->set_v_size_flags(SIZE_FILL);
+	col_nb->set_autowrap(true); // workaround to prevent resizing the label on each change
+	col_nb->set_custom_minimum_size(Size2(40,1)*EDSCALE);
 
 	text_editor->connect("input_event", this,"_text_editor_input_event");
 	text_editor->connect("cursor_changed", this,"_line_col_changed");

@@ -452,7 +452,7 @@ private:
 	void _save_scene(String p_file, int idx = -1);
 
 
-	void _instance_request(const String& p_path);
+	void _instance_request(const Vector<String>& p_files);
 
 	void _property_keyed(const String& p_keyed, const Variant& p_value, bool p_advance);
 	void _transform_keyed(Object *sp,const String& p_sub,const Transform& p_key);
@@ -666,6 +666,7 @@ public:
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
 
 	void request_instance_scene(const String &p_path);
+	void request_instance_scenes(const Vector<String>& p_files);
 	FileSystemDock *get_scenes_dock();
 	SceneTreeDock *get_scene_tree_dock();
 	static UndoRedo* get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
