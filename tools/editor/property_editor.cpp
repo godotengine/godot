@@ -940,11 +940,23 @@ void CustomPropertyEditor::_color_changed(const Color& p_color) {
 
 void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
-	if (owner) {
+
+	if (hint==PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && hint_text!=String()) {
+
+		Node* node=get_node(hint_text);
+		if (node) {
+
+			Node *tonode=node->get_node(p_path);
+			if (tonode) {
+				p_path=node->get_path_to(tonode);
+			}
+		}
+
+	} else if (owner) {
 
 		Node *node=NULL;
 
-		if (owner->is_type("Node"))
+		 if (owner->is_type("Node"))
 			node = owner->cast_to<Node>();
 		else if (owner->is_type("ArrayPropertyEdit"))
 			node = owner->cast_to<ArrayPropertyEdit>()->get_node();
@@ -4349,7 +4361,7 @@ SectionedPropertyEditor::~SectionedPropertyEditor() {
 
 double PropertyValueEvaluator::eval(const String& p_text) {
 
-	if (!obj)
+	if (!obj || !script_language)
 		return _default_eval(p_text);
 
 	Ref<Script> script= Ref<Script>(script_language ->create_script());
@@ -4361,6 +4373,8 @@ double PropertyValueEvaluator::eval(const String& p_text) {
 	}
 
 	ScriptInstance *script_instance = script->instance_create(this);
+	if (!script_instance)
+		return _default_eval(p_text);
 
 	Variant::CallError call_err;
 	script_instance->call("set_this",obj);
@@ -4388,7 +4402,13 @@ String PropertyValueEvaluator::_build_script(const String& p_text) {
 }
 
 PropertyValueEvaluator::PropertyValueEvaluator() {
-	script_language = ScriptServer::get_language(0); // todo: get script language from editor setting
+	script_language=NULL;
+
+	for(int i=0;i<ScriptServer::get_language_count();i++) {
+		if (ScriptServer::get_language(i)->get_name()=="GDScript") {
+			script_language=ScriptServer::get_language(i);
+		}
+	}
 }
 
 PropertyValueEvaluator::~PropertyValueEvaluator() {

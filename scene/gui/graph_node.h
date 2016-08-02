@@ -44,6 +44,8 @@ class GraphNode : public Container {
 		bool enable_right;
 		int type_right;
 		Color color_right;
+		Ref<Texture> custom_slot_left;
+		Ref<Texture> custom_slot_right;
 
 
 		Slot() { enable_left=false; type_left=0; color_left=Color(1,1,1,1); enable_right=false; type_right=0; color_right=Color(1,1,1,1); }
@@ -91,7 +93,7 @@ public:
 
 
 
-	void set_slot(int p_idx,bool p_enable_left,int p_type_left,const Color& p_color_left, bool p_enable_right,int p_type_right,const Color& p_color_right);
+	void set_slot(int p_idx,bool p_enable_left,int p_type_left,const Color& p_color_left, bool p_enable_right,int p_type_right,const Color& p_color_right,const Ref<Texture>& p_custom_left=Ref<Texture>(),const Ref<Texture>& p_custom_right=Ref<Texture>());
 	void clear_slot(int p_idx);
 	void clear_all_slots();
 	bool is_slot_enabled_left(int p_idx) const;

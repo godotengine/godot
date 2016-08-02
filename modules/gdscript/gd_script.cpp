@@ -249,6 +249,23 @@ void GDScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 }*/
 #endif
 
+
+void GDScript::get_method_list(List<MethodInfo> *p_list) const {
+
+	for (const Map<StringName,GDFunction*>::Element *E=member_functions.front();E;E=E->next()) {
+		MethodInfo mi;
+		mi.name=E->key();
+		for(int i=0;i<E->get()->get_argument_count();i++) {
+			PropertyInfo arg;
+			arg.type=Variant::NIL; //variant
+			arg.name=E->get()->get_argument_name(i);
+			mi.arguments.push_back(arg);
+		}
+
+		mi.return_val.name="var";
+		p_list->push_back(mi);
+	}
+}
 bool GDScript::get_property_default_value(const StringName& p_property, Variant &r_value) const {
 
 #ifdef TOOLS_ENABLED

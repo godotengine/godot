@@ -62,6 +62,8 @@ public:
 #else
 		set_argument_count($argc$);
 #endif
+
+		$ifret _set_returns(true); $
 	};
 };
 
@@ -140,6 +142,9 @@ public:
 #else
 		set_argument_count($argc$);
 #endif
+		$ifret _set_returns(true); $
+
+
 	};
 };
 

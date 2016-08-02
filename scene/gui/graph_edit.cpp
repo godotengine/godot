@@ -178,6 +178,7 @@ void GraphEdit::_graph_node_raised(Node* p_gn) {
 	ERR_FAIL_COND(!gn);
 	gn->raise();
 	top_layer->raise();
+	emit_signal("node_selected",p_gn);
 
 }
 
@@ -295,6 +296,36 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 				Vector2 pos = gn->get_connection_output_pos(j)+gn->get_pos();
 				if (pos.distance_to(mpos)<grab_r) {
 
+
+					if (valid_left_disconnect_types.has(gn->get_connection_output_type(j))) {
+						//check disconnect
+						for (List<Connection>::Element*E=connections.front();E;E=E->next()) {
+
+							if (E->get().from==gn->get_name() && E->get().from_port==j) {
+
+								Node*to = get_node(String(E->get().to));
+								if (to && to->cast_to<GraphNode>()) {
+
+									connecting_from=E->get().to;
+									connecting_index=E->get().to_port;
+									connecting_out=false;
+									connecting_type=to->cast_to<GraphNode>()->get_connection_input_type(E->get().to_port);
+									connecting_color=to->cast_to<GraphNode>()->get_connection_input_color(E->get().to_port);
+									connecting_target=false;
+									connecting_to=pos;
+
+									emit_signal("disconnection_request",E->get().from,E->get().from_port,E->get().to,E->get().to_port);
+									to = get_node(String(connecting_from)); //maybe it was erased
+									if (to && to->cast_to<GraphNode>()) {
+										connecting=true;
+									}
+									return;
+								}
+
+							}
+						}
+					}
+
 					connecting=true;
 					connecting_from=gn->get_name();
 					connecting_index=j;
@@ -315,7 +346,7 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 
 				if (pos.distance_to(mpos)<grab_r) {
 
-					if (right_disconnects) {
+					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
 						//check disconnect
 						for (List<Connection>::Element*E=connections.front();E;E=E->next()) {
 
@@ -381,7 +412,7 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 
 					Vector2 pos = gn->get_connection_output_pos(j)+gn->get_pos();
 					int type =gn->get_connection_output_type(j);
-					if (type==connecting_type && pos.distance_to(mpos)<grab_r) {
+					if ((type==connecting_type ||valid_connection_types.has(ConnType(type,connecting_type))) && pos.distance_to(mpos)<grab_r) {
 
 						connecting_target=true;
 						connecting_to=pos;
@@ -398,7 +429,7 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 
 					Vector2 pos = gn->get_connection_input_pos(j)+gn->get_pos();
 					int type =gn->get_connection_input_type(j);
-					if (type==connecting_type && pos.distance_to(mpos)<grab_r) {
+					if ((type==connecting_type ||valid_connection_types.has(ConnType(type,connecting_type))) && pos.distance_to(mpos)<grab_r) {
 						connecting_target=true;
 						connecting_to=pos;
 						connecting_target_to=gn->get_name();
@@ -433,7 +464,7 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 
 }
 
-void GraphEdit::_draw_cos_line(const Vector2& p_from, const Vector2& p_to,const Color& p_color) {
+void GraphEdit::_draw_cos_line(const Vector2& p_from, const Vector2& p_to,const Color& p_color,const Color& p_to_color) {
 
 	static const int steps = 20;
 
@@ -454,7 +485,7 @@ void GraphEdit::_draw_cos_line(const Vector2& p_from, const Vector2& p_to,const 
 
 		if (i>0) {
 
-			top_layer->draw_line(prev,p,p_color,2);
+			top_layer->draw_line(prev,p,p_color.linear_interpolate(p_to_color,d),2);
 		}
 
 		prev=p;
@@ -488,7 +519,7 @@ void GraphEdit::_top_layer_draw() {
 			col.g+=0.4;
 			col.b+=0.4;
 		}
-		_draw_cos_line(pos,topos,col);
+		_draw_cos_line(pos,topos,col,col);
 	}
 
 	List<List<Connection>::Element* > to_erase;
@@ -526,7 +557,8 @@ void GraphEdit::_top_layer_draw() {
 		Vector2 frompos=gfrom->get_connection_output_pos(E->get().from_port)+gfrom->get_pos();
 		Color color = gfrom->get_connection_output_color(E->get().from_port);
 		Vector2 topos=gto->get_connection_input_pos(E->get().to_port)+gto->get_pos();
-		_draw_cos_line(frompos,topos,color);
+		Color tocolor = gto->get_connection_input_color(E->get().to_port);
+		_draw_cos_line(frompos,topos,color,tocolor);
 
 	}
 
@@ -536,6 +568,18 @@ void GraphEdit::_top_layer_draw() {
 	}
 	if (box_selecting)
 		top_layer->draw_rect(box_selecting_rect,Color(0.7,0.7,1.0,0.3));
+}
+
+void GraphEdit::set_selected(Node* p_child) {
+
+	for(int i=get_child_count()-1;i>=0;i--) {
+
+		GraphNode *gn=get_child(i)->cast_to<GraphNode>();
+		if (!gn)
+			continue;
+
+		gn->set_selected(gn==p_child);
+	}
 }
 
 void GraphEdit::_input_event(const InputEvent& p_ev) {
@@ -804,6 +848,29 @@ bool GraphEdit::is_right_disconnects_enabled() const{
 	return right_disconnects;
 }
 
+void GraphEdit::add_valid_right_disconnect_type(int p_type) {
+
+	valid_right_disconnect_types.insert(p_type);
+}
+
+void GraphEdit::remove_valid_right_disconnect_type(int p_type){
+
+	valid_right_disconnect_types.erase(p_type);
+
+}
+
+void GraphEdit::add_valid_left_disconnect_type(int p_type){
+
+	valid_left_disconnect_types.insert(p_type);
+
+}
+
+void GraphEdit::remove_valid_left_disconnect_type(int p_type){
+
+	valid_left_disconnect_types.erase(p_type);
+
+}
+
 Array GraphEdit::_get_connection_list() const {
 
 	List<Connection> conns;
@@ -838,6 +905,35 @@ void GraphEdit::_zoom_plus() {
 	set_zoom(zoom*ZOOM_SCALE);
 }
 
+void GraphEdit::add_valid_connection_type(int p_type,int p_with_type) {
+
+	ConnType ct;
+	ct.type_a=p_type;
+	ct.type_b=p_with_type;
+
+	valid_connection_types.insert(ct);
+}
+
+void GraphEdit::remove_valid_connection_type(int p_type,int p_with_type) {
+
+	ConnType ct;
+	ct.type_a=p_type;
+	ct.type_b=p_with_type;
+
+	valid_connection_types.erase(ct);
+
+}
+
+bool GraphEdit::is_valid_connection_type(int p_type,int p_with_type) const {
+
+	ConnType ct;
+	ct.type_a=p_type;
+	ct.type_b=p_with_type;
+
+	return valid_connection_types.has(ct);
+
+}
+
 
 void GraphEdit::_bind_methods() {
 
@@ -865,10 +961,13 @@ void GraphEdit::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphEdit::_input_event);
 
+	ObjectTypeDB::bind_method(_MD("set_selected","node"),&GraphEdit::set_selected);
+
 	ADD_SIGNAL(MethodInfo("connection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
 	ADD_SIGNAL(MethodInfo("disconnection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
 	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2,"p_position")));
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
+	ADD_SIGNAL(MethodInfo("node_selected",PropertyInfo(Variant::OBJECT,"node")));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
 	ADD_SIGNAL(MethodInfo("_begin_node_move"));
 	ADD_SIGNAL(MethodInfo("_end_node_move"));

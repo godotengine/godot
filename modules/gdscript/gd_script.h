@@ -181,6 +181,8 @@ public:
 
 	bool get_property_default_value(const StringName& p_property,Variant& r_value) const;
 
+	virtual void get_method_list(List<MethodInfo> *p_list) const;
+
 	virtual ScriptLanguage *get_language() const;
 
 	GDScript();

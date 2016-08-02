@@ -223,10 +223,20 @@ void GraphNode::_notification(int p_what) {
 				continue;
 			const Slot &s=slot_info[E->key()];
 			//left
-			if (s.enable_left)
-				port->draw(get_canvas_item(),icofs+Point2(edgeofs,cache_y[E->key()]),s.color_left);
-			if (s.enable_right)
-				port->draw(get_canvas_item(),icofs+Point2(get_size().x-edgeofs,cache_y[E->key()]),s.color_right);
+			if (s.enable_left) {
+				Ref<Texture> p = port;
+				if (s.custom_slot_left.is_valid()) {
+					p=s.custom_slot_left;
+				}
+				p->draw(get_canvas_item(),icofs+Point2(edgeofs,cache_y[E->key()]),s.color_left);
+			}
+			if (s.enable_right) {
+				Ref<Texture> p = port;
+				if (s.custom_slot_right.is_valid()) {
+					p=s.custom_slot_right;
+				}
+				p->draw(get_canvas_item(),icofs+Point2(get_size().x-edgeofs,cache_y[E->key()]),s.color_right);
+			}
 
 		}
 	}
@@ -239,7 +249,7 @@ void GraphNode::_notification(int p_what) {
 }
 
 
-void GraphNode::set_slot(int p_idx,bool p_enable_left,int p_type_left,const Color& p_color_left, bool p_enable_right,int p_type_right,const Color& p_color_right) {
+void GraphNode::set_slot(int p_idx,bool p_enable_left,int p_type_left,const Color& p_color_left, bool p_enable_right,int p_type_right,const Color& p_color_right,const Ref<Texture>& p_custom_left,const Ref<Texture>& p_custom_right) {
 
 	ERR_FAIL_COND(p_idx<0);
 
@@ -255,6 +265,8 @@ void GraphNode::set_slot(int p_idx,bool p_enable_left,int p_type_left,const Colo
 	s.enable_right=p_enable_right;
 	s.type_right=p_type_right;
 	s.color_right=p_color_right;
+	s.custom_slot_left=p_custom_left;
+	s.custom_slot_right=p_custom_right;
 	slot_info[p_idx]=s;
 	update();
 	connpos_dirty=true;
@@ -580,7 +592,7 @@ void GraphNode::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_title"),&GraphNode::get_title);
 	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphNode::_input_event);
 
-	ObjectTypeDB::bind_method(_MD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right"),&GraphNode::set_slot);
+	ObjectTypeDB::bind_method(_MD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right","custom_left","custom_right"),&GraphNode::set_slot,DEFVAL(Ref<Texture>()),DEFVAL(Ref<Texture>()));
 	ObjectTypeDB::bind_method(_MD("clear_slot","idx"),&GraphNode::clear_slot);
 	ObjectTypeDB::bind_method(_MD("clear_all_slots","idx"),&GraphNode::clear_all_slots);
 	ObjectTypeDB::bind_method(_MD("is_slot_enabled_left","idx"),&GraphNode::is_slot_enabled_left);

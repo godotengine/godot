@@ -189,6 +189,8 @@ public:
 };
 
 
+typedef void (*CodeTextEditorCodeCompleteFunc)(void* p_ud,const String& p_code, List<String>* r_options);
+
 class CodeTextEditor : public VBoxContainer {
 
 	OBJ_TYPE(CodeTextEditor,VBoxContainer);
@@ -218,13 +220,16 @@ class CodeTextEditor : public VBoxContainer {
 	void _zoom_out();
 	void _reset_zoom();
 
+
+	CodeTextEditorCodeCompleteFunc code_complete_func;
+	void *code_complete_ud;
+
 protected:
 
-	void set_error(const String& p_error);
 
 	virtual void _load_theme_settings() {}
-	virtual void _validate_script()=0;
-	virtual void _code_complete_script(const String& p_code, List<String>* r_options) {};
+	virtual void _validate_script() {}
+	virtual void _code_complete_script(const String& p_code, List<String>* r_options) {}
 
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
@@ -235,9 +240,15 @@ protected:
 
 public:
 
+	void set_error(const String& p_error);
+	void update_line_and_column() { _line_col_changed(); }
 	TextEdit *get_text_edit() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	virtual void apply_code() {}
+
+
+	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void * p_ud);
+
 
 	CodeTextEditor();
 };

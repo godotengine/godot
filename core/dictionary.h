@@ -83,6 +83,8 @@ public:
 	Array keys() const;
 	Array values() const;
 
+	Dictionary copy() const;
+
 	Dictionary(const Dictionary& p_from);
 	Dictionary(bool p_shared=false);
 	~Dictionary();

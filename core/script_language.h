@@ -110,6 +110,7 @@ public:
 	virtual bool get_property_default_value(const StringName& p_property,Variant& r_value) const=0;
 
 	virtual void update_exports() {} //editor tool
+	virtual void get_method_list(List<MethodInfo> *p_list) const=0;
 
 
 	Script() {}

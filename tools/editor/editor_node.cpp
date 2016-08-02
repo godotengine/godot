@@ -86,6 +86,7 @@
 #include "plugins/collision_polygon_editor_plugin.h"
 #include "plugins/collision_polygon_2d_editor_plugin.h"
 #include "plugins/script_editor_plugin.h"
+#include "plugins/script_text_editor.h"
 #include "plugins/path_2d_editor_plugin.h"
 #include "plugins/particles_editor_plugin.h"
 #include "plugins/particles_2d_editor_plugin.h"
@@ -6442,6 +6443,8 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( CanvasItemEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpatialEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
+
+	ScriptTextEditor::register_editor(); //register one for text scripts
 
 	if (StreamPeerSSL::is_available()) {
 		add_editor_plugin( memnew( AssetLibraryEditorPlugin(this) ) );

@@ -68,6 +68,8 @@ enum PropertyHint {
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
 	PROPERTY_HINT_OBJECT_ID,
+	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
+	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, ///< so something else can provide this (used in scripts)
 	PROPERTY_HINT_MAX,
 };
 
