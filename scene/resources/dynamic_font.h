@@ -45,21 +45,32 @@ class DynamicFontData : public Resource {
 
 	OBJ_TYPE(DynamicFontData,Resource);
 
+public:
 
+	struct CacheID{
+
+		int size;
+		bool mipmaps;
+		bool filter;
+
+		bool operator< (CacheID right) const;
+		CacheID() { size=16; mipmaps=false; filter=false; }
+	};
+
+private:
 
 	const uint8_t *font_mem;
 	int font_mem_size;
 	bool force_autohinter;
 
 	String font_path;
-	Map<int,DynamicFontAtSize*> size_cache;
+	Map<CacheID,DynamicFontAtSize*> size_cache;
 
 	friend class DynamicFontAtSize;
 
 friend class DynamicFont;
 
-
-	Ref<DynamicFontAtSize> _get_dynamic_font_at_size(int p_size, uint32_t p_texture_flags=0);
+	Ref<DynamicFontAtSize> _get_dynamic_font_at_size(CacheID p_cache);
 protected:
 
 	static void _bind_methods();
@@ -126,7 +137,7 @@ class DynamicFontAtSize : public Reference {
 
 friend class DynamicFontData;
 	Ref<DynamicFontData> font;
-	int size;
+	DynamicFontData::CacheID id;
 
 
 
@@ -177,19 +188,16 @@ private:
 	Vector< Ref<DynamicFontAtSize> > fallback_data_at_size;
 
 
-	int size;
+	DynamicFontData::CacheID cache_id;
 	bool valid;
 	int spacing_top;
 	int spacing_bottom;
 	int spacing_char;
 	int spacing_space;
-	bool use_mipmaps;
-	bool use_filter;
-	uint32_t texture_flags;
 
 protected:
 
-	void _update_texture_flags();
+	void _reload_cache();
 
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
