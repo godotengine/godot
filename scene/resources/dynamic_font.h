@@ -59,7 +59,7 @@ class DynamicFontData : public Resource {
 friend class DynamicFont;
 
 
-	Ref<DynamicFontAtSize> _get_dynamic_font_at_size(int p_size);
+	Ref<DynamicFontAtSize> _get_dynamic_font_at_size(int p_size, uint32_t p_texture_flags=0);
 protected:
 
 	static void _bind_methods();
@@ -89,6 +89,8 @@ class DynamicFontAtSize : public Reference {
 	int descent;
 	int linegap;
 	int rect_margin;
+
+	uint32_t texture_flags;
 
 	bool valid;
 
@@ -145,7 +147,7 @@ public:
 
 	float draw_char(RID p_canvas_item, const Point2& p_pos, CharType p_char,CharType p_next,const Color& p_modulate,const Vector<Ref<DynamicFontAtSize> >& p_fallbacks) const;
 
-
+	void set_texture_flags(uint32_t p_flags);
 
 	DynamicFontAtSize();
 	~DynamicFontAtSize();
@@ -157,7 +159,7 @@ class DynamicFont : public Font {
 
 	OBJ_TYPE( DynamicFont, Font );
 
-	Ref<DynamicFontData> data;	
+	Ref<DynamicFontData> data;
 	Ref<DynamicFontAtSize> data_at_size;
 
 	Vector< Ref<DynamicFontData> > fallbacks;
@@ -166,8 +168,13 @@ class DynamicFont : public Font {
 
 	int size;
 	bool valid;
+	bool use_mipmaps;
+	bool use_filter;
+	uint32_t texture_flags;
 
 protected:
+
+	void _update_texture_flags();
 
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
@@ -183,6 +190,11 @@ public:
 	void set_size(int p_size);
 	int get_size() const;
 
+	bool get_use_mipmaps() const;
+	void set_use_mipmaps(bool p_enable);
+
+	bool get_use_filter() const;
+	void set_use_filter(bool p_enable);
 
 	void add_fallback(const Ref<DynamicFontData>& p_data);
 	void set_fallback(int p_idx,const Ref<DynamicFontData>& p_data);
