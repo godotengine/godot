@@ -569,7 +569,7 @@ void VisualScriptEditor::_update_members() {
 	List<StringName> var_names;
 	script->get_variable_list(&var_names);
 	for (List<StringName>::Element *E=var_names.front();E;E=E->next()) {
-		TreeItem *ti = members->create_item(variables)		;
+		TreeItem *ti = members->create_item(variables);
 		ti->set_text(0,E->get());
 		ti->set_selectable(0,true);
 		ti->set_editable(0,true);
@@ -589,7 +589,7 @@ void VisualScriptEditor::_update_members() {
 	List<StringName> signal_names;
 	script->get_custom_signal_list(&signal_names);
 	for (List<StringName>::Element *E=signal_names.front();E;E=E->next()) {
-		TreeItem *ti = members->create_item(_signals)		;
+		TreeItem *ti = members->create_item(_signals);
 		ti->set_text(0,E->get());
 		ti->set_selectable(0,true);
 		ti->set_editable(0,true);
@@ -659,7 +659,7 @@ void VisualScriptEditor::_member_edited() {
 
 	if (!new_name.is_valid_identifier()) {
 
-		EditorNode::get_singleton()->show_warning(TTR("Name is not a valid identifier: ")+new_name);
+		EditorNode::get_singleton()->show_warning(TTR("Name is not a valid identifier:")+" "+new_name);
 		updating_members=true;
 		ti->set_text(0,name);
 		updating_members=false;
@@ -669,7 +669,7 @@ void VisualScriptEditor::_member_edited() {
 
 	if (script->has_function(new_name) || script->has_variable(new_name) || script->has_custom_signal(new_name)) {
 
-		EditorNode::get_singleton()->show_warning(TTR("Name already in use by another func/var/signal: ")+new_name);
+		EditorNode::get_singleton()->show_warning(TTR("Name already in use by another func/var/signal:")+" "+new_name);
 		updating_members=true;
 		ti->set_text(0,name);
 		updating_members=false;
@@ -963,7 +963,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 			} else if (p_button==0) {
 
 				variable_editor->edit(name);
-				edit_variable_dialog->set_title(TTR("Editing Variable: ")+name);
+				edit_variable_dialog->set_title(TTR("Editing Variable:")+" "+name);
 				edit_variable_dialog->popup_centered_minsize(Size2(400,200)*EDSCALE);
 			}
 
@@ -989,7 +989,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 			} else if (p_button==0) {
 
 				signal_editor->edit(name);
-				edit_signal_dialog->set_title(TTR("Editing Signal: ")+name);
+				edit_signal_dialog->set_title(TTR("Editing Signal:")+" "+name);
 				edit_signal_dialog->popup_centered_minsize(Size2(400,300)*EDSCALE);
 			}
 
