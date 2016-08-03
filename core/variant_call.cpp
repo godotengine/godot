@@ -1173,6 +1173,56 @@ bool Variant::has_method(const StringName& p_method) const {
 
 }
 
+Vector<Variant::Type> Variant::get_method_argument_types(Variant::Type p_type,const StringName& p_method) {
+
+	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
+
+	const Map<StringName,_VariantCall::FuncData>::Element *E = fd.functions.find(p_method);
+	if (!E)
+		return Vector<Variant::Type>();
+
+	return E->get().arg_types;
+}
+
+Vector<StringName> Variant::get_method_argument_names(Variant::Type p_type,const StringName& p_method) {
+
+
+	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
+
+	const Map<StringName,_VariantCall::FuncData>::Element *E = fd.functions.find(p_method);
+	if (!E)
+		return Vector<StringName>();
+
+	return E->get().arg_names;
+
+}
+
+Variant::Type Variant::get_method_return_type(Variant::Type p_type,const StringName& p_method,bool* r_has_return) {
+
+	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
+
+	const Map<StringName,_VariantCall::FuncData>::Element *E = fd.functions.find(p_method);
+	if (!E)
+		return Variant::NIL;
+
+	if (r_has_return)
+		*r_has_return=E->get().return_type;
+
+	return E->get().return_type;
+}
+
+Vector<Variant> Variant::get_method_default_arguments(Variant::Type p_type,const StringName& p_method) {
+
+	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
+
+	const Map<StringName,_VariantCall::FuncData>::Element *E = fd.functions.find(p_method);
+	if (!E)
+		return Vector<Variant>();
+
+	return E->get().default_args;
+
+}
+
 void Variant::get_method_list(List<MethodInfo> *p_list) const {
 
 

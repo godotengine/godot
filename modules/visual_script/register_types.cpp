@@ -52,8 +52,10 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_type<VisualScriptIndexSet>();
 	ObjectTypeDB::register_type<VisualScriptGlobalConstant>();
 	ObjectTypeDB::register_type<VisualScriptMathConstant>();
-	ObjectTypeDB::register_type<VisualScriptSingleton>();
+	ObjectTypeDB::register_type<VisualScriptEngineSingleton>();
 	ObjectTypeDB::register_type<VisualScriptSceneNode>();
+	ObjectTypeDB::register_type<VisualScriptSceneTree>();
+	ObjectTypeDB::register_type<VisualScriptResourcePath>();
 
 	ObjectTypeDB::register_type<VisualScriptFunctionCall>();
 	ObjectTypeDB::register_type<VisualScriptPropertySet>();

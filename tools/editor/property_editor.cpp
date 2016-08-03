@@ -45,6 +45,7 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/main/viewport.h"
 #include "editor_file_system.h"
+#include "create_dialog.h"
 
 void CustomPropertyEditor::_notification(int p_what) {
 
@@ -430,6 +431,23 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				action_buttons[0]->set_end( Point2( margin, margin ) );
 				action_buttons[0]->set_text(TTR("Close"));
 				action_buttons[0]->show();
+
+			} else if (hint==PROPERTY_HINT_TYPE_STRING) {
+
+				if (!create_dialog) {
+					create_dialog = memnew( CreateDialog );
+					create_dialog->connect("create",this,"_create_dialog_callback");
+					add_child(create_dialog);
+				}
+
+				if (hint_text!=String()) {
+					create_dialog->set_base_type(hint_text);
+				} else {
+					create_dialog->set_base_type("Object");
+				}
+
+				create_dialog->popup(false);
+				hide();
 
 			} else {
 				List<String> names;
@@ -1331,6 +1349,13 @@ void CustomPropertyEditor::_text_edit_changed() {
 
 }
 
+void CustomPropertyEditor::_create_dialog_callback() {
+
+
+	v=create_dialog->get_selected_type();
+	emit_signal("variant_changed");
+}
+
 void CustomPropertyEditor::_modified(String p_string) {
 
 	if (updating)
@@ -1712,6 +1737,7 @@ void CustomPropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_drag_easing",&CustomPropertyEditor::_drag_easing);
 	ObjectTypeDB::bind_method( "_text_edit_changed",&CustomPropertyEditor::_text_edit_changed);
 	ObjectTypeDB::bind_method( "_menu_option",&CustomPropertyEditor::_menu_option);
+	ObjectTypeDB::bind_method( "_create_dialog_callback",&CustomPropertyEditor::_create_dialog_callback);
 
 
 
@@ -1834,6 +1860,8 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	add_child(slider);
 	slider->set_area_as_parent_rect(5);
 	slider->connect("value_changed",this,"_range_modified");
+
+	create_dialog = NULL;
 }
 
 bool PropertyEditor::_might_be_in_instance() {
@@ -2101,6 +2129,12 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 		} break;
 		case Variant::STRING:
 
+
+			if (p_hint==PROPERTY_HINT_TYPE_STRING) {
+
+				p_item->set_text(1,obj->get(p_name));
+			}
+
 			if (p_hint==PROPERTY_HINT_ENUM) {
 
 				Vector<String> strings = p_hint_text.split(",");
@@ -2367,14 +2401,26 @@ Variant PropertyEditor::get_drag_data_fw(const Point2& p_point,Control* p_from) 
 	if (!item)
 		return Variant();
 
-	int col = tree->get_column_at_pos(p_point);
-	if (col!=1)
-		return Variant();
-
-
 	Dictionary d = item->get_metadata(0);
 	if (!d.has("name"))
 		return Variant();
+
+	int col = tree->get_column_at_pos(p_point);
+	if (col==0) {
+
+		Dictionary dp;
+		dp["type"]="obj_property";
+		dp["object"]=obj;
+		dp["property"]=d["name"];
+		dp["value"]=obj->get(d["name"]);
+
+		Label *label =memnew( Label );
+		label->set_text(d["name"]);
+		set_drag_preview(label);
+		return dp;
+	}
+
+
 
 	Variant val = obj->get(d["name"]);
 
@@ -3109,6 +3155,15 @@ void PropertyEditor::update_tree() {
 						if (show_type_icons)
 							item->set_icon( 0,get_icon("Enum","EditorIcons") );
 
+
+					} break;
+					case PROPERTY_HINT_TYPE_STRING: {
+
+						item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM);
+						item->set_editable(1,!read_only);
+						if (show_type_icons)
+							item->set_icon( 0, get_icon("String","EditorIcons") );
+						item->set_text(1,obj->get(p.name));
 
 					} break;
 					default: {

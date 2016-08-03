@@ -42,6 +42,22 @@
 #include "scene/main/viewport.h"
 
 
+void SceneTreeDock::_nodes_drag_begin() {
+
+
+	if (restore_script_editor_on_drag) {
+		EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+		restore_script_editor_on_drag=false;
+	}
+
+}
+
+void SceneTreeDock::_input(InputEvent p_event) {
+
+	if (p_event.type==InputEvent::MOUSE_BUTTON && !p_event.mouse_button.pressed && p_event.mouse_button.button_index==BUTTON_LEFT)	 {
+		restore_script_editor_on_drag=false; //lost chance
+	}
+}
 
 void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 
@@ -698,7 +714,13 @@ void SceneTreeDock::_node_selected() {
 		return;
 	}
 
+	if (ScriptEditor::get_singleton()->is_visible()) {
+		restore_script_editor_on_drag=true;
+	}
+
 	editor->push_item(node);
+
+
 }
 
 void SceneTreeDock::_node_renamed() {
@@ -1807,6 +1829,8 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_load_request"),&SceneTreeDock::_load_request);
 	ObjectTypeDB::bind_method(_MD("_script_open_request"),&SceneTreeDock::_script_open_request);
 	ObjectTypeDB::bind_method(_MD("_unhandled_key_input"),&SceneTreeDock::_unhandled_key_input);
+	ObjectTypeDB::bind_method(_MD("_input"),&SceneTreeDock::_input);
+	ObjectTypeDB::bind_method(_MD("_nodes_drag_begin"),&SceneTreeDock::_nodes_drag_begin);
 	ObjectTypeDB::bind_method(_MD("_delete_confirm"),&SceneTreeDock::_delete_confirm);
 	ObjectTypeDB::bind_method(_MD("_node_prerenamed"),&SceneTreeDock::_node_prerenamed);
 	ObjectTypeDB::bind_method(_MD("_import_subscene"),&SceneTreeDock::_import_subscene);
@@ -1889,6 +1913,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	scene_tree->connect("open_script",this,"_script_open_request");
 	scene_tree->connect("nodes_rearranged",this,"_nodes_dragged");
 	scene_tree->connect("files_dropped",this,"_files_dropped");
+	scene_tree->connect("nodes_dragged",this,"_nodes_drag_begin");
 
 	scene_tree->set_undo_redo(&editor_data->get_undo_redo());
 	scene_tree->set_editor_selection(editor_selection);
@@ -1941,7 +1966,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	add_child(menu);
 	menu->connect("item_pressed",this,"_tool_selected");
 	first_enter=true;
-
+	restore_script_editor_on_drag=false;
 
 	vbc->add_constant_override("separation",4);
+	set_process_input(true);
 }

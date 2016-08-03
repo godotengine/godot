@@ -47,6 +47,14 @@ class VisualScriptEditor : public ScriptEditorBase {
 	Tree *members;
 	Tree *nodes;
 
+	Label *hint_text;
+	Timer *hint_text_timer;
+
+	Label *select_func_text;
+
+	void _show_hint(const String& p_hint);
+	void _hide_timer();
+
 	CreateDialog *select_base_type;
 
 	struct VirtualInMenu {

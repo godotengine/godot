@@ -395,6 +395,10 @@ public:
 
 	void get_method_list(List<MethodInfo> *p_list) const;
 	bool has_method(const StringName& p_method) const;
+	static Vector<Variant::Type> get_method_argument_types(Variant::Type p_type,const StringName& p_method);
+	static Vector<Variant> get_method_default_arguments(Variant::Type p_type,const StringName& p_method);
+	static Variant::Type get_method_return_type(Variant::Type p_type,const StringName& p_method,bool* r_has_return=NULL);
+	static Vector<StringName> get_method_argument_names(Variant::Type p_type,const StringName& p_method);
 
 	void set_named(const StringName& p_index, const Variant& p_value, bool *r_valid=NULL);
 	Variant get_named(const StringName& p_index, bool *r_valid=NULL) const;

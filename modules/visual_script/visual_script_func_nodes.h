@@ -12,11 +12,13 @@ public:
 		CALL_MODE_SELF,
 		CALL_MODE_NODE_PATH,
 		CALL_MODE_INSTANCE,
+		CALL_MODE_BASIC_TYPE,
 	};
 private:
 
 	CallMode call_mode;
 	StringName base_type;
+	Variant::Type basic_type;
 	NodePath base_path;
 	StringName function;
 	int use_default_args;
@@ -49,6 +51,9 @@ public:
 	virtual String get_caption() const;
 	virtual String get_text() const;
 
+	void set_basic_type(Variant::Type p_type);
+	Variant::Type get_basic_type() const;
+
 	void set_base_type(const StringName& p_type);
 	StringName get_base_type() const;
 
@@ -80,10 +85,14 @@ public:
 		CALL_MODE_SELF,
 		CALL_MODE_NODE_PATH,
 		CALL_MODE_INSTANCE,
+		CALL_MODE_BASIC_TYPE,
+
+
 	};
 private:
 
 	CallMode call_mode;
+	Variant::Type basic_type;
 	StringName base_type;
 	NodePath base_path;
 	StringName property;
@@ -121,6 +130,9 @@ public:
 	void set_base_type(const StringName& p_type);
 	StringName get_base_type() const;
 
+	void set_basic_type(Variant::Type p_type);
+	Variant::Type get_basic_type() const;
+
 	void set_property(const StringName& p_type);
 	StringName get_property() const;
 
@@ -152,10 +164,13 @@ public:
 		CALL_MODE_SELF,
 		CALL_MODE_NODE_PATH,
 		CALL_MODE_INSTANCE,
+		CALL_MODE_BASIC_TYPE
+
 	};
 private:
 
 	CallMode call_mode;
+	Variant::Type basic_type;
 	StringName base_type;
 	NodePath base_path;
 	StringName property;
@@ -191,6 +206,9 @@ public:
 
 	void set_base_type(const StringName& p_type);
 	StringName get_base_type() const;
+
+	void set_basic_type(Variant::Type p_type);
+	Variant::Type get_basic_type() const;
 
 	void set_property(const StringName& p_type);
 	StringName get_property() const;

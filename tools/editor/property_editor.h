@@ -48,7 +48,7 @@
 */
 
 class PropertyValueEvaluator;
-
+class CreateDialog;
 class CustomPropertyEditor : public Popup {
 
 	OBJ_TYPE( CustomPropertyEditor, Popup );
@@ -102,6 +102,7 @@ class CustomPropertyEditor : public Popup {
 
 
 	Control *easing_draw;
+	CreateDialog *create_dialog;
 
 	Object* owner;
 
@@ -118,6 +119,7 @@ class CustomPropertyEditor : public Popup {
 	void _focus_exit();
 	void _action_pressed(int p_which);
 	void _type_create_selected(int p_idx);
+	void _create_dialog_callback();
 
 
 	void _color_changed(const Color& p_color);

@@ -315,9 +315,9 @@ public:
 
 VARIANT_ENUM_CAST( VisualScriptMathConstant::MathConstant )
 
-class VisualScriptSingleton : public VisualScriptNode {
+class VisualScriptEngineSingleton : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptSingleton,VisualScriptNode)
+	OBJ_TYPE(VisualScriptEngineSingleton,VisualScriptNode)
 
 	String singleton;
 
@@ -346,7 +346,7 @@ public:
 
 	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
 
-	VisualScriptSingleton();
+	VisualScriptEngineSingleton();
 };
 
 
@@ -387,6 +387,77 @@ public:
 	VisualScriptSceneNode();
 };
 
+
+
+
+class VisualScriptSceneTree : public VisualScriptNode {
+
+	OBJ_TYPE(VisualScriptSceneTree,VisualScriptNode)
+
+
+protected:
+	virtual void _validate_property(PropertyInfo& property) const;
+	static void _bind_methods();
+public:
+
+	virtual int get_output_sequence_port_count() const;
+	virtual bool has_input_sequence_port() const;
+
+
+	virtual String get_output_sequence_port_text(int p_port) const;
+
+
+	virtual int get_input_value_port_count() const;
+	virtual int get_output_value_port_count() const;
+
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const;
+	virtual String get_text() const;
+
+	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+
+	VisualScriptSceneTree();
+};
+
+
+
+class VisualScriptResourcePath : public VisualScriptNode {
+
+	OBJ_TYPE(VisualScriptResourcePath,VisualScriptNode)
+
+	String path;
+protected:
+
+	static void _bind_methods();
+public:
+
+	virtual int get_output_sequence_port_count() const;
+	virtual bool has_input_sequence_port() const;
+
+
+	virtual String get_output_sequence_port_text(int p_port) const;
+
+
+	virtual int get_input_value_port_count() const;
+	virtual int get_output_value_port_count() const;
+
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const;
+	virtual String get_text() const;
+
+	void set_resource_path(const String &p_path);
+	String get_resource_path();
+
+	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+
+	VisualScriptResourcePath();
+};
 
 
 void register_visual_script_nodes();

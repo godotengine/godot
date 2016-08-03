@@ -586,6 +586,7 @@ public:
 		EDITOR_SCRIPT
 	};
 
+	void set_visible_editor(EditorTable p_table) { _editor_select(p_table); }
 	static EditorNode* get_singleton() { return singleton; }
 
 

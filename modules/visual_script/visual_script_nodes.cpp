@@ -863,7 +863,7 @@ PropertyInfo VisualScriptGlobalConstant::get_input_value_port_info(int p_idx) co
 
 PropertyInfo VisualScriptGlobalConstant::get_output_value_port_info(int p_idx) const{
 
-	return PropertyInfo(Variant::INT,"value");
+	return PropertyInfo(Variant::REAL,"value");
 }
 
 
@@ -1021,52 +1021,52 @@ VisualScriptMathConstant::VisualScriptMathConstant() {
 ////////////////GLOBALSINGLETON///////////
 //////////////////////////////////////////
 
-int VisualScriptSingleton::get_output_sequence_port_count() const {
+int VisualScriptEngineSingleton::get_output_sequence_port_count() const {
 
 	return 0;
 }
 
-bool VisualScriptSingleton::has_input_sequence_port() const{
+bool VisualScriptEngineSingleton::has_input_sequence_port() const{
 
 	return false;
 }
 
-int VisualScriptSingleton::get_input_value_port_count() const{
+int VisualScriptEngineSingleton::get_input_value_port_count() const{
 
 	return 0;
 }
-int VisualScriptSingleton::get_output_value_port_count() const{
+int VisualScriptEngineSingleton::get_output_value_port_count() const{
 
 	return 1;
 }
 
-String VisualScriptSingleton::get_output_sequence_port_text(int p_port) const {
+String VisualScriptEngineSingleton::get_output_sequence_port_text(int p_port) const {
 
 	return String();
 }
 
-PropertyInfo VisualScriptSingleton::get_input_value_port_info(int p_idx) const{
+PropertyInfo VisualScriptEngineSingleton::get_input_value_port_info(int p_idx) const{
 
 	return PropertyInfo();
 }
 
-PropertyInfo VisualScriptSingleton::get_output_value_port_info(int p_idx) const{
+PropertyInfo VisualScriptEngineSingleton::get_output_value_port_info(int p_idx) const{
 
 	return PropertyInfo(Variant::OBJECT,"instance");
 }
 
 
-String VisualScriptSingleton::get_caption() const {
+String VisualScriptEngineSingleton::get_caption() const {
 
-	return "Singleton";
+	return "EngineSingleton";
 }
 
-String VisualScriptSingleton::get_text() const {
+String VisualScriptEngineSingleton::get_text() const {
 
 	return singleton;
 }
 
-void VisualScriptSingleton::set_singleton(const String& p_string) {
+void VisualScriptEngineSingleton::set_singleton(const String& p_string) {
 
 	singleton=p_string;
 
@@ -1074,21 +1074,21 @@ void VisualScriptSingleton::set_singleton(const String& p_string) {
 	emit_signal("ports_changed");
 }
 
-String VisualScriptSingleton::get_singleton() {
+String VisualScriptEngineSingleton::get_singleton() {
 	return singleton;
 }
 
 
 
-VisualScriptNodeInstance* VisualScriptSingleton::instance(VScriptInstance* p_instance) {
+VisualScriptNodeInstance* VisualScriptEngineSingleton::instance(VScriptInstance* p_instance) {
 
 	return NULL;
 }
 
-void VisualScriptSingleton::_bind_methods() {
+void VisualScriptEngineSingleton::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_singleton","name"),&VisualScriptSingleton::set_singleton);
-	ObjectTypeDB::bind_method(_MD("get_singleton"),&VisualScriptSingleton::get_singleton);
+	ObjectTypeDB::bind_method(_MD("set_singleton","name"),&VisualScriptEngineSingleton::set_singleton);
+	ObjectTypeDB::bind_method(_MD("get_singleton"),&VisualScriptEngineSingleton::get_singleton);
 
 	String cc;
 
@@ -1108,7 +1108,7 @@ void VisualScriptSingleton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"constant",PROPERTY_HINT_ENUM,cc),_SCS("set_singleton"),_SCS("get_singleton"));
 }
 
-VisualScriptSingleton::VisualScriptSingleton() {
+VisualScriptEngineSingleton::VisualScriptEngineSingleton() {
 
 	singleton=String();
 }
@@ -1252,14 +1252,168 @@ VisualScriptSceneNode::VisualScriptSceneNode() {
 }
 
 
+//////////////////////////////////////////
+////////////////SceneTree///////////
+//////////////////////////////////////////
+
+int VisualScriptSceneTree::get_output_sequence_port_count() const {
+
+	return 0;
+}
+
+bool VisualScriptSceneTree::has_input_sequence_port() const{
+
+	return false;
+}
+
+int VisualScriptSceneTree::get_input_value_port_count() const{
+
+	return 0;
+}
+int VisualScriptSceneTree::get_output_value_port_count() const{
+
+	return 1;
+}
+
+String VisualScriptSceneTree::get_output_sequence_port_text(int p_port) const {
+
+	return String();
+}
+
+PropertyInfo VisualScriptSceneTree::get_input_value_port_info(int p_idx) const{
+
+	return PropertyInfo();
+}
+
+PropertyInfo VisualScriptSceneTree::get_output_value_port_info(int p_idx) const{
+
+	return PropertyInfo(Variant::OBJECT,"instance");
+}
+
+
+String VisualScriptSceneTree::get_caption() const {
+
+	return "SceneTree";
+}
+
+String VisualScriptSceneTree::get_text() const {
+
+	return "";
+}
+
+
+
+VisualScriptNodeInstance* VisualScriptSceneTree::instance(VScriptInstance* p_instance) {
+
+	return NULL;
+}
+
+void VisualScriptSceneTree::_validate_property(PropertyInfo& property) const {
+
+}
+
+void VisualScriptSceneTree::_bind_methods() {
+
+}
+
+VisualScriptSceneTree::VisualScriptSceneTree() {
+
+}
+
+
+//////////////////////////////////////////
+////////////////RESPATH///////////
+//////////////////////////////////////////
+
+int VisualScriptResourcePath::get_output_sequence_port_count() const {
+
+	return 0;
+}
+
+bool VisualScriptResourcePath::has_input_sequence_port() const{
+
+	return false;
+}
+
+int VisualScriptResourcePath::get_input_value_port_count() const{
+
+	return 0;
+}
+int VisualScriptResourcePath::get_output_value_port_count() const{
+
+	return 1;
+}
+
+String VisualScriptResourcePath::get_output_sequence_port_text(int p_port) const {
+
+	return String();
+}
+
+PropertyInfo VisualScriptResourcePath::get_input_value_port_info(int p_idx) const{
+
+	return PropertyInfo();
+}
+
+PropertyInfo VisualScriptResourcePath::get_output_value_port_info(int p_idx) const{
+
+	return PropertyInfo(Variant::STRING,"path");
+}
+
+
+String VisualScriptResourcePath::get_caption() const {
+
+	return "ResourcePath";
+}
+
+String VisualScriptResourcePath::get_text() const {
+
+	return path;
+}
+
+void VisualScriptResourcePath::set_resource_path(const String& p_path) {
+
+	path=p_path;
+	_change_notify();
+	emit_signal("ports_changed");
+}
+
+String VisualScriptResourcePath::get_resource_path() {
+	return path;
+}
+
+
+
+VisualScriptNodeInstance* VisualScriptResourcePath::instance(VScriptInstance* p_instance) {
+
+	return NULL;
+}
+
+
+
+void VisualScriptResourcePath::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_resource_path","path"),&VisualScriptResourcePath::set_resource_path);
+	ObjectTypeDB::bind_method(_MD("get_resource_path"),&VisualScriptResourcePath::get_resource_path);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"path",PROPERTY_HINT_FILE),_SCS("set_resource_path"),_SCS("get_resource_path"));
+}
+
+VisualScriptResourcePath::VisualScriptResourcePath() {
+
+	path="";
+}
+
+
 void register_visual_script_nodes() {
 
 	VisualScriptLanguage::singleton->add_register_func("data/variable",create_node_generic<VisualScriptVariable>);
 	VisualScriptLanguage::singleton->add_register_func("data/constant",create_node_generic<VisualScriptConstant>);
 	VisualScriptLanguage::singleton->add_register_func("data/global_constant",create_node_generic<VisualScriptGlobalConstant>);
 	VisualScriptLanguage::singleton->add_register_func("data/math_constant",create_node_generic<VisualScriptMathConstant>);
-	VisualScriptLanguage::singleton->add_register_func("data/singleton",create_node_generic<VisualScriptSingleton>);
+	VisualScriptLanguage::singleton->add_register_func("data/engine_singleton",create_node_generic<VisualScriptEngineSingleton>);
 	VisualScriptLanguage::singleton->add_register_func("data/scene_node",create_node_generic<VisualScriptSceneNode>);
+	VisualScriptLanguage::singleton->add_register_func("data/scene_tree",create_node_generic<VisualScriptSceneTree>);
+	VisualScriptLanguage::singleton->add_register_func("data/resource_path",create_node_generic<VisualScriptResourcePath>);
 
 
 	VisualScriptLanguage::singleton->add_register_func("index/get",create_node_generic<VisualScriptIndexGet>);
