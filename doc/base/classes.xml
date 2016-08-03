@@ -30627,6 +30627,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
+				Returns collision point. This point is in [b]global[/b] coordinate system.
 			</description>
 		</method>
 		<method name="get_layer_mask" qualifiers="const">
@@ -30669,6 +30670,7 @@
 			<argument index="0" name="local_point" type="Vector3">
 			</argument>
 			<description>
+				Sets to which point ray should be casted. This point is in [b]local[/b] coordinate system.
 			</description>
 		</method>
 		<method name="set_enabled">
