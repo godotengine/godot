@@ -503,8 +503,8 @@ void TextureRegionEditor::_scroll_changed(float)
 
 void TextureRegionEditor::_set_snap_mode(int p_mode)
 {
-	snap_mode_button->get_popup()->set_item_checked(snap_mode,false);
 	snap_mode = p_mode;
+	snap_mode_button->get_popup()->set_item_checked(snap_mode,false);
 	snap_mode_button->set_text(snap_mode_button->get_popup()->get_item_text(p_mode));
 	snap_mode_button->get_popup()->set_item_checked(snap_mode,true);
 
