@@ -3,7 +3,7 @@ buildscript {
 		jcenter()
 	}
 	dependencies {
-		classpath 'com.android.tools.build:gradle:2.1.0'
+		classpath 'com.android.tools.build:gradle:2.1.2'
 	}
 }
 
@@ -41,7 +41,7 @@ android {
 	}
 
 	defaultConfig {
-		minSdkVersion 14
+		minSdkVersion 10
 		targetSdkVersion 23
 		$$GRADLE_DEFAULT_CONFIG$$
 	}
