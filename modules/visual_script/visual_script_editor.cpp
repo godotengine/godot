@@ -1045,6 +1045,12 @@ void VisualScriptEditor::_available_node_doubleclicked() {
 		return;
 
 	Vector2 ofs = graph->get_scroll_ofs() + graph->get_size() * 0.5;
+
+	if (graph->is_using_snap()) {
+		int snap = graph->get_snap();
+		ofs = ofs.snapped(Vector2(snap,snap));
+	}
+
 	ofs/=EDSCALE;
 
 	while(true) {
@@ -1054,7 +1060,7 @@ void VisualScriptEditor::_available_node_doubleclicked() {
 		for (List<int>::Element *E=existing.front();E;E=E->next()) {
 			Point2 pos = script->get_node_pos(edited_func,E->get());
 			if (pos.distance_to(ofs)<15) {
-				ofs+=Vector2(25,25);
+				ofs+=Vector2(graph->get_snap(),graph->get_snap());
 				exists=true;
 				break;
 			}
@@ -1415,6 +1421,12 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 
 			Vector2 ofs = graph->get_scroll_ofs() + p_point;
 
+			if (graph->is_using_snap()) {
+				int snap = graph->get_snap();
+				ofs = ofs.snapped(Vector2(snap,snap));
+			}
+
+
 			ofs/=EDSCALE;
 
 			Ref<VisualScriptNode> vnode = VisualScriptLanguage::singleton->create_node_from_name(d["node_type"]);
@@ -1437,6 +1449,10 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 		if (d.has("type") && String(d["type"])=="visual_script_variable_drag") {
 
 			Vector2 ofs = graph->get_scroll_ofs() + p_point;
+			if (graph->is_using_snap()) {
+				int snap = graph->get_snap();
+				ofs = ofs.snapped(Vector2(snap,snap));
+			}
 
 			ofs/=EDSCALE;
 
@@ -1463,6 +1479,10 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 		if (d.has("type") && String(d["type"])=="visual_script_function_drag") {
 
 			Vector2 ofs = graph->get_scroll_ofs() + p_point;
+			if (graph->is_using_snap()) {
+				int snap = graph->get_snap();
+				ofs = ofs.snapped(Vector2(snap,snap));
+			}
 
 			ofs/=EDSCALE;
 
@@ -1491,6 +1511,10 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 		if (d.has("type") && String(d["type"])=="visual_script_signal_drag") {
 
 			Vector2 ofs = graph->get_scroll_ofs() + p_point;
+			if (graph->is_using_snap()) {
+				int snap = graph->get_snap();
+				ofs = ofs.snapped(Vector2(snap,snap));
+			}
 
 			ofs/=EDSCALE;
 
@@ -1527,6 +1551,10 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 
 			Vector2 ofs = graph->get_scroll_ofs() + p_point;
 
+			if (graph->is_using_snap()) {
+				int snap = graph->get_snap();
+				ofs = ofs.snapped(Vector2(snap,snap));
+			}
 			ofs/=EDSCALE;
 
 			undo_redo->create_action(TTR("Add Node(s) From Tree"));
@@ -1573,6 +1601,12 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 
 			Node *node = obj->cast_to<Node>();
 			Vector2 ofs = graph->get_scroll_ofs() + p_point;
+
+			if (graph->is_using_snap()) {
+				int snap = graph->get_snap();
+				ofs = ofs.snapped(Vector2(snap,snap));
+			}
+
 			ofs/=EDSCALE;
 #ifdef OSX_ENABLED
 			bool use_set = Input::get_singleton()->is_key_pressed(KEY_META);
