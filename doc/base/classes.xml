@@ -22374,7 +22374,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
-				Dumps the memory allocation ringlist to a file(only works in debug).
+				Dumps the memory allocation ringlist to a file (only works in debug).
 				Entry format per line: "Address - Size - Description"
 			</description>
 		</method>
@@ -22382,7 +22382,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
-				Dumps all used resources to file(only works in debug).
+				Dumps all used resources to file (only works in debug).
 				Entry format per line: "Resource Type : Resource Location"
 				At the end of the file is a statistic of all used Resource Types.
 			</description>
@@ -22604,7 +22604,7 @@
 			<argument index="0" name="code" type="int">
 			</argument>
 			<description>
-				Returns the given scancode as a string(e.g. Return values: "Escape", "Shift+Escape").
+				Returns the given scancode as a string (e.g. Return values: "Escape", "Shift+Escape").
 			</description>
 		</method>
 		<method name="get_screen_count" qualifiers="const">
