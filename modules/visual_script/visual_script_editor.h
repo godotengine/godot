@@ -31,6 +31,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	GraphEdit *graph;
 
+	LineEdit *node_filter;
+	TextureFrame *node_filter_icon;
+
 	VisualScriptEditorSignalEdit *signal_editor;
 
 	AcceptDialog *edit_signal_dialog;
@@ -41,6 +44,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	AcceptDialog *edit_variable_dialog;
 	PropertyEditor *edit_variable_edit;
+
+	CustomPropertyEditor *default_value_edit;
 
 	UndoRedo *undo_redo;
 
@@ -85,6 +90,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _node_selected(Node* p_node);
 
+	void _node_filter_changed(const String& p_text);
 	void _change_base_type_callback();
 	void _change_base_type();
 	void _member_selected();
@@ -118,8 +124,14 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
 
 
+	int editing_id;
+	int editing_input;
+
+	void _default_value_changed();
+	void _default_value_edited(Node * p_button,int p_id,int p_input_port);
 protected:
 
+	void _notification(int p_what);
 	static void _bind_methods();
 public:
 

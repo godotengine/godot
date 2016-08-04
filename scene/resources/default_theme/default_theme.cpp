@@ -921,7 +921,10 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	t->set_icon("minus","GraphEdit", make_icon(icon_zoom_less_png) );
 	t->set_icon("reset","GraphEdit", make_icon(icon_zoom_reset_png) );
 	t->set_icon("more","GraphEdit", make_icon(icon_zoom_more_png) );
+	t->set_icon("snap","GraphEdit", make_icon(icon_snap_png) );
 	t->set_stylebox("bg","GraphEdit", make_stylebox( tree_bg_png,4,4,4,5) );
+	t->set_color("grid_minor","GraphEdit", Color(1,1,1,0.05) );
+	t->set_color("grid_major","GraphEdit", Color(1,1,1,0.2) );
 
 
 

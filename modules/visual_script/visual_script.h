@@ -14,7 +14,15 @@ class VisualScriptNode : public Resource {
 friend class VisualScript;
 
 	Set<VisualScript*> scripts_used;
+
+	Array default_input_values;
+
+	void _set_default_input_values(Array p_values);
+	Array _get_default_input_values() const;
 protected:
+
+	void _notification(int p_what);
+	void ports_changed_notify();
 	static void _bind_methods();
 public:
 
@@ -31,6 +39,9 @@ public:
 
 	virtual PropertyInfo get_input_value_port_info(int p_idx) const=0;
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const=0;
+
+	void set_default_input_value(int p_port,const Variant& p_value);
+	Variant get_default_input_value(int p_port) const;
 
 	virtual String get_caption() const=0;
 	virtual String get_text() const=0;
@@ -175,6 +186,7 @@ public:
 	void data_disconnect(const StringName& p_func,int p_from_node,int p_from_port,int p_to_node,int p_to_port);
 	bool has_data_connection(const StringName& p_func,int p_from_node,int p_from_port,int p_to_node,int p_to_port) const;
 	void get_data_connection_list(const StringName& p_func,List<DataConnection> *r_connection) const;
+	bool is_input_value_port_connected(const StringName& p_name,int p_node,int p_port) const;
 
 	void add_variable(const StringName& p_name,const Variant& p_default_value=Variant());
 	bool has_variable(const StringName& p_name) const;

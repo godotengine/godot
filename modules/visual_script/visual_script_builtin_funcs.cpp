@@ -386,8 +386,9 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
 		case MATH_FLOOR:
-		case MATH_CEIL:
+		case MATH_CEIL: {
 			t=Variant::REAL;
+		} break;
 		case MATH_ROUND: {
 			t=Variant::INT;
 		} break;
@@ -529,7 +530,7 @@ void VisualScriptBuiltinFunc::set_func(BuiltinFunc p_which) {
 	ERR_FAIL_INDEX(p_which,FUNC_MAX);
 	func=p_which;
 	_change_notify();
-	emit_signal("ports_changed");
+	ports_changed_notify();
 }
 
 VisualScriptBuiltinFunc::BuiltinFunc VisualScriptBuiltinFunc::get_func() {

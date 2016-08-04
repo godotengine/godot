@@ -1,9 +1,87 @@
 #include "visual_script.h"
 #include "visual_script_nodes.h"
 
+
+void VisualScriptNode::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_POSTINITIALIZE) {
+
+		int dvc = get_input_value_port_count();
+		for(int i=0;i<dvc;i++) {
+			Variant::Type expected = get_input_value_port_info(i).type;
+			Variant::CallError ce;
+			default_input_values.push_back(Variant::construct(expected,NULL,0,ce,false));
+		}
+	}
+}
+
+void VisualScriptNode::ports_changed_notify(){
+
+	default_input_values.resize( MAX(default_input_values.size(),get_input_value_port_count()) ); //let it grow as big as possible, we don't want to lose values on resize
+	emit_signal("ports_changed");
+}
+
+void  VisualScriptNode::set_default_input_value(int p_port,const Variant& p_value) {
+
+	ERR_FAIL_INDEX(p_port,default_input_values.size());
+
+	default_input_values[p_port]=p_value;
+}
+
+Variant VisualScriptNode::get_default_input_value(int p_port) const {
+
+	ERR_FAIL_INDEX_V(p_port,default_input_values.size(),Variant());
+	return default_input_values[p_port];
+}
+
+void VisualScriptNode::_set_default_input_values(Array p_values) {
+
+
+	default_input_values=p_values;
+}
+
+Array VisualScriptNode::_get_default_input_values() const {
+
+	//validate on save, since on load there is little info about this
+
+	Array saved_values;
+
+	//actually validate on save
+	for(int i=0;i<get_input_value_port_count();i++) {
+
+		Variant::Type expected = get_input_value_port_info(i).type;
+
+		if (i>=default_input_values.size()) {
+
+			Variant::CallError ce;
+			saved_values.push_back(Variant::construct(expected,NULL,0,ce,false));
+		} else {
+
+			if (expected==Variant::NIL || expected==default_input_values[i].get_type()) {
+				saved_values.push_back(default_input_values[i]);
+			} else  {
+				//not the same, reconvert
+				Variant::CallError ce;
+				Variant existing = default_input_values[i];
+				const Variant *existingp=&existing;
+				saved_values.push_back( Variant::construct(expected,&existingp,1,ce,false) );
+			}
+		}
+	}
+	return saved_values;
+}
+
+
+
 void VisualScriptNode::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_visual_script:VisualScript"),&VisualScriptNode::get_visual_script);
+	ObjectTypeDB::bind_method(_MD("set_default_input_value","port_idx","value:Variant"),&VisualScriptNode::set_default_input_value);
+	ObjectTypeDB::bind_method(_MD("get_default_input_value:Variant","port_idx"),&VisualScriptNode::get_default_input_value);
+	ObjectTypeDB::bind_method(_MD("_set_default_input_values","values"),&VisualScriptNode::_set_default_input_values);
+	ObjectTypeDB::bind_method(_MD("_get_default_input_values"),&VisualScriptNode::_get_default_input_values);
+
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"_default_input_values",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_default_input_values"),_SCS("_get_default_input_values"));
 	ADD_SIGNAL(MethodInfo("ports_changed"));
 }
 
@@ -379,6 +457,19 @@ bool VisualScript::has_data_connection(const StringName& p_func,int p_from_node,
 
 	return func.data_connections.has(dc);
 
+}
+
+bool VisualScript::is_input_value_port_connected(const StringName& p_func,int p_node,int p_port) const {
+
+	ERR_FAIL_COND_V(!functions.has(p_func),false);
+	const Function &func = functions[p_func];
+
+	for (const Set<DataConnection>::Element *E=func.data_connections.front();E;E=E->next()) {
+		if (E->get().to_node==p_node && E->get().to_port==p_port)
+			return true;
+	}
+
+	return false;
 }
 
 void VisualScript::get_data_connection_list(const StringName& p_func,List<DataConnection> *r_connection) const {

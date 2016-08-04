@@ -26,7 +26,7 @@ bool  VisualScriptFunction::_set(const StringName& p_name, const Variant& p_valu
 			arguments[i].name="arg"+itos(i+1);
 			arguments[i].type=Variant::NIL;
 		}
-		emit_signal("ports_changed");
+		ports_changed_notify();
 		_change_notify();
 		return true;
 	}
@@ -38,7 +38,7 @@ bool  VisualScriptFunction::_set(const StringName& p_name, const Variant& p_valu
 
 			Variant::Type new_type = Variant::Type(int(p_value));
 			arguments[idx].type=new_type;
-			emit_signal("ports_changed");
+			ports_changed_notify();
 
 			return true;
 		}
@@ -46,7 +46,7 @@ bool  VisualScriptFunction::_set(const StringName& p_name, const Variant& p_valu
 		if (what=="name") {
 
 			arguments[idx].name=p_value;
-			emit_signal("ports_changed");
+			ports_changed_notify();
 			return true;
 		}
 
@@ -157,7 +157,7 @@ void VisualScriptFunction::add_argument(Variant::Type p_type,const String& p_nam
 	else
 		arguments.push_back(arg);
 
-	emit_signal("ports_changed");
+	ports_changed_notify();
 
 }
 void VisualScriptFunction::set_argument_type(int p_argidx,Variant::Type p_type){
@@ -165,7 +165,7 @@ void VisualScriptFunction::set_argument_type(int p_argidx,Variant::Type p_type){
 	ERR_FAIL_INDEX(p_argidx,arguments.size());
 
 	arguments[p_argidx].type=p_type;
-	emit_signal("ports_changed");
+	ports_changed_notify();
 }
 Variant::Type VisualScriptFunction::get_argument_type(int p_argidx) const {
 
@@ -178,7 +178,7 @@ void VisualScriptFunction::set_argument_name(int p_argidx,const String& p_name) 
 	ERR_FAIL_INDEX(p_argidx,arguments.size());
 
 	arguments[p_argidx].name=p_name;
-	emit_signal("ports_changed");
+	ports_changed_notify();
 
 }
 String VisualScriptFunction::get_argument_name(int p_argidx) const {
@@ -192,7 +192,7 @@ void VisualScriptFunction::remove_argument(int p_argidx) {
 	ERR_FAIL_INDEX(p_argidx,arguments.size());
 
 	arguments.remove(p_argidx);
-	emit_signal("ports_changed");
+	ports_changed_notify();
 
 }
 
@@ -400,7 +400,7 @@ void VisualScriptOperator::set_operator(Variant::Operator p_op) {
 	if (op==p_op)
 		return;
 	op=p_op;
-	emit_signal("ports_changed");
+	ports_changed_notify();
 
 }
 
@@ -516,7 +516,7 @@ void VisualScriptVariable::set_variable(StringName p_variable) {
 	if (variable==p_variable)
 		return;
 	variable=p_variable;
-	emit_signal("ports_changed");
+	ports_changed_notify();
 
 }
 
@@ -625,7 +625,7 @@ void VisualScriptConstant::set_constant_type(Variant::Type p_type) {
 		return;
 
 	type=p_type;
-	emit_signal("ports_changed");
+	ports_changed_notify();
 	Variant::CallError ce;
 	value=Variant::construct(type,NULL,0,ce);
 	_change_notify();
@@ -643,7 +643,7 @@ void VisualScriptConstant::set_constant_value(Variant p_value){
 		return;
 
 	value=p_value;
-	emit_signal("ports_changed");
+	ports_changed_notify();
 }
 Variant VisualScriptConstant::get_constant_value() const{
 
@@ -881,7 +881,7 @@ void VisualScriptGlobalConstant::set_global_constant(int p_which) {
 
 	index=p_which;
 	_change_notify();
-	emit_signal("ports_changed");
+	ports_changed_notify();
 }
 
 int VisualScriptGlobalConstant::get_global_constant() {
@@ -980,7 +980,7 @@ void VisualScriptMathConstant::set_math_constant(MathConstant p_which) {
 
 	constant=p_which;
 	_change_notify();
-	emit_signal("ports_changed");
+	ports_changed_notify();
 }
 
 VisualScriptMathConstant::MathConstant VisualScriptMathConstant::get_math_constant() {
@@ -1071,7 +1071,7 @@ void VisualScriptEngineSingleton::set_singleton(const String& p_string) {
 	singleton=p_string;
 
 	_change_notify();
-	emit_signal("ports_changed");
+	ports_changed_notify();
 }
 
 String VisualScriptEngineSingleton::get_singleton() {
@@ -1168,7 +1168,7 @@ void VisualScriptSceneNode::set_node_path(const NodePath& p_path) {
 
 	path=p_path;
 	_change_notify();
-	emit_signal("ports_changed");
+	ports_changed_notify();
 }
 
 NodePath VisualScriptSceneNode::get_node_path() {
@@ -1374,7 +1374,7 @@ void VisualScriptResourcePath::set_resource_path(const String& p_path) {
 
 	path=p_path;
 	_change_notify();
-	emit_signal("ports_changed");
+	ports_changed_notify();
 }
 
 String VisualScriptResourcePath::get_resource_path() {
@@ -1416,8 +1416,8 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("data/resource_path",create_node_generic<VisualScriptResourcePath>);
 
 
-	VisualScriptLanguage::singleton->add_register_func("index/get",create_node_generic<VisualScriptIndexGet>);
-	VisualScriptLanguage::singleton->add_register_func("index/set",create_node_generic<VisualScriptIndexSet>);
+	VisualScriptLanguage::singleton->add_register_func("index/get_index",create_node_generic<VisualScriptIndexGet>);
+	VisualScriptLanguage::singleton->add_register_func("index/set_index",create_node_generic<VisualScriptIndexSet>);
 
 
 	VisualScriptLanguage::singleton->add_register_func("operators/compare/equal",create_op_node<Variant::OP_EQUAL>);

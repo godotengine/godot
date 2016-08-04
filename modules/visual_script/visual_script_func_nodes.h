@@ -102,6 +102,7 @@ private:
 	Node *_get_base_node() const;
 	StringName _get_base_type() const;
 
+	void _update_base_type();
 
 protected:
 	virtual void _validate_property(PropertyInfo& property) const;
@@ -175,7 +176,7 @@ private:
 	NodePath base_path;
 	StringName property;
 
-
+	void _update_base_type();
 	Node *_get_base_node() const;
 	StringName _get_base_type() const;
 

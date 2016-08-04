@@ -33,6 +33,7 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/tool_button.h"
+#include "scene/gui/spin_box.h"
 #include "texture_frame.h"
 
 class GraphEdit;
@@ -69,6 +70,9 @@ private:
 	ToolButton *zoom_minus;
 	ToolButton *zoom_reset;
 	ToolButton *zoom_plus;
+
+	ToolButton *snap_button;
+	SpinBox *snap_amount;
 
 	void _zoom_minus();
 	void _zoom_reset();
@@ -149,6 +153,8 @@ private:
 
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2& p_point);
+	void _snap_toggled();
+	void _snap_value_changed(double);
 protected:
 
 	static void _bind_methods();
@@ -186,6 +192,11 @@ public:
 
 	void set_selected(Node* p_child);
 
+	void set_use_snap(bool p_enable);
+	bool is_using_snap() const;
+
+	int get_snap() const;
+	void set_snap(int p_snap);
 
 	GraphEdit();
 };

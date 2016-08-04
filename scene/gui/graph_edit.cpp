@@ -109,6 +109,10 @@ void GraphEdit::_scroll_moved(double) {
 
 	_update_scroll_offset();
 	top_layer->update();
+	if (is_using_snap()) {
+		//must redraw grid
+		update();
+	}
 }
 
 void GraphEdit::_update_scroll_offset() {
@@ -229,12 +233,59 @@ void GraphEdit::_notification(int p_what) {
 		h_scroll->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,hmin.height);
 		h_scroll->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,0);
 
+
+		zoom_minus->set_icon(get_icon("minus"));
+		zoom_reset->set_icon(get_icon("reset"));
+		zoom_plus->set_icon(get_icon("more"));
+		snap_button->set_icon(get_icon("snap"));
 //		zoom_icon->set_texture( get_icon("Zoom", "EditorIcons"));
 
 	}
 	if (p_what==NOTIFICATION_DRAW) {
 		draw_style_box( get_stylebox("bg"),Rect2(Point2(),get_size()) );
 		VS::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
+
+		if (is_using_snap()) {
+			//draw grid
+
+			int snap = get_snap();
+
+			Vector2 offset = get_scroll_ofs()/zoom;
+			Size2 size = get_size()/zoom;
+
+			Point2i from = (offset/float(snap)).floor();
+			Point2i len = (size/float(snap)).floor()+Vector2(1,1);
+
+			Color grid_minor = get_color("grid_minor");
+			Color grid_major = get_color("grid_major");
+
+			for(int i=from.x;i<from.x+len.x;i++) {
+
+				Color color;
+
+				if (ABS(i)%10==0)
+					color=grid_major;
+				else
+					color=grid_minor;
+
+				float base_ofs = i*snap*zoom - offset.x*zoom;
+				draw_line(Vector2(base_ofs,0),Vector2(base_ofs,get_size().height),color);
+			}
+
+			for(int i=from.y;i<from.y+len.y;i++) {
+
+				Color color;
+
+				if (ABS(i)%10==0)
+					color=grid_major;
+				else
+					color=grid_minor;
+
+				float base_ofs = i*snap*zoom - offset.y*zoom;
+				draw_line(Vector2(0,base_ofs),Vector2(get_size().width,base_ofs),color);
+			}
+
+		}
 
 	}
 
@@ -597,8 +648,16 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 		drag_accum = get_local_mouse_pos() - drag_origin;
 		for(int i=get_child_count()-1;i>=0;i--) {
 			GraphNode *gn=get_child(i)->cast_to<GraphNode>();
-			if (gn && gn->is_selected())
-				gn->set_offset((gn->get_drag_from()*zoom+drag_accum)/zoom);
+			if (gn && gn->is_selected()) {
+
+				Vector2 pos = (gn->get_drag_from()*zoom+drag_accum)/zoom;
+				if (is_using_snap()) {
+					int snap = get_snap();
+					pos = pos.snapped(Vector2(snap,snap));
+				}
+
+				gn->set_offset(pos);
+			}
 		}
 	}
 
@@ -937,6 +996,38 @@ bool GraphEdit::is_valid_connection_type(int p_type,int p_with_type) const {
 
 }
 
+void GraphEdit::set_use_snap(bool p_enable) {
+
+	snap_button->set_pressed(p_enable);
+	update();
+}
+
+bool GraphEdit::is_using_snap() const{
+
+	return snap_button->is_pressed();
+
+}
+
+int GraphEdit::get_snap() const{
+
+	return snap_amount->get_val();
+}
+
+void GraphEdit::set_snap(int p_snap) {
+
+	ERR_FAIL_COND(p_snap<5);
+	snap_amount->set_val(p_snap);
+	update();
+}
+void GraphEdit::_snap_toggled() {
+	update();
+}
+
+void GraphEdit::_snap_value_changed(double) {
+
+	update();
+}
+
 
 void GraphEdit::_bind_methods() {
 
@@ -948,6 +1039,12 @@ void GraphEdit::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_zoom","p_zoom"),&GraphEdit::set_zoom);
 	ObjectTypeDB::bind_method(_MD("get_zoom"),&GraphEdit::get_zoom);
+
+	ObjectTypeDB::bind_method(_MD("set_snap","pixels"),&GraphEdit::set_snap);
+	ObjectTypeDB::bind_method(_MD("get_snap"),&GraphEdit::get_snap);
+
+	ObjectTypeDB::bind_method(_MD("set_use_snap","enable"),&GraphEdit::set_use_snap);
+	ObjectTypeDB::bind_method(_MD("is_using_snap"),&GraphEdit::is_using_snap);
 
 	ObjectTypeDB::bind_method(_MD("set_right_disconnects","enable"),&GraphEdit::set_right_disconnects);
 	ObjectTypeDB::bind_method(_MD("is_right_disconnects_enabled"),&GraphEdit::is_right_disconnects_enabled);
@@ -961,6 +1058,8 @@ void GraphEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_zoom_minus"),&GraphEdit::_zoom_minus);
 	ObjectTypeDB::bind_method(_MD("_zoom_reset"),&GraphEdit::_zoom_reset);
 	ObjectTypeDB::bind_method(_MD("_zoom_plus"),&GraphEdit::_zoom_plus);
+	ObjectTypeDB::bind_method(_MD("_snap_toggled"),&GraphEdit::_snap_toggled);
+	ObjectTypeDB::bind_method(_MD("_snap_value_changed"),&GraphEdit::_snap_value_changed);
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphEdit::_input_event);
 
@@ -1017,17 +1116,33 @@ GraphEdit::GraphEdit() {
 	zoom_minus = memnew( ToolButton );
 	zoom_hb->add_child(zoom_minus);
 	zoom_minus->connect("pressed",this,"_zoom_minus");
-	zoom_minus->set_icon(get_icon("minus"));
+	zoom_minus->set_focus_mode(FOCUS_NONE);
 
 	zoom_reset = memnew( ToolButton );
 	zoom_hb->add_child(zoom_reset);
 	zoom_reset->connect("pressed",this,"_zoom_reset");
-	zoom_reset->set_icon(get_icon("reset"));
+	zoom_reset->set_focus_mode(FOCUS_NONE);
 
 	zoom_plus = memnew( ToolButton );
 	zoom_hb->add_child(zoom_plus);
 	zoom_plus->connect("pressed",this,"_zoom_plus");
-	zoom_plus->set_icon(get_icon("more"));
+	zoom_plus->set_focus_mode(FOCUS_NONE);
+
+	snap_button = memnew( ToolButton );
+	snap_button->set_toggle_mode(true);
+	snap_button->connect("pressed",this,"_snap_toggled");
+	snap_button->set_pressed(true);
+	snap_button->set_focus_mode(FOCUS_NONE);
+	zoom_hb->add_child(snap_button);
+
+	snap_amount = memnew( SpinBox );
+	snap_amount->set_min(5);
+	snap_amount->set_max(100);
+	snap_amount->set_step(1);
+	snap_amount->set_val(20);
+	snap_amount->connect("value_changed",this,"_snap_value_changed");
+	zoom_hb->add_child(snap_amount);
+
 
 
 }
