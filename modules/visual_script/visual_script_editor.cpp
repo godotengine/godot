@@ -499,6 +499,22 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				}
 
 				hbc->add_child(memnew(Label(left_name)));
+
+				if (left_type!=Variant::NIL && !script->is_input_value_port_connected(edited_func,E->get(),i)) {
+					Button *button = memnew( Button );
+					Variant value = node->get_default_input_value(i);
+					if (value.get_type()!=left_type) {
+						//different type? for now convert
+						//not the same, reconvert
+						Variant::CallError ce;
+						const Variant *existingp=&value;
+						value = Variant::construct(left_type,&existingp,1,ce,false);
+					}
+
+					button->set_text(value);
+					button->connect("pressed",this,"_default_value_edited",varray(button,E->get(),i));
+					hbc->add_child(button);
+				}
 			} else {
 				Control *c = memnew(Control);
 				c->set_custom_minimum_size(Size2(10,0)*EDSCALE);
@@ -1077,12 +1093,19 @@ void VisualScriptEditor::_update_available_nodes() {
 
 	Map<String,TreeItem*> path_cache;
 
+	String filter = node_filter->get_text();
+
 	List<String> fnodes;
 	VisualScriptLanguage::singleton->get_registered_node_names(&fnodes);
 
 	for (List<String>::Element *E=fnodes.front();E;E=E->next()) {
 
+
 		Vector<String> path = E->get().split("/");
+
+		if (filter!=String() && path.size() && path[path.size()-1].findn(filter)==-1)
+			continue;
+
 		String sp;
 		TreeItem* parent=root;
 
@@ -1097,7 +1120,9 @@ void VisualScriptEditor::_update_available_nodes() {
 				pathn->set_text(0,path[i].capitalize());
 				path_cache[sp]=pathn;
 				parent=pathn;
-				pathn->set_collapsed(true); //should remember state
+				if (filter==String()) {
+					pathn->set_collapsed(true); //should remember state
+				}
 			} else {
 				parent=path_cache[sp];
 			}
@@ -1952,6 +1977,11 @@ void VisualScriptEditor::_graph_connected(const String& p_from,int p_from_slot,c
 	} else {
 		undo_redo->add_do_method(script.ptr(),"data_connect",edited_func,p_from.to_int(),from_port,p_to.to_int(),to_port);
 		undo_redo->add_undo_method(script.ptr(),"data_disconnect",edited_func,p_from.to_int(),from_port,p_to.to_int(),to_port);
+		//update nodes in sgraph
+		undo_redo->add_do_method(this,"_update_graph",p_from.to_int());
+		undo_redo->add_do_method(this,"_update_graph",p_to.to_int());
+		undo_redo->add_undo_method(this,"_update_graph",p_from.to_int());
+		undo_redo->add_undo_method(this,"_update_graph",p_to.to_int());
 	}
 
 	undo_redo->add_do_method(this,"_update_graph_connections");
@@ -1993,14 +2023,61 @@ void VisualScriptEditor::_graph_disconnected(const String& p_from,int p_from_slo
 	} else {
 		undo_redo->add_do_method(script.ptr(),"data_disconnect",edited_func,p_from.to_int(),from_port,p_to.to_int(),to_port);
 		undo_redo->add_undo_method(script.ptr(),"data_connect",edited_func,p_from.to_int(),from_port,p_to.to_int(),to_port);
+		//update nodes in sgraph
+		undo_redo->add_do_method(this,"_update_graph",p_from.to_int());
+		undo_redo->add_do_method(this,"_update_graph",p_to.to_int());
+		undo_redo->add_undo_method(this,"_update_graph",p_from.to_int());
+		undo_redo->add_undo_method(this,"_update_graph",p_to.to_int());
 	}
-
 	undo_redo->add_do_method(this,"_update_graph_connections");
 	undo_redo->add_undo_method(this,"_update_graph_connections");
 
 	undo_redo->commit_action();
 }
 
+
+void VisualScriptEditor::_default_value_changed() {
+
+
+	Ref<VisualScriptNode> vsn = script->get_node(edited_func,editing_id);
+	if (vsn.is_null())
+		return;
+
+	undo_redo->create_action("Change Input Value");
+	undo_redo->add_do_method(vsn.ptr(),"set_default_input_value",editing_input,default_value_edit->get_variant());
+	undo_redo->add_undo_method(vsn.ptr(),"set_default_input_value",editing_input,vsn->get_default_input_value(editing_input));
+
+	undo_redo->add_do_method(this,"_update_graph",editing_id);
+	undo_redo->add_undo_method(this,"_update_graph",editing_id);
+	undo_redo->commit_action();
+
+}
+
+void VisualScriptEditor::_default_value_edited(Node * p_button,int p_id,int p_input_port) {
+
+	Ref<VisualScriptNode> vsn = script->get_node(edited_func,p_id);
+	if (vsn.is_null())
+		return;
+
+	PropertyInfo pinfo = vsn->get_input_value_port_info(p_input_port);
+	Variant existing = vsn->get_default_input_value(p_input_port);
+	if (pinfo.type!=Variant::NIL && existing.get_type()!=pinfo.type) {
+
+		Variant::CallError ce;
+		const Variant *existingp=&existing;
+		existing = Variant::construct(pinfo.type,&existingp,1,ce,false);
+
+	}
+
+	default_value_edit->set_pos(p_button->cast_to<Control>()->get_global_pos()+Vector2(0,p_button->cast_to<Control>()->get_size().y));
+	default_value_edit->set_size(Size2(1,1));
+	if (default_value_edit->edit(NULL,pinfo.name,pinfo.type,existing,pinfo.hint,pinfo.hint_string))
+		default_value_edit->popup();
+
+	editing_id = p_id;
+	editing_input=p_input_port;
+
+}
 
 void VisualScriptEditor::_show_hint(const String& p_hint) {
 
@@ -2014,7 +2091,17 @@ void VisualScriptEditor::_hide_timer() {
 	hint_text->hide();
 }
 
+void VisualScriptEditor::_node_filter_changed(const String& p_text) {
 
+	_update_available_nodes();
+}
+
+void  VisualScriptEditor::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_READY) {
+		node_filter_icon->set_texture(Control::get_icon("Zoom","EditorIcons"));
+	}
+}
 
 void VisualScriptEditor::_bind_methods() {
 
@@ -2034,6 +2121,10 @@ void VisualScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_update_graph",&VisualScriptEditor::_update_graph,DEFVAL(-1));
 	ObjectTypeDB::bind_method("_node_ports_changed",&VisualScriptEditor::_node_ports_changed);
 	ObjectTypeDB::bind_method("_available_node_doubleclicked",&VisualScriptEditor::_available_node_doubleclicked);
+	ObjectTypeDB::bind_method("_default_value_edited",&VisualScriptEditor::_default_value_edited);
+	ObjectTypeDB::bind_method("_default_value_changed",&VisualScriptEditor::_default_value_changed);
+
+
 
 	ObjectTypeDB::bind_method("get_drag_data_fw",&VisualScriptEditor::get_drag_data_fw);
 	ObjectTypeDB::bind_method("can_drop_data_fw",&VisualScriptEditor::can_drop_data_fw);
@@ -2048,6 +2139,7 @@ void VisualScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_graph_connected",&VisualScriptEditor::_graph_connected);
 	ObjectTypeDB::bind_method("_graph_disconnected",&VisualScriptEditor::_graph_disconnected);
 	ObjectTypeDB::bind_method("_update_graph_connections",&VisualScriptEditor::_update_graph_connections);
+	ObjectTypeDB::bind_method("_node_filter_changed",&VisualScriptEditor::_node_filter_changed);
 
 
 }
@@ -2087,8 +2179,24 @@ VisualScriptEditor::VisualScriptEditor() {
 	left_vsplit->add_child(left_vb2);
 	left_vb2->set_v_size_flags(SIZE_EXPAND_FILL);
 
+
+	VBoxContainer *vbc_nodes = memnew( VBoxContainer );
+	HBoxContainer *hbc_nodes = memnew( HBoxContainer );
+	node_filter = memnew (LineEdit);
+	node_filter->connect("text_changed",this,"_node_filter_changed");
+	hbc_nodes->add_child(node_filter);
+	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	node_filter_icon = memnew( TextureFrame );
+	node_filter_icon->set_stretch_mode(TextureFrame::STRETCH_KEEP_CENTERED);
+	hbc_nodes->add_child(node_filter_icon);
+	vbc_nodes->add_child(hbc_nodes);
+
 	nodes = memnew( Tree );
-	left_vb2->add_margin_child(TTR("Available Nodes:"),nodes,true);
+	vbc_nodes->add_child(nodes);
+	nodes->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	left_vb2->add_margin_child(TTR("Available Nodes:"),vbc_nodes,true);
+
 	nodes->set_hide_root(true);
 	nodes->connect("item_activated",this,"_available_node_doubleclicked");
 	nodes->set_drag_forwarding(this);
@@ -2182,6 +2290,11 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	set_process_input(true); //for revert on drag
 	set_process_unhandled_input(true); //for revert on drag
+
+	default_value_edit= memnew( CustomPropertyEditor);
+	add_child(default_value_edit);
+	default_value_edit->connect("variant_changed",this,"_default_value_changed");
+
 }
 
 VisualScriptEditor::~VisualScriptEditor() {

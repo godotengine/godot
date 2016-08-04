@@ -54,7 +54,7 @@ void VisualScriptReturn::set_return_type(Variant::Type p_type) {
 	if (type==p_type)
 		return;
 	type=p_type;
-	emit_signal("ports_changed");
+	ports_changed_notify();
 
 }
 
@@ -68,7 +68,7 @@ void VisualScriptReturn::set_enable_return_value(bool p_enable) {
 		return;
 
 	with_value=p_enable;
-	emit_signal("ports_changed");
+	ports_changed_notify();
 }
 
 bool VisualScriptReturn::is_return_value_enabled() const {
@@ -378,7 +378,7 @@ void VisualScriptSequence::set_steps(int p_steps) {
 		return;
 
 	steps=p_steps;
-	emit_signal("ports_changed");
+	ports_changed_notify();
 
 }
 

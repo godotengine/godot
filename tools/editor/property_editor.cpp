@@ -1362,11 +1362,21 @@ void CustomPropertyEditor::_modified(String p_string) {
 		return;
 	updating=true;
 	switch(type) {
+		case Variant::INT: {
+
+			if (evaluator)
+				v=evaluator->eval(value_editor[0]->get_text());
+			else
+				v=value_editor[0]->get_text().to_int();
+			emit_signal("variant_changed");
+
+
+		} break;
 		case Variant::REAL: {
 
 			if (hint!=PROPERTY_HINT_EXP_EASING) {
 				if (evaluator)
-					evaluator->eval(value_editor[0]->get_text());
+					v=evaluator->eval(value_editor[0]->get_text());
 				else
 					v=value_editor[0]->get_text().to_double();
 				emit_signal("variant_changed");
@@ -1570,7 +1580,8 @@ void CustomPropertyEditor::_modified(String p_string) {
 		} break;
 		case Variant::NODE_PATH: {
 
-
+			v=NodePath(value_editor[0]->get_text());
+			emit_signal("variant_changed");
 		} break;
 		case Variant::INPUT_EVENT: {
 
