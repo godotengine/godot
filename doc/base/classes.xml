@@ -22339,6 +22339,7 @@
 			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;">
 			</argument>
 			<description>
+				Displays a modal dialog box utilizing the host OS.
 			</description>
 		</method>
 		<method name="can_draw" qualifiers="const">
@@ -22352,6 +22353,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns if the current host platform is using multiple threads.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -22372,12 +22374,17 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+				Dumps the memory allocation ringlist to a file (only works in debug).
+				Entry format per line: "Address - Size - Description"
 			</description>
 		</method>
 		<method name="dump_resources_to_file">
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+				Dumps all used resources to file (only works in debug).
+				Entry format per line: "Resource Type : Resource Location"
+				At the end of the file is a statistic of all used Resource Types.
 			</description>
 		</method>
 		<method name="execute">
@@ -22401,12 +22408,14 @@
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
+				Returns the scancode of the given string (e.g. "Escape")
 			</description>
 		</method>
 		<method name="get_borderless_window" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if the current window is borderless.
 			</description>
 		</method>
 		<method name="get_clipboard" qualifiers="const">
@@ -22434,6 +22443,7 @@
 			<return type="String">
 			</return>
 			<description>
+				Returns the value of the commandline argument "-level".
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
@@ -22482,6 +22492,14 @@
 			<return type="Dictionary">
 			</return>
 			<description>
+				Returns the current engine version information in a Dictionary.
+
+				"major"    - Holds the major version number as a String
+				"minor"    - Holds the minor version number as a String
+				"patch"    - Holds the patch version number as a String
+				"status"   - Holds the status (e.g. "beta", "rc1", "rc2", ... "stable") as a String
+				"revision" - Holds the revision (e.g. "custom-build") as a String
+				"string"   - major + minor + patch + status + revision in a single String
 			</description>
 		</method>
 		<method name="get_environment" qualifiers="const">
@@ -22534,6 +22552,8 @@
 			<return type="String">
 			</return>
 			<description>
+				Returns the current latin keyboard variant as a String.
+				Possible return values are: "QWERTY", "AZERTY", "QZERTY", "DVORAK", "NEO" or "ERROR"
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
@@ -22554,6 +22574,7 @@
 			<return type="String">
 			</return>
 			<description>
+				Returns the model name of the current device.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
@@ -22583,6 +22604,7 @@
 			<argument index="0" name="code" type="int">
 			</argument>
 			<description>
+				Returns the given scancode as a string (e.g. Return values: "Escape", "Shift+Escape").
 			</description>
 		</method>
 		<method name="get_screen_count" qualifiers="const">
