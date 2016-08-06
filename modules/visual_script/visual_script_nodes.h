@@ -14,6 +14,10 @@ class VisualScriptFunction : public VisualScriptNode {
 	};
 
 	Vector<Argument> arguments;
+
+	bool stack_less;
+	int stack_size;
+
 protected:
 
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -38,6 +42,7 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "flow_control"; }
 
 	void add_argument(Variant::Type p_type,const String& p_name,int p_index=-1);
 	void set_argument_type(int p_argidx,Variant::Type p_type);
@@ -47,7 +52,14 @@ public:
 	void remove_argument(int p_argidx);
 	int get_argument_count() const;
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+
+	void set_stack_less(bool p_enable);
+	bool is_stack_less() const;
+
+	void set_stack_size(int p_size);
+	int get_stack_size() const;
+
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptFunction();
 };
@@ -80,19 +92,20 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "operators"; }
 
 	void set_operator(Variant::Operator p_op);
 	Variant::Operator get_operator() const;
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptOperator();
 };
 
 
-class VisualScriptVariable : public VisualScriptNode {
+class VisualScriptVariableGet : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptVariable,VisualScriptNode)
+	OBJ_TYPE(VisualScriptVariableGet,VisualScriptNode)
 
 
 	StringName variable;
@@ -118,14 +131,55 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "data"; }
 
 	void set_variable(StringName p_var);
 	StringName get_variable() const;
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
-	VisualScriptVariable();
+	VisualScriptVariableGet();
 };
+
+
+class VisualScriptVariableSet : public VisualScriptNode {
+
+	OBJ_TYPE(VisualScriptVariableSet,VisualScriptNode)
+
+
+	StringName variable;
+protected:
+
+	virtual void _validate_property(PropertyInfo& property) const;
+	static void _bind_methods();
+public:
+
+	virtual int get_output_sequence_port_count() const;
+	virtual bool has_input_sequence_port() const;
+
+
+	virtual String get_output_sequence_port_text(int p_port) const;
+
+
+	virtual int get_input_value_port_count() const;
+	virtual int get_output_value_port_count() const;
+
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const;
+	virtual String get_text() const;
+	virtual String get_category() const { return "data"; }
+
+	void set_variable(StringName p_var);
+	StringName get_variable() const;
+
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+
+	VisualScriptVariableSet();
+};
+
 
 class VisualScriptConstant : public VisualScriptNode {
 
@@ -156,6 +210,7 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "data"; }
 
 	void set_constant_type(Variant::Type p_type);
 	Variant::Type get_constant_type() const;
@@ -163,7 +218,7 @@ public:
 	void set_constant_value(Variant p_value);
 	Variant get_constant_value() const;
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptConstant();
 };
@@ -192,8 +247,9 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "operators"; }
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptIndexGet();
 };
@@ -222,8 +278,9 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "operators"; }
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptIndexSet();
 };
@@ -255,11 +312,12 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "data"; }
 
 	void set_global_constant(int p_which);
 	int get_global_constant();
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptGlobalConstant();
 };
@@ -283,6 +341,7 @@ public:
 
 private:
 	static const char* const_name[MATH_CONSTANT_MAX];
+	static double const_value[MATH_CONSTANT_MAX];
 	MathConstant constant;
 protected:
 	static void _bind_methods();
@@ -304,11 +363,12 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "data"; }
 
 	void set_math_constant(MathConstant p_which);
 	MathConstant get_math_constant();
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptMathConstant();
 };
@@ -340,11 +400,12 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "data"; }
 
 	void set_singleton(const String &p_string);
 	String get_singleton();
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptEngineSingleton();
 };
@@ -378,11 +439,12 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "data"; }
 
 	void set_node_path(const NodePath &p_path);
 	NodePath get_node_path();
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptSceneNode();
 };
@@ -416,8 +478,9 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "data"; }
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptSceneTree();
 };
@@ -450,13 +513,51 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "data"; }
 
 	void set_resource_path(const String &p_path);
 	String get_resource_path();
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptResourcePath();
+};
+
+
+class VisualScriptSelf : public VisualScriptNode {
+
+	OBJ_TYPE(VisualScriptSelf,VisualScriptNode)
+
+
+protected:
+
+	static void _bind_methods();
+public:
+
+	virtual int get_output_sequence_port_count() const;
+	virtual bool has_input_sequence_port() const;
+
+
+	virtual String get_output_sequence_port_text(int p_port) const;
+
+
+	virtual int get_input_value_port_count() const;
+	virtual int get_output_value_port_count() const;
+
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const;
+	virtual String get_text() const;
+	virtual String get_category() const { return "data"; }
+
+	void set_resource_path(const String &p_path);
+	String get_resource_path();
+
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+
+	VisualScriptSelf();
 };
 
 

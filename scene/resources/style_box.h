@@ -84,6 +84,7 @@ class StyleBoxTexture : public StyleBox {
 	Rect2 region_rect;
 	Ref<Texture> texture;
 	bool draw_center;
+	Color modulate;
 
 
 protected:
@@ -108,6 +109,9 @@ public:
 	void set_draw_center(bool p_draw);
 	bool get_draw_center() const;
 	virtual Size2 get_center_size() const;
+
+	void set_modulate(const Color& p_modulate);
+	Color get_modulate() const;
 
 
 	virtual void draw(RID p_canvas_item,const Rect2& p_rect) const;

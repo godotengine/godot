@@ -4,7 +4,7 @@
 #include "script_language.h"
 
 
-class VScriptInstance;
+class VisualScriptInstance;
 class VisualScriptNodeInstance;
 class VisualScript;
 
@@ -45,22 +45,69 @@ public:
 
 	virtual String get_caption() const=0;
 	virtual String get_text() const=0;
+	virtual String get_category() const=0;
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance)=0;
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance)=0;
 
 };
 
 
 class VisualScriptNodeInstance {
+friend class VisualScriptInstance;
+
+
+
+	enum { //input argument addressing
+		INPUT_SHIFT=1<<24,
+		INPUT_MASK=INPUT_SHIFT-1,
+		INPUT_DEFAULT_VALUE_BIT=INPUT_SHIFT, // from unassigned input port, using default value (edited by user)
+		INPUT_UNSEQUENCED_READ_BIT=INPUT_SHIFT<<1, //from unsequenced read (requires calling a function, used for constants, variales, etc).
+	};
+
+
+	int id;
+	int sequence_index;
+	VisualScriptNodeInstance **sequence_outputs;
+	int sequence_output_count;
+	int *input_ports;
+	int input_port_count;
+	int *output_ports;
+	int output_port_count;
+	int working_mem_idx;
+
+	VisualScriptNode *base;
+
 public:
 
-	virtual int step()=0; //do a step, return which sequence port to go out
+	enum {
+		STEP_SHIFT=1<<24,
+		STEP_MASK=STEP_SHIFT-1,
+		STEP_FLAG_PUSH_STACK_BIT=STEP_SHIFT, //push bit to stack
+		STEP_FLAG_GO_BACK_BIT=STEP_SHIFT<<1, //go back to previous node
+		STEP_EXIT_FUNCTION_BIT=STEP_SHIFT<<2, //return from function
 
-	virtual Variant get_input_value(int p_idx)=0;
-	virtual Variant get_output_value(int p_idx)=0;
+		FLOW_STACK_PUSHED_BIT=1<<30, //in flow stack, means bit was pushed (must go back here if end of sequence)
+		FLOW_STACK_MASK=FLOW_STACK_PUSHED_BIT-1
 
-	virtual VisualScriptNode* get_node()=0;
+	};
 
+	_FORCE_INLINE_ int  get_input_port_count() const { return input_port_count; }
+	_FORCE_INLINE_ int  get_output_port_count() const { return output_port_count; }
+	_FORCE_INLINE_ int  get_sequence_output_count() const { return sequence_output_count; }
+
+	_FORCE_INLINE_ int  get_id() const { return id; }
+
+	virtual int get_working_memory_size() const { return 0; }
+
+	//unsequenced ports are those that can return a value even if no sequence happened through them, used for constants, variables, etc.
+	virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str)=0; //do a step, return which sequence port to go out
+
+	Ref<VisualScriptNode> get_base_node() { return Ref<VisualScriptNode>( base ); }
+
+	VisualScriptNodeInstance();
 	virtual ~VisualScriptNodeInstance();
 };
 
@@ -112,6 +159,7 @@ public:
 
 
 private:
+friend class VisualScriptInstance;
 
 	StringName base_type;
 	struct Argument {
@@ -133,6 +181,7 @@ private:
 
 		int function_id;
 
+
 		Function() { function_id=-1; }
 
 	};
@@ -146,7 +195,17 @@ private:
 
 	Map<StringName,Function> functions;
 	Map<StringName,Variable> variables;
+	Map<StringName,StringName> script_variable_remap;
 	Map<StringName,Vector<Argument> > custom_signals;
+
+	Map<Object*,VisualScriptInstance*> instances;
+
+#ifdef TOOLS_ENABLED
+	Set<PlaceHolderScriptInstance*> placeholders;
+	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
+	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
+	void _update_placeholders();
+#endif
 
 	void _set_variable_info(const StringName& p_name,const Dictionary& p_info);
 	Dictionary _get_variable_info(const StringName& p_name) const;
@@ -248,14 +307,102 @@ public:
 };
 
 
+class VisualScriptInstance : public ScriptInstance {
+
+	Object *owner;
+	Ref<VisualScript> script;
+
+	Map<StringName,Variant> variables; //using variable path, not script
+	Map<int,VisualScriptNodeInstance*> instances;
+
+	struct Function {
+		int node;
+		int max_stack;
+		int trash_pos;
+		int return_pos;
+		int flow_stack_size;
+		int node_count;
+		int argument_count;
+		bool valid;
+
+		struct UnsequencedGet {
+			VisualScriptNodeInstance* from;
+			int from_port;
+			int to_stack;
+		};
+
+		Vector<UnsequencedGet> unsequenced_gets;
+
+	};
+
+	Map<StringName,Function> functions;
+
+	Vector<Variant> default_values;
+	int max_input_args,max_output_args;
+
+
+	//Map<StringName,Function> functions;
+
+public:
+	virtual bool set(const StringName& p_name, const Variant& p_value);
+	virtual bool get(const StringName& p_name, Variant &r_ret) const;
+	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
+	virtual Variant::Type get_property_type(const StringName& p_name,bool *r_is_valid=NULL) const;
+
+	virtual void get_method_list(List<MethodInfo> *p_list) const;
+	virtual bool has_method(const StringName& p_method) const;
+	virtual Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+	virtual void notification(int p_notification);
+
+	bool set_variable(const StringName& p_variable,const Variant& p_value) {
+
+		Map<StringName,Variant>::Element *E=variables.find(p_variable);
+		if (!E)
+			return false;
+
+		E->get()=p_value;
+		return true;
+	}
+
+	bool get_variable(const StringName& p_variable,Variant* r_variable) const {
+
+		const Map<StringName,Variant>::Element *E=variables.find(p_variable);
+		if (!E)
+			return false;
+
+		*r_variable=E->get();
+		return true;
+
+	}
+
+	virtual Ref<Script> get_script() const;
+
+	_FORCE_INLINE_ VisualScript *get_script_ptr() { return script.ptr(); }
+	_FORCE_INLINE_ Object *get_owner_ptr() { return owner; }
+
+	void create(const Ref<VisualScript>& p_script,Object *p_owner);
+
+	virtual ScriptLanguage *get_language();
+
+	VisualScriptInstance();
+	~VisualScriptInstance();
+};
+
+
+
 typedef Ref<VisualScriptNode> (*VisualScriptNodeRegisterFunc)(const String& p_type);
 
 class VisualScriptLanguage : public ScriptLanguage {
 
 	Map<String,VisualScriptNodeRegisterFunc> register_funcs;
+
+
 public:
+	StringName notification;
 
 	static VisualScriptLanguage* singleton;
+
+	Mutex *lock;
 
 	virtual String get_name() const;
 
@@ -270,7 +417,7 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
-	virtual String get_template(const String& p_class_name, const String& p_base_class_name) const;
+	virtual Ref<Script> get_template(const String& p_class_name, const String& p_base_class_name) const;
 	virtual bool validate(const String& p_script, int &r_line_error,int &r_col_error,String& r_test_error, const String& p_path="",List<String> *r_functions=NULL) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
@@ -313,6 +460,7 @@ public:
 
 
 	VisualScriptLanguage();
+	~VisualScriptLanguage();
 
 };
 

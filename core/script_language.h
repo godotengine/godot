@@ -178,7 +178,7 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const=0;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const=0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const=0;
-	virtual String get_template(const String& p_class_name, const String& p_base_class_name) const=0;
+	virtual Ref<Script> get_template(const String& p_class_name, const String& p_base_class_name) const=0;
 	virtual bool validate(const String& p_script, int &r_line_error,int &r_col_error,String& r_test_error, const String& p_path="",List<String> *r_functions=NULL) const=0;
 	virtual Script *create_script() const=0;
 	virtual bool has_named_classes() const=0;

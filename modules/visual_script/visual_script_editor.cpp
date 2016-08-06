@@ -425,6 +425,10 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		GraphNode *gnode = memnew( GraphNode );
 		gnode->set_title(node->get_caption());
 
+		if (EditorSettings::get_singleton()->has("visual_script/color_"+node->get_category())) {
+			gnode->set_modulate(EditorSettings::get_singleton()->get("visual_script/color_"+node->get_category()));
+		}
+
 		gnode->set_meta("__vnode",node);
 		gnode->set_name(itos(E->get()));
 		gnode->connect("dragged",this,"_node_moved",varray(E->get()));
@@ -1377,6 +1381,16 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2& p_point,const Variant& p
 					const_cast<VisualScriptEditor*>(this)->_show_hint("Hold Ctrl to drop a Setter, Shift+Ctrl to drop a Setter and copy the value.");
 #endif
 				}
+
+				if (String(d["type"])=="visual_script_variable_drag") {
+
+#ifdef OSX_ENABLED
+					const_cast<VisualScriptEditor*>(this)->_show_hint("Hold Meta to drop a Variable Setter.");
+#else
+					const_cast<VisualScriptEditor*>(this)->_show_hint("Hold Ctrl to drop a Variable Setter.");
+#endif
+				}
+
 				return true;
 
 		}
@@ -1448,6 +1462,11 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 
 		if (d.has("type") && String(d["type"])=="visual_script_variable_drag") {
 
+#ifdef OSX_ENABLED
+			bool use_set = Input::get_singleton()->is_key_pressed(KEY_META);
+#else
+			bool use_set = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+#endif
 			Vector2 ofs = graph->get_scroll_ofs() + p_point;
 			if (graph->is_using_snap()) {
 				int snap = graph->get_snap();
@@ -1456,9 +1475,19 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 
 			ofs/=EDSCALE;
 
-			Ref<VisualScriptVariable> vnode;
-			vnode.instance();
-			vnode->set_variable(d["variable"]);
+			Ref<VisualScriptNode> vnode;
+			if (use_set) {
+				Ref<VisualScriptVariableSet> vnodes;
+				vnodes.instance();
+				vnodes->set_variable(d["variable"]);
+				vnode=vnodes;
+			} else {
+
+				Ref<VisualScriptVariableGet> vnodeg;
+				vnodeg.instance();
+				vnodeg->set_variable(d["variable"]);
+				vnode=vnodeg;
+			}
 
 			int new_id = script->get_available_id();
 

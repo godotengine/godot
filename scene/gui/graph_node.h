@@ -77,6 +77,8 @@ class GraphNode : public Container {
 
 	Vector2 drag_from;
 	bool selected;
+
+	Color modulate;
 protected:
 
 
@@ -127,6 +129,9 @@ public:
 	int get_connection_output_type(int p_idx);
 	Color get_connection_output_color(int p_idx);
 
+
+	void set_modulate(const Color& p_color);
+	Color get_modulate() const;
 
 	virtual Size2 get_minimum_size() const;
 

@@ -46,7 +46,8 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_virtual_type<VisualScriptNode>();
 	ObjectTypeDB::register_type<VisualScriptFunction>();
 	ObjectTypeDB::register_type<VisualScriptOperator>();
-	ObjectTypeDB::register_type<VisualScriptVariable>();
+	ObjectTypeDB::register_type<VisualScriptVariableSet>();
+	ObjectTypeDB::register_type<VisualScriptVariableGet>();
 	ObjectTypeDB::register_type<VisualScriptConstant>();
 	ObjectTypeDB::register_type<VisualScriptIndexGet>();
 	ObjectTypeDB::register_type<VisualScriptIndexSet>();
@@ -56,6 +57,7 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_type<VisualScriptSceneNode>();
 	ObjectTypeDB::register_type<VisualScriptSceneTree>();
 	ObjectTypeDB::register_type<VisualScriptResourcePath>();
+	ObjectTypeDB::register_type<VisualScriptSelf>();
 
 	ObjectTypeDB::register_type<VisualScriptFunctionCall>();
 	ObjectTypeDB::register_type<VisualScriptPropertySet>();

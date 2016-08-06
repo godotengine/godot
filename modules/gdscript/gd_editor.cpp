@@ -44,7 +44,7 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 
 
 }
-String GDScriptLanguage::get_template(const String& p_class_name, const String& p_base_class_name) const {
+Ref<Script> GDScriptLanguage::get_template(const String& p_class_name, const String& p_base_class_name) const {
 
 	String _template = String()+
 	"\nextends %BASE%\n\n"+
@@ -58,7 +58,14 @@ String GDScriptLanguage::get_template(const String& p_class_name, const String& 
 	"\n"+
 	"\n";
 
-	return _template.replace("%BASE%",p_base_class_name);
+	_template = _template.replace("%BASE%",p_base_class_name);
+
+	Ref<GDScript> script;
+	script.instance();
+	script->set_source_code(_template);
+
+	return script;
+
 }
 
 

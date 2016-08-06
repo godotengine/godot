@@ -1213,7 +1213,9 @@ def detect_modules():
 	register_cpp=""
 	unregister_cpp=""
 
-	for x in glob.glob("modules/*"):
+	files = glob.glob("modules/*")
+	files.sort() #so register_module_types does not change that often, and also plugins are registered in alphabetic order
+	for x in files:
 		if (not os.path.isdir(x)):
 			continue
 		x=x.replace("modules/","") # rest of world

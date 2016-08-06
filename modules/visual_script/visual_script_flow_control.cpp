@@ -93,9 +93,38 @@ void VisualScriptReturn::_bind_methods() {
 
 }
 
-VisualScriptNodeInstance* VisualScriptReturn::instance(VScriptInstance* p_instance) {
+class VisualScriptNodeInstanceReturn : public VisualScriptNodeInstance {
+public:
 
-	return NULL;
+	VisualScriptReturn *node;
+	VisualScriptInstance *instance;
+	bool with_value;
+
+	virtual int get_working_memory_size() const { return 1; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		if (with_value) {
+			*p_working_mem = *p_inputs[0];
+		} else {
+			*p_working_mem = Variant();
+		}
+
+		return 0;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptReturn::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceReturn * instance = memnew(VisualScriptNodeInstanceReturn );
+	instance->node=this;
+	instance->instance=p_instance;
+	instance->with_value=with_value;
+	return instance;
 }
 
 VisualScriptReturn::VisualScriptReturn() {
@@ -174,9 +203,33 @@ void VisualScriptCondition::_bind_methods() {
 
 }
 
-VisualScriptNodeInstance* VisualScriptCondition::instance(VScriptInstance* p_instance) {
+class VisualScriptNodeInstanceCondition : public VisualScriptNodeInstance {
+public:
 
-	return NULL;
+	VisualScriptCondition *node;
+	VisualScriptInstance *instance;
+
+	//virtual int get_working_memory_size() const { return 1; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		if (p_inputs[0]->operator bool())
+			return 0;
+		else
+			return 1;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptCondition::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceCondition * instance = memnew(VisualScriptNodeInstanceCondition );
+	instance->node=this;
+	instance->instance=p_instance;
+	return instance;
 }
 
 VisualScriptCondition::VisualScriptCondition() {
@@ -244,11 +297,36 @@ void VisualScriptWhile::_bind_methods() {
 
 }
 
-VisualScriptNodeInstance* VisualScriptWhile::instance(VScriptInstance* p_instance) {
+class VisualScriptNodeInstanceWhile : public VisualScriptNodeInstance {
+public:
 
-	return NULL;
+	VisualScriptWhile *node;
+	VisualScriptInstance *instance;
+
+	//virtual int get_working_memory_size() const { return 1; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		bool keep_going = p_inputs[0]->operator bool();
+
+		if (keep_going)
+			return 0|STEP_FLAG_PUSH_STACK_BIT;
+		else
+			return 1;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptWhile::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceWhile * instance = memnew(VisualScriptNodeInstanceWhile );
+	instance->node=this;
+	instance->instance=p_instance;
+	return instance;
 }
-
 VisualScriptWhile::VisualScriptWhile() {
 
 }
@@ -316,9 +394,79 @@ void VisualScriptIterator::_bind_methods() {
 
 }
 
-VisualScriptNodeInstance* VisualScriptIterator::instance(VScriptInstance* p_instance) {
+class VisualScriptNodeInstanceIterator : public VisualScriptNodeInstance {
+public:
 
-	return NULL;
+	VisualScriptIterator *node;
+	VisualScriptInstance *instance;
+
+	virtual int get_working_memory_size() const { return 2; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		if (p_start_sequence) {
+			p_working_mem[0]=*p_inputs[0];
+			bool valid;
+			bool can_iter = p_inputs[0]->iter_init(p_working_mem[1],valid);
+
+			if (!valid) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				r_error_str=RTR("Input type not iterable: ")+Variant::get_type_name(p_inputs[0]->get_type());
+				return 0;
+			}
+
+			if (!can_iter)
+				return 1; //nothing to iterate
+
+
+			*p_outputs[0]=p_working_mem[0].iter_get( p_working_mem[1],valid);
+
+			if (!valid) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				r_error_str=RTR("Iterator became invalid");
+				return 0;
+			}
+
+
+		} else {
+
+			bool valid;
+			bool can_iter = p_working_mem[0].iter_next(p_working_mem[1],valid);
+
+			if (!valid) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				r_error_str=RTR("Iterator became invalid: ")+Variant::get_type_name(p_inputs[0]->get_type());
+				return 0;
+			}
+
+			if (!can_iter)
+				return 1; //nothing to iterate
+
+
+			*p_outputs[0]=p_working_mem[0].iter_get( p_working_mem[1],valid);
+
+			if (!valid) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				r_error_str=RTR("Iterator became invalid");
+				return 0;
+			}
+
+		}
+
+		return 0|STEP_FLAG_PUSH_STACK_BIT; //go around
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptIterator::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceIterator * instance = memnew(VisualScriptNodeInstanceIterator );
+	instance->node=this;
+	instance->instance=p_instance;
+	return instance;
 }
 
 VisualScriptIterator::VisualScriptIterator() {
@@ -396,11 +544,48 @@ void VisualScriptSequence::_bind_methods() {
 
 }
 
-VisualScriptNodeInstance* VisualScriptSequence::instance(VScriptInstance* p_instance) {
+class VisualScriptNodeInstanceSequence : public VisualScriptNodeInstance {
+public:
 
-	return NULL;
+	VisualScriptSequence *node;
+	VisualScriptInstance *instance;
+	int steps;
+
+	virtual int get_working_memory_size() const { return 1; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		if (p_start_sequence) {
+
+			p_working_mem[0]=0;
+		}
+
+		int step = p_working_mem[0];
+
+		*p_outputs[0]=step;
+
+		if (step+1==steps)
+			return step;
+		else {
+			p_working_mem[0]=step+1;
+			return step|STEP_FLAG_PUSH_STACK_BIT;
+		}
+
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptSequence::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceSequence * instance = memnew(VisualScriptNodeInstanceSequence );
+	instance->node=this;
+	instance->instance=p_instance;
+	instance->steps=steps;
+	return instance;
 }
-
 VisualScriptSequence::VisualScriptSequence() {
 
 	steps=1;

@@ -31,6 +31,7 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "flow_control"; }
 
 	void set_return_type(Variant::Type);
 	Variant::Type get_return_type() const;
@@ -39,7 +40,7 @@ public:
 	bool is_return_value_enabled() const;
 
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptReturn();
 };
@@ -72,9 +73,10 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "flow_control"; }
 
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptCondition();
 };
@@ -107,9 +109,10 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "flow_control"; }
 
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptWhile();
 };
@@ -143,9 +146,10 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "flow_control"; }
 
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptIterator();
 };
@@ -180,11 +184,12 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "flow_control"; }
 
 	void set_steps(int p_steps);
 	int get_steps() const;
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptSequence();
 };

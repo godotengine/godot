@@ -194,11 +194,15 @@ private:
 	void _font_changed();
 
 
+
 friend class Viewport;
 	void _modal_stack_remove();
 	void _modal_set_prev_focus_owner(ObjectID p_prev);
 
 protected:
+
+	virtual void add_child_notify(Node *p_child);
+	virtual void remove_child_notify(Node *p_child);
 
 	//virtual void _window_input_event(InputEvent p_event);
 

@@ -485,11 +485,96 @@ void VisualScriptFunctionCall::_bind_methods() {
 	BIND_CONSTANT( CALL_MODE_BASIC_TYPE );
 }
 
-VisualScriptNodeInstance* VisualScriptFunctionCall::instance(VScriptInstance* p_instance) {
+class VisualScriptNodeInstanceFunctionCall : public VisualScriptNodeInstance {
+public:
 
-	return NULL;
+
+	VisualScriptFunctionCall::CallMode call_mode;
+	NodePath node_path;
+	int input_args;
+	bool returns;
+	StringName function;
+
+	VisualScriptFunctionCall *node;
+	VisualScriptInstance *instance;
+
+
+
+	//virtual int get_working_memory_size() const { return 0; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+
+		switch(call_mode) {
+
+			case VisualScriptFunctionCall::CALL_MODE_SELF: {
+
+				Object *object=instance->get_owner_ptr();
+
+				if (returns) {
+					*p_outputs[0] = object->call(function,p_inputs,input_args,r_error);
+				} else {
+					object->call(function,p_inputs,input_args,r_error);
+				}
+			} break;
+			case VisualScriptFunctionCall::CALL_MODE_NODE_PATH: {
+
+				Node* node = instance->get_owner_ptr()->cast_to<Node>();
+				if (!node) {
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error_str="Base object is not a Node!";
+					return 0;
+				}
+
+				Node* another = node->get_node(node_path);
+				if (!node) {
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error_str="Path does not lead Node!";
+					return 0;
+				}
+
+				if (returns) {
+					*p_outputs[0] = another->call(function,p_inputs,input_args,r_error);
+				} else {
+					another->call(function,p_inputs,input_args,r_error);
+				}
+
+			} break;
+			case VisualScriptFunctionCall::CALL_MODE_INSTANCE:
+			case VisualScriptFunctionCall::CALL_MODE_BASIC_TYPE: {
+
+				Variant v = *p_inputs[0];
+				print_line("inputs: "+String(v));
+				if (returns) {
+					*p_outputs[0] = v.call(function,p_inputs+1,input_args,r_error);
+				} else {
+					v.call(function,p_inputs+1,input_args,r_error);
+				}
+
+			} break;
+
+		}
+		return 0;
+
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptFunctionCall::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceFunctionCall * instance = memnew(VisualScriptNodeInstanceFunctionCall );
+	instance->node=this;
+	instance->instance=p_instance;
+	instance->function=function;
+	instance->call_mode=call_mode;
+	instance->returns=get_output_value_port_count();
+	instance->node_path=base_path;
+	instance->input_args = get_input_value_port_count() - ( (call_mode==CALL_MODE_BASIC_TYPE || call_mode==CALL_MODE_INSTANCE) ? 1: 0 );
+	return instance;
 }
-
 VisualScriptFunctionCall::VisualScriptFunctionCall() {
 
 	call_mode=CALL_MODE_INSTANCE;
@@ -983,9 +1068,116 @@ void VisualScriptPropertySet::_bind_methods() {
 
 }
 
-VisualScriptNodeInstance* VisualScriptPropertySet::instance(VScriptInstance* p_instance) {
+class VisualScriptNodeInstancePropertySet : public VisualScriptNodeInstance {
+public:
 
-	return NULL;
+
+	VisualScriptPropertySet::CallMode call_mode;
+	NodePath node_path;
+	StringName property;
+	bool use_builtin;
+	Variant builtin_val;
+
+	VisualScriptPropertySet *node;
+	VisualScriptInstance *instance;
+
+
+
+	//virtual int get_working_memory_size() const { return 0; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+
+		switch(call_mode) {
+
+			case VisualScriptPropertySet::CALL_MODE_SELF: {
+
+				Object *object=instance->get_owner_ptr();
+
+				bool valid;
+
+				if (use_builtin) {
+					object->set(property,builtin_val,&valid);
+				} else {
+					object->set(property,*p_inputs[0],&valid);
+				}
+
+				if (!valid) {
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error_str="Invalid index property name.";
+				}
+			} break;
+			case VisualScriptPropertySet::CALL_MODE_NODE_PATH: {
+
+				Node* node = instance->get_owner_ptr()->cast_to<Node>();
+				if (!node) {
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error_str="Base object is not a Node!";
+					return 0;
+				}
+
+				Node* another = node->get_node(node_path);
+				if (!node) {
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error_str="Path does not lead Node!";
+					return 0;
+				}
+
+				bool valid;
+
+				if (use_builtin) {
+					another->set(property,builtin_val,&valid);
+				} else {
+					another->set(property,*p_inputs[0],&valid);
+				}
+
+				if (!valid) {
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error_str="Invalid index property name.";
+				}
+
+			} break;
+			case VisualScriptPropertySet::CALL_MODE_INSTANCE:
+			case VisualScriptPropertySet::CALL_MODE_BASIC_TYPE: {
+
+				Variant v = *p_inputs[0];
+
+				bool valid;
+
+				if (use_builtin) {
+					v.set(property,builtin_val,&valid);
+				} else {
+					v.set(property,p_inputs[1],&valid);
+				}
+
+				if (!valid) {
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error_str="Invalid index property name.";
+				}
+
+			} break;
+
+		}
+		return 0;
+
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptPropertySet::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstancePropertySet * instance = memnew(VisualScriptNodeInstancePropertySet );
+	instance->node=this;
+	instance->instance=p_instance;
+	instance->property=property;
+	instance->call_mode=call_mode;
+	instance->node_path=base_path;
+	instance->use_builtin=use_builtin_value;
+	instance->builtin_val=builtin_value;
+	return instance;
 }
 
 VisualScriptPropertySet::VisualScriptPropertySet() {
@@ -1012,12 +1204,12 @@ static Ref<VisualScriptNode> create_property_set_node(const String& p_name) {
 
 int VisualScriptPropertyGet::get_output_sequence_port_count() const {
 
-	return 1;
+	return (call_mode==CALL_MODE_SELF || call_mode==CALL_MODE_NODE_PATH)?0:1;
 }
 
 bool VisualScriptPropertyGet::has_input_sequence_port() const{
 
-	return true;
+	return (call_mode==CALL_MODE_SELF || call_mode==CALL_MODE_NODE_PATH)?false:true;
 }
 void VisualScriptPropertyGet::_update_base_type() {
 	//cache it because this information may not be available on load
@@ -1385,9 +1577,107 @@ void VisualScriptPropertyGet::_bind_methods() {
 	BIND_CONSTANT( CALL_MODE_INSTANCE);
 }
 
-VisualScriptNodeInstance* VisualScriptPropertyGet::instance(VScriptInstance* p_instance) {
+class VisualScriptNodeInstancePropertyGet : public VisualScriptNodeInstance {
+public:
 
-	return NULL;
+
+	VisualScriptPropertyGet::CallMode call_mode;
+	NodePath node_path;
+	StringName property;
+
+	VisualScriptPropertyGet *node;
+	VisualScriptInstance *instance;
+
+
+
+	//virtual int get_working_memory_size() const { return 0; }
+	virtual bool is_output_port_unsequenced(int p_idx) const { return (call_mode==VisualScriptPropertyGet::CALL_MODE_SELF || call_mode==VisualScriptPropertyGet::CALL_MODE_NODE_PATH); }
+	virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const {
+
+		//these two modes can be get directly, so they use unsequenced mode
+		switch(call_mode) {
+
+			case VisualScriptPropertyGet::CALL_MODE_SELF: {
+
+				Object *object=instance->get_owner_ptr();
+
+				bool valid;
+
+				*r_value = object->get(property,&valid);
+
+				if (!valid) {
+					//r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error=RTR("Invalid index property name.");
+					return false;
+				}
+			} break;
+			case VisualScriptPropertyGet::CALL_MODE_NODE_PATH: {
+
+				Node* node = instance->get_owner_ptr()->cast_to<Node>();
+				if (!node) {
+					//r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error=RTR("Base object is not a Node!");
+					return false;
+				}
+
+				Node* another = node->get_node(node_path);
+				if (!node) {
+					//r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error=RTR("Path does not lead Node!");
+					return false;
+				}
+
+				bool valid;
+
+
+				*r_value = another->get(property,&valid);
+
+				if (!valid) {
+					//r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error=vformat(RTR("Invalid index property name '%s' in node %s."),String(property),another->get_name());
+					return false;
+				}
+
+			} break;
+			default: {};
+		}
+		return true;
+
+	}
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+
+		bool valid;
+		Variant v = *p_inputs[0];
+
+		*p_outputs[0] = v.get(property,&valid);
+
+		if (!valid) {
+			r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			r_error_str=RTR("Invalid index property name.");
+
+		}
+
+
+		return 0;
+	}
+
+
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptPropertyGet::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstancePropertyGet * instance = memnew(VisualScriptNodeInstancePropertyGet );
+	instance->node=this;
+	instance->instance=p_instance;
+	instance->property=property;
+	instance->call_mode=call_mode;
+	instance->node_path=base_path;
+
+	return instance;
 }
 
 VisualScriptPropertyGet::VisualScriptPropertyGet() {
@@ -1463,7 +1753,9 @@ Node *VisualScriptScriptCall::_get_base_node() const {
 
 int VisualScriptScriptCall::get_input_value_port_count() const{
 
-
+#if 1
+	return argument_count;
+#else
 	if (call_mode==CALL_MODE_SELF) {
 
 		Ref<VisualScript> vs = get_visual_script();
@@ -1501,6 +1793,7 @@ int VisualScriptScriptCall::get_input_value_port_count() const{
 
 
 	return 0;
+#endif
 
 }
 int VisualScriptScriptCall::get_output_value_port_count() const{
@@ -1573,6 +1866,48 @@ String VisualScriptScriptCall::get_text() const {
 	return "  "+String(function)+"()";
 }
 
+void VisualScriptScriptCall::_update_argument_count() {
+
+	//try to remember the amount of arguments in the function, because if loaded from scratch
+	//this information will not be available
+
+	if (call_mode==CALL_MODE_SELF) {
+
+		Ref<VisualScript> vs = get_visual_script();
+		if (vs.is_valid()) {
+
+			if (!vs->has_function(function))
+				return ;
+
+			int id = vs->get_function_node_id(function);
+			if (id<0)
+				return;
+
+			Ref<VisualScriptFunction> func = vs->get_node(function,id);
+
+			argument_count=func->get_argument_count();
+		}
+	} else {
+
+		Node*base = _get_base_node();
+		if (!base)
+			return;
+
+		Ref<Script> script = base->get_script();
+		if (!script.is_valid())
+			return ;
+
+		List<MethodInfo> functions;
+		script->get_method_list(&functions);
+		for (List<MethodInfo>::Element *E=functions.front();E;E=E->next()) {
+			if (E->get().name==function) {
+				argument_count=E->get().arguments.size();
+				return;
+			}
+		}
+
+	}
+}
 
 
 void VisualScriptScriptCall::set_function(const StringName& p_type){
@@ -1581,7 +1916,7 @@ void VisualScriptScriptCall::set_function(const StringName& p_type){
 		return;
 
 	function=p_type;
-
+	_update_argument_count();
 	_change_notify();
 	ports_changed_notify();
 }
@@ -1597,7 +1932,7 @@ void VisualScriptScriptCall::set_base_path(const NodePath& p_type) {
 		return;
 
 	base_path=p_type;
-
+	_update_argument_count();
 	_change_notify();
 	ports_changed_notify();
 }
@@ -1614,11 +1949,25 @@ void VisualScriptScriptCall::set_call_mode(CallMode p_mode) {
 		return;
 
 	call_mode=p_mode;
-
+	_update_argument_count();
 	_change_notify();
 	ports_changed_notify();
 
 }
+
+void VisualScriptScriptCall::set_argument_count(int p_count) {
+
+	argument_count=p_count;
+	_change_notify();
+	ports_changed_notify();
+
+}
+
+int VisualScriptScriptCall::get_argument_count() const {
+
+	return argument_count;
+}
+
 VisualScriptScriptCall::CallMode VisualScriptScriptCall::get_call_mode() const {
 
 	return call_mode;
@@ -1703,24 +2052,95 @@ void VisualScriptScriptCall::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_base_path","base_path"),&VisualScriptScriptCall::set_base_path);
 	ObjectTypeDB::bind_method(_MD("get_base_path"),&VisualScriptScriptCall::get_base_path);
 
+	ObjectTypeDB::bind_method(_MD("set_argument_count","argument_count"),&VisualScriptScriptCall::set_argument_count);
+	ObjectTypeDB::bind_method(_MD("get_argument_count"),&VisualScriptScriptCall::get_argument_count);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"function/call_mode",PROPERTY_HINT_ENUM,"Self,Node Path"),_SCS("set_call_mode"),_SCS("get_call_mode"));
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"function/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),_SCS("set_base_path"),_SCS("get_base_path"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/function"),_SCS("set_function"),_SCS("get_function"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/argument_count"),_SCS("set_argument_count"),_SCS("get_argument_count"));
 
 	BIND_CONSTANT( CALL_MODE_SELF );
 	BIND_CONSTANT( CALL_MODE_NODE_PATH);
 
 }
 
-VisualScriptNodeInstance* VisualScriptScriptCall::instance(VScriptInstance* p_instance) {
+class VisualScriptNodeInstanceScriptCall : public VisualScriptNodeInstance {
+public:
 
-	return NULL;
+
+	VisualScriptScriptCall::CallMode call_mode;
+	NodePath node_path;
+	int input_args;
+	bool returns;
+	StringName function;
+
+	VisualScriptScriptCall *node;
+	VisualScriptInstance *instance;
+
+
+
+	//virtual int get_working_memory_size() const { return 0; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+
+		switch(call_mode) {
+
+			case VisualScriptScriptCall::CALL_MODE_SELF: {
+
+				Object *object=instance->get_owner_ptr();
+
+				*p_outputs[0] = object->call(function,p_inputs,input_args,r_error);
+
+			} break;
+			case VisualScriptScriptCall::CALL_MODE_NODE_PATH: {
+
+				Node* node = instance->get_owner_ptr()->cast_to<Node>();
+				if (!node) {
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error_str="Base object is not a Node!";
+					return 0;
+				}
+
+				Node* another = node->get_node(node_path);
+				if (!node) {
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error_str="Path does not lead Node!";
+					return 0;
+				}
+
+
+				*p_outputs[0] = another->call(function,p_inputs,input_args,r_error);
+
+			} break;
+
+		}
+		return 0;
+
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptScriptCall::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceScriptCall * instance = memnew(VisualScriptNodeInstanceScriptCall );
+	instance->node=this;
+	instance->instance=p_instance;
+	instance->function=function;
+	instance->call_mode=call_mode;
+	instance->node_path=base_path;
+	instance->input_args = argument_count;
+	return instance;
 }
 
 VisualScriptScriptCall::VisualScriptScriptCall() {
 
 	call_mode=CALL_MODE_SELF;
+	argument_count=0;
 
 
 }
@@ -1736,7 +2156,7 @@ static Ref<VisualScriptNode> create_script_call_node(const String& p_name) {
 
 
 //////////////////////////////////////////
-////////////////SCRIPT CALL//////////////////////
+////////////////EMIT//////////////////////
 //////////////////////////////////////////
 
 int VisualScriptEmitSignal::get_output_sequence_port_count() const {
@@ -1865,13 +2285,77 @@ void VisualScriptEmitSignal::_bind_methods() {
 
 }
 
-VisualScriptNodeInstance* VisualScriptEmitSignal::instance(VScriptInstance* p_instance) {
+class VisualScriptNodeInstanceEmitSignal : public VisualScriptNodeInstance {
+public:
 
-	return NULL;
+	VisualScriptEmitSignal *node;
+	VisualScriptInstance *instance;
+	int argcount;
+	StringName name;
+
+	//virtual int get_working_memory_size() const { return 0; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+
+		Object *obj = instance->get_owner_ptr();
+
+		obj->emit_signal(name,p_inputs,argcount);
+
+
+		return 0;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptEmitSignal::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceEmitSignal * instance = memnew(VisualScriptNodeInstanceEmitSignal );
+	instance->node=this;
+	instance->instance=p_instance;
+	instance->name=name;
+	instance->argcount=get_input_value_port_count();
+	return instance;
 }
 
 VisualScriptEmitSignal::VisualScriptEmitSignal() {
 }
+
+
+
+static Ref<VisualScriptNode> create_basic_type_call_node(const String& p_name) {
+
+	Vector<String> path = p_name.split("/");
+	ERR_FAIL_COND_V(path.size()<4,Ref<VisualScriptNode>());
+	String base_type = path[2];
+	String method = path[3];
+
+	Ref<VisualScriptFunctionCall> node;
+	node.instance();
+
+	Variant::Type type=Variant::VARIANT_MAX;
+
+	for(int i=0;i<Variant::VARIANT_MAX;i++) {
+
+		if (Variant::get_type_name(Variant::Type(i))==base_type) {
+			type=Variant::Type(i);
+			break;
+		}
+	}
+
+	ERR_FAIL_COND_V(type==Variant::VARIANT_MAX,Ref<VisualScriptNode>());
+
+
+	node->set_call_mode(VisualScriptFunctionCall::CALL_MODE_BASIC_TYPE);
+	node->set_basic_type(type);
+	node->set_function(method);
+
+	return node;
+}
+
 
 void register_visual_script_func_nodes() {
 
@@ -1895,4 +2379,17 @@ void register_visual_script_func_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("functions/script/emit_signal",create_node_generic<VisualScriptEmitSignal>);
 
 
+	for(int i=0;i<Variant::VARIANT_MAX;i++) {
+
+		Variant::Type t = Variant::Type(i);
+		String type_name = Variant::get_type_name(t);
+		Variant::CallError ce;
+		Variant vt = Variant::construct(t,NULL,0,ce);
+		List<MethodInfo> ml;
+		vt.get_method_list(&ml);
+
+		for (List<MethodInfo>::Element *E=ml.front();E;E=E->next()) {
+			VisualScriptLanguage::singleton->add_register_func("functions/basic_types/"+type_name+"/"+E->get().name,create_basic_type_call_node);
+		}
+	}
 }

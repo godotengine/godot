@@ -117,20 +117,20 @@ void ScriptCreateDialog::ok_pressed() {
 
 
 
-	String text = ScriptServer::get_language( language_menu->get_selected() )->get_template(cname,parent_name->get_text());
-	Script *script = ScriptServer::get_language( language_menu->get_selected() )->create_script();
-	script->set_source_code(text);
+
+	Ref<Script> scr = ScriptServer::get_language( language_menu->get_selected() )->get_template(cname,parent_name->get_text());
+	//scr->set_source_code(text);
+
+
 	if (cname!="")
-		script->set_name(cname);
+		scr->set_name(cname);
 
-
-	Ref<Script> scr(script);
 
 	if (!internal->is_pressed()) {
 
 
 		String lpath = Globals::get_singleton()->localize_path(file_path->get_text());
-		script->set_path(lpath);
+		scr->set_path(lpath);
 		if (!path_valid) {
 
 			alert->set_text(TTR("Invalid path!"));
@@ -145,7 +145,7 @@ void ScriptCreateDialog::ok_pressed() {
 			alert->popup_centered_minsize();
 			return;
 		}
-		scr->set_path(lpath);
+		//scr->set_path(lpath);
 	//EditorFileSystem::get_singleton()->update_file(lpath,scr->get_type());
 
 

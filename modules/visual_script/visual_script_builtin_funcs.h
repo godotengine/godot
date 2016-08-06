@@ -91,11 +91,12 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "functions"; }
 
 	void set_func(BuiltinFunc p_which);
 	BuiltinFunc get_func();
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptBuiltinFunc();
 };

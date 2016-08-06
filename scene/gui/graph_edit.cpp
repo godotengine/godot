@@ -196,6 +196,8 @@ void GraphEdit::_graph_node_moved(Node *p_gn) {
 
 void GraphEdit::add_child_notify(Node *p_child) {
 
+	Control::add_child_notify(p_child);
+
 	top_layer->call_deferred("raise"); //top layer always on top!
 	GraphNode *gn = p_child->cast_to<GraphNode>();
 	if (gn) {
@@ -205,9 +207,13 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		_graph_node_moved(gn);
 		gn->set_stop_mouse(false);
 	}
+
+
 }
 
 void GraphEdit::remove_child_notify(Node *p_child) {
+
+	Control::remove_child_notify(p_child);
 
 	top_layer->call_deferred("raise"); //top layer always on top!
 	GraphNode *gn = p_child->cast_to<GraphNode>();

@@ -422,6 +422,32 @@ void Control::_resize(const Size2& p_size) {
 	_size_changed();
 }
 
+//moved theme configuration here, so controls can set up even if still not inside active scene
+
+void Control::add_child_notify(Node *p_child) {
+
+	Control *child_c=p_child->cast_to<Control>();
+	if (!child_c)
+		return;
+
+	if (child_c->data.theme.is_null() && data.theme_owner) {
+		child_c->data.theme_owner=data.theme_owner;
+		child_c->notification(NOTIFICATION_THEME_CHANGED);
+	}
+}
+
+void Control::remove_child_notify(Node *p_child) {
+
+	Control *child_c=p_child->cast_to<Control>();
+	if (!child_c)
+		return;
+
+	if (child_c->data.theme_owner && child_c->data.theme.is_null()) {
+		child_c->data.theme_owner=NULL;
+		//notification(NOTIFICATION_THEME_CHANGED);
+	}
+
+}
 
 
 void Control::_notification(int p_notification) {
@@ -512,10 +538,10 @@ void Control::_notification(int p_notification) {
 			}
 
 
-			if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
-				data.theme_owner=data.parent->data.theme_owner;
-				notification(NOTIFICATION_THEME_CHANGED);
-			}
+			//if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
+			//	data.theme_owner=data.parent->data.theme_owner;
+			//	notification(NOTIFICATION_THEME_CHANGED);
+			//}
 
 		} break;
 		case NOTIFICATION_EXIT_CANVAS: {
@@ -547,10 +573,10 @@ void Control::_notification(int p_notification) {
 
 			data.parent=NULL;
 			data.parent_canvas_item=NULL;
-			if (data.theme_owner && data.theme.is_null()) {
-				data.theme_owner=NULL;
+			//if (data.theme_owner && data.theme.is_null()) {
+			//	data.theme_owner=NULL;
 				//notification(NOTIFICATION_THEME_CHANGED);
-			}
+			//}
 
 		} break;
 		 case NOTIFICATION_MOVED_IN_PARENT: {

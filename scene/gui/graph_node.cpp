@@ -189,6 +189,8 @@ void GraphNode::_notification(int p_what) {
 	if (p_what==NOTIFICATION_DRAW) {
 
 		Ref<StyleBox> sb=get_stylebox(selected ? "selectedframe" : "frame");
+		sb=sb->duplicate();
+		sb->call("set_modulate",modulate);
 		Ref<Texture> port =get_icon("port");
 		Ref<Texture> close =get_icon("close");
 		int close_offset = get_constant("close_offset");
@@ -198,6 +200,9 @@ void GraphNode::_notification(int p_what) {
 		Point2i icofs = -port->get_size()*0.5;
 		int edgeofs=get_constant("port_offset");
 		icofs.y+=sb->get_margin(MARGIN_TOP);
+
+
+
 		draw_style_box(sb,Rect2(Point2(),get_size()));
 
 		int w = get_size().width-sb->get_minimum_size().x;
@@ -590,6 +595,16 @@ void GraphNode::_input_event(const InputEvent& p_ev) {
 
 }
 
+void GraphNode::set_modulate(const Color &p_color) {
+
+	modulate=p_color;
+	update();
+}
+
+Color GraphNode::get_modulate() const{
+
+	return modulate;
+}
 
 void GraphNode::_bind_methods() {
 
@@ -620,6 +635,8 @@ void GraphNode::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_connection_input_type","idx"),&GraphNode::get_connection_input_type);
 	ObjectTypeDB::bind_method(_MD("get_connection_input_color","idx"),&GraphNode::get_connection_input_color);
 
+	ObjectTypeDB::bind_method(_MD("set_modulate","color"),&GraphNode::set_modulate);
+	ObjectTypeDB::bind_method(_MD("get_modulate"),&GraphNode::get_modulate);
 
 	ObjectTypeDB::bind_method(_MD("set_show_close_button","show"),&GraphNode::set_show_close_button);
 	ObjectTypeDB::bind_method(_MD("is_close_button_visible"),&GraphNode::is_close_button_visible);
@@ -637,4 +654,5 @@ GraphNode::GraphNode() {
 	show_close=false;
 	connpos_dirty=true;
 	set_stop_mouse(false);
+	modulate=Color(1,1,1,1);
 }

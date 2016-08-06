@@ -50,6 +50,7 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "functions"; }
 
 	void set_basic_type(Variant::Type p_type);
 	Variant::Type get_basic_type() const;
@@ -69,7 +70,7 @@ public:
 	void set_use_default_args(int p_amount);
 	int get_use_default_args() const;
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptFunctionCall();
 };
@@ -127,6 +128,7 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "functions"; }
 
 	void set_base_type(const StringName& p_type);
 	StringName get_base_type() const;
@@ -149,7 +151,7 @@ public:
 	void set_builtin_value(const Variant &p_value);
 	Variant get_builtin_value() const;
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptPropertySet();
 };
@@ -204,6 +206,7 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "functions"; }
 
 	void set_base_type(const StringName& p_type);
 	StringName get_base_type() const;
@@ -220,7 +223,7 @@ public:
 	void set_call_mode(CallMode p_mode);
 	CallMode get_call_mode() const;
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptPropertyGet();
 };
@@ -246,11 +249,13 @@ private:
 	CallMode call_mode;
 	NodePath base_path;
 	StringName function;
+	int argument_count;
 
 
 	Node *_get_base_node() const;
 
 
+	void _update_argument_count();
 protected:
 	virtual void _validate_property(PropertyInfo& property) const;
 
@@ -274,6 +279,7 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "functions"; }
 
 	void set_function(const StringName& p_type);
 	StringName get_function() const;
@@ -284,9 +290,11 @@ public:
 	void set_call_mode(CallMode p_mode);
 	CallMode get_call_mode() const;
 
+	void set_argument_count(int p_count);
+	int get_argument_count() const;
 
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptScriptCall();
 };
@@ -328,11 +336,12 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
+	virtual String get_category() const { return "functions"; }
 
 	void set_signal(const StringName& p_type);
 	StringName get_signal() const;
 
-	virtual VisualScriptNodeInstance* instance(VScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptEmitSignal();
 };

@@ -41,6 +41,8 @@ void Container::_child_minsize_changed() {
 
 void Container::add_child_notify(Node *p_child) {
 
+	Control::add_child_notify(p_child);
+
 	Control *control = p_child->cast_to<Control>();
 	if (!control)
 		return;
@@ -50,18 +52,24 @@ void Container::add_child_notify(Node *p_child) {
 	control->connect("visibility_changed",this,"_child_minsize_changed");
 	queue_sort();
 
+
 }
 
 void Container::move_child_notify(Node *p_child) {
+
+	Control::move_child_notify(p_child);
 
 	if (!p_child->cast_to<Control>())
 		return;
 
 	queue_sort();
+
+
 }
 
 void Container::remove_child_notify(Node *p_child) {
 
+	Control::remove_child_notify(p_child);
 
 	Control *control = p_child->cast_to<Control>();
 	if (!control)
