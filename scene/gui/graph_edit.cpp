@@ -100,6 +100,15 @@ void GraphEdit::get_connection_list(List<Connection> *r_connections) const {
 	*r_connections=connections;
 }
 
+void GraphEdit::set_scroll_ofs(const Vector2& p_ofs) {
+
+	setting_scroll_ofs=true;
+	h_scroll->set_val(p_ofs.x);
+	v_scroll->set_val(p_ofs.y);
+	_update_scroll();
+	setting_scroll_ofs=false;
+}
+
 Vector2 GraphEdit::get_scroll_ofs() const{
 
 	return Vector2(h_scroll->get_val(),v_scroll->get_val());
@@ -112,6 +121,10 @@ void GraphEdit::_scroll_moved(double) {
 	if (is_using_snap()) {
 		//must redraw grid
 		update();
+	}
+
+	if (!setting_scroll_ofs) {//in godot, signals on change value are avoided as a convention
+		emit_signal("scroll_offset_changed",get_scroll_ofs());
 	}
 }
 
@@ -1042,6 +1055,7 @@ void GraphEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("disconnect_node","from","from_port","to","to_port"),&GraphEdit::disconnect_node);
 	ObjectTypeDB::bind_method(_MD("get_connection_list"),&GraphEdit::_get_connection_list);
 	ObjectTypeDB::bind_method(_MD("get_scroll_ofs"),&GraphEdit::get_scroll_ofs);
+	ObjectTypeDB::bind_method(_MD("set_scroll_ofs","ofs"),&GraphEdit::set_scroll_ofs);
 
 	ObjectTypeDB::bind_method(_MD("set_zoom","p_zoom"),&GraphEdit::set_zoom);
 	ObjectTypeDB::bind_method(_MD("get_zoom"),&GraphEdit::get_zoom);
@@ -1079,6 +1093,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
 	ADD_SIGNAL(MethodInfo("_begin_node_move"));
 	ADD_SIGNAL(MethodInfo("_end_node_move"));
+	ADD_SIGNAL(MethodInfo("scroll_offset_changed",PropertyInfo(Variant::VECTOR2,"ofs")));
 }
 
 
@@ -1108,6 +1123,13 @@ GraphEdit::GraphEdit() {
 
 	box_selecting = false;
 	dragging = false;
+
+	//set large minmax so it can scroll even if not resized yet
+	h_scroll->set_min(-10000);
+	h_scroll->set_max(10000);
+
+	v_scroll->set_min(-10000);
+	v_scroll->set_max(10000);
 
 	h_scroll->connect("value_changed", this,"_scroll_moved");
 	v_scroll->connect("value_changed", this,"_scroll_moved");
@@ -1149,6 +1171,6 @@ GraphEdit::GraphEdit() {
 	snap_amount->connect("value_changed",this,"_snap_value_changed");
 	zoom_hb->add_child(snap_amount);
 
-
+	setting_scroll_ofs=false;
 
 }

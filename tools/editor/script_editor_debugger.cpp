@@ -220,6 +220,7 @@ void ScriptEditorDebugger::debug_continue() {
 	msg.push_back("continue");
 	ppeer->put_var(msg);
 
+
 }
 
 void ScriptEditorDebugger::_scene_tree_folded(Object* obj) {
@@ -360,7 +361,7 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		forward->set_disabled(true);
 		dobreak->set_disabled(false);
 		docontinue->set_disabled(true);
-		emit_signal("breaked",false,false);
+		emit_signal("breaked",false,false,Variant());
 		//tabs->set_current_tab(0);
 		profiler->set_enabled(true);
 		profiler->disable_seeking();

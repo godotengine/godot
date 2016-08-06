@@ -91,7 +91,7 @@ public:
 	virtual bool is_unsaved()=0;
 	virtual Variant get_edit_state()=0;
 	virtual void set_edit_state(const Variant& p_state)=0;
-	virtual void goto_line(int p_line)=0;
+	virtual void goto_line(int p_line,bool p_with_error=false)=0;
 	virtual void trim_trailing_whitespace()=0;
 	virtual void ensure_focus()=0;
 	virtual void tag_saved_version()=0;
@@ -100,6 +100,7 @@ public:
 	virtual bool goto_method(const String& p_method)=0;
 	virtual void add_callback(const String& p_function,StringArray p_args)=0;
 	virtual void update_settings()=0;
+	virtual void set_debugger_active(bool p_active)=0;
 
 	virtual void set_tooltip_request_func(String p_method,Object* p_obj)=0;
 	virtual Control *get_edit_menu()=0;

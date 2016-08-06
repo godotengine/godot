@@ -107,6 +107,7 @@ private:
 	Rect2 box_selecting_rect;
 	List<GraphNode*> previus_selected;
 
+	bool setting_scroll_ofs;
 	bool right_disconnects;
 	bool updating;
 	List<Connection> connections;
@@ -188,6 +189,7 @@ public:
 	void add_valid_left_disconnect_type(int p_type);
 	void remove_valid_left_disconnect_type(int p_type);
 
+	void set_scroll_ofs(const Vector2& p_ofs);
 	Vector2 get_scroll_ofs() const;
 
 	void set_selected(Node* p_child);

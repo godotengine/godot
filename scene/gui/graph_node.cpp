@@ -205,6 +205,20 @@ void GraphNode::_notification(int p_what) {
 
 		draw_style_box(sb,Rect2(Point2(),get_size()));
 
+		switch(overlay) {
+			case OVERLAY_DISABLED: {
+
+			} break;
+			case OVERLAY_BREAKPOINT: {
+
+				draw_style_box(get_stylebox("breakpoint"),Rect2(Point2(),get_size()));
+			} break;
+			case OVERLAY_POSITION: {
+				draw_style_box(get_stylebox("position"),Rect2(Point2(),get_size()));
+
+			} break;
+		}
+
 		int w = get_size().width-sb->get_minimum_size().x;
 
 		if (show_close)
@@ -605,6 +619,16 @@ Color GraphNode::get_modulate() const{
 
 	return modulate;
 }
+void GraphNode::set_overlay(Overlay p_overlay) {
+
+	overlay=p_overlay;
+	update();
+}
+
+GraphNode::Overlay GraphNode::get_overlay() const{
+
+	return overlay;
+}
 
 void GraphNode::_bind_methods() {
 
@@ -641,6 +665,9 @@ void GraphNode::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_show_close_button","show"),&GraphNode::set_show_close_button);
 	ObjectTypeDB::bind_method(_MD("is_close_button_visible"),&GraphNode::is_close_button_visible);
 
+	ObjectTypeDB::bind_method(_MD("set_overlay","overlay"),&GraphNode::set_overlay);
+	ObjectTypeDB::bind_method(_MD("get_overlay"),&GraphNode::get_overlay);
+
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"title"),_SCS("set_title"),_SCS("get_title"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"show_close"),_SCS("set_show_close_button"),_SCS("is_close_button_visible"));
 
@@ -648,9 +675,15 @@ void GraphNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dragged",PropertyInfo(Variant::VECTOR2,"from"),PropertyInfo(Variant::VECTOR2,"to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));
 	ADD_SIGNAL(MethodInfo("close_request"));
+
+	BIND_CONSTANT( OVERLAY_DISABLED );
+	BIND_CONSTANT( OVERLAY_BREAKPOINT );
+	BIND_CONSTANT( OVERLAY_POSITION );
 }
 
 GraphNode::GraphNode() {
+
+	overlay=OVERLAY_DISABLED;
 	show_close=false;
 	connpos_dirty=true;
 	set_stop_mouse(false);

@@ -285,6 +285,17 @@ void ScriptEditor::_breaked(bool p_breaked,bool p_can_debug) {
 	debug_menu->get_popup()->set_item_disabled( debug_menu->get_popup()->get_item_index(DEBUG_BREAK), p_breaked );
 	debug_menu->get_popup()->set_item_disabled( debug_menu->get_popup()->get_item_index(DEBUG_CONTINUE), !p_breaked );
 
+	for(int i=0;i<tab_container->get_child_count();i++) {
+
+		ScriptEditorBase *se = tab_container->get_child(i)->cast_to<ScriptEditorBase>();
+		if (!se) {
+
+			continue;
+		}
+
+		se->set_debugger_active(p_breaked);
+	}
+
 }
 
 void ScriptEditor::_show_debugger(bool p_show) {
@@ -315,7 +326,16 @@ void ScriptEditor::_goto_script_line(REF p_script,int p_line) {
 
 
 	editor->push_item(p_script.ptr());
-	_goto_script_line2(p_line);
+
+	int selected = tab_container->get_current_tab();
+	if (selected<0 || selected>=tab_container->get_child_count())
+		return;
+
+	ScriptEditorBase *current = tab_container->get_child(selected)->cast_to<ScriptEditorBase>();
+	if (!current)
+		return;
+
+	current->goto_line(p_line,true);
 
 }
 
@@ -1133,6 +1153,7 @@ void ScriptEditor::clear() {
 
 void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 
+
 	for(int i=0;i<tab_container->get_child_count();i++) {
 
 		ScriptEditorBase *se = tab_container->get_child(i)->cast_to<ScriptEditorBase>();
@@ -1500,6 +1521,8 @@ void ScriptEditor::save_all_scripts() {
 
 	}
 
+	_update_script_names();
+
 }
 
 void ScriptEditor::apply_scripts() const {
@@ -1536,6 +1559,17 @@ void ScriptEditor::_editor_stop() {
 	debug_menu->get_popup()->set_item_disabled( debug_menu->get_popup()->get_item_index(DEBUG_STEP), true );
 	debug_menu->get_popup()->set_item_disabled( debug_menu->get_popup()->get_item_index(DEBUG_BREAK), true );
 	debug_menu->get_popup()->set_item_disabled( debug_menu->get_popup()->get_item_index(DEBUG_CONTINUE), true );
+
+	for(int i=0;i<tab_container->get_child_count();i++) {
+
+		ScriptEditorBase *se = tab_container->get_child(i)->cast_to<ScriptEditorBase>();
+		if (!se) {
+
+			continue;
+		}
+
+		se->set_debugger_active(false);
+	}
 }
 
 

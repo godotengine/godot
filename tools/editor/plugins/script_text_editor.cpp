@@ -312,7 +312,7 @@ void ScriptTextEditor::tag_saved_version() {
 	code_editor->get_text_edit()->tag_saved_version();
 }
 
-void ScriptTextEditor::goto_line(int p_line) {
+void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
 	code_editor->get_text_edit()->cursor_set_line(p_line);
 }
 
@@ -950,6 +950,11 @@ void ScriptTextEditor::get_breakpoints(List<int> *p_breakpoints) {
 void ScriptTextEditor::set_tooltip_request_func(String p_method,Object* p_obj) {
 
 	code_editor->get_text_edit()->set_tooltip_request_func(p_obj,p_method,this);
+}
+
+void ScriptTextEditor::set_debugger_active(bool p_active) {
+
+
 }
 
 ScriptTextEditor::ScriptTextEditor() {

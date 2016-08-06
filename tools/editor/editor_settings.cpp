@@ -647,11 +647,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("import/automatic_reimport_on_sources_changed",true);
 
-	set("visual_script/color_functions",Color(1,0.9,0.9));
-	set("visual_script/color_data",Color(0.9,1.0,0.9));
-	set("visual_script/color_operators",Color(0.9,0.9,1.0));
-	set("visual_script/color_flow_control",Color(1.0,1.0,0.8));
-
 	if (p_extra_config.is_valid()) {
 
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {

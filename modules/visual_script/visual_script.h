@@ -2,7 +2,7 @@
 #define VSCRIPT_H
 
 #include "script_language.h"
-
+#include "os/thread.h"
 
 class VisualScriptInstance;
 class VisualScriptNodeInstance;
@@ -16,6 +16,7 @@ friend class VisualScript;
 	Set<VisualScript*> scripts_used;
 
 	Array default_input_values;
+	bool breakpoint;
 
 	void _set_default_input_values(Array p_values);
 	Array _get_default_input_values() const;
@@ -47,14 +48,19 @@ public:
 	virtual String get_text() const=0;
 	virtual String get_category() const=0;
 
+	//used by editor, this is not really saved
+	void set_breakpoint(bool p_breakpoint);
+	bool is_breakpoint() const;
+
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance)=0;
 
+	VisualScriptNode();
 };
 
 
 class VisualScriptNodeInstance {
 friend class VisualScriptInstance;
-
+friend class VisualScriptLanguage; //for debugger
 
 
 	enum { //input argument addressing
@@ -181,6 +187,8 @@ friend class VisualScriptInstance;
 
 		int function_id;
 
+		Vector2 scroll;
+
 
 		Function() { function_id=-1; }
 
@@ -225,12 +233,15 @@ public:
 	bool has_function(const StringName& p_name) const;
 	void remove_function(const StringName& p_name);
 	void rename_function(const StringName& p_name,const StringName& p_new_name);
+	void set_function_scroll(const StringName& p_name, const Vector2& p_scroll);
+	Vector2 get_function_scroll(const StringName& p_name) const;
 	void get_function_list(List<StringName> *r_functions) const;
 	int get_function_node_id(const StringName& p_name) const;
 
 
 	void add_node(const StringName& p_func,int p_id,const Ref<VisualScriptNode>& p_node,const Point2& p_pos=Point2());
 	void remove_node(const StringName& p_func,int p_id);
+	bool has_node(const StringName& p_func,int p_id) const;
 	Ref<VisualScriptNode> get_node(const StringName& p_func,int p_id) const;
 	void set_node_pos(const StringName& p_func,int p_id,const Point2& p_pos);
 	Point2 get_node_pos(const StringName& p_func,int p_id) const;
@@ -308,7 +319,6 @@ public:
 
 
 class VisualScriptInstance : public ScriptInstance {
-
 	Object *owner;
 	Ref<VisualScript> script;
 
@@ -340,9 +350,10 @@ class VisualScriptInstance : public ScriptInstance {
 	Vector<Variant> default_values;
 	int max_input_args,max_output_args;
 
+	StringName source;
 
 	//Map<StringName,Function> functions;
-
+friend class VisualScriptLanguage; //for debugger
 public:
 	virtual bool set(const StringName& p_name, const Variant& p_value);
 	virtual bool get(const StringName& p_name, Variant &r_ret) const;
@@ -396,6 +407,23 @@ class VisualScriptLanguage : public ScriptLanguage {
 
 	Map<String,VisualScriptNodeRegisterFunc> register_funcs;
 
+	struct CallLevel {
+
+	    Variant *stack;
+	    Variant **work_mem;
+	    const StringName *function;
+	    VisualScriptInstance *instance;
+	    int *current_id;
+
+	};
+
+
+	int _debug_parse_err_node;
+	String _debug_parse_err_file;
+	String _debug_error;
+	int _debug_call_stack_pos;
+	int _debug_max_call_stack;
+	CallLevel *_call_stack;
 
 public:
 	StringName notification;
@@ -403,6 +431,52 @@ public:
 	static VisualScriptLanguage* singleton;
 
 	Mutex *lock;
+
+	bool debug_break(const String& p_error,bool p_allow_continue=true);
+	bool debug_break_parse(const String& p_file, int p_node,const String& p_error);
+
+	_FORCE_INLINE_ void enter_function(VisualScriptInstance *p_instance,const StringName* p_function, Variant *p_stack, Variant **p_work_mem,int *current_id) {
+
+	    if (Thread::get_main_ID()!=Thread::get_caller_ID())
+		return; //no support for other threads than main for now
+
+	    if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
+		ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() +1 );
+
+	    if (_debug_call_stack_pos >= _debug_max_call_stack) {
+		//stack overflow
+		_debug_error="Stack Overflow (Stack Size: "+itos(_debug_max_call_stack)+")";
+		ScriptDebugger::get_singleton()->debug(this);
+		return;
+	    }
+
+	    _call_stack[_debug_call_stack_pos].stack=p_stack;
+	    _call_stack[_debug_call_stack_pos].instance=p_instance;
+	    _call_stack[_debug_call_stack_pos].function=p_function;
+	    _call_stack[_debug_call_stack_pos].work_mem=p_work_mem;
+	    _call_stack[_debug_call_stack_pos].current_id=current_id;
+	    _debug_call_stack_pos++;
+	}
+
+	_FORCE_INLINE_ void exit_function() {
+
+	    if (Thread::get_main_ID()!=Thread::get_caller_ID())
+		return; //no support for other threads than main for now
+
+	    if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
+		ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() -1 );
+
+	    if (_debug_call_stack_pos==0) {
+
+		_debug_error="Stack Underflow (Engine Bug)";
+		ScriptDebugger::get_singleton()->debug(this);
+		return;
+	    }
+
+	    _debug_call_stack_pos--;
+	}
+
+	//////////////////////////////////////
 
 	virtual String get_name() const;
 

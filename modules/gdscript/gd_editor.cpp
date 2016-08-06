@@ -335,7 +335,7 @@ String GDScriptLanguage::make_function(const String& p_class,const String& p_nam
 		for(int i=0;i<p_args.size();i++) {
 			if (i>0)
 				s+=", ";
-			s+=p_args[i];
+			s+=p_args[i].get_slice(":",0);
 		}
 		s+=" ";
 	}

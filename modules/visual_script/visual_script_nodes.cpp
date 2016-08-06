@@ -529,9 +529,15 @@ public:
 		}
 
 		if (!valid) {
+
 			r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			if (p_outputs[0]->get_type()==Variant::STRING) {
 				r_error_str=*p_outputs[0];
+			} else {
+				if (unary)
+					r_error_str=String(op_names[op])+RTR(": Invalid argument of type: ")+Variant::get_type_name(p_inputs[0]->get_type());
+				else
+					r_error_str=String(op_names[op])+RTR(": Invalid arguments: ")+"A: "+Variant::get_type_name(p_inputs[0]->get_type())+"  B: "+Variant::get_type_name(p_inputs[1]->get_type());
 			}
 		}
 

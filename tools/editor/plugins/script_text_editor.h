@@ -115,7 +115,7 @@ public:
 	virtual void trim_trailing_whitespace();
 	virtual void tag_saved_version();
 
-	virtual void goto_line(int p_line);
+	virtual void goto_line(int p_line,bool p_with_error=false);
 
 	virtual void reload(bool p_soft);
 	virtual void get_breakpoints(List<int> *p_breakpoints);
@@ -125,6 +125,8 @@ public:
 	virtual bool goto_method(const String& p_method);
 
 	virtual void set_tooltip_request_func(String p_method,Object* p_obj);
+
+	virtual void set_debugger_active(bool p_active);
 
 	Control *get_edit_menu();
 

@@ -34,8 +34,14 @@
 class GraphNode : public Container {
 
 	OBJ_TYPE(GraphNode,Container);
+public:
 
-
+	enum Overlay {
+		OVERLAY_DISABLED,
+		OVERLAY_BREAKPOINT,
+		OVERLAY_POSITION
+	};
+private:
 
 	struct Slot {
 		bool enable_left;
@@ -77,6 +83,8 @@ class GraphNode : public Container {
 
 	Vector2 drag_from;
 	bool selected;
+
+	Overlay overlay;
 
 	Color modulate;
 protected:
@@ -133,10 +141,14 @@ public:
 	void set_modulate(const Color& p_color);
 	Color get_modulate() const;
 
+	void set_overlay(Overlay p_overlay);
+	Overlay get_overlay() const;
+
 	virtual Size2 get_minimum_size() const;
 
 	GraphNode();
 };
 
+VARIANT_ENUM_CAST( GraphNode::Overlay )
 
 #endif // GRAPH_NODE_H

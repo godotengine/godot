@@ -347,6 +347,8 @@ void VisualScriptEditor::_update_graph_connections() {
 void VisualScriptEditor::_update_graph(int p_only_id) {
 
 
+	updating_graph=true;
+
 	//byebye all nodes
 	if (p_only_id>=0) {
 		if (graph->has_node(itos(p_only_id))) {
@@ -368,6 +370,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 	if (!script->has_function(edited_func)) {
 		graph->hide();
 		select_func_text->show();
+		updating_graph=false;
 		return;
 	}
 
@@ -424,9 +427,14 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 		GraphNode *gnode = memnew( GraphNode );
 		gnode->set_title(node->get_caption());
+		if (error_line==E->get()) {
+			gnode->set_overlay(GraphNode::OVERLAY_POSITION);
+		} else if (node->is_breakpoint()) {
+			gnode->set_overlay(GraphNode::OVERLAY_BREAKPOINT);
+		}
 
-		if (EditorSettings::get_singleton()->has("visual_script/color_"+node->get_category())) {
-			gnode->set_modulate(EditorSettings::get_singleton()->get("visual_script/color_"+node->get_category()));
+		if (EditorSettings::get_singleton()->has("visual_script_editor/color_"+node->get_category())) {
+			gnode->set_modulate(EditorSettings::get_singleton()->get("visual_script_editor/color_"+node->get_category()));
 		}
 
 		gnode->set_meta("__vnode",node);
@@ -555,6 +563,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 	}
 
 	_update_graph_connections();
+	graph->call_deferred("set_scroll_ofs",script->get_function_scroll(edited_func)*EDSCALE); //may need to adapt a bit, let it do so
+	updating_graph=false;
 
 }
 
@@ -583,6 +593,10 @@ void VisualScriptEditor::_update_members() {
 		//ti->add_button(0,Control::get_icon("Edit","EditorIcons"),0); function arguments are in the node now
 		ti->add_button(0,Control::get_icon("Del","EditorIcons"),1);
 		ti->set_metadata(0,E->get());
+		if (E->get()==edited_func) {
+			ti->set_custom_bg_color(0,get_color("prop_category","Editor"));
+			ti->set_custom_color(0,Color(1,1,1,1));
+		}
 		if (selected==E->get())
 			ti->select(0);
 	}
@@ -660,6 +674,7 @@ void VisualScriptEditor::_member_selected() {
 
 			revert_on_drag=edited_func;
 			edited_func=selected;
+			_update_members();
 			_update_graph();
 		}
 
@@ -1804,23 +1819,91 @@ Ref<Texture> VisualScriptEditor::get_icon(){
 }
 
 bool VisualScriptEditor::is_unsaved(){
-
+#ifdef TOOLS_ENABLED
+	return script->is_edited();
+#else
 	return false;
+#endif
 }
 
 Variant VisualScriptEditor::get_edit_state(){
 
-	return Variant();
+	Dictionary d;
+	d["function"]=edited_func;
+	d["scroll"]=graph->get_scroll_ofs();
+	d["zoom"]=graph->get_zoom();
+	d["using_snap"]=graph->is_using_snap();
+	d["snap"]=graph->get_snap();
+	return d;
 }
 
 void VisualScriptEditor::set_edit_state(const Variant& p_state){
 
+	Dictionary d = p_state;
+	if (d.has("function")) {
+		edited_func=p_state;
+		selected=edited_func;
+
+	}
+
+	_update_graph();
+	_update_members();
+
+	if (d.has("scroll")) {
+		graph->set_scroll_ofs(d["scroll"]);
+	}
+	if (d.has("zoom")) {
+		graph->set_zoom(d["zoom"]);
+	}
+	if (d.has("snap")) {
+		graph->set_snap(d["snap"]);
+	}
+	if (d.has("snap_enabled")) {
+		graph->set_use_snap(d["snap_enabled"]);
+	}
 
 }
 
-void VisualScriptEditor::goto_line(int p_line){
 
+void VisualScriptEditor::_center_on_node(int p_id) {
 
+	Node *n = graph->get_node(itos(p_id));
+	if (!n)
+		return;
+	GraphNode *gn = n->cast_to<GraphNode>();
+	if (gn) {
+		gn->set_selected(true);
+		Vector2 new_scroll = gn->get_offset() - graph->get_size()*0.5 + gn->get_size()*0.5;
+		graph->set_scroll_ofs( new_scroll );
+		script->set_function_scroll(edited_func,new_scroll/EDSCALE);
+		script->set_edited(true); //so it's saved
+
+	}
+}
+
+void VisualScriptEditor::goto_line(int p_line, bool p_with_error){
+
+	p_line+=1; //add one because script lines begin from 0.
+
+	if (p_with_error)
+		error_line=p_line;
+
+	List<StringName> functions;
+	script->get_function_list(&functions);
+	for (List<StringName>::Element *E=functions.front();E;E=E->next()) {
+
+		if (script->has_node(E->get(),p_line)) {
+
+			edited_func=E->get();
+			selected=edited_func;
+			_update_graph();
+			_update_members();
+
+			call_deferred("_center_on_node",p_line); //editor might be just created and size might not exist yet
+
+			return;
+		}
+	}
 }
 
 void VisualScriptEditor::trim_trailing_whitespace(){
@@ -1830,7 +1913,7 @@ void VisualScriptEditor::trim_trailing_whitespace(){
 
 void VisualScriptEditor::ensure_focus(){
 
-
+	graph->grab_focus();
 }
 
 void VisualScriptEditor::tag_saved_version(){
@@ -1845,24 +1928,92 @@ void VisualScriptEditor::reload(bool p_soft){
 
 void VisualScriptEditor::get_breakpoints(List<int> *p_breakpoints){
 
+	List<StringName> functions;
+	script->get_function_list(&functions);
+	for (List<StringName>::Element *E=functions.front();E;E=E->next()) {
 
+		List<int> nodes;
+		script->get_node_list(E->get(),&nodes);
+		for (List<int>::Element *F=nodes.front();F;F=F->next()) {
+
+			Ref<VisualScriptNode> vsn = script->get_node(E->get(),F->get());
+			if (vsn->is_breakpoint()) {
+				p_breakpoints->push_back(F->get()-1); //subtract 1 because breakpoints in text start from zero
+			}
+		}
+	}
 }
 
 bool VisualScriptEditor::goto_method(const String& p_method){
 
-	return false;
+	if (!script->has_function(p_method))
+		return false;
+
+	edited_func=p_method;
+	selected=edited_func;
+	_update_members();
+	_update_graph();
+	return true;
 }
 
 void VisualScriptEditor::add_callback(const String& p_function,StringArray p_args){
 
+	if (script->has_function(p_function)) {
+		edited_func=p_function;
+		selected=edited_func;
+		_update_members();
+		_update_graph();
+		return;
+	}
+
+	Ref<VisualScriptFunction> func;
+	func.instance();
+	for(int i=0;i<p_args.size();i++) {
+
+		String name = p_args[i];
+		Variant::Type type=Variant::NIL;
+
+		if (name.find(":")!=-1) {
+			String tt = name.get_slice(":",1);
+			name=name.get_slice(":",0);
+			for(int j=0;j<Variant::VARIANT_MAX;j++) {
+
+				String tname = Variant::get_type_name(Variant::Type(j));
+				if (tname==tt) {
+					type=Variant::Type(j);
+					break;
+				}
+			}
+		}
+
+		func->add_argument(type,name);
+	}
+
+	func->set_name(p_function);
+	script->add_function(p_function);
+	script->add_node(p_function,script->get_available_id(),func);
+
+	edited_func=p_function;
+	selected=edited_func;
+	_update_members();
+	_update_graph();
+	graph->call_deferred("set_scroll_ofs",script->get_function_scroll(edited_func)); //for first time it might need to be later
+
+	//undo_redo->clear_history();
 
 }
 
 void VisualScriptEditor::update_settings(){
 
-
+	_update_graph();
 }
 
+void VisualScriptEditor::set_debugger_active(bool p_active) {
+	if (!p_active) {
+		error_line=-1;
+		_update_graph(); //clear line break
+	}
+}
 
 void VisualScriptEditor::set_tooltip_request_func(String p_method,Object* p_obj){
 
@@ -1871,7 +2022,7 @@ void VisualScriptEditor::set_tooltip_request_func(String p_method,Object* p_obj)
 
 Control *VisualScriptEditor::get_edit_menu(){
 
-	return NULL;
+	return edit_menu;
 }
 
 void VisualScriptEditor::_change_base_type() {
@@ -2166,6 +2317,55 @@ void  VisualScriptEditor::_notification(int p_what) {
 	}
 }
 
+void VisualScriptEditor::_graph_ofs_changed(const Vector2& p_ofs) {
+
+	if (updating_graph)
+		return;
+
+	updating_graph=true;
+
+	if (script->has_function(edited_func)) {
+		script->set_function_scroll(edited_func,graph->get_scroll_ofs()/EDSCALE);
+		script->set_edited(true);
+	}
+	updating_graph=false;
+}
+
+void VisualScriptEditor::_menu_option(int p_what) {
+
+	switch(p_what) {
+		case EDIT_DELETE_NODES: {
+			_on_nodes_delete();
+		} break;
+		case EDIT_TOGGLE_BREAKPOINT: {
+
+			List<String> reselect;
+			for(int i=0;i<graph->get_child_count();i++) {
+				GraphNode *gn = graph->get_child(i)->cast_to<GraphNode>();
+				if (gn) {
+					if (gn->is_selected()) {
+						int id = String(gn->get_name()).to_int();
+						Ref<VisualScriptNode> vsn = script->get_node(edited_func,id);
+						if (vsn.is_valid()) {
+							vsn->set_breakpoint(!vsn->is_breakpoint());
+							reselect.push_back(gn->get_name());
+						}
+					}
+				}
+			}
+
+			_update_graph();
+
+			for(List<String>::Element *E=reselect.front();E;E=E->next()) {
+				GraphNode *gn = graph->get_node(E->get())->cast_to<GraphNode>();
+				gn->set_selected(true);
+			}
+
+		} break;
+
+	}
+}
+
 void VisualScriptEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_member_button",&VisualScriptEditor::_member_button);
@@ -2186,6 +2386,9 @@ void VisualScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_available_node_doubleclicked",&VisualScriptEditor::_available_node_doubleclicked);
 	ObjectTypeDB::bind_method("_default_value_edited",&VisualScriptEditor::_default_value_edited);
 	ObjectTypeDB::bind_method("_default_value_changed",&VisualScriptEditor::_default_value_changed);
+	ObjectTypeDB::bind_method("_menu_option",&VisualScriptEditor::_menu_option);
+	ObjectTypeDB::bind_method("_graph_ofs_changed",&VisualScriptEditor::_graph_ofs_changed);
+	ObjectTypeDB::bind_method("_center_on_node",&VisualScriptEditor::_center_on_node);
 
 
 
@@ -2211,6 +2414,14 @@ void VisualScriptEditor::_bind_methods() {
 
 VisualScriptEditor::VisualScriptEditor() {
 
+	updating_graph=false;
+
+	edit_menu = memnew( MenuButton );
+	edit_menu->set_text(TTR("Edit"));
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/delete_selected"), EDIT_DELETE_NODES);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/toggle_breakpoint"), EDIT_TOGGLE_BREAKPOINT);
+	edit_menu->get_popup()->connect("item_pressed",this,"_menu_option");
+
 	main_hsplit = memnew( HSplitContainer );
 	add_child(main_hsplit);
 	main_hsplit->set_area_as_parent_rect();
@@ -2232,7 +2443,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	members->set_hide_root(true);
 	members->connect("button_pressed",this,"_member_button");
 	members->connect("item_edited",this,"_member_edited");
-	members->connect("cell_selected",this,"_member_selected");
+	members->connect("cell_selected",this,"_member_selected",varray(),CONNECT_DEFERRED);
 	members->set_single_select_cell_editing_only_when_already_selected(true);
 	members->set_hide_folding(true);
 	members->set_drag_forwarding(this);
@@ -2274,6 +2485,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->connect("duplicate_nodes_request",this,"_on_nodes_duplicate");
 	graph->set_drag_forwarding(this);
 	graph->hide();
+	graph->connect("scroll_offset_changed",this,"_graph_ofs_changed");
 
 	select_func_text = memnew( Label );
 	select_func_text->set_text(TTR("Select or create a function to edit graph"));
@@ -2358,6 +2570,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	add_child(default_value_edit);
 	default_value_edit->connect("variant_changed",this,"_default_value_changed");
 
+	error_line=-1;
 }
 
 VisualScriptEditor::~VisualScriptEditor() {
@@ -2376,9 +2589,26 @@ static ScriptEditorBase * create_editor(const Ref<Script>& p_script) {
 	return NULL;
 }
 
+static void register_editor_callback() {
+
+	ScriptEditor::register_create_script_editor_function(create_editor);
+	EditorSettings::get_singleton()->set("visual_script_editor/color_functions",Color(1,0.9,0.9));
+	EditorSettings::get_singleton()->set("visual_script_editor/color_data",Color(0.9,1.0,0.9));
+	EditorSettings::get_singleton()->set("visual_script_editor/color_operators",Color(0.9,0.9,1.0));
+	EditorSettings::get_singleton()->set("visual_script_editor/color_flow_control",Color(1.0,1.0,0.8));
+
+
+	ED_SHORTCUT("visual_script_editor/delete_selected", TTR("Delete Selected"));
+	ED_SHORTCUT("visual_script_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), KEY_F9);
+
+}
 
 void VisualScriptEditor::register_editor() {
 
-	ScriptEditor::register_create_script_editor_function(create_editor);
+	//too early to register stuff here, request a callback
+	EditorNode::add_plugin_init_callback(register_editor_callback);
+
+
+
 }
 

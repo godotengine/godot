@@ -94,6 +94,7 @@
 
 
 typedef void (*EditorNodeInitCallback)();
+typedef void (*EditorPluginInitializeCallback)();
 
 class EditorPluginList;
 
@@ -575,10 +576,19 @@ private:
 
 	static void _file_access_close_error_notify(const String& p_str);
 
+
+	enum {
+		MAX_INIT_CALLBACKS=128
+	};
+
+	static int plugin_init_callback_count;
+	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
+
+	static void add_plugin_init_callback(EditorPluginInitializeCallback p_callback);
 
 	enum EditorTable {
 		EDITOR_2D = 0,
@@ -740,6 +750,8 @@ public:
 	void get_singleton(const char* arg1, bool arg2);
 
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
+
+
 
 };
 

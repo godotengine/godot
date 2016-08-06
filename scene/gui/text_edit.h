@@ -438,7 +438,7 @@ public:
 	bool is_highlight_all_occurrences_enabled() const;
 	bool is_selection_active() const;
 	int get_selection_from_line() const;
-    int get_selection_from_column() const;
+	int get_selection_from_column() const;
 	int get_selection_to_line() const;
 	int get_selection_to_column() const;
 	String get_selection_text() const;
@@ -496,7 +496,7 @@ public:
 
 	String get_text_for_completion();
 
-    virtual bool is_text_field() const;
+	virtual bool is_text_field() const;
 	TextEdit();
 	~TextEdit();
 };

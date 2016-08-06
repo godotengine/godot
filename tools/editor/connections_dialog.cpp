@@ -674,7 +674,7 @@ void ConnectionsDock::update_tree() {
 						tname=Variant::get_type_name(pi.type);
 					}
 					signaldesc+=tname+" "+(pi.name==""?String("arg "+itos(i)):pi.name);
-					argnames.push_back(pi.name);
+					argnames.push_back(pi.name+":"+tname);
 
 				}
 				signaldesc+=" ";

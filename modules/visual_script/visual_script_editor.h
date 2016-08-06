@@ -22,6 +22,13 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	};
 
+	enum {
+		EDIT_DELETE_NODES,
+		EDIT_TOGGLE_BREAKPOINT
+	};
+
+	MenuButton *edit_menu;
+
 	Ref<VisualScript> script;
 
 	Button *base_type_select;
@@ -57,6 +64,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	Label *select_func_text;
 
+	bool updating_graph;
+
 	void _show_hint(const String& p_hint);
 	void _hide_timer();
 
@@ -88,7 +97,10 @@ class VisualScriptEditor : public ScriptEditorBase {
 	String _validate_name(const String& p_name) const;
 
 
+	int error_line;
+
 	void _node_selected(Node* p_node);
+	void _center_on_node(int p_id);
 
 	void _node_filter_changed(const String& p_text);
 	void _change_base_type_callback();
@@ -129,6 +141,10 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _default_value_changed();
 	void _default_value_edited(Node * p_button,int p_id,int p_input_port);
+
+	void _menu_option(int p_what);
+
+	void _graph_ofs_changed(const Vector2& p_ofs);
 protected:
 
 	void _notification(int p_what);
@@ -145,7 +161,7 @@ public:
 	virtual bool is_unsaved();
 	virtual Variant get_edit_state();
 	virtual void set_edit_state(const Variant& p_state);
-	virtual void goto_line(int p_line);
+	virtual void goto_line(int p_line,bool p_with_error=false);
 	virtual void trim_trailing_whitespace();
 	virtual void ensure_focus();
 	virtual void tag_saved_version();
@@ -154,7 +170,7 @@ public:
 	virtual bool goto_method(const String& p_method);
 	virtual void add_callback(const String& p_function,StringArray p_args);
 	virtual void update_settings();
-
+	virtual void set_debugger_active(bool p_active);
 	virtual void set_tooltip_request_func(String p_method,Object* p_obj);
 	virtual Control *get_edit_menu();
 
