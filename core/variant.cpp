@@ -1510,7 +1510,7 @@ Variant::operator String() const {
 
 	switch( type ) {
 
-		case NIL: return "Null";
+		case NIL: return "";
 		case BOOL: return _data._bool ? "True" : "False";
 		case INT: return String::num(_data._int);
 		case REAL: return String::num(_data._real);

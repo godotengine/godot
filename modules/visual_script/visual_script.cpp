@@ -1351,8 +1351,8 @@ bool VisualScriptInstance::has_method(const StringName& p_method) const{
 }
 
 
-#define VSDEBUG(m_text) print_line(m_text)
-//#define VSDEBUG(m_text)
+//#define VSDEBUG(m_text) print_line(m_text)
+#define VSDEBUG(m_text)
 
 Variant VisualScriptInstance::call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error){
 
