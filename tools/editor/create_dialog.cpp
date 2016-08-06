@@ -326,7 +326,7 @@ Object *CreateDialog::instance_selected() {
 		}
 	}
 
-	print_line("NONE");
+
 	return NULL;
 }
 
