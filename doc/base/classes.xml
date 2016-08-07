@@ -11432,6 +11432,34 @@
 				On exit, don't forget to remove the plugin by calling [method remove_import_plugin]
 			</description>
 		</method>
+		<method name="add_tool_menu_item">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="handler" type="Object">
+			</argument>
+			<argument index="2" name="callback" type="String">
+			</argument>
+			<argument index="3" name="ud" type="Variant" default="NULL">
+			</argument>
+			<description>
+				Add a custom item to the "Tools" menu.
+				The name parameter is in the format "category_name/Submenu Name", the menu will group items with the same category. Optionally the category can be omited, and those items are grouped on the top of the menu.
+				When a item is pressed the callback method is called on the handler, and the given "ud" parameter is passed as an argument.
+				On exit, use [method remove_tool_menu_item] to remove the item.
+			</description>
+		</method>
+		<method name="add_tool_submenu_item">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="submenu" type="PopupMenu">
+			</argument>
+			<description>
+				Add a custom submenu to the "Tools" menu.
+				The name parameter is in the format "category_name/Submenu Name", the menu will group items with the same category. Optionally the category can be omited, and those items are grouped on the top of the menu.
+				It's nescessary to manually create a callback for this menu, and is recommended give a name to the popup menu node, e.g. [code]submenu.set_name("name")[/code].
+				On exit, use [method remove_tool_menu_item] to remove the submenu.
+			</description>
+		</method>
 		<method name="apply_changes" qualifiers="virtual">
 			<description>
 				This method is called when the editor is about to save the project, switch to another tab, etc. It asks the plugin to apply any pending state changes to ensure consistency.
@@ -11605,6 +11633,13 @@
 		<method name="save_external_data" qualifiers="virtual">
 			<description>
 				This method is called after the editor save the project or when the it's closed. It asks the plugin to save edited external scenes/resources.
+			</description>
+		</method>
+		<method name="remove_tool_menu_item">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Remove a item from the "Tools" menu, if the item is a submenu, the sub popup menu is automatically freed. Don't forget to call this on exit.
 			</description>
 		</method>
 		<method name="set_state" qualifiers="virtual">
