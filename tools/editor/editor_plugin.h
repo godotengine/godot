@@ -98,6 +98,10 @@ public:
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
 
+	void add_tool_menu_item(const String& p_name, Object *p_handler, const String& p_callback, const Variant& p_ud = Variant());
+	void add_tool_submenu_item(const String& p_name, Object *p_submenu);
+	void remove_tool_menu_item(const String& p_name);
+
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
 	virtual bool forward_input_event(const InputEvent& p_event);
 	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
