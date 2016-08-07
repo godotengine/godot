@@ -683,6 +683,8 @@ void SceneTreeDock::_notification(int p_what) {
 			}
 			button_add->set_icon(get_icon("Add","EditorIcons"));
 			button_instance->set_icon(get_icon("Instance","EditorIcons"));
+			button_create_script->set_icon(get_icon("Script","EditorIcons"));
+
 
 			filter_icon->set_texture(get_icon("Zoom","EditorIcons"));
 
@@ -1302,9 +1304,16 @@ void SceneTreeDock::_delete_confirm() {
 
 void SceneTreeDock::_selection_changed() {
 
-	if (EditorNode::get_singleton()->get_editor_selection()->get_selection().size()>1) {
+	int selection_size = EditorNode::get_singleton()->get_editor_selection()->get_selection().size();
+	if (selection_size>1) {
 		//automatically turn on multi-edit
 		_tool_selected(TOOL_MULTI_EDIT);
+	}
+
+	if (selection_size==1 && EditorNode::get_singleton()->get_editor_selection()->get_selection().front()->key()->get_script().is_null()) {
+		button_create_script->show();
+	} else {
+		button_create_script->hide();
 	}
 
 	//tool_buttons[TOOL_MULTI_EDIT]->set_disabled(EditorNode::get_singleton()->get_editor_selection()->get_selection().size()<2);
@@ -1899,6 +1908,12 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	filter->connect("text_changed",this,"_filter_changed");
 
 
+	tb = memnew( ToolButton );
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_SCRIPT, false));
+	tb->set_tooltip(TTR("Create a new script for the selected node."));
+	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/add_script"));
+	filter_hbc->add_child(tb);
+	button_create_script=tb;
 
 
 	scene_tree = memnew( SceneTreeEditor(false,true,true ));

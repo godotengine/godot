@@ -552,13 +552,12 @@ public:
 	virtual String get_text() const;
 	virtual String get_category() const { return "data"; }
 
-	void set_resource_path(const String &p_path);
-	String get_resource_path();
 
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptSelf();
 };
+
 
 
 void register_visual_script_nodes();

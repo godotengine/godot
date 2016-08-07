@@ -78,6 +78,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	ToolButton *button_add;
 	ToolButton *button_instance;
+	ToolButton *button_create_script;
 
 	SceneTreeEditor *scene_tree;
 

@@ -1,4 +1,6 @@
 #include "visual_script_flow_control.h"
+#include "os/keyboard.h"
+#include "globals.h"
 
 //////////////////////////////////////////
 ////////////////RETURN////////////////////
@@ -104,7 +106,7 @@ public:
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
 
 		if (with_value) {
 			*p_working_mem = *p_inputs[0];
@@ -213,7 +215,7 @@ public:
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
 
 		if (p_inputs[0]->operator bool())
 			return 0;
@@ -307,7 +309,7 @@ public:
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
 
 		bool keep_going = p_inputs[0]->operator bool();
 
@@ -404,9 +406,9 @@ public:
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
 
-		if (p_start_sequence) {
+		if (p_start_mode==START_MODE_BEGIN_SEQUENCE) {
 			p_working_mem[0]=*p_inputs[0];
 			bool valid;
 			bool can_iter = p_inputs[0]->iter_init(p_working_mem[1],valid);
@@ -430,7 +432,7 @@ public:
 			}
 
 
-		} else {
+		} else { //continue sequence
 
 			bool valid;
 			bool can_iter = p_working_mem[0].iter_next(p_working_mem[1],valid);
@@ -555,9 +557,9 @@ public:
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant** p_inputs,Variant** p_outputs,bool p_start_sequence,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
 
-		if (p_start_sequence) {
+		if (p_start_mode==START_MODE_BEGIN_SEQUENCE) {
 
 			p_working_mem[0]=0;
 		}
@@ -591,6 +593,1075 @@ VisualScriptSequence::VisualScriptSequence() {
 	steps=1;
 }
 
+
+//////////////////////////////////////////
+////////////////EVENT TYPE FILTER///////////
+//////////////////////////////////////////
+
+static const char* event_type_names[InputEvent::TYPE_MAX]={
+	"None",
+	"Key",
+	"MouseMotion",
+	"MouseButton",
+	"JoystickMotion",
+	"JoystickButton",
+	"ScreenTouch",
+	"ScreenDrag",
+	"Action"
+};
+
+int VisualScriptInputSelector::get_output_sequence_port_count() const {
+
+	return InputEvent::TYPE_MAX;
+}
+
+bool VisualScriptInputSelector::has_input_sequence_port() const{
+
+	return true;
+}
+
+int VisualScriptInputSelector::get_input_value_port_count() const{
+
+
+	return 1;
+}
+int VisualScriptInputSelector::get_output_value_port_count() const{
+
+	return 1;
+}
+
+String VisualScriptInputSelector::get_output_sequence_port_text(int p_port) const {
+
+	return event_type_names[p_port];
+}
+
+PropertyInfo VisualScriptInputSelector::get_input_value_port_info(int p_idx) const{
+
+	return PropertyInfo(Variant::INPUT_EVENT,"event");
+}
+
+PropertyInfo VisualScriptInputSelector::get_output_value_port_info(int p_idx) const{
+
+	return PropertyInfo(Variant::INPUT_EVENT,"");
+}
+
+
+String VisualScriptInputSelector::get_caption() const {
+
+	return "InputSelector";
+}
+
+String VisualScriptInputSelector::get_text() const {
+
+	return "";
+}
+
+
+class VisualScriptNodeInstanceInputSelector : public VisualScriptNodeInstance {
+public:
+
+	VisualScriptInstance* instance;
+	InputEvent::Type type;
+
+	//virtual int get_working_memory_size() const { return 0; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		if (p_inputs[0]->get_type()!=Variant::INPUT_EVENT) {
+			r_error_str="Input value not of type event";
+			r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			return 0;
+		}
+
+		InputEvent event = *p_inputs[0];
+
+		*p_outputs[0] = event;
+
+		return event.type;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptInputSelector::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceInputSelector * instance = memnew(VisualScriptNodeInstanceInputSelector );
+	instance->instance=p_instance;
+	return instance;
+}
+
+
+
+void VisualScriptInputSelector::_bind_methods() {
+
+
+}
+
+VisualScriptInputSelector::VisualScriptInputSelector() {
+
+
+}
+
+//////////////////////////////////////////
+////////////////EVENT ACTION FILTER///////////
+//////////////////////////////////////////
+
+
+int VisualScriptInputFilter::get_output_sequence_port_count() const {
+
+	return filters.size();
+}
+
+bool VisualScriptInputFilter::has_input_sequence_port() const{
+
+	return true;
+}
+
+int VisualScriptInputFilter::get_input_value_port_count() const{
+
+
+	return 1;
+}
+int VisualScriptInputFilter::get_output_value_port_count() const{
+
+	return 1;
+}
+
+String VisualScriptInputFilter::get_output_sequence_port_text(int p_port) const {
+
+	String text;
+
+	switch(filters[p_port].type) {
+		case InputEvent::NONE: {
+			text="None";
+		} break;
+		case InputEvent::KEY: {
+
+			InputEventKey k = filters[p_port].key;
+
+			if (k.scancode==0 && k.unicode==0) {
+				text="No Key";
+			} else {
+				if (k.scancode!=0) {
+					text="KeyCode: "+keycode_get_string(k.scancode);
+				} else if (k.unicode!=0) {
+					text="Uniode: "+String::chr(k.unicode);
+				}
+
+				if (k.pressed)
+					text+=", Pressed";
+				else
+					text+=", Released";
+
+				if (k.echo)
+					text+=", Echo";
+				if (k.mod.alt)
+					text="Alt+"+text;
+				if (k.mod.shift)
+					text="Shift+"+text;
+				if (k.mod.control)
+					text="Ctrl+"+text;
+				if (k.mod.meta)
+					text="Meta+"+text;
+			}
+
+		} break;
+		case InputEvent::MOUSE_MOTION: {
+			InputEventMouseMotion mm = filters[p_port].mouse_motion;
+			text="Mouse Motion";
+
+			String b = "Left,Right,Middle,WheelUp,WheelDown,WheelLeft,WheelRight";
+
+			for(int i=0;i<7;i++) {
+				if (mm.button_mask&(1<<i)) {
+					text=b.get_slice(",",i)+"+"+text;
+				}
+			}
+			if (mm.mod.alt)
+				text="Alt+"+text;
+			if (mm.mod.shift)
+				text="Shift+"+text;
+			if (mm.mod.control)
+				text="Ctrl+"+text;
+			if (mm.mod.meta)
+				text="Meta+"+text;
+		} break;
+		case InputEvent::MOUSE_BUTTON: {
+
+			InputEventMouseButton mb = filters[p_port].mouse_button;
+
+			String b = "Any,Left,Right,Middle,WheelUp,WheelDown,WheelLeft,WheelRight";
+
+			text=b.get_slice(",",mb.button_index)+" Mouse Button";
+
+			if (mb.pressed)
+				text+=", Pressed";
+			else
+				text+=", Released";
+
+			if (mb.doubleclick)
+				text+=", DblClick";
+			if (mb.mod.alt)
+				text="Alt+"+text;
+			if (mb.mod.shift)
+				text="Shift+"+text;
+			if (mb.mod.control)
+				text="Ctrl+"+text;
+			if (mb.mod.meta)
+				text="Meta+"+text;
+
+
+		} break;
+		case InputEvent::JOYSTICK_MOTION: {
+
+			InputEventJoystickMotion jm = filters[p_port].joy_motion;
+
+			text="JoyMotion Axis "+itos(jm.axis>>1);
+			if (jm.axis&1)
+				text+=" > "+rtos(jm.axis_value);
+			else
+				text+=" < "+rtos(-jm.axis_value);
+
+		} break;
+		case InputEvent::JOYSTICK_BUTTON: {
+			InputEventJoystickButton jb = filters[p_port].joy_button;
+
+			text="JoyButton "+itos(jb.button_index);
+			if (jb.pressed)
+				text+=", Pressed";
+			else
+				text+=", Released";
+		} break;
+		case InputEvent::SCREEN_TOUCH: {
+			InputEventScreenTouch sd = filters[p_port].screen_touch;
+
+			text="Touch Finger "+itos(sd.index);
+			if (sd.pressed)
+				text+=", Pressed";
+			else
+				text+=", Released";
+		} break;
+		case InputEvent::SCREEN_DRAG: {
+			InputEventScreenDrag sd = filters[p_port].screen_drag;
+			text="Drag Finger "+itos(sd.index);
+		} break;
+		case InputEvent::ACTION: {
+
+
+			List<PropertyInfo> pinfo;
+			Globals::get_singleton()->get_property_list(&pinfo);
+			int index=1;
+
+			text="No Action";
+			for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+				const PropertyInfo &pi=E->get();
+
+				if (!pi.name.begins_with("input/"))
+					continue;
+
+
+				if (filters[p_port].action.action==index) {
+					text="Action "+pi.name.substr(pi.name.find("/")+1,pi.name.length());
+					break;
+				}
+				index++;
+			}
+
+			if (filters[p_port].action.pressed)
+				text+=", Pressed";
+			else
+				text+=", Released";
+
+
+		} break;
+	}
+
+
+
+	return text+" - "+itos(p_port);
+}
+
+PropertyInfo VisualScriptInputFilter::get_input_value_port_info(int p_idx) const{
+
+	return PropertyInfo(Variant::INPUT_EVENT,"event");
+}
+
+PropertyInfo VisualScriptInputFilter::get_output_value_port_info(int p_idx) const{
+
+	return PropertyInfo(Variant::INPUT_EVENT,"");
+}
+
+
+String VisualScriptInputFilter::get_caption() const {
+
+	return "InputFilter";
+}
+
+String VisualScriptInputFilter::get_text() const {
+
+	return "";
+}
+
+
+
+bool VisualScriptInputFilter::_set(const StringName& p_name, const Variant& p_value) {
+
+	if (p_name=="filter_count") {
+		filters.resize(p_value);
+		_change_notify();
+		ports_changed_notify();
+		return true;
+	}
+
+
+	if (String(p_name).begins_with("filter_")) {
+
+		int idx = String(p_name).replace_first("filters_","").get_slice("/",0).to_int();
+
+		ERR_FAIL_INDEX_V(idx,filters.size(),false);
+
+		String what = String(p_name).get_slice("/",1);
+
+
+		if (what=="type") {
+			filters[idx]=InputEvent();
+			filters[idx].type=InputEvent::Type(int(p_value));
+			if (filters[idx].type==InputEvent::JOYSTICK_MOTION) {
+				filters[idx].joy_motion.axis_value=0.5; //for treshold
+			} else if (filters[idx].type==InputEvent::KEY) {
+				filters[idx].key.pressed=true; //put these as true to make it more user friendly
+			} else if (filters[idx].type==InputEvent::MOUSE_BUTTON) {
+				filters[idx].mouse_button.pressed=true;
+			} else if (filters[idx].type==InputEvent::JOYSTICK_BUTTON) {
+				filters[idx].joy_button.pressed=true;
+			} else if (filters[idx].type==InputEvent::SCREEN_TOUCH) {
+				filters[idx].screen_touch.pressed=true;
+			} else if (filters[idx].type==InputEvent::ACTION) {
+				filters[idx].action.pressed=true;
+			}
+			_change_notify();
+			ports_changed_notify();
+
+			return true;
+		}
+		if (what=="device") {
+			filters[idx].device=p_value;
+			ports_changed_notify();
+			return true;
+		}
+
+		switch(filters[idx].type) {
+
+			case InputEvent::KEY: {
+
+				if (what=="scancode") {
+					String sc = p_value;
+					if (sc==String()) {
+						filters[idx].key.scancode=0;
+					} else {
+						filters[idx].key.scancode=find_keycode(p_value);
+					}
+
+				} else if (what=="unicode") {
+
+					String uc = p_value;
+
+					if (uc==String()) {
+						filters[idx].key.unicode=0;
+					} else {
+						filters[idx].key.unicode=uc[0];
+					}
+
+				} else if (what=="pressed") {
+
+					filters[idx].key.pressed=p_value;
+				} else if (what=="echo") {
+
+					filters[idx].key.echo=p_value;
+
+				} else if (what=="mod_alt") {
+					filters[idx].key.mod.alt=p_value;
+
+				} else if (what=="mod_shift") {
+					filters[idx].key.mod.shift=p_value;
+
+				} else if (what=="mod_ctrl") {
+					filters[idx].key.mod.control=p_value;
+
+				} else  if (what=="mod_meta") {
+					filters[idx].key.mod.meta=p_value;
+				} else {
+					return false;
+				}
+				ports_changed_notify();
+
+				return true;
+			} break;
+			case InputEvent::MOUSE_MOTION: {
+
+
+				if (what=="button_mask") {
+					filters[idx].mouse_motion.button_mask=p_value;
+
+				} else if (what=="mod_alt") {
+					filters[idx].mouse_motion.mod.alt=p_value;
+
+				} else if (what=="mod_shift") {
+					filters[idx].mouse_motion.mod.shift=p_value;
+
+				} else if (what=="mod_ctrl") {
+					filters[idx].mouse_motion.mod.control=p_value;
+
+				} else  if (what=="mod_meta") {
+					filters[idx].mouse_motion.mod.meta=p_value;
+				} else {
+					return false;
+				}
+
+				ports_changed_notify();
+				return true;
+
+			} break;
+			case InputEvent::MOUSE_BUTTON: {
+
+				if (what=="button_index") {
+					filters[idx].mouse_button.button_index=p_value;
+				} else if (what=="pressed") {
+					filters[idx].mouse_button.pressed=p_value;
+				} else if (what=="doubleclicked") {
+					filters[idx].mouse_button.doubleclick=p_value;
+
+				} else if (what=="mod_alt") {
+					filters[idx].mouse_button.mod.alt=p_value;
+
+				} else if (what=="mod_shift") {
+					filters[idx].mouse_button.mod.shift=p_value;
+
+				} else if (what=="mod_ctrl") {
+					filters[idx].mouse_button.mod.control=p_value;
+
+				} else  if (what=="mod_meta") {
+					filters[idx].mouse_button.mod.meta=p_value;
+				} else {
+					return false;
+				}
+				ports_changed_notify();
+				return true;
+
+			} break;
+			case InputEvent::JOYSTICK_MOTION: {
+
+				if (what=="axis") {
+					filters[idx].joy_motion.axis=int(p_value)<<1|filters[idx].joy_motion.axis;
+				} else if (what=="mode") {
+					filters[idx].joy_motion.axis|=int(p_value);
+				} else if (what=="treshold") {
+					filters[idx].joy_motion.axis_value=p_value;
+				} else {
+					return false;
+				}
+				ports_changed_notify();
+				return true;
+
+
+			} break;
+			case InputEvent::JOYSTICK_BUTTON: {
+
+				if (what=="button_index") {
+					filters[idx].joy_button.button_index=p_value;
+				} else if (what=="pressed") {
+					filters[idx].joy_button.pressed=p_value;
+				} else {
+					return false;
+				}
+				ports_changed_notify();
+				return true;
+
+			} break;
+			case InputEvent::SCREEN_TOUCH: {
+
+				if (what=="finger_index") {
+					filters[idx].screen_touch.index=p_value;
+				} else if (what=="pressed") {
+					filters[idx].screen_touch.pressed=p_value;
+				} else {
+					return false;
+				}
+				ports_changed_notify();
+				return true;
+			} break;
+			case InputEvent::SCREEN_DRAG: {
+				if (what=="finger_index") {
+					filters[idx].screen_drag.index=p_value;
+				} else {
+					return false;
+				}
+				ports_changed_notify();
+				return true;
+			} break;
+			case InputEvent::ACTION: {
+
+
+				if (what=="action_name") {
+
+					List<PropertyInfo> pinfo;
+					Globals::get_singleton()->get_property_list(&pinfo);
+					int index=1;
+
+					for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+						const PropertyInfo &pi=E->get();
+
+						if (!pi.name.begins_with("input/"))
+							continue;
+
+						String name = pi.name.substr(pi.name.find("/")+1,pi.name.length());
+						if (name==String(p_value)) {
+
+							filters[idx].action.action=index;
+							ports_changed_notify();
+							return true;
+						}
+
+						index++;
+					}
+
+					filters[idx].action.action=0;
+					ports_changed_notify();
+
+					return false;
+
+				} else if (what=="pressed") {
+
+					filters[idx].action.pressed=p_value;
+					ports_changed_notify();
+					return true;
+				}
+
+
+			} break;
+
+		}
+	}
+	return false;
+}
+
+bool VisualScriptInputFilter::_get(const StringName& p_name,Variant &r_ret) const{
+
+	if (p_name=="filter_count") {
+		r_ret=filters.size();
+		return true;
+	}
+
+
+	if (String(p_name).begins_with("filter_")) {
+
+		int idx = String(p_name).replace_first("filters_","").get_slice("/",0).to_int();
+
+		ERR_FAIL_INDEX_V(idx,filters.size(),false);
+
+		String what = String(p_name).get_slice("/",1);
+
+
+		if (what=="type") {
+			r_ret=filters[idx].type;
+			return true;
+		}
+		if (what=="device") {
+			r_ret=filters[idx].device;
+			return true;
+		}
+
+		switch(filters[idx].type) {
+
+			case InputEvent::KEY: {
+
+				if (what=="scancode") {
+					if (filters[idx].key.scancode==0)
+						r_ret=String();
+					else {
+
+						r_ret=keycode_get_string(filters[idx].key.scancode);
+					}
+
+				} else if (what=="unicode") {
+
+
+					if (filters[idx].key.unicode==0) {
+						r_ret=String();
+					} else {
+						CharType str[2]={ (CharType)filters[idx].key.unicode, 0};
+						r_ret=String(str);
+					}
+
+				} else if (what=="pressed") {
+
+					r_ret=filters[idx].key.pressed;
+				} else if (what=="echo") {
+
+					r_ret=filters[idx].key.echo;
+
+				} else if (what=="mod_alt") {
+					r_ret=filters[idx].key.mod.alt;
+
+				} else if (what=="mod_shift") {
+					r_ret=filters[idx].key.mod.shift;
+
+				} else if (what=="mod_ctrl") {
+					r_ret=filters[idx].key.mod.control;
+
+				} else  if (what=="mod_meta") {
+					r_ret=filters[idx].key.mod.meta;
+				} else {
+					return false;
+				}
+
+				return true;
+			} break;
+			case InputEvent::MOUSE_MOTION: {
+
+
+				if (what=="button_mask") {
+					r_ret=filters[idx].mouse_motion.button_mask;
+
+				} else if (what=="mod_alt") {
+					r_ret=filters[idx].mouse_motion.mod.alt;
+
+				} else if (what=="mod_shift") {
+					r_ret=filters[idx].mouse_motion.mod.shift;
+
+				} else if (what=="mod_ctrl") {
+					r_ret=filters[idx].mouse_motion.mod.control;
+
+				} else  if (what=="mod_meta") {
+					r_ret=filters[idx].mouse_motion.mod.meta;
+				} else {
+					return false;
+				}
+
+				return true;
+
+			} break;
+			case InputEvent::MOUSE_BUTTON: {
+
+				if (what=="button_index") {
+					r_ret=filters[idx].mouse_button.button_index;
+				} else if (what=="pressed") {
+					r_ret=filters[idx].mouse_button.pressed;
+				} else if (what=="doubleclicked") {
+					r_ret=filters[idx].mouse_button.doubleclick;
+
+				} else if (what=="mod_alt") {
+					r_ret=filters[idx].mouse_button.mod.alt;
+
+				} else if (what=="mod_shift") {
+					r_ret=filters[idx].mouse_button.mod.shift;
+
+				} else if (what=="mod_ctrl") {
+					r_ret=filters[idx].mouse_button.mod.control;
+
+				} else  if (what=="mod_meta") {
+					r_ret=filters[idx].mouse_button.mod.meta;
+				} else {
+					return false;
+				}
+				return true;
+
+			} break;
+			case InputEvent::JOYSTICK_MOTION: {
+
+				if (what=="axis_index") {
+					r_ret=filters[idx].joy_motion.axis>>1;
+				} else if (what=="mode") {
+					r_ret=filters[idx].joy_motion.axis&1;
+				} else if (what=="treshold") {
+					r_ret=filters[idx].joy_motion.axis_value;
+				} else {
+					return false;
+				}
+				return true;
+
+
+			} break;
+			case InputEvent::JOYSTICK_BUTTON: {
+
+				if (what=="button_index") {
+					r_ret=filters[idx].joy_button.button_index;
+				} else if (what=="pressed") {
+					r_ret=filters[idx].joy_button.pressed;
+				} else {
+					return false;
+				}
+				return true;
+
+			} break;
+			case InputEvent::SCREEN_TOUCH: {
+
+				if (what=="finger_index") {
+					r_ret=filters[idx].screen_touch.index;
+				} else if (what=="pressed") {
+					r_ret=filters[idx].screen_touch.pressed;
+				} else {
+					return false;
+				}
+				return true;
+			} break;
+			case InputEvent::SCREEN_DRAG: {
+				if (what=="finger_index") {
+					r_ret=filters[idx].screen_drag.index;
+				} else {
+					return false;
+				}
+				return true;
+			} break;
+			case InputEvent::ACTION: {
+
+
+				if (what=="action_name") {
+
+					List<PropertyInfo> pinfo;
+					Globals::get_singleton()->get_property_list(&pinfo);
+					int index=1;
+
+					for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+						const PropertyInfo &pi=E->get();
+
+						if (!pi.name.begins_with("input/"))
+							continue;
+
+
+						if (filters[idx].action.action==index) {
+							r_ret=pi.name.substr(pi.name.find("/")+1,pi.name.length());
+							return true;
+						}
+						index++;
+					}
+
+					r_ret="None"; //no index
+					return false;
+
+				} else if (what=="pressed") {
+
+					r_ret=filters[idx].action.pressed;
+					return true;
+				}
+
+
+			} break;
+
+		}
+	}
+	return false;
+}
+void VisualScriptInputFilter::_get_property_list( List<PropertyInfo> *p_list) const {
+
+	p_list->push_back(PropertyInfo(Variant::INT,"filter_count",PROPERTY_HINT_RANGE,"0,64"));
+
+	String et;
+	for(int i=0;i<InputEvent::TYPE_MAX;i++) {
+		if (i>0)
+			et+=",";
+
+		et+=event_type_names[i];
+	}
+
+	String kc;
+	String actions;
+
+
+
+	for(int i=0;i<filters.size();i++) {
+
+		String base = "filter_"+itos(i)+"/";
+		p_list->push_back(PropertyInfo(Variant::INT,base+"type",PROPERTY_HINT_ENUM,et));
+		p_list->push_back(PropertyInfo(Variant::INT,base+"device"));
+		switch(filters[i].type) {
+
+			case InputEvent::NONE: {
+
+			} break;
+			case InputEvent::KEY: {
+				if (kc==String()) {
+					int kcc = keycode_get_count();
+					kc="None";
+					for(int i=0;i<kcc;i++) {
+						kc+=",";
+						kc+=String(keycode_get_name_by_index(i));
+					}
+				}
+				p_list->push_back(PropertyInfo(Variant::STRING,base+"scancode",PROPERTY_HINT_ENUM,kc));
+				p_list->push_back(PropertyInfo(Variant::STRING,base+"unicode"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"pressed"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"echo"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_alt"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_shift"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_ctrl"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_meta"));
+
+
+			} break;
+			case InputEvent::MOUSE_MOTION: {
+				p_list->push_back(PropertyInfo(Variant::INT,base+"button_mask",PROPERTY_HINT_FLAGS,"Left,Right,Middle,WheelUp,WheelDown,WheelLeft,WheelRight"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_alt"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_shift"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_ctrl"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_meta"));
+
+			} break;
+			case InputEvent::MOUSE_BUTTON: {
+				p_list->push_back(PropertyInfo(Variant::INT,base+"button_index",PROPERTY_HINT_ENUM,"Any,Left,Right,Middle,WheelUp,WheelDown,WheelLeft,WheelRight"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"pressed"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"doubleclicked"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_alt"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_shift"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_ctrl"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_meta"));
+
+			} break;
+			case InputEvent::JOYSTICK_MOTION: {
+
+				p_list->push_back(PropertyInfo(Variant::INT,base+"axis_index"));
+				p_list->push_back(PropertyInfo(Variant::INT,base+"mode",PROPERTY_HINT_ENUM,"Min,Max"));
+				p_list->push_back(PropertyInfo(Variant::REAL,base+"treshold",PROPERTY_HINT_RANGE,"0,1,0.01"));
+			} break;
+			case InputEvent::JOYSTICK_BUTTON: {
+				p_list->push_back(PropertyInfo(Variant::INT,base+"button_index"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"pressed"));
+
+			} break;
+			case InputEvent::SCREEN_TOUCH: {
+				p_list->push_back(PropertyInfo(Variant::INT,base+"finger_index"));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"pressed"));
+
+			} break;
+			case InputEvent::SCREEN_DRAG: {
+				p_list->push_back(PropertyInfo(Variant::INT,base+"finger_index"));
+			} break;
+			case InputEvent::ACTION: {
+
+
+
+				if (actions==String()) {
+
+					actions="None";
+
+					List<PropertyInfo> pinfo;
+					Globals::get_singleton()->get_property_list(&pinfo);
+					Vector<String> al;
+
+					for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+						const PropertyInfo &pi=E->get();
+
+						if (!pi.name.begins_with("input/"))
+							continue;
+
+						String name = pi.name.substr(pi.name.find("/")+1,pi.name.length());
+
+
+						al.push_back(name);
+					}
+
+					for(int i=0;i<al.size();i++) {
+						actions+=",";
+						actions+=al[i];
+					}
+				}
+
+				p_list->push_back(PropertyInfo(Variant::STRING,base+"action_name",PROPERTY_HINT_ENUM,actions));
+				p_list->push_back(PropertyInfo(Variant::BOOL,base+"pressed"));
+
+			} break;
+
+		}
+	}
+}
+
+class VisualScriptNodeInstanceInputFilter : public VisualScriptNodeInstance {
+public:
+
+	VisualScriptInstance* instance;
+	Vector<InputEvent> filters;
+
+	//virtual int get_working_memory_size() const { return 0; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		if (p_inputs[0]->get_type()!=Variant::INPUT_EVENT) {
+			r_error_str="Input value not of type event";
+			r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			return 0;
+		}
+
+		InputEvent event = *p_inputs[0];
+
+
+		for(int i=0;i<filters.size();i++) {
+
+			const InputEvent &ie = filters[i];
+			if (ie.type!=event.type)
+				continue;
+
+			bool match=false;
+
+			switch(ie.type) {
+
+				case InputEvent::NONE: {
+
+					match=true;
+				} break;
+				case InputEvent::KEY: {
+
+					InputEventKey k = ie.key;
+					InputEventKey k2 = event.key;
+
+					if (k.scancode==0 && k.unicode==0 && k2.scancode==0 && k2.unicode==0) {
+						match=true;
+
+					} else {
+
+						if ( (k.scancode!=0 && k.scancode==k2.scancode) || (k.unicode!=0 && k.unicode==k2.unicode)) {
+							//key valid
+
+							if (
+								k.pressed==k2.pressed &&
+								k.echo==k2.echo &&
+								k.mod == k2.mod
+									) {
+								match=true;
+							}
+						}
+
+					}
+
+				} break;
+				case InputEvent::MOUSE_MOTION: {
+					InputEventMouseMotion mm = ie.mouse_motion;
+					InputEventMouseMotion mm2 = event.mouse_motion;
+
+					if (	mm.button_mask==mm2.button_mask &&
+						mm.mod==mm2.mod
+						) {
+						match=true;
+					}
+
+				} break;
+				case InputEvent::MOUSE_BUTTON: {
+
+					InputEventMouseButton mb = ie.mouse_button;
+					InputEventMouseButton mb2 = event.mouse_button;
+
+					if (	mb.button_index==mb2.button_index &&
+						mb.pressed==mb2.pressed &&
+						mb.doubleclick==mb2.doubleclick &&
+						mb.mod==mb2.mod) {
+						match=true;
+					}
+
+
+				} break;
+				case InputEvent::JOYSTICK_MOTION: {
+
+					InputEventJoystickMotion jm = ie.joy_motion;
+					InputEventJoystickMotion jm2 = event.joy_motion;
+
+					int axis = jm.axis>>1;
+
+					if (axis==jm2.axis) {
+
+						if (jm.axis&1) {
+							//greater
+							if (jm2.axis_value > jm.axis_value) {
+								match=true;
+							}
+						} else {
+							//less
+							if (jm2.axis_value < -jm.axis_value) {
+								match=true;
+							}
+						}
+					}
+
+
+				} break;
+				case InputEvent::JOYSTICK_BUTTON: {
+					InputEventJoystickButton jb = ie.joy_button;
+					InputEventJoystickButton jb2 = event.joy_button;
+
+					if (	jb.button_index==jb2.button_index &&
+						jb.pressed == jb2.pressed
+							) {
+						match=true;
+					}
+				} break;
+				case InputEvent::SCREEN_TOUCH: {
+					InputEventScreenTouch st = ie.screen_touch;
+					InputEventScreenTouch st2 = event.screen_touch;
+
+					if (	st.index==st2.index &&
+						st.pressed==st2.pressed) {
+						match=true;
+					}
+
+				} break;
+				case InputEvent::SCREEN_DRAG: {
+					InputEventScreenDrag sd = ie.screen_drag;
+					InputEventScreenDrag sd2 = event.screen_drag;
+
+					if (sd.index==sd2.index) {
+						match=true;
+					}
+				} break;
+				case InputEvent::ACTION: {
+
+					InputEventAction ia = ie.action;
+					InputEventAction ia2 = event.action;
+
+					if (	ia.action==ia2.action &&
+						ia.pressed==ia2.pressed) {
+						match=true;
+					}
+				} break;
+
+			}
+
+			*p_outputs[0] = event;
+
+			if (match)
+				return i; //go through match output
+
+		}
+
+		return STEP_NO_ADVANCE_BIT; //none found, don't advance
+
+
+	}
+
+
+};
+
+
+VisualScriptNodeInstance* VisualScriptInputFilter::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceInputFilter * instance = memnew(VisualScriptNodeInstanceInputFilter );
+	instance->instance=p_instance;
+	instance->filters=filters;
+	return instance;
+}
+
+
+
+
+VisualScriptInputFilter::VisualScriptInputFilter() {
+
+
+}
+
+
+
+
 void register_visual_script_flow_control_nodes() {
 
 	VisualScriptLanguage::singleton->add_register_func("flow_control/return",create_return_node<false>);
@@ -599,5 +1670,9 @@ void register_visual_script_flow_control_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("flow_control/while",create_node_generic<VisualScriptWhile>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/iterator",create_node_generic<VisualScriptIterator>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/sequence",create_node_generic<VisualScriptSequence>);
+	VisualScriptLanguage::singleton->add_register_func("flow_control/input_select",create_node_generic<VisualScriptInputSelector>);
+	VisualScriptLanguage::singleton->add_register_func("flow_control/input_filter",create_node_generic<VisualScriptInputFilter>);
+
+
 
 }

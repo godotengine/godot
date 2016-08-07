@@ -447,13 +447,17 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 		} break;
 		case VARIANT_INPUT_EVENT: {
 
+			InputEvent ev;
+			ev.type=f->get_32(); //will only work for null though.
+			r_v=ev;
+
 		} break;
 		case VARIANT_DICTIONARY: {
 
-            uint32_t len=f->get_32();
-            Dictionary d(len&0x80000000); //last bit means shared
-            len&=0x7FFFFFFF;
-            for(uint32_t i=0;i<len;i++) {
+			uint32_t len=f->get_32();
+			Dictionary d(len&0x80000000); //last bit means shared
+			len&=0x7FFFFFFF;
+			for(uint32_t i=0;i<len;i++) {
 				Variant key;
 				Error err = parse_variant(key);
 				ERR_FAIL_COND_V(err,ERR_FILE_CORRUPT);
@@ -466,11 +470,11 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 		} break;
 		case VARIANT_ARRAY: {
 
-            uint32_t len=f->get_32();
-            Array a(len&0x80000000); //last bit means shared
-            len&=0x7FFFFFFF;
+			uint32_t len=f->get_32();
+			Array a(len&0x80000000); //last bit means shared
+			len&=0x7FFFFFFF;
 			a.resize(len);
-            for(uint32_t i=0;i<len;i++) {
+			for(uint32_t i=0;i<len;i++) {
 				Variant val;
 				Error err = parse_variant(val);
 				ERR_FAIL_COND_V(err,ERR_FILE_CORRUPT);
@@ -1725,7 +1729,9 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 		case Variant::INPUT_EVENT: {
 
 			f->store_32(VARIANT_INPUT_EVENT);
-			WARN_PRINT("Can't save InputEvent (maybe it could..)");
+			InputEvent event=p_property;
+			f->store_32(0); //event type none, nothing else suported for now.
+
 		} break;
 		case Variant::DICTIONARY: {
 

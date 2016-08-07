@@ -156,6 +156,7 @@ VARIANT_ENUM_CAST( Orientation );
 VARIANT_ENUM_CAST( HAlign );
 VARIANT_ENUM_CAST( Variant::Type );
 VARIANT_ENUM_CAST( Variant::Operator );
+VARIANT_ENUM_CAST( InputEvent::Type );
 
 class MethodBind {
 

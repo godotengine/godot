@@ -279,7 +279,9 @@ void VisualScript::_node_ports_changed(int p_id) {
 		}
 	}
 
+	set_edited(true); //something changed, let's set as edited
 	emit_signal("node_ports_changed",function,p_id);
+
 }
 
 void VisualScript::add_node(const StringName& p_func,int p_id, const Ref<VisualScriptNode>& p_node, const Point2 &p_pos) {
@@ -1354,95 +1356,30 @@ bool VisualScriptInstance::has_method(const StringName& p_method) const{
 //#define VSDEBUG(m_text) print_line(m_text)
 #define VSDEBUG(m_text)
 
-Variant VisualScriptInstance::call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error){
-
-	r_error.error=Variant::CallError::CALL_OK; //ok by default
+Variant VisualScriptInstance::_call_internal(const StringName& p_method, void* p_stack, int p_stack_size, VisualScriptNodeInstance* p_node, int p_flow_stack_pos, bool p_resuming_yield, Variant::CallError &r_error) {
 
 	Map<StringName,Function>::Element *F = functions.find(p_method);
-	if (!F) {
-		r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
-		return Variant();
-	}
-
-	VSDEBUG("CALLING: "+String(p_method));
-
+	ERR_FAIL_COND_V(!F,Variant());
 	Function *f=&F->get();
 
-	int total_stack_size=0;
-
-	total_stack_size+=f->max_stack*sizeof(Variant); //variants
-	total_stack_size+=f->node_count*sizeof(bool);
-	total_stack_size+=(max_input_args+max_output_args)*sizeof(Variant*); //arguments
-	total_stack_size+=f->flow_stack_size*sizeof(int); //flow
-
-	VSDEBUG("STACK SIZE: "+itos(total_stack_size));
-	VSDEBUG("STACK VARIANTS: : "+itos(f->max_stack));
-	VSDEBUG("SEQBITS: : "+itos(f->node_count));
-	VSDEBUG("MAX INPUT: "+itos(max_input_args));
-	VSDEBUG("MAX OUTPUT: "+itos(max_output_args));
-	VSDEBUG("FLOW STACK SIZE: "+itos(f->flow_stack_size));
-
-	void *stack = alloca(total_stack_size);
-
-	Variant *variant_stack=(Variant*)stack;
+	//this call goes separate, so it can e yielded and suspended
+	Variant *variant_stack=(Variant*)p_stack;
 	bool *sequence_bits = (bool*)(variant_stack + f->max_stack);
 	const Variant **input_args=(const Variant**)(sequence_bits+f->node_count);
 	Variant **output_args=(Variant**)(input_args + max_input_args);
 	int flow_max = f->flow_stack_size;
 	int* flow_stack = flow_max? (int*)(output_args + max_output_args) : (int*)NULL;
 
-	for(int i=0;i<f->node_count;i++) {
-		sequence_bits[i]=false; //all starts as false
-	}
-
-
-	Map<int,VisualScriptNodeInstance*>::Element *E = instances.find(f->node);
-	if (!E) {
-		r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
-
-		ERR_EXPLAIN("No VisualScriptFunction node in function!");
-		ERR_FAIL_V(Variant());
-	}
-
-	VisualScriptNodeInstance *node = E->get();
-
-	int flow_stack_pos=0;
-	if (flow_stack)	{
-		flow_stack[0]=node->get_id();
-	}
-
-	VSDEBUG("ARGUMENTS: "+itos(f->argument_count)=" RECEIVED: "+itos(p_argcount));
-
-	if (p_argcount<f->argument_count) {
-		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument=node->get_input_port_count();
-
-		return Variant();
-	}
-
-	if (p_argcount>f->argument_count) {
-		r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-		r_error.argument=node->get_input_port_count();
-
-		return Variant();
-	}
-
-	//allocate variant stack
-	for(int i=0;i<f->max_stack;i++) {
-		memnew_placement(&variant_stack[i],Variant);
-	}
-
-	//allocate function arguments (must be copied for yield to work properly)
-	for(int i=0;i<p_argcount;i++) {
-		variant_stack[i]=*p_args[i];
-	}
-
 	String error_str;
 
+	VisualScriptNodeInstance* node=p_node;
 	bool error=false;
 	int current_node_id=f->node;
 	Variant return_value;
 	Variant *working_mem=NULL;
+
+	int flow_stack_pos=p_flow_stack_pos;
+
 #ifdef DEBUG_ENABLED
 	if (ScriptDebugger::get_singleton()) {
 		VisualScriptLanguage::singleton->enter_function(this,&p_method,variant_stack,&working_mem,&current_node_id);
@@ -1518,17 +1455,70 @@ Variant VisualScriptInstance::call(const StringName& p_method,const Variant** p_
 
 		//do step
 
-		bool start_sequence = flow_stack && !(flow_stack[flow_stack_pos] & VisualScriptNodeInstance::FLOW_STACK_PUSHED_BIT); //if there is a push bit, it means we are continuing a sequence
-
+		VisualScriptNodeInstance::StartMode start_mode;
+		{
+			if (p_resuming_yield)
+				start_mode=VisualScriptNodeInstance::START_MODE_RESUME_YIELD;
+			else if (flow_stack && !(flow_stack[flow_stack_pos] & VisualScriptNodeInstance::FLOW_STACK_PUSHED_BIT)) //if there is a push bit, it means we are continuing a sequence
+				start_mode=VisualScriptNodeInstance::START_MODE_BEGIN_SEQUENCE;
+			else
+				start_mode=VisualScriptNodeInstance::START_MODE_CONTINUE_SEQUENCE;
+		}
 
 		VSDEBUG("STEP - STARTSEQ: "+itos(start_sequence));
 
-		int ret = node->step(input_args,output_args,start_sequence,working_mem,r_error,error_str);
+		int ret = node->step(input_args,output_args,start_mode,working_mem,r_error,error_str);
 
 		if (r_error.error!=Variant::CallError::CALL_OK) {
 			//use error from step
 			error=true;
 			break;
+		}
+
+		if (ret&VisualScriptNodeInstance::STEP_YIELD_BIT) {
+			//yielded!
+			if (node->get_working_memory_size()==0) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				error_str=RTR("A node yielded without working memory, please read the docs on how to yield properly!");
+				error=true;
+				break;
+
+			} else {
+				Ref<VisualScriptFunctionState> state = *working_mem;
+				if (!state.is_valid()) {
+
+					r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					error_str=RTR("Node yielded, but did not return a function state in the first working memory.");
+					error=true;
+					break;
+
+				}
+
+				//step 1, capture all state
+				state->instance_id=get_owner_ptr()->get_instance_ID();
+				state->script_id=get_script()->get_instance_ID();
+				state->instance=this;
+				state->function=p_method;
+				state->working_mem_index=node->working_mem_idx;
+				state->variant_stack_size=f->max_stack;
+				state->node=node;
+				state->flow_stack_pos=flow_stack_pos;
+				state->stack.resize(p_stack_size);
+				copymem(state->stack.ptr(),p_stack,p_stack_size);
+				//step 2, run away, return directly
+				r_error.error=Variant::CallError::CALL_OK;
+
+
+#ifdef DEBUG_ENABLED
+				//will re-enter later, so exiting
+				if (ScriptDebugger::get_singleton()) {
+					VisualScriptLanguage::singleton->exit_function();
+				}
+#endif
+
+				return state;
+
+			}
 		}
 
 #ifdef DEBUG_ENABLED
@@ -1586,10 +1576,11 @@ Variant VisualScriptInstance::call(const StringName& p_method,const Variant** p_
 			}
 
 			next = node->sequence_outputs[output];
-			if (next)
+			if (next) {
 				VSDEBUG("GOT NEXT NODE - "+itos(next->get_id()));
-			else
+			} else {
 				VSDEBUG("GOT NEXT NODE - NULL");
+			}
 		}
 
 		if (flow_stack) {
@@ -1740,6 +1731,95 @@ Variant VisualScriptInstance::call(const StringName& p_method,const Variant** p_
 
 
 	return return_value;
+}
+
+
+Variant VisualScriptInstance::call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error){
+
+	r_error.error=Variant::CallError::CALL_OK; //ok by default
+
+	Map<StringName,Function>::Element *F = functions.find(p_method);
+	if (!F) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
+	}
+
+	VSDEBUG("CALLING: "+String(p_method));
+
+	Function *f=&F->get();
+
+	int total_stack_size=0;
+
+	total_stack_size+=f->max_stack*sizeof(Variant); //variants
+	total_stack_size+=f->node_count*sizeof(bool);
+	total_stack_size+=(max_input_args+max_output_args)*sizeof(Variant*); //arguments
+	total_stack_size+=f->flow_stack_size*sizeof(int); //flow
+
+	VSDEBUG("STACK SIZE: "+itos(total_stack_size));
+	VSDEBUG("STACK VARIANTS: : "+itos(f->max_stack));
+	VSDEBUG("SEQBITS: : "+itos(f->node_count));
+	VSDEBUG("MAX INPUT: "+itos(max_input_args));
+	VSDEBUG("MAX OUTPUT: "+itos(max_output_args));
+	VSDEBUG("FLOW STACK SIZE: "+itos(f->flow_stack_size));
+
+	void *stack = alloca(total_stack_size);
+
+	Variant *variant_stack=(Variant*)stack;
+	bool *sequence_bits = (bool*)(variant_stack + f->max_stack);
+	const Variant **input_args=(const Variant**)(sequence_bits+f->node_count);
+	Variant **output_args=(Variant**)(input_args + max_input_args);
+	int flow_max = f->flow_stack_size;
+	int* flow_stack = flow_max? (int*)(output_args + max_output_args) : (int*)NULL;
+
+	for(int i=0;i<f->node_count;i++) {
+		sequence_bits[i]=false; //all starts as false
+	}
+
+
+	Map<int,VisualScriptNodeInstance*>::Element *E = instances.find(f->node);
+	if (!E) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+
+		ERR_EXPLAIN("No VisualScriptFunction node in function!");
+		ERR_FAIL_V(Variant());
+	}
+
+	VisualScriptNodeInstance *node = E->get();
+
+
+	if (flow_stack)	{
+		flow_stack[0]=node->get_id();
+	}
+
+	VSDEBUG("ARGUMENTS: "+itos(f->argument_count)=" RECEIVED: "+itos(p_argcount));
+
+	if (p_argcount<f->argument_count) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=node->get_input_port_count();
+
+		return Variant();
+	}
+
+	if (p_argcount>f->argument_count) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+		r_error.argument=node->get_input_port_count();
+
+		return Variant();
+	}
+
+	//allocate variant stack
+	for(int i=0;i<f->max_stack;i++) {
+		memnew_placement(&variant_stack[i],Variant);
+	}
+
+	//allocate function arguments (must be copied for yield to work properly)
+	for(int i=0;i<p_argcount;i++) {
+		variant_stack[i]=*p_args[i];
+	}
+
+	return _call_internal(p_method,stack,total_stack_size,node,0,false,r_error);
+
+
 }
 
 void VisualScriptInstance::notification(int p_notification){
@@ -1977,7 +2057,129 @@ VisualScriptInstance::~VisualScriptInstance() {
 
 
 
+/////////////////////////////////////////////
 
+
+/////////////////////
+
+
+Variant VisualScriptFunctionState::_signal_callback(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+	ERR_FAIL_COND_V(function==StringName(),Variant());
+
+#ifdef DEBUG_ENABLED
+	if (instance_id && !ObjectDB::get_instance(instance_id)) {
+		ERR_EXPLAIN("Resumed after yield, but class instance is gone");
+		ERR_FAIL_V(Variant());
+	}
+
+	if (script_id && !ObjectDB::get_instance(script_id)) {
+		ERR_EXPLAIN("Resumed after yield, but script is gone");
+		ERR_FAIL_V(Variant());
+	}
+#endif
+
+	r_error.error=Variant::CallError::CALL_OK;
+
+	Array args;
+
+	if (p_argcount==0) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=1;
+		return Variant();
+	} else if (p_argcount==1) {
+		//noooneee, reserved for me, me and only me.
+	} else {
+
+		for(int i=0;i<p_argcount-1;i++) {
+			args.push_back(*p_args[i]);
+		}
+	}
+
+	Ref<VisualScriptFunctionState> self = *p_args[p_argcount-1]; //hi, I'm myself, needed this to remain alive.
+
+	if (self.is_null()) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=p_argcount-1;
+		r_error.expected=Variant::OBJECT;
+		return Variant();
+	}
+
+	r_error.error=Variant::CallError::CALL_OK;
+
+	Variant *working_mem = ((Variant*)stack.ptr()) + working_mem_index;
+
+	*working_mem=args; //arguments go to working mem.
+
+	Variant ret = instance->_call_internal(function,stack.ptr(),stack.size(),node,flow_stack_pos,true,r_error);
+	function=StringName(); //invalidate
+	return ret;
+}
+
+void VisualScriptFunctionState::connect_to_signal(Object* p_obj, const String& p_signal, Array p_binds) {
+
+	Vector<Variant> binds;
+	for(int i=0;i<p_binds.size();i++) {
+		binds.push_back(p_binds[i]);
+	}
+	binds.push_back(Ref<VisualScriptFunctionState>(this)); //add myself on the back to avoid dying from unreferencing
+	p_obj->connect(p_signal,this,"_signal_callback",binds);
+}
+
+bool VisualScriptFunctionState::is_valid() const {
+
+	return function!=StringName();
+}
+
+Variant VisualScriptFunctionState::resume(Array p_args) {
+
+	ERR_FAIL_COND_V(function==StringName(),Variant());
+#ifdef DEBUG_ENABLED
+	if (instance_id && !ObjectDB::get_instance(instance_id)) {
+		ERR_EXPLAIN("Resumed after yield, but class instance is gone");
+		ERR_FAIL_V(Variant());
+	}
+
+	if (script_id && !ObjectDB::get_instance(script_id)) {
+		ERR_EXPLAIN("Resumed after yield, but script is gone");
+		ERR_FAIL_V(Variant());
+	}
+#endif
+
+	Variant::CallError r_error;
+	r_error.error=Variant::CallError::CALL_OK;
+
+	Variant *working_mem = ((Variant*)stack.ptr()) + working_mem_index;
+
+	*working_mem=p_args; //arguments go to working mem.
+
+	Variant ret= instance->_call_internal(function,stack.ptr(),stack.size(),node,flow_stack_pos,true,r_error);
+	function=StringName(); //invalidate
+	return ret;
+}
+
+
+void VisualScriptFunctionState::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("connect_to_signal","obj","signals","args"),&VisualScriptFunctionState::connect_to_signal);
+	ObjectTypeDB::bind_method(_MD("resume:Array","args"),&VisualScriptFunctionState::resume,DEFVAL(Variant()));
+	ObjectTypeDB::bind_method(_MD("is_valid"),&VisualScriptFunctionState::is_valid);
+	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"_signal_callback",&VisualScriptFunctionState::_signal_callback,MethodInfo("_signal_callback"));
+}
+
+VisualScriptFunctionState::VisualScriptFunctionState() {
+
+}
+
+VisualScriptFunctionState::~VisualScriptFunctionState() {
+
+	if (function!=StringName()) {
+		Variant *s = ((Variant*)stack.ptr());
+		for(int i=0;i<variant_stack_size;i++) {
+			s[i].~Variant();
+		}
+	}
+}
 
 
 

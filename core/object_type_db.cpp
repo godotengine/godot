@@ -549,6 +549,23 @@ bool ObjectTypeDB::has_signal(StringName p_type,StringName p_signal) {
 	return false;
 }
 
+bool ObjectTypeDB::get_signal(StringName p_type,StringName p_signal,MethodInfo *r_signal) {
+
+	TypeInfo *type=types.getptr(p_type);
+	TypeInfo *check=type;
+	while(check) {
+		if (check->signal_map.has(p_signal)) {
+			if (r_signal) {
+				*r_signal=check->signal_map[p_signal];
+			}
+			return true;
+		}
+		check=check->inherits_ptr;
+	}
+
+	return false;
+}
+
 void ObjectTypeDB::add_property(StringName p_type,const PropertyInfo& p_pinfo, const StringName& p_setter, const StringName& p_getter, int p_index) {
 
 

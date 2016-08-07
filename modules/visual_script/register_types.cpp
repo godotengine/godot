@@ -35,6 +35,7 @@
 #include "visual_script_func_nodes.h"
 #include "visual_script_builtin_funcs.h"
 #include "visual_script_flow_control.h"
+#include "visual_script_yield_nodes.h"
 
 
 VisualScriptLanguage *visual_script_language=NULL;
@@ -44,6 +45,7 @@ void register_visual_script_types() {
 
 	ObjectTypeDB::register_type<VisualScript>();
 	ObjectTypeDB::register_virtual_type<VisualScriptNode>();
+	ObjectTypeDB::register_virtual_type<VisualScriptFunctionState>();
 	ObjectTypeDB::register_type<VisualScriptFunction>();
 	ObjectTypeDB::register_type<VisualScriptOperator>();
 	ObjectTypeDB::register_type<VisualScriptVariableSet>();
@@ -70,6 +72,11 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_type<VisualScriptWhile>();
 	ObjectTypeDB::register_type<VisualScriptIterator>();
 	ObjectTypeDB::register_type<VisualScriptSequence>();
+	ObjectTypeDB::register_type<VisualScriptInputFilter>();
+	ObjectTypeDB::register_type<VisualScriptInputSelector>();
+
+	ObjectTypeDB::register_type<VisualScriptYield>();
+	ObjectTypeDB::register_type<VisualScriptYieldSignal>();
 
 	ObjectTypeDB::register_type<VisualScriptBuiltinFunc>();
 
@@ -81,6 +88,7 @@ void register_visual_script_types() {
 	register_visual_script_func_nodes();
 	register_visual_script_builtin_func_node();
 	register_visual_script_flow_control_nodes();
+	register_visual_script_yield_nodes();
 
 #ifdef TOOLS_ENABLED
 	VisualScriptEditor::register_editor();

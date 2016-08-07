@@ -453,6 +453,7 @@ public:
 
 	static void add_signal(StringName p_type,const MethodInfo& p_signal);
 	static bool has_signal(StringName p_type,StringName p_signal);
+	static bool get_signal(StringName p_type,StringName p_signal,MethodInfo *r_signal);
 	static void get_signal_list(StringName p_type,List<MethodInfo> *p_signals,bool p_no_inheritance=false);
 
 	static void add_property(StringName p_type,const PropertyInfo& p_pinfo, const StringName& p_setter, const StringName& p_getter, int p_index=-1);
