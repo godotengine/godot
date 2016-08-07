@@ -197,7 +197,9 @@ private:
 
 		IMPORT_PLUGIN_BASE=100,
 
-		OBJECT_METHOD_BASE=500
+		OBJECT_METHOD_BASE=500,
+
+		TOOL_MENU_BASE=1000
 	};
 
 
@@ -593,6 +595,22 @@ private:
 	void _call_build();
 	static int build_callback_count;
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
+
+	bool _initializing_tool_menu;
+
+	struct ToolMenuItem {
+		String name;
+		String submenu;
+		Variant ud;
+		ObjectID handler;
+		String callback;
+	};
+
+	Vector<ToolMenuItem> tool_menu_items;
+
+	void _tool_menu_insert_item(const ToolMenuItem& p_item);
+	void _rebuild_tool_menu() const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -755,6 +773,9 @@ public:
 	Variant drag_files(const Vector<String>& p_files,Control* p_from);
 	Variant drag_files_and_dirs(const Vector<String>& p_files,Control* p_from);
 
+	void add_tool_menu_item(const String& p_name, Object *p_handler, const String& p_callback, const Variant& p_ud = Variant());
+	void add_tool_submenu_item(const String& p_name, PopupMenu *p_submenu);
+	void remove_tool_menu_item(const String& p_name);
 
 	EditorNode();
 	~EditorNode();
