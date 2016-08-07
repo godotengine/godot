@@ -41,6 +41,7 @@
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "scene/main/viewport.h"
+#include "script_tree_list.h"
 
 /*** SCRIPT EDITOR ****/
 
@@ -944,7 +945,8 @@ void ScriptEditor::_notification(int p_what) {
 		editor->connect("stop_pressed", this, "_editor_stop");
 		editor->connect("script_add_function_request", this, "_add_callback");
 		editor->connect("resource_saved", this, "_res_saved_callback");
-		script_list->connect("item_selected", this, "_script_selected");
+		script_list->connect("script_selected", this, "_script_selected");
+		script_list->connect("function_selected", this, "_function_selected");
 		script_split->connect("dragged", this, "_script_split_dragged");
 		autosave_timer->connect("timeout", this, "_autosave_scripts");
 		{
@@ -1191,6 +1193,16 @@ void ScriptEditor::ensure_focus_current() {
 	se->ensure_focus();
 }
 
+void ScriptEditor::_function_selected(int p_idx, String function) {
+	_script_selected(p_idx);
+	Node *current = tab_container->get_child(tab_container->get_current_tab());
+	ScriptEditorBase *se = current->cast_to<ScriptEditorBase>();
+	if (!se) {
+		return;
+	}
+	script_goto_method(se->get_edited_script(), function);
+}
+
 void ScriptEditor::_script_selected(int p_idx) {
 
 	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(1); //amazing hack, simply amazing
@@ -1253,6 +1265,7 @@ struct _ScriptEditorItemData {
 	String tooltip;
 	bool used;
 	int category;
+	Vector<String> functions;
 
 	bool operator<(const _ScriptEditorItemData &id) const {
 
@@ -1314,6 +1327,11 @@ void ScriptEditor::_update_script_names() {
 		_find_scripts(edited, edited, used);
 	}
 
+	HashMap<String, bool> collapsed_status; // save which scripts are collapsed, tooltip (file path) should be enough to remeber unless it's a rename
+	for (int i = 0; i < script_list->get_item_count(); i++) { // in which case treat is as a new file.
+		collapsed_status.set(script_list->get_item_tooltip(i), script_list->is_item_collapsed(i));
+	}
+
 	script_list->clear();
 	bool split_script_help = EditorSettings::get_singleton()->get("text_editor/open_scripts/group_help_pages");
 	ScriptSortBy sort_by = (ScriptSortBy)(int)EditorSettings::get_singleton()->get("text_editor/open_scripts/sort_scripts_by");
@@ -1336,6 +1354,7 @@ void ScriptEditor::_update_script_names() {
 			sd.tooltip = path;
 			sd.index = i;
 			sd.used = used.has(se->get_edited_script());
+			sd.functions = se->get_functions();
 			sd.category = 0;
 
 			switch (sort_by) {
@@ -1393,6 +1412,7 @@ void ScriptEditor::_update_script_names() {
 		int index = script_list->get_item_count() - 1;
 		script_list->set_item_tooltip(index, sedata[i].tooltip);
 		script_list->set_item_metadata(index, sedata[i].index);
+		script_list->add_functions(index, sedata[i].functions);
 		if (sedata[i].used) {
 
 			script_list->set_item_custom_bg_color(index, Color(88 / 255.0, 88 / 255.0, 60 / 255.0));
@@ -1401,6 +1421,9 @@ void ScriptEditor::_update_script_names() {
 			script_list->select(index);
 			script_name_label->set_text(sedata[i].name);
 			script_icon->set_texture(sedata[i].icon);
+		}
+		if (collapsed_status.has(sedata[i].tooltip)) {
+			script_list->set_item_collapsed(index, collapsed_status.get(sedata[i].tooltip));
 		}
 	}
 
@@ -1675,6 +1698,8 @@ void ScriptEditor::_editor_settings_changed() {
 
 		se->update_settings();
 	}
+	script_list->update_settings();
+
 	_update_script_colors();
 	_update_script_names();
 
@@ -1997,6 +2022,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_editor_settings_changed", &ScriptEditor::_editor_settings_changed);
 	ClassDB::bind_method("_update_script_names", &ScriptEditor::_update_script_names);
 	ClassDB::bind_method("_tree_changed", &ScriptEditor::_tree_changed);
+	ClassDB::bind_method("_function_selected", &ScriptEditor::_function_selected);
 	ClassDB::bind_method("_script_selected", &ScriptEditor::_script_selected);
 	ClassDB::bind_method("_script_created", &ScriptEditor::_script_created);
 	ClassDB::bind_method("_script_split_dragged", &ScriptEditor::_script_split_dragged);
@@ -2028,7 +2054,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	script_list = memnew(ItemList);
+	script_list = memnew(ScriptTreeList);
 	script_split->add_child(script_list);
 	script_list->set_custom_minimum_size(Size2(0, 0));
 	script_split->set_split_offset(140);
