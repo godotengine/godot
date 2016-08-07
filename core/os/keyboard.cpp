@@ -443,7 +443,7 @@ int keycode_get_count() {
 }
 
 int keycode_get_value_by_index(int p_index) {
-	_keycodes[p_index].code;
+	return _keycodes[p_index].code;
 }
 
 const char* keycode_get_name_by_index(int p_index) {

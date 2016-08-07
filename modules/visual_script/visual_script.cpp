@@ -1,5 +1,7 @@
 #include "visual_script.h"
 #include "visual_script_nodes.h"
+#include "scene/main/node.h"
+
 #include "globals.h"
 #define SCRIPT_VARIABLES_PREFIX "script_variables/"
 
@@ -1847,6 +1849,21 @@ void VisualScriptInstance::create(const Ref<VisualScript>& p_script,Object *p_ow
 
 	max_input_args = 0;
 	max_output_args = 0;
+
+	if (p_owner->cast_to<Node>()) {
+		//turn on these if they exist and base is a node
+		Node* node = p_owner->cast_to<Node>();
+		if (p_script->functions.has("_process"))
+			node->set_process(true);
+		if (p_script->functions.has("_fixed_process"))
+			node->set_fixed_process(true);
+		if (p_script->functions.has("_input"))
+			node->set_process_input(true);
+		if (p_script->functions.has("_unhandled_input"))
+			node->set_process_unhandled_input(true);
+		if (p_script->functions.has("_unhandled_key_input"))
+			node->set_process_unhandled_key_input(true);
+	}
 
 	for(const Map<StringName,VisualScript::Variable>::Element *E=script->variables.front();E;E=E->next()) {
 		variables[E->key()]=E->get().default_value;
