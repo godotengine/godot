@@ -632,6 +632,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<PackedScene>();
 
 	ObjectTypeDB::register_type<SceneTree>();
+	ObjectTypeDB::register_virtual_type<SceneTreeTimer>(); //sorry, you can't create it
 
 	OS::get_singleton()->yield(); //may take time to init
 
