@@ -378,6 +378,21 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 				tokenizer->advance();
 
+				if (tokenizer->get_token()==GDTokenizer::TK_CURSOR) {
+
+
+					completion_cursor=StringName();
+					completion_node=object;
+					completion_type=COMPLETION_YIELD;
+					completion_class=current_class;
+					completion_function=current_function;
+					completion_line=tokenizer->get_token_line();
+					completion_argument=0;
+					completion_block=current_block;
+					completion_found=true;
+					tokenizer->advance();
+				}
+
 				Node *signal = _parse_and_reduce_expression(p_parent,p_static);
 				if (!signal)
 					return NULL;
