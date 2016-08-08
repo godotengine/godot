@@ -40,6 +40,9 @@ void VisibilityNotifier2D::_enter_viewport(Viewport* p_viewport) {
 	ERR_FAIL_COND(viewports.has(p_viewport));
 	viewports.insert(p_viewport);
 
+	if (is_inside_tree() && get_tree()->is_editor_hint())
+		return;
+
 	if (viewports.size()==1) {
 		emit_signal(SceneStringNames::get_singleton()->enter_screen);
 
@@ -53,6 +56,9 @@ void VisibilityNotifier2D::_exit_viewport(Viewport* p_viewport){
 
 	ERR_FAIL_COND(!viewports.has(p_viewport));
 	viewports.erase(p_viewport);
+
+	if (is_inside_tree() && get_tree()->is_editor_hint())
+		return;
 
 	emit_signal(SceneStringNames::get_singleton()->exit_viewport,p_viewport);
 	if (viewports.size()==0) {
