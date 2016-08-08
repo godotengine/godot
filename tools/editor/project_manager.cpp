@@ -364,12 +364,6 @@ public:
 		mode=p_mode;
 	}
 
-	void import_from_file(const String& p_file) {
-		mode=MODE_IMPORT;
-		_file_selected(p_file);
-		ok_pressed();
-	}
-
 	void show_dialog() {
 
 
