@@ -125,7 +125,8 @@ special_icons = {
     'icon_play': dict( theme_output_names= ['icon_play'] ),
     'icon_stop': dict( theme_output_names= ['icon_stop'] ),
     'icon_zoom_less': dict( theme_output_names= ['icon_zoom_less'], avoid_self=True ),
-    'icon_zoom_reset': dict( theme_output_names= ['icon_zoom_reset'], avoid_self=True )
+    'icon_zoom_reset': dict( theme_output_names= ['icon_zoom_reset'], avoid_self=True ),
+    'icon_snap': dict(theme_output_names=['icon_snap'])
 }
 
 theme_icons = {
