@@ -372,8 +372,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 					if (obj_A->get_script_instance() && obj_A->get_script_instance()->get_language()==GDScriptLanguage::get_singleton()) {
 
-						GDInstance *ins = static_cast<GDInstance*>(obj_A->get_script_instance());
-						GDScript *cmp = ins->script.ptr();
+						GDScript *cmp = static_cast<GDScript*>(obj_A->get_script_instance()->get_script().ptr());
 						//bool found=false;
 						while(cmp) {
 
