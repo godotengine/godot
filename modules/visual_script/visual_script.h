@@ -22,6 +22,8 @@ friend class VisualScript;
 	Array _get_default_input_values() const;
 protected:
 
+	virtual bool _use_builtin_script() const { return false; }
+
 	void _notification(int p_what);
 	void ports_changed_notify();
 	static void _bind_methods();
@@ -466,6 +468,8 @@ class VisualScriptLanguage : public ScriptLanguage {
 
 public:
 	StringName notification;
+	StringName _get_output_port_unsequenced;
+	StringName _step;
 
 	static VisualScriptLanguage* singleton;
 

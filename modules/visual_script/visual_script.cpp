@@ -2548,6 +2548,9 @@ void VisualScriptLanguage::get_registered_node_names(List<String> *r_names) {
 VisualScriptLanguage::VisualScriptLanguage() {
 
 	notification="_notification";
+	_get_output_port_unsequenced="_get_output_port_unsequenced";
+	_step="_step";
+
 	singleton=this;
 #ifndef NO_THREADS
 	lock = Mutex::create();
