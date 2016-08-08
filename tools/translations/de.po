@@ -1132,8 +1132,8 @@ msgid ""
 "Resource '%s' is in use.\n"
 "Changes will take effect when reloaded."
 msgstr ""
-"Ressource '%s' wird momentan benutzt.\n"
-"Änderungen werden erst nach neu laden aktiv."
+"Die Ressource '%s' wird momentan benutzt.\n"
+"Änderungen werden erst nach erneutem laden aktiv."
 
 #: tools/editor/dependency_editor.cpp
 msgid "Dependencies"
@@ -1873,7 +1873,7 @@ msgstr "Schließen Zu Vorh. Szene Gehen"
 
 #: tools/editor/editor_node.cpp
 msgid "Open Recent"
-msgstr "Zuletzt benutzte Scenen"
+msgstr "Zuletzt benutzte Szenen"
 
 #: tools/editor/editor_node.cpp
 msgid "Quick Filter Files.."
@@ -1914,7 +1914,7 @@ msgstr "Szene Zurücksetzen"
 
 #: tools/editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr "Verlasse zu Projekt Liste"
+msgstr "Verlassen und Projektliste öffnen"
 
 #: tools/editor/editor_node.cpp
 msgid "Import assets to the project."
@@ -3398,7 +3398,7 @@ msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
 msgstr ""
-"Zeige eine Liste aller Objekte, die sich an der angeklickten Position "
+"Zeige eine Liste aller Objekte an, die sich an der angeklickten Position "
 "befinden\n"
 "(equivalent zu Alt+RMT im Auswahlmodus)."
 
@@ -3421,13 +3421,11 @@ msgstr "Das ausgewählte Objekt entsperren (kann bewegt werden)."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Makes sure the object's children are not selectable."
-msgstr ""
-"Versichert, dass die untergeordnete Knoten des Objektes nicht auswählbar "
-"sind."
+msgstr "Verhindert das Auswählen von untergeordneten Knoten."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
-msgstr "Stellt die Eigenschaft des Objektes wieder her, ausgewählt zu werden."
+msgstr "Erlaubt das Auswählen von untergeordneten Knoten."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
@@ -6131,11 +6129,11 @@ msgstr ""
 
 #: tools/editor/scenes_dock.cpp
 msgid "Edit Dependencies.."
-msgstr "Bearbeiten Abhängigkeiten.."
+msgstr "Abhängigkeiten bearbeiten.."
 
 #: tools/editor/scenes_dock.cpp
 msgid "View Owners.."
-msgstr ""
+msgstr "Besitzer anzeigen.."
 
 #: tools/editor/scenes_dock.cpp
 msgid "Copy Path"
@@ -6143,7 +6141,7 @@ msgstr "Pfad kopieren"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Rename or Move.."
-msgstr ""
+msgstr "Verschieben oder Umbenennen.."
 
 #: tools/editor/scenes_dock.cpp
 msgid "Move To.."
@@ -6155,7 +6153,7 @@ msgstr "Info"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Show In File Manager"
-msgstr "Zeige im Dateimanager"
+msgstr "Im Dateimanager anzeigen"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Re-Import.."
@@ -6175,7 +6173,7 @@ msgstr ""
 
 #: tools/editor/scenes_dock.cpp
 msgid "Toggle folder status as Favorite"
-msgstr ""
+msgstr "Ordner als Favorit markieren"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Instance the selected scene(s) as child of the selected node."
