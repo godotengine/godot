@@ -1936,6 +1936,13 @@ Error _Directory::make_dir(String p_dir){
 Error _Directory::make_dir_recursive(String p_dir){
 
 	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
+	if (!p_dir.is_rel_path()) {
+		DirAccess *d = DirAccess::create_for_path(p_dir);
+		Error err = d->make_dir_recursive(p_dir);
+		memdelete(d);
+		return err;
+
+	}
 	return d->make_dir_recursive(p_dir);
 }
 
