@@ -2296,6 +2296,133 @@ VisualScriptCustomNode::VisualScriptCustomNode() {
 
 }
 
+//////////////////////////////////////////
+////////////////SUBCALL///////////
+//////////////////////////////////////////
+
+int VisualScriptSubCall::get_output_sequence_port_count() const {
+
+	return 1;
+}
+
+bool VisualScriptSubCall::has_input_sequence_port() const{
+
+	return true;
+}
+
+int VisualScriptSubCall::get_input_value_port_count() const{
+
+	Ref<Script> script = get_script();
+
+	if (script.is_valid() && script->has_method(VisualScriptLanguage::singleton->_subcall)) {
+
+		MethodInfo mi = script->get_method_info(VisualScriptLanguage::singleton->_subcall);
+		return mi.arguments.size();
+	}
+
+	return 0;
+}
+int VisualScriptSubCall::get_output_value_port_count() const{
+
+	return 1;
+}
+
+String VisualScriptSubCall::get_output_sequence_port_text(int p_port) const {
+
+	return String();
+}
+
+PropertyInfo VisualScriptSubCall::get_input_value_port_info(int p_idx) const{
+
+	Ref<Script> script = get_script();
+	if (script.is_valid() && script->has_method(VisualScriptLanguage::singleton->_subcall)) {
+
+		MethodInfo mi = script->get_method_info(VisualScriptLanguage::singleton->_subcall);
+		return mi.arguments[p_idx];
+	}
+
+	return PropertyInfo();
+}
+
+PropertyInfo VisualScriptSubCall::get_output_value_port_info(int p_idx) const{
+
+	Ref<Script> script = get_script();
+	if (script.is_valid() && script->has_method(VisualScriptLanguage::singleton->_subcall)) {
+		MethodInfo mi = script->get_method_info(VisualScriptLanguage::singleton->_subcall);
+		return mi.return_val;
+	}
+	return PropertyInfo();
+}
+
+
+String VisualScriptSubCall::get_caption() const {
+
+	return "SubCall";
+}
+
+
+String VisualScriptSubCall::get_text() const {
+
+	return "";
+}
+
+String VisualScriptSubCall::get_category() const {
+
+	return "custom";
+}
+
+class VisualScriptNodeInstanceSubCall : public VisualScriptNodeInstance {
+public:
+
+	VisualScriptInstance* instance;
+	VisualScriptSubCall *subcall;
+	int input_args;
+	bool valid;
+
+	//virtual int get_working_memory_size() const { return 0; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; };
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		if (!valid) {
+			r_error_str="Node requires a script with a _subcall(<args>) method to work.";
+			r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			return 0;
+		}
+		*p_outputs[0]=subcall->call(VisualScriptLanguage::singleton->_subcall,p_inputs,input_args,r_error_str);
+		return 0;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptSubCall::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceSubCall * instance = memnew(VisualScriptNodeInstanceSubCall );
+	instance->instance=p_instance;
+	Ref<Script> script = get_script();
+	if (script.is_valid() && script->has_method(VisualScriptLanguage::singleton->_subcall)) {
+		instance->valid=true;
+		instance->input_args=get_input_value_port_count();
+	} else {
+		instance->valid=false;
+	}
+	return instance;
+}
+
+
+
+void VisualScriptSubCall::_bind_methods() {
+
+	BIND_VMETHOD( MethodInfo(Variant::NIL,"_subcall",PropertyInfo(Variant::NIL,"arguments:Variant")) );
+
+}
+
+VisualScriptSubCall::VisualScriptSubCall() {
+
+
+}
 
 
 void register_visual_script_nodes() {
@@ -2311,6 +2438,7 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("data/resource_path",create_node_generic<VisualScriptResourcePath>);
 	VisualScriptLanguage::singleton->add_register_func("data/self",create_node_generic<VisualScriptSelf>);
 	VisualScriptLanguage::singleton->add_register_func("custom/custom_node",create_node_generic<VisualScriptCustomNode>);
+	VisualScriptLanguage::singleton->add_register_func("custom/sub_call",create_node_generic<VisualScriptSubCall>);
 
 
 	VisualScriptLanguage::singleton->add_register_func("index/get_index",create_node_generic<VisualScriptIndexGet>);
@@ -2344,5 +2472,6 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/xor",create_op_node<Variant::OP_XOR>);
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/not",create_op_node<Variant::OP_NOT>);
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/in",create_op_node<Variant::OP_IN>);
+
 
 }

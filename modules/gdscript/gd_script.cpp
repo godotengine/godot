@@ -262,10 +262,37 @@ void GDScript::get_method_list(List<MethodInfo> *p_list) const {
 			mi.arguments.push_back(arg);
 		}
 
-		mi.return_val.name="var";
+		mi.return_val.name="Variant";
 		p_list->push_back(mi);
 	}
 }
+
+bool GDScript::has_method(const StringName& p_method) const {
+
+	return member_functions.has(p_method);
+}
+
+MethodInfo GDScript::get_method_info(const StringName& p_method) const {
+
+	const Map<StringName,GDFunction*>::Element *E=member_functions.find(p_method);
+	if (!E)
+		return MethodInfo();
+
+	MethodInfo mi;
+	mi.name=E->key();
+	for(int i=0;i<E->get()->get_argument_count();i++) {
+		PropertyInfo arg;
+		arg.type=Variant::NIL; //variant
+		arg.name=E->get()->get_argument_name(i);
+		mi.arguments.push_back(arg);
+	}
+
+	mi.return_val.name="Variant";
+	return mi;
+
+}
+
+
 bool GDScript::get_property_default_value(const StringName& p_property, Variant &r_value) const {
 
 #ifdef TOOLS_ENABLED
@@ -1238,6 +1265,8 @@ void GDInstance::call_multilevel_reversed(const StringName& p_method,const Varia
 		_ml_call_reversed(script.ptr(),p_method,p_args,p_argcount);
 	}
 }
+
+
 
 void GDInstance::notification(int p_notification) {
 

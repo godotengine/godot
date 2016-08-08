@@ -211,6 +211,10 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					ERR_BREAK( !obj );
 					Resource *res=obj->cast_to<Resource>();
 					ERR_BREAK( !res );
+					if (owner && hint==PROPERTY_HINT_RESOURCE_TYPE && hint_text=="Script") {
+						//make visual script the right type
+						res->call("set_instance_base_type",owner->get_type());
+					}
 
 					v=Ref<Resource>(res).get_ref_ptr();
 					emit_signal("variant_changed");

@@ -18,6 +18,7 @@ class VisualScriptFunction : public VisualScriptNode {
 	bool stack_less;
 	int stack_size;
 
+
 protected:
 
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -608,6 +609,40 @@ public:
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptCustomNode();
+};
+
+class VisualScriptSubCall: public VisualScriptNode {
+
+	OBJ_TYPE(VisualScriptSubCall,VisualScriptNode)
+
+
+protected:
+
+	virtual bool _use_builtin_script() const { return true; }
+
+	static void _bind_methods();
+public:
+	virtual int get_output_sequence_port_count() const;
+	virtual bool has_input_sequence_port() const;
+
+
+	virtual String get_output_sequence_port_text(int p_port) const;
+
+
+	virtual int get_input_value_port_count() const;
+	virtual int get_output_value_port_count() const;
+
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const;
+	virtual String get_text() const;
+	virtual String get_category() const;
+
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+
+	VisualScriptSubCall();
 };
 
 

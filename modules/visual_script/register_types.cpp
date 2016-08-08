@@ -61,6 +61,7 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_type<VisualScriptResourcePath>();
 	ObjectTypeDB::register_type<VisualScriptSelf>();
 	ObjectTypeDB::register_type<VisualScriptCustomNode>();
+	ObjectTypeDB::register_type<VisualScriptSubCall>();
 
 	ObjectTypeDB::register_type<VisualScriptFunctionCall>();
 	ObjectTypeDB::register_type<VisualScriptPropertySet>();

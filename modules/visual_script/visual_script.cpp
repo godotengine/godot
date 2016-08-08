@@ -1015,6 +1015,36 @@ void VisualScript::get_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 
+bool VisualScript::has_method(const StringName& p_method) const {
+
+	return functions.has(p_method);
+}
+MethodInfo VisualScript::get_method_info(const StringName& p_method) const{
+
+	const Map<StringName,Function>::Element *E=functions.find(p_method);
+	if (!E)
+		return MethodInfo();
+
+	MethodInfo mi;
+	mi.name=E->key();
+	if (E->get().function_id>=0) {
+
+		Ref<VisualScriptFunction> func=E->get().nodes[E->get().function_id].node;
+		if (func.is_valid()) {
+
+			for(int i=0;i<func->get_argument_count();i++) {
+				PropertyInfo arg;
+				arg.name=func->get_argument_name(i);
+				arg.type=func->get_argument_type(i);
+				mi.arguments.push_back(arg);
+			}
+		}
+	}
+
+	return mi;
+}
+
+
 void VisualScript::_set_data(const Dictionary& p_data) {
 
 	Dictionary d = p_data;
@@ -2550,7 +2580,7 @@ VisualScriptLanguage::VisualScriptLanguage() {
 	notification="_notification";
 	_get_output_port_unsequenced="_get_output_port_unsequenced";
 	_step="_step";
-
+	_subcall="_subcall";
 	singleton=this;
 #ifndef NO_THREADS
 	lock = Mutex::create();

@@ -2596,6 +2596,7 @@ static void register_editor_callback() {
 	EditorSettings::get_singleton()->set("visual_script_editor/color_data",Color(0.9,1.0,0.9));
 	EditorSettings::get_singleton()->set("visual_script_editor/color_operators",Color(0.9,0.9,1.0));
 	EditorSettings::get_singleton()->set("visual_script_editor/color_flow_control",Color(1.0,1.0,0.8));
+	EditorSettings::get_singleton()->set("visual_script_editor/color_custom",Color(0.8,1.0,1.0));
 
 
 	ED_SHORTCUT("visual_script_editor/delete_selected", TTR("Delete Selected"));

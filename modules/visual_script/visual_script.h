@@ -322,6 +322,10 @@ public:
 	virtual bool get_property_default_value(const StringName& p_property,Variant& r_value) const;
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 
+	virtual bool has_method(const StringName& p_method) const;
+	virtual MethodInfo get_method_info(const StringName& p_method) const;
+
+
 
 	VisualScript();
 	~VisualScript();
@@ -470,6 +474,7 @@ public:
 	StringName notification;
 	StringName _get_output_port_unsequenced;
 	StringName _step;
+	StringName _subcall;
 
 	static VisualScriptLanguage* singleton;
 
