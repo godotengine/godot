@@ -1651,7 +1651,7 @@ void Object::_bind_methods() {
 		}
 
 
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call",&Object::_call_bind,mi,defargs);
+		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call:Variant",&Object::_call_bind,mi,defargs);
 	}
 
 	{
