@@ -519,11 +519,11 @@ void ProjectManager::_panel_draw(Node *p_hb) {
 void ProjectManager::_update_project_buttons()
 {
 	for(int i=0;i<scroll_childs->get_child_count();i++) {
-		
+
 		CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
 		item->update();
 	}
-	
+
 	bool has_runnable_scene = false;
 	for (Map<String,String>::Element *E=selected_list.front(); E; E=E->next()) {
 		const String &selected_main = E->get();
@@ -534,7 +534,7 @@ void ProjectManager::_update_project_buttons()
 
 	erase_btn->set_disabled(selected_list.size()<1);
 	open_btn->set_disabled(selected_list.size()<1);
-	run_btn->set_disabled(!has_runnable_scene);	
+	run_btn->set_disabled(!has_runnable_scene);
 }
 
 void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
@@ -605,6 +605,10 @@ void ProjectManager::_unhandled_input(const InputEvent& p_ev) {
 
 		switch (k.scancode) {
 
+			case KEY_RETURN: {
+
+				_open_project();
+			} break;
 			case KEY_HOME: {
 
 				for (int i=0; i<scroll_childs->get_child_count(); i++) {
@@ -614,6 +618,7 @@ void ProjectManager::_unhandled_input(const InputEvent& p_ev) {
 						selected_list.clear();
 						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
 						scroll->set_v_scroll(0);
+						_update_project_buttons();
 						break;
 					}
 				}
@@ -628,6 +633,7 @@ void ProjectManager::_unhandled_input(const InputEvent& p_ev) {
 						selected_list.clear();
 						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
 						scroll->set_v_scroll(scroll_childs->get_size().y);
+						_update_project_buttons();
 						break;
 					}
 				}
@@ -657,6 +663,8 @@ void ProjectManager::_unhandled_input(const InputEvent& p_ev) {
 
 							if (offset_diff > 0)
 								scroll->set_v_scroll(scroll->get_v_scroll() - offset_diff);
+
+							_update_project_buttons();
 
 							break;
 
@@ -694,6 +702,8 @@ void ProjectManager::_unhandled_input(const InputEvent& p_ev) {
 						if (offset_diff > 0)
 							scroll->set_v_scroll(scroll->get_v_scroll() + offset_diff);
 
+						_update_project_buttons();
+
 						break;
 
 					} else if (current==selected_list.back()->key()) {
@@ -714,12 +724,6 @@ void ProjectManager::_unhandled_input(const InputEvent& p_ev) {
 
 		if (scancode_handled) {
 			accept_event();
-
-			for(int i=0;i<scroll_childs->get_child_count();i++) {
-				CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
-				if (item)
-					item->update();
-			}
 		}
 	}
 }
@@ -897,14 +901,14 @@ void ProjectManager::_load_recent_projects() {
 
 		scroll_childs->add_child(hb);
 	}
-	
+
 	for (Map<String,String>::Element *E = selected_list_copy.front();E;E = E->next()) {
 		String key = E->key();
 		selected_list.erase(key);
 	}
-	
+
 	scroll->set_v_scroll(0);
-	
+
 	_update_project_buttons();
 
 	EditorSettings::get_singleton()->save();
@@ -943,7 +947,7 @@ void ProjectManager::_open_project() {
 	}
 
 	if (selected_list.size()>1) {
-		multi_open_ask->set_text(TTR("Are you sure to open more than one projects?"));
+		multi_open_ask->set_text(TTR("Are you sure to open more than one project?"));
 		multi_open_ask->popup_centered_minsize();
 	} else {
 		_open_project_confirm();
@@ -983,7 +987,7 @@ void ProjectManager::_run_project() {
 	}
 
 	if (selected_list.size()>1) {
-		multi_run_ask->set_text(TTR("Are you sure to run more than one projects?"));
+		multi_run_ask->set_text(TTR("Are you sure to run more than one project?"));
 		multi_run_ask->popup_centered_minsize();
 	} else {
 		_run_project_confirm();
@@ -1367,9 +1371,9 @@ ProjectManager::ProjectManager() {
 	multi_run_ask = memnew( ConfirmationDialog );
 	multi_run_ask->get_ok()->set_text(TTR("Run"));
 	multi_run_ask->get_ok()->connect("pressed", this, "_run_project_confirm");
-	
+
 	gui_base->add_child(multi_run_ask);
-	
+
 	multi_scan_ask = memnew( ConfirmationDialog );
 	multi_scan_ask->get_ok()->set_text(TTR("Scan"));
 
