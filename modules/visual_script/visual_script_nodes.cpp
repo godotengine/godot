@@ -2363,6 +2363,14 @@ String VisualScriptSubCall::get_caption() const {
 
 String VisualScriptSubCall::get_text() const {
 
+	Ref<Script> script = get_script();
+	if (script.is_valid()) {
+		if (script->get_name()!=String())
+			return script->get_name();
+		if (script->get_path().is_resource_file())
+			return script->get_path().get_file();
+		return script->get_type();
+	}
 	return "";
 }
 

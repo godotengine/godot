@@ -24,7 +24,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	enum {
 		EDIT_DELETE_NODES,
-		EDIT_TOGGLE_BREAKPOINT
+		EDIT_TOGGLE_BREAKPOINT,
+		EDIT_FIND_NODE_TYPE,
 	};
 
 	MenuButton *edit_menu;

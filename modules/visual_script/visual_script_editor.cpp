@@ -2362,6 +2362,11 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			}
 
 		} break;
+		case EDIT_FIND_NODE_TYPE: {
+			//popup disappearing grabs focus to owner, so use call deferred
+			node_filter->call_deferred("grab_focus");
+			node_filter->call_deferred("select_all");
+		} break;
 
 	}
 }
@@ -2420,6 +2425,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/delete_selected"), EDIT_DELETE_NODES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/toggle_breakpoint"), EDIT_TOGGLE_BREAKPOINT);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/find_node_type"), EDIT_FIND_NODE_TYPE);
 	edit_menu->get_popup()->connect("item_pressed",this,"_menu_option");
 
 	main_hsplit = memnew( HSplitContainer );
@@ -2601,6 +2607,7 @@ static void register_editor_callback() {
 
 	ED_SHORTCUT("visual_script_editor/delete_selected", TTR("Delete Selected"));
 	ED_SHORTCUT("visual_script_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), KEY_F9);
+	ED_SHORTCUT("visual_script_editor/find_node_type", TTR("Find Node Tyoe"), KEY_MASK_CMD+KEY_F);
 
 }
 
