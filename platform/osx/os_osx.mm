@@ -1494,8 +1494,6 @@ Size2 OS_OSX::get_window_size() const {
 
 };
 
-const int menuHeight = [[NSStatusBar systemStatusBar] thickness];
-
 void OS_OSX::set_window_size(const Size2 p_size) {
 
 	Size2 size=p_size;
@@ -1504,8 +1502,10 @@ void OS_OSX::set_window_size(const Size2 p_size) {
 	CGFloat menuBarHeight = [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
 	if (menuBarHeight != 0.f) {
 		size.y+= menuBarHeight;
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= 101104
 	} else {
-		size.y+= menuHeight;
+		size.y+= [[NSStatusBar systemStatusBar] thickness];
+#endif
 	}
 	NSRect frame = [window_object frame];
 	[window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, size.x, size.y) display:YES];
