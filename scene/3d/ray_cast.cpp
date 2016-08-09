@@ -134,37 +134,42 @@ void RayCast::_notification(int p_what) {
 			if (!enabled)
 				break;
 
-
-
-			Ref<World> w3d = get_world();
-			ERR_BREAK( w3d.is_null() );
-
-			PhysicsDirectSpaceState *dss = PhysicsServer::get_singleton()->space_get_direct_state(w3d->get_space());
-			ERR_BREAK( !dss );
-
-			Transform gt = get_global_transform();
-
-			Vector3 to = cast_to;
-			if (to==Vector3())
-				to=Vector3(0,0.01,0);
-
-			PhysicsDirectSpaceState::RayResult rr;
-
-			if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr,exclude, layer_mask, type_mask)) {
-
-				collided=true;
-				against=rr.collider_id;
-				collision_point=rr.position;
-				collision_normal=rr.normal;
-				against_shape=rr.shape;
-			} else {
-				collided=false;
-			}
-
+			_update_raycast_state();
 
 
 		} break;
 	}
+}
+
+void RayCast::_update_raycast_state(){
+	Ref<World> w3d = get_world();
+	ERR_FAIL_COND( w3d.is_null() );
+
+	PhysicsDirectSpaceState *dss = PhysicsServer::get_singleton()->space_get_direct_state(w3d->get_space());
+	ERR_FAIL_COND( !dss );
+
+	Transform gt = get_global_transform();
+
+	Vector3 to = cast_to;
+	if (to==Vector3())
+		to=Vector3(0,0.01,0);
+
+	PhysicsDirectSpaceState::RayResult rr;
+
+	if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr,exclude, layer_mask, type_mask)) {
+
+		collided=true;
+		against=rr.collider_id;
+		collision_point=rr.position;
+		collision_normal=rr.normal;
+		against_shape=rr.shape;
+	} else {
+		collided=false;
+	}
+}
+
+void RayCast::force_raycast_update() {
+	_update_raycast_state();
 }
 
 void RayCast::add_exception_rid(const RID& p_rid) {
@@ -212,6 +217,7 @@ void RayCast::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_cast_to"),&RayCast::get_cast_to);
 
 	ObjectTypeDB::bind_method(_MD("is_colliding"),&RayCast::is_colliding);
+	ObjectTypeDB::bind_method(_MD("force_raycast_update"),&RayCast::force_raycast_update);
 
 	ObjectTypeDB::bind_method(_MD("get_collider"),&RayCast::get_collider);
 	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&RayCast::get_collider_shape);
