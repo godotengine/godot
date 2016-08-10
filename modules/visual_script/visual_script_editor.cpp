@@ -387,7 +387,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_icon("MiniVector2","EditorIcons"),
 		Control::get_icon("MiniRect2","EditorIcons"),
 		Control::get_icon("MiniVector3","EditorIcons"),
-		Control::get_icon("MiniMatrix2","EditorIcons"),
+		Control::get_icon("MiniMatrix32","EditorIcons"),
 		Control::get_icon("MiniPlane","EditorIcons"),
 		Control::get_icon("MiniQuat","EditorIcons"),
 		Control::get_icon("MiniAabb","EditorIcons"),
@@ -2451,7 +2451,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	left_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 	left_vb->set_custom_minimum_size(Size2(180,1)*EDSCALE);
 
-	base_type_select = memnew( Button );	
+	base_type_select = memnew( Button );
 	left_vb->add_margin_child(TTR("Base Type:"),base_type_select);
 	base_type_select->connect("pressed",this,"_change_base_type");
 
