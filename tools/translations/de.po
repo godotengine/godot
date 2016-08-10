@@ -21,8 +21,8 @@ msgstr ""
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2016-08-10 13:41+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
-"Language-Team: German <https://hosted.weblate.org/projects/godot-"
-"engine/godot/de/>\n"
+"Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
+"godot/de/>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -216,6 +216,10 @@ msgstr ""
 "VisibilityEnable2D funktioniert am besten, wenn es ein Unterobjekt erster "
 "Ordnung der bearbeiteten Hauptszene ist."
 
+#: scene/3d/baked_light_instance.cpp
+msgid "BakedLightInstance does not contain a BakedLight resource."
+msgstr "BakedLightInstance enthält keine BakedLight-Ressource."
+
 #: scene/3d/body_shape.cpp
 msgid ""
 "CollisionShape only serves to provide a collision shape to a CollisionObject "
@@ -290,7 +294,7 @@ msgstr ""
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: scene/gui/dialogs.cpp
+#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "OK"
 
@@ -316,8 +320,8 @@ msgstr "Alle Dateien (*)"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
-#: tools/editor/scenes_dock.cpp
 msgid "Open"
 msgstr "Öffnen"
 
@@ -810,6 +814,10 @@ msgid "Optimize"
 msgstr "Optimieren"
 
 #: tools/editor/animation_editor.cpp
+msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
+msgstr ""
+
+#: tools/editor/animation_editor.cpp
 msgid "Key"
 msgstr "Schlüsselbild"
 
@@ -1015,6 +1023,20 @@ msgstr "Aufforderung beim Ersetzen"
 #: tools/editor/code_editor.cpp
 msgid "Skip"
 msgstr "Überspringen"
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom In"
+msgstr "Vergrößern"
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom Out"
+msgstr "Verkleinern"
+
+#: tools/editor/code_editor.cpp
+msgid "Reset Zoom"
+msgstr ""
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
@@ -1225,8 +1247,9 @@ msgid "Delete selected files?"
 msgstr "Ausgewählten Dateien löschen?"
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
-#: tools/editor/scenes_dock.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Löschen"
 
@@ -1381,7 +1404,7 @@ msgstr "Favoriten nach oben schieben"
 msgid "Move Favorite Down"
 msgstr "Favoriten nach unten schieben"
 
-#: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
+#: tools/editor/editor_file_dialog.cpp tools/editor/filesystem_dock.cpp
 msgid "Favorites:"
 msgstr "Favoriten:"
 
@@ -1392,10 +1415,6 @@ msgstr "Kürzlich:"
 #: tools/editor/editor_file_dialog.cpp
 msgid "Preview:"
 msgstr "Vorschau:"
-
-#: tools/editor/editor_file_system.cpp
-msgid "Cannot go into subdir:"
-msgstr "Unterordner kann nicht geöffnet werden:"
 
 #: tools/editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -2323,6 +2342,90 @@ msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
 msgstr ""
 "fil_type_cache.cch kann nicht mit Schreibzugriff geöffnet werden, file type "
 "cache wird nicht gespeichert!"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination files, doing nothing."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination paths, doing nothing."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't move directories to within themselves."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't operate on '..'"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Pick New Name and Location For:"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "No files selected!"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Edit Dependencies.."
+msgstr "Bearbeiten Abhängigkeiten.."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "View Owners.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr "Pfad kopieren"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Rename or Move.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move To.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Info"
+msgstr "Info"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr "Zeige im Dateimanager"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Import.."
+msgstr "Re-Import.."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Previous Directory"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Next Directory"
+msgstr "Nächstes Verzeichnis"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Scan Filesystem"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Toggle folder status as Favorite"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance the selected scene(s) as child of the selected node."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move"
+msgstr ""
 
 #: tools/editor/groups_editor.cpp
 msgid "Add to Group"
@@ -3291,10 +3394,6 @@ msgid "Post-Processing Texture #"
 msgstr "Nachbearbeiten von Textur #"
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr "BakedLightInstance enthält keine BakedLight-Ressource."
-
-#: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Bake!"
 msgstr "Bake!"
 
@@ -3358,7 +3457,8 @@ msgid "Paste Pose"
 msgstr "Pose einfügen"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Select Mode (Q)"
+#, fuzzy
+msgid "Select Mode"
 msgstr "Auswahlmodus (Q)"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3372,21 +3472,21 @@ msgstr "Alt+Ziehen = Verschieben"
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
 msgstr ""
-"Drücken Sie 'V', um den Pivotpunkt zu ändern, 'Shift+V', um den Pivotpunkt ("
-"während der Bewegung) zu verschieben."
+"Drücken Sie 'V', um den Pivotpunkt zu ändern, 'Shift+V', um den Pivotpunkt "
+"(während der Bewegung) zu verschieben."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+RMB: Depth list selection"
 msgstr "Alt+Rechtsklick: Listenauswahl nach Tiefe"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Move Mode (W)"
+#, fuzzy
+msgid "Move Mode"
 msgstr "Bewegungsmodus (W)"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rotate Mode (E)"
+#, fuzzy
+msgid "Rotate Mode"
 msgstr "Rotationsmodus (E)"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3489,14 +3589,6 @@ msgstr ""
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
 msgstr "Ansicht"
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom In"
-msgstr "Vergrößern"
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom Out"
-msgstr "Verkleinern"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom Reset"
@@ -4225,6 +4317,11 @@ msgid "Save Theme As"
 msgstr "Motiv speichern als"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Close Docs"
+msgstr "Klone herunter"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
 msgid "Move Up"
 msgstr "Schiebe hoch"
@@ -4678,6 +4775,14 @@ msgstr "Instanz am Mauszeiger"
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Could not instance scene!"
 msgstr "Konnte Szene nicht instantiieren!"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Move Mode (W)"
+msgstr "Bewegungsmodus (W)"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Rotate Mode (E)"
+msgstr "Rotationsmodus (E)"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
@@ -5498,11 +5603,13 @@ msgid "Unnamed Project"
 msgstr "Unbenanntes Projekt"
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to open more than one projects?"
+#, fuzzy
+msgid "Are you sure to open more than one project?"
 msgstr "Wollen Sie wirklich mehr als ein Projekt öffnen?"
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to run more than one projects?"
+#, fuzzy
+msgid "Are you sure to run more than one project?"
 msgstr "Wollen Sie wirklich mehr als ein Projekt ausführen?"
 
 #: tools/editor/project_manager.cpp
@@ -5510,6 +5617,12 @@ msgid "Remove project from the list? (Folder contents will not be modified)"
 msgstr ""
 "Das Projekt aus der Liste entfernen? (Inhalte des Projektordners werden "
 "nicht geändert)"
+
+#: tools/editor/project_manager.cpp
+msgid ""
+"You are about the scan %s folders for existing Godot projects. Do you "
+"confirm?"
+msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Project Manager"
@@ -5526,6 +5639,10 @@ msgstr "Ausführen"
 #: tools/editor/project_manager.cpp
 msgid "Scan"
 msgstr "Scannen"
+
+#: tools/editor/project_manager.cpp
+msgid "Select a Folder to Scan"
+msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "New Project"
@@ -5892,6 +6009,11 @@ msgid "No parent to instance a child at."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "No parent to instance the scenes at."
+msgstr "Konnte Szene nicht instantiieren!"
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr ""
 
@@ -6020,6 +6142,11 @@ msgid "Save Branch as Scene"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete (No Confirm)"
+msgstr "Bitte bestätigen..."
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
 msgstr ""
 
@@ -6089,90 +6216,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Select a Node"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination files, doing nothing."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination paths, doing nothing."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't move directories to within themselves."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't operate on '..'"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Pick New Name and Location For:"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "No files selected!"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Edit Dependencies.."
-msgstr "Bearbeiten Abhängigkeiten.."
-
-#: tools/editor/scenes_dock.cpp
-msgid "View Owners.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Copy Path"
-msgstr "Pfad kopieren"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Rename or Move.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move To.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Info"
-msgstr "Info"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Show In File Manager"
-msgstr "Zeige im Dateimanager"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Re-Import.."
-msgstr "Re-Import.."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Previous Directory"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Next Directory"
-msgstr "Nächstes Verzeichnis"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Re-Scan Filesystem"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Toggle folder status as Favorite"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move"
 msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
@@ -6410,6 +6453,9 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#~ msgid "Cannot go into subdir:"
+#~ msgstr "Unterordner kann nicht geöffnet werden:"
 
 #~ msgid "Imported Resources"
 #~ msgstr "Importierte Ressourcen"

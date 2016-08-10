@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "PO-Revision-Date: 2016-07-16 08:16+0000\n"
 "Last-Translator: hopping tappy (たっぴさん) <hopping.tappy@gmail.com>\n"
-"Language-Team: Japanese <https://hosted.weblate.org/projects/godot-"
-"engine/godot/ja/>\n"
+"Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ja/>\n"
 "Language: ja\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -68,16 +68,17 @@ msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"SpriteFrames リソースを作成または AnimatedSprite フレームを表示するためには 'Frames' "
-"プロパティに設定する必要があります。"
+"SpriteFrames リソースを作成または AnimatedSprite フレームを表示するためには "
+"'Frames' プロパティに設定する必要があります。"
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
-"1 つだけ表示されている CanvasModulate は、シーン (またはインスタンス化されたシーンのセット) ごとに許可されます。最初に作成された "
-"1 つが動作する一方、残りの部分は無視されます。"
+"1 つだけ表示されている CanvasModulate は、シーン (またはインスタンス化された"
+"シーンのセット) ごとに許可されます。最初に作成された 1 つが動作する一方、残り"
+"の部分は無視されます。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -85,8 +86,9 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon2D は、CollisionObject2D 派生ノードに衝突シェイプを提供するためにのみ機能します。"
-"のみとしてご利用ください Area2D、StaticBody2D、RigidBody2D、KinematicBody2D などの子図形をすることです。"
+"CollisionPolygon2D は、CollisionObject2D 派生ノードに衝突シェイプを提供するた"
+"めにのみ機能します。のみとしてご利用ください Area2D、StaticBody2D、"
+"RigidBody2D、KinematicBody2D などの子図形をすることです。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
@@ -99,15 +101,17 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D は、CollisionObject2D "
-"派生ノードにコリジョンシェイプを提供するためにのみ機能します。Area2D、StaticBody2D、RigidBody2D、"
-"KinematicBody2D などの子としてのみご利用ください。"
+"CollisionShape2D は、CollisionObject2D 派生ノードにコリジョンシェイプを提供す"
+"るためにのみ機能します。Area2D、StaticBody2D、RigidBody2D、KinematicBody2D な"
+"どの子としてのみご利用ください。"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
-msgstr "関数の CollisionShape2D の形状を指定する必要があります。そのためのシェイプリソースを作成してください!"
+msgstr ""
+"関数の CollisionShape2D の形状を指定する必要があります。そのためのシェイプリ"
+"ソースを作成してください!"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -118,7 +122,9 @@ msgstr "光の形状とテクスチャは、'texture'プロパティに指定し
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr "この遮蔽を有効にして、オクルーダ ポリゴンを設定 (または描画) する必要があります。"
+msgstr ""
+"この遮蔽を有効にして、オクルーダ ポリゴンを設定 (または描画) する必要がありま"
+"す。"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
@@ -129,61 +135,76 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
-"NavigationPolygon "
-"リソースを設定または動作するようにこのノード用に作成する必要があります。プロパティを設定するか、ポリゴンを描画してください。"
+"NavigationPolygon リソースを設定または動作するようにこのノード用に作成する必"
+"要があります。プロパティを設定するか、ポリゴンを描画してください。"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
-"NavigationPolygonInstance は、子または孫 Navigation2D ノードにある必要があります。ナビゲーション "
-"データのみ提供します。"
+"NavigationPolygonInstance は、子または孫 Navigation2D ノードにある必要があり"
+"ます。ナビゲーション データのみ提供します。"
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr "ParallaxLayer ノードは、ParallaxBackground ノードの子として設定されている場合のみ動作します。"
+msgstr ""
+"ParallaxLayer ノードは、ParallaxBackground ノードの子として設定されている場合"
+"のみ動作します。"
 
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
-msgstr "Path プロパティは、動作するように有効な Particles2D ノードを示す必要があります。"
+msgstr ""
+"Path プロパティは、動作するように有効な Particles2D ノードを示す必要がありま"
+"す。"
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D は、Path2D ノードの子として設定されている場合のみ動作します。"
+msgstr ""
+"PathFollow2D は、Path2D ノードの子として設定されている場合のみ動作します。"
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr "Path プロパティは、動作するように有効な Node2D ノードを示す必要があります。"
+msgstr ""
+"Path プロパティは、動作するように有効な Node2D ノードを示す必要があります。"
 
 #: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SamplePlayer to play sound."
 msgstr ""
-"SampleLibrary リソースは SamplePlayer がサウンドを再生するために作成または 'samples' "
-"プロパティで設定する必要があります。"
+"SampleLibrary リソースは SamplePlayer がサウンドを再生するために作成または "
+"'samples' プロパティで設定する必要があります。"
 
 #: scene/2d/sprite.cpp
 msgid ""
 "Path property must point to a valid Viewport node to work. Such Viewport "
 "must be set to 'render target' mode."
 msgstr ""
-"Path プロパティは、動作するように有効なビューポート ノードをポイントする必要があります。このようなビューポートは、'render target' "
-"モードに設定する必要があります。"
+"Path プロパティは、動作するように有効なビューポート ノードをポイントする必要"
+"があります。このようなビューポートは、'render target' モードに設定する必要が"
+"あります。"
 
 #: scene/2d/sprite.cpp
 msgid ""
 "The Viewport set in the path property must be set as 'render target' in "
 "order for this sprite to work."
-msgstr "Path プロパティに設定したビューポートは、このスプライトの動作する順序で 'render target' として設定する必要があります。"
+msgstr ""
+"Path プロパティに設定したビューポートは、このスプライトの動作する順序で "
+"'render target' として設定する必要があります。"
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
 "as parent."
-msgstr "VisibilityEnable2D は、親として直接編集されたシーンのルートを使用する場合に最適です。"
+msgstr ""
+"VisibilityEnable2D は、親として直接編集されたシーンのルートを使用する場合に最"
+"適です。"
+
+#: scene/3d/baked_light_instance.cpp
+msgid "BakedLightInstance does not contain a BakedLight resource."
+msgstr ""
 
 #: scene/3d/body_shape.cpp
 msgid ""
@@ -191,14 +212,17 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionShape は衝突物由来のノードに衝突形状を提供するのに役立ちます。唯一の彼らに形状を与えることなどエリア、静ボディ、RigidBody"
-"、キネマティックボディの子としてそれを使用してください。"
+"CollisionShape は衝突物由来のノードに衝突形状を提供するのに役立ちます。唯一の"
+"彼らに形状を与えることなどエリア、静ボディ、RigidBody、キネマティックボディの"
+"子としてそれを使用してください。"
 
 #: scene/3d/body_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
-msgstr "関数の CollisionShape の形状を指定する必要があります。それのためのシェイプリソースを作成してください!"
+msgstr ""
+"関数の CollisionShape の形状を指定する必要があります。それのためのシェイプリ"
+"ソースを作成してください!"
 
 #: scene/3d/collision_polygon.cpp
 #, fuzzy
@@ -207,9 +231,9 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon は、CollisionObject "
-"派生ノードにコリジョンシェイプを提供するためにのみ機能します。Area、StaticBody、RigidBody、KinematicBody "
-"の子としてのみ利用してください。"
+"CollisionPolygon は、CollisionObject 派生ノードにコリジョンシェイプを提供する"
+"ためにのみ機能します。Area、StaticBody、RigidBody、KinematicBody の子としての"
+"み利用してください。"
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
@@ -217,41 +241,47 @@ msgstr "空の CollisionPolygon は、衝突判定を持ちません。"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr "このノードを動かすために NavigationMesh リソースを設定または作成する必要があります。"
+msgstr ""
+"このノードを動かすために NavigationMesh リソースを設定または作成する必要があ"
+"ります。"
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
-msgstr "NavigationMeshInstance は、ナビゲーションノードの子や孫である必要があります。これはナビゲーションデータのみ提供します。"
+msgstr ""
+"NavigationMeshInstance は、ナビゲーションノードの子や孫である必要があります。"
+"これはナビゲーションデータのみ提供します。"
 
 #: scene/3d/scenario_fx.cpp
 #, fuzzy
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
-msgstr "1 つだけの WorldEnvironment は、シーン (またはインスタンス化されたシーンのセット) ごとに許可されます。"
+msgstr ""
+"1 つだけの WorldEnvironment は、シーン (またはインスタンス化されたシーンの"
+"セット) ごとに許可されます。"
 
 #: scene/3d/spatial_sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SpatialSamplePlayer to play sound."
 msgstr ""
-"SpatialSamplePlayer でサウンドを再生するためには SampleLibrary リソースを作成または 'samples' "
-"プロパティで設定する必要があります。"
+"SpatialSamplePlayer でサウンドを再生するためには SampleLibrary リソースを作成"
+"または 'samples' プロパティで設定する必要があります。"
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"SpriteFrames リソースを作成または AnimatedSprite3D フレームを表示するためには 'Frames' "
-"プロパティに設定する必要があります。"
+"SpriteFrames リソースを作成または AnimatedSprite3D フレームを表示するために"
+"は 'Frames' プロパティに設定する必要があります。"
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
 msgstr "キャンセル"
 
-#: scene/gui/dialogs.cpp
+#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "決定"
 
@@ -277,8 +307,8 @@ msgstr "すべてのファイル(*)"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
-#: tools/editor/scenes_dock.cpp
 msgid "Open"
 msgstr "開く"
 
@@ -448,8 +478,9 @@ msgid ""
 "functions. Making them visible for editing is fine though, but they will "
 "hide upon running."
 msgstr ""
-"ポップアップは、popup() または popup*() "
-"関数のいずれかを呼び出す場合を除き、既定では非表示になります。編集のためにそれらを可視化することは可能ですが、彼らは実行時に非表示になります。"
+"ポップアップは、popup() または popup*() 関数のいずれかを呼び出す場合を除き、"
+"既定では非表示になります。編集のためにそれらを可視化することは可能ですが、彼"
+"らは実行時に非表示になります。"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -458,9 +489,10 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
-"このビューポートは、レンダー "
-"ターゲットとして設定されていません。その内容を画面に直接表示する場合は、サイズを得ることができるように、コントロールの子をつくります。それ以外の場合、"
-"レンダー ターゲットし、その内部のテクスチャ表示のいくつかのノードに割り当てます。"
+"このビューポートは、レンダー ターゲットとして設定されていません。その内容を画"
+"面に直接表示する場合は、サイズを得ることができるように、コントロールの子をつ"
+"くります。それ以外の場合、レンダー ターゲットし、その内部のテクスチャ表示のい"
+"くつかのノードに割り当てます。"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
@@ -766,6 +798,10 @@ msgid "Optimize"
 msgstr "最適化"
 
 #: tools/editor/animation_editor.cpp
+msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
+msgstr ""
+
+#: tools/editor/animation_editor.cpp
 msgid "Key"
 msgstr "キー"
 
@@ -972,6 +1008,20 @@ msgstr ""
 msgid "Skip"
 msgstr "スキップ"
 
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom In"
+msgstr ""
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom Out"
+msgstr ""
+
+#: tools/editor/code_editor.cpp
+msgid "Reset Zoom"
+msgstr ""
+
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
 msgstr "ライン:"
@@ -1177,8 +1227,9 @@ msgid "Delete selected files?"
 msgstr ""
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
-#: tools/editor/scenes_dock.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr ""
 
@@ -1325,7 +1376,7 @@ msgstr ""
 msgid "Move Favorite Down"
 msgstr ""
 
-#: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
+#: tools/editor/editor_file_dialog.cpp tools/editor/filesystem_dock.cpp
 msgid "Favorites:"
 msgstr ""
 
@@ -1335,10 +1386,6 @@ msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Preview:"
-msgstr ""
-
-#: tools/editor/editor_file_system.cpp
-msgid "Cannot go into subdir:"
 msgstr ""
 
 #: tools/editor/editor_file_system.cpp
@@ -1499,7 +1546,9 @@ msgstr ""
 #, fuzzy
 msgid ""
 "Couldn't save scene. Likely dependencies (instances) couldn't be satisfied."
-msgstr "シーンを保存できませんでした。おそらく依存関係 (インスタンス) を満たせていません。"
+msgstr ""
+"シーンを保存できませんでした。おそらく依存関係 (インスタンス) を満たせていま"
+"せん。"
 
 #: tools/editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -1600,13 +1649,15 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"選択したシーン '%s' は、シーン ファイルではありません、有効なものを選択していますか？\n"
+"選択したシーン '%s' は、シーン ファイルではありません、有効なものを選択してい"
+"ますか？\n"
 "'アプリケーション' カテゴリの下の'プロジェクトの設定'で変更できます。"
 
 #: tools/editor/editor_node.cpp
 #, fuzzy
 msgid "Current scene was never saved, please save it prior to running."
-msgstr "現在のシーンが保存されていませんでした、それ以前の実行中に保存してください。"
+msgstr ""
+"現在のシーンが保存されていませんでした、それ以前の実行中に保存してください。"
 
 #: tools/editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -2231,6 +2282,90 @@ msgstr ""
 
 #: tools/editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination files, doing nothing."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination paths, doing nothing."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't move directories to within themselves."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't operate on '..'"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Pick New Name and Location For:"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "No files selected!"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Edit Dependencies.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "View Owners.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Rename or Move.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move To.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Info"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Import.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Previous Directory"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Next Directory"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Scan Filesystem"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Toggle folder status as Favorite"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance the selected scene(s) as child of the selected node."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move"
 msgstr ""
 
 #: tools/editor/groups_editor.cpp
@@ -3188,10 +3323,6 @@ msgid "Post-Processing Texture #"
 msgstr ""
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr ""
-
-#: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Bake!"
 msgstr ""
 
@@ -3255,8 +3386,9 @@ msgid "Paste Pose"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Select Mode (Q)"
-msgstr ""
+#, fuzzy
+msgid "Select Mode"
+msgstr "すべて選択"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -3275,13 +3407,12 @@ msgid "Alt+RMB: Depth list selection"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Move Mode (W)"
-msgstr ""
+#, fuzzy
+msgid "Move Mode"
+msgstr "追加したキーを移動"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rotate Mode (E)"
+msgid "Rotate Mode"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3377,14 +3508,6 @@ msgstr ""
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom In"
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom Out"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -4105,6 +4228,11 @@ msgid "Save Theme As"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Close Docs"
+msgstr "閉じる"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
 msgid "Move Up"
 msgstr ""
@@ -4553,6 +4681,14 @@ msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Could not instance scene!"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Move Mode (W)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Rotate Mode (E)"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -5370,15 +5506,21 @@ msgid "Unnamed Project"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to open more than one projects?"
+msgid "Are you sure to open more than one project?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to run more than one projects?"
+msgid "Are you sure to run more than one project?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid ""
+"You are about the scan %s folders for existing Godot projects. Do you "
+"confirm?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
@@ -5395,6 +5537,10 @@ msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Scan"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid "Select a Folder to Scan"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
@@ -5762,6 +5908,10 @@ msgid "No parent to instance a child at."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance the scenes at."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr ""
 
@@ -5890,6 +6040,11 @@ msgid "Save Branch as Scene"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete (No Confirm)"
+msgstr "確認してください。"
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
 msgstr ""
 
@@ -5959,90 +6114,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Select a Node"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination files, doing nothing."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination paths, doing nothing."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't move directories to within themselves."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't operate on '..'"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Pick New Name and Location For:"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "No files selected!"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Edit Dependencies.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "View Owners.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Copy Path"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Rename or Move.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move To.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Info"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Show In File Manager"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Re-Import.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Previous Directory"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Next Directory"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Re-Scan Filesystem"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Toggle folder status as Favorite"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move"
 msgstr ""
 
 #: tools/editor/script_create_dialog.cpp

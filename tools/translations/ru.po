@@ -12,14 +12,14 @@ msgstr ""
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2016-07-24 17:18+0000\n"
 "Last-Translator: DimOkGamer <dimokgamer@gmail.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/godot-"
-"engine/godot/ru/>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<="
-"4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
@@ -205,6 +205,10 @@ msgstr ""
 "VisibilityEnable2D работает наилучшим образом при использовании корня "
 "редактируемой сцены, как прямого родителя."
 
+#: scene/3d/baked_light_instance.cpp
+msgid "BakedLightInstance does not contain a BakedLight resource."
+msgstr "BakedLightInstance не содержит BakedLight ресурс."
+
 #: scene/3d/body_shape.cpp
 msgid ""
 "CollisionShape only serves to provide a collision shape to a CollisionObject "
@@ -277,7 +281,7 @@ msgstr ""
 msgid "Cancel"
 msgstr "Отмена"
 
-#: scene/gui/dialogs.cpp
+#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "Ок"
 
@@ -303,8 +307,8 @@ msgstr "Все файлы (*)"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
-#: tools/editor/scenes_dock.cpp
 msgid "Open"
 msgstr "Открыть"
 
@@ -795,6 +799,10 @@ msgid "Optimize"
 msgstr "Оптимизировать"
 
 #: tools/editor/animation_editor.cpp
+msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
+msgstr ""
+
+#: tools/editor/animation_editor.cpp
 msgid "Key"
 msgstr "Ключ"
 
@@ -1000,6 +1008,20 @@ msgstr "Подтверждение замены"
 #: tools/editor/code_editor.cpp
 msgid "Skip"
 msgstr "Пропустить"
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom In"
+msgstr "Приблизить"
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom Out"
+msgstr "Отдалить"
+
+#: tools/editor/code_editor.cpp
+msgid "Reset Zoom"
+msgstr ""
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
@@ -1209,8 +1231,9 @@ msgid "Delete selected files?"
 msgstr "Удалить выбранные файлы?"
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
-#: tools/editor/scenes_dock.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Удалить"
 
@@ -1363,7 +1386,7 @@ msgstr "Переместить избранное вверх"
 msgid "Move Favorite Down"
 msgstr "Переместить избранное вниз"
 
-#: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
+#: tools/editor/editor_file_dialog.cpp tools/editor/filesystem_dock.cpp
 msgid "Favorites:"
 msgstr "Избранное:"
 
@@ -1374,10 +1397,6 @@ msgstr "Недавнее:"
 #: tools/editor/editor_file_dialog.cpp
 msgid "Preview:"
 msgstr "Предпросмотр:"
-
-#: tools/editor/editor_file_system.cpp
-msgid "Cannot go into subdir:"
-msgstr "Невозможно перейти в подпапку:"
 
 #: tools/editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -2299,6 +2318,90 @@ msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
 msgstr ""
 "Невозможно открыть file_type_cache.cch для записи. Не будет сохранён кэш "
 "типов файлов!"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination files, doing nothing."
+msgstr "Файл назначения и исходный файлы совпадают, нечего делать."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination paths, doing nothing."
+msgstr "Путь назначения и исходный пути совпадают, нечего делать."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't move directories to within themselves."
+msgstr "Невозможно переместить каталоги внутрь себя."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't operate on '..'"
+msgstr "Невозможно работать с '..'"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Pick New Name and Location For:"
+msgstr "Выберете новое имя и расположение для:"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "No files selected!"
+msgstr "Файлы не выбраны!"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance"
+msgstr "Добавить экземпляр"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Edit Dependencies.."
+msgstr "Редактировать зависимости.."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "View Owners.."
+msgstr "Просмотреть владельцев.."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr "Копировать путь"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Rename or Move.."
+msgstr "Переименовать или Переместить.."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move To.."
+msgstr "Переместить в.."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Info"
+msgstr "Информация"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr "Просмотреть в проводнике"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Import.."
+msgstr "Переимпортировать.."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Previous Directory"
+msgstr "Предыдущий каталог"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Next Directory"
+msgstr "Следующий каталог"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Scan Filesystem"
+msgstr "Повторное сканирование файловой системы"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Toggle folder status as Favorite"
+msgstr "Переключить статус папки как избранной"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance the selected scene(s) as child of the selected node."
+msgstr "Добавить выбранную сцену(сцены), как потомка выбранного узла."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move"
+msgstr "Переместить"
 
 #: tools/editor/groups_editor.cpp
 msgid "Add to Group"
@@ -3268,10 +3371,6 @@ msgid "Post-Processing Texture #"
 msgstr "Пост-обработка текстуры #"
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr "BakedLightInstance не содержит BakedLight ресурс."
-
-#: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Bake!"
 msgstr "Запечь!"
 
@@ -3335,7 +3434,8 @@ msgid "Paste Pose"
 msgstr "Вставить позу"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Select Mode (Q)"
+#, fuzzy
+msgid "Select Mode"
 msgstr "Режим выделения (Q)"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3357,13 +3457,13 @@ msgid "Alt+RMB: Depth list selection"
 msgstr "Alt+ПКМ: Список выбора глубины"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Move Mode (W)"
+#, fuzzy
+msgid "Move Mode"
 msgstr "Режим перемещения (W)"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rotate Mode (E)"
+#, fuzzy
+msgid "Rotate Mode"
 msgstr "Режим поворота (E)"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3462,14 +3562,6 @@ msgstr "Очистить цепь ИК"
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
 msgstr "Обзор"
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom In"
-msgstr "Приблизить"
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom Out"
-msgstr "Отдалить"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom Reset"
@@ -4189,6 +4281,11 @@ msgid "Save Theme As"
 msgstr "Сохранить тему как"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Close Docs"
+msgstr "Копировать вниз"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
 msgid "Move Up"
 msgstr "Переместить вверх"
@@ -4642,6 +4739,14 @@ msgstr "Экземпляр на курсор"
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Could not instance scene!"
 msgstr "Не возможно добавить сцену!"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Move Mode (W)"
+msgstr "Режим перемещения (W)"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Rotate Mode (E)"
+msgstr "Режим поворота (E)"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
@@ -5460,16 +5565,24 @@ msgid "Unnamed Project"
 msgstr "Безымянный проект"
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to open more than one projects?"
+#, fuzzy
+msgid "Are you sure to open more than one project?"
 msgstr "Вы уверены, что открыть несколько проектов?"
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to run more than one projects?"
+#, fuzzy
+msgid "Are you sure to run more than one project?"
 msgstr "Вы уверены, что хотите запустить более одного проекта?"
 
 #: tools/editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
 msgstr "Удалить проект из списка? (Содержимое папки не будет изменено)"
+
+#: tools/editor/project_manager.cpp
+msgid ""
+"You are about the scan %s folders for existing Godot projects. Do you "
+"confirm?"
+msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Project Manager"
@@ -5486,6 +5599,11 @@ msgstr "Запустить"
 #: tools/editor/project_manager.cpp
 msgid "Scan"
 msgstr "Сканировать"
+
+#: tools/editor/project_manager.cpp
+#, fuzzy
+msgid "Select a Folder to Scan"
+msgstr "Выбрать узел"
 
 #: tools/editor/project_manager.cpp
 msgid "New Project"
@@ -5854,6 +5972,11 @@ msgid "No parent to instance a child at."
 msgstr "Нет родителя для добавления потомка."
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "No parent to instance the scenes at."
+msgstr "Нет родителя для добавления потомка."
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "Ошибка при загрузке сцены из %s"
 
@@ -5986,6 +6109,11 @@ msgid "Save Branch as Scene"
 msgstr "Сохранить ветку, как сцену"
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete (No Confirm)"
+msgstr "Подтверждение..."
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
 msgstr "Добавить/создать новый узел"
 
@@ -6060,90 +6188,6 @@ msgstr "Очистить!"
 #: tools/editor/scene_tree_editor.cpp
 msgid "Select a Node"
 msgstr "Выбрать узел"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination files, doing nothing."
-msgstr "Файл назначения и исходный файлы совпадают, нечего делать."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination paths, doing nothing."
-msgstr "Путь назначения и исходный пути совпадают, нечего делать."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't move directories to within themselves."
-msgstr "Невозможно переместить каталоги внутрь себя."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't operate on '..'"
-msgstr "Невозможно работать с '..'"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Pick New Name and Location For:"
-msgstr "Выберете новое имя и расположение для:"
-
-#: tools/editor/scenes_dock.cpp
-msgid "No files selected!"
-msgstr "Файлы не выбраны!"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance"
-msgstr "Добавить экземпляр"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Edit Dependencies.."
-msgstr "Редактировать зависимости.."
-
-#: tools/editor/scenes_dock.cpp
-msgid "View Owners.."
-msgstr "Просмотреть владельцев.."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Copy Path"
-msgstr "Копировать путь"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Rename or Move.."
-msgstr "Переименовать или Переместить.."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move To.."
-msgstr "Переместить в.."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Info"
-msgstr "Информация"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Show In File Manager"
-msgstr "Просмотреть в проводнике"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Re-Import.."
-msgstr "Переимпортировать.."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Previous Directory"
-msgstr "Предыдущий каталог"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Next Directory"
-msgstr "Следующий каталог"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Re-Scan Filesystem"
-msgstr "Повторное сканирование файловой системы"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Toggle folder status as Favorite"
-msgstr "Переключить статус папки как избранной"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr "Добавить выбранную сцену(сцены), как потомка выбранного узла."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move"
-msgstr "Переместить"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Invalid parent class name"
@@ -6380,6 +6424,9 @@ msgstr "Изменена длинна луча"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Изменены границы уведомителя"
+
+#~ msgid "Cannot go into subdir:"
+#~ msgstr "Невозможно перейти в подпапку:"
 
 #~ msgid "Imported Resources"
 #~ msgstr "Импортированные ресурсы"
