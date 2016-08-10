@@ -7,16 +7,16 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-06-20 11:18+0000\n"
+"PO-Revision-Date: 2016-08-08 10:20+0000\n"
 "Last-Translator: Mohammmad Khashashneh <mohammad.rasmi@gmail.com>\n"
-"Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
-"godot/ar/>\n"
+"Language-Team: Arabic <https://hosted.weblate.org/projects/godot-"
+"engine/godot/ar/>\n"
 "Language: ar\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 2.7-dev\n"
+"X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -36,7 +36,7 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "لا تستند الى شفرة مصدرية"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
@@ -95,6 +95,8 @@ msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
+"يجب تزويد  ال CollisionShape2D بإحدى الأشكال (من نوع Shape2D) لتعمل بالشكل "
+"المطلوب. الرجاء تكوين و ضبط الشكل لها اولا!"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -237,7 +239,7 @@ msgstr ""
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Recognized"
-msgstr ""
+msgstr "جميع الأنواع المعتمدة"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Files (*)"
@@ -519,7 +521,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "حذف الأطر الرئيسة"
 
 #: tools/editor/animation_editor.cpp
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
@@ -802,7 +804,7 @@ msgstr ""
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Site:"
-msgstr ""
+msgstr "الموقع:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Support.."
@@ -814,7 +816,7 @@ msgstr ""
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "مجتمع"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Testing"
@@ -822,7 +824,7 @@ msgstr ""
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
-msgstr ""
+msgstr "ملف اصول مضغوطة"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List For '%s':"
@@ -830,7 +832,7 @@ msgstr ""
 
 #: tools/editor/call_dialog.cpp
 msgid "Call"
-msgstr ""
+msgstr "نداء"
 
 #: tools/editor/call_dialog.cpp tools/editor/connections_dialog.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
@@ -1004,7 +1006,7 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Create Subscription"
-msgstr ""
+msgstr "عمل اشتراك"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect.."
@@ -2291,7 +2293,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "The quick brown fox jumps over the lazy dog."
-msgstr ""
+msgstr "أبجد هوز حطي كلمن صعفص قرشت ثخذ ضظغ."
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Test:"
@@ -3184,7 +3186,7 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Action"
-msgstr ""
+msgstr "عملية تحريك"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Edit IK Chain"
@@ -5175,7 +5177,7 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Samples"
-msgstr ""
+msgstr "عينات (صوتية)"
 
 #: tools/editor/project_export.cpp
 msgid "Sample Conversion Mode: (.wav files):"
