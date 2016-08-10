@@ -356,11 +356,11 @@ msgstr "Orta Tuş."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Wheel Up."
-msgstr "Mouse Topu Yukarı."
+msgstr "Fare Tekerleği Yukarı."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Wheel Down."
-msgstr "Mouse Topu Aşağı."
+msgstr "Fare Tekerleği Aşağı."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Axis"
@@ -426,22 +426,22 @@ msgstr ""
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "FreeType başlatılamadı."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Unknown font format."
-msgstr ""
+msgstr "Bilinmeyen yazı tipi formatı."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "Yazı tipi yükleme hatası."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Invalid font size."
-msgstr ""
+msgstr "Geçersiz yazı tipi boyutu."
 
 #: tools/editor/animation_editor.cpp
 msgid "Disabled"
@@ -534,7 +534,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "Sürekli"
 
 #: tools/editor/animation_editor.cpp
 msgid "Discrete"
@@ -542,7 +542,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "Tetikleyici"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Key"
@@ -554,11 +554,11 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale Selection"
-msgstr ""
+msgstr "Seçimi Yeniden Boyutlandır"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale From Cursor"
-msgstr ""
+msgstr "Fareden Seç"
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Next Step"
@@ -595,15 +595,15 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Transitions"
-msgstr ""
+msgstr "Geçişler"
 
 #: tools/editor/animation_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "Animasyonu Optimize Et"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr ""
+msgstr "Animasyonu Temizle"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
@@ -620,7 +620,7 @@ msgstr ""
 #: tools/editor/plugins/particles_editor_plugin.cpp
 #: tools/editor/project_manager.cpp tools/editor/script_create_dialog.cpp
 msgid "Create"
-msgstr ""
+msgstr "Oluştur"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create & Insert"
@@ -664,7 +664,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr ""
+msgstr "Uzunluk(lar):"
 
 #: tools/editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
@@ -672,7 +672,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr ""
+msgstr "Adım(lar):"
 
 #: tools/editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
@@ -724,19 +724,19 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Optimize"
-msgstr ""
+msgstr "Optimize Et"
 
 #: tools/editor/animation_editor.cpp
 msgid "Key"
-msgstr ""
+msgstr "Anahtar"
 
 #: tools/editor/animation_editor.cpp
 msgid "Transition"
-msgstr ""
+msgstr "Geçiş"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale Ratio:"
-msgstr ""
+msgstr "Ölçek Oranı:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
@@ -760,7 +760,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up"
-msgstr ""
+msgstr "Temizle"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -779,7 +779,7 @@ msgstr ""
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Search:"
-msgstr ""
+msgstr "Ara:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -844,15 +844,15 @@ msgstr "Kapat"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List:"
-msgstr ""
+msgstr "Metot Listesi:"
 
 #: tools/editor/call_dialog.cpp
 msgid "Arguments:"
-msgstr ""
+msgstr "Argümanlar:"
 
 #: tools/editor/call_dialog.cpp
 msgid "Return:"
-msgstr ""
+msgstr "Dönüş:"
 
 #: tools/editor/code_editor.cpp
 msgid "Go to Line"
@@ -947,7 +947,7 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
-msgstr ""
+msgstr "Öğeye Bağla:"
 
 #: tools/editor/connections_dialog.cpp
 #: tools/editor/editor_autoload_settings.cpp tools/editor/groups_editor.cpp
@@ -974,7 +974,7 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Path to Node:"
-msgstr ""
+msgstr "Öğenin Yolu:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Make Function"
@@ -990,7 +990,7 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect"
-msgstr ""
+msgstr "Bağla"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -2273,15 +2273,15 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Couldn't save font."
-msgstr ""
+msgstr "Yazı tipi kaydedilemedi."
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Source Font:"
-msgstr ""
+msgstr "Kaynak Yazı Tipi:"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Source Font Size:"
-msgstr ""
+msgstr "Kaynak Yazı Tipi Boyutu:"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Dest Resource:"
@@ -2293,7 +2293,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Test:"
-msgstr ""
+msgstr "Test:"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
@@ -2323,7 +2323,7 @@ msgstr ""
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Font"
-msgstr ""
+msgstr "Yazı Tipi"
 
 #: tools/editor/io_plugins/editor_mesh_import_plugin.cpp
 msgid "No meshes to import!"
@@ -2392,7 +2392,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Max Angle"
-msgstr ""
+msgstr "Maksimum Açı"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Clips"
@@ -2400,20 +2400,20 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Start(s)"
-msgstr ""
+msgstr "Başlangıç(lar)"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "End(s)"
-msgstr ""
+msgstr "Bitiş(ler)"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
-msgstr ""
+msgstr "Döngü"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Filters"
-msgstr ""
+msgstr "Süzgeçler"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Source path is empty."
@@ -2437,15 +2437,15 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Source Scene:"
-msgstr ""
+msgstr "Kaynak Sahne:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Same as Target Scene"
-msgstr ""
+msgstr "Hedef Sahne İle Aynı"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Shared"
-msgstr ""
+msgstr "Paylaşılmış"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Target Texture Folder:"
@@ -2461,7 +2461,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Auto"
-msgstr ""
+msgstr "Otomatik"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
@@ -2518,15 +2518,15 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Saving.."
-msgstr ""
+msgstr "Kaydediliyor.."
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "3D Scene Animation"
-msgstr ""
+msgstr "3B Sahne Animasyonu"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Uncompressed"
-msgstr ""
+msgstr "Sıkıştırılmamış"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Compress Lossless (PNG)"
@@ -2542,15 +2542,15 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Texture Format"
-msgstr ""
+msgstr "Kaplama Formatı"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Texture Compression Quality (WebP):"
-msgstr ""
+msgstr "Kaplama Sıkıştırma Kalitesi (WebP):"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Texture Options"
-msgstr ""
+msgstr "Kaplama Seçenekleri"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Please specify some files!"
@@ -2570,7 +2570,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Max Texture Size:"
-msgstr ""
+msgstr "Maksimum Kaplama Boyutu:"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Textures for Atlas (2D)"
@@ -2578,11 +2578,11 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Cell Size:"
-msgstr ""
+msgstr "Hücre Boyutu:"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Large Texture"
-msgstr ""
+msgstr "Büyük Kaplama"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Large Textures (2D)"
@@ -2590,11 +2590,11 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Source Texture"
-msgstr ""
+msgstr "Kaynak Kaplama"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Base Atlas Texture"
-msgstr ""
+msgstr "Kaynak Kaplama Atlası"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Source Texture(s)"
@@ -2614,15 +2614,15 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "2D Texture"
-msgstr ""
+msgstr "2B Kaplama"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "3D Texture"
-msgstr ""
+msgstr "3B Kaplama"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Atlas Texture"
-msgstr ""
+msgstr "Kaplama Atlası"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid ""
@@ -2636,7 +2636,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Texture"
-msgstr ""
+msgstr "Kaplama"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Large Texture"
@@ -2656,7 +2656,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Saving"
-msgstr ""
+msgstr "Kaydetme"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Couldn't save large texture:"
@@ -5233,11 +5233,11 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Export.."
-msgstr ""
+msgstr "Dışa Aktar.."
 
 #: tools/editor/project_export.cpp
 msgid "Project Export"
-msgstr ""
+msgstr "Projeyi Dışa Aktar"
 
 #: tools/editor/project_export.cpp
 msgid "Export Preset:"
@@ -5273,43 +5273,43 @@ msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Package Installed Successfully!"
-msgstr ""
+msgstr "Paket Başarıyla Kuruldu!"
 
 #: tools/editor/project_manager.cpp
 msgid "Import Existing Project"
-msgstr ""
+msgstr "Var Olan Projeyi İçe Aktar"
 
 #: tools/editor/project_manager.cpp
 msgid "Project Path (Must Exist):"
-msgstr ""
+msgstr "Proje Yolu (Var Olmalı):"
 
 #: tools/editor/project_manager.cpp
 msgid "Project Name:"
-msgstr ""
+msgstr "Proje Adı:"
 
 #: tools/editor/project_manager.cpp
 msgid "Create New Project"
-msgstr ""
+msgstr "Yeni Proje Oluştur"
 
 #: tools/editor/project_manager.cpp
 msgid "Project Path:"
-msgstr ""
+msgstr "Proje Yolu:"
 
 #: tools/editor/project_manager.cpp
 msgid "Install Project:"
-msgstr ""
+msgstr "Projeyi Yükle:"
 
 #: tools/editor/project_manager.cpp
 msgid "Install"
-msgstr ""
+msgstr "Yükle"
 
 #: tools/editor/project_manager.cpp
 msgid "Browse"
-msgstr ""
+msgstr "Gözat"
 
 #: tools/editor/project_manager.cpp
 msgid "New Game Project"
-msgstr ""
+msgstr "Yeni Oyun Projesi"
 
 #: tools/editor/project_manager.cpp
 msgid "That's a BINGO!"
@@ -5317,7 +5317,7 @@ msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Unnamed Project"
-msgstr ""
+msgstr "İsimsiz Proje"
 
 #: tools/editor/project_manager.cpp
 msgid "Are you sure to open more than one projects?"
@@ -5333,43 +5333,43 @@ msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Project Manager"
-msgstr ""
+msgstr "Proje Yöneticisi"
 
 #: tools/editor/project_manager.cpp
 msgid "Project List"
-msgstr ""
+msgstr "Proje Listesi"
 
 #: tools/editor/project_manager.cpp
 msgid "Run"
-msgstr ""
+msgstr "Çalıştır"
 
 #: tools/editor/project_manager.cpp
 msgid "Scan"
-msgstr ""
+msgstr "Tara"
 
 #: tools/editor/project_manager.cpp
 msgid "New Project"
-msgstr ""
+msgstr "Yeni Proje"
 
 #: tools/editor/project_manager.cpp
 msgid "Exit"
-msgstr ""
+msgstr "Çıkış"
 
 #: tools/editor/project_settings.cpp
 msgid "Key "
-msgstr ""
+msgstr "Tuş"
 
 #: tools/editor/project_settings.cpp
 msgid "Joy Button"
-msgstr ""
+msgstr "Joy Tuşu"
 
 #: tools/editor/project_settings.cpp
 msgid "Joy Axis"
-msgstr ""
+msgstr "Joy Ekseni"
 
 #: tools/editor/project_settings.cpp
 msgid "Mouse Button"
-msgstr ""
+msgstr "Fare Tuşu"
 
 #: tools/editor/project_settings.cpp
 msgid "Invalid action (anything goes but '/' or ':')."
@@ -5389,51 +5389,51 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "Control+"
-msgstr ""
+msgstr "Control+"
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "Press a Key.."
-msgstr ""
+msgstr "Bir Tuşa Basın.."
 
 #: tools/editor/project_settings.cpp
 msgid "Mouse Button Index:"
-msgstr ""
+msgstr "Fare Tuş Indisi:"
 
 #: tools/editor/project_settings.cpp
 msgid "Left Button"
-msgstr ""
+msgstr "Sol Tuş"
 
 #: tools/editor/project_settings.cpp
 msgid "Right Button"
-msgstr ""
+msgstr "Sağ Tuş"
 
 #: tools/editor/project_settings.cpp
 msgid "Middle Button"
-msgstr ""
+msgstr "Orta Tuş"
 
 #: tools/editor/project_settings.cpp
 msgid "Wheel Up Button"
-msgstr ""
+msgstr "Fare Tekerleği Yukarı Tuşu"
 
 #: tools/editor/project_settings.cpp
 msgid "Wheel Down Button"
-msgstr ""
+msgstr "Fare Tekerleği Aşağı Tuşu"
 
 #: tools/editor/project_settings.cpp
 msgid "Button 6"
-msgstr ""
+msgstr "Tuş 6"
 
 #: tools/editor/project_settings.cpp
 msgid "Button 7"
-msgstr ""
+msgstr "Tuş 7"
 
 #: tools/editor/project_settings.cpp
 msgid "Button 8"
-msgstr ""
+msgstr "Tuş 8"
 
 #: tools/editor/project_settings.cpp
 msgid "Button 9"
-msgstr ""
+msgstr "Tuş 9"
 
 #: tools/editor/project_settings.cpp
 msgid "Joystick Axis Index:"
@@ -5457,19 +5457,19 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Error saving settings."
-msgstr ""
+msgstr "Ayarlar kaydedilemedi."
 
 #: tools/editor/project_settings.cpp
 msgid "Settings saved OK."
-msgstr ""
+msgstr "Ayarlar kaydedildi."
 
 #: tools/editor/project_settings.cpp
 msgid "Add Translation"
-msgstr ""
+msgstr "Çeviri Ekle"
 
 #: tools/editor/project_settings.cpp
 msgid "Remove Translation"
-msgstr ""
+msgstr "Çeviriyi Kaldır"
 
 #: tools/editor/project_settings.cpp
 msgid "Add Remapped Path"
@@ -5497,11 +5497,11 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "Genel"
 
 #: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
 msgid "Property:"
-msgstr ""
+msgstr "Özellik:"
 
 #: tools/editor/project_settings.cpp
 msgid "Del"
@@ -5517,31 +5517,31 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Action:"
-msgstr ""
+msgstr "Hareket:"
 
 #: tools/editor/project_settings.cpp
 msgid "Device:"
-msgstr ""
+msgstr "Cihaz:"
 
 #: tools/editor/project_settings.cpp
 msgid "Index:"
-msgstr ""
+msgstr "Indis:"
 
 #: tools/editor/project_settings.cpp
 msgid "Localization"
-msgstr ""
+msgstr "Yerelleştirme"
 
 #: tools/editor/project_settings.cpp
 msgid "Translations"
-msgstr ""
+msgstr "Çevirileri"
 
 #: tools/editor/project_settings.cpp
 msgid "Translations:"
-msgstr ""
+msgstr "Çeviriler:"
 
 #: tools/editor/project_settings.cpp
 msgid "Add.."
-msgstr ""
+msgstr "Ekle.."
 
 #: tools/editor/project_settings.cpp
 msgid "Remaps"
@@ -5565,7 +5565,7 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Plugins"
-msgstr ""
+msgstr "Eklentiler"
 
 #: tools/editor/property_editor.cpp
 msgid "Preset.."
@@ -5581,7 +5581,7 @@ msgstr ""
 
 #: tools/editor/property_editor.cpp
 msgid "Zero"
-msgstr ""
+msgstr "Sıfır"
 
 #: tools/editor/property_editor.cpp
 msgid "Easing In-Out"
@@ -5593,27 +5593,27 @@ msgstr ""
 
 #: tools/editor/property_editor.cpp
 msgid "File.."
-msgstr ""
+msgstr "Dosya.."
 
 #: tools/editor/property_editor.cpp
 msgid "Dir.."
-msgstr ""
+msgstr "Dizin.."
 
 #: tools/editor/property_editor.cpp
 msgid "Load"
-msgstr ""
+msgstr "Yükle"
 
 #: tools/editor/property_editor.cpp
 msgid "Assign"
-msgstr ""
+msgstr "Ata"
 
 #: tools/editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
-msgstr ""
+msgstr "Dosya yükleme hatası: Kaynak değil!"
 
 #: tools/editor/property_editor.cpp
 msgid "Couldn't load image"
-msgstr ""
+msgstr "Resim yüklenemiyor"
 
 #: tools/editor/property_editor.cpp
 msgid "Bit %d, val %d."
@@ -5625,19 +5625,19 @@ msgstr ""
 
 #: tools/editor/property_editor.cpp
 msgid "Set"
-msgstr ""
+msgstr "Ayarla"
 
 #: tools/editor/property_editor.cpp
 msgid "Properties:"
-msgstr ""
+msgstr "Özellikler:"
 
 #: tools/editor/property_editor.cpp
 msgid "Global"
-msgstr ""
+msgstr "Global"
 
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
-msgstr ""
+msgstr "Bölümler:"
 
 #: tools/editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"
@@ -5665,19 +5665,19 @@ msgstr ""
 
 #: tools/editor/resources_dock.cpp
 msgid "Create New Resource"
-msgstr ""
+msgstr "Kaynak Oluştur"
 
 #: tools/editor/resources_dock.cpp
 msgid "Open Resource"
-msgstr ""
+msgstr "Kaynak Aç"
 
 #: tools/editor/resources_dock.cpp
 msgid "Save Resource"
-msgstr ""
+msgstr "Kaynağı Kaydet"
 
 #: tools/editor/resources_dock.cpp
 msgid "Resource Tools"
-msgstr ""
+msgstr "Kaynak Araçları"
 
 #: tools/editor/resources_dock.cpp
 msgid "Make Local"
@@ -5685,27 +5685,27 @@ msgstr ""
 
 #: tools/editor/run_settings_dialog.cpp
 msgid "Run Mode:"
-msgstr ""
+msgstr "Çalıştırma Modu:"
 
 #: tools/editor/run_settings_dialog.cpp
 msgid "Current Scene"
-msgstr ""
+msgstr "Aktif Sahne"
 
 #: tools/editor/run_settings_dialog.cpp
 msgid "Main Scene"
-msgstr ""
+msgstr "Ana Sahne"
 
 #: tools/editor/run_settings_dialog.cpp
 msgid "Main Scene Arguments:"
-msgstr ""
+msgstr "Ana Sahne Argümanları"
 
 #: tools/editor/run_settings_dialog.cpp
 msgid "Scene Run Settings"
-msgstr ""
+msgstr "Sahne Çalıştırma Ayarları"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "OK :("
-msgstr ""
+msgstr "Tamam :("
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -5721,7 +5721,7 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Ok"
-msgstr ""
+msgstr "Tamam"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
@@ -5751,7 +5751,7 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
-msgstr ""
+msgstr "Öğe(ler) Silinsin Mi?"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -5767,7 +5767,7 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save New Scene As.."
-msgstr ""
+msgstr "Yeni Sahneyi Farklı Kaydet.."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Makes Sense!"
@@ -5783,11 +5783,11 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
-msgstr ""
+msgstr "Öğe(leri) Kaldır"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Create Node"
-msgstr ""
+msgstr "Öğe Oluştur"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
@@ -5797,7 +5797,7 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error saving scene."
-msgstr ""
+msgstr "Sahne kaydedilemedi."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error duplicating scene to save it."
@@ -5805,19 +5805,19 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Edit Groups"
-msgstr ""
+msgstr "Grupları Düzenle"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Edit Connections"
-msgstr ""
+msgstr "Bağlantıları Düzenle"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
-msgstr ""
+msgstr "Öğe(leri) Sil"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add Child Node"
-msgstr ""
+msgstr "Çocuk Öğe Ekle"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
@@ -5825,7 +5825,7 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Change Type"
-msgstr ""
+msgstr "Türü Değiştir"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add Script"
@@ -5865,7 +5865,7 @@ msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Instance:"
-msgstr ""
+msgstr "Örnek:"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
@@ -5873,11 +5873,11 @@ msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Rename Node"
-msgstr ""
+msgstr "Öğeyi Yeniden Adlandır"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Scene Tree (Nodes):"
-msgstr ""
+msgstr "Sahne Ağacı (Öğeler):"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Editable Children"
@@ -5893,23 +5893,23 @@ msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Open in Editor"
-msgstr ""
+msgstr "Düzenleyicide Aç"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Clear Inheritance"
-msgstr ""
+msgstr "Kalıtımı Temizle"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Clear Inheritance? (No Undo!)"
-msgstr ""
+msgstr "Kalıtımı Temizle? (Geri Alınamaz!)"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Clear!"
-msgstr ""
+msgstr "Temizle!"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Select a Node"
-msgstr ""
+msgstr "Öğe Seç"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Same source and destination files, doing nothing."
@@ -6017,15 +6017,15 @@ msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class name is invalid!"
-msgstr ""
+msgstr "Sınıf ismi geçersiz!"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Parent class name is invalid!"
-msgstr ""
+msgstr "Ebeveyn sınıf ismi geçersiz!"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Invalid path!"
-msgstr ""
+msgstr "Geçersiz yol!"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Could not create script in filesystem."
@@ -6033,7 +6033,7 @@ msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
-msgstr ""
+msgstr "Yol boş"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Path is not local"
@@ -6045,7 +6045,7 @@ msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
 msgid "File exists"
-msgstr ""
+msgstr "Dosya mevcut"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Invalid extension"
