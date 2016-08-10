@@ -14,8 +14,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "PO-Revision-Date: 2016-08-10 13:18+0000\n"
 "Last-Translator: Mietek Szcześniak <ravaging@go2.pl>\n"
-"Language-Team: Polish <https://hosted.weblate.org/projects/godot-"
-"engine/godot/pl/>\n"
+"Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
+"godot/pl/>\n"
 "Language: pl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -24,10 +24,12 @@ msgstr ""
 "X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
+#: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Niepoprawny typ argumentu funkcji convert(), użyj stałej TYPE_*."
 
 #: modules/gdscript/gd_functions.cpp
+#: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Brak miejsca dla bajtów dekodujących, lub zły format."
 
@@ -63,6 +65,264 @@ msgstr "Niepoprawna instancja formatu słownika (niepoprawny skrypt w @path)"
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "Niepoprawna instancja słownika (niepoprawne podklasy)"
+
+#: modules/visual_script/visual_script.cpp
+msgid ""
+"A node yielded without working memory, please read the docs on how to yield "
+"properly!"
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid ""
+"Node yielded, but did not return a function state in the first working "
+"memory."
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid ""
+"Return value must be assigned to first element of node working memory! Fix "
+"your node please."
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid "Node returned an invalid sequence output: "
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid "Found sequence bit but not the node in the stack, report bug!"
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid "Stack overflow with stack depth: "
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Functions:"
+msgstr "Funkcja:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Variables:"
+msgstr "Zmienna"
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
+msgid "Signals:"
+msgstr "Sygnały:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Name is not a valid identifier:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Name already in use by another func/var/signal:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Rename Function"
+msgstr "Stwórz Funkcję"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Rename Variable"
+msgstr "Zmienna"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Rename Signal"
+msgstr "Zmień nazwę"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function"
+msgstr "Funkcja:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Variable"
+msgstr "Zmienna"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Signal"
+msgstr "Sygnały"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Function"
+msgstr "Usuń zaznaczone"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Variable"
+msgstr "Zmienna"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Editing Variable:"
+msgstr "Zmienna"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Signal"
+msgstr "Usuń zaznaczone"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Editing Signal:"
+msgstr "Połączony sygnał:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Node"
+msgstr "Dodaj węzeł dziecko"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Node(s) From Tree"
+msgstr "Węzeł ze Sceny"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Setter Property"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Getter Property"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/plugins/polygon_2d_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
+msgid "Edit"
+msgstr "Edycja"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Base Type:"
+msgstr "Zmień typ"
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
+msgid "Members:"
+msgstr "Członkowie:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Available Nodes:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Select or create a function to edit graph"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
+#: tools/editor/connections_dialog.cpp
+#: tools/editor/plugins/animation_player_editor_plugin.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/plugins/resource_preloader_editor_plugin.cpp
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/sprite_frames_editor_plugin.cpp
+#: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
+#: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
+msgid "Close"
+msgstr "Zamknij"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Edit Signal Arguments:"
+msgstr "Dodatkowe argumenty wywołania:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Edit Variable:"
+msgstr "Zmienna"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change"
+msgstr "Zmień typ"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Delete Selected"
+msgstr "Usunąć zaznaczone pliki?"
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Toggle Breakpoint"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Find Node Tyoe"
+msgstr "Znajdź Następny"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Input type not iterable: "
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator became invalid"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator became invalid: "
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Invalid index property name."
+msgstr "Nieprawidłowa nazwa klasy bazowej"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Base object is not a Node!"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Path does not lead Node!"
+msgstr "Ścieżka nie jest lokalna"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Invalid index property name '%s' in node %s."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid ": Invalid argument of type: "
+msgstr "Nieprawidłowa nazwa klasy bazowej"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid ": Invalid arguments: "
+msgstr "Nieprawidłowa nazwa klasy bazowej"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "VariableGet not found in script: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "VariableSet not found in script: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ""
+"Custom node has no _get_output_port_unsequenced(idx,wmem), but unsequenced "
+"ports were specified."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Custom node has no _step() method, can't process graph."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ""
+"Invalid return value from _step(), must be integer (seq out), or string "
+"(error)."
+msgstr ""
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -117,7 +377,8 @@ msgstr ""
 msgid ""
 "A texture with the shape of the light must be supplied to the 'texture' "
 "property."
-msgstr "Tekstura z kształtem promieni światła musi być dodana do pola Tekstura."
+msgstr ""
+"Tekstura z kształtem promieni światła musi być dodana do pola Tekstura."
 
 #: scene/2d/light_occluder_2d.cpp
 #, fuzzy
@@ -201,6 +462,10 @@ msgstr ""
 "VisibilityEnable2D działa najlepiej, gdy jest bezpośrednio pod korzeniem "
 "aktualnie edytowanej sceny."
 
+#: scene/3d/baked_light_instance.cpp
+msgid "BakedLightInstance does not contain a BakedLight resource."
+msgstr ""
+
 #: scene/3d/body_shape.cpp
 msgid ""
 "CollisionShape only serves to provide a collision shape to a CollisionObject "
@@ -271,11 +536,10 @@ msgstr ""
 "AnimatedSprite3D wyświetlał klatki."
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: scene/gui/dialogs.cpp,
 msgid "Cancel"
 msgstr "Anuluj"
 
-#: scene/gui/dialogs.cpp
+#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "OK"
 
@@ -288,30 +552,21 @@ msgid "Please Confirm..."
 msgstr "Proszę potwierdzić..."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp,
 msgid "File Exists, Overwrite?"
 msgstr "Plik istnieje, nadpisać?"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp,
 msgid "All Recognized"
 msgstr "Wszystko rozpoznane"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp,
 msgid "All Files (*)"
 msgstr "Wszystkie pliki (*)"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
-#: tools/editor/scenes_dock.cpp
-#: scene/gui/file_dialog.cpp,
-#: tools/editor/editor_file_dialog.cpp,
-#: tools/editor/editor_help.cpp,
-#: tools/editor/editor_node.cpp,
-#: tools/editor/plugins/script_editor_plugin.cpp,
-#: tools/editor/quick_open.cpp,
 msgid "Open"
 msgstr "Otwórz"
 
@@ -335,22 +590,15 @@ msgstr "Otwórz plik lub katalog"
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: scene/gui/file_dialog.cpp,
-#: tools/editor/editor_file_dialog.cpp,
-#: tools/editor/editor_node.cpp,
-#: tools/editor/plugins/animation_player_editor_plugin.cpp,
 msgid "Save"
 msgstr "Zapisz"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp,
 msgid "Save a File"
 msgstr "Zapisz plik"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp,
-#: tools/editor/editor_dir_dialog.cpp,
 msgid "Create Folder"
 msgstr "Stwórz katalog"
 
@@ -358,49 +606,34 @@ msgstr "Stwórz katalog"
 #: tools/editor/editor_file_dialog.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 #: tools/editor/script_create_dialog.cpp
-#: scene/gui/file_dialog.cpp,
-#: tools/editor/editor_autoload_settings.cpp,
-#: tools/editor/editor_file_dialog.cpp,
-#: tools/editor/io_plugins/editor_font_import_plugin.cpp,
 msgid "Path:"
 msgstr "Ścieżka:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp,
 msgid "Directories & Files:"
 msgstr "Katalogi i pliki:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/script_editor_debugger.cpp
-#: scene/gui/file_dialog.cpp,
-#: tools/editor/editor_file_dialog.cpp,
 msgid "File:"
 msgstr "Plik:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp,
 msgid "Filter:"
 msgstr "Filtr:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp tools/editor/editor_plugin_settings.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
-#: scene/gui/file_dialog.cpp,
-#: tools/editor/editor_dir_dialog.cpp,
-#: tools/editor/editor_file_dialog.cpp,
-#: tools/editor/editor_plugin_settings.cpp,
 msgid "Name:"
 msgstr "Nazwa:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp,
-#: tools/editor/editor_dir_dialog.cpp,
 msgid "Could not create folder."
 msgstr "Nie można stworzyć katalogu."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp,
 msgid "Must use a valid extension."
 msgstr "Rozszerzenie musi być poprawne."
 
@@ -424,90 +657,63 @@ msgid "Meta+"
 msgstr ""
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
-#: scene/gui/input_action.cpp,
 msgid "Device"
 msgstr "Urządzenie"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
-#: scene/gui/input_action.cpp,
 msgid "Button"
 msgstr "Przycisk"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
-#: scene/gui/input_action.cpp,
 msgid "Left Button."
 msgstr "Lewy przycisk."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
-#: scene/gui/input_action.cpp,
 msgid "Right Button."
 msgstr "Prawy przycisk."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
-#: scene/gui/input_action.cpp,
 msgid "Middle Button."
 msgstr "Środkowy przycisk."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
-#: scene/gui/input_action.cpp,
 msgid "Wheel Up."
 msgstr "Kółko myszy w górę."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
-#: scene/gui/input_action.cpp,
 msgid "Wheel Down."
 msgstr "Kółko myszy w dół."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
-#: scene/gui/input_action.cpp,
 msgid "Axis"
 msgstr "Oś"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
-#: scene/gui/line_edit.cpp,
-#: scene/gui/text_edit.cpp,
-#: tools/editor/plugins/script_editor_plugin.cpp,
 msgid "Cut"
 msgstr "Wytnij"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
-#: scene/gui/line_edit.cpp,
-#: scene/gui/text_edit.cpp,
-#: tools/editor/plugins/script_editor_plugin.cpp,
-#: tools/editor/plugins/shader_editor_plugin.cpp,
-#: tools/editor/property_editor.cpp,
 msgid "Copy"
 msgstr "Kopiuj"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
-#: scene/gui/line_edit.cpp,
-#: scene/gui/text_edit.cpp,
-#: tools/editor/plugins/resource_preloader_editor_plugin.cpp,
-#: tools/editor/plugins/script_editor_plugin.cpp,
-#: tools/editor/plugins/shader_editor_plugin.cpp,
-#: tools/editor/plugins/sprite_frames_editor_plugin.cpp,
-#: tools/editor/property_editor.cpp,
 msgid "Paste"
 msgstr "Wklej"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_export.cpp
-#: scene/gui/line_edit.cpp,
-#: scene/gui/text_edit.cpp,
-#: tools/editor/plugins/script_editor_plugin.cpp,
-#: tools/editor/plugins/shader_editor_plugin.cpp,
 msgid "Select All"
 msgstr "Zaznacz wszystko"
 
@@ -515,22 +721,12 @@ msgstr "Zaznacz wszystko"
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 #: tools/editor/plugins/rich_text_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/script_editor_debugger.cpp
-#: scene/gui/line_edit.cpp,
-#: scene/gui/text_edit.cpp,
-#: tools/editor/editor_log.cpp,
-#: tools/editor/plugins/animation_tree_editor_plugin.cpp,
-#: tools/editor/plugins/rich_text_editor_plugin.cpp,
-#: tools/editor/property_editor.cpp,
 msgid "Clear"
 msgstr "Wyczyść"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
-#: scene/gui/line_edit.cpp,
-#: scene/gui/text_edit.cpp,
-#: tools/editor/editor_node.cpp,
-#: tools/editor/plugins/script_editor_plugin.cpp,
 msgid "Undo"
 msgstr "Cofnij"
 
@@ -558,25 +754,21 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp,
 msgid "Error initializing FreeType."
 msgstr "Błąd przy inicjalizacji FreeType."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp,
 msgid "Unknown font format."
 msgstr "Nieznany format fonta."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp,
 msgid "Error loading font."
 msgstr "Błąd ładowania fonta."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp,
 msgid "Invalid font size."
 msgstr "Niepoprawny rozmiar fonta."
 
@@ -866,6 +1058,10 @@ msgid "Optimize"
 msgstr "Zoptymalizuj"
 
 #: tools/editor/animation_editor.cpp
+msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
+msgstr ""
+
+#: tools/editor/animation_editor.cpp
 msgid "Key"
 msgstr "Klucz"
 
@@ -969,18 +1165,6 @@ msgstr "Lista metod '%s':"
 msgid "Call"
 msgstr "Wywołanie"
 
-#: tools/editor/call_dialog.cpp tools/editor/connections_dialog.cpp
-#: tools/editor/plugins/animation_player_editor_plugin.cpp
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/resource_preloader_editor_plugin.cpp
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/sprite_frames_editor_plugin.cpp
-#: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
-#: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
-msgid "Close"
-msgstr "Zamknij"
-
 #: tools/editor/call_dialog.cpp
 msgid "Method List:"
 msgstr "Lista metod:"
@@ -1031,17 +1215,13 @@ msgstr "Tylko zaznaczenie"
 
 #: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
-#: tools/editor/code_editor.cpp,
-#: tools/editor/editor_help.cpp,
-#: tools/editor/plugins/script_editor_plugin.cpp,
-#: tools/editor/plugins/shader_editor_plugin.cpp,
 msgid "Search"
 msgstr "Szukaj"
 
 #: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
-#: tools/editor/code_editor.cpp,
 msgid "Find"
 msgstr "Szukaj"
 
@@ -1077,8 +1257,21 @@ msgstr "Zaptytaj przy zastąpieniu"
 msgid "Skip"
 msgstr "Pomiń"
 
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom In"
+msgstr "Przybliż"
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom Out"
+msgstr "Oddal"
+
+#: tools/editor/code_editor.cpp
+msgid "Reset Zoom"
+msgstr ""
+
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
-#: tools/editor/code_editor.cpp,
 msgid "Line:"
 msgstr "Linia:"
 
@@ -1099,11 +1292,6 @@ msgstr "Podłączanie Do Węzła:"
 #: tools/editor/plugins/item_list_editor_plugin.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
-#: tools/editor/connections_dialog.cpp,
-#: tools/editor/editor_autoload_settings.cpp,
-#: tools/editor/groups_editor.cpp,
-#: tools/editor/plugins/item_list_editor_plugin.cpp,
-#: tools/editor/plugins/theme_editor_plugin.cpp,
 msgid "Add"
 msgstr "Dodaj"
 
@@ -1111,10 +1299,6 @@ msgstr "Dodaj"
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_manager.cpp
-#: tools/editor/connections_dialog.cpp,
-#: tools/editor/dependency_editor.cpp,
-#: tools/editor/plugins/animation_tree_editor_plugin.cpp,
-#: tools/editor/plugins/theme_editor_plugin.cpp,
 msgid "Remove"
 msgstr "Usuń"
 
@@ -1169,7 +1353,6 @@ msgid "Disconnect"
 msgstr "Rozłącz"
 
 #: tools/editor/connections_dialog.cpp tools/editor/node_dock.cpp
-#: tools/editor/connections_dialog.cpp,
 msgid "Signals"
 msgstr "Sygnały"
 
@@ -1293,8 +1476,9 @@ msgid "Delete selected files?"
 msgstr "Usunąć zaznaczone pliki?"
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
-#: tools/editor/scenes_dock.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Usuń"
 
@@ -1308,7 +1492,8 @@ msgstr "Dopuszczalne znaki:"
 
 #: tools/editor/editor_autoload_settings.cpp
 msgid "Invalid name. Must not collide with an existing engine class name."
-msgstr "Niepoprawna nazwa. Nie może być taka sama jak istniejąca klasa silnika."
+msgstr ""
+"Niepoprawna nazwa. Nie może być taka sama jak istniejąca klasa silnika."
 
 #: tools/editor/editor_autoload_settings.cpp
 msgid "Invalid name. Must not collide with an existing buit-in type name."
@@ -1443,7 +1628,7 @@ msgstr "Przesuń Ulubiony w Górę"
 msgid "Move Favorite Down"
 msgstr "Przesuń Ulubiony w Dół"
 
-#: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
+#: tools/editor/editor_file_dialog.cpp tools/editor/filesystem_dock.cpp
 msgid "Favorites:"
 msgstr "Ulubione:"
 
@@ -1454,10 +1639,6 @@ msgstr "Ostatnie:"
 #: tools/editor/editor_file_dialog.cpp
 msgid "Preview:"
 msgstr "Podgląd:"
-
-#: tools/editor/editor_file_system.cpp
-msgid "Cannot go into subdir:"
-msgstr "Nie można iść do podkatalogu:"
 
 #: tools/editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -1497,16 +1678,8 @@ msgid "Public Methods:"
 msgstr "Metody Publiczne:"
 
 #: tools/editor/editor_help.cpp
-msgid "Members:"
-msgstr "Członkowie:"
-
-#: tools/editor/editor_help.cpp
 msgid "GUI Theme Items:"
 msgstr "Elementy Tematu GUI:"
-
-#: tools/editor/editor_help.cpp
-msgid "Signals:"
-msgstr "Sygnały:"
 
 #: tools/editor/editor_help.cpp
 msgid "Constants:"
@@ -1675,7 +1848,6 @@ msgstr "Wklej parametry"
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
-#: tools/editor/editor_node.cpp,
 msgid "Paste Resource"
 msgstr "Wklej zasób"
 
@@ -1952,7 +2124,7 @@ msgstr "MeshLibrary..."
 msgid "TileSet.."
 msgstr "TileSet..."
 
-#: tools/editor/editor_node.cpp tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/editor_node.cpp tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Redo"
 msgstr ""
@@ -2131,9 +2303,9 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
-"Wszelkie zmiany skryptów będą synchronizowane z urządzeniem zdalnym ("
-"działające instancje będą zrestartowane). Opcja ta działa szybciej z użyciem "
-"sieciowych systemów plików."
+"Wszelkie zmiany skryptów będą synchronizowane z urządzeniem zdalnym "
+"(działające instancje będą zrestartowane). Opcja ta działa szybciej z "
+"użyciem sieciowych systemów plików."
 
 #: tools/editor/editor_node.cpp tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Settings"
@@ -2382,6 +2554,94 @@ msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
 msgstr ""
 "Nie udało się otworzyć pliku file_type_cache.cch do zapisu, pamięć podręczna "
 "typu plików nie będzie zapisana!"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination files, doing nothing."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Same source and destination paths, doing nothing."
+msgstr ""
+"Ścieżki źródłowa i docelowa są takie same, żadna akcja nie została wykonana."
+
+#: tools/editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Can't move directories to within themselves."
+msgstr "Nie możesz przenieść danego katalogu do jego wnętrza."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't operate on '..'"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Pick New Name and Location For:"
+msgstr "Wybierz nową nazwę i lokację dla:"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "No files selected!"
+msgstr "Nie wybrano pliku!"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance"
+msgstr "Instancja"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Edit Dependencies.."
+msgstr "Edytuj Zależności..."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "View Owners.."
+msgstr "Pokaż właścicieli.."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr "Skopiuj Ścieżkę"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Rename or Move.."
+msgstr "Zmień nazwę lub Przenieś..."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move To.."
+msgstr "Przenieś Do..."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Info"
+msgstr "Informacje"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr "Pokaż w menadżerze plików"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Import.."
+msgstr "Importuj ponownie.."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Previous Directory"
+msgstr "Poprzedni katalog"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Next Directory"
+msgstr "Następny folder"
+
+#: tools/editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Re-Scan Filesystem"
+msgstr "Przeskanuj system plików ponownie"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Toggle folder status as Favorite"
+msgstr "Ustaw folder jako Ulubiony"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance the selected scene(s) as child of the selected node."
+msgstr "Stwórz instancje wybranej sceny/scen jako dziecko wybranego węzła."
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move"
+msgstr "Przenieś"
 
 #: tools/editor/groups_editor.cpp
 msgid "Add to Group"
@@ -3346,10 +3606,6 @@ msgid "Post-Processing Texture #"
 msgstr ""
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr ""
-
-#: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Bake!"
 msgstr ""
 
@@ -3413,7 +3669,8 @@ msgid "Paste Pose"
 msgstr "Wklej Pozę"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Select Mode (Q)"
+#, fuzzy
+msgid "Select Mode"
 msgstr "Zaznaczenie (Q)"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3436,13 +3693,13 @@ msgid "Alt+RMB: Depth list selection"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Move Mode (W)"
+#, fuzzy
+msgid "Move Mode"
 msgstr "Tryb Przesuwania (W)"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rotate Mode (E)"
+#, fuzzy
+msgid "Rotate Mode"
 msgstr "Tryb Rotacji (E)"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3475,14 +3732,6 @@ msgstr "Zablokuj selekcję węzłów podrzędnych."
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "Odblokuj selekcję węzłów podrzędnych."
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-#: tools/editor/project_manager.cpp
-msgid "Edit"
-msgstr "Edycja"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -3539,14 +3788,6 @@ msgstr "Wyczyść Łańcuch IK"
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
 msgstr "Widok"
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom In"
-msgstr "Przybliż"
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom Out"
-msgstr "Oddal"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom Reset"
@@ -4246,6 +4487,10 @@ msgid "Save All"
 msgstr "Zapisz Wszystko"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+msgid "Soft Reload Script"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
 msgstr ""
 
@@ -4266,95 +4511,25 @@ msgid "Save Theme As"
 msgstr "Zapisz Temat Jako"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/scene_tree_dock.cpp
-msgid "Move Up"
-msgstr "Przesuń w Górę"
+#, fuzzy
+msgid "Close Docs"
+msgstr "Zamknij Scene"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/scene_tree_dock.cpp
-msgid "Move Down"
-msgstr "Przesuń w Dół"
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Indent Left"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Indent Right"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Comment"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Clone Down"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Complete Symbol"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Trim Trailing Whitespace"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Auto Indent"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Soft Reload Script"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find.."
 msgstr "Znajdź.."
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find Next"
 msgstr "Znajdź Następny"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Find Previous"
-msgstr "Znajdź Poprzedni"
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Replace.."
-msgstr "Zamień.."
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Function.."
-msgstr "Idź do Funkcji.."
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Goto Line.."
-msgstr "Idź do Lini.."
-
-#: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
 msgstr "Debug"
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Breakpoint"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Remove All Breakpoints"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Next Breakpoint"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Previous Breakpoint"
-msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/script_editor_debugger.cpp
@@ -4391,14 +4566,6 @@ msgstr "Przesuń w Lewo"
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Move Right"
 msgstr "Przesuń w Prawo"
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Help"
-msgstr "Pomoc"
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Contextual Help"
-msgstr "Pomoc Kontekstowa"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Tutorials"
@@ -4455,6 +4622,77 @@ msgstr "Debugger"
 msgid ""
 "Built-in scripts can only be edited when the scene they belong to is loaded"
 msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
+msgid "Move Up"
+msgstr "Przesuń w Górę"
+
+#: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
+msgid "Move Down"
+msgstr "Przesuń w Dół"
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Indent Left"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Indent Right"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Toggle Comment"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Complete Symbol"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Trim Trailing Whitespace"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Auto Indent"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Remove All Breakpoints"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Next Breakpoint"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Previous Breakpoint"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Find Previous"
+msgstr "Znajdź Poprzedni"
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Replace.."
+msgstr "Zamień.."
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Function.."
+msgstr "Idź do Funkcji.."
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Goto Line.."
+msgstr "Idź do Lini.."
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Contextual Help"
+msgstr "Pomoc Kontekstowa"
 
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Vertex"
@@ -4715,6 +4953,14 @@ msgstr ""
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Could not instance scene!"
 msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Move Mode (W)"
+msgstr "Tryb Przesuwania (W)"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Rotate Mode (E)"
+msgstr "Tryb Rotacji (E)"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
@@ -5531,15 +5777,21 @@ msgid "Unnamed Project"
 msgstr "Projekt bez nazwy"
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to open more than one projects?"
+msgid "Are you sure to open more than one project?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to run more than one projects?"
+msgid "Are you sure to run more than one project?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid ""
+"You are about the scan %s folders for existing Godot projects. Do you "
+"confirm?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
@@ -5557,6 +5809,11 @@ msgstr "Uruchom"
 #: tools/editor/project_manager.cpp
 msgid "Scan"
 msgstr "Skanuj"
+
+#: tools/editor/project_manager.cpp
+#, fuzzy
+msgid "Select a Folder to Scan"
+msgstr "Wybierz węzeł"
 
 #: tools/editor/project_manager.cpp
 msgid "New Project"
@@ -5925,6 +6182,10 @@ msgid "No parent to instance a child at."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance the scenes at."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr ""
 
@@ -6056,6 +6317,11 @@ msgid "Save Branch as Scene"
 msgstr "Zapisz gałąź jako scene"
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete (No Confirm)"
+msgstr "Proszę potwierdzić..."
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
 msgstr "Dodaj/Stwórz nowy węzeł"
 
@@ -6064,6 +6330,11 @@ msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
 msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Create a new script for the selected node."
+msgstr "Stwórz instancje wybranej sceny/scen jako dziecko wybranego węzła."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid ""
@@ -6129,94 +6400,6 @@ msgstr ""
 #: tools/editor/scene_tree_editor.cpp
 msgid "Select a Node"
 msgstr "Wybierz węzeł"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination files, doing nothing."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-#, fuzzy
-msgid "Same source and destination paths, doing nothing."
-msgstr ""
-"Ścieżki źródłowa i docelowa są takie same, żadna akcja nie została wykonana."
-
-#: tools/editor/scenes_dock.cpp
-#, fuzzy
-msgid "Can't move directories to within themselves."
-msgstr "Nie możesz przenieść danego katalogu do jego wnętrza."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't operate on '..'"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Pick New Name and Location For:"
-msgstr "Wybierz nową nazwę i lokację dla:"
-
-#: tools/editor/scenes_dock.cpp
-msgid "No files selected!"
-msgstr "Nie wybrano pliku!"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance"
-msgstr "Instancja"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Edit Dependencies.."
-msgstr "Edytuj Zależności..."
-
-#: tools/editor/scenes_dock.cpp
-msgid "View Owners.."
-msgstr "Pokaż właścicieli.."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Copy Path"
-msgstr "Skopiuj Ścieżkę"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Rename or Move.."
-msgstr "Zmień nazwę lub Przenieś..."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move To.."
-msgstr "Przenieś Do..."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Info"
-msgstr "Informacje"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Show In File Manager"
-msgstr "Pokaż w menadżerze plików"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Re-Import.."
-msgstr "Importuj ponownie.."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Previous Directory"
-msgstr "Poprzedni katalog"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Next Directory"
-msgstr "Następny folder"
-
-#: tools/editor/scenes_dock.cpp
-#, fuzzy
-msgid "Re-Scan Filesystem"
-msgstr "Przeskanuj system plików ponownie"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Toggle folder status as Favorite"
-msgstr "Ustaw folder jako Ulubiony"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr "Stwórz instancje wybranej sceny/scen jako dziecko wybranego węzła."
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move"
-msgstr "Przenieś"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Invalid parent class name"
@@ -6458,3 +6641,9 @@ msgstr "Zmień długość Ray Shape"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#~ msgid "Cannot go into subdir:"
+#~ msgstr "Nie można iść do podkatalogu:"
+
+#~ msgid "Help"
+#~ msgstr "Pomoc"

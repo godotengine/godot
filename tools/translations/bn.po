@@ -10,8 +10,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "PO-Revision-Date: 2016-08-10 17:10+0000\n"
 "Last-Translator: ABU MD. MARUF SARKER <maruf.webdev@gmail.com>\n"
-"Language-Team: Bengali <https://hosted.weblate.org/projects/godot-"
-"engine/godot/bn/>\n"
+"Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
+"godot/bn/>\n"
 "Language: bn\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -19,10 +19,12 @@ msgstr ""
 "X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
+#: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "অগ্রহণযোগ্য মান convert()-এ গিয়েছে, TYPE_* ধ্রুবক ব্যবহার করুন।"
 
 #: modules/gdscript/gd_functions.cpp
+#: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "বিন্যাস জানার জন্য যথেষ্ট বাইট নেই, অথবা ভুল ফরম্যাট।"
 
@@ -58,6 +60,243 @@ msgstr "ভুল dictionary ফরম্যাট (@path-এ ভুল স্�
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "ভুল dictionary ফরম্যাট (ভুল subclasses)"
 
+#: modules/visual_script/visual_script.cpp
+msgid ""
+"A node yielded without working memory, please read the docs on how to yield "
+"properly!"
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid ""
+"Node yielded, but did not return a function state in the first working "
+"memory."
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid ""
+"Return value must be assigned to first element of node working memory! Fix "
+"your node please."
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid "Node returned an invalid sequence output: "
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid "Found sequence bit but not the node in the stack, report bug!"
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid "Stack overflow with stack depth: "
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Functions:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Variables:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
+msgid "Signals:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Name is not a valid identifier:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Name already in use by another func/var/signal:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Rename Function"
+msgstr "নির্বাচিত সমূহ অপসারণ করুন"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Rename Variable"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Rename Signal"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Function"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Variable"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Signal"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Function"
+msgstr "নির্বাচিত সমূহ অপসারণ করুন"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Remove Variable"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Editing Variable:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Signal"
+msgstr "নির্বাচিত সমূহ অপসারণ করুন"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Editing Signal:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node(s) From Tree"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Setter Property"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Getter Property"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/plugins/polygon_2d_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
+msgid "Edit"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Base Type:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
+msgid "Members:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Available Nodes:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Select or create a function to edit graph"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
+#: tools/editor/connections_dialog.cpp
+#: tools/editor/plugins/animation_player_editor_plugin.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/plugins/resource_preloader_editor_plugin.cpp
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/sprite_frames_editor_plugin.cpp
+#: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
+#: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
+msgid "Close"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Edit Signal Arguments:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Edit Variable:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Change"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Delete Selected"
+msgstr "নির্বাচিত সমূহ অনুলিপি করুন"
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Toggle Breakpoint"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Find Node Tyoe"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Input type not iterable: "
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator became invalid"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator became invalid: "
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Invalid index property name."
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Base object is not a Node!"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Path does not lead Node!"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Invalid index property name '%s' in node %s."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ": Invalid argument of type: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ": Invalid arguments: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "VariableGet not found in script: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "VariableSet not found in script: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ""
+"Custom node has no _get_output_port_unsequenced(idx,wmem), but unsequenced "
+"ports were specified."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Custom node has no _step() method, can't process graph."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ""
+"Invalid return value from _step(), must be integer (seq out), or string "
+"(error)."
+msgstr ""
+
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
@@ -80,9 +319,9 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি"
-" প্রদান করে। Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে "
-"আকার দিতে অনুগ্রহ করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
+"CollisionPolygon2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদান "
+"করে। Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে আকার দিতে "
+"অনুগ্রহ করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
@@ -94,25 +333,24 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি "
-"প্রদান করে। Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে আকা"
-"র দিতে অনুগ্রহ করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
+"CollisionShape2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদান "
+"করে। Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে আকার দিতে "
+"অনুগ্রহ করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"সফল্ভাবে কাজ করতে CollisionShape2D এর একটি আকৃতি প্রয়োজন। অনুগ্রহ করে তার জন্"
-"য একটি আকৃতি তৈরি করুন!"
+"সফল্ভাবে কাজ করতে CollisionShape2D এর একটি আকৃতি প্রয়োজন। অনুগ্রহ করে তার জন্য "
+"একটি আকৃতি তৈরি করুন!"
 
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the 'texture' "
 "property."
 msgstr ""
-"অবশ্যই লাইটের আকৃতি সহ একটি গঠন 'texture' এর বৈশিষ্ট্যে হিসেবে প্রদান করতে "
-"হবে।"
+"অবশ্যই লাইটের আকৃতি সহ একটি গঠন 'texture' এর বৈশিষ্ট্যে হিসেবে প্রদান করতে হবে।"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
@@ -122,17 +360,15 @@ msgstr ""
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
-msgstr ""
-"এই occluder এর জন্য occluder পলিগনটি খালি। অনুগ্রহ করে একটি পলিগন আঁকুন!"
+msgstr "এই occluder এর জন্য occluder পলিগনটি খালি। অনুগ্রহ করে একটি পলিগন আঁকুন!"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
-"এই নোডটি সফল্ভাবে কাজ করার জন্য একটি NavigationPolygon রিসোর্স নির্ধারন বা "
-"তৈরি করতে হবে। অনুগ্রহ করে একটি বৈশিষ্ট্য নির্ধারন করুন বা একটি পলিগন/বহুভুজ "
-"আঁকুন।"
+"এই নোডটি সফল্ভাবে কাজ করার জন্য একটি NavigationPolygon রিসোর্স নির্ধারন বা তৈরি "
+"করতে হবে। অনুগ্রহ করে একটি বৈশিষ্ট্য নির্ধারন করুন বা একটি পলিগন/বহুভুজ আঁকুন।"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -146,8 +382,7 @@ msgstr ""
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
-"ParallaxLayer একমাত্র ParallaxBackground এর অংশ হিসেবে নির্ধারন করলেই কাজ "
-"করে।"
+"ParallaxLayer একমাত্র ParallaxBackground এর অংশ হিসেবে নির্ধারন করলেই কাজ করে।"
 
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
@@ -166,8 +401,8 @@ msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SamplePlayer to play sound."
 msgstr ""
-"SamplePlayer-এ শব্দ চালাতে এর 'samples'-এ একটি SampleLibrary তৈরি বা নির্ধা"
-"রন করতে হবে।"
+"SamplePlayer-এ শব্দ চালাতে এর 'samples'-এ একটি SampleLibrary তৈরি বা নির্ধারন "
+"করতে হবে।"
 
 #: scene/2d/sprite.cpp
 msgid ""
@@ -182,16 +417,20 @@ msgid ""
 "The Viewport set in the path property must be set as 'render target' in "
 "order for this sprite to work."
 msgstr ""
-"এই sprite টি কার্যকর করতে path প্রোপার্টিতে নির্ধারিত Viewport টি অবশ্যই "
-"'render target' এ নির্ধারিত করতে হবে।"
+"এই sprite টি কার্যকর করতে path প্রোপার্টিতে নির্ধারিত Viewport টি অবশ্যই 'render "
+"target' এ নির্ধারিত করতে হবে।"
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
-"VisibilityEnable2D সর্বোত্তম কার্যকর হয় যখন সম্পাদিত দৃশ্য মূল দৃশ্য হিসেবে "
-"সরাসরি ব্যবহৃত হয়।"
+"VisibilityEnable2D সর্বোত্তম কার্যকর হয় যখন সম্পাদিত দৃশ্য মূল দৃশ্য হিসেবে সরাসরি "
+"ব্যবহৃত হয়।"
+
+#: scene/3d/baked_light_instance.cpp
+msgid "BakedLightInstance does not contain a BakedLight resource."
+msgstr ""
 
 #: scene/3d/body_shape.cpp
 msgid ""
@@ -199,17 +438,17 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionShape শুধুমাত্র CollisionObject হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদা"
-"ন করে। Area, StaticBody, RigidBody, KinematicBody, ইত্যাদিকে আকার দিতে অনুগ্"
-"রহ করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
+"CollisionShape শুধুমাত্র CollisionObject হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদান করে। "
+"Area, StaticBody, RigidBody, KinematicBody, ইত্যাদিকে আকার দিতে অনুগ্রহ করে তা "
+"শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
 
 #: scene/3d/body_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"সফল্ভাবে কাজ করতে CollisionShape এর একটি আকৃতি প্রয়োজন। অনুগ্রহ করে তার জন্য "
-"একটি আকৃতি তৈরি করুন!"
+"সফল্ভাবে কাজ করতে CollisionShape এর একটি আকৃতি প্রয়োজন। অনুগ্রহ করে তার জন্য একটি "
+"আকৃতি তৈরি করুন!"
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -217,9 +456,9 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon শুধুমাত্র CollisionObject হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি "
-"প্রদান করে। Area, StaticBody, RigidBody, KinematicBody, ইত্যাদিকে আকার দিতে "
-"অনুগ্রহ করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
+"CollisionPolygon শুধুমাত্র CollisionObject হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদান "
+"করে। Area, StaticBody, RigidBody, KinematicBody, ইত্যাদিকে আকার দিতে অনুগ্রহ "
+"করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
@@ -259,14 +498,14 @@ msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"AnimatedSprite3D দ্বারা ফ্রেম দেখাতে SpriteFrames রিসোর্স অবশ্যই তৈরি করতে "
-"হবে অথবা 'Frames' এর মান-এ নির্ধারন করে দিতে হবে।"
+"AnimatedSprite3D দ্বারা ফ্রেম দেখাতে SpriteFrames রিসোর্স অবশ্যই তৈরি করতে হবে "
+"অথবা 'Frames' এর মান-এ নির্ধারন করে দিতে হবে।"
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
 msgstr "বাতিল"
 
-#: scene/gui/dialogs.cpp
+#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "সঠিক"
 
@@ -292,8 +531,8 @@ msgstr "সব ফাইল (*)"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
-#: tools/editor/scenes_dock.cpp
 msgid "Open"
 msgstr "খুলুন"
 
@@ -416,13 +655,13 @@ msgid "Axis"
 msgstr "অক্ষ"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Cut"
 msgstr "কর্তন/কাট করুন"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
 msgid "Copy"
@@ -430,7 +669,7 @@ msgstr "প্রতিলিপি/কপি করুন"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
@@ -438,7 +677,7 @@ msgid "Paste"
 msgstr "প্রতিলেপন/পেস্ট করুন"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_export.cpp
 msgid "Select All"
@@ -452,7 +691,7 @@ msgid "Clear"
 msgstr "পরিস্কার করুন/ক্লীয়ার"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Undo"
 msgstr "সাবেক অবস্থায় যান/আনডু"
@@ -464,8 +703,8 @@ msgid ""
 "hide upon running."
 msgstr ""
 "সাধারণত popups লুকিয়ে যাবে, যদি আপনি popup() বা popup*() এর যেকোনো ফাংশন "
-"ব্যবহার না করেন। যদিও সম্পাদনের কাজে তা গ্রহনযোগ্য, কিন্তু চালনার সময় তা "
-"লুকিয়ে যাবে।"
+"ব্যবহার না করেন। যদিও সম্পাদনের কাজে তা গ্রহনযোগ্য, কিন্তু চালনার সময় তা লুকিয়ে "
+"যাবে।"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -474,10 +713,10 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
-"এই viewport টি render target হিসেবে নির্ধারন করা নেই। আপনি যদি এর "
-"বস্তু-সামগ্রী সরাসরি পর্দায় দেখাতে চান, এটিকে যেকোনো Control এর অংশভূত করুন "
-"যেনো এটি একটি আকার ধারণ করতে পারে। অন্যথায়, এটিকে একটি RenderTarget করুন এবং "
-"এর অভ্যন্তরীণ দৃশ্যাবলিকে (texture) দৃশ্যমান করতে কোনো নোডে হস্তান্তর করুন।"
+"এই viewport টি render target হিসেবে নির্ধারন করা নেই। আপনি যদি এর বস্তু-সামগ্রী "
+"সরাসরি পর্দায় দেখাতে চান, এটিকে যেকোনো Control এর অংশভূত করুন যেনো এটি একটি "
+"আকার ধারণ করতে পারে। অন্যথায়, এটিকে একটি RenderTarget করুন এবং এর অভ্যন্তরীণ "
+"দৃশ্যাবলিকে (texture) দৃশ্যমান করতে কোনো নোডে হস্তান্তর করুন।"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
@@ -667,8 +906,7 @@ msgstr "%s এর জন্য নতুন ট্র্যাক/পথ তৈ�
 
 #: tools/editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
-"%d এর জন্য নতুন ট্র্যাক/পথ-সমূহ তৈরি করতে এবং চাবিসমূহ প্রবেশ করাতে চান?"
+msgstr "%d এর জন্য নতুন ট্র্যাক/পথ-সমূহ তৈরি করতে এবং চাবিসমূহ প্রবেশ করাতে চান?"
 
 #: tools/editor/animation_editor.cpp tools/editor/create_dialog.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -784,6 +1022,10 @@ msgid "Optimize"
 msgstr ""
 
 #: tools/editor/animation_editor.cpp
+msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
+msgstr ""
+
+#: tools/editor/animation_editor.cpp
 msgid "Key"
 msgstr ""
 
@@ -887,18 +1129,6 @@ msgstr ""
 msgid "Call"
 msgstr ""
 
-#: tools/editor/call_dialog.cpp tools/editor/connections_dialog.cpp
-#: tools/editor/plugins/animation_player_editor_plugin.cpp
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/resource_preloader_editor_plugin.cpp
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/sprite_frames_editor_plugin.cpp
-#: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
-#: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
-msgid "Close"
-msgstr ""
-
 #: tools/editor/call_dialog.cpp
 msgid "Method List:"
 msgstr ""
@@ -949,6 +1179,7 @@ msgstr ""
 
 #: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
 msgid "Search"
@@ -988,6 +1219,20 @@ msgstr ""
 
 #: tools/editor/code_editor.cpp
 msgid "Skip"
+msgstr ""
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom In"
+msgstr ""
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom Out"
+msgstr ""
+
+#: tools/editor/code_editor.cpp
+msgid "Reset Zoom"
 msgstr ""
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
@@ -1142,8 +1387,8 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
-"যেসব ফাইল অপসারিত হচ্ছে তারা অন্যান্য রিসোর্স ফাইলের কার্যকররুপে কাজ করার জন্"
-"য দরকারি।\n"
+"যেসব ফাইল অপসারিত হচ্ছে তারা অন্যান্য রিসোর্স ফাইলের কার্যকররুপে কাজ করার জন্য "
+"দরকারি।\n"
 "তবুও তাদের অপসারণ করবেন? (তাদের আর ফেরত পাবেন না/আনডু অসম্ভব)"
 
 #: tools/editor/dependency_editor.cpp
@@ -1195,8 +1440,9 @@ msgid "Delete selected files?"
 msgstr ""
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
-#: tools/editor/scenes_dock.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr ""
 
@@ -1343,7 +1589,7 @@ msgstr ""
 msgid "Move Favorite Down"
 msgstr ""
 
-#: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
+#: tools/editor/editor_file_dialog.cpp tools/editor/filesystem_dock.cpp
 msgid "Favorites:"
 msgstr ""
 
@@ -1353,10 +1599,6 @@ msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Preview:"
-msgstr ""
-
-#: tools/editor/editor_file_system.cpp
-msgid "Cannot go into subdir:"
 msgstr ""
 
 #: tools/editor/editor_file_system.cpp
@@ -1397,15 +1639,7 @@ msgid "Public Methods:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
-msgid "Members:"
-msgstr ""
-
-#: tools/editor/editor_help.cpp
 msgid "GUI Theme Items:"
-msgstr ""
-
-#: tools/editor/editor_help.cpp
-msgid "Signals:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
@@ -1832,7 +2066,7 @@ msgstr ""
 msgid "TileSet.."
 msgstr ""
 
-#: tools/editor/editor_node.cpp tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/editor_node.cpp tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Redo"
 msgstr ""
@@ -2241,6 +2475,90 @@ msgstr ""
 
 #: tools/editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination files, doing nothing."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination paths, doing nothing."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't move directories to within themselves."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't operate on '..'"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Pick New Name and Location For:"
+msgstr "নতুন নাম এবং অবস্থান বাছাই করুন:"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "No files selected!"
+msgstr "কোনো ফাইল নির্বাচিত হয়নি!"
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Edit Dependencies.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "View Owners.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Rename or Move.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move To.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Info"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Import.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Previous Directory"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Next Directory"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Scan Filesystem"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Toggle folder status as Favorite"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance the selected scene(s) as child of the selected node."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move"
 msgstr ""
 
 #: tools/editor/groups_editor.cpp
@@ -3198,10 +3516,6 @@ msgid "Post-Processing Texture #"
 msgstr ""
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr ""
-
-#: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Bake!"
 msgstr ""
 
@@ -3265,8 +3579,9 @@ msgid "Paste Pose"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Select Mode (Q)"
-msgstr ""
+#, fuzzy
+msgid "Select Mode"
+msgstr "সবগুলি বাছাই করুন"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -3285,13 +3600,12 @@ msgid "Alt+RMB: Depth list selection"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Move Mode (W)"
-msgstr ""
+#, fuzzy
+msgid "Move Mode"
+msgstr "সংযোগ (অ্যাড) বোতাম সরান"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rotate Mode (E)"
+msgid "Rotate Mode"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3323,14 +3637,6 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-#: tools/editor/project_manager.cpp
-msgid "Edit"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3387,14 +3693,6 @@ msgstr ""
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom In"
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom Out"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -4095,6 +4393,10 @@ msgid "Save All"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+msgid "Soft Reload Script"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
 msgid "History Prev"
 msgstr ""
 
@@ -4115,94 +4417,23 @@ msgid "Save Theme As"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/scene_tree_dock.cpp
-msgid "Move Up"
+msgid "Close Docs"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/scene_tree_dock.cpp
-msgid "Move Down"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Indent Left"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Indent Right"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Comment"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Clone Down"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Complete Symbol"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Trim Trailing Whitespace"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Auto Indent"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Soft Reload Script"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find.."
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find Next"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Find Previous"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Replace.."
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Function.."
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Goto Line.."
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Breakpoint"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Remove All Breakpoints"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Next Breakpoint"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Previous Breakpoint"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -4239,14 +4470,6 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Move Right"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Help"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Contextual Help"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -4303,6 +4526,77 @@ msgstr ""
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid ""
 "Built-in scripts can only be edited when the scene they belong to is loaded"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
+msgid "Move Up"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
+msgid "Move Down"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Indent Left"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Indent Right"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Toggle Comment"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Complete Symbol"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Trim Trailing Whitespace"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Auto Indent"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Remove All Breakpoints"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Next Breakpoint"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Previous Breakpoint"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Find Previous"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Replace.."
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Function.."
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Goto Line.."
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Contextual Help"
 msgstr ""
 
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -4563,6 +4857,14 @@ msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Could not instance scene!"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Move Mode (W)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Rotate Mode (E)"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -5380,15 +5682,21 @@ msgid "Unnamed Project"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to open more than one projects?"
+msgid "Are you sure to open more than one project?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to run more than one projects?"
+msgid "Are you sure to run more than one project?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid ""
+"You are about the scan %s folders for existing Godot projects. Do you "
+"confirm?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
@@ -5405,6 +5713,10 @@ msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Scan"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid "Select a Folder to Scan"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
@@ -5772,6 +6084,10 @@ msgid "No parent to instance a child at."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance the scenes at."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr ""
 
@@ -5900,6 +6216,11 @@ msgid "Save Branch as Scene"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete (No Confirm)"
+msgstr "অনুগ্রহ করে নিশ্চিত করুন..."
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
 msgstr ""
 
@@ -5907,6 +6228,10 @@ msgstr ""
 msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create a new script for the selected node."
 msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
@@ -5969,90 +6294,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Select a Node"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination files, doing nothing."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination paths, doing nothing."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't move directories to within themselves."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't operate on '..'"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Pick New Name and Location For:"
-msgstr "নতুন নাম এবং অবস্থান বাছাই করুন:"
-
-#: tools/editor/scenes_dock.cpp
-msgid "No files selected!"
-msgstr "কোনো ফাইল নির্বাচিত হয়নি!"
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Edit Dependencies.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "View Owners.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Copy Path"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Rename or Move.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move To.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Info"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Show In File Manager"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Re-Import.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Previous Directory"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Next Directory"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Re-Scan Filesystem"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Toggle folder status as Favorite"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move"
 msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
