@@ -3,19 +3,20 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Bojidar Marinov <bojidar.marinov.bg@gmail.com>, 2016.
+# Иван Пенев (Адмирал АнимЕ) <aeternus.arcis@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-06-27 15:36+0000\n"
-"Last-Translator: Bojidar Marinov <bojidar.marinov.bg@gmail.com>\n"
-"Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
-"godot/bg/>\n"
+"PO-Revision-Date: 2016-08-10 14:02+0000\n"
+"Last-Translator: Иван Пенев (Адмирал АнимЕ) <aeternus.arcis@gmail.com>\n"
+"Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-"
+"engine/godot/bg/>\n"
 "Language: bg\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.7-dev\n"
+"X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -25,7 +26,7 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Недостатъчно байтове за декодиране на байтовете, или невалиден формат."
+msgstr "Недостатъчно байтове за разкодиране или недействителен формат."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
@@ -141,8 +142,8 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
-"На този нод трябва да бъде даден един NavigationPolygon ресурс. Моля, "
-"задайте или нарисувайте един многоъгълник."
+"За този възел трябва да бъде зададен или създаден един ресурс "
+"NavigationPolygon. Моля, задайте или нарисувайте един многоъгълник."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -251,23 +252,23 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
-msgstr ""
+msgstr "Отказ"
 
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr ""
+msgstr "Добре"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "Тревога!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "Моля, потвърдете..."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "File Exists, Overwrite?"
-msgstr ""
+msgstr "Файлът съществува. Искате ли да го презапишете?"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Recognized"
@@ -305,32 +306,32 @@ msgstr ""
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save"
-msgstr ""
+msgstr "Запазване"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Save a File"
-msgstr ""
+msgstr "Запазване на файл"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
 msgid "Create Folder"
-msgstr ""
+msgstr "Създаване на папка"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_autoload_settings.cpp
 #: tools/editor/editor_file_dialog.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 #: tools/editor/script_create_dialog.cpp
 msgid "Path:"
-msgstr ""
+msgstr "Път:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Directories & Files:"
-msgstr ""
+msgstr "Папки и файлове:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/script_editor_debugger.cpp
 msgid "File:"
-msgstr ""
+msgstr "Файл:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Filter:"
@@ -340,16 +341,16 @@ msgstr ""
 #: tools/editor/editor_file_dialog.cpp tools/editor/editor_plugin_settings.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Name:"
-msgstr ""
+msgstr "Име:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
 msgid "Could not create folder."
-msgstr ""
+msgstr "Неуспешно създаване на папка."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Must use a valid extension."
-msgstr ""
+msgstr "Трябва да се използва правилно разширение."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
@@ -372,48 +373,48 @@ msgstr ""
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Device"
-msgstr ""
+msgstr "Устройство"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Button"
-msgstr ""
+msgstr "Копче"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Left Button."
-msgstr ""
+msgstr "Ляво копче."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Right Button."
-msgstr ""
+msgstr "Дясно копче."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Middle Button."
-msgstr ""
+msgstr "Средно копче."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Wheel Up."
-msgstr ""
+msgstr "Колелцето нагоре."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Wheel Down."
-msgstr ""
+msgstr "Колелцето надолу."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Axis"
-msgstr ""
+msgstr "Ос"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Cut"
-msgstr ""
+msgstr "Изрязване"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
 msgid "Copy"
-msgstr ""
+msgstr "Копиране"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
@@ -422,21 +423,21 @@ msgstr ""
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
 msgid "Paste"
-msgstr ""
+msgstr "Поставяне"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_export.cpp
 msgid "Select All"
-msgstr ""
+msgstr "Избиране на всичко"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp tools/editor/editor_log.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 #: tools/editor/plugins/rich_text_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Clear"
-msgstr ""
+msgstr "Изчистване"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp tools/editor/editor_node.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -467,12 +468,12 @@ msgstr ""
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Unknown font format."
-msgstr ""
+msgstr "Непознат формат за шрифтове."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "Грешка при зареждането на шрифта."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
@@ -631,7 +632,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Transitions"
-msgstr ""
+msgstr "Преходи"
 
 #: tools/editor/animation_editor.cpp
 msgid "Optimize Animation"
@@ -643,7 +644,7 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "Преход"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
@@ -2102,7 +2103,7 @@ msgstr ""
 
 #: tools/editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
-msgstr ""
+msgstr "Инсталирани приставки:"
 
 #: tools/editor/editor_plugin_settings.cpp
 msgid "Version:"
@@ -5602,7 +5603,7 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Plugins"
-msgstr ""
+msgstr "Приставки"
 
 #: tools/editor/property_editor.cpp
 msgid "Preset.."

@@ -10,17 +10,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-07-01 17:28+0000\n"
+"PO-Revision-Date: 2016-07-24 17:18+0000\n"
 "Last-Translator: DimOkGamer <dimokgamer@gmail.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
-"godot/ru/>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/godot-"
+"engine/godot/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.7-dev\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<="
+"4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -597,9 +597,8 @@ msgid "Duplicate Transposed"
 msgstr "Дублировать перемещённый"
 
 #: tools/editor/animation_editor.cpp
-#, fuzzy
 msgid "Remove Selection"
-msgstr "Кадрировать выбранное"
+msgstr "Убрать выделение"
 
 #: tools/editor/animation_editor.cpp
 msgid "Continuous"
@@ -1242,22 +1241,18 @@ msgstr ""
 "константы."
 
 #: tools/editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Invalid Path."
-msgstr "Недопустимый путь!"
+msgstr "Недопустимый путь."
 
 #: tools/editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "File does not exist."
-msgstr "Файл существует"
+msgstr "Файл не существует."
 
 #: tools/editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Not in resource path."
-msgstr "Путь ресурса"
+msgstr "Не в пути ресурсов."
 
 #: tools/editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Add AutoLoad"
 msgstr "Добавлена автозагрузка"
 
@@ -1286,9 +1281,8 @@ msgid "Enable"
 msgstr "Включить"
 
 #: tools/editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Rearrange Autoloads"
-msgstr "Переименовать автозагрузку"
+msgstr "Перестановка автозагрузок"
 
 #: tools/editor/editor_autoload_settings.cpp
 msgid "Node Name:"
@@ -1362,14 +1356,12 @@ msgid "Focus Path"
 msgstr "Фокус на пути"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Move Favorite Up"
-msgstr "Избранное по порядку"
+msgstr "Переместить избранное вверх"
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Move Favorite Down"
-msgstr "Избранное в обратном порядке"
+msgstr "Переместить избранное вниз"
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
 msgid "Favorites:"
@@ -1747,7 +1739,6 @@ msgstr ""
 "(Несохранённые изменения будут потеряны.)"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Pick a Main Scene"
 msgstr "Выберите главную сцену"
 
@@ -1842,9 +1833,8 @@ msgid "Save Scene"
 msgstr "Сохранить сцену"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Save all Scenes"
-msgstr "Сохранить сцену"
+msgstr "Сохранить все сцены"
 
 #: tools/editor/editor_node.cpp
 msgid "Close Scene"
@@ -1970,9 +1960,8 @@ msgid "Play custom scene"
 msgstr "Запустить выборочную сцену"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play Custom Scene"
-msgstr "Запустить выборочную сцену"
+msgstr "Запустить произвольную сцену"
 
 #: tools/editor/editor_node.cpp
 msgid "Debug options"
@@ -3503,9 +3492,8 @@ msgid "Anchor"
 msgstr "Привязка"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Insert Keys"
-msgstr "Вставить ключ"
+msgstr "Вставить ключи"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
@@ -4159,14 +4147,12 @@ msgid "Save Theme As.."
 msgstr "Сохранить тему как.."
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next script"
-msgstr "Создать скрипт"
+msgstr "Следующий скрипт"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous script"
-msgstr "Предыдущая вкладка"
+msgstr "Предыдущий сценарий"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/project_export.cpp
@@ -4394,6 +4380,8 @@ msgstr "Отладчик"
 msgid ""
 "Built-in scripts can only be edited when the scene they belong to is loaded"
 msgstr ""
+"Встроенные скрипты могут быть изменены только, когда сцена, которой они "
+"принадлежат, загружена"
 
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Vertex"
@@ -4660,53 +4648,44 @@ msgid "Scale Mode (R)"
 msgstr "Режим масштабирования (R)"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom View"
-msgstr "Вид Снизу."
+msgstr "Вид Снизу"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Top View"
-msgstr "Вид сверху."
+msgstr "Вид сверху"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Rear View"
-msgstr "Вид сзади."
+msgstr "Вид сзади"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Front View"
-msgstr "Вид спереди."
+msgstr "Вид спереди"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left View"
-msgstr "Вид слева."
+msgstr "Вид слева"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Right View"
-msgstr "Вид справа."
+msgstr "Вид справа"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal view"
-msgstr ""
+msgstr "Переключить перспективный/ортогональный вид"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Insert Animation Key"
-msgstr "Вставить анимацию"
+msgstr "Вставить ключ анимации"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Focus Selection"
-msgstr "Масштаб выбранного промежутка"
+msgstr "Показать выбранное"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Selection With View"
-msgstr "Совместить с видом"
+msgstr "Совместить выбранное с видом"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform"
@@ -5429,15 +5408,12 @@ msgid "Couldn't create engine.cfg in project path."
 msgstr "Не могу создать engine.cfg в папке проекта."
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "The following files failed extraction from package:"
-msgstr ""
-"Следующие файлы новее на диске.\n"
-"Какие меры должны быть приняты?:"
+msgstr "Следующие файлы не удалось извлечения из пакета:"
 
 #: tools/editor/project_manager.cpp
 msgid "Package Installed Successfully!"
-msgstr ""
+msgstr "Пакет успешно установлен!"
 
 #: tools/editor/project_manager.cpp
 msgid "Import Existing Project"
@@ -5460,14 +5436,12 @@ msgid "Project Path:"
 msgstr "Путь к проекту:"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Install Project:"
-msgstr "Последние проекты:"
+msgstr "Установить проект:"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Install"
-msgstr "Добавить экземпляр"
+msgstr "Установить"
 
 #: tools/editor/project_manager.cpp
 msgid "Browse"

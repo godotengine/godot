@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-06-30 13:47+0000\n"
+"PO-Revision-Date: 2016-07-17 23:44+0000\n"
 "Last-Translator: Christian Fisch <christian.fiesel@gmail.com>\n"
 "Language-Team: Swiss High German <https://hosted.weblate.org/projects/godot-"
 "engine/godot/de_CH/>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.7-dev\n"
+"X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -1811,7 +1811,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Project Settings"
-msgstr ""
+msgstr "Projekteinstellungen"
 
 #: tools/editor/editor_node.cpp
 msgid "Revert Scene"
@@ -1819,11 +1819,11 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
+msgstr "Zurück zur Projektliste"
 
 #: tools/editor/editor_node.cpp
 msgid "Import assets to the project."
-msgstr ""
+msgstr "Assets zum Projekt importieren."
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
@@ -1839,7 +1839,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr ""
+msgstr "Verschiedene Projekte oder Szenenweite Werkzeuge."
 
 #: tools/editor/editor_node.cpp
 msgid "Tools"
@@ -1847,7 +1847,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Export the project to many platforms."
-msgstr ""
+msgstr "Exportiere das Projekt für viele Plattformen."
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Export"
@@ -2073,7 +2073,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Export Project"
-msgstr ""
+msgstr "Projekt exportieren"
 
 #: tools/editor/editor_node.cpp
 msgid "Export Library"
@@ -2780,7 +2780,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Add to Project (engine.cfg)"
-msgstr ""
+msgstr "Zum Projekt hinzufügen (engine.cfg)"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -5033,15 +5033,15 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Please export outside the project folder!"
-msgstr ""
+msgstr "Bitte ausserhalb des Projekt Verzeichnis exportieren!"
 
 #: tools/editor/project_export.cpp
 msgid "Error exporting project!"
-msgstr ""
+msgstr "Fehler beim Exportieren des Projekts!"
 
 #: tools/editor/project_export.cpp
 msgid "Error writing the project PCK!"
-msgstr ""
+msgstr "Fehler beim Schreiben des Projekts PCK!"
 
 #: tools/editor/project_export.cpp
 msgid "No exporter for platform '%s' yet."
@@ -5081,7 +5081,7 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Project Export Settings"
-msgstr ""
+msgstr "Projektexport Einstellungen"
 
 #: tools/editor/project_export.cpp
 msgid "Target"
@@ -5100,12 +5100,13 @@ msgid "Export selected resources (including dependencies)."
 msgstr ""
 
 #: tools/editor/project_export.cpp
+#, fuzzy
 msgid "Export all resources in the project."
-msgstr ""
+msgstr "Exportiere alle Resources des Projekts."
 
 #: tools/editor/project_export.cpp
 msgid "Export all files in the project directory."
-msgstr ""
+msgstr "Exportiere alle Dateien in das Projektverzeichnis."
 
 #: tools/editor/project_export.cpp
 msgid "Export Mode:"
@@ -5274,7 +5275,7 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Export Project PCK"
-msgstr ""
+msgstr "Exportiere das Projekt PCK"
 
 #: tools/editor/project_export.cpp
 msgid "Export.."
@@ -5282,7 +5283,7 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Project Export"
-msgstr ""
+msgstr "Projekt exportieren"
 
 #: tools/editor/project_export.cpp
 msgid "Export Preset:"
@@ -5290,27 +5291,27 @@ msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Invalid project path, the path must exist!"
-msgstr ""
+msgstr "Ungültiger Projektpfad, Pfad existiert nicht!"
 
 #: tools/editor/project_manager.cpp
 msgid "Invalid project path, engine.cfg must not exist."
-msgstr ""
+msgstr "Ungültiger Projektpfad, engine.cfg vorhanden!"
 
 #: tools/editor/project_manager.cpp
 msgid "Invalid project path, engine.cfg must exist."
-msgstr ""
+msgstr "Ungültiger Projektpfad, engine.cfg nicht vorhanden!"
 
 #: tools/editor/project_manager.cpp
 msgid "Imported Project"
-msgstr ""
+msgstr "Importierte Projekte"
 
 #: tools/editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
-msgstr ""
+msgstr "Ungültiger Projektpfad, (wurde was geändert?)!"
 
 #: tools/editor/project_manager.cpp
 msgid "Couldn't create engine.cfg in project path."
-msgstr ""
+msgstr "Die engine.cfg kann im Projektverzeichnis nicht erstellt werden."
 
 #: tools/editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -5322,19 +5323,19 @@ msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Import Existing Project"
-msgstr ""
+msgstr "Existierendes Projekt importieren"
 
 #: tools/editor/project_manager.cpp
 msgid "Project Path (Must Exist):"
-msgstr ""
+msgstr "Projektpfad (muss existieren):"
 
 #: tools/editor/project_manager.cpp
 msgid "Project Name:"
-msgstr ""
+msgstr "Projektname:"
 
 #: tools/editor/project_manager.cpp
 msgid "Create New Project"
-msgstr ""
+msgstr "Neues Projekt erstellen"
 
 #: tools/editor/project_manager.cpp
 msgid "Project Path:"

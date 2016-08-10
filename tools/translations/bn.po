@@ -3,14 +3,15 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Abu Md. Maruf Sarker <maruf.webdev@gmail.com>, 2016.
+# Tahmid Karim <tahmidk15@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-07-10 16:42+0000\n"
-"Last-Translator: Abu Md. Maruf Sarker <maruf.webdev@gmail.com>\n"
-"Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
-"godot/bn/>\n"
+"PO-Revision-Date: 2016-08-10 17:10+0000\n"
+"Last-Translator: ABU MD. MARUF SARKER <maruf.webdev@gmail.com>\n"
+"Language-Team: Bengali <https://hosted.weblate.org/projects/godot-"
+"engine/godot/bn/>\n"
 "Language: bn\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -19,55 +20,59 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "অগ্রহণযোগ্য মান convert()-এ গিয়েছে, TYPE_* ধ্রুবক ব্যবহার করুন।"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "বিন্যাস জানার জন্য যথেষ্ট বাইট নেই, অথবা ভুল ফরম্যাট।"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr ""
+msgstr "ধাপ মান শূন্য!"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
-msgstr ""
+msgstr "ইনস্ট্যান্স বিহীন স্ক্রিপ্ট"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "স্ক্রিপ্ট নির্ভর নয়"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr ""
+msgstr "রিসোর্স ফাইল ভিত্তিক নয়"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr ""
+msgstr "ভুল dictionary ফরম্যাট (@path নেই)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr ""
+msgstr "ভুল dictionary ফরম্যাট (@path-এ স্ক্রিপ্ট লোড অসম্ভব)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr ""
+msgstr "ভুল dictionary ফরম্যাট (@path-এ ভুল স্ক্রিপ্ট)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr ""
+msgstr "ভুল dictionary ফরম্যাট (ভুল subclasses)"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
+"AnimatedSprite দ্বারা ফ্রেম দেখাতে SpriteFrames রিসোর্স অবশ্যই তৈরি করতে হবে "
+"অথবা 'Frames' এর মান-এ নির্ধারন করে দিতে হবে।"
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
+"প্রতি scene-এ (অথবা ইন্সট্যান্সড scene-এর সম্মেলনে) সর্বোচ্চ একটি দৃশ্যমান "
+"CanvasModulate সম্ভব। সর্বপ্রথমেরটি দৃশ্যত হলেও বাকিগুলো বাতিল হয়ে যাবে।"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -75,10 +80,13 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি"
+" প্রদান করে। Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে "
+"আকার দিতে অনুগ্রহ করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr ""
+msgstr "সংঘর্ষে ফাঁকা/শুন্য CollisionPolygon2D-এর কোনো প্রভাব নেই।"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -86,80 +94,104 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionShape2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি "
+"প্রদান করে। Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে আকা"
+"র দিতে অনুগ্রহ করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
+"সফল্ভাবে কাজ করতে CollisionShape2D এর একটি আকৃতি প্রয়োজন। অনুগ্রহ করে তার জন্"
+"য একটি আকৃতি তৈরি করুন!"
 
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the 'texture' "
 "property."
 msgstr ""
+"অবশ্যই লাইটের আকৃতি সহ একটি গঠন 'texture' এর বৈশিষ্ট্যে হিসেবে প্রদান করতে "
+"হবে।"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
+"Occluder এর প্রভাব ফেলতে একটি occluder বহুভুজ নির্ধারণ করা (বা, আঁকা) আবশ্যক।"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
 msgstr ""
+"এই occluder এর জন্য occluder পলিগনটি খালি। অনুগ্রহ করে একটি পলিগন আঁকুন!"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
+"এই নোডটি সফল্ভাবে কাজ করার জন্য একটি NavigationPolygon রিসোর্স নির্ধারন বা "
+"তৈরি করতে হবে। অনুগ্রহ করে একটি বৈশিষ্ট্য নির্ধারন করুন বা একটি পলিগন/বহুভুজ "
+"আঁকুন।"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
+"NavigationPolygonInstance-কে অবশ্যই Navigation2D-এর অংশ অথবা অংশের অংশ হতে "
+"হবে। এটা শুধুমাত্র ন্যাভিগেশনের তথ্য প্রদান করে।"
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
+"ParallaxLayer একমাত্র ParallaxBackground এর অংশ হিসেবে নির্ধারন করলেই কাজ "
+"করে।"
 
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
-msgstr ""
+msgstr "Path এর দিক অবশ্যই একটি কার্যকর Particles2D এর দিকে নির্দেশ করাতে হবে।"
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
+msgstr "PathFollow2D একমাত্র Path2D এর অংশ হিসেবে নির্ধারন করালেই কাজ করে।"
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr ""
+msgstr "Path এর দিক অবশ্যই একটি কার্যকর Node2D এর দিকে নির্দেশ করাতে হবে।"
 
 #: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SamplePlayer to play sound."
 msgstr ""
+"SamplePlayer-এ শব্দ চালাতে এর 'samples'-এ একটি SampleLibrary তৈরি বা নির্ধা"
+"রন করতে হবে।"
 
 #: scene/2d/sprite.cpp
 msgid ""
 "Path property must point to a valid Viewport node to work. Such Viewport "
 "must be set to 'render target' mode."
 msgstr ""
+"Path এর দিক অবশ্যই একটি কার্যকর Viewport এর দিকে নির্দেশ করাতে হবে। সেই "
+"Viewport অবশ্যই 'render target' মোডে নির্ধারন করতে হবে।"
 
 #: scene/2d/sprite.cpp
 msgid ""
 "The Viewport set in the path property must be set as 'render target' in "
 "order for this sprite to work."
 msgstr ""
+"এই sprite টি কার্যকর করতে path প্রোপার্টিতে নির্ধারিত Viewport টি অবশ্যই "
+"'render target' এ নির্ধারিত করতে হবে।"
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
+"VisibilityEnable2D সর্বোত্তম কার্যকর হয় যখন সম্পাদিত দৃশ্য মূল দৃশ্য হিসেবে "
+"সরাসরি ব্যবহৃত হয়।"
 
 #: scene/3d/body_shape.cpp
 msgid ""
@@ -167,12 +199,17 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionShape শুধুমাত্র CollisionObject হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদা"
+"ন করে। Area, StaticBody, RigidBody, KinematicBody, ইত্যাদিকে আকার দিতে অনুগ্"
+"রহ করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
 
 #: scene/3d/body_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
 msgstr ""
+"সফল্ভাবে কাজ করতে CollisionShape এর একটি আকৃতি প্রয়োজন। অনুগ্রহ করে তার জন্য "
+"একটি আকৃতি তৈরি করুন!"
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -180,203 +217,216 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon শুধুমাত্র CollisionObject হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি "
+"প্রদান করে। Area, StaticBody, RigidBody, KinematicBody, ইত্যাদিকে আকার দিতে "
+"অনুগ্রহ করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
-msgstr ""
+msgstr "সংঘর্ষে ফাঁকা/শুন্য CollisionPolygon-এর কোনো প্রভাব নেই।"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
+"এই নোডটি সফল্ভাবে কাজ করার জন্য একটি NavigationMesh রিসোর্স নির্ধারন বা তৈরি "
+"করতে হবে।"
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
+"NavigationMeshInstance-কে অবশ্যই Navigation-এর অংশ অথবা অংশের অংশ হতে হবে। "
+"এটা শুধুমাত্র ন্যাভিগেশনের তথ্য প্রদান করে।"
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
+"প্রতি scene-এ (অথবা ইন্সট্যান্সড scene-এর সম্মেলনে) সর্বোচ্চ একটি দৃশ্যমান "
+"WorldEnvironment সম্ভব।"
 
 #: scene/3d/spatial_sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SpatialSamplePlayer to play sound."
 msgstr ""
+"SpatialSamplePlayer-এ শব্দ চালাতে এর 'samples'-এ একটি SampleLibrary তৈরি বা "
+"নির্ধারন করতে হবে।"
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
+"AnimatedSprite3D দ্বারা ফ্রেম দেখাতে SpriteFrames রিসোর্স অবশ্যই তৈরি করতে "
+"হবে অথবা 'Frames' এর মান-এ নির্ধারন করে দিতে হবে।"
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
-msgstr ""
+msgstr "বাতিল"
 
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr ""
+msgstr "সঠিক"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "সতর্কতা!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "অনুগ্রহ করে নিশ্চিত করুন..."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "File Exists, Overwrite?"
-msgstr ""
+msgstr "একই নামের ফাইল উপস্থিত, তা মুছে লিখবেন?"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Recognized"
-msgstr ""
+msgstr "সব ফাইল পরিচিতি সম্পন্ন"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Files (*)"
-msgstr ""
+msgstr "সব ফাইল (*)"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
 #: tools/editor/scenes_dock.cpp
 msgid "Open"
-msgstr ""
+msgstr "খুলুন"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a File"
-msgstr ""
+msgstr "একটি ফাইল খুলুন"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr ""
+msgstr "এক বা একাধিক ফাইল খুলুন"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a Directory"
-msgstr ""
+msgstr "পথ/ডিরেক্টরি খুলুন"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a File or Directory"
-msgstr ""
+msgstr "ফাইল বা পথ/ডিরেক্টরি খুলুন"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save"
-msgstr ""
+msgstr "সংরক্ষন করুন"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Save a File"
-msgstr ""
+msgstr "ফাইল সংরক্ষন করুন"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
 msgid "Create Folder"
-msgstr ""
+msgstr "ফোল্ডার তৈরি করুন"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_autoload_settings.cpp
 #: tools/editor/editor_file_dialog.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 #: tools/editor/script_create_dialog.cpp
 msgid "Path:"
-msgstr ""
+msgstr "পথ:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Directories & Files:"
-msgstr ""
+msgstr "পথ এবং ফাইল:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/script_editor_debugger.cpp
 msgid "File:"
-msgstr ""
+msgstr "ফাইল:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Filter:"
-msgstr ""
+msgstr "ফিল্টার:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp tools/editor/editor_plugin_settings.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Name:"
-msgstr ""
+msgstr "নাম:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
 msgid "Could not create folder."
-msgstr ""
+msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Must use a valid extension."
-msgstr ""
+msgstr "একটি কার্যকর এক্সটেনশন ব্যবহার করা আবশ্যক।"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Shift+"
-msgstr ""
+msgstr "Shift+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Alt+"
-msgstr ""
+msgstr "Alt+"
 
 #: scene/gui/input_action.cpp
 msgid "Ctrl+"
-msgstr ""
+msgstr "Ctrl+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Meta+"
-msgstr ""
+msgstr "Meta+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Device"
-msgstr ""
+msgstr "ডিভাইস/যন্ত্র"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Button"
-msgstr ""
+msgstr "বাটন/বোতাম"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Left Button."
-msgstr ""
+msgstr "বাম বোতাম/বাটন।"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Right Button."
-msgstr ""
+msgstr "ডান বোতাম/বাটন।"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Middle Button."
-msgstr ""
+msgstr "মাঝ বোতাম/বাটন।"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Wheel Up."
-msgstr ""
+msgstr "মাউসের চাকা উপরের দিকে চক্কর।"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Wheel Down."
-msgstr ""
+msgstr "মাউসের চাকা নিচের দিকে চক্কর।"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Axis"
-msgstr ""
+msgstr "অক্ষ"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Cut"
-msgstr ""
+msgstr "কর্তন/কাট করুন"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
 msgid "Copy"
-msgstr ""
+msgstr "প্রতিলিপি/কপি করুন"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
@@ -385,27 +435,27 @@ msgstr ""
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
 msgid "Paste"
-msgstr ""
+msgstr "প্রতিলেপন/পেস্ট করুন"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_export.cpp
 msgid "Select All"
-msgstr ""
+msgstr "সবগুলি বাছাই করুন"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp tools/editor/editor_log.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 #: tools/editor/plugins/rich_text_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Clear"
-msgstr ""
+msgstr "পরিস্কার করুন/ক্লীয়ার"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp tools/editor/editor_node.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Undo"
-msgstr ""
+msgstr "সাবেক অবস্থায় যান/আনডু"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -413,6 +463,9 @@ msgid ""
 "functions. Making them visible for editing is fine though, but they will "
 "hide upon running."
 msgstr ""
+"সাধারণত popups লুকিয়ে যাবে, যদি আপনি popup() বা popup*() এর যেকোনো ফাংশন "
+"ব্যবহার না করেন। যদিও সম্পাদনের কাজে তা গ্রহনযোগ্য, কিন্তু চালনার সময় তা "
+"লুকিয়ে যাবে।"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -421,196 +474,201 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
+"এই viewport টি render target হিসেবে নির্ধারন করা নেই। আপনি যদি এর "
+"বস্তু-সামগ্রী সরাসরি পর্দায় দেখাতে চান, এটিকে যেকোনো Control এর অংশভূত করুন "
+"যেনো এটি একটি আকার ধারণ করতে পারে। অন্যথায়, এটিকে একটি RenderTarget করুন এবং "
+"এর অভ্যন্তরীণ দৃশ্যাবলিকে (texture) দৃশ্যমান করতে কোনো নোডে হস্তান্তর করুন।"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "FreeType আরম্ভে সমস্যা হয়েছে।"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Unknown font format."
-msgstr ""
+msgstr "অজানা ধরনের ফন্ট।"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "ফন্ট তুলতে/লোডে সমস্যা হয়েছে।"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Invalid font size."
-msgstr ""
+msgstr "ফন্টের আকার অগ্র্যহনযোগ্য।"
 
 #: tools/editor/animation_editor.cpp
 msgid "Disabled"
-msgstr ""
+msgstr "অসমর্থ/অক্ষম"
 
 #: tools/editor/animation_editor.cpp
 msgid "All Selection"
-msgstr ""
+msgstr "সকল বাছাইকৃত"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Add Key"
-msgstr ""
+msgstr "সংযোগ (অ্যাড) বোতাম সরান"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) ট্র্যানজিশন/স্থানান্তরণ পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) ট্রান্সফর্ম/রুপান্তর পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Value"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) মান পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) ডাক পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr ""
+msgstr "অ্যানিমেশনে (Anim) ট্র্যাক/পথ যোগ করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) চাবিগুলো অনুলিপি/নকল করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) ট্র্যাক/পথ উপরের দিকে তুলুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) ট্র্যাক/পথ নিচের দিকে নিয়ে যান"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) ট্র্যাক/পথ অপসারণ করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr ""
+msgstr "ট্র্যানজিশন/স্থানান্তরণ সেট/নির্ধারণ করুন:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "অ্যানিমেশন (Anim) ট্র্যাক/পথ-এর নাম পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr ""
+msgstr "অ্যানিমেশন (Anim) ট্র্যাক/পথ-এর প্রক্ষেপ/নিবেশ পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr ""
+msgstr "অ্যানিমেশন (Anim) ট্র্যাক/পথ-এর মানের ধরন/প্রকার পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "নোডের বাঁক/কার্ভ সম্পাদন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "নির্বাচন বাঁক/কার্ভ সম্পাদন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) চাবিগুলো অপসারণ করুন"
 
 #: tools/editor/animation_editor.cpp
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr ""
+msgstr "নির্বাচিত সমূহ অনুলিপি করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Duplicate Transposed"
-msgstr ""
+msgstr "পক্ষান্তরিত (Transposed) সমূহ অনুলিপি করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove Selection"
-msgstr ""
+msgstr "নির্বাচিত সমূহ অপসারণ করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "অবিচ্ছিন্ন/নিরবচ্ছিন্ন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "স্বতন্ত্র/পৃথক্"
 
 #: tools/editor/animation_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "ট্রিগার/চালনা করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Key"
-msgstr ""
+msgstr "অ্যানিমেশনে (Anim) চাবি/কী যোগ করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Move Keys"
-msgstr ""
+msgstr "অ্যানিমেশনে (Anim) চাবি/কী-সমুহ সরান"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale Selection"
-msgstr ""
+msgstr "নির্বাচিত সমূহের আকার পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale From Cursor"
-msgstr ""
+msgstr "কার্সর হতে আকার পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr ""
+msgstr "পরবর্তী ধাপে যান"
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr ""
+msgstr "পূর্ববর্তী ধাপে যান"
 
 #: tools/editor/animation_editor.cpp tools/editor/property_editor.cpp
 msgid "Linear"
-msgstr ""
+msgstr "রৈখিক/লিনিয়ার"
 
 #: tools/editor/animation_editor.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr ""
+msgstr "ধ্রুবক/কন্সট্যান্ট"
 
 #: tools/editor/animation_editor.cpp
 msgid "In"
-msgstr ""
+msgstr "অভ্যন্তরে/ইন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Out"
-msgstr ""
+msgstr "বাইরে/অউট"
 
 #: tools/editor/animation_editor.cpp
 msgid "In-Out"
-msgstr ""
+msgstr "অভ্যন্তরে-বাইরে/ইন-অউট"
 
 #: tools/editor/animation_editor.cpp
 msgid "Out-In"
-msgstr ""
+msgstr "বাইরে-অভ্যন্তরে/অউট-ইন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Transitions"
-msgstr ""
+msgstr "অনুবাদসমূহ"
 
 #: tools/editor/animation_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "অ্যানিমেশন (Animation) উন্নত/নিখুঁত করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr ""
+msgstr "অ্যানিমেশন (Animation) পরিচ্ছন্ন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "%s এর জন্য নতুন ট্র্যাক/পথ তৈরি করতে এবং চাবি প্রবেশ করাতে চান?"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
 msgstr ""
+"%d এর জন্য নতুন ট্র্যাক/পথ-সমূহ তৈরি করতে এবং চাবিসমূহ প্রবেশ করাতে চান?"
 
 #: tools/editor/animation_editor.cpp tools/editor/create_dialog.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -619,83 +677,83 @@ msgstr ""
 #: tools/editor/plugins/particles_editor_plugin.cpp
 #: tools/editor/project_manager.cpp tools/editor/script_create_dialog.cpp
 msgid "Create"
-msgstr ""
+msgstr "তৈরি করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "অ্যানিমেশন (Anim) তৈরি এবং যোগ করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr ""
+msgstr "অ্যানিমেশনে (Anim) ট্র্যাক/পথ এবং চাবি যোগ করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr ""
+msgstr "অ্যানিমেশনে (Anim) চাবি যোগ করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) দৈর্ঘ্য পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) পুনরাবৃত্তি/লুপ পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr ""
+msgstr "অ্যানিমেশনে (Anim) প্রতীকী মানের চাবি তৈরি করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr ""
+msgstr "অ্যানিমেশনে (Anim) অন্তর্ভুক্ত করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "অ্যানিমেশনের (Anim) চাবিসমূহের আকার পরিবর্তন করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr ""
+msgstr "অ্যানিমেশনে (Anim) ডাকার ট্র্যাক/পথ যোগ করুন"
 
 #: tools/editor/animation_editor.cpp
 msgid "Animation zoom."
-msgstr ""
+msgstr "অ্যানিমেশন (Animation) জুম (zoom) করুন।"
 
 #: tools/editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr ""
+msgstr "দৈর্ঘ্য (দৈর্ঘ্যসমূহ):"
 
 #: tools/editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
-msgstr ""
+msgstr "অ্যানিমেশনের (Animation) দৈর্ঘ্য (সময় সেকেন্ডে)।"
 
 #: tools/editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr ""
+msgstr "ধাপ (ধাপসমূহ):"
 
 #: tools/editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
-msgstr ""
+msgstr "কার্সরের স্থানে/পদক্ষেপে ভাঙ্গুন (snap) (সময় সেকেন্ডে)।"
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr ""
+msgstr "অ্যানিমেশনের পুনরাবৃত্তি/লুপ সক্ষম/অক্ষম করুন।"
 
 #: tools/editor/animation_editor.cpp
 msgid "Add new tracks."
-msgstr ""
+msgstr "নতুন ট্র্যাক/পথ-সমূহ যোগ করুন।"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move current track up."
-msgstr ""
+msgstr "বর্তমান ট্র্যাক/পথ উপরের দিকে তুলুন।"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move current track down."
-msgstr ""
+msgstr "বর্তমান ট্র্যাক/পথ নিচের দিকে নামান।"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove selected track."
-msgstr ""
+msgstr "নির্বাচিত ট্র্যাক/পথ অপসারণ করুন।"
 
 #: tools/editor/animation_editor.cpp
 msgid "Track tools"
@@ -1084,6 +1142,9 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
+"যেসব ফাইল অপসারিত হচ্ছে তারা অন্যান্য রিসোর্স ফাইলের কার্যকররুপে কাজ করার জন্"
+"য দরকারি।\n"
+"তবুও তাদের অপসারণ করবেন? (তাদের আর ফেরত পাবেন না/আনডু অসম্ভব)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (no undo)"
@@ -5928,11 +5989,11 @@ msgstr ""
 
 #: tools/editor/scenes_dock.cpp
 msgid "Pick New Name and Location For:"
-msgstr ""
+msgstr "নতুন নাম এবং অবস্থান বাছাই করুন:"
 
 #: tools/editor/scenes_dock.cpp
 msgid "No files selected!"
-msgstr ""
+msgstr "কোনো ফাইল নির্বাচিত হয়নি!"
 
 #: tools/editor/scenes_dock.cpp
 msgid "Instance"

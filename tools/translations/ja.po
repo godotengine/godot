@@ -7,15 +7,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-06-20 19:30+0000\n"
+"PO-Revision-Date: 2016-07-16 08:16+0000\n"
 "Last-Translator: hopping tappy (たっぴさん) <hopping.tappy@gmail.com>\n"
-"Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
-"godot/ja/>\n"
+"Language-Team: Japanese <https://hosted.weblate.org/projects/godot-"
+"engine/godot/ja/>\n"
 "Language: ja\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.7-dev\n"
+"X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #, fuzzy
@@ -33,15 +33,15 @@ msgstr "ステップ引数はゼロです！"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
-msgstr ""
+msgstr "インスタンスを使用していないスクリプトです"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "スクリプトに基づいていません"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr ""
+msgstr "リソースファイルに基づいていません"
 
 #: modules/gdscript/gd_functions.cpp
 #, fuzzy
@@ -68,12 +68,16 @@ msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
+"SpriteFrames リソースを作成または AnimatedSprite フレームを表示するためには 'Frames' "
+"プロパティに設定する必要があります。"
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
+"1 つだけ表示されている CanvasModulate は、シーン (またはインスタンス化されたシーンのセット) ごとに許可されます。最初に作成された "
+"1 つが動作する一方、残りの部分は無視されます。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -81,91 +85,105 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon2D は、CollisionObject2D 派生ノードに衝突シェイプを提供するためにのみ機能します。"
+"のみとしてご利用ください Area2D、StaticBody2D、RigidBody2D、KinematicBody2D などの子図形をすることです。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr ""
+msgstr "空の CollisionPolygon2D は、衝突判定を持ちません。"
 
 #: scene/2d/collision_shape_2d.cpp
+#, fuzzy
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionShape2D は、CollisionObject2D "
+"派生ノードにコリジョンシェイプを提供するためにのみ機能します。Area2D、StaticBody2D、RigidBody2D、"
+"KinematicBody2D などの子としてのみご利用ください。"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
-msgstr ""
+msgstr "関数の CollisionShape2D の形状を指定する必要があります。そのためのシェイプリソースを作成してください!"
 
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the 'texture' "
 "property."
-msgstr ""
+msgstr "光の形状とテクスチャは、'texture'プロパティに指定します。"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
+msgstr "この遮蔽を有効にして、オクルーダ ポリゴンを設定 (または描画) する必要があります。"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
-msgstr ""
+msgstr "この遮蔽のオクルーダ ポリゴンが空です。多角形を描画してください!"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
+"NavigationPolygon "
+"リソースを設定または動作するようにこのノード用に作成する必要があります。プロパティを設定するか、ポリゴンを描画してください。"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
+"NavigationPolygonInstance は、子または孫 Navigation2D ノードにある必要があります。ナビゲーション "
+"データのみ提供します。"
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
+msgstr "ParallaxLayer ノードは、ParallaxBackground ノードの子として設定されている場合のみ動作します。"
 
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
-msgstr ""
+msgstr "Path プロパティは、動作するように有効な Particles2D ノードを示す必要があります。"
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
+msgstr "PathFollow2D は、Path2D ノードの子として設定されている場合のみ動作します。"
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr ""
+msgstr "Path プロパティは、動作するように有効な Node2D ノードを示す必要があります。"
 
 #: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SamplePlayer to play sound."
 msgstr ""
+"SampleLibrary リソースは SamplePlayer がサウンドを再生するために作成または 'samples' "
+"プロパティで設定する必要があります。"
 
 #: scene/2d/sprite.cpp
 msgid ""
 "Path property must point to a valid Viewport node to work. Such Viewport "
 "must be set to 'render target' mode."
 msgstr ""
+"Path プロパティは、動作するように有効なビューポート ノードをポイントする必要があります。このようなビューポートは、'render target' "
+"モードに設定する必要があります。"
 
 #: scene/2d/sprite.cpp
 msgid ""
 "The Viewport set in the path property must be set as 'render target' in "
 "order for this sprite to work."
-msgstr ""
+msgstr "Path プロパティに設定したビューポートは、このスプライトの動作する順序で 'render target' として設定する必要があります。"
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
 "as parent."
-msgstr ""
+msgstr "VisibilityEnable2D は、親として直接編集されたシーンのルートを使用する場合に最適です。"
 
 #: scene/3d/body_shape.cpp
 msgid ""
@@ -173,50 +191,61 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionShape は衝突物由来のノードに衝突形状を提供するのに役立ちます。唯一の彼らに形状を与えることなどエリア、静ボディ、RigidBody"
+"、キネマティックボディの子としてそれを使用してください。"
 
 #: scene/3d/body_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
-msgstr ""
+msgstr "関数の CollisionShape の形状を指定する必要があります。それのためのシェイプリソースを作成してください!"
 
 #: scene/3d/collision_polygon.cpp
+#, fuzzy
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon は、CollisionObject "
+"派生ノードにコリジョンシェイプを提供するためにのみ機能します。Area、StaticBody、RigidBody、KinematicBody "
+"の子としてのみ利用してください。"
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
-msgstr ""
+msgstr "空の CollisionPolygon は、衝突判定を持ちません。"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr ""
+msgstr "このノードを動かすために NavigationMesh リソースを設定または作成する必要があります。"
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
-msgstr ""
+msgstr "NavigationMeshInstance は、ナビゲーションノードの子や孫である必要があります。これはナビゲーションデータのみ提供します。"
 
 #: scene/3d/scenario_fx.cpp
+#, fuzzy
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
-msgstr ""
+msgstr "1 つだけの WorldEnvironment は、シーン (またはインスタンス化されたシーンのセット) ごとに許可されます。"
 
 #: scene/3d/spatial_sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SpatialSamplePlayer to play sound."
 msgstr ""
+"SpatialSamplePlayer でサウンドを再生するためには SampleLibrary リソースを作成または 'samples' "
+"プロパティで設定する必要があります。"
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
+"SpriteFrames リソースを作成または AnimatedSprite3D フレームを表示するためには 'Frames' "
+"プロパティに設定する必要があります。"
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
@@ -240,11 +269,11 @@ msgstr "ファイルが既に存在します。上書きしますか？"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Recognized"
-msgstr ""
+msgstr "すべての認識"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Files (*)"
-msgstr ""
+msgstr "すべてのファイル(*)"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
@@ -259,7 +288,7 @@ msgstr "ファイルを開く"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr ""
+msgstr "ファイルを開く"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a Directory"
@@ -283,18 +312,18 @@ msgstr "ファイルを保存"
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
 msgid "Create Folder"
-msgstr ""
+msgstr "フォルダを作成"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_autoload_settings.cpp
 #: tools/editor/editor_file_dialog.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 #: tools/editor/script_create_dialog.cpp
 msgid "Path:"
-msgstr ""
+msgstr "Path:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Directories & Files:"
-msgstr ""
+msgstr "ディレクトリまたはファイル:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/script_editor_debugger.cpp
@@ -419,6 +448,8 @@ msgid ""
 "functions. Making them visible for editing is fine though, but they will "
 "hide upon running."
 msgstr ""
+"ポップアップは、popup() または popup*() "
+"関数のいずれかを呼び出す場合を除き、既定では非表示になります。編集のためにそれらを可視化することは可能ですが、彼らは実行時に非表示になります。"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -427,11 +458,14 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
+"このビューポートは、レンダー "
+"ターゲットとして設定されていません。その内容を画面に直接表示する場合は、サイズを得ることができるように、コントロールの子をつくります。それ以外の場合、"
+"レンダー ターゲットし、その内部のテクスチャ表示のいくつかのノードに割り当てます。"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "FreeType の初期化エラー。"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
@@ -441,24 +475,24 @@ msgstr "不明なフォント形式です。"
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "フォント読み込みエラー。"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Invalid font size."
-msgstr ""
+msgstr "無効なフォント サイズです。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Disabled"
-msgstr ""
+msgstr "無効"
 
 #: tools/editor/animation_editor.cpp
 msgid "All Selection"
-msgstr ""
+msgstr "すべて選択"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Add Key"
-msgstr ""
+msgstr "追加したキーを移動"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -486,80 +520,80 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr ""
+msgstr "Anim トラックを上に移動"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr ""
+msgstr "Anim トラックを下に移動"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "Anim トラックを削除"
 
 #: tools/editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr ""
+msgstr "これにトランジションを設定:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "Anim トラック名の変更"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr ""
+msgstr "Anim トラック補間の変更"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr ""
+msgstr "Anim トラック値モード変更"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "ノード カーブを編集"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "選択曲線を編集"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "Anim キー削除"
 
 #: tools/editor/animation_editor.cpp
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr ""
+msgstr "選択範囲を複製"
 
 #: tools/editor/animation_editor.cpp
 msgid "Duplicate Transposed"
-msgstr ""
+msgstr "複製を転置"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove Selection"
-msgstr ""
+msgstr "選択しているものを削除"
 
 #: tools/editor/animation_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "継続的"
 
 #: tools/editor/animation_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "離散"
 
 #: tools/editor/animation_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "トリガー"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Key"
-msgstr ""
+msgstr "Anim キーを追加"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Move Keys"
-msgstr ""
+msgstr "Anim キーの移動"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale Selection"
-msgstr ""
+msgstr "スケールの選択"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale From Cursor"
@@ -567,36 +601,36 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr ""
+msgstr "次のステップへ"
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr ""
+msgstr "前のステップへ"
 
 #: tools/editor/animation_editor.cpp tools/editor/property_editor.cpp
 msgid "Linear"
-msgstr ""
+msgstr "Linear"
 
 #: tools/editor/animation_editor.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr ""
+msgstr "Constant"
 
 #: tools/editor/animation_editor.cpp
 msgid "In"
-msgstr ""
+msgstr "In"
 
 #: tools/editor/animation_editor.cpp
 msgid "Out"
-msgstr ""
+msgstr "Out"
 
 #: tools/editor/animation_editor.cpp
 msgid "In-Out"
-msgstr ""
+msgstr "In-Out"
 
 #: tools/editor/animation_editor.cpp
 msgid "Out-In"
-msgstr ""
+msgstr "Out-In"
 
 #: tools/editor/animation_editor.cpp
 msgid "Transitions"
@@ -604,19 +638,19 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "アニメーションの最適化"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr ""
+msgstr "アニメーションをクリーンアップ"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "%s の新しいトラックを作成し、キーを挿入しますか？"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
+msgstr "新しい %d トラックを作成し、キーを挿入しますか？"
 
 #: tools/editor/animation_editor.cpp tools/editor/create_dialog.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -625,203 +659,203 @@ msgstr ""
 #: tools/editor/plugins/particles_editor_plugin.cpp
 #: tools/editor/project_manager.cpp tools/editor/script_create_dialog.cpp
 msgid "Create"
-msgstr ""
+msgstr "作成"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "Anim の作成・挿入"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr ""
+msgstr "Anim トラック ・ キーを挿入"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr ""
+msgstr "Anim キーを挿入"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr ""
+msgstr "Anim Len を変更"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr ""
+msgstr "Anim Loop を変更"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr ""
+msgstr "Anim は、型指定された値のキーを作成"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr ""
+msgstr "Anim 挿入"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "Anim スケールキー"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr ""
+msgstr "Anim コールトラックを追加"
 
 #: tools/editor/animation_editor.cpp
 msgid "Animation zoom."
-msgstr ""
+msgstr "アニメーション 拡大。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr ""
+msgstr "長さ:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
-msgstr ""
+msgstr "アニメーションの長さ (単位は秒)。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr ""
+msgstr "ステップ:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
-msgstr ""
+msgstr "カーソル ステップ スナップ (単位は秒)。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr ""
+msgstr "アニメーションのループを有効/無効。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Add new tracks."
-msgstr ""
+msgstr "新しいトラックを追加。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move current track up."
-msgstr ""
+msgstr "現在のトラックに移動します。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move current track down."
-msgstr ""
+msgstr "現在のトラックを下へ移動します。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove selected track."
-msgstr ""
+msgstr "選択したトラックを削除します。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Track tools"
-msgstr ""
+msgstr "トラック ツール"
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
-msgstr ""
+msgstr "それらをクリックすることで、個々のキーの編集を有効にします。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim. Optimizer"
-msgstr ""
+msgstr "アニメーションのオプティマイザー"
 
 #: tools/editor/animation_editor.cpp
 msgid "Max. Linear Error:"
-msgstr ""
+msgstr "最大。線形エラー:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Max. Angular Error:"
-msgstr ""
+msgstr "最大。角度エラー:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr ""
+msgstr "最大最適化角度:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Optimize"
-msgstr ""
+msgstr "最適化"
 
 #: tools/editor/animation_editor.cpp
 msgid "Key"
-msgstr ""
+msgstr "キー"
 
 #: tools/editor/animation_editor.cpp
 msgid "Transition"
-msgstr ""
+msgstr "遷移"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale Ratio:"
-msgstr ""
+msgstr "スケールの比率:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr ""
+msgstr "ノード内の関数を呼び出しますか？"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove invalid keys"
-msgstr ""
+msgstr "無効なキーを削除"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr ""
+msgstr "未解決や空のトラックを削除"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-up all animations"
-msgstr ""
+msgstr "すべてのアニメーションをクリーンアップ"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr ""
+msgstr "クリーン アップ アニメーション(元に戻せません!)"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up"
-msgstr ""
+msgstr "クリーンアップ"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr ""
+msgstr "配列のサイズを変更"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr ""
+msgstr "配列の値の種類の変更"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr ""
+msgstr "配列の値を変更"
 
 #: tools/editor/asset_library_editor_plugin.cpp tools/editor/create_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Search:"
-msgstr ""
+msgstr "検索:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Sort:"
-msgstr ""
+msgstr "並べ替え:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Reverse"
-msgstr ""
+msgstr "逆"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
 msgid "Category:"
-msgstr ""
+msgstr "カテゴリー:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "All"
-msgstr ""
+msgstr "すべて"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Site:"
-msgstr ""
+msgstr "サイト:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Support.."
-msgstr ""
+msgstr "サポート."
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "公式"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "コミュニティ"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr ""
+msgstr "テスト中"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -829,11 +863,11 @@ msgstr ""
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List For '%s':"
-msgstr ""
+msgstr "'%s' のメソッド一覧："
 
 #: tools/editor/call_dialog.cpp
 msgid "Call"
-msgstr ""
+msgstr "呼び出し"
 
 #: tools/editor/call_dialog.cpp tools/editor/connections_dialog.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
@@ -845,90 +879,90 @@ msgstr ""
 #: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
 #: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
 msgid "Close"
-msgstr ""
+msgstr "閉じる"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List:"
-msgstr ""
+msgstr "メソッド一覧:"
 
 #: tools/editor/call_dialog.cpp
 msgid "Arguments:"
-msgstr ""
+msgstr "引数:"
 
 #: tools/editor/call_dialog.cpp
 msgid "Return:"
-msgstr ""
+msgstr "戻り値:"
 
 #: tools/editor/code_editor.cpp
 msgid "Go to Line"
-msgstr ""
+msgstr "行に移動"
 
 #: tools/editor/code_editor.cpp
 msgid "Line Number:"
-msgstr ""
+msgstr "行番号:"
 
 #: tools/editor/code_editor.cpp
 msgid "No Matches"
-msgstr ""
+msgstr "一致なし"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d Ocurrence(s)."
-msgstr ""
+msgstr "%d 箇所を置換しました。"
 
 #: tools/editor/code_editor.cpp
 msgid "Replace"
-msgstr ""
+msgstr "置換"
 
 #: tools/editor/code_editor.cpp
 msgid "Replace All"
-msgstr ""
+msgstr "すべて置換"
 
 #: tools/editor/code_editor.cpp
 msgid "Match Case"
-msgstr ""
+msgstr "大文字と小文字"
 
 #: tools/editor/code_editor.cpp
 msgid "Whole Words"
-msgstr ""
+msgstr "単語全体"
 
 #: tools/editor/code_editor.cpp
 msgid "Selection Only"
-msgstr ""
+msgstr "選択範囲のみ"
 
 #: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
 msgid "Search"
-msgstr ""
+msgstr "検索"
 
 #: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
 msgid "Find"
-msgstr ""
+msgstr "検索"
 
 #: tools/editor/code_editor.cpp
 msgid "Next"
-msgstr ""
+msgstr "次"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d ocurrence(s)."
-msgstr ""
+msgstr "%d 箇所を置換しました。"
 
 #: tools/editor/code_editor.cpp
 msgid "Not found!"
-msgstr ""
+msgstr "見つかりません!"
 
 #: tools/editor/code_editor.cpp
 msgid "Replace By"
-msgstr ""
+msgstr "置換"
 
 #: tools/editor/code_editor.cpp
 msgid "Case Sensitive"
-msgstr ""
+msgstr "大文字小文字を区別"
 
 #: tools/editor/code_editor.cpp
 msgid "Backwards"
-msgstr ""
+msgstr "後方"
 
 #: tools/editor/code_editor.cpp
 msgid "Prompt On Replace"
@@ -936,11 +970,11 @@ msgstr ""
 
 #: tools/editor/code_editor.cpp
 msgid "Skip"
-msgstr ""
+msgstr "スキップ"
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
-msgstr ""
+msgstr "ライン:"
 
 #: tools/editor/code_editor.cpp
 msgid "Col:"
@@ -948,11 +982,11 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr ""
+msgstr "対象となるノードのメソッドを指定する必要があります!"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
-msgstr ""
+msgstr "ノードに接続します。"
 
 #: tools/editor/connections_dialog.cpp
 #: tools/editor/editor_autoload_settings.cpp tools/editor/groups_editor.cpp
@@ -960,18 +994,19 @@ msgstr ""
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
 msgid "Add"
-msgstr ""
+msgstr "追加"
 
 #: tools/editor/connections_dialog.cpp tools/editor/dependency_editor.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_manager.cpp
 msgid "Remove"
-msgstr ""
+msgstr "削除"
 
 #: tools/editor/connections_dialog.cpp
+#, fuzzy
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "余分に呼び出し引数を追加します。"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
@@ -979,11 +1014,11 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Path to Node:"
-msgstr ""
+msgstr "ノードへのパス:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Make Function"
-msgstr ""
+msgstr "関数を作成"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Deferred"
@@ -995,15 +1030,15 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect"
-msgstr ""
+msgstr "接続"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr ""
+msgstr "'%s' を '%s' に接続"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connecting Signal:"
-msgstr ""
+msgstr "信号を接続:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Create Subscription"
@@ -1044,6 +1079,8 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will not take effect unless reloaded."
 msgstr ""
+"シーン '%s' は現在編集中です。\n"
+"再読み込みしない限り、変更は反映されません。"
 
 #: tools/editor/dependency_editor.cpp
 msgid ""
@@ -1101,7 +1138,7 @@ msgstr ""
 
 #: tools/editor/dependency_editor.cpp
 msgid "Scene failed to load due to missing dependencies:"
-msgstr ""
+msgstr "依存関係が不足しているのためシーンを読み込めませんでした。"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Open Anyway"
@@ -1230,7 +1267,7 @@ msgstr ""
 
 #: tools/editor/editor_data.cpp
 msgid "Updating Scene"
-msgstr ""
+msgstr "シーンを更新"
 
 #: tools/editor/editor_data.cpp
 msgid "Storing local changes.."
@@ -1238,7 +1275,7 @@ msgstr ""
 
 #: tools/editor/editor_data.cpp
 msgid "Updating scene.."
-msgstr ""
+msgstr "シーンを更新しています.."
 
 #: tools/editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1414,8 +1451,9 @@ msgid "Importing:"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "Node From Scene"
-msgstr ""
+msgstr "シーンからのノード"
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
@@ -1447,7 +1485,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Saving Scene"
-msgstr ""
+msgstr "シーンを保存"
 
 #: tools/editor/editor_node.cpp
 msgid "Analyzing"
@@ -1458,9 +1496,10 @@ msgid "Creating Thumbnail"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Couldn't save scene. Likely dependencies (instances) couldn't be satisfied."
-msgstr ""
+msgstr "シーンを保存できませんでした。おそらく依存関係 (インスタンス) を満たせていません。"
 
 #: tools/editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -1536,8 +1575,9 @@ msgid "Open in Help"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "There is no defined scene to run."
-msgstr ""
+msgstr "実行する定義済みのシーンはありません。"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1554,15 +1594,19 @@ msgid ""
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Selected scene '%s' is not a scene file, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"選択したシーン '%s' は、シーン ファイルではありません、有効なものを選択していますか？\n"
+"'アプリケーション' カテゴリの下の'プロジェクトの設定'で変更できます。"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
+msgstr "現在のシーンが保存されていませんでした、それ以前の実行中に保存してください。"
 
 #: tools/editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -1570,7 +1614,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Open Scene"
-msgstr ""
+msgstr "シーンを開く"
 
 #: tools/editor/editor_node.cpp
 msgid "Open Base Scene"
@@ -1618,11 +1662,11 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Quit"
-msgstr ""
+msgstr "終了"
 
 #: tools/editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr ""
+msgstr "エディターを終了しますか？"
 
 #: tools/editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
@@ -1797,7 +1841,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
+msgstr "終了してプロジェクトリストを開く"
 
 #: tools/editor/editor_node.cpp
 msgid "Import assets to the project."
@@ -5359,7 +5403,7 @@ msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Exit"
-msgstr ""
+msgstr "終了"
 
 #: tools/editor/project_settings.cpp
 msgid "Key "
