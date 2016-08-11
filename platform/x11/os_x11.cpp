@@ -127,10 +127,10 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	int xrandr_minor = 0;
 	int event_base, error_base;
 	xrandr_ext_ok = XRRQueryExtension(x11_display,&event_base, &error_base);
-	xrandr_handle = dlopen("libXrandr.so", RTLD_LAZY);
-	err = dlerror();
+	xrandr_handle = dlopen("libXrandr.so.2", RTLD_LAZY);
 	if (!xrandr_handle) {
-		fprintf(stderr, "could not load libXrandr.so, Error: %s\n", err);
+		err = dlerror();
+		fprintf(stderr, "could not load libXrandr.so.2, Error: %s\n", err);
 	}
 	else {
 		XRRQueryVersion(x11_display, &xrandr_major, &xrandr_minor);
