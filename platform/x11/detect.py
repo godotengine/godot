@@ -156,6 +156,7 @@ def configure(env):
 		print("Enabling ALSA")
 		env.Append(CPPFLAGS=["-DALSA_ENABLED"])
 		env.Append(LIBS=['asound'])
+		env.ParseConfig('pkg-config alsa --cflags --libs')
 	else:
 		print("ALSA libraries not found, disabling driver")
 
