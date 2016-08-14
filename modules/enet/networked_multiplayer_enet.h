@@ -19,6 +19,8 @@ class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
 	ENetPeer *peer;
 	ENetHost *host;
 
+	ConnectionStatus connection_status;
+
 	Map<StringName,ENetPeer*> peer_map;
 
 	struct Packet {
@@ -60,6 +62,7 @@ public:
 
 	virtual int get_max_packet_size() const;
 
+	virtual ConnectionStatus get_connection_status() const;
 
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();

@@ -12,10 +12,15 @@ void NetworkedMultiplayerPeer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("poll"), &NetworkedMultiplayerPeer::poll );
 
+	ObjectTypeDB::bind_method(_MD("get_connection_status"), &NetworkedMultiplayerPeer::get_connection_status );
 
 	BIND_CONSTANT( TRANSFER_MODE_UNRELIABLE );
 	BIND_CONSTANT( TRANSFER_MODE_RELIABLE );
 	BIND_CONSTANT( TRANSFER_MODE_ORDERED );
+
+	BIND_CONSTANT( CONNECTION_DISCONNECTED );
+	BIND_CONSTANT( CONNECTION_CONNECTING );
+	BIND_CONSTANT( CONNECTION_CONNECTED );
 
 	ADD_SIGNAL( MethodInfo("peer_connected",PropertyInfo(Variant::STRING,"id")));
 	ADD_SIGNAL( MethodInfo("peer_disconnected",PropertyInfo(Variant::STRING,"id")));

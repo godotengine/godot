@@ -50,12 +50,37 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 
 	active=true;
 	server=true;
+	connection_status=CONNECTION_CONNECTED;
 	return OK;
 }
 Error NetworkedMultiplayerENet::create_client(const IP_Address& p_ip,int p_port, int p_max_channels, int p_in_bandwidth, int p_out_bandwidth){
 
 	ERR_FAIL_COND_V(active,ERR_ALREADY_IN_USE);
 
+	host = enet_host_create (NULL /* create a client host */,
+		    1 /* only allow 1 outgoing connection */,
+		    p_max_channels /* allow up 2 channels to be used, 0 and 1 */,
+		    p_in_bandwidth /* 56K modem with 56 Kbps downstream bandwidth */,
+		    p_out_bandwidth /* 56K modem with 14 Kbps upstream bandwidth */);
+
+	ERR_FAIL_COND_V(!host,ERR_CANT_CREATE);
+
+
+	ENetAddress address;
+	address.host=p_ip.host;
+	address.port=p_port;
+
+	/* Initiate the connection, allocating the two channels 0 and 1. */
+	ENetPeer *peer = enet_host_connect (host, & address, p_max_channels, 0);
+
+	if (peer == NULL) {
+		enet_host_destroy(host);
+		ERR_FAIL_COND_V(!peer,ERR_CANT_CREATE);
+	}
+
+	//technically safe to ignore the peer or anything else.
+
+	connection_status=CONNECTION_CONNECTING;
 
 	return OK;
 }
@@ -82,6 +107,8 @@ void NetworkedMultiplayerENet::poll(){
 				*new_id = String(ip) +":"+ itos(event.peer -> address.port);
 
 				peer_map[*new_id]=event.peer;
+
+				connection_status=CONNECTION_CONNECTED; //if connecting, this means it connected t something!
 
 				emit_signal("peer_connected",*new_id);
 
@@ -110,6 +137,9 @@ void NetworkedMultiplayerENet::poll(){
 				//destroy packet later..
 
 			}break;
+			case ENET_EVENT_TYPE_NONE: {
+				//do nothing
+			} break;
 		}
 	}
 }
@@ -123,14 +153,8 @@ void NetworkedMultiplayerENet::disconnect() {
 	enet_host_destroy(host);
 	active=false;
 	incoming_packets.clear();
-}
 
-void NetworkedMultiplayerENet::_bind_methods() {
-
-	ObjectTypeDB::bind_method(_MD("create_server","port","max_clients","max_channels","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_server,DEFVAL(32),DEFVAL(1),DEFVAL(0),DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("create_client","ip","port","max_channels","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_client,DEFVAL(1),DEFVAL(0),DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("disconnect"),&NetworkedMultiplayerENet::disconnect);
-
+	connection_status=CONNECTION_DISCONNECTED;
 }
 
 int NetworkedMultiplayerENet::get_available_packet_count() const {
@@ -207,6 +231,20 @@ void NetworkedMultiplayerENet::_pop_current_packet() const {
 
 }
 
+NetworkedMultiplayerPeer::ConnectionStatus NetworkedMultiplayerENet::get_connection_status() const {
+
+	return connection_status;
+}
+
+void NetworkedMultiplayerENet::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("create_server","port","max_clients","max_channels","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_server,DEFVAL(32),DEFVAL(1),DEFVAL(0),DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("create_client","ip","port","max_channels","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_client,DEFVAL(1),DEFVAL(0),DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("disconnect"),&NetworkedMultiplayerENet::disconnect);
+
+}
+
+
 NetworkedMultiplayerENet::NetworkedMultiplayerENet(){
 
 	active=false;
@@ -214,7 +252,9 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet(){
 	send_channel=0;
 	current_packet.packet=NULL;
 	transfer_mode=TRANSFER_MODE_ORDERED;
+	connection_status=CONNECTION_DISCONNECTED;
 }
+
 NetworkedMultiplayerENet::~NetworkedMultiplayerENet(){
 
 	if (active) {
