@@ -52,9 +52,11 @@ public:
 	Error create_server(int p_port, int p_max_clients=32, int p_max_channels=1, int p_in_bandwidth=0, int p_out_bandwidth=0);
 	Error create_client(const IP_Address& p_ip,int p_port, int p_max_channels=1, int p_in_bandwidth=0, int p_out_bandwidth=0);
 
-	void disconnect();
+	void close_connection();
 
 	virtual void poll();
+
+	virtual bool is_server() const;
 
 	virtual int get_available_packet_count() const;
 	virtual Error get_packet(const uint8_t **r_buffer,int &r_buffer_size) const; ///< buffer is GONE after next get_packet

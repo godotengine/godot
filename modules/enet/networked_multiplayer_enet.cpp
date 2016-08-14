@@ -81,6 +81,8 @@ Error NetworkedMultiplayerENet::create_client(const IP_Address& p_ip,int p_port,
 	//technically safe to ignore the peer or anything else.
 
 	connection_status=CONNECTION_CONNECTING;
+	active=true;
+	server=false;
 
 	return OK;
 }
@@ -144,7 +146,13 @@ void NetworkedMultiplayerENet::poll(){
 	}
 }
 
-void NetworkedMultiplayerENet::disconnect() {
+bool NetworkedMultiplayerENet::is_server() const {
+	ERR_FAIL_COND_V(!active,false);
+
+	return server;
+}
+
+void NetworkedMultiplayerENet::close_connection() {
 
 	ERR_FAIL_COND(!active);
 
@@ -258,6 +266,6 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet(){
 NetworkedMultiplayerENet::~NetworkedMultiplayerENet(){
 
 	if (active) {
-		disconnect();
+		close_connection();
 	}
 }

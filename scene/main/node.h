@@ -53,6 +53,12 @@ public:
 		PAUSE_MODE_PROCESS
 	};
 
+	enum NetworkMode {
+
+		NETWORK_MODE_INHERIT,
+		NETWORK_MODE_MASTER,
+		NETWORK_MODE_SLAVE
+	};
 
 	struct Comparator {
 
@@ -67,6 +73,7 @@ private:
 		SceneTree::Group *group;
 		GroupData() { persistent=false; }
 	};
+
 
 	struct Data {
 
@@ -98,6 +105,13 @@ private:
 
 		PauseMode pause_mode;
 		Node *pause_owner;
+
+		NetworkMode network_mode;
+		Node *network_owner;
+		Set<StringName> allowed_remote_calls;
+		Set<StringName> allowed_remote_set;
+
+
 		// variables used to properly sort the node when processing, ignored otherwise
 		//should move all the stuff below to bits
 		bool fixed_process;
@@ -112,6 +126,8 @@ private:
 		bool use_placeholder;
 
 		bool display_folded;
+
+		mutable NodePath *path_cache;
 
 	} data;
 
@@ -134,6 +150,7 @@ private:
 	void _propagate_validate_owner();
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node*p_owner);
+	void _propagate_network_owner(Node*p_owner);
 	Array _get_node_and_resource(const NodePath& p_path);
 
 	void _duplicate_signals(const Node* p_original,Node* p_copy) const;
@@ -142,6 +159,9 @@ private:
 
 	Array _get_children() const;
 	Array _get_groups() const;
+
+	Variant _remote_call_reliable_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
+	Variant _remote_call_unreliable_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
 
 friend class SceneTree;
 
@@ -186,6 +206,7 @@ public:
 		NOTIFICATION_INSTANCED=20,
 		NOTIFICATION_DRAG_BEGIN=21,
 		NOTIFICATION_DRAG_END=22,
+		NOTIFICATION_PATH_CHANGED=23,
 	};
 
 	/* NODE/TREE */
@@ -331,7 +352,27 @@ public:
 
 	void set_display_folded(bool p_folded);
 	bool is_displayed_folded() const;
-	/* CANVAS */
+	/* NETWORK */
+
+	void set_network_mode(NetworkMode p_mode);
+	NetworkMode get_network_mode() const;
+	bool is_network_master() const;
+
+	void allow_remote_call(const StringName& p_method);
+	void disallow_remote_call(const StringName& p_method);
+
+	void allow_remote_set(const StringName& p_property);
+	void disallow_remote_set(const StringName& p_property);
+
+	void remote_call_reliable(const StringName& p_method,VARIANT_ARG_DECLARE);
+	void remote_call_reliablep(const StringName& p_method,const Variant** p_arg,int p_argcount);
+
+	void remote_call_unreliable(const StringName& p_method,VARIANT_ARG_DECLARE);
+	void remote_call_unreliablep(const StringName& p_method,const Variant** p_arg,int p_argcount);
+
+	void remote_set_reliable(const StringName& p_property,const Variant& p_value);
+	void remote_set_unreliable(const StringName& p_property,const Variant& p_value);
+
 
 	Node();
 	~Node();

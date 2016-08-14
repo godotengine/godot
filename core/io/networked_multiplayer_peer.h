@@ -32,6 +32,8 @@ public:
 	virtual StringName get_packet_peer() const=0;
 	virtual int get_packet_channel() const=0;
 
+	virtual bool is_server() const=0;
+
 	virtual void poll()=0;
 
 	virtual ConnectionStatus get_connection_status() const=0;
