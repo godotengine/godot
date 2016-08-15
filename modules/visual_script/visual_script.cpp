@@ -281,9 +281,10 @@ void VisualScript::_node_ports_changed(int p_id) {
 		}
 	}
 
+#ifdef TOOLS_ENABLED
 	set_edited(true); //something changed, let's set as edited
 	emit_signal("node_ports_changed",function,p_id);
-
+#endif
 }
 
 void VisualScript::add_node(const StringName& p_func,int p_id, const Ref<VisualScriptNode>& p_node, const Point2 &p_pos) {
