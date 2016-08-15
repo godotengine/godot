@@ -11505,6 +11505,13 @@
 				Get the undo/redo object. Most actions in the editor can be undoable, so use this object to make sure this happens when it's worth it.
 			</description>
 		</method>
+		<method name="get_window_layout" qualifiers="virtual">
+			<argument index="0" name="layout" type="ConfigFile">
+			</argument>
+			<description>
+				Get the GUI layout of the plugin. This is used to save the project's editor layout when the [method EditorPlugin.queue_save_layout] is called or the editor layout was changed(For example changing the position of a dock).
+			</description>
+		</method>
 		<method name="handles" qualifiers="virtual">
 			<return type="bool">
 			</return>
@@ -11527,6 +11534,11 @@
 			<description>
 				This function will be called when the editor is requested to become visible. It is used for plugins that edit a specific object type.
 				Remember that you have to manage the visibility of all your editor controls manually.
+			</description>
+		</method>
+		<method name="queue_save_layout" qualifiers="const">
+			<description>
+				Queue save the project's editor layout.
 			</description>
 		</method>
 		<method name="remove_control_from_bottom_panel">
@@ -11564,11 +11576,23 @@
 				Remove the import plugin, don't forget to call this on exit.
 			</description>
 		</method>
+		<method name="save_external_data" qualifiers="virtual">
+			<description>
+				This method is called after the editor save the project or when the it's closed. It asks the plugin to save edited external scenes/resources.
+			</description>
+		</method>
 		<method name="set_state" qualifiers="virtual">
 			<argument index="0" name="state" type="Dictionary">
 			</argument>
 			<description>
 				Restore the state saved by [method EditorPlugin.get_state].
+			</description>
+		</method>
+		<method name="set_window_layout" qualifiers="virtual">
+			<argument index="0" name="layout" type="ConfigFile">
+			</argument>
+			<description>
+				Restore the plugin GUI layout saved by [method EditorPlugin.get_window_layout].
 			</description>
 		</method>
 	</methods>
