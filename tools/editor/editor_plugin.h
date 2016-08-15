@@ -118,6 +118,7 @@ public:
 	virtual void get_window_layout(Ref<ConfigFile> p_layout);
 	virtual void edited_scene_changed(){}; // if changes are pending in editor, apply them
 
+	void queue_save_layout() const;
 
 	Control *get_base_control();
 
