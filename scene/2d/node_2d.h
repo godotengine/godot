@@ -87,11 +87,17 @@ public:
 	Size2 get_scale() const;
 
 	Point2 get_global_pos() const;
+	float get_global_rot() const;
+	float get_global_rotd() const;
+	Size2 get_global_scale() const;
 	virtual Rect2 get_item_rect() const;
 
 	void set_transform(const Matrix32& p_transform);
 	void set_global_transform(const Matrix32& p_transform);
 	void set_global_pos(const Point2& p_pos);
+	void set_global_rot(float p_radians);
+	void set_global_rotd(float p_degrees);
+	void set_global_scale(const Size2& p_scale);
 
 	void set_z(int p_z);
 	int get_z() const;
