@@ -36,6 +36,7 @@
 #include "instance_placeholder.h"
 
 VARIANT_ENUM_CAST(Node::PauseMode);
+VARIANT_ENUM_CAST(Node::NetworkMode);
 
 
 
@@ -77,6 +78,16 @@ void Node::_notification(int p_notification) {
 				data.pause_owner=this;
 			}
 
+			if (data.network_mode==NETWORK_MODE_INHERIT) {
+
+				if (data.parent)
+					data.network_owner=data.parent->data.network_owner;
+				else
+					data.network_owner=NULL;
+			} else {
+				data.network_owner=this;
+			}
+
 			if (data.input)
 				add_to_group("_vp_input"+itos(get_viewport()->get_instance_ID()));
 			if (data.unhandled_input)
@@ -97,6 +108,20 @@ void Node::_notification(int p_notification) {
 			if (data.unhandled_key_input)
 				remove_from_group("_vp_unhandled_key_input"+itos(get_viewport()->get_instance_ID()));
 
+
+			data.pause_owner=NULL;
+			data.network_owner=NULL;
+			if (data.path_cache) {
+				memdelete(data.path_cache);
+				data.path_cache=NULL;
+			}
+		} break;
+		case NOTIFICATION_PATH_CHANGED: {
+
+			if (data.path_cache) {
+				memdelete(data.path_cache);
+				data.path_cache=NULL;
+			}
 		} break;
 		case NOTIFICATION_READY: {
 
@@ -412,6 +437,200 @@ void Node::_propagate_pause_owner(Node*p_owner) {
 	}
 }
 
+void Node::set_network_mode(NetworkMode p_mode) {
+
+	if (data.network_mode==p_mode)
+		return;
+
+	bool prev_inherits=data.network_mode==NETWORK_MODE_INHERIT;
+	data.network_mode=p_mode;
+	if (!is_inside_tree())
+		return; //pointless
+	if ((data.network_mode==NETWORK_MODE_INHERIT) == prev_inherits)
+		return; ///nothing changed
+
+	Node *owner=NULL;
+
+	if (data.network_mode==NETWORK_MODE_INHERIT) {
+
+		if (data.parent)
+			owner=data.parent->data.network_owner;
+	} else {
+		owner=this;
+	}
+
+	_propagate_network_owner(owner);
+
+
+
+}
+
+Node::NetworkMode Node::get_network_mode() const {
+
+	return data.network_mode;
+}
+
+bool Node::is_network_master() const {
+
+	ERR_FAIL_COND_V(!is_inside_tree(),false);
+
+	switch(data.network_mode) {
+		case NETWORK_MODE_INHERIT: {
+
+			if (data.network_owner)
+				return data.network_owner->is_network_master();
+			else
+				return get_tree()->is_network_server();
+		} break;
+		case NETWORK_MODE_MASTER: {
+
+			return true;
+		} break;
+		case NETWORK_MODE_SLAVE: {
+			return false;
+		} break;
+	}
+
+	return false;
+}
+
+void Node::allow_remote_call(const StringName& p_method) {
+
+	data.allowed_remote_calls.insert(p_method);
+}
+
+void Node::disallow_remote_call(const StringName& p_method){
+
+	data.allowed_remote_calls.erase(p_method);
+
+}
+
+void Node::allow_remote_set(const StringName& p_property){
+
+	data.allowed_remote_set.insert(p_property);
+
+}
+void Node::disallow_remote_set(const StringName& p_property){
+
+	data.allowed_remote_set.erase(p_property);
+}
+
+
+void Node::_propagate_network_owner(Node*p_owner) {
+
+	if (data.network_mode!=NETWORK_MODE_INHERIT)
+		return;
+	data.network_owner=p_owner;
+	for(int i=0;i<data.children.size();i++) {
+
+		data.children[i]->_propagate_network_owner(p_owner);
+	}
+}
+
+void Node::remote_call_reliable(const StringName& p_method,VARIANT_ARG_DECLARE) {
+
+
+	VARIANT_ARGPTRS;
+
+	int argc=0;
+	for(int i=0;i<VARIANT_ARG_MAX;i++) {
+		if (argptr[i]->get_type()==Variant::NIL)
+			break;
+		argc++;
+	}
+
+	remote_call_reliablep(p_method,argptr,argc);
+}
+
+void Node::remote_call_reliablep(const StringName& p_method,const Variant** p_arg,int p_argcount){
+
+	ERR_FAIL_COND(!is_inside_tree());
+	get_tree()->_remote_call(this,true,false,p_method,p_arg,p_argcount);
+}
+
+void Node::remote_call_unreliable(const StringName& p_method,VARIANT_ARG_DECLARE){
+
+	VARIANT_ARGPTRS;
+
+	int argc=0;
+	for(int i=0;i<VARIANT_ARG_MAX;i++) {
+		if (argptr[i]->get_type()==Variant::NIL)
+			break;
+		argc++;
+	}
+
+	remote_call_unreliablep(p_method,argptr,argc);
+
+}
+
+void Node::remote_call_unreliablep(const StringName& p_method,const Variant** p_arg,int p_argcount){
+
+	ERR_FAIL_COND(!is_inside_tree());
+
+	get_tree()->_remote_call(this,false,false,p_method,p_arg,p_argcount);
+}
+
+void Node::remote_set_reliable(const StringName& p_property,const Variant& p_value) {
+
+
+	ERR_FAIL_COND(!is_inside_tree());
+	const Variant *ptr=&p_value;
+
+	get_tree()->_remote_call(this,true,true,p_property,&ptr,1);
+}
+
+void Node::remote_set_unreliable(const StringName& p_property,const Variant& p_value){
+
+	ERR_FAIL_COND(!is_inside_tree());
+	const Variant *ptr=&p_value;
+
+	get_tree()->_remote_call(this,false,true,p_property,&ptr,1);
+}
+
+Variant Node::_remote_call_reliable_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+	if (p_argcount<1) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=1;
+		return Variant();
+	}
+
+	if (p_args[0]->get_type()!=Variant::STRING) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=0;
+		r_error.expected=Variant::STRING;
+		return Variant();
+	}
+
+	StringName method = *p_args[0];
+
+	remote_call_reliablep(method,&p_args[1],p_argcount-1);
+
+}
+
+
+Variant Node::_remote_call_unreliable_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+	if (p_argcount<1) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=1;
+		return Variant();
+	}
+
+	if (p_args[0]->get_type()!=Variant::STRING) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=0;
+		r_error.expected=Variant::STRING;
+		return Variant();
+	}
+
+	StringName method = *p_args[0];
+
+	remote_call_unreliablep(method,&p_args[1],p_argcount-1);
+
+}
+
+
 bool Node::can_process() const {
 
 	ERR_FAIL_COND_V( !is_inside_tree(), false );
@@ -566,6 +785,8 @@ void Node::set_name(const String& p_name) {
 
 		data.parent->_validate_child_name(this);
 	}
+
+	propagate_notification(NOTIFICATION_PATH_CHANGED);
 
 	if (is_inside_tree()) {
 
@@ -1210,6 +1431,10 @@ NodePath Node::get_path_to(const Node *p_node) const {
 NodePath Node::get_path() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),NodePath());
+
+	if (data.path_cache)
+		return *data.path_cache;
+
 	const Node *n = this;
 
 	Vector<StringName> path;
@@ -1221,7 +1446,9 @@ NodePath Node::get_path() const {
 
 	path.invert();
 
-	return NodePath( path, true );
+	data.path_cache = memnew( NodePath( path, true ) );
+
+	return *data.path_cache;
 }
 
 bool Node::is_in_group(const StringName& p_identifier) const {
@@ -2212,8 +2439,16 @@ void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("queue_free"),&Node::queue_delete);
 
+	ObjectTypeDB::bind_method(_MD("set_network_mode","mode"),&Node::set_network_mode);
+	ObjectTypeDB::bind_method(_MD("get_network_mode"),&Node::get_network_mode);
 
+	ObjectTypeDB::bind_method(_MD("is_network_master"),&Node::is_network_master);
 
+	ObjectTypeDB::bind_method(_MD("allow_remote_call","method"),&Node::allow_remote_call);
+	ObjectTypeDB::bind_method(_MD("disallow_remote_call","method"),&Node::disallow_remote_call);
+
+	ObjectTypeDB::bind_method(_MD("allow_remote_set","method"),&Node::allow_remote_set);
+	ObjectTypeDB::bind_method(_MD("disallow_remote_set","method"),&Node::disallow_remote_set);
 
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("_set_import_path","import_path"),&Node::set_import_path);
@@ -2221,6 +2456,23 @@ void Node::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo(Variant::NODE_PATH,"_import_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_path"),_SCS("_get_import_path"));
 
 #endif
+
+	{
+		MethodInfo mi;
+		mi.name="remote_call_reliable";
+		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
+
+
+		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"remote_call_reliable",&Node::_remote_call_reliable_bind,mi);
+
+		mi.name="remote_call_unreliable";
+		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"remote_call_unreliable",&Node::_remote_call_unreliable_bind,mi);
+
+	}
+
+	ObjectTypeDB::bind_method(_MD("remote_set_reliable","property","value:Variant"),&Node::remote_set_reliable);
+	ObjectTypeDB::bind_method(_MD("remote_set_unreliable","property","value:Variant"),&Node::remote_set_unreliable);
+
 
 	BIND_CONSTANT( NOTIFICATION_ENTER_TREE );
 	BIND_CONSTANT( NOTIFICATION_EXIT_TREE );
@@ -2236,6 +2488,8 @@ void Node::_bind_methods() {
 	BIND_CONSTANT( NOTIFICATION_INSTANCED );
 	BIND_CONSTANT( NOTIFICATION_DRAG_BEGIN );
 	BIND_CONSTANT( NOTIFICATION_DRAG_END );
+	BIND_CONSTANT( NOTIFICATION_PATH_CHANGED);
+
 
 
 
@@ -2252,6 +2506,7 @@ void Node::_bind_methods() {
 	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/input" ), _SCS("set_process_input"),_SCS("is_processing_input" ) );
 	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/unhandled_input" ), _SCS("set_process_unhandled_input"),_SCS("is_processing_unhandled_input" ) );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "process/pause_mode",PROPERTY_HINT_ENUM,"Inherit,Stop,Process" ), _SCS("set_pause_mode"),_SCS("get_pause_mode" ) );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "process/network_mode",PROPERTY_HINT_ENUM,"Inherit,Master,Slave" ), _SCS("set_network_mode"),_SCS("get_network_mode" ) );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "editor/display_folded",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR ), _SCS("set_display_folded"),_SCS("is_displayed_folded" ) );
 
 	BIND_VMETHOD( MethodInfo("_process",PropertyInfo(Variant::REAL,"delta")) );
@@ -2286,11 +2541,15 @@ Node::Node() {
 	data.unhandled_key_input=false;
 	data.pause_mode=PAUSE_MODE_INHERIT;
 	data.pause_owner=NULL;
+	data.network_mode=NETWORK_MODE_INHERIT;
+	data.network_owner=NULL;
+	data.path_cache=NULL;
 	data.parent_owned=false;
 	data.in_constructor=true;
 	data.viewport=NULL;
 	data.use_placeholder=false;
 	data.display_folded=false;
+
 }
 
 Node::~Node() {

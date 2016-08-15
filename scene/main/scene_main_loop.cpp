@@ -545,6 +545,8 @@ bool SceneTree::idle(float p_time){
 
 	idle_process_time=p_time;
 
+	_network_poll();
+
 	emit_signal("idle_frame");
 
 	_flush_transform_notifications();
@@ -1655,6 +1657,322 @@ Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec) {
 	return stt;
 }
 
+void SceneTree::_network_peer_connected(const StringName& p_id) {
+
+
+	connected_peers.insert(p_id);
+	path_get_cache.insert(p_id,PathGetCache());
+	emit_signal("network_peer_connected",p_id);
+}
+
+void SceneTree::_network_peer_disconnected(const StringName& p_id) {
+
+	connected_peers.erase(p_id);
+	path_get_cache.erase(p_id); //I no longer need your cache, sorry
+	emit_signal("network_peer_disconnected",p_id);
+}
+
+void SceneTree::set_network_peer(const Ref<NetworkedMultiplayerPeer>& p_network_peer) {
+	if (network_peer.is_valid()) {
+		network_peer->disconnect("peer_connected",this,"_network_peer_connected");
+		network_peer->disconnect("peer_disconnected",this,"_network_peer_disconnected");
+		connected_peers.clear();
+		path_get_cache.clear();
+		path_send_cache.clear();
+		last_send_cache_id=1;
+	}
+
+	ERR_EXPLAIN("Supplied NetworkedNetworkPeer must be connecting or connected.");
+	ERR_FAIL_COND(p_network_peer.is_valid() && p_network_peer->get_connection_status()==NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED);
+
+	network_peer=p_network_peer;
+
+	if (network_peer.is_valid()) {
+		network_peer->connect("peer_connected",this,"_network_peer_connected");
+		network_peer->connect("peer_disconnected",this,"_network_peer_disconnected");
+	}
+}
+
+bool SceneTree::is_network_server() const {
+
+	ERR_FAIL_COND_V(!network_peer.is_valid(),false);
+	return network_peer->is_server();
+
+}
+
+void SceneTree::_remote_call(Node* p_from, bool p_reliable, bool p_set, const StringName& p_name, const Variant** p_arg, int p_argcount) {
+
+	if (network_peer.is_null()) {
+		ERR_EXPLAIN("Attempt to remote call/set when networking is not active in SceneTree.");
+		ERR_FAIL();
+	}
+
+	if (network_peer->get_connection_status()==NetworkedMultiplayerPeer::CONNECTION_CONNECTING) {
+		ERR_EXPLAIN("Attempt to remote call/set when networking is not connected yet in SceneTree.");
+		ERR_FAIL();
+	}
+
+	if (network_peer->get_connection_status()==NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED) {
+		ERR_EXPLAIN("Attempt to remote call/set when networking is disconnected.");
+		ERR_FAIL();
+	}
+
+	NodePath from_path = p_from->get_path();
+	ERR_FAIL_COND(from_path.is_empty());
+
+	//create base packet
+	Array message;
+
+	message.resize(3+p_argcount); //alloc size for args
+
+	//set message type
+	if (p_set) {
+		message[0]=NETWORK_COMMAND_REMOTE_SET;
+	} else {
+		message[0]=NETWORK_COMMAND_REMOTE_CALL;
+	}
+
+	//set message name
+	message[2]=p_name;
+
+	//set message args
+	for(int i=0;i<p_argcount;i++) {
+		message[3+i]=*p_arg[i];
+	}
+
+	//see if the path is cached
+	PathSentCache *psc = path_send_cache.getptr(from_path);
+	if (!psc) {
+		//path is not cached, create
+		path_send_cache[from_path]=PathSentCache();
+		psc = path_send_cache.getptr(from_path);
+		psc->id=last_send_cache_id++;
+
+	}
+
+	//see if all peers have cached path (is so, call can be fast)
+	bool has_all_peers=true;
+
+	List<StringName> peers_to_add; //if one is missing, take note to add it
+
+	for (Set<StringName>::Element *E=connected_peers.front();E;E=E->next()) {
+
+		Map<StringName,bool>::Element *F = psc->confirmed_peers.find(E->get());
+
+		if (!F || F->get()==false) {
+			//path was not cached, or was cached but is unconfirmed
+			if (!F) {
+				//not cached at all, take note
+				peers_to_add.push_back(E->get());
+			}
+
+			has_all_peers=false;
+			break;
+		}
+	}
+
+	//those that need to be added, send a message for this
+
+	for (List<StringName>::Element *E=peers_to_add.front();E;E=E->next()) {
+
+		Array add_path_message;
+		add_path_message.resize(3);
+		add_path_message[0]=NETWORK_COMMAND_SIMPLIFY_PATH;
+		add_path_message[1]=from_path;
+		add_path_message[2]=psc->id;
+
+		network_peer->set_target_peer(E->get()); //to all of you
+		network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_ORDERED);
+		network_peer->put_var(add_path_message); //a message with love
+
+		psc->confirmed_peers.insert(E->get(),false); //insert into confirmed, but as false since it was not confirmed
+	}
+
+	//take chance and set transfer mode, since all send methods will use it
+	network_peer->set_transfer_mode(p_reliable ? NetworkedMultiplayerPeer::TRANSFER_MODE_ORDERED : NetworkedMultiplayerPeer::TRANSFER_MODE_UNRELIABLE);
+
+	if (has_all_peers) {
+
+		//they all have verified paths, so send fast
+		message[1]=psc->id;
+
+		network_peer->set_target_peer(StringName()); //to all of you
+		network_peer->put_var(message); //a message with love
+	} else {
+		//not all verified path, so send one by one
+		for (Set<StringName>::Element *E=connected_peers.front();E;E=E->next()) {
+
+			Map<StringName,bool>::Element *F = psc->confirmed_peers.find(E->get());
+			ERR_CONTINUE(!F);//should never happen
+
+			network_peer->set_target_peer(E->get()); //to this one specifically
+
+			if (F->get()==true) {
+				//this one confirmed path, so use id
+				message[1]=psc->id;
+			} else {
+				//this one did not confirm path yet, so use entire path (sorry!)
+				message[1]=from_path;
+			}
+
+			network_peer->put_var(message);
+		}
+	}
+}
+
+
+void SceneTree::_network_process_packet(const StringName& p_from,const Array& p_packet) {
+
+	ERR_FAIL_COND(p_packet.empty());
+
+	int packet_type = p_packet[0];
+
+	switch(packet_type) {
+
+		case NETWORK_COMMAND_REMOTE_CALL:
+		case NETWORK_COMMAND_REMOTE_SET: {
+
+			ERR_FAIL_COND(p_packet.size()<3);
+			Variant target = p_packet[1];
+			Node* node=NULL;
+
+			if (target.get_type()==Variant::NODE_PATH) {
+				NodePath np = target;
+				node = get_root()->get_node(np);
+				if (node==NULL) {
+					ERR_EXPLAIN("Failed to get path from RPC: "+String(np));
+					ERR_FAIL_COND(node==NULL);
+				}
+			} else if (target.get_type()==Variant::INT) {
+
+				int id = target;
+
+				Map<StringName,PathGetCache>::Element *E=path_get_cache.find(p_from);
+				ERR_FAIL_COND(!E);
+
+				Map<int,PathGetCache::NodeInfo>::Element *F=E->get().nodes.find(id);
+				ERR_FAIL_COND(!F);
+
+				PathGetCache::NodeInfo *ni = &F->get();
+				//do proper caching later
+
+				node = get_root()->get_node(ni->path);
+				if (node==NULL) {
+					ERR_EXPLAIN("Failed to get cached path from RPC: "+String(ni->path));
+					ERR_FAIL_COND(node==NULL);
+				}
+
+
+			} else {
+				ERR_FAIL();
+			}
+
+			StringName name = p_packet[2];
+
+			if (packet_type==NETWORK_COMMAND_REMOTE_CALL) {
+
+				int argc = p_packet.size()-3;
+				Vector<Variant> args;
+				Vector<const Variant*> argp;
+				args.resize(argc);
+				argp.resize(argc);
+
+				for(int i=0;i<argc;i++) {
+					args[i]=p_packet[3+i];
+					argp[i]=&args[i];
+				}
+
+				Variant::CallError ce;
+
+				node->call(name,argp.ptr(),argc,ce);
+				if (ce.error!=Variant::CallError::CALL_OK) {
+					String error = Variant::get_call_error_text(node,name,argp.ptr(),argc,ce);
+					ERR_PRINTS(error);
+				}
+
+			} else {
+
+
+				ERR_FAIL_COND(p_packet.size()!=4);
+				Variant value = p_packet[3];
+				bool valid;
+
+				node->set(name,value,&valid);
+				if (!valid) {
+					String error = "Error setting remote property '"+String(name)+"', not found in object of type "+node->get_type();
+					ERR_PRINTS(error);
+				}
+			}
+
+		} break;
+		case NETWORK_COMMAND_SIMPLIFY_PATH: {
+
+			ERR_FAIL_COND(p_packet.size()!=3);
+			NodePath path = p_packet[1];
+			int id = p_packet[2];
+
+			if (!path_get_cache.has(p_from)) {
+				path_get_cache[p_from]=PathGetCache();
+			}
+
+			PathGetCache::NodeInfo ni;
+			ni.path=path;
+			ni.instance=0;
+
+			path_get_cache[p_from].nodes[id]=ni;
+
+			network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_ORDERED);
+			network_peer->set_target_peer(p_from);
+
+			Array message;
+			message.resize(2);
+			message[0]=NETWORK_COMMAND_CONFIRM_PATH;
+			message[1]=path;
+
+			network_peer->put_var(message);
+		} break;
+		case NETWORK_COMMAND_CONFIRM_PATH: {
+			ERR_FAIL_COND(p_packet.size()!=2);
+			NodePath path = p_packet[1];
+
+			PathSentCache *psc = path_send_cache.getptr(path);
+			ERR_FAIL_COND(!psc);
+
+			Map<StringName,bool>::Element *E=psc->confirmed_peers.find(p_from);
+			ERR_FAIL_COND(!E);
+			E->get()=true;
+		} break;
+	}
+
+}
+
+void SceneTree::_network_poll() {
+
+	if (!network_peer.is_valid())
+		return;
+
+	network_peer->poll();
+
+	while(network_peer->get_available_packet_count()) {
+
+		StringName sender = network_peer->get_packet_peer();
+		Variant packet;
+		Error err = network_peer->get_var(packet);
+		if (err!=OK) {
+			ERR_PRINT("Error getting packet!");
+		}
+		if (packet.get_type()!=Variant::ARRAY) {
+
+			ERR_PRINT("Error getting packet! (not an array)");
+		}
+
+		_network_process_packet(sender,packet);
+	}
+
+
+}
+
+
 void SceneTree::_bind_methods() {
 
 
@@ -1722,6 +2040,12 @@ void SceneTree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_change_scene"),&SceneTree::_change_scene);
 
+
+	ObjectTypeDB::bind_method(_MD("set_network_peer","peer:NetworkedMultiplayerPeer"),&SceneTree::set_network_peer);
+	ObjectTypeDB::bind_method(_MD("is_network_server","is_network_server"),&SceneTree::is_network_server);
+	ObjectTypeDB::bind_method(_MD("_network_peer_connected"),&SceneTree::_network_peer_connected);
+	ObjectTypeDB::bind_method(_MD("_network_peer_disconnected"),&SceneTree::_network_peer_disconnected);
+
 	ADD_SIGNAL( MethodInfo("tree_changed") );
 	ADD_SIGNAL( MethodInfo("node_removed",PropertyInfo( Variant::OBJECT, "node") ) );
 	ADD_SIGNAL( MethodInfo("screen_resized") );
@@ -1731,6 +2055,8 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("fixed_frame"));
 
 	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
+	ADD_SIGNAL( MethodInfo("network_peer_connected",PropertyInfo(Variant::STRING,"id")));
+	ADD_SIGNAL( MethodInfo("network_peer_disconnected",PropertyInfo(Variant::STRING,"id")));
 
 	BIND_CONSTANT( GROUP_CALL_DEFAULT );
 	BIND_CONSTANT( GROUP_CALL_REVERSE );
@@ -1830,6 +2156,8 @@ SceneTree::SceneTree() {
 	}
 
 	live_edit_root=NodePath("/root");
+
+	last_send_cache_id=1;
 
 #endif
 
