@@ -103,7 +103,7 @@ MaterialEditor::MaterialEditor() {
 	world.instance();
 	viewport->set_world(world); //use own world
 	add_child(viewport);
-	viewport->set_process_input(false);
+	viewport->set_disable_input(true);
 
 	camera = memnew( Camera );
 	camera->set_transform(Transform(Matrix3(),Vector3(0,0,3)));
