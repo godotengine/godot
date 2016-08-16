@@ -1,6 +1,6 @@
 Import('env')
 
-if env_base["platform"] == 'windows':
+if env["platform"] == 'windows':
 	env.Append(CPPFLAGS = ['-D_WIN32'])
 
 env.Append(CPPPATH=['#modules/enet'])
