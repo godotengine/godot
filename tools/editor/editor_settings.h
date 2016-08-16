@@ -104,6 +104,8 @@ private:
 
 	Map<String,Ref<ShortCut> > shortcuts;
 
+	void _add_property_info_bind(const Dictionary& p_info);
+
 protected:
 
 	static void _bind_methods();

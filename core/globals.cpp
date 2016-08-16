@@ -1375,6 +1375,25 @@ Vector<String> Globals::get_optimizer_presets() const {
 
 }
 
+void Globals::_add_property_info_bind(const Dictionary& p_info) {
+
+	ERR_FAIL_COND(!p_info.has("name"));
+	ERR_FAIL_COND(!p_info.has("type"));
+
+	PropertyInfo pinfo;
+	pinfo.name = p_info["name"];
+	ERR_FAIL_COND(!props.has(pinfo.name));
+	pinfo.type = Variant::Type(p_info["type"].operator int());
+	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
+
+	if (p_info.has("hint"))
+		pinfo.hint = PropertyHint(p_info["hint"].operator int());
+	if (p_info.has("hint_string"))
+		pinfo.hint_string = p_info["hint_string"];
+
+	set_custom_property_info(pinfo.name, pinfo);
+}
+
 void Globals::set_custom_property_info(const String& p_prop,const PropertyInfo& p_info) {
 
 	ERR_FAIL_COND(!props.has(p_prop));
@@ -1399,6 +1418,7 @@ void Globals::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_order","name"),&Globals::get_order);
 	ObjectTypeDB::bind_method(_MD("set_persisting","name","enable"),&Globals::set_persisting);
 	ObjectTypeDB::bind_method(_MD("is_persisting","name"),&Globals::is_persisting);
+	ObjectTypeDB::bind_method(_MD("add_property_info", "hint"),&Globals::_add_property_info_bind);
 	ObjectTypeDB::bind_method(_MD("clear","name"),&Globals::clear);
 	ObjectTypeDB::bind_method(_MD("localize_path","path"),&Globals::localize_path);
 	ObjectTypeDB::bind_method(_MD("globalize_path","path"),&Globals::globalize_path);

@@ -731,6 +731,25 @@ void EditorSettings::notify_changes() {
 
 }
 
+void EditorSettings::_add_property_info_bind(const Dictionary& p_info) {
+
+	ERR_FAIL_COND(!p_info.has("name"));
+	ERR_FAIL_COND(!p_info.has("type"));
+
+	PropertyInfo pinfo;
+	pinfo.name = p_info["name"];
+	ERR_FAIL_COND(!props.has(pinfo.name));
+	pinfo.type = Variant::Type(p_info["type"].operator int());
+	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
+
+	if (p_info.has("hint"))
+		pinfo.hint = PropertyHint(p_info["hint"].operator int());
+	if (p_info.has("hint_string"))
+		pinfo.hint_string = p_info["hint_string"];
+
+	add_property_hint(pinfo);
+}
+
 void EditorSettings::add_property_hint(const PropertyInfo& p_hint) {
 
 	_THREAD_SAFE_METHOD_
@@ -1000,6 +1019,8 @@ void EditorSettings::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("erase","property"),&EditorSettings::erase);
 	ObjectTypeDB::bind_method(_MD("get_settings_path"),&EditorSettings::get_settings_path);
 	ObjectTypeDB::bind_method(_MD("get_project_settings_path"),&EditorSettings::get_project_settings_path);
+
+	ObjectTypeDB::bind_method(_MD("add_property_info", "info"),&EditorSettings::_add_property_info_bind);
 
 	ObjectTypeDB::bind_method(_MD("set_favorite_dirs","dirs"),&EditorSettings::set_favorite_dirs);
 	ObjectTypeDB::bind_method(_MD("get_favorite_dirs"),&EditorSettings::get_favorite_dirs);

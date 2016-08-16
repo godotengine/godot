@@ -96,6 +96,8 @@ protected:
 
 	bool _load_resource_pack(const String& p_pack);
 
+	void _add_property_info_bind(const Dictionary& p_info);
+
 protected:
 
 	static void _bind_methods();
