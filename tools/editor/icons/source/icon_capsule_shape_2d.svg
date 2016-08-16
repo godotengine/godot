@@ -40,8 +40,8 @@
      showgrid="true"
      inkscape:current-layer="layer1"
      inkscape:document-units="px"
-     inkscape:cy="10.812487"
-     inkscape:cx="8.3752367"
+     inkscape:cy="10.749987"
+     inkscape:cx="2.8752365"
      inkscape:zoom="31.999999"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
@@ -73,7 +73,7 @@
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
     <path
-       style="opacity:1;fill:#a5b7f4;fill-opacity:0.98823529;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#68b6ff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="M 8 1 A 4 4 0 0 0 4 5 L 4 11 A 4 4 0 0 0 8 15 A 4 4 0 0 0 12 11 L 12 5 A 4 4 0 0 0 8 1 z M 8 3 A 2.0000174 2.0000174 0 0 1 10 5 L 10 11 A 2.0000174 2.0000174 0 0 1 8 13 A 2.0000174 2.0000174 0 0 1 6 11 L 6 5 A 2.0000174 2.0000174 0 0 1 8 3 z "
        transform="translate(0,1036.3622)"
        id="path4135" />
