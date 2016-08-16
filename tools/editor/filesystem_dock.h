@@ -54,6 +54,12 @@ class EditorNode;
 class FileSystemDock : public VBoxContainer {
 	OBJ_TYPE( FileSystemDock, VBoxContainer );
 
+public:
+	enum DisplayMode {
+		DISPLAY_THUMBNAILS,
+		DISPLAY_LIST
+	};
+private:
 	enum FileMenu {
 		FILE_OPEN,
 		FILE_INSTANCE,
@@ -79,7 +85,7 @@ class FileSystemDock : public VBoxContainer {
 	Button *button_reload;
 	Button *button_favorite;
 	Button *button_back;
-	Button *display_mode;
+	Button *button_display_mode;
 	Button *button_hist_next;
 	Button *button_hist_prev;
 	LineEdit *current_path;
@@ -88,6 +94,7 @@ class FileSystemDock : public VBoxContainer {
 	HBoxContainer *path_hb;
 
 	bool split_mode;
+	DisplayMode display_mode;
 
 	PopupMenu *file_options;
 
@@ -182,7 +189,7 @@ public:
 
 	void fix_dependencies(const String& p_for_file);
 
-	void set_use_thumbnails(bool p_use);
+	void set_display_mode(int p_mode);
 
 	FileSystemDock(EditorNode *p_editor);
 	~FileSystemDock();
