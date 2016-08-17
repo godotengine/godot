@@ -648,7 +648,7 @@ void CanvasItemEditor::_key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE 
 	if (editor_selection->get_selected_node_list().empty())
 		return;
 
-	undo_redo->create_action(TTR("Move Action"),true);
+	undo_redo->create_action(TTR("Move Action"),UndoRedo::MERGE_ENDS);
 
 	List<Node*> &selection = editor_selection->get_selected_node_list();
 

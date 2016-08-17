@@ -3564,7 +3564,7 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 	} else {
 
 
-		undo_redo->create_action(TTR("Set")+" "+p_name,true);
+		undo_redo->create_action(TTR("Set")+" "+p_name,UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(obj,p_name,p_value);
 		undo_redo->add_undo_property(obj,p_name,obj->get(p_name));
 		undo_redo->add_do_method(this,"_changed_callback",obj,p_name);
