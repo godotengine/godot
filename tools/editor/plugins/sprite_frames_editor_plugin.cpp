@@ -524,7 +524,7 @@ void SpriteFramesEditor::_animation_fps_changed(double p_value) {
 	if (updating)
 		return;
 
-	undo_redo->create_action(TTR("Change Animation FPS"),true);
+	undo_redo->create_action(TTR("Change Animation FPS"),UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_method(frames,"set_animation_speed",edited_anim,p_value);
 	undo_redo->add_undo_method(frames,"set_animation_speed",edited_anim,frames->get_animation_speed(edited_anim));
 	undo_redo->add_do_method(this,"_update_library",true);
