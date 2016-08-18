@@ -17670,8 +17670,13 @@
 </class>
 <class name="ItemList" inherits="Control" category="Core">
 	<brief_description>
+		Control that provides a list of selectable items (and/or icons) in a single column, or optionally in multiple columns.
 	</brief_description>
 	<description>
+		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons,
+		or both text and icon.  Tooltips are supported and may be different for every item in the list.  Selectable items in the list
+		may be selected or deselected and multiple selection may be enabled.  Selection with right mouse button may also be enabled
+		to allow use of popup context menus.  Items may also be 'activated' with a double click (or Enter key).
 	</description>
 	<methods>
 		<method name="add_icon_item">
@@ -17680,6 +17685,7 @@
 			<argument index="1" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
+			Adds an item to the item list with no text, only an icon.
 			</description>
 		</method>
 		<method name="add_item">
@@ -17690,26 +17696,32 @@
 			<argument index="2" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
+				Adds an item to the item list with specified text.  Specify an icon of null for a list item with no icon.
+				If selectable is true the list item will be selectable.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
+				Remove all items from the list.
 			</description>
 		</method>
 		<method name="ensure_current_is_visible">
 			<description>
+				Ensure selection is visible, adjusting the scroll position as necessary.
 			</description>
 		</method>
 		<method name="get_allow_rmb_select" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Return whether or not items may be selected via right mouse clicking.
 			</description>
 		</method>
 		<method name="get_fixed_column_width" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				If column size has been fixed to a value, return that value.
 			</description>
 		</method>
 		<method name="get_fixed_icon_size" qualifiers="const">
@@ -17738,12 +17750,14 @@
 			<argument index="1" name="exact" type="bool" default="false">
 			</argument>
 			<description>
+				Given a position within the control return the item (if any) at that point.
 			</description>
 		</method>
 		<method name="get_item_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Return count of items currently in the item list.
 			</description>
 		</method>
 		<method name="get_item_custom_bg_color" qualifiers="const">
@@ -17782,6 +17796,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return the text for specified item index.
 			</description>
 		</method>
 		<method name="get_item_tooltip" qualifiers="const">
@@ -17790,18 +17805,21 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Return tooltip hint for specified item index.
 			</description>
 		</method>
 		<method name="get_max_columns" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Return total number of columns in use by the list.
 			</description>
 		</method>
 		<method name="get_max_text_lines" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Return total number of lines currently in use by the list.
 			</description>
 		</method>
 		<method name="get_select_mode" qualifiers="const">
@@ -17814,7 +17832,7 @@
 			<return type="IntArray">
 			</return>
 			<description>
-				Returns a list of selected indexes.
+				Returns the list of selected indexes.
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
@@ -17823,6 +17841,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns whether or not the item at the specified index is disabled
 			</description>
 		</method>
 		<method name="is_item_selectable" qualifiers="const">
@@ -17831,12 +17850,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns whether or not the item at the specified index is selectable.
 			</description>
 		</method>
 		<method name="is_same_column_width" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns whether or not all columns of the list are of the same size.
 			</description>
 		</method>
 		<method name="is_selected" qualifiers="const">
@@ -17845,12 +17866,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns whether or not item at the specified index is currently selected.
 			</description>
 		</method>
 		<method name="remove_item">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Remove item at specified index from the list.
 			</description>
 		</method>
 		<method name="select">
@@ -17859,18 +17882,22 @@
 			<argument index="1" name="single" type="bool" default="true">
 			</argument>
 			<description>
+				Select the item at the specified index.
+				Note:  This method does not trigger the item selection signal.
 			</description>
 		</method>
 		<method name="set_allow_rmb_select">
 			<argument index="0" name="allow" type="bool">
 			</argument>
 			<description>
+				Allow (or disallow) selection of (selectable) items in the list using right mouse button.
 			</description>
 		</method>
 		<method name="set_fixed_column_width">
 			<argument index="0" name="width" type="int">
 			</argument>
 			<description>
+				Set the size (width) all columns in the list are to use.
 			</description>
 		</method>
 		<method name="set_fixed_icon_size">
@@ -17905,6 +17932,8 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
+				Disable (or enable) item at specified index.
+				Disabled items are not be selectable and do not fire activation (Enter or double-click) signals.
 			</description>
 		</method>
 		<method name="set_item_icon">
@@ -17913,6 +17942,7 @@
 			<argument index="1" name="icon" type="Texture">
 			</argument>
 			<description>
+				Set (or replace) icon of the item at the specified index.
 			</description>
 		</method>
 		<method name="set_item_icon_region">
@@ -17929,6 +17959,7 @@
 			<argument index="1" name="metadata" type="Variant">
 			</argument>
 			<description>
+				Sets a value (of any type) to be stored with the item at the specified index.
 			</description>
 		</method>
 		<method name="set_item_selectable">
@@ -17937,6 +17968,7 @@
 			<argument index="1" name="selectable" type="bool">
 			</argument>
 			<description>
+				Allow or disallow selection of the item at the specified index.
 			</description>
 		</method>
 		<method name="set_item_text">
@@ -17945,6 +17977,7 @@
 			<argument index="1" name="text" type="String">
 			</argument>
 			<description>
+				Sets text of item at specified index.
 			</description>
 		</method>
 		<method name="set_item_tooltip">
@@ -17953,24 +17986,28 @@
 			<argument index="1" name="tooltip" type="String">
 			</argument>
 			<description>
+				Sets tooltip hint for item at specified index.
 			</description>
 		</method>
 		<method name="set_max_columns">
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+				Set maximum number of columns to use for the list.
 			</description>
 		</method>
 		<method name="set_max_text_lines">
 			<argument index="0" name="lines" type="int">
 			</argument>
 			<description>
+				Set maximum number of lines to use for the list.
 			</description>
 		</method>
 		<method name="set_same_column_width">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Sets a fixed size (width) to use for all columns of the list.
 			</description>
 		</method>
 		<method name="set_select_mode">
@@ -17981,12 +18018,14 @@
 		</method>
 		<method name="sort_items_by_text">
 			<description>
+				Sorts items in the list by their text.
 			</description>
 		</method>
 		<method name="unselect">
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Ensure item at specified index is not selected.
 			</description>
 		</method>
 	</methods>
@@ -17995,6 +18034,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+				Fired when specified list item is activated via double click or Enter.
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
@@ -18003,12 +18043,16 @@
 			<argument index="1" name="atpos" type="Vector2">
 			</argument>
 			<description>
+				Fired when specified list item has been selected via right mouse clicking.
+				The click position is also provided to allow appropriate popup of context menus
+				at the correct location.
 			</description>
 		</signal>
 		<signal name="item_selected">
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+				Fired when specified item has been selected.
 			</description>
 		</signal>
 		<signal name="multi_selected">
@@ -18017,6 +18061,7 @@
 			<argument index="1" name="selected" type="bool">
 			</argument>
 			<description>
+				Fired when a multiple selection is altered on a list allowing mutliple selection.
 			</description>
 		</signal>
 	</signals>
