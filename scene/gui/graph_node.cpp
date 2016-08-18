@@ -636,7 +636,7 @@ void GraphNode::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_title"),&GraphNode::get_title);
 	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphNode::_input_event);
 
-	ObjectTypeDB::bind_method(_MD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right","custom_left","custom_right"),&GraphNode::set_slot,DEFVAL(Ref<Texture>()),DEFVAL(Ref<Texture>()));
+	ObjectTypeDB::bind_method(_MD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right","custom_left","custom_right"),&GraphNode::set_slot,DEFVAL(Variant()),DEFVAL(Variant()));
 	ObjectTypeDB::bind_method(_MD("clear_slot","idx"),&GraphNode::clear_slot);
 	ObjectTypeDB::bind_method(_MD("clear_all_slots","idx"),&GraphNode::clear_all_slots);
 	ObjectTypeDB::bind_method(_MD("is_slot_enabled_left","idx"),&GraphNode::is_slot_enabled_left);
