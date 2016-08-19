@@ -285,8 +285,8 @@ void NetworkedMultiplayerENet::poll(){
 							incoming_packets.push_back(packet);
 						} else {
 							//to someone else, specifically
-							ERR_CONTINUE(!peer_map.has(source));
-							enet_peer_send(peer_map[source],0,packet.packet);
+							ERR_CONTINUE(!peer_map.has(target));
+							enet_peer_send(peer_map[target],0,packet.packet);
 						}
 					} else {
 

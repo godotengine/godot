@@ -1760,6 +1760,17 @@ void SceneTree::_rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const St
 		ERR_FAIL();
 	}
 
+	if (p_to!=0 && !connected_peers.has(ABS(p_to))) {
+		if (p_to==get_network_unique_id()) {
+			ERR_EXPLAIN("Attempt to remote call/set yourself! unique ID: "+itos(get_network_unique_id()));
+		} else {
+			ERR_EXPLAIN("Attempt to remote call unexisting ID: "+itos(p_to));
+
+		}
+
+		ERR_FAIL();
+	}
+
 	NodePath from_path = p_from->get_path();
 	ERR_FAIL_COND(from_path.is_empty());
 
@@ -1816,7 +1827,6 @@ void SceneTree::_rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const St
 			}
 
 			has_all_peers=false;
-			break;
 		}
 	}
 
@@ -1990,10 +2000,10 @@ void SceneTree::_network_process_packet(int p_from, const Array& p_packet) {
 			message.resize(2);
 			message[0]=NETWORK_COMMAND_CONFIRM_PATH;
 			message[1]=path;
-
 			network_peer->put_var(message);
 		} break;
 		case NETWORK_COMMAND_CONFIRM_PATH: {
+
 			ERR_FAIL_COND(p_packet.size()!=2);
 			NodePath path = p_packet[1];
 
