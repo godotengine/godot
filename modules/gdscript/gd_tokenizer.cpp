@@ -100,6 +100,10 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "yield",
 "signal",
 "breakpoint",
+"rpc",
+"sync",
+"master",
+"slave",
 "'['",
 "']'",
 "'{'",
@@ -865,6 +869,10 @@ void GDTokenizerText::_advance() {
 								{TK_PR_YIELD,"yield"},
 								{TK_PR_SIGNAL,"signal"},
 								{TK_PR_BREAKPOINT,"breakpoint"},
+								{TK_PR_REMOTE,"remote"},
+								{TK_PR_MASTER,"master"},
+								{TK_PR_SLAVE,"slave"},
+								{TK_PR_SYNC,"sync"},
 								{TK_PR_CONST,"const"},
 								//controlflow
 								{TK_CF_IF,"if"},
@@ -1047,7 +1055,7 @@ void GDTokenizerText::advance(int p_amount) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 10
+#define BYTECODE_VERSION 11
 
 Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 

@@ -992,7 +992,7 @@ bool VisualScript::get_property_default_value(const StringName& p_property,Varia
 	r_value=variables[ script_variable_remap[p_property] ].default_value;
 	return true;
 }
-void VisualScript::get_method_list(List<MethodInfo> *p_list) const {
+void VisualScript::get_script_method_list(List<MethodInfo> *p_list) const {
 
 	for (Map<StringName,Function>::Element *E=functions.front();E;E=E->next()) {
 
@@ -1767,7 +1767,7 @@ Variant VisualScriptInstance::_call_internal(const StringName& p_method, void* p
 }
 
 
-Variant VisualScriptInstance::call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error){
+Variant VisualScriptInstance::call(const StringName& p_method, const Variant** p_args, int p_argcount, Variant::CallError &r_error){
 
 	r_error.error=Variant::CallError::CALL_OK; //ok by default
 
@@ -1869,6 +1869,15 @@ void VisualScriptInstance::notification(int p_notification){
 Ref<Script> VisualScriptInstance::get_script() const{
 
 	return script;
+}
+
+ScriptInstance::RPCMode VisualScriptInstance::get_rpc_mode(const StringName& p_method) const {
+
+	return RPC_MODE_DISABLED;
+}
+ScriptInstance::RPCMode VisualScriptInstance::get_rset_mode(const StringName& p_variable) const {
+
+	return RPC_MODE_DISABLED;
 }
 
 

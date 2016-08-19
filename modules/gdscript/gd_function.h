@@ -7,6 +7,7 @@
 #include "variant.h"
 #include "string_db.h"
 #include "reference.h"
+#include "script_language.h"
 
 class GDInstance;
 class GDScript;
@@ -64,6 +65,14 @@ public:
 		ADDR_TYPE_NIL=8
 	};
 
+	enum RPCMode {
+		RPC_DISABLED,
+		RPC_ENABLED,
+		RPC_SYNC,
+		RPC_SYNC_MASTER,
+		RPC_SYNC_SLAVE
+	};
+
     struct StackDebug {
 
 	int line;
@@ -91,6 +100,8 @@ friend class GDCompiler;
 	int _call_size;
 	int _initial_line;
 	bool _static;
+	ScriptInstance::RPCMode rpc_mode;
+
 	GDScript *_script;
 
 	StringName name;
@@ -185,6 +196,7 @@ public:
 
 	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL);
 
+	_FORCE_INLINE_ ScriptInstance::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDFunction();
 	~GDFunction();
 };

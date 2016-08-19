@@ -2075,6 +2075,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 		if (error_set)
 			return;
 
+
 		if (indent_level>tab_level.back()->get()) {
 			p_class->end_line=tokenizer->get_token_line();
 			return; //go back a level
@@ -2370,6 +2371,9 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				function->default_values=default_values;
 				function->_static=_static;
 				function->line=fnline;
+
+				function->rpc_mode=rpc_mode;
+				rpc_mode=ScriptInstance::RPC_MODE_DISABLED;
 
 
 				if (_static)
@@ -2842,25 +2846,101 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 				}
 
-				if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR) {
+				if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR && tokenizer->get_token()!=GDTokenizer::TK_PR_ONREADY && tokenizer->get_token()!=GDTokenizer::TK_PR_REMOTE && tokenizer->get_token()!=GDTokenizer::TK_PR_MASTER && tokenizer->get_token()!=GDTokenizer::TK_PR_SLAVE && tokenizer->get_token()!=GDTokenizer::TK_PR_SYNC) {
 
 					current_export=PropertyInfo();
+					_set_error("Expected 'var', 'onready', 'remote', 'master', 'slave' or 'sync'.");
+					return;
+				}
+
+				continue;
+			} break;
+			case GDTokenizer::TK_PR_ONREADY: {
+
+				//may be fallthrough from export, ignore if so
+				tokenizer->advance();
+				if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR) {
 					_set_error("Expected 'var'.");
 					return;
 				}
 
-			}; //fallthrough to var
-			case GDTokenizer::TK_PR_ONREADY: {
+				continue;
+			} break;
+			case GDTokenizer::TK_PR_REMOTE: {
 
-				if (token==GDTokenizer::TK_PR_ONREADY) {
-					//may be fallthrough from export, ignore if so
-					tokenizer->advance();
+				//may be fallthrough from export, ignore if so
+				tokenizer->advance();
+				if (current_export.type)  {
 					if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR) {
 						_set_error("Expected 'var'.");
 						return;
 					}
+
+				} else {
+					if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR && tokenizer->get_token()!=GDTokenizer::TK_PR_FUNCTION) {
+						_set_error("Expected 'var' or 'func'.");
+						return;
+					}
 				}
-			}; //fallthrough to var
+				rpc_mode=ScriptInstance::RPC_MODE_REMOTE;
+
+				continue;
+			} break;
+			case GDTokenizer::TK_PR_MASTER: {
+
+				//may be fallthrough from export, ignore if so
+				tokenizer->advance();
+				if (current_export.type)  {
+					if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR) {
+						_set_error("Expected 'var'.");
+						return;
+					}
+
+				} else {
+					if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR && tokenizer->get_token()!=GDTokenizer::TK_PR_FUNCTION) {
+						_set_error("Expected 'var' or 'func'.");
+						return;
+					}
+				}
+
+				rpc_mode=ScriptInstance::RPC_MODE_MASTER;
+				continue;
+			} break;
+			case GDTokenizer::TK_PR_SLAVE: {
+
+				//may be fallthrough from export, ignore if so
+				tokenizer->advance();
+				if (current_export.type)  {
+					if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR) {
+						_set_error("Expected 'var'.");
+						return;
+					}
+
+				} else {
+					if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR && tokenizer->get_token()!=GDTokenizer::TK_PR_FUNCTION) {
+						_set_error("Expected 'var' or 'func'.");
+						return;
+					}
+				}
+
+				rpc_mode=ScriptInstance::RPC_MODE_SLAVE;
+				continue;
+			} break;
+			case GDTokenizer::TK_PR_SYNC: {
+
+				//may be fallthrough from export, ignore if so
+				tokenizer->advance();
+				if (tokenizer->get_token()!=GDTokenizer::TK_PR_VAR && tokenizer->get_token()!=GDTokenizer::TK_PR_FUNCTION) {
+					if (current_export.type)
+						_set_error("Expected 'var'.");
+					else
+						_set_error("Expected 'var' or 'func'.");
+					return;
+				}
+
+				rpc_mode=ScriptInstance::RPC_MODE_SYNC;
+				continue;
+			} break;
 			case GDTokenizer::TK_PR_VAR: {
 				//variale declaration and (eventual) initialization
 
@@ -2884,7 +2964,11 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				member.expression=NULL;
 				member._export.name=member.identifier;
 				member.line=tokenizer->get_token_line();
+				member.rpc_mode=rpc_mode;
+
 				tokenizer->advance();
+
+				rpc_mode=ScriptInstance::RPC_MODE_DISABLED;
 
 				if (tokenizer->get_token()==GDTokenizer::TK_OP_ASSIGN) {
 
@@ -3228,6 +3312,7 @@ void GDParser::clear() {
 	current_class=NULL;
 
 	completion_found=false;
+	rpc_mode=ScriptInstance::RPC_MODE_DISABLED;
 
 	current_function=NULL;
 

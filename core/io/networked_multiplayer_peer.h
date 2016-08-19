@@ -11,6 +11,10 @@ protected:
 	static void _bind_methods();
 public:
 
+	enum {
+		TARGET_PEER_BROADCAST=0,
+		TARGET_PEER_SERVER=1
+	};
 	enum TransferMode {
 		TRANSFER_MODE_UNRELIABLE,
 		TRANSFER_MODE_RELIABLE,
@@ -25,16 +29,19 @@ public:
 
 
 	virtual void set_transfer_mode(TransferMode p_mode)=0;
-	virtual void set_target_peer(const StringName& p_peer_id)=0;
-	virtual void set_channel(int p_channel)=0;
+	virtual void set_target_peer(int p_peer_id)=0;
 
-
-	virtual StringName get_packet_peer() const=0;
-	virtual int get_packet_channel() const=0;
+	virtual int get_packet_peer() const=0;
 
 	virtual bool is_server() const=0;
 
 	virtual void poll()=0;
+
+	virtual int get_unique_id() const=0;
+
+	virtual void set_refuse_new_connections(bool p_enable)=0;
+	virtual bool is_refusing_new_connections() const=0;
+
 
 	virtual ConnectionStatus get_connection_status() const=0;
 

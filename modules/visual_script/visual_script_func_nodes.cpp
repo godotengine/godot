@@ -1951,7 +1951,7 @@ PropertyInfo VisualScriptScriptCall::get_input_value_port_info(int p_idx) const{
 			return PropertyInfo();
 
 		List<MethodInfo> functions;
-		script->get_method_list(&functions);
+		script->get_script_method_list(&functions);
 		for (List<MethodInfo>::Element *E=functions.front();E;E=E->next()) {
 			if (E->get().name==function) {
 				if (p_idx<0 || p_idx>=E->get().arguments.size())
@@ -2118,7 +2118,7 @@ void VisualScriptScriptCall::_validate_property(PropertyInfo& property) const {
 			Ref<VisualScript> vs = get_visual_script();
 			if (vs.is_valid()) {
 
-				vs->get_method_list(&methods);
+				vs->get_script_method_list(&methods);
 
 			}
 		} else {
@@ -2130,7 +2130,7 @@ void VisualScriptScriptCall::_validate_property(PropertyInfo& property) const {
 			if (!script.is_valid())
 				return;
 
-			script->get_method_list(&methods);
+			script->get_script_method_list(&methods);
 
 		}
 

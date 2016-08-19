@@ -8,32 +8,40 @@ class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
 
 	OBJ_TYPE(NetworkedMultiplayerENet,NetworkedMultiplayerPeer)
 
+	enum {
+		SYSMSG_ADD_PEER,
+		SYSMSG_REMOVE_PEER
+	};
+
 	bool active;
 	bool server;
 
-	int send_channel;
-	StringName target_peer;
+	uint32_t unique_id;
+
+	int target_peer;
 	TransferMode transfer_mode;
 
 	ENetEvent event;
 	ENetPeer *peer;
 	ENetHost *host;
 
+	bool refuse_connections;
+
 	ConnectionStatus connection_status;
 
-	Map<StringName,ENetPeer*> peer_map;
+	Map<int,ENetPeer*> peer_map;
 
 	struct Packet {
 
 		ENetPacket *packet;
-		int from_channel;
-		StringName from;
+		int from;
 	};
 
 	mutable List<Packet> incoming_packets;
 
 	mutable Packet current_packet;
 
+	uint32_t _gen_unique_id() const;
 	void _pop_current_packet() const;
 
 protected:
@@ -41,16 +49,14 @@ protected:
 public:
 
 	virtual void set_transfer_mode(TransferMode p_mode);
-	virtual void set_target_peer(const StringName& p_peer);
-	virtual void set_channel(int p_channel);
+	virtual void set_target_peer(int p_peer);
 
 
-	virtual StringName get_packet_peer() const;
-	virtual int get_packet_channel() const;
+	virtual int get_packet_peer() const;
 
 
-	Error create_server(int p_port, int p_max_clients=32, int p_max_channels=1, int p_in_bandwidth=0, int p_out_bandwidth=0);
-	Error create_client(const IP_Address& p_ip,int p_port, int p_max_channels=1, int p_in_bandwidth=0, int p_out_bandwidth=0);
+	Error create_server(int p_port, int p_max_peers=32, int p_in_bandwidth=0, int p_out_bandwidth=0);
+	Error create_client(const IP_Address& p_ip, int p_port, int p_in_bandwidth=0, int p_out_bandwidth=0);
 
 	void close_connection();
 
@@ -65,6 +71,11 @@ public:
 	virtual int get_max_packet_size() const;
 
 	virtual ConnectionStatus get_connection_status() const;
+
+	virtual void set_refuse_new_connections(bool p_enable);
+	virtual bool is_refusing_new_connections() const;
+
+	virtual int get_unique_id() const;
 
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();

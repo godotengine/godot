@@ -37,6 +37,7 @@
 
 VARIANT_ENUM_CAST(Node::PauseMode);
 VARIANT_ENUM_CAST(Node::NetworkMode);
+VARIANT_ENUM_CAST(Node::RPCMode);
 
 
 
@@ -494,26 +495,6 @@ bool Node::is_network_master() const {
 	return false;
 }
 
-void Node::allow_remote_call(const StringName& p_method) {
-
-	data.allowed_remote_calls.insert(p_method);
-}
-
-void Node::disallow_remote_call(const StringName& p_method){
-
-	data.allowed_remote_calls.erase(p_method);
-
-}
-
-void Node::allow_remote_set(const StringName& p_property){
-
-	data.allowed_remote_set.insert(p_property);
-
-}
-void Node::disallow_remote_set(const StringName& p_property){
-
-	data.allowed_remote_set.erase(p_property);
-}
 
 
 void Node::_propagate_network_owner(Node*p_owner) {
@@ -527,8 +508,29 @@ void Node::_propagate_network_owner(Node*p_owner) {
 	}
 }
 
-void Node::remote_call_reliable(const StringName& p_method,VARIANT_ARG_DECLARE) {
+/***** RPC CONFIG ********/
 
+void Node::rpc_config(const StringName& p_method,RPCMode p_mode) {
+
+	if (p_mode==RPC_MODE_DISABLED) {
+		data.rpc_methods.erase(p_method);
+	} else {
+		data.rpc_methods[p_method]=p_mode;
+	};
+}
+
+void Node::rset_config(const StringName& p_property,RPCMode p_mode) {
+
+	if (p_mode==RPC_MODE_DISABLED) {
+		data.rpc_properties.erase(p_property);
+	} else {
+		data.rpc_properties[p_property]=p_mode;
+	};
+}
+
+/***** RPC FUNCTIONS ********/
+
+void Node::rpc(const StringName& p_method,VARIANT_ARG_DECLARE) {
 
 	VARIANT_ARGPTRS;
 
@@ -539,16 +541,11 @@ void Node::remote_call_reliable(const StringName& p_method,VARIANT_ARG_DECLARE) 
 		argc++;
 	}
 
-	remote_call_reliablep(p_method,argptr,argc);
+	rpcp(0,false,p_method,argptr,argc);
 }
 
-void Node::remote_call_reliablep(const StringName& p_method,const Variant** p_arg,int p_argcount){
 
-	ERR_FAIL_COND(!is_inside_tree());
-	get_tree()->_remote_call(this,true,false,p_method,p_arg,p_argcount);
-}
-
-void Node::remote_call_unreliable(const StringName& p_method,VARIANT_ARG_DECLARE){
+void Node::rpc_id(int p_peer_id,const StringName& p_method,VARIANT_ARG_DECLARE) {
 
 	VARIANT_ARGPTRS;
 
@@ -559,35 +556,41 @@ void Node::remote_call_unreliable(const StringName& p_method,VARIANT_ARG_DECLARE
 		argc++;
 	}
 
-	remote_call_unreliablep(p_method,argptr,argc);
-
+	rpcp(p_peer_id,false,p_method,argptr,argc);
 }
 
-void Node::remote_call_unreliablep(const StringName& p_method,const Variant** p_arg,int p_argcount){
 
-	ERR_FAIL_COND(!is_inside_tree());
+void Node::rpc_unreliable(const StringName& p_method,VARIANT_ARG_DECLARE) {
 
-	get_tree()->_remote_call(this,false,false,p_method,p_arg,p_argcount);
+	VARIANT_ARGPTRS;
+
+	int argc=0;
+	for(int i=0;i<VARIANT_ARG_MAX;i++) {
+		if (argptr[i]->get_type()==Variant::NIL)
+			break;
+		argc++;
+	}
+
+	rpcp(0,true,p_method,argptr,argc);
 }
 
-void Node::remote_set_reliable(const StringName& p_property,const Variant& p_value) {
 
+void Node::rpc_unreliable_id(int p_peer_id,const StringName& p_method,VARIANT_ARG_DECLARE) {
 
-	ERR_FAIL_COND(!is_inside_tree());
-	const Variant *ptr=&p_value;
+	VARIANT_ARGPTRS;
 
-	get_tree()->_remote_call(this,true,true,p_property,&ptr,1);
+	int argc=0;
+	for(int i=0;i<VARIANT_ARG_MAX;i++) {
+		if (argptr[i]->get_type()==Variant::NIL)
+			break;
+		argc++;
+	}
+
+	rpcp(p_peer_id,true,p_method,argptr,argc);
 }
 
-void Node::remote_set_unreliable(const StringName& p_property,const Variant& p_value){
 
-	ERR_FAIL_COND(!is_inside_tree());
-	const Variant *ptr=&p_value;
-
-	get_tree()->_remote_call(this,false,true,p_property,&ptr,1);
-}
-
-Variant Node::_remote_call_reliable_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+Variant Node::_rpc_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
 
 	if (p_argcount<1) {
 		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -604,12 +607,46 @@ Variant Node::_remote_call_reliable_bind(const Variant** p_args, int p_argcount,
 
 	StringName method = *p_args[0];
 
-	remote_call_reliablep(method,&p_args[1],p_argcount-1);
+	rpcp(0,false,method,&p_args[1],p_argcount-1);
 
+	r_error.error=Variant::CallError::CALL_OK;
+	return Variant();
 }
 
 
-Variant Node::_remote_call_unreliable_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+Variant Node::_rpc_id_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+	if (p_argcount<2) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=2;
+		return Variant();
+	}
+
+	if (p_args[0]->get_type()!=Variant::INT) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=0;
+		r_error.expected=Variant::INT;
+		return Variant();
+	}
+
+	if (p_args[1]->get_type()!=Variant::STRING) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=1;
+		r_error.expected=Variant::STRING;
+		return Variant();
+	}
+
+	int peer_id = *p_args[0];
+	StringName method = *p_args[1];
+
+	rpcp(peer_id,false,method,&p_args[2],p_argcount-2);
+
+	r_error.error=Variant::CallError::CALL_OK;
+	return Variant();
+}
+
+
+Variant Node::_rpc_unreliable_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
 
 	if (p_argcount<1) {
 		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -626,8 +663,412 @@ Variant Node::_remote_call_unreliable_bind(const Variant** p_args, int p_argcoun
 
 	StringName method = *p_args[0];
 
-	remote_call_unreliablep(method,&p_args[1],p_argcount-1);
+	rpcp(0,true,method,&p_args[1],p_argcount-1);
 
+	r_error.error=Variant::CallError::CALL_OK;
+	return Variant();
+}
+
+
+Variant Node::_rpc_unreliable_id_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+	if (p_argcount<2) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=2;
+		return Variant();
+	}
+
+	if (p_args[0]->get_type()!=Variant::INT) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=0;
+		r_error.expected=Variant::INT;
+		return Variant();
+	}
+
+	if (p_args[1]->get_type()!=Variant::STRING) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=1;
+		r_error.expected=Variant::STRING;
+		return Variant();
+	}
+
+	int peer_id = *p_args[0];
+	StringName method = *p_args[1];
+
+	rpcp(peer_id,true,method,&p_args[2],p_argcount-2);
+
+	r_error.error=Variant::CallError::CALL_OK;
+	return Variant();
+}
+
+#if 0
+Variant Node::_rpc_bind(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+	if (p_argcount<1) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=1;
+		return Variant();
+	}
+
+	if (p_args[0]->get_type()!=Variant::STRING) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=0;
+		r_error.expected=Variant::STRING;
+		return Variant();
+	}
+
+	StringName method = *p_args[0];
+
+	rpcp(method,&p_args[1],p_argcount-1);
+
+	r_error.error=Variant::CallError::CALL_OK;
+	return Variant();
+}
+
+#endif
+void Node::rpcp(int p_peer_id,bool p_unreliable,const StringName& p_method,const Variant** p_arg,int p_argcount) {
+
+	ERR_FAIL_COND(!is_inside_tree());
+
+	bool skip_rpc=false;
+
+	if (p_peer_id==0 || p_peer_id==get_tree()->get_network_unique_id() || (p_peer_id<0 && p_peer_id!=-get_tree()->get_network_unique_id())) {
+		//check that send mode can use local call
+
+
+		bool call_local=false;
+
+
+
+		Map<StringName,RPCMode>::Element *E = data.rpc_methods.find(p_method);
+		if (E) {
+
+			switch(E->get()) {
+
+				case RPC_MODE_DISABLED: {
+					//do nothing
+				} break;
+				case RPC_MODE_REMOTE: {
+					//do nothing also, no need to call local
+				} break;
+				case RPC_MODE_SYNC: {
+					//call it, sync always results in call
+					call_local=true;
+				} break;
+				case RPC_MODE_MASTER: {
+					call_local=is_network_master();
+					if (call_local) {
+						skip_rpc=true; //no other master so..
+					}
+				} break;
+				case RPC_MODE_SLAVE: {
+					call_local=!is_network_master();
+				} break;
+
+			}
+		}
+
+
+		if (call_local) {
+			Variant::CallError ce;
+			call(p_method,p_arg,p_argcount,ce);
+			if (ce.error!=Variant::CallError::CALL_OK) {
+				String error = Variant::get_call_error_text(this,p_method,p_arg,p_argcount,ce);
+				error="rpc() aborted in local call:  - "+error;
+				ERR_PRINTS(error);
+				return;
+			}
+		} else if (get_script_instance()){
+			//attempt with script
+			ScriptInstance::RPCMode rpc_mode = get_script_instance()->get_rpc_mode(p_method);
+
+			switch(rpc_mode) {
+
+				case ScriptInstance::RPC_MODE_DISABLED: {
+					//do nothing
+				} break;
+				case ScriptInstance::RPC_MODE_REMOTE: {
+					//do nothing also, no need to call local
+				} break;
+				case ScriptInstance::RPC_MODE_SYNC: {
+					//call it, sync always results in call
+					call_local=true;
+				} break;
+				case ScriptInstance::RPC_MODE_MASTER: {
+					call_local=is_network_master();
+					if (call_local) {
+						skip_rpc=true; //no other master so..
+					}
+				} break;
+				case ScriptInstance::RPC_MODE_SLAVE: {
+					call_local=!is_network_master();
+				} break;
+			}
+
+			if (call_local) {
+				Variant::CallError ce;
+				ce.error=Variant::CallError::CALL_OK;
+				get_script_instance()->call(p_method,p_arg,p_argcount,ce);
+				if (ce.error!=Variant::CallError::CALL_OK) {
+					String error = Variant::get_call_error_text(this,p_method,p_arg,p_argcount,ce);
+					error="rpc() aborted in script local call:  - "+error;
+					ERR_PRINTS(error);
+					return;
+				}
+			}
+		}
+	}
+
+	if (skip_rpc)
+		return;
+
+
+	get_tree()->_rpc(this,p_peer_id,p_unreliable,false,p_method,p_arg,p_argcount);
+
+}
+
+
+/******** RSET *********/
+
+
+void Node::rsetp(int p_peer_id,bool p_unreliable,const StringName& p_property,const Variant& p_value) {
+
+	ERR_FAIL_COND(!is_inside_tree());
+
+	bool skip_rset=false;
+
+	if (p_peer_id==0 || p_peer_id==get_tree()->get_network_unique_id() || (p_peer_id<0 && p_peer_id!=-get_tree()->get_network_unique_id())) {
+		//check that send mode can use local call
+
+
+		bool set_local=false;
+
+		Map<StringName,RPCMode>::Element *E = data.rpc_properties.find(p_property);
+		if (E) {
+
+			switch(E->get()) {
+
+				case RPC_MODE_DISABLED: {
+					//do nothing
+				} break;
+				case RPC_MODE_REMOTE: {
+					//do nothing also, no need to call local
+				} break;
+				case RPC_MODE_SYNC: {
+					//call it, sync always results in call
+					set_local=true;
+				} break;
+				case RPC_MODE_MASTER: {
+					set_local=is_network_master();
+					if (set_local) {
+						skip_rset=true;
+					}
+
+				} break;
+				case RPC_MODE_SLAVE: {
+					set_local=!is_network_master();
+				} break;
+
+			}
+		}
+
+
+		if (set_local) {
+			bool valid;
+			set(p_property,p_value,&valid);
+
+			if (!valid) {
+				String error="rset() aborted in local set, property not found:  - "+String(p_property);
+				ERR_PRINTS(error);
+				return;
+			}
+		} else if (get_script_instance()){
+			//attempt with script
+			ScriptInstance::RPCMode rpc_mode = get_script_instance()->get_rset_mode(p_property);
+
+			switch(rpc_mode) {
+
+				case ScriptInstance::RPC_MODE_DISABLED: {
+					//do nothing
+				} break;
+				case ScriptInstance::RPC_MODE_REMOTE: {
+					//do nothing also, no need to call local
+				} break;
+				case ScriptInstance::RPC_MODE_SYNC: {
+					//call it, sync always results in call
+					set_local=true;
+				} break;
+				case ScriptInstance::RPC_MODE_MASTER: {
+					set_local=is_network_master();
+					if (set_local) {
+						skip_rset=true;
+					}
+				} break;
+				case ScriptInstance::RPC_MODE_SLAVE: {
+					set_local=!is_network_master();
+				} break;
+			}
+
+			if (set_local) {
+
+				bool valid = get_script_instance()->set(p_property,p_value);
+
+				if (!valid) {
+					String error="rset() aborted in local script set, property not found:  - "+String(p_property);
+					ERR_PRINTS(error);
+					return;
+				}
+			}
+
+		}
+	}
+
+	if (skip_rset)
+		return;
+
+	const Variant*vptr = &p_value;
+
+	get_tree()->_rpc(this,p_peer_id,p_unreliable,true,p_property,&vptr,1);
+
+}
+
+
+
+void Node::rset(const StringName& p_property,const Variant& p_value) {
+
+	rsetp(0,false,p_property,p_value);
+
+}
+
+void Node::rset_id(int p_peer_id,const StringName& p_property,const Variant& p_value) {
+
+	rsetp(p_peer_id,false,p_property,p_value);
+
+}
+
+void Node::rset_unreliable(const StringName& p_property,const Variant& p_value) {
+
+	rsetp(0,true,p_property,p_value);
+
+}
+
+void Node::rset_unreliable_id(int p_peer_id,const StringName& p_property,const Variant& p_value) {
+
+	rsetp(p_peer_id,true,p_property,p_value);
+
+}
+
+//////////// end of rpc
+
+bool Node::can_call_rpc(const StringName& p_method) const {
+
+	const Map<StringName,RPCMode>::Element *E = data.rpc_methods.find(p_method);
+	if (E) {
+
+		switch(E->get()) {
+
+			case RPC_MODE_DISABLED: {
+				return false;
+			} break;
+			case RPC_MODE_REMOTE: {
+				return true;
+			} break;
+			case RPC_MODE_SYNC: {
+				return true;
+			} break;
+			case RPC_MODE_MASTER: {
+				return is_network_master();
+			} break;
+			case RPC_MODE_SLAVE: {
+				return !is_network_master();
+			} break;
+		}
+	}
+
+
+	if (get_script_instance()){
+		//attempt with script
+		ScriptInstance::RPCMode rpc_mode = get_script_instance()->get_rpc_mode(p_method);
+
+		switch(rpc_mode) {
+
+			case ScriptInstance::RPC_MODE_DISABLED: {
+				return false;
+			} break;
+			case ScriptInstance::RPC_MODE_REMOTE: {
+				return true;
+			} break;
+			case ScriptInstance::RPC_MODE_SYNC: {
+				return true;
+			} break;
+			case ScriptInstance::RPC_MODE_MASTER: {
+				return is_network_master();
+			} break;
+			case ScriptInstance::RPC_MODE_SLAVE: {
+				return !is_network_master();
+			} break;
+		}
+
+	}
+
+	ERR_PRINTS("RPC on unauthorized method attempted: "+String(p_method)+" on base: "+String(Variant(this)));
+	return false;
+}
+
+bool Node::can_call_rset(const StringName& p_property) const {
+
+	const Map<StringName,RPCMode>::Element *E = data.rpc_properties.find(p_property);
+	if (E) {
+
+		switch(E->get()) {
+
+			case RPC_MODE_DISABLED: {
+				return false;
+			} break;
+			case RPC_MODE_REMOTE: {
+				return true;
+			} break;
+			case RPC_MODE_SYNC: {
+				return true;
+			} break;
+			case RPC_MODE_MASTER: {
+				return is_network_master();
+			} break;
+			case RPC_MODE_SLAVE: {
+				return !is_network_master();
+			} break;
+		}
+	}
+
+
+	if (get_script_instance()){
+		//attempt with script
+		ScriptInstance::RPCMode rpc_mode = get_script_instance()->get_rset_mode(p_property);
+
+		switch(rpc_mode) {
+
+			case ScriptInstance::RPC_MODE_DISABLED: {
+				return false;
+			} break;
+			case ScriptInstance::RPC_MODE_REMOTE: {
+				return true;
+			} break;
+			case ScriptInstance::RPC_MODE_SYNC: {
+				return true;
+			} break;
+			case ScriptInstance::RPC_MODE_MASTER: {
+				return is_network_master();
+			} break;
+			case ScriptInstance::RPC_MODE_SLAVE: {
+				return !is_network_master();
+			} break;
+		}
+
+	}
+
+	ERR_PRINTS("RSET on unauthorized property attempted: "+String(p_property)+" on base: "+String(Variant(this)));
+
+	return false;
 }
 
 
@@ -2444,11 +2885,9 @@ void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("is_network_master"),&Node::is_network_master);
 
-	ObjectTypeDB::bind_method(_MD("allow_remote_call","method"),&Node::allow_remote_call);
-	ObjectTypeDB::bind_method(_MD("disallow_remote_call","method"),&Node::disallow_remote_call);
+	ObjectTypeDB::bind_method(_MD("rpc_config","method","mode"),&Node::rpc_config);
+	ObjectTypeDB::bind_method(_MD("rset_config","property","mode"),&Node::rset_config);
 
-	ObjectTypeDB::bind_method(_MD("allow_remote_set","method"),&Node::allow_remote_set);
-	ObjectTypeDB::bind_method(_MD("disallow_remote_set","method"),&Node::disallow_remote_set);
 
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("_set_import_path","import_path"),&Node::set_import_path);
@@ -2459,19 +2898,29 @@ void Node::_bind_methods() {
 
 	{
 		MethodInfo mi;
-		mi.name="remote_call_reliable";
+
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
 
 
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"remote_call_reliable",&Node::_remote_call_reliable_bind,mi);
+		mi.name="rpc";
+		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"rpc",&Node::_rpc_bind,mi);
+		mi.name="rpc_unreliable";
+		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"rpc_unreliable",&Node::_rpc_unreliable_bind,mi);
 
-		mi.name="remote_call_unreliable";
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"remote_call_unreliable",&Node::_remote_call_unreliable_bind,mi);
+		mi.arguments.push_front( PropertyInfo( Variant::INT, "peer_") );
+
+		mi.name="rpc_id";
+		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"rpc_id",&Node::_rpc_id_bind,mi);
+		mi.name="rpc_unreliable_id";
+		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"rpc_unreliable_id",&Node::_rpc_unreliable_id_bind,mi);
+
 
 	}
 
-	ObjectTypeDB::bind_method(_MD("remote_set_reliable","property","value:Variant"),&Node::remote_set_reliable);
-	ObjectTypeDB::bind_method(_MD("remote_set_unreliable","property","value:Variant"),&Node::remote_set_unreliable);
+	ObjectTypeDB::bind_method(_MD("rset","property","value:Variant"),&Node::rset);
+	ObjectTypeDB::bind_method(_MD("rset_id","peer_id","property","value:Variant"),&Node::rset_id);
+	ObjectTypeDB::bind_method(_MD("rset_unreliable","property","value:Variant"),&Node::rset_unreliable);
+	ObjectTypeDB::bind_method(_MD("rset_unreliable_id","peer_id","property","value:Variant"),&Node::rset_unreliable_id);
 
 
 	BIND_CONSTANT( NOTIFICATION_ENTER_TREE );
@@ -2491,7 +2940,15 @@ void Node::_bind_methods() {
 	BIND_CONSTANT( NOTIFICATION_PATH_CHANGED);
 
 
+	BIND_CONSTANT( NETWORK_MODE_INHERIT );
+	BIND_CONSTANT( NETWORK_MODE_MASTER );
+	BIND_CONSTANT( NETWORK_MODE_SLAVE );
 
+	BIND_CONSTANT( RPC_MODE_DISABLED );
+	BIND_CONSTANT( RPC_MODE_REMOTE );
+	BIND_CONSTANT( RPC_MODE_SYNC );
+	BIND_CONSTANT( RPC_MODE_MASTER );
+	BIND_CONSTANT( RPC_MODE_SLAVE );
 
 	BIND_CONSTANT( PAUSE_MODE_INHERIT );
 	BIND_CONSTANT( PAUSE_MODE_STOP );
@@ -2506,7 +2963,6 @@ void Node::_bind_methods() {
 	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/input" ), _SCS("set_process_input"),_SCS("is_processing_input" ) );
 	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/unhandled_input" ), _SCS("set_process_unhandled_input"),_SCS("is_processing_unhandled_input" ) );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "process/pause_mode",PROPERTY_HINT_ENUM,"Inherit,Stop,Process" ), _SCS("set_pause_mode"),_SCS("get_pause_mode" ) );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "process/network_mode",PROPERTY_HINT_ENUM,"Inherit,Master,Slave" ), _SCS("set_network_mode"),_SCS("get_network_mode" ) );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "editor/display_folded",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR ), _SCS("set_display_folded"),_SCS("is_displayed_folded" ) );
 
 	BIND_VMETHOD( MethodInfo("_process",PropertyInfo(Variant::REAL,"delta")) );

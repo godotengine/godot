@@ -188,13 +188,17 @@ private:
 
 	Ref<NetworkedMultiplayerPeer> network_peer;
 
-	Set<StringName> connected_peers;
-	void _network_peer_connected(const StringName& p_id);
-	void _network_peer_disconnected(const StringName& p_id);
+	Set<int> connected_peers;
+	void _network_peer_connected(int p_id);
+	void _network_peer_disconnected(int p_id);
+
+	void _connected_to_server();
+	void _connection_failed();
+	void _server_disconnected();
 
 	//path sent caches
 	struct PathSentCache {
-		Map<StringName,bool> confirmed_peers;
+		Map<int,bool> confirmed_peers;
 		int id;
 	};
 
@@ -211,9 +215,9 @@ private:
 		Map<int,NodeInfo> nodes;
 	};
 
-	Map<StringName,PathGetCache> path_get_cache;
+	Map<int,PathGetCache> path_get_cache;
 
-	void _network_process_packet(const StringName &p_from, const Array& p_packet);
+	void _network_process_packet(int p_from, const Array& p_packet);
 	void _network_poll();
 
 	static SceneTree *singleton;
@@ -221,7 +225,8 @@ friend class Node;
 
 
 
-	void _remote_call(Node* p_from,bool p_reliable,bool p_set,const StringName& p_name,const Variant** p_arg,int p_argcount);
+
+	void _rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const StringName& p_name,const Variant** p_arg,int p_argcount);
 
 	void tree_changed();
 	void node_removed(Node *p_node);
@@ -418,6 +423,10 @@ public:
 
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer>& p_network_peer);
 	bool is_network_server() const;
+	int get_network_unique_id() const;
+
+	void set_refuse_new_network_connections(bool p_refuse);
+	bool is_refusing_new_network_connections() const;
 
 	SceneTree();
 	~SceneTree();

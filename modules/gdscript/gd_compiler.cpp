@@ -1297,8 +1297,10 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 		gdfunc = p_script->member_functions[func_name];
 	//}
 
-	if (p_func)
+	if (p_func) {
 		gdfunc->_static=p_func->_static;
+		gdfunc->rpc_mode=p_func->rpc_mode;
+	}
 
 #ifdef TOOLS_ENABLED
 	gdfunc->arg_names=argnames;
@@ -1625,6 +1627,8 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 		minfo.index = p_script->member_indices.size();
 		minfo.setter = p_class->variables[i].setter;
 		minfo.getter = p_class->variables[i].getter;
+		minfo.rpc_mode=p_class->variables[i].rpc_mode;
+
 		p_script->member_indices[name]=minfo;
 		p_script->members.insert(name);
 

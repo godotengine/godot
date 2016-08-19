@@ -1309,6 +1309,7 @@ GDFunction::GDFunction() : function_list(this) {
 
 	_stack_size=0;
 	_call_size=0;
+	rpc_mode=ScriptInstance::RPC_MODE_DISABLED;
 	name="<anonymous>";
 #ifdef DEBUG_ENABLED
 	_func_cname=NULL;
