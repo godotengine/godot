@@ -1,6 +1,6 @@
-#include "networked_multiplayer_enet.h"
 #include "os/os.h"
 #include "io/marshalls.h"
+#include "networked_multiplayer_enet.h"
 
 void NetworkedMultiplayerENet::set_transfer_mode(TransferMode p_mode) {
 
