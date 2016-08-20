@@ -1072,11 +1072,21 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 			if (p_item->cells[i].selected && select_mode!=SELECT_ROW) {
 
 				Rect2i r(item_rect.pos,item_rect.size);
+				if (p_item->cells[i].text.size() > 0){
+					float icon_width = p_item->cells[i].get_icon_size().width;
+					r.pos.x += icon_width;
+					r.size.x -= icon_width;
+				}
 				//r.grow(cache.selected->get_margin(MARGIN_LEFT));
-				if (has_focus())
+				if (has_focus()){
 					cache.selected_focus->draw(ci,r );
-				else
+					p_item->set_meta("__focus_rect", Rect2(r.pos,r.size));
+				} else {
 					cache.selected->draw(ci,r );
+				}
+				if (text_editor->is_visible()){
+					text_editor->set_pos(get_global_pos() + r.pos);
+				}
 			}
 
 			if (p_item->cells[i].custom_bg_color) {
@@ -2468,16 +2478,7 @@ bool Tree::edit_selected() {
 	if (!s->cells[col].editable)
 		return false;
 
-	Rect2 rect;
-	rect.pos.y = get_item_offset(s) - get_scroll().y;
-
-	for(int i=0;i<col;i++) {
-
-		rect.pos.x+=get_column_width(i);
-	}
-
-	rect.size.width=get_column_width(col);
-	rect.size.height=compute_item_height(s)+cache.vseparation;
+	Rect2 rect = s->get_meta("__focus_rect");
 
 	popup_edited_item=s;
 	popup_edited_item_col=col;
