@@ -1,8 +1,5 @@
 Import('env')
 
-if env["platform"] == 'windows':
-	env.Append(CPPFLAGS = ['-D_WIN32'])
-
 env.Append(CPPPATH=['#modules/enet'])
 env.add_source_files(env.modules_sources,"*.cpp")
 env.add_source_files(env.modules_sources,"*.c")
