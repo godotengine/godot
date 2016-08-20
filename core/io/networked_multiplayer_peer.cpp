@@ -17,8 +17,8 @@ void NetworkedMultiplayerPeer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_refusing_new_connections"), &NetworkedMultiplayerPeer::is_refusing_new_connections );
 
 	BIND_CONSTANT( TRANSFER_MODE_UNRELIABLE );
+	BIND_CONSTANT( TRANSFER_MODE_UNRELIABLE_ORDERED );
 	BIND_CONSTANT( TRANSFER_MODE_RELIABLE );
-	BIND_CONSTANT( TRANSFER_MODE_ORDERED );
 
 	BIND_CONSTANT( CONNECTION_DISCONNECTED );
 	BIND_CONSTANT( CONNECTION_CONNECTING );

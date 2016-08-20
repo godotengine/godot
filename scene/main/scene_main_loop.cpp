@@ -1841,14 +1841,14 @@ void SceneTree::_rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const St
 		add_path_message[2]=psc->id;
 
 		network_peer->set_target_peer(E->get()); //to all of you
-		network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_ORDERED);
+		network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
 		network_peer->put_var(add_path_message); //a message with love
 
 		psc->confirmed_peers.insert(E->get(),false); //insert into confirmed, but as false since it was not confirmed
 	}
 
 	//take chance and set transfer mode, since all send methods will use it
-	network_peer->set_transfer_mode(p_unreliable ? NetworkedMultiplayerPeer::TRANSFER_MODE_UNRELIABLE : NetworkedMultiplayerPeer::TRANSFER_MODE_ORDERED);
+	network_peer->set_transfer_mode(p_unreliable ? NetworkedMultiplayerPeer::TRANSFER_MODE_UNRELIABLE : NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
 
 	if (has_all_peers) {
 
@@ -1993,7 +1993,7 @@ void SceneTree::_network_process_packet(int p_from, const Array& p_packet) {
 
 			path_get_cache[p_from].nodes[id]=ni;
 
-			network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_ORDERED);
+			network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
 			network_peer->set_target_peer(p_from);
 
 			Array message;

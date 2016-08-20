@@ -17,8 +17,8 @@ public:
 	};
 	enum TransferMode {
 		TRANSFER_MODE_UNRELIABLE,
+		TRANSFER_MODE_UNRELIABLE_ORDERED,
 		TRANSFER_MODE_RELIABLE,
-		TRANSFER_MODE_ORDERED
 	};
 
 	enum ConnectionStatus {

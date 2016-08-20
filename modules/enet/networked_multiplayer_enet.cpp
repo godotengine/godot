@@ -371,10 +371,10 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer,int p_buffer_
 		case TRANSFER_MODE_UNRELIABLE: {
 			packet_flags=ENET_PACKET_FLAG_UNSEQUENCED;
 		} break;
-		case TRANSFER_MODE_RELIABLE: {
-			packet_flags=ENET_PACKET_FLAG_RELIABLE;
+		case TRANSFER_MODE_UNRELIABLE_ORDERED: {
+			packet_flags=0;
 		} break;
-		case TRANSFER_MODE_ORDERED: {
+		case TRANSFER_MODE_RELIABLE: {
 			packet_flags=ENET_PACKET_FLAG_RELIABLE;
 		} break;
 	}
@@ -513,7 +513,7 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet(){
 	unique_id=0;
 	target_peer=0;
 	current_packet.packet=NULL;
-	transfer_mode=TRANSFER_MODE_ORDERED;
+	transfer_mode=TRANSFER_MODE_RELIABLE;
 	connection_status=CONNECTION_DISCONNECTED;
 }
 
