@@ -572,7 +572,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("scenetree_editor/draw_relationship_lines",false);
 	set("scenetree_editor/relationship_line_color",Color::html("464646"));
 
-	set("gridmap_editor/pick_distance", 5000.0);
+	set("grid_map/pick_distance", 5000.0);
 
 	set("3d_editor/default_fov",45.0);
 	set("3d_editor/default_z_near",0.1);
