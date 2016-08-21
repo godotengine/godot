@@ -212,6 +212,18 @@ void  GridMapEditor::_menu_option(int p_option) {
 			_update_areas_display();
 			update_areas();
 		} break;
+		case MENU_OPTION_SELECTION_DUPLICATE:
+			if (!(selection.active && input_action==INPUT_NONE))
+				return;
+			if (last_mouseover==Vector3(-1,-1,-1)) //nono mouseovering anythin
+				break;
+
+			input_action=INPUT_DUPLICATE;
+			selection.click=last_mouseover;
+			selection.current=last_mouseover;
+			selection.duplicate_rot=0;
+			_update_duplicate_indicator();
+			break;
 		case MENU_OPTION_SELECTION_CLEAR: {
 			if (!selection.active)
 				return;
@@ -377,7 +389,9 @@ bool GridMapEditor::do_input_action(Camera* p_camera,const Point2& p_point,bool 
 		int item=node->get_cell_item(cell[0],cell[1],cell[2]);
 		if (item>=0) {
 			selected_pallete=item;
+			theme_pallete->set_current(item);
 			update_pallete();
+			_update_cursor_instance();
 		}
 		return true;
 	} if (input_action==INPUT_PAINT) {
@@ -530,29 +544,6 @@ bool GridMapEditor::forward_spatial_input_event(Camera* p_camera,const InputEven
 
 	if (edit_mode->get_selected()==0) { // regular click
 		switch (p_event.type) {
-			case InputEvent::KEY: {
-
-				if (p_event.key.pressed && p_event.key.scancode==KEY_D && p_event.key.mod.shift && selection.active && input_action==INPUT_NONE) {
-
-					if (last_mouseover==Vector3(-1,-1,-1)) //nono mouseovering anythin
-						return false;
-
-					input_action=INPUT_DUPLICATE;
-					selection.click=last_mouseover;
-					selection.current=last_mouseover;
-					selection.duplicate_rot=0;
-					_update_duplicate_indicator();
-
-
-				}
-
-				if (p_event.key.pressed && p_event.key.scancode==KEY_DELETE && selection.active) {
-
-					_delete_selection();
-					return true;
-				}
-
-			} break;
 			case InputEvent::MOUSE_BUTTON: {
 
 				if (p_event.mouse_button.button_index==BUTTON_WHEEL_UP && (p_event.mouse_button.mod.command || p_event.mouse_button.mod.shift)) {
@@ -851,6 +842,11 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	VS *vs = VS::get_singleton();
 
 	last_mouseover=Vector3(-1,-1,-1);
+	input_action=INPUT_NONE;
+	selection.active=false;
+	_update_selection_transform();
+	_update_duplicate_indicator();
+
 	spatial_editor  = editor->get_editor_plugin_screen()->cast_to<SpatialEditorPlugin>();
 
 	if (!node) {
@@ -1247,7 +1243,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item("Create Exterior Connector",MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR);
 	options->get_popup()->add_item("Erase Area",MENU_OPTION_REMOVE_AREA);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Selection -> Clear",MENU_OPTION_SELECTION_CLEAR);
+	options->get_popup()->add_item("Selection -> Duplicate",MENU_OPTION_SELECTION_DUPLICATE,KEY_MASK_SHIFT+KEY_INSERT);
+	options->get_popup()->add_item("Selection -> Clear",MENU_OPTION_SELECTION_CLEAR,KEY_MASK_SHIFT+KEY_DELETE);
 	//options->get_popup()->add_separator();
 	//options->get_popup()->add_item("Configure",MENU_OPTION_CONFIGURE);
 
@@ -1266,7 +1263,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	settings_pick_distance->set_max(10000.0f);
 	settings_pick_distance->set_min(500.0f);
 	settings_pick_distance->set_step(1.0f);
-	settings_pick_distance->set_val(EDITOR_DEF("gridmap_editor/pick_distance", 5000.0));
+	settings_pick_distance->set_val(EDITOR_DEF("grid_map/pick_distance", 5000.0));
 	settings_vbc->add_margin_child("Pick Distance:", settings_pick_distance);
 
 	clip_mode=CLIP_DISABLED;
