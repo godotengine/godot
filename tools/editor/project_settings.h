@@ -111,7 +111,7 @@ class ProjectSettings : public AcceptDialog {
 	void _action_button_pressed(Object* p_obj, int p_column,int p_id);
 	void _wait_for_key(const InputEvent& p_event);
 	void _press_a_key_confirm();
-
+	void _show_last_added(const InputEvent& p_event);
 
 	void _settings_prop_edited(const String& p_name);
 	void _settings_changed();

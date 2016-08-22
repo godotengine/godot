@@ -34,8 +34,52 @@
  */
 
 bool InputEvent::operator==(const InputEvent &p_event) const {
+	if (type != p_event.type){
+		return false;
+	}
 
-	return true;
+	switch(type) {
+		case KEY:
+			return key.unicode == p_event.key.unicode
+				&& key.scancode == p_event.key.scancode
+				&& key.echo == p_event.key.echo
+				&& key.pressed == p_event.key.pressed
+				&& key.mod == p_event.key.mod;
+		case MOUSE_MOTION:
+			return mouse_motion.x == p_event.mouse_motion.x
+				&& mouse_motion.y == p_event.mouse_motion.y
+				&& mouse_motion.relative_x == p_event.mouse_motion.relative_y
+				&& mouse_motion.button_mask == p_event.mouse_motion.button_mask
+				&& key.mod == p_event.key.mod;
+		case MOUSE_BUTTON:
+			return mouse_button.pressed == p_event.mouse_button.pressed
+				&& mouse_button.x == p_event.mouse_button.x
+				&& mouse_button.y == p_event.mouse_button.y
+				&& mouse_button.button_index == p_event.mouse_button.button_index
+				&& mouse_button.button_mask == p_event.mouse_button.button_mask
+				&& key.mod == p_event.key.mod;
+		case JOYSTICK_MOTION:
+			return joy_motion.axis == p_event.joy_motion.axis
+				&& joy_motion.axis_value == p_event.joy_motion.axis_value;
+		case JOYSTICK_BUTTON:
+			return joy_button.pressed == p_event.joy_button.pressed
+				&& joy_button.button_index == p_event.joy_button.button_index
+				&& joy_button.pressure == p_event.joy_button.pressure;
+		case SCREEN_TOUCH:
+			return screen_touch.pressed == p_event.screen_touch.pressed
+				&& screen_touch.index == p_event.screen_touch.index
+				&& screen_touch.x == p_event.screen_touch.x
+				&& screen_touch.y == p_event.screen_touch.y;
+		case SCREEN_DRAG:
+			return screen_drag.index == p_event.screen_drag.index
+				&& screen_drag.x == p_event.screen_drag.x
+				&& screen_drag.y == p_event.screen_drag.y;
+		case ACTION:
+			return action.action == p_event.action.action
+				&& action.pressed == p_event.action.pressed;
+	}
+
+	return false;
 }
 InputEvent::operator String() const {
 
