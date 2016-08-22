@@ -60,6 +60,10 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size,M
 
 			strm.avail_in=p_src_size;
 			int aout = deflateBound(&strm,p_src_size);;
+			/*if (aout>p_src_size) {
+				deflateEnd(&strm);
+				return -1;
+			}*/
 			strm.avail_out=aout;
 			strm.next_in=(Bytef*)p_src;
 			strm.next_out=p_dst;
@@ -107,19 +111,21 @@ int Compression::get_max_compressed_buffer_size(int p_src_size,Mode p_mode){
 
 
 
-void Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p_src, int p_src_size,Mode p_mode){
+int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p_src, int p_src_size,Mode p_mode){
 
 	switch(p_mode) {
 		case MODE_FASTLZ: {
 
+			int ret_size=0;
+
 			if (p_dst_max_size<16) {
 				uint8_t dst[16];
-				fastlz_decompress(p_src,p_src_size,dst,16);
+				ret_size = fastlz_decompress(p_src,p_src_size,dst,16);
 				copymem(p_dst,dst,p_dst_max_size);
 			} else {
-				fastlz_decompress(p_src,p_src_size,p_dst,p_dst_max_size);
+				ret_size = fastlz_decompress(p_src,p_src_size,p_dst,p_dst_max_size);
 			}
-			return;
+			return ret_size;
 		} break;
 		case MODE_DEFLATE: {
 
@@ -130,7 +136,7 @@ void Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *
 			strm.avail_in= 0;
 			strm.next_in=Z_NULL;
 			int err = inflateInit(&strm);
-			ERR_FAIL_COND(err!=Z_OK);
+			ERR_FAIL_COND_V(err!=Z_OK,-1);
 
 			strm.avail_in=p_src_size;
 			strm.avail_out=p_dst_max_size;
@@ -138,11 +144,12 @@ void Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *
 			strm.next_out=p_dst;
 
 			err = inflate(&strm,Z_FINISH);
+			int total = strm.total_out;
 			inflateEnd(&strm);
-			ERR_FAIL_COND(err!=Z_STREAM_END);
-			return;
+			ERR_FAIL_COND_V(err!=Z_STREAM_END,-1);
+			return total;
 		} break;
 	}
 
-	ERR_FAIL();
+	ERR_FAIL_V(-1);
 }

@@ -91,4 +91,40 @@ public:
 	StreamPeer() { big_endian=false; }
 };
 
+
+class StreamPeerBuffer : public StreamPeer {
+
+	OBJ_TYPE(StreamPeerBuffer,StreamPeer);
+
+	DVector<uint8_t> data;
+	int pointer;
+protected:
+
+	static void _bind_methods();
+public:
+	Error put_data(const uint8_t* p_data,int p_bytes);
+	Error put_partial_data(const uint8_t* p_data,int p_bytes, int &r_sent);
+
+	Error get_data(uint8_t* p_buffer, int p_bytes);
+	Error get_partial_data(uint8_t* p_buffer, int p_bytes,int &r_received);
+
+	virtual int get_available_bytes() const;
+
+	void seek(int p_pos);
+	int get_size() const;
+	int get_pos() const;
+	void resize(int p_size);
+
+
+	void set_data_array(const DVector<uint8_t> & p_data);
+	DVector<uint8_t> get_data_array() const;
+
+	void clear();
+
+	Ref<StreamPeerBuffer> duplicate() const;
+
+	StreamPeerBuffer();
+};
+
+
 #endif // STREAM_PEER_H

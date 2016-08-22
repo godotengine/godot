@@ -3,10 +3,20 @@
 
 #include "io/networked_multiplayer_peer.h"
 #include "enet/enet.h"
+#include "io/compression.h"
 
 class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
 
 	OBJ_TYPE(NetworkedMultiplayerENet,NetworkedMultiplayerPeer)
+public:
+	enum CompressionMode {
+		COMPRESS_NONE,
+		COMPRESS_RANGE_CODER,
+		COMPRESS_FASTLZ,
+		COMPRESS_ZLIB
+	};
+private:
+
 
 	enum {
 		SYSMSG_ADD_PEER,
@@ -37,12 +47,23 @@ class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
 		int from;
 	};
 
+	CompressionMode compression_mode;
+
 	mutable List<Packet> incoming_packets;
 
 	mutable Packet current_packet;
 
 	uint32_t _gen_unique_id() const;
 	void _pop_current_packet() const;
+
+	Vector<uint8_t> src_compressor_mem;
+	Vector<uint8_t> dst_compressor_mem;
+
+	ENetCompressor enet_compressor;
+	static size_t enet_compress(void * context, const ENetBuffer * inBuffers, size_t inBufferCount, size_t inLimit, enet_uint8 * outData, size_t outLimit);
+	static size_t  enet_decompress (void * context, const enet_uint8 * inData, size_t inLimit, enet_uint8 * outData, size_t outLimit);
+	static void enet_compressor_destroy(void * context);
+	void _setup_compressor();
 
 protected:
 	static void _bind_methods();
@@ -77,9 +98,14 @@ public:
 
 	virtual int get_unique_id() const;
 
+	void set_compression_mode(CompressionMode p_mode);
+	CompressionMode get_compression_mode() const;
+
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();
 };
+
+VARIANT_ENUM_CAST(NetworkedMultiplayerENet::CompressionMode);
 
 
 #endif // NETWORKED_MULTIPLAYER_ENET_H

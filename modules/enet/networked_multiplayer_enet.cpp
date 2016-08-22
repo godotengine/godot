@@ -38,6 +38,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 
 	ERR_FAIL_COND_V(!host,ERR_CANT_CREATE);
 
+	_setup_compressor();
 	active=true;
 	server=true;
 	refuse_connections=false;
@@ -57,6 +58,8 @@ Error NetworkedMultiplayerENet::create_client(const IP_Address& p_ip, int p_port
 
 	ERR_FAIL_COND_V(!host,ERR_CANT_CREATE);
 
+
+	_setup_compressor();
 
 	ENetAddress address;
 	address.host=p_ip.host;
@@ -494,13 +497,124 @@ bool NetworkedMultiplayerENet::is_refusing_new_connections() const {
 	return refuse_connections;
 }
 
+void NetworkedMultiplayerENet::set_compression_mode(CompressionMode p_mode) {
+
+	compression_mode=p_mode;
+}
+
+NetworkedMultiplayerENet::CompressionMode NetworkedMultiplayerENet::get_compression_mode() const{
+
+	return compression_mode;
+}
+
+size_t NetworkedMultiplayerENet::enet_compress(void * context, const ENetBuffer * inBuffers, size_t inBufferCount, size_t inLimit, enet_uint8 * outData, size_t outLimit) {
+
+	NetworkedMultiplayerENet *enet = (NetworkedMultiplayerENet*)(context);
+
+	if (size_t(enet->src_compressor_mem.size())<inLimit) {
+		enet->src_compressor_mem.resize( inLimit );
+	}
+
+	int total = inLimit;
+	int ofs=0;
+	while(total) {
+		for(size_t i=0;i<inBufferCount;i++) {
+			int to_copy = MIN(total,int(inBuffers[i].dataLength));
+			copymem(&enet->src_compressor_mem[ofs],inBuffers[i].data,to_copy);
+			ofs+=to_copy;
+			total-=to_copy;
+		}
+	}
+
+	Compression::Mode mode;
+
+	switch(enet->compression_mode) {
+		case COMPRESS_FASTLZ: {
+			mode=Compression::MODE_FASTLZ;
+		} break;
+		case COMPRESS_ZLIB: {
+			mode=Compression::MODE_DEFLATE;
+		} break;
+		default: { ERR_FAIL_V(0); }
+	}
+
+	int req_size = Compression::get_max_compressed_buffer_size(ofs,mode);
+	if (enet->dst_compressor_mem.size()<req_size) {
+		enet->dst_compressor_mem.resize(req_size);
+	}
+	int ret=Compression::compress(enet->dst_compressor_mem.ptr(),enet->src_compressor_mem.ptr(),ofs,mode);
+
+	if (ret<0)
+		return 0;
+
+
+	if (ret>int(outLimit))
+		return 0; //do not bother
+
+	copymem(outData,enet->dst_compressor_mem.ptr(),ret);
+
+	return ret;
+}
+
+size_t NetworkedMultiplayerENet::enet_decompress (void * context, const enet_uint8 * inData, size_t inLimit, enet_uint8 * outData, size_t outLimit){
+
+	NetworkedMultiplayerENet *enet = (NetworkedMultiplayerENet*)(context);
+	int ret = -1;
+	switch(enet->compression_mode) {
+		case COMPRESS_FASTLZ: {
+
+			ret=Compression::decompress(outData,outLimit,inData,inLimit,Compression::MODE_FASTLZ);
+		} break;
+		case COMPRESS_ZLIB: {
+
+			ret=Compression::decompress(outData,outLimit,inData,inLimit,Compression::MODE_DEFLATE);
+		} break;
+		default: {}
+	}
+	if (ret<0) {
+		return 0;
+	} else {
+		return ret;
+	}
+}
+
+void NetworkedMultiplayerENet::_setup_compressor() {
+
+	switch(compression_mode) {
+
+		case COMPRESS_NONE: {
+
+			enet_host_compress(host,NULL);
+		} break;
+		case COMPRESS_RANGE_CODER: {
+			enet_host_compress_with_range_coder(host);
+		} break;
+		case COMPRESS_FASTLZ:
+		case COMPRESS_ZLIB: {
+
+			enet_host_compress(host,&enet_compressor);
+		} break;
+	}
+}
+
+void NetworkedMultiplayerENet::enet_compressor_destroy(void * context){
+
+	//do none
+}
+
 
 void NetworkedMultiplayerENet::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("create_server","port","max_clients","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_server,DEFVAL(32),DEFVAL(0),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("create_client","ip","port","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_client,DEFVAL(0),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("close_connection"),&NetworkedMultiplayerENet::close_connection);
+	ObjectTypeDB::bind_method(_MD("set_compression_mode","mode"),&NetworkedMultiplayerENet::set_compression_mode);
+	ObjectTypeDB::bind_method(_MD("get_compression_mode"),&NetworkedMultiplayerENet::get_compression_mode);
 
+	BIND_CONSTANT( COMPRESS_NONE );
+	BIND_CONSTANT( COMPRESS_RANGE_CODER );
+	BIND_CONSTANT( COMPRESS_FASTLZ );
+	BIND_CONSTANT( COMPRESS_ZLIB );
 
 }
 
@@ -515,6 +629,12 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet(){
 	current_packet.packet=NULL;
 	transfer_mode=TRANSFER_MODE_RELIABLE;
 	connection_status=CONNECTION_DISCONNECTED;
+	compression_mode=COMPRESS_NONE;
+	enet_compressor.context=this;
+	enet_compressor.compress=enet_compress;
+	enet_compressor.decompress=enet_decompress;
+	enet_compressor.destroy=enet_compressor_destroy;
+
 }
 
 NetworkedMultiplayerENet::~NetworkedMultiplayerENet(){

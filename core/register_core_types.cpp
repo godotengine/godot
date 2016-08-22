@@ -118,6 +118,7 @@ void register_core_types() {
 	ObjectTypeDB::register_type<Resource>();
 	ObjectTypeDB::register_type<FuncRef>();
 	ObjectTypeDB::register_virtual_type<StreamPeer>();
+	ObjectTypeDB::register_type<StreamPeerBuffer>();
 	ObjectTypeDB::register_create_type<StreamPeerTCP>();
 	ObjectTypeDB::register_create_type<TCP_Server>();
 	ObjectTypeDB::register_create_type<PacketPeerUDP>();

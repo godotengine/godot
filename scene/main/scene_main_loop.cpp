@@ -44,7 +44,7 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
-
+#include "io/marshalls.h"
 
 void SceneTreeTimer::_bind_methods() {
 
@@ -1760,6 +1760,11 @@ void SceneTree::_rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const St
 		ERR_FAIL();
 	}
 
+	if (p_argcount>255) {
+		ERR_EXPLAIN("Too many arguments >255.");
+		ERR_FAIL();
+	}
+
 	if (p_to!=0 && !connected_peers.has(ABS(p_to))) {
 		if (p_to==get_network_unique_id()) {
 			ERR_EXPLAIN("Attempt to remote call/set yourself! unique ID: "+itos(get_network_unique_id()));
@@ -1774,25 +1779,7 @@ void SceneTree::_rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const St
 	NodePath from_path = p_from->get_path();
 	ERR_FAIL_COND(from_path.is_empty());
 
-	//create base packet
-	Array message;
 
-	message.resize(3+p_argcount); //alloc size for args
-
-	//set message type
-	if (p_set) {
-		message[0]=NETWORK_COMMAND_REMOTE_SET;
-	} else {
-		message[0]=NETWORK_COMMAND_REMOTE_CALL;
-	}
-
-	//set message name
-	message[2]=p_name;
-
-	//set message args
-	for(int i=0;i<p_argcount;i++) {
-		message[3+i]=*p_arg[i];
-	}
 
 	//see if the path is cached
 	PathSentCache *psc = path_send_cache.getptr(from_path);
@@ -1801,6 +1788,53 @@ void SceneTree::_rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const St
 		path_send_cache[from_path]=PathSentCache();
 		psc = path_send_cache.getptr(from_path);
 		psc->id=last_send_cache_id++;
+
+	}
+
+
+	//create base packet, lots of harcode because it must be tight
+
+	int ofs=0;
+
+#define MAKE_ROOM(m_amount) if (packet_cache.size() < m_amount) packet_cache.resize(m_amount);
+
+	//encode type
+	MAKE_ROOM(1);
+	packet_cache[0]=p_set ? NETWORK_COMMAND_REMOTE_SET : NETWORK_COMMAND_REMOTE_CALL;
+	ofs+=1;
+
+	//encode ID
+	MAKE_ROOM(ofs+4);
+	encode_uint32(psc->id,&packet_cache[ofs]);
+	ofs+=4;
+
+	//encode function name
+	CharString name = String(p_name).utf8();
+	int len = encode_cstring(name.get_data(),NULL);
+	MAKE_ROOM(ofs+len);
+	encode_cstring(name.get_data(),&packet_cache[ofs]);
+	ofs+=len;
+
+	if (p_set) {
+		//set argument
+		Error err = encode_variant(*p_arg[0],NULL,len);
+		ERR_FAIL_COND(err!=OK);
+		MAKE_ROOM(ofs+len);
+		encode_variant(*p_arg[0],&packet_cache[ofs],len);
+		ofs+=len;
+
+	} else {
+		//call arguments
+		MAKE_ROOM(ofs+1);
+		packet_cache[ofs]=p_argcount;
+		ofs+=1;
+		for(int i=0;i<p_argcount;i++) {
+			Error err = encode_variant(*p_arg[i],NULL,len);
+			ERR_FAIL_COND(err!=OK);
+			MAKE_ROOM(ofs+len);
+			encode_variant(*p_arg[i],&packet_cache[ofs],len);
+			ofs+=len;
+		}
 
 	}
 
@@ -1834,15 +1868,20 @@ void SceneTree::_rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const St
 
 	for (List<int>::Element *E=peers_to_add.front();E;E=E->next()) {
 
-		Array add_path_message;
-		add_path_message.resize(3);
-		add_path_message[0]=NETWORK_COMMAND_SIMPLIFY_PATH;
-		add_path_message[1]=from_path;
-		add_path_message[2]=psc->id;
+		//encode function name
+		CharString pname = String(from_path).utf8();
+		int len = encode_cstring(pname.get_data(),NULL);
+
+		Vector<uint8_t> packet;
+
+		packet.resize(1+4+len);
+		packet[0]=NETWORK_COMMAND_SIMPLIFY_PATH;
+		encode_uint32(psc->id,&packet[1]);
+		encode_cstring(pname.get_data(),&packet[5]);
 
 		network_peer->set_target_peer(E->get()); //to all of you
 		network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
-		network_peer->put_var(add_path_message); //a message with love
+		network_peer->put_packet(packet.ptr(),packet.size());
 
 		psc->confirmed_peers.insert(E->get(),false); //insert into confirmed, but as false since it was not confirmed
 	}
@@ -1853,12 +1892,18 @@ void SceneTree::_rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const St
 	if (has_all_peers) {
 
 		//they all have verified paths, so send fast
-		message[1]=psc->id;
-
 		network_peer->set_target_peer(p_to); //to all of you
-		network_peer->put_var(message); //a message with love
+		network_peer->put_packet(packet_cache.ptr(),ofs); //a message with love
 	} else {
 		//not all verified path, so send one by one
+
+		//apend path at the end, since we will need it for some packets
+		CharString pname = String(from_path).utf8();
+		int path_len = encode_cstring(pname.get_data(),NULL);
+		MAKE_ROOM(ofs+path_len);
+		encode_cstring(pname.get_data(),&packet_cache[ofs]);
+
+
 		for (Set<int>::Element *E=connected_peers.front();E;E=E->next()) {
 
 			if (p_to<0 && E->get()==-p_to)
@@ -1874,41 +1919,52 @@ void SceneTree::_rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const St
 
 			if (F->get()==true) {
 				//this one confirmed path, so use id
-				message[1]=psc->id;
+				encode_uint32(psc->id,&packet_cache[1]);
+				network_peer->put_packet(packet_cache.ptr(),ofs);
 			} else {
 				//this one did not confirm path yet, so use entire path (sorry!)
-				message[1]=from_path;
+				encode_uint32(0x80000000|ofs,&packet_cache[1]); //offset to path and flag
+				network_peer->put_packet(packet_cache.ptr(),ofs+path_len);
 			}
 
-			network_peer->put_var(message);
 		}
 	}
 }
 
 
-void SceneTree::_network_process_packet(int p_from, const Array& p_packet) {
+void SceneTree::_network_process_packet(int p_from, const uint8_t* p_packet, int p_packet_len) {
 
-	ERR_FAIL_COND(p_packet.empty());
+	ERR_FAIL_COND(p_packet_len<5);
 
-	int packet_type = p_packet[0];
+	uint8_t packet_type = p_packet[0];
 
 	switch(packet_type) {
 
 		case NETWORK_COMMAND_REMOTE_CALL:
 		case NETWORK_COMMAND_REMOTE_SET: {
 
-			ERR_FAIL_COND(p_packet.size()<3);
-			Variant target = p_packet[1];
-			Node* node=NULL;
+			ERR_FAIL_COND(p_packet_len<5);
+			uint32_t target = decode_uint32(&p_packet[1]);
 
-			if (target.get_type()==Variant::NODE_PATH) {
-				NodePath np = target;
+
+			Node *node=NULL;
+
+			if (target&0x80000000) {
+
+				int ofs = target&0x7FFFFFFF;
+				ERR_FAIL_COND(ofs>=p_packet_len);
+
+				String paths;
+				paths.parse_utf8((const char*)&p_packet[ofs],p_packet_len-ofs);
+
+				NodePath np = paths;
+
 				node = get_root()->get_node(np);
 				if (node==NULL) {
 					ERR_EXPLAIN("Failed to get path from RPC: "+String(np));
 					ERR_FAIL_COND(node==NULL);
 				}
-			} else if (target.get_type()==Variant::INT) {
+			} else {
 
 				int id = target;
 
@@ -1928,26 +1984,51 @@ void SceneTree::_network_process_packet(int p_from, const Array& p_packet) {
 				}
 
 
-			} else {
-				ERR_FAIL();
 			}
 
-			StringName name = p_packet[2];
+			ERR_FAIL_COND(p_packet_len<6);
+
+			//detect cstring end
+			int len_end=5;
+			for(;len_end<p_packet_len;len_end++) {
+				if (p_packet[len_end]==0) {
+					break;
+				}
+			}
+
+			ERR_FAIL_COND(len_end>=p_packet_len);
+
+			StringName name = String::utf8((const char*)&p_packet[5]);
+
+
+
 
 			if (packet_type==NETWORK_COMMAND_REMOTE_CALL) {
 
 				if (!node->can_call_rpc(name))
 					return;
 
-				int argc = p_packet.size()-3;
+				int ofs = len_end+1;
+
+				ERR_FAIL_COND(ofs>=p_packet_len);
+
+				int argc = p_packet[ofs];
 				Vector<Variant> args;
 				Vector<const Variant*> argp;
 				args.resize(argc);
 				argp.resize(argc);
 
+				ofs++;
+
 				for(int i=0;i<argc;i++) {
-					args[i]=p_packet[3+i];
-					argp[i]=&args[i];
+
+					ERR_FAIL_COND(ofs>=p_packet_len);
+					int vlen;
+					Error err = decode_variant(args[i],&p_packet[ofs],p_packet_len-ofs,&vlen);
+					ERR_FAIL_COND(err!=OK);
+					//args[i]=p_packet[3+i];
+					argp[i]=&args[i];					
+					ofs+=vlen;
 				}
 
 				Variant::CallError ce;
@@ -1964,9 +2045,13 @@ void SceneTree::_network_process_packet(int p_from, const Array& p_packet) {
 				if (!node->can_call_rset(name))
 					return;
 
+				int ofs = len_end+1;
 
-				ERR_FAIL_COND(p_packet.size()!=4);
-				Variant value = p_packet[3];
+				ERR_FAIL_COND(ofs>=p_packet_len);
+
+				Variant value;
+				decode_variant(value,&p_packet[ofs],p_packet_len-ofs);
+
 				bool valid;
 
 				node->set(name,value,&valid);
@@ -1979,9 +2064,13 @@ void SceneTree::_network_process_packet(int p_from, const Array& p_packet) {
 		} break;
 		case NETWORK_COMMAND_SIMPLIFY_PATH: {
 
-			ERR_FAIL_COND(p_packet.size()!=3);
-			NodePath path = p_packet[1];
-			int id = p_packet[2];
+			ERR_FAIL_COND(p_packet_len<5);
+			int id = decode_uint32(&p_packet[1]);
+
+			String paths;
+			paths.parse_utf8((const char*)&p_packet[5],p_packet_len-5);
+
+			NodePath path = paths;
 
 			if (!path_get_cache.has(p_from)) {
 				path_get_cache[p_from]=PathGetCache();
@@ -1993,19 +2082,31 @@ void SceneTree::_network_process_packet(int p_from, const Array& p_packet) {
 
 			path_get_cache[p_from].nodes[id]=ni;
 
-			network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
-			network_peer->set_target_peer(p_from);
 
-			Array message;
-			message.resize(2);
-			message[0]=NETWORK_COMMAND_CONFIRM_PATH;
-			message[1]=path;
-			network_peer->put_var(message);
+			{
+				//send ack
+
+				//encode path
+				CharString pname = String(path).utf8();
+				int len = encode_cstring(pname.get_data(),NULL);
+
+				Vector<uint8_t> packet;
+
+				packet.resize(1+len);
+				packet[0]=NETWORK_COMMAND_CONFIRM_PATH;
+				encode_cstring(pname.get_data(),&packet[1]);
+
+				network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
+				network_peer->set_target_peer(p_from);
+				network_peer->put_packet(packet.ptr(),packet.size());
+			}
 		} break;
 		case NETWORK_COMMAND_CONFIRM_PATH: {
 
-			ERR_FAIL_COND(p_packet.size()!=2);
-			NodePath path = p_packet[1];
+			String paths;
+			paths.parse_utf8((const char*)&p_packet[1],p_packet_len-1);
+
+			NodePath path = paths;
 
 			PathSentCache *psc = path_send_cache.getptr(path);
 			ERR_FAIL_COND(!psc);
@@ -2031,17 +2132,15 @@ void SceneTree::_network_poll() {
 	while(network_peer->get_available_packet_count()) {
 
 		int sender = network_peer->get_packet_peer();
-		Variant packet;
-		Error err = network_peer->get_var(packet);
+		const uint8_t *packet;
+		int len;
+
+		Error err = network_peer->get_packet(&packet,len);
 		if (err!=OK) {
 			ERR_PRINT("Error getting packet!");
 		}
-		if (packet.get_type()!=Variant::ARRAY) {
 
-			ERR_PRINT("Error getting packet! (not an array)");
-		}
-
-		_network_process_packet(sender,packet);
+		_network_process_packet(sender,packet,len);
 
 		if (!network_peer.is_valid()) {
 			break; //it's also possible that a packet or RPC caused a disconnection, so also check here
