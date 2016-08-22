@@ -3128,7 +3128,7 @@ void Tree::ensure_cursor_is_visible() {
 	int screenh=get_size().height-h_scroll->get_combined_minimum_size().height;
 
 	if (ofs+h>v_scroll->get_val()+screenh)
-		v_scroll->set_val(ofs-screenh+h);
+		v_scroll->call_deferred("set_val", ofs-screenh+h);
 	else if (ofs < v_scroll->get_val())
 		v_scroll->set_val(ofs);
 }
