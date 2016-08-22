@@ -1508,7 +1508,7 @@ msgstr ""
 
 #: tools/editor/editor_autoload_settings.cpp
 msgid "Invalid Path."
-msgstr "Ruta inválida."
+msgstr "Ruta válida."
 
 #: tools/editor/editor_autoload_settings.cpp
 msgid "File does not exist."
