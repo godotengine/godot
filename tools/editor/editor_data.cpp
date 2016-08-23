@@ -834,7 +834,7 @@ void EditorSelection::_node_removed(Node *p_node) {
 void EditorSelection::add_node(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
-
+	ERR_FAIL_COND(!p_node->is_inside_tree());
 	if (selection.has(p_node))
 		return;
 
