@@ -21,12 +21,12 @@ int NetworkedMultiplayerENet::get_packet_peer() const{
 
 }
 
-Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth){
+Error NetworkedMultiplayerENet::create_server(const IP_Address& p_ip, int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth){
 
 	ERR_FAIL_COND_V(active,ERR_ALREADY_IN_USE);
 
 	ENetAddress address;
-	address.host = ENET_HOST_ANY;
+	address.host = p_ip.host;
 
 	address.port = p_port;
 
@@ -45,6 +45,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	connection_status=CONNECTION_CONNECTED;
 	return OK;
 }
+
 Error NetworkedMultiplayerENet::create_client(const IP_Address& p_ip, int p_port, int p_in_bandwidth, int p_out_bandwidth){
 
 	ERR_FAIL_COND_V(active,ERR_ALREADY_IN_USE);
@@ -497,7 +498,7 @@ bool NetworkedMultiplayerENet::is_refusing_new_connections() const {
 
 void NetworkedMultiplayerENet::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("create_server","port","max_clients","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_server,DEFVAL(32),DEFVAL(0),DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("create_server","ip","port","max_clients","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_server,DEFVAL(32),DEFVAL(0),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("create_client","ip","port","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_client,DEFVAL(0),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("close_connection"),&NetworkedMultiplayerENet::close_connection);
 
