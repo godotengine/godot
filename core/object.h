@@ -70,6 +70,14 @@ enum PropertyHint {
 	PROPERTY_HINT_OBJECT_ID,
 	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
 	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, ///< so something else can provide this (used in scripts)
+	PROPERTY_HINT_METHOD_OF_VARIANT_TYPE, ///< a method of a type
+	PROPERTY_HINT_METHOD_OF_BASE_TYPE, ///< a method of a base type
+	PROPERTY_HINT_METHOD_OF_INSTANCE, ///< a method of an instance
+	PROPERTY_HINT_METHOD_OF_SCRIPT, ///< a method of a script & base
+	PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE, ///< a property of a type
+	PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, ///< a property of a base type
+	PROPERTY_HINT_PROPERTY_OF_INSTANCE, ///< a property of an instance
+	PROPERTY_HINT_PROPERTY_OF_SCRIPT, ///< a property of a script & base
 	PROPERTY_HINT_MAX,
 };
 

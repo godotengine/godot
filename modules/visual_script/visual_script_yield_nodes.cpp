@@ -595,7 +595,7 @@ VisualScriptNodeInstance* VisualScriptYieldSignal::instance(VisualScriptInstance
 }
 VisualScriptYieldSignal::VisualScriptYieldSignal() {
 
-	call_mode=CALL_MODE_INSTANCE;
+	call_mode=CALL_MODE_SELF;
 	base_type="Object";
 
 }

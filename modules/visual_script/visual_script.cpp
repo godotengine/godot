@@ -656,7 +656,7 @@ Dictionary VisualScript::_get_variable_info(const StringName& p_name) const{
 	return d;
 }
 
-void VisualScript::get_variable_list(List<StringName> *r_variables){
+void VisualScript::get_variable_list(List<StringName> *r_variables) const{
 
 
 	for (Map<StringName,Variable>::Element *E=variables.front();E;E=E->next()) {
@@ -1043,6 +1043,17 @@ MethodInfo VisualScript::get_method_info(const StringName& p_method) const{
 	}
 
 	return mi;
+}
+
+void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
+
+	List<StringName> vars;
+	get_variable_list(&vars);
+
+	for (List<StringName>::Element *E=vars.front();E;E=E->next()) {
+
+		p_list->push_back(variables[E->get()].info);
+	}
 }
 
 

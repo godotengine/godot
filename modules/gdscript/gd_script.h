@@ -186,6 +186,9 @@ public:
 	virtual bool has_method(const StringName& p_method) const;
 	virtual MethodInfo get_method_info(const StringName& p_method) const;
 
+	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+
+
 	virtual ScriptLanguage *get_language() const;
 
 	GDScript();

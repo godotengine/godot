@@ -575,6 +575,11 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 			}
 			emit_signal("connection_request",from,from_slot,to,to_slot);
 
+		} else {
+			String from = connecting_from;
+			int from_slot = connecting_index;
+			Vector2 ofs = Vector2(p_ev.mouse_button.x,p_ev.mouse_button.y);
+			emit_signal("connection_to_empty",from,from_slot,ofs);
 		}
 		connecting=false;
 		top_layer->update();
@@ -1166,6 +1171,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2,"p_position")));
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
 	ADD_SIGNAL(MethodInfo("node_selected",PropertyInfo(Variant::OBJECT,"node")));
+	ADD_SIGNAL(MethodInfo("connection_to_empty",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::VECTOR2,"release_pos")));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
 	ADD_SIGNAL(MethodInfo("_begin_node_move"));
 	ADD_SIGNAL(MethodInfo("_end_node_move"));

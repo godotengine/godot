@@ -275,7 +275,7 @@ public:
 	Variant get_variable_default_value(const StringName& p_name) const;
 	void set_variable_info(const StringName& p_name,const PropertyInfo& p_info);
 	PropertyInfo get_variable_info(const StringName& p_name) const;
-	void get_variable_list(List<StringName> *r_variables);
+	void get_variable_list(List<StringName> *r_variables) const;
 	void rename_variable(const StringName& p_name,const StringName& p_new_name);
 
 
@@ -325,6 +325,7 @@ public:
 	virtual bool has_method(const StringName& p_method) const;
 	virtual MethodInfo get_method_info(const StringName& p_method) const;
 
+	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
 
 
 	VisualScript();

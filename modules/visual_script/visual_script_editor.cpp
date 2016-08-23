@@ -438,6 +438,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->set_modulate(EditorSettings::get_singleton()->get("visual_script_editor/color_"+node->get_category()));
 		}
 
+
+
 		gnode->set_meta("__vnode",node);
 		gnode->set_name(itos(E->get()));
 		gnode->connect("dragged",this,"_node_moved",varray(E->get()));
@@ -1530,7 +1532,7 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 			}
 
 			ofs/=EDSCALE;
-
+#if 0
 			Ref<VisualScriptScriptCall> vnode;
 			vnode.instance();
 			vnode->set_call_mode(VisualScriptScriptCall::CALL_MODE_SELF);
@@ -1550,6 +1552,7 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 				graph->set_selected(node);
 				_node_selected(node);
 			}
+#endif
 		}
 
 
@@ -2251,6 +2254,11 @@ void VisualScriptEditor::_graph_disconnected(const String& p_from,int p_from_slo
 }
 
 
+void VisualScriptEditor::_graph_connect_to_empty(const String& p_from,int p_from_slot,const Vector2& p_release_pos) {
+
+
+}
+
 void VisualScriptEditor::_default_value_changed() {
 
 
@@ -2410,6 +2418,8 @@ void VisualScriptEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_graph_connected",&VisualScriptEditor::_graph_connected);
 	ObjectTypeDB::bind_method("_graph_disconnected",&VisualScriptEditor::_graph_disconnected);
+	ObjectTypeDB::bind_method("_graph_connect_to_empty",&VisualScriptEditor::_graph_connect_to_empty);
+
 	ObjectTypeDB::bind_method("_update_graph_connections",&VisualScriptEditor::_update_graph_connections);
 	ObjectTypeDB::bind_method("_node_filter_changed",&VisualScriptEditor::_node_filter_changed);
 
@@ -2532,6 +2542,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	graph->connect("connection_request",this,"_graph_connected");
 	graph->connect("disconnection_request",this,"_graph_disconnected");
+	graph->connect("connection_to_empty",this,"_graph_connect_to_empty");
 
 	edit_signal_dialog = memnew( AcceptDialog );
 	edit_signal_dialog->get_ok()->set_text(TTR("Close"));

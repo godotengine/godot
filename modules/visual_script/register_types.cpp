@@ -66,7 +66,7 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_type<VisualScriptFunctionCall>();
 	ObjectTypeDB::register_type<VisualScriptPropertySet>();
 	ObjectTypeDB::register_type<VisualScriptPropertyGet>();
-	ObjectTypeDB::register_type<VisualScriptScriptCall>();
+//	ObjectTypeDB::register_type<VisualScriptScriptCall>();
 	ObjectTypeDB::register_type<VisualScriptEmitSignal>();
 
 	ObjectTypeDB::register_type<VisualScriptReturn>();
