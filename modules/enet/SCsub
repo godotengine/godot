@@ -2,5 +2,7 @@ Import('env')
 
 env.add_source_files(env.modules_sources,"*.cpp")
 env.add_source_files(env.modules_sources,"*.c")
+#TODO: Make it possible to build against system enet
+env.Append(CPPPATH = ["#modules/enet"])
 
 Export('env')
