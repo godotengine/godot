@@ -44,6 +44,7 @@ class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
 	uint32_t _gen_unique_id() const;
 	void _pop_current_packet() const;
 
+	enet_uint32 bind_ip;
 protected:
 	static void _bind_methods();
 public:
@@ -79,6 +80,8 @@ public:
 
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();
+
+	void set_bind_ip(const IP_Address& p_ip);
 };
 
 

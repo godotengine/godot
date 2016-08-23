@@ -26,7 +26,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	ERR_FAIL_COND_V(active,ERR_ALREADY_IN_USE);
 
 	ENetAddress address;
-	address.host = ENET_HOST_ANY;
+	address.host = bind_ip;
 
 	address.port = p_port;
 
@@ -500,7 +500,7 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("create_server","port","max_clients","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_server,DEFVAL(32),DEFVAL(0),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("create_client","ip","port","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_client,DEFVAL(0),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("close_connection"),&NetworkedMultiplayerENet::close_connection);
-
+	ObjectTypeDB::bind_method(_MD("set_bind_ip", "ip"),&NetworkedMultiplayerENet::set_bind_ip);
 
 }
 
@@ -515,9 +515,16 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet(){
 	current_packet.packet=NULL;
 	transfer_mode=TRANSFER_MODE_RELIABLE;
 	connection_status=CONNECTION_DISCONNECTED;
+	bind_ip=ENET_HOST_ANY;
 }
 
 NetworkedMultiplayerENet::~NetworkedMultiplayerENet(){
 
 	close_connection();
+}
+
+// sets IP for ENet to bind when using create_server
+// if no IP is set, then ENet bind to ENET_HOST_ANY
+void NetworkedMultiplayerENet::set_bind_ip(const IP_Address& p_ip){
+	bind_ip=p_ip.host;
 }
