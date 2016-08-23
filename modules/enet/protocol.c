@@ -1692,7 +1692,7 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
                                         & host -> buffers [1], host -> bufferCount - 1,
                                         originalSize,
                                         host -> packetData [1],
-                                        originalSize);
+					originalSize);
             if (compressedSize > 0 && compressedSize < originalSize)
             {
                 host -> headerFlags |= ENET_PROTOCOL_HEADER_FLAG_COMPRESSED;

@@ -112,7 +112,9 @@ private:
 	bool updating;
 	List<Connection> connections;
 
-	void _draw_cos_line(const Vector2& p_from, const Vector2& p_to, const Color& p_color, const Color &p_to_color);
+	void _bake_segment2d(CanvasItem* p_where,float p_begin, float p_end, const Vector2& p_a, const Vector2& p_out, const Vector2& p_b, const Vector2& p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color& p_color, const Color& p_to_color, int &lines) const;
+
+	void _draw_cos_line(CanvasItem* p_where,const Vector2& p_from, const Vector2& p_to, const Color& p_color, const Color &p_to_color);
 
 	void _graph_node_raised(Node* p_gn);
 	void _graph_node_moved(Node *p_gn);
@@ -127,6 +129,9 @@ private:
 	void _update_scroll_offset();
 
 	Array _get_connection_list() const;
+
+	bool lines_on_bg;
+
 
 	struct ConnType {
 

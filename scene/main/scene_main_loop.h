@@ -217,7 +217,9 @@ private:
 
 	Map<int,PathGetCache> path_get_cache;
 
-	void _network_process_packet(int p_from, const Array& p_packet);
+	Vector<uint8_t> packet_cache;
+
+	void _network_process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void _network_poll();
 
 	static SceneTree *singleton;

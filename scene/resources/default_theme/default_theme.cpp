@@ -930,6 +930,8 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	t->set_stylebox("bg","GraphEdit", make_stylebox( tree_bg_png,4,4,4,5) );
 	t->set_color("grid_minor","GraphEdit", Color(1,1,1,0.05) );
 	t->set_color("grid_major","GraphEdit", Color(1,1,1,0.2) );
+	t->set_constant("bezier_len_pos","GraphEdit", 80*scale );
+	t->set_constant("bezier_len_neg","GraphEdit", 160*scale );
 
 
 

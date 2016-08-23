@@ -61,6 +61,7 @@ Error GraphEdit::connect_node(const StringName& p_from, int p_from_port,const St
 	c.to_port=p_to_port;
 	connections.push_back(c);
 	top_layer->update();
+	update();
 
 	return OK;
 }
@@ -85,6 +86,7 @@ void GraphEdit::disconnect_node(const StringName& p_from, int p_from_port,const 
 
 			connections.erase(E);
 			top_layer->update();
+			update();
 			return;
 		}
 	}
@@ -118,10 +120,7 @@ void GraphEdit::_scroll_moved(double) {
 
 	_update_scroll_offset();
 	top_layer->update();
-	if (is_using_snap()) {
-		//must redraw grid
-		update();
-	}
+	update();
 
 	if (!setting_scroll_ofs) {//in godot, signals on change value are avoided as a convention
 		emit_signal("scroll_offset_changed",get_scroll_ofs());
@@ -205,6 +204,7 @@ void GraphEdit::_graph_node_moved(Node *p_gn) {
 	GraphNode *gn=p_gn->cast_to<GraphNode>();
 	ERR_FAIL_COND(!gn);
 	top_layer->update();
+	update();
 }
 
 void GraphEdit::add_child_notify(Node *p_child) {
@@ -306,11 +306,60 @@ void GraphEdit::_notification(int p_what) {
 
 		}
 
+		{
+			//draw connections
+			List<List<Connection>::Element* > to_erase;
+			for(List<Connection>::Element *E=connections.front();E;E=E->next()) {
+
+				NodePath fromnp(E->get().from);
+
+				Node * from = get_node(fromnp);
+				if (!from) {
+					to_erase.push_back(E);
+					continue;
+				}
+
+				GraphNode *gfrom = from->cast_to<GraphNode>();
+
+				if (!gfrom) {
+					to_erase.push_back(E);
+					continue;
+				}
+
+				NodePath tonp(E->get().to);
+				Node * to = get_node(tonp);
+				if (!to) {
+					to_erase.push_back(E);
+					continue;
+				}
+
+				GraphNode *gto = to->cast_to<GraphNode>();
+
+				if (!gto) {
+					to_erase.push_back(E);
+					continue;
+				}
+
+				Vector2 frompos=gfrom->get_connection_output_pos(E->get().from_port)+gfrom->get_pos();
+				Color color = gfrom->get_connection_output_color(E->get().from_port);
+				Vector2 topos=gto->get_connection_input_pos(E->get().to_port)+gto->get_pos();
+				Color tocolor = gto->get_connection_input_color(E->get().to_port);
+				_draw_cos_line(this,frompos,topos,color,tocolor);
+
+			}
+
+			while(to_erase.size()) {
+				connections.erase(to_erase.front()->get());
+				to_erase.pop_front();
+			}
+		}
+
 	}
 
 	if (p_what==NOTIFICATION_RESIZED) {
 		_update_scroll();
 		top_layer->update();
+
 	}
 }
 
@@ -466,7 +515,7 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 
 		connecting_to=Vector2(p_ev.mouse_motion.x,p_ev.mouse_motion.y);
 		connecting_target=false;
-		top_layer->update();
+		top_layer->update();		
 
 		Ref<Texture> port =get_icon("port","GraphNode");
 		Vector2 mpos(p_ev.mouse_button.x,p_ev.mouse_button.y);
@@ -529,15 +578,82 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 		}
 		connecting=false;
 		top_layer->update();
+		update();
 
 	}
 
 }
 
-void GraphEdit::_draw_cos_line(const Vector2& p_from, const Vector2& p_to,const Color& p_color,const Color& p_to_color) {
+
+template<class Vector2>
+static _FORCE_INLINE_ Vector2 _bezier_interp(real_t t, Vector2 start, Vector2 control_1, Vector2 control_2, Vector2 end) {
+    /* Formula from Wikipedia article on Bezier curves. */
+	real_t omt = (1.0 - t);
+	real_t omt2 = omt*omt;
+	real_t omt3 = omt2*omt;
+	real_t t2 = t*t;
+	real_t t3 = t2*t;
+
+	return start * omt3
+	   + control_1 * omt2 * t * 3.0
+	   + control_2 * omt  * t2 * 3.0
+	   + end * t3;
+}
+
+
+void GraphEdit::_bake_segment2d(CanvasItem* p_where,float p_begin, float p_end,const Vector2& p_a,const Vector2& p_out,const Vector2& p_b, const Vector2& p_in,int p_depth,int p_min_depth,int p_max_depth,float p_tol,const Color& p_color,const Color& p_to_color,int &lines) const {
+
+	float mp = p_begin+(p_end-p_begin)*0.5;
+	Vector2 beg = _bezier_interp(p_begin,p_a,p_a+p_out,p_b+p_in,p_b);
+	Vector2 mid = _bezier_interp(mp,p_a,p_a+p_out,p_b+p_in,p_b);
+	Vector2 end = _bezier_interp(p_end,p_a,p_a+p_out,p_b+p_in,p_b);
+
+	Vector2 na = (mid-beg).normalized();
+	Vector2 nb = (end-mid).normalized();
+	float dp = Math::rad2deg(Math::acos(na.dot(nb)));
+
+	if (p_depth>=p_min_depth && ( dp<p_tol || p_depth>=p_max_depth)) {
+
+
+
+		p_where->draw_line(beg,end,p_color.linear_interpolate(p_to_color,mp),2);
+		lines++;
+	} else {
+		_bake_segment2d(p_where,p_begin,mp,p_a,p_out,p_b,p_in,p_depth+1,p_min_depth,p_max_depth,p_tol,p_color,p_to_color,lines);
+		_bake_segment2d(p_where,mp,p_end,p_a,p_out,p_b,p_in,p_depth+1,p_min_depth,p_max_depth,p_tol,p_color,p_to_color,lines);
+	}
+}
+
+
+void GraphEdit::_draw_cos_line(CanvasItem* p_where,const Vector2& p_from, const Vector2& p_to,const Color& p_color,const Color& p_to_color) {
+
+#if 1
+
+	//cubic bezier code
+	float diff = p_to.x-p_from.x;
+	float cp_offset;
+	int cp_len = get_constant("bezier_len_pos");
+	int cp_neg_len = get_constant("bezier_len_neg");
+
+	if (diff>0) {
+		cp_offset=MAX(cp_len,diff*0.5);
+	} else {
+		cp_offset=MAX(MIN(cp_len-diff,cp_neg_len),-diff*0.5);
+	}
+
+	Vector2 c1 = Vector2(cp_offset,0);
+	Vector2 c2 = Vector2(-cp_offset,0);
+
+	int lines=0;
+	_bake_segment2d(p_where,0,1,p_from,c1,p_to,c2,0,5,12,8,p_color,p_to_color,lines);
+	//print_line("used lines: "+itos(lines));
+
+
+#else
 
 	static const int steps = 20;
 
+	//old cosine code
 	Rect2 r;
 	r.pos=p_from;
 	r.expand_to(p_to);
@@ -547,6 +663,7 @@ void GraphEdit::_draw_cos_line(const Vector2& p_from, const Vector2& p_to,const 
 	Vector2 prev;
 	for(int i=0;i<=steps;i++) {
 
+
 		float d = i/float(steps);
 		float c=-Math::cos(d*Math_PI) * 0.5+0.5;
 		if (flip)
@@ -555,11 +672,12 @@ void GraphEdit::_draw_cos_line(const Vector2& p_from, const Vector2& p_to,const 
 
 		if (i>0) {
 
-			top_layer->draw_line(prev,p,p_color.linear_interpolate(p_to_color,d),2);
+			p_where->draw_line(prev,p,p_color.linear_interpolate(p_to_color,d),2);
 		}
 
 		prev=p;
 	}
+#endif
 }
 
 void GraphEdit::_top_layer_draw() {
@@ -589,53 +707,10 @@ void GraphEdit::_top_layer_draw() {
 			col.g+=0.4;
 			col.b+=0.4;
 		}
-		_draw_cos_line(pos,topos,col,col);
+		_draw_cos_line(top_layer,pos,topos,col,col);
 	}
 
-	List<List<Connection>::Element* > to_erase;
-	for(List<Connection>::Element *E=connections.front();E;E=E->next()) {
 
-		NodePath fromnp(E->get().from);
-
-		Node * from = get_node(fromnp);
-		if (!from) {
-			to_erase.push_back(E);
-			continue;
-		}
-
-		GraphNode *gfrom = from->cast_to<GraphNode>();
-
-		if (!gfrom) {
-			to_erase.push_back(E);
-			continue;
-		}
-
-		NodePath tonp(E->get().to);
-		Node * to = get_node(tonp);
-		if (!to) {
-			to_erase.push_back(E);
-			continue;
-		}
-
-		GraphNode *gto = to->cast_to<GraphNode>();
-
-		if (!gto) {
-			to_erase.push_back(E);
-			continue;
-		}
-
-		Vector2 frompos=gfrom->get_connection_output_pos(E->get().from_port)+gfrom->get_pos();
-		Color color = gfrom->get_connection_output_color(E->get().from_port);
-		Vector2 topos=gto->get_connection_input_pos(E->get().to_port)+gto->get_pos();
-		Color tocolor = gto->get_connection_input_color(E->get().to_port);
-		_draw_cos_line(frompos,topos,color,tocolor);
-
-	}
-
-	while(to_erase.size()) {
-		connections.erase(to_erase.front()->get());
-		to_erase.pop_front();
-	}
 	if (box_selecting)
 		top_layer->draw_rect(box_selecting_rect,Color(0.7,0.7,1.0,0.3));
 }
@@ -765,6 +840,7 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 			dragging = false;
 
 			top_layer->update();
+			update();
 		}
 
 		if (b.button_index==BUTTON_LEFT && b.pressed) {
@@ -1172,5 +1248,7 @@ GraphEdit::GraphEdit() {
 	zoom_hb->add_child(snap_amount);
 
 	setting_scroll_ofs=false;
+
+
 
 }
