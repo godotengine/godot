@@ -296,6 +296,10 @@ void DocData::generate(bool p_basic_types) {
 								default_arg_text=Variant::get_type_name(default_arg.get_type())+default_arg_text;
 								break;
 							case Variant::OBJECT:
+								if (default_arg.is_zero()) {
+									default_arg_text="NULL";
+									break;
+								}
 							case Variant::INPUT_EVENT:
 							case Variant::DICTIONARY:		// 20
 							case Variant::ARRAY:
