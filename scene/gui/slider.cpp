@@ -47,12 +47,15 @@ void Slider::_input_event(InputEvent p_event) {
 		if (mb.button_index==BUTTON_LEFT) {
 
 			if (mb.pressed)	{
+				Ref<Texture> grabber = get_icon(mouse_inside||has_focus()?"grabber_hilite":"grabber");				
 				grab.pos=orientation==VERTICAL?mb.y:mb.x;
-				double max = orientation==VERTICAL ? get_size().height : get_size().width ;
+				double grab_width = (double)grabber->get_size().width;
+				double grab_height = (double)grabber->get_size().height;
+				double max = orientation==VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
 				if (orientation==VERTICAL)
-					set_unit_value( 1 - ((double)grab.pos / max) );
+					set_unit_value( 1 - (((double)grab.pos - (grab_height / 2.0)) / max) );
 				else
-					set_unit_value((double)grab.pos / max);
+					set_unit_value(((double)grab.pos - (grab_width/2.0)) / max);
 				grab.active=true;
 				grab.uvalue=get_unit_value();
 			} else {
