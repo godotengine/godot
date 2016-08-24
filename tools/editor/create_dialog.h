@@ -34,6 +34,7 @@
 #include "scene/gui/tree.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/label.h"
+#include "editor_help.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -48,6 +49,10 @@ class CreateDialog : public ConfirmationDialog {
 	LineEdit *search_box;
 	Tree *search_options;
 	String base_type;
+
+	EditorHelpBit *help_bit;
+
+	void _item_selected();
 
 	void _update_search();
 

@@ -3,6 +3,8 @@
 
 #include "tools/editor/property_editor.h"
 #include "scene/gui/rich_text_label.h"
+#include "editor_help.h"
+
 class PropertySelector : public ConfirmationDialog {
 	OBJ_TYPE(PropertySelector,ConfirmationDialog )
 
@@ -17,8 +19,7 @@ class PropertySelector : public ConfirmationDialog {
 	void _confirmed();
 	void _text_changed(const String& p_newtext);
 
-	Panel *description;
-	RichTextLabel *rich_text;
+	EditorHelpBit *help_bit;
 
 	bool properties;
 	String selected;

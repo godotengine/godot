@@ -200,6 +200,23 @@ public:
 
 
 
+class EditorHelpBit : public Panel {
 
+	OBJ_TYPE( EditorHelpBit, Panel);
+
+	RichTextLabel *rich_text;
+	void _go_to_help(String p_what);
+	void _meta_clicked(String p_what);
+
+
+protected:
+
+	static void _bind_methods();
+	void _notification(int p_what);
+public:
+
+	void set_text(const String& p_text);
+	EditorHelpBit();
+};
 
 #endif // EDITOR_HELP_H

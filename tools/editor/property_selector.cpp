@@ -2,7 +2,6 @@
 #include "editor_scale.h"
 
 #include "os/keyboard.h"
-#include "editor_help.h"
 
 void PropertySelector::_text_changed(const String& p_newtext) {
 
@@ -51,7 +50,7 @@ void PropertySelector::_update_search() {
 		set_title(TTR("Select Method"));
 
 	search_options->clear();
-	rich_text->clear();
+	help_bit->set_text("");
 
 
 	TreeItem *root = search_options->create_item();
@@ -307,14 +306,13 @@ void PropertySelector::_confirmed() {
 
 void PropertySelector::_item_selected() {
 
-	rich_text->clear();
+	help_bit->set_text("");
 
 	TreeItem *item=search_options->get_selected();
 	if (!item)
 		return;
 	String name = item->get_metadata(0);
 
-	print_line("NAME: "+name);
 	String class_type;
 	if (properties && type==Variant::INPUT_EVENT) {
 
@@ -350,12 +348,11 @@ void PropertySelector::_item_selected() {
 
 		while(at_class!=String()) {
 
-			print_line("AT CLASS: "+at_class);
+
 			Map<String,DocData::ClassDoc>::Element *E=dd->class_list.find(at_class);
 			if (E) {
 				for(int i=0;i<E->get().properties.size();i++) {
 					if (E->get().properties[i].name==name) {
-						print_line("FOUND PROP");
 						text=E->get().properties[i].description;
 					}
 				}
@@ -368,14 +365,11 @@ void PropertySelector::_item_selected() {
 
 			StringName setter;
 			StringName type;
-			print_line("AT SETGET: ");
 			if (ObjectTypeDB::get_setter_and_type_for_property(class_type,name,type,setter)) {
-				print_line("GOT: "+String(type));
 				Map<String,DocData::ClassDoc>::Element *E=dd->class_list.find(type);
 				if (E) {
 					for(int i=0;i<E->get().methods.size();i++) {
 						if (E->get().methods[i].name==setter.operator String()) {
-							print_line("FOUND");
 							text=E->get().methods[i].description;
 						}
 					}
@@ -392,12 +386,10 @@ void PropertySelector::_item_selected() {
 
 		while(at_class!=String()) {
 
-			print_line("AT CLASS: "+at_class);
 			Map<String,DocData::ClassDoc>::Element *E=dd->class_list.find(at_class);
 			if (E) {
 				for(int i=0;i<E->get().methods.size();i++) {
 					if (E->get().methods[i].name==name) {
-						print_line("FOUND");
 						text=E->get().methods[i].description;
 					}
 				}
@@ -411,9 +403,7 @@ void PropertySelector::_item_selected() {
 	if (text==String())
 		return;
 
-	rich_text->parse_bbcode(text);
-
-
+	help_bit->set_text(text);
 
 }
 
@@ -423,7 +413,7 @@ void PropertySelector::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		connect("confirmed",this,"_confirmed");
-		description->add_style_override("bg",get_stylebox("normal","TextEdit"));
+
 	}
 }
 
@@ -599,11 +589,9 @@ PropertySelector::PropertySelector() {
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 
-	description = memnew( Panel );
-	description->set_custom_minimum_size(Size2(0,80*EDSCALE));
-	vbc->add_margin_child(TTR("Description:"),description);
-	rich_text = memnew( RichTextLabel );
-	description->add_child(rich_text);
-	rich_text->set_area_as_parent_rect(8*EDSCALE);
+	help_bit = memnew( EditorHelpBit );
+	vbc->add_margin_child(TTR("Description:"),help_bit);
+	help_bit->connect("request_hide",this,"_closed");
+
 
 }

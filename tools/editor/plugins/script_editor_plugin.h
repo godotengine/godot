@@ -320,6 +320,8 @@ public:
 
 	void close_builtin_scripts_from_scene(const String& p_scene);
 
+	void goto_help(const String& p_desc) { _help_class_goto(p_desc); }
+
 	ScriptEditorDebugger *get_debugger() { return debugger; }
 	void set_live_auto_reload_running_scripts(bool p_enabled);
 

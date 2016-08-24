@@ -31,7 +31,7 @@
 #include "editor_settings.h"
 #include "os/keyboard.h"
 #include "doc_data_compressed.h"
-
+#include "tools/editor/plugins/script_editor_plugin.h"
 
 
 #include "os/keyboard.h"
@@ -1256,16 +1256,20 @@ void EditorHelp::_help_callback(const String& p_topic) {
 
 }
 
-void EditorHelp::_add_text(const String& p_bbcode) {
 
 
-	/*class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-	class_desc->push_font( get_font("normal","Fonts") );
-	class_desc->push_indent(1);*/
+static void _add_text_to_rt(const String& p_bbcode,RichTextLabel *p_rt) {
+
+	DocData *doc = EditorHelp::get_doc_data();
+	String base_path;
+
+	/*p_rt->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+	p_rt->push_font( get_font("normal","Fonts") );
+	p_rt->push_indent(1);*/
 	int pos = 0;
 
-	Ref<Font> doc_font = get_font("doc","EditorFonts");
-	Ref<Font> doc_code_font = get_font("doc_source","EditorFonts");
+	Ref<Font> doc_font = p_rt->get_font("doc","EditorFonts");
+	Ref<Font> doc_code_font = p_rt->get_font("doc_source","EditorFonts");
 
 	String bbcode=p_bbcode.replace("\t"," ").replace("\r"," ").strip_edges();
 
@@ -1333,7 +1337,7 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 			brk_pos=bbcode.length();
 
 		if (brk_pos > pos) {
-			class_desc->add_text(bbcode.substr(pos,brk_pos-pos));
+			p_rt->add_text(bbcode.substr(pos,brk_pos-pos));
 
 		}
 
@@ -1344,7 +1348,7 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 
 		if (brk_end==-1) {
 			//no close, add the rest
-			class_desc->add_text(bbcode.substr(brk_pos,bbcode.length()-brk_pos));
+			p_rt->add_text(bbcode.substr(brk_pos,bbcode.length()-brk_pos));
 
 			break;
 		}
@@ -1362,7 +1366,7 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 			}
 			if (!tag_ok) {
 
-				class_desc->add_text("[");
+				p_rt->add_text("[");
 				pos++;
 				continue;
 			}
@@ -1370,32 +1374,32 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 			tag_stack.pop_front();
 			pos=brk_end+1;
 			if (tag!="/img")
-				class_desc->pop();
+				p_rt->pop();
 
 		} else if (tag.begins_with("method ")) {
 
 			String m = tag.substr(7,tag.length());
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-			class_desc->push_meta("@"+m);
-			class_desc->add_text(m+"()");
-			class_desc->pop();
-			class_desc->pop();
+			p_rt->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+			p_rt->push_meta("@"+m);
+			p_rt->add_text(m+"()");
+			p_rt->pop();
+			p_rt->pop();
 			pos=brk_end+1;
 
 		} else if (doc->class_list.has(tag)) {
 
 
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-			class_desc->push_meta("#"+tag);
-			class_desc->add_text(tag);
-			class_desc->pop();
-			class_desc->pop();
+			p_rt->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+			p_rt->push_meta("#"+tag);
+			p_rt->add_text(tag);
+			p_rt->pop();
+			p_rt->pop();
 			pos=brk_end+1;
 
 		} else if (tag=="b") {
 
 			//use bold font
-			class_desc->push_font(doc_code_font);
+			p_rt->push_font(doc_code_font);
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
 		} else if (tag=="i") {
@@ -1406,37 +1410,37 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 			text_color.r*=1.1;
 			text_color.g*=1.1;
 			text_color.b*=1.1;
-			class_desc->push_color(text_color);
-			//class_desc->push_font(get_font("italic","Fonts"));
+			p_rt->push_color(text_color);
+			//p_rt->push_font(get_font("italic","Fonts"));
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
 		} else if (tag=="code" || tag=="codeblock") {
 
 			//use monospace font
-			class_desc->push_font(doc_code_font);
+			p_rt->push_font(doc_code_font);
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
 		} else if (tag=="center") {
 
 			//use monospace font
-			class_desc->push_align(RichTextLabel::ALIGN_CENTER);
+			p_rt->push_align(RichTextLabel::ALIGN_CENTER);
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
 		} else if (tag=="br") {
 
 			//use monospace font
-			class_desc->add_newline();
+			p_rt->add_newline();
 			pos=brk_end+1;
 		} else if (tag=="u") {
 
 			//use underline
-			class_desc->push_underline();
+			p_rt->push_underline();
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
 		} else if (tag=="s") {
 
 			//use strikethrough (not supported underline instead)
-			class_desc->push_underline();
+			p_rt->push_underline();
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
 
@@ -1447,14 +1451,14 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 			if (end==-1)
 				end=bbcode.length();
 			String url = bbcode.substr(brk_end+1,end-brk_end-1);
-			class_desc->push_meta(url);
+			p_rt->push_meta(url);
 
 			pos=brk_end+1;
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("url=")) {
 
 			String url = tag.substr(4,tag.length());
-			class_desc->push_meta(url);
+			p_rt->push_meta(url);
 			pos=brk_end+1;
 			tag_stack.push_front("url");
 		} else if (tag=="img") {
@@ -1467,7 +1471,7 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 
 			Ref<Texture> texture = ResourceLoader::load(base_path+"/"+image,"Texture");
 			if (texture.is_valid())
-				class_desc->add_image(texture);
+				p_rt->add_image(texture);
 
 			pos=end;
 			tag_stack.push_front(tag);
@@ -1515,7 +1519,7 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 
 
 
-			class_desc->push_color(color);
+			p_rt->push_color(color);
 			pos=brk_end+1;
 			tag_stack.push_front("color");
 
@@ -1526,9 +1530,9 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 
 			Ref<Font> font = ResourceLoader::load(base_path+"/"+fnt,"Font");
 			if (font.is_valid())
-				class_desc->push_font(font);
+				p_rt->push_font(font);
 			else {
-				class_desc->push_font(doc_font);
+				p_rt->push_font(doc_font);
 			}
 
 			pos=brk_end+1;
@@ -1537,15 +1541,23 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 
 		} else {
 
-			class_desc->add_text("["); //ignore
+			p_rt->add_text("["); //ignore
 			pos=brk_pos+1;
 
 		}
 	}
 
-	/*class_desc->pop();
-	class_desc->pop();
-	class_desc->pop();*/
+	/*p_rt->pop();
+	p_rt->pop();
+	p_rt->pop();*/
+
+}
+
+
+void EditorHelp::_add_text(const String& p_bbcode) {
+
+
+	_add_text_to_rt(p_bbcode,class_desc);
 
 }
 
@@ -1703,3 +1715,71 @@ EditorHelp::~EditorHelp() {
 
 }
 
+/////////////
+
+
+
+void EditorHelpBit::_go_to_help(String p_what) {
+
+	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+	ScriptEditor::get_singleton()->goto_help(p_what);
+	emit_signal("request_hide");
+}
+
+void EditorHelpBit::_meta_clicked(String p_select) {
+
+
+	//	print_line("LINK: "+p_select);
+	if (p_select.begins_with("#")) {
+		//_goto_desc(p_select.substr(1,p_select.length()));
+		_go_to_help("class_name:"+p_select.substr(1,p_select.length()));
+		return;
+	} else if (p_select.begins_with("@")) {
+
+		String m = p_select.substr(1,p_select.length());
+
+		if (m.find(".")!=-1) {
+			//must go somewhere else
+
+			_go_to_help("class_method:"+m.get_slice(".",0)+":"+m.get_slice(".",0));
+		} else {
+//
+	//		if (!method_line.has(m))
+			//	return;
+			//class_desc->scroll_to_line(method_line[m]);
+		}
+
+	}
+
+
+}
+
+void EditorHelpBit::_bind_methods() {
+
+	ObjectTypeDB::bind_method("_meta_clicked",&EditorHelpBit::_meta_clicked);
+	ADD_SIGNAL(MethodInfo("request_hide"));
+}
+
+void EditorHelpBit::_notification(int p_what){
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+		add_style_override("panel",get_stylebox("normal","TextEdit"));
+	}
+}
+
+
+void EditorHelpBit::set_text(const String& p_text) {
+
+	rich_text->clear();
+	_add_text_to_rt(p_text,rich_text);
+}
+
+EditorHelpBit::EditorHelpBit() {
+
+	rich_text = memnew( RichTextLabel );
+	add_child(rich_text);
+	rich_text->set_area_as_parent_rect(8*EDSCALE);
+	rich_text->connect("meta_clicked",this,"_meta_clicked");
+	set_custom_minimum_size(Size2(0,70*EDSCALE));
+
+}

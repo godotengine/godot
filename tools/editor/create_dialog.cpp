@@ -140,7 +140,7 @@ void CreateDialog::_update_search() {
 
 
 	search_options->clear();
-
+	help_bit->set_text("");
 	/*
 	TreeItem *root = search_options->create_item();
 	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
@@ -336,11 +336,27 @@ String CreateDialog::get_base_type() const {
 	return base_type;
 }
 
+void CreateDialog::_item_selected() {
+
+	TreeItem *item = search_options->get_selected();
+	if (!item)
+		return;
+
+	String name = item->get_text(0);
+
+	if (!EditorHelp::get_doc_data()->class_list.has(name))
+		return;
+
+	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
+
+}
+
 void CreateDialog::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_text_changed"),&CreateDialog::_text_changed);
 	ObjectTypeDB::bind_method(_MD("_confirmed"),&CreateDialog::_confirmed);
 	ObjectTypeDB::bind_method(_MD("_sbox_input"),&CreateDialog::_sbox_input);
+	ObjectTypeDB::bind_method(_MD("_item_selected"),&CreateDialog::_item_selected);
 
 	ADD_SIGNAL(MethodInfo("create"));
 
@@ -364,8 +380,13 @@ CreateDialog::CreateDialog() {
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated",this,"_confirmed");
+	search_options->connect("cell_selected",this,"_item_selected");
 //	search_options->set_hide_root(true);
 	base_type="Object";
+
+	help_bit = memnew( EditorHelpBit );
+	vbc->add_margin_child(TTR("Description:"),help_bit);
+	help_bit->connect("request_hide",this,"_closed");
 
 }
 
