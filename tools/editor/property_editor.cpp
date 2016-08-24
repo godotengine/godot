@@ -3302,6 +3302,7 @@ void PropertyEditor::update_tree() {
 
 
 					} break;
+					case PROPERTY_HINT_METHOD_OF_VARIANT_TYPE: ///< a property of a type
 					case PROPERTY_HINT_METHOD_OF_BASE_TYPE: ///< a method of a base type
 					case PROPERTY_HINT_METHOD_OF_INSTANCE: ///< a method of an instance
 					case PROPERTY_HINT_METHOD_OF_SCRIPT: ///< a method of a script & base
