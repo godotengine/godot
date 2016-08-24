@@ -618,6 +618,15 @@ struct Matrix32 {
 
 	operator String() const;
 
+	Matrix32(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy) {
+
+		elements[0][0] = xx;
+		elements[0][1] = xy;
+		elements[1][0] = yx;
+		elements[1][1] = yy;
+		elements[2][0] = ox;
+		elements[2][1] = oy;
+	}
 
 	Matrix32(real_t p_rot, const Vector2& p_pos);
 	Matrix32() { elements[0][0]=1.0; elements[1][1]=1.0; }
