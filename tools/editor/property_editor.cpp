@@ -1151,6 +1151,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 					file->clear_filters();
 
+
 					if (hint_text!="") {
 						Vector<String> extensions=hint_text.split(",");
 						for(int i=0;i<extensions.size();i++) {

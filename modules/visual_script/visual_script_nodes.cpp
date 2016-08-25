@@ -62,6 +62,12 @@ bool  VisualScriptFunction::_set(const StringName& p_name, const Variant& p_valu
 		stack_size=p_value;
 		return true;
 	}
+
+	if (p_name=="rpc/mode") {
+		rpc_mode=ScriptInstance::RPCMode(int(p_value));
+		return true;
+	}
+
 	return false;
 }
 
@@ -99,6 +105,11 @@ bool  VisualScriptFunction::_get(const StringName& p_name,Variant &r_ret) const 
 		return true;
 	}
 
+	if (p_name=="rpc/mode") {
+		r_ret=rpc_mode;
+		return true;
+	}
+
 	return false;
 }
 void  VisualScriptFunction::_get_property_list( List<PropertyInfo> *p_list) const {
@@ -118,6 +129,7 @@ void  VisualScriptFunction::_get_property_list( List<PropertyInfo> *p_list) cons
 		p_list->push_back(PropertyInfo(Variant::INT,"stack/size",PROPERTY_HINT_RANGE,"1,100000"));
 	}
 	p_list->push_back(PropertyInfo(Variant::BOOL,"stack/stackless"));
+	p_list->push_back(PropertyInfo(Variant::INT,"rpc/mode",PROPERTY_HINT_ENUM,"Disabled,Remote,Sync,Master,Slave"));
 
 }
 
@@ -224,6 +236,16 @@ int VisualScriptFunction::get_argument_count() const {
 	return arguments.size();
 }
 
+
+void VisualScriptFunction::set_rpc_mode(ScriptInstance::RPCMode p_mode) {
+	rpc_mode=p_mode;
+}
+
+ScriptInstance::RPCMode VisualScriptFunction::get_rpc_mode() const {
+	return rpc_mode;
+}
+
+
 class VisualScriptNodeInstanceFunction : public VisualScriptNodeInstance {
 public:
 
@@ -272,6 +294,7 @@ VisualScriptFunction::VisualScriptFunction() {
 
 	stack_size=256;
 	stack_less=false;
+	rpc_mode=ScriptInstance::RPC_MODE_DISABLED;
 }
 
 
@@ -2432,6 +2455,153 @@ VisualScriptSubCall::VisualScriptSubCall() {
 
 }
 
+//////////////////////////////////////////
+////////////////Comment///////////
+//////////////////////////////////////////
+
+int VisualScriptComment::get_output_sequence_port_count() const {
+
+	return 0;
+}
+
+bool VisualScriptComment::has_input_sequence_port() const{
+
+	return false;
+}
+
+int VisualScriptComment::get_input_value_port_count() const{
+	return 0;
+}
+int VisualScriptComment::get_output_value_port_count() const{
+
+	return 0;
+}
+
+String VisualScriptComment::get_output_sequence_port_text(int p_port) const {
+
+	return String();
+}
+
+PropertyInfo VisualScriptComment::get_input_value_port_info(int p_idx) const{
+
+	return PropertyInfo();
+}
+
+PropertyInfo VisualScriptComment::get_output_value_port_info(int p_idx) const{
+
+	return PropertyInfo();
+}
+
+
+String VisualScriptComment::get_caption() const {
+
+	return title;
+}
+
+
+String VisualScriptComment::get_text() const {
+
+	return description;
+}
+
+void VisualScriptComment::set_title(const String& p_title) {
+
+
+	if (title==p_title)
+		return;
+	title=p_title;
+	ports_changed_notify();
+}
+
+String VisualScriptComment::get_title() const{
+
+	return title;
+}
+
+void VisualScriptComment::set_description(const String& p_description){
+
+	if (description==p_description)
+		return;
+	description=p_description;
+	ports_changed_notify();
+
+}
+String VisualScriptComment::get_description() const{
+
+	return description;
+}
+
+void VisualScriptComment::set_size(const Size2& p_size){
+
+	if (size==p_size)
+		return;
+	size=p_size;
+	ports_changed_notify();
+
+}
+Size2 VisualScriptComment::get_size() const{
+
+	return size;
+}
+
+
+String VisualScriptComment::get_category() const {
+
+	return "data";
+}
+
+class VisualScriptNodeInstanceComment : public VisualScriptNodeInstance {
+public:
+
+	VisualScriptInstance* instance;
+
+	//virtual int get_working_memory_size() const { return 0; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; };
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+
+		return 0;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptComment::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceComment * instance = memnew(VisualScriptNodeInstanceComment );
+	instance->instance=p_instance;
+	return instance;
+}
+
+
+
+void VisualScriptComment::_bind_methods() {
+
+
+	ObjectTypeDB::bind_method(_MD("set_title","title"),&VisualScriptComment::set_title);
+	ObjectTypeDB::bind_method(_MD("get_title"),&VisualScriptComment::get_title);
+
+	ObjectTypeDB::bind_method(_MD("set_description","description"),&VisualScriptComment::set_description);
+	ObjectTypeDB::bind_method(_MD("get_description"),&VisualScriptComment::get_description);
+
+	ObjectTypeDB::bind_method(_MD("set_size","size"),&VisualScriptComment::set_size);
+	ObjectTypeDB::bind_method(_MD("get_size"),&VisualScriptComment::get_size);
+
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"title"),_SCS("set_title"),_SCS("get_title"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"description",PROPERTY_HINT_MULTILINE_TEXT),_SCS("set_description"),_SCS("get_description"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"size"),_SCS("set_size"),_SCS("get_size"));
+
+}
+
+VisualScriptComment::VisualScriptComment() {
+
+	title="Comment";
+	size=Size2(150,150);
+}
+
+
 
 void register_visual_script_nodes() {
 
@@ -2447,6 +2617,7 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("data/self",create_node_generic<VisualScriptSelf>);
 	VisualScriptLanguage::singleton->add_register_func("custom/custom_node",create_node_generic<VisualScriptCustomNode>);
 	VisualScriptLanguage::singleton->add_register_func("custom/sub_call",create_node_generic<VisualScriptSubCall>);
+	VisualScriptLanguage::singleton->add_register_func("data/comment",create_node_generic<VisualScriptComment>);
 
 
 	VisualScriptLanguage::singleton->add_register_func("index/get_index",create_node_generic<VisualScriptIndexGet>);

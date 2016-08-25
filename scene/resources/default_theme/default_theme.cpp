@@ -627,6 +627,7 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	// GraphNode
 
 	Ref<StyleBoxTexture> graphsb = make_stylebox(graph_node_png,6,24,6,5,16,24,16,5);
+	Ref<StyleBoxTexture> graphsbcomment = make_stylebox(graph_node_comment_png,6,24,6,5,16,24,16,5);
 	Ref<StyleBoxTexture> graphsbselected = make_stylebox(graph_node_selected_png,6,24,6,5,16,24,16,5);
 	Ref<StyleBoxTexture> graphsbdefault = make_stylebox(graph_node_default_png,4,4,4,4,6,4,4,4);
 	Ref<StyleBoxTexture> graphsbdeffocus = make_stylebox(graph_node_default_focus_png,4,4,4,4,6,4,4,4);
@@ -639,11 +640,13 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	t->set_stylebox("selectedframe","GraphNode", graphsbselected );
 	t->set_stylebox("defaultframe", "GraphNode", graphsbdefault );
 	t->set_stylebox("defaultfocus", "GraphNode", graphsbdeffocus );
+	t->set_stylebox("comment", "GraphNode", graphsbcomment );
 	t->set_stylebox("breakpoint", "GraphNode", graph_bpoint );
 	t->set_stylebox("position", "GraphNode", graph_position );
 	t->set_constant("separation","GraphNode", 1 *scale);
 	t->set_icon("port","GraphNode", make_icon( graph_port_png ) );
 	t->set_icon("close","GraphNode", make_icon( graph_node_close_png ) );
+	t->set_icon("resizer","GraphNode", make_icon( window_resizer_png ) );
 	t->set_font("title_font","GraphNode", default_font );
 	t->set_color("title_color","GraphNode", Color(0,0,0,1));
 	t->set_constant("title_offset","GraphNode", 20 *scale);

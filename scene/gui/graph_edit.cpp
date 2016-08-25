@@ -193,6 +193,9 @@ void GraphEdit::_graph_node_raised(Node* p_gn) {
 	GraphNode *gn=p_gn->cast_to<GraphNode>();
 	ERR_FAIL_COND(!gn);
 	gn->raise();
+	if (gn->is_comment()) {
+		move_child(gn,0);
+	}
 	top_layer->raise();
 	emit_signal("node_selected",p_gn);
 
@@ -261,6 +264,7 @@ void GraphEdit::_notification(int p_what) {
 
 	}
 	if (p_what==NOTIFICATION_DRAW) {
+
 		draw_style_box( get_stylebox("bg"),Rect2(Point2(),get_size()) );
 		VS::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
 
@@ -712,6 +716,10 @@ void GraphEdit::_top_layer_draw() {
 			col.g+=0.4;
 			col.b+=0.4;
 		}
+
+		if (!connecting_out) {
+			SWAP(pos,topos);
+		}
 		_draw_cos_line(top_layer,pos,topos,col,col);
 	}
 
@@ -856,6 +864,10 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 				gn=get_child(i)->cast_to<GraphNode>();
 
 				if (gn) {
+
+					if (gn->is_resizing())
+						continue;
+
 					Rect2 r = gn->get_rect();
 					r.size*=zoom;
 					if (r.has_point(get_local_mouse_pos()))

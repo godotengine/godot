@@ -179,6 +179,15 @@ bool GDScript::can_instance() const {
 
 }
 
+Ref<Script> GDScript::get_base_script() const {
+
+	if (_base) {
+		return Ref<GDScript>( _base );
+	} else {
+		return Ref<Script>();
+	}
+}
+
 StringName GDScript::get_instance_base_type() const {
 
 	if (native.is_valid())

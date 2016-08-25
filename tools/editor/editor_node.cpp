@@ -1673,7 +1673,7 @@ void EditorNode::_edit_current() {
 
 	if (main_plugin) {
 
-		if (main_plugin!=editor_plugin_screen) {
+		if (main_plugin!=editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible() || ScriptEditor::get_singleton()->can_take_away_focus())) {
 
 			// update screen main_plugin
 

@@ -60,6 +60,12 @@ private:
 	String title;
 	bool show_close;
 	Vector2 offset;
+	bool comment;
+	bool resizeable;
+
+	bool resizing;
+	Vector2 resizing_from;
+	Vector2 resizing_from_size;
 
 	Rect2 close_rect;
 
@@ -144,7 +150,15 @@ public:
 	void set_overlay(Overlay p_overlay);
 	Overlay get_overlay() const;
 
+	void set_comment(bool p_enable);
+	bool is_comment() const;
+
+	void set_resizeable(bool p_enable);
+	bool is_resizeable() const;
+
 	virtual Size2 get_minimum_size() const;
+
+	bool is_resizing() const { return resizing; }
 
 	GraphNode();
 };

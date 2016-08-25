@@ -987,6 +987,20 @@ void ScriptEditor::_notification(int p_what) {
 
 }
 
+bool ScriptEditor::can_take_away_focus() const {
+
+	int selected = tab_container->get_current_tab();
+	if (selected<0 || selected>=tab_container->get_child_count())
+		return true;
+
+	ScriptEditorBase *current = tab_container->get_child(selected)->cast_to<ScriptEditorBase>();
+	if (!current)
+		return true;
+
+
+	return current->can_lose_focus_on_node_selection();
+
+}
 
 void ScriptEditor::close_builtin_scripts_from_scene(const String& p_scene) {
 
@@ -1397,7 +1411,7 @@ void ScriptEditor::_update_script_names() {
 
 
 
-void ScriptEditor::edit(const Ref<Script>& p_script) {
+void ScriptEditor::edit(const Ref<Script>& p_script, bool p_grab_focus) {
 
 	if (p_script.is_null())
 		return;
@@ -1471,7 +1485,9 @@ void ScriptEditor::edit(const Ref<Script>& p_script) {
 	}
 
 
-	_go_to_tab(tab_container->get_tab_count()-1);
+	if (p_grab_focus) {
+		_go_to_tab(tab_container->get_tab_count()-1);
+	}
 
 
 
@@ -1932,6 +1948,13 @@ void ScriptEditor::_help_search(String p_text) {
 	help_search_dialog->popup(p_text);
 }
 
+void ScriptEditor::_open_script_request(const String& p_path) {
+
+	Ref<Script> script = ResourceLoader::load(p_path);
+	if (script.is_valid()) {
+		script_editor->edit(script,false);
+	}
+}
 
 int ScriptEditor::script_editor_func_count=0;
 CreateScriptEditorFunc ScriptEditor::script_editor_funcs[ScriptEditor::SCRIPT_EDITOR_FUNC_MAX];
@@ -2208,6 +2231,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	edit_pass=0;
 	trim_trailing_whitespace_on_save = false;
+
+	ScriptServer::edit_request_func=_open_script_request;
 }
 
 

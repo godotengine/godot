@@ -45,12 +45,13 @@ PropertyInfo VisualScriptYield::get_output_value_port_info(int p_idx) const{
 
 String VisualScriptYield::get_caption() const {
 
-	return "Wait";
+	return yield_mode==YIELD_RETURN?"Yield":"Wait";
 }
 
 String VisualScriptYield::get_text() const {
 
 	switch (yield_mode) {
+		case YIELD_RETURN: return ""; break;
 		case YIELD_FRAME: return "Next Frame"; break;
 		case YIELD_FIXED_FRAME:  return "Next Fixed Frame"; break;
 		case YIELD_WAIT:  return rtos(wait_time)+" sec(s)"; break;
@@ -88,8 +89,10 @@ public:
 			Ref<VisualScriptFunctionState> state;
 			state.instance();
 
+			int ret = STEP_YIELD_BIT;
 			switch(mode) {
 
+				case VisualScriptYield::YIELD_RETURN:  ret=STEP_EXIT_FUNCTION_BIT; break; //return the yield
 				case VisualScriptYield::YIELD_FRAME: state->connect_to_signal(tree,"idle_frame",Array()); break;
 				case VisualScriptYield::YIELD_FIXED_FRAME:  state->connect_to_signal(tree,"fixed_frame",Array()); break;
 				case VisualScriptYield::YIELD_WAIT:  state->connect_to_signal(tree->create_timer(wait_time).ptr(),"timeout",Array()); break;
@@ -98,7 +101,7 @@ public:
 
 			*p_working_mem=state;
 
-			return STEP_YIELD_BIT;
+			return ret;
 		}
 	}
 
@@ -487,7 +490,7 @@ void VisualScriptYieldSignal::_bind_methods() {
 		bt+=Variant::get_type_name(Variant::Type(i));
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"signal/call_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance",PROPERTY_USAGE_NOEDITOR),_SCS("set_call_mode"),_SCS("get_call_mode"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"signal/call_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance"),_SCS("set_call_mode"),_SCS("get_call_mode"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"signal/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"signal/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),_SCS("set_base_path"),_SCS("get_base_path"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"signal/signal"),_SCS("set_signal"),_SCS("get_signal"));
@@ -615,8 +618,8 @@ void register_visual_script_yield_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("functions/wait/wait_fixed_frame",create_yield_node<VisualScriptYield::YIELD_FIXED_FRAME>);
 	VisualScriptLanguage::singleton->add_register_func("functions/wait/wait_time",create_yield_node<VisualScriptYield::YIELD_WAIT>);
 
-	VisualScriptLanguage::singleton->add_register_func("functions/yield/instance_signal",create_yield_signal_node<VisualScriptYieldSignal::CALL_MODE_INSTANCE>);
-	VisualScriptLanguage::singleton->add_register_func("functions/yield/self_signal",create_yield_signal_node<VisualScriptYieldSignal::CALL_MODE_SELF>);
-	VisualScriptLanguage::singleton->add_register_func("functions/yield/node_signal",create_yield_signal_node<VisualScriptYieldSignal::CALL_MODE_NODE_PATH>);
+
+	VisualScriptLanguage::singleton->add_register_func("functions/yield",create_yield_node<VisualScriptYield::YIELD_RETURN>);
+	VisualScriptLanguage::singleton->add_register_func("functions/yield_signal",create_node_generic<VisualScriptYieldSignal>);
 
 }

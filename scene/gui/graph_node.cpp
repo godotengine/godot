@@ -188,11 +188,13 @@ void GraphNode::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
 
-		Ref<StyleBox> sb=get_stylebox(selected ? "selectedframe" : "frame");
+		Ref<StyleBox> sb=get_stylebox(comment? "comment": (selected ? "selectedframe" : "frame"));
+
 		sb=sb->duplicate();
 		sb->call("set_modulate",modulate);
 		Ref<Texture> port =get_icon("port");
 		Ref<Texture> close =get_icon("close");
+		Ref<Texture> resizer =get_icon("resizer");
 		int close_offset = get_constant("close_offset");
 		Ref<Font> title_font = get_font("title_font");
 		int title_offset = get_constant("title_offset");
@@ -257,6 +259,11 @@ void GraphNode::_notification(int p_what) {
 				p->draw(get_canvas_item(),icofs+Point2(get_size().x-edgeofs,cache_y[E->key()]),s.color_right);
 			}
 
+		}
+
+
+		if (resizeable) {
+			draw_texture(resizer,get_size()-resizer->get_size());
 		}
 	}
 
@@ -594,18 +601,48 @@ void GraphNode::_input_event(const InputEvent& p_ev) {
 		ERR_EXPLAIN("GraphNode must be the child of a GraphEdit node.");
 		ERR_FAIL_COND(get_parent_control() == NULL);
 
-		get_parent_control()->grab_focus();
-
 		if(p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
 
 			Vector2 mpos = Vector2(p_ev.mouse_button.x,p_ev.mouse_button.y);
 			if (close_rect.size!=Size2() && close_rect.has_point(mpos)) {
 				emit_signal("close_request");
+				accept_event();
 				return;
 			}
+
+			Ref<Texture> resizer =get_icon("resizer");
+
+			if (resizeable && mpos.x > get_size().x-resizer->get_width() && mpos.y > get_size().y-resizer->get_height()) {
+
+				resizing=true;
+				resizing_from=mpos;
+				resizing_from_size=get_size();
+				accept_event();
+				return;
+			}
+
+			//send focus to parent
 			emit_signal("raise_request");
+			get_parent_control()->grab_focus();
+
 		}
+
+		if(!p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
+			resizing=false;
+		}
+
 	}
+
+
+	if (resizing && p_ev.type==InputEvent::MOUSE_MOTION) {
+		Vector2 mpos = Vector2(p_ev.mouse_motion.x,p_ev.mouse_motion.y);
+
+		Vector2 diff = mpos - resizing_from;
+
+		emit_signal("resize_request",resizing_from_size+diff);
+
+	}
+
 
 }
 
@@ -630,6 +667,30 @@ GraphNode::Overlay GraphNode::get_overlay() const{
 	return overlay;
 }
 
+void GraphNode::set_comment(bool p_enable) {
+
+	comment=p_enable;
+	update();
+}
+
+bool GraphNode::is_comment() const{
+
+	return comment;
+}
+
+
+void GraphNode::set_resizeable(bool p_enable) {
+
+	resizeable=p_enable;
+	update();
+}
+
+bool GraphNode::is_resizeable() const{
+
+	return resizeable;
+}
+
+
 void GraphNode::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_title","title"),&GraphNode::set_title);
@@ -648,6 +709,12 @@ void GraphNode::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&GraphNode::set_offset);
 	ObjectTypeDB::bind_method(_MD("get_offset"),&GraphNode::get_offset);
+
+	ObjectTypeDB::bind_method(_MD("set_comment","comment"),&GraphNode::set_comment);
+	ObjectTypeDB::bind_method(_MD("is_comment"),&GraphNode::is_comment);
+
+	ObjectTypeDB::bind_method(_MD("set_resizeable","resizeable"),&GraphNode::set_resizeable);
+	ObjectTypeDB::bind_method(_MD("is_resizeable"),&GraphNode::is_resizeable);
 
 	ObjectTypeDB::bind_method(_MD("get_connection_output_count"),&GraphNode::get_connection_output_count);
 	ObjectTypeDB::bind_method(_MD("get_connection_input_count"),&GraphNode::get_connection_input_count);
@@ -675,6 +742,7 @@ void GraphNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dragged",PropertyInfo(Variant::VECTOR2,"from"),PropertyInfo(Variant::VECTOR2,"to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));
 	ADD_SIGNAL(MethodInfo("close_request"));
+	ADD_SIGNAL(MethodInfo("resize_request",PropertyInfo(Variant::VECTOR2,"new_minsize")));
 
 	BIND_CONSTANT( OVERLAY_DISABLED );
 	BIND_CONSTANT( OVERLAY_BREAKPOINT );
@@ -688,4 +756,7 @@ GraphNode::GraphNode() {
 	connpos_dirty=true;
 	set_stop_mouse(false);
 	modulate=Color(1,1,1,1);
+	comment=false;
+	resizeable=false;
+	resizing=false;
 }

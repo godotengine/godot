@@ -508,6 +508,7 @@ void PropertySelector::select_property_from_base_type(const String& p_base,const
 void PropertySelector::select_property_from_script(const Ref<Script>& p_script,const String& p_current){
 
 	ERR_FAIL_COND( p_script.is_null() );
+
 	base_type=p_script->get_instance_base_type();
 	selected=p_current;
 	type=Variant::NIL;

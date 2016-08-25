@@ -133,6 +133,7 @@ private:
 	bool lines_on_bg;
 
 
+
 	struct ConnType {
 
 		union {
@@ -204,6 +205,7 @@ public:
 
 	int get_snap() const;
 	void set_snap(int p_snap);
+
 
 	GraphEdit();
 };

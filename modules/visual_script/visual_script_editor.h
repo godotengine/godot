@@ -27,6 +27,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 		EDIT_DELETE_NODES,
 		EDIT_TOGGLE_BREAKPOINT,
 		EDIT_FIND_NODE_TYPE,
+		EDIT_COPY_NODES,
+		EDIT_CUT_NODES,
+		EDIT_PASTE_NODES,
 	};
 
 	MenuButton *edit_menu;
@@ -98,6 +101,15 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	String _validate_name(const String& p_name) const;
 
+	struct Clipboard {
+
+		Map<int,Ref<VisualScriptNode> > nodes;
+		Map<int,Vector2 > nodes_positions;
+
+		Set<VisualScript::SequenceConnection> sequence_connections;
+		Set<VisualScript::DataConnection> data_connections;
+	} clipboard;
+
 
 	int error_line;
 
@@ -149,6 +161,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _menu_option(int p_what);
 
 	void _graph_ofs_changed(const Vector2& p_ofs);
+	void _comment_node_resized(const Vector2& p_new_size,int p_node);
 
 
 protected:
@@ -179,6 +192,7 @@ public:
 	virtual void set_debugger_active(bool p_active);
 	virtual void set_tooltip_request_func(String p_method,Object* p_obj);
 	virtual Control *get_edit_menu();
+	virtual bool can_lose_focus_on_node_selection() { return false; }
 
 	static void register_editor();
 

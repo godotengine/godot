@@ -3,6 +3,7 @@
 #include "os/os.h"
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"
+#include "io/resource_loader.h"
 
 //////////////////////////////////////////
 ////////////////CALL//////////////////////
@@ -91,20 +92,23 @@ StringName VisualScriptFunctionCall::_get_base_type() const {
 	return base_type;
 }
 
+
 int VisualScriptFunctionCall::get_input_value_port_count() const{
 
 	if (call_mode==CALL_MODE_BASIC_TYPE) {
 
 
 		Vector<StringName> names = Variant::get_method_argument_names(basic_type,function);
-		return names.size()+1;
+		return names.size() + (rpc_call_mode>=RPC_RELIABLE_TO_ID?1:0) + 1;
 
 	} else {
-		MethodBind *mb = ObjectTypeDB::get_method(_get_base_type(),function);
-		if (!mb)
-			return 0;
 
-		return mb->get_argument_count() + (call_mode==CALL_MODE_INSTANCE?1:0) - use_default_args;
+		MethodBind *mb = ObjectTypeDB::get_method(_get_base_type(),function);
+		if (mb) {
+			return mb->get_argument_count() + (call_mode==CALL_MODE_INSTANCE?1:0) + (rpc_call_mode>=RPC_RELIABLE_TO_ID?1:0) - use_default_args;
+		}
+
+		return method_cache.arguments.size() + (call_mode==CALL_MODE_INSTANCE?1:0) + (rpc_call_mode>=RPC_RELIABLE_TO_ID?1:0) - use_default_args;
 	}
 
 }
@@ -118,10 +122,11 @@ int VisualScriptFunctionCall::get_output_value_port_count() const{
 
 	} else {
 		MethodBind *mb = ObjectTypeDB::get_method(_get_base_type(),function);
-		if (!mb)
-			return 0;
+		if (mb) {
+			return mb->has_return() ? 1 : 0;
+		}
 
-		return mb->has_return() ? 1 : 0;
+		return 1; //it is assumed that script always returns something
 	}
 }
 
@@ -143,6 +148,16 @@ PropertyInfo VisualScriptFunctionCall::get_input_value_port_info(int p_idx) cons
 		}
 	}
 
+	if (rpc_call_mode>=RPC_RELIABLE_TO_ID) {
+
+		if (p_idx==0)  {
+			return PropertyInfo(Variant::INT,"peer_id");
+		} else {
+			p_idx--;
+		}
+
+	}
+
 #ifdef DEBUG_METHODS_ENABLED
 
 	if (call_mode==CALL_MODE_BASIC_TYPE) {
@@ -155,10 +170,15 @@ PropertyInfo VisualScriptFunctionCall::get_input_value_port_info(int p_idx) cons
 	} else {
 
 		MethodBind *mb = ObjectTypeDB::get_method(_get_base_type(),function);
-		if (!mb)
-			return PropertyInfo();
+		if (mb) {
+			return mb->get_argument_info(p_idx);
+		}
 
-		return mb->get_argument_info(p_idx);
+		if (p_idx>=0 && p_idx < method_cache.arguments.size()) {
+			return method_cache.arguments[p_idx];
+		}
+
+		return PropertyInfo();
 	}
 #else
 	return PropertyInfo();
@@ -178,12 +198,14 @@ PropertyInfo VisualScriptFunctionCall::get_output_value_port_info(int p_idx) con
 	} else {
 
 		MethodBind *mb = ObjectTypeDB::get_method(_get_base_type(),function);
-		if (!mb)
-			return PropertyInfo();
+		if (mb) {
 
-		PropertyInfo pi = mb->get_argument_info(-1);
-		pi.name="";
-		return pi;
+			PropertyInfo pi = mb->get_argument_info(-1);
+			pi.name="";
+			return pi;
+		}
+
+		return method_cache.return_val;
 	}
 #else
 	return PropertyInfo();
@@ -200,7 +222,13 @@ String VisualScriptFunctionCall::get_caption() const {
 		"CallBasic"
 	};
 
-	return cname[call_mode];
+	String caption = cname[call_mode];
+
+	if (rpc_call_mode) {
+		caption+=" (RPC)";
+	}
+
+	return caption;
 }
 
 String VisualScriptFunctionCall::get_text() const {
@@ -214,38 +242,6 @@ String VisualScriptFunctionCall::get_text() const {
 
 }
 
-void VisualScriptFunctionCall::_update_defargs() {
-
-	//save base type if accessible
-
-	if (call_mode==CALL_MODE_NODE_PATH) {
-
-		Node* node=_get_base_node();
-		if (node) {
-			base_type=node->get_type();
-		}
-	} else if (call_mode==CALL_MODE_SELF) {
-
-		if (get_visual_script().is_valid()) {
-			base_type=get_visual_script()->get_instance_base_type();
-		}
-	}
-
-
-	if (call_mode==CALL_MODE_BASIC_TYPE) {
-		use_default_args = Variant::get_method_default_arguments(basic_type,function).size();
-	} else {
-		if (!get_visual_script().is_valid())
-			return; //do not change if not valid yet
-
-		MethodBind *mb = ObjectTypeDB::get_method(_get_base_type(),function);
-		if (!mb)
-			return;
-
-		use_default_args=mb->get_default_argument_count();
-	}
-
-}
 
 void VisualScriptFunctionCall::set_basic_type(Variant::Type p_type) {
 
@@ -253,7 +249,7 @@ void VisualScriptFunctionCall::set_basic_type(Variant::Type p_type) {
 		return;
 	basic_type=p_type;
 
-	_update_defargs();
+
 	_change_notify();
 	ports_changed_notify();
 }
@@ -269,7 +265,6 @@ void VisualScriptFunctionCall::set_base_type(const StringName& p_type) {
 		return;
 
 	base_type=p_type;
-	_update_defargs();
 	_change_notify();
 	ports_changed_notify();
 }
@@ -279,13 +274,102 @@ StringName VisualScriptFunctionCall::get_base_type() const{
 	return base_type;
 }
 
+void VisualScriptFunctionCall::set_base_script(const String& p_path) {
+
+	if (base_script==p_path)
+		return;
+
+	base_script=p_path;
+	_change_notify();
+	ports_changed_notify();
+}
+
+String VisualScriptFunctionCall::get_base_script() const {
+
+	return base_script;
+}
+
+
+void VisualScriptFunctionCall::_update_method_cache() {
+	StringName type;
+	Ref<Script> script;
+
+	if (call_mode==CALL_MODE_NODE_PATH) {
+
+		Node* node=_get_base_node();
+		if (node) {
+			type=node->get_type();
+			base_type=type; //cache, too
+			script = node->get_script();
+		}
+	} else if (call_mode==CALL_MODE_SELF) {
+
+		if (get_visual_script().is_valid()) {
+			type=get_visual_script()->get_instance_base_type();
+			base_type=type; //cache, too
+			script=get_visual_script();
+		}
+	} else if (call_mode==CALL_MODE_INSTANCE) {
+
+		type=base_type;
+		if (base_script!=String()) {
+
+			if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
+
+				ScriptServer::edit_request_func(base_script); //make sure it's loaded
+			}
+
+			if (ResourceCache::has(base_script)) {
+
+				script = Ref<Resource>( ResourceCache::get(base_script) );
+			} else {
+				return;
+			}
+		}
+	}
+
+
+//		print_line("BASE: "+String(type)+" FUNC: "+String(function));
+	MethodBind *mb = ObjectTypeDB::get_method(type,function);
+	if (mb) {
+		use_default_args=mb->get_default_argument_count();
+		method_cache = MethodInfo();
+		for(int i=0;i<mb->get_argument_count();i++) {
+#ifdef DEBUG_METHODS_ENABLED
+			method_cache.arguments.push_back(mb->get_argument_info(i));
+#else
+			method_cache.arguments.push_back(PropertyInfo());
+#endif
+		}
+
+#ifdef DEBUG_METHODS_ENABLED
+
+		method_cache.return_val = mb->get_argument_info(-1);
+#endif
+	} else if (script.is_valid() && script->has_method(function)) {
+
+		method_cache = script->get_method_info(function);
+		use_default_args=method_cache.default_arguments.size();
+	}
+}
+
 void VisualScriptFunctionCall::set_function(const StringName& p_type){
 
 	if (function==p_type)
 		return;
 
 	function=p_type;
-	_update_defargs();
+
+	if (call_mode==CALL_MODE_BASIC_TYPE) {
+		use_default_args = Variant::get_method_default_arguments(basic_type,function).size();
+	} else {
+		//update all caches
+
+		_update_method_cache();
+
+	}
+
+
 	_change_notify();
 	ports_changed_notify();
 }
@@ -301,7 +385,6 @@ void VisualScriptFunctionCall::set_base_path(const NodePath& p_type) {
 		return;
 
 	base_path=p_type;	
-	_update_defargs();
 	_change_notify();
 	ports_changed_notify();
 }
@@ -318,7 +401,6 @@ void VisualScriptFunctionCall::set_call_mode(CallMode p_mode) {
 		return;
 
 	call_mode=p_mode;
-	_update_defargs();
 	_change_notify();
 	ports_changed_notify();
 
@@ -339,15 +421,51 @@ void VisualScriptFunctionCall::set_use_default_args(int p_amount) {
 
 }
 
+void VisualScriptFunctionCall::set_rpc_call_mode(VisualScriptFunctionCall::RPCCallMode p_mode) {
+
+	if (rpc_call_mode==p_mode)
+		return;
+	rpc_call_mode=p_mode;
+	ports_changed_notify();
+	_change_notify();
+}
+
+VisualScriptFunctionCall::RPCCallMode VisualScriptFunctionCall::get_rpc_call_mode() const{
+
+	return rpc_call_mode;
+}
+
+
 int VisualScriptFunctionCall::get_use_default_args() const{
 
 	return use_default_args;
 }
+
+
+
+
+void VisualScriptFunctionCall::_set_argument_cache(const Dictionary& p_cache) {
+	//so everything works in case all else fails
+	method_cache=MethodInfo::from_dict(p_cache);
+
+}
+
+Dictionary VisualScriptFunctionCall::_get_argument_cache() const {
+
+	return method_cache;
+}
+
 void VisualScriptFunctionCall::_validate_property(PropertyInfo& property) const {
 
 	if (property.name=="function/base_type") {
 		if (call_mode!=CALL_MODE_INSTANCE) {
 			property.usage=PROPERTY_USAGE_NOEDITOR;
+		}
+	}
+
+	if (property.name=="function/base_script") {
+		if (call_mode!=CALL_MODE_INSTANCE) {
+			property.usage=0;
 		}
 	}
 
@@ -384,6 +502,24 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo& property) const 
 		} else if (call_mode==CALL_MODE_INSTANCE) {
 			property.hint=PROPERTY_HINT_METHOD_OF_BASE_TYPE;
 			property.hint_string=base_type;
+
+			if (base_script!=String()) {
+				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
+
+					ScriptServer::edit_request_func(base_script); //make sure it's loaded
+				}
+
+				if (ResourceCache::has(base_script)) {
+
+					Ref<Script> script = Ref<Resource>( ResourceCache::get(base_script) );
+					if (script.is_valid()) {
+
+						property.hint=PROPERTY_HINT_METHOD_OF_SCRIPT;
+						property.hint_string=itos(script->get_instance_ID());
+					}
+				}
+			}
+
 		} else if (call_mode==CALL_MODE_NODE_PATH) {
 			Node *node = _get_base_node();
 			if (node) {
@@ -422,6 +558,13 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo& property) const 
 			property.hint_string="0,"+itos(mc)+",1";
 		}
 	}
+
+	if (property.name=="rpc/call_mode") {
+		if (call_mode==CALL_MODE_BASIC_TYPE) {
+			property.usage=0;
+		}
+	}
+
 }
 
 
@@ -429,6 +572,9 @@ void VisualScriptFunctionCall::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_base_type","base_type"),&VisualScriptFunctionCall::set_base_type);
 	ObjectTypeDB::bind_method(_MD("get_base_type"),&VisualScriptFunctionCall::get_base_type);
+
+	ObjectTypeDB::bind_method(_MD("set_base_script","base_script"),&VisualScriptFunctionCall::set_base_script);
+	ObjectTypeDB::bind_method(_MD("get_base_script"),&VisualScriptFunctionCall::get_base_script);
 
 	ObjectTypeDB::bind_method(_MD("set_basic_type","basic_type"),&VisualScriptFunctionCall::set_basic_type);
 	ObjectTypeDB::bind_method(_MD("get_basic_type"),&VisualScriptFunctionCall::get_basic_type);
@@ -445,6 +591,11 @@ void VisualScriptFunctionCall::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_use_default_args","amount"),&VisualScriptFunctionCall::set_use_default_args);
 	ObjectTypeDB::bind_method(_MD("get_use_default_args"),&VisualScriptFunctionCall::get_use_default_args);
 
+	ObjectTypeDB::bind_method(_MD("_set_argument_cache","argument_cache"),&VisualScriptFunctionCall::_set_argument_cache);
+	ObjectTypeDB::bind_method(_MD("_get_argument_cache"),&VisualScriptFunctionCall::_get_argument_cache);
+
+	ObjectTypeDB::bind_method(_MD("set_rpc_call_mode","mode"),&VisualScriptFunctionCall::set_rpc_call_mode);
+	ObjectTypeDB::bind_method(_MD("get_rpc_call_mode"),&VisualScriptFunctionCall::get_rpc_call_mode);
 
 	String bt;
 	for(int i=0;i<Variant::VARIANT_MAX;i++) {
@@ -454,12 +605,28 @@ void VisualScriptFunctionCall::_bind_methods() {
 		bt+=Variant::get_type_name(Variant::Type(i));
 	}
 
+
+	List<String> script_extensions;
+	for(int i=0;i<ScriptServer::get_language_count();i++) {
+		ScriptServer::get_language(i)->get_recognized_extensions(&script_extensions);
+	}
+
+	String script_ext_hint;
+	for (List<String>::Element *E=script_extensions.front();E;E=E->next()) {
+		if (script_ext_hint!=String())
+			script_ext_hint+=",";
+		script_ext_hint+="*."+E->get();
+	}
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"function/call_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance,Basic Type"),_SCS("set_call_mode"),_SCS("get_call_mode"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/base_script",PROPERTY_HINT_FILE,script_ext_hint),_SCS("set_base_script"),_SCS("get_base_script"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"function/basic_type",PROPERTY_HINT_ENUM,bt),_SCS("set_basic_type"),_SCS("get_basic_type"));
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"function/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),_SCS("set_base_path"),_SCS("get_base_path"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/function"),_SCS("set_function"),_SCS("get_function"));
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"function/argument_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_argument_cache"),_SCS("_get_argument_cache"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/function"),_SCS("set_function"),_SCS("get_function")); //when set, if loaded properly, will override argument count.
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"function/use_default_args"),_SCS("set_use_default_args"),_SCS("get_use_default_args"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"rpc/call_mode",PROPERTY_HINT_ENUM,"Disabled,Reliable,Unreliable,ReliableToID,UnreliableToID"),_SCS("set_rpc_call_mode"),_SCS("get_rpc_call_mode")); //when set, if loaded properly, will override argument count.
 
 	BIND_CONSTANT( CALL_MODE_SELF );
 	BIND_CONSTANT( CALL_MODE_NODE_PATH);
@@ -475,6 +642,7 @@ public:
 	NodePath node_path;
 	int input_args;
 	bool returns;
+	VisualScriptFunctionCall::RPCCallMode rpc_mode;
 	StringName function;
 
 	VisualScriptFunctionCall *node;
@@ -486,6 +654,35 @@ public:
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
+
+	_FORCE_INLINE_ bool call_rpc(Object* p_base,const Variant** p_args,int p_argcount) {
+
+		if (!p_base)
+			return false;
+
+		Node * node = p_base->cast_to<Node>();
+		if (!node)
+			return false;
+
+		int to_id=0;
+		bool reliable=true;
+
+		if (rpc_mode>=VisualScriptFunctionCall::RPC_RELIABLE_TO_ID) {
+			to_id = *p_args[0];
+			p_args+=1;
+			p_argcount-=1;
+			if (rpc_mode==VisualScriptFunctionCall::RPC_UNRELIABLE_TO_ID) {
+				reliable=false;
+			}
+		} else if (rpc_mode==VisualScriptFunctionCall::RPC_UNRELIABLE) {
+			reliable=false;
+		}
+
+		node->rpcp(to_id,!reliable,function,p_args,p_argcount);
+
+		return true;
+	}
+
 	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
 
 
@@ -495,7 +692,9 @@ public:
 
 				Object *object=instance->get_owner_ptr();
 
-				if (returns) {
+				if (rpc_mode) {
+					call_rpc(object,p_inputs,input_args);
+				} else if (returns) {
 					*p_outputs[0] = object->call(function,p_inputs,input_args,r_error);
 				} else {
 					object->call(function,p_inputs,input_args,r_error);
@@ -517,7 +716,9 @@ public:
 					return 0;
 				}
 
-				if (returns) {
+				if (rpc_mode) {
+					call_rpc(node,p_inputs,input_args);
+				} else if (returns) {
 					*p_outputs[0] = another->call(function,p_inputs,input_args,r_error);
 				} else {
 					another->call(function,p_inputs,input_args,r_error);
@@ -529,7 +730,12 @@ public:
 
 				Variant v = *p_inputs[0];
 
-				if (returns) {
+				if (rpc_mode) {
+					Object *obj = v;
+					if (obj) {
+						call_rpc(obj,p_inputs+1,input_args-1);
+					}
+				} else if (returns) {
 					*p_outputs[0] = v.call(function,p_inputs+1,input_args,r_error);
 				} else {
 					v.call(function,p_inputs+1,input_args,r_error);
@@ -555,6 +761,7 @@ VisualScriptNodeInstance* VisualScriptFunctionCall::instance(VisualScriptInstanc
 	instance->returns=get_output_value_port_count();
 	instance->node_path=base_path;
 	instance->input_args = get_input_value_port_count() - ( (call_mode==CALL_MODE_BASIC_TYPE || call_mode==CALL_MODE_INSTANCE) ? 1: 0 );
+	instance->rpc_mode=rpc_call_mode;
 	return instance;
 }
 VisualScriptFunctionCall::VisualScriptFunctionCall() {
@@ -563,6 +770,8 @@ VisualScriptFunctionCall::VisualScriptFunctionCall() {
 	basic_type=Variant::NIL;
 	use_default_args=0;
 	base_type="Object";
+	rpc_call_mode=RPC_DISABLED;
+
 
 }
 
@@ -687,55 +896,9 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 		}
 	}
 
-#ifdef DEBUG_METHODS_ENABLED
-
-	//not very efficient but..
-
-
-	List<PropertyInfo> pinfo;
-
-	if (call_mode==CALL_MODE_BASIC_TYPE) {
-
-
-		Variant v;
-		if (basic_type==Variant::INPUT_EVENT) {
-			InputEvent ev;
-			ev.type=event_type;
-			v=ev;
-		} else {
-			Variant::CallError ce;
-			v = Variant::construct(basic_type,NULL,0,ce);
-		}
-		v.get_property_list(&pinfo);
-
-	} else if (call_mode==CALL_MODE_NODE_PATH) {
-
-			Node *n = _get_base_node();
-			if (n) {
-				n->get_property_list(&pinfo);
-			} else {
-				ObjectTypeDB::get_property_list(_get_base_type(),&pinfo);
-			}
-	} else {
-		ObjectTypeDB::get_property_list(_get_base_type(),&pinfo);
-	}
-
-
-	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
-
-		if (E->get().name==property) {
-
-			PropertyInfo info=E->get();
-			info.name="value";
-			return info;
-		}
-	}
-
-
-#endif
-
-	return PropertyInfo(Variant::NIL,"value");
-
+	PropertyInfo pinfo=type_cache;
+	pinfo.name="value";
+	return pinfo;
 }
 
 PropertyInfo VisualScriptPropertySet::get_output_value_port_info(int p_idx) const{
@@ -821,6 +984,9 @@ void VisualScriptPropertySet::set_event_type(InputEvent::Type p_type) {
 	if (event_type==p_type)
 		return;
 	event_type=p_type;
+	if (call_mode==CALL_MODE_BASIC_TYPE) {
+		_update_cache();
+	}
 	_change_notify();
 	_update_base_type();
 	ports_changed_notify();
@@ -847,12 +1013,133 @@ StringName VisualScriptPropertySet::get_base_type() const{
 	return base_type;
 }
 
+
+void VisualScriptPropertySet::set_base_script(const String& p_path) {
+
+	if (base_script==p_path)
+		return;
+
+	base_script=p_path;
+	_change_notify();
+	ports_changed_notify();
+}
+
+String VisualScriptPropertySet::get_base_script() const {
+
+	return base_script;
+}
+
+
+void VisualScriptPropertySet::_update_cache() {
+
+
+	if (!OS::get_singleton()->get_main_loop())
+		return;
+	if (!OS::get_singleton()->get_main_loop()->cast_to<SceneTree>())
+		return;
+
+	if (!OS::get_singleton()->get_main_loop()->cast_to<SceneTree>()->is_editor_hint()) //only update cache if editor exists, it's pointless otherwise
+		return;
+
+	if (call_mode==CALL_MODE_BASIC_TYPE) {
+
+		//not super efficient..
+
+		Variant v;
+		if (basic_type==Variant::INPUT_EVENT) {
+			InputEvent ev;
+			ev.type=event_type;
+			v=ev;
+		} else {
+			Variant::CallError ce;
+			v = Variant::construct(basic_type,NULL,0,ce);
+		}
+
+		List<PropertyInfo> pinfo;
+		v.get_property_list(&pinfo);
+
+		for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+			if (E->get().name==property) {
+
+				type_cache=E->get();
+			}
+		}
+
+	} else {
+
+
+		StringName type;
+		Ref<Script> script;
+		Node *node=NULL;
+
+		if (call_mode==CALL_MODE_NODE_PATH) {
+
+			node=_get_base_node();
+			if (node) {
+				type=node->get_type();
+				base_type=type; //cache, too
+				script = node->get_script();
+			}
+		} else if (call_mode==CALL_MODE_SELF) {
+
+			if (get_visual_script().is_valid()) {
+				type=get_visual_script()->get_instance_base_type();
+				base_type=type; //cache, too
+				script=get_visual_script();
+			}
+		} else if (call_mode==CALL_MODE_INSTANCE) {
+
+			type=base_type;
+			if (base_script!=String()) {
+
+				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
+
+					ScriptServer::edit_request_func(base_script); //make sure it's loaded
+				}
+
+				if (ResourceCache::has(base_script)) {
+
+					script = Ref<Resource>( ResourceCache::get(base_script) );
+				} else {
+					return;
+				}
+			}
+		}
+
+		List<PropertyInfo> pinfo;
+
+
+		if (node) {
+
+			node->get_property_list(&pinfo);
+		} else {
+			ObjectTypeDB::get_property_list(type,&pinfo);
+		}
+
+		if (script.is_valid()) {
+
+			script->get_script_property_list(&pinfo);
+		}
+
+		for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+			if (E->get().name==property) {
+				type_cache=E->get();
+				return;
+			}
+		}
+
+	}
+}
+
 void VisualScriptPropertySet::set_property(const StringName& p_type){
 
 	if (property==p_type)
 		return;
 
 	property=p_type;
+	_update_cache();
 	_change_notify();	
 	ports_changed_notify();
 }
@@ -918,12 +1205,24 @@ void VisualScriptPropertySet::set_builtin_value(const Variant& p_value){
 		return;
 
 	builtin_value=p_value;
+	ports_changed_notify();
 
 }
 Variant VisualScriptPropertySet::get_builtin_value() const{
 
 	return builtin_value;
 }
+
+
+void VisualScriptPropertySet::_set_type_cache(const Dictionary &p_type) {
+	type_cache=PropertyInfo::from_dict(p_type);
+}
+
+Dictionary VisualScriptPropertySet::_get_type_cache() const {
+
+	return type_cache;
+}
+
 void VisualScriptPropertySet::_validate_property(PropertyInfo& property) const {
 
 	if (property.name=="property/base_type") {
@@ -932,6 +1231,11 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo& property) const {
 		}
 	}
 
+	if (property.name=="property/base_script") {
+		if (call_mode!=CALL_MODE_INSTANCE) {
+			property.usage=0;
+		}
+	}
 
 	if (property.name=="property/basic_type") {
 		if (call_mode!=CALL_MODE_BASIC_TYPE) {
@@ -972,6 +1276,24 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo& property) const {
 		} else if (call_mode==CALL_MODE_INSTANCE) {
 			property.hint=PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
 			property.hint_string=base_type;
+
+			if (base_script!=String()) {
+				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
+
+					ScriptServer::edit_request_func(base_script); //make sure it's loaded
+				}
+
+				if (ResourceCache::has(base_script)) {
+
+					Ref<Script> script = Ref<Resource>( ResourceCache::get(base_script) );
+					if (script.is_valid()) {
+
+						property.hint=PROPERTY_HINT_PROPERTY_OF_SCRIPT;
+						property.hint_string=itos(script->get_instance_ID());
+					}
+				}
+			}
+
 		} else if (call_mode==CALL_MODE_NODE_PATH) {
 			Node *node = _get_base_node();
 			if (node) {
@@ -991,34 +1313,9 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo& property) const {
 		if (!use_builtin_value) {
 			property.usage=0;
 		} else {
-			List<PropertyInfo> pinfo;
-
-			if (call_mode==CALL_MODE_BASIC_TYPE) {
-				Variant::CallError ce;
-				Variant v = Variant::construct(basic_type,NULL,0,ce);
-				v.get_property_list(&pinfo);
-
-			} else if (call_mode==CALL_MODE_NODE_PATH) {
-
-				Node *n = _get_base_node();
-				if (n) {
-					n->get_property_list(&pinfo);
-				} else {
-					ObjectTypeDB::get_property_list(_get_base_type(),&pinfo);
-				}
-			} else {
-				ObjectTypeDB::get_property_list(_get_base_type(),&pinfo);
-			}
-
-			for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
-
-				if (E->get().name==this->property) {
-
-					property.hint=E->get().hint;
-					property.type=E->get().type;
-					property.hint_string=E->get().hint_string;
-				}
-			}
+			property.type=type_cache.type;
+			property.hint=type_cache.hint;
+			property.hint_string=type_cache.hint_string;
 		}
 
 	}
@@ -1029,9 +1326,14 @@ void VisualScriptPropertySet::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_base_type","base_type"),&VisualScriptPropertySet::set_base_type);
 	ObjectTypeDB::bind_method(_MD("get_base_type"),&VisualScriptPropertySet::get_base_type);
 
+	ObjectTypeDB::bind_method(_MD("set_base_script","base_script"),&VisualScriptPropertySet::set_base_script);
+	ObjectTypeDB::bind_method(_MD("get_base_script"),&VisualScriptPropertySet::get_base_script);
 
 	ObjectTypeDB::bind_method(_MD("set_basic_type","basic_type"),&VisualScriptPropertySet::set_basic_type);
 	ObjectTypeDB::bind_method(_MD("get_basic_type"),&VisualScriptPropertySet::get_basic_type);
+
+	ObjectTypeDB::bind_method(_MD("_set_type_cache","type_cache"),&VisualScriptPropertySet::_set_type_cache);
+	ObjectTypeDB::bind_method(_MD("_get_type_cache"),&VisualScriptPropertySet::_get_type_cache);
 
 	ObjectTypeDB::bind_method(_MD("set_event_type","event_type"),&VisualScriptPropertySet::set_event_type);
 	ObjectTypeDB::bind_method(_MD("get_event_type"),&VisualScriptPropertySet::get_event_type);
@@ -1067,9 +1369,22 @@ void VisualScriptPropertySet::_bind_methods() {
 		et+=event_type_names[i];
 	}
 
+	List<String> script_extensions;
+	for(int i=0;i<ScriptServer::get_language_count();i++) {
+		ScriptServer::get_language(i)->get_recognized_extensions(&script_extensions);
+	}
+
+	String script_ext_hint;
+	for (List<String>::Element *E=script_extensions.front();E;E=E->next()) {
+		if (script_ext_hint!=String())
+			script_ext_hint+=",";
+		script_ext_hint+="*."+E->get();
+	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/set_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance,Basic Type"),_SCS("set_call_mode"),_SCS("get_call_mode"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_script",PROPERTY_HINT_FILE,script_ext_hint),_SCS("set_base_script"),_SCS("get_base_script"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/type_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_type_cache"),_SCS("_get_type_cache"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/basic_type",PROPERTY_HINT_ENUM,bt),_SCS("set_basic_type"),_SCS("get_basic_type"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/event_type",PROPERTY_HINT_ENUM,et),_SCS("set_event_type"),_SCS("get_event_type"));
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"property/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),_SCS("set_base_path"),_SCS("get_base_path"));
@@ -1299,6 +1614,7 @@ StringName VisualScriptPropertyGet::_get_base_type() const {
 	return base_type;
 }
 
+
 int VisualScriptPropertyGet::get_input_value_port_count() const{
 
 	return (call_mode==CALL_MODE_BASIC_TYPE || call_mode==CALL_MODE_INSTANCE)?1:0;
@@ -1332,54 +1648,7 @@ PropertyInfo VisualScriptPropertyGet::get_input_value_port_info(int p_idx) const
 
 PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) const{
 
-
-
-#ifdef DEBUG_METHODS_ENABLED
-
-	//not very efficient but..
-
-
-	List<PropertyInfo> pinfo;
-
-	if (call_mode==CALL_MODE_BASIC_TYPE) {
-
-
-		Variant v;
-		if (basic_type==Variant::INPUT_EVENT) {
-			InputEvent ev;
-			ev.type=event_type;
-			v=ev;
-		} else {
-			Variant::CallError ce;
-			v = Variant::construct(basic_type,NULL,0,ce);
-		}
-		v.get_property_list(&pinfo);
-	} else if (call_mode==CALL_MODE_NODE_PATH) {
-
-		Node *n = _get_base_node();
-		if (n) {
-			n->get_property_list(&pinfo);
-		} else {
-			ObjectTypeDB::get_property_list(_get_base_type(),&pinfo);
-		}
-	} else {
-		ObjectTypeDB::get_property_list(_get_base_type(),&pinfo);
-	}
-
-	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
-
-		if (E->get().name==property) {
-
-			PropertyInfo info=E->get();
-			info.name="";
-			return info;
-		}
-	}
-
-
-#endif
-
-	return PropertyInfo(Variant::NIL,"");
+	return PropertyInfo(type_cache,"value");
 }
 
 
@@ -1420,12 +1689,134 @@ StringName VisualScriptPropertyGet::get_base_type() const{
 	return base_type;
 }
 
+void VisualScriptPropertyGet::set_base_script(const String& p_path) {
+
+	if (base_script==p_path)
+		return;
+
+	base_script=p_path;
+	_change_notify();
+	ports_changed_notify();
+}
+
+String VisualScriptPropertyGet::get_base_script() const {
+
+	return base_script;
+}
+
+
+void VisualScriptPropertyGet::_update_cache() {
+
+
+	if (call_mode==CALL_MODE_BASIC_TYPE) {
+
+		//not super efficient..
+
+		Variant v;
+		if (basic_type==Variant::INPUT_EVENT) {
+			InputEvent ev;
+			ev.type=event_type;
+			v=ev;
+		} else {
+			Variant::CallError ce;
+			v = Variant::construct(basic_type,NULL,0,ce);
+		}
+
+		List<PropertyInfo> pinfo;
+		v.get_property_list(&pinfo);
+
+		for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+			if (E->get().name==property) {
+
+				type_cache=E->get().type;
+				return;
+			}
+		}
+
+	} else {
+
+
+		StringName type;
+		Ref<Script> script;
+		Node *node=NULL;
+
+		if (call_mode==CALL_MODE_NODE_PATH) {
+
+			node=_get_base_node();
+			if (node) {
+				type=node->get_type();
+				base_type=type; //cache, too
+				script = node->get_script();
+			}
+		} else if (call_mode==CALL_MODE_SELF) {
+
+			if (get_visual_script().is_valid()) {
+				type=get_visual_script()->get_instance_base_type();
+				base_type=type; //cache, too
+				script=get_visual_script();
+			}
+		} else if (call_mode==CALL_MODE_INSTANCE) {
+
+			type=base_type;
+			if (base_script!=String()) {
+
+				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
+
+					ScriptServer::edit_request_func(base_script); //make sure it's loaded
+				}
+
+				if (ResourceCache::has(base_script)) {
+
+					script = Ref<Resource>( ResourceCache::get(base_script) );
+				} else {
+					return;
+				}
+			}
+		}
+
+
+		bool valid=false;
+
+		Variant::Type type_ret;
+
+		type_ret=ObjectTypeDB::get_property_type(base_type,property,&valid);
+
+		if (valid) {
+			type_cache=type_ret;
+			return; //all dandy
+		}
+
+		if (node) {
+
+			Variant prop = node->get(property,&valid);
+			if (valid) {
+				type_cache=prop.get_type();
+				return; //all dandy again
+			}
+		}
+
+		if (script.is_valid()) {
+
+			type_ret=script->get_static_property_type(property,&valid);
+
+			if (valid) {
+				type_cache=type_ret;
+				return; //all dandy
+			}
+		}
+	}
+}
+
 void VisualScriptPropertyGet::set_property(const StringName& p_type){
 
 	if (property==p_type)
 		return;
 
 	property=p_type;
+
+
+	_update_cache();
 	_change_notify();
 	ports_changed_notify();
 }
@@ -1492,6 +1883,9 @@ void VisualScriptPropertyGet::set_event_type(InputEvent::Type p_type) {
 	if (event_type==p_type)
 		return;
 	event_type=p_type;
+	if(call_mode==CALL_MODE_BASIC_TYPE) {
+		_update_cache();
+	}
 	_change_notify();
 	_update_base_type();
 	ports_changed_notify();
@@ -1502,6 +1896,17 @@ InputEvent::Type VisualScriptPropertyGet::get_event_type() const{
 	return event_type;
 }
 
+
+void VisualScriptPropertyGet::_set_type_cache(Variant::Type p_type) {
+	type_cache=p_type;
+}
+
+Variant::Type VisualScriptPropertyGet::_get_type_cache() const {
+
+	return type_cache;
+}
+
+
 void VisualScriptPropertyGet::_validate_property(PropertyInfo& property) const {
 
 	if (property.name=="property/base_type") {
@@ -1510,6 +1915,11 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo& property) const {
 		}
 	}
 
+	if (property.name=="property/base_script") {
+		if (call_mode!=CALL_MODE_INSTANCE) {
+			property.usage=0;
+		}
+	}
 
 	if (property.name=="property/basic_type") {
 		if (call_mode!=CALL_MODE_BASIC_TYPE) {
@@ -1549,6 +1959,23 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo& property) const {
 		} else if (call_mode==CALL_MODE_INSTANCE) {
 			property.hint=PROPERTY_HINT_PROPERTY_OF_BASE_TYPE;
 			property.hint_string=base_type;
+
+			if (base_script!=String()) {
+				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
+
+					ScriptServer::edit_request_func(base_script); //make sure it's loaded
+				}
+
+				if (ResourceCache::has(base_script)) {
+
+					Ref<Script> script = Ref<Resource>( ResourceCache::get(base_script) );
+					if (script.is_valid()) {
+
+						property.hint=PROPERTY_HINT_PROPERTY_OF_SCRIPT;
+						property.hint_string=itos(script->get_instance_ID());
+					}
+				}
+			}
 		} else if (call_mode==CALL_MODE_NODE_PATH) {
 			Node *node = _get_base_node();
 			if (node) {
@@ -1570,9 +1997,14 @@ void VisualScriptPropertyGet::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_base_type","base_type"),&VisualScriptPropertyGet::set_base_type);
 	ObjectTypeDB::bind_method(_MD("get_base_type"),&VisualScriptPropertyGet::get_base_type);
 
+	ObjectTypeDB::bind_method(_MD("set_base_script","base_script"),&VisualScriptPropertyGet::set_base_script);
+	ObjectTypeDB::bind_method(_MD("get_base_script"),&VisualScriptPropertyGet::get_base_script);
 
 	ObjectTypeDB::bind_method(_MD("set_basic_type","basic_type"),&VisualScriptPropertyGet::set_basic_type);
 	ObjectTypeDB::bind_method(_MD("get_basic_type"),&VisualScriptPropertyGet::get_basic_type);
+
+	ObjectTypeDB::bind_method(_MD("_set_type_cache","type_cache"),&VisualScriptPropertyGet::_set_type_cache);
+	ObjectTypeDB::bind_method(_MD("_get_type_cache"),&VisualScriptPropertyGet::_get_type_cache);
 
 	ObjectTypeDB::bind_method(_MD("set_event_type","event_type"),&VisualScriptPropertyGet::set_event_type);
 	ObjectTypeDB::bind_method(_MD("get_event_type"),&VisualScriptPropertyGet::get_event_type);
@@ -1603,9 +2035,22 @@ void VisualScriptPropertyGet::_bind_methods() {
 		et+=event_type_names[i];
 	}
 
+	List<String> script_extensions;
+	for(int i=0;i<ScriptServer::get_language_count();i++) {
+		ScriptServer::get_language(i)->get_recognized_extensions(&script_extensions);
+	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/set_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance"),_SCS("set_call_mode"),_SCS("get_call_mode"));
+	String script_ext_hint;
+	for (List<String>::Element *E=script_extensions.front();E;E=E->next()) {
+		if (script_ext_hint!=String())
+			script_ext_hint+=",";
+		script_ext_hint+="."+E->get();
+	}
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/set_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance,Basic Type"),_SCS("set_call_mode"),_SCS("get_call_mode"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_script",PROPERTY_HINT_FILE,script_ext_hint),_SCS("set_base_script"),_SCS("get_base_script"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/type_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_type_cache"),_SCS("_get_type_cache"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/basic_type",PROPERTY_HINT_ENUM,bt),_SCS("set_basic_type"),_SCS("get_basic_type"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/event_type",PROPERTY_HINT_ENUM,et),_SCS("set_event_type"),_SCS("get_event_type"));
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"property/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),_SCS("set_base_path"),_SCS("get_base_path"));
@@ -1725,6 +2170,7 @@ VisualScriptPropertyGet::VisualScriptPropertyGet() {
 	base_type="Object";
 	basic_type=Variant::NIL;
 	event_type=InputEvent::NONE;
+	type_cache=Variant::NIL;
 
 }
 

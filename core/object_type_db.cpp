@@ -642,7 +642,7 @@ void ObjectTypeDB::get_property_list(StringName p_type, List<PropertyInfo> *p_li
 	TypeInfo *check=type;
 	while(check) {
 
-		for(List<PropertyInfo>::Element *E=type->property_list.front();E;E=E->next()) {
+		for(List<PropertyInfo>::Element *E=check->property_list.front();E;E=E->next()) {
 
 
 			if (p_validator) {

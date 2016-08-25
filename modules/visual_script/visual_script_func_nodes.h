@@ -14,19 +14,36 @@ public:
 		CALL_MODE_INSTANCE,
 		CALL_MODE_BASIC_TYPE,
 	};
+
+	enum RPCCallMode {
+		RPC_DISABLED,
+		RPC_RELIABLE,
+		RPC_UNRELIABLE,
+		RPC_RELIABLE_TO_ID,
+		RPC_UNRELIABLE_TO_ID
+	};
+
 private:
 
 	CallMode call_mode;
 	StringName base_type;
+	String base_script;
 	Variant::Type basic_type;
 	NodePath base_path;
 	StringName function;
 	int use_default_args;
+	RPCCallMode rpc_call_mode;
+
 
 	Node *_get_base_node() const;
 	StringName _get_base_type() const;
 
-	void _update_defargs();
+	MethodInfo method_cache;
+	void _update_method_cache();
+
+	void _set_argument_cache(const Dictionary& p_args);
+	Dictionary _get_argument_cache() const;
+
 protected:
 	virtual void _validate_property(PropertyInfo& property) const;
 
@@ -58,6 +75,9 @@ public:
 	void set_base_type(const StringName& p_type);
 	StringName get_base_type() const;
 
+	void set_base_script(const String& p_path);
+	String get_base_script() const;
+
 	void set_function(const StringName& p_type);
 	StringName get_function() const;
 
@@ -70,12 +90,16 @@ public:
 	void set_use_default_args(int p_amount);
 	int get_use_default_args() const;
 
+	void set_rpc_call_mode(RPCCallMode p_mode);
+	RPCCallMode get_rpc_call_mode() const;
+
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptFunctionCall();
 };
 
 VARIANT_ENUM_CAST(VisualScriptFunctionCall::CallMode );
+VARIANT_ENUM_CAST(VisualScriptFunctionCall::RPCCallMode );
 
 
 class VisualScriptPropertySet : public VisualScriptNode {
@@ -92,9 +116,12 @@ public:
 	};
 private:
 
+	PropertyInfo type_cache;
+
 	CallMode call_mode;
 	Variant::Type basic_type;	
 	StringName base_type;
+	String base_script;
 	NodePath base_path;
 	StringName property;
 	bool use_builtin_value;
@@ -105,6 +132,12 @@ private:
 	StringName _get_base_type() const;
 
 	void _update_base_type();
+
+	void _update_cache();
+
+	void _set_type_cache(const Dictionary& p_type);
+	Dictionary _get_type_cache() const;
+
 
 protected:
 	virtual void _validate_property(PropertyInfo& property) const;
@@ -133,6 +166,9 @@ public:
 
 	void set_base_type(const StringName& p_type);
 	StringName get_base_type() const;
+
+	void set_base_script(const String& p_path);
+	String get_base_script() const;
 
 	void set_basic_type(Variant::Type p_type);
 	Variant::Type get_basic_type() const;
@@ -171,14 +207,17 @@ public:
 		CALL_MODE_SELF,
 		CALL_MODE_NODE_PATH,
 		CALL_MODE_INSTANCE,
-		CALL_MODE_BASIC_TYPE
+		CALL_MODE_BASIC_TYPE,
 
 	};
 private:
 
+	Variant::Type type_cache;
+
 	CallMode call_mode;
 	Variant::Type basic_type;
 	StringName base_type;
+	String base_script;
 	NodePath base_path;
 	StringName property;
 	InputEvent::Type event_type;
@@ -187,6 +226,10 @@ private:
 	Node *_get_base_node() const;
 	StringName _get_base_type() const;
 
+	void _update_cache();
+
+	void _set_type_cache(Variant::Type p_type);
+	Variant::Type _get_type_cache() const;
 
 protected:
 	virtual void _validate_property(PropertyInfo& property) const;
@@ -215,6 +258,9 @@ public:
 
 	void set_base_type(const StringName& p_type);
 	StringName get_base_type() const;
+
+	void set_base_script(const String& p_path);
+	String get_base_script() const;
 
 	void set_basic_type(Variant::Type p_type);
 	Variant::Type get_basic_type() const;

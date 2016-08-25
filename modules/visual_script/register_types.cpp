@@ -43,6 +43,10 @@ VisualScriptLanguage *visual_script_language=NULL;
 
 void register_visual_script_types() {
 
+	visual_script_language=memnew( VisualScriptLanguage );
+	//script_language_gd->init();
+	ScriptServer::register_language(visual_script_language);
+
 	ObjectTypeDB::register_type<VisualScript>();
 	ObjectTypeDB::register_virtual_type<VisualScriptNode>();
 	ObjectTypeDB::register_virtual_type<VisualScriptFunctionState>();
@@ -62,6 +66,7 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_type<VisualScriptSelf>();
 	ObjectTypeDB::register_type<VisualScriptCustomNode>();
 	ObjectTypeDB::register_type<VisualScriptSubCall>();
+	ObjectTypeDB::register_type<VisualScriptComment>();
 
 	ObjectTypeDB::register_type<VisualScriptFunctionCall>();
 	ObjectTypeDB::register_type<VisualScriptPropertySet>();
@@ -82,9 +87,6 @@ void register_visual_script_types() {
 
 	ObjectTypeDB::register_type<VisualScriptBuiltinFunc>();
 
-	visual_script_language=memnew( VisualScriptLanguage );
-	//script_language_gd->init();
-	ScriptServer::register_language(visual_script_language);
 
 	register_visual_script_nodes();
 	register_visual_script_func_nodes();

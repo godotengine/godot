@@ -101,6 +101,7 @@ public:
 	virtual void add_callback(const String& p_function,StringArray p_args)=0;
 	virtual void update_settings()=0;
 	virtual void set_debugger_active(bool p_active)=0;
+	virtual bool can_lose_focus_on_node_selection() { return true; }
 
 	virtual void set_tooltip_request_func(String p_method,Object* p_obj)=0;
 	virtual Control *get_edit_menu()=0;
@@ -285,6 +286,8 @@ class ScriptEditor : public VBoxContainer {
 	int file_dialog_option;
 	void _file_dialog_action(String p_file);
 
+	static void _open_script_request(const String& p_path);
+
 	static ScriptEditor *script_editor;
 protected:
 	void _notification(int p_what);
@@ -297,7 +300,7 @@ public:
 	void apply_scripts() const;
 
 	void ensure_select_current();
-	void edit(const Ref<Script>& p_script);
+	void edit(const Ref<Script>& p_script,bool p_grab_focus=true);
 
 	Dictionary get_state() const;
 	void set_state(const Dictionary& p_state);
@@ -321,6 +324,8 @@ public:
 	void close_builtin_scripts_from_scene(const String& p_scene);
 
 	void goto_help(const String& p_desc) { _help_class_goto(p_desc); }
+
+	bool can_take_away_focus() const;
 
 	ScriptEditorDebugger *get_debugger() { return debugger; }
 	void set_live_auto_reload_running_scripts(bool p_enabled);

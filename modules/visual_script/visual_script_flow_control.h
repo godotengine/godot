@@ -273,6 +273,53 @@ public:
 	VisualScriptInputFilter();
 };
 
+
+
+
+
+class VisualScriptTypeCast : public VisualScriptNode {
+
+	OBJ_TYPE(VisualScriptTypeCast,VisualScriptNode)
+
+
+	StringName base_type;
+	String script;
+
+protected:
+
+	static void _bind_methods();
+public:
+
+	virtual int get_output_sequence_port_count() const;
+	virtual bool has_input_sequence_port() const;
+
+
+	virtual String get_output_sequence_port_text(int p_port) const;
+
+
+	virtual int get_input_value_port_count() const;
+	virtual int get_output_value_port_count() const;
+
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const;
+	virtual String get_text() const;
+	virtual String get_category() const { return "flow_control"; }
+
+	void set_base_type(const StringName& p_type);
+	StringName get_base_type() const;
+
+	void set_base_script(const String& p_path);
+	String get_base_script() const;
+
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+
+
+	VisualScriptTypeCast();
+};
+
 void register_visual_script_flow_control_nodes();
 
 

@@ -1,7 +1,7 @@
 #include "visual_script.h"
 #include "visual_script_nodes.h"
 #include "scene/main/node.h"
-
+#include "os/os.h"
 #include "globals.h"
 #define SCRIPT_VARIABLES_PREFIX "script_variables/"
 
@@ -31,11 +31,13 @@ void VisualScriptNode::_notification(int p_what) {
 
 void VisualScriptNode::ports_changed_notify(){
 
+
 	default_input_values.resize( MAX(default_input_values.size(),get_input_value_port_count()) ); //let it grow as big as possible, we don't want to lose values on resize
+
 	emit_signal("ports_changed");
 }
 
-void  VisualScriptNode::set_default_input_value(int p_port,const Variant& p_value) {
+void VisualScriptNode::set_default_input_value(int p_port,const Variant& p_value) {
 
 	ERR_FAIL_INDEX(p_port,default_input_values.size());
 
@@ -54,35 +56,40 @@ void VisualScriptNode::_set_default_input_values(Array p_values) {
 	default_input_values=p_values;
 }
 
-Array VisualScriptNode::_get_default_input_values() const {
 
-	//validate on save, since on load there is little info about this
+void VisualScriptNode::validate_input_default_values() {
 
-	Array saved_values;
+
+
+	default_input_values.resize(get_input_value_port_count());
 
 	//actually validate on save
 	for(int i=0;i<get_input_value_port_count();i++) {
 
 		Variant::Type expected = get_input_value_port_info(i).type;
 
-		if (i>=default_input_values.size()) {
 
+		if (expected==Variant::NIL || expected==default_input_values[i].get_type()) {
+			continue;
+		} else  {
+			//not the same, reconvert
 			Variant::CallError ce;
-			saved_values.push_back(Variant::construct(expected,NULL,0,ce,false));
-		} else {
-
-			if (expected==Variant::NIL || expected==default_input_values[i].get_type()) {
-				saved_values.push_back(default_input_values[i]);
-			} else  {
-				//not the same, reconvert
-				Variant::CallError ce;
-				Variant existing = default_input_values[i];
-				const Variant *existingp=&existing;
-				saved_values.push_back( Variant::construct(expected,&existingp,1,ce,false) );
+			Variant existing = default_input_values[i];
+			const Variant *existingp=&existing;
+			default_input_values[i] = Variant::construct(expected,&existingp,1,ce,false);
+			if (ce.error!=Variant::CallError::CALL_OK) {
+				//could not convert? force..
+				default_input_values[i] = Variant::construct(expected,NULL,0,ce,false);
 			}
 		}
 	}
-	return saved_values;
+}
+
+Array VisualScriptNode::_get_default_input_values() const {
+
+	//validate on save, since on load there is little info about this
+
+	return default_input_values;
 }
 
 
@@ -224,6 +231,7 @@ int VisualScript::get_function_node_id(const StringName& p_name) const {
 void VisualScript::_node_ports_changed(int p_id) {
 
 
+
 	StringName function;
 
 	for (Map<StringName,Function>::Element *E=functions.front();E;E=E->next()) {
@@ -238,6 +246,10 @@ void VisualScript::_node_ports_changed(int p_id) {
 
 	Function &func = functions[function];
 	Ref<VisualScriptNode> vsn = func.nodes[p_id].node;
+
+	if (OS::get_singleton()->get_main_loop() && OS::get_singleton()->get_main_loop()->cast_to<SceneTree>() && OS::get_singleton()->get_main_loop()->cast_to<SceneTree>()->is_editor_hint()) {
+		vsn->validate_input_default_values(); //force validate default values when editing on editor
+	}
 
 	//must revalidate all the functions
 
@@ -834,6 +846,10 @@ bool VisualScript::can_instance() const {
 StringName VisualScript::get_instance_base_type() const {
 
 	return base_type;
+}
+
+Ref<Script> VisualScript::get_base_script() const {
+	return Ref<Script>(); // no inheritance in visual script
 }
 
 
@@ -1884,8 +1900,23 @@ Ref<Script> VisualScriptInstance::get_script() const{
 
 ScriptInstance::RPCMode VisualScriptInstance::get_rpc_mode(const StringName& p_method) const {
 
+	const Map<StringName,VisualScript::Function>::Element *E = script->functions.find(p_method);
+	if (!E) {
+		return RPC_MODE_DISABLED;
+	}
+
+	if (E->get().function_id>=0 && E->get().nodes.has(E->get().function_id)) {
+
+		Ref<VisualScriptFunction> vsf = E->get().nodes[E->get().function_id].node;
+		if (vsf.is_valid()) {
+
+			return vsf->get_rpc_mode();
+		}
+	}
+
 	return RPC_MODE_DISABLED;
 }
+
 ScriptInstance::RPCMode VisualScriptInstance::get_rset_mode(const StringName& p_variable) const {
 
 	return RPC_MODE_DISABLED;

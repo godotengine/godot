@@ -347,6 +347,8 @@ void VisualScriptEditor::_update_graph_connections() {
 
 void VisualScriptEditor::_update_graph(int p_only_id) {
 
+	if (updating_graph)
+		return;
 
 	updating_graph=true;
 
@@ -451,9 +453,20 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->set_show_close_button(true);
 		}
 
+
 		Label *text = memnew( Label );
 		text->set_text(node->get_text());
 		gnode->add_child(text);
+
+		if (node->cast_to<VisualScriptComment>()) {
+			Ref<VisualScriptComment> vsc=node;
+			gnode->set_comment(true);
+			gnode->set_resizeable(true);
+			gnode->set_custom_minimum_size(vsc->get_size()*EDSCALE);
+			gnode->connect("resize_request",this,"_comment_node_resized",varray(E->get()));
+
+		}
+
 
 		int slot_idx=0;
 
@@ -479,6 +492,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			bool left_ok=false;
 			Variant::Type left_type=Variant::NIL;
 			String left_name;
+
 
 			if (i<node->get_input_value_port_count()) {
 				PropertyInfo pi = node->get_input_value_port_info(i);
@@ -563,6 +577,10 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		}
 
 		graph->add_child(gnode);
+
+		if (gnode->is_comment()) {
+			graph->move_child(gnode,0);
+		}
 	}
 
 	_update_graph_connections();
@@ -2340,6 +2358,39 @@ void VisualScriptEditor::_graph_ofs_changed(const Vector2& p_ofs) {
 	updating_graph=false;
 }
 
+void VisualScriptEditor::_comment_node_resized(const Vector2& p_new_size,int p_node) {
+
+	if (updating_graph)
+		return;
+
+	Ref<VisualScriptComment> vsc = script->get_node(edited_func,p_node);
+	if (vsc.is_null())
+		return;
+
+	Node *node = graph->get_node(itos(p_node));
+	if (!node)
+		return;
+	GraphNode *gn = node->cast_to<GraphNode>();
+	if (!gn)
+		return;
+
+	updating_graph=true;
+
+	graph->set_block_minimum_size_adjust(true); //faster resize
+
+	undo_redo->create_action("Resize Comment",true);
+	undo_redo->add_do_method(vsc.ptr(),"set_size",p_new_size/EDSCALE);
+	undo_redo->add_undo_method(vsc.ptr(),"set_size",vsc->get_size());
+	undo_redo->commit_action();
+
+	gn->set_custom_minimum_size(p_new_size); //for this time since graph update is blocked
+	gn->set_size(Size2(1,1));
+	graph->set_block_minimum_size_adjust(false);
+	updating_graph=false;
+
+
+}
+
 void VisualScriptEditor::_menu_option(int p_what) {
 
 	switch(p_what) {
@@ -2375,7 +2426,150 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			//popup disappearing grabs focus to owner, so use call deferred
 			node_filter->call_deferred("grab_focus");
 			node_filter->call_deferred("select_all");
+		} break;			
+		case EDIT_COPY_NODES:
+		case EDIT_CUT_NODES: {
+
+			if (!script->has_function(edited_func))
+				break;
+
+			clipboard.nodes.clear();
+			clipboard.data_connections.clear();
+			clipboard.sequence_connections.clear();
+
+			for(int i=0;i<graph->get_child_count();i++) {
+				GraphNode *gn = graph->get_child(i)->cast_to<GraphNode>();
+				if (gn) {
+					if (gn->is_selected()) {
+
+						int id = String(gn->get_name()).to_int();
+						Ref<VisualScriptNode> node = script->get_node(edited_func,id);
+						if (node->cast_to<VisualScriptFunction>()) {
+							EditorNode::get_singleton()->show_warning("Can't copy the function node.");
+							return;
+						}
+						if (node.is_valid()) {
+							clipboard.nodes[id]=node->duplicate();
+							clipboard.nodes_positions[id]=script->get_node_pos(edited_func,id);
+						}
+
+					}
+				}
+			}
+
+			if (clipboard.nodes.empty())
+				break;
+
+			List<VisualScript::SequenceConnection> sequence_connections;
+
+			script->get_sequence_connection_list(edited_func,&sequence_connections);
+
+			for (List<VisualScript::SequenceConnection>::Element *E=sequence_connections.front();E;E=E->next()) {
+
+				if (clipboard.nodes.has(E->get().from_node) && clipboard.nodes.has(E->get().to_node)) {
+
+					clipboard.sequence_connections.insert(E->get());
+				}
+			}
+
+			List<VisualScript::DataConnection> data_connections;
+
+			script->get_data_connection_list(edited_func,&data_connections);
+
+			for (List<VisualScript::DataConnection>::Element *E=data_connections.front();E;E=E->next()) {
+
+				if (clipboard.nodes.has(E->get().from_node) && clipboard.nodes.has(E->get().to_node)) {
+
+					clipboard.data_connections.insert(E->get());
+				}
+			}
+
+			if (p_what==EDIT_CUT_NODES) {
+				_on_nodes_delete(); // oh yeah, also delete on cut
+			}
+
+
 		} break;
+		case EDIT_PASTE_NODES: {
+			if (!script->has_function(edited_func))
+				break;
+
+			if (clipboard.nodes.empty()) {
+				EditorNode::get_singleton()->show_warning("Clipboard is empty!");
+				break;
+			}
+
+			Map<int,int> remap;
+
+			undo_redo->create_action("Paste VisualScript Nodes");
+			int idc=script->get_available_id()+1;
+
+			Set<int> to_select;
+
+			Set<Vector2> existing_positions;
+
+			{
+				List<int> nodes;
+				script->get_node_list(edited_func,&nodes);
+				for (List<int>::Element *E=nodes.front();E;E=E->next()) {
+					Vector2 pos = script->get_node_pos(edited_func,E->get()).snapped(Vector2(2,2));
+					existing_positions.insert(pos);
+				}
+			}
+
+			for (Map<int,Ref<VisualScriptNode> >::Element *E=clipboard.nodes.front();E;E=E->next()) {
+
+
+				Ref<VisualScriptNode> node = E->get()->duplicate();
+
+				int new_id = idc++;
+				to_select.insert(new_id);
+
+				remap[E->key()]=new_id;
+
+				Vector2 paste_pos = clipboard.nodes_positions[E->key()];
+
+				while(existing_positions.has(paste_pos.snapped(Vector2(2,2)))) {
+					paste_pos+=Vector2(20,20)*EDSCALE;
+				}
+
+
+				undo_redo->add_do_method(script.ptr(),"add_node",edited_func,new_id,node,paste_pos);
+				undo_redo->add_undo_method(script.ptr(),"remove_node",edited_func,new_id);
+
+			}
+
+			for (Set<VisualScript::SequenceConnection>::Element *E=clipboard.sequence_connections.front();E;E=E->next()) {
+
+
+				undo_redo->add_do_method(script.ptr(),"sequence_connect",edited_func,remap[E->get().from_node],E->get().from_output,remap[E->get().to_node]);
+				undo_redo->add_undo_method(script.ptr(),"sequence_disconnect",edited_func,remap[E->get().from_node],E->get().from_output,remap[E->get().to_node]);
+
+			}
+
+			for (Set<VisualScript::DataConnection>::Element *E=clipboard.data_connections.front();E;E=E->next()) {
+
+
+				undo_redo->add_do_method(script.ptr(),"data_connect",edited_func,remap[E->get().from_node],E->get().from_port,remap[E->get().to_node],E->get().to_port);
+				undo_redo->add_undo_method(script.ptr(),"data_disconnect",edited_func,remap[E->get().from_node],E->get().from_port,remap[E->get().to_node],E->get().to_port);
+
+			}
+
+			undo_redo->add_do_method(this,"_update_graph");
+			undo_redo->add_undo_method(this,"_update_graph");
+
+			undo_redo->commit_action();
+
+			for(int i=0;i<graph->get_child_count();i++) {
+				GraphNode *gn = graph->get_child(i)->cast_to<GraphNode>();
+				if (gn) {
+					int id = gn->get_name().operator String().to_int();
+					gn->set_selected(to_select.has(id));
+
+				}
+			}
+		} break;
+
 
 	}
 }
@@ -2403,6 +2597,7 @@ void VisualScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_menu_option",&VisualScriptEditor::_menu_option);
 	ObjectTypeDB::bind_method("_graph_ofs_changed",&VisualScriptEditor::_graph_ofs_changed);
 	ObjectTypeDB::bind_method("_center_on_node",&VisualScriptEditor::_center_on_node);
+	ObjectTypeDB::bind_method("_comment_node_resized",&VisualScriptEditor::_comment_node_resized);
 
 
 
@@ -2437,6 +2632,11 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/delete_selected"), EDIT_DELETE_NODES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/toggle_breakpoint"), EDIT_TOGGLE_BREAKPOINT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/find_node_type"), EDIT_FIND_NODE_TYPE);
+	edit_menu->get_popup()->add_separator();
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/copy_nodes"), EDIT_COPY_NODES);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/cut_nodes"), EDIT_CUT_NODES);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/paste_nodes"), EDIT_PASTE_NODES);
+
 	edit_menu->get_popup()->connect("item_pressed",this,"_menu_option");
 
 	main_hsplit = memnew( HSplitContainer );
@@ -2619,7 +2819,10 @@ static void register_editor_callback() {
 
 	ED_SHORTCUT("visual_script_editor/delete_selected", TTR("Delete Selected"));
 	ED_SHORTCUT("visual_script_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), KEY_F9);
-	ED_SHORTCUT("visual_script_editor/find_node_type", TTR("Find Node Tyoe"), KEY_MASK_CMD+KEY_F);
+	ED_SHORTCUT("visual_script_editor/find_node_type", TTR("Find Node Type"), KEY_MASK_CMD+KEY_F);
+	ED_SHORTCUT("visual_script_editor/copy_nodes", TTR("Copy Nodes"), KEY_MASK_CMD+KEY_C);
+	ED_SHORTCUT("visual_script_editor/cut_nodes", TTR("Cut Nodes"), KEY_MASK_CMD+KEY_X);
+	ED_SHORTCUT("visual_script_editor/paste_nodes", TTR("Paste Nodes"), KEY_MASK_CMD+KEY_V);
 
 }
 

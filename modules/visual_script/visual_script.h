@@ -20,6 +20,8 @@ friend class VisualScript;
 
 	void _set_default_input_values(Array p_values);
 	Array _get_default_input_values() const;
+
+	void validate_input_default_values();
 protected:
 
 	virtual bool _use_builtin_script() const { return false; }
@@ -300,6 +302,7 @@ public:
 
 	virtual bool can_instance() const;
 
+	virtual Ref<Script> get_base_script() const;
 	virtual StringName get_instance_base_type() const;
 	virtual ScriptInstance* instance_create(Object *p_this);
 	virtual bool instance_has(const Object *p_this) const;
