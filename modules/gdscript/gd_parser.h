@@ -247,6 +247,9 @@ public:
 			OP_BIT_AND,
 			OP_BIT_OR,
 			OP_BIT_XOR,
+			//ternary operators
+			OP_TERNARY_IF,
+			OP_TERNARY_ELSE,
 		};
 
 		Operator op;
