@@ -3046,7 +3046,7 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 			const String *str=reinterpret_cast<const String*>(_data._mem);
 			int idx = r_iter;
 			idx++;
-			if (idx >= str->size())
+			if (idx >= str->length())
 				return false;
 			r_iter = idx;
 			return true;
