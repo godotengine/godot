@@ -337,7 +337,7 @@ void ProjectSettings::_add_item(int p_item){
 			device_index->add_item(TTR("Button 7"));
 			device_index->add_item(TTR("Button 8"));
 			device_index->add_item(TTR("Button 9"));
-			device_input->popup_centered(Size2(350,95));
+			device_input->popup_centered_minsize(Size2(350,95));
 		} break;
 		case InputEvent::JOYSTICK_MOTION: {
 
@@ -349,12 +349,12 @@ void ProjectSettings::_add_item(int p_item){
 				String desc = _axis_names[i];
 				device_index->add_item(TTR("Axis")+" "+itos(i/2)+" "+(i&1?"+":"-")+desc);
 			}
-			device_input->popup_centered(Size2(350,95));
+			device_input->popup_centered_minsize(Size2(350,95));
 
 		} break;
 		case InputEvent::JOYSTICK_BUTTON: {
 
-			device_id->set_val(0);
+			device_id->set_val(3);
 			device_index_label->set_text(TTR("Joystick Button Index:"));
 			device_index->clear();
 
@@ -362,7 +362,7 @@ void ProjectSettings::_add_item(int p_item){
 
 				device_index->add_item(itos(i)+": "+String(_button_names[i]));
 			}
-			device_input->popup_centered(Size2(350,95));
+			device_input->popup_centered_minsize(Size2(350,95));
 
 		} break;
 		default:{}
@@ -1432,30 +1432,32 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	device_input->get_ok()->set_text(TTR("Add"));
 	device_input->connect("confirmed",this,"_device_input_add");
 
+	hbc = memnew( HBoxContainer );
+	device_input->add_child(hbc);
+	device_input->set_child_rect(hbc);
+
+	VBoxContainer *vbc_left = memnew( VBoxContainer );
+	hbc->add_child(vbc_left);
+
 	l = memnew( Label );
 	l->set_text(TTR("Device:"));
-	l->set_pos(Point2(15,10));
-	device_input->add_child(l);
+	vbc_left->add_child(l);
+
+	device_id = memnew( SpinBox );
+	device_id->set_val(0);
+	vbc_left->add_child(device_id);
+
+	VBoxContainer *vbc_right = memnew( VBoxContainer );
+	hbc->add_child(vbc_right);
+	vbc_right->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	l = memnew( Label );
 	l->set_text(TTR("Index:"));
-	l->set_pos(Point2(90,10));
-	device_input->add_child(l);
+	vbc_right->add_child(l);
 	device_index_label=l;
 
-	device_id = memnew( SpinBox );
-	device_id->set_pos(Point2(20,30));
-	device_id->set_size(Size2(70,10));
-	device_id->set_val(0);
-
-	device_input->add_child(device_id);
-
 	device_index = memnew( OptionButton );
-	device_index->set_pos(Point2(95,30));
-	device_index->set_size(Size2(300,10));
-	device_index->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,10);
-
-	device_input->add_child(device_index);
+	vbc_right->add_child(device_index);
 
 	/*
 	save = memnew( Button );
