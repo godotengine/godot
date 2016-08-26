@@ -84,6 +84,11 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 				v=val;
 				emit_signal("variant_changed");
+			} else if (hint==PROPERTY_HINT_ENUM) {
+
+				v=p_which;
+				emit_signal("variant_changed");
+
 			}
 		} break;
 		case Variant::OBJECT: {
@@ -283,6 +288,16 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 	switch(type) {
 
+		case Variant::BOOL: {
+
+			CheckBox *c=checks20[0];
+			c->set_text("True");
+			c->set_pos(Vector2(4,4));
+			c->set_pressed(v);
+			c->show();
+			set_size(checks20[0]->get_pos()+checks20[0]->get_size()+Vector2(4,4)*EDSCALE);
+
+		} break;
 		case Variant::INT:
 		case Variant::REAL: {
 
@@ -323,8 +338,23 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 					set_size(Size2(70,35)*EDSCALE);
 				}
 
+			} else if (hint==PROPERTY_HINT_ENUM) {
+
+				menu->clear();
+				Vector<String> options = hint_text.split(",");
+				for(int i=0;i<options.size();i++) {
+					menu->add_item(options[i],i);
+				}
+				menu->set_pos(get_pos());
+				menu->popup();
+				hide();
+				updating=false;
+				return false;
+
 
 			} else if (hint==PROPERTY_HINT_ALL_FLAGS) {
+
+				checks20[0]->set_text("");
 
 				uint32_t flgs = v;
 				for(int i=0;i<2;i++) {
@@ -1117,6 +1147,10 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		return;
 
 	switch(type) {
+		case Variant::BOOL: {
+			v=checks20[0]->is_pressed();
+			emit_signal("variant_changed");
+		} break;
 		case Variant::INT: {
 
 			if (hint==PROPERTY_HINT_ALL_FLAGS) {

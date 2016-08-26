@@ -67,6 +67,8 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_type<VisualScriptCustomNode>();
 	ObjectTypeDB::register_type<VisualScriptSubCall>();
 	ObjectTypeDB::register_type<VisualScriptComment>();
+	ObjectTypeDB::register_type<VisualScriptConstructor>();
+
 
 	ObjectTypeDB::register_type<VisualScriptFunctionCall>();
 	ObjectTypeDB::register_type<VisualScriptPropertySet>();
@@ -103,6 +105,8 @@ void register_visual_script_types() {
 
 void unregister_visual_script_types() {
 
+
+	unregister_visual_script_nodes();
 
 	ScriptServer::unregister_language(visual_script_language);
 

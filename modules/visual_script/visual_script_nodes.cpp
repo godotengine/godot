@@ -2602,6 +2602,156 @@ VisualScriptComment::VisualScriptComment() {
 }
 
 
+//////////////////////////////////////////
+////////////////Constructor///////////
+//////////////////////////////////////////
+
+int VisualScriptConstructor::get_output_sequence_port_count() const {
+
+	return 1;
+}
+
+bool VisualScriptConstructor::has_input_sequence_port() const{
+
+	return true;
+}
+
+int VisualScriptConstructor::get_input_value_port_count() const{
+	return constructor.arguments.size();
+}
+int VisualScriptConstructor::get_output_value_port_count() const{
+
+	return 1;
+}
+
+String VisualScriptConstructor::get_output_sequence_port_text(int p_port) const {
+
+	return "";
+}
+
+PropertyInfo VisualScriptConstructor::get_input_value_port_info(int p_idx) const{
+
+	return constructor.arguments[p_idx];
+}
+
+PropertyInfo VisualScriptConstructor::get_output_value_port_info(int p_idx) const{
+
+	return PropertyInfo(type,"value");
+}
+
+
+String VisualScriptConstructor::get_caption() const {
+
+	return "Construct";
+}
+
+
+String VisualScriptConstructor::get_text() const {
+
+	return "new "+Variant::get_type_name(type)+"()";
+}
+
+
+String VisualScriptConstructor::get_category() const {
+
+	return "functions";
+}
+
+void VisualScriptConstructor::set_constructor_type(Variant::Type p_type) {
+
+	if (type==p_type)
+		return;
+
+	type=p_type;
+	ports_changed_notify();
+}
+
+Variant::Type VisualScriptConstructor::get_constructor_type() const {
+
+	return type;
+}
+
+void VisualScriptConstructor::set_constructor(const Dictionary& p_info) {
+
+	constructor=MethodInfo::from_dict(p_info);
+}
+
+Dictionary VisualScriptConstructor::get_constructor() const {
+
+	return constructor;
+}
+
+
+class VisualScriptNodeInstanceConstructor : public VisualScriptNodeInstance {
+public:
+
+	VisualScriptInstance* instance;
+	Variant::Type type;
+	int argcount;
+
+	//virtual int get_working_memory_size() const { return 0; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; };
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		Variant::CallError ce;
+		*p_outputs[0]=Variant::construct(type,p_inputs,argcount,ce);
+		if (ce.error!=Variant::CallError::CALL_OK) {
+			r_error_str="Invalid arguments for constructor";
+		}
+
+		return 0;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptConstructor::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceConstructor * instance = memnew(VisualScriptNodeInstanceConstructor );
+	instance->instance=p_instance;
+	instance->type=type;
+	instance->argcount=constructor.arguments.size();
+	return instance;
+}
+
+
+
+void VisualScriptConstructor::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_constructor_type","type"),&VisualScriptConstructor::set_constructor_type);
+	ObjectTypeDB::bind_method(_MD("get_constructor_type"),&VisualScriptConstructor::get_constructor_type);
+
+	ObjectTypeDB::bind_method(_MD("set_constructor","constructor"),&VisualScriptConstructor::set_constructor);
+	ObjectTypeDB::bind_method(_MD("get_constructor"),&VisualScriptConstructor::get_constructor);
+
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"type",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_constructor_type"),_SCS("get_constructor_type"));
+	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"constructor",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_constructor"),_SCS("get_constructor"));
+
+}
+
+VisualScriptConstructor::VisualScriptConstructor() {
+
+	type=Variant::NIL;
+
+}
+
+static Map<String,Pair<Variant::Type,MethodInfo>  > constructor_map;
+
+static Ref<VisualScriptNode> create_constructor_node(const String& p_name) {
+
+	ERR_FAIL_COND_V(!constructor_map.has(p_name),Ref<VisualScriptNode>());
+
+	Ref<VisualScriptConstructor> vsc;
+	vsc.instance();
+	vsc->set_constructor_type(constructor_map[p_name].first);
+	vsc->set_constructor(constructor_map[p_name].second);
+
+	return vsc;
+}
+
+
 
 void register_visual_script_nodes() {
 
@@ -2653,4 +2803,41 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/in",create_op_node<Variant::OP_IN>);
 
 
+	for(int i=1;i<Variant::VARIANT_MAX;i++) {
+
+		List<MethodInfo> constructors;
+		Variant::get_constructor_list(Variant::Type(i),&constructors);
+
+		for(List<MethodInfo>::Element *E=constructors.front();E;E=E->next()) {
+
+			if  (E->get().arguments.size()>0) {
+
+
+				String name = "functions/constructors/"+Variant::get_type_name(Variant::Type(i))+" ( ";
+				for(int j=0;j<E->get().arguments.size();j++) {
+					if (j>0)
+						name+=", ";
+					if (E->get().arguments.size()==1)
+						name+=Variant::get_type_name(E->get().arguments[j].type);
+					else
+						name+=E->get().arguments[j].name;
+				}
+				name+=") ";
+
+				VisualScriptLanguage::singleton->add_register_func(name,create_constructor_node);
+				Pair<Variant::Type,MethodInfo> pair;
+				pair.first=Variant::Type(i);
+				pair.second=E->get();
+				constructor_map[name]=pair;
+			}
+		}
+	}
 }
+
+
+
+void unregister_visual_script_nodes() {
+
+	constructor_map.clear();
+}
+

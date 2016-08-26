@@ -6,7 +6,7 @@
 #include "tools/editor/property_editor.h"
 #include "scene/gui/graph_edit.h"
 #include "tools/editor/create_dialog.h"
-
+#include "tools/editor/property_selector.h"
 class VisualScriptEditorSignalEdit;
 class VisualScriptEditorVariableEdit;
 
@@ -51,6 +51,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	AcceptDialog *edit_signal_dialog;
 	PropertyEditor *edit_signal_edit;
 
+	PropertySelector *method_select;
 
 	VisualScriptEditorVariableEdit *variable_editor;
 
@@ -162,6 +163,12 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _graph_ofs_changed(const Vector2& p_ofs);
 	void _comment_node_resized(const Vector2& p_new_size,int p_node);
+
+	int selecting_method_id;
+	void _selected_method(const String& p_method);
+
+	void _draw_color_over_button(Object* obj,Color p_color);
+	void _button_resource_previewed(const String& p_path,const Ref<Texture>& p_preview,Variant p_ud);
 
 
 protected:
