@@ -56,6 +56,7 @@ private:
 	uint32_t _gen_unique_id() const;
 	void _pop_current_packet() const;
 
+	enet_uint32 bind_ip;
 	Vector<uint8_t> src_compressor_mem;
 	Vector<uint8_t> dst_compressor_mem;
 
@@ -103,6 +104,8 @@ public:
 
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();
+
+	void set_bind_ip(const IP_Address& p_ip);
 };
 
 VARIANT_ENUM_CAST(NetworkedMultiplayerENet::CompressionMode);
