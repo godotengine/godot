@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="16"
+   height="12"
+   viewBox="0 0 16 12"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_add_track.png"
+   inkscape:export-xdpi="45"
+   inkscape:export-ydpi="45"
+   sodipodi:docname="icon_mini_transform.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="45.254834"
+     inkscape:cx="4.0665819"
+     inkscape:cy="5.4066887"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="px"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:snap-bbox-midpoints="false"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-center="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:object-nodes="true"
+     inkscape:snap-smooth-nodes="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3336" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-1040.3622)">
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 3,1042.3622 a 3,3 0 0 0 -3,3 l 0,5 2,0 0,-2 1,0 0,-2 -1,0 0,-1 a 1.0000174,1.0000174 0 0 1 1,-1 l 0,-2 z"
+       id="rect4455"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 8,1044.3622 0,6 2,0 0,-4 a 1.0000174,1.0000174 0 0 1 1,1 l 0,3 2,0 0,-3 0,-1 a 1.0000174,1.0000174 0 0 1 1,1 l 0,3 2,0 0,-3 a 3,3 0 0 0 -3,-3 l -2,0 0,0.1758 a 3,3 0 0 0 -1,-0.1758 l -2,0 z"
+       id="path4771"
+       inkscape:connector-curvature="0" />
+    <rect
+       y="1047.3622"
+       x="3"
+       height="2.999984"
+       width="2"
+       id="rect4601"
+       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <rect
+       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4603"
+       width="1"
+       height="2.0000174"
+       x="6"
+       y="1044.3622" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path4605"
+       d="m 6,1044.3622 a 3,3 0 0 0 -3,3 l 2,0 a 1.0000174,1.0000174 0 0 1 1,-1 l 0,-2 z"
+       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  </g>
+</svg>
