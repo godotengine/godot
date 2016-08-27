@@ -1673,6 +1673,7 @@ Variant::operator String() const {
 						};
 					};
 				#endif
+				if (_get_obj().obj->has_method("_str")) return _get_obj().obj->call("_str");
 				return "["+_get_obj().obj->get_type()+":"+itos(_get_obj().obj->get_instance_ID())+"]";
 			} else
 				return "[Object:null]";
