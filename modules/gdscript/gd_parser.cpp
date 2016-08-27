@@ -3161,8 +3161,14 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				//mutiple constant declarations..
 
 				int last_assign = -1; // Incremented by 1 right before the assingment.
+				String enum_name;
+				Dictionary enum_dict;
 
 				tokenizer->advance();
+				if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
+					enum_name=tokenizer->get_token_identifier();
+					tokenizer->advance();
+				}
 				if (tokenizer->get_token()!=GDTokenizer::TK_CURLY_BRACKET_OPEN) {
 					_set_error("Expected '{' in enum declaration");
 					return;
@@ -3231,9 +3237,23 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							tokenizer->advance();
 						}
 
+						if(enum_name != "") {
+							const ConstantNode *cn = static_cast<const ConstantNode*>(constant.expression);
+							enum_dict[constant.identifier] = cn->value;
+						}
+
 						p_class->constant_expressions.push_back(constant);
 					}
 					
+				}
+				
+				if(enum_name != "") {
+					ClassNode::Constant enum_constant;
+					enum_constant.identifier=enum_name;
+					ConstantNode *cn = alloc_node<ConstantNode>();
+					cn->value = enum_dict;
+					enum_constant.expression=cn;
+					p_class->constant_expressions.push_back(enum_constant);
 				}
 
 				if (!_end_statement()) {
