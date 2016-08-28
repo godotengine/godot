@@ -1592,6 +1592,9 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 	int top_space = from->get_option("extra_space/top");
 	int bottom_space = from->get_option("extra_space/bottom");
 	bool enable_filter = from->get_option("advanced/enable_filter");
+	if (from->has_option("advanced/disable_filter")){ // this is a compatibility check for a deprecated option
+		enable_filter = !from->get_option("advanced/disable_filter");
+	}
 
 	Ref<BitmapFont> font;
 
