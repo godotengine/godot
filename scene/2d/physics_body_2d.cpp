@@ -1226,6 +1226,73 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 #endif
 }
 
+
+
+Vector2 KinematicBody2D::move_and_slide(const Vector2& p_linear_velocity,const Vector2& p_floor_direction,int p_max_bounces) {
+
+	Vector2 motion = p_linear_velocity*get_fixed_process_delta_time();
+	Vector2 lv = p_linear_velocity;
+
+	move_and_slide_on_floor=false;
+	move_and_slide_on_ceiling=false;
+	move_and_slide_on_wall=false;
+	move_and_slide_colliders.clear();
+
+	while(motion!=Vector2() && p_max_bounces) {
+
+		motion=move(motion);
+
+		if (is_colliding()) {
+
+			if (p_floor_direction==Vector2()) {
+				//all is a wall
+				move_and_slide_on_wall=true;
+			} else {
+				if ( get_collision_normal().dot(p_floor_direction) > Math::cos(Math::deg2rad(45))) { //floor
+					move_and_slide_on_floor=true;
+					move_and_slide_floor_velocity=get_collider_velocity();
+				} else if ( get_collision_normal().dot(p_floor_direction) < Math::cos(Math::deg2rad(45))) { //ceiling
+					move_and_slide_on_ceiling=true;
+				} else {
+					move_and_slide_on_wall=true;
+				}
+
+			}
+
+			motion=get_collision_normal().slide(motion);
+			lv=get_collision_normal().slide(lv);
+			Variant collider = _get_collider();
+			if (collider.get_type()!=Variant::NIL) {
+				move_and_slide_colliders.push_back(collider);
+			}
+
+		} else {
+			break;
+		}
+
+		p_max_bounces--;
+	}
+
+	return lv;
+}
+
+bool KinematicBody2D::is_move_and_slide_on_floor() const {
+
+	return move_and_slide_on_floor;
+}
+bool KinematicBody2D::is_move_and_slide_on_wall() const{
+
+	return move_and_slide_on_wall;
+}
+bool KinematicBody2D::is_move_and_slide_on_ceiling() const{
+
+	return move_and_slide_on_ceiling;
+}
+Array KinematicBody2D::get_move_and_slide_colliders() const{
+
+	return move_and_slide_colliders;
+}
+
 Vector2 KinematicBody2D::move_to(const Vector2& p_position) {
 
 	return move(p_position-get_global_pos());
@@ -1300,6 +1367,7 @@ void KinematicBody2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("move","rel_vec"),&KinematicBody2D::move);
 	ObjectTypeDB::bind_method(_MD("move_to","position"),&KinematicBody2D::move_to);
+	ObjectTypeDB::bind_method(_MD("move_and_slide","linear_velocity","floor_normal","max_bounces"),&KinematicBody2D::move_and_slide,DEFVAL(Vector2(0,0)),DEFVAL(4));
 
 	ObjectTypeDB::bind_method(_MD("test_move","rel_vec"),&KinematicBody2D::test_move);
 	ObjectTypeDB::bind_method(_MD("get_travel"),&KinematicBody2D::get_travel);
@@ -1313,6 +1381,10 @@ void KinematicBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collider:Object"),&KinematicBody2D::_get_collider);
 	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&KinematicBody2D::get_collider_shape);
 	ObjectTypeDB::bind_method(_MD("get_collider_metadata:Variant"),&KinematicBody2D::get_collider_metadata);
+	ObjectTypeDB::bind_method(_MD("get_move_and_slide_colliders"),&KinematicBody2D::get_move_and_slide_colliders);
+	ObjectTypeDB::bind_method(_MD("is_move_and_slide_on_floor"),&KinematicBody2D::is_move_and_slide_on_floor);
+	ObjectTypeDB::bind_method(_MD("is_move_and_slide_on_ceiling"),&KinematicBody2D::is_move_and_slide_on_ceiling);
+	ObjectTypeDB::bind_method(_MD("is_move_and_slide_on_wall"),&KinematicBody2D::is_move_and_slide_on_wall);
 
 	ObjectTypeDB::bind_method(_MD("set_collision_margin","pixels"),&KinematicBody2D::set_collision_margin);
 	ObjectTypeDB::bind_method(_MD("get_collision_margin","pixels"),&KinematicBody2D::get_collision_margin);
@@ -1330,6 +1402,11 @@ KinematicBody2D::KinematicBody2D() : PhysicsBody2D(Physics2DServer::BODY_MODE_KI
 	collider_shape=0;
 
 	margin=0.08;
+
+	move_and_slide_on_floor=false;
+	move_and_slide_on_ceiling=false;
+	move_and_slide_on_wall=false;
+
 }
 KinematicBody2D::~KinematicBody2D()  {
 

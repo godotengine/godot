@@ -1332,17 +1332,18 @@ Variant _GLOBAL_DEF( const String& p_var, const Variant& p_default) {
 void Globals::add_singleton(const Singleton &p_singleton) {
 
 	singletons.push_back(p_singleton);
+	singleton_ptrs[p_singleton.name]=p_singleton.ptr;
 }
 
 Object* Globals::get_singleton_object(const String& p_name) const {
 
-	for(const List<Singleton>::Element *E=singletons.front();E;E=E->next()) {
-		if (E->get().name == p_name) {
-			return E->get().ptr;
-		};
-	};
 
-	return NULL;
+	const Map<StringName,Object*>::Element *E=singleton_ptrs.find(p_name);
+	if (!E)
+		return NULL;
+	else
+		return E->get();
+
 };
 
 bool Globals::has_singleton(const String& p_name) const {

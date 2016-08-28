@@ -320,6 +320,9 @@ public:
 	VisualScriptTypeCast();
 };
 
+
+
+
 void register_visual_script_flow_control_nodes();
 
 

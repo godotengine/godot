@@ -4,6 +4,7 @@
 #include "scene/main/scene_main_loop.h"
 #include "os/os.h"
 #include "scene/main/node.h"
+#include "os/input.h"
 
 //////////////////////////////////////////
 ////////////////FUNCTION//////////////////
@@ -116,7 +117,7 @@ void  VisualScriptFunction::_get_property_list( List<PropertyInfo> *p_list) cons
 
 
 	p_list->push_back(PropertyInfo(Variant::INT,"argument_count",PROPERTY_HINT_RANGE,"0,256"));
-	String argt="Variant";
+	String argt="Any";
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {
 		argt+=","+Variant::get_type_name(Variant::Type(i));
 	}
@@ -385,6 +386,8 @@ PropertyInfo VisualScriptOperator::get_input_value_port_info(int p_idx) const{
 	PropertyInfo pinfo;
 	pinfo.name=p_idx==0?"A":"B";
 	pinfo.type=port_types[op][p_idx];
+	if (pinfo.type==Variant::NIL)
+		pinfo.type=typed;
 	return pinfo;
 }
 PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const{
@@ -423,6 +426,8 @@ PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const{
 	PropertyInfo pinfo;
 	pinfo.name="";
 	pinfo.type=port_types[op];
+	if (pinfo.type==Variant::NIL)
+		pinfo.type=typed;
 	return pinfo;
 
 }
@@ -515,11 +520,28 @@ Variant::Operator VisualScriptOperator::get_operator() const{
 	return op;
 }
 
+void VisualScriptOperator::set_typed(Variant::Type p_op) {
+
+	if (typed==p_op)
+		return;
+
+	typed=p_op;
+	ports_changed_notify();
+}
+
+Variant::Type VisualScriptOperator::get_typed() const {
+
+	return typed;
+}
+
 
 void VisualScriptOperator::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_operator","op"),&VisualScriptOperator::set_operator);
 	ObjectTypeDB::bind_method(_MD("get_operator"),&VisualScriptOperator::get_operator);
+
+	ObjectTypeDB::bind_method(_MD("set_typed","type"),&VisualScriptOperator::set_typed);
+	ObjectTypeDB::bind_method(_MD("get_typed"),&VisualScriptOperator::get_typed);
 
 	String types;
 	for(int i=0;i<Variant::OP_MAX;i++) {
@@ -527,7 +549,14 @@ void VisualScriptOperator::_bind_methods() {
 			types+=",";
 		types+=op_names[i];
 	}
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"operator_value/type",PROPERTY_HINT_ENUM,types),_SCS("set_operator"),_SCS("get_operator"));
+
+	String argt="Any";
+	for(int i=1;i<Variant::VARIANT_MAX;i++) {
+		argt+=","+Variant::get_type_name(Variant::Type(i));
+	}
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"operator_value/type",PROPERTY_HINT_ENUM,types,PROPERTY_USAGE_NOEDITOR),_SCS("set_operator"),_SCS("get_operator"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"typed_value/typed",PROPERTY_HINT_ENUM,argt),_SCS("set_typed"),_SCS("get_typed"));
 
 }
 
@@ -581,6 +610,7 @@ VisualScriptNodeInstance* VisualScriptOperator::instance(VisualScriptInstance* p
 VisualScriptOperator::VisualScriptOperator() {
 
 	op=Variant::OP_ADD;
+	typed=Variant::NIL;
 }
 
 
@@ -1023,6 +1053,125 @@ VisualScriptConstant::VisualScriptConstant() {
 	type=Variant::NIL;
 
 }
+
+//////////////////////////////////////////
+////////////////PRELOAD//////////////////
+//////////////////////////////////////////
+
+int VisualScriptPreload::get_output_sequence_port_count() const {
+
+	return 0;
+}
+
+bool VisualScriptPreload::has_input_sequence_port() const{
+
+	return false;
+}
+
+int VisualScriptPreload::get_input_value_port_count() const{
+
+	return 0;
+}
+int VisualScriptPreload::get_output_value_port_count() const{
+
+	return 1;
+}
+
+String VisualScriptPreload::get_output_sequence_port_text(int p_port) const {
+
+	return String();
+}
+
+PropertyInfo VisualScriptPreload::get_input_value_port_info(int p_idx) const{
+
+	return PropertyInfo();
+}
+
+PropertyInfo VisualScriptPreload::get_output_value_port_info(int p_idx) const{
+
+	return PropertyInfo(Variant::OBJECT,"res");
+}
+
+
+String VisualScriptPreload::get_caption() const {
+
+	return "Preload";
+}
+
+String VisualScriptPreload::get_text() const {
+
+	if (preload.is_valid()) {
+		if (preload->get_path().is_resource_file()) {
+			return preload->get_path();
+		} else if (preload->get_name()!=String()) {
+			return preload->get_name();
+		} else {
+			return preload->get_type();
+		}
+	} else {
+		return "<empty>";
+	}
+}
+
+
+void VisualScriptPreload::set_preload(const Ref<Resource>& p_preload){
+
+	if (preload==p_preload)
+		return;
+
+	preload=p_preload;
+	ports_changed_notify();
+}
+Ref<Resource> VisualScriptPreload::get_preload() const{
+
+	return preload;
+}
+
+
+void VisualScriptPreload::_bind_methods() {
+
+
+	ObjectTypeDB::bind_method(_MD("set_preload","resource"),&VisualScriptPreload::set_preload);
+	ObjectTypeDB::bind_method(_MD("get_preload"),&VisualScriptPreload::get_preload);
+
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"resource",PROPERTY_HINT_RESOURCE_TYPE,"Resource"),_SCS("set_preload"),_SCS("get_preload"));
+
+}
+
+class VisualScriptNodeInstancePreload : public VisualScriptNodeInstance {
+public:
+
+	Ref<Resource> preload;
+	//virtual int get_working_memory_size() const { return 0; }
+	virtual bool is_output_port_unsequenced(int p_idx) const { return true; }
+	virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const {
+
+		*r_value=preload;
+
+		return true;
+
+	}
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		return 0;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptPreload::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstancePreload * instance = memnew(VisualScriptNodeInstancePreload );
+	instance->preload=preload;
+	return instance;
+}
+
+VisualScriptPreload::VisualScriptPreload() {
+
+}
+
 
 
 
@@ -2751,6 +2900,519 @@ static Ref<VisualScriptNode> create_constructor_node(const String& p_name) {
 	return vsc;
 }
 
+//////////////////////////////////////////
+////////////////LocalVar///////////
+//////////////////////////////////////////
+
+int VisualScriptLocalVar::get_output_sequence_port_count() const {
+
+	return 1;
+}
+
+bool VisualScriptLocalVar::has_input_sequence_port() const{
+
+	return true;
+}
+
+int VisualScriptLocalVar::get_input_value_port_count() const{
+	return 1;
+}
+int VisualScriptLocalVar::get_output_value_port_count() const{
+
+	return 1;
+}
+
+String VisualScriptLocalVar::get_output_sequence_port_text(int p_port) const {
+
+	return "";
+}
+
+PropertyInfo VisualScriptLocalVar::get_input_value_port_info(int p_idx) const{
+
+	return PropertyInfo(type,"set");
+}
+PropertyInfo VisualScriptLocalVar::get_output_value_port_info(int p_idx) const{
+
+	return PropertyInfo(type,"get");
+}
+
+
+String VisualScriptLocalVar::get_caption() const {
+
+	return "LocalVar";
+}
+
+
+String VisualScriptLocalVar::get_text() const {
+
+	return name;
+}
+
+
+String VisualScriptLocalVar::get_category() const {
+
+	return "data";
+}
+
+
+void VisualScriptLocalVar::set_var_name(const StringName& p_name) {
+
+	if (name==p_name)
+		return;
+
+	name=p_name;
+	ports_changed_notify();
+
+}
+
+StringName VisualScriptLocalVar::get_var_name() const {
+
+	return name;
+}
+
+void VisualScriptLocalVar::set_var_type(Variant::Type p_type) {
+
+	type=p_type;
+	ports_changed_notify();
+}
+
+Variant::Type VisualScriptLocalVar::get_var_type() const {
+
+	return type;
+}
+
+
+class VisualScriptNodeInstanceLocalVar : public VisualScriptNodeInstance {
+public:
+
+	VisualScriptInstance* instance;
+	StringName name;
+
+
+	virtual int get_working_memory_size() const { return 1; }
+	virtual bool is_output_port_unsequenced(int p_idx) const { return true; }
+	virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const {
+		*r_value=*p_working_mem;
+		return true;
+	}
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		*p_working_mem=*p_inputs[0];
+		*p_outputs[0]=*p_working_mem;
+		return 0;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptLocalVar::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceLocalVar * instance = memnew(VisualScriptNodeInstanceLocalVar );
+	instance->instance=p_instance;
+	instance->name=name;
+
+	return instance;
+}
+
+
+
+void VisualScriptLocalVar::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_var_name","name"),&VisualScriptLocalVar::set_var_name);
+	ObjectTypeDB::bind_method(_MD("get_var_name"),&VisualScriptLocalVar::get_var_name);
+
+	ObjectTypeDB::bind_method(_MD("set_var_type","type"),&VisualScriptLocalVar::set_var_type);
+	ObjectTypeDB::bind_method(_MD("get_var_type"),&VisualScriptLocalVar::get_var_type);
+
+	String argt="Any";
+	for(int i=1;i<Variant::VARIANT_MAX;i++) {
+		argt+=","+Variant::get_type_name(Variant::Type(i));
+	}
+
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"variable/name"),_SCS("set_var_name"),_SCS("get_var_name"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"variable/type",PROPERTY_HINT_ENUM,argt),_SCS("set_var_type"),_SCS("get_var_type"));
+
+
+}
+
+VisualScriptLocalVar::VisualScriptLocalVar() {
+
+	name="new_local";
+	type=Variant::NIL;
+
+}
+
+//////////////////////////////////////////
+////////////////LocalVar///////////
+//////////////////////////////////////////
+
+int VisualScriptInputAction::get_output_sequence_port_count() const {
+
+	return 0;
+}
+
+bool VisualScriptInputAction::has_input_sequence_port() const{
+
+	return false;
+}
+
+int VisualScriptInputAction::get_input_value_port_count() const{
+	return 0;
+}
+int VisualScriptInputAction::get_output_value_port_count() const{
+
+	return 1;
+}
+
+String VisualScriptInputAction::get_output_sequence_port_text(int p_port) const {
+
+	return "";
+}
+
+PropertyInfo VisualScriptInputAction::get_input_value_port_info(int p_idx) const{
+
+	return PropertyInfo();
+}
+PropertyInfo VisualScriptInputAction::get_output_value_port_info(int p_idx) const{
+
+	return PropertyInfo(Variant::BOOL,"pressed");
+}
+
+
+String VisualScriptInputAction::get_caption() const {
+
+	return "Action";
+}
+
+
+String VisualScriptInputAction::get_text() const {
+
+	return name;
+}
+
+
+String VisualScriptInputAction::get_category() const {
+
+	return "data";
+}
+
+
+void VisualScriptInputAction::set_action_name(const StringName& p_name) {
+
+	if (name==p_name)
+		return;
+
+	name=p_name;
+	ports_changed_notify();
+
+}
+
+StringName VisualScriptInputAction::get_action_name() const {
+
+	return name;
+}
+
+
+class VisualScriptNodeInstanceInputAction : public VisualScriptNodeInstance {
+public:
+
+	VisualScriptInstance* instance;
+	StringName action;
+
+
+	virtual int get_working_memory_size() const { return 1; }
+	virtual bool is_output_port_unsequenced(int p_idx) const { return true; }
+	virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const {
+		*r_value=Input::get_singleton()->is_action_pressed(action);
+		return true;
+	}
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		return 0;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptInputAction::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceInputAction * instance = memnew(VisualScriptNodeInstanceInputAction );
+	instance->instance=p_instance;
+	instance->action=name;
+
+	return instance;
+}
+
+void VisualScriptInputAction::_validate_property(PropertyInfo& property) const {
+
+
+	if (property.name=="action") {
+
+		property.hint=PROPERTY_HINT_ENUM;
+		String actions;
+
+		List<PropertyInfo> pinfo;
+		Globals::get_singleton()->get_property_list(&pinfo);
+		Vector<String> al;
+
+		for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+			const PropertyInfo &pi=E->get();
+
+			if (!pi.name.begins_with("input/"))
+				continue;
+
+			String name = pi.name.substr(pi.name.find("/")+1,pi.name.length());
+
+
+			al.push_back(name);
+		}
+
+		al.sort();;
+
+		for(int i=0;i<al.size();i++) {
+			if (actions!=String())
+				actions+=",";
+			actions+=al[i];
+		}
+
+		property.hint_string=actions;
+	}
+}
+
+
+void VisualScriptInputAction::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_action_name","name"),&VisualScriptInputAction::set_action_name);
+	ObjectTypeDB::bind_method(_MD("get_action_name"),&VisualScriptInputAction::get_action_name);
+
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"action"),_SCS("set_action_name"),_SCS("get_action_name"));
+
+}
+
+VisualScriptInputAction::VisualScriptInputAction() {
+
+	name="";
+
+}
+
+//////////////////////////////////////////
+////////////////Constructor///////////
+//////////////////////////////////////////
+
+int VisualScriptDeconstruct::get_output_sequence_port_count() const {
+
+	return 1;
+}
+
+bool VisualScriptDeconstruct::has_input_sequence_port() const{
+
+	return true;
+}
+
+int VisualScriptDeconstruct::get_input_value_port_count() const{
+	return 1;
+}
+int VisualScriptDeconstruct::get_output_value_port_count() const{
+
+	return elements.size();
+}
+
+String VisualScriptDeconstruct::get_output_sequence_port_text(int p_port) const {
+
+	return "";
+}
+
+PropertyInfo VisualScriptDeconstruct::get_input_value_port_info(int p_idx) const{
+
+	return PropertyInfo(type,"value");
+}
+
+PropertyInfo VisualScriptDeconstruct::get_output_value_port_info(int p_idx) const{
+
+	return PropertyInfo(elements[p_idx].type,elements[p_idx].name);
+}
+
+
+String VisualScriptDeconstruct::get_caption() const {
+
+	return "Deconstruct";
+}
+
+
+String VisualScriptDeconstruct::get_text() const {
+
+	return "from "+Variant::get_type_name(type)+":";
+}
+
+
+String VisualScriptDeconstruct::get_category() const {
+
+	return "functions";
+}
+
+void VisualScriptDeconstruct::_update_elements() {
+
+	elements.clear();;
+	Variant v;
+	if (type==Variant::INPUT_EVENT) {
+		InputEvent ie;
+		ie.type=input_type;
+		v=ie;
+	} else {
+		Variant::CallError ce;
+		v = Variant::construct(type,NULL,0,ce);
+	}
+
+	List<PropertyInfo> pinfo;
+	v.get_property_list(&pinfo);
+
+	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+		Element e;
+		e.name=E->get().name;
+		e.type=E->get().type;
+		elements.push_back(e);
+	}
+}
+
+void VisualScriptDeconstruct::set_deconstruct_type(Variant::Type p_type) {
+
+	if (type==p_type)
+		return;
+
+	type=p_type;
+	_update_elements();
+	ports_changed_notify();
+	_change_notify(); //to make input appear/disappear
+}
+
+Variant::Type VisualScriptDeconstruct::get_deconstruct_type() const {
+
+	return type;
+}
+
+void VisualScriptDeconstruct::set_deconstruct_input_type(InputEvent::Type p_input_type) {
+
+	if (input_type==p_input_type)
+		return;
+
+	input_type=p_input_type;
+	_update_elements();
+	ports_changed_notify();
+}
+
+InputEvent::Type VisualScriptDeconstruct::get_deconstruct_input_type() const {
+
+	return input_type;
+}
+
+void VisualScriptDeconstruct::_set_elem_cache(const Array& p_elements) {
+
+	ERR_FAIL_COND(p_elements.size()%2==1);
+	elements.resize(p_elements.size()/2);
+	for(int i=0;i<elements.size();i++) {
+		elements[i].name=p_elements[i*2+0];
+		elements[i].type=Variant::Type(int(p_elements[i*2+1]));
+	}
+}
+
+Array VisualScriptDeconstruct::_get_elem_cache() const {
+
+	Array ret;
+	for(int i=0;i<elements.size();i++) {
+		ret.push_back(elements[i].name);
+		ret.push_back(elements[i].type);
+	}
+	return ret;
+}
+
+class VisualScriptNodeInstanceDeconstruct : public VisualScriptNodeInstance {
+public:
+
+	VisualScriptInstance* instance;
+	Vector<StringName> outputs;
+
+	//virtual int get_working_memory_size() const { return 0; }
+	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; };
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		Variant in=*p_inputs[0];
+
+		for(int i=0;i<outputs.size();i++) {
+			bool valid;
+			*p_outputs[i]=in.get(outputs[i],&valid);
+			if (!valid) {
+				r_error_str="Can't obtain element '"+String(outputs[i])+"' from "+Variant::get_type_name(in.get_type());
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				return 0;
+			}
+
+		}
+
+		return 0;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptDeconstruct::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceDeconstruct * instance = memnew(VisualScriptNodeInstanceDeconstruct );
+	instance->instance=p_instance;
+	instance->outputs.resize(elements.size());
+	for(int i=0;i<elements.size();i++) {
+		instance->outputs[i]=elements[i].name;
+	}
+
+	return instance;
+}
+
+
+
+void VisualScriptDeconstruct::_validate_property(PropertyInfo& property) const {
+
+	if (property.name=="input_type") {
+		if (type!=Variant::INPUT_EVENT) {
+			property.usage=0;
+		}
+	}
+}
+
+
+void VisualScriptDeconstruct::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_deconstruct_type","type"),&VisualScriptDeconstruct::set_deconstruct_type);
+	ObjectTypeDB::bind_method(_MD("get_deconstruct_type"),&VisualScriptDeconstruct::get_deconstruct_type);
+
+	ObjectTypeDB::bind_method(_MD("set_deconstruct_input_type","input_type"),&VisualScriptDeconstruct::set_deconstruct_input_type);
+	ObjectTypeDB::bind_method(_MD("get_deconstruct_input_type"),&VisualScriptDeconstruct::get_deconstruct_input_type);
+
+	ObjectTypeDB::bind_method(_MD("_set_elem_cache","_cache"),&VisualScriptDeconstruct::_set_elem_cache);
+	ObjectTypeDB::bind_method(_MD("_get_elem_cache"),&VisualScriptDeconstruct::_get_elem_cache);
+
+	String argt="Any";
+	for(int i=1;i<Variant::VARIANT_MAX;i++) {
+		argt+=","+Variant::get_type_name(Variant::Type(i));
+	}
+
+	String iet="None,Key,MouseMotion,MouseButton,JoystickMotion,JoystickButton,ScreenTouch,ScreenDrag,Action";
+
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"type",PROPERTY_HINT_ENUM,argt),_SCS("set_deconstruct_type"),_SCS("get_deconstruct_type"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"input_type",PROPERTY_HINT_ENUM,iet),_SCS("set_deconstruct_input_type"),_SCS("get_deconstruct_input_type"));
+	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"elem_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_elem_cache"),_SCS("_get_elem_cache"));
+
+}
+
+VisualScriptDeconstruct::VisualScriptDeconstruct() {
+
+	type=Variant::NIL;
+	input_type=InputEvent::NONE;
+
+}
 
 
 void register_visual_script_nodes() {
@@ -2768,6 +3430,9 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("custom/custom_node",create_node_generic<VisualScriptCustomNode>);
 	VisualScriptLanguage::singleton->add_register_func("custom/sub_call",create_node_generic<VisualScriptSubCall>);
 	VisualScriptLanguage::singleton->add_register_func("data/comment",create_node_generic<VisualScriptComment>);
+	VisualScriptLanguage::singleton->add_register_func("data/local_var",create_node_generic<VisualScriptLocalVar>);
+	VisualScriptLanguage::singleton->add_register_func("data/preload",create_node_generic<VisualScriptPreload>);
+	VisualScriptLanguage::singleton->add_register_func("data/action",create_node_generic<VisualScriptInputAction>);
 
 
 	VisualScriptLanguage::singleton->add_register_func("index/get_index",create_node_generic<VisualScriptIndexGet>);
@@ -2802,6 +3467,7 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/not",create_op_node<Variant::OP_NOT>);
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/in",create_op_node<Variant::OP_IN>);
 
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct",create_node_generic<VisualScriptDeconstruct>);
 
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {
 
