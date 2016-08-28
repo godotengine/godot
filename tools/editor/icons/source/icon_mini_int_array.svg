@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="45.254835"
-     inkscape:cx="5.8239696"
-     inkscape:cy="6.1697843"
+     inkscape:cx="4.3434649"
+     inkscape:cy="6.0813959"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -76,17 +76,17 @@
        transform="translate(0,1040.3622)"
        id="rect4158" />
     <path
-       style="fill:#ec6969;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#7dc6ef;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 3 2 L 3 4 L 5 4 L 5 2 L 3 2 z M 3 6 L 3 10 L 5 10 L 5 6 L 3 6 z "
        id="rect4412"
        transform="translate(0,1040.3622)" />
     <path
-       style="fill:#f39f9f;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#c8e7f9;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 5 4 L 5 10 L 7 10 L 7 6 A 1.0000174 1.0000174 0 0 1 8 7 L 8 10 L 10 10 L 10 7 A 3 3 0 0 0 7 4 L 5 4 z "
        transform="translate(0,1040.3622)"
        id="rect4414" />
     <path
-       style="fill:#ec6969;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#7dc6ef;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 10 2 L 10 7 A 3 3 0 0 0 13 10 L 13 8 A 1.0000174 1.0000174 0 0 1 12 7 L 12 6 L 13 6 L 13 4 L 12 4 L 12 2 L 10 2 z "
        id="rect4455"
        transform="translate(0,1040.3622)" />

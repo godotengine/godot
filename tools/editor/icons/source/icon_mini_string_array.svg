@@ -210,8 +210,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="45.254838"
-     inkscape:cx="5.57712"
-     inkscape:cy="4.3216032"
+     inkscape:cx="8.8695857"
+     inkscape:cy="6.6197"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -257,22 +257,22 @@
        transform="translate(0,1040.3622)"
        id="rect4158" />
     <path
-       style="fill:#85baf1;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#6ba7ec;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 7,1042.3622 a 3,3 0 0 0 -3,3 l 0,2 a 1.0000174,1.0000174 0 0 1 -1,1 l 0,2 a 3,3 0 0 0 3,-3 l 0,-2 a 1.0000174,1.0000174 0 0 1 1,-1 l 0,-2 z"
        id="path4184"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:#85baf1;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#6ba7ec;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 14,1044.3622 a 3,3 0 0 0 -3,3 l 0,3 2,0 0,-3 a 1.0000174,1.0000174 0 0 1 1,-1 l 0,-2 z"
        id="path4534"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:#abd0f5;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#b5d3f6;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 8,1042.3622 0,5 a 3,3 0 0 0 3,3 l 0,-2 a 1.0000174,1.0000174 0 0 1 -1,-1 l 0,-1 1,0 0,-2 -1,0 0,-2 -2,0 z"
        id="rect4540"
        inkscape:connector-curvature="0" />
     <rect
-       style="fill:#85baf1;fill-opacity:1;stroke:none"
+       style="fill:#6ba7ec;fill-opacity:1;stroke:none"
        id="rect4184"
        width="1"
        height="2"
@@ -284,6 +284,6 @@
        height="2"
        width="1"
        id="rect4186"
-       style="fill:#85baf1;fill-opacity:1;stroke:none" />
+       style="fill:#6ba7ec;fill-opacity:1;stroke:none" />
   </g>
 </svg>
