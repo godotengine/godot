@@ -1055,6 +1055,7 @@ bool InputDefault::is_joy_mapped(int p_device) {
 }
 
 String InputDefault::get_joy_guid_remapped(int p_device) const {
+	ERR_FAIL_COND_V(!joy_names.has(p_device), "");
 	return joy_names[p_device].uid;
 }
 
