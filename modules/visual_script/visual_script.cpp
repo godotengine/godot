@@ -1482,7 +1482,10 @@ Variant VisualScriptInstance::_call_internal(const StringName& p_method, void* p
 					//from a node that requires read
 					Function::UnsequencedGet *ug = &f->unsequenced_gets[index];
 
-					bool ok = ug->from->get_output_port_unsequenced(i,&variant_stack[ug->to_stack],working_mem,error_str);
+					Variant* ug_working_mem=ug->from->working_mem_idx>=0 ? &variant_stack[ug->from->working_mem_idx] : (Variant*)NULL;
+
+
+					bool ok = ug->from->get_output_port_unsequenced(i,&variant_stack[ug->to_stack],ug_working_mem,error_str);
 					if (!ok) {
 						r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
 						current_node_id=ug->from->get_id();
@@ -1519,13 +1522,13 @@ Variant VisualScriptInstance::_call_internal(const StringName& p_method, void* p
 		{
 			if (p_resuming_yield)
 				start_mode=VisualScriptNodeInstance::START_MODE_RESUME_YIELD;
-			else if (flow_stack && !(flow_stack[flow_stack_pos] & VisualScriptNodeInstance::FLOW_STACK_PUSHED_BIT)) //if there is a push bit, it means we are continuing a sequence
+			else if (!flow_stack || !(flow_stack[flow_stack_pos] & VisualScriptNodeInstance::FLOW_STACK_PUSHED_BIT)) //if there is a push bit, it means we are continuing a sequence
 				start_mode=VisualScriptNodeInstance::START_MODE_BEGIN_SEQUENCE;
 			else
 				start_mode=VisualScriptNodeInstance::START_MODE_CONTINUE_SEQUENCE;
 		}
 
-		VSDEBUG("STEP - STARTSEQ: "+itos(start_sequence));
+		VSDEBUG("STEP - STARTSEQ: "+itos(start_mode));
 
 		int ret = node->step(input_args,output_args,start_mode,working_mem,r_error,error_str);
 
@@ -1734,6 +1737,7 @@ Variant VisualScriptInstance::_call_internal(const StringName& p_method, void* p
 						node = instances[ flow_stack[i] & VisualScriptNodeInstance::FLOW_STACK_MASK ];
 						flow_stack_pos=i;
 						found=true;
+						break;
 					}
 				}
 
@@ -1761,6 +1765,22 @@ Variant VisualScriptInstance::_call_internal(const StringName& p_method, void* p
 		String err_file = script->get_path();
 		String err_func = p_method;
 		int err_line=current_node_id; //not a line but it works as one
+
+		if (node && (r_error.error!=Variant::CallError::CALL_ERROR_INVALID_METHOD || error_str==String())) {
+
+			if (r_error.error==Variant::CallError::CALL_ERROR_INVALID_ARGUMENT) {
+				int errorarg=r_error.argument;
+				error_str="Cannot convert argument "+itos(errorarg+1)+" to "+Variant::get_type_name(r_error.expected)+".";
+			} else if (r_error.error==Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
+				error_str="Expected "+itos(r_error.argument)+" arguments.";
+			} else if (r_error.error==Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
+				error_str="Expected "+itos(r_error.argument)+" arguments.";
+			} else if (r_error.error==Variant::CallError::CALL_ERROR_INVALID_METHOD) {
+				error_str="Invalid Call.";
+			} else if (r_error.error==Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
+				error_str="Instance is null";
+			}
+		}
 
 
 		//if (!GDScriptLanguage::get_singleton()->debug_break(err_text,false)) {
@@ -1959,6 +1979,7 @@ void VisualScriptInstance::create(const Ref<VisualScript>& p_script,Object *p_ow
 		function.max_stack=0;
 		function.flow_stack_size=0;
 		function.node_count=0;
+		Map<StringName,int> local_var_indices;
 
 		if (function.node<0) {
 			VisualScriptLanguage::singleton->debug_break_parse(get_script()->get_path(),0,"No start node in function: "+String(E->key()));
@@ -2022,7 +2043,20 @@ void VisualScriptInstance::create(const Ref<VisualScript>& p_script,Object *p_ow
 				}
 			}
 
-			if (instance->get_working_memory_size()) {
+			if (node->cast_to<VisualScriptLocalVar>()) {
+				//working memory is shared only for this node, for the same variables
+				Ref<VisualScriptLocalVar> vslv = node;
+
+				StringName var_name = String(vslv->get_var_name()).strip_edges();
+
+				if (!local_var_indices.has(var_name)) {
+					local_var_indices[var_name]=function.max_stack;
+					function.max_stack++;
+				}
+
+				instance->working_mem_idx=local_var_indices[var_name];
+
+			} else if (instance->get_working_memory_size()) {
 				instance->working_mem_idx = function.max_stack;
 				function.max_stack+=instance->get_working_memory_size();
 			} else {

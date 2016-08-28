@@ -91,6 +91,7 @@ protected:
 	Error _save_settings_binary(const String& p_file,const Map<String,List<String> > &props,const CustomMap& p_custom=CustomMap());
 
 	List<Singleton> singletons;
+	Map<StringName,Object*> singleton_ptrs;
 
 	Error _save_custom_bnd(const String& p_file);
 

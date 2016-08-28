@@ -86,7 +86,7 @@ void VisualScriptReturn::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_enable_return_value","enable"),&VisualScriptReturn::set_enable_return_value);
 	ObjectTypeDB::bind_method(_MD("is_return_value_enabled"),&VisualScriptReturn::is_return_value_enabled);
 
-	String argt="Variant";
+	String argt="Any";
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {
 		argt+=","+Variant::get_type_name(Variant::Type(i));
 	}
@@ -153,7 +153,7 @@ static Ref<VisualScriptNode> create_return_node(const String& p_name) {
 
 int VisualScriptCondition::get_output_sequence_port_count() const {
 
-	return 2;
+	return 3;
 }
 
 bool VisualScriptCondition::has_input_sequence_port() const{
@@ -174,8 +174,10 @@ String VisualScriptCondition::get_output_sequence_port_text(int p_port) const {
 
 	if (p_port==0)
 		return "true";
-	else
+	else if (p_port==1)
 		return "false";
+	else
+		return "done";
 }
 
 PropertyInfo VisualScriptCondition::get_input_value_port_info(int p_idx) const{
@@ -218,10 +220,12 @@ public:
 
 	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
 
-		if (p_inputs[0]->operator bool())
-			return 0;
+		if (p_start_mode==START_MODE_CONTINUE_SEQUENCE)
+			return 2;
+		else if (p_inputs[0]->operator bool())
+			return 0 | STEP_FLAG_PUSH_STACK_BIT;
 		else
-			return 1;
+			return 1 | STEP_FLAG_PUSH_STACK_BIT;
 	}
 
 
@@ -1662,7 +1666,7 @@ VisualScriptInputFilter::VisualScriptInputFilter() {
 
 
 //////////////////////////////////////////
-////////////////EVENT TYPE FILTER///////////
+////////////////TYPE CAST///////////
 //////////////////////////////////////////
 
 
