@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="32.000001"
-     inkscape:cx="3.3151539"
-     inkscape:cy="6.8940336"
+     inkscape:zoom="64.000002"
+     inkscape:cx="7.7647827"
+     inkscape:cy="5.814769"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -72,7 +72,7 @@
      transform="translate(0,-1040.3622)">
     <rect
        y="1045.3623"
-       x="1"
+       x="0"
        height="4.9999828"
        width="2"
        id="rect4498"
@@ -80,14 +80,14 @@
     <rect
        style="fill:#69ecdc;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect4500"
-       width="1"
+       width="2"
        height="2.0000174"
-       x="3"
+       x="2"
        y="1046.3623" />
     <path
        inkscape:connector-curvature="0"
        id="path4502"
-       d="m 4,1042.3623 a 3,3 0 0 0 -3,3 l 2,0 a 1.0000174,1.0000174 0 0 1 1,-1 l 0,-2 z"
+       d="m 3,1042.3623 a 3,3 0 0 0 -3,3 l 2,0 a 1.0000174,1.0000174 0 0 1 1,-1 l 0,-2 z"
        style="fill:#69ecdc;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <rect
        style="fill:#69ecdc;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -104,24 +104,44 @@
        style="fill:#69ecdc;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <rect
        y="-1047.3623"
-       x="11"
+       x="12"
        height="4.9999828"
        width="2"
        id="rect4508"
        style="fill:#69ecdc;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        transform="scale(1,-1)" />
-    <rect
-       style="fill:#69ecdc;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4510"
-       width="1"
-       height="2.0000174"
-       x="13"
-       y="-1046.3623"
-       transform="scale(1,-1)" />
     <path
        inkscape:connector-curvature="0"
        id="path4512"
-       d="m 14,1050.3622 a 3,3 0 0 1 -3,-3 l 2,0 a 1.0000174,1.0000174 0 0 0 1,1 l 0,2 z"
+       d="m 15,1050.3622 a 3,3 0 0 1 -3,-3 l 2,0 a 1.0000174,1.0000174 0 0 0 1,1 l 0,2 z"
        style="fill:#69ecdc;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <rect
+       style="fill:#69ecdc;fill-opacity:1;stroke:none"
+       id="rect4142"
+       width="1"
+       height="2"
+       x="9"
+       y="1048.3622" />
+    <rect
+       y="1044.3622"
+       x="14"
+       height="2"
+       width="2"
+       id="rect4144"
+       style="fill:#69ecdc;fill-opacity:1;stroke:none" />
+    <rect
+       style="fill:#69ecdc;fill-opacity:1;stroke:none"
+       id="rect4146"
+       width="1"
+       height="2"
+       x="15"
+       y="1048.3622" />
+    <rect
+       y="1042.3622"
+       x="3"
+       height="2"
+       width="1"
+       id="rect4148"
+       style="fill:#69ecdc;fill-opacity:1;stroke:none" />
   </g>
 </svg>
