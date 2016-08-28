@@ -954,12 +954,12 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 
 		if (b.button_index==BUTTON_WHEEL_UP && b.pressed) {
 			//too difficult to get right
-			//set_zoom(zoom*ZOOM_SCALE);
+			_zoom_plus();
 		}
 
 		if (b.button_index==BUTTON_WHEEL_DOWN && b.pressed) {
 			//too difficult to get right
-			//set_zoom(zoom/ZOOM_SCALE);
+			_zoom_minus();
 		}
 	}
 
