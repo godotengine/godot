@@ -245,7 +245,7 @@ void ProjectSettings::_device_input_add() {
 	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 
-
+	_show_last_added(ie);
 }
 
 
@@ -283,7 +283,34 @@ void ProjectSettings::_press_a_key_confirm() {
 	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 
+	_show_last_added(ie);
+}
 
+void ProjectSettings::_show_last_added(const InputEvent& p_event) {
+	TreeItem *r = input_editor->get_root();
+
+	if (!r)
+		return;
+	r=r->get_children();
+	if (!r)
+		return;
+	bool found = false;
+	while(r){
+		TreeItem *child = r->get_children();
+		while(child){
+			Variant input = child->get_meta("__input");
+			if (p_event==input){
+				child->select(0);
+				found = true;
+				break;
+			}
+			child=child->get_next();
+		}
+		if (found) break;
+		r=r->get_next();
+	}
+
+	if (found) input_editor->ensure_cursor_is_visible();
 }
 
 void ProjectSettings::_wait_for_key(const InputEvent& p_event) {
@@ -543,6 +570,7 @@ void ProjectSettings::_update_actions() {
 			}
 			action->add_button(0,get_icon("Remove","EditorIcons"),2);
 			action->set_metadata(0,i);
+			action->set_meta("__input", ie);
 		}
 	}
 }
