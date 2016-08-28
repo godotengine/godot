@@ -54,10 +54,10 @@ struct _VariantCall {
 		int arg_count;
 		Vector<Variant> default_args;
 		Vector<Variant::Type> arg_types;
-
-#ifdef DEBUG_ENABLED
 		Vector<StringName> arg_names;
 		Variant::Type return_type;
+
+#ifdef DEBUG_ENABLED
 		bool returns;
 #endif
 		VariantFunc func;
