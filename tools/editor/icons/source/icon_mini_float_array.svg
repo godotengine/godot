@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="64.000006"
-     inkscape:cx="7.7413489"
-     inkscape:cy="4.9436424"
+     inkscape:cx="5.0069742"
+     inkscape:cy="7.9592671"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -116,16 +116,16 @@
        style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        transform="scale(-1,1)" />
     <path
-       style="fill:#69ecdc;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#61daf4;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 6,1042.3622 a 3,3 0 0 0 -3,3 l 0,5 2,0 0,-2 1,0 0,-2 -1,0 0,-1 a 1.0000174,1.0000174 0 0 1 1,-1 l 0,-2 z"
        id="path4146" />
     <path
-       style="fill:#69ecdc;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#61daf4;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 10,1042.3622 0,5 a 3,3 0 0 0 3,3 l 0,-2 a 1.0000174,1.0000174 0 0 1 -1,-1 l 0,-1 1,0 0,-2 -1,0 0,-2 -2,0 z"
        id="rect4498"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:#aef5ec;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#c6f2fb;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 7,1042.3622 0,5 a 3,3 0 0 0 3,3 l 0,-2 a 1.0000174,1.0000174 0 0 1 -1,-1 l 0,-5 -2,0 z"
        id="rect4504"
        inkscape:connector-curvature="0" />
