@@ -100,7 +100,7 @@ public:
 	bool color_use_monochrome;
 	String gradient_image;
 
-	bool disable_filter;
+	bool enable_filter;
 	bool round_advance;
 	bool premultiply_alpha;
 
@@ -166,8 +166,8 @@ public:
 			color_use_monochrome=p_value;
 		else if (n=="advanced/round_advance")
 			round_advance=p_value;
-		else if (n=="advanced/disable_filter")
-			disable_filter=p_value;
+		else if (n=="advanced/enable_filter")
+			enable_filter=p_value;
 		else if (n=="advanced/premultiply_alpha")
 			premultiply_alpha=p_value;
 		else
@@ -236,8 +236,8 @@ public:
 			r_ret=color_use_monochrome;
 		else if (n=="advanced/round_advance")
 			r_ret=round_advance;
-		else if (n=="advanced/disable_filter")
-			r_ret=disable_filter;
+		else if (n=="advanced/enable_filter")
+			r_ret=enable_filter;
 		else if (n=="advanced/premultiply_alpha")
 			r_ret=premultiply_alpha;
 		else
@@ -301,7 +301,7 @@ public:
 		}
 
 		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/round_advance"));
-		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/disable_filter"));
+		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/enable_filter"));
 		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/premultiply_alpha"));
 
 	}
@@ -341,7 +341,7 @@ public:
 
 		font_mode=FONT_BITMAP;
 		round_advance=true;
-		disable_filter=false;
+		enable_filter=true;
 		premultiply_alpha=false;
 
 	}
@@ -374,7 +374,7 @@ public:
 		color_use_monochrome=false;
 
 		round_advance=true;
-		disable_filter=false;
+		enable_filter=true;
 		premultiply_alpha=false;
 	}
 
@@ -1591,7 +1591,10 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 	int space_space = from->get_option("extra_space/space");
 	int top_space = from->get_option("extra_space/top");
 	int bottom_space = from->get_option("extra_space/bottom");
-	bool disable_filter = from->get_option("advanced/disable_filter");
+	bool enable_filter = from->get_option("advanced/enable_filter");
+	if (from->has_option("advanced/disable_filter")){ // this is a compatibility check for a deprecated option
+		enable_filter = !from->get_option("advanced/disable_filter");
+	}
 
 	Ref<BitmapFont> font;
 
@@ -1613,7 +1616,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 	{
 		Ref<ImageTexture> t = memnew(ImageTexture);
 		int flags;
-		if (disable_filter)
+		if (!enable_filter)
 			flags=0;
 		else
 			flags=Texture::FLAG_FILTER;
