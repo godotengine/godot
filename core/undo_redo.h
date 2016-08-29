@@ -41,6 +41,12 @@ class UndoRedo : public Object {
 	OBJ_SAVE_TYPE( UndoRedo );
 public:
 
+	enum MergeMode {
+		MERGE_DISABLE,
+		MERGE_ENDS,
+		MERGE_ALL
+	};
+
 	typedef void (*CommitNotifyCallback)(void *p_ud,const String& p_name);
 	Variant _add_do_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
 	Variant _add_undo_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
@@ -76,7 +82,7 @@ private:
 	int current_action;
 	int action_level;
 	int max_steps;
-	bool merging;
+	MergeMode merge_mode;
 	uint64_t version;
 
 	void _pop_history_tail();
@@ -98,7 +104,7 @@ protected:
 
 public:
 
-	void create_action(const String& p_name="",bool p_mergeable=false);
+	void create_action(const String& p_name="",MergeMode p_mode=MERGE_DISABLE);
 
 	void add_do_method(Object *p_object,const String& p_method,VARIANT_ARG_LIST);
 	void add_undo_method(Object *p_object,const String& p_method,VARIANT_ARG_LIST);
@@ -127,5 +133,7 @@ public:
 	UndoRedo();
 	~UndoRedo();
 };
+
+VARIANT_ENUM_CAST( UndoRedo::MergeMode );
 
 #endif // UNDO_REDO_H
