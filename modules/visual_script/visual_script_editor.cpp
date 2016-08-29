@@ -2620,7 +2620,7 @@ void VisualScriptEditor::_comment_node_resized(const Vector2& p_new_size,int p_n
 
 	graph->set_block_minimum_size_adjust(true); //faster resize
 
-	undo_redo->create_action("Resize Comment",true);
+	undo_redo->create_action("Resize Comment",UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_method(vsc.ptr(),"set_size",p_new_size/EDSCALE);
 	undo_redo->add_undo_method(vsc.ptr(),"set_size",vsc->get_size());
 	undo_redo->commit_action();
