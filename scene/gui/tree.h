@@ -433,6 +433,9 @@ friend class TreeItem;
 	float last_drag_time;
 	float time_since_motion;*/
 
+	bool delayed_text_editor;
+	uint64_t first_selection_time;
+
 	float drag_speed;
 	float drag_from;
 	float drag_accum;
@@ -526,6 +529,9 @@ public:
 	bool get_allow_rmb_select() const;
 
 	void set_value_evaluator(ValueEvaluator *p_evaluator);
+
+	void set_delayed_text_editor(bool enabled);
+	bool is_delayed_text_editor_enabled() const;
 
 	Tree();
 	~Tree();

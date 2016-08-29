@@ -2328,9 +2328,22 @@ void Tree::_input_event(InputEvent p_event) {
 							range_drag_enabled=false;
 							Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 							warp_mouse(range_drag_capture_pos);
-						} else
-							edit_selected();
+						} else {
 
+							if (delayed_text_editor) {
+								uint64_t diff = OS::get_singleton()->get_ticks_msec() - first_selection_time;
+								if (diff >= 400 && diff <= 800)
+									edit_selected();
+								// fast double click
+								else if (diff < 400) {
+									emit_signal("item_double_clicked");
+								}
+
+								first_selection_time = OS::get_singleton()->get_ticks_msec();
+							} else {
+								edit_selected();
+							}
+						}
 						pressing_for_editor=false;
 
 					}
@@ -2848,7 +2861,6 @@ void Tree::item_changed(int p_column,TreeItem *p_item) {
 
 void Tree::item_selected(int p_column,TreeItem *p_item) {
 
-
 	if (select_mode==SELECT_MULTI) {
 
 		if (!p_item->cells[p_column].selectable)
@@ -2856,8 +2868,11 @@ void Tree::item_selected(int p_column,TreeItem *p_item) {
 
 		p_item->cells[p_column].selected=true;
 		//emit_signal("multi_selected",p_item,p_column,true); - NO this is for TreeItem::select
+		if (delayed_text_editor)
+			first_selection_time = OS::get_singleton()->get_ticks_msec();
 
 	} else {
+
 		select_single_item(p_item,root,p_column);
 	}
 	update();
@@ -3503,6 +3518,16 @@ bool Tree::get_allow_rmb_select() const{
 	return allow_rmb_select;
 }
 
+
+void Tree::set_delayed_text_editor(bool enabled) {
+	delayed_text_editor = enabled;
+}
+
+bool Tree::is_delayed_text_editor_enabled() const {
+	return delayed_text_editor;
+}
+
+
 void Tree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_range_click_timeout"),&Tree::_range_click_timeout);
@@ -3556,6 +3581,9 @@ void Tree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_allow_rmb_select","allow"),&Tree::set_allow_rmb_select);
 	ObjectTypeDB::bind_method(_MD("get_allow_rmb_select"),&Tree::get_allow_rmb_select);
 
+	ObjectTypeDB::bind_method(_MD("set_delayed_text_editor","enable"),&Tree::set_delayed_text_editor);
+	ObjectTypeDB::bind_method(_MD("is_delayed_text_editor_enabled"),&Tree::is_delayed_text_editor_enabled);
+
 
 	ObjectTypeDB::bind_method(_MD("set_single_select_cell_editing_only_when_already_selected","enable"),&Tree::set_single_select_cell_editing_only_when_already_selected);
 	ObjectTypeDB::bind_method(_MD("get_single_select_cell_editing_only_when_already_selected"),&Tree::get_single_select_cell_editing_only_when_already_selected);
@@ -3566,6 +3594,7 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("item_rmb_selected",PropertyInfo(Variant::VECTOR2,"pos")));
 	ADD_SIGNAL( MethodInfo("empty_tree_rmb_selected",PropertyInfo(Variant::VECTOR2,"pos")));
 	ADD_SIGNAL( MethodInfo("item_edited"));
+	ADD_SIGNAL( MethodInfo("item_double_clicked"));
 	ADD_SIGNAL( MethodInfo("item_collapsed",PropertyInfo(Variant::OBJECT,"item")));
 	//ADD_SIGNAL( MethodInfo("item_doubleclicked" ) );
 	ADD_SIGNAL( MethodInfo("button_pressed",PropertyInfo(Variant::OBJECT,"item"),PropertyInfo(Variant::INT,"column"),PropertyInfo(Variant::INT,"id")));
@@ -3669,6 +3698,9 @@ Tree::Tree() {
 	force_select_on_already_selected=false;
 
 	allow_rmb_select=false;
+
+	first_selection_time = 0;
+	delayed_text_editor = false;
 }
 
 
