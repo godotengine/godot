@@ -65,6 +65,7 @@ private:
 	static void enet_compressor_destroy(void * context);
 	void _setup_compressor();
 
+	enet_uint32 bind_ip;
 protected:
 	static void _bind_methods();
 public:
@@ -103,6 +104,8 @@ public:
 
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();
+
+	void set_bind_ip(const IP_Address& p_ip);
 };
 
 VARIANT_ENUM_CAST(NetworkedMultiplayerENet::CompressionMode);
