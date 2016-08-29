@@ -146,8 +146,12 @@ void FileSystemDock::_notification(int p_what) {
 			//button_instance->set_icon( get_icon("Add","EditorIcons"));
 			//button_open->set_icon( get_icon("Folder","EditorIcons"));
 			button_back->set_icon( get_icon("Filesystem","EditorIcons"));
-			display_mode->set_icon( get_icon("FileList","EditorIcons"));
-			display_mode->connect("pressed",this,"_change_file_display");
+			if (display_mode == DISPLAY_THUMBNAILS) {
+				button_display_mode->set_icon(get_icon("FileList","EditorIcons"));
+			} else {
+				button_display_mode->set_icon(get_icon("FileThumbnail","EditorIcons"));
+			}
+			button_display_mode->connect("pressed",this,"_change_file_display");
 			//file_options->set_icon( get_icon("Tools","EditorIcons"));
 			files->connect("item_activated",this,"_select_file");
 			button_hist_next->connect("pressed",this,"_fw_history");
@@ -197,9 +201,13 @@ void FileSystemDock::_notification(int p_what) {
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			display_mode->set_pressed(int(EditorSettings::get_singleton()->get("file_dialog/display_mode"))==EditorFileDialog::DISPLAY_LIST);
+			int new_mode = int(EditorSettings::get_singleton()->get("filesystem_dock/display_mode"));
 
-			_change_file_display();
+			if (new_mode != display_mode) {
+				set_display_mode(new_mode);
+			} else {
+				_update_files(true);
+			}
 		} break;
 	}
 
@@ -314,12 +322,15 @@ void FileSystemDock::_thumbnail_done(const String& p_path,const Ref<Texture>& p_
 
 void FileSystemDock::_change_file_display() {
 
-	if (display_mode->is_pressed()) {
-		display_mode->set_icon( get_icon("FileThumbnail","EditorIcons"));
-
+	if (button_display_mode->is_pressed()) {
+		display_mode = DISPLAY_LIST;
+		button_display_mode->set_icon( get_icon("FileThumbnail","EditorIcons"));
 	} else {
-		display_mode->set_icon( get_icon("FileList","EditorIcons"));
+		display_mode = DISPLAY_THUMBNAILS;
+		button_display_mode->set_icon( get_icon("FileList","EditorIcons"));
 	}
+
+	EditorSettings::get_singleton()->set("filesystem_dock/display_mode", display_mode);
 
 	_update_files(true);
 }
@@ -393,12 +404,12 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	if (!efd)
 		return;
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem_dock/thumbnail_size");
 	thumbnail_size*=EDSCALE;
 	Ref<Texture> folder_thumbnail;
 	Ref<Texture> file_thumbnail;
 
-	bool use_thumbnails=!display_mode->is_pressed();
+	bool use_thumbnails = (display_mode == DISPLAY_THUMBNAILS);
 	bool use_folders = search_box->get_text().length()==0 && split_mode;
 
 	if (use_thumbnails) { //thumbnails
@@ -1147,9 +1158,13 @@ void FileSystemDock::focus_on_filter() {
 
 }
 
-void FileSystemDock::set_use_thumbnails(bool p_use) {
+void FileSystemDock::set_display_mode(int p_mode) {
 
-	display_mode->set_pressed(!p_use);
+	if (p_mode == display_mode)
+		return;
+
+	button_display_mode->set_pressed(p_mode == DISPLAY_LIST);
+	_change_file_display();
 }
 
 
@@ -1721,9 +1736,9 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	search_icon->set_stretch_mode(TextureFrame::STRETCH_KEEP_CENTERED);
 	path_hb->add_child(search_icon);
 
-	display_mode = memnew( ToolButton );
-	path_hb->add_child(display_mode);
-	display_mode->set_toggle_mode(true);
+	button_display_mode = memnew( ToolButton );
+	path_hb->add_child(button_display_mode);
+	button_display_mode->set_toggle_mode(true);
 
 	file_list_vb->add_child(files);
 
@@ -1766,6 +1781,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	history_pos=0;
 
 	split_mode=false;
+	display_mode = DISPLAY_THUMBNAILS;
 
 	path="res://";
 
