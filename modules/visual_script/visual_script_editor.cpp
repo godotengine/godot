@@ -302,9 +302,45 @@ public:
 };
 
 static Color _color_from_type(Variant::Type p_type) {
-
 	Color color;
-	color.set_hsv(p_type/float(Variant::VARIANT_MAX),0.7,0.7);
+	switch(p_type) {
+		case Variant::NIL: color = Color::html("69ecbd"); break;
+
+		case Variant::BOOL: color = Color::html("8da6f0"); break;
+		case Variant::INT: color = Color::html("7dc6ef"); break;
+		case Variant::REAL: color = Color::html("61daf4"); break;
+		case Variant::STRING: color = Color::html("6ba7ec"); break;
+
+		case Variant::VECTOR2: color = Color::html("bd91f1"); break;
+		case Variant::RECT2: color = Color::html("f191a5"); break;
+		case Variant::VECTOR3: color = Color::html("d67dee"); break;
+		case Variant::MATRIX32: color = Color::html("c4ec69"); break;
+		case Variant::PLANE: color = Color::html("f77070"); break;
+		case Variant::QUAT: color = Color::html("ec69a3"); break;
+		case Variant::_AABB: color = Color::html("ee7991"); break;
+		case Variant::MATRIX3: color = Color::html("e3ec69"); break;
+		case Variant::TRANSFORM: color = Color::html("ecd669"); break;
+
+		case Variant::COLOR: color = Color::html("9dff70"); break;
+		case Variant::IMAGE: color = Color::html("93f1b9"); break;
+		case Variant::NODE_PATH: color = Color::html("6993ec"); break;
+		case Variant::_RID: color = Color::html("69ec9a"); break;
+		case Variant::OBJECT: color = Color::html("79f3e8"); break;
+		case Variant::INPUT_EVENT: color = Color::html("adf18f"); break;
+		case Variant::DICTIONARY: color = Color::html("77edb1"); break;
+
+		case Variant::ARRAY: color = Color::html("e0e0e0"); break;
+		case Variant::RAW_ARRAY: color = Color::html("aaf4c8"); break;
+		case Variant::INT_ARRAY: color = Color::html("afdcf5"); break;
+		case Variant::REAL_ARRAY: color = Color::html("97e7f8"); break;
+		case Variant::STRING_ARRAY: color = Color::html("9dc4f2"); break;
+		case Variant::VECTOR2_ARRAY: color = Color::html("d1b3f5"); break;
+		case Variant::VECTOR3_ARRAY: color = Color::html("df9bf2"); break;
+		case Variant::COLOR_ARRAY: color = Color::html("e9ff97"); break;
+
+		default:
+			color.set_hsv(p_type/float(Variant::VARIANT_MAX),0.7,0.7);
+	}
 	return color;
 }
 
