@@ -22349,6 +22349,27 @@
 				Return the global position of the 2D node.
 			</description>
 		</method>
+		<method name="get_global_rot" qualifiers="const">
+				<return type="float">
+				</return>
+				<description>
+					Return the global rotation in radians of the 2D node.
+				</description>
+		</method>
+		<method name="get_global_rotd" qualifiers="const">
+				<return type="float">
+				</return>
+				<description>
+					Return the global rotation in degrees of the 2D node.
+				</description>
+		</method>
+		<method name="get_global_scale" qualifiers="const">
+				<return type="Vector2">
+				</return>
+				<description>
+					Return the global scale of the 2D node.
+				</description>
+		</method>
 		<method name="get_pos" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -22451,6 +22472,27 @@
 			<description>
 				Set the global position of the 2D node to 'pos'.
 			</description>
+		</method>
+		<method name="set_global_rot">
+				<argument index="0" name="radians" type="float">
+				</argument>
+				<description>
+					Set the global rotation in radians of the 2D node.
+				</description>
+		</method>
+		<method name="set_global_rotd">
+				<argument index="0" name="degrees" type="float">
+				</argument>
+				<description>
+					Set the global rotation in degrees of the 2D node.
+				</description>
+		</method>
+		<method name="set_global_scale">
+				<argument index="0" name="scale" type="Vector2">
+				</argument>
+				<description>
+					Set the global scale of the 2D node.
+				</description>
 		</method>
 		<method name="set_global_transform">
 			<argument index="0" name="xform" type="Matrix32">
