@@ -767,7 +767,7 @@ VisualScriptVariableGet::VisualScriptVariableGet() {
 
 
 //////////////////////////////////////////
-////////////////VARIABLE GET//////////////////
+////////////////VARIABLE SET//////////////////
 //////////////////////////////////////////
 
 int VisualScriptVariableSet::get_output_sequence_port_count() const {
@@ -3417,8 +3417,8 @@ VisualScriptDeconstruct::VisualScriptDeconstruct() {
 
 void register_visual_script_nodes() {
 
-	VisualScriptLanguage::singleton->add_register_func("data/set_variable",create_node_generic<VisualScriptVariableGet>);
-	VisualScriptLanguage::singleton->add_register_func("data/get_variable",create_node_generic<VisualScriptVariableSet>);
+	VisualScriptLanguage::singleton->add_register_func("data/set_variable",create_node_generic<VisualScriptVariableSet>);
+	VisualScriptLanguage::singleton->add_register_func("data/get_variable",create_node_generic<VisualScriptVariableGet>);
 	VisualScriptLanguage::singleton->add_register_func("data/constant",create_node_generic<VisualScriptConstant>);
 	VisualScriptLanguage::singleton->add_register_func("data/global_constant",create_node_generic<VisualScriptGlobalConstant>);
 	VisualScriptLanguage::singleton->add_register_func("data/math_constant",create_node_generic<VisualScriptMathConstant>);
