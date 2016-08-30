@@ -6888,6 +6888,14 @@
 				Set the scrolling limit in pixels.
 			</description>
 		</method>
+		<method name="set_limit_smoothing_enabled">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Smooth camera when reaching camera limits.
+				This requires camera smoothing being enabled to have a noticeable effect.
+			</description>
+		</method>
 		<method name="set_offset">
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
