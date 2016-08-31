@@ -117,6 +117,9 @@ void unregister_visual_script_types() {
 
 	ScriptServer::unregister_language(visual_script_language);
 
+#ifdef TOOLS_ENABLED
+	VisualScriptEditor::free_clipboard();
+#endif
 	if (visual_script_language)
 		memdelete( visual_script_language );
 

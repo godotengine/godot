@@ -681,11 +681,21 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 				Vector2 a = sr[i*2+0];
 				Vector2 b = sr[i*2+1];
 
+				Vector2 rel = b-a;
+				float d = rel.length();
+				if (d==0)
+					continue;
+
+				Vector2 n = rel/d;
+				float traveled = n.dot(recover_motion);
+				a+=n*traveled;
+
+
 			//	float d = a.distance_to(b);
 
 				//if (d<margin)
 				///	continue;
-				recover_motion+=(b-a)*0.4;
+				recover_motion+=(b-a)*0.2;
 			}
 
 			if (recover_motion==Vector2()) {

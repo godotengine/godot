@@ -2800,6 +2800,10 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 			if (takeover_paths) {
 				res->set_path(p_path+"::"+itos(idx),true);
 			}
+#ifdef TOOLS_ENABLED
+			res->set_edited(false);
+#endif
+
 
 		}
 		write_string("\n",false);

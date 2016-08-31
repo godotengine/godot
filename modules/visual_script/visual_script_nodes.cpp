@@ -2858,6 +2858,7 @@ Variant::Type VisualScriptConstructor::get_constructor_type() const {
 void VisualScriptConstructor::set_constructor(const Dictionary& p_info) {
 
 	constructor=MethodInfo::from_dict(p_info);
+	ports_changed_notify();
 }
 
 Dictionary VisualScriptConstructor::get_constructor() const {

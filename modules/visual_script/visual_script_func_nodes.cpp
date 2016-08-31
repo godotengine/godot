@@ -513,6 +513,15 @@ int VisualScriptFunctionCall::get_use_default_args() const{
 }
 
 
+void VisualScriptFunctionCall::set_validate(bool p_amount) {
+
+	validate=p_amount;
+}
+
+bool VisualScriptFunctionCall::get_validate() const {
+
+	return validate;
+}
 
 
 void VisualScriptFunctionCall::_set_argument_cache(const Dictionary& p_cache) {
@@ -700,6 +709,9 @@ void VisualScriptFunctionCall::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_rpc_call_mode","mode"),&VisualScriptFunctionCall::set_rpc_call_mode);
 	ObjectTypeDB::bind_method(_MD("get_rpc_call_mode"),&VisualScriptFunctionCall::get_rpc_call_mode);
 
+	ObjectTypeDB::bind_method(_MD("set_validate","enable"),&VisualScriptFunctionCall::set_validate);
+	ObjectTypeDB::bind_method(_MD("get_validate"),&VisualScriptFunctionCall::get_validate);
+
 	String bt;
 	for(int i=0;i<Variant::VARIANT_MAX;i++) {
 		if (i>0)
@@ -732,6 +744,7 @@ void VisualScriptFunctionCall::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"function/argument_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_argument_cache"),_SCS("_get_argument_cache"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/function"),_SCS("set_function"),_SCS("get_function")); //when set, if loaded properly, will override argument count.
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"function/use_default_args"),_SCS("set_use_default_args"),_SCS("get_use_default_args"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"function/validate"),_SCS("set_validate"),_SCS("get_validate"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"rpc/call_mode",PROPERTY_HINT_ENUM,"Disabled,Reliable,Unreliable,ReliableToID,UnreliableToID"),_SCS("set_rpc_call_mode"),_SCS("get_rpc_call_mode")); //when set, if loaded properly, will override argument count.
 
 	BIND_CONSTANT( CALL_MODE_SELF );
@@ -747,6 +760,7 @@ public:
 	VisualScriptFunctionCall::CallMode call_mode;
 	NodePath node_path;
 	int input_args;
+	bool validate;
 	bool returns;
 	VisualScriptFunctionCall::RPCCallMode rpc_mode;
 	StringName function;
@@ -874,7 +888,16 @@ public:
 					object->call(function,p_inputs,input_args,r_error);
 				}
 			} break;
+
 		}
+
+		if (!validate) {
+
+			//ignore call errors if validation is disabled
+			r_error.error=Variant::CallError::CALL_OK;
+			r_error_str=String();
+		}
+
 		return 0;
 
 	}
@@ -894,10 +917,12 @@ VisualScriptNodeInstance* VisualScriptFunctionCall::instance(VisualScriptInstanc
 	instance->node_path=base_path;
 	instance->input_args = get_input_value_port_count() - ( (call_mode==CALL_MODE_BASIC_TYPE || call_mode==CALL_MODE_INSTANCE) ? 1: 0 );
 	instance->rpc_mode=rpc_call_mode;
+	instance->validate=validate;
 	return instance;
 }
 VisualScriptFunctionCall::VisualScriptFunctionCall() {
 
+	validate=true;
 	call_mode=CALL_MODE_SELF;
 	basic_type=Variant::NIL;
 	use_default_args=0;

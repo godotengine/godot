@@ -2175,6 +2175,9 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 			if (takeover_paths) {
 				r->set_path(p_path+"::"+itos(r->get_subindex()),true);
 			}
+#ifdef TOOLS_ENABLED
+			r->set_edited(false);
+#endif
 		} else {
 			save_unicode_string(r->get_path()); //actual external
 		}

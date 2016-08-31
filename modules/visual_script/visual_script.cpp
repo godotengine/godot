@@ -907,6 +907,9 @@ void VisualScript::_update_placeholders() {
 
 	for (Map<StringName,Variable>::Element *E=variables.front();E;E=E->next()) {
 
+		if (!E->get()._export)
+			continue;
+
 		PropertyInfo p = E->get().info;
 		p.name=SCRIPT_VARIABLES_PREFIX+String(E->key());
 		pinfo.push_back(p);
@@ -939,6 +942,9 @@ ScriptInstance* VisualScript::instance_create(Object *p_this) {
 		Map<StringName,Variant> values;
 
 		for (Map<StringName,Variable>::Element *E=variables.front();E;E=E->next()) {
+
+			if (!E->get()._export)
+				continue;
 
 			PropertyInfo p = E->get().info;
 			p.name=SCRIPT_VARIABLES_PREFIX+String(E->key());
@@ -1108,6 +1114,20 @@ void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 			continue;
 		p_list->push_back(variables[E->get()].info);
 	}
+}
+
+bool VisualScript::are_subnodes_edited() const {
+
+	for(const Map<StringName,Function>::Element *E=functions.front();E;E=E->next()) {
+
+		for (const Map<int,Function::NodeData>::Element *F=E->get().nodes.front();F;F=F->next()) {
+			if (F->get().node->is_edited()) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 

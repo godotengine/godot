@@ -2127,7 +2127,8 @@ Ref<Texture> VisualScriptEditor::get_icon(){
 
 bool VisualScriptEditor::is_unsaved(){
 #ifdef TOOLS_ENABLED
-	return script->is_edited();
+
+	return script->is_edited() || script->are_subnodes_edited();
 #else
 	return false;
 #endif
@@ -2722,9 +2723,9 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			if (!script->has_function(edited_func))
 				break;
 
-			clipboard.nodes.clear();
-			clipboard.data_connections.clear();
-			clipboard.sequence_connections.clear();
+			clipboard->nodes.clear();
+			clipboard->data_connections.clear();
+			clipboard->sequence_connections.clear();
 
 			for(int i=0;i<graph->get_child_count();i++) {
 				GraphNode *gn = graph->get_child(i)->cast_to<GraphNode>();
@@ -2738,15 +2739,15 @@ void VisualScriptEditor::_menu_option(int p_what) {
 							return;
 						}
 						if (node.is_valid()) {
-							clipboard.nodes[id]=node->duplicate();
-							clipboard.nodes_positions[id]=script->get_node_pos(edited_func,id);
+							clipboard->nodes[id]=node->duplicate();
+							clipboard->nodes_positions[id]=script->get_node_pos(edited_func,id);
 						}
 
 					}
 				}
 			}
 
-			if (clipboard.nodes.empty())
+			if (clipboard->nodes.empty())
 				break;
 
 			List<VisualScript::SequenceConnection> sequence_connections;
@@ -2755,9 +2756,9 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 			for (List<VisualScript::SequenceConnection>::Element *E=sequence_connections.front();E;E=E->next()) {
 
-				if (clipboard.nodes.has(E->get().from_node) && clipboard.nodes.has(E->get().to_node)) {
+				if (clipboard->nodes.has(E->get().from_node) && clipboard->nodes.has(E->get().to_node)) {
 
-					clipboard.sequence_connections.insert(E->get());
+					clipboard->sequence_connections.insert(E->get());
 				}
 			}
 
@@ -2767,9 +2768,9 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 			for (List<VisualScript::DataConnection>::Element *E=data_connections.front();E;E=E->next()) {
 
-				if (clipboard.nodes.has(E->get().from_node) && clipboard.nodes.has(E->get().to_node)) {
+				if (clipboard->nodes.has(E->get().from_node) && clipboard->nodes.has(E->get().to_node)) {
 
-					clipboard.data_connections.insert(E->get());
+					clipboard->data_connections.insert(E->get());
 				}
 			}
 
@@ -2783,7 +2784,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			if (!script->has_function(edited_func))
 				break;
 
-			if (clipboard.nodes.empty()) {
+			if (clipboard->nodes.empty()) {
 				EditorNode::get_singleton()->show_warning("Clipboard is empty!");
 				break;
 			}
@@ -2806,7 +2807,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				}
 			}
 
-			for (Map<int,Ref<VisualScriptNode> >::Element *E=clipboard.nodes.front();E;E=E->next()) {
+			for (Map<int,Ref<VisualScriptNode> >::Element *E=clipboard->nodes.front();E;E=E->next()) {
 
 
 				Ref<VisualScriptNode> node = E->get()->duplicate();
@@ -2816,7 +2817,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 				remap[E->key()]=new_id;
 
-				Vector2 paste_pos = clipboard.nodes_positions[E->key()];
+				Vector2 paste_pos = clipboard->nodes_positions[E->key()];
 
 				while(existing_positions.has(paste_pos.snapped(Vector2(2,2)))) {
 					paste_pos+=Vector2(20,20)*EDSCALE;
@@ -2828,7 +2829,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 			}
 
-			for (Set<VisualScript::SequenceConnection>::Element *E=clipboard.sequence_connections.front();E;E=E->next()) {
+			for (Set<VisualScript::SequenceConnection>::Element *E=clipboard->sequence_connections.front();E;E=E->next()) {
 
 
 				undo_redo->add_do_method(script.ptr(),"sequence_connect",edited_func,remap[E->get().from_node],E->get().from_output,remap[E->get().to_node]);
@@ -2836,7 +2837,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 			}
 
-			for (Set<VisualScript::DataConnection>::Element *E=clipboard.data_connections.front();E;E=E->next()) {
+			for (Set<VisualScript::DataConnection>::Element *E=clipboard->data_connections.front();E;E=E->next()) {
 
 
 				undo_redo->add_do_method(script.ptr(),"data_connect",edited_func,remap[E->get().from_node],E->get().from_port,remap[E->get().to_node],E->get().to_port);
@@ -2921,6 +2922,9 @@ void VisualScriptEditor::_bind_methods() {
 
 VisualScriptEditor::VisualScriptEditor() {
 
+	if (!clipboard) {
+		clipboard = memnew( Clipboard );
+	}
 	updating_graph=false;
 
 	edit_menu = memnew( MenuButton );
@@ -3105,6 +3109,14 @@ static ScriptEditorBase * create_editor(const Ref<Script>& p_script) {
 	}
 
 	return NULL;
+}
+
+
+VisualScriptEditor::Clipboard *VisualScriptEditor::clipboard=NULL;
+
+void VisualScriptEditor::free_clipboard() {
+	if (clipboard)
+		memdelete(clipboard);
 }
 
 static void register_editor_callback() {

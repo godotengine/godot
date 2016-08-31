@@ -605,7 +605,7 @@ VisualScriptSequence::VisualScriptSequence() {
 
 int VisualScriptSwitch::get_output_sequence_port_count() const {
 
-	return case_values.size();
+	return case_values.size()+1;
 }
 
 bool VisualScriptSwitch::has_input_sequence_port() const{
@@ -624,6 +624,9 @@ int VisualScriptSwitch::get_output_value_port_count() const{
 }
 
 String VisualScriptSwitch::get_output_sequence_port_text(int p_port) const {
+
+	if (p_port==case_values.size())
+		return "done";
 
 	if (case_values[p_port].value.get_type()==Variant::NIL)
 		return "null";
@@ -664,20 +667,18 @@ public:
 
 	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
 
-		if (p_inputs[0]->get_type()!=Variant::INPUT_EVENT) {
-			r_error_str="Input value not of type event";
-			r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
-			return 0;
+		if (p_start_mode==START_MODE_CONTINUE_SEQUENCE) {
+			return case_values.size(); //exit
 		}
 
 		for(int i=0;i<case_values.size();i++) {
 
 			if (*p_inputs[0]==case_values[i]) {
-				return i;
+				return i|STEP_FLAG_PUSH_STACK_BIT;
 			}
 		}
 
-		return STEP_NO_ADVANCE_BIT;
+		return case_values.size();
 	}
 
 

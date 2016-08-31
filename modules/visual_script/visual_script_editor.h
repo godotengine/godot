@@ -13,6 +13,7 @@ class VisualScriptEditorVariableEdit;
 
 #ifdef TOOLS_ENABLED
 
+
 class VisualScriptEditor : public ScriptEditorBase {
 	OBJ_TYPE(VisualScriptEditor,ScriptEditorBase)
 
@@ -109,7 +110,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 		Set<VisualScript::SequenceConnection> sequence_connections;
 		Set<VisualScript::DataConnection> data_connections;
-	} clipboard;
+	};
+
+	static Clipboard *clipboard;
 
 
 	int error_line;
@@ -202,6 +205,8 @@ public:
 	virtual bool can_lose_focus_on_node_selection() { return false; }
 
 	static void register_editor();
+
+	static void free_clipboard();
 
 	VisualScriptEditor();
 	~VisualScriptEditor();
