@@ -6036,7 +6036,7 @@
 			</argument>
 			<argument index="2" name="rect" type="Rect2">
 			</argument>
-			<argument index="3" name="align" type="Vector2" default="Vector2((0, 0))">
+			<argument index="3" name="align" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<argument index="4" name="advance" type="float" default="-1">
 			</argument>
@@ -6817,6 +6817,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_limit_smoothing_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_rotating" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -6889,7 +6895,7 @@
 			</description>
 		</method>
 		<method name="set_limit_smoothing_enabled">
-			<argument index="0" name="enable" type="bool">
+			<argument index="0" name="limit_smoothing_enabled" type="bool">
 			</argument>
 			<description>
 				Smooth camera when reaching camera limits.
@@ -7002,8 +7008,10 @@
 			</argument>
 			<argument index="3" name="width" type="float" default="1">
 			</argument>
+			<argument index="4" name="antialiased" type="bool" default="false">
+			</argument>
 			<description>
-				Draw a line from a 2D point to another, with a given color and width.
+				Draw a line from a 2D point to another, with a given color and width. It can be optionally antialiased.
 			</description>
 		</method>
 		<method name="draw_polygon">
@@ -9336,7 +9344,7 @@
 		<method name="get_cursor_shape" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="pos" type="Vector2" default="Vector2((0, 0))">
+			<argument index="0" name="pos" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Return the cursor shape at a certain position in the control.
@@ -9535,7 +9543,7 @@
 		<method name="get_tooltip" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="atpos" type="Vector2" default="Vector2((0, 0))">
+			<argument index="0" name="atpos" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Return the tooltip, which will appear when the cursor is resting over this control.
@@ -10179,9 +10187,9 @@
 		<method name="add_point">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
-			<argument index="1" name="in" type="Vector2" default="Vector2((0, 0))">
+			<argument index="1" name="in" type="Vector2" default="Vector2(0, 0)">
 			</argument>
-			<argument index="2" name="out" type="Vector2" default="Vector2((0, 0))">
+			<argument index="2" name="out" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<argument index="3" name="atpos" type="int" default="-1">
 			</argument>
@@ -10350,9 +10358,9 @@
 		<method name="add_point">
 			<argument index="0" name="pos" type="Vector3">
 			</argument>
-			<argument index="1" name="in" type="Vector3" default="Vector3((0, 0, 0))">
+			<argument index="1" name="in" type="Vector3" default="Vector3(0, 0, 0)">
 			</argument>
-			<argument index="2" name="out" type="Vector3" default="Vector3((0, 0, 0))">
+			<argument index="2" name="out" type="Vector3" default="Vector3(0, 0, 0)">
 			</argument>
 			<argument index="3" name="atpos" type="int" default="-1">
 			</argument>
@@ -11760,7 +11768,7 @@
 			<argument index="0" name="info" type="Dictionary">
 			</argument>
 			<description>
-			Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@Global Scope]), and optionally hint:[int](see PROPERTY_HINT_* in [@Global Scope]), hint_string:[String].
+				Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@Global Scope]), and optionally hint:[int](see PROPERTY_HINT_* in [@Global Scope]), hint_string:[String].
 			Example:[codeblock]
 			editor_settings.set("category/property_name", 0)
 
@@ -13794,7 +13802,7 @@
 			<argument index="0" name="hint" type="Dictionary">
 			</argument>
 			<description>
-			Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@Global Scope]), and optionally hint:[int](see PROPERTY_HINT_* in [@Global Scope]), hint_string:[String].
+				Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@Global Scope]), and optionally hint:[int](see PROPERTY_HINT_* in [@Global Scope]), hint_string:[String].
 			Example:
 			[codeblock]
 			Globals.set("category/property_name", 0)
@@ -14077,6 +14085,16 @@
 				Signal sent to the GraphEdit when the connection between 'from_slot' slot of 'from' GraphNode and 'to_slot' slot of 'to' GraphNode is attempted to be created.
 			</description>
 		</signal>
+		<signal name="connection_to_empty">
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="from_slot" type="int">
+			</argument>
+			<argument index="2" name="release_pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="delete_nodes_request">
 			<description>
 				Signal sent when a GraphNode is attempted to be removed from the GraphEdit.
@@ -14123,6 +14141,10 @@
 	<constants>
 	</constants>
 	<theme_items>
+		<theme_item name="bezier_len_neg" type="int">
+		</theme_item>
+		<theme_item name="bezier_len_pos" type="int">
+		</theme_item>
 		<theme_item name="bg" type="StyleBox">
 		</theme_item>
 		<theme_item name="grid_major" type="Color">
@@ -14296,6 +14318,18 @@
 				Returns true if the close button is shown. False otherwise.
 			</description>
 		</method>
+		<method name="is_comment" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_resizeable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -14314,6 +14348,12 @@
 				Return true if right (output) slot 'idx' is enabled. False otherwise.
 			</description>
 		</method>
+		<method name="set_comment">
+			<argument index="0" name="comment" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_modulate">
 			<argument index="0" name="color" type="Color">
 			</argument>
@@ -14329,6 +14369,12 @@
 		</method>
 		<method name="set_overlay">
 			<argument index="0" name="overlay" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_resizeable">
+			<argument index="0" name="resizeable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -14355,9 +14401,9 @@
 			</argument>
 			<argument index="6" name="color_right" type="Color">
 			</argument>
-			<argument index="7" name="custom_left" type="Object" default="Object()">
+			<argument index="7" name="custom_left" type="Object" default="NULL">
 			</argument>
-			<argument index="8" name="custom_right" type="Object" default="Object()">
+			<argument index="8" name="custom_right" type="Object" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -14395,6 +14441,12 @@
 				Signal sent when the GraphNode is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphNode.
 			</description>
 		</signal>
+		<signal name="resize_request">
+			<argument index="0" name="new_minsize" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="OVERLAY_DISABLED" value="0">
@@ -14411,6 +14463,8 @@
 		</theme_item>
 		<theme_item name="close_offset" type="int">
 		</theme_item>
+		<theme_item name="comment" type="StyleBox">
+		</theme_item>
 		<theme_item name="defaultfocus" type="StyleBox">
 		</theme_item>
 		<theme_item name="defaultframe" type="StyleBox">
@@ -14422,6 +14476,8 @@
 		<theme_item name="port_offset" type="int">
 		</theme_item>
 		<theme_item name="position" type="StyleBox">
+		</theme_item>
+		<theme_item name="resizer" type="Texture">
 		</theme_item>
 		<theme_item name="selectedframe" type="StyleBox">
 		</theme_item>
@@ -15981,7 +16037,7 @@
 		<method name="begin">
 			<argument index="0" name="primitive" type="int">
 			</argument>
-			<argument index="1" name="texture" type="Texture" default="Object()">
+			<argument index="1" name="texture" type="Texture" default="NULL">
 			</argument>
 			<description>
 				Begin drawing (And optionally pass a texture override). When done call end(). For more information on how this works, search for glBegin() glEnd() references.
@@ -16221,7 +16277,7 @@
 		<method name="set_custom_mouse_cursor">
 			<argument index="0" name="image" type="Texture">
 			</argument>
-			<argument index="1" name="hotspot" type="Vector2" default="Vector2((0, 0))">
+			<argument index="1" name="hotspot" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Set a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified.
@@ -17741,7 +17797,7 @@
 			<argument index="1" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
-			Adds an item to the item list with no text, only an icon.
+				Adds an item to the item list with no text, only an icon.
 			</description>
 		</method>
 		<method name="add_item">
@@ -18496,6 +18552,12 @@
 				Return the point in space where the body is touching another. If there is no collision, this method will return (0,0), so collisions must be checked first with [method is_colliding].
 			</description>
 		</method>
+		<method name="get_move_and_slide_colliders" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_travel" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -18510,6 +18572,24 @@
 				Return whether the body is colliding with another.
 			</description>
 		</method>
+		<method name="is_move_and_slide_on_ceiling" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_move_and_slide_on_floor" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_move_and_slide_on_wall" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="move">
 			<return type="Vector2">
 			</return>
@@ -18517,6 +18597,18 @@
 			</argument>
 			<description>
 				Move the body in the given direction, stopping if there is an obstacle. The returned vector is how much movement was remaining before being stopped.
+			</description>
+		</method>
+		<method name="move_and_slide">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="linear_velocity" type="Vector2">
+			</argument>
+			<argument index="1" name="floor_normal" type="Vector2" default="Vector2(0, 0)">
+			</argument>
+			<argument index="2" name="max_bounces" type="int" default="4">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="move_to">
@@ -21596,6 +21688,172 @@
 	<constants>
 	</constants>
 </class>
+<class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="close_connection">
+			<description>
+			</description>
+		</method>
+		<method name="create_client">
+			<return type="int">
+			</return>
+			<argument index="0" name="ip" type="String">
+			</argument>
+			<argument index="1" name="port" type="int">
+			</argument>
+			<argument index="2" name="in_bandwidth" type="int" default="0">
+			</argument>
+			<argument index="3" name="out_bandwidth" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create_server">
+			<return type="int">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<argument index="1" name="max_clients" type="int" default="32">
+			</argument>
+			<argument index="2" name="in_bandwidth" type="int" default="0">
+			</argument>
+			<argument index="3" name="out_bandwidth" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_compression_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_bind_ip">
+			<argument index="0" name="ip" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_compression_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="COMPRESS_NONE" value="0">
+		</constant>
+		<constant name="COMPRESS_RANGE_CODER" value="1">
+		</constant>
+		<constant name="COMPRESS_FASTLZ" value="2">
+		</constant>
+		<constant name="COMPRESS_ZLIB" value="3">
+		</constant>
+	</constants>
+</class>
+<class name="NetworkedMultiplayerPeer" inherits="PacketPeer" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_connection_status" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_packet_peer" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_unique_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_refusing_new_connections" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="poll">
+			<description>
+			</description>
+		</method>
+		<method name="set_refuse_new_connections">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_target_peer">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_transfer_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="connection_failed">
+			<description>
+			</description>
+		</signal>
+		<signal name="connection_succeeded">
+			<description>
+			</description>
+		</signal>
+		<signal name="peer_connected">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="peer_disconnected">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="server_disconnected">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="TRANSFER_MODE_UNRELIABLE" value="0">
+		</constant>
+		<constant name="TRANSFER_MODE_UNRELIABLE_ORDERED" value="1">
+		</constant>
+		<constant name="TRANSFER_MODE_RELIABLE" value="2">
+		</constant>
+		<constant name="CONNECTION_DISCONNECTED" value="0">
+		</constant>
+		<constant name="CONNECTION_CONNECTING" value="1">
+		</constant>
+		<constant name="CONNECTION_CONNECTED" value="2">
+		</constant>
+		<constant name="TARGET_PEER_BROADCAST" value="0">
+		</constant>
+		<constant name="TARGET_PEER_SERVER" value="1">
+		</constant>
+	</constants>
+</class>
 <class name="Nil" category="Built-In Types">
 	<brief_description>
 	</brief_description>
@@ -21956,6 +22214,12 @@
 				Return the name of the node. This name is unique among the siblings (other child nodes from the same parent).
 			</description>
 		</method>
+		<method name="get_network_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_node" qualifiers="const">
 			<return type="Node">
 			</return>
@@ -22120,6 +22384,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_network_master" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_processing" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -22209,6 +22479,86 @@
 				Replace a node in a scene by a given one. Subscriptions that pass through this node will be lost.
 			</description>
 		</method>
+		<method name="rpc">
+			<argument index="0" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rpc_config">
+			<argument index="0" name="method" type="String">
+			</argument>
+			<argument index="1" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rpc_id">
+			<argument index="0" name="peer_" type="int">
+			</argument>
+			<argument index="1" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rpc_unreliable">
+			<argument index="0" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rpc_unreliable_id">
+			<argument index="0" name="peer_" type="int">
+			</argument>
+			<argument index="1" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rset">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rset_config">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rset_id">
+			<argument index="0" name="peer_id" type="int">
+			</argument>
+			<argument index="1" name="property" type="String">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rset_unreliable">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rset_unreliable_id">
+			<argument index="0" name="peer_id" type="int">
+			</argument>
+			<argument index="1" name="property" type="String">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_display_folded">
 			<argument index="0" name="fold" type="bool">
 			</argument>
@@ -22234,6 +22584,12 @@
 			</argument>
 			<description>
 				Set the name of the [Node]. Name must be unique within parent, and setting an already existing name will cause for the node to be automatically renamed.
+			</description>
+		</method>
+		<method name="set_network_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_owner">
@@ -22328,6 +22684,24 @@
 		</constant>
 		<constant name="NOTIFICATION_DRAG_END" value="22">
 		</constant>
+		<constant name="NOTIFICATION_PATH_CHANGED" value="23">
+		</constant>
+		<constant name="NETWORK_MODE_INHERIT" value="0">
+		</constant>
+		<constant name="NETWORK_MODE_MASTER" value="1">
+		</constant>
+		<constant name="NETWORK_MODE_SLAVE" value="2">
+		</constant>
+		<constant name="RPC_MODE_DISABLED" value="0">
+		</constant>
+		<constant name="RPC_MODE_REMOTE" value="1">
+		</constant>
+		<constant name="RPC_MODE_SYNC" value="2">
+		</constant>
+		<constant name="RPC_MODE_MASTER" value="3">
+		</constant>
+		<constant name="RPC_MODE_SLAVE" value="4">
+		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0">
 		</constant>
 		<constant name="PAUSE_MODE_STOP" value="1">
@@ -22368,25 +22742,25 @@
 			</description>
 		</method>
 		<method name="get_global_rot" qualifiers="const">
-				<return type="float">
-				</return>
-				<description>
-					Return the global rotation in radians of the 2D node.
-				</description>
+			<return type="float">
+			</return>
+			<description>
+				Return the global rotation in radians of the 2D node.
+			</description>
 		</method>
 		<method name="get_global_rotd" qualifiers="const">
-				<return type="float">
-				</return>
-				<description>
-					Return the global rotation in degrees of the 2D node.
-				</description>
+			<return type="float">
+			</return>
+			<description>
+				Return the global rotation in degrees of the 2D node.
+			</description>
 		</method>
 		<method name="get_global_scale" qualifiers="const">
-				<return type="Vector2">
-				</return>
-				<description>
-					Return the global scale of the 2D node.
-				</description>
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the global scale of the 2D node.
+			</description>
 		</method>
 		<method name="get_pos" qualifiers="const">
 			<return type="Vector2">
@@ -22492,25 +22866,25 @@
 			</description>
 		</method>
 		<method name="set_global_rot">
-				<argument index="0" name="radians" type="float">
-				</argument>
-				<description>
-					Set the global rotation in radians of the 2D node.
-				</description>
+			<argument index="0" name="radians" type="float">
+			</argument>
+			<description>
+				Set the global rotation in radians of the 2D node.
+			</description>
 		</method>
 		<method name="set_global_rotd">
-				<argument index="0" name="degrees" type="float">
-				</argument>
-				<description>
-					Set the global rotation in degrees of the 2D node.
-				</description>
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+				Set the global rotation in degrees of the 2D node.
+			</description>
 		</method>
 		<method name="set_global_scale">
-				<argument index="0" name="scale" type="Vector2">
-				</argument>
-				<description>
-					Set the global scale of the 2D node.
-				</description>
+			<argument index="0" name="scale" type="Vector2">
+			</argument>
+			<description>
+				Set the global scale of the 2D node.
+			</description>
 		</method>
 		<method name="set_global_transform">
 			<argument index="0" name="xform" type="Matrix32">
@@ -29810,14 +30184,14 @@
 			</description>
 		</method>
 		<method name="popup_centered">
-			<argument index="0" name="size" type="Vector2" default="Vector2((0, 0))">
+			<argument index="0" name="size" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Popup (show the control in modal form) in the center of the screen, at the current size, or at a size determined by "size".
 			</description>
 		</method>
 		<method name="popup_centered_minsize">
-			<argument index="0" name="minsize" type="Vector2" default="Vector2((0, 0))">
+			<argument index="0" name="minsize" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Popup (show the control in modal form) in the center of the screen, ensuring the size is never smaller than [code]minsize[/code].
@@ -34236,6 +34610,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_network_unique_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_node_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -34282,7 +34662,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_network_server" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_paused" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_refusing_new_network_connections" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -34366,8 +34758,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_network_peer">
+			<argument index="0" name="peer" type="NetworkedMultiplayerPeer">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_pause">
 			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_refuse_new_network_connections">
+			<argument index="0" name="refuse" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -34384,6 +34788,14 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="connected_to_server">
+			<description>
+			</description>
+		</signal>
+		<signal name="connection_failed">
+			<description>
+			</description>
+		</signal>
 		<signal name="files_dropped">
 			<argument index="0" name="files" type="StringArray">
 			</argument>
@@ -34400,6 +34812,18 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="network_peer_connected">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="network_peer_disconnected">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="node_configuration_warning_changed">
 			<argument index="0" name="node" type="Object">
 			</argument>
@@ -34413,6 +34837,10 @@
 			</description>
 		</signal>
 		<signal name="screen_resized">
+			<description>
+			</description>
+		</signal>
+		<signal name="server_disconnected">
 			<description>
 			</description>
 		</signal>
@@ -37911,6 +38339,62 @@
 			</argument>
 			<description>
 				Set this [StreamPeer] to use big-endian format. Default is false.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="StreamPeerBuffer" inherits="StreamPeer" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="clear">
+			<description>
+			</description>
+		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="StreamPeerBuffer">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_data_array" qualifiers="const">
+			<return type="RawArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pos" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="resize">
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="seek">
+			<argument index="0" name="pos" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_data_array">
+			<argument index="0" name="data" type="RawArray">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -42201,6 +42685,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_delayed_text_editor_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_folding_hidden" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -42245,6 +42735,12 @@
 		</method>
 		<method name="set_columns">
 			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_delayed_text_editor">
+			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -42314,6 +42810,10 @@
 		<signal name="item_collapsed">
 			<argument index="0" name="item" type="Object">
 			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="item_double_clicked">
 			<description>
 			</description>
 		</signal>
@@ -43389,10 +43889,11 @@
 		<method name="create_action">
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="mergeable" type="bool" default="false">
+			<argument index="1" name="merge_mode" type="int" default="0">
 			</argument>
 			<description>
-				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property] and [method add_undo_property].
+				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property] and [method add_un
+do_property].
 			</description>
 		</method>
 		<method name="get_current_action_name" qualifiers="const">
@@ -43412,6 +43913,12 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="MERGE_DISABLE" value="0">
+		</constant>
+		<constant name="MERGE_ENDS" value="1">
+		</constant>
+		<constant name="MERGE_ALL" value="2">
+		</constant>
 	</constants>
 </class>
 <class name="VBoxContainer" inherits="BoxContainer" category="Core">
@@ -44867,9 +45374,9 @@
 		<method name="set_size_override">
 			<argument index="0" name="enable" type="bool">
 			</argument>
-			<argument index="1" name="size" type="Vector2" default="Vector2((-1, -1))">
+			<argument index="1" name="size" type="Vector2" default="Vector2(-1, -1)">
 			</argument>
-			<argument index="2" name="margin" type="Vector2" default="Vector2((0, 0))">
+			<argument index="2" name="margin" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Set the size of the viewport. If the enable parameter is true, it would use the override, otherwise it would use the default size. If the size parameter is equal to [code](-1, -1)[/code], it won't update the size.
@@ -45270,7 +45777,7 @@
 			</argument>
 			<argument index="2" name="node" type="Object">
 			</argument>
-			<argument index="3" name="pos" type="Vector2" default="Vector2((0, 0))">
+			<argument index="3" name="pos" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 			</description>
@@ -45279,6 +45786,8 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<argument index="1" name="default_value" type="Variant" default="NULL">
+			</argument>
+			<argument index="2" name="export" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -45426,6 +45935,14 @@
 			</description>
 		</method>
 		<method name="get_variable_default_value" qualifiers="const">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_variable_export" qualifiers="const">
+			<return type="bool">
+			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
@@ -45609,6 +46126,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_variable_export">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_variable_info">
 			<argument index="0" name="name" type="String">
 			</argument>
@@ -45645,6 +46170,52 @@
 		</method>
 		<method name="set_func">
 			<argument index="0" name="which" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="VisualScriptComment" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_description" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_title" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_description">
+			<argument index="0" name="description" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_size">
+			<argument index="0" name="size" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_title">
+			<argument index="0" name="title" type="String">
 			</argument>
 			<description>
 			</description>
@@ -45695,6 +46266,40 @@
 	<constants>
 	</constants>
 </class>
+<class name="VisualScriptConstructor" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_constructor" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_constructor_type" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_constructor">
+			<argument index="0" name="constructor" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_constructor_type">
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="VisualScriptCustomNode" inherits="VisualScriptNode" category="Core">
 	<brief_description>
 	</brief_description>
@@ -45731,16 +46336,6 @@
 			<return type="int">
 			</return>
 			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="_get_output_port_unsequenced" qualifiers="virtual">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="work_mem" type="Array">
 			</argument>
 			<description>
 			</description>
@@ -45799,14 +46394,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="_is_output_port_unsequenced" qualifiers="virtual">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="_step" qualifiers="virtual">
 			<return type="Variant">
 			</return>
@@ -45839,6 +46426,40 @@
 		</constant>
 		<constant name="STEP_YIELD_BIT" value="268435456">
 		</constant>
+	</constants>
+</class>
+<class name="VisualScriptDeconstruct" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_deconstruct_input_type" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_deconstruct_type" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_deconstruct_input_type">
+			<argument index="0" name="input_type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_deconstruct_type">
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
 	</constants>
 </class>
 <class name="VisualScriptEmitSignal" inherits="VisualScriptNode" category="Core">
@@ -45907,6 +46528,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_base_script" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_base_type" qualifiers="const">
 			<return type="String">
 			</return>
@@ -45931,6 +46558,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_rpc_call_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_singleton" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_use_default_args" qualifiers="const">
 			<return type="int">
 			</return>
@@ -45939,6 +46578,12 @@
 		</method>
 		<method name="set_base_path">
 			<argument index="0" name="base_path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_base_script">
+			<argument index="0" name="base_script" type="String">
 			</argument>
 			<description>
 			</description>
@@ -45963,6 +46608,18 @@
 		</method>
 		<method name="set_function">
 			<argument index="0" name="function" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rpc_call_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_singleton">
+			<argument index="0" name="singleton" type="String">
 			</argument>
 			<description>
 			</description>
@@ -46061,6 +46718,28 @@
 	<constants>
 	</constants>
 </class>
+<class name="VisualScriptInputAction" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_action_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_action_name">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="VisualScriptInputFilter" inherits="VisualScriptNode" category="Core">
 	<brief_description>
 	</brief_description>
@@ -46087,6 +46766,74 @@
 	<description>
 	</description>
 	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="VisualScriptLocalVar" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_var_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_var_type" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_var_name">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_var_type">
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="VisualScriptLocalVarSet" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_var_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_var_type" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_var_name">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_var_type">
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -46163,8 +46910,42 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_typed" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_operator">
 			<argument index="0" name="op" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_typed">
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="VisualScriptPreload" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_preload" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_preload">
+			<argument index="0" name="resource" type="Object">
 			</argument>
 			<description>
 			</description>
@@ -46181,6 +46962,12 @@
 	<methods>
 		<method name="get_base_path" qualifiers="const">
 			<return type="NodePath">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_base_script" qualifiers="const">
+			<return type="String">
 			</return>
 			<description>
 			</description>
@@ -46217,6 +47004,12 @@
 		</method>
 		<method name="set_base_path">
 			<argument index="0" name="base_path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_base_script">
+			<argument index="0" name="base_script" type="String">
 			</argument>
 			<description>
 			</description>
@@ -46273,6 +47066,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_base_script" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_base_type" qualifiers="const">
 			<return type="String">
 			</return>
@@ -46282,10 +47081,6 @@
 		<method name="get_basic_type" qualifiers="const">
 			<return type="int">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_builtin_value" qualifiers="const">
 			<description>
 			</description>
 		</method>
@@ -46307,14 +47102,14 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_using_builtin_value" qualifiers="const">
-			<return type="bool">
-			</return>
+		<method name="set_base_path">
+			<argument index="0" name="base_path" type="NodePath">
+			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="set_base_path">
-			<argument index="0" name="base_path" type="NodePath">
+		<method name="set_base_script">
+			<argument index="0" name="base_script" type="String">
 			</argument>
 			<description>
 			</description>
@@ -46327,12 +47122,6 @@
 		</method>
 		<method name="set_basic_type">
 			<argument index="0" name="basic_type" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_builtin_value">
-			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 			</description>
@@ -46351,12 +47140,6 @@
 		</method>
 		<method name="set_property">
 			<argument index="0" name="property" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_use_builtin_value">
-			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -46459,68 +47242,6 @@
 	<constants>
 	</constants>
 </class>
-<class name="VisualScriptScriptCall" inherits="VisualScriptNode" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-		<method name="get_argument_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_base_path" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_call_mode" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_function" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_argument_count">
-			<argument index="0" name="argument_count" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_base_path">
-			<argument index="0" name="base_path" type="NodePath">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_call_mode">
-			<argument index="0" name="mode" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_function">
-			<argument index="0" name="function" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-	</methods>
-	<constants>
-		<constant name="CALL_MODE_SELF" value="0">
-		</constant>
-		<constant name="CALL_MODE_NODE_PATH" value="1">
-		</constant>
-	</constants>
-</class>
 <class name="VisualScriptSelf" inherits="VisualScriptNode" category="Core">
 	<brief_description>
 	</brief_description>
@@ -46561,6 +47282,40 @@
 	<methods>
 		<method name="_subcall" qualifiers="virtual">
 			<argument index="0" name="arguments" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="VisualScriptTypeCast" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_base_script" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_base_type" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_base_script">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_base_type">
+			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
 			</description>
@@ -46655,11 +47410,11 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="YIELD_FRAME" value="0">
+		<constant name="YIELD_FRAME" value="1">
 		</constant>
-		<constant name="YIELD_FIXED_FRAME" value="1">
+		<constant name="YIELD_FIXED_FRAME" value="2">
 		</constant>
-		<constant name="YIELD_WAIT" value="2">
+		<constant name="YIELD_WAIT" value="3">
 		</constant>
 	</constants>
 </class>
@@ -46826,6 +47581,8 @@
 			<argument index="3" name="arg3" type="Color">
 			</argument>
 			<argument index="4" name="arg4" type="float" default="1">
+			</argument>
+			<argument index="5" name="arg5" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
