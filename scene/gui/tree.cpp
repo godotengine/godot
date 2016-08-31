@@ -171,6 +171,21 @@ String TreeItem::get_text(int p_column) const {
 
 }
 
+void TreeItem::set_suffix(int p_column,String p_suffix) {
+
+	ERR_FAIL_INDEX( p_column, cells.size() );
+	cells[p_column].suffix=p_suffix;
+
+	_changed_notify(p_column);
+
+}
+
+String TreeItem::get_suffix(int p_column) const {
+
+	ERR_FAIL_INDEX_V( p_column, cells.size(), "" );
+	return cells[p_column].suffix;
+
+}
 
 void TreeItem::set_icon(int p_column,const Ref<Texture>& p_icon) {
 
@@ -927,8 +942,12 @@ void Tree::draw_item_rect(const TreeItem::Cell& p_cell,const Rect2i& p_rect,cons
 
 	Ref<Font> font = cache.font;
 
+	String text = p_cell.text;
+	if (p_cell.suffix!=String())
+		text+=" "+p_cell.suffix;
+
 	rect.pos.y+=Math::floor((rect.size.y-font->get_height())/2.0) +font->get_ascent();
-	font->draw(ci,rect.pos,p_cell.text,p_color,rect.size.x);
+	font->draw(ci,rect.pos,text,p_color,rect.size.x);
 
 }
 
@@ -1175,6 +1194,9 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 						String s = p_item->cells[i].text;
 						s=s.get_slicec(',',option);
 
+						if (p_item->cells[i].suffix!=String())
+							s+=" "+p_item->cells[i].suffix;
+
 						Ref<Texture> downarrow = cache.select_arrow;
 
 						font->draw(ci, text_pos, s, col,item_rect.size.x-downarrow->get_width() );
@@ -1191,6 +1213,10 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 
 						String valtext = String::num( p_item->cells[i].val, Math::step_decimals( p_item->cells[i].step ) );
 						//String valtext = rtos( p_item->cells[i].val );
+
+						if (p_item->cells[i].suffix!=String())
+							valtext+=" "+p_item->cells[i].suffix;
+
 						font->draw( ci, text_pos, valtext, col, item_rect.size.x-updown->get_width());
 
 						if (!p_item->cells[i].editable)

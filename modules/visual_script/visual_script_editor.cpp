@@ -242,6 +242,11 @@ protected:
 			return true;
 		}
 
+		if (String(p_name)=="export") {
+			script->set_variable_export(var,p_value);
+			return true;
+		}
+
 
 		return false;
 	}
@@ -271,6 +276,11 @@ protected:
 			return true;
 		}
 
+		if (String(p_name)=="export") {
+			r_ret=script->get_variable_export(var);
+			return true;
+		}
+
 		return false;
 	}
 	void _get_property_list( List<PropertyInfo> *p_list) const {
@@ -286,6 +296,7 @@ protected:
 		p_list->push_back(PropertyInfo(script->get_variable_info(var).type,"value",script->get_variable_info(var).hint,script->get_variable_info(var).hint_string,PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::INT,"hint",PROPERTY_HINT_ENUM,"None,Range,ExpRange,Enum,ExpEasing,Length,SpriteFrame,KeyAccel,BitFlags,AllFlags,File,Dir,GlobalFile,GlobalDir,ResourceType,MultilineText"));
 		p_list->push_back(PropertyInfo(Variant::STRING,"hint_string"));
+		p_list->push_back(PropertyInfo(Variant::BOOL,"export"));
 
 	}
 
@@ -685,12 +696,48 @@ void VisualScriptEditor::_update_members() {
 	variables->add_button(0,Control::get_icon("Add","EditorIcons"));
 	variables->set_custom_bg_color(0,Control::get_color("prop_section","Editor"));
 
+	Ref<Texture> type_icons[Variant::VARIANT_MAX]={
+		Control::get_icon("MiniVariant","EditorIcons"),
+		Control::get_icon("MiniBoolean","EditorIcons"),
+		Control::get_icon("MiniInteger","EditorIcons"),
+		Control::get_icon("MiniFloat","EditorIcons"),
+		Control::get_icon("MiniString","EditorIcons"),
+		Control::get_icon("MiniVector2","EditorIcons"),
+		Control::get_icon("MiniRect2","EditorIcons"),
+		Control::get_icon("MiniVector3","EditorIcons"),
+		Control::get_icon("MiniMatrix32","EditorIcons"),
+		Control::get_icon("MiniPlane","EditorIcons"),
+		Control::get_icon("MiniQuat","EditorIcons"),
+		Control::get_icon("MiniAabb","EditorIcons"),
+		Control::get_icon("MiniMatrix3","EditorIcons"),
+		Control::get_icon("MiniTransform","EditorIcons"),
+		Control::get_icon("MiniColor","EditorIcons"),
+		Control::get_icon("MiniImage","EditorIcons"),
+		Control::get_icon("MiniPath","EditorIcons"),
+		Control::get_icon("MiniRid","EditorIcons"),
+		Control::get_icon("MiniObject","EditorIcons"),
+		Control::get_icon("MiniInput","EditorIcons"),
+		Control::get_icon("MiniDictionary","EditorIcons"),
+		Control::get_icon("MiniArray","EditorIcons"),
+		Control::get_icon("MiniRawArray","EditorIcons"),
+		Control::get_icon("MiniIntArray","EditorIcons"),
+		Control::get_icon("MiniFloatArray","EditorIcons"),
+		Control::get_icon("MiniStringArray","EditorIcons"),
+		Control::get_icon("MiniVector2Array","EditorIcons"),
+		Control::get_icon("MiniVector3Array","EditorIcons"),
+		Control::get_icon("MiniColorArray","EditorIcons")
+	};
 
 	List<StringName> var_names;
 	script->get_variable_list(&var_names);
 	for (List<StringName>::Element *E=var_names.front();E;E=E->next()) {
 		TreeItem *ti = members->create_item(variables);
+
 		ti->set_text(0,E->get());
+		Variant var = script->get_variable_default_value(E->get());
+		ti->set_suffix(0,"="+String(var));
+		ti->set_icon(0,type_icons[script->get_variable_info(E->get()).type]);
+
 		ti->set_selectable(0,true);
 		ti->set_editable(0,true);
 		ti->add_button(0,Control::get_icon("Edit","EditorIcons"),0);

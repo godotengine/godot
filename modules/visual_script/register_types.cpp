@@ -69,9 +69,11 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_type<VisualScriptComment>();
 	ObjectTypeDB::register_type<VisualScriptConstructor>();
 	ObjectTypeDB::register_type<VisualScriptLocalVar>();
+	ObjectTypeDB::register_type<VisualScriptLocalVarSet>();
 	ObjectTypeDB::register_type<VisualScriptInputAction>();
 	ObjectTypeDB::register_type<VisualScriptDeconstruct>();
 	ObjectTypeDB::register_type<VisualScriptPreload>();
+	ObjectTypeDB::register_type<VisualScriptTypeCast>();
 
 
 	ObjectTypeDB::register_type<VisualScriptFunctionCall>();

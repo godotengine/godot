@@ -650,21 +650,22 @@ int CanvasItem::get_light_mask() const{
 }
 
 
-void CanvasItem::item_rect_changed() {
+void CanvasItem::item_rect_changed(bool p_size_changed) {
 
-	update();
+	if (p_size_changed)
+		update();
 	emit_signal(SceneStringNames::get_singleton()->item_rect_changed);
 }
 
 
-void CanvasItem::draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width) {
+void CanvasItem::draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width,bool p_antialiased) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 		ERR_FAIL();
 	}
 
-	VisualServer::get_singleton()->canvas_item_add_line(canvas_item,p_from,p_to,p_color,p_width);
+	VisualServer::get_singleton()->canvas_item_add_line(canvas_item,p_from,p_to,p_color,p_width,p_antialiased);
 }
 
 void CanvasItem::draw_rect(const Rect2& p_rect, const Color& p_color) {
@@ -1028,7 +1029,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_is_on_top"),&CanvasItem::_is_on_top);
 	//ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
 
-	ObjectTypeDB::bind_method(_MD("draw_line","from","to","color","width"),&CanvasItem::draw_line,DEFVAL(1.0));
+	ObjectTypeDB::bind_method(_MD("draw_line","from","to","color","width"),&CanvasItem::draw_line,DEFVAL(1.0),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_rect","rect","color"),&CanvasItem::draw_rect);
 	ObjectTypeDB::bind_method(_MD("draw_circle","pos","radius","color"),&CanvasItem::draw_circle);
 	ObjectTypeDB::bind_method(_MD("draw_texture","texture:Texture","pos","modulate"),&CanvasItem::draw_texture,DEFVAL(Color(1,1,1,1)));

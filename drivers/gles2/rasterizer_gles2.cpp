@@ -8196,7 +8196,7 @@ RasterizerGLES2::Texture* RasterizerGLES2::_bind_canvas_texture(const RID& p_tex
 	return NULL;
 }
 
-void RasterizerGLES2::canvas_draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width) {
+void RasterizerGLES2::canvas_draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width,bool p_antialiased) {
 
 	_bind_canvas_texture(RID());
 	Color c=p_color;
@@ -8208,8 +8208,18 @@ void RasterizerGLES2::canvas_draw_line(const Point2& p_from, const Point2& p_to,
 		Vector3(p_to.x,p_to.y,0)
 	};
 
+#ifdef GLEW_ENABLED
+	if (p_antialiased)
+		glEnable(GL_LINE_SMOOTH);
+#endif
 	glLineWidth(p_width);
 	_draw_primitive(2,verts,0,0,0);
+
+#ifdef GLEW_ENABLED
+	if (p_antialiased)
+		glDisable(GL_LINE_SMOOTH);
+#endif
+
 	_rinfo.ci_draw_commands++;
 }
 
@@ -9135,7 +9145,7 @@ void RasterizerGLES2::_canvas_item_render_commands(CanvasItem *p_item,CanvasItem
 			case CanvasItem::Command::TYPE_LINE: {
 
 				CanvasItem::CommandLine* line = static_cast<CanvasItem::CommandLine*>(c);
-				canvas_draw_line(line->from,line->to,line->color,line->width);
+				canvas_draw_line(line->from,line->to,line->color,line->width,line->antialiased);
 			} break;
 			case CanvasItem::Command::TYPE_RECT: {
 

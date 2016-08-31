@@ -69,12 +69,23 @@ const char* VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 
 int VisualScriptBuiltinFunc::get_output_sequence_port_count() const {
 
-	return 1;
+	return has_input_sequence_port() ? 1 : 0;
 }
 
 bool VisualScriptBuiltinFunc::has_input_sequence_port() const{
 
-	return true;
+	switch(func) {
+
+		case MATH_RANDOMIZE:
+		case TEXT_PRINT:
+		case TEXT_PRINTERR:
+		case TEXT_PRINTRAW:
+			return true;
+		default:
+			return false;
+
+	}
+
 }
 
 int VisualScriptBuiltinFunc::get_input_value_port_count() const{

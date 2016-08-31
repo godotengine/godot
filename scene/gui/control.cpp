@@ -449,6 +449,13 @@ void Control::remove_child_notify(Node *p_child) {
 
 }
 
+void Control::_update_canvas_item_transform() {
+
+	Matrix32 xform=Matrix32(data.rotation,get_pos());
+	xform.scale_basis(data.scale);
+	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(),xform);
+
+}
 
 void Control::_notification(int p_notification) {
 
@@ -600,10 +607,9 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_DRAW: {
 
-			Matrix32 xform=Matrix32(data.rotation,get_pos());
-			xform.scale_basis(data.scale);
-			VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(),xform);
-			VisualServer::get_singleton()->canvas_item_set_custom_rect( get_canvas_item(),true, Rect2(Point2(),get_size()));
+			_update_canvas_item_transform();
+			VisualServer::get_singleton()->canvas_item_set_custom_rect( get_canvas_item(),!data.disable_visibility_clip, Rect2(Point2(),get_size()));
+
 			//emit_signal(SceneStringNames::get_singleton()->draw);
 
 		} break;
@@ -1272,17 +1278,24 @@ void Control::_size_changed() {
 	new_size_cache.x = MAX( minimum_size.x, new_size_cache.x );
 	new_size_cache.y = MAX( minimum_size.y, new_size_cache.y );
 
-
-	if (new_pos_cache == data.pos_cache && new_size_cache == data.size_cache)
-		return; // did not change, don't emit signal
+	bool pos_changed = new_pos_cache != data.pos_cache;
+	bool size_changed = new_size_cache != data.size_cache;
 
 	data.pos_cache=new_pos_cache;
 	data.size_cache=new_size_cache;
 
-	notification(NOTIFICATION_RESIZED);
-	item_rect_changed();
-	_change_notify_margins();
-	_notify_transform();
+	if (size_changed) {
+		notification(NOTIFICATION_RESIZED);
+	}
+	if (pos_changed || size_changed) {
+		item_rect_changed(size_changed);
+		_change_notify_margins();
+		_notify_transform();
+	}
+
+	if (pos_changed && !size_changed) {
+		_update_canvas_item_transform(); //move because it won't be updated
+	}
 }
 
 float Control::_get_parent_range(int p_idx) const {
@@ -2382,6 +2395,19 @@ bool Control::is_minimum_size_adjust_blocked() const {
 
 	return data.block_minimum_size_adjust;
 }
+
+
+void Control::set_disable_visibility_clip(bool p_ignore) {
+
+	data.disable_visibility_clip=p_ignore;
+	update();
+}
+
+bool Control::is_visibility_clip_disabled() const {
+
+	return data.disable_visibility_clip;
+}
+
 void Control::_bind_methods() {
 
 
@@ -2610,6 +2636,7 @@ Control::Control() {
 	data.drag_owner=0;
 	data.modal_frame=0;
 	data.block_minimum_size_adjust=false;
+	data.disable_visibility_clip=false;
 
 
 	for (int i=0;i<4;i++) {
