@@ -197,13 +197,24 @@ public:
 
 
 
-class VisualScriptInputSelector : public VisualScriptNode {
+class VisualScriptSwitch : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptInputSelector,VisualScriptNode)
+	OBJ_TYPE(VisualScriptSwitch,VisualScriptNode)
 
+	struct Case {
+		Variant::Type type;
+		Variant value;
+		Case() { type=Variant::NIL; }
+	};
 
+	Vector<Case> case_values;
 
+friend class VisualScriptNodeInstanceSwitch;
 protected:
+
+	bool _set(const StringName& p_name, const Variant& p_value);
+	bool _get(const StringName& p_name,Variant &r_ret) const;
+	void _get_property_list( List<PropertyInfo> *p_list) const;
 
 	static void _bind_methods();
 public:
@@ -229,7 +240,7 @@ public:
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 
-	VisualScriptInputSelector();
+	VisualScriptSwitch();
 };
 
 

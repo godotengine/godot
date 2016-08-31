@@ -1434,6 +1434,141 @@ VisualScriptGlobalConstant::VisualScriptGlobalConstant() {
 	index=0;
 }
 
+//////////////////////////////////////////
+////////////////CLASSCONSTANT///////////
+//////////////////////////////////////////
+
+int VisualScriptClassConstant::get_output_sequence_port_count() const {
+
+	return 0;
+}
+
+bool VisualScriptClassConstant::has_input_sequence_port() const{
+
+	return false;
+}
+
+int VisualScriptClassConstant::get_input_value_port_count() const{
+
+	return 0;
+}
+int VisualScriptClassConstant::get_output_value_port_count() const{
+
+	return 1;
+}
+
+String VisualScriptClassConstant::get_output_sequence_port_text(int p_port) const {
+
+	return String();
+}
+
+PropertyInfo VisualScriptClassConstant::get_input_value_port_info(int p_idx) const{
+
+	return PropertyInfo();
+}
+
+PropertyInfo VisualScriptClassConstant::get_output_value_port_info(int p_idx) const{
+
+	return PropertyInfo(Variant::INT,"value");
+}
+
+
+String VisualScriptClassConstant::get_caption() const {
+
+	return "ClassConst";
+}
+
+String VisualScriptClassConstant::get_text() const {
+
+	return String(base_type)+"."+String(name);
+}
+
+void VisualScriptClassConstant::set_class_constant(const StringName& p_which) {
+
+	name=p_which;
+	_change_notify();
+	ports_changed_notify();
+}
+
+StringName VisualScriptClassConstant::get_class_constant() {
+	return name;
+}
+
+
+void VisualScriptClassConstant::set_base_type(const StringName& p_which) {
+
+	base_type=p_which;
+	_change_notify();
+	ports_changed_notify();
+}
+
+StringName VisualScriptClassConstant::get_base_type() {
+	return base_type;
+}
+
+class VisualScriptNodeInstanceClassConstant : public VisualScriptNodeInstance {
+public:
+
+	int value;
+	bool valid;
+	//virtual int get_working_memory_size() const { return 0; }
+
+	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
+
+		if (!valid) {
+			r_error_str="Invalid constant name, pick a valid class constant.";
+			r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+		}
+
+		*p_outputs[0] = value;
+		return 0;
+	}
+
+
+};
+
+VisualScriptNodeInstance* VisualScriptClassConstant::instance(VisualScriptInstance* p_instance) {
+
+	VisualScriptNodeInstanceClassConstant * instance = memnew(VisualScriptNodeInstanceClassConstant );
+	instance->value=ObjectTypeDB::get_integer_constant(base_type,name,&instance->valid);
+	return instance;
+}
+
+void VisualScriptClassConstant::_validate_property(PropertyInfo& property) const {
+
+	if (property.name=="constant") {
+
+		List<String> constants;
+		ObjectTypeDB::get_integer_constant_list(base_type,&constants,true);
+
+		property.hint_string="";
+		for(List<String>::Element *E=constants.front();E;E=E->next()) {
+			if (property.hint_string!=String()) {
+				property.hint_string+=",";
+			}
+			property.hint_string+=E->get();
+		}
+	}
+}
+
+void VisualScriptClassConstant::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_class_constant","name"),&VisualScriptClassConstant::set_class_constant);
+	ObjectTypeDB::bind_method(_MD("get_class_constant"),&VisualScriptClassConstant::get_class_constant);
+
+	ObjectTypeDB::bind_method(_MD("set_base_type","name"),&VisualScriptClassConstant::set_base_type);
+	ObjectTypeDB::bind_method(_MD("get_base_type"),&VisualScriptClassConstant::get_base_type);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"constant",PROPERTY_HINT_ENUM,""),_SCS("set_class_constant"),_SCS("get_class_constant"));
+}
+
+VisualScriptClassConstant::VisualScriptClassConstant() {
+
+	base_type="Object";
+}
+
+
 
 
 //////////////////////////////////////////
@@ -3442,22 +3577,24 @@ void register_visual_script_nodes() {
 
 	VisualScriptLanguage::singleton->add_register_func("data/set_variable",create_node_generic<VisualScriptVariableSet>);
 	VisualScriptLanguage::singleton->add_register_func("data/get_variable",create_node_generic<VisualScriptVariableGet>);
-	VisualScriptLanguage::singleton->add_register_func("data/constant",create_node_generic<VisualScriptConstant>);
-	VisualScriptLanguage::singleton->add_register_func("data/global_constant",create_node_generic<VisualScriptGlobalConstant>);
-	VisualScriptLanguage::singleton->add_register_func("data/math_constant",create_node_generic<VisualScriptMathConstant>);
 	VisualScriptLanguage::singleton->add_register_func("data/engine_singleton",create_node_generic<VisualScriptEngineSingleton>);
 	VisualScriptLanguage::singleton->add_register_func("data/scene_node",create_node_generic<VisualScriptSceneNode>);
 	VisualScriptLanguage::singleton->add_register_func("data/scene_tree",create_node_generic<VisualScriptSceneTree>);
 	VisualScriptLanguage::singleton->add_register_func("data/resource_path",create_node_generic<VisualScriptResourcePath>);
 	VisualScriptLanguage::singleton->add_register_func("data/self",create_node_generic<VisualScriptSelf>);
-	VisualScriptLanguage::singleton->add_register_func("custom/custom_node",create_node_generic<VisualScriptCustomNode>);
-	VisualScriptLanguage::singleton->add_register_func("custom/sub_call",create_node_generic<VisualScriptSubCall>);
 	VisualScriptLanguage::singleton->add_register_func("data/comment",create_node_generic<VisualScriptComment>);
 	VisualScriptLanguage::singleton->add_register_func("data/get_local_variable",create_node_generic<VisualScriptLocalVar>);
 	VisualScriptLanguage::singleton->add_register_func("data/set_local_variable",create_node_generic<VisualScriptLocalVarSet>);
 	VisualScriptLanguage::singleton->add_register_func("data/preload",create_node_generic<VisualScriptPreload>);
 	VisualScriptLanguage::singleton->add_register_func("data/action",create_node_generic<VisualScriptInputAction>);
 
+	VisualScriptLanguage::singleton->add_register_func("constants/constant",create_node_generic<VisualScriptConstant>);
+	VisualScriptLanguage::singleton->add_register_func("constants/math_constant",create_node_generic<VisualScriptMathConstant>);
+	VisualScriptLanguage::singleton->add_register_func("constants/class_constant",create_node_generic<VisualScriptClassConstant>);
+	VisualScriptLanguage::singleton->add_register_func("constants/global_constant",create_node_generic<VisualScriptGlobalConstant>);
+
+	VisualScriptLanguage::singleton->add_register_func("custom/custom_node",create_node_generic<VisualScriptCustomNode>);
+	VisualScriptLanguage::singleton->add_register_func("custom/sub_call",create_node_generic<VisualScriptSubCall>);
 
 	VisualScriptLanguage::singleton->add_register_func("index/get_index",create_node_generic<VisualScriptIndexGet>);
 	VisualScriptLanguage::singleton->add_register_func("index/set_index",create_node_generic<VisualScriptIndexSet>);

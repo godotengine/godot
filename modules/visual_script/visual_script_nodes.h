@@ -219,7 +219,7 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
-	virtual String get_category() const { return "data"; }
+	virtual String get_category() const { return "constants"; }
 
 	void set_constant_type(Variant::Type p_type);
 	Variant::Type get_constant_type() const;
@@ -360,7 +360,7 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
-	virtual String get_category() const { return "data"; }
+	virtual String get_category() const { return "constants"; }
 
 	void set_global_constant(int p_which);
 	int get_global_constant();
@@ -370,6 +370,47 @@ public:
 	VisualScriptGlobalConstant();
 };
 
+
+class VisualScriptClassConstant : public VisualScriptNode {
+
+	OBJ_TYPE(VisualScriptClassConstant,VisualScriptNode)
+
+	StringName base_type;
+	StringName name;
+protected:
+	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo& property) const;
+
+public:
+
+	virtual int get_output_sequence_port_count() const;
+	virtual bool has_input_sequence_port() const;
+
+
+	virtual String get_output_sequence_port_text(int p_port) const;
+
+
+	virtual int get_input_value_port_count() const;
+	virtual int get_output_value_port_count() const;
+
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const;
+	virtual String get_text() const;
+	virtual String get_category() const { return "constants"; }
+
+	void set_class_constant(const StringName& p_which);
+	StringName get_class_constant();
+
+	void set_base_type(const StringName& p_which);
+	StringName get_base_type();
+
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+
+	VisualScriptClassConstant();
+};
 
 
 class VisualScriptMathConstant : public VisualScriptNode {
@@ -411,7 +452,7 @@ public:
 
 	virtual String get_caption() const;
 	virtual String get_text() const;
-	virtual String get_category() const { return "data"; }
+	virtual String get_category() const { return "constants"; }
 
 	void set_math_constant(MathConstant p_which);
 	MathConstant get_math_constant();

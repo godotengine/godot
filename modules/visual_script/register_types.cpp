@@ -58,6 +58,7 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_type<VisualScriptIndexGet>();
 	ObjectTypeDB::register_type<VisualScriptIndexSet>();
 	ObjectTypeDB::register_type<VisualScriptGlobalConstant>();
+	ObjectTypeDB::register_type<VisualScriptClassConstant>();
 	ObjectTypeDB::register_type<VisualScriptMathConstant>();
 	ObjectTypeDB::register_type<VisualScriptEngineSingleton>();
 	ObjectTypeDB::register_type<VisualScriptSceneNode>();
@@ -88,7 +89,7 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_type<VisualScriptIterator>();
 	ObjectTypeDB::register_type<VisualScriptSequence>();
 	ObjectTypeDB::register_type<VisualScriptInputFilter>();
-	ObjectTypeDB::register_type<VisualScriptInputSelector>();
+	ObjectTypeDB::register_type<VisualScriptSwitch	>();
 
 	ObjectTypeDB::register_type<VisualScriptYield>();
 	ObjectTypeDB::register_type<VisualScriptYieldSignal>();

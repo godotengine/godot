@@ -35,6 +35,7 @@ void VisualScriptNode::ports_changed_notify(){
 	default_input_values.resize( MAX(default_input_values.size(),get_input_value_port_count()) ); //let it grow as big as possible, we don't want to lose values on resize
 
 	emit_signal("ports_changed");
+
 }
 
 void VisualScriptNode::set_default_input_value(int p_port,const Variant& p_value) {
@@ -42,6 +43,13 @@ void VisualScriptNode::set_default_input_value(int p_port,const Variant& p_value
 	ERR_FAIL_INDEX(p_port,default_input_values.size());
 
 	default_input_values[p_port]=p_value;
+
+#ifdef TOOLS_ENABLED
+	for (Set<VisualScript*>::Element *E=scripts_used.front();E;E=E->next()) {
+		E->get()->set_edited(true);
+	}
+#endif
+
 }
 
 Variant VisualScriptNode::get_default_input_value(int p_port) const {
@@ -126,7 +134,6 @@ Ref<VisualScript> VisualScriptNode::get_visual_script() const {
 		return Ref<VisualScript>(scripts_used.front()->get());
 
 	return Ref<VisualScript>();
-
 }
 
 VisualScriptNode::VisualScriptNode() {
@@ -625,6 +632,7 @@ void VisualScript::set_variable_default_value(const StringName& p_name,const Var
 #ifdef TOOLS_ENABLED
 	_update_placeholders();
 #endif
+
 
 }
 Variant VisualScript::get_variable_default_value(const StringName& p_name) const{
@@ -2120,9 +2128,12 @@ void VisualScriptInstance::create(const Ref<VisualScript>& p_script,Object *p_ow
 
 			instance->id=F->key();
 			instance->input_port_count = node->get_input_value_port_count();
+			instance->input_ports=NULL;
 			instance->output_port_count = node->get_output_value_port_count();
+			instance->output_ports=NULL;
 			instance->sequence_output_count = node->get_output_sequence_port_count();
 			instance->sequence_index=function.node_count++;
+			instance->sequence_outputs=NULL;
 			instance->pass_idx=-1;
 
 			if (instance->input_port_count) {
@@ -2591,7 +2602,7 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level,List<String>
 	const StringName *f = _call_stack[l].function;
 
 	ERR_FAIL_COND(!_call_stack[l].instance->functions.has(*f));
-	VisualScriptInstance::Function *func = &_call_stack[l].instance->functions[*f];
+//	VisualScriptInstance::Function *func = &_call_stack[l].instance->functions[*f];
 
 	VisualScriptNodeInstance *node =_call_stack[l].instance->instances[*_call_stack[l].current_id];
 	ERR_FAIL_COND(!node);

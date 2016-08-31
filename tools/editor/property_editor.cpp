@@ -91,6 +91,15 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 			}
 		} break;
+		case Variant::STRING: {
+
+			if (hint==PROPERTY_HINT_ENUM) {
+
+				v=hint_text.get_slice(",",p_which);
+				emit_signal("variant_changed");
+
+			}
+		} break;
 		case Variant::OBJECT: {
 
 			switch(p_which) {
@@ -446,7 +455,16 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				config_action_buttons(names);
 			} else if (hint==PROPERTY_HINT_ENUM) {
 
-
+				menu->clear();
+				Vector<String> options = hint_text.split(",");
+				for(int i=0;i<options.size();i++) {
+					menu->add_item(options[i],i);
+				}
+				menu->set_pos(get_pos());
+				menu->popup();
+				hide();
+				updating=false;
+				return false;
 
 			} else if (hint==PROPERTY_HINT_MULTILINE_TEXT) {
 
