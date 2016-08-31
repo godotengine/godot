@@ -157,7 +157,7 @@ protected:
 
 	_FORCE_INLINE_ void _notify_transform() { if (!is_inside_tree()) return; _notify_transform(this); if (!block_transform_notify && notify_local_transform) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED); }
 
-	void item_rect_changed();
+	void item_rect_changed(bool p_size_changed=true);
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -207,7 +207,7 @@ public:
 
 	/* DRAWING API */
 
-	void draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width=1.0);
+	void draw_line(const Point2& p_from, const Point2& p_to, const Color& p_color, float p_width=1.0, bool p_antialiased=false);
 	void draw_rect(const Rect2& p_rect, const Color& p_color);
 	void draw_circle(const Point2& p_pos, float p_radius, const Color& p_color);
 	void draw_texture(const Ref<Texture>& p_texture, const Point2& p_pos, const Color &p_modulate=Color(1,1,1,1));

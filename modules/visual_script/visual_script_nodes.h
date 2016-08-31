@@ -820,6 +820,45 @@ public:
 	VisualScriptLocalVar();
 };
 
+class VisualScriptLocalVarSet: public VisualScriptNode {
+
+	OBJ_TYPE(VisualScriptLocalVarSet,VisualScriptNode)
+
+	StringName name;
+	Variant::Type type;
+
+protected:
+
+	static void _bind_methods();
+public:
+	virtual int get_output_sequence_port_count() const;
+	virtual bool has_input_sequence_port() const;
+
+
+	virtual String get_output_sequence_port_text(int p_port) const;
+
+
+	virtual int get_input_value_port_count() const;
+	virtual int get_output_value_port_count() const;
+
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const;
+	virtual String get_text() const;
+	virtual String get_category() const;
+
+	void set_var_name(const StringName& p_name);
+	StringName get_var_name() const;
+
+	void set_var_type(Variant::Type p_type);
+	Variant::Type get_var_type() const;
+
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+
+	VisualScriptLocalVarSet();
+};
 
 
 

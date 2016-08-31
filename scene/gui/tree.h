@@ -69,6 +69,7 @@ friend class Tree;
 		Ref<Texture> icon;
 		Rect2i icon_region;
 		String text;
+		String suffix;
 		double min,max,step,val;
 		int icon_max_w;
 		bool expr;
@@ -167,6 +168,9 @@ public:
 
 	void set_text(int p_column,String p_text);
 	String get_text(int p_column) const;
+
+	void set_suffix(int p_column,String p_suffix);
+	String get_suffix(int p_column) const;
 
 	void set_icon(int p_column,const Ref<Texture>& p_icon);
 	Ref<Texture> get_icon(int p_column) const;

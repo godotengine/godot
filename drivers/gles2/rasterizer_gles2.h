@@ -1633,7 +1633,7 @@ public:
 	virtual void canvas_begin_rect(const Matrix32& p_transform);
 	virtual void canvas_set_clip(bool p_clip, const Rect2& p_rect);
 	virtual void canvas_end_rect();
-	virtual void canvas_draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width);
+	virtual void canvas_draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width,bool p_antialiased);
 	virtual void canvas_draw_rect(const Rect2& p_rect, int p_flags, const Rect2& p_source,RID p_texture,const Color& p_modulate);
 	virtual void canvas_draw_style_box(const Rect2& p_rect, const Rect2& p_src_region, RID p_texture,const float *p_margins, bool p_draw_center=true,const Color& p_modulate=Color(1,1,1));
 	virtual void canvas_draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width);

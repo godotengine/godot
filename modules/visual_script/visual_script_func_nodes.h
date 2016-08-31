@@ -328,6 +328,9 @@ public:
 
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
+
+
+
 	VisualScriptEmitSignal();
 };
 

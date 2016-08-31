@@ -62,6 +62,7 @@ Error GraphEdit::connect_node(const StringName& p_from, int p_from_port,const St
 	connections.push_back(c);
 	top_layer->update();
 	update();
+	connections_layer->update();
 
 	return OK;
 }
@@ -87,6 +88,7 @@ void GraphEdit::disconnect_node(const StringName& p_from, int p_from_port,const 
 			connections.erase(E);
 			top_layer->update();
 			update();
+			connections_layer->update();
 			return;
 		}
 	}
@@ -118,7 +120,11 @@ Vector2 GraphEdit::get_scroll_ofs() const{
 
 void GraphEdit::_scroll_moved(double) {
 
-	_update_scroll_offset();
+
+	if (!awaiting_scroll_offset_update) {
+		call_deferred("_update_scroll_offset");
+		awaiting_scroll_offset_update=true;
+	}
 	top_layer->update();
 	update();
 
@@ -129,6 +135,8 @@ void GraphEdit::_scroll_moved(double) {
 
 void GraphEdit::_update_scroll_offset() {
 
+	set_block_minimum_size_adjust(true);
+
 	for(int i=0;i<get_child_count();i++) {
 
 		GraphNode *gn=get_child(i)->cast_to<GraphNode>();
@@ -138,8 +146,14 @@ void GraphEdit::_update_scroll_offset() {
 		Point2 pos=gn->get_offset()*zoom;
 		pos-=Point2(h_scroll->get_val(),v_scroll->get_val());
 		gn->set_pos(pos);
-		gn->set_scale(Vector2(zoom,zoom));
+		if (gn->get_scale()!=Vector2(zoom,zoom)) {
+			gn->set_scale(Vector2(zoom,zoom));
+		}
 	}
+
+	connections_layer->set_pos(-Point2(h_scroll->get_val(),v_scroll->get_val())*zoom);
+	set_block_minimum_size_adjust(false);
+	awaiting_scroll_offset_update=false;
 
 }
 
@@ -149,6 +163,9 @@ void GraphEdit::_update_scroll() {
 		return;
 
 	updating=true;
+
+	set_block_minimum_size_adjust(true);
+
 	Rect2 screen;
 	for(int i=0;i<get_child_count();i++) {
 
@@ -183,7 +200,13 @@ void GraphEdit::_update_scroll() {
 	else
 		v_scroll->show();
 
-	_update_scroll_offset();
+	set_block_minimum_size_adjust(false);
+
+	if (!awaiting_scroll_offset_update) {
+		call_deferred("_update_scroll_offset");
+		awaiting_scroll_offset_update=true;
+	}
+
 	updating=false;
 }
 
@@ -196,6 +219,16 @@ void GraphEdit::_graph_node_raised(Node* p_gn) {
 	if (gn->is_comment()) {
 		move_child(gn,0);
 	}
+	int first_not_comment=0;
+	for(int i=0;i<get_child_count();i++) {
+		GraphNode *gn=get_child(i)->cast_to<GraphNode>();
+		if (gn && !gn->is_comment()) {
+			first_not_comment=i;
+			break;
+		}
+	}
+
+	move_child(connections_layer,first_not_comment);
 	top_layer->raise();
 	emit_signal("node_selected",p_gn);
 
@@ -208,6 +241,7 @@ void GraphEdit::_graph_node_moved(Node *p_gn) {
 	ERR_FAIL_COND(!gn);
 	top_layer->update();
 	update();
+	connections_layer->update();
 }
 
 void GraphEdit::add_child_notify(Node *p_child) {
@@ -265,6 +299,7 @@ void GraphEdit::_notification(int p_what) {
 	}
 	if (p_what==NOTIFICATION_DRAW) {
 
+
 		draw_style_box( get_stylebox("bg"),Rect2(Point2(),get_size()) );
 		VS::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
 
@@ -310,53 +345,7 @@ void GraphEdit::_notification(int p_what) {
 
 		}
 
-		{
-			//draw connections
-			List<List<Connection>::Element* > to_erase;
-			for(List<Connection>::Element *E=connections.front();E;E=E->next()) {
 
-				NodePath fromnp(E->get().from);
-
-				Node * from = get_node(fromnp);
-				if (!from) {
-					to_erase.push_back(E);
-					continue;
-				}
-
-				GraphNode *gfrom = from->cast_to<GraphNode>();
-
-				if (!gfrom) {
-					to_erase.push_back(E);
-					continue;
-				}
-
-				NodePath tonp(E->get().to);
-				Node * to = get_node(tonp);
-				if (!to) {
-					to_erase.push_back(E);
-					continue;
-				}
-
-				GraphNode *gto = to->cast_to<GraphNode>();
-
-				if (!gto) {
-					to_erase.push_back(E);
-					continue;
-				}
-
-				Vector2 frompos=gfrom->get_connection_output_pos(E->get().from_port)+gfrom->get_pos();
-				Color color = gfrom->get_connection_output_color(E->get().from_port);
-				Vector2 topos=gto->get_connection_input_pos(E->get().to_port)+gto->get_pos();
-				Color tocolor = gto->get_connection_input_color(E->get().to_port);
-				_draw_cos_line(this,frompos,topos,color,tocolor);
-
-			}
-
-			while(to_erase.size()) {
-				connections.erase(to_erase.front()->get());
-				to_erase.pop_front();
-			}
-		}
 
 	}
 
@@ -588,6 +577,7 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 		connecting=false;
 		top_layer->update();
 		update();
+		connections_layer->update();
 
 	}
 
@@ -625,7 +615,7 @@ void GraphEdit::_bake_segment2d(CanvasItem* p_where,float p_begin, float p_end,c
 
 
 
-		p_where->draw_line(beg,end,p_color.linear_interpolate(p_to_color,mp),2);
+		p_where->draw_line(beg,end,p_color.linear_interpolate(p_to_color,mp),2,true);
 		lines++;
 	} else {
 		_bake_segment2d(p_where,p_begin,mp,p_a,p_out,p_b,p_in,p_depth+1,p_min_depth,p_max_depth,p_tol,p_color,p_to_color,lines);
@@ -635,6 +625,7 @@ void GraphEdit::_bake_segment2d(CanvasItem* p_where,float p_begin, float p_end,c
 
 
 void GraphEdit::_draw_cos_line(CanvasItem* p_where,const Vector2& p_from, const Vector2& p_to,const Color& p_color,const Color& p_to_color) {
+
 
 #if 1
 
@@ -654,8 +645,7 @@ void GraphEdit::_draw_cos_line(CanvasItem* p_where,const Vector2& p_from, const 
 	Vector2 c2 = Vector2(-cp_offset,0);
 
 	int lines=0;
-	_bake_segment2d(p_where,0,1,p_from,c1,p_to,c2,0,5,12,8,p_color,p_to_color,lines);
-	//print_line("used lines: "+itos(lines));
+	_bake_segment2d(p_where,0,1,p_from,c1,p_to,c2,0,3,9,8,p_color,p_to_color,lines);
 
 
 #else
@@ -687,6 +677,59 @@ void GraphEdit::_draw_cos_line(CanvasItem* p_where,const Vector2& p_from, const 
 		prev=p;
 	}
 #endif
+}
+
+
+void GraphEdit::_connections_layer_draw() {
+
+
+	{
+		//draw connections
+		List<List<Connection>::Element* > to_erase;
+		for(List<Connection>::Element *E=connections.front();E;E=E->next()) {
+
+			NodePath fromnp(E->get().from);
+
+			Node * from = get_node(fromnp);
+			if (!from) {
+				to_erase.push_back(E);
+				continue;
+			}
+
+			GraphNode *gfrom = from->cast_to<GraphNode>();
+
+			if (!gfrom) {
+				to_erase.push_back(E);
+				continue;
+			}
+
+			NodePath tonp(E->get().to);
+			Node * to = get_node(tonp);
+			if (!to) {
+				to_erase.push_back(E);
+				continue;
+			}
+
+			GraphNode *gto = to->cast_to<GraphNode>();
+
+			if (!gto) {
+				to_erase.push_back(E);
+				continue;
+			}
+
+			Vector2 frompos=gfrom->get_connection_output_pos(E->get().from_port)+gfrom->get_offset();
+			Color color = gfrom->get_connection_output_color(E->get().from_port);
+			Vector2 topos=gto->get_connection_input_pos(E->get().to_port)+gto->get_offset();
+			Color tocolor = gto->get_connection_input_color(E->get().to_port);
+			_draw_cos_line(connections_layer,frompos,topos,color,tocolor);
+
+		}
+
+		while(to_erase.size()) {
+			connections.erase(to_erase.front()->get());
+			to_erase.pop_front();
+		}
+	}
 }
 
 void GraphEdit::_top_layer_draw() {
@@ -854,6 +897,7 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 
 			top_layer->update();
 			update();
+			connections_layer->update();
 		}
 
 		if (b.button_index==BUTTON_LEFT && b.pressed) {
@@ -979,6 +1023,7 @@ void GraphEdit::clear_connections() {
 
 	connections.clear();
 	update();
+	connections_layer->update();
 }
 
 void GraphEdit::set_zoom(float p_zoom) {
@@ -1112,6 +1157,7 @@ void GraphEdit::set_use_snap(bool p_enable) {
 
 	snap_button->set_pressed(p_enable);
 	update();
+
 }
 
 bool GraphEdit::is_using_snap() const{
@@ -1175,6 +1221,10 @@ void GraphEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_snap_value_changed"),&GraphEdit::_snap_value_changed);
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphEdit::_input_event);
+	ObjectTypeDB::bind_method(_MD("_update_scroll_offset"),&GraphEdit::_update_scroll_offset);
+	ObjectTypeDB::bind_method(_MD("_connections_layer_draw"),&GraphEdit::_connections_layer_draw);
+
+
 
 	ObjectTypeDB::bind_method(_MD("set_selected","node"),&GraphEdit::set_selected);
 
@@ -1195,6 +1245,7 @@ void GraphEdit::_bind_methods() {
 GraphEdit::GraphEdit() {
 	set_focus_mode(FOCUS_ALL);
 
+	awaiting_scroll_offset_update=false;
 	top_layer=NULL;
 	top_layer=memnew(GraphEditFilter(this));
 	add_child(top_layer);
@@ -1203,6 +1254,12 @@ GraphEdit::GraphEdit() {
 	top_layer->connect("draw",this,"_top_layer_draw");
 	top_layer->set_stop_mouse(false);
 	top_layer->connect("input_event",this,"_top_layer_input");
+
+	connections_layer = memnew( Control );
+	add_child(connections_layer);
+	connections_layer->connect("draw",this,"_connections_layer_draw");
+	connections_layer->set_name("CLAYER");
+	connections_layer->set_disable_visibility_clip(true); // so it can draw freely and be offseted
 
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");

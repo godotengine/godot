@@ -3629,7 +3629,7 @@ float VisualServerRaster::canvas_item_get_self_opacity(RID p_item, float p_self_
 }
 
 
-void VisualServerRaster::canvas_item_add_line(RID p_item, const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width) {
+void VisualServerRaster::canvas_item_add_line(RID p_item, const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width,bool p_antialiased) {
 	VS_CHANGED;
 	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
 	ERR_FAIL_COND(!canvas_item);
@@ -3640,6 +3640,7 @@ void VisualServerRaster::canvas_item_add_line(RID p_item, const Point2& p_from, 
 	line->from=p_from;
 	line->to=p_to;
 	line->width=p_width;
+	line->antialiased=p_antialiased;
 	canvas_item->rect_dirty=true;
 
 
