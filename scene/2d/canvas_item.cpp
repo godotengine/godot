@@ -1029,7 +1029,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_is_on_top"),&CanvasItem::_is_on_top);
 	//ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
 
-	ObjectTypeDB::bind_method(_MD("draw_line","from","to","color","width"),&CanvasItem::draw_line,DEFVAL(1.0),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("draw_line","from","to","color","width","antialiased"),&CanvasItem::draw_line,DEFVAL(1.0),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_rect","rect","color"),&CanvasItem::draw_rect);
 	ObjectTypeDB::bind_method(_MD("draw_circle","pos","radius","color"),&CanvasItem::draw_circle);
 	ObjectTypeDB::bind_method(_MD("draw_texture","texture:Texture","pos","modulate"),&CanvasItem::draw_texture,DEFVAL(Color(1,1,1,1)));
