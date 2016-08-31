@@ -96,13 +96,15 @@ Error HTTPRequest::_parse_url(const String& p_url) {
 	return OK;
 }
 
-Error HTTPRequest::request(const String& p_url, const Vector<String>& p_custom_headers, bool p_ssl_validate_domain) {
+Error HTTPRequest::request(const String& p_url, const Vector<String>& p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const String& p_request_data) {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),ERR_UNCONFIGURED);
 	if ( requesting ) {
 		ERR_EXPLAIN("HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
 		ERR_FAIL_V(ERR_BUSY);
 	}
+
+	method=p_method;
 
 	Error err = _parse_url(p_url);
 	if (err)
@@ -113,6 +115,8 @@ Error HTTPRequest::request(const String& p_url, const Vector<String>& p_custom_h
 	bool has_user_agent=false;
 	bool has_accept=false;
 	headers=p_custom_headers;
+
+	request_data = p_request_data;
 
 	for(int i=0;i<headers.size();i++) {
 
@@ -281,7 +285,7 @@ bool HTTPRequest::_update_connection() {
 	switch( client->get_status() ) {
 		case HTTPClient::STATUS_DISCONNECTED: {
 			call_deferred("_request_done",RESULT_CANT_CONNECT,0,StringArray(),ByteArray());
-			return true; //end it, since it's doing something			
+			return true; //end it, since it's doing something
 		} break;
 		case HTTPClient::STATUS_RESOLVING: {
 			client->poll();
@@ -334,7 +338,7 @@ bool HTTPRequest::_update_connection() {
 			} else {
 				//did not request yet, do request
 
-				Error err = client->request(HTTPClient::METHOD_GET,request_string,headers);
+				Error err = client->request(method,request_string,headers,request_data);
 				if (err!=OK) {
 					call_deferred("_request_done",RESULT_CONNECTION_ERROR,0,StringArray(),ByteArray());
 					return true;
@@ -531,7 +535,7 @@ int HTTPRequest::get_body_size() const{
 
 void HTTPRequest::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("request","url","custom_headers","ssl_validate_domain"),&HTTPRequest::request,DEFVAL(StringArray()),DEFVAL(true));
+	ObjectTypeDB::bind_method(_MD("request","url","custom_headers","ssl_validate_domain","method","request_data"),&HTTPRequest::request,DEFVAL(StringArray()),DEFVAL(true),DEFVAL(HTTPClient::METHOD_GET),DEFVAL(String()));
 	ObjectTypeDB::bind_method(_MD("cancel_request"),&HTTPRequest::cancel_request);
 
 	ObjectTypeDB::bind_method(_MD("get_http_client_status"),&HTTPRequest::get_http_client_status);
