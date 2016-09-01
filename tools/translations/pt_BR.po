@@ -2,6 +2,7 @@
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
+# António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
 # George Marques <george@gmarqu.es>, 2016.
 # Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
 #
@@ -9,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2016-07-15 15:36+0000\n"
-"Last-Translator: George Marques <georgemjesus@gmail.com>\n"
+"PO-Revision-Date: 2016-08-11 15:38+0000\n"
+"Last-Translator: António Sarmento <antonio.luis.sarmento@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -95,14 +96,12 @@ msgid "Stack overflow with stack depth: "
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Functions:"
-msgstr "Função:"
+msgstr "Funções:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Variables:"
-msgstr "Variável"
+msgstr "Variáveis:"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Signals:"
@@ -117,9 +116,8 @@ msgid "Name already in use by another func/var/signal:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Function"
-msgstr "Criar Função"
+msgstr "Renomear Função"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -127,54 +125,44 @@ msgid "Rename Variable"
 msgstr "Renomear Amostra"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Signal"
-msgstr "Renomear Amostra"
+msgstr "Renomear Sinal"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function"
-msgstr "Função:"
+msgstr "Adicionar Função"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Variable"
-msgstr "Variável"
+msgstr "Adicionar Variável"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Signal"
-msgstr "Sinais"
+msgstr "Adicionar Sinal"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Function"
-msgstr "Remover Seleção"
+msgstr "Remover Função"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Variable"
-msgstr "Variável"
+msgstr "Remover Variável"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Editing Variable:"
-msgstr "Variável"
+msgstr "Editando Variável:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Signal"
-msgstr "Remover Seleção"
+msgstr "Remover Sinal"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Editing Signal:"
-msgstr "Conectando Sinal:"
+msgstr "Editando Sinal:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node"
-msgstr "Adicionar Nó Filho"
+msgstr "Adicionar Nó"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -208,9 +196,8 @@ msgid "Members:"
 msgstr "Membros:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Available Nodes:"
-msgstr "Nó Tempo de Escala"
+msgstr "Nós Disponíveis:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit graph"
@@ -230,24 +217,20 @@ msgid "Close"
 msgstr "Fechar"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Signal Arguments:"
-msgstr "Argumentos de Chamada Extras:"
+msgstr "Editar Argumentos do Sinal:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Variable:"
-msgstr "Variável"
+msgstr "Editar Variável:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change"
-msgstr "Alterar Tipo"
+msgstr "Alterar"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete Selected"
-msgstr "Excluir os arquivos selecionados?"
+msgstr "Excluir Selecionados"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -255,9 +238,8 @@ msgid "Toggle Breakpoint"
 msgstr "Alternar Ponto de interrupção"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Find Node Tyoe"
-msgstr "Localizar próximo"
+msgstr "Localizar Tipo de Nó"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -295,9 +277,8 @@ msgid ": Invalid argument of type: "
 msgstr "Nome de classe pai inválido"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid ": Invalid arguments: "
-msgstr "Nome de classe pai inválido"
+msgstr ": Argumentos inválidos: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
@@ -4510,9 +4491,8 @@ msgid "Save Theme As"
 msgstr "Salvar Tema Como"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close Docs"
-msgstr "Clonar Abaixo"
+msgstr "Fechar Docs"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -5822,7 +5802,7 @@ msgstr "Escanear"
 #: tools/editor/project_manager.cpp
 #, fuzzy
 msgid "Select a Folder to Scan"
-msgstr "Selecione um Nó"
+msgstr "Selecione uma Pasta para Scanear"
 
 #: tools/editor/project_manager.cpp
 msgid "New Project"
@@ -6326,9 +6306,8 @@ msgid "Save Branch as Scene"
 msgstr "Salvar Ramo como Cena"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete (No Confirm)"
-msgstr "Confirme Por Favor..."
+msgstr "Excluir (Sem Confirmação)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
@@ -6343,9 +6322,8 @@ msgstr ""
 "existe um nó raiz."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Create a new script for the selected node."
-msgstr "Instancia a(s) cena(s) selecionada como filho do nó selecionado."
+msgstr "Criar um script novo para o nó selecionado."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid ""

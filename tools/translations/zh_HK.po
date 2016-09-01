@@ -2,18 +2,21 @@
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# Wesley <ZX_WT@ymail.com>, 2016.
+# Wesley (zx-wt) <ZX_WT@ymail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-05-30 16:42+0800\n"
-"Last-Translator: Wesley <ZX_WT@ymail.com>\n"
-"Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
+"PO-Revision-Date: 2016-08-13 09:55+0000\n"
+"Last-Translator: zx-wt <ZX_WT@ymail.com>\n"
+"Language-Team: Chinese (Hong Kong) <https://hosted.weblate.org/projects/"
+"godot-engine/godot/zh_HK/>\n"
 "Language: zh_HK\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -98,7 +101,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Signals:"
-msgstr ""
+msgstr "訊號:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
@@ -132,7 +135,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
-msgstr ""
+msgstr "新增訊號"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -159,11 +162,11 @@ msgstr "連接"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
-msgstr ""
+msgstr "新增節點"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
-msgstr ""
+msgstr "由主幹新增節點"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
@@ -225,9 +228,8 @@ msgid "Change"
 msgstr "當改變時更新"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete Selected"
-msgstr "要刪除選中檔案?"
+msgstr "刪除選中檔案"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -459,23 +461,23 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 #: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "警告!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "請確認..."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "File Exists, Overwrite?"
-msgstr ""
+msgstr "檔案已存在, 要覆蓋嗎?"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Recognized"
@@ -483,7 +485,7 @@ msgstr ""
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Files (*)"
-msgstr ""
+msgstr "所有檔案(*)"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
@@ -493,23 +495,20 @@ msgid "Open"
 msgstr "開啟"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a File"
-msgstr "儲存檔案"
+msgstr "開啟檔案"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr ""
+msgstr "開啟檔案"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a Directory"
-msgstr "選擇資料夾"
+msgstr "開啟資料夾"
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Open a File or Directory"
-msgstr "選擇資料夾"
+msgstr "選擇資料夾/檔案"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_node.cpp
@@ -532,26 +531,26 @@ msgstr "新增資料夾"
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 #: tools/editor/script_create_dialog.cpp
 msgid "Path:"
-msgstr "路徑"
+msgstr "路徑:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Directories & Files:"
-msgstr ""
+msgstr "資料夾和檔案:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/script_editor_debugger.cpp
 msgid "File:"
-msgstr "檔案"
+msgstr "檔案:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Filter:"
-msgstr ""
+msgstr "篩選:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp tools/editor/editor_plugin_settings.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Name:"
-msgstr "名稱"
+msgstr "名稱:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
@@ -560,7 +559,7 @@ msgstr "無法新增資料夾"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Must use a valid extension."
-msgstr ""
+msgstr "請用有效的副檔名"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
@@ -583,7 +582,7 @@ msgstr ""
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Device"
-msgstr ""
+msgstr "設備"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Button"
@@ -591,27 +590,28 @@ msgstr ""
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Left Button."
-msgstr ""
+msgstr "左𨫡"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Right Button."
-msgstr ""
+msgstr "右𨫡"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Middle Button."
-msgstr ""
+msgstr "中𨫡"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Wheel Up."
-msgstr ""
+msgstr "上滾"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Wheel Down."
-msgstr ""
+msgstr "下滾"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
+#, fuzzy
 msgid "Axis"
-msgstr ""
+msgstr "中軸"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -692,7 +692,7 @@ msgstr "無效字型"
 
 #: tools/editor/animation_editor.cpp
 msgid "Disabled"
-msgstr ""
+msgstr "已停用"
 
 #: tools/editor/animation_editor.cpp
 msgid "All Selection"
@@ -776,9 +776,8 @@ msgid "Duplicate Transposed"
 msgstr ""
 
 #: tools/editor/animation_editor.cpp
-#, fuzzy
 msgid "Remove Selection"
-msgstr "只限選中"
+msgstr "移除選項"
 
 #: tools/editor/animation_editor.cpp
 msgid "Continuous"
@@ -1068,9 +1067,8 @@ msgid "Community"
 msgstr ""
 
 #: tools/editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Testing"
-msgstr "設定"
+msgstr "測試"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -1142,7 +1140,7 @@ msgstr ""
 
 #: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
 msgid "Find"
-msgstr ""
+msgstr "查找"
 
 #: tools/editor/code_editor.cpp
 msgid "Next"
@@ -1162,7 +1160,7 @@ msgstr "替換為"
 
 #: tools/editor/code_editor.cpp
 msgid "Case Sensitive"
-msgstr ""
+msgstr "符合大小寫"
 
 #: tools/editor/code_editor.cpp
 msgid "Backwards"
@@ -1179,16 +1177,16 @@ msgstr "跳過"
 #: tools/editor/code_editor.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom In"
-msgstr ""
+msgstr "放大"
 
 #: tools/editor/code_editor.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom Out"
-msgstr ""
+msgstr "縮小"
 
 #: tools/editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "重設縮放比例"
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
@@ -1255,9 +1253,8 @@ msgid "Connect '%s' to '%s'"
 msgstr "由 '%s' 連到 '%s'"
 
 #: tools/editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connecting Signal:"
-msgstr "連接"
+msgstr "連接訊號:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Create Subscription"
@@ -1274,11 +1271,11 @@ msgstr "中斷"
 
 #: tools/editor/connections_dialog.cpp tools/editor/node_dock.cpp
 msgid "Signals"
-msgstr ""
+msgstr "訊號"
 
 #: tools/editor/create_dialog.cpp
 msgid "Create New"
-msgstr ""
+msgstr "新增"
 
 #: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
@@ -1421,14 +1418,12 @@ msgid "Invalid name. Must not collide with an existing global constant name."
 msgstr ""
 
 #: tools/editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Invalid Path."
-msgstr "有效路徑"
+msgstr "有效的路徑"
 
 #: tools/editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "File does not exist."
-msgstr "檔案已存在"
+msgstr "檔案不存在."
 
 #: tools/editor/editor_autoload_settings.cpp
 msgid "Not in resource path."
@@ -1534,9 +1529,8 @@ msgid "Toggle Mode"
 msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Focus Path"
-msgstr "複製"
+msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
 #, fuzzy
@@ -1558,7 +1552,7 @@ msgstr "最近:"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Preview:"
-msgstr "預覽"
+msgstr "預覽:"
 
 #: tools/editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -1659,7 +1653,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Importing:"
-msgstr "導入中"
+msgstr "導入中:"
 
 #: tools/editor/editor_node.cpp
 msgid "Node From Scene"
@@ -1900,9 +1894,8 @@ msgid ""
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Pick a Main Scene"
-msgstr "儲存場景"
+msgstr "選擇主場景"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
@@ -1993,9 +1986,8 @@ msgid "Save Scene"
 msgstr "儲存場景"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Save all Scenes"
-msgstr "儲存場景"
+msgstr "儲存所有場景"
 
 #: tools/editor/editor_node.cpp
 msgid "Close Scene"
@@ -2096,9 +2088,8 @@ msgid "Pause the scene"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Pause Scene"
-msgstr "儲存場景"
+msgstr "暫停場景"
 
 #: tools/editor/editor_node.cpp
 msgid "Stop the scene."
@@ -2110,23 +2101,20 @@ msgid "Stop"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play the edited scene."
-msgstr "請先儲存場景"
+msgstr "運行修改的場景"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play Scene"
-msgstr "儲存場景"
+msgstr "運行場景"
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Play Custom Scene"
-msgstr "儲存場景"
+msgstr "運行場景"
 
 #: tools/editor/editor_node.cpp
 msgid "Debug options"
@@ -2189,9 +2177,8 @@ msgid ""
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Sync Script Changes"
-msgstr "當改變時更新"
+msgstr "同步更新腳本"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -2435,7 +2422,7 @@ msgstr ""
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr "場景路徑"
+msgstr "場景路徑:"
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Import From Node:"
@@ -2482,9 +2469,8 @@ msgid "View Owners.."
 msgstr ""
 
 #: tools/editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Copy Path"
-msgstr "複製"
+msgstr "複製路徑"
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Rename or Move.."
@@ -3238,9 +3224,8 @@ msgid "Save the current animation"
 msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Save As"
-msgstr "另存為.."
+msgstr "另存為"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -3549,9 +3534,8 @@ msgid "Paste Pose"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode"
-msgstr "不選"
+msgstr "選擇模式"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -3570,9 +3554,8 @@ msgid "Alt+RMB: Depth list selection"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Mode"
-msgstr "下移"
+msgstr "移動模式"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate Mode"
@@ -4341,9 +4324,8 @@ msgid "Save Theme As.."
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next script"
-msgstr "下一個"
+msgstr "下一個腳本"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Previous script"
@@ -6386,7 +6368,7 @@ msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Errors:"
-msgstr "錯誤"
+msgstr "錯誤:"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Stack Trace (if applicable):"

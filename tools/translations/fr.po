@@ -8,14 +8,17 @@
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016.
 # Marc <marc.gilleron@gmail.com>, 2016.
 # Onyx Steinheim <thevoxelmanonyx@gmail.com>, 2016.
+# rafeu <duchainer@gmail.com>, 2016.
 # Rémi Verschelde <rverschelde@gmail.com>, 2016.
+# Roger BR <drai_kin@hotmail.com>, 2016.
+# Thomas Baijot <thomasbaijot@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-08-09 20:42+0000\n"
-"Last-Translator: Hugo Locurcio <hugo.l@openmailbox.org>\n"
+"PO-Revision-Date: 2016-08-29 13:56+0000\n"
+"Last-Translator: Thomas Baijot <thomasbaijot@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -37,7 +40,7 @@ msgstr "Pas assez d'octets pour les octets de décodage, ou format non valide."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr ""
+msgstr "L'argument du pas est zéro!"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
@@ -91,7 +94,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
-msgstr ""
+msgstr "Le nœud a retourné une séquence de sortie invalide "
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
@@ -102,66 +105,57 @@ msgid "Stack overflow with stack depth: "
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Functions:"
 msgstr "Fonction :"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Variables:"
-msgstr "Variable"
+msgstr "Variables:"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Signals:"
 msgstr "Signaux :"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Name is not a valid identifier:"
-msgstr ""
+msgstr "Le nom n'est pas un identifiant valide"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
-msgstr ""
+msgstr "Le nom est déjà utilisé dans une autre func/var/signal:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Function"
-msgstr "Créer une fonction"
+msgstr "Renommer la fonction"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Variable"
-msgstr "Renommer l'échantillon"
+msgstr "Renommer la variable"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Signal"
-msgstr "Renommer l'échantillon"
+msgstr "Renommer le signal"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function"
-msgstr "Fonction :"
+msgstr "Ajouter une fonction"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Variable"
-msgstr "Variable"
+msgstr "Ajouter une variable"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Signal"
-msgstr "Signaux"
+msgstr "Ajouter un signal"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Function"
-msgstr "Supprimer la sélection"
+msgstr "Supprimer la fonction"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Variable"
-msgstr "Variable"
+msgstr "Supprimer la variable"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -169,9 +163,8 @@ msgid "Editing Variable:"
 msgstr "Variable"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Signal"
-msgstr "Supprimer la sélection"
+msgstr "Supprimer le signal"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -179,14 +172,12 @@ msgid "Editing Signal:"
 msgstr "Connecter un signal :"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node"
-msgstr "Ajouter un nœud enfant"
+msgstr "Ajouter un nœud"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node(s) From Tree"
-msgstr "Nœud à partir d'une scène"
+msgstr "Ajouter un nœud à partir de l'arbre"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
@@ -206,22 +197,20 @@ msgid "Edit"
 msgstr "Modifier"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Base Type:"
-msgstr "Type de données :"
+msgstr "Type de base"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Members:"
 msgstr "Membres :"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Available Nodes:"
-msgstr "Nœud TimeScale"
+msgstr "Nœuds disponibles:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit graph"
-msgstr ""
+msgstr "Sélectionner ou créer une fonction pour éditer le graph"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
 #: tools/editor/connections_dialog.cpp
@@ -237,24 +226,20 @@ msgid "Close"
 msgstr "Fermer"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Signal Arguments:"
-msgstr "Arguments supplémentaires :"
+msgstr "Editer les arguments du signal"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Variable:"
-msgstr "Variable"
+msgstr "Editer la variable"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change"
-msgstr "Changer le type"
+msgstr "Changer"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete Selected"
-msgstr "Supprimer les fichiers sélectionnés ?"
+msgstr "Supprimer la selection"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -262,9 +247,8 @@ msgid "Toggle Breakpoint"
 msgstr "Placer un point d'arrêt"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Find Node Tyoe"
-msgstr "Trouver le suivant"
+msgstr "Trouver le type du noeud"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -272,11 +256,11 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
-msgstr ""
+msgstr "L'itérateur est devenu invalide"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
-msgstr ""
+msgstr "L'itérateur est devenu invalide "
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -285,12 +269,11 @@ msgstr "Nom de classe parent invalide"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr ""
+msgstr "L'objet de base n'est pas un nœud !"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Path does not lead Node!"
-msgstr "Le chemin n'est pas local"
+msgstr "Le chemin ne mène pas au nœud !"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
@@ -302,9 +285,8 @@ msgid ": Invalid argument of type: "
 msgstr "Nom de classe parent invalide"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid ": Invalid arguments: "
-msgstr "Nom de classe parent invalide"
+msgstr ": Arguments invalides "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
@@ -1110,14 +1092,12 @@ msgid "Resize Array"
 msgstr "Redimensionner le tableau"
 
 #: tools/editor/array_property_edit.cpp
-#, fuzzy
 msgid "Change Array Value Type"
-msgstr "Changer les valeurs types d'un tableau"
+msgstr "Changer les types des valeurs du tableau"
 
 #: tools/editor/array_property_edit.cpp
-#, fuzzy
 msgid "Change Array Value"
-msgstr "Changer la valeur d'un tableau"
+msgstr "Changer les valeurs du tableau"
 
 #: tools/editor/asset_library_editor_plugin.cpp tools/editor/create_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
@@ -1279,7 +1259,7 @@ msgstr "Dézoomer"
 
 #: tools/editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "Réinitialiser le zoom"
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
@@ -1534,9 +1514,8 @@ msgid "File does not exist."
 msgstr "Le fichier n'existe pas."
 
 #: tools/editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Not in resource path."
-msgstr "Chemin de la ressource"
+msgstr "Pas dans le chemin de la ressource."
 
 #: tools/editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2019,9 +1998,8 @@ msgstr ""
 "(les modifications non sauvegardées seront perdues)"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Pick a Main Scene"
-msgstr "Scène principale"
+msgstr "Choisir une scène principale"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
@@ -2082,19 +2060,16 @@ msgid "Fullscreen Mode"
 msgstr "Mode plein écran"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Distraction Free Mode"
-msgstr "Mode distraction libre"
+msgstr "Mode sans distraction"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Next tab"
-msgstr "Suivant"
+msgstr "Onglet suivant"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Previous tab"
-msgstr "Répertoire précédent"
+msgstr "Onglet precedent"
 
 #: tools/editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -2117,9 +2092,8 @@ msgid "Save Scene"
 msgstr "Enregistrer la scène"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Save all Scenes"
-msgstr "Enregistrer la scène"
+msgstr "Enregistrer toutes les scènes"
 
 #: tools/editor/editor_node.cpp
 msgid "Close Scene"
@@ -2258,12 +2232,11 @@ msgid "Deploy with Remote Debug"
 msgstr "Déployer avec le débogage distant"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When exporting or deploying, the resulting executable will attempt to "
 "connect to the IP of this computer in order to be debugged."
 msgstr ""
-"Lors de l'exportation ou du déploiement, l'exécutable tentera de se "
+"Lors de l'exportation ou du déploiement, l'exécutable produit tentera de se "
 "connecter à l'adresse IP de cet ordinateur afin de procéder au débogage."
 
 #: tools/editor/editor_node.cpp
@@ -2307,12 +2280,11 @@ msgid "Visible Navigation"
 msgstr "Navigation visible"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
 msgstr ""
-"la navigation des maillages et des polygones sera visible en jeu si cette "
+"Les maillages et polygones de navigation seront visibles en jeu si cette "
 "option est activée."
 
 #: tools/editor/editor_node.cpp
@@ -2321,7 +2293,6 @@ msgid "Sync Scene Changes"
 msgstr "Changement de synchronisation de scène"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is turned on, any changes made to the scene in the editor "
 "will be replicated in the running game.\n"
@@ -2330,8 +2301,8 @@ msgid ""
 msgstr ""
 "Lorsque cette option est activée, toutes les modifications apportées à la "
 "scène dans l'éditeur seront reproduites en jeu.\n"
-"Lorsque c'est utilisé à distance sur un périphérique, c'est plus efficace "
-"avec le système de fichiers réseau."
+"Lorsqu'elle est utilisée à distance sur un périphérique, l'efficacité est "
+"meilleure avec le système de fichiers réseau."
 
 #: tools/editor/editor_node.cpp
 msgid "Sync Script Changes"
@@ -2491,29 +2462,24 @@ msgid "Status:"
 msgstr "État :"
 
 #: tools/editor/editor_profiler.cpp
-#, fuzzy
 msgid "Stop Profiling"
-msgstr "Arrêt du profilage"
+msgstr "Arrêter le profilage"
 
 #: tools/editor/editor_profiler.cpp
-#, fuzzy
 msgid "Start Profiling"
-msgstr "Démarrage du profilage"
+msgstr "Démarrer le profilage"
 
 #: tools/editor/editor_profiler.cpp
-#, fuzzy
 msgid "Measure:"
-msgstr "Quantité:"
+msgstr "Mesure:"
 
 #: tools/editor/editor_profiler.cpp
-#, fuzzy
 msgid "Frame Time (sec)"
-msgstr "Image par seconde"
+msgstr "Temps image (en seconde)"
 
 #: tools/editor/editor_profiler.cpp
-#, fuzzy
 msgid "Average Time (sec)"
-msgstr "Temps moyen (sec)"
+msgstr "Temps moyen (seconde)"
 
 #: tools/editor/editor_profiler.cpp
 #, fuzzy
@@ -3369,9 +3335,9 @@ msgid "ERROR: No animation to edit!"
 msgstr "ERREUR : Pas d'animation à modifier !"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Play selected animation backwards from current pos. (A)"
-msgstr "Lire l'animation sélectionnée à rebours de la position actuelle. (A)"
+msgstr ""
+"Jouer l'animation sélectionnée à l'envers depuis la position actuelle. (A)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy

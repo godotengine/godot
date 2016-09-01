@@ -3,12 +3,13 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Enes Kaya Öcal <ekayaocal@hotmail.com>, 2016.
+# M. Yavuz Uzun <myavuzuzun@yandex.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-07-25 11:14+0000\n"
-"Last-Translator: Enes Kaya Öcal <ekayaocal@hotmail.com>\n"
+"PO-Revision-Date: 2016-08-18 00:13+0000\n"
+"Last-Translator: M. Yavuz Uzun <myavuzuzun@yandex.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -37,11 +38,11 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "Bir koda bağlı değil"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr ""
+msgstr "Bir kaynak dosyasına bağlı değil"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
@@ -63,7 +64,7 @@ msgstr ""
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
 "properly!"
-msgstr ""
+msgstr "Çalışan hafıza olmadan düğüm yerleştirilmiş, lütfen belgeleri okuyun!"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -90,14 +91,12 @@ msgid "Stack overflow with stack depth: "
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Functions:"
-msgstr "Fonksiyon:"
+msgstr "Fonksiyonlar:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Variables:"
-msgstr "Değişken"
+msgstr "Değişkenler:"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Signals:"
@@ -105,82 +104,71 @@ msgstr "Sinyaller:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
-msgstr ""
+msgstr "İsim doğru bir belirleyici değil:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
-msgstr ""
+msgstr "Ad zaten başka bir fonksiyon/değişken/sinyal tarafından kullanılıyor:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Function"
-msgstr "Fonksiyon:"
+msgstr "Fonksiyonu Yeniden İsimlendir"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Variable"
-msgstr "Değişken"
+msgstr "Değişkeni Yeniden İsimlendir"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Signal"
-msgstr ""
+msgstr "Sinyali Yeniden İsimlendir"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function"
-msgstr "Fonksiyon:"
+msgstr "Fonksiyon Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Variable"
-msgstr "Değişken"
+msgstr "Değişken Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Signal"
-msgstr "Sinyaller:"
+msgstr "Sinyal Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Function"
-msgstr "Seçimi Kaldır"
+msgstr "Fonksiyonu Kaldır"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Variable"
-msgstr "Değişken"
+msgstr "Değişkeni Kaldır"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Editing Variable:"
-msgstr "Değişken"
+msgstr "Değişken Düzenleniyor:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Signal"
-msgstr "Seçimi Kaldır"
+msgstr "Sinyali Kaldır"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Editing Signal:"
-msgstr "Sinyaller:"
+msgstr "Sinyal Düzenleniyor:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node"
-msgstr "AutoLoad ekle"
+msgstr "Düğüm Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
-msgstr ""
+msgstr "Ağaçtan Düğüm(ler) Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
-msgstr ""
+msgstr "Düzenleyici Özellik Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
-msgstr ""
+msgstr "Alıcı Özellik Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -189,11 +177,11 @@ msgstr ""
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_manager.cpp
 msgid "Edit"
-msgstr ""
+msgstr "Düzenle"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
-msgstr ""
+msgstr "Taban Tipi:"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Members:"
@@ -225,18 +213,16 @@ msgid "Edit Signal Arguments:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Variable:"
-msgstr "Değişken"
+msgstr "Değişkeni Düzenle:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change"
-msgstr ""
+msgstr "Değiştir"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete Selected"
-msgstr "Seçili dosyaları sil?"
+msgstr "Seçilenleri Sil"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -475,7 +461,7 @@ msgstr "İptal"
 
 #: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
 msgid "OK"
-msgstr "NoTamam"
+msgstr "Tamam"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -502,15 +488,15 @@ msgstr "Tüm dosyalar (*)"
 #: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
 msgid "Open"
-msgstr "Açık"
+msgstr "Aç"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a File"
-msgstr ""
+msgstr "Bir Dosya Aç"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr ""
+msgstr "Dosya(ları) aç"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a Directory"
@@ -588,7 +574,7 @@ msgstr "Ctrl+"
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Meta+"
-msgstr ""
+msgstr "Meta+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Device"
@@ -1028,7 +1014,7 @@ msgstr "Diziyi Yeniden Boyutlandır"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr ""
+msgstr "Dizinin türünü degistir"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Change Array Value"
@@ -1047,7 +1033,7 @@ msgstr "Sırala:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Reverse"
-msgstr ""
+msgstr "Tersi"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
@@ -1210,7 +1196,7 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
-msgstr ""
+msgstr "Düğüme bağlan:"
 
 #: tools/editor/connections_dialog.cpp
 #: tools/editor/editor_autoload_settings.cpp tools/editor/groups_editor.cpp
@@ -1358,9 +1344,8 @@ msgid "Remove selected files from the project? (no undo)"
 msgstr "Seçili dosyaları projeden kaldır? (Geri alınamaz)"
 
 #: tools/editor/dependency_editor.cpp
-#, fuzzy
 msgid "Error loading:"
-msgstr "Yüklemede hata:"
+msgstr "Yüklerken hata:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Scene failed to load due to missing dependencies:"
@@ -3127,34 +3112,34 @@ msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Anim"
-msgstr ""
+msgstr "Yeni Animasyon"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
-msgstr ""
+msgstr "Animasyonun adını değiştir:"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr ""
+msgstr "Animasyonu Kaldır"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Invalid animation name!"
-msgstr ""
+msgstr "HATA: Geçersiz animasyon adı!"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Animation name already exists!"
-msgstr ""
+msgstr "HATA: Bu animasyonun adı zaten var!"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
-msgstr ""
+msgstr "Animasyonu Yeniden İsimlendir"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr ""
+msgstr "Animasyon Ekle"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
@@ -3166,15 +3151,15 @@ msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr ""
+msgstr "Animasyon Yükle"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
-msgstr ""
+msgstr "Animasyonu Yeniden Çıkar"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation to copy!"
-msgstr ""
+msgstr "HATA: Kopyalamak için bir animasyon yok!"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation resource on clipboard!"
@@ -3190,7 +3175,7 @@ msgstr ""
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation to edit!"
-msgstr ""
+msgstr "HATA: Düzenlemek için bir animasyon yok!"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
@@ -6336,7 +6321,7 @@ msgstr "Sınıf Adı:"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Built-In Script"
-msgstr ""
+msgstr "Gömme Betik"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Create Node Script"
@@ -6344,7 +6329,7 @@ msgstr "Düğüm Betiği Oluştur"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Bytes:"
-msgstr ""
+msgstr "Baytlar:"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Warning"

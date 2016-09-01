@@ -2,13 +2,13 @@
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# volzhs <volzhs@gmail.com>, 2016.
+# 박한얼 (volzhs) <volzhs@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-07-29 08:31+0000\n"
+"PO-Revision-Date: 2016-08-17 10:07+0000\n"
 "Last-Translator: 박한얼 <volzhs@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -95,14 +95,12 @@ msgid "Stack overflow with stack depth: "
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Functions:"
 msgstr "함수:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Variables:"
-msgstr "변수"
+msgstr "변수:"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Signals:"
@@ -117,69 +115,56 @@ msgid "Name already in use by another func/var/signal:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Function"
-msgstr "함수 만들기"
+msgstr "함수명 변경"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Variable"
-msgstr "샘플 이름 변경"
+msgstr "변수명 변경"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Signal"
-msgstr "샘플 이름 변경"
+msgstr "시그널명 변경"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function"
-msgstr "함수:"
+msgstr "함수 추가"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Variable"
-msgstr "변수"
+msgstr "변수 추가"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Signal"
-msgstr "시그널"
+msgstr "시그널 추가"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Function"
-msgstr "선택 삭제"
+msgstr "함수 제거"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Variable"
-msgstr "변수"
+msgstr "변수 제거"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Editing Variable:"
-msgstr "변수"
+msgstr "변수 편집:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Signal"
-msgstr "선택 삭제"
+msgstr "시그널 제거"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Editing Signal:"
-msgstr "시그널 연결:"
+msgstr "시그널 편집:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node"
-msgstr "자식 노드 추가"
+msgstr "노드 추가"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node(s) From Tree"
-msgstr "씬으로부터 노드 가져오기"
+msgstr "트리에서 노드 추가"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
@@ -199,18 +184,16 @@ msgid "Edit"
 msgstr "편집"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Base Type:"
-msgstr "데이타 타입:"
+msgstr "기본 타입:"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Members:"
 msgstr "멤버:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Available Nodes:"
-msgstr "시간 크기 조절 노드"
+msgstr "가능한 노드:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit graph"
@@ -230,24 +213,20 @@ msgid "Close"
 msgstr "닫기"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Signal Arguments:"
-msgstr "별도의 호출 인자:"
+msgstr "시그널 인자 편집:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Variable:"
-msgstr "변수"
+msgstr "변수 편집:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change"
-msgstr "타입 변경"
+msgstr "변경"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete Selected"
-msgstr "선택된 파일들을 삭제하시겠습니까?"
+msgstr "선택 항목 삭제"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -255,9 +234,8 @@ msgid "Toggle Breakpoint"
 msgstr "중단점 토글"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Find Node Tyoe"
-msgstr "다음 찾기"
+msgstr "노드 타입 찾기"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -272,32 +250,28 @@ msgid "Iterator became invalid: "
 msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Invalid index property name."
-msgstr "유요하지 않은 부모 클래스명"
+msgstr "유요하지 않은 인덱스 속성명."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
 msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Path does not lead Node!"
-msgstr "경로가 로컬이 아님"
+msgstr "노드를 지칭하는 경로가 아닙니다!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid ": Invalid argument of type: "
-msgstr "유요하지 않은 부모 클래스명"
+msgstr ": 유효하지 않은 인자 타입: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid ": Invalid arguments: "
-msgstr "유요하지 않은 부모 클래스명"
+msgstr ": 유효하지 인자: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
@@ -3644,9 +3618,8 @@ msgid "Paste Pose"
 msgstr "포즈 붙여넣기"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode"
-msgstr "선택 모드 (Q)"
+msgstr "선택 모드"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -3665,14 +3638,12 @@ msgid "Alt+RMB: Depth list selection"
 msgstr "알트+우클릭: 겹친 오브젝트 선택"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Mode"
-msgstr "이동 모드 (W)"
+msgstr "이동 모드"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Mode"
-msgstr "회전 모드 (E)"
+msgstr "회전 모드"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -4485,9 +4456,8 @@ msgid "Save Theme As"
 msgstr "테마 다른 이름으로 저장"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close Docs"
-msgstr "아래로 복제"
+msgstr "문서 닫기"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -5753,12 +5723,10 @@ msgid "Unnamed Project"
 msgstr "이름없는 프로젝트"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Are you sure to open more than one project?"
 msgstr "두개 이상의 프로젝트를 열려는 것이 확실합니까?"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Are you sure to run more than one project?"
 msgstr "두개 이상의 프로젝트를 실행하려는 것이 확실합니까?"
 
@@ -5790,9 +5758,8 @@ msgid "Scan"
 msgstr "스캔"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Select a Folder to Scan"
-msgstr "노드 선택"
+msgstr "스캔할 폴더를 선택하세요"
 
 #: tools/editor/project_manager.cpp
 msgid "New Project"
@@ -6064,7 +6031,7 @@ msgstr "이미지를 로드할 수 없음"
 
 #: tools/editor/property_editor.cpp
 msgid "Bit %d, val %d."
-msgstr "Bit %d, val %d."
+msgstr "비트 %d, 값 %d."
 
 #: tools/editor/property_editor.cpp
 msgid "On"
@@ -6159,9 +6126,8 @@ msgid "No parent to instance a child at."
 msgstr "선택된 부모 노드가 없어서 자식노드를 인스턴스할 수 없습니다."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "No parent to instance the scenes at."
-msgstr "선택된 부모 노드가 없어서 자식노드를 인스턴스할 수 없습니다."
+msgstr "씬을 인스턴스할 수 있는 부모가 없습니다."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
@@ -6293,9 +6259,8 @@ msgid "Save Branch as Scene"
 msgstr "선택 노드를 다른 씬으로 저장"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete (No Confirm)"
-msgstr "확인해주세요..."
+msgstr "삭제 (확인 없음)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
@@ -6309,9 +6274,8 @@ msgstr ""
 "씬 파일을 노드로 추가합니다. 루트 노드가 없을 경우, 상속씬으로 만들어집니다."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Create a new script for the selected node."
-msgstr "선택된 씬을 선택된 노드의 자식으로 인스턴스 합니다."
+msgstr "선택된 노드에 새로운 스크립트를 생성합니다."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid ""

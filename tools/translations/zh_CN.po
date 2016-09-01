@@ -3,15 +3,17 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # 纯洁的坏蛋 <tqj.zyy@gmail.com>, 2016.
+# 孤月蓝风 <trlanfeng@foxmail.com>, 2016.
 # Geequlim <geequlim@gmail.com>, 2016.
 # Luo Jun <vipsbpig@gmail.com>, 2016.
+# wanfang liu <wanfang.liu@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-08-10 17:36+0000\n"
-"Last-Translator: Luo Jun <vipsbpig@gmail.com>\n"
+"PO-Revision-Date: 2016-08-23 09:17+0000\n"
+"Last-Translator: 孤月蓝风 <trlanfeng@foxmail.com>\n"
 "Language-Team: Chinese (China) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/zh_CN/>\n"
 "Language: zh_CN\n"
@@ -68,30 +70,31 @@ msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
 "properly!"
 msgstr ""
+"一个节点在无工作内存的情况下被yielded，请阅读文档来查看如何适当的yield！"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "Node yielded, but did not return a function state in the first working "
 "memory."
-msgstr ""
+msgstr "节点已yielded，但并没有在第一个工作内存中返回一个函数状态。"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "Return value must be assigned to first element of node working memory! Fix "
 "your node please."
-msgstr ""
+msgstr "节点工作内存的第一个节点的返回值必须已赋值！请修正你的节点。"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
-msgstr ""
+msgstr "节点返回了一个无效的连续输出： "
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
-msgstr ""
+msgstr "在非堆栈中的节点中找到连续bit，报告bug！"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Stack overflow with stack depth: "
-msgstr ""
+msgstr "堆栈深度溢出： "
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -99,71 +102,70 @@ msgid "Functions:"
 msgstr "函数:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Variables:"
-msgstr "变量"
+msgstr "变量："
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Signals:"
 msgstr "事件:"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Name is not a valid identifier:"
-msgstr ""
+msgstr "名称不是有效的标识符："
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Name already in use by another func/var/signal:"
-msgstr ""
+msgstr "名称已经被其他的函数/变量/信号占用："
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Function"
-msgstr "创建方法"
+msgstr "重命名函数"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Variable"
-msgstr "重命名音效"
+msgstr "重命名变量"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Rename Signal"
-msgstr "重命名音效"
+msgstr "重命名信号"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Add Function"
-msgstr "函数:"
+msgstr "添加函数"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Add Variable"
-msgstr "变量"
+msgstr "添加变量"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Add Signal"
-msgstr "信号"
+msgstr "添加信号"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Remove Function"
-msgstr "移除选中项"
+msgstr "移除函数"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Remove Variable"
-msgstr "变量"
+msgstr "移除变量"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Editing Variable:"
-msgstr "变量"
+msgstr "编辑变量："
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Remove Signal"
-msgstr "移除选中项"
+msgstr "移除信号"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -182,11 +184,11 @@ msgstr "从场景导入节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
-msgstr ""
+msgstr "添加设置器"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
-msgstr ""
+msgstr "添加访问器属性"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -198,21 +200,21 @@ msgid "Edit"
 msgstr "编辑"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Base Type:"
-msgstr "数据类型:"
+msgstr "基础类型："
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Members:"
-msgstr "成员:"
+msgstr "成员："
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Available Nodes:"
-msgstr ""
+msgstr "有效节点："
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Select or create a function to edit graph"
-msgstr ""
+msgstr "在 edit graph 中选择或者建立一个函数"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
 #: tools/editor/connections_dialog.cpp
@@ -259,15 +261,15 @@ msgstr "查找下一项"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
-msgstr ""
+msgstr "输入类型不可迭代： "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
-msgstr ""
+msgstr "迭代器失效"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
-msgstr ""
+msgstr "迭代器失效： "
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -276,7 +278,7 @@ msgstr "基类名称非法"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr ""
+msgstr "基础对象不是一个节点！"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -285,25 +287,23 @@ msgstr "必须是项目路径"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr ""
+msgstr "节点%s的'%s'为无效索引属性名。"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid ": Invalid argument of type: "
-msgstr "基类名称非法"
+msgstr "：无效参数类型： "
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid ": Invalid arguments: "
-msgstr "基类名称非法"
+msgstr "：无效参数： "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
-msgstr ""
+msgstr "脚本中未找到VariableGet： "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
-msgstr ""
+msgstr "脚本中未找到VariableSet： "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ""
@@ -319,7 +319,7 @@ msgstr ""
 msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
-msgstr ""
+msgstr "_step()的返回值无效，必须是整形（seq out），或字符串（error）。"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -1032,7 +1032,7 @@ msgstr "优化"
 
 #: tools/editor/animation_editor.cpp
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
-msgstr ""
+msgstr "在场景树中选择一个AnimationPlayer来编辑动画。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Key"
@@ -1242,7 +1242,7 @@ msgstr "缩小"
 
 #: tools/editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "重置缩放"
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
@@ -2011,7 +2011,7 @@ msgstr "前往上一个打开的场景。"
 
 #: tools/editor/editor_node.cpp
 msgid "Fullscreen Mode"
-msgstr ""
+msgstr "全屏模式"
 
 #: tools/editor/editor_node.cpp
 msgid "Distraction Free Mode"
@@ -2998,7 +2998,7 @@ msgstr "源贴图:"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Base Atlas Texture"
-msgstr ""
+msgstr "基础图集纹理"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Source Texture(s)"
@@ -3261,7 +3261,7 @@ msgstr "从结束时间倒放选中动画（Shift+A）"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
-msgstr ""
+msgstr "停止动画回放。(S)"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from start. (Shift+D)"
@@ -3276,8 +3276,9 @@ msgid "Animation position (in seconds)."
 msgstr "动画位置（单位:秒）"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
 msgid "Scale animation playback globally for the node."
-msgstr ""
+msgstr "节点全局缩放动画回放"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create new animation in player."
@@ -3472,7 +3473,7 @@ msgstr ""
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr ""
+msgstr "时间缩放节点"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeSeek Node"
@@ -3480,7 +3481,7 @@ msgstr ""
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Transition Node"
-msgstr ""
+msgstr "过渡节点"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations.."
@@ -3557,7 +3558,7 @@ msgstr "预览"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap"
-msgstr ""
+msgstr "设置吸附"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3670,7 +3671,7 @@ msgstr "恢复节点的子孙能够被选中。"
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr ""
+msgstr "使用吸附"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3679,24 +3680,24 @@ msgstr "显示网格"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
-msgstr ""
+msgstr "使用旋转吸附"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
-msgstr ""
+msgstr "相对吸附"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap.."
-msgstr ""
+msgstr "设置吸附.."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
-msgstr ""
+msgstr "使用像素吸附"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Expand to Parent"
-msgstr ""
+msgstr "展开父节点"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton.."
@@ -3769,7 +3770,7 @@ msgstr "设置值"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
-msgstr ""
+msgstr "吸附（像素）："
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -3999,7 +4000,7 @@ msgstr ""
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Couldn't map area."
-msgstr ""
+msgstr "无法绘制区域。"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
@@ -4007,7 +4008,7 @@ msgstr "选择源Mesh:"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Target Surface:"
-msgstr ""
+msgstr "选择一个目标曲面："
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate Surface"
@@ -4019,7 +4020,7 @@ msgstr ""
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Target Surface:"
-msgstr ""
+msgstr "目标曲面："
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Source Mesh:"
@@ -6572,8 +6573,9 @@ msgid "Change Ray Shape Length"
 msgstr ""
 
 #: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
 msgid "Change Notifier Extents"
-msgstr ""
+msgstr "更改通知器级别"
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "无法打开目录:"
