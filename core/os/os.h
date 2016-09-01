@@ -62,6 +62,10 @@ class OS {
 	bool _pixel_snap;
 	bool _allow_hidpi;
 
+	uint64_t _fixed_frames;
+	uint64_t _idle_frames;
+	bool _in_fixed;
+
 	char *last_error;
 
 public:
@@ -281,6 +285,10 @@ public:
 	virtual bool can_draw() const = 0;
 
 	uint64_t get_frames_drawn();
+
+	uint64_t get_fixed_frames() const { return _fixed_frames; }
+	uint64_t get_idle_frames() const { return _idle_frames; }
+	bool is_in_fixed_frame() const { return _in_fixed; }
 
 	bool is_stdout_verbose() const;
 

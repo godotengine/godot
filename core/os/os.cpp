@@ -587,6 +587,9 @@ OS::OS() {
 	_time_scale=1.0;
 	_pixel_snap=false;
 	_allow_hidpi=true;
+	_fixed_frames=0;
+	_idle_frames=0;
+	_in_fixed=false;
 	Math::seed(1234567);
 }
 

@@ -38,15 +38,26 @@ class InputDefault : public Input {
 	_THREAD_SAFE_CLASS_
 
 	int mouse_button_mask;
+
+
 	Set<int> keys_pressed;
 	Set<int> joy_buttons_pressed;
 	Map<int,float> _joy_axis;
-	Map<StringName,int> custom_action_press;
+	//Map<StringName,int> custom_action_press;
 	Vector3 accelerometer;
 	Vector3 magnetometer;
 	Vector3 gyroscope;
 	Vector2 mouse_pos;
 	MainLoop *main_loop;
+
+	struct Action {
+		uint64_t fixed_frame;
+		uint64_t idle_frame;
+		bool pressed;
+	};
+
+	Map<StringName,Action> action_state;
+
 
 	bool emulate_touch;
 
@@ -164,12 +175,14 @@ public:
 
 
 
-	virtual bool is_key_pressed(int p_scancode);
-	virtual bool is_mouse_button_pressed(int p_button);
-	virtual bool is_joy_button_pressed(int p_device, int p_button);
-	virtual bool is_action_pressed(const StringName& p_action);
+	virtual bool is_key_pressed(int p_scancode) const;
+	virtual bool is_mouse_button_pressed(int p_button) const;
+	virtual bool is_joy_button_pressed(int p_device, int p_button) const;
+	virtual bool is_action_pressed(const StringName& p_action) const;
+	virtual bool is_action_just_pressed(const StringName& p_action) const;
+	virtual bool is_action_just_released(const StringName& p_action) const;
 
-	virtual float get_joy_axis(int p_device,int p_axis);
+	virtual float get_joy_axis(int p_device,int p_axis) const;
 	String get_joy_name(int p_idx);
 	virtual Array get_connected_joysticks();
 	virtual Vector2 get_joy_vibration_strength(int p_device);
@@ -178,9 +191,9 @@ public:
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
 	void parse_joystick_mapping(String p_mapping, bool p_update_existing);
 
-	virtual Vector3 get_accelerometer();
-	virtual Vector3 get_magnetometer();
-	virtual Vector3 get_gyroscope();
+	virtual Vector3 get_accelerometer() const;
+	virtual Vector3 get_magnetometer() const;
+	virtual Vector3 get_gyroscope() const;
 
 	virtual Point2 get_mouse_pos() const;
 	virtual Point2 get_mouse_speed() const;

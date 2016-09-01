@@ -290,6 +290,10 @@ bool InputMap::event_is_joy_motion_action_pressed(const InputEvent& p_event) con
 
 }
 
+const Map<StringName, InputMap::Action>& InputMap::get_action_map() const {
+	return input_map;
+}
+
 void InputMap::load_from_globals() {
 
 	input_map.clear();;

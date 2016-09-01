@@ -3247,13 +3247,29 @@ PropertyInfo VisualScriptInputAction::get_output_value_port_info(int p_idx) cons
 
 String VisualScriptInputAction::get_caption() const {
 
+
 	return "Action";
 }
 
 
 String VisualScriptInputAction::get_text() const {
 
-	return name;
+	switch(mode) {
+		case MODE_PRESSED: {
+			return name;
+		} break;
+		case MODE_RELEASED: {
+			return "not "+name;
+		} break;
+		case MODE_JUST_PRESSED: {
+			return String(name)+" "+TTR("just pressed");
+		} break;
+		case MODE_JUST_RELEASED: {
+			return String(name)+" "+TTR("just released");
+		} break;
+	}
+
+	return String();
 }
 
 
@@ -3278,19 +3294,50 @@ StringName VisualScriptInputAction::get_action_name() const {
 	return name;
 }
 
+void VisualScriptInputAction::set_action_mode(Mode p_mode) {
+
+	if (mode==p_mode)
+		return;
+
+	mode=p_mode;
+	ports_changed_notify();
+
+}
+VisualScriptInputAction::Mode VisualScriptInputAction::get_action_mode() const {
+
+	return mode;
+}
+
 
 class VisualScriptNodeInstanceInputAction : public VisualScriptNodeInstance {
 public:
 
 	VisualScriptInstance* instance;
 	StringName action;
+	VisualScriptInputAction::Mode mode;
 
 
 	virtual int get_working_memory_size() const { return 1; }
 
 	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
 
-		*p_outputs[0]=Input::get_singleton()->is_action_pressed(action);
+		switch(mode) {
+			case VisualScriptInputAction::MODE_PRESSED: {
+				*p_outputs[0]=Input::get_singleton()->is_action_pressed(action);
+			} break;
+			case VisualScriptInputAction::MODE_RELEASED: {
+				*p_outputs[0]=!Input::get_singleton()->is_action_pressed(action);
+			} break;
+			case VisualScriptInputAction::MODE_JUST_PRESSED: {
+				*p_outputs[0]=Input::get_singleton()->is_action_just_pressed(action);
+			} break;
+			case VisualScriptInputAction:: MODE_JUST_RELEASED: {
+				*p_outputs[0]=Input::get_singleton()->is_action_just_released(action);
+			} break;
+
+		}
+
+
 		return 0;
 	}
 
@@ -3302,6 +3349,7 @@ VisualScriptNodeInstance* VisualScriptInputAction::instance(VisualScriptInstance
 	VisualScriptNodeInstanceInputAction * instance = memnew(VisualScriptNodeInstanceInputAction );
 	instance->instance=p_instance;
 	instance->action=name;
+	instance->mode=mode;
 
 	return instance;
 }
@@ -3348,13 +3396,18 @@ void VisualScriptInputAction::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_action_name","name"),&VisualScriptInputAction::set_action_name);
 	ObjectTypeDB::bind_method(_MD("get_action_name"),&VisualScriptInputAction::get_action_name);
 
+	ObjectTypeDB::bind_method(_MD("set_action_mode","mode"),&VisualScriptInputAction::set_action_mode);
+	ObjectTypeDB::bind_method(_MD("get_action_mode"),&VisualScriptInputAction::get_action_mode);
+
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"action"),_SCS("set_action_name"),_SCS("get_action_name"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Pressed,Released,JustPressed,JustReleased"),_SCS("set_action_mode"),_SCS("get_action_mode"));
 
 }
 
 VisualScriptInputAction::VisualScriptInputAction() {
 
 	name="";
+	mode=MODE_PRESSED;
 
 }
 

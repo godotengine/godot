@@ -1560,6 +1560,8 @@ bool Main::iteration() {
 
 	int iters = 0;
 
+	OS::get_singleton()->_in_fixed=true;
+
 	while(time_accum>frame_slice) {
 
 		uint64_t fixed_begin = OS::get_singleton()->get_ticks_usec();
@@ -1590,7 +1592,10 @@ bool Main::iteration() {
 		fixed_process_ticks=MAX(fixed_process_ticks,OS::get_singleton()->get_ticks_usec()-fixed_begin); // keep the largest one for reference
 		fixed_process_max=MAX(OS::get_singleton()->get_ticks_usec()-fixed_begin,fixed_process_max);
 		iters++;
+		OS::get_singleton()->_fixed_frames++;
 	}
+
+	OS::get_singleton()->_in_fixed=false;
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
@@ -1640,6 +1645,7 @@ bool Main::iteration() {
 
 	//	x11_delay_usec(10000);
 	frames++;
+	OS::get_singleton()->_idle_frames++;
 
 	if (frame>1000000) {
 

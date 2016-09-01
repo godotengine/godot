@@ -53,6 +53,8 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_mouse_button_pressed","button"),&Input::is_mouse_button_pressed);
 	ObjectTypeDB::bind_method(_MD("is_joy_button_pressed","device","button"),&Input::is_joy_button_pressed);
 	ObjectTypeDB::bind_method(_MD("is_action_pressed","action"),&Input::is_action_pressed);
+	ObjectTypeDB::bind_method(_MD("is_action_just_pressed","action"),&Input::is_action_just_pressed);
+	ObjectTypeDB::bind_method(_MD("is_action_just_released","action"),&Input::is_action_just_released);
 	ObjectTypeDB::bind_method(_MD("add_joy_mapping","mapping", "update_existing"),&Input::add_joy_mapping, DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("remove_joy_mapping","guid"),&Input::remove_joy_mapping);
 	ObjectTypeDB::bind_method(_MD("is_joy_known","device"),&Input::is_joy_known);

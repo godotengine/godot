@@ -906,8 +906,16 @@ public:
 class VisualScriptInputAction: public VisualScriptNode {
 
 	OBJ_TYPE(VisualScriptInputAction,VisualScriptNode)
+public:
+	enum Mode {
+		MODE_PRESSED,
+		MODE_RELEASED,
+		MODE_JUST_PRESSED,
+		MODE_JUST_RELEASED,
+	};
 
 	StringName name;
+	Mode mode;
 
 protected:
 
@@ -936,12 +944,15 @@ public:
 	void set_action_name(const StringName& p_name);
 	StringName get_action_name() const;
 
+	void set_action_mode(Mode p_mode);
+	Mode get_action_mode() const;
+
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
 	VisualScriptInputAction();
 };
 
-
+VARIANT_ENUM_CAST( VisualScriptInputAction::Mode )
 
 class VisualScriptDeconstruct: public VisualScriptNode {
 
