@@ -169,15 +169,43 @@ msgid "Add Node"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Preload Node"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Setter Property"
+msgid "Add Getter Property"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Getter Property"
+msgid "Add Setter Property"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -240,8 +268,22 @@ msgid "Toggle Breakpoint"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Find Node Tyoe"
+msgid "Find Node Type"
 msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Copy Nodes"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Cut Nodes"
+msgstr "Възел"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Paste Nodes"
+msgstr "Поставяне"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -285,12 +327,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
-msgstr ""
-
-#: modules/visual_script/visual_script_nodes.cpp
-msgid ""
-"Custom node has no _get_output_port_unsequenced(idx,wmem), but unsequenced "
-"ports were specified."
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -523,7 +559,8 @@ msgstr ""
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
 #: tools/editor/filesystem_dock.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Open"
 msgstr ""
 
@@ -1059,7 +1096,8 @@ msgstr ""
 
 #: tools/editor/asset_library_editor_plugin.cpp tools/editor/create_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr ""
@@ -1308,8 +1346,14 @@ msgid "Create New"
 msgstr ""
 
 #: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Matches:"
+msgstr ""
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
+#: tools/editor/property_selector.cpp tools/editor/script_editor_debugger.cpp
+msgid "Description:"
 msgstr ""
 
 #: tools/editor/dependency_editor.cpp
@@ -1626,10 +1670,6 @@ msgstr ""
 
 #: tools/editor/editor_help.cpp
 msgid "Constants:"
-msgstr ""
-
-#: tools/editor/editor_help.cpp tools/editor/script_editor_debugger.cpp
-msgid "Description:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
@@ -5992,6 +6032,16 @@ msgstr ""
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
 msgstr ""
+
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Property"
+msgstr "Избиране на всичко"
+
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Method"
+msgstr "Избиране на всичко"
 
 #: tools/editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"

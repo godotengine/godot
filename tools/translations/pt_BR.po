@@ -165,16 +165,45 @@ msgid "Add Node"
 msgstr "Adicionar Nó"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Preload Node"
+msgstr "Adicionar Nó Filho"
+
+#: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Add Node(s) From Tree"
 msgstr "Nó a Partir de Cena"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Setter Property"
+msgid "Add Getter Property"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Getter Property"
+msgid "Add Setter Property"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -238,8 +267,24 @@ msgid "Toggle Breakpoint"
 msgstr "Alternar Ponto de interrupção"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Find Node Tyoe"
+#, fuzzy
+msgid "Find Node Type"
 msgstr "Localizar Tipo de Nó"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Copy Nodes"
+msgstr "Copiar Pose"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Cut Nodes"
+msgstr "Criar Nó"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Paste Nodes"
+msgstr "Colar Pose"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -286,12 +331,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
-msgstr ""
-
-#: modules/visual_script/visual_script_nodes.cpp
-msgid ""
-"Custom node has no _get_output_port_unsequenced(idx,wmem), but unsequenced "
-"ports were specified."
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -546,7 +585,8 @@ msgstr "Todos os Arquivos (*)"
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
 #: tools/editor/filesystem_dock.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Open"
 msgstr "Abrir"
 
@@ -1089,7 +1129,8 @@ msgstr "Alterar Valor do Vetor"
 
 #: tools/editor/asset_library_editor_plugin.cpp tools/editor/create_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr "Pesquisar:"
@@ -1338,9 +1379,15 @@ msgid "Create New"
 msgstr "Criar Novo"
 
 #: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Matches:"
 msgstr "Combinações:"
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
+#: tools/editor/property_selector.cpp tools/editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "Descrição:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -1666,10 +1713,6 @@ msgstr "Itens do Tema de GUI:"
 #: tools/editor/editor_help.cpp
 msgid "Constants:"
 msgstr "Constantes:"
-
-#: tools/editor/editor_help.cpp tools/editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "Descrição:"
 
 #: tools/editor/editor_help.cpp
 msgid "Method Description:"
@@ -6095,6 +6138,16 @@ msgstr "Global"
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
 msgstr "Seções:"
+
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Property"
+msgstr "Selecionar Pontos"
+
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Method"
+msgstr "Modo de Seleção (Q)"
 
 #: tools/editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"

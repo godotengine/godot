@@ -163,15 +163,44 @@ msgid "Add Node"
 msgstr "노드 추가"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Preload Node"
+msgstr "자식 노드 추가"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
 msgstr "트리에서 노드 추가"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Setter Property"
+msgid "Add Getter Property"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Getter Property"
+msgid "Add Setter Property"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -234,8 +263,24 @@ msgid "Toggle Breakpoint"
 msgstr "중단점 토글"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Find Node Tyoe"
+#, fuzzy
+msgid "Find Node Type"
 msgstr "노드 타입 찾기"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Copy Nodes"
+msgstr "포즈 복사"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Cut Nodes"
+msgstr "노드 생성"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Paste Nodes"
+msgstr "포즈 붙여넣기"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -279,12 +324,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
-msgstr ""
-
-#: modules/visual_script/visual_script_nodes.cpp
-msgid ""
-"Custom node has no _get_output_port_unsequenced(idx,wmem), but unsequenced "
-"ports were specified."
 msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
@@ -529,7 +568,8 @@ msgstr "모든 파일 (*)"
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
 #: tools/editor/filesystem_dock.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Open"
 msgstr "열기"
 
@@ -1071,7 +1111,8 @@ msgstr "배열 값 변경"
 
 #: tools/editor/asset_library_editor_plugin.cpp tools/editor/create_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr "검색:"
@@ -1320,9 +1361,15 @@ msgid "Create New"
 msgstr "새로 만들기"
 
 #: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Matches:"
 msgstr "일치:"
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
+#: tools/editor/property_selector.cpp tools/editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "설명:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -1646,10 +1693,6 @@ msgstr "GUI 테마 항목:"
 #: tools/editor/editor_help.cpp
 msgid "Constants:"
 msgstr "상수:"
-
-#: tools/editor/editor_help.cpp tools/editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "설명:"
 
 #: tools/editor/editor_help.cpp
 msgid "Method Description:"
@@ -6052,6 +6095,16 @@ msgstr "Global"
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
 msgstr "부문:"
+
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Property"
+msgstr "포인트 선택"
+
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Method"
+msgstr "선택 모드"
 
 #: tools/editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"

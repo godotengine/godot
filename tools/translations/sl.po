@@ -166,16 +166,45 @@ msgid "Add Node"
 msgstr "Dodaj Node"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Preload Node"
+msgstr "Dodaj Node"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
 msgstr "Dodaj Node(e) iz Drevesa"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Setter Property"
-msgstr "Dodaj Setter Lastnost"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
 msgstr "Dodaj Getter Lastnost"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Setter Property"
+msgstr "Dodaj Setter Lastnost"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -237,8 +266,21 @@ msgid "Toggle Breakpoint"
 msgstr "Preklopi na Zaustavitev"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Find Node Tyoe"
+#, fuzzy
+msgid "Find Node Type"
 msgstr "Najdi Node Type"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Copy Nodes"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Cut Nodes"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Paste Nodes"
+msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -283,14 +325,6 @@ msgstr "VariableGet ni najden v skripti: "
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
 msgstr "VariableSet ni najden v skripti: "
-
-#: modules/visual_script/visual_script_nodes.cpp
-msgid ""
-"Custom node has no _get_output_port_unsequenced(idx,wmem), but unsequenced "
-"ports were specified."
-msgstr ""
-"Custom node nima _get_output_port_unsequenced(idx,wmem), vendar nezaporedni "
-"porti so bili določeni."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -506,7 +540,8 @@ msgstr ""
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
 #: tools/editor/filesystem_dock.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Open"
 msgstr ""
 
@@ -1042,7 +1077,8 @@ msgstr ""
 
 #: tools/editor/asset_library_editor_plugin.cpp tools/editor/create_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr ""
@@ -1291,8 +1327,14 @@ msgid "Create New"
 msgstr ""
 
 #: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Matches:"
+msgstr ""
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
+#: tools/editor/property_selector.cpp tools/editor/script_editor_debugger.cpp
+msgid "Description:"
 msgstr ""
 
 #: tools/editor/dependency_editor.cpp
@@ -1608,10 +1650,6 @@ msgstr ""
 
 #: tools/editor/editor_help.cpp
 msgid "Constants:"
-msgstr ""
-
-#: tools/editor/editor_help.cpp tools/editor/script_editor_debugger.cpp
-msgid "Description:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
@@ -5973,6 +6011,15 @@ msgstr ""
 msgid "Sections:"
 msgstr ""
 
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Property"
+msgstr "Dodaj Setter Lastnost"
+
+#: tools/editor/property_selector.cpp
+msgid "Select Method"
+msgstr ""
+
 #: tools/editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"
 msgstr ""
@@ -6492,3 +6539,10 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#~ msgid ""
+#~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "
+#~ "unsequenced ports were specified."
+#~ msgstr ""
+#~ "Custom node nima _get_output_port_unsequenced(idx,wmem), vendar "
+#~ "nezaporedni porti so bili določeni."

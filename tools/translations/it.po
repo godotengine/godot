@@ -169,16 +169,45 @@ msgid "Add Node"
 msgstr "Aggiungi Nodo"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Preload Node"
+msgstr "Aggiungi Nodo Figlio"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
 msgstr "Aggiungi Nodo(i) Da Albero"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Setter Property"
-msgstr "Aggiungi Proprietà Setter"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
 msgstr "Aggiungi Proprietà Getter"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Setter Property"
+msgstr "Aggiungi Proprietà Setter"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -240,8 +269,24 @@ msgid "Toggle Breakpoint"
 msgstr "Abilita Breakpoint"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Find Node Tyoe"
+#, fuzzy
+msgid "Find Node Type"
 msgstr "Trova Tipo Nodo"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Copy Nodes"
+msgstr "Copia Posa"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Cut Nodes"
+msgstr "Crea Nodo"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Paste Nodes"
+msgstr "Incolla Posa"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -286,14 +331,6 @@ msgstr "VariableGet non trovato nello script: "
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
 msgstr "VariableSet non trovato nello script: "
-
-#: modules/visual_script/visual_script_nodes.cpp
-msgid ""
-"Custom node has no _get_output_port_unsequenced(idx,wmem), but unsequenced "
-"ports were specified."
-msgstr ""
-"Il nodo personalizzato non ha _get_output_port_unsequenced(idx,wmem), ma le "
-"porte unsequenced sono state specificate."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -559,7 +596,8 @@ msgstr "Tutti i File (*)"
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
 #: tools/editor/filesystem_dock.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Open"
 msgstr "Apri"
 
@@ -1103,7 +1141,8 @@ msgstr "Cambia Valore Array"
 
 #: tools/editor/asset_library_editor_plugin.cpp tools/editor/create_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Search:"
 msgstr "Cerca:"
@@ -1352,9 +1391,15 @@ msgid "Create New"
 msgstr "Crea Nuovo"
 
 #: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Matches:"
 msgstr "Corrispondenze:"
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
+#: tools/editor/property_selector.cpp tools/editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "Descrizione:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -1683,10 +1728,6 @@ msgstr "Elementi Tema GUI:"
 #: tools/editor/editor_help.cpp
 msgid "Constants:"
 msgstr "Costanti:"
-
-#: tools/editor/editor_help.cpp tools/editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "Descrizione:"
 
 #: tools/editor/editor_help.cpp
 msgid "Method Description:"
@@ -6113,6 +6154,16 @@ msgstr "Globale"
 msgid "Sections:"
 msgstr "Sezioni:"
 
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Property"
+msgstr "Selezione Punti"
+
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Method"
+msgstr "Modalità di Selezione"
+
 #: tools/editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"
 msgstr "Impossibile eseguire lo strumento di PVRTC:"
@@ -6640,6 +6691,13 @@ msgstr "Cambia lunghezza Ray Shape"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Cambia Estensione di Notifier"
+
+#~ msgid ""
+#~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "
+#~ "unsequenced ports were specified."
+#~ msgstr ""
+#~ "Il nodo personalizzato non ha _get_output_port_unsequenced(idx,wmem), ma "
+#~ "le porte unsequenced sono state specificate."
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "Impossibile accedere alla subdirectory:"
