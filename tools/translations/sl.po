@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-08-10 10:28+0000\n"
+"PO-Revision-Date: 2016-08-12 09:47+0000\n"
 "Last-Translator: matevž lapajne <sivar.lapajne@gmail.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
@@ -20,11 +20,11 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Neveljaven tip argumenta za convert(), use TYPE_* constants."
+msgstr "Neveljavena vrsta argumenta za convert(), uporabite TYPE_* konstanto."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Ni dovolj bajtov za dekodiranje bajtov, ali neveljaven format."
+msgstr "Ni dovolj pomnilnika za dekodiranje bajtov, ali neveljaven format."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
@@ -32,7 +32,7 @@ msgstr "stopnja argumenta je nič!"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
-msgstr "Ni skripta z primerom"
+msgstr "To ni skripta z instanco"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
@@ -40,20 +40,20 @@ msgstr "Ne temelji na skripti"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr "Ne temelji na viru datoteke"
+msgstr "Ne temelji na datoteki virov"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr "Neveljaven primer slovarskega formata (manjka @path)"
+msgstr "Neveljaven primer formata slovarja (manjka @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
-"Neveljaven primer slovarskega formata (ne morem naložiti skripte ob @path)"
+"Neveljaven primer formata slovarja (ni mogoče naložiti skripte iz @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "Neveljaven primer slovarskega formata (neveljavna skripta na @path)"
+msgstr "Neveljaven primer formata slovarja (neveljavna skripta v @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
@@ -72,6 +72,8 @@ msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
+"Le en viden CanvasModulate je dovoljen na sceno (ali niz instanciranih "
+"scen). Prvi ustvarjen se bo uporabil, medtem ko bodo drugi prezrti."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -79,10 +81,14 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon2D služi le, da zagotavlja collision obliko nodu "
+"CollisionObject2D, ki izhaja iz njega. Naprošamo vas, da ga uporabite le kot "
+"otroka od Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. da jim "
+"date obliko."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr ""
+msgstr "Prazen CollisionPolygon2D nima vpliva na collision."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -90,6 +96,10 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionShape2D služi le, da zagotavlja collision obliko nodu "
+"CollisionObject2D, ki izhaja iz njega. Naprošamo vas, da ga uporabite le kot "
+"otroka od Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. da jim "
+"date obliko."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -851,7 +861,7 @@ msgstr ""
 #: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
 #: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
 msgid "Close"
-msgstr ""
+msgstr "Zapri"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List:"
@@ -1360,7 +1370,7 @@ msgstr ""
 
 #: tools/editor/editor_help.cpp
 msgid "Members:"
-msgstr ""
+msgstr "Člani:"
 
 #: tools/editor/editor_help.cpp
 msgid "GUI Theme Items:"
@@ -1368,7 +1378,7 @@ msgstr ""
 
 #: tools/editor/editor_help.cpp
 msgid "Signals:"
-msgstr ""
+msgstr "Signali:"
 
 #: tools/editor/editor_help.cpp
 msgid "Constants:"
@@ -3371,7 +3381,7 @@ msgstr ""
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_manager.cpp
 msgid "Edit"
-msgstr ""
+msgstr "Uredi"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -4227,7 +4237,7 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Breakpoint"
-msgstr ""
+msgstr "Preklopi na Zaustavitev"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Remove All Breakpoints"
@@ -6268,3 +6278,173 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#~ msgid ""
+#~ "A node yielded without working memory, please read the docs on how to "
+#~ "yield properly!"
+#~ msgstr ""
+#~ "Node je bil sprejet brez potrebnega pomnilnika, pravilen postopek je "
+#~ "opisan v dokumentaciji!"
+
+#~ msgid ""
+#~ "Node yielded, but did not return a function state in the first working "
+#~ "memory."
+#~ msgstr ""
+#~ "Node pridobljen, vendar se ne vrne v funkcijalno stanje v prvem delavnem "
+#~ "spominu."
+
+#~ msgid ""
+#~ "Return value must be assigned to first element of node working memory! "
+#~ "Fix your node please."
+#~ msgstr ""
+#~ "Vrnjena vrednost mora biti dodeljena prvemu elementu v node-delavnemu "
+#~ "spominu! Prosim, da popraviš node."
+
+#~ msgid "Node returned an invalid sequence output: "
+#~ msgstr "Node je vrnil napačno zaporedje na izhodu: "
+
+#~ msgid "Found sequence bit but not the node in the stack, report bug!"
+#~ msgstr "Zaporedni bit najden, vendar ne node v skladu, prijavi napako!"
+
+#~ msgid "Stack overflow with stack depth: "
+#~ msgstr "Sklad prepoln z stack depth: "
+
+#~ msgid "Functions:"
+#~ msgstr "Funkcije:"
+
+#~ msgid "Variables:"
+#~ msgstr "Spremenljivke:"
+
+#~ msgid "Name is not a valid identifier:"
+#~ msgstr "Ime ni pravilen identifikator:"
+
+#~ msgid "Name already in use by another func/var/signal:"
+#~ msgstr "Ime že uporablja druga funkcija/sprem/signal:"
+
+#~ msgid "Rename Function"
+#~ msgstr "Preimenuj Funkcijo"
+
+#~ msgid "Rename Variable"
+#~ msgstr "Preimenuj Spremenljivko"
+
+#~ msgid "Rename Signal"
+#~ msgstr "Preimenuj Signal"
+
+#~ msgid "Add Function"
+#~ msgstr "Dodaj Funkcijo"
+
+#~ msgid "Add Variable"
+#~ msgstr "Dodaj Spremenljivko"
+
+#~ msgid "Add Signal"
+#~ msgstr "Dodaj Signal"
+
+#~ msgid "Remove Function"
+#~ msgstr "Odstrani Funkcijo"
+
+#~ msgid "Remove Variable"
+#~ msgstr "Odstrani Spremenljivko"
+
+#~ msgid "Editing Variable:"
+#~ msgstr "Urejanje Spremenljivke:"
+
+#~ msgid "Remove Signal"
+#~ msgstr "Odstrani Signal"
+
+#~ msgid "Editing Signal:"
+#~ msgstr "Urejanje Signala:"
+
+#~ msgid "Add Node"
+#~ msgstr "Dodaj Node"
+
+#, fuzzy
+#~ msgid "Add Preload Node"
+#~ msgstr "Dodaj Node"
+
+#~ msgid "Add Node(s) From Tree"
+#~ msgstr "Dodaj Node(e) iz Drevesa"
+
+#~ msgid "Add Getter Property"
+#~ msgstr "Dodaj Getter Lastnost"
+
+#~ msgid "Add Setter Property"
+#~ msgstr "Dodaj Setter Lastnost"
+
+#~ msgid "Base Type:"
+#~ msgstr "Osnovni Tip:"
+
+#~ msgid "Available Nodes:"
+#~ msgstr "Na voljo Nodes:"
+
+#~ msgid "Select or create a function to edit graph"
+#~ msgstr "Izberi ali ustvari funkcijo za urejanje grafa"
+
+#~ msgid "Edit Signal Arguments:"
+#~ msgstr "Uredi Argumente Signala:"
+
+#~ msgid "Edit Variable:"
+#~ msgstr "Uredi Spremenljivko:"
+
+#~ msgid "Change"
+#~ msgstr "Spremeni"
+
+#~ msgid "Delete Selected"
+#~ msgstr "Izbriši Izbrano"
+
+#, fuzzy
+#~ msgid "Find Node Type"
+#~ msgstr "Najdi Node Type"
+
+#~ msgid "Input type not iterable: "
+#~ msgstr "Vhodni tip ni spremenljiv: "
+
+#~ msgid "Iterator became invalid"
+#~ msgstr "Iterator je bil neveljaven"
+
+#~ msgid "Iterator became invalid: "
+#~ msgstr "Iterator je neveljaven: "
+
+#~ msgid "Invalid index property name."
+#~ msgstr "Neveljaven indeks lastnosti imena."
+
+#~ msgid "Base object is not a Node!"
+#~ msgstr "Osnovni objekt ni Node!"
+
+#~ msgid "Path does not lead Node!"
+#~ msgstr "Pot ne vodi do Node!"
+
+#~ msgid "Invalid index property name '%s' in node %s."
+#~ msgstr "Neveljaven indeks lastnosti imena '%s' v node %s."
+
+#~ msgid ": Invalid argument of type: "
+#~ msgstr ": Neveljaven argument od tipa: "
+
+#~ msgid ": Invalid arguments: "
+#~ msgstr ": Neveljavni argumenti: "
+
+#~ msgid "VariableGet not found in script: "
+#~ msgstr "VariableGet ni najden v skripti: "
+
+#~ msgid "VariableSet not found in script: "
+#~ msgstr "VariableSet ni najden v skripti: "
+
+#~ msgid "Custom node has no _step() method, can't process graph."
+#~ msgstr "Custom node nima _step() metode, grafa ni mogoče obdelati."
+
+#~ msgid ""
+#~ "Invalid return value from _step(), must be integer (seq out), or string "
+#~ "(error)."
+#~ msgstr ""
+#~ "Neveljavna vrnitev vrednosti od _step(), mora biti število (seq out), ali "
+#~ "string (error)."
+
+#, fuzzy
+#~ msgid "Select Property"
+#~ msgstr "Dodaj Setter Lastnost"
+
+#~ msgid ""
+#~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "
+#~ "unsequenced ports were specified."
+#~ msgstr ""
+#~ "Custom node nima _get_output_port_unsequenced(idx,wmem), vendar "
+#~ "nezaporedni porti so bili določeni."

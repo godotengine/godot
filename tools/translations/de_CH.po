@@ -6316,5 +6316,49 @@ msgstr ""
 msgid "Change Notifier Extents"
 msgstr ""
 
+#, fuzzy
+#~ msgid "Add Signal"
+#~ msgstr "Script hinzufügen"
+
+#, fuzzy
+#~ msgid "Remove Variable"
+#~ msgstr "Ungültige Bilder löschen"
+
+#, fuzzy
+#~ msgid "Remove Signal"
+#~ msgstr "Ungültige Bilder löschen"
+
+#, fuzzy
+#~ msgid "Add Node"
+#~ msgstr "Node"
+
+#, fuzzy
+#~ msgid "Add Preload Node"
+#~ msgstr "Node"
+
+#, fuzzy
+#~ msgid "Add Node(s) From Tree"
+#~ msgstr "Node von Szene"
+
+#, fuzzy
+#~ msgid "Base Type:"
+#~ msgstr "Typ ändern"
+
+#, fuzzy
+#~ msgid "Available Nodes:"
+#~ msgstr "TimeScale-Node"
+
+#, fuzzy
+#~ msgid "Change"
+#~ msgstr "Typ ändern"
+
+#, fuzzy
+#~ msgid "Cut Nodes"
+#~ msgstr "Node erstellen"
+
+#, fuzzy
+#~ msgid "Paste Nodes"
+#~ msgstr "Node erstellen"
+
 #~ msgid "Insert Keys (Ins)"
 #~ msgstr "Bilder (innerhalb) einfügen"

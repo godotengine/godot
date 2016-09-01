@@ -6277,3 +6277,27 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Rename Function"
+#~ msgstr "Všetky vybrané"
+
+#, fuzzy
+#~ msgid "Add Signal"
+#~ msgstr "Signály:"
+
+#, fuzzy
+#~ msgid "Remove Function"
+#~ msgstr "Všetky vybrané"
+
+#, fuzzy
+#~ msgid "Remove Signal"
+#~ msgstr "Všetky vybrané"
+
+#, fuzzy
+#~ msgid "Editing Signal:"
+#~ msgstr "Signály:"
+
+#, fuzzy
+#~ msgid "Paste Nodes"
+#~ msgstr "Vložiť"

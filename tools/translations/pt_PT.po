@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-08-10 15:14+0000\n"
+"PO-Revision-Date: 2016-08-11 15:42+0000\n"
 "Last-Translator: António Sarmento <antonio.luis.sarmento@gmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -24,38 +24,41 @@ msgstr "Tipo de argumento inválido para convert(), use constantes TYPE_*."
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
+"Número de bytes insuficientes para descodificar, ou o formato é inválido."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr ""
+msgstr "o argumento \"step\" é zero!"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
-msgstr ""
+msgstr "Não é um script com uma instância"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "Não é baseado num script"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr ""
+msgstr "Não é baseado num ficheiro de recurso"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr ""
+msgstr "Formato de dicionário de instância inválido (falta @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
+"Formato de dicionário de instância inválido (não foi possível carregar o "
+"script em @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr ""
+msgstr "Formato de dicionário de instância inválido (script inválido em @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr ""
+msgstr "Dicionário de instância inválido (subclasses inválidas)"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -847,7 +850,7 @@ msgstr ""
 #: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
 #: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
 msgid "Close"
-msgstr ""
+msgstr "Fechar"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List:"
@@ -1356,7 +1359,7 @@ msgstr ""
 
 #: tools/editor/editor_help.cpp
 msgid "Members:"
-msgstr ""
+msgstr "Membros:"
 
 #: tools/editor/editor_help.cpp
 msgid "GUI Theme Items:"
@@ -1364,7 +1367,7 @@ msgstr ""
 
 #: tools/editor/editor_help.cpp
 msgid "Signals:"
-msgstr ""
+msgstr "Sinais:"
 
 #: tools/editor/editor_help.cpp
 msgid "Constants:"
@@ -3367,7 +3370,7 @@ msgstr ""
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_manager.cpp
 msgid "Edit"
-msgstr ""
+msgstr "Editar"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -4223,7 +4226,7 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Breakpoint"
-msgstr ""
+msgstr "Accionar Breakpoint"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Remove All Breakpoints"
@@ -6264,3 +6267,152 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#~ msgid ""
+#~ "A node yielded without working memory, please read the docs on how to "
+#~ "yield properly!"
+#~ msgstr ""
+#~ "Um nó fez yield sem memória para usar, por favor leia os documentos para "
+#~ "saber como fazer yield correctamente!"
+
+#~ msgid ""
+#~ "Node yielded, but did not return a function state in the first working "
+#~ "memory."
+#~ msgstr ""
+#~ "O nó fez yield, mas não retornou um estado de função na primeira memória "
+#~ "de trabalho."
+
+#~ msgid ""
+#~ "Return value must be assigned to first element of node working memory! "
+#~ "Fix your node please."
+#~ msgstr ""
+#~ "O valor de retorno deve ser atribuído ao primeiro elemento da memória de "
+#~ "trabalho de nós! Corrija o seu nó por favor."
+
+#~ msgid "Node returned an invalid sequence output: "
+#~ msgstr "O nó retornou uma sequência de saída (output) incorrecta: "
+
+#~ msgid "Found sequence bit but not the node in the stack, report bug!"
+#~ msgstr ""
+#~ "A sequência foi encontrada mas não o nó na pilha (stack), faça report de "
+#~ "bug!"
+
+#~ msgid "Stack overflow with stack depth: "
+#~ msgstr "Stack overflow com a profundidade da pilha (stack): "
+
+#~ msgid "Functions:"
+#~ msgstr "Funções:"
+
+#~ msgid "Variables:"
+#~ msgstr "Variáveis:"
+
+#~ msgid "Name is not a valid identifier:"
+#~ msgstr "O nome não é um identificador válido:"
+
+#~ msgid "Name already in use by another func/var/signal:"
+#~ msgstr "Este nome já está a ser usado por outro func/var/signal:"
+
+#~ msgid "Rename Function"
+#~ msgstr "Alterar nome da Função"
+
+#~ msgid "Rename Variable"
+#~ msgstr "Alterar nome da Variável"
+
+#~ msgid "Rename Signal"
+#~ msgstr "Alterar nome do Sinal"
+
+#~ msgid "Add Function"
+#~ msgstr "Adicionar Função"
+
+#~ msgid "Add Variable"
+#~ msgstr "Adicionar Variável"
+
+#~ msgid "Add Signal"
+#~ msgstr "Adicionar Sinal"
+
+#~ msgid "Remove Function"
+#~ msgstr "Remover Função"
+
+#~ msgid "Remove Variable"
+#~ msgstr "Remover Variável"
+
+#~ msgid "Editing Variable:"
+#~ msgstr "A editar Variável:"
+
+#~ msgid "Remove Signal"
+#~ msgstr "Remover Sinal"
+
+#~ msgid "Editing Signal:"
+#~ msgstr "A editar Sinal:"
+
+#~ msgid "Add Node"
+#~ msgstr "Adicionar Nó"
+
+#, fuzzy
+#~ msgid "Add Preload Node"
+#~ msgstr "Adicionar Nó"
+
+#~ msgid "Add Node(s) From Tree"
+#~ msgstr "Adicionar Nó da Árvore"
+
+#~ msgid "Add Getter Property"
+#~ msgstr "Adicionar propriedade Getter"
+
+#~ msgid "Add Setter Property"
+#~ msgstr "Adicionar propriedade Setter"
+
+#~ msgid "Base Type:"
+#~ msgstr "Tipo de Base:"
+
+#~ msgid "Available Nodes:"
+#~ msgstr "Nós Disponíveis:"
+
+#~ msgid "Select or create a function to edit graph"
+#~ msgstr "Seleccione ou crie uma função para editar o grafo"
+
+#~ msgid "Edit Signal Arguments:"
+#~ msgstr "Editar Argumentos do Sinal:"
+
+#~ msgid "Edit Variable:"
+#~ msgstr "Editar Variável:"
+
+#~ msgid "Change"
+#~ msgstr "Alterar"
+
+#~ msgid "Delete Selected"
+#~ msgstr "Apagar Seleccionados"
+
+#, fuzzy
+#~ msgid "Find Node Type"
+#~ msgstr "Encontrar Tipo de Nó"
+
+#~ msgid "Input type not iterable: "
+#~ msgstr "Tipo de Input não iterável: "
+
+#~ msgid "Iterator became invalid"
+#~ msgstr "O iterador tornou-se inválido"
+
+#~ msgid "Iterator became invalid: "
+#~ msgstr "O iterador tornou-se inválido: "
+
+#~ msgid "Invalid index property name."
+#~ msgstr "Nome de índice propriedade inválido."
+
+#~ msgid "Base object is not a Node!"
+#~ msgstr "Objecto de base não é un Nó!"
+
+#~ msgid "Path does not lead Node!"
+#~ msgstr "Caminho não aponta para nenhum Nó!"
+
+#~ msgid "Invalid index property name '%s' in node %s."
+#~ msgstr "Nome de propriedade índice '%s' inválido em nó %s."
+
+#~ msgid ": Invalid argument of type: "
+#~ msgstr ": Argumento inválido de tipo: "
+
+#~ msgid ": Invalid arguments: "
+#~ msgstr ": Argumentos inválidos: "
+
+#, fuzzy
+#~ msgid "Select Property"
+#~ msgstr "Adicionar propriedade Setter"

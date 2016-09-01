@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-07-24 17:18+0000\n"
+"PO-Revision-Date: 2016-08-17 20:35+0000\n"
 "Last-Translator: DimOkGamer <dimokgamer@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -800,7 +800,7 @@ msgstr "Оптимизировать"
 
 #: tools/editor/animation_editor.cpp
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
-msgstr ""
+msgstr "Выберите AnimationPlayer из дерева сцены для редактирования анимаций."
 
 #: tools/editor/animation_editor.cpp
 msgid "Key"
@@ -1021,7 +1021,7 @@ msgstr "Отдалить"
 
 #: tools/editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "Сбросить приближение"
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
@@ -3434,9 +3434,8 @@ msgid "Paste Pose"
 msgstr "Вставить позу"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode"
-msgstr "Режим выделения (Q)"
+msgstr "Режим выделения"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -3457,14 +3456,12 @@ msgid "Alt+RMB: Depth list selection"
 msgstr "Alt+ПКМ: Список выбора глубины"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Mode"
-msgstr "Режим перемещения (W)"
+msgstr "Режим перемещения"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Mode"
-msgstr "Режим поворота (E)"
+msgstr "Режим поворота"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -4281,9 +4278,8 @@ msgid "Save Theme As"
 msgstr "Сохранить тему как"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close Docs"
-msgstr "Копировать вниз"
+msgstr "Закрыть документацию"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -5565,12 +5561,10 @@ msgid "Unnamed Project"
 msgstr "Безымянный проект"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Are you sure to open more than one project?"
-msgstr "Вы уверены, что открыть несколько проектов?"
+msgstr "Вы уверены, что хотите открыть более одного проекта?"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Are you sure to run more than one project?"
 msgstr "Вы уверены, что хотите запустить более одного проекта?"
 
@@ -5583,6 +5577,8 @@ msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
 msgstr ""
+"Вы собираетесь сканировать %s папки для существующих проектов Godot. "
+"Подтверждаете?"
 
 #: tools/editor/project_manager.cpp
 msgid "Project Manager"
@@ -5601,9 +5597,8 @@ msgid "Scan"
 msgstr "Сканировать"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Select a Folder to Scan"
-msgstr "Выбрать узел"
+msgstr "Выбрать папку для сканирования"
 
 #: tools/editor/project_manager.cpp
 msgid "New Project"
@@ -5972,9 +5967,8 @@ msgid "No parent to instance a child at."
 msgstr "Нет родителя для добавления потомка."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "No parent to instance the scenes at."
-msgstr "Нет родителя для добавления потомка."
+msgstr "Нет родителя для добавления сюда сцены."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
@@ -6109,9 +6103,8 @@ msgid "Save Branch as Scene"
 msgstr "Сохранить ветку, как сцену"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete (No Confirm)"
-msgstr "Подтверждение..."
+msgstr "Удалить (без подтверждения)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
@@ -6424,6 +6417,197 @@ msgstr "Изменена длинна луча"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Изменены границы уведомителя"
+
+#~ msgid ""
+#~ "A node yielded without working memory, please read the docs on how to "
+#~ "yield properly!"
+#~ msgstr ""
+#~ "Узел покинут без рабочей памяти, пожалуйста, прочитайте документацию о "
+#~ "том, как правильно выходить!"
+
+#~ msgid ""
+#~ "Node yielded, but did not return a function state in the first working "
+#~ "memory."
+#~ msgstr ""
+#~ "Узел покинут, но не возвращает состояние функции в первой рабочей памяти."
+
+#~ msgid ""
+#~ "Return value must be assigned to first element of node working memory! "
+#~ "Fix your node please."
+#~ msgstr ""
+#~ "Возвращаемое значение должно быть присвоено первому элементу узла рабочей "
+#~ "памяти! Исправьте узел пожалуйста."
+
+#~ msgid "Node returned an invalid sequence output: "
+#~ msgstr "Узел вернул ошибочную последовательность: "
+
+#~ msgid "Found sequence bit but not the node in the stack, report bug!"
+#~ msgstr ""
+#~ "Найдена последовательность бит, но не узел в стеке, сообщение об ошибке!"
+
+#~ msgid "Stack overflow with stack depth: "
+#~ msgstr "Переполнение стека с глубиной стека: "
+
+#~ msgid "Functions:"
+#~ msgstr "Функции:"
+
+#~ msgid "Variables:"
+#~ msgstr "Переменные:"
+
+#~ msgid "Name is not a valid identifier:"
+#~ msgstr "Имя не является допустимым идентификатором:"
+
+#~ msgid "Name already in use by another func/var/signal:"
+#~ msgstr "Имя уже используется другой функцией/переменной/сигналом:"
+
+#~ msgid "Rename Function"
+#~ msgstr "Переименовать функцию"
+
+#~ msgid "Rename Variable"
+#~ msgstr "Переименовать переменную"
+
+#~ msgid "Rename Signal"
+#~ msgstr "Переименовать сигнал"
+
+#~ msgid "Add Function"
+#~ msgstr "Добавить функцию"
+
+#~ msgid "Add Variable"
+#~ msgstr "Добавить переменную"
+
+#~ msgid "Add Signal"
+#~ msgstr "Добавить сигнал"
+
+#~ msgid "Remove Function"
+#~ msgstr "Удалить функцию"
+
+#~ msgid "Remove Variable"
+#~ msgstr "Удалить переменную"
+
+#~ msgid "Editing Variable:"
+#~ msgstr "Редактирование переменной:"
+
+#~ msgid "Remove Signal"
+#~ msgstr "Удалить сигнал"
+
+#~ msgid "Editing Signal:"
+#~ msgstr "Редактирование сигнала:"
+
+#~ msgid "Add Node"
+#~ msgstr "Добавить узел"
+
+#, fuzzy
+#~ msgid "Add Preload Node"
+#~ msgstr "Добавить дочерний узел"
+
+#~ msgid "Add Node(s) From Tree"
+#~ msgstr "Добавить узел(узлы) из дерева"
+
+#~ msgid "Add Getter Property"
+#~ msgstr "Добавить получающее свойство"
+
+#~ msgid "Add Setter Property"
+#~ msgstr "Добавить устанавливающее свойство"
+
+#~ msgid "Base Type:"
+#~ msgstr "Базовый тип:"
+
+#~ msgid "Available Nodes:"
+#~ msgstr "Доступные узлы:"
+
+#~ msgid "Select or create a function to edit graph"
+#~ msgstr "Выберите или создайте функцию для редактирования графа"
+
+#~ msgid "Edit Signal Arguments:"
+#~ msgstr "Редактирование аргументов сигнала:"
+
+#~ msgid "Edit Variable:"
+#~ msgstr "Редактировать переменную:"
+
+#~ msgid "Change"
+#~ msgstr "Изменить"
+
+#~ msgid "Delete Selected"
+#~ msgstr "Удалить выделенное"
+
+#, fuzzy
+#~ msgid "Find Node Type"
+#~ msgstr "Найти тип узла"
+
+#, fuzzy
+#~ msgid "Copy Nodes"
+#~ msgstr "Копировать позу"
+
+#, fuzzy
+#~ msgid "Cut Nodes"
+#~ msgstr "Создать узел"
+
+#, fuzzy
+#~ msgid "Paste Nodes"
+#~ msgstr "Вставить позу"
+
+#~ msgid "Input type not iterable: "
+#~ msgstr "Входной тип не итерируемый: "
+
+#~ msgid "Iterator became invalid"
+#~ msgstr "Итератор стал недействительным"
+
+#~ msgid "Iterator became invalid: "
+#~ msgstr "Итератор стал недействительным: "
+
+#~ msgid "Invalid index property name."
+#~ msgstr "Неверный индекс свойства имени."
+
+#~ msgid "Base object is not a Node!"
+#~ msgstr "Базовый объект не является узлом!"
+
+#~ msgid "Path does not lead Node!"
+#~ msgstr "Путь не приводит к узлу!"
+
+#~ msgid "Invalid index property name '%s' in node %s."
+#~ msgstr "Неправильный индекс свойства имени '%s' в узле %s."
+
+#~ msgid ": Invalid argument of type: "
+#~ msgstr ": Недопустимый аргумент типа: "
+
+#~ msgid ": Invalid arguments: "
+#~ msgstr ": Недопустимые аргументы: "
+
+#~ msgid "VariableGet not found in script: "
+#~ msgstr "VariableGet не найден в скрипте: "
+
+#~ msgid "VariableSet not found in script: "
+#~ msgstr "VariableSet не найден в скрипте: "
+
+#~ msgid "Custom node has no _step() method, can't process graph."
+#~ msgstr ""
+#~ "Пользовательский узел не имеет метода _step(), не возможно обрабатывать "
+#~ "граф."
+
+#~ msgid ""
+#~ "Invalid return value from _step(), must be integer (seq out), or string "
+#~ "(error)."
+#~ msgstr ""
+#~ "Недопустимое значение, возвращаемое _step(), должно быть целое число(seq "
+#~ "out) или строка (error)."
+
+#, fuzzy
+#~ msgid "Select Property"
+#~ msgstr "Выбрать точки"
+
+#, fuzzy
+#~ msgid "Select Method"
+#~ msgstr "Режим выделения"
+
+#~ msgid "Create a new script for the selected node."
+#~ msgstr "Создать новый скрипт для выбранного узла."
+
+#~ msgid ""
+#~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "
+#~ "unsequenced ports were specified."
+#~ msgstr ""
+#~ "Пользовательский узел не имеет _get_output_port_unsequenced(idx,wmem), но "
+#~ "неупорядоченные порты были указаны."
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "Невозможно перейти в подпапку:"

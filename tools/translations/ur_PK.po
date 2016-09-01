@@ -6274,3 +6274,15 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ".نوٹفئر کے اکسٹنٹ کو تبدیل کیجیۓ"
+
+#, fuzzy
+#~ msgid "Rename Function"
+#~ msgstr ".تمام کا انتخاب"
+
+#, fuzzy
+#~ msgid "Remove Function"
+#~ msgstr ".تمام کا انتخاب"
+
+#, fuzzy
+#~ msgid "Remove Signal"
+#~ msgstr ".تمام کا انتخاب"

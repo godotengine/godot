@@ -6351,3 +6351,55 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Functions:"
+#~ msgstr "関数を作成"
+
+#, fuzzy
+#~ msgid "Rename Function"
+#~ msgstr "関数を作成"
+
+#, fuzzy
+#~ msgid "Add Function"
+#~ msgstr "関数を作成"
+
+#, fuzzy
+#~ msgid "Remove Function"
+#~ msgstr "選択しているものを削除"
+
+#, fuzzy
+#~ msgid "Remove Variable"
+#~ msgstr "無効なキーを削除"
+
+#, fuzzy
+#~ msgid "Remove Signal"
+#~ msgstr "選択しているものを削除"
+
+#, fuzzy
+#~ msgid "Editing Signal:"
+#~ msgstr "信号を接続:"
+
+#, fuzzy
+#~ msgid "Add Node(s) From Tree"
+#~ msgstr "シーンからのノード"
+
+#, fuzzy
+#~ msgid "Edit Signal Arguments:"
+#~ msgstr "余分に呼び出し引数を追加します。"
+
+#, fuzzy
+#~ msgid "Delete Selected"
+#~ msgstr "選択範囲を複製"
+
+#, fuzzy
+#~ msgid "Paste Nodes"
+#~ msgstr "ノードへのパス:"
+
+#, fuzzy
+#~ msgid "Select Property"
+#~ msgstr "すべて選択"
+
+#, fuzzy
+#~ msgid "Select Method"
+#~ msgstr "すべて選択"

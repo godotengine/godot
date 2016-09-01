@@ -6270,3 +6270,7 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Remove Function"
+#~ msgstr "عملية تحريك"

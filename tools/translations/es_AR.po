@@ -3,13 +3,14 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Lisandro Lorea <lisandrolorea@gmail.com>, 2016.
+# Sebastian Silva <sebastian@sugarlabs.org>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-07-15 07:17+0000\n"
-"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
+"PO-Revision-Date: 2016-08-23 11:49+0000\n"
+"Last-Translator: Sebastian Silva <sebastian@sugarlabs.org>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -794,6 +795,7 @@ msgstr "Optimizar"
 #: tools/editor/animation_editor.cpp
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
 msgstr ""
+"Seleccioná un AnimationPlayer de el Arbol de Escenas para editar animaciones."
 
 #: tools/editor/animation_editor.cpp
 msgid "Key"
@@ -1014,7 +1016,7 @@ msgstr "Zoom Out"
 
 #: tools/editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "Resetear el Zoom"
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
@@ -3427,9 +3429,8 @@ msgid "Paste Pose"
 msgstr "Pegar Pose"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode"
-msgstr "Seleccionar Modo (Q)"
+msgstr "Seleccionar Modo"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -3450,14 +3451,12 @@ msgid "Alt+RMB: Depth list selection"
 msgstr "Alt+Click Der.: Selección en depth list"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Mode"
-msgstr "Modo Mover (W)"
+msgstr "Modo Mover"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Mode"
-msgstr "Modo Rotar (E)"
+msgstr "Modo Rotar"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -4275,9 +4274,8 @@ msgid "Save Theme As"
 msgstr "Guardar Tema Como"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close Docs"
-msgstr "Clonar hacia Abajo"
+msgstr "Cerrar Docs"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -5561,14 +5559,12 @@ msgid "Unnamed Project"
 msgstr "Proyecto Sin Nombre"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Are you sure to open more than one project?"
 msgstr "¿Estás seguro/a que querés abrir mas de un proyecto?"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Are you sure to run more than one project?"
-msgstr "¿Estás seguro/a que queres ejecutar mas de un proyecto?"
+msgstr "¿Estás seguro/a que querés ejecutar mas de un proyecto?"
 
 #: tools/editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
@@ -5581,6 +5577,8 @@ msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
 msgstr ""
+"Estas a punto de examinar %s carpetas en busca de proyectos de Godot. "
+"Confirmar?"
 
 #: tools/editor/project_manager.cpp
 msgid "Project Manager"
@@ -5599,9 +5597,8 @@ msgid "Scan"
 msgstr "Escanear"
 
 #: tools/editor/project_manager.cpp
-#, fuzzy
 msgid "Select a Folder to Scan"
-msgstr "Seleccionar un Nodo"
+msgstr "Seleccionar una Carpeta para Examinar"
 
 #: tools/editor/project_manager.cpp
 msgid "New Project"
@@ -5969,9 +5966,8 @@ msgid "No parent to instance a child at."
 msgstr "No hay padre al que instanciarle un hijo."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "No parent to instance the scenes at."
-msgstr "No hay padre al que instanciarle un hijo."
+msgstr "No hay padre donde instanciar la escena."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
@@ -6107,9 +6103,8 @@ msgid "Save Branch as Scene"
 msgstr "Guardar Rama como Escena"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete (No Confirm)"
-msgstr "Confirmá, por favor..."
+msgstr "Eliminar (Sin Confirmación)"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
@@ -6317,7 +6312,7 @@ msgstr "Inspector Remoto"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Live Scene Tree:"
-msgstr "Arbos de Escenas en Vivo:"
+msgstr "Árbol de Escenas en Vivo:"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Remote Object Properties: "
@@ -6422,6 +6417,199 @@ msgstr "Cambiar Largo de Shape Rayo"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Cambiar Alcances de Notificadores"
+
+#~ msgid ""
+#~ "A node yielded without working memory, please read the docs on how to "
+#~ "yield properly!"
+#~ msgstr ""
+#~ "Un nodo rindió(yielded) sin memoria de trabajo, por favor lee los docs "
+#~ "sobre como usar yield correctamente!"
+
+#~ msgid ""
+#~ "Node yielded, but did not return a function state in the first working "
+#~ "memory."
+#~ msgstr ""
+#~ "El nodo rindió(yielded), pero no retornó un estado de función en la "
+#~ "primera memoria de trabajo."
+
+#~ msgid ""
+#~ "Return value must be assigned to first element of node working memory! "
+#~ "Fix your node please."
+#~ msgstr ""
+#~ "El valor de retorno debe ser asignado al primer elemento de la memoria de "
+#~ "trabajo nodos! Arreglá tu nodo, por favor."
+
+#~ msgid "Node returned an invalid sequence output: "
+#~ msgstr "El nodo retornó una secuencia de salida inválida: "
+
+#~ msgid "Found sequence bit but not the node in the stack, report bug!"
+#~ msgstr ""
+#~ "Se encontró un bit de secuencia pero no el nodo en el stack, reportá el "
+#~ "bug!"
+
+#~ msgid "Stack overflow with stack depth: "
+#~ msgstr "Stack overflow con la profundidad del stack: "
+
+#~ msgid "Functions:"
+#~ msgstr "Funciones:"
+
+#~ msgid "Variables:"
+#~ msgstr "Variables:"
+
+#~ msgid "Name is not a valid identifier:"
+#~ msgstr "El nombre no es un identificador válido:"
+
+#~ msgid "Name already in use by another func/var/signal:"
+#~ msgstr "El nombre ya esta en uso por otra func/var/señal:"
+
+#~ msgid "Rename Function"
+#~ msgstr "Renombrar Función"
+
+#~ msgid "Rename Variable"
+#~ msgstr "Renombrar Variable"
+
+#~ msgid "Rename Signal"
+#~ msgstr "Renombrar Señal"
+
+#~ msgid "Add Function"
+#~ msgstr "Agregar Función"
+
+#~ msgid "Add Variable"
+#~ msgstr "Agregar Variable"
+
+#~ msgid "Add Signal"
+#~ msgstr "Agregar Señal"
+
+#~ msgid "Remove Function"
+#~ msgstr "Quitar Función"
+
+#~ msgid "Remove Variable"
+#~ msgstr "Quitar Variable"
+
+#~ msgid "Editing Variable:"
+#~ msgstr "Editando Variable:"
+
+#~ msgid "Remove Signal"
+#~ msgstr "Quitar Señal"
+
+#~ msgid "Editing Signal:"
+#~ msgstr "Editando Señal:"
+
+#~ msgid "Add Node"
+#~ msgstr "Agregar Nodo"
+
+#, fuzzy
+#~ msgid "Add Preload Node"
+#~ msgstr "Agregar Nodo Hijo"
+
+#~ msgid "Add Node(s) From Tree"
+#~ msgstr "Agregar Nodo(s) Desde Arbol"
+
+#~ msgid "Add Getter Property"
+#~ msgstr "Agregar Propiedad Getter"
+
+#~ msgid "Add Setter Property"
+#~ msgstr "Agregar Propiedad Setter"
+
+#~ msgid "Base Type:"
+#~ msgstr "Tipo Base:"
+
+#~ msgid "Available Nodes:"
+#~ msgstr "Nodos Disponibles:"
+
+#~ msgid "Select or create a function to edit graph"
+#~ msgstr "Seleccioná o creá una función para editar el grafo"
+
+#~ msgid "Edit Signal Arguments:"
+#~ msgstr "Editar Argumentos de Señal:"
+
+#~ msgid "Edit Variable:"
+#~ msgstr "Editar Variable:"
+
+#~ msgid "Change"
+#~ msgstr "Cambiar"
+
+#~ msgid "Delete Selected"
+#~ msgstr "Eliminar Seleccionados"
+
+#, fuzzy
+#~ msgid "Find Node Type"
+#~ msgstr "Encontrar Tipo de Nodo"
+
+#, fuzzy
+#~ msgid "Copy Nodes"
+#~ msgstr "Copiar Pose"
+
+#, fuzzy
+#~ msgid "Cut Nodes"
+#~ msgstr "Crear Nodo"
+
+#, fuzzy
+#~ msgid "Paste Nodes"
+#~ msgstr "Pegar Pose"
+
+#~ msgid "Input type not iterable: "
+#~ msgstr "Tipo de input no iterable: "
+
+#~ msgid "Iterator became invalid"
+#~ msgstr "El iterador se volvió inválido"
+
+#~ msgid "Iterator became invalid: "
+#~ msgstr "El iterador se volvió inválido: "
+
+#~ msgid "Invalid index property name."
+#~ msgstr "Nombre de propiedad indíce inválido."
+
+#~ msgid "Base object is not a Node!"
+#~ msgstr "El objeto base no es un Nodo!"
+
+#~ msgid "Path does not lead Node!"
+#~ msgstr "La ruta no apunta a un Nodo!"
+
+#~ msgid "Invalid index property name '%s' in node %s."
+#~ msgstr "Nombre de propiedad índice '%s'  inválido en nodo %s."
+
+#~ msgid ": Invalid argument of type: "
+#~ msgstr ": Argumento inválido de tipo: "
+
+#~ msgid ": Invalid arguments: "
+#~ msgstr ": Argumentos inválidos: "
+
+#~ msgid "VariableGet not found in script: "
+#~ msgstr "VariableGet no encontrado en el script: "
+
+#~ msgid "VariableSet not found in script: "
+#~ msgstr "VariableSet no encontrado en el script: "
+
+#~ msgid "Custom node has no _step() method, can't process graph."
+#~ msgstr ""
+#~ "El nodo personalizado no tiene ningún método _step(), no se puede "
+#~ "procesar el grafo."
+
+#~ msgid ""
+#~ "Invalid return value from _step(), must be integer (seq out), or string "
+#~ "(error)."
+#~ msgstr ""
+#~ "Valor de retorno inválido de _step(), debe ser un entero (seq out), o "
+#~ "string (error)."
+
+#, fuzzy
+#~ msgid "Select Property"
+#~ msgstr "Seleccionar Puntos"
+
+#, fuzzy
+#~ msgid "Select Method"
+#~ msgstr "Seleccionar Modo"
+
+#~ msgid "Create a new script for the selected node."
+#~ msgstr "Crear un nuevo script para el nodo seleccionado."
+
+#~ msgid ""
+#~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "
+#~ "unsequenced ports were specified."
+#~ msgstr ""
+#~ "El nodo personalizado no tiene ningún _get_output_port_unsequenced(idx,"
+#~ "wmem), pero se especificaron puertos no secuenciados."
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "No se puede acceder al subdir:"

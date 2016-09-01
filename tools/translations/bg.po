@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-08-10 14:02+0000\n"
+"PO-Revision-Date: 2016-08-20 16:42+0000\n"
 "Last-Translator: Иван Пенев (Адмирал АнимЕ) <aeternus.arcis@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
@@ -161,7 +161,8 @@ msgstr "ParallaxLayer работи само когато е наследник �
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
 msgstr ""
-"Параметъра 'Path' трябва да сочи към работещ Particles2D нод за да работи."
+"Параметърът 'Path' трябва да сочи към действителен възел Particles2D, за да "
+"работи."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -169,7 +170,9 @@ msgstr "PathFollow2D работи само когато е наследник н
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr "Параметъра 'Path' трябва да сочи към Node2D нод за да работи."
+msgstr ""
+"Параметърът 'Path' трябва да сочи към действителен възел Node2D, за да "
+"работи."
 
 #: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
 msgid ""
@@ -1155,7 +1158,7 @@ msgstr ""
 
 #: tools/editor/dependency_editor.cpp
 msgid "Scene failed to load due to missing dependencies:"
-msgstr ""
+msgstr "Сцената не успя да се зареди заради липсващи зависимости:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Open Anyway"
@@ -1286,7 +1289,7 @@ msgstr ""
 
 #: tools/editor/editor_data.cpp
 msgid "Updating Scene"
-msgstr ""
+msgstr "Обновяване на сцената"
 
 #: tools/editor/editor_data.cpp
 msgid "Storing local changes.."
@@ -1294,7 +1297,7 @@ msgstr ""
 
 #: tools/editor/editor_data.cpp
 msgid "Updating scene.."
-msgstr ""
+msgstr "Обновяване на сцената.."
 
 #: tools/editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1346,7 +1349,7 @@ msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp tools/editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr ""
+msgstr "Любими:"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Recent:"
@@ -1447,7 +1450,7 @@ msgstr ""
 
 #: tools/editor/editor_import_export.cpp
 msgid "Exporting for %s"
-msgstr ""
+msgstr "Изнасяне за %s"
 
 #: tools/editor/editor_import_export.cpp
 msgid "Setting Up.."
@@ -1459,11 +1462,11 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
 msgid "Re-Importing"
-msgstr ""
+msgstr "Извършва се повторно внасяне"
 
 #: tools/editor/editor_node.cpp
 msgid "Importing:"
-msgstr ""
+msgstr "Внасяне:"
 
 #: tools/editor/editor_node.cpp
 msgid "Node From Scene"
@@ -1499,7 +1502,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Saving Scene"
-msgstr ""
+msgstr "Запазване на сцената"
 
 #: tools/editor/editor_node.cpp
 msgid "Analyzing"
@@ -1622,7 +1625,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Open Scene"
-msgstr ""
+msgstr "Отваряне на сцена"
 
 #: tools/editor/editor_node.cpp
 msgid "Open Base Scene"
@@ -1630,7 +1633,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Quick Open Scene.."
-msgstr ""
+msgstr "Бързо отваряне на сцена.."
 
 #: tools/editor/editor_node.cpp
 msgid "Quick Open Script.."
@@ -1642,11 +1645,11 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Close scene? (Unsaved changes will be lost)"
-msgstr ""
+msgstr "Да се затвори ли сцената? (незаразените промени ще се загубят)"
 
 #: tools/editor/editor_node.cpp
 msgid "Save Scene As.."
-msgstr ""
+msgstr "Запазване на сцената като.."
 
 #: tools/editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
@@ -1654,7 +1657,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Please save the scene first."
-msgstr ""
+msgstr "Моля, първо запазете сцената."
 
 #: tools/editor/editor_node.cpp
 msgid "Save Translatable Strings"
@@ -1670,7 +1673,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Quit"
-msgstr ""
+msgstr "Изход"
 
 #: tools/editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -1694,7 +1697,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Quick Run Scene.."
-msgstr ""
+msgstr "Бързо пускане на сцена.."
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1704,7 +1707,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Pick a Main Scene"
-msgstr ""
+msgstr "Изберете главна сцена"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
@@ -1718,11 +1721,11 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Error loading scene."
-msgstr ""
+msgstr "Имаше грешка при зареждане на сцената."
 
 #: tools/editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
-msgstr ""
+msgstr "Сцената '%s' има нарушени зависимости:"
 
 #: tools/editor/editor_node.cpp
 msgid "Save Layout"
@@ -1751,7 +1754,7 @@ msgstr ""
 #: tools/editor/editor_node.cpp
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Scene"
-msgstr ""
+msgstr "Сцена"
 
 #: tools/editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -1779,7 +1782,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "New Scene"
-msgstr ""
+msgstr "Нова сцена"
 
 #: tools/editor/editor_node.cpp
 msgid "New Inherited Scene.."
@@ -1787,19 +1790,19 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Open Scene.."
-msgstr ""
+msgstr "Отваряне на сцена.."
 
 #: tools/editor/editor_node.cpp
 msgid "Save Scene"
-msgstr ""
+msgstr "Запазване на сцената"
 
 #: tools/editor/editor_node.cpp
 msgid "Save all Scenes"
-msgstr ""
+msgstr "Запазване на всички сцени"
 
 #: tools/editor/editor_node.cpp
 msgid "Close Scene"
-msgstr ""
+msgstr "Затваряне на сцената"
 
 #: tools/editor/editor_node.cpp
 msgid "Close Goto Prev. Scene"
@@ -1840,7 +1843,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Project Settings"
-msgstr ""
+msgstr "Настройки на проекта"
 
 #: tools/editor/editor_node.cpp
 msgid "Revert Scene"
@@ -1848,11 +1851,11 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
+msgstr "Изход до списъка с проекти"
 
 #: tools/editor/editor_node.cpp
 msgid "Import assets to the project."
-msgstr ""
+msgstr "Внасяне на обекти в проекта."
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
@@ -1864,7 +1867,7 @@ msgstr ""
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 #: tools/editor/project_manager.cpp
 msgid "Import"
-msgstr ""
+msgstr "Внасяне"
 
 #: tools/editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -1876,15 +1879,15 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Export the project to many platforms."
-msgstr ""
+msgstr "Изнасяне на проекта на много платформи."
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Export"
-msgstr ""
+msgstr "Изнасяне"
 
 #: tools/editor/editor_node.cpp
 msgid "Play the project."
-msgstr ""
+msgstr "Възпроизвеждане на проекта."
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
@@ -1893,15 +1896,15 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Pause the scene"
-msgstr ""
+msgstr "Преустановяване на сцената"
 
 #: tools/editor/editor_node.cpp
 msgid "Pause Scene"
-msgstr ""
+msgstr "Преустановяване на сцената"
 
 #: tools/editor/editor_node.cpp
 msgid "Stop the scene."
-msgstr ""
+msgstr "Спиране на сцената."
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
@@ -1910,23 +1913,23 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Play the edited scene."
-msgstr ""
+msgstr "Възпроизвеждане на редактирана сцена."
 
 #: tools/editor/editor_node.cpp
 msgid "Play Scene"
-msgstr ""
+msgstr "Възпроизвеждане на сцената"
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr ""
+msgstr "Възпроизвеждане на сцена по избор"
 
 #: tools/editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr ""
+msgstr "Възпроизвеждане на сцена по избор"
 
 #: tools/editor/editor_node.cpp
 msgid "Debug options"
-msgstr ""
+msgstr "Настройки за отстраняване на грешки"
 
 #: tools/editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -1998,11 +2001,11 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Settings"
-msgstr ""
+msgstr "Настройки"
 
 #: tools/editor/editor_node.cpp tools/editor/settings_config_dialog.cpp
 msgid "Editor Settings"
-msgstr ""
+msgstr "Настройки на редактора"
 
 #: tools/editor/editor_node.cpp
 msgid "Editor Layout"
@@ -2014,7 +2017,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "About"
-msgstr ""
+msgstr "Относно"
 
 #: tools/editor/editor_node.cpp
 msgid "Alerts when an external resource has changed."
@@ -2078,7 +2081,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
 msgid "Re-Import"
-msgstr ""
+msgstr "Повторно внасяне"
 
 #: tools/editor/editor_node.cpp tools/editor/editor_plugin_settings.cpp
 msgid "Update"
@@ -2094,15 +2097,15 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr ""
+msgstr "Внасяне на шаблони от архив във формат ZIP"
 
 #: tools/editor/editor_node.cpp tools/editor/project_export.cpp
 msgid "Export Project"
-msgstr ""
+msgstr "Изнасяне на проекта"
 
 #: tools/editor/editor_node.cpp
 msgid "Export Library"
-msgstr ""
+msgstr "Изнасяне на библиотеката"
 
 #: tools/editor/editor_node.cpp
 msgid "Merge With Existing"
@@ -2187,10 +2190,11 @@ msgstr ""
 #: tools/editor/editor_reimport_dialog.cpp
 msgid "Current scene must be saved to re-import."
 msgstr ""
+"За да се извърши повторното внасяне, текущата сцена трябва да бъде запазена."
 
 #: tools/editor/editor_reimport_dialog.cpp
 msgid "Save & Re-Import"
-msgstr ""
+msgstr "Запазване и повторно внасяне"
 
 #: tools/editor/editor_reimport_dialog.cpp
 msgid "Re-Import Changed Resources"
@@ -2230,7 +2234,7 @@ msgstr ""
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr ""
+msgstr "Път на сцената:"
 
 #: tools/editor/editor_sub_scene.cpp
 msgid "Import From Node:"
@@ -2298,7 +2302,7 @@ msgstr ""
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Re-Import.."
-msgstr ""
+msgstr "Повторно внасяне.."
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2445,7 +2449,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Font Import"
-msgstr ""
+msgstr "Внасяне на шрифт"
 
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid ""
@@ -2570,11 +2574,11 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Error importing scene."
-msgstr ""
+msgstr "Имаше грешка при внасянето на сцената."
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import 3D Scene"
-msgstr ""
+msgstr "Внасяне на триизмерна сцена"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Source Scene:"
@@ -2610,11 +2614,11 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import Anyway"
-msgstr ""
+msgstr "Внасяне въпреки това"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import & Open"
-msgstr ""
+msgstr "Внасяне и отваряне"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Edited scene has not been saved, open imported scene anyway?"
@@ -2623,11 +2627,11 @@ msgstr ""
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Import Scene"
-msgstr ""
+msgstr "Внасяне на сцена"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Importing Scene.."
-msgstr ""
+msgstr "Внасяне на сцената.."
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Running Custom Script.."
@@ -2647,7 +2651,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import Image:"
-msgstr ""
+msgstr "Внасяне на изображение:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Can't import a file over itself:"
@@ -2703,7 +2707,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Error importing:"
-msgstr ""
+msgstr "Имаше грешка при внасянето:"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Only one file is required for large texture."
@@ -2715,7 +2719,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Textures for Atlas (2D)"
-msgstr ""
+msgstr "Внасяне на текстури за Атлас (двуизмерно)"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Cell Size:"
@@ -2727,7 +2731,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Large Textures (2D)"
-msgstr ""
+msgstr "Внасяне на големи текстури (двуизмерно)"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Source Texture"
@@ -2751,15 +2755,15 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Textures"
-msgstr ""
+msgstr "Внасяне на текстури"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "2D Texture"
-msgstr ""
+msgstr "Двуизмерна текстура"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "3D Texture"
-msgstr ""
+msgstr "Триизмерна текстура"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Atlas Texture"
@@ -2781,7 +2785,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Large Texture"
-msgstr ""
+msgstr "Внасяне на голяма текстура"
 
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Load Source Image"
@@ -2854,7 +2858,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "No items to import!"
-msgstr ""
+msgstr "Няма артикули за внасяне!"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "No target path!"
@@ -2862,15 +2866,15 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Translations"
-msgstr ""
+msgstr "Внасяне на преводи"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Couldn't import!"
-msgstr ""
+msgstr "Неуспешно внасяне!"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Translation"
-msgstr ""
+msgstr "Внасяне на превода"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Source CSV:"
@@ -2890,7 +2894,7 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
-msgstr ""
+msgstr "Внасяне на езици:"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Translation"
@@ -2902,7 +2906,7 @@ msgstr ""
 
 #: tools/editor/node_dock.cpp
 msgid "Node"
-msgstr ""
+msgstr "Възел"
 
 #: tools/editor/node_dock.cpp
 msgid "Groups"
@@ -3220,7 +3224,7 @@ msgstr ""
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations.."
-msgstr ""
+msgstr "Внасяне на анимации.."
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
@@ -3585,11 +3589,11 @@ msgstr ""
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Import from Scene"
-msgstr ""
+msgstr "Внасяне от сцена"
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
-msgstr ""
+msgstr "Обновяване от сцена"
 
 #: tools/editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -4126,15 +4130,15 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Error importing theme"
-msgstr ""
+msgstr "Имаше грешка при внасянето на сцената"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Error importing"
-msgstr ""
+msgstr "Имаше грешка при внасянето"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
-msgstr ""
+msgstr "Внасяне на тема"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."
@@ -4259,7 +4263,7 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr ""
+msgstr "Отстраняване на грешки"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Breakpoint"
@@ -4299,7 +4303,7 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
-msgstr ""
+msgstr "Отстранителя на грешки да седи отворен"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Window"
@@ -4370,7 +4374,7 @@ msgstr ""
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/script_editor_debugger.cpp
 msgid "Debugger"
-msgstr ""
+msgstr "Отстранител на грешки"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid ""
@@ -4863,7 +4867,7 @@ msgstr ""
 
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
-msgstr ""
+msgstr "Скорост (кадри в секунда):"
 
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames"
@@ -5128,11 +5132,11 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Please export outside the project folder!"
-msgstr ""
+msgstr "Моля, изнесете извън папката на проекта!"
 
 #: tools/editor/project_export.cpp
 msgid "Error exporting project!"
-msgstr ""
+msgstr "Имаше грешка при изнасяне на проекта!"
 
 #: tools/editor/project_export.cpp
 msgid "Error writing the project PCK!"
@@ -5176,7 +5180,7 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Project Export Settings"
-msgstr ""
+msgstr "Настройки за изнасяне на проекта"
 
 #: tools/editor/project_export.cpp
 msgid "Target"
@@ -5184,7 +5188,7 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Export to Platform"
-msgstr ""
+msgstr "Изнасяне към платформа"
 
 #: tools/editor/project_export.cpp
 msgid "Resources"
@@ -5192,23 +5196,23 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Export selected resources (including dependencies)."
-msgstr ""
+msgstr "Изнасяне на избраните ресурси (включително зависимостите)."
 
 #: tools/editor/project_export.cpp
 msgid "Export all resources in the project."
-msgstr ""
+msgstr "Изнасяне на всички ресурси в проекта."
 
 #: tools/editor/project_export.cpp
 msgid "Export all files in the project directory."
-msgstr ""
+msgstr "Изнасяне на всички файлове в папката на проекта."
 
 #: tools/editor/project_export.cpp
 msgid "Export Mode:"
-msgstr ""
+msgstr "Режим на изнасяне:"
 
 #: tools/editor/project_export.cpp
 msgid "Resources to Export:"
-msgstr ""
+msgstr "Ресурси за изнасяне:"
 
 #: tools/editor/project_export.cpp
 msgid "Action"
@@ -5373,7 +5377,7 @@ msgstr ""
 
 #: tools/editor/project_export.cpp
 msgid "Export.."
-msgstr ""
+msgstr "Изнасяне.."
 
 #: tools/editor/project_export.cpp
 msgid "Project Export"
@@ -5397,7 +5401,7 @@ msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Imported Project"
-msgstr ""
+msgstr "Внесен проект"
 
 #: tools/editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
@@ -5417,7 +5421,7 @@ msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Import Existing Project"
-msgstr ""
+msgstr "Внасяне на съществуващ проект"
 
 #: tools/editor/project_manager.cpp
 msgid "Project Path (Must Exist):"
@@ -5611,7 +5615,7 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Settings saved OK."
-msgstr ""
+msgstr "Настройките са запазени."
 
 #: tools/editor/project_settings.cpp
 msgid "Add Translation"
@@ -5851,7 +5855,7 @@ msgstr ""
 
 #: tools/editor/run_settings_dialog.cpp
 msgid "Scene Run Settings"
-msgstr ""
+msgstr "Настройки за пускане на сцена"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "OK :("
@@ -6164,7 +6168,7 @@ msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Errors"
-msgstr ""
+msgstr "Грешки"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Child Process Connected"
@@ -6188,7 +6192,7 @@ msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Errors:"
-msgstr ""
+msgstr "Грешки:"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Stack Trace (if applicable):"
@@ -6216,7 +6220,7 @@ msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Value"
-msgstr ""
+msgstr "Стойност"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Monitors"
@@ -6248,7 +6252,7 @@ msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Misc"
-msgstr ""
+msgstr "Разни"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Clicked Control:"
@@ -6305,3 +6309,19 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Cut Nodes"
+#~ msgstr "Възел"
+
+#, fuzzy
+#~ msgid "Paste Nodes"
+#~ msgstr "Поставяне"
+
+#, fuzzy
+#~ msgid "Select Property"
+#~ msgstr "Избиране на всичко"
+
+#, fuzzy
+#~ msgid "Select Method"
+#~ msgstr "Избиране на всичко"
