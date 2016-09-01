@@ -523,19 +523,27 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		gnode->set_offset(pos*EDSCALE);
 		slot_idx++;
 
-		if (!single_seq_output) {
-			for(int i=0;i<node->get_output_sequence_port_count();i++) {
 
-				Label *text2 = memnew( Label );
-				text2->set_text(node->get_output_sequence_port_text(i));
-				text2->set_align(Label::ALIGN_RIGHT);
-				gnode->add_child(text2);
-				gnode->set_slot(slot_idx,false,0,Color(),true,TYPE_SEQUENCE,Color(1,1,1,1),seq_port,seq_port);
-				slot_idx++;
+		int mixed_seq_ports=0;
+
+		if (!single_seq_output) {
+
+			if (node->has_mixed_input_and_sequence_ports()) {
+				mixed_seq_ports=node->get_output_sequence_port_count();
+			} else {
+				for(int i=0;i<node->get_output_sequence_port_count();i++) {
+
+					Label *text2 = memnew( Label );
+					text2->set_text(node->get_output_sequence_port_text(i));
+					text2->set_align(Label::ALIGN_RIGHT);
+					gnode->add_child(text2);
+					gnode->set_slot(slot_idx,false,0,Color(),true,TYPE_SEQUENCE,Color(1,1,1,1),seq_port,seq_port);
+					slot_idx++;
+				}
 			}
 		}
 
-		for(int i=0;i<MAX(node->get_output_value_port_count(),node->get_input_value_port_count());i++) {
+		for(int i=0;i<MAX(node->get_output_value_port_count(),MAX(mixed_seq_ports,node->get_input_value_port_count()));i++) {
 
 			bool left_ok=false;
 			Variant::Type left_type=Variant::NIL;
@@ -554,8 +562,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			Variant::Type right_type=Variant::NIL;
 			String right_name;
 
-			if (i<node->get_output_value_port_count()) {
-				PropertyInfo pi = node->get_output_value_port_info(i);
+			if (i>=mixed_seq_ports && i<node->get_output_value_port_count()+mixed_seq_ports) {
+				PropertyInfo pi = node->get_output_value_port_info(i-mixed_seq_ports);
 				right_ok=true;
 				right_type=pi.type;
 				right_name=pi.name;
@@ -620,6 +628,14 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 			hbc->add_spacer();
 
+			if (i<mixed_seq_ports) {
+
+				Label *text2 = memnew( Label );
+				text2->set_text(node->get_output_sequence_port_text(i));
+				text2->set_align(Label::ALIGN_RIGHT);
+				hbc->add_child(text2);
+			}
+
 			if (right_ok) {
 
 				hbc->add_child(memnew(Label(right_name)));
@@ -639,7 +655,11 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 			gnode->add_child(hbc);
 
-			gnode->set_slot(slot_idx,left_ok,left_type,_color_from_type(left_type),right_ok,right_type,_color_from_type(right_type));
+			if (i<mixed_seq_ports) {
+				gnode->set_slot(slot_idx,left_ok,left_type,_color_from_type(left_type),true,TYPE_SEQUENCE,Color(1,1,1,1),Ref<Texture>(),seq_port);
+			} else {
+				gnode->set_slot(slot_idx,left_ok,left_type,_color_from_type(left_type),right_ok,right_type,_color_from_type(right_type));
+			}
 
 			slot_idx++;
 		}

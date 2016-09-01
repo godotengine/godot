@@ -38,6 +38,8 @@ public:
 
 	virtual String get_output_sequence_port_text(int p_port) const=0;
 
+	virtual bool has_mixed_input_and_sequence_ports() const { return false; }
+
 	virtual int get_input_value_port_count() const=0;
 	virtual int get_output_value_port_count() const=0;
 

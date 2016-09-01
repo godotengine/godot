@@ -616,7 +616,7 @@ bool VisualScriptSwitch::has_input_sequence_port() const{
 int VisualScriptSwitch::get_input_value_port_count() const{
 
 
-	return 1;
+	return case_values.size()+1;
 }
 int VisualScriptSwitch::get_output_value_port_count() const{
 
@@ -628,14 +628,15 @@ String VisualScriptSwitch::get_output_sequence_port_text(int p_port) const {
 	if (p_port==case_values.size())
 		return "done";
 
-	if (case_values[p_port].value.get_type()==Variant::NIL)
-		return "null";
-	return case_values[p_port].value;
+	return String();
 }
 
 PropertyInfo VisualScriptSwitch::get_input_value_port_info(int p_idx) const{
 
-	return PropertyInfo(Variant::NIL,"input");
+	if (p_idx<case_values.size()) {
+		return PropertyInfo(case_values[p_idx].type," =");
+	} else
+		return PropertyInfo(Variant::NIL,"input");
 }
 
 PropertyInfo VisualScriptSwitch::get_output_value_port_info(int p_idx) const{
@@ -659,7 +660,7 @@ class VisualScriptNodeInstanceSwitch : public VisualScriptNodeInstance {
 public:
 
 	VisualScriptInstance* instance;
-	Vector<Variant> case_values;
+	int case_count;
 
 	//virtual int get_working_memory_size() const { return 0; }
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -668,17 +669,17 @@ public:
 	virtual int step(const Variant** p_inputs,Variant** p_outputs,StartMode p_start_mode,Variant* p_working_mem,Variant::CallError& r_error,String& r_error_str) {
 
 		if (p_start_mode==START_MODE_CONTINUE_SEQUENCE) {
-			return case_values.size(); //exit
+			return case_count; //exit
 		}
 
-		for(int i=0;i<case_values.size();i++) {
+		for(int i=0;i<case_count;i++) {
 
-			if (*p_inputs[0]==case_values[i]) {
+			if (*p_inputs[i]==*p_inputs[case_count]) {
 				return i|STEP_FLAG_PUSH_STACK_BIT;
 			}
 		}
 
-		return case_values.size();
+		return case_count;
 	}
 
 
@@ -688,10 +689,7 @@ VisualScriptNodeInstance* VisualScriptSwitch::instance(VisualScriptInstance* p_i
 
 	VisualScriptNodeInstanceSwitch * instance = memnew(VisualScriptNodeInstanceSwitch );
 	instance->instance=p_instance;
-	instance->case_values.resize(case_values.size());
-	for(int i=0;i<case_values.size();i++) {
-		instance->case_values[i]=case_values[i].value;
-	}
+	instance->case_count=case_values.size();
 	return instance;
 }
 
@@ -708,23 +706,12 @@ bool VisualScriptSwitch::_set(const StringName& p_name, const Variant& p_value) 
 
 		int idx = String(p_name).get_slice("/",1).to_int();
 		ERR_FAIL_INDEX_V(idx,case_values.size(),false);
-		String what = String(p_name).get_slice("/",2);
 
-		if (what=="type") {
-			case_values[idx].type=Variant::Type(int(p_value));
-			Variant::CallError ce;
-			case_values[idx].value=Variant::construct(case_values[idx].type,NULL,0,ce);
-			_change_notify();
-			ports_changed_notify();
+		case_values[idx].type=Variant::Type(int(p_value));
+		_change_notify();
+		ports_changed_notify();
 
-			return true;
-		}
-
-		if (what=="value") {
-			case_values[idx].value=p_value;
-			ports_changed_notify();
-			return true;
-		}
+		return true;
 	}
 
 	return false;
@@ -741,17 +728,9 @@ bool VisualScriptSwitch::_get(const StringName& p_name,Variant &r_ret) const {
 
 		int idx = String(p_name).get_slice("/",1).to_int();
 		ERR_FAIL_INDEX_V(idx,case_values.size(),false);
-		String what = String(p_name).get_slice("/",2);
 
-		if (what=="type") {
-			r_ret=case_values[idx].type;
-			return true;
-		}
-
-		if (what=="value") {
-			r_ret=case_values[idx].value;
-			return true;
-		}
+		r_ret=case_values[idx].type;
+		return true;
 	}
 
 	return false;
@@ -767,8 +746,7 @@ void VisualScriptSwitch::_get_property_list( List<PropertyInfo> *p_list) const {
 	}
 
 	for(int i=0;i<case_values.size();i++) {
-		p_list->push_back(PropertyInfo(Variant::INT,"case/"+itos(i)+"/type",PROPERTY_HINT_ENUM,argt));
-		p_list->push_back(PropertyInfo(case_values[i].type,"case/"+itos(i)+"/value"));
+		p_list->push_back(PropertyInfo(Variant::INT,"case/"+itos(i),PROPERTY_HINT_ENUM,argt));
 	}
 }
 

@@ -203,7 +203,6 @@ class VisualScriptSwitch : public VisualScriptNode {
 
 	struct Case {
 		Variant::Type type;
-		Variant value;
 		Case() { type=Variant::NIL; }
 	};
 
@@ -224,6 +223,7 @@ public:
 
 
 	virtual String get_output_sequence_port_text(int p_port) const;
+	virtual bool has_mixed_input_and_sequence_ports() const { return true; }
 
 
 	virtual int get_input_value_port_count() const;
