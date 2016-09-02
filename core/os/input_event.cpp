@@ -39,6 +39,8 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 	}
 
 	switch(type) {
+		case NONE:
+			return true;
 		case KEY:
 			return key.unicode == p_event.key.unicode
 				&& key.scancode == p_event.key.scancode
@@ -77,6 +79,8 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 		case ACTION:
 			return action.action == p_event.action.action
 				&& action.pressed == p_event.action.pressed;
+		default:
+			ERR_PRINT("No logic to compare InputEvents of this type, this shouldn't happen.");
 	}
 
 	return false;
