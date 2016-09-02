@@ -93,6 +93,9 @@ private:
 	Overlay overlay;
 
 	Color modulate;
+
+	bool has_point(const Point2& p_point) const;
+
 protected:
 
 

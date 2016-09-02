@@ -628,6 +628,7 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 
 	Ref<StyleBoxTexture> graphsb = make_stylebox(graph_node_png,6,24,6,5,16,24,16,5);
 	Ref<StyleBoxTexture> graphsbcomment = make_stylebox(graph_node_comment_png,6,24,6,5,16,24,16,5);
+	Ref<StyleBoxTexture> graphsbcommentselected = make_stylebox(graph_node_comment_focus_png,6,24,6,5,16,24,16,5);
 	Ref<StyleBoxTexture> graphsbselected = make_stylebox(graph_node_selected_png,6,24,6,5,16,24,16,5);
 	Ref<StyleBoxTexture> graphsbdefault = make_stylebox(graph_node_default_png,4,4,4,4,6,4,4,4);
 	Ref<StyleBoxTexture> graphsbdeffocus = make_stylebox(graph_node_default_focus_png,4,4,4,4,6,4,4,4);
@@ -641,6 +642,7 @@ void fill_default_theme(Ref<Theme>& t,const Ref<Font> & default_font,const Ref<F
 	t->set_stylebox("defaultframe", "GraphNode", graphsbdefault );
 	t->set_stylebox("defaultfocus", "GraphNode", graphsbdeffocus );
 	t->set_stylebox("comment", "GraphNode", graphsbcomment );
+	t->set_stylebox("commentfocus", "GraphNode", graphsbcommentselected );
 	t->set_stylebox("breakpoint", "GraphNode", graph_bpoint );
 	t->set_stylebox("position", "GraphNode", graph_position );
 	t->set_constant("separation","GraphNode", 1 *scale);

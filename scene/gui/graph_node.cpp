@@ -183,12 +183,39 @@ void GraphNode::_resort() {
 
 }
 
+bool GraphNode::has_point(const Point2& p_point) const {
+
+	if (comment) {
+		Ref<StyleBox> comment = get_stylebox("comment");
+		Ref<Texture> resizer =get_icon("resizer");
+
+		if (Rect2(get_size()-resizer->get_size(), resizer->get_size()).has_point(p_point)) {
+			return true;
+		}
+		if (Rect2(0,0,get_size().width,comment->get_margin(MARGIN_TOP)).has_point(p_point)) {
+			return true;
+		}
+
+		return false;
+
+	} else {
+		return Control::has_point(p_point);
+	}
+}
 
 void GraphNode::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
 
-		Ref<StyleBox> sb=get_stylebox(comment? "comment": (selected ? "selectedframe" : "frame"));
+		Ref<StyleBox> sb;
+
+		if (comment) {
+			sb = get_stylebox( selected? "commentfocus" : "comment");
+
+		} else {
+
+			sb = get_stylebox( selected ? "selectedframe" : "frame");
+		}
 
 		sb=sb->duplicate();
 		sb->call("set_modulate",modulate);
@@ -600,6 +627,8 @@ void GraphNode::_input_event(const InputEvent& p_ev) {
 
 		ERR_EXPLAIN("GraphNode must be the child of a GraphEdit node.");
 		ERR_FAIL_COND(get_parent_control() == NULL);
+
+		print_line("INPUT EVENT BUTTON");
 
 		if(p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
 
