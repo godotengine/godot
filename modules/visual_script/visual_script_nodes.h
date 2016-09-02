@@ -412,6 +412,48 @@ public:
 	VisualScriptClassConstant();
 };
 
+class VisualScriptBasicTypeConstant : public VisualScriptNode {
+
+	OBJ_TYPE(VisualScriptBasicTypeConstant,VisualScriptNode)
+
+	Variant::Type type;
+	StringName name;
+protected:
+	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo& property) const;
+
+public:
+
+	virtual int get_output_sequence_port_count() const;
+	virtual bool has_input_sequence_port() const;
+
+
+	virtual String get_output_sequence_port_text(int p_port) const;
+
+
+	virtual int get_input_value_port_count() const;
+	virtual int get_output_value_port_count() const;
+
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const;
+	virtual String get_text() const;
+	virtual String get_category() const { return "constants"; }
+
+	void set_basic_type_constant(const StringName& p_which);
+	StringName get_basic_type_constant() const;
+
+	void set_basic_type(Variant::Type p_which);
+	Variant::Type get_basic_type() const;
+
+	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+
+	VisualScriptBasicTypeConstant();
+};
+
+
 
 class VisualScriptMathConstant : public VisualScriptNode {
 

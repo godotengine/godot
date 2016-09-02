@@ -1324,14 +1324,22 @@ bool Variant::has_numeric_constant(Variant::Type p_type, const StringName& p_val
 	return cd.value.has(p_value);
 }
 
-int Variant::get_numeric_constant_value(Variant::Type p_type, const StringName& p_value) {
+int Variant::get_numeric_constant_value(Variant::Type p_type, const StringName& p_value, bool *r_valid) {
+
+	if (r_valid)
+		*r_valid=false;
 
 	ERR_FAIL_INDEX_V(p_type,Variant::VARIANT_MAX,0);
 	_VariantCall::ConstantData& cd = _VariantCall::constant_data[p_type];
 
 
 	Map<StringName,int>::Element *E = cd.value.find(p_value);
-	ERR_FAIL_COND_V(!E,0);
+	if (!E) {
+		return -1;
+	}
+	if (r_valid)
+		*r_valid=true;
+
 	return E->get();
 }
 
