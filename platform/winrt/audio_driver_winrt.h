@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_context_egl.h                                                     */
+/*  audio_driver_winrt.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,53 +26,84 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef CONTEXT_EGL_H
-#define CONTEXT_EGL_H
+#ifndef AUDIO_DRIVER_WINRT_H
+#define AUDIO_DRIVER_WINRT_H
 
-#include <wrl.h>
+#include "servers/audio/audio_server_sw.h"
 
-#include "os/os.h"
-#include "EGL/egl.h"
-#include "error_list.h"
-#include "drivers/gl_context/context_gl.h"
+#include "core/os/thread.h"
+#include "core/os/mutex.h"
 
-using namespace Windows::UI::Core;
+#include <windows.h>
+#include <mmsystem.h>
+#include <mmreg.h>
+#include <xaudio2.h>
+#include <wrl/client.h>
 
-class ContextEGL : public ContextGL {
+class AudioDriverWinRT : public AudioDriverSW {
 
-	CoreWindow^ window;
+	enum {
+		AUDIO_BUFFERS = 2
+	};
 
-	EGLDisplay mEglDisplay;
-	EGLContext mEglContext;
-	EGLSurface mEglSurface;
+	struct XAudio2DriverVoiceCallback : public IXAudio2VoiceCallback {
 
-	EGLint width;
-	EGLint height;
+		HANDLE buffer_end_event;
+		XAudio2DriverVoiceCallback() : buffer_end_event(CreateEvent(NULL, FALSE, FALSE, NULL)) {}
+		void STDMETHODCALLTYPE OnBufferEnd(void* pBufferContext) { /*print_line("buffer ended");*/ SetEvent(buffer_end_event); }
 
-	bool vsync;
+		//Unused methods are stubs
+		void STDMETHODCALLTYPE OnStreamEnd() { }
+		void STDMETHODCALLTYPE OnVoiceProcessingPassEnd() { }
+		void STDMETHODCALLTYPE OnVoiceProcessingPassStart(UINT32 SamplesRequired) {    }
+		void STDMETHODCALLTYPE OnBufferStart(void * pBufferContext) {    }
+		void STDMETHODCALLTYPE OnLoopEnd(void * pBufferContext) {    }
+		void STDMETHODCALLTYPE OnVoiceError(void * pBufferContext, HRESULT Error) { }
+
+	};
+
+	Thread* thread;
+	Mutex* mutex;
+
+	int32_t* samples_in;
+	int16_t* samples_out[AUDIO_BUFFERS];
+
+	static void thread_func(void* p_udata);
+	int buffer_size;
+
+	unsigned int mix_rate;
+	OutputFormat output_format;
+
+	int channels;
+
+	bool active;
+	bool thread_exited;
+	mutable bool exit_thread;
+	bool pcm_open;
+
+	WAVEFORMATEX wave_format;
+	Microsoft::WRL::ComPtr<IXAudio2> xaudio;
+	int current_buffer;
+	IXAudio2MasteringVoice* mastering_voice;
+	XAUDIO2_BUFFER xaudio_buffer[AUDIO_BUFFERS];
+	IXAudio2SourceVoice* source_voice;
+	XAudio2DriverVoiceCallback* voice_callback;
 
 public:
 
-	virtual void release_current();
+	const char* get_name() const;
 
-	virtual void make_current();
+	virtual Error init();
+	virtual void start();
+	virtual int get_mix_rate() const;
+	virtual OutputFormat get_output_format() const;
+	virtual float get_latency();
+	virtual void lock();
+	virtual void unlock();
+	virtual void finish();
 
-	virtual int get_window_width();
-	virtual int get_window_height();
-	virtual void swap_buffers();
-
-	void set_use_vsync(bool use) { vsync = use; }
-	bool is_using_vsync() const { return vsync; }
-
-	virtual Error initialize();
-	void reset();
-
-	void cleanup();
-
-	ContextEGL(CoreWindow^ p_window);
-	~ContextEGL();
-
+	AudioDriverWinRT();
+	~AudioDriverWinRT();
 };
 
 #endif
-

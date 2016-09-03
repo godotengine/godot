@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_context_egl.h                                                     */
+/*  joystick.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,53 +26,56 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef CONTEXT_EGL_H
-#define CONTEXT_EGL_H
+#ifndef JOYSTICK_WINRT_H
+#define JOYSTICK_WINRT_H
 
-#include <wrl.h>
+#include "main/input_default.h"
 
-#include "os/os.h"
-#include "EGL/egl.h"
-#include "error_list.h"
-#include "drivers/gl_context/context_gl.h"
+ref class JoystickWinrt sealed {
 
-using namespace Windows::UI::Core;
+internal:
 
-class ContextEGL : public ContextGL {
+	void register_events();
+	uint32_t process_controllers(uint32_t p_last_id);
 
-	CoreWindow^ window;
+	JoystickWinrt();
+	JoystickWinrt(InputDefault* p_input);
 
-	EGLDisplay mEglDisplay;
-	EGLContext mEglContext;
-	EGLSurface mEglSurface;
+private:
 
-	EGLint width;
-	EGLint height;
+	enum {
+		MAX_CONTROLLERS = 4,
+	};
 
-	bool vsync;
+	enum ControllerType {
+		GAMEPAD_CONTROLLER,
+		ARCADE_STICK_CONTROLLER,
+		RACING_WHEEL_CONTROLLER,
+	};
 
-public:
+	struct ControllerDevice {
 
-	virtual void release_current();
+		Windows::Gaming::Input::IGameController^ controller_reference;
 
-	virtual void make_current();
+		int id;
+		bool connected;
+		ControllerType type;
 
-	virtual int get_window_width();
-	virtual int get_window_height();
-	virtual void swap_buffers();
+		ControllerDevice() {
+			id = -1;
+			connected = false;
+			type = ControllerType::GAMEPAD_CONTROLLER;
+		}
+	};
 
-	void set_use_vsync(bool use) { vsync = use; }
-	bool is_using_vsync() const { return vsync; }
+	ControllerDevice controllers[MAX_CONTROLLERS];
 
-	virtual Error initialize();
-	void reset();
+	InputDefault* input;
 
-	void cleanup();
+	void OnGamepadAdded(Platform::Object^ sender, Windows::Gaming::Input::Gamepad^ value);
+	void OnGamepadRemoved(Platform::Object^ sender, Windows::Gaming::Input::Gamepad^ value);
 
-	ContextEGL(CoreWindow^ p_window);
-	~ContextEGL();
-
+	InputDefault::JoyAxis axis_correct(double p_val, bool p_negate = false, bool p_trigger = false) const;
 };
 
 #endif
-

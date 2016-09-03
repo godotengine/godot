@@ -90,6 +90,7 @@ import os
 
 import sys
 
+import methods
 
 def is_active():
 	return True
@@ -258,7 +259,7 @@ def configure(env):
 		env['ENV'] = os.environ;
 
 		# This detection function needs the tools env (that is env['ENV'], not SCons's env), and that is why it's this far bellow in the code
-		compiler_version_str = detect_visual_c_compiler_version(env['ENV'])
+		compiler_version_str = methods.detect_visual_c_compiler_version(env['ENV'])
 
 		# Note: this detection/override code from here onward should be here instead of in SConstruct because it's platform and compiler specific (MSVC/Windows)
 		if(env["bits"] != "default"):
@@ -272,7 +273,7 @@ def configure(env):
                 # that decide the architecture that is build for. Scons can only detect the os.getenviron (because vsvarsall.bat sets a lot of stuff for cl.exe to work with)
                 env["bits"]="32"
 		env["x86_opt_vc"]=True
-		
+
 		print "Detected MSVC compiler: "+compiler_version_str
 		# If building for 64bit architecture, disable assembly optimisations for 32 bit builds (theora as of writting)... vc compiler for 64bit can not compile _asm
 		if(compiler_version_str == "amd64" or compiler_version_str == "x86_amd64"):
@@ -282,9 +283,14 @@ def configure(env):
                 elif (compiler_version_str=="x86" or compiler_version_str == "amd64_x86"):
                         print "Compiled program architecture will be a 32 bit executable. (forcing bits=32)."
                 else:
-                        print "Failed to detect MSVC compiler architecture version... Defaulting to 32bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup."                        
+                        print "Failed to detect MSVC compiler architecture version... Defaulting to 32bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup."
 		if env["bits"]=="64":
 			env.Append(CCFLAGS=['/D_WIN64'])
+
+		# Incremental linking fix
+		env['BUILDERS']['ProgramOriginal'] = env['BUILDERS']['Program']
+		env['BUILDERS']['Program'] = methods.precious_program
+
 	else:
 
 		# Workaround for MinGW. See:
@@ -379,73 +385,7 @@ def configure(env):
 		env['is_mingw']=True
 		env.Append( BUILDERS = { 'RES' : env.Builder(action = build_res_file, suffix = '.o',src_suffix = '.rc') } )
 
-	import methods
 	env.Append( BUILDERS = { 'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	env.Append( BUILDERS = { 'GLSL' : env.Builder(action = methods.build_glsl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.h',src_suffix = '.hlsl') } )
 	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
-
-def detect_visual_c_compiler_version(tools_env):
-        # tools_env is the variable scons uses to call tools that execute tasks, SCons's env['ENV'] that executes tasks...
-        # (see the SCons documentation for more information on what it does)...
-        # in order for this function to be well encapsulated i choose to force it to recieve SCons's TOOLS env (env['ENV']
-        # and not scons setup environment (env)... so make sure you call the right environment on it or it will fail to detect
-        # the propper vc version that will be called
-        
-        # These is no flag to give to visual c compilers to set the architecture, ie scons bits argument (32,64,ARM etc)
-        # There are many different cl.exe files that are run, and each one compiles & links to a different architecture
-        # As far as I know, the only way to figure out what compiler will be run when Scons calls cl.exe via Program()
-        # is to check the PATH varaible and figure out which one will be called first. Code bellow does that and returns:
-        # the following string values:
-
-        # ""              Compiler not detected
-        # "amd64"         Native 64 bit compiler
-        # "amd64_x86"     64 bit Cross Compiler for 32 bit
-        # "x86"           Native 32 bit compiler
-        # "x86_amd64"     32 bit Cross Compiler for 64 bit
-
-        # There are other architectures, but Godot does not support them currently, so this function does not detect arm/amd64_arm
-        # and similar architectures/compilers
-
-        # Set chosen compiler to "not detected"
-        vc_chosen_compiler_index = -1
-        vc_chosen_compiler_str = ""
-        
-        # find() works with -1 so big ifs bellow are needed... the simplest solution, in fact
-        # First test if amd64 and amd64_x86 compilers are present in the path
-        vc_amd64_compiler_detection_index =  tools_env["PATH"].find(tools_env["VCINSTALLDIR"]+"BIN\\amd64;")
-        if(vc_amd64_compiler_detection_index > -1):
-                vc_chosen_compiler_index = vc_amd64_compiler_detection_index
-                vc_chosen_compiler_str = "amd64"
-        
-        vc_amd64_x86_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"]+"BIN\\amd64_x86;")
-        if(vc_amd64_x86_compiler_detection_index > -1
-           and (vc_chosen_compiler_index == -1
-                or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index)):
-                vc_chosen_compiler_index = vc_amd64_x86_compiler_detection_index
-                vc_chosen_compiler_str = "amd64_x86"
-
-
-        # Now check the 32 bit compilers
-        vc_x86_compiler_detection_index =  tools_env["PATH"].find(tools_env["VCINSTALLDIR"]+"BIN;")
-        if(vc_x86_compiler_detection_index > -1
-           and (vc_chosen_compiler_index == -1
-                or vc_chosen_compiler_index > vc_x86_compiler_detection_index)):
-                vc_chosen_compiler_index = vc_x86_compiler_detection_index
-                vc_chosen_compiler_str = "x86"
-                
-        vc_x86_amd64_compiler_detection_index = tools_env["PATH"].find(tools_env['VCINSTALLDIR']+"BIN\\x86_amd64;")
-        if(vc_x86_amd64_compiler_detection_index > -1
-           and (vc_chosen_compiler_index == -1
-                or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index)):
-                vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
-                vc_chosen_compiler_str = "x86_amd64"
-
-        # debug help
-        #print vc_amd64_compiler_detection_index
-        #print vc_amd64_x86_compiler_detection_index
-        #print vc_x86_compiler_detection_index
-        #print vc_x86_amd64_compiler_detection_index
-        #print "chosen "+str(vc_chosen_compiler_index)+ " | "+str(vc_chosen_compiler_str)
-
-        return vc_chosen_compiler_str
