@@ -811,7 +811,11 @@ void main() {
 	float specular_exp=1.0;
 	float glow=0.0;
 	float shade_param=0.0;
+#ifdef DISABLE_FRONT_FACING
+	float side=float(1)*2.0-1.0;
+#else
 	float side=float(gl_FrontFacing)*2.0-1.0;
+#endif
 #if defined(ENABLE_TANGENT_INTERP)
 	vec3 binormal = normalize(binormal_interp)*side;
 	vec3 tangent = normalize(tangent_interp)*side;
