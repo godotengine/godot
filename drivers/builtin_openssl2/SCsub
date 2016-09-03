@@ -642,6 +642,7 @@ openssl_sources = [
 
 #env.drivers_sources+=openssl_sources
 
+env.Append(CPPPATH=["#drivers/builtin_openssl2"])
 env_drivers.Append(CPPPATH=["#drivers/builtin_openssl2/crypto"])
 env_drivers.Append(CPPPATH=["#drivers/builtin_openssl2/openssl"])
 env_drivers.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/evp"])
@@ -649,6 +650,9 @@ env_drivers.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/asn1"])
 env_drivers.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/modes"])
 #env_ssl.Append(CPPPATH=["#drivers/builtin_openssl2/crypto/store"])
 env_drivers.Append(CPPFLAGS=["-DOPENSSL_NO_ASM","-DOPENSSL_THREADS","-DL_ENDIAN"])
+
+if "platform" in env and env["platform"] == "winrt":
+	openssl_sources += ['winrt.cpp']
 
 # Workaround for compilation error with GCC/Clang when -Werror is too greedy (GH-4517)
 import os
