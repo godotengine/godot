@@ -105,6 +105,9 @@ public:
 
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
+	virtual TypeGuess guess_output_type(TypeGuess* p_inputs, int p_output) const;
+
+
 	VisualScriptFunctionCall();
 };
 
@@ -195,6 +198,7 @@ public:
 
 
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+	virtual TypeGuess guess_output_type(TypeGuess* p_inputs, int p_output) const;
 
 	VisualScriptPropertySet();
 };

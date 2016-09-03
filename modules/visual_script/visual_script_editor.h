@@ -33,6 +33,19 @@ class VisualScriptEditor : public ScriptEditorBase {
 		EDIT_PASTE_NODES,
 	};
 
+	enum PortAction {
+
+		CREATE_CALL,
+		CREATE_SET,
+		CREATE_GET,
+		CREATE_COND,
+		CREATE_SEQUENCE,
+		CREATE_SWITCH,
+		CREATE_ITERATOR,
+		CREATE_WHILE,
+		CREATE_RETURN,
+	};
+
 	MenuButton *edit_menu;
 
 	Ref<VisualScript> script;
@@ -53,6 +66,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	PropertyEditor *edit_signal_edit;
 
 	PropertySelector *method_select;
+	PropertySelector *new_connect_node_select;
 
 	VisualScriptEditorVariableEdit *variable_editor;
 
@@ -114,6 +128,16 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	static Clipboard *clipboard;
 
+	PopupMenu *port_action_popup;
+
+	PortAction port_action;
+	int port_action_node;
+	int port_action_output;
+	Vector2 port_action_pos;
+	int port_action_new_node;
+	void _port_action_menu(int p_option);
+	void _selected_connect_node_method_or_setget(const String& p_text);
+
 
 	int error_line;
 
@@ -145,6 +169,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _member_button(Object *p_item, int p_column, int p_button);
 
 
+
 	String revert_on_drag;
 
 	void _input(const InputEvent& p_event);
@@ -172,6 +197,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _draw_color_over_button(Object* obj,Color p_color);
 	void _button_resource_previewed(const String& p_path,const Ref<Texture>& p_preview,Variant p_ud);
+
+	VisualScriptNode::TypeGuess  _guess_output_type(int p_port_action_node,int p_port_action_output,Set<int> &visited_nodes);
 
 
 protected:

@@ -65,7 +65,7 @@ public:
 		Variant::Type type;
 		InputEvent::Type ev_type;
 		StringName obj_type;
-		String script_type;
+		Ref<Script> script;
 
 		TypeGuess() { type=Variant::NIL; ev_type=InputEvent::NONE; }
 	};
@@ -281,6 +281,7 @@ public:
 	bool has_data_connection(const StringName& p_func,int p_from_node,int p_from_port,int p_to_node,int p_to_port) const;
 	void get_data_connection_list(const StringName& p_func,List<DataConnection> *r_connection) const;
 	bool is_input_value_port_connected(const StringName& p_name,int p_node,int p_port) const;
+	bool get_input_value_port_connection_source(const StringName& p_name,int p_node,int p_port,int *r_node,int *r_port) const;
 
 	void add_variable(const StringName& p_name,const Variant& p_default_value=Variant(),bool p_export=false);
 	bool has_variable(const StringName& p_name) const;

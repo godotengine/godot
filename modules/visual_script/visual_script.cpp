@@ -574,6 +574,23 @@ bool VisualScript::is_input_value_port_connected(const StringName& p_func,int p_
 	return false;
 }
 
+bool VisualScript::get_input_value_port_connection_source(const StringName& p_func,int p_node,int p_port,int *r_node,int *r_port) const {
+
+	ERR_FAIL_COND_V(!functions.has(p_func),false);
+	const Function &func = functions[p_func];
+
+	for (const Set<DataConnection>::Element *E=func.data_connections.front();E;E=E->next()) {
+		if (E->get().to_node==p_node && E->get().to_port==p_port) {
+			*r_node=E->get().from_node;
+			*r_port=E->get().from_port;
+			return true;
+		}
+	}
+
+	return false;
+
+}
+
 void VisualScript::get_data_connection_list(const StringName& p_func,List<DataConnection> *r_connection) const {
 
 	ERR_FAIL_COND(!functions.has(p_func));

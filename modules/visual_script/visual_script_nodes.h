@@ -538,6 +538,9 @@ public:
 
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
+	virtual TypeGuess guess_output_type(TypeGuess* p_inputs, int p_output) const;
+
+
 	VisualScriptEngineSingleton();
 };
 
@@ -577,6 +580,8 @@ public:
 
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
 
+	virtual TypeGuess guess_output_type(TypeGuess* p_inputs, int p_output) const;
+
 	VisualScriptSceneNode();
 };
 
@@ -612,6 +617,8 @@ public:
 	virtual String get_category() const { return "data"; }
 
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+
+	virtual TypeGuess guess_output_type(TypeGuess* p_inputs, int p_output) const;
 
 	VisualScriptSceneTree();
 };
@@ -685,6 +692,8 @@ public:
 
 
 	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+
+	virtual TypeGuess guess_output_type(TypeGuess* p_inputs, int p_output) const;
 
 	VisualScriptSelf();
 };

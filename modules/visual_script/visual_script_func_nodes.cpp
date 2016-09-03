@@ -920,6 +920,18 @@ VisualScriptNodeInstance* VisualScriptFunctionCall::instance(VisualScriptInstanc
 	instance->validate=validate;
 	return instance;
 }
+
+
+VisualScriptFunctionCall::TypeGuess VisualScriptFunctionCall::guess_output_type(TypeGuess* p_inputs, int p_output) const {
+
+	if (p_output==0 && call_mode==CALL_MODE_INSTANCE) {
+		return p_inputs[0];
+	}
+
+	return VisualScriptNode::guess_output_type(p_inputs,p_output);
+
+}
+
 VisualScriptFunctionCall::VisualScriptFunctionCall() {
 
 	validate=true;
@@ -1600,6 +1612,17 @@ VisualScriptNodeInstance* VisualScriptPropertySet::instance(VisualScriptInstance
 	return instance;
 }
 
+
+
+VisualScriptPropertySet::TypeGuess VisualScriptPropertySet::guess_output_type(TypeGuess* p_inputs, int p_output) const {
+
+	if (p_output==0 && call_mode==CALL_MODE_INSTANCE) {
+		return p_inputs[0];
+	}
+
+	return VisualScriptNode::guess_output_type(p_inputs,p_output);
+
+}
 VisualScriptPropertySet::VisualScriptPropertySet() {
 
 	call_mode=CALL_MODE_SELF;
