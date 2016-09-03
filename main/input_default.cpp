@@ -741,6 +741,10 @@ static const char *s_ControllerMappings[] = {
 	"303534632d303563342d576972656c65,PS4 Controller USB/Win,leftx:a0,lefty:a1,dpdown:b15,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a5,lefttrigger:a3,x:b0,dpup:b14,dpleft:b16,dpright:b17,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b1,righttrigger:b7,b:b2,",
 	"c2a94d6963726f736f66742058626f78,Wireless X360 Controller,leftx:a0,lefty:a1,dpdown:b14,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:b11,lefttrigger:a2,x:b2,dpup:b13,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:b12,righttrigger:a5,b:b1,",
 #endif
+
+#ifdef WINRT_ENABLED
+	"__WINRT_GAMEPAD__,Xbox Controller,a:b2,b:b3,x:b4,y:b5,start:b0,back:b1,leftstick:b12,rightstick:b13,leftshoulder:b10,rightshoulder:b11,dpup:b6,dpdown:b7,dpleft:b8,dpright:b9,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,",
+#endif
 	NULL
 };
 
