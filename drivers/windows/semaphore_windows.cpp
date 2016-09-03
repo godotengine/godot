@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "semaphore_windows.h"
 
-#if defined(WINDOWS_ENABLED) && !defined(WINRT_ENABLED)
+#if defined(WINDOWS_ENABLED)
 
 #include "os/memory.h"
 

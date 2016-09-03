@@ -115,7 +115,16 @@ void FileAccessWindows::close() {
 		//int rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str());
 
 		bool rename_error;
+
+#ifdef WINRT_ENABLED
+		// WinRT has no PathFileExists, so we check attributes instead
+		DWORD fileAttr;
+
+		fileAttr = GetFileAttributesW(save_path.c_str());
+		if (INVALID_FILE_ATTRIBUTES == fileAttr) {
+#else
 		if (!PathFileExistsW(save_path.c_str())) {
+#endif
 			//creating new file
 			rename_error = _wrename((save_path + ".tmp").c_str(), save_path.c_str()) != 0;
 		} else {
@@ -130,6 +139,7 @@ void FileAccessWindows::close() {
 		ERR_FAIL_COND(rename_error);
 	}
 }
+
 bool FileAccessWindows::is_open() const {
 
 	return (f != NULL);
