@@ -81,6 +81,9 @@
 #   include <sys/time.h>
 #  endif
 # endif
+#ifdef WINRT_ENABLED
+#include <winsock2.h>
+#endif
 
 #ifdef  __cplusplus
 extern "C" {
