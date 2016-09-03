@@ -2886,6 +2886,7 @@ void VisualScriptEditor::_selected_connect_node_method_or_setget(const String& p
 		script->data_connect(edited_func,port_action_node,port_action_output,port_action_new_node,0);
 	}
 
+	_update_graph(port_action_new_node);
 	_update_graph_connections();
 
 }
