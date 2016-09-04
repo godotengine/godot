@@ -553,7 +553,7 @@ void VisualScriptOperator::_bind_methods() {
 		argt+=","+Variant::get_type_name(Variant::Type(i));
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"operator_value/type",PROPERTY_HINT_ENUM,types,PROPERTY_USAGE_NOEDITOR),_SCS("set_operator"),_SCS("get_operator"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"operator_value/type",PROPERTY_HINT_ENUM,types),_SCS("set_operator"),_SCS("get_operator"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"typed_value/typed",PROPERTY_HINT_ENUM,argt),_SCS("set_typed"),_SCS("get_typed"));
 
 }

@@ -1909,17 +1909,21 @@ Variant VisualScriptInstance::_call_internal(const StringName& p_method, void* p
 
 		if (node && (r_error.error!=Variant::CallError::CALL_ERROR_INVALID_METHOD || error_str==String())) {
 
+			if (error_str!=String()) {
+				error_str+=" ";
+			}
+
 			if (r_error.error==Variant::CallError::CALL_ERROR_INVALID_ARGUMENT) {
 				int errorarg=r_error.argument;
-				error_str="Cannot convert argument "+itos(errorarg+1)+" to "+Variant::get_type_name(r_error.expected)+".";
+				error_str+="Cannot convert argument "+itos(errorarg+1)+" to "+Variant::get_type_name(r_error.expected)+".";
 			} else if (r_error.error==Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-				error_str="Expected "+itos(r_error.argument)+" arguments.";
+				error_str+="Expected "+itos(r_error.argument)+" arguments.";
 			} else if (r_error.error==Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-				error_str="Expected "+itos(r_error.argument)+" arguments.";
+				error_str+="Expected "+itos(r_error.argument)+" arguments.";
 			} else if (r_error.error==Variant::CallError::CALL_ERROR_INVALID_METHOD) {
-				error_str="Invalid Call.";
+				error_str+="Invalid Call.";
 			} else if (r_error.error==Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
-				error_str="Instance is null";
+				error_str+="Base Instance is null";
 			}
 		}
 

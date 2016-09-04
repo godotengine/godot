@@ -36,6 +36,7 @@
 #include "visual_script_builtin_funcs.h"
 #include "visual_script_flow_control.h"
 #include "visual_script_yield_nodes.h"
+#include "visual_script_expression.h"
 
 
 VisualScriptLanguage *visual_script_language=NULL;
@@ -98,11 +99,14 @@ void register_visual_script_types() {
 	ObjectTypeDB::register_type<VisualScriptBuiltinFunc>();
 
 
+	ObjectTypeDB::register_type<VisualScriptExpression>();
+
 	register_visual_script_nodes();
 	register_visual_script_func_nodes();
 	register_visual_script_builtin_func_node();
 	register_visual_script_flow_control_nodes();
 	register_visual_script_yield_nodes();
+	register_visual_script_expression_node();
 
 #ifdef TOOLS_ENABLED
 	VisualScriptEditor::register_editor();

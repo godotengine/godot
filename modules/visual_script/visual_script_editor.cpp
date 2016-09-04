@@ -3,6 +3,7 @@
 #include "visual_script_nodes.h"
 #include "visual_script_flow_control.h"
 #include "visual_script_func_nodes.h"
+#include "visual_script_expression.h"
 #include "os/input.h"
 #include "tools/editor/editor_resource_preview.h"
 #include "os/keyboard.h"
@@ -505,6 +506,9 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Label *text = memnew( Label );
 		text->set_text(node->get_text());
 		gnode->add_child(text);
+		if (node->cast_to<VisualScriptExpression>()) {
+			text->add_font_override("font",get_font("source","EditorFonts"));
+		}
 
 		if (node->cast_to<VisualScriptComment>()) {
 			Ref<VisualScriptComment> vsc=node;
