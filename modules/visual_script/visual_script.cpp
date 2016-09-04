@@ -3,7 +3,7 @@
 #include "scene/main/node.h"
 #include "os/os.h"
 #include "globals.h"
-#define SCRIPT_VARIABLES_PREFIX "script_variables/"
+
 
 
 //used by editor, this is not really saved
@@ -615,8 +615,6 @@ void VisualScript::add_variable(const StringName& p_name,const Variant& p_defaul
 	v._export=p_export;
 
 	variables[p_name]=v;
-	script_variable_remap[SCRIPT_VARIABLES_PREFIX+String(p_name)]=p_name;
-
 
 #ifdef TOOLS_ENABLED
 	_update_placeholders();
@@ -633,7 +631,6 @@ void VisualScript::remove_variable(const StringName& p_name) {
 
 	ERR_FAIL_COND(!variables.has(p_name));
 	variables.erase(p_name);
-	script_variable_remap.erase(SCRIPT_VARIABLES_PREFIX+String(p_name));
 
 #ifdef TOOLS_ENABLED
 	_update_placeholders();
@@ -928,7 +925,7 @@ void VisualScript::_update_placeholders() {
 			continue;
 
 		PropertyInfo p = E->get().info;
-		p.name=SCRIPT_VARIABLES_PREFIX+String(E->key());
+		p.name=String(E->key());
 		pinfo.push_back(p);
 		values[p.name]=E->get().default_value;
 	}
@@ -964,7 +961,7 @@ ScriptInstance* VisualScript::instance_create(Object *p_this) {
 				continue;
 
 			PropertyInfo p = E->get().info;
-			p.name=SCRIPT_VARIABLES_PREFIX+String(E->key());
+			p.name=String(E->key());
 			pinfo.push_back(p);
 			values[p.name]=E->get().default_value;
 		}
@@ -1062,10 +1059,10 @@ void VisualScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 
 bool VisualScript::get_property_default_value(const StringName& p_property,Variant& r_value) const {
 
-	if (!script_variable_remap.has(p_property))
+	if (!variables.has(p_property))
 		return false;
 
-	r_value=variables[ script_variable_remap[p_property] ].default_value;
+	r_value=variables[ p_property ].default_value;
 	return true;
 }
 void VisualScript::get_script_method_list(List<MethodInfo> *p_list) const {
@@ -1402,12 +1399,10 @@ VisualScript::~VisualScript() {
 
 bool VisualScriptInstance::set(const StringName& p_name, const Variant& p_value) {
 
-	const Map<StringName,StringName>::Element *remap = script->script_variable_remap.find(p_name);
-	if (!remap)
-		return false;
 
-	Map<StringName,Variant>::Element *E=variables.find(remap->get());
-	ERR_FAIL_COND_V(!E,false);
+	Map<StringName,Variant>::Element *E=variables.find(p_name);
+	if (!E)
+		return false;
 
 	E->get()=p_value;
 
@@ -1417,12 +1412,9 @@ bool VisualScriptInstance::set(const StringName& p_name, const Variant& p_value)
 
 bool VisualScriptInstance::get(const StringName& p_name, Variant &r_ret) const {
 
-	const Map<StringName,StringName>::Element *remap = script->script_variable_remap.find(p_name);
-	if (!remap)
+	const Map<StringName,Variant>::Element *E=variables.find(p_name);
+	if (!E)
 		return false;
-
-	const Map<StringName,Variant>::Element *E=variables.find(remap->get());
-	ERR_FAIL_COND_V(!E,false);
 
 	return E->get();
 }
@@ -1433,21 +1425,15 @@ void VisualScriptInstance::get_property_list(List<PropertyInfo> *p_properties) c
 		if (!E->get()._export)
 			continue;
 		PropertyInfo p = E->get().info;
-		p.name=SCRIPT_VARIABLES_PREFIX+String(E->key());
+		p.name=String(E->key());
 		p_properties->push_back(p);
 
 	}
 }
 Variant::Type VisualScriptInstance::get_property_type(const StringName& p_name,bool *r_is_valid) const{
 
-	const Map<StringName,StringName>::Element *remap = script->script_variable_remap.find(p_name);
-	if (!remap) {
-		if (r_is_valid)
-			*r_is_valid=false;
-		return Variant::NIL;
-	}
 
-	const Map<StringName,VisualScript::Variable>::Element *E=script->variables.find(remap->get());
+	const Map<StringName,VisualScript::Variable>::Element *E=script->variables.find(p_name);
 	if (!E) {
 		if (r_is_valid)
 			*r_is_valid=false;

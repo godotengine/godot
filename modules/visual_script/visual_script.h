@@ -227,7 +227,6 @@ friend class VisualScriptInstance;
 
 	Map<StringName,Function> functions;
 	Map<StringName,Variable> variables;
-	Map<StringName,StringName> script_variable_remap;
 	Map<StringName,Vector<Argument> > custom_signals;
 
 	Map<Object*,VisualScriptInstance*> instances;
