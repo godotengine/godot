@@ -344,7 +344,9 @@ public:
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
 
+#ifdef TOOLS_ENABLED
 	virtual bool are_subnodes_edited() const;
+#endif
 
 	VisualScript();
 	~VisualScript();
