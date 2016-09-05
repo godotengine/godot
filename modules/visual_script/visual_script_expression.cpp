@@ -1396,9 +1396,9 @@ public:
 			r_error_str+="Can't convert expression result from "+Variant::get_type_name(p_outputs[0]->get_type())+" to "+Variant::get_type_name(expression->output_type)+".";
 			r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
 
-#endif
 		}
-
+#endif
+		
 		return 0;
 	}
 
