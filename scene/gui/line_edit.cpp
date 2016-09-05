@@ -806,16 +806,6 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 		pixel_ofs+=char_w;
 
 		if (pixel_ofs > p_x) { //found what we look for
-
-
-			if ( (pixel_ofs-p_x) < (char_w >> 1 ) ) {
-
-				ofs+=1;
-			} else if ( (pixel_ofs-p_x) > (char_w >> 1 ) ) {
-
-				ofs-=1;
-			}
-
 			break;
 		}
 
