@@ -4666,7 +4666,7 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 			enablers.push_back("#define USE_LIGHT_SHADER_CODE\n");
 		}
 		if (light_flags.uses_shadow_color) {
-			enablers.push_back("#define USE_LIGHT_SHADOW_COLOR\n");
+			enablers.push_back("#define USE_OUTPUT_SHADOW_COLOR\n");
 		}
 		if (light_flags.uses_time || fragment_flags.uses_time || vertex_flags.uses_time) {
 			enablers.push_back("#define USE_TIME\n");
@@ -4709,7 +4709,7 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 			enablers.push_back("#define USE_TEXPIXEL_SIZE\n");
 		}
 		if (light_flags.uses_shadow_color) {
-			enablers.push_back("#define USE_LIGHT_SHADOW_COLOR\n");
+			enablers.push_back("#define USE_OUTPUT_SHADOW_COLOR\n");
 		}
 
 		if (vertex_flags.uses_worldvec) {

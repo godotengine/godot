@@ -1181,7 +1181,7 @@ FRAGMENT_SHADER_CODE
 		vec3 mdiffuse = diffuse.rgb;
 		vec3 light;
 
-#if defined(USE_LIGHT_SHADOW_COLOR)
+#if defined(USE_OUTPUT_SHADOW_COLOR)
 		vec3 shadow_color=vec3(0.0,0.0,0.0);
 #endif
 
@@ -1205,7 +1205,7 @@ LIGHT_SHADER_CODE
 #endif
 		diffuse.rgb = const_light_mult * ambient_light *diffuse.rgb + light * attenuation * shadow_attenuation;
 
-#if defined(USE_LIGHT_SHADOW_COLOR)
+#if defined(USE_OUTPUT_SHADOW_COLOR)
 		diffuse.rgb += light * shadow_color * attenuation * (1.0 - shadow_attenuation);
 #endif
 
