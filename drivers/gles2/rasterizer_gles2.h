@@ -238,51 +238,67 @@ class RasterizerGLES2 : public Rasterizer {
 	void _update_shader( Shader* p_shader) const;
 
 	struct Material {
+		struct Pass {
+			bool flags[VS::MATERIAL_FLAG_MAX];
 
-		bool flags[VS::MATERIAL_FLAG_MAX];
+			VS::MaterialBlendMode blend_mode;
+			VS::MaterialDepthDrawMode depth_draw_mode;
 
-		VS::MaterialBlendMode blend_mode;
-		VS::MaterialDepthDrawMode depth_draw_mode;
+			float line_width;
+			bool has_alpha;
 
-		float line_width;
-		bool has_alpha;
+			mutable uint32_t shader_version;
 
-		mutable uint32_t shader_version;
+			RID shader; // shader material
+			Shader *shader_cache;
 
-		RID shader; // shader material
-		Shader *shader_cache;
+			struct UniformData {
 
-		struct UniformData {
+				bool inuse;
+				bool istexture;
+				Variant value;
+				int index;
+			};
 
-			bool inuse;
-			bool istexture;
-			Variant value;			
-			int index;
+			uint64_t last_pass;
+
+			mutable Map<StringName, UniformData> shader_params;
+
+			Pass() {
+				for (int i = 0; i<VS::MATERIAL_FLAG_MAX; i++)
+					flags[i] = false;
+				flags[VS::MATERIAL_FLAG_VISIBLE] = true;
+
+				line_width = 1;
+				has_alpha = false;
+				depth_draw_mode = VS::MATERIAL_DEPTH_DRAW_OPAQUE_ONLY;
+				blend_mode = VS::MATERIAL_BLEND_MODE_MIX;
+				shader_version = 0;
+				shader_cache = NULL;
+				last_pass = 0;
+			}
 		};
 
-		mutable Map<StringName,UniformData> shader_params;
+		Vector<Pass> passes;
 
-		uint64_t last_pass;
-
+		void set_pass_count(const int p_pass_count) {
+			int original_size = passes.size();
+			passes.resize(p_pass_count);
+			if (original_size > p_pass_count || original_size < p_pass_count) {
+				passes.resize(p_pass_count);
+				if (original_size > p_pass_count) {
+					for (int i = original_size; i < p_pass_count; i++) {
+						passes[i] = Pass();
+					}
+				}
+			}
+		}
 
 		Material() {
-
-			for(int i=0;i<VS::MATERIAL_FLAG_MAX;i++)
-				flags[i]=false;
-			flags[VS::MATERIAL_FLAG_VISIBLE]=true;
-
-			line_width=1;
-			has_alpha=false;
-			depth_draw_mode=VS::MATERIAL_DEPTH_DRAW_OPAQUE_ONLY;
-			blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
-			last_pass = 0;
-			shader_version=0;
-			shader_cache=NULL;
-
 		}
 	};
 
-	_FORCE_INLINE_ void _update_material_shader_params(Material *p_material) const;
+	_FORCE_INLINE_ void _update_material_pass_shader_params(Material::Pass *p_material_pass) const;
 	mutable RID_Owner<Material> material_owner;
 
 
@@ -863,6 +879,7 @@ class RasterizerGLES2 : public Rasterizer {
 			const Geometry *geometry;
 			const Geometry *geometry_cmp;
 			const Material *material;
+			const Material::Pass *pass;
 			const GeometryOwner *owner;
 			bool *additive_ptr;
 			bool additive;
@@ -910,28 +927,28 @@ class RasterizerGLES2 : public Rasterizer {
 		}
 
 
-		struct SortMatGeom {
+		struct SortMatPassGeom {
 
 			_FORCE_INLINE_ bool operator()(const Element* A,  const Element* B ) const {
 				// TODO move to a single uint64 (one comparison)
-				if (A->material->shader_cache == B->material->shader_cache) {
-					if (A->material == B->material) {
+				if (A->pass->shader_cache == B->pass->shader_cache) {
+					if (A->pass == B->pass) {
 
 						return A->geometry_cmp < B->geometry_cmp;
 					} else {
 
-						return (A->material < B->material);
+						return (A->pass < B->pass);
 					}
 				} else {
 
-					return A->material->shader_cache < B->material->shader_cache;
+					return A->pass->shader_cache < B->pass->shader_cache;
 				}
 			}
 		};
 
-		void sort_mat_geom() {
+		void sort_mat_pass_geom() {
 
-			SortArray<Element*,SortMatGeom> sorter;
+			SortArray<Element*,SortMatPassGeom> sorter;
 			sorter.sort(elements,element_count);
 		}
 
@@ -941,12 +958,12 @@ class RasterizerGLES2 : public Rasterizer {
 
 				if (A->geometry_cmp == B->geometry_cmp) {
 
-					if (A->material == B->material) {
+					if (A->pass == B->pass) {
 
 						return A->light<B->light;
 					} else {
 
-						return (A->material < B->material);
+						return (A->pass < B->pass);
 					}
 				} else {
 
@@ -955,7 +972,7 @@ class RasterizerGLES2 : public Rasterizer {
 			}
 		};
 
-		void sort_mat_light() {
+		void sort_mat_pass_light() {
 
 			SortArray<Element*,SortMatLight> sorter;
 			sorter.sort(elements,element_count);
@@ -966,17 +983,17 @@ class RasterizerGLES2 : public Rasterizer {
 			_FORCE_INLINE_ bool operator()(const Element* A,  const Element* B ) const {
 
 				if (A->light_type == B->light_type) {
-					if (A->material->shader_cache == B->material->shader_cache) {
-						if (A->material == B->material) {
+					if (A->pass->shader_cache == B->pass->shader_cache) {
+						if (A->pass == B->pass) {
 
 							return (A->geometry_cmp < B->geometry_cmp);
 						} else {
 
-							return (A->material < B->material);
+							return (A->pass < B->pass);
 						}
 					} else {
 
-						return (A->material->shader_cache < B->material->shader_cache);
+						return (A->pass->shader_cache < B->pass->shader_cache);
 					}
 				} else {
 
@@ -985,7 +1002,7 @@ class RasterizerGLES2 : public Rasterizer {
 			}
 		};
 
-		void sort_mat_light_type() {
+		void sort_mat_pass_light_type() {
 
 			SortArray<Element*,SortMatLightType> sorter;
 			sorter.sort(elements,element_count);
@@ -996,17 +1013,17 @@ class RasterizerGLES2 : public Rasterizer {
 			_FORCE_INLINE_ bool operator()(const Element* A,  const Element* B ) const {
 
 				if (A->sort_key == B->sort_key) {
-					if (A->material->shader_cache == B->material->shader_cache) {
-						if (A->material == B->material) {
+					if (A->pass->shader_cache == B->pass->shader_cache) {
+						if (A->pass == B->pass) {
 
 							return (A->geometry_cmp < B->geometry_cmp);
 						} else {
 
-							return (A->material < B->material);
+							return (A->pass < B->pass);
 						}
 					} else {
 
-						return (A->material->shader_cache < B->material->shader_cache);
+						return (A->pass->shader_cache < B->pass->shader_cache);
 					}
 				} else {
 
@@ -1015,7 +1032,7 @@ class RasterizerGLES2 : public Rasterizer {
 			}
 		};
 
-		void sort_mat_light_type_flags() {
+		void sort_mat_pass_light_type_flags() {
 
 			SortArray<Element*,SortMatLightTypeFlags> sorter;
 			sorter.sort(elements,element_count);
@@ -1077,12 +1094,12 @@ class RasterizerGLES2 : public Rasterizer {
 	void _setup_light(uint16_t p_light);
 
 	_FORCE_INLINE_ void _setup_shader_params(const Material *p_material);
-	bool _setup_material(const Geometry *p_geometry, const Material *p_material, bool p_no_const_light, bool p_opaque_pass);
+	bool _setup_material_pass(const Material::Pass *p_material_pass, bool p_opaque_pass);
 	void _setup_skeleton(const Skeleton *p_skeleton);
 
 
-	Error _setup_geometry(const Geometry *p_geometry, const Material* p_material,const Skeleton *p_skeleton, const float *p_morphs);
-	void _render(const Geometry *p_geometry,const Material *p_material, const Skeleton* p_skeleton, const GeometryOwner *p_owner,const Transform& p_xform);
+	Error _setup_geometry(const Geometry *p_geometry,const Skeleton *p_skeleton, const float *p_morphs);
+	void _render(const Geometry *p_geometry, const Skeleton* p_skeleton, const GeometryOwner *p_owner,const Transform& p_xform);
 
 
 	/***********/
@@ -1364,26 +1381,28 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	virtual RID material_create();
+	virtual RID material_create(const int p_pass_count);
 
-	virtual void material_set_shader(RID p_shader_material, RID p_shader);
-	virtual RID material_get_shader(RID p_shader_material) const;
+	virtual void material_set_shader(RID p_shader_material, const int p_pass_index, RID p_shader);
+	virtual RID material_get_shader(RID p_shader_material, const int p_pass_index) const;
 
-	virtual void material_set_param(RID p_material, const StringName& p_param, const Variant& p_value);
-	virtual Variant material_get_param(RID p_material, const StringName& p_param) const;
+	virtual void material_set_param(RID p_material, const int p_pass_index, const StringName& p_param, const Variant& p_value);
+	virtual Variant material_get_param(RID p_material, const int p_pass_index, const StringName& p_param) const;
 
-	virtual void material_set_flag(RID p_material, VS::MaterialFlag p_flag,bool p_enabled);
-	virtual bool material_get_flag(RID p_material,VS::MaterialFlag p_flag) const;
+	virtual void material_set_flag(RID p_material, const int p_pass_index, VS::MaterialFlag p_flag, bool p_enabled);
+	virtual bool material_get_flag(RID p_material, const int p_pass_index, VS::MaterialFlag p_flag) const;
 
-	virtual void material_set_depth_draw_mode(RID p_material, VS::MaterialDepthDrawMode p_mode);
-	virtual VS::MaterialDepthDrawMode material_get_depth_draw_mode(RID p_material) const;
+	virtual void material_set_depth_draw_mode(RID p_material, const int p_pass_index, VS::MaterialDepthDrawMode p_mode);
+	virtual VS::MaterialDepthDrawMode material_get_depth_draw_mode(RID p_material, const int p_pass_index) const;
 
-	virtual void material_set_blend_mode(RID p_material,VS::MaterialBlendMode p_mode);
-	virtual VS::MaterialBlendMode material_get_blend_mode(RID p_material) const;
+	virtual void material_set_blend_mode(RID p_material, const int p_pass_index, VS::MaterialBlendMode p_mode);
+	virtual VS::MaterialBlendMode material_get_blend_mode(RID p_material, const int p_pass_index) const;
 
-	virtual void material_set_line_width(RID p_material,float p_line_width);
-	virtual float material_get_line_width(RID p_material) const;
+	virtual void material_set_line_width(RID p_material, const int p_pass_index, float p_line_width);
+	virtual float material_get_line_width(RID p_material, const int p_pass_index) const;
 
+	virtual void material_set_pass_count(RID p_material, const int p_pass_count);
+	virtual int material_get_pass_count(RID p_material) const;
 
 	/* MESH API */
 

@@ -137,24 +137,27 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	FUNC0R(RID,material_create);
-	FUNC2(material_set_shader,RID,RID);
-	FUNC1RC(RID,material_get_shader,RID);
+	FUNC1R(RID,material_create,int);
+	FUNC3(material_set_shader,RID,int,RID);
+	FUNC2RC(RID,material_get_shader,RID,int);
 
-	FUNC3(material_set_param,RID,const StringName&,const Variant&);
-	FUNC2RC(Variant,material_get_param,RID,const StringName&);
+	FUNC4(material_set_param,RID,int,const StringName&,const Variant&);
+	FUNC3RC(Variant,material_get_param,RID,int,const StringName&);
 
-	FUNC3(material_set_flag,RID,MaterialFlag,bool);
-	FUNC2RC(bool,material_get_flag,RID,MaterialFlag);
+	FUNC4(material_set_flag,RID,int,MaterialFlag,bool);
+	FUNC3RC(bool,material_get_flag,RID,int,MaterialFlag);
 
-	FUNC2(material_set_depth_draw_mode,RID,MaterialDepthDrawMode);
-	FUNC1RC(MaterialDepthDrawMode,material_get_depth_draw_mode,RID);
+	FUNC3(material_set_depth_draw_mode,RID,int,MaterialDepthDrawMode);
+	FUNC2RC(MaterialDepthDrawMode,material_get_depth_draw_mode,RID,int);
 
-	FUNC2(material_set_blend_mode,RID,MaterialBlendMode);
-	FUNC1RC(MaterialBlendMode,material_get_blend_mode,RID);
+	FUNC3(material_set_blend_mode,RID,int,MaterialBlendMode);
+	FUNC2RC(MaterialBlendMode,material_get_blend_mode,RID,int);
 
-	FUNC2(material_set_line_width,RID,float);
-	FUNC1RC(float,material_get_line_width,RID);
+	FUNC3(material_set_line_width,RID,int,float);
+	FUNC2RC(float,material_get_line_width,RID,int);
+
+	FUNC2(material_set_pass_count,RID,int);
+	FUNC1RC(int, material_get_pass_count,RID);
 
 	/* FIXED MATERIAL */
 
