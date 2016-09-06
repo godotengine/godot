@@ -2,7 +2,7 @@
 import sys
 
 if (len(sys.argv)<2):
-  print("usage: makewrapper.py <headers>")
+  print("usage: make_glwrapper.py <headers>")
   sys.exit(255)
 
 
