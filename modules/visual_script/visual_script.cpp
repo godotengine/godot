@@ -1130,6 +1130,7 @@ void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 bool VisualScript::are_subnodes_edited() const {
 
 	for(const Map<StringName,Function>::Element *E=functions.front();E;E=E->next()) {
@@ -1143,7 +1144,7 @@ bool VisualScript::are_subnodes_edited() const {
 
 	return false;
 }
-
+#endif
 
 void VisualScript::_set_data(const Dictionary& p_data) {
 
