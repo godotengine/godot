@@ -406,10 +406,10 @@ public:
 		DVector<Plane> cylinder_planes = Geometry::build_cylinder_planes(0.5,2,9,Vector3::AXIS_Y);
 		RID cylinder_material = vs->fixed_material_create();
 		vs->fixed_material_set_param( cylinder_material, VisualServer::FIXED_MATERIAL_PARAM_DIFFUSE, Color(0.8,0.2,0.9));
-		vs->material_set_flag( cylinder_material,0,VisualServer::MATERIAL_FLAG_ONTOP,true);
+		vs->material_set_flag( cylinder_material, VisualServer::MATERIAL_FLAG_ONTOP,true);
 		//vs->material_set_flag( cylinder_material, VisualServer::MATERIAL_FLAG_WIREFRAME,true);
-		vs->material_set_flag( cylinder_material,0,VisualServer::MATERIAL_FLAG_DOUBLE_SIDED,true);
-		vs->material_set_flag( cylinder_material,0,VisualServer::MATERIAL_FLAG_UNSHADED,true);
+		vs->material_set_flag( cylinder_material, VisualServer::MATERIAL_FLAG_DOUBLE_SIDED,true);
+		vs->material_set_flag( cylinder_material, VisualServer::MATERIAL_FLAG_UNSHADED,true);
 
 		RID cylinder_mesh = vs->mesh_create();
 		Geometry::MeshData cylinder_data = Geometry::build_convex_mesh(cylinder_planes);

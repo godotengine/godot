@@ -239,161 +239,109 @@ Variant RasterizerDummy::shader_get_default_param(RID p_shader, const StringName
 /* COMMON MATERIAL API */
 
 
-RID RasterizerDummy::material_create(const int p_pass_count) {
+RID RasterizerDummy::material_create() {
 
-	Material *mat = memnew(Material);
-	mat->set_pass_count(p_pass_count);
-	RID material = material_owner.make_rid(mat);
-	return material;
+	return material_owner.make_rid( memnew( Material ) );
 }
 
-void RasterizerDummy::material_set_shader(RID p_material,const int p_pass_index,RID p_shader) {
+void RasterizerDummy::material_set_shader(RID p_material, RID p_shader) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND(!pass);
-
-	if (pass->shader == p_shader)
-		return;
-	pass->shader = p_shader;
-	pass->shader_version = 0;
+	material->shader=p_shader;
 
 }
 
-RID RasterizerDummy::material_get_shader(RID p_material, const int p_pass_index) const {
+RID RasterizerDummy::material_get_shader(RID p_material) const {
 
 	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material, RID());
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND_V(!pass, RID());
-	return pass->shader;
+	ERR_FAIL_COND_V(!material,RID());
+	return material->shader;
 }
 
-void RasterizerDummy::material_set_param(RID p_material, const int p_pass_index, const StringName& p_param, const Variant& p_value) {
+void RasterizerDummy::material_set_param(RID p_material, const StringName& p_param, const Variant& p_value) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND(!pass);
 
 	if (p_value.get_type()==Variant::NIL)
-		pass->shader_params.erase(p_param);
+		material->shader_params.erase(p_param);
 	else
-		pass->shader_params[p_param] = p_value;
+		material->shader_params[p_param]=p_value;
 }
-Variant RasterizerDummy::material_get_param(RID p_material,const int p_pass_index,const StringName& p_param) const {
+Variant RasterizerDummy::material_get_param(RID p_material, const StringName& p_param) const {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!material,Variant());
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND_V(!pass, Variant());
 
-	if (pass->shader_params.has(p_param))
-		return pass->shader_params[p_param];
+	if (material->shader_params.has(p_param))
+		return material->shader_params[p_param];
 	else
 		return Variant();
 }
 
 
-void RasterizerDummy::material_set_flag(RID p_material,const int p_pass_index,VS::MaterialFlag p_flag,bool p_enabled) {
+void RasterizerDummy::material_set_flag(RID p_material, VS::MaterialFlag p_flag,bool p_enabled) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND(!pass);
-
-	ERR_FAIL_INDEX(p_flag, VS::MATERIAL_FLAG_MAX);
-
-	pass->flags[p_flag]=p_enabled;
+	ERR_FAIL_INDEX(p_flag,VS::MATERIAL_FLAG_MAX);
+	material->flags[p_flag]=p_enabled;
 
 }
-bool RasterizerDummy::material_get_flag(RID p_material,const int p_pass_index,VS::MaterialFlag p_flag) const {
+bool RasterizerDummy::material_get_flag(RID p_material,VS::MaterialFlag p_flag) const {
 
 	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material, false);
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND_V(!pass, false);
+	ERR_FAIL_COND_V(!material,false);
+	ERR_FAIL_INDEX_V(p_flag,VS::MATERIAL_FLAG_MAX,false);
+	return material->flags[p_flag];
 
-	ERR_FAIL_INDEX_V(p_flag, VS::MATERIAL_FLAG_MAX, false);
-	return pass->flags[p_flag];
+
 }
 
-void RasterizerDummy::material_set_depth_draw_mode(RID p_material,const int p_pass_index,VS::MaterialDepthDrawMode p_mode) {
+void RasterizerDummy::material_set_depth_draw_mode(RID p_material, VS::MaterialDepthDrawMode p_mode) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND(!pass);
-
-	pass->depth_draw_mode = p_mode;
+	material->depth_draw_mode=p_mode;
 }
 
-VS::MaterialDepthDrawMode RasterizerDummy::material_get_depth_draw_mode(RID p_material, const int p_pass_index) const{
+VS::MaterialDepthDrawMode RasterizerDummy::material_get_depth_draw_mode(RID p_material) const{
 
 	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material, VS::MATERIAL_DEPTH_DRAW_ALWAYS);
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND_V(!pass, VS::MATERIAL_DEPTH_DRAW_ALWAYS);
+	ERR_FAIL_COND_V(!material,VS::MATERIAL_DEPTH_DRAW_ALWAYS);
+	return material->depth_draw_mode;
 
-	return pass->depth_draw_mode;
 }
 
 
-void RasterizerDummy::material_set_blend_mode(RID p_material,const int p_pass_index,VS::MaterialBlendMode p_mode) {
+void RasterizerDummy::material_set_blend_mode(RID p_material,VS::MaterialBlendMode p_mode) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND(!pass);
-
-	pass->blend_mode=p_mode;
+	material->blend_mode=p_mode;
 
 }
-VS::MaterialBlendMode RasterizerDummy::material_get_blend_mode(RID p_material,const int p_pass_index) const {
+VS::MaterialBlendMode RasterizerDummy::material_get_blend_mode(RID p_material) const {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!material,VS::MATERIAL_BLEND_MODE_ADD);
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND_V(!pass, VS::MATERIAL_BLEND_MODE_ADD);
-
-	return pass->blend_mode;
+	return material->blend_mode;
 }
 
-void RasterizerDummy::material_set_line_width(RID p_material,const int p_pass_index,float p_line_width) {
+void RasterizerDummy::material_set_line_width(RID p_material,float p_line_width) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND(!pass);
-
-	pass->line_width=p_line_width;
+	material->line_width=p_line_width;
 
 }
-float RasterizerDummy::material_get_line_width(RID p_material,const int p_pass_index) const {
+float RasterizerDummy::material_get_line_width(RID p_material) const {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND_V(!material,0);
-	Material::Pass *pass = &material->passes[p_pass_index];
-	ERR_FAIL_COND_V(!pass,0);
 
-	return pass->line_width;
-}
-
-void RasterizerDummy::material_set_pass_count(RID p_material, const int p_pass_count) {
-
-	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND(!material);
-
-	material->set_pass_count(p_pass_count);
-}
-
-int RasterizerDummy::material_get_pass_count(RID p_material) const {
-
-	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material, -1);
-
-	return material->passes.size();
+	return material->line_width;
 }
 
 /* MESH API */

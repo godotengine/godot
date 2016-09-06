@@ -600,7 +600,7 @@ void ScriptEditor::_live_auto_reload_running_scripts() {
 bool ScriptEditor::_test_script_times_on_disk(Ref<Script> p_for_script) {
 
 
-	//disk_changed_list->clear();
+	disk_changed_list->clear();
 	TreeItem *r = disk_changed_list->create_item();
 	disk_changed_list->set_hide_root(true);
 

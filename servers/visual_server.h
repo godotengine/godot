@@ -178,13 +178,13 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	virtual RID material_create(const int p_pass_count) = 0;
+	virtual RID material_create()=0;
 
-	virtual void material_set_shader(RID p_shader_material,int p_pass, RID p_shader)=0;
-	virtual RID material_get_shader(RID p_shader_material,int p_pass) const=0;
+	virtual void material_set_shader(RID p_shader_material, RID p_shader)=0;
+	virtual RID material_get_shader(RID p_shader_material) const=0;
 
-	virtual void material_set_param(RID p_material,int p_pass, const StringName& p_param, const Variant& p_value)=0;
-	virtual Variant material_get_param(RID p_material,int p_pass, const StringName& p_param) const=0;
+	virtual void material_set_param(RID p_material, const StringName& p_param, const Variant& p_value)=0;
+	virtual Variant material_get_param(RID p_material, const StringName& p_param) const=0;
 
 	enum MaterialFlag {
 		MATERIAL_FLAG_VISIBLE,
@@ -197,8 +197,8 @@ public:
 		MATERIAL_FLAG_MAX,
 	};
 
-	virtual void material_set_flag(RID p_material,int p_pass, MaterialFlag p_flag,bool p_enabled)=0;
-	virtual bool material_get_flag(RID p_material,int p_pass, MaterialFlag p_flag) const=0;
+	virtual void material_set_flag(RID p_material, MaterialFlag p_flag,bool p_enabled)=0;
+	virtual bool material_get_flag(RID p_material,MaterialFlag p_flag) const=0;
 
 	enum MaterialDepthDrawMode {
 		MATERIAL_DEPTH_DRAW_ALWAYS,
@@ -207,8 +207,8 @@ public:
 		MATERIAL_DEPTH_DRAW_NEVER
 	};
 
-	virtual void material_set_depth_draw_mode(RID p_material, int p_pass, MaterialDepthDrawMode p_mode) = 0;
-	virtual MaterialDepthDrawMode material_get_depth_draw_mode(RID p_material,int p_pass) const=0;
+	virtual void material_set_depth_draw_mode(RID p_material, MaterialDepthDrawMode p_mode)=0;
+	virtual MaterialDepthDrawMode material_get_depth_draw_mode(RID p_material) const=0;
 
 	enum MaterialBlendMode {
 		MATERIAL_BLEND_MODE_MIX, //default
@@ -219,14 +219,12 @@ public:
 	};
 
 
-	virtual void material_set_blend_mode(RID p_material,int p_pass,MaterialBlendMode p_mode)=0;
-	virtual MaterialBlendMode material_get_blend_mode(RID p_material,int p_pass) const=0;
+	virtual void material_set_blend_mode(RID p_material,MaterialBlendMode p_mode)=0;
+	virtual MaterialBlendMode material_get_blend_mode(RID p_material) const=0;
 
-	virtual void material_set_line_width(RID p_material,int p_pass,float p_line_width)=0;
-	virtual float material_get_line_width(RID p_material, int p_pass) const=0;
+	virtual void material_set_line_width(RID p_material,float p_line_width)=0;
+	virtual float material_get_line_width(RID p_material) const=0;
 
-	virtual void material_set_pass_count(RID p_material, const int p_pass_count)=0;
-	virtual int material_get_pass_count(RID p_material) const=0;
 
 	//fixed material api
 

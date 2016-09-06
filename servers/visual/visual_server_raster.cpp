@@ -190,81 +190,72 @@ RID VisualServerRaster::shader_get_default_texture_param(RID p_shader, const Str
 
 /* Material */
 
-RID VisualServerRaster::material_create(const int p_pass_count) {
+RID VisualServerRaster::material_create() {
 
-	return rasterizer->material_create(p_pass_count);
+	return rasterizer->material_create();
 }
 
-void VisualServerRaster::material_set_shader(RID p_material, const int p_pass, RID p_shader) {
+void VisualServerRaster::material_set_shader(RID p_material, RID p_shader) {
 
 	VS_CHANGED;
-	rasterizer->material_set_shader(p_material, p_pass,p_shader );
+	rasterizer->material_set_shader(p_material, p_shader );
 }
 
-RID VisualServerRaster::material_get_shader(RID p_material, const int p_pass) const {
+RID VisualServerRaster::material_get_shader(RID p_material) const {
 
-	return rasterizer->material_get_shader(p_material,p_pass);
+	return rasterizer->material_get_shader(p_material);
 }
 
-void VisualServerRaster::material_set_param(RID p_material, const int p_pass, const StringName& p_param, const Variant& p_value) {
+void VisualServerRaster::material_set_param(RID p_material, const StringName& p_param, const Variant& p_value) {
 
 	VS_CHANGED;
-	rasterizer->material_set_param(p_material, p_pass,p_param,p_value );
+	rasterizer->material_set_param(p_material, p_param,p_value );
 }
 
-Variant VisualServerRaster::material_get_param(RID p_material, const int p_pass, const StringName& p_param) const {
+Variant VisualServerRaster::material_get_param(RID p_material, const StringName& p_param) const {
 
-	return rasterizer->material_get_param(p_material,p_pass,p_param);
+	return rasterizer->material_get_param(p_material,p_param);
 }
 
-void VisualServerRaster::material_set_flag(RID p_material, const int p_pass, MaterialFlag p_flag, bool p_enabled) {
+void VisualServerRaster::material_set_flag(RID p_material, MaterialFlag p_flag,bool p_enabled) {
 	VS_CHANGED;
-	rasterizer->material_set_flag(p_material,p_pass,p_flag, p_enabled);
+	rasterizer->material_set_flag(p_material,p_flag,p_enabled);
 }
 
-void VisualServerRaster::material_set_depth_draw_mode(RID p_material, const int p_pass, MaterialDepthDrawMode p_mode) {
+void VisualServerRaster::material_set_depth_draw_mode(RID p_material, MaterialDepthDrawMode p_mode) {
 
 	VS_CHANGED;
-	rasterizer->material_set_depth_draw_mode(p_material,p_pass,p_mode);
+	rasterizer->material_set_depth_draw_mode(p_material,p_mode);
 
 }
 
-VS::MaterialDepthDrawMode VisualServerRaster::material_get_depth_draw_mode(RID p_material, const int p_pass) const {
+VS::MaterialDepthDrawMode VisualServerRaster::material_get_depth_draw_mode(RID p_material) const {
 
-	return rasterizer->material_get_depth_draw_mode(p_material,p_pass);
+	return rasterizer->material_get_depth_draw_mode(p_material);
 }
 
 
-bool VisualServerRaster::material_get_flag(RID p_material, const int p_pass, MaterialFlag p_flag) const {
+bool VisualServerRaster::material_get_flag(RID p_material,MaterialFlag p_flag) const {
 
-	return rasterizer->material_get_flag(p_material,p_pass,p_flag);
+	return rasterizer->material_get_flag(p_material,p_flag);
 }
 
-void VisualServerRaster::material_set_blend_mode(RID p_material,const int p_pass,MaterialBlendMode p_mode) {
+void VisualServerRaster::material_set_blend_mode(RID p_material,MaterialBlendMode p_mode) {
 	VS_CHANGED;
-	rasterizer->material_set_blend_mode(p_material,p_pass,p_mode);
+	rasterizer->material_set_blend_mode(p_material,p_mode);
 }
-VS::MaterialBlendMode VisualServerRaster::material_get_blend_mode(RID p_material, const int p_pass) const {
+VS::MaterialBlendMode VisualServerRaster::material_get_blend_mode(RID p_material) const {
 
-	return rasterizer->material_get_blend_mode(p_material,p_pass);
+	return rasterizer->material_get_blend_mode(p_material);
 }
 
-void VisualServerRaster::material_set_line_width(RID p_material,const int p_pass,float p_line_width) {
+void VisualServerRaster::material_set_line_width(RID p_material,float p_line_width) {
 	VS_CHANGED;
-	rasterizer->material_set_line_width(p_material,p_pass,p_line_width);
+	rasterizer->material_set_line_width(p_material,p_line_width);
 }
-float VisualServerRaster::material_get_line_width(RID p_material, const int p_pass) const {
+float VisualServerRaster::material_get_line_width(RID p_material) const {
 
-	return rasterizer->material_get_line_width(p_material, p_pass);
-}
-
-void VisualServerRaster::material_set_pass_count(RID p_material, const int p_pass_count) {
-	VS_CHANGED;
-	rasterizer->material_set_pass_count(p_material, p_pass_count);
-}
-
-int VisualServerRaster::material_get_pass_count(RID p_material) const {
-	return rasterizer->material_get_pass_count(p_material);
+	return rasterizer->material_get_line_width(p_material);
 }
 
 /* FIXED MATERIAL */

@@ -32,7 +32,7 @@
 
 RID Rasterizer::create_default_material() {
 
-	return material_create(1);
+	return material_create();
 }
 
 
@@ -359,15 +359,15 @@ bool Rasterizer::fixed_material_get_flag(RID p_material, VS::FixedMaterialFlags 
 
 RID Rasterizer::fixed_material_create() {
 
-	RID mat = material_create(1);
+	RID mat = material_create();
 	fixed_materials[mat]=memnew( FixedMaterial() );
 	FixedMaterial &fm=*fixed_materials[mat];
 	fm.self=mat;
 	fm.get_key();
-	material_set_flag(mat,0,VS::MATERIAL_FLAG_COLOR_ARRAY_SRGB,true);
+	material_set_flag(mat,VS::MATERIAL_FLAG_COLOR_ARRAY_SRGB,true);
 	for(int i=0;i<VS::FIXED_MATERIAL_PARAM_MAX;i++) {
 
-		material_set_param(mat,0,_fixed_material_param_names[i],fm.param[i]); //must be there
+		material_set_param(mat,_fixed_material_param_names[i],fm.param[i]); //must be there
 	}
 	fixed_material_dirty_list.add(&fm.dirty_list);
 	//print_line("FMC: "+itos(mat.get_id()));
@@ -400,7 +400,7 @@ void Rasterizer::fixed_material_set_parameter(RID p_material, VS::FixedMaterialP
 	}
 
 	fm.param[p_parameter]=p_value;
-	VS::get_singleton()->material_set_param(material,0,_fixed_material_param_names[p_parameter],p_value);
+	VS::get_singleton()->material_set_param(material,_fixed_material_param_names[p_parameter],p_value);
 
 
 }
@@ -427,7 +427,7 @@ void Rasterizer::fixed_material_set_texture(RID p_material,VS::FixedMaterialPara
 	ERR_FAIL_INDEX(p_parameter,VS::FIXED_MATERIAL_PARAM_MAX);
 	RID material=E->key();
 	fm.texture[p_parameter]=p_texture;
-	VS::get_singleton()->material_set_param(material,0,_fixed_material_tex_names[p_parameter],p_texture);
+	VS::get_singleton()->material_set_param(material,_fixed_material_tex_names[p_parameter],p_texture);
 
 	if (!fm.dirty_list.in_list())
 		fixed_material_dirty_list.add( &fm.dirty_list );
@@ -480,7 +480,7 @@ void Rasterizer::fixed_material_set_uv_transform(RID p_material,const Transform&
 	FixedMaterial &fm=*E->get();
 	RID material=E->key();
 
-	VS::get_singleton()->material_set_param(material,0,_fixed_material_uv_xform_name,p_transform);
+	VS::get_singleton()->material_set_param(material,_fixed_material_uv_xform_name,p_transform);
 
 	fm.uv_xform=p_transform;
 
@@ -526,7 +526,7 @@ void Rasterizer::fixed_material_set_point_size(RID p_material,float p_size) {
 	FixedMaterial &fm=*E->get();
 	RID material=E->key();
 
-	VS::get_singleton()->material_set_param(material,0,_fixed_material_point_size_name,p_size);
+	VS::get_singleton()->material_set_param(material,_fixed_material_point_size_name,p_size);
 
 	fm.point_size=p_size;
 
@@ -556,20 +556,20 @@ void Rasterizer::_update_fixed_materials() {
 			_free_shader(fm.current_key);
 			RID new_rid = _create_shader(new_key);
 			fm.current_key=new_key;
-			material_set_shader(fm.self,0,new_rid);
+			material_set_shader(fm.self,new_rid);
 
 			if (fm.texture[VS::FIXED_MATERIAL_PARAM_DETAIL].is_valid()) {
 				//send these again just in case.
-				material_set_param(fm.self,0,_fixed_material_param_names[VS::FIXED_MATERIAL_PARAM_DETAIL],fm.param[VS::FIXED_MATERIAL_PARAM_DETAIL]);
+				material_set_param(fm.self,_fixed_material_param_names[VS::FIXED_MATERIAL_PARAM_DETAIL],fm.param[VS::FIXED_MATERIAL_PARAM_DETAIL]);
 			}
 			if (fm.texture[VS::FIXED_MATERIAL_PARAM_NORMAL].is_valid()) {
 				//send these again just in case.
-				material_set_param(fm.self,0,_fixed_material_param_names[VS::FIXED_MATERIAL_PARAM_NORMAL],fm.param[VS::FIXED_MATERIAL_PARAM_NORMAL]);
+				material_set_param(fm.self,_fixed_material_param_names[VS::FIXED_MATERIAL_PARAM_NORMAL],fm.param[VS::FIXED_MATERIAL_PARAM_NORMAL]);
 			}
 
-			material_set_param(fm.self,0,_fixed_material_uv_xform_name,fm.uv_xform);
+			material_set_param(fm.self,_fixed_material_uv_xform_name,fm.uv_xform);
 			if (fm.use_pointsize) {
-				material_set_param(fm.self,0,_fixed_material_point_size_name,fm.point_size);
+				material_set_param(fm.self,_fixed_material_point_size_name,fm.point_size);
 			}
 		}
 
@@ -633,8 +633,8 @@ RID Rasterizer::create_overdraw_debug_material() {
 	fixed_material_set_parameter( mat,VisualServer::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0.1,0.1,0.2) );
 	fixed_material_set_parameter( mat,VisualServer::FIXED_MATERIAL_PARAM_EMISSION,Color(0,0,0) );
 	fixed_material_set_flag( mat, VS::FIXED_MATERIAL_FLAG_USE_ALPHA, true);
-	material_set_flag( mat, 0, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-	material_set_blend_mode( mat,0,VisualServer::MATERIAL_BLEND_MODE_ADD );
+	material_set_flag( mat, VisualServer::MATERIAL_FLAG_UNSHADED, true );
+	material_set_blend_mode( mat,VisualServer::MATERIAL_BLEND_MODE_ADD );
 
 
 	return mat;

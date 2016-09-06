@@ -543,7 +543,6 @@ void register_scene_types() {
 	ObjectTypeDB::register_virtual_type<Material>();
 	ObjectTypeDB::register_type<FixedMaterial>();
 	ObjectTypeDB::register_type<ShaderMaterial>();
-	ObjectTypeDB::register_type<MultiPassMaterial>();
 	ObjectTypeDB::register_type<RoomBounds>();
 	ObjectTypeDB::register_type<MaterialShaderGraph>();
 	ObjectTypeDB::register_type<MaterialShader>();

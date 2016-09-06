@@ -87,63 +87,33 @@ class RasterizerDummy : public Rasterizer {
 
 
 	struct Material {
-		struct Pass {
-			bool flags[VS::MATERIAL_FLAG_MAX];
 
-			VS::MaterialBlendMode blend_mode;
-			VS::MaterialDepthDrawMode depth_draw_mode;
+		bool flags[VS::MATERIAL_FLAG_MAX];
 
-			float line_width;
-			bool has_alpha;
+		VS::MaterialDepthDrawMode depth_draw_mode;
 
-			mutable uint32_t shader_version;
+		VS::MaterialBlendMode blend_mode;
 
-			RID shader; // shader material
-			Shader *shader_cache;
+		float line_width;
+		float point_size;
 
-			struct UniformData {
+		RID shader; // shader material
 
-				bool inuse;
-				bool istexture;
-				Variant value;
-				int index;
-			};
+		Map<StringName,Variant> shader_params;
 
-			uint64_t last_pass;
-
-			Map<StringName, Variant> shader_params;
-
-			Pass() {
-				for (int i = 0; i<VS::MATERIAL_FLAG_MAX; i++)
-					flags[i] = false;
-				flags[VS::MATERIAL_FLAG_VISIBLE] = true;
-
-				line_width = 1;
-				has_alpha = false;
-				depth_draw_mode = VS::MATERIAL_DEPTH_DRAW_OPAQUE_ONLY;
-				blend_mode = VS::MATERIAL_BLEND_MODE_MIX;
-				shader_version = 0;
-				shader_cache = NULL;
-				last_pass = 0;
-			}
-		};
-
-		Vector<Pass> passes;
-
-		void set_pass_count(const int p_pass_count) {
-			int original_size = passes.size();
-			passes.resize(p_pass_count);
-			if (original_size > p_pass_count || original_size < p_pass_count) {
-				passes.resize(p_pass_count);
-				if (original_size > p_pass_count) {
-					for (int i = original_size; i < p_pass_count; i++) {
-						passes[i] = Pass();
-					}
-				}
-			}
-		}
 
 		Material() {
+
+
+			for(int i=0;i<VS::MATERIAL_FLAG_MAX;i++)
+				flags[i]=false;
+			flags[VS::MATERIAL_FLAG_VISIBLE]=true;
+
+			depth_draw_mode=VS::MATERIAL_DEPTH_DRAW_OPAQUE_ONLY;
+			line_width=1;
+			blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
+			point_size = 1.0;
+
 		}
 	};
 	mutable RID_Owner<Material> material_owner;
@@ -469,28 +439,25 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	virtual RID material_create(const int p_pass_count);
+	virtual RID material_create();
 
-	virtual void material_set_shader(RID p_shader_material, const int p_pass_index, RID p_shader);
-	virtual RID material_get_shader(RID p_shader_material, const int p_pass_index) const;
+	virtual void material_set_shader(RID p_shader_material, RID p_shader);
+	virtual RID material_get_shader(RID p_shader_material) const;
 
-	virtual void material_set_param(RID p_material, const int p_pass_index, const StringName& p_param, const Variant& p_value);
-	virtual Variant material_get_param(RID p_material, const int p_pass_index, const StringName& p_param) const;
+	virtual void material_set_param(RID p_material, const StringName& p_param, const Variant& p_value);
+	virtual Variant material_get_param(RID p_material, const StringName& p_param) const;
 
-	virtual void material_set_flag(RID p_material, const int p_pass_index, VS::MaterialFlag p_flag, bool p_enabled);
-	virtual bool material_get_flag(RID p_material, const int p_pass_index, VS::MaterialFlag p_flag) const;
+	virtual void material_set_flag(RID p_material, VS::MaterialFlag p_flag,bool p_enabled);
+	virtual bool material_get_flag(RID p_material,VS::MaterialFlag p_flag) const;
 
-	virtual void material_set_depth_draw_mode(RID p_material, const int p_pass_index, VS::MaterialDepthDrawMode p_mode);
-	virtual VS::MaterialDepthDrawMode material_get_depth_draw_mode(RID p_material, const int p_pass_index) const;
+	virtual void material_set_depth_draw_mode(RID p_material, VS::MaterialDepthDrawMode p_mode);
+	virtual VS::MaterialDepthDrawMode material_get_depth_draw_mode(RID p_material) const;
 
-	virtual void material_set_blend_mode(RID p_material,const int p_pass_index,VS::MaterialBlendMode p_mode);
-	virtual VS::MaterialBlendMode material_get_blend_mode(RID p_material, const int p_pass_index) const;
+	virtual void material_set_blend_mode(RID p_material,VS::MaterialBlendMode p_mode);
+	virtual VS::MaterialBlendMode material_get_blend_mode(RID p_material) const;
 
-	virtual void material_set_line_width(RID p_material,const int p_pass_index,float p_line_width);
-	virtual float material_get_line_width(RID p_material, const int p_pass_index) const;
-
-	virtual void material_set_pass_count(RID p_material, const int p_pass_count);
-	virtual int material_get_pass_count(RID p_material) const;
+	virtual void material_set_line_width(RID p_material,float p_line_width);
+	virtual float material_get_line_width(RID p_material) const;
 
 	/* MESH API */
 
