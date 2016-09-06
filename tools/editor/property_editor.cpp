@@ -4283,7 +4283,7 @@ void SectionedPropertyEditor::update_category_list() {
 		else if ( !(pi.usage&PROPERTY_USAGE_EDITOR) )
 			continue;
 
-		if (pi.name.find(":")!=-1 || pi.name=="script/script")
+		if (pi.name.find(":")!=-1 || pi.name=="script/script" || pi.name.begins_with("resource/"))
 			continue;
 		int sp = pi.name.find("/");
 		if (sp!=-1) {
