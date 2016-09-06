@@ -360,7 +360,8 @@ bool GraphEdit::_filter_input(const Point2& p_point) {
 
 	Ref<Texture> port =get_icon("port","GraphNode");
 
-	float grab_r=port->get_width()*0.5;
+	float grab_r_extend = 2.0;
+	float grab_r=port->get_width()*0.5*grab_r_extend;
 	for(int i=get_child_count()-1;i>=0;i--) {
 
 		GraphNode *gn=get_child(i)->cast_to<GraphNode>();
@@ -379,8 +380,9 @@ bool GraphEdit::_filter_input(const Point2& p_point) {
 		for(int j=0;j<gn->get_connection_input_count();j++) {
 
 			Vector2 pos = gn->get_connection_input_pos(j)+gn->get_pos();
-			if (pos.distance_to(p_point)<grab_r)
+			if (pos.distance_to(p_point)<grab_r) {
 				return true;
+			}
 
 
 		}
@@ -392,11 +394,13 @@ bool GraphEdit::_filter_input(const Point2& p_point) {
 
 void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 
+
+	float grab_r_extend = 2.0;
 	if (p_ev.type==InputEvent::MOUSE_BUTTON && p_ev.mouse_button.button_index==BUTTON_LEFT && p_ev.mouse_button.pressed) {
 
 		Ref<Texture> port =get_icon("port","GraphNode");
 		Vector2 mpos(p_ev.mouse_button.x,p_ev.mouse_button.y);
-		float grab_r=port->get_width()*0.5;
+		float grab_r=port->get_width()*0.5*grab_r_extend;
 		for(int i=get_child_count()-1;i>=0;i--) {
 
 			GraphNode *gn=get_child(i)->cast_to<GraphNode>();
@@ -517,7 +521,7 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 
 		Ref<Texture> port =get_icon("port","GraphNode");
 		Vector2 mpos(p_ev.mouse_button.x,p_ev.mouse_button.y);
-		float grab_r=port->get_width()*0.5;
+		float grab_r=port->get_width()*0.5*grab_r_extend;
 		for(int i=get_child_count()-1;i>=0;i--) {
 
 			GraphNode *gn=get_child(i)->cast_to<GraphNode>();
