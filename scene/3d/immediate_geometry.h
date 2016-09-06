@@ -62,7 +62,7 @@ public:
 	void clear();
 
 
-	void add_sphere(int p_lats,int p_lons,float p_radius);
+	void add_sphere(int p_lats,int p_lons,float p_radius,bool p_add_uv=true);
 
 
 
