@@ -2417,6 +2417,7 @@ void ShaderGraphView::_create_node(int p_id) {
 		colors.push_back("Color");
 		colors.push_back("LightColor");
 		colors.push_back("Light");
+		colors.push_back("ShadowColor");
 		colors.push_back("Diffuse");
 		colors.push_back("Specular");
 		colors.push_back("Emmision");
@@ -2429,6 +2430,7 @@ void ShaderGraphView::_create_node(int p_id) {
 		reals.push_back("ShadeParam");
 		reals.push_back("SpecularExp");
 		reals.push_back("LightAlpha");
+		reals.push_back("ShadowAlpha");
 		reals.push_back("PointSize");
 		reals.push_back("Discard");
 
