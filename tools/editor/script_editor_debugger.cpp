@@ -1087,6 +1087,9 @@ void ScriptEditorDebugger::start() {
 
 	stop();
 
+	if (!EditorNode::get_log()->is_visible()) {
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
+	}
 
 	uint16_t port = GLOBAL_DEF("debug/remote_port",6007);
 	perf_history.clear();
