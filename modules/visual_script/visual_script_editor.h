@@ -168,6 +168,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _member_button(Object *p_item, int p_column, int p_button);
 
+	void _expression_text_changed(const String& p_text,int p_id);
 
 
 	String revert_on_drag;

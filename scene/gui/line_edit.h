@@ -90,6 +90,11 @@ private:
 	} selection;
 
 	Timer *caret_blink_timer;
+
+
+	void _text_changed();
+	bool expand_to_text_length;
+
 	bool caret_blink_enabled;
 	bool draw_caret;
 	bool window_has_focus;
@@ -168,6 +173,9 @@ public:
 	void select(int p_from=0, int p_to=-1);
 
 	virtual Size2 get_minimum_size() const;
+
+	void set_expand_to_text_length(bool p_len);
+	bool get_expand_to_text_length() const;
 
 	virtual bool is_text_field() const;
 	LineEdit();
