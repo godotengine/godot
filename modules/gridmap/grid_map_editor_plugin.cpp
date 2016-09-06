@@ -885,8 +885,8 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 		//update grids
 		indicator_mat = VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->material_set_flag( indicator_mat, 0, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-		VisualServer::get_singleton()->material_set_flag( indicator_mat, 0, VisualServer::MATERIAL_FLAG_ONTOP, false );
+		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_UNSHADED, true );
+		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_ONTOP, false );
 
 		VisualServer::get_singleton()->fixed_material_set_param(indicator_mat,VisualServer::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0.8,0.5,0.1));
 		VisualServer::get_singleton()->fixed_material_set_flag( indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
@@ -1388,8 +1388,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		inner_mat = VisualServer::get_singleton()->fixed_material_create();
 		VisualServer::get_singleton()->fixed_material_set_param(inner_mat,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0.7,0.7,1.0,0.3));
-		VisualServer::get_singleton()->material_set_flag(inner_mat,0,VS::MATERIAL_FLAG_ONTOP,true);
-		VisualServer::get_singleton()->material_set_flag(inner_mat,0,VS::MATERIAL_FLAG_UNSHADED,true);
+		VisualServer::get_singleton()->material_set_flag(inner_mat,VS::MATERIAL_FLAG_ONTOP,true);
+		VisualServer::get_singleton()->material_set_flag(inner_mat,VS::MATERIAL_FLAG_UNSHADED,true);
 		VisualServer::get_singleton()->fixed_material_set_flag( inner_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
 
 
@@ -1399,9 +1399,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		outer_mat = VisualServer::get_singleton()->fixed_material_create();
 		VisualServer::get_singleton()->fixed_material_set_param(outer_mat,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0.7,0.7,1.0,0.8));
-		VisualServer::get_singleton()->material_set_line_width(outer_mat,0,3.0);
-		VisualServer::get_singleton()->material_set_flag(outer_mat,0,VS::MATERIAL_FLAG_ONTOP,true);
-		VisualServer::get_singleton()->material_set_flag(outer_mat,0,VS::MATERIAL_FLAG_UNSHADED,true);
+		VisualServer::get_singleton()->material_set_line_width(outer_mat,3.0);
+		VisualServer::get_singleton()->material_set_flag(outer_mat,VS::MATERIAL_FLAG_ONTOP,true);
+		VisualServer::get_singleton()->material_set_flag(outer_mat,VS::MATERIAL_FLAG_UNSHADED,true);
 		VisualServer::get_singleton()->fixed_material_set_flag( outer_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
 
 
@@ -1412,8 +1412,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		inner_mat_dup = VisualServer::get_singleton()->fixed_material_create();
 		VisualServer::get_singleton()->fixed_material_set_param(inner_mat_dup,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(1.0,0.7,0.7,0.3));
-		VisualServer::get_singleton()->material_set_flag(inner_mat_dup,0,VS::MATERIAL_FLAG_ONTOP,true);
-		VisualServer::get_singleton()->material_set_flag(inner_mat_dup,0,VS::MATERIAL_FLAG_UNSHADED,true);
+		VisualServer::get_singleton()->material_set_flag(inner_mat_dup,VS::MATERIAL_FLAG_ONTOP,true);
+		VisualServer::get_singleton()->material_set_flag(inner_mat_dup,VS::MATERIAL_FLAG_UNSHADED,true);
 		VisualServer::get_singleton()->fixed_material_set_flag( inner_mat_dup, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
 
 
@@ -1423,9 +1423,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		outer_mat_dup = VisualServer::get_singleton()->fixed_material_create();
 		VisualServer::get_singleton()->fixed_material_set_param(outer_mat_dup,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(1.0,0.7,0.7,0.8));
-		VisualServer::get_singleton()->material_set_line_width(outer_mat_dup,0,3.0);
-		VisualServer::get_singleton()->material_set_flag(outer_mat_dup,0,VS::MATERIAL_FLAG_ONTOP,true);
-		VisualServer::get_singleton()->material_set_flag(outer_mat_dup,0,VS::MATERIAL_FLAG_UNSHADED,true);
+		VisualServer::get_singleton()->material_set_line_width(outer_mat_dup,3.0);
+		VisualServer::get_singleton()->material_set_flag(outer_mat_dup,VS::MATERIAL_FLAG_ONTOP,true);
+		VisualServer::get_singleton()->material_set_flag(outer_mat_dup,VS::MATERIAL_FLAG_UNSHADED,true);
 		VisualServer::get_singleton()->fixed_material_set_flag( outer_mat_dup, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
 
 

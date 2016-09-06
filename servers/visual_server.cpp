@@ -315,9 +315,9 @@ RID VisualServer::material_2d_get(bool p_shaded, bool p_transparent, bool p_cut_
 	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_USE_ALPHA,p_transparent);
 	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
 	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_DISCARD_ALPHA,p_cut_alpha);
-	material_set_flag(material_2d[version],0,MATERIAL_FLAG_UNSHADED,!p_shaded);
-	material_set_flag(material_2d[version],0,MATERIAL_FLAG_DOUBLE_SIDED,true);
-	material_set_depth_draw_mode(material_2d[version],0,p_opaque_prepass?MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA:MATERIAL_DEPTH_DRAW_OPAQUE_ONLY);
+	material_set_flag(material_2d[version],MATERIAL_FLAG_UNSHADED,!p_shaded);
+	material_set_flag(material_2d[version],MATERIAL_FLAG_DOUBLE_SIDED,true);
+	material_set_depth_draw_mode(material_2d[version],p_opaque_prepass?MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA:MATERIAL_DEPTH_DRAW_OPAQUE_ONLY);
 	fixed_material_set_texture(material_2d[version],FIXED_MATERIAL_PARAM_DIFFUSE,get_white_texture());
 	//material cut alpha?
 	return material_2d[version];
