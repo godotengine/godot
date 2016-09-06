@@ -577,6 +577,13 @@ Error VisualScriptExpression::_get_token(Token& r_token) {
 							}
 						}
 
+						VisualScriptBuiltinFunc::BuiltinFunc bifunc = VisualScriptBuiltinFunc::find_function(id);
+						if (bifunc!=VisualScriptBuiltinFunc::FUNC_MAX) {
+							r_token.type=TK_BUILTIN_FUNC;
+							r_token.value=bifunc;
+							return OK;
+						}
+
 						r_token.type=TK_IDENTIFIER;
 						r_token.value=id;
 					}
@@ -603,6 +610,7 @@ const char* VisualScriptExpression::token_name[TK_MAX]={
 "PARENTHESIS OPEN",
 "PARENTHESIS CLOSE",
 "IDENTIFIER",
+"BUILTIN FUNC",
 "SELF",
 "CONSTANT",
 "BASIC TYPE",
@@ -812,6 +820,53 @@ VisualScriptExpression::ENode* VisualScriptExpression::_parse_expression() {
 				}
 
 				expr=constructor;
+
+			} break;
+			case TK_BUILTIN_FUNC: {
+				//builtin function
+
+				Variant::Type bt = Variant::Type(int(tk.value));
+				_get_token(tk);
+				if (tk.type!=TK_PARENTHESIS_OPEN) {
+					_set_error("Expected '('");
+					return NULL;
+				}
+
+				BuiltinFuncNode *bifunc = alloc_node<BuiltinFuncNode>();
+				bifunc->func=VisualScriptBuiltinFunc::BuiltinFunc(int(tk.value));
+
+				while(true) {
+
+					int cofs=str_ofs;
+					_get_token(tk);
+					if (tk.type==TK_PARENTHESIS_CLOSE) {
+						break;
+					}
+					str_ofs=cofs; //revert
+					//parse an expression
+					ENode* expr=_parse_expression();
+					if (!expr)
+						return NULL;
+
+					bifunc->arguments.push_back(expr);
+
+					cofs=str_ofs;
+					_get_token(tk);
+					if (tk.type==TK_COMMA) {
+						//all good
+					} else if (tk.type==TK_PARENTHESIS_CLOSE) {
+						str_ofs=cofs;
+					} else {
+						_set_error("Expected ',' or ')'");
+					}
+				}
+
+				int expected_args = VisualScriptBuiltinFunc::get_func_argument_count(bifunc->func);
+				if (bifunc->arguments.size() != expected_args) {
+					_set_error("Builtin func '"+VisualScriptBuiltinFunc::get_func_name(bifunc->func)+"' expects "+itos(expected_args)+" arguments.");
+				}
+
+				expr=bifunc;
 
 			} break;
 			case TK_OP_SUB: {
@@ -1336,6 +1391,34 @@ public:
 					return true;
 				}
 
+
+			} break;
+			case VisualScriptExpression::ENode::TYPE_BUILTIN_FUNC:  {
+
+				const VisualScriptExpression::BuiltinFuncNode *bifunc = static_cast<const VisualScriptExpression::BuiltinFuncNode*>(p_node);
+
+				Vector<Variant> arr;
+				Vector<const Variant*> argp;
+				arr.resize(bifunc->arguments.size());
+				argp.resize(bifunc->arguments.size());
+
+				for (int i=0;i<bifunc->arguments.size();i++) {
+
+					Variant value;
+					bool ret = _execute(p_inputs,bifunc->arguments[i],value,r_error_str,ce);
+					if (ret)
+						return true;
+					arr[i]=value;
+					argp[i]=&arr[i];
+				}
+
+
+				VisualScriptBuiltinFunc::exec_func(bifunc->func,argp.ptr(),&r_ret,ce,r_error_str);
+
+				if (ce.error!=Variant::CallError::CALL_OK) {
+					r_error_str="Builtin Call Failed. "+r_error_str;
+					return true;
+				}
 
 			} break;
 			case VisualScriptExpression::ENode::TYPE_CALL:  {

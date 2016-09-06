@@ -1417,7 +1417,8 @@ bool VisualScriptInstance::get(const StringName& p_name, Variant &r_ret) const {
 	if (!E)
 		return false;
 
-	return E->get();
+	r_ret=E->get();
+	return true;
 }
 void VisualScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const{
 
