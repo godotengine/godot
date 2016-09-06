@@ -904,6 +904,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["LIGHT_VEC"]="light_vec";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["LIGHT_HEIGHT"]="light_height";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["LIGHT_COLOR"]="light";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["LIGHT_SHADOW"]="light_shadow_color";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["LIGHT_UV"]="light_uv";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["LIGHT"]="light_out";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["SHADOW"]="shadow_color";
