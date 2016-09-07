@@ -17920,6 +17920,15 @@
 				Return tooltip hint for specified item index.
 			</description>
 		</method>
+		<method name="is_item_tooltip_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns whether the tooptip is enabled for specified item index.
+			</description>
+		</method>
 		<method name="get_max_columns" qualifiers="const">
 			<return type="int">
 			</return>
@@ -18099,6 +18108,15 @@
 			</argument>
 			<description>
 				Sets tooltip hint for item at specified index.
+			</description>
+		</method>
+		<method name="set_item_tooltip_enabled">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				Sets whether the tooltip is enabled for specified item index.
 			</description>
 		</method>
 		<method name="set_max_columns">
