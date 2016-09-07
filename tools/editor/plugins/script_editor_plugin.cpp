@@ -1292,6 +1292,7 @@ struct _ScriptEditorItemData {
 void ScriptEditor::_update_script_colors() {
 
 	bool enabled = EditorSettings::get_singleton()->get("text_editor/script_temperature_enabled");
+	bool highlight_current = EditorSettings::get_singleton()->get("text_editor/highlight_current_script");
 	if (!enabled)
 		return;
 
@@ -1319,8 +1320,12 @@ void ScriptEditor::_update_script_colors() {
 		int non_zero_hist_size = ( hist_size == 0 ) ? 1 : hist_size;
 		float v = Math::ease((edit_pass-pass)/float(non_zero_hist_size),0.4);
 
-
-		script_list->set_item_custom_bg_color(i,hot_color.linear_interpolate(cold_color,v));
+		bool current = tab_container->get_current_tab() == c;
+		if (current && highlight_current) {
+			script_list->set_item_custom_bg_color(i, EditorSettings::get_singleton()->get("text_editor/current_script_background_color"));
+		} else {
+			script_list->set_item_custom_bg_color(i,hot_color.linear_interpolate(cold_color,v));
+		}
 	}
 }
 
@@ -2356,9 +2361,11 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("external_editor/use_external_editor",false);
 	EDITOR_DEF("external_editor/exec_path","");
 	EDITOR_DEF("text_editor/script_temperature_enabled",true);
+	EDITOR_DEF("text_editor/highlight_current_script", true);
 	EDITOR_DEF("text_editor/script_temperature_history_size",15);
 	EDITOR_DEF("text_editor/script_temperature_hot_color",Color(1,0,0,0.3));
 	EDITOR_DEF("text_editor/script_temperature_cold_color",Color(0,0,1,0.3));
+	EDITOR_DEF("text_editor/current_script_background_color",Color(0.81,0.81,0.14,0.63));
 	EDITOR_DEF("text_editor/group_help_pages",true);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"external_editor/exec_path",PROPERTY_HINT_GLOBAL_FILE));
 	EDITOR_DEF("external_editor/exec_flags","");
