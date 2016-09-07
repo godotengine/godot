@@ -10871,7 +10871,7 @@
 			</return>
 			<description>
 				Initialise the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
-				Return false if the stream could not be initialised.
+				Return true if the stream could not be initialised.
 			</description>
 		</method>
 		<method name="list_dir_end">
