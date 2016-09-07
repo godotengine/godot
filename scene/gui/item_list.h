@@ -56,6 +56,7 @@ private:
 		bool selectable;
 		bool selected;
 		bool disabled;
+		bool tooltip_enabled;
 		Variant metadata;
 		String tooltip;
 		Color custom_bg;
@@ -134,6 +135,9 @@ public:
 
 	void set_item_tag_icon(int p_idx,const Ref<Texture>& p_tag_icon);
 	Ref<Texture> get_item_tag_icon(int p_idx) const;
+
+	void set_item_tooltip_enabled(int p_idx, const bool p_enabled);
+	bool is_item_tooltip_enabled(int p_idx) const;
 
 	void set_item_tooltip(int p_idx,const String& p_tooltip);
 	String get_item_tooltip(int p_idx) const;

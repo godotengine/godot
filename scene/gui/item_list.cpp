@@ -40,6 +40,7 @@ void ItemList::add_item(const String& p_item,const Ref<Texture>& p_texture,bool 
 	item.selectable=p_selectable;
 	item.selected=false;
 	item.disabled=false;
+	item.tooltip_enabled=true;
 	item.custom_bg=Color(0,0,0,0);
 	items.push_back(item);
 
@@ -57,6 +58,7 @@ void ItemList::add_icon_item(const Ref<Texture>& p_item,bool p_selectable){
 	item.selectable=p_selectable;
 	item.selected=false;
 	item.disabled=false;
+	item.tooltip_enabled=true;
 	item.custom_bg=Color(0,0,0,0);
 	items.push_back(item);
 
@@ -80,6 +82,16 @@ String ItemList::get_item_text(int p_idx) const{
 	ERR_FAIL_INDEX_V(p_idx,items.size(),String());
 	return items[p_idx].text;
 
+}
+
+void ItemList::set_item_tooltip_enabled(int p_idx, const bool p_enabled) {
+	ERR_FAIL_INDEX(p_idx,items.size());
+	items[p_idx].tooltip_enabled = p_enabled;
+}
+
+bool ItemList::is_item_tooltip_enabled(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx,items.size(), false);
+	return items[p_idx].tooltip_enabled;
 }
 
 void ItemList::set_item_tooltip(int p_idx,const String& p_tooltip){
@@ -1198,6 +1210,9 @@ String ItemList::get_tooltip(const Point2& p_pos) const {
 	int closest = get_item_at_pos(p_pos);
 
 	if (closest!=-1) {
+		if (!items[closest].tooltip_enabled) {
+			return "";
+		}
 		if (items[closest].tooltip!="") {
 			return items[closest].tooltip;
 		}
@@ -1293,6 +1308,9 @@ void ItemList::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("set_item_custom_bg_color","idx","custom_bg_color"),&ItemList::set_item_custom_bg_color);
 	ObjectTypeDB::bind_method(_MD("get_item_custom_bg_color","idx"),&ItemList::get_item_custom_bg_color);
+
+	ObjectTypeDB::bind_method(_MD("set_item_tooltip_enabled","idx","enable"),&ItemList::set_item_tooltip_enabled);
+	ObjectTypeDB::bind_method(_MD("is_item_tooltip_enabled","idx"),&ItemList::is_item_tooltip_enabled);
 
 	ObjectTypeDB::bind_method(_MD("set_item_tooltip","idx","tooltip"),&ItemList::set_item_tooltip);
 	ObjectTypeDB::bind_method(_MD("get_item_tooltip","idx"),&ItemList::get_item_tooltip);
