@@ -751,7 +751,7 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 
-	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo(Variant::OBJECT,"new"));
+	ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo(Variant::OBJECT,"new"));
 
 	ObjectTypeDB::bind_method(_MD("get_as_byte_code"),&GDScript::get_as_byte_code);
 

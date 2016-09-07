@@ -61,11 +61,7 @@ void FuncRef::_bind_methods() {
 		MethodInfo mi;
 		mi.name="call_func";
 		Vector<Variant> defargs;
-		for(int i=0;i<10;i++) {
-			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-			defargs.push_back(Variant());
-		}
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call_func:Variant",&FuncRef::call_func,mi,defargs);
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_func:Variant",&FuncRef::call_func,mi,defargs);
 
 	}
 

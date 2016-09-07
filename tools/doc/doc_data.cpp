@@ -198,6 +198,11 @@ void DocData::generate(bool p_basic_types) {
 				if (method.qualifiers!="")
 					method.qualifiers+=" ";
 				method.qualifiers+="const";
+
+			} else if (E->get().flags&METHOD_FLAG_VARARG) {
+				if (method.qualifiers!="")
+					method.qualifiers+=" ";
+				method.qualifiers+="vararg";
 			}
 
 			for(int i=-1;i<E->get().arguments.size();i++) {

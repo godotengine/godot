@@ -2903,16 +2903,16 @@ void Node::_bind_methods() {
 
 
 		mi.name="rpc";
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"rpc",&Node::_rpc_bind,mi);
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc",&Node::_rpc_bind,mi);
 		mi.name="rpc_unreliable";
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"rpc_unreliable",&Node::_rpc_unreliable_bind,mi);
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc_unreliable",&Node::_rpc_unreliable_bind,mi);
 
-		mi.arguments.push_front( PropertyInfo( Variant::INT, "peer_") );
+		mi.arguments.push_front( PropertyInfo( Variant::INT, "peer_id") );
 
 		mi.name="rpc_id";
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"rpc_id",&Node::_rpc_id_bind,mi);
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc_id",&Node::_rpc_id_bind,mi);
 		mi.name="rpc_unreliable_id";
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"rpc_unreliable_id",&Node::_rpc_unreliable_id_bind,mi);
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc_unreliable_id",&Node::_rpc_unreliable_id_bind,mi);
 
 
 	}

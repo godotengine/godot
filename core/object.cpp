@@ -1693,42 +1693,26 @@ void Object::_bind_methods() {
 		MethodInfo mi;
 		mi.name="emit_signal";
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "signal"));
-		Vector<Variant> defargs;
-		for(int i=0;i<VARIANT_ARG_MAX;i++) {
-			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-			defargs.push_back(Variant());
-		}
 
-
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"emit_signal",&Object::_emit_signal,mi,defargs);
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"emit_signal",&Object::_emit_signal,mi);
 	}
 
 	{
 		MethodInfo mi;
 		mi.name="call";
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
-		Vector<Variant> defargs;
-		for(int i=0;i<10;i++) {
-			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-			defargs.push_back(Variant());
-		}
 
 
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call:Variant",&Object::_call_bind,mi,defargs);
+
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call:Variant",&Object::_call_bind,mi);
 	}
 
 	{
 		MethodInfo mi;
 		mi.name="call_deferred";
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
-		Vector<Variant> defargs;
-		for(int i=0;i<VARIANT_ARG_MAX;i++) {
-			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-			defargs.push_back(Variant());
-		}
 
-
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call_deferred",&Object::_call_deferred_bind,mi,defargs);
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_deferred",&Object::_call_deferred_bind,mi);
 	}
 
 	ObjectTypeDB::bind_method(_MD("callv:Variant","method","arg_array"),&Object::callv);
