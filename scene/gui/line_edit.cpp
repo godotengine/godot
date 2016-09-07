@@ -1228,9 +1228,9 @@ PopupMenu *LineEdit::get_menu() const {
 #endif
 
 
-void LineEdit::set_expand_to_text_length(bool p_len) {
+void LineEdit::set_expand_to_text_length(bool p_enabled) {
 
-	expand_to_text_length=p_len;
+	expand_to_text_length = p_enabled;
 	minimum_size_changed();
 }
 
@@ -1272,9 +1272,9 @@ void LineEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_placeholder_alpha"),&LineEdit::get_placeholder_alpha);
 	ObjectTypeDB::bind_method(_MD("set_cursor_pos","pos"),&LineEdit::set_cursor_pos);
 	ObjectTypeDB::bind_method(_MD("get_cursor_pos"),&LineEdit::get_cursor_pos);
-	ObjectTypeDB::bind_method(_MD("set_expand_to_text_length","pos"),&LineEdit::set_expand_to_text_length);
+	ObjectTypeDB::bind_method(_MD("set_expand_to_text_length","enabled"),&LineEdit::set_expand_to_text_length);
 	ObjectTypeDB::bind_method(_MD("get_expand_to_text_length"),&LineEdit::get_expand_to_text_length);
-	ObjectTypeDB::bind_method(_MD("cursor_set_blink_enabled", "enable"),&LineEdit::cursor_set_blink_enabled);
+	ObjectTypeDB::bind_method(_MD("cursor_set_blink_enabled", "enabled"),&LineEdit::cursor_set_blink_enabled);
 	ObjectTypeDB::bind_method(_MD("cursor_get_blink_enabled"),&LineEdit::cursor_get_blink_enabled);
 	ObjectTypeDB::bind_method(_MD("cursor_set_blink_speed", "blink_speed"),&LineEdit::cursor_set_blink_speed);
 	ObjectTypeDB::bind_method(_MD("cursor_get_blink_speed"),&LineEdit::cursor_get_blink_speed);
