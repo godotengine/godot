@@ -14465,6 +14465,8 @@
 		</theme_item>
 		<theme_item name="comment" type="StyleBox">
 		</theme_item>
+		<theme_item name="commentfocus" type="StyleBox">
+		</theme_item>
 		<theme_item name="defaultfocus" type="StyleBox">
 		</theme_item>
 		<theme_item name="defaultframe" type="StyleBox">
@@ -16023,6 +16025,8 @@
 			</argument>
 			<argument index="2" name="radius" type="float">
 			</argument>
+			<argument index="3" name="add_uv" type="bool" default="true">
+			</argument>
 			<description>
 				Simple helper to draw an uvsphere, with given latitudes, longitude and radius.
 			</description>
@@ -16124,7 +16128,7 @@
 				Add a new mapping entry (in SDL2 format) to the mapping database. Optionally update already connected devices.
 			</description>
 		</method>
-		<method name="get_accelerometer">
+		<method name="get_accelerometer" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -16138,14 +16142,14 @@
 				Returns an [Array] containing the device IDs of all currently connected joysticks.
 			</description>
 		</method>
-		<method name="get_gyroscope">
+		<method name="get_gyroscope" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				If the device has a gyroscope, this will return the rate of rotation in rad/s around a device's x, y, and z axis.
 			</description>
 		</method>
-		<method name="get_joy_axis">
+		<method name="get_joy_axis" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="device" type="int">
@@ -16192,7 +16196,7 @@
 				Returns the strength of the joystick vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
 			</description>
 		</method>
-		<method name="get_magnetometer">
+		<method name="get_magnetometer" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -16220,7 +16224,23 @@
 				Returns the mouse speed for the last time the cursor was moved, and this until the next frame where the mouse moves. This means that even if the mouse is not moving, this function will still return the value of the last motion.
 			</description>
 		</method>
-		<method name="is_action_pressed">
+		<method name="is_action_just_pressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_action_just_released" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_action_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="action" type="String">
@@ -16229,7 +16249,7 @@
 				Returns true or false depending on whether the action event is pressed. Actions and their events can be set in the Project Settings / Input Map tab. Or be set with [InputMap].
 			</description>
 		</method>
-		<method name="is_joy_button_pressed">
+		<method name="is_joy_button_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="device" type="int">
@@ -16249,7 +16269,7 @@
 				Returns if the specified device is known by the system. This means that it sets all button and axis indices exactly as defined in the JOY_* constants (see [@Global Scope]). Unknown joysticks are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
-		<method name="is_key_pressed">
+		<method name="is_key_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="scancode" type="int">
@@ -16258,7 +16278,7 @@
 				Returns true or false depending on whether the key is pressed or not. You can pass KEY_*, which are pre-defined constants listed in [@Global Scope].
 			</description>
 		</method>
-		<method name="is_mouse_button_pressed">
+		<method name="is_mouse_button_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="button" type="int">
@@ -18606,7 +18626,9 @@
 			</argument>
 			<argument index="1" name="floor_normal" type="Vector2" default="Vector2(0, 0)">
 			</argument>
-			<argument index="2" name="max_bounces" type="int" default="4">
+			<argument index="2" name="slope_stop_min_velocity" type="float" default="5">
+			</argument>
+			<argument index="3" name="max_bounces" type="int" default="4">
 			</argument>
 			<description>
 			</description>
@@ -18635,10 +18657,12 @@
 		<method name="test_move">
 			<return type="bool">
 			</return>
-			<argument index="0" name="rel_vec" type="Vector2">
+			<argument index="0" name="from" type="Matrix32">
+			</argument>
+			<argument index="1" name="rel_vec" type="Vector2">
 			</argument>
 			<description>
-				Return true if there would be a collision if the body moved in the given direction.
+				Return true if there would be a collision if the body moved from the given point in the given direction.
 			</description>
 		</method>
 	</methods>
@@ -19436,7 +19460,7 @@
 			</description>
 		</method>
 		<method name="cursor_set_blink_enabled">
-			<argument index="0" name="enable" type="bool">
+			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
 				Set the line edit caret to blink.
@@ -19460,6 +19484,12 @@
 			</return>
 			<description>
 				Return the cursor position inside the [LineEdit].
+			</description>
+		</method>
+		<method name="get_expand_to_text_length" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_max_length" qualifiers="const">
@@ -19545,6 +19575,12 @@
 			</argument>
 			<description>
 				Set the [i]editable[/i] status of the [LineEdit]. When disabled, existing text can't be modified and new text can't be added.
+			</description>
+		</method>
+		<method name="set_expand_to_text_length">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_max_length">
@@ -27280,14 +27316,16 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="motion" type="Vector2">
+			<argument index="1" name="from" type="Matrix32">
 			</argument>
-			<argument index="2" name="margin" type="float" default="0.08">
+			<argument index="2" name="motion" type="Vector2">
 			</argument>
-			<argument index="3" name="result" type="Physics2DTestMotionResult" default="NULL">
+			<argument index="3" name="margin" type="float" default="0.08">
+			</argument>
+			<argument index="4" name="result" type="Physics2DTestMotionResult" default="NULL">
 			</argument>
 			<description>
-				Return whether a body can move in a given direction. Apart from the boolean return value, a [Physics2DTestMotionResult] can be passed to return additional information in.
+				Return whether a body can move from a given point in a given direction. Apart from the boolean return value, a [Physics2DTestMotionResult] can be passed to return additional information in.
 			</description>
 		</method>
 		<method name="damped_spring_joint_create">
@@ -31484,6 +31522,12 @@
 				Returns the collision point in which the ray intersects the closest object.
 			</description>
 		</method>
+		<method name="get_exclude_parent_body" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_layer_mask" qualifiers="const">
 			<return type="int">
 			</return>
@@ -31536,6 +31580,12 @@
 			</argument>
 			<description>
 				Enables the RayCast2D. Only enabled raycasts will be able to query the space and report collisions.
+			</description>
+		</method>
+		<method name="set_exclude_parent_body">
+			<argument index="0" name="mask" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_layer_mask">
@@ -46156,6 +46206,40 @@ do_property].
 	<constants>
 	</constants>
 </class>
+<class name="VisualScriptBasicTypeConstant" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_basic_type" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_basic_type_constant" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_basic_type">
+			<argument index="0" name="name" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_basic_type_constant">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="VisualScriptBuiltinFunc" inherits="VisualScriptNode" category="Core">
 	<brief_description>
 	</brief_description>
@@ -46170,6 +46254,40 @@ do_property].
 		</method>
 		<method name="set_func">
 			<argument index="0" name="which" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="VisualScriptClassConstant" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_base_type">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_class_constant">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_base_type">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_class_constant">
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -46506,6 +46624,16 @@ do_property].
 	<constants>
 	</constants>
 </class>
+<class name="VisualScriptExpression" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="VisualScriptFunction" inherits="VisualScriptNode" category="Core">
 	<brief_description>
 	</brief_description>
@@ -46576,6 +46704,12 @@ do_property].
 			<description>
 			</description>
 		</method>
+		<method name="get_validate" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_base_path">
 			<argument index="0" name="base_path" type="NodePath">
 			</argument>
@@ -46626,6 +46760,12 @@ do_property].
 		</method>
 		<method name="set_use_default_args">
 			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_validate">
+			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -46724,9 +46864,21 @@ do_property].
 	<description>
 	</description>
 	<methods>
+		<method name="get_action_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_action_name" qualifiers="const">
 			<return type="String">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_action_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -46741,16 +46893,6 @@ do_property].
 	</constants>
 </class>
 <class name="VisualScriptInputFilter" inherits="VisualScriptNode" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
-</class>
-<class name="VisualScriptInputSelector" inherits="VisualScriptNode" category="Core">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -47286,6 +47428,16 @@ do_property].
 			<description>
 			</description>
 		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="VisualScriptSwitch" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
 	</methods>
 	<constants>
 	</constants>
