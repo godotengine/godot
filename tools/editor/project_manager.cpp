@@ -1196,14 +1196,11 @@ ProjectManager::ProjectManager() {
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	set_area_as_parent_rect();
+	set_theme(create_default_theme());
 
 	gui_base = memnew( Control );
 	add_child(gui_base);
 	gui_base->set_area_as_parent_rect();
-
-	set_theme(create_default_theme());
-	Ref<Theme> theme = create_editor_theme();
-	gui_base->set_theme(theme);
 
 	Panel *panel = memnew( Panel );
 	gui_base->add_child(panel);
@@ -1391,6 +1388,8 @@ ProjectManager::ProjectManager() {
 	last_clicked = "";
 
 	SceneTree::get_singleton()->connect("files_dropped", this, "_files_dropped");
+
+	gui_base->set_theme(create_editor_theme());
 }
 
 
