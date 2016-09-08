@@ -289,15 +289,16 @@ void TileMapEditor::_pick_tile(const Point2& p_pos) {
 	canvas_item_editor->update();
 }
 
-DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start) {
+DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase) {
 
-	if (node->get_cell(p_start.x, p_start.y) != TileMap::INVALID_CELL)
-		return DVector<Vector2>();
+	int prev_id = node->get_cell(p_start.x, p_start.y);
+	int id = TileMap::INVALID_CELL;
+	if (!erase) {
+		id = get_selected_tile();
 
-	int id = get_selected_tile();
-
-	if (id == TileMap::INVALID_CELL)
-		return DVector<Vector2>();
+		if (id == TileMap::INVALID_CELL)
+			return DVector<Vector2>();
+	}
 
 	Rect2 r = node->get_item_rect();
 	r.pos = r.pos/node->get_cell_size();
@@ -316,7 +317,7 @@ DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start) {
 		if (!r.has_point(n))
 			continue;
 
-		if (node->get_cell(n.x, n.y) == TileMap::INVALID_CELL) {
+		if (node->get_cell(n.x, n.y) == prev_id) {
 
 			node->set_cellv(n, id, flip_h, flip_v, transpose);
 
@@ -685,6 +686,12 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 
 						} else if (tool==TOOL_BUCKET) {
 
+							Dictionary pop;
+							pop["id"] = node->get_cell(over_tile.x, over_tile.y);
+							pop["flip_h"] = node->is_cell_x_flipped(over_tile.x, over_tile.y);
+							pop["flip_v"] = node->is_cell_y_flipped(over_tile.x, over_tile.y);
+							pop["transpose"] = node->is_cell_transposed(over_tile.x, over_tile.y);
+
 							DVector<Vector2> points = _bucket_fill(over_tile);
 
 							if (points.size() == 0)
@@ -699,7 +706,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 							undo_redo->create_action("Bucket Fill");
 
 							undo_redo->add_do_method(this, "_fill_points", points, op);
-							undo_redo->add_undo_method(this, "_erase_points", points);
+							undo_redo->add_undo_method(this, "_fill_points", points, pop);
 
 							undo_redo->commit_action();
 						}
@@ -782,6 +789,26 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 						tool=TOOL_NONE;
 
 						return true;
+
+					} else if (tool==TOOL_BUCKET) {
+
+						Dictionary pop;
+						pop["id"] = node->get_cell(over_tile.x, over_tile.y);
+						pop["flip_h"] = node->is_cell_x_flipped(over_tile.x, over_tile.y);
+						pop["flip_v"] = node->is_cell_y_flipped(over_tile.x, over_tile.y);
+						pop["transpose"] = node->is_cell_transposed(over_tile.x, over_tile.y);
+
+						DVector<Vector2> points = _bucket_fill(over_tile, true);
+
+						if (points.size() == 0)
+							return false;
+
+						undo_redo->create_action("Bucket Fill");
+
+						undo_redo->add_do_method(this, "_erase_points", points);
+						undo_redo->add_undo_method(this, "_fill_points", points, pop);
+
+						undo_redo->commit_action();
 					}
 				}
 			}
@@ -798,7 +825,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 				canvas_item_editor->update();
 			}
 
-			int tile_under = node->get_cell(over_tile.x, over_tile.y);	
+			int tile_under = node->get_cell(over_tile.x, over_tile.y);
 			String tile_name = "none";
 
 			if (node->get_tileset()->has_tile(tile_under))
