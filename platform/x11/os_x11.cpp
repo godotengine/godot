@@ -1957,9 +1957,20 @@ void OS_X11::set_context(int p_context) {
 			classHint->res_name = (char *)"Godot_Editor";
 		if (p_context == CONTEXT_PROJECTMAN)
 			classHint->res_name = (char *)"Godot_ProjectList";
+		if (p_context == CONTEXT_PLAYER)
+			classHint->res_name = (char *)"Godot_Player";
 		classHint->res_class = (char *)"Godot";
 		XSetClassHint(x11_display, x11_window, classHint);
 		XFree(classHint);
+	}
+  
+	XMapWindow(x11_display, x11_window);
+	while(true) {
+		// wait for mapnotify (window created)
+		XEvent e;
+		XNextEvent(x11_display, &e);
+		if (e.type == MapNotify)
+			break;
 	}
 }
 

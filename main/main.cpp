@@ -1366,6 +1366,7 @@ bool Main::start() {
 			} else {
 #endif
 
+				OS::get_singleton()->set_context(OS::CONTEXT_PLAYER);
 				{
 					//autoload
 					List<PropertyInfo> props;
