@@ -290,6 +290,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["snap_rotation"]=snap_rotation;
 	state["snap_relative"]=snap_relative;
 	state["snap_pixel"]=snap_pixel;
+	state["skeleton_show_bones"]=skeleton_show_bones;
 	return state;
 }
 void CanvasItemEditor::set_state(const Dictionary& p_state){
@@ -350,6 +351,12 @@ void CanvasItemEditor::set_state(const Dictionary& p_state){
 		snap_pixel=state["snap_pixel"];
 		int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
 		edit_menu->get_popup()->set_item_checked(idx,snap_pixel);
+	}
+
+	if (state.has("skeleton_show_bones")) {
+		skeleton_show_bones=state["skeleton_show_bones"];
+		int idx = skeleton_menu->get_item_index(SKELETON_SHOW_BONES);
+		skeleton_menu->set_item_checked(idx,skeleton_show_bones);
 	}
 }
 
@@ -2083,76 +2090,78 @@ void CanvasItemEditor::_viewport_draw() {
 
 	}
 
-	int bone_width = EditorSettings::get_singleton()->get("2d_editor/bone_width");
-	Color bone_color1 = EditorSettings::get_singleton()->get("2d_editor/bone_color1");
-	Color bone_color2 = EditorSettings::get_singleton()->get("2d_editor/bone_color2");
-	Color bone_ik_color = EditorSettings::get_singleton()->get("2d_editor/bone_ik_color");
-	Color bone_selected_color = EditorSettings::get_singleton()->get("2d_editor/bone_selected_color");
+	if (skeleton_show_bones) {
+		int bone_width = EditorSettings::get_singleton()->get("2d_editor/bone_width");
+		Color bone_color1 = EditorSettings::get_singleton()->get("2d_editor/bone_color1");
+		Color bone_color2 = EditorSettings::get_singleton()->get("2d_editor/bone_color2");
+		Color bone_ik_color = EditorSettings::get_singleton()->get("2d_editor/bone_ik_color");
+		Color bone_selected_color = EditorSettings::get_singleton()->get("2d_editor/bone_selected_color");
 
-	for(Map<ObjectID,BoneList>::Element*E=bone_list.front();E;E=E->next()) {
+		for(Map<ObjectID,BoneList>::Element*E=bone_list.front();E;E=E->next()) {
 
-		E->get().from=Vector2();
-		E->get().to=Vector2();
+			E->get().from=Vector2();
+			E->get().to=Vector2();
 
-		Object *obj = ObjectDB::get_instance(E->get().bone);
-		if (!obj)
-			continue;
+			Object *obj = ObjectDB::get_instance(E->get().bone);
+			if (!obj)
+				continue;
 
-		Node2D* n2d = obj->cast_to<Node2D>();
-		if (!n2d)
-			continue;
+			Node2D* n2d = obj->cast_to<Node2D>();
+			if (!n2d)
+				continue;
 
-		if (!n2d->get_parent())
-			continue;
+			if (!n2d->get_parent())
+				continue;
 
-		CanvasItem *pi = n2d->get_parent_item();
-
-
-		Node2D* pn2d=n2d->get_parent()->cast_to<Node2D>();
-
-		if (!pn2d)
-			continue;
-
-		Vector2 from = transform.xform(pn2d->get_global_pos());
-		Vector2 to = transform.xform(n2d->get_global_pos());
-
-		E->get().from=from;
-		E->get().to=to;
-
-		Vector2 rel = to-from;
-		Vector2 relt = rel.tangent().normalized()*bone_width;
+			CanvasItem *pi = n2d->get_parent_item();
 
 
+			Node2D* pn2d=n2d->get_parent()->cast_to<Node2D>();
 
-		Vector<Vector2> bone_shape;
-		bone_shape.push_back(from);
-		bone_shape.push_back(from+rel*0.2+relt);
-		bone_shape.push_back(to);
-		bone_shape.push_back(from+rel*0.2-relt);
-		Vector<Color> colors;
-		if (pi->has_meta("_edit_ik_")) {
+			if (!pn2d)
+				continue;
 
-			colors.push_back(bone_ik_color);
-			colors.push_back(bone_ik_color);
-			colors.push_back(bone_ik_color);
-			colors.push_back(bone_ik_color);
-		} else {
-			colors.push_back(bone_color1);
-			colors.push_back(bone_color2);
-			colors.push_back(bone_color1);
-			colors.push_back(bone_color2);
-		}
+			Vector2 from = transform.xform(pn2d->get_global_pos());
+			Vector2 to = transform.xform(n2d->get_global_pos());
+
+			E->get().from=from;
+			E->get().to=to;
+
+			Vector2 rel = to-from;
+			Vector2 relt = rel.tangent().normalized()*bone_width;
 
 
-		VisualServer::get_singleton()->canvas_item_add_primitive(ci,bone_shape,colors,Vector<Vector2>(),RID());
 
-		if (editor_selection->is_selected(pi)) {
-			for(int i=0;i<bone_shape.size();i++) {
+			Vector<Vector2> bone_shape;
+			bone_shape.push_back(from);
+			bone_shape.push_back(from+rel*0.2+relt);
+			bone_shape.push_back(to);
+			bone_shape.push_back(from+rel*0.2-relt);
+			Vector<Color> colors;
+			if (pi->has_meta("_edit_ik_")) {
 
-				VisualServer::get_singleton()->canvas_item_add_line(ci,bone_shape[i],bone_shape[(i+1)%bone_shape.size()],bone_selected_color,2);
+				colors.push_back(bone_ik_color);
+				colors.push_back(bone_ik_color);
+				colors.push_back(bone_ik_color);
+				colors.push_back(bone_ik_color);
+			} else {
+				colors.push_back(bone_color1);
+				colors.push_back(bone_color2);
+				colors.push_back(bone_color1);
+				colors.push_back(bone_color2);
 			}
-		}
 
+
+			VisualServer::get_singleton()->canvas_item_add_primitive(ci,bone_shape,colors,Vector<Vector2>(),RID());
+
+			if (editor_selection->is_selected(pi)) {
+				for(int i=0;i<bone_shape.size();i++) {
+
+					VisualServer::get_singleton()->canvas_item_add_line(ci,bone_shape[i],bone_shape[(i+1)%bone_shape.size()],bone_selected_color,2);
+				}
+			}
+
+		}
 	}
 }
 
@@ -2535,6 +2544,12 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case SNAP_CONFIGURE: {
 			((SnapDialog *)snap_dialog)->set_fields(snap_offset, snap_step, snap_rotation_offset, snap_rotation_step);
 			snap_dialog->popup_centered(Size2(220,160));
+		} break;
+		case SKELETON_SHOW_BONES: {
+			skeleton_show_bones = !skeleton_show_bones;
+			int idx = skeleton_menu->get_item_index(SKELETON_SHOW_BONES);
+			skeleton_menu->set_item_checked(idx,skeleton_show_bones);
+			viewport->update();
 		} break;
 		case ZOOM_IN: {
 			if (zoom>MAX_ZOOM)
@@ -2999,6 +3014,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 
 				n2d->set_meta("_edit_bone_",true);
+				if (!skeleton_show_bones)
+					skeleton_menu->activate_item(skeleton_menu->get_item_index(SKELETON_SHOW_BONES));
 
 			}
 			viewport->update();
@@ -3017,6 +3034,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 
 				n2d->set_meta("_edit_bone_",Variant());
+				if (!skeleton_show_bones)
+					skeleton_menu->activate_item(skeleton_menu->get_item_index(SKELETON_SHOW_BONES));
 
 			}
 			viewport->update();
@@ -3036,6 +3055,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 
 				canvas_item->set_meta("_edit_ik_",true);
+				if (!skeleton_show_bones)
+					skeleton_menu->activate_item(skeleton_menu->get_item_index(SKELETON_SHOW_BONES));
 
 			}
 
@@ -3055,6 +3076,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 
 				n2d->set_meta("_edit_ik_",Variant());
+				if (!skeleton_show_bones)
+					skeleton_menu->activate_item(skeleton_menu->get_item_index(SKELETON_SHOW_BONES));
 
 			}
 			viewport->update();
@@ -3401,15 +3424,17 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/expand_to_parent", TTR("Expand to Parent"), KEY_MASK_CMD | KEY_P), EXPAND_TO_PARENT);
 	p->add_separator();
 	p->add_submenu_item(TTR("Skeleton.."),"skeleton");
-	PopupMenu *p2 = memnew(PopupMenu);
-	p->add_child(p2);
-	p2->set_name("skeleton");
-	p2->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Bones"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B ),SKELETON_MAKE_BONES);
-	p2->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_bones", TTR("Clear Bones")), SKELETON_CLEAR_BONES);
-	p2->add_separator();
-	p2->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_set_ik_chain", TTR("Make IK Chain")), SKELETON_SET_IK_CHAIN);
-	p2->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_ik_chain", TTR("Clear IK Chain")), SKELETON_CLEAR_IK_CHAIN);
-	p2->connect("item_pressed", this,"_popup_callback");
+	skeleton_menu = memnew(PopupMenu);
+	p->add_child(skeleton_menu);
+	skeleton_menu->set_name("skeleton");
+	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Bones"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B ),SKELETON_MAKE_BONES);
+	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_bones", TTR("Clear Bones")), SKELETON_CLEAR_BONES);
+	skeleton_menu->add_separator();
+	skeleton_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_show_bones", TTR("Show Bones")), SKELETON_SHOW_BONES);
+	skeleton_menu->add_separator();
+	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_set_ik_chain", TTR("Make IK Chain")), SKELETON_SET_IK_CHAIN);
+	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_ik_chain", TTR("Clear IK Chain")), SKELETON_CLEAR_IK_CHAIN);
+	skeleton_menu->connect("item_pressed", this,"_popup_callback");
 
 
 	/*
@@ -3535,6 +3560,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	snap_show_grid=false;
 	snap_rotation=false;
 	snap_pixel=false;
+	skeleton_show_bones=true;
+	skeleton_menu->set_item_checked(skeleton_menu->get_item_index(SKELETON_SHOW_BONES),true);
 	updating_value_dialog=false;
 	box_selecting=false;
 	//zoom=0.5;
