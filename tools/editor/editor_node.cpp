@@ -6543,11 +6543,6 @@ EditorNode::EditorNode() {
 
 	Globals::get_singleton()->set("debug/indicators_enabled",true);
 	Globals::get_singleton()->set("render/room_cull_enabled",false);
-	theme->set_color("prop_category","Editor",Color::hex(0x3f3a44ff));
-	theme->set_color("prop_section","Editor",Color::hex(0x35313aff));
-	theme->set_color("prop_subsection","Editor",Color::hex(0x312e37ff));
-	theme->set_color("fg_selected","Editor",Color::html("ffbd8e8e"));
-	theme->set_color("fg_error","Editor",Color::html("ffbd8e8e"));
 
 	reference_resource_mem=true;
 	save_external_resources_mem=true;
