@@ -331,7 +331,7 @@ static Color _color_from_type(Variant::Type p_type) {
 		case Variant::QUAT: color = Color::html("ec69a3"); break;
 		case Variant::_AABB: color = Color::html("ee7991"); break;
 		case Variant::MATRIX3: color = Color::html("e3ec69"); break;
-		case Variant::TRANSFORM: color = Color::html("ecd669"); break;
+		case Variant::TRANSFORM: color = Color::html("f6a86e"); break;
 
 		case Variant::COLOR: color = Color::html("9dff70"); break;
 		case Variant::IMAGE: color = Color::html("93f1b9"); break;
