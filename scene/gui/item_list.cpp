@@ -1358,6 +1358,8 @@ void ItemList::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("ensure_current_is_visible"),&ItemList::ensure_current_is_visible);
 
+	ObjectTypeDB::bind_method(_MD("get_v_scroll"),&ItemList::get_v_scroll);
+
 	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&ItemList::_scroll_changed);
 	ObjectTypeDB::bind_method(_MD("_input_event"),&ItemList::_input_event);
 
