@@ -195,6 +195,8 @@ public:
 	void set_icon_scale(real_t p_scale);
 	real_t get_icon_scale() const;
 
+	VScrollBar *get_v_scroll() { return scroll_bar; }
+
 	ItemList();
 	~ItemList();
 };
