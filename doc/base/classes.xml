@@ -17976,6 +17976,13 @@
 				Returns the list of selected indexes.
 			</description>
 		</method>
+		<method name="get_v_scroll">
+			<return type="VScrollBar">
+			</return>
+			<description>
+				Returns the current vertical scroll bar for the List.
+			</description>
+		</method>
 		<method name="is_item_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
