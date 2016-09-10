@@ -17,6 +17,7 @@ SConscript('gl_context/SCsub');
 SConscript('pnm/SCsub');
 
 if (env['openssl']!='no'):
+	env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
 	env_drivers.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
 	if (env['openssl']=="builtin"):
 		env_drivers.Append(CPPPATH=['#drivers/builtin_openssl2'])

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_context_egl.h                                                     */
+/*  winrtdef.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,53 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef CONTEXT_EGL_H
-#define CONTEXT_EGL_H
 
-#include <wrl.h>
-
-#include "os/os.h"
-#include "EGL/egl.h"
-#include "error_list.h"
-#include "drivers/gl_context/context_gl.h"
-
-using namespace Windows::UI::Core;
-
-class ContextEGL : public ContextGL {
-
-	CoreWindow^ window;
-
-	EGLDisplay mEglDisplay;
-	EGLContext mEglContext;
-	EGLSurface mEglSurface;
-
-	EGLint width;
-	EGLint height;
-
-	bool vsync;
-
-public:
-
-	virtual void release_current();
-
-	virtual void make_current();
-
-	virtual int get_window_width();
-	virtual int get_window_height();
-	virtual void swap_buffers();
-
-	void set_use_vsync(bool use) { vsync = use; }
-	bool is_using_vsync() const { return vsync; }
-
-	virtual Error initialize();
-	void reset();
-
-	void cleanup();
-
-	ContextEGL(CoreWindow^ p_window);
-	~ContextEGL();
-
-};
-
-#endif
-
+// "generic" is a reserved keyword in C++/CX code
+// this avoids the errors in the variable name from Freetype code
+#define generic freetype_generic

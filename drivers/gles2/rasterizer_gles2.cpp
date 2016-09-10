@@ -5210,7 +5210,6 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 
 		material_shader.set_conditional(MaterialShaderGLES2::USE_FOG,current_env && current_env->fx_enabled[VS::ENV_FX_FOG]);
 		//glDepthMask( true );
-
 	}
 
 
@@ -10843,6 +10842,11 @@ void RasterizerGLES2::init() {
 	copy_shader.set_conditional(CopyShaderGLES2::USE_GLES_OVER_GL,true);
 #endif
 
+#ifdef ANGLE_ENABLED
+	// Fix for ANGLE
+	material_shader.set_conditional(MaterialShaderGLES2::DISABLE_FRONT_FACING, true);
+#endif
+
 
 	shadow=NULL;
 	shadow_pass=0;
@@ -10930,7 +10934,11 @@ void RasterizerGLES2::init() {
 
 
 	srgb_supported=extensions.has("GL_EXT_sRGB");
+#ifndef ANGLE_ENABLED
 	s3tc_srgb_supported =  s3tc_supported && extensions.has("GL_EXT_texture_compression_s3tc");
+#else
+	s3tc_srgb_supported = s3tc_supported;
+#endif
 	latc_supported = extensions.has("GL_EXT_texture_compression_latc");
 	anisotropic_level=1.0;
 	use_anisotropic_filter=extensions.has("GL_EXT_texture_filter_anisotropic");
