@@ -11510,6 +11510,13 @@
 				Get the name of the editor plugin. For main scren plugins this is what will appear in the selector (which by default is 2D, 3D, Script).
 			</description>
 		</method>
+		<method name="get_resource_previewer">
+			<return type="EditorResourcePreview">
+			</return>
+			<description>
+			Get tool for generating resource previews.
+			</description>
+		</method>
 		<method name="get_selection">
 			<return type="EditorSelection">
 			</return>
@@ -11552,6 +11559,15 @@
 			</return>
 			<description>
 				Return true if this is a main screen editor plugin (it goes in the main screen selector together with 2D, 3D, Script).
+			</description>
+		</method>
+		<method name="inspect_object">
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="for_property" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			Inspect an object in the inspector.
 			</description>
 		</method>
 		<method name="make_visible" qualifiers="virtual">
@@ -11655,6 +11671,117 @@
 		</constant>
 		<constant name="DOCK_SLOT_MAX" value="8">
 		</constant>
+	</constants>
+</class>
+<class name="EditorResourcePreview" inherits="Node" category="Core">
+	<brief_description>
+		Helper to generate previews of reources or files.
+	</brief_description>
+	<description>
+		This object is used to generate previews for resources of files.
+	</description>
+	<methods>
+		<method name="add_preview_generator">
+			<argument index="0" name="generator" type="EditorResourcePreviewGenerator">
+			</argument>
+			<description>
+				Create an own, custom preview generator.
+			</description>
+		</method>
+		<method name="check_for_invalidation">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Check if the resource changed, if so it will be invalidated and the corresponding signal emitted.
+			</description>
+		</method>
+		<method name="queue_edited_resource_preview">
+			<argument index="0" name="resource" type="Resource">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="receiver_func" type="String">
+			</argument>
+			<argument index="3" name="userdata" type="Variant">
+			</argument>
+			<description>
+				Queue a resource being edited for preview (using an instance). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texure (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.
+			</description>
+		</method>
+		<method name="queue_resource_preview">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="receiver_func" type="String">
+			</argument>
+			<argument index="3" name="userdata" type="Variant">
+			</argument>
+			<description>
+				Queue a resource file for preview (using a path). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texure (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.
+			</description>
+		</method>
+		<method name="remove_preview_generator">
+			<argument index="0" name="generator" type="EditorResourcePreviewGenerator">
+			</argument>
+			<description>
+				Remove a custom preview generator.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="preview_invalidated">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				If a preview was invalidated (changed) this signal will emit (using the path of the preview)
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>
+<class name="EditorResourcePreviewGenerator" inherits="Reference" category="Core">
+	<brief_description>
+		Custom generator of previews.
+	</brief_description>
+	<description>
+		Custom code to generate previews. Please check "file_dialog/thumbnail_size" in EditorSettings to find out the right size to do previews at.
+	</description>
+	<methods>
+		<method name="generate" qualifiers="virtual">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="from" type="Resource">
+			</argument>
+			<description>
+				Generate a preview from a given resource. This must be always implemented.
+			Returning an empty texture is an OK way to fail and let another generator take care.
+			Care must be taken because this function is always called from a thread (not the main thread).
+			</description>
+		</method>
+		<method name="generate_from_path" qualifiers="virtual">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Generate a preview directly from a path, implementing this is optional, as default code will load and call generate()
+			Returning an empty texture is an OK way to fail and let another generator take care.
+			Care must be taken because this function is always called from a thread (not the main thread).
+			</description>
+		</method>
+		<method name="handles" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Return if your generator supports this resource type.
+			</description>
+		</method>
+	</methods>
+	<constants>
 	</constants>
 </class>
 <class name="EditorScenePostImport" inherits="Reference" category="Core">
@@ -13189,31 +13316,10 @@
 		However, by creating a [FuncRef] using the [method @GDScript.funcref] function, a reference to a function in a given object can be created, passed around and called.
 	</description>
 	<methods>
-		<method name="call_func">
+		<method name="call_func" qualifiers="vararg">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="1" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="2" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg4" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg5" type="Variant" default="NULL">
-			</argument>
-			<argument index="6" name="arg6" type="Variant" default="NULL">
-			</argument>
-			<argument index="7" name="arg7" type="Variant" default="NULL">
-			</argument>
-			<argument index="8" name="arg8" type="Variant" default="NULL">
-			</argument>
-			<argument index="9" name="arg9" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Call the referenced function with the given arguments. The argument count must correspond to the required number of arguments in the function. Returns the return value of the function call.
 			</description>
 		</method>
 		<method name="set_function">
@@ -13290,7 +13396,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="new">
+		<method name="new" qualifiers="vararg">
 			<return type="Object">
 			</return>
 			<description>
@@ -15392,10 +15498,11 @@
 			</argument>
 			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
 			</argument>
+			<argument index="3" name="method" type="int" default="0">
+			</argument>
+			<argument index="4" name="request_data" type="String" default="&quot;&quot;">
+			</argument>
 			<description>
-				Make a HTTP GET request. The url is the complete url including "http://" or "https://" which will be parsed for a host and a port.
-				The custom_headers are HTTP request headers which will be used. If User-Agent is not specified a Godot specific will be used.
-				The ssl_validate_domain specifies if in case of HTTPS the server certificate should be verified.
 			</description>
 		</method>
 		<method name="set_body_size_limit">
@@ -17940,15 +18047,6 @@
 				Return tooltip hint for specified item index.
 			</description>
 		</method>
-		<method name="is_item_tooltip_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-				Returns whether the tooptip is enabled for specified item index.
-			</description>
-		</method>
 		<method name="get_max_columns" qualifiers="const">
 			<return type="int">
 			</return>
@@ -17977,7 +18075,7 @@
 			</description>
 		</method>
 		<method name="get_v_scroll">
-			<return type="VScrollBar">
+			<return type="Object">
 			</return>
 			<description>
 				Returns the current vertical scroll bar for the List.
@@ -17999,6 +18097,15 @@
 			</argument>
 			<description>
 				Returns whether or not the item at the specified index is selectable.
+			</description>
+		</method>
+		<method name="is_item_tooltip_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns whether the tooptip is enabled for specified item index.
 			</description>
 		</method>
 		<method name="is_same_column_width" qualifiers="const">
@@ -22540,7 +22647,7 @@
 				Replace a node in a scene by a given one. Subscriptions that pass through this node will be lost.
 			</description>
 		</method>
-		<method name="rpc">
+		<method name="rpc" qualifiers="vararg">
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
@@ -22554,22 +22661,22 @@
 			<description>
 			</description>
 		</method>
-		<method name="rpc_id">
-			<argument index="0" name="peer_" type="int">
+		<method name="rpc_id" qualifiers="vararg">
+			<argument index="0" name="peer_id" type="int">
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="rpc_unreliable">
+		<method name="rpc_unreliable" qualifiers="vararg">
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="rpc_unreliable_id">
-			<argument index="0" name="peer_" type="int">
+		<method name="rpc_unreliable_id" qualifiers="vararg">
+			<argument index="0" name="peer_id" type="int">
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
@@ -24021,50 +24128,18 @@
 				Add a user signal (can be added anytime). Arguments are optional, but can be added as an array of dictionaries, each containing "name" and "type" (from [@Global Scope] TYPE_*).
 			</description>
 		</method>
-		<method name="call">
+		<method name="call" qualifiers="vararg">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="method" type="String">
 			</argument>
-			<argument index="1" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="2" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg4" type="Variant" default="NULL">
-			</argument>
-			<argument index="6" name="arg5" type="Variant" default="NULL">
-			</argument>
-			<argument index="7" name="arg6" type="Variant" default="NULL">
-			</argument>
-			<argument index="8" name="arg7" type="Variant" default="NULL">
-			</argument>
-			<argument index="9" name="arg8" type="Variant" default="NULL">
-			</argument>
-			<argument index="10" name="arg9" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Call a function in the object, result is returned.
 			</description>
 		</method>
-		<method name="call_deferred">
+		<method name="call_deferred" qualifiers="vararg">
 			<argument index="0" name="method" type="String">
 			</argument>
-			<argument index="1" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="2" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg4" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Create and store a function in the object. The call will take place on idle time.
 			</description>
 		</method>
 		<method name="callv">
@@ -24112,21 +24187,10 @@
 				Disconnect a signal from a method.
 			</description>
 		</method>
-		<method name="emit_signal">
+		<method name="emit_signal" qualifiers="vararg">
 			<argument index="0" name="signal" type="String">
 			</argument>
-			<argument index="1" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="2" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg4" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Emit a signal. Arguments are passed in an array.
 			</description>
 		</method>
 		<method name="free">
@@ -32075,6 +32139,28 @@
 	<constants>
 	</constants>
 </class>
+<class name="RemoteTransform" inherits="Spatial" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_remote_node" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_remote_node">
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="RemoteTransform2D" inherits="Node2D" category="Core">
 	<brief_description>
 	</brief_description>
@@ -34634,22 +34720,12 @@
 	<description>
 	</description>
 	<methods>
-		<method name="call_group">
+		<method name="call_group" qualifiers="vararg">
 			<argument index="0" name="flags" type="int">
 			</argument>
 			<argument index="1" name="group" type="String">
 			</argument>
 			<argument index="2" name="method" type="String">
-			</argument>
-			<argument index="3" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="6" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="7" name="arg4" type="Variant" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -43886,24 +43962,12 @@
 		Common behavior is to create an action, then add do/undo calls to functions or property changes, then commiting the action.
 	</description>
 	<methods>
-		<method name="add_do_method">
+		<method name="add_do_method" qualifiers="vararg">
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
-			<argument index="2" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="6" name="arg4" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Add a call to a method in a given object with custom
-			arguments.
 			</description>
 		</method>
 		<method name="add_do_property">
@@ -43924,23 +43988,12 @@
 				Add a 'do' reference that will be erased if the 'do' history is lost. This is useful mostly for new nodes created for the 'do' call. Do not use for resources.
 			</description>
 		</method>
-		<method name="add_undo_method">
+		<method name="add_undo_method" qualifiers="vararg">
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
-			<argument index="2" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="6" name="arg4" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Add a call to an undo method in a given object with custom arguments. Undo calls are used to revert 'do' calls.
 			</description>
 		</method>
 		<method name="add_undo_property">

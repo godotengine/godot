@@ -32,6 +32,7 @@
 #include "plugins/spatial_editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "tools/editor/editor_settings.h"
+#include "editor_resource_preview.h"
 
 void EditorPlugin::add_custom_type(const String& p_type, const String& p_base,const Ref<Script>& p_script, const Ref<Texture>& p_icon) {
 
@@ -272,6 +273,10 @@ EditorSettings *EditorPlugin::get_editor_settings() {
 	return EditorSettings::get_singleton();
 }
 
+EditorResourcePreview *EditorPlugin::get_resource_previewer() {
+	return EditorResourcePreview::get_singleton();
+}
+
 void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin>& p_editor_import) {
 
 	EditorNode::get_singleton()->add_editor_import_plugin(p_editor_import);
@@ -318,6 +323,8 @@ void EditorPlugin::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("add_export_plugin","plugin:EditorExportPlugin"),&EditorPlugin::add_export_plugin);
 	ObjectTypeDB::bind_method(_MD("remove_export_plugin","plugin:EditorExportPlugin"),&EditorPlugin::remove_export_plugin);
+
+	ObjectTypeDB::bind_method(_MD("get_resource_previewer:EditorResourcePreview"),&EditorPlugin::get_resource_previewer);
 
 	ObjectTypeDB::bind_method(_MD("inspect_object","object","for_property"),&EditorPlugin::inspect_object,DEFVAL(String()));
 

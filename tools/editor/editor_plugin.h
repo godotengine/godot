@@ -34,6 +34,7 @@
 #include "scene/resources/texture.h"
 #include "undo_redo.h"
 #include "io/config_file.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -47,6 +48,7 @@ class EditorSettings;
 class SpatialEditorGizmo;
 class EditorImportPlugin;
 class EditorExportPlugin;
+class EditorResourcePreview;
 
 class EditorPlugin : public Node {
 
@@ -134,6 +136,7 @@ public:
 	EditorSelection* get_selection();
 	//EditorImportExport *get_import_export();
 	EditorSettings *get_editor_settings();
+	EditorResourcePreview *get_resource_previewer();
 
 	virtual void restore_global_state();
 	virtual void save_global_state();
