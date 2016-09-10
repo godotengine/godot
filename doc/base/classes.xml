@@ -11467,7 +11467,7 @@
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
-			If your plugin is active (because handles() returned true to the object), any input interaction with the 2D canvas editor will be first forwarded here. The canvas transform (containing zoom and offset to transform to edited world coordinates) is provided, but the input supplied is in untransformed coordinates to the canvas editor.
+			If your plugin is active (because handles() returned true to the object), any input interaction with the 2D canvas editor will be first forwarded here. The canvas transform (containing zoom and offset to transform to edited world coordinates) is provided, but the input supplied is in untransformed coordinates to the canvas editor. Return true if you want to eat this event and not pass it to the canvas editor.
 			</description>
 		</method>
 		<method name="forward_draw_over_canvas" qualifiers="virtual">
