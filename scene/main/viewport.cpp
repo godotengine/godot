@@ -1344,6 +1344,15 @@ Matrix32 Viewport::_get_input_pre_xform() const {
 	return pre_xf;
 }
 
+Vector2 Viewport::_get_window_offset() const {
+
+	if (parent_control) {
+		return (parent_control->get_viewport()->get_final_transform() * parent_control->get_global_transform_with_canvas()).get_origin();
+	}
+
+	return Vector2();
+}
+
 void Viewport::_make_input_local(InputEvent& ev) {
 
 
@@ -1351,10 +1360,7 @@ void Viewport::_make_input_local(InputEvent& ev) {
 
 		case InputEvent::MOUSE_BUTTON: {
 
-			Vector2 vp_ofs;
-			if (parent_control) {
-				vp_ofs = (parent_control->get_viewport()->get_final_transform() * parent_control->get_global_transform_with_canvas()).get_origin();
-			}
+			Vector2 vp_ofs = _get_window_offset();
 
 			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 g = ai.xform(Vector2(ev.mouse_button.global_x,ev.mouse_button.global_y));
@@ -1369,10 +1375,7 @@ void Viewport::_make_input_local(InputEvent& ev) {
 		} break;
 		case InputEvent::MOUSE_MOTION: {
 
-			Vector2 vp_ofs;
-			if (parent_control) {
-				vp_ofs = (parent_control->get_viewport()->get_final_transform() * parent_control->get_global_transform_with_canvas()).get_origin();
-			}
+			Vector2 vp_ofs = _get_window_offset();
 
 			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 g = ai.xform(Vector2(ev.mouse_motion.global_x,ev.mouse_motion.global_y));
@@ -1393,10 +1396,7 @@ void Viewport::_make_input_local(InputEvent& ev) {
 		} break;
 		case InputEvent::SCREEN_TOUCH: {
 
-			Vector2 vp_ofs;
-			if (parent_control) {
-				vp_ofs = (parent_control->get_viewport()->get_final_transform() * parent_control->get_global_transform_with_canvas()).get_origin();
-			}
+			Vector2 vp_ofs = _get_window_offset();
 
 			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 t = ai.xform(Vector2(ev.screen_touch.x,ev.screen_touch.y)-vp_ofs);
@@ -1408,10 +1408,7 @@ void Viewport::_make_input_local(InputEvent& ev) {
 		} break;
 		case InputEvent::SCREEN_DRAG: {
 
-			Vector2 vp_ofs;
-			if (parent_control) {
-				vp_ofs = (parent_control->get_viewport()->get_final_transform() * parent_control->get_global_transform_with_canvas()).get_origin();
-			}
+			Vector2 vp_ofs = _get_window_offset();
 
 			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 t = ai.xform(Vector2(ev.screen_drag.x,ev.screen_drag.y)-vp_ofs);
@@ -1490,7 +1487,7 @@ void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 
 Vector2 Viewport::get_mouse_pos() const {
 
-	return (get_final_transform().affine_inverse() * _get_input_pre_xform()).xform(Input::get_singleton()->get_mouse_pos());
+	return (get_final_transform().affine_inverse() * _get_input_pre_xform()).xform(Input::get_singleton()->get_mouse_pos() - _get_window_offset());
 }
 
 void Viewport::warp_mouse(const Vector2& p_pos) {
