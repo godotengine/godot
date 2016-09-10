@@ -3157,6 +3157,114 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				}
 
 			} break;
+			case GDTokenizer::TK_PR_ENUM: {
+				//mutiple constant declarations..
+
+				int last_assign = -1; // Incremented by 1 right before the assingment.
+				String enum_name;
+				Dictionary enum_dict;
+
+				tokenizer->advance();
+				if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
+					enum_name=tokenizer->get_token_identifier();
+					tokenizer->advance();
+				}
+				if (tokenizer->get_token()!=GDTokenizer::TK_CURLY_BRACKET_OPEN) {
+					_set_error("Expected '{' in enum declaration");
+					return;
+				}
+				tokenizer->advance();
+				
+				while(true) {
+					if(tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+						
+						tokenizer->advance(); // Ignore newlines
+					} else if (tokenizer->get_token()==GDTokenizer::TK_CURLY_BRACKET_CLOSE) {
+						
+						tokenizer->advance();
+						break; // End of enum
+					} else if (tokenizer->get_token()!=GDTokenizer::TK_IDENTIFIER) {
+						
+						if(tokenizer->get_token()==GDTokenizer::TK_EOF) {
+							_set_error("Unexpected end of file.");
+						} else {
+							_set_error(String("Unexpected ") + GDTokenizer::get_token_name(tokenizer->get_token()) + ", expected identifier");
+						}
+						
+						return;
+					} else { // tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER
+						ClassNode::Constant constant;
+						
+						constant.identifier=tokenizer->get_token_identifier();
+						
+						tokenizer->advance();
+						
+						if (tokenizer->get_token()==GDTokenizer::TK_OP_ASSIGN) {
+							tokenizer->advance();
+
+							Node *subexpr=NULL;
+
+							subexpr = _parse_and_reduce_expression(p_class,true,true);
+							if (!subexpr) {
+								if (_recover_from_completion()) {
+									break;
+								}
+								return;
+							}
+
+							if (subexpr->type!=Node::TYPE_CONSTANT) {
+								_set_error("Expected constant expression");
+							}
+							
+							const ConstantNode *subexpr_const = static_cast<const ConstantNode*>(subexpr);
+							
+							if(subexpr_const->value.get_type() != Variant::INT) {
+								_set_error("Expected an int value for enum");
+							}
+							
+							last_assign = subexpr_const->value;
+							
+							constant.expression=subexpr;
+
+						} else {
+							last_assign = last_assign + 1;
+							ConstantNode *cn = alloc_node<ConstantNode>();
+							cn->value = last_assign;
+							constant.expression = cn;
+						}
+						
+						if(tokenizer->get_token()==GDTokenizer::TK_COMMA) {
+							tokenizer->advance();
+						}
+
+						if(enum_name != "") {
+							const ConstantNode *cn = static_cast<const ConstantNode*>(constant.expression);
+							enum_dict[constant.identifier] = cn->value;
+						}
+
+						p_class->constant_expressions.push_back(constant);
+					}
+					
+				}
+				
+				if(enum_name != "") {
+					ClassNode::Constant enum_constant;
+					enum_constant.identifier=enum_name;
+					ConstantNode *cn = alloc_node<ConstantNode>();
+					cn->value = enum_dict;
+					enum_constant.expression=cn;
+					p_class->constant_expressions.push_back(enum_constant);
+				}
+
+				if (!_end_statement()) {
+					_set_error("Expected end of statement (enum)");
+					return;
+				}
+
+
+				
+
+			} break;
 
 
 			default: {
