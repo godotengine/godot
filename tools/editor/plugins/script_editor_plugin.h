@@ -133,6 +133,7 @@ class ScriptEditor : public VBoxContainer {
 		FILE_SAVE_THEME_AS,
 		FILE_CLOSE,
 		CLOSE_DOCS,
+		CLOSE_ALL,
 		FILE_TOOL_RELOAD,
 		FILE_TOOL_RELOAD_SOFT,
 		DEBUG_NEXT,
@@ -221,6 +222,9 @@ class ScriptEditor : public VBoxContainer {
 
 	void _close_current_tab();
 	void _close_docs_tab();
+	void _close_all_tabs();
+
+	void _ask_close_current_unsaved_tab(ScriptEditorBase *current);
 
 	bool grab_focus_block;
 

@@ -480,6 +480,33 @@ void ScriptEditor::_close_docs_tab() {
 
 }
 
+void ScriptEditor::_close_all_tabs() {
+
+	int child_count = tab_container->get_child_count();
+	for (int i = child_count-1; i>=0; i--) {
+
+		tab_container->set_current_tab(i);
+		ScriptEditorBase *se = tab_container->get_child(i)->cast_to<ScriptEditorBase>();
+
+		if (se) {
+
+			// Maybe there are unsaved changes
+			if (se->is_unsaved()) {
+				_ask_close_current_unsaved_tab(se);
+				continue;
+			}
+
+		}
+
+		_close_current_tab();
+	}
+
+}
+
+void ScriptEditor::_ask_close_current_unsaved_tab(ScriptEditorBase *current) {
+	erase_tab_confirm->set_text("Close and save changes?\n\""+current->get_name()+"\"");
+	erase_tab_confirm->popup_centered_minsize();
+}
 
 
 void ScriptEditor::_resave_scripts(const String& p_str) {
@@ -831,14 +858,16 @@ void ScriptEditor::_menu_option(int p_option) {
 
 			case FILE_CLOSE: {
 				if (current->is_unsaved()) {
-					erase_tab_confirm->set_text("Close and save changes?\n\""+current->get_name()+"\"");
-					erase_tab_confirm->popup_centered_minsize();
+					_ask_close_current_unsaved_tab(current);
 				} else {
 					_close_current_tab();
 				}
 			} break;
 			case CLOSE_DOCS: {
 				_close_docs_tab();
+			} break;
+			case CLOSE_ALL: {
+				_close_all_tabs();
 			} break;
 			case DEBUG_NEXT: {
 
@@ -912,6 +941,9 @@ void ScriptEditor::_menu_option(int p_option) {
 			} break;
 			case CLOSE_DOCS: {
 				_close_docs_tab();
+			} break;
+			case CLOSE_ALL: {
+				_close_all_tabs();
 			} break;
 
 
@@ -1977,6 +2009,7 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_menu_option",&ScriptEditor::_menu_option);
 	ObjectTypeDB::bind_method("_close_current_tab",&ScriptEditor::_close_current_tab);
 	ObjectTypeDB::bind_method("_close_docs_tab", &ScriptEditor::_close_docs_tab);
+	ObjectTypeDB::bind_method("_close_all_tabs", &ScriptEditor::_close_all_tabs);
 	ObjectTypeDB::bind_method("_editor_play",&ScriptEditor::_editor_play);
 	ObjectTypeDB::bind_method("_editor_pause",&ScriptEditor::_editor_pause);
 	ObjectTypeDB::bind_method("_editor_stop",&ScriptEditor::_editor_stop);
@@ -2067,6 +2100,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_all", TTR("Close All")), CLOSE_ALL);
 	file_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 
