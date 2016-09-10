@@ -504,7 +504,7 @@ void InputDefault::action_release(const StringName& p_action){
 
 	action.fixed_frame=OS::get_singleton()->get_fixed_frames();
 	action.idle_frame=OS::get_singleton()->get_idle_frames();
-	action.pressed=true;
+	action.pressed=false;
 
 	action_state[p_action]=action;
 }
