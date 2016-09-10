@@ -298,6 +298,10 @@ Control *EditorPlugin::get_base_control() {
 	return EditorNode::get_singleton()->get_gui_base();
 }
 
+void EditorPlugin::inspect_object(Object *p_obj,const String& p_for_property) {
+
+	EditorNode::get_singleton()->push_item(p_obj,p_for_property);
+}
 
 void EditorPlugin::_bind_methods() {
 
@@ -315,6 +319,7 @@ void EditorPlugin::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_export_plugin","plugin:EditorExportPlugin"),&EditorPlugin::add_export_plugin);
 	ObjectTypeDB::bind_method(_MD("remove_export_plugin","plugin:EditorExportPlugin"),&EditorPlugin::remove_export_plugin);
 
+	ObjectTypeDB::bind_method(_MD("inspect_object","object","for_property"),&EditorPlugin::inspect_object,DEFVAL(String()));
 
 	ObjectTypeDB::bind_method(_MD("get_base_control:Control"),&EditorPlugin::get_base_control);
 	ObjectTypeDB::bind_method(_MD("get_undo_redo:UndoRedo"),&EditorPlugin::_get_undo_redo);
