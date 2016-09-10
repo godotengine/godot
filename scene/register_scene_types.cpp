@@ -182,6 +182,7 @@
 
 
 #include "scene/3d/spatial.h"
+#include "scene/3d/remote_transform.h"
 #include "scene/3d/skeleton.h"
 #include "scene/3d/bone_attachment.h"
 #include "scene/3d/room_instance.h"
@@ -453,6 +454,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<BakedLightInstance>();
 	ObjectTypeDB::register_type<BakedLightSampler>();
 	ObjectTypeDB::register_type<WorldEnvironment>();
+	ObjectTypeDB::register_type<RemoteTransform>();
 
 	ObjectTypeDB::register_virtual_type<Joint>();
 	ObjectTypeDB::register_type<PinJoint>();
