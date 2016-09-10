@@ -609,7 +609,7 @@ public:
 			//t.basis.rotate(Vector3(-1,0,0),Math_PI/4*i);
 
 
-			RID b = create_body(type,PhysicsServer::BODY_MODE_RIGID,t);
+			create_body(type,PhysicsServer::BODY_MODE_RIGID,t);
 			//RID b = create_body(type,i==0?PhysicsServer::BODY_MODE_STATIC:PhysicsServer::BODY_MODE_RIGID,t);
 
 		}

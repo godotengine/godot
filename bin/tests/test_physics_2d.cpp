@@ -410,7 +410,7 @@ public:
 
 			Physics2DServer::ShapeType type = types[i%4];
 //			type=Physics2DServer::SHAPE_SEGMENT;
-			RID b = _add_body(type,Matrix32(i*0.8,Point2(152+i*40,100-40*i)));
+			_add_body(type,Matrix32(i*0.8,Point2(152+i*40,100-40*i)));
 			//if (i==0)
 			//	ps->body_set_mode(b,Physics2DServer::BODY_MODE_STATIC);
 		}

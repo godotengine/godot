@@ -147,7 +147,7 @@ public:
 
 			dst = dst.plus_file(bitmasks[i].get_file().basename() + ".pbm");
 
-			Error err = plugin->import(dst, imd);
+			plugin->import(dst, imd);
 		}
 
 		hide();

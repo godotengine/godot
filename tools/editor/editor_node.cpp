@@ -785,7 +785,7 @@ bool EditorNode::_find_and_save_resource(RES res,Map<RES,bool>& processed,int32_
 		if (changed || subchanged) {
 			//save
 			print_line("Also saving modified external resource: "+res->get_path());
-			Error err = ResourceSaver::save(res->get_path(),res,flags);
+			ResourceSaver::save(res->get_path(),res,flags);
 
 		}
 		processed[res]=false; //because it's a file

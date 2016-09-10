@@ -495,7 +495,7 @@ static String _parse_string(const uint8_t *p_bytes,bool p_utf8) {
 
 		Vector<uint8_t> str8;
 		str8.resize(len+1);
-		for(int i=0;i<len;i++) {
+		for(uint32_t i=0;i<len;i++) {
 			str8[i]=p_bytes[offset+i];
 		}
 		str8[len]=0;
@@ -505,7 +505,7 @@ static String _parse_string(const uint8_t *p_bytes,bool p_utf8) {
 	} else {
 
 		String str;
-		for(int i=0;i<len;i++) {
+		for(uint32_t i=0;i<len;i++) {
 			CharType c = decode_uint16(&p_bytes[offset+i*2]);
 			if (c==0)
 				break;
@@ -535,7 +535,7 @@ void EditorExportPlatformAndroid::_fix_resources(Vector<uint8_t>& p_manifest) {
 	printf("stirng count: %i\n",string_count);
 	printf("flags: %x\n",string_flags);
 
-	for(int i=0;i<string_count;i++) {
+	for(uint32_t i=0;i<string_count;i++) {
 
 		uint32_t offset = decode_uint32(&p_manifest[string_table_begins+i*4]);
 		offset+=string_table_begins+string_count*4;
@@ -569,7 +569,7 @@ void EditorExportPlatformAndroid::_fix_resources(Vector<uint8_t>& p_manifest) {
 	Vector<uint8_t> ret;
 	ret.resize(string_table_begins+string_table.size()*4);
 
-	for(int i=0;i<string_table_begins;i++) {
+	for(uint32_t i=0;i<string_table_begins;i++) {
 
 		ret[i]=p_manifest[i];
 	}
@@ -660,7 +660,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 	uint32_t filesize = decode_uint32(&p_manifest[ofs+4]);
 	ofs+=8;
 
-//	print_line("FILESIZE: "+itos(filesize)+" ACTUAL: "+itos(p_manifest.size()));
+	//print_line("FILESIZE: "+itos(filesize)+" ACTUAL: "+itos(p_manifest.size()));
 
 	uint32_t string_count;
 	uint32_t styles_count;
@@ -672,7 +672,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 	uint32_t string_table_ends;
 	Vector<uint8_t> stable_extra;
 
-	while(ofs < p_manifest.size()) {
+	while(ofs < (uint32_t)p_manifest.size()) {
 
 		uint32_t chunk = decode_uint32(&p_manifest[ofs]);
 		uint32_t size = decode_uint32(&p_manifest[ofs+4]);
@@ -687,7 +687,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 
 				string_count=decode_uint32(&p_manifest[iofs]);
 				styles_count=decode_uint32(&p_manifest[iofs+4]);
-				uint32_t string_flags=decode_uint32(&p_manifest[iofs+8]);
+				string_flags=decode_uint32(&p_manifest[iofs+8]);
 				string_data_offset=decode_uint32(&p_manifest[iofs+12]);
 				styles_offset=decode_uint32(&p_manifest[iofs+16]);
 /*
@@ -703,7 +703,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 				string_table_begins=st_offset;
 
 
-				for(int i=0;i<string_count;i++) {
+				for(uint32_t i=0;i<string_count;i++) {
 
 					uint32_t string_at = decode_uint32(&p_manifest[st_offset+i*4]);
 					string_at+=st_offset+string_count*4;
@@ -719,7 +719,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 						uint32_t len = decode_uint16(&p_manifest[string_at]);
 						Vector<CharType> ucstring;
 						ucstring.resize(len+1);
-						for(int j=0;j<len;j++) {
+						for(uint32_t j=0;j<len;j++) {
 							uint16_t c=decode_uint16(&p_manifest[string_at+2+2*j]);
 							ucstring[j]=c;
 						}
@@ -732,7 +732,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 //					print_line("String "+itos(i)+": "+string_table[i]);
 				}
 
-				for(int i=string_end;i<(ofs+size);i++) {
+				for(uint32_t i=string_end;i<(ofs+size);i++) {
 					stable_extra.push_back(p_manifest[i]);
 				}
 
@@ -758,7 +758,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 				uint32_t attrcount=decode_uint32(&p_manifest[iofs+20]);
 				iofs+=28;
 				//printf("ATTRCOUNT: %x\n",attrcount);
-				for(int i=0;i<attrcount;i++) {
+				for(uint32_t i=0;i<attrcount;i++) {
 					uint32_t attr_nspace=decode_uint32(&p_manifest[iofs]);
 					uint32_t attr_name=decode_uint32(&p_manifest[iofs+4]);
 					uint32_t attr_value=decode_uint32(&p_manifest[iofs+8]);
@@ -883,7 +883,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 	Vector<uint8_t> ret;
 	ret.resize(string_table_begins+string_table.size()*4);
 
-	for(int i=0;i<string_table_begins;i++) {
+	for(uint32_t i=0;i<string_table_begins;i++) {
 
 		ret[i]=p_manifest[i];
 	}
@@ -927,7 +927,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 
 	uint32_t extra = (p_manifest.size()-string_table_ends);
 	ret.resize(new_stable_end + extra);
-	for(int i=0;i<extra;i++)
+	for(uint32_t i=0;i<extra;i++)
 		ret[new_stable_end+i]=p_manifest[string_table_ends+i];
 
 	while(ret.size()%4)
@@ -1355,7 +1355,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		args.push_back(unaligned_path);
 		args.push_back(user);
 		int retval;
-		int err = OS::get_singleton()->execute(jarsigner,args,true,NULL,NULL,&retval);
+		OS::get_singleton()->execute(jarsigner,args,true,NULL,NULL,&retval);
 		if (retval) {
 			EditorNode::add_io_error("'jarsigner' returned with error #"+itos(retval));
 			return ERR_CANT_CREATE;
@@ -1368,7 +1368,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		args.push_back(unaligned_path);
 		args.push_back("-verbose");
 
-		err = OS::get_singleton()->execute(jarsigner,args,true,NULL,NULL,&retval);
+		OS::get_singleton()->execute(jarsigner,args,true,NULL,NULL,&retval);
 		if (retval) {
 			EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use jarsigner from Java 6.");
 			return ERR_CANT_CREATE;
@@ -1515,7 +1515,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 			List<String> args;
 			args.push_back("devices");
 			int ec;
-			Error err = OS::get_singleton()->execute(adb,args,true,NULL,&devices,&ec);
+			OS::get_singleton()->execute(adb,args,true,NULL,&devices,&ec);
 			Vector<String> ds = devices.split("\n");
 			Vector<String> ldevices;
 			for(int i=1;i<ds.size();i++) {
@@ -1574,7 +1574,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 						int ec;
 						String dp;
 
-						Error err = OS::get_singleton()->execute(adb,args,true,NULL,&dp,&ec);
+						OS::get_singleton()->execute(adb,args,true,NULL,&dp,&ec);
 
 						Vector<String> props = dp.split("\n");
 						String vendor;
