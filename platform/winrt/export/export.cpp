@@ -84,16 +84,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <zlib.h>
 
-#ifdef OPENSSL_ENABLED
-#include <openssl/bio.h>
-#include <openssl/asn1.h>
-#include <openssl/pkcs7.h>
-#include <openssl/pkcs12.h>
-#include <openssl/err.h>
-#include <openssl/asn1t.h>
-#include <openssl/x509.h>
-#include <openssl/ossl_typ.h>
-
 // Capabilities
 static const char* uwp_capabilities[] = {
 	"allJoyn",
@@ -128,6 +118,16 @@ static const char* uwp_device_capabilites[] = {
 	"webcam",
 	NULL
 };
+
+#ifdef OPENSSL_ENABLED
+#include <openssl/bio.h>
+#include <openssl/asn1.h>
+#include <openssl/pkcs7.h>
+#include <openssl/pkcs12.h>
+#include <openssl/err.h>
+#include <openssl/asn1t.h>
+#include <openssl/x509.h>
+#include <openssl/ossl_typ.h>
 
 namespace asn1 {
 	// https://msdn.microsoft.com/en-us/gg463180.aspx
