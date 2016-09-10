@@ -268,6 +268,8 @@ friend class Control;
 
 	Control *_gui_get_focus_owner();
 
+	Vector2 _get_window_offset() const;
+
 friend class Listener;
 	void _listener_transform_changed_notify();
 	void _listener_set(Listener* p_listener);
