@@ -877,14 +877,25 @@ bool EditorSelection::is_selected(Node * p_node) const {
 	return selection.has(p_node);
 }
 
-
-Array EditorSelection::_get_selected_nodes() {
+Array EditorSelection::_get_transformable_selected_nodes() {
 
 	Array ret;
 
 	for (List<Node*>::Element *E=selected_node_list.front();E;E=E->next()) {
 
 		ret.push_back(E->get());
+	}
+
+	return ret;
+}
+
+Array EditorSelection::_get_selected_nodes() {
+
+	Array ret;
+
+	for (Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
+
+		ret.push_back(E->key());
 	}
 
 	return ret;
@@ -897,6 +908,7 @@ void EditorSelection::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_node","node:Node"),&EditorSelection::add_node);
 	ObjectTypeDB::bind_method(_MD("remove_node","node:Node"),&EditorSelection::remove_node);
 	ObjectTypeDB::bind_method(_MD("get_selected_nodes"),&EditorSelection::_get_selected_nodes);
+	ObjectTypeDB::bind_method(_MD("get_transformable_selected_nodes"),&EditorSelection::_get_transformable_selected_nodes);
 	ADD_SIGNAL( MethodInfo("selection_changed") );
 
 }

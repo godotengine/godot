@@ -11269,10 +11269,10 @@
 </class>
 <class name="EditorFileSystem" inherits="Node" category="Core">
 	<brief_description>
-	Resource filesystem, as the editor sees it.
+		Resource filesystem, as the editor sees it.
 	</brief_description>
 	<description>
-	This object holds information of all resources in the filesystem, their types, etc. 
+		This object holds information of all resources in the filesystem, their types, etc.
 	</description>
 	<methods>
 		<method name="get_file_type" qualifiers="const">
@@ -11281,14 +11281,14 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-			Get the type of the file, given the full path.
+				Get the type of the file, given the full path.
 			</description>
 		</method>
 		<method name="get_filesystem">
 			<return type="EditorFileSystemDirectory">
 			</return>
 			<description>
-			Get the root directory object.
+				Get the root directory object.
 			</description>
 		</method>
 		<method name="get_path">
@@ -11303,45 +11303,45 @@
 			<return type="float">
 			</return>
 			<description>
-			Return the scan progress for 0 to 1 if the FS is being scanned.
+				Return the scan progress for 0 to 1 if the FS is being scanned.
 			</description>
 		</method>
 		<method name="is_scanning" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-			Return true of the filesystem is being scanned.
+				Return true of the filesystem is being scanned.
 			</description>
 		</method>
 		<method name="scan">
 			<description>
-			Scan the filesystem for changes.
+				Scan the filesystem for changes.
 			</description>
 		</method>
 		<method name="scan_sources">
 			<description>
-			Check if the source of any imported resource changed.
+				Check if the source of any imported resource changed.
 			</description>
 		</method>
 		<method name="update_file">
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-			Update a file information. Call this if an external program (not Godot) modified the file.
+				Update a file information. Call this if an external program (not Godot) modified the file.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="filesystem_changed">
 			<description>
-			Emitted if the filesystem changed.
+				Emitted if the filesystem changed.
 			</description>
 		</signal>
 		<signal name="sources_changed">
 			<argument index="0" name="exist" type="bool">
 			</argument>
 			<description>
-			Emitted if the source of any imported file changed.
+				Emitted if the source of any imported file changed.
 			</description>
 		</signal>
 	</signals>
@@ -11350,7 +11350,7 @@
 </class>
 <class name="EditorFileSystemDirectory" inherits="Object" category="Core">
 	<brief_description>
-	A diretory for the resource filesystem.
+		A diretory for the resource filesystem.
 	</brief_description>
 	<description>
 	</description>
@@ -11708,7 +11708,7 @@
 			<return type="EditorFileSystem">
 			</return>
 			<description>
-			Get the filesystem cache for all resources in the project.
+				Get the filesystem cache for all resources in the project.
 			</description>
 		</method>
 		<method name="get_resource_previewer">
@@ -12063,6 +12063,13 @@
 			</return>
 			<description>
 				Get the list of selectes nodes.
+			</description>
+		</method>
+		<method name="get_transformable_selected_nodes">
+			<return type="Array">
+			</return>
+			<description>
+			Get the list of selected nodes, optimized for transform operations (ie, moving them, rotating, etc). This list avoids situations where a node is selected and also chid/grandchild.
 			</description>
 		</method>
 		<method name="remove_node">
