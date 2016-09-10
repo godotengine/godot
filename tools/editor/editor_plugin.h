@@ -49,6 +49,7 @@ class SpatialEditorGizmo;
 class EditorImportPlugin;
 class EditorExportPlugin;
 class EditorResourcePreview;
+class EditorFileSystem;
 
 class EditorPlugin : public Node {
 
@@ -139,6 +140,7 @@ public:
 	//EditorImportExport *get_import_export();
 	EditorSettings *get_editor_settings();
 	EditorResourcePreview *get_resource_previewer();
+	EditorFileSystem *get_resource_file_system();
 
 	virtual void restore_global_state();
 	virtual void save_global_state();

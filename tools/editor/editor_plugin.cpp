@@ -320,6 +320,10 @@ void EditorPlugin::inspect_object(Object *p_obj,const String& p_for_property) {
 	EditorNode::get_singleton()->push_item(p_obj,p_for_property);
 }
 
+EditorFileSystem *EditorPlugin::get_resource_file_system() {
+	return EditorFileSystem::get_singleton();
+}
+
 void EditorPlugin::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("add_control_to_container","container","control:Control"),&EditorPlugin::add_control_to_container);
@@ -337,6 +341,7 @@ void EditorPlugin::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("remove_export_plugin","plugin:EditorExportPlugin"),&EditorPlugin::remove_export_plugin);
 
 	ObjectTypeDB::bind_method(_MD("get_resource_previewer:EditorResourcePreview"),&EditorPlugin::get_resource_previewer);
+	ObjectTypeDB::bind_method(_MD("get_resource_filesystem:EditorFileSystem"),&EditorPlugin::get_resource_file_system);
 
 	ObjectTypeDB::bind_method(_MD("inspect_object","object","for_property"),&EditorPlugin::inspect_object,DEFVAL(String()));
 	ObjectTypeDB::bind_method(_MD("update_canvas"),&EditorPlugin::update_canvas);

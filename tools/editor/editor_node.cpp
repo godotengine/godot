@@ -4141,6 +4141,9 @@ void EditorNode::register_editor_types() {
 	ObjectTypeDB::register_type<EditorSpatialGizmo>();
 	ObjectTypeDB::register_type<EditorResourcePreview>();
 	ObjectTypeDB::register_type<EditorResourcePreviewGenerator>();
+	ObjectTypeDB::register_type<EditorFileSystem>();
+	ObjectTypeDB::register_type<EditorFileSystemDirectory>();
+
 
 
 	//ObjectTypeDB::register_type<EditorImporter>();

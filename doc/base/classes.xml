@@ -2221,6 +2221,12 @@
 				Register a [LineEdit] in the dialog. When the enter key is pressed, the dialog will be accepted.
 			</description>
 		</method>
+		<method name="set_child_rect">
+			<argument index="0" name="child" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_hide_on_ok">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
@@ -11261,6 +11267,184 @@
 		</constant>
 	</constants>
 </class>
+<class name="EditorFileSystem" inherits="Node" category="Core">
+	<brief_description>
+	Resource filesystem, as the editor sees it.
+	</brief_description>
+	<description>
+	This object holds information of all resources in the filesystem, their types, etc. 
+	</description>
+	<methods>
+		<method name="get_file_type" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			Get the type of the file, given the full path.
+			</description>
+		</method>
+		<method name="get_filesystem">
+			<return type="EditorFileSystemDirectory">
+			</return>
+			<description>
+			Get the root directory object.
+			</description>
+		</method>
+		<method name="get_path">
+			<return type="EditorFileSystemDirectory">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_scanning_progress" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			Return the scan progress for 0 to 1 if the FS is being scanned.
+			</description>
+		</method>
+		<method name="is_scanning" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			Return true of the filesystem is being scanned.
+			</description>
+		</method>
+		<method name="scan">
+			<description>
+			Scan the filesystem for changes.
+			</description>
+		</method>
+		<method name="scan_sources">
+			<description>
+			Check if the source of any imported resource changed.
+			</description>
+		</method>
+		<method name="update_file">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			Update a file information. Call this if an external program (not Godot) modified the file.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="filesystem_changed">
+			<description>
+			Emitted if the filesystem changed.
+			</description>
+		</signal>
+		<signal name="sources_changed">
+			<argument index="0" name="exist" type="bool">
+			</argument>
+			<description>
+			Emitted if the source of any imported file changed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>
+<class name="EditorFileSystemDirectory" inherits="Object" category="Core">
+	<brief_description>
+	A diretory for the resource filesystem.
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="find_dir_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="find_file_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_file" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_file_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_file_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_file_type" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_name">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_parent">
+			<return type="EditorFileSystemDirectory">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdir">
+			<return type="Object">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdir_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_missing_sources" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="EditorImportPlugin" inherits="Reference" category="Core">
 	<brief_description>
 		Import plugin for editor
@@ -11467,7 +11651,7 @@
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
-			If your plugin is active (because handles() returned true to the object), any input interaction with the 2D canvas editor will be first forwarded here. The canvas transform (containing zoom and offset to transform to edited world coordinates) is provided, but the input supplied is in untransformed coordinates to the canvas editor. Return true if you want to eat this event and not pass it to the canvas editor.
+				If your plugin is active (because handles() returned true to the object), any input interaction with the 2D canvas editor will be first forwarded here. The canvas transform (containing zoom and offset to transform to edited world coordinates) is provided, but the input supplied is in untransformed coordinates to the canvas editor. Return true if you want to eat this event and not pass it to the canvas editor.
 			</description>
 		</method>
 		<method name="forward_draw_over_canvas" qualifiers="virtual">
@@ -11476,7 +11660,7 @@
 			<argument index="1" name="canvas" type="Control">
 			</argument>
 			<description>
-			This function is called every time the 2D canvas editor draws (which overlays over the edited scene). Drawing over the supplied control will draw over the edited scene. To convert from control coordinates to edited scene coordinates (including zoom and offset), a transform is also provided. If you require this control to be redraw, call [method update_canvas]().
+				This function is called every time the 2D canvas editor draws (which overlays over the edited scene). Drawing over the supplied control will draw over the edited scene. To convert from control coordinates to edited scene coordinates (including zoom and offset), a transform is also provided. If you require this control to be redraw, call [method update_canvas]().
 			</description>
 		</method>
 		<method name="forward_spatial_input_event" qualifiers="virtual">
@@ -11518,6 +11702,13 @@
 			</return>
 			<description>
 				Get the name of the editor plugin. For main scren plugins this is what will appear in the selector (which by default is 2D, 3D, Script).
+			</description>
+		</method>
+		<method name="get_resource_filesystem">
+			<return type="EditorFileSystem">
+			</return>
+			<description>
+			Get the filesystem cache for all resources in the project.
 			</description>
 		</method>
 		<method name="get_resource_previewer">
@@ -11649,7 +11840,7 @@
 		</method>
 		<method name="update_canvas">
 			<description>
-			Updates the control used to draw the edited scene over the 2D canvas. This is used together with [method forward_canvas_input_event]().
+				Updates the control used to draw the edited scene over the 2D canvas. This is used together with [method forward_canvas_input_event]().
 			</description>
 		</method>
 	</methods>

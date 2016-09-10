@@ -3470,7 +3470,7 @@ void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 		return;
 
 #if 0
-//i don't remember this being used
+//i don't remember this being used, why was it here?
 	{
 
 		EditorNode *en = editor;
