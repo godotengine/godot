@@ -151,7 +151,7 @@ class Polygon2DEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual bool forward_input_event(const InputEvent& p_event) { return collision_polygon_editor->forward_input_event(p_event); }
+	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_input_event(p_event); }
 
 	virtual String get_name() const { return "Polygon2D"; }
 	bool has_main_screen() const { return false; }

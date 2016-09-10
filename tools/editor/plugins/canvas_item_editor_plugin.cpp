@@ -1058,7 +1058,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
 		if (!over_plugin_list->empty()) {
-			bool discard = over_plugin_list->forward_input_event(p_event);
+			bool discard = over_plugin_list->forward_input_event(transform,p_event);
 			if (discard) {
 				accept_event();
 				return;
@@ -2089,6 +2089,18 @@ void CanvasItemEditor::_viewport_draw() {
 		}
 
 	}
+
+	{
+
+	       EditorNode *en = editor;
+	       EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
+
+	       if (!over_plugin_list->empty()) {
+
+		       over_plugin_list->forward_draw_over_canvas(transform,viewport);
+
+	       }
+       }
 
 	if (skeleton_show_bones) {
 		int bone_width = EditorSettings::get_singleton()->get("2d_editor/bone_width");

@@ -131,13 +131,25 @@ Ref<SpatialEditorGizmo> EditorPlugin::create_spatial_gizmo(Spatial* p_spatial) {
 	return Ref<SpatialEditorGizmo>();
 }
 
-bool EditorPlugin::forward_input_event(const InputEvent& p_event) {
+bool EditorPlugin::forward_canvas_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event) {
 
-	if (get_script_instance() && get_script_instance()->has_method("forward_input_event")) {
-		return get_script_instance()->call("forward_input_event",p_event);
+	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_input_event")) {
+		return get_script_instance()->call("forward_canvas_input_event",p_canvas_xform,p_event);
 	}
 	return false;
 }
+
+void EditorPlugin::forward_draw_over_canvas(const Matrix32& p_canvas_xform,Control *p_canvas) {
+
+	if (get_script_instance() && get_script_instance()->has_method("forward_draw_over_canvas")) {
+		get_script_instance()->call("forward_draw_over_canvas",p_canvas_xform,p_canvas);
+	}
+}
+
+void EditorPlugin::update_canvas() {
+	CanvasItemEditor::get_singleton()->get_viewport_control()->update();
+}
+
 bool EditorPlugin::forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) {
 
 	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_input_event")) {
@@ -327,6 +339,7 @@ void EditorPlugin::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_resource_previewer:EditorResourcePreview"),&EditorPlugin::get_resource_previewer);
 
 	ObjectTypeDB::bind_method(_MD("inspect_object","object","for_property"),&EditorPlugin::inspect_object,DEFVAL(String()));
+	ObjectTypeDB::bind_method(_MD("update_canvas"),&EditorPlugin::update_canvas);
 
 	ObjectTypeDB::bind_method(_MD("get_base_control:Control"),&EditorPlugin::get_base_control);
 	ObjectTypeDB::bind_method(_MD("get_undo_redo:UndoRedo"),&EditorPlugin::_get_undo_redo);
@@ -334,7 +347,8 @@ void EditorPlugin::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_editor_settings:EditorSettings"),&EditorPlugin::get_editor_settings);
 	ObjectTypeDB::bind_method(_MD("queue_save_layout"),&EditorPlugin::queue_save_layout);
 
-	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_input_event",PropertyInfo(Variant::INPUT_EVENT,"event")));
+	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_canvas_input_event",PropertyInfo(Variant::MATRIX32,"canvas_xform"),PropertyInfo(Variant::INPUT_EVENT,"event")));
+	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo("forward_draw_over_canvas",PropertyInfo(Variant::MATRIX32,"canvas_xform"),PropertyInfo(Variant::OBJECT,"canvas:Control")));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_spatial_input_event",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera"),PropertyInfo(Variant::INPUT_EVENT,"event")));
 	MethodInfo gizmo = MethodInfo(Variant::OBJECT,"create_spatial_gizmo",PropertyInfo(Variant::OBJECT,"for_spatial:Spatial"));
 	gizmo.return_val.hint=PROPERTY_HINT_RESOURCE_TYPE;

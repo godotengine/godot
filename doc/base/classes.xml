@@ -11459,14 +11459,24 @@
 				This function is used for plugins that edit specific object types (nodes or resources). It requests the editor to edit the given object.
 			</description>
 		</method>
-		<method name="forward_input_event" qualifiers="virtual">
+		<method name="forward_canvas_input_event" qualifiers="virtual">
 			<return type="bool">
 			</return>
-			<argument index="0" name="event" type="InputEvent">
+			<argument index="0" name="canvas_xform" type="Matrix32">
+			</argument>
+			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
-				This is a low level function for plugins that edit a given object type derived from CanvasItem to capture the input in the 2D editor viewport. The function is only being called if your object is being edited.
-				Return true if you want to capture the input, otherwise false.
+			If your plugin is active (because handles() returned true to the object), any input interaction with the 2D canvas editor will be first forwarded here. The canvas transform (containing zoom and offset to transform to edited world coordinates) is provided, but the input supplied is in untransformed coordinates to the canvas editor.
+			</description>
+		</method>
+		<method name="forward_draw_over_canvas" qualifiers="virtual">
+			<argument index="0" name="canvas_xform" type="Matrix32">
+			</argument>
+			<argument index="1" name="canvas" type="Control">
+			</argument>
+			<description>
+			This function is called every time the 2D canvas editor draws (which overlays over the edited scene). Drawing over the supplied control will draw over the edited scene. To convert from control coordinates to edited scene coordinates (including zoom and offset), a transform is also provided. If you require this control to be redraw, call [method update_canvas]().
 			</description>
 		</method>
 		<method name="forward_spatial_input_event" qualifiers="virtual">
@@ -11514,7 +11524,7 @@
 			<return type="EditorResourcePreview">
 			</return>
 			<description>
-			Get tool for generating resource previews.
+				Get tool for generating resource previews.
 			</description>
 		</method>
 		<method name="get_selection">
@@ -11567,7 +11577,7 @@
 			<argument index="1" name="for_property" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-			Inspect an object in the inspector.
+				Inspect an object in the inspector.
 			</description>
 		</method>
 		<method name="make_visible" qualifiers="virtual">
@@ -11635,6 +11645,11 @@
 			</argument>
 			<description>
 				Restore the plugin GUI layout saved by [method EditorPlugin.get_window_layout].
+			</description>
+		</method>
+		<method name="update_canvas">
+			<description>
+			Updates the control used to draw the edited scene over the 2D canvas. This is used together with [method forward_canvas_input_event]().
 			</description>
 		</method>
 	</methods>
