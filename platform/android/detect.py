@@ -166,16 +166,13 @@ def configure(env):
 	env.Append(CPPPATH=[gcc_include])
 #	env['CCFLAGS'] = string.split('-DNO_THREADS -MMD -MP -MF -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__  -Wno-psabi -march=armv5te -mtune=xscale -msoft-float  -fno-exceptions -mthumb -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED ')
 
-	libm='m'
 	env['neon_enabled']=False
 	if env['android_arch']=='x86':
 		env['CCFLAGS'] = string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__GLIBC__  -Wno-psabi -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED')
 	elif env["android_arch"]=="armv6":
-		env['CCFLAGS'] = string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__ARM_ARCH_6__ -D__GLIBC__  -Wno-psabi -march=armv6 -mfpu=vfp -mfloat-abi=hard -D_NDK_MATH_NO_SOFTFP=1 -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED')
-		libm='m_hard'
+		env['CCFLAGS'] = string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__ARM_ARCH_6__ -D__GLIBC__  -Wno-psabi -march=armv6 -mfpu=vfp -mfloat-abi=softfp -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED')
 	elif env["android_arch"]=="armv7":
-		env['CCFLAGS'] = string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__ARM_ARCH_7__ -D__ARM_ARCH_7A__ -Wl,--fix-cortex-a8 -D__GLIBC__  -Wno-psabi -march=armv7-a -mfloat-abi=hard -D_NDK_MATH_NO_SOFTFP=1 -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED')
-		libm='m_hard'
+		env['CCFLAGS'] = string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__ARM_ARCH_7__ -D__ARM_ARCH_7A__ -D__GLIBC__  -Wno-psabi -march=armv7-a -mfloat-abi=softfp -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED')
 		if env['android_neon']=='yes':
 			env['neon_enabled']=True
 			env.Append(CCFLAGS=['-mfpu=neon','-D__ARM_NEON__'])
@@ -184,11 +181,11 @@ def configure(env):
 
 	env.Append(LDPATH=[ld_path])
 	env.Append(LIBS=['OpenSLES'])
-#	env.Append(LIBS=['c',libm,'stdc++','log','EGL','GLESv1_CM','GLESv2','OpenSLES','supc++','android'])
+#	env.Append(LIBS=['c','m','stdc++','log','EGL','GLESv1_CM','GLESv2','OpenSLES','supc++','android'])
 	env.Append(LIBS=['EGL','OpenSLES','android'])
-	env.Append(LIBS=['c',libm,'stdc++','log','GLESv1_CM','GLESv2', 'z'])
+	env.Append(LIBS=['c','m','stdc++','log','GLESv1_CM','GLESv2', 'z'])
 
-	env["LINKFLAGS"]= string.split(" -g --sysroot="+ld_sysroot+" -Wl,--no-undefined -Wl,-z,noexecstack -Wl,--no-warn-mismatch")
+	env["LINKFLAGS"]= string.split(" -g --sysroot="+ld_sysroot+" -Wl,--no-undefined -Wl,-z,noexecstack ")
 	env.Append(LINKFLAGS=["-Wl,-soname,libgodot_android.so"])
 
 	if (env["target"]=="release"):
