@@ -619,6 +619,8 @@ void Tween::_tween_process(float p_delta) {
 					};
 					object->call(data.key, (const Variant **) arg, data.args, error);
 				}
+				if (!repeat)
+					call_deferred("remove", object, data.key);
 			}
 			continue;
 		}
