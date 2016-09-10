@@ -518,6 +518,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1(ByteArray,append);
 	VCALL_LOCALMEM1(ByteArray,append_array);
 	VCALL_LOCALMEM0(ByteArray,invert);
+	VCALL_LOCALMEM2R(ByteArray,subarray);
 
 	VCALL_LOCALMEM0R(IntArray,size);
 	VCALL_LOCALMEM2(IntArray,set);
@@ -1592,6 +1593,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC2(RAW_ARRAY,INT,ByteArray,insert,INT,"idx",INT,"byte",varray());
 	ADDFUNC1(RAW_ARRAY,NIL,ByteArray,resize,INT,"idx",varray());
 	ADDFUNC0(RAW_ARRAY,NIL,ByteArray,invert,varray());
+	ADDFUNC2(RAW_ARRAY,RAW_ARRAY,ByteArray,subarray,INT,"from",INT,"to",varray());
 
 	ADDFUNC0(RAW_ARRAY,STRING,ByteArray,get_string_from_ascii,varray());
 	ADDFUNC0(RAW_ARRAY,STRING,ByteArray,get_string_from_utf8,varray());

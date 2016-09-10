@@ -31364,6 +31364,17 @@
 				Return the size of the array.
 			</description>
 		</method>
+		<method name="subarray">
+			<return type="RawArray">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Returns the slice of the [RawArray] between indices (inclusive) as a new [RawArray].  Any negative index is considered to be from the end of the array.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
