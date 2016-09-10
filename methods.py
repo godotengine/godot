@@ -1379,6 +1379,7 @@ def use_windows_spawn_fix(self, platform=None):
 	    cmdline = cmd + " " + newargs
 
 	    rv=0
+	    env = {str(key): str(value) for key, value in env.iteritems()}
 	    if len(cmdline) > 32000 and cmd.endswith("ar") :
 		    cmdline = cmd + " " + args[1] + " " + args[2] + " "
 		    for i in range(3,len(args)) :
