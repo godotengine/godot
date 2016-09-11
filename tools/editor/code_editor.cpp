@@ -1128,8 +1128,10 @@ void CodeTextEditor::_update_font() {
 			font_overridden = true;
 		}
 	}
-	if(!font_overridden)
+	if(!font_overridden) {
+
 		text_editor->add_font_override("font",get_font("source","EditorFonts"));
+	}
 }
 
 void CodeTextEditor::_on_settings_change() {
@@ -1168,7 +1170,7 @@ void CodeTextEditor::_notification(int p_what) {
 		_load_theme_settings();
 		emit_signal("load_theme_settings");
 	}
-	if (p_what==NOTIFICATION_ENTER_TREE) {
+	if (p_what==NOTIFICATION_THEME_CHANGED) {
 		_update_font();
 	}
 }

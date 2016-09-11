@@ -1924,7 +1924,7 @@ void Control::_propagate_theme_changed(CanvasItem *p_at,Control *p_owner,bool p_
 		if (p_assign) {
 			c->data.theme_owner=p_owner;
 		}
-		c->_notification(NOTIFICATION_THEME_CHANGED);
+		c->notification(NOTIFICATION_THEME_CHANGED);
 		c->update();
 	}
 }

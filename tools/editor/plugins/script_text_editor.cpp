@@ -30,6 +30,7 @@
 #include "tools/editor/editor_settings.h"
 #include "os/keyboard.h"
 #include "tools/editor/script_editor_debugger.h"
+#include "tools/editor/editor_node.h"
 
 Vector<String> ScriptTextEditor::get_functions()  {
 
@@ -920,6 +921,10 @@ void ScriptTextEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_edit_option",&ScriptTextEditor::_edit_option);
 	ObjectTypeDB::bind_method("_goto_line",&ScriptTextEditor::_goto_line);
 
+	ObjectTypeDB::bind_method("get_drag_data_fw",&ScriptTextEditor::get_drag_data_fw);
+	ObjectTypeDB::bind_method("can_drop_data_fw",&ScriptTextEditor::can_drop_data_fw);
+	ObjectTypeDB::bind_method("drop_data_fw",&ScriptTextEditor::drop_data_fw);
+
 	ADD_SIGNAL(MethodInfo("name_changed"));
 	ADD_SIGNAL(MethodInfo("request_help_search",PropertyInfo(Variant::STRING,"topic")));
 }
@@ -956,6 +961,144 @@ void ScriptTextEditor::set_debugger_active(bool p_active) {
 
 
 }
+
+
+Variant ScriptTextEditor::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+
+	return Variant();
+}
+
+bool ScriptTextEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const{
+
+	Dictionary d = p_data;
+	if (d.has("type") &&
+			(
+
+				String(d["type"])=="resource" ||
+				String(d["type"])=="files" ||
+				String(d["type"])=="nodes"
+			) ) {
+
+
+			return true;
+	}
+
+
+	return false;
+
+}
+
+#ifdef TOOLS_ENABLED
+
+static Node* _find_script_node(Node* p_edited_scene,Node* p_current_node,const Ref<Script> &script) {
+
+	if (p_edited_scene!=p_current_node && p_current_node->get_owner()!=p_edited_scene)
+		return NULL;
+
+	Ref<Script> scr = p_current_node->get_script();
+
+	if (scr.is_valid() && scr==script)
+		return p_current_node;
+
+	for(int i=0;i<p_current_node->get_child_count();i++) {
+		Node *n = _find_script_node(p_edited_scene,p_current_node->get_child(i),script);
+		if (n)
+			return n;
+	}
+
+	return NULL;
+}
+
+#else
+
+static Node* _find_script_node(Node* p_edited_scene,Node* p_current_node,const Ref<Script> &script) {
+
+	return NULL;
+}
+#endif
+
+
+
+
+void ScriptTextEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from){
+
+	Dictionary d = p_data;
+
+	if (d.has("type") && String(d["type"])=="resource") {
+
+		Ref<Resource> res = d["resource"];
+		if (!res.is_valid()) {
+			return;
+		}
+
+		if (res->get_path().is_resource_file()) {
+			EditorNode::get_singleton()->show_warning("Only resources from filesystem can be dropped.");
+			return;
+		}
+
+		code_editor->get_text_edit()->insert_text_at_cursor(res->get_path());
+
+	}
+
+	if (d.has("type") && String(d["type"])=="files") {
+
+
+		Array files = d["files"];
+
+		String text_to_drop;
+		for(int i=0;i<files.size();i++) {
+
+			if (i>0)
+				text_to_drop+=",";
+			text_to_drop+="\""+String(files[i]).c_escape()+"\"";
+
+		}
+
+		code_editor->get_text_edit()->insert_text_at_cursor(text_to_drop);
+
+	}
+
+	if (d.has("type") && String(d["type"])=="nodes") {
+
+		Node* sn = _find_script_node(get_tree()->get_edited_scene_root(),get_tree()->get_edited_scene_root(),script);
+
+
+		if (!sn) {
+			EditorNode::get_singleton()->show_warning("Can't drop nodes because script '"+get_name()+"' is not used in this scene.");
+			return;
+		}
+
+
+		Array nodes = d["nodes"];
+		String text_to_drop;
+		for(int i=0;i<nodes.size();i++) {
+
+			if (i>0)
+				text_to_drop+=",";
+
+			NodePath np = nodes[i];
+			Node *node = get_node(np);
+			if (!node) {
+				continue;
+			}
+
+
+
+			String path = sn->get_path_to(node);
+			text_to_drop+="\""+path.c_escape()+"\"";
+
+
+		}
+
+		code_editor->get_text_edit()->insert_text_at_cursor(text_to_drop);
+
+
+	}
+
+
+
+}
+
 
 ScriptTextEditor::ScriptTextEditor() {
 
@@ -1039,6 +1182,9 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);
+
+
+	code_editor->get_text_edit()->set_drag_forwarding(this);
 }
 
 static ScriptEditorBase * create_editor(const Ref<Script>& p_script) {

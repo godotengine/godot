@@ -55,6 +55,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/texture_frame.h"
+#include "scene/gui/color_rect.h"
 #include "scene/gui/patch_9_frame.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/check_box.h"
@@ -339,6 +340,7 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ObjectTypeDB::register_type<TextureFrame>();
+	ObjectTypeDB::register_type<ColorFrame>();
 	ObjectTypeDB::register_type<Patch9Frame>();
 	ObjectTypeDB::register_type<TabContainer>();
 	ObjectTypeDB::register_type<Tabs>();

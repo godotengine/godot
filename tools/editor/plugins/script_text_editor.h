@@ -98,6 +98,11 @@ protected:
 	void _edit_option(int p_op);
 
 	void _goto_line(int p_line) { goto_line(p_line); }
+
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+
 public:
 
 	virtual void apply_code();

@@ -34,6 +34,7 @@
 
 #include "globals.h"
 #include "message_queue.h"
+#include "scene/main/viewport.h"
 
 #define TAB_PIXELS
 
@@ -1651,7 +1652,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 			const InputEventMouseMotion &mm=p_input_event.mouse_motion;
 
-			if (mm.button_mask&BUTTON_MASK_LEFT) {
+			if (mm.button_mask&BUTTON_MASK_LEFT && get_viewport()->gui_get_drag_data()==Variant()) { //ignore if dragging
 
 				if (selection.selecting_mode!=Selection::MODE_NONE) {
 
