@@ -356,7 +356,7 @@ void FindReplaceBar::_show_search() {
 	show();
 	search_text->grab_focus();
 
-	if (text_edit->is_selection_active()) {
+	if (text_edit->is_selection_active() && !selection_only->is_pressed()) {
 		search_text->set_text(text_edit->get_selection_text());
 	}
 
@@ -376,11 +376,15 @@ void FindReplaceBar::popup_search() {
 
 void FindReplaceBar::popup_replace() {
 
+
 	if (!replace_hbc->is_visible() || !replace_options_hbc->is_visible()) {
 		replace_text->clear();
 		replace_hbc->show();
 		replace_options_hbc->show();
+
 	}
+
+	selection_only->set_pressed( (text_edit->is_selection_active() && text_edit->get_selection_from_line() < text_edit->get_selection_to_line()) );
 
 	_show_search();
 }
@@ -407,6 +411,14 @@ void FindReplaceBar::_search_text_changed(const String& p_text) {
 void FindReplaceBar::_search_text_entered(const String& p_text) {
 
 	search_next();
+}
+
+void FindReplaceBar::_replace_text_entered(const String& p_text) {
+
+	if (selection_only->is_pressed() && text_edit->is_selection_active()) {
+		_replace_all();
+		_hide_bar();
+	}
 }
 
 String FindReplaceBar::get_search_text() const {
@@ -452,6 +464,7 @@ void FindReplaceBar::_bind_methods() {
 	ObjectTypeDB::bind_method("_editor_text_changed",&FindReplaceBar::_editor_text_changed);
 	ObjectTypeDB::bind_method("_search_text_changed",&FindReplaceBar::_search_text_changed);
 	ObjectTypeDB::bind_method("_search_text_entered",&FindReplaceBar::_search_text_entered);
+	ObjectTypeDB::bind_method("_replace_text_entered",&FindReplaceBar::_replace_text_entered);
 	ObjectTypeDB::bind_method("_search_current",&FindReplaceBar::search_current);
 	ObjectTypeDB::bind_method("_search_next",&FindReplaceBar::search_next);
 	ObjectTypeDB::bind_method("_search_prev",&FindReplaceBar::search_prev);
@@ -497,18 +510,19 @@ FindReplaceBar::FindReplaceBar() {
 	replace_text = memnew(LineEdit);
 	replace_hbc->add_child(replace_text);
 	replace_text->set_custom_minimum_size(Size2(200, 0));
-	replace_text->connect("text_entered",this,"_search_text_entered");
+	replace_text->connect("text_entered",this,"_replace_text_entered");
 
-	replace = memnew(ToolButton);
+
+	replace = memnew(Button);
 	replace_hbc->add_child(replace);
 	replace->set_text(TTR("Replace"));
-	replace->set_focus_mode(FOCUS_NONE);
+	//replace->set_focus_mode(FOCUS_NONE);
 	replace->connect("pressed",this,"_replace_pressed");
 
-	replace_all = memnew(ToolButton);
+	replace_all = memnew(Button);
 	replace_hbc->add_child(replace_all);
 	replace_all->set_text(TTR("Replace All"));
-	replace_all->set_focus_mode(FOCUS_NONE);
+	//replace_all->set_focus_mode(FOCUS_NONE);
 	replace_all->connect("pressed",this,"_replace_all_pressed");
 
 	Control *spacer_split = memnew( Control );
@@ -581,8 +595,10 @@ void FindReplaceDialog::popup_search() {
 
 void FindReplaceDialog::popup_replace() {
 
+
 	set_title(TTR("Replace"));
 	bool do_selection=(text_edit->is_selection_active() && text_edit->get_selection_from_line() < text_edit->get_selection_to_line());
+
 	set_replace_selection_only(do_selection);
 
 	if (!do_selection && text_edit->is_selection_active()) {

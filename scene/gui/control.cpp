@@ -431,8 +431,7 @@ void Control::add_child_notify(Node *p_child) {
 		return;
 
 	if (child_c->data.theme.is_null() && data.theme_owner) {
-		child_c->data.theme_owner=data.theme_owner;
-		child_c->notification(NOTIFICATION_THEME_CHANGED);
+		_propagate_theme_changed(child_c,data.theme_owner); //need to propagate here, since many controls may require setting up stuff
 	}
 }
 
@@ -443,8 +442,7 @@ void Control::remove_child_notify(Node *p_child) {
 		return;
 
 	if (child_c->data.theme_owner && child_c->data.theme.is_null()) {
-		child_c->data.theme_owner=NULL;
-		//notification(NOTIFICATION_THEME_CHANGED);
+		_propagate_theme_changed(child_c,NULL);
 	}
 
 }
@@ -482,10 +480,10 @@ void Control::_notification(int p_notification) {
 			if (is_set_as_toplevel()) {
 				data.SI=get_viewport()->_gui_add_subwindow_control(this);
 
-				if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
+				/*if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
 					data.theme_owner=data.parent->data.theme_owner;
 					notification(NOTIFICATION_THEME_CHANGED);
-				}
+				}*/
 
 			} else {
 
@@ -521,10 +519,10 @@ void Control::_notification(int p_notification) {
 
 				if (parent_control) {
 					//do nothing, has a parent control
-					if (data.theme.is_null() && parent_control->data.theme_owner) {
+					/*if (data.theme.is_null() && parent_control->data.theme_owner) {
 						data.theme_owner=parent_control->data.theme_owner;
 						notification(NOTIFICATION_THEME_CHANGED);
-					}
+					}*/
 				} else if (subwindow) {
 					//is a subwindow (process input before other controls for that canvas)
 					data.SI=get_viewport()->_gui_add_subwindow_control(this);
@@ -1915,7 +1913,7 @@ void Control::_propagate_theme_changed(CanvasItem *p_at,Control *p_owner,bool p_
 
 		CanvasItem *child = p_at->get_child(i)->cast_to<CanvasItem>();
 		if (child) {
-			_propagate_theme_changed(child,p_owner);
+			_propagate_theme_changed(child,p_owner,p_assign);
 		}
 
 	}

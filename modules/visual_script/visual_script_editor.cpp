@@ -2140,6 +2140,7 @@ Vector<String> VisualScriptEditor::get_functions(){
 
 void VisualScriptEditor::set_edited_script(const Ref<Script>& p_script){
 
+
 	script=p_script;
 	signal_editor->script=p_script;
 	signal_editor->undo_redo=undo_redo;

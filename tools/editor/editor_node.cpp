@@ -5419,9 +5419,9 @@ EditorNode::EditorNode() {
 	theme_base->add_child(gui_base);
 	gui_base->set_area_as_parent_rect();
 
-	theme_base->set_theme( create_default_theme() );
-	theme = create_editor_theme();
-	gui_base->set_theme(theme);
+	Ref<Theme> theme = create_editor_theme();
+	theme_base->set_theme( theme );
+	gui_base->set_theme(create_custom_theme());
 
 	resource_preview = memnew( EditorResourcePreview );
 	add_child(resource_preview);

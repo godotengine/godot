@@ -33,7 +33,7 @@
 #include "editor_settings.h"
 #include "core/io/resource_loader.h"
 
-Ref<Theme> create_default_theme()
+Ref<Theme> create_editor_theme()
 {
 	Ref<Theme> theme = Ref<Theme>( memnew( Theme ) );
 
@@ -57,23 +57,22 @@ Ref<Theme> create_default_theme()
 	return theme;
 }
 
-Ref<Theme> create_editor_theme()
+Ref<Theme> create_custom_theme()
 {
-	Ref<Theme> theme = NULL;
+	Ref<Theme> theme;
 
 	String custom_theme = EditorSettings::get_singleton()->get("global/custom_theme");
 	if (custom_theme!="") {
 		theme = ResourceLoader::load(custom_theme);
 	}
 
-	if (theme.is_null() || !theme.is_valid()) {
-		theme = create_default_theme();
-	}
-
 	String global_font = EditorSettings::get_singleton()->get("global/custom_font");
 	if (global_font!="") {
 		Ref<Font> fnt = ResourceLoader::load(global_font);
 		if (fnt.is_valid()) {
+			if (!theme.is_valid()) {
+				theme.instance();
+			}
 			theme->set_default_theme_font(fnt);
 		}
 	}

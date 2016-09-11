@@ -1513,6 +1513,7 @@ void ScriptEditor::edit(const Ref<Script>& p_script, bool p_grab_focus) {
 	}
 	ERR_FAIL_COND(!se);
 	tab_container->add_child(se);
+
 	se->set_edited_script(p_script);
 	se->set_tooltip_request_func("_get_debug_tooltip",this);
 	if (se->get_edit_menu()) {
