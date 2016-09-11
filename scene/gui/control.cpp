@@ -2406,6 +2406,35 @@ bool Control::is_visibility_clip_disabled() const {
 	return data.disable_visibility_clip;
 }
 
+void Control::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
+
+	Node::get_argument_options(p_function,p_idx,r_options);
+
+	if (p_idx==0) {
+		List<StringName> sn;
+		String pf = p_function;
+		if (pf=="add_color_override" || pf=="has_color" || pf=="has_color_override" || pf=="get_color") {
+			Theme::get_default()->get_color_list(get_type(),&sn);
+		} else if (pf=="add_style_override" || pf=="has_style" || pf=="has_style_override" || pf=="get_style") {
+			Theme::get_default()->get_stylebox_list(get_type(),&sn);
+		} else if (pf=="add_font_override" || pf=="has_font" || pf=="has_font_override" || pf=="get_font") {
+			Theme::get_default()->get_font_list(get_type(),&sn);
+		} else if (pf=="add_constant_override" || pf=="has_constant" || pf=="has_constant_override" || pf=="get_constant") {
+			Theme::get_default()->get_constant_list(get_type(),&sn);
+		} else if (pf=="add_color_override" || pf=="has_color" || pf=="has_color_override" || pf=="get_color") {
+			Theme::get_default()->get_color_list(get_type(),&sn);
+		}
+
+		sn.sort_custom<StringName::AlphCompare>();
+		for (List<StringName>::Element *E=sn.front();E;E=E->next()) {
+			r_options->push_back("\""+E->get()+"\"");
+		}
+	}
+
+
+}
+
+
 void Control::_bind_methods() {
 
 
