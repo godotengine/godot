@@ -2141,7 +2141,18 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 			GDCompletionIdentifier t;
 			if (_guess_expression_type(context,static_cast<const GDParser::OperatorNode *>(node)->arguments[0],p.get_completion_line(),t)) {
 
-				if (t.type==Variant::OBJECT && t.obj_type!=StringName()) {
+				if (t.type==Variant::OBJECT && t.obj_type=="GDNativeClass") {
+					//native enum
+					Ref<GDNativeClass> gdn = t.value;
+					if (gdn.is_valid()) {
+						StringName cn = gdn->get_name();
+						List<String> cnames;
+						ObjectTypeDB::get_integer_constant_list(cn,&cnames);
+						for (List<String>::Element *E=cnames.front();E;E=E->next()) {
+							options.insert(E->get());
+						}
+					}
+				} else if (t.type==Variant::OBJECT && t.obj_type!=StringName()) {
 
 					Ref<GDScript> on_script;
 
