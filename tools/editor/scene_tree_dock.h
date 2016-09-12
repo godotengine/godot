@@ -175,6 +175,7 @@ public:
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
 
 
+	void open_script_dialog(Node* p_for_node);
 	SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelection *p_editor_selection,EditorData &p_editor_data);
 };
 
