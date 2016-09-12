@@ -583,35 +583,26 @@ void AnimationPlayer::_animation_process2(float p_delta) {
 
 	Playback &c=playback;
 
-	float prev_blend=1.0;
 	accum_pass++;
 
-	int pop_count=1;
-	int pop=0; // if >0, then amount of elements to pop from the back
+	_animation_process_data(c.current,p_delta,1.0f);
 
-
-	for (List<Blend>::Element *E=c.blend.back();E;E=E->prev(),pop_count++) {
+	List<Blend>::Element *prev = NULL;
+	for (List<Blend>::Element *E=c.blend.back();E;E=prev) {
 
 		Blend& b=E->get();
-		_animation_process_data(b.data,p_delta,prev_blend);
-
-		prev_blend=1.0-b.blend_left/b.blend_time;
+		float blend=b.blend_left/b.blend_time;
+		_animation_process_data(b.data,p_delta,blend);
 
 		b.blend_left-=Math::absf(speed_scale*p_delta);
 
+		prev = E->prev();
 		if (b.blend_left<0) {
 
-			pop=pop_count;
+			c.blend.erase(E);
 		}
 	}
-
-	while(pop--) {
-
-		c.blend.pop_back();
-	}
-
-
-	_animation_process_data(c.current,p_delta,prev_blend);
+	
 
 }
 
