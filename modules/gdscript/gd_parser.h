@@ -432,6 +432,7 @@ private:
 	int completion_line;
 	int completion_argument;
 	bool completion_found;
+	bool completion_ident_is_call;
 
 	PropertyInfo current_export;
 
@@ -478,7 +479,7 @@ public:
 	BlockNode *get_completion_block();
 	FunctionNode *get_completion_function();
 	int get_completion_argument_index();
-
+	int get_completion_identifier_is_function();
 
 	void clear();
 	GDParser();

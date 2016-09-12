@@ -98,6 +98,7 @@ protected:
 	void _edit_option(int p_op);
 
 	void _goto_line(int p_line) { goto_line(p_line); }
+	void _lookup_symbol(const String& p_symbol,int p_row, int p_column);
 
 	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
 	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;

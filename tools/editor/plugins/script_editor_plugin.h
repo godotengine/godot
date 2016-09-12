@@ -78,7 +78,8 @@ class ScriptEditorDebugger;
 class ScriptEditorBase : public Control {
 
 	OBJ_TYPE( ScriptEditorBase, Control );
-
+protected:
+	static void _bind_methods();
 public:
 
 	virtual void apply_code()=0;
@@ -282,6 +283,7 @@ class ScriptEditor : public VBoxContainer {
 	void _help_class_open(const String& p_class);
 	void _help_class_goto(const String& p_desc);
 	void _update_history_arrows();
+	void _save_history();
 	void _go_to_tab(int p_idx);
 	void _update_history_pos(int p_new_pos);
 	void _update_script_colors();

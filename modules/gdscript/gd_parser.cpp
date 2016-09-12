@@ -203,6 +203,7 @@ bool GDParser::_get_completable_identifier(CompletionType p_type,StringName& ide
 		completion_line=tokenizer->get_token_line();
 		completion_block=current_block;
 		completion_found=true;
+		completion_ident_is_call=false;
 		tokenizer->advance();
 
 		if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
@@ -210,6 +211,9 @@ bool GDParser::_get_completable_identifier(CompletionType p_type,StringName& ide
 			tokenizer->advance();
 		}
 
+		if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_OPEN) {
+			completion_ident_is_call=true;
+		}
 		return true;
 	}
 
@@ -3550,6 +3554,11 @@ GDParser::FunctionNode *GDParser::get_completion_function(){
 int GDParser::get_completion_argument_index() {
 
 	return completion_argument;
+}
+
+int GDParser::get_completion_identifier_is_function() {
+
+	return completion_ident_is_call;
 }
 
 GDParser::GDParser() {

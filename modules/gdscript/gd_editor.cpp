@@ -351,6 +351,7 @@ struct GDCompletionIdentifier {
 	Ref<GDScript> script;
 	Variant::Type type;
 	Variant value; //im case there is a value, also return it
+
 };
 
 
@@ -934,6 +935,7 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 
 	return false;
 }
+
 
 static bool _guess_identifier_type_in_block(GDCompletionContext& context,int p_line,const StringName& p_identifier,GDCompletionIdentifier &r_type) {
 
@@ -2521,4 +2523,439 @@ void GDScriptLanguage::auto_indent_code(String& p_code,int p_from_line,int p_to_
 		p_code+=lines[i];
 	}
 
+}
+
+Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol,const String& p_base_path, Object*p_owner,LookupResult& r_result) {
+
+
+	//before parsing, try the usual stuff
+	if (ObjectTypeDB::type_exists(p_symbol)) {
+		r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS;
+		r_result.class_name=p_symbol;
+		return OK;
+	}
+
+	for(int i=0;i<Variant::VARIANT_MAX;i++) {
+		Variant::Type t = Variant::Type(i);
+		if (Variant::get_type_name(t)==p_symbol) {
+			r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS;
+			r_result.class_name=Variant::get_type_name(t);
+			return OK;
+		}
+	}
+
+	for(int i=0;i<GDFunctions::FUNC_MAX;i++) {
+		if (GDFunctions::get_func_name(GDFunctions::Function(i))==p_symbol) {
+			r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+			r_result.class_name="@GDScript";
+			r_result.class_member=p_symbol;
+			return OK;
+		}
+	}
+
+	GDParser p;
+	p.parse(p_code,p_base_path,false,"",true);
+
+	if (p.get_completion_type()==GDParser::COMPLETION_NONE)
+		return ERR_CANT_RESOLVE;
+
+	GDCompletionContext context;
+
+	context._class=p.get_completion_class();
+	context.block=p.get_completion_block();
+	context.function=p.get_completion_function();
+	context.base=p_owner;
+	context.base_path=p_base_path;
+	bool isfunction=false;
+
+	switch(p.get_completion_type()) {
+
+		case GDParser::COMPLETION_NONE: {
+		} break;
+		case GDParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
+
+			r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+			r_result.class_name=Variant::get_type_name(p.get_completion_built_in_constant());
+			r_result.class_member=p_symbol;
+			return OK;
+
+		} break;
+		case GDParser::COMPLETION_FUNCTION: {
+
+
+			if (context._class && context._class->functions.size()) {
+				for(int i=0;i<context._class->functions.size();i++) {
+					if (context._class->functions[i]->name==p_symbol) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+						r_result.location=context._class->functions[i]->line;
+						return OK;
+					}
+				}
+			}
+
+			Ref<GDScript> parent = _get_parent_class(context);
+			while(parent.is_valid()) {
+				int line = parent->get_member_line(p_symbol);
+				if (line>=0) {
+					r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+					r_result.location=line;
+					r_result.script=parent;
+					return OK;
+
+				}
+
+				parent=parent->get_base();
+			}
+
+			GDCompletionIdentifier identifier = _get_native_class(context);
+			print_line("identifier: "+String(identifier.obj_type));
+
+			if (ObjectTypeDB::has_method(identifier.obj_type,p_symbol)) {
+
+				r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+				r_result.class_name=identifier.obj_type;
+				r_result.class_member=p_symbol;
+				return OK;
+			}
+
+
+		} break;
+		case GDParser::COMPLETION_IDENTIFIER: {
+
+			//check if a function
+			if (p.get_completion_identifier_is_function()) {
+				if (context._class && context._class->functions.size()) {
+					for(int i=0;i<context._class->functions.size();i++) {
+						if (context._class->functions[i]->name==p_symbol) {
+							r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+							r_result.location=context._class->functions[i]->line;
+							return OK;
+						}
+					}
+				}
+
+				Ref<GDScript> parent = _get_parent_class(context);
+				while(parent.is_valid()) {
+					int line = parent->get_member_line(p_symbol);
+					if (line>=0) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+						r_result.location=line;
+						r_result.script=parent;
+						return OK;
+
+					}
+
+					parent=parent->get_base();
+				}
+
+				GDCompletionIdentifier identifier = _get_native_class(context);
+
+
+				if (ObjectTypeDB::has_method(identifier.obj_type,p_symbol)) {
+
+					r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+					r_result.class_name=identifier.obj_type;
+					r_result.class_member=p_symbol;
+					return OK;
+				}
+			} else {
+
+
+				const GDParser::BlockNode *block=context.block;
+				//search in blocks going up (local var?)
+				while(block) {
+
+
+
+					for (int i=0;i<block->statements.size();i++) {
+
+						if (block->statements[i]->line>p.get_completion_line())
+							continue;
+
+
+						if (block->statements[i]->type==GDParser::BlockNode::TYPE_LOCAL_VAR) {
+
+							const GDParser::LocalVarNode *lv=static_cast<const GDParser::LocalVarNode *>(block->statements[i]);
+
+							if (lv->assign && lv->name==p_symbol) {
+
+								r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+								r_result.location=block->statements[i]->line;
+								return OK;
+							}
+						}
+					}
+					block=block->parent_block;
+				}
+
+				//guess from function arguments
+				if (context.function && context.function->name!=StringName()) {
+
+					for(int i=0;i<context.function->arguments.size();i++) {
+
+						if (context.function->arguments[i]==p_symbol) {
+							r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+							r_result.location=context.function->line;
+							return OK;
+						}
+
+					}
+				}
+
+				//guess in class constants
+
+				for(int i=0;i<context._class->constant_expressions.size();i++) {
+
+					if (context._class->constant_expressions[i].identifier==p_symbol) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+						r_result.location=context._class->constant_expressions[i].expression->line;
+						return OK;
+					}
+				}
+
+				//guess in class variables
+				if (!(context.function && context.function->_static)) {
+
+					for(int i=0;i<context._class->variables.size();i++) {
+
+						if (context._class->variables[i].identifier==p_symbol) {
+
+							r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+							r_result.location=context._class->variables[i].line;
+							return OK;
+						}
+					}
+				}
+
+				//guess in autoloads as singletons
+				List<PropertyInfo> props;
+				Globals::get_singleton()->get_property_list(&props);
+
+				for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+
+					String s = E->get().name;
+					if (!s.begins_with("autoload/"))
+						continue;
+					String name = s.get_slice("/",1);
+					if (name==String(p_symbol)) {
+
+						String path = Globals::get_singleton()->get(s);
+						if (path.begins_with("*")) {
+							String script =path.substr(1,path.length());
+
+							if (!script.ends_with(".gd")) {
+								//not a script, try find the script anyway,
+								//may have some success
+								script=script.basename()+".gd";
+							}
+
+							if (FileAccess::exists(script)) {
+
+								r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+								r_result.location=0;
+								r_result.script=ResourceLoader::load(script);
+								return OK;
+							}
+						}
+					}
+				}
+
+				//global
+				for(Map<StringName,int>::Element *E=GDScriptLanguage::get_singleton()->get_global_map().front();E;E=E->next()) {
+					if (E->key()==p_symbol) {
+
+						Variant value = GDScriptLanguage::get_singleton()->get_global_array()[E->get()];
+						if (value.get_type()==Variant::OBJECT) {
+							Object *obj = value;
+							if (obj) {
+
+								if (obj->cast_to<GDNativeClass>()) {
+									r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS;
+									r_result.class_name=obj->cast_to<GDNativeClass>()->get_name();
+
+								} else {
+									r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS;
+									r_result.class_name=obj->get_type();
+								}
+								return OK;
+							}
+						} else {
+
+							r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+							r_result.class_name="@Global Scope";
+							r_result.class_member=p_symbol;
+							return OK;
+						}
+					}
+
+				}
+#if 0
+				GDCompletionIdentifier identifier;
+				if (_guess_identifier_type(context,p.get_completion_line(),p_symbol,identifier)) {
+
+					print_line("var type: "+Variant::get_type_name(identifier.type));
+					if (identifier.script.is_valid()) {
+						print_line("var script: "+identifier.script->get_path());
+					}
+					print_line("obj type: "+String(identifier.obj_type));
+					print_line("value: "+String(identifier.value));
+				}
+#endif
+			}
+
+		} break;
+		case GDParser::COMPLETION_PARENT_FUNCTION: {
+
+		} break;
+		case GDParser::COMPLETION_METHOD:
+			isfunction=true;
+		case GDParser::COMPLETION_INDEX: {
+
+			const GDParser::Node *node = p.get_completion_node();
+			if (node->type!=GDParser::Node::TYPE_OPERATOR)
+				break;
+
+
+
+
+			GDCompletionIdentifier t;
+			if (_guess_expression_type(context,static_cast<const GDParser::OperatorNode *>(node)->arguments[0],p.get_completion_line(),t)) {
+
+				if (t.type==Variant::OBJECT && t.obj_type=="GDNativeClass") {
+					//native enum
+					Ref<GDNativeClass> gdn = t.value;
+					if (gdn.is_valid()) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+						r_result.class_name=gdn->get_name();;
+						r_result.class_member=p_symbol;
+						return OK;
+
+					}
+				} else if (t.type==Variant::OBJECT && t.obj_type!=StringName()) {
+
+					Ref<GDScript> on_script;
+
+					if (t.value.get_type()) {
+						Object *obj=t.value;
+
+
+						if (obj) {
+
+
+							on_script=obj->get_script();
+
+							if (on_script.is_valid()) {
+								int loc = on_script->get_member_line(p_symbol);
+								if (loc>=0) {
+									r_result.script=on_script;
+									r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+									r_result.location=loc;
+									return OK;
+								}
+							}
+						}
+					}
+
+					if (ObjectTypeDB::has_method(t.obj_type,p_symbol)) {
+
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+						r_result.class_name=t.obj_type;
+						r_result.class_member=p_symbol;
+						return OK;
+
+					}
+
+					bool success;
+					ObjectTypeDB::get_integer_constant(t.obj_type,p_symbol,&success);
+					if (success) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+						r_result.class_name=t.obj_type;
+						r_result.class_member=p_symbol;
+						return OK;
+					}
+
+					ObjectTypeDB::get_property_type(t.obj_type,p_symbol,&success);
+
+					if (success) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY;
+						r_result.class_name=t.obj_type;
+						r_result.class_member=p_symbol;
+						return OK;
+					}
+
+
+				} else {
+
+					Variant::CallError ce;
+					Variant v = Variant::construct(t.type,NULL,0,ce);
+
+					bool valid;
+					v.get_numeric_constant_value(t.type,p_symbol,&valid);
+					if (valid) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+						r_result.class_name=Variant::get_type_name(t.type);
+						r_result.class_member=p_symbol;
+						return OK;
+					}
+
+					//todo check all inputevent types for property
+
+					v.get(p_symbol,&valid);
+
+					if (valid) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY;
+						r_result.class_name=Variant::get_type_name(t.type);
+						r_result.class_member=p_symbol;
+						return OK;
+					}
+
+					if (v.has_method(p_symbol)) {
+
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+						r_result.class_name=Variant::get_type_name(t.type);
+						r_result.class_member=p_symbol;
+						return OK;
+
+					}
+
+
+				}
+			}
+
+
+		} break;
+		case GDParser::COMPLETION_CALL_ARGUMENTS: {
+
+			return ERR_CANT_RESOLVE;
+		} break;
+		case GDParser::COMPLETION_VIRTUAL_FUNC: {
+
+			GDCompletionIdentifier cid = _get_native_class(context);
+
+			if (cid.obj_type!=StringName()) {
+				List<MethodInfo> vm;
+				ObjectTypeDB::get_virtual_methods(cid.obj_type,&vm);
+				for(List<MethodInfo>::Element *E=vm.front();E;E=E->next()) {
+
+					if (p_symbol==E->get().name) {
+
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+						r_result.class_name=cid.obj_type;
+						r_result.class_member=p_symbol;
+						return OK;
+
+					}
+				}
+			}
+		} break;
+		case GDParser::COMPLETION_YIELD: {
+
+			return ERR_CANT_RESOLVE;
+
+		} break;
+
+	}
+
+
+	return ERR_CANT_RESOLVE;
 }

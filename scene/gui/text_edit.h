@@ -242,6 +242,9 @@ class TextEdit : public Control  {
 	bool auto_indent;
 	bool cut_copy_line;
 	bool insert_mode;
+	bool select_identifiers_enabled;
+
+	String hilighted_word;
 
 	uint64_t last_dblclk;
 
@@ -444,6 +447,7 @@ public:
 	String get_selection_text() const;
 
 	String get_word_under_cursor() const;
+	String get_word_at_pos(const Vector2& p_pos) const;
 
 	bool search(const String &p_key,uint32_t p_search_flags, int p_from_line, int p_from_column,int &r_line,int &r_column) const;
 
@@ -492,9 +496,13 @@ public:
 	void set_code_hint(const String& p_hint);
 	void query_code_comple();
 
+	void set_select_identifiers_on_hover(bool p_enable);
+	bool is_selecting_identifiers_on_hover_enabled() const;
+
 	PopupMenu *get_menu() const;
 
 	String get_text_for_completion();
+	String get_text_for_lookup_completion();
 
 	virtual bool is_text_field() const;
 	TextEdit();

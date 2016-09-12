@@ -526,6 +526,74 @@ static void swap_lines(TextEdit *tx, int line1, int line2)
     tx->cursor_set_line(line2);
 }
 
+void ScriptTextEditor::_lookup_symbol(const String& p_symbol,int p_row, int p_column) {
+
+	Node *base = get_tree()->get_edited_scene_root();
+	if (base) {
+		base = _find_node_for_script(base,base,script);
+	}
+
+
+	ScriptLanguage::LookupResult result;
+	if (script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(),p_symbol,script->get_path().get_base_dir(),base,result)==OK) {
+
+		_goto_line(p_row);
+
+		switch(result.type) {
+			case ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION: {
+
+				if (result.script.is_valid()) {
+					emit_signal("request_open_script_at_line",result.script,result.location-1);
+				} else {
+					emit_signal("request_save_history");
+					_goto_line(result.location-1);
+				}
+			} break;
+			case ScriptLanguage::LookupResult::RESULT_CLASS: {
+				emit_signal("go_to_help","class_name:"+result.class_name);
+			} break;
+			case ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT: {
+
+				StringName cname = result.class_name;
+				bool success;
+				while(true) {
+					ObjectTypeDB::get_integer_constant(cname,result.class_member,&success);
+					if (success) {
+						result.class_name=cname;
+						cname=ObjectTypeDB::type_inherits_from(cname);
+					} else {
+						break;
+					}
+				}
+
+
+				emit_signal("go_to_help","class_constant:"+result.class_name+":"+result.class_member);
+
+			} break;
+			case ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY: {
+				emit_signal("go_to_help","class_property:"+result.class_name+":"+result.class_member);
+
+			} break;
+			case ScriptLanguage::LookupResult::RESULT_CLASS_METHOD: {
+
+				StringName cname = result.class_name;
+
+				while(true) {
+					if (ObjectTypeDB::has_method(cname,result.class_member)) {
+						result.class_name=cname;
+						cname=ObjectTypeDB::type_inherits_from(cname);
+					} else {
+						break;
+					}
+				}
+
+				emit_signal("go_to_help","class_method:"+result.class_name+":"+result.class_member);
+
+			} break;
+		}
+
+	}
+}
 
 void ScriptTextEditor::_edit_option(int p_op) {
 
@@ -920,13 +988,14 @@ void ScriptTextEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_breakpoint_toggled",&ScriptTextEditor::_breakpoint_toggled);
 	ObjectTypeDB::bind_method("_edit_option",&ScriptTextEditor::_edit_option);
 	ObjectTypeDB::bind_method("_goto_line",&ScriptTextEditor::_goto_line);
+	ObjectTypeDB::bind_method("_lookup_symbol",&ScriptTextEditor::_lookup_symbol);
+
+
 
 	ObjectTypeDB::bind_method("get_drag_data_fw",&ScriptTextEditor::get_drag_data_fw);
 	ObjectTypeDB::bind_method("can_drop_data_fw",&ScriptTextEditor::can_drop_data_fw);
 	ObjectTypeDB::bind_method("drop_data_fw",&ScriptTextEditor::drop_data_fw);
 
-	ADD_SIGNAL(MethodInfo("name_changed"));
-	ADD_SIGNAL(MethodInfo("request_help_search",PropertyInfo(Variant::STRING,"topic")));
 }
 
 Control *ScriptTextEditor::get_edit_menu() {
@@ -1109,6 +1178,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->connect("load_theme_settings",this,"_load_theme_settings");
 	code_editor->set_code_complete_func(_code_complete_scripts,this);
 	code_editor->get_text_edit()->connect("breakpoint_toggled", this, "_breakpoint_toggled");
+	code_editor->get_text_edit()->connect("symbol_lookup", this, "_lookup_symbol");
+
 
 	code_editor->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
 	code_editor->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
@@ -1124,6 +1195,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_edit()->set_callhint_settings(
 		EditorSettings::get_singleton()->get("text_editor/put_callhint_tooltip_below_current_line"),
 		EditorSettings::get_singleton()->get("text_editor/callhint_tooltip_offset"));
+
+	code_editor->get_text_edit()->set_select_identifiers_on_hover(true);
 
 	edit_hb = memnew (HBoxContainer);
 

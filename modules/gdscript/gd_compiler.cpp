@@ -1443,6 +1443,10 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 #endif
 	if (p_func) {
 		gdfunc->_initial_line=p_func->line;
+#ifdef TOOLS_ENABLED
+
+		p_script->member_lines[func_name]=p_func->line;
+#endif
 	} else {
 		gdfunc->_initial_line=0;
 	}
@@ -1672,6 +1676,12 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 		p_script->member_indices[name]=minfo;
 		p_script->members.insert(name);
 
+#ifdef TOOLS_ENABLED
+
+		p_script->member_lines[name]=p_class->variables[i].line;
+#endif
+
+
 	}
 
 	for(int i=0;i<p_class->constant_expressions.size();i++) {
@@ -1683,6 +1693,11 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 
 		p_script->constants.insert(name,constant->value);
 		//p_script->constants[constant->value].make_const();
+#ifdef TOOLS_ENABLED
+
+		p_script->member_lines[name]=p_class->constant_expressions[i].expression->line;
+#endif
+
 	}
 
 	for(int i=0;i<p_class->_signals.size();i++) {
@@ -1731,6 +1746,10 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 		if (err)
 			return err;
 
+#ifdef TOOLS_ENABLED
+
+		p_script->member_lines[name]=p_class->subclasses[i]->line;
+#endif
 
 		p_script->constants.insert(name,subclass); //once parsed, goes to the list of constants
 		p_script->subclasses.insert(name,subclass);

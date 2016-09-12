@@ -700,6 +700,7 @@ void TextEdit::_notification(int p_what) {
 				bool prev_is_char=false;
 				bool prev_is_number = false;
 				bool in_keyword=false;
+				bool underlined=false;
 				bool in_word = false;
 				bool in_function_name = false;
 				bool in_member_variable = false;
@@ -825,8 +826,10 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 
-						if (!is_char)
+						if (!is_char) {
 							in_keyword=false;
+							underlined=false;
+						}
 
 						if (in_region==-1 && !in_keyword && is_char && !prev_is_char) {
 
@@ -843,6 +846,12 @@ void TextEdit::_notification(int p_what) {
 
 								in_keyword=true;
 								keyword_color=*col;
+							}
+
+							if (select_identifiers_enabled && hilighted_word!=String()) {
+								if (hilighted_word==range) {
+									underlined=true;
+								}
 							}
 						}
 
@@ -1024,8 +1033,12 @@ void TextEdit::_notification(int p_what) {
 						color = cache.caret_background_color;
 					}
 
-					if (str[j]>=32)
-						cache.font->draw_char(ci,Point2i( char_ofs+char_margin, ofs_y+ascent),str[j],str[j+1],in_selection?cache.font_selected_color:color);
+					if (str[j]>=32) {
+						int w = cache.font->draw_char(ci,Point2i( char_ofs+char_margin, ofs_y+ascent),str[j],str[j+1],in_selection?cache.font_selected_color:color);
+						if (underlined) {
+							draw_rect(Rect2( char_ofs+char_margin, ofs_y+ascent+2,w,1),in_selection?cache.font_selected_color:color);
+						}
+					}
 
 					else if (draw_tabs && str[j]=='\t') {
 						int yofs= (get_row_height() - cache.tab_icon->get_height())/2;
@@ -1501,10 +1514,18 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				}
 				if (mb.button_index==BUTTON_LEFT) {
 
+
 					_reset_caret_blink_timer();
 
 					int row,col;
 					_get_mouse_pos(Point2i(mb.x,mb.y), row,col);
+
+					if (mb.mod.command && hilighted_word!=String()) {
+
+						emit_signal("symbol_lookup",hilighted_word,row,col);
+						return;
+					}
+
 
 					// toggle breakpoint on gutter click
 					if (draw_breakpoint_gutter) {
@@ -1652,6 +1673,22 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 			const InputEventMouseMotion &mm=p_input_event.mouse_motion;
 
+			if (select_identifiers_enabled) {
+				if (mm.mod.command && mm.button_mask==0) {
+
+					String new_word = get_word_at_pos(Vector2(mm.x,mm.y));
+					if (new_word!=hilighted_word) {
+						hilighted_word=new_word;
+						update();
+					}
+				} else {
+					if (hilighted_word!=String()) {
+						hilighted_word=String();
+						update();
+					}
+				}
+			}
+
 			if (mm.button_mask&BUTTON_MASK_LEFT && get_viewport()->gui_get_drag_data()==Variant()) { //ignore if dragging
 
 				if (selection.selecting_mode!=Selection::MODE_NONE) {
@@ -1678,6 +1715,27 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 		case InputEvent::KEY: {
 
 			InputEventKey k=p_input_event.key;
+
+
+#ifdef OSX_ENABLED
+			if (k.scancode==KEY_META) {
+#else
+			if (k.scancode==KEY_CONTROL) {
+
+#endif
+				if (select_identifiers_enabled) {
+
+					if (k.pressed) {
+
+						hilighted_word = get_word_at_pos(get_local_mouse_pos());
+						update();
+
+					} else {
+						hilighted_word=String();
+						update();
+					}
+				}
+			}
 
 			if (!k.pressed)
 				return;
@@ -1846,6 +1904,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 			if (!k.mod.command) {
 				_reset_caret_blink_timer();
 			}
+
+
 			// save here for insert mode, just in case it is cleared in the following section
 			bool had_selection = selection.active;
 
@@ -2559,7 +2619,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						}
 						update();
 					}
-					break;}
+				} break;
 
 				default: {
 
@@ -3223,6 +3283,9 @@ void TextEdit::insert_text_at_cursor(const String& p_text) {
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2& p_pos) const {
+	if (hilighted_word!=String())
+		return CURSOR_POINTING_HAND;
+
 	int gutter=cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w+cache.breakpoint_gutter_width;
 	if((completion_active && completion_rect.has_point(p_pos)) || p_pos.x < gutter) {
 		return CURSOR_ARROW;
@@ -3264,6 +3327,36 @@ String TextEdit::get_text() {
 	return longthing;
 
 };
+
+
+String TextEdit::get_text_for_lookup_completion() {
+
+
+	int row,col;
+	_get_mouse_pos(get_local_mouse_pos(), row,col);
+
+
+	String longthing;
+	int len = text.size();
+	for (int i=0;i<len;i++) {
+
+		if (i==row) {
+			longthing+=text[i].substr(0,col);
+			longthing+=String::chr(0xFFFF); //not unicode, represents the cursor
+			longthing+=text[i].substr(col,text[i].size());
+		} else {
+
+			longthing+=text[i];
+		}
+
+
+		if (i!=len-1)
+			longthing+="\n";
+	}
+
+	return longthing;
+
+}
 
 String TextEdit::get_text_for_completion() {
 
@@ -4302,6 +4395,38 @@ void TextEdit::code_complete(const Vector<String> &p_strings) {
 }
 
 
+String TextEdit::get_word_at_pos(const Vector2& p_pos) const {
+
+	int row,col;
+	_get_mouse_pos(p_pos, row, col);
+
+	String s = text[row];
+	if (s.length()==0)
+		return "";
+	int beg=CLAMP(col,0,s.length());
+	int end=beg;
+
+
+	if (s[beg]>32 || beg==s.length()) {
+
+		bool symbol = beg < s.length() &&  _is_symbol(s[beg]); //not sure if right but most editors behave like this
+
+		while(beg>0 && s[beg-1]>32 && (symbol==_is_symbol(s[beg-1]))) {
+			beg--;
+		}
+		while(end<s.length() && s[end+1]>32 && (symbol==_is_symbol(s[end+1]))) {
+			end++;
+		}
+
+		if (end<s.length())
+			end+=1;
+
+		return s.substr(beg,end-beg);
+	}
+
+	return String();
+}
+
 String TextEdit::get_tooltip(const Point2& p_pos) const {
 
 	if (!tooltip_obj)
@@ -4425,6 +4550,18 @@ void TextEdit::menu_option(int p_option) {
 	};
 }
 
+
+void TextEdit::set_select_identifiers_on_hover(bool p_enable) {
+
+	select_identifiers_enabled=p_enable;
+}
+
+bool TextEdit::is_selecting_identifiers_on_hover_enabled() const {
+
+	return select_identifiers_enabled;
+}
+
+
 PopupMenu *TextEdit::get_menu() const {
 	return menu;
 }
@@ -4521,6 +4658,7 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("text_changed"));
 	ADD_SIGNAL(MethodInfo("request_completion"));
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo( Variant::INT, "row")));
+	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING,"symbol"),PropertyInfo( Variant::INT, "row"),PropertyInfo( Variant::INT, "column")));
 
 	BIND_CONSTANT( MENU_CUT );
 	BIND_CONSTANT( MENU_COPY );
@@ -4641,6 +4779,7 @@ TextEdit::TextEdit()  {
 	auto_indent=false;
 	insert_mode = false;
 	window_has_focus=true;
+	select_identifiers_enabled=false;
 
 	menu = memnew( PopupMenu );
 	add_child(menu);
