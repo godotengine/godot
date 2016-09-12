@@ -1691,6 +1691,7 @@ void ScriptEditor::_editor_settings_changed() {
 
 		se->update_settings();
 	}
+	_update_script_colors();
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/auto_reload_and_parse_scripts_on_save",true));
 
