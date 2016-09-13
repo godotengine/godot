@@ -88,6 +88,8 @@ void CreateDialog::popup(bool p_dontclear) {
 
 		memdelete(f);
 	} else {
+#if 0
+// I think this was way too confusing
 		if (base_type=="Node") {
 			//harcode some favorites :D
 			favorite_list.push_back("Panel");
@@ -107,6 +109,7 @@ void CreateDialog::popup(bool p_dontclear) {
 			favorite_list.push_back("AnimationPlayer");
 
 		}
+#endif
 	}
 
 	_update_favorite_list();
