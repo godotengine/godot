@@ -186,6 +186,7 @@ private:
 		SETTINGS_LAYOUT_DEFAULT,
 		SETTINGS_LOAD_EXPORT_TEMPLATES,
 		SETTINGS_PICK_MAIN_SCENE,
+		SETTINGS_TOGGLE_FULLSCREN,
 		SETTINGS_HELP,
 		SETTINGS_ABOUT,
 		SOURCES_REIMPORT,
@@ -356,7 +357,7 @@ private:
 	int dock_popup_selected;
 	Timer *dock_drag_timer;
 	bool docks_visible;
-	bool distraction_free_mode;
+	ToolButton *distraction_free;
 
 	String _tmp_import_path;
 
@@ -576,10 +577,13 @@ private:
 
 	static void _file_access_close_error_notify(const String& p_str);
 
+	void _toggle_distraction_free_mode();
 
 	enum {
 		MAX_INIT_CALLBACKS=128
 	};
+
+
 
 	static int plugin_init_callback_count;
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];

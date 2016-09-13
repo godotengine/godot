@@ -176,17 +176,6 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 	if (p_event.type==InputEvent::KEY && p_event.key.pressed && !p_event.key.echo && !gui_base->get_viewport()->gui_has_modal_stack()) {
 
 
-		if (ED_IS_SHORTCUT("editor/fullscreen_mode", p_event)) {
-			if (distraction_free_mode) {
-				distraction_free_mode = false;
-				_update_top_menu_visibility();
-			} else {
-				set_docks_visible(!get_docks_visible());
-			}
-		}
-		if (ED_IS_SHORTCUT("editor/distraction_free_mode", p_event)) {
-			set_distraction_free_mode(!get_distraction_free_mode());
-		}
 		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
 			int next_tab = editor_data.get_edited_scene() + 1;
 			next_tab %= editor_data.get_edited_scene_count();
@@ -1374,6 +1363,7 @@ void EditorNode::_dialog_action(String p_file) {
 			unzClose(pkg);
 
 		} break;
+
 		case RESOURCE_SAVE:
 		case RESOURCE_SAVE_AS: {
 
@@ -2817,6 +2807,12 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			file_templates->popup_centered_ratio();
 
 		} break;
+		case SETTINGS_TOGGLE_FULLSCREN: {
+
+			OS::get_singleton()->set_window_fullscreen( !OS::get_singleton()->is_window_fullscreen() );
+
+
+		} break;
 		case SETTINGS_PICK_MAIN_SCENE: {
 
 
@@ -3002,6 +2998,8 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
 		singleton->main_editor_buttons.push_back(tb);
 		singleton->main_editor_button_vb->add_child(tb);
 		singleton->editor_table.push_back(p_editor);
+
+		singleton->distraction_free->raise();
 	}
 	singleton->editor_data.add_editor_plugin( p_editor );
 	singleton->add_child(p_editor);
@@ -4607,7 +4605,10 @@ void EditorNode::_update_dock_slots_visibility() {
 }
 
 void EditorNode::_update_top_menu_visibility() {
-	if (distraction_free_mode) {
+
+	return; // I think removing top menu is too much
+	/*
+	if (distraction_free->is_pressed()) {
 		play_cc->hide();
 		menu_hb->hide();
 		scene_tabs->hide();
@@ -4615,7 +4616,7 @@ void EditorNode::_update_top_menu_visibility() {
 		play_cc->show();
 		menu_hb->show();
 		scene_tabs->show();
-	}
+	}*/
 }
 
 void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String& p_section) {
@@ -4991,8 +4992,14 @@ bool EditorNode::get_docks_visible() const {
 	return docks_visible;
 }
 
+void EditorNode::_toggle_distraction_free_mode() {
+
+	set_distraction_free_mode( distraction_free->is_pressed() );
+}
+
 void EditorNode::set_distraction_free_mode(bool p_enter) {
-	distraction_free_mode = p_enter;
+
+	distraction_free->set_pressed(p_enter);
 
 	if (p_enter) {
 		if (docks_visible) {
@@ -5005,7 +5012,7 @@ void EditorNode::set_distraction_free_mode(bool p_enter) {
 }
 
 bool EditorNode::get_distraction_free_mode() const {
-	return distraction_free_mode;
+	return distraction_free->is_pressed();
 }
 
 void EditorNode::add_control_to_dock(DockSlot p_slot,Control* p_control) {
@@ -5305,6 +5312,7 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_clear_search_box",&EditorNode::_clear_search_box);
 	ObjectTypeDB::bind_method("_clear_undo_history",&EditorNode::_clear_undo_history);
 	ObjectTypeDB::bind_method("_dropped_files",&EditorNode::_dropped_files);
+	ObjectTypeDB::bind_method("_toggle_distraction_free_mode",&EditorNode::_toggle_distraction_free_mode);
 
 
 
@@ -5349,7 +5357,7 @@ EditorNode::EditorNode() {
 	changing_scene=false;
 	_initializing_addons=false;
 	docks_visible = true;
-	distraction_free_mode=false;
+
 
 	FileAccess::set_backup_save(true);
 
@@ -5677,8 +5685,6 @@ EditorNode::EditorNode() {
 	prev_scene->set_pos(Point2(3,24));
 	prev_scene->hide();
 
-	ED_SHORTCUT("editor/fullscreen_mode",TTR("Fullscreen Mode"),KEY_MASK_SHIFT|KEY_F11);
-	ED_SHORTCUT("editor/distraction_free_mode",TTR("Distraction Free Mode"),KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_F11);
 
 
 	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD+KEY_TAB);
@@ -5748,6 +5754,13 @@ EditorNode::EditorNode() {
 	main_editor_button_vb = memnew( HBoxContainer );
 	editor_region->add_child(main_editor_button_vb);
 	menu_hb->add_child(editor_region);
+
+	distraction_free = memnew( ToolButton );
+	main_editor_button_vb->add_child(distraction_free);
+	distraction_free->set_shortcut( ED_SHORTCUT("editor/distraction_free_mode",TTR("Distraction Free Mode"),KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_F11) );
+	distraction_free->connect("pressed",this,"_toggle_distraction_free_mode");
+	distraction_free->set_icon(gui_base->get_icon("DistractionFree","EditorIcons"));
+	distraction_free->set_toggle_mode(true);
 
 	//menu_hb->add_spacer();
 #if 0
@@ -5989,6 +6002,9 @@ EditorNode::EditorNode() {
 	p->add_child(editor_layouts);
 	editor_layouts->connect("item_pressed",this,"_layout_menu_option");
 	p->add_submenu_item(TTR("Editor Layout"), "Layouts");
+
+	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode",TTR("Toggle Fullscreen"),KEY_MASK_SHIFT|KEY_F11),SETTINGS_TOGGLE_FULLSCREN);
+
 	p->add_separator();
 	p->add_item(TTR("Install Export Templates"),SETTINGS_LOAD_EXPORT_TEMPLATES);
 	p->add_separator();
