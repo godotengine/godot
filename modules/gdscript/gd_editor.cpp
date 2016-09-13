@@ -2525,6 +2525,8 @@ void GDScriptLanguage::auto_indent_code(String& p_code,int p_from_line,int p_to_
 
 }
 
+#ifdef TOOLS_ENABLED
+
 Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol,const String& p_base_path, Object*p_owner,LookupResult& r_result) {
 
 
@@ -2959,3 +2961,5 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 
 	return ERR_CANT_RESOLVE;
 }
+
+#endif
