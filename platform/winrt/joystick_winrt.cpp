@@ -103,9 +103,10 @@ void JoystickWinrt::OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::I
 
 	controllers[idx].connected = true;
 	controllers[idx].controller_reference = value;
+	controllers[idx].id = idx;
 	controllers[idx].type = ControllerType::GAMEPAD_CONTROLLER;
 
-	input->joy_connection_changed(idx, true, "Xbox Controller", "__WINRT_GAMEPAD__");
+	input->joy_connection_changed(controllers[idx].id, true, "Xbox Controller", "__WINRT_GAMEPAD__");
 }
 
 void JoystickWinrt::OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value) {
