@@ -42,11 +42,81 @@
 
 void CreateDialog::popup(bool p_dontclear) {
 
+	recent->clear();
+
+	FileAccess *f = FileAccess::open( EditorSettings::get_singleton()->get_project_settings_path().plus_file("create_recent."+base_type), FileAccess::READ );
+
+	if (f) {
+
+		TreeItem *root = recent->create_item();
+
+		while(!f->eof_reached()) {
+			String l = f->get_line().strip_edges();
+
+			if (l!=String()) {
+
+				TreeItem *ti = recent->create_item(root);
+				ti->set_text(0,l);
+				if (has_icon(l,"EditorIcons")) {
+
+					ti->set_icon(0,get_icon(l,"EditorIcons"));
+				} else {
+					ti->set_icon(0,get_icon("Object","EditorIcons"));
+				}
+			}
+		}
+
+		memdelete(f);
+	}
+
+	favorites->clear();
+
+	f = FileAccess::open( EditorSettings::get_singleton()->get_project_settings_path().plus_file("favorites."+base_type), FileAccess::READ );
+
+	favorite_list.clear();
+
+	if (f) {
+
+
+		while(!f->eof_reached()) {
+			String l = f->get_line().strip_edges();
+
+			if (l!=String()) {
+				favorite_list.push_back(l);
+			}
+		}
+
+		memdelete(f);
+	} else {
+		if (base_type=="Node") {
+			//harcode some favorites :D
+			favorite_list.push_back("Panel");
+			favorite_list.push_back("Button");
+			favorite_list.push_back("Label");
+			favorite_list.push_back("LineEdit");
+			favorite_list.push_back("Node2D");
+			favorite_list.push_back("Sprite");
+			favorite_list.push_back("Camera2D");
+			favorite_list.push_back("Area2D");
+			favorite_list.push_back("CollisionShape2D");
+			favorite_list.push_back("Spatial");
+			favorite_list.push_back("Camera");
+			favorite_list.push_back("Area");
+			favorite_list.push_back("CollisionShape");
+			favorite_list.push_back("TestCube");
+			favorite_list.push_back("AnimationPlayer");
+
+		}
+	}
+
+	_update_favorite_list();
+
 	popup_centered_ratio();
 	if (p_dontclear)
 		search_box->select_all();
-	else
+	else {
 		search_box->clear();
+	}
 	search_box->grab_focus();
 
 	_update_search();
@@ -104,7 +174,7 @@ void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_ty
 		item->set_selectable(0,false);
 	} else {
 
-		if (!*to_select && (search_box->get_text().is_subsequence_ofi(p_type))) {
+		if ((!*to_select && (search_box->get_text().is_subsequence_ofi(p_type))) || search_box->get_text()==p_type) {
 			*to_select=item;
 		}
 
@@ -140,6 +210,8 @@ void CreateDialog::_update_search() {
 
 
 	search_options->clear();
+	favorite->set_disabled(true);
+
 	help_bit->set_text("");
 	/*
 	TreeItem *root = search_options->create_item();
@@ -225,7 +297,7 @@ void CreateDialog::_update_search() {
 
 				}
 
-				if (!to_select) {
+				if (!to_select || ct[i].name==search_box->get_text()) {
 					to_select=item;
 				}
 
@@ -234,8 +306,11 @@ void CreateDialog::_update_search() {
 		}
 	}
 
-	if (to_select)
+	if (to_select) {
 		to_select->select(0);
+		favorite->set_disabled(false);
+		favorite->set_pressed(favorite_list.find(to_select->get_text(0))!=-1);
+	}
 
 	get_ok()->set_disabled(root->get_children()==NULL);
 
@@ -246,6 +321,32 @@ void CreateDialog::_confirmed() {
 	TreeItem *ti = search_options->get_selected();
 	if (!ti)
 		return;
+
+	FileAccess *f = FileAccess::open( EditorSettings::get_singleton()->get_project_settings_path().plus_file("create_recent."+base_type), FileAccess::WRITE );
+
+	if (f) {
+		f->store_line(get_selected_type());
+		TreeItem *t = recent->get_root();
+		if (t)
+			t=t->get_children();
+		int count=0;
+		while(t) {
+			if (t->get_text(0)!=get_selected_type()) {
+
+				f->store_line(t->get_text(0));
+			}
+
+			if (count>32) {
+				//limit it to 32 entries..
+				break;
+			}
+			t=t->get_next();
+			count++;
+		}
+
+		memdelete(f);
+	}
+
 	emit_signal("create");
 	hide();
 }
@@ -255,6 +356,7 @@ void CreateDialog::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		connect("confirmed",this,"_confirmed");
+		favorite->set_icon(get_icon("Favorites","EditorIcons"));
 	}
 	if (p_what==NOTIFICATION_EXIT_TREE) {
 
@@ -344,10 +446,173 @@ void CreateDialog::_item_selected() {
 
 	String name = item->get_text(0);
 
+	favorite->set_disabled(false);
+	favorite->set_pressed(favorite_list.find(name)!=-1);
+
 	if (!EditorHelp::get_doc_data()->class_list.has(name))
 		return;
 
 	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
+
+}
+
+
+void CreateDialog::_favorite_toggled() {
+
+	TreeItem *item = search_options->get_selected();
+	if (!item)
+		return;
+
+	String name = item->get_text(0);
+
+	if (favorite_list.find(name)==-1) {
+		favorite_list.push_back(name);
+		favorite->set_pressed(true);
+	} else {
+		favorite_list.erase(name);
+		favorite->set_pressed(false);
+	}
+
+	_save_favorite_list();
+	_update_favorite_list();
+}
+
+void CreateDialog::_save_favorite_list() {
+
+	FileAccess *f = FileAccess::open( EditorSettings::get_singleton()->get_project_settings_path().plus_file("favorites."+base_type), FileAccess::WRITE );
+
+	if (f) {
+
+		for(int i=0;i<favorite_list.size();i++) {
+
+			f->store_line(favorite_list[i]);
+		}
+		memdelete(f);
+	}
+}
+
+void CreateDialog::_update_favorite_list() {
+
+	favorites->clear();
+	TreeItem *root = favorites->create_item();
+	for(int i=0;i<favorite_list.size();i++) {
+		TreeItem *ti = favorites->create_item(root);
+		String l = favorite_list[i];
+		ti->set_text(0,l);
+
+		if (has_icon(l,"EditorIcons")) {
+
+			ti->set_icon(0,get_icon(l,"EditorIcons"));
+		} else {
+			ti->set_icon(0,get_icon("Object","EditorIcons"));
+		}
+	}
+}
+
+
+void CreateDialog::_history_selected() {
+
+	TreeItem *item = recent->get_selected();
+	if (!item)
+		return;
+
+	search_box->set_text(item->get_text(0));
+	_update_search();
+
+}
+
+void CreateDialog::_favorite_selected(){
+
+	TreeItem *item = favorites->get_selected();
+	if (!item)
+		return;
+
+	search_box->set_text(item->get_text(0));
+	_update_search();
+
+}
+
+void CreateDialog::_history_activated() {
+
+	_confirmed();
+}
+
+void CreateDialog::_favorite_activated(){
+
+	_confirmed();
+}
+
+Variant CreateDialog::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+
+	TreeItem *ti = favorites->get_item_at_pos(p_point);
+	if (ti) {
+		Dictionary d;
+		d["type"]="create_favorite_drag";
+		d["class"]=ti->get_text(0);
+
+		ToolButton *tb = memnew( ToolButton );
+		tb->set_icon(ti->get_icon(0));
+		tb->set_text(ti->get_text(0));
+		set_drag_preview(tb);
+
+		return d;
+	}
+
+	return Variant();
+}
+
+bool CreateDialog::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const{
+
+	Dictionary d = p_data;
+	if (d.has("type") && String(d["type"])=="create_favorite_drag") {
+		favorites->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
+		return true;
+	}
+
+	return false;
+}
+void CreateDialog::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from){
+
+	Dictionary d = p_data;
+
+	TreeItem *ti = favorites->get_item_at_pos(p_point);
+	if (!ti)
+		return;
+
+	String drop_at = ti->get_text(0);
+	int ds = favorites->get_drop_section_at_pos(p_point);
+
+	int drop_idx = favorite_list.find(drop_at);
+	if (drop_idx<0)
+		return;
+
+	String type = d["class"];
+
+	int from_idx = favorite_list.find(type);
+	if (from_idx<0)
+		return;
+
+	if (drop_idx==from_idx) {
+		ds=-1; //cause it will be gone
+	} else if (drop_idx>from_idx) {
+		drop_idx--;
+	}
+
+	favorite_list.remove(from_idx);
+
+	if (ds<0) {
+		favorite_list.insert(drop_idx,type);
+	} else {
+		if (drop_idx>=favorite_list.size()-1) {
+			favorite_list.push_back(type);
+		} else {
+			favorite_list.insert(drop_idx+1,type);
+		}
+	}
+
+	_save_favorite_list();
+	_update_favorite_list();
+
 
 }
 
@@ -357,6 +622,16 @@ void CreateDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_confirmed"),&CreateDialog::_confirmed);
 	ObjectTypeDB::bind_method(_MD("_sbox_input"),&CreateDialog::_sbox_input);
 	ObjectTypeDB::bind_method(_MD("_item_selected"),&CreateDialog::_item_selected);
+	ObjectTypeDB::bind_method(_MD("_favorite_toggled"),&CreateDialog::_favorite_toggled);
+	ObjectTypeDB::bind_method(_MD("_history_selected"),&CreateDialog::_history_selected);
+	ObjectTypeDB::bind_method(_MD("_favorite_selected"),&CreateDialog::_favorite_selected);
+	ObjectTypeDB::bind_method(_MD("_history_activated"),&CreateDialog::_history_activated);
+	ObjectTypeDB::bind_method(_MD("_favorite_activated"),&CreateDialog::_favorite_activated);
+
+
+	ObjectTypeDB::bind_method("get_drag_data_fw",&CreateDialog::get_drag_data_fw);
+	ObjectTypeDB::bind_method("can_drop_data_fw",&CreateDialog::can_drop_data_fw);
+	ObjectTypeDB::bind_method("drop_data_fw",&CreateDialog::drop_data_fw);
 
 	ADD_SIGNAL(MethodInfo("create"));
 
@@ -365,12 +640,44 @@ void CreateDialog::_bind_methods() {
 
 CreateDialog::CreateDialog() {
 
+	HSplitContainer *hbc = memnew( HSplitContainer );
+
+	add_child(hbc);
+	set_child_rect(hbc);
+
+	VBoxContainer *lvbc = memnew( VBoxContainer);
+	hbc->add_child(lvbc);
+	lvbc->set_custom_minimum_size(Size2(150,0)*EDSCALE);
+
+	favorites = memnew (Tree );
+	lvbc->add_margin_child(TTR("Favorites:"),favorites,true);
+	favorites->set_hide_root(true);
+	favorites->set_hide_folding(true);
+	favorites->connect("cell_selected",this,"_favorite_selected");
+	favorites->connect("item_activated",this,"_favorite_activated");
+	favorites->set_drag_forwarding(this);
+
+
+	recent = memnew (Tree );
+	lvbc->add_margin_child(TTR("Recent:"),recent,true);
+	recent->set_hide_root(true);
+	recent->set_hide_folding(true);
+	recent->connect("cell_selected",this,"_history_selected");
+	recent->connect("item_activated",this,"_history_activated");
+
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
-	add_child(vbc);
-	set_child_rect(vbc);
+	hbc->add_child(vbc);
+	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	HBoxContainer *search_hb = memnew( HBoxContainer );
 	search_box = memnew( LineEdit );
-	vbc->add_margin_child(TTR("Search:"),search_box);
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_hb->add_child(search_box);
+	favorite = memnew( Button );
+	favorite->set_toggle_mode(true);
+	search_hb->add_child(favorite);
+	favorite->connect("pressed",this,"_favorite_toggled");
+	vbc->add_margin_child(TTR("Search:"),search_hb);
 	search_box->connect("text_changed",this,"_text_changed");
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
