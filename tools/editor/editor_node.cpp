@@ -5366,10 +5366,15 @@ EditorNode::EditorNode() {
 	// load settings
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
+
+	bool use_single_dock_column = false;
 	{
 		int dpi_mode = EditorSettings::get_singleton()->get("global/hidpi_mode");
 		if (dpi_mode==0) {
-			editor_set_scale( OS::get_singleton()->get_screen_dpi(0) > 150 ? 2.0 : 1.0 );
+			editor_set_scale( OS::get_singleton()->get_screen_dpi(0) > 150 && OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x>2000 ? 2.0 : 1.0 );
+
+			use_single_dock_column = OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x<1200;
+
 		} else if (dpi_mode==1) {
 			editor_set_scale(0.75);
 		} else if (dpi_mode==2) {
@@ -5380,7 +5385,6 @@ EditorNode::EditorNode() {
 			editor_set_scale(2.0);
 		}
 	}
-
 
 
 	ResourceLoader::set_abort_on_missing_resources(false);
@@ -6201,12 +6205,24 @@ EditorNode::EditorNode() {
 
 	node_dock = memnew( NodeDock );
 	//node_dock->set_undoredo(&editor_data.get_undo_redo());
-	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(node_dock);
+	if (use_single_dock_column) {
+		dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(node_dock);
+	} else {
+		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(node_dock);
+	}
 
 	scenes_dock = memnew( FileSystemDock(this) );
 	scenes_dock->set_name(TTR("FileSystem"));
 	scenes_dock->set_display_mode(int(EditorSettings::get_singleton()->get("filesystem_dock/display_mode")));
-	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(scenes_dock);
+
+	if (use_single_dock_column) {
+		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(scenes_dock);
+		left_r_vsplit->hide();
+		dock_slot[DOCK_SLOT_LEFT_UR]->hide();
+		dock_slot[DOCK_SLOT_LEFT_BR]->hide();
+	} else {
+		dock_slot[DOCK_SLOT_LEFT_UR]->add_child(scenes_dock);
+	}
 	//prop_pallete->add_child(scenes_dock);
 	scenes_dock->connect("open",this,"open_request");
 	scenes_dock->connect("instance",this,"_instance_request");
