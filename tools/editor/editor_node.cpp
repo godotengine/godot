@@ -5369,11 +5369,15 @@ EditorNode::EditorNode() {
 	{
 		int dpi_mode = EditorSettings::get_singleton()->get("global/hidpi_mode");
 		if (dpi_mode==0) {
-			editor_set_hidpi( OS::get_singleton()->get_screen_dpi(0) > 150 );
+			editor_set_scale( OS::get_singleton()->get_screen_dpi(0) > 150 ? 2.0 : 1.0 );
+		} else if (dpi_mode==1) {
+			editor_set_scale(0.75);
 		} else if (dpi_mode==2) {
-			editor_set_hidpi(true);
-		} else {
-			editor_set_hidpi(false);
+			editor_set_scale(1.0);
+		} else if (dpi_mode==3) {
+			editor_set_scale(1.5);
+		} else if (dpi_mode==4) {
+			editor_set_scale(2.0);
 		}
 	}
 

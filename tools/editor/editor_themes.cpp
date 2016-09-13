@@ -32,6 +32,7 @@
 #include "editor_fonts.h"
 #include "editor_settings.h"
 #include "core/io/resource_loader.h"
+#include "editor_scale.h"
 
 Ref<Theme> create_editor_theme()
 {
@@ -43,8 +44,8 @@ Ref<Theme> create_editor_theme()
 	Ref<StyleBoxTexture> focus_sbt=memnew( StyleBoxTexture );
 	focus_sbt->set_texture(theme->get_icon("EditorFocus","EditorIcons"));
 	for(int i=0;i<4;i++) {
-		focus_sbt->set_margin_size(Margin(i),16);
-		focus_sbt->set_default_margin(Margin(i),16);
+		focus_sbt->set_margin_size(Margin(i),16*EDSCALE);
+		focus_sbt->set_default_margin(Margin(i),16*EDSCALE);
 	}
 	focus_sbt->set_draw_center(false);
 	theme->set_stylebox("EditorFocus","EditorStyles",focus_sbt);
