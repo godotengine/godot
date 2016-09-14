@@ -5244,6 +5244,18 @@ void EditorNode::add_plugin_init_callback(EditorPluginInitializeCallback p_callb
 EditorPluginInitializeCallback EditorNode::plugin_init_callbacks[EditorNode::MAX_INIT_CALLBACKS];
 
 
+int EditorNode::build_callback_count=0;
+
+void EditorNode::add_build_callback(EditorBuildCallback p_callback) {
+
+	ERR_FAIL_COND(build_callback_count==MAX_INIT_CALLBACKS);
+
+	build_callbacks[build_callback_count++]=p_callback;
+}
+
+EditorPluginInitializeCallback EditorNode::build_callbacks[EditorNode::MAX_BUILD_CALLBACKS];
+
+
 void EditorNode::_bind_methods() {
 
 

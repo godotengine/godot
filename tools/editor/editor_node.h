@@ -95,6 +95,7 @@
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
+typedef void (*EditorBuildCallback)();
 
 class EditorPluginList;
 
@@ -580,13 +581,17 @@ private:
 	void _toggle_distraction_free_mode();
 
 	enum {
-		MAX_INIT_CALLBACKS=128
+		MAX_INIT_CALLBACKS=128,
+		MAX_BUILD_CALLBACKS=128
 	};
 
 
 
 	static int plugin_init_callback_count;
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
+
+	static int build_callback_count;
+	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -754,6 +759,7 @@ public:
 	void get_singleton(const char* arg1, bool arg2);
 
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
+	static void add_build_callback(EditorBuildCallback p_callback);
 
 
 

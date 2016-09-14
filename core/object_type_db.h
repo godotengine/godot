@@ -109,7 +109,13 @@ static _FORCE_INLINE_ const char* _MD(const char* m_name, ...) { return m_name; 
 #endif
 
 class ObjectTypeDB {
-
+public:
+	enum APIType {
+		API_CORE,
+		API_EDITOR,
+		API_NONE
+	};
+public:
 	struct PropertySetGet {
 
 		int index;
@@ -122,6 +128,7 @@ class ObjectTypeDB {
 
 	struct TypeInfo {
 
+		APIType api;
 		TypeInfo *inherits_ptr;
 		HashMap<StringName,MethodBind*,StringNameHasher> method_map;
 		HashMap<StringName,int,StringNameHasher> constant_map;
@@ -161,6 +168,7 @@ class ObjectTypeDB {
 #endif
 
 
+	static APIType current_api;
 
 	static void _add_type2(const StringName& p_type, const StringName& p_inherits);
 public:
@@ -236,6 +244,9 @@ public:
 	static bool is_type(const StringName &p_type,const StringName& p_inherits);
 	static bool can_instance(const StringName &p_type);
 	static Object *instance(const StringName &p_type);
+	static APIType get_api_type(const StringName &p_type);
+
+	static uint64_t get_api_hash(APIType p_api);
 
 #if 0
 	template<class N, class M>
@@ -499,6 +510,8 @@ public:
 
 	static void add_compatibility_type(const StringName& p_type,const StringName& p_fallback);
 	static void init();
+
+	static void set_current_api(APIType p_api);
 	static void cleanup();
 };
 

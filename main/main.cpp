@@ -994,8 +994,11 @@ Error Main::setup2() {
 		}
 	}
 #ifdef TOOLS_ENABLED
+	ObjectTypeDB::set_current_api(ObjectTypeDB::API_EDITOR);
 	EditorNode::register_editor_types();
 	ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
+	ObjectTypeDB::set_current_api(ObjectTypeDB::API_CORE);
+
 #endif
 
 	MAIN_PRINT("Main: Load Scripts, Modules, Drivers");
@@ -1021,6 +1024,8 @@ Error Main::setup2() {
 	}
 	_start_success=true;
 	locale=String();
+
+	ObjectTypeDB::set_current_api(ObjectTypeDB::API_NONE); //no more api is registered at this point
 
 	MAIN_PRINT("Main: Done");
 
