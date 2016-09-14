@@ -44,6 +44,9 @@ void Camera2D::_update_scroll() {
 	}
 
 	if (current) {
+
+		ERR_FAIL_COND( custom_viewport && !ObjectDB::get_instance(custom_viewport_id) );
+
 		Matrix32 xform = get_camera_transform();
 
 		if (viewport) {
@@ -240,14 +243,10 @@ void Camera2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 
-			viewport = NULL;
-			Node *n=this;
-			while(n){
-
-				viewport = n->cast_to<Viewport>();
-				if (viewport)
-					break;
-				n=n->get_parent();
+			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
+				viewport=custom_viewport;
+			} else {
+				viewport=get_viewport();
 			}
 
 			canvas = get_canvas();
@@ -270,8 +269,8 @@ void Camera2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
-			if (is_current()) {
-				if (viewport) {
+			if (is_current()) {				
+				if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
 					viewport->set_canvas_transform( Matrix32() );
 				}
 			}
@@ -549,6 +548,42 @@ bool Camera2D::is_follow_smoothing_enabled() const {
 	return smoothing_enabled;
 }
 
+void Camera2D::set_custom_viewport(Node *p_viewport) {
+	ERR_FAIL_NULL(p_viewport);
+	if (is_inside_tree()) {
+		remove_from_group(group_name);
+		remove_from_group(canvas_group_name);
+	}
+
+	custom_viewport=p_viewport->cast_to<Viewport>();
+
+	if (custom_viewport) {
+		custom_viewport_id=custom_viewport->get_instance_ID();
+	} else {
+		custom_viewport_id=0;
+	}
+
+	if (is_inside_tree()) {
+
+		if (custom_viewport)
+			viewport=custom_viewport;
+		else
+			viewport=get_viewport();
+
+		RID vp = viewport->get_viewport();
+		group_name = "__cameras_"+itos(vp.get_id());
+		canvas_group_name ="__cameras_c"+itos(canvas.get_id());
+		add_to_group(group_name);
+		add_to_group(canvas_group_name);
+	}
+
+}
+
+Node* Camera2D::get_custom_viewport() const {
+
+	return custom_viewport;
+}
+
 
 void Camera2D::_bind_methods() {
 
@@ -597,6 +632,8 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_zoom","zoom"),&Camera2D::set_zoom);
 	ObjectTypeDB::bind_method(_MD("get_zoom"),&Camera2D::get_zoom);
 
+	ObjectTypeDB::bind_method(_MD("set_custom_viewport","viewport:Viewport"),&Camera2D::set_custom_viewport);
+	ObjectTypeDB::bind_method(_MD("get_custom_viewport:Viewport"),&Camera2D::get_custom_viewport);
 
 	ObjectTypeDB::bind_method(_MD("set_follow_smoothing","follow_smoothing"),&Camera2D::set_follow_smoothing);
 	ObjectTypeDB::bind_method(_MD("get_follow_smoothing"),&Camera2D::get_follow_smoothing);
@@ -662,6 +699,8 @@ Camera2D::Camera2D() {
 	first=true;
 	smoothing_enabled=false;
 	limit_smoothing_enabled=false;
+	custom_viewport=NULL;
+	custom_viewport_id=0;
 
 	smoothing=5.0;
 	zoom = Vector2(1, 1);
