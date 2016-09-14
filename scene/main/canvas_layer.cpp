@@ -168,20 +168,13 @@ void CanvasLayer::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			Node *n = this;
-			vp=NULL;
+			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
 
-			while(n) {
+				vp=custom_viewport;
+			} else {
+				vp=Node::get_viewport();
 
-				if (n->cast_to<Viewport>()) {
-
-					vp = n->cast_to<Viewport>();
-					break;
-				}
-				n=n->get_parent();
 			}
-
-
 			ERR_FAIL_COND(!vp);
 			viewport=vp->get_viewport();
 
@@ -205,6 +198,7 @@ Size2 CanvasLayer::get_viewport_size() const {
 	if (!is_inside_tree())
 		return Size2(1,1);
 
+
 	Rect2 r = vp->get_visible_rect();
 	return r.size;
 }
@@ -213,6 +207,43 @@ Size2 CanvasLayer::get_viewport_size() const {
 RID CanvasLayer::get_viewport() const {
 
 	return viewport;
+}
+
+void CanvasLayer::set_custom_viewport(Node *p_viewport) {
+	ERR_FAIL_NULL(p_viewport);
+	if (is_inside_tree()) {
+		VisualServer::get_singleton()->viewport_remove_canvas(viewport,canvas->get_canvas());
+		viewport=RID();
+	}
+
+	custom_viewport=p_viewport->cast_to<Viewport>();
+
+	if (custom_viewport) {
+		custom_viewport_id=custom_viewport->get_instance_ID();
+	} else {
+		custom_viewport_id=0;
+	}
+
+	if (is_inside_tree()) {
+
+
+		if (custom_viewport)
+			vp=custom_viewport;
+		else
+			vp=Node::get_viewport();
+
+		viewport = vp->get_viewport();
+
+		VisualServer::get_singleton()->viewport_attach_canvas(viewport,canvas->get_canvas());
+		VisualServer::get_singleton()->viewport_set_canvas_layer(viewport,canvas->get_canvas(),layer);
+		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport,canvas->get_canvas(),transform);
+	}
+
+}
+
+Node* CanvasLayer::get_custom_viewport() const {
+
+	return custom_viewport;
 }
 
 
@@ -241,8 +272,11 @@ void CanvasLayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&CanvasLayer::set_scale);
 	ObjectTypeDB::bind_method(_MD("get_scale"),&CanvasLayer::get_scale);
 
+	ObjectTypeDB::bind_method(_MD("set_custom_viewport","viewport:Viewport"),&CanvasLayer::set_custom_viewport);
+	ObjectTypeDB::bind_method(_MD("get_custom_viewport:Viewport"),&CanvasLayer::get_custom_viewport);
+
 	ObjectTypeDB::bind_method(_MD("get_world_2d:World2D"),&CanvasLayer::get_world_2d);
-	ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
+//	ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer",PROPERTY_HINT_RANGE,"-128,128,1"),_SCS("set_layer"),_SCS("get_layer") );
 	//ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"transform",PROPERTY_HINT_RANGE),_SCS("set_transform"),_SCS("get_transform") );
@@ -260,4 +294,6 @@ CanvasLayer::CanvasLayer() {
 	locrotscale_dirty=false;
 	layer=1;
 	canvas = Ref<World2D>( memnew(World2D) );
+	custom_viewport=NULL;
+	custom_viewport_id=0;
 }
