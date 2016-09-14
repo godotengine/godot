@@ -560,6 +560,16 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				goto error;
 
 			}
+		} else if (I->get()=="-epid") {
+			if (I->next()) {
+
+				int editor_pid=I->next()->get().to_int();
+				Globals::get_singleton()->set("editor_pid",editor_pid);
+				N=I->next()->next();
+			} else {
+				goto error;
+
+			}
 		} else {
 
 			//test for game path

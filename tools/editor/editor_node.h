@@ -690,6 +690,7 @@ public:
 
 	void notify_child_process_exited();
 
+	OS::ProcessID get_child_process_id() const { return editor_run.get_pid(); }
 	void stop_child_process();
 
 	Ref<Theme> get_editor_theme() const { return theme; }
