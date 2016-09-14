@@ -114,6 +114,13 @@ Files extracted from upstream source:
 - COPYING
 
 
+## libvpx
+
+- Upstream: http://www.webmproject.org/code/
+- Version: 1.6.0
+- License: BSD-3-Clause
+
+
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
