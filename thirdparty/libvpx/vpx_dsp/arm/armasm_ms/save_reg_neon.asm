@@ -1,3 +1,5 @@
+; This file was created from a .asm file
+;  using the ads2armasm_ms.pl script.
 ;
 ;  Copyright (c) 2010 The WebM project authors. All Rights Reserved.
 ;
@@ -12,11 +14,10 @@
     EXPORT  |vpx_push_neon|
     EXPORT  |vpx_pop_neon|
 
-    ARM
-    REQUIRE8
-    PRESERVE8
+    
+    
 
-    AREA ||.text||, CODE, READONLY, ALIGN=2
+    AREA |.text|, CODE, READONLY, ALIGN=2
 
 |vpx_push_neon| PROC
     vst1.i64            {d8, d9, d10, d11}, [r0]!
@@ -24,6 +25,7 @@
     bx              lr
 
     ENDP
+    ALIGN 4
 
 |vpx_pop_neon| PROC
     vld1.i64            {d8, d9, d10, d11}, [r0]!
@@ -31,6 +33,7 @@
     bx              lr
 
     ENDP
+    ALIGN 4
 
     END
 

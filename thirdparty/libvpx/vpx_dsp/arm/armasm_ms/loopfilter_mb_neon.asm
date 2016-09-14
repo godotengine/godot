@@ -1,3 +1,5 @@
+; This file was created from a .asm file
+;  using the ads2armasm_ms.pl script.
 ;
 ;  Copyright (c) 2013 The WebM project authors. All Rights Reserved.
 ;
@@ -11,9 +13,8 @@
     EXPORT  |vpx_lpf_horizontal_edge_8_neon|
     EXPORT  |vpx_lpf_horizontal_edge_16_neon|
     EXPORT  |vpx_lpf_vertical_16_neon|
-    ARM
 
-    AREA ||.text||, CODE, READONLY, ALIGN=2
+    AREA |.text|, CODE, READONLY, ALIGN=2
 
 ; void mb_lpf_horizontal_edge(uint8_t *s, int p,
 ;                             const uint8_t *blimit,
@@ -117,6 +118,7 @@ h_next
     pop         {r4-r8, pc}
 
     ENDP        ; |mb_lpf_horizontal_edge|
+    ALIGN 4
 
 ; void vpx_lpf_horizontal_edge_8_neon(uint8_t *s, int pitch,
 ;                                     const uint8_t *blimit,
@@ -131,6 +133,7 @@ h_next
     mov r12, #1
     b mb_lpf_horizontal_edge
     ENDP        ; |vpx_lpf_horizontal_edge_8_neon|
+    ALIGN 4
 
 ; void vpx_lpf_horizontal_edge_16_neon(uint8_t *s, int pitch,
 ;                                      const uint8_t *blimit,
@@ -145,6 +148,7 @@ h_next
     mov r12, #2
     b mb_lpf_horizontal_edge
     ENDP        ; |vpx_lpf_horizontal_edge_16_neon|
+    ALIGN 4
 
 ; void vpx_lpf_vertical_16_neon(uint8_t *s, int p,
 ;                               const uint8_t *blimit,
@@ -309,6 +313,7 @@ v_end
     pop         {r4-r8, pc}
 
     ENDP        ; |vpx_lpf_vertical_16_neon|
+    ALIGN 4
 
 ; void vpx_wide_mbfilter_neon();
 ; This is a helper function for the loopfilters. The invidual functions do the
@@ -631,5 +636,6 @@ v_end
 
     bx          lr
     ENDP        ; |vpx_wide_mbfilter_neon|
+    ALIGN 4
 
     END

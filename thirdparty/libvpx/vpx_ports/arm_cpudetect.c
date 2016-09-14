@@ -38,26 +38,7 @@ static int arm_cpu_env_mask(void) {
 }
 
 #if !CONFIG_RUNTIME_CPU_DETECT
-
-int arm_cpu_caps(void) {
-  /* This function should actually be a no-op. There is no way to adjust any of
-   * these because the RTCD tables do not exist: the functions are called
-   * statically */
-  int flags;
-  int mask;
-  if (!arm_cpu_env_flags(&flags)) {
-    return flags;
-  }
-  mask = arm_cpu_env_mask();
-#if HAVE_MEDIA
-  flags |= HAS_MEDIA;
-#endif /* HAVE_MEDIA */
-#if HAVE_NEON || HAVE_NEON_ASM
-  flags |= HAS_NEON;
-#endif /* HAVE_NEON  || HAVE_NEON_ASM */
-  return flags & mask;
-}
-
+  #error "CONFIG_RUNTIME_CPU_DETECT should be enabled!"
 #elif defined(_MSC_VER) /* end !CONFIG_RUNTIME_CPU_DETECT */
 /*For GetExceptionCode() and EXCEPTION_ILLEGAL_INSTRUCTION.*/
 #define WIN32_LEAN_AND_MEAN
@@ -76,28 +57,28 @@ int arm_cpu_caps(void) {
    * All of these instructions should be essentially nops.
    */
 #if HAVE_MEDIA
-  if (mask & HAS_MEDIA)
+  if (mask & HAS_MEDIA) {
     __try {
       /*SHADD8 r3,r3,r3*/
       __emit(0xE6333F93);
       flags |= HAS_MEDIA;
     } __except (GetExceptionCode() == EXCEPTION_ILLEGAL_INSTRUCTION) {
     /*Ignore exception.*/
+    }
   }
-}
 #endif /* HAVE_MEDIA */
 #if HAVE_NEON || HAVE_NEON_ASM
-if (mask &HAS_NEON) {
-  __try {
-    /*VORR q0,q0,q0*/
-    __emit(0xF2200150);
-    flags |= HAS_NEON;
-  } __except (GetExceptionCode() == EXCEPTION_ILLEGAL_INSTRUCTION) {
-    /*Ignore exception.*/
+  if (mask &HAS_NEON) {
+    __try {
+      /*VORR q0,q0,q0*/
+      __emit(0xF2200150);
+      flags |= HAS_NEON;
+    } __except (GetExceptionCode() == EXCEPTION_ILLEGAL_INSTRUCTION) {
+      /*Ignore exception.*/
+    }
   }
-}
 #endif /* HAVE_NEON || HAVE_NEON_ASM */
-return flags & mask;
+  return flags & mask;
 }
 
 #elif defined(__ANDROID__) /* end _MSC_VER */
@@ -170,6 +151,20 @@ int arm_cpu_caps(void) {
   return flags & mask;
 }
 #else /* end __linux__ */
-#error "--enable-runtime-cpu-detect selected, but no CPU detection method " \
-"available for your platform. Reconfigure with --disable-runtime-cpu-detect."
+int arm_cpu_caps(void) {
+  int flags;
+  int mask;
+  if (!arm_cpu_env_flags(&flags)) {
+    return flags;
+  }
+  mask = arm_cpu_env_mask();
+#if HAVE_MEDIA
+  flags |= HAS_MEDIA;
+#endif /* HAVE_MEDIA */
+#if HAVE_NEON || HAVE_NEON_ASM
+  flags |= HAS_NEON;
+#endif /* HAVE_NEON  || HAVE_NEON_ASM */
+  return flags & mask;
+}
+#warning "ARM run-time CPU detection is disabled for this platform..."
 #endif
