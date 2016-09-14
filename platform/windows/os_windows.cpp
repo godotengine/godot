@@ -2157,10 +2157,15 @@ String OS_Windows::get_stdin_string(bool p_block) {
 }
 
 
+void OS_Windows::enable_for_stealing_focus(ProcessID pid) {
+
+	AllowSetForegroundWindow(pid);
+
+}
+
 void OS_Windows::move_window_to_foreground() {
 
 	SetForegroundWindow(hWnd);
-	BringWindowToTop(hWnd);
 
 }
 
