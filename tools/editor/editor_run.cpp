@@ -52,6 +52,9 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 		args.push_back("localhost:"+String::num(GLOBAL_DEF("debug/debug_port", 6007)));
 	}
 
+	args.push_back("-epid");
+	args.push_back(String::num(OS::get_singleton()->get_process_ID()));
+
 	if (p_custom_args!="") {
 
 		Vector<String> cargs=p_custom_args.split(" ",false);
@@ -130,6 +133,7 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 			args.push_back("-f");
 		} break;
 	}
+
 
 
 	if (p_breakpoints.size()) {

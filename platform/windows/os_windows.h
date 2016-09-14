@@ -269,6 +269,7 @@ public:
 	virtual String get_locale() const;
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const; 
 
+	virtual void enable_for_stealing_focus(ProcessID pid);
 	virtual void move_window_to_foreground();
 	virtual String get_data_dir() const;
 	virtual String get_system_dir(SystemDir p_dir) const;
