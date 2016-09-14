@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_plugin.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/3d/camera.h"
 #include "plugins/canvas_item_editor_plugin.h"
 #include "plugins/spatial_editor_plugin.h"
@@ -120,6 +121,24 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location,Co
 
 
 	}
+}
+
+void EditorPlugin::add_tool_menu_item(const String& p_name, Object *p_handler, const String& p_callback, const Variant& p_ud) {
+
+	EditorNode::get_singleton()->add_tool_menu_item(p_name, p_handler, p_callback, p_ud);
+}
+
+void EditorPlugin::add_tool_submenu_item(const String& p_name, Object *p_submenu) {
+
+	ERR_FAIL_NULL(p_submenu);
+	PopupMenu *submenu = p_submenu->cast_to<PopupMenu>();
+	ERR_FAIL_NULL(submenu);
+	EditorNode::get_singleton()->add_tool_submenu_item(p_name, submenu);
+}
+
+void EditorPlugin::remove_tool_menu_item(const String& p_name) {
+
+	EditorNode::get_singleton()->remove_tool_menu_item(p_name);
 }
 
 Ref<SpatialEditorGizmo> EditorPlugin::create_spatial_gizmo(Spatial* p_spatial) {
@@ -331,6 +350,9 @@ void EditorPlugin::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_control_to_dock","slot","control:Control"),&EditorPlugin::add_control_to_dock);
 	ObjectTypeDB::bind_method(_MD("remove_control_from_docks","control:Control"),&EditorPlugin::remove_control_from_docks);
 	ObjectTypeDB::bind_method(_MD("remove_control_from_bottom_panel","control:Control"),&EditorPlugin::remove_control_from_bottom_panel);
+	ObjectTypeDB::bind_method(_MD("add_tool_menu_item", "name", "handler", "callback", "ud"),&EditorPlugin::add_tool_menu_item,DEFVAL(Variant()));
+	ObjectTypeDB::bind_method(_MD("add_tool_submenu_item", "name", "submenu:PopupMenu"),&EditorPlugin::add_tool_submenu_item);
+	ObjectTypeDB::bind_method(_MD("remove_tool_menu_item", "name"),&EditorPlugin::remove_tool_menu_item);
 	ObjectTypeDB::bind_method(_MD("add_custom_type","type","base","script:Script","icon:Texture"),&EditorPlugin::add_custom_type);
 	ObjectTypeDB::bind_method(_MD("remove_custom_type","type"),&EditorPlugin::remove_custom_type);
 
