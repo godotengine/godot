@@ -590,6 +590,7 @@ private:
 	static int plugin_init_callback_count;
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
 
+	void _call_build();
 	static int build_callback_count;
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 protected:

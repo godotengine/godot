@@ -1217,6 +1217,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 				//_save_scene(p_file);
 				_save_scene_with_preview(p_file);
+				_call_build();
 				_run(true);
 			}
 		} break;
@@ -2636,6 +2637,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case RUN_PLAY: {
 			_menu_option_confirm(RUN_STOP,true);
+			_call_build();
 			_run(false);
 
 		} break;
@@ -2671,6 +2673,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case RUN_PLAY_SCENE: {
 			_menu_option_confirm(RUN_STOP,true);
+			_call_build();
 			_run(true);
 
 		} break;
@@ -2682,6 +2685,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			}
 			if (run_native->is_deploy_debug_remote_enabled()){
 				_menu_option_confirm(RUN_STOP,true);
+				_call_build();
 				emit_signal("play_pressed");
 				editor_run.run_native_notify();
 			}
@@ -4042,6 +4046,7 @@ void EditorNode::_quick_opened() {
 
 void EditorNode::_quick_run() {
 
+	_call_build();
 	_run(false,quick_run->get_selected());
 }
 
@@ -5255,6 +5260,12 @@ void EditorNode::add_build_callback(EditorBuildCallback p_callback) {
 
 EditorPluginInitializeCallback EditorNode::build_callbacks[EditorNode::MAX_BUILD_CALLBACKS];
 
+void EditorNode::_call_build() {
+
+	for(int i=0;i<build_callback_count;i++) {
+		build_callbacks[i]();
+	}
+}
 
 void EditorNode::_bind_methods() {
 
