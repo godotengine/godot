@@ -1516,6 +1516,12 @@ def detect_visual_c_compiler_version(tools_env):
 
         return vc_chosen_compiler_str
 
+def msvc_is_detected() :
+	# looks for VisualStudio env variable 
+	# or for Visual C++ Build Tools (which is a standalone MSVC)
+	return os.getenv("VSINSTALLDIR") or os.getenv("VS100COMNTOOLS") or os.getenv("VS110COMNTOOLS") or os.getenv("VS120COMNTOOLS") or os.getenv("VS140COMNTOOLS");
+
+
 def precious_program(env, program, sources, **args):
 	program = env.ProgramOriginal(program, sources, **args)
 	env.Precious(program)
