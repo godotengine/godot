@@ -76,8 +76,9 @@ Matrix32 Camera2D::get_camera_transform()  {
 	if (!get_tree())
 		return Matrix32();
 
-	Size2 screen_size = get_viewport_rect().size;
-	screen_size=get_viewport_rect().size;
+	ERR_FAIL_COND_V( custom_viewport && !ObjectDB::get_instance(custom_viewport_id), Matrix32() );
+
+	Size2 screen_size = viewport->get_visible_rect().size;
 
 
 	Point2 new_camera_pos = get_global_transform().get_origin();
@@ -446,8 +447,10 @@ void Camera2D::reset_smoothing() {
 
 void Camera2D::align() {
 
-	Size2 screen_size = get_viewport_rect().size;
-	screen_size=get_viewport_rect().size;
+	ERR_FAIL_COND( custom_viewport && !ObjectDB::get_instance(custom_viewport_id) );
+
+	Size2 screen_size = viewport->get_visible_rect().size;
+
 	Point2 current_camera_pos = get_global_transform().get_origin();
 	if (anchor_mode==ANCHOR_MODE_DRAG_CENTER) {
 		if (h_ofs<0) {
