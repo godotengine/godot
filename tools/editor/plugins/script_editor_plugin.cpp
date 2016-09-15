@@ -1362,10 +1362,8 @@ struct _ScriptEditorItemData {
 
 void ScriptEditor::_update_script_colors() {
 
-	bool enabled = EditorSettings::get_singleton()->get("text_editor/script_temperature_enabled");
+	bool script_temperature_enabled = EditorSettings::get_singleton()->get("text_editor/script_temperature_enabled");
 	bool highlight_current = EditorSettings::get_singleton()->get("text_editor/highlight_current_script");
-	if (!enabled)
-		return;
 
 	int hist_size = EditorSettings::get_singleton()->get("text_editor/script_temperature_history_size");
 	Color hot_color=EditorSettings::get_singleton()->get("text_editor/script_temperature_hot_color");
@@ -1379,22 +1377,25 @@ void ScriptEditor::_update_script_colors() {
 			continue;
 
 		script_list->set_item_custom_bg_color(i,Color(0,0,0,0));
-		if (!n->has_meta("__editor_pass")) {
-			continue;
-		}
-
-		int pass=n->get_meta("__editor_pass");
-		int h = edit_pass - pass;
-		if (h>hist_size) {
-			continue;
-		}
-		int non_zero_hist_size = ( hist_size == 0 ) ? 1 : hist_size;
-		float v = Math::ease((edit_pass-pass)/float(non_zero_hist_size),0.4);
 
 		bool current = tab_container->get_current_tab() == c;
 		if (current && highlight_current) {
 			script_list->set_item_custom_bg_color(i, EditorSettings::get_singleton()->get("text_editor/current_script_background_color"));
-		} else {
+
+		} else if (script_temperature_enabled) {
+
+			if (!n->has_meta("__editor_pass")) {
+				continue;
+			}
+
+			int pass=n->get_meta("__editor_pass");
+			int h = edit_pass - pass;
+			if (h>hist_size) {
+				continue;
+			}
+			int non_zero_hist_size = ( hist_size == 0 ) ? 1 : hist_size;
+			float v = Math::ease((edit_pass-pass)/float(non_zero_hist_size),0.4);
+
 			script_list->set_item_custom_bg_color(i,hot_color.linear_interpolate(cold_color,v));
 		}
 	}
