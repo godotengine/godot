@@ -106,6 +106,8 @@ class OS_Windows : public OS {
 
 	uint32_t move_timer_id;
 
+	HANDLE opengl_init_timeout_thread_hd;
+
 	HCURSOR hCursor;
 
 	Size2 window_rect;
