@@ -97,6 +97,7 @@ public:
 	void add_control_to_dock(DockSlot p_slot,Control *p_control);
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
+	Control* get_editor_viewport();
 
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
 	virtual bool forward_input_event(const InputEvent& p_event);
