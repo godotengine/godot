@@ -11697,6 +11697,13 @@
 				Get the general settings for the editor (the same window that appears in the Settings menu).
 			</description>
 		</method>
+		<method name="get_editor_viewport">
+			<return type="Control">
+			</return>
+			<description>
+				Get the main editor control. Use this as a parent for main screens.
+			</description>
+		</method>
 		<method name="get_name" qualifiers="virtual">
 			<return type="String">
 			</return>

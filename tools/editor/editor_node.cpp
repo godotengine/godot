@@ -3016,7 +3016,7 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
 
 		for(int i=0;i<singleton->main_editor_buttons.size();i++) {
 
-			if (p_editor->get_name()==singleton->main_editor_buttons[i]->get_name()) {
+			if (p_editor->get_name()==singleton->main_editor_buttons[i]->get_text()) {
 
 				memdelete( singleton->main_editor_buttons[i] );
 				singleton->main_editor_buttons.remove(i);
