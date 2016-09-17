@@ -30,7 +30,8 @@
 #define IMAGE_LOADER_PNG_H
 
 #include "io/image_loader.h"
-#include "drivers/png/png.h"
+
+#include <png.h>
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
