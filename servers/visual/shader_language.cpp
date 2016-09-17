@@ -1180,6 +1180,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_light_builtins_defs[]={
 	{ "LIGHT_HEIGHT", TYPE_FLOAT},
 	{ "LIGHT_COLOR", TYPE_VEC4},
 	{ "LIGHT_UV", TYPE_VEC2},
+	{ "LIGHT_SHADOW", TYPE_VEC4},
 	{ "LIGHT", TYPE_VEC4},
 	{ "SHADOW", TYPE_VEC4},
 	{ "POINT_COORD", TYPE_VEC2},
