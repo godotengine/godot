@@ -71,6 +71,11 @@ void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
 
 }
 
+Control * EditorPlugin::get_editor_viewport() {
+
+	return EditorNode::get_singleton()->get_viewport();
+}
+
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location,Control *p_control) {
 
 	switch(p_location) {
@@ -333,6 +338,7 @@ void EditorPlugin::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("remove_control_from_bottom_panel","control:Control"),&EditorPlugin::remove_control_from_bottom_panel);
 	ObjectTypeDB::bind_method(_MD("add_custom_type","type","base","script:Script","icon:Texture"),&EditorPlugin::add_custom_type);
 	ObjectTypeDB::bind_method(_MD("remove_custom_type","type"),&EditorPlugin::remove_custom_type);
+	ObjectTypeDB::bind_method(_MD("get_editor_viewport:Control"), &EditorPlugin::get_editor_viewport);
 
 	ObjectTypeDB::bind_method(_MD("add_import_plugin","plugin:EditorImportPlugin"),&EditorPlugin::add_import_plugin);
 	ObjectTypeDB::bind_method(_MD("remove_import_plugin","plugin:EditorImportPlugin"),&EditorPlugin::remove_import_plugin);
