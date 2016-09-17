@@ -714,6 +714,8 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 	t->set_constant("item_margin","Tree",12 *scale);
 	t->set_constant("button_margin","Tree",4 *scale);
 	t->set_constant("draw_relationship_lines", "Tree", 0);
+	t->set_constant("scroll_border", "Tree", 4);
+	t->set_constant("scroll_speed", "Tree", 12);
 
 
 	// ItemList
