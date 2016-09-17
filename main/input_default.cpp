@@ -849,6 +849,13 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 		return p_last_id;
 	}
 
+	if (ABS(joy.last_axis[p_axis]) > 0.5 && joy.last_axis[p_axis] * p_value.value < 0) {
+		//changed direction quickly, insert fake event to release pending inputmap actions
+		JoyAxis jx;
+		jx.min = p_value.min;
+		jx.value = p_value.value < 0 ? 0.1 : -0.1;
+		p_last_id = joy_axis(p_last_id, p_device, p_axis, jx);
+	}
 
 	joy.last_axis[p_axis] = p_value.value;
 	float val = p_value.min == 0 ? -1.0f + 2.0f * p_value.value : p_value.value;
