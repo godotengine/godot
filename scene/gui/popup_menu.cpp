@@ -89,6 +89,8 @@ Size2 PopupMenu::get_minimum_size() const {
 			size.height=font_h;
 		}
 
+		size.width+=items[i].h_ofs;
+
 		if (items[i].checkable) {
 
 			size.width+=check_w+hseparation;
@@ -105,6 +107,7 @@ Size2 PopupMenu::get_minimum_size() const {
 			accel_w+=font->get_string_size(_get_accel_text(i)).width;
 			accel_max_w = MAX( accel_w, accel_max_w );
 		}
+
 
 		minsize.height+=size.height;
 		max_w = MAX( max_w, size.width );
@@ -450,6 +453,7 @@ void PopupMenu::_notification(int p_what) {
 				float h;
 				Size2 icon_size;
 
+				item_ofs.x+=items[i].h_ofs;
 				if (!items[i].icon.is_null()) {
 
 					icon_size = items[i].icon->get_size();
@@ -461,13 +465,13 @@ void PopupMenu::_notification(int p_what) {
 
 				if (i==mouse_over) {
 
-					hover->draw(ci,	Rect2( ofs+Point2(-hseparation,-vseparation), Size2( get_size().width - style->get_minimum_size().width + hseparation*2, h+vseparation*2 ) ));
+					hover->draw(ci,	Rect2( item_ofs+Point2(-hseparation,-vseparation), Size2( get_size().width - style->get_minimum_size().width + hseparation*2, h+vseparation*2 ) ));
 				}
 
 				if (items[i].separator) {
 
 					int sep_h=separator->get_center_size().height+separator->get_minimum_size().height;
-					separator->draw(ci,	Rect2( ofs+Point2(0,Math::floor((h-sep_h)/2.0)), Size2( get_size().width - style->get_minimum_size().width , sep_h ) ));
+					separator->draw(ci,	Rect2( item_ofs+Point2(0,Math::floor((h-sep_h)/2.0)), Size2( get_size().width - style->get_minimum_size().width , sep_h ) ));
 
 				}
 
@@ -818,6 +822,15 @@ void PopupMenu::set_item_shortcut(int p_idx, const Ref<ShortCut>& p_shortcut) {
 
 	update();
 }
+
+void PopupMenu::set_item_h_offset(int p_idx, int p_offset) {
+
+	ERR_FAIL_INDEX(p_idx,items.size());
+	items[p_idx].h_ofs=p_offset;
+	update();
+
+}
+
 
 bool PopupMenu::is_item_checkable(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx,items.size(),false);

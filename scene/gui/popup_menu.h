@@ -54,9 +54,10 @@ class PopupMenu : public Popup {
 		String tooltip;
 		uint32_t accel;
 		int _ofs_cache;
+		int h_ofs;
 		Ref<ShortCut> shortcut;
 
-		Item() { checked=false; checkable=false; separator=false; accel=0; disabled=false; _ofs_cache=0; }
+		Item() { checked=false; checkable=false; separator=false; accel=0; disabled=false; _ofs_cache=0; h_ofs=0; }
 	};
 
 
@@ -115,6 +116,7 @@ public:
 	void set_item_as_checkable(int p_idx, bool p_checkable);
 	void set_item_tooltip(int p_idx,const String& p_tooltip);
 	void set_item_shortcut(int p_idx, const Ref<ShortCut>& p_shortcut);
+	void set_item_h_offset(int p_idx, int p_offset);
 
 	String get_item_text(int p_idx) const;
 	Ref<Texture> get_item_icon(int p_idx) const;

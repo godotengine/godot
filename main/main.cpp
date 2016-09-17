@@ -1027,6 +1027,10 @@ Error Main::setup2() {
 
 	ObjectTypeDB::set_current_api(ObjectTypeDB::API_NONE); //no more api is registered at this point
 
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line("CORE API HASH: "+itos(ObjectTypeDB::get_api_hash(ObjectTypeDB::API_CORE)));
+		print_line("EDITOR API HASH: "+itos(ObjectTypeDB::get_api_hash(ObjectTypeDB::API_EDITOR)));
+	}
 	MAIN_PRINT("Main: Done");
 
 	return OK;

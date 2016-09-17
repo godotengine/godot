@@ -30,6 +30,7 @@
 #define EDITOR_PATH_H
 
 #include "scene/gui/control.h"
+#include "scene/gui/popup_menu.h"
 #include "editor_data.h"
 
 class EditorPath : public Control {
@@ -39,10 +40,17 @@ class EditorPath : public Control {
 	EditorHistory *history;
 
 
+	Vector<ObjectID> objects;
+	PopupMenu *popup;
+	bool mouse_over;
 	EditorPath();
 
+	void _popup_select(int p_idx);
+	void _input_event(const InputEvent& p_event);
+	void _add_children_to_popup(Object* p_obj,int p_depth=0);
 protected:
 
+	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
