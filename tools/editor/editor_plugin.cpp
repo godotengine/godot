@@ -315,6 +315,16 @@ Control *EditorPlugin::get_base_control() {
 	return EditorNode::get_singleton()->get_gui_base();
 }
 
+void EditorPlugin::make_bottom_panel_item_visible(Control * p_item) {
+
+	EditorNode::get_singleton()->make_bottom_panel_item_visible(p_item);
+}
+
+void EditorPlugin::hide_bottom_panel() {
+
+	EditorNode::get_singleton()->hide_bottom_panel();
+}
+
 void EditorPlugin::inspect_object(Object *p_obj,const String& p_for_property) {
 
 	EditorNode::get_singleton()->push_item(p_obj,p_for_property);
@@ -345,6 +355,9 @@ void EditorPlugin::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("inspect_object","object","for_property"),&EditorPlugin::inspect_object,DEFVAL(String()));
 	ObjectTypeDB::bind_method(_MD("update_canvas"),&EditorPlugin::update_canvas);
+
+	ObjectTypeDB::bind_method(_MD("make_bottom_panel_item_visible","item:Control"), &EditorPlugin::make_bottom_panel_item_visible);
+	ObjectTypeDB::bind_method(_MD("hide_bottom_panel"), &EditorPlugin::hide_bottom_panel);
 
 	ObjectTypeDB::bind_method(_MD("get_base_control:Control"),&EditorPlugin::get_base_control);
 	ObjectTypeDB::bind_method(_MD("get_undo_redo:UndoRedo"),&EditorPlugin::_get_undo_redo);
