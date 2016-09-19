@@ -43,6 +43,7 @@
 #include "scene/3d/collision_object.h"
 
 #include "scene/2d/collision_object_2d.h"
+#include "scene/2d/listener_2d.h"
 
 #include "scene/gui/panel.h"
 #include "scene/gui/label.h"
@@ -759,7 +760,7 @@ void Viewport::_update_listener() {
 
 void Viewport::_update_listener_2d() {
 
-	if (is_inside_tree() && audio_listener && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))
+	if (is_inside_tree() && audio_listener_2d && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))
 		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, find_world_2d()->get_sound_space());
 	else
 		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, RID());
@@ -784,35 +785,32 @@ bool Viewport::is_audio_listener() const {
 
 void Viewport::set_as_audio_listener_2d(bool p_enable) {
 
-	if (p_enable==audio_listener_2d)
+	if (p_enable == audio_listener_2d)
 		return;
 
-	audio_listener_2d=p_enable;
-
+	audio_listener_2d = p_enable;
 	_update_listener_2d();
-
-
 }
 
 bool Viewport::is_audio_listener_2d() const {
 
-	return  audio_listener_2d;
+	return audio_listener_2d;
 }
 
 void Viewport::set_canvas_transform(const Matrix32& p_transform) {
 
-	canvas_transform=p_transform;
+	canvas_transform = p_transform;
 	VisualServer::get_singleton()->viewport_set_canvas_transform(viewport,find_world_2d()->get_canvas(),canvas_transform);
 
-	Matrix32 xform = (global_canvas_transform * canvas_transform).affine_inverse();
-	Size2 ss = get_visible_rect().size;
-	SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Matrix32(0, xform.xform(ss*0.5)));
-	Vector2 ss2 = ss*xform.get_scale();
-	float panrange = MAX(ss2.x,ss2.y);
+	if (audio_listener_2d && !listener_2d) {		
+		Matrix32 xform = (global_canvas_transform * canvas_transform).affine_inverse();
+		Size2 ss = get_visible_rect().size;
+		SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Matrix32(0, xform.xform(ss*0.5)));
+		Vector2 ss2 = ss*xform.get_scale();
+		float panrange = MAX(ss2.x,ss2.y);
 
-	SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
-
-
+		SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
+	}
 }
 
 Matrix32 Viewport::get_canvas_transform() const{
@@ -824,19 +822,18 @@ Matrix32 Viewport::get_canvas_transform() const{
 
 void Viewport::_update_global_transform() {
 
-
 	Matrix32 sxform = stretch_transform * global_canvas_transform;
-
 	VisualServer::get_singleton()->viewport_set_global_canvas_transform(viewport,sxform);
 
-	Matrix32 xform = (sxform * canvas_transform).affine_inverse();
-	Size2 ss = get_visible_rect().size;
-	SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Matrix32(0, xform.xform(ss*0.5)));
-	Vector2 ss2 = ss*xform.get_scale();
-	float panrange = MAX(ss2.x,ss2.y);
+	if (audio_listener_2d && !listener_2d) {
+		Matrix32 xform = (sxform * canvas_transform).affine_inverse();
+		Size2 ss = get_visible_rect().size;
+		SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Matrix32(0, xform.xform(ss*0.5)));
+		Vector2 ss2 = ss*xform.get_scale();
+		float panrange = MAX(ss2.x,ss2.y);
 
-	SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
-
+		SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
+	}
 }
 
 
@@ -916,6 +913,63 @@ void Viewport::_listener_make_next_current(Listener* p_exclude) {
 	}
 }
 #endif
+
+void Viewport::_listener_2d_transform_changed_notify() {
+
+	if (listener_2d)
+		SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, listener_2d->get_listener_transform());
+}
+
+void Viewport::_listener_2d_set(Listener2D* p_listener_2d) {
+
+
+	if (listener_2d == p_listener_2d)
+		return;
+
+	listener_2d = p_listener_2d;
+
+	_update_listener_2d();
+	_listener_2d_transform_changed_notify();
+}
+
+bool Viewport::_listener_2d_add(Listener2D* p_listener_2d) {
+
+	listeners_2d.insert(p_listener_2d);
+	return listeners_2d.size() == 1;
+}
+
+void Viewport::_listener_2d_remove(Listener2D* p_listener_2d) {
+
+	listeners_2d.erase(p_listener_2d);
+	if (listener_2d == p_listener_2d) {
+		listener_2d = NULL;
+	}
+}
+
+void Viewport::_listener_2d_make_next_current(Listener2D* p_exclude_2d) {
+
+	if (listeners_2d.size() > 0) {
+		for (Set<Listener2D*>::Element *E = listeners_2d.front(); E; E = E->next()) {
+
+			if (p_exclude_2d == E->get())
+				continue;
+			if (!E->get()->is_inside_tree())
+				continue;
+			if (listener_2d != NULL)
+				return;
+
+			E->get()->make_current();
+
+		}
+	}
+	/*else {
+		// Attempt to reset listener to the camera position
+		if (camera != NULL) {
+			_update_listener();
+			_camera_transform_changed_notify();
+		}
+	}*/
+}
 
 void Viewport::_camera_transform_changed_notify() {
 
@@ -1163,6 +1217,11 @@ Ref<World> Viewport::find_world() const{
 Listener* Viewport::get_listener() const {
 
 	return listener;
+}
+
+Listener2D* Viewport::get_listener_2d() const {
+	
+	return listener_2d;
 }
 
 Camera* Viewport::get_camera() const {
@@ -2727,6 +2786,7 @@ Viewport::Viewport() {
 	transparent_bg=false;
 	parent=NULL;
 	listener=NULL;
+	listener_2d=NULL;
 	camera=NULL;
 	size_override=false;
 	size_override_stretch=false;
