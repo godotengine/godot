@@ -88,7 +88,6 @@ void Listener2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_current","current"),&Listener2D::set_current);
 	ObjectTypeDB::bind_method(_MD("is_current"),&Listener2D::is_current);
-	ObjectTypeDB::bind_method(_MD("get_listener_transform"),&Listener2D::get_listener_transform);
 	
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"current"),_SCS("set_current"),_SCS("is_current"));
 }
