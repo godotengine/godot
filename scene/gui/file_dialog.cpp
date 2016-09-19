@@ -186,15 +186,17 @@ void FileDialog::_action_pressed() {
 		hide();
 	}else if (mode==MODE_OPEN_ANY || mode==MODE_OPEN_DIR) {
 
-
 		String path=dir_access->get_current_dir();
-		/*if (tree->get_selected()) {
-			Dictionary d = tree->get_selected()->get_metadata(0);
-			if (d["dir"]) {
-				path=path+"/"+String(d["name"]);
-			}
-		}*/
+
 		path=path.replace("\\","/");
+
+		if (TreeItem* item = tree->get_selected()) {
+			Dictionary d = item->get_metadata(0);
+			if (d["dir"]) {
+				path=path.plus_file(d["name"]);
+			}
+		}
+
 		emit_signal("dir_selected",path);
 		hide();
 	}
@@ -348,18 +350,18 @@ void FileDialog::update_file_list() {
 	files.sort_custom<NoCaseComparator>();
 
 	while(!dirs.empty()) {
+		String& dir_name = dirs.front()->get();
+		TreeItem *ti=tree->create_item(root);
+		ti->set_text(0,dir_name+"/");
+		ti->set_icon(0,folder);
 
-		if (dirs.front()->get()!=".") {
-			TreeItem *ti=tree->create_item(root);
-			ti->set_text(0,dirs.front()->get()+"/");
-			ti->set_icon(0,folder);
-			Dictionary d;
-			d["name"]=dirs.front()->get();
-			d["dir"]=true;
-			ti->set_metadata(0,d);
-		}
+		Dictionary d;
+		d["name"]=dir_name;
+		d["dir"]=true;
+
+		ti->set_metadata(0,d);
+
 		dirs.pop_front();
-
 	}
 
 	dirs.clear();
