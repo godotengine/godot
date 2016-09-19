@@ -2481,7 +2481,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 				} break;
 				case KEY_X: {
-
+					if (readonly) {
+						break;
+					}
 					if (!k.mod.command || k.mod.shift || k.mod.alt) {
 						scancode_handled=false;
 						break;
@@ -2513,7 +2515,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						undo();
 				} break;
 				case KEY_V: {
-
+					if (readonly) {
+						break;
+					}
 					if (!k.mod.command || k.mod.shift || k.mod.alt) {
 						scancode_handled=false;
 						break;
@@ -4401,18 +4405,22 @@ void TextEdit::menu_option(int p_option) {
 
 	switch( p_option ) {
 		case MENU_CUT: {
-
-			cut();
+			if (!readonly) {
+				cut();
+			}
 		} break;
 		case MENU_COPY: {
 			copy();
 		} break;
 		case MENU_PASTE: {
-
-			paste();
+			if (!readonly) {
+				paste();
+			}
 		} break;
 		case MENU_CLEAR: {
-			clear();
+			if (!readonly) {
+				clear();
+			}
 		} break;
 		case MENU_SELECT_ALL: {
 			select_all();
