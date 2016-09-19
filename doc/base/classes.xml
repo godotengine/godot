@@ -15221,8 +15221,12 @@
 			</argument>
 			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
 			</argument>
+			<argument index="3" name="method" type="int" default="0">
+			</argument>
+			<argument index="4" name="request_data" type="String" default="&quot;&quot;">
+			</argument>
 			<description>
-				Make a HTTP GET request. The url is the complete url including "http://" or "https://" which will be parsed for a host and a port.
+				Make a HTTP request (by default GET, unless specified otherwise as method). The url is the complete url including "http://" or "https://" which will be parsed for a host and a port.
 				The custom_headers are HTTP request headers which will be used. If User-Agent is not specified a Godot specific will be used.
 				The ssl_validate_domain specifies if in case of HTTPS the server certificate should be verified.
 			</description>
@@ -15853,6 +15857,8 @@
 			<argument index="1" name="lons" type="int">
 			</argument>
 			<argument index="2" name="radius" type="float">
+			</argument>
+			<argument index="3" name="add_uv" type="bool" default="true">
 			</argument>
 			<description>
 				Simple helper to draw an uvsphere, with given latitudes, longitude and radius.
@@ -17752,15 +17758,6 @@
 				Return tooltip hint for specified item index.
 			</description>
 		</method>
-		<method name="is_item_tooltip_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<description>
-				Returns whether the tooptip is enabled for specified item index.
-			</description>
-		</method>
 		<method name="get_max_columns" qualifiers="const">
 			<return type="int">
 			</return>
@@ -17789,7 +17786,7 @@
 			</description>
 		</method>
 		<method name="get_v_scroll">
-			<return type="VScrollBar">
+			<return type="Object">
 			</return>
 			<description>
 				Returns the current vertical scroll bar for the List.
@@ -17811,6 +17808,15 @@
 			</argument>
 			<description>
 				Returns whether or not the item at the specified index is selectable.
+			</description>
+		</method>
+		<method name="is_item_tooltip_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns whether the tooptip is enabled for specified item index.
 			</description>
 		</method>
 		<method name="is_same_column_width" qualifiers="const">
