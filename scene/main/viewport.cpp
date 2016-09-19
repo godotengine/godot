@@ -917,7 +917,7 @@ void Viewport::_listener_make_next_current(Listener* p_exclude) {
 void Viewport::_listener_2d_transform_changed_notify() {
 
 	if (listener_2d)
-		SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, listener_2d->get_listener_transform());
+		SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, listener_2d->get_global_transform());
 }
 
 void Viewport::_listener_2d_set(Listener2D* p_listener_2d) {
@@ -958,17 +958,9 @@ void Viewport::_listener_2d_make_next_current(Listener2D* p_exclude_2d) {
 			if (listener_2d != NULL)
 				return;
 
-			E->get()->make_current();
-
+			E->get()->set_current(true);
 		}
 	}
-	/*else {
-		// Attempt to reset listener to the camera position
-		if (camera != NULL) {
-			_update_listener();
-			_camera_transform_changed_notify();
-		}
-	}*/
 }
 
 void Viewport::_camera_transform_changed_notify() {
