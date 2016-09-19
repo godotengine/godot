@@ -1701,16 +1701,11 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 			} break;
 			case TreeItem::CELL_MODE_CHECK: {
 
-				Ref<Texture> checked = cache.checked;
 				bring_up_editor=false; //checkboxes are not edited with editor
-				if (x>=0 && x<= checked->get_width()+cache.hseparation ) {
-
-
-					p_item->set_checked(col,!c.checked);
-					item_edited(col,p_item);
-					click_handled=true;
-					//p_item->edited_signal.call(col);
-				}
+				p_item->set_checked(col, !c.checked);
+				item_edited(col, p_item);
+				click_handled = true;
+				//p_item->edited_signal.call(col);
 
 			} break;
 			case TreeItem::CELL_MODE_RANGE:
