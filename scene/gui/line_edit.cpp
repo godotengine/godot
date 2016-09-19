@@ -1191,24 +1191,28 @@ void LineEdit::menu_option(int p_option) {
 
 	switch(p_option) {
 		case MENU_CUT: {
-			cut_text();
+			if (editable) {
+				cut_text();
+			}
 		} break;
 		case MENU_COPY: {
 
 			copy_text();
 		} break;
 		case MENU_PASTE: {
-
-			paste_text();
+			if (editable) {
+				paste_text();
+			}
 		} break;
 		case MENU_CLEAR: {
-			clear();
+			if (editable) {
+				clear();
+			}
 		} break;
 		case MENU_SELECT_ALL: {
 			select_all();
 		} break;
 		case MENU_UNDO: {
-
 			undo();
 		} break;
 
