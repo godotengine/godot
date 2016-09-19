@@ -2918,6 +2918,7 @@ void PropertyEditor::update_tree() {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CHECK );
 				item->set_text(1,TTR("On"));
+				item->set_tooltip(1, obj->get(p.name) ? "True" : "False");
 				item->set_checked( 1, obj->get( p.name ) );
 				if (show_type_icons)
 					item->set_icon( 0, get_icon("Bool","EditorIcons") );
@@ -3546,6 +3547,7 @@ void PropertyEditor::_item_edited() {
 		case Variant::BOOL: {
 
 			_edit_set(name,item->is_checked(1));
+			item->set_tooltip(1, item->is_checked(1) ? "True" : "False");
 		} break;
 		case Variant::INT:
 		case Variant::REAL: {
