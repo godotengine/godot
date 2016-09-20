@@ -79,7 +79,7 @@ public:
 	void move_y(float p_delta,bool p_scaled=false);
 	void translate(const Vector2& p_amount);
 	void global_translate(const Vector2& p_amount);
-	void scale(const Vector2& p_amount);
+	void scale(const Size2& p_amount);
 
 	Point2 get_pos() const;
 	float get_rot() const;
@@ -109,8 +109,6 @@ public:
 	bool is_z_relative() const;
 
 	Matrix32 get_relative_transform_to_parent(const Node *p_parent) const;
-
-
 
 	Matrix32 get_transform() const;
 
