@@ -136,7 +136,7 @@ bool LineShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_en
 	return true;
 }
 
-real_t LineShape2DSW::get_moment_of_inertia(float p_mass, const Vector2 &p_scale) const {
+real_t LineShape2DSW::get_moment_of_inertia(float p_mass, const Size2 &p_scale) const {
 
 	return 0;
 }
@@ -191,7 +191,7 @@ bool RayShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_end
 
 }
 
-real_t RayShape2DSW::get_moment_of_inertia(float p_mass, const Vector2 &p_scale) const {
+real_t RayShape2DSW::get_moment_of_inertia(float p_mass, const Size2 &p_scale) const {
 
 	return 0; //rays are mass-less
 }
@@ -252,7 +252,7 @@ bool SegmentShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p
 	return true;
 }
 
-real_t SegmentShape2DSW::get_moment_of_inertia(float p_mass, const Vector2 &p_scale) const {
+real_t SegmentShape2DSW::get_moment_of_inertia(float p_mass, const Size2 &p_scale) const {
 
 	Vector2 s[2]={a*p_scale,b*p_scale};
 
@@ -336,7 +336,7 @@ bool CircleShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_
 	return true;
 }
 
-real_t CircleShape2DSW::get_moment_of_inertia(float p_mass, const Vector2 &p_scale) const {
+real_t CircleShape2DSW::get_moment_of_inertia(float p_mass, const Size2 &p_scale) const {
 
 	return (radius*radius)*(p_scale.x*0.5+p_scale.y*0.5);
 
@@ -407,7 +407,7 @@ bool RectangleShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2&
 	return get_aabb().intersects_segment(p_begin,p_end,&r_point,&r_normal);
 }
 
-real_t RectangleShape2DSW::get_moment_of_inertia(float p_mass,const Vector2& p_scale) const {
+real_t RectangleShape2DSW::get_moment_of_inertia(float p_mass,const Size2& p_scale) const {
 
 	Vector2 he2=half_extents*2*p_scale;
 	return p_mass*he2.dot(he2)/12.0f;
@@ -540,7 +540,7 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p
 	return collided; //todo
 }
 
-real_t CapsuleShape2DSW::get_moment_of_inertia(float p_mass, const Vector2 &p_scale) const {
+real_t CapsuleShape2DSW::get_moment_of_inertia(float p_mass, const Size2 &p_scale) const {
 
 	Vector2 he2=Vector2(radius*2,height+radius*2)*p_scale;
 	return p_mass*he2.dot(he2)/12.0f;
@@ -670,7 +670,7 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2& p_begin,const Vect
 	return inters; //todo
 }
 
-real_t ConvexPolygonShape2DSW::get_moment_of_inertia(float p_mass,const Vector2& p_scale) const {
+real_t ConvexPolygonShape2DSW::get_moment_of_inertia(float p_mass,const Size2& p_scale) const {
 
 	Rect2 aabb;
 	aabb.pos=points[0].pos*p_scale;

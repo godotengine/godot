@@ -253,7 +253,7 @@ void Node2D::global_translate(const Vector2& p_amount) {
 	set_global_pos( get_global_pos() + p_amount );
 }
 
-void Node2D::scale(const Vector2& p_amount) {
+void Node2D::scale(const Size2& p_amount) {
 
 	set_scale( get_scale() * p_amount );
 }

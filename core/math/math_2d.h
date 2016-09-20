@@ -553,9 +553,7 @@ struct Rect2i {
 
 struct Matrix32 {
 
-
 	Vector2 elements[3];
-
 
 	_FORCE_INLINE_ float tdotx(const Vector2& v) const { return elements[0][0] * v.x + elements[1][0] * v.y; }
 	_FORCE_INLINE_ float tdoty(const Vector2& v) const { return elements[0][1] * v.x + elements[1][1] * v.y; }
@@ -577,25 +575,24 @@ struct Matrix32 {
 	_FORCE_INLINE_ void set_rotation_and_scale(real_t p_phi,const Size2& p_scale);
 	void rotate(real_t p_phi);
 
-	void scale(const Vector2& p_scale);
-	void scale_basis(const Vector2& p_scale);
+	void scale(const Size2& p_scale);
+	void scale_basis(const Size2& p_scale);
 	void translate( real_t p_tx, real_t p_ty);
 	void translate( const Vector2& p_translation );
 
 	float basis_determinant() const;
 
-	Vector2 get_scale() const;
+	Size2 get_scale() const;
 
 	_FORCE_INLINE_ const Vector2& get_origin() const { return elements[2]; }
 	_FORCE_INLINE_ void set_origin(const Vector2& p_origin) { elements[2]=p_origin; }
 
-	Matrix32 scaled(const Vector2& p_scale) const;
-	Matrix32 basis_scaled(const Vector2& p_scale) const;
+	Matrix32 scaled(const Size2& p_scale) const;
+	Matrix32 basis_scaled(const Size2& p_scale) const;
 	Matrix32 translated(const Vector2& p_offset) const;
 	Matrix32 rotated(float p_phi) const;
 
 	Matrix32 untranslated() const;
-
 
 	void orthonormalize();
 	Matrix32 orthonormalized() const;
@@ -615,7 +612,6 @@ struct Matrix32 {
 	_FORCE_INLINE_ Rect2 xform(const Rect2& p_vec) const;
 	_FORCE_INLINE_ Rect2 xform_inv(const Rect2& p_vec) const;
 
-
 	operator String() const;
 
 	Matrix32(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy) {
@@ -630,7 +626,6 @@ struct Matrix32 {
 
 	Matrix32(real_t p_rot, const Vector2& p_pos);
 	Matrix32() { elements[0][0]=1.0; elements[1][1]=1.0; }
-
 };
 
 bool Rect2::intersects_transformed(const Matrix32& p_xform, const Rect2& p_rect) const {
