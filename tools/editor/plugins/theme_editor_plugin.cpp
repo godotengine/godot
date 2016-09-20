@@ -668,7 +668,7 @@ ThemeEditor::ThemeEditor() {
 
 
 	theme_menu = memnew( MenuButton );
-	theme_menu->set_text("Theme");
+	theme_menu->set_text(TTR("Theme"));
 	theme_menu->get_popup()->add_item(TTR("Add Item"),POPUP_ADD);
 	theme_menu->get_popup()->add_item(TTR("Add Class Items"),POPUP_CLASS_ADD);
 	theme_menu->get_popup()->add_item(TTR("Remove Item"),POPUP_REMOVE);
