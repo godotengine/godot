@@ -59,6 +59,7 @@ void baked_light_baker_add_64i(int64_t *dst,int64_t value) {
 #elif defined(WINDOWS_ENABLED)
 
 #include "windows.h"
+#include <intrin.h>
 
 void baked_light_baker_add_64f(double *dst,double value) {
 

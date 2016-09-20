@@ -49,7 +49,7 @@ for x in glob.glob("platform/*"):
 module_list=methods.detect_modules()
 
 
-#print "Detected Platforms: "+str(platform_list)
+print "Detected Platforms: "+str(platform_list)
 
 methods.save_active_platforms(active_platforms,active_platform_ids)
 
@@ -451,3 +451,6 @@ else:
 	for x in platform_list:
 		print("\t"+x)
 	print("\nPlease run scons again with argument: platform=<string>")
+
+env.Replace(CC = "clang-cl")
+env.Append(CPPFLAGS=['/EHsc']);
