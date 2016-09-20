@@ -40,7 +40,7 @@ class CanvasLayer : public Node {
 
 	bool locrotscale_dirty;
 	Vector2 ofs;
-	Vector2 scale;
+	Size2 scale;
 	real_t rot;
 	int layer;
 	Matrix32 transform;
@@ -81,8 +81,8 @@ public:
 	void set_rotationd(real_t p_degrees);
 	real_t get_rotationd() const;
 
-	void set_scale(const Vector2& p_scale);
-	Vector2 get_scale() const;
+	void set_scale(const Size2& p_scale);
+	Size2 get_scale() const;
 
 	Ref<World2D> get_world_2d() const;
 

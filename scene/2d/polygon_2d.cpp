@@ -288,12 +288,12 @@ float Polygon2D::_get_texture_rotationd() const{
 }
 
 
-void Polygon2D::set_texture_scale(const Vector2& p_scale){
+void Polygon2D::set_texture_scale(const Size2& p_scale){
 
 	tex_scale=p_scale;
 	update();
 }
-Vector2 Polygon2D::get_texture_scale() const{
+Size2 Polygon2D::get_texture_scale() const{
 
 	return tex_scale;
 }

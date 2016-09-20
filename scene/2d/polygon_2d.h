@@ -40,7 +40,7 @@ class Polygon2D : public Node2D {
 	DVector<Color> vertex_colors;
 	Color color;
 	Ref<Texture> texture;
-	Vector2 tex_scale;
+	Size2 tex_scale;
 	Vector2 tex_ofs;
 	bool tex_tile;
 	float tex_rot;
@@ -81,8 +81,8 @@ public:
 	void set_texture_rotation(float p_rot);
 	float get_texture_rotation() const;
 
-	void set_texture_scale(const Vector2& p_scale);
-	Vector2 get_texture_scale() const;
+	void set_texture_scale(const Size2& p_scale);
+	Size2 get_texture_scale() const;
 
 	void set_invert(bool p_rot);
 	bool get_invert() const;
