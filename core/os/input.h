@@ -96,6 +96,11 @@ public:
 	virtual void set_custom_mouse_cursor(const RES& p_cursor,const Vector2& p_hotspot=Vector2())=0;
 	virtual void set_mouse_in_window(bool p_in_window)=0;
 
+	virtual String get_joy_button_string(int p_button)=0;
+	virtual String get_joy_axis_string(int p_axis)=0;
+	virtual int    get_joy_button_index_from_string(String p_button)=0;
+	virtual int    get_joy_axis_index_from_string(String p_axis)=0;
+
 	Input();
 };
 
