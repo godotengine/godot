@@ -2221,6 +2221,12 @@
 				Register a [LineEdit] in the dialog. When the enter key is pressed, the dialog will be accepted.
 			</description>
 		</method>
+		<method name="set_child_rect">
+			<argument index="0" name="child" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_hide_on_ok">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
@@ -10871,7 +10877,7 @@
 			</return>
 			<description>
 				Initialise the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
-				Return false if the stream could not be initialised.
+				Return true if the stream could not be initialised.
 			</description>
 		</method>
 		<method name="list_dir_end">
@@ -11261,6 +11267,184 @@
 		</constant>
 	</constants>
 </class>
+<class name="EditorFileSystem" inherits="Node" category="Core">
+	<brief_description>
+		Resource filesystem, as the editor sees it.
+	</brief_description>
+	<description>
+		This object holds information of all resources in the filesystem, their types, etc.
+	</description>
+	<methods>
+		<method name="get_file_type" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Get the type of the file, given the full path.
+			</description>
+		</method>
+		<method name="get_filesystem">
+			<return type="EditorFileSystemDirectory">
+			</return>
+			<description>
+				Get the root directory object.
+			</description>
+		</method>
+		<method name="get_path">
+			<return type="EditorFileSystemDirectory">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_scanning_progress" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the scan progress for 0 to 1 if the FS is being scanned.
+			</description>
+		</method>
+		<method name="is_scanning" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true of the filesystem is being scanned.
+			</description>
+		</method>
+		<method name="scan">
+			<description>
+				Scan the filesystem for changes.
+			</description>
+		</method>
+		<method name="scan_sources">
+			<description>
+				Check if the source of any imported resource changed.
+			</description>
+		</method>
+		<method name="update_file">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Update a file information. Call this if an external program (not Godot) modified the file.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="filesystem_changed">
+			<description>
+				Emitted if the filesystem changed.
+			</description>
+		</signal>
+		<signal name="sources_changed">
+			<argument index="0" name="exist" type="bool">
+			</argument>
+			<description>
+				Emitted if the source of any imported file changed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>
+<class name="EditorFileSystemDirectory" inherits="Object" category="Core">
+	<brief_description>
+		A diretory for the resource filesystem.
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="find_dir_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="find_file_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_file" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_file_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_file_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_file_type" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_name">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_parent">
+			<return type="EditorFileSystemDirectory">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdir">
+			<return type="Object">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdir_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_missing_sources" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="EditorImportPlugin" inherits="Reference" category="Core">
 	<brief_description>
 		Import plugin for editor
@@ -11459,14 +11643,24 @@
 				This function is used for plugins that edit specific object types (nodes or resources). It requests the editor to edit the given object.
 			</description>
 		</method>
-		<method name="forward_input_event" qualifiers="virtual">
+		<method name="forward_canvas_input_event" qualifiers="virtual">
 			<return type="bool">
 			</return>
-			<argument index="0" name="event" type="InputEvent">
+			<argument index="0" name="canvas_xform" type="Matrix32">
+			</argument>
+			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
-				This is a low level function for plugins that edit a given object type derived from CanvasItem to capture the input in the 2D editor viewport. The function is only being called if your object is being edited.
-				Return true if you want to capture the input, otherwise false.
+				If your plugin is active (because handles() returned true to the object), any input interaction with the 2D canvas editor will be first forwarded here. The canvas transform (containing zoom and offset to transform to edited world coordinates) is provided, but the input supplied is in untransformed coordinates to the canvas editor. Return true if you want to eat this event and not pass it to the canvas editor.
+			</description>
+		</method>
+		<method name="forward_draw_over_canvas" qualifiers="virtual">
+			<argument index="0" name="canvas_xform" type="Matrix32">
+			</argument>
+			<argument index="1" name="canvas" type="Control">
+			</argument>
+			<description>
+				This function is called every time the 2D canvas editor draws (which overlays over the edited scene). Drawing over the supplied control will draw over the edited scene. To convert from control coordinates to edited scene coordinates (including zoom and offset), a transform is also provided. If you require this control to be redraw, call [method update_canvas]().
 			</description>
 		</method>
 		<method name="forward_spatial_input_event" qualifiers="virtual">
@@ -11503,11 +11697,32 @@
 				Get the general settings for the editor (the same window that appears in the Settings menu).
 			</description>
 		</method>
+		<method name="get_editor_viewport">
+			<return type="Control">
+			</return>
+			<description>
+				Get the main editor control. Use this as a parent for main screens.
+			</description>
+		</method>
 		<method name="get_name" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
 				Get the name of the editor plugin. For main scren plugins this is what will appear in the selector (which by default is 2D, 3D, Script).
+			</description>
+		</method>
+		<method name="get_resource_filesystem">
+			<return type="EditorFileSystem">
+			</return>
+			<description>
+				Get the filesystem cache for all resources in the project.
+			</description>
+		</method>
+		<method name="get_resource_previewer">
+			<return type="EditorResourcePreview">
+			</return>
+			<description>
+				Get tool for generating resource previews.
 			</description>
 		</method>
 		<method name="get_selection">
@@ -11552,6 +11767,15 @@
 			</return>
 			<description>
 				Return true if this is a main screen editor plugin (it goes in the main screen selector together with 2D, 3D, Script).
+			</description>
+		</method>
+		<method name="inspect_object">
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="for_property" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+				Inspect an object in the inspector.
 			</description>
 		</method>
 		<method name="make_visible" qualifiers="virtual">
@@ -11621,6 +11845,11 @@
 				Restore the plugin GUI layout saved by [method EditorPlugin.get_window_layout].
 			</description>
 		</method>
+		<method name="update_canvas">
+			<description>
+				Updates the control used to draw the edited scene over the 2D canvas. This is used together with [method forward_canvas_input_event]().
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="CONTAINER_TOOLBAR" value="0">
@@ -11655,6 +11884,117 @@
 		</constant>
 		<constant name="DOCK_SLOT_MAX" value="8">
 		</constant>
+	</constants>
+</class>
+<class name="EditorResourcePreview" inherits="Node" category="Core">
+	<brief_description>
+		Helper to generate previews of reources or files.
+	</brief_description>
+	<description>
+		This object is used to generate previews for resources of files.
+	</description>
+	<methods>
+		<method name="add_preview_generator">
+			<argument index="0" name="generator" type="EditorResourcePreviewGenerator">
+			</argument>
+			<description>
+				Create an own, custom preview generator.
+			</description>
+		</method>
+		<method name="check_for_invalidation">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Check if the resource changed, if so it will be invalidated and the corresponding signal emitted.
+			</description>
+		</method>
+		<method name="queue_edited_resource_preview">
+			<argument index="0" name="resource" type="Resource">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="receiver_func" type="String">
+			</argument>
+			<argument index="3" name="userdata" type="Variant">
+			</argument>
+			<description>
+				Queue a resource being edited for preview (using an instance). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texure (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.
+			</description>
+		</method>
+		<method name="queue_resource_preview">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="receiver_func" type="String">
+			</argument>
+			<argument index="3" name="userdata" type="Variant">
+			</argument>
+			<description>
+				Queue a resource file for preview (using a path). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texure (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.
+			</description>
+		</method>
+		<method name="remove_preview_generator">
+			<argument index="0" name="generator" type="EditorResourcePreviewGenerator">
+			</argument>
+			<description>
+				Remove a custom preview generator.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="preview_invalidated">
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				If a preview was invalidated (changed) this signal will emit (using the path of the preview)
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>
+<class name="EditorResourcePreviewGenerator" inherits="Reference" category="Core">
+	<brief_description>
+		Custom generator of previews.
+	</brief_description>
+	<description>
+		Custom code to generate previews. Please check "file_dialog/thumbnail_size" in EditorSettings to find out the right size to do previews at.
+	</description>
+	<methods>
+		<method name="generate" qualifiers="virtual">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="from" type="Resource">
+			</argument>
+			<description>
+				Generate a preview from a given resource. This must be always implemented.
+			Returning an empty texture is an OK way to fail and let another generator take care.
+			Care must be taken because this function is always called from a thread (not the main thread).
+			</description>
+		</method>
+		<method name="generate_from_path" qualifiers="virtual">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Generate a preview directly from a path, implementing this is optional, as default code will load and call generate()
+			Returning an empty texture is an OK way to fail and let another generator take care.
+			Care must be taken because this function is always called from a thread (not the main thread).
+			</description>
+		</method>
+		<method name="handles" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Return if your generator supports this resource type.
+			</description>
+		</method>
+	</methods>
+	<constants>
 	</constants>
 </class>
 <class name="EditorScenePostImport" inherits="Reference" category="Core">
@@ -11730,6 +12070,13 @@
 			</return>
 			<description>
 				Get the list of selectes nodes.
+			</description>
+		</method>
+		<method name="get_transformable_selected_nodes">
+			<return type="Array">
+			</return>
+			<description>
+			Get the list of selected nodes, optimized for transform operations (ie, moving them, rotating, etc). This list avoids situations where a node is selected and also chid/grandchild.
 			</description>
 		</method>
 		<method name="remove_node">
@@ -13189,31 +13536,10 @@
 		However, by creating a [FuncRef] using the [method @GDScript.funcref] function, a reference to a function in a given object can be created, passed around and called.
 	</description>
 	<methods>
-		<method name="call_func">
+		<method name="call_func" qualifiers="vararg">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="1" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="2" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg4" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg5" type="Variant" default="NULL">
-			</argument>
-			<argument index="6" name="arg6" type="Variant" default="NULL">
-			</argument>
-			<argument index="7" name="arg7" type="Variant" default="NULL">
-			</argument>
-			<argument index="8" name="arg8" type="Variant" default="NULL">
-			</argument>
-			<argument index="9" name="arg9" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Call the referenced function with the given arguments. The argument count must correspond to the required number of arguments in the function. Returns the return value of the function call.
 			</description>
 		</method>
 		<method name="set_function">
@@ -13290,7 +13616,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="new">
+		<method name="new" qualifiers="vararg">
 			<return type="Object">
 			</return>
 			<description>
@@ -14465,6 +14791,8 @@
 		</theme_item>
 		<theme_item name="comment" type="StyleBox">
 		</theme_item>
+		<theme_item name="commentfocus" type="StyleBox">
+		</theme_item>
 		<theme_item name="defaultfocus" type="StyleBox">
 		</theme_item>
 		<theme_item name="defaultframe" type="StyleBox">
@@ -15390,10 +15718,11 @@
 			</argument>
 			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
 			</argument>
+			<argument index="3" name="method" type="int" default="0">
+			</argument>
+			<argument index="4" name="request_data" type="String" default="&quot;&quot;">
+			</argument>
 			<description>
-				Make a HTTP GET request. The url is the complete url including "http://" or "https://" which will be parsed for a host and a port.
-				The custom_headers are HTTP request headers which will be used. If User-Agent is not specified a Godot specific will be used.
-				The ssl_validate_domain specifies if in case of HTTPS the server certificate should be verified.
 			</description>
 		</method>
 		<method name="set_body_size_limit">
@@ -16023,6 +16352,8 @@
 			</argument>
 			<argument index="2" name="radius" type="float">
 			</argument>
+			<argument index="3" name="add_uv" type="bool" default="true">
+			</argument>
 			<description>
 				Simple helper to draw an uvsphere, with given latitudes, longitude and radius.
 			</description>
@@ -16124,7 +16455,7 @@
 				Add a new mapping entry (in SDL2 format) to the mapping database. Optionally update already connected devices.
 			</description>
 		</method>
-		<method name="get_accelerometer">
+		<method name="get_accelerometer" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -16138,14 +16469,14 @@
 				Returns an [Array] containing the device IDs of all currently connected joysticks.
 			</description>
 		</method>
-		<method name="get_gyroscope">
+		<method name="get_gyroscope" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				If the device has a gyroscope, this will return the rate of rotation in rad/s around a device's x, y, and z axis.
 			</description>
 		</method>
-		<method name="get_joy_axis">
+		<method name="get_joy_axis" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="device" type="int">
@@ -16192,7 +16523,7 @@
 				Returns the strength of the joystick vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
 			</description>
 		</method>
-		<method name="get_magnetometer">
+		<method name="get_magnetometer" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -16220,7 +16551,23 @@
 				Returns the mouse speed for the last time the cursor was moved, and this until the next frame where the mouse moves. This means that even if the mouse is not moving, this function will still return the value of the last motion.
 			</description>
 		</method>
-		<method name="is_action_pressed">
+		<method name="is_action_just_pressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_action_just_released" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_action_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="action" type="String">
@@ -16229,7 +16576,7 @@
 				Returns true or false depending on whether the action event is pressed. Actions and their events can be set in the Project Settings / Input Map tab. Or be set with [InputMap].
 			</description>
 		</method>
-		<method name="is_joy_button_pressed">
+		<method name="is_joy_button_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="device" type="int">
@@ -16249,7 +16596,7 @@
 				Returns if the specified device is known by the system. This means that it sets all button and axis indices exactly as defined in the JOY_* constants (see [@Global Scope]). Unknown joysticks are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
-		<method name="is_key_pressed">
+		<method name="is_key_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="scancode" type="int">
@@ -16258,7 +16605,7 @@
 				Returns true or false depending on whether the key is pressed or not. You can pass KEY_*, which are pre-defined constants listed in [@Global Scope].
 			</description>
 		</method>
-		<method name="is_mouse_button_pressed">
+		<method name="is_mouse_button_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="button" type="int">
@@ -16300,7 +16647,8 @@
 			<argument index="3" name="duration" type="float" default="0">
 			</argument>
 			<description>
-				Starts to vibrate the joystick. Joysticks usually come with two rumble motors, a strong and a weak one. weak_magnitude is the strength of the weak motor (between 0 and 1) and strong_magnitude is the strength of the strong motor (between 0 and 1). duration is the duration of the effect in seconds (a duration of 0 will play the vibration indefinitely).
+				Starts to vibrate the joystick. Joysticks usually come with two rumble motors, a strong and a weak one. weak_magnitude is the strength of the weak motor (between 0 and 1) and strong_magnitude is the strength of the strong motor (between 0 and 1). duration is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely).
+				Note that not every hardware is compatible with long effect durations, it is recommended to restart an effect if in need to play it for more than a few seconds.
 			</description>
 		</method>
 		<method name="stop_joy_vibration">
@@ -17947,6 +18295,13 @@
 				Returns the list of selected indexes.
 			</description>
 		</method>
+		<method name="get_v_scroll">
+			<return type="Object">
+			</return>
+			<description>
+				Returns the current vertical scroll bar for the List.
+			</description>
+		</method>
 		<method name="is_item_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -17963,6 +18318,15 @@
 			</argument>
 			<description>
 				Returns whether or not the item at the specified index is selectable.
+			</description>
+		</method>
+		<method name="is_item_tooltip_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns whether the tooptip is enabled for specified item index.
 			</description>
 		</method>
 		<method name="is_same_column_width" qualifiers="const">
@@ -18099,6 +18463,15 @@
 			</argument>
 			<description>
 				Sets tooltip hint for item at specified index.
+			</description>
+		</method>
+		<method name="set_item_tooltip_enabled">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				Sets whether the tooltip is enabled for specified item index.
 			</description>
 		</method>
 		<method name="set_max_columns">
@@ -18606,7 +18979,9 @@
 			</argument>
 			<argument index="1" name="floor_normal" type="Vector2" default="Vector2(0, 0)">
 			</argument>
-			<argument index="2" name="max_bounces" type="int" default="4">
+			<argument index="2" name="slope_stop_min_velocity" type="float" default="5">
+			</argument>
+			<argument index="3" name="max_bounces" type="int" default="4">
 			</argument>
 			<description>
 			</description>
@@ -18635,10 +19010,12 @@
 		<method name="test_move">
 			<return type="bool">
 			</return>
-			<argument index="0" name="rel_vec" type="Vector2">
+			<argument index="0" name="from" type="Matrix32">
+			</argument>
+			<argument index="1" name="rel_vec" type="Vector2">
 			</argument>
 			<description>
-				Return true if there would be a collision if the body moved in the given direction.
+				Return true if there would be a collision if the body moved from the given point in the given direction.
 			</description>
 		</method>
 	</methods>
@@ -19436,7 +19813,7 @@
 			</description>
 		</method>
 		<method name="cursor_set_blink_enabled">
-			<argument index="0" name="enable" type="bool">
+			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
 				Set the line edit caret to blink.
@@ -19460,6 +19837,12 @@
 			</return>
 			<description>
 				Return the cursor position inside the [LineEdit].
+			</description>
+		</method>
+		<method name="get_expand_to_text_length" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_max_length" qualifiers="const">
@@ -19545,6 +19928,12 @@
 			</argument>
 			<description>
 				Set the [i]editable[/i] status of the [LineEdit]. When disabled, existing text can't be modified and new text can't be added.
+			</description>
+		</method>
+		<method name="set_expand_to_text_length">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_max_length">
@@ -22479,7 +22868,7 @@
 				Replace a node in a scene by a given one. Subscriptions that pass through this node will be lost.
 			</description>
 		</method>
-		<method name="rpc">
+		<method name="rpc" qualifiers="vararg">
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
@@ -22493,22 +22882,22 @@
 			<description>
 			</description>
 		</method>
-		<method name="rpc_id">
-			<argument index="0" name="peer_" type="int">
+		<method name="rpc_id" qualifiers="vararg">
+			<argument index="0" name="peer_id" type="int">
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="rpc_unreliable">
+		<method name="rpc_unreliable" qualifiers="vararg">
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="rpc_unreliable_id">
-			<argument index="0" name="peer_" type="int">
+		<method name="rpc_unreliable_id" qualifiers="vararg">
+			<argument index="0" name="peer_id" type="int">
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
@@ -23960,50 +24349,18 @@
 				Add a user signal (can be added anytime). Arguments are optional, but can be added as an array of dictionaries, each containing "name" and "type" (from [@Global Scope] TYPE_*).
 			</description>
 		</method>
-		<method name="call">
+		<method name="call" qualifiers="vararg">
 			<return type="Variant">
 			</return>
 			<argument index="0" name="method" type="String">
 			</argument>
-			<argument index="1" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="2" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg4" type="Variant" default="NULL">
-			</argument>
-			<argument index="6" name="arg5" type="Variant" default="NULL">
-			</argument>
-			<argument index="7" name="arg6" type="Variant" default="NULL">
-			</argument>
-			<argument index="8" name="arg7" type="Variant" default="NULL">
-			</argument>
-			<argument index="9" name="arg8" type="Variant" default="NULL">
-			</argument>
-			<argument index="10" name="arg9" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Call a function in the object, result is returned.
 			</description>
 		</method>
-		<method name="call_deferred">
+		<method name="call_deferred" qualifiers="vararg">
 			<argument index="0" name="method" type="String">
 			</argument>
-			<argument index="1" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="2" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg4" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Create and store a function in the object. The call will take place on idle time.
 			</description>
 		</method>
 		<method name="callv">
@@ -24051,21 +24408,10 @@
 				Disconnect a signal from a method.
 			</description>
 		</method>
-		<method name="emit_signal">
+		<method name="emit_signal" qualifiers="vararg">
 			<argument index="0" name="signal" type="String">
 			</argument>
-			<argument index="1" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="2" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg4" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Emit a signal. Arguments are passed in an array.
 			</description>
 		</method>
 		<method name="free">
@@ -27280,14 +27626,16 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="motion" type="Vector2">
+			<argument index="1" name="from" type="Matrix32">
 			</argument>
-			<argument index="2" name="margin" type="float" default="0.08">
+			<argument index="2" name="motion" type="Vector2">
 			</argument>
-			<argument index="3" name="result" type="Physics2DTestMotionResult" default="NULL">
+			<argument index="3" name="margin" type="float" default="0.08">
+			</argument>
+			<argument index="4" name="result" type="Physics2DTestMotionResult" default="NULL">
 			</argument>
 			<description>
-				Return whether a body can move in a given direction. Apart from the boolean return value, a [Physics2DTestMotionResult] can be passed to return additional information in.
+				Return whether a body can move from a given point in a given direction. Apart from the boolean return value, a [Physics2DTestMotionResult] can be passed to return additional information in.
 			</description>
 		</method>
 		<method name="damped_spring_joint_create">
@@ -31301,6 +31649,17 @@
 				Return the size of the array.
 			</description>
 		</method>
+		<method name="subarray">
+			<return type="RawArray">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Returns the slice of the [RawArray] between indices (inclusive) as a new [RawArray].  Any negative index is considered to be from the end of the array.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -31484,6 +31843,12 @@
 				Returns the collision point in which the ray intersects the closest object.
 			</description>
 		</method>
+		<method name="get_exclude_parent_body" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_layer_mask" qualifiers="const">
 			<return type="int">
 			</return>
@@ -31536,6 +31901,12 @@
 			</argument>
 			<description>
 				Enables the RayCast2D. Only enabled raycasts will be able to query the space and report collisions.
+			</description>
+		</method>
+		<method name="set_exclude_parent_body">
+			<argument index="0" name="mask" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_layer_mask">
@@ -31983,6 +32354,28 @@
 			</return>
 			<description>
 				Returns whether this object has a valid regular expression assigned.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="RemoteTransform" inherits="Spatial" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_remote_node" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_remote_node">
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -34548,22 +34941,12 @@
 	<description>
 	</description>
 	<methods>
-		<method name="call_group">
+		<method name="call_group" qualifiers="vararg">
 			<argument index="0" name="flags" type="int">
 			</argument>
 			<argument index="1" name="group" type="String">
 			</argument>
 			<argument index="2" name="method" type="String">
-			</argument>
-			<argument index="3" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="6" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="7" name="arg4" type="Variant" default="NULL">
 			</argument>
 			<description>
 			</description>
@@ -34988,7 +35371,7 @@
 		A helper node for displaying scrollable elements (e.g. lists).
 	</brief_description>
 	<description>
-		A ScrollContainer node with a [Control] child and scrollbar child ([HScrollbar], [VScrollBar], or both) will only draw the Control within the ScrollContainer area.  Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer.  Scrollbars will also automatically resize the grabber based on the minimum_size of the Control relative to the ScrollContainer.  Works great with a [Panel] control.
+		A ScrollContainer node with a [Control] child and scrollbar child ([HScrollbar], [VScrollBar], or both) will only draw the Control within the ScrollContainer area.  Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer.  Scrollbars will also automatically resize the grabber based on the minimum_size of the Control relative to the ScrollContainer.  Works great with a [Panel] control.  You can set EXPAND on children size flags, so they will upscale to ScrollContainer size if ScrollContainer size is bigger (scroll is invisible for chosen dimension).
 	</description>
 	<methods>
 		<method name="get_h_scroll" qualifiers="const">
@@ -42537,18 +42920,33 @@
 </class>
 <class name="Tree" inherits="Control" category="Core">
 	<brief_description>
+		Control to show a tree of items.
 	</brief_description>
 	<description>
+		This shows a tree of items that can be selected, expanded and collapsed. The tree can have multiple columns with custom controls like text editing, buttons and popups. It can be useful for structural displaying and interactions.
+		Trees are built via code, using [TreeItem] objects to create the structure. They have a single root but multiple root can be simulated if a dummy hidden root is added.
+		[codeblock]
+		func _ready():
+		    var tree = Tree.new()
+		    var root = tree.create_item()
+		    tree.set_hide_root(true)
+		    var child1 = tree.create_item(root)
+		    var child2 = tree.create_item(root)
+		    var subchild1 = tree.create_item(child1)
+		    subchild1.set_text(0, "Subchild1")
+		[/codeblock]
 	</description>
 	<methods>
 		<method name="are_column_titles_visible" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether the column titles are being shown.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
+				Clear the tree. This erases all of the items.
 			</description>
 		</method>
 		<method name="create_item">
@@ -42557,16 +42955,19 @@
 			<argument index="0" name="parent" type="TreeItem" default="NULL">
 			</argument>
 			<description>
+				Create an item in the tree and add it as the last child of [code]parent[/code]. If parent is not given, it will be added as the last child of the root, or it'll the be the root itself if the tree is empty.
 			</description>
 		</method>
 		<method name="ensure_cursor_is_visible">
 			<description>
+				Make the current selected item visible. This will scroll the tree to make sure the selected item is in sight.
 			</description>
 		</method>
 		<method name="get_allow_rmb_select" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether a right click can select items.
 			</description>
 		</method>
 		<method name="get_column_at_pos" qualifiers="const">
@@ -42575,6 +42976,7 @@
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Get the column index under the given point.
 			</description>
 		</method>
 		<method name="get_column_title" qualifiers="const">
@@ -42583,6 +42985,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Get the title of the given column.
 			</description>
 		</method>
 		<method name="get_column_width" qualifiers="const">
@@ -42591,36 +42994,42 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Get the width of the given column in pixels.
 			</description>
 		</method>
 		<method name="get_columns" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the amount of columns.
 			</description>
 		</method>
 		<method name="get_custom_popup_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
+				Get the rectangle for custom popups. Helper to create custom cell controls that display a popup. See [method TreeItem.set_cell_mode].
 			</description>
 		</method>
 		<method name="get_drop_mode_flags" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the flags of the current drop mode.
 			</description>
 		</method>
 		<method name="get_edited" qualifiers="const">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Get the current edited item. This is only available for custom cell mode.
 			</description>
 		</method>
 		<method name="get_edited_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the column of the cell for the current edited icon. This is only available for custom cell mode.
 			</description>
 		</method>
 		<method name="get_item_area_rect" qualifiers="const">
@@ -42631,6 +43040,7 @@
 			<argument index="1" name="column" type="int" default="-1">
 			</argument>
 			<description>
+				Get the rectangle area of the the specified item. If column is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
 			</description>
 		</method>
 		<method name="get_item_at_pos" qualifiers="const">
@@ -42639,6 +43049,7 @@
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Get the tree item at the specified position (relative to the tree origin position).
 			</description>
 		</method>
 		<method name="get_next_selected">
@@ -42647,42 +43058,49 @@
 			<argument index="0" name="from" type="TreeItem">
 			</argument>
 			<description>
+				Get the next selected item after the given one.
 			</description>
 		</method>
 		<method name="get_pressed_button" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the index of the last pressed button.
 			</description>
 		</method>
 		<method name="get_root">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Get the root item of the tree.
 			</description>
 		</method>
 		<method name="get_scroll" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Get the current scrolling position.
 			</description>
 		</method>
 		<method name="get_selected" qualifiers="const">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Get the currently selected item.
 			</description>
 		</method>
 		<method name="get_selected_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the column number of the current selection.
 			</description>
 		</method>
 		<method name="get_single_select_cell_editing_only_when_already_selected" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether the editing of a cell should only happen when it is already selected.
 			</description>
 		</method>
 		<method name="is_delayed_text_editor_enabled" qualifiers="const">
@@ -42695,12 +43113,14 @@
 			<return type="bool">
 			</return>
 			<description>
+				Get whether the folding arrow is hidden.
 			</description>
 		</method>
 		<method name="set_allow_rmb_select">
 			<argument index="0" name="allow" type="bool">
 			</argument>
 			<description>
+				Set whether or not a right mouse button click can select items.
 			</description>
 		</method>
 		<method name="set_column_expand">
@@ -42709,6 +43129,7 @@
 			<argument index="1" name="expand" type="bool">
 			</argument>
 			<description>
+				Set whether a column will have the "Expand" flag of [Control].
 			</description>
 		</method>
 		<method name="set_column_min_width">
@@ -42717,6 +43138,7 @@
 			<argument index="1" name="min_width" type="int">
 			</argument>
 			<description>
+				Set the minimum width of a column.
 			</description>
 		</method>
 		<method name="set_column_title">
@@ -42725,18 +43147,21 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
+				Set the title of a column.
 			</description>
 		</method>
 		<method name="set_column_titles_visible">
 			<argument index="0" name="visible" type="bool">
 			</argument>
 			<description>
+				Set whether the column titles visibility.
 			</description>
 		</method>
 		<method name="set_columns">
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+				Set the amount of columns.
 			</description>
 		</method>
 		<method name="set_delayed_text_editor">
@@ -42749,30 +43174,35 @@
 			<argument index="0" name="flags" type="int">
 			</argument>
 			<description>
+				Set the drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="set_hide_folding">
 			<argument index="0" name="hide" type="bool">
 			</argument>
 			<description>
+				Set whether the folding arrow should be hidden.
 			</description>
 		</method>
 		<method name="set_hide_root">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set whether the root of the tree should be hidden.
 			</description>
 		</method>
 		<method name="set_select_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+				Set the selection mode. Use one of the [code]SELECT_*[/code] constants.
 			</description>
 		</method>
 		<method name="set_single_select_cell_editing_only_when_already_selected">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set whether the editing of a cell should only happen when it is already selected.
 			</description>
 		</method>
 	</methods>
@@ -42785,32 +43215,38 @@
 			<argument index="2" name="id" type="int">
 			</argument>
 			<description>
+				Emitted when a button on the tree was pressed (see [method TreeItem.add_button]).
 			</description>
 		</signal>
 		<signal name="cell_selected">
 			<description>
+				Emitted when a cell is selected.
 			</description>
 		</signal>
 		<signal name="custom_popup_edited">
 			<argument index="0" name="arrow_clicked" type="bool">
 			</argument>
 			<description>
+				Emitted when a cell with the [code]CELL_MODE_CUSTOM[/code] is clicked to be edited.
 			</description>
 		</signal>
 		<signal name="empty_tree_rmb_selected">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Emitted when the right mouse button is pressed if RMB selection is active and the tree is empty.
 			</description>
 		</signal>
 		<signal name="item_activated">
 			<description>
+				Emitted when an item is activated (double-clicked).
 			</description>
 		</signal>
 		<signal name="item_collapsed">
 			<argument index="0" name="item" type="Object">
 			</argument>
 			<description>
+				Emitted when an item is collapsed by a click on the folding arrow.
 			</description>
 		</signal>
 		<signal name="item_double_clicked">
@@ -42819,16 +43255,19 @@
 		</signal>
 		<signal name="item_edited">
 			<description>
+				Emitted when an item is editted.
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Emitted when an item is selected with right mouse button.
 			</description>
 		</signal>
 		<signal name="item_selected">
 			<description>
+				Emitted when an item is selected with right mouse button.
 			</description>
 		</signal>
 		<signal name="multi_selected">
@@ -43800,24 +44239,12 @@
 		Common behavior is to create an action, then add do/undo calls to functions or property changes, then commiting the action.
 	</description>
 	<methods>
-		<method name="add_do_method">
+		<method name="add_do_method" qualifiers="vararg">
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
-			<argument index="2" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="6" name="arg4" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Add a call to a method in a given object with custom
-			arguments.
 			</description>
 		</method>
 		<method name="add_do_property">
@@ -43838,23 +44265,12 @@
 				Add a 'do' reference that will be erased if the 'do' history is lost. This is useful mostly for new nodes created for the 'do' call. Do not use for resources.
 			</description>
 		</method>
-		<method name="add_undo_method">
+		<method name="add_undo_method" qualifiers="vararg">
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<argument index="1" name="method" type="String">
 			</argument>
-			<argument index="2" name="arg0" type="Variant" default="NULL">
-			</argument>
-			<argument index="3" name="arg1" type="Variant" default="NULL">
-			</argument>
-			<argument index="4" name="arg2" type="Variant" default="NULL">
-			</argument>
-			<argument index="5" name="arg3" type="Variant" default="NULL">
-			</argument>
-			<argument index="6" name="arg4" type="Variant" default="NULL">
-			</argument>
 			<description>
-				Add a call to an undo method in a given object with custom arguments. Undo calls are used to revert 'do' calls.
 			</description>
 		</method>
 		<method name="add_undo_property">
@@ -44878,136 +45294,160 @@ do_property].
 </class>
 <class name="VideoPlayer" inherits="Control" category="Core">
 	<brief_description>
+		Control to play video files.
 	</brief_description>
 	<description>
+		This control has the ability to play video streams. The only format accepted is the OGV Theora, so any other format must be converted before using in a project.
 	</description>
 	<methods>
 		<method name="get_audio_track" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the selected audio track (for multitrack videos).
 			</description>
 		</method>
 		<method name="get_buffering_msec" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the amount of miliseconds to store in buffer while playing.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
 			<return type="VideoStream">
 			</return>
 			<description>
+				Get the video stream.
 			</description>
 		</method>
 		<method name="get_stream_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Get the name of the video stream.
 			</description>
 		</method>
 		<method name="get_stream_pos" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Get the current position of the stream, in seconds.
 			</description>
 		</method>
 		<method name="get_video_texture">
 			<return type="Texture">
 			</return>
 			<description>
+				Get the current frame of the video as a [Texture].
 			</description>
 		</method>
 		<method name="get_volume" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Get the volume of the audio track as a linear value.
 			</description>
 		</method>
 		<method name="get_volume_db" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Get the volume of the audio track in decibels.
 			</description>
 		</method>
 		<method name="has_autoplay" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the video is set as autoplay.
 			</description>
 		</method>
 		<method name="has_expand" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the expand property is set.
 			</description>
 		</method>
 		<method name="is_paused" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the video is paused.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the video is playing.
 			</description>
 		</method>
 		<method name="play">
 			<description>
+				Start the video playback.
 			</description>
 		</method>
 		<method name="set_audio_track">
 			<argument index="0" name="track" type="int">
 			</argument>
 			<description>
+				Set the audio track (for multitrack videos).
 			</description>
 		</method>
 		<method name="set_autoplay">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+				Set whether this node should start playing automatically.
 			</description>
 		</method>
 		<method name="set_buffering_msec">
 			<argument index="0" name="msec" type="int">
 			</argument>
 			<description>
+				Set the amount of miliseconds to buffer during playback.
 			</description>
 		</method>
 		<method name="set_expand">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set the expand property. If enabled, the video will grow or shrink to fit the player size, otherwise it will play at the stream resolution.
 			</description>
 		</method>
 		<method name="set_paused">
 			<argument index="0" name="paused" type="bool">
 			</argument>
 			<description>
+				Set whether the video should pause the playback.
 			</description>
 		</method>
 		<method name="set_stream">
 			<argument index="0" name="stream" type="VideoStream">
 			</argument>
 			<description>
+				Set the video stream for this player.
 			</description>
 		</method>
 		<method name="set_volume">
 			<argument index="0" name="volume" type="float">
 			</argument>
 			<description>
+				Set the audio volume as a linear value.
 			</description>
 		</method>
 		<method name="set_volume_db">
 			<argument index="0" name="db" type="float">
 			</argument>
 			<description>
+				Set the audio volume in decibels.
 			</description>
 		</method>
 		<method name="stop">
 			<description>
+				Stop the video playback.
 			</description>
 		</method>
 	</methods>
@@ -46156,6 +46596,40 @@ do_property].
 	<constants>
 	</constants>
 </class>
+<class name="VisualScriptBasicTypeConstant" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_basic_type" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_basic_type_constant" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_basic_type">
+			<argument index="0" name="name" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_basic_type_constant">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="VisualScriptBuiltinFunc" inherits="VisualScriptNode" category="Core">
 	<brief_description>
 	</brief_description>
@@ -46170,6 +46644,40 @@ do_property].
 		</method>
 		<method name="set_func">
 			<argument index="0" name="which" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="VisualScriptClassConstant" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_base_type">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_class_constant">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_base_type">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_class_constant">
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -46506,6 +47014,16 @@ do_property].
 	<constants>
 	</constants>
 </class>
+<class name="VisualScriptExpression" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="VisualScriptFunction" inherits="VisualScriptNode" category="Core">
 	<brief_description>
 	</brief_description>
@@ -46576,6 +47094,12 @@ do_property].
 			<description>
 			</description>
 		</method>
+		<method name="get_validate" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_base_path">
 			<argument index="0" name="base_path" type="NodePath">
 			</argument>
@@ -46626,6 +47150,12 @@ do_property].
 		</method>
 		<method name="set_use_default_args">
 			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_validate">
+			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -46724,9 +47254,21 @@ do_property].
 	<description>
 	</description>
 	<methods>
+		<method name="get_action_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_action_name" qualifiers="const">
 			<return type="String">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_action_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -46741,16 +47283,6 @@ do_property].
 	</constants>
 </class>
 <class name="VisualScriptInputFilter" inherits="VisualScriptNode" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
-</class>
-<class name="VisualScriptInputSelector" inherits="VisualScriptNode" category="Core">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -47286,6 +47818,16 @@ do_property].
 			<description>
 			</description>
 		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="VisualScriptSwitch" inherits="VisualScriptNode" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
 	</methods>
 	<constants>
 	</constants>
@@ -49305,14 +49847,17 @@ do_property].
 </class>
 <class name="XMLParser" inherits="Reference" category="Core">
 	<brief_description>
+		Low-level class for creating parsers for XML files.
 	</brief_description>
 	<description>
+		This class can serve as base to make custom XML parsers. Since XML is a very flexible standard, this interface is low level so it can be applied to any possible schema.
 	</description>
 	<methods>
 		<method name="get_attribute_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the amount of attributes in the current element.
 			</description>
 		</method>
 		<method name="get_attribute_name" qualifiers="const">
@@ -49321,6 +49866,7 @@ do_property].
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Get the name of the attribute specified by the index in [code]idx[/code] argument.
 			</description>
 		</method>
 		<method name="get_attribute_value" qualifiers="const">
@@ -49329,12 +49875,14 @@ do_property].
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Get the value of the attribute specified by the index in [code]idx[/code] argument.
 			</description>
 		</method>
 		<method name="get_current_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the current line in the parsed file (currently not implemented).
 			</description>
 		</method>
 		<method name="get_named_attribute_value" qualifiers="const">
@@ -49343,6 +49891,7 @@ do_property].
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Get the value of a certain attribute of the current element by name. This will raise an error if the element has no such attribute.
 			</description>
 		</method>
 		<method name="get_named_attribute_value_safe" qualifiers="const">
@@ -49351,30 +49900,35 @@ do_property].
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Get the value of a certain attribute of the current element by name. This will return an empty [String] if the attribute is not found.
 			</description>
 		</method>
 		<method name="get_node_data" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Get the contents of a text node. This will raise an error in any other type of node.
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Get the name of the current element node. This will raise an error if the current node type is not [code]NODE_ELEMENT[/code] nor [code]NODE_ELEMENT_END[/code]
 			</description>
 		</method>
 		<method name="get_node_offset" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the byte offset of the current node since the beginning of the file or buffer.
 			</description>
 		</method>
 		<method name="get_node_type">
 			<return type="int">
 			</return>
 			<description>
+				Get the type of the current node. Compare with [code]NODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="has_attribute" qualifiers="const">
@@ -49383,12 +49937,14 @@ do_property].
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Check whether or not the current element has a certain attribute.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Check whether the current element is empty (this only works for completely empty tags, e.g. &lt;element \&gt;).
 			</description>
 		</method>
 		<method name="open">
@@ -49397,6 +49953,7 @@ do_property].
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+				Open a XML file for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="open_buffer">
@@ -49405,12 +49962,14 @@ do_property].
 			<argument index="0" name="buffer" type="RawArray">
 			</argument>
 			<description>
+				Open a XML raw buffer for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="read">
 			<return type="int">
 			</return>
 			<description>
+				Read the next node of the file. This returns an error code.
 			</description>
 		</method>
 		<method name="seek">
@@ -49419,27 +49978,36 @@ do_property].
 			<argument index="0" name="pos" type="int">
 			</argument>
 			<description>
+				Move the buffer cursor to a certain offset (since the beginning) and read the next node there. This returns an error code.
 			</description>
 		</method>
 		<method name="skip_section">
 			<description>
+				Skips the current section. If the node contains other elements, they will be ignored and the cursor will go to the closing of the current element.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="NODE_NONE" value="0">
+			There's no node (no file or buffer opened)
 		</constant>
 		<constant name="NODE_ELEMENT" value="1">
+			Element (tag)
 		</constant>
 		<constant name="NODE_ELEMENT_END" value="2">
+			End of element
 		</constant>
 		<constant name="NODE_TEXT" value="3">
+			Text node
 		</constant>
 		<constant name="NODE_COMMENT" value="4">
+			Comment node
 		</constant>
 		<constant name="NODE_CDATA" value="5">
+			CDATA content
 		</constant>
 		<constant name="NODE_UNKNOWN" value="6">
+			Unknown node
 		</constant>
 	</constants>
 </class>

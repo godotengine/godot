@@ -35,12 +35,44 @@
 #include "editor_scale.h"
 #include "message_queue.h"
 
+bool EditorResourcePreviewGenerator::handles(const String& p_type) const {
+
+	if (get_script_instance() && get_script_instance()->has_method("handles")) {
+		return get_script_instance()->call("handles",p_type);
+	}
+	ERR_EXPLAIN("EditorResourcePreviewGenerator::handles needs to be overriden");
+	ERR_FAIL_V(false);
+}
+Ref<Texture> EditorResourcePreviewGenerator::generate(const RES& p_from){
+
+	if (get_script_instance() && get_script_instance()->has_method("generate")) {
+		return get_script_instance()->call("generate",p_from);
+	}
+	ERR_EXPLAIN("EditorResourcePreviewGenerator::generate needs to be overriden");
+	ERR_FAIL_V(Ref<Texture>());
+
+}
+
+
 Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String& p_path) {
+
+	if (get_script_instance() && get_script_instance()->has_method("generate_from_path")) {
+		return get_script_instance()->call("generate_from_path",p_path);
+	}
 
 	RES res = ResourceLoader::load(p_path);
 	if (!res.is_valid())
 		return res;
 	return generate(res);
+}
+
+
+void EditorResourcePreviewGenerator::_bind_methods() {
+
+	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"handles",PropertyInfo(Variant::STRING,"type")));
+	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::OBJECT,"generate:Texture",PropertyInfo(Variant::OBJECT,"from",PROPERTY_HINT_RESOURCE_TYPE,"Resource")));
+	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::OBJECT,"generate_from_path:Texture",PropertyInfo(Variant::STRING,"path",PROPERTY_HINT_FILE)));
+
 }
 
 EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {
@@ -330,6 +362,11 @@ void EditorResourcePreview::add_preview_generator(const Ref<EditorResourcePrevie
 	preview_generators.push_back(p_generator);
 }
 
+void EditorResourcePreview::remove_preview_generator(const Ref<EditorResourcePreviewGenerator>& p_generator) {
+
+	preview_generators.erase(p_generator);
+}
+
 EditorResourcePreview* EditorResourcePreview::get_singleton() {
 
 	return singleton;
@@ -338,6 +375,11 @@ EditorResourcePreview* EditorResourcePreview::get_singleton() {
 void EditorResourcePreview::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_preview_ready",&EditorResourcePreview::_preview_ready);
+
+	ObjectTypeDB::bind_method(_MD("queue_resource_preview","path","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_resource_preview);
+	ObjectTypeDB::bind_method(_MD("queue_edited_resource_preview","resource:Resource","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_edited_resource_preview);
+	ObjectTypeDB::bind_method(_MD("add_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::add_preview_generator);
+	ObjectTypeDB::bind_method(_MD("remove_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::remove_preview_generator);
 	ObjectTypeDB::bind_method(_MD("check_for_invalidation","path"),&EditorResourcePreview::check_for_invalidation);
 
 

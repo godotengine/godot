@@ -1417,7 +1417,8 @@ bool VisualScriptInstance::get(const StringName& p_name, Variant &r_ret) const {
 	if (!E)
 		return false;
 
-	return E->get();
+	r_ret=E->get();
+	return true;
 }
 void VisualScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const{
 
@@ -2438,7 +2439,7 @@ void VisualScriptFunctionState::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("connect_to_signal","obj","signals","args"),&VisualScriptFunctionState::connect_to_signal);
 	ObjectTypeDB::bind_method(_MD("resume:Array","args"),&VisualScriptFunctionState::resume,DEFVAL(Variant()));
 	ObjectTypeDB::bind_method(_MD("is_valid"),&VisualScriptFunctionState::is_valid);
-	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"_signal_callback",&VisualScriptFunctionState::_signal_callback,MethodInfo("_signal_callback"));
+	ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"_signal_callback",&VisualScriptFunctionState::_signal_callback,MethodInfo("_signal_callback"));
 }
 
 VisualScriptFunctionState::VisualScriptFunctionState() {

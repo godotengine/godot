@@ -504,7 +504,7 @@ void InputDefault::action_release(const StringName& p_action){
 
 	action.fixed_frame=OS::get_singleton()->get_fixed_frames();
 	action.idle_frame=OS::get_singleton()->get_idle_frames();
-	action.pressed=true;
+	action.pressed=false;
 
 	action_state[p_action]=action;
 }
@@ -655,7 +655,7 @@ static const char *s_ControllerMappings [] =
 	"030000004f04000015b3000010010000,Thrustmaster Dual Analog 4,a:b0,b:b2,x:b1,y:b3,start:b9,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b6,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b5,righttrigger:b7,",
 	"030000004f04000020b3000010010000,Thrustmaster 2 in 1 DT,a:b0,b:b2,y:b3,x:b1,start:b9,guide:,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b6,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b5,righttrigger:b7,",
 	"030000004f04000023b3000000010000,Thrustmaster Dual Trigger 3-in-1,x:b0,a:b1,b:b2,y:b3,back:b8,start:b9,dpleft:h0.8,dpdown:h0.0,dpdown:h0.4,dpright:h0.0,dpright:h0.2,dpup:h0.0,dpup:h0.1,leftshoulder:h0.0,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a5,",
-	"030000005e0400001907000000010000,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
+	"030000005e0400001907000000010000,X360 Wireless Controller,leftx:a0,lefty:a1,dpdown:h0.4,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:h0.8,lefttrigger:a2,x:b2,dpup:h0.1,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:h0.2,righttrigger:a5,b:b1,",
 	"030000005e0400008902000021010000,Microsoft X-Box pad v2 (US),x:b3,a:b0,b:b1,y:b4,back:b6,start:b7,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b5,lefttrigger:a2,rightshoulder:b2,righttrigger:a5,leftstick:b8,rightstick:b9,leftx:a0,lefty:a1,rightx:a3,righty:a4,",
 	"030000005e0400008e02000001000000,Microsoft X-Box 360 pad,leftstick:b9,leftx:a0,lefty:a1,dpdown:h0.1,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:h0.2,lefttrigger:a2,x:b2,dpup:h0.4,back:b6,leftshoulder:b4,y:b3,a:b0,dpright:h0.8,righttrigger:a5,b:b1,",
 	"030000005e0400008e02000004010000,Microsoft X-Box 360 pad,a:b0,b:b1,x:b2,y:b3,back:b6,start:b7,guide:b8,leftshoulder:b4,rightshoulder:b5,leftstick:b9,rightstick:b10,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,",
@@ -737,6 +737,10 @@ static const char *s_ControllerMappings [] =
 	"303534632d303563342d536f6e792043,PS4 Controller USB/Linux,leftx:a0,lefty:a1,dpdown:a7,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a5,dpleft:a6,lefttrigger:a3,x:b0,dpup:a7,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b1,dpright:a6,righttrigger:a4,b:b2,",
 	"303534632d303563342d576972656c65,PS4 Controller USB/Win,leftx:a0,lefty:a1,dpdown:b15,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a5,lefttrigger:a3,x:b0,dpup:b14,dpleft:b16,dpright:b17,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b1,righttrigger:b7,b:b2,",
 	"c2a94d6963726f736f66742058626f78,Wireless X360 Controller,leftx:a0,lefty:a1,dpdown:b14,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:b11,lefttrigger:a2,x:b2,dpup:b13,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:b12,righttrigger:a5,b:b1,",
+	#endif
+
+	#ifdef WINRT_ENABLED
+	"__WINRT_GAMEPAD__,Xbox Controller,a:b2,b:b3,x:b4,y:b5,start:b0,back:b1,leftstick:b12,rightstick:b13,leftshoulder:b10,rightshoulder:b11,dpup:b6,dpdown:b7,dpleft:b8,dpright:b9,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,",
 	#endif
 	NULL
 };
@@ -845,6 +849,13 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 		return p_last_id;
 	}
 
+	if (ABS(joy.last_axis[p_axis]) > 0.5 && joy.last_axis[p_axis] * p_value.value < 0) {
+		//changed direction quickly, insert fake event to release pending inputmap actions
+		JoyAxis jx;
+		jx.min = p_value.min;
+		jx.value = p_value.value < 0 ? 0.1 : -0.1;
+		p_last_id = joy_axis(p_last_id, p_device, p_axis, jx);
+	}
 
 	joy.last_axis[p_axis] = p_value.value;
 	float val = p_value.min == 0 ? -1.0f + 2.0f * p_value.value : p_value.value;

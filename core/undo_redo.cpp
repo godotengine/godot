@@ -490,13 +490,9 @@ void UndoRedo::_bind_methods() {
 		mi.name="add_do_method";
 		mi.arguments.push_back( PropertyInfo( Variant::OBJECT, "object"));
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
-		Vector<Variant> defargs;
-		for(int i=0;i<VARIANT_ARG_MAX;++i) {
-			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-			defargs.push_back(Variant());
-		}
 
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"add_do_method",&UndoRedo::_add_do_method,mi,defargs);
+
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"add_do_method",&UndoRedo::_add_do_method,mi);
 	}
 
 	{
@@ -504,13 +500,9 @@ void UndoRedo::_bind_methods() {
 		mi.name="add_undo_method";
 		mi.arguments.push_back( PropertyInfo( Variant::OBJECT, "object"));
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
-		Vector<Variant> defargs;
-		for(int i=0;i<VARIANT_ARG_MAX;++i) {
-			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-			defargs.push_back(Variant());
-		}
 
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"add_undo_method",&UndoRedo::_add_undo_method,mi,defargs);
+
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"add_undo_method",&UndoRedo::_add_undo_method,mi);
 	}
 
 	ObjectTypeDB::bind_method(_MD("add_do_property","object", "property", "value:Variant"),&UndoRedo::add_do_property);

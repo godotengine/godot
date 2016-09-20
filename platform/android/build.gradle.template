@@ -67,7 +67,6 @@ android {
 				$$GRADLE_ASSET_DIRS$$
 			]
 			jniLibs.srcDirs = [
-				'libs'
 				$$GRADLE_JNI_DIRS$$
 			]
 		}

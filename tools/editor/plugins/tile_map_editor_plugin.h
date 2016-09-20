@@ -129,7 +129,7 @@ class TileMapEditor : public VBoxContainer {
 
 	void _pick_tile(const Point2& p_pos);
 
-	DVector<Vector2> _bucket_fill(const Point2i& p_start);
+	DVector<Vector2> _bucket_fill(const Point2i& p_start, bool erase=false);
 
 	void _fill_points(const DVector<Vector2> p_points, const Dictionary& p_op);
 	void _erase_points(const DVector<Vector2> p_points);
@@ -181,7 +181,7 @@ class TileMapEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual bool forward_input_event(const InputEvent& p_event) { return tile_map_editor->forward_input_event(p_event); }
+	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return tile_map_editor->forward_input_event(p_event); }
 
 	virtual String get_name() const { return "TileMap"; }
 	bool has_main_screen() const { return false; }

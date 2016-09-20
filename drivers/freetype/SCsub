@@ -48,6 +48,11 @@ ft_sources=[\
 
 
 if (env["freetype"]=="builtin"):
+
+	# Include header for WinRT to fix build issues
+	if "platform" in env and env["platform"] == "winrt":
+		env.Append(CCFLAGS=['/FI', '"drivers/freetype/winrtdef.h"'])
+
 	# fix for Windows' shell miserably failing on long lines, split in two libraries
 	half1=[]
 	half2=[]

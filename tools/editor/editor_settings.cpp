@@ -511,7 +511,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	}
 
 	set("global/hidpi_mode",0);
-	hints["global/hidpi_mode"]=PropertyInfo(Variant::INT,"global/hidpi_mode",PROPERTY_HINT_ENUM,"Auto,LoDPI,HiDPI",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["global/hidpi_mode"]=PropertyInfo(Variant::INT,"global/hidpi_mode",PROPERTY_HINT_ENUM,"Auto,VeryLoDPI,LoDPI,MidDPI,HiDPI",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
 	set("global/show_script_in_scene_tabs",false);
 	set("global/font_size",14);
 	hints["global/font_size"]=PropertyInfo(Variant::INT,"global/font_size",PROPERTY_HINT_RANGE,"10,40,1",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -573,6 +573,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("scenetree_editor/relationship_line_color",Color::html("464646"));
 
 	set("grid_map/pick_distance", 5000.0);
+
+	set("3d_editor/grid_color",Color(0,1,0,0.2));
+	hints["3d_editor/grid_color"]=PropertyInfo(Variant::COLOR,"3d_editor/grid_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
 
 	set("3d_editor/default_fov",45.0);
 	set("3d_editor/default_z_near",0.1);

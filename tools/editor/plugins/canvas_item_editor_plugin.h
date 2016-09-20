@@ -124,6 +124,7 @@ class CanvasItemEditor : public VBoxContainer {
 		VIEW_FRAME_TO_SELECTION,
 		SKELETON_MAKE_BONES,
 		SKELETON_CLEAR_BONES,
+		SKELETON_SHOW_BONES,
 		SKELETON_SET_IK_CHAIN,
 		SKELETON_CLEAR_IK_CHAIN
 
@@ -175,6 +176,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool snap_rotation;
 	bool snap_relative;
 	bool snap_pixel;
+	bool skeleton_show_bones;
 	bool box_selecting;
 	Point2 box_selecting_to;
 	bool key_pos;
@@ -256,6 +258,7 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *ungroup_button;
 
 	MenuButton *edit_menu;
+	PopupMenu *skeleton_menu;
 	MenuButton *view_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;

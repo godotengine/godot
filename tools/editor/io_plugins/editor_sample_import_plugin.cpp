@@ -298,7 +298,7 @@ public:
 
 			dst = dst.plus_file(samples[i].get_file().basename()+".smp");
 
-			Error err = plugin->import(dst,imd);
+			plugin->import(dst,imd);
 		}
 
 		hide();

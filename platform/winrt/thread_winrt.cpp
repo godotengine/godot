@@ -59,7 +59,9 @@ Thread::ID ThreadWinrt::get_ID() const {
 };
 
 void ThreadWinrt::make_default() {
-
+	create_func = create_func_winrt;
+	get_thread_ID_func = get_thread_ID_func_winrt;
+	wait_to_finish_func = wait_to_finish_func_winrt;
 };
 
 ThreadWinrt::ThreadWinrt() {

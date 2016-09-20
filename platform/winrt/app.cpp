@@ -1,4 +1,32 @@
-﻿//
+/*************************************************************************/
+/*  app.cpp                                                              */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+//
 // This file demonstrates how to initialize EGL in a Windows Store app, using ICoreWindow.
 //
 
@@ -7,17 +35,25 @@
 #include "main/main.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
+#include "core/os/keyboard.h"
+
+#include "platform/windows/key_mapping_win.h"
+
+#include <collection.h>
 
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Input;
+using namespace Windows::Devices::Input;
+using namespace Windows::UI::Xaml::Input;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
+using namespace Windows::System;
+using namespace Windows::System::Threading::Core;
 using namespace Microsoft::WRL;
-using namespace Platform;
 
-using namespace $ext_safeprojectname$;
+using namespace GodotWinRT;
 
 // Helper to convert a length in device-independent pixels (DIPs) to a length in physical pixels.
 inline float ConvertDipsToPixels(float dips, float dpi)
@@ -27,7 +63,7 @@ inline float ConvertDipsToPixels(float dips, float dpi)
 }
 
 // Implementation of the IFrameworkViewSource interface, necessary to run our app.
-ref class HelloTriangleApplicationSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
+ref class GodotWinrtViewSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
 {
 public:
     virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView()
@@ -40,8 +76,8 @@ public:
 [Platform::MTAThread]
 int main(Platform::Array<Platform::String^>^)
 {
-    auto helloTriangleApplicationSource = ref new HelloTriangleApplicationSource();
-    CoreApplication::Run(helloTriangleApplicationSource);
+    auto godotApplicationSource = ref new GodotWinrtViewSource();
+    CoreApplication::Run(godotApplicationSource);
     return 0;
 }
 
@@ -52,7 +88,8 @@ App::App() :
     mWindowHeight(0),
     mEglDisplay(EGL_NO_DISPLAY),
     mEglContext(EGL_NO_CONTEXT),
-    mEglSurface(EGL_NO_SURFACE)
+    mEglSurface(EGL_NO_SURFACE),
+	number_of_contacts(0)
 {
 }
 
@@ -69,6 +106,7 @@ void App::Initialize(CoreApplicationView^ applicationView)
     // http://msdn.microsoft.com/en-us/library/windows/apps/xaml/hh994930.aspx
 
 	os = new OSWinrt;
+
 }
 
 // Called when the CoreWindow object is created (or re-created).
@@ -95,20 +133,31 @@ void App::SetWindow(CoreWindow^ p_window)
 
 	window->PointerPressed +=
 		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointerPressed);
-
 	window->PointerMoved +=
 		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointerMoved);
-
 	window->PointerReleased +=
 		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointerReleased);
+	window->PointerWheelChanged +=
+		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointerWheelChanged);
 
-	//window->PointerWheelChanged +=
-	//	ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointerWheelChanged);
+	mouseChangedNotifier = SignalNotifier::AttachToEvent(L"os_mouse_mode_changed", ref new SignalHandler(
+		this, &App::OnMouseModeChanged
+	));
+
+	mouseChangedNotifier->Enable();
+
+	window->CharacterReceived +=
+		ref new TypedEventHandler<CoreWindow^, CharacterReceivedEventArgs^>(this, &App::OnCharacterReceived);
+	window->KeyDown +=
+		ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &App::OnKeyDown);
+	window->KeyUp +=
+		ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &App::OnKeyUp);
 
 
+	unsigned int argc;
+	char** argv = get_command_line(&argc);
 
-	char* args[] = {"-path", "game", NULL};
-	Main::setup("winrt", 2, args, false);
+	Main::setup("winrt", argc, argv, false);
 
 	// The CoreWindow has been created, so EGL can be initialized.
 	ContextEGL* context = memnew(ContextEGL(window));
@@ -217,7 +266,7 @@ static int _get_finger(uint32_t p_touch_id) {
 	return p_touch_id % 31; // for now
 };
 
-void App::pointer_event(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args, bool p_pressed) {
+void App::pointer_event(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args, bool p_pressed, bool p_is_wheel) {
 
 	Windows::UI::Input::PointerPoint ^point = args->CurrentPoint;
 	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, os);
@@ -236,7 +285,7 @@ void App::pointer_event(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core
 		last_touch_y[event.screen_touch.index] = pos.Y;
 
 		os->input_event(event);
-		if (event.screen_touch.index != 0)
+		if (number_of_contacts > 1)
 			return;
 
 	}; // fallthrought of sorts
@@ -251,6 +300,14 @@ void App::pointer_event(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core
 	event.mouse_button.global_x = pos.X;
 	event.mouse_button.global_y = pos.Y;
 
+	if (p_is_wheel) {
+		if (point->Properties->MouseWheelDelta > 0) {
+			event.mouse_button.button_index = point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_UP;
+		} else if (point->Properties->MouseWheelDelta < 0) {
+			event.mouse_button.button_index = point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_LEFT : BUTTON_WHEEL_DOWN;
+		}
+	}
+
 	last_touch_x[31] = pos.X;
 	last_touch_y[31] = pos.Y;
 
@@ -260,21 +317,56 @@ void App::pointer_event(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core
 
 void App::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args) {
 
+	number_of_contacts++;
 	pointer_event(sender, args, true);
 };
 
 
 void App::OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args) {
 
+	number_of_contacts--;
 	pointer_event(sender, args, false);
 };
+
+void App::OnPointerWheelChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args) {
+
+	pointer_event(sender, args, true, true);
+}
+
+void App::OnMouseModeChanged(Windows::System::Threading::Core::SignalNotifier^ signalNotifier, bool timedOut) {
+
+	OS::MouseMode mode = os->get_mouse_mode();
+	SignalNotifier^ notifier = mouseChangedNotifier;
+
+	window->Dispatcher->RunAsync(
+		CoreDispatcherPriority::High,
+		ref new DispatchedHandler(
+		[mode, notifier, this]() {
+			if (mode == OS::MOUSE_MODE_CAPTURED) {
+
+				this->MouseMovedToken = MouseDevice::GetForCurrentView()->MouseMoved +=
+					ref new TypedEventHandler<MouseDevice^, MouseEventArgs^>(this, &App::OnMouseMoved);
+
+			} else {
+
+				MouseDevice::GetForCurrentView()->MouseMoved -= MouseMovedToken;
+
+			}
+
+			notifier->Enable();
+	}));
+
+	ResetEvent(os->mouse_mode_changed);
+
+
+}
 
 void App::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args) {
 
 	Windows::UI::Input::PointerPoint ^point = args->CurrentPoint;
 	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, os);
 
-	if (_is_touch(point)) {
+	if (point->IsInContact && _is_touch(point)) {
 
 		InputEvent event;
 		event.type = InputEvent::SCREEN_DRAG;
@@ -286,10 +378,14 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Cor
 		event.screen_drag.relative_y = event.screen_drag.y - last_touch_y[event.screen_drag.index];
 
 		os->input_event(event);
-		if (event.screen_drag.index != 0)
+		if (number_of_contacts > 1)
 			return;
 
 	}; // fallthrought of sorts
+
+	// In case the mouse grabbed, MouseMoved will handle this
+	if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED)
+		return;
 
 	InputEvent event;
 	event.type = InputEvent::MOUSE_MOTION;
@@ -301,16 +397,90 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Cor
 	event.mouse_motion.relative_x = pos.X - last_touch_x[31];
 	event.mouse_motion.relative_y = pos.Y - last_touch_y[31];
 
+	last_mouse_pos = pos;
+
 	os->input_event(event);
 
-};
+}
+
+void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
+
+	// In case the mouse isn't grabbed, PointerMoved will handle this
+	if (os->get_mouse_mode() != OS::MouseMode::MOUSE_MODE_CAPTURED)
+		return;
+
+	Windows::Foundation::Point pos;
+	pos.X = last_mouse_pos.X + args->MouseDelta.X;
+	pos.Y = last_mouse_pos.Y + args->MouseDelta.Y;
+
+	InputEvent event;
+	event.type = InputEvent::MOUSE_MOTION;
+	event.device = 0;
+	event.mouse_motion.x = pos.X;
+	event.mouse_motion.y = pos.Y;
+	event.mouse_motion.global_x = pos.X;
+	event.mouse_motion.global_y = pos.Y;
+	event.mouse_motion.relative_x = args->MouseDelta.X;
+	event.mouse_motion.relative_y = args->MouseDelta.Y;
+
+	last_mouse_pos = pos;
+
+	os->input_event(event);
+}
+
+void App::key_event(Windows::UI::Core::CoreWindow^ sender, bool p_pressed, Windows::UI::Core::KeyEventArgs^ key_args, Windows::UI::Core::CharacterReceivedEventArgs^ char_args)
+{
+
+	OSWinrt::KeyEvent ke;
+
+	InputModifierState mod;
+	mod.meta = false;
+	mod.command = false;
+	mod.control = sender->GetAsyncKeyState(VirtualKey::Control) == CoreVirtualKeyStates::Down;
+	mod.alt = sender->GetAsyncKeyState(VirtualKey::Menu) == CoreVirtualKeyStates::Down;
+	mod.shift = sender->GetAsyncKeyState(VirtualKey::Shift) == CoreVirtualKeyStates::Down;
+	ke.mod_state = mod;
+
+	ke.pressed = p_pressed;
+	
+	if (key_args != nullptr) {
+		
+		ke.type = OSWinrt::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
+		ke.unicode = 0;
+		ke.scancode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
+		ke.echo = (!p_pressed && !key_args->KeyStatus.IsKeyReleased) || (p_pressed && key_args->KeyStatus.WasKeyDown);
+
+	} else {
+
+		ke.type = OSWinrt::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
+		ke.unicode = char_args->KeyCode;
+		ke.scancode = 0;
+		ke.echo = (!p_pressed && !char_args->KeyStatus.IsKeyReleased) || (p_pressed && char_args->KeyStatus.WasKeyDown);
+	}
+
+	os->queue_key_event(ke);
+
+}
+void App::OnKeyDown(CoreWindow^ sender, KeyEventArgs^ args)
+{
+	key_event(sender, true, args);
+}
+
+void App::OnKeyUp(CoreWindow^ sender, KeyEventArgs^ args)
+{
+	key_event(sender, false, args);
+}
+
+void App::OnCharacterReceived(CoreWindow^ sender, CharacterReceivedEventArgs^ args)
+{
+	key_event(sender, true, nullptr, args);
+}
 
 
 // Initializes scene resources
 void App::Load(Platform::String^ entryPoint)
 {
-	//char* args[] = {"-test", "render", NULL};
-	//Main::setup("winrt", 2, args);
+
 }
 
 // This method is called after the window becomes active.
@@ -382,4 +552,96 @@ void App::UpdateWindowSize(Size size)
 	vm.fullscreen = true;
 	vm.resizable = false;
 	os->set_video_mode(vm);
+}
+
+char** App::get_command_line(unsigned int* out_argc) {
+
+	static char* fail_cl[] = { "-path", "game", NULL };
+	*out_argc = 2;
+
+	FILE* f = _wfopen(L"__cl__.cl", L"rb");
+
+	if (f == NULL) {
+
+		wprintf(L"Couldn't open command line file.");
+		return fail_cl;
+	}
+
+#define READ_LE_4(v) ((int)(##v[3] & 0xFF) << 24) | ((int)(##v[2] & 0xFF) << 16) | ((int)(##v[1] & 0xFF) << 8) | ((int)(##v[0] & 0xFF))
+#define CMD_MAX_LEN 65535
+
+	uint8_t len[4];
+	int r = fread(len, sizeof(uint8_t), 4, f);
+
+	Platform::Collections::Vector<Platform::String^> cl;
+
+	if (r < 4) {
+		fclose(f);
+		wprintf(L"Wrong cmdline length.");
+		return(fail_cl);
+	}
+
+	int argc = READ_LE_4(len);
+
+	for (int i = 0; i < argc; i++) {
+
+		r = fread(len, sizeof(uint8_t), 4, f);
+
+		if (r < 4) {
+			fclose(f);
+			wprintf(L"Wrong cmdline param length.");
+			return(fail_cl);
+		}
+
+		int strlen = READ_LE_4(len);
+
+		if (strlen > CMD_MAX_LEN) {
+			fclose(f);
+			wprintf(L"Wrong command length.");
+			return(fail_cl);
+		}
+
+		char* arg = new char[strlen + 1];
+		r = fread(arg, sizeof(char), strlen, f);
+		arg[strlen] = '\0';
+
+		if (r == strlen) {
+
+			int warg_size = MultiByteToWideChar(CP_UTF8, 0, arg, -1, NULL, 0);
+			wchar_t* warg = new wchar_t[warg_size];
+
+			MultiByteToWideChar(CP_UTF8, 0, arg, -1, warg, warg_size);
+
+			cl.Append(ref new Platform::String(warg, warg_size));
+
+		} else {
+
+			delete[] arg;
+			fclose(f);
+			wprintf(L"Error reading command.");
+			return(fail_cl);
+		}
+	}
+
+#undef READ_LE_4
+#undef CMD_MAX_LEN
+
+	fclose(f);
+
+	char** ret = new char*[cl.Size + 1];
+
+	for (int i = 0; i < cl.Size; i++) {
+
+		int arg_size = WideCharToMultiByte(CP_UTF8, 0, cl.GetAt(i)->Data(), -1, NULL, 0, NULL, NULL);
+		char* arg = new char[arg_size];
+
+		WideCharToMultiByte(CP_UTF8, 0, cl.GetAt(i)->Data(), -1, arg, arg_size, NULL, NULL);
+
+		ret[i] = arg;
+
+	}
+	ret[cl.Size] = NULL;
+	*out_argc = cl.Size;
+
+	return ret;
 }

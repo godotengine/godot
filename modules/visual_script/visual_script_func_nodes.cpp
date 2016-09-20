@@ -417,6 +417,14 @@ void VisualScriptFunctionCall::_update_method_cache() {
 
 		method_cache.return_val = mb->get_argument_info(-1);
 #endif
+
+		if (mb->is_vararg()) {
+			//for vararg just give it 10 arguments (should be enough for most use cases)
+			for(int i=0;i<10;i++) {
+				method_cache.arguments.push_back(PropertyInfo(Variant::NIL,"arg"+itos(i)));
+				use_default_args++;
+			}
+		}
 	} else if (script.is_valid() && script->has_method(function)) {
 
 		method_cache = script->get_method_info(function);

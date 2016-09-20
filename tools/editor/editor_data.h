@@ -233,6 +233,8 @@ public:
 
 	void _update_nl();
 	Array _get_selected_nodes();
+	Array _get_transformable_selected_nodes();
+
 protected:
 
 	static void _bind_methods();

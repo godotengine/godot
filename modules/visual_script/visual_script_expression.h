@@ -2,6 +2,7 @@
 #define VISUALSCRIPTEXPRESSION_H
 
 #include "visual_script.h"
+#include "visual_script_builtin_funcs.h"
 
 class VisualScriptExpression : public VisualScriptNode {
 
@@ -35,6 +36,7 @@ friend class VisualScriptNodeInstanceExpression;
 		TK_PARENTHESIS_OPEN,
 		TK_PARENTHESIS_CLOSE,
 		TK_IDENTIFIER,
+		TK_BUILTIN_FUNC,
 		TK_SELF,
 		TK_CONSTANT,
 		TK_BASIC_TYPE,
@@ -101,6 +103,7 @@ friend class VisualScriptNodeInstanceExpression;
 			TYPE_ARRAY,
 			TYPE_DICTIONARY,
 			TYPE_CONSTRUCTOR,
+			TYPE_BUILTIN_FUNC,
 			TYPE_CALL
 		};
 
@@ -212,6 +215,14 @@ friend class VisualScriptNodeInstanceExpression;
 			type=TYPE_DICTIONARY;
 		}
 
+	};
+
+	struct BuiltinFuncNode : public ENode {
+		VisualScriptBuiltinFunc::BuiltinFunc func;
+		Vector<ENode*> arguments;
+		BuiltinFuncNode() {
+			type=TYPE_BUILTIN_FUNC;
+		}
 	};
 
 	template<class T>

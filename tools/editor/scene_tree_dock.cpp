@@ -1841,6 +1841,12 @@ void SceneTreeDock::_focus_node() {
 	}
 }
 
+void SceneTreeDock::open_script_dialog(Node* p_for_node) {
+
+	scene_tree->set_selected(p_for_node,false);
+	_tool_selected(TOOL_SCRIPT);
+}
+
 void SceneTreeDock::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected,DEFVAL(false));

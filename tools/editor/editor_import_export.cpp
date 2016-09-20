@@ -1441,7 +1441,7 @@ bool EditorExportPlatformPC::can_export(String *r_error) const {
 	String err;
 	bool valid=true;
 
-	if (use64 && (!exists_export_template(debug_binary64)) || !exists_export_template(release_binary64)) {
+	if (use64 && (!exists_export_template(debug_binary64) || !exists_export_template(release_binary64))) {
 		valid=false;
 		err="No 64 bits export templates found.\nDownload and install export templates.\n";
 	}

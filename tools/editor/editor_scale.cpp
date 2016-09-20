@@ -1,14 +1,13 @@
 #include "editor_scale.h"
 #include "os/os.h"
 
-static bool editor_hidpi=false;
+static float scale = 1.0;
 
-void editor_set_hidpi(bool p_hidpi) {
+void editor_set_scale(float p_scale) {
 
-	editor_hidpi=p_hidpi;
+	scale=p_scale;
 }
+float editor_get_scale() {
 
-bool editor_is_hidpi() {
-
-	return editor_hidpi;
+	return scale;
 }

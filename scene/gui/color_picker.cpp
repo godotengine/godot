@@ -41,13 +41,13 @@ void update_material(Ref<CanvasItemMaterial>mat,const Color& p_color,float h,flo
 	if (!sdr.is_valid())
 		return;
 
-		mat->set_shader_param("R",p_color.r);
-		mat->set_shader_param("G",p_color.g);
-		mat->set_shader_param("B",p_color.b);
-		mat->set_shader_param("H",h);
-		mat->set_shader_param("S",s);
-		mat->set_shader_param("V",v);
-		mat->set_shader_param("A",p_color.a);
+	mat->set_shader_param("R",p_color.r);
+	mat->set_shader_param("G",p_color.g);
+	mat->set_shader_param("B",p_color.b);
+	mat->set_shader_param("H",h);
+	mat->set_shader_param("S",s);
+	mat->set_shader_param("V",v);
+	mat->set_shader_param("A",p_color.a);
 }
 
 void ColorPicker::_notification(int p_what) {
@@ -397,9 +397,10 @@ void ColorPicker::_screen_input(const InputEvent &ev)
 		if (!r->get_rect().has_point(Point2(mev.global_x,mev.global_y)))
 			return;
 		Image img =r->get_screen_capture();
-		if (!img.empty())
+		if (!img.empty()) {
 			last_capture=img;
 			r->queue_screen_capture();
+		}
 		if (!last_capture.empty())
 			set_color(last_capture.get_pixel(mev.global_x,mev.global_y));
 	}

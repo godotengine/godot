@@ -95,6 +95,7 @@
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
+typedef void (*EditorBuildCallback)();
 
 class EditorPluginList;
 
@@ -186,6 +187,7 @@ private:
 		SETTINGS_LAYOUT_DEFAULT,
 		SETTINGS_LOAD_EXPORT_TEMPLATES,
 		SETTINGS_PICK_MAIN_SCENE,
+		SETTINGS_TOGGLE_FULLSCREN,
 		SETTINGS_HELP,
 		SETTINGS_ABOUT,
 		SOURCES_REIMPORT,
@@ -356,7 +358,7 @@ private:
 	int dock_popup_selected;
 	Timer *dock_drag_timer;
 	bool docks_visible;
-	bool distraction_free_mode;
+	ToolButton *distraction_free;
 
 	String _tmp_import_path;
 
@@ -576,13 +578,21 @@ private:
 
 	static void _file_access_close_error_notify(const String& p_str);
 
+	void _toggle_distraction_free_mode();
 
 	enum {
-		MAX_INIT_CALLBACKS=128
+		MAX_INIT_CALLBACKS=128,
+		MAX_BUILD_CALLBACKS=128
 	};
+
+
 
 	static int plugin_init_callback_count;
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
+
+	void _call_build();
+	static int build_callback_count;
+	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -750,6 +760,7 @@ public:
 	void get_singleton(const char* arg1, bool arg2);
 
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
+	static void add_build_callback(EditorBuildCallback p_callback);
 
 
 
@@ -780,8 +791,9 @@ public:
 
 	void make_visible(bool p_visible);
 	void edit(Object *p_object);
-	bool forward_input_event(const InputEvent& p_event);
+	bool forward_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event);
 	bool forward_spatial_input_event(Camera* p_camera, const InputEvent& p_event);
+	void forward_draw_over_canvas(const Matrix32& p_canvas_xform,Control* p_canvas);
 	void clear();
 	bool empty();
 

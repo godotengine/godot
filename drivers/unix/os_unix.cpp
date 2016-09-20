@@ -390,7 +390,7 @@ Error OS_Unix::execute(const String& p_path, const List<String>& p_arguments,boo
 	if (p_blocking) {
 
 		int status;
-		pid_t rpid = waitpid(pid,&status,0);
+		waitpid(pid,&status,0);
 		if (r_exitcode)
 			*r_exitcode=WEXITSTATUS(status);
 	} else {

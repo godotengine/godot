@@ -175,8 +175,8 @@ void AudioDriverPulseAudio::finish() {
 	exit_thread = true;
 	Thread::wait_to_finish(thread);
 
-    if (pulse)
-        pa_simple_free(pulse);
+	if (pulse)
+		pa_simple_free(pulse);
 
 	if (samples_in) {
 		memdelete_arr(samples_in);

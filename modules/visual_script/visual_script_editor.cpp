@@ -331,7 +331,7 @@ static Color _color_from_type(Variant::Type p_type) {
 		case Variant::QUAT: color = Color::html("ec69a3"); break;
 		case Variant::_AABB: color = Color::html("ee7991"); break;
 		case Variant::MATRIX3: color = Color::html("e3ec69"); break;
-		case Variant::TRANSFORM: color = Color::html("ecd669"); break;
+		case Variant::TRANSFORM: color = Color::html("f6a86e"); break;
 
 		case Variant::COLOR: color = Color::html("9dff70"); break;
 		case Variant::IMAGE: color = Color::html("93f1b9"); break;
@@ -503,12 +503,20 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		}
 
 
-		Label *text = memnew( Label );
-		text->set_text(node->get_text());
-		gnode->add_child(text);
 		if (node->cast_to<VisualScriptExpression>()) {
-			text->add_font_override("font",get_font("source","EditorFonts"));
+
+			LineEdit *line_edit = memnew( LineEdit );
+			line_edit->set_text(node->get_text());
+			line_edit->set_expand_to_text_length(true);
+			line_edit->add_font_override("font",get_font("source","EditorFonts"));
+			gnode->add_child(line_edit);
+			line_edit->connect("text_changed",this,"_expression_text_changed",varray(E->get()));
+		} else {
+			Label *text = memnew( Label );
+			text->set_text(node->get_text());
+			gnode->add_child(text);
 		}
+
 
 		if (node->cast_to<VisualScriptComment>()) {
 			Ref<VisualScriptComment> vsc=node;
@@ -1199,6 +1207,30 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 
 
 	}
+}
+
+void VisualScriptEditor::_expression_text_changed(const String& p_text,int p_id) {
+
+	Ref<VisualScriptExpression> vse = script->get_node(edited_func,p_id);
+	if (!vse.is_valid())
+		return;
+
+
+	updating_graph=true;
+
+	undo_redo->create_action(TTR("Change Expression"),UndoRedo::MERGE_ENDS);
+	undo_redo->add_do_property(vse.ptr(),"expression",p_text);
+	undo_redo->add_undo_property(vse.ptr(),"expression",vse->get("expression"));
+	undo_redo->add_do_method(this,"_update_graph",p_id);
+	undo_redo->add_undo_method(this,"_update_graph",p_id);
+	undo_redo->commit_action();
+
+	Node *node = graph->get_node(itos(p_id));
+	if (node->cast_to<Control>())
+		node->cast_to<Control>()->set_size(Vector2(1,1)); //shrink if text is smaller
+
+	updating_graph=false;
+
 }
 
 void VisualScriptEditor::_available_node_doubleclicked() {
@@ -2107,6 +2139,7 @@ Vector<String> VisualScriptEditor::get_functions(){
 }
 
 void VisualScriptEditor::set_edited_script(const Ref<Script>& p_script){
+
 
 	script=p_script;
 	signal_editor->script=p_script;
@@ -3224,6 +3257,7 @@ void VisualScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_button_resource_previewed",&VisualScriptEditor::_button_resource_previewed);
 	ObjectTypeDB::bind_method("_port_action_menu",&VisualScriptEditor::_port_action_menu);
 	ObjectTypeDB::bind_method("_selected_connect_node_method_or_setget",&VisualScriptEditor::_selected_connect_node_method_or_setget);
+	ObjectTypeDB::bind_method("_expression_text_changed",&VisualScriptEditor::_expression_text_changed);
 
 
 

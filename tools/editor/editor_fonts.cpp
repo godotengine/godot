@@ -158,17 +158,10 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font("doc_source","EditorFonts",df_doc_code);
 
 
-	if (editor_is_hidpi()) {
-		//replace default theme
-		Ref<Texture> di;
-		Ref<StyleBox> ds;
-		fill_default_theme(p_theme,df,df_doc,di,ds,true);
+	//replace default theme
+	Ref<Texture> di;
+	Ref<StyleBox> ds;
+	fill_default_theme(p_theme,df,df_doc,di,ds,EDSCALE);
 
-	} else {
-		Ref<Texture> di;
-		Ref<StyleBox> ds;
-		fill_default_theme(p_theme,df,df_doc,di,ds,false);
-
-	}
 
 }

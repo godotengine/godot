@@ -445,7 +445,7 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 	{
 		//write datapack
 
-		int err = zipOpenNewFileInZip(dpkg,
+		zipOpenNewFileInZip(dpkg,
 			(pkg_name+".app/Contents/Resources/data.pck").utf8().get_data(),
 			NULL,
 			NULL,

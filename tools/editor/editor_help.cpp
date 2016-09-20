@@ -882,6 +882,15 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 				class_desc->pop();
 			}
 
+			if (cd.methods[i].qualifiers.find("vararg")!=-1) {
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+				class_desc->add_text(",");
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
+				class_desc->add_text(" ... ");
+				class_desc->pop();
+				class_desc->pop();
+			}
+
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
 			class_desc->add_text(cd.methods[i].arguments.size()?" )":")");
 			class_desc->pop();

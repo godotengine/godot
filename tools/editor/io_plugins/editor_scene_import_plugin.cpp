@@ -1447,6 +1447,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 			}
 
 		} break;
+		default: {}
 
 	}
 
@@ -2325,7 +2326,7 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 
 	if (!scene->has_node(String("AnimationPlayer")))
 		return;
-		Node* n = scene->get_node(String("AnimationPlayer"));
+	Node* n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
 	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
 	ERR_FAIL_COND(!anim);
@@ -2443,7 +2444,7 @@ void EditorSceneImportPlugin::_optimize_animations(Node *scene, float p_max_lin_
 
 	if (!scene->has_node(String("AnimationPlayer")))
 		return;
-		Node* n = scene->get_node(String("AnimationPlayer"));
+	Node* n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
 	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
 	ERR_FAIL_COND(!anim);
@@ -2842,7 +2843,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 				}
 			}
 
-			Error err = EditorTextureImportPlugin::get_singleton()->import(target_path,imd);
+			EditorTextureImportPlugin::get_singleton()->import(target_path,imd);
 
 		}
 	}

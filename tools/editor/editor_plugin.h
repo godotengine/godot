@@ -34,6 +34,7 @@
 #include "scene/resources/texture.h"
 #include "undo_redo.h"
 #include "io/config_file.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -47,6 +48,8 @@ class EditorSettings;
 class SpatialEditorGizmo;
 class EditorImportPlugin;
 class EditorExportPlugin;
+class EditorResourcePreview;
+class EditorFileSystem;
 
 class EditorPlugin : public Node {
 
@@ -97,9 +100,11 @@ public:
 	void add_control_to_dock(DockSlot p_slot,Control *p_control);
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
+	Control* get_editor_viewport();
 
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
-	virtual bool forward_input_event(const InputEvent& p_event);
+	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform, const InputEvent& p_event);
+	virtual void forward_draw_over_canvas(const Matrix32& p_canvas_xform,Control *p_canvas);
 	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
 	virtual String get_name() const;
 	virtual bool has_main_screen() const;
@@ -116,11 +121,18 @@ public:
 	virtual bool get_remove_list(List<Node*> *p_list);
 	virtual void set_window_layout(Ref<ConfigFile> p_layout);
 	virtual void get_window_layout(Ref<ConfigFile> p_layout);
-	virtual void edited_scene_changed(){}; // if changes are pending in editor, apply them
+	virtual void edited_scene_changed(){} // if changes are pending in editor, apply them
+
+	void update_canvas();
+
+	virtual void inspect_object(Object *p_obj,const String& p_for_property=String());
 
 	void queue_save_layout() const;
 
 	Control *get_base_control();
+
+	void make_bottom_panel_item_visible(Control *p_item);
+	void hide_bottom_panel();
 
 	void add_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
 	void remove_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
@@ -131,6 +143,8 @@ public:
 	EditorSelection* get_selection();
 	//EditorImportExport *get_import_export();
 	EditorSettings *get_editor_settings();
+	EditorResourcePreview *get_resource_previewer();
+	EditorFileSystem *get_resource_file_system();
 
 	virtual void restore_global_state();
 	virtual void save_global_state();

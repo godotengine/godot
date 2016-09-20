@@ -7534,10 +7534,10 @@ void VisualServerRaster::_draw_cursors_and_margins() {
 		ERR_CONTINUE( !tex );
 		if (cursors[i].region.has_no_area()) {
 			Point2 size(texture_get_width(tex), texture_get_height(tex));
-			rasterizer->canvas_draw_rect(Rect2(cursors[i].pos, size), 0, Rect2(), tex, Color(1, 1, 1, 1));
+			rasterizer->canvas_draw_rect(Rect2(cursors[i].pos-cursors[i].center, size), 0, Rect2(), tex, Color(1, 1, 1, 1));
 		} else {
 			Point2 size = cursors[i].region.size;
-			rasterizer->canvas_draw_rect(Rect2(cursors[i].pos, size), Rasterizer::CANVAS_RECT_REGION, cursors[i].region, tex, Color(1, 1, 1, 1));
+			rasterizer->canvas_draw_rect(Rect2(cursors[i].pos-cursors[i].center, size), Rasterizer::CANVAS_RECT_REGION, cursors[i].region, tex, Color(1, 1, 1, 1));
 		}
 	};
 

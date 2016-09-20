@@ -28,7 +28,9 @@ enet_initialize (void)
        return -1;
     }
 
+#ifndef WINRT_ENABLED
     timeBeginPeriod (1);
+#endif
 
     return 0;
 }
@@ -36,10 +38,21 @@ enet_initialize (void)
 void
 enet_deinitialize (void)
 {
+#ifndef WINRT_ENABLED
     timeEndPeriod (1);
+#endif
 
     WSACleanup ();
 }
+
+#ifdef WINRT_ENABLED
+enet_uint32
+timeGetTime() {
+	ULONGLONG ticks = GetTickCount64();
+	return (enet_uint32)ticks;
+}
+#endif
+
 
 enet_uint32
 enet_host_random_seed (void)

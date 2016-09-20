@@ -5,7 +5,7 @@ sources = [
 ]
 
 sources_lib = [
-	"vorbis/analysis.c",
+	#"vorbis/analysis.c",
 	#"vorbis/barkmel.c",
 	"vorbis/bitrate.c",
 	"vorbis/block.c",
@@ -27,7 +27,7 @@ sources_lib = [
 	"vorbis/smallft.c",
 	"vorbis/synthesis.c",
 	#"vorbis/tone.c",
-	"vorbis/vorbisenc.c",
+	#"vorbis/vorbisenc.c",
 	"vorbis/vorbisfile.c",
 	"vorbis/window.c",
 ]

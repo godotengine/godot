@@ -95,6 +95,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "setget",
 "const",
 "var",
+"enum",
 "preload",
 "assert",
 "yield",
@@ -874,6 +875,7 @@ void GDTokenizerText::_advance() {
 								{TK_PR_SLAVE,"slave"},
 								{TK_PR_SYNC,"sync"},
 								{TK_PR_CONST,"const"},
+								{TK_PR_ENUM,"enum"},
 								//controlflow
 								{TK_CF_IF,"if"},
 								{TK_CF_ELIF,"elif"},
@@ -1330,7 +1332,7 @@ StringName GDTokenizerBuffer::get_token_identifier(int p_offset) const{
 
 	ERR_FAIL_INDEX_V(offset,tokens.size(),StringName());
 	uint32_t identifier = tokens[offset]>>TOKEN_BITS;
-	ERR_FAIL_INDEX_V(identifier,identifiers.size(),StringName());
+	ERR_FAIL_INDEX_V(identifier,(uint32_t)identifiers.size(),StringName());
 
 	return identifiers[identifier];
 }
@@ -1389,7 +1391,7 @@ const Variant& GDTokenizerBuffer::get_token_constant(int p_offset) const{
 	int offset = token+p_offset;
 	ERR_FAIL_INDEX_V(offset,tokens.size(),nil);
 	uint32_t constant = tokens[offset]>>TOKEN_BITS;
-	ERR_FAIL_INDEX_V(constant,constants.size(),nil);
+	ERR_FAIL_INDEX_V(constant,(uint32_t)constants.size(),nil);
 	return constants[constant];
 
 }

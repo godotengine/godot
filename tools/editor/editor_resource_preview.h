@@ -57,10 +57,13 @@ class EditorResourcePreviewGenerator : public Reference {
 
 	OBJ_TYPE(EditorResourcePreviewGenerator,Reference );
 
+protected:
+
+	static void _bind_methods();
 public:
 
-	virtual bool handles(const String& p_type) const=0;
-	virtual Ref<Texture> generate(const RES& p_from)=0;
+	virtual bool handles(const String& p_type) const;
+	virtual Ref<Texture> generate(const RES& p_from);
 	virtual Ref<Texture> generate_from_path(const String& p_path);
 
 	EditorResourcePreviewGenerator();
@@ -121,6 +124,7 @@ public:
 	void queue_edited_resource_preview(const Ref<Resource>& p_path, Object* p_receiver, const StringName& p_receiver_func, const Variant& p_userdata);
 
 	void add_preview_generator(const Ref<EditorResourcePreviewGenerator>& p_generator);
+	void remove_preview_generator(const Ref<EditorResourcePreviewGenerator>& p_generator);
 	void check_for_invalidation(const String& p_path);
 
 	EditorResourcePreview();

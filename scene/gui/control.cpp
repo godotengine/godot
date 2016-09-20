@@ -431,8 +431,7 @@ void Control::add_child_notify(Node *p_child) {
 		return;
 
 	if (child_c->data.theme.is_null() && data.theme_owner) {
-		child_c->data.theme_owner=data.theme_owner;
-		child_c->notification(NOTIFICATION_THEME_CHANGED);
+		_propagate_theme_changed(child_c,data.theme_owner); //need to propagate here, since many controls may require setting up stuff
 	}
 }
 
@@ -443,8 +442,7 @@ void Control::remove_child_notify(Node *p_child) {
 		return;
 
 	if (child_c->data.theme_owner && child_c->data.theme.is_null()) {
-		child_c->data.theme_owner=NULL;
-		//notification(NOTIFICATION_THEME_CHANGED);
+		_propagate_theme_changed(child_c,NULL);
 	}
 
 }
@@ -482,10 +480,10 @@ void Control::_notification(int p_notification) {
 			if (is_set_as_toplevel()) {
 				data.SI=get_viewport()->_gui_add_subwindow_control(this);
 
-				if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
+				/*if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
 					data.theme_owner=data.parent->data.theme_owner;
 					notification(NOTIFICATION_THEME_CHANGED);
-				}
+				}*/
 
 			} else {
 
@@ -521,10 +519,10 @@ void Control::_notification(int p_notification) {
 
 				if (parent_control) {
 					//do nothing, has a parent control
-					if (data.theme.is_null() && parent_control->data.theme_owner) {
+					/*if (data.theme.is_null() && parent_control->data.theme_owner) {
 						data.theme_owner=parent_control->data.theme_owner;
 						notification(NOTIFICATION_THEME_CHANGED);
-					}
+					}*/
 				} else if (subwindow) {
 					//is a subwindow (process input before other controls for that canvas)
 					data.SI=get_viewport()->_gui_add_subwindow_control(this);
@@ -1915,7 +1913,7 @@ void Control::_propagate_theme_changed(CanvasItem *p_at,Control *p_owner,bool p_
 
 		CanvasItem *child = p_at->get_child(i)->cast_to<CanvasItem>();
 		if (child) {
-			_propagate_theme_changed(child,p_owner);
+			_propagate_theme_changed(child,p_owner,p_assign);
 		}
 
 	}
@@ -1926,7 +1924,7 @@ void Control::_propagate_theme_changed(CanvasItem *p_at,Control *p_owner,bool p_
 		if (p_assign) {
 			c->data.theme_owner=p_owner;
 		}
-		c->_notification(NOTIFICATION_THEME_CHANGED);
+		c->notification(NOTIFICATION_THEME_CHANGED);
 		c->update();
 	}
 }
@@ -2407,6 +2405,35 @@ bool Control::is_visibility_clip_disabled() const {
 
 	return data.disable_visibility_clip;
 }
+
+void Control::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
+
+	Node::get_argument_options(p_function,p_idx,r_options);
+
+	if (p_idx==0) {
+		List<StringName> sn;
+		String pf = p_function;
+		if (pf=="add_color_override" || pf=="has_color" || pf=="has_color_override" || pf=="get_color") {
+			Theme::get_default()->get_color_list(get_type(),&sn);
+		} else if (pf=="add_style_override" || pf=="has_style" || pf=="has_style_override" || pf=="get_style") {
+			Theme::get_default()->get_stylebox_list(get_type(),&sn);
+		} else if (pf=="add_font_override" || pf=="has_font" || pf=="has_font_override" || pf=="get_font") {
+			Theme::get_default()->get_font_list(get_type(),&sn);
+		} else if (pf=="add_constant_override" || pf=="has_constant" || pf=="has_constant_override" || pf=="get_constant") {
+			Theme::get_default()->get_constant_list(get_type(),&sn);
+		} else if (pf=="add_color_override" || pf=="has_color" || pf=="has_color_override" || pf=="get_color") {
+			Theme::get_default()->get_color_list(get_type(),&sn);
+		}
+
+		sn.sort_custom<StringName::AlphCompare>();
+		for (List<StringName>::Element *E=sn.front();E;E=E->next()) {
+			r_options->push_back("\""+E->get()+"\"");
+		}
+	}
+
+
+}
+
 
 void Control::_bind_methods() {
 

@@ -32,8 +32,9 @@
 #include "editor_fonts.h"
 #include "editor_settings.h"
 #include "core/io/resource_loader.h"
+#include "editor_scale.h"
 
-Ref<Theme> create_default_theme()
+Ref<Theme> create_editor_theme()
 {
 	Ref<Theme> theme = Ref<Theme>( memnew( Theme ) );
 
@@ -43,32 +44,36 @@ Ref<Theme> create_default_theme()
 	Ref<StyleBoxTexture> focus_sbt=memnew( StyleBoxTexture );
 	focus_sbt->set_texture(theme->get_icon("EditorFocus","EditorIcons"));
 	for(int i=0;i<4;i++) {
-		focus_sbt->set_margin_size(Margin(i),16);
-		focus_sbt->set_default_margin(Margin(i),16);
+		focus_sbt->set_margin_size(Margin(i),16*EDSCALE);
+		focus_sbt->set_default_margin(Margin(i),16*EDSCALE);
 	}
 	focus_sbt->set_draw_center(false);
 	theme->set_stylebox("EditorFocus","EditorStyles",focus_sbt);
+	theme->set_color("prop_category","Editor",Color::hex(0x3f3a44ff));
+	theme->set_color("prop_section","Editor",Color::hex(0x35313aff));
+	theme->set_color("prop_subsection","Editor",Color::hex(0x312e37ff));
+	theme->set_color("fg_selected","Editor",Color::html("ffbd8e8e"));
+	theme->set_color("fg_error","Editor",Color::html("ffbd8e8e"));
 
 	return theme;
 }
 
-Ref<Theme> create_editor_theme()
+Ref<Theme> create_custom_theme()
 {
-	Ref<Theme> theme = NULL;
+	Ref<Theme> theme;
 
 	String custom_theme = EditorSettings::get_singleton()->get("global/custom_theme");
 	if (custom_theme!="") {
 		theme = ResourceLoader::load(custom_theme);
 	}
 
-	if (theme.is_null() || !theme.is_valid()) {
-		theme = create_default_theme();
-	}
-
 	String global_font = EditorSettings::get_singleton()->get("global/custom_font");
 	if (global_font!="") {
 		Ref<Font> fnt = ResourceLoader::load(global_font);
 		if (fnt.is_valid()) {
+			if (!theme.is_valid()) {
+				theme.instance();
+			}
 			theme->set_default_theme_font(fnt);
 		}
 	}

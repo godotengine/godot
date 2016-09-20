@@ -1185,25 +1185,26 @@ ProjectManager::ProjectManager() {
 	{
 		int dpi_mode = EditorSettings::get_singleton()->get("global/hidpi_mode");
 		if (dpi_mode==0) {
-			editor_set_hidpi( OS::get_singleton()->get_screen_dpi(0) > 150 );
+			editor_set_scale( OS::get_singleton()->get_screen_dpi(0) > 150 && OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x>2000 ? 2.0 : 1.0 );
+		} else if (dpi_mode==1) {
+			editor_set_scale(0.75);
 		} else if (dpi_mode==2) {
-			editor_set_hidpi(true);
-		} else {
-			editor_set_hidpi(false);
+			editor_set_scale(1.0);
+		} else if (dpi_mode==3) {
+			editor_set_scale(1.5);
+		} else if (dpi_mode==4) {
+			editor_set_scale(2.0);
 		}
 	}
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	set_area_as_parent_rect();
+	set_theme(create_editor_theme());
 
 	gui_base = memnew( Control );
 	add_child(gui_base);
 	gui_base->set_area_as_parent_rect();
-
-	set_theme(create_default_theme());
-	Ref<Theme> theme = create_editor_theme();
-	gui_base->set_theme(theme);
 
 	Panel *panel = memnew( Panel );
 	gui_base->add_child(panel);
@@ -1391,6 +1392,8 @@ ProjectManager::ProjectManager() {
 	last_clicked = "";
 
 	SceneTree::get_singleton()->connect("files_dropped", this, "_files_dropped");
+
+	gui_base->set_theme(create_custom_theme());
 }
 
 

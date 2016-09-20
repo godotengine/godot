@@ -2200,13 +2200,9 @@ void SceneTree::_bind_methods() {
 	mi.arguments.push_back( PropertyInfo( Variant::INT, "flags"));
 	mi.arguments.push_back( PropertyInfo( Variant::STRING, "group"));
 	mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
-	Vector<Variant> defargs;
-	for(int i=0;i<VARIANT_ARG_MAX;i++) {
-		mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-		defargs.push_back(Variant());
-	}
 
-	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi,defargs);
+
+	ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi);
 
 	ObjectTypeDB::bind_method(_MD("set_current_scene","child_node:Node"),&SceneTree::set_current_scene);
 	ObjectTypeDB::bind_method(_MD("get_current_scene:Node"),&SceneTree::get_current_scene);

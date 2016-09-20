@@ -203,6 +203,7 @@ bool GDParser::_get_completable_identifier(CompletionType p_type,StringName& ide
 		completion_line=tokenizer->get_token_line();
 		completion_block=current_block;
 		completion_found=true;
+		completion_ident_is_call=false;
 		tokenizer->advance();
 
 		if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
@@ -210,6 +211,9 @@ bool GDParser::_get_completable_identifier(CompletionType p_type,StringName& ide
 			tokenizer->advance();
 		}
 
+		if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_OPEN) {
+			completion_ident_is_call=true;
+		}
 		return true;
 	}
 
@@ -936,6 +940,8 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			case GDTokenizer::TK_OP_BIT_OR: op=OperatorNode::OP_BIT_OR ; break;
 			case GDTokenizer::TK_OP_BIT_XOR: op=OperatorNode::OP_BIT_XOR ; break;
 			case GDTokenizer::TK_PR_EXTENDS: op=OperatorNode::OP_EXTENDS; break;
+			case GDTokenizer::TK_CF_IF: op=OperatorNode::OP_TERNARY_IF; break;
+			case GDTokenizer::TK_CF_ELSE: op=OperatorNode::OP_TERNARY_ELSE; break;
 			default: valid=false; break;
 		}
 
@@ -958,6 +964,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 		int next_op=-1;
 		int min_priority=0xFFFFF;
 		bool is_unary=false;
+		bool is_ternary=false;
 
 		for(int i=0;i<expression.size();i++) {
 
@@ -971,6 +978,8 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			int priority;
 
 			bool unary=false;
+			bool ternary=false;
+			bool error=false;
 
 			switch(expression[i].op) {
 
@@ -1001,25 +1010,27 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				case OperatorNode::OP_EQUAL: priority=8; break;
 				case OperatorNode::OP_NOT_EQUAL: priority=8; break;
 
+				
 				case OperatorNode::OP_IN: priority=10; break;
-
+				
 				case OperatorNode::OP_NOT: priority=11; unary=true; break;
 				case OperatorNode::OP_AND: priority=12; break;
 				case OperatorNode::OP_OR: priority=13; break;
+				
+				case OperatorNode::OP_TERNARY_IF: priority=14; ternary=true; break;
+				case OperatorNode::OP_TERNARY_ELSE: priority=14; error=true; break; // Errors out when found without IF (since IF would consume it)
 
-				// ?: = 10
-
-				case OperatorNode::OP_ASSIGN: priority=14; break;
-				case OperatorNode::OP_ASSIGN_ADD: priority=14; break;
-				case OperatorNode::OP_ASSIGN_SUB: priority=14; break;
-				case OperatorNode::OP_ASSIGN_MUL: priority=14; break;
-				case OperatorNode::OP_ASSIGN_DIV: priority=14; break;
-				case OperatorNode::OP_ASSIGN_MOD: priority=14; break;
-				case OperatorNode::OP_ASSIGN_SHIFT_LEFT: priority=14; break;
-				case OperatorNode::OP_ASSIGN_SHIFT_RIGHT: priority=14; break;
-				case OperatorNode::OP_ASSIGN_BIT_AND: priority=14; break;
-				case OperatorNode::OP_ASSIGN_BIT_OR: priority=14; break;
-				case OperatorNode::OP_ASSIGN_BIT_XOR: priority=14; break;
+				case OperatorNode::OP_ASSIGN: priority=15; break;
+				case OperatorNode::OP_ASSIGN_ADD: priority=15; break;
+				case OperatorNode::OP_ASSIGN_SUB: priority=15; break;
+				case OperatorNode::OP_ASSIGN_MUL: priority=15; break;
+				case OperatorNode::OP_ASSIGN_DIV: priority=15; break;
+				case OperatorNode::OP_ASSIGN_MOD: priority=15; break;
+				case OperatorNode::OP_ASSIGN_SHIFT_LEFT: priority=15; break;
+				case OperatorNode::OP_ASSIGN_SHIFT_RIGHT: priority=15; break;
+				case OperatorNode::OP_ASSIGN_BIT_AND: priority=15; break;
+				case OperatorNode::OP_ASSIGN_BIT_OR: priority=15; break;
+				case OperatorNode::OP_ASSIGN_BIT_XOR: priority=15; break;
 
 
 				default: {
@@ -1030,11 +1041,16 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			}
 
 			if (priority<min_priority) {
+				if(error) {
+					_set_error("Unexpected operator");
+					return NULL;
+				}
 				// < is used for left to right (default)
 				// <= is used for right to left
 				next_op=i;
 				min_priority=priority;
 				is_unary=unary;
+				is_ternary=ternary;
 			}
 
 		}
@@ -1075,6 +1091,62 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			}
 
 
+		} else if(is_ternary) {
+			if (next_op <1 || next_op>=(expression.size()-1)) {
+				_set_error("Parser bug..");
+				ERR_FAIL_V(NULL);
+			}
+			
+			if(next_op>=(expression.size()-2) || expression[next_op+2].op != OperatorNode::OP_TERNARY_ELSE) {
+				_set_error("Expected else after ternary if.");
+				ERR_FAIL_V(NULL);
+			}
+			if(next_op>=(expression.size()-3)) {
+				_set_error("Expected value after ternary else.");
+				ERR_FAIL_V(NULL);
+			}
+
+			OperatorNode *op = alloc_node<OperatorNode>();
+			op->op=expression[next_op].op;
+			op->line=op_line; //line might have been changed from a \n
+
+			if (expression[next_op-1].is_op) {
+
+				_set_error("Parser bug..");
+				ERR_FAIL_V(NULL);
+			}
+
+			if (expression[next_op+1].is_op) {
+				// this is not invalid and can really appear
+				// but it becomes invalid anyway because no binary op
+				// can be followed by an unary op in a valid combination,
+				// due to how precedence works, unaries will always dissapear first
+
+				_set_error("Unexpected two consecutive operators after ternary if.");
+				return NULL;
+			}
+
+			if (expression[next_op+3].is_op) {
+				// this is not invalid and can really appear
+				// but it becomes invalid anyway because no binary op
+				// can be followed by an unary op in a valid combination,
+				// due to how precedence works, unaries will always dissapear first
+
+				_set_error("Unexpected two consecutive operators after ternary else.");
+				return NULL;
+			}
+
+
+			op->arguments.push_back(expression[next_op+1].node); //next expression goes as first
+			op->arguments.push_back(expression[next_op-1].node); //left expression goes as when-true
+			op->arguments.push_back(expression[next_op+3].node); //expression after next goes as when-false
+
+			//replace all 3 nodes by this operator and make it an expression
+			expression[next_op-1].node=op;
+			expression.remove(next_op);
+			expression.remove(next_op);
+			expression.remove(next_op);
+			expression.remove(next_op);
 		} else {
 
 			if (next_op <1 || next_op>=(expression.size()-1)) {
@@ -3157,6 +3229,114 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				}
 
 			} break;
+			case GDTokenizer::TK_PR_ENUM: {
+				//mutiple constant declarations..
+
+				int last_assign = -1; // Incremented by 1 right before the assingment.
+				String enum_name;
+				Dictionary enum_dict;
+
+				tokenizer->advance();
+				if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
+					enum_name=tokenizer->get_token_identifier();
+					tokenizer->advance();
+				}
+				if (tokenizer->get_token()!=GDTokenizer::TK_CURLY_BRACKET_OPEN) {
+					_set_error("Expected '{' in enum declaration");
+					return;
+				}
+				tokenizer->advance();
+				
+				while(true) {
+					if(tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+						
+						tokenizer->advance(); // Ignore newlines
+					} else if (tokenizer->get_token()==GDTokenizer::TK_CURLY_BRACKET_CLOSE) {
+						
+						tokenizer->advance();
+						break; // End of enum
+					} else if (tokenizer->get_token()!=GDTokenizer::TK_IDENTIFIER) {
+						
+						if(tokenizer->get_token()==GDTokenizer::TK_EOF) {
+							_set_error("Unexpected end of file.");
+						} else {
+							_set_error(String("Unexpected ") + GDTokenizer::get_token_name(tokenizer->get_token()) + ", expected identifier");
+						}
+						
+						return;
+					} else { // tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER
+						ClassNode::Constant constant;
+						
+						constant.identifier=tokenizer->get_token_identifier();
+						
+						tokenizer->advance();
+						
+						if (tokenizer->get_token()==GDTokenizer::TK_OP_ASSIGN) {
+							tokenizer->advance();
+
+							Node *subexpr=NULL;
+
+							subexpr = _parse_and_reduce_expression(p_class,true,true);
+							if (!subexpr) {
+								if (_recover_from_completion()) {
+									break;
+								}
+								return;
+							}
+
+							if (subexpr->type!=Node::TYPE_CONSTANT) {
+								_set_error("Expected constant expression");
+							}
+							
+							const ConstantNode *subexpr_const = static_cast<const ConstantNode*>(subexpr);
+							
+							if(subexpr_const->value.get_type() != Variant::INT) {
+								_set_error("Expected an int value for enum");
+							}
+							
+							last_assign = subexpr_const->value;
+							
+							constant.expression=subexpr;
+
+						} else {
+							last_assign = last_assign + 1;
+							ConstantNode *cn = alloc_node<ConstantNode>();
+							cn->value = last_assign;
+							constant.expression = cn;
+						}
+						
+						if(tokenizer->get_token()==GDTokenizer::TK_COMMA) {
+							tokenizer->advance();
+						}
+
+						if(enum_name != "") {
+							const ConstantNode *cn = static_cast<const ConstantNode*>(constant.expression);
+							enum_dict[constant.identifier] = cn->value;
+						}
+
+						p_class->constant_expressions.push_back(constant);
+					}
+					
+				}
+				
+				if(enum_name != "") {
+					ClassNode::Constant enum_constant;
+					enum_constant.identifier=enum_name;
+					ConstantNode *cn = alloc_node<ConstantNode>();
+					cn->value = enum_dict;
+					enum_constant.expression=cn;
+					p_class->constant_expressions.push_back(enum_constant);
+				}
+
+				if (!_end_statement()) {
+					_set_error("Expected end of statement (enum)");
+					return;
+				}
+
+
+				
+
+			} break;
 
 
 			default: {
@@ -3374,6 +3554,11 @@ GDParser::FunctionNode *GDParser::get_completion_function(){
 int GDParser::get_completion_argument_index() {
 
 	return completion_argument;
+}
+
+int GDParser::get_completion_identifier_is_function() {
+
+	return completion_ident_is_call;
 }
 
 GDParser::GDParser() {
