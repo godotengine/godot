@@ -161,7 +161,7 @@ void EditorLog::_undo_redo_cbk(void *p_self,const String& p_name) {
 void EditorLog::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_clear_request"),&EditorLog::_clear_request );
-
+	ObjectTypeDB::bind_method("_override_logger_styles",&EditorLog::_override_logger_styles );
 	//ObjectTypeDB::bind_method(_MD("_dragged"),&EditorLog::_dragged );
 	ADD_SIGNAL( MethodInfo("clear_request"));
 }
@@ -193,11 +193,10 @@ EditorLog::EditorLog() {
 	ec->set_custom_minimum_size(Size2(0,180));
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
 
-
-	PanelContainer *pc = memnew( PanelContainer );
-	pc->add_style_override("panel",get_stylebox("normal","TextEdit"));
+	pc = memnew( PanelContainer );
 	ec->add_child(pc);
 	pc->set_area_as_parent_rect();
+	pc->connect("enter_tree", this, "_override_logger_styles");
 
 	log = memnew( RichTextLabel );
 	log->set_scroll_follow(true);
@@ -224,6 +223,11 @@ void EditorLog::deinit() {
 
 }
 
+void EditorLog::_override_logger_styles() {
+
+	pc->add_style_override("panel",get_stylebox("normal","TextEdit"));
+
+}
 
 EditorLog::~EditorLog() {
 

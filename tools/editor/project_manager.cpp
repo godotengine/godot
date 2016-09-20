@@ -506,7 +506,7 @@ void ProjectManager::_panel_draw(Node *p_hb) {
 	hb->draw_line(Point2(0,hb->get_size().y+1),Point2(hb->get_size().x-10,hb->get_size().y+1),get_color("guide_color","Tree"));
 
 	if (selected_list.has(hb->get_meta("name"))) {
-		hb->draw_style_box(get_stylebox("selected","Tree"),Rect2(Point2(),hb->get_size()-Size2(10,0)));
+		hb->draw_style_box( gui_base->get_stylebox("selected","Tree"),Rect2(Point2(),hb->get_size()-Size2(10,0)));
 	}
 }
 
@@ -753,7 +753,7 @@ void ProjectManager::_load_recent_projects() {
 	List<PropertyInfo> properties;
 	EditorSettings::get_singleton()->get_property_list(&properties);
 
-	Color font_color = get_color("font_color","Tree");
+	Color font_color = gui_base->get_color("font_color","Tree");
 
 	List<ProjectItem> projects;
 	List<ProjectItem> favorite_projects;
@@ -864,6 +864,7 @@ void ProjectManager::_load_recent_projects() {
 		hb->set_meta("favorite",is_favorite);
 		hb->connect("draw",this,"_panel_draw",varray(hb));
 		hb->connect("input_event",this,"_panel_input",varray(hb));
+		hb->add_constant_override("separation",10*EDSCALE);
 
 		VBoxContainer *favorite_box = memnew( VBoxContainer );
 		TextureButton *favorite = memnew( TextureButton );
@@ -885,7 +886,7 @@ void ProjectManager::_load_recent_projects() {
 		ec->set_custom_minimum_size(Size2(0,1));
 		vb->add_child(ec);
 		Label *title = memnew( Label(project_name) );
-		title->add_font_override("font",get_font("large","Fonts"));
+		title->add_font_override("font", gui_base->get_font("large","Fonts"));
 		title->add_color_override("font_color",font_color);
 		vb->add_child(title);
 		Label *fpath = memnew( Label(path) );
@@ -1205,6 +1206,7 @@ ProjectManager::ProjectManager() {
 	gui_base = memnew( Control );
 	add_child(gui_base);
 	gui_base->set_area_as_parent_rect();
+	gui_base->set_theme(create_custom_theme());
 
 	Panel *panel = memnew( Panel );
 	gui_base->add_child(panel);
@@ -1227,7 +1229,7 @@ ProjectManager::ProjectManager() {
 	CenterContainer *ccl = memnew( CenterContainer );
 	Label *l = memnew( Label );
 	l->set_text(_MKSTR(VERSION_NAME)+String(" - ")+TTR("Project Manager"));
-	l->add_font_override("font",get_font("doc","EditorFonts"));
+	l->add_font_override("font", gui_base->get_font("doc","EditorFonts"));
 	ccl->add_child(l);
 	top_hb->add_child(ccl);
 	top_hb->add_spacer();
@@ -1263,7 +1265,7 @@ ProjectManager::ProjectManager() {
 	search_tree_vb->add_child(search_box);
 
 	PanelContainer *pc = memnew( PanelContainer);
-	pc->add_style_override("panel",get_stylebox("bg","Tree"));
+	pc->add_style_override("panel", gui_base->get_stylebox("bg","Tree"));
 	search_tree_vb->add_child(pc);
 	pc->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -1392,8 +1394,6 @@ ProjectManager::ProjectManager() {
 	last_clicked = "";
 
 	SceneTree::get_singleton()->connect("files_dropped", this, "_files_dropped");
-
-	gui_base->set_theme(create_custom_theme());
 }
 
 
