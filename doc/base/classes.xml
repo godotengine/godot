@@ -42920,18 +42920,33 @@
 </class>
 <class name="Tree" inherits="Control" category="Core">
 	<brief_description>
+		Control to show a tree of items.
 	</brief_description>
 	<description>
+		This shows a tree of items that can be selected, expanded and collapsed. The tree can have multiple columns with custom controls like text editing, buttons and popups. It can be useful for structural displaying and interactions.
+		Trees are built via code, using [TreeItem] objects to create the structure. They have a single root but multiple root can be simulated if a dummy hidden root is added.
+		[codeblock]
+		func _ready():
+		    var tree = Tree.new()
+		    var root = tree.create_item()
+		    tree.set_hide_root(true)
+		    var child1 = tree.create_item(root)
+		    var child2 = tree.create_item(root)
+		    var subchild1 = tree.create_item(child1)
+		    subchild1.set_text(0, "Subchild1")
+		[/codeblock]
 	</description>
 	<methods>
 		<method name="are_column_titles_visible" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether the column titles are being shown.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
+				Clear the tree. This erases all of the items.
 			</description>
 		</method>
 		<method name="create_item">
@@ -42940,16 +42955,19 @@
 			<argument index="0" name="parent" type="TreeItem" default="NULL">
 			</argument>
 			<description>
+				Create an item in the tree and add it as the last child of [code]parent[/code]. If parent is not given, it will be added as the last child of the root, or it'll the be the root itself if the tree is empty.
 			</description>
 		</method>
 		<method name="ensure_cursor_is_visible">
 			<description>
+				Make the current selected item visible. This will scroll the tree to make sure the selected item is in sight.
 			</description>
 		</method>
 		<method name="get_allow_rmb_select" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether a right click can select items.
 			</description>
 		</method>
 		<method name="get_column_at_pos" qualifiers="const">
@@ -42958,6 +42976,7 @@
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Get the column index under the given point.
 			</description>
 		</method>
 		<method name="get_column_title" qualifiers="const">
@@ -42966,6 +42985,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Get the title of the given column.
 			</description>
 		</method>
 		<method name="get_column_width" qualifiers="const">
@@ -42974,36 +42994,42 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Get the width of the given column in pixels.
 			</description>
 		</method>
 		<method name="get_columns" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the amount of columns.
 			</description>
 		</method>
 		<method name="get_custom_popup_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
+				Get the rectangle for custom popups. Helper to create custom cell controls that display a popup. See [method TreeItem.set_cell_mode].
 			</description>
 		</method>
 		<method name="get_drop_mode_flags" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the flags of the current drop mode.
 			</description>
 		</method>
 		<method name="get_edited" qualifiers="const">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Get the current edited item. This is only available for custom cell mode.
 			</description>
 		</method>
 		<method name="get_edited_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the column of the cell for the current edited icon. This is only available for custom cell mode.
 			</description>
 		</method>
 		<method name="get_item_area_rect" qualifiers="const">
@@ -43014,6 +43040,7 @@
 			<argument index="1" name="column" type="int" default="-1">
 			</argument>
 			<description>
+				Get the rectangle area of the the specified item. If column is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
 			</description>
 		</method>
 		<method name="get_item_at_pos" qualifiers="const">
@@ -43022,6 +43049,7 @@
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Get the tree item at the specified position (relative to the tree origin position).
 			</description>
 		</method>
 		<method name="get_next_selected">
@@ -43030,42 +43058,49 @@
 			<argument index="0" name="from" type="TreeItem">
 			</argument>
 			<description>
+				Get the next selected item after the given one.
 			</description>
 		</method>
 		<method name="get_pressed_button" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the index of the last pressed button.
 			</description>
 		</method>
 		<method name="get_root">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Get the root item of the tree.
 			</description>
 		</method>
 		<method name="get_scroll" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Get the current scrolling position.
 			</description>
 		</method>
 		<method name="get_selected" qualifiers="const">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Get the currently selected item.
 			</description>
 		</method>
 		<method name="get_selected_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the column number of the current selection.
 			</description>
 		</method>
 		<method name="get_single_select_cell_editing_only_when_already_selected" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether the editing of a cell should only happen when it is already selected.
 			</description>
 		</method>
 		<method name="is_delayed_text_editor_enabled" qualifiers="const">
@@ -43078,12 +43113,14 @@
 			<return type="bool">
 			</return>
 			<description>
+				Get whether the folding arrow is hidden.
 			</description>
 		</method>
 		<method name="set_allow_rmb_select">
 			<argument index="0" name="allow" type="bool">
 			</argument>
 			<description>
+				Set whether or not a right mouse button click can select items.
 			</description>
 		</method>
 		<method name="set_column_expand">
@@ -43092,6 +43129,7 @@
 			<argument index="1" name="expand" type="bool">
 			</argument>
 			<description>
+				Set whether a column will have the "Expand" flag of [Control].
 			</description>
 		</method>
 		<method name="set_column_min_width">
@@ -43100,6 +43138,7 @@
 			<argument index="1" name="min_width" type="int">
 			</argument>
 			<description>
+				Set the minimum width of a column.
 			</description>
 		</method>
 		<method name="set_column_title">
@@ -43108,18 +43147,21 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
+				Set the title of a column.
 			</description>
 		</method>
 		<method name="set_column_titles_visible">
 			<argument index="0" name="visible" type="bool">
 			</argument>
 			<description>
+				Set whether the column titles visibility.
 			</description>
 		</method>
 		<method name="set_columns">
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+				Set the amount of columns.
 			</description>
 		</method>
 		<method name="set_delayed_text_editor">
@@ -43132,30 +43174,35 @@
 			<argument index="0" name="flags" type="int">
 			</argument>
 			<description>
+				Set the drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="set_hide_folding">
 			<argument index="0" name="hide" type="bool">
 			</argument>
 			<description>
+				Set whether the folding arrow should be hidden.
 			</description>
 		</method>
 		<method name="set_hide_root">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set whether the root of the tree should be hidden.
 			</description>
 		</method>
 		<method name="set_select_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+				Set the selection mode. Use one of the [code]SELECT_*[/code] constants.
 			</description>
 		</method>
 		<method name="set_single_select_cell_editing_only_when_already_selected">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set whether the editing of a cell should only happen when it is already selected.
 			</description>
 		</method>
 	</methods>
@@ -43168,32 +43215,38 @@
 			<argument index="2" name="id" type="int">
 			</argument>
 			<description>
+				Emitted when a button on the tree was pressed (see [method TreeItem.add_button]).
 			</description>
 		</signal>
 		<signal name="cell_selected">
 			<description>
+				Emitted when a cell is selected.
 			</description>
 		</signal>
 		<signal name="custom_popup_edited">
 			<argument index="0" name="arrow_clicked" type="bool">
 			</argument>
 			<description>
+				Emitted when a cell with the [code]CELL_MODE_CUSTOM[/code] is clicked to be edited.
 			</description>
 		</signal>
 		<signal name="empty_tree_rmb_selected">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Emitted when the right mouse button is pressed if RMB selection is active and the tree is empty.
 			</description>
 		</signal>
 		<signal name="item_activated">
 			<description>
+				Emitted when an item is activated (double-clicked).
 			</description>
 		</signal>
 		<signal name="item_collapsed">
 			<argument index="0" name="item" type="Object">
 			</argument>
 			<description>
+				Emitted when an item is collapsed by a click on the folding arrow.
 			</description>
 		</signal>
 		<signal name="item_double_clicked">
@@ -43202,16 +43255,19 @@
 		</signal>
 		<signal name="item_edited">
 			<description>
+				Emitted when an item is editted.
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Emitted when an item is selected with right mouse button.
 			</description>
 		</signal>
 		<signal name="item_selected">
 			<description>
+				Emitted when an item is selected with right mouse button.
 			</description>
 		</signal>
 		<signal name="multi_selected">
@@ -45238,136 +45294,160 @@ do_property].
 </class>
 <class name="VideoPlayer" inherits="Control" category="Core">
 	<brief_description>
+		Control to play video files.
 	</brief_description>
 	<description>
+		This control has the ability to play video streams. The only format accepted is the OGV Theora, so any other format must be converted before using in a project.
 	</description>
 	<methods>
 		<method name="get_audio_track" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the selected audio track (for multitrack videos).
 			</description>
 		</method>
 		<method name="get_buffering_msec" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the amount of miliseconds to store in buffer while playing.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
 			<return type="VideoStream">
 			</return>
 			<description>
+				Get the video stream.
 			</description>
 		</method>
 		<method name="get_stream_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Get the name of the video stream.
 			</description>
 		</method>
 		<method name="get_stream_pos" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Get the current position of the stream, in seconds.
 			</description>
 		</method>
 		<method name="get_video_texture">
 			<return type="Texture">
 			</return>
 			<description>
+				Get the current frame of the video as a [Texture].
 			</description>
 		</method>
 		<method name="get_volume" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Get the volume of the audio track as a linear value.
 			</description>
 		</method>
 		<method name="get_volume_db" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Get the volume of the audio track in decibels.
 			</description>
 		</method>
 		<method name="has_autoplay" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the video is set as autoplay.
 			</description>
 		</method>
 		<method name="has_expand" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the expand property is set.
 			</description>
 		</method>
 		<method name="is_paused" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the video is paused.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the video is playing.
 			</description>
 		</method>
 		<method name="play">
 			<description>
+				Start the video playback.
 			</description>
 		</method>
 		<method name="set_audio_track">
 			<argument index="0" name="track" type="int">
 			</argument>
 			<description>
+				Set the audio track (for multitrack videos).
 			</description>
 		</method>
 		<method name="set_autoplay">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+				Set whether this node should start playing automatically.
 			</description>
 		</method>
 		<method name="set_buffering_msec">
 			<argument index="0" name="msec" type="int">
 			</argument>
 			<description>
+				Set the amount of miliseconds to buffer during playback.
 			</description>
 		</method>
 		<method name="set_expand">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set the expand property. If enabled, the video will grow or shrink to fit the player size, otherwise it will play at the stream resolution.
 			</description>
 		</method>
 		<method name="set_paused">
 			<argument index="0" name="paused" type="bool">
 			</argument>
 			<description>
+				Set whether the video should pause the playback.
 			</description>
 		</method>
 		<method name="set_stream">
 			<argument index="0" name="stream" type="VideoStream">
 			</argument>
 			<description>
+				Set the video stream for this player.
 			</description>
 		</method>
 		<method name="set_volume">
 			<argument index="0" name="volume" type="float">
 			</argument>
 			<description>
+				Set the audio volume as a linear value.
 			</description>
 		</method>
 		<method name="set_volume_db">
 			<argument index="0" name="db" type="float">
 			</argument>
 			<description>
+				Set the audio volume in decibels.
 			</description>
 		</method>
 		<method name="stop">
 			<description>
+				Stop the video playback.
 			</description>
 		</method>
 	</methods>
@@ -49767,14 +49847,17 @@ do_property].
 </class>
 <class name="XMLParser" inherits="Reference" category="Core">
 	<brief_description>
+		Low-level class for creating parsers for XML files.
 	</brief_description>
 	<description>
+		This class can serve as base to make custom XML parsers. Since XML is a very flexible standard, this interface is low level so it can be applied to any possible schema.
 	</description>
 	<methods>
 		<method name="get_attribute_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the amount of attributes in the current element.
 			</description>
 		</method>
 		<method name="get_attribute_name" qualifiers="const">
@@ -49783,6 +49866,7 @@ do_property].
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Get the name of the attribute specified by the index in [code]idx[/code] argument.
 			</description>
 		</method>
 		<method name="get_attribute_value" qualifiers="const">
@@ -49791,12 +49875,14 @@ do_property].
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Get the value of the attribute specified by the index in [code]idx[/code] argument.
 			</description>
 		</method>
 		<method name="get_current_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the current line in the parsed file (currently not implemented).
 			</description>
 		</method>
 		<method name="get_named_attribute_value" qualifiers="const">
@@ -49805,6 +49891,7 @@ do_property].
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Get the value of a certain attribute of the current element by name. This will raise an error if the element has no such attribute.
 			</description>
 		</method>
 		<method name="get_named_attribute_value_safe" qualifiers="const">
@@ -49813,30 +49900,35 @@ do_property].
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Get the value of a certain attribute of the current element by name. This will return an empty [String] if the attribute is not found.
 			</description>
 		</method>
 		<method name="get_node_data" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Get the contents of a text node. This will raise an error in any other type of node.
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Get the name of the current element node. This will raise an error if the current node type is not [code]NODE_ELEMENT[/code] nor [code]NODE_ELEMENT_END[/code]
 			</description>
 		</method>
 		<method name="get_node_offset" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the byte offset of the current node since the beginning of the file or buffer.
 			</description>
 		</method>
 		<method name="get_node_type">
 			<return type="int">
 			</return>
 			<description>
+				Get the type of the current node. Compare with [code]NODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="has_attribute" qualifiers="const">
@@ -49845,12 +49937,14 @@ do_property].
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Check whether or not the current element has a certain attribute.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Check whether the current element is empty (this only works for completely empty tags, e.g. &lt;element \&gt;).
 			</description>
 		</method>
 		<method name="open">
@@ -49859,6 +49953,7 @@ do_property].
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+				Open a XML file for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="open_buffer">
@@ -49867,12 +49962,14 @@ do_property].
 			<argument index="0" name="buffer" type="RawArray">
 			</argument>
 			<description>
+				Open a XML raw buffer for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="read">
 			<return type="int">
 			</return>
 			<description>
+				Read the next node of the file. This returns an error code.
 			</description>
 		</method>
 		<method name="seek">
@@ -49881,27 +49978,36 @@ do_property].
 			<argument index="0" name="pos" type="int">
 			</argument>
 			<description>
+				Move the buffer cursor to a certain offset (since the beginning) and read the next node there. This returns an error code.
 			</description>
 		</method>
 		<method name="skip_section">
 			<description>
+				Skips the current section. If the node contains other elements, they will be ignored and the cursor will go to the closing of the current element.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="NODE_NONE" value="0">
+			There's no node (no file or buffer opened)
 		</constant>
 		<constant name="NODE_ELEMENT" value="1">
+			Element (tag)
 		</constant>
 		<constant name="NODE_ELEMENT_END" value="2">
+			End of element
 		</constant>
 		<constant name="NODE_TEXT" value="3">
+			Text node
 		</constant>
 		<constant name="NODE_COMMENT" value="4">
+			Comment node
 		</constant>
 		<constant name="NODE_CDATA" value="5">
+			CDATA content
 		</constant>
 		<constant name="NODE_UNKNOWN" value="6">
+			Unknown node
 		</constant>
 	</constants>
 </class>
