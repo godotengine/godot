@@ -913,14 +913,12 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 	}
 
 
-	ret.resize(ret.size()+stable_extra.size());
+	for(int i=0;i<stable_extra.size();i++) {
+		ret.push_back(stable_extra[i]);
+	}
+
 	while(ret.size()%4)
 		ret.push_back(0);
-
-	for(int i=0;i<stable_extra.size();i++) {
-
-		chars[i]=stable_extra[i];
-	}
 
 
 	uint32_t new_stable_end=ret.size();
