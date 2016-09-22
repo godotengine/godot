@@ -72,6 +72,7 @@ void ImmediateGeometry::add_vertex(const Vector3& p_vertex){
 	if (empty) {
 		aabb.pos=p_vertex;
 		aabb.size=Vector3();
+		empty=false;
 	} else {
 		aabb.expand_to(p_vertex);
 	}
