@@ -1176,6 +1176,19 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 		event.key.mod.shift=true;
 	}
 
+	//don't set mod state if modifier keys are released by themselves
+	//else event.is_action() will not work correctly here
+	if (!event.key.pressed) {
+		if (event.key.scancode == KEY_SHIFT)
+			event.key.mod.shift = false;
+		else if (event.key.scancode == KEY_CONTROL)
+			event.key.mod.control = false;
+		else if (event.key.scancode == KEY_ALT)
+			event.key.mod.alt = false;
+		else if (event.key.scancode == KEY_META)
+			event.key.mod.meta = false;
+	}
+
 	//printf("key: %x\n",event.key.scancode);
 	input->parse_input_event( event);
 }
