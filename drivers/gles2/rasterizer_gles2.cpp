@@ -36,6 +36,7 @@
 #include "servers/visual/particle_system_sw.h"
 #include "gl_context/context_gl.h"
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef GLEW_ENABLED
 #define   _GL_HALF_FLOAT_OES      0x140B
@@ -10812,11 +10813,11 @@ void RasterizerGLES2::init() {
 	// Check for GL 2.1 compatibility, if not bail out
 	if (!glewIsSupported("GL_VERSION_2_1")) {
 		ERR_PRINT("Your system's graphic drivers seem not to support OpenGL 2.1 / GLES 2.0, sorry :(\n"
-			  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
+			  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot is now going to terminate.");
 		OS::get_singleton()->alert("Your system's graphic drivers seem not to support OpenGL 2.1 / GLES 2.0, sorry :(\n"
 					   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
 					   "Fatal error: Insufficient OpenGL / GLES drivers");
-		// TODO: If it's even possible, we should stop the execution without segfault and memory leaks :)
+		exit(1);
 	}
 #endif
 
