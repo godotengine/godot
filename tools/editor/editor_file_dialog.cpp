@@ -336,15 +336,21 @@ void EditorFileDialog::_action_pressed() {
 		hide();
 	}else if (mode==MODE_OPEN_ANY || mode==MODE_OPEN_DIR) {
 
-
 		String path=dir_access->get_current_dir();
-		/*if (tree->get_selected()) {
-			Dictionary d = tree->get_selected()->get_metadata(0);
-			if (d["dir"]) {
-				path=path+"/"+String(d["name"]);
-			}
-		}*/
+
 		path=path.replace("\\","/");
+
+		for(int i=0;i<item_list->get_item_count();i++) {
+			if (item_list->is_selected(i)) {
+				Dictionary d=item_list->get_item_metadata(i);
+				if (d["dir"]) {
+					path=path.plus_file(d["name"]);
+
+					break;
+				}
+			}
+		}
+
 		_save_to_recent();
 		emit_signal("dir_selected",path);
 		hide();
