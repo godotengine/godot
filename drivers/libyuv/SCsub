@@ -1,0 +1,30 @@
+Import('env')
+Import('env_drivers')
+
+env_drivers.Append(CPPPATH=["#drivers/libyuv"])
+
+sources = [
+	"libyuv/convert_argb.cc",
+	"libyuv/cpu_id.cc",
+	"libyuv/planar_functions.cc",
+	"libyuv/row_any.cc",
+	"libyuv/row_common.cc",
+	"libyuv/row_gcc.cc",
+	"libyuv/row_mips.cc",
+	"libyuv/row_msa.cc",
+	"libyuv/row_neon.cc",
+	"libyuv/row_neon64.cc",
+	"libyuv/row_win.cc",
+	"libyuv/scale.cc",
+	"libyuv/scale_any.cc",
+	"libyuv/scale_argb.cc",
+	"libyuv/scale_common.cc",
+	"libyuv/scale_gcc.cc",
+	"libyuv/scale_mips.cc",
+	"libyuv/scale_neon.cc",
+	"libyuv/scale_neon64.cc",
+	"libyuv/scale_win.cc",
+	"libyuv/video_common.cc"
+]
+
+env.drivers_sources += sources
