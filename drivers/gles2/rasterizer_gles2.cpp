@@ -7018,6 +7018,10 @@ void RasterizerGLES2::_process_glow_bloom() {
 
 void RasterizerGLES2::_process_hdr() {
 
+	if (framebuffer.luminance.empty()) {
+		return;
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.luminance[0].fbo);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, framebuffer.color );
