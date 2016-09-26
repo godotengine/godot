@@ -178,17 +178,16 @@ extern "C" {
 #define HAS_SOBELXYROW_SSE2
 #define HAS_SOBELYROW_SSE2
 
-// The following functions fail on gcc/clang 32 bit with fpic and framepointer.
-// caveat: clangcl uses row_win.cc which works.
-#if defined(NDEBUG) || !(defined(_DEBUG) && defined(__i386__)) || \
-    !defined(__i386__) || defined(_MSC_VER)
-// TODO(fbarchard): fix build error on x86 debug
-// https://code.google.com/p/libyuv/issues/detail?id=524
-#define HAS_I411TOARGBROW_SSSE3
-// TODO(fbarchard): fix build error on android_full_debug=1
-// https://code.google.com/p/libyuv/issues/detail?id=517
-#define HAS_I422ALPHATOARGBROW_SSSE3
+// The following functions fail sometimes on gcc/clang 32 bit.
+#if defined(_MSC_VER) || !defined(__i386__)
+	// TODO(fbarchard): fix build error on x86 debug
+	// https://code.google.com/p/libyuv/issues/detail?id=524
+	#define HAS_I411TOARGBROW_SSSE3
+	// TODO(fbarchard): fix build error on android_full_debug=1
+	// https://code.google.com/p/libyuv/issues/detail?id=517
+	#define HAS_I422ALPHATOARGBROW_SSSE3
 #endif
+
 #endif
 
 // The following are available on all x86 platforms, but
@@ -209,11 +208,14 @@ extern "C" {
 #define HAS_COPYROW_AVX
 #define HAS_H422TOARGBROW_AVX2
 #define HAS_I400TOARGBROW_AVX2
-#if !(defined(_DEBUG) && defined(__i386__))
-// TODO(fbarchard): fix build error on android_full_debug=1
-// https://code.google.com/p/libyuv/issues/detail?id=517
-#define HAS_I422ALPHATOARGBROW_AVX2
+
+// The following functions fail sometimes on gcc/clang 32 bit.
+#if defined(_MSC_VER) || !defined(__i386__)
+	// TODO(fbarchard): fix build error on android_full_debug=1
+	// https://code.google.com/p/libyuv/issues/detail?id=517
+	#define HAS_I422ALPHATOARGBROW_AVX2
 #endif
+
 #define HAS_I411TOARGBROW_AVX2
 #define HAS_I422TOARGB1555ROW_AVX2
 #define HAS_I422TOARGB4444ROW_AVX2
