@@ -29,8 +29,8 @@
 #ifdef THEORA_ENABLED
 
 #include "video_stream_theora.h"
+#include "libyuv/convert_argb.h"
 #include "os/os.h"
-#include "yuv2rgb.h"
 #include "globals.h"
 
 
@@ -115,21 +115,20 @@ void VideoStreamPlaybackTheora::video_write(void){
 	frame_data.resize(size.x * size.y * pitch);
 	{
 		DVector<uint8_t>::Write w = frame_data.write();
-		char* dst = (char*)w.ptr();
+		uint8_t *dst = w.ptr();
 
 		//uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
 
 		if (px_fmt == TH_PF_444) {
 
-			yuv444_2_rgb8888((uint8_t*)dst, (uint8_t*)yuv[0].data, (uint8_t*)yuv[1].data, (uint8_t*)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x<<2, 0);
-
+			libyuv::I444ToARGB(yuv[0].data, yuv[0].stride, yuv[2].data, yuv[2].stride, yuv[1].data, yuv[1].stride, dst, size.x << 2, size.x, size.y);
 		} else if (px_fmt == TH_PF_422) {
 
-			yuv422_2_rgb8888((uint8_t*)dst, (uint8_t*)yuv[0].data, (uint8_t*)yuv[1].data, (uint8_t*)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x<<2, 0);
+			libyuv::I422ToARGB(yuv[0].data, yuv[0].stride, yuv[2].data, yuv[2].stride, yuv[1].data, yuv[1].stride, dst, size.x << 2, size.x, size.y);
 
 		} else if (px_fmt == TH_PF_420) {
 
-			yuv420_2_rgb8888((uint8_t*)dst, (uint8_t*)yuv[0].data, (uint8_t*)yuv[2].data, (uint8_t*)yuv[1].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x<<2, 0);
+			libyuv::I420ToARGB(yuv[0].data, yuv[0].stride, yuv[2].data, yuv[2].stride, yuv[1].data, yuv[1].stride, dst, size.x << 2, size.x, size.y);
 		};
 
 		format = Image::FORMAT_RGBA;
