@@ -571,25 +571,26 @@ void EditorFileDialog::update_file_list() {
 	files.sort_custom<NoCaseComparator>();
 
 	while(!dirs.empty()) {
+		const String& dir_name=dirs.front()->get();
 
-		if (dirs.front()->get()!=".") {
-			item_list->add_item(dirs.front()->get()+"/");
-			if (display_mode==DISPLAY_THUMBNAILS) {
+		item_list->add_item(dir_name+"/");
 
-				item_list->set_item_icon(item_list->get_item_count()-1,folder_thumbnail);
-			} else {
+		if (display_mode==DISPLAY_THUMBNAILS) {
 
-				item_list->set_item_icon(item_list->get_item_count()-1,folder);
-			}
+			item_list->set_item_icon(item_list->get_item_count()-1,folder_thumbnail);
+		} else {
 
-			Dictionary d;
-			d["name"]=dirs.front()->get();
-			d["path"]=String();
-			d["dir"]=true;
-			item_list->set_item_metadata( item_list->get_item_count() -1, d);
+			item_list->set_item_icon(item_list->get_item_count()-1,folder);
 		}
-		dirs.pop_front();
 
+		Dictionary d;
+		d["name"]=dir_name;
+		d["path"]=String();
+		d["dir"]=true;
+
+		item_list->set_item_metadata( item_list->get_item_count() -1, d);
+
+		dirs.pop_front();
 	}
 
 	dirs.clear();
