@@ -132,15 +132,10 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	AudioDriverManagerSW::add_driver(&audio_driver_android);
 
 
-	if (true) {
-		RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,use_reload_hooks,false,use_reload_hooks ) );
-		if (gl_extensions)
-			rasterizer_gles22->set_extensions(gl_extensions);
-		rasterizer = rasterizer_gles22;
-	} else {
-		//rasterizer = memnew( RasterizerGLES1(use_reload_hooks, use_reload_hooks) );
-
-	}
+	RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,use_reload_hooks,false,use_reload_hooks ) );
+	if (gl_extensions)
+		rasterizer_gles22->set_extensions(gl_extensions);
+	rasterizer = rasterizer_gles22;
 
 	rasterizer->set_force_16_bits_fbo(use_16bits_fbo);
 
