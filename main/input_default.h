@@ -235,6 +235,11 @@ public:
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
 
+	virtual String get_joy_button_string(int p_button);
+	virtual String get_joy_axis_string(int p_axis);
+	virtual int    get_joy_axis_index_from_string(String p_axis);
+	virtual int    get_joy_button_index_from_string(String p_button);
+
 	bool is_joy_mapped(int p_device);
 	String get_joy_guid_remapped(int p_device) const;
 	void set_fallback_mapping(String p_guid);
