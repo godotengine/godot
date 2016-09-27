@@ -81,6 +81,9 @@ int Physics2DDirectSpaceStateSW::intersect_point(const Vector2& p_point,ShapeRes
 		if (!shape->contains_point(local_point))
 			continue;
 
+		if (cc>=p_result_max)
+			continue;
+
 		r_results[cc].collider_id=col_obj->get_instance_id();
 		if (r_results[cc].collider_id!=0)
 			r_results[cc].collider=ObjectDB::get_instance(r_results[cc].collider_id);
