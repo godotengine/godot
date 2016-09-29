@@ -639,6 +639,7 @@ void LineEdit::_notification(int p_what) {
 			if(text.empty())
 				font_color.a *= placeholder_alpha;
 
+			int caret_height = font->get_height() > y_area ? y_area : font->get_height();
 			while(true) {
 
 		//end of string, break!
@@ -657,14 +658,14 @@ void LineEdit::_notification(int p_what) {
 				bool selected=selection.enabled && char_ofs>=selection.begin && char_ofs<selection.end;
 
 				if (selected)
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(char_width, y_area)), selection_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(char_width, caret_height)), selection_color);
 
 
 				font->draw_char(ci, Point2(x_ofs, y_ofs + font_ascent), cchar, next, selected ? font_color_selected : font_color);
 
 				if (char_ofs==cursor_pos && draw_caret) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(
-						Point2( x_ofs , y_ofs ), Size2( 1, y_area ) ), cursor_color );
+						Point2( x_ofs , y_ofs ), Size2( 1, caret_height ) ), cursor_color );
 				}
 
 				x_ofs+=char_width;
@@ -673,7 +674,7 @@ void LineEdit::_notification(int p_what) {
 
 			if (char_ofs==cursor_pos && draw_caret) {//may be at the end
 				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(
-					Point2( x_ofs , y_ofs ), Size2( 1, y_area ) ), cursor_color );
+					Point2( x_ofs , y_ofs ), Size2( 1, caret_height ) ), cursor_color );
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
