@@ -254,7 +254,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 		String config_err = n->get_configuration_warning();
 		if (config_err==String())
 			return;
-		config_err=config_err.world_wrap(80);
+		config_err=config_err.word_wrap(80);
 		warning->set_text(config_err);
 		warning->popup_centered_minsize();
 
