@@ -1312,10 +1312,13 @@ void OS_Windows::finalize_core() {
 
 void OS_Windows::vprint(const char* p_format, va_list p_list, bool p_stderr) {
 
-	char buf[16384+1];
-	int len = vsnprintf(buf,16384,p_format,p_list);
+	const unsigned int BUFFER_SIZE = 16384;
+	char buf[BUFFER_SIZE+1]; // +1 for the terminating character
+	int len = vsnprintf(buf,BUFFER_SIZE,p_format,p_list);
 	if (len<=0)
 		return;
+	if(len >= BUFFER_SIZE)
+		len = BUFFER_SIZE; // Output is too big, will be truncated
 	buf[len]=0;
 
 
