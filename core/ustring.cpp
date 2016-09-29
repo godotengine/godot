@@ -3173,7 +3173,7 @@ bool String::is_valid_identifier() const {
 
 //kind of poor should be rewritten properly
 
-String String::world_wrap(int p_chars_per_line) const {
+String String::word_wrap(int p_chars_per_line) const {
 
 	int from=0;
 	int last_space=0;
