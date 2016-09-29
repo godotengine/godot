@@ -3073,6 +3073,11 @@ String String::simplify_path() const {
 	}
 
 	s =s.replace("\\","/");
+	while(true){ // in case of using 2 or more slash
+		String compare = s.replace("//","/");
+		if (s==compare) break;
+		else s=compare;
+	}
 	Vector<String> dirs = s.split("/",false);
 
 	for(int i=0;i<dirs.size();i++) {
