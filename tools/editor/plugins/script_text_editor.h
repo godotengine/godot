@@ -30,6 +30,7 @@
 #define SCRIPT_TEXT_EDITOR_H
 
 #include "script_editor_plugin.h"
+#include "scene/gui/color_picker.h"
 
 
 class ScriptTextEditor : public ScriptEditorBase {
@@ -47,9 +48,15 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
+	PopupMenu  *context_menu;
 
 	GotoLineDialog *goto_line_dialog;
 	ScriptEditorQuickOpen *quick_open;
+
+	PopupPanel *color_panel;
+	ColorPicker *color_picker;
+	int color_line;
+	String color_args;
 
 	enum {
 		EDIT_UNDO,
@@ -67,6 +74,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_INDENT_RIGHT,
 		EDIT_INDENT_LEFT,
 		EDIT_CLONE_DOWN,
+		EDIT_PICK_COLOR,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,
 		SEARCH_FIND_PREV,
@@ -96,6 +104,9 @@ protected:
 	static void _bind_methods();
 
 	void _edit_option(int p_op);
+	void _make_context_menu(bool p_selection, bool p_color);
+	void _text_edit_input_event(const InputEvent& ev);
+	void _color_changed(const Color& p_color);
 
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String& p_symbol,int p_row, int p_column);

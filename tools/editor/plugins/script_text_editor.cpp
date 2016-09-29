@@ -498,6 +498,7 @@ void ScriptTextEditor::_code_complete_scripts(void* p_ud,const String& p_code, L
 
 void ScriptTextEditor::_code_complete_script(const String& p_code, List<String>* r_options) {
 
+	if (color_panel->is_visible()) return;
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
 		base = _find_node_for_script(base,base,script);
@@ -882,6 +883,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 			trim_trailing_whitespace();
 		} break;
+		case EDIT_PICK_COLOR: {
+			color_panel->popup();
+		} break;
 
 
 		case SEARCH_FIND: {
@@ -989,7 +993,8 @@ void ScriptTextEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_edit_option",&ScriptTextEditor::_edit_option);
 	ObjectTypeDB::bind_method("_goto_line",&ScriptTextEditor::_goto_line);
 	ObjectTypeDB::bind_method("_lookup_symbol",&ScriptTextEditor::_lookup_symbol);
-
+	ObjectTypeDB::bind_method("_text_edit_input_event", &ScriptTextEditor::_text_edit_input_event);
+	ObjectTypeDB::bind_method("_color_changed", &ScriptTextEditor::_color_changed);
 
 
 	ObjectTypeDB::bind_method("get_drag_data_fw",&ScriptTextEditor::get_drag_data_fw);
@@ -1168,6 +1173,96 @@ void ScriptTextEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,
 
 }
 
+void ScriptTextEditor::_text_edit_input_event(const InputEvent& ev) {
+	if (ev.type == InputEvent::MOUSE_BUTTON) {
+		InputEventMouseButton mb = ev.mouse_button;
+		if (mb.button_index == BUTTON_RIGHT && !mb.pressed) {
+
+			int col, row;
+			TextEdit* tx = code_editor->get_text_edit();
+			tx->_get_mouse_pos(Point2i(mb.global_x, mb.global_y)-tx->get_global_pos(), row, col);
+			Vector2 mpos = Vector2(mb.global_x, mb.global_y)-tx->get_global_pos();
+			bool have_selection = (tx->get_selection_text().length() > 0);
+			bool have_color = (tx->get_word_at_pos(mpos) == "Color");
+			if (have_color) {
+
+				String line = tx->get_line(row);
+				color_line = row;
+				int begin = 0;
+				int end   = 0;
+				bool valid = false;
+				for (int i = col; i < line.length(); i++) {
+					if (line[i] == '(') {
+						begin = i;
+						continue;
+					}
+					else if (line[i] == ')') {
+						end = i+1;
+						valid = true;
+						break;
+					}
+				}
+				if (valid) {
+					color_args = line.substr(begin, end-begin);
+					String stripped = color_args.replace(" ", "").replace("(", "").replace(")", "");
+					Vector<float> color = stripped.split_floats(",");
+					if (color.size() > 2) {
+						float alpha = color.size() > 3 ? color[3] : 1.0f;
+						color_picker->set_color(Color(color[0], color[1], color[2], alpha));
+					}
+					color_panel->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+					Size2 ms = Size2(300, color_picker->get_combined_minimum_size().height+10);
+					color_panel->set_size(ms);
+				} else {
+					have_color = false;
+				}
+			}
+			_make_context_menu(have_selection, have_color);
+		}
+	}
+}
+
+void ScriptTextEditor::_color_changed(const Color& p_color) {
+	String new_args;
+	if (p_color.a == 1.0f) {
+		new_args = String("("+rtos(p_color.r)+", "+rtos(p_color.g)+", "+rtos(p_color.b)+")");
+	} else {
+		new_args = String("("+rtos(p_color.r)+", "+rtos(p_color.g)+", "+rtos(p_color.b)+", "+rtos(p_color.a)+")");
+	}
+
+	String line = code_editor->get_text_edit()->get_line(color_line);
+	String new_line = line.replace(color_args, new_args);
+	color_args = new_args;
+	code_editor->get_text_edit()->set_line(color_line, new_line);
+}
+
+void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color) {
+
+	context_menu->clear();
+	if (p_selection) {
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/cut"));
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/copy"));
+	}
+
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/paste"));
+	context_menu->add_separator();
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/select_all"));
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"));
+
+	if (p_selection) {
+		context_menu->add_separator();
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_left"));
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"));
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"));
+	}
+	if (p_color) {
+		context_menu->add_separator();
+		context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
+	}
+	context_menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+	context_menu->set_size(Vector2(1, 1));
+	context_menu->popup();
+}
 
 ScriptTextEditor::ScriptTextEditor() {
 
@@ -1197,6 +1292,19 @@ ScriptTextEditor::ScriptTextEditor() {
 		EditorSettings::get_singleton()->get("text_editor/callhint_tooltip_offset"));
 
 	code_editor->get_text_edit()->set_select_identifiers_on_hover(true);
+	code_editor->get_text_edit()->set_context_menu_enabled(false);
+	code_editor->get_text_edit()->connect("input_event", this, "_text_edit_input_event");
+
+	context_menu = memnew(PopupMenu);
+	add_child(context_menu);
+	context_menu->connect("item_pressed", this, "_edit_option");
+
+	color_panel = memnew(PopupPanel);
+	add_child(color_panel);
+	color_picker = memnew(ColorPicker);
+	color_panel->add_child(color_picker);
+	color_panel->set_child_rect(color_picker);
+	color_picker->connect("color_changed", this, "_color_changed");
 
 	edit_hb = memnew (HBoxContainer);
 
@@ -1279,8 +1387,8 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/select_all", TTR("Select All"), KEY_MASK_CMD|KEY_A);
 	ED_SHORTCUT("script_text_editor/move_up", TTR("Move Up"), KEY_MASK_ALT|KEY_UP);
 	ED_SHORTCUT("script_text_editor/move_down", TTR("Move Down"), KEY_MASK_ALT|KEY_DOWN);
-	ED_SHORTCUT("script_text_editor/indent_left", TTR("Indent Left"), 0);
-	ED_SHORTCUT("script_text_editor/indent_right", TTR("Indent Right"), 0);
+	ED_SHORTCUT("script_text_editor/indent_left", TTR("Indent Left"), KEY_MASK_ALT|KEY_LEFT);
+	ED_SHORTCUT("script_text_editor/indent_right", TTR("Indent Right"), KEY_MASK_ALT|KEY_RIGHT);
 	ED_SHORTCUT("script_text_editor/toggle_comment", TTR("Toggle Comment"), KEY_MASK_CMD|KEY_K);
 	ED_SHORTCUT("script_text_editor/clone_down", TTR("Clone Down"), KEY_MASK_CMD|KEY_B);
 #ifdef OSX_ENABLED
