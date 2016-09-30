@@ -1567,6 +1567,193 @@ bool GDParser::_recover_from_completion() {
 	return true;
 }
 
+GDParser::PatternNode *GDParser::_parse_pattern(bool p_static)
+{
+	
+	PatternNode *pattern = memnew(PatternNode);
+	
+	GDTokenizer::Token token = tokenizer->get_token();
+	if (error_set)
+		return NULL;
+	
+	switch (token) {
+		// all the constants like strings and numbers
+		case GDTokenizer::TK_CONSTANT: {
+			Node *value = _parse_and_reduce_expression(pattern, p_static);
+			if (value->type != GDParser::Node::TYPE_CONSTANT) {
+				_set_error("Not a constant expression");
+				return NULL;
+			}
+			pattern->pt_type = GDParser::PatternNode::PT_CONSTANT;
+			pattern->constant = static_cast<ConstantNode*>(value);
+		} break;
+		
+		case GDTokenizer::TK_BRACKET_OPEN: {
+			tokenizer->advance();
+			pattern->pt_type = GDParser::PatternNode::PT_ARRAY;
+			while (true) {
+				
+				if (tokenizer->get_token() == GDTokenizer::TK_BRACKET_CLOSE) {
+					tokenizer->advance();
+					break;
+				}
+				
+				if (tokenizer->get_token() == GDTokenizer::TK_PERIOD && tokenizer->get_token(1) == GDTokenizer::TK_PERIOD) {
+					// match everything
+					tokenizer->advance(2);
+					pattern->pt_type = GDParser::PatternNode::PT_IGNORE_REST;
+					if (tokenizer->get_token() == GDTokenizer::TK_COMMA && tokenizer->get_token(1) == GDTokenizer::TK_BRACKET_CLOSE) {
+						tokenizer->advance(2);
+						break;
+					} else if (tokenizer->get_token() == GDTokenizer::TK_BRACKET_CLOSE) {
+						tokenizer->advance(1);
+						break;
+					} else {
+						_set_error("'..' pattern only allowed at the end of an array pattern");
+						return NULL;
+					}
+				}
+				
+				PatternNode *sub_pattern = _parse_pattern(p_static);
+				if (!sub_pattern) {
+					return NULL;
+				}
+				
+				pattern->array.push_back(sub_pattern);
+				
+				if (tokenizer->get_token() == GDTokenizer::TK_COMMA) {
+					tokenizer->advance();
+					continue;
+				} else if (tokenizer->get_token() == GDTokenizer::TK_BRACKET_CLOSE) {
+					tokenizer->advance();
+					break;
+				} else {
+					_set_error("Not a valid pattern");
+					return NULL;
+				}
+			}
+		} break;
+		
+		case GDTokenizer::TK_IDENTIFIER: {
+			pattern->pt_type = GDParser::PatternNode::PT_BIND;
+			pattern->bind = tokenizer->get_token_identifier();
+			tokenizer->advance();
+		} break;
+		
+		case GDTokenizer::TK_CURLY_BRACKET_OPEN: {
+			tokenizer->advance();
+			pattern->pt_type = GDParser::PatternNode::PT_DICITIONARY;
+			while (true) {
+				
+				if (tokenizer->get_token() == GDTokenizer::TK_CURLY_BRACKET_CLOSE) {
+					tokenizer->advance();
+					break;
+				}
+				
+				if (tokenizer->get_token() == GDTokenizer::TK_PERIOD && tokenizer->get_token(1) == GDTokenizer::TK_PERIOD) {
+					// match everything
+					tokenizer->advance(2);
+					pattern->pt_type = GDParser::PatternNode::PT_IGNORE_REST;
+					if (tokenizer->get_token() == GDTokenizer::TK_COMMA && tokenizer->get_token(1) == GDTokenizer::TK_CURLY_BRACKET_CLOSE) {
+						tokenizer->advance(2);
+						break;
+					} else if (tokenizer->get_token() == GDTokenizer::TK_CURLY_BRACKET_CLOSE) {
+						tokenizer->advance(1);
+						break;
+					} else {
+						_set_error("'..' pattern only allowed at the end of an dictionary pattern");
+						return NULL;
+					}
+				}
+				
+				Node *key = _parse_and_reduce_expression(pattern, p_static);
+				if (!key) {
+					_set_error("Not a valid key in pattern");
+					return NULL;
+				}
+				
+				if (key->type != GDParser::Node::TYPE_CONSTANT) {
+					_set_error("Not a constant expression as key");
+					return NULL;
+				}
+				
+				if (tokenizer->get_token() == GDTokenizer::TK_COLON) {
+					tokenizer->advance();
+					
+					PatternNode *value = _parse_pattern(p_static);
+					if (!value) {
+						_set_error("Expected pattern in dictionary value");
+						return NULL;
+					}
+					
+					pattern->dictionary.insert(static_cast<ConstantNode*>(key), value);
+				} else {
+					pattern->dictionary.insert(static_cast<ConstantNode*>(key), NULL);
+				}
+				
+				
+				if (tokenizer->get_token() == GDTokenizer::TK_COMMA) {
+					tokenizer->advance();
+					continue;
+				} else if (tokenizer->get_token() == GDTokenizer::TK_CURLY_BRACKET_CLOSE) {
+					tokenizer->advance();
+					break;
+				} else {
+					_set_error("Not a valid pattern");
+					return NULL;
+				}
+			}
+		} break;
+		
+		default: {
+			_set_error("Not a valid pattern");
+			return NULL;
+		}
+	}
+	
+	return pattern;
+}
+
+void GDParser::_parse_pattern_block(Vector<PatternBranchNode*> &p_block, bool p_static)
+{
+	int indent_level = tab_level.back()->get();
+	
+	while (true) {
+		
+		while (tokenizer->get_token() == GDTokenizer::TK_NEWLINE && _parse_newline());
+		
+		// GDTokenizer::Token token = tokenizer->get_token();
+		if (error_set)
+			return;
+		
+		if (indent_level > tab_level.back()->get()) {
+			return; // go back a level
+		}
+		
+		if (pending_newline!=-1) {
+			pending_newline=-1;
+		}
+		
+		PatternBranchNode *branch = memnew(PatternBranchNode);
+		
+		branch->pattern = _parse_pattern(p_static);
+		if (!branch->pattern) {
+			return;
+		}
+		
+		if(!_enter_indent_block()) {
+			_set_error("Expected block in pattern branch");
+			return;
+		}
+		
+		branch->body = memnew(BlockNode);
+		
+		_parse_block(branch->body, p_static);
+		
+		p_block.push_back(branch);
+	}
+}
+
 void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 
 	int indent_level = tab_level.back()->get();
@@ -1969,6 +2156,33 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				}
 
 
+			} break;
+			case GDTokenizer::TK_CF_MATCH: {
+				
+				tokenizer->advance();
+				
+				ControlFlowNode *match_node = memnew(ControlFlowNode);
+				match_node->cf_type = ControlFlowNode::CF_MATCH;
+				
+				Node *val_to_match = _parse_and_reduce_expression(p_block, p_static);
+				
+				if (!val_to_match) {
+					if (_recover_from_completion()) {
+						break;
+					}
+					return;
+				}
+				
+				match_node->arguments.push_back(val_to_match);
+				
+				if (!_enter_indent_block()) {
+					_set_error("Expected indented pattern matching block after 'match'");
+					return;
+				}
+				
+				_parse_pattern_block(match_node->branches, p_static);
+
+				p_block->statements.push_back(match_node);
 			} break;
 			case GDTokenizer::TK_PR_ASSERT: {
 
