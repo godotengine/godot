@@ -38,6 +38,7 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/button_group.h"
 #include "scene/gui/margin_container.h"
+#include "scene/io/resource_format_image.h"
 
 static const char *flag_names[]={
 	("Streaming Format"),
@@ -1589,16 +1590,9 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 				} break; //use default
 			}
 
+			String validated_path=EditorImportPlugin::validate_source_path(p_path);
 
-			int flags=0;
-
-			if (Globals::get_singleton()->get("image_loader/filter"))
-				flags|=IMAGE_FLAG_FILTER;
-			if (!Globals::get_singleton()->get("image_loader/gen_mipmaps"))
-				flags|=IMAGE_FLAG_NO_MIPMAPS;
-			if (!Globals::get_singleton()->get("image_loader/repeat"))
-				flags|=IMAGE_FLAG_REPEAT;
-
+			int flags=texture_flags_to_export_flags(ResourceFormatLoaderImage::load_image_flags(validated_path));
 			flags|=IMAGE_FLAG_FIX_BORDER_ALPHA;
 
 			print_line("group format"+itos(group_format));
@@ -1607,7 +1601,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 			rimd->set_option("quality",group_lossy_quality);
 			rimd->set_option("atlas",false);
 			rimd->set_option("shrink",group_shrink);
-			rimd->add_source(EditorImportPlugin::validate_source_path(p_path),FileAccess::get_md5(p_path));
+			rimd->add_source(validated_path,FileAccess::get_md5(p_path));
 
 		} else if (EditorImportExport::get_singleton()->get_image_formats().has(p_path.extension().to_lower()) && EditorImportExport::get_singleton()->get_export_image_action()!=EditorImportExport::IMAGE_ACTION_NONE) {
 			//handled by general image export settings
@@ -1619,22 +1613,16 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 				case EditorImportExport::IMAGE_ACTION_COMPRESS_RAM: rimd->set_option("format",IMAGE_FORMAT_COMPRESS_RAM); break;
 			}
 
-			int flags=0;
+			String validated_path=EditorImportPlugin::validate_source_path(p_path);
 
-			if (Globals::get_singleton()->get("image_loader/filter"))
-				flags|=IMAGE_FLAG_FILTER;
-			if (!Globals::get_singleton()->get("image_loader/gen_mipmaps"))
-				flags|=IMAGE_FLAG_NO_MIPMAPS;
-			if (!Globals::get_singleton()->get("image_loader/repeat"))
-				flags|=IMAGE_FLAG_REPEAT;
-
+			int flags=texture_flags_to_export_flags(ResourceFormatLoaderImage::load_image_flags(validated_path));
 			flags|=IMAGE_FLAG_FIX_BORDER_ALPHA;
 
 			rimd->set_option("shrink",EditorImportExport::get_singleton()->get_export_image_shrink());
 			rimd->set_option("flags",flags);
 			rimd->set_option("quality",EditorImportExport::get_singleton()->get_export_image_quality());
 			rimd->set_option("atlas",false);
-			rimd->add_source(EditorImportPlugin::validate_source_path(p_path),FileAccess::get_md5(p_path));
+			rimd->add_source(validated_path,FileAccess::get_md5(p_path));
 
 		} else {
 			return Vector<uint8_t>();
@@ -1724,6 +1712,33 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 	f->get_buffer(ret.ptr(),ret.size());
 
 	return ret;
+}
+
+uint32_t EditorTextureImportPlugin::texture_flags_to_export_flags(uint32_t p_tex_flags) const {
+
+	uint32_t flags=0;
+
+	if (!(p_tex_flags&Texture::FLAG_MIPMAPS)) {
+		flags|=IMAGE_FLAG_NO_MIPMAPS;
+	}
+	if (p_tex_flags&Texture::FLAG_REPEAT) {
+		flags|=IMAGE_FLAG_REPEAT;
+	}
+	if (p_tex_flags&Texture::FLAG_FILTER) {
+		flags|=IMAGE_FLAG_FILTER;
+	}
+	if (p_tex_flags&Texture::FLAG_ANISOTROPIC_FILTER) {
+		flags|=IMAGE_FLAG_USE_ANISOTROPY;
+	}
+	if (p_tex_flags&Texture::FLAG_CONVERT_TO_LINEAR) {
+		flags|=IMAGE_FLAG_CONVERT_TO_LINEAR;
+	}
+	/* // no correspondence yet
+	if (p_tex_flags&Texture::TEXTURE_FLAG_MIRRORED_REPEAT) {
+		flags|=;
+	}*/
+
+	return flags;
 }
 
 void EditorTextureImportPlugin::import_from_drop(const Vector<String>& p_drop,const String& p_dest_path) {

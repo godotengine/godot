@@ -136,61 +136,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 #endif
 
 
-		uint32_t flags=0;
-
-		FileAccess *f2 = FileAccess::open(p_path+".flags",FileAccess::READ);
-		Map<String,bool> flags_found;
-		if (f2) {
-
-			while(!f2->eof_reached()) {
-				String l2 = f2->get_line();
-				int eqpos = l2.find("=");
-				if (eqpos!=-1) {
-					String flag=l2.substr(0,eqpos).strip_edges();
-					String val=l2.substr(eqpos+1,l2.length()).strip_edges().to_lower();
-					flags_found[flag]=(val=="true" || val=="1")?true:false;
-				}
-			}
-			memdelete(f2);
-		}
-
-
-		if (flags_found.has("filter")) {
-			if (flags_found["filter"])
-				flags|=Texture::FLAG_FILTER;
-		} else if (bool(GLOBAL_DEF("image_loader/filter",true))) {
-			flags|=Texture::FLAG_FILTER;
-		}
-
-
-		if (flags_found.has("gen_mipmaps")) {
-			if (flags_found["gen_mipmaps"])
-				flags|=Texture::FLAG_MIPMAPS;
-		} else if (bool(GLOBAL_DEF("image_loader/gen_mipmaps",true))) {
-			flags|=Texture::FLAG_MIPMAPS;
-		}
-
-		if (flags_found.has("repeat")) {
-			if (flags_found["repeat"])
-				flags|=Texture::FLAG_REPEAT;
-		} else if (bool(GLOBAL_DEF("image_loader/repeat",true))) {
-			flags|=Texture::FLAG_REPEAT;
-		}
-
-		if (flags_found.has("anisotropic")) {
-			if (flags_found["anisotropic"])
-				flags|=Texture::FLAG_ANISOTROPIC_FILTER;
-		}
-
-		if (flags_found.has("tolinear")) {
-			if (flags_found["tolinear"])
-				flags|=Texture::FLAG_CONVERT_TO_LINEAR;
-		}
-
-		if (flags_found.has("mirroredrepeat")) {
-			if (flags_found["mirroredrepeat"])
-				flags|=Texture::FLAG_MIRRORED_REPEAT;
-		}
+		uint32_t flags=load_image_flags(p_path);
 
 		if (debug_load_times)
 			begtime=OS::get_singleton()->get_ticks_usec();
@@ -212,6 +158,68 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 	}
 
 
+}
+
+uint32_t ResourceFormatLoaderImage::load_image_flags(const String &p_path) {
+
+
+	FileAccess *f2 = FileAccess::open(p_path+".flags",FileAccess::READ);
+	Map<String,bool> flags_found;
+	if (f2) {
+
+		while(!f2->eof_reached()) {
+			String l2 = f2->get_line();
+			int eqpos = l2.find("=");
+			if (eqpos!=-1) {
+				String flag=l2.substr(0,eqpos).strip_edges();
+				String val=l2.substr(eqpos+1,l2.length()).strip_edges().to_lower();
+				flags_found[flag]=(val=="true" || val=="1")?true:false;
+			}
+		}
+		memdelete(f2);
+	}
+
+
+	uint32_t flags=0;
+
+	if (flags_found.has("filter")) {
+		if (flags_found["filter"])
+			flags|=Texture::FLAG_FILTER;
+	} else if (bool(GLOBAL_DEF("image_loader/filter",true))) {
+		flags|=Texture::FLAG_FILTER;
+	}
+
+
+	if (flags_found.has("gen_mipmaps")) {
+		if (flags_found["gen_mipmaps"])
+			flags|=Texture::FLAG_MIPMAPS;
+	} else if (bool(GLOBAL_DEF("image_loader/gen_mipmaps",true))) {
+		flags|=Texture::FLAG_MIPMAPS;
+	}
+
+	if (flags_found.has("repeat")) {
+		if (flags_found["repeat"])
+			flags|=Texture::FLAG_REPEAT;
+	} else if (bool(GLOBAL_DEF("image_loader/repeat",true))) {
+		flags|=Texture::FLAG_REPEAT;
+	}
+
+	if (flags_found.has("anisotropic")) {
+		if (flags_found["anisotropic"])
+			flags|=Texture::FLAG_ANISOTROPIC_FILTER;
+	}
+
+	if (flags_found.has("tolinear")) {
+		if (flags_found["tolinear"])
+			flags|=Texture::FLAG_CONVERT_TO_LINEAR;
+	}
+
+	if (flags_found.has("mirroredrepeat")) {
+		if (flags_found["mirroredrepeat"])
+			flags|=Texture::FLAG_MIRRORED_REPEAT;
+	}
+
+	return flags;
 }
 
 bool ResourceFormatLoaderImage::handles_type(const String& p_type) const {
