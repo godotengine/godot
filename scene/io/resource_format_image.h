@@ -39,8 +39,8 @@ class ResourceFormatLoaderImage : public ResourceFormatLoader {
 	bool debug_load_times;
 	int max_texture_size;
 public:
-
 	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
+	static uint32_t load_image_flags(const String &p_path);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String& p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
