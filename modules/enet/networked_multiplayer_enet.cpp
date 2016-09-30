@@ -359,7 +359,7 @@ Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer,int &r_buffe
 	incoming_packets.pop_front();
 
 	*r_buffer=(const uint8_t*)(&current_packet.packet->data[12]);
-	r_buffer_size=current_packet.packet->dataLength;
+	r_buffer_size=current_packet.packet->dataLength-12;
 
 	return OK;
 }
