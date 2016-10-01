@@ -31861,14 +31861,21 @@
 </class>
 <class name="RayCast" inherits="Spatial" category="Core">
 	<brief_description>
+		Query the closest object intersecting a ray.
 	</brief_description>
 	<description>
+		A RayCast represents a line from its origin to its destination position [code]cast_to[/code], it is used to query the 3D space in order to find the closest object intersecting with the ray.
+
+		RayCast can ignore some objects by adding them to the exception list via [code]add_exception[/code], setting proper filtering with layers, or by filtering object types with type masks.
+
+		Only enabled raycasts will be able to query the space and report collisions!
 	</description>
 	<methods>
 		<method name="add_exception">
 			<argument index="0" name="node" type="Object">
 			</argument>
 			<description>
+				Adds a collision exception so the ray does not report collisions with the specified [code]node[/code].
 			</description>
 		</method>
 		<method name="add_exception_rid">
@@ -31879,30 +31886,35 @@
 		</method>
 		<method name="clear_exceptions">
 			<description>
+				Removes all collision exception for this ray.
 			</description>
 		</method>
 		<method name="get_cast_to" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+				Return the destination point of this ray object.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
 			<return type="Object">
 			</return>
 			<description>
+				Return the closest object the ray is pointing to. Note that this does not consider the length of the vector, so you must also use [method is_colliding] to check if the object returned is actually colliding with the ray.
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the collision shape of the closest object the ray is pointing to.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+				Returns the normal of the intersecting object shape face containing the collision point.
 			</description>
 		</method>
 		<method name="get_collision_point" qualifiers="const">
@@ -31916,30 +31928,35 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the layer mask for this ray.
 			</description>
 		</method>
 		<method name="get_type_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the type mask (types of objects to detect) for this ray. The value is a sum (bitwise OR'd) of constants available for [PhysicsDirectSpaceState].
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Return whether the closest object the ray is pointing to is colliding with the vector (considering the vector length).
 			</description>
 		</method>
 		<method name="is_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether this raycast is enabled or not.
 			</description>
 		</method>
 		<method name="remove_exception">
 			<argument index="0" name="node" type="Object">
 			</argument>
 			<description>
+				Removes a collision exception so the ray does report collisions with the specified [code]node[/code].
 			</description>
 		</method>
 		<method name="remove_exception_rid">
@@ -31959,18 +31976,21 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+				Enables the RayCast2D. Only enabled raycasts will be able to query the space and report collisions.
 			</description>
 		</method>
 		<method name="set_layer_mask">
 			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
+				Set the mask to filter objects. Only objects with at least the same mask element set will be detected.
 			</description>
 		</method>
 		<method name="set_type_mask">
 			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
+				Set the types of objects to detect. For [code]mask[/code] use a logic sum (OR operation) of constants defined in [PhysicsDirectSpaceState], eg. [code]PhysicsDirectSpaceState.TYPE_MASK_STATIC_BODY | PhysicsDirectSpaceState.TYPE_MASK_KINEMATIC_BODY[/code] to detect only those two types.
 			</description>
 		</method>
 	</methods>
@@ -31979,10 +31999,14 @@
 </class>
 <class name="RayCast2D" inherits="Node2D" category="Core">
 	<brief_description>
-		Query the closest object intersecting a ray
+		Query the closest object intersecting a ray.
 	</brief_description>
 	<description>
 		A RayCast2D represents a line from its origin to its destination position [code]cast_to[/code], it is used to query the 2D space in order to find the closest object intersecting with the ray.
+
+		RayCast2D can ignore some objects by adding them to the exception list via [code]add_exception[/code], setting proper filtering with layers, or by filtering object types with type masks.
+
+		Only enabled raycasts will be able to query the space and report collisions!
 	</description>
 	<methods>
 		<method name="add_exception">
@@ -32007,7 +32031,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the destination point of this ray object
+				Return the destination point of this ray object.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
@@ -32035,13 +32059,14 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the collision point in which the ray intersects the closest object.
+				Returns the collision point in which the ray intersects the closest object. This point is in [b]global[/b] coordinate system.
 			</description>
 		</method>
 		<method name="get_exclude_parent_body" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether this ray should hit your parent node, if it's a body.
 			</description>
 		</method>
 		<method name="get_layer_mask" qualifiers="const">
@@ -32055,6 +32080,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the type mask (types of objects to detect) for this ray. The value is a sum (bitwise OR'd) of constants available for [Physics2DDirectSpaceState].
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
@@ -32068,7 +32094,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this raycast is enabled or not
+				Returns whether this raycast is enabled or not.
 			</description>
 		</method>
 		<method name="remove_exception">
@@ -32102,18 +32128,21 @@
 			<argument index="0" name="mask" type="bool">
 			</argument>
 			<description>
+				Toggle whether this ray should hit your parent node, if it's a body.
 			</description>
 		</method>
 		<method name="set_layer_mask">
 			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
+				Set the mask to filter objects. Only objects with at least the same mask element set will be detected.
 			</description>
 		</method>
 		<method name="set_type_mask">
 			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
+				Set the types of objects to detect. For [code]mask[/code] use a logic sum (OR operation) of constants defined in [Physics2DDirectSpaceState], eg. [code]Physics2DDirectSpaceState.TYPE_MASK_STATIC_BODY | Physics2DDirectSpaceState.TYPE_MASK_KINEMATIC_BODY[/code] to detect only those two types.
 			</description>
 		</method>
 	</methods>
