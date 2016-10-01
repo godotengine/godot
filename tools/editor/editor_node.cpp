@@ -266,10 +266,12 @@ void EditorNode::_notification(int p_what) {
 				circle_step=0;
 
 			circle_step_msec=tick;
-		circle_step_frame=frame+1;
+		    circle_step_frame=frame+1;
 
-			update_menu->set_icon(gui_base->get_icon("Progress"+itos(circle_step+1),"EditorIcons"));
-
+            // update the circle itself only when its enabled
+            if (!update_menu->get_popup()->is_item_checked(3)){
+                update_menu->set_icon(gui_base->get_icon("Progress"+itos(circle_step+1),"EditorIcons"));
+            }
 		}
 
 		scene_root->set_size_override(true,Size2(Globals::get_singleton()->get("display/width"),Globals::get_singleton()->get("display/height")));
@@ -2678,7 +2680,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		} break;
 		case RUN_PLAY_NATIVE: {
-			
+
 			bool autosave = EDITOR_DEF("run/auto_save_before_running",true);
 			if (autosave) {
 				_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
@@ -2797,6 +2799,10 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			update_menu->get_popup()->set_item_checked(1,true);
 			OS::get_singleton()->set_low_processor_usage_mode(true);
 		} break;
+        case SETTINGS_UPDATE_SPINNER_HIDE: {
+			update_menu->set_icon(gui_base->get_icon("Collapse","EditorIcons"));
+            update_menu->get_popup()->toggle_item_checked(3);
+        } break;
 		case SETTINGS_PREFERENCES: {
 
 			settings_config_dialog->popup_edit_settings();
@@ -6064,6 +6070,8 @@ EditorNode::EditorNode() {
 	p=update_menu->get_popup();
 	p->add_check_item(TTR("Update Always"),SETTINGS_UPDATE_ALWAYS);
 	p->add_check_item(TTR("Update Changes"),SETTINGS_UPDATE_CHANGES);
+    p->add_separator();
+    p->add_check_item(TTR("Disable Update Spinner"),SETTINGS_UPDATE_SPINNER_HIDE);
 	p->set_item_checked(1,true);
 
 	//sources_button->connect();
