@@ -117,7 +117,6 @@ if (env["tools"]!="no"):
 	SConscript('editor/SCsub');
 	SConscript('collada/SCsub');
 	SConscript('doc/SCsub')
-	SConscript('pck/SCsub')
 
 	lib = env.Library("tool",env.tool_sources)
 

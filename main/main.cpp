@@ -57,7 +57,6 @@
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
 
-#include "tools/pck/pck_packer.h"
 #endif
 
 #include "io/file_access_network.h"
@@ -995,7 +994,6 @@ Error Main::setup2() {
 	}
 #ifdef TOOLS_ENABLED
 	EditorNode::register_editor_types();
-	ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
 #endif
 
 	MAIN_PRINT("Main: Load Scripts, Modules, Drivers");
@@ -1747,4 +1745,3 @@ void Main::cleanup() {
 
 
 }
-

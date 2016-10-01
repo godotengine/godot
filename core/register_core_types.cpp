@@ -48,6 +48,7 @@
 #include "os/input.h"
 #include "core/io/xml_parser.h"
 #include "io/http_client.h"
+#include "io/pck_packer.h"
 #include "packed_data_container.h"
 #include "func_ref.h"
 #include "input_map.h"
@@ -143,6 +144,8 @@ void register_core_types() {
 	ObjectTypeDB::register_type<XMLParser>();
 
 	ObjectTypeDB::register_type<ConfigFile>();
+
+	ObjectTypeDB::register_type<PCKPacker>();
 
 	ObjectTypeDB::register_type<PackedDataContainer>();
 	ObjectTypeDB::register_virtual_type<PackedDataContainerRef>();
