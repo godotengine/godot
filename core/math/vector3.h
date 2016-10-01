@@ -100,6 +100,7 @@ struct Vector3 {
 	_FORCE_INLINE_ real_t distance_to(const Vector3& p_b) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3& p_b) const;
 
+	_FORCE_INLINE_ real_t angle_to(const Vector3& p_b) const;
 
 
 	_FORCE_INLINE_ Vector3 slide(const Vector3& p_vec) const;
@@ -183,15 +184,19 @@ Vector3 Vector3::linear_interpolate(const Vector3& p_b,float p_t) const {
 	);
 }
 
-
-
 real_t Vector3::distance_to(const Vector3& p_b) const {
 
 	return (p_b-*this).length();
 }
+
 real_t Vector3::distance_squared_to(const Vector3& p_b) const {
 
 	return (p_b-*this).length_squared();
+}
+
+real_t Vector3::angle_to(const Vector3& p_b) const {
+
+	return Math::acos(this->dot(p_b) / Math::sqrt(this->length_squared() * p_b.length_squared()));
 }
 
 /* Operators */
@@ -220,8 +225,6 @@ Vector3 Vector3::operator-(const Vector3& p_v) const {
 
 	return Vector3(x-p_v.x, y-p_v.y, z- p_v.z);
 }
-
-
 
 Vector3& Vector3::operator*=(const Vector3& p_v) {
 
@@ -283,7 +286,6 @@ Vector3 Vector3::operator-() const {
 
 	return Vector3( -x, -y, -z );
 }
-
 
 bool Vector3::operator==(const Vector3& p_v) const {
 
