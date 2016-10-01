@@ -2153,6 +2153,120 @@
 	<constants>
 	</constants>
 </class>
+<class name="AStar" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="add_point">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="pos" type="Vector3">
+			</argument>
+			<argument index="2" name="weight_scale" type="float" default="1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="are_points_connected" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear">
+			<description>
+			</description>
+		</method>
+		<method name="connect_points">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="disconnect_points">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_available_point_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="to_pos" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_pos_in_segment" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="to_pos" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_id_path">
+			<return type="IntArray">
+			</return>
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_path">
+			<return type="Vector3Array">
+			</return>
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_pos" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_weight_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_point">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="AcceptDialog" inherits="WindowDialog" category="Core">
 	<brief_description>
 		Base dialog for user notification.
@@ -4024,7 +4138,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area enters this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -4044,7 +4158,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area exits this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -4366,7 +4480,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area enters this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -4386,7 +4500,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area exits this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -6755,6 +6869,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_custom_viewport" qualifiers="const">
+			<return type="Viewport">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_drag_margin" qualifiers="const">
 			<return type="float">
 			</return>
@@ -6854,6 +6974,12 @@
 		</method>
 		<method name="set_anchor_mode">
 			<argument index="0" name="anchor_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_viewport">
+			<argument index="0" name="viewport" type="Viewport">
 			</argument>
 			<description>
 			</description>
@@ -7560,6 +7686,12 @@
 		Canvas Item layer. [CanvasItem] nodes that are direct or indirect children of a [CanvasLayer] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index 0, so a [CanvasLayer] with index -1 will be drawn below, and one with index 1 will be drawn above. This is very useful for HUDs (in layer 1+ or above), or backgrounds (in layer -1 or below).
 	</description>
 	<methods>
+		<method name="get_custom_viewport" qualifiers="const">
+			<return type="Viewport">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_layer" qualifiers="const">
 			<return type="int">
 			</return>
@@ -7602,18 +7734,17 @@
 				Return the base transform for this layer.
 			</description>
 		</method>
-		<method name="get_viewport" qualifiers="const">
-			<return type="RID">
-			</return>
-			<description>
-				Return the viewport RID for this layer.
-			</description>
-		</method>
 		<method name="get_world_2d" qualifiers="const">
 			<return type="World2D">
 			</return>
 			<description>
 				Return the [World2D] used by this layer.
+			</description>
+		</method>
+		<method name="set_custom_viewport">
+			<argument index="0" name="viewport" type="Viewport">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_layer">
@@ -8672,6 +8803,28 @@
 			</return>
 			<description>
 				Return the array size.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="ColorFrame" inherits="Control" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_frame_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_frame_color">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -11769,6 +11922,10 @@
 				Return true if this is a main screen editor plugin (it goes in the main screen selector together with 2D, 3D, Script).
 			</description>
 		</method>
+		<method name="hide_bottom_panel">
+			<description>
+			</description>
+		</method>
 		<method name="inspect_object">
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -11776,6 +11933,12 @@
 			</argument>
 			<description>
 				Inspect an object in the inspector.
+			</description>
+		</method>
+		<method name="make_bottom_panel_item_visible">
+			<argument index="0" name="item" type="Control">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="make_visible" qualifiers="virtual">
@@ -12076,7 +12239,7 @@
 			<return type="Array">
 			</return>
 			<description>
-			Get the list of selected nodes, optimized for transform operations (ie, moving them, rotating, etc). This list avoids situations where a node is selected and also chid/grandchild.
+				Get the list of selected nodes, optimized for transform operations (ie, moving them, rotating, etc). This list avoids situations where a node is selected and also chid/grandchild.
 			</description>
 		</method>
 		<method name="remove_node">
@@ -16485,6 +16648,38 @@
 			</argument>
 			<description>
 				Returns the current value of the joystick axis at given index (see JOY_* constants in [@Global Scope])
+			</description>
+		</method>
+		<method name="get_joy_axis_index_from_string">
+			<return type="int">
+			</return>
+			<argument index="0" name="axis" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_axis_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="axis_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_button_index_from_string">
+			<return type="int">
+			</return>
+			<argument index="0" name="button" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_button_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="button_index" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
@@ -40910,6 +41105,16 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="symbol_lookup">
+			<argument index="0" name="symbol" type="String">
+			</argument>
+			<argument index="1" name="row" type="int">
+			</argument>
+			<argument index="2" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="text_changed">
 			<description>
 				Emitted when the text changes.
@@ -44541,6 +44746,14 @@ do_property].
 				Returns the angle in radians between the line connecting the two points and the x coordinate.
 			</description>
 		</method>
+		<method name="clamped">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="length" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="cubic_interpolate">
 			<return type="Vector2">
 			</return>
@@ -45627,6 +45840,12 @@ do_property].
 				Return the 3D world of the viewport.
 			</description>
 		</method>
+		<method name="get_world_2d" qualifiers="const">
+			<return type="World2D">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
 			<return type="Variant">
 			</return>
@@ -45848,6 +46067,12 @@ do_property].
 			</argument>
 			<description>
 				Change the 3D world of the viewport.
+			</description>
+		</method>
+		<method name="set_world_2d">
+			<argument index="0" name="world_2d" type="World2D">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="unhandled_input">
@@ -46170,8 +46395,20 @@ do_property].
 	<description>
 	</description>
 	<methods>
+		<method name="get_aabb" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_layer_mask" qualifiers="const">
 			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_transformed_aabb" qualifiers="const">
+			<return type="AABB">
 			</return>
 			<description>
 			</description>
