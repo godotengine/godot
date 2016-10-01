@@ -57,7 +57,6 @@
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
 
-#include "tools/pck/pck_packer.h"
 #endif
 
 #include "io/file_access_network.h"
@@ -996,7 +995,7 @@ Error Main::setup2() {
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::set_current_api(ObjectTypeDB::API_EDITOR);
 	EditorNode::register_editor_types();
-	ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
+
 	ObjectTypeDB::set_current_api(ObjectTypeDB::API_CORE);
 
 #endif
@@ -1755,4 +1754,3 @@ void Main::cleanup() {
 
 
 }
-
