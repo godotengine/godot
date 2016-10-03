@@ -10821,8 +10821,46 @@ void RasterizerGLES2::init() {
 		print_line(String("GLES2: Using GLEW ") + (const char*) glewGetString(GLEW_VERSION));
 	}
 
+	// Godot makes use of functions from ARB_framebuffer_object extension which is not implemented by all drivers.
+	// On the other hand, these drivers might implement the older EXT_framebuffer_object extension
+	// with which current source code is backward compatible.
+
+	bool framebuffer_object_is_supported = glewIsSupported("GL_ARB_framebuffer_object");
+
+	if ( !framebuffer_object_is_supported ) {
+		WARN_PRINT("GL_ARB_framebuffer_object not supported by your graphics card.");
+
+		if ( glewIsSupported("GL_EXT_framebuffer_object") ) {
+			// falling-back to the older EXT function if present
+			WARN_PRINT("Falling-back to GL_EXT_framebuffer_object.");
+
+			glIsRenderbuffer = glIsRenderbufferEXT;
+			glBindRenderbuffer = glBindRenderbufferEXT;
+			glDeleteRenderbuffers = glDeleteRenderbuffersEXT;
+			glGenRenderbuffers = glGenRenderbuffersEXT;
+			glRenderbufferStorage = glRenderbufferStorageEXT;
+			glGetRenderbufferParameteriv = glGetRenderbufferParameterivEXT;
+			glIsFramebuffer = glIsFramebufferEXT;
+			glBindFramebuffer = glBindFramebufferEXT;
+			glDeleteFramebuffers = glDeleteFramebuffersEXT;
+			glGenFramebuffers = glGenFramebuffersEXT;
+			glCheckFramebufferStatus = glCheckFramebufferStatusEXT;
+			glFramebufferTexture1D = glFramebufferTexture1DEXT;
+			glFramebufferTexture2D = glFramebufferTexture2DEXT;
+			glFramebufferTexture3D = glFramebufferTexture3DEXT;
+			glFramebufferRenderbuffer = glFramebufferRenderbufferEXT;
+			glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameterivEXT;
+			glGenerateMipmap = glGenerateMipmapEXT;
+
+			framebuffer_object_is_supported = true;
+		}
+		else {
+			ERR_PRINT("Framebuffer Object is not supported by your graphics card.");
+		}
+	}
+
 	// Check for GL 2.1 compatibility, if not bail out
-	if (!glewIsSupported("GL_VERSION_2_1")) {
+	if (!(glewIsSupported("GL_VERSION_2_1") && framebuffer_object_is_supported)) {
 		ERR_PRINT("Your system's graphic drivers seem not to support OpenGL 2.1 / GLES 2.0, sorry :(\n"
 			  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot is now going to terminate.");
 		OS::get_singleton()->alert("Your system's graphic drivers seem not to support OpenGL 2.1 / GLES 2.0, sorry :(\n"
