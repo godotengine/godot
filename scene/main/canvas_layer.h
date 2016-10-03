@@ -52,6 +52,8 @@ class CanvasLayer : public Node {
 	RID viewport;
 	Viewport *vp;
 
+	int sort_index;
+
 	// Deprecated, should be removed in a future version.
 	void _set_rotationd(real_t p_rotation);
 	real_t _get_rotationd() const;
@@ -92,6 +94,9 @@ public:
 
 	void set_custom_viewport(Node *p_viewport);
 	Node* get_custom_viewport() const;
+
+	void reset_sort_index();
+	int get_sort_index();
 
 	CanvasLayer();
 };

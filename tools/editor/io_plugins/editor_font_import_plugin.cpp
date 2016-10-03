@@ -1330,7 +1330,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 			if (err==OK) {
 
 				for(int i=0;i<height;i++){
-					color[i]=img.get_pixel(0,i*img.get_height()/height);
+					//color[i]=img.get_pixel(0,i*img.get_height()/height);
 				}
 			} else {
 
@@ -1514,7 +1514,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 
 		w=DVector<uint8_t>::Write();
 
-		Image img(s.width,s.height,0,Image::FORMAT_RGBA,pixels);
+		Image img(s.width,s.height,0,Image::FORMAT_RGBA8,pixels);
 
 		font_data_list[i]->blit=img;
 		font_data_list[i]->blit_ofs=o;
@@ -1537,7 +1537,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 	res_size.y=nearest_power_of_2(res_size.y);
 	print_line("Atlas size: "+res_size);
 
-	Image atlas(res_size.x,res_size.y,0,Image::FORMAT_RGBA);
+	Image atlas(res_size.x,res_size.y,0,Image::FORMAT_RGBA8);
 
 	for(int i=0;i<font_data_list.size();i++) {
 
@@ -1565,12 +1565,12 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 			}
 		}
 
-		atlas=Image(res_size.x,res_size.y,0,Image::FORMAT_RGBA,data);
+		atlas=Image(res_size.x,res_size.y,0,Image::FORMAT_RGBA8,data);
 	}
 
 	if (from->has_option("color/monochrome") && bool(from->get_option("color/monochrome"))) {
 
-		atlas.convert(Image::FORMAT_GRAYSCALE_ALPHA);
+		atlas.convert(Image::FORMAT_LA8);
 	}
 
 

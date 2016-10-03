@@ -33,7 +33,7 @@
 #include "io/resource_saver.h"
 
 
-
+#if 0
 
 
 void BakedLightEditor::_end_baking() {
@@ -145,7 +145,7 @@ void BakedLightEditor::_notification(int p_option) {
 
 #if 1
 //debug
-				Image img(baker->baked_octree_texture_w,baker->baked_octree_texture_h,0,Image::FORMAT_RGBA,octree_texture);
+				Image img(baker->baked_octree_texture_w,baker->baked_octree_texture_h,0,Image::FORMAT_RGBA8,octree_texture);
 				Ref<ImageTexture> it = memnew( ImageTexture );
 				it->create_from_image(img);
 				ResourceSaver::save("baked_octree.png",it);
@@ -373,3 +373,4 @@ BakedLightEditorPlugin::~BakedLightEditorPlugin()
 }
 
 
+#endif

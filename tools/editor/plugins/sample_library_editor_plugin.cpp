@@ -236,7 +236,7 @@ void SampleLibraryEditor::_update_library() {
 
 		// Preview/edit
 		Ref<ImageTexture> preview( memnew( ImageTexture ));
-		preview->create(128,16,Image::FORMAT_RGB);
+		preview->create(128,16,Image::FORMAT_RGB8);
 		SampleEditor::generate_preview_texture(smp,preview);
 		ti->set_cell_mode(1,TreeItem::CELL_MODE_ICON);
 		ti->set_selectable(1,false);

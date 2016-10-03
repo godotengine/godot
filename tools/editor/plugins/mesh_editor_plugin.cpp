@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "mesh_editor_plugin.h"
 
+#if 0
 void MeshEditor::_input_event(InputEvent p_event) {
 
 
@@ -241,3 +242,4 @@ MeshEditorPlugin::MeshEditorPlugin(EditorNode *p_node) {
 MeshEditorPlugin::~MeshEditorPlugin()
 {
 }
+#endif

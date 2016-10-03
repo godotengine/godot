@@ -33,7 +33,7 @@
 #include "tools/editor/editor_node.h"
 #include "tools/editor/editor_settings.h"
 
-
+#if 0
 void baked_light_baker_add_64f(double *dst,double value);
 void baked_light_baker_add_64i(int64_t *dst,int64_t value);
 
@@ -91,15 +91,15 @@ BakedLightBaker::MeshTexture* BakedLightBaker::_get_mat_tex(const Ref<Texture>& 
 		if (image.empty())
 			return NULL;
 
-		if (image.get_format()!=Image::FORMAT_RGBA) {
+		if (image.get_format()!=Image::FORMAT_RGBA8) {
 			if (image.get_format()>Image::FORMAT_INDEXED_ALPHA) {
 				Error err = image.decompress();
 				if (err)
 					return NULL;
 			}
 
-			if (image.get_format()!=Image::FORMAT_RGBA)
-				image.convert(Image::FORMAT_RGBA);
+			if (image.get_format()!=Image::FORMAT_RGBA8)
+				image.convert(Image::FORMAT_RGBA8);
 		}
 
 		if (imgtex->get_flags()&Texture::FLAG_CONVERT_TO_LINEAR) {
@@ -2619,7 +2619,7 @@ Error BakedLightBaker::transfer_to_lightmaps() {
 			copymem(w.ptr(),baked_textures[i].data.ptr(),baked_textures[i].data.size());
 		}
 
-		Image img(baked_textures[i].width,baked_textures[i].height,0,Image::FORMAT_RGBA,dv);
+		Image img(baked_textures[i].width,baked_textures[i].height,0,Image::FORMAT_RGBA8,dv);
 		Ref<ImageTexture> tex = memnew( ImageTexture );
 		tex->create_from_image(img);
 		baked_light->set_lightmap_texture(i,tex);
@@ -2720,3 +2720,4 @@ BakedLightBaker::~BakedLightBaker() {
 
 	clear();
 }
+#endif

@@ -37,6 +37,7 @@
 #include "scene/resources/bit_mask.h"
 #include "tools/editor/editor_scale.h"
 
+#if 0
 bool EditorTexturePreviewPlugin::handles(const String& p_type) const {
 
 	return (ObjectTypeDB::is_type(p_type,"ImageTexture") || ObjectTypeDB::is_type(p_type, "AtlasTexture"));
@@ -69,8 +70,8 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES& p_from) {
 	if (img.is_compressed()) {
 		if (img.decompress()!=OK)
 			return Ref<Texture>();
-    } else if (img.get_format()!=Image::FORMAT_RGB && img.get_format()!=Image::FORMAT_RGBA) {
-		img.convert(Image::FORMAT_RGBA);
+    } else if (img.get_format()!=Image::FORMAT_RGB8 && img.get_format()!=Image::FORMAT_RGBA8) {
+		img.convert(Image::FORMAT_RGBA8);
 	}
 
 	int width,height;
@@ -138,15 +139,15 @@ Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES& p_from) {
 	}
 
 
-	Image img(bm->get_size().width,bm->get_size().height,0,Image::FORMAT_GRAYSCALE,data);
+	Image img(bm->get_size().width,bm->get_size().height,0,Image::FORMAT_L8,data);
 
 	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
 	thumbnail_size*=EDSCALE;
 	if (img.is_compressed()) {
 		if (img.decompress()!=OK)
 			return Ref<Texture>();
-	} else if (img.get_format()!=Image::FORMAT_RGB && img.get_format()!=Image::FORMAT_RGBA) {
-		img.convert(Image::FORMAT_RGBA);
+	} else if (img.get_format()!=Image::FORMAT_RGB8 && img.get_format()!=Image::FORMAT_RGBA8) {
+		img.convert(Image::FORMAT_RGBA8);
 	}
 
 	int width,height;
@@ -434,7 +435,7 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES& p_from) {
 	int col=0;
 	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
 	thumbnail_size*=EDSCALE;
-	Image img(thumbnail_size,thumbnail_size,0,Image::FORMAT_RGBA);
+	Image img(thumbnail_size,thumbnail_size,0,Image::FORMAT_RGBA8);
 
 
 
@@ -778,7 +779,7 @@ Ref<Texture> EditorSamplePreviewPlugin::generate(const RES& p_from) {
 	imgdata = DVector<uint8_t>::Write();
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>( memnew( ImageTexture));
-	ptex->create_from_image(Image(w,h,0,Image::FORMAT_RGB,img),0);
+	ptex->create_from_image(Image(w,h,0,Image::FORMAT_RGB8,img),0);
 	return ptex;
 
 }
@@ -888,6 +889,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
 }
 
+
 EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 
 	//VS::get_singleton()->free(sphere);
@@ -901,3 +903,4 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 	VS::get_singleton()->free(scenario);
 
 }
+#endif

@@ -1710,7 +1710,7 @@ EditorHelp::EditorHelp() {
 	search_dialog->get_ok()->set_text(TTR("Find"));
 	search_dialog->connect("confirmed",this,"_search_cbk");
 	search_dialog->set_hide_on_ok(false);
-	search_dialog->set_self_opacity(0.8);
+	search_dialog->set_self_modulate(Color(1,1,1,0.8));
 
 
 	/*class_search = memnew( EditorHelpSearch(editor) );

@@ -123,7 +123,7 @@ def build_glsl_header( filename ):
 				uline=line[:line.lower().find("//")]
 				uline = uline[uline.find("uniform")+len("uniform"):];
 				uline = uline.replace(";","");
-				uline = uline.replace("{","");
+				uline = uline.replace("{","").strip();
 				lines = uline.split(",")
 				for x in lines:
 
@@ -767,9 +767,31 @@ def include_file_in_legacygl_header( filename, header_data, depth ):
 					header_data.texunits+=[(x,texunit)]
 					header_data.texunit_names+=[x]
 
+		elif (line.find("uniform")!=-1 and line.lower().find("ubo:")!=-1):
+			#uniform buffer object
+			ubostr = line[line.find(":")+1:].strip()
+			ubo = str(int(ubostr ))
+			uline=line[:line.lower().find("//")]
+			uline = uline[uline.find("uniform")+len("uniform"):];
+			uline = uline.replace("highp","");
+			uline = uline.replace(";","");
+			uline = uline.replace("{","").strip();
+			lines = uline.split(",")
+			for x in lines:
+
+				x = x.strip()
+				x = x[ x.rfind(" ")+1: ]
+				if (x.find("[")!=-1):
+					#unfiorm array
+					x = x[ :x.find("[") ]
+
+				if (not x in header_data.ubo_names):
+					header_data.ubos+=[(x,ubo)]
+					header_data.ubo_names+=[x]
 
 
-		elif (line.find("uniform")!=-1):
+
+		elif (line.find("uniform")!=-1 and line.find("{")==-1 and line.find(";")!=-1):
 			uline = line.replace("uniform","");
 			uline = uline.replace(";","");
 			lines = uline.split(",")
@@ -785,7 +807,7 @@ def include_file_in_legacygl_header( filename, header_data, depth ):
 					header_data.uniforms+=[x]
 
 
-		if ((line.strip().find("in ")==0 or line.strip().find("attribute ")==0) and line.find("attrib:")!=-1):
+		if ( line.strip().find("attribute ")==0 and line.find("attrib:")!=-1):
 			uline = line.replace("in ","");
 			uline = uline.replace("attribute ","");
 			uline = uline.replace("highp ","");
@@ -1036,6 +1058,7 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 	else:
 		fd.write("\t\tstatic const char **_uniform_strings=NULL;\n")
 
+
 	if output_attribs:
 		if (len(header_data.attributes)):
 
@@ -1054,6 +1077,14 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 		fd.write("\t\t};\n\n");
 	else:
 		fd.write("\t\tstatic TexUnitPair *_texunit_pairs=NULL;\n")
+
+	if (len(header_data.ubos)):
+		fd.write("\t\tstatic UBOPair _ubo_pairs[]={\n")
+		for x in header_data.ubos:
+			fd.write("\t\t\t{\""+x[0]+"\","+x[1]+"},\n");
+		fd.write("\t\t};\n\n");
+	else:
+		fd.write("\t\tstatic UBOPair *_ubo_pairs=NULL;\n")
 
 	fd.write("\t\tstatic const char _vertex_code[]={\n")
 	for x in header_data.vertex_lines:
@@ -1077,9 +1108,9 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 	fd.write("\t\tstatic const int _fragment_code_start="+str(header_data.fragment_offset)+";\n")
 
 	if output_attribs:
-		fd.write("\t\tsetup(_conditional_strings,"+str(len(header_data.conditionals))+",_uniform_strings,"+str(len(header_data.uniforms))+",_attribute_pairs,"+str(len(header_data.attributes))+", _texunit_pairs,"+str(len(header_data.texunits))+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
+		fd.write("\t\tsetup(_conditional_strings,"+str(len(header_data.conditionals))+",_uniform_strings,"+str(len(header_data.uniforms))+",_attribute_pairs,"+str(len(header_data.attributes))+", _texunit_pairs,"+str(len(header_data.texunits))+",_ubo_pairs,"+str(len(header_data.ubos))+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
 	else:
-		fd.write("\t\tsetup(_conditional_strings,"+str(len(header_data.conditionals))+",_uniform_strings,"+str(len(header_data.uniforms))+",_texunit_pairs,"+str(len(header_data.texunits))+",_enums,"+str(len(header_data.enums))+",_enum_values,"+str(enum_value_count)+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
+		fd.write("\t\tsetup(_conditional_strings,"+str(len(header_data.conditionals))+",_uniform_strings,"+str(len(header_data.uniforms))+",_texunit_pairs,"+str(len(header_data.texunits))+",_enums,"+str(len(header_data.enums))+",_enum_values,"+str(enum_value_count)+",_ubo_pairs,"+str(len(header_data.ubos))+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
 
 	fd.write("\t};\n\n")
 
@@ -1111,6 +1142,11 @@ def build_gles2_headers( target, source, env ):
 
 	for x in source:
 		build_legacygl_header(str(x), include="drivers/gles2/shader_gles2.h", class_suffix = "GLES2", output_attribs = True)
+		
+def build_gles3_headers( target, source, env ):
+
+	for x in source:
+		build_legacygl_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix = "GLES3", output_attribs = True)
 
 def update_version():
 

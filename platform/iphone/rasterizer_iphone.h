@@ -74,7 +74,7 @@ class RasterizerIPhone : public Rasterizer {
 
 			flags=width=height=0;
 			tex_id=0;
-			format=Image::FORMAT_GRAYSCALE;
+			format=Image::FORMAT_L8;
 			gl_components_cache=0;
 			format_has_alpha=false;
 			has_alpha=false;

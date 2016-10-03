@@ -46,7 +46,7 @@ SHAPE_CUSTOM, ///< Server-Implementation based custom shape, calling shape_creat
 
 class Shape2DSW;
 
-class ShapeOwner2DSW {
+class ShapeOwner2DSW : public RID_Data{
 public:
 
 	virtual void _shape_changed()=0;
@@ -55,7 +55,7 @@ public:
 	virtual ~ShapeOwner2DSW() {}
 };
 
-class Shape2DSW {
+class Shape2DSW : public RID_Data {
 
 	RID self;
 	Rect2 aabb;

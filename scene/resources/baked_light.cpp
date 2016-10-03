@@ -29,6 +29,8 @@
 #include "baked_light.h"
 #include "servers/visual_server.h"
 
+#if 0
+
 void BakedLight::set_mode(Mode p_mode) {
 
 	mode=p_mode;
@@ -582,7 +584,7 @@ BakedLight::BakedLight() {
 	tint=0.0;
 	ao_radius=2.5;
 	ao_strength=0.7;
-	format=FORMAT_RGB;
+	format=FORMAT_RGB8;
 	transfer_only_uv2=false;
 
 
@@ -600,3 +602,4 @@ BakedLight::~BakedLight() {
 
 	VS::get_singleton()->free(baked_light);
 }
+#endif

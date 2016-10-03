@@ -1,6 +1,8 @@
 #include "material_editor_plugin.h"
 #include "scene/main/viewport.h"
 
+#if 0
+
 void MaterialEditor::_input_event(InputEvent p_event) {
 
 
@@ -379,3 +381,4 @@ MaterialEditorPlugin::~MaterialEditorPlugin()
 }
 
 
+#endif

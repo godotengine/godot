@@ -134,21 +134,21 @@ static Image _get_gl_image_and_format(const Image& p_image, Image::Format p_form
 
 	switch(p_format) {
 
-		case Image::FORMAT_GRAYSCALE: {
+		case Image::FORMAT_L8: {
 			r_gl_components=1;
 			r_gl_format=GL_LUMINANCE;
 
 		} break;
 		case Image::FORMAT_INTENSITY: {
 
-			image.convert(Image::FORMAT_RGBA);
+			image.convert(Image::FORMAT_RGBA8);
 			r_gl_components=4;
 			r_gl_format=GL_RGBA;
 			r_has_alpha_cache=true;
 		} break;
-		case Image::FORMAT_GRAYSCALE_ALPHA: {
+		case Image::FORMAT_LA8: {
 
-			image.convert(Image::FORMAT_RGBA);
+			image.convert(Image::FORMAT_RGBA8);
 			r_gl_components=4;
 			r_gl_format=GL_RGBA;
 			r_has_alpha_cache=true;
@@ -156,7 +156,7 @@ static Image _get_gl_image_and_format(const Image& p_image, Image::Format p_form
 
 		case Image::FORMAT_INDEXED: {
 
-			image.convert(Image::FORMAT_RGB);
+			image.convert(Image::FORMAT_RGB8);
 			r_gl_components=3;
 			r_gl_format=GL_RGB;
 
@@ -164,17 +164,17 @@ static Image _get_gl_image_and_format(const Image& p_image, Image::Format p_form
 
 		case Image::FORMAT_INDEXED_ALPHA: {
 
-			image.convert(Image::FORMAT_RGBA);
+			image.convert(Image::FORMAT_RGBA8);
 			r_gl_components=4;
 			r_gl_format=GL_RGB;
 			r_has_alpha_cache=true;
 
 		} break;
-		case Image::FORMAT_RGB: {
+		case Image::FORMAT_RGB8: {
 
 			r_gl_components=3; r_gl_format=GL_RGB;
 		} break;
-		case Image::FORMAT_RGBA: {
+		case Image::FORMAT_RGBA8: {
 
 			r_gl_components=4;
 			r_gl_format=GL_RGBA;
@@ -344,7 +344,7 @@ Image::Format RasterizerIPhone::texture_get_format(RID p_texture) const {
 
 	Texture * texture = texture_owner.get(p_texture);
 
-	ERR_FAIL_COND_V(!texture,Image::FORMAT_GRAYSCALE);
+	ERR_FAIL_COND_V(!texture,Image::FORMAT_L8);
 
 	return texture->format;
 }

@@ -38,7 +38,7 @@
 #include "tools/editor/property_editor.h"
 #include "os/os.h"
 
-
+#if 0
 /*** SETTINGS EDITOR ****/
 
 
@@ -654,3 +654,4 @@ ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node, bool p_2d) {
 ShaderEditorPlugin::~ShaderEditorPlugin() {
 }
 
+#endif

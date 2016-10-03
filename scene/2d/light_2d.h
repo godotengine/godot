@@ -42,6 +42,14 @@ public:
 		MODE_MASK,
 	};
 
+	enum ShadowFilter {
+		SHADOW_FILTER_NONE,
+		SHADOW_FILTER_PCF3,
+		SHADOW_FILTER_PCF5,
+		SHADOW_FILTER_PCF9,
+		SHADOW_FILTER_PCF13,
+	};
+
 private:
 	RID canvas_light;
 	bool enabled;
@@ -58,10 +66,12 @@ private:
 	int item_mask;
 	int item_shadow_mask;
 	int shadow_buffer_size;
-	float shadow_esm_multiplier;
+	float shadow_gradient_length;
 	Mode mode;
 	Ref<Texture> texture;
 	Vector2 texture_offset;
+	ShadowFilter shadow_filter;
+
 
 	void _update_light_visibility();
 protected:
@@ -108,11 +118,11 @@ public:
 	void set_layer_range_max( int p_max_layer);
 	int get_layer_range_max() const;
 
-	void set_item_mask( int p_mask);
-	int get_item_mask() const;
+	void set_item_cull_mask( int p_mask);
+	int get_item_cull_mask() const;
 
-	void set_item_shadow_mask( int p_mask);
-	int get_item_shadow_mask() const;
+	void set_item_shadow_cull_mask( int p_mask);
+	int get_item_shadow_cull_mask() const;
 
 	void set_mode( Mode p_mode );
 	Mode get_mode() const;
@@ -123,8 +133,11 @@ public:
 	void set_shadow_buffer_size( int p_size );
 	int get_shadow_buffer_size() const;
 
-	void set_shadow_esm_multiplier( float p_multiplier);
-	float get_shadow_esm_multiplier() const;
+	void set_shadow_gradient_length( float p_multiplier);
+	float get_shadow_gradient_length() const;
+
+	void set_shadow_filter( ShadowFilter p_filter);
+	ShadowFilter get_shadow_filter() const;
 
 	void set_shadow_color( const Color& p_shadow_color);
 	Color get_shadow_color() const;
@@ -139,5 +152,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Light2D::Mode);
+VARIANT_ENUM_CAST(Light2D::ShadowFilter);
+
 
 #endif // LIGHT_2D_H

@@ -467,7 +467,7 @@ private:
 	static SpatialEditor *singleton;
 
 	void _node_removed(Node* p_node);
-	SpatialEditorGizmos *gizmos;
+	//SpatialEditorGizmos *gizmos;
 	SpatialEditor();
 
 	void _update_ambient_light_color(const Color& p_color);

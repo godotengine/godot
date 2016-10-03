@@ -1,0 +1,7 @@
+Import('env')
+
+if env['BUILDERS'].has_key('GLES3_GLSL'):
+	env.GLES3_GLSL('copy.glsl');
+	env.GLES3_GLSL('canvas.glsl');
+	env.GLES3_GLSL('canvas_shadow.glsl');
+

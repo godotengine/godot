@@ -67,7 +67,7 @@ class SpatialSoundServerSW : public SpatialSoundServer {
 
 	struct Room;
 
-	struct Space {
+	struct Space : public RID_Data {
 
 		RID default_room;
 		Set<RID> rooms;
@@ -79,7 +79,7 @@ class SpatialSoundServerSW : public SpatialSoundServer {
 
 	mutable RID_Owner<Space> space_owner;
 
-	struct Room {
+	struct Room : public RID_Data{
 		RID space;
 		Transform transform;
 		Transform inverse_transform;
@@ -97,7 +97,7 @@ class SpatialSoundServerSW : public SpatialSoundServer {
 
 
 
-	struct Source {
+	struct Source : public RID_Data {
 
 		struct Voice {
 
@@ -161,7 +161,7 @@ class SpatialSoundServerSW : public SpatialSoundServer {
 
 	mutable RID_Owner<Source> source_owner;
 
-	struct Listener {
+	struct Listener : public RID_Data {
 
 		RID space;
 		Transform transform;

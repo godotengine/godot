@@ -32,6 +32,7 @@
 #include "resource.h"
 #include "scene/resources/texture.h"
 
+#if 0
 class BakedLight : public Resource {
 
 	OBJ_TYPE( BakedLight, Resource);
@@ -44,7 +45,7 @@ public:
 
 	enum Format {
 
-		FORMAT_RGB,
+		FORMAT_RGB8,
 		FORMAT_HDR8,
 		FORMAT_HDR16
 	};
@@ -195,5 +196,5 @@ public:
 VARIANT_ENUM_CAST(BakedLight::Format);
 VARIANT_ENUM_CAST(BakedLight::Mode);
 VARIANT_ENUM_CAST(BakedLight::BakeFlags);
-
+#endif
 #endif // BAKED_LIGHT_H

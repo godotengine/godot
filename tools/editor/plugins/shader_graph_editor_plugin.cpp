@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "shader_graph_editor_plugin.h"
 
+#if 0
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/menu_button.h"
@@ -1377,7 +1378,7 @@ ToolButton *ShaderGraphView::make_editor(String text,GraphNode* gn,int p_id,int 
 		edit->set_icon(ped_popup->get_icon("Matrix", "EditorIcons"));
 		break;
 	case Variant::COLOR: {
-		Image icon_color = Image(15,15,false,Image::FORMAT_RGB);
+		Image icon_color = Image(15,15,false,Image::FORMAT_RGB8);
 		Color c = graph->default_get_value(type,p_id,param);
 		for (int x=1;x<14;x++)
 			for (int y=1;y<14;y++)
@@ -2945,3 +2946,4 @@ ShaderGraphEditorPlugin::~ShaderGraphEditorPlugin()
 
 
 
+#endif

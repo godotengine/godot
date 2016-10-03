@@ -74,29 +74,6 @@ enum {
 	IMAGE_ENCODING_LOSSLESS=2,
 	IMAGE_ENCODING_LOSSY=3,
 
-	IMAGE_FORMAT_GRAYSCALE=0,
-	IMAGE_FORMAT_INTENSITY=1,
-	IMAGE_FORMAT_GRAYSCALE_ALPHA=2,
-	IMAGE_FORMAT_RGB=3,
-	IMAGE_FORMAT_RGBA=4,
-	IMAGE_FORMAT_INDEXED=5,
-	IMAGE_FORMAT_INDEXED_ALPHA=6,
-	IMAGE_FORMAT_BC1=7,
-	IMAGE_FORMAT_BC2=8,
-	IMAGE_FORMAT_BC3=9,
-	IMAGE_FORMAT_BC4=10,
-	IMAGE_FORMAT_BC5=11,
-	IMAGE_FORMAT_PVRTC2=12,
-	IMAGE_FORMAT_PVRTC2_ALPHA=13,
-	IMAGE_FORMAT_PVRTC4=14,
-	IMAGE_FORMAT_PVRTC4_ALPHA=15,
-	IMAGE_FORMAT_ETC=16,
-	IMAGE_FORMAT_ATC=17,
-	IMAGE_FORMAT_ATC_ALPHA_EXPLICIT=18,
-	IMAGE_FORMAT_ATC_ALPHA_INTERPOLATED=19,
-	IMAGE_FORMAT_CUSTOM=30,
-
-
 	OBJECT_EMPTY=0,
 	OBJECT_EXTERNAL_RESOURCE=1,
 	OBJECT_INTERNAL_RESOURCE=2,
@@ -269,36 +246,20 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 				uint32_t height = f->get_32();
 				uint32_t mipmaps = f->get_32();
 				uint32_t format = f->get_32();
-				Image::Format fmt;
-				switch(format) {
+				const uint32_t format_version_shift=24;
+				const uint32_t format_version_mask=format_version_shift-1;
 
-					case IMAGE_FORMAT_GRAYSCALE: { fmt=Image::FORMAT_GRAYSCALE; } break;
-					case IMAGE_FORMAT_INTENSITY: { fmt=Image::FORMAT_INTENSITY; } break;
-					case IMAGE_FORMAT_GRAYSCALE_ALPHA: { fmt=Image::FORMAT_GRAYSCALE_ALPHA; } break;
-					case IMAGE_FORMAT_RGB: { fmt=Image::FORMAT_RGB; } break;
-					case IMAGE_FORMAT_RGBA: { fmt=Image::FORMAT_RGBA; } break;
-					case IMAGE_FORMAT_INDEXED: { fmt=Image::FORMAT_INDEXED; } break;
-					case IMAGE_FORMAT_INDEXED_ALPHA: { fmt=Image::FORMAT_INDEXED_ALPHA; } break;
-					case IMAGE_FORMAT_BC1: { fmt=Image::FORMAT_BC1; } break;
-					case IMAGE_FORMAT_BC2: { fmt=Image::FORMAT_BC2; } break;
-					case IMAGE_FORMAT_BC3: { fmt=Image::FORMAT_BC3; } break;
-					case IMAGE_FORMAT_BC4: { fmt=Image::FORMAT_BC4; } break;
-					case IMAGE_FORMAT_BC5: { fmt=Image::FORMAT_BC5; } break;
-					case IMAGE_FORMAT_PVRTC2: { fmt=Image::FORMAT_PVRTC2; } break;
-					case IMAGE_FORMAT_PVRTC2_ALPHA: { fmt=Image::FORMAT_PVRTC2_ALPHA; } break;
-					case IMAGE_FORMAT_PVRTC4: { fmt=Image::FORMAT_PVRTC4; } break;
-					case IMAGE_FORMAT_PVRTC4_ALPHA: { fmt=Image::FORMAT_PVRTC4_ALPHA; } break;
-					case IMAGE_FORMAT_ETC: { fmt=Image::FORMAT_ETC; } break;
-					case IMAGE_FORMAT_ATC: { fmt=Image::FORMAT_ATC; } break;
-					case IMAGE_FORMAT_ATC_ALPHA_EXPLICIT: { fmt=Image::FORMAT_ATC_ALPHA_EXPLICIT; } break;
-					case IMAGE_FORMAT_ATC_ALPHA_INTERPOLATED: { fmt=Image::FORMAT_ATC_ALPHA_INTERPOLATED; } break;
-					case IMAGE_FORMAT_CUSTOM: { fmt=Image::FORMAT_CUSTOM; } break;
-					default: {
+				uint32_t format_version = format>>format_version_shift;
 
-						ERR_FAIL_V(ERR_FILE_CORRUPT);
-					}
+				const uint32_t current_version = 0;
+				if (format_version>current_version) {
 
+					ERR_PRINT("Format version for encoded binary image is too new");
+					return ERR_PARSE_ERROR;
 				}
+
+
+				Image::Format fmt=Image::Format(format&format_version_mask); //if format changes, we can add a compatibility bit on top
 
 
 				uint32_t datalen = f->get_32();
@@ -1599,7 +1560,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 			int encoding=IMAGE_ENCODING_RAW;
 			float quality=0.7;
 
-			if (val.get_format() <= Image::FORMAT_INDEXED_ALPHA) {
+			if (!val.is_compressed()) {
 				//can only compress uncompressed stuff
 
 				if (p_hint.hint==PROPERTY_HINT_IMAGE_COMPRESS_LOSSY && Image::lossy_packer) {
@@ -1621,33 +1582,8 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 
 				f->store_32(val.get_width());
 				f->store_32(val.get_height());
-				f->store_32(val.get_mipmaps());
-				switch(val.get_format()) {
-
-					case Image::FORMAT_GRAYSCALE: f->store_32(IMAGE_FORMAT_GRAYSCALE ); break; ///< one byte per pixel: f->store_32(IMAGE_FORMAT_ ); break; 0-255
-					case Image::FORMAT_INTENSITY: f->store_32(IMAGE_FORMAT_INTENSITY ); break; ///< one byte per pixel: f->store_32(IMAGE_FORMAT_ ); break; 0-255
-					case Image::FORMAT_GRAYSCALE_ALPHA: f->store_32(IMAGE_FORMAT_GRAYSCALE_ALPHA ); break; ///< two bytes per pixel: f->store_32(IMAGE_FORMAT_ ); break; 0-255. alpha 0-255
-					case Image::FORMAT_RGB: f->store_32(IMAGE_FORMAT_RGB ); break; ///< one byte R: f->store_32(IMAGE_FORMAT_ ); break; one byte G: f->store_32(IMAGE_FORMAT_ ); break; one byte B
-					case Image::FORMAT_RGBA: f->store_32(IMAGE_FORMAT_RGBA ); break; ///< one byte R: f->store_32(IMAGE_FORMAT_ ); break; one byte G: f->store_32(IMAGE_FORMAT_ ); break; one byte B: f->store_32(IMAGE_FORMAT_ ); break; one byte A
-					case Image::FORMAT_INDEXED: f->store_32(IMAGE_FORMAT_INDEXED ); break; ///< index byte 0-256: f->store_32(IMAGE_FORMAT_ ); break; and after image end: f->store_32(IMAGE_FORMAT_ ); break; 256*3 bytes of palette
-					case Image::FORMAT_INDEXED_ALPHA: f->store_32(IMAGE_FORMAT_INDEXED_ALPHA ); break; ///< index byte 0-256: f->store_32(IMAGE_FORMAT_ ); break; and after image end: f->store_32(IMAGE_FORMAT_ ); break; 256*4 bytes of palette (alpha)
-					case Image::FORMAT_BC1: f->store_32(IMAGE_FORMAT_BC1 ); break; // DXT1
-					case Image::FORMAT_BC2: f->store_32(IMAGE_FORMAT_BC2 ); break; // DXT3
-					case Image::FORMAT_BC3: f->store_32(IMAGE_FORMAT_BC3 ); break; // DXT5
-					case Image::FORMAT_BC4: f->store_32(IMAGE_FORMAT_BC4 ); break; // ATI1
-					case Image::FORMAT_BC5: f->store_32(IMAGE_FORMAT_BC5 ); break; // ATI2
-					case Image::FORMAT_PVRTC2: f->store_32(IMAGE_FORMAT_PVRTC2 ); break;
-					case Image::FORMAT_PVRTC2_ALPHA: f->store_32(IMAGE_FORMAT_PVRTC2_ALPHA ); break;
-					case Image::FORMAT_PVRTC4: f->store_32(IMAGE_FORMAT_PVRTC4 ); break;
-					case Image::FORMAT_PVRTC4_ALPHA: f->store_32(IMAGE_FORMAT_PVRTC4_ALPHA ); break;
-					case Image::FORMAT_ETC: f->store_32(IMAGE_FORMAT_ETC); break;
-					case Image::FORMAT_ATC: f->store_32(IMAGE_FORMAT_ATC); break;
-					case Image::FORMAT_ATC_ALPHA_EXPLICIT: f->store_32(IMAGE_FORMAT_ATC_ALPHA_EXPLICIT); break;
-					case Image::FORMAT_ATC_ALPHA_INTERPOLATED: f->store_32(IMAGE_FORMAT_ATC_ALPHA_INTERPOLATED); break;
-					case Image::FORMAT_CUSTOM: f->store_32(IMAGE_FORMAT_CUSTOM ); break;
-					default: {}
-
-				}
+				f->store_32(val.has_mipmaps());
+				f->store_32(val.get_format()); //if format changes we can add a compatibility version bit
 
 				int dlen = val.get_data().size();
 				f->store_32(dlen);

@@ -42,9 +42,6 @@ bool CanvasItemMaterial::_set(const StringName& p_name, const Variant& p_value) 
 	if (p_name==SceneStringNames::get_singleton()->shader_shader) {
 		set_shader(p_value);
 		return true;
-	} else if (p_name==SceneStringNames::get_singleton()->shading_mode) {
-		set_shading_mode(ShadingMode(p_value.operator int()));
-		return true;
 	} else {
 
 		if (shader.is_valid()) {
@@ -58,7 +55,7 @@ bool CanvasItemMaterial::_set(const StringName& p_name, const Variant& p_value) 
 				}
 			}
 			if (pr) {
-				VisualServer::get_singleton()->canvas_item_material_set_shader_param(material,pr,p_value);
+				VisualServer::get_singleton()->material_set_param(material,pr,p_value);
 				return true;
 			}
 		}
@@ -74,18 +71,14 @@ bool CanvasItemMaterial::_get(const StringName& p_name,Variant &r_ret) const {
 
 		r_ret=get_shader();
 		return true;
-	} else if (p_name==SceneStringNames::get_singleton()->shading_mode) {
 
-
-		r_ret=shading_mode;
-		return true;
 	} else {
 
 		if (shader.is_valid()) {
 
 			StringName pr = shader->remap_param(p_name);
 			if (pr) {
-				r_ret=VisualServer::get_singleton()->canvas_item_material_get_shader_param(material,pr);
+				r_ret=VisualServer::get_singleton()->material_get_param(material,pr);
 				return true;
 			}
 		}
@@ -100,7 +93,6 @@ bool CanvasItemMaterial::_get(const StringName& p_name,Variant &r_ret) const {
 void CanvasItemMaterial::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	p_list->push_back( PropertyInfo( Variant::OBJECT, "shader/shader", PROPERTY_HINT_RESOURCE_TYPE,"CanvasItemShader,CanvasItemShaderGraph" ) );
-	p_list->push_back( PropertyInfo( Variant::INT, "shader/shading_mode",PROPERTY_HINT_ENUM,"Normal,Unshaded,Light Only") );
 
 	if (!shader.is_null()) {
 
@@ -119,7 +111,7 @@ void CanvasItemMaterial::set_shader(const Ref<Shader>& p_shader) {
 	if (shader.is_valid())
 		rid=shader->get_rid();
 
-	VS::get_singleton()->canvas_item_material_set_shader(material,rid);
+	VS::get_singleton()->material_set_shader(material,rid);
 	_change_notify(); //properties for shader exposed
 	emit_changed();
 }
@@ -131,27 +123,17 @@ Ref<Shader> CanvasItemMaterial::get_shader() const{
 
 void CanvasItemMaterial::set_shader_param(const StringName& p_param,const Variant& p_value){
 
-	VS::get_singleton()->canvas_item_material_set_shader_param(material,p_param,p_value);
+	VS::get_singleton()->material_set_param(material,p_param,p_value);
 }
 
 Variant CanvasItemMaterial::get_shader_param(const StringName& p_param) const{
 
-	return VS::get_singleton()->canvas_item_material_get_shader_param(material,p_param);
+	return VS::get_singleton()->material_get_param(material,p_param);
 }
 
 RID CanvasItemMaterial::get_rid() const {
 
 	return material;
-}
-
-void CanvasItemMaterial::set_shading_mode(ShadingMode p_mode) {
-
-	shading_mode=p_mode;
-	VS::get_singleton()->canvas_item_material_set_shading_mode(material,VS::CanvasItemShadingMode(p_mode));
-}
-
-CanvasItemMaterial::ShadingMode CanvasItemMaterial::get_shading_mode() const {
-	return shading_mode;
 }
 
 
@@ -161,12 +143,7 @@ void CanvasItemMaterial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_shader:Shader"),&CanvasItemMaterial::get_shader);
 	ObjectTypeDB::bind_method(_MD("set_shader_param","param","value"),&CanvasItemMaterial::set_shader_param);
 	ObjectTypeDB::bind_method(_MD("get_shader_param","param"),&CanvasItemMaterial::get_shader_param);
-	ObjectTypeDB::bind_method(_MD("set_shading_mode","mode"),&CanvasItemMaterial::set_shading_mode);
-	ObjectTypeDB::bind_method(_MD("get_shading_mode"),&CanvasItemMaterial::get_shading_mode);
 
-	BIND_CONSTANT( SHADING_NORMAL );
-	BIND_CONSTANT( SHADING_UNSHADED );
-	BIND_CONSTANT( SHADING_ONLY_LIGHT );
 
 
 }
@@ -189,13 +166,13 @@ void CanvasItemMaterial::get_argument_options(const StringName& p_function,int p
 
 CanvasItemMaterial::CanvasItemMaterial() {
 
-	material=VS::get_singleton()->canvas_item_material_create();
-	shading_mode=SHADING_NORMAL;
+
+
 }
 
 CanvasItemMaterial::~CanvasItemMaterial(){
 
-	VS::get_singleton()->free(material);
+
 }
 
 
@@ -374,6 +351,8 @@ Matrix32 CanvasItem::get_global_transform_with_canvas() const {
 		return last_valid->canvas_layer->get_transform() * xform;
 	else if (is_inside_tree())
 		return get_viewport()->get_canvas_transform() * xform;
+
+	return xform;
 }
 
 Matrix32 CanvasItem::get_global_transform() const {
@@ -394,42 +373,17 @@ Matrix32 CanvasItem::get_global_transform() const {
 
 }
 
-
-void CanvasItem::_queue_sort_children() {
-
-	if (pending_children_sort)
-		return;
-
-	pending_children_sort=true;
-	MessageQueue::get_singleton()->push_call(this,"_sort_children");
-}
-
-void CanvasItem::_sort_children() {
-
-	pending_children_sort=false;
+void CanvasItem::_toplevel_raise_self() {
 
 	if (!is_inside_tree())
 		return;
 
-	for(int i=0;i<get_child_count();i++) {
+	if (canvas_layer)
+		VisualServer::get_singleton()->canvas_item_set_draw_index(canvas_item,canvas_layer->get_sort_index());
+	else
+		VisualServer::get_singleton()->canvas_item_set_draw_index(canvas_item,get_viewport()->gui_get_canvas_sort_index());
 
-		Node *n = get_child(i);
-		CanvasItem *ci=n->cast_to<CanvasItem>();
 
-		if (ci) {
-			if (ci->toplevel || ci->group!="")
-				continue;
-			VisualServer::get_singleton()->canvas_item_raise(n->cast_to<CanvasItem>()->canvas_item);
-		}
-	}
-}
-
-void CanvasItem::_raise_self() {
-
-	if (!is_inside_tree())
-		return;
-
-	VisualServer::get_singleton()->canvas_item_raise(canvas_item);
 }
 
 
@@ -461,14 +415,19 @@ void CanvasItem::_enter_canvas() {
 		group = "root_canvas"+itos(canvas.get_id());
 
 		add_to_group(group);
-		get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_raise_self");
+		if (canvas_layer)
+			canvas_layer->reset_sort_index();
+		else
+			get_viewport()->gui_reset_canvas_sort_index();
+
+		get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
 
 	} else {
 
 		CanvasItem *parent = get_parent_item();
 		canvas_layer=parent->canvas_layer;
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,parent->get_canvas_item());
-		parent->_queue_sort_children();
+		VisualServer::get_singleton()->canvas_item_set_draw_index(canvas_item,get_index());
 	}
 
 	pending_update=false;
@@ -495,7 +454,6 @@ void CanvasItem::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			first_draw=true;
-			pending_children_sort=false;
 			if (get_parent()) {
 				CanvasItem *ci = get_parent()->cast_to<CanvasItem>();
 				if (ci)
@@ -508,13 +466,15 @@ void CanvasItem::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
 
+			if (!is_inside_tree())
+				break;
 
 			if (group!="") {
-				get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_raise_self");
+				get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
 				ERR_FAIL_COND(!p);
-				p->_queue_sort_children();
+				VisualServer::get_singleton()->canvas_item_set_draw_index(canvas_item,get_index());
 			}
 
 
@@ -569,15 +529,15 @@ void CanvasItem::update() {
 	MessageQueue::get_singleton()->push_call(this,"_update_callback");
 }
 
-void CanvasItem::set_opacity(float p_opacity) {
+void CanvasItem::set_modulate(const Color& p_modulate) {
 
-	opacity=p_opacity;
-	VisualServer::get_singleton()->canvas_item_set_opacity(canvas_item,opacity);
+	modulate=p_modulate;
+	VisualServer::get_singleton()->canvas_item_set_modulate(canvas_item,modulate);
 
 }
-float CanvasItem::get_opacity() const {
+Color CanvasItem::get_modulate() const {
 
-	return opacity;
+	return modulate;
 }
 
 
@@ -614,29 +574,17 @@ CanvasItem *CanvasItem::get_parent_item() const {
 }
 
 
-void CanvasItem::set_self_opacity(float p_self_opacity) {
+void CanvasItem::set_self_modulate(const Color& p_self_modulate) {
 
-	self_opacity=p_self_opacity;
-	VisualServer::get_singleton()->canvas_item_set_self_opacity(canvas_item,self_opacity);
-
-}
-float CanvasItem::get_self_opacity() const {
-
-	return self_opacity;
-}
-
-void CanvasItem::set_blend_mode(BlendMode p_blend_mode) {
-
-	ERR_FAIL_INDEX(p_blend_mode,5);
-	blend_mode=p_blend_mode;
-	VisualServer::get_singleton()->canvas_item_set_blend_mode(canvas_item,VS::MaterialBlendMode(blend_mode));
+	self_modulate=p_self_modulate;
+	VisualServer::get_singleton()->canvas_item_set_self_modulate(canvas_item,self_modulate);
 
 }
+Color CanvasItem::get_self_modulate() const {
 
-CanvasItem::BlendMode CanvasItem::get_blend_mode() const {
-
-	return blend_mode;
+	return self_modulate;
 }
+
 
 void CanvasItem::set_light_mask(int p_light_mask) {
 
@@ -913,7 +861,7 @@ void CanvasItem::set_draw_behind_parent(bool p_enable) {
 	if (behind==p_enable)
 		return;
 	behind=p_enable;
-	VisualServer::get_singleton()->canvas_item_set_on_top(canvas_item,!behind);
+	VisualServer::get_singleton()->canvas_item_set_draw_behind_parent(canvas_item,behind);
 
 }
 
@@ -983,8 +931,7 @@ Vector2 CanvasItem::get_local_mouse_pos() const{
 
 void CanvasItem::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_sort_children"),&CanvasItem::_sort_children);
-	ObjectTypeDB::bind_method(_MD("_raise_self"),&CanvasItem::_raise_self);
+	ObjectTypeDB::bind_method(_MD("_toplevel_raise_self"),&CanvasItem::_toplevel_raise_self);
 	ObjectTypeDB::bind_method(_MD("_update_callback"),&CanvasItem::_update_callback);
 	ObjectTypeDB::bind_method(_MD("_set_visible_"),&CanvasItem::_set_visible_);
 	ObjectTypeDB::bind_method(_MD("_is_visible_"),&CanvasItem::_is_visible_);
@@ -1011,16 +958,13 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_as_toplevel","enable"),&CanvasItem::set_as_toplevel);
 	ObjectTypeDB::bind_method(_MD("is_set_as_toplevel"),&CanvasItem::is_set_as_toplevel);
 
-	ObjectTypeDB::bind_method(_MD("set_blend_mode","blend_mode"),&CanvasItem::set_blend_mode);
-	ObjectTypeDB::bind_method(_MD("get_blend_mode"),&CanvasItem::get_blend_mode);
-
 	ObjectTypeDB::bind_method(_MD("set_light_mask","light_mask"),&CanvasItem::set_light_mask);
 	ObjectTypeDB::bind_method(_MD("get_light_mask"),&CanvasItem::get_light_mask);
 
-	ObjectTypeDB::bind_method(_MD("set_opacity","opacity"),&CanvasItem::set_opacity);
-	ObjectTypeDB::bind_method(_MD("get_opacity"),&CanvasItem::get_opacity);
-	ObjectTypeDB::bind_method(_MD("set_self_opacity","self_opacity"),&CanvasItem::set_self_opacity);
-	ObjectTypeDB::bind_method(_MD("get_self_opacity"),&CanvasItem::get_self_opacity);
+	ObjectTypeDB::bind_method(_MD("set_modulate","modulate"),&CanvasItem::set_modulate);
+	ObjectTypeDB::bind_method(_MD("get_modulate"),&CanvasItem::get_modulate);
+	ObjectTypeDB::bind_method(_MD("set_self_modulate","self_modulate"),&CanvasItem::set_self_modulate);
+	ObjectTypeDB::bind_method(_MD("get_self_modulate"),&CanvasItem::get_self_modulate);
 
 	ObjectTypeDB::bind_method(_MD("set_draw_behind_parent","enable"),&CanvasItem::set_draw_behind_parent);
 	ObjectTypeDB::bind_method(_MD("is_draw_behind_parent_enabled"),&CanvasItem::is_draw_behind_parent_enabled);
@@ -1069,12 +1013,11 @@ void CanvasItem::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_draw"));
 
 	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"visibility/opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_opacity"),_SCS("get_opacity") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"visibility/self_opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_opacity"),_SCS("get_self_opacity") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"visibility/modulate",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_modulate"),_SCS("get_modulate") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"visibility/self_modulate",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_modulate"),_SCS("get_self_modulate") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"visibility/behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
 
-	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/blend_mode",PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul,PMAlpha"), _SCS("set_blend_mode"),_SCS("get_blend_mode") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"visibility/light_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_light_mask"),_SCS("get_light_mask") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"material/material",PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial"), _SCS("set_material"),_SCS("get_material") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"material/use_parent"), _SCS("set_use_parent_material"),_SCS("get_use_parent_material") );
@@ -1176,12 +1119,10 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	canvas_item=VisualServer::get_singleton()->canvas_item_create();
 	hidden=false;
 	pending_update=false;
-	opacity=1;
-	self_opacity=1;
+	modulate=Color(1,1,1,1);
+	self_modulate=Color(1,1,1,1);
 	toplevel=false;
-	pending_children_sort=false;
 	first_draw=false;
-	blend_mode=BLEND_MODE_MIX;
 	drawing=false;
 	behind=false;
 	block_transform_notify=false;

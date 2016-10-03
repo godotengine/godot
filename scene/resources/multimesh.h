@@ -30,16 +30,33 @@
 #define MULTIMESH_H
 
 #include "scene/resources/mesh.h"
-
+#include "servers/visual_server.h"
 
 class MultiMesh : public Resource {
 
 	OBJ_TYPE( MultiMesh, Resource );
 	RES_BASE_EXTENSION("mmsh");
+public:
 
+	enum TransformFormat {
+		TRANSFORM_NONE = VS::MULTIMESH_TRANSFORM_NONE,
+		TRANSFORM_2D = VS::MULTIMESH_TRANSFORM_2D,
+		TRANSFORM_3D = VS::MULTIMESH_TRANSFORM_3D
+	};
+
+	enum ColorFormat {
+		COLOR_NONE = VS::MULTIMESH_COLOR_NONE,
+		COLOR_8BIT = VS::MULTIMESH_COLOR_8BIT,
+		COLOR_FLOAT = VS::MULTIMESH_COLOR_FLOAT,
+	};
+private:
 	AABB aabb;
 	Ref<Mesh> mesh;
 	RID multimesh;
+	TransformFormat transform_format;
+	ColorFormat color_format;
+
+
 protected:
 
 	static void _bind_methods();
@@ -54,6 +71,12 @@ public:
 
 	void set_mesh(const Ref<Mesh>& p_mesh);
 	Ref<Mesh> get_mesh() const;
+
+	void set_color_format(ColorFormat p_color_format);
+	ColorFormat get_color_format() const;
+
+	void set_transform_format(TransformFormat p_transform_format);
+	TransformFormat get_transform_format() const;
 
 	void set_instance_count(int p_count);
 	int get_instance_count() const;
@@ -75,5 +98,9 @@ public:
 	~MultiMesh();
 
 };
+
+
+VARIANT_ENUM_CAST( MultiMesh::TransformFormat );
+VARIANT_ENUM_CAST( MultiMesh::ColorFormat);
 
 #endif // MULTI_MESH_H

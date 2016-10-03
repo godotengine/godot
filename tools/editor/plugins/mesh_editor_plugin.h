@@ -29,6 +29,8 @@
 #ifndef MESH_EDITOR_PLUGIN_H
 #define MESH_EDITOR_PLUGIN_H
 
+#if 0
+
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/resources/material.h"
@@ -93,3 +95,4 @@ public:
 };
 
 #endif // MESH_EDITOR_PLUGIN_H
+#endif

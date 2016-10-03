@@ -74,21 +74,20 @@ struct DDSFormatInfo {
 
 
 static const DDSFormatInfo dds_format_info[DDS_MAX]={
-	{"DXT1",true,false,4,8,Image::FORMAT_BC1},
-	{"DXT3",true,false,4,16,Image::FORMAT_BC2},
-	{"DXT5",true,false,4,16,Image::FORMAT_BC3},
-	{"ATI1",true,false,4,8,Image::FORMAT_BC4},
-	{"ATI2",true,false,4,16,Image::FORMAT_BC5},
-	{"BGRA8",false,false,1,4,Image::FORMAT_RGBA},
-	{"BGR8",false,false,1,3,Image::FORMAT_RGB},
-	{"RGBA8",false,false,1,4,Image::FORMAT_RGBA},
-	{"RGB8",false,false,1,3,Image::FORMAT_RGB},
-	{"BGR5A1",false,false,1,2,Image::FORMAT_RGBA},
-	{"BGR565",false,false,1,2,Image::FORMAT_RGB},
-	{"BGR10A2",false,false,1,4,Image::FORMAT_RGBA},
-	{"INDEXED",false,true,1,1,Image::FORMAT_INDEXED},
-	{"GRAYSCALE",false,false,1,1,Image::FORMAT_GRAYSCALE},
-	{"GRAYSCALE_ALPHA",false,false,1,2,Image::FORMAT_GRAYSCALE_ALPHA}
+	{"DXT1",true,false,4,8,Image::FORMAT_DXT1},
+	{"DXT3",true,false,4,16,Image::FORMAT_DXT3},
+	{"DXT5",true,false,4,16,Image::FORMAT_DXT5},
+	{"ATI1",true,false,4,8,Image::FORMAT_ATI1},
+	{"ATI2",true,false,4,16,Image::FORMAT_ATI2},
+	{"BGRA8",false,false,1,4,Image::FORMAT_RGBA8},
+	{"BGR8",false,false,1,3,Image::FORMAT_RGB8},
+	{"RGBA8",false,false,1,4,Image::FORMAT_RGBA8},
+	{"RGB8",false,false,1,3,Image::FORMAT_RGB8},
+	{"BGR5A1",false,false,1,2,Image::FORMAT_RGBA8},
+	{"BGR565",false,false,1,2,Image::FORMAT_RGB8},
+	{"BGR10A2",false,false,1,4,Image::FORMAT_RGBA8},
+	{"GRAYSCALE",false,false,1,1,Image::FORMAT_L8},
+	{"GRAYSCALE_ALPHA",false,false,1,2,Image::FORMAT_LA8}
 };
 
 

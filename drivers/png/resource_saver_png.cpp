@@ -96,10 +96,10 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 
 Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
 
-	if (p_img.get_format() > Image::FORMAT_INDEXED_ALPHA)
+	if (p_img.is_compressed())
 		p_img.decompress();
 
-	ERR_FAIL_COND_V(p_img.get_format() > Image::FORMAT_INDEXED_ALPHA, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_img.is_compressed(), ERR_INVALID_PARAMETER);
 
 	png_structp png_ptr;
 	png_infop info_ptr;
@@ -138,22 +138,22 @@ Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
 
 	switch(p_img.get_format()) {
 
-		case Image::FORMAT_GRAYSCALE: {
+		case Image::FORMAT_L8: {
 
 			pngf=PNG_COLOR_TYPE_GRAY;
 			cs=1;
 		} break;
-		case Image::FORMAT_GRAYSCALE_ALPHA: {
+		case Image::FORMAT_LA8: {
 
 			pngf=PNG_COLOR_TYPE_GRAY_ALPHA;
 			cs=2;
 		} break;
-		case Image::FORMAT_RGB: {
+		case Image::FORMAT_RGB8: {
 
 			pngf=PNG_COLOR_TYPE_RGB;
 			cs=3;
 		} break;
-		case Image::FORMAT_RGBA: {
+		case Image::FORMAT_RGBA8: {
 
 			pngf=PNG_COLOR_TYPE_RGB_ALPHA;
 			cs=4;
@@ -162,12 +162,12 @@ Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
 
 			if (p_img.detect_alpha()) {
 
-				p_img.convert(Image::FORMAT_RGBA);
+				p_img.convert(Image::FORMAT_RGBA8);
 				pngf=PNG_COLOR_TYPE_RGB_ALPHA;
 				cs=4;
 			} else {
 
-				p_img.convert(Image::FORMAT_RGB);
+				p_img.convert(Image::FORMAT_RGB8);
 				pngf=PNG_COLOR_TYPE_RGB;
 				cs=3;
 			}

@@ -657,37 +657,37 @@ static Variant _decode_variant(const String& p_string) {
 		String format=params[0].strip_edges();
 
 		Image::Format imgformat;
-
+/*
 		if (format=="grayscale") {
-			imgformat=Image::FORMAT_GRAYSCALE;
+			imgformat=Image::FORMAT_L8;
 		} else if (format=="intensity") {
 			imgformat=Image::FORMAT_INTENSITY;
 		} else if (format=="grayscale_alpha") {
-			imgformat=Image::FORMAT_GRAYSCALE_ALPHA;
+			imgformat=Image::FORMAT_LA8;
 		} else if (format=="rgb") {
-			imgformat=Image::FORMAT_RGB;
+			imgformat=Image::FORMAT_RGB8;
 		} else if (format=="rgba") {
-			imgformat=Image::FORMAT_RGBA;
+			imgformat=Image::FORMAT_RGBA8;
 		} else if (format=="indexed") {
 			imgformat=Image::FORMAT_INDEXED;
 		} else if (format=="indexed_alpha") {
 			imgformat=Image::FORMAT_INDEXED_ALPHA;
 		} else if (format=="bc1") {
-			imgformat=Image::FORMAT_BC1;
+			imgformat=Image::FORMAT_DXT1;
 		} else if (format=="bc2") {
-			imgformat=Image::FORMAT_BC2;
+			imgformat=Image::FORMAT_DXT3;
 		} else if (format=="bc3") {
-			imgformat=Image::FORMAT_BC3;
+			imgformat=Image::FORMAT_DXT5;
 		} else if (format=="bc4") {
-			imgformat=Image::FORMAT_BC4;
+			imgformat=Image::FORMAT_ATI1;
 		} else if (format=="bc5") {
-			imgformat=Image::FORMAT_BC5;
+			imgformat=Image::FORMAT_ATI2;
 		} else if (format=="custom") {
 			imgformat=Image::FORMAT_CUSTOM;
 		} else {
 
 			ERR_FAIL_V( Image() );
-		}
+		}*/
 
 		int mipmaps=params[1].to_int();
 		int w=params[2].to_int();
@@ -974,26 +974,30 @@ static String _encode_variant(const Variant& p_variant) {
 			if (!img.empty()) {
 
 				String format;
+
+				/*
 				switch(img.get_format()) {
 
-					case Image::FORMAT_GRAYSCALE: format="grayscale"; break;
+					case Image::FORMAT_L8: format="grayscale"; break;
 					case Image::FORMAT_INTENSITY: format="intensity"; break;
-					case Image::FORMAT_GRAYSCALE_ALPHA: format="grayscale_alpha"; break;
-					case Image::FORMAT_RGB: format="rgb"; break;
-					case Image::FORMAT_RGBA: format="rgba"; break;
+					case Image::FORMAT_LA8: format="grayscale_alpha"; break;
+					case Image::FORMAT_RGB8: format="rgb"; break;
+					case Image::FORMAT_RGBA8: format="rgba"; break;
 					case Image::FORMAT_INDEXED : format="indexed"; break;
 					case Image::FORMAT_INDEXED_ALPHA: format="indexed_alpha"; break;
-					case Image::FORMAT_BC1: format="bc1"; break;
-					case Image::FORMAT_BC2: format="bc2"; break;
-					case Image::FORMAT_BC3: format="bc3"; break;
-					case Image::FORMAT_BC4: format="bc4"; break;
-					case Image::FORMAT_BC5: format="bc5"; break;
+					case Image::FORMAT_DXT1: format="bc1"; break;
+					case Image::FORMAT_DXT3: format="bc2"; break;
+					case Image::FORMAT_DXT5: format="bc3"; break;
+					case Image::FORMAT_ATI1: format="bc4"; break;
+					case Image::FORMAT_ATI2: format="bc5"; break;
 					case Image::FORMAT_CUSTOM: format="custom custom_size="+itos(img.get_data().size())+""; break;
 					default: {}
 				}
 
+				*/
+
 				str+=format+", ";
-				str+=itos(img.get_mipmaps())+", ";
+				str+=itos(img.has_mipmaps())+", ";
 				str+=itos(img.get_width())+", ";
 				str+=itos(img.get_height())+", ";
 				DVector<uint8_t> data = img.get_data();
@@ -1399,6 +1403,7 @@ void Globals::set_custom_property_info(const String& p_prop,const PropertyInfo& 
 
 	ERR_FAIL_COND(!props.has(p_prop));
 	custom_prop_info[p_prop]=p_info;
+	custom_prop_info[p_prop].name=p_prop;
 
 }
 

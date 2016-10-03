@@ -58,14 +58,14 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src,float p_left, float p_top, flo
 		if (scale>1) {
 			Size2 orig_size = Size2(img.get_width(),img.get_height());
 
-			img.convert(Image::FORMAT_RGBA);
+			img.convert(Image::FORMAT_RGBA8);
 			img.expand_x2_hq2x();
 			if (scale!=2.0) {
 				img.resize(orig_size.x*scale,orig_size.y*scale);
 			}
 		} else if (scale<1) {
 			Size2 orig_size = Size2(img.get_width(),img.get_height());
-			img.convert(Image::FORMAT_RGBA);
+			img.convert(Image::FORMAT_RGBA8);
 			img.resize(orig_size.x*scale,orig_size.y*scale);
 		}
 
@@ -108,14 +108,14 @@ static Ref<Texture> make_icon(T p_src) {
 	if (scale>1) {
 		Size2 orig_size = Size2(img.get_width(),img.get_height());
 
-		img.convert(Image::FORMAT_RGBA);
+		img.convert(Image::FORMAT_RGBA8);
 		img.expand_x2_hq2x();
 		if (scale!=2.0) {
 			img.resize(orig_size.x*scale,orig_size.y*scale);
 		}
 	} else if (scale<1) {
 		Size2 orig_size = Size2(img.get_width(),img.get_height());
-		img.convert(Image::FORMAT_RGBA);
+		img.convert(Image::FORMAT_RGBA8);
 		img.resize(orig_size.x*scale,orig_size.y*scale);
 	}
 	texture->create_from_image( img,ImageTexture::FLAG_FILTER );
@@ -125,7 +125,7 @@ static Ref<Texture> make_icon(T p_src) {
 
 static Ref<Shader> make_shader(const char*vertex_code,const char*fragment_code,const char*lighting_code) {
 	Ref<Shader> shader = (memnew( Shader(Shader::MODE_CANVAS_ITEM) ));
-	shader->set_code(vertex_code, fragment_code, lighting_code);
+//	shader->set_code(vertex_code, fragment_code, lighting_code);
 
 	return shader;
 }
@@ -213,6 +213,8 @@ static Ref<StyleBox> make_empty_stylebox(float p_margin_left=-1, float p_margin_
 
 	return style;
 }
+
+
 
 void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref<Font> & large_font, Ref<Texture>& default_icon, Ref<StyleBox>& default_style, float p_scale) {
 
@@ -832,9 +834,14 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 	t->set_icon("screen_picker","ColorPicker", make_icon( icon_color_pick_png ) );
 	t->set_icon("add_preset","ColorPicker", make_icon( icon_add_png ) );
+	t->set_icon("color_area", "ColorPicker", make_icon( color_picker_main_png));
+	t->set_icon("color_hue", "ColorPicker", make_icon( color_picker_hue_png));
+	t->set_icon("color_sample", "ColorPicker", make_icon( color_picker_sample_png));
 
 	t->set_shader("uv_editor", "ColorPicker", make_shader("", uv_editor_shader_code, ""));
 	t->set_shader("w_editor", "ColorPicker", make_shader("", w_editor_shader_code, ""));
+
+
 
 	// TooltipPanel
 
@@ -960,7 +967,6 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 
 	t->set_icon( "logo","Icons", make_icon(logo_png) );
-
 
 
 	// Theme

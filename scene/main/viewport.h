@@ -79,11 +79,11 @@ class Viewport : public Node {
 	OBJ_TYPE( Viewport, Node );
 public:
 
-	enum RenderTargetUpdateMode {
-		RENDER_TARGET_UPDATE_DISABLED,
-		RENDER_TARGET_UPDATE_ONCE, //then goes to disabled
-		RENDER_TARGET_UPDATE_WHEN_VISIBLE, // default
-		RENDER_TARGET_UPDATE_ALWAYS
+	enum UpdateMode {
+		UPDATE_DISABLED,
+		UPDATE_ONCE, //then goes to disabled
+		UPDATE_WHEN_VISIBLE, // default
+		UPDATE_ALWAYS
 	};
 
 private:
@@ -114,7 +114,7 @@ friend class RenderTargetTexture;
 	Matrix32 global_canvas_transform;
 	Matrix32 stretch_transform;
 
-	Rect2 rect;
+	Size2 size;
 	Rect2 to_screen_rect;
 
 	RID contact_2d_debug;
@@ -131,10 +131,10 @@ friend class RenderTargetTexture;
 	Rect2 last_vp_rect;
 
 	bool transparent_bg;
-	bool render_target_vflip;
-	bool render_target_clear_on_new_frame;
-	bool render_target_filter;
-	bool render_target_gen_mipmaps;
+	bool vflip;
+	bool clear_on_new_frame;
+	bool filter;
+	bool gen_mipmaps;
 
 	bool physics_object_picking;
 	List<InputEvent> physics_picking_events;
@@ -170,10 +170,10 @@ friend class RenderTargetTexture;
 	void _update_stretch_transform();
 	void _update_global_transform();
 
-	bool render_target;
-	RenderTargetUpdateMode render_target_update_mode;
-	RID render_target_texture_rid;
-	Ref<RenderTargetTexture> render_target_texture;
+
+	UpdateMode update_mode;
+	RID texture_rid;
+	Ref<RenderTargetTexture> texture;
 
 
 	struct GUI {
@@ -202,6 +202,7 @@ friend class RenderTargetTexture;
 		List<Control*> subwindows;
 		bool roots_order_dirty;
 		List<Control*> roots;
+		int canvas_sort_index; //for sorting items with canvas as root
 
 
 		GUI();
@@ -299,8 +300,10 @@ public:
 	void set_as_audio_listener_2d(bool p_enable);
 	bool is_audio_listener_2d() const;
 
-	void set_rect(const Rect2& p_rect);
-	Rect2 get_rect() const;
+	void set_size(const Size2& p_size);
+
+
+	Size2 get_size() const;
 	Rect2 get_visible_rect() const;
 	RID get_viewport() const;
 
@@ -327,29 +330,27 @@ public:
 
 	void set_size_override(bool p_enable,const Size2& p_size=Size2(-1,-1),const Vector2& p_margin=Vector2());
 	Size2 get_size_override() const;
+
 	bool is_size_override_enabled() const;
 	void set_size_override_stretch(bool p_enable);
 	bool is_size_override_stretch_enabled() const;
 
-	void set_as_render_target(bool p_enable);
-	bool is_set_as_render_target() const;
+	void set_vflip(bool p_enable);
+	bool get_vflip() const;
 
-	void set_render_target_vflip(bool p_enable);
-	bool get_render_target_vflip() const;
+	void set_clear_on_new_frame(bool p_enable);
+	bool get_clear_on_new_frame() const;
+	void clear();
 
-	void set_render_target_clear_on_new_frame(bool p_enable);
-	bool get_render_target_clear_on_new_frame() const;
-	void render_target_clear();
+	void set_filter(bool p_enable);
+	bool get_filter() const;
 
-	void set_render_target_filter(bool p_enable);
-	bool get_render_target_filter() const;
+	void set_gen_mipmaps(bool p_enable);
+	bool get_gen_mipmaps() const;
 
-	void set_render_target_gen_mipmaps(bool p_enable);
-	bool get_render_target_gen_mipmaps() const;
-
-	void set_render_target_update_mode(RenderTargetUpdateMode p_mode);
-	RenderTargetUpdateMode get_render_target_update_mode() const;
-	Ref<RenderTargetTexture> get_render_target_texture() const;
+	void set_update_mode(UpdateMode p_mode);
+	UpdateMode get_update_mode() const;
+	Ref<RenderTargetTexture> get_texture() const;
 
 
 	Vector2 get_camera_coords(const Vector2& p_viewport_coords) const;
@@ -367,8 +368,8 @@ public:
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
 
-	void set_render_target_to_screen_rect(const Rect2& p_rect);
-	Rect2 get_render_target_to_screen_rect() const;
+	void set_attach_to_screen_rect(const Rect2& p_rect);
+	Rect2 get_attach_to_screen_rect() const;
 
 	Vector2 get_mouse_pos() const;
 	void warp_mouse(const Vector2& p_pos);
@@ -381,12 +382,17 @@ public:
 	Variant gui_get_drag_data() const;
 	Control *get_modal_stack_top() const;
 
+	void gui_reset_canvas_sort_index();
+	int gui_get_canvas_sort_index();
+
 	virtual String get_configuration_warning() const;
+
+
 
 	Viewport();
 	~Viewport();
 
 };
 
-VARIANT_ENUM_CAST(Viewport::RenderTargetUpdateMode);
+VARIANT_ENUM_CAST(Viewport::UpdateMode);
 #endif

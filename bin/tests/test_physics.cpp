@@ -138,10 +138,6 @@ protected:
 
 		/* SPHERE SHAPE */
 		RID sphere_mesh = vs->make_sphere_mesh(10,20,0.5);
-		RID sphere_material = vs->fixed_material_create();
-		//vs->material_set_flag( sphere_material, VisualServer::MATERIAL_FLAG_WIREFRAME, true );
-		vs->fixed_material_set_param( sphere_material, VisualServer::FIXED_MATERIAL_PARAM_DIFFUSE, Color(0.7,0.8,3.0) );
-		vs->mesh_surface_set_material( sphere_mesh, 0, sphere_material );
 		type_mesh_map[PhysicsServer::SHAPE_SPHERE]=sphere_mesh;
 
 		RID sphere_shape=ps->shape_create(PhysicsServer::SHAPE_SPHERE);
@@ -151,12 +147,9 @@ protected:
 		/* BOX SHAPE */
 
 		DVector<Plane> box_planes = Geometry::build_box_planes(Vector3(0.5,0.5,0.5));
-		RID box_material = vs->fixed_material_create();
-		vs->fixed_material_set_param( box_material, VisualServer::FIXED_MATERIAL_PARAM_DIFFUSE, Color(1.0,0.2,0.2) );
 		RID box_mesh = vs->mesh_create();
 		Geometry::MeshData box_data = Geometry::build_convex_mesh(box_planes);
 		vs->mesh_add_surface_from_mesh_data(box_mesh,box_data);
-		vs->mesh_surface_set_material( box_mesh, 0, box_material );
 		type_mesh_map[PhysicsServer::SHAPE_BOX]=box_mesh;
 
 		RID box_shape=ps->shape_create(PhysicsServer::SHAPE_BOX);
@@ -167,13 +160,11 @@ protected:
 		/* CAPSULE SHAPE */
 
 		DVector<Plane> capsule_planes = Geometry::build_capsule_planes(0.5,0.7,12,Vector3::AXIS_Z);
-		RID capsule_material = vs->fixed_material_create();
-		vs->fixed_material_set_param( capsule_material, VisualServer::FIXED_MATERIAL_PARAM_DIFFUSE, Color(0.3,0.4,1.0) );
 
 		RID capsule_mesh = vs->mesh_create();
 		Geometry::MeshData capsule_data = Geometry::build_convex_mesh(capsule_planes);
 		vs->mesh_add_surface_from_mesh_data(capsule_mesh,capsule_data);
-		vs->mesh_surface_set_material( capsule_mesh, 0, capsule_material );
+
 		type_mesh_map[PhysicsServer::SHAPE_CAPSULE]=capsule_mesh;
 
 		RID capsule_shape=ps->shape_create(PhysicsServer::SHAPE_CAPSULE);
@@ -186,14 +177,12 @@ protected:
 		/* CONVEX SHAPE */
 
 		DVector<Plane> convex_planes = Geometry::build_cylinder_planes(0.5,0.7,5,Vector3::AXIS_Z);
-		RID convex_material = vs->fixed_material_create();
-		vs->fixed_material_set_param( convex_material, VisualServer::FIXED_MATERIAL_PARAM_DIFFUSE, Color(0.8,0.2,0.9));
 
 		RID convex_mesh = vs->mesh_create();
 		Geometry::MeshData convex_data = Geometry::build_convex_mesh(convex_planes);
 		QuickHull::build(convex_data.vertices,convex_data);
 		vs->mesh_add_surface_from_mesh_data(convex_mesh,convex_data);
-		vs->mesh_surface_set_material( convex_mesh, 0, convex_material );
+
 		type_mesh_map[PhysicsServer::SHAPE_CONVEX_POLYGON]=convex_mesh;
 
 		RID convex_shape=ps->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON);
@@ -223,11 +212,9 @@ protected:
 		d.resize(VS::ARRAY_MAX);
 		d[VS::ARRAY_VERTEX]=p_faces;
 		d[VS::ARRAY_NORMAL]=normals;
-		vs->mesh_add_surface(trimesh_mesh, VS::PRIMITIVE_TRIANGLES, d );
-		RID trimesh_mat = vs->fixed_material_create();
-		vs->fixed_material_set_param( trimesh_mat, VisualServer::FIXED_MATERIAL_PARAM_DIFFUSE, Color(1.0,0.5,0.8));
+		vs->mesh_add_surface_from_arrays(trimesh_mesh, VS::PRIMITIVE_TRIANGLES, d );
 		//vs->material_set_flag( trimesh_mat, VisualServer::MATERIAL_FLAG_UNSHADED,true);
-		vs->mesh_surface_set_material( trimesh_mesh, 0, trimesh_mat );
+
 
 		RID triins = vs->instance_create2(trimesh_mesh,scenario);
 
@@ -464,7 +451,7 @@ public:
 	}
 	virtual bool iteration(float p_time) {
 
-		if (mover) {
+		if (mover.is_valid()) {
 			static float joy_speed = 10;
 			PhysicsServer * ps = PhysicsServer::get_singleton();
 			Transform t = ps->body_get_state(mover,PhysicsServer::BODY_STATE_TRANSFORM);
@@ -548,15 +535,10 @@ public:
 
 
 		DVector<Plane> capsule_planes = Geometry::build_capsule_planes(0.5,1,12,5,Vector3::AXIS_Y);
-		RID capsule_material = vs->fixed_material_create();
-
-		vs->fixed_material_set_param( capsule_material, VisualServer::FIXED_MATERIAL_PARAM_DIFFUSE, Color(1,1,1) );
-
 
 		RID capsule_mesh = vs->mesh_create();
 		Geometry::MeshData capsule_data = Geometry::build_convex_mesh(capsule_planes);
 		vs->mesh_add_surface_from_mesh_data(capsule_mesh,capsule_data);
-		vs->mesh_surface_set_material( capsule_mesh, 0, capsule_material );
 		type_mesh_map[PhysicsServer::SHAPE_CAPSULE]=capsule_mesh;
 
 		RID capsule_shape=ps->shape_create(PhysicsServer::SHAPE_CAPSULE);

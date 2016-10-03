@@ -30,6 +30,23 @@
 #include "print_string.h"
 #include "os/os.h"
 
+
+Rasterizer* (*Rasterizer::_create_func)()=NULL;
+
+Rasterizer *Rasterizer::create() {
+
+	return _create_func();
+}
+
+RasterizerStorage*RasterizerStorage::base_signleton=NULL;
+
+RasterizerStorage::RasterizerStorage() {
+
+	base_signleton=this;
+}
+
+#if 0
+
 RID Rasterizer::create_default_material() {
 
 	return material_create();
@@ -636,3 +653,5 @@ RID Rasterizer::create_overdraw_debug_material() {
 
 	return mat;
 }
+
+#endif

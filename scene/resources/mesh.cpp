@@ -122,22 +122,14 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 
 	if (idx==surfaces.size()) {
 
-		if (what=="custom") {
-			add_custom_surface(p_value);
-			return true;
-
-		}
-
 		//create
 		Dictionary d=p_value;
 		ERR_FAIL_COND_V(!d.has("primitive"),false);
 		ERR_FAIL_COND_V(!d.has("arrays"),false);
 		ERR_FAIL_COND_V(!d.has("morph_arrays"),false);
 
-		bool alphasort = d.has("alphasort") && bool(d["alphasort"]);
 
-
-		add_surface(PrimitiveType(int(d["primitive"])),d["arrays"],d["morph_arrays"],alphasort);
+		add_surface(PrimitiveType(int(d["primitive"])),d["arrays"],d["morph_arrays"]);
 		if (d.has("material")) {
 
 			surface_set_material(idx,d["material"]);
@@ -196,7 +188,6 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 	d["primitive"]=surface_get_primitive_type(idx);
 	d["arrays"]=surface_get_arrays(idx);
 	d["morph_arrays"]=surface_get_morph_arrays(idx);
-	d["alphasort"]=surface_is_alpha_sorting_enabled(idx);
 	Ref<Material> m = surface_get_material(idx);
 	if (m.is_valid())
 		d["material"]=m;
@@ -243,14 +234,14 @@ void Mesh::_recompute_aabb() {
 
 }
 
-void Mesh::add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes,bool p_alphasort) {
+void Mesh::add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes) {
 
 
 	ERR_FAIL_COND(p_arrays.size()!=ARRAY_MAX);
 
 	Surface s;
 
-	VisualServer::get_singleton()->mesh_add_surface(mesh,(VisualServer::PrimitiveType)p_primitive, p_arrays,p_blend_shapes,p_alphasort);
+	VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh,(VisualServer::PrimitiveType)p_primitive, p_arrays,p_blend_shapes);
 	surfaces.push_back(s);
 
 
@@ -274,7 +265,6 @@ void Mesh::add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Arr
 		}
 
 		surfaces[surfaces.size()-1].aabb=aabb;
-		surfaces[surfaces.size()-1].alphasort=p_alphasort;
 
 		_recompute_aabb();
 
@@ -289,28 +279,18 @@ void Mesh::add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Arr
 Array Mesh::surface_get_arrays(int p_surface) const {
 
 	ERR_FAIL_INDEX_V(p_surface,surfaces.size(),Array());
-	return VisualServer::get_singleton()->mesh_get_surface_arrays(mesh,p_surface);
+	//return VisualServer::get_singleton()->mesh_get_surface_arrays(mesh,p_surface);
+	return Array();
 
 }
 Array Mesh::surface_get_morph_arrays(int p_surface) const {
 
 	ERR_FAIL_INDEX_V(p_surface,surfaces.size(),Array());
-	return VisualServer::get_singleton()->mesh_get_surface_morph_arrays(mesh,p_surface);
+	return Array();
 
 }
 
 
-
-void Mesh::add_custom_surface(const Variant& p_data) {
-
-	Surface s;
-	s.aabb=AABB();
-	VisualServer::get_singleton()->mesh_add_custom_surface(mesh,p_data);
-	surfaces.push_back(s);
-
-	triangle_mesh=Ref<TriangleMesh>();
-	_change_notify();
-}
 
 
 int Mesh::get_surface_count() const {
@@ -418,11 +398,6 @@ Mesh::PrimitiveType Mesh::surface_get_primitive_type(int p_idx) const {
 	return (PrimitiveType)VisualServer::get_singleton()->mesh_surface_get_primitive_type( mesh, p_idx );
 }
 
-bool Mesh::surface_is_alpha_sorting_enabled(int p_idx) const {
-
-	ERR_FAIL_INDEX_V( p_idx, surfaces.size(), 0 );
-	return surfaces[p_idx].alphasort;
-}
 
 void Mesh::surface_set_material(int p_idx, const Ref<Material>& p_material) {
 
@@ -968,7 +943,6 @@ void Mesh::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_morph_target_mode","mode"),&Mesh::set_morph_target_mode);
 	ObjectTypeDB::bind_method(_MD("get_morph_target_mode"),&Mesh::get_morph_target_mode);
 
-	ObjectTypeDB::bind_method(_MD("add_surface","primitive","arrays","morph_arrays","alphasort"),&Mesh::add_surface,DEFVAL(Array()),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_surface_count"),&Mesh::get_surface_count);
 	ObjectTypeDB::bind_method(_MD("surface_remove","surf_idx"),&Mesh::surface_remove);
 	ObjectTypeDB::bind_method(_MD("surface_get_array_len","surf_idx"),&Mesh::surface_get_array_len);

@@ -29,6 +29,7 @@
 #include "baked_light_instance.h"
 #include "scene/scene_string_names.h"
 
+#if 0
 
 RID BakedLightInstance::get_baked_light_instance() const {
 
@@ -179,3 +180,4 @@ BakedLightSampler::~BakedLightSampler(){
 
 	VS::get_singleton()->free(base);
 }
+#endif

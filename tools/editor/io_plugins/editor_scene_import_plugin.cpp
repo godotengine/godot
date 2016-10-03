@@ -1406,9 +1406,9 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 								if (tex.is_valid()) {
 
 									image_map.insert(tex,TEXTURE_ROLE_NORMALMAP);
-									if (p_flags&SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY)
-										res->cast_to<FixedMaterial>()->set_fixed_flag(FixedMaterial::FLAG_USE_XY_NORMALMAP,true);
-								}
+									//if (p_flags&SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY)
+									//	res->cast_to<FixedMaterial>()->set_fixed_flag(FixedMaterial::FLAG_USE_XY_NORMALMAP,true);
+								}//
 
 
 							} else {
@@ -1516,10 +1516,10 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 					Ref<FixedMaterial> fm = m->surface_get_material(i);
 					if (fm.is_valid()) {
-						fm->set_flag(Material::FLAG_UNSHADED,true);
-						fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-						fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-						fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
+					//	fm->set_flag(Material::FLAG_UNSHADED,true);
+					//	fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
+					//	fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
+					//	fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
 					}
 				}
 			}
@@ -1543,17 +1543,17 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 				if (p_flags&SCENE_FLAG_DETECT_ALPHA && _teststr(mat->get_name(),"alpha")) {
 
-					mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
-					mat->set_name(_fixstr(mat->get_name(),"alpha"));
+				//	mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
+				//	mat->set_name(_fixstr(mat->get_name(),"alpha"));
 				}
 				if (p_flags&SCENE_FLAG_DETECT_VCOLOR && _teststr(mat->get_name(),"vcol")) {
 
-					mat->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
-					mat->set_name(_fixstr(mat->get_name(),"vcol"));
+					//mat->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
+					//mat->set_name(_fixstr(mat->get_name(),"vcol"));
 				}
 
 				if (p_flags&SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS && m->surface_get_format(i)&Mesh::ARRAY_FORMAT_TEX_UV2) {
-					mat->set_flag(Material::FLAG_LIGHTMAP_ON_UV2,true);
+					//mat->set_flag(Material::FLAG_LIGHTMAP_ON_UV2,true);
 				}
 
 			}
@@ -1612,11 +1612,11 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 					float dist = d.to_double();
 					mi->set_flag(GeometryInstance::FLAG_BILLBOARD,true);
 					mi->set_flag(GeometryInstance::FLAG_BILLBOARD_FIX_Y,true);
-					mi->set_draw_range_begin(dist);
-					mi->set_draw_range_end(100000);
+					//mi->set_draw_range_begin(dist);
+					//mi->set_draw_range_end(100000);
 
-					mip->set_draw_range_begin(0);
-					mip->set_draw_range_end(dist);
+					//mip->set_draw_range_begin(0);
+					//mip->set_draw_range_end(dist);
 
 					if (mi->get_mesh().is_valid()) {
 
@@ -1625,10 +1625,10 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 							Ref<FixedMaterial> fm = m->surface_get_material(i);
 							if (fm.is_valid()) {
-								fm->set_flag(Material::FLAG_UNSHADED,true);
-								fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-								fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-								fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
+							//	fm->set_flag(Material::FLAG_UNSHADED,true);
+							//	fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
+							//	fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
+							//	fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
 							}
 						}
 					}
@@ -1660,11 +1660,11 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		    d=d.substr(1,d.length());
 		if (d.length() && d[0]>='0' && d[0]<='9') {
 		    float dist = d.to_double();
-		    mi->set_draw_range_begin(dist);
-		    mi->set_draw_range_end(100000);
+		  ///  mi->set_draw_range_begin(dist);
+		  //  mi->set_draw_range_end(100000);
 
-		    mip->set_draw_range_begin(0);
-		    mip->set_draw_range_end(dist);
+		  //  mip->set_draw_range_begin(0);
+		  //  mip->set_draw_range_end(dist);
 
 		    /*if (mi->get_mesh().is_valid()) {
 
@@ -1888,8 +1888,8 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		BSP_Tree bsptree(faces);
 
 		Ref<RoomBounds> area = memnew( RoomBounds );
-		area->set_bounds(faces);
-		area->set_geometry_hint(faces);
+		//area->set_bounds(faces);
+		//area->set_geometry_hint(faces);
 
 
 		Room * room = memnew( Room );
@@ -1917,7 +1917,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		memdelete(p_node);
 		p_node=room;
 
-		room->compute_room_from_subtree();
+		//room->compute_room_from_subtree();
 
 	} else if (p_flags&SCENE_FLAG_CREATE_PORTALS &&_teststr(name,"portal") && p_node->cast_to<MeshInstance>()) {
 
@@ -2047,7 +2047,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 				Ref<FixedMaterial> fm = mesh->surface_get_material(i);
 				if (fm.is_valid()) {
 					String name = fm->get_name();
-					if (_teststr(name,"alpha")) {
+				/*	if (_teststr(name,"alpha")) {
 						fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
 						name=_fixstr(name,"alpha");
 					}
@@ -2055,7 +2055,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 					if (_teststr(name,"vcol")) {
 						fm->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
 						name=_fixstr(name,"vcol");
-					}
+					}*/
 					fm->set_name(name);
 				}
 			}

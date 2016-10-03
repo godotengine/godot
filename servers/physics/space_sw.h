@@ -57,7 +57,7 @@ public:
 
 
 
-class SpaceSW {
+class SpaceSW : public RID_Data {
 
 public:
 

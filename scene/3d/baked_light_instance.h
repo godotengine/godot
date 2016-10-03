@@ -32,6 +32,7 @@
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/baked_light.h"
 
+#if 0
 class BakedLightBaker;
 
 
@@ -101,5 +102,5 @@ public:
 
 VARIANT_ENUM_CAST( BakedLightSampler::Param );
 
-
+#endif
 #endif // BAKED_LIGHT_H

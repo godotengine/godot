@@ -16324,15 +16324,15 @@
 		</constant>
 		<constant name="COMPRESS_ETC" value="3">
 		</constant>
-		<constant name="FORMAT_GRAYSCALE" value="0">
+		<constant name="FORMAT_L8" value="0">
 		</constant>
 		<constant name="FORMAT_INTENSITY" value="1">
 		</constant>
-		<constant name="FORMAT_GRAYSCALE_ALPHA" value="2">
+		<constant name="FORMAT_LA8" value="2">
 		</constant>
-		<constant name="FORMAT_RGB" value="3">
+		<constant name="FORMAT_RGB8" value="3">
 		</constant>
-		<constant name="FORMAT_RGBA" value="4">
+		<constant name="FORMAT_RGBA8" value="4">
 		</constant>
 		<constant name="FORMAT_INDEXED" value="5">
 		</constant>
@@ -16342,23 +16342,23 @@
 		</constant>
 		<constant name="FORMAT_YUV_444" value="8">
 		</constant>
-		<constant name="FORMAT_BC1" value="9">
+		<constant name="FORMAT_DXT1" value="9">
 		</constant>
-		<constant name="FORMAT_BC2" value="10">
+		<constant name="FORMAT_DXT3" value="10">
 		</constant>
-		<constant name="FORMAT_BC3" value="11">
+		<constant name="FORMAT_DXT5" value="11">
 		</constant>
-		<constant name="FORMAT_BC4" value="12">
+		<constant name="FORMAT_ATI1" value="12">
 		</constant>
-		<constant name="FORMAT_BC5" value="13">
+		<constant name="FORMAT_ATI2" value="13">
 		</constant>
 		<constant name="FORMAT_PVRTC2" value="14">
 		</constant>
-		<constant name="FORMAT_PVRTC2_ALPHA" value="15">
+		<constant name="FORMAT_PVRTC2A" value="15">
 		</constant>
 		<constant name="FORMAT_PVRTC4" value="16">
 		</constant>
-		<constant name="FORMAT_PVRTC4_ALPHA" value="17">
+		<constant name="FORMAT_PVRTC4A" value="17">
 		</constant>
 		<constant name="FORMAT_ETC" value="18">
 		</constant>

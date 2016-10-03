@@ -33,6 +33,7 @@
 #include "scene/resources/texture.h"
 #include "scene/main/scene_main_loop.h"
 #include "scene/resources/shader.h"
+#include "scene/resources/material.h"
 
 class CanvasLayer;
 class Viewport;
@@ -40,22 +41,19 @@ class Font;
 
 class StyleBox;
 
-class CanvasItemMaterial : public Resource{
+class CanvasItemMaterial : public Material{
 
-	OBJ_TYPE(CanvasItemMaterial,Resource);
+	OBJ_TYPE(CanvasItemMaterial,Material);
 	RID material;
 	Ref<Shader> shader;
 public:
-	enum ShadingMode {
+	/*enum ShadingMode {
 		SHADING_NORMAL,
 		SHADING_UNSHADED,
 		SHADING_ONLY_LIGHT,
-	};
+	};*/
 
 protected:
-
-	ShadingMode shading_mode;
-
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
@@ -72,15 +70,12 @@ public:
 	void set_shader_param(const StringName& p_param,const Variant& p_value);
 	Variant get_shader_param(const StringName& p_param) const;
 
-	void set_shading_mode(ShadingMode p_mode);
-	ShadingMode get_shading_mode() const;
-
 	virtual RID get_rid() const;
 	CanvasItemMaterial();
 	~CanvasItemMaterial();
 };
 
-VARIANT_ENUM_CAST( CanvasItemMaterial::ShadingMode );
+
 
 
 class CanvasItem : public Node {
@@ -107,8 +102,8 @@ private:
 
 	CanvasLayer *canvas_layer;
 
-	float opacity;
-	float self_opacity;
+	Color modulate;
+	Color self_modulate;
 
 	List<CanvasItem*> children_items;
 	List<CanvasItem*>::Element *C;
@@ -120,7 +115,6 @@ private:
 	bool hidden;
 	bool pending_update;
 	bool toplevel;
-	bool pending_children_sort;
 	bool drawing;
 	bool block_transform_notify;
 	bool behind;
@@ -133,7 +127,7 @@ private:
 	mutable bool global_invalid;
 
 
-	void _raise_self();
+	void _toplevel_raise_self();
 
 	void _propagate_visibility_changed(bool p_visible);
 
@@ -144,9 +138,6 @@ private:
 
 	void _enter_canvas();
 	void _exit_canvas();
-
-	void _queue_sort_children();
-	void _sort_children();
 
 	void _notify_transform(CanvasItem *p_node);
 
@@ -193,17 +184,14 @@ public:
 
 	void update();
 
-	void set_blend_mode(BlendMode p_blend_mode);
-	BlendMode get_blend_mode() const;
-
 	virtual void set_light_mask(int p_light_mask);
 	int get_light_mask() const;
 
-	void set_opacity(float p_opacity);
-	float get_opacity() const;
+	void set_modulate(const Color& p_modulate);
+	Color get_modulate() const;
 
-	void set_self_opacity(float p_self_opacity);
-	float get_self_opacity() const;
+	void set_self_modulate(const Color& p_self_modulate);
+	Color get_self_modulate() const;
 
 	/* DRAWING API */
 

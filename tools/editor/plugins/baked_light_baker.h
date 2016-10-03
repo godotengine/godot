@@ -34,6 +34,8 @@
 #include "scene/3d/mesh_instance.h"
 #include "os/thread.h"
 
+#if 0
+
 class BakedLightBaker {
 public:
 
@@ -375,3 +377,4 @@ public:
 };
 
 #endif // BAKED_LIGHT_BAKER_H
+#endif

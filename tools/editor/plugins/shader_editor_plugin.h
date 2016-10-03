@@ -38,7 +38,7 @@
 #include "scene/resources/shader.h"
 #include "servers/visual/shader_language.h"
 
-
+#if 0
 class ShaderTextEditor : public CodeTextEditor {
 
 	OBJ_TYPE( ShaderTextEditor, CodeTextEditor );
@@ -154,4 +154,6 @@ public:
 	~ShaderEditorPlugin();
 
 };
+
+#endif
 #endif

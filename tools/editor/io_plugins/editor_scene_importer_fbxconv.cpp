@@ -33,7 +33,7 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/animation/animation_player.h"
 
-
+#if 0
 String EditorSceneImporterFBXConv::_id(const String& p_id) const {
 
 	return p_id.replace(":","_").replace("/","_");
@@ -1132,3 +1132,4 @@ EditorSceneImporterFBXConv::EditorSceneImporterFBXConv() {
 #endif
 
 }
+#endif

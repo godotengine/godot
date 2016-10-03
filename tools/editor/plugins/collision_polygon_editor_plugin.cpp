@@ -33,6 +33,8 @@
 #include "scene/3d/camera.h"
 #include "canvas_item_editor_plugin.h"
 
+#if 0
+
 void CollisionPolygonEditor::_notification(int p_what) {
 
 	switch(p_what) {
@@ -642,3 +644,4 @@ CollisionPolygonEditorPlugin::~CollisionPolygonEditorPlugin()
 {
 }
 
+#endif

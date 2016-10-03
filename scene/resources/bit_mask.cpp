@@ -45,8 +45,8 @@ void BitMap::create_from_image_alpha(const Image& p_image){
 
 	ERR_FAIL_COND(p_image.empty());
 	Image img=p_image;
-	img.convert(Image::FORMAT_INTENSITY);
-	ERR_FAIL_COND(img.get_format()!=Image::FORMAT_INTENSITY);
+	img.convert(Image::FORMAT_LA8);
+	ERR_FAIL_COND(img.get_format()!=Image::FORMAT_LA8);
 
 	create(Size2(img.get_width(),img.get_height()));
 
@@ -58,7 +58,7 @@ void BitMap::create_from_image_alpha(const Image& p_image){
 
 		int bbyte = i/8;
 		int bbit = i % 8;
-		if (r[i])
+		if (r[i*2])
 			w[bbyte]|=(1<<bbit);
 	}
 
@@ -192,7 +192,6 @@ void BitMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_get_data"),&BitMap::_get_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_data"),_SCS("_get_data"));
-
 
 }
 

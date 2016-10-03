@@ -89,7 +89,6 @@ public:
 	enum Flags {
 		FLAG_VISIBLE=VS::INSTANCE_FLAG_VISIBLE,
 		FLAG_CAST_SHADOW=VS::INSTANCE_FLAG_CAST_SHADOW,
-		FLAG_RECEIVE_SHADOWS=VS::INSTANCE_FLAG_RECEIVE_SHADOWS,
 		FLAG_BILLBOARD=VS::INSTANCE_FLAG_BILLBOARD,
 		FLAG_BILLBOARD_FIX_Y=VS::INSTANCE_FLAG_BILLBOARD_FIX_Y,
 		FLAG_DEPH_SCALE=VS::INSTANCE_FLAG_DEPH_SCALE,
@@ -110,8 +109,10 @@ private:
 	bool flags[FLAG_MAX];
 	ShadowCastingSetting shadow_casting_setting;
 	Ref<Material> material_override;
-	float draw_begin;
-	float draw_end;
+	float lod_min_distance;
+	float lod_max_distance;
+	float lod_min_hysteresis;
+	float lod_max_hysteresis;
 	void _find_baked_light();
 	BakedLightInstance *baked_light_instance;
 	int baked_light_texture_id;
@@ -131,11 +132,17 @@ public:
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
 
-	void set_draw_range_begin(float p_dist);
-	float get_draw_range_begin() const;
+	void set_lod_min_distance(float p_dist);
+	float get_lod_min_distance() const;
 
-	void set_draw_range_end(float p_dist);
-	float get_draw_range_end() const;
+	void set_lod_max_distance(float p_dist);
+	float get_lod_max_distance() const;
+
+	void set_lod_min_hysteresis(float p_dist);
+	float get_lod_min_hysteresis() const;
+
+	void set_lod_max_hysteresis(float p_dist);
+	float get_lod_max_hysteresis() const;
 
 	void set_material_override(const Ref<Material>& p_material);
 	Ref<Material> get_material_override() const;

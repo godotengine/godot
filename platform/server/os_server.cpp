@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/rasterizer_dummy.h"
+//#include "servers/visual/visual_server_raster.h"
+//#include "servers/visual/rasterizer_dummy.h"
 #include "os_server.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,9 +57,9 @@ void OS_Server::initialize(const VideoMode& p_desired,int p_video_driver,int p_a
 	current_videomode=p_desired;
 	main_loop=NULL;
 
-	rasterizer = memnew( RasterizerDummy );
+	//rasterizer = memnew( RasterizerDummy );
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
+	//visual_server = memnew( VisualServerRaster(rasterizer) );
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -114,7 +114,7 @@ void OS_Server::finalize() {
 
 	visual_server->finish();
 	memdelete(visual_server);
-	memdelete(rasterizer);
+	//memdelete(rasterizer);
 
 	physics_server->finish();
 	memdelete(physics_server);

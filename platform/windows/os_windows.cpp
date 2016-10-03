@@ -2081,8 +2081,8 @@ void OS_Windows::set_icon(const Image& p_icon) {
 
 
 	Image icon=p_icon;
-	if (icon.get_format()!=Image::FORMAT_RGBA)
-		icon.convert(Image::FORMAT_RGBA);
+	if (icon.get_format()!=Image::FORMAT_RGBA8)
+		icon.convert(Image::FORMAT_RGBA8);
 	int w = icon.get_width();
 	int h = icon.get_height();
 

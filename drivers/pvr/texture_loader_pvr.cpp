@@ -116,33 +116,33 @@ RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path,E
 	switch(flags&0xFF) {
 
 		case 0x18:
-		case 0xC: format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC2_ALPHA:Image::FORMAT_PVRTC2;  break;
+		case 0xC: format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC2A:Image::FORMAT_PVRTC2;  break;
 		case 0x19:
-		case 0xD: format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC4_ALPHA:Image::FORMAT_PVRTC4;  break;
+		case 0xD: format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC4A:Image::FORMAT_PVRTC4;  break;
 		case 0x16:
-			format=Image::FORMAT_GRAYSCALE; break;
+			format=Image::FORMAT_L8; break;
 		case 0x17:
-			format=Image::FORMAT_GRAYSCALE_ALPHA; break;
+			format=Image::FORMAT_LA8; break;
 		case 0x20:
 		case 0x80:
 		case 0x81:
-			format=Image::FORMAT_BC1; break;
+			format=Image::FORMAT_DXT1; break;
 		case 0x21:
 		case 0x22:
 		case 0x82:
 		case 0x83:
-			format=Image::FORMAT_BC2; break;
+			format=Image::FORMAT_DXT3; break;
 		case 0x23:
 		case 0x24:
 		case 0x84:
 		case 0x85:
-			format=Image::FORMAT_BC3; break;
+			format=Image::FORMAT_DXT5; break;
 		case 0x4:
 		case 0x15:
-			format=Image::FORMAT_RGB; break;
+			format=Image::FORMAT_RGB8; break;
 		case 0x5:
 		case 0x12:
-			format=Image::FORMAT_RGBA; break;
+			format=Image::FORMAT_RGBA8; break;
 		case 0x36:
 			format=Image::FORMAT_ETC; break;
 		default:
@@ -198,24 +198,24 @@ static void _compress_pvrtc4(Image * p_img) {
 
 	bool make_mipmaps=false;
 	if (img.get_width()%8 || img.get_height()%8) {
-		make_mipmaps=img.get_mipmaps()>0;
+		make_mipmaps=img.has_mipmaps();
 		img.resize(img.get_width()+(8-(img.get_width()%8)),img.get_height()+(8-(img.get_height()%8)));
 	}
-	img.convert(Image::FORMAT_RGBA);
-	if (img.get_mipmaps()==0 && make_mipmaps)
+	img.convert(Image::FORMAT_RGBA8);
+	if (!img.has_mipmaps() && make_mipmaps)
 		img.generate_mipmaps();
 
 	bool use_alpha=img.detect_alpha();
 
 	Image new_img;
-	new_img.create(img.get_width(),img.get_height(),true,use_alpha?Image::FORMAT_PVRTC4_ALPHA:Image::FORMAT_PVRTC4);
+	new_img.create(img.get_width(),img.get_height(),true,use_alpha?Image::FORMAT_PVRTC4A:Image::FORMAT_PVRTC4);
 	DVector<uint8_t> data=new_img.get_data();
 	{
 		DVector<uint8_t>::Write wr=data.write();
 		DVector<uint8_t>::Read r=img.get_data().read();
 
 
-		for(int i=0;i<=new_img.get_mipmaps();i++) {
+		for(int i=0;i<=new_img.get_mipmap_count();i++) {
 
 			int ofs,size,w,h;
 			img.get_mipmap_offset_size_and_dimensions(i,ofs,size,w,h);
@@ -234,7 +234,7 @@ static void _compress_pvrtc4(Image * p_img) {
 
 	}
 
-	*p_img = Image(new_img.get_width(),new_img.get_height(),new_img.get_mipmaps(),new_img.get_format(),data);
+	*p_img = Image(new_img.get_width(),new_img.get_height(),new_img.has_mipmaps(),new_img.get_format(),data);
 
 }
 
@@ -673,9 +673,9 @@ static void _pvrtc_decompress(Image* p_img) {
 //		decompress_pvrtc((PVRTCBlock*)p_comp_img,p_2bit,p_width,p_height,1,p_dst);
 //	}
 
-	ERR_FAIL_COND( p_img->get_format()!=Image::FORMAT_PVRTC2 && p_img->get_format()!=Image::FORMAT_PVRTC2_ALPHA && p_img->get_format()!=Image::FORMAT_PVRTC4 && p_img->get_format()!=Image::FORMAT_PVRTC4_ALPHA);
+	ERR_FAIL_COND( p_img->get_format()!=Image::FORMAT_PVRTC2 && p_img->get_format()!=Image::FORMAT_PVRTC2A && p_img->get_format()!=Image::FORMAT_PVRTC4 && p_img->get_format()!=Image::FORMAT_PVRTC4A);
 
-	bool _2bit = (p_img->get_format()==Image::FORMAT_PVRTC2 || p_img->get_format()==Image::FORMAT_PVRTC2_ALPHA );
+	bool _2bit = (p_img->get_format()==Image::FORMAT_PVRTC2 || p_img->get_format()==Image::FORMAT_PVRTC2A );
 
 	DVector<uint8_t> data = p_img->get_data();
 	DVector<uint8_t>::Read r = data.read();
@@ -694,8 +694,8 @@ static void _pvrtc_decompress(Image* p_img) {
 	w=DVector<uint8_t>::Write();
 	r=DVector<uint8_t>::Read();
 
-	bool make_mipmaps=p_img->get_mipmaps()>0;
-	Image newimg(p_img->get_width(),p_img->get_height(),0,Image::FORMAT_RGBA,newdata);
+	bool make_mipmaps=p_img->has_mipmaps();
+	Image newimg(p_img->get_width(),p_img->get_height(),false,Image::FORMAT_RGBA8,newdata);
 	if (make_mipmaps)
 		newimg.generate_mipmaps();
 	*p_img=newimg;

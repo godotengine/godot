@@ -8,7 +8,7 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/camera.h"
 
-
+#if 0
 class MaterialEditor : public Control {
 
 	OBJ_TYPE(MaterialEditor, Control);
@@ -69,3 +69,4 @@ public:
 };
 
 #endif // MATERIAL_EDITOR_PLUGIN_H
+#endif

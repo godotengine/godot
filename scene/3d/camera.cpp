@@ -96,8 +96,8 @@ bool Camera::_set(const StringName& p_name, const Variant& p_value) {
 		} else {
 			clear_current();
 		}
-	} else if (p_name=="visible_layers") {
-		set_visible_layers(p_value);
+	} else if (p_name=="cull_mask") {
+		set_cull_mask(p_value);
 	} else if (p_name=="environment") {
 		set_environment(p_value);
 	} else
@@ -130,8 +130,8 @@ bool Camera::_get(const StringName& p_name,Variant &r_ret) const {
 		} else {
 			r_ret=is_current();
 		}
-	} else if (p_name=="visible_layers") {
-		r_ret=get_visible_layers();
+	} else if (p_name=="cull_mask") {
+		r_ret=get_cull_mask();
 	} else if (p_name=="h_offset") {
 		r_ret=get_h_offset();
 	} else if (p_name=="v_offset") {
@@ -176,7 +176,7 @@ void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 	p_list->push_back( PropertyInfo( Variant::REAL, "far" , PROPERTY_HINT_EXP_RANGE, "0.01,4096.0,0.01") );
 	p_list->push_back( PropertyInfo( Variant::INT, "keep_aspect",PROPERTY_HINT_ENUM,"Keep Width,Keep Height") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "current" ) );
-	p_list->push_back( PropertyInfo( Variant::INT, "visible_layers",PROPERTY_HINT_ALL_FLAGS ) );
+	p_list->push_back( PropertyInfo( Variant::INT, "cull_mask",PROPERTY_HINT_ALL_FLAGS ) );
 	p_list->push_back( PropertyInfo( Variant::OBJECT, "environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "h_offset" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "v_offset" ) );
@@ -342,91 +342,6 @@ bool Camera::_can_gizmo_scale() const {
 }
 
 
-RES Camera::_get_gizmo_geometry() const {
-
-
-	Ref<SurfaceTool> surface_tool( memnew( SurfaceTool ));
-
-	Ref<FixedMaterial> mat( memnew( FixedMaterial ));
-
-	mat->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(1.0,0.5,1.0,0.5) );
-	mat->set_line_width(4);
-	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-	mat->set_flag(Material::FLAG_UNSHADED,true);
-	//mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
-
-	surface_tool->begin(Mesh::PRIMITIVE_LINES);
-	surface_tool->set_material(mat);
-
-	switch(mode) {
-
-		case PROJECTION_PERSPECTIVE: {
-
-
-
-			Vector3 side=Vector3( Math::sin(Math::deg2rad(fov)), 0, -Math::cos(Math::deg2rad(fov)) );
-			Vector3 nside=side;
-			nside.x=-nside.x;
-			Vector3 up=Vector3(0,side.x,0);
-
-
-#define ADD_TRIANGLE( m_a, m_b, m_c)\
-{\
-	surface_tool->add_vertex(m_a);\
-	surface_tool->add_vertex(m_b);\
-	surface_tool->add_vertex(m_b);\
-	surface_tool->add_vertex(m_c);\
-	surface_tool->add_vertex(m_c);\
-	surface_tool->add_vertex(m_a);\
-}
-
-			ADD_TRIANGLE( Vector3(), side+up, side-up );
-			ADD_TRIANGLE( Vector3(), nside+up, nside-up );
-			ADD_TRIANGLE( Vector3(), side+up, nside+up );
-			ADD_TRIANGLE( Vector3(), side-up, nside-up );
-
-			side.x*=0.25;
-			nside.x*=0.25;
-			Vector3 tup( 0, up.y*3/2,side.z);
-			ADD_TRIANGLE( tup, side+up, nside+up );
-
-		} break;
-		case PROJECTION_ORTHOGONAL: {
-
-#define ADD_QUAD( m_a, m_b, m_c, m_d)\
-{\
-	surface_tool->add_vertex(m_a);\
-	surface_tool->add_vertex(m_b);\
-	surface_tool->add_vertex(m_b);\
-	surface_tool->add_vertex(m_c);\
-	surface_tool->add_vertex(m_c);\
-	surface_tool->add_vertex(m_d);\
-	surface_tool->add_vertex(m_d);\
-	surface_tool->add_vertex(m_a);\
-}
-
-			float hsize=size*0.5;
-			Vector3 right(hsize,0,0);
-			Vector3 up(0,hsize,0);
-			Vector3 back(0,0,-1.0);
-			Vector3 front(0,0,0);
-
-			ADD_QUAD( -up-right,-up+right,up+right,up-right);
-			ADD_QUAD( -up-right+back,-up+right+back,up+right+back,up-right+back);
-			ADD_QUAD( up+right,up+right+back,up-right+back,up-right);
-			ADD_QUAD( -up+right,-up+right+back,-up-right+back,-up-right);
-
-			right.x*=0.25;
-			Vector3 tup( 0, up.y*3/2,back.z );
-			ADD_TRIANGLE( tup, right+up+back, -right+up+back );
-
-		} break;
-
-	}
-
-	return surface_tool->commit();
-
-}
 
 Vector3 Camera::project_ray_normal(const Point2& p_pos) const {
 
@@ -648,8 +563,8 @@ void Camera::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("get_zfar"),&Camera::get_zfar );
 	ObjectTypeDB::bind_method( _MD("get_znear"),&Camera::get_znear );
 	ObjectTypeDB::bind_method( _MD("get_projection"),&Camera::get_projection );
-	ObjectTypeDB::bind_method( _MD("set_visible_layers","mask"),&Camera::set_visible_layers );
-	ObjectTypeDB::bind_method( _MD("get_visible_layers"),&Camera::get_visible_layers );
+	ObjectTypeDB::bind_method( _MD("set_cull_mask","mask"),&Camera::set_cull_mask );
+	ObjectTypeDB::bind_method( _MD("get_cull_mask"),&Camera::get_cull_mask );
 	ObjectTypeDB::bind_method(_MD("set_environment","env:Environment"),&Camera::set_environment);
 	ObjectTypeDB::bind_method(_MD("get_environment:Environment"),&Camera::get_environment);
 	ObjectTypeDB::bind_method(_MD("set_keep_aspect_mode","mode"),&Camera::set_keep_aspect_mode);
@@ -690,13 +605,13 @@ Camera::Projection Camera::get_projection() const {
 	return mode;
 }
 
-void Camera::set_visible_layers(uint32_t p_layers) {
+void Camera::set_cull_mask(uint32_t p_layers) {
 
 	layers=p_layers;
-	VisualServer::get_singleton()->camera_set_visible_layers(camera,layers);
+	VisualServer::get_singleton()->camera_set_cull_mask(camera,layers);
 }
 
-uint32_t Camera::get_visible_layers() const{
+uint32_t Camera::get_cull_mask() const{
 
 	return layers;
 }
@@ -757,7 +672,7 @@ Camera::Camera() {
 	layers=0xfffff;
 	v_offset=0;
 	h_offset=0;
-	VisualServer::get_singleton()->camera_set_visible_layers(camera,layers);
+	VisualServer::get_singleton()->camera_set_cull_mask(camera,layers);
 	//active=false;
 }
 

@@ -31,6 +31,7 @@
 #include "scene/resources/curve.h"
 #include "os/keyboard.h"
 
+#if 0
 String PathSpatialGizmo::get_handle_name(int p_idx) const {
 
 	Ref<Curve3D> c = path->get_curve();
@@ -593,3 +594,4 @@ PathEditorPlugin::~PathEditorPlugin()
 {
 }
 
+#endif

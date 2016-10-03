@@ -1060,7 +1060,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			if (buf) {
 
 				encode_uint32(image.get_format(),&buf[0]);
-				encode_uint32(image.get_mipmaps(),&buf[4]);
+				encode_uint32(image.has_mipmaps(),&buf[4]);
 				encode_uint32(image.get_width(),&buf[8]);
 				encode_uint32(image.get_height(),&buf[12]);
 				int ds=data.size();

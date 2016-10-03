@@ -870,7 +870,7 @@ void ProjectManager::_load_recent_projects() {
 		TextureButton *favorite = memnew( TextureButton );
 		favorite->set_normal_texture(favorite_icon);
 		if (!is_favorite)
-			favorite->set_opacity(0.2);
+			favorite->set_modulate(Color(1,1,1,0.2));
 		favorite->set_v_size_flags(SIZE_EXPAND);
 		favorite->connect("pressed",this,"_favorite_pressed",varray(hb));
 		favorite_box->add_child(favorite);
@@ -891,7 +891,7 @@ void ProjectManager::_load_recent_projects() {
 		vb->add_child(title);
 		Label *fpath = memnew( Label(path) );
 		vb->add_child(fpath);
-		fpath->set_opacity(0.5);
+		fpath->set_modulate(Color(1,1,1,0.5));
 		fpath->add_color_override("font_color",font_color);
 
 		scroll_childs->add_child(hb);

@@ -140,6 +140,7 @@ Error ContextGL_X11::initialize() {
 		static int context_attribs[] = {
 			GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
 			GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+			GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_DEBUG_BIT_ARB,
 			None
 		};
 

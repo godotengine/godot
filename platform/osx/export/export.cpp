@@ -207,7 +207,7 @@ void EditorExportPlatformOSX::_make_icon(const Image& p_icon,Vector<uint8_t>& ic
 	while(size>=16) {
 
 		Image copy = p_icon;
-		copy.convert(Image::FORMAT_RGBA);
+		copy.convert(Image::FORMAT_RGBA8);
 		copy.resize(size,size);
 		it->create_from_image(copy);
 		String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/icon.png";

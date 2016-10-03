@@ -167,35 +167,5 @@ public:
 };
 
 
-class StyleBoxImageMask : public StyleBox {
-
-	OBJ_TYPE( StyleBoxImageMask, StyleBox );
-	virtual float get_style_margin(Margin p_margin) const { return 0; }
-
-	Image image;
-	float expand_margin[4];
-	bool expand;
-
-protected:
-
-	static void _bind_methods();
-
-public:
-
-	virtual void draw(RID p_canvas_item,const Rect2& p_rect) const {}
-	virtual bool test_mask(const Point2& p_point, const Rect2& p_rect) const;
-
-	void set_image(const Image& p_image);
-	Image get_image() const;
-
-	void set_expand(bool p_expand);
-	bool get_expand() const;
-	void set_expand_margin_size(Margin p_expand_margin,float p_size);
-	float get_expand_margin_size(Margin p_expand_margin) const;
-
-	StyleBoxImageMask();
-
-};
-
 
 #endif

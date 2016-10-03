@@ -32,6 +32,7 @@
 #include "resource.h"
 #include "io/resource_loader.h"
 #include "scene/resources/texture.h"
+
 class Shader : public Resource {
 
 	OBJ_TYPE(Shader,Resource);
@@ -49,9 +50,6 @@ public:
 private:
 	RID shader;
 	Mode mode;
-	Dictionary _get_code();
-	void _set_code(const Dictionary& p_string);
-
 
 	// hack the name of performance
 	// shaders keep a list of ShaderMaterial -> VisualServer name translations, to make
@@ -73,10 +71,8 @@ public:
 	//void set_mode(Mode p_mode);
 	Mode get_mode() const;
 
-	void set_code( const String& p_vertex, const String& p_fragment, const String& p_light,int p_fragment_ofs=0,int p_light_ofs=0);
-	String get_vertex_code() const;
-	String get_fragment_code() const;
-	String get_light_code() const;
+	void set_code( const String& p_code);
+	String get_code() const;
 
 	void get_param_list(List<PropertyInfo> *p_params) const;
 	bool has_param(const StringName& p_param) const;
@@ -122,15 +118,6 @@ public:
 	CanvasItemShader() : Shader(MODE_CANVAS_ITEM) {};
 };
 
-
-
-class ResourceFormatLoaderShader : public ResourceFormatLoader {
-public:
-	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
-};
 
 
 

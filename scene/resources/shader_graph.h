@@ -30,7 +30,7 @@
 #define SHADER_GRAPH_H
 
 
-
+#if 0
 #include "map.h"
 #include "scene/resources/shader.h"
 
@@ -440,5 +440,5 @@ public:
 	}
 };
 
-
+#endif
 #endif // SHADER_GRAPH_H

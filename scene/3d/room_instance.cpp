@@ -75,50 +75,6 @@ void Room::_notification(int p_what) {
 }
 
 
-RES Room::_get_gizmo_geometry() const {
-
-	DVector<Face3> faces;
-	if (!room.is_null())
-		faces=room->get_geometry_hint();
-
-	int count=faces.size();
-	if (count==0)
-		return RES();
-
-	DVector<Face3>::Read facesr=faces.read();
-
-	const Face3* facesptr=facesr.ptr();
-
-	DVector<Vector3> points;
-
-	Ref<SurfaceTool> surface_tool( memnew( SurfaceTool ));
-
-	Ref<FixedMaterial> mat( memnew( FixedMaterial ));
-
-	mat->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.2,0.8,0.9,0.3) );
-	mat->set_line_width(4);
-	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-	mat->set_flag(Material::FLAG_UNSHADED,true);
-//	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
-
-	surface_tool->begin(Mesh::PRIMITIVE_LINES);
-	surface_tool->set_material(mat);
-
-	for (int i=0;i<count;i++) {
-
-		surface_tool->add_vertex(facesptr[i].vertex[0]);
-		surface_tool->add_vertex(facesptr[i].vertex[1]);
-
-		surface_tool->add_vertex(facesptr[i].vertex[1]);
-		surface_tool->add_vertex(facesptr[i].vertex[2]);
-
-		surface_tool->add_vertex(facesptr[i].vertex[2]);
-		surface_tool->add_vertex(facesptr[i].vertex[0]);
-
-	}
-
-	return surface_tool->commit();
-}
 
 
 
@@ -127,8 +83,9 @@ AABB Room::get_aabb() const {
 	if (room.is_null())
 		return AABB();
 
-	return room->get_bounds().get_aabb();
+	return AABB();
 }
+
 DVector<Face3> Room::get_faces(uint32_t p_usage_flags) const {
 
 	return DVector<Face3>();
@@ -153,9 +110,6 @@ void Room::set_room( const Ref<RoomBounds>& p_room ) {
 
 	propagate_notification(NOTIFICATION_AREA_CHANGED);
 	update_gizmo();
-
-	if (room.is_valid())
-		SpatialSoundServer::get_singleton()->room_set_bounds(sound_room,room->get_bounds());
 
 
 }
@@ -202,32 +156,6 @@ void Room::_parse_node_faces(DVector<Face3> &all_faces,const Node *p_node) const
 
 }
 
-void Room::compute_room_from_subtree() {
-
-
-	DVector<Face3> all_faces;
-	_parse_node_faces(all_faces,this);
-
-
-	if (all_faces.size()==0)
-		return;
-	float error;
-	DVector<Face3> wrapped_faces = Geometry::wrap_geometry(all_faces,&error);
-
-
-	if (wrapped_faces.size()==0)
-		return;
-
-	BSP_Tree tree(wrapped_faces,error);
-
-	Ref<RoomBounds> room( memnew( RoomBounds ) );
-	room->set_bounds(tree);
-	room->set_geometry_hint(wrapped_faces);
-
-	set_room(room);
-
-}
-
 
 
 void Room::set_simulate_acoustics(bool p_enable) {
@@ -268,7 +196,6 @@ void Room::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_room","room:Room"),&Room::set_room );
 	ObjectTypeDB::bind_method(_MD("get_room:Room"),&Room::get_room );
-	ObjectTypeDB::bind_method(_MD("compute_room_from_subtree"),&Room::compute_room_from_subtree);
 
 
 

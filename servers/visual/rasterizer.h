@@ -29,6 +29,670 @@
 #ifndef RASTERIZER_H
 #define RASTERIZER_H
 
+
+#include "servers/visual_server.h"
+#include "camera_matrix.h"
+
+
+
+class RasterizerStorage {
+public:
+	/* TEXTURE API */
+
+	virtual RID texture_create()=0;
+	virtual void texture_allocate(RID p_texture,int p_width, int p_height,Image::Format p_format,uint32_t p_flags=VS::TEXTURE_FLAGS_DEFAULT)=0;
+	virtual void texture_set_data(RID p_texture,const Image& p_image,VS::CubeMapSide p_cube_side=VS::CUBEMAP_LEFT)=0;
+	virtual Image texture_get_data(RID p_texture,VS::CubeMapSide p_cube_side=VS::CUBEMAP_LEFT) const=0;
+	virtual void texture_set_flags(RID p_texture,uint32_t p_flags)=0;
+	virtual uint32_t texture_get_flags(RID p_texture) const=0;
+	virtual Image::Format texture_get_format(RID p_texture) const=0;
+	virtual uint32_t texture_get_width(RID p_texture) const=0;
+	virtual uint32_t texture_get_height(RID p_texture) const=0;
+	virtual void texture_set_size_override(RID p_texture,int p_width, int p_height)=0;
+
+	virtual void texture_set_path(RID p_texture,const String& p_path)=0;
+	virtual String texture_get_path(RID p_texture) const=0;
+
+	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable)=0;
+
+	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info)=0;
+
+
+	/* SHADER API */
+
+
+	virtual RID shader_create(VS::ShaderMode p_mode=VS::SHADER_SPATIAL)=0;
+
+	virtual void shader_set_mode(RID p_shader,VS::ShaderMode p_mode)=0;
+	virtual VS::ShaderMode shader_get_mode(RID p_shader) const=0;
+
+	virtual void shader_set_code(RID p_shader, const String& p_code)=0;
+	virtual String shader_get_code(RID p_shader) const=0;
+	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const=0;
+
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture)=0;
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const=0;
+
+
+	/* COMMON MATERIAL API */
+
+	virtual RID material_create()=0;
+
+	virtual void material_set_shader(RID p_shader_material, RID p_shader)=0;
+	virtual RID material_get_shader(RID p_shader_material) const=0;
+
+	virtual void material_set_param(RID p_material, const StringName& p_param, const Variant& p_value)=0;
+	virtual Variant material_get_param(RID p_material, const StringName& p_param) const=0;
+
+	/* MESH API */
+
+	virtual RID mesh_create()=0;
+
+	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >())=0;
+
+	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount)=0;
+	virtual int mesh_get_morph_target_count(RID p_mesh) const=0;
+
+
+	virtual void mesh_set_morph_target_mode(RID p_mesh,VS::MorphTargetMode p_mode)=0;
+	virtual VS::MorphTargetMode mesh_get_morph_target_mode(RID p_mesh) const=0;
+
+	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material)=0;
+	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const=0;
+
+	virtual int mesh_surface_get_array_len(RID p_mesh, int p_surface) const=0;
+	virtual int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const=0;
+
+	virtual DVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const=0;
+	virtual DVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const=0;
+
+
+	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const=0;
+	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const=0;
+
+	virtual void mesh_remove_surface(RID p_mesh,int p_index)=0;
+	virtual int mesh_get_surface_count(RID p_mesh) const=0;
+
+	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb)=0;
+	virtual AABB mesh_get_custom_aabb(RID p_mesh) const=0;
+
+	virtual AABB mesh_get_aabb(RID p_mesh) const=0;
+	virtual void mesh_clear(RID p_mesh)=0;
+
+	/* MULTIMESH API */
+
+
+	virtual RID multimesh_create()=0;
+
+	virtual void multimesh_allocate(RID p_multimesh,int p_instances,VS::MultimeshTransformFormat p_transform_format,VS::MultimeshColorFormat p_color_format,bool p_gen_aabb=true)=0;
+	virtual int multimesh_get_instance_count(RID p_multimesh) const=0;
+
+	virtual void multimesh_set_mesh(RID p_multimesh,RID p_mesh)=0;
+	virtual void multimesh_set_custom_aabb(RID p_multimesh,const AABB& p_aabb)=0;
+	virtual void multimesh_instance_set_transform(RID p_multimesh,int p_index,const Transform& p_transform)=0;
+	virtual void multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Matrix32& p_transform)=0;
+	virtual void multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color)=0;
+
+	virtual RID multimesh_get_mesh(RID p_multimesh) const=0;
+	virtual AABB multimesh_get_custom_aabb(RID p_multimesh,const AABB& p_aabb) const=0;
+
+	virtual Transform multimesh_instance_get_transform(RID p_multimesh,int p_index) const=0;
+	virtual Matrix32 multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const=0;
+	virtual Color multimesh_instance_get_color(RID p_multimesh,int p_index) const=0;
+
+	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible)=0;
+	virtual int multimesh_get_visible_instances(RID p_multimesh) const=0;
+
+	virtual AABB multimesh_get_aabb(RID p_mesh) const=0;
+
+	/* IMMEDIATE API */
+
+	virtual RID immediate_create()=0;
+	virtual void immediate_begin(RID p_immediate,VS::PrimitiveType p_rimitive,RID p_texture=RID())=0;
+	virtual void immediate_vertex(RID p_immediate,const Vector3& p_vertex)=0;
+	virtual void immediate_vertex_2d(RID p_immediate,const Vector3& p_vertex)=0;
+	virtual void immediate_normal(RID p_immediate,const Vector3& p_normal)=0;
+	virtual void immediate_tangent(RID p_immediate,const Plane& p_tangent)=0;
+	virtual void immediate_color(RID p_immediate,const Color& p_color)=0;
+	virtual void immediate_uv(RID p_immediate,const Vector2& tex_uv)=0;
+	virtual void immediate_uv2(RID p_immediate,const Vector2& tex_uv)=0;
+	virtual void immediate_end(RID p_immediate)=0;
+	virtual void immediate_clear(RID p_immediate)=0;
+	virtual void immediate_set_material(RID p_immediate,RID p_material)=0;
+	virtual RID immediate_get_material(RID p_immediate) const=0;
+
+	/* SKELETON API */
+
+	virtual RID skeleton_create()=0;
+	virtual void skeleton_allocate(RID p_skeleton,int p_bones,bool p_2d_skeleton=false)=0;
+	virtual int skeleton_get_bone_count(RID p_skeleton) const=0;
+	virtual void skeleton_bone_set_transform(RID p_skeleton,int p_bone, const Transform& p_transform)=0;
+	virtual Transform skeleton_bone_get_transform(RID p_skeleton,int p_bone)=0;
+	virtual void skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Matrix32& p_transform)=0;
+	virtual Matrix32 skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone)=0;
+
+	/* Light API */
+
+	virtual RID light_create(VS::LightType p_type)=0;
+
+	virtual void light_set_color(RID p_light,const Color& p_color)=0;
+	virtual void light_set_param(RID p_light,VS::LightParam p_param,float p_value)=0;
+	virtual void light_set_shadow(RID p_light,bool p_enabled)=0;
+	virtual void light_set_projector(RID p_light,RID p_texture)=0;
+	virtual void light_set_attenuation_texure(RID p_light,RID p_texture)=0;
+	virtual void light_set_negative(RID p_light,bool p_enable)=0;
+	virtual void light_set_cull_mask(RID p_light,uint32_t p_mask)=0;
+	virtual void light_set_shader(RID p_light,RID p_shader)=0;
+
+
+	virtual void light_directional_set_shadow_mode(RID p_light,VS::LightDirectionalShadowMode p_mode)=0;
+
+	/* PROBE API */
+
+	virtual RID reflection_probe_create()=0;
+
+	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity)=0;
+	virtual void reflection_probe_set_clip(RID p_probe, float p_near, float p_far)=0;
+	virtual void reflection_probe_set_min_blend_distance(RID p_probe, float p_distance)=0;
+	virtual void reflection_probe_set_extents(RID p_probe, const Vector3& p_extents)=0;
+	virtual void reflection_probe_set_origin_offset(RID p_probe, const Vector3& p_offset)=0;
+	virtual void reflection_probe_set_enable_parallax_correction(RID p_probe, bool p_enable)=0;
+	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution)=0;
+	virtual void reflection_probe_set_hide_skybox(RID p_probe, bool p_hide)=0;
+	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers)=0;
+
+
+	/* ROOM API */
+
+	virtual RID room_create()=0;
+	virtual void room_add_bounds(RID p_room, const DVector<Vector2>& p_convex_polygon,float p_height,const Transform& p_transform)=0;
+	virtual void room_clear_bounds()=0;
+
+	/* PORTAL API */
+
+	// portals are only (x/y) points, forming a convex shape, which its clockwise
+	// order points outside. (z is 0)=0;
+
+	virtual RID portal_create()=0;
+	virtual void portal_set_shape(RID p_portal, const Vector<Point2>& p_shape)=0;
+	virtual void portal_set_enabled(RID p_portal, bool p_enabled)=0;
+	virtual void portal_set_disable_distance(RID p_portal, float p_distance)=0;
+	virtual void portal_set_disabled_color(RID p_portal, const Color& p_color)=0;
+
+
+	/* RENDER TARGET */
+
+	enum RenderTargetFlags {
+		RENDER_TARGET_VFLIP,
+		RENDER_TARGET_TRANSPARENT,
+		RENDER_TARGET_NO_3D,
+		RENDER_TARGET_NO_SAMPLING,
+		RENDER_TARGET_FLAG_MAX
+	};
+
+	virtual RID render_target_create()=0;
+	virtual void render_target_set_size(RID p_render_target,int p_width, int p_height)=0;
+	virtual RID render_target_get_texture(RID p_render_target) const=0;
+	virtual Image render_target_get_image(RID p_render_target) const=0;
+	virtual void render_target_set_flag(RID p_render_target,RenderTargetFlags p_flag,bool p_value)=0;
+	virtual bool render_target_renedered_in_frame(RID p_render_target)=0;
+
+
+	/* CANVAS SHADOW */
+
+	virtual RID canvas_light_shadow_buffer_create(int p_width)=0;
+
+	/* LIGHT SHADOW MAPPING */
+
+	virtual RID canvas_light_occluder_create()=0;
+	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines)=0;
+
+	virtual bool free(RID p_rid)=0;
+
+
+	static RasterizerStorage*base_signleton;
+	RasterizerStorage();
+	virtual ~RasterizerStorage() {}
+};
+
+
+
+
+class RasterizerCanvas {
+public:
+
+	enum CanvasRectFlags {
+
+		CANVAS_RECT_REGION=1,
+		CANVAS_RECT_TILE=2,
+		CANVAS_RECT_FLIP_H=4,
+		CANVAS_RECT_FLIP_V=8,
+		CANVAS_RECT_TRANSPOSE=16
+	};
+
+
+	struct Light : public RID_Data {
+
+
+
+		bool enabled;
+		Color color;
+		Matrix32 xform;
+		float height;
+		float energy;
+		float scale;
+		int z_min;
+		int z_max;
+		int layer_min;
+		int layer_max;
+		int item_mask;
+		int item_shadow_mask;
+		VS::CanvasLightMode mode;
+		RID texture;
+		Vector2 texture_offset;
+		RID canvas;
+		RID shadow_buffer;
+		int shadow_buffer_size;
+		float shadow_gradient_length;
+		VS::CanvasLightShadowFilter shadow_filter;
+		Color shadow_color;
+
+
+		void *texture_cache; // implementation dependent
+		Rect2 rect_cache;
+		Matrix32 xform_cache;
+		float radius_cache; //used for shadow far plane
+		CameraMatrix shadow_matrix_cache;
+
+		Matrix32 light_shader_xform;
+		Vector2 light_shader_pos;
+
+		Light *shadows_next_ptr;
+		Light *filter_next_ptr;
+		Light *next_ptr;
+		Light *mask_next_ptr;
+
+		RID light_internal;
+
+		Light() {
+			enabled=true;
+			color=Color(1,1,1);
+			shadow_color=Color(0,0,0,0);
+			height=0;
+			z_min=-1024;
+			z_max=1024;
+			layer_min=0;
+			layer_max=0;
+			item_mask=1;
+			scale=1.0;
+			energy=1.0;
+			item_shadow_mask=-1;
+			mode=VS::CANVAS_LIGHT_MODE_ADD;
+			texture_cache=NULL;
+			next_ptr=NULL;
+			mask_next_ptr=NULL;
+			filter_next_ptr=NULL;
+			shadow_buffer_size=256;
+			shadow_gradient_length=0;
+			shadow_filter=VS::CANVAS_LIGHT_FILTER_NONE;
+
+		}
+	};
+
+	virtual RID light_internal_create()=0;
+	virtual void light_internal_update(RID p_rid, Light* p_light)=0;
+	virtual void light_internal_free(RID p_rid)=0;
+
+	struct Item : public RID_Data {
+
+		struct Command {
+
+			enum Type {
+
+				TYPE_LINE,
+				TYPE_RECT,
+				TYPE_NINEPATCH,
+				TYPE_PRIMITIVE,
+				TYPE_POLYGON,
+				TYPE_MESH,
+				TYPE_MULTIMESH,
+				TYPE_CIRCLE,
+				TYPE_TRANSFORM,
+				TYPE_CLIP_IGNORE,
+			};
+
+			Type type;
+			virtual ~Command(){}
+		};
+
+		struct CommandLine : public Command {
+
+			Point2 from,to;
+			Color color;
+			float width;
+			bool antialiased;
+			CommandLine() { type = TYPE_LINE; }
+		};
+
+		struct CommandRect : public Command {
+
+			Rect2 rect;
+			RID texture;
+			Color modulate;
+			Rect2 source;
+			uint8_t flags;
+
+			CommandRect() { flags=0; type = TYPE_RECT; }
+		};
+
+		struct CommandNinePatch : public Command {
+
+			Rect2 rect;
+			Rect2 source;
+			RID texture;
+			float margin[4];
+			bool draw_center;
+			Color color;
+			VS::NinePatchAxisMode axis_x;
+			VS::NinePatchAxisMode axis_y;
+			CommandNinePatch() { draw_center=true; type = TYPE_NINEPATCH; }
+		};
+
+		struct CommandPrimitive : public Command {
+
+			Vector<Point2> points;
+			Vector<Point2> uvs;
+			Vector<Color> colors;
+			RID texture;
+			float width;
+
+			CommandPrimitive() { type = TYPE_PRIMITIVE; width=1;}
+		};
+
+		struct CommandPolygon : public Command {
+
+			Vector<int> indices;
+			Vector<Point2> points;
+			Vector<Point2> uvs;
+			Vector<Color> colors;
+			RID texture;
+			int count;
+
+			CommandPolygon() { type = TYPE_POLYGON; count = 0; }
+		};
+
+
+		struct CommandMesh : public Command {
+
+			RID mesh;
+			RID skeleton;
+			CommandMesh() { type = TYPE_MESH;  }
+		};
+
+		struct CommandMultiMesh : public Command {
+
+			RID multimesh;
+			RID skeleton;
+			CommandMultiMesh() { type = TYPE_MULTIMESH;  }
+		};
+
+		struct CommandCircle : public Command {
+
+			Point2 pos;
+			float radius;
+			Color color;
+			CommandCircle() { type = TYPE_CIRCLE; }
+		};
+
+		struct CommandTransform : public Command {
+
+			Matrix32 xform;
+			CommandTransform() { type = TYPE_TRANSFORM; }
+		};
+
+
+		struct CommandClipIgnore : public Command {
+
+			bool ignore;
+			CommandClipIgnore() { type = TYPE_CLIP_IGNORE; ignore=false; }
+		};
+
+
+		struct ViewportRender {
+			VisualServer*owner;
+			void* udata;
+			Rect2 rect;
+		};
+
+		Matrix32 xform;
+		bool clip;
+		bool visible;
+		bool behind;
+		//VS::MaterialBlendMode blend_mode;
+		int light_mask;
+		Vector<Command*> commands;
+		mutable bool custom_rect;
+		mutable bool rect_dirty;
+		mutable Rect2 rect;
+		RID material;
+		Item*next;
+
+		struct CopyBackBuffer {
+			Rect2 rect;
+			Rect2 screen_rect;
+			bool full;
+		};
+		CopyBackBuffer *copy_back_buffer;
+
+
+		Color final_modulate;
+		Matrix32 final_transform;
+		Rect2 final_clip_rect;
+		Item* final_clip_owner;
+		Item* material_owner;
+		ViewportRender *vp_render;
+		bool distance_field;
+		bool light_masked;
+
+		Rect2 global_rect_cache;
+
+		const Rect2& get_rect() const {
+			if (custom_rect || !rect_dirty)
+				return rect;
+
+			//must update rect
+			int s=commands.size();
+			if (s==0) {
+
+				rect=Rect2();
+				rect_dirty=false;
+				return rect;
+			}
+
+			Matrix32 xf;
+			bool found_xform=false;
+			bool first=true;
+
+			const Item::Command * const *cmd = &commands[0];
+
+
+			for (int i=0;i<s;i++) {
+
+				const  Item::Command *c=cmd[i];
+				Rect2 r;
+
+				switch(c->type) {
+					case Item::Command::TYPE_LINE: {
+
+						const Item::CommandLine* line = static_cast< const Item::CommandLine*>(c);
+						r.pos=line->from;
+						r.expand_to(line->to);
+					} break;
+					case Item::Command::TYPE_RECT: {
+
+						const Item::CommandRect* crect = static_cast< const Item::CommandRect*>(c);
+						r=crect->rect;
+
+					} break;
+					case Item::Command::TYPE_NINEPATCH: {
+
+						const Item::CommandNinePatch* style = static_cast< const Item::CommandNinePatch*>(c);
+						r=style->rect;
+					} break;
+					case Item::Command::TYPE_PRIMITIVE: {
+
+						const Item::CommandPrimitive* primitive = static_cast< const Item::CommandPrimitive*>(c);
+						r.pos=primitive->points[0];
+						for(int i=1;i<primitive->points.size();i++) {
+
+							r.expand_to(primitive->points[i]);
+
+						}
+					} break;
+					case Item::Command::TYPE_POLYGON: {
+
+						const Item::CommandPolygon* polygon = static_cast< const Item::CommandPolygon*>(c);
+						int l = polygon->points.size();
+						const Point2*pp=&polygon->points[0];
+						r.pos=pp[0];
+						for(int i=1;i<l;i++) {
+
+							r.expand_to(pp[i]);
+
+						}
+					} break;
+					case Item::Command::TYPE_MESH: {
+
+						const Item::CommandMesh* mesh = static_cast< const Item::CommandMesh*>(c);
+						AABB aabb = RasterizerStorage::base_signleton->mesh_get_aabb(mesh->mesh);
+
+						r=Rect2(aabb.pos.x,aabb.pos.y,aabb.size.x,aabb.size.y);
+
+					} break;
+					case Item::Command::TYPE_MULTIMESH: {
+
+						const Item::CommandMultiMesh* multimesh = static_cast< const Item::CommandMultiMesh*>(c);
+						AABB aabb = RasterizerStorage::base_signleton->multimesh_get_aabb(multimesh->multimesh);
+
+						r=Rect2(aabb.pos.x,aabb.pos.y,aabb.size.x,aabb.size.y);
+
+					} break;
+					case Item::Command::TYPE_CIRCLE: {
+
+						const Item::CommandCircle* circle = static_cast< const Item::CommandCircle*>(c);
+						r.pos=Point2(-circle->radius,-circle->radius)+circle->pos;
+						r.size=Point2(circle->radius*2.0,circle->radius*2.0);
+					} break;
+					case Item::Command::TYPE_TRANSFORM: {
+
+						const Item::CommandTransform* transform = static_cast<const Item::CommandTransform*>(c);
+						xf=transform->xform;
+						found_xform=true;
+						continue;
+					} break;
+
+					case Item::Command::TYPE_CLIP_IGNORE: {
+
+					} break;
+				}
+
+				if (found_xform) {
+					r = xf.xform(r);
+					found_xform=false;
+				}
+
+
+				if (first) {
+					rect=r;
+					first=false;
+				} else
+					rect=rect.merge(r);
+			}
+
+			rect_dirty=false;
+			return rect;
+		}
+
+		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  material_owner=NULL; light_masked=false; }
+		Item() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_modulate=Color(1,1,1,1); visible=true; rect_dirty=true; custom_rect=false; behind=false; material_owner=NULL;  copy_back_buffer=NULL; distance_field=false; light_masked=false; }
+		virtual ~Item() { clear(); if (copy_back_buffer) memdelete(copy_back_buffer); }
+	};
+
+
+	virtual void canvas_begin()=0;
+
+	virtual void canvas_render_items(Item *p_item_list,int p_z,const Color& p_modulate,Light *p_light)=0;
+	virtual void canvas_debug_viewport_shadows(Light* p_lights_with_shadow)=0;
+
+
+
+	struct LightOccluderInstance : public RID_Data {
+
+
+		bool enabled;
+		RID canvas;
+		RID polygon;
+		RID polygon_buffer;
+		Rect2 aabb_cache;
+		Matrix32 xform;
+		Matrix32 xform_cache;
+		int light_mask;
+		VS::CanvasOccluderPolygonCullMode cull_cache;
+
+		LightOccluderInstance *next;
+
+		LightOccluderInstance() { enabled=true; next=NULL; light_mask=1; cull_cache=VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED; }
+	};
+
+
+
+	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, LightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache)=0;
+
+
+	virtual void reset_canvas()=0;
+
+	virtual ~RasterizerCanvas() {}
+};
+
+
+
+class RasterizerScene {
+public:
+
+
+
+	virtual ~RasterizerScene() {}
+};
+
+
+
+class Rasterizer {
+protected:
+	static Rasterizer* (*_create_func)();
+public:
+	static Rasterizer *create();
+
+	virtual RasterizerStorage *get_storage()=0;
+	virtual RasterizerCanvas *get_canvas()=0;
+	virtual RasterizerScene *get_scene()=0;
+
+	virtual void initialize()=0;
+	virtual void begin_frame()=0;
+	virtual void set_current_render_target(RID p_render_target)=0;
+	virtual void restore_render_target()=0;
+	virtual void clear_render_target(const Color& p_color)=0;
+	virtual void blit_render_target_to_screen(RID p_render_target,const Rect2& p_screen_rect,int p_screen=0)=0;
+	virtual void end_frame()=0;
+	virtual void finalize()=0;
+
+
+	virtual ~Rasterizer() {}
+};
+
+
+
+
+#if 0
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -41,7 +705,7 @@ class Rasterizer {
 protected:
 
 
-	typedef void (*CanvasItemDrawViewportFunc)(VisualServer*owner,void*ud,const Rect2& p_rect);
+	typedef void (*ItemDrawViewportFunc)(VisualServer*owner,void*ud,const Rect2& p_rect);
 
 	RID create_default_material();
 	RID create_overdraw_debug_material();
@@ -581,7 +1245,7 @@ public:
 	};
 
 
-	struct CanvasLight {
+	struct Light {
 
 
 
@@ -597,7 +1261,7 @@ public:
 		int layer_max;
 		int item_mask;
 		int item_shadow_mask;
-		VS::CanvasLightMode mode;
+		VS::LightMode mode;
 		RID texture;
 		Vector2 texture_offset;
 		RID canvas;
@@ -616,12 +1280,12 @@ public:
 		Matrix32 light_shader_xform;
 		Vector2 light_shader_pos;
 
-		CanvasLight *shadows_next_ptr;
-		CanvasLight *filter_next_ptr;
-		CanvasLight *next_ptr;
-		CanvasLight *mask_next_ptr;
+		Light *shadows_next_ptr;
+		Light *filter_next_ptr;
+		Light *next_ptr;
+		Light *mask_next_ptr;
 
-		CanvasLight() {
+		Light() {
 			enabled=true;
 			color=Color(1,1,1);
 			shadow_color=Color(0,0,0,0);
@@ -645,20 +1309,20 @@ public:
 		}
 	};
 
-	struct CanvasItem;
+	struct Item;
 
-	struct CanvasItemMaterial  {
+	struct ItemMaterial  {
 
 		RID shader;
 		Map<StringName,Variant> shader_param;
 		uint32_t shader_version;
-		Set<CanvasItem*> owners;
-		VS::CanvasItemShadingMode shading_mode;
+		Set<Item*> owners;
+		VS::ItemShadingMode shading_mode;
 
-		CanvasItemMaterial() {shading_mode=VS::CANVAS_ITEM_SHADING_NORMAL; shader_version=0; }
+		ItemMaterial() {shading_mode=VS::CANVAS_ITEM_SHADING_NORMAL; shader_version=0; }
 	};
 
-	struct CanvasItem {
+	struct Item {
 
 		struct Command {
 
@@ -788,8 +1452,8 @@ public:
 		mutable bool custom_rect;
 		mutable bool rect_dirty;
 		mutable Rect2 rect;
-		CanvasItem*next;
-		CanvasItemMaterial* material;
+		Item*next;
+		ItemMaterial* material;
 		struct CopyBackBuffer {
 			Rect2 rect;
 			Rect2 screen_rect;
@@ -801,8 +1465,8 @@ public:
 		float final_opacity;
 		Matrix32 final_transform;
 		Rect2 final_clip_rect;
-		CanvasItem* final_clip_owner;
-		CanvasItem* material_owner;
+		Item* final_clip_owner;
+		Item* material_owner;
 		ViewportRender *vp_render;
 		bool distance_field;
 		bool light_masked;
@@ -826,35 +1490,35 @@ public:
 			bool found_xform=false;
 			bool first=true;
 
-			const CanvasItem::Command * const *cmd = &commands[0];
+			const Item::Command * const *cmd = &commands[0];
 
 
 			for (int i=0;i<s;i++) {
 
-				const  CanvasItem::Command *c=cmd[i];
+				const  Item::Command *c=cmd[i];
 				Rect2 r;
 
 				switch(c->type) {
-					case CanvasItem::Command::TYPE_LINE: {
+					case Item::Command::TYPE_LINE: {
 
-						const CanvasItem::CommandLine* line = static_cast< const CanvasItem::CommandLine*>(c);
+						const Item::CommandLine* line = static_cast< const Item::CommandLine*>(c);
 						r.pos=line->from;
 						r.expand_to(line->to);
 					} break;
-					case CanvasItem::Command::TYPE_RECT: {
+					case Item::Command::TYPE_RECT: {
 
-						const CanvasItem::CommandRect* crect = static_cast< const CanvasItem::CommandRect*>(c);
+						const Item::CommandRect* crect = static_cast< const Item::CommandRect*>(c);
 						r=crect->rect;
 
 					} break;
-					case CanvasItem::Command::TYPE_STYLE: {
+					case Item::Command::TYPE_STYLE: {
 
-						const CanvasItem::CommandStyle* style = static_cast< const CanvasItem::CommandStyle*>(c);
+						const Item::CommandStyle* style = static_cast< const Item::CommandStyle*>(c);
 						r=style->rect;
 					} break;
-					case CanvasItem::Command::TYPE_PRIMITIVE: {
+					case Item::Command::TYPE_PRIMITIVE: {
 
-						const CanvasItem::CommandPrimitive* primitive = static_cast< const CanvasItem::CommandPrimitive*>(c);
+						const Item::CommandPrimitive* primitive = static_cast< const Item::CommandPrimitive*>(c);
 						r.pos=primitive->points[0];
 						for(int i=1;i<primitive->points.size();i++) {
 
@@ -862,9 +1526,9 @@ public:
 
 						}
 					} break;
-					case CanvasItem::Command::TYPE_POLYGON: {
+					case Item::Command::TYPE_POLYGON: {
 
-						const CanvasItem::CommandPolygon* polygon = static_cast< const CanvasItem::CommandPolygon*>(c);
+						const Item::CommandPolygon* polygon = static_cast< const Item::CommandPolygon*>(c);
 						int l = polygon->points.size();
 						const Point2*pp=&polygon->points[0];
 						r.pos=pp[0];
@@ -875,9 +1539,9 @@ public:
 						}
 					} break;
 
-					case CanvasItem::Command::TYPE_POLYGON_PTR: {
+					case Item::Command::TYPE_POLYGON_PTR: {
 
-						const CanvasItem::CommandPolygonPtr* polygon = static_cast< const CanvasItem::CommandPolygonPtr*>(c);
+						const Item::CommandPolygonPtr* polygon = static_cast< const Item::CommandPolygonPtr*>(c);
 						int l = polygon->count;
 						if (polygon->indices != NULL) {
 
@@ -894,23 +1558,23 @@ public:
 							}
 						}
 					} break;
-					case CanvasItem::Command::TYPE_CIRCLE: {
+					case Item::Command::TYPE_CIRCLE: {
 
-						const CanvasItem::CommandCircle* circle = static_cast< const CanvasItem::CommandCircle*>(c);
+						const Item::CommandCircle* circle = static_cast< const Item::CommandCircle*>(c);
 						r.pos=Point2(-circle->radius,-circle->radius)+circle->pos;
 						r.size=Point2(circle->radius*2.0,circle->radius*2.0);
 					} break;
-					case CanvasItem::Command::TYPE_TRANSFORM: {
+					case Item::Command::TYPE_TRANSFORM: {
 
-						const CanvasItem::CommandTransform* transform = static_cast<const CanvasItem::CommandTransform*>(c);
+						const Item::CommandTransform* transform = static_cast<const Item::CommandTransform*>(c);
 						xf=transform->xform;
 						found_xform=true;
 						continue;
 					} break;
-					case CanvasItem::Command::TYPE_BLEND_MODE: {
+					case Item::Command::TYPE_BLEND_MODE: {
 
 					} break;
-					case CanvasItem::Command::TYPE_CLIP_IGNORE: {
+					case Item::Command::TYPE_CLIP_IGNORE: {
 
 					} break;
 				}
@@ -933,12 +1597,12 @@ public:
 		}
 
 		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  material_owner=NULL; light_masked=false; }
-		CanvasItem() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; material_owner=NULL; material=NULL; copy_back_buffer=NULL; distance_field=false; light_masked=false; }
-		virtual ~CanvasItem() { clear(); if (copy_back_buffer) memdelete(copy_back_buffer); }
+		Item() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; material_owner=NULL; material=NULL; copy_back_buffer=NULL; distance_field=false; light_masked=false; }
+		virtual ~Item() { clear(); if (copy_back_buffer) memdelete(copy_back_buffer); }
 	};
 
 
-	CanvasItemDrawViewportFunc draw_viewport_func;
+	ItemDrawViewportFunc draw_viewport_func;
 
 
 	virtual void begin_canvas_bg()=0;
@@ -956,8 +1620,8 @@ public:
 	virtual void canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor)=0;
 	virtual void canvas_set_transform(const Matrix32& p_transform)=0;
 
-	virtual void canvas_render_items(CanvasItem *p_item_list,int p_z,const Color& p_modulate,CanvasLight *p_light)=0;
-	virtual void canvas_debug_viewport_shadows(CanvasLight* p_lights_with_shadow)=0;
+	virtual void canvas_render_items(Item *p_item_list,int p_z,const Color& p_modulate,Light *p_light)=0;
+	virtual void canvas_debug_viewport_shadows(Light* p_lights_with_shadow)=0;
 	/* LIGHT SHADOW MAPPING */
 
 	virtual RID canvas_light_occluder_create()=0;
@@ -966,7 +1630,7 @@ public:
 
 	virtual RID canvas_light_shadow_buffer_create(int p_width)=0;
 
-	struct CanvasLightOccluderInstance {
+	struct LightOccluderInstance {
 
 
 		bool enabled;
@@ -979,14 +1643,14 @@ public:
 		int light_mask;
 		VS::CanvasOccluderPolygonCullMode cull_cache;
 
-		CanvasLightOccluderInstance *next;
+		LightOccluderInstance *next;
 
-		CanvasLightOccluderInstance() { enabled=true; next=NULL; light_mask=1; cull_cache=VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED; }
+		LightOccluderInstance() { enabled=true; next=NULL; light_mask=1; cull_cache=VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED; }
 	};
 
 
 
-	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, CanvasLightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache)=0;
+	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, LightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache)=0;
 
 	/* ENVIRONMENT */
 
@@ -1050,5 +1714,5 @@ public:
 };
 
 
-
+#endif
 #endif

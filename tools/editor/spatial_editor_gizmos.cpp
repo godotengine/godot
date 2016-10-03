@@ -41,6 +41,8 @@
 // Keep small children away from this file.
 // It's so ugly it will eat them alive
 
+#if 0
+
 #define HANDLE_HALF_SIZE 0.05
 
 void EditorSpatialGizmo::clear() {
@@ -3198,3 +3200,4 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 
 
 }
+#endif

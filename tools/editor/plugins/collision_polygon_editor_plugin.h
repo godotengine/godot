@@ -40,6 +40,8 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
+#if 0
 class CanvasItemEditor;
 
 class CollisionPolygonEditor : public HBoxContainer {
@@ -117,5 +119,5 @@ public:
 	~CollisionPolygonEditorPlugin();
 
 };
-
+#endif
 #endif // COLLISION_POLYGON_EDITOR_PLUGIN_H

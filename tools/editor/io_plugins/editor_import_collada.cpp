@@ -237,8 +237,8 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 					//well, it's an ambient light..
 					Light *l = memnew( DirectionalLight );
 //					l->set_color(Light::COLOR_AMBIENT,ld.color);
-					l->set_color(Light::COLOR_DIFFUSE,Color(0,0,0));
-					l->set_color(Light::COLOR_SPECULAR,Color(0,0,0));
+//					l->set_color(Light::COLOR_DIFFUSE,Color(0,0,0));
+//					l->set_color(Light::COLOR_SPECULAR,Color(0,0,0));
 					node = l;
 
 				} else if (ld.mode==Collada::LightData::MODE_DIRECTIONAL) {
@@ -248,8 +248,8 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 					//if (found_ambient) //use it here
 					//	l->set_color(Light::COLOR_AMBIENT,ambient);
 
-					l->set_color(Light::COLOR_DIFFUSE,ld.color);
-					l->set_color(Light::COLOR_SPECULAR,Color(1,1,1));
+//					l->set_color(Light::COLOR_DIFFUSE,ld.color);
+//					l->set_color(Light::COLOR_SPECULAR,Color(1,1,1));
 					node = l;
 				} else {
 
@@ -259,14 +259,14 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 						l=memnew( OmniLight );
 					else {
 						l=memnew( SpotLight );
-						l->set_parameter(Light::PARAM_SPOT_ANGLE,ld.spot_angle);
-						l->set_parameter(Light::PARAM_SPOT_ATTENUATION,ld.spot_exp);
+//						l->set_parameter(Light::PARAM_SPOT_ANGLE,ld.spot_angle);
+//						l->set_parameter(Light::PARAM_SPOT_ATTENUATION,ld.spot_exp);
 					}
 
 					//
-					l->set_color(Light::COLOR_DIFFUSE,ld.color);
-					l->set_color(Light::COLOR_SPECULAR,Color(1,1,1));
-					l->approximate_opengl_attenuation(ld.constant_att,ld.linear_att,ld.quad_att);
+//					l->set_color(Light::COLOR_DIFFUSE,ld.color);
+//					l->set_color(Light::COLOR_SPECULAR,Color(1,1,1));
+//					l->approximate_opengl_attenuation(ld.constant_att,ld.linear_att,ld.quad_att);
 					node=l;
 				}
 
@@ -394,14 +394,14 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 
-				material->set_texture(FixedMaterial::PARAM_DIFFUSE,texture);
-				material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,1));
+//				material->set_texture(FixedMaterial::PARAM_DIFFUSE,texture);
+//				material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
 		}
 	} else {
-		material->set_parameter(FixedMaterial::PARAM_DIFFUSE,effect.diffuse.color);
+//		material->set_parameter(FixedMaterial::PARAM_DIFFUSE,effect.diffuse.color);
 	}
 
 	// SPECULAR
@@ -414,15 +414,15 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 
-				material->set_texture(FixedMaterial::PARAM_SPECULAR,texture);
-				material->set_parameter(FixedMaterial::PARAM_SPECULAR,Color(1,1,1,1));
+//				material->set_texture(FixedMaterial::PARAM_SPECULAR,texture);
+//				material->set_parameter(FixedMaterial::PARAM_SPECULAR,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
 
 		}
 	} else {
-		material->set_parameter(FixedMaterial::PARAM_SPECULAR,effect.specular.color);
+//		material->set_parameter(FixedMaterial::PARAM_SPECULAR,effect.specular.color);
 	}
 
 	// EMISSION
@@ -435,15 +435,15 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 
-				material->set_texture(FixedMaterial::PARAM_EMISSION,texture);
-				material->set_parameter(FixedMaterial::PARAM_EMISSION,Color(1,1,1,1));
+//				material->set_texture(FixedMaterial::PARAM_EMISSION,texture);
+//				material->set_parameter(FixedMaterial::PARAM_EMISSION,Color(1,1,1,1));
 			}else {
-				missing_textures.push_back(texfile.get_file());
+//				missing_textures.push_back(texfile.get_file());
 			}
 
 		}
 	} else {
-		material->set_parameter(FixedMaterial::PARAM_EMISSION,effect.emission.color);
+//		material->set_parameter(FixedMaterial::PARAM_EMISSION,effect.emission.color);
 	}
 
 	// NORMAL
@@ -456,18 +456,18 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 
-				material->set_texture(FixedMaterial::PARAM_NORMAL,texture);
+	//			material->set_texture(FixedMaterial::PARAM_NORMAL,texture);
 			}else {
-				missing_textures.push_back(texfile.get_file());
+//				missing_textures.push_back(texfile.get_file());
 			}
 
 		}
 	}
 
 
-	material->set_parameter(FixedMaterial::PARAM_SPECULAR_EXP,effect.shininess);
-	material->set_flag(Material::FLAG_DOUBLE_SIDED,effect.double_sided);
-	material->set_flag(Material::FLAG_UNSHADED,effect.unshaded);
+//	material->set_parameter(FixedMaterial::PARAM_SPECULAR_EXP,effect.shininess);
+//	material->set_flag(Material::FLAG_DOUBLE_SIDED,effect.double_sided);
+//	material->set_flag(Material::FLAG_UNSHADED,effect.unshaded);
 
 
 
@@ -1196,7 +1196,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 				tarrayw = DVector<real_t>::Write();
 
 				final_tangent_array=tarray;
-			} else if (final_normal_array.size() && primitive==Mesh::PRIMITIVE_TRIANGLES && final_uv_array.size() && (force_make_tangents || (material.is_valid() && material->get_texture(FixedMaterial::PARAM_NORMAL).is_valid()))){
+			} else if (final_normal_array.size() && primitive==Mesh::PRIMITIVE_TRIANGLES && final_uv_array.size() && (force_make_tangents || (material.is_valid()))){
 				//if this uses triangles, there are uvs and the material is using a normalmap, generate tangents and binormals, because they WILL be needed
 				//generate binormals/tangents
 				_generate_tangents_and_binormals(index_array,final_vertex_array,final_uv_array,final_normal_array,final_tangent_array);

@@ -60,7 +60,7 @@ private:
 	RID source_rid;
 
 	virtual bool _can_gizmo_scale() const;
-	virtual RES _get_gizmo_geometry() const;
+
 
 
 protected:

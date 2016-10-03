@@ -953,7 +953,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2& p_point,Control* p_from)
 			Label *label = memnew( Label( selected[i]->get_name() ) );
 			hb->add_child(label);
 			vb->add_child(hb);
-			hb->set_opacity(opacity_item);
+			hb->set_modulate(Color(1,1,1,opacity_item));
 			opacity_item -= opacity_step;
 		}
 		NodePath p = selected[i]->get_path();

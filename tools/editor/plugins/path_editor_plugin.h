@@ -32,6 +32,7 @@
 
 #include "tools/editor/spatial_editor_gizmos.h"
 #include "scene/3d/path.h"
+# if 0
 class PathSpatialGizmo  : public EditorSpatialGizmo {
 
 	OBJ_TYPE(PathSpatialGizmo,EditorSpatialGizmo);
@@ -95,5 +96,5 @@ public:
 
 };
 
-
+#endif
 #endif // PATH_EDITOR_PLUGIN_H

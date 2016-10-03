@@ -12,7 +12,7 @@ SConscript('unix/SCsub');
 SConscript('alsa/SCsub');
 SConscript('pulseaudio/SCsub');
 SConscript('windows/SCsub');
-SConscript('gles2/SCsub');
+SConscript('gles3/SCsub');
 SConscript('gl_context/SCsub');
 SConscript('pnm/SCsub');
 

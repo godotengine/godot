@@ -895,7 +895,7 @@ void FindReplaceDialog::_bind_methods() {
 
 FindReplaceDialog::FindReplaceDialog() {
 
-	set_self_opacity(0.8);
+	set_self_modulate(Color(1,1,1,0.8));
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);

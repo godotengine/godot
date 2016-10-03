@@ -30,6 +30,7 @@
 #include "servers/visual_server.h"
 #include "scene/resources/surface_tool.h"
 
+#if 0
 /*
 static const char* _var_names[Particles::VAR_MAX]={
 	"vars/lifetime",
@@ -557,3 +558,4 @@ Particles::~Particles() {
 	VisualServer::get_singleton()->free(particles);
 }
 
+#endif

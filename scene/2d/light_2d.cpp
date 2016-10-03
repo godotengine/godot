@@ -208,26 +208,26 @@ int Light2D::get_layer_range_max() const {
 	return layer_max;
 }
 
-void Light2D::set_item_mask( int p_mask) {
+void Light2D::set_item_cull_mask( int p_mask) {
 
 	item_mask=p_mask;
-	VS::get_singleton()->canvas_light_set_item_mask(canvas_light,item_mask);
+	VS::get_singleton()->canvas_light_set_item_cull_mask(canvas_light,item_mask);
 
 }
 
-int Light2D::get_item_mask() const {
+int Light2D::get_item_cull_mask() const {
 
 	return item_mask;
 }
 
-void Light2D::set_item_shadow_mask( int p_mask) {
+void Light2D::set_item_shadow_cull_mask( int p_mask) {
 
 	item_shadow_mask=p_mask;
-	VS::get_singleton()->canvas_light_set_item_shadow_mask(canvas_light,item_shadow_mask);
+	VS::get_singleton()->canvas_light_set_item_shadow_cull_mask(canvas_light,item_shadow_mask);
 
 }
 
-int Light2D::get_item_shadow_mask() const {
+int Light2D::get_item_shadow_cull_mask() const {
 
 	return item_shadow_mask;
 }
@@ -265,16 +265,29 @@ int Light2D::get_shadow_buffer_size() const {
 	return shadow_buffer_size;
 }
 
-void Light2D::set_shadow_esm_multiplier( float p_multiplier) {
+void Light2D::set_shadow_gradient_length( float p_multiplier) {
 
-	shadow_esm_multiplier=p_multiplier;
-	VS::get_singleton()->canvas_light_set_shadow_esm_multiplier(canvas_light,p_multiplier);
+	shadow_gradient_length=p_multiplier;
+	VS::get_singleton()->canvas_light_set_shadow_gradient_length(canvas_light,p_multiplier);
 }
 
-float Light2D::get_shadow_esm_multiplier() const{
+float Light2D::get_shadow_gradient_length() const{
 
-	return shadow_esm_multiplier;
+	return shadow_gradient_length;
 }
+
+
+void Light2D::set_shadow_filter( ShadowFilter p_filter) {
+	shadow_filter=p_filter;
+	VS::get_singleton()->canvas_light_set_shadow_filter(canvas_light,VS::CanvasLightShadowFilter(p_filter ));
+}
+
+Light2D::ShadowFilter Light2D::get_shadow_filter() const {
+
+	return shadow_filter;
+}
+
+
 
 void Light2D::set_shadow_color( const Color& p_shadow_color) {
 	shadow_color=p_shadow_color;
@@ -360,11 +373,11 @@ void Light2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_layer_range_max"),&Light2D::get_layer_range_max);
 
 
-	ObjectTypeDB::bind_method(_MD("set_item_mask","item_mask"),&Light2D::set_item_mask);
-	ObjectTypeDB::bind_method(_MD("get_item_mask"),&Light2D::get_item_mask);
+	ObjectTypeDB::bind_method(_MD("set_item_cull_mask","item_cull_mask"),&Light2D::set_item_cull_mask);
+	ObjectTypeDB::bind_method(_MD("get_item_cull_mask"),&Light2D::get_item_cull_mask);
 
-	ObjectTypeDB::bind_method(_MD("set_item_shadow_mask","item_shadow_mask"),&Light2D::set_item_shadow_mask);
-	ObjectTypeDB::bind_method(_MD("get_item_shadow_mask"),&Light2D::get_item_shadow_mask);
+	ObjectTypeDB::bind_method(_MD("set_item_shadow_cull_mask","item_shadow_cull_mask"),&Light2D::set_item_shadow_cull_mask);
+	ObjectTypeDB::bind_method(_MD("get_item_shadow_cull_mask"),&Light2D::get_item_shadow_cull_mask);
 
 	ObjectTypeDB::bind_method(_MD("set_mode","mode"),&Light2D::set_mode);
 	ObjectTypeDB::bind_method(_MD("get_mode"),&Light2D::get_mode);
@@ -375,8 +388,11 @@ void Light2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_shadow_buffer_size","size"),&Light2D::set_shadow_buffer_size);
 	ObjectTypeDB::bind_method(_MD("get_shadow_buffer_size"),&Light2D::get_shadow_buffer_size);
 
-	ObjectTypeDB::bind_method(_MD("set_shadow_esm_multiplier","multiplier"),&Light2D::set_shadow_esm_multiplier);
-	ObjectTypeDB::bind_method(_MD("get_shadow_esm_multiplier"),&Light2D::get_shadow_esm_multiplier);
+	ObjectTypeDB::bind_method(_MD("set_shadow_gradient_length","multiplier"),&Light2D::set_shadow_gradient_length);
+	ObjectTypeDB::bind_method(_MD("get_shadow_gradient_length"),&Light2D::get_shadow_gradient_length);
+
+	ObjectTypeDB::bind_method(_MD("set_shadow_filter","filter"),&Light2D::set_shadow_filter);
+	ObjectTypeDB::bind_method(_MD("get_shadow_filter"),&Light2D::get_shadow_filter);
 
 	ObjectTypeDB::bind_method(_MD("set_shadow_color","shadow_color"),&Light2D::set_shadow_color);
 	ObjectTypeDB::bind_method(_MD("get_shadow_color"),&Light2D::get_shadow_color);
@@ -394,12 +410,13 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/z_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_max"),_SCS("get_z_range_max"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/layer_min",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_min"),_SCS("get_layer_range_min"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/layer_max",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_max"),_SCS("get_layer_range_max"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/item_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_mask"),_SCS("get_item_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/item_cull_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_cull_mask"),_SCS("get_item_cull_mask"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow/enabled"),_SCS("set_shadow_enabled"),_SCS("is_shadow_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"shadow/color"),_SCS("set_shadow_color"),_SCS("get_shadow_color"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/buffer_size",PROPERTY_HINT_RANGE,"32,16384,1"),_SCS("set_shadow_buffer_size"),_SCS("get_shadow_buffer_size"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow/esm_multiplier",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_esm_multiplier"),_SCS("get_shadow_esm_multiplier"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/item_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_shadow_mask"),_SCS("get_item_shadow_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow/gradient_length",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_gradient_length"),_SCS("get_shadow_gradient_length"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow/filter",PROPERTY_HINT_ENUM,"None,PCF3,PCF5,PCF9,PCF13"),_SCS("set_shadow_filter"),_SCS("get_shadow_filter"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/item_cull_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_shadow_cull_mask"),_SCS("get_item_shadow_cull_mask"));
 
 	BIND_CONSTANT( MODE_ADD );
 	BIND_CONSTANT( MODE_SUB );
@@ -425,9 +442,10 @@ Light2D::Light2D() {
 	item_shadow_mask=1;
 	mode=MODE_ADD;
 	shadow_buffer_size=2048;
-	shadow_esm_multiplier=80;
+	shadow_gradient_length=0;
 	energy=1.0;
 	shadow_color=Color(0,0,0,0);
+	shadow_filter=SHADOW_FILTER_NONE;
 
 }
 

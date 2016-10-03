@@ -34,7 +34,7 @@
 #include "drivers/unix/os_unix.h"
 #include "context_gl_x11.h"
 #include "servers/visual_server.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+//#include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/physics_server.h"
 #include "servers/audio/audio_server_sw.h"
@@ -99,7 +99,7 @@ class OS_X11 : public OS_Unix {
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 	ContextGL_X11 *context_gl;
 #endif
-	Rasterizer *rasterizer;
+	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	List<String> args;

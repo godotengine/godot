@@ -315,6 +315,12 @@ void Node::move_child(Node *p_child,int p_pos) {
 	}
 
 
+	if (p_child->data.pos==p_pos)
+		return; //do nothing
+
+	int motion_from = MIN(p_pos,p_child->data.pos);
+	int motion_to = MAX(p_pos,p_child->data.pos);
+
 	data.children.remove( p_child->data.pos );
 	data.children.insert( p_pos, p_child );
 
@@ -324,13 +330,13 @@ void Node::move_child(Node *p_child,int p_pos) {
 
 	data.blocked++;
 	//new pos first
-	for (int i=0;i<data.children.size();i++) {
+	for (int i=motion_from;i<=motion_to;i++) {
 
 		data.children[i]->data.pos=i;
 	}
 	// notification second
 	move_child_notify(p_child);
-	for (int i=0;i<data.children.size();i++) {
+	for (int i=motion_from;i<=motion_to;i++) {
 		data.children[i]->notification( NOTIFICATION_MOVED_IN_PARENT );
 
 	}

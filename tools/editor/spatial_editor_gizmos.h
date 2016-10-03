@@ -52,7 +52,7 @@
 
 
 class Camera;
-
+#if 0
 class EditorSpatialGizmo  : public SpatialEditorGizmo {
 
 	OBJ_TYPE(EditorSpatialGizmo,SpatialGizmo);
@@ -505,5 +505,5 @@ public:
 
 	SpatialEditorGizmos();
 };
-
+#endif
 #endif // SPATIAL_EDITOR_GIZMOS_H

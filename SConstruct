@@ -386,6 +386,9 @@ if selected_platform in platform_list:
 	if (env['etc1']=='yes'):
 		env.Append(CPPFLAGS=['-DETC1_ENABLED'])
 
+	if (True): # detect GLES3
+		env.Append( BUILDERS = { 'GLES3_GLSL' : env.Builder(action = methods.build_gles3_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
+
 	Export('env')
 
 	#build subdirs, the build order is dependent on link order.

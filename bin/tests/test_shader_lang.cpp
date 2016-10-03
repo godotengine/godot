@@ -37,9 +37,9 @@
 #include "scene/gui/text_edit.h"
 #include "print_string.h"
 #include "servers/visual/shader_language.h"
-#include "drivers/gles2/shader_compiler_gles2.h"
+//#include "drivers/gles2/shader_compiler_gles2.h"
 
-
+#if 0
 typedef ShaderLanguage SL;
 
 namespace TestShaderLang {
@@ -323,7 +323,7 @@ MainLoop* test() {
 	if (!err) {
 		print_line(rcode);
 	}
-
+#if 0
 	ShaderCompilerGLES2 comp;
 	String codeline,globalsline;
 	SL::VarInfo vi;
@@ -333,6 +333,18 @@ MainLoop* test() {
 
 	ShaderCompilerGLES2::Flags fl;
 	comp.compile(code,ShaderLanguage::SHADER_MATERIAL_FRAGMENT,codeline,globalsline,fl);
+#endif
+	return NULL;
+}
+
+}
+#endif
+
+typedef ShaderLanguage SL;
+
+namespace TestShaderLang {
+
+MainLoop* test() {
 
 	return NULL;
 }

@@ -99,7 +99,6 @@ private:
 	struct Surface {
 		String name;
 		AABB aabb;
-		bool alphasort;
 		Ref<Material> material;
 	};
 	Vector<Surface> surfaces;
@@ -123,11 +122,9 @@ protected:
 
 public:
 
-	void add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes=Array(),bool p_alphasort=false);
+	void add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes=Array());
 	Array surface_get_arrays(int p_surface) const;
 	virtual Array surface_get_morph_arrays(int p_surface) const;
-
-	void add_custom_surface(const Variant& p_data); //only recognized by driver
 
 	void add_morph_target(const StringName& p_name);
 	int get_morph_target_count() const;

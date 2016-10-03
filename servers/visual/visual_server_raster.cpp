@@ -32,7 +32,1279 @@
 #include "default_mouse_cursor.xpm"
 #include "sort.h"
 #include "io/marshalls.h"
+#include "visual_server_canvas.h"
+#include "visual_server_global.h"
+
 // careful, these may run in different threads than the visual server
+
+RID VisualServerRaster::texture_create(){
+
+	return VSG::storage->texture_create();
+}
+void VisualServerRaster::texture_allocate(RID p_texture,int p_width, int p_height,Image::Format p_format,uint32_t p_flags){
+
+	VSG::storage->texture_allocate(p_texture,p_width,p_height,p_format,p_flags);
+}
+void VisualServerRaster::texture_set_data(RID p_texture,const Image& p_image,CubeMapSide p_cube_side){
+
+	VSG::storage->texture_set_data(p_texture,p_image,p_cube_side);
+}
+Image VisualServerRaster::texture_get_data(RID p_texture,CubeMapSide p_cube_side) const{
+
+	return VSG::storage->texture_get_data(p_texture,p_cube_side);
+}
+void VisualServerRaster::texture_set_flags(RID p_texture,uint32_t p_flags) {
+
+	VSG::storage->texture_set_flags(p_texture,p_flags);
+}
+uint32_t VisualServerRaster::texture_get_flags(RID p_texture) const{
+
+	return VSG::storage->texture_get_flags(p_texture);
+}
+Image::Format VisualServerRaster::texture_get_format(RID p_texture) const{
+
+	return VSG::storage->texture_get_format(p_texture);
+}
+uint32_t VisualServerRaster::texture_get_width(RID p_texture) const{
+
+	return VSG::storage->texture_get_width(p_texture);
+}
+uint32_t VisualServerRaster::texture_get_height(RID p_texture) const{
+
+	return VSG::storage->texture_get_height(p_texture);
+}
+void VisualServerRaster::texture_set_size_override(RID p_texture,int p_width, int p_height){
+	VSG::storage->texture_set_size_override(p_texture,p_width,p_height);
+
+}
+
+void VisualServerRaster::texture_set_path(RID p_texture,const String& p_path){
+
+	VSG::storage->texture_set_path(p_texture,p_path);
+}
+
+String VisualServerRaster::texture_get_path(RID p_texture) const{
+
+	return VSG::storage->texture_get_path(p_texture);
+}
+
+void VisualServerRaster::texture_set_shrink_all_x2_on_set_data(bool p_enable){
+
+	VSG::storage->texture_set_shrink_all_x2_on_set_data(p_enable);
+}
+
+void VisualServerRaster::texture_debug_usage(List<TextureInfo> *r_info){
+
+	VSG::storage->texture_debug_usage(r_info);
+}
+
+
+/* SHADER API */
+
+
+RID VisualServerRaster::shader_create(ShaderMode p_mode){
+
+	return VSG::storage->shader_create(p_mode);
+}
+
+void VisualServerRaster::shader_set_mode(RID p_shader,ShaderMode p_mode){
+
+	VSG::storage->shader_set_mode(p_shader,p_mode);
+}
+VisualServerRaster::ShaderMode VisualServerRaster::shader_get_mode(RID p_shader) const{
+
+	return VSG::storage->shader_get_mode(p_shader);
+}
+
+void VisualServerRaster::shader_set_code(RID p_shader, const String& p_code){
+
+	VSG::storage->shader_set_code(p_shader,p_code);
+}
+String VisualServerRaster::shader_get_code(RID p_shader) const{
+
+	return VSG::storage->shader_get_code(p_shader);
+}
+void VisualServerRaster::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const{
+
+	VSG::storage->shader_get_param_list(p_shader,p_param_list);
+}
+
+void VisualServerRaster::shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture){
+
+	VSG::storage->shader_set_default_texture_param(p_shader,p_name,p_texture);
+}
+RID VisualServerRaster::shader_get_default_texture_param(RID p_shader, const StringName& p_name) const{
+
+	return VSG::storage->shader_get_default_texture_param(p_shader,p_name);
+}
+
+
+/* COMMON MATERIAL API */
+
+RID VisualServerRaster::material_create(){
+
+	return VSG::storage->material_create();
+}
+
+void VisualServerRaster::material_set_shader(RID p_shader_material, RID p_shader){
+
+	VSG::storage->material_set_shader(p_shader_material,p_shader);
+}
+RID VisualServerRaster::material_get_shader(RID p_shader_material) const{
+
+	return VSG::storage->material_get_shader(p_shader_material);
+}
+
+void VisualServerRaster::material_set_param(RID p_material, const StringName& p_param, const Variant& p_value){
+
+	VSG::storage->material_set_param(p_material,p_param,p_value);
+}
+Variant VisualServerRaster::material_get_param(RID p_material, const StringName& p_param) const{
+
+	return VSG::storage->material_get_param(p_material,p_param);
+}
+
+/* MESH API */
+
+RID VisualServerRaster::mesh_create(){
+
+	return VSG::storage->mesh_create();
+}
+
+void VisualServerRaster::mesh_add_surface(RID p_mesh,uint32_t p_format,PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const Vector<DVector<uint8_t> >& p_blend_shapes){
+
+	VSG::storage->mesh_add_surface(p_mesh,p_format,p_primitive,p_array,p_vertex_count,p_index_array,p_index_count,p_blend_shapes);
+}
+
+void VisualServerRaster::mesh_set_morph_target_count(RID p_mesh,int p_amount){
+
+	VSG::storage->mesh_set_morph_target_count(p_mesh,p_amount);
+}
+int VisualServerRaster::mesh_get_morph_target_count(RID p_mesh) const{
+
+	return VSG::storage->mesh_get_morph_target_count(p_mesh);
+}
+
+
+void VisualServerRaster::mesh_set_morph_target_mode(RID p_mesh,MorphTargetMode p_mode){
+
+	VSG::storage->mesh_set_morph_target_mode(p_mesh,p_mode);
+}
+VisualServerRaster::MorphTargetMode VisualServerRaster::mesh_get_morph_target_mode(RID p_mesh) const{
+
+	return VSG::storage->mesh_get_morph_target_mode(p_mesh);
+}
+
+void VisualServerRaster::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material){
+
+	VSG::storage->mesh_surface_set_material(p_mesh,p_surface,p_material);
+}
+RID VisualServerRaster::mesh_surface_get_material(RID p_mesh, int p_surface) const{
+
+	return VSG::storage->mesh_surface_get_material(p_mesh,p_surface);
+}
+
+int VisualServerRaster::mesh_surface_get_array_len(RID p_mesh, int p_surface) const{
+
+	return VSG::storage->mesh_surface_get_array_len(p_mesh,p_surface);
+}
+int VisualServerRaster::mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const{
+
+	return VSG::storage->mesh_surface_get_array_index_len(p_mesh,p_surface);
+}
+
+DVector<uint8_t> VisualServerRaster::mesh_surface_get_array(RID p_mesh, int p_surface) const{
+
+	return VSG::storage->mesh_surface_get_array(p_mesh,p_surface);
+}
+DVector<uint8_t> VisualServerRaster::mesh_surface_get_index_array(RID p_mesh, int p_surface) const{
+
+	return VSG::storage->mesh_surface_get_index_array(p_mesh,p_surface);
+}
+
+
+uint32_t VisualServerRaster::mesh_surface_get_format(RID p_mesh, int p_surface) const{
+
+	return VSG::storage->mesh_surface_get_format(p_mesh,p_surface);
+}
+VisualServerRaster::PrimitiveType VisualServerRaster::mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const{
+
+	return VSG::storage->mesh_surface_get_primitive_type(p_mesh,p_surface);
+}
+
+void VisualServerRaster::mesh_remove_surface(RID p_mesh,int p_index){
+
+	VSG::storage->mesh_remove_surface(p_mesh,p_index);
+}
+int VisualServerRaster::mesh_get_surface_count(RID p_mesh) const{
+
+	return VSG::storage->mesh_get_surface_count(p_mesh);
+}
+
+void VisualServerRaster::mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb){
+
+	VSG::storage->mesh_set_custom_aabb(p_mesh,p_aabb);
+}
+AABB VisualServerRaster::mesh_get_custom_aabb(RID p_mesh) const{
+
+	return VSG::storage->mesh_get_custom_aabb(p_mesh);
+}
+
+void VisualServerRaster::mesh_clear(RID p_mesh){
+
+	VSG::storage->mesh_clear(p_mesh);
+}
+
+/* MULTIMESH API */
+
+
+RID VisualServerRaster::multimesh_create() {
+
+	return VSG::storage->multimesh_create();
+}
+
+void VisualServerRaster::multimesh_allocate(RID p_multimesh,int p_instances,MultimeshTransformFormat p_transform_format,MultimeshColorFormat p_color_format,bool p_gen_aabb){
+
+	VSG::storage->multimesh_allocate(p_multimesh,p_instances,p_transform_format,p_color_format,p_gen_aabb);
+}
+int VisualServerRaster::multimesh_get_instance_count(RID p_multimesh) const{
+
+	return VSG::storage->multimesh_get_instance_count(p_multimesh);
+}
+
+void VisualServerRaster::multimesh_set_mesh(RID p_multimesh,RID p_mesh){
+
+	VSG::storage->multimesh_set_mesh(p_multimesh,p_mesh);
+}
+void VisualServerRaster::multimesh_set_custom_aabb(RID p_multimesh,const AABB& p_aabb){
+
+	VSG::storage->multimesh_set_custom_aabb(p_multimesh,p_aabb);
+}
+void VisualServerRaster::multimesh_instance_set_transform(RID p_multimesh,int p_index,const Transform& p_transform){
+
+	VSG::storage->multimesh_instance_set_transform(p_multimesh,p_index,p_transform);
+}
+void VisualServerRaster::multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Matrix32& p_transform){
+
+	VSG::storage->multimesh_instance_set_transform_2d(p_multimesh,p_index,p_transform);
+}
+void VisualServerRaster::multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color){
+
+	VSG::storage->multimesh_instance_set_color(p_multimesh,p_index,p_color);
+}
+
+RID VisualServerRaster::multimesh_get_mesh(RID p_multimesh) const{
+
+	return VSG::storage->multimesh_get_mesh(p_multimesh);
+}
+AABB VisualServerRaster::multimesh_get_custom_aabb(RID p_multimesh,const AABB& p_aabb) const{
+
+	return VSG::storage->multimesh_get_custom_aabb(p_multimesh,p_aabb);
+}
+
+Transform VisualServerRaster::multimesh_instance_get_transform(RID p_multimesh,int p_index) const{
+
+	return VSG::storage->multimesh_instance_get_transform(p_multimesh,p_index);
+}
+Matrix32 VisualServerRaster::multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const{
+
+	return VSG::storage->multimesh_instance_get_transform_2d(p_multimesh,p_index);
+}
+Color VisualServerRaster::multimesh_instance_get_color(RID p_multimesh,int p_index) const{
+
+	return VSG::storage->multimesh_instance_get_color(p_multimesh,p_index);
+}
+
+void VisualServerRaster::multimesh_set_visible_instances(RID p_multimesh,int p_visible){
+
+	VSG::storage->multimesh_set_visible_instances(p_multimesh,p_visible);
+}
+int VisualServerRaster::multimesh_get_visible_instances(RID p_multimesh) const{
+
+	return VSG::storage->multimesh_get_visible_instances(p_multimesh);
+}
+
+
+/* IMMEDIATE API */
+
+RID VisualServerRaster::immediate_create(){
+
+	return VSG::storage->immediate_create();
+}
+void VisualServerRaster::immediate_begin(RID p_immediate,PrimitiveType p_rimitive,RID p_texture){
+
+	VSG::storage->immediate_begin(p_immediate,p_rimitive,p_texture);
+}
+void VisualServerRaster::immediate_vertex(RID p_immediate,const Vector3& p_vertex){
+
+	VSG::storage->immediate_vertex(p_immediate,p_vertex);
+}
+void VisualServerRaster::immediate_vertex_2d(RID p_immediate,const Vector3& p_vertex){
+
+	VSG::storage->immediate_vertex_2d(p_immediate,p_vertex);
+
+}
+void VisualServerRaster::immediate_normal(RID p_immediate,const Vector3& p_normal){
+
+	VSG::storage->immediate_normal(p_immediate,p_normal);
+
+}
+void VisualServerRaster::immediate_tangent(RID p_immediate,const Plane& p_tangent){
+
+	VSG::storage->immediate_tangent(p_immediate,p_tangent);
+}
+void VisualServerRaster::immediate_color(RID p_immediate,const Color& p_color){
+
+	VSG::storage->immediate_color(p_immediate,p_color);
+
+}
+void VisualServerRaster::immediate_uv(RID p_immediate,const Vector2& tex_uv){
+
+	VSG::storage->immediate_uv(p_immediate,tex_uv);
+
+}
+void VisualServerRaster::immediate_uv2(RID p_immediate,const Vector2& tex_uv){
+
+	VSG::storage->immediate_uv2(p_immediate,tex_uv);
+
+}
+void VisualServerRaster::immediate_end(RID p_immediate){
+
+	VSG::storage->immediate_end(p_immediate);
+
+}
+void VisualServerRaster::immediate_clear(RID p_immediate){
+
+	VSG::storage->immediate_clear(p_immediate);
+
+}
+void VisualServerRaster::immediate_set_material(RID p_immediate,RID p_material){
+
+	VSG::storage->immediate_set_material(p_immediate,p_material);
+
+}
+RID VisualServerRaster::immediate_get_material(RID p_immediate) const{
+
+	return VSG::storage->immediate_get_material(p_immediate);
+}
+
+/* SKELETON API */
+
+RID VisualServerRaster::skeleton_create(){
+
+	return VSG::storage->skeleton_create();
+}
+void VisualServerRaster::skeleton_allocate(RID p_skeleton,int p_bones,bool p_2d_skeleton){
+
+	VSG::storage->skeleton_allocate(p_skeleton,p_bones,p_2d_skeleton);
+}
+int VisualServerRaster::skeleton_get_bone_count(RID p_skeleton) const{
+
+	return VSG::storage->skeleton_get_bone_count(p_skeleton);
+}
+void VisualServerRaster::skeleton_bone_set_transform(RID p_skeleton,int p_bone, const Transform& p_transform){
+
+	VSG::storage->skeleton_bone_set_transform(p_skeleton,p_bone,p_transform);
+}
+Transform VisualServerRaster::skeleton_bone_get_transform(RID p_skeleton,int p_bone){
+
+	return VSG::storage->skeleton_bone_get_transform(p_skeleton,p_bone);
+}
+void VisualServerRaster::skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Matrix32& p_transform){
+
+	VSG::storage->skeleton_bone_set_transform_2d(p_skeleton,p_bone,p_transform);
+}
+Matrix32 VisualServerRaster::skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone){
+
+	return VSG::storage->skeleton_bone_get_transform_2d(p_skeleton,p_bone);
+}
+
+/* Light API */
+
+RID VisualServerRaster::light_create(LightType p_type){
+
+	return VSG::storage->light_create(p_type);
+}
+
+void VisualServerRaster::light_set_color(RID p_light,const Color& p_color){
+
+	VSG::storage->light_set_color(p_light,p_color);
+}
+void VisualServerRaster::light_set_param(RID p_light,LightParam p_param,float p_value){
+
+	VSG::storage->light_set_param(p_light,p_param,p_value);
+}
+void VisualServerRaster::light_set_shadow(RID p_light,bool p_enabled){
+
+	VSG::storage->light_set_shadow(p_light,p_enabled);
+}
+void VisualServerRaster::light_set_projector(RID p_light,RID p_texture){
+
+	VSG::storage->light_set_projector(p_light,p_texture);
+}
+void VisualServerRaster::light_set_attenuation_texure(RID p_light,RID p_texture){
+
+	VSG::storage->light_set_attenuation_texure(p_light,p_texture);
+}
+void VisualServerRaster::light_set_negative(RID p_light,bool p_enable){
+
+	VSG::storage->light_set_negative(p_light,p_enable);
+}
+void VisualServerRaster::light_set_cull_mask(RID p_light,uint32_t p_mask){
+
+	VSG::storage->light_set_cull_mask(p_light,p_mask);
+}
+void VisualServerRaster::light_set_shader(RID p_light,RID p_shader){
+
+	VSG::storage->light_set_shader(p_light,p_shader);
+}
+
+
+void VisualServerRaster::light_directional_set_shadow_mode(RID p_light,LightDirectionalShadowMode p_mode){
+
+	VSG::storage->light_directional_set_shadow_mode(p_light,p_mode);
+}
+
+/* PROBE API */
+
+RID VisualServerRaster::reflection_probe_create(){
+
+	return VSG::storage->reflection_probe_create();
+}
+
+void VisualServerRaster::reflection_probe_set_intensity(RID p_probe, float p_intensity){
+
+	VSG::storage->reflection_probe_set_intensity(p_probe,p_intensity);
+}
+void VisualServerRaster::reflection_probe_set_clip(RID p_probe, float p_near, float p_far){
+
+	VSG::storage->reflection_probe_set_clip(p_probe,p_near,p_far);
+}
+void VisualServerRaster::reflection_probe_set_min_blend_distance(RID p_probe, float p_distance){
+
+	VSG::storage->reflection_probe_set_min_blend_distance(p_probe,p_distance);
+}
+void VisualServerRaster::reflection_probe_set_extents(RID p_probe, const Vector3& p_extents){
+
+	VSG::storage->reflection_probe_set_extents(p_probe,p_extents);
+}
+void VisualServerRaster::reflection_probe_set_origin_offset(RID p_probe, const Vector3& p_offset){
+
+	VSG::storage->reflection_probe_set_origin_offset(p_probe,p_offset);
+}
+void VisualServerRaster::reflection_probe_set_enable_parallax_correction(RID p_probe, bool p_enable){
+
+	VSG::storage->reflection_probe_set_enable_parallax_correction(p_probe,p_enable);
+}
+void VisualServerRaster::reflection_probe_set_resolution(RID p_probe, int p_resolution){
+
+	VSG::storage->reflection_probe_set_resolution(p_probe,p_resolution);
+}
+void VisualServerRaster::reflection_probe_set_hide_skybox(RID p_probe, bool p_hide){
+
+	VSG::storage->reflection_probe_set_hide_skybox(p_probe,p_hide);
+}
+void VisualServerRaster::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers){
+
+	VSG::storage->reflection_probe_set_cull_mask(p_probe,p_layers);
+}
+
+
+/* ROOM API */
+
+RID VisualServerRaster::room_create(){
+
+	return VSG::storage->room_create();
+}
+void VisualServerRaster::room_add_bounds(RID p_room, const DVector<Vector2>& p_convex_polygon,float p_height,const Transform& p_transform){
+
+	VSG::storage->room_add_bounds(p_room,p_convex_polygon,p_height,p_transform);
+}
+void VisualServerRaster::room_clear_bounds(){
+
+	VSG::storage->room_clear_bounds();
+}
+
+/* PORTAL API */
+
+// portals are only (x/y) points, forming a convex shape, which its clockwise
+// order points outside. (z is 0);
+
+RID VisualServerRaster::portal_create(){
+
+	return VSG::storage->portal_create();
+}
+void VisualServerRaster::portal_set_shape(RID p_portal, const Vector<Point2>& p_shape){
+
+	VSG::storage->portal_set_shape(p_portal,p_shape);
+}
+void VisualServerRaster::portal_set_enabled(RID p_portal, bool p_enabled) {
+
+	VSG::storage->portal_set_enabled(p_portal,p_enabled);
+}
+void VisualServerRaster::portal_set_disable_distance(RID p_portal, float p_distance){
+
+	VSG::storage->portal_set_disable_distance(p_portal,p_distance);
+}
+void VisualServerRaster::portal_set_disabled_color(RID p_portal, const Color& p_color){
+
+	VSG::storage->portal_set_disabled_color(p_portal,p_color);
+}
+
+/* CAMERA API */
+
+RID VisualServerRaster::camera_create() {
+
+	return RID();
+}
+void VisualServerRaster::camera_set_perspective(RID p_camera,float p_fovy_degrees, float p_z_near, float p_z_far) {
+
+}
+void VisualServerRaster::camera_set_orthogonal(RID p_camera,float p_size, float p_z_near, float p_z_far){
+
+}
+void VisualServerRaster::camera_set_transform(RID p_camera,const Transform& p_transform) {
+
+}
+void VisualServerRaster::camera_set_cull_mask(RID p_camera,uint32_t p_layers){
+
+}
+void VisualServerRaster::camera_set_environment(RID p_camera,RID p_env){
+
+}
+void VisualServerRaster::camera_set_use_vertical_aspect(RID p_camera,bool p_enable){
+
+}
+
+
+/* VIEWPORT TARGET API */
+
+RID VisualServerRaster::viewport_create(){
+
+	return VSG::viewport->viewport_create();
+}
+
+void VisualServerRaster::viewport_set_size(RID p_viewport,int p_width,int p_height){
+
+	VSG::viewport->viewport_set_size(p_viewport,p_width,p_height);
+}
+
+void VisualServerRaster::viewport_set_active(RID p_viewport,bool p_active) {
+
+	VSG::viewport->viewport_set_active(p_viewport,p_active);
+}
+
+void VisualServerRaster::viewport_set_clear_mode(RID p_viewport,ViewportClearMode p_clear_mode) {
+
+	VSG::viewport->viewport_set_clear_mode(p_viewport,p_clear_mode);
+}
+
+void VisualServerRaster::viewport_attach_to_screen(RID p_viewport,const Rect2& p_rect,int p_screen){
+
+	VSG::viewport->viewport_attach_to_screen(p_viewport,p_rect,p_screen);
+
+}
+void VisualServerRaster::viewport_detach(RID p_viewport){
+
+	VSG::viewport->viewport_detach(p_viewport);
+
+}
+
+void VisualServerRaster::viewport_set_update_mode(RID p_viewport,ViewportUpdateMode p_mode){
+
+	VSG::viewport->viewport_set_update_mode(p_viewport,p_mode);
+
+}
+void VisualServerRaster::viewport_set_vflip(RID p_viewport,bool p_enable){
+
+	VSG::viewport->viewport_set_vflip(p_viewport,p_enable);
+
+}
+
+RID VisualServerRaster::viewport_get_texture(RID p_viewport) const{
+
+	return VSG::viewport->viewport_get_texture(p_viewport);
+
+}
+Image VisualServerRaster::viewport_capture(RID p_viewport) const{
+
+	return VSG::viewport->viewport_capture(p_viewport);
+}
+
+void VisualServerRaster::viewport_set_hide_scenario(RID p_viewport,bool p_hide){
+
+	return VSG::viewport->viewport_set_hide_scenario(p_viewport,p_hide);
+}
+void VisualServerRaster::viewport_set_hide_canvas(RID p_viewport,bool p_hide){
+
+	return VSG::viewport->viewport_set_hide_canvas(p_viewport,p_hide);
+
+}
+void VisualServerRaster::viewport_set_disable_environment(RID p_viewport,bool p_disable){
+
+	return VSG::viewport->viewport_set_disable_environment(p_viewport,p_disable);
+
+}
+
+void VisualServerRaster::viewport_attach_camera(RID p_viewport,RID p_camera){
+
+	return VSG::viewport->viewport_attach_camera(p_viewport,p_camera);
+
+}
+void VisualServerRaster::viewport_set_scenario(RID p_viewport,RID p_scenario){
+
+	return VSG::viewport->viewport_set_scenario(p_viewport,p_scenario);
+
+}
+void VisualServerRaster::viewport_attach_canvas(RID p_viewport,RID p_canvas){
+
+	return VSG::viewport->viewport_attach_canvas(p_viewport,p_canvas);
+
+}
+void VisualServerRaster::viewport_remove_canvas(RID p_viewport,RID p_canvas){
+
+	return VSG::viewport->viewport_remove_canvas(p_viewport,p_canvas);
+
+}
+void VisualServerRaster::viewport_set_canvas_transform(RID p_viewport,RID p_canvas,const Matrix32& p_offset){
+
+	return VSG::viewport->viewport_set_canvas_transform(p_viewport,p_canvas,p_offset);
+
+}
+void VisualServerRaster::viewport_set_transparent_background(RID p_viewport,bool p_enabled){
+
+	return VSG::viewport->viewport_set_transparent_background(p_viewport,p_enabled);
+
+}
+
+void VisualServerRaster::viewport_set_global_canvas_transform(RID p_viewport,const Matrix32& p_transform){
+
+	return VSG::viewport->viewport_set_global_canvas_transform(p_viewport,p_transform);
+
+}
+void VisualServerRaster::viewport_set_canvas_layer(RID p_viewport,RID p_canvas,int p_layer){
+
+	return VSG::viewport->viewport_set_canvas_layer(p_viewport,p_canvas,p_layer);
+
+}
+
+
+/* ENVIRONMENT API */
+
+RID VisualServerRaster::environment_create(){
+
+	return RID();
+}
+
+void VisualServerRaster::environment_set_background(RID p_env,EnvironmentBG p_bg){
+
+}
+void VisualServerRaster::environment_set_skybox(RID p_env,RID p_skybox,float p_energy){
+
+}
+void VisualServerRaster::environment_set_bg_color(RID p_env,const Color& p_color){
+
+}
+void VisualServerRaster::environment_set_canvas_max_layer(RID p_env,int p_max_layer){
+
+}
+void VisualServerRaster::environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy){
+
+}
+
+void VisualServerRaster::environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,EnvironmentGlowBlendMode p_blend_mode){
+
+}
+void VisualServerRaster::environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture){
+
+}
+
+void VisualServerRaster::environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,EnvironmentToneMapper p_tone_mapper){
+
+}
+void VisualServerRaster::environment_set_brightness(RID p_env,bool p_enable,float p_brightness){
+
+}
+void VisualServerRaster::environment_set_contrast(RID p_env,bool p_enable,float p_contrast){
+
+}
+void VisualServerRaster::environment_set_saturation(RID p_env,bool p_enable,float p_saturation){
+
+}
+void VisualServerRaster::environment_set_color_correction(RID p_env,bool p_enable,RID p_ramp){
+
+}
+
+
+/* SCENARIO API */
+
+
+RID VisualServerRaster::scenario_create() {
+
+	return RID();
+}
+
+void VisualServerRaster::scenario_set_debug(RID p_scenario,ScenarioDebugMode p_debug_mode){
+
+}
+void VisualServerRaster::scenario_set_environment(RID p_scenario, RID p_environment){
+
+}
+RID VisualServerRaster::scenario_get_environment(RID p_scenario, RID p_environment) const{
+
+	return RID();
+}
+void VisualServerRaster::scenario_set_fallback_environment(RID p_scenario, RID p_environment){
+
+}
+
+
+/* INSTANCING API */
+// from can be mesh, light,  area and portal so far.
+RID VisualServerRaster::instance_create(){
+
+	return RID();
+}
+
+void VisualServerRaster::instance_set_base(RID p_instance, RID p_base){
+
+}
+void VisualServerRaster::instance_set_scenario(RID p_instance, RID p_scenario){
+
+}
+void VisualServerRaster::instance_set_layer_mask(RID p_instance, uint32_t p_mask){
+
+}
+void VisualServerRaster::instance_set_transform(RID p_instance, const Transform& p_transform){
+
+}
+void VisualServerRaster::instance_attach_object_instance_ID(RID p_instance,ObjectID p_ID){
+
+}
+void VisualServerRaster::instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight){
+
+}
+void VisualServerRaster::instance_set_surface_material(RID p_instance,int p_surface, RID p_material){
+
+}
+
+void VisualServerRaster::instance_attach_skeleton(RID p_instance,RID p_skeleton){
+
+}
+void VisualServerRaster::instance_set_exterior( RID p_instance, bool p_enabled ){
+
+}
+void VisualServerRaster::instance_set_room( RID p_instance, RID p_room ){
+
+}
+
+void VisualServerRaster::instance_set_extra_visibility_margin( RID p_instance, real_t p_margin ){
+
+}
+
+// don't use these in a game!
+Vector<ObjectID> VisualServerRaster::instances_cull_aabb(const AABB& p_aabb, RID p_scenario) const{
+
+	return Vector<ObjectID>();
+}
+
+Vector<ObjectID> VisualServerRaster::instances_cull_ray(const Vector3& p_from, const Vector3& p_to, RID p_scenario) const{
+
+	return Vector<ObjectID>();
+}
+Vector<ObjectID> VisualServerRaster::instances_cull_convex(const Vector<Plane>& p_convex, RID p_scenario) const {
+
+	return Vector<ObjectID>();
+}
+
+
+void VisualServerRaster::instance_geometry_set_flag(RID p_instance,InstanceFlags p_flags,bool p_enabled){
+
+}
+void VisualServerRaster::instance_geometry_set_cast_shadows_setting(RID p_instance, ShadowCastingSetting p_shadow_casting_setting) {
+
+}
+void VisualServerRaster::instance_geometry_set_material_override(RID p_instance, RID p_material){
+
+}
+
+
+void VisualServerRaster::instance_geometry_set_draw_range(RID p_instance,float p_min,float p_max,float p_min_margin,float p_max_margin){
+
+}
+void VisualServerRaster::instance_geometry_set_as_instance_lod(RID p_instance,RID p_as_lod_of_instance){
+
+}
+
+/* CANVAS (2D) */
+
+RID VisualServerRaster::canvas_create(){
+
+	return VSG::canvas->canvas_create();
+
+}
+void VisualServerRaster::canvas_set_item_mirroring(RID p_canvas,RID p_item,const Point2& p_mirroring){
+
+	VSG::canvas->canvas_set_item_mirroring(p_canvas,p_item,p_mirroring);
+}
+void VisualServerRaster::canvas_set_modulate(RID p_canvas,const Color& p_color){
+
+	VSG::canvas->canvas_set_modulate(p_canvas,p_color);
+}
+
+
+RID VisualServerRaster::canvas_item_create(){
+
+	return VSG::canvas->canvas_item_create();
+}
+void VisualServerRaster::canvas_item_set_parent(RID p_item,RID p_parent){
+
+	VSG::canvas->canvas_item_set_parent(p_item,p_parent);
+
+}
+
+void VisualServerRaster::canvas_item_set_visible(RID p_item,bool p_visible){
+
+	VSG::canvas->canvas_item_set_visible(p_item,p_visible);
+
+}
+void VisualServerRaster::canvas_item_set_light_mask(RID p_item,int p_mask){
+
+	VSG::canvas->canvas_item_set_light_mask(p_item,p_mask);
+
+}
+
+void VisualServerRaster::canvas_item_set_transform(RID p_item, const Matrix32& p_transform){
+
+	VSG::canvas->canvas_item_set_transform(p_item,p_transform);
+
+}
+void VisualServerRaster::canvas_item_set_clip(RID p_item, bool p_clip){
+
+	VSG::canvas->canvas_item_set_clip(p_item,p_clip);
+
+}
+void VisualServerRaster::canvas_item_set_distance_field_mode(RID p_item, bool p_enable){
+
+	VSG::canvas->canvas_item_set_distance_field_mode(p_item,p_enable);
+
+}
+void VisualServerRaster::canvas_item_set_custom_rect(RID p_item, bool p_custom_rect,const Rect2& p_rect){
+
+	VSG::canvas->canvas_item_set_custom_rect(p_item,p_custom_rect,p_rect);
+
+}
+void VisualServerRaster::canvas_item_set_modulate(RID p_item, const Color& p_color){
+
+	VSG::canvas->canvas_item_set_modulate(p_item,p_color);
+
+}
+void VisualServerRaster::canvas_item_set_self_modulate(RID p_item, const Color& p_color){
+
+	VSG::canvas->canvas_item_set_self_modulate(p_item,p_color);
+
+}
+
+void VisualServerRaster::canvas_item_set_draw_behind_parent(RID p_item, bool p_enable){
+
+	VSG::canvas->canvas_item_set_draw_behind_parent(p_item,p_enable);
+
+}
+
+
+void VisualServerRaster::canvas_item_add_line(RID p_item, const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width,bool p_antialiased){
+
+	VSG::canvas->canvas_item_add_line(p_item,p_from,p_to,p_color,p_width,p_antialiased);
+
+}
+void VisualServerRaster::canvas_item_add_rect(RID p_item, const Rect2& p_rect, const Color& p_color){
+
+	VSG::canvas->canvas_item_add_rect(p_item,p_rect,p_color);
+
+}
+void VisualServerRaster::canvas_item_add_circle(RID p_item, const Point2& p_pos, float p_radius,const Color& p_color){
+
+	VSG::canvas->canvas_item_add_circle(p_item,p_pos,p_radius,p_color);
+
+}
+void VisualServerRaster::canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile,const Color& p_modulate,bool p_transpose){
+
+	VSG::canvas->canvas_item_add_texture_rect(p_item,p_rect,p_texture,p_tile,p_modulate,p_transpose);
+
+}
+void VisualServerRaster::canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate,bool p_transpose){
+
+	VSG::canvas->canvas_item_add_texture_rect_region(p_item,p_rect,p_texture,p_src_rect,p_modulate,p_transpose);
+
+}
+void VisualServerRaster::canvas_item_add_nine_patch(RID p_item, const Rect2& p_rect, const Rect2& p_source, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright,NinePatchAxisMode p_x_axis_mode, NinePatchAxisMode p_y_axis_mode,bool p_draw_center,const Color& p_modulate){
+
+	VSG::canvas->canvas_item_add_nine_patch(p_item,p_rect,p_source,p_texture,p_topleft,p_bottomright,p_x_axis_mode,p_y_axis_mode,p_draw_center,p_modulate);
+
+}
+void VisualServerRaster::canvas_item_add_primitive(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width){
+
+	VSG::canvas->canvas_item_add_primitive(p_item,p_points,p_colors,p_uvs,p_texture,p_width);
+
+}
+void VisualServerRaster::canvas_item_add_polygon(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture){
+
+	VSG::canvas->canvas_item_add_polygon(p_item,p_points,p_colors,p_uvs,p_texture);
+
+}
+void VisualServerRaster::canvas_item_add_triangle_array(RID p_item, const Vector<int>& p_indices, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture, int p_count){
+
+	VSG::canvas->canvas_item_add_triangle_array(p_item,p_indices,p_points,p_colors,p_uvs,p_texture,p_count);
+
+}
+void VisualServerRaster::canvas_item_add_mesh(RID p_item, const RID& p_mesh,RID p_skeleton){
+
+	VSG::canvas->canvas_item_add_mesh(p_item,p_mesh,p_skeleton);
+
+}
+void VisualServerRaster::canvas_item_add_multimesh(RID p_item, RID p_mesh,RID p_skeleton){
+
+	VSG::canvas->canvas_item_add_multimesh(p_item,p_mesh,p_skeleton);
+
+}
+void VisualServerRaster::canvas_item_add_set_transform(RID p_item,const Matrix32& p_transform){
+
+	VSG::canvas->canvas_item_add_set_transform(p_item,p_transform);
+
+}
+void VisualServerRaster::canvas_item_add_clip_ignore(RID p_item, bool p_ignore){
+
+	VSG::canvas->canvas_item_add_clip_ignore(p_item,p_ignore);
+
+}
+void VisualServerRaster::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable){
+
+	VSG::canvas->canvas_item_set_sort_children_by_y(p_item,p_enable);
+
+}
+void VisualServerRaster::canvas_item_set_z(RID p_item, int p_z){
+
+	VSG::canvas->canvas_item_set_z(p_item,p_z);
+
+}
+void VisualServerRaster::canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable){
+
+	VSG::canvas->canvas_item_set_z_as_relative_to_parent(p_item,p_enable);
+
+}
+void VisualServerRaster::canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable,const Rect2& p_rect){
+
+	VSG::canvas->canvas_item_set_copy_to_backbuffer(p_item,p_enable,p_rect);
+
+}
+
+void VisualServerRaster::canvas_item_clear(RID p_item){
+
+	VSG::canvas->canvas_item_clear(p_item);
+
+}
+void VisualServerRaster::canvas_item_set_draw_index(RID p_item,int p_index){
+
+	VSG::canvas->canvas_item_set_draw_index(p_item,p_index);
+
+}
+
+void VisualServerRaster::canvas_item_set_material(RID p_item, RID p_material){
+
+	VSG::canvas->canvas_item_set_material(p_item,p_material);
+
+}
+
+void VisualServerRaster::canvas_item_set_use_parent_material(RID p_item, bool p_enable) {
+
+	VSG::canvas->canvas_item_set_use_parent_material(p_item,p_enable);
+}
+
+RID VisualServerRaster::canvas_light_create(){
+
+	return VSG::canvas->canvas_light_create();
+}
+
+void VisualServerRaster::canvas_light_attach_to_canvas(RID p_light,RID p_canvas){
+
+	VSG::canvas->canvas_light_attach_to_canvas(p_light,p_canvas);
+
+}
+void VisualServerRaster::canvas_light_set_enabled(RID p_light, bool p_enabled){
+
+	VSG::canvas->canvas_light_set_enabled(p_light,p_enabled);
+
+}
+void VisualServerRaster::canvas_light_set_scale(RID p_light, float p_scale){
+
+	VSG::canvas->canvas_light_set_scale(p_light,p_scale);
+
+}
+void VisualServerRaster::canvas_light_set_transform(RID p_light, const Matrix32& p_transform){
+
+	VSG::canvas->canvas_light_set_transform(p_light,p_transform);
+
+}
+void VisualServerRaster::canvas_light_set_texture(RID p_light, RID p_texture){
+
+	VSG::canvas->canvas_light_set_texture(p_light,p_texture);
+
+}
+void VisualServerRaster::canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset){
+
+	VSG::canvas->canvas_light_set_texture_offset(p_light,p_offset);
+
+}
+void VisualServerRaster::canvas_light_set_color(RID p_light, const Color& p_color){
+
+	VSG::canvas->canvas_light_set_color(p_light,p_color);
+
+}
+void VisualServerRaster::canvas_light_set_height(RID p_light, float p_height){
+
+	VSG::canvas->canvas_light_set_height(p_light,p_height);
+
+}
+void VisualServerRaster::canvas_light_set_energy(RID p_light, float p_energy){
+
+	VSG::canvas->canvas_light_set_energy(p_light,p_energy);
+
+}
+void VisualServerRaster::canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z){
+
+	VSG::canvas->canvas_light_set_z_range(p_light,p_min_z,p_max_z);
+
+}
+void VisualServerRaster::canvas_light_set_layer_range(RID p_light, int p_min_layer,int p_max_layer){
+
+	VSG::canvas->canvas_light_set_layer_range(p_light,p_min_layer,p_max_layer);
+
+}
+void VisualServerRaster::canvas_light_set_item_cull_mask(RID p_light, int p_mask){
+
+	VSG::canvas->canvas_light_set_item_cull_mask(p_light,p_mask);
+
+}
+void VisualServerRaster::canvas_light_set_item_shadow_cull_mask(RID p_light, int p_mask){
+
+	VSG::canvas->canvas_light_set_item_shadow_cull_mask(p_light,p_mask);
+
+}
+
+void VisualServerRaster::canvas_light_set_mode(RID p_light, CanvasLightMode p_mode){
+
+	VSG::canvas->canvas_light_set_mode(p_light,p_mode);
+
+}
+
+
+void VisualServerRaster::canvas_light_set_shadow_enabled(RID p_light, bool p_enabled) {
+
+	VSG::canvas->canvas_light_set_shadow_enabled(p_light,p_enabled);
+
+}
+void VisualServerRaster::canvas_light_set_shadow_buffer_size(RID p_light, int p_size) {
+
+	VSG::canvas->canvas_light_set_shadow_buffer_size(p_light,p_size);
+
+}
+void VisualServerRaster::canvas_light_set_shadow_gradient_length(RID p_light, float p_length) {
+
+	VSG::canvas->canvas_light_set_shadow_gradient_length(p_light,p_length);
+
+}
+void VisualServerRaster::canvas_light_set_shadow_filter(RID p_light, CanvasLightShadowFilter p_filter){
+
+	VSG::canvas->canvas_light_set_shadow_filter(p_light,p_filter);
+
+}
+void VisualServerRaster::canvas_light_set_shadow_color(RID p_light, const Color& p_color){
+
+	VSG::canvas->canvas_light_set_shadow_color(p_light,p_color);
+
+}
+
+
+
+RID VisualServerRaster::canvas_light_occluder_create() {
+
+	return VSG::canvas->canvas_light_occluder_create();
+}
+
+void VisualServerRaster::canvas_light_occluder_attach_to_canvas(RID p_occluder,RID p_canvas){
+
+	VSG::canvas->canvas_light_occluder_attach_to_canvas(p_occluder,p_canvas);
+
+}
+void VisualServerRaster::canvas_light_occluder_set_enabled(RID p_occluder,bool p_enabled) {
+
+	VSG::canvas->canvas_light_occluder_set_enabled(p_occluder,p_enabled);
+
+}
+void VisualServerRaster::canvas_light_occluder_set_polygon(RID p_occluder,RID p_polygon){
+
+	VSG::canvas->canvas_light_occluder_set_polygon(p_occluder,p_polygon);
+
+}
+void VisualServerRaster::canvas_light_occluder_set_transform(RID p_occluder,const Matrix32& p_xform){
+
+	VSG::canvas->canvas_light_occluder_set_transform(p_occluder,p_xform);
+
+}
+void VisualServerRaster::canvas_light_occluder_set_light_mask(RID p_occluder,int p_mask){
+
+	VSG::canvas->canvas_light_occluder_set_light_mask(p_occluder,p_mask);
+
+}
+
+RID VisualServerRaster::canvas_occluder_polygon_create() {
+
+	return VSG::canvas->canvas_occluder_polygon_create();
+}
+void VisualServerRaster::canvas_occluder_polygon_set_shape(RID p_occluder_polygon,const DVector<Vector2>& p_shape,bool p_closed){
+
+	VSG::canvas->canvas_occluder_polygon_set_shape(p_occluder_polygon,p_shape,p_closed);
+}
+void VisualServerRaster::canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon,const DVector<Vector2>& p_shape){
+
+	VSG::canvas->canvas_occluder_polygon_set_shape_as_lines(p_occluder_polygon,p_shape);
+
+}
+
+
+void VisualServerRaster::canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon,CanvasOccluderPolygonCullMode p_mode){
+
+	VSG::canvas->canvas_occluder_polygon_set_cull_mode(p_occluder_polygon,p_mode);
+
+}
+
+
+/* CURSOR */
+void VisualServerRaster::cursor_set_rotation(float p_rotation, int p_cursor ){
+
+}
+void VisualServerRaster::cursor_set_texture(RID p_texture, const Point2 &p_center_offset, int p_cursor, const Rect2 &p_region){
+
+}
+void VisualServerRaster::cursor_set_visible(bool p_visible, int p_cursor ){
+
+}
+void VisualServerRaster::cursor_set_pos(const Point2& p_pos, int p_cursor ){
+
+}
+
+/* BLACK BARS */
+
+
+void VisualServerRaster::black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom){
+
+}
+void VisualServerRaster::black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom){
+
+}
+
+
+/* FREE */
+
+void VisualServerRaster::free( RID p_rid ){
+
+	if (VSG::storage->free(p_rid))
+		return;
+	if (VSG::canvas->free(p_rid))
+		return;
+	if (VSG::viewport->free(p_rid))
+		return;
+
+}
+
+/* EVENT QUEUING */
+
+void VisualServerRaster::draw(){
+
+	//if (changes)
+	//	print_line("changes: "+itos(changes));
+
+//	changes=0;
+	VSG::rasterizer->begin_frame();
+	VSG::viewport->draw_viewports();
+	//_draw_cursors_and_margins();
+	VSG::rasterizer->end_frame();
+	//draw_extra_frame=VS:rasterizer->needs_to_draw_next_frame();
+}
+void VisualServerRaster::sync(){
+
+}
+bool VisualServerRaster::has_changed() const{
+
+	return false;
+}
+void VisualServerRaster::init(){
+
+	VSG::rasterizer->initialize();
+
+}
+void VisualServerRaster::finish(){
+
+	if (test_cube.is_valid()) {
+		free(test_cube);
+	}
+
+	VSG::rasterizer->finalize();
+}
+
+/* STATUS INFORMATION */
+
+
+int VisualServerRaster::get_render_info(RenderInfo p_info){
+
+	return 0;
+}
+
+
+
+/* TESTING */
+
+
+
+void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_color,bool p_scale){
+
+}
+void VisualServerRaster::set_default_clear_color(const Color& p_color){
+
+}
+
+bool VisualServerRaster::has_feature(Features p_feature) const {
+
+	return false;
+}
+
+RID VisualServerRaster::get_test_cube() {
+	if (!test_cube.is_valid()) {
+		test_cube=_make_test_cube();
+	}
+	return test_cube;
+}
+
+VisualServerRaster::VisualServerRaster() {
+
+	VSG::canvas = memnew( VisualServerCanvas);
+	VSG::viewport = memnew( VisualServerViewport);
+	VSG::rasterizer = Rasterizer::create();
+	VSG::storage=VSG::rasterizer->get_storage();
+	VSG::canvas_render=VSG::rasterizer->get_canvas();
+	VSG::scene_render=VSG::rasterizer->get_scene();
+
+}
+
+VisualServerRaster::~VisualServerRaster() {
+
+	memdelete(VSG::canvas);
+	memdelete(VSG::viewport);
+	memdelete(VSG::rasterizer);
+}
+
+
+#if 0
 
 BalloonAllocator<> *VisualServerRaster::OctreeAllocator::allocator=NULL;
 
@@ -1146,7 +2418,7 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 	if (p_octree.size()==0) {
 		if (baked_light->data.octree_texture.is_valid())
 			rasterizer->free(baked_light->data.octree_texture);
-		baked_light->data.octree_texture=RID();
+		baked_light->data.octree_texture;
 		baked_light->octree_aabb=AABB();
 		baked_light->octree_tex_size=Size2();
 	} else {
@@ -1203,7 +2475,7 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 			if (tex_w!=baked_light->octree_tex_size.x || tex_h!=baked_light->octree_tex_size.y) {
 
 				rasterizer->free(baked_light->data.octree_texture);
-				baked_light->data.octree_texture=RID();
+				baked_light->data.octree_texture;
 				baked_light->octree_tex_size.x=0;
 				baked_light->octree_tex_size.y=0;
 			}
@@ -1212,7 +2484,7 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 		if (baked_light->data.light_texture.is_valid()) {
 			if (!has_light_tex || light_tex_w!=baked_light->light_tex_size.x || light_tex_h!=baked_light->light_tex_size.y) {
 				rasterizer->free(baked_light->data.light_texture);
-				baked_light->data.light_texture=RID();
+				baked_light->data.light_texture;
 				baked_light->light_tex_size.x=0;
 				baked_light->light_tex_size.y=0;
 			}
@@ -1220,20 +2492,20 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 
 		if (!baked_light->data.octree_texture.is_valid()) {
 			baked_light->data.octree_texture=rasterizer->texture_create();
-			rasterizer->texture_allocate(baked_light->data.octree_texture,tex_w,tex_h,Image::FORMAT_RGBA,TEXTURE_FLAG_FILTER);
+			rasterizer->texture_allocate(baked_light->data.octree_texture,tex_w,tex_h,Image::FORMAT_RGBA8,TEXTURE_FLAG_FILTER);
 			baked_light->octree_tex_size.x=tex_w;
 			baked_light->octree_tex_size.y=tex_h;
 		}
 
 		if (!baked_light->data.light_texture.is_valid() && has_light_tex) {
 			baked_light->data.light_texture=rasterizer->texture_create();
-			rasterizer->texture_allocate(baked_light->data.light_texture,light_tex_w,light_tex_h,Image::FORMAT_RGBA,TEXTURE_FLAG_FILTER);
+			rasterizer->texture_allocate(baked_light->data.light_texture,light_tex_w,light_tex_h,Image::FORMAT_RGBA8,TEXTURE_FLAG_FILTER);
 			baked_light->light_tex_size.x=light_tex_w;
 			baked_light->light_tex_size.y=light_tex_h;
 
 		}
 
-		Image img(tex_w,tex_h,0,Image::FORMAT_RGBA,p_octree);
+		Image img(tex_w,tex_h,0,Image::FORMAT_RGBA8,p_octree);
 		rasterizer->texture_set_data(baked_light->data.octree_texture,img);
 
 	}
@@ -1276,7 +2548,7 @@ void VisualServerRaster::baked_light_set_light(RID p_baked_light,const DVector<u
 
 	print_line("w: "+itos(tex_w)+" h: "+itos(tex_h)+" lightsize: "+itos(p_light.size()));
 
-	Image img(tex_w,tex_h,0,Image::FORMAT_RGBA,p_light);
+	Image img(tex_w,tex_h,0,Image::FORMAT_RGBA8,p_light);
 	rasterizer->texture_set_data(baked_light->data.light_texture,img);
 
 
@@ -1611,8 +2883,8 @@ void VisualServerRaster::viewport_set_as_render_target(RID p_viewport,bool p_ena
 	if (!p_enable) {
 
 		rasterizer->free(viewport->render_target);
-		viewport->render_target=RID();
-		viewport->render_target_texture=RID();
+		viewport->render_target;
+		viewport->render_target_texture;
 		if (viewport->update_list.in_list())
 			viewport_update_list.remove(&viewport->update_list);
 
@@ -1811,7 +3083,7 @@ void VisualServerRaster::viewport_attach_camera(RID p_viewport,RID p_camera) {
 		// a camera
 		viewport->camera=p_camera;
 	} else {
-		viewport->camera=RID();
+		viewport->camera;
 	}
 
 }
@@ -1830,7 +3102,7 @@ void VisualServerRaster::viewport_set_scenario(RID p_viewport,RID p_scenario) {
 		// a camera
 		viewport->scenario=p_scenario;
 	} else {
-		viewport->scenario=RID();
+		viewport->scenario;
 	}
 
 }
@@ -2284,7 +3556,7 @@ void VisualServerRaster::instance_set_base(RID p_instance, RID p_base) {
 
 
 	instance->base_type=INSTANCE_NONE;
-	instance->base_rid=RID();
+	instance->base_rid;
 
 
 	if (p_base.is_valid()) {
@@ -3003,7 +4275,7 @@ void VisualServerRaster::instance_geometry_set_baked_light_sampler(RID p_instanc
 
 	if (instance->sampled_light) {
 		instance->sampled_light->baked_light_sampler_info->owned_instances.erase(instance);
-		instance->data.sampled_light=RID();
+		instance->data.sampled_light;
 	}
 
 	if(p_baked_light_sampler.is_valid()) {
@@ -3016,7 +4288,7 @@ void VisualServerRaster::instance_geometry_set_baked_light_sampler(RID p_instanc
 		instance->sampled_light=NULL;
 	}
 
-	instance->data.sampled_light=RID();
+	instance->data.sampled_light;
 
 }
 
@@ -3432,7 +4704,7 @@ void VisualServerRaster::canvas_item_set_parent(RID p_item,RID p_parent) {
 			item_owner->child_items.erase(canvas_item);
 		}
 
-		canvas_item->parent=RID();
+		canvas_item->parent;
 	}
 
 
@@ -4057,7 +5329,7 @@ void VisualServerRaster::canvas_light_attach_to_canvas(RID p_light,RID p_canvas)
 	}
 
 	if (!canvas_owner.owns(p_canvas))
-		p_canvas=RID();
+		p_canvas;
 	clight->canvas=p_canvas;
 
 	if (clight->canvas.is_valid()) {
@@ -4184,7 +5456,7 @@ void VisualServerRaster::canvas_light_set_shadow_enabled(RID p_light, bool p_ena
 		clight->shadow_buffer=rasterizer->canvas_light_shadow_buffer_create(clight->shadow_buffer_size);
 	} else {
 		rasterizer->free(clight->shadow_buffer);
-		clight->shadow_buffer=RID();
+		clight->shadow_buffer;
 
 	}
 
@@ -4246,7 +5518,7 @@ void VisualServerRaster::canvas_light_occluder_attach_to_canvas(RID p_occluder,R
 	}
 
 	if (!canvas_owner.owns(p_canvas))
-		p_canvas=RID();
+		p_canvas;
 
 	occluder->canvas=p_canvas;
 
@@ -4279,12 +5551,12 @@ void VisualServerRaster::canvas_light_occluder_set_polygon(RID p_occluder,RID p_
 	}
 
 	occluder->polygon=p_polygon;
-	occluder->polygon_buffer=RID();
+	occluder->polygon_buffer;
 
 	if (occluder->polygon.is_valid()) {
 		CanvasLightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get(p_polygon);
 		if (!occluder_poly)
-			occluder->polygon=RID();
+			occluder->polygon;
 		ERR_FAIL_COND(!occluder_poly);
 		occluder_poly->owners.insert(occluder);
 		occluder->polygon_buffer=occluder_poly->occluder;
@@ -4558,7 +5830,7 @@ void VisualServerRaster::free( RID p_rid ) {
 			//detach skeletons
 			for (Set<Instance*>::Element *F=E->get().front();F;F=F->next()) {
 
-				F->get()->data.skeleton=RID();
+				F->get()->data.skeleton;
 			}
 			skeleton_dependency_map.erase(E);
 		}
@@ -4688,17 +5960,17 @@ void VisualServerRaster::free( RID p_rid ) {
 
 		for (int i=0;i<canvas->child_items.size();i++) {
 
-			canvas->child_items[i].item->parent=RID();
+			canvas->child_items[i].item->parent;
 		}
 
 		for (Set<Rasterizer::CanvasLight*>::Element *E=canvas->lights.front();E;E=E->next()) {
 
-			E->get()->canvas=RID();
+			E->get()->canvas;
 		}
 
 		for (Set<Rasterizer::CanvasLightOccluderInstance*>::Element *E=canvas->occluders.front();E;E=E->next()) {
 
-			E->get()->canvas=RID();
+			E->get()->canvas;
 		}
 
 		canvas_owner.free( p_rid );
@@ -4726,7 +5998,7 @@ void VisualServerRaster::free( RID p_rid ) {
 
 		for (int i=0;i<canvas_item->child_items.size();i++) {
 
-			canvas_item->child_items[i]->parent=RID();
+			canvas_item->child_items[i]->parent;
 		}
 
 		if (canvas_item->material) {
@@ -4798,7 +6070,7 @@ void VisualServerRaster::free( RID p_rid ) {
 
 		while(occluder_poly->owners.size()) {
 
-			occluder_poly->owners.front()->get()->polygon=RID();
+			occluder_poly->owners.front()->get()->polygon;
 			occluder_poly->owners.erase( occluder_poly->owners.front() );
 		}
 
@@ -6417,7 +7689,7 @@ void VisualServerRaster::_process_sampled_light(const Transform& p_camera,Instan
 
 		for(Set<Instance*>::Element *F=p_sampled_light->baked_light_sampler_info->owned_instances.front();F;F=F->next()) {
 
-			F->get()->data.sampled_light=RID(); //do not use because nothing close
+			F->get()->data.sampled_light; //do not use because nothing close
 		}
 	}
 
@@ -7679,7 +8951,7 @@ void VisualServerRaster::init() {
 
 	Image img;
 	img.create(default_mouse_cursor_xpm);
-	//img.convert(Image::FORMAT_RGB);
+	//img.convert(Image::FORMAT_RGB8);
 	default_cursor_texture = texture_create_from_image(img, 0);
 
 	aabb_random_points.resize( GLOBAL_DEF("render/aabb_random_points",16) );
@@ -7766,3 +9038,4 @@ VisualServerRaster::VisualServerRaster(Rasterizer *p_rasterizer) {
 VisualServerRaster::~VisualServerRaster()
 {
 }
+#endif

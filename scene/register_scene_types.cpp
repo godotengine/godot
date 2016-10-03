@@ -235,7 +235,6 @@ static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
 
 #endif
 static ResourceFormatLoaderTheme *resource_loader_theme=NULL;
-static ResourceFormatLoaderShader *resource_loader_shader=NULL;
 
 static ResourceFormatSaverText *resource_saver_text=NULL;
 static ResourceFormatLoaderText *resource_loader_text=NULL;
@@ -269,8 +268,6 @@ void register_scene_types() {
 	resource_loader_theme = memnew( ResourceFormatLoaderTheme );
 	ResourceLoader::add_resource_format_loader( resource_loader_theme );
 
-	resource_loader_shader = memnew( ResourceFormatLoaderShader );
-	ResourceLoader::add_resource_format_loader( resource_loader_shader );
 
 	bool default_theme_hidpi=GLOBAL_DEF("display/use_hidpi_theme",false);
 	Globals::get_singleton()->set_custom_property_info("display/use_hidpi_theme",PropertyInfo(Variant::BOOL,"display/use_hidpi_theme",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
@@ -424,7 +421,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<SpotLight>();
 	ObjectTypeDB::register_type<AnimationTreePlayer>();
 	ObjectTypeDB::register_type<Portal>();
-	ObjectTypeDB::register_type<Particles>();
+	//ObjectTypeDB::register_type<Particles>();
 	ObjectTypeDB::register_type<Position3D>();
 	ObjectTypeDB::register_type<Quad>();
 	ObjectTypeDB::register_type<NavigationMeshInstance>();
@@ -453,8 +450,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<PathFollow>();
 	ObjectTypeDB::register_type<VisibilityNotifier>();
 	ObjectTypeDB::register_type<VisibilityEnabler>();
-	ObjectTypeDB::register_type<BakedLightInstance>();
-	ObjectTypeDB::register_type<BakedLightSampler>();
+	//ObjectTypeDB::register_type<BakedLightInstance>();
+	//ObjectTypeDB::register_type<BakedLightSampler>();
 	ObjectTypeDB::register_type<WorldEnvironment>();
 	ObjectTypeDB::register_type<RemoteTransform>();
 
@@ -489,7 +486,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Particles2D>();
 	ObjectTypeDB::register_type<ParticleAttractor2D>();
 	ObjectTypeDB::register_type<Sprite>();
-	ObjectTypeDB::register_type<ViewportSprite>();
+//	ObjectTypeDB::register_type<ViewportSprite>();
 	ObjectTypeDB::register_type<SpriteFrames>();
 	ObjectTypeDB::register_type<AnimatedSprite>();
 	ObjectTypeDB::register_type<Position2D>();
@@ -538,17 +535,17 @@ void register_scene_types() {
 	/* REGISTER RESOURCES */
 
 	ObjectTypeDB::register_virtual_type<Shader>();
-	ObjectTypeDB::register_virtual_type<ShaderGraph>();
+//	ObjectTypeDB::register_virtual_type<ShaderGraph>();
 	ObjectTypeDB::register_type<CanvasItemShader>();
-	ObjectTypeDB::register_type<CanvasItemShaderGraph>();
+//	ObjectTypeDB::register_type<CanvasItemShaderGraph>();
 
 #ifndef _3D_DISABLED
 	ObjectTypeDB::register_type<Mesh>();
 	ObjectTypeDB::register_virtual_type<Material>();
 	ObjectTypeDB::register_type<FixedMaterial>();
-	ObjectTypeDB::register_type<ShaderMaterial>();
+//	ObjectTypeDB::register_type<ShaderMaterial>();
 	ObjectTypeDB::register_type<RoomBounds>();
-	ObjectTypeDB::register_type<MaterialShaderGraph>();
+//	ObjectTypeDB::register_type<MaterialShaderGraph>();
 	ObjectTypeDB::register_type<MaterialShader>();
 	ObjectTypeDB::add_compatibility_type("Shader","MaterialShader");
 	ObjectTypeDB::add_compatibility_type("ParticleSystemMaterial","FixedMaterial");
@@ -568,7 +565,7 @@ void register_scene_types() {
 
 	ObjectTypeDB::register_type<SurfaceTool>();
 	ObjectTypeDB::register_type<MeshDataTool>();
-	ObjectTypeDB::register_type<BakedLight>();
+	//ObjectTypeDB::register_type<BakedLight>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -590,8 +587,7 @@ void register_scene_types() {
 
 	ObjectTypeDB::register_type<StyleBoxEmpty>();
 	ObjectTypeDB::register_type<StyleBoxTexture>();
-	ObjectTypeDB::register_type<StyleBoxFlat>();
-	ObjectTypeDB::register_type<StyleBoxImageMask>();
+	ObjectTypeDB::register_type<StyleBoxFlat>();	
 	ObjectTypeDB::register_type<Theme>();
 
 	ObjectTypeDB::add_compatibility_type("Font","BitmapFont");
@@ -664,7 +660,6 @@ void unregister_scene_types() {
 
 
 	memdelete( resource_loader_theme );
-	memdelete( resource_loader_shader );
 
 	if (resource_saver_text) {
 		memdelete(resource_saver_text);

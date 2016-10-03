@@ -907,10 +907,11 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 
 	_editor_select(is2d?EDITOR_2D:EDITOR_3D);
 
-	VS::get_singleton()->viewport_queue_screen_capture(viewport);
+
 	save.step(TTR("Creating Thumbnail"),2);
 	save.step(TTR("Creating Thumbnail"),3);
-	Image img = VS::get_singleton()->viewport_get_screen_capture(viewport);
+#if 0
+	Image img = VS::get_singleton()->viewport_texture(scree_capture(viewport);
 	int preview_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");;
 	preview_size*=EDSCALE;
 	int width,height;
@@ -928,7 +929,7 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 		height=img.get_height();
 	}
 
-	img.convert(Image::FORMAT_RGB);
+	img.convert(Image::FORMAT_RGB8);
 	img.resize(width,height);
 
 	String pfile = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp/last_scene_preview.png");
@@ -940,7 +941,7 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 	if (editor_data.get_edited_scene_import_metadata().is_null())
 		editor_data.set_edited_scene_import_metadata(Ref<ResourceImportMetadata>( memnew( ResourceImportMetadata ) ) );
 	editor_data.get_edited_scene_import_metadata()->set_option("thumbnail",imgdata);
-
+#endif
 	//tamanio tel thumbnail
 	if (screen!=-1) {
 		_editor_select(screen);
@@ -1243,7 +1244,7 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = Ref<MeshLibrary>( memnew( MeshLibrary ));
 			}
 
-			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(),ml,true);
+//			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(),ml,true);
 
 			Error err = ResourceSaver::save(p_file,ml);
 			if (err) {
@@ -4145,7 +4146,7 @@ void EditorNode::register_editor_types() {
 	ObjectTypeDB::register_type<EditorFileDialog>();
 	//ObjectTypeDB::register_type<EditorImportExport>();
 	ObjectTypeDB::register_type<EditorSettings>();
-	ObjectTypeDB::register_type<EditorSpatialGizmo>();
+//	ObjectTypeDB::register_type<EditorSpatialGizmo>();
 	ObjectTypeDB::register_type<EditorResourcePreview>();
 	ObjectTypeDB::register_type<EditorResourcePreviewGenerator>();
 	ObjectTypeDB::register_type<EditorFileSystem>();
@@ -6537,10 +6538,10 @@ EditorNode::EditorNode() {
 	//more visually meaningful to have this later
 	raise_bottom_panel_item(AnimationPlayerEditor::singleton);
 
-	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,true) ) );
+/*	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,true) ) );
 	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,false) ) );
 	add_editor_plugin( memnew( ShaderEditorPlugin(this,true) ) );
-	add_editor_plugin( memnew( ShaderEditorPlugin(this,false) ) );
+	add_editor_plugin( memnew( ShaderEditorPlugin(this,false) ) );*/
 	add_editor_plugin( memnew( CameraEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleLibraryEditorPlugin(this) ) );
@@ -6549,14 +6550,14 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( MeshInstanceEditorPlugin(this) ) );
 	add_editor_plugin( memnew( AnimationTreeEditorPlugin(this) ) );
 	//add_editor_plugin( memnew( SamplePlayerEditorPlugin(this) ) ); - this is kind of useless at this point
-	add_editor_plugin( memnew( MeshLibraryEditorPlugin(this) ) );
+//	add_editor_plugin( memnew( MeshLibraryEditorPlugin(this) ) );
 	//add_editor_plugin( memnew( StreamEditorPlugin(this) ) );
 	add_editor_plugin( memnew( StyleBoxEditorPlugin(this) ) );
-	add_editor_plugin( memnew( ParticlesEditorPlugin(this) ) );
+	//add_editor_plugin( memnew( ParticlesEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ResourcePreloaderEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ItemListEditorPlugin(this) ) );
 	//add_editor_plugin( memnew( RichTextEditorPlugin(this) ) );
-	add_editor_plugin( memnew( CollisionPolygonEditorPlugin(this) ) );
+//	add_editor_plugin( memnew( CollisionPolygonEditorPlugin(this) ) );
 	add_editor_plugin( memnew( CollisionPolygon2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TileSetEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TileMapEditorPlugin(this) ) );
@@ -6564,16 +6565,16 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( TextureRegionEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Particles2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Path2DEditorPlugin(this) ) );
-	add_editor_plugin( memnew( PathEditorPlugin(this) ) );
-	add_editor_plugin( memnew( BakedLightEditorPlugin(this) ) );
+//	add_editor_plugin( memnew( PathEditorPlugin(this) ) );
+	//add_editor_plugin( memnew( BakedLightEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Polygon2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( LightOccluder2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( NavigationPolygonEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ColorRampEditorPlugin(this) ) );
 	add_editor_plugin( memnew( CollisionShape2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TextureEditorPlugin(this) ) );
-	add_editor_plugin( memnew( MaterialEditorPlugin(this) ) );
-	add_editor_plugin( memnew( MeshEditorPlugin(this) ) );
+//	add_editor_plugin( memnew( MaterialEditorPlugin(this) ) );
+//	add_editor_plugin( memnew( MeshEditorPlugin(this) ) );
 
 	for(int i=0;i<EditorPlugins::get_plugin_count();i++)
 		add_editor_plugin( EditorPlugins::create(i,this) );
@@ -6582,14 +6583,14 @@ EditorNode::EditorNode() {
 		plugin_init_callbacks[i]();
 	}
 
-	resource_preview->add_preview_generator( Ref<EditorTexturePreviewPlugin>( memnew(EditorTexturePreviewPlugin )));
+	/*resource_preview->add_preview_generator( Ref<EditorTexturePreviewPlugin>( memnew(EditorTexturePreviewPlugin )));
 	resource_preview->add_preview_generator( Ref<EditorPackedScenePreviewPlugin>( memnew(EditorPackedScenePreviewPlugin )));
 	resource_preview->add_preview_generator( Ref<EditorMaterialPreviewPlugin>( memnew(EditorMaterialPreviewPlugin )));
 	resource_preview->add_preview_generator( Ref<EditorScriptPreviewPlugin>( memnew(EditorScriptPreviewPlugin )));
 	resource_preview->add_preview_generator( Ref<EditorSamplePreviewPlugin>( memnew(EditorSamplePreviewPlugin )));
 	resource_preview->add_preview_generator( Ref<EditorMeshPreviewPlugin>( memnew(EditorMeshPreviewPlugin )));
 	resource_preview->add_preview_generator( Ref<EditorBitmapPreviewPlugin>( memnew(EditorBitmapPreviewPlugin )));
-
+*/
 
 
 	circle_step_msec=OS::get_singleton()->get_ticks_msec();
