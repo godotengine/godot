@@ -1321,14 +1321,14 @@ Space2DSW::Space2DSW() {
 	contact_debug_count=0;
 
 	locked=false;
-	contact_recycle_radius=0.01;
-	contact_max_separation=0.05;
-	contact_max_allowed_penetration= 0.01;
+	contact_recycle_radius=1.0;
+	contact_max_separation=1.5;
+	contact_max_allowed_penetration= 0.3;
 
-	constraint_bias = 0.01;
-	body_linear_velocity_sleep_treshold=0.01;
-	body_angular_velocity_sleep_treshold=(8.0 / 180.0 * Math_PI);
-	body_time_to_sleep=0.5;
+	constraint_bias = 0.2;
+	body_linear_velocity_sleep_treshold=GLOBAL_DEF("physics_2d/sleep_threashold_linear",2.0);
+	body_angular_velocity_sleep_treshold=GLOBAL_DEF("physics_2d/sleep_threshold_angular",(8.0 / 180.0 * Math_PI));
+	body_time_to_sleep=GLOBAL_DEF("physics_2d/time_before_sleep",0.5);
 
 
 	broadphase = BroadPhase2DSW::create_func();
