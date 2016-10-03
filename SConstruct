@@ -128,7 +128,7 @@ opts.Add('theoralib','Theora Video (yes/no)','no')
 opts.Add('freetype','Freetype support in editor','builtin')
 opts.Add('speex','Speex Audio (yes/no)','yes')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
-opts.Add('png','PNG Image loader support (yes/no)','yes')
+opts.Add('png','PNG Image loader support, using libpng (system/builtin/no)','builtin')
 opts.Add('jpg','JPG Image loader support (yes/no)','yes')
 opts.Add('webp','WEBP Image loader support (yes/no)','yes')
 opts.Add('dds','DDS Texture loader support (yes/no)','yes')
@@ -351,8 +351,8 @@ if selected_platform in platform_list:
 	if (env['theoralib']=='yes'):
 		env.Append(CPPFLAGS=['-DTHEORALIB_ENABLED']);
 
-	if (env['png']=='yes'):
-		env.Append(CPPFLAGS=['-DPNG_ENABLED']);
+	if (env['png'] != 'no'):
+		env.Append(CPPFLAGS = ['-DPNG_ENABLED']);
 	if (env['dds']=='yes'):
 		env.Append(CPPFLAGS=['-DDDS_ENABLED']);
 	if (env['pvr']=='yes'):

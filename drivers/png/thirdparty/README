@@ -1,0 +1,12 @@
+# Third party libraries used by this Godot module
+
+## libpng - http://libpng.org/pub/png/libpng.html
+
+Version: 1.6.23
+
+Files extracted from the upstream tarball:
+ - all .c and .h files of the main directory, except from:
+   * example.c
+   * pngtest.c
+ - the arm/ folder
+ - scripts/pnglibconf.h.prebuilt as pnglibconf.h
