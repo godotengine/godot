@@ -53,6 +53,8 @@ public:
 	void run_native_notify() { status=STATUS_PLAY; }
 	void stop();
 
+	OS::ProcessID get_pid() const { return pid; }
+
 	void set_debug_collisions(bool p_debug);
 	bool get_debug_collisions() const;
 
