@@ -5456,9 +5456,16 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 	}
 
 
-	light_data[VL_LIGHT_ATTENUATION][0]=l->vars[VS::LIGHT_PARAM_ENERGY];
-	light_data[VL_LIGHT_ATTENUATION][1]=l->vars[VS::LIGHT_PARAM_RADIUS];
-	light_data[VL_LIGHT_ATTENUATION][2]=l->vars[VS::LIGHT_PARAM_ATTENUATION];
+	light_data[VL_LIGHT_ATTENUATION][0] = l->vars[VS::LIGHT_PARAM_ENERGY];
+
+	if (l->type == VS::LIGHT_DIRECTIONAL) {
+		light_data[VL_LIGHT_ATTENUATION][1] = l->directional_shadow_param[VS::LIGHT_DIRECTIONAL_SHADOW_PARAM_MAX_DISTANCE];
+	}
+	else{
+		light_data[VL_LIGHT_ATTENUATION][1] = l->vars[VS::LIGHT_PARAM_RADIUS];
+	}
+
+	light_data[VL_LIGHT_ATTENUATION][2] = l->vars[VS::LIGHT_PARAM_ATTENUATION];
 
 	light_data[VL_LIGHT_SPOT_ATTENUATION][0]=Math::cos(Math::deg2rad(l->vars[VS::LIGHT_PARAM_SPOT_ANGLE]));
 	light_data[VL_LIGHT_SPOT_ATTENUATION][1]=l->vars[VS::LIGHT_PARAM_SPOT_ATTENUATION];
