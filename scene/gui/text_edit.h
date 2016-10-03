@@ -269,6 +269,8 @@ class TextEdit : public Control  {
 	int search_result_line;
 	int search_result_col;
 
+	bool context_menu_enabled;
+
 	int get_visible_rows() const;
 
 	int get_char_count();
@@ -319,8 +321,6 @@ class TextEdit : public Control  {
 	void _confirm_completion();
 	void _update_completion_candidates();
 
-	void _get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) const;
-
 protected:
 
 	virtual String get_tooltip(const Point2& p_pos) const;
@@ -359,6 +359,8 @@ public:
 	};
 
 	virtual CursorShape get_cursor_shape(const Point2& p_pos=Point2i()) const;
+
+	void _get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) const;
 
 	//void delete_char();
 	//void delete_line();
@@ -499,6 +501,7 @@ public:
 	void set_select_identifiers_on_hover(bool p_enable);
 	bool is_selecting_identifiers_on_hover_enabled() const;
 
+	void set_context_menu_enabled(bool p_enable);
 	PopupMenu *get_menu() const;
 
 	String get_text_for_completion();

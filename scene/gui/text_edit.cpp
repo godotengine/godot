@@ -1651,7 +1651,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					update();
 				}
 
-				if (mb.button_index==BUTTON_RIGHT) {
+				if (mb.button_index==BUTTON_RIGHT && context_menu_enabled) {
 
 					menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
 					menu->set_size(Vector2(1,1));
@@ -4569,6 +4569,9 @@ bool TextEdit::is_selecting_identifiers_on_hover_enabled() const {
 	return select_identifiers_enabled;
 }
 
+void TextEdit::set_context_menu_enabled(bool p_enable) {
+	context_menu_enabled = p_enable;
+}
 
 PopupMenu *TextEdit::get_menu() const {
 	return menu;
@@ -4789,6 +4792,7 @@ TextEdit::TextEdit()  {
 	window_has_focus=true;
 	select_identifiers_enabled=false;
 
+	context_menu_enabled=true;
 	menu = memnew( PopupMenu );
 	add_child(menu);
 	menu->add_item(TTR("Cut"),MENU_CUT,KEY_MASK_CMD|KEY_X);
