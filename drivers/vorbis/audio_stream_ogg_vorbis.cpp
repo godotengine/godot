@@ -299,6 +299,49 @@ Error AudioStreamPlaybackOGGVorbis::set_file(const String& p_file) {
 	return OK;
 }
 
+Dictionary AudioStreamPlaybackOGGVorbis::get_stream_metadata(const String& p_file) {
+
+	file = p_file;
+	Error err;
+	f = FileAccess::open(file, FileAccess::READ, &err);
+
+	if (err) {
+		return Dictionary();
+	}
+
+	int errv = ov_open_callbacks(f, &vf, NULL, 0, _ov_callbacks);
+	if (errv != 0) {
+		return Dictionary();
+	}
+
+	vorbis_comment *vorbis_comment = ov_comment(&vf, -1);
+	if (vorbis_comment != NULL) {
+		Dictionary dictionary;
+		for (int i = 0; i < vorbis_comment->comments; i++) {
+			String string = String::utf8(vorbis_comment->user_comments[i], vorbis_comment->comment_lengths[i]);
+			Vector<String> split_string = string.split("=");
+
+			if (split_string.size() >= 2) {
+				String tag = split_string[0];
+				String description = split_string[1];
+
+				// Restore the rest
+				if (split_string.size() > 2) {
+					for (int j = 2; j < split_string.size(); j++) {
+						description += "=";
+						description += split_string[j];
+					}
+				}
+
+				dictionary[tag] = description;
+			}
+		}
+		return dictionary;
+	}
+
+	Dictionary();
+}
+
 Error AudioStreamPlaybackOGGVorbis::_load_stream()  {
 
 	ERR_FAIL_COND_V(!stream_valid,ERR_UNCONFIGURED);
@@ -402,6 +445,16 @@ AudioStreamPlaybackOGGVorbis::~AudioStreamPlaybackOGGVorbis() {
 
 }
 
+Dictionary AudioStreamOGGVorbis::get_stream_metadata() {
+	Ref<AudioStreamPlaybackOGGVorbis> pb = memnew(AudioStreamPlaybackOGGVorbis);
+	Dictionary dictionary = pb->get_stream_metadata(file);
+	return dictionary;
+}
+
+void AudioStreamOGGVorbis::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("get_stream_metadata"), &AudioStreamOGGVorbis::get_stream_metadata);
+}
 
 
 RES ResourceFormatLoaderAudioStreamOGGVorbis::load(const String &p_path, const String& p_original_path, Error *r_error) {
