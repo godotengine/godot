@@ -755,29 +755,10 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case FILE_SAVE_ALL: {
 
-			if (!_test_script_times_on_disk())
+			if (_test_script_times_on_disk())
 				return;
 
 			save_all_scripts();
-
-#if 0
-			for(int i=0;i<tab_container->get_child_count();i++) {
-
-				ScriptTextEditor *se = tab_container->get_child(i)->cast_to<ScriptTextEditor>();
-				if (!se)
-					continue;
-
-
-				Ref<Script> script = se->get_edited_script();
-
-				if (script->get_path()=="" || script->get_path().find("local://")!=-1 || script->get_path().find("::")!=-1)
-					continue; //internal script, who cares
-
-
-				editor->save_resource( script );
-			}
-
-#endif
 		} break;
 		case FILE_IMPORT_THEME: {
 			file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
