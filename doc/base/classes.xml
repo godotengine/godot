@@ -31869,6 +31869,8 @@
 		RayCast can ignore some objects by adding them to the exception list via [code]add_exception[/code], setting proper filtering with layers, or by filtering object types with type masks.
 
 		Only enabled raycasts will be able to query the space and report collisions!
+
+		RayCast calculates intersection every fixed frame (see [Node]), and the result is cached so it can be used later until the next frame. If multiple queries are required between fixed frames (or during the same frame) use [method force_raycast_update] after adjusting the raycast.
 	</description>
 	<methods>
 		<method name="add_exception">
@@ -31887,6 +31889,11 @@
 		<method name="clear_exceptions">
 			<description>
 				Removes all collision exception for this ray.
+			</description>
+		</method>
+		<method name="force_raycast_update">
+			<description>
+				Updates the collision information in case if this object's properties changed during the current frame (for example position, rotation or the cast_point). Note, [code]set_enabled[/code] is not required for this to work.
 			</description>
 		</method>
 		<method name="get_cast_to" qualifiers="const">
@@ -32007,6 +32014,8 @@
 		RayCast2D can ignore some objects by adding them to the exception list via [code]add_exception[/code], setting proper filtering with layers, or by filtering object types with type masks.
 
 		Only enabled raycasts will be able to query the space and report collisions!
+
+		RayCast2D calculates intersection every fixed frame (see [Node]), and the result is cached so it can be used later until the next frame. If multiple queries are required between fixed frames (or during the same frame) use [method force_raycast_update] after adjusting the raycast.
 	</description>
 	<methods>
 		<method name="add_exception">
@@ -32025,6 +32034,11 @@
 		<method name="clear_exceptions">
 			<description>
 				Removes all collision exception for this ray.
+			</description>
+		</method>
+		<method name="force_raycast_update">
+			<description>
+				Updates the collision information in case if this object's properties changed during the current frame (for example position, rotation or the cast_point). Note, [code]set_enabled[/code] is not required for this to work.
 			</description>
 		</method>
 		<method name="get_cast_to" qualifiers="const">
