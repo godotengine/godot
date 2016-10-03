@@ -72,6 +72,8 @@ private:
 
 	Error _process_texture_data(Ref<ImageTexture> &texture, int format, float quality, int flags,EditorExportPlatform::ImageCompression p_compr,int tex_flags,float shrink);
 	void compress_image(EditorExportPlatform::ImageCompression p_mode,Image& image,bool p_smaller);
+
+	uint32_t texture_flags_to_export_flags(uint32_t p_tex_flags) const;
 public:
 
 
