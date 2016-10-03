@@ -656,7 +656,8 @@ if "platform" in env and env["platform"] == "winrt":
 
 # Workaround for compilation error with GCC/Clang when -Werror is too greedy (GH-4517)
 import os
-if not (os.name=="nt" and os.getenv("VSINSTALLDIR")!=None): # not Windows and not MSVC
+import methods
+if not (os.name=="nt" and methods.msvc_is_detected() ): # not Windows and not MSVC
 	env_drivers.Append(CFLAGS=["-Wno-error=implicit-function-declaration"])
 
 env_drivers.add_source_files(env.drivers_sources,openssl_sources)
