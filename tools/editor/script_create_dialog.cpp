@@ -121,6 +121,9 @@ void ScriptCreateDialog::ok_pressed() {
 	Ref<Script> scr = ScriptServer::get_language( language_menu->get_selected() )->get_template(cname,parent_name->get_text());
 	//scr->set_source_code(text);
 
+	String selected_language = language_menu->get_item_text(language_menu->get_selected());
+	editor_settings->set_last_selected_language(selected_language);
+
 
 	if (cname!="")
 		scr->set_name(cname);
@@ -329,8 +332,18 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 		language_menu->add_item(ScriptServer::get_language(i)->get_name());
 	}
+	editor_settings = EditorSettings::get_singleton();
+	String last_selected_language = editor_settings->get_last_selected_language();
 
-	language_menu->select(0);
+	if (last_selected_language != "")
+		for (int i = 0; i < language_menu->get_item_count(); i++)
+			if (language_menu->get_item_text(i) == last_selected_language)
+			{
+				language_menu->select(i);
+				break;
+			}
+	else language_menu->select(0);
+
 	language_menu->connect("item_selected",this,"_lang_changed");
 
 	//parent_name->set_text();
