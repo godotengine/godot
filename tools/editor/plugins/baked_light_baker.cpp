@@ -34,6 +34,112 @@
 #include "tools/editor/editor_settings.h"
 
 
+#ifdef BAKER_RNG_USE_C_RAND
+	#define RAND_DOUBLE() (double(rand())/RAND_MAX)
+#else
+	#ifdef BAKER_RNG_USE_XONOROSHI128PLUS
+		// from public domain : http://xoroshiro.di.unimi.it/xoroshiro128plus.c
+		void BLB_RNG::seed(uint64_t value) {
+			s[0] = value;
+			s[1] = value;
+		}
+
+		uint64_t BLB_RNG::rand() {
+			const uint64_t s0 = s[0];
+			uint64_t s1 = s[1];
+			const uint64_t result = s0 + s1;
+			s1 ^= s0;
+			s[0] = RNG_rotl(s0, 55) ^ s1 ^ ( s1 << 14 );
+			s[1] = RNG_rotl(s1, 36);
+
+			return result;
+		}
+	#endif
+	#ifdef BAKER_RNG_USE_XORSHIFT128
+		void BLB_RNG::seed(uint32_t value) {
+			x = y = z = w = value;
+		}
+		uint32_t BLB_RNG::rand() {
+			t = x;
+			t ^= t << 11;
+			t ^= t >> 8;
+			x = y;
+			y = z ;
+			z = w;
+			w ^= w >> 19;
+			w ^= t;
+			return w;
+		}
+	#endif
+	#ifdef BAKER_RNG_USE_XORSHIFTSTAR
+		void BLB_RNG::seed(uint64_t value) {
+			x = value;
+		}
+		uint64_t BLB_RNG::rand() {
+			x ^= x >> 12;
+			x ^= x << 25;
+			x ^= x >> 27;
+			return x * 2685821657736338717u;
+		}
+	#endif
+	#ifdef BAKER_RNG_USE_XORSHIFTPLUS
+		void BLB_RNG::seed(uint64_t value) {
+			s0 = value;
+			s1 = value;
+		}
+		uint64_t BLB_RNG::rand() {
+			uint64_t x = s0;
+			uint64_t const y = s1;
+			s0 = y;
+			x ^= x << 23;
+			s1 = x ^ y ^(x >> 17) ^ (y >> 26);
+			return s1 + y;
+		}
+	#endif
+	#ifdef BAKER_RNG_USE_MT19937
+		void BLB_RNG::seed(uint32_t value) {
+			index = 624;
+			x[0] = value;
+			for(int i=1; i<624; i++) {
+				x[i] = 1812433253 * ( x[i-1] ^ x[i-1] >> 30 ) + i;  
+			}
+		}
+		void BLB_RNG::twist() {
+			uint32_t y;
+			for(int i=0; i<624; i++) {
+				y = (x[i] & 0x80000000) + (x[ ( i + 1) % 624] & 0x7fffFFFF );
+				x[i] = x[ ( i + 397 ) % 624 ] ^ y >> 1;
+				if (( y % 2 ) != 0 ) {
+					x[i] ^= 0x9908b0df;
+				} 
+			}
+			index = 0;
+		}
+		uint32_t BLB_RNG::rand() {
+			if ( index >= 624 ) twist();
+			uint32_t y = x[index];
+
+			y ^= y >> 11;
+			y ^= y << 7 & 2636928640;
+			y ^= y << 15 & 4022730752;
+			y ^= y >> 18;
+
+			index++;
+
+			return y;
+		}
+	#endif
+	#ifdef BAKER_RNG_USE_CXX11_MT19937
+		void BLB_RNG::seed(uint32_t value) {
+			rng.seed(value);
+		}
+		uint32_t BLB_RNG::rand() {
+			return rng();
+		}
+	#endif
+	#define RAND_DOUBLE() (double(thread_stack.rng.rand())/BAKER_RNG_RAND_MAX)
+#endif
+
 void baked_light_baker_add_64f(double *dst,double value);
 void baked_light_baker_add_64i(int64_t *dst,int64_t value);
 
@@ -1203,9 +1309,9 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 
 				Vector3 c1=r_normal.cross(n).normalized();
 				Vector3 c2=r_normal.cross(c1).normalized();
-				double r1 = double(rand())/RAND_MAX;
-				double r2 = double(rand())/RAND_MAX;
-				double r3 = double(rand())/RAND_MAX;
+				double r1 = RAND_DOUBLE();
+				double r2 = RAND_DOUBLE();
+				double r3 = RAND_DOUBLE();
 #if 0
 				Vector3 next = - ((c1*(r1-0.5)) + (c2*(r2-0.5)) + (r_normal*(r3-0.5))).normalized()*0.5 + r_normal*0.5;
 
@@ -1262,9 +1368,9 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 
 				Vector3 c1=r_normal.cross(n).normalized();
 				Vector3 c2=r_normal.cross(c1).normalized();
-				double r1 = double(rand())/RAND_MAX;
-				double r2 = double(rand())/RAND_MAX;
-				double r3 = double(rand())/RAND_MAX;
+				double r1 = RAND_DOUBLE();
+				double r2 = RAND_DOUBLE();
+				double r3 = RAND_DOUBLE();
 				Vector3 rn = ((c1*(r1-0.5)) + (c2*(r2-0.5)) + (r_normal*r3*0.25)).normalized();
 				float d =_throw_ray(thread_stack,p_bake_direct,r_point,r_point+rn*p_rest,p_rest,diffuse_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1,false,true);
 				r = plot_size*cell_size*ao_radius;
@@ -1620,8 +1726,8 @@ void BakedLightBaker::throw_rays(ThreadStack& thread_stack,int p_amount) {
 
 				for(int j=0;j<amount;j++) {
 					Vector3 from = dl.pos;
-					double r1 = double(rand())/RAND_MAX;
-					double r2 = double(rand())/RAND_MAX;
+					double r1 = RAND_DOUBLE();
+					double r2 = RAND_DOUBLE();
 					from+=dl.up*(r1*2.0-1.0);
 					from+=dl.left*(r2*2.0-1.0);
 					Vector3 to = from+dl.dir*dl.length;
@@ -1643,9 +1749,9 @@ void BakedLightBaker::throw_rays(ThreadStack& thread_stack,int p_amount) {
 				for(int j=0;j<amount;j++) {
 					Vector3 from = dl.pos;
 
-					double r1 = double(rand())/RAND_MAX;
-					double r2 = double(rand())/RAND_MAX;
-					double r3 = double(rand())/RAND_MAX;
+					double r1 = RAND_DOUBLE();
+					double r2 = RAND_DOUBLE();
+					double r3 = RAND_DOUBLE();
 
 #if 0
 					//crap is not uniform..
@@ -1687,9 +1793,9 @@ void BakedLightBaker::throw_rays(ThreadStack& thread_stack,int p_amount) {
 				for(int j=0;j<amount;j++) {
 					Vector3 from = dl.pos;
 
-					double r1 = double(rand())/RAND_MAX;
-					//double r2 = double(rand())/RAND_MAX;
-					double r3 = double(rand())/RAND_MAX;
+					double r1 = RAND_DOUBLE();
+					//double r2 = RAND_DOUBLE();
+					double r3 = RAND_DOUBLE();
 
 					float d=Math::tan(Math::deg2rad(dl.spot_angle));
 
@@ -2105,7 +2211,8 @@ bool BakedLightBaker::is_paused() {
 
 void BakedLightBaker::_bake_thread_func(void *arg) {
 
-	BakedLightBaker *ble = (BakedLightBaker*)arg;
+	ThreadFuncArgs *args = (ThreadFuncArgs*)arg;
+	BakedLightBaker *ble = args->back_light_baker;
 
 
 
@@ -2115,6 +2222,13 @@ void BakedLightBaker::_bake_thread_func(void *arg) {
 	thread_stack.bvh_stack = memnew_arr(BVH*,ble->bvh_depth);
 	thread_stack.octant_stack = memnew_arr(uint32_t,ble->octree_depth*2 );
 	thread_stack.octantptr_stack = memnew_arr(uint32_t,ble->octree_depth*2 );
+
+#ifdef BAKER_RNG_USE_C_RAND
+	srand( args->random_seed ); // not guaranteed to be multithread-safe with other compilers than MSVC
+#else
+	thread_stack.rng.seed( args->random_seed );
+#endif
+	print_line("firsts random numbers "+rtos(RAND_DOUBLE())+", "+rtos(RAND_DOUBLE())+", "+rtos(RAND_DOUBLE())+", "+rtos(RAND_DOUBLE())+", "+rtos(RAND_DOUBLE()));
 
 	while(!ble->bake_thread_exit) {
 
@@ -2140,8 +2254,14 @@ void BakedLightBaker::_start_thread() {
 
 	//thread_count=1;
 	threads.resize(thread_count);
+	threads_func_args.resize(thread_count);
+
 	for(int i=0;i<threads.size();i++) {
-		threads[i]=Thread::create(_bake_thread_func,this);
+
+		threads_func_args[i].back_light_baker = this;		
+		threads_func_args[i].random_seed = rand();
+
+		threads[i]=Thread::create(_bake_thread_func,&threads_func_args[i]);
 	}
 }
 
@@ -2155,6 +2275,7 @@ void BakedLightBaker::_stop_thread() {
 		memdelete(threads[i]);
 	}
 	threads.clear();
+	threads_func_args.clear();
 }
 
 void BakedLightBaker::_plot_pixel_to_lightmap(int x, int y, int width, int height, uint8_t *image, const Vector3& p_pos,const Vector3& p_normal,double *p_norm_ptr,float mult,float gamma) {
