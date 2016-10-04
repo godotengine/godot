@@ -62,6 +62,9 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *
 	for(int i=0;i<p_dir->get_subdir_count();i++)
 		_create_tree(item,p_dir->get_subdir(i));
 
+	if(lpath != "res://")
+		item->set_collapsed(true);
+
 	return true;
 }
 
