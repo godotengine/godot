@@ -307,6 +307,10 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				_set_error("expected string constant as 'preload' argument.");
 				return NULL;
 			}
+			if (path.begins_with("/")) {
+				_set_error("Paths cannot start with '/', absolute paths must start with \'res://\', \'user://\', or \'local://\'");
+				return NULL;
+			}
 			if (!path.is_abs_path() && base_path!="")
 				path=base_path+"/"+path;
 			path = path.replace("///","//").simplify_path();
@@ -2107,6 +2111,10 @@ void GDParser::_parse_extends(ClassNode *p_class) {
 		if (constant.get_type()!=Variant::STRING) {
 
 			_set_error("'extends' constant must be a string.");
+			return;
+		}
+		if (((String)(constant)).begins_with("/")) {
+			_set_error("Paths cannot start with '/', absolute paths must start with \'res://\', \'user://\', or \'local://\'");
 			return;
 		}
 
