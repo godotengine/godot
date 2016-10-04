@@ -134,7 +134,7 @@ public:
 	virtual void multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color)=0;
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const=0;
-	virtual AABB multimesh_get_custom_aabb(RID p_multimesh,const AABB& p_aabb) const=0;
+	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const=0;
 
 	virtual Transform multimesh_instance_get_transform(RID p_multimesh,int p_index) const=0;
 	virtual Matrix32 multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const=0;
@@ -167,9 +167,9 @@ public:
 	virtual void skeleton_allocate(RID p_skeleton,int p_bones,bool p_2d_skeleton=false)=0;
 	virtual int skeleton_get_bone_count(RID p_skeleton) const=0;
 	virtual void skeleton_bone_set_transform(RID p_skeleton,int p_bone, const Transform& p_transform)=0;
-	virtual Transform skeleton_bone_get_transform(RID p_skeleton,int p_bone)=0;
+	virtual Transform skeleton_bone_get_transform(RID p_skeleton,int p_bone) const =0;
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Matrix32& p_transform)=0;
-	virtual Matrix32 skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone)=0;
+	virtual Matrix32 skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone) const=0;
 
 	/* Light API */
 
@@ -206,7 +206,7 @@ public:
 
 	virtual RID room_create()=0;
 	virtual void room_add_bounds(RID p_room, const DVector<Vector2>& p_convex_polygon,float p_height,const Transform& p_transform)=0;
-	virtual void room_clear_bounds()=0;
+	virtual void room_clear_bounds(RID p_room)=0;
 
 	/* PORTAL API */
 

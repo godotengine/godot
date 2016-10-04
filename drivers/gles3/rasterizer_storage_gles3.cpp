@@ -1199,7 +1199,7 @@ RID RasterizerStorageGLES3::multimesh_get_mesh(RID p_multimesh) const{
 
 	return RID();
 }
-AABB RasterizerStorageGLES3::multimesh_get_custom_aabb(RID p_multimesh,const AABB& p_aabb) const{
+AABB RasterizerStorageGLES3::multimesh_get_custom_aabb(RID p_multimesh) const{
 
 	return AABB();
 }
@@ -1305,7 +1305,7 @@ void RasterizerStorageGLES3::skeleton_bone_set_transform(RID p_skeleton,int p_bo
 
 
 }
-Transform RasterizerStorageGLES3::skeleton_bone_get_transform(RID p_skeleton,int p_bone){
+Transform RasterizerStorageGLES3::skeleton_bone_get_transform(RID p_skeleton,int p_bone) const{
 
 	return Transform();
 }
@@ -1313,7 +1313,7 @@ void RasterizerStorageGLES3::skeleton_bone_set_transform_2d(RID p_skeleton,int p
 
 
 }
-Matrix32 RasterizerStorageGLES3::skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone){
+Matrix32 RasterizerStorageGLES3::skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone) const{
 
 	return Matrix32();
 }
@@ -1419,7 +1419,7 @@ void RasterizerStorageGLES3::room_add_bounds(RID p_room, const DVector<Vector2>&
 
 
 }
-void RasterizerStorageGLES3::room_clear_bounds(){
+void RasterizerStorageGLES3::room_clear_bounds(RID p_room){
 
 
 }

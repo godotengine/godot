@@ -34,7 +34,9 @@
 #include "servers/visual/rasterizer.h"
 #include "allocators.h"
 #include "octree.h"
-
+#include "visual_server_global.h"
+#include "visual_server_viewport.h"
+#include "visual_server_canvas.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -139,7 +141,7 @@ class VisualServerRaster : public VisualServer {
 
 		Transform transform;
 
- 		Camera() {
+		Camera() {
 
 			visible_layers=0xFFFFFFFF;
 			fov=60;
@@ -148,8 +150,8 @@ class VisualServerRaster : public VisualServer {
 			size=1.0;
 			vaspect=false;
 
- 		}
- 	};
+		}
+	};
 
 
 	struct Instance;
@@ -580,188 +582,209 @@ class VisualServerRaster : public VisualServer {
 
 public:
 
+#define DISPLAY_CHANGED changes++;
+
+#define BIND0R(m_r,m_name) m_r m_name() { return BINDBASE->m_name(); }
+#define BIND1R(m_r,m_name,m_type1) m_r m_name(m_type1 arg1) { return BINDBASE->m_name(arg1); }
+#define BIND1RC(m_r,m_name,m_type1) m_r m_name(m_type1 arg1) const { return BINDBASE->m_name(arg1); }
+#define BIND2RC(m_r,m_name,m_type1,m_type2) m_r m_name(m_type1 arg1,m_type2 arg2) const { return BINDBASE->m_name(arg1,arg2); }
+#define BIND3RC(m_r,m_name,m_type1,m_type2,m_type3) m_r m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3) const { return BINDBASE->m_name(arg1,arg2,arg3); }
+#define BIND4RC(m_r,m_name,m_type1,m_type2,m_type3,m_type4) m_r m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4) const { return BINDBASE->m_name(arg1,arg2,arg3,arg4); }
+
+#define BIND1(m_name,m_type1) void m_name(m_type1 arg1) { DISPLAY_CHANGED BINDBASE->m_name(arg1); }
+#define BIND2(m_name,m_type1,m_type2) void m_name(m_type1 arg1,m_type2 arg2) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2); }
+#define BIND2C(m_name,m_type1,m_type2) void m_name(m_type1 arg1,m_type2 arg2) const { BINDBASE->m_name(arg1,arg2); }
+#define BIND3(m_name,m_type1,m_type2,m_type3) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3); }
+#define BIND4(m_name,m_type1,m_type2,m_type3,m_type4) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3,arg4); }
+#define BIND5(m_name,m_type1,m_type2,m_type3,m_type4,m_type5) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4,m_type5 arg5) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3,arg4,arg5); }
+#define BIND6(m_name,m_type1,m_type2,m_type3,m_type4,m_type5,m_type6) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4,m_type5 arg5,m_type6 arg6) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3,arg4,arg5,arg6); }
+#define BIND7(m_name,m_type1,m_type2,m_type3,m_type4,m_type5,m_type6,m_type7) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4,m_type5 arg5,m_type6 arg6,m_type7 arg7) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3,arg4,arg5,arg6,arg7); }
+#define BIND8(m_name,m_type1,m_type2,m_type3,m_type4,m_type5,m_type6,m_type7,m_type8) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4,m_type5 arg5,m_type6 arg6,m_type7 arg7,m_type8 arg8) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8); }
+#define BIND10(m_name,m_type1,m_type2,m_type3,m_type4,m_type5,m_type6,m_type7,m_type8,m_type9,m_type10) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4,m_type5 arg5,m_type6 arg6,m_type7 arg7,m_type8 arg8,m_type9 arg9,m_type10 arg10) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10); }
+
+//from now on, calls forwarded to this singleton
+#define BINDBASE VSG::storage
 
 	/* TEXTURE API */
 
-	virtual RID texture_create();
-	virtual void texture_allocate(RID p_texture,int p_width, int p_height,Image::Format p_format,uint32_t p_flags=TEXTURE_FLAGS_DEFAULT);
-	virtual void texture_set_data(RID p_texture,const Image& p_image,CubeMapSide p_cube_side=CUBEMAP_LEFT);
-	virtual Image texture_get_data(RID p_texture,CubeMapSide p_cube_side=CUBEMAP_LEFT) const;
-	virtual void texture_set_flags(RID p_texture,uint32_t p_flags) ;
-	virtual uint32_t texture_get_flags(RID p_texture) const;
-	virtual Image::Format texture_get_format(RID p_texture) const;
-	virtual uint32_t texture_get_width(RID p_texture) const;
-	virtual uint32_t texture_get_height(RID p_texture) const;
-	virtual void texture_set_size_override(RID p_texture,int p_width, int p_height);
+
+	BIND0R(RID,texture_create)
+	BIND5(texture_allocate,RID,int,int,Image::Format,uint32_t)
+	BIND3(texture_set_data,RID,const Image&,CubeMapSide)
+	BIND2RC(Image,texture_get_data,RID,CubeMapSide)
+	BIND2(texture_set_flags,RID,uint32_t)
+	BIND1RC(uint32_t,texture_get_flags,RID)
+	BIND1RC(Image::Format,texture_get_format,RID)
+	BIND1RC(uint32_t,texture_get_width,RID)
+	BIND1RC(uint32_t,texture_get_height,RID)
+	BIND3(texture_set_size_override,RID,int,int)
 
 
 
-	virtual void texture_set_path(RID p_texture,const String& p_path);
-	virtual String texture_get_path(RID p_texture) const;
+	BIND2(texture_set_path,RID,const String&)
+	BIND1RC(String,texture_get_path,RID)
+	BIND1(texture_set_shrink_all_x2_on_set_data,bool)
+	BIND1(texture_debug_usage,List<TextureInfo>*)
 
-	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable);
-
-	virtual void texture_debug_usage(List<TextureInfo> *r_info);
 
 
 	/* SHADER API */
 
+	BIND1R(RID,shader_create,ShaderMode)
 
-	virtual RID shader_create(ShaderMode p_mode=SHADER_SPATIAL);
 
-	virtual void shader_set_mode(RID p_shader,ShaderMode p_mode);
-	virtual ShaderMode shader_get_mode(RID p_shader) const;
+	BIND2(shader_set_mode,RID,ShaderMode)
+	BIND1RC(ShaderMode,shader_get_mode,RID)
 
-	virtual void shader_set_code(RID p_shader, const String& p_code);
-	virtual String shader_get_code(RID p_shader) const;
-	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
+	BIND2(shader_set_code,RID,const String&)
+	BIND1RC(String,shader_get_code,RID)
 
-	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture);
-	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const;
+	BIND2C(shader_get_param_list,RID, List<PropertyInfo> *)
+
+	BIND3(shader_set_default_texture_param,RID,const StringName&,RID)
+	BIND2RC(RID,shader_get_default_texture_param,RID,const StringName&)
 
 
 	/* COMMON MATERIAL API */
 
-	virtual RID material_create();
+	BIND0R(RID,material_create)
 
-	virtual void material_set_shader(RID p_shader_material, RID p_shader);
-	virtual RID material_get_shader(RID p_shader_material) const;
+	BIND2(material_set_shader,RID,RID)
+	BIND1RC(RID,material_get_shader,RID)
 
-	virtual void material_set_param(RID p_material, const StringName& p_param, const Variant& p_value);
-	virtual Variant material_get_param(RID p_material, const StringName& p_param) const;
+	BIND3(material_set_param,RID, const StringName&, const Variant& )
+	BIND2RC(Variant,material_get_param,RID, const StringName& )
 
 	/* MESH API */
 
-	virtual RID mesh_create();
+	BIND0R(RID,mesh_create)
 
-	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >());
+	BIND8(mesh_add_surface,RID,uint32_t,PrimitiveType,const DVector<uint8_t>&,int ,const DVector<uint8_t>& ,int ,const Vector<DVector<uint8_t> >& )
 
-	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount);
-	virtual int mesh_get_morph_target_count(RID p_mesh) const;
-
-
-	virtual void mesh_set_morph_target_mode(RID p_mesh,MorphTargetMode p_mode);
-	virtual MorphTargetMode mesh_get_morph_target_mode(RID p_mesh) const;
-
-	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
-	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const;
-
-	virtual int mesh_surface_get_array_len(RID p_mesh, int p_surface) const;
-	virtual int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const;
-
-	virtual DVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const;
-	virtual DVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const;
+	BIND2(mesh_set_morph_target_count,RID,int)
+	BIND1RC(int,mesh_get_morph_target_count,RID)
 
 
-	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const;
-	virtual PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
+	BIND2(mesh_set_morph_target_mode,RID,MorphTargetMode)
+	BIND1RC(MorphTargetMode, mesh_get_morph_target_mode,RID )
 
-	virtual void mesh_remove_surface(RID p_mesh,int p_index);
-	virtual int mesh_get_surface_count(RID p_mesh) const;
+	BIND3(mesh_surface_set_material,RID, int , RID )
+	BIND2RC(RID,mesh_surface_get_material,RID, int )
 
-	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
-	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
+	BIND2RC(int,mesh_surface_get_array_len,RID,int)
+	BIND2RC(int,mesh_surface_get_array_index_len,RID,int)
 
-	virtual void mesh_clear(RID p_mesh);
+	BIND2RC(DVector<uint8_t>,mesh_surface_get_array,RID,int)
+	BIND2RC(DVector<uint8_t>,mesh_surface_get_index_array,RID, int)
+
+	BIND2RC(uint32_t,mesh_surface_get_format,RID,int)
+	BIND2RC(PrimitiveType,mesh_surface_get_primitive_type,RID,int)
+
+	BIND2(mesh_remove_surface,RID,int)
+	BIND1RC(int,mesh_get_surface_count,RID)
+
+	BIND2(mesh_set_custom_aabb,RID,const AABB&)
+	BIND1RC(AABB,mesh_get_custom_aabb,RID)
+
+	BIND1(mesh_clear,RID)
 
 	/* MULTIMESH API */
 
 
-	virtual RID multimesh_create();
+	BIND0R(RID,multimesh_create)
 
-	virtual void multimesh_allocate(RID p_multimesh,int p_instances,MultimeshTransformFormat p_transform_format,MultimeshColorFormat p_color_format,bool p_gen_aabb=true);
-	virtual int multimesh_get_instance_count(RID p_multimesh) const;
+	BIND5(multimesh_allocate,RID,int,MultimeshTransformFormat,MultimeshColorFormat,bool)
+	BIND1RC(int,multimesh_get_instance_count,RID)
 
-	virtual void multimesh_set_mesh(RID p_multimesh,RID p_mesh);
-	virtual void multimesh_set_custom_aabb(RID p_multimesh,const AABB& p_aabb);
-	virtual void multimesh_instance_set_transform(RID p_multimesh,int p_index,const Transform& p_transform);
-	virtual void multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Matrix32& p_transform);
-	virtual void multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color);
+	BIND2(multimesh_set_mesh,RID,RID)
+	BIND2(multimesh_set_custom_aabb,RID,const AABB&)
+	BIND3(multimesh_instance_set_transform,RID,int,const Transform&)
+	BIND3(multimesh_instance_set_transform_2d,RID,int,const Matrix32& )
+	BIND3(multimesh_instance_set_color,RID,int,const Color&)
 
-	virtual RID multimesh_get_mesh(RID p_multimesh) const;
-	virtual AABB multimesh_get_custom_aabb(RID p_multimesh,const AABB& p_aabb) const;
+	BIND1RC(RID,multimesh_get_mesh,RID)
+	BIND1RC(AABB,multimesh_get_custom_aabb,RID)
 
-	virtual Transform multimesh_instance_get_transform(RID p_multimesh,int p_index) const;
-	virtual Matrix32 multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const;
-	virtual Color multimesh_instance_get_color(RID p_multimesh,int p_index) const;
+	BIND2RC(Transform,multimesh_instance_get_transform,RID,int )
+	BIND2RC(Matrix32,multimesh_instance_get_transform_2d,RID,int)
+	BIND2RC(Color,multimesh_instance_get_color,RID,int)
 
-	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible);
-	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
+	BIND2(multimesh_set_visible_instances,RID,int)
+	BIND1RC(int,multimesh_get_visible_instances,RID)
 
 
 	/* IMMEDIATE API */
 
-	virtual RID immediate_create();
-	virtual void immediate_begin(RID p_immediate,PrimitiveType p_rimitive,RID p_texture=RID());
-	virtual void immediate_vertex(RID p_immediate,const Vector3& p_vertex);
-	virtual void immediate_vertex_2d(RID p_immediate,const Vector3& p_vertex);
-	virtual void immediate_normal(RID p_immediate,const Vector3& p_normal);
-	virtual void immediate_tangent(RID p_immediate,const Plane& p_tangent);
-	virtual void immediate_color(RID p_immediate,const Color& p_color);
-	virtual void immediate_uv(RID p_immediate,const Vector2& tex_uv);
-	virtual void immediate_uv2(RID p_immediate,const Vector2& tex_uv);
-	virtual void immediate_end(RID p_immediate);
-	virtual void immediate_clear(RID p_immediate);
-	virtual void immediate_set_material(RID p_immediate,RID p_material);
-	virtual RID immediate_get_material(RID p_immediate) const;
+	BIND0R(RID,immediate_create)
+	BIND3(immediate_begin,RID,PrimitiveType,RID)
+	BIND2(immediate_vertex,RID,const Vector3&)
+	BIND2(immediate_vertex_2d,RID,const Vector3&)
+	BIND2(immediate_normal,RID,const Vector3&)
+	BIND2(immediate_tangent,RID,const Plane&)
+	BIND2(immediate_color,RID,const Color&)
+	BIND2(immediate_uv,RID,const Vector2& )
+	BIND2(immediate_uv2,RID,const Vector2&)
+	BIND1(immediate_end,RID)
+	BIND1(immediate_clear,RID)
+	BIND2(immediate_set_material,RID ,RID )
+	BIND1RC(RID,immediate_get_material,RID)
 
 	/* SKELETON API */
 
-	virtual RID skeleton_create();
-	virtual void skeleton_allocate(RID p_skeleton,int p_bones,bool p_2d_skeleton=false);
-	virtual int skeleton_get_bone_count(RID p_skeleton) const;
-	virtual void skeleton_bone_set_transform(RID p_skeleton,int p_bone, const Transform& p_transform);
-	virtual Transform skeleton_bone_get_transform(RID p_skeleton,int p_bone);
-	virtual void skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Matrix32& p_transform);
-	virtual Matrix32 skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone);
+	BIND0R(RID,skeleton_create)
+	BIND3(skeleton_allocate,RID,int,bool)
+	BIND1RC(int,skeleton_get_bone_count,RID)
+	BIND3(skeleton_bone_set_transform,RID,int,const Transform&)
+	BIND2RC(Transform,skeleton_bone_get_transform,RID,int)
+	BIND3(skeleton_bone_set_transform_2d,RID,int, const Matrix32& )
+	BIND2RC(Matrix32,skeleton_bone_get_transform_2d,RID,int)
 
 	/* Light API */
 
-	virtual RID light_create(LightType p_type);
+	BIND1R(RID,light_create,LightType)
 
-	virtual void light_set_color(RID p_light,const Color& p_color);
-	virtual void light_set_param(RID p_light,LightParam p_param,float p_value);
-	virtual void light_set_shadow(RID p_light,bool p_enabled);
-	virtual void light_set_projector(RID p_light,RID p_texture);
-	virtual void light_set_attenuation_texure(RID p_light,RID p_texture);
-	virtual void light_set_negative(RID p_light,bool p_enable);
-	virtual void light_set_cull_mask(RID p_light,uint32_t p_mask);
-	virtual void light_set_shader(RID p_light,RID p_shader);
+	BIND2(light_set_color,RID,const Color&)
+	BIND3(light_set_param,RID ,LightParam ,float )
+	BIND2(light_set_shadow,RID ,bool )
+	BIND2(light_set_projector,RID,RID )
+	BIND2(light_set_attenuation_texure,RID,RID )
+	BIND2(light_set_negative,RID,bool )
+	BIND2(light_set_cull_mask,RID ,uint32_t )
+	BIND2(light_set_shader,RID ,RID )
 
-
-	virtual void light_directional_set_shadow_mode(RID p_light,LightDirectionalShadowMode p_mode);
+	BIND2(light_directional_set_shadow_mode,RID,LightDirectionalShadowMode)
 
 	/* PROBE API */
 
-	virtual RID reflection_probe_create();
+	BIND0R(RID,reflection_probe_create)
 
-	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity);
-	virtual void reflection_probe_set_clip(RID p_probe, float p_near, float p_far);
-	virtual void reflection_probe_set_min_blend_distance(RID p_probe, float p_distance);
-	virtual void reflection_probe_set_extents(RID p_probe, const Vector3& p_extents);
-	virtual void reflection_probe_set_origin_offset(RID p_probe, const Vector3& p_offset);
-	virtual void reflection_probe_set_enable_parallax_correction(RID p_probe, bool p_enable);
-	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution);
-	virtual void reflection_probe_set_hide_skybox(RID p_probe, bool p_hide);
-	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers);
+	BIND2(reflection_probe_set_intensity,RID, float )
+	BIND3(reflection_probe_set_clip,RID, float , float )
+	BIND2(reflection_probe_set_min_blend_distance,RID, float )
+	BIND2(reflection_probe_set_extents,RID, const Vector3& )
+	BIND2(reflection_probe_set_origin_offset,RID, const Vector3& )
+	BIND2(reflection_probe_set_enable_parallax_correction,RID, bool )
+	BIND2(reflection_probe_set_resolution,RID, int )
+	BIND2(reflection_probe_set_hide_skybox,RID, bool )
+	BIND2(reflection_probe_set_cull_mask,RID, uint32_t )
 
 
 	/* ROOM API */
 
-	virtual RID room_create();
-	virtual void room_add_bounds(RID p_room, const DVector<Vector2>& p_convex_polygon,float p_height,const Transform& p_transform);
-	virtual void room_clear_bounds();
+	BIND0R(RID,room_create)
+	BIND4(room_add_bounds,RID, const DVector<Vector2>& ,float ,const Transform& )
+	BIND1(room_clear_bounds,RID)
 
 	/* PORTAL API */
 
 	// portals are only (x/y) points, forming a convex shape, which its clockwise
 	// order points outside. (z is 0);
 
-	virtual RID portal_create();
-	virtual void portal_set_shape(RID p_portal, const Vector<Point2>& p_shape);
-	virtual void portal_set_enabled(RID p_portal, bool p_enabled);
-	virtual void portal_set_disable_distance(RID p_portal, float p_distance);
-	virtual void portal_set_disabled_color(RID p_portal, const Color& p_color);
+	BIND0R(RID,portal_create)
+	BIND2(portal_set_shape,RID , const Vector<Point2>& )
+	BIND2(portal_set_enabled,RID , bool )
+	BIND2(portal_set_disable_distance,RID , float )
+	BIND2(portal_set_disabled_color,RID , const Color& )
 
 	/* CAMERA API */
 
@@ -773,40 +796,44 @@ public:
 	virtual void camera_set_environment(RID p_camera,RID p_env);
 	virtual void camera_set_use_vertical_aspect(RID p_camera,bool p_enable);
 
+#undef BINDBASE
+//from now on, calls forwarded to this singleton
+#define BINDBASE VSG::viewport
 
 	/* VIEWPORT TARGET API */
 
-	virtual RID viewport_create();
+	BIND0R(RID,viewport_create)
 
-	virtual void viewport_set_size(RID p_viewport,int p_width,int p_height);
+	BIND3(viewport_set_size,RID,int ,int )
 
-	virtual void viewport_set_active(RID p_viewport,bool p_active);
+	BIND2(viewport_set_active,RID ,bool )
 
-	virtual void viewport_set_clear_mode(RID p_viewport,ViewportClearMode p_clear_mode);
+	BIND2(viewport_set_clear_mode,RID,ViewportClearMode )
 
-	virtual void viewport_attach_to_screen(RID p_viewport,const Rect2& p_rect=Rect2(),int p_screen=0);
-	virtual void viewport_detach(RID p_viewport);
+	BIND3(viewport_attach_to_screen,RID ,const Rect2& ,int )
+	BIND1(viewport_detach,RID)
 
-	virtual void viewport_set_update_mode(RID p_viewport,ViewportUpdateMode p_mode);
-	virtual void viewport_set_vflip(RID p_viewport,bool p_enable);
+	BIND2(viewport_set_update_mode,RID,ViewportUpdateMode )
+	BIND2(viewport_set_vflip,RID,bool)
 
 
-	virtual RID viewport_get_texture(RID p_viewport) const;
-	virtual Image viewport_capture(RID p_viewport) const;
+	BIND1RC(RID,viewport_get_texture,RID )
+	BIND1RC(Image,viewport_capture,RID )
 
-	virtual void viewport_set_hide_scenario(RID p_viewport,bool p_hide);
-	virtual void viewport_set_hide_canvas(RID p_viewport,bool p_hide);
-	virtual void viewport_set_disable_environment(RID p_viewport,bool p_disable);
+	BIND2(viewport_set_hide_scenario,RID,bool )
+	BIND2(viewport_set_hide_canvas,RID,bool )
+	BIND2(viewport_set_disable_environment,RID,bool )
 
-	virtual void viewport_attach_camera(RID p_viewport,RID p_camera);
-	virtual void viewport_set_scenario(RID p_viewport,RID p_scenario);
-	virtual void viewport_attach_canvas(RID p_viewport,RID p_canvas);
-	virtual void viewport_remove_canvas(RID p_viewport,RID p_canvas);
-	virtual void viewport_set_canvas_transform(RID p_viewport,RID p_canvas,const Matrix32& p_offset);
-	virtual void viewport_set_transparent_background(RID p_viewport,bool p_enabled);
+	BIND2(viewport_attach_camera,RID,RID )
+	BIND2(viewport_set_scenario,RID,RID )
+	BIND2(viewport_attach_canvas,RID,RID )
 
-	virtual void viewport_set_global_canvas_transform(RID p_viewport,const Matrix32& p_transform);
-	virtual void viewport_set_canvas_layer(RID p_viewport,RID p_canvas,int p_layer);
+	BIND2(viewport_remove_canvas,RID,RID )
+	BIND3(viewport_set_canvas_transform,RID ,RID ,const Matrix32& )
+	BIND2(viewport_set_transparent_background,RID ,bool )
+
+	BIND2(viewport_set_global_canvas_transform,RID,const Matrix32& )
+	BIND3(viewport_set_canvas_layer,RID ,RID ,int )
 
 
 	/* ENVIRONMENT API */
@@ -872,93 +899,99 @@ public:
 	virtual void instance_geometry_set_draw_range(RID p_instance,float p_min,float p_max,float p_min_margin,float p_max_margin);
 	virtual void instance_geometry_set_as_instance_lod(RID p_instance,RID p_as_lod_of_instance);
 
+
+#undef BINDBASE
+//from now on, calls forwarded to this singleton
+#define BINDBASE VSG::canvas
+
 	/* CANVAS (2D) */
 
-	virtual RID canvas_create();
-	virtual void canvas_set_item_mirroring(RID p_canvas,RID p_item,const Point2& p_mirroring);
-	virtual void canvas_set_modulate(RID p_canvas,const Color& p_color);
+	BIND0R(RID,canvas_create)
+	BIND3(canvas_set_item_mirroring,RID ,RID ,const Point2& )
+	BIND2(canvas_set_modulate,RID,const Color&)
 
 
-	virtual RID canvas_item_create();
-	virtual void canvas_item_set_parent(RID p_item,RID p_parent);
+	BIND0R(RID,canvas_item_create)
+	BIND2(canvas_item_set_parent,RID ,RID)
 
-	virtual void canvas_item_set_visible(RID p_item,bool p_visible);
-	virtual void canvas_item_set_light_mask(RID p_item,int p_mask);
+	BIND2(canvas_item_set_visible,RID,bool )
+	BIND2(canvas_item_set_light_mask,RID,int )
 
-	virtual void canvas_item_set_transform(RID p_item, const Matrix32& p_transform);
-	virtual void canvas_item_set_clip(RID p_item, bool p_clip);
-	virtual void canvas_item_set_distance_field_mode(RID p_item, bool p_enable);
-	virtual void canvas_item_set_custom_rect(RID p_item, bool p_custom_rect,const Rect2& p_rect=Rect2());
-	virtual void canvas_item_set_modulate(RID p_item, const Color& p_color);
-	virtual void canvas_item_set_self_modulate(RID p_item, const Color& p_color);
+	BIND2(canvas_item_set_transform,RID, const Matrix32& )
+	BIND2(canvas_item_set_clip,RID, bool )
+	BIND2(canvas_item_set_distance_field_mode,RID, bool )
+	BIND3(canvas_item_set_custom_rect,RID, bool ,const Rect2& )
+	BIND2(canvas_item_set_modulate,RID, const Color& )
+	BIND2(canvas_item_set_self_modulate,RID, const Color& )
 
-	virtual void canvas_item_set_draw_behind_parent(RID p_item, bool p_enable);
-
-
-	virtual void canvas_item_add_line(RID p_item, const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width=1.0,bool p_antialiased=false);
-	virtual void canvas_item_add_rect(RID p_item, const Rect2& p_rect, const Color& p_color);
-	virtual void canvas_item_add_circle(RID p_item, const Point2& p_pos, float p_radius,const Color& p_color);
-	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile=false,const Color& p_modulate=Color(1,1,1),bool p_transpose=false);
-	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1),bool p_transpose=false);
-	virtual void canvas_item_add_nine_patch(RID p_item, const Rect2& p_rect, const Rect2& p_source, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright,NinePatchAxisMode p_x_axis_mode=NINE_PATCH_STRETCH, NinePatchAxisMode p_y_axis_mode=NINE_PATCH_STRETCH,bool p_draw_center=true,const Color& p_modulate=Color(1,1,1));
-	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width=1.0);
-	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), RID p_texture=RID());
-	virtual void canvas_item_add_triangle_array(RID p_item, const Vector<int>& p_indices, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), RID p_texture=RID(), int p_count=-1);
-	virtual void canvas_item_add_mesh(RID p_item, const RID& p_mesh,RID p_skeleton=RID());
-	virtual void canvas_item_add_multimesh(RID p_item, RID p_mesh,RID p_skeleton=RID());
-	virtual void canvas_item_add_set_transform(RID p_item,const Matrix32& p_transform);
-	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore);
-	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
-	virtual void canvas_item_set_z(RID p_item, int p_z);
-	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);
-	virtual void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable,const Rect2& p_rect);
-
-	virtual void canvas_item_clear(RID p_item);
-	virtual void canvas_item_set_draw_index(RID p_item,int p_index);
-
-	virtual void canvas_item_set_material(RID p_item, RID p_material);
-
-	virtual void canvas_item_set_use_parent_material(RID p_item, bool p_enable);
-
-	virtual RID canvas_light_create();
-	virtual void canvas_light_attach_to_canvas(RID p_light,RID p_canvas);
-	virtual void canvas_light_set_enabled(RID p_light, bool p_enabled);
-	virtual void canvas_light_set_scale(RID p_light, float p_scale);
-	virtual void canvas_light_set_transform(RID p_light, const Matrix32& p_transform);
-	virtual void canvas_light_set_texture(RID p_light, RID p_texture);
-	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset);
-	virtual void canvas_light_set_color(RID p_light, const Color& p_color);
-	virtual void canvas_light_set_height(RID p_light, float p_height);
-	virtual void canvas_light_set_energy(RID p_light, float p_energy);
-	virtual void canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z);
-	virtual void canvas_light_set_layer_range(RID p_light, int p_min_layer,int p_max_layer);
-	virtual void canvas_light_set_item_cull_mask(RID p_light, int p_mask);
-	virtual void canvas_light_set_item_shadow_cull_mask(RID p_light, int p_mask);
-
-	virtual void canvas_light_set_mode(RID p_light, CanvasLightMode p_mode);
+	BIND2(canvas_item_set_draw_behind_parent,RID, bool )
 
 
-	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled);
-	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size);
-	virtual void canvas_light_set_shadow_gradient_length(RID p_light, float p_length);
-	virtual void canvas_light_set_shadow_filter(RID p_light, CanvasLightShadowFilter p_filter);
-	virtual void canvas_light_set_shadow_color(RID p_light, const Color& p_color);
+	BIND6(canvas_item_add_line,RID, const Point2& , const Point2& ,const Color& ,float ,bool )
+	BIND3(canvas_item_add_rect,RID, const Rect2& , const Color& )
+	BIND4(canvas_item_add_circle,RID, const Point2& , float ,const Color& )
+	BIND6(canvas_item_add_texture_rect,RID, const Rect2& , RID ,bool ,const Color& ,bool )
+	BIND6(canvas_item_add_texture_rect_region,RID, const Rect2& , RID ,const Rect2& ,const Color& ,bool )
+	BIND10(canvas_item_add_nine_patch,RID, const Rect2& , const Rect2& , RID ,const Vector2& , const Vector2& ,NinePatchAxisMode , NinePatchAxisMode,bool ,const Color& )
+	BIND6(canvas_item_add_primitive,RID, const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID ,float )
+	BIND5(canvas_item_add_polygon,RID, const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID )
+	BIND7(canvas_item_add_triangle_array,RID, const Vector<int>& , const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID , int)
+	BIND3(canvas_item_add_mesh,RID, const RID& ,RID )
+	BIND3(canvas_item_add_multimesh,RID, RID ,RID )
+	BIND2(canvas_item_add_set_transform,RID,const Matrix32& )
+	BIND2(canvas_item_add_clip_ignore,RID, bool )
+	BIND2(canvas_item_set_sort_children_by_y,RID, bool )
+	BIND2(canvas_item_set_z,RID, int )
+	BIND2(canvas_item_set_z_as_relative_to_parent,RID, bool )
+	BIND3(canvas_item_set_copy_to_backbuffer,RID, bool ,const Rect2& )
+
+	BIND1(canvas_item_clear,RID )
+	BIND2(canvas_item_set_draw_index,RID,int)
+
+	BIND2(canvas_item_set_material,RID, RID )
+
+	BIND2(canvas_item_set_use_parent_material,RID, bool )
+
+
+	BIND0R(RID,canvas_light_create)
+	BIND2(canvas_light_attach_to_canvas,RID,RID )
+	BIND2(canvas_light_set_enabled,RID, bool )
+	BIND2(canvas_light_set_scale,RID, float )
+	BIND2(canvas_light_set_transform,RID, const Matrix32& )
+	BIND2(canvas_light_set_texture,RID, RID )
+	BIND2(canvas_light_set_texture_offset,RID, const Vector2& )
+	BIND2(canvas_light_set_color,RID, const Color& )
+	BIND2(canvas_light_set_height,RID, float )
+	BIND2(canvas_light_set_energy,RID, float )
+	BIND3(canvas_light_set_z_range,RID, int ,int )
+	BIND3(canvas_light_set_layer_range,RID, int ,int )
+	BIND2(canvas_light_set_item_cull_mask,RID, int )
+	BIND2(canvas_light_set_item_shadow_cull_mask,RID, int )
+
+	BIND2(canvas_light_set_mode,RID, CanvasLightMode )
+
+	BIND2(canvas_light_set_shadow_enabled,RID, bool )
+	BIND2(canvas_light_set_shadow_buffer_size,RID, int )
+	BIND2(canvas_light_set_shadow_gradient_length,RID, float )
+	BIND2(canvas_light_set_shadow_filter,RID, CanvasLightShadowFilter )
+	BIND2(canvas_light_set_shadow_color,RID, const Color& )
 
 
 
-	virtual RID canvas_light_occluder_create();
-	virtual void canvas_light_occluder_attach_to_canvas(RID p_occluder,RID p_canvas);
-	virtual void canvas_light_occluder_set_enabled(RID p_occluder,bool p_enabled);
-	virtual void canvas_light_occluder_set_polygon(RID p_occluder,RID p_polygon);
-	virtual void canvas_light_occluder_set_transform(RID p_occluder,const Matrix32& p_xform);
-	virtual void canvas_light_occluder_set_light_mask(RID p_occluder,int p_mask);
-
-	virtual RID canvas_occluder_polygon_create();
-	virtual void canvas_occluder_polygon_set_shape(RID p_occluder_polygon,const DVector<Vector2>& p_shape,bool p_closed);
-	virtual void canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon,const DVector<Vector2>& p_shape);
+	BIND0R(RID,canvas_light_occluder_create)
+	BIND2(canvas_light_occluder_attach_to_canvas,RID,RID )
+	BIND2(canvas_light_occluder_set_enabled,RID,bool )
+	BIND2(canvas_light_occluder_set_polygon,RID,RID )
+	BIND2(canvas_light_occluder_set_transform,RID,const Matrix32& )
+	BIND2(canvas_light_occluder_set_light_mask,RID,int )
 
 
-	virtual void canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon,CanvasOccluderPolygonCullMode p_mode);
+	BIND0R(RID,canvas_occluder_polygon_create)
+	BIND3(canvas_occluder_polygon_set_shape,RID,const DVector<Vector2>& ,bool)
+	BIND2(canvas_occluder_polygon_set_shape_as_lines,RID ,const DVector<Vector2>&)
+
+
+	BIND2(canvas_occluder_polygon_set_cull_mode,RID,CanvasOccluderPolygonCullMode)
 
 
 	/* CURSOR */
@@ -1004,6 +1037,24 @@ public:
 
 	VisualServerRaster();
 	~VisualServerRaster();
+
+#undef DISPLAY_CHANGED
+
+#undef BIND0R
+#undef BIND1RC
+#undef BIND2RC
+#undef BIND3RC
+#undef BIND4RC
+
+#undef BIND1
+#undef BIND2
+#undef BIND3
+#undef BIND4
+#undef BIND5
+#undef BIND6
+#undef BIND7
+#undef BIND8
+#undef BIND10
 
 };
 
