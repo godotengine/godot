@@ -74,7 +74,10 @@ static inline uint32_t hash_djb2_one_float(float p_in,uint32_t p_prev=5381) {
 		float f;
 		uint32_t i;
 	} u;
-	u.f=p_in;
+
+	// handle -0 case
+	if (p_in==0.0f) u.f=0.0f;
+	else u.f=p_in;
 
 	return ((p_prev<<5)+p_prev)+u.i;
 }
