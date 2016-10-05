@@ -1705,6 +1705,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->set_hide_root(true);
 	split_box->add_child(tree);
 	tree->set_drag_forwarding(this);
+	tree->set_all_collapse(true);
 
 
 	//tree->set_v_size_flags(SIZE_EXPAND_FILL);
