@@ -980,7 +980,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 		} break;
 		//TYPE_TYPE,
 		default: {
-
+			
 			ERR_EXPLAIN("Bug in bytecode compiler, unexpected node in parse tree while parsing expression.");
 			ERR_FAIL_V(-1); //unreachable code
 		} break;
@@ -1019,7 +1019,13 @@ Error GDCompiler::_parse_block(CodeGen& codegen,const GDParser::BlockNode *p_blo
 
 				switch(cf->cf_type) {
 
-
+					case GDParser::ControlFlowNode::CF_MATCH: {
+						Error err = _parse_block(codegen,cf->match->compiled_block,p_stack_level,p_break_addr,p_continue_addr);
+						if (err)
+							return err;
+						
+					} break;
+					
 					case GDParser::ControlFlowNode::CF_IF: {
 
 #ifdef DEBUG_ENABLED

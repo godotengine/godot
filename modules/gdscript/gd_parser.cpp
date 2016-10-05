@@ -1570,24 +1570,18 @@ bool GDParser::_recover_from_completion() {
 GDParser::PatternNode *GDParser::_parse_pattern(bool p_static)
 {
 	
-	PatternNode *pattern = memnew(PatternNode);
+	PatternNode *pattern = alloc_node<PatternNode>();
 	
 	GDTokenizer::Token token = tokenizer->get_token();
 	if (error_set)
 		return NULL;
 	
+	if (token == GDTokenizer::TK_EOF) {
+		return NULL;
+	}
+	
 	switch (token) {
 		// all the constants like strings and numbers
-		case GDTokenizer::TK_CONSTANT: {
-			Node *value = _parse_and_reduce_expression(pattern, p_static);
-			if (value->type != GDParser::Node::TYPE_CONSTANT) {
-				_set_error("Not a constant expression");
-				return NULL;
-			}
-			pattern->pt_type = GDParser::PatternNode::PT_CONSTANT;
-			pattern->constant = static_cast<ConstantNode*>(value);
-		} break;
-		
 		case GDTokenizer::TK_BRACKET_OPEN: {
 			tokenizer->advance();
 			pattern->pt_type = GDParser::PatternNode::PT_ARRAY;
@@ -1601,7 +1595,9 @@ GDParser::PatternNode *GDParser::_parse_pattern(bool p_static)
 				if (tokenizer->get_token() == GDTokenizer::TK_PERIOD && tokenizer->get_token(1) == GDTokenizer::TK_PERIOD) {
 					// match everything
 					tokenizer->advance(2);
-					pattern->pt_type = GDParser::PatternNode::PT_IGNORE_REST;
+					PatternNode *sub_pattern = alloc_node<PatternNode>();
+					sub_pattern->pt_type = GDParser::PatternNode::PT_IGNORE_REST;
+					pattern->array.push_back(sub_pattern);
 					if (tokenizer->get_token() == GDTokenizer::TK_COMMA && tokenizer->get_token(1) == GDTokenizer::TK_BRACKET_CLOSE) {
 						tokenizer->advance(2);
 						break;
@@ -1634,7 +1630,8 @@ GDParser::PatternNode *GDParser::_parse_pattern(bool p_static)
 			}
 		} break;
 		
-		case GDTokenizer::TK_IDENTIFIER: {
+		case GDTokenizer::TK_PR_VAR: {
+			tokenizer->advance();
 			pattern->pt_type = GDParser::PatternNode::PT_BIND;
 			pattern->bind = tokenizer->get_token_identifier();
 			tokenizer->advance();
@@ -1642,7 +1639,7 @@ GDParser::PatternNode *GDParser::_parse_pattern(bool p_static)
 		
 		case GDTokenizer::TK_CURLY_BRACKET_OPEN: {
 			tokenizer->advance();
-			pattern->pt_type = GDParser::PatternNode::PT_DICITIONARY;
+			pattern->pt_type = GDParser::PatternNode::PT_DICTIONARY;
 			while (true) {
 				
 				if (tokenizer->get_token() == GDTokenizer::TK_CURLY_BRACKET_CLOSE) {
@@ -1653,7 +1650,9 @@ GDParser::PatternNode *GDParser::_parse_pattern(bool p_static)
 				if (tokenizer->get_token() == GDTokenizer::TK_PERIOD && tokenizer->get_token(1) == GDTokenizer::TK_PERIOD) {
 					// match everything
 					tokenizer->advance(2);
-					pattern->pt_type = GDParser::PatternNode::PT_IGNORE_REST;
+					PatternNode *sub_pattern = alloc_node<PatternNode>();
+					sub_pattern->pt_type = PatternNode::PT_IGNORE_REST;
+					pattern->array.push_back(sub_pattern);
 					if (tokenizer->get_token() == GDTokenizer::TK_COMMA && tokenizer->get_token(1) == GDTokenizer::TK_CURLY_BRACKET_CLOSE) {
 						tokenizer->advance(2);
 						break;
@@ -1706,15 +1705,24 @@ GDParser::PatternNode *GDParser::_parse_pattern(bool p_static)
 		} break;
 		
 		default: {
-			_set_error("Not a valid pattern");
-			return NULL;
-		}
+			Node *value = _parse_and_reduce_expression(pattern, p_static);
+			if (error_set) {
+				return NULL;
+			}
+			if (value->type == Node::TYPE_IDENTIFIER && static_cast<IdentifierNode*>(value)->name == "_") {
+				// wildcard pattern
+				pattern->pt_type = PatternNode::PT_WILDCARD;
+				break;
+			}
+			pattern->pt_type = PatternNode::PT_CONSTANT;
+			pattern->constant = value;
+		} break;
 	}
 	
 	return pattern;
 }
 
-void GDParser::_parse_pattern_block(Vector<PatternBranchNode*> &p_block, bool p_static)
+void GDParser::_parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode*> &p_branches, bool p_static)
 {
 	int indent_level = tab_level.back()->get();
 	
@@ -1734,7 +1742,7 @@ void GDParser::_parse_pattern_block(Vector<PatternBranchNode*> &p_block, bool p_
 			pending_newline=-1;
 		}
 		
-		PatternBranchNode *branch = memnew(PatternBranchNode);
+		PatternBranchNode *branch = alloc_node<PatternBranchNode>();
 		
 		branch->pattern = _parse_pattern(p_static);
 		if (!branch->pattern) {
@@ -1746,12 +1754,324 @@ void GDParser::_parse_pattern_block(Vector<PatternBranchNode*> &p_block, bool p_
 			return;
 		}
 		
-		branch->body = memnew(BlockNode);
+		branch->body = alloc_node<BlockNode>();
+		branch->body->parent_block = p_block;
+		p_block->sub_blocks.push_back(branch->body);
+		current_block = branch->body;
 		
 		_parse_block(branch->body, p_static);
 		
-		p_block.push_back(branch);
+		current_block = p_block;
+		
+		p_branches.push_back(branch);
 	}
+}
+
+void GDParser::_generate_array_pattern(PatternNode *p_array_pattern, Node *p_value_to_match, Node *&p_resulting_node, Map<StringName, Node*> &p_bindings)
+{
+	bool open_ended = false;
+	
+	if (p_array_pattern->array.size() > 0) {
+		if (p_array_pattern->array[p_array_pattern->array.size() - 1]->pt_type == PatternNode::PT_IGNORE_REST) {
+			open_ended = true;
+		}
+	}
+	
+	// check length
+	
+	// typeof(value_to_match) == TYPE_ARRAY && value_to_match.size() >= length
+	// typeof(value_to_match) == TYPE_ARRAY && value_to_match.size() == length
+	
+	{
+
+		// typecheck
+		BuiltInFunctionNode *typeof_node = alloc_node<BuiltInFunctionNode>();
+		typeof_node->function = GDFunctions::TYPE_OF;
+		
+		OperatorNode *typeof_match_value = alloc_node<OperatorNode>();
+		typeof_match_value->op = OperatorNode::OP_CALL;
+		typeof_match_value->arguments.push_back(typeof_node);
+		typeof_match_value->arguments.push_back(p_value_to_match);
+		
+		IdentifierNode *typeof_array = alloc_node<IdentifierNode>();
+		typeof_array->name = "TYPE_ARRAY";
+
+		OperatorNode *type_comp = alloc_node<OperatorNode>();
+		type_comp->op = OperatorNode::OP_EQUAL;
+		type_comp->arguments.push_back(typeof_match_value);
+		type_comp->arguments.push_back(typeof_array);
+
+		
+		ConstantNode *length = alloc_node<ConstantNode>();
+		length->value = Variant(open_ended ? p_array_pattern->array.size() - 1 : p_array_pattern->array.size());
+		
+		
+		OperatorNode *call = alloc_node<OperatorNode>();
+		call->op = OperatorNode::OP_CALL;
+		call->arguments.push_back(p_value_to_match);
+		
+		IdentifierNode *size = alloc_node<IdentifierNode>();
+		size->name = "size";
+		call->arguments.push_back(size);
+		
+		OperatorNode *length_comparison = alloc_node<OperatorNode>();
+		length_comparison->op = open_ended ? OperatorNode::OP_GREATER_EQUAL : OperatorNode::OP_EQUAL;
+		length_comparison->arguments.push_back(call);
+		length_comparison->arguments.push_back(length);
+		
+		OperatorNode *type_and_length_comparison = alloc_node<OperatorNode>();
+		type_and_length_comparison->op = OperatorNode::OP_AND;
+		type_and_length_comparison->arguments.push_back(type_comp);
+		type_and_length_comparison->arguments.push_back(length_comparison);
+		
+		p_resulting_node = type_and_length_comparison;
+	}
+	
+	
+	
+	for (int i = 0; i < p_array_pattern->array.size(); i++) {
+		PatternNode *pattern = p_array_pattern->array[i];
+		
+		Node *condition = NULL;
+		
+		ConstantNode *index = alloc_node<ConstantNode>();
+		index->value = Variant(i);
+		
+		OperatorNode *indexed_value = alloc_node<OperatorNode>();
+		indexed_value->op = OperatorNode::OP_INDEX;
+		indexed_value->arguments.push_back(p_value_to_match);
+		indexed_value->arguments.push_back(index);
+		
+		_generate_pattern(pattern, indexed_value, condition, p_bindings);
+		
+		OperatorNode *and_node = alloc_node<OperatorNode>();
+		and_node->op = OperatorNode::OP_AND;
+		and_node->arguments.push_back(p_resulting_node);
+		and_node->arguments.push_back(condition);
+		
+		p_resulting_node = and_node;
+	}
+}
+
+void GDParser::_generate_bind_pattern(PatternNode *p_bind_pattern, Node *p_value_to_match, Map<StringName, Node*> &p_bindings)
+{
+	p_bindings[p_bind_pattern->bind] = p_value_to_match;
+}
+
+void GDParser::_generate_constant_pattern(PatternNode *p_constant_pattern, Node *p_value_to_match, Node *&p_resulting_node)
+{
+	BuiltInFunctionNode *typeof_node = alloc_node<BuiltInFunctionNode>();
+	typeof_node->function = GDFunctions::TYPE_OF;
+	
+	OperatorNode *typeof_match_value = alloc_node<OperatorNode>();
+	typeof_match_value->op = OperatorNode::OP_CALL;
+	typeof_match_value->arguments.push_back(typeof_node);
+	typeof_match_value->arguments.push_back(p_value_to_match);
+	
+	OperatorNode *typeof_pattern_value = alloc_node<OperatorNode>();
+	typeof_pattern_value->op = OperatorNode::OP_CALL;
+	typeof_pattern_value->arguments.push_back(typeof_node);
+	typeof_pattern_value->arguments.push_back(p_constant_pattern->constant);
+	
+	OperatorNode *type_comp = alloc_node<OperatorNode>();
+	type_comp->op = OperatorNode::OP_EQUAL;
+	type_comp->arguments.push_back(typeof_match_value);
+	type_comp->arguments.push_back(typeof_pattern_value);
+	
+	OperatorNode *value_comp = alloc_node<OperatorNode>();
+	value_comp->op = OperatorNode::OP_EQUAL;
+	value_comp->arguments.push_back(p_constant_pattern->constant);
+	value_comp->arguments.push_back(p_value_to_match);
+	
+	
+	OperatorNode *comparison = alloc_node<OperatorNode>();
+	comparison->op = OperatorNode::OP_AND;
+	comparison->arguments.push_back(type_comp);
+	comparison->arguments.push_back(value_comp);
+	
+	p_resulting_node = comparison;
+	
+}
+
+
+void GDParser::_generate_dict_pattern(PatternNode *p_dict_pattern, Node *p_value_to_match, Node *&p_resulting_node, Map<StringName, Node*> &p_bindings)
+{
+	bool open_ended = false;
+	
+	if (p_dict_pattern->array.size() > 0) {
+		open_ended = true;
+		print_line("open dictionary");
+	}
+	
+	// check length
+	
+	// typeof(value_to_match) == TYPE_DICTIONARY && value_to_match.size() >= length
+	// typeof(value_to_match) == TYPE_DICTIONARY && value_to_match.size() == length
+	
+	
+	{
+		
+		// typecheck
+		BuiltInFunctionNode *typeof_node = alloc_node<BuiltInFunctionNode>();
+		typeof_node->function = GDFunctions::TYPE_OF;
+		
+		OperatorNode *typeof_match_value = alloc_node<OperatorNode>();
+		typeof_match_value->op = OperatorNode::OP_CALL;
+		typeof_match_value->arguments.push_back(typeof_node);
+		typeof_match_value->arguments.push_back(p_value_to_match);
+		
+		IdentifierNode *typeof_dictionary = alloc_node<IdentifierNode>();
+		typeof_dictionary->name = "TYPE_DICTIONARY";
+
+		OperatorNode *type_comp = alloc_node<OperatorNode>();
+		type_comp->op = OperatorNode::OP_EQUAL;
+		type_comp->arguments.push_back(typeof_match_value);
+		type_comp->arguments.push_back(typeof_dictionary);
+
+		
+		ConstantNode *length = alloc_node<ConstantNode>();
+		length->value = Variant(open_ended ? p_dict_pattern->dictionary.size() - 1 : p_dict_pattern->dictionary.size());
+		
+		
+		OperatorNode *call = alloc_node<OperatorNode>();
+		call->op = OperatorNode::OP_CALL;
+		call->arguments.push_back(p_value_to_match);
+		
+		IdentifierNode *size = alloc_node<IdentifierNode>();
+		size->name = "size";
+		call->arguments.push_back(size);
+		
+		OperatorNode *length_comparison = alloc_node<OperatorNode>();
+		length_comparison->op = open_ended ? OperatorNode::OP_GREATER_EQUAL : OperatorNode::OP_EQUAL;
+		length_comparison->arguments.push_back(call);
+		length_comparison->arguments.push_back(length);
+		
+		OperatorNode *type_and_length_comparison = alloc_node<OperatorNode>();
+		type_and_length_comparison->op = OperatorNode::OP_AND;
+		type_and_length_comparison->arguments.push_back(type_comp);
+		type_and_length_comparison->arguments.push_back(length_comparison);
+		
+		p_resulting_node = type_and_length_comparison;
+	}
+	
+	
+	
+	for (Map<ConstantNode*, PatternNode*>::Element *e = p_dict_pattern->dictionary.front(); e; e = e->next()) {
+		
+		Node *condition = NULL;
+		
+		// chech for has, then for pattern
+		
+		IdentifierNode *has = alloc_node<IdentifierNode>();
+		has->name = "has";
+		
+		OperatorNode *has_call = alloc_node<OperatorNode>();
+		has_call->op = OperatorNode::OP_CALL;
+		has_call->arguments.push_back(p_value_to_match);
+		has_call->arguments.push_back(has);
+		has_call->arguments.push_back(e->key());
+			
+			
+		if (e->value()) {
+			
+			OperatorNode *indexed_value = alloc_node<OperatorNode>();
+			indexed_value->op = OperatorNode::OP_INDEX;
+			indexed_value->arguments.push_back(p_value_to_match);
+			indexed_value->arguments.push_back(e->key());
+			
+			_generate_pattern(e->value(), indexed_value, condition, p_bindings);
+			
+			OperatorNode *has_and_pattern = alloc_node<OperatorNode>();
+			has_and_pattern->op = OperatorNode::OP_AND;
+			has_and_pattern->arguments.push_back(has_call);
+			has_and_pattern->arguments.push_back(condition);
+			
+			condition = has_and_pattern;
+
+		} else {
+			condition = has_call;
+		}
+		
+		
+		
+		
+		OperatorNode *and_node = alloc_node<OperatorNode>();
+		and_node->op = OperatorNode::OP_AND;
+		and_node->arguments.push_back(p_resulting_node);
+		and_node->arguments.push_back(condition);
+		
+		p_resulting_node = and_node;
+	}
+	
+}
+
+
+void GDParser::_generate_pattern(PatternNode *p_pattern, Node *p_node_to_match, Node *&p_resulting_node, Map<StringName, Node*> &p_bindings)
+{
+	switch (p_pattern->pt_type) {
+		case PatternNode::PT_CONSTANT: {
+			_generate_constant_pattern(p_pattern, p_node_to_match, p_resulting_node);
+		} break;
+		case PatternNode::PT_BIND: {
+			_generate_bind_pattern(p_pattern, p_node_to_match, p_bindings);
+			
+			ConstantNode *true_value = alloc_node<ConstantNode>();
+			true_value->value = Variant(true);
+			p_resulting_node = true_value;
+		} break;
+		case PatternNode::PT_ARRAY: {
+			_generate_array_pattern(p_pattern, p_node_to_match, p_resulting_node, p_bindings);
+		} break;
+		case PatternNode::PT_DICTIONARY: {
+			_generate_dict_pattern(p_pattern, p_node_to_match, p_resulting_node, p_bindings);
+		} break;
+		case PatternNode::PT_WILDCARD: {
+			// simply generate a `true`
+			ConstantNode *true_value = alloc_node<ConstantNode>();
+			true_value->value = Variant(true);
+			p_resulting_node = true_value;
+		} break;
+		default: {
+			
+		} break;
+	}
+}
+
+void GDParser::_transform_match_statment(BlockNode *p_block, MatchNode *p_match_statement)
+{
+	LocalVarNode *val_to_match = alloc_node<LocalVarNode>();
+	val_to_match->name = "#match_value"; // use a name that can't be referenced in GDscript
+	val_to_match->assign = p_match_statement->val_to_match;
+
+	p_block->statements.push_back(val_to_match);
+
+	
+	IdentifierNode *id = alloc_node<IdentifierNode>();
+	id->name=val_to_match->name;
+
+	OperatorNode *op = alloc_node<OperatorNode>();
+	op->op=OperatorNode::OP_ASSIGN;
+	op->arguments.push_back(id);
+	op->arguments.push_back(val_to_match->assign);
+	p_block->statements.push_back(op);
+	
+	
+	
+	for (int i = 0; i < p_match_statement->branches.size(); i++) {
+		PatternBranchNode *branch = p_match_statement->branches[i];
+		Map<StringName, Node*> bindings;
+		Node *resulting_node;
+		_generate_pattern(branch->pattern, id, resulting_node, bindings);
+		
+		// TEMP: if's for testing
+		ControlFlowNode *cf_if = alloc_node<ControlFlowNode>();
+		cf_if->cf_type = ControlFlowNode::CF_IF;
+		cf_if->arguments.push_back(resulting_node);
+		cf_if->body = branch->body;
+		
+		p_block->statements.push_back(cf_if);
+	}
+	
 }
 
 void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
@@ -2161,8 +2481,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				
 				tokenizer->advance();
 				
-				ControlFlowNode *match_node = memnew(ControlFlowNode);
-				match_node->cf_type = ControlFlowNode::CF_MATCH;
+				MatchNode *match_node = alloc_node<MatchNode>();
 				
 				Node *val_to_match = _parse_and_reduce_expression(p_block, p_static);
 				
@@ -2173,16 +2492,32 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 					return;
 				}
 				
-				match_node->arguments.push_back(val_to_match);
+				match_node->val_to_match = val_to_match;
 				
 				if (!_enter_indent_block()) {
 					_set_error("Expected indented pattern matching block after 'match'");
 					return;
 				}
 				
-				_parse_pattern_block(match_node->branches, p_static);
-
-				p_block->statements.push_back(match_node);
+				BlockNode *compiled_branches = alloc_node<BlockNode>();
+				compiled_branches->parent_block = p_block;
+				compiled_branches->parent_class = p_block->parent_class;
+				
+				p_block->sub_blocks.push_back(compiled_branches);
+				
+				_parse_pattern_block(compiled_branches, match_node->branches, p_static);
+				
+				_transform_match_statment(compiled_branches, match_node);
+				
+				match_node->compiled_block = compiled_branches;
+				
+				ControlFlowNode *match_cf_node = alloc_node<ControlFlowNode>();
+				match_cf_node->cf_type = ControlFlowNode::CF_MATCH;
+				match_cf_node->match = match_node;
+				
+				p_block->statements.push_back(match_cf_node);
+				
+				_end_statement();
 			} break;
 			case GDTokenizer::TK_PR_ASSERT: {
 

@@ -264,14 +264,15 @@ public:
 		enum PatternType {
 			PT_CONSTANT,
 			PT_BIND,
-			PT_DICITIONARY,
+			PT_DICTIONARY,
 			PT_ARRAY,
-			PT_IGNORE_REST
+			PT_IGNORE_REST,
+			PT_WILDCARD
 		};
 		
 		PatternType pt_type;
 		
-		ConstantNode *constant;
+		Node *constant;
 		StringName bind;
 		Map<ConstantNode*, PatternNode*> dictionary;
 		Vector<PatternNode*> array;
@@ -281,6 +282,13 @@ public:
 	struct PatternBranchNode : public Node {
 		PatternNode *pattern;
 		BlockNode *body;
+	};
+	
+	struct MatchNode : public Node {
+		Node *val_to_match;
+		Vector<PatternBranchNode*> branches;
+		
+		BlockNode *compiled_block;
 	};
 
 	struct ControlFlowNode : public Node {
@@ -299,7 +307,8 @@ public:
 		Vector<Node*> arguments;
 		BlockNode *body;
 		BlockNode *body_else;
-		Vector<PatternBranchNode*> branches;
+		
+		MatchNode *match;
 
 		ControlFlowNode *_else; //used for if
 		ControlFlowNode() { type=TYPE_CONTROL_FLOW; cf_type=CF_IF; body=NULL; body_else=NULL;}
@@ -479,9 +488,17 @@ private:
 
 	
 	// TODO
-	void _parse_pattern_block(Vector<PatternBranchNode*> &p_block, bool p_static);
+	void _parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode*> &p_branches, bool p_static);
 	
 	PatternNode *_parse_pattern(bool p_static);
+	void _transform_match_statment(BlockNode *p_block, MatchNode *p_match_statement);
+	
+	void _generate_pattern(PatternNode *p_pattern, Node *p_node_to_match, Node *&p_resulting_node, Map<StringName, Node*> &p_bindings);
+	
+	void _generate_array_pattern(PatternNode *p_array_pattern, Node *p_value_to_match, Node *&p_resulting_node, Map<StringName, Node*> &p_bindings);
+	void _generate_bind_pattern(PatternNode *p_bind_pattern, Node *p_value_to_match, Map<StringName, Node*> &p_bindings);
+	void _generate_constant_pattern(PatternNode *p_constant_pattern, Node *p_value_to_match, Node *&p_resulting_node);
+	void _generate_dict_pattern(PatternNode *p_dict_pattern, Node *p_value_to_match, Node *&p_resulting_node, Map<StringName, Node*> &p_bindings);
 	
 	
 	void _parse_block(BlockNode *p_block,bool p_static);
