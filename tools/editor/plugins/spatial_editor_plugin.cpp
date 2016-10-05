@@ -2348,7 +2348,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	message_time=0;
 
 	spatial_editor=p_spatial_editor;
-	Control *c=memnew(Control);
+	ViewportContainer *c=memnew(ViewportContainer);
 	add_child(c);
 	c->set_area_as_parent_rect();
 	viewport = memnew( Viewport );
@@ -3973,7 +3973,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 
 
-	settings_light_base = memnew( Control );
+	settings_light_base = memnew( ViewportContainer );
 	settings_light_base->set_custom_minimum_size(Size2(128,128));
 	settings_light_base->connect("input_event",this,"_default_light_angle_input");
 	settings_vbc->add_margin_child(TTR("Default Light Normal:"),settings_light_base);

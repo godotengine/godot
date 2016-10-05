@@ -430,7 +430,7 @@ private:
 	float settings_default_light_rot_x;
 	float settings_default_light_rot_y;
 
-	Control *settings_light_base;
+	ViewportContainer *settings_light_base;
 	Viewport *settings_light_vp;
 	ColorPickerButton *settings_ambient_color;
 	Image settings_light_dir_image;

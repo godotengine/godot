@@ -233,7 +233,6 @@ public:
 	virtual RID render_target_create()=0;
 	virtual void render_target_set_size(RID p_render_target,int p_width, int p_height)=0;
 	virtual RID render_target_get_texture(RID p_render_target) const=0;
-	virtual Image render_target_get_image(RID p_render_target) const=0;
 	virtual void render_target_set_flag(RID p_render_target,RenderTargetFlags p_flag,bool p_value)=0;
 	virtual bool render_target_renedered_in_frame(RID p_render_target)=0;
 

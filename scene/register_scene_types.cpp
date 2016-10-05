@@ -66,6 +66,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/viewport_container.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/file_dialog.h"
@@ -300,7 +301,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_virtual_type<InstancePlaceholder>();
 
 	ObjectTypeDB::register_type<Viewport>();
-	ObjectTypeDB::register_virtual_type<RenderTargetTexture>();
+	ObjectTypeDB::register_type<ViewportTexture>();
 	ObjectTypeDB::register_type<HTTPRequest>();
 	ObjectTypeDB::register_type<Timer>();
 	ObjectTypeDB::register_type<CanvasLayer>();
@@ -390,6 +391,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<ConfirmationDialog>();
 	ObjectTypeDB::register_type<VideoPlayer>();
 	ObjectTypeDB::register_type<MarginContainer>();
+	ObjectTypeDB::register_type<ViewportContainer>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

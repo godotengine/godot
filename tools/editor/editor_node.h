@@ -79,7 +79,7 @@
 
 #include "fileserver/editor_file_server.h"
 #include "editor_resource_preview.h"
-
+#include "scene/gui/viewport_container.h"
 
 
 #include "progress_dialog.h"
@@ -207,7 +207,7 @@ private:
 
 	//Ref<ResourceImportMetadata> scene_import_metadata;
 
-	Control* scene_root_parent;
+	PanelContainer* scene_root_parent;
 	Control *gui_base;
 	VBoxContainer *main_vbox;
 

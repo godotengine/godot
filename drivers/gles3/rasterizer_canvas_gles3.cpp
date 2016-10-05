@@ -111,6 +111,15 @@ void RasterizerCanvasGLES3::light_internal_free(RID p_rid) {
 
 void RasterizerCanvasGLES3::canvas_begin(){
 
+	if (storage->frame.current_rt && storage->frame.clear_request) {
+		// a clear request may be pending, so do it
+
+		glClearColor( storage->frame.clear_request_color.r, storage->frame.clear_request_color.g, storage->frame.clear_request_color.b, storage->frame.clear_request_color.a );
+		glClear(GL_COLOR_BUFFER_BIT);
+		storage->frame.clear_request=false;
+
+	}
+
 	/*canvas_shader.unbind();
 	canvas_shader.set_custom_shader(0);
 	canvas_shader.set_conditional(CanvasShaderGLES2::USE_MODULATE,false);
@@ -504,7 +513,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item,Item *curr
 					}
 
 					if (rect->flags&CANVAS_RECT_FLIP_V) {
-						src_rect.size.x*=-1;
+						src_rect.size.y*=-1;
 					}
 
 					if (rect->flags&CANVAS_RECT_TRANSPOSE) {
@@ -769,14 +778,7 @@ void RasterizerGLES2::_canvas_item_setup_shader_params(CanvasItemMaterial *mater
 void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const Color& p_modulate,Light *p_light) {
 
 
-	if (storage->frame.clear_request) {
-		// a clear request may be pending, so do it
-		glClearColor( storage->frame.clear_request_color.r, storage->frame.clear_request_color.g, storage->frame.clear_request_color.b, storage->frame.clear_request_color.a );
-		glClear(GL_COLOR_BUFFER_BIT);
-		storage->frame.clear_request=false;
 
-
-	}
 
 	Item *current_clip=NULL;
 	RasterizerStorageGLES3::Shader *shader_cache=NULL;

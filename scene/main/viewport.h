@@ -48,9 +48,9 @@ class Label;
 class Timer;
 class Viewport;
 
-class RenderTargetTexture : public Texture {
+class ViewportTexture : public Texture {
 
-	OBJ_TYPE( RenderTargetTexture, Texture );
+	OBJ_TYPE( ViewportTexture, Texture );
 
 	int flags;
 friend class Viewport;
@@ -70,7 +70,7 @@ public:
 	virtual void set_flags(uint32_t p_flags);
 	virtual uint32_t get_flags() const;
 
-	RenderTargetTexture(Viewport *p_vp=NULL);
+	ViewportTexture(Viewport *p_vp=NULL);
 
 };
 
@@ -88,10 +88,10 @@ public:
 
 private:
 
-friend class RenderTargetTexture;
+friend class ViewportTexture;
 
 
-	Control *parent_control;
+
 	Viewport *parent;
 
 	Listener *listener;
@@ -101,7 +101,6 @@ friend class RenderTargetTexture;
 	Set<Camera*> cameras;
 
 	RID viewport;
-	RID canvas_item;
 	RID current_canvas;
 
 	bool audio_listener;
@@ -171,9 +170,10 @@ friend class RenderTargetTexture;
 	void _update_global_transform();
 
 
+	bool disable_3d;
 	UpdateMode update_mode;
 	RID texture_rid;
-	Ref<RenderTargetTexture> texture;
+	Ref<ViewportTexture> texture;
 
 
 	struct GUI {
@@ -342,15 +342,10 @@ public:
 	bool get_clear_on_new_frame() const;
 	void clear();
 
-	void set_filter(bool p_enable);
-	bool get_filter() const;
-
-	void set_gen_mipmaps(bool p_enable);
-	bool get_gen_mipmaps() const;
 
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
-	Ref<RenderTargetTexture> get_texture() const;
+	Ref<ViewportTexture> get_texture() const;
 
 
 	Vector2 get_camera_coords(const Vector2& p_viewport_coords) const;
@@ -367,6 +362,9 @@ public:
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
+
+	void set_disable_3d(bool p_disable);
+	bool is_3d_disabled() const;
 
 	void set_attach_to_screen_rect(const Rect2& p_rect);
 	Rect2 get_attach_to_screen_rect() const;

@@ -266,13 +266,11 @@ void EditorNode::_notification(int p_what) {
 				circle_step=0;
 
 			circle_step_msec=tick;
-		circle_step_frame=frame+1;
+			circle_step_frame=frame+1;
 
 			update_menu->set_icon(gui_base->get_icon("Progress"+itos(circle_step+1),"EditorIcons"));
 
 		}
-
-		scene_root->set_size_override(true,Size2(Globals::get_singleton()->get("display/width"),Globals::get_singleton()->get("display/height")));
 
 		editor_selection->update();
 
@@ -300,7 +298,7 @@ void EditorNode::_notification(int p_what) {
 	}
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-
+		get_tree()->get_root()->set_disable_3d(true);
 		//MessageQueue::get_singleton()->push_call(this,"_get_scene_metadata");
 		get_tree()->set_editor_hint(true);
 		get_tree()->get_root()->set_as_audio_listener(false);
@@ -5663,6 +5661,7 @@ EditorNode::EditorNode() {
 	scene_root_parent->set_custom_minimum_size(Size2(0,80)*EDSCALE);
 
 
+
 	//Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel","TabContainer");
 	//scene_root_parent->add_style_override("panel",sp);
 
@@ -5676,6 +5675,8 @@ EditorNode::EditorNode() {
 
 
 	scene_root = memnew( Viewport );
+	scene_root->set_disable_3d(true);
+
 
 
 	//scene_root_base->add_child(scene_root);
@@ -5683,7 +5684,7 @@ EditorNode::EditorNode() {
 	VisualServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport(),true);
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
-	scene_root->set_size_override(true,Size2(Globals::get_singleton()->get("display/width"),Globals::get_singleton()->get("display/height")));
+	//scene_root->set_size_override(true,Size2(Globals::get_singleton()->get("display/width"),Globals::get_singleton()->get("display/height")));
 
 //	scene_root->set_world_2d( Ref<World2D>( memnew( World2D )) );
 
@@ -5694,6 +5695,7 @@ EditorNode::EditorNode() {
 		viewport->set_margin(Margin(i),sp->get_margin(Margin(i)));
 	}*/
 	scene_root_parent->add_child(viewport);
+
 
 
 	PanelContainer *top_region = memnew( PanelContainer );
@@ -6672,6 +6674,7 @@ EditorNode::EditorNode() {
 	load_error_dialog->set_title(TTR("Load Errors"));
 	load_error_dialog->set_child_rect(load_errors);
 	gui_base->add_child(load_error_dialog);
+
 
 	//EditorImport::add_importer( Ref<EditorImporterCollada>( memnew(EditorImporterCollada )));
 

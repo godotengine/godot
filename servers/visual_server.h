@@ -424,6 +424,7 @@ public:
 
 	virtual void viewport_set_size(RID p_viewport,int p_width,int p_height)=0;
 	virtual void viewport_set_active(RID p_viewport,bool p_active)=0;
+	virtual void viewport_set_parent_viewport(RID p_viewport,RID p_parent_viewport)=0;
 
 	virtual void viewport_attach_to_screen(RID p_viewport,const Rect2& p_rect=Rect2(),int p_screen=0)=0;
 	virtual void viewport_detach(RID p_viewport)=0;
@@ -442,18 +443,18 @@ public:
 	enum ViewportClearMode {
 
 		VIEWPORT_CLEAR_ALWAYS,
-		VIWEPORT_CLEAR_NEVER,
+		VIEWPORT_CLEAR_NEVER,
 		VIEWPORT_CLEAR_ONLY_NEXT_FRAME
 	};
 
 	virtual void viewport_set_clear_mode(RID p_viewport,ViewportClearMode p_clear_mode)=0;
 
 	virtual RID viewport_get_texture(RID p_viewport) const=0;
-	virtual Image viewport_capture(RID p_viewport) const=0;
 
 	virtual void viewport_set_hide_scenario(RID p_viewport,bool p_hide)=0;
 	virtual void viewport_set_hide_canvas(RID p_viewport,bool p_hide)=0;
 	virtual void viewport_set_disable_environment(RID p_viewport,bool p_disable)=0;
+	virtual void viewport_set_disable_3d(RID p_viewport,bool p_disable)=0;
 
 	virtual void viewport_attach_camera(RID p_viewport,RID p_camera)=0;
 	virtual void viewport_set_scenario(RID p_viewport,RID p_scenario)=0;

@@ -1483,12 +1483,20 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 		rt->depth=0;
 	}
 
+	Texture *tex = texture_owner.get(rt->texture);
+	tex->alloc_height=0;
+	tex->alloc_width=0;
+	tex->width=0;
+	tex->height=0;
+
 }
 
 void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 
 	if (rt->width<=0 || rt->height<=0)
 		return;
+
+	glActiveTexture(GL_TEXTURE0);
 
 	glGenFramebuffers(1, &rt->front.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->front.fbo);
@@ -1512,6 +1520,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 	GLuint color_internal_format;
 	GLuint color_format;
 	GLuint color_type;
+	Image::Format image_format;
 
 
 	if (config.fbo_format==FBO_FORMAT_16_BITS) {
@@ -1520,28 +1529,33 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 			color_internal_format=GL_RGB5_A1;
 			color_format=GL_RGBA;
 			color_type=GL_UNSIGNED_SHORT_5_5_5_1;
+			image_format=Image::FORMAT_RGBA5551;
 		} else {
 			color_internal_format=GL_RGB565;
 			color_format=GL_RGB;
 			color_type=GL_UNSIGNED_SHORT_5_6_5;
+			image_format=Image::FORMAT_RGB565;
 		}
 
-	} else if (config.fbo_format==FBO_FORMAT_32_BITS) {
+	} else if (config.fbo_format==FBO_FORMAT_32_BITS || (config.fbo_format==FBO_FORMAT_FLOAT && rt->flags[RENDER_TARGET_NO_3D])) {
 
 		if (rt->flags[RENDER_TARGET_TRANSPARENT]) {
 			color_internal_format=GL_RGBA8;
 			color_format=GL_RGBA;
 			color_type=GL_UNSIGNED_BYTE;
+			image_format=Image::FORMAT_RGBA8;
 		} else {
 			color_internal_format=GL_RGB10_A2;
 			color_format=GL_RGBA;
 			color_type=GL_UNSIGNED_INT_2_10_10_10_REV;
+			image_format=Image::FORMAT_RGBA8;//todo
 		}
 	} else if (config.fbo_format==FBO_FORMAT_FLOAT) {
 
 		color_internal_format=GL_RGBA16F;
 		color_format=GL_RGBA;
 		color_type=GL_HALF_FLOAT;
+		image_format=Image::FORMAT_RGBAH;
 	}
 
 	glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format,  rt->width, rt->height, 0, color_format, color_type, NULL);
@@ -1559,6 +1573,19 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 		ERR_FAIL_COND( status != GL_FRAMEBUFFER_COMPLETE );
 	}
 
+	Texture *tex = texture_owner.get(rt->texture);
+	tex->format=image_format;
+	tex->gl_format_cache=color_format;
+	tex->gl_type_cache=color_type;
+	tex->gl_internal_format_cache=color_internal_format;
+	tex->tex_id=rt->front.color;
+	tex->width=rt->width;
+	tex->alloc_width=rt->width;
+	tex->height=rt->height;
+	tex->alloc_height=rt->height;
+
+
+	texture_set_flags(rt->texture,tex->flags);
 
 	if (!rt->flags[RENDER_TARGET_NO_SAMPLING]) {
 
@@ -1662,6 +1689,31 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 RID RasterizerStorageGLES3::render_target_create(){
 
 	RenderTarget *rt = memnew( RenderTarget );
+
+	Texture * t = memnew( Texture );
+
+	t->flags=0;
+	t->width=0;
+	t->height=0;
+	t->alloc_height=0;
+	t->alloc_width=0;
+	t->format=Image::FORMAT_R8;
+	t->target=GL_TEXTURE_2D;
+	t->gl_format_cache=0;
+	t->gl_internal_format_cache=0;
+	t->gl_type_cache=0;
+	t->data_size=0;
+	t->compressed=false;
+	t->srgb=false;
+	t->total_data_size=0;
+	t->ignore_mipmaps=false;
+	t->mipmaps=0;
+	t->active=true;
+	t->tex_id=0;
+
+
+	rt->texture=texture_owner.make_rid(t);
+
 	return render_target_owner.make_rid(rt);
 }
 
@@ -1686,13 +1738,9 @@ RID RasterizerStorageGLES3::render_target_get_texture(RID p_render_target) const
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt,RID());
 
-
-	return RID();
+	return rt->texture;
 }
-Image RasterizerStorageGLES3::render_target_get_image(RID p_render_target) const{
 
-	return Image();
-}
 void RasterizerStorageGLES3::render_target_set_flag(RID p_render_target,RenderTargetFlags p_flag,bool p_value) {
 
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
@@ -1889,12 +1937,16 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 
 		RenderTarget *rt = render_target_owner.getornull(p_rid);
 		_render_target_clear(rt);
+		Texture *t=texture_owner.get(rt->texture);
+		texture_owner.free(rt->texture);
+		memdelete(t);
 		render_target_owner.free(p_rid);
 		memdelete(rt);
 
 	} else if (texture_owner.owns(p_rid)) {
 		// delete the texture
 		Texture *texture = texture_owner.get(p_rid);
+		ERR_FAIL_COND_V(texture->render_target,true); //cant free the render target texture, dude
 		info.texture_mem-=texture->total_data_size;
 		texture_owner.free(p_rid);
 		memdelete(texture);

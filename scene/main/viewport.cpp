@@ -51,35 +51,37 @@
 
 #include "globals.h"
 
-int RenderTargetTexture::get_width() const {
+int ViewportTexture::get_width() const {
 
 	ERR_FAIL_COND_V(!vp,0);
 	return vp->size.width;
 }
-int RenderTargetTexture::get_height() const{
+int ViewportTexture::get_height() const{
 
 	ERR_FAIL_COND_V(!vp,0);
 	return vp->size.height;
 }
-Size2 RenderTargetTexture::get_size() const{
+Size2 ViewportTexture::get_size() const{
 
 	ERR_FAIL_COND_V(!vp,Size2());
 	return vp->size;
 }
-RID RenderTargetTexture::get_rid() const{
+RID ViewportTexture::get_rid() const{
 
 	ERR_FAIL_COND_V(!vp,RID());
 	return vp->texture_rid;
 }
 
-bool RenderTargetTexture::has_alpha() const{
+bool ViewportTexture::has_alpha() const{
 
 	return false;
 }
 
-void RenderTargetTexture::set_flags(uint32_t p_flags){
+void ViewportTexture::set_flags(uint32_t p_flags){
 
-	ERR_FAIL_COND(!vp);
+	if (!vp)
+		return;
+
 	if (p_flags&FLAG_FILTER)
 		flags=FLAG_FILTER;
 	else
@@ -89,12 +91,12 @@ void RenderTargetTexture::set_flags(uint32_t p_flags){
 
 }
 
-uint32_t RenderTargetTexture::get_flags() const{
+uint32_t ViewportTexture::get_flags() const{
 
 	return flags;
 }
 
-RenderTargetTexture::RenderTargetTexture(Viewport *p_vp){
+ViewportTexture::ViewportTexture(Viewport *p_vp){
 
 	vp=p_vp;
 	flags=0;
@@ -207,7 +209,7 @@ void Viewport::_parent_draw() {
 
 void Viewport::_parent_visibility_changed() {
 
-
+/*
 	if (parent_control) {
 
 		Control *c = parent_control;
@@ -216,14 +218,14 @@ void Viewport::_parent_visibility_changed() {
 		_update_listener();
 		_update_listener_2d();
 	}
-
+*/
 
 }
 
 
 void Viewport::_vp_enter_tree() {
 
-	if (parent_control) {
+/*	if (parent_control) {
 
 		Control *cparent=parent_control;
 		RID parent_ci = cparent->get_canvas_item();
@@ -240,7 +242,7 @@ void Viewport::_vp_enter_tree() {
 //		VisualServer::get_singleton()->viewport_attach_to_screen(viewport,0);
 
 	}
-
+*/
 
 }
 
@@ -327,24 +329,10 @@ void Viewport::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			if (get_parent()) {
-				Node *parent=get_parent();
-				if (parent) {
-					parent_control=parent->cast_to<Control>();
-				}
-			}
-
-
-			parent=NULL;
-			Node *parent_node=get_parent();
-
-
-			while(parent_node) {
-
-				parent = parent_node->cast_to<Viewport>();
-				if (parent)
-					break;
-
-				parent_node=parent_node->get_parent();
+				parent = get_parent()->get_viewport();
+				VisualServer::get_singleton()->viewport_set_parent_viewport(viewport,parent->get_viewport());
+			} else {
+				parent=NULL;
 			}
 
 			current_canvas=find_world_2d()->get_canvas();
@@ -434,7 +422,7 @@ void Viewport::_notification(int p_what) {
 			}
 
 			remove_from_group("_viewports");
-			parent_control=NULL;
+
 
 			VS::get_singleton()->viewport_set_active(viewport,false);
 
@@ -1263,7 +1251,7 @@ bool Viewport::is_set_as_render_target() const{
 void Viewport::set_update_mode(UpdateMode p_mode){
 
 	update_mode=p_mode;
-//	VS::get_singleton()->viewport_set_update_mode(viewport,VS::RenderTargetUpdateMode(p_mode));
+	VS::get_singleton()->viewport_set_update_mode(viewport,VS::ViewportUpdateMode(p_mode));
 
 }
 Viewport::UpdateMode Viewport::get_update_mode() const{
@@ -1282,7 +1270,7 @@ Image Viewport::get_screen_capture() const {
 	return Image();
 }
 
-Ref<RenderTargetTexture> Viewport::get_texture() const {
+Ref<ViewportTexture> Viewport::get_texture() const {
 
 	return texture;
 }
@@ -1290,7 +1278,7 @@ Ref<RenderTargetTexture> Viewport::get_texture() const {
 void Viewport::set_vflip(bool p_enable) {
 
 	vflip=p_enable;
-//	VisualServer::get_singleton()->viewport_set_vflip(viewport,p_enable);
+	VisualServer::get_singleton()->viewport_set_vflip(viewport,p_enable);
 }
 
 bool Viewport::get_vflip() const{
@@ -1315,30 +1303,6 @@ void Viewport::clear() {
 //	VisualServer::get_singleton()->viewport_clear(viewport);
 }
 
-void Viewport::set_filter(bool p_enable) {
-
-	texture->set_flags(p_enable?int(Texture::FLAG_FILTER):int(0));
-
-}
-
-bool Viewport::get_filter() const{
-
-	return (texture->get_flags()&Texture::FLAG_FILTER)!=0;
-}
-
-void Viewport::set_gen_mipmaps(bool p_enable) {
-
-	//texture->set_flags(p_enable?int(Texture::FLAG_FILTER):int(0));
-	gen_mipmaps=p_enable;
-
-}
-
-bool Viewport::get_gen_mipmaps() const{
-
-	//return (texture->get_flags()&Texture::FLAG_FILTER)!=0;
-	return gen_mipmaps;
-}
-
 
 Matrix32 Viewport::_get_input_pre_xform() const {
 
@@ -1356,9 +1320,9 @@ Matrix32 Viewport::_get_input_pre_xform() const {
 
 Vector2 Viewport::_get_window_offset() const {
 
-	if (parent_control) {
-		return (parent_control->get_viewport()->get_final_transform() * parent_control->get_global_transform_with_canvas()).get_origin();
-	}
+//	if (parent_control) {
+//		return (parent_control->get_viewport()->get_final_transform() * parent_control->get_global_transform_with_canvas()).get_origin();
+//	}
 
 	return Vector2();
 }
@@ -1454,8 +1418,6 @@ void Viewport::_vp_input(const InputEvent& p_ev) {
 	}
 #endif
 
-	if (parent_control && !parent_control->is_visible())
-		return;
 
 	if (to_screen_rect==Rect2())
 		return; //if render target, can't get input events
@@ -1480,8 +1442,8 @@ void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 	}
 #endif
 
-	if (parent_control && !parent_control->is_visible())
-		return;
+//	if (parent_control && !parent_control->is_visible())
+//		return;
 
 	if (to_screen_rect==Rect2())
 		return; //if render target, can't get input events
@@ -2575,6 +2537,16 @@ bool Viewport::is_input_disabled() const {
 	return disable_input;
 }
 
+void Viewport::set_disable_3d(bool p_disable) {
+	disable_3d=p_disable;
+	VS::get_singleton()->viewport_set_disable_3d(viewport,p_disable);
+}
+
+bool Viewport::is_3d_disabled() const {
+
+	return disable_3d;
+}
+
 Variant Viewport::gui_get_drag_data() const {
 	return gui.drag_data;
 }
@@ -2648,17 +2620,10 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_clear_on_new_frame"), &Viewport::get_clear_on_new_frame);
 
 	ObjectTypeDB::bind_method(_MD("clear"), &Viewport::clear);
-
-	ObjectTypeDB::bind_method(_MD("set_filter","enable"), &Viewport::set_filter);
-	ObjectTypeDB::bind_method(_MD("get_filter"), &Viewport::get_filter);
-
-	ObjectTypeDB::bind_method(_MD("set_gen_mipmaps","enable"), &Viewport::set_gen_mipmaps);
-	ObjectTypeDB::bind_method(_MD("get_gen_mipmaps"), &Viewport::get_gen_mipmaps);
-
 	ObjectTypeDB::bind_method(_MD("set_update_mode","mode"), &Viewport::set_update_mode);
 	ObjectTypeDB::bind_method(_MD("get_update_mode"), &Viewport::get_update_mode);
 
-	ObjectTypeDB::bind_method(_MD("get_texture:RenderTargetTexture"), &Viewport::get_texture);
+	ObjectTypeDB::bind_method(_MD("get_texture:ViewportTexture"), &Viewport::get_texture);
 
 	ObjectTypeDB::bind_method(_MD("set_physics_object_picking","enable"), &Viewport::set_physics_object_picking);
 	ObjectTypeDB::bind_method(_MD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
@@ -2690,6 +2655,9 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_disable_input","disable"), &Viewport::set_disable_input);
 	ObjectTypeDB::bind_method(_MD("is_input_disabled"), &Viewport::is_input_disabled);
 
+	ObjectTypeDB::bind_method(_MD("set_disable_3d","disable"), &Viewport::set_disable_3d);
+	ObjectTypeDB::bind_method(_MD("is_3d_disabled"), &Viewport::is_3d_disabled);
+
 	ObjectTypeDB::bind_method(_MD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
 	ObjectTypeDB::bind_method(_MD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
 
@@ -2700,13 +2668,12 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), _SCS("set_transparent_background"), _SCS("has_transparent_background") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/v_flip"), _SCS("set_vflip"), _SCS("get_vflip") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/clear_on_new_frame"), _SCS("set_clear_on_new_frame"), _SCS("get_clear_on_new_frame") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/filter"), _SCS("set_filter"), _SCS("get_filter") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/gen_mipmaps"), _SCS("set_gen_mipmaps"), _SCS("get_gen_mipmaps") );
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target/update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), _SCS("set_update_mode"), _SCS("get_update_mode") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_2d"), _SCS("set_as_audio_listener_2d"), _SCS("is_audio_listener_2d") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_3d"), _SCS("set_as_audio_listener"), _SCS("is_audio_listener") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"physics/object_picking"), _SCS("set_physics_object_picking"), _SCS("get_physics_object_picking") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gui/disable_input"), _SCS("set_disable_input"), _SCS("is_input_disabled") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"3d/disable_3d"), _SCS("set_disable_3d"), _SCS("is_3d_disabled") );
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 
@@ -2727,6 +2694,7 @@ Viewport::Viewport() {
 	world_2d = Ref<World2D>( memnew( World2D ));
 
 	viewport = VisualServer::get_singleton()->viewport_create();
+	texture_rid=VisualServer::get_singleton()->viewport_get_texture(viewport);
 	internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener=false;
 	internal_listener_2d = SpatialSound2DServer::get_singleton()->listener_create();
@@ -2744,7 +2712,7 @@ Viewport::Viewport() {
 	clear_on_new_frame=true;
 	//clear=true;
 	update_mode=UPDATE_WHEN_VISIBLE;
-	texture = Ref<RenderTargetTexture>( memnew( RenderTargetTexture(this) ) );
+	texture = Ref<ViewportTexture>( memnew( ViewportTexture(this) ) );
 
 	physics_object_picking=false;
 	physics_object_capture=0;
@@ -2759,6 +2727,7 @@ Viewport::Viewport() {
 	unhandled_key_input_group = "_vp_unhandled_key_input"+id;
 
 	disable_input=false;
+	disable_3d=false;
 
 	//window tooltip
 	gui.tooltip_timer = -1;
@@ -2773,7 +2742,7 @@ Viewport::Viewport() {
 	gui.canvas_sort_index=0;
 
 
-	parent_control=NULL;
+
 
 
 }

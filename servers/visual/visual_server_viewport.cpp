@@ -1,6 +1,7 @@
 #include "visual_server_viewport.h"
 #include "visual_server_global.h"
 #include "visual_server_canvas.h"
+#include "globals.h"
 
 void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 
@@ -50,7 +51,12 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 	}
 #endif
 
-	VSG::rasterizer->clear_render_target(Color(0.5,0.5,0.5,1.0));
+	if (p_viewport->clear_mode!=VS::VIEWPORT_CLEAR_NEVER) {
+		VSG::rasterizer->clear_render_target(clear_color);
+		if (p_viewport->clear_mode==VS::VIEWPORT_CLEAR_ONLY_NEXT_FRAME) {
+			p_viewport->clear_mode=VS::VIEWPORT_CLEAR_NEVER;
+		}
+	}
 
 	if (!p_viewport->hide_canvas) {
 		int i=0;
@@ -161,10 +167,10 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 				light=light->shadows_next_ptr;
 			}
 
-			VSG::rasterizer->restore_render_target();
 		//	VSG::canvas_render->reset_canvas();
 		}
 
+		VSG::rasterizer->restore_render_target();
 
 
 #if 0
@@ -175,6 +181,8 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 
 		}
 #endif
+
+
 		for (Map<Viewport::CanvasKey,Viewport::CanvasData*>::Element *E=canvas_map.front();E;E=E->next()) {
 
 			VisualServerCanvas::Canvas *canvas = static_cast<VisualServerCanvas::Canvas*>(E->get()->canvas);
@@ -226,6 +234,10 @@ void VisualServerViewport::draw_viewports() {
 
 	//draw viewports
 
+	clear_color=GLOBAL_DEF("rendering/viewport/default_clear_color",Color(0.5,0.5,0.5));
+
+
+	active_viewports.sort_custom<ViewportSort>();
 
 	for(int i=0;i<active_viewports.size();i++) {
 
@@ -297,6 +309,14 @@ void VisualServerViewport::viewport_set_active(RID p_viewport,bool p_active) {
 
 }
 
+void VisualServerViewport::viewport_set_parent_viewport(RID p_viewport,RID p_parent_viewport) {
+
+	Viewport * viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->parent=p_parent_viewport;
+}
+
 void VisualServerViewport::viewport_set_clear_mode(RID p_viewport,VS::ViewportClearMode p_clear_mode) {
 
 	Viewport * viewport = viewport_owner.getornull(p_viewport);
@@ -350,13 +370,6 @@ RID VisualServerViewport::viewport_get_texture(RID p_viewport) const{
 	return VSG::storage->render_target_get_texture(viewport->render_target);
 
 }
-Image VisualServerViewport::viewport_capture(RID p_viewport) const{
-
-	const Viewport * viewport = viewport_owner.getornull(p_viewport);
-	ERR_FAIL_COND_V(!viewport,Image());
-	return VSG::storage->render_target_get_image(viewport->render_target);
-
-}
 
 void VisualServerViewport::viewport_set_hide_scenario(RID p_viewport,bool p_hide){
 
@@ -379,6 +392,16 @@ void VisualServerViewport::viewport_set_disable_environment(RID p_viewport,bool 
 
 
 	viewport->disable_environment=p_disable;
+}
+
+void VisualServerViewport::viewport_set_disable_3d(RID p_viewport,bool p_disable){
+
+	Viewport * viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+
+	viewport->disable_3d=p_disable;
+	VSG::storage->render_target_set_flag(viewport->render_target,RasterizerStorage::RENDER_TARGET_NO_3D,p_disable);
 }
 
 void VisualServerViewport::viewport_attach_camera(RID p_viewport,RID p_camera){

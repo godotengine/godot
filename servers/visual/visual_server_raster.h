@@ -807,6 +807,7 @@ public:
 	BIND3(viewport_set_size,RID,int ,int )
 
 	BIND2(viewport_set_active,RID ,bool )
+	BIND2(viewport_set_parent_viewport,RID,RID)
 
 	BIND2(viewport_set_clear_mode,RID,ViewportClearMode )
 
@@ -818,11 +819,11 @@ public:
 
 
 	BIND1RC(RID,viewport_get_texture,RID )
-	BIND1RC(Image,viewport_capture,RID )
 
 	BIND2(viewport_set_hide_scenario,RID,bool )
 	BIND2(viewport_set_hide_canvas,RID,bool )
 	BIND2(viewport_set_disable_environment,RID,bool )
+	BIND2(viewport_set_disable_3d,RID,bool )
 
 	BIND2(viewport_attach_camera,RID,RID )
 	BIND2(viewport_set_scenario,RID,RID )

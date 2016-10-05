@@ -141,7 +141,7 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target){
 		storage->frame.current_rt=rt;
 		storage->frame.clear_request=false;
 
-		glViewport(0,0,rt->width,rt->height);
+		glViewport(0,0,rt->width,rt->height);				
 
 	} else {
 		storage->frame.current_rt=NULL;
@@ -155,6 +155,7 @@ void RasterizerGLES3::restore_render_target() {
 
 	ERR_FAIL_COND(storage->frame.current_rt==NULL);
 	RasterizerStorageGLES3::RenderTarget * rt = storage->frame.current_rt;
+	glBindFramebuffer(GL_FRAMEBUFFER,rt->front.fbo);
 	glViewport(0,0,rt->width,rt->height);
 
 }
@@ -176,6 +177,7 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target,const Rec
 	ERR_FAIL_COND(!rt);
 
 	canvas->canvas_begin();
+	glDisable(GL_BLEND);
 	glBindFramebuffer(GL_FRAMEBUFFER,storage->config.system_fbo);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D,rt->front.color);

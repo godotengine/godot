@@ -395,5 +395,6 @@ LIGHT_SHADER_CODE
 //	color.rgb*=color.a;
 	gl_FragColor = color;
 
+
 }
 

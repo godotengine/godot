@@ -117,7 +117,6 @@ public:
 		bool active;
 		GLuint tex_id;
 
-
 		RenderTarget *render_target;
 
 		Texture() {
@@ -361,6 +360,8 @@ public:
 
 		bool used_in_frame;
 
+		RID texture;
+
 		RenderTarget() {
 
 			width=0;
@@ -387,7 +388,7 @@ public:
 	virtual RID render_target_create();
 	virtual void render_target_set_size(RID p_render_target,int p_width, int p_height);
 	virtual RID render_target_get_texture(RID p_render_target) const;
-	virtual Image render_target_get_image(RID p_render_target) const;
+
 	virtual void render_target_set_flag(RID p_render_target,RenderTargetFlags p_flag,bool p_value);
 	virtual bool render_target_renedered_in_frame(RID p_render_target);
 

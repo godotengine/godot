@@ -3320,7 +3320,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	vp_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	palette_split->add_child(vp_base);
 
-	Control *vp = memnew (Control);
+	ViewportContainer *vp = memnew (ViewportContainer);
+	vp->set_stretch(true);
 	vp_base->add_child(vp);
 	vp->set_area_as_parent_rect();
 	vp->add_child(p_editor->get_scene_root());
