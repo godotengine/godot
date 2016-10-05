@@ -1022,6 +1022,36 @@ void EditorSettings::set_optimize_save(bool p_optimize) {
 	optimize_save=p_optimize;
 }
 
+String EditorSettings::get_last_selected_language()
+{
+	FileAccess *file = FileAccess::open(get_project_settings_path().plus_file("last_selected_language"), FileAccess::READ);
+
+	if(file)
+	{
+		String line = file->get_line();
+		memdelete(file);
+		if (line != "")
+			return line;
+		else return "";
+	}
+
+	return "";
+}
+
+void EditorSettings::set_last_selected_language(String p_language)
+{
+	FileAccess *file = FileAccess::open(get_project_settings_path().plus_file("last_selected_language"), FileAccess::WRITE);
+
+	if(file)
+	{
+		file->store_string(p_language);
+		memdelete(file);
+		return;
+	}
+
+	memdelete(file);
+}
+
 void EditorSettings::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("erase","property"),&EditorSettings::erase);
