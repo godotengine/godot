@@ -4103,12 +4103,15 @@ void TextEdit::_confirm_completion() {
 
 
 void TextEdit::_cancel_code_hint() {
+
+	VisualServer::get_singleton()->canvas_item_set_z(get_canvas_item(), 0);
 	completion_hint="";
 	update();
 }
 
 void TextEdit::_cancel_completion() {
 
+	VisualServer::get_singleton()->canvas_item_set_z(get_canvas_item(), 0);
 	if (!completion_active)
 		return;
 
@@ -4288,6 +4291,7 @@ void TextEdit::query_code_comple() {
 
 void TextEdit::set_code_hint(const String& p_hint) {
 
+	VisualServer::get_singleton()->canvas_item_set_z(get_canvas_item(), 1);
 	completion_hint=p_hint;
 	completion_hint_offset=-0xFFFF;
 	update();
@@ -4295,7 +4299,7 @@ void TextEdit::set_code_hint(const String& p_hint) {
 
 void TextEdit::code_complete(const Vector<String> &p_strings) {
 
-
+	VisualServer::get_singleton()->canvas_item_set_z(get_canvas_item(), 1);
 	completion_strings=p_strings;
 	completion_active=true;
 	completion_current="";
