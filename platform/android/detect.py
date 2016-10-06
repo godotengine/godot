@@ -24,8 +24,8 @@ def get_opts():
 			('NDK_TARGET', 'toolchain to use for the NDK',os.environ.get("NDK_TARGET", "arm-linux-androideabi-4.9")),
 			('NDK_TARGET_X86', 'toolchain to use for the NDK x86',os.environ.get("NDK_TARGET_X86", "x86-4.9")),
 			('ndk_platform', 'compile for platform: (android-<api> , example: android-14)',"android-14"),
-			('android_arch', 'select compiler architecture: (armv7/armv6/x86)',"armv7"),
-			('android_neon','enable neon (armv7 only)',"yes"),
+			('android_arch', 'select compiler architecture: (armv8/armv7/armv6/x86)',"armv7"),
+			('android_neon','enable neon (armv7 only) NOTE: for armv8 is enabled by default',"yes"),
 			('android_stl','enable STL support in android port (for modules)',"no")
 	]
 
@@ -93,7 +93,7 @@ def configure(env):
 
 	ndk_platform=env['ndk_platform']
 
-	if env['android_arch'] not in ['armv7','armv6','x86']:
+	if env['android_arch'] not in ['armv8','armv7','armv6','x86']:
 		env['android_arch']='armv7'
 
 	if env['android_arch']=='x86':
@@ -121,21 +121,25 @@ def configure(env):
 			env.extra_suffix=".armv7.neon"+env.extra_suffix
 		else:
 			env.extra_suffix=".armv7"+env.extra_suffix
-
+        elif env['android_arch']=='armv8':
+		env.extra_suffix=".armv8.neon."+env.extra_suffix
+			
 	gcc_path=env["ANDROID_NDK_ROOT"]+"/toolchains/"+env["NDK_TARGET"]+"/prebuilt/";
 
-	if (sys.platform.find("linux")==0):
-		if (platform.architecture()[0]=='64bit' or os.path.isdir(gcc_path+"linux-x86_64/bin")): # check was not working
+	if (sys.platform.startswith("linux")):
+		if (platform.machine().endswith('64')):
 			gcc_path=gcc_path+"/linux-x86_64/bin"
 		else:
 			gcc_path=gcc_path+"/linux-x86/bin"
-	elif (sys.platform=="darwin"):
-		gcc_path=gcc_path+"/darwin-x86_64/bin" #this may be wrong
+	elif (sys.platform.startswith("darwin")):
+		gcc_path=gcc_path+"/darwin-x86_64/bin"
 		env['SHLINKFLAGS'][1] = '-shared'
 		env['SHLIBSUFFIX'] = '.so'
-	elif (os.name=="nt"):
-		gcc_path=gcc_path+"/windows-x86_64/bin" #this may be wrong
-
+	elif (os.platform.startswith('win')):
+                if (platform.machine().endswith('64')):
+			gcc_path=gcc_path+"/windows-x86_64/bin"
+                else:
+			gcc_path=gcc_path+"/windows-x86/bin"
 
 
 	env['ENV']['PATH'] = gcc_path+":"+env['ENV']['PATH']
@@ -145,6 +149,12 @@ def configure(env):
 		env['AR'] = gcc_path+"/i686-linux-android-ar"
 		env['RANLIB'] = gcc_path+"/i686-linux-android-ranlib"
 		env['AS'] = gcc_path+"/i686-linux-android-as"
+        elif env['android_arch']=='armv8':
+		env['CC'] = gcc_path+'/aarch64-linux-androideabi-gcc'
+		env['CXX'] = gcc_path+'/aarch64-linux-androideabi-g++'
+		env['AR'] = gcc_path+"/aarch64-linux-androideabi-ar"
+		env['RANLIB'] = gcc_path+"/aarch64-linux-androideabi-ranlib"
+		env['AS'] = gcc_path+"/aarch64-linux-androideabi-as"
 	else:
 		env['CC'] = gcc_path+'/arm-linux-androideabi-gcc'
 		env['CXX'] = gcc_path+'/arm-linux-androideabi-g++'
@@ -154,6 +164,8 @@ def configure(env):
 
 	if env['android_arch']=='x86':
 		env['ARCH'] = 'arch-x86'
+        elif env['android_arch']=='armv8':
+		env['ARCH'] = 'arch-arm64'
 	else:
 		env['ARCH'] = 'arch-arm'
 
@@ -178,6 +190,9 @@ def configure(env):
 			env.Append(CCFLAGS=['-mfpu=neon','-D__ARM_NEON__'])
 		else:
 			env.Append(CCFLAGS=['-mfpu=vfpv3-d16'])
+        elif env["android_arch"]=="armv8":
+		env['CCFLAGS'] = string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__GLIBC__  -Wno-psabi -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED')
+        
 
 	env.Append(LDPATH=[ld_path])
 	env.Append(LIBS=['OpenSLES'])
@@ -221,6 +236,9 @@ def configure(env):
 		elif env["android_arch"]=="armv7":
 			env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi-v7a/include"])
 			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi-v7a"])
+                elif env["android_arch"]=="armv8":
+			env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/arm64-v8a/include"])
+			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/arm64-v8a"])
 
 		env.Append(LIBS=["gnustl_static","supc++"])
 		env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cpufeatures"])
@@ -238,6 +256,8 @@ def configure(env):
 			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi"])
 		elif env["android_arch"]=="armv7":
 			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi-v7a"])
+                elif env["android_arch"]=="armv8":
+			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.9/libs/arm64-v8a"])
 		env.Append(LIBS=['gnustl_static'])
 		env.Append(CCFLAGS=["-fno-exceptions",'-DNO_SAFE_CAST'])
 
