@@ -43,11 +43,13 @@ void FileSystemDock::_get_unfolded_paths(TreeItem& root, Vector<String>& paths) 
 		return;
 
 	Variant data = root.get_metadata(0);
-	if(data.get_type() == Variant::NIL)
-		data = Variant(root.get_text(0));
-	String toSave = data;
-	if(toSave.size() != 0)
-		paths.push_back(toSave);
+	if(data.get_type() == Variant::NIL) {
+		if(!root.get_text(0).empty())
+			data = Variant(root.get_text(0));
+	}
+
+	if(data.get_type() != Variant::NIL) // For root it will be empty
+		paths.push_back(data);
 
 	for(TreeItem* c = root.get_children(); c != NULL; c = c->get_next())
 		_get_unfolded_paths(*c, paths);
@@ -62,7 +64,7 @@ void FileSystemDock::_save_unfolded() {
 }
 
 bool FileSystemDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir,Set<String>& unfolded) {
-
+	bool foldable = true;
 
 	TreeItem *item = tree->create_item(p_parent);
 	String dname=p_dir->get_name();
@@ -79,15 +81,16 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *
 	item->set_metadata(0,lpath);
 	if (lpath==path) {
 		item->select(0);
+		foldable = false;
 	}
 
 	for(int i=0;i<p_dir->get_subdir_count();i++)
-		_create_tree(item,p_dir->get_subdir(i),unfolded);
+		foldable = _create_tree(item,p_dir->get_subdir(i),unfolded) && foldable;
 
-	if(unfolded.find(lpath) == NULL)
+	if(unfolded.find(lpath) == NULL && foldable)
 		item->set_collapsed(true);
 
-	return true;
+	return foldable;
 }
 
 
