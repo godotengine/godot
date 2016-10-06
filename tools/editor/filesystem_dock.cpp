@@ -1165,9 +1165,11 @@ void FileSystemDock::_open_pressed(){
 
 	//file_options->show();
 
-	_update_files(false);
+	_update_files(last_path == path);// keep selection if dir has not been changed
 	current_path->set_text(path);
 	_push_to_history();
+
+	last_path = path;
 
 //	emit_signal("open",path);
 
@@ -1827,6 +1829,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	display_mode = DISPLAY_THUMBNAILS;
 
 	path="res://";
+	last_path = "";
 
 
 	add_constant_override("separation",3);

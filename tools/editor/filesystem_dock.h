@@ -113,6 +113,7 @@ private:
 	int history_pos;
 
 	String path;
+	String last_path;
 
 	bool initialized;
 
