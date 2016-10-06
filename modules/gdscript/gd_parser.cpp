@@ -3101,13 +3101,33 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							}
 							member._export.type=cn->value.get_type();
 							member._export.usage|=PROPERTY_USAGE_SCRIPT_VARIABLE;
+							if (cn->value.get_type()==Variant::OBJECT) {
+								Object *obj = cn->value;
+								member._export.hint=PROPERTY_HINT_RESOURCE_TYPE;
+								GDNativeClass *nc = obj->cast_to<GDNativeClass>();
+								Resource *res = obj->cast_to<Resource>();
+								if(res!=NULL) {
+									// Preloaded Resource
+									member._export.hint_string=res->get_type();
+								} else if(nc!=NULL && ObjectTypeDB::is_type(nc->get_name(),"Resource")) {
+									// Resource class
+									member._export.hint_string=nc->get_name();
+								} else {
+									// Not a resource
+									_set_error("Exported constant not a type or resource.");
+									return;
+								}
+							}
 						}
 					}
 #ifdef TOOLS_ENABLED
 					if (subexpr->type==Node::TYPE_CONSTANT && member._export.type!=Variant::NIL) {
 
 						ConstantNode *cn = static_cast<ConstantNode*>(subexpr);
-						if (cn->value.get_type()!=Variant::NIL) {
+						Object *obj = cn->value;
+						if(cn->value.get_type()==Variant::OBJECT && obj->cast_to<Resource>()==NULL) {
+							member.default_value=Variant();
+						} else if (cn->value.get_type()!=Variant::NIL) {
 							member.default_value=cn->value;
 						}
 					}
