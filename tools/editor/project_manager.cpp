@@ -142,6 +142,7 @@ private:
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
 		_path_text_changed(p);
+		get_ok()->call_deferred("grab_focus");
 	}
 
 	void _path_selected(const String& p_path) {
@@ -150,7 +151,7 @@ private:
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
 		_path_text_changed(p);
-
+		get_ok()->call_deferred("grab_focus");
 	}
 
 	void _browse_path() {
