@@ -124,19 +124,20 @@ def configure(env):
 
 	gcc_path=env["ANDROID_NDK_ROOT"]+"/toolchains/"+env["NDK_TARGET"]+"/prebuilt/";
 
-	if (sys.platform.find("linux")==0):
-		if (platform.architecture()[0]=='64bit' or os.path.isdir(gcc_path+"linux-x86_64/bin")): # check was not working
+	if (sys.platform.startswith("linux")):
+		if (platform.machine().endswith('64')):
 			gcc_path=gcc_path+"/linux-x86_64/bin"
 		else:
 			gcc_path=gcc_path+"/linux-x86/bin"
-	elif (sys.platform=="darwin"):
-		gcc_path=gcc_path+"/darwin-x86_64/bin" #this may be wrong
+	elif (sys.platform.startswith("darwin")):
+		gcc_path=gcc_path+"/darwin-x86_64/bin"
 		env['SHLINKFLAGS'][1] = '-shared'
 		env['SHLIBSUFFIX'] = '.so'
-	elif (os.name=="nt"):
-		gcc_path=gcc_path+"/windows-x86_64/bin" #this may be wrong
-
-
+	elif (os.platform.startswith('win')):
+                if (platform.machine().endswith('64')):
+			gcc_path=gcc_path+"/windows-x86_64/bin"
+                else:
+			gcc_path=gcc_path+"/windows-x86/bin"
 
 	env['ENV']['PATH'] = gcc_path+":"+env['ENV']['PATH']
 	if env['android_arch']=='x86':
