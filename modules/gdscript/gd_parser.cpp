@@ -3101,6 +3101,16 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							}
 							member._export.type=cn->value.get_type();
 							member._export.usage|=PROPERTY_USAGE_SCRIPT_VARIABLE;
+							if (cn->value.get_type()==Variant::OBJECT) {
+								Object *obj = cn->value;
+								Resource *res = obj->cast_to<Resource>();
+								if(res==NULL) {
+									_set_error("Exported constant not a type or resource.");
+									return;
+								}
+								member._export.hint=PROPERTY_HINT_RESOURCE_TYPE;
+								member._export.hint_string=res->get_type();
+							}
 						}
 					}
 #ifdef TOOLS_ENABLED
