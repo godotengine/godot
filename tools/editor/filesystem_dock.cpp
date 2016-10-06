@@ -283,7 +283,7 @@ void FileSystemDock::_dir_selected() {
 
 }
 
-void FileSystemDock::_item_collapsed(Variant& item) {
+void FileSystemDock::_item_collapsed(Variant item) {
 	if(!updating_tree)
 		_save_unfolded();
 }

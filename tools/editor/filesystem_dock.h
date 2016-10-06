@@ -147,7 +147,7 @@ private:
 
 
 	void _dir_selected();
-	void _item_collapsed(Variant& item);
+	void _item_collapsed(Variant item);
 	void _update_tree();
 	void _rescan();
 	void _set_scannig_mode();
