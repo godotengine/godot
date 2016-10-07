@@ -227,7 +227,7 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String>& p_files,Node*
 		editor_data->get_undo_redo().add_do_reference(instanced_scene);
 		editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced_scene);
 
-		String new_name = parent->validate_child_name(instanced_scene->get_name());
+		String new_name = parent->validate_child_name(instanced_scene);
 		ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
 		editor_data->get_undo_redo().add_do_method(sed,"live_debug_instance_node",edited_scene->get_path_to(parent),p_files[i],new_name);
 		editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(edited_scene->get_path_to(parent))+"/"+new_name));
@@ -254,17 +254,6 @@ bool SceneTreeDock::_cyclical_dependency_exists(const String& p_target_scene_pat
 	}
 
 	return false;
-}
-
-
-static String _get_name_num_separator() {
-	switch(EditorSettings::get_singleton()->get("scenetree_editor/duplicate_node_name_num_separator").operator int()) {
-		case 0: return "";
-		case 1: return " ";
-		case 2: return "_";
-		case 3: return "-";
-	}
-	return " ";
 }
 
 
@@ -474,37 +463,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (selection.size()==1)
 					dupsingle=dup;
 
-				String name = node->get_name();
-
-				String nums;
-				for(int i=name.length()-1;i>=0;i--) {
-					CharType n=name[i];
-					if (n>='0' && n<='9') {
-						nums=String::chr(name[i])+nums;
-					} else {
-						break;
-					}
-				}
-
-				int num=nums.to_int();
-				if (num<1)
-					num=1;
-				else
-					num++;
-
-				String nnsep = _get_name_num_separator();
-				name = name.substr(0,name.length()-nums.length()).strip_edges();
-				if ( name.substr(name.length()-nnsep.length(),nnsep.length()) == nnsep) {
-					name = name.substr(0,name.length()-nnsep.length());
-				}
-				String attempt = (name + nnsep + itos(num)).strip_edges();
-
-				while(parent->has_node(attempt)) {
-					num++;
-					attempt = (name + nnsep + itos(num)).strip_edges();
-				}
-
-				dup->set_name(attempt);
+				dup->set_name(parent->validate_child_name(dup));
 
 				editor_data->get_undo_redo().add_do_method(parent,"_add_child_below_node",node, dup);
 				for (List<Node*>::Element *F=owned.front();F;F=F->next()) {
@@ -522,8 +481,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
 
-				editor_data->get_undo_redo().add_do_method(sed,"live_debug_duplicate_node",edited_scene->get_path_to(node),attempt);
-				editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(edited_scene->get_path_to(parent))+"/"+attempt));
+				editor_data->get_undo_redo().add_do_method(sed,"live_debug_duplicate_node",edited_scene->get_path_to(node),dup->get_name());
+				editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(edited_scene->get_path_to(parent))+"/"+dup->get_name()));
 
 				//parent->add_child(dup);
 				//reselect.push_back(dup);
@@ -1142,7 +1101,7 @@ void SceneTreeDock::_do_reparent(Node* p_new_parent,int p_position_in_parent,Vec
 			editor_data->get_undo_redo().add_do_method(new_parent,"move_child",node,p_position_in_parent+inc);
 
 		ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
-		String new_name = new_parent->validate_child_name(node->get_name());
+		String new_name = new_parent->validate_child_name(node);
 		editor_data->get_undo_redo().add_do_method(sed,"live_debug_reparent_node",edited_scene->get_path_to(node),edited_scene->get_path_to(new_parent),new_name,-1);
 		editor_data->get_undo_redo().add_undo_method(sed,"live_debug_reparent_node",NodePath(String(edited_scene->get_path_to(new_parent))+"/"+new_name),edited_scene->get_path_to(node->get_parent()),node->get_name(),node->get_index());
 
@@ -1363,7 +1322,7 @@ void SceneTreeDock::_create() {
 			editor_data->get_undo_redo().add_undo_method(parent,"remove_child",child);
 
 
-			String new_name = parent->validate_child_name(child->get_type());
+			String new_name = parent->validate_child_name(child);
 			ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
 			editor_data->get_undo_redo().add_do_method(sed,"live_debug_create_node",edited_scene->get_path_to(parent),child->get_type(),new_name);
 			editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(edited_scene->get_path_to(parent))+"/"+new_name));
