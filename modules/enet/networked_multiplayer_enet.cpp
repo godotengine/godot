@@ -208,6 +208,9 @@ void NetworkedMultiplayerENet::poll(){
 					//some config message
 					ERR_CONTINUE( event.packet->dataLength < 8);
 
+					// Only server can send config messages
+					ERR_CONTINUE( server );
+
 					int msg = decode_uint32(&event.packet->data[0]);
 					int id = decode_uint32(&event.packet->data[4]);
 
@@ -231,7 +234,7 @@ void NetworkedMultiplayerENet::poll(){
 					Packet packet;
 					packet.packet = event.packet;
 
-					int *id = (int*)event.peer -> data;
+					uint32_t *id = (uint32_t*)event.peer->data;
 
 					ERR_CONTINUE(event.packet->dataLength<12)
 
@@ -243,6 +246,8 @@ void NetworkedMultiplayerENet::poll(){
 					packet.from=source;
 
 					if (server) {
+						// Someone is cheating and trying to fake the source!
+						ERR_CONTINUE(source!=*id);
 
 						packet.from=*id;
 
