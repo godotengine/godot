@@ -138,7 +138,10 @@ public:
 		TK_HINT_WHITE_TEXTURE,
 		TK_HINT_BLACK_TEXTURE,
 		TK_HINT_NORMAL_TEXTURE,
+		TK_HINT_ALBEDO_TEXTURE,
+		TK_HINT_COLOR,
 		TK_HINT_RANGE,
+		TK_CURSOR,
 		TK_ERROR,
 		TK_EOF,
 		TK_MAX
@@ -291,7 +294,15 @@ public:
 	struct ConstantNode : public Node {
 
 		DataType datatype;
-		Variant value;
+
+		union Value {
+			bool boolean;
+			float real;
+			int32_t sint;
+			uint32_t uint;
+		};
+
+		Vector<Value> values;
 		virtual DataType get_datatype() const { return datatype; }
 
 		ConstantNode() { type=TYPE_CONSTANT; }
@@ -306,6 +317,7 @@ public:
 		struct Variable {
 			DataType type;
 			DataPrecision precision;
+			int line; //for completion
 		};
 
 		Map<StringName,Variable> variables;
@@ -316,6 +328,7 @@ public:
 	struct ControlFlowNode : public Node {
 
 		FlowOperation flow_op;
+		Vector<Node*> expressions;
 		Vector<BlockNode*> blocks;
 		ControlFlowNode() { type=TYPE_CONTROL_FLOW; flow_op=FLOW_OP_IF;}
 	};
@@ -368,16 +381,19 @@ public:
 		struct Uniform {
 			enum Hint {
 				HINT_NONE,
-				HINT_WHITE_TEXTURE,
-				HINT_BLACK_TEXTURE,
-				HINT_NORMAL_TEXTURE,
+				HINT_COLOR,
 				HINT_RANGE,
+				HINT_ALBEDO,
+				HINT_NORMAL,
+				HINT_BLACK,
+				HINT_WHITE,
+				HINT_MAX
 			};
 
 			int order;
 			DataType type;
 			DataPrecision precission;
-			Variant default_value;
+			Vector<ConstantNode::Value> default_value;
 			Hint hint;
 			float hint_range[3];
 
@@ -414,15 +430,12 @@ public:
 
 	enum CompletionType {
 		COMPLETION_NONE,
-		COMPLETION_BUILT_IN_TYPE_CONSTANT,
-		COMPLETION_FUNCTION,
+		COMPLETION_RENDER_MODE,
+		COMPLETION_MAIN_FUNCTION,
 		COMPLETION_IDENTIFIER,
-		COMPLETION_PARENT_FUNCTION,
-		COMPLETION_METHOD,
+		COMPLETION_FUNCTION_CALL,
 		COMPLETION_CALL_ARGUMENTS,
 		COMPLETION_INDEX,
-		COMPLETION_VIRTUAL_FUNC,
-		COMPLETION_YIELD,
 	};
 
 	struct Token {
@@ -433,7 +446,10 @@ public:
 		uint16_t line;
 	};
 
+
+	static String get_operator_text(Operator p_op);
 	static String get_token_text(Token p_token);
+
 	static bool is_token_datatype(TokenType p_type);
 	static DataType get_token_datatype(TokenType p_type);
 	static bool is_token_precision(TokenType p_type);
@@ -442,7 +458,15 @@ public:
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
 
+	static bool convert_constant(ConstantNode* p_constant, DataType p_to_type,ConstantNode::Value *p_value=NULL);
+	static DataType get_scalar_type(DataType p_type);
+	static bool is_scalar_type(DataType p_type);
+
+	static void get_keyword_list(List<String> *r_keywords);
 private:
+
+	struct KeyWord { TokenType token; const char *text;};
+	static const KeyWord keyword_list[];
 
 	bool error_set;
 	String error_str;
@@ -452,10 +476,29 @@ private:
 	int char_idx;
 	int tk_line;
 
+	struct TkPos {
+		int char_idx;
+		int tk_line;
+	};
+
+	TkPos _get_tkpos() {
+		TkPos tkp;
+		tkp.char_idx=char_idx;
+		tkp.tk_line=tk_line;
+		return tkp;
+	}
+
+
+	void _set_tkpos(TkPos p_pos) {
+		char_idx=p_pos.char_idx;
+		tk_line=p_pos.tk_line;
+	}
 
 	void _set_error(const String& p_str) {
 		if (error_set)
 			return;
+
+		error_line=tk_line;
 		error_set=true;
 		error_str=p_str;
 	}
@@ -485,7 +528,7 @@ private:
 	bool _validate_operator(OperatorNode *p_op,DataType *r_ret_type=NULL);
 
 
-	struct IntrinsicFuncDef {
+	struct BuiltinFuncDef {
 
 		enum { MAX_ARGS=5 };
 		const char* name;
@@ -494,11 +537,20 @@ private:
 
 	};
 
+	CompletionType completion_type;
+	int completion_line;
+	BlockNode *completion_block;
+	DataType completion_base;
+	StringName completion_function;
+	int completion_argument;
 
-	static const IntrinsicFuncDef intrinsic_func_defs[];
+
+	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName& identifier);
+
+	static const BuiltinFuncDef builtin_func_defs[];
 	bool _validate_function_call(BlockNode* p_block, OperatorNode *p_func,DataType *r_ret_type);
 
-	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName,DataType>  &p_builtin_types, OperatorNode* p_func);
+	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName,DataType>  &p_builtin_types, OperatorNode* p_func, int *r_complete_arg=NULL);
 
 	Node* _parse_expression(BlockNode *p_block, const Map<StringName,DataType>  &p_builtin_types);
 
@@ -516,10 +568,16 @@ public:
 
 	void clear();
 	Error compile(const String& p_code,const Map< StringName, Map<StringName,DataType> > &p_functions,const Set<String>& p_render_modes);
+	Error complete(const String& p_code,const Map< StringName, Map<StringName,DataType> > &p_functions,const Set<String>& p_render_modes,List<String>* r_options,String& r_call_hint);
+
+
+
 	String get_error_text();
 	int get_error_line();
 
-	static String lex_debug(const String& p_code);
+	ShaderNode *get_shader();
+
+	String token_debug(const String& p_code);
 
 	ShaderLanguage();
 	~ShaderLanguage();

@@ -548,7 +548,7 @@ void register_scene_types() {
 //	ObjectTypeDB::register_type<ShaderMaterial>();
 	ObjectTypeDB::register_type<RoomBounds>();
 //	ObjectTypeDB::register_type<MaterialShaderGraph>();
-	ObjectTypeDB::register_type<MaterialShader>();
+	ObjectTypeDB::register_type<SpatialShader>();
 	ObjectTypeDB::add_compatibility_type("Shader","MaterialShader");
 	ObjectTypeDB::add_compatibility_type("ParticleSystemMaterial","FixedMaterial");
 	ObjectTypeDB::add_compatibility_type("UnshadedMaterial","FixedMaterial");

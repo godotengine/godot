@@ -6540,9 +6540,10 @@ EditorNode::EditorNode() {
 	//more visually meaningful to have this later
 	raise_bottom_panel_item(AnimationPlayerEditor::singleton);
 
+	add_editor_plugin( memnew( ShaderEditorPlugin(this) ) );
 /*	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,true) ) );
 	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,false) ) );
-	add_editor_plugin( memnew( ShaderEditorPlugin(this,true) ) );
+
 	add_editor_plugin( memnew( ShaderEditorPlugin(this,false) ) );*/
 	add_editor_plugin( memnew( CameraEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleEditorPlugin(this) ) );

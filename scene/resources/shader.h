@@ -42,7 +42,7 @@ class Shader : public Resource {
 public:
 	enum Mode {
 
-		MODE_MATERIAL,
+		MODE_SPATIAL,
 		MODE_CANVAS_ITEM,
 		MODE_POST_PROCESS,
 		MODE_MAX
@@ -100,13 +100,13 @@ public:
 
 VARIANT_ENUM_CAST( Shader::Mode );
 
-class MaterialShader : public Shader {
+class SpatialShader : public Shader {
 
-	OBJ_TYPE(MaterialShader,Shader);
+	OBJ_TYPE(SpatialShader,Shader);
 
 public:
 
-	MaterialShader() : Shader(MODE_MATERIAL) {};
+	SpatialShader() : Shader(MODE_SPATIAL) {};
 };
 
 class CanvasItemShader : public Shader {
