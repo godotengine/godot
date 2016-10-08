@@ -424,7 +424,7 @@ Matrix32 Matrix32::inverse() const {
 
 void Matrix32::affine_invert() {
 
-	float det = elements[0][0]*elements[1][1] - elements[1][0]*elements[0][1];
+	float det = basis_determinant();
 	ERR_FAIL_COND(det==0);
 	float idet = 1.0 / det;
 
