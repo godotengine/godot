@@ -137,6 +137,18 @@
 			return rng();
 		}
 	#endif
+	#ifdef BAKER_RNG_USE_XORSHIFT32
+		void BLB_RNG::seed(uint32_t value) {
+			x = value;
+			if ( x == 0 ) x = 0xFFFFffff;
+		}
+		uint32_t BLB_RNG::rand() {
+			x ^= x << 13;
+			x ^= x >> 17;
+			x ^= x << 5;
+			return x;
+		}
+	#endif
 	#define RAND_DOUBLE() (double(thread_stack.rng.rand())/BAKER_RNG_RAND_MAX)
 #endif
 

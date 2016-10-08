@@ -40,14 +40,16 @@
  && !defined(BAKER_RNG_USE_XORSHIFTSTAR) \
  && !defined(BAKER_RNG_USE_XORSHIFTPLUS) \
  && !defined(BAKER_RNG_USE_MT19937) \
- && !defined(BAKER_RNG_USE_CXX11_MT19937)
+ && !defined(BAKER_RNG_USE_CXX11_MT19937) \
+ && !defined(BAKER_RNG_USE_XORSHIFT32)
 	//#define BAKER_RNG_USE_C_RAND
 	//#define BAKER_RNG_USE_XONOROSHI128PLUS
 	//#define BAKER_RNG_USE_XORSHIFT128
 	//#define BAKER_RNG_USE_XORSHIFTSTAR
 	//#define BAKER_RNG_USE_XORSHIFTPLUS
 	#define BAKER_RNG_USE_MT19937
-	//#define BAKER_RNG_USE_CXX11_MT19937 
+	//#define BAKER_RNG_USE_CXX11_MT19937
+	//#define BAKER_RNG_USE_XORSHIFT32
 #endif
 
 #ifdef BAKER_RNG_USE_XONOROSHI128PLUS
@@ -120,6 +122,16 @@
 	class BLB_RNG {
 	private:
 		std::mt19937 rng;
+	public:
+		uint32_t rand();
+		void seed(uint32_t value);
+	};
+#endif
+#ifdef BAKER_RNG_USE_XORSHIFT32
+	#define BAKER_RNG_RAND_MAX 0xFFFFffffu
+	class BLB_RNG {
+	private:
+		uint32_t x;
 	public:
 		uint32_t rand();
 		void seed(uint32_t value);
