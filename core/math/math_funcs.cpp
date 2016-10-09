@@ -45,14 +45,13 @@ uint32_t Math::rand_from_seed(uint32_t *seed) {
 #if 1
 	uint32_t k;
 	uint32_t s = (*seed);
-	if (s == 0)
+	if (s == 0){
 		s = 0x12345987;
+	}
 	k = s / 127773;
 	s = 16807 * (s - k * 127773) - 2836 * k;
-//	if (s < 0)
-//		s += 2147483647;
-	(*seed) = s;
-	return (s & Math::RANDOM_MAX);
+	(*seed) = (s & Math::RANDOM_MAX);
+	return (*seed);
 #else
 	*seed = *seed * 1103515245 + 12345;
 	return (*seed % ((unsigned int)RANDOM_MAX + 1));
