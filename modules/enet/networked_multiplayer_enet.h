@@ -23,6 +23,13 @@ private:
 		SYSMSG_REMOVE_PEER
 	};
 
+	enum {
+		SYSCH_CONFIG,
+		SYSCH_RELIABLE,
+		SYSCH_UNRELIABLE,
+		SYSCH_MAX
+	};
+
 	bool active;
 	bool server;
 
