@@ -1051,7 +1051,7 @@ void CodeTextEditor::_reset_zoom() {
 void CodeTextEditor::_line_col_changed() {
 
 	line_nb->set_text(itos(text_editor->cursor_get_line() + 1));
-	col_nb->set_text(itos(text_editor->cursor_get_column()));
+	col_nb->set_text(itos(text_editor->cursor_get_column() + 1));
 }
 
 void CodeTextEditor::_text_changed() {
