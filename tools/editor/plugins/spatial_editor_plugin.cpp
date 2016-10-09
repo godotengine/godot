@@ -1978,6 +1978,11 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			_update_name();
 
 		} break;
+		case VIEW_CENTER_TO_ORIGIN: {
+
+			cursor.pos = Vector3(0,0,0);
+
+		} break;
 		case VIEW_CENTER_TO_SELECTION: {
 
 			focus_selection();
@@ -2391,6 +2396,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(VIEW_GIZMOS),true);
 
 	view_menu->get_popup()->add_separator();
+	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_selection_with_view"), VIEW_ALIGN_SELECTION_WITH_VIEW);
 	view_menu->get_popup()->connect("item_pressed",this,"_menu_option");
@@ -3858,6 +3864,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("spatial_editor/switch_perspective_orthogonal", TTR("Switch Perspective/Orthogonal view"), KEY_KP_5);
 	ED_SHORTCUT("spatial_editor/snap", TTR("Snap"), KEY_S);
 	ED_SHORTCUT("spatial_editor/insert_anim_key", TTR("Insert Animation Key"), KEY_K);
+	ED_SHORTCUT("spatial_editor/focus_origin", TTR("Focus Origin"), KEY_O);
 	ED_SHORTCUT("spatial_editor/focus_selection", TTR("Focus Selection"), KEY_F);
 	ED_SHORTCUT("spatial_editor/align_selection_with_view", TTR("Align Selection With View"), KEY_MASK_ALT+KEY_MASK_CMD+KEY_F);
 
