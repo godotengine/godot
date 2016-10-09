@@ -71,10 +71,10 @@ def get_flags():
 	('builtin_zlib', 'no'),
 	('glew', 'yes'),
 	("openssl", "yes"),
-	('freetype','yes'), #use system freetype
-
+	('freetype','yes'), # use system freetype
+	('libpng', 'system'),
 	#("theora","no"),
-        ]
+	]
 
 
 
@@ -143,6 +143,8 @@ def configure(env):
 	if (env["openssl"]=="yes"):
 		env.ParseConfig('pkg-config openssl --cflags --libs')
 
+	if (env["libpng"] == "system"):
+		env.ParseConfig('pkg-config libpng --cflags --libs')
 
 	if (env["freetype"]=="yes"):
 		env.ParseConfig('pkg-config freetype2 --cflags --libs')
