@@ -721,7 +721,7 @@ SpaceSW::SpaceSW() {
 	constraint_bias = 0.01;
 	body_linear_velocity_sleep_threshold=GLOBAL_DEF("physics/sleep_threshold_linear",0.1);
 	body_angular_velocity_sleep_threshold=GLOBAL_DEF("physics/sleep_threshold_angular", (8.0 / 180.0 * Math_PI) );
-	body_time_to_sleep=0.5;
+	body_time_to_sleep=GLOBAL_DEF("physics/time_before_sleep",0.5);
 	body_angular_velocity_damp_ratio=10;
 
 
