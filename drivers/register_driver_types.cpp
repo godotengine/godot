@@ -31,7 +31,6 @@
 #include "png/image_loader_png.h"
 #include "png/resource_saver_png.h"
 #include "webp/image_loader_webp.h"
-#include "jpegd/image_loader_jpegd.h"
 #include "dds/texture_loader_dds.h"
 #include "etc1/texture_loader_pkm.h"
 #include "pvr/texture_loader_pvr.h"
@@ -80,10 +79,6 @@ static ResourceSaverPNG *resource_saver_png=NULL;
 
 #ifdef WEBP_ENABLED
 static ImageLoaderWEBP *image_loader_webp=NULL;
-#endif
-
-#ifdef JPG_ENABLED
-static ImageLoaderJPG *image_loader_jpg=NULL;
 #endif
 
 #ifdef DDS_ENABLED
@@ -140,13 +135,6 @@ void register_core_driver_types() {
 	ImageLoader::add_image_format_loader( image_loader_webp );
 #endif
 
-#ifdef JPG_ENABLED
-
-	image_loader_jpg = memnew( ImageLoaderJPG );
-	ImageLoader::add_image_format_loader( image_loader_jpg );
-#endif
-
-
 	pbm_loader = memnew( ResourceFormatPBM );
 	ResourceLoader::add_resource_format_loader(pbm_loader);
 
@@ -163,11 +151,6 @@ void unregister_core_driver_types() {
 #ifdef WEBP_ENABLED
 	if (image_loader_webp)
 		memdelete( image_loader_webp );
-#endif
-
-#ifdef JPG_ENABLED
-	if (image_loader_jpg)
-		memdelete( image_loader_jpg );
 #endif
 
 	memdelete( pbm_loader );

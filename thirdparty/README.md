@@ -1,6 +1,17 @@
 # Third party libraries
 
 
+## jpeg-compressor
+
+- Upstream: https://github.com/richgel999/jpeg-compressor
+- Version: 1.04
+- License: Public domain
+
+Files extracted from upstream source:
+
+- jpgd.{c,h}
+
+
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
