@@ -13,10 +13,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-09-01 11:47+0000\n"
-"Last-Translator: Roger BR <drai_kin@hotmail.com>\n"
-"Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
-"godot/es/>\n"
+"PO-Revision-Date: 2016-09-01 19:29+0000\n"
+"Last-Translator: Swyter <swyterzone@gmail.com>\n"
+"Language-Team: Spanish <https://hosted.weblate.org/projects/godot-"
+"engine/godot/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -183,31 +183,34 @@ msgstr "Añadir nodo"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"Mantén pulsado Meta para quitar un «Setter». Mantén pulsado Mayús para "
+"quitar una firma genérica."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"Mantén pulsado Ctrl para quitar un «Getter». Mantén pulsado Mayús para "
+"quitar una firma genérica."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a simple reference to the node."
-msgstr ""
+msgstr "Mantén pulsado Meta para quitar una referencia simple del nodo."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
-msgstr ""
+msgstr "Mantén pulsado Ctrl para quitar una referencia simple del nodo."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Variable Setter."
-msgstr ""
+msgstr "Mantén pulsado Meta para quitar un «Setter» de variable."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Variable Setter."
-msgstr ""
+msgstr "Mantén pulsado Ctrl para quitar un «Setter» de variable."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Preload Node"
-msgstr "Añadir nodo hijo"
+msgstr "Añadir nodo «Preload»"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -577,11 +580,11 @@ msgstr "Aceptar"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr "¡Advertencia!"
+msgstr "Notificación"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr "Confirmar decisión..."
+msgstr "Confirmar decisión…"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1039,7 +1042,7 @@ msgstr "Paso (s):"
 
 #: tools/editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
-msgstr "Snap de cursor por pasos (en segundos)."
+msgstr "Fijado de cursor por pasos (en segundos)."
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
@@ -1174,7 +1177,7 @@ msgstr "Sitio:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Support.."
-msgstr "Ayuda..."
+msgstr "Ayuda…"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -1380,7 +1383,7 @@ msgstr "Crear suscripción"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect.."
-msgstr "Conectar..."
+msgstr "Conectar…"
 
 #: tools/editor/connections_dialog.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
@@ -1625,11 +1628,11 @@ msgstr "Actualizando escena"
 
 #: tools/editor/editor_data.cpp
 msgid "Storing local changes.."
-msgstr "Guardando cambios locales.."
+msgstr "Guardando cambios locales…"
 
 #: tools/editor/editor_data.cpp
 msgid "Updating scene.."
-msgstr "Actualizando escena.."
+msgstr "Actualizando escena…"
 
 #: tools/editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1774,7 +1777,7 @@ msgstr "Exportando para %s"
 
 #: tools/editor/editor_import_export.cpp
 msgid "Setting Up.."
-msgstr "Configurando..."
+msgstr "Configurando…"
 
 #: tools/editor/editor_log.cpp
 msgid " Output:"
@@ -1802,11 +1805,11 @@ msgstr "¡Hubo un error al guardar el recurso!"
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/resources_dock.cpp
 msgid "Save Resource As.."
-msgstr "Guardar recurso como.."
+msgstr "Guardar recurso como…"
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
 msgid "I see.."
-msgstr "Muy bien..."
+msgstr "Muy bien…"
 
 #: tools/editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -1966,11 +1969,11 @@ msgstr "Abrir escena base"
 
 #: tools/editor/editor_node.cpp
 msgid "Quick Open Scene.."
-msgstr "Abrir escena rápido.."
+msgstr "Apertura rápida de escena…"
 
 #: tools/editor/editor_node.cpp
 msgid "Quick Open Script.."
-msgstr "Abrir script rápido.."
+msgstr "Apertura rápida de script…"
 
 #: tools/editor/editor_node.cpp
 msgid "Yes"
@@ -1982,7 +1985,7 @@ msgstr "¿Quieres cerrar la escena? (Los cambios sin guardar se perderán)"
 
 #: tools/editor/editor_node.cpp
 msgid "Save Scene As.."
-msgstr "Guardar escena como.."
+msgstr "Guardar escena como…"
 
 #: tools/editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
@@ -2031,7 +2034,7 @@ msgstr "Esta acción es irreversible. ¿Quieres revertirla de todos modos?"
 
 #: tools/editor/editor_node.cpp
 msgid "Quick Run Scene.."
-msgstr "Ejecutar escena rápido.."
+msgstr "Ejecución rápida de escena…"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -2125,7 +2128,7 @@ msgstr "Nueva escena"
 
 #: tools/editor/editor_node.cpp
 msgid "New Inherited Scene.."
-msgstr "Nueva escena heredada.."
+msgstr "Nueva escena heredada…"
 
 #: tools/editor/editor_node.cpp
 msgid "Open Scene.."
@@ -2153,23 +2156,23 @@ msgstr "Abrir reciente"
 
 #: tools/editor/editor_node.cpp
 msgid "Quick Filter Files.."
-msgstr "Filtrado rápido de archivos..."
+msgstr "Filtrado rápido de archivos…"
 
 #: tools/editor/editor_node.cpp
 msgid "Convert To.."
-msgstr "Convertir a..."
+msgstr "Convertir a…"
 
 #: tools/editor/editor_node.cpp
 msgid "Translatable Strings.."
-msgstr "Cadenas traducibles..."
+msgstr "Cadenas traducibles…"
 
 #: tools/editor/editor_node.cpp
 msgid "MeshLibrary.."
-msgstr "MeshLibrary..."
+msgstr "MeshLibrary…"
 
 #: tools/editor/editor_node.cpp
 msgid "TileSet.."
-msgstr "TileSet.."
+msgstr "TileSet…"
 
 #: tools/editor/editor_node.cpp tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -2411,7 +2414,7 @@ msgstr "Guardar el recurso editado actualmente."
 
 #: tools/editor/editor_node.cpp tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save As.."
-msgstr "Guardar como..."
+msgstr "Guardar como…"
 
 #: tools/editor/editor_node.cpp
 msgid "Go to the previous edited object in history."
@@ -2619,7 +2622,7 @@ msgstr "No se pueden mover carpetas dentro de si mismas."
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Can't operate on '..'"
-msgstr "No se puede operar en '..'"
+msgstr "No se puede operar en «…»"
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Pick New Name and Location For:"
@@ -2635,11 +2638,11 @@ msgstr "Instanciar"
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Edit Dependencies.."
-msgstr "Editar dependencias.."
+msgstr "Editar dependencias…"
 
 #: tools/editor/filesystem_dock.cpp
 msgid "View Owners.."
-msgstr "Ver dueños.."
+msgstr "Ver dueños…"
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Copy Path"
@@ -2647,11 +2650,11 @@ msgstr "Copiar ruta"
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Rename or Move.."
-msgstr "Renombrar o mover.."
+msgstr "Renombrar o mover…"
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Move To.."
-msgstr "Mover a.."
+msgstr "Mover a…"
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Info"
@@ -2663,7 +2666,7 @@ msgstr "Mostrar en el navegador de archivos"
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Re-Import.."
-msgstr "Reimportando.."
+msgstr "Reimportando…"
 
 #: tools/editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2999,11 +3002,11 @@ msgstr "Importar escena"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Importing Scene.."
-msgstr "Importando escena.."
+msgstr "Importando escena…"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Running Custom Script.."
-msgstr "Ejecutando script personalizado.."
+msgstr "Ejecutando script personalizado…"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Couldn't load post-import script:"
@@ -3032,7 +3035,7 @@ msgstr "No se pudo encontrar la ruta: %s (ya es local)"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Saving.."
-msgstr "Guardando.."
+msgstr "Guardando…"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "3D Scene Animation"
@@ -3597,7 +3600,7 @@ msgstr "Nodo de transición"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations.."
-msgstr "Importar animaciones.."
+msgstr "Importar animaciones…"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
@@ -3605,7 +3608,7 @@ msgstr "Editar filtros de nodo"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Filters.."
-msgstr "Filtros.."
+msgstr "Filtros…"
 
 #: tools/editor/plugins/baked_light_baker.cpp
 msgid "Parsing %d Triangles:"
@@ -3672,7 +3675,7 @@ msgstr "Vista previa"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap"
-msgstr "Configurar Snap"
+msgstr "Ajustes de fijado"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3786,7 +3789,7 @@ msgstr "Restaurar la habilidad de seleccionar los hijos de un objeto."
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr "Usar Snap"
+msgstr "Fijar a cuadrícula"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3795,20 +3798,20 @@ msgstr "Mostrar rejilla"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
-msgstr "Usar Snap de Rotación"
+msgstr "Fijar rotación"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
-msgstr "Usar Snap Relativo"
+msgstr "Fijado relativo"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap.."
-msgstr "Configurar Snap.."
+msgstr "Configurar fijado…"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
-msgstr "Usar Pixel Snap"
+msgstr "Adherir a píxeles"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Expand to Parent"
@@ -3816,7 +3819,7 @@ msgstr "Expandir al padre"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton.."
-msgstr "Esqueleto.."
+msgstr "Esqueleto…"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make Bones"
@@ -3845,7 +3848,7 @@ msgstr "Restablecer zoom"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom Set.."
-msgstr "Ajustar zoom..."
+msgstr "Ajustar zoom…"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3885,7 +3888,7 @@ msgstr "Establecer valor"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
-msgstr "Snap (Pixeles):"
+msgstr "Fijar (Pixeles):"
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -3942,7 +3945,7 @@ msgstr "Crear biblioteca de modelos 3D"
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Thumbnail.."
-msgstr "Miniatura.."
+msgstr "Miniatura…"
 
 #: tools/editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Remove item %d?"
@@ -4064,7 +4067,7 @@ msgstr "Crear colisión hermanada convexa"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh.."
-msgstr "Crear modelo 3D de contorno.."
+msgstr "Crear modelo 3D de contorno…"
 
 #: tools/editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
@@ -4193,7 +4196,7 @@ msgstr "Error al cargar la imagen:"
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image.."
 msgstr ""
-"No hay píxeles que tengan menos de un 128/255 de transparencia en la imagen.."
+"No hay píxeles que tengan menos de un 128/255 de transparencia en la imagen…"
 
 #: tools/editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Set Emission Mask"
@@ -4409,11 +4412,11 @@ msgstr "Limpiar UV"
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
-msgstr "Esnapear"
+msgstr "Adherir a cuadrícula"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
-msgstr "Activar Snap"
+msgstr "Adherir a cuadrícula"
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
@@ -4520,7 +4523,7 @@ msgstr "Importar tema"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."
-msgstr "Guardar tema como.."
+msgstr "Guardar tema como…"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Next script"
@@ -4576,7 +4579,7 @@ msgstr "Cerrar documentación"
 #: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find.."
-msgstr "Buscar..."
+msgstr "Buscar…"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -4740,16 +4743,16 @@ msgstr "Buscar anterior"
 #: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Replace.."
-msgstr "Reemplazar..."
+msgstr "Reemplazar…"
 
 #: tools/editor/plugins/script_text_editor.cpp
 msgid "Goto Function.."
-msgstr "Ir a función..."
+msgstr "Ir a función…"
 
 #: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Goto Line.."
-msgstr "Ir a línea.."
+msgstr "Ir a línea…"
 
 #: tools/editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
@@ -5079,7 +5082,7 @@ msgstr "Coordenadas locales"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog.."
-msgstr "Ventana de transformación.."
+msgstr "Ventana de transformación…"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Default Light"
@@ -5139,19 +5142,19 @@ msgstr "Ver rejilla"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
-msgstr "Ajustes de Snap"
+msgstr "Ajustes de fijado"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate Snap:"
-msgstr "Snap de Traslación:"
+msgstr "Fijar desplazamiento:"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Snap (deg.):"
-msgstr "Snap de Rotación (grados):"
+msgstr "Fijar rotación (grados):"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Snap (%):"
-msgstr "Snap de Escala (%):"
+msgstr "Fijar escala (%):"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Viewport Settings"
@@ -5179,7 +5182,7 @@ msgstr "Profundidad máxima de vista:"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Change"
-msgstr "Cambio de transformación"
+msgstr "Transformar"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate:"
@@ -5271,7 +5274,7 @@ msgstr "Vista previa de StyleBox:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
-msgstr "Modo Snap:"
+msgstr "Modo de fijado:"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "<None>"
@@ -5279,11 +5282,11 @@ msgstr "<Ninguno>"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
-msgstr "Pixel Snap"
+msgstr "Adherir a píxeles"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
-msgstr "Snap de Grilla"
+msgstr "Adherir a cuadrícula"
 
 #: tools/editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
@@ -5757,7 +5760,7 @@ msgstr "Exportar PCK del proyecto"
 
 #: tools/editor/project_export.cpp
 msgid "Export.."
-msgstr "Exportar.."
+msgstr "Exportar…"
 
 #: tools/editor/project_export.cpp
 msgid "Project Export"
@@ -5931,7 +5934,7 @@ msgstr "Control+"
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "Press a Key.."
-msgstr "Presiona una tecla..."
+msgstr "Presiona una tecla…"
 
 #: tools/editor/project_settings.cpp
 msgid "Mouse Button Index:"
@@ -6047,7 +6050,7 @@ msgstr "Eliminar"
 
 #: tools/editor/project_settings.cpp
 msgid "Copy To Platform.."
-msgstr "Copiar a plataforma.."
+msgstr "Copiar a plataforma…"
 
 #: tools/editor/project_settings.cpp
 msgid "Input Map"
@@ -6079,7 +6082,7 @@ msgstr "Traducciones:"
 
 #: tools/editor/project_settings.cpp
 msgid "Add.."
-msgstr "Añadir..."
+msgstr "Añadir…"
 
 #: tools/editor/project_settings.cpp
 msgid "Remaps"
@@ -6107,7 +6110,7 @@ msgstr "Plugins"
 
 #: tools/editor/property_editor.cpp
 msgid "Preset.."
-msgstr "Ajuste.."
+msgstr "Ajuste…"
 
 #: tools/editor/property_editor.cpp
 msgid "Ease In"
@@ -6131,11 +6134,11 @@ msgstr "Transición salida-entrada"
 
 #: tools/editor/property_editor.cpp
 msgid "File.."
-msgstr "Archivo.."
+msgstr "Archivo…"
 
 #: tools/editor/property_editor.cpp
 msgid "Dir.."
-msgstr "Dir.."
+msgstr "Dir…"
 
 #: tools/editor/property_editor.cpp
 msgid "Load"
@@ -6322,7 +6325,7 @@ msgstr "Esta operación no puede realizarse en escenas instanciadas."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save New Scene As.."
-msgstr "Guardar nueva escena como.."
+msgstr "Guardar nueva escena como…"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Makes Sense!"

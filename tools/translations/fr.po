@@ -17,16 +17,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-08-29 13:56+0000\n"
+"PO-Revision-Date: 2016-09-03 09:11+0000\n"
 "Last-Translator: Thomas Baijot <thomasbaijot@gmail.com>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
-"godot/fr/>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/godot-"
+"engine/godot/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.8\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -106,11 +106,11 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr "Fonction :"
+msgstr "Fonctions :"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Variables:"
-msgstr "Variables:"
+msgstr "Variables :"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Signals:"
@@ -322,7 +322,7 @@ msgstr "Le chemin ne mène pas au nœud !"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr ""
+msgstr "Nom de propriété invalide '%s' dans le nœud %s."
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
@@ -331,15 +331,15 @@ msgstr "Nom de classe parent invalide"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
-msgstr ": Arguments invalides "
+msgstr ": Arguments invalides: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
-msgstr ""
+msgstr "VariableGet introuvable dans le script: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
-msgstr ""
+msgstr "VariableSet introuvable dans le script: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -997,7 +997,7 @@ msgstr "Animation Inserer une clé"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr "Changer la longueur de l'animation"
+msgstr "Modifier la longueur de l'animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Loop"
@@ -1637,7 +1637,7 @@ msgstr "Choisir"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr "Revenir"
+msgstr "Retour"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Forward"

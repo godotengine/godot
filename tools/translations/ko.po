@@ -8,16 +8,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-08-17 10:07+0000\n"
+"PO-Revision-Date: 2016-09-26 13:04+0000\n"
 "Last-Translator: 박한얼 <volzhs@gmail.com>\n"
-"Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
-"godot/ko/>\n"
+"Language-Team: Korean <https://hosted.weblate.org/projects/godot-"
+"engine/godot/ko/>\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.9-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -187,9 +187,8 @@ msgid "Hold Ctrl to drop a Variable Setter."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Preload Node"
-msgstr "자식 노드 추가"
+msgstr "Preload 노드 추가"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -263,24 +262,20 @@ msgid "Toggle Breakpoint"
 msgstr "중단점 토글"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Find Node Type"
 msgstr "노드 타입 찾기"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Copy Nodes"
-msgstr "포즈 복사"
+msgstr "노드 복사"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Cut Nodes"
-msgstr "노드 생성"
+msgstr "노드 잘라내기"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Paste Nodes"
-msgstr "포즈 붙여넣기"
+msgstr "노드 붙여넣기"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -6097,14 +6092,12 @@ msgid "Sections:"
 msgstr "부문:"
 
 #: tools/editor/property_selector.cpp
-#, fuzzy
 msgid "Select Property"
-msgstr "포인트 선택"
+msgstr "속성 선택"
 
 #: tools/editor/property_selector.cpp
-#, fuzzy
 msgid "Select Method"
-msgstr "선택 모드"
+msgstr "메소드 선택"
 
 #: tools/editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"

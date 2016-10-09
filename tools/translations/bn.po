@@ -8,15 +8,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-08-12 06:37+0000\n"
+"PO-Revision-Date: 2016-09-02 13:47+0000\n"
 "Last-Translator: ABU MD. MARUF SARKER <maruf.webdev@gmail.com>\n"
-"Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
-"godot/bn/>\n"
+"Language-Team: Bengali <https://hosted.weblate.org/projects/godot-"
+"engine/godot/bn/>\n"
 "Language: bn\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.8\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -102,19 +102,20 @@ msgstr "ফাংশনগুলি:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Variables:"
-msgstr ""
+msgstr "ভেরিয়েবলস/চলকসমূহ:"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Signals:"
-msgstr ""
+msgstr "সিগন্যালস/সংকেতসমূহ:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
-msgstr ""
+msgstr "নামটি কার্যকর সনাক্তকারী নয়:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
 msgstr ""
+"নামটি ইতিমধ্যেই অপর ফাংশন/চলক(ভেরিয়েবল)/সংকেত(সিগন্যাল)-এ ব্যবহৃত হয়েছে:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Function"
@@ -122,23 +123,23 @@ msgstr "ফাংশনের (Function) নতুন নামকরণ কর�
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Variable"
-msgstr ""
+msgstr "চলক/ভেরিয়েবল-এর নামান্তর করুন"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Signal"
-msgstr ""
+msgstr "সংকেত/সিগন্যাল-এর নামান্তর করুন"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Function"
-msgstr ""
+msgstr "ফাংশন সংযোজন করুন"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
-msgstr ""
+msgstr "চলক/ভেরিয়েবল সংযোজন করুন"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
-msgstr ""
+msgstr "সংকেত/সিগন্যাল সংযোজন করুন"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -146,11 +147,11 @@ msgstr "ফাংশন (Function) অপসারণ করুন"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Variable"
-msgstr ""
+msgstr "চলক/ভেরিয়েবল অপসারণ করুন"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Variable:"
-msgstr ""
+msgstr "চলক/ভেরিয়েবল সম্পাদন:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Signal"
@@ -158,19 +159,23 @@ msgstr "সংকেত (Signal) অপসারণ করুন"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Signal:"
-msgstr ""
+msgstr "সংকেত/সিগন্যাল সম্পাদন:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
-msgstr ""
+msgstr "নোড সংযোজন করুন"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"গেটার (Getter) ফেলতে/নামাতে মেটা কী (Meta) চাপুন। জেনেরিক সিগনেচার (generic "
+"signature) ফেলতে/নামাতে শিফট কী (Shift) চাপুন।"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"গেটার (Getter) ফেলতে/নামাতে কন্ট্রোল কী (Ctrl) চাপুন। জেনেরিক সিগনেচার ("
+"generic signature) ফেলতে/নামাতে শিফট কী (Shift) চাপুন।"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a simple reference to the node."
@@ -276,9 +281,8 @@ msgid "Cut Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Paste Nodes"
-msgstr "প্রতিলেপন/পেস্ট করুন"
+msgstr "নোড-সমূহ প্রতিলেপন/পেস্ট করুন"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -6051,14 +6055,12 @@ msgid "Sections:"
 msgstr ""
 
 #: tools/editor/property_selector.cpp
-#, fuzzy
 msgid "Select Property"
-msgstr "মোড (Mode) বাছাই করুন"
+msgstr "গুণাগুণ/বৈশিষ্ট্য বাছাই করুন"
 
 #: tools/editor/property_selector.cpp
-#, fuzzy
 msgid "Select Method"
-msgstr "মোড (Mode) বাছাই করুন"
+msgstr "মেথড/পদ্ধতি বাছাই করুন"
 
 #: tools/editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"
