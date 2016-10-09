@@ -382,7 +382,7 @@ void VisualServer::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("mesh_create"),&VisualServer::mesh_create);
-	ObjectTypeDB::bind_method(_MD("mesh_add_surface"),&VisualServer::mesh_add_surface, DEFVAL(NO_INDEX_ARRAY));
+	ObjectTypeDB::bind_method(_MD("mesh_add_surface"),&VisualServer::mesh_add_surface, DEFVAL(Array()), DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("mesh_surface_set_material"),&VisualServer::mesh_surface_set_material,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("mesh_surface_get_material"),&VisualServer::mesh_surface_get_material);
 
