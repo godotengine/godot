@@ -26,8 +26,7 @@ if (env['openssl']!='no'):
 	SConscript('openssl/SCsub')
 
 
-if (env["png"]=="yes"):
-	SConscript("png/SCsub");
+SConscript("png/SCsub");
 if (env["jpg"]=="yes"):
 	#SConscript("jpg/SCsub");
 	SConscript("jpegd/SCsub");

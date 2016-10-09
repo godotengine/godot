@@ -29,8 +29,8 @@
 #include "register_driver_types.h"
 
 #include "png/image_loader_png.h"
-#include "webp/image_loader_webp.h"
 #include "png/resource_saver_png.h"
+#include "webp/image_loader_webp.h"
 #include "jpegd/image_loader_jpegd.h"
 #include "dds/texture_loader_dds.h"
 #include "etc1/texture_loader_pkm.h"
@@ -75,14 +75,11 @@
 #include "mpc/audio_stream_mpc.h"
 #endif
 
-#ifdef PNG_ENABLED
 static ImageLoaderPNG *image_loader_png=NULL;
 static ResourceSaverPNG *resource_saver_png=NULL;
-#endif
 
 #ifdef WEBP_ENABLED
 static ImageLoaderWEBP *image_loader_webp=NULL;
-//static ResourceSaverPNG *resource_saver_png=NULL;
 #endif
 
 #ifdef JPG_ENABLED
@@ -132,22 +129,15 @@ static ResourceFormatPBM * pbm_loader=NULL;
 
 void register_core_driver_types() {
 
-#ifdef PNG_ENABLED
 	image_loader_png = memnew( ImageLoaderPNG );
 	ImageLoader::add_image_format_loader( image_loader_png );
 
 	resource_saver_png = memnew( ResourceSaverPNG );
 	ResourceSaver::add_resource_format_saver(resource_saver_png);
 
-#endif
-
 #ifdef WEBP_ENABLED
 	image_loader_webp = memnew( ImageLoaderWEBP );
 	ImageLoader::add_image_format_loader( image_loader_webp );
-
-//	resource_saver_png = memnew( ResourceSaverPNG );
-//	ResourceSaver::add_resource_format_saver(resource_saver_png);
-
 #endif
 
 #ifdef JPG_ENABLED
@@ -165,18 +155,14 @@ void register_core_driver_types() {
 
 void unregister_core_driver_types() {
 
-#ifdef PNG_ENABLED
 	if (image_loader_png)
 		memdelete( image_loader_png );
 	if (resource_saver_png)
 		memdelete( resource_saver_png );
-#endif
 
 #ifdef WEBP_ENABLED
 	if (image_loader_webp)
 		memdelete( image_loader_webp );
-//	if (resource_saver_png)
-//		memdelete( resource_saver_png );
 #endif
 
 #ifdef JPG_ENABLED
