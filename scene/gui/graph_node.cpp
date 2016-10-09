@@ -745,6 +745,9 @@ void GraphNode::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_resizeable","resizeable"),&GraphNode::set_resizeable);
 	ObjectTypeDB::bind_method(_MD("is_resizeable"),&GraphNode::is_resizeable);
 
+	ObjectTypeDB::bind_method(_MD("set_selected","selected"),&GraphNode::set_selected);
+	ObjectTypeDB::bind_method(_MD("is_selected"),&GraphNode::is_selected);
+
 	ObjectTypeDB::bind_method(_MD("get_connection_output_count"),&GraphNode::get_connection_output_count);
 	ObjectTypeDB::bind_method(_MD("get_connection_input_count"),&GraphNode::get_connection_input_count);
 
