@@ -13,6 +13,7 @@
 # Oliver Ruehl <oliver@ruehldesign.co>, 2016.
 # Paul-Vincent Roll <paviro@me.com>, 2016.
 # Peter Friedland <peter_friedland@gmx.de>, 2016.
+# No need for a name <endoplasmatik@gmx.net>, 2016.
 # So Wieso <sowieso@dukun.de>, 2016.
 # Timo Schwarzer <account@timoschwarzer.com>, 2016.
 # viernullvier <hannes.breul+github@gmail.com>, 2016.
@@ -21,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-08-31 15:37+0000\n"
+"PO-Revision-Date: 2016-09-30 03:13+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.8\n"
+"X-Generator: Weblate 2.9-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -47,6 +48,12 @@ msgid "step argument is zero!"
 msgstr "Schrittargument ist null!"
 
 #: modules/gdscript/gd_functions.cpp
+msgid ""
+"Paths cannot start with '/', absolute paths must start with 'res://', "
+"'user://', or 'local://'"
+msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
 msgstr "Skript hat keine Instanz"
 
@@ -56,25 +63,25 @@ msgstr "Nicht auf einem Skript basierend"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr "Nicht auf einer Resourcendatei basierend"
+msgstr "Nicht auf einer Ressourcendatei basierend"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr "Ungültiges Instanzverzeichnisformat (@path fehlt)"
+msgstr "Ungültiges Instanz-Verzeichnisformat (@path fehlt)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
-"Ungültiges Instanzverzeichnisformat (Skript in @path kann nicht geladen "
+"Ungültiges Instanz-Verzeichnisformat (Skript in @path kann nicht geladen "
 "werden)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "Ungültiges Instanzverzeichnisformat (ungültiges Skript in @path)"
+msgstr "Ungültiges Instanz-Verzeichnisformat (ungültiges Skript in @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "Ungültiges Instanzverzeichnisformat (ungültige Unterklasse)"
+msgstr "Ungültiges Instanz-Verzeichnisformat (ungültige Unterklasse)"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -615,7 +622,7 @@ msgstr "Auswahl duplizieren"
 
 #: tools/editor/animation_editor.cpp
 msgid "Duplicate Transposed"
-msgstr "Transponiert duplizieren"
+msgstr "Transponierte duplizieren"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove Selection"
@@ -1052,6 +1059,12 @@ msgstr "Spalte:"
 #: tools/editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
 msgstr "Methode in Ziel-Node muss angegeben werden!"
+
+#: tools/editor/connections_dialog.cpp
+msgid ""
+"Target method not found! Specify a valid method or attach a script to target "
+"Node."
+msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -1838,6 +1851,7 @@ msgid "Go to previously opened scene."
 msgstr "Gehe zu vorher geöffneter Szene."
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "Fullscreen Mode"
 msgstr "Vollbildmodus"
 
@@ -1964,7 +1978,7 @@ msgstr "Exportieren"
 
 #: tools/editor/editor_node.cpp
 msgid "Play the project."
-msgstr "Projekt starten."
+msgstr "Projekt abspielen."
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/sample_library_editor_plugin.cpp
@@ -2133,6 +2147,10 @@ msgid "Update Changes"
 msgstr "Änderungen aktualisieren"
 
 #: tools/editor/editor_node.cpp
+msgid "Disable Update Spinner"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
 msgid "Inspector"
 msgstr "Inspektor"
 
@@ -2171,6 +2189,10 @@ msgstr "Objekteigenschaften."
 #: tools/editor/editor_node.cpp
 msgid "FileSystem"
 msgstr "Dateisystem"
+
+#: tools/editor/editor_node.cpp tools/editor/node_dock.cpp
+msgid "Node"
+msgstr "Node"
 
 #: tools/editor/editor_node.cpp
 msgid "Output"
@@ -2274,7 +2296,7 @@ msgstr "Inklusive"
 
 #: tools/editor/editor_profiler.cpp
 msgid "Self"
-msgstr "Self"
+msgstr "Selbst"
 
 #: tools/editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -3010,10 +3032,6 @@ msgid "MultiNode Set"
 msgstr "MultiNode setzen"
 
 #: tools/editor/node_dock.cpp
-msgid "Node"
-msgstr "Node"
-
-#: tools/editor/node_dock.cpp
 msgid "Groups"
 msgstr "Gruppen"
 
@@ -3061,7 +3079,6 @@ msgid "Add Animation"
 msgstr "Animation hinzufügen"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Blend Next Changed"
 msgstr "Überblende nächste Bearbeitung"
 
@@ -3221,7 +3238,7 @@ msgstr "Blenden"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix"
-msgstr "Mix"
+msgstr "Mischen"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Auto Restart:"
@@ -3269,14 +3286,12 @@ msgid "Add Input"
 msgstr "Eingang hinzufügen"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Auto-Advance"
-msgstr "Stoppe automatisches Durchschalten"
+msgstr "Lösche Auto-Fortschritt"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Set Auto-Advance"
-msgstr "Setze automatisches Durchschalten"
+msgstr "Setze Auto-Fortschritt"
 
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Delete Input"
@@ -3392,7 +3407,7 @@ msgstr "Nachbearbeiten von Textur #"
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Bake!"
-msgstr "Bake!"
+msgstr "Backen!"
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Reset the lightmap octree baking process (start over)."
@@ -3858,9 +3873,8 @@ msgid "Parent has no solid faces to populate."
 msgstr "Elternelement hat keine soliden Faces zu besetzen."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
-#, fuzzy
 msgid "Couldn't map area."
-msgstr "Gebiet konnte nicht abgebildet werden."
+msgstr "Bereich konnte nicht abgebildet werden."
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
@@ -3871,14 +3885,12 @@ msgid "Select a Target Surface:"
 msgstr "Ziel-Oberfläche auswählen:"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
-#, fuzzy
 msgid "Populate Surface"
-msgstr "Oberfläche besetzen"
+msgstr "Oberfläche füllen"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
-#, fuzzy
 msgid "Populate MultiMesh"
-msgstr "MultiMesh besetzen"
+msgstr "MultiMesh füllen"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
 msgid "Target Surface:"
@@ -3917,9 +3929,8 @@ msgid "Random Scale:"
 msgstr "Zufällige Skalieren:"
 
 #: tools/editor/plugins/multimesh_editor_plugin.cpp
-#, fuzzy
 msgid "Populate"
-msgstr "Besetzen"
+msgstr "Füllen"
 
 #: tools/editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
@@ -3994,9 +4005,8 @@ msgid "Emission Positions:"
 msgstr "Emissionsorte:"
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Fill:"
-msgstr "Emissionsausschüttung"
+msgstr "Emissionsfüllung:"
 
 #: tools/editor/plugins/particles_editor_plugin.cpp
 msgid "Surface"
@@ -4810,11 +4820,14 @@ msgstr "Animations-Schlüsselbild einfügen"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Focus Selection"
-msgstr "zur Auswahl springen"
+msgid "Focus Origin"
+msgstr "Zeige Ursprung"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
+msgid "Focus Selection"
+msgstr "Auswahl fokussieren"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Align Selection With View"
 msgstr "Auswahl auf Ansicht ausrichten"
 
@@ -5738,9 +5751,8 @@ msgid "Erase Input Action Event"
 msgstr "Lösche Eingabeaktionsereignis"
 
 #: tools/editor/project_settings.cpp
-#, fuzzy
 msgid "Toggle Persisting"
-msgstr "Dauerhaft umschalten"
+msgstr "Persistente an- und ausschalten"
 
 #: tools/editor/project_settings.cpp
 msgid "Error saving settings."
@@ -5832,7 +5844,7 @@ msgstr "Hinzufügen.."
 
 #: tools/editor/project_settings.cpp
 msgid "Remaps"
-msgstr "Remaps"
+msgstr "Neu zuweisen"
 
 #: tools/editor/project_settings.cpp
 msgid "Resources:"
@@ -5859,14 +5871,12 @@ msgid "Preset.."
 msgstr "Voreinstellungen.."
 
 #: tools/editor/property_editor.cpp
-#, fuzzy
 msgid "Ease In"
-msgstr "Einfahren"
+msgstr "Einblenden"
 
 #: tools/editor/property_editor.cpp
-#, fuzzy
 msgid "Ease Out"
-msgstr "Ausfahren"
+msgstr "Ausblenden"
 
 #: tools/editor/property_editor.cpp
 msgid "Zero"
@@ -5913,7 +5923,6 @@ msgid "On"
 msgstr "An"
 
 #: tools/editor/property_editor.cpp
-#, fuzzy
 msgid "Set"
 msgstr "Setzen"
 
@@ -6032,10 +6041,9 @@ msgid "Instance Scene(s)"
 msgstr "Instanz-Szene(n)"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "This operation can't be done on the tree root."
 msgstr ""
-"Diese Aktion kann nicht auf der Wurzel des Szenenbaums ausgeführt werden."
+"Diese Aktion kann nicht in der Wurzel des Szenenbaums ausgeführt werden."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Move Node In Parent"
@@ -6332,7 +6340,7 @@ msgstr "Nächste Instanz untersuchen"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Stack Frames"
-msgstr "Stack Frames"
+msgstr "Einzelbilder stapeln"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Variable"
@@ -6347,16 +6355,14 @@ msgid "Stack Trace (if applicable):"
 msgstr "Stack Trace (falls geeignet):"
 
 #: tools/editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote Inspector"
-msgstr "Ferninspektor"
+msgstr "Remote Inspektor"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Live Scene Tree:"
 msgstr "Echtzeit Szenenbaum:"
 
 #: tools/editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote Object Properties: "
 msgstr "Eigenschaften entfernter Objekte: "
 
@@ -6441,9 +6447,8 @@ msgid "Change Sphere Shape Radius"
 msgstr "Ändere Radius der Kugelform"
 
 #: tools/editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Change Box Shape Extents"
-msgstr "Ändere Ausmessungen der Kastenform"
+msgstr "Ändere Ausmaße der Kastenform"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Radius"
@@ -6458,7 +6463,6 @@ msgid "Change Ray Shape Length"
 msgstr "Ändere Länge der Strahlenform"
 
 #: tools/editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Change Notifier Extents"
 msgstr "Ändere Ausmaße des Benachrichtigers"
 
@@ -6488,7 +6492,7 @@ msgstr "Ändere Ausmaße des Benachrichtigers"
 
 #~ msgid "Found sequence bit but not the node in the stack, report bug!"
 #~ msgstr ""
-#~ "Sequenzbit gefunden aber kein entsprechendes Node auf dem Stack, bitte "
+#~ "Sequenzbit gefunden, aber kein entsprechendes Node auf dem Stack, bitte "
 #~ "melden Sie den Bug!"
 
 #~ msgid "Stack overflow with stack depth: "
@@ -6540,12 +6544,37 @@ msgstr "Ändere Ausmaße des Benachrichtigers"
 #~ msgid "Editing Signal:"
 #~ msgstr "bearbeite Signal:"
 
+#, fuzzy
+#~ msgid "Change Expression"
+#~ msgstr "Typ ändern"
+
 #~ msgid "Add Node"
 #~ msgstr "Node hinzufügen"
 
-#, fuzzy
+#~ msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
+#~ msgstr ""
+#~ "Alt-Taste gedrückt halten, um einen Getter zu setzen. Umschalt-Taste "
+#~ "halten, um eine allgemeine Signatur zu setzen."
+
+#~ msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
+#~ msgstr ""
+#~ "Strg-Taste halten um einen Getter zu setzen. Umschalt-Taste halten um "
+#~ "eine allgemeine Signatur zu setzen."
+
+#~ msgid "Hold Meta to drop a simple reference to the node."
+#~ msgstr "Alt-Taste halten um einfache Referenz zu Node hinzuzufügen."
+
+#~ msgid "Hold Ctrl to drop a simple reference to the node."
+#~ msgstr "Strg-Taste halten um einfache Referenz zu Node hinzuzufügen."
+
+#~ msgid "Hold Meta to drop a Variable Setter."
+#~ msgstr "Alt-Taste halten um einen Variablen-Setter zu setzen."
+
+#~ msgid "Hold Ctrl to drop a Variable Setter."
+#~ msgstr "Strg-Taste halten um einen Variablen-Setter zu setzen."
+
 #~ msgid "Add Preload Node"
-#~ msgstr "Node hier anhängen"
+#~ msgstr "Preload-Node hinzufügen"
 
 #~ msgid "Add Node(s) From Tree"
 #~ msgstr "Node(s) aus Szenenbaum hinzufügen"
@@ -6555,6 +6584,22 @@ msgstr "Ändere Ausmaße des Benachrichtigers"
 
 #~ msgid "Add Setter Property"
 #~ msgstr "Setter-Eigenschaft hinzufügen"
+
+#, fuzzy
+#~ msgid "Condition"
+#~ msgstr "Animation kopieren"
+
+#, fuzzy
+#~ msgid "Switch"
+#~ msgstr "Tonhöhe"
+
+#, fuzzy
+#~ msgid "Return"
+#~ msgstr "Rückgabe:"
+
+#, fuzzy
+#~ msgid "Get"
+#~ msgstr "Setzen"
 
 #~ msgid "Base Type:"
 #~ msgstr "Basistyp:"
@@ -6579,24 +6624,20 @@ msgstr "Ändere Ausmaße des Benachrichtigers"
 #~ msgid "Delete Selected"
 #~ msgstr "Ausgewähltes löschen"
 
-#, fuzzy
 #~ msgid "Find Node Type"
-#~ msgstr "Finde Node-Typ"
+#~ msgstr "Node-Typ finden"
 
-#, fuzzy
 #~ msgid "Copy Nodes"
-#~ msgstr "Pose kopieren"
+#~ msgstr "Nodes kopieren"
 
-#, fuzzy
 #~ msgid "Cut Nodes"
-#~ msgstr "Erzeuge Node"
+#~ msgstr "Nodes trennen"
 
-#, fuzzy
 #~ msgid "Paste Nodes"
-#~ msgstr "Pose einfügen"
+#~ msgstr "Nodes einfügen"
 
 #~ msgid "Input type not iterable: "
-#~ msgstr "Eingabetyp nicht iterierbar: "
+#~ msgstr "Eingabetyp nicht wiederholbar: "
 
 #~ msgid "Iterator became invalid"
 #~ msgstr "Iterator wurde ungültig"
@@ -6641,12 +6682,55 @@ msgstr "Ändere Ausmaße des Benachrichtigers"
 #~ "oder String (für Fehler) sein."
 
 #, fuzzy
-#~ msgid "Select Property"
-#~ msgstr "Punkte auswählen"
+#~ msgid "Error creating the signature object."
+#~ msgstr "Fehler beim Schreiben des Projekt-PCK!"
 
 #, fuzzy
+#~ msgid "Invalid unique name."
+#~ msgstr "Ungültiger Name."
+
+#, fuzzy
+#~ msgid "Invalid product GUID."
+#~ msgstr "Ungültige Schriftgröße."
+
+#, fuzzy
+#~ msgid "Invalid publisher GUID."
+#~ msgstr "Ungültiger Pfad"
+
+#, fuzzy
+#~ msgid "Invalid background color."
+#~ msgstr "Eigene Schriftart-Quelle ist ungültig."
+
+#, fuzzy
+#~ msgid "Path property must point to a valid Spatial node to work."
+#~ msgstr ""
+#~ "Die Pfad-Eigenschaft muss auf ein gültiges Particles2D-Node verweisen."
+
+#, fuzzy
+#~ msgid "Show Bones"
+#~ msgstr "Knochen erstellen"
+
+#, fuzzy
+#~ msgid "Close All"
+#~ msgstr "Schließen"
+
+#, fuzzy
+#~ msgid "Pick Color"
+#~ msgstr "Farbe"
+
+#, fuzzy
+#~ msgid "Theme"
+#~ msgstr "Motiv speichern"
+
+#, fuzzy
+#~ msgid "New Script"
+#~ msgstr "Nächstes Skript"
+
+#~ msgid "Select Property"
+#~ msgstr "Eigenschaft auswählen"
+
 #~ msgid "Select Method"
-#~ msgstr "Auswahlmodus"
+#~ msgstr "Methode auswählen"
 
 #~ msgid "Create a new script for the selected node."
 #~ msgstr "Erzeuge ein neues Skript für das ausgewählte Node."

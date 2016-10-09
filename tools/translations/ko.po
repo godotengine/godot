@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-08-17 10:07+0000\n"
+"PO-Revision-Date: 2016-09-26 13:04+0000\n"
 "Last-Translator: 박한얼 <volzhs@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.9-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -31,6 +31,12 @@ msgstr "디코딩할 바이트가 모자라거나, 유효하지 않은 형식입
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
 msgstr "스텝 인자가 제로입니다!"
+
+#: modules/gdscript/gd_functions.cpp
+msgid ""
+"Paths cannot start with '/', absolute paths must start with 'res://', "
+"'user://', or 'local://'"
+msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
@@ -1020,6 +1026,12 @@ msgid "Method in target Node must be specified!"
 msgstr "대상 노드의 함수를 명시해야합니다!"
 
 #: tools/editor/connections_dialog.cpp
+msgid ""
+"Target method not found! Specify a valid method or attach a script to target "
+"Node."
+msgstr ""
+
+#: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
 msgstr "연결할 노드:"
 
@@ -1791,6 +1803,7 @@ msgid "Go to previously opened scene."
 msgstr "이전에 열었던 씬으로 가기."
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "Fullscreen Mode"
 msgstr "전체화면 모드"
 
@@ -2086,6 +2099,10 @@ msgid "Update Changes"
 msgstr "변경사항만 갱신"
 
 #: tools/editor/editor_node.cpp
+msgid "Disable Update Spinner"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
 msgid "Inspector"
 msgstr "인스펙터"
 
@@ -2124,6 +2141,10 @@ msgstr "오브젝트 속성."
 #: tools/editor/editor_node.cpp
 msgid "FileSystem"
 msgstr "파일 시스템"
+
+#: tools/editor/editor_node.cpp tools/editor/node_dock.cpp
+msgid "Node"
+msgstr "노드"
 
 #: tools/editor/editor_node.cpp
 msgid "Output"
@@ -2959,10 +2980,6 @@ msgstr "번역"
 #: tools/editor/multi_node_edit.cpp
 msgid "MultiNode Set"
 msgstr "다중 노드 설정"
-
-#: tools/editor/node_dock.cpp
-msgid "Node"
-msgstr "노드"
 
 #: tools/editor/node_dock.cpp
 msgid "Groups"
@@ -4745,6 +4762,11 @@ msgid "Insert Animation Key"
 msgstr "애니메이션 키 삽입"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Focus Origin"
+msgstr "원점 보기"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "선택 포커스"
 
@@ -6412,15 +6434,34 @@ msgstr "Notifier 범위 변경"
 #~ msgid "Editing Signal:"
 #~ msgstr "시그널 편집:"
 
+#, fuzzy
+#~ msgid "Change Expression"
+#~ msgstr "타입 변경"
+
 #~ msgid "Add Node"
 #~ msgstr "노드 추가"
 
-#, fuzzy
 #~ msgid "Add Preload Node"
-#~ msgstr "자식 노드 추가"
+#~ msgstr "Preload 노드 추가"
 
 #~ msgid "Add Node(s) From Tree"
 #~ msgstr "트리에서 노드 추가"
+
+#, fuzzy
+#~ msgid "Condition"
+#~ msgstr "애니메이션 복사"
+
+#, fuzzy
+#~ msgid "Switch"
+#~ msgstr "피치"
+
+#, fuzzy
+#~ msgid "Return"
+#~ msgstr "리턴:"
+
+#, fuzzy
+#~ msgid "Get"
+#~ msgstr "설정"
 
 #~ msgid "Base Type:"
 #~ msgstr "기본 타입:"
@@ -6440,21 +6481,17 @@ msgstr "Notifier 범위 변경"
 #~ msgid "Delete Selected"
 #~ msgstr "선택 항목 삭제"
 
-#, fuzzy
 #~ msgid "Find Node Type"
 #~ msgstr "노드 타입 찾기"
 
-#, fuzzy
 #~ msgid "Copy Nodes"
-#~ msgstr "포즈 복사"
+#~ msgstr "노드 복사"
 
-#, fuzzy
 #~ msgid "Cut Nodes"
-#~ msgstr "노드 생성"
+#~ msgstr "노드 잘라내기"
 
-#, fuzzy
 #~ msgid "Paste Nodes"
-#~ msgstr "포즈 붙여넣기"
+#~ msgstr "노드 붙여넣기"
 
 #~ msgid "Invalid index property name."
 #~ msgstr "유요하지 않은 인덱스 속성명."
@@ -6469,12 +6506,54 @@ msgstr "Notifier 범위 변경"
 #~ msgstr ": 유효하지 인자: "
 
 #, fuzzy
-#~ msgid "Select Property"
-#~ msgstr "포인트 선택"
+#~ msgid "Error creating the signature object."
+#~ msgstr "프로젝트 PCK 작성중 에러!"
 
 #, fuzzy
+#~ msgid "Invalid unique name."
+#~ msgstr "유효하지 않은 이름."
+
+#, fuzzy
+#~ msgid "Invalid product GUID."
+#~ msgstr "유요하지 않은 폰트 사이즈."
+
+#, fuzzy
+#~ msgid "Invalid publisher GUID."
+#~ msgstr "기본 경로가 유요하지 않음"
+
+#, fuzzy
+#~ msgid "Invalid background color."
+#~ msgstr "사용자 지정 폰트 소스가 유효하지 않습니다."
+
+#, fuzzy
+#~ msgid "Path property must point to a valid Spatial node to work."
+#~ msgstr "Path 속성은 유효한 Particles2D 노드를 가리켜야 합니다."
+
+#, fuzzy
+#~ msgid "Show Bones"
+#~ msgstr "Bones 만들기"
+
+#, fuzzy
+#~ msgid "Close All"
+#~ msgstr "닫기"
+
+#, fuzzy
+#~ msgid "Pick Color"
+#~ msgstr "색깔"
+
+#, fuzzy
+#~ msgid "Theme"
+#~ msgstr "테마 저장"
+
+#, fuzzy
+#~ msgid "New Script"
+#~ msgstr "다음 스크립트"
+
+#~ msgid "Select Property"
+#~ msgstr "속성 선택"
+
 #~ msgid "Select Method"
-#~ msgstr "선택 모드"
+#~ msgstr "메소드 선택"
 
 #~ msgid "Create a new script for the selected node."
 #~ msgstr "선택된 노드에 새로운 스크립트를 생성합니다."

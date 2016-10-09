@@ -5,13 +5,14 @@
 # António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
 # George Marques <george@gmarqu.es>, 2016.
 # Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
+# Mailson Silva Marins <mailsons335@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2016-08-11 15:38+0000\n"
-"Last-Translator: António Sarmento <antonio.luis.sarmento@gmail.com>\n"
+"PO-Revision-Date: 2016-09-02 21:07+0000\n"
+"Last-Translator: Mailson Silva Marins <mailsons335@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -19,11 +20,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.8\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argumento de tipo inválido para convert(), use constantes TYPE_*."
+msgstr "Argumento de tipo inválido para converter(), use constantes TYPE_*."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -32,6 +33,12 @@ msgstr "Não há bytes suficientes para decodificar, ou o formato é inválido."
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
 msgstr "o argumento step é zero!"
+
+#: modules/gdscript/gd_functions.cpp
+msgid ""
+"Paths cannot start with '/', absolute paths must start with 'res://', "
+"'user://', or 'local://'"
+msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
@@ -1032,6 +1039,12 @@ msgid "Method in target Node must be specified!"
 msgstr "O método no Nó destino precisa ser especificado!"
 
 #: tools/editor/connections_dialog.cpp
+msgid ""
+"Target method not found! Specify a valid method or attach a script to target "
+"Node."
+msgstr ""
+
+#: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
 msgstr "Conectar ao Nó:"
 
@@ -1809,6 +1822,7 @@ msgid "Go to previously opened scene."
 msgstr "Ir para cena aberta anteriormente."
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "Fullscreen Mode"
 msgstr "Modo Tela-Cheia"
 
@@ -2103,6 +2117,10 @@ msgid "Update Changes"
 msgstr "Atualizar nas Mudanças"
 
 #: tools/editor/editor_node.cpp
+msgid "Disable Update Spinner"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
 msgid "Inspector"
 msgstr "Inspetor"
 
@@ -2141,6 +2159,10 @@ msgstr "Propriedades do objeto."
 #: tools/editor/editor_node.cpp
 msgid "FileSystem"
 msgstr "Arquivos"
+
+#: tools/editor/editor_node.cpp tools/editor/node_dock.cpp
+msgid "Node"
+msgstr "Nó"
 
 #: tools/editor/editor_node.cpp
 msgid "Output"
@@ -2979,10 +3001,6 @@ msgstr "Tradução"
 #: tools/editor/multi_node_edit.cpp
 msgid "MultiNode Set"
 msgstr "Múltiplos Nós definidos"
-
-#: tools/editor/node_dock.cpp
-msgid "Node"
-msgstr "Nó"
 
 #: tools/editor/node_dock.cpp
 msgid "Groups"
@@ -4776,6 +4794,11 @@ msgid "Insert Animation Key"
 msgstr "Inserir Chanve de Animação"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Focus Origin"
+msgstr "Ver Origem"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "Focar Seleção"
 
@@ -6424,9 +6447,8 @@ msgstr "Alterar a Extensão do Notificador"
 #~ msgid "Rename Function"
 #~ msgstr "Renomear Função"
 
-#, fuzzy
 #~ msgid "Rename Variable"
-#~ msgstr "Renomear Amostra"
+#~ msgstr "renomeie variável"
 
 #~ msgid "Rename Signal"
 #~ msgstr "Renomear Sinal"
@@ -6455,6 +6477,10 @@ msgstr "Alterar a Extensão do Notificador"
 #~ msgid "Editing Signal:"
 #~ msgstr "Editando Sinal:"
 
+#, fuzzy
+#~ msgid "Change Expression"
+#~ msgstr "Alterar Tipo"
+
 #~ msgid "Add Node"
 #~ msgstr "Adicionar Nó"
 
@@ -6467,8 +6493,23 @@ msgstr "Alterar a Extensão do Notificador"
 #~ msgstr "Nó a Partir de Cena"
 
 #, fuzzy
+#~ msgid "Condition"
+#~ msgstr "Copiar Animação"
+
+#, fuzzy
+#~ msgid "Switch"
+#~ msgstr "Pitch"
+
+#, fuzzy
+#~ msgid "Return"
+#~ msgstr "Retornar:"
+
+#, fuzzy
+#~ msgid "Get"
+#~ msgstr "Definir"
+
 #~ msgid "Base Type:"
-#~ msgstr "Tipo de Dados:"
+#~ msgstr "Tipo de Base:"
 
 #~ msgid "Available Nodes:"
 #~ msgstr "Nós Disponíveis:"
@@ -6515,6 +6556,51 @@ msgstr "Alterar a Extensão do Notificador"
 
 #~ msgid ": Invalid arguments: "
 #~ msgstr ": Argumentos inválidos: "
+
+#, fuzzy
+#~ msgid "Error creating the signature object."
+#~ msgstr "Erro ao escrever o PCK do projeto!"
+
+#, fuzzy
+#~ msgid "Invalid unique name."
+#~ msgstr "Nome Inválido."
+
+#, fuzzy
+#~ msgid "Invalid product GUID."
+#~ msgstr "Tamanho de fonte inválido."
+
+#, fuzzy
+#~ msgid "Invalid publisher GUID."
+#~ msgstr "Caminho base inválido"
+
+#, fuzzy
+#~ msgid "Invalid background color."
+#~ msgstr "Origem personalizada da fonte inválida."
+
+#, fuzzy
+#~ msgid "Path property must point to a valid Spatial node to work."
+#~ msgstr ""
+#~ "A propriedade Caminho deve apontar a um nó Particles2D para funcionar."
+
+#, fuzzy
+#~ msgid "Show Bones"
+#~ msgstr "Fazer Ossos"
+
+#, fuzzy
+#~ msgid "Close All"
+#~ msgstr "Fechar"
+
+#, fuzzy
+#~ msgid "Pick Color"
+#~ msgstr "Cor"
+
+#, fuzzy
+#~ msgid "Theme"
+#~ msgstr "Salvar Tema"
+
+#, fuzzy
+#~ msgid "New Script"
+#~ msgstr "Próximo Script"
 
 #, fuzzy
 #~ msgid "Select Property"
