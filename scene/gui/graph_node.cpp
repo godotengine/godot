@@ -788,4 +788,5 @@ GraphNode::GraphNode() {
 	comment=false;
 	resizeable=false;
 	resizing=false;
+	selected=false;
 }

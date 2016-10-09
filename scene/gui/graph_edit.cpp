@@ -912,18 +912,20 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 		if (b.button_index==BUTTON_LEFT && b.pressed) {
 
 			GraphNode *gn = NULL;
+			GraphNode *gn_selected = NULL;
 			for(int i=get_child_count()-1;i>=0;i--) {
 
-				gn=get_child(i)->cast_to<GraphNode>();
+				gn_selected=get_child(i)->cast_to<GraphNode>();
 
-				if (gn) {
+				if (gn_selected) {
 
-					if (gn->is_resizing())
+					if (gn_selected->is_resizing())
 						continue;
 
-					Rect2 r = gn->get_rect();
+					Rect2 r = gn_selected->get_rect();
 					r.size*=zoom;
 					if (r.has_point(get_local_mouse_pos()))
+						gn = gn_selected;
 						break;
 				}
 			}
