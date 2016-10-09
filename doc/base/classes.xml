@@ -8575,6 +8575,13 @@
 		<method name="Color">
 			<return type="Color">
 			</return>
+			<description>
+				Construct an opaque black color.
+			</description>
+		</method>
+		<method name="Color">
+			<return type="Color">
+			</return>
 			<argument index="0" name="r" type="float">
 			</argument>
 			<argument index="1" name="g" type="float">
@@ -20677,6 +20684,11 @@
 	</description>
 	<methods>
 		<method name="Matrix3">
+			<description>
+				Constructs an identity matrix.
+			</description>
+		</method>
+		<method name="Matrix3">
 			<return type="Matrix3">
 			</return>
 			<argument index="0" name="from" type="Quat">
@@ -31440,6 +31452,11 @@
 	</description>
 	<methods>
 		<method name="Quat">
+			<description>
+				Constructs an identity quaternion.
+			</description>
+		</method>
+		<method name="Quat">
 			<return type="Quat">
 			</return>
 			<argument index="0" name="x" type="float">
@@ -31451,6 +31468,7 @@
 			<argument index="3" name="w" type="float">
 			</argument>
 			<description>
+				Constructs a quaternion from the value of its internal components.
 			</description>
 		</method>
 		<method name="Quat">
@@ -31461,6 +31479,7 @@
 			<argument index="1" name="angle" type="float">
 			</argument>
 			<description>
+				Constructs a quaternion as a rotation around an axis.
 			</description>
 		</method>
 		<method name="Quat">
@@ -31469,6 +31488,7 @@
 			<argument index="0" name="from" type="Matrix3">
 			</argument>
 			<description>
+				Constructs a quaternion from the rotation described by a matrix
 			</description>
 		</method>
 		<method name="cubic_slerp">
@@ -42900,6 +42920,13 @@
 		<method name="Transform">
 			<return type="Transform">
 			</return>
+			<description>
+				Construct an identity transform.
+			</description>
+		</method>
+		<method name="Transform">
+			<return type="Transform">
+			</return>
 			<argument index="0" name="x_axis" type="Vector3">
 			</argument>
 			<argument index="1" name="y_axis" type="Vector3">
@@ -44733,6 +44760,11 @@ do_property].
 	</description>
 	<methods>
 		<method name="Vector2">
+			<description>
+				Constructs a new Vector2 with both x and y set to 0.
+			</description>
+		</method>
+		<method name="Vector2">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="x" type="float">
@@ -45035,6 +45067,11 @@ do_property].
 		Vector3 is one of the core classes of the engine, and includes several built-in helper functions to perform basic vector math operations.
 	</description>
 	<methods>
+		<method name="Vector3">
+			<description>
+				Constructs a new Vector3 with x, y and z set to 0.
+			</description>
+		</method>
 		<method name="Vector3">
 			<return type="Vector3">
 			</return>
