@@ -4008,7 +4008,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area enters this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -4028,7 +4028,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area exits this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -4350,7 +4350,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area enters this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -4370,7 +4370,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area exits this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -6544,6 +6544,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_h_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_keep_aspect_mode" qualifiers="const">
 			<return type="int">
 			</return>
@@ -6557,6 +6563,12 @@
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_v_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -6640,6 +6652,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_h_offset">
+			<argument index="0" name="ofs" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_keep_aspect_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
@@ -6666,6 +6684,12 @@
 			</argument>
 			<description>
 				Set the camera projection to perspective mode, by specifying a [i]FOV[/i] Y angle in degrees (FOV means Field of View), and the [i]near[/i] and [i]far[/i] clip planes in worldspace units.
+			</description>
+		</method>
+		<method name="set_v_offset">
+			<argument index="0" name="ofs" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_visible_layers">
@@ -16000,6 +16024,38 @@
 				Returns the current value of the joystick axis at given index (see JOY_* constants in [@Global Scope])
 			</description>
 		</method>
+		<method name="get_joy_axis_index_from_string">
+			<return type="int">
+			</return>
+			<argument index="0" name="axis" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_axis_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="axis_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_button_index_from_string">
+			<return type="int">
+			</return>
+			<argument index="0" name="button" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_button_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="button_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_joy_guid" qualifiers="const">
 			<return type="String">
 			</return>
@@ -19039,6 +19095,12 @@
 				Get the minimum Z value that objects of the scene have to be in order to be affected by the Light2D.
 			</description>
 		</method>
+		<method name="is_editor_only" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -19058,6 +19120,12 @@
 			</argument>
 			<description>
 				Set the color of the Light2D.
+			</description>
+		</method>
+		<method name="set_editor_only">
+			<argument index="0" name="editor_only" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_enabled">
@@ -29942,6 +30010,14 @@
 				Return the text of the item at index "idx".
 			</description>
 		</method>
+		<method name="get_item_tooltip" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="is_item_checkable" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -30081,6 +30157,20 @@
 			</argument>
 			<description>
 				Set the text of the item at index "idx".
+			</description>
+		</method>
+		<method name="set_item_tooltip">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="tooltip" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="toggle_item_checked">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -38109,6 +38199,206 @@
 		This is the built-in string class (and the one used by GDScript). It supports Unicode and provides all necessary means for string handling. Strings are reference counted and use a copy-on-write approach, so passing them around is cheap in resources.
 	</description>
 	<methods>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Matrix32">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Plane">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Quat">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="AABB">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Matrix3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="RawArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="IntArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="RealArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="StringArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Vector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Vector3Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="ColorArray">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="basename">
 			<return type="String">
 			</return>
@@ -42314,6 +42604,10 @@
 		</theme_item>
 		<theme_item name="relationship_line_color" type="Color">
 		</theme_item>
+		<theme_item name="scroll_border" type="int">
+		</theme_item>
+		<theme_item name="scroll_speed" type="int">
+		</theme_item>
 		<theme_item name="select_arrow" type="Texture">
 		</theme_item>
 		<theme_item name="selected" type="StyleBox">
@@ -43541,6 +43835,14 @@
 				Returns the angle in radians between the line connecting the two points and the x coordinate.
 			</description>
 		</method>
+		<method name="clamped">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="length" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="cubic_interpolate">
 			<return type="Vector2">
 			</return>
@@ -43811,6 +44113,14 @@
 			</return>
 			<description>
 				Returns a new vector with all components in absolute values (e.g. positive).
+			</description>
+		</method>
+		<method name="angle_to">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Vector3">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="ceil">
@@ -45170,8 +45480,20 @@
 	<description>
 	</description>
 	<methods>
+		<method name="get_aabb" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_layer_mask" qualifiers="const">
 			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_transformed_aabb" qualifiers="const">
+			<return type="AABB">
 			</return>
 			<description>
 			</description>
@@ -45437,6 +45759,14 @@
 			<argument index="0" name="arg0" type="RID">
 			</argument>
 			<argument index="1" name="arg1" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_sort_children_by_y">
+			<argument index="0" name="arg0" type="RID">
+			</argument>
+			<argument index="1" name="arg1" type="bool">
 			</argument>
 			<description>
 			</description>
