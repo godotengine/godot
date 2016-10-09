@@ -130,7 +130,6 @@ opts.Add('freetype','Freetype support in editor','builtin')
 opts.Add('speex','Speex Audio (yes/no)','yes')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
 opts.Add('libpng','libpng library for image loader support (system/builtin)','builtin')
-opts.Add('jpg','JPG Image loader support (yes/no)','yes')
 opts.Add('webp','WEBP Image loader support (yes/no)','yes')
 opts.Add('dds','DDS Texture loader support (yes/no)','yes')
 opts.Add('pvr','PVR (PowerVR) Texture loader support (yes/no)','yes')
@@ -356,8 +355,6 @@ if selected_platform in platform_list:
 		env.Append(CPPFLAGS=['-DDDS_ENABLED']);
 	if (env['pvr']=='yes'):
 		env.Append(CPPFLAGS=['-DPVR_ENABLED']);
-	if (env['jpg']=='yes'):
-		env.Append(CPPFLAGS=['-DJPG_ENABLED']);
 	if (env['webp']=='yes'):
 		env.Append(CPPFLAGS=['-DWEBP_ENABLED']);
 

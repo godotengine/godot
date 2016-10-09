@@ -30,7 +30,8 @@
 
 #include "print_string.h"
 #include "os/os.h"
-#include "jpgd.h"
+
+#include <jpgd.h>
 #include <string.h>
 
 
