@@ -1715,6 +1715,9 @@ Control* Viewport::_gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_g
 	}
 
 	Matrix32 matrix = p_xform * p_node->get_transform();
+	// matrix.basis_determinant() == 0.0f implies that node does not exist on scene
+	if(matrix.basis_determinant() == 0.0f)
+		return NULL;
 
 	if (!c || !c->clips_input() || c->has_point(matrix.affine_inverse().xform(p_global))) {
 
