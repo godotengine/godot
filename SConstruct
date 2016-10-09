@@ -54,7 +54,7 @@ methods.save_active_platforms(active_platforms,active_platform_ids)
 
 custom_tools=['default']
 
-platform_arg = ARGUMENTS.get("platform", False)
+platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
 if (os.name=="posix"):
 	pass
