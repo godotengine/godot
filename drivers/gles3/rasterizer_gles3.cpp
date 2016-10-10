@@ -115,8 +115,17 @@ void RasterizerGLES3::initialize() {
 
 void RasterizerGLES3::begin_frame(){
 
+	double time_total = double(OS::get_singleton()->get_ticks_usec())/1000000.0;
 
+	storage->frame.time[0]=time_total;
+	storage->frame.time[1]=Math::fmod(time_total,3600);
+	storage->frame.time[2]=Math::fmod(time_total,900);
+	storage->frame.time[3]=Math::fmod(time_total,60);
+
+	storage->update_dirty_shaders();
+	storage->update_dirty_materials();
 }
+
 void RasterizerGLES3::set_current_render_target(RID p_render_target){
 
 	if (!p_render_target.is_valid() && storage->frame.current_rt && storage->frame.clear_request) {
@@ -257,6 +266,7 @@ RasterizerGLES3::RasterizerGLES3()
 	storage = memnew( RasterizerStorageGLES3 );
 	canvas = memnew( RasterizerCanvasGLES3 );
 	canvas->storage=storage;
+	storage->canvas=canvas;
 
 
 }

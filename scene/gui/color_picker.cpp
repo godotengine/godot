@@ -34,31 +34,12 @@
 #include "os/input.h"
 #include "os/keyboard.h"
 
-void update_material(Ref<CanvasItemMaterial>mat,const Color& p_color,float h,float s,float v) {
-	if (!mat.is_valid())
-		return;
-	Ref<Shader> sdr = mat->get_shader();
-	if (!sdr.is_valid())
-		return;
-
-	mat->set_shader_param("R",p_color.r);
-	mat->set_shader_param("G",p_color.g);
-	mat->set_shader_param("B",p_color.b);
-	mat->set_shader_param("H",h);
-	mat->set_shader_param("S",s);
-	mat->set_shader_param("V",v);
-	mat->set_shader_param("A",p_color.a);
-}
 
 void ColorPicker::_notification(int p_what) {
 
 
 	switch(p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			uv_material->set_shader(get_shader("uv_editor"));
-			w_material->set_shader(get_shader("w_editor"));
-			update_material(uv_material,color,h,s,v);
-			update_material(w_material,color,h,s,v);
 			uv_edit->set_texture(get_icon("color_main"));
 			w_edit->set_texture(get_icon("color_hue"));
 			sample->set_texture(get_icon("color_sample"));
@@ -68,8 +49,6 @@ void ColorPicker::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
-			update_material(uv_material, color,h,s,v);
-			update_material(w_material, color,h,s,v);
 
 			uv_edit->get_child(0)->cast_to<Control>()->update();
 			w_edit->get_child(0)->cast_to<Control>()->update();
@@ -113,8 +92,6 @@ void ColorPicker::set_color(const Color& p_color) {
 	if (!is_inside_tree())
 		return;
 
-	update_material(uv_material, color,h,s,v);
-	update_material(w_material, color,h,s,v);
 
 	uv_edit->get_child(0)->cast_to<Control>()->update();
 	w_edit->get_child(0)->cast_to<Control>()->update();
@@ -509,7 +486,6 @@ ColorPicker::ColorPicker() :
 	uv_edit->add_child(c);
 	c->set_area_as_parent_rect();
 	c->set_stop_mouse(false);
-	c->set_material(memnew ( CanvasItemMaterial ));
 	Vector<Variant> args=Vector<Variant>();
 	args.push_back(0);
 	args.push_back(c);
@@ -525,7 +501,6 @@ ColorPicker::ColorPicker() :
 	w_edit->add_child(c);
 	c->set_area_as_parent_rect();
 	c->set_stop_mouse(false);
-	c->set_material(memnew ( CanvasItemMaterial ));
 	args.clear();
 	args.push_back(1);
 	args.push_back(c);
@@ -592,18 +567,6 @@ ColorPicker::ColorPicker() :
 	_update_controls();
 	//_update_color();
 	updating=false;
-
-	uv_material.instance();
-	Ref<Shader> s_uv = get_shader("uv_editor");
-	uv_material->set_shader(s_uv);
-
-	w_material.instance();
-
-	Ref<Shader> s_w = get_shader("w_editor");
-	w_material->set_shader(s_w);
-
-	uv_edit->set_material(uv_material);
-	w_edit->set_material(w_material);
 
 	set_color(Color(1,1,1));
 

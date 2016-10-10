@@ -1,4 +1,5 @@
 #include "rasterizer_storage_gles3.h"
+#include "rasterizer_canvas_gles3.h"
 #include "globals.h"
 
 /* TEXTURE API */
@@ -1000,63 +1001,904 @@ void RasterizerStorageGLES3::texture_set_shrink_all_x2_on_set_data(bool p_enable
 
 RID RasterizerStorageGLES3::shader_create(VS::ShaderMode p_mode){
 
-	return RID();
+	Shader *shader = memnew( Shader );
+	shader->mode=p_mode;
+	RID rid = shader_owner.make_rid(shader);
+	shader_set_mode(rid,p_mode);
+	_shader_make_dirty(shader);
+	shader->self=rid;
+
+	return rid;
+}
+
+void RasterizerStorageGLES3::_shader_make_dirty(Shader* p_shader) {
+
+	if (p_shader->dirty_list.in_list())
+		return;
+
+	_shader_dirty_list.add(&p_shader->dirty_list);
 }
 
 void RasterizerStorageGLES3::shader_set_mode(RID p_shader,VS::ShaderMode p_mode){
 
+	ERR_FAIL_INDEX(p_mode,VS::SHADER_MAX);
+	Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	if (shader->custom_code_id && p_mode==shader->mode)
+		return;
+
+
+	if (shader->custom_code_id) {
+
+		shader->shader->free_custom_shader(shader->custom_code_id);
+		shader->custom_code_id=0;
+	}
+
+	shader->mode=p_mode;
+
+	ShaderGLES3* shaders[VS::SHADER_MAX]={
+		&canvas->state.canvas_shader,
+		&canvas->state.canvas_shader,
+		&canvas->state.canvas_shader,
+
+	};
+
+	shader->shader=shaders[p_mode];
+
+	shader->custom_code_id = shader->shader->create_custom_shader();
+
+	_shader_make_dirty(shader);
 
 }
 VS::ShaderMode RasterizerStorageGLES3::shader_get_mode(RID p_shader) const {
 
-	return VS::SHADER_SPATIAL;
+	const Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND_V(!shader,VS::SHADER_MAX);
+
+	return shader->mode;
 }
 void RasterizerStorageGLES3::shader_set_code(RID p_shader, const String& p_code){
 
+	Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
 
+	shader->code=p_code;
+	_shader_make_dirty(shader);
 }
 String RasterizerStorageGLES3::shader_get_code(RID p_shader) const{
 
-	return String();
+	const Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND_V(!shader,String());
+
+
+	return shader->code;
 }
+
+void RasterizerStorageGLES3::_update_shader(Shader* p_shader) const {
+
+
+	_shader_dirty_list.remove( &p_shader->dirty_list );
+
+	p_shader->valid=false;
+
+	p_shader->uniforms.clear();
+
+	ShaderCompilerGLES3::GeneratedCode gen_code;
+	ShaderCompilerGLES3::IdentifierActions *actions=NULL;
+
+
+
+	switch(p_shader->mode) {
+		case VS::SHADER_CANVAS_ITEM: {
+
+			p_shader->canvas_item.light_mode=Shader::CanvasItem::LIGHT_MODE_NORMAL;
+			p_shader->canvas_item.blend_mode=Shader::CanvasItem::BLEND_MODE_MIX;
+
+			shaders.actions_canvas.render_mode_values["blend_add"]=Pair<int*,int>(&p_shader->canvas_item.blend_mode,Shader::CanvasItem::BLEND_MODE_ADD);
+			shaders.actions_canvas.render_mode_values["blend_mix"]=Pair<int*,int>(&p_shader->canvas_item.blend_mode,Shader::CanvasItem::BLEND_MODE_MIX);
+			shaders.actions_canvas.render_mode_values["blend_sub"]=Pair<int*,int>(&p_shader->canvas_item.blend_mode,Shader::CanvasItem::BLEND_MODE_SUB);
+			shaders.actions_canvas.render_mode_values["blend_mul"]=Pair<int*,int>(&p_shader->canvas_item.blend_mode,Shader::CanvasItem::BLEND_MODE_MUL);
+			shaders.actions_canvas.render_mode_values["blend_premul_alpha"]=Pair<int*,int>(&p_shader->canvas_item.blend_mode,Shader::CanvasItem::BLEND_MODE_PMALPHA);
+
+			shaders.actions_canvas.render_mode_values["unshaded"]=Pair<int*,int>(&p_shader->canvas_item.light_mode,Shader::CanvasItem::LIGHT_MODE_UNSHADED);
+			shaders.actions_canvas.render_mode_values["light_only"]=Pair<int*,int>(&p_shader->canvas_item.light_mode,Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY);
+
+			actions=&shaders.actions_canvas;
+			actions->uniforms=&p_shader->uniforms;
+
+		} break;
+	}
+
+
+	Error err = shaders.compiler.compile(p_shader->mode,p_shader->code,actions,p_shader->path,gen_code);
+
+	ERR_FAIL_COND(err!=OK);
+
+	p_shader->shader->set_custom_shader_code(p_shader->custom_code_id,gen_code.vertex,gen_code.vertex_global,gen_code.fragment,gen_code.light,gen_code.fragment_global,gen_code.uniforms,gen_code.texture_uniforms,gen_code.defines);
+
+	p_shader->ubo_size=gen_code.uniform_total_size;
+	p_shader->ubo_offsets=gen_code.uniform_offsets;
+	p_shader->texture_count=gen_code.texture_uniforms.size();
+
+	//all materials using this shader will have to be invalidated, unfortunately
+
+	for (SelfList<Material>* E = p_shader->materials.first();E;E=E->next() ) {
+
+		_material_make_dirty(E->self());
+	}
+
+	p_shader->valid=true;
+	p_shader->version++;
+
+}
+
+void RasterizerStorageGLES3::update_dirty_shaders() {
+
+	while( _shader_dirty_list.first() ) {
+		_update_shader(_shader_dirty_list.first()->self() );
+	}
+}
+
 void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const{
 
+	Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
 
+
+	if (shader->dirty_list.in_list())
+		_update_shader(shader); // ok should be not anymore dirty
+
+
+	Map<int,StringName> order;
+
+
+	for(Map<StringName,ShaderLanguage::ShaderNode::Uniform>::Element *E=shader->uniforms.front();E;E=E->next()) {
+
+
+		order[E->get().order]=E->key();
+	}
+
+
+	for(Map<int,StringName>::Element *E=order.front();E;E=E->next()) {
+
+		PropertyInfo pi;
+		ShaderLanguage::ShaderNode::Uniform &u=shader->uniforms[E->get()];
+		pi.name=E->get();
+		switch(u.type) {
+			case ShaderLanguage::TYPE_VOID: pi.type=Variant::NIL; break;
+			case ShaderLanguage::TYPE_BOOL: pi.type=Variant::BOOL; break;
+			case ShaderLanguage::TYPE_BVEC2: pi.type=Variant::INT; pi.hint=PROPERTY_HINT_FLAGS; pi.hint_string="x,y"; break;
+			case ShaderLanguage::TYPE_BVEC3: pi.type=Variant::INT; pi.hint=PROPERTY_HINT_FLAGS; pi.hint_string="x,y,z"; break;
+			case ShaderLanguage::TYPE_BVEC4: pi.type=Variant::INT; pi.hint=PROPERTY_HINT_FLAGS; pi.hint_string="x,y,z,w"; break;
+			case ShaderLanguage::TYPE_UINT:
+			case ShaderLanguage::TYPE_INT: {
+				pi.type=Variant::INT;
+				if (u.hint==ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
+					pi.hint=PROPERTY_HINT_RANGE;
+					pi.hint_string=rtos(u.hint_range[0])+","+rtos(u.hint_range[1]);
+				}
+
+			} break;
+			case ShaderLanguage::TYPE_IVEC2:
+			case ShaderLanguage::TYPE_IVEC3:
+			case ShaderLanguage::TYPE_IVEC4:
+			case ShaderLanguage::TYPE_UVEC2:
+			case ShaderLanguage::TYPE_UVEC3:
+			case ShaderLanguage::TYPE_UVEC4: {
+
+				pi.type=Variant::INT_ARRAY;
+			} break;
+			case ShaderLanguage::TYPE_FLOAT: {
+				pi.type=Variant::REAL;
+				if (u.hint==ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
+					pi.hint=PROPERTY_HINT_RANGE;
+					pi.hint_string=rtos(u.hint_range[0])+","+rtos(u.hint_range[1])+","+rtos(u.hint_range[2]);
+				}
+
+			} break;
+			case ShaderLanguage::TYPE_VEC2: pi.type=Variant::VECTOR2; break;
+			case ShaderLanguage::TYPE_VEC3: pi.type=Variant::VECTOR3; break;
+			case ShaderLanguage::TYPE_VEC4: {
+				if (u.hint==ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					pi.type=Variant::COLOR;
+				} else {
+					pi.type=Variant::PLANE;
+				}
+			} break;
+			case ShaderLanguage::TYPE_MAT2: pi.type=Variant::MATRIX32; break;
+			case ShaderLanguage::TYPE_MAT3: pi.type=Variant::MATRIX3; break;
+			case ShaderLanguage::TYPE_MAT4: pi.type=Variant::TRANSFORM; break;
+			case ShaderLanguage::TYPE_SAMPLER2D:
+			case ShaderLanguage::TYPE_ISAMPLER2D:
+			case ShaderLanguage::TYPE_USAMPLER2D: {
+
+				 pi.type=Variant::OBJECT;
+				 pi.hint=PROPERTY_HINT_RESOURCE_TYPE;
+				 pi.hint_string="Texture";
+			} break;
+			case ShaderLanguage::TYPE_SAMPLERCUBE: {
+
+				pi.type=Variant::OBJECT;
+				pi.hint=PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string="CubeMap";
+			} break;
+		};
+
+		p_param_list->push_back(pi);
+
+	}
 }
 
 void RasterizerStorageGLES3::shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture){
 
+	Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+	ERR_FAIL_COND(p_texture.is_valid() && !texture_owner.owns(p_texture));
 
+	if (p_texture.is_valid())
+		shader->default_textures[p_name]=p_texture;
+	else
+		shader->default_textures.erase(p_name);
+
+	_shader_make_dirty(shader);
 }
 RID RasterizerStorageGLES3::shader_get_default_texture_param(RID p_shader, const StringName& p_name) const{
 
-	return RID();
+	const Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND_V(!shader,RID());
+
+	const Map<StringName,RID>::Element *E=shader->default_textures.find(p_name);
+	if (!E)
+		return RID();
+	return E->get();
 }
 
 
 /* COMMON MATERIAL API */
 
+void RasterizerStorageGLES3::_material_make_dirty(Material* p_material) const {
+
+	if (p_material->dirty_list.in_list())
+		return;
+
+	_material_dirty_list.add(&p_material->dirty_list);
+}
+
 RID RasterizerStorageGLES3::material_create(){
 
-	return RID();
+	Material *material = memnew( Material );
+
+	return material_owner.make_rid(material);
 }
 
-void RasterizerStorageGLES3::material_set_shader(RID p_shader_material, RID p_shader){
+void RasterizerStorageGLES3::material_set_shader(RID p_material, RID p_shader){
 
+	Material *material = material_owner.get(  p_material );
+	ERR_FAIL_COND(!material);
+
+	Shader *shader=shader_owner.getornull(p_shader);
+
+	if (material->shader) {
+		//if shader, remove from previous shader material list
+		material->shader->materials.remove( &material->list );
+	}
+	material->shader=shader;
+
+	if (shader) {
+		shader->materials.add(&material->list);
+	}
+
+	_material_make_dirty(material);
 
 }
-RID RasterizerStorageGLES3::material_get_shader(RID p_shader_material) const{
+
+RID RasterizerStorageGLES3::material_get_shader(RID p_material) const{
+
+	const Material *material = material_owner.get(  p_material );
+	ERR_FAIL_COND_V(!material,RID());
+
+	if (material->shader)
+		return material->shader->self;
 
 	return RID();
 }
 
 void RasterizerStorageGLES3::material_set_param(RID p_material, const StringName& p_param, const Variant& p_value){
 
+	Material *material = material_owner.get(  p_material );
+	ERR_FAIL_COND(!material);
+
+	if (p_value.get_type()==Variant::NIL)
+		material->params.erase(p_param);
+	else
+		material->params[p_param]=p_value;
+
+	_material_make_dirty(material);
 
 }
 Variant RasterizerStorageGLES3::material_get_param(RID p_material, const StringName& p_param) const{
 
+	const Material *material = material_owner.get(  p_material );
+	ERR_FAIL_COND_V(!material,RID());
+
+	if (material->params.has(p_param))
+		return material->params[p_param];
+
 	return Variant();
+}
+
+_FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, const Variant& value, uint8_t *data) {
+	switch(type) {
+		case ShaderLanguage::TYPE_BOOL: {
+
+			bool v = value;
+
+			GLuint *gui = (GLuint*)data;
+			*gui = v ? GL_TRUE : GL_FALSE;
+		} break;
+		case ShaderLanguage::TYPE_BVEC2: {
+
+			int v = value;
+			GLuint *gui = (GLuint*)data;
+			gui[0]=v&1 ? GL_TRUE : GL_FALSE;
+			gui[1]=v&2 ? GL_TRUE : GL_FALSE;
+
+		} break;
+		case ShaderLanguage::TYPE_BVEC3: {
+
+			int v = value;
+			GLuint *gui = (GLuint*)data;
+			gui[0]=v&1 ? GL_TRUE : GL_FALSE;
+			gui[1]=v&2 ? GL_TRUE : GL_FALSE;
+			gui[2]=v&4 ? GL_TRUE : GL_FALSE;
+
+		} break;
+		case ShaderLanguage::TYPE_BVEC4: {
+
+			int v = value;
+			GLuint *gui = (GLuint*)data;
+			gui[0]=v&1 ? GL_TRUE : GL_FALSE;
+			gui[1]=v&2 ? GL_TRUE : GL_FALSE;
+			gui[2]=v&4 ? GL_TRUE : GL_FALSE;
+			gui[3]=v&8 ? GL_TRUE : GL_FALSE;
+
+		} break;
+		case ShaderLanguage::TYPE_INT: {
+
+			int v = value;
+			GLint *gui = (GLint*)data;
+			gui[0]=v;
+
+		} break;
+		case ShaderLanguage::TYPE_IVEC2: {
+
+			DVector<int> iv = value;
+			int s = iv.size();
+			GLint *gui = (GLint*)data;
+
+			DVector<int>::Read r = iv.read();
+
+			for(int i=0;i<2;i++) {
+				if (i<s)
+					gui[i]=r[i];
+				else
+					gui[i]=0;
+
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_IVEC3: {
+
+			DVector<int> iv = value;
+			int s = iv.size();
+			GLint *gui = (GLint*)data;
+
+			DVector<int>::Read r = iv.read();
+
+			for(int i=0;i<3;i++) {
+				if (i<s)
+					gui[i]=r[i];
+				else
+					gui[i]=0;
+
+			}
+		} break;
+		case ShaderLanguage::TYPE_IVEC4: {
+
+
+			DVector<int> iv = value;
+			int s = iv.size();
+			GLint *gui = (GLint*)data;
+
+			DVector<int>::Read r = iv.read();
+
+			for(int i=0;i<4;i++) {
+				if (i<s)
+					gui[i]=r[i];
+				else
+					gui[i]=0;
+
+			}
+		} break;
+		case ShaderLanguage::TYPE_UINT: {
+
+			int v = value;
+			GLuint *gui = (GLuint*)data;
+			gui[0]=v;
+
+		} break;
+		case ShaderLanguage::TYPE_UVEC2: {
+
+			DVector<int> iv = value;
+			int s = iv.size();
+			GLuint *gui = (GLuint*)data;
+
+			DVector<int>::Read r = iv.read();
+
+			for(int i=0;i<2;i++) {
+				if (i<s)
+					gui[i]=r[i];
+				else
+					gui[i]=0;
+
+			}
+		} break;
+		case ShaderLanguage::TYPE_UVEC3: {
+			DVector<int> iv = value;
+			int s = iv.size();
+			GLuint *gui = (GLuint*)data;
+
+			DVector<int>::Read r = iv.read();
+
+			for(int i=0;i<3;i++) {
+				if (i<s)
+					gui[i]=r[i];
+				else
+					gui[i]=0;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_UVEC4: {
+			DVector<int> iv = value;
+			int s = iv.size();
+			GLuint *gui = (GLuint*)data;
+
+			DVector<int>::Read r = iv.read();
+
+			for(int i=0;i<4;i++) {
+				if (i<s)
+					gui[i]=r[i];
+				else
+					gui[i]=0;
+			}
+		} break;
+		case ShaderLanguage::TYPE_FLOAT: {
+			float v = value;
+			GLfloat *gui = (GLfloat*)data;
+			gui[0]=v;
+
+		} break;
+		case ShaderLanguage::TYPE_VEC2: {
+			Vector2 v = value;
+			GLfloat *gui = (GLfloat*)data;
+			gui[0]=v.x;
+			gui[1]=v.y;
+
+		} break;
+		case ShaderLanguage::TYPE_VEC3: {
+			Vector3 v = value;
+			GLfloat *gui = (GLfloat*)data;
+			gui[0]=v.x;
+			gui[1]=v.y;
+			gui[2]=v.z;
+
+		} break;
+		case ShaderLanguage::TYPE_VEC4: {
+
+			GLfloat *gui = (GLfloat*)data;
+
+			if (value.get_type()==Variant::COLOR) {
+				Color v=value;
+
+				gui[0]=v.r;
+				gui[1]=v.g;
+				gui[3]=v.b;
+				gui[4]=v.a;
+			} else if (value.get_type()==Variant::RECT2) {
+				Rect2 v=value;
+
+				gui[0]=v.pos.x;
+				gui[1]=v.pos.y;
+				gui[3]=v.size.x;
+				gui[4]=v.size.y;
+			} else if (value.get_type()==Variant::QUAT) {
+				Quat v=value;
+
+				gui[0]=v.x;
+				gui[1]=v.y;
+				gui[3]=v.z;
+				gui[4]=v.w;
+			} else {
+				Plane v=value;
+
+				gui[0]=v.normal.x;
+				gui[1]=v.normal.y;
+				gui[3]=v.normal.x;
+				gui[4]=v.d;
+
+			}
+		} break;
+		case ShaderLanguage::TYPE_MAT2: {
+			Matrix32 v = value;
+			GLfloat *gui = (GLfloat*)data;
+
+			gui[ 0]=v.elements[0][0];
+			gui[ 1]=v.elements[0][1];
+			gui[ 2]=v.elements[1][0];
+			gui[ 3]=v.elements[1][1];
+		} break;
+		case ShaderLanguage::TYPE_MAT3: {
+
+
+			Matrix3 v = value;
+			GLfloat *gui = (GLfloat*)data;
+
+			gui[ 0]=v.elements[0][0];
+			gui[ 1]=v.elements[1][0];
+			gui[ 2]=v.elements[2][0];
+			gui[ 3]=0;
+			gui[ 4]=v.elements[0][1];
+			gui[ 5]=v.elements[1][1];
+			gui[ 6]=v.elements[2][1];
+			gui[ 7]=0;
+			gui[ 8]=v.elements[0][2];
+			gui[ 9]=v.elements[1][2];
+			gui[10]=v.elements[2][2];
+			gui[11]=0;
+		} break;
+		case ShaderLanguage::TYPE_MAT4: {
+
+			Transform v = value;
+			GLfloat *gui = (GLfloat*)data;
+
+			gui[ 0]=v.basis.elements[0][0];
+			gui[ 1]=v.basis.elements[1][0];
+			gui[ 2]=v.basis.elements[2][0];
+			gui[ 3]=0;
+			gui[ 4]=v.basis.elements[0][1];
+			gui[ 5]=v.basis.elements[1][1];
+			gui[ 6]=v.basis.elements[2][1];
+			gui[ 7]=0;
+			gui[ 8]=v.basis.elements[0][2];
+			gui[ 9]=v.basis.elements[1][2];
+			gui[10]=v.basis.elements[2][2];
+			gui[11]=0;
+			gui[12]=v.origin.x;
+			gui[13]=v.origin.y;
+			gui[14]=v.origin.z;
+			gui[15]=1;
+		} break;
+		default: {}
+	}
+
+}
+
+_FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type, const Vector<ShaderLanguage::ConstantNode::Value>& value, uint8_t *data) {
+
+	switch(type) {
+		case ShaderLanguage::TYPE_BOOL: {
+
+			GLuint *gui = (GLuint*)data;
+			*gui = value[0].boolean ? GL_TRUE : GL_FALSE;
+		} break;
+		case ShaderLanguage::TYPE_BVEC2: {
+
+			GLuint *gui = (GLuint*)data;
+			gui[0]=value[0].boolean ? GL_TRUE : GL_FALSE;
+			gui[1]=value[1].boolean ? GL_TRUE : GL_FALSE;
+
+		} break;
+		case ShaderLanguage::TYPE_BVEC3: {
+
+			GLuint *gui = (GLuint*)data;
+			gui[0]=value[0].boolean ? GL_TRUE : GL_FALSE;
+			gui[1]=value[1].boolean ? GL_TRUE : GL_FALSE;
+			gui[2]=value[2].boolean ? GL_TRUE : GL_FALSE;
+
+		} break;
+		case ShaderLanguage::TYPE_BVEC4: {
+
+			GLuint *gui = (GLuint*)data;
+			gui[0]=value[0].boolean ? GL_TRUE : GL_FALSE;
+			gui[1]=value[1].boolean ? GL_TRUE : GL_FALSE;
+			gui[2]=value[2].boolean ? GL_TRUE : GL_FALSE;
+			gui[3]=value[3].boolean ? GL_TRUE : GL_FALSE;
+
+		} break;
+		case ShaderLanguage::TYPE_INT: {
+
+			GLint *gui = (GLint*)data;
+			gui[0]=value[0].sint;
+
+		} break;
+		case ShaderLanguage::TYPE_IVEC2: {
+
+			GLint *gui = (GLint*)data;
+
+			for(int i=0;i<2;i++) {
+				gui[i]=value[i].sint;
+
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_IVEC3: {
+
+			GLint *gui = (GLint*)data;
+
+			for(int i=0;i<3;i++) {
+				gui[i]=value[i].sint;
+
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_IVEC4: {
+
+			GLint *gui = (GLint*)data;
+
+			for(int i=0;i<4;i++) {
+				gui[i]=value[i].sint;
+
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_UINT: {
+
+
+			GLuint *gui = (GLuint*)data;
+			gui[0]=value[0].uint;
+
+		} break;
+		case ShaderLanguage::TYPE_UVEC2: {
+
+			GLint *gui = (GLint*)data;
+
+			for(int i=0;i<2;i++) {
+				gui[i]=value[i].uint;
+			}
+		} break;
+		case ShaderLanguage::TYPE_UVEC3: {
+			GLint *gui = (GLint*)data;
+
+			for(int i=0;i<3;i++) {
+				gui[i]=value[i].uint;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_UVEC4: {
+			GLint *gui = (GLint*)data;
+
+			for(int i=0;i<4;i++) {
+				gui[i]=value[i].uint;
+			}
+		} break;
+		case ShaderLanguage::TYPE_FLOAT: {
+
+			GLfloat *gui = (GLfloat*)data;
+			gui[0]=value[0].real;
+
+		} break;
+		case ShaderLanguage::TYPE_VEC2: {
+
+			GLfloat *gui = (GLfloat*)data;
+
+			for(int i=0;i<2;i++) {
+				gui[i]=value[i].real;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_VEC3: {
+
+			GLfloat *gui = (GLfloat*)data;
+
+			for(int i=0;i<3;i++) {
+				gui[i]=value[i].real;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_VEC4: {
+
+			GLfloat *gui = (GLfloat*)data;
+
+			for(int i=0;i<4;i++) {
+				gui[i]=value[i].real;
+			}
+		} break;
+		case ShaderLanguage::TYPE_MAT2: {
+			GLfloat *gui = (GLfloat*)data;
+
+			for(int i=0;i<2;i++) {
+				gui[i]=value[i].real;
+			}
+		} break;
+		case ShaderLanguage::TYPE_MAT3: {
+
+
+
+			GLfloat *gui = (GLfloat*)data;
+
+			gui[ 0]=value[0].real;
+			gui[ 1]=value[1].real;
+			gui[ 2]=value[2].real;
+			gui[ 3]=0;
+			gui[ 4]=value[3].real;
+			gui[ 5]=value[4].real;
+			gui[ 6]=value[5].real;
+			gui[ 7]=0;
+			gui[ 8]=value[6].real;
+			gui[ 9]=value[7].real;
+			gui[10]=value[8].real;
+			gui[11]=0;
+		} break;
+		case ShaderLanguage::TYPE_MAT4: {
+
+			GLfloat *gui = (GLfloat*)data;
+
+			for(int i=0;i<16;i++) {
+				gui[i]=value[i].real;
+			}
+		} break;
+		default: {}
+	}
+
+}
+
+
+_FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type, uint8_t *data) {
+
+	switch(type) {
+
+		case ShaderLanguage::TYPE_BOOL:
+		case ShaderLanguage::TYPE_INT:
+		case ShaderLanguage::TYPE_UINT:
+		case ShaderLanguage::TYPE_FLOAT: {
+			zeromem(data,4);
+		} break;
+		case ShaderLanguage::TYPE_BVEC2:
+		case ShaderLanguage::TYPE_IVEC2:
+		case ShaderLanguage::TYPE_UVEC2:
+		case ShaderLanguage::TYPE_VEC2: {
+			zeromem(data,8);
+		} break;
+		case ShaderLanguage::TYPE_BVEC3:
+		case ShaderLanguage::TYPE_IVEC3:
+		case ShaderLanguage::TYPE_UVEC3:
+		case ShaderLanguage::TYPE_VEC3:
+		case ShaderLanguage::TYPE_BVEC4:
+		case ShaderLanguage::TYPE_IVEC4:
+		case ShaderLanguage::TYPE_UVEC4:
+		case ShaderLanguage::TYPE_VEC4:
+		case ShaderLanguage::TYPE_MAT2:{
+
+			zeromem(data,16);
+		} break;
+		case ShaderLanguage::TYPE_MAT3:{
+
+			zeromem(data,48);
+		} break;
+		case ShaderLanguage::TYPE_MAT4:{
+			zeromem(data,64);
+		} break;
+
+		default: {}
+	}
+
+}
+
+void RasterizerStorageGLES3::_update_material(Material* material) {
+
+	if (material->dirty_list.in_list())
+		_material_dirty_list.remove( &material->dirty_list );
+
+	//clear ubo if it needs to be cleared
+	if (material->ubo_size) {
+
+		if (!material->shader || material->shader->ubo_size!=material->ubo_size) {
+			//by by ubo
+			glDeleteBuffers(1,&material->ubo_id);
+			material->ubo_id=0;
+			material->ubo_size=0;
+		}
+	}
+
+	//create ubo if it needs to be created
+	if (material->ubo_size==0 && material->shader && material->shader->ubo_size) {
+
+		glGenBuffers(1, &material->ubo_id);
+		glBindBuffer(GL_UNIFORM_BUFFER, material->ubo_id);
+		glBufferData(GL_UNIFORM_BUFFER, material->shader->ubo_size, NULL, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		material->ubo_size=material->shader->ubo_size;
+	}
+
+	//fill up the UBO if it needs to be filled
+	if (material->shader && material->ubo_size) {
+		uint8_t* local_ubo = (uint8_t*)alloca(material->ubo_size);
+
+		for(Map<StringName,ShaderLanguage::ShaderNode::Uniform>::Element *E=material->shader->uniforms.front();E;E=E->next()) {
+
+			if (E->get().order<0)
+				continue; // texture, does not go here
+
+			//regular uniform
+			uint8_t *data = &local_ubo[ material->shader->ubo_offsets[E->get().order] ];
+
+			Map<StringName,Variant>::Element *V = material->params.find(E->key());
+
+			if (V) {
+				//user provided
+				_fill_std140_variant_ubo_value(E->get().type,V->get(),data);
+			} else if (E->get().default_value.size()){
+				//default value
+				_fill_std140_ubo_value(E->get().type,E->get().default_value,data);
+				//value=E->get().default_value;
+			} else {
+				//zero because it was not provided
+				_fill_std140_ubo_empty(E->get().type,data);
+			}
+
+
+		}
+
+		glBindBuffer(GL_UNIFORM_BUFFER,material->ubo_id);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, material->ubo_size, local_ubo);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+	//set up the texture array, for easy access when it needs to be drawn
+	if (material->shader && material->shader->texture_count) {
+
+		material->textures.resize(material->shader->texture_count);
+
+		for(Map<StringName,ShaderLanguage::ShaderNode::Uniform>::Element *E=material->shader->uniforms.front();E;E=E->next()) {
+
+			if (E->get().texture_order<0)
+				continue; // not a texture, does not go here
+
+			RID texture;
+
+			Map<StringName,Variant>::Element *V = material->params.find(E->key());
+			if (V) {
+				texture=V->get();
+			}
+
+			if (!texture.is_valid()) {
+				Map<StringName,RID>::Element *W = material->shader->default_textures.find(E->key());
+				if (W) {
+					texture=W->get();
+				}
+			}
+
+			material->textures[ E->get().texture_order ]=texture;
+
+
+		}
+
+
+	} else {
+		material->textures.clear();
+	}
+
+}
+
+void RasterizerStorageGLES3::update_dirty_materials() {
+
+	while( _material_dirty_list.first() ) {
+
+		Material *material = _material_dirty_list.first()->self();
+
+		_update_material(material);
+	}
 }
 
 /* MESH API */
@@ -1950,6 +2792,49 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 		info.texture_mem-=texture->total_data_size;
 		texture_owner.free(p_rid);
 		memdelete(texture);
+
+	} else if (shader_owner.owns(p_rid)) {
+
+		// delete the texture
+		Shader *shader = shader_owner.get(p_rid);
+
+		if (shader->shader)
+			shader->shader->free_custom_shader(shader->custom_code_id);
+
+		if (shader->dirty_list.in_list())
+			_shader_dirty_list.remove(&shader->dirty_list);
+
+		while (shader->materials.first()) {
+
+			Material *mat = shader->materials.first()->self();
+
+			mat->shader=NULL;
+			_material_make_dirty(mat);
+
+			shader->materials.remove( shader->materials.first() );
+		}
+
+		//material_shader.free_custom_shader(shader->custom_code_id);
+		shader_owner.free(p_rid);
+		memdelete(shader);
+
+	} else if (material_owner.owns(p_rid)) {
+
+		// delete the texture
+		Material *material = material_owner.get(p_rid);
+
+		if (material->shader) {
+			material->shader->materials.remove( & material->list );
+		}
+
+		if (material->ubo_id) {
+			glDeleteBuffers(1,&material->ubo_id);
+		}
+
+		material_owner.free(p_rid);
+		memdelete(material);
+
+
 	} else if (canvas_occluder_owner.owns(p_rid)) {
 
 

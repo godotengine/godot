@@ -55,7 +55,7 @@ bool CanvasItemMaterial::_set(const StringName& p_name, const Variant& p_value) 
 				}
 			}
 			if (pr) {
-				VisualServer::get_singleton()->material_set_param(material,pr,p_value);
+				VisualServer::get_singleton()->material_set_param(_get_material(),pr,p_value);
 				return true;
 			}
 		}
@@ -78,7 +78,7 @@ bool CanvasItemMaterial::_get(const StringName& p_name,Variant &r_ret) const {
 
 			StringName pr = shader->remap_param(p_name);
 			if (pr) {
-				r_ret=VisualServer::get_singleton()->material_get_param(material,pr);
+				r_ret=VisualServer::get_singleton()->material_get_param(_get_material(),pr);
 				return true;
 			}
 		}
@@ -111,7 +111,7 @@ void CanvasItemMaterial::set_shader(const Ref<Shader>& p_shader) {
 	if (shader.is_valid())
 		rid=shader->get_rid();
 
-	VS::get_singleton()->material_set_shader(material,rid);
+	VS::get_singleton()->material_set_shader(_get_material(),rid);
 	_change_notify(); //properties for shader exposed
 	emit_changed();
 }
@@ -123,18 +123,14 @@ Ref<Shader> CanvasItemMaterial::get_shader() const{
 
 void CanvasItemMaterial::set_shader_param(const StringName& p_param,const Variant& p_value){
 
-	VS::get_singleton()->material_set_param(material,p_param,p_value);
+	VS::get_singleton()->material_set_param(_get_material(),p_param,p_value);
 }
 
 Variant CanvasItemMaterial::get_shader_param(const StringName& p_param) const{
 
-	return VS::get_singleton()->material_get_param(material,p_param);
+	return VS::get_singleton()->material_get_param(_get_material(),p_param);
 }
 
-RID CanvasItemMaterial::get_rid() const {
-
-	return material;
-}
 
 
 void CanvasItemMaterial::_bind_methods() {

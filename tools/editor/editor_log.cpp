@@ -67,6 +67,10 @@ void EditorLog::_error_handler(void *p_self, const char*p_func, const char*p_fil
 
 			icon = self->get_icon("ScriptError","EditorIcons");
 		} break;
+		case ERR_HANDLER_SHADER: {
+
+			icon = self->get_icon("Shader","EditorIcons");
+		} break;
 
 	}
 

@@ -5,12 +5,14 @@
 #include "rasterizer_storage_gles3.h"
 #include "shaders/canvas_shadow.glsl.h"
 
+
 class RasterizerCanvasGLES3 : public RasterizerCanvas {
 public:
 
 	struct CanvasItemUBO {
 
 		float projection_matrix[16];
+		float time[4];
 
 	};
 

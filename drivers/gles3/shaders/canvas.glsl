@@ -1,7 +1,7 @@
 [vertex]
 
 
-layout(location=0) in highp vec3 vertex;
+layout(location=0) in highp vec2 vertex;
 layout(location=3) in vec4 color_attrib;
 
 #ifdef USE_TEXTURE_RECT
@@ -20,6 +20,7 @@ layout(location=4) in highp vec2 uv_attrib;
 layout(std140) uniform CanvasItemData { //ubo:0
 
 	highp mat4 projection_matrix;
+	highp vec4 time;
 };
 
 uniform highp mat4 modelview_matrix;
@@ -28,10 +29,6 @@ uniform highp mat4 extra_matrix;
 
 out mediump vec2 uv_interp;
 out mediump vec4 color_interp;
-
-#if defined(USE_TIME)
-uniform float time;
-#endif
 
 #ifdef USE_LIGHTING
 
@@ -51,6 +48,7 @@ layout(std140) uniform LightData { //ubo:1
 	highp float shadow_distance_mult;
 };
 
+
 out vec4 light_uv_interp;
 
 #if defined(NORMAL_USED)
@@ -66,20 +64,30 @@ out highp vec2 pos;
 
 VERTEX_SHADER_GLOBALS
 
+#if defined(USE_MATERIAL)
+
+layout(std140) uniform UniformData { //ubo:2
+
+MATERIAL_UNIFORMS
+
+};
+
+#endif
+
 void main() {
 
-	color_interp = color_attrib;
+	vec4 vertex_color = color_attrib;
 
 
 #ifdef USE_TEXTURE_RECT
 
 
-	uv_interp = src_rect.xy + abs(src_rect.zw) * vertex.xy;
-	highp vec4 outvec = vec4(dst_rect.xy + dst_rect.zw * mix(vertex.xy,vec2(1.0,1.0)-vertex.xy,lessThan(src_rect.zw,vec2(0.0,0.0))),0.0,1.0);
+	uv_interp = src_rect.xy + abs(src_rect.zw) * vertex;
+	highp vec4 outvec = vec4(dst_rect.xy + dst_rect.zw * mix(vertex,vec2(1.0,1.0)-vertex,lessThan(src_rect.zw,vec2(0.0,0.0))),0.0,1.0);
 
 #else
 	uv_interp = uv_attrib;
-	highp vec4 outvec = vec4(vertex, 1.0);
+	highp vec4 outvec = vec4(vertex,0.0,1.0);
 #endif
 
 
@@ -90,16 +98,16 @@ VERTEX_SHADER_CODE
 
 }
 
-#if !defined(USE_WORLD_VEC)
+#if !defined(SKIP_TRANSFORM_USED)
 	outvec = extra_matrix * outvec;
 	outvec = modelview_matrix * outvec;
 #endif
 
-
+	color_interp = vertex_color;
 
 #ifdef USE_PIXEL_SNAP
 
-	outvec.xy=floor(outvec.xy+0.5);
+	outvec.xy=floor(outvec+0.5);
 #endif
 
 
@@ -132,20 +140,24 @@ VERTEX_SHADER_CODE
 
 
 uniform mediump sampler2D color_texture; // texunit:0
+uniform highp vec2 color_texpixel_size;
 
 in mediump vec2 uv_interp;
 in mediump vec4 color_interp;
 
 
-#if defined(ENABLE_TEXSCREEN)
+#if defined(SCREEN_TEXTURE_USED)
 
-uniform sampler2D texscreen_tex; // texunit:-3
+uniform sampler2D screen_texture; // texunit:-3
 
 #endif
 
-#if defined(USE_TIME)
-uniform float time;
-#endif
+layout(std140) uniform CanvasItemData {
+
+	highp mat4 projection_matrix;
+	highp vec4 time;
+};
+
 
 #ifdef USE_LIGHTING
 
@@ -188,12 +200,26 @@ FRAGMENT_SHADER_GLOBALS
 
 layout(location=0) out mediump vec4 frag_color;
 
+
+#if defined(USE_MATERIAL)
+
+layout(std140) uniform UniformData {
+
+MATERIAL_UNIFORMS
+
+};
+
+#endif
+
 void main() {
 
 	vec4 color = color_interp;
 #if defined(NORMAL_USED)
 	vec3 normal = vec3(0.0,0.0,1.0);
 #endif
+
+#if !defined(COLOR_USED)
+//default behavior, texture by color
 
 #ifdef USE_DISTANCE_FIELD
 	const float smoothing = 1.0/32.0;
@@ -204,6 +230,7 @@ void main() {
 
 #endif
 
+#endif
 
 #if defined(ENABLE_SCREEN_UV)
 	vec2 screen_uv = gl_FragCoord.xy*screen_uv_mult;
@@ -211,14 +238,15 @@ void main() {
 
 
 {
-#if defined(USE_NORMALMAP)
-	vec3 normal_map=vec3(0.0,0.0,1.0);
 	float normal_depth=1.0;
+
+#if defined(NORMALMAP_USED)
+	vec3 normal_map=vec3(0.0,0.0,1.0);
 #endif
 
 FRAGMENT_SHADER_CODE
 
-#if defined(USE_NORMALMAP)
+#if defined(NORMALMAP_USED)
 	normal = mix(vec3(0.0,0.0,1.0), normal_map * vec3(2.0,-2.0,1.0) - vec3( 1.0, -1.0, 0.0 ), normal_depth );
 #endif
 
@@ -246,7 +274,7 @@ FRAGMENT_SHADER_CODE
 
 	vec2 light_uv = light_uv_interp.xy;
 	vec4 light = texture(light_texture,light_uv) * light_color;
-#if defined(USE_OUTPUT_SHADOW_COLOR)
+#if defined(SHADOW_COLOR_USED)
 	vec4 shadow_color=vec4(0.0,0.0,0.0,0.0);
 #endif
 
@@ -409,7 +437,7 @@ LIGHT_SHADER_CODE
 #endif
 
 
-#if defined(USE_OUTPUT_SHADOW_COLOR)
+#if defined(SHADOW_COLOR_USED)
 	color=mix(shadow_color,color,shadow_attenuation);
 #else
 	//color*=shadow_attenuation;

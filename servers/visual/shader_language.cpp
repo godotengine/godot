@@ -712,6 +712,8 @@ bool ShaderLanguage::is_token_nonvoid_datatype(TokenType p_type) {
 
 void ShaderLanguage::clear() {
 
+	current_function=StringName();
+
 	completion_type=COMPLETION_NONE;
 	completion_block=NULL;
 	completion_function=StringName();
@@ -2096,6 +2098,12 @@ bool ShaderLanguage::is_scalar_type(DataType p_type) {
 	return p_type==TYPE_BOOL || p_type==TYPE_INT || p_type==TYPE_UINT || p_type==TYPE_FLOAT;
 }
 
+bool ShaderLanguage::is_sampler_type(DataType p_type) {
+
+	return p_type==TYPE_SAMPLER2D || p_type==TYPE_ISAMPLER2D || p_type==TYPE_USAMPLER2D || p_type==TYPE_SAMPLERCUBE;
+
+}
+
 void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 
 	Set<String> kws;
@@ -2121,6 +2129,27 @@ void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 		r_keywords->push_back(E->get());
 	}
 }
+
+void ShaderLanguage::get_builtin_funcs(List<String> *r_keywords) {
+
+
+	Set<String> kws;
+
+	int idx=0;
+
+	while (builtin_func_defs[idx].name) {
+
+		kws.insert(builtin_func_defs[idx].name);
+
+		idx++;
+	}
+
+	for(Set<String>::Element *E=kws.front();E;E=E->next()) {
+		r_keywords->push_back(E->get());
+	}
+}
+
+
 
 ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
 
@@ -2341,6 +2370,12 @@ ShaderLanguage::Node* ShaderLanguage::_parse_expression(BlockNode* p_block,const
 				int carg=-1;
 
 				bool ok =_parse_function_arguments(p_block,p_builtin_types,func,&carg);
+
+				for(int i=0;i<shader->functions.size();i++) {
+					if (shader->functions[i].name==name) {
+						shader->functions[i].uses_function.insert(name);
+					}
+				}
 
 
 
@@ -3140,6 +3175,9 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 
 	Token tk = _get_token();
 
+	int texture_uniforms = 0;
+	int uniforms =0;
+
 	while(tk.type!=TK_EOF) {
 
 		switch(tk.type) {
@@ -3160,12 +3198,12 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 						return ERR_PARSE_ERROR;
 					}
 
-					if (shader->render_modes.has(tk.text)) {
+					if (shader->render_modes.find(tk.text)!=-1) {
 						_set_error("Duplicate render mode: '"+String(tk.text)+"'");
 						return ERR_PARSE_ERROR;
 					}
 
-					shader->render_modes.insert(tk.text);
+					shader->render_modes.push_back(tk.text);
 
 					tk = _get_token();
 					if (tk.type==TK_COMMA) {
@@ -3225,6 +3263,13 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 
 					ShaderNode::Uniform uniform;
 					uniform.order=shader->uniforms.size();
+					if (is_sampler_type(type)) {
+						uniform.texture_order=texture_uniforms++;
+						uniform.order=-1;
+					} else {
+						uniform.texture_order=-1;
+						uniform.order=uniforms++;
+					}
 					uniform.type=type;
 					uniform.precission=precision;
 
@@ -3520,9 +3565,13 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 					return ERR_PARSE_ERROR;
 				}
 
+				current_function = name;
+
 				Error err = _parse_block(func_node->body,builtin_types);
 				if (err)
 					return err;
+
+				current_function=StringName();
 			}
 		}
 

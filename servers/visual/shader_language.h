@@ -370,6 +370,7 @@ public:
 		struct Function {
 			StringName name;
 			FunctionNode*function;
+			Set<StringName> uses_function;
 			bool callable;
 		};
 
@@ -391,6 +392,7 @@ public:
 			};
 
 			int order;
+			int texture_order;
 			DataType type;
 			DataPrecision precission;
 			Vector<ConstantNode::Value> default_value;
@@ -403,7 +405,7 @@ public:
 
 		Map<StringName,Varying> varyings;
 		Map<StringName,Uniform> uniforms;
-		Set<StringName> render_modes;
+		Vector<StringName> render_modes;
 
 		Vector<Function> functions;
 
@@ -461,8 +463,10 @@ public:
 	static bool convert_constant(ConstantNode* p_constant, DataType p_to_type,ConstantNode::Value *p_value=NULL);
 	static DataType get_scalar_type(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
+	static bool is_sampler_type(DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
+	static void get_builtin_funcs(List<String> *r_keywords);
 private:
 
 	struct KeyWord { TokenType token; const char *text;};
@@ -475,6 +479,8 @@ private:
 	String code;
 	int char_idx;
 	int tk_line;
+
+	StringName current_function;
 
 	struct TkPos {
 		int char_idx;

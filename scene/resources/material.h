@@ -46,6 +46,9 @@ class Material : public Resource {
 	OBJ_SAVE_TYPE( Material );
 
 	RID material;
+protected:
+
+	_FORCE_INLINE_  RID _get_material() const { return material; }
 public:
 
 	virtual RID get_rid() const;

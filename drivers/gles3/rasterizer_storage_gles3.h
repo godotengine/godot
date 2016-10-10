@@ -2,15 +2,20 @@
 #define RASTERIZERSTORAGEGLES3_H
 
 #include "servers/visual/rasterizer.h"
+#include "servers/visual/shader_language.h"
 #include "shader_gles3.h"
 #include "shaders/copy.glsl.h"
 #include "shaders/canvas.glsl.h"
+#include "self_list.h"
+#include "shader_compiler_gles3.h"
 
-
+class RasterizerCanvasGLES3;
 
 
 class RasterizerStorageGLES3 : public RasterizerStorage {
 public:
+
+	RasterizerCanvasGLES3 *canvas;
 
 	enum FBOFormat {
 		FBO_FORMAT_16_BITS,
@@ -47,9 +52,13 @@ public:
 		Set<String> extensions;
 	} config;
 
-	struct Shaders {
+	mutable struct Shaders {
 
 		CopyShaderGLES3 copy;
+
+		ShaderCompilerGLES3 compiler;
+
+		ShaderCompilerGLES3::IdentifierActions actions_canvas;
 	} shaders;
 
 	struct Resources {
@@ -169,11 +178,71 @@ public:
 
 	/* SHADER API */
 
+	struct Material;
+
 	struct Shader : public RID_Data {
 
+		RID self;
 
+		VS::ShaderMode mode;
+		ShaderGLES3 *shader;
+		String code;
+		SelfList<Material>::List materials;
+
+
+
+		Map<StringName,ShaderLanguage::ShaderNode::Uniform> uniforms;
+		Vector<uint32_t> ubo_offsets;
+		uint32_t ubo_size;
+
+		uint32_t texture_count;
+
+		uint32_t custom_code_id;
+		uint32_t version;
+
+		SelfList<Shader> dirty_list;
+
+		Map<StringName,RID> default_textures;
+
+		bool valid;
+
+		String path;
+
+		struct CanvasItem {
+
+			enum BlendMode {
+				BLEND_MODE_MIX,
+				BLEND_MODE_ADD,
+				BLEND_MODE_SUB,
+				BLEND_MODE_MUL,
+				BLEND_MODE_PMALPHA,
+			};
+
+			int blend_mode;
+
+			enum LightMode {
+				LIGHT_MODE_NORMAL,
+				LIGHT_MODE_UNSHADED,
+				LIGHT_MODE_LIGHT_ONLY
+			};
+
+			int light_mode;
+
+		} canvas_item;
+
+		Shader() : dirty_list(this) {
+
+			shader=NULL;
+			valid=false;
+			custom_code_id=0;
+			version=1;
+		}
 	};
 
+	mutable SelfList<Shader>::List _shader_dirty_list;
+	void _shader_make_dirty(Shader* p_shader);
+
+	mutable RID_Owner<Shader> shader_owner;
 
 	virtual RID shader_create(VS::ShaderMode p_mode=VS::SHADER_SPATIAL);
 
@@ -187,16 +256,47 @@ public:
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture);
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const;
 
+	void _update_shader(Shader* p_shader) const;
+
+	void update_dirty_shaders();
 
 	/* COMMON MATERIAL API */
 
+	struct Material : public RID_Data {
+
+		Shader *shader;
+		GLuint ubo_id;
+		uint32_t ubo_size;
+		Map<StringName,Variant> params;
+		SelfList<Material> list;
+		SelfList<Material> dirty_list;
+		Vector<RID> textures;
+
+		Material() : list(this), dirty_list(this) {
+			shader=NULL;
+			ubo_id=0;
+			ubo_size=0;
+		}
+
+	};
+
+	mutable SelfList<Material>::List _material_dirty_list;
+	void _material_make_dirty(Material *p_material) const;
+
+
+	mutable RID_Owner<Material> material_owner;
+
 	virtual RID material_create();
 
-	virtual void material_set_shader(RID p_shader_material, RID p_shader);
-	virtual RID material_get_shader(RID p_shader_material) const;
+	virtual void material_set_shader(RID p_material, RID p_shader);
+	virtual RID material_get_shader(RID p_material) const;
 
 	virtual void material_set_param(RID p_material, const StringName& p_param, const Variant& p_value);
 	virtual Variant material_get_param(RID p_material, const StringName& p_param) const;
+
+	void _update_material(Material* material);
+
+	void update_dirty_materials();
 
 	/* MESH API */
 
@@ -432,6 +532,7 @@ public:
 		bool clear_request;
 		Color clear_request_color;
 		int canvas_draw_commands;
+		float time[4];
 	} frame;
 
 	void initialize();

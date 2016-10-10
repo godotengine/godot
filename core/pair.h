@@ -34,6 +34,9 @@ struct Pair {
 
 	F first;
 	S second;
+
+	Pair() {}
+	Pair( F p_first,  S p_second) { first=p_first; second=p_second; }
 };
 
 #endif // PAIR_H

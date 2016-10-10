@@ -105,9 +105,10 @@ private:
 		String fragment;
 		String fragment_globals;
 		String light;
+		String uniforms;
 		uint32_t version;
-		Vector<StringName> custom_uniforms;
-		Vector<const char*> custom_defines;
+		Vector<StringName> texture_uniforms;
+		Vector<CharString> custom_defines;
 
 	};
 
@@ -118,7 +119,7 @@ private:
 		GLuint vert_id;
 		GLuint frag_id;					
 		GLint *uniform_location;
-		Vector<GLint> custom_uniform_locations;
+		Vector<GLint> texture_uniform_locations;
 		uint32_t code_version;
 		bool ok;
 		Version() { code_version=0; ok=false; uniform_location=NULL; }
@@ -166,10 +167,14 @@ private:
 	CharString fragment_code1;
 	CharString fragment_code2;
 	CharString fragment_code3;
+	CharString fragment_code4;
 
 	CharString vertex_code0;
 	CharString vertex_code1;
 	CharString vertex_code2;
+	CharString vertex_code3;
+
+	int base_material_tex_index;
 
 	Version * get_current_version();
 	
@@ -308,7 +313,7 @@ public:
 	void clear_caches();
 
 	uint32_t create_custom_shader();
-	void set_custom_shader_code(uint32_t p_id,const String& p_vertex, const String& p_vertex_globals,const String& p_fragment,const String& p_p_light,const String& p_fragment_globals,const Vector<StringName>& p_uniforms,const Vector<const char*> &p_custom_defines);
+	void set_custom_shader_code(uint32_t p_id,const String& p_vertex, const String& p_vertex_globals,const String& p_fragment,const String& p_p_light,const String& p_fragment_globals,const String& p_uniforms,const Vector<StringName>& p_texture_uniforms,const Vector<CharString> &p_custom_defines);
 	void set_custom_shader(uint32_t p_id);
 	void free_custom_shader(uint32_t p_id);
 
@@ -332,22 +337,24 @@ public:
 		uniforms_dirty = true;
 	};
 
-	_FORCE_INLINE_ void set_custom_uniform(int p_idx, const Variant& p_value) {
+	_FORCE_INLINE_ void set_texture_uniform(int p_idx, const Variant& p_value) {
 
 		ERR_FAIL_COND(!version);
-		ERR_FAIL_INDEX(p_idx,version->custom_uniform_locations.size());
-		_set_uniform_variant( version->custom_uniform_locations[p_idx], p_value );
+		ERR_FAIL_INDEX(p_idx,version->texture_uniform_locations.size());
+		_set_uniform_variant( version->texture_uniform_locations[p_idx], p_value );
 	}
 	
-	_FORCE_INLINE_ GLint get_custom_uniform_location(int p_idx) {
+	_FORCE_INLINE_ GLint get_texture_uniform_location(int p_idx) {
 
 		ERR_FAIL_COND_V(!version,-1);
-		ERR_FAIL_INDEX_V(p_idx,version->custom_uniform_locations.size(),-1);
-		return version->custom_uniform_locations[p_idx];
+		ERR_FAIL_INDEX_V(p_idx,version->texture_uniform_locations.size(),-1);
+		return version->texture_uniform_locations[p_idx];
 	}
 
 	virtual void init()=0;
 	void finish();
+
+	void set_base_material_tex_index(int p_idx);
 
 	virtual ~ShaderGLES3();
 

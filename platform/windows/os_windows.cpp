@@ -1727,6 +1727,10 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				print("SCRIPT ERROR: %s: %s\n", p_function, err_details);
 				print("          At: %s:%i\n", p_file, p_line);
 				break;
+			case ERR_SHADER:
+				print("SHADER ERROR: %s: %s\n", p_function, err_details);
+				print("          At: %s:%i\n", p_file, p_line);
+				break;
 		}
 
 	} else {
@@ -1742,6 +1746,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 			case ERR_ERROR: basecol = FOREGROUND_RED; break;
 			case ERR_WARNING: basecol = FOREGROUND_RED | FOREGROUND_GREEN; break;
 			case ERR_SCRIPT: basecol = FOREGROUND_RED | FOREGROUND_BLUE; break;
+			case ERR_SHADER: basecol = FOREGROUND_GREEN | FOREGROUND_BLUE; break;
 		}
 
 		basecol |= current_bg;
@@ -1753,6 +1758,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("ERROR: "); break;
 				case ERR_WARNING: print("WARNING: "); break;
 				case ERR_SCRIPT: print("SCRIPT ERROR: "); break;
+				case ERR_SCRIPT: print("SHADER ERROR: "); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
@@ -1763,6 +1769,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("   At: "); break;
 				case ERR_WARNING: print("     At: "); break;
 				case ERR_SCRIPT: print("          At: "); break;
+				case ERR_SHADER: print("          At: "); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg);
@@ -1775,6 +1782,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("ERROR: %s: ", p_function); break;
 				case ERR_WARNING: print("WARNING: %s: ", p_function); break;
 				case ERR_SCRIPT: print("SCRIPT ERROR: %s: ", p_function); break;
+				case ERR_SHADER: print("SCRIPT ERROR: %s: ", p_function); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
@@ -1785,6 +1793,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("   At: "); break;
 				case ERR_WARNING: print("     At: "); break;
 				case ERR_SCRIPT: print("          At: "); break;
+				case ERR_SHADER: print("          At: "); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg);

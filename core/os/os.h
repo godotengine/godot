@@ -120,7 +120,8 @@ public:
 	enum ErrorType {
 		ERR_ERROR,
 		ERR_WARNING,
-		ERR_SCRIPT
+		ERR_SCRIPT,
+		ERR_SHADER
 	};
 
 	virtual void print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type=ERR_ERROR);

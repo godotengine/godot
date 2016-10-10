@@ -41,10 +41,9 @@ class Font;
 
 class StyleBox;
 
-class CanvasItemMaterial : public Material{
+class CanvasItemMaterial : public Material {
 
 	OBJ_TYPE(CanvasItemMaterial,Material);
-	RID material;
 	Ref<Shader> shader;
 public:
 	/*enum ShadingMode {
@@ -70,7 +69,6 @@ public:
 	void set_shader_param(const StringName& p_param,const Variant& p_value);
 	Variant get_shader_param(const StringName& p_param) const;
 
-	virtual RID get_rid() const;
 	CanvasItemMaterial();
 	~CanvasItemMaterial();
 };

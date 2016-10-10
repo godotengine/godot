@@ -138,6 +138,7 @@ void RasterizerCanvasGLES3::canvas_begin(){
 	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_DISTANCE_FIELD,false);
 
 
+	state.canvas_shader.set_custom_shader(0);
 	state.canvas_shader.bind();
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE,Color(1,1,1,1));
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,Matrix32());
@@ -520,6 +521,8 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item,Item *curr
 						//err..
 					}
 
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE,texpixel_size);
+
 
 					glVertexAttrib4f(1,rect->rect.pos.x,rect->rect.pos.y,rect->rect.size.x,rect->rect.size.y);
 					glVertexAttrib4f(2,src_rect.pos.x,src_rect.pos.y,src_rect.size.x,src_rect.size.y);
@@ -566,6 +569,8 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item,Item *curr
 
 
 				Size2 texpixel_size( 1.0/texture->width, 1.0/texture->height );
+
+				state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE,texpixel_size);
 
 #define DSTRECT(m_x,m_y,m_w,m_h) glVertexAttrib4f(1,m_x,m_y,m_w,m_h)
 #define SRCRECT(m_x,m_y,m_w,m_h) glVertexAttrib4f(2,(m_x)*texpixel_size.x,(m_y)*texpixel_size.y,(m_w)*texpixel_size.x,(m_h)*texpixel_size.y)
@@ -634,8 +639,13 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item,Item *curr
 
 				ERR_CONTINUE( primitive->points.size()<1);
 
-				_bind_canvas_texture(primitive->texture);
+				RasterizerStorageGLES3::Texture* texture = _bind_canvas_texture(primitive->texture);
 
+				if (texture ) {
+					Size2 texpixel_size( 1.0/texture->width, 1.0/texture->height );
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE,texpixel_size);
+
+				}
 				if (primitive->colors.size()==1 && primitive->points.size()>1) {
 
 					Color c = primitive->colors[0];
@@ -652,6 +662,14 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item,Item *curr
 
 				Item::CommandPolygon* polygon = static_cast<Item::CommandPolygon*>(c);
 				_set_texture_rect_mode(false);
+
+				RasterizerStorageGLES3::Texture* texture = _bind_canvas_texture(polygon->texture);
+
+				if (texture ) {
+					Size2 texpixel_size( 1.0/texture->width, 1.0/texture->height );
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE,texpixel_size);
+
+				}
 				_draw_polygon(polygon->count,polygon->indices.ptr(),polygon->points.ptr(),polygon->uvs.ptr(),polygon->colors.ptr(),polygon->texture,polygon->colors.size()==1);
 
 			} break;
@@ -800,9 +818,13 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 	glBindTexture(GL_TEXTURE_2D,storage->resources.white_tex);
 
 
+	int last_blend_mode=-1;
+
 	RID canvas_last_material;
 
 	bool prev_distance_field=false;
+
+
 
 	while(p_item_list) {
 
@@ -878,53 +900,71 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 		RID material = material_owner->material;
 
 		if (material!=canvas_last_material || rebind_shader) {
-#if 0
-			Shader *shader = NULL;
-			if (material && material->shader.is_valid()) {
-				shader = shader_owner.get(material->shader);
-				if (shader && !shader->valid) {
-					shader=NULL;
+
+			RasterizerStorageGLES3::Material *material_ptr = storage->material_owner.getornull(material);
+			RasterizerStorageGLES3::Shader *shader_ptr = NULL;
+
+			if (material_ptr) {
+
+				shader_ptr = material_ptr->shader;
+
+				if (shader_ptr && shader_ptr->mode!=VS::SHADER_CANVAS_ITEM) {
+					shader_ptr=NULL; //do not use non canvasitem shader
 				}
 			}
 
-			shader_cache=shader;
 
-			if (shader) {
-				canvas_shader.set_custom_shader(shader->custom_code_id);
-				_canvas_item_setup_shader_params(material,shader);
-			} else {
-				shader_cache=NULL;
-				canvas_shader.set_custom_shader(0);
-				canvas_shader.bind();
-				uses_texpixel_size=false;
+			if (shader_ptr && shader_ptr!=shader_cache) {
+
+				state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);
+				state.canvas_shader.bind();
+
+				if (material_ptr->ubo_id) {
+					glBindBufferBase(GL_UNIFORM_BUFFER,2,material_ptr->ubo_id);
+				}
+
+				int tc = material_ptr->textures.size();
+				RID* textures = material_ptr->textures.ptr();
+
+				for(int i=0;i<tc;i++) {
+
+					glActiveTexture(GL_TEXTURE1+i);
+
+					RasterizerStorageGLES3::Texture *t = storage->texture_owner.getornull( textures[i] );
+					if (!t) {
+						//check hints
+						glBindTexture(GL_TEXTURE_2D,storage->resources.white_tex);
+						continue;
+					}
+
+					glBindTexture(t->target,t->tex_id);
+				}
+
+
+			} else if (!shader_ptr) {
+				state.canvas_shader.set_custom_shader(0);
+				state.canvas_shader.bind();
 
 			}
 
+			shader_cache=shader_ptr;
 
-			canvas_shader.set_uniform(CanvasShaderGLES3::PROJECTION_MATRIX,canvas_transform);
-			if (canvas_use_modulate)
-				reset_modulate=true;
 			canvas_last_material=material;
 			rebind_shader=false;
-#endif
+
 		}
 
-		if (material.is_valid() && shader_cache) {
-#if 0
-			_canvas_item_setup_shader_uniforms(material,shader_cache);
-#endif
-		}
-
-		bool unshaded = false; //(material && material->shading_mode==VS::CANVAS_ITEM_SHADING_UNSHADED) || ci->blend_mode!=VS::MATERIAL_BLEND_MODE_MIX;
+		int blend_mode = shader_cache ? shader_cache->canvas_item.blend_mode : RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MIX;
+		bool unshaded = shader_cache && (shader_cache->canvas_item.light_mode==RasterizerStorageGLES3::Shader::CanvasItem::LIGHT_MODE_UNSHADED || blend_mode!=RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MIX);
 		bool reclip=false;
-#if 0
-		if (ci==p_item_list || ci->blend_mode!=canvas_blend_mode) {
 
-			switch(ci->blend_mode) {
+		if (last_blend_mode!=blend_mode) {
 
-				 case VS::MATERIAL_BLEND_MODE_MIX: {
+			switch(blend_mode) {
+
+				 case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MIX: {
 					glBlendEquation(GL_FUNC_ADD);
-					if (current_rt && current_rt_transparent) {
+					if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
 						glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 					}
 					else {
@@ -932,33 +972,30 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 					}
 
 				 } break;
-				 case VS::MATERIAL_BLEND_MODE_ADD: {
+				 case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_ADD: {
 
 					glBlendEquation(GL_FUNC_ADD);
 					glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 
 				 } break;
-				 case VS::MATERIAL_BLEND_MODE_SUB: {
+				 case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_SUB: {
 
 					glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
 					glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 				 } break;
-				case VS::MATERIAL_BLEND_MODE_MUL: {
+				case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MUL: {
 					glBlendEquation(GL_FUNC_ADD);
 					glBlendFunc(GL_DST_COLOR,GL_ZERO);
 				} break;
-				case VS::MATERIAL_BLEND_MODE_PREMULT_ALPHA: {
+				case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA: {
 					glBlendEquation(GL_FUNC_ADD);
 					glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
 				} break;
 
 			}
 
-			canvas_blend_mode=ci->blend_mode;
+			last_blend_mode=blend_mode;
 		}
-#endif
-
-//		canvas_shader.set_uniform(CanvasShaderGLES3::CANVAS_MODULATE,unshaded ? Color(1,1,1,1) : p_modulate);
 
 		state.canvas_item_modulate = unshaded ? ci->final_modulate : Color(
 					ci->final_modulate.r * p_modulate.r,
@@ -974,10 +1011,10 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,state.extra_matrix);
 
 
-		if (unshaded || (state.canvas_item_modulate.a>0.001 && (!material.is_valid() /*|| material->shading_mode!=VS::CANVAS_ITEM_SHADING_ONLY_LIGHT*/) && !ci->light_masked ))
+		if (unshaded || (state.canvas_item_modulate.a>0.001 && (!shader_cache || shader_cache->canvas_item.light_mode!=RasterizerStorageGLES3::Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY) && !ci->light_masked ))
 			_canvas_item_render_commands(ci,current_clip,reclip);
 
-		if (/*canvas_blend_mode==VS::MATERIAL_BLEND_MODE_MIX &&*/ p_light && !unshaded) {
+		if ((blend_mode==RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MIX || RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA) && p_light && !unshaded) {
 
 			Light *light = p_light;
 			bool light_used=false;
@@ -1046,12 +1083,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 					bool light_rebind = state.canvas_shader.bind();
 
 					if (light_rebind) {
-#if 0
-						if (material && shader_cache) {
-							_canvas_item_setup_shader_params(material,shader_cache);
-							_canvas_item_setup_shader_uniforms(material,shader_cache);
-						}
-#endif
+
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE,state.canvas_item_modulate);
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,state.final_transform);
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Matrix32());
@@ -1100,15 +1132,12 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 				state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF9,false);
 				state.canvas_shader.set_conditional(CanvasShaderGLES3::SHADOW_FILTER_PCF13,false);
 
-
 				state.canvas_shader.bind();
-#if 0
-				if (material && shader_cache) {
-					_canvas_item_setup_shader_params(material,shader_cache);
-					_canvas_item_setup_shader_uniforms(material,shader_cache);
-				}
-#endif
 
+				last_blend_mode=-1;
+
+				/*
+				//this is set again, so it should not be needed anyway?
 				state.canvas_item_modulate = unshaded ? ci->final_modulate : Color(
 							ci->final_modulate.r * p_modulate.r,
 							ci->final_modulate.g * p_modulate.g,
@@ -1120,7 +1149,6 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 				state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Matrix32());
 				state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE,state.canvas_item_modulate);
 
-
 				glBlendEquation(GL_FUNC_ADD);
 
 				if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
@@ -1130,6 +1158,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 				}
 
 				//@TODO RESET canvas_blend_mode
+				*/
 			}
 
 
@@ -1380,6 +1409,9 @@ void RasterizerCanvasGLES3::reset_canvas() {
 	state.vp=canvas_transform;
 
 	store_transform(canvas_transform,state.canvas_item_ubo_data.projection_matrix);
+	for(int i=0;i<4;i++) {
+		state.canvas_item_ubo_data.time[i]=storage->frame.time[i];
+	}
 
 	glBindBuffer(GL_UNIFORM_BUFFER, state.canvas_item_ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CanvasItemUBO), &state.canvas_item_ubo_data);
@@ -1442,6 +1474,7 @@ void RasterizerCanvasGLES3::initialize() {
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	state.canvas_shader.init();
+	state.canvas_shader.set_base_material_tex_index(1);
 	state.canvas_shadow_shader.init();
 
 	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_RGBA_SHADOWS,storage->config.use_rgba_2d_shadows);
