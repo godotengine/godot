@@ -482,6 +482,14 @@ void TextEdit::_notification(int p_what) {
 			Color color = cache.font_color;
 			int in_region=-1;
 
+			if (line_length_guideline) {
+				int x=xmargin_beg+cache.font->get_char_size('0').width*line_length_guideline_col-cursor.x_ofs;
+				if (x>xmargin_beg && x<xmargin_end) {
+					Color guideline_color(color.r,color.g,color.b,color.a*0.25f);
+					VisualServer::get_singleton()->canvas_item_add_line(ci,Point2(x,0),Point2(x,cache.size.height),guideline_color);
+				}
+			}
+
 			if (syntax_coloring) {
 
 				if (custom_bg_color.a>0.01) {
@@ -4508,6 +4516,16 @@ bool TextEdit::is_show_line_numbers_enabled() const {
 	return line_numbers;
 }
 
+void TextEdit::set_show_line_length_guideline(bool p_show) {
+	line_length_guideline=p_show;
+	update();
+}
+
+void TextEdit::set_line_length_guideline_column(int p_column) {
+	line_length_guideline_col=p_column;
+	update();
+}
+
 void TextEdit::set_draw_breakpoint_gutter(bool p_draw) {
 	draw_breakpoint_gutter = p_draw;
 	update();
@@ -4785,6 +4803,8 @@ TextEdit::TextEdit()  {
 	completion_line_ofs=0;
 	tooltip_obj=NULL;
 	line_numbers=false;
+	line_length_guideline=false;
+	line_length_guideline_col=80;
 	draw_breakpoint_gutter=false;
 	next_operation_is_complex=false;
 	scroll_past_end_of_file_enabled=false;

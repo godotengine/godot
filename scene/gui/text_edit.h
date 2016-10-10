@@ -232,6 +232,8 @@ class TextEdit : public Control  {
 	bool text_changed_dirty;
 	bool undo_enabled;
 	bool line_numbers;
+	bool line_length_guideline;
+	int line_length_guideline_col;
 	bool draw_breakpoint_gutter;
 	int breakpoint_gutter_width;
 
@@ -484,6 +486,9 @@ public:
 
 	void set_show_line_numbers(bool p_show);
 	bool is_show_line_numbers_enabled() const;
+
+	void set_show_line_length_guideline(bool p_show);
+	void set_line_length_guideline_column(int p_column);
 
 	void set_draw_breakpoint_gutter(bool p_draw);
 	bool is_drawing_breakpoint_gutter() const;
