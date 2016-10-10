@@ -1310,6 +1310,7 @@ String Node::_generate_serial_child_name(Node *p_child) {
 		name = p_child->get_type();
 	}
 
+	// Extract trailing number
 	String nums;
 	for(int i=name.length()-1;i>=0;i--) {
 		CharType n=name[i];
@@ -1320,18 +1321,20 @@ String Node::_generate_serial_child_name(Node *p_child) {
 		}
 	}
 
-	int num=nums.to_int();
-	if (num<1)
-		num=1;
-
 	String nnsep=_get_name_num_separator();
-	name = name.substr(0,name.length()-nums.length()).strip_edges();
-	if ( name.substr(name.length()-nnsep.length(),nnsep.length()) == nnsep) {
-		name = name.substr(0,name.length()-nnsep.length());
+	int num=0;
+	bool explicit_zero=false;
+	if (nums.length()>0 && name.substr(name.length()-nnsep.length()-nums.length(),nnsep.length()) == nnsep) {
+		// Base name + Separator + Number
+		num=nums.to_int();
+		name=name.substr(0,name.length()-nnsep.length()-nums.length()); // Keep base name
+		if (num==0) {
+			explicit_zero=true;
+		}
 	}
 
 	for(;;) {
-		String attempt = (name + (num > 1 ? nnsep + itos(num) : "")).strip_edges();
+		String attempt = (name + (num > 0 || explicit_zero ? nnsep + itos(num) : "")).strip_edges();
 		bool found=false;
 		for(int i=0;i<data.children.size();i++) {
 			if (data.children[i]==p_child)
@@ -1344,7 +1347,17 @@ String Node::_generate_serial_child_name(Node *p_child) {
 		if (!found) {
 			return attempt;
 		} else {
-			num++;
+			if (num==0) {
+				if (explicit_zero) {
+					// Name ended in separator + 0; user expects to get to separator + 1
+					num=1;
+				} else {
+					// Name was undecorated so skip to 2 for a more natural result
+					num=2;
+				}
+			} else {
+				num++;
+			}
 		}
 	}
 }
