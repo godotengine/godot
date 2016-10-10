@@ -232,6 +232,7 @@ class TextEdit : public Control  {
 	bool text_changed_dirty;
 	bool undo_enabled;
 	bool line_numbers;
+	bool line_numbers_zero_padded;
 	bool line_length_guideline;
 	int line_length_guideline_col;
 	bool draw_breakpoint_gutter;
@@ -488,6 +489,8 @@ public:
 
 	void set_show_line_numbers(bool p_show);
 	bool is_show_line_numbers_enabled() const;
+
+	void set_line_numbers_zero_padded(bool p_zero_padded);
 
 	void set_show_line_length_guideline(bool p_show);
 	void set_line_length_guideline_column(int p_column);
