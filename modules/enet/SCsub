@@ -1,8 +1,27 @@
 Import('env')
+Import('env_modules')
 
-env.add_source_files(env.modules_sources,"*.cpp")
-env.add_source_files(env.modules_sources,"*.c")
-#TODO: Make it possible to build against system enet
-env.Append(CPPPATH = ["#modules/enet"])
+# Thirdparty source files
 
+if (env["enet"] != "system"): # builtin
+	thirdparty_dir = "#thirdparty/enet/"
+	thirdparty_enet_sources = [
+		"callbacks.c",
+		"compress.c",
+		"host.c",
+		"list.c",
+		"packet.c",
+		"peer.c",
+		"protocol.c",
+		"unix.c",
+		"win32.c",
+	]
+	thirdparty_enet_sources = [thirdparty_dir + file for file in thirdparty_enet_sources]
+
+	env_modules.add_source_files(env.modules_sources, thirdparty_enet_sources)
+	env_modules.Append(CPPPATH = [thirdparty_dir])
+
+env_modules.add_source_files(env.modules_sources, "*.cpp")
+
+Export('env_modules')
 Export('env')

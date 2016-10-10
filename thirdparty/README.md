@@ -1,6 +1,23 @@
 # Third party libraries
 
 
+## enet
+
+- Upstream: http://enet.bespin.org
+- Version: 1.3.13
+- License: MIT
+
+Files extracted from upstream source:
+
+- all *.c files in the main directory
+- the include/enet/ folder as enet/
+- LICENSE file
+
+Important: Some files have been modified by Godot developers so that they work
+for all platforms (especially WinRT). Check the diff with the 1.3.13 tarball
+before the next update.
+
+
 ## jpeg-compressor
 
 - Upstream: https://github.com/richgel999/jpeg-compressor

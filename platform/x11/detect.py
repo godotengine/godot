@@ -149,7 +149,8 @@ def configure(env):
 	if (env["freetype"]=="yes"):
 		env.ParseConfig('pkg-config freetype2 --cflags --libs')
 
-
+	if (env["enet"] == "system"):
+		env.ParseConfig('pkg-config libenet --cflags --libs')
 
 
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED'])

@@ -135,6 +135,7 @@ opts.Add('etc1','etc1 Texture compression support (yes/no)','yes')
 opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
 opts.Add('openssl','Use OpenSSL (yes/no/builtin)','no')
 opts.Add('musepack','Musepack Audio (yes/no)','yes')
+opts.Add('enet','ENet library (system/builtin)','builtin')
 opts.Add("CXX", "C++ Compiler")
 opts.Add("CC", "C Compiler")
 opts.Add("CCFLAGS", "Custom flags for the C++ compiler");
