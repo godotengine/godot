@@ -243,6 +243,8 @@ class TextEdit : public Control  {
 	bool cut_copy_line;
 	bool insert_mode;
 
+	bool raised_from_completion;
+
 	uint64_t last_dblclk;
 
 	Timer *idle_detect;
