@@ -244,6 +244,8 @@ class TextEdit : public Control  {
 	bool insert_mode;
 	bool select_identifiers_enabled;
 
+	bool raised_from_completion;
+
 	String hilighted_word;
 
 	uint64_t last_dblclk;
