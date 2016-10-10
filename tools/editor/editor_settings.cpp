@@ -546,8 +546,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/tab_size"]=PropertyInfo(Variant::INT,"text_editor/tab_size",PROPERTY_HINT_RANGE,"1, 64, 1"); // size of 0 crashes.
 	set("text_editor/draw_tabs", true);
 
+	set("text_editor/line_numbers_zero_padded", true);
+
 	set("text_editor/show_line_numbers", true);
 	set("text_editor/show_breakpoint_gutter", true);
+
+	set("text_editor/show_line_length_guideline", false);
+	set("text_editor/line_length_guideline_column", 80);
+	hints["text_editor/line_length_guideline_column"]=PropertyInfo(Variant::INT,"text_editor/line_length_guideline_column",PROPERTY_HINT_RANGE,"20, 160, 10");
 
 	set("text_editor/trim_trailing_whitespace_on_save", false);
 	set("text_editor/idle_parse_delay",2);
@@ -687,6 +693,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 }
 
 void EditorSettings::_load_default_text_editor_theme() {
+
 	set("text_editor/background_color",Color::html("3b000000"));
 	set("text_editor/completion_background_color", Color::html("2C2A32"));
 	set("text_editor/completion_selected_color", Color::html("434244"));
@@ -710,6 +717,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	set("text_editor/selection_color",Color::html("7b5dbe"));
 	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
 	set("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15));
+	set("text_editor/line_length_guideline_color",Color(0.3,0.5,0.8,0.1));
 	set("text_editor/mark_color", Color(1.0,0.4,0.4,0.4));
 	set("text_editor/breakpoint_color", Color(0.8,0.8,0.4,0.2));
 	set("text_editor/word_highlighted_color",Color(0.8,0.9,0.9,0.15));
@@ -944,6 +952,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 bool EditorSettings::_save_text_editor_theme(String p_file) {
 	String theme_section = "color_theme";
 	Ref<ConfigFile> cf = memnew( ConfigFile );	// hex is better?
+
 	cf->set_value(theme_section, "background_color", ((Color)get("text_editor/background_color")).to_html());
 	cf->set_value(theme_section, "completion_background_color", ((Color)get("text_editor/completion_background_color")).to_html());
 	cf->set_value(theme_section, "completion_selected_color", ((Color)get("text_editor/completion_selected_color")).to_html());
@@ -967,11 +976,13 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	cf->set_value(theme_section, "selection_color", ((Color)get("text_editor/selection_color")).to_html());
 	cf->set_value(theme_section, "brace_mismatch_color", ((Color)get("text_editor/brace_mismatch_color")).to_html());
 	cf->set_value(theme_section, "current_line_color", ((Color)get("text_editor/current_line_color")).to_html());
+	cf->set_value(theme_section, "line_length_guideline_color", ((Color)get("text_editor/line_length_guideline_color")).to_html());
 	cf->set_value(theme_section, "mark_color", ((Color)get("text_editor/mark_color")).to_html());
 	cf->set_value(theme_section, "breakpoint_color", ((Color)get("text_editor/breakpoint_color")).to_html());
 	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/word_highlighted_color")).to_html());
 	cf->set_value(theme_section, "search_result_color", ((Color)get("text_editor/search_result_color")).to_html());
 	cf->set_value(theme_section, "search_result_border_color", ((Color)get("text_editor/search_result_border_color")).to_html());
+
 	Error err = cf->save(p_file);
 
 	if (err == OK) {
