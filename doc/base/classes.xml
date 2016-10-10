@@ -22274,8 +22274,10 @@
 </class>
 <class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" category="Core">
 	<brief_description>
+		PacketPeer implementation using the ENet library.
 	</brief_description>
 	<description>
+		A connection (or a listening server) that should be passed to [method SceneTree.set_network_peer]. Socket events can be handled by connecting to [SceneTree] signals.
 	</description>
 	<methods>
 		<method name="close_connection">
@@ -22630,6 +22632,7 @@
 		Nodes can also process input events. When set, the [method _input] function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the [method _unhandled_input] function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI [Control] nodes), ensuring that the node only receives the events that were meant for it.
 		To keep track of the scene hierarchy (especially when instancing scenes into other scenes), an "owner" can be set for the node with [method set_owner]. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
 		Finally, when a node is freed with [method free] or [method queue_free], it will also free all its children.
+		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]) it is possible to use the built-in RPC (remote procedure call) system to easily communicate over the network. By calling [method rpc] with a method name, it will be called locally, and in all connected peers (peers = clients and the server that accepts connections), with behaviour varying depending on the network mode ([method set_network_mode]) on the receiving peer. To identify which [Node] receives the RPC call Godot will use it's [NodePath] (make sure node names are the same on all peers).
 	</description>
 	<methods>
 		<method name="_enter_tree" qualifiers="virtual">
@@ -23067,6 +23070,7 @@
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
+				Send a remote procedure call request to all peers on the network (and locally), optionally sending additional data as arguments. Call request will be received by nodes with the same [NodePath].
 			</description>
 		</method>
 		<method name="rpc_config">
@@ -23075,6 +23079,7 @@
 			<argument index="1" name="mode" type="int">
 			</argument>
 			<description>
+				Change the method's RPC mode (one of RPC_MODE_* constants).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
@@ -23083,12 +23088,14 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
+				Send a [method rpc] to a specific peer identified by [i]peer_id[/i].
 			</description>
 		</method>
 		<method name="rpc_unreliable" qualifiers="vararg">
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
+				Send a [method rpc] using an unreliable protocol.
 			</description>
 		</method>
 		<method name="rpc_unreliable_id" qualifiers="vararg">
@@ -23097,6 +23104,7 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
+				Send a [method rpc] to a specific peer identified by [i]peer_id[/i] using an unreliable protocol.
 			</description>
 		</method>
 		<method name="rset">
@@ -23105,6 +23113,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Remotely change property's value on other peers (and locally).
 			</description>
 		</method>
 		<method name="rset_config">
@@ -23113,6 +23122,7 @@
 			<argument index="1" name="mode" type="int">
 			</argument>
 			<description>
+				Change the property's RPC mode (one of RPC_MODE_* constants).
 			</description>
 		</method>
 		<method name="rset_id">
@@ -23123,6 +23133,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
+				Remotely change property's value on a specific peer identified by [i]peer_id[/i].
 			</description>
 		</method>
 		<method name="rset_unreliable">
@@ -23131,6 +23142,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Remotely change property's value on other peers (and locally) using an unreliable protocol.
 			</description>
 		</method>
 		<method name="rset_unreliable_id">
@@ -23141,6 +23153,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
+				Remotely change property's value on a specific peer identified by [i]peer_id[/i] using an unreliable protocol.
 			</description>
 		</method>
 		<method name="set_display_folded">
@@ -23174,6 +23187,7 @@
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+				Change the networking mode of the [Node], where [i]mode[/i] is one of the constants NETWORK_MODE_*. Master nodes will only call gdscript methods defined as [i]master func[/i] if a RPC call is received (slave nodes will only call [i]slave func[/i]; both will call [i]remote func[/i] if the call is not local, and [i]sync func[/i] in any case). Inherit mode looks at the parent node to determine the value (root node depends on the [SceneTree] having a networking peer set with [method SceneTree.set_network_peer])
 			</description>
 		</method>
 		<method name="set_owner">
@@ -35273,6 +35287,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if this SceneTree's [NetworkedMultiplayerPeer] is in server mode (listening for connections).
 			</description>
 		</method>
 		<method name="is_paused" qualifiers="const">
@@ -35369,6 +35384,7 @@
 			<argument index="0" name="peer" type="NetworkedMultiplayerPeer">
 			</argument>
 			<description>
+				Set the peer object to handle the RPC system (effectively enabling networking). Depending on the peer itself, the SceneTree will become a network server (check with [method is_network_server()]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to slave. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to SceneTree's signals.
 			</description>
 		</method>
 		<method name="set_pause">
