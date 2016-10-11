@@ -116,6 +116,8 @@ protected:
 
 	Vector2 snap_point(Vector2 p_target) const;
 
+	virtual void _changed_callback(Object *p_changed, const char *p_prop);
+
 public:
 
 	void _edit_region();
