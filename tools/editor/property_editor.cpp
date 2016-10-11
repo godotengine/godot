@@ -328,26 +328,26 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				if (c>=2) {
 
 					if (!hint_text.get_slice(",",1).empty())
-					max=hint_text.get_slice(",",1).to_double();
+						max=hint_text.get_slice(",",1).to_double();
 				}
 
-				if (type==Variant::REAL && c>=3) {
+				if (c>=3) {
 
 					if (!hint_text.get_slice(",",2).empty())
-					step= hint_text.get_slice(",",2).to_double();
+						step= hint_text.get_slice(",",2).to_double();
 				}
 
 				if (c>=4 && hint_text.get_slice(",",3)=="slider") {
 					slider->set_min(min);
 					slider->set_max(max);
-					slider->set_step((type==Variant::REAL) ? step : 1);
+					slider->set_step(step);
 					slider->set_val(v);
 					slider->show();
 					set_size(Size2(110,30)*EDSCALE);
 				} else {
 					spinbox->set_min(min);
 					spinbox->set_max(max);
-					spinbox->set_step((type==Variant::REAL) ? step : 1);
+					spinbox->set_step(step);
 					spinbox->set_val(v);
 					spinbox->show();
 					set_size(Size2(70,35)*EDSCALE);
@@ -3258,7 +3258,7 @@ void PropertyEditor::update_tree() {
 						max=p.hint_string.get_slice(",",1).to_double();
 					}
 
-					if (p.type==Variant::REAL && c>=3) {
+					if (p.type!=PROPERTY_HINT_SPRITE_FRAME && c>=3) {
 
 						step= p.hint_string.get_slice(",",2).to_double();
 					}
