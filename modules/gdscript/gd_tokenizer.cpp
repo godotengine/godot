@@ -943,7 +943,7 @@ void GDTokenizerText::set_code(const String& p_code) {
 	}
 	code_pos=0;
 	line=1; //it is stand-ar-ized that lines begin in 1 in code..
-	column=0;
+	column=1; //the same holds for columns
 	tk_rb_pos=0;
 	error_flag=false;
 	last_error="";
