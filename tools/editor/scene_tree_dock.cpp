@@ -238,6 +238,34 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String>& p_files,Node*
 
 }
 
+void SceneTreeDock::_replace_with_branch_scene(const String& p_file,Node* base) {
+	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
+	if (!sdata.is_valid()) {
+		accept->get_ok()->set_text(TTR("Ugh"));
+		accept->set_text(vformat(TTR("Error loading scene from %s"),p_file));
+		accept->popup_centered_minsize();
+		return;
+	}
+
+	Node *instanced_scene=sdata->instance(true);
+	if (!instanced_scene) {
+		accept->get_ok()->set_text(TTR("Ugh"));
+		accept->set_text(vformat(TTR("Error instancing scene from %s"),p_file));
+		accept->popup_centered_minsize();
+		return;
+	}
+
+	Node *parent = base->get_parent();
+	int pos = base->get_index();
+	memdelete(base);
+	parent->add_child(instanced_scene);
+	parent->move_child(instanced_scene, pos);
+	instanced_scene->set_owner(edited_scene);
+	editor_selection->clear();
+	editor_selection->add_node(instanced_scene);
+	scene_tree->set_selected(instanced_scene);
+}
+
 bool SceneTreeDock::_cyclical_dependency_exists(const String& p_target_scene_path, Node* p_desired_node) {
 	int childCount = p_desired_node->get_child_count();
 
@@ -1513,7 +1541,7 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 			accept->popup_centered_minsize();
 			return;
 		}
-
+		_replace_with_branch_scene(p_file, base);
 	} else {
 		accept->get_ok()->set_text(TTR("I see.."));
 		accept->set_text(TTR("Error duplicating scene to save it."));
