@@ -44,6 +44,22 @@ Files extracted from upstream source:
 - scripts/pnglibconf.h.prebuilt as pnglibconf.h
 
 
+## libwebp
+
+- Upstream: https://chromium.googlesource.com/webm/libwebp/
+- Version: 0.5.1
+- License: BSD-3-Clause
+
+Files extracted from the upstream source:
+
+- src/\* except from: \*.am, \*.in, extras/, webp/extras.h
+- AUTHORS, COPYING, PATENTS
+
+Important: The files `utils/bit_reader.{c,h}` have Godot-made
+changes to ensure they build for Javascript/HTML5. Those
+changes are marked with `// -- GODOT --` comments.
+
+
 ## pvrtccompressor
 
 - Upstream: https://bitbucket.org/jthlim/pvrtccompressor

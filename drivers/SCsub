@@ -26,8 +26,6 @@ if (env['openssl']!='no'):
 
 
 SConscript("png/SCsub");
-if (env["webp"]=="yes"):
-	SConscript("webp/SCsub");
 if (env["builtin_zlib"]=="yes"):
 	SConscript("builtin_zlib/SCsub");
 

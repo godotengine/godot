@@ -30,7 +30,6 @@
 
 #include "png/image_loader_png.h"
 #include "png/resource_saver_png.h"
-#include "webp/image_loader_webp.h"
 #include "chibi/event_stream_chibi.h"
 
 
@@ -72,10 +71,6 @@
 static ImageLoaderPNG *image_loader_png=NULL;
 static ResourceSaverPNG *resource_saver_png=NULL;
 
-#ifdef WEBP_ENABLED
-static ImageLoaderWEBP *image_loader_webp=NULL;
-#endif
-
 #ifdef TREMOR_ENABLED
 static ResourceFormatLoaderAudioStreamOGG *vorbis_stream_loader=NULL;
 #endif
@@ -109,11 +104,6 @@ void register_core_driver_types() {
 	resource_saver_png = memnew( ResourceSaverPNG );
 	ResourceSaver::add_resource_format_saver(resource_saver_png);
 
-#ifdef WEBP_ENABLED
-	image_loader_webp = memnew( ImageLoaderWEBP );
-	ImageLoader::add_image_format_loader( image_loader_webp );
-#endif
-
 	ObjectTypeDB::register_type<RegEx>();
 }
 
@@ -123,12 +113,6 @@ void unregister_core_driver_types() {
 		memdelete( image_loader_png );
 	if (resource_saver_png)
 		memdelete( resource_saver_png );
-
-#ifdef WEBP_ENABLED
-	if (image_loader_webp)
-		memdelete( image_loader_webp );
-#endif
-
 }
 
 

@@ -146,6 +146,9 @@ def configure(env):
 	if (env["libpng"] == "system"):
 		env.ParseConfig('pkg-config libpng --cflags --libs')
 
+	if (env["libwebp"] == "system"):
+		env.ParseConfig('pkg-config libwebp --cflags --libs')
+
 	if (env["freetype"]=="yes"):
 		env.ParseConfig('pkg-config freetype2 --cflags --libs')
 
