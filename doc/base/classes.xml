@@ -17386,7 +17386,7 @@
 			Echo state of the key, i.e. whether it's a repeat event or not.
 		</member>
 		<member name="meta" type="bool">
-			State of the Meta modifier.
+			State of the Command modifier.
 		</member>
 		<member name="pressed" type="bool">
 			Pressed state of the key.
@@ -17525,7 +17525,7 @@
 			Global Y coordinate of the mouse click.
 		</member>
 		<member name="meta" type="bool">
-			State of the Meta modifier.
+			State of the Command modifier.
 		</member>
 		<member name="pos" type="Vector2">
 			Local position of the mouse click.
@@ -17661,7 +17661,7 @@
 			Global Y coordinate of the mouse pointer.
 		</member>
 		<member name="meta" type="bool">
-			State of the Meta modifier.
+			State of the Command modifier.
 		</member>
 		<member name="pos" type="Vector2">
 			Local position of the mouse pointer.

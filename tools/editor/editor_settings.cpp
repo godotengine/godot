@@ -586,11 +586,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("3d_editor/zoom_style",0);
 	hints["3d_editor/zoom_style"]=PropertyInfo(Variant::INT,"3d_editor/zoom_style",PROPERTY_HINT_ENUM,"Vertical, Horizontal");
 	set("3d_editor/orbit_modifier",0);
-	hints["3d_editor/orbit_modifier"]=PropertyInfo(Variant::INT,"3d_editor/orbit_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
+	hints["3d_editor/orbit_modifier"]=PropertyInfo(Variant::INT,"3d_editor/orbit_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Command,Ctrl");
 	set("3d_editor/pan_modifier",1);
-	hints["3d_editor/pan_modifier"]=PropertyInfo(Variant::INT,"3d_editor/pan_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
+	hints["3d_editor/pan_modifier"]=PropertyInfo(Variant::INT,"3d_editor/pan_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Command,Ctrl");
 	set("3d_editor/zoom_modifier",4);
-	hints["3d_editor/zoom_modifier"]=PropertyInfo(Variant::INT,"3d_editor/zoom_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
+	hints["3d_editor/zoom_modifier"]=PropertyInfo(Variant::INT,"3d_editor/zoom_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Command,Ctrl");
 	set("3d_editor/emulate_numpad",false);
 	set("3d_editor/emulate_3_button_mouse", false);
 

@@ -63,7 +63,7 @@ String ShortCut::get_as_text() const {
 			if (shortcut.key.mod.control)
 				str+=RTR("Ctrl+");
 			if (shortcut.key.mod.meta)
-				str+=RTR("Meta+");
+				str+=RTR("Command+");
 
 			str+=keycode_get_string(shortcut.key.scancode).capitalize();
 

@@ -321,7 +321,7 @@ void ProjectSettings::_wait_for_key(const InputEvent& p_event) {
 		last_wait_for_key=p_event;
 		String str=keycode_get_string(p_event.key.scancode).capitalize();
 		if (p_event.key.mod.meta)
-			str=TTR("Meta+")+str;
+			str=TTR("Command+")+str;
 		if (p_event.key.mod.shift)
 			str=TTR("Shift+")+str;
 		if (p_event.key.mod.alt)
@@ -520,7 +520,7 @@ void ProjectSettings::_update_actions() {
 
 					String str=keycode_get_string(ie.key.scancode).capitalize();
 					if (ie.key.mod.meta)
-						str=TTR("Meta+")+str;
+						str=TTR("Command+")+str;
 					if (ie.key.mod.shift)
 						str=TTR("Shift+")+str;
 					if (ie.key.mod.alt)

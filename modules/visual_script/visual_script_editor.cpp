@@ -1574,7 +1574,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2& p_point,const Variant& p
 				if (String(d["type"])=="obj_property") {
 
 #ifdef OSX_ENABLED
-					const_cast<VisualScriptEditor*>(this)->_show_hint(TTR("Hold Meta to drop a Getter. Hold Shift to drop a generic signature."));
+					const_cast<VisualScriptEditor*>(this)->_show_hint(TTR("Hold Command to drop a Getter. Hold Shift to drop a generic signature."));
 #else
 					const_cast<VisualScriptEditor*>(this)->_show_hint(TTR("Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."));
 #endif
@@ -1583,7 +1583,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2& p_point,const Variant& p
 				if (String(d["type"])=="nodes") {
 
 #ifdef OSX_ENABLED
-					const_cast<VisualScriptEditor*>(this)->_show_hint(TTR("Hold Meta to drop a simple reference to the node."));
+					const_cast<VisualScriptEditor*>(this)->_show_hint(TTR("Hold Command to drop a simple reference to the node."));
 #else
 					const_cast<VisualScriptEditor*>(this)->_show_hint(TTR("Hold Ctrl to drop a simple reference to the node."));
 #endif
@@ -1592,7 +1592,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2& p_point,const Variant& p
 				if (String(d["type"])=="visual_script_variable_drag") {
 
 #ifdef OSX_ENABLED
-					const_cast<VisualScriptEditor*>(this)->_show_hint(TTR("Hold Meta to drop a Variable Setter."));
+					const_cast<VisualScriptEditor*>(this)->_show_hint(TTR("Hold Command to drop a Variable Setter."));
 #else
 					const_cast<VisualScriptEditor*>(this)->_show_hint(TTR("Hold Ctrl to drop a Variable Setter."));
 #endif

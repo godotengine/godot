@@ -259,7 +259,7 @@ typedef struct{
  * This structure holds the in-stream metadata corresponding to
  * the 'comment' header packet.
  *
- * Meta data is stored as a series of (tag, value) pairs, in
+ * Command data is stored as a series of (tag, value) pairs, in
  * length-encoded string vectors. The first occurence of the 
  * '=' character delimits the tag and value. A particular tag
  * may occur more than once. The character set encoding for

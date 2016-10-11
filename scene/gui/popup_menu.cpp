@@ -51,7 +51,7 @@ String PopupMenu::_get_accel_text(int p_item) const {
 	if (p_accel&KEY_MASK_CTRL)
 		atxt+="Ctrl+";
 	if (p_accel&KEY_MASK_META)
-		atxt+="Meta+";
+		atxt+="Command+";
 
 	p_accel&=KEY_CODE_MASK;
 

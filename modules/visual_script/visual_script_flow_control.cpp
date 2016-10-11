@@ -821,7 +821,7 @@ String VisualScriptInputFilter::get_output_sequence_port_text(int p_port) const 
 				if (k.mod.control)
 					text="Ctrl+"+text;
 				if (k.mod.meta)
-					text="Meta+"+text;
+					text="Command+"+text;
 			}
 
 		} break;
@@ -843,7 +843,7 @@ String VisualScriptInputFilter::get_output_sequence_port_text(int p_port) const 
 			if (mm.mod.control)
 				text="Ctrl+"+text;
 			if (mm.mod.meta)
-				text="Meta+"+text;
+				text="Command+"+text;
 		} break;
 		case InputEvent::MOUSE_BUTTON: {
 
@@ -867,7 +867,7 @@ String VisualScriptInputFilter::get_output_sequence_port_text(int p_port) const 
 			if (mb.mod.control)
 				text="Ctrl+"+text;
 			if (mb.mod.meta)
-				text="Meta+"+text;
+				text="Command+"+text;
 
 
 		} break;

@@ -242,7 +242,7 @@ void EditorSettingsDialog::_wait_for_key(const InputEvent& p_event) {
 		last_wait_for_key=p_event;
 		String str=keycode_get_string(p_event.key.scancode).capitalize();
 		if (p_event.key.mod.meta)
-			str=TTR("Meta+")+str;
+			str=TTR("Command+")+str;
 		if (p_event.key.mod.shift)
 			str=TTR("Shift+")+str;
 		if (p_event.key.mod.alt)

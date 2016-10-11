@@ -58,7 +58,7 @@ static const _KeyCodeText _keycodes[]={
 		{KEY_PAGEDOWN                      ,"PageDown"},
 		{KEY_SHIFT                         ,"Shift"},
 		{KEY_CONTROL                       ,"Control"},
-		{KEY_META                          ,"Meta"},
+		{KEY_META                          ,"Command"},
 		{KEY_ALT                           ,"Alt"},
 		{KEY_CAPSLOCK                      ,"CapsLock"},
 		{KEY_NUMLOCK                       ,"NumLock"},
@@ -315,7 +315,7 @@ String keycode_get_string(uint32_t p_code) {
 	if (p_code&KEY_MASK_CTRL)
 		codestr+="Ctrl+";
 	if (p_code&KEY_MASK_META)
-		codestr+="Meta+";
+		codestr+="Command+";
 
 	p_code&=KEY_CODE_MASK;
 

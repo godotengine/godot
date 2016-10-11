@@ -170,7 +170,7 @@ msgid "Add Node"
 msgstr "Afegeix Node"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
+msgid "Hold Command to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -178,7 +178,7 @@ msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Hold Meta to drop a simple reference to the node."
+msgid "Hold Command to drop a simple reference to the node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -186,7 +186,7 @@ msgid "Hold Ctrl to drop a simple reference to the node."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Hold Meta to drop a Variable Setter."
+msgid "Hold Command to drop a Variable Setter."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -676,8 +676,8 @@ msgstr "Ctrl +"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
-msgid "Meta+"
-msgstr "Meta +"
+msgid "Command+"
+msgstr "Command +"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Device"
