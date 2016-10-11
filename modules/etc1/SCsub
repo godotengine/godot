@@ -1,0 +1,19 @@
+Import('env')
+Import('env_modules')
+
+# Thirdparty source files
+# Not unbundled so far since not widespread as shared library
+thirdparty_dir = "#thirdparty/rg-etc1/"
+thirdparty_etc1_sources = [
+	"rg_etc1.cpp",
+]
+thirdparty_etc1_sources = [thirdparty_dir + file for file in thirdparty_etc1_sources]
+
+env_modules.add_source_files(env.modules_sources, thirdparty_etc1_sources)
+env_modules.Append(CPPPATH = [thirdparty_dir])
+
+# Godot source files
+env_modules.add_source_files(env.modules_sources, "*.cpp")
+
+Export('env_modules')
+Export('env')

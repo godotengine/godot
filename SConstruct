@@ -129,9 +129,6 @@ opts.Add('freetype','Freetype support in editor','builtin')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
 opts.Add('libpng','libpng library for image loader support (system/builtin)','builtin')
 opts.Add('webp','WEBP Image loader support (yes/no)','yes')
-opts.Add('dds','DDS Texture loader support (yes/no)','yes')
-opts.Add('pvr','PVR (PowerVR) Texture loader support (yes/no)','yes')
-opts.Add('etc1','etc1 Texture compression support (yes/no)','yes')
 opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
 opts.Add('openssl','Use OpenSSL (yes/no/builtin)','no')
 opts.Add('musepack','Musepack Audio (yes/no)','yes')
@@ -157,7 +154,7 @@ for k in platform_opts.keys():
 		opts.Add(o[0],o[1],o[2])
 
 for x in module_list:
-	opts.Add('module_'+x+'_enabled', "Enable module '"+x+"'.", "yes")
+	opts.Add('module_'+x+'_enabled', "Enable module '"+x+"' (yes/no)", "yes")
 
 opts.Update(env_base) # update environment
 Help(opts.GenerateHelpText(env_base)) # generate help
@@ -350,10 +347,6 @@ if selected_platform in platform_list:
 	if (env['theoralib']=='yes'):
 		env.Append(CPPFLAGS=['-DTHEORALIB_ENABLED']);
 
-	if (env['dds']=='yes'):
-		env.Append(CPPFLAGS=['-DDDS_ENABLED']);
-	if (env['pvr']=='yes'):
-		env.Append(CPPFLAGS=['-DPVR_ENABLED']);
 	if (env['webp']=='yes'):
 		env.Append(CPPFLAGS=['-DWEBP_ENABLED']);
 
@@ -374,9 +367,6 @@ if selected_platform in platform_list:
 
 	if (env['colored']=='yes'):
 		methods.colored(sys,env)
-
-	if (env['etc1']=='yes'):
-		env.Append(CPPFLAGS=['-DETC1_ENABLED'])
 
 	Export('env')
 

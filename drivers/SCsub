@@ -14,7 +14,6 @@ SConscript('pulseaudio/SCsub');
 SConscript('windows/SCsub');
 SConscript('gles2/SCsub');
 SConscript('gl_context/SCsub');
-SConscript('pnm/SCsub');
 
 if (env['openssl']!='no'):
 	env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
@@ -29,9 +28,6 @@ if (env['openssl']!='no'):
 SConscript("png/SCsub");
 if (env["webp"]=="yes"):
 	SConscript("webp/SCsub");
-SConscript("dds/SCsub");
-SConscript("pvr/SCsub");
-SConscript("etc1/SCsub")
 if (env["builtin_zlib"]=="yes"):
 	SConscript("builtin_zlib/SCsub");
 

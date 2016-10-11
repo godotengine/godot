@@ -31,12 +31,7 @@
 #include "png/image_loader_png.h"
 #include "png/resource_saver_png.h"
 #include "webp/image_loader_webp.h"
-#include "dds/texture_loader_dds.h"
-#include "etc1/texture_loader_pkm.h"
-#include "pvr/texture_loader_pvr.h"
-#include "etc1/image_etc.h"
 #include "chibi/event_stream_chibi.h"
-#include "pnm/bitmap_loader_pnm.h"
 
 
 #ifdef TOOLS_ENABLED
@@ -81,19 +76,6 @@ static ResourceSaverPNG *resource_saver_png=NULL;
 static ImageLoaderWEBP *image_loader_webp=NULL;
 #endif
 
-#ifdef DDS_ENABLED
-static ResourceFormatDDS *resource_loader_dds=NULL;
-#endif
-
-#ifdef ETC1_ENABLED
-static ResourceFormatPKM *resource_loader_pkm=NULL;
-#endif
-
-
-#ifdef PVR_ENABLED
-static ResourceFormatPVR *resource_loader_pvr=NULL;
-#endif
-
 #ifdef TREMOR_ENABLED
 static ResourceFormatLoaderAudioStreamOGG *vorbis_stream_loader=NULL;
 #endif
@@ -119,9 +101,6 @@ static ResourceFormatLoaderAudioStreamMPC * mpc_stream_loader=NULL;
 #endif
 
 
-
-static ResourceFormatPBM * pbm_loader=NULL;
-
 void register_core_driver_types() {
 
 	image_loader_png = memnew( ImageLoaderPNG );
@@ -134,9 +113,6 @@ void register_core_driver_types() {
 	image_loader_webp = memnew( ImageLoaderWEBP );
 	ImageLoader::add_image_format_loader( image_loader_webp );
 #endif
-
-	pbm_loader = memnew( ResourceFormatPBM );
-	ResourceLoader::add_resource_format_loader(pbm_loader);
 
 	ObjectTypeDB::register_type<RegEx>();
 }
@@ -153,7 +129,6 @@ void unregister_core_driver_types() {
 		memdelete( image_loader_webp );
 #endif
 
-	memdelete( pbm_loader );
 }
 
 
@@ -175,21 +150,6 @@ void register_driver_types() {
 	opus_stream_loader=memnew( ResourceFormatLoaderAudioStreamOpus );
 	ResourceLoader::add_resource_format_loader( opus_stream_loader );
 	ObjectTypeDB::register_type<AudioStreamOpus>();
-#endif
-
-#ifdef DDS_ENABLED
-	resource_loader_dds = memnew( ResourceFormatDDS );
-	ResourceLoader::add_resource_format_loader(resource_loader_dds );
-#endif
-
-#ifdef ETC1_ENABLED
-	resource_loader_pkm = memnew( ResourceFormatPKM );
-	ResourceLoader::add_resource_format_loader(resource_loader_pkm);
-#endif
-
-#ifdef PVR_ENABLED
-	resource_loader_pvr = memnew( ResourceFormatPVR );
-	ResourceLoader::add_resource_format_loader(resource_loader_pvr );
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -225,10 +185,6 @@ void register_driver_types() {
 #endif
 #endif
 
-#ifdef ETC1_ENABLED
-	_register_etc1_compress_func();
-#endif
-	
 	initialize_chibi();
 }
 
@@ -255,18 +211,6 @@ void unregister_driver_types() {
 #ifdef MUSEPACK_ENABLED
 
 	memdelete (mpc_stream_loader);
-#endif
-
-#ifdef DDS_ENABLED
-	memdelete(resource_loader_dds);
-#endif
-
-#ifdef ETC1_ENABLED
-	memdelete(resource_loader_pkm);
-#endif
-
-#ifdef PVR_ENABLED
-	memdelete(resource_loader_pvr);
 #endif
 
 #ifdef OPENSSL_ENABLED
