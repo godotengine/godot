@@ -121,6 +121,7 @@ bool GDParser::_parse_arguments(Node* p_parent,Vector<Node*>& p_args,bool p_stat
 		tokenizer->advance();
 	} else {
 
+		parenthesis ++;
 		int argidx=0;
 
 		while(true) {
@@ -165,6 +166,7 @@ bool GDParser::_parse_arguments(Node* p_parent,Vector<Node*>& p_args,bool p_stat
 			}
 
 		}
+		parenthesis --;
 	}
 
 	return true;
@@ -368,10 +370,16 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			OperatorNode *yield = alloc_node<OperatorNode>();
 			yield->op=OperatorNode::OP_YIELD;
 
+			while (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+				tokenizer->advance();
+			}
+
 			if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {
 				expr=yield;
 				tokenizer->advance();
 			} else {
+
+				parenthesis ++;
 
 				Node *object = _parse_and_reduce_expression(p_parent,p_static);
 				if (!object)
@@ -379,7 +387,6 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				yield->arguments.push_back(object);
 
 				if (tokenizer->get_token()!=GDTokenizer::TK_COMMA) {
-
 					_set_error("Expected ',' after first argument of 'yield'");
 					return NULL;
 				}
@@ -407,10 +414,11 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				yield->arguments.push_back(signal);
 
 				if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
-
 					_set_error("Expected ')' after second argument of 'yield'");
 					return NULL;
 				}
+
+				parenthesis --;
 
 				tokenizer->advance();
 
@@ -1709,6 +1717,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 			case GDTokenizer::TK_CF_IF: {
 
 				tokenizer->advance();
+				
 				Node *condition = _parse_and_reduce_expression(p_block,p_static);
 				if (!condition) {
 					if (_recover_from_completion()) {
@@ -2313,6 +2322,11 @@ void GDParser::_parse_class(ClassNode *p_class) {
 					bool defaulting=false;
 					while(true) {
 
+						if (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+							tokenizer->advance();
+							continue;
+						}
+
 						if (tokenizer->get_token()==GDTokenizer::TK_PR_VAR) {
 
 							tokenizer->advance(); //var before the identifier is allowed
@@ -2365,6 +2379,10 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							default_values.push_back(on);
 						}
 
+						while (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+							tokenizer->advance();
+						}
+
 						if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
 							tokenizer->advance();
 							continue;
@@ -2406,6 +2424,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 							if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
 								//has arguments
+								parenthesis ++;
 								while(true) {
 
 									Node *arg = _parse_and_reduce_expression(p_class,_static);
@@ -2423,6 +2442,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 									break;
 
 								}
+								parenthesis --;
 							}
 
 							tokenizer->advance();
@@ -2486,6 +2506,10 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_OPEN) {
 					tokenizer->advance();
 					while(true) {
+						if (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+							tokenizer->advance();
+							continue;
+						}
 
 
 						if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {
@@ -2500,6 +2524,10 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 						sig.arguments.push_back(tokenizer->get_token_identifier());
 						tokenizer->advance();
+
+						while (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+							tokenizer->advance();
+						}
 
 						if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
 							tokenizer->advance();
