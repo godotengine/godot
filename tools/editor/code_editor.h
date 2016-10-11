@@ -242,6 +242,7 @@ protected:
 
 public:
 
+	void update_editor_settings();
 	void set_error(const String& p_error);
 	void update_line_and_column() { _line_col_changed(); }
 	TextEdit *get_text_edit() { return text_editor; }
