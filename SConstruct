@@ -130,7 +130,7 @@ opts.Add('freetype','Freetype support in editor','builtin')
 opts.Add('speex','Speex Audio (yes/no)','yes')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
 opts.Add('libpng','libpng library for image loader support (system/builtin)','builtin')
-opts.Add('webp','WEBP Image loader support (yes/no)','yes')
+opts.Add('libwebp','libwebp library for webp module (system/builtin)','builtin')
 opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
 opts.Add('openssl','Use OpenSSL (yes/no/builtin)','no')
 opts.Add('musepack','Musepack Audio (yes/no)','yes')
@@ -347,10 +347,6 @@ if selected_platform in platform_list:
 		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);
 	if (env['theoralib']=='yes'):
 		env.Append(CPPFLAGS=['-DTHEORALIB_ENABLED']);
-
-	if (env['webp']=='yes'):
-		env.Append(CPPFLAGS=['-DWEBP_ENABLED']);
-
 	if (env['speex']=='yes'):
 		env.Append(CPPFLAGS=['-DSPEEX_ENABLED']);
 
