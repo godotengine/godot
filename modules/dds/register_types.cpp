@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  bitmap_loader_pnm.h                                                  */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,25 +26,19 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef BITMAP_LOADER_PNM_H
-#define BITMAP_LOADER_PNM_H
+#include "register_types.h"
 
-#include "io/resource_loader.h"
+#include "texture_loader_dds.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-class ResourceFormatPBM : public ResourceFormatLoader {
+static ResourceFormatDDS *resource_loader_dds = NULL;
 
+void register_dds_types() {
 
-public:
+	resource_loader_dds = memnew( ResourceFormatDDS );
+	ResourceLoader::add_resource_format_loader(resource_loader_dds);
+}
 
-	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
-};
+void unregister_dds_types() {
 
-
-
-#endif
+	memdelete(resource_loader_dds);
+}
