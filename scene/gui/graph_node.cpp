@@ -769,6 +769,7 @@ void GraphNode::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"title"),_SCS("set_title"),_SCS("get_title"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"show_close"),_SCS("set_show_close_button"),_SCS("is_close_button_visible"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"resizeable"),_SCS("set_resizeable"),_SCS("is_resizeable"));
 
 	ADD_SIGNAL(MethodInfo("offset_changed"));
 	ADD_SIGNAL(MethodInfo("dragged",PropertyInfo(Variant::VECTOR2,"from"),PropertyInfo(Variant::VECTOR2,"to")));
