@@ -14,16 +14,6 @@ SConscript('windows/SCsub');
 SConscript('gles2/SCsub');
 SConscript('gl_context/SCsub');
 
-if (env['openssl']!='no'):
-	env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
-	env_drivers.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
-	if (env['openssl']=="builtin"):
-		env_drivers.Append(CPPPATH=['#drivers/builtin_openssl2'])
-		SConscript("builtin_openssl2/SCsub");
-
-	SConscript('openssl/SCsub')
-
-
 SConscript("png/SCsub");
 if (env["builtin_zlib"]=="yes"):
 	SConscript("builtin_zlib/SCsub");

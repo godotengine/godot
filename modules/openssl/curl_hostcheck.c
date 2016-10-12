@@ -46,8 +46,6 @@ be used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization of the copyright holder.
 */
 
-#ifdef OPENSSL_ENABLED
-
 #include "curl_hostcheck.h"
 #include <string.h>
 
@@ -217,5 +215,3 @@ int Tool_Curl_cert_hostcheck(const char *match_pattern, const char *hostname)
     return 1;
   return 0;
 }
-
-#endif

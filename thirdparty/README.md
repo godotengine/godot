@@ -86,6 +86,17 @@ changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
 
 
+## openssl
+
+- Upstream: https://www.openssl.org
+- Version: 1.2.0h
+- License: OpenSSL license / BSD-like
+
+Files extracted from the upstream source:
+
+TODO.
+
+
 ## opus
 
 - Upstream: https://opus-codec.org

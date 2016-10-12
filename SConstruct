@@ -131,7 +131,7 @@ opts.Add('xml','XML Save/Load support (yes/no)','yes')
 opts.Add('libpng','libpng library for image loader support (system/builtin)','builtin')
 opts.Add('libwebp','libwebp library for webp module (system/builtin)','builtin')
 opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
-opts.Add('openssl','Use OpenSSL (yes/no/builtin)','no')
+opts.Add('openssl','OpenSSL library for openssl module (system/builtin)','builtin')
 opts.Add('musepack','Musepack Audio (yes/no)','yes')
 opts.Add('enet','ENet library (system/builtin)','builtin')
 opts.Add("CXX", "C++ Compiler")
@@ -321,11 +321,6 @@ if selected_platform in platform_list:
 
 	if (env['musepack']=='yes'):
 		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
-
-	#if (env['openssl']!='no'):
-	#	env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
-	#	if (env['openssl']=="builtin"):
-	#		env.Append(CPPPATH=['#drivers/builtin_openssl2'])
 
 	if (env["builtin_zlib"]=='yes'):
 		env.Append(CPPPATH=['#drivers/builtin_zlib/zlib'])
