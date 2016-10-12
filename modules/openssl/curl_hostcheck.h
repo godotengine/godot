@@ -1,8 +1,6 @@
 #ifndef HEADER_TOOL_CURL_HOSTCHECK_H
 #define HEADER_TOOL_CURL_HOSTCHECK_H
 
-#ifdef OPENSSL_ENABLED
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,8 +33,6 @@ int Tool_Curl_cert_hostcheck(const char *match_pattern, const char *hostname);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
 #endif /* HEADER_CURL_HOSTCHECK_H */

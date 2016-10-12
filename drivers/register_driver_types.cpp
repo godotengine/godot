@@ -67,10 +67,6 @@ static ResourceFormatLoaderVideoStreamTheora* theora_stream_loader = NULL;
 static ResourceFormatLoaderAudioStreamMPC * mpc_stream_loader=NULL;
 #endif
 
-#ifdef OPENSSL_ENABLED
-#include "openssl/register_openssl.h"
-#endif
-
 
 void register_core_driver_types() {
 
@@ -107,11 +103,6 @@ void register_driver_types() {
 
 #endif
 
-#ifdef OPENSSL_ENABLED
-
-	register_openssl();
-#endif
-
 #ifdef THEORA_ENABLED
 	theora_stream_loader = memnew( ResourceFormatLoaderVideoStreamTheora );
 	ResourceLoader::add_resource_format_loader(theora_stream_loader);
@@ -140,11 +131,6 @@ void unregister_driver_types() {
 #ifdef MUSEPACK_ENABLED
 
 	memdelete (mpc_stream_loader);
-#endif
-
-#ifdef OPENSSL_ENABLED
-
-	unregister_openssl();
 #endif
 
 	finalize_chibi();

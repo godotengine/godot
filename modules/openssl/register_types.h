@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_openssl.cpp                                                 */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,22 +26,5 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_openssl.h"
-
-#include "stream_peer_openssl.h"
-#ifdef OPENSSL_ENABLED
-
-void register_openssl() {
-
-	ObjectTypeDB::register_type<StreamPeerOpenSSL>();
-	StreamPeerOpenSSL::initialize_ssl();
-
-}
-
-void unregister_openssl() {
-
-	StreamPeerOpenSSL::finalize_ssl();
-
-}
-#endif
-
+void register_openssl_types();
+void unregister_openssl_types();
