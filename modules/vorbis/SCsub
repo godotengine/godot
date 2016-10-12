@@ -1,0 +1,44 @@
+Import('env')
+Import('env_modules')
+
+# Thirdparty source files
+if (env["libvorbis"] != "system"): # builtin
+	thirdparty_dir = "#thirdparty/libvorbis/"
+	thirdparty_libvorbis_sources = [
+		#"analysis.c",
+		#"barkmel.c",
+		"bitrate.c",
+		"block.c",
+		"codebook.c",
+		"envelope.c",
+		"floor0.c",
+		"floor1.c",
+		"info.c",
+		"lookup.c",
+		"lpc.c",
+		"lsp.c",
+		"mapping0.c",
+		"mdct.c",
+		"psy.c",
+		#"psytune.c",
+		"registry.c",
+		"res0.c",
+		"sharedbook.c",
+		"smallft.c",
+		"synthesis.c",
+		#"tone.c",
+		#"vorbisenc.c",
+		"vorbisfile.c",
+		"window.c",
+	]
+
+	thirdparty_libvorbis_sources = [thirdparty_dir + file for file in thirdparty_libvorbis_sources]
+
+	env_modules.add_source_files(env.modules_sources, thirdparty_libvorbis_sources)
+	env_modules.Append(CPPPATH = [thirdparty_dir])
+
+# Godot source files
+env_modules.add_source_files(env.modules_sources, "*.cpp")
+
+Export('env_modules')
+Export('env')

@@ -203,7 +203,8 @@ def configure(env):
 	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL','-DMPC_FIXED_POINT'])
 #	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
 
-	if(env["opus"]=="yes"):
+	# TODO: Move that to opus module's config
+	if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
 		if (env["android_arch"]=="armv6" or env["android_arch"]=="armv7"):
 			env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
 		env.opus_fixed_point="yes"

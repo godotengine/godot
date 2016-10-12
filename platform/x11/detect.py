@@ -155,6 +155,17 @@ def configure(env):
 	if (env["enet"] == "system"):
 		env.ParseConfig('pkg-config libenet --cflags --libs')
 
+	if (env["libogg"] == "system"):
+		env.ParseConfig('pkg-config ogg --cflags --libs')
+
+	if (env["libvorbis"] == "system"):
+		env["libogg"] = "system"  # Needed to link against system libvorbis
+		env.ParseConfig('pkg-config vorbis vorbisfile ogg --cflags --libs')
+
+	if (env["opus"] == "system"):
+		env["libogg"] = "system"  # Needed to link against system opus
+		env.ParseConfig('pkg-config opus opusfile ogg --cflags --libs')
+
 
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED'])
 

@@ -119,8 +119,9 @@ opts.Add('platform','Platform: '+str(platform_list)+'.',"")
 opts.Add('p','Platform (same as platform=).',"")
 opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
-opts.Add('vorbis','Build Ogg Vorbis Support: (yes/no)','yes')
-opts.Add('opus','Build Opus Audio Format Support: (yes/no)','yes')
+opts.Add('libogg','Ogg library for ogg container support (system/builtin)','builtin')
+opts.Add('libvorbis','Ogg Vorbis library for vorbis support (system/builtin)','builtin')
+opts.Add('opus','Opus and opusfile library for Opus format support: (system/builtin)','builtin')
 opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
 opts.Add('squish','Squish BC Texture Compression in editor (yes/no)','yes')
 opts.Add('theora','Theora Video (yes/no)','yes')
@@ -334,11 +335,6 @@ if selected_platform in platform_list:
 
 	if (env_base['squish']=='yes'):
 		env.Append(CPPFLAGS=['-DSQUISH_ENABLED']);
-
-	if (env['vorbis']=='yes'):
-		env.Append(CPPFLAGS=['-DVORBIS_ENABLED']);
-	if (env['opus']=='yes'):
-		env.Append(CPPFLAGS=['-DOPUS_ENABLED']);
 
 
 	if (env['theora']=='yes'):

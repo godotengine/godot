@@ -29,6 +29,19 @@ Files extracted from upstream source:
 - jpgd.{c,h}
 
 
+## libogg
+
+- Upstream: https://www.xiph.org/ogg
+- Version: 1.3.2
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- src/\*.c
+- include/ogg/\*.h in ogg/
+- COPYING
+
+
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
@@ -42,6 +55,19 @@ Files extracted from upstream source:
   * pngtest.c
 - the arm/ folder
 - scripts/pnglibconf.h.prebuilt as pnglibconf.h
+
+
+## libvorbis
+
+- Upstream: https://www.xiph.org/vorbis
+- Version: 1.3.5
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- src/\* except from: lookups.pl, Makefile.\*
+- include/vorbis/\*.h as vorbis/
+- COPYING
 
 
 ## libwebp
@@ -58,6 +84,20 @@ Files extracted from the upstream source:
 Important: The files `utils/bit_reader.{c,h}` have Godot-made
 changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
+
+
+## opus
+
+- Upstream: https://opus-codec.org
+- Version: 1.1.2 (opus) and 0.7 (opusfile)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- all .c and .h files in src/ (both opus and opusfile),
+  except opus_demo.c
+- all .h files in include/ (both opus and opusfile)
+- COPYING
 
 
 ## pvrtccompressor
