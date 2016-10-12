@@ -168,8 +168,12 @@ Size2 ButtonArray::get_minimum_size() const {
 void ButtonArray::_notification(int p_what) {
 
 	switch(p_what) {
+		case NOTIFICATION_MOUSE_EXIT:{
+			hover=-1;
+			update();
+		}break;
 		case NOTIFICATION_READY:{
-		        MethodInfo mi;
+			MethodInfo mi;
 			mi.name="mouse_sub_enter";
 
 			add_user_signal(mi);
@@ -245,8 +249,12 @@ void ButtonArray::_notification(int p_what) {
 
 				Ref<Font> f;
 				Color c;
+				Point2 sbsize;
+				Point2 sbofs;
 				if (i==selected) {
 					draw_style_box(style_selected,r);
+					sbsize=style_selected->get_minimum_size();
+					sbofs=style_selected->get_offset();
 					f=font_selected;
 					c=color_selected;
 					if (has_focus())
@@ -256,6 +264,8 @@ void ButtonArray::_notification(int p_what) {
 						draw_style_box(style_hover,r);
 					else
 						draw_style_box(style_normal,r);
+					sbsize=style_selected->get_minimum_size();
+					sbofs=style_normal->get_offset();
 					f=font_normal;
 					c=color_normal;
 				}
@@ -265,7 +275,7 @@ void ButtonArray::_notification(int p_what) {
 
 					ssize.x+=buttons[i].icon->get_width();
 				}
-				Point2 text_ofs=((r.size-ssize)/2.0+Point2(0,f->get_ascent())).floor();
+				Point2 text_ofs=((r.size-ssize-sbsize)/2.0+Point2(0,f->get_ascent())).floor()+sbofs;
 				if (buttons[i].icon.is_valid()) {
 
 					draw_texture(buttons[i].icon,r.pos+Point2(text_ofs.x,Math::floor((r.size.height-buttons[i].icon->get_height())/2.0)));
