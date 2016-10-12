@@ -4,7 +4,6 @@ env_drivers = env.Clone()
 
 env.drivers_sources=[]
 #env.add_source_files(env.drivers_sources,"*.cpp")
-env_drivers.Append(CPPPATH=["vorbis"])
 
 Export('env_drivers')
 
@@ -31,19 +30,11 @@ if (env["builtin_zlib"]=="yes"):
 SConscript("rtaudio/SCsub");
 SConscript("nrex/SCsub");
 SConscript("chibi/SCsub");
-if (env["vorbis"]=="yes" or env["speex"]=="yes" or env["theoralib"]=="yes" or env["opus"]=="yes"):
-        SConscript("ogg/SCsub");
-if (env["vorbis"]=="yes"):
-        SConscript("vorbis/SCsub");
-if (env["opus"]=="yes"):
-	SConscript('opus/SCsub');
 if (env["tools"]=="yes"):
 	SConscript("convex_decomp/SCsub");
 
 if (env["theoralib"]=="yes"):
 	SConscript("theora/SCsub");
-if (env['speex']=='yes'):
-	SConscript("speex/SCsub");
 if (env['musepack']=='yes'):
 	SConscript("mpc/SCsub");
 if (env["squish"]=="yes" and env["tools"]=="yes"):

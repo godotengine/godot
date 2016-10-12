@@ -45,22 +45,6 @@
 #include "platform/windows/export/export.h"
 #endif
 
-#ifdef TREMOR_ENABLED
-#include "teora/audio_stream_ogg.h"
-#endif
-
-#ifdef VORBIS_ENABLED
-#include "vorbis/audio_stream_ogg_vorbis.h"
-#endif
-
-#ifdef OPUS_ENABLED
-#include "opus/audio_stream_opus.h"
-#endif
-
-#ifdef SPEEX_ENABLED
-#include "speex/audio_stream_speex.h"
-#endif
-
 #ifdef THEORA_ENABLED
 #include "theora/video_stream_theora.h"
 #endif
@@ -74,22 +58,6 @@
 
 static ImageLoaderPNG *image_loader_png=NULL;
 static ResourceSaverPNG *resource_saver_png=NULL;
-
-#ifdef TREMOR_ENABLED
-static ResourceFormatLoaderAudioStreamOGG *vorbis_stream_loader=NULL;
-#endif
-
-#ifdef VORBIS_ENABLED
-static ResourceFormatLoaderAudioStreamOGGVorbis *vorbis_stream_loader=NULL;
-#endif
-
-#ifdef OPUS_ENABLED
-static ResourceFormatLoaderAudioStreamOpus *opus_stream_loader=NULL;
-#endif
-
-#ifdef SPEEX_ENABLED
-static ResourceFormatLoaderAudioStreamSpeex *speex_stream_loader=NULL;
-#endif
 
 #ifdef THEORA_ENABLED
 static ResourceFormatLoaderVideoStreamTheora* theora_stream_loader = NULL;
@@ -126,33 +94,9 @@ void unregister_core_driver_types() {
 
 void register_driver_types() {
 
-#ifdef TREMOR_ENABLED
-	vorbis_stream_loader=memnew( ResourceFormatLoaderAudioStreamOGG );
-	ResourceLoader::add_resource_format_loader(vorbis_stream_loader );
-	ObjectTypeDB::register_type<AudioStreamOGG>();
-#endif
-
-#ifdef VORBIS_ENABLED
-	vorbis_stream_loader=memnew( ResourceFormatLoaderAudioStreamOGGVorbis );
-	ResourceLoader::add_resource_format_loader(vorbis_stream_loader );
-	ObjectTypeDB::register_type<AudioStreamOGGVorbis>();
-#endif
-
-#ifdef OPUS_ENABLED
-	opus_stream_loader=memnew( ResourceFormatLoaderAudioStreamOpus );
-	ResourceLoader::add_resource_format_loader( opus_stream_loader );
-	ObjectTypeDB::register_type<AudioStreamOpus>();
-#endif
-
 #ifdef TOOLS_ENABLED
 
 	Geometry::_decompose_func=b2d_decompose;
-#endif
-
-#ifdef SPEEX_ENABLED
-	speex_stream_loader=memnew( ResourceFormatLoaderAudioStreamSpeex );
-	ResourceLoader::add_resource_format_loader(speex_stream_loader);
-	ObjectTypeDB::register_type<AudioStreamSpeex>();
 #endif
 
 #ifdef MUSEPACK_ENABLED
@@ -187,23 +131,6 @@ void register_driver_types() {
 }
 
 void unregister_driver_types() {
-
-
-#ifdef TREMOR_ENABLED
-	memdelete( vorbis_stream_loader );
-#endif
-
-#ifdef VORBIS_ENABLED
-	memdelete( vorbis_stream_loader );
-#endif
-
-#ifdef OPUS_ENABLED
-	memdelete( opus_stream_loader );
-#endif
-
-#ifdef SPEEX_ENABLED
-	memdelete( speex_stream_loader );
-#endif
 
 #ifdef THEORA_ENABLED
 	memdelete (theora_stream_loader);
