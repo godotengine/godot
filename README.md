@@ -1,9 +1,9 @@
+<div align="center">
 
+![GODOT](/logo.png)
 
-->![GODOT](/logo.png)<-
-
-->https://godotengine.org<-
-
+https://godotengine.org
+</div>
 ### The Engine
 
 Godot is a fully featured, open source, MIT licensed, game engine. It focuses on having great tools, and a visual oriented workflow that can export to PC, Mobile and Web platforms with no hassle.
