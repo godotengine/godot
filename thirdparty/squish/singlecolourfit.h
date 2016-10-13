@@ -1,7 +1,6 @@
 /* -----------------------------------------------------------------------------
 
 	Copyright (c) 2006 Simon Brown                          si@sjbrown.co.uk
-	Copyright (c) 2007 Ignacio Castano                   icastano@nvidia.com
 
 	Permission is hereby granted, free of charge, to any person obtaining
 	a copy of this software and associated documentation files (the 
@@ -24,38 +23,36 @@
 	
    -------------------------------------------------------------------------- */
    
-#ifndef SQUISH_CLUSTERFIT_H
-#define SQUISH_CLUSTERFIT_H
+#ifndef SQUISH_SINGLECOLOURFIT_H
+#define SQUISH_SINGLECOLOURFIT_H
 
-#include "squish/squish.h"
-#include "maths.h"
-#include "simd.h"
+#include <squish.h>
 #include "colourfit.h"
 
 namespace squish {
 
-class ClusterFit : public ColourFit
+class ColourSet;
+struct SingleColourLookup;
+
+class SingleColourFit : public ColourFit
 {
 public:
-	ClusterFit( ColourSet const* colours, int flags );
+	SingleColourFit( ColourSet const* colours, int flags );
 	
 private:
-	bool ConstructOrdering( Vec3 const& axis, int iteration );
-
 	virtual void Compress3( void* block );
 	virtual void Compress4( void* block );
-
-	enum { kMaxIterations = 8 };
-
-	int m_iterationCount;
-	Vec3 m_principle;
-	u8 m_order[16*kMaxIterations];
-	Vec4 m_points_weights[16];
-	Vec4 m_xsum_wsum;
-	Vec4 m_metric;
-	Vec4 m_besterror;
+	
+	void ComputeEndPoints( SingleColourLookup const* const* lookups );
+	
+	u8 m_colour[3];
+	Vec3 m_start;
+	Vec3 m_end;
+	u8 m_index;
+	int m_error;
+	int m_besterror;
 };
 
 } // namespace squish
 
-#endif // ndef SQUISH_CLUSTERFIT_H
+#endif // ndef SQUISH_SINGLECOLOURFIT_H

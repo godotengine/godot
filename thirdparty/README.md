@@ -148,6 +148,19 @@ Files extracted from upstream source:
 - License: BSD-3-Clause
 
 
+## squish
+
+- Upstream: https://code.google.com/archive/p/libsquish
+  and patches from https://github.com/Cavewhere/squish
+- Version: 1.11
+- License: MIT
+
+Files extracted from upstream source:
+
+- all .cpp, .h and .inl files
+>>>>>>> 8311a78... squish: Move to a module and split thirdparty lib
+
+
 ## theora
 
 - Upstream: https://www.theora.org

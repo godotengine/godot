@@ -125,7 +125,7 @@ opts.Add('libvorbis','Ogg Vorbis library for vorbis support (system/builtin)','b
 opts.Add('libtheora','Theora library for theora module (system/builtin)','builtin')
 opts.Add('opus','Opus and opusfile library for Opus format support: (system/builtin)','builtin')
 opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
-opts.Add('squish','Squish BC Texture Compression in editor (yes/no)','yes')
+opts.Add('squish','Squish library for BC Texture Compression in editor (system/builtin)','builtin')
 opts.Add('freetype','Freetype support in editor','builtin')
 # (akien) Unbundling would require work in audio_stream_speex.{cpp,h}, but since speex was
 # removed in 3.0+ and this is only to preserve compatibility in 2.1, I haven't worked on it.
@@ -327,9 +327,6 @@ if selected_platform in platform_list:
 
 	# to test 64 bits compiltion
 	# env.Append(CPPFLAGS=['-m64'])
-
-	if (env_base['squish']=='yes'):
-		env.Append(CPPFLAGS=['-DSQUISH_ENABLED']);
 
 	if (env['tools']=='yes'):
 		env.Append(CPPFLAGS=['-DTOOLS_ENABLED'])

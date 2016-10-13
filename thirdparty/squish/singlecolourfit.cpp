@@ -26,6 +26,7 @@
 #include "singlecolourfit.h"
 #include "colourset.h"
 #include "colourblock.h"
+#include <climits>
 
 namespace squish {
 
@@ -68,7 +69,7 @@ SingleColourFit::SingleColourFit( ColourSet const* colours, int flags )
 	m_colour[2] = ( u8 )FloatToInt( 255.0f*values->Z(), 255 );
 		
 	// initialise the best error
-	m_besterror = 2147483647; //INT_MAX
+	m_besterror = INT_MAX;
 }
 
 void SingleColourFit::Compress3( void* block )
@@ -130,7 +131,7 @@ void SingleColourFit::Compress4( void* block )
 void SingleColourFit::ComputeEndPoints( SingleColourLookup const* const* lookups )
 {
 	// check each index combination (endpoint or intermediate)
-	m_error = 2147483647; //INT_MAX
+	m_error = INT_MAX;
 	for( int index = 0; index < 2; ++index )
 	{
 		// check the error for this codebook index

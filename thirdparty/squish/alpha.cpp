@@ -24,6 +24,7 @@
    -------------------------------------------------------------------------- */
    
 #include "alpha.h"
+#include <climits>
 #include <algorithm>
 
 namespace squish {
@@ -114,7 +115,7 @@ static int FitCodes( u8 const* rgba, int mask, u8 const* codes, u8* indices )
 		
 		// find the least error and corresponding index
 		int value = rgba[4*i + 3];
-		int least = 2147483647; //INT_MAX
+		int least = INT_MAX;
 		int index = 0;
 		for( int j = 0; j < 8; ++j )
 		{

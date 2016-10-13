@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_driver_types.cpp                                            */
+/*  image_compress_squish.cpp                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,58 +26,67 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_driver_types.h"
+#include "image_compress_squish.h"
 
-#include "core/math/geometry.h"
-#include "png/image_loader_png.h"
-#include "png/resource_saver_png.h"
-#include "chibi/event_stream_chibi.h"
+#include "print_string.h"
 
-#ifdef TOOLS_ENABLED
-#include "convex_decomp/b2d_decompose.h"
-#endif
+#include <squish.h>
 
-#ifdef TOOLS_ENABLED
-#include "platform/windows/export/export.h"
-#endif
+void image_compress_squish(Image *p_image) {
 
-#include "drivers/nrex/regex.h"
+	int w=p_image->get_width();
+	int h=p_image->get_height();
 
-static ImageLoaderPNG *image_loader_png=NULL;
-static ResourceSaverPNG *resource_saver_png=NULL;
+	if (p_image->get_mipmaps() == 0) {
+		ERR_FAIL_COND( !w || w % 4 != 0);
+		ERR_FAIL_COND( !h || h % 4 != 0);
+	} else {
+		ERR_FAIL_COND( !w || w !=nearest_power_of_2(w) );
+		ERR_FAIL_COND( !h || h !=nearest_power_of_2(h) );
+	};
 
+	if (p_image->get_format()>=Image::FORMAT_BC1)
+		return; //do not compress, already compressed
 
-void register_core_driver_types() {
+	int shift=0;
+	int squish_comp=squish::kColourRangeFit;
+	Image::Format target_format;
 
-	image_loader_png = memnew( ImageLoaderPNG );
-	ImageLoader::add_image_format_loader( image_loader_png );
+	if (p_image->get_format()==Image::FORMAT_GRAYSCALE_ALPHA) {
+		//compressed normalmap
+		target_format = Image::FORMAT_BC3; squish_comp|=squish::kDxt5;;
+	} else if (p_image->detect_alpha()!=Image::ALPHA_NONE) {
 
-	resource_saver_png = memnew( ResourceSaverPNG );
-	ResourceSaver::add_resource_format_saver(resource_saver_png);
+		target_format = Image::FORMAT_BC2; squish_comp|=squish::kDxt3;;
+	} else {
+		target_format = Image::FORMAT_BC1; shift=1; squish_comp|=squish::kDxt1;;
+	}
 
-	ObjectTypeDB::register_type<RegEx>();
-}
+	p_image->convert(Image::FORMAT_RGBA); //always expects rgba
 
-void unregister_core_driver_types() {
+	int mm_count = p_image->get_mipmaps();
 
-	if (image_loader_png)
-		memdelete( image_loader_png );
-	if (resource_saver_png)
-		memdelete( resource_saver_png );
-}
+	DVector<uint8_t> data;
+	int target_size = Image::get_image_data_size(w,h,target_format,mm_count);
+	data.resize(target_size);
 
+	DVector<uint8_t>::Read rb = p_image->get_data().read();
+	DVector<uint8_t>::Write wb = data.write();
 
-void register_driver_types() {
+	int dst_ofs=0;
 
-#ifdef TOOLS_ENABLED
+	for(int i=0;i<=mm_count;i++) {
 
-	Geometry::_decompose_func=b2d_decompose;
-#endif
+		int src_ofs = p_image->get_mipmap_offset(i);
+		squish::CompressImage( &rb[src_ofs],w,h,&wb[dst_ofs],squish_comp);
+		dst_ofs+=(MAX(4,w)*MAX(4,h))>>shift;
+		w>>=1;
+		h>>=1;
+	}
 
-	initialize_chibi();
-}
+	rb = DVector<uint8_t>::Read();
+	wb = DVector<uint8_t>::Write();
 
-void unregister_driver_types() {
+	p_image->create(p_image->get_width(),p_image->get_height(),p_image->get_mipmaps(),target_format,data);
 
-	finalize_chibi();
 }

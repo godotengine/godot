@@ -23,19 +23,19 @@
 	
    -------------------------------------------------------------------------- */
    
-#ifndef SQUISH_COLOURBLOCK_H
-#define SQUISH_COLOURBLOCK_H
+#ifndef SQUISH_ALPHA_H
+#define SQUISH_ALPHA_H
 
-#include "squish/squish.h"
-#include "maths.h"
+#include <squish.h>
 
 namespace squish {
 
-void WriteColourBlock3( Vec3::Arg start, Vec3::Arg end, u8 const* indices, void* block );
-void WriteColourBlock4( Vec3::Arg start, Vec3::Arg end, u8 const* indices, void* block );
+void CompressAlphaDxt3( u8 const* rgba, int mask, void* block );
+void CompressAlphaDxt5( u8 const* rgba, int mask, void* block );
 
-void DecompressColour( u8* rgba, void const* block, bool isDxt1 );
+void DecompressAlphaDxt3( u8* rgba, void const* block );
+void DecompressAlphaDxt5( u8* rgba, void const* block );
 
 } // namespace squish
 
-#endif // ndef SQUISH_COLOURBLOCK_H
+#endif // ndef SQUISH_ALPHA_H
