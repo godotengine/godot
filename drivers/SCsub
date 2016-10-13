@@ -25,8 +25,6 @@ SConscript("chibi/SCsub");
 if (env["tools"]=="yes"):
 	SConscript("convex_decomp/SCsub");
 
-if (env["squish"]=="yes" and env["tools"]=="yes"):
-	SConscript("squish/SCsub");
 if (env["freetype"]!="no"):
 	SConscript("freetype/SCsub");
 

@@ -26,7 +26,7 @@
 #ifndef SQUISH_RANGEFIT_H
 #define SQUISH_RANGEFIT_H
 
-#include "squish/squish.h"
+#include <squish.h>
 #include "colourfit.h"
 #include "maths.h"
 

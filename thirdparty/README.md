@@ -158,6 +158,18 @@ Files extracted from upstream source:
 - RtAudio.{cpp,h}
 
 
+## squish
+
+- Upstream: https://code.google.com/archive/p/libsquish
+  and patches from https://github.com/Cavewhere/squish
+- Version: 1.11
+- License: MIT
+
+Files extracted from upstream source:
+
+- all .cpp, .h and .inl files
+
+
 ## theora
 
 - Upstream: https://www.theora.org
