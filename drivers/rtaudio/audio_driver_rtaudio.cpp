@@ -27,8 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_driver_rtaudio.h"
+
 #include "globals.h"
 #include "os/os.h"
+
 #ifdef RTAUDIO_ENABLED
 
 const char* AudioDriverRtAudio::get_name() const {

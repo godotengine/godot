@@ -130,6 +130,17 @@ Files extracted from upstream source:
 - all of them: rg_etc1.{cpp,h}
 
 
+## rtaudio
+
+- Upstream: http://www.music.mcgill.ca/~gary/rtaudio/
+- Version: 4.1.2
+- License: MIT-like
+
+Files extracted from upstream source:
+
+- RtAudio.{cpp,h}
+
+
 ## speex
 
 - Upstream: http://speex.org/
