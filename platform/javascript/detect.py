@@ -26,10 +26,10 @@ def get_flags():
 
 	return [
 		('tools', 'no'),
-		('theora', 'no'),
 		('musepack', 'no'),
 		('squish', 'no'),
 		('etc1', 'no'),
+		('module_theora_enabled', 'no'),
 	]
 
 

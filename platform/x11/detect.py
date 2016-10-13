@@ -73,7 +73,6 @@ def get_flags():
 	("openssl", "system"),
 	('freetype','yes'), # use system freetype
 	('libpng', 'system'),
-	#("theora","no"),
 	]
 
 
@@ -155,16 +154,24 @@ def configure(env):
 	if (env["enet"] == "system"):
 		env.ParseConfig('pkg-config libenet --cflags --libs')
 
-	if (env["libogg"] == "system"):
-		env.ParseConfig('pkg-config ogg --cflags --libs')
+	# Sound and video libraries
+	# Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
+
+	if (env["libtheora"] == "system"):
+		env["libogg"] = "system"  # Needed to link against system libtheora
+		env["libvorbis"] = "system"  # Needed to link against system libtheora
+		env.ParseConfig('pkg-config theora theoradec --cflags --libs')
 
 	if (env["libvorbis"] == "system"):
 		env["libogg"] = "system"  # Needed to link against system libvorbis
-		env.ParseConfig('pkg-config vorbis vorbisfile ogg --cflags --libs')
+		env.ParseConfig('pkg-config vorbis vorbisfile --cflags --libs')
 
 	if (env["opus"] == "system"):
 		env["libogg"] = "system"  # Needed to link against system opus
-		env.ParseConfig('pkg-config opus opusfile ogg --cflags --libs')
+		env.ParseConfig('pkg-config opus opusfile --cflags --libs')
+
+	if (env["libogg"] == "system"):
+		env.ParseConfig('pkg-config ogg --cflags --libs')
 
 
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED'])

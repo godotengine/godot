@@ -26,13 +26,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifdef THEORA_ENABLED
-
 #include "video_stream_theora.h"
+
+#include "globals.h"
 #include "os/os.h"
 #include "yuv2rgb.h"
-#include "globals.h"
-
 
 int VideoStreamPlaybackTheora::	buffer_data() {
 
@@ -940,6 +938,3 @@ String ResourceFormatLoaderVideoStreamTheora::get_resource_type(const String &p_
 		return "VideoStreamTheora";
 	return "";
 }
-
-#endif
-

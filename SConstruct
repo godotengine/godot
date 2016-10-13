@@ -121,11 +121,10 @@ opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
 opts.Add('libogg','Ogg library for ogg container support (system/builtin)','builtin')
 opts.Add('libvorbis','Ogg Vorbis library for vorbis support (system/builtin)','builtin')
+opts.Add('libtheora','Theora library for theora module (system/builtin)','builtin')
 opts.Add('opus','Opus and opusfile library for Opus format support: (system/builtin)','builtin')
 opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
 opts.Add('squish','Squish BC Texture Compression in editor (yes/no)','yes')
-opts.Add('theora','Theora Video (yes/no)','yes')
-opts.Add('theoralib','Theora Video (yes/no)','no')
 opts.Add('freetype','Freetype support in editor','builtin')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
 opts.Add('libpng','libpng library for image loader support (system/builtin)','builtin')
@@ -330,13 +329,6 @@ if selected_platform in platform_list:
 
 	if (env_base['squish']=='yes'):
 		env.Append(CPPFLAGS=['-DSQUISH_ENABLED']);
-
-
-	if (env['theora']=='yes'):
-		env['theoralib']='yes'
-		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);
-	if (env['theoralib']=='yes'):
-		env.Append(CPPFLAGS=['-DTHEORALIB_ENABLED']);
 
 	if (env['tools']=='yes'):
 		env.Append(CPPFLAGS=['-DTOOLS_ENABLED'])

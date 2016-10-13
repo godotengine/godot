@@ -29,16 +29,15 @@
 #ifndef VIDEO_STREAM_THEORA_H
 #define VIDEO_STREAM_THEORA_H
 
-#ifdef THEORA_ENABLED
-
-#include "theora/theoradec.h"
-#include "vorbis/codec.h"
-#include "os/file_access.h"
-#include "ring_buffer.h"
 #include "io/resource_loader.h"
-#include "scene/resources/video_stream.h"
+#include "os/file_access.h"
 #include "os/thread.h"
 #include "os/semaphore.h"
+#include "ring_buffer.h"
+#include "scene/resources/video_stream.h"
+
+#include <theora/theoradec.h>
+#include <vorbis/codec.h>
 
 //#define THEORA_USE_THREAD_STREAMING
 
@@ -196,9 +195,5 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 
 };
-
-
-
-#endif
 
 #endif
