@@ -18,7 +18,8 @@ SConscript("png/SCsub");
 if (env["builtin_zlib"]=="yes"):
 	SConscript("builtin_zlib/SCsub");
 
-SConscript("rtaudio/SCsub");
+if (env["platform"] == "windows"):
+	SConscript("rtaudio/SCsub");
 SConscript("nrex/SCsub");
 SConscript("chibi/SCsub");
 if (env["tools"]=="yes"):
