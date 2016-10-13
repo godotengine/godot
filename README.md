@@ -1,6 +1,6 @@
 <div align="center">
 
-    ![GODOT](/logo.png)
+    <img src="/logo.png" placeholder="GODOT"><br/>
 
      https://godotengine.org
 </div>
