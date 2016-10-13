@@ -29,13 +29,12 @@
 #ifndef AUDIO_STREAM_MPC_H
 #define AUDIO_STREAM_MPC_H
 
-#include "scene/resources/audio_stream.h"
-#include "os/file_access.h"
-#include "mpc/mpcdec.h"
-#include "os/thread_safe.h"
 #include "io/resource_loader.h"
-//#include "../libmpcdec/decoder.h"
-//#include "../libmpcdec/internal.h"
+#include "os/file_access.h"
+#include "os/thread_safe.h"
+#include "scene/resources/audio_stream.h"
+
+#include <mpc/mpcdec.h>
 
 class AudioStreamPlaybackMPC : public AudioStreamPlayback {
 

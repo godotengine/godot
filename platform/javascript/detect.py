@@ -26,9 +26,9 @@ def get_flags():
 
 	return [
 		('tools', 'no'),
-		('musepack', 'no'),
 		('squish', 'no'),
 		('etc1', 'no'),
+		('module_mpc_enabled', 'no'),
 		('module_theora_enabled', 'no'),
 	]
 
