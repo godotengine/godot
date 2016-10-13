@@ -64,10 +64,6 @@
 #include "opus/audio_stream_opus.h"
 #endif
 
-#ifdef SPEEX_ENABLED
-#include "speex/audio_stream_speex.h"
-#endif
-
 #ifdef THEORA_ENABLED
 #include "theora/video_stream_theora.h"
 #endif
@@ -116,10 +112,6 @@ static ResourceFormatLoaderAudioStreamOGGVorbis *vorbis_stream_loader=NULL;
 
 #ifdef OPUS_ENABLED
 static ResourceFormatLoaderAudioStreamOpus *opus_stream_loader=NULL;
-#endif
-
-#ifdef SPEEX_ENABLED
-static ResourceFormatLoaderAudioStreamSpeex *speex_stream_loader=NULL;
 #endif
 
 #ifdef THEORA_ENABLED
@@ -236,12 +228,6 @@ void register_driver_types() {
 	Geometry::_decompose_func=b2d_decompose;
 #endif
 
-#ifdef SPEEX_ENABLED
-	speex_stream_loader=memnew( ResourceFormatLoaderAudioStreamSpeex );
-	ResourceLoader::add_resource_format_loader(speex_stream_loader);
-	ObjectTypeDB::register_type<AudioStreamSpeex>();
-#endif
-
 #ifdef MUSEPACK_ENABLED
 
 	mpc_stream_loader=memnew( ResourceFormatLoaderAudioStreamMPC );
@@ -290,10 +276,6 @@ void unregister_driver_types() {
 
 #ifdef OPUS_ENABLED
 	memdelete( opus_stream_loader );
-#endif
-
-#ifdef SPEEX_ENABLED
-	memdelete( speex_stream_loader );
 #endif
 
 #ifdef THEORA_ENABLED
