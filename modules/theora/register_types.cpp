@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_driver_types.cpp                                            */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,92 +26,20 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_driver_types.h"
+#include "register_types.h"
 
-#include "core/math/geometry.h"
-#include "png/image_loader_png.h"
-#include "png/resource_saver_png.h"
-#include "chibi/event_stream_chibi.h"
+#include "video_stream_theora.h"
 
+static ResourceFormatLoaderVideoStreamTheora* theora_stream_loader = NULL;
 
-#ifdef TOOLS_ENABLED
-#include "squish/image_compress_squish.h"
-#endif
+void register_theora_types() {
 
-#ifdef TOOLS_ENABLED
-#include "convex_decomp/b2d_decompose.h"
-#endif
-
-#ifdef TOOLS_ENABLED
-#include "platform/windows/export/export.h"
-#endif
-
-#include "drivers/nrex/regex.h"
-
-#ifdef MUSEPACK_ENABLED
-#include "mpc/audio_stream_mpc.h"
-#endif
-
-static ImageLoaderPNG *image_loader_png=NULL;
-static ResourceSaverPNG *resource_saver_png=NULL;
-
-#ifdef MUSEPACK_ENABLED
-static ResourceFormatLoaderAudioStreamMPC * mpc_stream_loader=NULL;
-#endif
-
-
-void register_core_driver_types() {
-
-	image_loader_png = memnew( ImageLoaderPNG );
-	ImageLoader::add_image_format_loader( image_loader_png );
-
-	resource_saver_png = memnew( ResourceSaverPNG );
-	ResourceSaver::add_resource_format_saver(resource_saver_png);
-
-	ObjectTypeDB::register_type<RegEx>();
+	theora_stream_loader = memnew( ResourceFormatLoaderVideoStreamTheora );
+	ResourceLoader::add_resource_format_loader(theora_stream_loader);
+	ObjectTypeDB::register_type<VideoStreamTheora>();
 }
 
-void unregister_core_driver_types() {
+void unregister_theora_types() {
 
-	if (image_loader_png)
-		memdelete( image_loader_png );
-	if (resource_saver_png)
-		memdelete( resource_saver_png );
-}
-
-
-void register_driver_types() {
-
-#ifdef TOOLS_ENABLED
-
-	Geometry::_decompose_func=b2d_decompose;
-#endif
-
-#ifdef MUSEPACK_ENABLED
-
-	mpc_stream_loader=memnew( ResourceFormatLoaderAudioStreamMPC );
-	ResourceLoader::add_resource_format_loader(mpc_stream_loader);
-	ObjectTypeDB::register_type<AudioStreamMPC>();
-
-#endif
-
-#ifdef TOOLS_ENABLED
-#ifdef SQUISH_ENABLED
-
-	Image::set_compress_bc_func(image_compress_squish);
-
-#endif
-#endif
-
-	initialize_chibi();
-}
-
-void unregister_driver_types() {
-
-#ifdef MUSEPACK_ENABLED
-
-	memdelete (mpc_stream_loader);
-#endif
-
-	finalize_chibi();
+	memdelete( theora_stream_loader );
 }

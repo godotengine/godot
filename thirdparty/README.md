@@ -122,3 +122,16 @@ Files extracted from upstream source:
 - Upstream: http://speex.org/
 - Version: 1.2rc1?
 - License: BSD-3-Clause
+
+
+## theora
+
+- Upstream: https://www.theora.org
+- Version: 1.1.1
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- all .c, .h in lib/
+- all .h files in include/theora/ as theora/
+- COPYING and LICENSE

@@ -33,8 +33,7 @@ def get_flags():
 
 	return [
 		('tools', 'no'),
-		('theora', 'no'),
-
+		('module_theora_enabled', 'no'),
 	]
 
 def configure(env):
