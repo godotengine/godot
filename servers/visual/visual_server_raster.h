@@ -1283,6 +1283,7 @@ public:
 
 	virtual void set_boot_image(const Image& p_image, const Color& p_color, bool p_scale);
 	virtual void set_default_clear_color(const Color& p_color);
+	virtual Color get_default_clear_color() const;
 
 	VisualServerRaster(Rasterizer *p_rasterizer);
 	~VisualServerRaster();
