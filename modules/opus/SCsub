@@ -1,11 +1,13 @@
 Import('env')
 Import('env_modules')
 
+env_opus = env_modules.Clone()
+
 # Thirdparty source files
 if (env["opus"] != "system"): # builtin
 	thirdparty_dir = "#thirdparty/opus/"
 
-	thirdparty_opus_sources = [
+	thirdparty_sources = [
 		"silk/tables_other.c",
 		"silk/sum_sqr_shift.c",
 		"silk/PLC.c",
@@ -126,7 +128,7 @@ if (env["opus"] != "system"): # builtin
 	opus_sources_silk = []
 
 	if("opus_fixed_point" in env and env.opus_fixed_point=="yes"):
-		env_modules.Append(CFLAGS = ["-DFIXED_POINT"])
+		env_opus.Append(CFLAGS = ["-DFIXED_POINT"])
 		opus_sources_silk = [
 			"silk/fixed/schur64_FIX.c",
 			"silk/fixed/residual_energy16_FIX.c",
@@ -189,11 +191,10 @@ if (env["opus"] != "system"): # builtin
 			"silk/float/prefilter_FLP.c"
 	]
 
-	thirdparty_opus_sources = [thirdparty_dir + file for file in thirdparty_opus_sources + opus_sources_silk]
+	thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources + opus_sources_silk]
 
-	env_modules.add_source_files(env.modules_sources, thirdparty_opus_sources)
-	# FIXME: Clone the environment to make a env_opus and not pollute the modules env
-	env_modules.Append(CFLAGS=["-DHAVE_CONFIG_H"])
+	env_opus.add_source_files(env.modules_sources, thirdparty_sources)
+	env_opus.Append(CFLAGS=["-DHAVE_CONFIG_H"])
 
 	thirdparty_include_paths = [
 		"",
@@ -202,10 +203,11 @@ if (env["opus"] != "system"): # builtin
 		"silk/fixed",
 		"silk/float",
 	]
-	env_modules.Append(CPPPATH = [thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
+	env_opus.Append(CPPPATH = [thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
+
+	# also requires libogg
+	if (env["libogg"] != "system"): # builtin
+		env_opus.Append(CPPPATH = ["#thirdparty/libogg"])
 
 # Module files
-env_modules.add_source_files(env.modules_sources, "*.cpp")
-
-Export('env_modules')
-Export('env')
+env_opus.add_source_files(env.modules_sources, "*.cpp")

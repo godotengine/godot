@@ -3,9 +3,11 @@ Import('env_modules')
 
 # Thirdparty source files
 
+env_enet = env_modules.Clone()
+
 if (env["enet"] != "system"): # builtin
 	thirdparty_dir = "#thirdparty/enet/"
-	thirdparty_enet_sources = [
+	thirdparty_sources = [
 		"callbacks.c",
 		"compress.c",
 		"host.c",
@@ -16,12 +18,9 @@ if (env["enet"] != "system"): # builtin
 		"unix.c",
 		"win32.c",
 	]
-	thirdparty_enet_sources = [thirdparty_dir + file for file in thirdparty_enet_sources]
+	thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-	env_modules.add_source_files(env.modules_sources, thirdparty_enet_sources)
-	env_modules.Append(CPPPATH = [thirdparty_dir])
+	env_enet.add_source_files(env.modules_sources, thirdparty_sources)
+	env_enet.Append(CPPPATH = [thirdparty_dir])
 
-env_modules.add_source_files(env.modules_sources, "*.cpp")
-
-Export('env_modules')
-Export('env')
+env_enet.add_source_files(env.modules_sources, "*.cpp")

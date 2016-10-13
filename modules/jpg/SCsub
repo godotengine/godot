@@ -1,19 +1,18 @@
 Import('env')
 Import('env_modules')
 
+env_jpg = env_modules.Clone()
+
 # Thirdparty source files
 # Not unbundled for now as they are not commonly available as shared library
 thirdparty_dir = "#thirdparty/jpeg-compressor/"
-thirdparty_jpg_sources = [
+thirdparty_sources = [
 	"jpgd.cpp",
 ]
-thirdparty_jpg_sources = [thirdparty_dir + file for file in thirdparty_jpg_sources]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_modules.add_source_files(env.modules_sources, thirdparty_jpg_sources)
-env_modules.Append(CPPPATH = [thirdparty_dir])
+env_jpg.add_source_files(env.modules_sources, thirdparty_sources)
+env_jpg.Append(CPPPATH = [thirdparty_dir])
 
 # Godot's own source files
-env_modules.add_source_files(env.modules_sources, "*.cpp")
-
-Export('env_modules')
-Export('env')
+env_jpg.add_source_files(env.modules_sources, "*.cpp")
