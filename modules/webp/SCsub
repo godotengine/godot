@@ -1,10 +1,12 @@
 Import('env')
 Import('env_modules')
 
+env_webp = env_modules.Clone()
+
 # Thirdparty source files
 if (env["libwebp"] != "system"): # builtin
 	thirdparty_dir = "#thirdparty/libwebp/"
-	thirdparty_libwebp_sources = [
+	thirdparty_sources = [
 		"enc/webpenc.c",
 		"enc/near_lossless.c",
 		"enc/frame.c",
@@ -108,13 +110,10 @@ if (env["libwebp"] != "system"): # builtin
 		"dsp/enc_sse2.c",
 		"dsp/upsampling_sse2.c",
 	]
-	thirdparty_libwebp_sources = [thirdparty_dir + file for file in thirdparty_libwebp_sources]
+	thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-	env_modules.add_source_files(env.modules_sources, thirdparty_libwebp_sources)
-	env_modules.Append(CPPPATH = [thirdparty_dir])
+	env_webp.add_source_files(env.modules_sources, thirdparty_sources)
+	env_webp.Append(CPPPATH = [thirdparty_dir])
 
 # Godot source files
-env_modules.add_source_files(env.modules_sources, "*.cpp")
-
-Export('env_modules')
-Export('env')
+env_webp.add_source_files(env.modules_sources, "*.cpp")

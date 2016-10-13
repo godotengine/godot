@@ -1,23 +1,22 @@
 Import('env')
 Import('env_modules')
 
+env_pvr = env_modules.Clone()
+
 # Thirdparty source files
 # Not unbundled so far since not widespread as shared library
 thirdparty_dir = "#thirdparty/pvrtccompressor/"
-thirdparty_pvr_sources = [
+thirdparty_sources = [
 	"BitScale.cpp",
 	"MortonTable.cpp",
 	"PvrTcDecoder.cpp",
 	"PvrTcEncoder.cpp",
 	"PvrTcPacket.cpp",
 ]
-thirdparty_pvr_sources = [thirdparty_dir + file for file in thirdparty_pvr_sources]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_modules.add_source_files(env.modules_sources, thirdparty_pvr_sources)
-env_modules.Append(CPPPATH = [thirdparty_dir])
+env_pvr.add_source_files(env.modules_sources, thirdparty_sources)
+env_pvr.Append(CPPPATH = [thirdparty_dir])
 
 # Godot source files
-env_modules.add_source_files(env.modules_sources, "*.cpp")
-
-Export('env_modules')
-Export('env')
+env_pvr.add_source_files(env.modules_sources, "*.cpp")
