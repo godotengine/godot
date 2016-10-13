@@ -160,9 +160,8 @@ Files extracted from upstream source:
 
 ## squish
 
-- Upstream: https://code.google.com/archive/p/libsquish
-  and patches from https://github.com/Cavewhere/squish
-- Version: 1.11
+- Upstream: https://sourceforge.net/projects/libsquish
+- Version: 1.14
 - License: MIT
 
 Files extracted from upstream source:
