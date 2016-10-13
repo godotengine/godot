@@ -54,7 +54,7 @@ String Globals::localize_path(const String& p_path) const {
 	if (resource_path=="")
 		return p_path; //not initialied yet
 
-	if (p_path.begins_with("res://") || p_path.begins_with("user://"))
+	if (p_path.begins_with("res://") || p_path.begins_with("user://") || p_path.is_abs_path())
 		return p_path.simplify_path();
 
 
