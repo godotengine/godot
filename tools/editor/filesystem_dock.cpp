@@ -38,9 +38,33 @@
 #include "editor_settings.h"
 #include "scene/main/viewport.h"
 
+void FileSystemDock::_get_unfolded_paths(TreeItem& root, Vector<String>& paths) {
+	if(root.is_collapsed())
+		return;
 
-bool FileSystemDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir) {
+	Variant data = root.get_metadata(0);
+	if(data.get_type() == Variant::NIL) {
+		if(!root.get_text(0).empty())
+			data = Variant(root.get_text(0));
+	}
 
+	if(data.get_type() != Variant::NIL) // For root it will be empty
+		paths.push_back(data);
+
+	for(TreeItem* c = root.get_children(); c != NULL; c = c->get_next())
+		_get_unfolded_paths(*c, paths);
+}
+
+void FileSystemDock::_save_unfolded() {
+	if(tree->get_root()) {
+		Vector<String> paths;
+		_get_unfolded_paths(*tree->get_root(), paths);
+		EditorSettings::get_singleton()->set_unfolded_dirs(paths);
+	}
+}
+
+bool FileSystemDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir,Set<String>& unfolded) {
+	bool foldable = true;
 
 	TreeItem *item = tree->create_item(p_parent);
 	String dname=p_dir->get_name();
@@ -57,23 +81,32 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *
 	item->set_metadata(0,lpath);
 	if (lpath==path) {
 		item->select(0);
+		foldable = false;
 	}
 
 	for(int i=0;i<p_dir->get_subdir_count();i++)
-		_create_tree(item,p_dir->get_subdir(i));
+		foldable = _create_tree(item,p_dir->get_subdir(i),unfolded) && foldable;
 
-	return true;
+	if(unfolded.find(lpath) == NULL && foldable)
+		item->set_collapsed(true);
+
+	return foldable;
 }
 
 
 void FileSystemDock::_update_tree() {
+	Set<String> unfolded;
+	Vector<String> unfolded_dirs = EditorSettings::get_singleton()->get_unfolded_dirs();
+	for(int i = 0; i < unfolded_dirs.size(); ++i)
+		unfolded.insert(unfolded_dirs[i]);
 
 	tree->clear();
 	updating_tree=true;
 	TreeItem *root = tree->create_item();
 	TreeItem *favorites = tree->create_item(root);
+	const String favoritesName = TTR("Favorites:");
 	favorites->set_icon(0, get_icon("Favorites","EditorIcons") );
-	favorites->set_text(0,TTR("Favorites:"));
+	favorites->set_text(0, favoritesName);
 	favorites->set_selectable(0,false);
 	Vector<String> faves = 	EditorSettings::get_singleton()->get_favorite_dirs();
 	for(int i=0;i<faves.size();i++) {
@@ -90,8 +123,10 @@ void FileSystemDock::_update_tree() {
 		ti->set_selectable(0,true);
 		ti->set_metadata(0,faves[i]);
 	}
+	if(unfolded.find(favoritesName) == NULL)
+		favorites->set_collapsed(true);
 
-	_create_tree(root,EditorFileSystem::get_singleton()->get_filesystem());
+	_create_tree(root,EditorFileSystem::get_singleton()->get_filesystem(),unfolded);
 	updating_tree=false;
 
 }
@@ -246,6 +281,11 @@ void FileSystemDock::_dir_selected() {
 		_open_pressed(); //go directly to dir
 	}
 
+}
+
+void FileSystemDock::_item_collapsed(Variant item) {
+	if(!updating_tree)
+		_save_unfolded();
 }
 
 
@@ -1125,9 +1165,11 @@ void FileSystemDock::_open_pressed(){
 
 	//file_options->show();
 
-	_update_files(false);
+	_update_files(last_path == path);// keep selection if dir has not been changed
 	current_path->set_text(path);
 	_push_to_history();
+
+	last_path = path;
 
 //	emit_signal("open",path);
 
@@ -1603,6 +1645,7 @@ void FileSystemDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_bw_history"), &FileSystemDock::_bw_history);
 	ObjectTypeDB::bind_method(_MD("_fs_changed"), &FileSystemDock::_fs_changed);
 	ObjectTypeDB::bind_method(_MD("_dir_selected"), &FileSystemDock::_dir_selected);
+	ObjectTypeDB::bind_method(_MD("_item_collapsed", "item"), &FileSystemDock::_item_collapsed);
 	ObjectTypeDB::bind_method(_MD("_file_option"), &FileSystemDock::_file_option);
 	ObjectTypeDB::bind_method(_MD("_move_operation"), &FileSystemDock::_move_operation);
 	ObjectTypeDB::bind_method(_MD("_rename_operation"), &FileSystemDock::_rename_operation);
@@ -1702,12 +1745,14 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->set_hide_root(true);
 	split_box->add_child(tree);
 	tree->set_drag_forwarding(this);
+	tree->set_all_collapse(true);
 
 
 	//tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->connect("item_edited",this,"_favorite_toggled");
 	tree->connect("item_activated",this,"_open_pressed");
 	tree->connect("cell_selected",this,"_dir_selected");
+	tree->connect("item_collapsed", this, "_item_collapsed");
 
 	files = memnew( ItemList );
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1784,6 +1829,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	display_mode = DISPLAY_THUMBNAILS;
 
 	path="res://";
+	last_path = "";
 
 
 	add_constant_override("separation",3);

@@ -205,6 +205,7 @@ public:
 	void set_custom_draw(int p_column,Object *p_object,const StringName& p_callback);
 
 	void set_collapsed(bool p_collapsed);
+	void set_all_collapsed(bool p_collapsed);
 	bool is_collapsed();
 
 	TreeItem *get_prev();
@@ -440,6 +441,7 @@ friend class TreeItem;
 	float time_since_motion;*/
 
 	bool delayed_text_editor;
+	bool all_collapse;
 	uint64_t first_selection_time;
 
 	float drag_speed;
@@ -539,6 +541,9 @@ public:
 
 	void set_delayed_text_editor(bool enabled);
 	bool is_delayed_text_editor_enabled() const;
+
+	void set_all_collapse(bool all);
+	bool is_all_collapse() const;
 
 	Tree();
 	~Tree();

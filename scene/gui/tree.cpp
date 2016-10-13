@@ -338,6 +338,13 @@ void TreeItem::set_collapsed(bool p_collapsed) {
 
 }
 
+void TreeItem::set_all_collapsed(bool p_collapsed) {
+	for(TreeItem* child = get_children(); child != NULL; child = child->get_next())
+		child->set_all_collapsed(p_collapsed);
+
+	set_collapsed(p_collapsed);
+}
+
 bool TreeItem::is_collapsed() {
 
 	return collapsed;
@@ -677,6 +684,7 @@ void TreeItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_custom_draw","column","object","callback"),&TreeItem::set_custom_draw);
 
 	ObjectTypeDB::bind_method(_MD("set_collapsed","enable"),&TreeItem::set_collapsed);
+	ObjectTypeDB::bind_method(_MD("set_all_collapsed", "enable"), &TreeItem::set_all_collapsed);
 	ObjectTypeDB::bind_method(_MD("is_collapsed"),&TreeItem::is_collapsed);
 
 	ObjectTypeDB::bind_method(_MD("get_next:TreeItem"),&TreeItem::get_next);
@@ -1542,8 +1550,12 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 		if (!hide_folding && (p_pos.x >=x_ofs && p_pos.x < (x_ofs+cache.item_margin) )) {
 
 
-			if (p_item->childs)
-				p_item->set_collapsed( ! p_item->is_collapsed() );
+			if (p_item->childs) {
+				if(is_all_collapse() && !p_item->is_collapsed())
+					p_item->set_all_collapsed(!p_item->is_collapsed());
+				else
+					p_item->set_collapsed(!p_item->is_collapsed());
+			}
 
 			return -1; //handled!
 		}
@@ -3581,6 +3593,14 @@ bool Tree::is_delayed_text_editor_enabled() const {
 }
 
 
+void Tree::set_all_collapse(bool all) {
+	all_collapse = all;
+}
+bool Tree::is_all_collapse() const {
+	return all_collapse;
+}
+
+
 void Tree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_range_click_timeout"),&Tree::_range_click_timeout);
@@ -3636,6 +3656,9 @@ void Tree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_delayed_text_editor","enable"),&Tree::set_delayed_text_editor);
 	ObjectTypeDB::bind_method(_MD("is_delayed_text_editor_enabled"),&Tree::is_delayed_text_editor_enabled);
+
+	ObjectTypeDB::bind_method(_MD("set_all_collapse", "all"), &Tree::set_all_collapse);
+	ObjectTypeDB::bind_method(_MD("is_all_collapse"), &Tree::is_all_collapse);
 
 
 	ObjectTypeDB::bind_method(_MD("set_single_select_cell_editing_only_when_already_selected","enable"),&Tree::set_single_select_cell_editing_only_when_already_selected);
@@ -3754,6 +3777,7 @@ Tree::Tree() {
 
 	first_selection_time = 0;
 	delayed_text_editor = false;
+	all_collapse = false;
 }
 
 
