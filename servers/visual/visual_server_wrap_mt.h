@@ -718,6 +718,7 @@ public:
 
 	FUNC3(set_boot_image,const Image& , const Color&,bool );
 	FUNC1(set_default_clear_color,const Color& );
+	FUNC0RC(Color,get_default_clear_color );
 
 	FUNC0R(RID,get_test_cube );
 
