@@ -693,6 +693,8 @@ void TextEdit::_notification(int p_what) {
 			// get the highlighted words
 			String highlighted_text = get_selection_text();
 
+			String line_num_padding = line_numbers_zero_padded ? "0" : " ";
+
 			for (int i=0;i<visible_rows;i++) {
 
 				int line=i+cursor.line_ofs;
@@ -758,7 +760,7 @@ void TextEdit::_notification(int p_what) {
 				if (cache.line_number_w) {
 					String fc = String::num(line+1);
 					while (fc.length() < line_number_char_count) {
-						fc="0"+fc;
+						fc=line_num_padding+fc;
 					}
 
 					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT)+cache.breakpoint_gutter_width,ofs_y+cache.font->get_ascent()),fc,cache.line_number_color);
@@ -4520,6 +4522,12 @@ void TextEdit::set_show_line_numbers(bool p_show) {
 	update();
 }
 
+void TextEdit::set_line_numbers_zero_padded(bool p_zero_padded) {
+
+	line_numbers_zero_padded=p_zero_padded;
+	update();
+}
+
 bool TextEdit::is_show_line_numbers_enabled() const {
 	return line_numbers;
 }
@@ -4811,6 +4819,7 @@ TextEdit::TextEdit()  {
 	completion_line_ofs=0;
 	tooltip_obj=NULL;
 	line_numbers=false;
+	line_numbers_zero_padded=false;
 	line_length_guideline=false;
 	line_length_guideline_col=80;
 	draw_breakpoint_gutter=false;

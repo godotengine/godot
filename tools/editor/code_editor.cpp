@@ -1112,6 +1112,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
 	text_editor->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
 	text_editor->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+	text_editor->set_line_numbers_zero_padded(EditorSettings::get_singleton()->get("text_editor/line_numbers_zero_padded"));
 	text_editor->set_show_line_length_guideline(EditorSettings::get_singleton()->get("text_editor/show_line_length_guideline"));
 	text_editor->set_line_length_guideline_column(EditorSettings::get_singleton()->get("text_editor/line_length_guideline_column"));
 	text_editor->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
