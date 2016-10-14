@@ -9,7 +9,7 @@
 
 Files extracted from upstream source:
 
-- src/glew.c
+- `src/glew.c`
 - include/GL/ as GL/
 - LICENSE.txt
 
@@ -22,7 +22,7 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- jpgd.{c,h}
+- `jpgd.{c,h}`
 
 
 ## libmpcdec
@@ -46,8 +46,8 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- src/\*.c
-- include/ogg/\*.h in ogg/
+- `src/*.c`
+- `include/ogg/*.h` in ogg/
 - COPYING
 
 
@@ -59,11 +59,10 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- all .c and .h files of the main directory, except from:
-  * example.c
-  * pngtest.c
+- all .c and .h files of the main directory, except from
+  `example.c` and `pngtest.c`
 - the arm/ folder
-- scripts/pnglibconf.h.prebuilt as pnglibconf.h
+- `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
 
 
 ## libvorbis
@@ -74,8 +73,8 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- src/\* except from: lookups.pl, Makefile.\*
-- include/vorbis/\*.h as vorbis/
+- `src/*` except from: `lookups.pl`, `Makefile.*`
+- `include/vorbis/*.h` as vorbis/
 - COPYING
 
 
@@ -87,7 +86,7 @@ Files extracted from upstream source:
 
 Files extracted from the upstream source:
 
-- src/\* except from: \*.am, \*.in, extras/, webp/extras.h
+- `src/*` except from: .am and .in, files, extras/, `webp/extras.h`
 - AUTHORS, COPYING, PATENTS
 
 Important: The files `utils/bit_reader.{c,h}` have Godot-made
@@ -115,7 +114,7 @@ TODO.
 Files extracted from upstream source:
 
 - all .c and .h files in src/ (both opus and opusfile),
-  except opus_demo.c
+  except `opus_demo.c`
 - all .h files in include/ (both opus and opusfile)
 - COPYING
 
@@ -128,7 +127,7 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- all .cpp and .h files apart from main.cpp
+- all .cpp and .h files apart from `main.cpp`
 - LICENSE.TXT
 
 
@@ -140,7 +139,7 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- all of them: rg_etc1.{cpp,h}
+- `rg_etc1.{cpp,h}`
 
 
 ## rtaudio
@@ -151,7 +150,7 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- RtAudio.{cpp,h}
+- `RtAudio.{cpp,h}`
 
 
 ## speex
@@ -184,3 +183,14 @@ Files extracted from upstream source:
 - all .c, .h in lib/
 - all .h files in include/theora/ as theora/
 - COPYING and LICENSE
+
+
+## zlib
+
+- Upstream: http://www.zlib.net/
+- Version: 1.2.8
+- License: zlib
+
+Files extracted from upstream source:
+
+- all .c and .h files apart from `gz*`

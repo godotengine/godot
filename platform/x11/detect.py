@@ -68,7 +68,6 @@ def get_opts():
 def get_flags():
 
 	return [
-	('builtin_zlib', 'no'),
 	("openssl", "system"),
 	('freetype','yes'), # use system freetype
 	('libpng', 'system'),
