@@ -34,10 +34,9 @@ def get_flags():
 
 	return [
 		('tools', 'no'),
-		('nedmalloc', 'no'),
 		('builtin_zlib', 'no'),
-                ('openssl','builtin'), #use builtin openssl
-        ]
+		('openssl', 'builtin'), #use builtin openssl
+	]
 
 
 def create(env):
