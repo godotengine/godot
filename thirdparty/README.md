@@ -18,6 +18,19 @@ for all platforms (especially WinRT). Check the diff with the 1.3.13 tarball
 before the next update.
 
 
+## freetype
+
+- Upstream: https://www.freetype.org
+- Version: 2.6.5
+- License: FreeType License (BSD-like)
+
+Files extracted from upstream source:
+
+- the src/ folder, stripped of the `Jamfile` files
+- the include/ folder
+- `docs/{FTL.TXT,LICENSE.TXT}`
+
+
 ## glew
 
 - Upstream: http://glew.sourceforge.net
@@ -101,7 +114,7 @@ Files extracted from upstream source:
 - Version: 0.5.1
 - License: BSD-3-Clause
 
-Files extracted from the upstream source:
+Files extracted from upstream source:
 
 - `src/*` except from: .am and .in, files, extras/, `webp/extras.h`
 - AUTHORS, COPYING, PATENTS

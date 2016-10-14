@@ -69,7 +69,7 @@ def get_flags():
 
 	return [
 	("openssl", "system"),
-	('freetype','yes'), # use system freetype
+	('freetype', 'system'),
 	('libpng', 'system'),
 	]
 
@@ -140,14 +140,15 @@ def configure(env):
 	if (env["openssl"] == "system"):
 		env.ParseConfig('pkg-config openssl --cflags --libs')
 
-	if (env["libpng"] == "system"):
-		env.ParseConfig('pkg-config libpng --cflags --libs')
-
 	if (env["libwebp"] == "system"):
 		env.ParseConfig('pkg-config libwebp --cflags --libs')
 
-	if (env["freetype"]=="yes"):
+	if (env["freetype"] == "system"):
+		env["libpng"] = "system"  # Freetype links against libpng
 		env.ParseConfig('pkg-config freetype2 --cflags --libs')
+
+	if (env["libpng"] == "system"):
+		env.ParseConfig('pkg-config libpng --cflags --libs')
 
 	if (env["enet"] == "system"):
 		env.ParseConfig('pkg-config libenet --cflags --libs')
