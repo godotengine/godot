@@ -129,7 +129,6 @@ opts.Add('freetype','Freetype support in editor','builtin')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
 opts.Add('libpng','libpng library for image loader support (system/builtin)','builtin')
 opts.Add('libwebp','libwebp library for webp module (system/builtin)','builtin')
-opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
 opts.Add('openssl','OpenSSL library for openssl module (system/builtin)','builtin')
 opts.Add('libmpcdec','libmpcdec library for mpc module (system/builtin)','builtin')
 opts.Add('enet','ENet library (system/builtin)','builtin')
@@ -318,9 +317,6 @@ if selected_platform in platform_list:
 
 	if (env.use_ptrcall):
 		env.Append(CPPFLAGS=['-DPTRCALL_ENABLED']);
-
-	if (env["builtin_zlib"]=='yes'):
-		env.Append(CPPPATH=['#drivers/builtin_zlib/zlib'])
 
 	# to test 64 bits compiltion
 	# env.Append(CPPFLAGS=['-m64'])

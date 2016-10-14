@@ -26,6 +26,7 @@ def get_flags():
 
 	return [
 		('tools', 'no'),
+		('builtin_zlib', 'yes'),
 		('module_etc1_enabled', 'no'),
 		('module_mpc_enabled', 'no'),
 		('module_theora_enabled', 'no'),
