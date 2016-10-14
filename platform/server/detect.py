@@ -27,7 +27,7 @@ def get_opts():
 def get_flags():
 
 	return [
-	('builtin_zlib', 'no'),
+		('builtin_zlib', 'no'),
 	]
 
 

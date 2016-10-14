@@ -133,6 +133,7 @@ opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
 opts.Add('openssl','OpenSSL library for openssl module (system/builtin)','builtin')
 opts.Add('libmpcdec','libmpcdec library for mpc module (system/builtin)','builtin')
 opts.Add('enet','ENet library (system/builtin)','builtin')
+opts.Add('glew','GLEW library for the gl_context (system/builtin)','builtin')
 opts.Add("CXX", "C++ Compiler")
 opts.Add("CC", "C Compiler")
 opts.Add("CCFLAGS", "Custom flags for the C++ compiler");

@@ -69,7 +69,6 @@ def get_flags():
 
 	return [
 	('builtin_zlib', 'no'),
-	('glew', 'yes'),
 	("openssl", "system"),
 	('freetype','yes'), # use system freetype
 	('libpng', 'system'),
@@ -178,6 +177,9 @@ def configure(env):
 
 
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED'])
+
+	if (env["glew"] == "system"):
+		env.ParseConfig('pkg-config glew --cflags --libs')
 
 	if os.system("pkg-config --exists alsa")==0:
 		print("Enabling ALSA")

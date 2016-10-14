@@ -18,6 +18,19 @@ for all platforms (especially WinRT). Check the diff with the 1.3.13 tarball
 before the next update.
 
 
+## glew
+
+- Upstream: http://glew.sourceforge.net
+- Version: 1.13.0
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- src/glew.c
+- include/GL/ as GL/
+- LICENSE.txt
+
+
 ## jpeg-compressor
 
 - Upstream: https://github.com/richgel999/jpeg-compressor
