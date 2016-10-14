@@ -28,7 +28,6 @@
 /*************************************************************************/
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "os_winrt.h"
-#include "drivers/nedmalloc/memory_pool_static_nedmalloc.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
 #include "os/memory_pool_dynamic_static.h"
 #include "thread_winrt.h"

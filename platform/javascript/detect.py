@@ -24,21 +24,12 @@ def get_opts():
 def get_flags():
 
 	return [
-		('lua', 'no'),
 		('tools', 'no'),
-		('nedmalloc', 'no'),
 		('theora', 'no'),
-		('tools', 'no'),
-		('nedmalloc', 'no'),
 		('musepack', 'no'),
-		('squirrel', 'no'),
 		('squish', 'no'),
 		('speex', 'no'),
-		('old_scenes', 'no'),
 		('etc1', 'no'),
-#		('default_gui_theme', 'no'),
-
-		#('builtin_zlib', 'no'),
 	]
 
 
