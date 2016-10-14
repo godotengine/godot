@@ -28,9 +28,7 @@ def get_opts():
 def get_flags():
 
 	return [
-	('legacygl', 'yes'),
-	('builtin_zlib', 'no'),
-	('glew', 'yes'),
+		('builtin_zlib', 'no'),
 	]
 
 

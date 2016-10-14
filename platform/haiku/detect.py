@@ -24,7 +24,6 @@ def get_opts():
 def get_flags():
 	return [
 		('builtin_zlib', 'no'),
-		('glew', 'yes'),
 	]
 
 def configure(env):
