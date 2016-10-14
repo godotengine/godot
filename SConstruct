@@ -126,7 +126,7 @@ opts.Add('libtheora','Theora library for theora module (system/builtin)','builti
 opts.Add('opus','Opus and opusfile library for Opus format support: (system/builtin)','builtin')
 opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
 opts.Add('squish','Squish library for BC Texture Compression in editor (system/builtin)','builtin')
-opts.Add('freetype','Freetype support in editor','builtin')
+opts.Add('freetype','Freetype library for TTF support via freetype module (system/builtin)','builtin')
 # (akien) Unbundling would require work in audio_stream_speex.{cpp,h}, but since speex was
 # removed in 3.0+ and this is only to preserve compatibility in 2.1, I haven't worked on it.
 # Patches welcome if anyone cares :)
@@ -253,14 +253,6 @@ if selected_platform in platform_list:
 
 	#must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
 	detect.configure(env)
-
-
-	if (env["freetype"]!="no"):
-		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
-		if (env["freetype"]=="builtin"):
-			env.Append(CPPPATH=['#drivers/freetype'])
-			env.Append(CPPPATH=['#drivers/freetype/freetype/include'])
-
 
 	#env['platform_libsuffix'] = env['LIBSUFFIX']
 

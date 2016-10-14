@@ -24,9 +24,6 @@ SConscript("nrex/SCsub");
 if (env["tools"]=="yes"):
 	SConscript("convex_decomp/SCsub");
 
-if (env["freetype"]!="no"):
-	SConscript("freetype/SCsub");
-
 num = 0
 cur_base = ""
 total = len(env.drivers_sources)

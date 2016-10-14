@@ -80,10 +80,6 @@ def configure(env):
 		env['AS'] = basecmd+"as"
 
 
-#	env.Append(CPPPATH=['#platform/osx/include/freetype2', '#platform/osx/include'])
-#	env.Append(LIBPATH=['#platform/osx/lib'])
-
-
 	env.Append(CPPFLAGS=["-DAPPLE_STYLE_KEYS"])
 	env.Append(CPPFLAGS=['-DUNIX_ENABLED','-DGLES2_ENABLED','-DOSX_ENABLED'])
 	env.Append(LIBS=['pthread'])
