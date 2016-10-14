@@ -254,6 +254,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		gn->set_scale(Vector2(zoom,zoom));
 		gn->connect("offset_changed",this,"_graph_node_moved",varray(gn));
 		gn->connect("raise_request",this,"_graph_node_raised",varray(gn));
+		gn->connect("item_rect_changed",connections_layer,"update");
 		_graph_node_moved(gn);
 		gn->set_stop_mouse(false);
 	}
