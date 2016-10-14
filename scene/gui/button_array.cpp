@@ -60,6 +60,8 @@ bool ButtonArray::_set(const StringName& p_name, const Variant& p_value) {
 			String f = n.get_slicec('/',2);
 			if (f=="text")
 				buttons[idx].text=p_value;
+			else if (f=="tooltip")
+				buttons[idx].tooltip=p_value;
 			else if (f=="icon")
 				buttons[idx].icon=p_value;
 			else
@@ -95,6 +97,8 @@ bool ButtonArray::_get(const StringName& p_name,Variant &r_ret) const {
 			String f = n.get_slicec('/',2);
 			if (f=="text")
 				r_ret=buttons[idx].text;
+			else if (f=="tooltip")
+				r_ret=buttons[idx].tooltip;
 			else if (f=="icon")
 				r_ret=buttons[idx].icon;
 			else
@@ -115,6 +119,7 @@ void ButtonArray::_get_property_list( List<PropertyInfo> *p_list) const {
 	for(int i=0;i<buttons.size();i++) {
 		String base="button/"+itos(i)+"/";
 		p_list->push_back( PropertyInfo( Variant::STRING, base+"text"));
+		p_list->push_back( PropertyInfo( Variant::STRING, base+"tooltip"));
 		p_list->push_back( PropertyInfo( Variant::OBJECT, base+"icon",PROPERTY_HINT_RESOURCE_TYPE,"Texture"));
 	}
 	if (buttons.size()>0) {
@@ -359,6 +364,18 @@ void ButtonArray::_input_event(const InputEvent& p_event) {
 
 }
 
+String ButtonArray::get_tooltip(const Point2& p_pos) const {
+
+	int ofs = orientation==HORIZONTAL ? p_pos.x: p_pos.y;
+	for(int i=0;i<buttons.size();i++) {
+
+		if (ofs>=buttons[i]._pos_cache && ofs<buttons[i]._pos_cache+buttons[i]._size_cache)
+			return buttons[i].tooltip;
+
+	}
+	return Control::get_tooltip(p_pos);
+}
+
 void ButtonArray::set_align(Align p_align) {
 
 	align=p_align;
@@ -372,10 +389,11 @@ ButtonArray::Align ButtonArray::get_align() const {
 }
 
 
-void ButtonArray::add_button(const String& p_text) {
+void ButtonArray::add_button(const String& p_text,const String& p_tooltip) {
 
 	Button button;
 	button.text=p_text;
+	button.tooltip=p_tooltip;
 	buttons.push_back(button);
 	update();
 
@@ -385,11 +403,12 @@ void ButtonArray::add_button(const String& p_text) {
 	minimum_size_changed();
 }
 
-void ButtonArray::add_icon_button(const Ref<Texture>& p_icon,const String& p_text) {
+void ButtonArray::add_icon_button(const Ref<Texture>& p_icon,const String& p_text,const String& p_tooltip) {
 
 	Button button;
 	button.text=p_text;
 	button.icon=p_icon;
+	button.tooltip=p_tooltip;
 	buttons.push_back(button);
 	if (selected==-1)
 		selected=0;
@@ -407,6 +426,13 @@ void ButtonArray::set_button_text(int p_button, const String& p_text) {
 
 }
 
+void ButtonArray::set_button_tooltip(int p_button, const String& p_text) {
+
+	ERR_FAIL_INDEX(p_button,buttons.size());
+	buttons[p_button].tooltip=p_text;
+
+}
+
 void ButtonArray::set_button_icon(int p_button, const Ref<Texture>& p_icon) {
 
 	ERR_FAIL_INDEX(p_button,buttons.size());
@@ -419,6 +445,12 @@ String ButtonArray::get_button_text(int p_button) const {
 
 	ERR_FAIL_INDEX_V(p_button,buttons.size(),"");
 	return buttons[p_button].text;
+}
+
+String ButtonArray::get_button_tooltip(int p_button) const {
+
+	ERR_FAIL_INDEX_V(p_button,buttons.size(),"");
+	return buttons[p_button].tooltip;
 }
 
 Ref<Texture> ButtonArray::get_button_icon(int p_button) const {
@@ -475,18 +507,22 @@ int ButtonArray::get_button_count() const {
 void ButtonArray::get_translatable_strings(List<String> *p_strings) const {
 
 
-	for(int i=0;i<buttons.size();i++)
+	for(int i=0;i<buttons.size();i++) {
 		p_strings->push_back(buttons[i].text);
+		p_strings->push_back(buttons[i].tooltip);
+	}
 }
 
 
 void ButtonArray::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("add_button","text"),&ButtonArray::add_button);
-	ObjectTypeDB::bind_method(_MD("add_icon_button","icon:Texture","text"),&ButtonArray::add_icon_button,DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("add_button","text","tooltip"),&ButtonArray::add_button,DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("add_icon_button","icon:Texture","text","tooltip"),&ButtonArray::add_icon_button,DEFVAL(""),DEFVAL(""));
 	ObjectTypeDB::bind_method(_MD("set_button_text","button_idx","text"),&ButtonArray::set_button_text);
+	ObjectTypeDB::bind_method(_MD("set_button_tooltip","button_idx","text"),&ButtonArray::set_button_tooltip);
 	ObjectTypeDB::bind_method(_MD("set_button_icon","button_idx","icon:Texture"),&ButtonArray::set_button_icon);
 	ObjectTypeDB::bind_method(_MD("get_button_text","button_idx"),&ButtonArray::get_button_text);
+	ObjectTypeDB::bind_method(_MD("get_button_tooltip","button_idx"),&ButtonArray::get_button_tooltip);
 	ObjectTypeDB::bind_method(_MD("get_button_icon:Texture","button_idx"),&ButtonArray::get_button_icon);
 	ObjectTypeDB::bind_method(_MD("get_button_count"),&ButtonArray::get_button_count);
 	ObjectTypeDB::bind_method(_MD("get_selected"),&ButtonArray::get_selected);

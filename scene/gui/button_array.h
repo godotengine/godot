@@ -50,6 +50,7 @@ private:
 	struct Button {
 
 		String text;
+		String tooltip;
 		Ref<Texture> icon;
 		mutable int _ms_cache;
 		mutable int _pos_cache;
@@ -78,14 +79,16 @@ public:
 	void set_align(Align p_align);
 	Align get_align() const;
 
-	void add_button(const String& p_button);
-	void add_icon_button(const Ref<Texture>& p_icon,const String& p_button="");
+	void add_button(const String& p_button,const String& p_tooltip="");
+	void add_icon_button(const Ref<Texture>& p_icon,const String& p_button="",const String& p_tooltip="");
 
 	void set_button_text(int p_button, const String& p_text);
+	void set_button_tooltip(int p_button, const String& p_text);
 	void set_button_icon(int p_button, const Ref<Texture>& p_icon);
 
 
 	String get_button_text(int p_button) const;
+	String get_button_tooltip(int p_button) const;
 	Ref<Texture> get_button_icon(int p_button) const;
 
 	int get_selected() const;
@@ -100,6 +103,7 @@ public:
 	virtual Size2 get_minimum_size() const;
 
 	virtual void get_translatable_strings(List<String> *p_strings) const;
+	virtual String get_tooltip(const Point2& p_pos) const;
 
 
 	ButtonArray(Orientation p_orientation=HORIZONTAL);
