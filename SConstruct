@@ -126,7 +126,6 @@ opts.Add('squish','Squish BC Texture Compression in editor (yes/no)','yes')
 opts.Add('theora','Theora Video (yes/no)','yes')
 opts.Add('theoralib','Theora Video (yes/no)','no')
 opts.Add('freetype','Freetype support in editor','builtin')
-opts.Add('speex','Speex Audio (yes/no)','yes')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
 opts.Add('png','PNG Image loader support (yes/no)','yes')
 opts.Add('jpg','JPG Image loader support (yes/no)','yes')
@@ -361,9 +360,6 @@ if selected_platform in platform_list:
 		env.Append(CPPFLAGS=['-DJPG_ENABLED']);
 	if (env['webp']=='yes'):
 		env.Append(CPPFLAGS=['-DWEBP_ENABLED']);
-
-	if (env['speex']=='yes'):
-		env.Append(CPPFLAGS=['-DSPEEX_ENABLED']);
 
 	if (env['tools']=='yes'):
 		env.Append(CPPFLAGS=['-DTOOLS_ENABLED'])

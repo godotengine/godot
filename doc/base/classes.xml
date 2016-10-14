@@ -5459,18 +5459,6 @@
 	<constants>
 	</constants>
 </class>
-<class name="AudioStreamSpeex" inherits="AudioStream" category="Core">
-	<brief_description>
-		Speex audio stream driver.
-	</brief_description>
-	<description>
-		Speex audio stream driver. Speex is very useful for compressed speech. It allows loading a very large amount of speech in memory at little IO/latency cost.
-	</description>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
-</class>
 <class name="BackBufferCopy" inherits="Node2D" category="Core">
 	<brief_description>
 		Copies a region of the screen (or the whole screen) to a buffer so it can be accessed with the texscreen() shader instruction.
