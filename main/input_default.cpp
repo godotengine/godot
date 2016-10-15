@@ -1050,8 +1050,8 @@ void InputDefault::parse_mapping(String p_mapping) {
 		if (entry[idx] == "")
 			continue;
 
-		String from = entry[idx].get_slice(":", 1);
-		String to = entry[idx].get_slice(":", 0);
+		String from = entry[idx].get_slice(":", 1).replace(" ", "");
+		String to = entry[idx].get_slice(":", 0).replace(" ", "");
 
 		JoyEvent to_event = _find_to_event(to);
 		if (to_event.type == -1)
