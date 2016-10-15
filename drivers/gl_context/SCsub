@@ -1,7 +1,4 @@
 Import('env')
-Import('env_drivers')
-
-env_glew = env_drivers.Clone()
 
 if (env["platform"] in ["haiku","osx","windows","x11"]):
 	# Thirdparty source files
@@ -12,15 +9,13 @@ if (env["platform"] in ["haiku","osx","windows","x11"]):
 		]
 		thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-		env_glew.add_source_files(env.drivers_sources, thirdparty_sources)
-		env_glew.Append(CPPFLAGS = ['-DGLEW_STATIC'])
-		env_glew.Append(CPPPATH = [thirdparty_dir])
-		# Also pass to global env, used by platform code
+		env.add_source_files(env.drivers_sources, thirdparty_sources)
+		env.Append(CPPFLAGS = ['-DGLEW_STATIC'])
 		env.Append(CPPPATH = [thirdparty_dir])
 
 	env.Append(CPPFLAGS = ['-DGLEW_ENABLED'])
 
 # Godot source files
-env_glew.add_source_files(env.drivers_sources, "*.cpp")
+env.add_source_files(env.drivers_sources, "*.cpp")
 
 Export('env')
