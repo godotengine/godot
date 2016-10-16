@@ -8,6 +8,9 @@ env_drivers.Append(CPPPATH=["vorbis"])
 
 Export('env_drivers')
 
+if (env["theoralib"]=="yes"):
+	SConscript('libyuv/SCsub');
+
 SConscript('unix/SCsub');
 SConscript('alsa/SCsub');
 SConscript('pulseaudio/SCsub');
