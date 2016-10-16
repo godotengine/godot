@@ -237,5 +237,5 @@ def configure(env):
 
 	list_of_x86 = ['x86_64', 'x86', 'i386', 'i586']
 	if any(platform.machine() in s for s in list_of_x86):
-		env["x86_opt_gcc"]=True
+		env["x86_libtheora_opt_gcc"]=True
 
