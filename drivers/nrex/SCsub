@@ -1,7 +1,5 @@
 Import('env')
 
-sources = [
-	'nrex.cpp',
-	'regex.cpp',
-]
-env.add_source_files(env.drivers_sources, sources)
+env.add_source_files(env.drivers_sources, "*.cpp")
+
+Export('env')

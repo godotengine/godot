@@ -176,7 +176,7 @@ def get_opts():
 def get_flags():
 
 	return [
-		('glew','yes'),
+		('builtin_zlib', 'yes'),
 		('openssl','builtin'), #use builtin openssl
 	]
 

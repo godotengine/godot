@@ -119,23 +119,20 @@ opts.Add('platform','Platform: '+str(platform_list)+'.',"")
 opts.Add('p','Platform (same as platform=).',"")
 opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
-opts.Add('vorbis','Build Ogg Vorbis Support: (yes/no)','yes')
-opts.Add('opus','Build Opus Audio Format Support: (yes/no)','yes')
+opts.Add('libogg','Ogg library for ogg container support (system/builtin)','builtin')
+opts.Add('libvorbis','Ogg Vorbis library for vorbis support (system/builtin)','builtin')
+opts.Add('libtheora','Theora library for theora module (system/builtin)','builtin')
+opts.Add('opus','Opus and opusfile library for Opus format support: (system/builtin)','builtin')
 opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
-opts.Add('squish','Squish BC Texture Compression in editor (yes/no)','yes')
-opts.Add('theora','Theora Video (yes/no)','yes')
-opts.Add('theoralib','Theora Video (yes/no)','no')
-opts.Add('freetype','Freetype support in editor','builtin')
+opts.Add('squish','Squish library for BC Texture Compression in editor (system/builtin)','builtin')
+opts.Add('freetype','Freetype library for TTF support via freetype module (system/builtin)','builtin')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
-opts.Add('png','PNG Image loader support (yes/no)','yes')
-opts.Add('jpg','JPG Image loader support (yes/no)','yes')
-opts.Add('webp','WEBP Image loader support (yes/no)','yes')
-opts.Add('dds','DDS Texture loader support (yes/no)','yes')
-opts.Add('pvr','PVR (PowerVR) Texture loader support (yes/no)','yes')
-opts.Add('etc1','etc1 Texture compression support (yes/no)','yes')
-opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
-opts.Add('openssl','Use OpenSSL (yes/no/builtin)','no')
-opts.Add('musepack','Musepack Audio (yes/no)','yes')
+opts.Add('libpng','libpng library for image loader support (system/builtin)','builtin')
+opts.Add('libwebp','libwebp library for webp module (system/builtin)','builtin')
+opts.Add('openssl','OpenSSL library for openssl module (system/builtin)','builtin')
+opts.Add('libmpcdec','libmpcdec library for mpc module (system/builtin)','builtin')
+opts.Add('enet','ENet library (system/builtin)','builtin')
+opts.Add('glew','GLEW library for the gl_context (system/builtin)','builtin')
 opts.Add("CXX", "C++ Compiler")
 opts.Add("CC", "C Compiler")
 opts.Add("CCFLAGS", "Custom flags for the C++ compiler");
@@ -157,7 +154,7 @@ for k in platform_opts.keys():
 		opts.Add(o[0],o[1],o[2])
 
 for x in module_list:
-	opts.Add('module_'+x+'_enabled', "Enable module '"+x+"'.", "yes")
+	opts.Add('module_'+x+'_enabled', "Enable module '"+x+"' (yes/no)", "yes")
 
 opts.Update(env_base) # update environment
 Help(opts.GenerateHelpText(env_base)) # generate help
@@ -253,14 +250,6 @@ if selected_platform in platform_list:
 	#must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
 	detect.configure(env)
 
-
-	if (env["freetype"]!="no"):
-		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
-		if (env["freetype"]=="builtin"):
-			env.Append(CPPPATH=['#drivers/freetype'])
-			env.Append(CPPPATH=['#drivers/freetype/freetype/include'])
-
-
 	#env['platform_libsuffix'] = env['LIBSUFFIX']
 
 	suffix="."+selected_platform
@@ -321,45 +310,8 @@ if selected_platform in platform_list:
 	if (env.use_ptrcall):
 		env.Append(CPPFLAGS=['-DPTRCALL_ENABLED']);
 
-	if (env['musepack']=='yes'):
-		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
-
-	#if (env['openssl']!='no'):
-	#	env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
-	#	if (env['openssl']=="builtin"):
-	#		env.Append(CPPPATH=['#drivers/builtin_openssl2'])
-
-	if (env["builtin_zlib"]=='yes'):
-		env.Append(CPPPATH=['#drivers/builtin_zlib/zlib'])
-
 	# to test 64 bits compiltion
 	# env.Append(CPPFLAGS=['-m64'])
-
-	if (env_base['squish']=='yes'):
-		env.Append(CPPFLAGS=['-DSQUISH_ENABLED']);
-
-	if (env['vorbis']=='yes'):
-		env.Append(CPPFLAGS=['-DVORBIS_ENABLED']);
-	if (env['opus']=='yes'):
-		env.Append(CPPFLAGS=['-DOPUS_ENABLED']);
-
-
-	if (env['theora']=='yes'):
-		env['theoralib']='yes'
-		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);
-	if (env['theoralib']=='yes'):
-		env.Append(CPPFLAGS=['-DTHEORALIB_ENABLED']);
-
-	if (env['png']=='yes'):
-		env.Append(CPPFLAGS=['-DPNG_ENABLED']);
-	if (env['dds']=='yes'):
-		env.Append(CPPFLAGS=['-DDDS_ENABLED']);
-	if (env['pvr']=='yes'):
-		env.Append(CPPFLAGS=['-DPVR_ENABLED']);
-	if (env['jpg']=='yes'):
-		env.Append(CPPFLAGS=['-DJPG_ENABLED']);
-	if (env['webp']=='yes'):
-		env.Append(CPPFLAGS=['-DWEBP_ENABLED']);
 
 	if (env['tools']=='yes'):
 		env.Append(CPPFLAGS=['-DTOOLS_ENABLED'])
@@ -378,9 +330,6 @@ if selected_platform in platform_list:
 
 	if (env['colored']=='yes'):
 		methods.colored(sys,env)
-
-	if (env['etc1']=='yes'):
-		env.Append(CPPFLAGS=['-DETC1_ENABLED'])
 
 	Export('env')
 

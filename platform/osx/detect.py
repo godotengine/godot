@@ -28,9 +28,6 @@ def get_opts():
 def get_flags():
 
 	return [
-	('legacygl', 'yes'),
-	('builtin_zlib', 'no'),
-	('glew', 'yes'),
 	]
 
 
@@ -81,10 +78,6 @@ def configure(env):
 		env['AR'] = basecmd+"ar"
 		env['RANLIB'] = basecmd+"ranlib"
 		env['AS'] = basecmd+"as"
-
-
-#	env.Append(CPPPATH=['#platform/osx/include/freetype2', '#platform/osx/include'])
-#	env.Append(LIBPATH=['#platform/osx/lib'])
 
 
 	env.Append(CPPFLAGS=["-DAPPLE_STYLE_KEYS"])
