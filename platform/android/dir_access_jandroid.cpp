@@ -203,7 +203,6 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 		return false;
 
 	env->CallVoidMethod(io,_dir_close,res);
-	env->DeleteLocalRef(js);
 
 	return true;
 }
