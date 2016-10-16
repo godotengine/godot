@@ -280,7 +280,7 @@ public:
 	};
 	
 	struct PatternBranchNode : public Node {
-		PatternNode *pattern;
+		Vector<PatternNode*> patterns;
 		BlockNode *body;
 	};
 	
@@ -288,7 +288,12 @@ public:
 		Node *val_to_match;
 		Vector<PatternBranchNode*> branches;
 		
-		BlockNode *compiled_block;
+		struct CompiledPatternBranch {
+			Node *compiled_pattern;
+			BlockNode *body;
+		};
+		
+		Vector<CompiledPatternBranch> compiled_pattern_branches;
 	};
 
 	struct ControlFlowNode : public Node {
@@ -487,18 +492,12 @@ private:
 	Node* _parse_and_reduce_expression(Node *p_parent,bool p_static,bool p_reduce_const=false,bool p_allow_assign=false);
 
 	
-	// TODO
-	void _parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode*> &p_branches, bool p_static);
+	
 	
 	PatternNode *_parse_pattern(bool p_static);
+	void _parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode*> &p_branches, bool p_static);
 	void _transform_match_statment(BlockNode *p_block, MatchNode *p_match_statement);
-	
 	void _generate_pattern(PatternNode *p_pattern, Node *p_node_to_match, Node *&p_resulting_node, Map<StringName, Node*> &p_bindings);
-	
-	void _generate_array_pattern(PatternNode *p_array_pattern, Node *p_value_to_match, Node *&p_resulting_node, Map<StringName, Node*> &p_bindings);
-	void _generate_bind_pattern(PatternNode *p_bind_pattern, Node *p_value_to_match, Map<StringName, Node*> &p_bindings);
-	void _generate_constant_pattern(PatternNode *p_constant_pattern, Node *p_value_to_match, Node *&p_resulting_node);
-	void _generate_dict_pattern(PatternNode *p_dict_pattern, Node *p_value_to_match, Node *&p_resulting_node, Map<StringName, Node*> &p_bindings);
 	
 	
 	void _parse_block(BlockNode *p_block,bool p_static);
