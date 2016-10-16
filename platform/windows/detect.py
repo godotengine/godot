@@ -279,13 +279,13 @@ def configure(env):
 		# Forcing bits argument because MSVC does not have a flag to set this through SCons... it's different compilers (cl.exe's) called from the propper command prompt
                 # that decide the architecture that is build for. Scons can only detect the os.getenviron (because vsvarsall.bat sets a lot of stuff for cl.exe to work with)
                 env["bits"]="32"
-		env["x86_opt_vc"]=True
+		env["x86_libtheora_opt_vc"]=True
 
 		print "Detected MSVC compiler: "+compiler_version_str
 		# If building for 64bit architecture, disable assembly optimisations for 32 bit builds (theora as of writting)... vc compiler for 64bit can not compile _asm
 		if(compiler_version_str == "amd64" or compiler_version_str == "x86_amd64"):
                         env["bits"]="64"
-                        env["x86_opt_vc"]=False
+                        env["x86_libtheora_opt_vc"]=False
                         print "Compiled program architecture will be a 64 bit executable (forcing bits=64)."
                 elif (compiler_version_str=="x86" or compiler_version_str == "amd64_x86"):
                         print "Compiled program architecture will be a 32 bit executable. (forcing bits=32)."
@@ -365,7 +365,7 @@ def configure(env):
 		env['AR'] = mingw_prefix+"ar"
 		env['RANLIB'] = mingw_prefix+"ranlib"
 		env['LD'] = mingw_prefix+"g++"
-		env["x86_opt_gcc"]=True
+		env["x86_libtheora_opt_gcc"]=True
 
 		#env['CC'] = "winegcc"
 		#env['CXX'] = "wineg++"
