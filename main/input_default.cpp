@@ -377,13 +377,13 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 
 			if (InputMap::get_singleton()->event_is_action(p_event,E->key())) {
 
-				Action action;
-				action.fixed_frame=OS::get_singleton()->get_fixed_frames();
-				action.idle_frame=OS::get_singleton()->get_idle_frames();
-				action.pressed=p_event.is_pressed();
-
-				action_state[E->key()]=action;
-
+				if(is_action_pressed(E->key()) != p_event.is_pressed()) {
+					Action action;
+					action.fixed_frame=OS::get_singleton()->get_fixed_frames();
+					action.idle_frame=OS::get_singleton()->get_idle_frames();
+					action.pressed=p_event.is_pressed();
+					action_state[E->key()]=action;
+				}
 			}
 		}
 	}
