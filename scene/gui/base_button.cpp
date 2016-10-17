@@ -243,12 +243,22 @@ void BaseButton::_notification(int p_what) {
 			update();
 		}
 	}
+	
+	if (p_what==NOTIFICATION_FOCUS_ENTER) {
+		
+		status.hovering=true;
+		update();
+	}
 
 	if (p_what==NOTIFICATION_FOCUS_EXIT) {
 
 		if (status.pressing_button && status.press_attempt) {
 			status.press_attempt=false;
 			status.pressing_button=0;
+			status.hovering=false;
+			update();
+		} else if (status.hovering) {
+			status.hovering=false;
 			update();
 		}
 	}
