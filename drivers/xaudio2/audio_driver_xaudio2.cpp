@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_driver_winrt.cpp                                               */
+/*  audio_driver_xaudio2.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,23 +26,17 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "audio_driver_winrt.h"
+#include "audio_driver_xaudio2.h"
 
 #include "globals.h"
 #include "os/os.h"
 
-using namespace Windows::Media;
-using namespace Windows::Media::Core;
-using namespace Windows::Media::MediaProperties;
-using namespace Windows::Media::Editing;
-using namespace Windows::Foundation;
-
-const char * AudioDriverWinRT::get_name() const
+const char * AudioDriverXAudio2::get_name() const
 {
-	return "WinRT";
+	return "XAudio2";
 }
 
-Error AudioDriverWinRT::init() {
+Error AudioDriverXAudio2::init() {
 
 	active = false;
 	thread_exited = false;
@@ -95,14 +89,14 @@ Error AudioDriverWinRT::init() {
 	}
 
 	mutex = Mutex::create();
-	thread = Thread::create(AudioDriverWinRT::thread_func, this);
+	thread = Thread::create(AudioDriverXAudio2::thread_func, this);
 
 	return OK;
 };
 
-void AudioDriverWinRT::thread_func(void* p_udata) {
+void AudioDriverXAudio2::thread_func(void* p_udata) {
 
-	AudioDriverWinRT* ad = (AudioDriverWinRT*)p_udata;
+	AudioDriverXAudio2* ad = (AudioDriverXAudio2*)p_udata;
 
 	uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate)) * 1000000;
 
@@ -149,7 +143,7 @@ void AudioDriverWinRT::thread_func(void* p_udata) {
 
 };
 
-void AudioDriverWinRT::start() {
+void AudioDriverXAudio2::start() {
 
 	active = true;
 	HRESULT hr = source_voice->Start(0);
@@ -159,17 +153,17 @@ void AudioDriverWinRT::start() {
 	}
 };
 
-int AudioDriverWinRT::get_mix_rate() const {
+int AudioDriverXAudio2::get_mix_rate() const {
 
 	return mix_rate;
 };
 
-AudioDriverSW::OutputFormat AudioDriverWinRT::get_output_format() const {
+AudioDriverSW::OutputFormat AudioDriverXAudio2::get_output_format() const {
 
 	return output_format;
 };
 
-float AudioDriverWinRT::get_latency() {
+float AudioDriverXAudio2::get_latency() {
 
 	XAUDIO2_PERFORMANCE_DATA perf_data;
 	xaudio->GetPerformanceData(&perf_data);
@@ -180,20 +174,20 @@ float AudioDriverWinRT::get_latency() {
 	}
 }
 
-void AudioDriverWinRT::lock() {
+void AudioDriverXAudio2::lock() {
 
 	if (!thread || !mutex)
 		return;
 	mutex->lock();
 };
-void AudioDriverWinRT::unlock() {
+void AudioDriverXAudio2::unlock() {
 
 	if (!thread || !mutex)
 		return;
 	mutex->unlock();
 };
 
-void AudioDriverWinRT::finish() {
+void AudioDriverXAudio2::finish() {
 
 	if (!thread)
 		return;
@@ -224,7 +218,7 @@ void AudioDriverWinRT::finish() {
 	thread = NULL;
 };
 
-AudioDriverWinRT::AudioDriverWinRT() {
+AudioDriverXAudio2::AudioDriverXAudio2() {
 
 	mutex = NULL;
 	thread = NULL;
@@ -236,7 +230,7 @@ AudioDriverWinRT::AudioDriverWinRT() {
 	current_buffer = 0;
 };
 
-AudioDriverWinRT::~AudioDriverWinRT() {
+AudioDriverXAudio2::~AudioDriverXAudio2() {
 
 
 };

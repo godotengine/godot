@@ -31,6 +31,7 @@ def get_flags():
 	('tools', 'no'),
 	('builtin_zlib', 'yes'),
 	('openssl', 'builtin'),
+	('xaudio2', 'yes'),
 	]
 
 
@@ -145,7 +146,6 @@ def configure(env):
 	env.Append(CCFLAGS=['/DGLES2_ENABLED','/DGL_GLEXT_PROTOTYPES','/DEGL_EGLEXT_PROTOTYPES','/DANGLE_ENABLED'])
 
 	LIBS = [
-		'xaudio2',
 		'WindowsApp',
 		'mincore',
 		'libANGLE',

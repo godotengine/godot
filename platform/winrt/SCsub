@@ -8,7 +8,6 @@ files = [
 	'#platform/windows/key_mapping_win.cpp',
 	'joystick_winrt.cpp',
 	'gl_context_egl.cpp',
-	'audio_driver_winrt.cpp',
 	'app.cpp',
 	'os_winrt.cpp',
 ]
