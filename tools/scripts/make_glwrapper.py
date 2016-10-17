@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 import sys
 
 if (len(sys.argv)<2):

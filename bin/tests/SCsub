@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 Import('env')
 
 env.tests_sources=[]

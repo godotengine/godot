@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 EnsureSConsVersion(0,14);
 
 
