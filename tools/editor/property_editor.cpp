@@ -3613,9 +3613,10 @@ void PropertyEditor::update_tree() {
 			} break;
 			case Variant::NODE_PATH: {
 
-				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
+				item->set_cell_mode(1, TreeItem::CELL_MODE_STRING);
 				item->set_editable( 1, !read_only );
 				item->set_text(1,obj->get(p.name));
+				item->add_button(1, get_icon("Collapse", "EditorIcons"));
 
 			} break;
 			case Variant::OBJECT: {
@@ -3892,6 +3893,7 @@ void PropertyEditor::_item_edited() {
 
 		} break;
 		case Variant::NODE_PATH: {
+			_edit_set(name, NodePath(item->get_text(1)));
 
 		} break;
 
@@ -4067,7 +4069,17 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 		String n = d["name"];
 		String ht = d["hint_text"];
 
-		if (t==Variant::STRING) {
+		if(t == Variant::NODE_PATH) {
+
+			Variant v = obj->get(n);
+			custom_editor->edit(obj, n, (Variant::Type)t, v, h, ht);
+			Rect2 where = tree->get_item_rect(ti, 1);
+			where.pos -= tree->get_scroll();
+			where.pos += tree->get_global_pos();
+			custom_editor->set_pos(where.pos);
+			custom_editor->popup();
+
+		} else if (t==Variant::STRING) {
 
 
 			Variant v = obj->get(n);
