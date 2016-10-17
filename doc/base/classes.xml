@@ -6506,6 +6506,14 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="button_selected">
+			<argument index="0" name="button" type="Object">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 	<theme_items>
@@ -46212,9 +46220,9 @@
 			</argument>
 			<argument index="2" name="arg2" type="Array">
 			</argument>
-			<argument index="3" name="arg3" type="Array">
+			<argument index="3" name="arg3" type="Array" default="Array()">
 			</argument>
-			<argument index="4" name="arg4" type="bool" default="-1">
+			<argument index="4" name="arg4" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
