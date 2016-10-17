@@ -1416,7 +1416,7 @@ def save_active_platforms(apnames,ap):
 		logow.write(str)
 
 
-def colored(sys,env):
+def no_verbose(sys,env):
 
 	#If the output is not a terminal, do nothing
 	if not sys.stdout.isatty():
