@@ -95,6 +95,12 @@ Files extracted from upstream source:
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
 
 
+## libsimplewebm
+
+- Upstream: https://github.com/zaps166/libsimplewebm
+- License: MIT, BSD-3-Clause
+
+
 ## libvorbis
 
 - Upstream: https://www.xiph.org/vorbis
