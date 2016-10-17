@@ -261,6 +261,8 @@ if selected_platform in platform_list:
 			sys.exit(255)
 		suffix+=".opt"
 
+		env.Append(CCFLAGS=['-DNDEBUG']);
+
 	elif (env["target"]=="release_debug"):
 		if (env["tools"]=="yes"):
 			suffix+=".opt.tools"
