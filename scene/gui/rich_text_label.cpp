@@ -84,7 +84,7 @@ Rect2 RichTextLabel::_get_text_rect() {
 	Ref<StyleBox> style = get_stylebox("normal");
 	return Rect2(style->get_offset(), get_size() - style->get_minimum_size());
 }
-void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Point2i &p_click_pos, Item **r_click_item, int *r_click_char, bool *r_outside, int p_char_count) {
+int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Point2i &p_click_pos, Item **r_click_item, int *r_click_char, bool *r_outside, int p_char_count) {
 
 	RID ci;
 	if (r_outside)
@@ -104,9 +104,11 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 	int line = 0;
 	int spaces = 0;
 
+	int height = get_size().y;
+
 	if (p_mode != PROCESS_CACHE) {
 
-		ERR_FAIL_INDEX(line, l.offset_caches.size());
+		ERR_FAIL_INDEX_V(line, l.offset_caches.size(), 0);
 		line_ofs = l.offset_caches[line];
 	}
 
@@ -133,12 +135,20 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 	//line height should be the font height for the first time, this ensures that an empty line will never have zero height and successive newlines are displayed
 	int line_height = cfont->get_height();
 
+	int nonblank_line_count = 0; //number of nonblank lines as counted during PROCESS_DRAW
+
 	Variant meta;
+
+#define RETURN return nonblank_line_count
 
 #define NEW_LINE                                                                                                                                                \
 	{                                                                                                                                                           \
 		if (p_mode != PROCESS_CACHE) {                                                                                                                          \
 			line++;                                                                                                                                             \
+			if (!line_is_blank) {                                                                                                                               \
+				nonblank_line_count++;                                                                                                                          \
+			}                                                                                                                                                   \
+			line_is_blank = true;                                                                                                                               \
 			if (line < l.offset_caches.size())                                                                                                                  \
 				line_ofs = l.offset_caches[line];                                                                                                               \
 			wofs = margin;                                                                                                                                      \
@@ -168,7 +178,7 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 			if (r_outside) *r_outside = true;                                                                                                                   \
 			*r_click_item = it;                                                                                                                                 \
 			*r_click_char = rchar;                                                                                                                              \
-			return;                                                                                                                                             \
+			RETURN;                                                                                                                                             \
 		}                                                                                                                                                       \
 	}
 
@@ -185,7 +195,7 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 			if (r_outside) *r_outside = true;                                                                                                                   \
 			*r_click_item = it;                                                                                                                                 \
 			*r_click_char = rchar;                                                                                                                              \
-			return;                                                                                                                                             \
+			RETURN;                                                                                                                                             \
 		}                                                                                                                                                       \
 		NEW_LINE                                                                                                                                                \
 	}
@@ -196,7 +206,7 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 			if (r_outside) *r_outside = false;                                                                                                                                                               \
 			*r_click_item = it;                                                                                                                                                                              \
 			*r_click_char = rchar;                                                                                                                                                                           \
-			return;                                                                                                                                                                                          \
+			RETURN;                                                                                                                                                                                          \
 		}                                                                                                                                                                                                    \
 		wofs += m_width;                                                                                                                                                                                     \
 	}
@@ -206,6 +216,9 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 		line_height = m_height;   \
 	}
 
+#define YRANGE_VISIBLE(m_top, m_height) \
+	(m_height > 0 && ((m_top >= 0 && m_top < height) || ((m_top + m_height - 1) >= 0 && (m_top + m_height - 1) < height)))
+
 	Color selection_fg;
 	Color selection_bg;
 
@@ -214,8 +227,10 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 		selection_fg = get_color("font_color_selected");
 		selection_bg = get_color("selection_color");
 	}
+
 	int rchar = 0;
 	int lh = 0;
+	bool line_is_blank = true;
 
 	while (it) {
 
@@ -327,7 +342,10 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 
 								int cw = 0;
 
-								bool visible = visible_characters < 0 || p_char_count < visible_characters;
+								bool visible = visible_characters < 0 || p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - (fh - 0 * ascent), fh); //getting rid of ascent seems to work??
+								if (visible)
+									line_is_blank = false;
+
 								if (c[i] == '\t')
 									visible = false;
 
@@ -384,7 +402,9 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 
 				ENSURE_WIDTH(img->image->get_width());
 
-				bool visible = visible_characters < 0 || p_char_count < visible_characters;
+				bool visible = visible_characters < 0 || p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - font->get_descent() - img->image->get_height(), img->image->get_height());
+				if (visible)
+					line_is_blank = false;
 
 				if (p_mode == PROCESS_DRAW && visible) {
 					img->image->draw(ci, p_ofs + Point2(align_ofs + wofs, y + lh - font->get_descent() - img->image->get_height()));
@@ -398,8 +418,10 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 			case ITEM_NEWLINE: {
 
 				lh = 0;
-				if (p_mode != PROCESS_CACHE)
+				if (p_mode != PROCESS_CACHE) {
 					lh = line < l.height_caches.size() ? l.height_caches[line] : 1;
+					line_is_blank = true;
+				}
 
 			} break;
 			case ITEM_TABLE: {
@@ -436,7 +458,7 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 						idx++;
 					}
 
-					//compute available width and total radio (for expanders)
+					//compute available width and total ratio (for expanders)
 
 					int total_ratio = 0;
 					int available_width = p_width - hseparation * (table->columns.size() - 1);
@@ -494,12 +516,14 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 					int lines_ofs = p_ofs.y + offset.y + draw_ofs.y;
 
 					bool visible = lines_ofs < get_size().height && lines_ofs + lines_h >= 0;
+					if (visible)
+						line_is_blank = false;
 
 					for (int i = 0; i < frame->lines.size(); i++) {
 
 						if (visible) {
 							if (p_mode == PROCESS_DRAW) {
-								_process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, PROCESS_DRAW, cfont, ccolor);
+								nonblank_line_count += _process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, PROCESS_DRAW, cfont, ccolor);
 							} else if (p_mode == PROCESS_POINTER) {
 								_process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, PROCESS_POINTER, cfont, ccolor, p_click_pos, r_click_item, r_click_char, r_outside);
 							}
@@ -547,15 +571,17 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 				if (r_outside) *r_outside = true;
 				*r_click_item = itp;
 				*r_click_char = rchar;
-				return;
+				RETURN;
 			}
 
 			break;
 		}
 	}
-
 	NEW_LINE;
 
+	RETURN;
+
+#undef RETURN
 #undef NEW_LINE
 #undef ENSURE_WIDTH
 #undef ADVANCE
@@ -665,14 +691,14 @@ void RichTextLabel::_notification(int p_what) {
 
 			if (from_line >= main->lines.size())
 				break; //nothing to draw
-
 			int y = (main->lines[from_line].height_accum_cache - main->lines[from_line].height_cache) - ofs;
 			Ref<Font> base_font = get_font("normal_font");
 			Color base_color = get_color("default_color");
 
+			visible_line_count = 0;
 			while (y < size.height && from_line < main->lines.size()) {
 
-				_process_line(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_DRAW, base_font, base_color, Point2i(), NULL, NULL, NULL, total_chars);
+				visible_line_count += _process_line(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_DRAW, base_font, base_color, Point2i(), NULL, NULL, NULL, total_chars);
 				total_chars += main->lines[from_line].char_count;
 				from_line++;
 			}
@@ -1013,7 +1039,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 	if (p_frame->first_invalid_line == p_frame->lines.size())
 		return;
 
-	//validate invalid lines!s
+	//validate invalid lines
 	Size2 size = get_size();
 	Rect2 text_rect = _get_text_rect();
 
@@ -1665,6 +1691,12 @@ int RichTextLabel::get_line_count() const {
 	return current_frame->lines.size();
 }
 
+int RichTextLabel::get_visible_line_count() const {
+	if (!is_visible())
+		return 0;
+	return visible_line_count;
+}
+
 void RichTextLabel::set_selection_enabled(bool p_enabled) {
 
 	selection.enabled = p_enabled;
@@ -1907,6 +1939,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_bbcode", "enable"), &RichTextLabel::set_use_bbcode);
 	ClassDB::bind_method(D_METHOD("is_using_bbcode"), &RichTextLabel::is_using_bbcode);
 
+	ClassDB::bind_method(D_METHOD("get_line_count"), &RichTextLabel::get_line_count);
+	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &RichTextLabel::get_visible_line_count);
+
 	ADD_GROUP("BBCode", "bbcode_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bbcode_text", PROPERTY_HINT_MULTILINE_TEXT), "set_bbcode", "get_bbcode");
@@ -1995,6 +2030,7 @@ RichTextLabel::RichTextLabel() {
 
 	visible_characters = -1;
 	percent_visible = 1;
+	visible_line_count = 0;
 
 	set_clip_contents(true);
 }
