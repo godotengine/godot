@@ -94,10 +94,6 @@ def configure(env):
 		env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
 		env.extra_suffix=".llvm"
 
-		if (env["colored"]=="yes"):
-			if sys.stdout.isatty():
-				env.Append(CXXFLAGS=["-fcolor-diagnostics"])
-
 	if (env["use_sanitizer"]=="yes"):
 		env.Append(CXXFLAGS=['-fsanitize=address','-fno-omit-frame-pointer'])
 		env.Append(LINKFLAGS=['-fsanitize=address'])
