@@ -80,9 +80,7 @@ Error AudioDriverXAudio2::init() {
 	wave_format.nBlockAlign = channels * wave_format.wBitsPerSample >> 3;
 	wave_format.nAvgBytesPerSec = mix_rate * wave_format.nBlockAlign;
 
-	voice_callback = memnew(XAudio2DriverVoiceCallback);
-
-	hr = xaudio->CreateSourceVoice(&source_voice, &wave_format, 0, XAUDIO2_MAX_FREQ_RATIO, voice_callback);
+	hr = xaudio->CreateSourceVoice(&source_voice, &wave_format, 0, XAUDIO2_MAX_FREQ_RATIO, &voice_callback);
 	if (hr != S_OK) {
 		ERR_EXPLAIN("Error creating XAudio2 source voice. " + itos(hr));
 		ERR_FAIL_V(ERR_UNAVAILABLE);
@@ -133,7 +131,7 @@ void AudioDriverXAudio2::thread_func(void* p_udata) {
 			XAUDIO2_VOICE_STATE state;
 			while (ad->source_voice->GetState(&state), state.BuffersQueued > AUDIO_BUFFERS - 1)
 			{
-				WaitForSingleObject(ad->voice_callback->buffer_end_event, INFINITE);
+				WaitForSingleObject(ad->voice_callback.buffer_end_event, INFINITE);
 			}
 		}
 
@@ -197,7 +195,7 @@ void AudioDriverXAudio2::finish() {
 
 	if (source_voice) {
 		source_voice->Stop(0);
-		memdelete(source_voice);
+		source_voice->DestroyVoice();
 	}
 
 	if (samples_in) {
@@ -209,8 +207,7 @@ void AudioDriverXAudio2::finish() {
 		}
 	};
 
-	memdelete(voice_callback);
-	memdelete(mastering_voice);
+	mastering_voice->DestroyVoice();
 
 	memdelete(thread);
 	if (mutex)

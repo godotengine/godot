@@ -87,7 +87,7 @@ class AudioDriverXAudio2 : public AudioDriverSW {
 	IXAudio2MasteringVoice* mastering_voice;
 	XAUDIO2_BUFFER xaudio_buffer[AUDIO_BUFFERS];
 	IXAudio2SourceVoice* source_voice;
-	XAudio2DriverVoiceCallback* voice_callback;
+	XAudio2DriverVoiceCallback voice_callback;
 
 public:
 
