@@ -164,6 +164,9 @@ def configure(env):
 		env["libvorbis"] = "system"  # Needed to link against system libtheora
 		env.ParseConfig('pkg-config theora theoradec --cflags --libs')
 
+	if (env["libvpx"] == "system"):
+		env.ParseConfig('pkg-config vpx --cflags --libs')
+
 	if (env["libvorbis"] == "system"):
 		env["libogg"] = "system"  # Needed to link against system libvorbis
 		env.ParseConfig('pkg-config vorbis vorbisfile --cflags --libs')
