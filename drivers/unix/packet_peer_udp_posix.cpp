@@ -73,7 +73,15 @@ Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer,int &r_buffer_size
 		return ERR_UNAVAILABLE;
 
 	uint32_t size;
-	rb.read((uint8_t*)&packet_ip.host,4,true);
+	uint8_t type;
+	rb.read(&type, 1, true);
+	if (type == IP_Address::TYPE_IPV4) {
+		rb.read((uint8_t*)&packet_ip.field8,4,true);
+		packet_ip.type = IP_Address::TYPE_IPV4;
+	} else {
+		rb.read((uint8_t*)&packet_ip.field8,16,true);
+		packet_ip.type = IP_Address::TYPE_IPV6;
+	};
 	rb.read((uint8_t*)&packet_port,4,true);
 	rb.read((uint8_t*)&size,4,true);
 	rb.read(packet_buffer,size,true);
@@ -85,12 +93,22 @@ Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer,int &r_buffer_size
 }
 Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 
-	int sock = _get_socket();
+	ERR_FAIL_COND_V(peer_addr.type == IP_Address::TYPE_NONE, ERR_UNCONFIGURED);
+
+	int sock = _get_socket(peer_addr.type);
 	ERR_FAIL_COND_V( sock == -1, FAILED );
-	struct sockaddr_in addr;
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(peer_port);
-	addr.sin_addr = *((struct in_addr*)&peer_addr.host);
+	struct sockaddr_storage addr;
+	if (peer_addr.type == IP_Address::TYPE_IPV4) {
+		struct sockaddr_in* addr_in = (struct sockaddr_in*)&addr;
+		addr_in->sin_family = AF_INET;
+		addr_in->sin_port = htons(peer_port);
+		addr_in->sin_addr = *((struct in_addr*)&peer_addr.field32[0]);
+	} else {
+		struct sockaddr_in6* addr_in6 = (struct sockaddr_in6*)&addr;
+		addr_in6->sin6_family = AF_INET;
+		addr_in6->sin6_port = htons(peer_port);
+		copymem(&addr_in6->sin6_addr.s6_addr, peer_addr.field8, 16);
+	};
 
 	errno = 0;
 	int err;
@@ -110,17 +128,32 @@ int PacketPeerUDPPosix::get_max_packet_size() const{
 	return 512; // uhm maybe not
 }
 
-Error PacketPeerUDPPosix::listen(int p_port, int p_recv_buffer_size){
+Error PacketPeerUDPPosix::listen(int p_port, IP_Address::AddrType p_address_type, int p_recv_buffer_size) {
+
+	ERR_FAIL_COND_V(p_address_type != IP_Address::TYPE_IPV4 && p_address_type != IP_Address::TYPE_IPV6, ERR_INVALID_PARAMETER);
 
 	close();
-	int sock = _get_socket();
+	int sock = _get_socket(p_address_type);
 	if (sock == -1 )
 		return ERR_CANT_CREATE;
-	sockaddr_in addr = {0};
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(p_port);
-	addr.sin_addr.s_addr = INADDR_ANY;
-	if (bind(sock, (struct sockaddr*)&addr, sizeof(sockaddr_in)) == -1 ) {
+
+	sockaddr_storage addr = {0};
+
+	if (p_address_type == IP_Address::TYPE_IPV4) {
+		struct sockaddr_in* addr4 = (struct sockaddr_in*)&addr;
+		addr4->sin_family = AF_INET;
+		addr4->sin_port = htons(p_port);
+		addr4->sin_addr.s_addr = INADDR_ANY;
+	} else {
+
+		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)&addr;
+
+		addr6->sin6_family = AF_INET6;
+		addr6->sin6_port = htons(p_port);
+		addr6->sin6_addr = in6addr_any;
+	};
+
+	if (bind(sock, (struct sockaddr*)&addr, sizeof(sockaddr_storage)) == -1 ) {
 		close();
 		return ERR_UNAVAILABLE;
 	}
@@ -145,16 +178,40 @@ Error PacketPeerUDPPosix::wait() {
 
 Error PacketPeerUDPPosix::_poll(bool p_wait) {
 
-	struct sockaddr_in from = {0};
-	socklen_t len = sizeof(struct sockaddr_in);
+	struct sockaddr_storage from = {0};
+	socklen_t len = sizeof(struct sockaddr_storage);
 	int ret;
 	while ( (ret = recvfrom(sockfd, recv_buffer, MIN((int)sizeof(recv_buffer),MAX(rb.space_left()-12, 0)), p_wait?0:MSG_DONTWAIT, (struct sockaddr*)&from, &len)) > 0) {
-		rb.write((uint8_t*)&from.sin_addr, 4);
-		uint32_t port = ntohs(from.sin_port);
+
+		uint32_t port = 0;
+
+		if (from.ss_family == AF_INET) {
+			uint8_t type = (uint8_t)IP_Address::TYPE_IPV4;
+			rb.write(&type, 1);
+			struct sockaddr_in* sin_from = (struct sockaddr_in*)&from;
+			rb.write((uint8_t*)&sin_from->sin_addr, 4);
+			port = sin_from->sin_port;
+
+		} else if (from.ss_family == AF_INET6) {
+
+			uint8_t type = (uint8_t)IP_Address::TYPE_IPV6;
+			rb.write(&type, 1);
+
+			struct sockaddr_in6* s6_from = (struct sockaddr_in6*)&from;
+			rb.write((uint8_t*)&s6_from->sin6_addr, 16);
+
+			port = s6_from->sin6_port;
+
+		} else {
+			// WARN_PRINT("Ignoring packet with unknown address family");
+			uint8_t type = (uint8_t)IP_Address::TYPE_NONE;
+			rb.write(&type, 1);
+		};
+
 		rb.write((uint8_t*)&port, 4);
 		rb.write((uint8_t*)&ret, 4);
 		rb.write(recv_buffer, ret);
-		len = sizeof(struct sockaddr_in);
+
 		++queue_count;
 	};
 
@@ -182,12 +239,14 @@ int PacketPeerUDPPosix::get_packet_port() const{
 	return packet_port;
 }
 
-int PacketPeerUDPPosix::_get_socket() {
+int PacketPeerUDPPosix::_get_socket(IP_Address::AddrType p_type) {
 
 	if (sockfd != -1)
 		return sockfd;
 
-	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	int family = p_type == IP_Address::TYPE_IPV6 ? AF_INET6 : AF_INET;
+
+	sockfd = socket(family, SOCK_DGRAM, IPPROTO_UDP);
 	ERR_FAIL_COND_V( sockfd == -1, -1 );
 	//fcntl(sockfd, F_SETFL, O_NONBLOCK);
 

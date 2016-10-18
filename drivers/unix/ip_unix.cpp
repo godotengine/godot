@@ -30,6 +30,7 @@
 
 #if defined(UNIX_ENABLED) || defined(WINDOWS_ENABLED)
 
+#include <string.h>
 
 #ifdef WINDOWS_ENABLED
  #ifdef WINRT_ENABLED
@@ -62,16 +63,51 @@
  #endif
 #endif
 
-IP_Address IP_Unix::_resolve_hostname(const String& p_hostname) {
+static IP_Address _sockaddr2ip(struct sockaddr* p_addr) {
 
-	struct hostent *he;
-	if ((he=gethostbyname(p_hostname.utf8().get_data())) == NULL) {  // get the host info
-		ERR_PRINT("gethostbyname failed!");
-		return IP_Address();
-	}
 	IP_Address ip;
+	if (p_addr->sa_family == AF_INET) {
+		struct sockaddr_in* addr = (struct sockaddr_in*)p_addr;
+		ip.field32[0] = ntohl(addr->sin_addr.s_addr);
+		ip.type = IP_Address::TYPE_IPV4;
+	} else {
+		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)p_addr;
+		for (int i=0; i<16; i++)
+			ip.field8[i] = addr6->sin6_addr.s6_addr[i];
+		ip.type = IP_Address::TYPE_IPV6;
+	};
 
-	ip.host= *((unsigned long*)he->h_addr);
+	return ip;
+};
+
+IP_Address IP_Unix::_resolve_hostname(const String& p_hostname, IP_Address::AddrType p_type) {
+
+	struct addrinfo hints;
+	struct addrinfo* result;
+
+	memset(&hints, 0, sizeof(struct addrinfo));
+	if (p_type == IP_Address::TYPE_IPV4) {
+		hints.ai_family = AF_INET;
+	} else if (p_type == IP_Address::TYPE_IPV6) {
+		hints.ai_family = AF_INET6;
+	} else {
+		hints.ai_family = AF_UNSPEC;
+	};
+
+	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
+	if (s != 0) {
+		ERR_PRINT("getaddrinfo failed!");
+		return IP_Address();
+	};
+
+	if (result == NULL || result->ai_addr == NULL) {
+		ERR_PRINT("Invalid response from getaddrinfo");
+		return IP_Address();
+	};
+
+	IP_Address ip = _sockaddr2ip(result->ai_addr);
+
+	freeaddrinfo(result);
 
 	return ip;
 
@@ -90,10 +126,9 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 
 	for (int i = 0; i < hostnames->Size; i++) {
 
-		if (hostnames->GetAt(i)->Type == HostNameType::Ipv4 && hostnames->GetAt(i)->IPInformation != nullptr) {
+		if (hostnames->GetAt(i)->Type == HostNameType::Ipv4 || hostnames->GetAt(i)->Type == HostNameType::Ipv6 && hostnames->GetAt(i)->IPInformation != nullptr) {
 
 			r_addresses->push_back(IP_Address(String(hostnames->GetAt(i)->CanonicalName->Data())));
-
 		}
 	}
 
@@ -108,7 +143,7 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 	while (true) {
 
 		addrs = (IP_ADAPTER_ADDRESSES*)memalloc(buf_size);
-		int err = GetAdaptersAddresses(AF_INET, GAA_FLAG_SKIP_ANYCAST |
+		int err = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_SKIP_ANYCAST |
 									   GAA_FLAG_SKIP_MULTICAST |
 									   GAA_FLAG_SKIP_DNS_SERVER |
 									   GAA_FLAG_SKIP_FRIENDLY_NAME,
@@ -134,14 +169,23 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 		IP_ADAPTER_UNICAST_ADDRESS* address = adapter->FirstUnicastAddress;
 		while (address != NULL) {
 
-			char addr_chr[INET_ADDRSTRLEN];
-			SOCKADDR_IN* ipv4 = reinterpret_cast<SOCKADDR_IN*>(address->Address.lpSockaddr);
-
 			IP_Address ip;
-			ip.host= *((unsigned long*)&ipv4->sin_addr);
 
+			if (address->Address.lpSockaddr->sa_family == AF_INET) {
 
-			//inet_ntop(AF_INET, &ipv4->sin_addr, addr_chr, INET_ADDRSTRLEN);
+				SOCKADDR_IN* ipv4 = reinterpret_cast<SOCKADDR_IN*>(address->Address.lpSockaddr);
+
+				ip.field32[0] = *((unsigned long*)&ipv4->sin_addr);
+				ip.type = IP_Address::TYPE_IPV4;
+			} else { // ipv6
+
+				SOCKADDR_IN6* ipv6 = reinterpret_cast<SOCKADDR_IN6*>(address->Address.lpSockaddr);
+				for (int i=0; i<16; i++) {
+					ip.field8[i] = ipv6->sin6_addr.s6_addr[i];
+				};
+				ip.type = IP_Address::TYPE_IPV6;
+			};
+
 
 			r_addresses->push_back(ip);
 
@@ -167,20 +211,9 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
 		if (!ifa->ifa_addr)
 			continue;
-		if (ifa ->ifa_addr->sa_family==AF_INET) { // check it is IP4
-			// is a valid IP4 Address
 
-			IP_Address ip;
-			ip.host= *((unsigned long*)&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr);
-
-			r_addresses->push_back(ip);
-		}/* else if (ifa->ifa_addr->sa_family==AF_INET6) { // check it is IP6
-			// is a valid IP6 Address
-			tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
-			char addressBuffer[INET6_ADDRSTRLEN];
-			inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
-			printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer);
-		} */
+		IP_Address ip = _sockaddr2ip(ifa->ifa_addr);
+		r_addresses->push_back(ip);
 	}
 
 	if (ifAddrStruct!=NULL) freeifaddrs(ifAddrStruct);

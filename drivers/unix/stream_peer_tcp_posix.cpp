@@ -61,12 +61,23 @@
 	#define MSG_NOSIGNAL    SO_NOSIGPIPE
 #endif
 
-static void set_addr_in(struct sockaddr_in& their_addr, const IP_Address& p_host, uint16_t p_port) {
+static void set_addr_in(struct sockaddr_storage& their_addr, const IP_Address& p_host, uint16_t p_port) {
 
-	their_addr.sin_family = AF_INET;    // host byte order
-	their_addr.sin_port = htons(p_port);  // short, network byte order
-	their_addr.sin_addr = *((struct in_addr*)&p_host.host);
-	memset(&(their_addr.sin_zero), '\0', 8);
+	memset(&their_addr, 0, sizeof(struct sockaddr_storage));
+	if (p_host.type == IP_Address::TYPE_IPV6) {
+
+		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)&their_addr;
+		addr6->sin6_family = AF_INET6;
+		addr6->sin6_port = htons(p_port);
+		copymem(&addr6->sin6_addr.s6_addr, p_host.field8, 16);
+
+	} else {
+
+		struct sockaddr_in* addr4 = (struct sockaddr_in*)&their_addr;
+		addr4->sin_family = AF_INET;    // host byte order
+		addr4->sin_port = htons(p_port);  // short, network byte order
+		addr4->sin_addr = *((struct in_addr*)&p_host.field32[0]);
+	};
 };
 
 StreamPeerTCP* StreamPeerTCPPosix::_create() {
@@ -103,9 +114,9 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 		_block(sockfd, false, true);
 	};
 
-	struct sockaddr_in their_addr;
+	struct sockaddr_storage their_addr;
 	set_addr_in(their_addr, peer_host, peer_port);
-	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(struct sockaddr)) == -1) {
+	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(their_addr)) == -1) {
 
 		if (errno == EISCONN) {
 			status = STATUS_CONNECTED;
@@ -140,9 +151,10 @@ void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port)
 
 Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 
-	ERR_FAIL_COND_V( p_host.host == 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V( p_host.type == IP_Address::TYPE_NONE, ERR_INVALID_PARAMETER);
 
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+	int family = p_host.type == IP_Address::TYPE_IPV6 ? AF_INET6 : AF_INET;
+	if ((sockfd = socket(family, SOCK_STREAM, 0)) == -1) {
 		ERR_PRINT("Socket creation failed!");
 		disconnect();
 		//perror("socket");
@@ -156,11 +168,11 @@ Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 	ioctl(sockfd, FIONBIO, &bval);
 #endif
 
-	struct sockaddr_in their_addr;
+	struct sockaddr_storage their_addr;
 	set_addr_in(their_addr, p_host, p_port);
 
 	errno = 0;
-	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(struct sockaddr)) == -1 && errno != EINPROGRESS) {
+	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(their_addr)) == -1 && errno != EINPROGRESS) {
 
 		ERR_PRINT("Connection to remote host failed!");
 		disconnect();
