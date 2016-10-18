@@ -32,6 +32,7 @@
 #include "hash_map.h"
 
 VARIANT_ENUM_CAST(IP::ResolverStatus);
+VARIANT_ENUM_CAST(IP_Address::AddrType);
 
 /************* RESOLVER ******************/
 
@@ -43,10 +44,12 @@ struct _IP_ResolverPrivate {
 		volatile IP::ResolverStatus status;
 		IP_Address response;
 		String hostname;
+		IP_Address::AddrType type;
 
 		void clear() {
 			status = IP::RESOLVER_STATUS_NONE;
 			response = IP_Address();
+			type = IP_Address::TYPE_NONE;
 			hostname="";
 		};
 
@@ -78,9 +81,9 @@ struct _IP_ResolverPrivate {
 
 			if (queue[i].status!=IP::RESOLVER_STATUS_WAITING)
 				continue;
-			queue[i].response=IP::get_singleton()->resolve_hostname(queue[i].hostname);
+			queue[i].response=IP::get_singleton()->resolve_hostname(queue[i].hostname, queue[i].type);
 
-			if (queue[i].response.host==0)
+			if (queue[i].response.type==IP_Address::TYPE_NONE)
 				queue[i].status=IP::RESOLVER_STATUS_ERROR;
 			else
 				queue[i].status=IP::RESOLVER_STATUS_DONE;
@@ -109,21 +112,21 @@ struct _IP_ResolverPrivate {
 
 
 
-IP_Address IP::resolve_hostname(const String& p_hostname) {
+IP_Address IP::resolve_hostname(const String& p_hostname, IP_Address::AddrType p_type) {
 
-	GLOBAL_LOCK_FUNCTION
+	GLOBAL_LOCK_FUNCTION;
 
 	if (resolver->cache.has(p_hostname))
 		return resolver->cache[p_hostname];
 
-	IP_Address res = _resolve_hostname(p_hostname);
+	IP_Address res = _resolve_hostname(p_hostname, p_type);
 	resolver->cache[p_hostname]=res;
 	return res;
 
 }
-IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname) {
+IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname, IP_Address::AddrType p_type) {
 
-	GLOBAL_LOCK_FUNCTION
+	GLOBAL_LOCK_FUNCTION;
 
 	ResolverID id = resolver->find_empty_id();
 
@@ -133,6 +136,7 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname) {
 	}
 
 	resolver->queue[id].hostname=p_hostname;
+	resolver->queue[id].type = p_type;
 	if (resolver->cache.has(p_hostname)) {
 		resolver->queue[id].response=resolver->cache[p_hostname];
 		resolver->queue[id].status=IP::RESOLVER_STATUS_DONE;
@@ -144,10 +148,6 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname) {
 		else
 			resolver->resolve_queues();
 	}
-
-
-
-
 
 	return id;
 }

@@ -55,6 +55,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <assert.h>
+
 TCP_Server* TCPServerPosix::_create() {
 
 	return memnew(TCPServerPosix);
@@ -65,10 +66,11 @@ void TCPServerPosix::make_default() {
 	TCP_Server::_create = TCPServerPosix::_create;
 };
 
-Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
+Error TCPServerPosix::listen(uint16_t p_port, IP_Address::AddrType p_type, const List<String> *p_accepted_hosts) {
 
 	int sockfd;
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	int family = p_type == IP_Address::TYPE_IPV6 ? AF_INET6 : AF_INET;
+	sockfd = socket(family, SOCK_STREAM, 0);
 	ERR_FAIL_COND_V(sockfd == -1, FAILED);
 #ifndef NO_FCNTL
 	fcntl(sockfd, F_SETFL, O_NONBLOCK);
@@ -82,13 +84,22 @@ Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_host
 		WARN_PRINT("REUSEADDR failed!")
 	}
 
-	struct sockaddr_in my_addr;
-	my_addr.sin_family = AF_INET;         // host byte order
-	my_addr.sin_port = htons(p_port);     // short, network byte order
-	my_addr.sin_addr.s_addr = INADDR_ANY; // automatically fill with my IP TODO: use p_accepted_hosts
-	memset(my_addr.sin_zero, '\0', sizeof my_addr.sin_zero);
+	sockaddr_storage addr = {0};
+	if (p_type == IP_Address::TYPE_IPV4) {
+		struct sockaddr_in* addr4 = (struct sockaddr_in*)&addr;
+		addr4->sin_family = AF_INET;
+		addr4->sin_port = htons(p_port);
+		addr4->sin_addr.s_addr = INADDR_ANY;
+	} else {
 
-	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof my_addr) != -1) {
+		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)&addr;
+		addr6->sin6_family = AF_INET6;
+		addr6->sin6_port = htons(p_port);
+		addr6->sin6_addr = in6addr_any;
+	};
+	// automatically fill with my IP TODO: use p_accepted_hosts
+
+	if (bind(sockfd, (struct sockaddr *)&addr, sizeof addr) != -1) {
 
 		if (::listen(sockfd, 1) == -1) {
 
@@ -136,9 +147,9 @@ Ref<StreamPeerTCP> TCPServerPosix::take_connection() {
 		return Ref<StreamPeerTCP>();
 	};
 
-	struct sockaddr_in their_addr;
-	socklen_t sin_size = sizeof(their_addr);
-	int fd = accept(listen_sockfd, (struct sockaddr *)&their_addr, &sin_size);
+	struct sockaddr_storage their_addr;
+	socklen_t size = sizeof(their_addr);
+	int fd = accept(listen_sockfd, (struct sockaddr *)&their_addr, &size);
 	ERR_FAIL_COND_V(fd == -1, Ref<StreamPeerTCP>());
 #ifndef NO_FCNTL
 	fcntl(fd, F_SETFL, O_NONBLOCK);
@@ -149,8 +160,23 @@ Ref<StreamPeerTCP> TCPServerPosix::take_connection() {
 
 	Ref<StreamPeerTCPPosix> conn = memnew(StreamPeerTCPPosix);
 	IP_Address ip;
-	ip.host = (uint32_t)their_addr.sin_addr.s_addr;
-	conn->set_socket(fd, ip, ntohs(their_addr.sin_port));
+
+	if (their_addr.ss_family == AF_INET) {
+		ip.type = IP_Address::TYPE_IPV4;
+
+		struct sockaddr_in* addr4 = (struct sockaddr_in*)&their_addr;
+		ip.field32[0] = (uint32_t)addr4->sin_addr.s_addr;
+		conn->set_socket(fd, ip, ntohs(addr4->sin_port));
+
+	} else if (their_addr.ss_family == AF_INET6) {
+
+		ip.type = IP_Address::TYPE_IPV6;
+
+		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)&their_addr;
+		copymem(&addr6->sin6_addr.s6_addr, ip.field8, 16);
+
+		conn->set_socket(fd, ip, ntohs(addr6->sin6_port));
+	};
 
 	return conn;
 };
