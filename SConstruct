@@ -134,6 +134,7 @@ opts.Add('openssl','OpenSSL library for openssl module (system/builtin)','builti
 opts.Add('libmpcdec','libmpcdec library for mpc module (system/builtin)','builtin')
 opts.Add('enet','ENet library (system/builtin)','builtin')
 opts.Add('glew','GLEW library for the gl_context (system/builtin)','builtin')
+opts.Add('xaudio2','XAudio2 audio driver (yes/no)','no')
 opts.Add("CXX", "C++ Compiler")
 opts.Add("CC", "C Compiler")
 opts.Add("CCFLAGS", "Custom flags for the C++ compiler");

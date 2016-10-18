@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_driver_winrt.h                                                 */
+/*  audio_driver_xaudio2.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef AUDIO_DRIVER_WINRT_H
-#define AUDIO_DRIVER_WINRT_H
+#ifndef AUDIO_DRIVER_XAUDIO2_H
+#define AUDIO_DRIVER_XAUDIO2_H
 
 #include "servers/audio/audio_server_sw.h"
 
@@ -40,7 +40,7 @@
 #include <xaudio2.h>
 #include <wrl/client.h>
 
-class AudioDriverWinRT : public AudioDriverSW {
+class AudioDriverXAudio2 : public AudioDriverSW {
 
 	enum {
 		AUDIO_BUFFERS = 2
@@ -53,12 +53,12 @@ class AudioDriverWinRT : public AudioDriverSW {
 		void STDMETHODCALLTYPE OnBufferEnd(void* pBufferContext) { /*print_line("buffer ended");*/ SetEvent(buffer_end_event); }
 
 		//Unused methods are stubs
-		void STDMETHODCALLTYPE OnStreamEnd() { }
-		void STDMETHODCALLTYPE OnVoiceProcessingPassEnd() { }
-		void STDMETHODCALLTYPE OnVoiceProcessingPassStart(UINT32 SamplesRequired) {    }
-		void STDMETHODCALLTYPE OnBufferStart(void * pBufferContext) {    }
-		void STDMETHODCALLTYPE OnLoopEnd(void * pBufferContext) {    }
-		void STDMETHODCALLTYPE OnVoiceError(void * pBufferContext, HRESULT Error) { }
+		void STDMETHODCALLTYPE OnStreamEnd() {}
+		void STDMETHODCALLTYPE OnVoiceProcessingPassEnd() {}
+		void STDMETHODCALLTYPE OnVoiceProcessingPassStart(UINT32 SamplesRequired) {}
+		void STDMETHODCALLTYPE OnBufferStart(void * pBufferContext) {}
+		void STDMETHODCALLTYPE OnLoopEnd(void * pBufferContext) {}
+		void STDMETHODCALLTYPE OnVoiceError(void * pBufferContext, HRESULT Error) {}
 
 	};
 
@@ -87,7 +87,7 @@ class AudioDriverWinRT : public AudioDriverSW {
 	IXAudio2MasteringVoice* mastering_voice;
 	XAUDIO2_BUFFER xaudio_buffer[AUDIO_BUFFERS];
 	IXAudio2SourceVoice* source_voice;
-	XAudio2DriverVoiceCallback* voice_callback;
+	XAudio2DriverVoiceCallback voice_callback;
 
 public:
 
@@ -102,8 +102,8 @@ public:
 	virtual void unlock();
 	virtual void finish();
 
-	AudioDriverWinRT();
-	~AudioDriverWinRT();
+	AudioDriverXAudio2();
+	~AudioDriverXAudio2();
 };
 
 #endif
