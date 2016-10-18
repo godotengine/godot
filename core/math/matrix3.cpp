@@ -73,6 +73,7 @@ void Matrix3::invert() {
 }
 
 void Matrix3::orthonormalize() {
+	ERR_FAIL_COND(determinant() == 0);
 
 	// Gram-Schmidt Process
 
@@ -97,6 +98,17 @@ Matrix3 Matrix3::orthonormalized() const {
 	Matrix3 c = *this;
 	c.orthonormalize();
 	return c;
+}
+
+bool Matrix3::is_orthogonal() const {
+	Matrix3 id;
+	Matrix3 m = (*this)*transposed();
+
+	return isequal_approx(id,m);
+}
+
+bool Matrix3::is_rotation() const {
+	return Math::isequal_approx(determinant(), 1) && is_orthogonal();
 }
 
 
@@ -150,42 +162,58 @@ Vector3 Matrix3::get_scale() const {
 	);
 
 }
-void Matrix3::rotate(const Vector3& p_axis, real_t p_phi) {
 
+// Matrix3::rotate and Matrix3::rotated return M * R(axis,phi), and is a convenience function. They do *not* perform proper matrix rotation.
+void Matrix3::rotate(const Vector3& p_axis, real_t p_phi) {
+	// TODO: This function should also be renamed as the current name is misleading: rotate does *not* perform matrix rotation.
+	// Same problem affects Matrix3::rotated.
+	// A similar problem exists in 2D math, which will be handled separately.
+	// After Matrix3 is renamed to Basis, this comments needs to be revised.
 	*this = *this * Matrix3(p_axis, p_phi);
 }
 
 Matrix3 Matrix3::rotated(const Vector3& p_axis, real_t p_phi) const {
-
 	return *this * Matrix3(p_axis, p_phi);
 
 }
 
+// get_euler returns a vector containing the Euler angles in the format
+// (a1,a2,a3), where a3 is the angle of the first rotation, and a1 is the last
+// (following the convention they are commonly defined in the literature).
+//
+// The current implementation uses XYZ convention (Z is the first rotation),
+// so euler.z is the angle of the (first) rotation around Z axis and so on,
+//
+// And thus, assuming the matrix is a rotation matrix, this function returns
+// the angles in the decomposition R = X(a1).Y(a2).Z(a3) where Z(a) rotates
+// around the z-axis by a and so on.
 Vector3 Matrix3::get_euler() const {
 
+	// Euler angles in XYZ convention.
+	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+	//
 	// rot =  cy*cz          -cy*sz           sy
-	    //        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
-	    //       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
-
-	Matrix3 m = *this;
-	m.orthonormalize();
+	//        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
+	//       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
 
 	Vector3 euler;
 
-	euler.y = Math::asin(m[0][2]);
+	ERR_FAIL_COND_V(is_rotation() == false, euler);
+
+	euler.y = Math::asin(elements[0][2]);
 	if ( euler.y < Math_PI*0.5) {
 		if ( euler.y > -Math_PI*0.5) {
-			euler.x = Math::atan2(-m[1][2],m[2][2]);
-			euler.z = Math::atan2(-m[0][1],m[0][0]);
+			euler.x = Math::atan2(-elements[1][2],elements[2][2]);
+			euler.z = Math::atan2(-elements[0][1],elements[0][0]);
 
 		} else {
-			real_t r = Math::atan2(m[1][0],m[1][1]);
+			real_t r = Math::atan2(elements[1][0],elements[1][1]);
 			euler.z = 0.0;
 			euler.x = euler.z - r;
 
 		}
 	} else {
-		real_t r = Math::atan2(m[0][1],m[1][1]);
+		real_t r = Math::atan2(elements[0][1],elements[1][1]);
 		euler.z = 0;
 		euler.x = r - euler.z;
 	}
@@ -195,6 +223,9 @@ Vector3 Matrix3::get_euler() const {
 
 }
 
+// set_euler expects a vector containing the Euler angles in the format
+// (c,b,a), where a is the angle of the first rotation, and c is the last.
+// The current implementation uses XYZ convention (Z is the first rotation).
 void Matrix3::set_euler(const Vector3& p_euler) {
 
 	real_t c, s;
@@ -215,17 +246,30 @@ void Matrix3::set_euler(const Vector3& p_euler) {
 	*this = xmat*(ymat*zmat);
 }
 
+bool Matrix3::isequal_approx(const Matrix3& a, const Matrix3& b) const {
+
+        for (int i=0;i<3;i++) {
+                for (int j=0;j<3;j++) {
+                        if (Math::isequal_approx(a.elements[i][j],b.elements[i][j]) == false)
+                                return false;
+                }
+        }
+
+        return true;
+}
+
 bool Matrix3::operator==(const Matrix3& p_matrix) const {
 
 	for (int i=0;i<3;i++) {
 		for (int j=0;j<3;j++) {
-			if (elements[i][j]!=p_matrix.elements[i][j])
+			if (elements[i][j] != p_matrix.elements[i][j])
 				return false;
 		}
 	}
 
 	return true;
 }
+
 bool Matrix3::operator!=(const Matrix3& p_matrix) const {
 
 	return (!(*this==p_matrix));
@@ -249,11 +293,9 @@ Matrix3::operator String() const {
 }
 
 Matrix3::operator Quat() const {
+	ERR_FAIL_COND_V(is_rotation() == false, Quat());
 
-	Matrix3 m=*this;
-	m.orthonormalize();
-
-	real_t trace = m.elements[0][0] + m.elements[1][1] + m.elements[2][2];
+	real_t trace = elements[0][0] + elements[1][1] + elements[2][2];
 	real_t temp[4];
 
 	if (trace > 0.0)
@@ -262,25 +304,25 @@ Matrix3::operator Quat() const {
 		temp[3]=(s * 0.5);
 		s = 0.5 / s;
 
-		temp[0]=((m.elements[2][1] - m.elements[1][2]) * s);
-		temp[1]=((m.elements[0][2] - m.elements[2][0]) * s);
-		temp[2]=((m.elements[1][0] - m.elements[0][1]) * s);
+		temp[0]=((elements[2][1] - elements[1][2]) * s);
+		temp[1]=((elements[0][2] - elements[2][0]) * s);
+		temp[2]=((elements[1][0] - elements[0][1]) * s);
 	}
 	else
 	{
-		int i = m.elements[0][0] < m.elements[1][1] ?
-			(m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
-			(m.elements[0][0] < m.elements[2][2] ? 2 : 0);
+		int i = elements[0][0] < elements[1][1] ?
+			(elements[1][1] < elements[2][2] ? 2 : 1) :
+			(elements[0][0] < elements[2][2] ? 2 : 0);
 		int j = (i + 1) % 3;
 		int k = (i + 2) % 3;
 
-		real_t s = Math::sqrt(m.elements[i][i] - m.elements[j][j] - m.elements[k][k] + 1.0);
+		real_t s = Math::sqrt(elements[i][i] - elements[j][j] - elements[k][k] + 1.0);
 		temp[i] = s * 0.5;
 		s = 0.5 / s;
 
-		temp[3] = (m.elements[k][j] - m.elements[j][k]) * s;
-		temp[j] = (m.elements[j][i] + m.elements[i][j]) * s;
-		temp[k] = (m.elements[k][i] + m.elements[i][k]) * s;
+		temp[3] = (elements[k][j] - elements[j][k]) * s;
+		temp[j] = (elements[j][i] + elements[i][j]) * s;
+		temp[k] = (elements[k][i] + elements[i][k]) * s;
 	}
 
 	return Quat(temp[0],temp[1],temp[2],temp[3]);
@@ -356,6 +398,10 @@ void Matrix3::set_orthogonal_index(int p_index){
 
 
 void Matrix3::get_axis_and_angle(Vector3 &r_axis,real_t& r_angle) const {
+	// TODO: We can handle improper matrices here too, in which case axis will also correspond to the axis of reflection.
+	// See Eq. (52) in http://scipp.ucsc.edu/~haber/ph251/rotreflect_13.pdf for example
+	// After that change, we should fail on is_orthogonal() == false.
+	ERR_FAIL_COND(is_rotation() == false);
 
 
 	double angle,x,y,z; // variables for result
@@ -423,14 +469,13 @@ void Matrix3::get_axis_and_angle(Vector3 &r_axis,real_t& r_angle) const {
 	// as we have reached here there are no singularities so we can handle normally
 	double s = Math::sqrt((elements[1][2] - elements[2][1])*(elements[1][2] - elements[2][1])
 		+(elements[2][0] - elements[0][2])*(elements[2][0] - elements[0][2])
-		+(elements[0][1] - elements[1][0])*(elements[0][1] - elements[1][0])); // used to normalise
-	if (Math::abs(s) < 0.001) s=1;
-		// prevent divide by zero, should not happen if matrix is orthogonal and should be
-		// caught by singularity test above, but I've left it in just in case
+		+(elements[0][1] - elements[1][0])*(elements[0][1] - elements[1][0])); // s=|axis||sin(angle)|, used to normalise
+
 	angle = Math::acos(( elements[0][0] + elements[1][1] + elements[2][2] - 1)/2);
-	x = (elements[1][2] - elements[2][1])/s;
-	y = (elements[2][0] - elements[0][2])/s;
-	z = (elements[0][1] - elements[1][0])/s;
+	if (angle < 0) s = -s;
+	x = (elements[2][1] - elements[1][2])/s;
+	y = (elements[0][2] - elements[2][0])/s;
+	z = (elements[1][0] - elements[0][1])/s;
 
 	r_axis=Vector3(x,y,z);
 	r_angle=angle;
@@ -457,6 +502,7 @@ Matrix3::Matrix3(const Quat& p_quat) {
 }
 
 Matrix3::Matrix3(const Vector3& p_axis, real_t p_phi) {
+	// Rotation matrix from axis and angle, see https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
 
 	Vector3 axis_sq(p_axis.x*p_axis.x,p_axis.y*p_axis.y,p_axis.z*p_axis.z);
 
@@ -464,15 +510,15 @@ Matrix3::Matrix3(const Vector3& p_axis, real_t p_phi) {
 	real_t sine= Math::sin(p_phi);
 
 	elements[0][0] = axis_sq.x + cosine * ( 1.0 - axis_sq.x );
-	elements[0][1] = p_axis.x * p_axis.y *  ( 1.0 - cosine ) + p_axis.z * sine;
-	elements[0][2] = p_axis.z * p_axis.x * ( 1.0 - cosine ) - p_axis.y * sine;
+	elements[0][1] = p_axis.x * p_axis.y *  ( 1.0 - cosine ) - p_axis.z * sine;
+	elements[0][2] = p_axis.z * p_axis.x * ( 1.0 - cosine ) + p_axis.y * sine;
 
-	elements[1][0] = p_axis.x * p_axis.y * ( 1.0 - cosine ) - p_axis.z * sine;
+	elements[1][0] = p_axis.x * p_axis.y * ( 1.0 - cosine ) + p_axis.z * sine;
 	elements[1][1] = axis_sq.y + cosine  * ( 1.0 - axis_sq.y );
-	elements[1][2] = p_axis.y * p_axis.z * ( 1.0 - cosine ) + p_axis.x * sine;
+	elements[1][2] = p_axis.y * p_axis.z * ( 1.0 - cosine ) - p_axis.x * sine;
 
-	elements[2][0] = p_axis.z * p_axis.x * ( 1.0 - cosine ) + p_axis.y * sine;
-	elements[2][1] = p_axis.y * p_axis.z * ( 1.0 - cosine ) - p_axis.x * sine;
+	elements[2][0] = p_axis.z * p_axis.x * ( 1.0 - cosine ) - p_axis.y * sine;
+	elements[2][1] = p_axis.y * p_axis.z * ( 1.0 - cosine ) + p_axis.x * sine;
 	elements[2][2] = axis_sq.z + cosine  * ( 1.0 - axis_sq.z );
 
 }

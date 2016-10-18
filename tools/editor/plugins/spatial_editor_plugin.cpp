@@ -61,8 +61,8 @@ void SpatialEditorViewport::_update_camera() {
 
 	Transform camera_transform;
 	camera_transform.translate(cursor.pos);
-	camera_transform.basis.rotate(Vector3(0, 1, 0), cursor.y_rot);
-	camera_transform.basis.rotate(Vector3(1, 0, 0), cursor.x_rot);
+	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
+	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
 
 	if (orthogonal)
 		camera_transform.translate(0, 0, 4096);
@@ -474,8 +474,8 @@ Vector3 SpatialEditorViewport::_get_screen_to_space(const Vector3& p_pos) {
 
 	Transform camera_transform;
 	camera_transform.translate( cursor.pos );
-	camera_transform.basis.rotate(Vector3(0,1,0),cursor.y_rot);
-	camera_transform.basis.rotate(Vector3(1,0,0),cursor.x_rot);
+	camera_transform.basis.rotate(Vector3(0,1,0),-cursor.y_rot);
+	camera_transform.basis.rotate(Vector3(1,0,0),-cursor.x_rot);
 	camera_transform.translate(0,0,cursor.distance);
 
 	return camera_transform.xform(Vector3( ((p_pos.x/get_size().width)*2.0-1.0)*screen_w, ((1.0-(p_pos.y/get_size().height))*2.0-1.0)*screen_h,-get_znear()));
@@ -1484,7 +1484,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 
 							Transform r;
-							r.basis.rotate(plane.normal,-angle);
+							r.basis.rotate(plane.normal,angle);
 
 							List<Node*> &selection = editor_selection->get_selected_node_list();
 
@@ -1591,8 +1591,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					Transform camera_transform;
 
 					camera_transform.translate(cursor.pos);
-					camera_transform.basis.rotate(Vector3(0,1,0),cursor.y_rot);
-					camera_transform.basis.rotate(Vector3(1,0,0),cursor.x_rot);
+					camera_transform.basis.rotate(Vector3(0,1,0),-cursor.y_rot);
+					camera_transform.basis.rotate(Vector3(1,0,0),-cursor.x_rot);
 					Vector3 translation(-m.relative_x*pan_speed,m.relative_y*pan_speed,0);
 					translation*=cursor.distance/DISTANCE_DEFAULT;
 					camera_transform.translate(translation);
@@ -2810,7 +2810,7 @@ void SpatialEditor::_xform_dialog_action() {
 			continue;
 		Vector3 axis;
 		axis[i]=1.0;
-		t.basis.rotate(axis,rotate[i]);
+		t.basis.rotate(axis,rotate[i]); // BUG(?): Angle not flipped; please check during the review of PR #6865.
 	}
 
 	for(int i=0;i<3;i++) {
@@ -3160,7 +3160,7 @@ void SpatialEditor::_init_indicators() {
 
 
 
-	light_transform.rotate(Vector3(1,0,0),Math_PI/5.0);
+	light_transform.rotate(Vector3(1,0,0),-Math_PI/5.0);
 	VisualServer::get_singleton()->instance_set_transform(light_instance,light_transform);
 
 
@@ -3773,8 +3773,8 @@ void SpatialEditor::_update_ambient_light_color(const Color& p_color) {
 void SpatialEditor::_update_default_light_angle() {
 
 	Transform t;
-	t.basis.rotate(Vector3(1,0,0),settings_default_light_rot_x);
-	t.basis.rotate(Vector3(0,1,0),settings_default_light_rot_y);
+	t.basis.rotate(Vector3(1,0,0),-settings_default_light_rot_x);
+	t.basis.rotate(Vector3(0,1,0),-settings_default_light_rot_y);
 	settings_dlight->set_transform(t);
 	if (light_instance.is_valid()) {
 		VS::get_singleton()->instance_set_transform(light_instance,t);

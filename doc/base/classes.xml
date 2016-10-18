@@ -20714,7 +20714,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Create a matrix from an axis vector and an angle.
+				Create a matrix which rotates around the given axis by the specified angle.
 			</description>
 		</method>
 		<method name="Matrix3">
@@ -20741,7 +20741,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Return euler angles from the matrix.
+				Return euler angles (in the XYZ convention: first Z, then Y, and X last) from the matrix. Returned vector contains the rotation angles in the format (third,second,first).
 			</description>
 		</method>
 		<method name="get_orthogonal_index">
@@ -20767,7 +20767,7 @@
 			<return type="Matrix3">
 			</return>
 			<description>
-				Return the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error).
+				Return the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
 			</description>
 		</method>
 		<method name="rotated">
@@ -20777,10 +20777,7 @@
 			</argument>
 			<argument index="1" name="phi" type="float">
 			</argument>
-			<description>
-				Return the rotated version of the matrix, by a given axis and angle.
-			</description>
-		</method>
+                </method>
 		<method name="scaled">
 			<return type="Matrix3">
 			</return>
@@ -31485,7 +31482,7 @@
 		Quaternion.
 	</brief_description>
 	<description>
-		Quaternion is a 4 dimensional vector that is used to represent a rotation. It mainly exists to perform SLERP (spherical-linear interpolation) between to rotations obtained by a Matrix3 cheaply. Adding quaternions also cheaply adds the rotations, however quaternions need to be often normalized, or else they suffer from precision issues.
+		Quaternion is a 4 dimensional vector that is used to represent a rotation. It mainly exists to perform SLERP (spherical-linear interpolation) between to rotations obtained by a Matrix3 cheaply. Multiplying quaternions also cheaply reproduces rotation sequences, however quaternions need to be often normalized, or else they suffer from precision issues.
 	</description>
 	<methods>
 		<method name="Quat">
@@ -31510,6 +31507,7 @@
 			<argument index="1" name="angle" type="float">
 			</argument>
 			<description>
+                Returns a quaternion that will rotate around the given axis by the specified angle.
 			</description>
 		</method>
 		<method name="Quat">
@@ -31518,6 +31516,7 @@
 			<argument index="0" name="from" type="Matrix3">
 			</argument>
 			<description>
+				Returns the rotation matrix corresponding to the given quaternion.
 			</description>
 		</method>
 		<method name="cubic_slerp">
@@ -31540,14 +31539,14 @@
 			<argument index="0" name="b" type="Quat">
 			</argument>
 			<description>
-				Returns the dot product between two quaternions.
+				Returns the dot product of two quaternions.
 			</description>
 		</method>
 		<method name="inverse">
 			<return type="Quat">
 			</return>
 			<description>
-				Returns the inverse of the quaternion (applies to the inverse rotation too).
+				Returns the inverse of the quaternion.
 			</description>
 		</method>
 		<method name="length">
@@ -43135,7 +43134,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Rotate the transform locally.
+				Rotate the transform locally. This introduces an additional pre-rotation to the transform, changing the basis to basis * Matrix3(axis, phi).
 			</description>
 		</method>
 		<method name="scaled">

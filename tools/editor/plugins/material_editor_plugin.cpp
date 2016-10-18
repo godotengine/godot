@@ -129,8 +129,8 @@ MaterialEditor::MaterialEditor() {
 	viewport->add_child(box_instance);
 
 	Transform box_xform;
-	box_xform.basis.rotate(Vector3(1,0,0),Math::deg2rad(-25));
-	box_xform.basis = box_xform.basis * Matrix3().rotated(Vector3(0,1,0),Math::deg2rad(-25));
+	box_xform.basis.rotate(Vector3(1,0,0),Math::deg2rad(25));
+	box_xform.basis = box_xform.basis * Matrix3().rotated(Vector3(0,1,0),Math::deg2rad(25));
 	box_xform.basis.scale(Vector3(0.8,0.8,0.8));
 	box_instance->set_transform(box_xform);
 

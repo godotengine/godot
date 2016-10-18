@@ -96,6 +96,15 @@ public:
 
 	static double random(double from, double to);
 
+	static _FORCE_INLINE_ bool isequal_approx(real_t a, real_t b) {
+		// TODO: Comparing floats for approximate-equality is non-trivial.
+		// Using epsilon should cover the typical cases in Godot (where a == b is used to compare two reals), such as matrix and vector comparison operators.
+		// A proper implementation in terms of ULPs should eventually replace the contents of this function.
+		// See https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/ for details.
+
+		return abs(a-b) < CMP_EPSILON;
+	}
+
 
 	static _FORCE_INLINE_ real_t abs(real_t g) {
 

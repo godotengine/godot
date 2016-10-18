@@ -49,15 +49,16 @@ public:
 	Quat inverse() const;
 	_FORCE_INLINE_ real_t dot(const Quat& q) const;
 	void set_euler(const Vector3& p_euler);
+	Vector3 get_euler() const;
 	Quat slerp(const Quat& q, const real_t& t) const;
 	Quat slerpni(const Quat& q, const real_t& t) const;
 	Quat cubic_slerp(const Quat& q, const Quat& prep, const Quat& postq,const real_t& t) const;
 
 	_FORCE_INLINE_ void get_axis_and_angle(Vector3& r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
-		r_axis.x = -x / Math::sqrt(1-w*w);
-		r_axis.y = -y / Math::sqrt(1-w*w);
-		r_axis.z = -z / Math::sqrt(1-w*w);
+		r_axis.x = x / Math::sqrt(1-w*w);
+		r_axis.y = y / Math::sqrt(1-w*w);
+		r_axis.z = z / Math::sqrt(1-w*w);
 	}
 
 	void operator*=(const Quat& q);
@@ -183,12 +184,10 @@ Quat Quat::operator/(const real_t& s) const {
 
 
 bool Quat::operator==(const Quat& p_quat) const {
-
 	return x==p_quat.x && y==p_quat.y && z==p_quat.z && w==p_quat.w;
 }
 
 bool Quat::operator!=(const Quat& p_quat) const {
-
 	return x!=p_quat.x || y!=p_quat.y || z!=p_quat.z || w!=p_quat.w;
 }
 
