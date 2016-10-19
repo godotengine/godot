@@ -37,6 +37,7 @@
 #include "visual_server_global.h"
 #include "visual_server_viewport.h"
 #include "visual_server_canvas.h"
+#include "visual_server_scene.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -600,6 +601,7 @@ public:
 #define BIND6(m_name,m_type1,m_type2,m_type3,m_type4,m_type5,m_type6) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4,m_type5 arg5,m_type6 arg6) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3,arg4,arg5,arg6); }
 #define BIND7(m_name,m_type1,m_type2,m_type3,m_type4,m_type5,m_type6,m_type7) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4,m_type5 arg5,m_type6 arg6,m_type7 arg7) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3,arg4,arg5,arg6,arg7); }
 #define BIND8(m_name,m_type1,m_type2,m_type3,m_type4,m_type5,m_type6,m_type7,m_type8) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4,m_type5 arg5,m_type6 arg6,m_type7 arg7,m_type8 arg8) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8); }
+#define BIND9(m_name,m_type1,m_type2,m_type3,m_type4,m_type5,m_type6,m_type7,m_type8,m_type9) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4,m_type5 arg5,m_type6 arg6,m_type7 arg7,m_type8 arg8,m_type9 arg9) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9); }
 #define BIND10(m_name,m_type1,m_type2,m_type3,m_type4,m_type5,m_type6,m_type7,m_type8,m_type9,m_type10) void m_name(m_type1 arg1,m_type2 arg2,m_type3 arg3,m_type4 arg4,m_type5 arg5,m_type6 arg6,m_type7 arg7,m_type8 arg8,m_type9 arg9,m_type10 arg10) { DISPLAY_CHANGED BINDBASE->m_name(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10); }
 
 //from now on, calls forwarded to this singleton
@@ -659,7 +661,7 @@ public:
 
 	BIND0R(RID,mesh_create)
 
-	BIND8(mesh_add_surface,RID,uint32_t,PrimitiveType,const DVector<uint8_t>&,int ,const DVector<uint8_t>& ,int ,const Vector<DVector<uint8_t> >& )
+	BIND10(mesh_add_surface,RID,uint32_t,PrimitiveType,const DVector<uint8_t>&,int ,const DVector<uint8_t>& ,int ,const AABB&,const Vector<DVector<uint8_t> >&,const Vector<AABB>& )
 
 	BIND2(mesh_set_morph_target_count,RID,int)
 	BIND1RC(int,mesh_get_morph_target_count,RID)
@@ -788,13 +790,18 @@ public:
 
 	/* CAMERA API */
 
-	virtual RID camera_create();
-	virtual void camera_set_perspective(RID p_camera,float p_fovy_degrees, float p_z_near, float p_z_far);
-	virtual void camera_set_orthogonal(RID p_camera,float p_size, float p_z_near, float p_z_far);
-	virtual void camera_set_transform(RID p_camera,const Transform& p_transform);
-	virtual void camera_set_cull_mask(RID p_camera,uint32_t p_layers);
-	virtual void camera_set_environment(RID p_camera,RID p_env);
-	virtual void camera_set_use_vertical_aspect(RID p_camera,bool p_enable);
+#undef BINDBASE
+//from now on, calls forwarded to this singleton
+#define BINDBASE VSG::scene
+
+
+	BIND0R(RID, camera_create)
+	BIND4(camera_set_perspective,RID,float, float , float )
+	BIND4(camera_set_orthogonal,RID,float , float , float )
+	BIND2(camera_set_transform,RID,const Transform&)
+	BIND2(camera_set_cull_mask,RID,uint32_t )
+	BIND2(camera_set_environment,RID ,RID )
+	BIND2(camera_set_use_vertical_aspect,RID,bool)
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
@@ -839,66 +846,69 @@ public:
 
 	/* ENVIRONMENT API */
 
-	virtual RID environment_create();
+#undef BINDBASE
+//from now on, calls forwarded to this singleton
+#define BINDBASE VSG::scene
 
-	virtual void environment_set_background(RID p_env,EnvironmentBG p_bg);
-	virtual void environment_set_skybox(RID p_env,RID p_skybox,float p_energy=1.0);
-	virtual void environment_set_bg_color(RID p_env,const Color& p_color);
-	virtual void environment_set_canvas_max_layer(RID p_env,int p_max_layer);
-	virtual void environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy=1.0);
+	BIND0R(RID,environment_create)
 
-	virtual void environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,EnvironmentGlowBlendMode p_blend_mode);
-	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture);
+	BIND2(environment_set_background,RID ,EnvironmentBG )
+	BIND3(environment_set_skybox,RID,RID ,float )
+	BIND2(environment_set_bg_color,RID,const Color& )
+	BIND2(environment_set_canvas_max_layer,RID,int )
+	BIND3(environment_set_ambient_light,RID,const Color& ,float )
 
-	virtual void environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,EnvironmentToneMapper p_tone_mapper);
-	virtual void environment_set_brightness(RID p_env,bool p_enable,float p_brightness);
-	virtual void environment_set_contrast(RID p_env,bool p_enable,float p_contrast);
-	virtual void environment_set_saturation(RID p_env,bool p_enable,float p_saturation);
-	virtual void environment_set_color_correction(RID p_env,bool p_enable,RID p_ramp);
+	BIND7(environment_set_glow,RID,bool ,int ,float ,float ,float ,EnvironmentGlowBlendMode )
+	BIND5(environment_set_fog,RID,bool ,float ,float ,RID )
+
+	BIND8(environment_set_tonemap,RID,bool ,float ,float ,float ,float ,float ,EnvironmentToneMapper )
+	BIND3(environment_set_brightness,RID,bool ,float )
+	BIND3(environment_set_contrast,RID,bool ,float )
+	BIND3(environment_set_saturation,RID,bool ,float )
+	BIND3(environment_set_color_correction,RID,bool ,RID )
 
 
 	/* SCENARIO API */
 
 
-	virtual RID scenario_create();
+	BIND0R(RID,scenario_create)
 
-	virtual void scenario_set_debug(RID p_scenario,ScenarioDebugMode p_debug_mode);
-	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
-	virtual RID scenario_get_environment(RID p_scenario, RID p_environment) const;
-	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
+	BIND2(scenario_set_debug,RID,ScenarioDebugMode )
+	BIND2(scenario_set_environment,RID, RID )
+	BIND2(scenario_set_fallback_environment,RID, RID )
 
 
 	/* INSTANCING API */
  // from can be mesh, light,  area and portal so far.
-	virtual RID instance_create(); // from can be mesh, light, poly, area and portal so far.
+	BIND0R(RID,instance_create)
 
-	virtual void instance_set_base(RID p_instance, RID p_base); // from can be mesh, light, poly, area and portal so far.
-	virtual void instance_set_scenario(RID p_instance, RID p_scenario); // from can be mesh, light, poly, area and portal so far.
-	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
-	virtual void instance_set_transform(RID p_instance, const Transform& p_transform);
-	virtual void instance_attach_object_instance_ID(RID p_instance,ObjectID p_ID);
-	virtual void instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight);
-	virtual void instance_set_surface_material(RID p_instance,int p_surface, RID p_material);
+	BIND2(instance_set_base,RID, RID ) // from can be mesh, light, poly, area and portal so far.
+	BIND2(instance_set_scenario,RID, RID ) // from can be mesh, light, poly, area and portal so far.
+	BIND2(instance_set_layer_mask,RID, uint32_t )
+	BIND2(instance_set_transform,RID, const Transform& )
+	BIND2(instance_attach_object_instance_ID,RID,ObjectID )
+	BIND3(instance_set_morph_target_weight,RID,int , float )
+	BIND3(instance_set_surface_material,RID,int , RID )
 
-	virtual void instance_attach_skeleton(RID p_instance,RID p_skeleton);
-	virtual void instance_set_exterior( RID p_instance, bool p_enabled );
-	virtual void instance_set_room( RID p_instance, RID p_room );
+	BIND2(instance_attach_skeleton,RID,RID )
+	BIND2(instance_set_exterior, RID, bool  )
+	BIND2(instance_set_room, RID, RID  )
 
-	virtual void instance_set_extra_visibility_margin( RID p_instance, real_t p_margin );
+	BIND2(instance_set_extra_visibility_margin, RID, real_t  )
 
 	// don't use these in a game!
-	virtual Vector<ObjectID> instances_cull_aabb(const AABB& p_aabb, RID p_scenario=RID()) const;
-	virtual Vector<ObjectID> instances_cull_ray(const Vector3& p_from, const Vector3& p_to, RID p_scenario=RID()) const;
-	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane>& p_convex, RID p_scenario=RID()) const;
+	BIND2RC(Vector<ObjectID>,instances_cull_aabb,const AABB& , RID)
+	BIND3RC(Vector<ObjectID>,instances_cull_ray,const Vector3& , const Vector3& , RID )
+	BIND2RC(Vector<ObjectID>,instances_cull_convex,const Vector<Plane>& , RID)
 
 
-	virtual void instance_geometry_set_flag(RID p_instance,InstanceFlags p_flags,bool p_enabled);
-	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, ShadowCastingSetting p_shadow_casting_setting);
-	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material);
+	BIND3(instance_geometry_set_flag,RID,InstanceFlags ,bool )
+	BIND2(instance_geometry_set_cast_shadows_setting,RID, ShadowCastingSetting )
+	BIND2(instance_geometry_set_material_override,RID, RID )
 
 
-	virtual void instance_geometry_set_draw_range(RID p_instance,float p_min,float p_max,float p_min_margin,float p_max_margin);
-	virtual void instance_geometry_set_as_instance_lod(RID p_instance,RID p_as_lod_of_instance);
+	BIND5(instance_geometry_set_draw_range,RID,float ,float ,float ,float )
+	BIND2(instance_geometry_set_as_instance_lod,RID,RID )
 
 
 #undef BINDBASE
@@ -1055,6 +1065,7 @@ public:
 #undef BIND6
 #undef BIND7
 #undef BIND8
+#undef BIND9
 #undef BIND10
 
 };

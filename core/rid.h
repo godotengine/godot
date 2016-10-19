@@ -181,6 +181,14 @@ public:
 
 	}
 
+
+	_FORCE_INLINE_ T * getptr(const RID& p_rid) {
+
+		return static_cast<T*>(p_rid.get_data());
+
+	}
+
+
 	_FORCE_INLINE_ bool owns(const RID& p_rid) const {
 
 		if (p_rid.get_data()==NULL)

@@ -662,8 +662,8 @@ void ShaderGLES3::setup(const char** p_conditional_defines, int p_conditional_co
 			fragment_code0=code.ascii();
 		} else {
 			fragment_code0=code.substr(0,cpos).ascii();
-			code = code.substr(cpos+globals_tag.length(),code.length());
-
+			//print_line("CODE0:\n"+String(fragment_code0.get_data()));
+			code = code.substr(cpos+globals_tag.length(),code.length());			
 			cpos = code.find(material_tag);
 
 			if (cpos==-1) {
@@ -671,14 +671,18 @@ void ShaderGLES3::setup(const char** p_conditional_defines, int p_conditional_co
 			} else {
 
 				fragment_code1=code.substr(0,cpos).ascii();
-				String code2 = code.substr(cpos+material_tag.length(),code.length());
+				//print_line("CODE1:\n"+String(fragment_code1.get_data()));
 
+				String code2 = code.substr(cpos+material_tag.length(),code.length());
 				cpos = code2.find(code_tag);
+
 				if (cpos==-1) {
 					fragment_code2=code2.ascii();
 				} else {
 
 					fragment_code2=code2.substr(0,cpos).ascii();
+					//print_line("CODE2:\n"+String(fragment_code2.get_data()));
+
 					String code3 = code2.substr(cpos+code_tag.length(),code2.length());
 
 					cpos = code3.find(light_code_tag);
@@ -687,7 +691,9 @@ void ShaderGLES3::setup(const char** p_conditional_defines, int p_conditional_co
 					} else {
 
 						fragment_code3=code3.substr(0,cpos).ascii();
+					//	print_line("CODE3:\n"+String(fragment_code3.get_data()));
 						fragment_code4 = code3.substr(cpos+light_code_tag.length(),code3.length()).ascii();
+						//print_line("CODE4:\n"+String(fragment_code4.get_data()));
 					}
 				}
 			}

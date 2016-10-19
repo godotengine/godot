@@ -59,6 +59,9 @@ protected:
 	RID test_material;
 	RID material_2d[16];
 
+
+	Error _surface_set_data(Array p_arrays,uint32_t p_format,uint32_t *p_offsets,uint32_t p_stride,DVector<uint8_t> &r_vertex_array,int p_vertex_array_len,DVector<uint8_t> &r_index_array,int p_index_array_len,AABB &r_aabb,Vector<AABB> r_bone_aabb);
+
 	static VisualServer* (*create_func)();
 	static void _bind_methods();
 public:
@@ -207,6 +210,7 @@ public:
 		ARRAY_COMPRESS_INDEX=1<<(ARRAY_INDEX+ARRAY_COMPRESS_BASE),
 
 		ARRAY_FLAG_USE_2D_VERTICES=ARRAY_COMPRESS_INDEX<<1,
+		ARRAY_FLAG_USE_16_BIT_BONES=ARRAY_COMPRESS_INDEX<<2,
 
 		ARRAY_COMPRESS_DEFAULT=ARRAY_COMPRESS_VERTEX|ARRAY_COMPRESS_NORMAL|ARRAY_COMPRESS_TANGENT|ARRAY_COMPRESS_COLOR|ARRAY_COMPRESS_TEX_UV|ARRAY_COMPRESS_TEX_UV2|ARRAY_COMPRESS_BONES|ARRAY_COMPRESS_WEIGHTS|ARRAY_COMPRESS_INDEX
 
@@ -228,7 +232,7 @@ public:
 
 
 	virtual void mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes=Array(),uint32_t p_compress_format=ARRAY_COMPRESS_DEFAULT);
-	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >())=0;
+	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>())=0;
 
 	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount)=0;
 	virtual int mesh_get_morph_target_count(RID p_mesh) const=0;
@@ -530,7 +534,6 @@ public:
 
 	virtual void scenario_set_debug(RID p_scenario,ScenarioDebugMode p_debug_mode)=0;
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment)=0;
-	virtual RID scenario_get_environment(RID p_scenario, RID p_environment) const=0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment)=0;
 
 
@@ -546,6 +549,7 @@ public:
 		INSTANCE_REFLECTION_PROBE,
 		INSTANCE_ROOM,
 		INSTANCE_PORTAL,
+		INSTANCE_MAX,
 		/*INSTANCE_BAKED_LIGHT,
 		INSTANCE_BAKED_LIGHT_SAMPLER,*/
 

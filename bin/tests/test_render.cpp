@@ -173,7 +173,10 @@ public:
 // 		vs->camera_set_perspective( camera, 60.0,0.1, 100.0 );
 
 		viewport = vs->viewport_create();
-		vs->viewport_attach_to_screen(viewport,Rect2(Vector2(),OS::get_singleton()->get_window_size()));
+		Size2i screen_size = OS::get_singleton()->get_window_size();
+		vs->viewport_set_size(viewport,screen_size.x,screen_size.y);
+		vs->viewport_attach_to_screen(viewport,Rect2(Vector2(),screen_size));
+		vs->viewport_set_active(viewport,true);
 		vs->viewport_attach_camera( viewport, camera );
 		vs->viewport_set_scenario( viewport, scenario );
 		vs->camera_set_transform(camera, Transform( Matrix3(), Vector3(0,3,30 ) ) );

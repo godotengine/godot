@@ -1,5 +1,6 @@
 #include "rasterizer_storage_gles3.h"
 #include "rasterizer_canvas_gles3.h"
+#include "rasterizer_scene_gles3.h"
 #include "globals.h"
 
 /* TEXTURE API */
@@ -1039,7 +1040,7 @@ void RasterizerStorageGLES3::shader_set_mode(RID p_shader,VS::ShaderMode p_mode)
 
 	ShaderGLES3* shaders[VS::SHADER_MAX]={
 		&canvas->state.canvas_shader,
-		&canvas->state.canvas_shader,
+		&scene->state.scene_shader,
 		&canvas->state.canvas_shader,
 
 	};
@@ -1108,6 +1109,37 @@ void RasterizerStorageGLES3::_update_shader(Shader* p_shader) const {
 			actions->uniforms=&p_shader->uniforms;
 
 		} break;
+
+		case VS::SHADER_SPATIAL: {
+
+			p_shader->spatial.blend_mode=Shader::Spatial::BLEND_MODE_MIX;
+			p_shader->spatial.depth_draw_mode=Shader::Spatial::DEPTH_DRAW_OPAQUE;
+			p_shader->spatial.cull_mode=Shader::Spatial::CULL_MODE_BACK;
+			p_shader->spatial.uses_alpha=false;
+			p_shader->spatial.unshaded=false;
+			p_shader->spatial.ontop=false;
+
+			shaders.actions_scene.render_mode_values["blend_add"]=Pair<int*,int>(&p_shader->spatial.blend_mode,Shader::Spatial::BLEND_MODE_ADD);
+			shaders.actions_scene.render_mode_values["blend_mix"]=Pair<int*,int>(&p_shader->spatial.blend_mode,Shader::Spatial::BLEND_MODE_MIX);
+			shaders.actions_scene.render_mode_values["blend_sub"]=Pair<int*,int>(&p_shader->spatial.blend_mode,Shader::Spatial::BLEND_MODE_SUB);
+			shaders.actions_scene.render_mode_values["blend_mul"]=Pair<int*,int>(&p_shader->spatial.blend_mode,Shader::Spatial::BLEND_MODE_MUL);
+
+			shaders.actions_scene.render_mode_values["depth_draw_opaque"]=Pair<int*,int>(&p_shader->spatial.depth_draw_mode,Shader::Spatial::DEPTH_DRAW_OPAQUE);
+			shaders.actions_scene.render_mode_values["depth_draw_always"]=Pair<int*,int>(&p_shader->spatial.depth_draw_mode,Shader::Spatial::DEPTH_DRAW_ALWAYS);
+			shaders.actions_scene.render_mode_values["depth_draw_never"]=Pair<int*,int>(&p_shader->spatial.depth_draw_mode,Shader::Spatial::DEPTH_DRAW_NEVER);
+			shaders.actions_scene.render_mode_values["depth_draw_alpha_prepass"]=Pair<int*,int>(&p_shader->spatial.depth_draw_mode,Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS);
+
+			shaders.actions_scene.render_mode_values["cull_front"]=Pair<int*,int>(&p_shader->spatial.cull_mode,Shader::Spatial::CULL_MODE_FRONT);
+			shaders.actions_scene.render_mode_values["cull_back"]=Pair<int*,int>(&p_shader->spatial.cull_mode,Shader::Spatial::CULL_MODE_BACK);
+			shaders.actions_scene.render_mode_values["cull_disable"]=Pair<int*,int>(&p_shader->spatial.cull_mode,Shader::Spatial::CULL_MODE_DISABLED);
+
+			shaders.actions_canvas.render_mode_flags["unshaded"]=&p_shader->spatial.unshaded;
+			shaders.actions_canvas.render_mode_flags["ontop"]=&p_shader->spatial.ontop;
+
+			shaders.actions_canvas.usage_flag_pointers["ALPHA"]=&p_shader->spatial.uses_alpha;
+
+		}
+
 	}
 
 
@@ -1905,97 +1937,685 @@ void RasterizerStorageGLES3::update_dirty_materials() {
 
 RID RasterizerStorageGLES3::mesh_create(){
 
-	return RID();
+	Mesh * mesh = memnew( Mesh );
+
+	return mesh_owner.make_rid(mesh);
 }
 
-void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const Vector<DVector<uint8_t> >& p_blend_shapes){
+
+void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes,const Vector<AABB>& p_bone_aabbs){
+
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	ERR_FAIL_COND(!(p_format&VS::ARRAY_FORMAT_VERTEX));
+
+	//must have index and bones, both.
+	{
+		uint32_t bones_weight = VS::ARRAY_FORMAT_BONES|VS::ARRAY_FORMAT_WEIGHTS;
+		ERR_EXPLAIN("Array must have both bones and weights in format or none.");
+		ERR_FAIL_COND( (p_format&bones_weight) && (p_format&bones_weight)!=bones_weight );
+	}
 
 
+	bool has_morph = p_blend_shapes.size();
+
+	Surface::Attrib attribs[VS::ARRAY_MAX],morph_attribs[VS::ARRAY_MAX];
+
+	int stride=0;
+	int morph_stride=0;
+
+	for(int i=0;i<VS::ARRAY_MAX;i++) {
+
+		if (! (p_format&(1<<i) ) ) {
+			attribs[i].enabled=false;
+			morph_attribs[i].enabled=false;
+			continue;
+		}
+
+		attribs[i].enabled=true;
+		attribs[i].offset=stride;
+		attribs[i].index=i;
+
+		if (has_morph) {
+			morph_attribs[i].enabled=true;
+			morph_attribs[i].offset=morph_stride;
+			morph_attribs[i].index=i+8;
+		} else {
+			morph_attribs[i].enabled=false;
+		}
+
+		switch(i) {
+
+			case VS::ARRAY_VERTEX: {
+
+				if (p_format&VS::ARRAY_FLAG_USE_2D_VERTICES) {
+					attribs[i].size=2;
+				} else {
+					attribs[i].size=3;
+				}
+
+				if (p_format&VS::ARRAY_COMPRESS_VERTEX) {
+					attribs[i].type=GL_HALF_FLOAT;
+					stride+=attribs[i].size*2;
+				} else {
+					attribs[i].type=GL_FLOAT;
+					stride+=attribs[i].size*4;
+				}
+
+				attribs[i].normalized=GL_FALSE;
+
+				if (has_morph) {
+					//morph
+					morph_attribs[i].normalized=GL_FALSE;
+					morph_attribs[i].size=attribs[i].size;
+					morph_attribs[i].type=GL_FLOAT;
+					morph_stride+=attribs[i].size*4;
+				}
+			} break;
+			case VS::ARRAY_NORMAL: {
+
+				attribs[i].size=3;
+
+				if (p_format&VS::ARRAY_COMPRESS_NORMAL) {
+					attribs[i].type=GL_BYTE;
+					stride+=4; //pad extra byte
+					attribs[i].normalized=GL_TRUE;
+				} else {
+					attribs[i].type=GL_FLOAT;
+					stride+=12;
+					attribs[i].normalized=GL_FALSE;
+				}
+
+				if (has_morph) {
+					//morph
+					morph_attribs[i].normalized=GL_FALSE;
+					morph_attribs[i].size=attribs[i].size;
+					morph_attribs[i].type=GL_FLOAT;
+					morph_stride+=12;
+				}
+
+			} break;
+			case VS::ARRAY_TANGENT: {
+
+				attribs[i].size=4;
+
+				if (p_format&VS::ARRAY_COMPRESS_TANGENT) {
+					attribs[i].type=GL_BYTE;
+					stride+=4;
+					attribs[i].normalized=GL_TRUE;
+				} else {
+					attribs[i].type=GL_FLOAT;
+					stride+=16;
+					attribs[i].normalized=GL_FALSE;
+				}
+
+				if (has_morph) {
+					morph_attribs[i].normalized=GL_FALSE;
+					morph_attribs[i].size=attribs[i].size;
+					morph_attribs[i].type=GL_FLOAT;
+					morph_stride+=16;
+				}
+
+			} break;
+			case VS::ARRAY_COLOR: {
+
+				attribs[i].size=4;
+
+				if (p_format&VS::ARRAY_COMPRESS_COLOR) {
+					attribs[i].type=GL_UNSIGNED_BYTE;
+					stride+=4;
+					attribs[i].normalized=GL_TRUE;
+				} else {
+					attribs[i].type=GL_FLOAT;
+					stride+=16;
+					attribs[i].normalized=GL_FALSE;
+				}
+
+				if (has_morph) {
+					morph_attribs[i].normalized=GL_FALSE;
+					morph_attribs[i].size=attribs[i].size;
+					morph_attribs[i].type=GL_FLOAT;
+					morph_stride+=16;
+				}
+
+			} break;
+			case VS::ARRAY_TEX_UV: {
+
+				attribs[i].size=2;
+
+				if (p_format&VS::ARRAY_COMPRESS_TEX_UV) {
+					attribs[i].type=GL_HALF_FLOAT;
+					stride+=4;
+				} else {
+					attribs[i].type=GL_FLOAT;
+					stride+=8;
+				}
+
+				attribs[i].normalized=GL_FALSE;
+
+				if (has_morph) {
+					morph_attribs[i].normalized=GL_FALSE;
+					morph_attribs[i].size=attribs[i].size;
+					morph_attribs[i].type=GL_FLOAT;
+					morph_stride+=8;
+				}
+
+			} break;
+			case VS::ARRAY_TEX_UV2: {
+
+				attribs[i].size=2;
+
+				if (p_format&VS::ARRAY_COMPRESS_TEX_UV2) {
+					attribs[i].type=GL_HALF_FLOAT;
+					stride+=4;
+				} else {
+					attribs[i].type=GL_FLOAT;
+					stride+=8;
+				}
+				attribs[i].normalized=GL_FALSE;
+
+				if (has_morph) {
+					morph_attribs[i].normalized=GL_FALSE;
+					morph_attribs[i].size=attribs[i].size;
+					morph_attribs[i].type=GL_FLOAT;
+					morph_stride+=8;
+				}
+
+			} break;
+			case VS::ARRAY_BONES: {
+
+				attribs[i].size=4;
+
+				if (p_format&VS::ARRAY_COMPRESS_BONES) {
+
+					if (p_format&VS::ARRAY_FLAG_USE_16_BIT_BONES) {
+						attribs[i].type=GL_UNSIGNED_SHORT;
+						stride+=8;
+					} else {
+						attribs[i].type=GL_UNSIGNED_BYTE;
+						stride+=4;
+					}
+				} else {
+					attribs[i].type=GL_UNSIGNED_SHORT;
+					stride+=8;
+				}
+
+				attribs[i].normalized=GL_FALSE;
+
+				if (has_morph) {
+					morph_attribs[i].normalized=GL_FALSE;
+					morph_attribs[i].size=attribs[i].size;
+					morph_attribs[i].type=GL_UNSIGNED_SHORT;
+					morph_stride+=8;
+				}
+
+			} break;
+			case VS::ARRAY_WEIGHTS: {
+
+				attribs[i].size=4;
+
+				if (p_format&VS::ARRAY_COMPRESS_WEIGHTS) {
+
+					attribs[i].type=GL_UNSIGNED_SHORT;
+					stride+=8;
+					attribs[i].normalized=GL_TRUE;
+				} else {
+					attribs[i].type=GL_FLOAT;
+					stride+=16;
+					attribs[i].normalized=GL_FALSE;
+				}
+
+				if (has_morph) {
+					morph_attribs[i].normalized=GL_FALSE;
+					morph_attribs[i].size=attribs[i].size;
+					morph_attribs[i].type=GL_FLOAT;
+					morph_stride+=8;
+				}
+			} break;
+			case VS::ARRAY_INDEX: {
+
+				attribs[i].size=1;
+
+				if (p_vertex_count>=(1<<16)) {
+					attribs[i].type=GL_UNSIGNED_INT;
+					attribs[i].stride=4;
+				} else {
+					attribs[i].type=GL_UNSIGNED_SHORT;
+					attribs[i].stride=2;
+				}
+
+				attribs[i].normalized=GL_FALSE;
+
+			} break;
+
+		}
+	}
+
+	for(int i=0;i<VS::ARRAY_MAX-1;i++) {
+		attribs[i].stride=stride;
+		if (has_morph) {
+			morph_attribs[i].stride=morph_stride;
+		}
+	}
+
+	//validate sizes
+
+	int array_size = stride * p_vertex_count;
+	int index_array_size=0;
+
+	ERR_FAIL_COND(p_array.size()!=array_size);
+
+	if (p_format&VS::ARRAY_FORMAT_INDEX) {
+
+		index_array_size=attribs[VS::ARRAY_INDEX].stride*p_index_count;
+
+		print_line("index count: "+itos(p_index_count)+" stride: "+itos(attribs[VS::ARRAY_INDEX].stride) );
+	}
+
+
+	ERR_FAIL_COND(p_index_array.size()!=index_array_size);
+
+	ERR_FAIL_COND(p_blend_shapes.size()!=mesh->morph_target_count);
+
+	for(int i=0;i<p_blend_shapes.size();i++) {
+		ERR_FAIL_COND(p_blend_shapes[i].size()!=array_size);
+	}
+
+	//ok all valid, create stuff
+
+	Surface * surface = memnew( Surface );
+
+	surface->active=true;
+	surface->array_len=p_vertex_count;
+	surface->index_array_len=p_index_count;
+	surface->primitive=p_primitive;
+	surface->mesh=mesh;
+	surface->format=p_format;
+	surface->skeleton_bone_aabb=p_bone_aabbs;
+	surface->skeleton_bone_used.resize(surface->skeleton_bone_aabb.size());
+	surface->aabb=p_aabb;
+	surface->max_bone=p_bone_aabbs.size();
+
+	for(int i=0;i<surface->skeleton_bone_used.size();i++) {
+		if (surface->skeleton_bone_aabb[i].size.x<0 || surface->skeleton_bone_aabb[i].size.y<0 || surface->skeleton_bone_aabb[i].size.z<0) {
+			surface->skeleton_bone_used[i]=false;
+		} else {
+			surface->skeleton_bone_used[i]=true;
+		}
+	}
+
+	for(int i=0;i<VS::ARRAY_MAX;i++) {
+		surface->attribs[i]=attribs[i];
+		surface->morph_attribs[i]=morph_attribs[i];
+	}
+
+	{
+
+		DVector<uint8_t>::Read vr = p_array.read();
+
+		glGenBuffers(1,&surface->vertex_id);
+		glBindBuffer(GL_ARRAY_BUFFER,surface->vertex_id);
+		glBufferData(GL_ARRAY_BUFFER,array_size,vr.ptr(),GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
+
+
+		if (p_format&VS::ARRAY_FORMAT_INDEX) {
+
+			DVector<uint8_t>::Read ir = p_index_array.read();
+
+			glGenBuffers(1,&surface->index_id);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,surface->index_id);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER,index_array_size,ir.ptr(),GL_STATIC_DRAW);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0); //unbind
+		}
+
+		//generate arrays for faster state switching
+
+		glGenVertexArrays(1,&surface->array_id);
+		glBindVertexArray(surface->array_id);
+		glBindBuffer(GL_ARRAY_BUFFER,surface->vertex_id);
+
+		for(int i=0;i<VS::ARRAY_MAX-1;i++) {
+
+			if (!attribs[i].enabled)
+				continue;
+
+			glVertexAttribPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].normalized,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+			glEnableVertexAttribArray(attribs[i].index);
+
+		}
+
+		if (surface->index_id) {
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,surface->index_id);
+		}
+
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
+
+	}
+
+	{
+
+		//blend shapes
+
+		for(int i=0;i<p_blend_shapes.size();i++) {
+
+			Surface::MorphTarget mt;
+
+			DVector<uint8_t>::Read vr = p_blend_shapes[i].read();
+
+			glGenBuffers(1,&mt.vertex_id);
+			glBindBuffer(GL_ARRAY_BUFFER,mt.vertex_id);
+			glBufferData(GL_ARRAY_BUFFER,array_size,vr.ptr(),GL_STATIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
+
+			glGenVertexArrays(1,&mt.array_id);
+			glBindVertexArray(mt.array_id);
+			glBindBuffer(GL_ARRAY_BUFFER,mt.vertex_id);
+
+			for(int i=0;i<VS::ARRAY_MAX-1;i++) {
+
+				if (!attribs[i].enabled)
+					continue;
+
+				glVertexAttribPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].normalized,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+				glEnableVertexAttribArray(attribs[i].index);
+
+			}
+
+			glBindVertexArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
+
+			surface->morph_targets.push_back(mt);
+
+		}
+	}
+
+	mesh->surfaces.push_back(surface);
+	mesh->instance_change_notify();
 }
 
 void RasterizerStorageGLES3::mesh_set_morph_target_count(RID p_mesh,int p_amount){
 
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+
+	ERR_FAIL_COND(mesh->surfaces.size()!=0);
+	ERR_FAIL_COND(p_amount<0);
+
+	mesh->morph_target_count=p_amount;
 
 }
 int RasterizerStorageGLES3::mesh_get_morph_target_count(RID p_mesh) const{
 
-	return 0;
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,0);
+
+	return mesh->morph_target_count;
 }
 
 
 void RasterizerStorageGLES3::mesh_set_morph_target_mode(RID p_mesh,VS::MorphTargetMode p_mode){
 
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	mesh->morph_target_mode=p_mode;
 
 }
 VS::MorphTargetMode RasterizerStorageGLES3::mesh_get_morph_target_mode(RID p_mesh) const{
 
-	return VS::MORPH_MODE_NORMALIZED;
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,VS::MORPH_MODE_NORMALIZED);
+
+	return mesh->morph_target_mode;
 }
 
 void RasterizerStorageGLES3::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material){
 
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_INDEX(p_surface,mesh->surfaces.size());
+
+	mesh->surfaces[p_surface]->material=p_material;
 
 }
 RID RasterizerStorageGLES3::mesh_surface_get_material(RID p_mesh, int p_surface) const{
 
-	return RID();
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,RID());
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),RID());
+
+	return mesh->surfaces[p_surface]->material;
 }
 
 int RasterizerStorageGLES3::mesh_surface_get_array_len(RID p_mesh, int p_surface) const{
 
-	return 0;
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,0);
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),0);
+
+	return mesh->surfaces[p_surface]->array_len;
+
 }
 int RasterizerStorageGLES3::mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const{
 
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,0);
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),0);
 
-	return 0;
+	return mesh->surfaces[p_surface]->index_array_len;
 }
 
 DVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_array(RID p_mesh, int p_surface) const{
 
-	return DVector<uint8_t>();
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,DVector<uint8_t>());
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),DVector<uint8_t>());
+
+	Surface *surface = mesh->surfaces[p_surface];
+
+	glBindBuffer(GL_ARRAY_BUFFER,surface->vertex_id);
+	void * data = glMapBufferRange(GL_ARRAY_BUFFER,0,surface->array_len,GL_MAP_READ_BIT);
+
+	ERR_FAIL_COND_V(!data,DVector<uint8_t>());
+
+	DVector<uint8_t> ret;
+	ret.resize(surface->array_len);
+
+	{
+
+		DVector<uint8_t>::Write w = ret.write();
+		copymem(w.ptr(),data,surface->array_len);
+	}
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+
+
+	return ret;
 }
-DVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_index_array(RID p_mesh, int p_surface) const{
 
+DVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_index_array(RID p_mesh, int p_surface) const {
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,DVector<uint8_t>());
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),DVector<uint8_t>());
 
-	return DVector<uint8_t>();
+	Surface *surface = mesh->surfaces[p_surface];
+
+	ERR_FAIL_COND_V(surface->index_array_len==0,DVector<uint8_t>());
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,surface->vertex_id);
+	void * data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,0,surface->index_array_len,GL_MAP_READ_BIT);
+
+	ERR_FAIL_COND_V(!data,DVector<uint8_t>());
+
+	DVector<uint8_t> ret;
+	ret.resize(surface->index_array_len);
+
+	{
+
+		DVector<uint8_t>::Write w = ret.write();
+		copymem(w.ptr(),data,surface->index_array_len);
+	}
+
+	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
+	return ret;
 }
 
 
 uint32_t RasterizerStorageGLES3::mesh_surface_get_format(RID p_mesh, int p_surface) const{
 
-	return 0;
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+
+	ERR_FAIL_COND_V(!mesh,0);
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),0);
+
+	return mesh->surfaces[p_surface]->format;
+
 }
+
 VS::PrimitiveType RasterizerStorageGLES3::mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const{
 
-	return VS::PRIMITIVE_MAX;
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,VS::PRIMITIVE_MAX);
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),VS::PRIMITIVE_MAX);
+
+	return mesh->surfaces[p_surface]->primitive;
 }
 
-void RasterizerStorageGLES3::mesh_remove_surface(RID p_mesh,int p_index){
+void RasterizerStorageGLES3::mesh_remove_surface(RID p_mesh, int p_surface){
 
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_INDEX(p_surface,mesh->surfaces.size());
 
+	Surface *surface = mesh->surfaces[p_surface];
+
+	ERR_FAIL_COND(surface->index_array_len==0);
+
+	glDeleteBuffers(1,&surface->array_id);
+	if (surface->index_id) {
+		glDeleteBuffers(1,&surface->index_id);
+	}
+
+	glDeleteVertexArrays(1,&surface->array_id);
+
+	for(int i=0;i<surface->morph_targets.size();i++) {
+
+		glDeleteBuffers(1,&surface->morph_targets[i].vertex_id);
+		glDeleteVertexArrays(1,&surface->morph_targets[i].array_id);
+	}
+
+	memdelete(surface);
+
+	mesh->surfaces.remove(p_surface);
+
+	mesh->instance_change_notify();
 }
 int RasterizerStorageGLES3::mesh_get_surface_count(RID p_mesh) const{
 
-	return 0;
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,0);
+	return mesh->surfaces.size();
+
 }
 
 void RasterizerStorageGLES3::mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb){
 
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
 
+	mesh->custom_aabb=p_aabb;
 }
 AABB RasterizerStorageGLES3::mesh_get_custom_aabb(RID p_mesh) const{
 
-	return AABB();
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,AABB());
+
+	return mesh->custom_aabb;
+
 }
 
-AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh) const{
+AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh,RID p_skeleton) const{
 
-	return AABB();
+	Mesh *mesh = mesh_owner.get( p_mesh );
+	ERR_FAIL_COND_V(!mesh,AABB());
+
+	if (mesh->custom_aabb!=AABB())
+		return mesh->custom_aabb;
+/*
+	Skeleton *sk=NULL;
+	if (p_skeleton.is_valid())
+		sk=skeleton_owner.get(p_skeleton);
+*/
+	AABB aabb;
+	/*
+	if (sk && sk->bones.size()!=0) {
+
+
+		for (int i=0;i<mesh->surfaces.size();i++) {
+
+			AABB laabb;
+			if (mesh->surfaces[i]->format&VS::ARRAY_FORMAT_BONES && mesh->surfaces[i]->skeleton_bone_aabb.size()) {
+
+
+				int bs = mesh->surfaces[i]->skeleton_bone_aabb.size();
+				const AABB *skbones = mesh->surfaces[i]->skeleton_bone_aabb.ptr();
+				const bool *skused = mesh->surfaces[i]->skeleton_bone_used.ptr();
+
+				int sbs = sk->bones.size();
+				ERR_CONTINUE(bs>sbs);
+				Skeleton::Bone *skb = sk->bones.ptr();
+
+				bool first=true;
+				for(int j=0;j<bs;j++) {
+
+					if (!skused[j])
+						continue;
+					AABB baabb = skb[ j ].transform_aabb ( skbones[j] );
+					if (first) {
+						laabb=baabb;
+						first=false;
+					} else {
+						laabb.merge_with(baabb);
+					}
+				}
+
+			} else {
+
+				laabb=mesh->surfaces[i]->aabb;
+			}
+
+			if (i==0)
+				aabb=laabb;
+			else
+				aabb.merge_with(laabb);
+		}
+	} else {
+*/
+		for (int i=0;i<mesh->surfaces.size();i++) {
+
+			if (i==0)
+				aabb=mesh->surfaces[i]->aabb;
+			else
+				aabb.merge_with(mesh->surfaces[i]->aabb);
+		}
+/*
+	}
+*/
+	return aabb;
+
 }
 void RasterizerStorageGLES3::mesh_clear(RID p_mesh){
 
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
 
+	while(mesh->surfaces.size()) {
+		mesh_remove_surface(p_mesh,0);
+	}
 }
 
 /* MULTIMESH API */
@@ -2206,6 +2826,16 @@ void RasterizerStorageGLES3::light_directional_set_shadow_mode(RID p_light,VS::L
 
 }
 
+VS::LightType RasterizerStorageGLES3::light_get_type(RID p_light) const {
+
+	return VS::LIGHT_DIRECTIONAL;
+}
+
+AABB RasterizerStorageGLES3::light_get_aabb(RID p_light) const {
+
+	return AABB();
+}
+
 /* PROBE API */
 
 RID RasterizerStorageGLES3::reflection_probe_create(){
@@ -2290,6 +2920,42 @@ void RasterizerStorageGLES3::portal_set_disable_distance(RID p_portal, float p_d
 void RasterizerStorageGLES3::portal_set_disabled_color(RID p_portal, const Color& p_color){
 
 
+}
+
+void RasterizerStorageGLES3::instance_add_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance) {
+
+	Instantiable *inst=NULL;
+	switch(p_instance->base_type) {
+		case VS::INSTANCE_MESH: {
+			inst = mesh_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		default: {
+			ERR_FAIL();
+		}
+	}
+
+	inst->instance_list.add( &p_instance->dependency_item );
+}
+
+void RasterizerStorageGLES3::instance_remove_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance){
+
+	Instantiable *inst=NULL;
+
+	switch(p_instance->base_type) {
+		case VS::INSTANCE_MESH: {
+			inst = mesh_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+
+		} break;
+		default: {
+			ERR_FAIL();
+		}
+	}
+
+	ERR_FAIL_COND(!inst);
+
+	inst->instance_list.remove( &p_instance->dependency_item );
 }
 
 
@@ -2773,6 +3439,15 @@ void RasterizerStorageGLES3::canvas_light_occluder_set_polylines(RID p_occluder,
 
 }
 
+VS::InstanceType RasterizerStorageGLES3::get_base_type(RID p_rid) const {
+
+	if (mesh_owner.owns(p_rid)) {
+		return VS::INSTANCE_MESH;
+	}
+
+	return VS::INSTANCE_NONE;
+}
+
 bool RasterizerStorageGLES3::free(RID p_rid){
 
 	if (render_target_owner.owns(p_rid)) {
@@ -2834,6 +3509,15 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 		material_owner.free(p_rid);
 		memdelete(material);
 
+	} else if (mesh_owner.owns(p_rid)) {
+
+		// delete the texture
+		Mesh *mesh = mesh_owner.get(p_rid);
+
+		mesh_clear(p_rid);
+
+		mesh_owner.free(p_rid);
+		memdelete(mesh);
 
 	} else if (canvas_occluder_owner.owns(p_rid)) {
 

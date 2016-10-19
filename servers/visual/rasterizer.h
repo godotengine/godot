@@ -33,6 +33,75 @@
 #include "servers/visual_server.h"
 #include "camera_matrix.h"
 
+#include "self_list.h"
+
+
+class RasterizerScene {
+public:
+
+
+	struct InstanceBase : RID_Data {
+
+		VS::InstanceType base_type;
+		RID base;
+
+		RID skeleton;
+		RID material_override;
+
+		Transform transform;
+
+		int depth_layer;
+
+		//RID sampled_light;
+
+		Vector<RID> materials;
+		Vector<RID> light_instances;
+
+		Vector<float> morph_values;
+
+		//BakedLightData *baked_light;
+		VS::ShadowCastingSetting cast_shadows;
+		//Transform *baked_light_octree_xform;
+		//int baked_lightmap_id;
+
+		bool mirror :8;
+		bool depth_scale :8;
+		bool billboard :8;
+		bool billboard_y :8;
+		bool receive_shadows : 8;
+
+		SelfList<InstanceBase> dependency_item;
+
+		virtual void base_removed()=0;
+		virtual void base_changed()=0;
+
+		InstanceBase() : dependency_item(this) {
+
+			base_type=VS::INSTANCE_NONE;
+			cast_shadows=VS::SHADOW_CASTING_SETTING_ON;
+			receive_shadows=true;
+			depth_scale=false;
+			billboard=false;
+			billboard_y=false;
+			depth_layer=0;
+
+		}
+	};
+
+	virtual RID light_instance_create(RID p_light)=0;
+	virtual void light_instance_set_transform(RID p_light_instance,const Transform& p_transform)=0;
+
+	virtual void render_scene(const Transform& p_cam_transform,CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_directional_lights,int p_directional_light_count,RID p_environment)=0;
+
+	virtual bool free(RID p_rid)=0;
+
+	virtual ~RasterizerScene() {}
+};
+
+
+
+
+
 
 
 class RasterizerStorage {
@@ -88,7 +157,7 @@ public:
 
 	virtual RID mesh_create()=0;
 
-	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >())=0;
+	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>())=0;
 
 	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount)=0;
 	virtual int mesh_get_morph_target_count(RID p_mesh) const=0;
@@ -116,7 +185,7 @@ public:
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb)=0;
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const=0;
 
-	virtual AABB mesh_get_aabb(RID p_mesh) const=0;
+	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const=0;
 	virtual void mesh_clear(RID p_mesh)=0;
 
 	/* MULTIMESH API */
@@ -184,8 +253,10 @@ public:
 	virtual void light_set_cull_mask(RID p_light,uint32_t p_mask)=0;
 	virtual void light_set_shader(RID p_light,RID p_shader)=0;
 
-
 	virtual void light_directional_set_shadow_mode(RID p_light,VS::LightDirectionalShadowMode p_mode)=0;
+
+	virtual VS::LightType light_get_type(RID p_light) const=0;
+	virtual AABB light_get_aabb(RID p_light) const=0;
 
 	/* PROBE API */
 
@@ -220,6 +291,10 @@ public:
 	virtual void portal_set_disabled_color(RID p_portal, const Color& p_color)=0;
 
 
+
+	virtual void instance_add_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance)=0;
+	virtual void instance_remove_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance)=0;
+
 	/* RENDER TARGET */
 
 	enum RenderTargetFlags {
@@ -246,6 +321,8 @@ public:
 	virtual RID canvas_light_occluder_create()=0;
 	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines)=0;
 
+
+	virtual VS::InstanceType get_base_type(RID p_rid) const=0;
 	virtual bool free(RID p_rid)=0;
 
 
@@ -253,6 +330,7 @@ public:
 	RasterizerStorage();
 	virtual ~RasterizerStorage() {}
 };
+
 
 
 
@@ -563,7 +641,7 @@ public:
 					case Item::Command::TYPE_MESH: {
 
 						const Item::CommandMesh* mesh = static_cast< const Item::CommandMesh*>(c);
-						AABB aabb = RasterizerStorage::base_signleton->mesh_get_aabb(mesh->mesh);
+						AABB aabb = RasterizerStorage::base_signleton->mesh_get_aabb(mesh->mesh,mesh->skeleton);
 
 						r=Rect2(aabb.pos.x,aabb.pos.y,aabb.size.x,aabb.size.y);
 
@@ -654,17 +732,6 @@ public:
 };
 
 
-
-class RasterizerScene {
-public:
-
-
-
-	virtual ~RasterizerScene() {}
-};
-
-
-
 class Rasterizer {
 protected:
 	static Rasterizer* (*_create_func)();
@@ -687,8 +754,6 @@ public:
 
 	virtual ~Rasterizer() {}
 };
-
-
 
 
 #if 0

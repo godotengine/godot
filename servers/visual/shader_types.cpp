@@ -58,8 +58,8 @@ ShaderTypes::ShaderTypes()
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["NORMAL"]=ShaderLanguage::TYPE_VEC3;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["ALBEDO"]=ShaderLanguage::TYPE_VEC3;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["ALPHA"]=ShaderLanguage::TYPE_FLOAT;
-	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["METAL"]=ShaderLanguage::TYPE_FLOAT;
-	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["ROUGH"]=ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["SPECULAR"]=ShaderLanguage::TYPE_VEC3;
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["ROUGHNESS"]=ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["EMISSION"]=ShaderLanguage::TYPE_VEC3;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["SPECIAL"]=ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["DISCARD"]=ShaderLanguage::TYPE_BOOL;
@@ -77,10 +77,6 @@ ShaderTypes::ShaderTypes()
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_sub");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_mul");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("special_glow");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("special_subsurf");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("special_specular");
-
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_draw_opaque");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_draw_always");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_draw_never");
@@ -90,12 +86,10 @@ ShaderTypes::ShaderTypes()
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_back");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_disable");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("lightmap_on_uv2");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("unshaded");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("ontop");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("vertex_model_space");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("vertex_camera_space");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_transform");
 
 	/************ CANVAS ITEM **************************/
 
@@ -152,6 +146,7 @@ ShaderTypes::ShaderTypes()
 
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("unshaded");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("light_only");
+
 
 
 

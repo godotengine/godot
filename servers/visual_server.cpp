@@ -345,8 +345,754 @@ RID VisualServer::get_white_texture() {
 }
 
 
+Error VisualServer::_surface_set_data(Array p_arrays,uint32_t p_format,uint32_t *p_offsets,uint32_t p_stride,DVector<uint8_t> &r_vertex_array,int p_vertex_array_len,DVector<uint8_t> &r_index_array,int p_index_array_len,AABB &r_aabb,Vector<AABB> r_bone_aabb) {
+
+	DVector<uint8_t>::Write vw = r_vertex_array.write();
+
+	DVector<uint8_t>::Write iw;
+	if (r_index_array.size()) {
+		iw=r_index_array.write();
+	}
+
+	int max_bone=0;
+
+
+	for(int ai=0;ai<VS::ARRAY_MAX;ai++) {
+
+		if (!(p_format&(1<<ai))) // no array
+			continue;
+
+
+		switch(ai) {
+
+			case VS::ARRAY_VERTEX: {
+
+				if (p_format& VS::ARRAY_FLAG_USE_2D_VERTICES) {
+
+					DVector<Vector2> array = p_arrays[ai];
+					ERR_FAIL_COND_V( array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER );
+
+
+					DVector<Vector2>::Read read = array.read();
+					const Vector2* src=read.ptr();
+
+					// setting vertices means regenerating the AABB
+					Rect2 aabb;
+
+
+					if (p_format&ARRAY_COMPRESS_VERTEX) {
+
+						for (int i=0;i<p_vertex_array_len;i++) {
+
+
+							uint16_t vector[2]={ Math::make_half_float(src[i].x), Math::make_half_float(src[i].y) };
+
+							copymem(&vw[p_offsets[ai]+i*p_stride], vector, sizeof(uint16_t)*2);
+
+							if (i==0) {
+
+								aabb=Rect2(src[i],Vector2());
+							} else {
+
+								aabb.expand_to( src[i] );
+							}
+						}
+
+
+					} else {
+						for (int i=0;i<p_vertex_array_len;i++) {
+
+
+							float vector[2]={ src[i].x, src[i].y };
+
+							copymem(&vw[p_offsets[ai]+i*p_stride], vector, sizeof(float)*2);
+
+							if (i==0) {
+
+								aabb=Rect2(src[i],Vector2());
+							} else {
+
+								aabb.expand_to( src[i] );
+							}
+						}
+					}
+
+					r_aabb=AABB(Vector3(aabb.pos.x,aabb.pos.y,0),Vector3(aabb.size.x,aabb.size.y,0));
+
+
+				} else {
+					DVector<Vector3> array = p_arrays[ai];
+					ERR_FAIL_COND_V( array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER );
+
+
+					DVector<Vector3>::Read read = array.read();
+					const Vector3* src=read.ptr();
+
+					// setting vertices means regenerating the AABB
+					AABB aabb;
+
+
+					if (p_format&ARRAY_COMPRESS_VERTEX) {
+
+						for (int i=0;i<p_vertex_array_len;i++) {
+
+
+							uint16_t vector[3]={ Math::make_half_float(src[i].x), Math::make_half_float(src[i].y), Math::make_half_float(src[i].z) };
+
+							copymem(&vw[p_offsets[ai]+i*p_stride], vector, sizeof(uint16_t)*3);
+
+							if (i==0) {
+
+								aabb=AABB(src[i],Vector3());
+							} else {
+
+								aabb.expand_to( src[i] );
+							}
+						}
+
+
+					} else {
+						for (int i=0;i<p_vertex_array_len;i++) {
+
+
+							float vector[3]={ src[i].x, src[i].y, src[i].z };
+
+							copymem(&vw[p_offsets[ai]+i*p_stride], vector, sizeof(float)*3);
+
+							if (i==0) {
+
+								aabb=AABB(src[i],Vector3());
+							} else {
+
+								aabb.expand_to( src[i] );
+							}
+						}
+					}
+
+					r_aabb=aabb;
+
+				}
+
+
+			} break;
+			case VS::ARRAY_NORMAL: {
+
+				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::VECTOR3_ARRAY, ERR_INVALID_PARAMETER );
+
+				DVector<Vector3> array = p_arrays[ai];
+				ERR_FAIL_COND_V( array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER );
+
+
+				DVector<Vector3>::Read read = array.read();
+				const Vector3* src=read.ptr();
+
+				// setting vertices means regenerating the AABB
+
+				if (p_format&ARRAY_COMPRESS_NORMAL) {
+
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+						uint8_t vector[4]={
+							CLAMP(src[i].x*127,-128,127),
+							CLAMP(src[i].y*127,-128,127),
+							CLAMP(src[i].z*127,-128,127),
+							0,
+						};
+
+						copymem(&vw[p_offsets[ai]+i*p_stride], vector, 4);
+
+					}
+
+				} else {
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+
+						float vector[3]={ src[i].x, src[i].y, src[i].z };
+						copymem(&vw[p_offsets[ai]+i*p_stride], vector, 3*4);
+
+					}
+				}
+
+			} break;
+
+			case VS::ARRAY_TANGENT: {
+
+				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::REAL_ARRAY, ERR_INVALID_PARAMETER );
+
+				DVector<real_t> array = p_arrays[ai];
+
+				ERR_FAIL_COND_V( array.size() != p_vertex_array_len*4, ERR_INVALID_PARAMETER );
+
+
+				DVector<real_t>::Read read = array.read();
+				const real_t* src = read.ptr();
+
+				if (p_format&ARRAY_COMPRESS_TANGENT) {
+
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+						uint8_t xyzw[4]={
+							CLAMP(src[i*4+0]*127,-128,127),
+							CLAMP(src[i*4+1]*127,-128,127),
+							CLAMP(src[i*4+2]*127,-128,127),
+							CLAMP(src[i*4+3]*127,-128,127)
+						};
+
+						copymem(&vw[p_offsets[ai]+i*p_stride], xyzw, 4);
+
+					}
+
+
+				} else {
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+						float xyzw[4]={
+							src[i*4+0],
+							src[i*4+1],
+							src[i*4+2],
+							src[i*4+3]
+						};
+
+						copymem(&vw[p_offsets[ai]+i*p_stride], xyzw, 4*4);
+
+					}
+				}
+
+			} break;
+			case VS::ARRAY_COLOR: {
+
+				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::COLOR_ARRAY, ERR_INVALID_PARAMETER );
+
+
+				DVector<Color> array = p_arrays[ai];
+
+				ERR_FAIL_COND_V( array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER );
+
+
+				DVector<Color>::Read read = array.read();
+				const Color* src = read.ptr();
+
+				if (p_format&ARRAY_COMPRESS_COLOR) {
+
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+
+						uint8_t colors[4];
+
+						for(int j=0;j<4;j++) {
+
+							colors[j]=CLAMP( int((src[i][j])*255.0), 0,255 );
+						}
+
+						copymem(&vw[p_offsets[ai]+i*p_stride], colors, 4);
+
+					}
+				} else {
+
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+
+						copymem(&vw[p_offsets[ai]+i*p_stride], &src[i], 4*4);
+					}
+
+				}
+
+
+			} break;
+			case VS::ARRAY_TEX_UV: {
+
+				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::VECTOR2_ARRAY, ERR_INVALID_PARAMETER );
+
+				DVector<Vector2> array = p_arrays[ai];
+
+				ERR_FAIL_COND_V( array.size() != p_vertex_array_len , ERR_INVALID_PARAMETER);
+
+				DVector<Vector2>::Read read = array.read();
+
+				const Vector2 * src=read.ptr();
+
+
+
+				if (p_format&ARRAY_COMPRESS_TEX_UV) {
+
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+						uint16_t uv[2]={ Math::make_half_float(src[i].x) , Math::make_half_float(src[i].y) };
+						copymem(&vw[p_offsets[ai]+i*p_stride], uv, 2*2);
+					}
+
+				} else {
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+						float uv[2]={ src[i].x , src[i].y };
+
+						copymem(&vw[p_offsets[ai]+i*p_stride], uv, 2*4);
+
+					}
+				}
+
+
+			} break;
+
+			case VS::ARRAY_TEX_UV2: {
+
+
+				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::VECTOR2_ARRAY, ERR_INVALID_PARAMETER );
+
+				DVector<Vector2> array = p_arrays[ai];
+
+				ERR_FAIL_COND_V( array.size() != p_vertex_array_len , ERR_INVALID_PARAMETER);
+
+				DVector<Vector2>::Read read = array.read();
+
+				const Vector2 * src=read.ptr();
+
+
+
+				if (p_format&ARRAY_COMPRESS_TEX_UV2) {
+
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+						uint16_t uv[2]={ Math::make_half_float(src[i].x) , Math::make_half_float(src[i].y) };
+						copymem(&vw[p_offsets[ai]+i*p_stride], uv, 2*2);
+					}
+
+				} else {
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+						float uv[2]={ src[i].x , src[i].y };
+
+						copymem(&vw[p_offsets[ai]+i*p_stride], uv, 2*4);
+
+					}
+				}
+			} break;
+			case VS::ARRAY_WEIGHTS: {
+
+				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::REAL_ARRAY, ERR_INVALID_PARAMETER );
+
+				DVector<real_t> array = p_arrays[ai];
+
+				ERR_FAIL_COND_V( array.size() != p_vertex_array_len*VS::ARRAY_WEIGHTS_SIZE, ERR_INVALID_PARAMETER );
+
+
+				DVector<real_t>::Read read = array.read();
+
+				const real_t * src = read.ptr();
+
+				if (p_format&ARRAY_COMPRESS_WEIGHTS) {
+
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+						uint16_t data[VS::ARRAY_WEIGHTS_SIZE];
+						for (int j=0;j<VS::ARRAY_WEIGHTS_SIZE;j++) {
+							data[j]=CLAMP(src[i*VS::ARRAY_WEIGHTS_SIZE+j]*65535,0,65535);
+						}
+
+						copymem(&vw[p_offsets[ai]+i*p_stride], data, 2*4);
+					}
+				} else {
+
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+						float data[VS::ARRAY_WEIGHTS_SIZE];
+						for (int j=0;j<VS::ARRAY_WEIGHTS_SIZE;j++) {
+							data[j]=src[i*VS::ARRAY_WEIGHTS_SIZE+j];
+						}
+
+						copymem(&vw[p_offsets[ai]+i*p_stride], data, 4*4);
+
+
+					}
+				}
+
+			} break;
+			case VS::ARRAY_BONES: {
+
+				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::REAL_ARRAY, ERR_INVALID_PARAMETER );
+
+				DVector<int> array = p_arrays[ai];
+
+				ERR_FAIL_COND_V( array.size() != p_vertex_array_len*VS::ARRAY_WEIGHTS_SIZE, ERR_INVALID_PARAMETER );
+
+
+				DVector<int>::Read read = array.read();
+
+				const int * src = read.ptr();
+
+
+				if (!(p_format&ARRAY_FLAG_USE_16_BIT_BONES)) {
+
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+						uint8_t data[VS::ARRAY_WEIGHTS_SIZE];
+						for (int j=0;j<VS::ARRAY_WEIGHTS_SIZE;j++) {
+							data[j]=CLAMP(src[i*VS::ARRAY_WEIGHTS_SIZE+j],0,255);
+							max_bone=MAX(data[j],max_bone);
+
+						}
+
+						copymem(&vw[p_offsets[ai]+i*p_stride], data, 4);
+
+
+					}
+
+				} else {
+					for (int i=0;i<p_vertex_array_len;i++) {
+
+						uint16_t data[VS::ARRAY_WEIGHTS_SIZE];
+						for (int j=0;j<VS::ARRAY_WEIGHTS_SIZE;j++) {
+							data[j]=src[i*VS::ARRAY_WEIGHTS_SIZE+j];
+							max_bone=MAX(data[j],max_bone);
+
+						}
+
+						copymem(&vw[p_offsets[ai]+i*p_stride], data, 2*4);
+
+
+					}
+				}
+
+
+			} break;
+			case VS::ARRAY_INDEX: {
+
+
+				ERR_FAIL_COND_V( p_index_array_len<=0, ERR_INVALID_DATA );
+				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::INT_ARRAY, ERR_INVALID_PARAMETER );
+
+				DVector<int> indices = p_arrays[ai];
+				ERR_FAIL_COND_V( indices.size() == 0, ERR_INVALID_PARAMETER );
+				ERR_FAIL_COND_V( indices.size() != p_index_array_len, ERR_INVALID_PARAMETER );
+
+				/* determine wether using 16 or 32 bits indices */
+
+				DVector<int>::Read read = indices.read();
+				const int *src=read.ptr();
+
+				for (int i=0;i<p_index_array_len;i++) {
+
+
+					if (p_vertex_array_len<(1<<16)) {
+						uint16_t v=src[i];
+
+						copymem(&iw[i*2], &v, 2);
+					} else {
+						uint32_t v=src[i];
+
+						copymem(&iw[i*4], &v, 4);
+					}
+				}
+			} break;
+			default: {
+				ERR_FAIL_V( ERR_INVALID_DATA );
+			}
+		}
+	}
+
+
+	if (p_format&VS::ARRAY_FORMAT_BONES) {
+		//create AABBs for each detected bone
+		int total_bones = max_bone+1;
+
+		bool first = r_bone_aabb.size()==0;
+
+		r_bone_aabb.resize(total_bones);
+
+		if (first) {
+			for(int i=0;i<total_bones;i++) {
+				r_bone_aabb[i].size==Vector3(-1,-1,-1); //negative means unused
+			}
+		}
+
+		DVector<Vector3> vertices = p_arrays[VS::ARRAY_VERTEX];
+		DVector<int> bones = p_arrays[VS::ARRAY_BONES];
+		DVector<float> weights = p_arrays[VS::ARRAY_WEIGHTS];
+
+		bool any_valid=false;
+
+		if (vertices.size() && bones.size()==vertices.size()*4 && weights.size()==bones.size()) {
+
+			int vs = vertices.size();
+			DVector<Vector3>::Read rv =vertices.read();
+			DVector<int>::Read rb=bones.read();
+			DVector<float>::Read rw=weights.read();
+
+			AABB *bptr = r_bone_aabb.ptr();
+
+			for(int i=0;i<vs;i++) {
+
+				Vector3 v = rv[i];
+				for(int j=0;j<4;j++) {
+
+					int idx = rb[i*4+j];
+					float w = rw[i*4+j];
+					if (w==0)
+						continue;//break;
+					ERR_FAIL_INDEX_V(idx,total_bones,ERR_INVALID_DATA);
+
+					if (bptr->size.x<0) {
+						//first
+						bptr[idx]=AABB();
+						bptr[idx].pos=v;
+						any_valid=true;
+					} else {
+						bptr[idx].expand_to(v);
+					}
+				}
+			}
+		}
+
+		if (!any_valid && first) {
+
+			r_bone_aabb.clear();
+		}
+	}
+	return OK;
+}
+
+
 void VisualServer::mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes,uint32_t p_compress_format) {
 
+	ERR_FAIL_INDEX( p_primitive, VS::PRIMITIVE_MAX );
+	ERR_FAIL_COND(p_arrays.size()!=VS::ARRAY_MAX);
+
+	uint32_t format=0;
+
+	// validation
+	int index_array_len=0;
+	int array_len=0;
+
+	for(int i=0;i<p_arrays.size();i++) {
+
+		if (p_arrays[i].get_type()==Variant::NIL)
+			continue;
+
+		format|=(1<<i);
+
+		if (i==VS::ARRAY_VERTEX) {
+
+			Variant var = p_arrays[i];
+			switch(var.get_type()) {
+				case Variant::VECTOR2_ARRAY: {
+					DVector<Vector2> v2 = var;
+					array_len=v2.size();
+				} break;
+				case Variant::VECTOR3_ARRAY: {
+					DVector<Vector3> v3 = var;
+					array_len=v3.size();
+				} break;
+				default: {
+					Array v = var;
+					array_len=v.size();
+				} break;
+			}
+
+			array_len=Vector3Array(p_arrays[i]).size();
+			ERR_FAIL_COND(array_len==0);
+		} else if (i==VS::ARRAY_INDEX) {
+
+			index_array_len=IntArray(p_arrays[i]).size();
+		}
+	}
+
+	ERR_FAIL_COND((format&VS::ARRAY_FORMAT_VERTEX)==0); // mandatory
+
+
+	if (p_blend_shapes.size()) {
+		//validate format for morphs
+		for(int i=0;i<p_blend_shapes.size();i++) {
+
+			uint32_t bsformat=0;
+			Array arr = p_blend_shapes[i];
+			for(int j=0;j<arr.size();j++) {
+
+
+				if (arr[j].get_type()!=Variant::NIL)
+					bsformat|=(1<<j);
+			}
+
+			ERR_FAIL_COND( (bsformat)!=(format&(VS::ARRAY_FORMAT_BONES-1)));
+		}
+	}
+
+	uint32_t offsets[VS::ARRAY_MAX];
+
+	int total_elem_size=0;
+
+	for (int i=0;i<VS::ARRAY_MAX;i++) {
+
+
+		offsets[i]=0; //reset
+
+		if (!(format&(1<<i))) // no array
+			continue;
+
+
+		int elem_size=0;
+
+		switch(i) {
+
+			case VS::ARRAY_VERTEX: {
+
+				Variant arr = p_arrays[0];
+				if (arr.get_type()==Variant::VECTOR2_ARRAY) {
+					elem_size=2;
+					p_compress_format|=ARRAY_FLAG_USE_2D_VERTICES;
+				} else if (arr.get_type()==Variant::VECTOR3_ARRAY) {
+					p_compress_format&=~ARRAY_FLAG_USE_2D_VERTICES;
+					elem_size=3;
+				} else {
+					elem_size=(p_compress_format&ARRAY_FLAG_USE_2D_VERTICES)?2:3;
+				}
+
+				if (p_compress_format&ARRAY_COMPRESS_VERTEX) {
+					elem_size*=sizeof(int16_t);
+				} else {
+					elem_size*=sizeof(float);
+				}
+
+			} break;
+			case VS::ARRAY_NORMAL: {
+
+				if (p_compress_format&ARRAY_COMPRESS_NORMAL) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(float)*3;
+				}
+
+			} break;
+
+			case VS::ARRAY_TANGENT: {
+				if (p_compress_format&ARRAY_COMPRESS_TANGENT) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(float)*4;
+				}
+
+			} break;
+			case VS::ARRAY_COLOR: {
+
+				if (p_compress_format&ARRAY_COMPRESS_COLOR) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(float)*4;
+				}
+			} break;
+			case VS::ARRAY_TEX_UV: {
+				if (p_compress_format&ARRAY_COMPRESS_TEX_UV) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(float)*2;
+				}
+
+			} break;
+
+			case VS::ARRAY_TEX_UV2: {
+				if (p_compress_format&ARRAY_COMPRESS_TEX_UV2) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(float)*2;
+				}
+
+			} break;
+			case VS::ARRAY_WEIGHTS: {
+
+				if (p_compress_format&ARRAY_COMPRESS_WEIGHTS) {
+					elem_size=sizeof(uint16_t)*4;
+				} else {
+					elem_size=sizeof(float)*4;
+				}
+
+			} break;
+			case VS::ARRAY_BONES: {
+
+				if (p_compress_format&ARRAY_FLAG_USE_16_BIT_BONES) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(uint16_t)*4;
+				}
+
+			} break;
+			case VS::ARRAY_INDEX: {
+
+				if (index_array_len<=0) {
+					ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
+					break;
+				}
+				/* determine wether using 16 or 32 bits indices */
+				if (array_len>(1<<16)) {
+
+					elem_size=4;
+
+				} else {
+					elem_size=2;
+				}
+				offsets[i]=elem_size;
+				continue;
+			} break;
+			default: {
+				ERR_FAIL( );
+			}
+		}
+
+		print_line("type "+itos(i)+" size: "+itos(elem_size)+" offset "+itos(total_elem_size));
+		offsets[i]=total_elem_size;
+		total_elem_size+=elem_size;
+
+
+	}
+
+	print_line("total elemn size: "+itos(total_elem_size));
+
+	uint32_t mask = (1<<ARRAY_MAX)-1;
+	format|=~mask&p_compress_format; //make the full format
+
+
+	int array_size = total_elem_size * array_len;
+
+	print_line("array size: "+itos(array_size));
+
+	DVector<uint8_t> vertex_array;
+	vertex_array.resize(array_size);
+
+	int index_array_size = offsets[VS::ARRAY_INDEX]*index_array_len;
+
+	print_line("index array size: "+itos(index_array_size));
+
+	DVector<uint8_t> index_array;
+	index_array.resize(index_array_size);
+
+	AABB aabb;
+	Vector<AABB> bone_aabb;
+
+	Error err = _surface_set_data(p_arrays,format,offsets,total_elem_size,vertex_array,array_len,index_array,index_array_len,aabb,bone_aabb);
+
+	if (err) {
+		ERR_EXPLAIN("Invalid array format for surface");
+		ERR_FAIL_COND(err!=OK);
+	}
+
+	Vector<DVector<uint8_t> > blend_shape_data;
+
+	for(int i=0;i<p_blend_shapes.size();i++) {
+
+		DVector<uint8_t> vertex_array_shape;
+		vertex_array_shape.resize(array_size);
+		DVector<uint8_t> noindex;
+
+		AABB laabb;
+		Error err = _surface_set_data(p_blend_shapes[i],format&~ARRAY_FORMAT_INDEX,offsets,total_elem_size,vertex_array,array_len,noindex,0,laabb,bone_aabb);
+		aabb.merge_with(laabb);
+		if (err) {
+			ERR_EXPLAIN("Invalid blend shape array format for surface");
+			ERR_FAIL_COND(err!=OK);
+		}
+
+		blend_shape_data.push_back(vertex_array_shape);
+	}
+
+	mesh_add_surface(p_mesh,format,p_primitive,vertex_array,array_len,index_array,index_array_len,aabb,blend_shape_data,bone_aabb);
 
 }
 

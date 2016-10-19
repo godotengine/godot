@@ -10,12 +10,14 @@
 #include "shader_compiler_gles3.h"
 
 class RasterizerCanvasGLES3;
+class RasterizerSceneGLES3;
 
 
 class RasterizerStorageGLES3 : public RasterizerStorage {
 public:
 
 	RasterizerCanvasGLES3 *canvas;
+	RasterizerSceneGLES3 *scene;
 
 	enum FBOFormat {
 		FBO_FORMAT_16_BITS,
@@ -59,6 +61,7 @@ public:
 		ShaderCompilerGLES3 compiler;
 
 		ShaderCompilerGLES3::IdentifierActions actions_canvas;
+		ShaderCompilerGLES3::IdentifierActions actions_scene;
 	} shaders;
 
 	struct Resources {
@@ -230,6 +233,40 @@ public:
 
 		} canvas_item;
 
+		struct Spatial {
+
+			enum BlendMode {
+				BLEND_MODE_MIX,
+				BLEND_MODE_ADD,
+				BLEND_MODE_SUB,
+				BLEND_MODE_MUL,
+			};
+
+			int blend_mode;
+
+			enum DepthDrawMode {
+				DEPTH_DRAW_OPAQUE,
+				DEPTH_DRAW_ALWAYS,
+				DEPTH_DRAW_NEVER,
+				DEPTH_DRAW_ALPHA_PREPASS,
+			};
+
+			int depth_draw_mode;
+
+			enum CullMode {
+				CULL_MODE_FRONT,
+				CULL_MODE_BACK,
+				CULL_MODE_DISABLED,
+			};
+
+			int cull_mode;
+
+			bool uses_alpha;
+			bool unshaded;
+			bool ontop;
+
+		} spatial;
+
 		Shader() : dirty_list(this) {
 
 			shader=NULL;
@@ -272,10 +309,14 @@ public:
 		SelfList<Material> dirty_list;
 		Vector<RID> textures;
 
+		uint32_t index;
+		uint64_t last_pass;
+
 		Material() : list(this), dirty_list(this) {
 			shader=NULL;
 			ubo_id=0;
 			ubo_size=0;
+			last_pass=0;
 		}
 
 	};
@@ -300,9 +341,155 @@ public:
 
 	/* MESH API */
 
+	struct Instantiable : public RID_Data {
+
+		enum Type {
+			GEOMETRY_INVALID,
+			GEOMETRY_SURFACE,
+			GEOMETRY_IMMEDIATE,
+			GEOMETRY_MULTISURFACE,
+		};
+
+		SelfList<RasterizerScene::InstanceBase>::List instance_list;
+
+		_FORCE_INLINE_ void instance_change_notify() {
+
+			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+			while(instances) {
+
+				instances->self()->base_changed();
+				instances=instances->next();
+			}
+		}
+
+		Instantiable() {  }
+		virtual ~Instantiable() {
+
+			while(instance_list.first()) {
+				instance_list.first()->self()->base_removed();
+			}
+		}
+	};
+
+	struct Geometry : Instantiable {
+
+		enum Type {
+			GEOMETRY_INVALID,
+			GEOMETRY_SURFACE,
+			GEOMETRY_IMMEDIATE,
+			GEOMETRY_MULTISURFACE,
+		};
+
+		Type type;
+		RID material;
+		uint64_t last_pass;
+		uint32_t index;
+
+		Geometry() {
+			last_pass=0;
+			index=0;
+		}
+
+	};
+
+	struct GeometryOwner : public Instantiable {
+
+		virtual ~GeometryOwner() {}
+	};
+
+	struct Mesh;
+	struct Surface : public Geometry {
+
+		struct Attrib {
+
+			bool enabled;
+			GLuint index;
+			GLint size;
+			GLenum type;
+			GLboolean normalized;
+			GLsizei stride;
+			uint32_t offset;
+		};
+
+		Attrib attribs[VS::ARRAY_MAX];
+		Attrib morph_attribs[VS::ARRAY_MAX];
+
+
+		Mesh *mesh;
+		uint32_t format;
+
+		GLuint array_id;
+		GLuint vertex_id;
+		GLuint index_id;
+
+		Vector<AABB> skeleton_bone_aabb;
+		Vector<bool> skeleton_bone_used;
+
+		//bool packed;
+
+		struct MorphTarget {
+			GLuint vertex_id;
+			GLuint array_id;
+		};
+
+		Vector<MorphTarget> morph_targets;
+
+		AABB aabb;
+
+		int array_len;
+		int index_array_len;
+		int max_bone;
+
+		int array_bytes;
+
+
+		VS::PrimitiveType primitive;
+
+		bool active;
+
+		Surface() {
+
+			array_bytes=0;
+			mesh=NULL;
+			format=0;
+			array_id=0;
+			vertex_id=0;
+			index_id=0;
+			array_len=0;
+			type=GEOMETRY_SURFACE;
+			primitive=VS::PRIMITIVE_POINTS;
+			index_array_len=0;
+			active=false;
+
+		}
+
+		~Surface() {
+
+		}
+	};
+
+
+	struct Mesh : public GeometryOwner {
+
+		bool active;
+		Vector<Surface*> surfaces;
+		int morph_target_count;
+		VS::MorphTargetMode morph_target_mode;
+		AABB custom_aabb;
+		mutable uint64_t last_pass;
+		Mesh() {
+			morph_target_mode=VS::MORPH_MODE_NORMALIZED;
+			morph_target_count=0;
+			last_pass=0;
+			active=false;
+		}
+	};
+
+	mutable RID_Owner<Mesh> mesh_owner;
+
 	virtual RID mesh_create();
 
-	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >());
+	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>());
 
 	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount);
 	virtual int mesh_get_morph_target_count(RID p_mesh) const;
@@ -324,13 +511,13 @@ public:
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const;
 	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
 
-	virtual void mesh_remove_surface(RID p_mesh,int p_index);
+	virtual void mesh_remove_surface(RID p_mesh, int p_surface);
 	virtual int mesh_get_surface_count(RID p_mesh) const;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
 
-	virtual AABB mesh_get_aabb(RID p_mesh) const;
+	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const;
 	virtual void mesh_clear(RID p_mesh);
 
 	/* MULTIMESH API */
@@ -401,6 +588,8 @@ public:
 
 	virtual void light_directional_set_shadow_mode(RID p_light,VS::LightDirectionalShadowMode p_mode);
 
+	virtual VS::LightType light_get_type(RID p_light) const;
+	virtual AABB light_get_aabb(RID p_light) const;
 	/* PROBE API */
 
 	virtual RID reflection_probe_create();
@@ -433,6 +622,9 @@ public:
 	virtual void portal_set_disable_distance(RID p_portal, float p_distance);
 	virtual void portal_set_disabled_color(RID p_portal, const Color& p_color);
 
+
+	virtual void instance_add_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance);
+	virtual void instance_remove_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance);
 
 	/* RENDER TARGET */
 
@@ -521,6 +713,8 @@ public:
 
 	virtual RID canvas_light_occluder_create();
 	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines);
+
+	virtual VS::InstanceType get_base_type(RID p_rid) const;
 
 	virtual bool free(RID p_rid);
 

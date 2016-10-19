@@ -1,7 +1,10 @@
 #include "visual_server_viewport.h"
 #include "visual_server_global.h"
 #include "visual_server_canvas.h"
+#include "visual_server_scene.h"
 #include "globals.h"
+
+
 
 void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 
@@ -56,6 +59,12 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 		if (p_viewport->clear_mode==VS::VIEWPORT_CLEAR_ONLY_NEXT_FRAME) {
 			p_viewport->clear_mode=VS::VIEWPORT_CLEAR_NEVER;
 		}
+	}
+
+
+	if (!p_viewport->disable_3d && p_viewport->camera.is_valid()) {
+
+		VSG::scene->render_camera(p_viewport->camera,p_viewport->scenario,p_viewport->size);
 	}
 
 	if (!p_viewport->hide_canvas) {
@@ -247,6 +256,11 @@ void VisualServerViewport::draw_viewports() {
 			continue;
 
 		ERR_CONTINUE( !vp->render_target.is_valid() );
+
+		bool visible = vp->viewport_to_screen_rect!=Rect2() || vp->update_mode==VS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode==VS::VIEWPORT_UPDATE_ONCE;
+
+		if (!visible)
+			continue;
 
 		VSG::rasterizer->set_current_render_target(vp->render_target);
 		_draw_viewport(vp);

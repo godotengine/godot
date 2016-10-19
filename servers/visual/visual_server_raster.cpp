@@ -34,183 +34,12 @@
 #include "io/marshalls.h"
 #include "visual_server_canvas.h"
 #include "visual_server_global.h"
+#include "visual_server_scene.h"
 
 // careful, these may run in different threads than the visual server
 
 
 
-/* CAMERA API */
-
-RID VisualServerRaster::camera_create() {
-
-	return RID();
-}
-void VisualServerRaster::camera_set_perspective(RID p_camera,float p_fovy_degrees, float p_z_near, float p_z_far) {
-
-}
-void VisualServerRaster::camera_set_orthogonal(RID p_camera,float p_size, float p_z_near, float p_z_far){
-
-}
-void VisualServerRaster::camera_set_transform(RID p_camera,const Transform& p_transform) {
-
-}
-void VisualServerRaster::camera_set_cull_mask(RID p_camera,uint32_t p_layers){
-
-}
-void VisualServerRaster::camera_set_environment(RID p_camera,RID p_env){
-
-}
-void VisualServerRaster::camera_set_use_vertical_aspect(RID p_camera,bool p_enable){
-
-}
-
-
-/* ENVIRONMENT API */
-
-RID VisualServerRaster::environment_create(){
-
-	return RID();
-}
-
-void VisualServerRaster::environment_set_background(RID p_env,EnvironmentBG p_bg){
-
-}
-void VisualServerRaster::environment_set_skybox(RID p_env,RID p_skybox,float p_energy){
-
-}
-void VisualServerRaster::environment_set_bg_color(RID p_env,const Color& p_color){
-
-}
-void VisualServerRaster::environment_set_canvas_max_layer(RID p_env,int p_max_layer){
-
-}
-void VisualServerRaster::environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy){
-
-}
-
-void VisualServerRaster::environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,EnvironmentGlowBlendMode p_blend_mode){
-
-}
-void VisualServerRaster::environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture){
-
-}
-
-void VisualServerRaster::environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,EnvironmentToneMapper p_tone_mapper){
-
-}
-void VisualServerRaster::environment_set_brightness(RID p_env,bool p_enable,float p_brightness){
-
-}
-void VisualServerRaster::environment_set_contrast(RID p_env,bool p_enable,float p_contrast){
-
-}
-void VisualServerRaster::environment_set_saturation(RID p_env,bool p_enable,float p_saturation){
-
-}
-void VisualServerRaster::environment_set_color_correction(RID p_env,bool p_enable,RID p_ramp){
-
-}
-
-
-/* SCENARIO API */
-
-
-RID VisualServerRaster::scenario_create() {
-
-	return RID();
-}
-
-void VisualServerRaster::scenario_set_debug(RID p_scenario,ScenarioDebugMode p_debug_mode){
-
-}
-void VisualServerRaster::scenario_set_environment(RID p_scenario, RID p_environment){
-
-}
-RID VisualServerRaster::scenario_get_environment(RID p_scenario, RID p_environment) const{
-
-	return RID();
-}
-void VisualServerRaster::scenario_set_fallback_environment(RID p_scenario, RID p_environment){
-
-}
-
-
-/* INSTANCING API */
-// from can be mesh, light,  area and portal so far.
-RID VisualServerRaster::instance_create(){
-
-	return RID();
-}
-
-void VisualServerRaster::instance_set_base(RID p_instance, RID p_base){
-
-}
-void VisualServerRaster::instance_set_scenario(RID p_instance, RID p_scenario){
-
-}
-void VisualServerRaster::instance_set_layer_mask(RID p_instance, uint32_t p_mask){
-
-}
-void VisualServerRaster::instance_set_transform(RID p_instance, const Transform& p_transform){
-
-}
-void VisualServerRaster::instance_attach_object_instance_ID(RID p_instance,ObjectID p_ID){
-
-}
-void VisualServerRaster::instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight){
-
-}
-void VisualServerRaster::instance_set_surface_material(RID p_instance,int p_surface, RID p_material){
-
-}
-
-void VisualServerRaster::instance_attach_skeleton(RID p_instance,RID p_skeleton){
-
-}
-void VisualServerRaster::instance_set_exterior( RID p_instance, bool p_enabled ){
-
-}
-void VisualServerRaster::instance_set_room( RID p_instance, RID p_room ){
-
-}
-
-void VisualServerRaster::instance_set_extra_visibility_margin( RID p_instance, real_t p_margin ){
-
-}
-
-// don't use these in a game!
-Vector<ObjectID> VisualServerRaster::instances_cull_aabb(const AABB& p_aabb, RID p_scenario) const{
-
-	return Vector<ObjectID>();
-}
-
-Vector<ObjectID> VisualServerRaster::instances_cull_ray(const Vector3& p_from, const Vector3& p_to, RID p_scenario) const{
-
-	return Vector<ObjectID>();
-}
-Vector<ObjectID> VisualServerRaster::instances_cull_convex(const Vector<Plane>& p_convex, RID p_scenario) const {
-
-	return Vector<ObjectID>();
-}
-
-
-void VisualServerRaster::instance_geometry_set_flag(RID p_instance,InstanceFlags p_flags,bool p_enabled){
-
-}
-void VisualServerRaster::instance_geometry_set_cast_shadows_setting(RID p_instance, ShadowCastingSetting p_shadow_casting_setting) {
-
-}
-void VisualServerRaster::instance_geometry_set_material_override(RID p_instance, RID p_material){
-
-}
-
-
-void VisualServerRaster::instance_geometry_set_draw_range(RID p_instance,float p_min,float p_max,float p_min_margin,float p_max_margin){
-
-}
-void VisualServerRaster::instance_geometry_set_as_instance_lod(RID p_instance,RID p_as_lod_of_instance){
-
-}
 
 /* CURSOR */
 void VisualServerRaster::cursor_set_rotation(float p_rotation, int p_cursor ){
@@ -247,6 +76,8 @@ void VisualServerRaster::free( RID p_rid ){
 		return;
 	if (VSG::viewport->free(p_rid))
 		return;
+	if (VSG::scene->free(p_rid))
+		return;
 
 }
 
@@ -258,6 +89,9 @@ void VisualServerRaster::draw(){
 	//	print_line("changes: "+itos(changes));
 
 	changes=0;
+
+	VSG::scene->update_dirty_instances(); //update scene stuff
+
 	VSG::rasterizer->begin_frame();
 	VSG::viewport->draw_viewports();
 	//_draw_cursors_and_margins();
@@ -322,6 +156,7 @@ VisualServerRaster::VisualServerRaster() {
 
 	VSG::canvas = memnew( VisualServerCanvas);
 	VSG::viewport = memnew( VisualServerViewport);
+	VSG::scene = memnew( VisualServerScene );
 	VSG::rasterizer = Rasterizer::create();
 	VSG::storage=VSG::rasterizer->get_storage();
 	VSG::canvas_render=VSG::rasterizer->get_canvas();

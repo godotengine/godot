@@ -15,7 +15,7 @@ RasterizerCanvas *RasterizerGLES3::get_canvas() {
 
 RasterizerScene *RasterizerGLES3::get_scene() {
 
-	return NULL;
+	return scene;
 }
 
 
@@ -111,6 +111,7 @@ void RasterizerGLES3::initialize() {
 */
 	storage->initialize();
 	canvas->initialize();
+	scene->initialize();
 }
 
 void RasterizerGLES3::begin_frame(){
@@ -124,6 +125,7 @@ void RasterizerGLES3::begin_frame(){
 
 	storage->update_dirty_shaders();
 	storage->update_dirty_materials();
+
 }
 
 void RasterizerGLES3::set_current_render_target(RID p_render_target){
@@ -131,6 +133,7 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target){
 	if (!p_render_target.is_valid() && storage->frame.current_rt && storage->frame.clear_request) {
 		//handle pending clear request, if the framebuffer was not cleared
 		glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->front.fbo);
+		print_line("unbind clear of: "+storage->frame.clear_request_color);
 		glClearColor(
 			storage->frame.clear_request_color.r,
 			storage->frame.clear_request_color.g,
@@ -265,8 +268,12 @@ RasterizerGLES3::RasterizerGLES3()
 
 	storage = memnew( RasterizerStorageGLES3 );
 	canvas = memnew( RasterizerCanvasGLES3 );
+	scene = memnew( RasterizerSceneGLES3 );
 	canvas->storage=storage;
 	storage->canvas=canvas;
+	scene->storage=storage;
+	storage->scene=scene;
+
 
 
 }

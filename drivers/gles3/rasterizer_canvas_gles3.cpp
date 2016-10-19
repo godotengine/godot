@@ -117,6 +117,7 @@ void RasterizerCanvasGLES3::canvas_begin(){
 		glClearColor( storage->frame.clear_request_color.r, storage->frame.clear_request_color.g, storage->frame.clear_request_color.b, storage->frame.clear_request_color.a );
 		glClear(GL_COLOR_BUFFER_BIT);
 		storage->frame.clear_request=false;
+		print_line("canvas clear?");
 
 	}
 

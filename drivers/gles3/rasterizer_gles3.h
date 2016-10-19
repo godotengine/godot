@@ -4,6 +4,7 @@
 #include "servers/visual/rasterizer.h"
 #include "rasterizer_storage_gles3.h"
 #include "rasterizer_canvas_gles3.h"
+#include "rasterizer_scene_gles3.h"
 
 
 class RasterizerGLES3 : public Rasterizer {
@@ -12,6 +13,8 @@ class RasterizerGLES3 : public Rasterizer {
 
 	RasterizerStorageGLES3 *storage;
 	RasterizerCanvasGLES3 *canvas;
+	RasterizerSceneGLES3 *scene;
+
 public:
 
 	virtual RasterizerStorage *get_storage();
