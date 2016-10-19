@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include "os/os.h"
 #include "drivers/nrex/regex.h"
+#include "core/io/ip_address.h"
 
 #include "test_string.h"
 
@@ -843,6 +844,23 @@ bool test_28() {
 	return state;
 }
 
+bool test_29() {
+
+	IP_Address ip0("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
+	printf("ip0 is %ls\n", String(ip0).c_str());
+
+	IP_Address ip(0x0123, 0x4567, 0x89ab, 0xcdef, IP_Address::TYPE_IPV6);
+	printf("ip6 is %ls\n", String(ip).c_str());
+
+	IP_Address ip2("fe80::52e5:49ff:fe93:1baf");
+	printf("ip6 is %ls\n", String(ip2).c_str());
+
+	IP_Address ip3("::ffff:192.168.0.1");
+	printf("ip6 is %ls\n", String(ip3).c_str());
+
+	return true;
+};
+
 typedef bool (*TestFunc)(void);
 
 TestFunc test_funcs[] = {
@@ -875,6 +893,7 @@ TestFunc test_funcs[] = {
 	test_26,
 	test_27,
 	test_28,
+	test_29,
 	0
 
 };

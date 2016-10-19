@@ -68,7 +68,7 @@ static IP_Address _sockaddr2ip(struct sockaddr* p_addr) {
 	IP_Address ip;
 	if (p_addr->sa_family == AF_INET) {
 		struct sockaddr_in* addr = (struct sockaddr_in*)p_addr;
-		ip.field32[0] = ntohl(addr->sin_addr.s_addr);
+		ip.field32[0] = *((unsigned long*)&addr->sin_addr);
 		ip.type = IP_Address::TYPE_IPV4;
 	} else {
 		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)p_addr;
