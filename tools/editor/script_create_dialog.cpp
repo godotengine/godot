@@ -164,10 +164,12 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	} else {
 		class_name->set_editable(false);
 	}
-	if (file_path->get_text().basename()==initial_bp) {
-		file_path->set_text(initial_bp+"."+ScriptServer::get_language( l )->get_extension());
-		_path_changed(file_path->get_text());
+
+	if (file_path->get_text().rfind(".") > file_path->get_text().rfind(file_path->get_text().basename())) { // if there is an extention after basename
+		file_path->set_text(String(file_path->get_text().substr(0, file_path->get_text().rfind(".")+1) + ScriptServer::get_language( l )->get_extension()));
 	}
+	
+	_path_changed(file_path->get_text());
 	_class_name_changed(class_name->get_text());
 
 }
