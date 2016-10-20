@@ -131,7 +131,7 @@ def configure(env):
 		gcc_path=gcc_path+"/darwin-x86_64/bin"
 		env['SHLINKFLAGS'][1] = '-shared'
 		env['SHLIBSUFFIX'] = '.so'
-	elif (os.platform.startswith('win')):
+	elif (sys.platform.startswith('win')):
                 if (platform.machine().endswith('64')):
 			gcc_path=gcc_path+"/windows-x86_64/bin"
                 else:
