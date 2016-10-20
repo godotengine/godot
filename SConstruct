@@ -379,9 +379,9 @@ if selected_platform in platform_list:
 		release_variants = ['release|Win32']+['release|x64']
 		release_debug_variants = ['release_debug|Win32']+['release_debug|x64']
 		variants = debug_variants + release_variants + release_debug_variants
-		debug_targets = ['Debug']+['Debug']
-		release_targets = ['Release']+['Release']
-		release_debug_targets = ['ReleaseDebug']+['ReleaseDebug']
+		debug_targets = ['bin\\godot.windows.tools.32.exe']+['bin\\godot.windows.tools.64.exe']
+		release_targets = ['bin\\godot.windows.opt.32.exe']+['bin\\godot.windows.opt.64.exe']
+		release_debug_targets = ['bin\\godot.windows.opt.tools.32.exe']+['bin\\godot.windows.opt.tools.64.exe']
 		targets = debug_targets + release_targets + release_debug_targets
 		msvproj = env.MSVSProject(target = ['#godot' + env['MSVSPROJECTSUFFIX'] ],
 								incs = env.vs_incs,
