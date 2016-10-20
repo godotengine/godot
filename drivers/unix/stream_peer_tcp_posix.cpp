@@ -61,24 +61,7 @@
 	#define MSG_NOSIGNAL    SO_NOSIGPIPE
 #endif
 
-static void set_addr_in(struct sockaddr_storage& their_addr, const IP_Address& p_host, uint16_t p_port) {
-
-	memset(&their_addr, 0, sizeof(struct sockaddr_storage));
-	if (p_host.type == IP_Address::TYPE_IPV6) {
-
-		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)&their_addr;
-		addr6->sin6_family = AF_INET6;
-		addr6->sin6_port = htons(p_port);
-		copymem(&addr6->sin6_addr.s6_addr, p_host.field8, 16);
-
-	} else {
-
-		struct sockaddr_in* addr4 = (struct sockaddr_in*)&their_addr;
-		addr4->sin_family = AF_INET;    // host byte order
-		addr4->sin_port = htons(p_port);  // short, network byte order
-		addr4->sin_addr = *((struct in_addr*)&p_host.field32[0]);
-	};
-};
+#include "drivers/unix/socket_helpers.h"
 
 StreamPeerTCP* StreamPeerTCPPosix::_create() {
 
@@ -115,7 +98,8 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 	};
 
 	struct sockaddr_storage their_addr;
-	set_addr_in(their_addr, peer_host, peer_port);
+	_set_sockaddr(&their_addr, peer_host, peer_port);
+
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(their_addr)) == -1) {
 
 		if (errno == EISCONN) {
@@ -169,7 +153,7 @@ Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 #endif
 
 	struct sockaddr_storage their_addr;
-	set_addr_in(their_addr, p_host, p_port);
+	_set_sockaddr(&their_addr, p_host, p_port);
 
 	errno = 0;
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(their_addr)) == -1 && errno != EINPROGRESS) {

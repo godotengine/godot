@@ -56,6 +56,8 @@
 #include <sys/socket.h>
 #include <assert.h>
 
+#include "drivers/unix/socket_helpers.h"
+
 TCP_Server* TCPServerPosix::_create() {
 
 	return memnew(TCPServerPosix);
@@ -84,19 +86,9 @@ Error TCPServerPosix::listen(uint16_t p_port, IP_Address::AddrType p_type, const
 		WARN_PRINT("REUSEADDR failed!")
 	}
 
-	sockaddr_storage addr = {0};
-	if (p_type == IP_Address::TYPE_IPV4) {
-		struct sockaddr_in* addr4 = (struct sockaddr_in*)&addr;
-		addr4->sin_family = AF_INET;
-		addr4->sin_port = htons(p_port);
-		addr4->sin_addr.s_addr = INADDR_ANY;
-	} else {
+	struct sockaddr_storage addr;
+	_set_listen_sockaddr(&addr, p_port, p_type, p_accepted_hosts);
 
-		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)&addr;
-		addr6->sin6_family = AF_INET6;
-		addr6->sin6_port = htons(p_port);
-		addr6->sin6_addr = in6addr_any;
-	};
 	// automatically fill with my IP TODO: use p_accepted_hosts
 
 	if (bind(sockfd, (struct sockaddr *)&addr, sizeof addr) != -1) {
@@ -161,22 +153,10 @@ Ref<StreamPeerTCP> TCPServerPosix::take_connection() {
 	Ref<StreamPeerTCPPosix> conn = memnew(StreamPeerTCPPosix);
 	IP_Address ip;
 
-	if (their_addr.ss_family == AF_INET) {
-		ip.type = IP_Address::TYPE_IPV4;
+	int port;
+	_set_ip_addr_port(ip, port, &their_addr);
 
-		struct sockaddr_in* addr4 = (struct sockaddr_in*)&their_addr;
-		ip.field32[0] = (uint32_t)addr4->sin_addr.s_addr;
-		conn->set_socket(fd, ip, ntohs(addr4->sin_port));
-
-	} else if (their_addr.ss_family == AF_INET6) {
-
-		ip.type = IP_Address::TYPE_IPV6;
-
-		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)&their_addr;
-		copymem(&addr6->sin6_addr.s6_addr, ip.field8, 16);
-
-		conn->set_socket(fd, ip, ntohs(addr6->sin6_port));
-	};
+	conn->set_socket(fd, ip, port);
 
 	return conn;
 };

@@ -54,6 +54,7 @@
 #include <arpa/inet.h>
 #endif
 
+#include "drivers/unix/socket_helpers.h"
 
 int PacketPeerUDPPosix::get_available_packet_count() const {
 
@@ -98,17 +99,7 @@ Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 	int sock = _get_socket(peer_addr.type);
 	ERR_FAIL_COND_V( sock == -1, FAILED );
 	struct sockaddr_storage addr;
-	if (peer_addr.type == IP_Address::TYPE_IPV4) {
-		struct sockaddr_in* addr_in = (struct sockaddr_in*)&addr;
-		addr_in->sin_family = AF_INET;
-		addr_in->sin_port = htons(peer_port);
-		addr_in->sin_addr = *((struct in_addr*)&peer_addr.field32[0]);
-	} else {
-		struct sockaddr_in6* addr_in6 = (struct sockaddr_in6*)&addr;
-		addr_in6->sin6_family = AF_INET;
-		addr_in6->sin6_port = htons(peer_port);
-		copymem(&addr_in6->sin6_addr.s6_addr, peer_addr.field8, 16);
-	};
+	_set_sockaddr(&addr, peer_addr, peer_port);
 
 	errno = 0;
 	int err;
@@ -138,20 +129,7 @@ Error PacketPeerUDPPosix::listen(int p_port, IP_Address::AddrType p_address_type
 		return ERR_CANT_CREATE;
 
 	sockaddr_storage addr = {0};
-
-	if (p_address_type == IP_Address::TYPE_IPV4) {
-		struct sockaddr_in* addr4 = (struct sockaddr_in*)&addr;
-		addr4->sin_family = AF_INET;
-		addr4->sin_port = htons(p_port);
-		addr4->sin_addr.s_addr = INADDR_ANY;
-	} else {
-
-		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)&addr;
-
-		addr6->sin6_family = AF_INET6;
-		addr6->sin6_port = htons(p_port);
-		addr6->sin6_addr = in6addr_any;
-	};
+	_set_listen_sockaddr(&addr, p_port, p_address_type, NULL);
 
 	if (bind(sock, (struct sockaddr*)&addr, sizeof(sockaddr_storage)) == -1 ) {
 		close();
@@ -212,6 +190,7 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 		rb.write((uint8_t*)&ret, 4);
 		rb.write(recv_buffer, ret);
 
+		len = sizeof(struct sockaddr_storage);
 		++queue_count;
 	};
 
