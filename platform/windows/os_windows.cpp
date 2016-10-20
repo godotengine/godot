@@ -1366,13 +1366,16 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 		POINT pos = { (int) center.x, (int) center.y };
 		ClientToScreen(hWnd, &pos);
 		SetCursorPos(pos.x, pos.y);
-		ShowCursor(false);
 	} else {
-		ShowCursor(true);
 		ReleaseCapture();
 		ClipCursor(NULL);
 	}
 
+	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_HIDDEN) {
+		hCursor = SetCursor(NULL);
+	} else {
+		SetCursor(hCursor);
+	}
 }
 
 OS_Windows::MouseMode OS_Windows::get_mouse_mode() const{
