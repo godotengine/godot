@@ -846,19 +846,58 @@ bool test_28() {
 
 bool test_29() {
 
+	bool error = false;
+	bool state = true;
+	bool success = false;
+
 	IP_Address ip0("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
-	printf("ip0 is %ls\n", String(ip0).c_str());
+	OS::get_singleton()->print("ip0 is %ls\n", String(ip0).c_str());
 
 	IP_Address ip(0x0123, 0x4567, 0x89ab, 0xcdef, IP_Address::TYPE_IPV6);
-	printf("ip6 is %ls\n", String(ip).c_str());
+	OS::get_singleton()->print("ip6 is %ls\n", String(ip).c_str());
 
 	IP_Address ip2("fe80::52e5:49ff:fe93:1baf");
-	printf("ip6 is %ls\n", String(ip2).c_str());
+	OS::get_singleton()->print("ip6 is %ls\n", String(ip2).c_str());
 
 	IP_Address ip3("::ffff:192.168.0.1");
-	printf("ip6 is %ls\n", String(ip3).c_str());
+	OS::get_singleton()->print("ip6 is %ls\n", String(ip3).c_str());
 
-	return true;
+	String ip4 = "192.168.0.1";
+	success = ip4.is_valid_ip_address();
+	OS::get_singleton()->print("Is valid ipv4: %ls, %s\n", ip4.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	ip4 = "192.368.0.1";
+	success = (!ip4.is_valid_ip_address());
+	OS::get_singleton()->print("Is invalid ipv4: %ls, %s\n", ip4.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	String ip6 = "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
+	success = ip6.is_valid_ip_address();
+	OS::get_singleton()->print("Is valid ipv6: %ls, %s\n", ip6.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	ip6 = "2001:0db8:85j3:0000:0000:8a2e:0370:7334";
+	success = (!ip6.is_valid_ip_address());
+	OS::get_singleton()->print("Is invalid ipv6: %ls, %s\n", ip6.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	ip6 = "2001:0db8:85f345:0000:0000:8a2e:0370:7334";
+	success = (!ip6.is_valid_ip_address());
+	OS::get_singleton()->print("Is invalid ipv6: %ls, %s\n", ip6.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	ip6 = "2001:0db8::0:8a2e:370:7334";
+	success = (ip6.is_valid_ip_address());
+	OS::get_singleton()->print("Is valid ipv6: %ls, %s\n", ip6.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	ip6 = "::ffff:192.168.0.1";
+	success = (ip6.is_valid_ip_address());
+	OS::get_singleton()->print("Is valid ipv6: %ls, %s\n", ip6.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	return state;
 };
 
 typedef bool (*TestFunc)(void);
