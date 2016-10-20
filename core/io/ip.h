@@ -89,6 +89,8 @@ public:
 	virtual void get_local_addresses(List<IP_Address> *r_addresses) const=0;
 	void erase_resolve_item(ResolverID p_id);
 
+	void clear_cache(const String& p_hostname = "");
+
 	static IP* get_singleton();
 
 	static IP* create();
