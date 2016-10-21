@@ -39,6 +39,26 @@
 class RasterizerScene {
 public:
 
+	/* ENVIRONMENT API */
+
+	virtual RID environment_create()=0;
+
+	virtual void environment_set_background(RID p_env,VS::EnvironmentBG p_bg)=0;
+	virtual void environment_set_skybox(RID p_env,RID p_skybox,int p_radiance_size,int p_irradiance_size)=0;
+	virtual void environment_set_skybox_scale(RID p_env,float p_scale)=0;
+	virtual void environment_set_bg_color(RID p_env,const Color& p_color)=0;
+	virtual void environment_set_bg_energy(RID p_env,float p_energy)=0;
+	virtual void environment_set_canvas_max_layer(RID p_env,int p_max_layer)=0;
+	virtual void environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy=1.0,float p_skybox_energy=0.0)=0;
+
+	virtual void environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode)=0;
+	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture)=0;
+
+	virtual void environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,VS::EnvironmentToneMapper p_tone_mapper)=0;
+	virtual void environment_set_brightness(RID p_env,bool p_enable,float p_brightness)=0;
+	virtual void environment_set_contrast(RID p_env,bool p_enable,float p_contrast)=0;
+	virtual void environment_set_saturation(RID p_env,bool p_enable,float p_saturation)=0;
+	virtual void environment_set_color_correction(RID p_env,bool p_enable,RID p_ramp)=0;
 
 	struct InstanceBase : RID_Data {
 
@@ -126,6 +146,7 @@ public:
 
 	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info)=0;
 
+	virtual RID texture_create_pbr_cubemap(RID p_source,VS::PBRCubeMapMode p_mode,int p_resolution=-1) const=0;
 
 	/* SHADER API */
 

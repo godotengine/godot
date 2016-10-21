@@ -1,5 +1,10 @@
 #include "rasterizer_scene_gles3.h"
 #include "globals.h"
+
+
+
+
+
 static _FORCE_INLINE_ void store_matrix32(const Matrix32& p_mtx, float* p_array) {
 
 	p_array[ 0]=p_mtx.elements[0][0];
@@ -49,6 +54,121 @@ static _FORCE_INLINE_ void store_camera(const CameraMatrix& p_mtx, float* p_arra
 		}
 	}
 }
+
+
+
+
+/* ENVIRONMENT API */
+
+RID RasterizerSceneGLES3::environment_create(){
+
+
+	Environment *env = memnew( Environment );
+
+	return environment_owner.make_rid(env);
+}
+
+void RasterizerSceneGLES3::environment_set_background(RID p_env,VS::EnvironmentBG p_bg){
+
+	Environment *env=environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+	env->bg_mode=p_bg;
+}
+
+void RasterizerSceneGLES3::environment_set_skybox(RID p_env, RID p_skybox, int p_radiance_size, int p_irradiance_size){
+
+	Environment *env=environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	if (env->skybox_color.is_valid()) {
+		env->skybox_color=RID();
+	}
+	if (env->skybox_radiance.is_valid()) {
+		storage->free(env->skybox_radiance);
+		env->skybox_radiance=RID();
+	}
+	if (env->skybox_irradiance.is_valid()) {
+		storage->free(env->skybox_irradiance);
+		env->skybox_irradiance=RID();
+	}
+
+	if (p_skybox.is_valid()) {
+
+		env->skybox_color=p_skybox;
+	//	env->skybox_radiance=storage->texture_create_pbr_cubemap(p_skybox,VS::PBR_CUBEMAP_RADIANCE,p_radiance_size);
+		//env->skybox_irradiance=storage->texture_create_pbr_cubemap(p_skybox,VS::PBR_CUBEMAP_IRRADIANCE,p_irradiance_size);
+	}
+
+}
+
+void RasterizerSceneGLES3::environment_set_skybox_scale(RID p_env,float p_scale) {
+
+	Environment *env=environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->skybox_scale=p_scale;
+
+}
+
+void RasterizerSceneGLES3::environment_set_bg_color(RID p_env,const Color& p_color){
+
+	Environment *env=environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->bg_color=p_color;
+
+}
+void RasterizerSceneGLES3::environment_set_bg_energy(RID p_env,float p_energy) {
+
+	Environment *env=environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->energy=p_energy;
+
+}
+
+void RasterizerSceneGLES3::environment_set_canvas_max_layer(RID p_env,int p_max_layer){
+
+	Environment *env=environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->canvas_max_layer=p_max_layer;
+
+}
+void RasterizerSceneGLES3::environment_set_ambient_light(RID p_env, const Color& p_color, float p_energy, float p_skybox_energy){
+
+	Environment *env=environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->ambient_color=p_color;
+	env->ambient_anergy=p_energy;
+	env->skybox_ambient=p_skybox_energy;
+
+}
+
+void RasterizerSceneGLES3::environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode){
+
+}
+void RasterizerSceneGLES3::environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture){
+
+}
+
+void RasterizerSceneGLES3::environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,VS::EnvironmentToneMapper p_tone_mapper){
+
+}
+void RasterizerSceneGLES3::environment_set_brightness(RID p_env,bool p_enable,float p_brightness){
+
+}
+void RasterizerSceneGLES3::environment_set_contrast(RID p_env,bool p_enable,float p_contrast){
+
+}
+void RasterizerSceneGLES3::environment_set_saturation(RID p_env,bool p_enable,float p_saturation){
+
+}
+void RasterizerSceneGLES3::environment_set_color_correction(RID p_env,bool p_enable,RID p_ramp){
+
+}
+
 
 
 
@@ -493,6 +613,70 @@ void RasterizerSceneGLES3::_add_geometry(  RasterizerStorageGLES3::Geometry* p_g
 #endif
 }
 
+void RasterizerSceneGLES3::_draw_skybox(RID p_skybox,CameraMatrix& p_projection,const Transform& p_transform,bool p_vflip,float p_scale) {
+
+	RasterizerStorageGLES3::Texture *tex = storage->texture_owner.getornull(p_skybox);
+
+	ERR_FAIL_COND(!tex);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(tex->target,tex->tex_id);
+
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glColorMask(1,1,1,1);
+
+	float flip_sign = p_vflip?-1:1;
+
+	Vector3 vertices[8]={
+		Vector3(-1,-1*flip_sign,0.1),
+		Vector3( 0, 1, 0),
+		Vector3( 1,-1*flip_sign,0.1),
+		Vector3( 1, 1, 0),
+		Vector3( 1, 1*flip_sign,0.1),
+		Vector3( 1, 0, 0),
+		Vector3(-1, 1*flip_sign,0.1),
+		Vector3( 0, 0, 0),
+
+	};
+
+
+
+	//skybox uv vectors
+	float vw,vh,zn;
+	p_projection.get_viewport_size(vw,vh);
+	zn=p_projection.get_z_near();
+
+	float scale=p_scale;
+
+	for(int i=0;i<4;i++) {
+
+		Vector3 uv=vertices[i*2+1];
+		uv.x=(uv.x*2.0-1.0)*vw*scale;
+		uv.y=-(uv.y*2.0-1.0)*vh*scale;
+		uv.z=-zn;
+		vertices[i*2+1] = p_transform.basis.xform(uv).normalized();
+		vertices[i*2+1].z = -vertices[i*2+1].z;
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER,state.skybox_verts);
+	glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(Vector3)*8,vertices);
+	glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
+
+	glBindVertexArray(state.skybox_array);
+
+	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_CUBEMAP,true);
+	storage->shaders.copy.bind();
+
+	glDrawArrays(GL_TRIANGLE_FAN,0,4);
+
+	glBindVertexArray(0);
+
+	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_CUBEMAP,false);
+
+}
+
 void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_directional_lights,int p_directional_light_count,RID p_environment){
 
 
@@ -561,7 +745,9 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,CameraM
 	glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->front.fbo);
 
 
-	if (true) {
+	Environment *env = environment_owner.getornull(p_environment);
+
+	if (!env || env->bg_mode==VS::ENV_BG_CLEAR_COLOR) {
 
 		if (storage->frame.clear_request) {
 
@@ -570,6 +756,16 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,CameraM
 			storage->frame.clear_request=false;
 
 		}
+	} else if (env->bg_mode==VS::ENV_BG_COLOR) {
+
+
+		glClearColor( env->bg_color.r, env->bg_color.g, env->bg_color.b, env->bg_color.a );
+		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+		storage->frame.clear_request=false;
+	} else {
+		glClear(GL_DEPTH_BUFFER_BIT);
+		storage->frame.clear_request=false;
+
 	}
 
 	state.current_depth_test=true;
@@ -615,6 +811,12 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,CameraM
 
 
 	_render_list(render_list.elements,render_list.element_count,p_cam_transform,p_cam_projection,false,false);
+
+
+	if (env && env->bg_mode==VS::ENV_BG_SKYBOX) {
+
+		_draw_skybox(env->skybox_color,p_cam_projection,p_cam_transform,storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP],env->skybox_scale);
+	}
 
 	//_render_list_forward(&alpha_render_list,camera_transform,camera_transform_inverse,camera_projection,false,fragment_lighting,true);
 	//glColorMask(1,1,1,1);
@@ -793,6 +995,27 @@ void RasterizerSceneGLES3::initialize() {
 	if (render_list.max_elements<1024)
 		render_list.max_elements=1024;
 
+
+
+	{
+		//quad buffers
+
+		glGenBuffers(1,&state.skybox_verts);
+		glBindBuffer(GL_ARRAY_BUFFER,state.skybox_verts);
+		glBufferData(GL_ARRAY_BUFFER,sizeof(Vector3)*8,NULL,GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
+
+
+		glGenVertexArrays(1,&state.skybox_array);
+		glBindVertexArray(state.skybox_array);
+		glBindBuffer(GL_ARRAY_BUFFER,state.skybox_verts);
+		glVertexAttribPointer(VS::ARRAY_VERTEX,3,GL_FLOAT,GL_FALSE,sizeof(Vector3)*2,0);
+		glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+		glVertexAttribPointer(VS::ARRAY_TEX_UV,3,GL_FLOAT,GL_FALSE,sizeof(Vector3)*2,((uint8_t*)NULL)+sizeof(Vector3));
+		glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
+	}
 	render_list.init();
 }
 

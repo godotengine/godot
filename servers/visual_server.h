@@ -125,6 +125,13 @@ public:
 
 	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable)=0;
 
+	enum PBRCubeMapMode {
+		PBR_CUBEMAP_RADIANCE,
+		PBR_CUBEMAP_IRRADIANCE,
+	};
+
+	virtual RID texture_create_pbr_cubemap(RID p_source,PBRCubeMapMode p_mode,int p_resolution=-1) const=0;
+
 	struct TextureInfo {
 		RID texture;
 		Size2 size;
@@ -478,18 +485,21 @@ public:
 
 	enum EnvironmentBG {
 
-		ENV_BG_KEEP,
+		ENV_BG_CLEAR_COLOR,
 		ENV_BG_COLOR,
 		ENV_BG_SKYBOX,
 		ENV_BG_CANVAS,
+		ENV_BG_KEEP,
 		ENV_BG_MAX
 	};
 
 	virtual void environment_set_background(RID p_env,EnvironmentBG p_bg)=0;
-	virtual void environment_set_skybox(RID p_env,RID p_skybox,float p_energy=1.0)=0;
+	virtual void environment_set_skybox(RID p_env,RID p_skybox,int p_radiance_size,int p_irradiance_size)=0;
+	virtual void environment_set_skybox_scale(RID p_env,float p_scale)=0;
 	virtual void environment_set_bg_color(RID p_env,const Color& p_color)=0;
+	virtual void environment_set_bg_energy(RID p_env,float p_energy)=0;
 	virtual void environment_set_canvas_max_layer(RID p_env,int p_max_layer)=0;
-	virtual void environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy=1.0)=0;
+	virtual void environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy=1.0,float p_skybox_energy=0.0)=0;
 
 	//set default SSAO options
 	//set default SSR options

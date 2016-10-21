@@ -620,6 +620,7 @@ public:
 	BIND1RC(uint32_t,texture_get_width,RID)
 	BIND1RC(uint32_t,texture_get_height,RID)
 	BIND3(texture_set_size_override,RID,int,int)
+	BIND3RC(RID,texture_create_pbr_cubemap,RID,PBRCubeMapMode,int)
 
 
 
@@ -848,15 +849,17 @@ public:
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
-#define BINDBASE VSG::scene
+#define BINDBASE VSG::scene_render
 
 	BIND0R(RID,environment_create)
 
 	BIND2(environment_set_background,RID ,EnvironmentBG )
-	BIND3(environment_set_skybox,RID,RID ,float )
+	BIND4(environment_set_skybox,RID,RID ,int,int )
+	BIND2(environment_set_skybox_scale,RID,float)
 	BIND2(environment_set_bg_color,RID,const Color& )
+	BIND2(environment_set_bg_energy,RID,float )
 	BIND2(environment_set_canvas_max_layer,RID,int )
-	BIND3(environment_set_ambient_light,RID,const Color& ,float )
+	BIND4(environment_set_ambient_light,RID,const Color& ,float,float )
 
 	BIND7(environment_set_glow,RID,bool ,int ,float ,float ,float ,EnvironmentGlowBlendMode )
 	BIND5(environment_set_fog,RID,bool ,float ,float ,RID )
@@ -870,6 +873,9 @@ public:
 
 	/* SCENARIO API */
 
+
+#undef BINDBASE
+#define BINDBASE VSG::scene
 
 	BIND0R(RID,scenario_create)
 

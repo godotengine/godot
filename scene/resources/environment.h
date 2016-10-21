@@ -31,28 +31,80 @@
 
 #include "resource.h"
 #include "servers/visual_server.h"
+#include "scene/resources/texture.h"
 
 class Environment : public Resource {
 
 	OBJ_TYPE(Environment,Resource);
 public:
 
+	enum BGMode {
+
+		BG_CLEAR_COLOR,
+		BG_COLOR,
+		BG_SKYBOX,
+		BG_CANVAS,
+		BG_KEEP,
+		BG_MAX
+	};
+
+	enum GlowBlendMode {
+		GLOW_BLEND_MODE_ADDITIVE,
+		GLOW_BLEND_MODE_SCREEN,
+		GLOW_BLEND_MODE_SOFTLIGHT,
+		GLOW_BLEND_MODE_DISABLED,
+	};
 
 private:
-
-
 	RID environment;
+
+	BGMode bg_mode;
+	Ref<CubeMap> bg_skybox;
+	float bg_skybox_scale;
+	Color bg_color;
+	float bg_energy;
+	int bg_canvas_max_layer;
+	Color ambient_color;
+	float ambient_energy;
+	float ambient_skybox_energy;
 
 protected:
 
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo& property) const;
+
 public:
+
+
+	void set_background(BGMode p_bg);
+	void set_skybox(const Ref<CubeMap>& p_skybox);
+	void set_skybox_scale(float p_scale);
+	void set_bg_color(const Color& p_color);
+	void set_bg_energy(float p_energy);
+	void set_canvas_max_layer(int p_max_layer);
+	void set_ambient_light_color(const Color& p_color);
+	void set_ambient_light_energy(float p_energy);
+	void set_ambient_light_skybox_energy(float p_energy);
+
+	BGMode get_background() const;
+	Ref<CubeMap> get_skybox() const;
+	float get_skybox_scale() const;
+	Color get_bg_color() const;
+	float get_bg_energy() const;
+	int get_canvas_max_layer() const;
+	Color get_ambient_light_color() const;
+	float get_ambient_light_energy() const;
+	float get_ambient_light_skybox_energy() const;
+
 
 	virtual RID get_rid() const;
 
 	Environment();
 	~Environment();
 };
+
+VARIANT_ENUM_CAST(Environment::BGMode)
+VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 
 
 #endif // ENVIRONMENT_H

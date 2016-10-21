@@ -6,6 +6,7 @@
 #include "shader_gles3.h"
 #include "shaders/copy.glsl.h"
 #include "shaders/canvas.glsl.h"
+#include "shaders/cubemap_filter.glsl.h"
 #include "self_list.h"
 #include "shader_compiler_gles3.h"
 
@@ -60,6 +61,8 @@ public:
 
 		ShaderCompilerGLES3 compiler;
 
+		CubemapFilterShaderGLES3 cubemap_filter;
+
 		ShaderCompilerGLES3::IdentifierActions actions_canvas;
 		ShaderCompilerGLES3::IdentifierActions actions_scene;
 	} shaders;
@@ -69,6 +72,9 @@ public:
 		GLuint white_tex;
 		GLuint black_tex;
 		GLuint normal_tex;
+
+		GLuint quadie;
+		GLuint quadie_array;
 
 	} resources;
 
@@ -177,6 +183,8 @@ public:
 	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable);
 
 	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info);
+
+	virtual RID texture_create_pbr_cubemap(RID p_source,VS::PBRCubeMapMode p_mode,int p_resolution=-1) const;
 
 
 	/* SHADER API */

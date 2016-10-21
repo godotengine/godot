@@ -69,54 +69,6 @@ void VisualServerScene::camera_set_use_vertical_aspect(RID p_camera,bool p_enabl
 }
 
 
-
-/* ENVIRONMENT API */
-
-RID VisualServerScene::environment_create(){
-
-	return RID();
-}
-
-void VisualServerScene::environment_set_background(RID p_env,VS::EnvironmentBG p_bg){
-
-}
-void VisualServerScene::environment_set_skybox(RID p_env,RID p_skybox,float p_energy){
-
-}
-void VisualServerScene::environment_set_bg_color(RID p_env,const Color& p_color){
-
-}
-void VisualServerScene::environment_set_canvas_max_layer(RID p_env,int p_max_layer){
-
-}
-void VisualServerScene::environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy){
-
-}
-
-void VisualServerScene::environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode){
-
-}
-void VisualServerScene::environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture){
-
-}
-
-void VisualServerScene::environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,VS::EnvironmentToneMapper p_tone_mapper){
-
-}
-void VisualServerScene::environment_set_brightness(RID p_env,bool p_enable,float p_brightness){
-
-}
-void VisualServerScene::environment_set_contrast(RID p_env,bool p_enable,float p_contrast){
-
-}
-void VisualServerScene::environment_set_saturation(RID p_env,bool p_enable,float p_saturation){
-
-}
-void VisualServerScene::environment_set_color_correction(RID p_env,bool p_enable,RID p_ramp){
-
-}
-
-
 /* SCENARIO API */
 
 

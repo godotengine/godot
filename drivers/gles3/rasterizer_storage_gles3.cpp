@@ -995,6 +995,104 @@ void RasterizerStorageGLES3::texture_set_shrink_all_x2_on_set_data(bool p_enable
 	config.shrink_textures_x2=p_enable;
 }
 
+RID RasterizerStorageGLES3::texture_create_pbr_cubemap(RID p_source,VS::PBRCubeMapMode p_mode,int p_resolution) const {
+
+	Texture * texture = texture_owner.get(p_source);
+	ERR_FAIL_COND_V(!texture,RID());
+	ERR_FAIL_COND_V(!(texture->flags&VS::TEXTURE_FLAG_CUBEMAP),RID());
+
+	bool use_float=true;
+
+	if (p_resolution<0) {
+		p_resolution=texture->width;
+	}
+
+
+	glBindVertexArray(0);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_SCISSOR_TEST);
+#ifdef GLEW_ENABLED
+	glDisable(GL_POINT_SPRITE);
+	glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+#endif
+	glDisable(GL_BLEND);
+
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(texture->target, texture->tex_id);
+
+	glActiveTexture(GL_TEXTURE0);
+	GLuint new_cubemap;
+	glGenTextures(1, &new_cubemap);
+
+
+	GLuint tmp_fb;
+
+	glGenFramebuffers(1, &tmp_fb);
+	glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb);
+
+
+	int w = texture->width;
+	int h = texture->height;
+
+	int lod=0;
+
+	shaders.cubemap_filter.bind();
+
+	int mipmaps=6;
+
+	int mm_level=mipmaps;
+
+	while(mm_level) {
+
+		for(int i=0;i<6;i++) {
+			glTexImage2D(_cube_side_enum[i], lod, use_float?GL_RGBA16F:GL_RGB10_A2,  w, h, 0, GL_RGBA, use_float?GL_HALF_FLOAT:GL_UNSIGNED_INT_2_10_10_10_REV, NULL);
+			glTexParameteri(_cube_side_enum[i], GL_TEXTURE_BASE_LEVEL, lod);
+			glTexParameteri(_cube_side_enum[i], GL_TEXTURE_MAX_LEVEL, lod);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _cube_side_enum[i], new_cubemap, 0);
+
+			glViewport(0,0,w,h);
+			glBindVertexArray(resources.quadie_array);
+
+			shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::FACE_ID,i);
+			shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::ROUGHNESS,lod/float(mipmaps));
+
+
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);
+			glBindVertexArray(0);
+#ifdef DEBUG_ENABLED
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			ERR_CONTINUE(status!=GL_FRAMEBUFFER_COMPLETE);
+#endif
+		}
+
+
+
+		if (w>1)
+			w>>=1;
+		if (h>1)
+			h>>=1;
+
+		lod++;
+		mm_level--;
+
+	}
+
+
+	for(int i=0;i<6;i++) {
+		//restore ranges
+		glTexParameteri(_cube_side_enum[i], GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(_cube_side_enum[i], GL_TEXTURE_MAX_LEVEL, lod);
+
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, config.system_fbo);
+	glDeleteFramebuffers(1, &tmp_fb);
+
+
+	return RID();
+}
 
 
 /* SHADER API */
@@ -3649,6 +3747,45 @@ void RasterizerStorageGLES3::initialize() {
 #else
 	config.use_rgba_2d_shadows=true;
 #endif
+
+
+	//generic quadie for copying
+
+	{
+		//quad buffers
+
+		glGenBuffers(1,&resources.quadie);
+		glBindBuffer(GL_ARRAY_BUFFER,resources.quadie);
+		{
+			const float qv[16]={
+				-1,-1,
+				 0, 0,
+				-1, 1,
+				 0, 1,
+				 1, 1,
+				 1, 1,
+				 1,-1,
+				 1, 0,
+			};
+
+			glBufferData(GL_ARRAY_BUFFER,sizeof(float)*16,qv,GL_STATIC_DRAW);
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
+
+
+		glGenVertexArrays(1,&resources.quadie_array);
+		glBindVertexArray(resources.quadie_array);
+		glBindBuffer(GL_ARRAY_BUFFER,resources.quadie);
+		glVertexAttribPointer(0,2,GL_FLOAT,GL_FALSE,sizeof(float)*4,0);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(float)*4,((uint8_t*)NULL)+8);
+		glEnableVertexAttribArray(1);
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
+	}
+
+	shaders.cubemap_filter.init();
 }
 
 void RasterizerStorageGLES3::finalize() {

@@ -33,19 +33,30 @@ void main() {
 
 #ifdef USE_CUBEMAP
 in vec3 cube_interp;
-uniform samplerCube source_cube;
+uniform samplerCube source_cube; //texunit:0
 #else
 in vec2 uv_interp;
-uniform sampler2D source;
+uniform sampler2D source; //texunit:0
 #endif
+
+
+uniform float stuff;
 
 in vec2 uv2_interp;
 
-layout(location = 0) vec4 frag_color; //color:0
+layout(location = 0) out vec4 frag_color;
 
 void main() {
 
 	//vec4 color = color_interp;
+
+#ifdef USE_CUBEMAP
+	vec4 color = texture( source_cube,  normalize(cube_interp) );
+
+#else
+	vec4 color = texture( source,  uv_interp );
+#endif
+
 
 	frag_color = color;
 }

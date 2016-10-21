@@ -16,8 +16,6 @@ public:
 
 	RasterizerStorageGLES3 *storage;
 
-
-
 	struct State {
 
 		bool current_depth_test;
@@ -40,9 +38,69 @@ public:
 
 		GLuint scene_ubo;
 
-
+		GLuint skybox_verts;
+		GLuint skybox_array;
 
 	} state;
+
+
+
+
+	/* ENVIRONMENT API */
+
+	struct Environment : public RID_Data {
+
+		VS::EnvironmentBG bg_mode;
+
+		RID skybox_color;
+		RID skybox_radiance;
+		RID skybox_irradiance;
+		float skybox_scale;
+
+		Color bg_color;
+		float energy;
+		float skybox_ambient;
+
+		Color ambient_color;
+		float ambient_anergy;
+		float ambient_skybox_energy;
+
+		int canvas_max_layer;
+
+
+		Environment() {
+			bg_mode=VS::ENV_BG_CLEAR_COLOR;
+			skybox_scale=1.0;
+			energy=1.0;
+			skybox_ambient=0;
+			ambient_anergy=1.0;
+			ambient_skybox_energy=0.0;
+			canvas_max_layer=0;
+		}
+	};
+
+	RID_Owner<Environment> environment_owner;
+
+	virtual RID environment_create();
+
+	virtual void environment_set_background(RID p_env,VS::EnvironmentBG p_bg);
+	virtual void environment_set_skybox(RID p_env,RID p_skybox,int p_radiance_size,int p_irradiance_size);
+	virtual void environment_set_skybox_scale(RID p_env,float p_scale);
+	virtual void environment_set_bg_color(RID p_env,const Color& p_color);
+	virtual void environment_set_bg_energy(RID p_env,float p_energy);
+	virtual void environment_set_canvas_max_layer(RID p_env,int p_max_layer);
+	virtual void environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy=1.0,float p_skybox_energy=0.0);
+
+	virtual void environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode);
+	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture);
+
+	virtual void environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,VS::EnvironmentToneMapper p_tone_mapper);
+	virtual void environment_set_brightness(RID p_env,bool p_enable,float p_brightness);
+	virtual void environment_set_contrast(RID p_env,bool p_enable,float p_contrast);
+	virtual void environment_set_saturation(RID p_env,bool p_enable,float p_saturation);
+	virtual void environment_set_color_correction(RID p_env,bool p_enable,RID p_ramp);
+
+	/* RENDER LIST */
 
 	struct RenderList {
 
@@ -165,6 +223,8 @@ public:
 	virtual void light_instance_set_transform(RID p_light_instance,const Transform& p_transform);
 
 	_FORCE_INLINE_ void _add_geometry(  RasterizerStorageGLES3::Geometry* p_geometry,  InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner,int p_material);
+
+	void _draw_skybox(RID p_skybox, CameraMatrix& p_projection, const Transform& p_transform, bool p_vflip, float p_scale);
 
 	virtual void render_scene(const Transform& p_cam_transform,CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_directional_lights,int p_directional_light_count,RID p_environment);
 
