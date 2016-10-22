@@ -5,7 +5,7 @@
 
 // helpers for sockaddr -> IP_Address and back, should work for posix and winsock. All implementations should use this
 
-static void _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p_ip, int p_port) {
+static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p_ip, int p_port) {
 
 	memset(p_addr, 0, sizeof(struct sockaddr_storage));
 	if (p_ip.type == IP_Address::TYPE_IPV6) {
@@ -14,6 +14,7 @@ static void _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p_i
 		addr6->sin6_family = AF_INET6;
 		addr6->sin6_port = htons(p_port);
 		copymem(&addr6->sin6_addr.s6_addr, p_ip.field8, 16);
+		return sizeof(sockaddr_in6);
 
 	} else {
 
@@ -21,10 +22,11 @@ static void _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p_i
 		addr4->sin_family = AF_INET;    // host byte order
 		addr4->sin_port = htons(p_port);  // short, network byte order
 		addr4->sin_addr = *((struct in_addr*)&p_ip.field32[0]);
+		return sizeof(sockaddr_in);
 	};
 };
 
-static void _set_listen_sockaddr(struct sockaddr_storage* p_addr, int p_port, IP_Address::AddrType p_address_type, const List<String> *p_accepted_hosts) {
+static size_t _set_listen_sockaddr(struct sockaddr_storage* p_addr, int p_port, IP_Address::AddrType p_address_type, const List<String> *p_accepted_hosts) {
 
 	memset(p_addr, 0, sizeof(struct sockaddr_storage));
 	if (p_address_type == IP_Address::TYPE_IPV4) {
@@ -32,12 +34,14 @@ static void _set_listen_sockaddr(struct sockaddr_storage* p_addr, int p_port, IP
 		addr4->sin_family = AF_INET;
 		addr4->sin_port = htons(p_port);
 		addr4->sin_addr.s_addr = INADDR_ANY; // TODO: use accepted hosts list
+		return sizeof(sockaddr_in);
 	} else {
 		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)p_addr;
 
 		addr6->sin6_family = AF_INET6;
 		addr6->sin6_port = htons(p_port);
 		addr6->sin6_addr = in6addr_any; // TODO: use accepted hosts list
+		return sizeof(sockaddr_in6);
 	};
 };
 

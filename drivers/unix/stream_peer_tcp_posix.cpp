@@ -98,9 +98,9 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 	};
 
 	struct sockaddr_storage their_addr;
-	_set_sockaddr(&their_addr, peer_host, peer_port);
+	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port);
 
-	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(their_addr)) == -1) {
+	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == -1) {
 
 		if (errno == EISCONN) {
 			status = STATUS_CONNECTED;
@@ -153,10 +153,10 @@ Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 #endif
 
 	struct sockaddr_storage their_addr;
-	_set_sockaddr(&their_addr, p_host, p_port);
+	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port);
 
 	errno = 0;
-	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(their_addr)) == -1 && errno != EINPROGRESS) {
+	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == -1 && errno != EINPROGRESS) {
 
 		ERR_PRINT("Connection to remote host failed!");
 		disconnect();

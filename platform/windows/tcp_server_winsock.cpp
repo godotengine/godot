@@ -77,7 +77,7 @@ Error TCPServerWinsock::listen(uint16_t p_port, IP_Address::AddrType p_type,cons
 	};
 
 	struct sockaddr_storage my_addr;
-	_set_listen_sockaddr(&my_addr, p_port, p_type, p_accepted_hosts);
+	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, p_type, p_accepted_hosts);
 
 	int reuse=1;
 	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
@@ -86,7 +86,7 @@ Error TCPServerWinsock::listen(uint16_t p_port, IP_Address::AddrType p_type,cons
 	}
 
 
-	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof my_addr) != SOCKET_ERROR) {
+	if (bind(sockfd, (struct sockaddr *)&my_addr, addr_size) != SOCKET_ERROR) {
 
 		if (::listen(sockfd, SOMAXCONN) == SOCKET_ERROR) {
 

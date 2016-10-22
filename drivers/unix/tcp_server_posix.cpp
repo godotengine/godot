@@ -87,11 +87,11 @@ Error TCPServerPosix::listen(uint16_t p_port, IP_Address::AddrType p_type, const
 	}
 
 	struct sockaddr_storage addr;
-	_set_listen_sockaddr(&addr, p_port, p_type, p_accepted_hosts);
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, p_type, p_accepted_hosts);
 
 	// automatically fill with my IP TODO: use p_accepted_hosts
 
-	if (bind(sockfd, (struct sockaddr *)&addr, sizeof addr) != -1) {
+	if (bind(sockfd, (struct sockaddr *)&addr, addr_size) != -1) {
 
 		if (::listen(sockfd, 1) == -1) {
 
