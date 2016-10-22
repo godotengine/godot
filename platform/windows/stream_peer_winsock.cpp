@@ -88,9 +88,9 @@ Error StreamPeerWinsock::_poll_connection(bool p_block) const {
 	};
 
 	struct sockaddr_storage their_addr;
-	_set_sockaddr(&their_addr, peer_host, peer_port);
+	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port);
 
-	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(struct sockaddr)) == SOCKET_ERROR) {
+	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == SOCKET_ERROR) {
 
 		int err = WSAGetLastError();
 		if (err == WSAEISCONN) {
@@ -312,9 +312,9 @@ Error StreamPeerWinsock::connect(const IP_Address& p_host, uint16_t p_port) {
 	};
 
 	struct sockaddr_storage their_addr;
-	_set_sockaddr(&their_addr, p_host, p_port);
+	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port);
 
-	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(struct sockaddr)) == SOCKET_ERROR) {
+	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == SOCKET_ERROR) {
 
 		if (WSAGetLastError() != WSAEWOULDBLOCK) {
 			ERR_PRINT("Connection to remote host failed!");
