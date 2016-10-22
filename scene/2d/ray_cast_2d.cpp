@@ -187,37 +187,42 @@ void RayCast2D::_notification(int p_what) {
 			if (!enabled)
 				break;
 
-
-
-			Ref<World2D> w2d = get_world_2d();
-			ERR_BREAK( w2d.is_null() );
-
-			Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(w2d->get_space());
-			ERR_BREAK( !dss );
-
-			Matrix32 gt = get_global_transform();
-
-			Vector2 to = cast_to;
-			if (to==Vector2())
-				to=Vector2(0,0.01);
-
-			Physics2DDirectSpaceState::RayResult rr;
-
-			if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr,exclude,layer_mask,type_mask)) {
-
-				collided=true;
-				against=rr.collider_id;
-				collision_point=rr.position;
-				collision_normal=rr.normal;
-				against_shape=rr.shape;
-			} else {
-				collided=false;
-			}
-
+			_update_raycast_state();
 
 
 		} break;
 	}
+}
+
+void RayCast2D::_update_raycast_state() {
+	Ref<World2D> w2d = get_world_2d();
+	ERR_FAIL_COND( w2d.is_null() );
+
+	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(w2d->get_space());
+	ERR_FAIL_COND( !dss );
+
+	Matrix32 gt = get_global_transform();
+
+	Vector2 to = cast_to;
+	if (to==Vector2())
+		to=Vector2(0,0.01);
+
+	Physics2DDirectSpaceState::RayResult rr;
+
+	if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr,exclude,layer_mask,type_mask)) {
+
+		collided=true;
+		against=rr.collider_id;
+		collision_point=rr.position;
+		collision_normal=rr.normal;
+		against_shape=rr.shape;
+	} else {
+		collided=false;
+	}
+}
+
+void RayCast2D::force_raycast_update() {
+	_update_raycast_state();
 }
 
 void RayCast2D::add_exception_rid(const RID& p_rid) {
@@ -265,6 +270,7 @@ void RayCast2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_cast_to"),&RayCast2D::get_cast_to);
 
 	ObjectTypeDB::bind_method(_MD("is_colliding"),&RayCast2D::is_colliding);
+	ObjectTypeDB::bind_method(_MD("force_raycast_update"),&RayCast2D::force_raycast_update);
 
 	ObjectTypeDB::bind_method(_MD("get_collider"),&RayCast2D::get_collider);
 	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&RayCast2D::get_collider_shape);

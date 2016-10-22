@@ -53,6 +53,7 @@ class RayCast : public Spatial {
 protected:
 
 	void _notification(int p_what);
+	void _update_raycast_state();
 	static void _bind_methods();
 public:
 
@@ -68,6 +69,7 @@ public:
 	void set_type_mask(uint32_t p_mask);
 	uint32_t get_type_mask() const;
 
+	void force_raycast_update();
 	bool is_colliding() const;
 	Object *get_collider() const;
 	int get_collider_shape() const;
