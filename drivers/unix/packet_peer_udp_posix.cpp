@@ -99,12 +99,12 @@ Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 	int sock = _get_socket(peer_addr.type);
 	ERR_FAIL_COND_V( sock == -1, FAILED );
 	struct sockaddr_storage addr;
-	_set_sockaddr(&addr, peer_addr, peer_port);
+	size_t addr_size = _set_sockaddr(&addr, peer_addr, peer_port);
 
 	errno = 0;
 	int err;
 
-	while ( (err = sendto(sock, p_buffer, p_buffer_size, 0, (struct sockaddr*)&addr, sizeof(addr))) != p_buffer_size) {
+	while ( (err = sendto(sock, p_buffer, p_buffer_size, 0, (struct sockaddr*)&addr, addr_size)) != p_buffer_size) {
 
 		if (errno != EAGAIN) {
 			return FAILED;
@@ -129,9 +129,9 @@ Error PacketPeerUDPPosix::listen(int p_port, IP_Address::AddrType p_address_type
 		return ERR_CANT_CREATE;
 
 	sockaddr_storage addr = {0};
-	_set_listen_sockaddr(&addr, p_port, p_address_type, NULL);
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, p_address_type, NULL);
 
-	if (bind(sock, (struct sockaddr*)&addr, sizeof(sockaddr_storage)) == -1 ) {
+	if (bind(sock, (struct sockaddr*)&addr, addr_size) == -1 ) {
 		close();
 		return ERR_UNAVAILABLE;
 	}
