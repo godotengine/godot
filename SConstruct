@@ -65,6 +65,8 @@ elif (os.name=="nt"):
 		custom_tools=['mingw']
 
 env_base=Environment(tools=custom_tools);
+if 'TERM' in os.environ:
+	env_base['ENV']['TERM'] = os.environ['TERM']
 env_base.AppendENVPath('PATH', os.getenv('PATH'))
 env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
 env_base.global_defaults=global_defaults
@@ -143,7 +145,7 @@ opts.Add("LINKFLAGS", "Custom flags for the linker");
 opts.Add('unix_global_settings_path', 'unix-specific path to system-wide settings. Currently only used by templates.','')
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
-opts.Add('colored', 'Enable colored output for the compilation (yes/no)', 'no')
+opts.Add('verbose', 'Enable verbose output for the compilation (yes/no)', 'yes')
 opts.Add('deprecated','Enable deprecated features (yes/no)','yes')
 opts.Add('extra_suffix', 'Custom extra suffix added to the base filename of all generated binary files.', '')
 opts.Add('vsproj', 'Generate Visual Studio Project. (yes/no)', 'no')
@@ -332,8 +334,8 @@ if selected_platform in platform_list:
 	if (env['xml']=='yes'):
 		env.Append(CPPFLAGS=['-DXML_ENABLED'])
 
-	if (env['colored']=='yes'):
-		methods.colored(sys,env)
+	if (env['verbose']=='no'):
+		methods.no_verbose(sys,env)
 
 	Export('env')
 
