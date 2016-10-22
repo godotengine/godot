@@ -142,7 +142,7 @@ opts.Add('libmpcdec','libmpcdec library for mpc module (system/builtin)','builti
 opts.Add('glew','GLEW library for the gl_context (system/builtin)','builtin')
 opts.Add("CXX", "C++ Compiler")
 opts.Add("CC", "C Compiler")
-opts.Add("CCFLAGS", "Custom flags for the C++ compiler");
+opts.Add("CCFLAGS", "Custom flags for the C/C++ compiler");
 opts.Add("CFLAGS", "Custom flags for the C compiler");
 opts.Add("LINKFLAGS", "Custom flags for the linker");
 opts.Add('unix_global_settings_path', 'unix-specific path to system-wide settings. Currently only used by templates.','')
