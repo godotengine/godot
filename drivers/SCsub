@@ -25,7 +25,6 @@ SConscript('gl_context/SCsub');
 
 # Core dependencies
 SConscript("png/SCsub");
-SConscript("nrex/SCsub");
 
 # Tools override
 # FIXME: Should likely be integrated in the tools/ codebase
