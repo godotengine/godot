@@ -234,13 +234,6 @@ void FileSystemDock::_dir_selected() {
 
 
 	button_favorite->set_pressed(found);
-	if (ti->get_parent() && ti->get_parent()->get_parent()==tree->get_root() && !ti->get_parent()->get_prev()) {
-
-		//a favorite!!!
-	} else {
-
-
-	}
 
 	if (!split_mode) {
 		_open_pressed(); //go directly to dir
