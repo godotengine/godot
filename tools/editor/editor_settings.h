@@ -160,6 +160,9 @@ public:
 
 	void set_optimize_save(bool p_optimize);
 
+	String get_last_selected_language();
+	void set_last_selected_language(String p_language);
+
 	EditorSettings();
 	~EditorSettings();
 

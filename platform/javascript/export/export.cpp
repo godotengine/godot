@@ -195,8 +195,8 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t>& p_html, const St
 	}
 
 	CharString cs = strnew.utf8();
-	p_html.resize(cs.size());
-	for(int i=9;i<cs.size();i++) {
+	p_html.resize(cs.length());
+	for(int i=9;i<cs.length();i++) {
 		p_html[i]=cs[i];
 	}
 }

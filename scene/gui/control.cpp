@@ -1725,11 +1725,11 @@ Control *Control::find_next_valid_focus() const {
 
 		if (next_child==this) // no next control->
 			return (get_focus_mode()==FOCUS_ALL)?next_child:NULL;
-
-		if (next_child->get_focus_mode()==FOCUS_ALL)
-			return next_child;
-
-		from = next_child;
+		if (next_child) {
+			if (next_child->get_focus_mode()==FOCUS_ALL)
+				return next_child;
+			from = next_child;
+		} else break;
 	}
 
 	return NULL;

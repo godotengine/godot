@@ -32,11 +32,9 @@ def get_opts():
 def get_flags():
 
 	return [
-		('lua', 'no'),
 		('tools', 'no'),
-		('nedmalloc', 'no'),
-		('theora', 'no'),
-
+		('builtin_zlib', 'yes'),
+		('module_theora_enabled', 'no'),
 	]
 
 def configure(env):

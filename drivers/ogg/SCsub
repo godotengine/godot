@@ -1,9 +1,0 @@
-Import('env')
-
-ogg_sources = [
-
-	"ogg/bitwise.c",
-	"ogg/framing.c",
-]
-
-env.drivers_sources+=ogg_sources

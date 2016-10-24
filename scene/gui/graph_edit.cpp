@@ -151,7 +151,7 @@ void GraphEdit::_update_scroll_offset() {
 		}
 	}
 
-	connections_layer->set_pos(-Point2(h_scroll->get_val(),v_scroll->get_val())*zoom);
+	connections_layer->set_pos(-Point2(h_scroll->get_val(),v_scroll->get_val()));
 	set_block_minimum_size_adjust(false);
 	awaiting_scroll_offset_update=false;
 
@@ -254,6 +254,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		gn->set_scale(Vector2(zoom,zoom));
 		gn->connect("offset_changed",this,"_graph_node_moved",varray(gn));
 		gn->connect("raise_request",this,"_graph_node_raised",varray(gn));
+		gn->connect("item_rect_changed",connections_layer,"update");
 		_graph_node_moved(gn);
 		gn->set_stop_mouse(false);
 	}
@@ -650,8 +651,8 @@ void GraphEdit::_draw_cos_line(CanvasItem* p_where,const Vector2& p_from, const 
 		cp_offset=MAX(MIN(cp_len-diff,cp_neg_len),-diff*0.5);
 	}
 
-	Vector2 c1 = Vector2(cp_offset,0);
-	Vector2 c2 = Vector2(-cp_offset,0);
+	Vector2 c1 = Vector2(cp_offset*zoom,0);
+	Vector2 c2 = Vector2(-cp_offset*zoom,0);
 
 	int lines=0;
 	_bake_segment2d(p_where,0,1,p_from,c1,p_to,c2,0,3,9,8,p_color,p_to_color,lines);
@@ -726,9 +727,9 @@ void GraphEdit::_connections_layer_draw() {
 				continue;
 			}
 
-			Vector2 frompos=gfrom->get_connection_output_pos(E->get().from_port)+gfrom->get_offset();
+			Vector2 frompos=gfrom->get_connection_output_pos(E->get().from_port)+gfrom->get_offset()*zoom;
 			Color color = gfrom->get_connection_output_color(E->get().from_port);
-			Vector2 topos=gto->get_connection_input_pos(E->get().to_port)+gto->get_offset();
+			Vector2 topos=gto->get_connection_input_pos(E->get().to_port)+gto->get_offset()*zoom;
 			Color tocolor = gto->get_connection_input_color(E->get().to_port);
 			_draw_cos_line(connections_layer,frompos,topos,color,tocolor);
 
@@ -912,18 +913,20 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 		if (b.button_index==BUTTON_LEFT && b.pressed) {
 
 			GraphNode *gn = NULL;
+			GraphNode *gn_selected = NULL;
 			for(int i=get_child_count()-1;i>=0;i--) {
 
-				gn=get_child(i)->cast_to<GraphNode>();
+				gn_selected=get_child(i)->cast_to<GraphNode>();
 
-				if (gn) {
+				if (gn_selected) {
 
-					if (gn->is_resizing())
+					if (gn_selected->is_resizing())
 						continue;
 
-					Rect2 r = gn->get_rect();
+					Rect2 r = gn_selected->get_rect();
 					r.size*=zoom;
 					if (r.has_point(get_local_mouse_pos()))
+						gn = gn_selected;
 						break;
 				}
 			}
@@ -1050,6 +1053,7 @@ void GraphEdit::set_zoom(float p_zoom) {
 	top_layer->update();
 
 	_update_scroll();
+	connections_layer->update();
 
 	if (is_visible()) {
 

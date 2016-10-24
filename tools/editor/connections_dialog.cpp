@@ -181,6 +181,14 @@ void ConnectDialog::ok_pressed() {
 		error->popup_centered_minsize();
 		return;
 	}
+	Node* target = tree->get_selected();
+	if (target->get_script().is_null()) {
+		if (!target->has_method(dst_method->get_text())) {
+			error->set_text(TTR("Target method not found! Specify a valid method or attach a script to target Node."));
+			error->popup_centered_minsize();
+			return;
+		}
+	}
 	emit_signal("connected");
 	hide();
 

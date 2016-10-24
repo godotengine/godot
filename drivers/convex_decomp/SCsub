@@ -1,4 +1,7 @@
-Import('env')
-Export('env');
+#!/usr/bin/env python
 
-env.add_source_files(env.drivers_sources,"*.cpp")
+Import('env')
+
+env.add_source_files(env.drivers_sources, "*.cpp")
+
+Export('env')

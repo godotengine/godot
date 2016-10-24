@@ -153,6 +153,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _filter_changed(const String& p_filter);
 
 	void _perform_instance_scenes(const Vector<String>& p_files,Node* parent,int p_pos);
+	void _replace_with_branch_scene(const String& p_file,Node* base);
 
 protected:
 

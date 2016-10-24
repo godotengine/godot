@@ -516,7 +516,7 @@ MainLoop* test() {
 
 	{
 
-		Vector<int32_t> hashes;
+		Vector<int> hashes;
 		List<StringName> tl;
 		ObjectTypeDB::get_type_list(&tl);
 

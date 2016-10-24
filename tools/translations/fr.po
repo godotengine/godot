@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-08-29 13:56+0000\n"
+"PO-Revision-Date: 2016-09-03 09:11+0000\n"
 "Last-Translator: Thomas Baijot <thomasbaijot@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.8\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -41,6 +41,12 @@ msgstr "Pas assez d'octets pour les octets de décodage, ou format non valide."
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
 msgstr "L'argument du pas est zéro!"
+
+#: modules/gdscript/gd_functions.cpp
+msgid ""
+"Paths cannot start with '/', absolute paths must start with 'res://', "
+"'user://', or 'local://'"
+msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
@@ -106,11 +112,11 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr "Fonction :"
+msgstr "Fonctions :"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Variables:"
-msgstr "Variables:"
+msgstr "Variables :"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Signals:"
@@ -172,6 +178,11 @@ msgid "Editing Signal:"
 msgstr "Connecter un signal :"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Expression"
+msgstr "Changer le type"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
 msgstr "Ajouter un nœud"
 
@@ -215,6 +226,47 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
 msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Condition"
+msgstr "Copier l'animation"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Sequence"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Switch"
+msgstr "Hauteur"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Iterator"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "While"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Return"
+msgstr "Retourne :"
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
+msgid "Call"
+msgstr "Appel"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Get"
+msgstr "Définir"
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/property_editor.cpp
+msgid "Set"
+msgstr "Définir"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -322,7 +374,7 @@ msgstr "Le chemin ne mène pas au nœud !"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr ""
+msgstr "Nom de propriété invalide '%s' dans le nœud %s."
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
@@ -331,15 +383,15 @@ msgstr "Nom de classe parent invalide"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
-msgstr ": Arguments invalides "
+msgstr ": Arguments invalides: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
-msgstr ""
+msgstr "VariableGet introuvable dans le script: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
-msgstr ""
+msgstr "VariableSet introuvable dans le script: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -349,6 +401,90 @@ msgstr ""
 msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "just pressed"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "just released"
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid ""
+"Couldn't read the certficate file. Are the path and password both correct?"
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid "Error creating the signature object."
+msgstr "Erreur d'écriture du PCK du projet !"
+
+#: platform/winrt/export/export.cpp
+msgid "Error creating the package signature."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid ""
+"No export templates found.\n"
+"Download and install export templates."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Custom debug package not found."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Custom release package not found."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid "Invalid unique name."
+msgstr "Nom invalide."
+
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid "Invalid product GUID."
+msgstr "Taille de police invalide."
+
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid "Invalid publisher GUID."
+msgstr "Chemin de base invalide"
+
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid "Invalid background color."
+msgstr "Source personnalisée de police invalide."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp
@@ -541,6 +677,13 @@ msgid ""
 msgstr ""
 "Un NavigationMeshInstance doit être enfant ou sous-enfant d'un nœud de type "
 "Navigation. Il fournit uniquement des données de navigation."
+
+#: scene/3d/remote_transform.cpp
+#, fuzzy
+msgid "Path property must point to a valid Spatial node to work."
+msgstr ""
+"La propriété Path doit pointer à un nœud de type Particles2D valide pour "
+"fonctionner."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -997,7 +1140,7 @@ msgstr "Animation Inserer une clé"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr "Changer la longueur de l'animation"
+msgstr "Modifier la longueur de l'animation"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Loop"
@@ -1193,10 +1336,6 @@ msgid "Method List For '%s':"
 msgstr "Liste des méthodes pour « %s » :"
 
 #: tools/editor/call_dialog.cpp
-msgid "Call"
-msgstr "Appel"
-
-#: tools/editor/call_dialog.cpp
 msgid "Method List:"
 msgstr "Liste des méthodes :"
 
@@ -1315,6 +1454,12 @@ msgid "Method in target Node must be specified!"
 msgstr "La méthode du nœud cible doit être spécifiée !"
 
 #: tools/editor/connections_dialog.cpp
+msgid ""
+"Target method not found! Specify a valid method or attach a script to target "
+"Node."
+msgstr ""
+
+#: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
 msgstr "Connecter au nœud :"
 
@@ -1389,6 +1534,15 @@ msgstr "Signaux"
 #: tools/editor/create_dialog.cpp
 msgid "Create New"
 msgstr "Créer un nouveau"
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: tools/editor/filesystem_dock.cpp
+msgid "Favorites:"
+msgstr "Favoris :"
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_file_dialog.cpp
+msgid "Recent:"
+msgstr "Récents :"
 
 #: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -1637,7 +1791,7 @@ msgstr "Choisir"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr "Revenir"
+msgstr "Retour"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Go Forward"
@@ -1675,14 +1829,6 @@ msgstr "Déplacer le favori vers le haut"
 #: tools/editor/editor_file_dialog.cpp
 msgid "Move Favorite Down"
 msgstr "Déplacer le favori vers le bas"
-
-#: tools/editor/editor_file_dialog.cpp tools/editor/filesystem_dock.cpp
-msgid "Favorites:"
-msgstr "Favoris :"
-
-#: tools/editor/editor_file_dialog.cpp
-msgid "Recent:"
-msgstr "Récents :"
 
 #: tools/editor/editor_file_dialog.cpp
 msgid "Preview:"
@@ -2099,14 +2245,6 @@ msgid "Go to previously opened scene."
 msgstr "Aller à la scène ouverte précédemment."
 
 #: tools/editor/editor_node.cpp
-msgid "Fullscreen Mode"
-msgstr "Mode plein écran"
-
-#: tools/editor/editor_node.cpp
-msgid "Distraction Free Mode"
-msgstr "Mode sans distraction"
-
-#: tools/editor/editor_node.cpp
 msgid "Next tab"
 msgstr "Onglet suivant"
 
@@ -2190,6 +2328,10 @@ msgstr "Réinitialiser la scène"
 #: tools/editor/editor_node.cpp
 msgid "Quit to Project List"
 msgstr "Quitter vers la liste des projets"
+
+#: tools/editor/editor_node.cpp
+msgid "Distraction Free Mode"
+msgstr "Mode sans distraction"
 
 #: tools/editor/editor_node.cpp
 msgid "Import assets to the project."
@@ -2377,6 +2519,11 @@ msgid "Editor Layout"
 msgstr "Disposition de l'éditeur"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Toggle Fullscreen"
+msgstr "Mode plein écran"
+
+#: tools/editor/editor_node.cpp
 msgid "Install Export Templates"
 msgstr "Installer les modèles d'exportation"
 
@@ -2399,6 +2546,10 @@ msgstr "Toujours repeindre"
 #: tools/editor/editor_node.cpp
 msgid "Update Changes"
 msgstr "Repeindre quand modifié"
+
+#: tools/editor/editor_node.cpp
+msgid "Disable Update Spinner"
+msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Inspector"
@@ -2439,6 +2590,10 @@ msgstr "Propriétés de l'objet."
 #: tools/editor/editor_node.cpp
 msgid "FileSystem"
 msgstr "Système de fichiers"
+
+#: tools/editor/editor_node.cpp tools/editor/node_dock.cpp
+msgid "Node"
+msgstr "Nœud"
 
 #: tools/editor/editor_node.cpp
 msgid "Output"
@@ -3288,10 +3443,6 @@ msgid "MultiNode Set"
 msgstr "Réglage multi-nœuds"
 
 #: tools/editor/node_dock.cpp
-msgid "Node"
-msgstr "Nœud"
-
-#: tools/editor/node_dock.cpp
 msgid "Groups"
 msgstr "Groupes"
 
@@ -3847,6 +3998,11 @@ msgstr "Créer les os"
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Bones"
 msgstr "Effacer les os"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Bones"
+msgstr "Créer les os"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
@@ -4598,6 +4754,11 @@ msgid "Close Docs"
 msgstr "Cloner en dessous"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Close All"
+msgstr "Fermer"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find.."
@@ -4708,6 +4869,11 @@ msgid ""
 msgstr ""
 "Les scripts intégrés ne peuvent être modifiés uniquement lorsque la scène à "
 "qui ils appartiennent est ouverte"
+
+#: tools/editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Pick Color"
+msgstr "Couleur"
 
 #: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
 msgid "Move Up"
@@ -5093,6 +5259,11 @@ msgstr "Coller l'animation"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
+msgid "Focus Origin"
+msgstr "Afficher l'origine"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Focus Selection"
 msgstr "Mettre à l'échelle la sélection"
 
@@ -5364,6 +5535,11 @@ msgstr "Tout ajouter"
 #: tools/editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Item"
 msgstr "Supprimer l'item"
+
+#: tools/editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme"
+msgstr "Enregistrer le thème"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -6192,6 +6368,11 @@ msgid "Assign"
 msgstr "Assigner"
 
 #: tools/editor/property_editor.cpp
+#, fuzzy
+msgid "New Script"
+msgstr "Créer un script"
+
+#: tools/editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
 msgstr "Erreur de chargement du fichier : ce n'est pas une ressource !"
 
@@ -6206,10 +6387,6 @@ msgstr "Bit %d, valeur %d."
 #: tools/editor/property_editor.cpp
 msgid "On"
 msgstr "Activé"
-
-#: tools/editor/property_editor.cpp
-msgid "Set"
-msgstr "Définir"
 
 #: tools/editor/property_editor.cpp
 msgid "Properties:"

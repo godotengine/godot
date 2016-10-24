@@ -175,6 +175,7 @@ class EditorSceneImportDialog : public ConfirmationDialog  {
 	EditorDirDialog *save_select;
 	OptionButton *texture_action;
 	CreateDialog *root_type_choose;
+	LineEdit *root_node_name;
 
 	ConfirmationDialog *confirm_open;
 
@@ -639,6 +640,7 @@ void EditorSceneImportDialog::_choose_file(const String& p_path) {
 	} else {
 #endif
 		save_path->set_text("");
+		root_node_name->set_text("");
 		//save_path->set_text(p_path.get_file().basename()+".scn");
 #if 0
 	}
@@ -656,6 +658,9 @@ void EditorSceneImportDialog::_choose_file(const String& p_path) {
 
 
 	import_path->set_text(p_path);
+	if (root_node_name->get_text().size()==0){
+		root_node_name->set_text(import_path->get_text().get_file().basename());
+	}
 
 }
 void EditorSceneImportDialog::_choose_save_file(const String& p_path) {
@@ -788,6 +793,10 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	if (!root_default->is_pressed()) {
 		rim->set_option("root_type",root_type->get_text());
 	}
+	if (root_node_name->get_text().size()==0) {
+		root_node_name->set_text(import_path->get_text().get_file().basename());
+	}
+	rim->set_option("root_name",root_node_name->get_text());
 
 	List<String> missing;
 	Error err = plugin->import1(rim,&scene,&missing);
@@ -946,7 +955,11 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 			root_default->set_pressed(true);
 			root_type->set_disabled(true);
 		}
-
+		if (rimd->has_option("root_name")) {
+			root_node_name->set_text(rimd->get_option("root_name"));
+		} else {
+			root_node_name->set_text(root_type->get_text()); // backward compatibility for 2.1 or before
+		}
 		script_path->set_text(rimd->get_option("post_import_script"));
 
 		save_path->set_text(p_from.get_base_dir());
@@ -1241,7 +1254,9 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	root_default->connect("pressed",this,"_root_default_pressed");
 	custom_root_hb->add_child(root_default);
 
-
+	root_node_name = memnew( LineEdit );
+	root_node_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc->add_margin_child(TTR("Root Node Name:"),root_node_name);
 	/*
 	this_import = memnew( OptionButton );
 	this_import->add_item("Overwrite Existing Scene");
@@ -2185,6 +2200,7 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 		}
 	}
 
+	scene->set_name(from->get_option("root_name"));
 	_tag_import_paths(scene,scene);
 
 	*r_node=scene;
