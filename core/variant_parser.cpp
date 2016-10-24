@@ -1177,16 +1177,16 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 		} else if (id=="IntArray") {
 
-			Vector<int32_t> args;
-			Error err = _parse_construct<int32_t>(p_stream,args,line,r_err_str);
+			Vector<int> args;
+			Error err = _parse_construct<int>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
-			DVector<int32_t> arr;
+			DVector<int> arr;
 			{
 				int len=args.size();
 				arr.resize(len);
-				DVector<int32_t>::Write w = arr.write();
+				DVector<int>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
 					w[i]=int(args[i]);
 				}

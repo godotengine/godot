@@ -745,6 +745,9 @@ void GraphNode::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_resizeable","resizeable"),&GraphNode::set_resizeable);
 	ObjectTypeDB::bind_method(_MD("is_resizeable"),&GraphNode::is_resizeable);
 
+	ObjectTypeDB::bind_method(_MD("set_selected","selected"),&GraphNode::set_selected);
+	ObjectTypeDB::bind_method(_MD("is_selected"),&GraphNode::is_selected);
+
 	ObjectTypeDB::bind_method(_MD("get_connection_output_count"),&GraphNode::get_connection_output_count);
 	ObjectTypeDB::bind_method(_MD("get_connection_input_count"),&GraphNode::get_connection_input_count);
 
@@ -766,6 +769,7 @@ void GraphNode::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"title"),_SCS("set_title"),_SCS("get_title"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"show_close"),_SCS("set_show_close_button"),_SCS("is_close_button_visible"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"resizeable"),_SCS("set_resizeable"),_SCS("is_resizeable"));
 
 	ADD_SIGNAL(MethodInfo("offset_changed"));
 	ADD_SIGNAL(MethodInfo("dragged",PropertyInfo(Variant::VECTOR2,"from"),PropertyInfo(Variant::VECTOR2,"to")));
@@ -788,4 +792,5 @@ GraphNode::GraphNode() {
 	comment=false;
 	resizeable=false;
 	resizing=false;
+	selected=false;
 }

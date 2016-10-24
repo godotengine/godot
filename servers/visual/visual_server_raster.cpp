@@ -7612,6 +7612,11 @@ void VisualServerRaster::set_default_clear_color(const Color& p_color) {
 	clear_color=p_color;
 }
 
+Color VisualServerRaster::get_default_clear_color() const {
+
+	return clear_color;
+}
+
 void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_color,bool p_scale) {
 
 	if (p_image.empty())

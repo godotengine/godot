@@ -1005,12 +1005,12 @@ Error GDCompiler::_parse_block(CodeGen& codegen,const GDParser::BlockNode *p_blo
 
 		switch(s->type) {
 			case GDParser::Node::TYPE_NEWLINE: {
-
+#ifdef DEBUG_ENABLED
 				const GDParser::NewLineNode *nl = static_cast<const GDParser::NewLineNode*>(s);
 				codegen.opcodes.push_back(GDFunction::OPCODE_LINE);
 				codegen.opcodes.push_back(nl->line);
 				codegen.current_line=nl->line;
-
+#endif
 			} break;
 			case GDParser::Node::TYPE_CONTROL_FLOW: {
 				// try subblocks
@@ -1201,8 +1201,10 @@ Error GDCompiler::_parse_block(CodeGen& codegen,const GDParser::BlockNode *p_blo
 				codegen.opcodes.push_back(ret);
 			} break;
 			case GDParser::Node::TYPE_BREAKPOINT: {
+#ifdef DEBUG_ENABLED
 				// try subblocks
 				codegen.opcodes.push_back(GDFunction::OPCODE_BREAKPOINT);
+#endif
 			} break;
 			case GDParser::Node::TYPE_LOCAL_VAR: {
 

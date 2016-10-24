@@ -32,7 +32,8 @@
 #ifdef RTAUDIO_ENABLED
 
 #include "servers/audio/audio_server_sw.h"
-#include "drivers/rtaudio/RtAudio.h"
+
+#include <RtAudio.h>
 
 class AudioDriverRtAudio : public AudioDriverSW {
 

@@ -235,6 +235,7 @@ void BaseButton::_notification(int p_what) {
 		status.hovering=false;
 		update();
 	}
+
 	if (p_what==NOTIFICATION_DRAG_BEGIN) {
 
 		if (status.press_attempt) {
@@ -243,9 +244,8 @@ void BaseButton::_notification(int p_what) {
 			update();
 		}
 	}
-	
-	if (p_wat==NOTIFICATION_FOCUS_ENTER) {
-		
+
+	if (p_what==NOTIFICATION_FOCUS_ENTER) {
 		status.hovering=true;
 		update();
 	}

@@ -1,0 +1,90 @@
+#!/usr/bin/env python
+
+Import('env')
+
+# Not building in a separate env as core needs it
+
+# Thirdparty source files
+if (env["freetype"] != "system"): # builtin
+	thirdparty_dir = "#thirdparty/freetype/"
+	thirdparty_sources = [
+		"src/autofit/autofit.c",
+		"src/base/ftapi.c",
+		"src/base/ftbase.c",
+		"src/base/ftbbox.c",
+		"src/base/ftbdf.c",
+		"src/base/ftbitmap.c",
+		"src/base/ftcid.c",
+		"src/base/ftdebug.c",
+		"src/base/ftfntfmt.c",
+		"src/base/ftfstype.c",
+		"src/base/ftgasp.c",
+		"src/base/ftglyph.c",
+		"src/base/ftgxval.c",
+		"src/base/ftinit.c",
+		"src/base/ftlcdfil.c",
+		"src/base/ftmm.c",
+		"src/base/ftotval.c",
+		"src/base/ftpatent.c",
+		"src/base/ftpfr.c",
+		"src/base/ftpic.c",
+		"src/base/ftstroke.c",
+		"src/base/ftsynth.c",
+		"src/base/ftsystem.c",
+		"src/base/fttype1.c",
+		"src/base/ftwinfnt.c",
+		"src/bdf/bdf.c",
+		"src/cache/ftcache.c",
+		"src/cff/cff.c",
+		"src/cid/type1cid.c",
+		"src/gxvalid/gxvalid.c",
+		"src/otvalid/otvalid.c",
+		"src/pcf/pcf.c",
+		"src/pfr/pfr.c",
+		"src/psaux/psaux.c",
+		"src/pshinter/pshinter.c",
+		"src/psnames/psnames.c",
+		"src/raster/raster.c",
+		"src/sfnt/sfnt.c",
+		"src/smooth/smooth.c",
+		"src/truetype/truetype.c",
+		"src/type1/type1.c",
+		"src/type42/type42.c",
+		"src/winfonts/winfnt.c",
+	]
+	thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+	# Include header for WinRT to fix build issues
+	if "platform" in env and env["platform"] == "winrt":
+		env.Append(CCFLAGS = ['/FI', '"modules/freetype/winrtdef.h"'])
+
+	env.Append(CPPPATH = [thirdparty_dir, thirdparty_dir + "/include"])
+
+	# also requires libpng headers
+	if (env["libpng"] != "system"): # builtin
+		env.Append(CPPPATH = ["#thirdparty/libpng"])
+
+	""" FIXME: Remove this commented code if Windows can handle the monolithic lib
+	# fix for Windows' shell miserably failing on long lines, split in two libraries
+	half1 = []
+	half2 = []
+	for x in thirdparty_sources:
+		if (x.find("src/base") != -1 and x.find("src/sfnt") != -1):
+			half1.append(x)
+		else:
+			half2.append(x)
+
+	lib = env.Library("freetype_builtin1", half2)
+	env.Append(LIBS = [lib])
+	lib = env.Library("freetype_builtin2", half1)
+	env.Append(LIBS = [lib])
+	"""
+
+	lib = env.Library("freetype_builtin", thirdparty_sources)
+	env.Append(LIBS = [lib])
+
+# Godot source files
+env.add_source_files(env.modules_sources, "*.cpp")
+env.Append(CCFLAGS = ['-DFREETYPE_ENABLED'])
+
+Export('env')

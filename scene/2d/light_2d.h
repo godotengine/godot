@@ -45,6 +45,7 @@ public:
 private:
 	RID canvas_light;
 	bool enabled;
+	bool editor_only;
 	bool shadow;
 	Color color;
 	Color shadow_color;
@@ -77,6 +78,9 @@ public:
 
 	void set_enabled( bool p_enabled);
 	bool is_enabled() const;
+
+	void set_editor_only(bool p_editor_only);
+	bool is_editor_only() const;
 
 	void set_texture( const Ref<Texture>& p_texture);
 	Ref<Texture> get_texture() const;

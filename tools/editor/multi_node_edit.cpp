@@ -53,7 +53,14 @@ bool MultiNodeEdit::_set(const StringName& p_name, const Variant& p_value){
 		if (!n)
 			continue;
 
-		ur->add_do_property(n,name,p_value);
+		if (p_value.get_type() == Variant::NODE_PATH) {
+			Node *tonode = n->get_node(p_value);
+			NodePath p_path = n->get_path_to(tonode);
+			ur->add_do_property(n,name,p_path);
+		} else {
+			ur->add_do_property(n,name,p_value);
+		}
+
 		ur->add_undo_property(n,name,n->get(name));
 
 

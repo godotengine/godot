@@ -429,6 +429,7 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 				return true;
 			i++;
 		}
+
 	} else if (invalid_types) {
 
 
@@ -439,6 +440,8 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 				return false;
 			i++;
 		}
+
+		return true;
 	}
 
 	return false;
@@ -457,7 +460,6 @@ bool Variant::can_convert_strict(Variant::Type p_type_from,Variant::Type p_type_
 	};
 
 	const Type *valid_types=NULL;
-	const Type *invalid_types=NULL;
 
 	switch(p_type_to) {
 		case BOOL: {
@@ -677,16 +679,6 @@ bool Variant::can_convert_strict(Variant::Type p_type_from,Variant::Type p_type_
 
 			if (p_type_from==valid_types[i])
 				return true;
-			i++;
-		}
-	} else if (invalid_types) {
-
-
-		int i=0;
-		while(invalid_types[i]!=NIL) {
-
-			if (p_type_from==invalid_types[i])
-				return false;
 			i++;
 		}
 	}

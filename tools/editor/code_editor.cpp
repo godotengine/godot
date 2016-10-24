@@ -1051,7 +1051,7 @@ void CodeTextEditor::_reset_zoom() {
 void CodeTextEditor::_line_col_changed() {
 
 	line_nb->set_text(itos(text_editor->cursor_get_line() + 1));
-	col_nb->set_text(itos(text_editor->cursor_get_column()));
+	col_nb->set_text(itos(text_editor->cursor_get_column() + 1));
 }
 
 void CodeTextEditor::_text_changed() {
@@ -1103,6 +1103,24 @@ void CodeTextEditor::_font_resize_timeout() {
 
 		font_resize_val=0;
 	}
+}
+
+void CodeTextEditor::update_editor_settings() {
+
+	text_editor->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
+	text_editor->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
+	text_editor->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
+	text_editor->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
+	text_editor->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
+	text_editor->set_line_numbers_zero_padded(EditorSettings::get_singleton()->get("text_editor/line_numbers_zero_padded"));
+	text_editor->set_show_line_length_guideline(EditorSettings::get_singleton()->get("text_editor/show_line_length_guideline"));
+	text_editor->set_line_length_guideline_column(EditorSettings::get_singleton()->get("text_editor/line_length_guideline_column"));
+	text_editor->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
+	text_editor->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
+	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/caret_blink"));
+	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/caret_blink_speed"));
+	text_editor->set_draw_breakpoint_gutter(EditorSettings::get_singleton()->get("text_editor/show_breakpoint_gutter"));
+	text_editor->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/block_caret"));
 }
 
 void CodeTextEditor::set_error(const String& p_error) {

@@ -67,7 +67,23 @@ void Light2D::_update_light_visibility() {
 	if (!is_inside_tree())
 		return;
 
-	VS::get_singleton()->canvas_light_set_enabled(canvas_light,enabled && is_visible());
+	bool editor_ok=true;
+
+#ifdef TOOLS_ENABLED
+	if (editor_only) {
+		if (!get_tree()->is_editor_hint()) {
+			editor_ok=false;
+		} else {
+			editor_ok = (get_tree()->get_edited_scene_root() && (this==get_tree()->get_edited_scene_root() || get_owner()==get_tree()->get_edited_scene_root()));
+		}
+	}
+#else
+	if (editor_only) {
+		editor_ok=false;
+	}
+#endif
+
+	VS::get_singleton()->canvas_light_set_enabled(canvas_light,enabled && is_visible() && editor_ok);
 }
 
 void Light2D::set_enabled( bool p_enabled) {
@@ -80,6 +96,17 @@ void Light2D::set_enabled( bool p_enabled) {
 bool Light2D::is_enabled() const {
 
 	return enabled;
+}
+
+void Light2D::set_editor_only(bool p_editor_only) {
+
+	editor_only=p_editor_only;
+	_update_light_visibility();
+}
+
+bool Light2D::is_editor_only() const{
+
+	return editor_only;
 }
 
 void Light2D::set_texture( const Ref<Texture>& p_texture) {
@@ -328,6 +355,9 @@ void Light2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_enabled","enabled"),&Light2D::set_enabled);
 	ObjectTypeDB::bind_method(_MD("is_enabled"),&Light2D::is_enabled);
 
+	ObjectTypeDB::bind_method(_MD("set_editor_only","editor_only"), &Light2D::set_editor_only );
+	ObjectTypeDB::bind_method(_MD("is_editor_only"), &Light2D::is_editor_only );
+
 	ObjectTypeDB::bind_method(_MD("set_texture","texture"),&Light2D::set_texture);
 	ObjectTypeDB::bind_method(_MD("get_texture"),&Light2D::get_texture);
 
@@ -383,6 +413,7 @@ void Light2D::_bind_methods() {
 
 
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "editor_only"),_SCS("set_editor_only"),_SCS("is_editor_only"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"scale",PROPERTY_HINT_RANGE,"0.01,50,0.01"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
@@ -413,6 +444,7 @@ Light2D::Light2D() {
 
 	canvas_light=VisualServer::get_singleton()->canvas_light_create();
 	enabled=true;
+	editor_only=false;
 	shadow=false;
 	color=Color(1,1,1);
 	height=0;

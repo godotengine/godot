@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  networked_multiplayer_enet.cpp                                       */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "os/os.h"
 #include "io/marshalls.h"
 #include "networked_multiplayer_enet.h"
@@ -32,7 +60,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 
 	host = enet_host_create (& address /* the address to bind the server host to */,
 				     p_max_clients      /* allow up to 32 clients and/or outgoing connections */,
-				     2      /* allow up to 2 channels to be used, 0 and 1 */,
+				     SYSCH_MAX      /* allow up to SYSCH_MAX channels to be used */,
 				     p_in_bandwidth      /* assume any amount of incoming bandwidth */,
 				     p_out_bandwidth      /* assume any amount of outgoing bandwidth */);
 
@@ -52,7 +80,7 @@ Error NetworkedMultiplayerENet::create_client(const IP_Address& p_ip, int p_port
 
 	host = enet_host_create (NULL /* create a client host */,
 		    1 /* only allow 1 outgoing connection */,
-		    2 /* allow up 2 channels to be used, 0 and 1 */,
+		    SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
 		    p_in_bandwidth /* 56K modem with 56 Kbps downstream bandwidth */,
 		    p_out_bandwidth /* 56K modem with 14 Kbps upstream bandwidth */);
 
@@ -70,8 +98,8 @@ Error NetworkedMultiplayerENet::create_client(const IP_Address& p_ip, int p_port
 
 	unique_id=_gen_unique_id();
 
-	/* Initiate the connection, allocating the two channels 0 and 1. */
-	ENetPeer *peer = enet_host_connect (host, & address, 2, unique_id);
+	/* Initiate the connection, allocating the enough channels */
+	ENetPeer *peer = enet_host_connect (host, & address, SYSCH_MAX, unique_id);
 
 	if (peer == NULL) {
 		enet_host_destroy(host);
@@ -148,12 +176,12 @@ void NetworkedMultiplayerENet::poll(){
 						ENetPacket * packet = enet_packet_create (NULL,8,ENET_PACKET_FLAG_RELIABLE);
 						encode_uint32(SYSMSG_ADD_PEER,&packet->data[0]);
 						encode_uint32(E->key(),&packet->data[4]);
-						enet_peer_send(event.peer,1,packet);
+						enet_peer_send(event.peer,SYSCH_CONFIG,packet);
 						//send the new peer to existing peers
 						packet = enet_packet_create (NULL,8,ENET_PACKET_FLAG_RELIABLE);
 						encode_uint32(SYSMSG_ADD_PEER,&packet->data[0]);
 						encode_uint32(*new_id,&packet->data[4]);
-						enet_peer_send(E->get(),1,packet);
+						enet_peer_send(E->get(),SYSCH_CONFIG,packet);
 					}
 				} else {
 
@@ -185,7 +213,7 @@ void NetworkedMultiplayerENet::poll(){
 							ENetPacket* packet = enet_packet_create (NULL,8,ENET_PACKET_FLAG_RELIABLE);
 							encode_uint32(SYSMSG_REMOVE_PEER,&packet->data[0]);
 							encode_uint32(*id,&packet->data[4]);
-							enet_peer_send(E->get(),1,packet);
+							enet_peer_send(E->get(),SYSCH_CONFIG,packet);
 						}
 					} else if (!server) {
 						emit_signal("server_disconnected");
@@ -204,9 +232,12 @@ void NetworkedMultiplayerENet::poll(){
 			case ENET_EVENT_TYPE_RECEIVE: {
 
 
-				if (event.channelID==1) {
+				if (event.channelID==SYSCH_CONFIG) {
 					//some config message
 					ERR_CONTINUE( event.packet->dataLength < 8);
+
+					// Only server can send config messages
+					ERR_CONTINUE( server );
 
 					int msg = decode_uint32(&event.packet->data[0]);
 					int id = decode_uint32(&event.packet->data[4]);
@@ -226,12 +257,12 @@ void NetworkedMultiplayerENet::poll(){
 					}
 
 					enet_packet_destroy(event.packet);
-				} else if (event.channelID==0){
+				} else if (event.channelID < SYSCH_MAX){
 
 					Packet packet;
 					packet.packet = event.packet;
 
-					int *id = (int*)event.peer -> data;
+					uint32_t *id = (uint32_t*)event.peer->data;
 
 					ERR_CONTINUE(event.packet->dataLength<12)
 
@@ -243,6 +274,8 @@ void NetworkedMultiplayerENet::poll(){
 					packet.from=source;
 
 					if (server) {
+						// Someone is cheating and trying to fake the source!
+						ERR_CONTINUE(source!=*id);
 
 						packet.from=*id;
 
@@ -258,7 +291,7 @@ void NetworkedMultiplayerENet::poll(){
 
 								ENetPacket* packet2 = enet_packet_create (packet.packet->data,packet.packet->dataLength,flags);
 
-								enet_peer_send(E->get(),0,packet2);
+								enet_peer_send(E->get(),event.channelID,packet2);
 							}
 
 						} else if (target<0) {
@@ -272,7 +305,7 @@ void NetworkedMultiplayerENet::poll(){
 
 								ENetPacket* packet2 = enet_packet_create (packet.packet->data,packet.packet->dataLength,flags);
 
-								enet_peer_send(E->get(),0,packet2);
+								enet_peer_send(E->get(),event.channelID,packet2);
 							}
 
 							if (-target != 1) {
@@ -289,7 +322,7 @@ void NetworkedMultiplayerENet::poll(){
 						} else {
 							//to someone else, specifically
 							ERR_CONTINUE(!peer_map.has(target));
-							enet_peer_send(peer_map[target],0,packet.packet);
+							enet_peer_send(peer_map[target],event.channelID,packet.packet);
 						}
 					} else {
 
@@ -369,16 +402,20 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer,int p_buffer_
 	ERR_FAIL_COND_V(connection_status!=CONNECTION_CONNECTED,ERR_UNCONFIGURED);
 
 	int packet_flags=0;
+	int channel=SYSCH_RELIABLE;
 
 	switch(transfer_mode) {
 		case TRANSFER_MODE_UNRELIABLE: {
 			packet_flags=ENET_PACKET_FLAG_UNSEQUENCED;
+			channel=SYSCH_UNRELIABLE;
 		} break;
 		case TRANSFER_MODE_UNRELIABLE_ORDERED: {
 			packet_flags=0;
+			channel=SYSCH_UNRELIABLE;
 		} break;
 		case TRANSFER_MODE_RELIABLE: {
 			packet_flags=ENET_PACKET_FLAG_RELIABLE;
+			channel=SYSCH_RELIABLE;
 		} break;
 	}
 
@@ -402,7 +439,7 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer,int p_buffer_
 	if (server) {
 
 		if (target_peer==0) {
-			enet_host_broadcast(host,0,packet);
+			enet_host_broadcast(host,channel,packet);
 		} else if (target_peer<0) {
 			//send to all but one
 			//and make copies for sending
@@ -416,18 +453,18 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer,int p_buffer_
 
 				ENetPacket* packet2 = enet_packet_create (packet->data,packet->dataLength,packet_flags);
 
-				enet_peer_send(F->get(),0,packet2);
+				enet_peer_send(F->get(),channel,packet2);
 			}
 
 			enet_packet_destroy(packet); //original packet no longer needed
 		} else {
-			enet_peer_send (E->get(), 0, packet);
+			enet_peer_send (E->get(), channel, packet);
 
 		}
 	} else {
 
 		ERR_FAIL_COND_V(!peer_map.has(1),ERR_BUG);
-		enet_peer_send (peer_map[1], 0, packet); //send to server for broadcast..
+		enet_peer_send (peer_map[1], channel, packet); //send to server for broadcast..
 
 	}
 
