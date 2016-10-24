@@ -1340,6 +1340,12 @@ Error RegEx::compile(const String& p_pattern) {
 
 Ref<RegExMatch> RegEx::search(const String& p_text, int p_start, int p_end) const {
 
+	ERR_FAIL_COND_V(!is_valid(), NULL);
+	ERR_FAIL_COND_V(p_start < 0, NULL);
+	ERR_FAIL_COND_V(p_start >= p_text.length(), NULL);
+	ERR_FAIL_COND_V(p_end > p_text.length(), NULL);
+	ERR_FAIL_COND_V(p_end != -1 && p_end < p_start, NULL);
+
 	Ref<RegExMatch> res = memnew(RegExMatch());
 
 	for (int i = 0; i < group_names.size(); ++i) {
@@ -1350,7 +1356,7 @@ Ref<RegExMatch> RegEx::search(const String& p_text, int p_start, int p_end) cons
 
 	res->string = p_text;
 
-	if (p_end < p_start || p_end > p_text.length())
+	if (p_end == -1)
 		p_end = p_text.length();
 
 	RegExSearch s(res, p_end, lookahead_depth);
@@ -1369,18 +1375,45 @@ Ref<RegExMatch> RegEx::search(const String& p_text, int p_start, int p_end) cons
 	return NULL;
 }
 
-String RegEx::sub(const String& p_text, const String& p_template, int p_start, int p_end) const {
+String RegEx::sub(const String& p_text, const String& p_replacement, bool p_all, int p_start, int p_end) const {
 
-	Ref<RegExMatch> m = search(p_text, p_start, p_end);
-	RegExMatch::Group& s = m->captures[0];
-	if (s.start >= 0) {
-		String res = p_text.substr(0, s.start) + m->expand(p_template);
-		int end = s.start + s.length;
-		if (end < p_text.length())
-			res += p_text.substr(end, p_text.length() - end);
-		return res;
+	ERR_FAIL_COND_V(!is_valid(), p_text);
+	ERR_FAIL_COND_V(p_start < 0, p_text);
+	ERR_FAIL_COND_V(p_start >= p_text.length(), p_text);
+	ERR_FAIL_COND_V(p_end > p_text.length(), p_text);
+	ERR_FAIL_COND_V(p_end != -1 && p_end < p_start, p_text);
+
+	String text = p_text;
+	int start = p_start;
+
+	if (p_end == -1)
+		p_end = p_text.length();
+
+	while (start < text.length() && (p_all || start == p_start)) {
+
+		Ref<RegExMatch> m = search(text, start, p_end);
+
+		RegExMatch::Group& s = m->captures[0];
+
+		if (s.start < 0)
+			break;
+
+		String res = text.substr(0, s.start) + m->expand(p_replacement);
+
+		start = res.length();
+
+		if (s.length == 0)
+			++start;
+
+		int sub_end = s.start + s.length;
+		if (sub_end < text.length())
+			res += text.substr(sub_end, text.length() - sub_end);
+
+		p_end += res.length() - text.length();
+
+		text = res;
 	}
-	return p_text;
+	return text;
 }
 
 void RegEx::clear() {
@@ -1456,7 +1489,7 @@ void RegEx::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("clear"),&RegEx::clear);
 	ObjectTypeDB::bind_method(_MD("compile","pattern"),&RegEx::compile);
 	ObjectTypeDB::bind_method(_MD("search","text","start","end"),&RegEx::search, DEFVAL(0), DEFVAL(-1));
-	ObjectTypeDB::bind_method(_MD("sub","text","template","start","end"),&RegEx::sub, DEFVAL(0), DEFVAL(-1));
+	ObjectTypeDB::bind_method(_MD("sub","text","replacement","all","start","end"),&RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("is_valid"),&RegEx::is_valid);
 	ObjectTypeDB::bind_method(_MD("get_pattern"),&RegEx::get_pattern);
 	ObjectTypeDB::bind_method(_MD("get_group_count"),&RegEx::get_group_count);

@@ -97,7 +97,7 @@ public:
 	Error compile(const String& p_pattern);
 
 	Ref<RegExMatch> search(const String& p_text, int p_start = 0, int p_end = -1) const;
-	String sub(const String& p_text, const String& p_template, int p_start = 0, int p_end = -1) const;
+	String sub(const String& p_text, const String& p_replacement, bool p_all = false, int p_start = 0, int p_end = -1) const;
 
 	bool is_valid() const;
 	String get_pattern() const;
