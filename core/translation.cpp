@@ -779,6 +779,11 @@ Vector<String> TranslationServer::get_all_locale_names(){
 }
 
 
+static String get_trimmed_locale(const String& p_locale) {
+
+	return p_locale.substr(0,2);
+}
+
 static bool is_valid_locale(const String& p_locale) {
 
 	const char **ptr=locale_list;
