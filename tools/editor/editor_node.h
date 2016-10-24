@@ -179,6 +179,7 @@ private:
 		RUN_RELOAD_SCRIPTS,
 		SETTINGS_UPDATE_ALWAYS,
 		SETTINGS_UPDATE_CHANGES,
+		SETTINGS_UPDATE_SPINNER_HIDE,
 		SETTINGS_EXPORT_PREFERENCES,
 		SETTINGS_PREFERENCES,
 		SETTINGS_OPTIMIZED_PRESETS,
@@ -700,6 +701,7 @@ public:
 
 	void notify_child_process_exited();
 
+	OS::ProcessID get_child_process_id() const { return editor_run.get_pid(); }
 	void stop_child_process();
 
 	Ref<Theme> get_editor_theme() const { return theme; }

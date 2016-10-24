@@ -1416,7 +1416,7 @@ def save_active_platforms(apnames,ap):
 		logow.write(str)
 
 
-def colored(sys,env):
+def no_verbose(sys,env):
 
 	#If the output is not a terminal, do nothing
 	if not sys.stdout.isatty():
@@ -1515,6 +1515,12 @@ def detect_visual_c_compiler_version(tools_env):
         #print "chosen "+str(vc_chosen_compiler_index)+ " | "+str(vc_chosen_compiler_str)
 
         return vc_chosen_compiler_str
+
+def msvc_is_detected() :
+	# looks for VisualStudio env variable 
+	# or for Visual C++ Build Tools (which is a standalone MSVC)
+	return os.getenv("VSINSTALLDIR") or os.getenv("VS100COMNTOOLS") or os.getenv("VS110COMNTOOLS") or os.getenv("VS120COMNTOOLS") or os.getenv("VS140COMNTOOLS");
+
 
 def precious_program(env, program, sources, **args):
 	program = env.ProgramOriginal(program, sources, **args)

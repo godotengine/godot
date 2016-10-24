@@ -1,15 +1,22 @@
 #
-# 	tested on               | Windows native    | Linux cross-compilation
-#	------------------------+-------------------+---------------------------
-#	MSVS C++ 2010 Express   | WORKS             | n/a
-#	Mingw-w64               | WORKS             | WORKS
-#	Mingw-w32               | WORKS             | WORKS
-#	MinGW                   | WORKS             | untested
+# 	tested on                   | Windows native    | Linux cross-compilation
+#	----------------------------+-------------------+---------------------------
+#	MSVS C++ 2010 Express       | WORKS             | n/a
+#   Visual C++ Build Tools 2015 | WORKS             | n/a
+#	Mingw-w64                   | WORKS             | WORKS
+#	Mingw-w32                   | WORKS             | WORKS
+#	MinGW                       | WORKS             | untested
 #
 #####
 # Notes about MSVS C++ :
 #
 # 	- MSVC2010-Express compiles to 32bits only.
+#
+#####
+# Note about Visual C++ Build Tools :
+#
+#	- Visual C++ Build Tools is the standalone MSVC compiler :
+#		http://landinghub.visualstudio.com/visual-cpp-build-tools
 #
 #####
 # Notes about Mingw-w64 and Mingw-w32 under Windows :
@@ -78,7 +85,7 @@
 
 #####
 # TODO :
-#
+# 
 #	- finish to cleanup this script to remove all the remains of previous hacks and workarounds
 #	- make it work with the Windows7 SDK that is supposed to enable 64bits compilation for MSVC2010-Express
 #	- confirm it works well with other Visual Studio versions.
@@ -102,7 +109,7 @@ def can_build():
 
 	if (os.name=="nt"):
 		#building natively on windows!
-		if (os.getenv("VSINSTALLDIR")):
+		if ( methods.msvc_is_detected() ):
 			return True
 		else:
 			print("\nMSVC not detected, attempting Mingw.")
@@ -169,7 +176,7 @@ def get_opts():
 def get_flags():
 
 	return [
-		('glew','yes'),
+		('builtin_zlib', 'yes'),
 		('openssl','builtin'), #use builtin openssl
 	]
 
@@ -197,7 +204,7 @@ def configure(env):
 
 	env.Append(CPPPATH=['#platform/windows'])
 	env['is_mingw']=False
-	if (os.name=="nt" and os.getenv("VSINSTALLDIR")!=None):
+	if (os.name=="nt" and methods.msvc_is_detected() ):
 		#build using visual studio
 		env['ENV']['TMP'] = os.environ['TMP']
 		env.Append(CPPPATH=['#platform/windows/include'])
@@ -272,13 +279,13 @@ def configure(env):
 		# Forcing bits argument because MSVC does not have a flag to set this through SCons... it's different compilers (cl.exe's) called from the propper command prompt
                 # that decide the architecture that is build for. Scons can only detect the os.getenviron (because vsvarsall.bat sets a lot of stuff for cl.exe to work with)
                 env["bits"]="32"
-		env["x86_opt_vc"]=True
+		env["x86_libtheora_opt_vc"]=True
 
 		print "Detected MSVC compiler: "+compiler_version_str
 		# If building for 64bit architecture, disable assembly optimisations for 32 bit builds (theora as of writting)... vc compiler for 64bit can not compile _asm
 		if(compiler_version_str == "amd64" or compiler_version_str == "x86_amd64"):
                         env["bits"]="64"
-                        env["x86_opt_vc"]=False
+                        env["x86_libtheora_opt_vc"]=False
                         print "Compiled program architecture will be a 64 bit executable (forcing bits=64)."
                 elif (compiler_version_str=="x86" or compiler_version_str == "amd64_x86"):
                         print "Compiled program architecture will be a 32 bit executable. (forcing bits=32)."
@@ -358,7 +365,7 @@ def configure(env):
 		env['AR'] = mingw_prefix+"ar"
 		env['RANLIB'] = mingw_prefix+"ranlib"
 		env['LD'] = mingw_prefix+"g++"
-		env["x86_opt_gcc"]=True
+		env["x86_libtheora_opt_gcc"]=True
 
 		#env['CC'] = "winegcc"
 		#env['CXX'] = "wineg++"

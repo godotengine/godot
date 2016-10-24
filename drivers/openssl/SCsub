@@ -1,6 +1,0 @@
-Import('env_drivers')
-Import('env')
-
-env_drivers.add_source_files(env.drivers_sources,"*.cpp")
-env_drivers.add_source_files(env.drivers_sources,"*.c")
-

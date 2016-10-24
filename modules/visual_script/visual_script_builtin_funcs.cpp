@@ -55,6 +55,7 @@ const char* VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"convert",
 	"typeof",
 	"type_exists",
+	"char",
 	"str",
 	"print",
 	"printerr",
@@ -141,6 +142,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case LOGIC_NEAREST_PO2:
 		case OBJ_WEAKREF:
 		case TYPE_OF:
+		case TEXT_CHAR:
 		case TEXT_STR:
 		case TEXT_PRINT:
 		case TEXT_PRINTERR:
@@ -362,6 +364,12 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 			return PropertyInfo(Variant::STRING,"type");
 
 		} break;
+		case TEXT_CHAR: {
+
+			return PropertyInfo(Variant::INT,"ascii");
+
+
+		} break;
 		case TEXT_STR: {
 
 			return PropertyInfo(Variant::NIL,"value");
@@ -517,6 +525,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 			t=Variant::BOOL;
 
 		} break;
+		case TEXT_CHAR:
 		case TEXT_STR: {
 
 			t=Variant::STRING;
@@ -975,6 +984,13 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func,const Variant** p_inp
 			*r_return = ObjectTypeDB::type_exists(*p_inputs[0]);
 
 		} break;
+		case VisualScriptBuiltinFunc::TEXT_CHAR: {
+
+			CharType result[2] = {*p_inputs[0], 0};
+			
+			*r_return=String(result);
+
+		} break;
 		case VisualScriptBuiltinFunc::TEXT_STR: {
 
 			String str = *p_inputs[0];
@@ -1213,6 +1229,7 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/convert",create_builtin_func_node<VisualScriptBuiltinFunc::TYPE_CONVERT>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/typeof",create_builtin_func_node<VisualScriptBuiltinFunc::TYPE_OF>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/type_exists",create_builtin_func_node<VisualScriptBuiltinFunc::TYPE_EXISTS>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/char",create_builtin_func_node<VisualScriptBuiltinFunc::TEXT_CHAR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/str",create_builtin_func_node<VisualScriptBuiltinFunc::TEXT_STR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/print",create_builtin_func_node<VisualScriptBuiltinFunc::TEXT_PRINT>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/printerr",create_builtin_func_node<VisualScriptBuiltinFunc::TEXT_PRINTERR>);

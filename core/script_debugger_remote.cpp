@@ -134,6 +134,8 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 		ERR_FAIL();
 	}
 
+	OS::get_singleton()->enable_for_stealing_focus(Globals::get_singleton()->get("editor_pid"));
+
 	packet_peer_stream->put_var("debug_enter");
 	packet_peer_stream->put_var(2);
 	packet_peer_stream->put_var(p_can_continue);
@@ -273,6 +275,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
 				set_depth(-1);
 				set_lines_left(-1);
+				OS::get_singleton()->move_window_to_foreground();
 				break;
 			} else if (command=="break") {
 				ERR_PRINT("Got break when already broke!");

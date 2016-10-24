@@ -1249,51 +1249,12 @@ void Node::set_human_readable_collision_renaming(bool p_enabled) {
 }
 
 
+#ifdef TOOLS_ENABLED
+String Node::validate_child_name(Node* p_child) {
 
-String Node::validate_child_name(const String& p_name) const {
-
-	//this approach to autoset node names is human readable but very slow
-	//it's turned on while running in the editor
-
-	String basename = p_name;
-
-	if (basename==String()) {
-
-		return String();
-	}
-
-	int val=1;
-
-	for(;;) {
-
-		String attempted = val > 1 ? (basename + " " +itos(val) ) : basename;
-
-		bool found=false;
-
-		for (int i=0;i<data.children.size();i++) {
-
-			//if (data.children[i]==p_child)
-			//	continue;
-			if (data.children[i]->get_name() == attempted) {
-				found=true;
-				break;
-			}
-
-		}
-
-		if (found) {
-
-			val++;
-			continue;
-		}
-
-		return attempted;
-		break;
-	}
-
-	return basename;
-
+	return _generate_serial_child_name(p_child);
 }
+#endif
 
 void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 
@@ -1304,41 +1265,8 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 		//this approach to autoset node names is human readable but very slow
 		//it's turned on while running in the editor
 
-		String basename = p_child->data.name;
+		p_child->data.name=_generate_serial_child_name(p_child);
 
-		if (basename=="") {
-
-			basename = p_child->get_type();
-		}
-
-		int val=1;
-
-		for(;;) {
-
-			String attempted = val > 1 ? (basename + " " +itos(val) ) : basename;
-
-			bool found=false;
-
-			for (int i=0;i<data.children.size();i++) {
-
-				if (data.children[i]==p_child)
-					continue;
-				if (data.children[i]->get_name() == attempted) {
-					found=true;
-					break;
-				}
-
-			}
-
-			if (found) {
-
-				val++;
-				continue;
-			}
-
-			p_child->data.name=attempted;
-			break;
-		}
 	} else {
 
 		//this approach to autoset node names is fast but not as readable
@@ -1369,6 +1297,67 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 			node_hrcr_count.ref();
 			String name = "@"+String(p_child->get_name())+"@"+itos(node_hrcr_count.get());
 			p_child->data.name=name;
+		}
+	}
+}
+
+String Node::_generate_serial_child_name(Node *p_child) {
+
+	String name = p_child->data.name;
+
+	if (name=="") {
+
+		name = p_child->get_type();
+	}
+
+	// Extract trailing number
+	String nums;
+	for(int i=name.length()-1;i>=0;i--) {
+		CharType n=name[i];
+		if (n>='0' && n<='9') {
+			nums=String::chr(name[i])+nums;
+		} else {
+			break;
+		}
+	}
+
+	String nnsep=_get_name_num_separator();
+	int num=0;
+	bool explicit_zero=false;
+	if (nums.length()>0 && name.substr(name.length()-nnsep.length()-nums.length(),nnsep.length()) == nnsep) {
+		// Base name + Separator + Number
+		num=nums.to_int();
+		name=name.substr(0,name.length()-nnsep.length()-nums.length()); // Keep base name
+		if (num==0) {
+			explicit_zero=true;
+		}
+	}
+
+	for(;;) {
+		String attempt = (name + (num > 0 || explicit_zero ? nnsep + itos(num) : "")).strip_edges();
+		bool found=false;
+		for(int i=0;i<data.children.size();i++) {
+			if (data.children[i]==p_child)
+				continue;
+			if (data.children[i]->data.name==attempt) {
+				found=true;
+				break;
+			}
+		}
+		if (!found) {
+			return attempt;
+		} else {
+			if (num==0) {
+				if (explicit_zero) {
+					// Name ended in separator + 0; user expects to get to separator + 1
+					num=1;
+				} else {
+					// Name was undecorated so skip to 2 for a more natural result
+					num=2;
+				}
+			} else {
+				num++;
+			}
 		}
 	}
 }
@@ -2811,6 +2800,10 @@ bool Node::is_displayed_folded() const {
 
 void Node::_bind_methods() {
 
+	_GLOBAL_DEF("node/name_num_separator",0);
+	Globals::get_singleton()->set_custom_property_info("node/name_num_separator",PropertyInfo(Variant::INT,"node/name_num_separator",PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
+
+
 	ObjectTypeDB::bind_method(_MD("_add_child_below_node","node:Node","child_node:Node","legible_unique_name"),&Node::add_child_below_node,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("set_name","name"),&Node::set_name);
@@ -2976,6 +2969,17 @@ void Node::_bind_methods() {
 
 	//ObjectTypeDB::bind_method(_MD("get_child",&Node::get_child,PH("index")));
 	//ObjectTypeDB::bind_method(_MD("get_node",&Node::get_node,PH("path")));
+}
+
+
+String Node::_get_name_num_separator() {
+	switch(Globals::get_singleton()->get("node/name_num_separator").operator int()) {
+		case 0: return "";
+		case 1: return " ";
+		case 2: return "_";
+		case 3: return "-";
+	}
+	return " ";
 }
 
 

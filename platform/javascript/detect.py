@@ -25,21 +25,11 @@ def get_opts():
 def get_flags():
 
 	return [
-		('lua', 'no'),
 		('tools', 'no'),
-		('nedmalloc', 'no'),
-		('theora', 'no'),
-		('tools', 'no'),
-		('nedmalloc', 'no'),
-		('musepack', 'no'),
-		('squirrel', 'no'),
-		('squish', 'no'),
-		('speex', 'no'),
-		('old_scenes', 'no'),
-		('etc1', 'no'),
-#		('default_gui_theme', 'no'),
-
-		#('builtin_zlib', 'no'),
+		('builtin_zlib', 'yes'),
+		('module_etc1_enabled', 'no'),
+		('module_mpc_enabled', 'no'),
+		('module_theora_enabled', 'no'),
 	]
 
 
@@ -80,8 +70,9 @@ def configure(env):
 		#env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-g4', '-DDEBUG_ENABLED'])
 		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
 
-	if(env["opus"]=="yes"):
-		env.opus_fixed_point="yes"
+	# TODO: Move that to opus module's config
+	if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
+		env.opus_fixed_point = "yes"
 
 	env.Append(CPPFLAGS=["-fno-exceptions",'-DNO_SAFE_CAST','-fno-rtti'])
 	env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DNO_FCNTL','-DMPC_FIXED_POINT','-DTYPED_METHOD_BIND','-DNO_THREADS'])

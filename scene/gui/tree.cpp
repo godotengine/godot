@@ -32,6 +32,7 @@
 #include "os/keyboard.h"
 #include "globals.h"
 #include "os/input.h"
+#include "scene/main/viewport.h"
 
 
 
@@ -829,6 +830,8 @@ void Tree::update_cache() {
 	cache.guide_width=get_constant("guide_width");
 	cache.draw_relationship_lines=get_constant("draw_relationship_lines");
 	cache.relationship_line_color=get_color("relationship_line_color");
+	cache.scroll_border=get_constant("scroll_border");
+	cache.scroll_speed=get_constant("scroll_speed");
 
 	cache.title_button = get_stylebox("title_button_normal");
 	cache.title_button_pressed = get_stylebox("title_button_pressed");
@@ -1701,16 +1704,11 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 			} break;
 			case TreeItem::CELL_MODE_CHECK: {
 
-				Ref<Texture> checked = cache.checked;
 				bring_up_editor=false; //checkboxes are not edited with editor
-				if (x>=0 && x<= checked->get_width()+cache.hseparation ) {
-
-
-					p_item->set_checked(col,!c.checked);
-					item_edited(col,p_item);
-					click_handled=true;
-					//p_item->edited_signal.call(col);
-				}
+				p_item->set_checked(col, !c.checked);
+				item_edited(col, p_item);
+				click_handled = true;
+				//p_item->edited_signal.call(col);
 
 			} break;
 			case TreeItem::CELL_MODE_RANGE:
@@ -2681,11 +2679,17 @@ void Tree::_notification(int p_what) {
 	if (p_what==NOTIFICATION_DRAG_END) {
 
 		drop_mode_flags=0;
+		scrolling = false;
+		set_fixed_process(false);
 		update();
 	}
 	if (p_what==NOTIFICATION_DRAG_BEGIN) {
 
 		single_select_defer=NULL;
+		if (cache.scroll_speed > 0 && get_rect().has_point(get_viewport()->get_mouse_pos() - get_global_pos())) {
+			scrolling = true;
+			set_fixed_process(true);
+		}
 	}
 	if (p_what==NOTIFICATION_FIXED_PROCESS) {
 
@@ -2730,6 +2734,28 @@ void Tree::_notification(int p_what) {
 			} else {
 
 			}
+		}
+		
+		if (scrolling) {
+			Point2 point = get_viewport()->get_mouse_pos() - get_global_pos();
+			if (point.x < cache.scroll_border) {
+				point.x -= cache.scroll_border;
+			} else if (point.x > get_size().width - cache.scroll_border) {
+				point.x -= get_size().width - cache.scroll_border;
+			} else {
+				point.x = 0;
+			}
+			if (point.y < cache.scroll_border) {
+				point.y -= cache.scroll_border;
+			} else if (point.y > get_size().height - cache.scroll_border) {
+				point.y -= get_size().height - cache.scroll_border;
+			} else {
+				point.y = 0;
+			}
+			point *= cache.scroll_speed * get_fixed_process_delta_time();
+			point += get_scroll();
+			h_scroll->set_val(point.x);
+			v_scroll->set_val(point.y);
 		}
 	}
 

@@ -648,12 +648,16 @@ void Camera::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("get_zfar"),&Camera::get_zfar );
 	ObjectTypeDB::bind_method( _MD("get_znear"),&Camera::get_znear );
 	ObjectTypeDB::bind_method( _MD("get_projection"),&Camera::get_projection );
+	ObjectTypeDB::bind_method( _MD("set_h_offset","ofs"),&Camera::set_h_offset );
+	ObjectTypeDB::bind_method( _MD("get_h_offset"),&Camera::get_h_offset );
+	ObjectTypeDB::bind_method( _MD("set_v_offset","ofs"),&Camera::set_v_offset );
+	ObjectTypeDB::bind_method( _MD("get_v_offset"),&Camera::get_v_offset );
 	ObjectTypeDB::bind_method( _MD("set_visible_layers","mask"),&Camera::set_visible_layers );
 	ObjectTypeDB::bind_method( _MD("get_visible_layers"),&Camera::get_visible_layers );
-	ObjectTypeDB::bind_method(_MD("set_environment","env:Environment"),&Camera::set_environment);
-	ObjectTypeDB::bind_method(_MD("get_environment:Environment"),&Camera::get_environment);
-	ObjectTypeDB::bind_method(_MD("set_keep_aspect_mode","mode"),&Camera::set_keep_aspect_mode);
-	ObjectTypeDB::bind_method(_MD("get_keep_aspect_mode"),&Camera::get_keep_aspect_mode);
+	ObjectTypeDB::bind_method( _MD("set_environment","env:Environment"),&Camera::set_environment );
+	ObjectTypeDB::bind_method( _MD("get_environment:Environment"),&Camera::get_environment );
+	ObjectTypeDB::bind_method( _MD("set_keep_aspect_mode","mode"),&Camera::set_keep_aspect_mode );
+	ObjectTypeDB::bind_method( _MD("get_keep_aspect_mode"),&Camera::get_keep_aspect_mode );
 	//ObjectTypeDB::bind_method( _MD("_camera_make_current"),&Camera::_camera_make_current );
 
 	BIND_CONSTANT( PROJECTION_PERSPECTIVE );

@@ -3073,6 +3073,11 @@ String String::simplify_path() const {
 	}
 
 	s =s.replace("\\","/");
+	while(true){ // in case of using 2 or more slash
+		String compare = s.replace("//","/");
+		if (s==compare) break;
+		else s=compare;
+	}
 	Vector<String> dirs = s.split("/",false);
 
 	for(int i=0;i<dirs.size();i++) {
@@ -3173,7 +3178,7 @@ bool String::is_valid_identifier() const {
 
 //kind of poor should be rewritten properly
 
-String String::world_wrap(int p_chars_per_line) const {
+String String::word_wrap(int p_chars_per_line) const {
 
 	int from=0;
 	int last_space=0;

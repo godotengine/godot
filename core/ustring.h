@@ -218,7 +218,7 @@ public:
 	String c_escape() const;
 	String c_unescape() const;
 	String json_escape() const;
-	String world_wrap(int p_chars_per_line) const;
+	String word_wrap(int p_chars_per_line) const;
 
 	String percent_encode() const;
 	String percent_decode() const;

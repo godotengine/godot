@@ -282,7 +282,7 @@ void GDTokenizerText::_advance() {
 			case '\n': {
 				line++;
 				INCPOS(1);
-				column=0;
+				column=1;
 				int i=0;
 				while(GETCHAR(i)==' ' || GETCHAR(i)=='\t') {
 					i++;
@@ -303,7 +303,7 @@ void GDTokenizerText::_advance() {
 					}
 				}
 				INCPOS(1);
-				column=0;
+				column=1;
 				line++;
 				int i=0;
 				while(GETCHAR(i)==' ' || GETCHAR(i)=='\t') {
@@ -335,7 +335,7 @@ void GDTokenizerText::_advance() {
 								break;
 							} else if (_code[pos]=='\n') {
 								new_line++;
-								new_col=0;
+								new_col=1;
 							} else {
 								new_col++;
 							}
@@ -358,7 +358,7 @@ void GDTokenizerText::_advance() {
 							}
 						}
 						INCPOS(1);
-						column=0;
+						column=1;
 						line++;
 						continue;
 
@@ -654,7 +654,7 @@ void GDTokenizerText::_advance() {
 					} else {
 						if (CharType(GETCHAR(i))=='\n') {
 							line++;
-							column=0;
+							column=1;
 						}
 
 						str+=CharType(GETCHAR(i));
@@ -943,7 +943,7 @@ void GDTokenizerText::set_code(const String& p_code) {
 	}
 	code_pos=0;
 	line=1; //it is stand-ar-ized that lines begin in 1 in code..
-	column=0;
+	column=1; //the same holds for columns
 	tk_rb_pos=0;
 	error_flag=false;
 	last_error="";
