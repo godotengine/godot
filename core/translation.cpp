@@ -844,9 +844,17 @@ void Translation::_set_messages(const DVector<String>& p_messages){
 
 void Translation::set_locale(const String& p_locale) {
 
-	ERR_EXPLAIN("Invalid Locale: "+p_locale);
-	ERR_FAIL_COND(!is_valid_locale(p_locale));
-	locale=p_locale;
+	if(!is_valid_locale(p_locale)) {
+		String trimmed_locale = get_trimmed_locale(p_locale);
+		
+		ERR_EXPLAIN("Invalid Locale: "+trimmed_locale);
+		ERR_FAIL_COND(!is_valid_locale(trimmed_locale));
+		
+		locale=trimmed_locale;
+	}
+	else {
+		locale=p_locale;
+	}
 }
 
 void Translation::add_message( const StringName& p_src_text, const StringName& p_xlated_text ) {
