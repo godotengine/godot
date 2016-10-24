@@ -919,9 +919,17 @@ Translation::Translation() {
 
 void TranslationServer::set_locale(const String& p_locale) {
 
-	ERR_EXPLAIN("Invalid Locale: "+p_locale);
-	ERR_FAIL_COND(!is_valid_locale(p_locale));
-	locale=p_locale;
+	if(!is_valid_locale(p_locale)) {
+		String trimmed_locale = get_trimmed_locale(p_locale);
+		
+		ERR_EXPLAIN("Invalid Locale: "+trimmed_locale);
+		ERR_FAIL_COND(!is_valid_locale(trimmed_locale));
+		
+		locale=trimmed_locale;
+	}
+	else {
+		locale=p_locale;
+	}
 }
 
 String TranslationServer::get_locale() const {
