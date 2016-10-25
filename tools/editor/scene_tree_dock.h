@@ -174,7 +174,7 @@ public:
 	void fill_path_renames(Node* p_node, Node *p_new_parent, List<Pair<NodePath,NodePath> > *p_renames);
 	void perform_node_renames(Node* p_base,List<Pair<NodePath,NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims=NULL);
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
-
+	EditorData *get_editor_data() { return editor_data; }
 
 	void open_script_dialog(Node* p_for_node);
 	SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelection *p_editor_selection,EditorData &p_editor_data);
