@@ -130,6 +130,17 @@ opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
 opts.Add('squish','Squish library for BC Texture Compression in editor (system/builtin)','builtin')
 opts.Add('freetype','Freetype library for TTF support via freetype module (system/builtin)','builtin')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
+<<<<<<< HEAD
+opts.Add('png','PNG Image loader support (yes/no)','yes')
+opts.Add('jpg','JPG Image loader support (yes/no)','yes')
+opts.Add('webp','WEBP Image loader support (yes/no)','yes')
+opts.Add('dds','DDS Texture loader support (yes/no)','yes')
+opts.Add('pvr','PVR (PowerVR) Texture loader support (yes/no)','yes')
+opts.Add('etc1','etc1 Texture compression support (yes/no)','yes')
+opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
+opts.Add('openssl','Use OpenSSL (yes/no/builtin)','no')
+opts.Add('musepack','Musepack Audio (yes/no)','yes')
+=======
 opts.Add('libpng','libpng library for image loader support (system/builtin)','builtin')
 opts.Add('libwebp','libwebp library for webp module (system/builtin)','builtin')
 opts.Add('openssl','OpenSSL library for openssl module (system/builtin)','builtin')
@@ -137,6 +148,7 @@ opts.Add('libmpcdec','libmpcdec library for mpc module (system/builtin)','builti
 opts.Add('enet','ENet library (system/builtin)','builtin')
 opts.Add('glew','GLEW library for the gl_context (system/builtin)','builtin')
 opts.Add('xaudio2','XAudio2 audio driver (yes/no)','no')
+>>>>>>> d2f1228141c3307305664ac607f7f37c553838bf
 opts.Add("CXX", "C++ Compiler")
 opts.Add("CC", "C Compiler")
 opts.Add("CCFLAGS", "Custom flags for the C++ compiler");

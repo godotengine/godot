@@ -243,9 +243,9 @@ void BaseButton::_notification(int p_what) {
 			update();
 		}
 	}
-	
+
 	if (p_what==NOTIFICATION_FOCUS_ENTER) {
-		
+
 		status.hovering=true;
 		update();
 	}
