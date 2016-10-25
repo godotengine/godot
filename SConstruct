@@ -139,7 +139,7 @@ opts.Add('glew','GLEW library for the gl_context (system/builtin)','builtin')
 opts.Add('xaudio2','XAudio2 audio driver (yes/no)','no')
 opts.Add("CXX", "C++ Compiler")
 opts.Add("CC", "C Compiler")
-opts.Add("CCFLAGS", "Custom flags for the C++ compiler");
+opts.Add("CCFLAGS", "Custom flags for the C/C++ compiler");
 opts.Add("CFLAGS", "Custom flags for the C compiler");
 opts.Add("LINKFLAGS", "Custom flags for the linker");
 opts.Add('unix_global_settings_path', 'unix-specific path to system-wide settings. Currently only used by templates.','')
