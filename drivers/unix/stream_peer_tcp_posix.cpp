@@ -100,7 +100,7 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 	struct sockaddr_storage their_addr;
 	_set_sockaddr(&their_addr, peer_host, peer_port);
 
-	if (::connect(sockfd, (struct sockaddr *)&their_addr, p_host.type == IP_Address::TYPE_IPV4 ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6)) == -1) {
+	if (::connect(sockfd, (struct sockaddr *)&their_addr, peer_host.type == IP_Address::TYPE_IPV4 ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6)) == -1) {
 
 		if (errno == EISCONN) {
 			status = STATUS_CONNECTED;
