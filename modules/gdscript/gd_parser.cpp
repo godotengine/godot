@@ -2554,10 +2554,34 @@ void GDParser::_parse_class(ClassNode *p_class) {
 						current_export.type=type;
 						current_export.usage|=PROPERTY_USAGE_SCRIPT_VARIABLE;
 						tokenizer->advance();
+						
+						String hint_prefix ="";
+						
+						if(type == Variant::ARRAY && tokenizer->get_token()==GDTokenizer::TK_COMMA) {
+							tokenizer->advance();
+
+							while(tokenizer->get_token()==GDTokenizer::TK_BUILT_IN_TYPE) {
+								type = tokenizer->get_token_type();
+								
+								tokenizer->advance();
+
+								if(type == Variant::ARRAY) {
+									hint_prefix += itos(Variant::ARRAY)+":";
+									if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
+										tokenizer->advance();
+									}
+								} else {
+									hint_prefix += itos(type);
+									break;
+								}
+							}
+						}
+						
 						if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
 							// hint expected next!
 							tokenizer->advance();
-							switch(current_export.type) {
+
+							switch(type) {
 
 
 								case Variant::INT: {
@@ -2913,7 +2937,14 @@ void GDParser::_parse_class(ClassNode *p_class) {
 									return;
 								} break;
 							}
-
+							
+						}
+						if(current_export.type == Variant::ARRAY && !hint_prefix.empty()) {
+							if(current_export.hint) {
+								hint_prefix += "/"+itos(current_export.hint);
+							}
+							current_export.hint_string=hint_prefix+":"+current_export.hint_string;
+							current_export.hint=PROPERTY_HINT_NONE;
 						}
 
 					} else if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
