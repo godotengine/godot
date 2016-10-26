@@ -78,9 +78,9 @@ public:
 
 };
 
-class RegEx : public Reference {
+class RegEx : public Resource {
 
-	OBJ_TYPE(RegEx, Reference);
+	OBJ_TYPE(RegEx, Resource);
 
 	RegExNode* root;
 	Vector<Variant> group_names;

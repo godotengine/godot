@@ -985,7 +985,9 @@ static bool RegEx_is_shorthand(CharType ch) {
 
 Error RegEx::compile(const String& p_pattern) {
 
-	if (pattern == p_pattern)
+	ERR_FAIL_COND_V(p_pattern.length() == 0, FAILED);
+
+	if (pattern == p_pattern && root)
 		return OK;
 
 	clear();
@@ -1421,7 +1423,7 @@ void RegEx::clear() {
 	if (root)
 		memdelete(root);
 
-	pattern.clear();
+	root = NULL;
 	group_names.clear();
 	lookahead_depth = 0;
 }
@@ -1494,5 +1496,7 @@ void RegEx::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_pattern"),&RegEx::get_pattern);
 	ObjectTypeDB::bind_method(_MD("get_group_count"),&RegEx::get_group_count);
 	ObjectTypeDB::bind_method(_MD("get_names"),&RegEx::get_names);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "pattern"), _SCS("compile"), _SCS("get_pattern"));
 }
 
