@@ -29,8 +29,9 @@
 #include "http_client.h"
 #include "io/stream_peer_ssl.h"
 
+VARIANT_ENUM_CAST(IP_Address::AddrType);
 
-Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_verify_host){
+Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_verify_host, IP_Address::AddrType p_addr_type){
 
 	close();
 	conn_port=p_port;
@@ -62,7 +63,7 @@ Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_ve
 		status=STATUS_CONNECTING;
 	} else {
 		//is hostname
-		resolving=IP::get_singleton()->resolve_hostname_queue_item(conn_host);
+		resolving=IP::get_singleton()->resolve_hostname_queue_item(conn_host, p_addr_type);
 		status=STATUS_RESOLVING;
 
 	}
@@ -635,7 +636,7 @@ Error HTTPClient::_get_http_data(uint8_t* p_buffer, int p_bytes,int &r_received)
 
 void HTTPClient::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl","verify_host"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true));
+	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl","verify_host"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true),DEFVAL(IP_Address::TYPE_ANY));
 	ObjectTypeDB::bind_method(_MD("set_connection","connection:StreamPeer"),&HTTPClient::set_connection);
 	ObjectTypeDB::bind_method(_MD("get_connection:StreamPeer"),&HTTPClient::get_connection);
 	ObjectTypeDB::bind_method(_MD("request_raw","method","url","headers","body"),&HTTPClient::request_raw);
