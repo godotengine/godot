@@ -166,7 +166,7 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 			rb.write(&type, 1);
 			struct sockaddr_in* sin_from = (struct sockaddr_in*)&from;
 			rb.write((uint8_t*)&sin_from->sin_addr, 4);
-			port = sin_from->sin_port;
+			port = ntohs(sin_from->sin_port);
 
 		} else if (from.ss_family == AF_INET6) {
 
@@ -176,7 +176,7 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 			struct sockaddr_in6* s6_from = (struct sockaddr_in6*)&from;
 			rb.write((uint8_t*)&s6_from->sin6_addr, 16);
 
-			port = s6_from->sin6_port;
+			port = ntohs(s6_from->sin6_port);
 
 		} else {
 			// WARN_PRINT("Ignoring packet with unknown address family");
