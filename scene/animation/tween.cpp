@@ -206,6 +206,7 @@ void Tween::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("resume","object","key"),&Tween::resume, DEFVAL("") );
 	ObjectTypeDB::bind_method(_MD("resume_all"),&Tween::resume_all );
 	ObjectTypeDB::bind_method(_MD("remove","object","key"),&Tween::remove, DEFVAL("") );
+	ObjectTypeDB::bind_method(_MD("_remove","object","key","first_only"),&Tween::_remove );
 	ObjectTypeDB::bind_method(_MD("remove_all"),&Tween::remove_all );
 	ObjectTypeDB::bind_method(_MD("seek","time"),&Tween::seek );
 	ObjectTypeDB::bind_method(_MD("tell"),&Tween::tell );
@@ -620,7 +621,7 @@ void Tween::_tween_process(float p_delta) {
 					object->call(data.key, (const Variant **) arg, data.args, error);
 				}
 				if (!repeat)
-					call_deferred("remove", object, data.key);
+					call_deferred("_remove", object, data.key, true);
 			}
 			continue;
 		}
@@ -634,7 +635,7 @@ void Tween::_tween_process(float p_delta) {
 			emit_signal("tween_complete",object,data.key);
 			// not repeat mode, remove completed action
 			if (!repeat)
-				call_deferred("remove", object, data.key);
+				call_deferred("_remove", object, data.key, true);
 		}
 	}
 	pending_update --;
@@ -816,10 +817,15 @@ bool Tween::resume_all() {
 }
 
 bool Tween::remove(Object *p_object, String p_key) {
+	_remove(p_object, p_key, false);
+	return true;
+}
+
+void Tween::_remove(Object *p_object, String p_key, bool first_only) {
 
 	if(pending_update != 0) {
-		call_deferred("remove", p_object, p_key);
-		return true;
+		call_deferred("_remove", p_object, p_key, first_only);
+		return;
 	}
 	List<List<InterpolateData>::Element *> for_removal;
 	for(List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
@@ -830,12 +836,14 @@ bool Tween::remove(Object *p_object, String p_key) {
 			continue;
 		if(object == p_object && (data.key == p_key || p_key == "")) {
 			for_removal.push_back(E);
+			if (first_only) {
+				break;
+			}
 		}
 	}
 	for(List<List<InterpolateData>::Element *>::Element *E=for_removal.front();E;E=E->next()) {
 		interpolates.erase(E->get());
 	}
-	return true;
 }
 
 bool Tween::remove_all() {
