@@ -108,8 +108,8 @@ bool Tween::_set(const StringName& p_name, const Variant& p_value) {
 
 	String name=p_name;
 
-	if (name=="playback/speed" || name=="speed") { //bw compatibility
-		set_speed(p_value);
+	if (name=="playback/speed_scale" || name=="speed_scale") { //bw compatibility
+		set_speed_scale(p_value);
 
 	} else if (name=="playback/active") {
 		set_active(p_value);
@@ -125,7 +125,7 @@ bool Tween::_get(const StringName& p_name,Variant &r_ret) const {
 
 	String name=p_name;
 
-	if (name=="playback/speed") { //bw compatibility
+	if (name=="playback/speed_scale") { //bw compatibility
 
 		r_ret=speed_scale;
 	} else if (name=="playback/active") {
@@ -143,7 +143,7 @@ void Tween::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	p_list->push_back( PropertyInfo( Variant::BOOL, "playback/active", PROPERTY_HINT_NONE,"" ) );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "playback/repeat", PROPERTY_HINT_NONE,"" ) );
-	p_list->push_back( PropertyInfo( Variant::REAL, "playback/speed", PROPERTY_HINT_RANGE, "-64,64,0.01") );
+	p_list->push_back( PropertyInfo( Variant::REAL, "playback/speed_scale", PROPERTY_HINT_RANGE, "-64,64,0.01") );
 }
 
 void Tween::_notification(int p_what) {
@@ -192,8 +192,8 @@ void Tween::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_repeat"),&Tween::is_repeat );
 	ObjectTypeDB::bind_method(_MD("set_repeat","repeat"),&Tween::set_repeat );
 
-	ObjectTypeDB::bind_method(_MD("set_speed","speed"),&Tween::set_speed);
-	ObjectTypeDB::bind_method(_MD("get_speed"),&Tween::get_speed);
+	ObjectTypeDB::bind_method(_MD("set_speed_scale","speed_scale"),&Tween::set_speed_scale);
+	ObjectTypeDB::bind_method(_MD("get_speed_scale"),&Tween::get_speed_scale);
 
 	ObjectTypeDB::bind_method(_MD("set_tween_process_mode","mode"),&Tween::set_tween_process_mode);
 	ObjectTypeDB::bind_method(_MD("get_tween_process_mode"),&Tween::get_tween_process_mode);
@@ -696,12 +696,12 @@ void Tween::set_repeat(bool p_repeat) {
 	repeat = p_repeat;
 }
 
-void Tween::set_speed(float p_speed) {
+void Tween::set_speed_scale(float p_speed) {
 
 	speed_scale=p_speed;
 }
 
-float Tween::get_speed() const {
+float Tween::get_speed_scale() const {
 
 	return speed_scale;
 }
