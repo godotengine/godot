@@ -1,22 +1,22 @@
 #
-# 	tested on                   | Windows native    | Linux cross-compilation
-#	----------------------------+-------------------+---------------------------
-#	MSVS C++ 2010 Express       | WORKS             | n/a
+#   tested on                   | Windows native    | Linux cross-compilation
+#   ----------------------------+-------------------+---------------------------
 #   Visual C++ Build Tools 2015 | WORKS             | n/a
-#	Mingw-w64                   | WORKS             | WORKS
-#	Mingw-w32                   | WORKS             | WORKS
-#	MinGW                       | WORKS             | untested
-#
-#####
-# Notes about MSVS C++ :
-#
-# 	- MSVC2010-Express compiles to 32bits only.
+#   MSVS C++ 2010 Express       | WORKS             | n/a
+#   Mingw-w64                   | WORKS             | WORKS
+#   Mingw-w32                   | WORKS             | WORKS
+#   MinGW                       | WORKS             | untested
 #
 #####
 # Note about Visual C++ Build Tools :
 #
 #	- Visual C++ Build Tools is the standalone MSVC compiler :
 #		http://landinghub.visualstudio.com/visual-cpp-build-tools
+#
+#####
+# Notes about MSVS C++ :
+#
+# 	- MSVC2010-Express compiles to 32bits only.
 #
 #####
 # Notes about Mingw-w64 and Mingw-w32 under Windows :
@@ -109,7 +109,7 @@ def can_build():
 
 	if (os.name=="nt"):
 		#building natively on windows!
-		if ( methods.msvc_is_detected() ):
+		if ( os.getenv("VCINSTALLDIR") ):
 			return True
 		else:
 			print("\nMSVC not detected, attempting Mingw.")
@@ -204,7 +204,7 @@ def configure(env):
 
 	env.Append(CPPPATH=['#platform/windows'])
 	env['is_mingw']=False
-	if (os.name=="nt" and methods.msvc_is_detected() ):
+	if (os.name=="nt" and os.getenv("VCINSTALLDIR") ):
 		#build using visual studio
 		env['ENV']['TMP'] = os.environ['TMP']
 		env.Append(CPPPATH=['#platform/windows/include'])
