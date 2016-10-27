@@ -147,6 +147,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _nodes_dragged(Array p_nodes,NodePath p_to,int p_type);
 	void _files_dropped(Vector<String> p_files,NodePath p_to,int p_type);
+	void _script_dropped(String p_file, NodePath p_to);
 
 	void _tree_rmb(const Vector2& p_menu_pos);
 

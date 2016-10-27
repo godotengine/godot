@@ -1721,6 +1721,15 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files,NodePath p_to,int p_ty
 	_perform_instance_scenes(p_files,node,to_pos);
 }
 
+void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
+	Ref<Script> scr = ResourceLoader::load(p_file);
+	ERR_FAIL_COND(!scr.is_valid());
+	Node *n = get_node(p_to);
+	if (n) {
+		n->set_script(scr.get_ref_ptr());
+	}
+}
+
 void SceneTreeDock::_nodes_dragged(Array p_nodes,NodePath p_to,int p_type) {
 
 	Vector<Node*> nodes;
@@ -1859,6 +1868,7 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_new_scene_from"),&SceneTreeDock::_new_scene_from);
 	ObjectTypeDB::bind_method(_MD("_nodes_dragged"),&SceneTreeDock::_nodes_dragged);
 	ObjectTypeDB::bind_method(_MD("_files_dropped"),&SceneTreeDock::_files_dropped);
+	ObjectTypeDB::bind_method(_MD("_script_dropped"),&SceneTreeDock::_script_dropped);
 	ObjectTypeDB::bind_method(_MD("_tree_rmb"),&SceneTreeDock::_tree_rmb);
 	ObjectTypeDB::bind_method(_MD("_filter_changed"),&SceneTreeDock::_filter_changed);
 	ObjectTypeDB::bind_method(_MD("_focus_node"),&SceneTreeDock::_focus_node);
@@ -1941,6 +1951,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	scene_tree->connect("open_script",this,"_script_open_request");
 	scene_tree->connect("nodes_rearranged",this,"_nodes_dragged");
 	scene_tree->connect("files_dropped",this,"_files_dropped");
+	scene_tree->connect("script_dropped",this,"_script_dropped");
 	scene_tree->connect("nodes_dragged",this,"_nodes_drag_begin");
 
 	scene_tree->get_scene_tree()->connect("item_double_clicked", this, "_focus_node");

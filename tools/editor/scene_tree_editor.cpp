@@ -971,6 +971,10 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2& p_point,Control* p_from)
 	return drag_data;
 }
 
+bool SceneTreeEditor::_is_script_type(const StringName &p_type) const {
+	return (script_types->find(p_type));
+}
+
 bool SceneTreeEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const {
 
 	if (!can_rename)
@@ -998,9 +1002,13 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_da
 		if (files.size()==0)
 			return false; //weird
 
+		if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(files[0]))) {
+			tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
+			return true;
+		}
 
 		for(int i=0;i<files.size();i++) {
-			String file = files[0];
+			String file = files[i];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 			if (ftype!="PackedScene")
 				return false;
@@ -1044,7 +1052,15 @@ void SceneTreeEditor::drop_data_fw(const Point2& p_point,const Variant& p_data,C
 
 	if (String(d["type"])=="files") {
 
-		emit_signal("files_dropped",d["files"],np,section);
+		Vector<String> files = d["files"];
+
+
+		String ftype = EditorFileSystem::get_singleton()->get_file_type(files[0]);
+		if (_is_script_type(ftype)) {
+			emit_signal("script_dropped", files[0],np);
+		} else {
+			emit_signal("files_dropped",files,np,section);
+		}
 	}
 
 }
@@ -1113,6 +1129,7 @@ void SceneTreeEditor::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("nodes_dragged") );
 	ADD_SIGNAL( MethodInfo("nodes_rearranged",PropertyInfo(Variant::ARRAY,"paths"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
 	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
+	ADD_SIGNAL( MethodInfo("script_dropped",PropertyInfo(Variant::STRING,"file"),PropertyInfo(Variant::NODE_PATH,"to_path")));
 	ADD_SIGNAL( MethodInfo("rmb_pressed",PropertyInfo(Variant::VECTOR2,"pos")) ) ;
 
 	ADD_SIGNAL( MethodInfo("open") );
@@ -1209,12 +1226,16 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	update_timer->set_wait_time(0.5);
 	add_child(update_timer);
 
+	script_types = memnew(List<StringName>);
+	ObjectTypeDB::get_inheriters_from("Script", script_types);
+
 }
 
 
 
 SceneTreeEditor::~SceneTreeEditor() {
 
+	memdelete(script_types);
 }
 
 
