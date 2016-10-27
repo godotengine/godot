@@ -46,7 +46,7 @@ protected:
 
 public:
 
-	virtual Error listen(int p_port, IP_Address::AddrType p_address_type = IP_Address::TYPE_IPV4, int p_recv_buffer_size=65536)=0;
+	virtual Error listen(int p_port, IP_Address::AddrType p_address_type = IP_Address::TYPE_ANY, int p_recv_buffer_size=65536)=0;
 	virtual void close()=0;
 	virtual Error wait()=0;
 	virtual bool is_listening() const=0;
