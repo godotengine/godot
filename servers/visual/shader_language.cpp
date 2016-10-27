@@ -260,11 +260,11 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[]={
 	{TK_UNIFORM,"uniform"},
 	{TK_VARYING,"varying"},
 	{TK_RENDER_MODE,"render_mode"},
-	{TK_HINT_WHITE_TEXTURE,"white"},
-	{TK_HINT_BLACK_TEXTURE,"black"},
-	{TK_HINT_NORMAL_TEXTURE,"normal"},
-	{TK_HINT_ALBEDO_TEXTURE,"albedo"},
-	{TK_HINT_COLOR,"color"},
+	{TK_HINT_WHITE_TEXTURE,"hint_white"},
+	{TK_HINT_BLACK_TEXTURE,"hint_black"},
+	{TK_HINT_NORMAL_TEXTURE,"hint_normal"},
+	{TK_HINT_ALBEDO_TEXTURE,"hint_albedo"},
+	{TK_HINT_COLOR,"hint_color"},
 	{TK_HINT_RANGE,"hint_range"},
 
 	{TK_ERROR,NULL}
@@ -604,7 +604,7 @@ String ShaderLanguage::token_debug(const String& p_code) {
 
 	Token tk = _get_token();
 	while(tk.type!=TK_EOF && tk.type!=TK_ERROR) {
-		print_line(get_token_text(tk));
+
 		output+=itos(tk_line)+": "+get_token_text(tk)+"\n";
 		tk = _get_token();
 	}
@@ -2232,9 +2232,7 @@ ShaderLanguage::Node* ShaderLanguage::_parse_expression(BlockNode* p_block,const
 		Node *expr=NULL;
 		TkPos prepos = _get_tkpos();
 		Token tk = _get_token();
-		TkPos pos = _get_tkpos();
-
-		print_line("in expr: "+get_token_text(tk));
+		TkPos pos = _get_tkpos();		
 
 
 		if (tk.type==TK_PARENTHESIS_OPEN) {
@@ -2300,8 +2298,6 @@ ShaderLanguage::Node* ShaderLanguage::_parse_expression(BlockNode* p_block,const
 			return NULL;
 		} else if (is_token_nonvoid_datatype(tk.type)) {
 			//basic type constructor
-
-			print_line("parse constructor");
 
 			OperatorNode *func = alloc_node<OperatorNode>();
 			func->op=OP_CONSTRUCT;
@@ -3193,17 +3189,17 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 						return ERR_PARSE_ERROR;
 					}
 
-					if (!p_render_modes.has(tk.text)) {
-						_set_error("Invalid render mode: '"+String(tk.text)+"'");
+					if (!p_render_modes.has(mode)) {
+						_set_error("Invalid render mode: '"+String(mode)+"'");
 						return ERR_PARSE_ERROR;
 					}
 
-					if (shader->render_modes.find(tk.text)!=-1) {
-						_set_error("Duplicate render mode: '"+String(tk.text)+"'");
+					if (shader->render_modes.find(mode)!=-1) {
+						_set_error("Duplicate render mode: '"+String(mode)+"'");
 						return ERR_PARSE_ERROR;
 					}
 
-					shader->render_modes.push_back(tk.text);
+					shader->render_modes.push_back(mode);
 
 					tk = _get_token();
 					if (tk.type==TK_COMMA) {
@@ -3262,7 +3258,7 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 				if (uniform) {
 
 					ShaderNode::Uniform uniform;
-					uniform.order=shader->uniforms.size();
+
 					if (is_sampler_type(type)) {
 						uniform.texture_order=texture_uniforms++;
 						uniform.order=-1;
@@ -3331,7 +3327,7 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 
 							tk = _get_token();
 
-							if (tk.type!=TK_REAL_CONSTANT ||tk.type!=TK_INT_CONSTANT) {
+							if (tk.type!=TK_REAL_CONSTANT && tk.type!=TK_INT_CONSTANT) {
 								_set_error("Expected integer constant");
 								return ERR_PARSE_ERROR;
 							}
@@ -3347,7 +3343,7 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 
 							tk = _get_token();
 
-							if (tk.type!=TK_REAL_CONSTANT || tk.type!=TK_INT_CONSTANT) {
+							if (tk.type!=TK_REAL_CONSTANT && tk.type!=TK_INT_CONSTANT) {
 								_set_error("Expected integer constant after ','");
 								return ERR_PARSE_ERROR;
 							}
@@ -3359,7 +3355,7 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 							if (tk.type==TK_COMMA) {
 								tk = _get_token();
 
-								if (tk.type!=TK_REAL_CONSTANT || tk.type!=TK_INT_CONSTANT) {
+								if (tk.type!=TK_REAL_CONSTANT && tk.type!=TK_INT_CONSTANT) {
 									_set_error("Expected integer constant after ','");
 									return ERR_PARSE_ERROR;
 								}
@@ -3389,8 +3385,6 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 							return ERR_PARSE_ERROR;
 
 						}
-
-						print_line("assigning name: "+String(name));
 
 						tk = _get_token();
 					}
@@ -3624,7 +3618,7 @@ Error ShaderLanguage::complete(const String& p_code,const Map< StringName, Map<S
 			return OK;
 		} break;
 		case COMPLETION_MAIN_FUNCTION: {
-			print_line("complete main func");
+
 			for(const Map< StringName, Map<StringName,DataType> >::Element *E=p_functions.front();E;E=E->next()) {
 
 				r_options->push_back(E->key());
@@ -3635,7 +3629,6 @@ Error ShaderLanguage::complete(const String& p_code,const Map< StringName, Map<S
 		case COMPLETION_IDENTIFIER:
 		case COMPLETION_FUNCTION_CALL: {
 
-			print_line("complete identifier");
 			bool comp_ident=completion_type==COMPLETION_IDENTIFIER;
 			Set<String> matches;
 
@@ -3709,7 +3702,6 @@ Error ShaderLanguage::complete(const String& p_code,const Map< StringName, Map<S
 		} break;
 		case COMPLETION_CALL_ARGUMENTS: {
 
-			print_line("complete callargs");
 			for(int i=0;i<shader->functions.size();i++) {
 				if (!shader->functions[i].callable)
 					continue;

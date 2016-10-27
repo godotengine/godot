@@ -751,6 +751,7 @@ void ShaderGLES3::set_custom_shader_code(uint32_t p_code_id, const String& p_ver
 	ERR_FAIL_COND(!custom_code_map.has(p_code_id));
 	CustomCode *cc=&custom_code_map[p_code_id];
 
+
 	cc->vertex=p_vertex;
 	cc->vertex_globals=p_vertex_globals;
 	cc->fragment=p_fragment;

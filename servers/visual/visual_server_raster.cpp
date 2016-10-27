@@ -405,33 +405,33 @@ RID VisualServerRaster::fixed_material_create() {
 	return rasterizer->fixed_material_create();
 }
 
-void VisualServerRaster::fixed_material_set_flag(RID p_material, FixedMaterialFlags p_flag, bool p_enabled) {
+void VisualServerRaster::fixed_material_set_flag(RID p_material, FixedSpatialMaterialFlags p_flag, bool p_enabled) {
 
 	rasterizer->fixed_material_set_flag(p_material,p_flag,p_enabled);
 }
 
-bool VisualServerRaster::fixed_material_get_flag(RID p_material, FixedMaterialFlags p_flag) const {
+bool VisualServerRaster::fixed_material_get_flag(RID p_material, FixedSpatialMaterialFlags p_flag) const {
 
 	return rasterizer->fixed_material_get_flag(p_material,p_flag);
 }
 
-void VisualServerRaster::fixed_material_set_param(RID p_material, FixedMaterialParam p_parameter, const Variant& p_value) {
+void VisualServerRaster::fixed_material_set_param(RID p_material, FixedSpatialMaterialParam p_parameter, const Variant& p_value) {
 	VS_CHANGED;
 	rasterizer->fixed_material_set_parameter(p_material,p_parameter,p_value);
 }
 
-Variant VisualServerRaster::fixed_material_get_param(RID p_material,FixedMaterialParam p_parameter) const {
+Variant VisualServerRaster::fixed_material_get_param(RID p_material,FixedSpatialMaterialParam p_parameter) const {
 
 	return rasterizer->fixed_material_get_parameter(p_material,p_parameter);
 }
 
 
-void VisualServerRaster::fixed_material_set_texture(RID p_material,FixedMaterialParam p_parameter, RID p_texture) {
+void VisualServerRaster::fixed_material_set_texture(RID p_material,FixedSpatialMaterialParam p_parameter, RID p_texture) {
 	VS_CHANGED;
 	rasterizer->fixed_material_set_texture(p_material,p_parameter,p_texture);
 }
 
-RID VisualServerRaster::fixed_material_get_texture(RID p_material,FixedMaterialParam p_parameter) const {
+RID VisualServerRaster::fixed_material_get_texture(RID p_material,FixedSpatialMaterialParam p_parameter) const {
 
 	return rasterizer->fixed_material_get_texture(p_material,p_parameter);
 }
@@ -439,12 +439,12 @@ RID VisualServerRaster::fixed_material_get_texture(RID p_material,FixedMaterialP
 
 
 
-void VisualServerRaster::fixed_material_set_texcoord_mode(RID p_material,FixedMaterialParam p_parameter, FixedMaterialTexCoordMode p_mode) {
+void VisualServerRaster::fixed_material_set_texcoord_mode(RID p_material,FixedSpatialMaterialParam p_parameter, FixedSpatialMaterialTexCoordMode p_mode) {
 	VS_CHANGED;
 	rasterizer->fixed_material_set_texcoord_mode(p_material,p_parameter,p_mode);
 }
 
-VS::FixedMaterialTexCoordMode VisualServerRaster::fixed_material_get_texcoord_mode(RID p_material,FixedMaterialParam p_parameter) const {
+VS::FixedSpatialMaterialTexCoordMode VisualServerRaster::fixed_material_get_texcoord_mode(RID p_material,FixedSpatialMaterialParam p_parameter) const {
 
 	return rasterizer->fixed_material_get_texcoord_mode(p_material,p_parameter);
 }
@@ -471,14 +471,14 @@ Transform VisualServerRaster::fixed_material_get_uv_transform(RID p_material) co
 	return rasterizer->fixed_material_get_uv_transform(p_material);
 }
 
-void VisualServerRaster::fixed_material_set_light_shader(RID p_material,FixedMaterialLightShader p_shader) {
+void VisualServerRaster::fixed_material_set_light_shader(RID p_material,FixedSpatialMaterialLightShader p_shader) {
 
 	VS_CHANGED;
 	rasterizer->fixed_material_set_light_shader(p_material,p_shader);
 
 }
 
-VisualServerRaster::FixedMaterialLightShader VisualServerRaster::fixed_material_get_light_shader(RID p_material) const{
+VisualServerRaster::FixedSpatialMaterialLightShader VisualServerRaster::fixed_material_get_light_shader(RID p_material) const{
 
 	return rasterizer->fixed_material_get_light_shader(p_material);
 }

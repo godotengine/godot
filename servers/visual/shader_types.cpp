@@ -136,16 +136,16 @@ ShaderTypes::ShaderTypes()
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["POINT_COORD"]=ShaderLanguage::TYPE_VEC2;
 	shader_modes[VS::SHADER_CANVAS_ITEM].functions["light"]["TIME"]=ShaderLanguage::TYPE_FLOAT;
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("skip_transform");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("skip_transform");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_mix");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_add");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_sub");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_mul");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("blend_premul_alpha");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_mix");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_add");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_sub");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_mul");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("blend_premul_alpha");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("unshaded");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("light_only");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("unshaded");
+	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("light_only");
 
 
 

@@ -44,10 +44,32 @@ class Light : public VisualInstance {
 
 public:
 
-
+	enum Param {
+		PARAM_ENERGY,
+		PARAM_SPECULAR,
+		PARAM_RANGE,
+		PARAM_ATTENUATION,
+		PARAM_SPOT_ANGLE,
+		PARAM_SPOT_ATTENUATION,
+		PARAM_SHADOW_MAX_DISTANCE,
+		PARAM_SHADOW_DARKNESS,
+		PARAM_SHADOW_SPLIT_1_OFFSET,
+		PARAM_SHADOW_SPLIT_2_OFFSET,
+		PARAM_SHADOW_SPLIT_3_OFFSET,
+		PARAM_SHADOW_SPLIT_4_OFFSET,
+		PARAM_SHADOW_NORMAL_BIAS,
+		PARAM_SHADOW_BIAS,
+		PARAM_SHADOW_BIAS_SPLIT_SCALE,
+		PARAM_MAX
+	};
 
 private:
 
+	Color color;
+	float param[PARAM_MAX];
+	bool shadow;
+	bool negative;
+	uint32_t cull_mask;
 	VS::LightType type;
 	bool editor_only;
 	void _update_visibility();
@@ -71,6 +93,22 @@ public:
 	void set_editor_only(bool p_editor_only);
 	bool is_editor_only() const;
 
+	void set_param(Param p_param, float p_value);
+	float get_param(Param p_param) const;
+
+	void set_shadow(bool p_enable);
+	bool has_shadow() const;
+
+	void set_negative(bool p_enable);
+	bool is_negative() const;
+
+	void set_cull_mask(uint32_t p_cull_mask);
+	uint32_t get_cull_mask() const;
+
+	void set_color(const Color& p_color);
+	Color get_color() const;
+
+
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
@@ -79,6 +117,7 @@ public:
 
 };
 
+VARIANT_ENUM_CAST(Light::Param);
 
 
 class DirectionalLight : public Light {

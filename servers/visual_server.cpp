@@ -1036,14 +1036,11 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primi
 			}
 		}
 
-		print_line("type "+itos(i)+" size: "+itos(elem_size)+" offset "+itos(total_elem_size));
 		offsets[i]=total_elem_size;
 		total_elem_size+=elem_size;
 
 
 	}
-
-	print_line("total elemn size: "+itos(total_elem_size));
 
 	uint32_t mask = (1<<ARRAY_MAX)-1;
 	format|=~mask&p_compress_format; //make the full format
@@ -1051,14 +1048,10 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primi
 
 	int array_size = total_elem_size * array_len;
 
-	print_line("array size: "+itos(array_size));
-
 	DVector<uint8_t> vertex_array;
 	vertex_array.resize(array_size);
 
 	int index_array_size = offsets[VS::ARRAY_INDEX]*index_array_len;
-
-	print_line("index array size: "+itos(index_array_size));
 
 	DVector<uint8_t> index_array;
 	index_array.resize(index_array_size);

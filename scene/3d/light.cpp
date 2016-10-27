@@ -39,24 +39,88 @@ bool Light::_can_gizmo_scale() const {
 }
 
 
+void Light::set_param(Param p_param, float p_value) {
+
+	ERR_FAIL_INDEX(p_param,PARAM_MAX);
+	param[p_param]=p_value;
+
+	VS::get_singleton()->light_set_param(light,VS::LightParam(p_param),p_value);
+
+	if (p_param==PARAM_SPOT_ANGLE || p_param==PARAM_RANGE) {
+		update_gizmo();;
+	}
+
+
+}
+
+float Light::get_param(Param p_param) const{
+
+	ERR_FAIL_INDEX_V(p_param,PARAM_MAX,0);
+	return param[p_param];
+
+}
+
+void Light::set_shadow(bool p_enable){
+
+	shadow=p_enable;
+	VS::get_singleton()->light_set_shadow(light,p_enable);
+
+}
+bool Light::has_shadow() const{
+
+	return shadow;
+}
+
+void Light::set_negative(bool p_enable){
+
+	negative=p_enable;
+	VS::get_singleton()->light_set_negative(light,p_enable);
+}
+bool Light::is_negative() const{
+
+	return negative;
+}
+
+void Light::set_cull_mask(uint32_t p_cull_mask){
+
+	cull_mask=p_cull_mask;
+	VS::get_singleton()->light_set_cull_mask(light,p_cull_mask);
+
+}
+uint32_t Light::get_cull_mask() const{
+
+	return cull_mask;
+}
+
+void Light::set_color(const Color& p_color){
+
+	color=p_color;
+	VS::get_singleton()->light_set_color(light,p_color);
+}
+Color Light::get_color() const{
+
+	return color;
+}
+
+
 AABB Light::get_aabb() const {
 
-#if 0
+
 	if (type==VisualServer::LIGHT_DIRECTIONAL) {
 
 		return AABB( Vector3(-1,-1,-1), Vector3(2, 2, 2 ) );
 
 	} else if (type==VisualServer::LIGHT_OMNI) {
 
-		return AABB( Vector3(-1,-1,-1) * vars[PARAM_RADIUS], Vector3(2, 2, 2 ) * vars[PARAM_RADIUS]);
+		return AABB( Vector3(-1,-1,-1) * param[PARAM_RANGE], Vector3(2, 2, 2 ) * param[PARAM_RANGE]);
 
 	} else if (type==VisualServer::LIGHT_SPOT) {
 
-		float len=vars[PARAM_RADIUS];
-		float size=Math::tan(Math::deg2rad(vars[PARAM_SPOT_ANGLE]))*len;
+		float len=param[PARAM_RANGE];
+		float size=Math::tan(Math::deg2rad(param[PARAM_SPOT_ANGLE]))*len;
 		return AABB( Vector3( -size,-size,-len ), Vector3( size*2, size*2, len ) );
 	}
-#endif
+
 	return AABB();
 }
 
@@ -118,10 +182,51 @@ void Light::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_editor_only"), &Light::is_editor_only );
 
 
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "params/editor_only"), _SCS("set_editor_only"), _SCS("is_editor_only"));
+	ObjectTypeDB::bind_method(_MD("set_param","param","value"), &Light::set_param );
+	ObjectTypeDB::bind_method(_MD("get_param","param"), &Light::get_param );
 
+	ObjectTypeDB::bind_method(_MD("set_shadow","enabled"), &Light::set_shadow );
+	ObjectTypeDB::bind_method(_MD("has_shadow"), &Light::has_shadow );
 
+	ObjectTypeDB::bind_method(_MD("set_negative","enabled"), &Light::set_negative );
+	ObjectTypeDB::bind_method(_MD("is_negative"), &Light::is_negative );
 
+	ObjectTypeDB::bind_method(_MD("set_cull_mask","cull_mask"), &Light::set_cull_mask );
+	ObjectTypeDB::bind_method(_MD("get_cull_mask"), &Light::get_cull_mask );
+
+	ObjectTypeDB::bind_method(_MD("set_color","color"), &Light::set_color );
+	ObjectTypeDB::bind_method(_MD("get_color"), &Light::get_color );
+
+	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "light/color"), _SCS("set_color"), _SCS("get_color"));
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/energy"), _SCS("set_param"), _SCS("get_param"), PARAM_ENERGY);
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "light/negative"), _SCS("set_negative"), _SCS("is_negative"));
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/specular"), _SCS("set_param"), _SCS("get_param"), PARAM_SPECULAR);
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "light/cull_mask"), _SCS("set_cull_mask"), _SCS("get_cull_mask"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "shadow/enabled"), _SCS("set_shadow"), _SCS("has_shadow"));
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/darkness"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_DARKNESS);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/normal_bias"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_NORMAL_BIAS);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/bias"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_BIAS);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/bias_split_scale"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_BIAS_SPLIT_SCALE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/max_distance"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_MAX_DISTANCE);
+
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "editor/editor_only"), _SCS("set_editor_only"), _SCS("is_editor_only"));
+
+	BIND_CONSTANT( PARAM_ENERGY );
+	BIND_CONSTANT( PARAM_SPECULAR );
+	BIND_CONSTANT( PARAM_RANGE );
+	BIND_CONSTANT( PARAM_ATTENUATION );
+	BIND_CONSTANT( PARAM_SPOT_ANGLE );
+	BIND_CONSTANT( PARAM_SPOT_ATTENUATION );
+	BIND_CONSTANT( PARAM_SHADOW_MAX_DISTANCE );
+	BIND_CONSTANT( PARAM_SHADOW_DARKNESS );
+	BIND_CONSTANT( PARAM_SHADOW_SPLIT_1_OFFSET );
+	BIND_CONSTANT( PARAM_SHADOW_SPLIT_2_OFFSET );
+	BIND_CONSTANT( PARAM_SHADOW_SPLIT_3_OFFSET );
+	BIND_CONSTANT( PARAM_SHADOW_SPLIT_4_OFFSET );
+	BIND_CONSTANT( PARAM_SHADOW_NORMAL_BIAS );
+	BIND_CONSTANT( PARAM_SHADOW_BIAS );
+	BIND_CONSTANT( PARAM_SHADOW_BIAS_SPLIT_SCALE );
+	BIND_CONSTANT( PARAM_MAX );
 
 
 }
@@ -131,9 +236,29 @@ Light::Light(VisualServer::LightType p_type) {
 
 	type=p_type;
 	light=VisualServer::get_singleton()->light_create(p_type);
-
+	VS::get_singleton()->instance_set_base(get_instance(),light);
 
 	editor_only=false;
+	set_color(Color(1,1,1,1));
+	set_shadow(false);
+	set_negative(false);
+	set_cull_mask(0xFFFFFFFF);
+
+	set_param(PARAM_ENERGY,1);
+	set_param(PARAM_SPECULAR,1);
+	set_param(PARAM_RANGE,5);
+	set_param(PARAM_ATTENUATION,1);
+	set_param(PARAM_SPOT_ANGLE,45);
+	set_param(PARAM_SPOT_ATTENUATION,1);
+	set_param(PARAM_SHADOW_MAX_DISTANCE,0);
+	set_param(PARAM_SHADOW_DARKNESS,0);
+	set_param(PARAM_SHADOW_SPLIT_1_OFFSET,0.1);
+	set_param(PARAM_SHADOW_SPLIT_2_OFFSET,0.2);
+	set_param(PARAM_SHADOW_SPLIT_3_OFFSET,0.5);
+	set_param(PARAM_SHADOW_SPLIT_4_OFFSET,1.0);
+	set_param(PARAM_SHADOW_NORMAL_BIAS,0.1);
+	set_param(PARAM_SHADOW_BIAS,0.1);
+	set_param(PARAM_SHADOW_BIAS_SPLIT_SCALE,0.1);
 
 }
 
@@ -147,6 +272,8 @@ Light::Light() {
 
 Light::~Light() {
 
+	VS::get_singleton()->instance_set_base(get_instance(),RID());
+
 	if (light.is_valid())
 		VisualServer::get_singleton()->free(light);
 }
@@ -156,6 +283,10 @@ Light::~Light() {
 void DirectionalLight::_bind_methods() {
 
 
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "pssm/split_1"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_1_OFFSET);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "pssm/split_2"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_2_OFFSET);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "pssm/split_3"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_3_OFFSET);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "pssm/split_4"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_4_OFFSET);
 
 }
 
@@ -169,10 +300,15 @@ DirectionalLight::DirectionalLight() : Light( VisualServer::LIGHT_DIRECTIONAL ) 
 
 void OmniLight::_bind_methods() {
 
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/range"), _SCS("set_param"), _SCS("get_param"), PARAM_RANGE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/attenuation"), _SCS("set_param"), _SCS("get_param"), PARAM_ATTENUATION);
 
 }
 
 void SpotLight::_bind_methods() {
+
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/spot_angle"), _SCS("set_param"), _SCS("get_param"), PARAM_SPOT_ANGLE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/spot_attenuation"), _SCS("set_param"), _SCS("get_param"), PARAM_SPOT_ATTENUATION);
 
 }
 

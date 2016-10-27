@@ -544,14 +544,16 @@ void register_scene_types() {
 #ifndef _3D_DISABLED
 	ObjectTypeDB::register_type<Mesh>();
 	ObjectTypeDB::register_virtual_type<Material>();
-	ObjectTypeDB::register_type<FixedMaterial>();
+	ObjectTypeDB::register_type<FixedSpatialMaterial>();
+	SceneTree::add_idle_callback(FixedSpatialMaterial::flush_changes);
+	FixedSpatialMaterial::init_shaders();
 //	ObjectTypeDB::register_type<ShaderMaterial>();
 	ObjectTypeDB::register_type<RoomBounds>();
 //	ObjectTypeDB::register_type<MaterialShaderGraph>();
 	ObjectTypeDB::register_type<SpatialShader>();
 	ObjectTypeDB::add_compatibility_type("Shader","MaterialShader");
-	ObjectTypeDB::add_compatibility_type("ParticleSystemMaterial","FixedMaterial");
-	ObjectTypeDB::add_compatibility_type("UnshadedMaterial","FixedMaterial");
+	ObjectTypeDB::add_compatibility_type("ParticleSystemMaterial","FixedSpatialMaterial");
+	ObjectTypeDB::add_compatibility_type("UnshadedMaterial","FixedSpatialMaterial");
 	ObjectTypeDB::register_type<MultiMesh>();
 	ObjectTypeDB::register_type<MeshLibrary>();
 
@@ -655,6 +657,7 @@ void unregister_scene_types() {
 	memdelete( resource_loader_wav );
 	memdelete( resource_loader_dynamic_font );
 
+
 #ifdef TOOLS_ENABLED
 
 
@@ -669,5 +672,7 @@ void unregister_scene_types() {
 	if (resource_loader_text) {
 		memdelete(resource_loader_text);
 	}
+
+	FixedSpatialMaterial::finish_shaders();
 	SceneStringNames::free();
 }

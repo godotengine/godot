@@ -464,34 +464,34 @@ public:
 class SpatialEditorGizmos  {
 public:
 
-	Ref<FixedMaterial> create_line_material(const Color& p_base_color);
-	Ref<FixedMaterial> create_solid_material(const Color& p_base_color);
-	Ref<FixedMaterial> handle2_material;
-	Ref<FixedMaterial> handle_material;
-	Ref<FixedMaterial> light_material;
-	Ref<FixedMaterial> light_material_omni_icon;
-	Ref<FixedMaterial> light_material_directional_icon;
-	Ref<FixedMaterial> camera_material;
-	Ref<FixedMaterial> skeleton_material;
-	Ref<FixedMaterial> room_material;
-	Ref<FixedMaterial> portal_material;
-	Ref<FixedMaterial> raycast_material;
-	Ref<FixedMaterial> visibility_notifier_material;
-	Ref<FixedMaterial> car_wheel_material;
-	Ref<FixedMaterial> joint_material;
+	Ref<FixedSpatialMaterial> create_line_material(const Color& p_base_color);
+	Ref<FixedSpatialMaterial> create_solid_material(const Color& p_base_color);
+	Ref<FixedSpatialMaterial> handle2_material;
+	Ref<FixedSpatialMaterial> handle_material;
+	Ref<FixedSpatialMaterial> light_material;
+	Ref<FixedSpatialMaterial> light_material_omni_icon;
+	Ref<FixedSpatialMaterial> light_material_directional_icon;
+	Ref<FixedSpatialMaterial> camera_material;
+	Ref<FixedSpatialMaterial> skeleton_material;
+	Ref<FixedSpatialMaterial> room_material;
+	Ref<FixedSpatialMaterial> portal_material;
+	Ref<FixedSpatialMaterial> raycast_material;
+	Ref<FixedSpatialMaterial> visibility_notifier_material;
+	Ref<FixedSpatialMaterial> car_wheel_material;
+	Ref<FixedSpatialMaterial> joint_material;
 
-	Ref<FixedMaterial> navmesh_edge_material;
-	Ref<FixedMaterial> navmesh_solid_material;
-	Ref<FixedMaterial> navmesh_edge_material_disabled;
-	Ref<FixedMaterial> navmesh_solid_material_disabled;
+	Ref<FixedSpatialMaterial> navmesh_edge_material;
+	Ref<FixedSpatialMaterial> navmesh_solid_material;
+	Ref<FixedSpatialMaterial> navmesh_edge_material_disabled;
+	Ref<FixedSpatialMaterial> navmesh_solid_material_disabled;
 
-	Ref<FixedMaterial> listener_icon;
+	Ref<FixedSpatialMaterial> listener_icon;
 
-	Ref<FixedMaterial> sample_player_icon;
-	Ref<FixedMaterial> stream_player_icon;
-	Ref<FixedMaterial> visibility_notifier_icon;
+	Ref<FixedSpatialMaterial> sample_player_icon;
+	Ref<FixedSpatialMaterial> stream_player_icon;
+	Ref<FixedSpatialMaterial> visibility_notifier_icon;
 
-	Ref<FixedMaterial> shape_material;
+	Ref<FixedSpatialMaterial> shape_material;
 	Ref<Texture> handle_t;
 
 	Ref<Mesh> pos3d_mesh;

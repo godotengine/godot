@@ -620,7 +620,7 @@ public:
 	BIND1RC(uint32_t,texture_get_width,RID)
 	BIND1RC(uint32_t,texture_get_height,RID)
 	BIND3(texture_set_size_override,RID,int,int)
-	BIND3RC(RID,texture_create_pbr_cubemap,RID,PBRCubeMapMode,int)
+	BIND2RC(RID,texture_create_radiance_cubemap,RID,int)
 
 
 
@@ -854,7 +854,7 @@ public:
 	BIND0R(RID,environment_create)
 
 	BIND2(environment_set_background,RID ,EnvironmentBG )
-	BIND4(environment_set_skybox,RID,RID ,int,int )
+	BIND3(environment_set_skybox,RID,RID ,int )
 	BIND2(environment_set_skybox_scale,RID,float)
 	BIND2(environment_set_bg_color,RID,const Color& )
 	BIND2(environment_set_bg_energy,RID,float )

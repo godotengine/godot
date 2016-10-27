@@ -125,12 +125,7 @@ public:
 
 	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable)=0;
 
-	enum PBRCubeMapMode {
-		PBR_CUBEMAP_RADIANCE,
-		PBR_CUBEMAP_IRRADIANCE,
-	};
-
-	virtual RID texture_create_pbr_cubemap(RID p_source,PBRCubeMapMode p_mode,int p_resolution=-1) const=0;
+	virtual RID texture_create_radiance_cubemap(RID p_source,int p_resolution=-1) const=0;
 
 	struct TextureInfo {
 		RID texture;
@@ -349,7 +344,9 @@ public:
 		LIGHT_PARAM_ENERGY,
 		LIGHT_PARAM_SPECULAR,
 		LIGHT_PARAM_RANGE,
+		LIGHT_PARAM_ATTENUATION,
 		LIGHT_PARAM_SPOT_ANGLE,
+		LIGHT_PARAM_SPOT_ATTENUATION,
 		LIGHT_PARAM_SHADOW_MAX_DISTANCE,
 		LIGHT_PARAM_SHADOW_DARKNESS,
 		LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET,
@@ -357,10 +354,8 @@ public:
 		LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET,
 		LIGHT_PARAM_SHADOW_SPLIT_4_OFFSET,
 		LIGHT_PARAM_SHADOW_NORMAL_BIAS,
-		LIGHT_PARAM_SHADOW_BIAS_1,
-		LIGHT_PARAM_SHADOW_BIAS_2,
-		LIGHT_PARAM_SHADOW_BIAS_3,
-		LIGHT_PARAM_SHADOW_BIAS_4,
+		LIGHT_PARAM_SHADOW_BIAS,
+		LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE,
 		LIGHT_PARAM_MAX
 	};
 
@@ -494,12 +489,12 @@ public:
 	};
 
 	virtual void environment_set_background(RID p_env,EnvironmentBG p_bg)=0;
-	virtual void environment_set_skybox(RID p_env,RID p_skybox,int p_radiance_size,int p_irradiance_size)=0;
+	virtual void environment_set_skybox(RID p_env,RID p_skybox,int p_radiance_size)=0;
 	virtual void environment_set_skybox_scale(RID p_env,float p_scale)=0;
 	virtual void environment_set_bg_color(RID p_env,const Color& p_color)=0;
 	virtual void environment_set_bg_energy(RID p_env,float p_energy)=0;
 	virtual void environment_set_canvas_max_layer(RID p_env,int p_max_layer)=0;
-	virtual void environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy=1.0,float p_skybox_energy=0.0)=0;
+	virtual void environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy=1.0,float p_skybox_contribution=0.0)=0;
 
 	//set default SSAO options
 	//set default SSR options

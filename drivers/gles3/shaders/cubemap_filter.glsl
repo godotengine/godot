@@ -16,19 +16,26 @@ void main() {
 [fragment]
 
 
-uniform samplerCube source_cube; //texunit:1
+precision highp float;
+precision highp int;
+
+
+uniform samplerCube source_cube; //texunit:0
 uniform int face_id;
 uniform float roughness;
 in highp vec2 uv_interp;
 
 
-layout(location = 0) vec4 frag_color;
+layout(location = 0) out vec4 frag_color;
+
+
+#define M_PI 3.14159265359
 
 
 vec3 texelCoordToVec(vec2 uv, int faceID)
 {
     mat3 faceUvVectors[6];
-
+/*
     // -x
     faceUvVectors[1][0] = vec3(0.0, 0.0, 1.0);  // u -> +z
     faceUvVectors[1][1] = vec3(0.0, -1.0, 0.0); // v -> -y
@@ -58,6 +65,37 @@ vec3 texelCoordToVec(vec2 uv, int faceID)
     faceUvVectors[4][0] = vec3(1.0, 0.0, 0.0);  // u -> +x
     faceUvVectors[4][1] = vec3(0.0, -1.0, 0.0); // v -> -y
     faceUvVectors[4][2] = vec3(0.0, 0.0, 1.0);  // +z face
+*/
+
+    // -x
+    faceUvVectors[0][0] = vec3(0.0, 0.0, 1.0);  // u -> +z
+    faceUvVectors[0][1] = vec3(0.0, -1.0, 0.0); // v -> -y
+    faceUvVectors[0][2] = vec3(-1.0, 0.0, 0.0); // -x face
+
+    // +x
+    faceUvVectors[1][0] = vec3(0.0, 0.0, -1.0); // u -> -z
+    faceUvVectors[1][1] = vec3(0.0, -1.0, 0.0); // v -> -y
+    faceUvVectors[1][2] = vec3(1.0, 0.0, 0.0);  // +x face
+
+    // -y
+    faceUvVectors[2][0] = vec3(1.0, 0.0, 0.0);  // u -> +x
+    faceUvVectors[2][1] = vec3(0.0, 0.0, -1.0); // v -> -z
+    faceUvVectors[2][2] = vec3(0.0, -1.0, 0.0); // -y face
+
+    // +y
+    faceUvVectors[3][0] = vec3(1.0, 0.0, 0.0);  // u -> +x
+    faceUvVectors[3][1] = vec3(0.0, 0.0, 1.0);  // v -> +z
+    faceUvVectors[3][2] = vec3(0.0, 1.0, 0.0);  // +y face
+
+    // -z
+    faceUvVectors[4][0] = vec3(-1.0, 0.0, 0.0); // u -> -x
+    faceUvVectors[4][1] = vec3(0.0, -1.0, 0.0); // v -> -y
+    faceUvVectors[4][2] = vec3(0.0, 0.0, -1.0); // -z face
+
+    // +z
+    faceUvVectors[5][0] = vec3(1.0, 0.0, 0.0);  // u -> +x
+    faceUvVectors[5][1] = vec3(0.0, -1.0, 0.0); // v -> -y
+    faceUvVectors[5][2] = vec3(0.0, 0.0, 1.0);  // +z face
 
     // out = u * s_faceUv[0] + v * s_faceUv[1] + s_faceUv[2].
     vec3 result = (faceUvVectors[faceID][0] * uv.x) + (faceUvVectors[faceID][1] * uv.y) + faceUvVectors[faceID][2];
@@ -113,7 +151,7 @@ vec2 Hammersley(uint i, uint N) {
      return vec2(float(i)/float(N), radicalInverse_VdC(i));
 }
 
-#define SAMPLE_COUNT 1024
+#define SAMPLE_COUNT 1024u
 
 void main() {
 
@@ -123,20 +161,21 @@ void main() {
 	//vec4 color = color_interp;
 	vec4 sum = vec4(0.0, 0.0, 0.0, 0.0);
 
-	for(int sampleNum = 0; sampleNum < SAMPLE_COUNT; sampleNum++) {
+	for(uint sampleNum = 0u; sampleNum < SAMPLE_COUNT; sampleNum++) {
 		vec2 xi = Hammersley(sampleNum, SAMPLE_COUNT);
-		vec2 xi = texture2DLod(Texture0, vec2(float(sampleNum) / float(SAMPLE_COUNT), 0.5), 0.0).xy;
 
 		vec3 H  = ImportanceSampleGGX( xi, roughness, N );
 		vec3 V  = N;
 		vec3 L  = normalize(2.0 * dot( V, H ) * H - V);
 
-		float ndotl = max(0.0, dot(N, L));
-		vec3 s = textureCubeLod(u_skyCube, H, 0.0).rgb * ndotl;
+		float ndotl = clamp(dot(N, L),0.0,1.0);
 
-		sum += vec4(s, 1.0);
+		if (ndotl>0.0) {
+			sum.rgb += textureLod(source_cube, H, 0.0).rgb *ndotl;
+			sum.a += ndotl;
+		}
 	}
-	sum /= sum.w;
+	sum /= sum.a;
 
 	frag_color = vec4(sum.rgb, 1.0);
 }

@@ -319,10 +319,10 @@ RES Particles::_get_gizmo_geometry() const {
 
 	Ref<SurfaceTool> surface_tool( memnew( SurfaceTool ));
 
-	Ref<FixedMaterial> mat( memnew( FixedMaterial ));
+	Ref<FixedSpatialMaterial> mat( memnew( FixedSpatialMaterial ));
 
-	mat->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.0,0.6,0.7,0.2) );
-	mat->set_parameter( FixedMaterial::PARAM_EMISSION,Color(0.5,0.7,0.8) );
+	mat->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.0,0.6,0.7,0.2) );
+	mat->set_parameter( FixedSpatialMaterial::PARAM_EMISSION,Color(0.5,0.7,0.8) );
 	mat->set_blend_mode( Material::BLEND_MODE_ADD );
 	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 //	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
@@ -382,9 +382,9 @@ RES Particles::_get_gizmo_geometry() const {
 
 	Ref<Mesh> mesh = surface_tool->commit();
 
-	Ref<FixedMaterial> mat_aabb( memnew( FixedMaterial ));
+	Ref<FixedSpatialMaterial> mat_aabb( memnew( FixedSpatialMaterial ));
 
-	mat_aabb->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.8,0.8,0.9,0.7) );
+	mat_aabb->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.8,0.8,0.9,0.7) );
 	mat_aabb->set_line_width(3);
 	mat_aabb->set_flag( Material::FLAG_UNSHADED, true );
 

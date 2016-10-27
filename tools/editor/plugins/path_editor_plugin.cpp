@@ -523,16 +523,16 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	editor=p_node;
 	singleton=this;
 
-	path_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	path_material->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.8) );
-	path_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	path_material = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));
+	path_material->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.8) );
+	path_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA, true);
 	path_material->set_line_width(3);
 	path_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	path_material->set_flag(Material::FLAG_UNSHADED,true);
 
-	path_thin_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	path_thin_material->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.4) );
-	path_thin_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	path_thin_material = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));
+	path_thin_material->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.4) );
+	path_thin_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA, true);
 	path_thin_material->set_line_width(1);
 	path_thin_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	path_thin_material->set_flag(Material::FLAG_UNSHADED,true);

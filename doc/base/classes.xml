@@ -13434,12 +13434,12 @@
 		</theme_item>
 	</theme_items>
 </class>
-<class name="FixedMaterial" inherits="Material" category="Core">
+<class name="FixedSpatialMaterial" inherits="Material" category="Core">
 	<brief_description>
 		Simple Material with a fixed parameter set.
 	</brief_description>
 	<description>
-		FixedMaterial is a simple type of material [Resource], which contains a fixed amount of parameters. It is the only type of material supported in fixed-pipeline devices and APIs. It is also an often a better alternative to [ShaderMaterial] for most simple use cases.
+		FixedSpatialMaterial is a simple type of material [Resource], which contains a fixed amount of parameters. It is the only type of material supported in fixed-pipeline devices and APIs. It is also an often a better alternative to [ShaderMaterial] for most simple use cases.
 	</description>
 	<methods>
 		<method name="get_fixed_flag" qualifiers="const">

@@ -48,7 +48,7 @@ static int _get_datatype_size(SL::DataType p_type) {
 		case SL::TYPE_SAMPLERCUBE: return 16;
 	}
 
-
+	ERR_FAIL_V(0);
 }
 
 
@@ -195,7 +195,12 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			for(Map<StringName,SL::ShaderNode::Uniform>::Element *E=pnode->uniforms.front();E;E=E->next()) {
 
-				String ucode="uniform ";
+				String ucode;
+
+				if (SL::is_sampler_type(E->get().type)) {
+					ucode="uniform ";
+				}
+
 				ucode+=_prestr(E->get().precission);
 				ucode+=_typestr(E->get().type);
 				ucode+=" "+_mkid(E->key());
@@ -228,7 +233,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			for(int i=0;i<uniform_sizes.size();i++) {
 
 				if (i>0)
-					r_gen_code.uniform_offsets[i]=uniform_sizes[i]-1;
+					r_gen_code.uniform_offsets[i]=uniform_sizes[i-1];
 				else
 					r_gen_code.uniform_offsets[i]=0;
 			}
@@ -320,7 +325,11 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			SL::VariableNode *vnode=(SL::VariableNode*)p_node;
 
 			if (p_default_actions.usage_defines.has(vnode->name) && !used_name_defines.has(vnode->name)) {
-				r_gen_code.defines.push_back(p_default_actions.usage_defines[vnode->name].utf8());
+				String define = p_default_actions.usage_defines[vnode->name];
+				if (define.begins_with("@")) {
+					define = p_default_actions.usage_defines[define.substr(1,define.length())];
+				}
+				r_gen_code.defines.push_back(define.utf8());
 				used_name_defines.insert(vnode->name);
 			}
 
@@ -451,6 +460,14 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String& p_code, 
 	Error err = parser.compile(p_code,ShaderTypes::get_singleton()->get_functions(p_mode),ShaderTypes::get_singleton()->get_modes(p_mode));
 
 	if (err!=OK) {
+#if 1
+
+		Vector<String> shader = p_code.split("\n");
+		for(int i=0;i<shader.size();i++) {
+			print_line(itos(i)+" "+shader[i]);
+		}
+#endif
+
 		_err_print_error(NULL,p_path.utf8().get_data(),parser.get_error_line(),parser.get_error_text().utf8().get_data(),ERR_HANDLER_SHADER);
 		return err;
 	}
@@ -468,6 +485,7 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String& p_code, 
 	used_rmode_defines.clear();
 
 	_dump_node_code(parser.get_shader(),1,r_gen_code,*p_actions,actions[p_mode]);
+
 
 	return OK;
 
@@ -517,6 +535,61 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SHADOW_COLOR"]="#define SHADOW_COLOR_USED\n";
 
 	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["skip_transform"]="#define SKIP_TRANSFORM_USED\n";
+
+	/** SPATIAL SHADER **/
+
+
+	actions[VS::SHADER_SPATIAL].renames["WORLD_MATRIX"]="world_transform";
+	actions[VS::SHADER_SPATIAL].renames["INV_CAMERA_MATRIX"]="camera_inverse_matrix";
+	actions[VS::SHADER_SPATIAL].renames["PROJECTION_MATRIX"]="projection_matrix";
+
+
+	actions[VS::SHADER_SPATIAL].renames["VERTEX"]="vertex.xyz";
+	actions[VS::SHADER_SPATIAL].renames["NORMAL"]="normal";
+	actions[VS::SHADER_SPATIAL].renames["TANGENT"]="tangent";
+	actions[VS::SHADER_SPATIAL].renames["BINORMAL"]="binormal";
+	actions[VS::SHADER_SPATIAL].renames["UV"]="uv_interp";
+	actions[VS::SHADER_SPATIAL].renames["UV2"]="uv2_interp";
+	actions[VS::SHADER_SPATIAL].renames["COLOR"]="color_interp";
+	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"]="gl_PointSize";
+	//actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"]=ShaderLanguage::TYPE_INT;
+
+	//builtins
+
+	actions[VS::SHADER_SPATIAL].renames["TIME"]="time";
+	//actions[VS::SHADER_SPATIAL].renames["VIEWPORT_SIZE"]=ShaderLanguage::TYPE_VEC2;
+
+	actions[VS::SHADER_SPATIAL].renames["FRAGCOORD"]="gl_FragCoord";
+	actions[VS::SHADER_SPATIAL].renames["FRONT_FACING"]="gl_FrotFacing";
+	actions[VS::SHADER_SPATIAL].renames["NORMALMAP"]="normalmap";
+	actions[VS::SHADER_SPATIAL].renames["NORMALMAP_DEPTH"]="normaldepth";
+	actions[VS::SHADER_SPATIAL].renames["ALBEDO"]="albedo";
+	actions[VS::SHADER_SPATIAL].renames["ALPHA"]="alpha";
+	actions[VS::SHADER_SPATIAL].renames["SPECULAR"]="specular";
+	actions[VS::SHADER_SPATIAL].renames["ROUGHNESS"]="roughness";
+	actions[VS::SHADER_SPATIAL].renames["EMISSION"]="emission";
+	actions[VS::SHADER_SPATIAL].renames["SPECIAL"]="special";
+	actions[VS::SHADER_SPATIAL].renames["DISCARD"]="_discard";
+//	actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"]=ShaderLanguage::TYPE_VEC2;
+	actions[VS::SHADER_SPATIAL].renames["POINT_COORD"]="gl_PointCoord";
+
+
+	actions[VS::SHADER_SPATIAL].usage_defines["TANGENT"]="#define ENABLE_TANGENT_INTERP\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["BINORMAL"]="@TANGENT";
+	actions[VS::SHADER_SPATIAL].usage_defines["UV"]="#define ENABLE_UV_INTERP\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["UV2"]="#define ENABLE_UV2_INTERP\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["NORMALMAP"]="#define ENABLE_NORMALMAP\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["NORMALMAP_DEPTH"]="@NORMALMAP";
+	actions[VS::SHADER_SPATIAL].usage_defines["COLOR"]="#define ENABLE_COLOR_INTERP\n";
+
+	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_transform"]="#define SKIP_TRANSFORM_USED\n";
+
+
+
+
+
+
+
 
 	List<String> func_list;
 

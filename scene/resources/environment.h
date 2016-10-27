@@ -66,7 +66,7 @@ private:
 	int bg_canvas_max_layer;
 	Color ambient_color;
 	float ambient_energy;
-	float ambient_skybox_energy;
+	float ambient_skybox_contribution;
 
 protected:
 
@@ -84,7 +84,7 @@ public:
 	void set_canvas_max_layer(int p_max_layer);
 	void set_ambient_light_color(const Color& p_color);
 	void set_ambient_light_energy(float p_energy);
-	void set_ambient_light_skybox_energy(float p_energy);
+	void set_ambient_light_skybox_contribution(float p_energy);
 
 	BGMode get_background() const;
 	Ref<CubeMap> get_skybox() const;
@@ -94,7 +94,7 @@ public:
 	int get_canvas_max_layer() const;
 	Color get_ambient_light_color() const;
 	float get_ambient_light_energy() const;
-	float get_ambient_light_skybox_energy() const;
+	float get_ambient_light_skybox_contribution() const;
 
 
 	virtual RID get_rid() const;

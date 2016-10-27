@@ -29,6 +29,7 @@
 #ifndef SHADER_GLES3_H
 #define SHADER_GLES3_H
 
+#include <stdio.h>
 
 #include "platform_config.h"
 #ifndef GLES3_INCLUDE_H

@@ -2548,11 +2548,11 @@ void SpatialEditor::_generate_selection_box() {
 
 	}
 
-	Ref<FixedMaterial> mat = memnew( FixedMaterial );
-	/*mat->set_flag(Material::FLAG_UNSHADED,true);
-	mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1));
-	mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
-	mat->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);*/
+	Ref<FixedSpatialMaterial> mat = memnew( FixedSpatialMaterial );
+	mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
+	mat->set_albedo(Color(1,1,1));
+	mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT,true);
+	mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR,true);
 	st->set_material(mat);
 	selection_box = st->commit();
 }
@@ -3139,11 +3139,11 @@ void SpatialEditor::_init_indicators() {
 
 	{
 
-		indicator_mat = VisualServer::get_singleton()->material_create();
-		/*VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_ONTOP, false );
-		VisualServer::get_singleton()->fixed_material_set_flag(indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
-		VisualServer::get_singleton()->fixed_material_set_flag(indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);*/
+		indicator_mat.instance();;
+		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
+		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP,true);
+		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR,true);
+		indicator_mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT,true);
 
 		DVector<Color> grid_colors[3];
 		DVector<Vector3> grid_points[3];
@@ -3186,7 +3186,7 @@ void SpatialEditor::_init_indicators() {
 			d[VisualServer::ARRAY_VERTEX]=grid_points[i];
 			d[VisualServer::ARRAY_COLOR]=grid_colors[i];
 			VisualServer::get_singleton()->mesh_add_surface_from_arrays(grid[i],VisualServer::PRIMITIVE_LINES,d);
-			VisualServer::get_singleton()->mesh_surface_set_material(grid[i],0,indicator_mat);
+			VisualServer::get_singleton()->mesh_surface_set_material(grid[i],0,indicator_mat->get_rid());
 			grid_instance[i] = VisualServer::get_singleton()->instance_create2(grid[i],get_tree()->get_root()->get_world()->get_scenario());
 
 			grid_visible[i]=false;
@@ -3205,7 +3205,7 @@ void SpatialEditor::_init_indicators() {
 		d[VisualServer::ARRAY_COLOR]=origin_colors;
 
 		VisualServer::get_singleton()->mesh_add_surface_from_arrays(origin,VisualServer::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(origin,0,indicator_mat);
+		VisualServer::get_singleton()->mesh_surface_set_material(origin,0,indicator_mat->get_rid());
 
 
 //		origin = VisualServer::get_singleton()->poly_create();
@@ -3236,17 +3236,15 @@ void SpatialEditor::_init_indicators() {
 		cursor_points.push_back(Vector3(0,-cs,0));
 		cursor_points.push_back(Vector3(0,0,+cs));
 		cursor_points.push_back(Vector3(0,0,-cs));
-		cursor_material=VisualServer::get_singleton()->material_create();
-		/*VisualServer::get_singleton()->fixed_material_set_param(cursor_material,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0,1,1));
-		VisualServer::get_singleton()->material_set_flag( cursor_material, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-		VisualServer::get_singleton()->fixed_material_set_flag(cursor_material, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
-		VisualServer::get_singleton()->fixed_material_set_flag(cursor_material, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);*/
+		cursor_material.instance();
+		cursor_material->set_albedo(Color(0,1,1));
+		cursor_material->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
 
 		Array d;
 		d.resize(VS::ARRAY_MAX);
 		d[VS::ARRAY_VERTEX]=cursor_points;
 		VisualServer::get_singleton()->mesh_add_surface_from_arrays(cursor_mesh,VS::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(cursor_mesh,0,cursor_material);
+		VisualServer::get_singleton()->mesh_surface_set_material(cursor_mesh,0,cursor_material->get_rid());
 
 		cursor_instance = VisualServer::get_singleton()->instance_create2(cursor_mesh,get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_layer_mask(cursor_instance,1<<SpatialEditorViewport::GIZMO_GRID_LAYER);
@@ -3264,11 +3262,11 @@ void SpatialEditor::_init_indicators() {
 
 		float gizmo_alph = EditorSettings::get_singleton()->get("3d_editor/manipulator_gizmo_opacity");
 
-		gizmo_hl = Ref<FixedMaterial>( memnew( FixedMaterial ) );
-	/*	gizmo_hl->set_flag(Material::FLAG_UNSHADED, true);
-		gizmo_hl->set_flag(Material::FLAG_ONTOP, true);
-		gizmo_hl->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-		gizmo_hl->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,gizmo_alph+0.2f));*/
+		gizmo_hl = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ) );
+		gizmo_hl->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+		gizmo_hl->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
+		gizmo_hl->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+		gizmo_hl->set_albedo(Color(1,1,1,gizmo_alph+0.2f));
 
 		for(int i=0;i<3;i++) {
 
@@ -3276,14 +3274,14 @@ void SpatialEditor::_init_indicators() {
 			rotate_gizmo[i]=Ref<Mesh>( memnew( Mesh ) );
 
 
-			Ref<FixedMaterial> mat = memnew( FixedMaterial );
-		/*	mat->set_flag(Material::FLAG_UNSHADED, true);
-			mat->set_flag(Material::FLAG_ONTOP, true);
-			mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+			Ref<FixedSpatialMaterial> mat = memnew( FixedSpatialMaterial );
+			mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+			mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
+			mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
 			Color col;
 			col[i]=1.0;
 			col.a= gizmo_alph;
-			mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,col);*/
+			mat->set_albedo(col);
 			gizmo_color[i]=mat;
 
 
@@ -3429,8 +3427,6 @@ void SpatialEditor::_finish_indicators() {
 
 	VisualServer::get_singleton()->free(cursor_instance);
 	VisualServer::get_singleton()->free(cursor_mesh);
-	VisualServer::get_singleton()->free(indicator_mat);
-	VisualServer::get_singleton()->free(cursor_material);
 }
 
 void SpatialEditor::_instance_scene() {

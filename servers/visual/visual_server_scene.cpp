@@ -337,8 +337,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base){
 					light->D=NULL;
 				}
 				VSG::scene_render->free(light->instance);
-
-			}
+			} break;
 		}
 
 		if (instance->base_data) {
@@ -492,12 +491,12 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base){
 				light->instance = VSG::scene_render->light_instance_create(p_base);
 
 				instance->base_data=light;
-			}
+			} break;
 			case VS::INSTANCE_MESH: {
 
 				InstanceGeometryData *geom = memnew( InstanceGeometryData );
 				instance->base_data=geom;
-			}
+			} break;
 
 		}
 
@@ -596,7 +595,7 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario){
 					instance->scenario->directional_lights.erase( light->D );
 					light->D=NULL;
 				}
-			}
+			} break;
 		}
 
 		instance->scenario=NULL;
@@ -623,7 +622,7 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario){
 				if (VSG::storage->light_get_type(instance->base)==VS::LIGHT_DIRECTIONAL) {
 					light->D = scenario->directional_lights.push_back(instance);
 				}
-			}
+			} break;
 		}
 
 		_instance_queue_update(instance,true,true);
@@ -711,11 +710,58 @@ Vector<ObjectID> VisualServerScene::instances_cull_convex(const Vector<Plane>& p
 
 void VisualServerScene::instance_geometry_set_flag(RID p_instance,VS::InstanceFlags p_flags,bool p_enabled){
 
+	Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND( !instance );
+
+	switch(p_flags) {
+
+		case VS::INSTANCE_FLAG_VISIBLE: {
+
+			instance->visible=p_enabled;
+
+		} break;
+		case VS::INSTANCE_FLAG_BILLBOARD: {
+
+			instance->billboard=p_enabled;
+
+		} break;
+		case VS::INSTANCE_FLAG_BILLBOARD_FIX_Y: {
+
+			instance->billboard_y=p_enabled;
+
+		} break;
+		case VS::INSTANCE_FLAG_CAST_SHADOW: {
+			/*if (p_enabled == true) {
+				instance->cast_shadows = SHADOW_CASTING_SETTING_ON;
+			}
+			else {
+				instance->cast_shadows = SHADOW_CASTING_SETTING_OFF;
+			}*/
+
+		} break;
+		case VS::INSTANCE_FLAG_DEPH_SCALE: {
+
+			instance->depth_scale=p_enabled;
+
+		} break;
+		case VS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS: {
+
+			instance->visible_in_all_rooms=p_enabled;
+
+		} break;
+
+	}
 }
 void VisualServerScene::instance_geometry_set_cast_shadows_setting(RID p_instance, VS::ShadowCastingSetting p_shadow_casting_setting) {
 
 }
 void VisualServerScene::instance_geometry_set_material_override(RID p_instance, RID p_material){
+
+	Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND( !instance );
+
+	instance->material_override=p_material;
+
 
 }
 
@@ -1151,7 +1197,8 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewp
 			//failure
 		} else if (ins->base_type==VS::INSTANCE_LIGHT && ins->visible) {
 
-			if (light_cull_count<MAX_LIGHTS_CULLED) {
+
+			if (ins->visible && light_cull_count<MAX_LIGHTS_CULLED) {
 
 				InstanceLightData * light = static_cast<InstanceLightData*>(ins->base_data);
 
@@ -1252,6 +1299,8 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewp
 
 				geom->lighting_dirty=false;
 			}
+
+			ins->depth = near_plane.distance_to(ins->transform.origin);
 
 		}
 

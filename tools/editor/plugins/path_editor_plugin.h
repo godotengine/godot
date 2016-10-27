@@ -79,8 +79,8 @@ public:
 	Path *get_edited_path() { return path; }
 
 	static PathEditorPlugin* singleton;
-	Ref<FixedMaterial> path_material;
-	Ref<FixedMaterial> path_thin_material;
+	Ref<FixedSpatialMaterial> path_material;
+	Ref<FixedSpatialMaterial> path_thin_material;
 	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
 
 //	virtual bool forward_input_event(const InputEvent& p_event) { return collision_polygon_editor->forward_input_event(p_event); }

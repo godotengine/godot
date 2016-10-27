@@ -377,7 +377,7 @@ Error ColladaImport::_create_material(const String& p_target) {
 	ERR_FAIL_COND_V(!collada.state.effect_map.has(src_mat.instance_effect),ERR_INVALID_PARAMETER);
 	Collada::Effect &effect=collada.state.effect_map[src_mat.instance_effect];
 
-	Ref<FixedMaterial> material= memnew( FixedMaterial );
+	Ref<FixedSpatialMaterial> material= memnew( FixedSpatialMaterial );
 
 	if (src_mat.name!="")
 		material->set_name(src_mat.name);
@@ -394,14 +394,14 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 
-//				material->set_texture(FixedMaterial::PARAM_DIFFUSE,texture);
-//				material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,1));
+//				material->set_texture(FixedSpatialMaterial::PARAM_DIFFUSE,texture);
+//				material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
 		}
 	} else {
-//		material->set_parameter(FixedMaterial::PARAM_DIFFUSE,effect.diffuse.color);
+//		material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,effect.diffuse.color);
 	}
 
 	// SPECULAR
@@ -414,15 +414,15 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 
-//				material->set_texture(FixedMaterial::PARAM_SPECULAR,texture);
-//				material->set_parameter(FixedMaterial::PARAM_SPECULAR,Color(1,1,1,1));
+//				material->set_texture(FixedSpatialMaterial::PARAM_SPECULAR,texture);
+//				material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
 
 		}
 	} else {
-//		material->set_parameter(FixedMaterial::PARAM_SPECULAR,effect.specular.color);
+//		material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR,effect.specular.color);
 	}
 
 	// EMISSION
@@ -435,15 +435,15 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 
-//				material->set_texture(FixedMaterial::PARAM_EMISSION,texture);
-//				material->set_parameter(FixedMaterial::PARAM_EMISSION,Color(1,1,1,1));
+//				material->set_texture(FixedSpatialMaterial::PARAM_EMISSION,texture);
+//				material->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,Color(1,1,1,1));
 			}else {
 //				missing_textures.push_back(texfile.get_file());
 			}
 
 		}
 	} else {
-//		material->set_parameter(FixedMaterial::PARAM_EMISSION,effect.emission.color);
+//		material->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,effect.emission.color);
 	}
 
 	// NORMAL
@@ -456,7 +456,7 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 
-	//			material->set_texture(FixedMaterial::PARAM_NORMAL,texture);
+	//			material->set_texture(FixedSpatialMaterial::PARAM_NORMAL,texture);
 			}else {
 //				missing_textures.push_back(texfile.get_file());
 			}
@@ -465,7 +465,7 @@ Error ColladaImport::_create_material(const String& p_target) {
 	}
 
 
-//	material->set_parameter(FixedMaterial::PARAM_SPECULAR_EXP,effect.shininess);
+//	material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR_EXP,effect.shininess);
 //	material->set_flag(Material::FLAG_DOUBLE_SIDED,effect.double_sided);
 //	material->set_flag(Material::FLAG_UNSHADED,effect.unshaded);
 
@@ -1042,7 +1042,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 		{
 
-			Ref<FixedMaterial> material;
+			Ref<FixedSpatialMaterial> material;
 
 			//find material
 			Mesh::PrimitiveType primitive=Mesh::PRIMITIVE_TRIANGLES;

@@ -135,10 +135,13 @@ public:
 		bool active;
 		GLuint tex_id;
 
+		uint16_t stored_cube_sides;
+
 		RenderTarget *render_target;
 
 		Texture() {
 
+			stored_cube_sides=0;
 			ignore_mipmaps=false;
 			render_target=NULL;
 			flags=width=height=0;
@@ -184,7 +187,7 @@ public:
 
 	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info);
 
-	virtual RID texture_create_pbr_cubemap(RID p_source,VS::PBRCubeMapMode p_mode,int p_resolution=-1) const;
+	virtual RID texture_create_radiance_cubemap(RID p_source,int p_resolution=-1) const;
 
 
 	/* SHADER API */
@@ -350,13 +353,6 @@ public:
 	/* MESH API */
 
 	struct Instantiable : public RID_Data {
-
-		enum Type {
-			GEOMETRY_INVALID,
-			GEOMETRY_SURFACE,
-			GEOMETRY_IMMEDIATE,
-			GEOMETRY_MULTISURFACE,
-		};
 
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
@@ -581,6 +577,20 @@ public:
 	virtual Matrix32 skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone) const;
 
 	/* Light API */
+
+
+	struct Light : Instantiable {
+
+		VS::LightType type;
+		float param[VS::LIGHT_PARAM_MAX];
+		Color color;
+		bool shadow;
+		bool negative;
+		uint32_t cull_mask;
+		VS::LightDirectionalShadowMode directional_shadow_mode;
+	};
+
+	mutable RID_Owner<Light> light_owner;
 
 	virtual RID light_create(VS::LightType p_type);
 

@@ -53,7 +53,7 @@ void Environment::set_skybox(const Ref<CubeMap>& p_skybox){
 		sb_rid=bg_skybox->get_rid();
 	print_line("skybox valid: "+itos(sb_rid.is_valid()));
 
-	VS::get_singleton()->environment_set_skybox(environment,sb_rid,Globals::get_singleton()->get("rendering/skybox/radiance_cube_resolution"),Globals::get_singleton()->get("rendering/skybox/iradiance_cube_resolution"));
+	VS::get_singleton()->environment_set_skybox(environment,sb_rid,Globals::get_singleton()->get("rendering/skybox/radiance_cube_resolution"));
 }
 
 void Environment::set_skybox_scale(float p_scale) {
@@ -80,17 +80,17 @@ void Environment::set_canvas_max_layer(int p_max_layer){
 void Environment::set_ambient_light_color(const Color& p_color){
 
 	ambient_color=p_color;
-	VS::get_singleton()->environment_set_ambient_light(environment,ambient_color,ambient_energy,ambient_skybox_energy);
+	VS::get_singleton()->environment_set_ambient_light(environment,ambient_color,ambient_energy,ambient_skybox_contribution);
 }
 void Environment::set_ambient_light_energy(float p_energy){
 
 	ambient_energy=p_energy;
-	VS::get_singleton()->environment_set_ambient_light(environment,ambient_color,ambient_energy,ambient_skybox_energy);
+	VS::get_singleton()->environment_set_ambient_light(environment,ambient_color,ambient_energy,ambient_skybox_contribution);
 }
-void Environment::set_ambient_light_skybox_energy(float p_energy){
+void Environment::set_ambient_light_skybox_contribution(float p_energy){
 
-	ambient_skybox_energy=p_energy;
-	VS::get_singleton()->environment_set_ambient_light(environment,ambient_color,ambient_energy,ambient_skybox_energy);
+	ambient_skybox_contribution=p_energy;
+	VS::get_singleton()->environment_set_ambient_light(environment,ambient_color,ambient_energy,ambient_skybox_contribution);
 }
 
 Environment::BGMode Environment::get_background() const{
@@ -127,16 +127,16 @@ float Environment::get_ambient_light_energy() const{
 
 	return ambient_energy;
 }
-float Environment::get_ambient_light_skybox_energy() const{
+float Environment::get_ambient_light_skybox_contribution() const{
 
-	return ambient_skybox_energy;
+	return ambient_skybox_contribution;
 }
 
 
 
 void Environment::_validate_property(PropertyInfo& property) const {
 
-	if (property.name=="background/skybox" || property.name=="ambient_light/skybox_energy") {
+	if (property.name=="background/skybox" || property.name=="background/skybox_scale" || property.name=="ambient_light/skybox_contribution") {
 		if (bg_mode!=BG_SKYBOX) {
 			property.usage=PROPERTY_USAGE_NOEDITOR;
 		}
@@ -166,7 +166,7 @@ void Environment::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_canvas_max_layer","layer"),&Environment::set_canvas_max_layer);
 	ObjectTypeDB::bind_method(_MD("set_ambient_light_color","color"),&Environment::set_ambient_light_color);
 	ObjectTypeDB::bind_method(_MD("set_ambient_light_energy","energy"),&Environment::set_ambient_light_energy);
-	ObjectTypeDB::bind_method(_MD("set_ambient_light_skybox_energy","energy"),&Environment::set_ambient_light_skybox_energy);
+	ObjectTypeDB::bind_method(_MD("set_ambient_light_skybox_contribution","energy"),&Environment::set_ambient_light_skybox_contribution);
 
 
 	ObjectTypeDB::bind_method(_MD("get_background"),&Environment::get_background);
@@ -177,7 +177,7 @@ void Environment::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_canvas_max_layer"),&Environment::get_canvas_max_layer);
 	ObjectTypeDB::bind_method(_MD("get_ambient_light_color"),&Environment::get_ambient_light_color);
 	ObjectTypeDB::bind_method(_MD("get_ambient_light_energy"),&Environment::get_ambient_light_energy);
-	ObjectTypeDB::bind_method(_MD("get_ambient_light_skybox_energy"),&Environment::get_ambient_light_skybox_energy);
+	ObjectTypeDB::bind_method(_MD("get_ambient_light_skybox_contribution"),&Environment::get_ambient_light_skybox_contribution);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"background/mode",PROPERTY_HINT_ENUM,"Clear Color,Custom Color,Skybox,Canvas,Keep"),_SCS("set_background"),_SCS("get_background") );
@@ -188,7 +188,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"background/canvas_max_layer",PROPERTY_HINT_RANGE,"-1000,1000,1"),_SCS("set_canvas_max_layer"),_SCS("get_canvas_max_layer") );
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"ambient_light/color"),_SCS("set_ambient_light_color"),_SCS("get_ambient_light_color") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_light/energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_ambient_light_energy"),_SCS("get_ambient_light_energy") );
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_light/skybox_energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_ambient_light_skybox_energy"),_SCS("get_ambient_light_skybox_energy") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_light/skybox_contribution",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_ambient_light_skybox_contribution"),_SCS("get_ambient_light_skybox_contribution") );
 
 	GLOBAL_DEF("rendering/skybox/irradiance_cube_resolution",256);
 	GLOBAL_DEF("rendering/skybox/radiance_cube_resolution",64);
@@ -209,10 +209,11 @@ void Environment::_bind_methods() {
 Environment::Environment() {
 
 	bg_mode=BG_CLEAR_COLOR;
+	bg_skybox_scale=1.0;
 	bg_energy=1.0;
 	bg_canvas_max_layer=0;
 	ambient_energy=1.0;
-	ambient_skybox_energy=0;
+	ambient_skybox_contribution=0;
 
 
 	environment = VS::get_singleton()->environment_create();

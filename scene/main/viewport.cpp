@@ -2513,7 +2513,7 @@ Vector2 Viewport::get_camera_coords(const Vector2 &p_viewport_coords) const {
 
 Vector2 Viewport::get_camera_rect_size() const {
 
-	return last_vp_rect.size;
+	return size;
 }
 
 
