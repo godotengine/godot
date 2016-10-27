@@ -407,24 +407,38 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera* p_camera,const InputEve
 
 		} else if (mb.pressed && ((mb.button_index==BUTTON_LEFT && curve_del->is_pressed()) || (mb.button_index==BUTTON_RIGHT && curve_edit->is_pressed()))) {
 
-			int erase_idx=-1;
 			for(int i=0;i<c->get_point_count();i++) {
-				//find the offset and point index of the place to break up
-				if (p_camera->unproject_position(gt.xform(c->get_point_pos(i))).distance_to(mbpos)<click_dist) {
+				real_t dist_to_p = p_camera->unproject_position(gt.xform(c->get_point_pos(i))).distance_to(mbpos);
+				real_t dist_to_p_out = p_camera->unproject_position(gt.xform(c->get_point_pos(i) + c->get_point_out(i))).distance_to(mbpos);
+				real_t dist_to_p_in = p_camera->unproject_position(gt.xform(c->get_point_pos(i) + c->get_point_in(i))).distance_to(mbpos);
 
-					erase_idx=i;
-					break;
+				// Find the offset and point index of the place to break up.
+				// Also check for the control points.
+				if (dist_to_p < click_dist) {
+
+					UndoRedo *ur = editor->get_undo_redo();
+					ur->create_action(TTR("Remove Path Point"));
+					ur->add_do_method(c.ptr(),"remove_point",i);
+					ur->add_undo_method(c.ptr(),"add_point",c->get_point_pos(i),c->get_point_in(i),c->get_point_out(i),i);
+					ur->commit_action();
+					return true;
+				} else if (dist_to_p_out < click_dist) {
+
+					UndoRedo *ur = editor->get_undo_redo();
+					ur->create_action(TTR("Remove Out-Control Point"));
+					ur->add_do_method(c.ptr(),"set_point_out",i,Vector3());
+					ur->add_undo_method(c.ptr(),"set_point_out",i,c->get_point_out(i));
+					ur->commit_action();
+					return true;
+				} else if (dist_to_p_in < click_dist) {
+
+					UndoRedo *ur = editor->get_undo_redo();
+					ur->create_action(TTR("Remove In-Control Point"));
+					ur->add_do_method(c.ptr(),"set_point_in",i,Vector3());
+					ur->add_undo_method(c.ptr(),"set_point_in",i,c->get_point_in(i));
+					ur->commit_action();
+					return true;
 				}
-			}
-
-			if (erase_idx!=-1) {
-
-				UndoRedo *ur = editor->get_undo_redo();
-				ur->create_action(TTR("Remove Path Point"));
-				ur->add_do_method(c.ptr(),"remove_point",erase_idx);
-				ur->add_undo_method(c.ptr(),"add_point",c->get_point_pos(erase_idx),c->get_point_in(erase_idx),c->get_point_out(erase_idx),erase_idx);
-				ur->commit_action();
-				return true;
 			}
 		}
 

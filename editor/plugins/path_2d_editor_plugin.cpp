@@ -81,7 +81,7 @@ bool Path2DEditor::forward_gui_input(const InputEvent &p_event) {
 			Vector2 cpoint = !mb.mod.alt ? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint)) : node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
 
 			//first check if a point is to be added (segment split)
-			real_t grab_treshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
+			real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 
 			// Test move point!!
 
@@ -93,34 +93,57 @@ bool Path2DEditor::forward_gui_input(const InputEvent &p_event) {
 
 					bool pointunder = false;
 
-					{
-						Point2 p = xform.xform(curve->get_point_pos(i));
-						if (gpoint.distance_to(p) < grab_treshold) {
+					real_t dist_to_p = gpoint.distance_to(xform.xform(curve->get_point_pos(i)));
+					real_t dist_to_p_out = gpoint.distance_to(xform.xform(curve->get_point_pos(i) + curve->get_point_out(i)));
+					real_t dist_to_p_in = gpoint.distance_to(xform.xform(curve->get_point_pos(i) + curve->get_point_in(i)));
 
-							if (mb.button_index == BUTTON_LEFT && !mb.mod.shift && mode == MODE_EDIT) {
+					if (mb.button_index == BUTTON_LEFT && !mb.mod.shift && mode == MODE_EDIT) {
+						if (dist_to_p < grab_threshold) {
 
-								action = ACTION_MOVING_POINT;
-								action_point = i;
-								moving_from = curve->get_point_pos(i);
-								moving_screen_from = gpoint;
-								return true;
-							} else if ((mb.button_index == BUTTON_RIGHT && mode == MODE_EDIT) || (mb.button_index == BUTTON_LEFT && mode == MODE_DELETE)) {
-
-								undo_redo->create_action(TTR("Remove Point from Curve"));
-								undo_redo->add_do_method(curve.ptr(), "remove_point", i);
-								undo_redo->add_undo_method(curve.ptr(), "add_point", curve->get_point_pos(i), curve->get_point_in(i), curve->get_point_out(i), i);
-								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-								undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
-								undo_redo->commit_action();
-								return true;
-							} else
-								pointunder = true;
+							action = ACTION_MOVING_POINT;
+							action_point = i;
+							moving_from = curve->get_point_pos(i);
+							moving_screen_from = gpoint;
+							return true;
 						}
 					}
 
+					if ((mb.button_index == BUTTON_RIGHT && mode == MODE_EDIT) || (mb.button_index == BUTTON_LEFT && mode == MODE_DELETE)) {
+						if (dist_to_p < grab_threshold) {
+
+							undo_redo->create_action(TTR("Remove Point from Curve"));
+							undo_redo->add_do_method(curve.ptr(), "remove_point", i);
+							undo_redo->add_undo_method(curve.ptr(), "add_point", curve->get_point_pos(i), curve->get_point_in(i), curve->get_point_out(i), i);
+							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+							undo_redo->commit_action();
+							return true;
+						} else if (dist_to_p_out < grab_threshold) {
+
+							undo_redo->create_action(TTR("Remove Out-Control from Curve"));
+							undo_redo->add_do_method(curve.ptr(), "set_point_out", i, Vector2());
+							undo_redo->add_undo_method(curve.ptr(), "set_point_out", i, curve->get_point_out(i));
+							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+							undo_redo->commit_action();
+							return true;
+						} else if (dist_to_p_in < grab_threshold) {
+
+							undo_redo->create_action(TTR("Remove In-Control from Curve"));
+							undo_redo->add_do_method(curve.ptr(), "set_point_in", i, Vector2());
+							undo_redo->add_undo_method(curve.ptr(), "set_point_in", i, curve->get_point_in(i));
+							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
+							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+							undo_redo->commit_action();
+							return true;
+						}
+					}
+
+					if (dist_to_p < grab_threshold)
+						pointunder = true;
+
 					if (mb.button_index == BUTTON_LEFT && i < (curve->get_point_count() - 1)) {
-						Point2 p = xform.xform(curve->get_point_pos(i) + curve->get_point_out(i));
-						if (gpoint.distance_to(p) < grab_treshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
+						if (dist_to_p_out < grab_threshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
 
 							action = ACTION_MOVING_OUT;
 							action_point = i;
@@ -131,8 +154,7 @@ bool Path2DEditor::forward_gui_input(const InputEvent &p_event) {
 					}
 
 					if (mb.button_index == BUTTON_LEFT && i > 0) {
-						Point2 p = xform.xform(curve->get_point_pos(i) + curve->get_point_in(i));
-						if (gpoint.distance_to(p) < grab_treshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
+						if (dist_to_p_in < grab_threshold && (mode == MODE_EDIT || mode == MODE_EDIT_CURVE)) {
 
 							action = ACTION_MOVING_IN;
 							action_point = i;
@@ -234,7 +256,7 @@ bool Path2DEditor::forward_gui_input(const InputEvent &p_event) {
 							return true;
 						} else {
 
-							if (wip.size()>1 && xform.xform(wip[0]).distance_to(gpoint)<grab_treshold) {
+							if (wip.size()>1 && xform.xform(wip[0]).distance_to(gpoint)<grab_threshold) {
 								//wip closed
 								_wip_close();
 
@@ -291,7 +313,7 @@ bool Path2DEditor::forward_gui_input(const InputEvent &p_event) {
 										continue; //not valid to reuse point
 
 									real_t d = cp.distance_to(gpoint);
-									if (d<closest_dist && d<grab_treshold) {
+									if (d<closest_dist && d<grab_threshold) {
 										closest_dist=d;
 										closest_pos=cp;
 										closest_idx=i;
@@ -322,7 +344,7 @@ bool Path2DEditor::forward_gui_input(const InputEvent &p_event) {
 									Vector2 cp =xform.xform(poly[i]);
 
 									real_t d = cp.distance_to(gpoint);
-									if (d<closest_dist && d<grab_treshold) {
+									if (d<closest_dist && d<grab_threshold) {
 										closest_dist=d;
 										closest_pos=cp;
 										closest_idx=i;
@@ -370,7 +392,7 @@ bool Path2DEditor::forward_gui_input(const InputEvent &p_event) {
 							Vector2 cp =xform.xform(poly[i]);
 
 							real_t d = cp.distance_to(gpoint);
-							if (d<closest_dist && d<grab_treshold) {
+							if (d<closest_dist && d<grab_threshold) {
 								closest_dist=d;
 								closest_pos=cp;
 								closest_idx=i;
