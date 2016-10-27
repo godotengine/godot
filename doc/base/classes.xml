@@ -32527,6 +32527,17 @@
 		* Lookahead [code](?=)[/code], [code](?!)[/code] and lookbehind [code](?&lt;=)[/code], [code](?&lt;!)[/code]
 		* ASCII [code]\xFF[/code] and Unicode [code]\uFFFF[/code] code points (in a style similar to Python)
 		* Word boundaries [code]\b[/code], [code]\B[/code]
+    
+    Example:
+    [code]
+    var r = RegEx.new()
+    r.compile("(\\w+):\\s+(\\d+)")
+    r.find("age: 18")
+    
+    var matches = r.get_captures() # "matches" is an array of strings with ["age", "18"]
+    var x = r.get_capture(1) # x becomes "age"
+    var y = r.get_capture(2) # y becomes "18"
+    [/code]
 	</description>
 	<methods>
 		<method name="clear">
@@ -32543,6 +32554,11 @@
 			</argument>
 			<description>
 				Compiles and assign the regular expression pattern to use. The limit on the number of capturing groups can be specified or made unlimited if negative.
+        
+        [code]
+        var r = RegEx.new()
+        r.compile("(\\w+)")
+        [/code]
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
@@ -32556,6 +32572,12 @@
 			</argument>
 			<description>
 				This method tries to find the pattern within the string, and returns the position where it was found. It also stores any capturing group (see [method get_capture]) for further retrieval.
+        
+        [code]
+        var sentence = "The quick brown fox jumps over the lazy dog."
+        var r = RegEx.new()
+        r.compile("quick")
+        r.find(sentence)
 			</description>
 		</method>
 		<method name="get_capture" qualifiers="const">
@@ -32565,6 +32587,14 @@
 			</argument>
 			<description>
 				Returns a captured group. A captured group is the part of a string that matches a part of the pattern delimited by parentheses (unless they are non-capturing parentheses [i](?:)[/i]).
+        
+        [code]
+        var sentence = "There are 4 lights!"
+        var r = RegEx.new()
+        r.compile("(\\d+)")
+        r.find(sentence)
+        var four = r.get_capture(1)
+        [/code]
 			</description>
 		</method>
 		<method name="get_capture_count" qualifiers="const">
@@ -32587,6 +32617,14 @@
 			</return>
 			<description>
 				Return a list of all the captures made by the regular expression.
+        
+        [code]
+        var line = "location /api/v1 {\n"
+        var r = RegEx.new()
+        r.compile("(\\w+)\\s+(\\w|/+)\\s+{")
+        r.find(line)
+        var matches = r.get_captures() # matches becomes string array of ["location", "/api/v1"]
+        [/code]
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
