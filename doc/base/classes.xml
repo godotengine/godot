@@ -32578,6 +32578,7 @@
         var r = RegEx.new()
         r.compile("quick")
         r.find(sentence)
+        [/code]
 			</description>
 		</method>
 		<method name="get_capture" qualifiers="const">
