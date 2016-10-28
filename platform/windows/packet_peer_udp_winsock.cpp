@@ -112,15 +112,23 @@ void PacketPeerUDPWinsock::_set_blocking(bool p_blocking) {
 	};
 }
 
-Error PacketPeerUDPWinsock::listen(int p_port, IP_Address::AddrType p_address_type, int p_recv_buffer_size) {
+Error PacketPeerUDPWinsock::listen(int p_port, IP_Address::AddrType p_type, int p_recv_buffer_size) {
 
 	close();
-	int sock = _get_socket(p_address_type);
+	int sock = _get_socket(p_type);
 	if (sock == -1 )
 		return ERR_CANT_CREATE;
 
+	if(p_type == IP_Address::TYPE_IPV6) {
+		// Use IPv6 only socket
+		int yes = 1;
+		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&yes, sizeof(yes)) != 0) {
+				WARN_PRINT("Unable to unset IPv4 address mapping over IPv6");
+		}
+	}
+
 	struct sockaddr_storage addr = {0};
-	size_t addr_size = _set_listen_sockaddr(&addr, p_port, p_address_type, NULL);
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, p_type, NULL);
 
 	if (bind(sock, (struct sockaddr*)&addr, addr_size) == -1 ) {
 		close();

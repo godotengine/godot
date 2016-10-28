@@ -56,8 +56,8 @@ static int _socket_create(IP_Address::AddrType p_type, int type, int protocol) {
 
 	if(family == AF_INET6) {
 		// Ensure IPv4 over IPv6 is enabled
-		int v6_only = 0;
-		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&v6_only, sizeof(v6_only)) != 0) {
+		int no = 0;
+		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&no, sizeof(no)) != 0) {
 			WARN_PRINT("Unable to set IPv4 address mapping over IPv6");
 		}
 	}

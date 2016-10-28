@@ -74,6 +74,14 @@ Error TCPServerPosix::listen(uint16_t p_port, IP_Address::AddrType p_type, const
 	sockfd = _socket_create(p_type, SOCK_STREAM, IPPROTO_TCP);
 
 	ERR_FAIL_COND_V(sockfd == -1, FAILED);
+
+	if(p_type == IP_Address::TYPE_IPV6) {
+		// Use IPv6 only socket
+		int yes = 1;
+		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&yes, sizeof(yes)) != 0) {
+				WARN_PRINT("Unable to unset IPv4 address mapping over IPv6");
+		}
+	}
 #ifndef NO_FCNTL
 	fcntl(sockfd, F_SETFL, O_NONBLOCK);
 #else

@@ -69,6 +69,14 @@ Error TCPServerWinsock::listen(uint16_t p_port, IP_Address::AddrType p_type,cons
 	sockfd = _socket_create(p_type, SOCK_STREAM, IPPROTO_TCP);
 	ERR_FAIL_COND_V(sockfd == INVALID_SOCKET, FAILED);
 
+	if(p_type == IP_Address::TYPE_IPV6) {
+		// Use IPv6 only socket
+		int yes = 1;
+		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&yes, sizeof(yes)) != 0) {
+				WARN_PRINT("Unable to unset IPv4 address mapping over IPv6");
+		}
+	}
+
 	unsigned long par = 1;
 	if (ioctlsocket(sockfd, FIONBIO, &par)) {
 		perror("setting non-block mode");
