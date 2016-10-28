@@ -33,6 +33,13 @@
 #include <string.h>
 
 #ifdef WINDOWS_ENABLED
+  // Workaround mingw missing flags!
+  #ifndef AI_ADDRCONFIG
+    #define AI_ADDRCONFIG 0x00000400
+  #endif
+  #ifndef AI_V4MAPPED
+    #define AI_V4MAPPED 0x00000800
+  #endif
  #ifdef WINRT_ENABLED
   #include <ws2tcpip.h>
   #include <winsock2.h>
@@ -90,8 +97,10 @@ IP_Address IP_Unix::_resolve_hostname(const String& p_hostname, IP_Address::Addr
 		hints.ai_family = AF_INET;
 	} else if (p_type == IP_Address::TYPE_IPV6) {
 		hints.ai_family = AF_INET6;
+		hints.ai_flags = 0;
 	} else {
 		hints.ai_family = AF_UNSPEC;
+		hints.ai_flags = (AI_V4MAPPED | AI_ADDRCONFIG);
 	};
 
 	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
