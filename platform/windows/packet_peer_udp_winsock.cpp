@@ -239,11 +239,7 @@ int PacketPeerUDPWinsock::_get_socket(IP_Address::AddrType p_type) {
 	if (sockfd != -1)
 		return sockfd;
 
-	int family = p_type == IP_Address::TYPE_IPV6 ? AF_INET6 : AF_INET;
-
-	sockfd = socket(family, SOCK_DGRAM, IPPROTO_UDP);
-	ERR_FAIL_COND_V( sockfd == -1, -1 );
-	//fcntl(sockfd, F_SETFL, O_NONBLOCK);
+	sockfd = _socket_create(p_type, SOCK_DGRAM, IPPROTO_UDP);
 
 	return sockfd;
 }

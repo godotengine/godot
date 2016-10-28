@@ -137,8 +137,8 @@ Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 
 	ERR_FAIL_COND_V( p_host.type == IP_Address::TYPE_NONE, ERR_INVALID_PARAMETER);
 
-	int family = p_host.type == IP_Address::TYPE_IPV6 ? AF_INET6 : AF_INET;
-	if ((sockfd = socket(family, SOCK_STREAM, 0)) == -1) {
+	sockfd = _socket_create(p_host.type, SOCK_STREAM, IPPROTO_TCP);
+	if (sockfd == -1) {
 		ERR_PRINT("Socket creation failed!");
 		disconnect();
 		//perror("socket");
