@@ -1264,7 +1264,11 @@ Viewport::RenderTargetUpdateMode Viewport::get_render_target_update_mode() const
 
 	return render_target_update_mode;
 }
-//RID get_render_target_texture() const;
+//RID get_render_target_texture() const; // clean this up ?
+void Viewport::update_render_target(){
+
+	VS::get_singleton()->viewport_update_render_target(viewport);
+}
 
 void Viewport::queue_screen_capture(){
 
@@ -2643,6 +2647,7 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_render_target_clear_on_new_frame"), &Viewport::get_render_target_clear_on_new_frame);
 
 	ObjectTypeDB::bind_method(_MD("render_target_clear"), &Viewport::render_target_clear);
+	ObjectTypeDB::bind_method(_MD("update_render_target"), &Viewport::update_render_target);
 
 	ObjectTypeDB::bind_method(_MD("set_render_target_filter","enable"), &Viewport::set_render_target_filter);
 	ObjectTypeDB::bind_method(_MD("get_render_target_filter"), &Viewport::get_render_target_filter);
