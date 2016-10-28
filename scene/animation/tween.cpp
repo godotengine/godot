@@ -830,6 +830,7 @@ bool Tween::remove(Object *p_object, String p_key) {
 			continue;
 		if(object == p_object && (data.key == p_key || p_key == "")) {
 			for_removal.push_back(E);
+			return true;
 		}
 	}
 	for(List<List<InterpolateData>::Element *>::Element *E=for_removal.front();E;E=E->next()) {
