@@ -42,7 +42,7 @@ protected:
 
 	String _get_packet_ip() const;
 
-	virtual Error _set_send_address(const String& p_address,int p_port);
+	virtual Error _set_send_address(const String& p_address,int p_port, IP_Address::AddrType p_address_type = IP_Address::TYPE_ANY);
 
 public:
 
