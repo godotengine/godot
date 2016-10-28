@@ -66,7 +66,7 @@ void TCPServerWinsock::cleanup() {
 Error TCPServerWinsock::listen(uint16_t p_port, IP_Address::AddrType p_type,const List<String> *p_accepted_hosts) {
 
 	int sockfd;
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	sockfd = _socket_create(p_type, SOCK_STREAM, IPPROTO_TCP);
 	ERR_FAIL_COND_V(sockfd == INVALID_SOCKET, FAILED);
 
 	unsigned long par = 1;
