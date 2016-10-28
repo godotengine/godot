@@ -61,7 +61,7 @@ platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 if (os.name=="posix"):
 	pass
 elif (os.name=="nt"):
-	if (not methods.msvc_is_detected() or platform_arg=="android"):
+	if ( os.getenv("VCINSTALLDIR")==None or platform_arg=="android"):
 		custom_tools=['mingw']
 
 env_base=Environment(tools=custom_tools);
