@@ -87,13 +87,13 @@ void LinkButton::_notification(int p_what) {
 					else
 						color=get_color("font_color");
 
-					do_underline=true;
+					do_underline=underline_mode!=UNDERLINE_MODE_NEVER;
 
 				} break;
 				case DRAW_HOVER: {
 
 					color=get_color("font_color_hover");
-					do_underline=true;
+					do_underline=underline_mode!=UNDERLINE_MODE_NEVER;
 
 				} break;
 				case DRAW_DISABLED: {
@@ -139,9 +139,10 @@ void LinkButton::_bind_methods() {
 
 	BIND_CONSTANT( 	UNDERLINE_MODE_ALWAYS );
 	BIND_CONSTANT( 	UNDERLINE_MODE_ON_HOVER );
+	BIND_CONSTANT( 	UNDERLINE_MODE_NEVER );
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING,"text"), _SCS("set_text"), _SCS("get_text"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT,"underline",PROPERTY_HINT_ENUM,"Always,On Hover"), _SCS("set_underline_mode"), _SCS("get_underline_mode"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT,"underline",PROPERTY_HINT_ENUM,"Always,On Hover,Never"), _SCS("set_underline_mode"), _SCS("get_underline_mode"));
 
 }
 

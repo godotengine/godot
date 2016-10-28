@@ -20298,6 +20298,9 @@
 		<constant name="UNDERLINE_MODE_ON_HOVER" value="1">
 			The LinkButton will show an underline at the bottom of its text when the mouse cursor is over it.
 		</constant>
+		<constant name="UNDERLINE_MODE_NEVER" value="2">
+			The LinkButton will never show an underline at the bottom of its text.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="font" type="Font">
