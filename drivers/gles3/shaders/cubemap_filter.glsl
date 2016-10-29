@@ -3,7 +3,7 @@
 
 layout(location=0) in highp vec2 vertex;
 
-layout(location=1) in highp vec2 uv;
+layout(location=4) in highp vec2 uv;
 
 out highp vec2 uv_interp;
 

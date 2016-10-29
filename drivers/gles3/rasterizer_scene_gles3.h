@@ -18,10 +18,11 @@ public:
 
 	struct State {
 
-		bool current_depth_test;
-		bool current_depth_mask;
+
 		bool texscreen_copied;
 		int current_blend_mode;
+		float current_line_width;
+		int current_depth_draw;
 
 		SceneShaderGLES3 scene_shader;
 
@@ -56,6 +57,8 @@ public:
 
 		GLuint skybox_verts;
 		GLuint skybox_array;
+
+
 
 	} state;
 
@@ -109,11 +112,8 @@ public:
 	virtual void environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode);
 	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture);
 
-	virtual void environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,VS::EnvironmentToneMapper p_tone_mapper);
-	virtual void environment_set_brightness(RID p_env,bool p_enable,float p_brightness);
-	virtual void environment_set_contrast(RID p_env,bool p_enable,float p_contrast);
-	virtual void environment_set_saturation(RID p_env,bool p_enable,float p_saturation);
-	virtual void environment_set_color_correction(RID p_env,bool p_enable,RID p_ramp);
+	virtual void environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,float p_auto_exp_scale,VS::EnvironmentToneMapper p_tone_mapper);
+	virtual void environment_set_adjustment(RID p_env,bool p_enable,float p_brightness,float p_contrast,float p_saturation,RID p_ramp);
 
 
 	/* LIGHT INSTANCE */
@@ -314,6 +314,7 @@ public:
 	RenderList render_list;
 
 	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES3::Material* p_material,bool p_alpha_pass);
+	_FORCE_INLINE_ void _setup_transform(InstanceBase *p_instance,const Transform& p_view_transform,const CameraMatrix& p_projection);
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *e);
 	_FORCE_INLINE_ void _render_geometry(RenderList::Element *e);
 	_FORCE_INLINE_ void _setup_light(LightInstance *p_light);
@@ -327,6 +328,8 @@ public:
 
 	void _setup_environment(Environment *env,CameraMatrix& p_cam_projection, const Transform& p_cam_transform);
 	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform);
+	void _copy_screen();
+	void _copy_to_front_buffer(Environment *env);
 
 	virtual void render_scene(const Transform& p_cam_transform,CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_directional_lights,int p_directional_light_count,RID p_environment);
 

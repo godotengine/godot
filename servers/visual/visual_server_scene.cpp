@@ -692,21 +692,81 @@ void VisualServerScene::instance_set_extra_visibility_margin( RID p_instance, re
 
 }
 
-// don't use these in a game!
-Vector<ObjectID> VisualServerScene::instances_cull_aabb(const AABB& p_aabb, RID p_scenario) const{
+Vector<ObjectID> VisualServerScene::instances_cull_aabb(const AABB& p_aabb, RID p_scenario) const {
 
-	return Vector<ObjectID>();
+
+	Vector<ObjectID> instances;
+	Scenario *scenario=scenario_owner.get(p_scenario);
+	ERR_FAIL_COND_V(!scenario,instances);
+
+	const_cast<VisualServerScene*>(this)->update_dirty_instances(); // check dirty instances before culling
+
+	int culled=0;
+	Instance *cull[1024];
+	culled=scenario->octree.cull_AABB(p_aabb,cull,1024);
+
+	for (int i=0;i<culled;i++) {
+
+		Instance *instance=cull[i];
+		ERR_CONTINUE(!instance);
+		if (instance->object_ID==0)
+			continue;
+
+		instances.push_back(instance->object_ID);
+	}
+
+	return instances;
 }
-
 Vector<ObjectID> VisualServerScene::instances_cull_ray(const Vector3& p_from, const Vector3& p_to, RID p_scenario) const{
 
-	return Vector<ObjectID>();
-}
-Vector<ObjectID> VisualServerScene::instances_cull_convex(const Vector<Plane>& p_convex, RID p_scenario) const {
+	Vector<ObjectID> instances;
+	Scenario *scenario=scenario_owner.get(p_scenario);
+	ERR_FAIL_COND_V(!scenario,instances);
+	const_cast<VisualServerScene*>(this)->update_dirty_instances(); // check dirty instances before culling
 
-	return Vector<ObjectID>();
-}
+	int culled=0;
+	Instance *cull[1024];
+	culled=scenario->octree.cull_segment(p_from,p_to*10000,cull,1024);
 
+
+	for (int i=0;i<culled;i++) {
+		Instance *instance=cull[i];
+		ERR_CONTINUE(!instance);
+		if (instance->object_ID==0)
+			continue;
+
+		instances.push_back(instance->object_ID);
+	}
+
+	return instances;
+
+}
+Vector<ObjectID> VisualServerScene::instances_cull_convex(const Vector<Plane>& p_convex,  RID p_scenario) const{
+
+	Vector<ObjectID> instances;
+	Scenario *scenario=scenario_owner.get(p_scenario);
+	ERR_FAIL_COND_V(!scenario,instances);
+	const_cast<VisualServerScene*>(this)->update_dirty_instances(); // check dirty instances before culling
+
+	int culled=0;
+	Instance *cull[1024];
+
+
+	culled=scenario->octree.cull_convex(p_convex,cull,1024);
+
+	for (int i=0;i<culled;i++) {
+
+		Instance *instance=cull[i];
+		ERR_CONTINUE(!instance);
+		if (instance->object_ID==0)
+			continue;
+
+		instances.push_back(instance->object_ID);
+	}
+
+	return instances;
+
+}
 
 void VisualServerScene::instance_geometry_set_flag(RID p_instance,VS::InstanceFlags p_flags,bool p_enabled){
 

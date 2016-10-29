@@ -21,6 +21,8 @@ public:
 
 		Vector<CharString> defines;
 		Vector<StringName> texture_uniforms;
+		Vector<ShaderLanguage::ShaderNode::Uniform::Hint> texture_hints;
+
 		Vector<uint32_t> uniform_offsets;
 		uint32_t uniform_total_size;
 		String uniforms;

@@ -74,6 +74,7 @@ void FixedSpatialMaterial::init_shaders() {
 	shader_names->subsurface_scattering="subsurface_scattering";
 	shader_names->refraction="refraction";
 	shader_names->refraction_roughness="refraction_roughness";
+	shader_names->point_size="point_size";
 
 	shader_names->texture_names[TEXTURE_ALBEDO]="texture_albedo";
 	shader_names->texture_names[TEXTURE_SPECULAR]="texture_specular";
@@ -166,15 +167,33 @@ void FixedSpatialMaterial::_update_shader() {
 
 
 	code+="uniform vec4 albedo : hint_color;\n";
-	code+="uniform sampler2D albedo_texture : hint_albedo;\n";
+	code+="uniform sampler2D texture_albedo : hint_albedo;\n";
 	code+="uniform vec4 specular : hint_color;\n";
 	code+="uniform float roughness : hint_range(0,1);\n";
-	code+="uniform sampler2D specular_texture : hint_white;\n";
+	code+="uniform float point_size : hint_range(0,128);\n";
+	code+="uniform sampler2D texture_specular : hint_white;\n";
 	code+="\n\n";
 
+	code+="void vertex() {\n";
+
+	if (flags[FLAG_SRGB_VERTEX_COLOR]) {
+
+		code+="\tCOLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );\n";
+	}
+	if (flags[FLAG_USE_POINT_SIZE]) {
+
+		code+="\tPOINT_SIZE=point_size;\n";
+	}
+
+	code+="}\n";
 	code+="\n\n";
 	code+="void fragment() {\n";
-	code+="\tvec4 albedo_tex = texture(albedo_texture,UV);\n";
+
+	if (flags[FLAG_USE_POINT_SIZE]) {
+		code+="\tvec4 albedo_tex = texture(texture_albedo,POINT_COORD);\n";
+	} else {
+		code+="\tvec4 albedo_tex = texture(texture_albedo,UV);\n";
+	}
 
 	if (flags[FLAG_ALBEDO_FROM_VERTEX_COLOR]) {
 		code+="\talbedo_tex *= COLOR;\n";
@@ -184,7 +203,7 @@ void FixedSpatialMaterial::_update_shader() {
 	if (features[FEATURE_TRANSPARENT]) {
 		code+="\tALPHA = albedo.a * albedo_tex.a;\n";
 	}
-	code+="\tvec4 specular_tex = texture(specular_texture,UV);\n";
+	code+="\tvec4 specular_tex = texture(texture_specular,UV);\n";
 	code+="\tSPECULAR = specular.rgb * specular_tex.rgb;\n";
 	code+="\tROUGHNESS = specular.a * roughness;\n";
 	code+="}\n";
@@ -526,7 +545,8 @@ void FixedSpatialMaterial::set_texture(TextureParam p_param, const Ref<Texture> 
 
 	ERR_FAIL_INDEX(p_param,TEXTURE_MAX);
 	textures[p_param]=p_texture;
-	VS::get_singleton()->material_set_param(_get_material(),shader_names->texture_names[p_param],p_texture);
+	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	VS::get_singleton()->material_set_param(_get_material(),shader_names->texture_names[p_param],rid);
 }
 
 Ref<Texture> FixedSpatialMaterial::get_texture(TextureParam p_param) const {
@@ -540,6 +560,7 @@ void FixedSpatialMaterial::_validate_feature(const String& text, Feature feature
 	if (property.name.begins_with(text) && property.name!=text+"/enabled" && !features[feature]) {
 		property.usage=0;
 	}
+
 }
 
 void FixedSpatialMaterial::_validate_property(PropertyInfo& property) const {
@@ -553,6 +574,28 @@ void FixedSpatialMaterial::_validate_property(PropertyInfo& property) const {
 	_validate_feature("refraction",FEATURE_REFRACTION,property);
 	_validate_feature("detail",FEATURE_DETAIL,property);
 
+}
+
+void FixedSpatialMaterial::set_line_width(float p_line_width) {
+
+	line_width=p_line_width;
+	VS::get_singleton()->material_set_line_width(_get_material(),line_width);
+}
+
+float FixedSpatialMaterial::get_line_width() const {
+
+	return line_width;
+}
+
+void FixedSpatialMaterial::set_point_size(float p_point_size) {
+
+	point_size=p_point_size;
+	VS::get_singleton()->material_set_param(_get_material(),shader_names->point_size,p_point_size);
+}
+
+float FixedSpatialMaterial::get_point_size() const {
+
+	return point_size;
 }
 
 void FixedSpatialMaterial::_bind_methods() {
@@ -600,6 +643,12 @@ void FixedSpatialMaterial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_refraction_roughness","refraction_roughness"),&FixedSpatialMaterial::set_refraction_roughness);
 	ObjectTypeDB::bind_method(_MD("get_refraction_roughness"),&FixedSpatialMaterial::get_refraction_roughness);
 
+	ObjectTypeDB::bind_method(_MD("set_line_width","line_width"),&FixedSpatialMaterial::set_line_width);
+	ObjectTypeDB::bind_method(_MD("get_line_width"),&FixedSpatialMaterial::get_line_width);
+
+	ObjectTypeDB::bind_method(_MD("set_point_size","point_size"),&FixedSpatialMaterial::set_point_size);
+	ObjectTypeDB::bind_method(_MD("get_point_size"),&FixedSpatialMaterial::get_point_size);
+
 	ObjectTypeDB::bind_method(_MD("set_detail_uv","detail_uv"),&FixedSpatialMaterial::set_detail_uv);
 	ObjectTypeDB::bind_method(_MD("get_detail_uv"),&FixedSpatialMaterial::get_detail_uv);
 
@@ -630,12 +679,16 @@ void FixedSpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags/transparent"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags/unshaded"),_SCS("set_flag"),_SCS("get_flag"),FLAG_UNSHADED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags/on_top"),_SCS("set_flag"),_SCS("get_flag"),FLAG_ONTOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags/vcol_albedo"),_SCS("set_flag"),_SCS("get_flag"),FLAG_ALBEDO_FROM_VERTEX_COLOR);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags/use_point_size"),_SCS("set_flag"),_SCS("get_flag"),FLAG_USE_POINT_SIZE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"vertex_color/use_as_albedo"),_SCS("set_flag"),_SCS("get_flag"),FLAG_ALBEDO_FROM_VERTEX_COLOR);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"vertex_color/is_srgb"),_SCS("set_flag"),_SCS("get_flag"),FLAG_SRGB_VERTEX_COLOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"params/diffuse_mode",PROPERTY_HINT_ENUM,"Labert,Lambert Wrap,Oren Nayar,Burley"),_SCS("set_diffuse_mode"),_SCS("get_diffuse_mode"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"params/blend_mode",PROPERTY_HINT_ENUM,"Mix,Add,Sub,Mul"),_SCS("set_blend_mode"),_SCS("get_blend_mode"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"params/cull_mode",PROPERTY_HINT_ENUM,"Back,Front,Disabled"),_SCS("set_cull_mode"),_SCS("get_cull_mode"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"params/depth_draw_mode",PROPERTY_HINT_ENUM,"Opaque Only,Always,Never,Opaque Pre-Pass"),_SCS("set_depth_draw_mode"),_SCS("get_depth_draw_mode"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"params/line_width",PROPERTY_HINT_RANGE,"0.1,128,0.1"),_SCS("set_line_width"),_SCS("get_line_width"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"params/point_size",PROPERTY_HINT_RANGE,"0.1,128,0.1"),_SCS("set_point_size"),_SCS("get_point_size"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"albedo/color"),_SCS("set_albedo"),_SCS("get_albedo"));
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"albedo/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_ALBEDO);
@@ -737,6 +790,8 @@ void FixedSpatialMaterial::_bind_methods() {
 	BIND_CONSTANT( FLAG_UNSHADED );
 	BIND_CONSTANT( FLAG_ONTOP );
 	BIND_CONSTANT( FLAG_ALBEDO_FROM_VERTEX_COLOR );
+	BIND_CONSTANT( FLAG_SRGB_VERTEX_COLOR )
+	BIND_CONSTANT( FLAG_USE_POINT_SIZE )
 	BIND_CONSTANT( FLAG_MAX );
 
 	BIND_CONSTANT( DIFFUSE_LAMBERT );
@@ -763,6 +818,8 @@ FixedSpatialMaterial::FixedSpatialMaterial() : element(this) {
 	set_subsurface_scattering(0);
 	set_refraction(0);
 	set_refraction_roughness(0);
+	set_line_width(1);
+	set_point_size(1);
 
 	detail_uv=DETAIL_UV_1;
 	blend_mode=BLEND_MODE_MIX;

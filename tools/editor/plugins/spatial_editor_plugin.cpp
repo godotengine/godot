@@ -2553,6 +2553,7 @@ void SpatialEditor::_generate_selection_box() {
 	mat->set_albedo(Color(1,1,1));
 	mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT,true);
 	mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR,true);
+	mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR,true);
 	st->set_material(mat);
 	selection_box = st->commit();
 }
@@ -3143,6 +3144,8 @@ void SpatialEditor::_init_indicators() {
 		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
 		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP,true);
 		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR,true);
+		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR,true);
+
 		indicator_mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT,true);
 
 		DVector<Color> grid_colors[3];
@@ -3543,7 +3546,7 @@ void SpatialEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		//gizmos = memnew( SpatialEditorGizmos );
+		gizmos = memnew( SpatialEditorGizmos );
 		_init_indicators();
 		_update_default_light_angle();
 	}
@@ -3551,7 +3554,7 @@ void SpatialEditor::_notification(int p_what) {
 	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		_finish_indicators();
-//		memdelete( gizmos );
+		memdelete( gizmos );
 
 	}
 }
@@ -3597,7 +3600,7 @@ void SpatialEditor::_request_gizmo(Object* p_obj) {
 		}
 
 		if (!seg.is_valid()) {
-		//	seg = gizmos->get_gizmo(sp);
+			seg = gizmos->get_gizmo(sp);
 		}
 
 		if (seg.is_valid()) {

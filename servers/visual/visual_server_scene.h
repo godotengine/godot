@@ -162,7 +162,7 @@ public:
 		Scenario() {  debug=VS::SCENARIO_DEBUG_DISABLED; }
 	};
 
-	RID_Owner<Scenario> scenario_owner;
+	mutable RID_Owner<Scenario> scenario_owner;
 
 	static void* _instance_pair(void *p_self, OctreeElementID, Instance *p_A,int, OctreeElementID, Instance *p_B,int);
 	static void _instance_unpair(void *p_self, OctreeElementID, Instance *p_A,int, OctreeElementID, Instance *p_B,int,void*);

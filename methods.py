@@ -233,6 +233,7 @@ def build_glsl_header( filename ):
 
 		fd.write("\t_FORCE_INLINE_ void set_conditional(Conditionals p_conditional,bool p_enable)  {  _set_conditional(p_conditional,p_enable); }\n\n");
 	fd.write("\t#define _FU if (get_uniform(p_uniform)<0) return; ERR_FAIL_COND( get_active()!=this );\n\n ");
+	fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, bool p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value?1:0); }\n\n");
 	fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n");
 	fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, double p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n");
 	fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint8_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n");

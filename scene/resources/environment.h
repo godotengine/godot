@@ -55,6 +55,16 @@ public:
 		GLOW_BLEND_MODE_DISABLED,
 	};
 
+	enum ToneMapper {
+		TONE_MAPPER_LINEAR,
+		TONE_MAPPER_LOG,
+		TONE_MAPPER_REINHARDT,
+		TONE_MAPPER_FILMIC,
+		TONE_MAPPER_ACES_FILMIC
+	};
+
+
+
 private:
 	RID environment;
 
@@ -67,6 +77,21 @@ private:
 	Color ambient_color;
 	float ambient_energy;
 	float ambient_skybox_contribution;
+
+	ToneMapper tone_mapper;
+	float tonemap_exposure;
+	float tonemap_white;
+	bool tonemap_auto_exposure;
+	float tonemap_auto_exposure_max;
+	float tonemap_auto_exposure_min;
+	float tonemap_auto_exposure_speed;
+	float tonemap_auto_exposure_scale;
+
+	bool adjustment_enabled;
+	float adjustment_contrast;
+	float adjustment_saturation;
+	float adjustment_brightness;
+	Ref<Texture> adjustment_color_correction;
 
 protected:
 
@@ -97,14 +122,58 @@ public:
 	float get_ambient_light_skybox_contribution() const;
 
 
+	void set_tonemapper(ToneMapper p_tone_mapper);
+	ToneMapper get_tonemapper() const;
+
+	void set_tonemap_exposure(float p_exposure);
+	float get_tonemap_exposure() const;
+
+	void set_tonemap_white(float p_white);
+	float get_tonemap_white() const;
+
+	void set_tonemap_auto_exposure(bool p_enabled);
+	bool get_tonemap_auto_exposure() const;
+
+	void set_tonemap_auto_exposure_max(float p_auto_exposure_max);
+	float get_tonemap_auto_exposure_max() const;
+
+	void set_tonemap_auto_exposure_min(float p_auto_exposure_min);
+	float get_tonemap_auto_exposure_min() const;
+
+	void set_tonemap_auto_exposure_speed(float p_auto_exposure_speed);
+	float get_tonemap_auto_exposure_speed() const;
+
+	void set_tonemap_auto_exposure_scale(float p_auto_exposure_scale);
+	float get_tonemap_auto_exposure_scale() const;
+
+	void set_adjustment_enable(bool p_enable);
+	bool is_adjustment_enabled() const;
+
+	void set_adjustment_brightness(float p_brightness);
+	float get_adjustment_brightness() const;
+
+	void set_adjustment_contrast(float p_contrast);
+	float get_adjustment_contrast() const;
+
+	void set_adjustment_saturation(float p_saturation);
+	float get_adjustment_saturation() const;
+
+	void set_adjustment_color_correction(const Ref<Texture>& p_ramp);
+	Ref<Texture> get_adjustment_color_correction() const;
+
+
 	virtual RID get_rid() const;
 
 	Environment();
 	~Environment();
 };
 
+
+
+
 VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
+VARIANT_ENUM_CAST(Environment::ToneMapper)
 
 
 #endif // ENVIRONMENT_H

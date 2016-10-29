@@ -75,25 +75,81 @@ static String _mkid(const String& p_id) {
 	return "m_"+p_id;
 }
 
+static String f2sp0(float p_float) {
+
+	if (int(p_float)==p_float)
+		return itos(p_float)+".0";
+	else
+		return rtoss(p_float);
+}
+
 static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value>& p_values) {
 
 	switch(p_type) {
 		case SL::TYPE_BOOL:  return p_values[0].boolean?"true":"false";
-		case SL::TYPE_BVEC2:  return String()+"bvec2("+(p_values[0].boolean?"true":"false")+(p_values[1].boolean?"true":"false")+")";
-		case SL::TYPE_BVEC3:  return String()+"bvec3("+(p_values[0].boolean?"true":"false")+","+(p_values[1].boolean?"true":"false")+","+(p_values[2].boolean?"true":"false")+")";
-		case SL::TYPE_BVEC4:  return String()+"bvec4("+(p_values[0].boolean?"true":"false")+","+(p_values[1].boolean?"true":"false")+","+(p_values[2].boolean?"true":"false")+","+(p_values[3].boolean?"true":"false")+")";
-		case SL::TYPE_INT:  return rtos(p_values[0].sint);
-		case SL::TYPE_IVEC2:  return String()+"ivec2("+rtos(p_values[0].sint)+","+rtos(p_values[1].sint)+")";
-		case SL::TYPE_IVEC3:  return String()+"ivec3("+rtos(p_values[0].sint)+","+rtos(p_values[1].sint)+","+rtos(p_values[2].sint)+")";
-		case SL::TYPE_IVEC4:  return String()+"ivec4("+rtos(p_values[0].sint)+","+rtos(p_values[1].sint)+","+rtos(p_values[2].sint)+","+rtos(p_values[3].sint)+")";
-		case SL::TYPE_UINT:  return rtos(p_values[0].real);
-		case SL::TYPE_UVEC2:  return String()+"uvec2("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+")";
-		case SL::TYPE_UVEC3:  return String()+"uvec3("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+","+rtos(p_values[2].real)+")";
-		case SL::TYPE_UVEC4:  return String()+"uvec4("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+","+rtos(p_values[2].real)+","+rtos(p_values[3].real)+")";
-		case SL::TYPE_FLOAT:  return rtos(p_values[0].real);
-		case SL::TYPE_VEC2:  return String()+"vec2("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+")";
-		case SL::TYPE_VEC3:  return String()+"vec3("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+","+rtos(p_values[2].real)+")";
-		case SL::TYPE_VEC4:  return String()+"vec4("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+","+rtos(p_values[2].real)+","+rtos(p_values[3].real)+")";
+		case SL::TYPE_BVEC2:
+		case SL::TYPE_BVEC3:
+		case SL::TYPE_BVEC4: {
+
+
+			String text="bvec"+itos(p_type-SL::TYPE_BOOL+1)+"(";
+			for(int i=0;i<p_values.size();i++) {
+				if (i>0)
+					text+=",";
+
+				text+=p_values[i].boolean?"true":"false";
+			}
+			text+=")";
+			return text;
+		}
+
+		case SL::TYPE_INT:  return itos(p_values[0].sint);
+		case SL::TYPE_IVEC2:
+		case SL::TYPE_IVEC3:
+		case SL::TYPE_IVEC4: {
+
+			String text="ivec"+itos(p_type-SL::TYPE_INT+1)+"(";
+			for(int i=0;i<p_values.size();i++) {
+				if (i>0)
+					text+=",";
+
+				text+=itos(p_values[i].sint);
+			}
+			text+=")";
+			return text;
+
+		} break;
+		case SL::TYPE_UINT:  return itos(p_values[0].uint)+"u";
+		case SL::TYPE_UVEC2:
+		case SL::TYPE_UVEC3:
+		case SL::TYPE_UVEC4:   {
+
+			String text="uvec"+itos(p_type-SL::TYPE_UINT+1)+"(";
+			for(int i=0;i<p_values.size();i++) {
+				if (i>0)
+					text+=",";
+
+				text+=itos(p_values[i].uint)+"u";
+			}
+			text+=")";
+			return text;
+		} break;
+		case SL::TYPE_FLOAT:  return f2sp0(p_values[0].real)+"f";
+		case SL::TYPE_VEC2:
+		case SL::TYPE_VEC3:
+		case SL::TYPE_VEC4:  {
+
+			String text="vec"+itos(p_type-SL::TYPE_FLOAT+1)+"(";
+			for(int i=0;i<p_values.size();i++) {
+				if (i>0)
+					text+=",";
+
+				text+=f2sp0(p_values[i].real);
+			}
+			text+=")";
+			return text;
+
+		} break;
 		default: ERR_FAIL_V(String());
 	}
 }
@@ -189,6 +245,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			}
 
 			r_gen_code.texture_uniforms.resize(max_texture_uniforms);
+			r_gen_code.texture_hints.resize(max_texture_uniforms);
 
 			Vector<int> uniform_sizes;
 			uniform_sizes.resize(max_uniforms);
@@ -209,6 +266,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					r_gen_code.vertex_global+=ucode;
 					r_gen_code.fragment_global+=ucode;
 					r_gen_code.texture_uniforms[E->get().texture_order]=_mkid(E->key());
+					r_gen_code.texture_hints[E->get().texture_order]=E->get().hint;
 				} else {
 					if (r_gen_code.uniforms.empty()) {
 

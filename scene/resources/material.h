@@ -132,6 +132,8 @@ public:
 		FLAG_UNSHADED,
 		FLAG_ONTOP,
 		FLAG_ALBEDO_FROM_VERTEX_COLOR,
+		FLAG_SRGB_VERTEX_COLOR,
+		FLAG_USE_POINT_SIZE,
 		FLAG_MAX
 	};
 
@@ -146,12 +148,12 @@ private:
 	union MaterialKey {
 
 		struct {
-			uint32_t feature_mask : 16;
+			uint32_t feature_mask : 15;
 			uint32_t detail_uv : 1;
 			uint32_t blend_mode : 2;
 			uint32_t depth_draw_mode : 2;
 			uint32_t cull_mode : 2;
-			uint32_t flags : 3;
+			uint32_t flags : 5;
 			uint32_t detail_blend_mode : 2;
 			uint32_t diffuse_mode : 2;
 			uint32_t invalid_key : 1;
@@ -213,7 +215,9 @@ private:
 		StringName subsurface_scattering;
 		StringName refraction;
 		StringName refraction_roughness;
+		StringName point_size;
 		StringName texture_names[TEXTURE_MAX];
+
 	};
 
 	static Mutex *material_mutex;
@@ -240,6 +244,8 @@ private:
 	float subsurface_scattering;
 	float refraction;
 	float refraction_roughness;
+	float line_width;
+	float point_size;
 
 	DetailUV detail_uv;
 
@@ -305,6 +311,12 @@ public:
 
 	void set_refraction_roughness(float p_refraction_roughness);
 	float get_refraction_roughness() const;
+
+	void set_line_width(float p_line_width);
+	float get_line_width() const;
+
+	void set_point_size(float p_point_size);
+	float get_point_size() const;
 
 	void set_detail_uv(DetailUV p_detail_uv);
 	DetailUV get_detail_uv() const;

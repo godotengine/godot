@@ -269,10 +269,15 @@ in vec3 normal_interp;
 
 /* PBR CHANNELS */
 
+//used on forward mainly
+uniform bool no_ambient_light;
+
+
 #ifdef USE_RADIANCE_CUBEMAP
 
 uniform sampler2D brdf_texture; //texunit:-1
 uniform samplerCube radiance_cube; //texunit:-2
+
 
 layout(std140) uniform Radiance { //ubo:2
 
@@ -346,7 +351,17 @@ in mediump vec4 forward_shadow_pos4;
 
 #endif
 
+#ifdef USE_MULTIPLE_RENDER_TARGETS
+
+layout(location=0) out vec4 diffuse_buffer;
+layout(location=1) out vec4 specular_buffer;
+layout(location=2) out vec4 normal_mr_buffer;
+
+#else
+
 layout(location=0) out vec4 frag_color;
+
+#endif
 
 
 // GGX Specular
@@ -470,39 +485,46 @@ FRAGMENT_SHADER_CODE
 /////////////////////// LIGHTING //////////////////////////////
 
 	vec3 specular_light = vec3(0.0,0.0,0.0);
-	vec3 ambient_light = ambient_light_color.rgb;
+	vec3 ambient_light;
 	vec3 diffuse_light = vec3(0.0,0.0,0.0);
 
 	vec3 eye_vec = -normalize( vertex_interp );
 
 #ifdef USE_RADIANCE_CUBEMAP
 
-	{
+	if (no_ambient_light) {
+		ambient_light=vec3(0.0,0.0,0.0);
+	} else {
+		{
 
-		float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
-		vec2 brdf = texture(brdf_texture, vec2(roughness, ndotv)).xy;
+			float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
+			vec2 brdf = texture(brdf_texture, vec2(roughness, ndotv)).xy;
 
-		float lod = roughness * 5.0;
-		vec3 r = reflect(-eye_vec,normal); //2.0 * ndotv * normal - view; // reflect(v, n);
-		r=normalize((radiance_inverse_xform * vec4(r,0.0)).xyz);
-		vec3 radiance = textureLod(radiance_cube, r, lod).xyz * ( brdf.x + brdf.y);
+			float lod = roughness * 5.0;
+			vec3 r = reflect(-eye_vec,normal); //2.0 * ndotv * normal - view; // reflect(v, n);
+			r=normalize((radiance_inverse_xform * vec4(r,0.0)).xyz);
+			vec3 radiance = textureLod(radiance_cube, r, lod).xyz * ( brdf.x + brdf.y);
 
-		specular_light=mix(albedo,radiance,specular);
+			specular_light=mix(albedo,radiance,specular);
 
+		}
+
+		{
+
+			vec3 ambient_dir=normalize((radiance_inverse_xform * vec4(normal,0.0)).xyz);
+			vec3 env_ambient=textureLod(radiance_cube, ambient_dir, 5.0).xyz;
+
+			ambient_light=mix(ambient_light_color.rgb,env_ambient,radiance_ambient_contribution);
+		}
 	}
-
-	{
-
-		vec3 ambient_dir=normalize((radiance_inverse_xform * vec4(normal,0.0)).xyz);
-		vec3 env_ambient=textureLod(radiance_cube, ambient_dir, 5.0).xyz;
-
-		ambient_light=mix(ambient_light,env_ambient,radiance_ambient_contribution);
-	}
-
 
 #else
 
-	ambient_light=albedo;
+	if (no_ambient_light){
+		ambient_light=vec3(0.0,0.0,0.0);
+	} else {
+		ambient_light=ambient_light_color.rgb;
+	}
 #endif
 
 
@@ -538,11 +560,25 @@ LIGHT_SHADER_CODE
 }
 #endif
 
-#ifdef SHADELESS
+#ifdef USE_MULTIPLE_RENDER_TARGETS
 
+	//approximate ambient scale for SSAO, since we will lack full ambient
+	float max_ambient=max(ambient_light.r,max(ambient_light.g,ambient_light.b));
+	float max_diffuse=max(diffuse_light.r,max(diffuse_light.g,diffuse_light.b));
+	float total_ambient = max_ambient+max_diffuse;
+	float ambient_scale = (total_ambient>0.0) ? max_ambient/total_ambient : 0.0;
+
+	diffuse_buffer=vec4(diffuse_light+ambient_light,ambient_scale);
+	specular_buffer=vec4(specular_light,0.0);
+	normal_mr_buffer=vec4(normal.x,normal.y,max(specular.r,max(specular.g,specular.b)),roughness);
+
+#else
+
+#ifdef SHADELESS
 	frag_color=vec4(albedo,alpha);
 #else
 	frag_color=vec4(ambient_light+diffuse_light+specular_light,alpha);
+#endif
 
 #endif
 

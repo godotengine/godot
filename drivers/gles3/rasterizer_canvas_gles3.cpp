@@ -914,6 +914,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 			}
 
 
+
 			if (shader_ptr && shader_ptr!=shader_cache) {
 
 				state.canvas_shader.set_custom_shader(shader_ptr->custom_code_id);
@@ -925,6 +926,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 
 				int tc = material_ptr->textures.size();
 				RID* textures = material_ptr->textures.ptr();
+				ShaderLanguage::ShaderNode::Uniform::Hint* texture_hints = shader_ptr->texture_hints.ptr();
 
 				for(int i=0;i<tc;i++) {
 
@@ -932,9 +934,28 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 
 					RasterizerStorageGLES3::Texture *t = storage->texture_owner.getornull( textures[i] );
 					if (!t) {
+
+						switch(texture_hints[i]) {
+							case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
+								glBindTexture(GL_TEXTURE_2D,storage->resources.black_tex);
+							} break;
+							case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
+								glBindTexture(GL_TEXTURE_2D,storage->resources.normal_tex);
+							} break;
+							default: {
+								glBindTexture(GL_TEXTURE_2D,storage->resources.white_tex);
+							} break;
+						}
+
 						//check hints
-						glBindTexture(GL_TEXTURE_2D,storage->resources.white_tex);
+
 						continue;
+					}
+
+					if (storage->config.srgb_decode_supported && t->using_srgb) {
+						//no srgb in 2D
+						glTexParameteri(t->target,_TEXTURE_SRGB_DECODE_EXT,_SKIP_DECODE_EXT);
+						t->using_srgb=false;
 					}
 
 					glBindTexture(t->target,t->tex_id);

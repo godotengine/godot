@@ -658,6 +658,10 @@ public:
 	BIND3(material_set_param,RID, const StringName&, const Variant& )
 	BIND2RC(Variant,material_get_param,RID, const StringName& )
 
+	BIND2(material_set_line_width,RID, float )
+
+
+
 	/* MESH API */
 
 	BIND0R(RID,mesh_create)
@@ -864,11 +868,8 @@ public:
 	BIND7(environment_set_glow,RID,bool ,int ,float ,float ,float ,EnvironmentGlowBlendMode )
 	BIND5(environment_set_fog,RID,bool ,float ,float ,RID )
 
-	BIND8(environment_set_tonemap,RID,bool ,float ,float ,float ,float ,float ,EnvironmentToneMapper )
-	BIND3(environment_set_brightness,RID,bool ,float )
-	BIND3(environment_set_contrast,RID,bool ,float )
-	BIND3(environment_set_saturation,RID,bool ,float )
-	BIND3(environment_set_color_correction,RID,bool ,RID )
+	BIND9(environment_set_tonemap,RID,bool ,float ,float ,float ,float ,float,float ,EnvironmentToneMapper )
+	BIND6(environment_set_adjustment,RID,bool ,float ,float ,float ,RID )
 
 
 	/* SCENARIO API */

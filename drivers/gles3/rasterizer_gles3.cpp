@@ -253,10 +253,8 @@ void RasterizerGLES3::make_current() {
 
 void RasterizerGLES3::register_config() {
 
-	GLOBAL_DEF("rendering/gles3/framebuffer_format",RasterizerStorageGLES3::FBO_FORMAT_FLOAT);
-	Globals::get_singleton()->set_custom_property_info("rendering/gles3/framebuffer_format",PropertyInfo(Variant::INT,"",PROPERTY_HINT_ENUM,"16 Bits,32 Bits,Half Float"));
-	GLOBAL_DEF("rendering/gles3/lighting_technique",1);
-	Globals::get_singleton()->set_custom_property_info("rendering/gles3/lighting_technique",PropertyInfo(Variant::INT,"",PROPERTY_HINT_ENUM,"Forward,Deferred"));
+	GLOBAL_DEF("rendering/gles3/render_architecture",0);
+	Globals::get_singleton()->set_custom_property_info("rendering/gles3/render_architecture",PropertyInfo(Variant::INT,"",PROPERTY_HINT_ENUM,"Desktop,Mobile"));
 	GLOBAL_DEF("rendering/gles3/use_nearest_mipmap_filter",false);
 	GLOBAL_DEF("rendering/gles3/anisotropic_filter_level",4.0);
 

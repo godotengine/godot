@@ -54,11 +54,8 @@ public:
 	virtual void environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode)=0;
 	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture)=0;
 
-	virtual void environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,VS::EnvironmentToneMapper p_tone_mapper)=0;
-	virtual void environment_set_brightness(RID p_env,bool p_enable,float p_brightness)=0;
-	virtual void environment_set_contrast(RID p_env,bool p_enable,float p_contrast)=0;
-	virtual void environment_set_saturation(RID p_env,bool p_enable,float p_saturation)=0;
-	virtual void environment_set_color_correction(RID p_env,bool p_enable,RID p_ramp)=0;
+	virtual void environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,float p_auto_exp_scale,VS::EnvironmentToneMapper p_tone_mapper)=0;
+	virtual void environment_set_adjustment(RID p_env,bool p_enable,float p_brightness,float p_contrast,float p_saturation,RID p_ramp)=0;
 
 	struct InstanceBase : RID_Data {
 
@@ -175,6 +172,8 @@ public:
 
 	virtual void material_set_param(RID p_material, const StringName& p_param, const Variant& p_value)=0;
 	virtual Variant material_get_param(RID p_material, const StringName& p_param) const=0;
+
+	virtual void material_set_line_width(RID p_material, float p_width)=0;
 
 	/* MESH API */
 
