@@ -76,6 +76,7 @@ friend class SpatialEditor;
 		VIEW_RIGHT,
 		VIEW_FRONT,
 		VIEW_REAR,
+		VIEW_CENTER_TO_ORIGIN,
 		VIEW_CENTER_TO_SELECTION,
 		VIEW_ALIGN_SELECTION_WITH_VIEW,
 		VIEW_PERSPECTIVE,
@@ -253,6 +254,9 @@ public:
 	void set_state(const Dictionary& p_state);
 	Dictionary get_state() const;
 	void reset();
+
+	void focus_selection();
+
 	Viewport *get_viewport_node() { return viewport; }
 
 

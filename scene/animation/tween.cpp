@@ -199,13 +199,13 @@ void Tween::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_tween_process_mode"),&Tween::get_tween_process_mode);
 
 	ObjectTypeDB::bind_method(_MD("start"),&Tween::start );
-	ObjectTypeDB::bind_method(_MD("reset","object","key"),&Tween::reset );
+	ObjectTypeDB::bind_method(_MD("reset","object","key"),&Tween::reset, DEFVAL("") );
 	ObjectTypeDB::bind_method(_MD("reset_all"),&Tween::reset_all );
-	ObjectTypeDB::bind_method(_MD("stop","object","key"),&Tween::stop );
+	ObjectTypeDB::bind_method(_MD("stop","object","key"),&Tween::stop, DEFVAL("") );
 	ObjectTypeDB::bind_method(_MD("stop_all"),&Tween::stop_all );
-	ObjectTypeDB::bind_method(_MD("resume","object","key"),&Tween::resume );
+	ObjectTypeDB::bind_method(_MD("resume","object","key"),&Tween::resume, DEFVAL("") );
 	ObjectTypeDB::bind_method(_MD("resume_all"),&Tween::resume_all );
-	ObjectTypeDB::bind_method(_MD("remove","object","key"),&Tween::remove );
+	ObjectTypeDB::bind_method(_MD("remove","object","key"),&Tween::remove, DEFVAL("") );
 	ObjectTypeDB::bind_method(_MD("remove_all"),&Tween::remove_all );
 	ObjectTypeDB::bind_method(_MD("seek","time"),&Tween::seek );
 	ObjectTypeDB::bind_method(_MD("tell"),&Tween::tell );
@@ -619,6 +619,8 @@ void Tween::_tween_process(float p_delta) {
 					};
 					object->call(data.key, (const Variant **) arg, data.args, error);
 				}
+				if (!repeat)
+					call_deferred("remove", object, data.key);
 			}
 			continue;
 		}
@@ -721,7 +723,7 @@ bool Tween::reset(Object *p_object, String p_key) {
 		if(object == NULL)
 			continue;
 
-		if(object == p_object && data.key == p_key) {
+		if(object == p_object && (data.key == p_key || p_key == "")) {
 
 			data.elapsed = 0;
 			data.finish = false;
@@ -757,7 +759,7 @@ bool Tween::stop(Object *p_object, String p_key) {
 		Object *object = ObjectDB::get_instance(data.id);
 		if(object == NULL)
 			continue;
-		if(object == p_object && data.key == p_key)
+		if(object == p_object && (data.key == p_key || p_key == ""))
 			data.active = false;
 	}
 	pending_update --;
@@ -791,7 +793,7 @@ bool Tween::resume(Object *p_object, String p_key) {
 		Object *object = ObjectDB::get_instance(data.id);
 		if(object == NULL)
 			continue;
-		if(object == p_object && data.key == p_key)
+		if(object == p_object && (data.key == p_key || p_key == ""))
 			data.active = true;
 	}
 	pending_update --;
@@ -819,16 +821,19 @@ bool Tween::remove(Object *p_object, String p_key) {
 		call_deferred("remove", p_object, p_key);
 		return true;
 	}
+	List<List<InterpolateData>::Element *> for_removal;
 	for(List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
 
 		InterpolateData& data = E->get();
 		Object *object = ObjectDB::get_instance(data.id);
 		if(object == NULL)
 			continue;
-		if(object == p_object && data.key == p_key) {
-			interpolates.erase(E);
-			return true;
+		if(object == p_object && (data.key == p_key || p_key == "")) {
+			for_removal.push_back(E);
 		}
+	}
+	for(List<List<InterpolateData>::Element *>::Element *E=for_removal.front();E;E=E->next()) {
+		interpolates.erase(E->get());
 	}
 	return true;
 }

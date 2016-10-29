@@ -540,24 +540,20 @@ Variant JavaClass::call(const StringName& p_method,const Variant** p_args,int p_
 
 JavaClass::JavaClass() {
 
-
 }
 
 /////////////////////
 
 Variant JavaObject::call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error){
 
-
 	return Variant();
 }
 
 JavaObject::JavaObject(const Ref<JavaClass>& p_base,jobject *p_instance) {
 
-
 }
 
 JavaObject::~JavaObject(){
-
 
 }
 
@@ -1355,6 +1351,5 @@ JavaClassWrapper::JavaClassWrapper(jobject p_activity) {
 
 	bclass = env->FindClass("java/lang/Double");
 	Double_doubleValue = env->GetMethodID(bclass, "doubleValue", "()D");
-
 
 }

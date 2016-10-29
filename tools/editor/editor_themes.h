@@ -31,8 +31,8 @@
 
 #include "scene/resources/theme.h"
 
-Ref<Theme> create_default_theme();
-
 Ref<Theme> create_editor_theme();
+
+Ref<Theme> create_custom_theme();
 
 #endif

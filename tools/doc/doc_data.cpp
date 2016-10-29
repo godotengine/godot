@@ -198,6 +198,11 @@ void DocData::generate(bool p_basic_types) {
 				if (method.qualifiers!="")
 					method.qualifiers+=" ";
 				method.qualifiers+="const";
+
+			} else if (E->get().flags&METHOD_FLAG_VARARG) {
+				if (method.qualifiers!="")
+					method.qualifiers+=" ";
+				method.qualifiers+="vararg";
 			}
 
 			for(int i=-1;i<E->get().arguments.size();i++) {
@@ -276,14 +281,9 @@ void DocData::generate(bool p_basic_types) {
 								default_arg_text=Variant::get_type_name(default_arg.get_type())+"("+default_arg_text+")";
 								break;
 
-							case Variant::VECTOR2:		// 5
-							case Variant::RECT2:
-							case Variant::VECTOR3:
-							case Variant::PLANE:
-							case Variant::QUAT:
 							case Variant::_AABB: //sorry naming convention fail :( not like it's used often // 10
-							case Variant::MATRIX3:
 							case Variant::COLOR:
+							case Variant::PLANE:
 							case Variant::RAW_ARRAY:
 							case Variant::INT_ARRAY:
 							case Variant::REAL_ARRAY:
@@ -293,7 +293,18 @@ void DocData::generate(bool p_basic_types) {
 							case Variant::COLOR_ARRAY:
 								default_arg_text=Variant::get_type_name(default_arg.get_type())+"("+default_arg_text+")";
 								break;
+							case Variant::VECTOR2:		// 5
+							case Variant::RECT2:
+							case Variant::VECTOR3:
+							case Variant::QUAT:
+							case Variant::MATRIX3:
+								default_arg_text=Variant::get_type_name(default_arg.get_type())+default_arg_text;
+								break;
 							case Variant::OBJECT:
+								if (default_arg.is_zero()) {
+									default_arg_text="NULL";
+									break;
+								}
 							case Variant::INPUT_EVENT:
 							case Variant::DICTIONARY:		// 20
 							case Variant::ARRAY:

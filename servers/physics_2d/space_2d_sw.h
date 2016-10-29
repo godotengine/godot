@@ -37,6 +37,7 @@
 #include "area_pair_2d_sw.h"
 #include "broad_phase_2d_sw.h"
 #include "collision_object_2d_sw.h"
+#include "globals.h"
 
 
 class Physics2DDirectSpaceStateSW : public Physics2DDirectSpaceState {
@@ -184,7 +185,7 @@ public:
 
 	int get_collision_pairs() const { return collision_pairs; }
 
-	bool test_body_motion(Body2DSW *p_body, const Vector2&p_motion, float p_margin, Physics2DServer::MotionResult *r_result);
+	bool test_body_motion(Body2DSW *p_body, const Matrix32 &p_from, const Vector2&p_motion, float p_margin, Physics2DServer::MotionResult *r_result);
 
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }

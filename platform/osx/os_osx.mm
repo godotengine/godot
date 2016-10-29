@@ -1123,6 +1123,7 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
+	joystick_osx = memnew( JoystickOSX );
 
 	_ensure_data_dir();
 
@@ -1165,7 +1166,7 @@ void OS_OSX::finalize() {
 	spatial_sound_2d_server->finish();
 	memdelete(spatial_sound_2d_server);
 
-
+	memdelete(joystick_osx);
 	memdelete(input);
 
 	memdelete(sample_manager);
@@ -1497,6 +1498,16 @@ Size2 OS_OSX::get_window_size() const {
 void OS_OSX::set_window_size(const Size2 p_size) {
 
 	Size2 size=p_size;
+
+	// NSRect used by setFrame includes the title bar, so add it to our size.y
+	CGFloat menuBarHeight = [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
+	if (menuBarHeight != 0.f) {
+		size.y+= menuBarHeight;
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= 101104
+	} else {
+		size.y+= [[NSStatusBar systemStatusBar] thickness];
+#endif
+	}
 	NSRect frame = [window_object frame];
 	[window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, size.x, size.y) display:YES];
 };
@@ -1575,6 +1586,11 @@ bool OS_OSX::is_window_maximized() const {
 void OS_OSX::move_window_to_foreground() {
 
 	[window_object orderFrontRegardless];
+}
+
+void OS_OSX::request_attention() {
+
+	[NSApp requestUserAttention:NSCriticalRequest];
 }
 
 String OS_OSX::get_executable_path() const {
@@ -1723,7 +1739,7 @@ void OS_OSX::run() {
 	while (!force_quit) {
 
 		process_events(); // get rid of pending events
-//		process_joysticks();
+		last_id = joystick_osx->process_joysticks(last_id);
 		if (Main::iteration()==true)
 			break;
 	};
@@ -1756,6 +1772,10 @@ void OS_OSX::set_mouse_mode(MouseMode p_mode) {
 OS::MouseMode OS_OSX::get_mouse_mode() const {
 
     return mouse_mode;
+}
+
+String OS_OSX::get_joy_guid(int p_device) const {
+	return input->get_joy_guid_remapped(p_device);
 }
 
 OS_OSX* OS_OSX::singleton=NULL;

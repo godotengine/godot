@@ -447,13 +447,17 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 		} break;
 		case VARIANT_INPUT_EVENT: {
 
+			InputEvent ev;
+			ev.type=f->get_32(); //will only work for null though.
+			r_v=ev;
+
 		} break;
 		case VARIANT_DICTIONARY: {
 
-            uint32_t len=f->get_32();
-            Dictionary d(len&0x80000000); //last bit means shared
-            len&=0x7FFFFFFF;
-            for(uint32_t i=0;i<len;i++) {
+			uint32_t len=f->get_32();
+			Dictionary d(len&0x80000000); //last bit means shared
+			len&=0x7FFFFFFF;
+			for(uint32_t i=0;i<len;i++) {
 				Variant key;
 				Error err = parse_variant(key);
 				ERR_FAIL_COND_V(err,ERR_FILE_CORRUPT);
@@ -466,11 +470,11 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 		} break;
 		case VARIANT_ARRAY: {
 
-            uint32_t len=f->get_32();
-            Array a(len&0x80000000); //last bit means shared
-            len&=0x7FFFFFFF;
+			uint32_t len=f->get_32();
+			Array a(len&0x80000000); //last bit means shared
+			len&=0x7FFFFFFF;
 			a.resize(len);
-            for(uint32_t i=0;i<len;i++) {
+			for(uint32_t i=0;i<len;i++) {
 				Variant val;
 				Error err = parse_variant(val);
 				ERR_FAIL_COND_V(err,ERR_FILE_CORRUPT);
@@ -1105,13 +1109,8 @@ void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String
 
 	for(List<String>::Element *E=extensions.front();E;E=E->next()) {
 		String ext = E->get().to_lower();
-		if (ext=="res")
-			continue;
-//		p_extensions->push_back("x"+ext);
 		p_extensions->push_back(ext);
 	}
-
-	p_extensions->push_back("res");
 
 }
 void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *p_extensions) const{
@@ -1122,12 +1121,9 @@ void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *p_exten
 
 	for(List<String>::Element *E=extensions.front();E;E=E->next()) {
 		String ext = E->get().to_lower();
-		if (ext=="res")
-			continue;
 		p_extensions->push_back(ext);
 	}
 
-	p_extensions->push_back("res");
 }
 
 bool ResourceFormatLoaderBinary::handles_type(const String& p_type) const{
@@ -1733,7 +1729,9 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 		case Variant::INPUT_EVENT: {
 
 			f->store_32(VARIANT_INPUT_EVENT);
-			WARN_PRINT("Can't save InputEvent (maybe it could..)");
+			InputEvent event=p_property;
+			f->store_32(0); //event type none, nothing else suported for now.
+
 		} break;
 		case Variant::DICTIONARY: {
 
@@ -2177,6 +2175,9 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 			if (takeover_paths) {
 				r->set_path(p_path+"::"+itos(r->get_subindex()),true);
 			}
+#ifdef TOOLS_ENABLED
+			r->set_edited(false);
+#endif
 		} else {
 			save_unicode_string(r->get_path()); //actual external
 		}
@@ -2270,16 +2271,8 @@ bool ResourceFormatSaverBinary::recognize(const RES& p_resource) const {
 
 void ResourceFormatSaverBinary::get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const {
 
-
-	//here comes the sun, lalalala
 	String base = p_resource->get_base_extension().to_lower();
-	if (base!="res") {
-
-		p_extensions->push_back(base);
-	}
-
-	p_extensions->push_back("res");
-
+	p_extensions->push_back(base);
 
 }
 

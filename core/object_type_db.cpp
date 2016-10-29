@@ -189,6 +189,14 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 
 #endif
 
+
+ObjectTypeDB::APIType ObjectTypeDB::current_api=API_CORE;
+
+void ObjectTypeDB::set_current_api(APIType p_api) {
+
+	current_api=p_api;
+}
+
 HashMap<StringName,ObjectTypeDB::TypeInfo,StringNameHasher> ObjectTypeDB::types;
 HashMap<StringName,StringName,StringNameHasher> ObjectTypeDB::resource_base_extensions;
 HashMap<StringName,StringName,StringNameHasher> ObjectTypeDB::compat_types;
@@ -258,6 +266,171 @@ StringName ObjectTypeDB::type_inherits_from(const StringName& p_type) {
 	return ti->inherits;
 }
 
+ObjectTypeDB::APIType ObjectTypeDB::get_api_type(const StringName &p_type) {
+
+	OBJTYPE_LOCK;
+
+	TypeInfo *ti = types.getptr(p_type);
+	ERR_FAIL_COND_V(!ti,API_NONE);
+	return ti->api;
+}
+
+uint64_t ObjectTypeDB::get_api_hash(APIType p_api) {
+
+#ifdef DEBUG_METHODS_ENABLED
+
+	uint64_t hash = hash_djb2_one_64(HashMapHahserDefault::hash(VERSION_FULL_NAME));
+
+	List<StringName> names;
+
+	const StringName *k=NULL;
+
+	while((k=types.next(k))) {
+
+		names.push_back(*k);
+	}
+	//must be alphabetically sorted for hash to compute
+	names.sort_custom<StringName::AlphCompare>();
+
+	for (List<StringName>::Element *E=names.front();E;E=E->next()) {
+
+		TypeInfo *t = types.getptr(E->get());
+		ERR_FAIL_COND_V(!t,0);
+		if (t->api!=p_api)
+			continue;
+		hash = hash_djb2_one_64(t->name.hash(),hash);
+		hash = hash_djb2_one_64(t->inherits.hash(),hash);
+
+		{ //methods
+
+			List<StringName> snames;
+
+			k=NULL;
+
+			while((k=t->method_map.next(k))) {
+
+				snames.push_back(*k);
+			}
+
+			snames.sort_custom<StringName::AlphCompare>();
+
+			for (List<StringName>::Element *F=snames.front();F;F=F->next()) {
+
+				MethodBind *mb = t->method_map[F->get()];
+				hash = hash_djb2_one_64( mb->get_name().hash(), hash);
+				hash = hash_djb2_one_64( mb->get_argument_count(), hash);
+				hash = hash_djb2_one_64( mb->get_argument_type(-1), hash); //return
+
+				for(int i=0;i<mb->get_argument_count();i++) {
+					hash = hash_djb2_one_64( mb->get_argument_info(i).type, hash );
+					hash = hash_djb2_one_64( mb->get_argument_info(i).name.hash(), hash );
+					hash = hash_djb2_one_64( mb->get_argument_info(i).hint, hash );
+					hash = hash_djb2_one_64( mb->get_argument_info(i).hint_string.hash(), hash );
+				}
+
+				hash = hash_djb2_one_64( mb->get_default_argument_count(), hash);
+
+				for(int i=0;i<mb->get_default_argument_count();i++) {
+					//hash should not change, i hope for tis
+					Variant da = mb->get_default_argument(i);
+					hash = hash_djb2_one_64( da.hash(), hash );
+				}
+
+				hash = hash_djb2_one_64( mb->get_hint_flags(), hash);
+
+			}
+		}
+
+
+		{ //constants
+
+			List<StringName> snames;
+
+			k=NULL;
+
+			while((k=t->constant_map.next(k))) {
+
+				snames.push_back(*k);
+			}
+
+			snames.sort_custom<StringName::AlphCompare>();
+
+			for (List<StringName>::Element *F=snames.front();F;F=F->next()) {
+
+				hash = hash_djb2_one_64(F->get().hash(), hash);
+				hash = hash_djb2_one_64( t->constant_map[F->get()], hash);
+			}
+		}
+
+
+		{ //signals
+
+			List<StringName> snames;
+
+			k=NULL;
+
+			while((k=t->signal_map.next(k))) {
+
+				snames.push_back(*k);
+			}
+
+			snames.sort_custom<StringName::AlphCompare>();
+
+			for (List<StringName>::Element *F=snames.front();F;F=F->next()) {
+
+				MethodInfo &mi = t->signal_map[F->get()];
+				hash = hash_djb2_one_64( F->get().hash(), hash);
+				for(int i=0;i<mi.arguments.size();i++) {
+					hash = hash_djb2_one_64( mi.arguments[i].type, hash);
+				}
+			}
+		}
+
+		{ //properties
+
+			List<StringName> snames;
+
+			k=NULL;
+
+			while((k=t->property_setget.next(k))) {
+
+				snames.push_back(*k);
+			}
+
+			snames.sort_custom<StringName::AlphCompare>();
+
+			for (List<StringName>::Element *F=snames.front();F;F=F->next()) {
+
+				PropertySetGet *psg=t->property_setget.getptr(F->get());
+
+				hash = hash_djb2_one_64( F->get().hash(), hash);
+				hash = hash_djb2_one_64( psg->setter.hash(), hash);
+				hash = hash_djb2_one_64( psg->getter.hash(), hash);
+
+			}
+		}
+
+		//property list
+		for (List<PropertyInfo>::Element *F=t->property_list.front();F;F=F->next()) {
+
+			hash = hash_djb2_one_64( F->get().name.hash(), hash);
+			hash = hash_djb2_one_64( F->get().type, hash);
+			hash = hash_djb2_one_64( F->get().hint, hash);
+			hash = hash_djb2_one_64( F->get().hint_string.hash(), hash);
+			hash = hash_djb2_one_64( F->get().usage, hash);
+		}
+
+
+	}
+
+
+	return hash;
+#else
+	return 0;
+#endif
+
+}
+
 bool ObjectTypeDB::type_exists(const StringName &p_type) {
 
 	OBJTYPE_LOCK;
@@ -309,6 +482,7 @@ void ObjectTypeDB::_add_type2(const StringName& p_type, const StringName& p_inhe
 	TypeInfo &ti=types[name];
 	ti.name=name;
 	ti.inherits=p_inherits;
+	ti.api=current_api;
 
 	if (ti.inherits) {
 
@@ -549,6 +723,23 @@ bool ObjectTypeDB::has_signal(StringName p_type,StringName p_signal) {
 	return false;
 }
 
+bool ObjectTypeDB::get_signal(StringName p_type,StringName p_signal,MethodInfo *r_signal) {
+
+	TypeInfo *type=types.getptr(p_type);
+	TypeInfo *check=type;
+	while(check) {
+		if (check->signal_map.has(p_signal)) {
+			if (r_signal) {
+				*r_signal=check->signal_map[p_signal];
+			}
+			return true;
+		}
+		check=check->inherits_ptr;
+	}
+
+	return false;
+}
+
 void ObjectTypeDB::add_property(StringName p_type,const PropertyInfo& p_pinfo, const StringName& p_setter, const StringName& p_getter, int p_index) {
 
 
@@ -625,7 +816,7 @@ void ObjectTypeDB::get_property_list(StringName p_type, List<PropertyInfo> *p_li
 	TypeInfo *check=type;
 	while(check) {
 
-		for(List<PropertyInfo>::Element *E=type->property_list.front();E;E=E->next()) {
+		for(List<PropertyInfo>::Element *E=check->property_list.front();E;E=E->next()) {
 
 
 			if (p_validator) {
@@ -828,7 +1019,7 @@ MethodBind* ObjectTypeDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind , c
 
 	TypeInfo *type=types.getptr(instance_type);
 	if (!type) {
-		print_line("couldn't bind method "+mdname+" for instance: "+instance_type);
+		ERR_PRINTS("Couldn't bind method '"+mdname+"' for instance: "+instance_type);
 		memdelete(p_bind);
 		ERR_FAIL_COND_V(!type,NULL);
 	}
@@ -849,21 +1040,14 @@ MethodBind* ObjectTypeDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind , c
 
 	Vector<Variant> defvals;
 
-#define PARSE_DEFVAL(m_defval)\
-if (d##m_defval.used) defvals.insert(0,d##m_defval.val);\
-else goto set_defvals;
-
 	defvals.resize(p_defcount);
 	for(int i=0;i<p_defcount;i++) {
 
 		defvals[i]=*p_defs[p_defcount-i-1];
 	}
 
-	set_defvals:
-
 	p_bind->set_default_arguments(defvals);
 	p_bind->set_hint_flags(p_flags);
-#undef PARSE_DEFVAL
 	return p_bind;
 
 }

@@ -28,12 +28,12 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627417"
-     inkscape:cx="4.9021021"
-     inkscape:cy="11.249083"
+     inkscape:zoom="32"
+     inkscape:cx="9.8470361"
+     inkscape:cy="9.8599985"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
-     showgrid="true"
+     showgrid="false"
      units="px"
      inkscape:snap-bbox="true"
      inkscape:bbox-paths="true"
@@ -59,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -146,5 +146,23 @@
         </g>
       </g>
     </g>
+    <path
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.44162436"
+       d="m 4,1041.3622 a 3,3 0 0 0 -3,3 3,3 0 0 0 3,3 3,3 0 0 0 3,-3 3,3 0 0 0 -3,-3 z m 0,1 a 2.0000174,2.0000174 0 0 1 2,2 2.0000174,2.0000174 0 0 1 -2,2 2.0000174,2.0000174 0 0 1 -2,-2 2.0000174,2.0000174 0 0 1 2,-2 z"
+       id="path4151"
+       inkscape:connector-curvature="0" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path4156"
+       d="m 12,1041.3622 a 3,3 0 0 0 -3,3 3,3 0 0 0 3,3 3,3 0 0 0 3,-3 3,3 0 0 0 -3,-3 z m 0,1 a 2.0000174,2.0000174 0 0 1 2,2 2.0000174,2.0000174 0 0 1 -2,2 2.0000174,2.0000174 0 0 1 -2,-2 2.0000174,2.0000174 0 0 1 2,-2 z"
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.44162436" />
+    <rect
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.44162436"
+       id="rect4160"
+       width="4"
+       height="1"
+       x="6"
+       y="1043.3622"
+       ry="0" />
   </g>
 </svg>

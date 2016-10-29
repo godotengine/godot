@@ -109,7 +109,13 @@ static _FORCE_INLINE_ const char* _MD(const char* m_name, ...) { return m_name; 
 #endif
 
 class ObjectTypeDB {
-
+public:
+	enum APIType {
+		API_CORE,
+		API_EDITOR,
+		API_NONE
+	};
+public:
 	struct PropertySetGet {
 
 		int index;
@@ -122,6 +128,7 @@ class ObjectTypeDB {
 
 	struct TypeInfo {
 
+		APIType api;
 		TypeInfo *inherits_ptr;
 		HashMap<StringName,MethodBind*,StringNameHasher> method_map;
 		HashMap<StringName,int,StringNameHasher> constant_map;
@@ -161,6 +168,7 @@ class ObjectTypeDB {
 #endif
 
 
+	static APIType current_api;
 
 	static void _add_type2(const StringName& p_type, const StringName& p_inherits);
 public:
@@ -236,6 +244,9 @@ public:
 	static bool is_type(const StringName &p_type,const StringName& p_inherits);
 	static bool can_instance(const StringName &p_type);
 	static Object *instance(const StringName &p_type);
+	static APIType get_api_type(const StringName &p_type);
+
+	static uint64_t get_api_hash(APIType p_api);
 
 #if 0
 	template<class N, class M>
@@ -415,14 +426,21 @@ public:
 
 #endif
 	template<class M>
-	static MethodBind* bind_native_method(uint32_t p_flags, const StringName& p_name, M p_method,const MethodInfo& p_info=MethodInfo(),const Vector<Variant>& p_default_args=Vector<Variant>()) {
+	static MethodBind* bind_vararg_method(uint32_t p_flags, StringName p_name, M p_method,const MethodInfo& p_info=MethodInfo(),const Vector<Variant>& p_default_args=Vector<Variant>()) {
 
 		GLOBAL_LOCK_FUNCTION;
 
 
 
-		MethodBind *bind = create_native_method_bind(p_method,p_info);
+		MethodBind *bind = create_vararg_method_bind(p_method,p_info);
 		ERR_FAIL_COND_V(!bind,NULL);
+
+		String rettype;
+		if (p_name.operator String().find(":")!=-1) {
+			rettype = p_name.operator String().get_slice(":",1);
+			p_name = p_name.operator String().get_slice(":",0);
+		}
+
 		bind->set_name(p_name);
 		bind->set_default_arguments(p_default_args);
 
@@ -442,6 +460,8 @@ public:
 		}
 		type->method_map[p_name]=bind;
 #ifdef DEBUG_METHODS_ENABLED
+		if (!rettype.empty())
+			bind->set_return_type(rettype);
 		type->method_order.push_back(p_name);
 #endif
 
@@ -453,6 +473,7 @@ public:
 
 	static void add_signal(StringName p_type,const MethodInfo& p_signal);
 	static bool has_signal(StringName p_type,StringName p_signal);
+	static bool get_signal(StringName p_type,StringName p_signal,MethodInfo *r_signal);
 	static void get_signal_list(StringName p_type,List<MethodInfo> *p_signals,bool p_no_inheritance=false);
 
 	static void add_property(StringName p_type,const PropertyInfo& p_pinfo, const StringName& p_setter, const StringName& p_getter, int p_index=-1);
@@ -489,6 +510,8 @@ public:
 
 	static void add_compatibility_type(const StringName& p_type,const StringName& p_fallback);
 	static void init();
+
+	static void set_current_api(APIType p_api);
 	static void cleanup();
 };
 

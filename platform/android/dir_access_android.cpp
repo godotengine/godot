@@ -61,6 +61,7 @@ String DirAccessAndroid::get_next(){
 
 
 }
+
 bool DirAccessAndroid::current_is_dir() const{
 
 	String sd;
@@ -79,9 +80,11 @@ bool DirAccessAndroid::current_is_dir() const{
 	return false;
 
 }
+
 bool DirAccessAndroid::current_is_hidden() const{
 	return current!="." && current!=".." && current.begins_with(".");
 }
+
 void DirAccessAndroid::list_dir_end(){
 
 	if (aad==NULL)
@@ -96,6 +99,7 @@ int DirAccessAndroid::get_drive_count(){
 
 	return 0;
 }
+
 String DirAccessAndroid::get_drive(int p_drive){
 
 	return "";
@@ -164,6 +168,7 @@ Error DirAccessAndroid::rename(String p_from, String p_to){
 
 	ERR_FAIL_V(ERR_UNAVAILABLE);
 }
+
 Error DirAccessAndroid::remove(String p_name){
 
 	ERR_FAIL_V(ERR_UNAVAILABLE);

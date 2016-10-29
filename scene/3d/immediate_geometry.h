@@ -38,6 +38,8 @@ class ImmediateGeometry : public GeometryInstance {
 
 
 	RID im;
+	//a list of texures drawn need to be kept, to avoid references
+	// in VisualServer from becoming invalid if the texture is no longer used
 	List<Ref<Texture> > cached_textures;
 	bool empty;
 	AABB aabb;
@@ -47,7 +49,7 @@ protected:
 public:
 
 
-	void begin(Mesh::PrimitiveType p_primitive,const Ref<Texture>& p_texture);
+	void begin(Mesh::PrimitiveType p_primitive,const Ref<Texture>& p_texture=Ref<Texture>());
 	void set_normal(const Vector3& p_normal);
 	void set_tangent(const Plane& p_tangent);
 	void set_color(const Color& p_color);
@@ -60,7 +62,7 @@ public:
 	void clear();
 
 
-	void add_sphere(int p_lats,int p_lons,float p_radius);
+	void add_sphere(int p_lats,int p_lons,float p_radius,bool p_add_uv=true);
 
 
 

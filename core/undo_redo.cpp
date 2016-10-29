@@ -52,26 +52,46 @@ void UndoRedo::_discard_redo() {
 
 }
 
-
-void UndoRedo::create_action(const String& p_name,bool p_mergeable) {
+void UndoRedo::create_action(const String& p_name,MergeMode p_mode) {
 
 	if (action_level==0) {
 
 		_discard_redo();
-		if (p_mergeable && actions.size() && actions[actions.size()-1].name==p_name) {
 
-			//old will replace new (it's mergeable after all)
-			// should check references though!
+		// Check if the merge operation is valid
+		if (p_mode!=MERGE_DISABLE && actions.size() && actions[actions.size()-1].name==p_name) {
+
 			current_action=actions.size()-2;
-			actions[current_action+1].do_ops.clear();
-			//actions[current_action+1].undo_ops.clear(); - no, this is kept
-			merging=true;
+
+			if (p_mode==MERGE_ENDS) {
+
+				// Clear all do ops from last action, and delete all object references
+				List<Operation>::Element *E=actions[current_action+1].do_ops.front();
+
+				while (E) {
+
+					if (E->get().type==Operation::TYPE_REFERENCE) {
+
+						Object *obj=ObjectDB::get_instance(E->get().object);
+
+						if (obj)
+							memdelete(obj);
+					}
+
+					E=E->next();
+					actions[current_action+1].do_ops.pop_front();
+				}
+			}
+
+			merge_mode=p_mode;
 
 		} else {
+
 			Action new_action;
 			new_action.name=p_name;
 			actions.push_back(new_action);
-			merging=false;
+
+			merge_mode=MERGE_DISABLE;
 		}
 	}
 
@@ -102,8 +122,10 @@ void UndoRedo::add_undo_method(Object *p_object,const String& p_method,VARIANT_A
 	VARIANT_ARGPTRS
 	ERR_FAIL_COND(action_level<=0);
 	ERR_FAIL_COND((current_action+1)>=actions.size());
-	if (merging)
-		return; //- no undo if merging
+
+	// No undo if the merge mode is MERGE_ENDS
+	if (merge_mode==MERGE_ENDS)
+		return;
 
 	Operation undo_op;
 	undo_op.object=p_object->get_instance_ID();
@@ -139,6 +161,10 @@ void UndoRedo::add_undo_property(Object *p_object,const String& p_property,const
 	ERR_FAIL_COND(action_level<=0);
 	ERR_FAIL_COND((current_action+1)>=actions.size());
 
+	// No undo if the merge mode is MERGE_ENDS
+	if (merge_mode==MERGE_ENDS)
+		return;
+
 	Operation undo_op;
 	undo_op.object=p_object->get_instance_ID();
 	if (p_object->cast_to<Resource>())
@@ -167,6 +193,11 @@ void UndoRedo::add_undo_reference(Object *p_object) {
 
 	ERR_FAIL_COND(action_level<=0);
 	ERR_FAIL_COND((current_action+1)>=actions.size());
+
+	// No undo if the merge mode is MERGE_ENDS
+	if (merge_mode==MERGE_ENDS)
+		return;
+
 	Operation undo_op;
 	undo_op.object=p_object->get_instance_ID();
 	if (p_object->cast_to<Resource>())
@@ -352,7 +383,7 @@ UndoRedo::UndoRedo() {
 	action_level=0;
 	current_action=-1;
 	max_steps=-1;
-	merging=true;
+	merge_mode=MERGE_DISABLE;
 	callback=NULL;
 	callback_ud=NULL;
 
@@ -448,7 +479,7 @@ Variant UndoRedo::_add_undo_method(const Variant** p_args, int p_argcount, Varia
 
 void UndoRedo::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("create_action","name","mergeable"),&UndoRedo::create_action, DEFVAL(false) );
+	ObjectTypeDB::bind_method(_MD("create_action","name","merge_mode"),&UndoRedo::create_action, DEFVAL(MERGE_DISABLE) );
 	ObjectTypeDB::bind_method(_MD("commit_action"),&UndoRedo::commit_action);
 
 	//ObjectTypeDB::bind_method(_MD("add_do_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_do_method);
@@ -459,13 +490,9 @@ void UndoRedo::_bind_methods() {
 		mi.name="add_do_method";
 		mi.arguments.push_back( PropertyInfo( Variant::OBJECT, "object"));
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
-		Vector<Variant> defargs;
-		for(int i=0;i<VARIANT_ARG_MAX;++i) {
-			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-			defargs.push_back(Variant());
-		}
 
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"add_do_method",&UndoRedo::_add_do_method,mi,defargs);
+
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"add_do_method",&UndoRedo::_add_do_method,mi);
 	}
 
 	{
@@ -473,13 +500,9 @@ void UndoRedo::_bind_methods() {
 		mi.name="add_undo_method";
 		mi.arguments.push_back( PropertyInfo( Variant::OBJECT, "object"));
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
-		Vector<Variant> defargs;
-		for(int i=0;i<VARIANT_ARG_MAX;++i) {
-			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-			defargs.push_back(Variant());
-		}
 
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"add_undo_method",&UndoRedo::_add_undo_method,mi,defargs);
+
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"add_undo_method",&UndoRedo::_add_undo_method,mi);
 	}
 
 	ObjectTypeDB::bind_method(_MD("add_do_property","object", "property", "value:Variant"),&UndoRedo::add_do_property);
@@ -489,4 +512,8 @@ void UndoRedo::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("clear_history"),&UndoRedo::clear_history);
 	ObjectTypeDB::bind_method(_MD("get_current_action_name"),&UndoRedo::get_current_action_name);
 	ObjectTypeDB::bind_method(_MD("get_version"),&UndoRedo::get_version);
+
+	BIND_CONSTANT(MERGE_DISABLE);
+	BIND_CONSTANT(MERGE_ENDS);
+	BIND_CONSTANT(MERGE_ALL);
 }

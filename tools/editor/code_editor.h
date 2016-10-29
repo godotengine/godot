@@ -73,8 +73,8 @@ class FindReplaceBar : public HBoxContainer {
 	TextureButton *hide_button;
 
 	LineEdit *replace_text;
-	ToolButton *replace;
-	ToolButton *replace_all;
+	Button *replace;
+	Button *replace_all;
 	CheckBox *selection_only;
 
 	VBoxContainer *text_vbc;
@@ -98,6 +98,7 @@ class FindReplaceBar : public HBoxContainer {
 	void _search_options_changed(bool p_pressed);
 	void _search_text_changed(const String& p_text);
 	void _search_text_entered(const String& p_text);
+	void _replace_text_entered(const String& p_text);
 
 protected:
 	void _notification(int p_what);
@@ -189,6 +190,8 @@ public:
 };
 
 
+typedef void (*CodeTextEditorCodeCompleteFunc)(void* p_ud,const String& p_code, List<String>* r_options);
+
 class CodeTextEditor : public VBoxContainer {
 
 	OBJ_TYPE(CodeTextEditor,VBoxContainer);
@@ -196,7 +199,8 @@ class CodeTextEditor : public VBoxContainer {
 	TextEdit *text_editor;
 	FindReplaceBar *find_replace_bar;
 
-	Label *line_col;
+	Label *line_nb;
+	Label *col_nb;
 	Label *info;
 	Timer *idle;
 	Timer *code_complete_timer;
@@ -214,14 +218,20 @@ class CodeTextEditor : public VBoxContainer {
 	void _font_resize_timeout();
 
 	void _text_editor_input_event(const InputEvent& p_event);
+	void _zoom_in();
+	void _zoom_out();
+	void _reset_zoom();
+
+
+	CodeTextEditorCodeCompleteFunc code_complete_func;
+	void *code_complete_ud;
 
 protected:
 
-	void set_error(const String& p_error);
 
 	virtual void _load_theme_settings() {}
-	virtual void _validate_script()=0;
-	virtual void _code_complete_script(const String& p_code, List<String>* r_options) {};
+	virtual void _validate_script() {}
+	virtual void _code_complete_script(const String& p_code, List<String>* r_options) {}
 
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
@@ -232,9 +242,16 @@ protected:
 
 public:
 
+	void update_editor_settings();
+	void set_error(const String& p_error);
+	void update_line_and_column() { _line_col_changed(); }
 	TextEdit *get_text_edit() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	virtual void apply_code() {}
+
+
+	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void * p_ud);
+
 
 	CodeTextEditor();
 };

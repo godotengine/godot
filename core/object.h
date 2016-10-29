@@ -68,6 +68,16 @@ enum PropertyHint {
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
 	PROPERTY_HINT_OBJECT_ID,
+	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
+	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, ///< so something else can provide this (used in scripts)
+	PROPERTY_HINT_METHOD_OF_VARIANT_TYPE, ///< a method of a type
+	PROPERTY_HINT_METHOD_OF_BASE_TYPE, ///< a method of a base type
+	PROPERTY_HINT_METHOD_OF_INSTANCE, ///< a method of an instance
+	PROPERTY_HINT_METHOD_OF_SCRIPT, ///< a method of a script & base
+	PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE, ///< a property of a type
+	PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, ///< a property of a base type
+	PROPERTY_HINT_PROPERTY_OF_INSTANCE, ///< a property of an instance
+	PROPERTY_HINT_PROPERTY_OF_SCRIPT, ///< a property of a script & base
 	PROPERTY_HINT_MAX,
 };
 
@@ -116,6 +126,11 @@ struct PropertyInfo {
 
 	_FORCE_INLINE_ PropertyInfo added_usage(int p_fl) const { PropertyInfo pi=*this; pi.usage|=p_fl; return pi; }
 
+
+	operator Dictionary() const;
+
+	static PropertyInfo from_dict(const Dictionary& p_dict);
+
 	PropertyInfo() { type=Variant::NIL; hint=PROPERTY_HINT_NONE; usage = PROPERTY_USAGE_DEFAULT; }
 	PropertyInfo( Variant::Type p_type, const String p_name, PropertyHint p_hint=PROPERTY_HINT_NONE, const String& p_hint_string="",uint32_t p_usage=PROPERTY_USAGE_DEFAULT) {
 		type=p_type; name=p_name; hint=p_hint; hint_string=p_hint_string; usage=p_usage;
@@ -140,6 +155,9 @@ struct MethodInfo {
 
 	inline bool  operator<(const MethodInfo& p_method) const { return id==p_method.id?(name < p_method.name):(id<p_method.id); }
 
+	operator Dictionary() const;
+
+	static MethodInfo from_dict(const Dictionary& p_dict);
 	MethodInfo();
 	MethodInfo(const String& p_name);
 	MethodInfo(const String& p_name, const PropertyInfo& p_param1);

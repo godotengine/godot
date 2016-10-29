@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "menu_button.h"
 #include "os/keyboard.h"
+#include "scene/main/viewport.h"
 
 
 void MenuButton::_unhandled_key_input(InputEvent p_event) {
@@ -38,8 +39,12 @@ void MenuButton::_unhandled_key_input(InputEvent p_event) {
 		if (!get_parent() || !is_visible() || is_disabled())
 			return;
 
+		if (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this))
+			return; //ignore because of modal window
 
-		int item = popup->activate_item_by_event(p_event);
+
+		if (popup->activate_item_by_event(p_event))
+			accept_event();
 	}
 }
 

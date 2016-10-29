@@ -53,6 +53,7 @@ int OS_Android::get_video_driver_count() const {
 
 	return 1;
 }
+
 const char * OS_Android::get_video_driver_name(int p_driver) const {
 
 	return "GLES2";
@@ -131,15 +132,10 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	AudioDriverManagerSW::add_driver(&audio_driver_android);
 
 
-	if (true) {
-		RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,use_reload_hooks,false,use_reload_hooks ) );
-		if (gl_extensions)
-			rasterizer_gles22->set_extensions(gl_extensions);
-		rasterizer = rasterizer_gles22;
-	} else {
-		//rasterizer = memnew( RasterizerGLES1(use_reload_hooks, use_reload_hooks) );
-
-	}
+	RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,use_reload_hooks,false,use_reload_hooks ) );
+	if (gl_extensions)
+		rasterizer_gles22->set_extensions(gl_extensions);
+	rasterizer = rasterizer_gles22;
 
 	rasterizer->set_force_16_bits_fbo(use_16bits_fbo);
 
@@ -271,16 +267,17 @@ bool OS_Android::is_mouse_grab_enabled() const {
 	//*sigh* technology has evolved so much since i was a kid..
 	return false;
 }
+
 Point2 OS_Android::get_mouse_pos() const {
 
 	return Point2();
 }
+
 int OS_Android::get_mouse_button_state() const {
 
 	return 0;
 }
 void OS_Android::set_window_title(const String& p_title) {
-
 
 }
 
@@ -290,13 +287,13 @@ void OS_Android::set_window_title(const String& p_title) {
 
 void OS_Android::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
 
-
 }
 
 OS::VideoMode OS_Android::get_video_mode(int p_screen) const {
 
 	return default_videomode;
 }
+
 void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
 	p_list->push_back(default_videomode);
@@ -340,6 +337,7 @@ void OS_Android::main_loop_begin() {
 	if (main_loop)
 		main_loop->init();
 }
+
 bool OS_Android::main_loop_iterate() {
 
 	if (!main_loop)
@@ -394,7 +392,7 @@ void OS_Android::process_event(InputEvent p_event) {
 
 	p_event.ID = last_id++;
 	input->parse_input_event(p_event);
-};
+}
 
 
 void OS_Android::process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points) {
@@ -614,6 +612,11 @@ void OS_Android::process_magnetometer(const Vector3& p_magnetometer) {
 	input->set_magnetometer(p_magnetometer);
 }
 
+void OS_Android::process_gyroscope(const Vector3& p_gyroscope) {
+
+	input->set_gyroscope(p_gyroscope);
+}
+
 bool OS_Android::has_touchscreen_ui_hint() const {
 
 	return true;
@@ -622,7 +625,7 @@ bool OS_Android::has_touchscreen_ui_hint() const {
 bool OS_Android::has_virtual_keyboard() const {
 
 	return true;
-};
+}
 
 void OS_Android::show_virtual_keyboard(const String& p_existing_text,const Rect2& p_screen_rect) {
 
@@ -632,7 +635,7 @@ void OS_Android::show_virtual_keyboard(const String& p_existing_text,const Rect2
 
 		ERR_PRINT("Virtual keyboard not available");
 	};
-};
+}
 
 void OS_Android::hide_virtual_keyboard() {
 
@@ -643,7 +646,7 @@ void OS_Android::hide_virtual_keyboard() {
 
 		ERR_PRINT("Virtual keyboard not available");
 	};
-};
+}
 
 
 void OS_Android::init_video_mode(int p_video_width,int p_video_height) {
@@ -679,7 +682,7 @@ Error OS_Android::shell_open(String p_uri) {
 	if (open_uri_func)
 		return open_uri_func(p_uri)?ERR_CANT_OPEN:OK;
 	return ERR_UNAVAILABLE;
-};
+}
 
 String OS_Android::get_resource_dir() const {
 
@@ -700,6 +703,13 @@ String OS_Android::get_model_name() const {
     return OS_Unix::get_model_name();
 }
 
+int OS_Android::get_screen_dpi(int p_screen) const {
+
+	if (get_screen_dpi_func) {
+		return get_screen_dpi_func();
+	}
+	return 160;
+}
 
 void OS_Android::set_need_reload_hooks(bool p_needs_them) {
 
@@ -737,11 +747,10 @@ String OS_Android::get_data_dir() const {
 
 	return ".";
 	//return Globals::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
-};
+}
 
 
 void OS_Android::set_screen_orientation(ScreenOrientation p_orientation) {
-
 
 	if (set_screen_orientation_func)
 		set_screen_orientation_func(p_orientation);
@@ -803,8 +812,7 @@ String OS_Android::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion) {
-
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion) {
 
 	use_apk_expansion=p_use_apk_expansion;
 	default_videomode.width=800;
@@ -824,6 +832,7 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFu
 	get_data_dir_func=p_get_data_dir_func;
 	get_locale_func=p_get_locale_func;
 	get_model_func=p_get_model_func;
+	get_screen_dpi_func = p_get_screen_dpi_func;
 	get_unique_id_func=p_get_unique_id;
 	get_system_dir_func=p_get_sdir_func;
 
@@ -842,6 +851,5 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFu
 }
 
 OS_Android::~OS_Android() {
-
 
 }

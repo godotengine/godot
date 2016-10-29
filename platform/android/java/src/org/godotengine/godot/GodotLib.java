@@ -52,6 +52,7 @@ public class GodotLib {
      public static native void touch(int what,int pointer,int howmany, int[] arr);
      public static native void accelerometer(float x, float y, float z);
      public static native void magnetometer(float x, float y, float z);
+     public static native void gyroscope(float x, float y, float z);
 	 public static native void key(int p_scancode, int p_unicode_char, boolean p_pressed);
 	 public static native void joybutton(int p_device, int p_but, boolean p_pressed);
 	 public static native void joyaxis(int p_device, int p_axis, float p_value);

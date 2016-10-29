@@ -163,11 +163,14 @@ public:
 	int get_connection_flags(int p_idx) const;
 	Array get_connection_binds(int p_idx) const;
 
+	bool has_connection(const NodePath &p_node_from, const StringName& p_signal, const NodePath &p_node_to, const StringName& p_method) const;
+
 	Vector<NodePath> get_editable_instances() const;
 
 	//build API
 
 	int add_name(const StringName& p_name);
+	int find_name(const StringName& p_name) const;
 	int add_value(const Variant& p_value);
 	int add_node_path(const NodePath& p_path);
 	int add_node(int p_parent,int p_owner,int p_type,int p_name, int p_instance);

@@ -602,7 +602,7 @@ public:
 
 	FUNC2(canvas_item_attach_viewport,RID, RID );
 
-	FUNC5(canvas_item_add_line,RID, const Point2& , const Point2& ,const Color& ,float );
+	FUNC6(canvas_item_add_line,RID, const Point2& , const Point2& ,const Color& ,float,bool);
 	FUNC3(canvas_item_add_rect,RID, const Rect2& , const Color& );
 	FUNC4(canvas_item_add_circle,RID, const Point2& , float ,const Color& );
 	FUNC6(canvas_item_add_texture_rect,RID, const Rect2& , RID ,bool ,const Color&,bool );
@@ -680,7 +680,7 @@ public:
 
 	/* CURSOR */
 	FUNC2(cursor_set_rotation,float , int ); // radians
-	FUNC3(cursor_set_texture,RID , const Point2 &, int );
+	FUNC4(cursor_set_texture,RID , const Point2 &, int, const Rect2 &);
 	FUNC2(cursor_set_visible,bool , int );
 	FUNC2(cursor_set_pos,const Point2& , int );
 
@@ -718,6 +718,7 @@ public:
 
 	FUNC3(set_boot_image,const Image& , const Color&,bool );
 	FUNC1(set_default_clear_color,const Color& );
+	FUNC0RC(Color,get_default_clear_color );
 
 	FUNC0R(RID,get_test_cube );
 

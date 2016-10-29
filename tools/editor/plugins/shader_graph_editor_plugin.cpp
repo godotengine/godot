@@ -675,7 +675,7 @@ GraphCurveMapEdit::GraphCurveMapEdit(){
 void ShaderGraphView::_scalar_const_changed(double p_value,int p_id) {
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Change Scalar Constant"),true);
+	ur->create_action(TTR("Change Scalar Constant"),UndoRedo::MERGE_ENDS);
 	ur->add_do_method(graph.ptr(),"scalar_const_node_set_value",type,p_id,p_value);
 	ur->add_undo_method(graph.ptr(),"scalar_const_node_set_value",type,p_id,graph->scalar_const_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -693,7 +693,7 @@ void ShaderGraphView::_vec_const_changed(double p_value, int p_id,Array p_arr){
 	}
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Change Vec Constant"),true);
+	ur->create_action(TTR("Change Vec Constant"),UndoRedo::MERGE_ENDS);
 	ur->add_do_method(graph.ptr(),"vec_const_node_set_value",type,p_id,val);
 	ur->add_undo_method(graph.ptr(),"vec_const_node_set_value",type,p_id,graph->vec_const_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -706,7 +706,7 @@ void ShaderGraphView::_vec_const_changed(double p_value, int p_id,Array p_arr){
 void ShaderGraphView::_rgb_const_changed(const Color& p_color, int p_id){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Change RGB Constant"),true);
+	ur->create_action(TTR("Change RGB Constant"),UndoRedo::MERGE_ENDS);
 	ur->add_do_method(graph.ptr(),"rgb_const_node_set_value",type,p_id,p_color);
 	ur->add_undo_method(graph.ptr(),"rgb_const_node_set_value",type,p_id,graph->rgb_const_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -807,7 +807,7 @@ void ShaderGraphView::_vec_func_changed(int p_func, int p_id){
 void ShaderGraphView::_scalar_input_changed(double p_value,int p_id){
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Change Scalar Uniform"),true);
+	ur->create_action(TTR("Change Scalar Uniform"),UndoRedo::MERGE_ENDS);
 	ur->add_do_method(graph.ptr(),"scalar_input_node_set_value",type,p_id,p_value);
 	ur->add_undo_method(graph.ptr(),"scalar_input_node_set_value",type,p_id,graph->scalar_input_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -825,7 +825,7 @@ void ShaderGraphView::_vec_input_changed(double p_value, int p_id,Array p_arr){
 	}
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Change Vec Uniform"),true);
+	ur->create_action(TTR("Change Vec Uniform"),UndoRedo::MERGE_ENDS);
 	ur->add_do_method(graph.ptr(),"vec_input_node_set_value",type,p_id,val);
 	ur->add_undo_method(graph.ptr(),"vec_input_node_set_value",type,p_id,graph->vec_input_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -863,7 +863,7 @@ void ShaderGraphView::_rgb_input_changed(const Color& p_color, int p_id){
 
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Change RGB Uniform"),true);
+	ur->create_action(TTR("Change RGB Uniform"),UndoRedo::MERGE_ENDS);
 	ur->add_do_method(graph.ptr(),"rgb_input_node_set_value",type,p_id,p_color);
 	ur->add_undo_method(graph.ptr(),"rgb_input_node_set_value",type,p_id,graph->rgb_input_node_get_value(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -901,6 +901,7 @@ void ShaderGraphView::_variant_edited() {
 			case Variant::COLOR:
 				v2=Color();
 				break;
+			default: {}
 			}
 		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Default Value"));
@@ -963,7 +964,7 @@ void ShaderGraphView::_comment_edited(int p_id,Node* p_button) {
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 	TextEdit *te=p_button->cast_to<TextEdit>();
-	ur->create_action(TTR("Change Comment"),true);
+	ur->create_action(TTR("Change Comment"),UndoRedo::MERGE_ENDS);
 	ur->add_do_method(graph.ptr(),"comment_node_set_text",type,p_id,te->get_text());
 	ur->add_undo_method(graph.ptr(),"comment_node_set_text",type,p_id,graph->comment_node_get_text(type,p_id));
 	ur->add_do_method(this,"_update_graph");
@@ -1005,7 +1006,7 @@ void ShaderGraphView::_color_ramp_changed(int p_id,Node* p_ramp) {
 	if (old_offsets.size()!=new_offsets.size())
 		ur->create_action(TTR("Add/Remove to Color Ramp"));
 	else
-		ur->create_action(TTR("Modify Color Ramp"),true);
+		ur->create_action(TTR("Modify Color Ramp"),UndoRedo::MERGE_ENDS);
 
 	ur->add_do_method(graph.ptr(),"color_ramp_node_set_ramp",type,p_id,new_colors,new_offsets);
 	ur->add_undo_method(graph.ptr(),"color_ramp_node_set_ramp",type,p_id,old_colors,old_offsets);
@@ -1041,7 +1042,7 @@ void ShaderGraphView::_curve_changed(int p_id,Node* p_curve) {
 	if (old_points.size()!=new_points.size())
 		ur->create_action(TTR("Add/Remove to Curve Map"));
 	else
-		ur->create_action(TTR("Modify Curve Map"),true);
+		ur->create_action(TTR("Modify Curve Map"),UndoRedo::MERGE_ENDS);
 
 	ur->add_do_method(graph.ptr(),"curve_map_node_set_points",type,p_id,new_points);
 	ur->add_undo_method(graph.ptr(),"curve_map_node_set_points",type,p_id,old_points);
@@ -1321,6 +1322,7 @@ void ShaderGraphView::_default_changed(int p_id, Node *p_button, int p_param, in
 			h=PROPERTY_HINT_COLOR_NO_ALPHA;
 			v=Color();
 			break;
+		default: {}
 		}
 
 	ped_popup->edit(NULL,"",vt,v,h,p_hint);
@@ -1347,6 +1349,8 @@ ToolButton *ShaderGraphView::make_label(String text, Variant::Type v_type) {
 		break;
 	case Variant::COLOR:
 		l->set_icon(ped_popup->get_icon("Color", "EditorIcons"));
+		break;
+	default: {}
 	}
 	return l;
 }
@@ -1372,7 +1376,7 @@ ToolButton *ShaderGraphView::make_editor(String text,GraphNode* gn,int p_id,int 
 	case Variant::TRANSFORM:
 		edit->set_icon(ped_popup->get_icon("Matrix", "EditorIcons"));
 		break;
-	case Variant::COLOR:
+	case Variant::COLOR: {
 		Image icon_color = Image(15,15,false,Image::FORMAT_RGB);
 		Color c = graph->default_get_value(type,p_id,param);
 		for (int x=1;x<14;x++)
@@ -1382,7 +1386,8 @@ ToolButton *ShaderGraphView::make_editor(String text,GraphNode* gn,int p_id,int 
 		t.instance();
 		t->create_from_image(icon_color);
 		edit->set_icon(t);
-		break;
+	} break;
+	default: {}
 	}
 	return edit;
 }
@@ -2417,6 +2422,7 @@ void ShaderGraphView::_create_node(int p_id) {
 		colors.push_back("Color");
 		colors.push_back("LightColor");
 		colors.push_back("Light");
+		colors.push_back("ShadowColor");
 		colors.push_back("Diffuse");
 		colors.push_back("Specular");
 		colors.push_back("Emmision");
@@ -2429,6 +2435,7 @@ void ShaderGraphView::_create_node(int p_id) {
 		reals.push_back("ShadeParam");
 		reals.push_back("SpecularExp");
 		reals.push_back("LightAlpha");
+		reals.push_back("ShadowAlpha");
 		reals.push_back("PointSize");
 		reals.push_back("Discard");
 

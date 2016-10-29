@@ -262,6 +262,34 @@ public:
 			w[bs+i]=r[i];
 	}
 
+	DVector<T> subarray(int p_from, int p_to) {
+
+		if (p_from<0) {
+			p_from=size()+p_from;
+		}
+		if (p_to<0) {
+			p_to=size()+p_to;
+		}
+		if (p_from<0 || p_from>=size()) {
+			DVector<T>& aux=*((DVector<T>*)0); // nullreturn
+			ERR_FAIL_COND_V(p_from<0 || p_from>=size(),aux)
+		}
+		if (p_to<0 || p_to>=size()) {
+			DVector<T>& aux=*((DVector<T>*)0); // nullreturn
+			ERR_FAIL_COND_V(p_to<0 || p_to>=size(),aux)
+		}
+
+		DVector<T> slice;
+		int span=1 + p_to - p_from;
+		slice.resize(span);
+		Read r = read();
+		Write w = slice.write();
+		for (int i=0; i<span; ++i) {
+			w[i] = r[p_from+i];
+		}
+
+		return slice;
+	}
 
 	Error insert(int p_pos,const T& p_val) {
 

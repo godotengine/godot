@@ -228,14 +228,14 @@ void ScrollContainer::_notification(int p_what) {
 			child_max_size.y = MAX(child_max_size.y, minsize.y);
 
 			Rect2 r = Rect2(-scroll,minsize);
-			if (!scroll_h) {
+			if (!(scroll_h || h_scroll->is_visible())) {
 				r.pos.x=0;
 				if (c->get_h_size_flags()&SIZE_EXPAND)
 					r.size.width=MAX(size.width,minsize.width);
 				else
 					r.size.width=minsize.width;
 			}
-			if (!scroll_v) {
+			if (!(scroll_v || v_scroll->is_visible())) {
 				r.pos.y=0;
 				r.size.height=size.height;
 				if (c->get_v_size_flags()&SIZE_EXPAND)

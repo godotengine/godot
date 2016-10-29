@@ -95,10 +95,9 @@ bool ResourceImportMetadata::has_option(const String& p_key) const {
 
 	return options.has(p_key);
 }
+
 Variant ResourceImportMetadata::get_option(const String& p_key) const {
 
-	if (!options.has(p_key))
-		print_line(p_key);
 	ERR_FAIL_COND_V(!options.has(p_key),Variant());
 
 	return options[p_key];
@@ -487,8 +486,6 @@ void ResourceCache::dump(const char* p_file,bool p_short) {
 		if (!p_short) {
 			if (f)
 				f->store_line(r->get_type()+": "+r->get_path());
-			else
-				print_line(r->get_type()+": "+r->get_path());
 		}
 	}
 
@@ -496,8 +493,6 @@ void ResourceCache::dump(const char* p_file,bool p_short) {
 
 		if (f)
 			f->store_line(E->key()+" count: "+itos(E->get()));
-		else
-			print_line(E->key()+" count: "+itos(E->get()));
 	}
 	if (f) {
 		f->close();

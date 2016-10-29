@@ -64,6 +64,8 @@ class GDScript : public Script {
 		int index;
 		StringName setter;
 		StringName getter;
+		ScriptInstance::RPCMode rpc_mode;
+
 	};
 
 friend class GDInstance;
@@ -85,7 +87,10 @@ friend class GDScriptLanguage;
 	Map<StringName,Ref<GDScript> > subclasses;
 	Map<StringName,Vector<StringName> > _signals;
 
+
 #ifdef TOOLS_ENABLED
+
+	Map<StringName,int> member_lines;
 
 	Map<StringName,Variant> member_default_values;
 
@@ -120,7 +125,11 @@ friend class GDScriptLanguage;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 #endif
 
+#ifdef DEBUG_ENABLED
 
+	Map<ObjectID,List<Pair<StringName,Variant> > > pending_reload_state;
+
+#endif
 
 	bool _update_exports();
 
@@ -157,6 +166,8 @@ public:
 	Variant _new(const Variant** p_args,int p_argcount,Variant::CallError& r_error);
 	virtual bool can_instance() const;
 
+	virtual Ref<Script> get_base_script() const;
+
 	virtual StringName get_instance_base_type() const; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance* instance_create(Object *p_this);
 	virtual bool instance_has(const Object *p_this) const;
@@ -177,7 +188,24 @@ public:
 
 	bool get_property_default_value(const StringName& p_property,Variant& r_value) const;
 
+	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
+	virtual bool has_method(const StringName& p_method) const;
+	virtual MethodInfo get_method_info(const StringName& p_method) const;
+
+	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+
+
 	virtual ScriptLanguage *get_language() const;
+
+	virtual int get_member_line(const StringName& p_member) const {
+#ifdef TOOLS_ENABLED
+		if (member_lines.has(p_member))
+			return member_lines[p_member];
+		else
+#endif
+			return -1;
+
+	}
 
 	GDScript();
 	~GDScript();
@@ -228,6 +256,10 @@ public:
 
 	void reload_members();
 
+	virtual RPCMode get_rpc_mode(const StringName& p_method) const;
+	virtual RPCMode get_rset_mode(const StringName& p_variable) const;
+
+
 	GDInstance();
 	~GDInstance();
 
@@ -242,28 +274,30 @@ class GDScriptLanguage : public ScriptLanguage {
 	Map<StringName,int> globals;
 
 
-    struct CallLevel {
+	struct CallLevel {
 
-        Variant *stack;
-        GDFunction *function;
-        GDInstance *instance;
-        int *ip;
-        int *line;
+		Variant *stack;
+		GDFunction *function;
+		GDInstance *instance;
+		int *ip;
+		int *line;
 
-    };
+	};
 
 
-    int _debug_parse_err_line;
-    String _debug_parse_err_file;
-    String _debug_error;
-    int _debug_call_stack_pos;
-    int _debug_max_call_stack;
-    CallLevel *_call_stack;
+	int _debug_parse_err_line;
+	String _debug_parse_err_file;
+	String _debug_error;
+	int _debug_call_stack_pos;
+	int _debug_max_call_stack;
+	CallLevel *_call_stack;
 
 	void _add_global(const StringName& p_name,const Variant& p_value);
 
 
 	Mutex *lock;
+
+
 
 friend class GDScript;
 
@@ -278,54 +312,54 @@ public:
 
 	int calls;
 
-    bool debug_break(const String& p_error,bool p_allow_continue=true);
-    bool debug_break_parse(const String& p_file, int p_line,const String& p_error);
+	bool debug_break(const String& p_error,bool p_allow_continue=true);
+	bool debug_break_parse(const String& p_file, int p_line,const String& p_error);
 
-    _FORCE_INLINE_ void enter_function(GDInstance *p_instance,GDFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
+	_FORCE_INLINE_ void enter_function(GDInstance *p_instance,GDFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
 
-        if (Thread::get_main_ID()!=Thread::get_caller_ID())
-            return; //no support for other threads than main for now
+		if (Thread::get_main_ID()!=Thread::get_caller_ID())
+			return; //no support for other threads than main for now
 
-        if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
-            ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() +1 );
+		if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
+			ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() +1 );
 
-        if (_debug_call_stack_pos >= _debug_max_call_stack) {
-            //stack overflow
-            _debug_error="Stack Overflow (Stack Size: "+itos(_debug_max_call_stack)+")";
-            ScriptDebugger::get_singleton()->debug(this);
-            return;
+		if (_debug_call_stack_pos >= _debug_max_call_stack) {
+			//stack overflow
+			_debug_error="Stack Overflow (Stack Size: "+itos(_debug_max_call_stack)+")";
+			ScriptDebugger::get_singleton()->debug(this);
+			return;
+		}
+
+		_call_stack[_debug_call_stack_pos].stack=p_stack;
+		_call_stack[_debug_call_stack_pos].instance=p_instance;
+		_call_stack[_debug_call_stack_pos].function=p_function;
+		_call_stack[_debug_call_stack_pos].ip=p_ip;
+		_call_stack[_debug_call_stack_pos].line=p_line;
+		_debug_call_stack_pos++;
 	}
 
-        _call_stack[_debug_call_stack_pos].stack=p_stack;
-        _call_stack[_debug_call_stack_pos].instance=p_instance;
-        _call_stack[_debug_call_stack_pos].function=p_function;
-        _call_stack[_debug_call_stack_pos].ip=p_ip;
-        _call_stack[_debug_call_stack_pos].line=p_line;
-        _debug_call_stack_pos++;
-    }
+	_FORCE_INLINE_ void exit_function() {
 
-    _FORCE_INLINE_ void exit_function() {
+		if (Thread::get_main_ID()!=Thread::get_caller_ID())
+			return; //no support for other threads than main for now
 
-        if (Thread::get_main_ID()!=Thread::get_caller_ID())
-            return; //no support for other threads than main for now
+		if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
+			ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() -1 );
 
-        if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
-	    ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() -1 );
+		if (_debug_call_stack_pos==0) {
 
-        if (_debug_call_stack_pos==0) {
+			_debug_error="Stack Underflow (Engine Bug)";
+			ScriptDebugger::get_singleton()->debug(this);
+			return;
+		}
 
-            _debug_error="Stack Underflow (Engine Bug)";
-            ScriptDebugger::get_singleton()->debug(this);
-            return;
-        }
-
-        _debug_call_stack_pos--;
-    }
+		_debug_call_stack_pos--;
+	}
 
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() {
-	    if (Thread::get_main_ID()!=Thread::get_caller_ID())
-		return Vector<StackInfo>();
+		if (Thread::get_main_ID()!=Thread::get_caller_ID())
+			return Vector<StackInfo>();
 
 		Vector<StackInfo> csi;
 		csi.resize(_debug_call_stack_pos);
@@ -367,13 +401,16 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
-	virtual String get_template(const String& p_class_name, const String& p_base_class_name) const;
+	virtual Ref<Script> get_template(const String& p_class_name, const String& p_base_class_name) const;
 	virtual bool validate(const String& p_script,int &r_line_error,int &r_col_error,String& r_test_error, const String& p_path="",List<String> *r_functions=NULL) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual int find_function(const String& p_function,const String& p_code) const;
 	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const;
 	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint);
+#ifdef TOOLS_ENABLED
+	virtual Error lookup_code(const String& p_code, const String& p_symbol, const String& p_base_path, Object*p_owner, LookupResult& r_result);
+#endif
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const;
 	virtual void add_global_constant(const StringName& p_variable,const Variant& p_value);
 

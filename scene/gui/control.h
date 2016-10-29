@@ -128,6 +128,9 @@ private:
 		bool ignore_mouse;
 		bool stop_mouse;
 
+		bool block_minimum_size_adjust;
+		bool disable_visibility_clip;
+
 		Control *parent;
 		ObjectID drag_owner;
 		bool modal;
@@ -172,7 +175,9 @@ private:
 	float _get_range(int p_idx) const;
 	float _s2a(float p_val, AnchorType p_anchor,float p_range) const;
 	float _a2s(float p_val, AnchorType p_anchor,float p_range) const;
-	void _propagate_theme_changed(CanvasItem *p_at, Control *p_owner);
+	void _propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool p_assign=true);
+	void _theme_changed();
+
 
 	void _change_notify_margins();
 	void _update_minimum_size();
@@ -191,12 +196,17 @@ private:
 	void _unref_font( Ref<Font> p_sc);
 	void _font_changed();
 
+	void _update_canvas_item_transform();
+
 
 friend class Viewport;
 	void _modal_stack_remove();
 	void _modal_set_prev_focus_owner(ObjectID p_prev);
 
 protected:
+
+	virtual void add_child_notify(Node *p_child);
+	virtual void remove_child_notify(Node *p_child);
 
 	//virtual void _window_input_event(InputEvent p_event);
 
@@ -389,6 +399,15 @@ public:
 	virtual bool is_text_field() const;
 
 	Control *get_root_parent_control() const;
+
+
+	void set_block_minimum_size_adjust(bool p_block);
+	bool is_minimum_size_adjust_blocked() const;
+
+	void set_disable_visibility_clip(bool p_ignore);
+	bool is_visibility_clip_disabled() const;
+
+	virtual void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
 
 	Control();
 	~Control();

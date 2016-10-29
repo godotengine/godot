@@ -219,7 +219,22 @@ Ref<Theme> Theme::get_default() {
 
 void Theme::set_default_theme_font( const Ref<Font>& p_default_font ) {
 
+	if (default_theme_font==p_default_font)
+		return;
+
+	if (default_theme_font.is_valid()) {
+		_unref_font(default_theme_font);
+	}
+
 	default_theme_font=p_default_font;
+
+	if (default_theme_font.is_valid()) {
+		_ref_font(default_theme_font);
+	}
+
+	_change_notify();
+	emit_changed();;
+
 }
 
 Ref<Font> Theme::get_default_theme_font() const {

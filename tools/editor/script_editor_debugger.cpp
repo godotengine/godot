@@ -216,9 +216,12 @@ void ScriptEditorDebugger::debug_continue() {
 	ERR_FAIL_COND(connection.is_null());
 	ERR_FAIL_COND(!connection->is_connected());
 
+	OS::get_singleton()->enable_for_stealing_focus(EditorNode::get_singleton()->get_child_process_id());
+
 	Array msg;
 	msg.push_back("continue");
 	ppeer->put_var(msg);
+
 
 }
 
@@ -338,8 +341,9 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		docontinue->set_disabled(false);
 		emit_signal("breaked",true,can_continue);
 		OS::get_singleton()->move_window_to_foreground();
-		if (!profiler->is_seeking())
+		if (error!="") {
 			tabs->set_current_tab(0);
+		}
 
 		profiler->set_enabled(false);
 
@@ -359,7 +363,7 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		forward->set_disabled(true);
 		dobreak->set_disabled(false);
 		docontinue->set_disabled(true);
-		emit_signal("breaked",false,false);
+		emit_signal("breaked",false,false,Variant());
 		//tabs->set_current_tab(0);
 		profiler->set_enabled(true);
 		profiler->disable_seeking();
@@ -1085,6 +1089,9 @@ void ScriptEditorDebugger::start() {
 
 	stop();
 
+	if (!EditorNode::get_log()->is_visible()) {
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
+	}
 
 	uint16_t port = GLOBAL_DEF("debug/remote_port",6007);
 	perf_history.clear();

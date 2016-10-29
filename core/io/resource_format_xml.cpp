@@ -1862,8 +1862,6 @@ void ResourceInteractiveLoaderXML::open(FileAccess *p_f) {
 	}
 
 	int major = version.get_slicec('.',0).to_int();
-	int minor = version.get_slicec('.',1).to_int();
-
 	if (major>VERSION_MAJOR) {
 
 		error=ERR_FILE_UNRECOGNIZED;
@@ -2802,6 +2800,10 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 			if (takeover_paths) {
 				res->set_path(p_path+"::"+itos(idx),true);
 			}
+#ifdef TOOLS_ENABLED
+			res->set_edited(false);
+#endif
+
 
 		}
 		write_string("\n",false);

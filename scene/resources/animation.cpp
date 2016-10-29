@@ -1997,9 +1997,6 @@ void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,fl
 
 void Animation::optimize(float p_allowed_linear_err,float p_allowed_angular_err,float p_angle_max) {
 
-
-	int total_tt=0;
-
 	for(int i=0;i<tracks.size();i++) {
 
 		if (tracks[i]->type==TYPE_TRANSFORM)

@@ -640,8 +640,8 @@ void Area::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("body_enter",PropertyInfo(Variant::OBJECT,"body")));
 	ADD_SIGNAL( MethodInfo("body_exit",PropertyInfo(Variant::OBJECT,"body")));
 
-	ADD_SIGNAL( MethodInfo("area_enter_shape",PropertyInfo(Variant::INT,"area_id"),PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area"),PropertyInfo(Variant::INT,"area_shape"),PropertyInfo(Variant::INT,"area_shape")));
-	ADD_SIGNAL( MethodInfo("area_exit_shape",PropertyInfo(Variant::INT,"area_id"),PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area"),PropertyInfo(Variant::INT,"area_shape"),PropertyInfo(Variant::INT,"area_shape")));
+	ADD_SIGNAL( MethodInfo("area_enter_shape",PropertyInfo(Variant::INT,"area_id"),PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area"),PropertyInfo(Variant::INT,"area_shape"),PropertyInfo(Variant::INT,"self_shape")));
+	ADD_SIGNAL( MethodInfo("area_exit_shape",PropertyInfo(Variant::INT,"area_id"),PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area"),PropertyInfo(Variant::INT,"area_shape"),PropertyInfo(Variant::INT,"self_shape")));
 	ADD_SIGNAL( MethodInfo("area_enter",PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area")));
 	ADD_SIGNAL( MethodInfo("area_exit",PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area")));
 

@@ -1543,11 +1543,11 @@ String::String(const StrRange& p_range) {
 	copy_from(p_range.c_str,p_range.len);
 }
 
-int String::hex_to_int() const {
+int String::hex_to_int(bool p_with_prefix) const {
 
     int l = length();
-    if (l<3)
-           return 0;
+	if (p_with_prefix && l<3)
+		return 0;
 
     const CharType *s=ptr();
 
@@ -1556,15 +1556,16 @@ int String::hex_to_int() const {
     if (sign<0) {
         s++;
         l--;
-        if (l<2)
+		if (p_with_prefix && l<2)
             return 0;
     }
 
-    if (s[0]!='0' || s[1]!='x')
-           return 0;
-
-    s+=2;
-    l-=2;
+	if (p_with_prefix) {
+		if (s[0]!='0' || s[1]!='x')
+			return 0;
+		s+=2;
+		l-=2;
+	};
 
     int hex=0;
 
@@ -3073,6 +3074,11 @@ String String::simplify_path() const {
 	}
 
 	s =s.replace("\\","/");
+	while(true){ // in case of using 2 or more slash
+		String compare = s.replace("//","/");
+		if (s==compare) break;
+		else s=compare;
+	}
 	Vector<String> dirs = s.split("/",false);
 
 	for(int i=0;i<dirs.size();i++) {
@@ -3173,7 +3179,7 @@ bool String::is_valid_identifier() const {
 
 //kind of poor should be rewritten properly
 
-String String::world_wrap(int p_chars_per_line) const {
+String String::word_wrap(int p_chars_per_line) const {
 
 	int from=0;
 	int last_space=0;
@@ -3491,7 +3497,7 @@ bool String::is_valid_integer() const {
 		return false;
 
 	int from=0;
-	if (operator[](0)=='+' || operator[](0)=='-')
+	if (len!=1 && (operator[](0)=='+' || operator[](0)=='-'))
 		from++;
 
 	for(int i=from;i<len;i++) {
@@ -3504,6 +3510,36 @@ bool String::is_valid_integer() const {
 	return true;
 
 }
+
+bool String::is_valid_hex_number(bool p_with_prefix) const {
+
+	int from = 0;
+	int len = length();
+
+	if (len!=1 && (operator[](0)=='+' || operator[](0)=='-'))
+		from++;
+
+	if (p_with_prefix) {
+
+		if (len < 2)
+			return false;
+		if (operator[](from) != '0' || operator[](from+1) != 'x') {
+			return false;
+		};
+		from += 2;
+	};
+
+	for (int i=from; i<len; i++) {
+
+		CharType c = operator[](i);
+		if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
+			continue;
+		return false;
+	};
+
+	return true;
+};
+
 
 bool String::is_valid_float() const {
 
@@ -3641,20 +3677,41 @@ bool String::is_valid_html_color() const {
 
 }
 
+
 bool String::is_valid_ip_address() const {
 
-	Vector<String> ip = split(".");
-	if (ip.size()!=4)
-		return false;
-	for(int i=0;i<ip.size();i++) {
+	if (find(":") >= 0) {
 
-		String n = ip[i];
-		if (!n.is_valid_integer())
+		Vector<String> ip = split(":");
+		for (int i=0; i<ip.size(); i++) {
+
+			String n = ip[i];
+			if (n.empty())
+				continue;
+			if (n.is_valid_hex_number(false)) {
+				int nint = n.hex_to_int(false);
+				if (nint < 0 || nint > 0xffff)
+					return false;
+				continue;
+			};
+			if (!n.is_valid_ip_address())
+				return false;
+		};
+
+	} else {
+		Vector<String> ip = split(".");
+		if (ip.size()!=4)
 			return false;
-		int val = n.to_int();
-		if (val<0 || val>255)
-			return false;
-	}
+		for(int i=0;i<ip.size();i++) {
+
+			String n = ip[i];
+			if (!n.is_valid_integer())
+				return false;
+			int val = n.to_int();
+			if (val<0 || val>255)
+				return false;
+		}
+	};
 
 	return true;
 }
@@ -3836,7 +3893,6 @@ String String::lpad(int min_length, const String& character) const {
 String String::sprintf(const Array& values, bool* error) const {
 	String formatted;
 	CharType* self = (CharType*)c_str();
-	int num_items = values.size();
 	bool in_format = false;
 	int value_index = 0;
 	int min_chars;

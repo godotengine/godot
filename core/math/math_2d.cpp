@@ -424,7 +424,7 @@ Matrix32 Matrix32::inverse() const {
 
 void Matrix32::affine_invert() {
 
-	float det = elements[0][0]*elements[1][1] - elements[1][0]*elements[0][1];
+	float det = basis_determinant();
 	ERR_FAIL_COND(det==0);
 	float idet = 1.0 / det;
 
@@ -475,18 +475,18 @@ Matrix32::Matrix32(real_t p_rot, const Vector2& p_pos) {
 	elements[2]=p_pos;
 }
 
-Vector2 Matrix32::get_scale() const {
+Size2 Matrix32::get_scale() const {
 
-	return Vector2( elements[0].length(), elements[1].length() );
+	return Size2( elements[0].length(), elements[1].length() );
 }
 
-void Matrix32::scale(const Vector2& p_scale) {
+void Matrix32::scale(const Size2& p_scale) {
 
 	elements[0]*=p_scale;
 	elements[1]*=p_scale;
 	elements[2]*=p_scale;
 }
-void Matrix32::scale_basis(const Vector2& p_scale) {
+void Matrix32::scale_basis(const Size2& p_scale) {
 
 	elements[0]*=p_scale;
 	elements[1]*=p_scale;
@@ -500,7 +500,6 @@ void Matrix32::translate( const Vector2& p_translation ) {
 
 	elements[2]+=basis_xform(p_translation);
 }
-
 
 void Matrix32::orthonormalize() {
 
@@ -550,11 +549,6 @@ void Matrix32::operator*=(const Matrix32& p_transform) {
 	elements[2] = xform(p_transform.elements[2]);
 
 	float x0,x1,y0,y1;
-/*
-	x0 = p_transform.tdotx(elements[0]);
-	x1 = p_transform.tdoty(elements[0]);
-	y0 = p_transform.tdotx(elements[1]);
-	y1 = p_transform.tdoty(elements[1]);*/
 
 	x0 = tdotx(p_transform.elements[0]);
 	x1 = tdoty(p_transform.elements[0]);
@@ -576,7 +570,7 @@ Matrix32 Matrix32::operator*(const Matrix32& p_transform) const {
 
 }
 
-Matrix32 Matrix32::scaled(const Vector2& p_scale) const {
+Matrix32 Matrix32::scaled(const Size2& p_scale) const {
 
 	Matrix32 copy=*this;
 	copy.scale(p_scale);
@@ -584,7 +578,7 @@ Matrix32 Matrix32::scaled(const Vector2& p_scale) const {
 
 }
 
-Matrix32 Matrix32::basis_scaled(const Vector2& p_scale) const {
+Matrix32 Matrix32::basis_scaled(const Size2& p_scale) const {
 
 	Matrix32 copy=*this;
 	copy.scale_basis(p_scale);
@@ -629,8 +623,8 @@ Matrix32 Matrix32::interpolate_with(const Matrix32& p_transform, float p_c) cons
 	real_t r1 = get_rotation();
 	real_t r2 = p_transform.get_rotation();
 
-	Vector2 s1 = get_scale();
-	Vector2 s2 = p_transform.get_scale();
+	Size2 s1 = get_scale();
+	Size2 s2 = p_transform.get_scale();
 
 	//slerp rotation
 	Vector2 v1(Math::cos(r1), Math::sin(r1));

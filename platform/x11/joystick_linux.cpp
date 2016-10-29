@@ -259,7 +259,7 @@ void joystick_linux::close_joystick(int p_id) {
 		attached_devices.remove(attached_devices.find(joy.devpath));
 		input->joy_connection_changed(p_id, false, "");
 	};
-};
+}
 
 static String _hex_str(uint8_t p_byte) {
 
@@ -271,7 +271,7 @@ static String _hex_str(uint8_t p_byte) {
 	ret[1] = dict[p_byte & 0xF];
 
 	return ret;
-};
+}
 
 void joystick_linux::setup_joystick_properties(int p_id) {
 

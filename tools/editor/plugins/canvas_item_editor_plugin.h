@@ -124,6 +124,7 @@ class CanvasItemEditor : public VBoxContainer {
 		VIEW_FRAME_TO_SELECTION,
 		SKELETON_MAKE_BONES,
 		SKELETON_CLEAR_BONES,
+		SKELETON_SHOW_BONES,
 		SKELETON_SET_IK_CHAIN,
 		SKELETON_CLEAR_IK_CHAIN
 
@@ -175,6 +176,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool snap_rotation;
 	bool snap_relative;
 	bool snap_pixel;
+	bool skeleton_show_bones;
 	bool box_selecting;
 	Point2 box_selecting_to;
 	bool key_pos;
@@ -256,6 +258,7 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *ungroup_button;
 
 	MenuButton *edit_menu;
+	PopupMenu *skeleton_menu;
 	MenuButton *view_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
@@ -352,6 +355,8 @@ class CanvasItemEditor : public VBoxContainer {
 	void _viewport_input_event(const InputEvent& p_event);
 	void _viewport_draw();
 
+	void _focus_selection(int p_op);
+
 	void _set_anchor(Control::AnchorType p_left,Control::AnchorType p_top,Control::AnchorType p_right,Control::AnchorType p_bottom);
 
 	HSplitContainer *palette_split;
@@ -414,10 +419,12 @@ public:
 
 	Control *get_viewport_control() { return viewport; }
 
-
 	bool get_remove_list(List<Node*> *p_list);
 	void set_undo_redo(UndoRedo *p_undo_redo) {undo_redo=p_undo_redo; }
 	void edit(CanvasItem *p_canvas_item);
+
+	void focus_selection();
+
 	CanvasItemEditor(EditorNode *p_editor);
 };
 

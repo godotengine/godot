@@ -71,12 +71,14 @@ class SceneTreeDock : public VBoxContainer {
 	};
 
 
+	bool restore_script_editor_on_drag;
 
 	int current_option;
 	CreateDialog *create_dialog;
 
 	ToolButton *button_add;
 	ToolButton *button_instance;
+	ToolButton *button_create_script;
 
 	SceneTreeEditor *scene_tree;
 
@@ -128,6 +130,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _node_prerenamed(Node* p_node, const String& p_new_name);
 
+	void _nodes_drag_begin();
+	void _input(InputEvent p_event);
 	void _unhandled_key_input(InputEvent p_event);
 
 	void _import_subscene();
@@ -148,6 +152,9 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _filter_changed(const String& p_filter);
 
+	void _perform_instance_scenes(const Vector<String>& p_files,Node* parent,int p_pos);
+	void _replace_with_branch_scene(const String& p_file,Node* base);
+
 protected:
 
 	void _notification(int p_what);
@@ -157,16 +164,19 @@ public:
 	String get_filter();
 	void set_filter(const String& p_filter);
 
+	void _focus_node();
+
 	void import_subscene();
 	void set_edited_scene(Node* p_scene);
 	void instance(const String& p_path);
-	void instance_scenes(const Vector<String>& p_files,Node* parent,int p_pos);
+	void instance_scenes(const Vector<String>& p_files, Node *p_parent=NULL);
 	void set_selected(Node *p_node, bool p_emit_selected=false);
 	void fill_path_renames(Node* p_node, Node *p_new_parent, List<Pair<NodePath,NodePath> > *p_renames);
 	void perform_node_renames(Node* p_base,List<Pair<NodePath,NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims=NULL);
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
 
 
+	void open_script_dialog(Node* p_for_node);
 	SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelection *p_editor_selection,EditorData &p_editor_data);
 };
 

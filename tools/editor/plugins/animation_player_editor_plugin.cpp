@@ -43,6 +43,7 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 
 		key_editor->set_animation(Ref<Animation>());
 		key_editor->set_root(NULL);
+		key_editor->show_select_node_warning(true);
 		_update_player();
 		//editor->animation_editor_make_visible(false);
 
@@ -376,8 +377,8 @@ void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource>& p_resou
 	int flg = 0;
 	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
 		flg |= ResourceSaver::FLAG_COMPRESS;
-	if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
-		flg |= ResourceSaver::FLAG_RELATIVE_PATHS;
+	//if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+	//	flg |= ResourceSaver::FLAG_RELATIVE_PATHS;
 
 	String path = Globals::get_singleton()->localize_path(p_path);
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
@@ -665,7 +666,7 @@ void AnimationPlayerEditor::set_state(const Dictionary& p_state) {
 			return;
 
 		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["player"]);
-		if (n && n->cast_to<AnimationPlayer>()) {
+		if (n && n->cast_to<AnimationPlayer>() && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
 			player=n->cast_to<AnimationPlayer>();
 			_update_player();
 			show();
@@ -832,6 +833,7 @@ void AnimationPlayerEditor::_update_player() {
 	remove_anim->set_disabled(animlist.size()==0);
 	resource_edit_anim->set_disabled(animlist.size()==0);
 	save_anim->set_disabled(animlist.size() == 0);
+	tool_anim->set_disabled(player==NULL);
 
 
 	int active_idx=-1;
@@ -889,9 +891,11 @@ void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 		return; //ignore, pinned
 	player=p_player;
 
-	if (player)
+	if (player) {
 		_update_player();
-	else {
+		key_editor->show_select_node_warning(false);
+	} else {
+		key_editor->show_select_node_warning(true);
 
 //		hide();
 
@@ -1123,6 +1127,7 @@ void AnimationPlayerEditor::_hide_anim_editors() {
 
 	key_editor->set_animation(Ref<Animation>());
 	key_editor->set_root(NULL);
+	key_editor->show_select_node_warning(true);
 //		editor->animation_editor_make_visible(false);
 
 }
@@ -1531,6 +1536,8 @@ void AnimationPlayerEditorPlugin::edit(Object *p_object) {
 	if (!p_object)
 		return;
 	anim_editor->edit(p_object->cast_to<AnimationPlayer>());
+
+
 }
 
 bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {

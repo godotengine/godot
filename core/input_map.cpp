@@ -232,62 +232,8 @@ bool InputMap::event_is_action(const InputEvent& p_event, const StringName& p_ac
 	return _find_event(E->get().inputs,p_event)!=NULL;
 }
 
-bool InputMap::event_is_joy_motion_action_pressed(const InputEvent& p_event) const {
-
-	ERR_FAIL_COND_V(p_event.type!=InputEvent::JOYSTICK_MOTION,false);
-	bool pressed=false;
-
-	//this could be optimized by having a separate list of joymotions?
-
-	for (Map<StringName, Action>::Element *A=input_map.front();A;A=A->next()) {
-
-		for (List<InputEvent>::Element *E=A->get().inputs.front();E;E=E->next()) {
-
-			const InputEvent& e=E->get();
-			if(e.type!=p_event.type)
-				continue;
-			if (e.type!=InputEvent::KEY && e.device!=p_event.device)
-				continue;
-
-			switch(p_event.type) {
-
-				case InputEvent::KEY: {
-
-					if (e.key.scancode==p_event.key.scancode && e.key.mod == p_event.key.mod)
-						return e.key.pressed;
-
-				} break;
-				case InputEvent::JOYSTICK_BUTTON: {
-
-					if (e.joy_button.button_index==p_event.joy_button.button_index) {
-						return e.joy_button.pressed;
-					}
-
-				} break;
-				case InputEvent::MOUSE_BUTTON: {
-
-					if (e.mouse_button.button_index==p_event.mouse_button.button_index) {
-						return e.mouse_button.pressed;
-					}
-
-				} break;
-				case InputEvent::JOYSTICK_MOTION: {
-
-					if (e.joy_motion.axis==p_event.joy_motion.axis) {
-						if (
-								(e.joy_motion.axis_value * p_event.joy_motion.axis_value >0) && //same axis
-								ABS(e.joy_motion.axis_value)>0.5 && ABS(p_event.joy_motion.axis_value)>0.5 )
-							pressed=true;
-					}
-
-				} break;
-			}
-
-		}
-	}
-
-	return pressed;
-
+const Map<StringName, InputMap::Action>& InputMap::get_action_map() const {
+	return input_map;
 }
 
 void InputMap::load_from_globals() {

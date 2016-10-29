@@ -95,11 +95,16 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "setget",
 "const",
 "var",
+"enum",
 "preload",
 "assert",
 "yield",
 "signal",
 "breakpoint",
+"rpc",
+"sync",
+"master",
+"slave",
 "'['",
 "']'",
 "'{'",
@@ -277,7 +282,7 @@ void GDTokenizerText::_advance() {
 			case '\n': {
 				line++;
 				INCPOS(1);
-				column=0;
+				column=1;
 				int i=0;
 				while(GETCHAR(i)==' ' || GETCHAR(i)=='\t') {
 					i++;
@@ -298,7 +303,7 @@ void GDTokenizerText::_advance() {
 					}
 				}
 				INCPOS(1);
-				column=0;
+				column=1;
 				line++;
 				int i=0;
 				while(GETCHAR(i)==' ' || GETCHAR(i)=='\t') {
@@ -330,7 +335,7 @@ void GDTokenizerText::_advance() {
 								break;
 							} else if (_code[pos]=='\n') {
 								new_line++;
-								new_col=0;
+								new_col=1;
 							} else {
 								new_col++;
 							}
@@ -353,7 +358,7 @@ void GDTokenizerText::_advance() {
 							}
 						}
 						INCPOS(1);
-						column=0;
+						column=1;
 						line++;
 						continue;
 
@@ -649,7 +654,7 @@ void GDTokenizerText::_advance() {
 					} else {
 						if (CharType(GETCHAR(i))=='\n') {
 							line++;
-							column=0;
+							column=1;
 						}
 
 						str+=CharType(GETCHAR(i));
@@ -865,7 +870,12 @@ void GDTokenizerText::_advance() {
 								{TK_PR_YIELD,"yield"},
 								{TK_PR_SIGNAL,"signal"},
 								{TK_PR_BREAKPOINT,"breakpoint"},
+								{TK_PR_REMOTE,"remote"},
+								{TK_PR_MASTER,"master"},
+								{TK_PR_SLAVE,"slave"},
+								{TK_PR_SYNC,"sync"},
 								{TK_PR_CONST,"const"},
+								{TK_PR_ENUM,"enum"},
 								//controlflow
 								{TK_CF_IF,"if"},
 								{TK_CF_ELIF,"elif"},
@@ -933,7 +943,7 @@ void GDTokenizerText::set_code(const String& p_code) {
 	}
 	code_pos=0;
 	line=1; //it is stand-ar-ized that lines begin in 1 in code..
-	column=0;
+	column=1; //the same holds for columns
 	tk_rb_pos=0;
 	error_flag=false;
 	last_error="";
@@ -1047,7 +1057,7 @@ void GDTokenizerText::advance(int p_amount) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 10
+#define BYTECODE_VERSION 11
 
 Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 
@@ -1322,7 +1332,7 @@ StringName GDTokenizerBuffer::get_token_identifier(int p_offset) const{
 
 	ERR_FAIL_INDEX_V(offset,tokens.size(),StringName());
 	uint32_t identifier = tokens[offset]>>TOKEN_BITS;
-	ERR_FAIL_INDEX_V(identifier,identifiers.size(),StringName());
+	ERR_FAIL_INDEX_V(identifier,(uint32_t)identifiers.size(),StringName());
 
 	return identifiers[identifier];
 }
@@ -1381,7 +1391,7 @@ const Variant& GDTokenizerBuffer::get_token_constant(int p_offset) const{
 	int offset = token+p_offset;
 	ERR_FAIL_INDEX_V(offset,tokens.size(),nil);
 	uint32_t constant = tokens[offset]>>TOKEN_BITS;
-	ERR_FAIL_INDEX_V(constant,constants.size(),nil);
+	ERR_FAIL_INDEX_V(constant,(uint32_t)constants.size(),nil);
 	return constants[constant];
 
 }

@@ -40,6 +40,7 @@ void ItemList::add_item(const String& p_item,const Ref<Texture>& p_texture,bool 
 	item.selectable=p_selectable;
 	item.selected=false;
 	item.disabled=false;
+	item.tooltip_enabled=true;
 	item.custom_bg=Color(0,0,0,0);
 	items.push_back(item);
 
@@ -57,6 +58,7 @@ void ItemList::add_icon_item(const Ref<Texture>& p_item,bool p_selectable){
 	item.selectable=p_selectable;
 	item.selected=false;
 	item.disabled=false;
+	item.tooltip_enabled=true;
 	item.custom_bg=Color(0,0,0,0);
 	items.push_back(item);
 
@@ -80,6 +82,16 @@ String ItemList::get_item_text(int p_idx) const{
 	ERR_FAIL_INDEX_V(p_idx,items.size(),String());
 	return items[p_idx].text;
 
+}
+
+void ItemList::set_item_tooltip_enabled(int p_idx, const bool p_enabled) {
+	ERR_FAIL_INDEX(p_idx,items.size());
+	items[p_idx].tooltip_enabled = p_enabled;
+}
+
+bool ItemList::is_item_tooltip_enabled(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx,items.size(), false);
+	return items[p_idx].tooltip_enabled;
 }
 
 void ItemList::set_item_tooltip(int p_idx,const String& p_tooltip){
@@ -191,7 +203,7 @@ void ItemList::set_item_disabled(int p_idx,bool p_disabled){
 	ERR_FAIL_INDEX(p_idx,items.size());
 
 	items[p_idx].disabled=p_disabled;
-
+	update();
 
 }
 
@@ -225,7 +237,7 @@ void ItemList::select(int p_idx,bool p_single){
 
 	if (p_single || select_mode==SELECT_SINGLE) {
 
-		if (!items[p_idx].selectable) {
+		if (!items[p_idx].selectable || items[p_idx].disabled) {
 			return;
 		}
 
@@ -237,7 +249,7 @@ void ItemList::select(int p_idx,bool p_single){
 		ensure_selected_visible=false;
 	} else {
 
-		if (items[p_idx].selectable) {
+		if (items[p_idx].selectable && !items[p_idx].disabled) {
 			items[p_idx].selected=true;
 		}
 	}
@@ -336,6 +348,7 @@ void ItemList::clear(){
 	current=-1;
 	ensure_selected_visible=false;
 	update();
+	shape_changed=true;
 	defer_select_single=-1;
 
 }
@@ -461,7 +474,6 @@ void ItemList::_input_event(const InputEvent& p_event) {
 		pos.y+=scroll_bar->get_val();
 
 		int closest = -1;
-		int closest_dist=0x7FFFFFFF;
 
 		for(int i=0;i<items.size();i++) {
 
@@ -473,12 +485,6 @@ void ItemList::_input_event(const InputEvent& p_event) {
 			if (rc.has_point(pos)) {
 				closest=i;
 				break;
-			}
-
-			float dist = rc.distance_to(pos);
-			if (dist<closest_dist) {
-				closest=i;
-				closest_dist=dist;
 			}
 		}
 
@@ -510,7 +516,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 				}
 			} else {
 
-				if (!mb.doubleclick && !mb.mod.command && select_mode==SELECT_MULTI && items[i].selectable && items[i].selected && p_event.mouse_button.button_index==BUTTON_LEFT) {
+				if (!mb.doubleclick && !mb.mod.command && select_mode==SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && p_event.mouse_button.button_index==BUTTON_LEFT) {
 					defer_select_single=i;
 					return;
 				}
@@ -546,6 +552,11 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 
 			return;
+		} else {
+			Vector<int> sItems = get_selected_items();
+			for(int i = 0; i < sItems.size(); i++) {
+				unselect(sItems[i]);
+			}
 		}
 	}
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_WHEEL_UP && p_event.mouse_button.pressed) {
@@ -694,7 +705,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 
 			if (select_mode==SELECT_MULTI && current>=0 && current<items.size()) {
-				if (items[current].selectable && !items[current].selected) {
+				if (items[current].selectable && !items[current].disabled && !items[current].selected) {
 					select(current,false);
 					emit_signal("multi_selected",current,true);
 				} else if (items[current].selected) {
@@ -823,7 +834,7 @@ void ItemList::_notification(int p_what) {
 		}
 
 		if (shape_changed) {
-			
+
 			float max_column_width = 0;
 
 			//1- compute item minimum sizes
@@ -914,11 +925,11 @@ void ItemList::_notification(int p_what) {
 
 						if (i<items.size()-1)
 							separators.push_back(ofs.y+max_h+vseparation/2);
-						
+
 						for(int j=i;j>=0 && col>0;j--, col--) {
 							items[j].rect_cache.size.y = max_h;
 						}
-						
+
 						ofs.x=0;
 						ofs.y+=max_h+vseparation;
 						col=0;
@@ -948,7 +959,23 @@ void ItemList::_notification(int p_what) {
 			shape_changed=false;
 		}
 
+		//ensure_selected_visible needs to be checked before we draw the list.
+		if (ensure_selected_visible && current>=0 && current <=items.size()) {
 
+			Rect2 r = items[current].rect_cache;
+			int from = scroll_bar->get_val();
+			int to = from + scroll_bar->get_page();
+
+			if (r.pos.y < from) {
+				scroll_bar->set_val(r.pos.y);
+			} else if (r.pos.y+r.size.y > to) {
+				scroll_bar->set_val(r.pos.y+r.size.y - (to-from));
+			}
+
+
+		}
+
+		ensure_selected_visible=false;		
 
 		Vector2 base_ofs = bg->get_offset();
 		base_ofs.y-=int(scroll_bar->get_val());
@@ -1029,10 +1056,14 @@ void ItemList::_notification(int p_what) {
 					draw_rect.size=adj.size;
 				}
 
+				Color modulate=Color(1,1,1,1);
+				if (items[i].disabled)
+					modulate.a*=0.5;
+
 				if (items[i].icon_region.has_no_area())
-					draw_texture_rect(items[i].icon, draw_rect );
+					draw_texture_rect(items[i].icon, draw_rect,false,modulate );
 				else
-					draw_texture_rect_region(items[i].icon, draw_rect, items[i].icon_region);
+					draw_texture_rect_region(items[i].icon, draw_rect, items[i].icon_region,modulate);
 
 			}
 
@@ -1052,6 +1083,10 @@ void ItemList::_notification(int p_what) {
 					max_len=items[i].rect_cache.size.x;
 				else
 					max_len=size.x;
+
+				Color modulate=items[i].selected?font_color_selected:font_color;
+				if (items[i].disabled)
+					modulate.a*=0.5;
 
 				if (icon_mode==ICON_MODE_TOP && max_text_lines>0) {
 
@@ -1090,7 +1125,7 @@ void ItemList::_notification(int p_what) {
 							if (line>=max_text_lines)
 								break;
 						}
-						ofs+=font->draw_char(get_canvas_item(),text_ofs+Vector2(ofs+(max_len-line_size_cache[line])/2,line*(font_height+line_separation)).floor(),items[i].text[j],items[i].text[j+1],items[i].selected?font_color_selected:font_color);
+						ofs+=font->draw_char(get_canvas_item(),text_ofs+Vector2(ofs+(max_len-line_size_cache[line])/2,line*(font_height+line_separation)).floor(),items[i].text[j],items[i].text[j+1],modulate);
 					}
 
 					//special multiline mode
@@ -1110,7 +1145,7 @@ void ItemList::_notification(int p_what) {
 					text_ofs+=base_ofs;
 					text_ofs+=items[i].rect_cache.pos;
 
-					draw_string(font,text_ofs,items[i].text,items[i].selected?font_color_selected:font_color,max_len+1);
+					draw_string(font,text_ofs,items[i].text,modulate,max_len+1);
 				}
 
 
@@ -1128,25 +1163,6 @@ void ItemList::_notification(int p_what) {
 		for(int i=0;i<separators.size();i++) {
 			draw_line(Vector2(bg->get_margin(MARGIN_LEFT),base_ofs.y+separators[i]),Vector2(size.width-bg->get_margin(MARGIN_LEFT),base_ofs.y+separators[i]),guide_color);
 		}
-
-
-		if (ensure_selected_visible && current>=0 && current <=items.size()) {
-
-			Rect2 r = items[current].rect_cache;
-			int from = scroll_bar->get_val();
-			int to = from + scroll_bar->get_page();
-
-			if (r.pos.y < from) {
-				scroll_bar->set_val(r.pos.y);
-			} else if (r.pos.y+r.size.y > to) {
-				scroll_bar->set_val(r.pos.y+r.size.y - (to-from));
-			}
-
-
-		}
-
-		ensure_selected_visible=false;
-
 	}
 }
 
@@ -1191,6 +1207,9 @@ String ItemList::get_tooltip(const Point2& p_pos) const {
 	int closest = get_item_at_pos(p_pos);
 
 	if (closest!=-1) {
+		if (!items[closest].tooltip_enabled) {
+			return "";
+		}
 		if (items[closest].tooltip!="") {
 			return items[closest].tooltip;
 		}
@@ -1203,8 +1222,11 @@ String ItemList::get_tooltip(const Point2& p_pos) const {
 }
 
 void ItemList::sort_items_by_text() {
+
 	items.sort();
 	update();
+	shape_changed=true;
+
 	if (select_mode==SELECT_SINGLE) {
 		for(int i=0;i<items.size();i++) {
 			if (items[i].selected) {
@@ -1284,6 +1306,9 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_item_custom_bg_color","idx","custom_bg_color"),&ItemList::set_item_custom_bg_color);
 	ObjectTypeDB::bind_method(_MD("get_item_custom_bg_color","idx"),&ItemList::get_item_custom_bg_color);
 
+	ObjectTypeDB::bind_method(_MD("set_item_tooltip_enabled","idx","enable"),&ItemList::set_item_tooltip_enabled);
+	ObjectTypeDB::bind_method(_MD("is_item_tooltip_enabled","idx"),&ItemList::is_item_tooltip_enabled);
+
 	ObjectTypeDB::bind_method(_MD("set_item_tooltip","idx","tooltip"),&ItemList::set_item_tooltip);
 	ObjectTypeDB::bind_method(_MD("get_item_tooltip","idx"),&ItemList::get_item_tooltip);
 
@@ -1296,7 +1321,7 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("remove_item","idx"),&ItemList::remove_item);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&ItemList::clear);
-	ObjectTypeDB::bind_method(_MD("sort_items_by_text"),&ItemList::clear);
+	ObjectTypeDB::bind_method(_MD("sort_items_by_text"),&ItemList::sort_items_by_text);
 
 	ObjectTypeDB::bind_method(_MD("set_fixed_column_width","width"),&ItemList::set_fixed_column_width);
 	ObjectTypeDB::bind_method(_MD("get_fixed_column_width"),&ItemList::get_fixed_column_width);
@@ -1329,6 +1354,8 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("get_item_at_pos","pos","exact"),&ItemList::get_item_at_pos,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("ensure_current_is_visible"),&ItemList::ensure_current_is_visible);
+
+	ObjectTypeDB::bind_method(_MD("get_v_scroll"),&ItemList::get_v_scroll);
 
 	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&ItemList::_scroll_changed);
 	ObjectTypeDB::bind_method(_MD("_input_event"),&ItemList::_input_event);
@@ -1375,4 +1402,3 @@ ItemList::ItemList() {
 ItemList::~ItemList() {
 
 }
-

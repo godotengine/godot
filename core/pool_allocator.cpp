@@ -372,7 +372,6 @@ Error PoolAllocator::resize(ID p_mem,int p_new_size) {
 	}
 
 	//p_new_size = align(p_new_size)
-	int _total = pool_size; // - static_area_size;
 	int _free = free_mem; // - static_area_size;
 
 	if ((_free + aligned(e->len)) - alloc_size < 0) {

@@ -31,6 +31,7 @@
 #include "os/os.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
+#include "os/keyboard.h"
 #include "editor_settings.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tool_button.h"
@@ -49,17 +50,30 @@
 #include "editor_initialize_ssl.h"
 #include "editor_scale.h"
 
+#include "io/zip_io.h"
+
 class NewProjectDialog : public ConfirmationDialog {
 
 	OBJ_TYPE(NewProjectDialog,ConfirmationDialog);
 
+public:
 
-	bool import_mode;
+	enum Mode {
+		MODE_NEW,
+		MODE_IMPORT,
+		MODE_INSTALL
+	};
+private:
+
+	Mode mode;
 	Label *pp,*pn;
 	Label *error;
 	LineEdit *project_path;
 	LineEdit *project_name;
 	FileDialog *fdialog;
+	String zip_path;
+	String zip_title;
+	AcceptDialog *dialog_error;
 
 	bool _test_path() {
 
@@ -72,7 +86,7 @@ class NewProjectDialog : public ConfirmationDialog {
 			return false;
 		}
 
-		if (!import_mode) {
+		if (mode!=MODE_IMPORT) {
 
 			if (d->file_exists("engine.cfg")) {
 
@@ -109,7 +123,7 @@ class NewProjectDialog : public ConfirmationDialog {
 			if (lidx!=-1) {
 				sp=sp.substr(lidx+1,sp.length());
 			}
-			if (sp=="" && import_mode )
+			if (sp=="" && mode==MODE_IMPORT )
 				sp=TTR("Imported Project");
 
 			project_name->set_text(sp);
@@ -119,7 +133,7 @@ class NewProjectDialog : public ConfirmationDialog {
 	void _file_selected(const String& p_path) {
 
 		String p = p_path;
-		if (import_mode) {
+		if (mode==MODE_IMPORT) {
 			if (p.ends_with("engine.cfg")) {
 
 				p=p.get_base_dir();
@@ -128,6 +142,7 @@ class NewProjectDialog : public ConfirmationDialog {
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
 		_path_text_changed(p);
+		get_ok()->call_deferred("grab_focus");
 	}
 
 	void _path_selected(const String& p_path) {
@@ -136,12 +151,12 @@ class NewProjectDialog : public ConfirmationDialog {
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
 		_path_text_changed(p);
-
+		get_ok()->call_deferred("grab_focus");
 	}
 
 	void _browse_path() {
 
-		if (import_mode) {
+		if (mode==MODE_IMPORT) {
 
 			fdialog->set_mode(FileDialog::MODE_OPEN_FILE);
 			fdialog->clear_filters();
@@ -163,7 +178,7 @@ class NewProjectDialog : public ConfirmationDialog {
 
 		String dir;
 
-		if (import_mode) {
+		if (mode==MODE_IMPORT) {
 			dir=project_path->get_text();
 
 
@@ -179,26 +194,131 @@ class NewProjectDialog : public ConfirmationDialog {
 			dir=d->get_current_dir();
 			memdelete(d);
 
-			FileAccess *f = FileAccess::open(dir.plus_file("/engine.cfg"),FileAccess::WRITE);
-			if (!f) {
-				error->set_text(TTR("Couldn't create engine.cfg in project path."));
-			} else {
+			if (mode==MODE_NEW) {
 
-				f->store_line("; Engine configuration file.");
-				f->store_line("; It's best to edit using the editor UI, not directly,");
-				f->store_line("; becausethe parameters that go here are not obvious.");
-				f->store_line("; ");
-				f->store_line("; Format: ");
-				f->store_line(";   [section] ; section goes between []");
-				f->store_line(";   param=value ; assign values to parameters");
-				f->store_line("\n");
-				f->store_line("[application]");
-				f->store_line("name=\""+project_name->get_text()+"\"");
-				f->store_line("icon=\"res://icon.png\"");
 
-				memdelete(f);
 
-				ResourceSaver::save(dir.plus_file("/icon.png"),get_icon("DefaultProjectIcon","EditorIcons"));
+
+				FileAccess *f = FileAccess::open(dir.plus_file("/engine.cfg"),FileAccess::WRITE);
+				if (!f) {
+					error->set_text(TTR("Couldn't create engine.cfg in project path."));
+				} else {
+
+					f->store_line("; Engine configuration file.");
+					f->store_line("; It's best edited using the editor UI and not directly,");
+					f->store_line("; since the parameters that go here are not all obvious.");
+					f->store_line("; ");
+					f->store_line("; Format: ");
+					f->store_line(";   [section] ; section goes between []");
+					f->store_line(";   param=value ; assign values to parameters");
+					f->store_line("\n");
+					f->store_line("[application]");
+					f->store_line("\n");
+					f->store_line("name=\""+project_name->get_text()+"\"");
+					f->store_line("icon=\"res://icon.png\"");
+
+					memdelete(f);
+
+					ResourceSaver::save(dir.plus_file("/icon.png"),get_icon("DefaultProjectIcon","EditorIcons"));
+				}
+
+			} else if (mode==MODE_INSTALL) {
+
+
+				FileAccess *src_f=NULL;
+				zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+
+				unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
+				if (!pkg) {
+
+					dialog_error->set_text("Error opening package file, not in zip format.");
+					return;
+				}
+
+				int ret = unzGoToFirstFile(pkg);
+
+				Vector<String> failed_files;
+
+				int idx=0;
+				while(ret==UNZ_OK) {
+
+					//get filename
+					unz_file_info info;
+					char fname[16384];
+					ret = unzGetCurrentFileInfo(pkg,&info,fname,16384,NULL,0,NULL,0);
+
+					String path=fname;
+
+					int depth=1; //stuff from github comes with tag
+					bool skip=false;
+					while(depth>0) {
+						int pp = path.find("/");
+						if (pp==-1) {
+							skip=true;
+							break;
+						}
+						path=path.substr(pp+1,path.length());
+						depth--;
+					}
+
+
+					if (skip || path==String()) {
+						//
+					} else if (path.ends_with("/")) { // a dir
+
+						path=path.substr(0,path.length()-1);
+
+						DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+						da->make_dir(dir.plus_file(path));
+						memdelete(da);
+
+					} else {
+
+						Vector<uint8_t> data;
+						data.resize(info.uncompressed_size);
+
+						//read
+						unzOpenCurrentFile(pkg);
+						unzReadCurrentFile(pkg,data.ptr(),data.size());
+						unzCloseCurrentFile(pkg);
+
+						FileAccess *f=FileAccess::open(dir.plus_file(path),FileAccess::WRITE);
+
+						if (f) {
+							f->store_buffer(data.ptr(),data.size());
+							memdelete(f);
+						} else {
+							failed_files.push_back(path);
+						}
+
+
+					}
+
+					idx++;
+					ret = unzGoToNextFile(pkg);
+				}
+
+				unzClose(pkg);
+
+				if (failed_files.size()) {
+					String msg=TTR("The following files failed extraction from package:")+"\n\n";
+					for(int i=0;i<failed_files.size();i++) {
+
+						if (i>15) {
+							msg+="\nAnd "+itos(failed_files.size()-i)+" more files.";
+							break;
+						}
+						msg+=failed_files[i]+"\n";
+					}
+
+					dialog_error->set_text(msg);
+					dialog_error->popup_centered_minsize();
+
+				} else {
+					dialog_error->set_text(TTR("Package Installed Successfully!"));
+					dialog_error->popup_centered_minsize();
+				}
+
 			}
 
 
@@ -233,10 +353,16 @@ protected:
 
 public:
 
+	void set_zip_path(const String& p_path) {
+		zip_path=p_path;
+	}
+	void set_zip_title(const String& p_title) {
+		zip_title=p_title;
+	}
 
-	void set_import_mode(bool p_import ) {
+	void set_mode(Mode p_mode) {
 
-		import_mode=p_import;
+		mode=p_mode;
 	}
 
 	void show_dialog() {
@@ -245,7 +371,7 @@ public:
 		project_path->clear();
 		project_name->clear();
 
-		if (import_mode) {
+		if (mode==MODE_IMPORT) {
 			set_title(TTR("Import Existing Project"));
 			get_ok()->set_text(TTR("Import"));
 			pp->set_text(TTR("Project Path (Must Exist):"));
@@ -253,9 +379,10 @@ public:
 			pn->hide();
 			project_name->hide();
 
-			popup_centered(Size2(500,125));
+			popup_centered(Size2(500,125)*EDSCALE);
 
-		} else {
+		} else if (mode==MODE_NEW){
+
 			set_title(TTR("Create New Project"));
 			get_ok()->set_text(TTR("Create"));
 			pp->set_text(TTR("Project Path:"));
@@ -263,7 +390,16 @@ public:
 			pn->show();
 			project_name->show();
 
-			popup_centered(Size2(500,145));
+			popup_centered(Size2(500,145)*EDSCALE);
+		} else if (mode==MODE_INSTALL){
+
+			set_title(TTR("Install Project:")+" "+zip_title);
+			get_ok()->set_text(TTR("Install"));
+			pp->set_text(TTR("Project Path:"));
+			pn->hide();
+			project_name->hide();
+
+			popup_centered(Size2(500,125)*EDSCALE);
 
 		}
 
@@ -329,7 +465,10 @@ public:
 		fdialog->connect("dir_selected", this,"_path_selected");
 		fdialog->connect("file_selected", this,"_file_selected");
 		set_hide_on_ok(false);
-		import_mode=false;
+		mode=MODE_NEW;
+
+		dialog_error = memnew( AcceptDialog );
+		add_child(dialog_error);
 	}
 
 
@@ -354,6 +493,10 @@ void ProjectManager::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		get_tree()->set_editor_hint(true);
+
+	} else if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+
+		set_process_unhandled_input(is_visible());
 	}
 }
 
@@ -364,8 +507,29 @@ void ProjectManager::_panel_draw(Node *p_hb) {
 	hb->draw_line(Point2(0,hb->get_size().y+1),Point2(hb->get_size().x-10,hb->get_size().y+1),get_color("guide_color","Tree"));
 
 	if (selected_list.has(hb->get_meta("name"))) {
-		hb->draw_style_box(get_stylebox("selected","Tree"),Rect2(Point2(),hb->get_size()-Size2(10,0)));
+		hb->draw_style_box( gui_base->get_stylebox("selected","Tree"),Rect2(Point2(),hb->get_size()-Size2(10,0)));
 	}
+}
+
+void ProjectManager::_update_project_buttons()
+{
+	for(int i=0;i<scroll_childs->get_child_count();i++) {
+
+		CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
+		item->update();
+	}
+
+	bool has_runnable_scene = false;
+	for (Map<String,String>::Element *E=selected_list.front(); E; E=E->next()) {
+		const String &selected_main = E->get();
+		if (selected_main == "") continue;
+		has_runnable_scene = true;
+		break;
+	}
+
+	erase_btn->set_disabled(selected_list.size()<1);
+	open_btn->set_disabled(selected_list.size()<1);
+	run_btn->set_disabled(!has_runnable_scene);
 }
 
 void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
@@ -415,27 +579,147 @@ void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
 			}
 		}
 
-		String single_selected = "";
-		if (selected_list.size() == 1) {
-			single_selected = selected_list.front()->key();
-		}
-
-		single_selected_main = "";
-		for(int i=0;i<scroll_childs->get_child_count();i++) {
-			CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
-			item->update();
-
-			if (single_selected!="" && single_selected == item->get_meta("name"))
-				single_selected_main = item->get_meta("main_scene");
-		}
-
-		erase_btn->set_disabled(selected_list.size()<1);
-		open_btn->set_disabled(selected_list.size()<1);
-		run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));
+		_update_project_buttons();
 
 		if (p_ev.mouse_button.doubleclick)
 			_open_project(); //open if doubleclicked
 
+	}
+}
+
+void ProjectManager::_unhandled_input(const InputEvent& p_ev) {
+
+	if (p_ev.type==InputEvent::KEY) {
+
+		const InputEventKey &k = p_ev.key;
+
+		if (!k.pressed)
+			return;
+
+		bool scancode_handled = true;
+
+		switch (k.scancode) {
+
+			case KEY_RETURN: {
+
+				_open_project();
+			} break;
+			case KEY_HOME: {
+
+				for (int i=0; i<scroll_childs->get_child_count(); i++) {
+
+					HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+					if (hb) {
+						selected_list.clear();
+						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
+						scroll->set_v_scroll(0);
+						_update_project_buttons();
+						break;
+					}
+				}
+
+			} break;
+			case KEY_END: {
+
+				for (int i=scroll_childs->get_child_count()-1; i>=0; i--) {
+
+					HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+					if (hb) {
+						selected_list.clear();
+						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
+						scroll->set_v_scroll(scroll_childs->get_size().y);
+						_update_project_buttons();
+						break;
+					}
+				}
+
+			} break;
+			case KEY_UP: {
+
+				if (k.mod.shift)
+					break;
+
+				if (selected_list.size()) {
+
+					bool found = false;
+
+					for (int i=scroll_childs->get_child_count()-1; i>=0; i--) {
+
+						HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+						if (!hb) continue;
+
+						String current = hb->get_meta("name");
+
+						if (found) {
+							selected_list.clear();
+							selected_list.insert(current, hb->get_meta("main_scene"));
+
+							int offset_diff = scroll->get_v_scroll() - hb->get_pos().y;
+
+							if (offset_diff > 0)
+								scroll->set_v_scroll(scroll->get_v_scroll() - offset_diff);
+
+							_update_project_buttons();
+
+							break;
+
+						} else if (current==selected_list.back()->key()) {
+
+							found = true;
+						}
+					}
+
+					break;
+				}
+				// else fallthrough to key_down
+			}
+			case KEY_DOWN: {
+
+				if (k.mod.shift)
+					break;
+
+				bool found = selected_list.empty();
+
+				for (int i=0; i<scroll_childs->get_child_count(); i++) {
+
+					HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+					if (!hb) continue;
+
+					String current = hb->get_meta("name");
+
+					if (found) {
+						selected_list.clear();
+						selected_list.insert(current, hb->get_meta("main_scene"));
+
+						int last_y_visible = scroll->get_v_scroll() + scroll->get_size().y;
+						int offset_diff = (hb->get_pos().y + hb->get_size().y) - last_y_visible;
+
+						if (offset_diff > 0)
+							scroll->set_v_scroll(scroll->get_v_scroll() + offset_diff);
+
+						_update_project_buttons();
+
+						break;
+
+					} else if (current==selected_list.back()->key()) {
+
+						found = true;
+					}
+				}
+
+			} break;
+			case KEY_F: {
+				if (k.mod.command) this->project_filter->search_box->grab_focus();
+				else scancode_handled = false;
+			} break;
+			default: {
+				scancode_handled = false;
+			} break;
+		}
+
+		if (scancode_handled) {
+			accept_event();
+		}
 	}
 }
 
@@ -465,10 +749,12 @@ void ProjectManager::_load_recent_projects() {
 		memdelete( scroll_childs->get_child(0));
 	}
 
+	Map<String, String> selected_list_copy = selected_list;
+
 	List<PropertyInfo> properties;
 	EditorSettings::get_singleton()->get_property_list(&properties);
 
-	Color font_color = get_color("font_color","Tree");
+	Color font_color = gui_base->get_color("font_color","Tree");
 
 	List<ProjectItem> projects;
 	List<ProjectItem> favorite_projects;
@@ -571,12 +857,15 @@ void ProjectManager::_load_recent_projects() {
 			main_scene = cf->get_value("application","main_scene");
 		}
 
+		selected_list_copy.erase(project);
+
 		HBoxContainer *hb = memnew( HBoxContainer );
 		hb->set_meta("name",project);
 		hb->set_meta("main_scene",main_scene);
 		hb->set_meta("favorite",is_favorite);
 		hb->connect("draw",this,"_panel_draw",varray(hb));
 		hb->connect("input_event",this,"_panel_input",varray(hb));
+		hb->add_constant_override("separation",10*EDSCALE);
 
 		VBoxContainer *favorite_box = memnew( VBoxContainer );
 		TextureButton *favorite = memnew( TextureButton );
@@ -598,7 +887,7 @@ void ProjectManager::_load_recent_projects() {
 		ec->set_custom_minimum_size(Size2(0,1));
 		vb->add_child(ec);
 		Label *title = memnew( Label(project_name) );
-		title->add_font_override("font",get_font("large","Fonts"));
+		title->add_font_override("font", gui_base->get_font("large","Fonts"));
 		title->add_color_override("font_color",font_color);
 		vb->add_child(title);
 		Label *fpath = memnew( Label(path) );
@@ -609,13 +898,18 @@ void ProjectManager::_load_recent_projects() {
 		scroll_childs->add_child(hb);
 	}
 
+	for (Map<String,String>::Element *E = selected_list_copy.front();E;E = E->next()) {
+		String key = E->key();
+		selected_list.erase(key);
+	}
+
 	scroll->set_v_scroll(0);
 
-	erase_btn->set_disabled(selected_list.size()<1);
-	open_btn->set_disabled(selected_list.size()<1);
-	run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));
+	_update_project_buttons();
 
 	EditorSettings::get_singleton()->save();
+
+	tabs->set_current_tab(0);
 }
 
 void ProjectManager::_open_project_confirm() {
@@ -649,7 +943,7 @@ void ProjectManager::_open_project() {
 	}
 
 	if (selected_list.size()>1) {
-		multi_open_ask->set_text(TTR("Are you sure to open more than one projects?"));
+		multi_open_ask->set_text(TTR("Are you sure to open more than one project?"));
 		multi_open_ask->popup_centered_minsize();
 	} else {
 		_open_project_confirm();
@@ -689,7 +983,7 @@ void ProjectManager::_run_project() {
 	}
 
 	if (selected_list.size()>1) {
-		multi_run_ask->set_text(TTR("Are you sure to run more than one projects?"));
+		multi_run_ask->set_text(TTR("Are you sure to run more than one project?"));
 		multi_run_ask->popup_centered_minsize();
 	} else {
 		_run_project_confirm();
@@ -755,14 +1049,14 @@ void ProjectManager::_scan_projects() {
 
 void ProjectManager::_new_project()  {
 
-	npdialog->set_import_mode(false);
+	npdialog->set_mode(NewProjectDialog::MODE_NEW);
 	npdialog->show_dialog();
 }
 
 
 void ProjectManager::_import_project()  {
 
-	npdialog->set_import_mode(true);
+	npdialog->set_mode(NewProjectDialog::MODE_IMPORT);
 	npdialog->show_dialog();
 }
 
@@ -778,7 +1072,6 @@ void ProjectManager::_erase_project_confirm()  {
 	EditorSettings::get_singleton()->save();
 	selected_list.clear();
 	last_clicked = "";
-	single_selected_main="";
 	_load_recent_projects();
 
 }
@@ -800,6 +1093,63 @@ void ProjectManager::_exit_dialog()  {
 	get_tree()->quit();
 }
 
+
+void ProjectManager::_install_project(const String& p_zip_path,const String& p_title) {
+
+	npdialog->set_mode(NewProjectDialog::MODE_INSTALL);
+	npdialog->set_zip_path(p_zip_path);
+	npdialog->set_zip_title(p_title);
+	npdialog->show_dialog();
+}
+
+void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
+	Set<String> folders_set;
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	for (int i = 0; i < p_files.size(); i++) {
+		String file = p_files[i];
+		folders_set.insert(da->dir_exists(file) ? file : file.get_base_dir());
+	}
+	memdelete(da);
+	if (folders_set.size()>0) {
+		StringArray folders;
+		for (Set<String>::Element *E=folders_set.front();E;E=E->next()) {
+			folders.append(E->get());
+		}
+
+		bool confirm = true;
+		if (folders.size()==1) {
+			DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			if (dir->change_dir(folders[0])==OK) {
+				dir->list_dir_begin();
+				String file = dir->get_next();
+				while(confirm && file!=String()) {
+					if (!da->current_is_dir() && file.ends_with("engine.cfg")) {
+						confirm = false;
+					}
+					file = dir->get_next();
+				}
+				dir->list_dir_end();
+			}
+			memdelete(dir);
+		}
+		if (confirm) {
+			multi_scan_ask->get_ok()->disconnect("pressed", this, "_scan_multiple_folders");
+			multi_scan_ask->get_ok()->connect("pressed", this, "_scan_multiple_folders", varray(folders));
+			multi_scan_ask->set_text(vformat(TTR("You are about the scan %s folders for existing Godot projects. Do you confirm?"), folders.size()));
+			multi_scan_ask->popup_centered_minsize();
+		} else {
+			_scan_multiple_folders(folders);
+		}
+	}
+}
+
+void ProjectManager::_scan_multiple_folders(StringArray p_files)
+{
+	for (int i = 0; i < p_files.size(); i++) {
+		_scan_begin(p_files.get(i));
+	}
+}
+
 void ProjectManager::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_open_project",&ProjectManager::_open_project);
@@ -816,7 +1166,11 @@ void ProjectManager::_bind_methods() {
 	ObjectTypeDB::bind_method("_load_recent_projects",&ProjectManager::_load_recent_projects);
 	ObjectTypeDB::bind_method("_panel_draw",&ProjectManager::_panel_draw);
 	ObjectTypeDB::bind_method("_panel_input",&ProjectManager::_panel_input);
+	ObjectTypeDB::bind_method("_unhandled_input",&ProjectManager::_unhandled_input);
 	ObjectTypeDB::bind_method("_favorite_pressed",&ProjectManager::_favorite_pressed);
+	ObjectTypeDB::bind_method("_install_project",&ProjectManager::_install_project);
+	ObjectTypeDB::bind_method("_files_dropped",&ProjectManager::_files_dropped);
+	ObjectTypeDB::bind_method(_MD("_scan_multiple_folders", "files"),&ProjectManager::_scan_multiple_folders);
 
 
 }
@@ -833,25 +1187,27 @@ ProjectManager::ProjectManager() {
 	{
 		int dpi_mode = EditorSettings::get_singleton()->get("global/hidpi_mode");
 		if (dpi_mode==0) {
-			editor_set_hidpi( OS::get_singleton()->get_screen_dpi(0) > 150 );
+			editor_set_scale( OS::get_singleton()->get_screen_dpi(0) > 150 && OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x>2000 ? 2.0 : 1.0 );
+		} else if (dpi_mode==1) {
+			editor_set_scale(0.75);
 		} else if (dpi_mode==2) {
-			editor_set_hidpi(true);
-		} else {
-			editor_set_hidpi(false);
+			editor_set_scale(1.0);
+		} else if (dpi_mode==3) {
+			editor_set_scale(1.5);
+		} else if (dpi_mode==4) {
+			editor_set_scale(2.0);
 		}
 	}
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	set_area_as_parent_rect();
+	set_theme(create_editor_theme());
 
 	gui_base = memnew( Control );
 	add_child(gui_base);
 	gui_base->set_area_as_parent_rect();
-
-	set_theme(create_default_theme());
-	Ref<Theme> theme = create_editor_theme();
-	gui_base->set_theme(theme);
+	gui_base->set_theme(create_custom_theme());
 
 	Panel *panel = memnew( Panel );
 	gui_base->add_child(panel);
@@ -874,7 +1230,7 @@ ProjectManager::ProjectManager() {
 	CenterContainer *ccl = memnew( CenterContainer );
 	Label *l = memnew( Label );
 	l->set_text(_MKSTR(VERSION_NAME)+String(" - ")+TTR("Project Manager"));
-	l->add_font_override("font",get_font("doc","EditorFonts"));
+	l->add_font_override("font", gui_base->get_font("doc","EditorFonts"));
 	ccl->add_child(l);
 	top_hb->add_child(ccl);
 	top_hb->add_spacer();
@@ -910,7 +1266,7 @@ ProjectManager::ProjectManager() {
 	search_tree_vb->add_child(search_box);
 
 	PanelContainer *pc = memnew( PanelContainer);
-	pc->add_style_override("panel",get_stylebox("bg","Tree"));
+	pc->add_style_override("panel", gui_base->get_stylebox("bg","Tree"));
 	search_tree_vb->add_child(pc);
 	pc->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -951,6 +1307,7 @@ ProjectManager::ProjectManager() {
 	scan_dir = memnew( FileDialog );
 	scan_dir->set_access(FileDialog::ACCESS_FILESYSTEM);
 	scan_dir->set_mode(FileDialog::MODE_OPEN_DIR);
+	scan_dir->set_title(TTR("Select a Folder to Scan")); // must be after mode or it's overridden
 	scan_dir->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_path") );
 	gui_base->add_child(scan_dir);
 	scan_dir->connect("dir_selected",this,"_scan_begin");
@@ -978,10 +1335,10 @@ ProjectManager::ProjectManager() {
 
 
 	if (StreamPeerSSL::is_available()) {
-
 		asset_library = memnew( EditorAssetLibrary(true) );
 		asset_library->set_name("Templates");
 		tabs->add_child(asset_library);
+		asset_library->connect("install_asset",this,"_install_project");
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
@@ -1015,7 +1372,10 @@ ProjectManager::ProjectManager() {
 
 	gui_base->add_child(multi_run_ask);
 
+	multi_scan_ask = memnew( ConfirmationDialog );
+	multi_scan_ask->get_ok()->set_text(TTR("Scan"));
 
+	gui_base->add_child(multi_scan_ask);
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
@@ -1033,6 +1393,8 @@ ProjectManager::ProjectManager() {
 	//get_ok()->set_text("Exit");
 
 	last_clicked = "";
+
+	SceneTree::get_singleton()->connect("files_dropped", this, "_files_dropped");
 }
 
 

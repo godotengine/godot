@@ -32,6 +32,7 @@
 #include "node.h"
 #include "io/http_client.h"
 #include "os/file_access.h"
+#include "os/thread.h"
 
 class HTTPRequest : public Node {
 
@@ -65,11 +66,13 @@ private:
 	Vector<String> headers;
 	bool validate_ssl;
 	bool use_ssl;
+	HTTPClient::Method method;
+	String request_data;
 
 	bool request_sent;
 	Ref<HTTPClient> client;
 	ByteArray body;
-	bool use_threads;
+	volatile bool use_threads;
 
 	bool got_response;
 	int response_code;
@@ -80,7 +83,7 @@ private:
 	FileAccess *file;
 
 	int body_len;
-	int downloaded;
+	volatile int downloaded;
 	int body_size_limit;
 
 	int redirections;
@@ -93,11 +96,19 @@ private:
 
 	void _redirect_request(const String& p_new_url);
 
+
 	bool _handle_response(bool *ret_value);
 
 	Error _parse_url(const String& p_url);
 	Error _request();
 
+	volatile bool thread_done;
+	volatile bool thread_request_quit;
+
+	Thread *thread;
+
+	void _request_done(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
+	static void _thread_func(void *p_userdata);
 
 protected:
 
@@ -105,7 +116,7 @@ protected:
 	static void _bind_methods();
 public:
 
-	Error request(const String& p_url,const Vector<String>& p_custom_headers=Vector<String>(),bool p_ssl_validate_domain=true); //connects to a full url and perform request
+	Error request(const String& p_url, const Vector<String>& p_custom_headers=Vector<String>(), bool p_ssl_validate_domain=true, HTTPClient::Method p_method=HTTPClient::METHOD_GET, const String& p_request_data=""); //connects to a full url and perform request
 	void cancel_request();
 	HTTPClient::Status get_http_client_status() const;
 

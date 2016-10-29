@@ -429,6 +429,27 @@ static const _KeyCodeReplace _keycode_replace_neo[]={
 {0,0}
 };
 
+int keycode_get_count() {
+
+	const _KeyCodeText *kct =&_keycodes[0];
+
+	int count=0;
+	while(kct->text) {
+
+		count++;
+		kct++;
+	}
+	return count;
+}
+
+int keycode_get_value_by_index(int p_index) {
+	return _keycodes[p_index].code;
+}
+
+const char* keycode_get_name_by_index(int p_index) {
+	return _keycodes[p_index].text;
+}
+
 
 int latin_keyboard_keycode_convert(int p_keycode) {
 

@@ -33,6 +33,7 @@ int ScriptServer::_language_count=0;
 
 bool ScriptServer::scripting_enabled=true;
 bool ScriptServer::reload_scripts_on_save=false;
+ScriptEditRequestFunction ScriptServer::edit_request_func=NULL;
 
 void Script::_notification( int p_what) {
 

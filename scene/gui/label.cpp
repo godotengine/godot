@@ -334,7 +334,7 @@ int Label::get_longest_line_width() const {
 			}
 		} else {
 
-			int char_width=font->get_char_size(current).width;
+			int char_width=font->get_char_size(current,text[i+1]).width;
 			line_width+=char_width;
 		}
 
@@ -354,6 +354,21 @@ int Label::get_line_count() const {
 		const_cast<Label*>(this)->regenerate_word_cache();
 
 	return line_count;
+}
+
+int Label::get_visible_line_count() const {
+
+	int line_spacing = get_constant("line_spacing");
+	int font_h = get_font("font")->get_height()+line_spacing;
+	int lines_visible = (get_size().y+line_spacing)/font_h;
+
+	if (lines_visible > line_count)
+		lines_visible = line_count;
+
+	if (max_lines_visible >= 0 && lines_visible > max_lines_visible)
+		lines_visible = max_lines_visible;
+
+	return lines_visible;
 }
 
 void Label::regenerate_word_cache() {
@@ -439,7 +454,7 @@ void Label::regenerate_word_cache() {
 				word_pos=i;
 			}
 
-			char_width=font->get_char_size(current).width;
+			char_width=font->get_char_size(current,text[i+1]).width;
 			current_word_size+=char_width;
 			line_width+=char_width;
 			total_char_cache++;
@@ -535,7 +550,9 @@ void Label::set_text(const String& p_string) {
 	if (percent_visible<1)
 		visible_chars=get_total_character_count()*percent_visible;
 	update();
-	minimum_size_changed();
+	if (!autowrap) {
+		minimum_size_changed();
+	}
 
 }
 
@@ -638,6 +655,7 @@ void Label::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_uppercase"),&Label::is_uppercase);
 	ObjectTypeDB::bind_method(_MD("get_line_height"),&Label::get_line_height);
 	ObjectTypeDB::bind_method(_MD("get_line_count"),&Label::get_line_count);
+	ObjectTypeDB::bind_method(_MD("get_visible_line_count"),&Label::get_visible_line_count);
 	ObjectTypeDB::bind_method(_MD("get_total_character_count"),&Label::get_total_character_count);
 	ObjectTypeDB::bind_method(_MD("set_visible_characters","amount"),&Label::set_visible_characters);
 	ObjectTypeDB::bind_method(_MD("get_visible_characters"),&Label::get_visible_characters);

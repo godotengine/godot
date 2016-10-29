@@ -107,6 +107,7 @@ f.write(main_po)
 f.close()
 
 if (os.name == "posix"):
+	print("Wrapping template at 79 characters for compatibility with Weblate.")
 	os.system("msgmerge -w79 tools.pot tools.pot > tools.pot.wrap")
 	shutil.move("tools.pot.wrap", "tools.pot")
 

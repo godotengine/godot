@@ -232,6 +232,20 @@ Error Dictionary::parse_json(const String& p_json) {
 	return OK;
 }
 
+Dictionary Dictionary::copy() const {
+
+	Dictionary n(is_shared());
+
+	List<Variant> keys;
+	get_key_list(&keys);
+
+	for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
+		n[E->get()]=operator[](E->get());
+	}
+
+	return n;
+}
+
 String Dictionary::to_json() const {
 
 	return JSON::print(*this);

@@ -254,19 +254,27 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 		String config_err = n->get_configuration_warning();
 		if (config_err==String())
 			return;
-		config_err=config_err.world_wrap(80);
+		config_err=config_err.word_wrap(80);
 		warning->set_text(config_err);
 		warning->popup_centered_minsize();
 
 	} else if (p_id==BUTTON_SIGNALS) {
 
-		item->select(0);
+		editor_selection->clear();
+		editor_selection->add_node(n);
+
+		set_selected(n);
+
 		NodeDock::singleton->get_parent()->call("set_current_tab",NodeDock::singleton->get_index());
 		NodeDock::singleton->show_connections();
 
 	} else if (p_id==BUTTON_GROUPS) {
 
-		item->select(0);
+		editor_selection->clear();
+		editor_selection->add_node(n);
+
+		set_selected(n);
+
 		NodeDock::singleton->get_parent()->call("set_current_tab",NodeDock::singleton->get_index());
 		NodeDock::singleton->show_groups();
 	}
@@ -958,7 +966,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2& p_point,Control* p_from)
 	drag_data["nodes"]=objs;
 
 	tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN|Tree::DROP_MODE_ON_ITEM);
-
+	emit_signal("nodes_dragged");
 
 	return drag_data;
 }
@@ -973,6 +981,14 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_da
 
 	Dictionary d=p_data;
 	if (!d.has("type"))
+		return false;
+
+	TreeItem *item = tree->get_item_at_pos(p_point);
+	if (!item)
+		return false;
+
+	int section = tree->get_drop_section_at_pos(p_point);
+	if (section<-1 || (section==-1 && !item->get_parent()))
 		return false;
 
 	if (String(d["type"])=="files") {
@@ -997,15 +1013,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2& p_point,const Variant& p_da
 
 
 	if (String(d["type"])=="nodes") {
-		TreeItem *item = tree->get_item_at_pos(p_point);
-		if (!item)
-			return false;
-		int section = tree->get_drop_section_at_pos(p_point);
-		if (section<-1 || (section==-1 && !item->get_parent()))
-			return false;
-
 		return true;
-
 	}
 
 	return false;
@@ -1102,6 +1110,7 @@ void SceneTreeEditor::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("node_renamed") );
 	ADD_SIGNAL( MethodInfo("node_prerename") );
 	ADD_SIGNAL( MethodInfo("node_changed") );
+	ADD_SIGNAL( MethodInfo("nodes_dragged") );
 	ADD_SIGNAL( MethodInfo("nodes_rearranged",PropertyInfo(Variant::ARRAY,"paths"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
 	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
 	ADD_SIGNAL( MethodInfo("rmb_pressed",PropertyInfo(Variant::VECTOR2,"pos")) ) ;

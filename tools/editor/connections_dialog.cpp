@@ -181,6 +181,14 @@ void ConnectDialog::ok_pressed() {
 		error->popup_centered_minsize();
 		return;
 	}
+	Node* target = tree->get_selected();
+	if (target->get_script().is_null()) {
+		if (!target->has_method(dst_method->get_text())) {
+			error->set_text(TTR("Target method not found! Specify a valid method or attach a script to target Node."));
+			error->popup_centered_minsize();
+			return;
+		}
+	}
 	emit_signal("connected");
 	hide();
 
@@ -309,6 +317,7 @@ ConnectDialog::ConnectDialog() {
 
 
 	tree = memnew(SceneTreeEditor(false));
+	tree->get_scene_tree()->connect("item_activated",this,"_ok");
 	vbc_left->add_margin_child(TTR("Connect To Node:"),tree,true);
 
 
@@ -673,7 +682,7 @@ void ConnectionsDock::update_tree() {
 						tname=Variant::get_type_name(pi.type);
 					}
 					signaldesc+=tname+" "+(pi.name==""?String("arg "+itos(i)):pi.name);
-					argnames.push_back(pi.name);
+					argnames.push_back(pi.name+":"+tname);
 
 				}
 				signaldesc+=" ";

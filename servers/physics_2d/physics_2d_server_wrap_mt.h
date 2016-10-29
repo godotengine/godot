@@ -266,10 +266,10 @@ public:
 
 	FUNC2(body_set_pickable,RID,bool);
 
-	bool body_test_motion(RID p_body,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL) {
+	bool body_test_motion(RID p_body,const Matrix32& p_from,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL) {
 
 		ERR_FAIL_COND_V(main_thread!=Thread::get_caller_ID(),false);
-		return physics_2d_server->body_test_motion(p_body,p_motion,p_margin,r_result);
+		return physics_2d_server->body_test_motion(p_body,p_from,p_motion,p_margin,r_result);
 	}
 
 	/* JOINT API */

@@ -75,12 +75,13 @@ public:
 	int rfind(const Variant& p_value, int p_from=-1) const;
 	int find_last(const Variant& p_value) const;
 	int count(const Variant& p_value) const;
+	bool has(const Variant& p_value) const;
 
 	void erase(const Variant& p_value);
 
 	void push_front(const Variant& p_value);
-	void pop_back();
-	void pop_front();
+	Variant pop_back();
+	Variant pop_front();
 
 	Array(const Array& p_from);
 	Array(bool p_shared=false);

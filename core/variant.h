@@ -395,6 +395,10 @@ public:
 
 	void get_method_list(List<MethodInfo> *p_list) const;
 	bool has_method(const StringName& p_method) const;
+	static Vector<Variant::Type> get_method_argument_types(Variant::Type p_type,const StringName& p_method);
+	static Vector<Variant> get_method_default_arguments(Variant::Type p_type,const StringName& p_method);
+	static Variant::Type get_method_return_type(Variant::Type p_type,const StringName& p_method,bool* r_has_return=NULL);
+	static Vector<StringName> get_method_argument_names(Variant::Type p_type,const StringName& p_method);
 
 	void set_named(const StringName& p_index, const Variant& p_value, bool *r_valid=NULL);
 	Variant get_named(const StringName& p_index, bool *r_valid=NULL) const;
@@ -422,7 +426,7 @@ public:
 	static void get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list);
 	static void get_numeric_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
 	static bool has_numeric_constant(Variant::Type p_type, const StringName& p_value);
-	static int get_numeric_constant_value(Variant::Type p_type, const StringName& p_value);
+	static int get_numeric_constant_value(Variant::Type p_type, const StringName& p_value,bool *r_valid=NULL);
 
 	typedef String (*ObjectDeConstruct)(const Variant& p_object,void *ud);
 	typedef void (*ObjectConstruct)(const String& p_text,void *ud,Variant& r_value);

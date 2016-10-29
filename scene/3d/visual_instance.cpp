@@ -128,6 +128,8 @@ void VisualInstance::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"), &VisualInstance::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"), &VisualInstance::get_layer_mask);
 
+	ObjectTypeDB::bind_method(_MD("get_transformed_aabb"), &VisualInstance::get_transformed_aabb);
+
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "layers",PROPERTY_HINT_ALL_FLAGS), _SCS("set_layer_mask"), _SCS("get_layer_mask"));
 
 
@@ -375,6 +377,8 @@ void GeometryInstance::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_extra_cull_margin","margin"), &GeometryInstance::set_extra_cull_margin);
 	ObjectTypeDB::bind_method(_MD("get_extra_cull_margin"), &GeometryInstance::get_extra_cull_margin);
+
+	ObjectTypeDB::bind_method(_MD("get_aabb"),&GeometryInstance::get_aabb);
 
 	ObjectTypeDB::bind_method(_MD("_baked_light_changed"), &GeometryInstance::_baked_light_changed);
 

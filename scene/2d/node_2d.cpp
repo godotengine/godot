@@ -253,7 +253,7 @@ void Node2D::global_translate(const Vector2& p_amount) {
 	set_global_pos( get_global_pos() + p_amount );
 }
 
-void Node2D::scale(const Vector2& p_amount) {
+void Node2D::scale(const Size2& p_amount) {
 
 	set_scale( get_scale() * p_amount );
 }
@@ -294,6 +294,53 @@ void Node2D::set_global_pos(const Point2& p_pos) {
 		set_pos(p_pos);
 	}
 }
+
+
+float Node2D::get_global_rot() const {
+
+	return get_global_transform().get_rotation();
+}
+
+void Node2D::set_global_rot(float p_radians) {
+
+	CanvasItem *pi = get_parent_item();
+	if (pi) {
+		const float parent_global_rot = pi->get_global_transform().get_rotation();
+		set_rot(p_radians - parent_global_rot);
+	} else {
+		set_rot(p_radians);
+	}
+}
+
+
+float Node2D::get_global_rotd() const {
+
+	return Math::rad2deg(get_global_rot());
+}
+
+void Node2D::set_global_rotd(float p_degrees) {
+
+	set_global_rot(Math::deg2rad(p_degrees));
+}
+
+
+Size2 Node2D::get_global_scale() const {
+
+	return get_global_transform().get_scale();
+}
+
+void Node2D::set_global_scale(const Size2& p_scale) {
+
+	CanvasItem *pi = get_parent_item();
+	if (pi) {
+		const Size2 parent_global_scale = pi->get_global_transform().get_scale();
+		set_scale(p_scale - parent_global_scale);
+	} else {
+		set_scale(p_scale);
+	}
+
+}
+
 
 void Node2D::set_transform(const Matrix32& p_transform) {
 
@@ -398,6 +445,12 @@ void Node2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_global_pos","pos"),&Node2D::set_global_pos);
 	ObjectTypeDB::bind_method(_MD("get_global_pos"),&Node2D::get_global_pos);
+	ObjectTypeDB::bind_method(_MD("set_global_rot","radians"),&Node2D::set_global_rot);
+	ObjectTypeDB::bind_method(_MD("get_global_rot"),&Node2D::get_global_rot);
+	ObjectTypeDB::bind_method(_MD("set_global_rotd","degrees"),&Node2D::set_global_rotd);
+	ObjectTypeDB::bind_method(_MD("get_global_rotd"),&Node2D::get_global_rotd);
+	ObjectTypeDB::bind_method(_MD("set_global_scale","scale"),&Node2D::set_global_scale);
+	ObjectTypeDB::bind_method(_MD("get_global_scale"),&Node2D::get_global_scale);
 
 	ObjectTypeDB::bind_method(_MD("set_transform","xform"),&Node2D::set_transform);
 	ObjectTypeDB::bind_method(_MD("set_global_transform","xform"),&Node2D::set_global_transform);

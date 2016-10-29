@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 Import('env')
 
 env.tool_sources=[]
@@ -115,12 +117,8 @@ if (env["tools"]!="no"):
 	env.Command('#tools/editor/builtin_fonts.h',flist,make_fonts_header)
 
 	SConscript('editor/SCsub');
-	#SConscript('scintilla/SCsub');
 	SConscript('collada/SCsub');
-	SConscript('docdump/SCsub');
-	#SConscript('freetype/SCsub');
 	SConscript('doc/SCsub')
-	SConscript('pck/SCsub')
 
 	lib = env.Library("tool",env.tool_sources)
 

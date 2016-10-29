@@ -63,6 +63,7 @@ typedef int (*OpenURIFunc)(const String&);
 typedef String (*GetDataDirFunc)();
 typedef String (*GetLocaleFunc)();
 typedef String (*GetModelFunc)();
+typedef int (*GetScreenDPIFunc)();
 typedef String (*GetUniqueIDFunc)();
 typedef void (*ShowVirtualKeyboardFunc)(const String&);
 typedef void (*HideVirtualKeyboardFunc)();
@@ -141,6 +142,7 @@ private:
 	GetDataDirFunc get_data_dir_func;
 	GetLocaleFunc get_locale_func;
 	GetModelFunc get_model_func;
+	GetScreenDPIFunc get_screen_dpi_func;
 	ShowVirtualKeyboardFunc show_virtual_keyboard_func;
 	HideVirtualKeyboardFunc hide_virtual_keyboard_func;
 	SetScreenOrientationFunc set_screen_orientation_func;
@@ -234,6 +236,7 @@ public:
 	virtual String get_resource_dir() const;
 	virtual String get_locale() const;
 	virtual String get_model_name() const;
+	virtual int get_screen_dpi(int p_screen=0) const;
 
 	virtual String get_unique_ID() const;
 
@@ -242,6 +245,7 @@ public:
 
 	void process_accelerometer(const Vector3& p_accelerometer);
 	void process_magnetometer(const Vector3& p_magnetometer);
+	void process_gyroscope(const Vector3& p_gyroscope);
 	void process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points);
 	void process_joy_event(JoystickEvent p_event);
 	void process_event(InputEvent p_event);
@@ -256,7 +260,7 @@ public:
 	virtual String get_joy_guid(int p_device) const;
 	void joy_connection_changed(int p_device, bool p_connected, String p_name);
 
-	OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion);
+	OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion);
 	~OS_Android();
 
 };

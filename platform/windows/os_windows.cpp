@@ -29,7 +29,6 @@
 #include "drivers/gles2/rasterizer_gles2.h"
 
 #include "os_windows.h"
-#include "drivers/nedmalloc/memory_pool_static_nedmalloc.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
 #include "os/memory_pool_dynamic_static.h"
 #include "drivers/windows/thread_windows.h"
@@ -581,11 +580,14 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 				}
 			} else if (mouse_mode!=MOUSE_MODE_CAPTURED) {
 				// for reasons unknown to mankind, wheel comes in screen cordinates
-				RECT rect;
-				GetWindowRect(hWnd,&rect);
-				mb.x-=rect.left;
-				mb.y-=rect.top;
+				POINT coords;
+				coords.x = mb.x;
+				coords.y = mb.y;
 
+				ScreenToClient(hWnd, &coords);
+
+				mb.x = coords.x;
+				mb.y = coords.y;
 			}
 
 			if (main_loop) {
@@ -1309,10 +1311,13 @@ void OS_Windows::finalize_core() {
 
 void OS_Windows::vprint(const char* p_format, va_list p_list, bool p_stderr) {
 
-	char buf[16384+1];
-	int len = vsnprintf(buf,16384,p_format,p_list);
+	const unsigned int BUFFER_SIZE = 16384;
+	char buf[BUFFER_SIZE+1]; // +1 for the terminating character
+	int len = vsnprintf(buf,BUFFER_SIZE,p_format,p_list);
 	if (len<=0)
 		return;
+	if(len >= BUFFER_SIZE)
+		len = BUFFER_SIZE; // Output is too big, will be truncated
 	buf[len]=0;
 
 
@@ -1340,7 +1345,7 @@ void OS_Windows::vprint(const char* p_format, va_list p_list, bool p_stderr) {
 void OS_Windows::alert(const String& p_alert,const String& p_title) {
 
 	if (!is_no_window_mode_enabled())
-		MessageBoxW(NULL,p_alert.c_str(),p_title.c_str(),MB_OK|MB_ICONEXCLAMATION);
+		MessageBoxW(NULL, p_alert.c_str(), p_title.c_str(), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
 	else
 		print_line("ALERT: "+p_alert);
 }
@@ -1366,6 +1371,11 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 		ClipCursor(NULL);
 	}
 
+	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_HIDDEN) {
+		hCursor = SetCursor(NULL);
+	} else {
+		SetCursor(hCursor);
+	}
 }
 
 OS_Windows::MouseMode OS_Windows::get_mouse_mode() const{
@@ -1473,6 +1483,7 @@ Point2 OS_Windows::get_window_position() const{
 }
 void OS_Windows::set_window_position(const Point2& p_position){
 
+	if (video_mode.fullscreen) return;
 	RECT r;
 	GetWindowRect(hWnd,&r);
 	MoveWindow(hWnd,p_position.x,p_position.y,r.right-r.left,r.bottom-r.top,TRUE);
@@ -1681,6 +1692,17 @@ void OS_Windows::set_borderless_window(int p_borderless) {
 
 bool OS_Windows::get_borderless_window() {
 	return video_mode.borderless_window;
+}
+
+void OS_Windows::request_attention() {
+
+	FLASHWINFO info;
+	info.cbSize = sizeof(FLASHWINFO);
+	info.hwnd = hWnd;
+	info.dwFlags = FLASHW_TRAY;
+	info.dwTimeout = 0;
+	info.uCount = 2;
+	FlashWindowEx(&info);
 }
 
 void OS_Windows::print_error(const char* p_function, const char* p_file, int p_line, const char* p_code, const char* p_rationale, ErrorType p_type) {
@@ -2137,10 +2159,15 @@ String OS_Windows::get_stdin_string(bool p_block) {
 }
 
 
+void OS_Windows::enable_for_stealing_focus(ProcessID pid) {
+
+	AllowSetForegroundWindow(pid);
+
+}
+
 void OS_Windows::move_window_to_foreground() {
 
 	SetForegroundWindow(hWnd);
-	BringWindowToTop(hWnd);
 
 }
 
@@ -2176,6 +2203,68 @@ String OS_Windows::get_locale() const {
 		return neutral;
 
 	return "en";
+}
+
+
+OS::LatinKeyboardVariant OS_Windows::get_latin_keyboard_variant() const {
+	
+	unsigned long azerty[] = { 
+		0x00020401, // Arabic (102) AZERTY
+		0x0001080c, // Belgian (Comma)
+		0x0000080c, // Belgian French
+		0x0000040c, // French
+		0 // <--- STOP MARK
+	};
+	unsigned long qwertz[] = {
+		0x0000041a, // Croation
+		0x00000405, // Czech
+		0x00000407, // German
+		0x00010407, // German (IBM)
+		0x0000040e, // Hungarian
+		0x0000046e, // Luxembourgish
+		0x00010415, // Polish (214)
+		0x00000418, // Romanian (Legacy)
+		0x0000081a, // Serbian (Latin)
+		0x0000041b, // Slovak
+		0x00000424, // Slovenian
+		0x0001042e, // Sorbian Extended
+		0x0002042e, // Sorbian Standard
+		0x0000042e, // Sorbian Standard (Legacy)
+		0x0000100c, // Swiss French
+		0x00000807, // Swiss German
+		0 // <--- STOP MARK
+	};
+	unsigned long dvorak[] = {
+		0x00010409, // US-Dvorak
+		0x00030409, // US-Dvorak for left hand
+		0x00040409, // US-Dvorak for right hand
+		0 // <--- STOP MARK
+	};
+
+	char name[ KL_NAMELENGTH + 1 ]; name[0] = 0;
+	GetKeyboardLayoutNameA( name );
+
+	unsigned long hex = strtoul(name, NULL, 16);
+
+	int i=0;
+	while( azerty[i] != 0 ) {
+		if (azerty[i] == hex) return LATIN_KEYBOARD_AZERTY;
+		i++;
+	}
+
+	i = 0;
+	while( qwertz[i] != 0 ) {
+		if (qwertz[i] == hex) return LATIN_KEYBOARD_QWERTZ;
+		i++;
+	}
+	
+	i = 0;
+	while( dvorak[i] != 0 ) {
+		if (dvorak[i] == hex) return LATIN_KEYBOARD_DVORAK;
+		i++; 
+	}
+
+	return LATIN_KEYBOARD_QWERTY;
 }
 
 void OS_Windows::release_rendering_thread() {
@@ -2331,6 +2420,9 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverManagerSW::add_driver(&driver_rtaudio);
+#endif
+#ifdef XAUDIO2_ENABLED
+	AudioDriverManagerSW::add_driver(&driver_xaudio2);
 #endif
 
 }

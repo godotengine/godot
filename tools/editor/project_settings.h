@@ -34,6 +34,7 @@
 #include "undo_redo.h"
 #include "editor_data.h"
 #include "scene/gui/tab_container.h"
+#include "editor_autoload_settings.h"
 #include "editor_plugin_settings.h"
 
 //#include "project_export_settings.h"
@@ -88,25 +89,9 @@ class ProjectSettings : public AcceptDialog {
 	Tree *translation_remap;
 	Tree *translation_remap_options;
 
-
-	Tree *autoload_list;
-	String selected_autoload;
-	EditorFileDialog *autoload_file_open;
-	LineEdit *autoload_add_name;
-	LineEdit *autoload_add_path;
-
+	EditorAutoloadSettings *autoload_settings;
 
 	EditorPluginSettings *plugin_settings;
-
-	void _update_autoload();
-	void _autoload_file_callback(const String& p_path);
-	void _autoload_add();
-	void _autoload_edited();
-	void _autoload_file_open();
-	void _autoload_delete(Object *p_item,int p_column, int p_button);
-	void _autoload_selected();
-	bool updating_autoload;
-
 
 	void _item_selected();
 	void _item_adds(String);
@@ -126,7 +111,7 @@ class ProjectSettings : public AcceptDialog {
 	void _action_button_pressed(Object* p_obj, int p_column,int p_id);
 	void _wait_for_key(const InputEvent& p_event);
 	void _press_a_key_confirm();
-
+	void _show_last_added(const InputEvent& p_event);
 
 	void _settings_prop_edited(const String& p_name);
 	void _settings_changed();

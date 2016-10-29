@@ -46,9 +46,18 @@ void EditorSettingsDialog::ok_pressed() {
 
 void EditorSettingsDialog::_settings_changed() {
 
-
 	timer->start();
-	property_editor->get_property_editor()->update_tree(); // else color's won't update when theme is selected.
+}
+
+void EditorSettingsDialog::_settings_property_edited(const String& p_name) {
+
+	String full_name = property_editor->get_full_item_path(p_name);
+
+	// Small usability workaround to update the text color settings when the
+	// color theme is changed
+	if (full_name == "text_editor/color_theme") {
+		property_editor->get_property_editor()->update_tree();
+	}
 }
 
 void EditorSettingsDialog::_settings_save() {
@@ -281,6 +290,7 @@ void EditorSettingsDialog::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_settings_save"),&EditorSettingsDialog::_settings_save);
 	ObjectTypeDB::bind_method(_MD("_settings_changed"),&EditorSettingsDialog::_settings_changed);
+	ObjectTypeDB::bind_method(_MD("_settings_property_edited"),&EditorSettingsDialog::_settings_property_edited);
 	ObjectTypeDB::bind_method(_MD("_clear_search_box"),&EditorSettingsDialog::_clear_search_box);
 	ObjectTypeDB::bind_method(_MD("_clear_shortcut_search_box"),&EditorSettingsDialog::_clear_shortcut_search_box);
 	ObjectTypeDB::bind_method(_MD("_shortcut_button_pressed"),&EditorSettingsDialog::_shortcut_button_pressed);
@@ -325,6 +335,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	property_editor->get_property_editor()->register_text_enter(search_box);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(property_editor);
+	property_editor->get_property_editor()->connect("property_edited", this, "_settings_property_edited");
 
 	vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);

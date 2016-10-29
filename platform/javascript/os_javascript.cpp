@@ -230,6 +230,11 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
 		ERR_PRINTS( "Error while setting Emscripten gamepaddisconnected callback: Code " + itos(result) );
 	}
+
+#ifdef JAVASCRIPT_EVAL_ENABLED
+	javascript_eval = memnew(JavaScript);
+	Globals::get_singleton()->add_singleton(Globals::Singleton("JavaScript", javascript_eval));
+#endif
 }
 
 void OS_JavaScript::set_main_loop( MainLoop * p_main_loop ) {
@@ -415,6 +420,9 @@ void OS_JavaScript::push_input(const InputEvent& p_ev) {
 
 	InputEvent ev = p_ev;
 	ev.ID=last_id++;
+	if (ev.type==InputEvent::MOUSE_MOTION) {
+		input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+	}
 	input->parse_input_event(p_ev);
 }
 

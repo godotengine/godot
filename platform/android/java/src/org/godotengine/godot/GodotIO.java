@@ -40,6 +40,7 @@ import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.os.*;
 import android.util.Log;
+import android.util.DisplayMetrics;
 import android.graphics.*;
 import android.text.method.*;
 import android.text.*;
@@ -511,6 +512,11 @@ public class GodotIO {
 
 	public String getModel() {
 		return Build.MODEL;
+	}
+
+	public int getScreenDPI() {
+		DisplayMetrics metrics = applicationContext.getResources().getDisplayMetrics();
+		return (int)(metrics.density * 160f);
 	}
 
 	public boolean needsReloadHooks() {

@@ -101,10 +101,8 @@ void EditorRunNative::_run_native(int p_idx,const String& p_platform) {
 
 	Ref<EditorExportPlatform> eep = EditorImportExport::get_singleton()->get_export_platform(p_platform);
 	ERR_FAIL_COND(eep.is_null());
-	if (deploy_debug_remote) {
-		emit_signal("native_run");
+	emit_signal("native_run");
 
-	}
 	int flags=0;
 	if (deploy_debug_remote)
 		flags|=EditorExportPlatform::EXPORT_REMOTE_DEBUG;

@@ -54,7 +54,7 @@ String Globals::localize_path(const String& p_path) const {
 	if (resource_path=="")
 		return p_path; //not initialied yet
 
-	if (p_path.begins_with("res://") || p_path.begins_with("user://"))
+	if (p_path.begins_with("res://") || p_path.begins_with("user://") || p_path.is_abs_path())
 		return p_path.simplify_path();
 
 
@@ -1332,17 +1332,18 @@ Variant _GLOBAL_DEF( const String& p_var, const Variant& p_default) {
 void Globals::add_singleton(const Singleton &p_singleton) {
 
 	singletons.push_back(p_singleton);
+	singleton_ptrs[p_singleton.name]=p_singleton.ptr;
 }
 
 Object* Globals::get_singleton_object(const String& p_name) const {
 
-	for(const List<Singleton>::Element *E=singletons.front();E;E=E->next()) {
-		if (E->get().name == p_name) {
-			return E->get().ptr;
-		};
-	};
 
-	return NULL;
+	const Map<StringName,Object*>::Element *E=singleton_ptrs.find(p_name);
+	if (!E)
+		return NULL;
+	else
+		return E->get();
+
 };
 
 bool Globals::has_singleton(const String& p_name) const {
@@ -1375,6 +1376,25 @@ Vector<String> Globals::get_optimizer_presets() const {
 
 }
 
+void Globals::_add_property_info_bind(const Dictionary& p_info) {
+
+	ERR_FAIL_COND(!p_info.has("name"));
+	ERR_FAIL_COND(!p_info.has("type"));
+
+	PropertyInfo pinfo;
+	pinfo.name = p_info["name"];
+	ERR_FAIL_COND(!props.has(pinfo.name));
+	pinfo.type = Variant::Type(p_info["type"].operator int());
+	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
+
+	if (p_info.has("hint"))
+		pinfo.hint = PropertyHint(p_info["hint"].operator int());
+	if (p_info.has("hint_string"))
+		pinfo.hint_string = p_info["hint_string"];
+
+	set_custom_property_info(pinfo.name, pinfo);
+}
+
 void Globals::set_custom_property_info(const String& p_prop,const PropertyInfo& p_info) {
 
 	ERR_FAIL_COND(!props.has(p_prop));
@@ -1399,6 +1419,7 @@ void Globals::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_order","name"),&Globals::get_order);
 	ObjectTypeDB::bind_method(_MD("set_persisting","name","enable"),&Globals::set_persisting);
 	ObjectTypeDB::bind_method(_MD("is_persisting","name"),&Globals::is_persisting);
+	ObjectTypeDB::bind_method(_MD("add_property_info", "hint"),&Globals::_add_property_info_bind);
 	ObjectTypeDB::bind_method(_MD("clear","name"),&Globals::clear);
 	ObjectTypeDB::bind_method(_MD("localize_path","path"),&Globals::localize_path);
 	ObjectTypeDB::bind_method(_MD("globalize_path","path"),&Globals::globalize_path);
@@ -1429,7 +1450,7 @@ Globals::Globals() {
 
 	set("application/name","" );
 	set("application/main_scene","");
-	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"scn,res,xscn,xml,tscn");
+	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"tscn,scn,xscn,xml,res");
 	set("application/disable_stdout",false);
 	set("application/use_shared_user_dir",true);
 

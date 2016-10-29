@@ -155,6 +155,8 @@ class EditorAssetLibraryItemDownload : public PanelContainer {
 
 	int asset_id;
 
+	bool external_install;
+
 	EditorAssetInstaller *asset_installer;
 
 	void _close();
@@ -168,6 +170,7 @@ protected:
 	static void _bind_methods();
 public:
 
+	void set_external_install(bool p_enable) { external_install=p_enable; }
 	int get_asset_id() { return asset_id; }
 	void configure(const String& p_title,int p_asset_id,const Ref<Texture>& p_preview, const String& p_download_url, const String& p_sha256_hash);
 	EditorAssetLibraryItemDownload();
@@ -300,6 +303,8 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _repository_changed(int p_repository_id);
 	void _support_toggled(int p_support);
+
+	void _install_external_asset(String p_zip_path,String p_title);
 
 friend class EditorAssetLibraryItemDescription;
 friend class EditorAssetLibraryItem;

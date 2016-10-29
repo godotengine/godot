@@ -48,6 +48,8 @@ protected:
 	Point2 smoothed_camera_pos;
 	bool first;
 
+	ObjectID custom_viewport_id; // to check validity
+	Viewport *custom_viewport;
 	Viewport *viewport;
 
 	StringName group_name;
@@ -61,13 +63,13 @@ protected:
 	float smoothing;
 	bool smoothing_enabled;
 	int limit[4];
+	bool limit_smoothing_enabled;
 	float drag_margin[4];
 
 	bool h_drag_enabled;
 	bool v_drag_enabled;
 	float h_ofs;
 	float v_ofs;
-
 
 	Point2 camera_screen_center;
 	void _update_scroll();
@@ -95,6 +97,8 @@ public:
 	void set_limit(Margin p_margin,int p_limit);
 	int get_limit(Margin p_margin) const;
 
+	void set_limit_smoothing_enabled(bool enable);
+	bool is_limit_smoothing_enabled() const;
 
 	void set_h_drag_enabled(bool p_enabled);
 	bool is_h_drag_enabled() const;
@@ -126,8 +130,13 @@ public:
 
 	Point2 get_camera_screen_center() const;
 
+	void set_custom_viewport(Node *p_viewport);
+	Node* get_custom_viewport() const;
+
 	Vector2 get_camera_pos() const;
 	void force_update_scroll();
+	void reset_smoothing();
+	void align();
 
 	Camera2D();
 };

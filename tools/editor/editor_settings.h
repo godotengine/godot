@@ -104,6 +104,8 @@ private:
 
 	Map<String,Ref<ShortCut> > shortcuts;
 
+	void _add_property_info_bind(const Dictionary& p_info);
+
 protected:
 
 	static void _bind_methods();
@@ -157,6 +159,9 @@ public:
 	void get_shortcut_list(List<String> *r_shortcuts);
 
 	void set_optimize_save(bool p_optimize);
+
+	String get_last_selected_language();
+	void set_last_selected_language(String p_language);
 
 	EditorSettings();
 	~EditorSettings();

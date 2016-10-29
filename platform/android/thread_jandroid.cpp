@@ -64,10 +64,12 @@ Thread* ThreadAndroid::create_func_jandroid(ThreadCreateCallback p_callback,void
 
 	return tr;
 }
+
 Thread::ID ThreadAndroid::get_thread_ID_func_jandroid() {
 
 	return (ID)pthread_self();
 }
+
 void ThreadAndroid::wait_to_finish_func_jandroid(Thread* p_thread) {
 
 	ThreadAndroid *tp=static_cast<ThreadAndroid*>(p_thread);

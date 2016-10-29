@@ -179,6 +179,15 @@ bool GDScript::can_instance() const {
 
 }
 
+Ref<Script> GDScript::get_base_script() const {
+
+	if (_base) {
+		return Ref<GDScript>( _base );
+	} else {
+		return Ref<Script>();
+	}
+}
+
 StringName GDScript::get_instance_base_type() const {
 
 	if (native.is_valid())
@@ -248,6 +257,85 @@ void GDScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 
 }*/
 #endif
+
+
+void GDScript::get_script_method_list(List<MethodInfo> *p_list) const {
+
+	for (const Map<StringName,GDFunction*>::Element *E=member_functions.front();E;E=E->next()) {
+		MethodInfo mi;
+		mi.name=E->key();
+		for(int i=0;i<E->get()->get_argument_count();i++) {
+			PropertyInfo arg;
+			arg.type=Variant::NIL; //variant
+			arg.name=E->get()->get_argument_name(i);
+			mi.arguments.push_back(arg);
+		}
+
+		mi.return_val.name="Variant";
+		p_list->push_back(mi);
+	}
+}
+
+void GDScript::get_script_property_list(List<PropertyInfo> *p_list) const {
+
+	const GDScript *sptr=this;
+	List<PropertyInfo> props;
+
+	while(sptr) {
+
+		Vector<_GDScriptMemberSort> msort;
+		for(Map<StringName,PropertyInfo>::Element *E=sptr->member_info.front();E;E=E->next()) {
+
+			_GDScriptMemberSort ms;
+			ERR_CONTINUE(!sptr->member_indices.has(E->key()));
+			ms.index=sptr->member_indices[E->key()].index;
+			ms.name=E->key();
+			msort.push_back(ms);
+
+		}
+
+		msort.sort();
+		msort.invert();
+		for(int i=0;i<msort.size();i++) {
+
+			props.push_front(sptr->member_info[msort[i].name]);
+
+		}
+
+		sptr = sptr->_base;
+	}
+
+	for (List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+		p_list->push_back(E->get());
+	}
+
+}
+
+bool GDScript::has_method(const StringName& p_method) const {
+
+	return member_functions.has(p_method);
+}
+
+MethodInfo GDScript::get_method_info(const StringName& p_method) const {
+
+	const Map<StringName,GDFunction*>::Element *E=member_functions.find(p_method);
+	if (!E)
+		return MethodInfo();
+
+	MethodInfo mi;
+	mi.name=E->key();
+	for(int i=0;i<E->get()->get_argument_count();i++) {
+		PropertyInfo arg;
+		arg.type=Variant::NIL; //variant
+		arg.name=E->get()->get_argument_name(i);
+		mi.arguments.push_back(arg);
+	}
+
+	mi.return_val.name="Variant";
+	return mi;
+
+}
+
 
 bool GDScript::get_property_default_value(const StringName& p_property, Variant &r_value) const {
 
@@ -663,7 +751,7 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 
-	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo("new"));
+	ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo(Variant::OBJECT,"new"));
 
 	ObjectTypeDB::bind_method(_MD("get_as_byte_code"),&GDScript::get_as_byte_code);
 
@@ -1222,6 +1310,8 @@ void GDInstance::call_multilevel_reversed(const StringName& p_method,const Varia
 	}
 }
 
+
+
 void GDInstance::notification(int p_notification) {
 
 	//notification is not virutal, it gets called at ALL levels just like in C.
@@ -1253,6 +1343,46 @@ ScriptLanguage *GDInstance::get_language() {
 
 	return GDScriptLanguage::get_singleton();
 }
+
+GDInstance::RPCMode GDInstance::get_rpc_mode(const StringName& p_method) const {
+
+	const GDScript *cscript = script.ptr();
+
+	while(cscript) {
+		const Map<StringName,GDFunction*>::Element *E=cscript->member_functions.find(p_method);
+		if (E) {
+
+			if (E->get()->get_rpc_mode()!=RPC_MODE_DISABLED) {
+				return E->get()->get_rpc_mode();
+			}
+
+		}
+		cscript=cscript->_base;
+	}
+
+	return RPC_MODE_DISABLED;
+}
+
+GDInstance::RPCMode GDInstance::get_rset_mode(const StringName& p_variable) const {
+
+	const GDScript *cscript = script.ptr();
+
+	while(cscript) {
+		const Map<StringName,GDScript::MemberInfo>::Element *E=cscript->member_indices.find(p_variable);
+		if (E) {
+
+			if (E->get().rpc_mode) {
+				return E->get().rpc_mode;
+			}
+
+		}
+		cscript=cscript->_base;
+	}
+
+	return RPC_MODE_DISABLED;
+}
+
+
 
 void GDInstance::reload_members() {
 
@@ -1643,13 +1773,16 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script>& p_script,bool p_sof
 			}
 #endif
 
+			for(Map<ObjectID,List<Pair<StringName,Variant> > >::Element *F=E->get()->pending_reload_state.front();F;F=F->next()) {
+				map[F->key()]=F->get(); //pending to reload, use this one instead
+			}
 		}
 	}
 
 	for(Map< Ref<GDScript>, Map<ObjectID,List<Pair<StringName,Variant> > > >::Element *E=to_reload.front();E;E=E->next()) {
 
 		Ref<GDScript> scr = E->key();
-		scr->reload(true);
+		scr->reload(p_soft_reload);
 
 		//restore state if saved
 		for (Map<ObjectID,List<Pair<StringName,Variant> > >::Element *F=E->get().front();F;F=F->next()) {
@@ -1658,13 +1791,24 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script>& p_script,bool p_sof
 			if (!obj)
 				continue;
 
+			if (!p_soft_reload) {
+				//clear it just in case (may be a pending reload state)
+				obj->set_script(RefPtr());
+			}
 			obj->set_script(scr.get_ref_ptr());
-			if (!obj->get_script_instance())
+			if (!obj->get_script_instance()) {
+				//failed, save reload state for next time if not saved
+				if (!scr->pending_reload_state.has(obj->get_instance_ID())) {
+					scr->pending_reload_state[obj->get_instance_ID()]=F->get();
+				}
 				continue;
+			}
 
 			for (List<Pair<StringName,Variant> >::Element *G=F->get().front();G;G=G->next()) {
 				obj->get_script_instance()->set(G->get().first,G->get().second);
 			}
+
+			scr->pending_reload_state.erase(obj->get_instance_ID()); //as it reloaded, remove pending state
 		}
 
 		//if instance states were saved, set them!
@@ -1751,6 +1895,10 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"pass",
 		"return",
 		"while",
+		"remote",
+		"sync",
+		"master",
+		"slave",
 		0};
 
 

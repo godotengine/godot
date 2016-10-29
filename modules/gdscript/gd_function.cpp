@@ -372,8 +372,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 					if (obj_A->get_script_instance() && obj_A->get_script_instance()->get_language()==GDScriptLanguage::get_singleton()) {
 
-						GDInstance *ins = static_cast<GDInstance*>(obj_A->get_script_instance());
-						GDScript *cmp = ins->script.ptr();
+						GDScript *cmp = static_cast<GDScript*>(obj_A->get_script_instance()->get_script().ptr());
 						//bool found=false;
 						while(cmp) {
 
@@ -1310,6 +1309,7 @@ GDFunction::GDFunction() : function_list(this) {
 
 	_stack_size=0;
 	_call_size=0;
+	rpc_mode=ScriptInstance::RPC_MODE_DISABLED;
 	name="<anonymous>";
 #ifdef DEBUG_ENABLED
 	_func_cname=NULL;
@@ -1437,7 +1437,7 @@ void GDFunctionState::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("resume:Variant","arg"),&GDFunctionState::resume,DEFVAL(Variant()));
 	ObjectTypeDB::bind_method(_MD("is_valid"),&GDFunctionState::is_valid);
-	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"_signal_callback",&GDFunctionState::_signal_callback,MethodInfo("_signal_callback"));
+	ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"_signal_callback",&GDFunctionState::_signal_callback,MethodInfo("_signal_callback"));
 
 }
 

@@ -175,6 +175,7 @@ class EditorSceneImportDialog : public ConfirmationDialog  {
 	EditorDirDialog *save_select;
 	OptionButton *texture_action;
 	CreateDialog *root_type_choose;
+	LineEdit *root_node_name;
 
 	ConfirmationDialog *confirm_open;
 
@@ -639,6 +640,7 @@ void EditorSceneImportDialog::_choose_file(const String& p_path) {
 	} else {
 #endif
 		save_path->set_text("");
+		root_node_name->set_text("");
 		//save_path->set_text(p_path.get_file().basename()+".scn");
 #if 0
 	}
@@ -656,6 +658,9 @@ void EditorSceneImportDialog::_choose_file(const String& p_path) {
 
 
 	import_path->set_text(p_path);
+	if (root_node_name->get_text().size()==0){
+		root_node_name->set_text(import_path->get_text().get_file().basename());
+	}
 
 }
 void EditorSceneImportDialog::_choose_save_file(const String& p_path) {
@@ -756,6 +761,8 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	}
 
 
+	// Scenes should always be imported as binary format since vertex data is large and would take
+	// up a lot of space and time to load if imported as text format (GH-5778)
 	String save_file = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+".scn");
 	print_line("Saving to: "+save_file);
 
@@ -786,6 +793,10 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	if (!root_default->is_pressed()) {
 		rim->set_option("root_type",root_type->get_text());
 	}
+	if (root_node_name->get_text().size()==0) {
+		root_node_name->set_text(import_path->get_text().get_file().basename());
+	}
+	rim->set_option("root_name",root_node_name->get_text());
 
 	List<String> missing;
 	Error err = plugin->import1(rim,&scene,&missing);
@@ -944,7 +955,11 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 			root_default->set_pressed(true);
 			root_type->set_disabled(true);
 		}
-
+		if (rimd->has_option("root_name")) {
+			root_node_name->set_text(rimd->get_option("root_name"));
+		} else {
+			root_node_name->set_text(root_type->get_text()); // backward compatibility for 2.1 or before
+		}
 		script_path->set_text(rimd->get_option("post_import_script"));
 
 		save_path->set_text(p_from.get_base_dir());
@@ -1239,7 +1254,9 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	root_default->connect("pressed",this,"_root_default_pressed");
 	custom_root_hb->add_child(root_default);
 
-
+	root_node_name = memnew( LineEdit );
+	root_node_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc->add_margin_child(TTR("Root Node Name:"),root_node_name);
 	/*
 	this_import = memnew( OptionButton );
 	this_import->add_item("Overwrite Existing Scene");
@@ -1445,6 +1462,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 			}
 
 		} break;
+		default: {}
 
 	}
 
@@ -2182,6 +2200,7 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 		}
 	}
 
+	scene->set_name(from->get_option("root_name"));
 	_tag_import_paths(scene,scene);
 
 	*r_node=scene;
@@ -2323,7 +2342,7 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 
 	if (!scene->has_node(String("AnimationPlayer")))
 		return;
-		Node* n = scene->get_node(String("AnimationPlayer"));
+	Node* n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
 	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
 	ERR_FAIL_COND(!anim);
@@ -2441,7 +2460,7 @@ void EditorSceneImportPlugin::_optimize_animations(Node *scene, float p_max_lin_
 
 	if (!scene->has_node(String("AnimationPlayer")))
 		return;
-		Node* n = scene->get_node(String("AnimationPlayer"));
+	Node* n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
 	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
 	ERR_FAIL_COND(!anim);
@@ -2840,7 +2859,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 				}
 			}
 
-			Error err = EditorTextureImportPlugin::get_singleton()->import(target_path,imd);
+			EditorTextureImportPlugin::get_singleton()->import(target_path,imd);
 
 		}
 	}

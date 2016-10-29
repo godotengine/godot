@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="32"
-     inkscape:cx="7.2827981"
-     inkscape:cy="6.8612677"
+     inkscape:cx="6.0308283"
+     inkscape:cy="7.6625569"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -74,27 +74,14 @@
      id="layer1"
      transform="translate(0,-1036.3622)">
     <path
-       style="fill:#cacad7;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
-       d="m 8,1044.3622 6,-3 -6,-3 -6,3 z"
-       id="path4180"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccc" />
+       style="fill:#e0e0e0;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 8,1043.8622 0,6 6,-3 0,-6 z"
+       id="path4135"
+       inkscape:connector-curvature="0" />
     <path
-       style="fill:#cacad7;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
-       d="m 2,1047.3622 6,3 0,-6 -6,-3 z"
-       id="path4176"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccc" />
-    <path
-       sodipodi:nodetypes="ccccc"
-       inkscape:connector-curvature="0"
-       id="path4178"
-       d="m 14,1047.3622 -6,3 0,-6 6,-3 z"
-       style="fill:#cacad7;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-    <path
-       style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;baseline-shift:baseline;text-anchor:start;white-space:normal;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#3b3a4d;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+       style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;baseline-shift:baseline;text-anchor:start;white-space:normal;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#e0e0e0;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
        d="M 7.9628906 1.0019531 A 1.0001 1.0001 0 0 0 7.5527344 1.1054688 L 1.5527344 4.1054688 A 1.0001 1.0001 0 0 0 1 5 L 1 11 A 1.0001 1.0001 0 0 0 1.5527344 11.894531 L 7.5527344 14.894531 A 1.0001 1.0001 0 0 0 8.4472656 14.894531 L 14.447266 11.894531 A 1.0001 1.0001 0 0 0 15 11 L 15 5 A 1.0001 1.0001 0 0 0 14.447266 4.1054688 L 8.4472656 1.1054688 A 1.0001 1.0001 0 0 0 7.9628906 1.0019531 z M 8 3.1191406 L 11.763672 5 L 8 6.8828125 L 4.2363281 5 L 8 3.1191406 z M 3 6.6171875 L 7 8.6171875 L 7 12.382812 L 3 10.382812 L 3 6.6171875 z M 13 6.6171875 L 13 10.382812 L 9 12.382812 L 9 8.6171875 L 13 6.6171875 z "
-       transform="translate(0,1036.3622)"
-       id="path4139" />
+       id="path4139"
+       transform="translate(0,1036.3622)" />
   </g>
 </svg>

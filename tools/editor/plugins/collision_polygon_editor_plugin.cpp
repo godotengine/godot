@@ -584,7 +584,7 @@ CollisionPolygonEditor::CollisionPolygonEditor(EditorNode *p_editor) {
 	handle_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1));
 	handle_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	handle_material->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY, false);
-	Ref<Texture> handle= SpatialEditor::get_singleton()->get_icon("Editor3DHandle","EditorIcons");
+	Ref<Texture> handle=editor->get_gui_base()->get_icon("Editor3DHandle","EditorIcons");
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(FixedMaterial::PARAM_DIFFUSE,handle);
 

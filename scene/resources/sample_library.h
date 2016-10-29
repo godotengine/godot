@@ -47,6 +47,8 @@ class SampleLibrary : public Resource {
 	};
 
 	Map<StringName,SampleData > sample_map;
+
+	Array _get_sample_list() const;
 protected:
 
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -66,7 +68,7 @@ public:
 	void sample_set_pitch_scale(const StringName& p_name, float p_pitch);
 	float sample_get_pitch_scale(const StringName& p_name) const;
 	Ref<Sample> get_sample(const StringName& p_name) const;
-	void get_sample_list(List<StringName> *p_samples);
+	void get_sample_list(List<StringName> *p_samples) const;
 	void remove_sample(const StringName& p_name);
 	StringName get_sample_idx(int p_idx) const;
 

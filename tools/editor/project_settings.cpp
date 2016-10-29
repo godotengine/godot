@@ -100,16 +100,6 @@ void ProjectSettings::_notification(int p_what) {
 			translation_res_file_open->add_filter("*."+E->get());
 			translation_res_option_file_open->add_filter("*."+E->get());
 		}
-
-		List<String> afn;
-		ResourceLoader::get_recognized_extensions_for_type("Script",&afn);
-		ResourceLoader::get_recognized_extensions_for_type("PackedScene",&afn);
-
-		for (List<String>::Element *E=afn.front();E;E=E->next()) {
-
-			autoload_file_open->add_filter("*."+E->get());
-		}
-
 	}
 }
 
@@ -255,7 +245,7 @@ void ProjectSettings::_device_input_add() {
 	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 
-
+	_show_last_added(ie);
 }
 
 
@@ -293,7 +283,34 @@ void ProjectSettings::_press_a_key_confirm() {
 	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 
+	_show_last_added(ie);
+}
 
+void ProjectSettings::_show_last_added(const InputEvent& p_event) {
+	TreeItem *r = input_editor->get_root();
+
+	if (!r)
+		return;
+	r=r->get_children();
+	if (!r)
+		return;
+	bool found = false;
+	while(r){
+		TreeItem *child = r->get_children();
+		while(child){
+			Variant input = child->get_meta("__input");
+			if (p_event==input){
+				child->select(0);
+				found = true;
+				break;
+			}
+			child=child->get_next();
+		}
+		if (found) break;
+		r=r->get_next();
+	}
+
+	if (found) input_editor->ensure_cursor_is_visible();
 }
 
 void ProjectSettings::_wait_for_key(const InputEvent& p_event) {
@@ -347,7 +364,7 @@ void ProjectSettings::_add_item(int p_item){
 			device_index->add_item(TTR("Button 7"));
 			device_index->add_item(TTR("Button 8"));
 			device_index->add_item(TTR("Button 9"));
-			device_input->popup_centered(Size2(350,95));
+			device_input->popup_centered_minsize(Size2(350,95));
 		} break;
 		case InputEvent::JOYSTICK_MOTION: {
 
@@ -359,12 +376,12 @@ void ProjectSettings::_add_item(int p_item){
 				String desc = _axis_names[i];
 				device_index->add_item(TTR("Axis")+" "+itos(i/2)+" "+(i&1?"+":"-")+desc);
 			}
-			device_input->popup_centered(Size2(350,95));
+			device_input->popup_centered_minsize(Size2(350,95));
 
 		} break;
 		case InputEvent::JOYSTICK_BUTTON: {
 
-			device_id->set_val(0);
+			device_id->set_val(3);
 			device_index_label->set_text(TTR("Joystick Button Index:"));
 			device_index->clear();
 
@@ -372,7 +389,7 @@ void ProjectSettings::_add_item(int p_item){
 
 				device_index->add_item(itos(i)+": "+String(_button_names[i]));
 			}
-			device_input->popup_centered(Size2(350,95));
+			device_input->popup_centered_minsize(Size2(350,95));
 
 		} break;
 		default:{}
@@ -553,6 +570,7 @@ void ProjectSettings::_update_actions() {
 			}
 			action->add_button(0,get_icon("Remove","EditorIcons"),2);
 			action->set_metadata(0,i);
+			action->set_meta("__input", ie);
 		}
 	}
 }
@@ -564,7 +582,7 @@ void ProjectSettings::popup_project_settings() {
 	popup_centered_ratio();
 	globals_editor->update_category_list();
 	_update_translations();
-	_update_autoload();
+	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
 }
 
@@ -616,10 +634,26 @@ void ProjectSettings::_item_add() {
 
 	String name = catname!="" ? catname+"/"+propname : propname;
 
-	Globals::get_singleton()->set(name,value);
+	undo_redo->create_action("Add Global Property");
+
+	undo_redo->add_do_property(Globals::get_singleton(), name, value);
+	undo_redo->add_do_method(Globals::get_singleton(), "set_persisting", name, true);
+
+	if (Globals::get_singleton()->has(name)) {
+		undo_redo->add_undo_property(Globals::get_singleton(), name, Globals::get_singleton()->get(name));
+	} else {
+		undo_redo->add_undo_property(Globals::get_singleton(), name, Variant());
+	}
+
+	undo_redo->add_do_method(globals_editor, "update_category_list");
+	undo_redo->add_undo_method(globals_editor, "update_category_list");
+
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+
+	undo_redo->commit_action();
 
 	globals_editor->set_current_section(catname);
-	globals_editor->update_category_list();
 
 	_settings_changed();
 }
@@ -633,10 +667,20 @@ void ProjectSettings::_item_del() {
 
 	String name = catname!="" ? catname+"/"+propname : propname;
 
-	Globals::get_singleton()->set(name,Variant());
+	undo_redo->create_action("Delete Global Property");
 
-	globals_editor->set_current_section(catname);
-	globals_editor->update_category_list();
+	undo_redo->add_do_property(Globals::get_singleton(), name, Variant());
+
+	undo_redo->add_undo_property(Globals::get_singleton(), name, Globals::get_singleton()->get(name));
+	undo_redo->add_undo_method(Globals::get_singleton(), "set_persisting", name, Globals::get_singleton()->is_persisting(name));
+
+	undo_redo->add_do_method(globals_editor, "update_category_list");
+	undo_redo->add_undo_method(globals_editor, "update_category_list");
+
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+
+	undo_redo->commit_action();
 
 	_settings_changed();
 }
@@ -809,263 +853,6 @@ void ProjectSettings::_translation_add(const String& p_path) {
 void ProjectSettings::_translation_file_open() {
 
 	translation_file_open->popup_centered_ratio();
-}
-
-
-void ProjectSettings::_autoload_file_callback(const String& p_path) {
-
-	autoload_add_path->set_text(p_path);
-	//if (autoload_add_name->get_text().strip_edges()==String()) {
-
-		autoload_add_name->set_text( p_path.get_file().basename() );
-	//}
-
-	//_translation_add(p_translation);
-}
-
-void ProjectSettings::_autoload_file_open() {
-
-	autoload_file_open->popup_centered_ratio();
-}
-
-void ProjectSettings::_autoload_edited() {
-
-	if (updating_autoload)
-		return;
-
-	TreeItem *ti = autoload_list->get_edited();
-	int column = autoload_list->get_edited_column();
-
-	if (!ti || (column != 0 && column != 2))
-		return;
-
-	if (column == 0) {
-		String name = ti->get_text(0);
-		String old_name = selected_autoload.substr(selected_autoload.find("/")+1,selected_autoload.length());
-
-		if (!name.is_valid_identifier()) {
-			ti->set_text(0,old_name);
-			message->set_text(TTR("Invalid name.")+"\n"+TTR("Valid characters:")+" a-z, A-Z, 0-9 or _");
-			message->popup_centered(Size2(300,100));
-			return;
-		}
-
-		if (ObjectTypeDB::type_exists(name)) {
-			ti->set_text(0,old_name);
-			message->set_text(TTR("Invalid name. Must not collide with an existing engine class name."));
-			message->popup_centered(Size2(400,100));
-			return;
-		}
-
-		for(int i=0;i<Variant::VARIANT_MAX;i++) {
-			if (Variant::get_type_name(Variant::Type(i))==name) {
-				ti->set_text(0,old_name);
-				message->set_text(TTR("Invalid name. Must not collide with an existing buit-in type name."));
-				message->popup_centered(Size2(400,100));
-				return;
-			}
-		}
-
-		for(int i=0;i<GlobalConstants::get_global_constant_count();i++) {
-			if (GlobalConstants::get_global_constant_name(i)==name) {
-				ti->set_text(0,old_name);
-				message->set_text(TTR("Invalid name. Must not collide with an existing global constant name."));
-				message->popup_centered(Size2(400,100));
-				return;
-			}
-		}
-
-		if (Globals::get_singleton()->has("autoload/"+name)) {
-			ti->set_text(0,old_name);
-			message->set_text(vformat(TTR("Autoload '%s' already exists!"),name));
-			message->popup_centered(Size2(300,100));
-			return;
-		}
-
-		updating_autoload = true;
-
-		name = "autoload/"+name;
-		String path = Globals::get_singleton()->get(selected_autoload);
-		bool is_persisting = Globals::get_singleton()->is_persisting(selected_autoload);
-		int order = Globals::get_singleton()->get_order(selected_autoload);
-
-		undo_redo->create_action(TTR("Rename Autoload"));
-		undo_redo->add_do_property(Globals::get_singleton(),name,path);
-		undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",name,is_persisting);
-		undo_redo->add_do_method(Globals::get_singleton(),"set_order",name,order);
-		undo_redo->add_do_method(Globals::get_singleton(),"clear",selected_autoload);
-		undo_redo->add_undo_property(Globals::get_singleton(),selected_autoload,path);
-		undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",selected_autoload,is_persisting);
-		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",selected_autoload,order);
-		undo_redo->add_undo_method(Globals::get_singleton(),"clear",name);
-		undo_redo->add_do_method(this,"_update_autoload");
-		undo_redo->add_undo_method(this,"_update_autoload");
-		undo_redo->add_do_method(this,"_settings_changed");
-		undo_redo->add_undo_method(this,"_settings_changed");
-		undo_redo->commit_action();
-
-		selected_autoload = name;
-	} else if (column == 2) {
-		updating_autoload = true;
-
-		bool checked = ti->is_checked(2);
-		String base = "autoload/"+ti->get_text(0);
-		String path = Globals::get_singleton()->get(base);
-		int order = Globals::get_singleton()->get_order(base);
-
-		if (path.begins_with("*"))
-			path = path.substr(1,path.length());
-
-		if (checked)
-			path = "*" + path;
-
-		undo_redo->create_action(TTR("Toggle AutoLoad Globals"));
-		undo_redo->add_do_property(Globals::get_singleton(),base,path);
-		undo_redo->add_undo_property(Globals::get_singleton(),base,Globals::get_singleton()->get(base));
-		undo_redo->add_do_method(Globals::get_singleton(),"set_order",base,order); // keep order, as config order matters for these
-		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",base,order);
-		undo_redo->add_do_method(this,"_update_autoload");
-		undo_redo->add_undo_method(this,"_update_autoload");
-		undo_redo->add_do_method(this,"_settings_changed");
-		undo_redo->add_undo_method(this,"_settings_changed");
-		undo_redo->commit_action();
-	}
-
-	updating_autoload = false;
-}
-
-void ProjectSettings::_autoload_add() {
-
-	String name = autoload_add_name->get_text();
-	if (!name.is_valid_identifier()) {
-		message->set_text(TTR("Invalid name.")+"\n"+TTR("Valid characters:")+" a-z, A-Z, 0-9 or _");
-		message->popup_centered(Size2(300,100));
-		return;
-
-	}
-
-	if (ObjectTypeDB::type_exists(name)) {
-
-		message->set_text(TTR("Invalid name. Must not collide with an existing engine class name."));
-		message->popup_centered(Size2(300,100));
-		return;
-
-	}
-
-	for(int i=0;i<Variant::VARIANT_MAX;i++) {
-		if (Variant::get_type_name(Variant::Type(i))==name) {
-
-			message->set_text(TTR("Invalid name. Must not collide with an existing buit-in type name."));
-			message->popup_centered(Size2(300,100));
-			return;
-
-		}
-	}
-
-	for(int i=0;i<GlobalConstants::get_global_constant_count();i++) {
-
-		if (GlobalConstants::get_global_constant_name(i)==name) {
-
-			message->set_text(TTR("Invalid name. Must not collide with an existing global constant name."));
-			message->popup_centered(Size2(300,100));
-			return;
-		}
-
-	}
-
-	String path = autoload_add_path->get_text();
-	if (!FileAccess::exists(path)) {
-		message->set_text("Invalid Path.\nFile does not exist.");
-		message->popup_centered(Size2(300,100));
-		return;
-
-	}
-	if (!path.begins_with("res://")) {
-		message->set_text("Invalid Path.\nNot in resource path.");
-		message->popup_centered(Size2(300,100));
-		return;
-
-	}
-
-	undo_redo->create_action(TTR("Add Autoload"));
-	name = "autoload/"+name;
-	undo_redo->add_do_property(Globals::get_singleton(),name,"*"+path);
-	if (Globals::get_singleton()->has(name))
-		undo_redo->add_undo_property(Globals::get_singleton(),name,Globals::get_singleton()->get(name));
-	else
-		undo_redo->add_undo_property(Globals::get_singleton(),name,Variant());
-
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",name,true);
-	undo_redo->add_do_method(this,"_update_autoload");
-	undo_redo->add_undo_method(this,"_update_autoload");
-	undo_redo->add_do_method(this,"_settings_changed");
-	undo_redo->add_undo_method(this,"_settings_changed");
-	undo_redo->commit_action();
-
-	autoload_add_path->set_text("");
-	autoload_add_name->set_text("");
-
-	//autoload_file_open->popup_centered_ratio();
-}
-
-void ProjectSettings::_autoload_delete(Object *p_item,int p_column, int p_button) {
-
-
-	TreeItem *ti=p_item->cast_to<TreeItem>();
-	String name = "autoload/"+ti->get_text(0);
-
-	if (p_button==0) {
-		//delete
-		int order = Globals::get_singleton()->get_order(name);
-		undo_redo->create_action(TTR("Remove Autoload"));
-		undo_redo->add_do_property(Globals::get_singleton(),name,Variant());
-		undo_redo->add_undo_property(Globals::get_singleton(),name,Globals::get_singleton()->get(name));
-		undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",name,true);
-		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",name,order);
-		undo_redo->add_do_method(this,"_update_autoload");
-		undo_redo->add_undo_method(this,"_update_autoload");
-		undo_redo->add_do_method(this,"_settings_changed");
-		undo_redo->add_undo_method(this,"_settings_changed");
-		undo_redo->commit_action();
-	} else {
-
-		TreeItem *swap = NULL;
-
-		if (p_button==1) {
-			swap=ti->get_prev();
-		} else if (p_button==2) {
-			swap=ti->get_next();
-		}
-		if (!swap)
-			return;
-
-		String swap_name= "autoload/"+swap->get_text(0);
-
-		int order = Globals::get_singleton()->get_order(name);
-		int swap_order = Globals::get_singleton()->get_order(swap_name);
-
-		undo_redo->create_action(TTR("Move Autoload"));
-		undo_redo->add_do_method(Globals::get_singleton(),"set_order",swap_name,order);
-		undo_redo->add_do_method(Globals::get_singleton(),"set_order",name,swap_order);
-		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",swap_name,swap_order);
-		undo_redo->add_undo_method(Globals::get_singleton(),"set_order",name,order);
-		undo_redo->add_do_method(this,"_update_autoload");
-		undo_redo->add_undo_method(this,"_update_autoload");
-		undo_redo->add_do_method(this,"_settings_changed");
-		undo_redo->add_undo_method(this,"_settings_changed");
-		undo_redo->commit_action();
-
-	}
-
-}
-
-void ProjectSettings::_autoload_selected() {
-	TreeItem *ti = autoload_list->get_selected();
-
-	if (!ti)
-		return;
-
-	selected_autoload = "autoload/"+ti->get_text(0);
 }
 
 void ProjectSettings::_translation_delete(Object *p_item,int p_column, int p_button) {
@@ -1393,55 +1180,6 @@ void ProjectSettings::_update_translations() {
 
 }
 
-void ProjectSettings::_update_autoload() {
-
-	if (updating_autoload)
-		return;
-
-	updating_autoload=true;
-
-	autoload_list->clear();
-	TreeItem *root = autoload_list->create_item();
-	autoload_list->set_hide_root(true);
-
-	List<PropertyInfo> props;
-	Globals::get_singleton()->get_property_list(&props);
-
-	for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
-
-		const PropertyInfo &pi=E->get();
-		if (!pi.name.begins_with("autoload/"))
-			continue;
-
-		String name = pi.name.get_slice("/",1);
-		String path = Globals::get_singleton()->get(pi.name);
-
-		if (name=="")
-			continue;
-		bool global=false;
-		if (path.begins_with("*")) {
-			path=path.substr(1,path.length());
-			global=true;
-		}
-		TreeItem *t = autoload_list->create_item(root);
-		t->set_text(0,name);
-		t->set_editable(0,true);
-		t->set_text(1,path);
-		t->set_cell_mode(2,TreeItem::CELL_MODE_CHECK);
-		t->set_editable(2,true);
-		t->set_text(2,TTR("Enable"));
-		t->set_checked(2,global);
-		t->add_button(3,get_icon("MoveUp","EditorIcons"),1);
-		t->add_button(3,get_icon("MoveDown","EditorIcons"),2);
-		t->add_button(3,get_icon("Del","EditorIcons"),0);
-
-
-	}
-
-	updating_autoload=false;
-
-}
-
 void ProjectSettings::_toggle_search_bar(bool p_pressed) {
 
 	globals_editor->get_property_editor()->set_use_filter(p_pressed);
@@ -1507,14 +1245,6 @@ void ProjectSettings::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_translation_res_option_changed"),&ProjectSettings::_translation_res_option_changed);
 	ObjectTypeDB::bind_method(_MD("_translation_res_delete"),&ProjectSettings::_translation_res_delete);
 	ObjectTypeDB::bind_method(_MD("_translation_res_option_delete"),&ProjectSettings::_translation_res_option_delete);
-
-	ObjectTypeDB::bind_method(_MD("_autoload_add"),&ProjectSettings::_autoload_add);
-	ObjectTypeDB::bind_method(_MD("_autoload_file_open"),&ProjectSettings::_autoload_file_open);
-	ObjectTypeDB::bind_method(_MD("_autoload_file_callback"),&ProjectSettings::_autoload_file_callback);
-	ObjectTypeDB::bind_method(_MD("_update_autoload"),&ProjectSettings::_update_autoload);
-	ObjectTypeDB::bind_method(_MD("_autoload_delete"),&ProjectSettings::_autoload_delete);
-	ObjectTypeDB::bind_method(_MD("_autoload_edited"),&ProjectSettings::_autoload_edited);
-	ObjectTypeDB::bind_method(_MD("_autoload_selected"),&ProjectSettings::_autoload_selected);
 
 	ObjectTypeDB::bind_method(_MD("_clear_search_box"),&ProjectSettings::_clear_search_box);
 	ObjectTypeDB::bind_method(_MD("_toggle_search_bar"),&ProjectSettings::_toggle_search_bar);
@@ -1673,34 +1403,35 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	input_base->set_area_as_parent_rect();;
 	tab_container->add_child(input_base);
 
+	VBoxContainer *vbc = memnew( VBoxContainer );
+	input_base->add_child(vbc);
+	vbc->set_anchor_and_margin(MARGIN_TOP,ANCHOR_BEGIN, 5 );
+	vbc->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END, 5 );
+	vbc->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN, 5 );
+	vbc->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END, 5 );
+
 	l = memnew( Label );
-	input_base->add_child(l);
+	vbc->add_child(l);
 	l->set_pos(Point2(6,5));
 	l->set_text(TTR("Action:"));
 
+	hbc = memnew( HBoxContainer );
+	vbc->add_child(hbc);
+
 	action_name = memnew( LineEdit );
-	action_name->set_anchor(MARGIN_RIGHT,ANCHOR_RATIO);
-	action_name->set_begin( Point2(5,25) );
-	action_name->set_end( Point2(0.85,26) );
-	input_base->add_child(action_name);
+	action_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->add_child(action_name);
 	action_name->connect("text_entered",this,"_action_adds");
 
 	add = memnew( Button );
-	input_base->add_child(add);
-	add->set_anchor(MARGIN_LEFT,ANCHOR_RATIO);
-	add->set_begin( Point2(0.86,25) );
-	add->set_anchor(MARGIN_RIGHT,ANCHOR_END);
-	add->set_end( Point2(5,26) );
+	hbc->add_child(add);
+	add->set_custom_minimum_size(Size2(150, 0));
 	add->set_text(TTR("Add"));
 	add->connect("pressed",this,"_action_add");
 
 	input_editor = memnew( Tree );
-	input_base->add_child(input_editor);
-	input_editor->set_area_as_parent_rect();
-	input_editor->set_anchor_and_margin(MARGIN_TOP,ANCHOR_BEGIN, 55 );
-	input_editor->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END, 35 );
-	input_editor->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN, 5 );
-	input_editor->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END, 5 );
+	vbc->add_child(input_editor);
+	input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	input_editor->connect("item_edited",this,"_action_edited");
 	input_editor->connect("cell_selected",this,"_action_selected");
 	input_editor->connect("button_pressed",this,"_action_button_pressed");
@@ -1729,30 +1460,32 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	device_input->get_ok()->set_text(TTR("Add"));
 	device_input->connect("confirmed",this,"_device_input_add");
 
+	hbc = memnew( HBoxContainer );
+	device_input->add_child(hbc);
+	device_input->set_child_rect(hbc);
+
+	VBoxContainer *vbc_left = memnew( VBoxContainer );
+	hbc->add_child(vbc_left);
+
 	l = memnew( Label );
 	l->set_text(TTR("Device:"));
-	l->set_pos(Point2(15,10));
-	device_input->add_child(l);
+	vbc_left->add_child(l);
+
+	device_id = memnew( SpinBox );
+	device_id->set_val(0);
+	vbc_left->add_child(device_id);
+
+	VBoxContainer *vbc_right = memnew( VBoxContainer );
+	hbc->add_child(vbc_right);
+	vbc_right->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	l = memnew( Label );
 	l->set_text(TTR("Index:"));
-	l->set_pos(Point2(90,10));
-	device_input->add_child(l);
+	vbc_right->add_child(l);
 	device_index_label=l;
 
-	device_id = memnew( SpinBox );
-	device_id->set_pos(Point2(20,30));
-	device_id->set_size(Size2(70,10));
-	device_id->set_val(0);
-
-	device_input->add_child(device_id);
-
 	device_index = memnew( OptionButton );
-	device_index->set_pos(Point2(95,30));
-	device_index->set_size(Size2(300,10));
-	device_index->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,10);
-
-	device_input->add_child(device_index);
+	vbc_right->add_child(device_index);
 
 	/*
 	save = memnew( Button );
@@ -1858,69 +1591,10 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 
 	{
-		VBoxContainer *avb = memnew( VBoxContainer );
-		tab_container->add_child(avb);
-		avb->set_name(TTR("AutoLoad"));
-		HBoxContainer *ahb = memnew( HBoxContainer);
-		avb->add_child(ahb);
-
-
-		VBoxContainer *avb_path = memnew( VBoxContainer );
-		avb_path->set_h_size_flags(SIZE_EXPAND_FILL);
-		HBoxContainer *ahb_path = memnew( HBoxContainer );
-		autoload_add_path = memnew(LineEdit);
-		autoload_add_path->set_h_size_flags(SIZE_EXPAND_FILL);
-		ahb_path->add_child(autoload_add_path);
-		Button *browseaa = memnew( Button("..") );
-		ahb_path->add_child(browseaa);
-		browseaa->connect("pressed",this,"_autoload_file_open");
-
-		avb_path->add_margin_child(TTR("Path:"),ahb_path);
-		ahb->add_child(avb_path);
-
-		VBoxContainer *avb_name = memnew( VBoxContainer );
-		avb_name->set_h_size_flags(SIZE_EXPAND_FILL);
-
-		HBoxContainer *ahb_name = memnew( HBoxContainer );
-		autoload_add_name = memnew(LineEdit);
-		autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
-		ahb_name->add_child(autoload_add_name);
-		avb_name->add_margin_child(TTR("Node Name:"),ahb_name);
-		Button *addaa = memnew( Button(TTR("Add")) );
-		ahb_name->add_child(addaa);
-		addaa->connect("pressed",this,"_autoload_add");
-
-		ahb->add_child(avb_name);
-
-		autoload_list = memnew( Tree );
-		autoload_list->set_v_size_flags(SIZE_EXPAND_FILL);
-		avb->add_margin_child(TTR("List:"),autoload_list,true);
-
-		autoload_file_open=memnew( EditorFileDialog );
-		add_child(autoload_file_open);
-		autoload_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-		autoload_file_open->connect("file_selected",this,"_autoload_file_callback");
-
-		autoload_list->set_columns(4);
-		autoload_list->set_column_titles_visible(true);
-		autoload_list->set_column_title(0,TTR("Name"));
-		autoload_list->set_column_expand(0,true);
-		autoload_list->set_column_min_width(0,100);
-		autoload_list->set_column_title(1,TTR("Path"));
-		autoload_list->set_column_expand(1,true);
-		autoload_list->set_column_min_width(1,100);
-		autoload_list->set_column_title(2,TTR("Singleton"));
-		autoload_list->set_column_expand(2,false);
-		autoload_list->set_column_min_width(2,80);
-		autoload_list->set_column_expand(3,false);
-		autoload_list->set_column_min_width(3,80);
-
-		autoload_list->connect("button_pressed",this,"_autoload_delete");
-		autoload_list->connect("item_edited",this,"_autoload_edited");
-		autoload_list->connect("cell_selected", this, "_autoload_selected");
-
-		updating_autoload=false;
-
+		autoload_settings = memnew( EditorAutoloadSettings );
+		autoload_settings->set_name(TTR("AutoLoad"));
+		tab_container->add_child(autoload_settings);
+		autoload_settings->connect("autoload_changed", this, "_settings_changed");
 	}
 
 	{

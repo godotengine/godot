@@ -30,6 +30,7 @@
 
 #include "print_string.h"
 #include "os/os.h"
+
 #include <string.h>
 
 
@@ -270,7 +271,7 @@ static void user_read_data(png_structp png_ptr,png_bytep data, png_size_t p_leng
 	PNGReadStatus *rstatus;
 	rstatus=(PNGReadStatus*)png_get_io_ptr(png_ptr);
 
-	int to_read=p_length;
+	png_size_t to_read=p_length;
 	if (rstatus->size>=0) {
 		to_read = MIN( p_length, rstatus->size - rstatus->offset);
 	}

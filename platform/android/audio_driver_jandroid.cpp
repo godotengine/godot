@@ -192,29 +192,31 @@ void AudioDriverAndroid::thread_func(JNIEnv *env) {
 		env->CallVoidMethod(gob, _write_buffer, (jshortArray)audioBuffer);
 	}
 
-
-
 }
 
 int AudioDriverAndroid::get_mix_rate() const {
 
 	return mix_rate;
 }
+
 AudioDriverSW::OutputFormat AudioDriverAndroid::get_output_format() const{
 
 	return OUTPUT_STEREO;
 }
+
 void AudioDriverAndroid::lock(){
 
 	if (mutex)
 		mutex->lock();
 
 }
+
 void AudioDriverAndroid::unlock() {
 
 	if (mutex)
 		mutex->unlock();
 }
+
 void AudioDriverAndroid::finish(){
 
 	JNIEnv *env = ThreadAndroid::get_env();
@@ -236,12 +238,10 @@ void AudioDriverAndroid::set_pause(bool p_pause) {
 
 }
 
-AudioDriverAndroid::AudioDriverAndroid()
-{
+AudioDriverAndroid::AudioDriverAndroid() {
+
 	s_ad=this;
 	active=false;
-
-
 
 }
 

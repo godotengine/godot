@@ -400,6 +400,7 @@ void TabContainer::_child_renamed_callback() {
 
 void TabContainer::add_child_notify(Node *p_child) {
 
+	Control::add_child_notify(p_child);
 
 	Control *c = p_child->cast_to<Control>();
 	if (!c)
@@ -531,6 +532,8 @@ Control* TabContainer::get_current_tab_control() const {
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
+
+	Control::remove_child_notify(p_child);
 
 	int tc = get_tab_count();
 	if (current==tc-1) {

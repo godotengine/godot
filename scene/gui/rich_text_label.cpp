@@ -662,8 +662,9 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (use_bbcode)
-				parse_bbcode(bbcode);
+			if (bbcode != "")
+				set_bbcode(bbcode);
+
 			main->first_invalid_line=0; //invalidate ALL
 			update();
 
@@ -1440,7 +1441,6 @@ bool RichTextLabel::is_scroll_following() const {
 
 Error RichTextLabel::parse_bbcode(const String& p_bbcode) {
 
-
 	clear();
 	return append_bbcode(p_bbcode);
 }
@@ -1858,6 +1858,10 @@ void RichTextLabel::set_bbcode(const String& p_bbcode) {
 	bbcode=p_bbcode;
 	if (is_inside_tree() && use_bbcode)
 		parse_bbcode(p_bbcode);
+	else { // raw text
+		clear();
+		add_text(p_bbcode);
+	}
 }
 
 String RichTextLabel::get_bbcode() const {
@@ -1869,19 +1873,37 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	if (use_bbcode==p_enable)
 		return;
 	use_bbcode=p_enable;
-	if (is_inside_tree() && use_bbcode)
-		parse_bbcode(bbcode);
+	set_bbcode(bbcode);
 }
 
 bool RichTextLabel::is_using_bbcode() const {
 
 	return use_bbcode;
 }
+
+String RichTextLabel::get_text() {
+	String text = "";
+	Item *it = main;
+	while (it) {
+		if (it->type == ITEM_TEXT) {
+			ItemText *t = static_cast<ItemText*>(it);
+			text += t->text;
+		} else if (it->type == ITEM_NEWLINE) {
+			text += "\n";
+		} else if (it->type == ITEM_INDENT) {
+			text += "\t";
+		}
+		it=_get_next_item(it,true);
+	}
+	return text;
+}
+
 void RichTextLabel::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&RichTextLabel::_input_event);
 	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&RichTextLabel::_scroll_changed);
+	ObjectTypeDB::bind_method(_MD("get_text"),&RichTextLabel::get_text);
 	ObjectTypeDB::bind_method(_MD("add_text","text"),&RichTextLabel::add_text);
 	ObjectTypeDB::bind_method(_MD("add_image","image:Texture"),&RichTextLabel::add_image);
 	ObjectTypeDB::bind_method(_MD("newline"),&RichTextLabel::add_newline);

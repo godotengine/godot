@@ -71,6 +71,11 @@ void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, co
 	}
 }
 
+void Font::update_changes() {
+
+	emit_changed();
+}
+
 void Font::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("draw","canvas_item","pos","string","modulate","clip_w"),&Font::draw,DEFVAL(Color(1,1,1)),DEFVAL(-1));
@@ -80,6 +85,7 @@ void Font::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_distance_field_hint"),&Font::is_distance_field_hint);
 	ObjectTypeDB::bind_method(_MD("get_string_size","string"),&Font::get_string_size);
 	ObjectTypeDB::bind_method(_MD("draw_char","canvas_item","pos","char","next","modulate"),&Font::draw_char,DEFVAL(-1),DEFVAL(Color(1,1,1)));
+	ObjectTypeDB::bind_method(_MD("update_changes"),&Font::update_changes);
 
 }
 

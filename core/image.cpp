@@ -2052,6 +2052,7 @@ Error Image::_decompress_bc() {
 				ht/=2;
 
 			} break;
+			default: {}
 		}
 
 	}

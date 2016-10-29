@@ -752,8 +752,6 @@ void SurfaceTool::generate_normals() {
 	if (smooth_groups.has(0))
 		smooth=smooth_groups[0];
 
-	print_line("SMOOTH BEGIN? "+itos(smooth));
-
 	List< Vertex >::Element *B=vertex_array.front();
 	for(List< Vertex >::Element *E=B;E;) {
 
@@ -862,6 +860,7 @@ void SurfaceTool::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("deindex"),&SurfaceTool::deindex);
 	///ObjectTypeDB::bind_method(_MD("generate_flat_normals"),&SurfaceTool::generate_flat_normals);
 	ObjectTypeDB::bind_method(_MD("generate_normals"),&SurfaceTool::generate_normals);
+	ObjectTypeDB::bind_method(_MD("add_index", "index"), &SurfaceTool::add_index);
 	ObjectTypeDB::bind_method(_MD("commit:Mesh","existing:Mesh"),&SurfaceTool::commit,DEFVAL(Variant()));
 	ObjectTypeDB::bind_method(_MD("clear"),&SurfaceTool::clear);
 

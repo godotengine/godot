@@ -115,7 +115,6 @@ bool EditorSettings::_get(const StringName& p_name,Variant &r_ret) const {
 					continue; //not changed from default, don't save
 			}
 
-			print_line("SAVING: "+E->key());
 			arr.push_back(E->key());
 			arr.push_back(sc->get_shortcut());
 		}
@@ -512,7 +511,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	}
 
 	set("global/hidpi_mode",0);
-	hints["global/hidpi_mode"]=PropertyInfo(Variant::INT,"global/hidpi_mode",PROPERTY_HINT_ENUM,"Auto,LoDPI,HiDPI",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["global/hidpi_mode"]=PropertyInfo(Variant::INT,"global/hidpi_mode",PROPERTY_HINT_ENUM,"Auto,VeryLoDPI,LoDPI,MidDPI,HiDPI",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
 	set("global/show_script_in_scene_tabs",false);
 	set("global/font_size",14);
 	hints["global/font_size"]=PropertyInfo(Variant::INT,"global/font_size",PROPERTY_HINT_RANGE,"10,40,1",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
@@ -547,14 +546,21 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/tab_size"]=PropertyInfo(Variant::INT,"text_editor/tab_size",PROPERTY_HINT_RANGE,"1, 64, 1"); // size of 0 crashes.
 	set("text_editor/draw_tabs", true);
 
+	set("text_editor/line_numbers_zero_padded", false);
+
 	set("text_editor/show_line_numbers", true);
 	set("text_editor/show_breakpoint_gutter", true);
+
+	set("text_editor/show_line_length_guideline", false);
+	set("text_editor/line_length_guideline_column", 80);
+	hints["text_editor/line_length_guideline_column"]=PropertyInfo(Variant::INT,"text_editor/line_length_guideline_column",PROPERTY_HINT_RANGE,"20, 160, 10");
 
 	set("text_editor/trim_trailing_whitespace_on_save", false);
 	set("text_editor/idle_parse_delay",2);
 	set("text_editor/create_signal_callbacks",true);
 	set("text_editor/autosave_interval_secs",0);
 
+	set("text_editor/block_caret", false);
 	set("text_editor/caret_blink", false);
 	set("text_editor/caret_blink_speed", 0.65);
 	hints["text_editor/caret_blink_speed"]=PropertyInfo(Variant::REAL,"text_editor/caret_blink_speed",PROPERTY_HINT_RANGE,"0.1, 10, 0.1");
@@ -565,14 +571,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("text_editor/restore_scripts_on_load",true);
 
 
-	set("scenetree_editor/duplicate_node_name_num_separator",0);
-	hints["scenetree_editor/duplicate_node_name_num_separator"]=PropertyInfo(Variant::INT,"scenetree_editor/duplicate_node_name_num_separator",PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash");
 	//set("scenetree_editor/display_old_action_buttons",false);
 	set("scenetree_editor/start_create_dialog_fully_expanded",false);
 	set("scenetree_editor/draw_relationship_lines",false);
 	set("scenetree_editor/relationship_line_color",Color::html("464646"));
 
-	set("gridmap_editor/pick_distance", 5000.0);
+	set("grid_map/pick_distance", 5000.0);
+
+	set("3d_editor/grid_color",Color(0,1,0,0.2));
+	hints["3d_editor/grid_color"]=PropertyInfo(Variant::COLOR,"3d_editor/grid_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED);
 
 	set("3d_editor/default_fov",45.0);
 	set("3d_editor/default_z_near",0.1);
@@ -611,8 +618,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("on_save/compress_binary_resources",true);
 	set("on_save/save_modified_external_resources",true);
-	set("on_save/save_paths_as_relative",false);
-	set("on_save/save_paths_without_extension",false);
+	//set("on_save/save_paths_as_relative",false);
+	//set("on_save/save_paths_without_extension",false);
 
 	set("text_editor/create_signal_callbacks",true);
 
@@ -621,6 +628,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["file_dialog/display_mode"]=PropertyInfo(Variant::INT,"file_dialog/display_mode",PROPERTY_HINT_ENUM,"Thumbnails,List");
 	set("file_dialog/thumbnail_size", 64);
 	hints["file_dialog/thumbnail_size"]=PropertyInfo(Variant::INT,"file_dialog/thumbnail_size",PROPERTY_HINT_RANGE,"32,128,16");
+
+	set("filesystem_dock/display_mode", 0);
+	hints["filesystem_dock/display_mode"]=PropertyInfo(Variant::INT,"filesystem_dock/display_mode",PROPERTY_HINT_ENUM,"Thumbnails,List");
+	set("filesystem_dock/thumbnail_size", 64);
+	hints["filesystem_dock/thumbnail_size"]=PropertyInfo(Variant::INT,"filesystem_dock/thumbnail_size",PROPERTY_HINT_RANGE,"32,128,16");
 
 	set("animation/autorename_animation_tracks",true);
 	set("animation/confirm_insert_track",true);
@@ -683,7 +695,10 @@ void EditorSettings::_load_default_text_editor_theme() {
 	set("text_editor/completion_background_color", Color::html("2C2A32"));
 	set("text_editor/completion_selected_color", Color::html("434244"));
 	set("text_editor/completion_existing_color", Color::html("21dfdfdf"));
+	set("text_editor/completion_scroll_color", Color::html("ffffff"));
+	set("text_editor/completion_font_color", Color::html("aaaaaa"));
 	set("text_editor/caret_color",Color::html("aaaaaa"));
+	set("text_editor/caret_background_color", Color::html("000000"));
 	set("text_editor/line_number_color",Color::html("66aaaaaa"));
 	set("text_editor/text_color",Color::html("aaaaaa"));
 	set("text_editor/text_selected_color",Color::html("000000"));
@@ -726,6 +741,25 @@ void EditorSettings::notify_changes() {
 	}
 	root->propagate_notification(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
 
+}
+
+void EditorSettings::_add_property_info_bind(const Dictionary& p_info) {
+
+	ERR_FAIL_COND(!p_info.has("name"));
+	ERR_FAIL_COND(!p_info.has("type"));
+
+	PropertyInfo pinfo;
+	pinfo.name = p_info["name"];
+	ERR_FAIL_COND(!props.has(pinfo.name));
+	pinfo.type = Variant::Type(p_info["type"].operator int());
+	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
+
+	if (p_info.has("hint"))
+		pinfo.hint = PropertyHint(p_info["hint"].operator int());
+	if (p_info.has("hint_string"))
+		pinfo.hint_string = p_info["hint_string"];
+
+	add_property_hint(pinfo);
 }
 
 void EditorSettings::add_property_hint(const PropertyInfo& p_hint) {
@@ -918,7 +952,10 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	cf->set_value(theme_section, "completion_background_color", ((Color)get("text_editor/completion_background_color")).to_html());
 	cf->set_value(theme_section, "completion_selected_color", ((Color)get("text_editor/completion_selected_color")).to_html());
 	cf->set_value(theme_section, "completion_existing_color", ((Color)get("text_editor/completion_existing_color")).to_html());
+	cf->set_value(theme_section, "completion_scroll_color", ((Color)get("text_editor/completion_scroll_color")).to_html());
+	cf->set_value(theme_section, "completion_font_color", ((Color)get("text_editor/completion_font_color")).to_html());
 	cf->set_value(theme_section, "caret_color", ((Color)get("text_editor/caret_color")).to_html());
+	cf->set_value(theme_section, "caret_background_color", ((Color)get("text_editor/caret_background_color")).to_html());
 	cf->set_value(theme_section, "line_number_color", ((Color)get("text_editor/line_number_color")).to_html());
 	cf->set_value(theme_section, "text_color", ((Color)get("text_editor/text_color")).to_html());
 	cf->set_value(theme_section, "text_selected_color", ((Color)get("text_editor/text_selected_color")).to_html());
@@ -939,6 +976,8 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/word_highlighted_color")).to_html());
 	cf->set_value(theme_section, "search_result_color", ((Color)get("text_editor/search_result_color")).to_html());
 	cf->set_value(theme_section, "search_result_border_color", ((Color)get("text_editor/search_result_border_color")).to_html());
+
+
 	Error err = cf->save(p_file);
 
 	if (err == OK) {
@@ -987,11 +1026,41 @@ void EditorSettings::set_optimize_save(bool p_optimize) {
 	optimize_save=p_optimize;
 }
 
+String EditorSettings::get_last_selected_language()
+{
+	Ref<ConfigFile> cf = memnew( ConfigFile );
+	String path = get_project_settings_path().plus_file("project_metadata.cfg");
+	Error err = cf->load(path);
+	if (err != OK) {
+		WARN_PRINTS("Can't load config file: " + path);
+		return "";
+	}
+	Variant last_selected_language = cf->get_value("script_setup", "last_selected_language");
+	if (last_selected_language.get_type() != Variant::STRING)
+		return "";
+	return static_cast<String>(last_selected_language);
+}
+
+void EditorSettings::set_last_selected_language(String p_language)
+{
+	Ref<ConfigFile> cf = memnew( ConfigFile );
+	String path = get_project_settings_path().plus_file("project_metadata.cfg");
+	Error err = cf->load(path);
+	if (err != OK) {
+		WARN_PRINTS("Can't load config file: " + path);
+		return;
+	}
+	cf->set_value("script_setup", "last_selected_language", p_language);
+	cf->save(path);
+}
+
 void EditorSettings::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("erase","property"),&EditorSettings::erase);
 	ObjectTypeDB::bind_method(_MD("get_settings_path"),&EditorSettings::get_settings_path);
 	ObjectTypeDB::bind_method(_MD("get_project_settings_path"),&EditorSettings::get_project_settings_path);
+
+	ObjectTypeDB::bind_method(_MD("add_property_info", "info"),&EditorSettings::_add_property_info_bind);
 
 	ObjectTypeDB::bind_method(_MD("set_favorite_dirs","dirs"),&EditorSettings::set_favorite_dirs);
 	ObjectTypeDB::bind_method(_MD("get_favorite_dirs"),&EditorSettings::get_favorite_dirs);

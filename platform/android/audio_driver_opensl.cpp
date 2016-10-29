@@ -207,6 +207,7 @@ Error AudioDriverOpenSL::init(){
 	return OK;
 
 }
+
 void AudioDriverOpenSL::start(){
 
 
@@ -366,26 +367,31 @@ void AudioDriverOpenSL::start(){
 
 	active=true;
 }
+
 int AudioDriverOpenSL::get_mix_rate() const {
 
 	return 44100;
 }
+
 AudioDriverSW::OutputFormat AudioDriverOpenSL::get_output_format() const{
 
 	return OUTPUT_STEREO;
 }
+
 void AudioDriverOpenSL::lock(){
 
 	if (active && mutex)
 		mutex->lock();
 
 }
+
 void AudioDriverOpenSL::unlock() {
 
 	if (active && mutex)
 		mutex->unlock();
 
 }
+
 void AudioDriverOpenSL::finish(){
 
 	(*sl)->Destroy(sl);

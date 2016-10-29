@@ -685,7 +685,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			if (count) {
 				varray.resize(count);
 				DVector<Vector2>::Write w = varray.write();
-				const float *r = (const float*)buf;
 
 				for(int i=0;i<(int)count;i++) {
 
@@ -724,7 +723,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			if (count) {
 				varray.resize(count);
 				DVector<Vector3>::Write w = varray.write();
-				const float *r = (const float*)buf;
 
 				for(int i=0;i<(int)count;i++) {
 
@@ -764,7 +762,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			if (count) {
 				carray.resize(count);
 				DVector<Color>::Write w = carray.write();
-				const float *r = (const float*)buf;
 
 				for(int i=0;i<(int)count;i++) {
 

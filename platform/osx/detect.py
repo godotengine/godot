@@ -28,9 +28,6 @@ def get_opts():
 def get_flags():
 
 	return [
-	('legacygl', 'yes'),
-	('builtin_zlib', 'no'),
-	('glew', 'yes'),
 	]
 
 
@@ -83,24 +80,17 @@ def configure(env):
 		env['AS'] = basecmd+"as"
 
 
-#	env.Append(CPPPATH=['#platform/osx/include/freetype2', '#platform/osx/include'])
-#	env.Append(LIBPATH=['#platform/osx/lib'])
-
-
 	env.Append(CPPFLAGS=["-DAPPLE_STYLE_KEYS"])
 	env.Append(CPPFLAGS=['-DUNIX_ENABLED','-DGLES2_ENABLED','-DOSX_ENABLED'])
 	env.Append(LIBS=['pthread'])
 	#env.Append(CPPFLAGS=['-F/Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks', '-isysroot', '/Developer/SDKs/MacOSX10.4u.sdk', '-mmacosx-version-min=10.4'])
 	#env.Append(LINKFLAGS=['-mmacosx-version-min=10.4', '-isysroot', '/Developer/SDKs/MacOSX10.4u.sdk', '-Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk'])
-	env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'OpenGL', '-framework', 'AGL', '-framework', 'AudioUnit','-lz'])
+	env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'OpenGL', '-framework', 'AGL', '-framework', 'AudioUnit','-lz', '-framework', 'IOKit', '-framework', 'ForceFeedback'])
 
 	if (env["CXX"]=="clang++"):
 		env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
 		env["CC"]="clang"
 		env["LD"]="clang++"
-		if (env["colored"]=="yes"):
-			if sys.stdout.isatty():
-				env.Append(CPPFLAGS=["-fcolor-diagnostics"])
 
 	import methods
 
@@ -109,4 +99,4 @@ def configure(env):
 	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	#env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.h',src_suffix = '.hlsl') } )
 
-	env["x86_opt_gcc"]=True
+	env["x86_libtheora_opt_gcc"]=True

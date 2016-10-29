@@ -811,7 +811,11 @@ void main() {
 	float specular_exp=1.0;
 	float glow=0.0;
 	float shade_param=0.0;
+#ifdef DISABLE_FRONT_FACING
+	float side=float(1)*2.0-1.0;
+#else
 	float side=float(gl_FrontFacing)*2.0-1.0;
+#endif
 #if defined(ENABLE_TANGENT_INTERP)
 	vec3 binormal = normalize(binormal_interp)*side;
 	vec3 tangent = normalize(tangent_interp)*side;
@@ -976,6 +980,12 @@ FRAGMENT_SHADER_CODE
 #ifdef LIGHT_USE_SHADOW
 #ifdef LIGHT_TYPE_DIRECTIONAL
 
+	float shadow_fade_exponent=5.0;  //hardcoded for now
+	float shadow_fade=pow(length(vertex_interp)/light_attenuation.g,shadow_fade_exponent);
+
+// optimization - skip shadows outside visible range
+	if(shadow_fade<1.0){
+
 #ifdef LIGHT_USE_PSSM
 
 
@@ -1101,6 +1111,12 @@ FRAGMENT_SHADER_CODE
 
 	shadow_attenuation=SAMPLE_SHADOW_TEX(shadow_coord.xy,shadow_coord.z);
 #endif
+
+	shadow_attenuation=mix(shadow_attenuation,1.0,shadow_fade);
+	}else{
+	shadow_attenuation=1.0;
+	};
+
 #endif
 
 #ifdef LIGHT_TYPE_OMNI
@@ -1181,7 +1197,7 @@ FRAGMENT_SHADER_CODE
 		vec3 mdiffuse = diffuse.rgb;
 		vec3 light;
 
-#if defined(USE_LIGHT_SHADOW_COLOR)
+#if defined(USE_OUTPUT_SHADOW_COLOR)
 		vec3 shadow_color=vec3(0.0,0.0,0.0);
 #endif
 
@@ -1205,7 +1221,7 @@ LIGHT_SHADER_CODE
 #endif
 		diffuse.rgb = const_light_mult * ambient_light *diffuse.rgb + light * attenuation * shadow_attenuation;
 
-#if defined(USE_LIGHT_SHADOW_COLOR)
+#if defined(USE_OUTPUT_SHADOW_COLOR)
 		diffuse.rgb += light * shadow_color * attenuation * (1.0 - shadow_attenuation);
 #endif
 

@@ -33,6 +33,7 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/tool_button.h"
+#include "scene/gui/spin_box.h"
 #include "texture_frame.h"
 
 class GraphEdit;
@@ -70,6 +71,9 @@ private:
 	ToolButton *zoom_reset;
 	ToolButton *zoom_plus;
 
+	ToolButton *snap_button;
+	SpinBox *snap_amount;
+
 	void _zoom_minus();
 	void _zoom_reset();
 	void _zoom_plus();
@@ -88,10 +92,12 @@ private:
 	Vector2 connecting_to;
 	String connecting_target_to;
 	int connecting_target_index;
+	bool just_disconected;
 
 	bool dragging;
 	bool just_selected;
 	Vector2 drag_accum;
+	Point2 drag_origin; // Workaround for GH-5907
 
 	float zoom;
 
@@ -102,11 +108,15 @@ private:
 	Rect2 box_selecting_rect;
 	List<GraphNode*> previus_selected;
 
+	bool setting_scroll_ofs;
 	bool right_disconnects;
 	bool updating;
+	bool awaiting_scroll_offset_update;
 	List<Connection> connections;
 
-	void _draw_cos_line(const Vector2& p_from, const Vector2& p_to,const Color& p_color);
+	void _bake_segment2d(CanvasItem* p_where,float p_begin, float p_end, const Vector2& p_a, const Vector2& p_out, const Vector2& p_b, const Vector2& p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color& p_color, const Color& p_to_color, int &lines) const;
+
+	void _draw_cos_line(CanvasItem* p_where,const Vector2& p_from, const Vector2& p_to, const Color& p_color, const Color &p_to_color);
 
 	void _graph_node_raised(Node* p_gn);
 	void _graph_node_moved(Node *p_gn);
@@ -115,15 +125,47 @@ private:
 	void _scroll_moved(double);
 	void _input_event(const InputEvent& p_ev);
 
+	Control *connections_layer;
 	GraphEditFilter *top_layer;
 	void _top_layer_input(const InputEvent& p_ev);
 	void _top_layer_draw();
+	void _connections_layer_draw();
 	void _update_scroll_offset();
 
 	Array _get_connection_list() const;
 
+	bool lines_on_bg;
+
+
+
+	struct ConnType {
+
+		union {
+			struct {
+				uint32_t type_a;
+				uint32_t type_b;
+			};
+			uint64_t key;
+		};
+
+		bool operator<(const ConnType& p_type) const {
+			return key<p_type.key;
+		}
+
+		ConnType(uint32_t a=0, uint32_t b=0) {
+			type_a=a;
+			type_b=b;
+		}
+	};
+
+	Set<ConnType> valid_connection_types;
+	Set<int> valid_left_disconnect_types;
+	Set<int> valid_right_disconnect_types;
+
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2& p_point);
+	void _snap_toggled();
+	void _snap_value_changed(double);
 protected:
 
 	static void _bind_methods();
@@ -138,6 +180,10 @@ public:
 	void disconnect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);
 	void clear_connections();
 
+	void add_valid_connection_type(int p_type,int p_with_type);
+	void remove_valid_connection_type(int p_type,int p_with_type);
+	bool is_valid_connection_type(int p_type,int p_with_type) const;
+
 	void set_zoom(float p_zoom);
 	float get_zoom() const;
 
@@ -147,7 +193,22 @@ public:
 	void set_right_disconnects(bool p_enable);
 	bool is_right_disconnects_enabled() const;
 
+	void add_valid_right_disconnect_type(int p_type);
+	void remove_valid_right_disconnect_type(int p_type);
+
+	void add_valid_left_disconnect_type(int p_type);
+	void remove_valid_left_disconnect_type(int p_type);
+
+	void set_scroll_ofs(const Vector2& p_ofs);
 	Vector2 get_scroll_ofs() const;
+
+	void set_selected(Node* p_child);
+
+	void set_use_snap(bool p_enable);
+	bool is_using_snap() const;
+
+	int get_snap() const;
+	void set_snap(int p_snap);
 
 
 	GraphEdit();

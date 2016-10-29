@@ -1808,6 +1808,7 @@ bool GridMap::is_using_baked_light() const{
 }
 
 
+
 GridMap::GridMap() {
 
 	cell_size=2;

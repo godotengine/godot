@@ -388,6 +388,10 @@ void TextureRegionEditor::_region_input(const InputEvent& p_input)
 					drag_index = -1;
 				}
 			}
+		} else if (mb.button_index == BUTTON_WHEEL_UP) {
+			_zoom_in();
+		} else if (mb.button_index == BUTTON_WHEEL_DOWN) {
+			_zoom_out();
 		}
 	} else if (p_input.type==InputEvent::MOUSE_MOTION) {
 
@@ -503,8 +507,8 @@ void TextureRegionEditor::_scroll_changed(float)
 
 void TextureRegionEditor::_set_snap_mode(int p_mode)
 {
-	snap_mode_button->get_popup()->set_item_checked(snap_mode,false);
 	snap_mode = p_mode;
+	snap_mode_button->get_popup()->set_item_checked(snap_mode,false);
 	snap_mode_button->set_text(snap_mode_button->get_popup()->get_item_text(p_mode));
 	snap_mode_button->get_popup()->set_item_checked(snap_mode,true);
 
@@ -649,6 +653,7 @@ void TextureRegionEditor::edit(Object *p_obj)
 		} else {
 			p_obj->connect("texture_changed",this,"_edit_region");
 		}
+		p_obj->add_change_receptor(this);
 		p_obj->connect("exit_tree",this,"_node_removed",varray(p_obj),CONNECT_ONESHOT);
 		_edit_region();
 	} else {
@@ -667,6 +672,12 @@ void TextureRegionEditor::edit(Object *p_obj)
 		atlas_tex = Ref<AtlasTexture>(NULL);
 	}
 	edit_draw->update();
+}
+
+void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+	if ((String)p_prop == "region_rect") {
+		_edit_region();
+	}
 }
 
 void TextureRegionEditor::_edit_region()
@@ -703,14 +714,24 @@ void TextureRegionEditor::_edit_region()
 							bool merged = true;
 							while (merged) {
 								merged = false;
+								bool queue_erase = false;
 								for (List<Rect2>::Element *F = autoslice_cache.front(); F; F=F->next()) {
+									if (queue_erase){
+										autoslice_cache.erase(F->prev());
+										queue_erase = false;
+									}
 									if (F==E)
 										continue;
 									if (E->get().grow(1).intersects(F->get())) {
 										E->get().expand_to(F->get().pos);
 										E->get().expand_to(F->get().pos+F->get().size);
-										F=F->prev();
-										autoslice_cache.erase(F->next());
+										if (F->prev()) {
+											F=F->prev();
+											autoslice_cache.erase(F->next());
+										} else {
+											queue_erase = true;
+											//Cant delete the first rect in the list.
+										}
 										merged = true;
 									}
 								}

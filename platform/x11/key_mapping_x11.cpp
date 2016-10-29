@@ -197,6 +197,7 @@ unsigned int KeyMappingX11::get_keycode(KeySym p_keysym) {
 
 	return 0;
 }
+
 KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
 
 	// kinda bruteforce.. could optimize.

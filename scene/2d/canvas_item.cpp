@@ -650,21 +650,22 @@ int CanvasItem::get_light_mask() const{
 }
 
 
-void CanvasItem::item_rect_changed() {
+void CanvasItem::item_rect_changed(bool p_size_changed) {
 
-	update();
+	if (p_size_changed)
+		update();
 	emit_signal(SceneStringNames::get_singleton()->item_rect_changed);
 }
 
 
-void CanvasItem::draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width) {
+void CanvasItem::draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width,bool p_antialiased) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 		ERR_FAIL();
 	}
 
-	VisualServer::get_singleton()->canvas_item_add_line(canvas_item,p_from,p_to,p_color,p_width);
+	VisualServer::get_singleton()->canvas_item_add_line(canvas_item,p_from,p_to,p_color,p_width,p_antialiased);
 }
 
 void CanvasItem::draw_rect(const Rect2& p_rect, const Color& p_color) {
@@ -948,6 +949,15 @@ Ref<CanvasItemMaterial> CanvasItem::get_material() const{
 	return material;
 }
 
+Vector2 CanvasItem::make_canvas_pos_local(const Vector2& screen_point) const {
+
+	ERR_FAIL_COND_V(!is_inside_tree(),screen_point);
+
+	Matrix32 local_matrix = (get_canvas_transform() * 
+			get_global_transform()).affine_inverse();
+
+	return local_matrix.xform(screen_point);
+}
 
 InputEvent CanvasItem::make_input_local(const InputEvent& p_event) const {
 
@@ -1019,7 +1029,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_is_on_top"),&CanvasItem::_is_on_top);
 	//ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
 
-	ObjectTypeDB::bind_method(_MD("draw_line","from","to","color","width"),&CanvasItem::draw_line,DEFVAL(1.0));
+	ObjectTypeDB::bind_method(_MD("draw_line","from","to","color","width","antialiased"),&CanvasItem::draw_line,DEFVAL(1.0),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_rect","rect","color"),&CanvasItem::draw_rect);
 	ObjectTypeDB::bind_method(_MD("draw_circle","pos","radius","color"),&CanvasItem::draw_circle);
 	ObjectTypeDB::bind_method(_MD("draw_texture","texture:Texture","pos","modulate"),&CanvasItem::draw_texture,DEFVAL(Color(1,1,1,1)));
@@ -1052,6 +1062,8 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_use_parent_material","enable"),&CanvasItem::set_use_parent_material);
 	ObjectTypeDB::bind_method(_MD("get_use_parent_material"),&CanvasItem::get_use_parent_material);
 
+	ObjectTypeDB::bind_method(_MD("make_canvas_pos_local","screen_point"),
+			&CanvasItem::make_canvas_pos_local);
 	ObjectTypeDB::bind_method(_MD("make_input_local","event"),&CanvasItem::make_input_local);
 
 	BIND_VMETHOD(MethodInfo("_draw"));

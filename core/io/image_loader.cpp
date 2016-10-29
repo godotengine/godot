@@ -51,7 +51,7 @@ Error ImageLoader::load_image(String p_file,Image *p_image, FileAccess *p_custom
 		Error err;
 		f=FileAccess::open(p_file,FileAccess::READ,&err);
 		if (!f) {
-			print_line("ERROR OPENING FILE: "+p_file);
+			ERR_PRINTS("Error opening file: "+p_file);
 			return err;
 		}
 	}
@@ -76,7 +76,6 @@ Error ImageLoader::load_image(String p_file,Image *p_image, FileAccess *p_custom
 
 
 	}
-	print_line("NO LOADER?");
 
 	if (!p_custom)
 		memdelete(f);

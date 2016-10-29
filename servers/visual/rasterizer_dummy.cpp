@@ -1615,7 +1615,7 @@ void RasterizerDummy::canvas_end_rect() {
 
 }
 
-void RasterizerDummy::canvas_draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width) {
+void RasterizerDummy::canvas_draw_line(const Point2& p_from, const Point2& p_to, const Color& p_color, float p_width, bool p_antialiased) {
 
 
 

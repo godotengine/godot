@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+# Thirdparty source files
+
+env_enet = env_modules.Clone()
+
+if (env["enet"] != "system"): # builtin
+	thirdparty_dir = "#thirdparty/enet/"
+	thirdparty_sources = [
+		"callbacks.c",
+		"compress.c",
+		"host.c",
+		"list.c",
+		"packet.c",
+		"peer.c",
+		"protocol.c",
+		"unix.c",
+		"win32.c",
+	]
+	thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+	env_enet.add_source_files(env.modules_sources, thirdparty_sources)
+	env_enet.Append(CPPPATH = [thirdparty_dir])
+
+env_enet.add_source_files(env.modules_sources, "*.cpp")

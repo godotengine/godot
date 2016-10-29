@@ -52,6 +52,7 @@ enum MethodFlags {
 	METHOD_FLAG_REVERSE=16, // used for events
 	METHOD_FLAG_VIRTUAL=32,
 	METHOD_FLAG_FROM_SCRIPT=64,
+	METHOD_FLAG_VARARG=128,
 	METHOD_FLAGS_DEFAULT=METHOD_FLAG_NORMAL,
 };
 
@@ -154,6 +155,9 @@ VARIANT_ENUM_CAST( wchar_t );
 VARIANT_ENUM_CAST( Margin );
 VARIANT_ENUM_CAST( Orientation );
 VARIANT_ENUM_CAST( HAlign );
+VARIANT_ENUM_CAST( Variant::Type );
+VARIANT_ENUM_CAST( Variant::Operator );
+VARIANT_ENUM_CAST( InputEvent::Type );
 
 class MethodBind {
 
@@ -170,11 +174,13 @@ class MethodBind {
 	StringName ret_type;
 #endif
 	bool _const;
+	bool _returns;
 
 
 protected:
 
 	void _set_const(bool p_const);
+	void _set_returns(bool p_returns);
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const=0;
 	void _generate_argument_types(int p_count);
@@ -224,7 +230,7 @@ public:
 	Vector<StringName> get_argument_names() const;
 #endif
 	void set_hint_flags(uint32_t p_hint) { hint_flags=p_hint; }
-	uint32_t get_hint_flags() const { return hint_flags|(is_const()?METHOD_FLAG_CONST:0); }
+	uint32_t get_hint_flags() const { return hint_flags|(is_const()?METHOD_FLAG_CONST:0)|(is_vararg()?METHOD_FLAG_VARARG:0); }
 	virtual String get_instance_type() const=0;
 
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
@@ -261,7 +267,8 @@ public:
 	void set_name(const StringName& p_name);
 	_FORCE_INLINE_ int get_method_id() const { return method_id; }
 	_FORCE_INLINE_ bool is_const() const { return _const; }
-
+	_FORCE_INLINE_ bool has_return() const { return _returns; }
+	virtual bool is_vararg() const { return false; }
 
 	void set_default_arguments(const Vector<Variant>& p_defargs);
 
@@ -271,7 +278,7 @@ public:
 
 
 template<class T>
-class MethodBindNative : public MethodBind {
+class MethodBindVarArg : public MethodBind {
 public:
 	typedef Variant (T::*NativeCall)(const Variant**,int ,Variant::CallError &);
 protected:
@@ -313,7 +320,9 @@ public:
 	}
 
 #ifdef PTRCALL_ENABLED
-	virtual void ptrcall(Object* p_object,const void** p_args,void* r_ret) {} //todo
+	virtual void ptrcall(Object* p_object,const void** p_args,void* r_ret) {
+		ERR_FAIL(); //can't call
+	} //todo
 #endif
 
 
@@ -321,14 +330,16 @@ public:
 	virtual bool is_const() const { return false; }
 	virtual String get_instance_type() const { return T::get_type_static(); }
 
-	MethodBindNative() { call_method=NULL; }
+	virtual bool is_vararg() const { return true; }
+
+	MethodBindVarArg() { call_method=NULL; _set_returns(true);}
 };
 
 
 template<class T   >
-MethodBind* create_native_method_bind( Variant (T::*p_method)(const Variant**,int ,Variant::CallError &), const MethodInfo& p_info ) {
+MethodBind* create_vararg_method_bind( Variant (T::*p_method)(const Variant**,int ,Variant::CallError &), const MethodInfo& p_info ) {
 
-	MethodBindNative<T   > * a = memnew( (MethodBindNative<T   >) );
+	MethodBindVarArg<T   > * a = memnew( (MethodBindVarArg<T   >) );
 	a->set_method(p_method);
 	a->set_method_info(p_info);
 	return a;

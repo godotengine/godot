@@ -1,11 +1,23 @@
+#!/usr/bin/env python
+
 Import('env')
 
 files = [
 	'thread_winrt.cpp',
-#	'#platform/windows/stream_peer_winsock.cpp',
+	'#platform/windows/tcp_server_winsock.cpp',
+	'#platform/windows/packet_peer_udp_winsock.cpp',
+	'#platform/windows/stream_peer_winsock.cpp',
+	'#platform/windows/key_mapping_win.cpp',
+	'joystick_winrt.cpp',
 	'gl_context_egl.cpp',
 	'app.cpp',
 	'os_winrt.cpp',
 ]
 
-env.Program('#bin/godot', files)
+if "build_angle" in env and env["build_angle"]:
+	cmd = env.AlwaysBuild(env.ANGLE('libANGLE.lib', None))
+
+prog = env.Program('#bin/godot', files)
+
+if "build_angle" in env and env["build_angle"]:
+	env.Depends(prog, [cmd])

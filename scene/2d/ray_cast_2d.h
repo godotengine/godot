@@ -45,12 +45,14 @@ class RayCast2D : public Node2D {
 	Set<RID> exclude;
 	uint32_t layer_mask;
 	uint32_t type_mask;
+	bool exclude_parent_body;
 
 
 	Vector2 cast_to;
 protected:
 
 	void _notification(int p_what);
+	void _update_raycast_state();
 	static void _bind_methods();
 public:
 
@@ -65,6 +67,11 @@ public:
 
 	void set_type_mask(uint32_t p_mask);
 	uint32_t get_type_mask() const;
+
+	void set_exclude_parent_body(bool p_exclude_parent_body);
+	bool get_exclude_parent_body() const;
+
+	void force_raycast_update();
 
 	bool is_colliding() const;
 	Object *get_collider() const;

@@ -76,6 +76,7 @@ String DirAccessJAndroid::get_next(){
 	return ret;
 
 }
+
 bool DirAccessJAndroid::current_is_dir() const{
 
 
@@ -106,6 +107,7 @@ int DirAccessJAndroid::get_drive_count(){
 
 	return 0;
 }
+
 String DirAccessJAndroid::get_drive(int p_drive){
 
 	return "";
@@ -201,7 +203,6 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 		return false;
 
 	env->CallVoidMethod(io,_dir_close,res);
-	env->DeleteLocalRef(js);
 
 	return true;
 }
@@ -215,6 +216,7 @@ Error DirAccessJAndroid::rename(String p_from, String p_to){
 
 	ERR_FAIL_V(ERR_UNAVAILABLE);
 }
+
 Error DirAccessJAndroid::remove(String p_name){
 
 	ERR_FAIL_V(ERR_UNAVAILABLE);

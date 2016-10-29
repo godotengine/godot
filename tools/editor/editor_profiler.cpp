@@ -135,6 +135,8 @@ void EditorProfiler::_item_edited() {
 		frame_delay->set_wait_time(0.1);
 		frame_delay->start();
 	}
+
+	_update_plot();
 }
 
 void EditorProfiler::_update_plot() {

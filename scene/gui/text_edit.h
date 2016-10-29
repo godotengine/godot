@@ -77,7 +77,9 @@ class TextEdit : public Control  {
 		Color completion_background_color;
 		Color completion_selected_color;
 		Color completion_existing_color;
+		Color completion_font_color;
 		Color caret_color;
+		Color caret_background_color;
 		Color line_number_color;
 		Color font_color;
 		Color font_selected_color;
@@ -221,6 +223,7 @@ class TextEdit : public Control  {
 	bool caret_blink_enabled;
 	bool draw_caret;
 	bool window_has_focus;
+	bool block_caret;
 
 	bool setting_row;
 	bool wrap;
@@ -229,6 +232,9 @@ class TextEdit : public Control  {
 	bool text_changed_dirty;
 	bool undo_enabled;
 	bool line_numbers;
+	bool line_numbers_zero_padded;
+	bool line_length_guideline;
+	int line_length_guideline_col;
 	bool draw_breakpoint_gutter;
 	int breakpoint_gutter_width;
 
@@ -239,6 +245,11 @@ class TextEdit : public Control  {
 	bool auto_indent;
 	bool cut_copy_line;
 	bool insert_mode;
+	bool select_identifiers_enabled;
+
+	bool raised_from_completion;
+
+	String hilighted_word;
 
 	uint64_t last_dblclk;
 
@@ -262,6 +273,8 @@ class TextEdit : public Control  {
 	uint32_t search_flags;
 	int search_result_line;
 	int search_result_col;
+
+	bool context_menu_enabled;
 
 	int get_visible_rows() const;
 
@@ -313,8 +326,6 @@ class TextEdit : public Control  {
 	void _confirm_completion();
 	void _update_completion_candidates();
 
-	void _get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) const;
-
 protected:
 
 	virtual String get_tooltip(const Point2& p_pos) const;
@@ -353,6 +364,8 @@ public:
 	};
 
 	virtual CursorShape get_cursor_shape(const Point2& p_pos=Point2i()) const;
+
+	void _get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) const;
 
 	//void delete_char();
 	//void delete_line();
@@ -393,6 +406,8 @@ public:
 	}
 	void set_auto_indent(bool p_auto_indent);
 
+	void center_viewport_to_cursor();
+
 	void cursor_set_column(int p_col, bool p_adjust_viewport=true);
 	void cursor_set_line(int p_row, bool p_adjust_viewport=true);
 
@@ -404,6 +419,9 @@ public:
 
 	float cursor_get_blink_speed() const;
 	void cursor_set_blink_speed(const float p_speed);
+
+	void cursor_set_block_mode(const bool p_enable);
+	bool cursor_is_block_mode() const;
 
 	void set_readonly(bool p_readonly);
 
@@ -427,14 +445,16 @@ public:
 	void set_current_search_result(int line, int col);
 
 	void set_highlight_all_occurrences(const bool p_enabled);
+	bool is_highlight_all_occurrences_enabled() const;
 	bool is_selection_active() const;
 	int get_selection_from_line() const;
-    int get_selection_from_column() const;
+	int get_selection_from_column() const;
 	int get_selection_to_line() const;
 	int get_selection_to_column() const;
 	String get_selection_text() const;
 
 	String get_word_under_cursor() const;
+	String get_word_at_pos(const Vector2& p_pos) const;
 
 	bool search(const String &p_key,uint32_t p_search_flags, int p_from_line, int p_from_column,int &r_line,int &r_column) const;
 
@@ -468,6 +488,12 @@ public:
 	void menu_option(int p_option);
 
 	void set_show_line_numbers(bool p_show);
+	bool is_show_line_numbers_enabled() const;
+
+	void set_line_numbers_zero_padded(bool p_zero_padded);
+
+	void set_show_line_length_guideline(bool p_show);
+	void set_line_length_guideline_column(int p_column);
 
 	void set_draw_breakpoint_gutter(bool p_draw);
 	bool is_drawing_breakpoint_gutter() const;
@@ -482,11 +508,16 @@ public:
 	void set_code_hint(const String& p_hint);
 	void query_code_comple();
 
+	void set_select_identifiers_on_hover(bool p_enable);
+	bool is_selecting_identifiers_on_hover_enabled() const;
+
+	void set_context_menu_enabled(bool p_enable);
 	PopupMenu *get_menu() const;
 
 	String get_text_for_completion();
+	String get_text_for_lookup_completion();
 
-    virtual bool is_text_field() const;
+	virtual bool is_text_field() const;
 	TextEdit();
 	~TextEdit();
 };

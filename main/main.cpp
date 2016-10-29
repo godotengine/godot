@@ -57,7 +57,6 @@
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
 
-#include "tools/pck/pck_packer.h"
 #endif
 
 #include "io/file_access_network.h"
@@ -101,6 +100,7 @@ static bool init_fullscreen=false;
 static bool init_use_custom_pos=false;
 static bool debug_collisions=false;
 static bool debug_navigation=false;
+static int frame_delay=0;
 static Vector2 init_custom_pos;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
@@ -488,7 +488,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 			if (I->next()) {
 
-				OS::get_singleton()->set_frame_delay(I->next()->get().to_int());
+				frame_delay=I->next()->get().to_int();
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -554,6 +554,16 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 					OS::get_singleton()->print("Invalid debug host string\n");
 					goto error;
 				}
+				N=I->next()->next();
+			} else {
+				goto error;
+
+			}
+		} else if (I->get()=="-epid") {
+			if (I->next()) {
+
+				int editor_pid=I->next()->get().to_int();
+				Globals::get_singleton()->set("editor_pid",editor_pid);
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -805,11 +815,18 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_LANDSCAPE);
 	}
 
+
 	OS::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/fixed_fps",60));
-	OS::get_singleton()->set_target_fps(GLOBAL_DEF("application/target_fps",0));
+	OS::get_singleton()->set_target_fps(GLOBAL_DEF("debug/force_fps",0));
 
 	if (!OS::get_singleton()->_verbose_stdout) //overrided
 		OS::get_singleton()->_verbose_stdout=GLOBAL_DEF("debug/verbose_stdout",false);
+
+	if (frame_delay==0) {
+		frame_delay=GLOBAL_DEF("application/frame_delay_msec",0);
+	}
+
+	OS::get_singleton()->set_frame_delay(frame_delay);
 
 	message_queue = memnew( MessageQueue );
 
@@ -986,8 +1003,11 @@ Error Main::setup2() {
 		}
 	}
 #ifdef TOOLS_ENABLED
+	ObjectTypeDB::set_current_api(ObjectTypeDB::API_EDITOR);
 	EditorNode::register_editor_types();
-	ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
+
+	ObjectTypeDB::set_current_api(ObjectTypeDB::API_CORE);
+
 #endif
 
 	MAIN_PRINT("Main: Load Scripts, Modules, Drivers");
@@ -1013,6 +1033,8 @@ Error Main::setup2() {
 	}
 	_start_success=true;
 	locale=String();
+
+	ObjectTypeDB::set_current_api(ObjectTypeDB::API_NONE); //no more api is registered at this point
 
 	MAIN_PRINT("Main: Done");
 
@@ -1286,9 +1308,10 @@ bool Main::start() {
 		}
 
 
+		String local_game_path;
 		if (game_path!="" && !project_manager_request) {
 
-			String local_game_path=game_path.replace("\\","/");
+			local_game_path=game_path.replace("\\","/");
 
 			if (!local_game_path.begins_with("res://")) {
 				bool absolute=(local_game_path.size()>1) && (local_game_path[0]=='/' || local_game_path[1]==':');
@@ -1355,98 +1378,99 @@ bool Main::start() {
 				OS::get_singleton()->set_context(OS::CONTEXT_EDITOR);
 
 				//editor_node->set_edited_scene(game);
-			} else {
+			}
 #endif
+		}
 
-				{
-					//autoload
-					List<PropertyInfo> props;
-					Globals::get_singleton()->get_property_list(&props);
+		if (!project_manager_request && !editor) {
+			if (game_path!="" || script!="") {
+				//autoload
+				List<PropertyInfo> props;
+				Globals::get_singleton()->get_property_list(&props);
 
-					//first pass, add the constants so they exist before any script is loaded
-					for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+				//first pass, add the constants so they exist before any script is loaded
+				for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
 
-						String s = E->get().name;
-						if (!s.begins_with("autoload/"))
-							continue;
-						String name = s.get_slicec('/',1);
-						String path = Globals::get_singleton()->get(s);
-						bool global_var=false;
-						if (path.begins_with("*")) {
-							global_var=true;
-						}
-
-						if (global_var) {
-							for(int i=0;i<ScriptServer::get_language_count();i++) {
-								ScriptServer::get_language(i)->add_global_constant(name,Variant());
-							}
-						}
-
+					String s = E->get().name;
+					if (!s.begins_with("autoload/"))
+						continue;
+					String name = s.get_slicec('/',1);
+					String path = Globals::get_singleton()->get(s);
+					bool global_var=false;
+					if (path.begins_with("*")) {
+						global_var=true;
 					}
 
-					//second pass, load into global constants
-					List<Node*> to_add;
-					for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
-
-						String s = E->get().name;
-						if (!s.begins_with("autoload/"))
-							continue;
-						String name = s.get_slicec('/',1);
-						String path = Globals::get_singleton()->get(s);
-						bool global_var=false;
-						if (path.begins_with("*")) {
-							global_var=true;
-							path=path.substr(1,path.length()-1);
+					if (global_var) {
+						for(int i=0;i<ScriptServer::get_language_count();i++) {
+							ScriptServer::get_language(i)->add_global_constant(name,Variant());
 						}
-
-						RES res = ResourceLoader::load(path);
-						ERR_EXPLAIN("Can't autoload: "+path);
-						ERR_CONTINUE(res.is_null());
-						Node *n=NULL;
-						if (res->is_type("PackedScene")) {
-							Ref<PackedScene> ps = res;
-							n=ps->instance();
-						} else if (res->is_type("Script")) {
-							Ref<Script> s = res;
-							StringName ibt = s->get_instance_base_type();
-							bool valid_type = ObjectTypeDB::is_type(ibt,"Node");
-							ERR_EXPLAIN("Script does not inherit a Node: "+path);
-							ERR_CONTINUE( !valid_type );
-
-							Object *obj = ObjectTypeDB::instance(ibt);
-
-							ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: "+String(ibt));
-							ERR_CONTINUE( obj==NULL );
-
-							n = obj->cast_to<Node>();
-							n->set_script(s.get_ref_ptr());
-						}
-
-						ERR_EXPLAIN("Path in autoload not a node or script: "+path);
-						ERR_CONTINUE(!n);
-						n->set_name(name);
-
-						//defer so references are all valid on _ready()
-						//sml->get_root()->add_child(n);
-						to_add.push_back(n);
-
-						if (global_var) {
-							for(int i=0;i<ScriptServer::get_language_count();i++) {
-								ScriptServer::get_language(i)->add_global_constant(name,n);
-							}
-						}
-
 					}
-
-					for(List<Node*>::Element *E=to_add.front();E;E=E->next()) {
-
-						sml->get_root()->add_child(E->get());
-					}
-
-
 
 				}
 
+				//second pass, load into global constants
+				List<Node*> to_add;
+				for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+
+					String s = E->get().name;
+					if (!s.begins_with("autoload/"))
+						continue;
+					String name = s.get_slicec('/',1);
+					String path = Globals::get_singleton()->get(s);
+					bool global_var=false;
+					if (path.begins_with("*")) {
+						global_var=true;
+						path=path.substr(1,path.length()-1);
+					}
+
+					RES res = ResourceLoader::load(path);
+					ERR_EXPLAIN("Can't autoload: "+path);
+					ERR_CONTINUE(res.is_null());
+					Node *n=NULL;
+					if (res->is_type("PackedScene")) {
+						Ref<PackedScene> ps = res;
+						n=ps->instance();
+					} else if (res->is_type("Script")) {
+						Ref<Script> s = res;
+						StringName ibt = s->get_instance_base_type();
+						bool valid_type = ObjectTypeDB::is_type(ibt,"Node");
+						ERR_EXPLAIN("Script does not inherit a Node: "+path);
+						ERR_CONTINUE( !valid_type );
+
+						Object *obj = ObjectTypeDB::instance(ibt);
+
+						ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: "+String(ibt));
+						ERR_CONTINUE( obj==NULL );
+
+						n = obj->cast_to<Node>();
+						n->set_script(s.get_ref_ptr());
+					}
+
+					ERR_EXPLAIN("Path in autoload not a node or script: "+path);
+					ERR_CONTINUE(!n);
+					n->set_name(name);
+
+					//defer so references are all valid on _ready()
+					//sml->get_root()->add_child(n);
+					to_add.push_back(n);
+
+					if (global_var) {
+						for(int i=0;i<ScriptServer::get_language_count();i++) {
+							ScriptServer::get_language(i)->add_global_constant(name,n);
+						}
+					}
+
+				}
+
+				for(List<Node*>::Element *E=to_add.front();E;E=E->next()) {
+
+					sml->get_root()->add_child(E->get());
+				}
+				//singletons
+			}
+
+			if (game_path!="") {
 				Node *scene=NULL;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid())
@@ -1463,12 +1487,7 @@ bool Main::start() {
 					if (icon.load(iconpath)==OK)
 						OS::get_singleton()->set_icon(icon);
 				}
-
-
-				//singletons
-#ifdef TOOLS_ENABLED
 			}
-#endif
 		}
 
 #ifdef TOOLS_ENABLED
@@ -1496,6 +1515,8 @@ bool Main::start() {
 		if (project_manager_request || (script=="" && test=="" && game_path=="" && !editor)) {
 
 			ProjectManager *pmanager = memnew( ProjectManager );
+			ProgressDialog *progress_dialog = memnew( ProgressDialog );
+			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
 			OS::get_singleton()->set_context(OS::CONTEXT_PROJECTMAN);
 		}
@@ -1550,6 +1571,8 @@ bool Main::iteration() {
 
 	int iters = 0;
 
+	OS::get_singleton()->_in_fixed=true;
+
 	while(time_accum>frame_slice) {
 
 		uint64_t fixed_begin = OS::get_singleton()->get_ticks_usec();
@@ -1580,7 +1603,10 @@ bool Main::iteration() {
 		fixed_process_ticks=MAX(fixed_process_ticks,OS::get_singleton()->get_ticks_usec()-fixed_begin); // keep the largest one for reference
 		fixed_process_max=MAX(OS::get_singleton()->get_ticks_usec()-fixed_begin,fixed_process_max);
 		iters++;
+		OS::get_singleton()->_fixed_frames++;
 	}
+
+	OS::get_singleton()->_in_fixed=false;
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
@@ -1630,6 +1656,7 @@ bool Main::iteration() {
 
 	//	x11_delay_usec(10000);
 	frames++;
+	OS::get_singleton()->_idle_frames++;
 
 	if (frame>1000000) {
 
@@ -1737,4 +1764,3 @@ void Main::cleanup() {
 
 
 }
-

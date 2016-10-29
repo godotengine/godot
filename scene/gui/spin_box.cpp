@@ -39,7 +39,7 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_value_changed(double) {
 
-	String value = String::num(get_val(),Math::decimals(get_step()));
+	String value = String::num(get_val(),Math::step_decimals(get_step()));
 	if (prefix!="")
 		value=prefix+" "+value;
 	if (suffix!="")

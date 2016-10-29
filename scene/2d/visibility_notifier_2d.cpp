@@ -40,6 +40,9 @@ void VisibilityNotifier2D::_enter_viewport(Viewport* p_viewport) {
 	ERR_FAIL_COND(viewports.has(p_viewport));
 	viewports.insert(p_viewport);
 
+	if (is_inside_tree() && get_tree()->is_editor_hint())
+		return;
+
 	if (viewports.size()==1) {
 		emit_signal(SceneStringNames::get_singleton()->enter_screen);
 
@@ -53,6 +56,9 @@ void VisibilityNotifier2D::_exit_viewport(Viewport* p_viewport){
 
 	ERR_FAIL_COND(!viewports.has(p_viewport));
 	viewports.erase(p_viewport);
+
+	if (is_inside_tree() && get_tree()->is_editor_hint())
+		return;
 
 	emit_signal(SceneStringNames::get_singleton()->exit_viewport,p_viewport);
 	if (viewports.size()==0) {
@@ -270,9 +276,6 @@ void VisibilityEnabler2D::_notification(int p_what){
 			return;
 
 
-		Node *from = this;
-		//find where current scene starts
-
 		for (Map<Node*,Variant>::Element *E=nodes.front();E;E=E->next()) {
 
 			if (!visible)
@@ -293,14 +296,7 @@ void VisibilityEnabler2D::_change_node_state(Node* p_node,bool p_enabled) {
 		RigidBody2D *rb = p_node->cast_to<RigidBody2D>();
 		if (rb) {
 
-			if (p_enabled) {
-				RigidBody2D::Mode mode = RigidBody2D::Mode(nodes[p_node].operator int());
-				//rb->set_mode(mode);
-				rb->set_sleeping(false);
-			} else {
-				//rb->set_mode(RigidBody2D::MODE_STATIC);
-				rb->set_sleeping(true);
-			}
+			rb->set_sleeping(!p_enabled);
 		}
 	}
 

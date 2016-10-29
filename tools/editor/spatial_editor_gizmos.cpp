@@ -422,8 +422,6 @@ bool EditorSpatialGizmo::intersect_ray(const Camera *p_camera,const Point2& p_po
 		if (billboard_handle) {
 			t.set_look_at(t.origin,t.origin+p_camera->get_transform().basis.get_axis(2),p_camera->get_transform().basis.get_axis(1));
 		}
-		Transform ti=t.affine_inverse();
-
 
 		float min_d=1e20;
 		int idx=-1;
@@ -623,12 +621,11 @@ void EditorSpatialGizmo::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_unscaled_billboard","material:Material","default_scale"),&EditorSpatialGizmo::add_unscaled_billboard,DEFVAL(1));
 	ObjectTypeDB::bind_method(_MD("add_handles","handles","billboard","secondary"),&EditorSpatialGizmo::add_handles,DEFVAL(false),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("set_spatial_node","node:Spatial"),&EditorSpatialGizmo::_set_spatial_node);
+	ObjectTypeDB::bind_method(_MD("clear"),&EditorSpatialGizmo::clear);
 
 	BIND_VMETHOD( MethodInfo("redraw"));
 	BIND_VMETHOD( MethodInfo(Variant::STRING,"get_handle_name",PropertyInfo(Variant::INT,"index")));
-	{
-		BIND_VMETHOD( MethodInfo("get_handle_value:Variant",PropertyInfo(Variant::INT,"index")));
-	}
+	BIND_VMETHOD( MethodInfo("get_handle_value:Variant",PropertyInfo(Variant::INT,"index")));
 	BIND_VMETHOD( MethodInfo("set_handle",PropertyInfo(Variant::INT,"index"),PropertyInfo(Variant::OBJECT,"camera:Camera"),PropertyInfo(Variant::VECTOR2,"point")));
 	MethodInfo cm = MethodInfo("commit_handle",PropertyInfo(Variant::INT,"index"),PropertyInfo(Variant::NIL,"restore:Variant"),PropertyInfo(Variant::BOOL,"cancel"));
 	cm.default_arguments.push_back(false);

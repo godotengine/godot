@@ -28,11 +28,10 @@
 /*************************************************************************/
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "os_winrt.h"
-#include "drivers/nedmalloc/memory_pool_static_nedmalloc.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
 #include "os/memory_pool_dynamic_static.h"
 #include "thread_winrt.h"
-//#include "drivers/windows/semaphore_windows.h"
+#include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/mutex_windows.h"
 #include "main/main.h"
 #include "drivers/windows/file_access_windows.h"
@@ -47,15 +46,27 @@
 #include "globals.h"
 #include "io/marshalls.h"
 
+#include "platform/windows/packet_peer_udp_winsock.h"
+#include "platform/windows/stream_peer_winsock.h"
+#include "platform/windows/tcp_server_winsock.h"
+#include "drivers/unix/ip_unix.h"
+
 #include <wrl.h>
+#include <ppltasks.h>
 
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Input;
+using namespace Windows::UI::Popups;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 using namespace Microsoft::WRL;
+using namespace Windows::UI::ViewManagement;
+using namespace Windows::Devices::Input;
+using namespace Windows::Devices::Sensors;
+using namespace Windows::ApplicationModel::DataTransfer;
+using namespace concurrency;
 
 
 int OSWinrt::get_video_driver_count() const {
@@ -70,6 +81,66 @@ const char * OSWinrt::get_video_driver_name(int p_driver) const {
 OS::VideoMode OSWinrt::get_default_video_mode() const {
 
 	return video_mode;
+}
+
+Size2 OSWinrt::get_window_size() const {
+	Size2 size;
+	size.width = video_mode.width;
+	size.height = video_mode.height;
+	return size;
+}
+
+void OSWinrt::set_window_size(const Size2 p_size) {
+
+	Windows::Foundation::Size new_size;
+	new_size.Width = p_size.width;
+	new_size.Height = p_size.height;
+
+	ApplicationView^ view = ApplicationView::GetForCurrentView();
+
+	if (view->TryResizeView(new_size)) {
+
+		video_mode.width = p_size.width;
+		video_mode.height = p_size.height;
+	}
+}
+
+void OSWinrt::set_window_fullscreen(bool p_enabled) {
+
+	ApplicationView^ view = ApplicationView::GetForCurrentView();
+
+	video_mode.fullscreen = view->IsFullScreenMode;
+
+	if (video_mode.fullscreen == p_enabled)
+		return;
+
+	if (p_enabled) {
+
+		video_mode.fullscreen = view->TryEnterFullScreenMode();
+
+	} else {
+
+		view->ExitFullScreenMode();
+		video_mode.fullscreen = false;
+
+	}
+}
+
+bool OSWinrt::is_window_fullscreen() const {
+
+	return ApplicationView::GetForCurrentView()->IsFullScreenMode;
+}
+
+void OSWinrt::set_keep_screen_on(bool p_enabled) {
+
+	if (is_keep_screen_on() == p_enabled) return;
+
+	if (p_enabled)
+		display_request->RequestActive();
+	else
+		display_request->RequestRelease();
+
+	OS::set_keep_screen_on(p_enabled);
 }
 
 int OSWinrt::get_audio_driver_count() const {
@@ -94,7 +165,7 @@ void OSWinrt::initialize_core() {
 	//RedirectIOToConsole();
 
 	ThreadWinrt::make_default();
-	//SemaphoreWindows::make_default();
+	SemaphoreWindows::make_default();
 	MutexWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
@@ -107,6 +178,10 @@ void OSWinrt::initialize_core() {
 
 	//TCPServerWinsock::make_default();
 	//StreamPeerWinsock::make_default();
+
+	TCPServerWinsock::make_default();
+	StreamPeerWinsock::make_default();
+	PacketPeerUDPWinsock::make_default();
 
 	mempool_static = new MemoryPoolStaticMalloc;
 #if 1
@@ -125,6 +200,8 @@ void OSWinrt::initialize_core() {
 	// the start of the computer when we call GetGameTime()
 	ticks_start = 0;
 	ticks_start = get_ticks_usec();
+
+	IP_Unix::make_default();
 
 	cursor_shape=CURSOR_ARROW;
 }
@@ -154,8 +231,37 @@ void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_aud
 	VideoMode vm;
 	vm.width = gl_context->get_window_width();
 	vm.height = gl_context->get_window_height();
-	vm.fullscreen = true;
 	vm.resizable = false;
+
+	ApplicationView^ view = ApplicationView::GetForCurrentView();
+	vm.fullscreen = view->IsFullScreenMode;
+
+	view->SetDesiredBoundsMode(ApplicationViewBoundsMode::UseVisible);
+	view->PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
+
+	if (p_desired.fullscreen != view->IsFullScreenMode) {
+		if (p_desired.fullscreen) {
+
+			vm.fullscreen = view->TryEnterFullScreenMode();
+
+		} else {
+
+			view->ExitFullScreenMode();
+			vm.fullscreen = false;
+		}
+	}
+
+	Windows::Foundation::Size desired;
+	desired.Width = p_desired.width;
+	desired.Height = p_desired.height;
+
+	view->PreferredLaunchViewSize = desired;
+
+	if (view->TryResizeView(desired)) {
+
+		vm.width = view->VisibleBounds.Width;
+		vm.height = view->VisibleBounds.Height;
+	}
 
 	set_video_mode(vm);
 
@@ -179,6 +285,9 @@ void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_aud
 
 	input = memnew( InputDefault );
 
+	joystick = ref new JoystickWinrt(input);
+	joystick->register_events();
+
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
 	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
@@ -196,96 +305,77 @@ void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_aud
 	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
 	spatial_sound_2d_server->init();
 
+	managed_object->update_clipboard();
+
+	Clipboard::ContentChanged += ref new EventHandler<Platform::Object^>(managed_object, &ManagedType::on_clipboard_changed);
+
+	accelerometer = Accelerometer::GetDefault();
+	if (accelerometer != nullptr) {
+		// 60 FPS
+		accelerometer->ReportInterval = (1.0f / 60.0f) * 1000;
+		accelerometer->ReadingChanged +=
+			ref new TypedEventHandler<Accelerometer^, AccelerometerReadingChangedEventArgs^>
+			(managed_object, &ManagedType::on_accelerometer_reading_changed);
+	}
+
+	magnetometer = Magnetometer::GetDefault();
+	if (magnetometer != nullptr) {
+		// 60 FPS
+		magnetometer->ReportInterval = (1.0f / 60.0f) * 1000;
+		magnetometer->ReadingChanged +=
+			ref new TypedEventHandler<Magnetometer^, MagnetometerReadingChangedEventArgs^>
+			(managed_object, &ManagedType::on_magnetometer_reading_changed);
+	}
+
+	gyrometer = Gyrometer::GetDefault();
+	if (gyrometer != nullptr) {
+		// 60 FPS
+		gyrometer->ReportInterval = (1.0f / 60.0f) * 1000;
+		gyrometer->ReadingChanged +=
+			ref new TypedEventHandler<Gyrometer^, GyrometerReadingChangedEventArgs^>
+			(managed_object, &ManagedType::on_gyroscope_reading_changed);
+	}
 
 	_ensure_data_dir();
+
+	if (is_keep_screen_on())
+		display_request->RequestActive();
+
+	set_keep_screen_on(GLOBAL_DEF("display/keep_screen_on", true));
+
 }
 
 void OSWinrt::set_clipboard(const String& p_text) {
 
-	/*
-	if (!OpenClipboard(hWnd)) {
-		ERR_EXPLAIN("Unable to open clipboard.");
-		ERR_FAIL();
-	};
-	EmptyClipboard();
+	DataPackage^ clip = ref new DataPackage();
+	clip->RequestedOperation = DataPackageOperation::Copy;
+	clip->SetText(ref new Platform::String((const wchar_t*)p_text.c_str()));
 
-	HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, (p_text.length() + 1) * sizeof(CharType));
-	if (mem == NULL) {
-		ERR_EXPLAIN("Unable to allocate memory for clipboard contents.");
-		ERR_FAIL();
-	};
-	LPWSTR lptstrCopy = (LPWSTR)GlobalLock(mem);
-	memcpy(lptstrCopy, p_text.c_str(), (p_text.length() + 1) * sizeof(CharType));
-	//memset((lptstrCopy + p_text.length()), 0, sizeof(CharType));
-	GlobalUnlock(mem);
-
-	SetClipboardData(CF_UNICODETEXT, mem);
-
-	// set the CF_TEXT version (not needed?)
-	CharString utf8 = p_text.utf8();
-	mem = GlobalAlloc(GMEM_MOVEABLE, utf8.length() + 1);
-	if (mem == NULL) {
-		ERR_EXPLAIN("Unable to allocate memory for clipboard contents.");
-		ERR_FAIL();
-	};
-	LPTSTR ptr = (LPTSTR)GlobalLock(mem);
-	memcpy(ptr, utf8.get_data(), utf8.length());
-	ptr[utf8.length()] = 0;
-	GlobalUnlock(mem);
-
-	SetClipboardData(CF_TEXT, mem);
-
-	CloseClipboard();
-	*/
+	Clipboard::SetContent(clip);
 };
 
 String OSWinrt::get_clipboard() const {
 
-	/*
-	String ret;
-	if (!OpenClipboard(hWnd)) {
-		ERR_EXPLAIN("Unable to open clipboard.");
-		ERR_FAIL_V("");
-	};
-
-	if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
-
-		HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
-		if (mem != NULL) {
-
-			LPWSTR ptr = (LPWSTR)GlobalLock(mem);
-			if (ptr != NULL) {
-
-				ret = String((CharType*)ptr);
-				GlobalUnlock(mem);
-			};
-		};
-
-	} else if (IsClipboardFormatAvailable(CF_TEXT)) {
-
-		HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
-		if (mem != NULL) {
-
-			LPTSTR ptr = (LPTSTR)GlobalLock(mem);
-			if (ptr != NULL) {
-
-				ret.parse_utf8((const char*)ptr);
-				GlobalUnlock(mem);
-			};
-		};
-	};
-
-	CloseClipboard();
-
-	return ret;
-	*/
-	return "";
+	if (managed_object->clipboard != nullptr)
+		return managed_object->clipboard->Data();
+	else
+		return "";
 };
 
 
 void OSWinrt::input_event(InputEvent &p_event) {
+
 	p_event.ID = ++last_id;
+
 	input->parse_input_event(p_event);
+
+	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index>3) {
+
+		//send release for mouse wheel
+		p_event.mouse_button.pressed = false;
+		p_event.ID = ++last_id;
+		input->parse_input_event(p_event);
+	}
 };
 
 void OSWinrt::delete_main_loop() {
@@ -339,6 +429,8 @@ void OSWinrt::finalize() {
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
 
+	joystick = nullptr;
+
 }
 void OSWinrt::finalize_core() {
 
@@ -370,9 +462,6 @@ void OSWinrt::vprint(const char* p_format, va_list p_list, bool p_stderr) {
 	else
 		wprintf(L"%s",wbuf);
 
-#ifdef STDOUT_FILE
-	//vwfprintf(stdo,p_format,p_list);
-#endif
 	free(wbuf);
 
 	fflush(stdout);
@@ -380,11 +469,101 @@ void OSWinrt::vprint(const char* p_format, va_list p_list, bool p_stderr) {
 
 void OSWinrt::alert(const String& p_alert,const String& p_title) {
 
-	print_line("ALERT: "+p_alert);
+	Platform::String^ alert = ref new Platform::String(p_alert.c_str());
+	Platform::String^ title = ref new Platform::String(p_title.c_str());
+
+	MessageDialog^ msg = ref new MessageDialog(alert, title);
+
+	UICommand^ close = ref new UICommand("Close", ref new UICommandInvokedHandler(managed_object, &OSWinrt::ManagedType::alert_close));
+	msg->Commands->Append(close);
+	msg->DefaultCommandIndex = 0;
+	
+	managed_object->alert_close_handle = true;
+
+	msg->ShowAsync();
+}
+
+void OSWinrt::ManagedType::alert_close(IUICommand^ command) {
+
+	alert_close_handle = false;
+}
+
+void OSWinrt::ManagedType::on_clipboard_changed(Platform::Object ^ sender, Platform::Object ^ ev) {
+
+	update_clipboard();
+}
+
+void OSWinrt::ManagedType::update_clipboard() {
+
+	DataPackageView^ data = Clipboard::GetContent();
+
+	if (data->Contains(StandardDataFormats::Text)) {
+
+		create_task(data->GetTextAsync()).then(
+			[this](Platform::String^ clipboard_content) {
+
+			this->clipboard = clipboard_content;
+		});
+	}
+}
+
+void OSWinrt::ManagedType::on_accelerometer_reading_changed(Accelerometer ^ sender, AccelerometerReadingChangedEventArgs ^ args) {
+	
+	AccelerometerReading^ reading = args->Reading;
+
+	os->input->set_accelerometer(Vector3(
+		reading->AccelerationX,
+		reading->AccelerationY,
+		reading->AccelerationZ
+	));
+}
+
+void OSWinrt::ManagedType::on_magnetometer_reading_changed(Magnetometer ^ sender, MagnetometerReadingChangedEventArgs ^ args) {
+
+	MagnetometerReading^ reading = args->Reading;
+
+	os->input->set_magnetometer(Vector3(
+		reading->MagneticFieldX,
+		reading->MagneticFieldY,
+		reading->MagneticFieldZ
+	));
+}
+
+void OSWinrt::ManagedType::on_gyroscope_reading_changed(Gyrometer ^ sender, GyrometerReadingChangedEventArgs ^ args) {
+
+	GyrometerReading^ reading = args->Reading;
+
+	os->input->set_magnetometer(Vector3(
+		reading->AngularVelocityX,
+		reading->AngularVelocityY,
+		reading->AngularVelocityZ
+	));
 }
 
 void OSWinrt::set_mouse_mode(MouseMode p_mode) {
 
+	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED) {
+
+		CoreWindow::GetForCurrentThread()->SetPointerCapture();
+
+	} else {
+
+		CoreWindow::GetForCurrentThread()->ReleasePointerCapture();
+
+	}
+
+	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED || p_mode == MouseMode::MOUSE_MODE_HIDDEN) {
+
+		CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
+
+	} else {
+
+		CoreWindow::GetForCurrentThread()->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+	}
+
+	mouse_mode = p_mode;
+
+	SetEvent(mouse_mode_changed);
 }
 
 OSWinrt::MouseMode OSWinrt::get_mouse_mode() const{
@@ -482,7 +661,7 @@ OS::Time OSWinrt::get_time(bool utc) const {
 	return time;
 }
 
-OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
+OS::TimeZoneInfo OSWinrt::get_time_zone_info() const {
 	TIME_ZONE_INFORMATION info;
 	bool daylight = false;
 	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
@@ -503,7 +682,7 @@ uint64_t OSWinrt::get_unix_time() const {
 
 	FILETIME ft;
 	SYSTEMTIME st;
-	GetSystemTime(&systemtime);
+	GetSystemTime(&st);
 	SystemTimeToFileTime(&st, &ft);
 
 	SYSTEMTIME ep;
@@ -546,10 +725,79 @@ uint64_t OSWinrt::get_ticks_usec() const {
 
 void OSWinrt::process_events() {
 
+	last_id = joystick->process_controllers(last_id);
+	process_key_events();
+}
+
+void OSWinrt::process_key_events()
+{
+
+	for (int i = 0; i < key_event_pos; i++) {
+
+		KeyEvent &kev = key_event_buffer[i];
+		InputEvent iev;
+
+		iev.type = InputEvent::KEY;
+		iev.key.mod = kev.mod_state;
+		iev.key.echo = kev.echo;
+		iev.key.scancode = kev.scancode;
+		iev.key.unicode = kev.unicode;
+		iev.key.pressed = kev.pressed;
+
+		input_event(iev);
+
+	}
+	key_event_pos = 0;
+}
+
+void OSWinrt::queue_key_event(KeyEvent & p_event)
+{
+	// This merges Char events with the previous Key event, so
+	// the unicode can be retrieved without sending duplicate events.
+	if (p_event.type == KeyEvent::MessageType::CHAR_EVENT_MESSAGE && key_event_pos > 0) {
+
+		KeyEvent &old = key_event_buffer[key_event_pos - 1];
+		ERR_FAIL_COND(old.type != KeyEvent::MessageType::KEY_EVENT_MESSAGE);
+
+		key_event_buffer[key_event_pos - 1].unicode = p_event.unicode;
+		return;
+	}
+
+	ERR_FAIL_COND(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+
+	key_event_buffer[key_event_pos++] = p_event;
 }
 
 void OSWinrt::set_cursor_shape(CursorShape p_shape) {
 
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+
+	if (cursor_shape == p_shape)
+		return;
+
+	static const CoreCursorType uwp_cursors[CURSOR_MAX] = {
+		CoreCursorType::Arrow,
+		CoreCursorType::IBeam,
+		CoreCursorType::Hand,
+		CoreCursorType::Cross,
+		CoreCursorType::Wait,
+		CoreCursorType::Wait,
+		CoreCursorType::Arrow,
+		CoreCursorType::Arrow,
+		CoreCursorType::UniversalNo,
+		CoreCursorType::SizeNorthSouth,
+		CoreCursorType::SizeWestEast,
+		CoreCursorType::SizeNortheastSouthwest,
+		CoreCursorType::SizeNorthwestSoutheast,
+		CoreCursorType::SizeAll,
+		CoreCursorType::SizeNorthSouth,
+		CoreCursorType::SizeWestEast,
+		CoreCursorType::Help
+	};
+
+	CoreWindow::GetForCurrentThread()->PointerCursor = ref new CoreCursor(uwp_cursors[p_shape], 0);
+
+	cursor_shape = p_shape;
 }
 
 Error OSWinrt::execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id,String* r_pipe,int *r_exitcode) {
@@ -609,7 +857,7 @@ String OSWinrt::get_locale() const {
 	return "en";
 #else
 	Platform::String ^language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
-	return language->Data();
+	return String(language->Data()).replace("-", "_");
 #endif
 }
 
@@ -628,6 +876,29 @@ void OSWinrt::swap_buffers() {
 	gl_context->swap_buffers();
 }
 
+bool OSWinrt::has_touchscreen_ui_hint() const {
+
+	TouchCapabilities^ tc = ref new TouchCapabilities();
+	return tc->TouchPresent != 0 || UIViewSettings::GetForCurrentView()->UserInteractionMode == UserInteractionMode::Touch;
+}
+
+bool OSWinrt::has_virtual_keyboard() const {
+
+	return UIViewSettings::GetForCurrentView()->UserInteractionMode == UserInteractionMode::Touch;
+}
+
+void OSWinrt::show_virtual_keyboard(const String & p_existing_text, const Rect2 & p_screen_rect) {
+
+	InputPane^ pane = InputPane::GetForCurrentView();
+	pane->TryShow();
+}
+
+void OSWinrt::hide_virtual_keyboard() {
+
+	InputPane^ pane = InputPane::GetForCurrentView();
+	pane->TryHide();
+}
+
 
 void OSWinrt::run() {
 
@@ -644,6 +915,7 @@ void OSWinrt::run() {
 	while (!force_quit) {
 
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+		if (managed_object->alert_close_handle) continue;
 		process_events(); // get rid of pending events
 		if (Main::iteration()==true)
 			break;
@@ -665,7 +937,7 @@ String OSWinrt::get_data_dir() const {
 
 	Windows::Storage::StorageFolder ^data_folder = Windows::Storage::ApplicationData::Current->LocalFolder;
 
-	return data_folder->Path->Data();
+	return String(data_folder->Path->Data()).replace("\\", "/");
 }
 
 
@@ -689,6 +961,13 @@ OSWinrt::OSWinrt() {
 #endif
 
 	gl_context = NULL;
+
+	display_request = ref new Windows::System::Display::DisplayRequest();
+
+	managed_object = ref new ManagedType;
+	managed_object->os = this;
+
+	mouse_mode_changed = CreateEvent(NULL, TRUE, FALSE, L"os_mouse_mode_changed");
 
 	AudioDriverManagerSW::add_driver(&audio_driver);
 }

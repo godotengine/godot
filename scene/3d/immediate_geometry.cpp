@@ -72,6 +72,7 @@ void ImmediateGeometry::add_vertex(const Vector3& p_vertex){
 	if (empty) {
 		aabb.pos=p_vertex;
 		aabb.size=Vector3();
+		empty=false;
 	} else {
 		aabb.expand_to(p_vertex);
 	}
@@ -102,7 +103,7 @@ DVector<Face3> ImmediateGeometry::get_faces(uint32_t p_usage_flags) const {
 
 
 
-void ImmediateGeometry::add_sphere(int p_lats,int p_lons,float p_radius) {
+void ImmediateGeometry::add_sphere(int p_lats, int p_lons, float p_radius, bool p_add_uv) {
 
 	for(int i = 1; i <= p_lats; i++) {
 		double lat0 = Math_PI * (-0.5 + (double) (i - 1) / p_lats);
@@ -132,6 +133,10 @@ void ImmediateGeometry::add_sphere(int p_lats,int p_lons,float p_radius) {
 			};
 
 #define ADD_POINT(m_idx)\
+	if (p_add_uv) {\
+		set_uv(Vector2(Math::atan2(v[m_idx].x,v[m_idx].z)/Math_PI * 0.5+0.5,v[m_idx].y*0.5+0.5));\
+		set_tangent(Plane(Vector3(-v[m_idx].z,v[m_idx].y,v[m_idx].x),1));		\
+	}\
 	set_normal(v[m_idx]);\
 	add_vertex(v[m_idx]*p_radius);
 
@@ -149,14 +154,14 @@ void ImmediateGeometry::add_sphere(int p_lats,int p_lons,float p_radius) {
 
 void ImmediateGeometry::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("begin","primitive","texture:Texture"),&ImmediateGeometry::begin);
+	ObjectTypeDB::bind_method(_MD("begin","primitive","texture:Texture"),&ImmediateGeometry::begin,DEFVAL(Ref<Texture>()));
 	ObjectTypeDB::bind_method(_MD("set_normal","normal"),&ImmediateGeometry::set_normal);
 	ObjectTypeDB::bind_method(_MD("set_tangent","tangent"),&ImmediateGeometry::set_tangent);
 	ObjectTypeDB::bind_method(_MD("set_color","color"),&ImmediateGeometry::set_color);
 	ObjectTypeDB::bind_method(_MD("set_uv","uv"),&ImmediateGeometry::set_uv);
 	ObjectTypeDB::bind_method(_MD("set_uv2","uv"),&ImmediateGeometry::set_uv2);
 	ObjectTypeDB::bind_method(_MD("add_vertex","pos"),&ImmediateGeometry::add_vertex);
-	ObjectTypeDB::bind_method(_MD("add_sphere","lats","lons","radius"),&ImmediateGeometry::add_sphere);
+	ObjectTypeDB::bind_method(_MD("add_sphere","lats","lons","radius","add_uv"),&ImmediateGeometry::add_sphere,DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("end"),&ImmediateGeometry::end);
 	ObjectTypeDB::bind_method(_MD("clear"),&ImmediateGeometry::clear);
 

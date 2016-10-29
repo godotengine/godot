@@ -629,7 +629,7 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 
 
 	// create and initialize cells to zero
-	print_line("Wrapper: Initializing Cells");
+	//print_line("Wrapper: Initializing Cells");
 
 	uint8_t ***cell_status=memnew_arr(uint8_t**,div_x);
 	for(int i=0;i<div_x;i++) {
@@ -648,7 +648,7 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 	}
 
 	// plot faces into cells
-	print_line("Wrapper (1/6): Plotting Faces");
+	//print_line("Wrapper (1/6): Plotting Faces");
 
 	for (int i=0;i<face_count;i++) {
 
@@ -663,7 +663,7 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 
 	// determine which cells connect to the outside by traversing the outside and recursively flood-fill marking
 
-	print_line("Wrapper (2/6) Flood Filling");
+	//print_line("Wrapper (2/6): Flood Filling");
 
 	for (int i=0;i<div_x;i++) {
 
@@ -694,7 +694,7 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 
 	// build faces for the inside-outside cell divisors
 
-	print_line("Wrapper (3/6): Building Faces");
+	//print_line("Wrapper (3/6): Building Faces");
 
 	DVector<Face3> wrapped_faces;
 
@@ -709,7 +709,7 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 		}
 	}
 
-	print_line("Wrapper (4/6): Transforming Back Vertices");
+	//print_line("Wrapper (4/6): Transforming Back Vertices");
 
 	// transform face vertices to global coords
 
@@ -728,7 +728,7 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 	}
 
 	// clean up grid
-	print_line("Wrapper (5/6): Grid Cleanup");
+	//print_line("Wrapper (5/6): Grid Cleanup");
 
 	for(int i=0;i<div_x;i++) {
 
@@ -744,7 +744,7 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 	if (p_error)
 		*p_error=voxelsize.length();
 
-	print_line("Wrapper (6/6): Finished.");
+	//print_line("Wrapper (6/6): Finished.");
 	return wrapped_faces;
 }
 

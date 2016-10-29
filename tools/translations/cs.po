@@ -2,20 +2,29 @@
 # Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Jan 'spl!te' Kondelík <j.kondelik@centrum.cz>, 2016.
+# Luděk Novotný <gladosicek@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"PO-Revision-Date: 2016-08-11 15:01+0000\n"
+"Last-Translator: Luděk Novotný <gladosicek@gmail.com>\n"
+"Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
+"cs/>\n"
 "Language: cs\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
+#: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
+#: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
 
@@ -24,31 +33,439 @@ msgid "step argument is zero!"
 msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
-msgid "Not a script with an instance"
+msgid ""
+"Paths cannot start with '/', absolute paths must start with 'res://', "
+"'user://', or 'local://'"
 msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not a script with an instance"
+msgstr "Skript nemá instanci"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "Není založeno na skriptu"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr ""
+msgstr "Není založeno na zdrojovém souboru"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr ""
+msgstr "Neplatná instance slovníkového formátu (chybí @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr ""
+msgstr "Neplatná instance slovníkového formátu (nemohu nahrát skript na @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr ""
+msgstr "Neplatná instance slovníkového formátu (nemohu nahrát skript na @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
+msgstr "Neplatná instance slovníku (neplatné podtřídy)"
+
+#: modules/visual_script/visual_script.cpp
+#, fuzzy
+msgid ""
+"A node yielded without working memory, please read the docs on how to yield "
+"properly!"
+msgstr ""
+"Uzel zavolal yield bez pracovní paměti. Přečtěte si prosím v dokumentaci, "
+"jak správně používat yield!"
+
+#: modules/visual_script/visual_script.cpp
+#, fuzzy
+msgid ""
+"Node yielded, but did not return a function state in the first working "
+"memory."
+msgstr "Uzel zavolal yield, ale nevrátil stav funkce v první pracovní paměti."
+
+#: modules/visual_script/visual_script.cpp
+#, fuzzy
+msgid ""
+"Return value must be assigned to first element of node working memory! Fix "
+"your node please."
+msgstr ""
+"Návratová hodnota musí být přiřazena prvnímu prvku uzlu pracovní paměti. "
+"Opravte prosím váš uzel."
+
+#: modules/visual_script/visual_script.cpp
+msgid "Node returned an invalid sequence output: "
+msgstr "Uzel vrátil neplatnou posloupnost výstupu: "
+
+#: modules/visual_script/visual_script.cpp
+msgid "Found sequence bit but not the node in the stack, report bug!"
+msgstr "Nalezen bit posloupnosti ale ne uzel v zásobníku. Nahlaste chybu!"
+
+#: modules/visual_script/visual_script.cpp
+msgid "Stack overflow with stack depth: "
+msgstr "Přetečení zásobníku s hloubkou: "
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Functions:"
+msgstr "Funkce:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Variables:"
+msgstr "Proměnné:"
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
+msgid "Signals:"
+msgstr "Signály:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Name is not a valid identifier:"
+msgstr "Jméno není platný identifikátor:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Name already in use by another func/var/signal:"
+msgstr "Jméno už je použito jinou funkcí/proměnnou/signálem:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Rename Function"
+msgstr "Přejmenovat funkci"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Rename Variable"
+msgstr "Přejmenovat proměnnou"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Rename Signal"
+msgstr "Přejmenovat signál"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Function"
+msgstr "Přidat funkci"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Variable"
+msgstr "Přidat proměnnou"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Signal"
+msgstr "Přidat signál"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Remove Function"
+msgstr "Odstranit funkci"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Remove Variable"
+msgstr "Odstranit proměnnou"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Editing Variable:"
+msgstr "Úprava proměnné:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Remove Signal"
+msgstr "Odstranit signál"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Editing Signal:"
+msgstr "Úprava signálu:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Expression"
+msgstr "Animace: změna přechodu"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node"
+msgstr "Přidat uzel"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Preload Node"
+msgstr "Přidat uzel"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node(s) From Tree"
+msgstr "Přidat uzel (uzly) ze stromu"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Getter Property"
+msgstr "Přidat vlastnost getter"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Setter Property"
+msgstr "Přidat vlastnost setter"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Condition"
+msgstr "Přechod"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Sequence"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Switch"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Iterator"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "While"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Return"
+msgstr "Vrátit:"
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
+msgid "Call"
+msgstr "Volat"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Get"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/property_editor.cpp
+msgid "Set"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/plugins/polygon_2d_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
+msgid "Edit"
+msgstr "Upravit"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Base Type:"
+msgstr "Základní typ:"
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
+msgid "Members:"
+msgstr "Členové:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Available Nodes:"
+msgstr "Dostupné uzly:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Select or create a function to edit graph"
+msgstr "Pro úpravu grafu vyber nebo vytvoř funkci"
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
+#: tools/editor/connections_dialog.cpp
+#: tools/editor/plugins/animation_player_editor_plugin.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/plugins/resource_preloader_editor_plugin.cpp
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/sprite_frames_editor_plugin.cpp
+#: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
+#: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
+msgid "Close"
+msgstr "Zavřít"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Edit Signal Arguments:"
+msgstr "Upravit argumenty signálu:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Edit Variable:"
+msgstr "Upravit proměnnou:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Change"
+msgstr "Změnit"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Delete Selected"
+msgstr "Smazat vybraný"
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Toggle Breakpoint"
+msgstr "Přepnout breakpoint"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Find Node Type"
+msgstr "Vyhledat typ uzlu"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Copy Nodes"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Cut Nodes"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Paste Nodes"
+msgstr "Cesta k uzlu:"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Input type not iterable: "
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator became invalid"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator became invalid: "
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Invalid index property name."
+msgstr "Neplatné jméno vlastnosti."
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Base object is not a Node!"
+msgstr "Základní objekt není Node!"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Path does not lead Node!"
+msgstr "Cesta nevede k uzlu!"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Invalid index property name '%s' in node %s."
+msgstr "Neplatné jméno vlastnosti '%s' v uzlu %s."
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ": Invalid argument of type: "
+msgstr ": Neplatný argument typu: "
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ": Invalid arguments: "
+msgstr ": Neplatné argumenty: "
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "VariableGet not found in script: "
+msgstr "Proměnná pro získání nebyla ve skriptu nalezena: "
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "VariableSet not found in script: "
+msgstr "Proměnná pro nastavení nebyla ve skriptu nalezena: "
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Custom node has no _step() method, can't process graph."
+msgstr "Vlastní uzel nemá metodu _step(), takže nelze postupovat grafem."
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ""
+"Invalid return value from _step(), must be integer (seq out), or string "
+"(error)."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "just pressed"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "just released"
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid ""
+"Couldn't read the certficate file. Are the path and password both correct?"
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Error creating the signature object."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Error creating the package signature."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid ""
+"No export templates found.\n"
+"Download and install export templates."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Custom debug package not found."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Custom release package not found."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid "Invalid unique name."
+msgstr "Neplatný název."
+
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid "Invalid product GUID."
+msgstr "Neplatná velikost fontu."
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid publisher GUID."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid background color."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp
@@ -69,10 +486,14 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon2D slouží pouze jako kontejner tvarů objektu "
+"CollissionObject2D a od něj odvozených uzlů. Použijte ho pouze jako potomka "
+"Area2D, StaticBody2D, RigidBody2D, KinematicBody2D a dalších, pro určení "
+"jejich tvaru."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr ""
+msgstr "Prázdný CollisionPolygon2D nemá žádný efekt na kolizích."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -80,6 +501,10 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon2D slouží pouze jako kontejner tvarů objektu "
+"CollissionObject2D a od něj odvozených uzlů. Použijte ho pouze jako potomka "
+"Area2D, StaticBody2D, RigidBody2D, KinematicBody2D a dalších, pro určení "
+"jejich tvaru."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -91,12 +516,13 @@ msgstr ""
 msgid ""
 "A texture with the shape of the light must be supplied to the 'texture' "
 "property."
-msgstr ""
+msgstr "Textura světla musí být nastavena vlastností 'texture'."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
+"Polygon stínítka musí být nastaven (nebo namalován), aby stínítko fungovalo."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
@@ -107,47 +533,61 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
+"Aby mohl tento uzel fungovat, musí mít vytvořen nebo nastaven zdroj "
+"NavigationPolygon. Nastavte prosím vlastnost nebo nakreslete mnohoúhelník."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
+"NavigationPolygonInstance musí být dítětem nebo vnoučetem uzlu Navigation2D. "
+"Poskytuje pouze data pro navigaci."
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
+"Uzel ParallaxLayer funguje pouze když je dítětem uzlu ParallaxBackground."
 
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
 msgstr ""
+"Aby ParticleAttractor2D fungoval, musí vlastnost path ukazovat na platný "
+"uzel Particles2D."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
+msgstr "PathFollow2D funguje pouze když je dítětem uzlu Path2D."
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
+"Pro zajištění funkčnosti musí vlastnost path ukazovat na platný uzel Node2D."
 
 #: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SamplePlayer to play sound."
 msgstr ""
+"Zdroj SampleLibrary musí být vytvořen nebo nastaven jako vlastnost "
+"'samples', aby mohl SamplePlayer přehrát zvuk."
 
 #: scene/2d/sprite.cpp
 msgid ""
 "Path property must point to a valid Viewport node to work. Such Viewport "
 "must be set to 'render target' mode."
 msgstr ""
+"Pro zajištění funkčností musí vlastnost path ukazovat na platný uzel "
+"Viewport. Takový Viewport musí být nastaven do módu 'render target'."
 
 #: scene/2d/sprite.cpp
 msgid ""
 "The Viewport set in the path property must be set as 'render target' in "
 "order for this sprite to work."
 msgstr ""
+"Aby tento sprite mohl fungovat, Viewport nastavený ve vlastnosti path musí "
+"být nastaven do módu 'render target'."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -155,18 +595,27 @@ msgid ""
 "as parent."
 msgstr ""
 
+#: scene/3d/baked_light_instance.cpp
+msgid "BakedLightInstance does not contain a BakedLight resource."
+msgstr "BakedLightInstance neobsahuje zdroj BakedLight."
+
 #: scene/3d/body_shape.cpp
 msgid ""
 "CollisionShape only serves to provide a collision shape to a CollisionObject "
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionShape pouze poskytuje tvar kolize uzlům odvozeným z "
+"CollisionObject. Použijte ho jen jako dítě uzlů Area, StaticBody, RigidBody "
+"a KinematicBody, abyste jim dali tvar."
 
 #: scene/3d/body_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
 msgstr ""
+"Aby CollisionShape mohl fungovat, musí mu být poskytnut tvar. Vytvořte mu "
+"prosím zdroj tvar!"
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -174,152 +623,174 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon pouze poskytuje tvar kolize uzlům odvozeným z "
+"CollisionObject. Použijte ho jen jako dítě uzlů Area, StaticBody, RigidBody "
+"a KinematicBody, abyste jim dali tvar."
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
-msgstr ""
+msgstr "Prázdný CollisionPolygon nemá na kolize žádný efekt."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
+"Aby tento uzel mohl fungovat, musí mít nastaven nebo vytvořen zdroj "
+"NavigationMesh."
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
+"NavigationMeshInstance musí být dítětem nebo vnoučetem uzlu Navigation. "
+"Poskytuje pouze data pro navigaci."
+
+#: scene/3d/remote_transform.cpp
+#, fuzzy
+msgid "Path property must point to a valid Spatial node to work."
+msgstr ""
+"Aby ParticleAttractor2D fungoval, musí vlastnost path ukazovat na platný "
+"uzel Particles2D."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
+"Na každou scénu (nebo skupinu instancovaných scén) je povolen pouze jeden "
+"WorldEnvironment."
 
 #: scene/3d/spatial_sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SpatialSamplePlayer to play sound."
 msgstr ""
+"Zdroj SampleLibrary musí být vytvořen nebo nastaven jako vlastnost "
+"'samples', aby mohl SpatialSamplePlayer přehrát zvuk."
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
+"Zdroj SpriteFrames musí být vytvořen nebo nastaven ve vlastnosti 'Frames', "
+"aby mohl AnimatedSprite3D zobrazit rámečky."
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
-msgstr ""
+msgstr "Zrušit"
 
-#: scene/gui/dialogs.cpp
+#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "Pozor!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "Potvrďte prosím..."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "File Exists, Overwrite?"
-msgstr ""
+msgstr "Soubor už existuje. Přepsat?"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Recognized"
-msgstr ""
+msgstr "Všechny rozpoznatelné"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Files (*)"
-msgstr ""
+msgstr "Všechny soubory (*)"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
-#: tools/editor/scenes_dock.cpp
+#: tools/editor/filesystem_dock.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Open"
-msgstr ""
+msgstr "Otevřít"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a File"
-msgstr ""
+msgstr "Otevřít soubor"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr ""
+msgstr "Otevřít soubor(y)"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a Directory"
-msgstr ""
+msgstr "Otevřít složku"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a File or Directory"
-msgstr ""
+msgstr "Otevřít soubor nebo složku"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save"
-msgstr ""
+msgstr "Uložit"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Save a File"
-msgstr ""
+msgstr "Uložit soubor"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
 msgid "Create Folder"
-msgstr ""
+msgstr "Vytvořit složku"
 
-#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp tools/editor/editor_autoload_settings.cpp
+#: tools/editor/editor_file_dialog.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: tools/editor/project_settings.cpp tools/editor/script_create_dialog.cpp
+#: tools/editor/script_create_dialog.cpp
 msgid "Path:"
-msgstr ""
+msgstr "Cesta:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Directories & Files:"
-msgstr ""
+msgstr "Složky a soubory:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/script_editor_debugger.cpp
 msgid "File:"
-msgstr ""
+msgstr "Soubor:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Filter:"
-msgstr ""
+msgstr "Filtr:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp tools/editor/editor_plugin_settings.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Name:"
-msgstr ""
+msgstr "Jméno:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
 msgid "Could not create folder."
-msgstr ""
+msgstr "Nelze vytvořit složku."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Must use a valid extension."
-msgstr ""
+msgstr "Je nutné použít platnou příponu."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Shift+"
-msgstr ""
+msgstr "Shift+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Alt+"
-msgstr ""
+msgstr "Alt+"
 
 #: scene/gui/input_action.cpp
 msgid "Ctrl+"
-msgstr ""
+msgstr "Ctrl+"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 #: tools/editor/settings_config_dialog.cpp
@@ -328,77 +799,77 @@ msgstr ""
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Device"
-msgstr ""
+msgstr "Zařízení"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Button"
-msgstr ""
+msgstr "Tlačítko"
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Left Button."
-msgstr ""
+msgstr "Levé tlačítko."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Right Button."
-msgstr ""
+msgstr "Pravé tlačítko."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Middle Button."
-msgstr ""
+msgstr "Prostřední tlačítko."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Wheel Up."
-msgstr ""
+msgstr "Kolečko nahoru."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Wheel Down."
-msgstr ""
+msgstr "Kolečko dolů."
 
 #: scene/gui/input_action.cpp tools/editor/project_settings.cpp
 msgid "Axis"
-msgstr ""
+msgstr "Osa"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Cut"
-msgstr ""
+msgstr "Vyjmout"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
 msgid "Copy"
-msgstr ""
+msgstr "Kopírovat"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
 msgid "Paste"
-msgstr ""
+msgstr "Vložit"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_export.cpp
 msgid "Select All"
-msgstr ""
+msgstr "Vybrat vše"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp tools/editor/editor_log.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 #: tools/editor/plugins/rich_text_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Clear"
-msgstr ""
+msgstr "Vyčistit"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Undo"
-msgstr ""
+msgstr "Zpět"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -406,6 +877,9 @@ msgid ""
 "functions. Making them visible for editing is fine though, but they will "
 "hide upon running."
 msgstr ""
+"Popupy budou standardně skryty, dokud nezavoláte popup() nebo některou z "
+"popup*() funkcí. I když je jejich zviditelnění pro úpravu v pořádku, za běhu "
+"budou skryty."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -414,34 +888,38 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
+"Tento viewport není nastaven jako render target. Pokud chcete jeho obsah "
+"zobrazit přímo na obrazovku, musíte ho nastavit jako dítě uzlu Control, aby "
+"mohl získat velikost. Jinak ho nastavte jako render target a přiřaďte jeho "
+"vnitřní texturu nějakému uzlu k zobrazení."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "Chyba při inicializaci FreeType."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Unknown font format."
-msgstr ""
+msgstr "Neznámý formát fontu."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "Chyba nahrávání fontu."
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Invalid font size."
-msgstr ""
+msgstr "Neplatná velikost fontu."
 
 #: tools/editor/animation_editor.cpp
 msgid "Disabled"
-msgstr ""
+msgstr "Vypnuto"
 
 #: tools/editor/animation_editor.cpp
 msgid "All Selection"
-msgstr ""
+msgstr "Všechny vybrané"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Add Key"
@@ -449,157 +927,161 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Animace: změna přechodu"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "Animace: změna transformace"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Value"
-msgstr ""
+msgstr "Animace: změna hodnoty"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Animace: změna volání"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Move Anim Track Up"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Move Anim Track Down"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Remove Anim Track"
-msgstr ""
+msgstr "Animace: přidat stopu"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "Animace: duplikovat klíče"
+
+#: tools/editor/animation_editor.cpp
+msgid "Move Anim Track Up"
+msgstr "Posun stopy animace nahoru"
+
+#: tools/editor/animation_editor.cpp
+msgid "Move Anim Track Down"
+msgstr "Posun stopy animace dolů"
+
+#: tools/editor/animation_editor.cpp
+msgid "Remove Anim Track"
+msgstr "Odstranit stopu animace"
 
 #: tools/editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr ""
+msgstr "Změna přechodů na:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "Animace: přejmenování stopy"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr ""
+msgstr "Animace: změna interpolace stopy"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr ""
+msgstr "Animace: změna typu hodnot"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "Úprava křivky uzlu"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "Úprava vybraných křivek"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Continuous"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Discrete"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Trigger"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Anim Add Key"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Anim Move Keys"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Scale Selection"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Scale From Cursor"
-msgstr ""
+msgstr "Animace: smazat klíče"
 
 #: tools/editor/animation_editor.cpp
 #: tools/editor/plugins/tile_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr ""
+msgstr "Duplikovat výběr"
 
 #: tools/editor/animation_editor.cpp
 msgid "Duplicate Transposed"
 msgstr ""
 
 #: tools/editor/animation_editor.cpp
+msgid "Remove Selection"
+msgstr "Odstranit výběr"
+
+#: tools/editor/animation_editor.cpp
+msgid "Continuous"
+msgstr "Spojité"
+
+#: tools/editor/animation_editor.cpp
+msgid "Discrete"
+msgstr "Diskrétní"
+
+#: tools/editor/animation_editor.cpp
+msgid "Trigger"
+msgstr "Spoušť"
+
+#: tools/editor/animation_editor.cpp
+msgid "Anim Add Key"
+msgstr "Animace: přidat klíč"
+
+#: tools/editor/animation_editor.cpp
+msgid "Anim Move Keys"
+msgstr "Animace: přesunout klíče"
+
+#: tools/editor/animation_editor.cpp
+msgid "Scale Selection"
+msgstr "Změnit měřítko výběru"
+
+#: tools/editor/animation_editor.cpp
+msgid "Scale From Cursor"
+msgstr "Změnit měřítko od kurzoru"
+
+#: tools/editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr ""
+msgstr "Jít k dalšímu kroku"
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr ""
+msgstr "Jít k předchozímu kroku"
 
 #: tools/editor/animation_editor.cpp tools/editor/property_editor.cpp
 msgid "Linear"
-msgstr ""
+msgstr "Lineární"
 
 #: tools/editor/animation_editor.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr ""
+msgstr "Konstantní"
 
 #: tools/editor/animation_editor.cpp
 msgid "In"
-msgstr ""
+msgstr "In"
 
 #: tools/editor/animation_editor.cpp
 msgid "Out"
-msgstr ""
+msgstr "Out"
 
 #: tools/editor/animation_editor.cpp
 msgid "In-Out"
-msgstr ""
+msgstr "In-Out"
 
 #: tools/editor/animation_editor.cpp
 msgid "Out-In"
-msgstr ""
+msgstr "Out-In"
 
 #: tools/editor/animation_editor.cpp
 msgid "Transitions"
-msgstr ""
+msgstr "Přechody"
 
 #: tools/editor/animation_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "Optimalizovat animaci"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr ""
+msgstr "Pročistit animaci"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "Vytvořit NOVOU stopu pro %s a vložit klíč?"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
+msgstr "Vytvořit %d NOVÝCH stop a vložit klíče?"
 
 #: tools/editor/animation_editor.cpp tools/editor/create_dialog.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -608,27 +1090,27 @@ msgstr ""
 #: tools/editor/plugins/particles_editor_plugin.cpp
 #: tools/editor/project_manager.cpp tools/editor/script_create_dialog.cpp
 msgid "Create"
-msgstr ""
+msgstr "Vytvořit"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "Animace: Vytvořit a vložit"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr ""
+msgstr "Animace: Vložit stopu a klíč"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr ""
+msgstr "Animace: vložit klíč"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr ""
+msgstr "Změnit délku animace"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr ""
+msgstr "Změnit opakování animace"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
@@ -636,91 +1118,95 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr ""
+msgstr "Animace: vložit"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "Animace: změnit měřítko klíčů"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr ""
+msgstr "Animace: přidat stopu volání"
 
 #: tools/editor/animation_editor.cpp
 msgid "Animation zoom."
-msgstr ""
+msgstr "Přiblížení animace."
 
 #: tools/editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr ""
+msgstr "Délka (s):"
 
 #: tools/editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
-msgstr ""
+msgstr "Délka animace (v sekundách)."
 
 #: tools/editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr ""
+msgstr "Krok (s):"
 
 #: tools/editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
-msgstr ""
+msgstr "Krokování kurzoru (v sekundách)."
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr ""
+msgstr "Zapnout/vypnout opakování animace."
 
 #: tools/editor/animation_editor.cpp
 msgid "Add new tracks."
-msgstr ""
+msgstr "Přidat nové stopy."
 
 #: tools/editor/animation_editor.cpp
 msgid "Move current track up."
-msgstr ""
+msgstr "Posunout aktuální stopu nahoru."
 
 #: tools/editor/animation_editor.cpp
 msgid "Move current track down."
-msgstr ""
+msgstr "Posunout aktuální stopu dolů."
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove selected track."
-msgstr ""
+msgstr "Odstranit vybranou stopu."
 
 #: tools/editor/animation_editor.cpp
 msgid "Track tools"
-msgstr ""
+msgstr "Nástroje stopy"
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
-msgstr ""
+msgstr "Kliknutím na klíče zapnete jejich individuální úpravu."
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim. Optimizer"
-msgstr ""
+msgstr "Optimalizátor animace"
 
 #: tools/editor/animation_editor.cpp
 msgid "Max. Linear Error:"
-msgstr ""
+msgstr "Maximální lineární chyba:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Max. Angular Error:"
-msgstr ""
+msgstr "Maximální úhlová chyba:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr ""
+msgstr "Maximální optimalizovatelný úhel:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Optimize"
-msgstr ""
+msgstr "Optimalizuj"
+
+#: tools/editor/animation_editor.cpp
+msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
+msgstr "Pro úpravu animací vyberte ze stromu scény uzel AnimationPlayer."
 
 #: tools/editor/animation_editor.cpp
 msgid "Key"
-msgstr ""
+msgstr "Klíč"
 
 #: tools/editor/animation_editor.cpp
 msgid "Transition"
-msgstr ""
+msgstr "Přechod"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale Ratio:"
@@ -728,11 +1214,11 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr ""
+msgstr "Ze kterého uzlu volej funkce?"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove invalid keys"
-msgstr ""
+msgstr "Odstranit neplatné klíče"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove unresolved and empty tracks"
@@ -740,171 +1226,156 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-up all animations"
-msgstr ""
+msgstr "Pročistit všechny animace"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr ""
+msgstr "Pročistit animaci (NELZE VZÍT ZPĚT!)"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up"
-msgstr ""
+msgstr "Pročistit"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr ""
+msgstr "Změnit velikost pole"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr ""
+msgstr "Změnit typ hodnot pole"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr ""
+msgstr "Změnit hodnotu pole"
 
 #: tools/editor/asset_library_editor_plugin.cpp tools/editor/create_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Search:"
-msgstr ""
+msgstr "Hledat:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Sort:"
-msgstr ""
+msgstr "Řadit:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Reverse"
-msgstr ""
+msgstr "Naopak"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
 msgid "Category:"
-msgstr ""
+msgstr "Kategorie:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "All"
-msgstr ""
+msgstr "Všechny"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Site:"
-msgstr ""
+msgstr "Web:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Support.."
-msgstr ""
+msgstr "Podpora.."
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "Oficiální"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "Z komunity"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr ""
+msgstr "Testované"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
-msgstr ""
+msgstr "ZIP soubor asetů"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List For '%s':"
-msgstr ""
-
-#: tools/editor/call_dialog.cpp
-msgid "Call"
-msgstr ""
-
-#: tools/editor/call_dialog.cpp tools/editor/connections_dialog.cpp
-#: tools/editor/import_settings.cpp
-#: tools/editor/plugins/animation_player_editor_plugin.cpp
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/resource_preloader_editor_plugin.cpp
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/sprite_frames_editor_plugin.cpp
-#: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
-#: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
-msgid "Close"
-msgstr ""
+msgstr "Seznam metod '%s':"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List:"
-msgstr ""
+msgstr "Seznam metod:"
 
 #: tools/editor/call_dialog.cpp
 msgid "Arguments:"
-msgstr ""
+msgstr "Argumenty:"
 
 #: tools/editor/call_dialog.cpp
 msgid "Return:"
-msgstr ""
+msgstr "Vrátit:"
 
 #: tools/editor/code_editor.cpp
 msgid "Go to Line"
-msgstr ""
+msgstr "Běž na řádek"
 
 #: tools/editor/code_editor.cpp
 msgid "Line Number:"
-msgstr ""
+msgstr "Číslo řádku:"
 
 #: tools/editor/code_editor.cpp
 msgid "No Matches"
-msgstr ""
+msgstr "Žádné shody"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d Ocurrence(s)."
-msgstr ""
+msgstr "Nahrazeno %d výskytů."
 
 #: tools/editor/code_editor.cpp
 msgid "Replace"
-msgstr ""
+msgstr "Nahradit"
 
 #: tools/editor/code_editor.cpp
 msgid "Replace All"
-msgstr ""
+msgstr "Nahradit všechny"
 
 #: tools/editor/code_editor.cpp
 msgid "Match Case"
-msgstr ""
+msgstr "Rozlišovat malá/velká"
 
 #: tools/editor/code_editor.cpp
 msgid "Whole Words"
-msgstr ""
+msgstr "Celá slova"
 
 #: tools/editor/code_editor.cpp
 msgid "Selection Only"
-msgstr ""
+msgstr "Pouze výběr"
 
 #: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
 msgid "Search"
-msgstr ""
+msgstr "Hledat"
 
 #: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
 msgid "Find"
-msgstr ""
+msgstr "Najít"
 
 #: tools/editor/code_editor.cpp
 msgid "Next"
-msgstr ""
+msgstr "Další"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d ocurrence(s)."
-msgstr ""
+msgstr "Nahrazeno %d výskytů."
 
 #: tools/editor/code_editor.cpp
 msgid "Not found!"
-msgstr ""
+msgstr "Nenalezeno!"
 
 #: tools/editor/code_editor.cpp
 msgid "Replace By"
-msgstr ""
+msgstr "Nahradit"
 
 #: tools/editor/code_editor.cpp
 msgid "Case Sensitive"
@@ -916,156 +1387,196 @@ msgstr ""
 
 #: tools/editor/code_editor.cpp
 msgid "Prompt On Replace"
-msgstr ""
+msgstr "Potvrzovat nahrazení"
 
 #: tools/editor/code_editor.cpp
 msgid "Skip"
-msgstr ""
+msgstr "Přeskočit"
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom In"
+msgstr "Přiblížit"
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom Out"
+msgstr "Oddálit"
+
+#: tools/editor/code_editor.cpp
+msgid "Reset Zoom"
+msgstr "Obnovit původní přiblížení"
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
-msgstr ""
+msgstr "Řádek:"
 
 #: tools/editor/code_editor.cpp
 msgid "Col:"
-msgstr ""
+msgstr "Sloupec:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
+msgstr "Je nutné zadat metodu v cílovém uzlu!"
+
+#: tools/editor/connections_dialog.cpp
+msgid ""
+"Target method not found! Specify a valid method or attach a script to target "
+"Node."
 msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
-msgstr ""
+msgstr "Připojit k uzlu:"
 
-#: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
+#: tools/editor/connections_dialog.cpp
+#: tools/editor/editor_autoload_settings.cpp tools/editor/groups_editor.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
 msgid "Add"
-msgstr ""
+msgstr "Přidat"
 
 #: tools/editor/connections_dialog.cpp tools/editor/dependency_editor.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_manager.cpp
 msgid "Remove"
-msgstr ""
+msgstr "Odebrat"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "Přidat další argument volání:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr ""
+msgstr "Další argumenty volání:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Path to Node:"
-msgstr ""
+msgstr "Cesta k uzlu:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Make Function"
-msgstr ""
+msgstr "Vytvořit funkci"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Deferred"
-msgstr ""
+msgstr "Odloženě"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Oneshot"
-msgstr ""
+msgstr "Jednorázově"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect"
-msgstr ""
+msgstr "Připojit"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr ""
+msgstr "Připojit '%s' k '%s'"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connecting Signal:"
-msgstr ""
+msgstr "Připojuji signál:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Create Subscription"
-msgstr ""
+msgstr "Vytvořit odběr"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect.."
-msgstr ""
+msgstr "Připojit.."
 
 #: tools/editor/connections_dialog.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Disconnect"
-msgstr ""
+msgstr "Odpojit"
 
 #: tools/editor/connections_dialog.cpp tools/editor/node_dock.cpp
 msgid "Signals"
-msgstr ""
+msgstr "Signály"
 
 #: tools/editor/create_dialog.cpp
 msgid "Create New"
+msgstr "Vytvořit nový"
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: tools/editor/filesystem_dock.cpp
+msgid "Favorites:"
+msgstr ""
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_file_dialog.cpp
+msgid "Recent:"
 msgstr ""
 
 #: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Matches:"
+msgstr "Shody:"
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
+#: tools/editor/property_selector.cpp tools/editor/script_editor_debugger.cpp
+msgid "Description:"
 msgstr ""
 
 #: tools/editor/dependency_editor.cpp
 msgid "Search Replacement For:"
-msgstr ""
+msgstr "Hledat náhradu za:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Dependencies For:"
-msgstr ""
+msgstr "Závislosti na:"
 
 #: tools/editor/dependency_editor.cpp
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will not take effect unless reloaded."
 msgstr ""
+"Scéna '%s' se právě upravuje.\n"
+"Změny se projeví po opětovném načtení."
 
 #: tools/editor/dependency_editor.cpp
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will take effect when reloaded."
 msgstr ""
+"Zdroj '%s' se právě používá.\n"
+"Změny se projeví po opětovném načtení."
 
 #: tools/editor/dependency_editor.cpp
 msgid "Dependencies"
-msgstr ""
+msgstr "Závislosti"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Resource"
-msgstr ""
+msgstr "Zdroj"
 
-#: tools/editor/dependency_editor.cpp tools/editor/project_manager.cpp
-#: tools/editor/project_settings.cpp
+#: tools/editor/dependency_editor.cpp tools/editor/editor_autoload_settings.cpp
+#: tools/editor/project_manager.cpp tools/editor/project_settings.cpp
 msgid "Path"
-msgstr ""
+msgstr "Cesta"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Dependencies:"
-msgstr ""
+msgstr "Závislosti:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Fix Broken"
-msgstr ""
+msgstr "Opravit nefunkční"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Dependency Editor"
-msgstr ""
+msgstr "Editor závislostí"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
-msgstr ""
+msgstr "Hledat náhradní zdroj:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Owners Of:"
-msgstr ""
+msgstr "Vlastníci:"
 
 #: tools/editor/dependency_editor.cpp
 msgid ""
@@ -1073,42 +1584,44 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
+"Soubory ke smazání potřebují jiné zdroje ke své činnosti.\n"
+"Přesto je chcete smazat? (nelze vrátit zpět)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (no undo)"
-msgstr ""
+msgstr "Odebrat vybrané soubory z projektu? (nelze vrátit zpět)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Error loading:"
-msgstr ""
+msgstr "Chyba při načítání:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Scene failed to load due to missing dependencies:"
-msgstr ""
+msgstr "Scénu se nepodařilo načíst kvůli chybějícím závislostem:"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Open Anyway"
-msgstr ""
+msgstr "Přesto otevřít"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr ""
+msgstr "Jaká akce by se měla provést?"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr ""
+msgstr "Opravit závislosti"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr ""
+msgstr "Chyby při načítání!"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr ""
+msgstr "Permanentně smazat %d položek? (nelze vrátit zpět!)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Owns"
-msgstr ""
+msgstr "Vlastní"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
@@ -1116,16 +1629,102 @@ msgstr ""
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
 msgid "Orphan Resource Explorer"
-msgstr ""
+msgstr "Průzkumník sirotků zdrojů"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Delete selected files?"
-msgstr ""
+msgstr "Odstranit vybrané soubory?"
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
-#: tools/editor/scenes_dock.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "Delete"
+msgstr "Odstranit"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name."
+msgstr "Neplatný název."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Valid characters:"
+msgstr "Platné znaky:"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing engine class name."
+msgstr "Neplatný název. Nesmí kolidovat s existující názvem třídy enginu."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing buit-in type name."
+msgstr ""
+"Neplatný název. Nesmí kolidovat s existujícím jménem zabudovaného typu."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing global constant name."
+msgstr ""
+"Neplatný název. Nesmí kolidovat s existujícím názvem globální konstanty."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid Path."
+msgstr "Neplatná cesta."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "File does not exist."
+msgstr "Soubor neexistuje."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Not in resource path."
+msgstr "Není v cestě ke zdroji."
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Add AutoLoad"
+msgstr "Přidat AutoLoad"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Autoload '%s' already exists!"
+msgstr "Autoload '%s' už existuje!"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Rename Autoload"
+msgstr "Přejmenovat AutoLoad"
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Toggle AutoLoad Globals"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Move Autoload"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Remove Autoload"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Enable"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Rearrange Autoloads"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Node Name:"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
+msgid "Name"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Singleton"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "List:"
 msgstr ""
 
 #: tools/editor/editor_data.cpp
@@ -1181,19 +1780,11 @@ msgid "Focus Path"
 msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
-msgid "Mode Favorite Up"
+msgid "Move Favorite Up"
 msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
-msgid "Mode Favorite Down"
-msgstr ""
-
-#: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
-msgid "Favorites:"
-msgstr ""
-
-#: tools/editor/editor_file_dialog.cpp
-msgid "Recent:"
+msgid "Move Favorite Down"
 msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
@@ -1201,19 +1792,19 @@ msgid "Preview:"
 msgstr ""
 
 #: tools/editor/editor_file_system.cpp
-msgid "Cannot go into subdir:"
-msgstr ""
-
-#: tools/editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr ""
 
-#: tools/editor/editor_help.cpp
-msgid "Search Classes"
+#: tools/editor/editor_help.cpp tools/editor/plugins/script_editor_plugin.cpp
+msgid "Search Help"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
 msgid "Class List:"
+msgstr ""
+
+#: tools/editor/editor_help.cpp
+msgid "Search Classes"
 msgstr ""
 
 #: tools/editor/editor_help.cpp tools/editor/property_editor.cpp
@@ -1238,23 +1829,11 @@ msgid "Public Methods:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
-msgid "Members:"
-msgstr ""
-
-#: tools/editor/editor_help.cpp
 msgid "GUI Theme Items:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
-msgid "Signals:"
-msgstr ""
-
-#: tools/editor/editor_help.cpp
 msgid "Constants:"
-msgstr ""
-
-#: tools/editor/editor_help.cpp tools/editor/script_editor_debugger.cpp
-msgid "Description:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
@@ -1311,10 +1890,6 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Node From Scene"
-msgstr ""
-
-#: tools/editor/editor_node.cpp tools/editor/scenes_dock.cpp
-msgid "Re-Import.."
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1551,7 +2126,7 @@ msgid ""
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Pick a Manu Scene"
+msgid "Pick a Main Scene"
 msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
@@ -1606,14 +2181,6 @@ msgid "Go to previously opened scene."
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Fullscreen Mode"
-msgstr ""
-
-#: tools/editor/editor_node.cpp
-msgid "Distraction Free Mode"
-msgstr ""
-
-#: tools/editor/editor_node.cpp
 msgid "Next tab"
 msgstr ""
 
@@ -1639,6 +2206,10 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Save Scene"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid "Save all Scenes"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1673,7 +2244,7 @@ msgstr ""
 msgid "TileSet.."
 msgstr ""
 
-#: tools/editor/editor_node.cpp tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/editor_node.cpp tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Redo"
 msgstr ""
@@ -1692,6 +2263,10 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Quit to Project List"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid "Distraction Free Mode"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1762,6 +2337,10 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid "Play Custom Scene"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1849,6 +2428,10 @@ msgid "Editor Layout"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+msgid "Toggle Fullscreen"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
 msgid "Install Export Templates"
 msgstr ""
 
@@ -1870,6 +2453,10 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Update Changes"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid "Disable Update Spinner"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1912,12 +2499,15 @@ msgstr ""
 msgid "FileSystem"
 msgstr ""
 
+#: tools/editor/editor_node.cpp tools/editor/node_dock.cpp
+msgid "Node"
+msgstr ""
+
 #: tools/editor/editor_node.cpp
 msgid "Output"
 msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
-#: tools/editor/import_settings.cpp
 msgid "Re-Import"
 msgstr ""
 
@@ -2081,16 +2671,96 @@ msgstr ""
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
 msgstr ""
 
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination files, doing nothing."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination paths, doing nothing."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't move directories to within themselves."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't operate on '..'"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Pick New Name and Location For:"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "No files selected!"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Edit Dependencies.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "View Owners.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Rename or Move.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move To.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Info"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Import.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Previous Directory"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Next Directory"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Scan Filesystem"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Toggle folder status as Favorite"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance the selected scene(s) as child of the selected node."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move"
+msgstr ""
+
 #: tools/editor/groups_editor.cpp
 msgid "Add to Group"
 msgstr ""
 
 #: tools/editor/groups_editor.cpp
 msgid "Remove from Group"
-msgstr ""
-
-#: tools/editor/import_settings.cpp
-msgid "Imported Resources"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
@@ -2298,12 +2968,6 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Clips"
-msgstr ""
-
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-#: tools/editor/project_manager.cpp tools/editor/project_settings.cpp
-msgid "Name"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
@@ -2665,10 +3329,6 @@ msgstr ""
 
 #: tools/editor/multi_node_edit.cpp
 msgid "MultiNode Set"
-msgstr ""
-
-#: tools/editor/node_dock.cpp
-msgid "Node"
 msgstr ""
 
 #: tools/editor/node_dock.cpp
@@ -3046,10 +3706,6 @@ msgid "Post-Processing Texture #"
 msgstr ""
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr ""
-
-#: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Bake!"
 msgstr ""
 
@@ -3113,8 +3769,9 @@ msgid "Paste Pose"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Select Mode (Q)"
-msgstr ""
+#, fuzzy
+msgid "Select Mode"
+msgstr "Vybrat vše"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -3133,13 +3790,11 @@ msgid "Alt+RMB: Depth list selection"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Move Mode (W)"
+msgid "Move Mode"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rotate Mode (E)"
+msgid "Rotate Mode"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3171,14 +3826,6 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-#: tools/editor/project_manager.cpp
-msgid "Edit"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3225,6 +3872,10 @@ msgid "Clear Bones"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Bones"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
 msgstr ""
 
@@ -3235,14 +3886,6 @@ msgstr ""
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom In"
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom Out"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3266,7 +3909,7 @@ msgid "Anchor"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert Keys (Ins)"
+msgid "Insert Keys"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3805,6 +4448,7 @@ msgid "Clear UV"
 msgstr ""
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
 msgstr ""
 
@@ -3920,6 +4564,14 @@ msgid "Save Theme As.."
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+msgid "Next script"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid "Previous script"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/project_export.cpp
 msgid "File"
 msgstr ""
@@ -3931,6 +4583,10 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid "Soft Reload Script"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -3954,94 +4610,28 @@ msgid "Save Theme As"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/scene_tree_dock.cpp
-msgid "Move Up"
+msgid "Close Docs"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/scene_tree_dock.cpp
-msgid "Move Down"
-msgstr ""
+#, fuzzy
+msgid "Close All"
+msgstr "Zavřít"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Indent Left"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Indent Right"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Comment"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Clone Down"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Complete Symbol"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Trim Trailing Whitespace"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Auto Indent"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Soft Reload Script"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find.."
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find Next"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Find Previous"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Replace.."
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Function.."
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Goto Line.."
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Breakpoint"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Remove All Breakpoints"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Next Breakpoint"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Previous Breakpoint"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -4081,14 +4671,6 @@ msgid "Move Right"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Help"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Contextual Help"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Tutorials"
 msgstr ""
 
@@ -4102,10 +4684,6 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Search the class hierarchy."
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Search Help"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -4141,6 +4719,86 @@ msgstr ""
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/script_editor_debugger.cpp
 msgid "Debugger"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid ""
+"Built-in scripts can only be edited when the scene they belong to is loaded"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Pick Color"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
+msgid "Move Up"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
+msgid "Move Down"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Indent Left"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Indent Right"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Toggle Comment"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Complete Symbol"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Trim Trailing Whitespace"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Auto Indent"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Remove All Breakpoints"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Next Breakpoint"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Previous Breakpoint"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Find Previous"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Replace.."
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Function.."
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Goto Line.."
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Contextual Help"
 msgstr ""
 
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -4376,38 +5034,6 @@ msgid "Align with view"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Top (Num7)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom (Shift+Num7)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Left (Num3)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Right (Shift+Num3)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Front (Num1)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear (Shift+Num1)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Perspective (Num5)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Orthogonal (Num5)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Environment"
 msgstr ""
 
@@ -4417,14 +5043,6 @@ msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Selection (F)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view (Ctrl+Shift+F)"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -4444,7 +5062,59 @@ msgid "Could not instance scene!"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Move Mode (W)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Rotate Mode (E)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Bottom View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Top View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Rear View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Front View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Left View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Right View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Switch Perspective/Orthogonal view"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Insert Animation Key"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Focus Origin"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Focus Selection"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Align Selection With View"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -4702,6 +5372,10 @@ msgstr ""
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Item"
+msgstr ""
+
+#: tools/editor/plugins/theme_editor_plugin.cpp
+msgid "Theme"
 msgstr ""
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
@@ -5166,6 +5840,14 @@ msgid "Couldn't create engine.cfg in project path."
 msgstr ""
 
 #: tools/editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid "Package Installed Successfully!"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
 msgid "Import Existing Project"
 msgstr ""
 
@@ -5186,6 +5868,14 @@ msgid "Project Path:"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
+msgid "Install Project:"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid "Install"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
 msgid "Browse"
 msgstr ""
 
@@ -5202,15 +5892,21 @@ msgid "Unnamed Project"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to open more than one projects?"
+msgid "Are you sure to open more than one project?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to run more than one projects?"
+msgid "Are you sure to run more than one project?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid ""
+"You are about the scan %s folders for existing Godot projects. Do you "
+"confirm?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
@@ -5227,6 +5923,10 @@ msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Scan"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid "Select a Folder to Scan"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
@@ -5350,50 +6050,6 @@ msgid "Add Translation"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Invalid name."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Valid characters:"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing engine class name."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing buit-in type name."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing global constant name."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Autoload '%s' already exists!"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Rename Autoload"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Toggle AutoLoad Globals"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Add Autoload"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Remove Autoload"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Move Autoload"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
 msgid "Remove Translation"
 msgstr ""
 
@@ -5415,10 +6071,6 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Remove Resource Remap Option"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Enable"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
@@ -5494,18 +6146,6 @@ msgid "AutoLoad"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Node Name:"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "List:"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Singleton"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
 msgid "Plugins"
 msgstr ""
 
@@ -5550,6 +6190,10 @@ msgid "Assign"
 msgstr ""
 
 #: tools/editor/property_editor.cpp
+msgid "New Script"
+msgstr ""
+
+#: tools/editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
 msgstr ""
 
@@ -5566,10 +6210,6 @@ msgid "On"
 msgstr ""
 
 #: tools/editor/property_editor.cpp
-msgid "Set"
-msgstr ""
-
-#: tools/editor/property_editor.cpp
 msgid "Properties:"
 msgstr ""
 
@@ -5580,6 +6220,16 @@ msgstr ""
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
 msgstr ""
+
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Property"
+msgstr "Přidat vlastnost setter"
+
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Method"
+msgstr "Vybrat vše"
 
 #: tools/editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"
@@ -5651,6 +6301,10 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance the scenes at."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
@@ -5782,6 +6436,11 @@ msgid "Save Branch as Scene"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete (No Confirm)"
+msgstr "Potvrďte prosím..."
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
 msgstr ""
 
@@ -5789,6 +6448,10 @@ msgstr ""
 msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create a new script for the selected node."
 msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
@@ -5851,86 +6514,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Select a Node"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination files, doing nothing."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination paths, doing nothing."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't move directories to within themselves."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't operate on '..'"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Pick New Name and Location For:"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "No files selected!"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Edit Dependencies.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "View Owners.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Copy Path"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Rename or Move.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move To.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Info"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Show In File Manager"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Previous Directory"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Next Directory"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Re-Scan Filesystem"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Toggle folder status as Favorite"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move"
 msgstr ""
 
 #: tools/editor/script_create_dialog.cpp

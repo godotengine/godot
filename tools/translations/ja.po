@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-06-20 19:30+0000\n"
+"PO-Revision-Date: 2016-07-16 08:16+0000\n"
 "Last-Translator: hopping tappy (たっぴさん) <hopping.tappy@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -15,14 +15,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.7-dev\n"
+"X-Generator: Weblate 2.8-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
+#: modules/visual_script/visual_script_builtin_funcs.cpp
 #, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Convert()に対して無効な型の引数です。TYPE_* 定数を使ってください。"
 
 #: modules/gdscript/gd_functions.cpp
+#: modules/visual_script/visual_script_builtin_funcs.cpp
 #, fuzzy
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "デコードバイトのバイトは十分ではありません。または無効な形式です。"
@@ -32,16 +34,22 @@ msgid "step argument is zero!"
 msgstr "ステップ引数はゼロです！"
 
 #: modules/gdscript/gd_functions.cpp
-msgid "Not a script with an instance"
+msgid ""
+"Paths cannot start with '/', absolute paths must start with 'res://', "
+"'user://', or 'local://'"
 msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not a script with an instance"
+msgstr "インスタンスを使用していないスクリプトです"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "スクリプトに基づいていません"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr ""
+msgstr "リソースファイルに基づいていません"
 
 #: modules/gdscript/gd_functions.cpp
 #, fuzzy
@@ -63,17 +71,424 @@ msgstr "無効なインスタンス辞書形式です (@path で無効なスク�
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "無効なインスタンス辞書です (無効なサブクラス)"
 
+#: modules/visual_script/visual_script.cpp
+msgid ""
+"A node yielded without working memory, please read the docs on how to yield "
+"properly!"
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid ""
+"Node yielded, but did not return a function state in the first working "
+"memory."
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid ""
+"Return value must be assigned to first element of node working memory! Fix "
+"your node please."
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid "Node returned an invalid sequence output: "
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid "Found sequence bit but not the node in the stack, report bug!"
+msgstr ""
+
+#: modules/visual_script/visual_script.cpp
+msgid "Stack overflow with stack depth: "
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Functions:"
+msgstr "関数を作成"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Variables:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
+msgid "Signals:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Name is not a valid identifier:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Name already in use by another func/var/signal:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Rename Function"
+msgstr "関数を作成"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Rename Variable"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Rename Signal"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function"
+msgstr "関数を作成"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Variable"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Signal"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Function"
+msgstr "選択しているものを削除"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Variable"
+msgstr "無効なキーを削除"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Editing Variable:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Signal"
+msgstr "選択しているものを削除"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Editing Signal:"
+msgstr "信号を接続:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Change Expression"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a simple reference to the node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Meta to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Hold Ctrl to drop a Variable Setter."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Preload Node"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Node(s) From Tree"
+msgstr "シーンからのノード"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Getter Property"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Setter Property"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Condition"
+msgstr "遷移"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Sequence"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Switch"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Iterator"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "While"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Return"
+msgstr "戻り値:"
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
+msgid "Call"
+msgstr "呼び出し"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Get"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/property_editor.cpp
+msgid "Set"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/plugins/polygon_2d_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
+msgid "Edit"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Base Type:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
+msgid "Members:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Available Nodes:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Select or create a function to edit graph"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
+#: tools/editor/connections_dialog.cpp
+#: tools/editor/plugins/animation_player_editor_plugin.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/plugins/resource_preloader_editor_plugin.cpp
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/sprite_frames_editor_plugin.cpp
+#: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
+#: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
+msgid "Close"
+msgstr "閉じる"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Edit Signal Arguments:"
+msgstr "余分に呼び出し引数を追加します。"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Edit Variable:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Change"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Delete Selected"
+msgstr "選択範囲を複製"
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Toggle Breakpoint"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Find Node Type"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Copy Nodes"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Cut Nodes"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Paste Nodes"
+msgstr "ノードへのパス:"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Input type not iterable: "
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator became invalid"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator became invalid: "
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Invalid index property name."
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Base object is not a Node!"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Path does not lead Node!"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Invalid index property name '%s' in node %s."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ": Invalid argument of type: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ": Invalid arguments: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "VariableGet not found in script: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "VariableSet not found in script: "
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Custom node has no _step() method, can't process graph."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ""
+"Invalid return value from _step(), must be integer (seq out), or string "
+"(error)."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "just pressed"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "just released"
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid ""
+"Couldn't read the certficate file. Are the path and password both correct?"
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Error creating the signature object."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Error creating the package signature."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid ""
+"No export templates found.\n"
+"Download and install export templates."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Custom debug package not found."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Custom release package not found."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid "Invalid unique name."
+msgstr "無効なフォント サイズです。"
+
+#: platform/winrt/export/export.cpp
+#, fuzzy
+msgid "Invalid product GUID."
+msgstr "無効なフォント サイズです。"
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid publisher GUID."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid background color."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr ""
+
+#: platform/winrt/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr ""
+
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
+"SpriteFrames リソースを作成または AnimatedSprite フレームを表示するためには "
+"'Frames' プロパティに設定する必要があります。"
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
+"1 つだけ表示されている CanvasModulate は、シーン (またはインスタンス化された"
+"シーンのセット) ごとに許可されます。最初に作成された 1 つが動作する一方、残り"
+"の部分は無視されます。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -81,90 +496,124 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon2D は、CollisionObject2D 派生ノードに衝突シェイプを提供するた"
+"めにのみ機能します。のみとしてご利用ください Area2D、StaticBody2D、"
+"RigidBody2D、KinematicBody2D などの子図形をすることです。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr ""
+msgstr "空の CollisionPolygon2D は、衝突判定を持ちません。"
 
 #: scene/2d/collision_shape_2d.cpp
+#, fuzzy
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionShape2D は、CollisionObject2D 派生ノードにコリジョンシェイプを提供す"
+"るためにのみ機能します。Area2D、StaticBody2D、RigidBody2D、KinematicBody2D な"
+"どの子としてのみご利用ください。"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
+"関数の CollisionShape2D の形状を指定する必要があります。そのためのシェイプリ"
+"ソースを作成してください!"
 
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the 'texture' "
 "property."
-msgstr ""
+msgstr "光の形状とテクスチャは、'texture'プロパティに指定します。"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
+"この遮蔽を有効にして、オクルーダ ポリゴンを設定 (または描画) する必要がありま"
+"す。"
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
-msgstr ""
+msgstr "この遮蔽のオクルーダ ポリゴンが空です。多角形を描画してください!"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
+"NavigationPolygon リソースを設定または動作するようにこのノード用に作成する必"
+"要があります。プロパティを設定するか、ポリゴンを描画してください。"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
+"NavigationPolygonInstance は、子または孫 Navigation2D ノードにある必要があり"
+"ます。ナビゲーション データのみ提供します。"
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
+"ParallaxLayer ノードは、ParallaxBackground ノードの子として設定されている場合"
+"のみ動作します。"
 
 #: scene/2d/particles_2d.cpp
 msgid "Path property must point to a valid Particles2D node to work."
 msgstr ""
+"Path プロパティは、動作するように有効な Particles2D ノードを示す必要がありま"
+"す。"
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr ""
+"PathFollow2D は、Path2D ノードの子として設定されている場合のみ動作します。"
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
+"Path プロパティは、動作するように有効な Node2D ノードを示す必要があります。"
 
 #: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SamplePlayer to play sound."
 msgstr ""
+"SampleLibrary リソースは SamplePlayer がサウンドを再生するために作成または "
+"'samples' プロパティで設定する必要があります。"
 
 #: scene/2d/sprite.cpp
 msgid ""
 "Path property must point to a valid Viewport node to work. Such Viewport "
 "must be set to 'render target' mode."
 msgstr ""
+"Path プロパティは、動作するように有効なビューポート ノードをポイントする必要"
+"があります。このようなビューポートは、'render target' モードに設定する必要が"
+"あります。"
 
 #: scene/2d/sprite.cpp
 msgid ""
 "The Viewport set in the path property must be set as 'render target' in "
 "order for this sprite to work."
 msgstr ""
+"Path プロパティに設定したビューポートは、このスプライトの動作する順序で "
+"'render target' として設定する必要があります。"
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
 "as parent."
+msgstr ""
+"VisibilityEnable2D は、親として直接編集されたシーンのルートを使用する場合に最"
+"適です。"
+
+#: scene/3d/baked_light_instance.cpp
+msgid "BakedLightInstance does not contain a BakedLight resource."
 msgstr ""
 
 #: scene/3d/body_shape.cpp
@@ -173,56 +622,83 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionShape は衝突物由来のノードに衝突形状を提供するのに役立ちます。唯一の"
+"彼らに形状を与えることなどエリア、静ボディ、RigidBody、キネマティックボディの"
+"子としてそれを使用してください。"
 
 #: scene/3d/body_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
 msgstr ""
+"関数の CollisionShape の形状を指定する必要があります。それのためのシェイプリ"
+"ソースを作成してください!"
 
 #: scene/3d/collision_polygon.cpp
+#, fuzzy
 msgid ""
 "CollisionPolygon only serves to provide a collision shape to a "
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon は、CollisionObject 派生ノードにコリジョンシェイプを提供する"
+"ためにのみ機能します。Area、StaticBody、RigidBody、KinematicBody の子としての"
+"み利用してください。"
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
-msgstr ""
+msgstr "空の CollisionPolygon は、衝突判定を持ちません。"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
+"このノードを動かすために NavigationMesh リソースを設定または作成する必要があ"
+"ります。"
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
+"NavigationMeshInstance は、ナビゲーションノードの子や孫である必要があります。"
+"これはナビゲーションデータのみ提供します。"
+
+#: scene/3d/remote_transform.cpp
+#, fuzzy
+msgid "Path property must point to a valid Spatial node to work."
+msgstr ""
+"Path プロパティは、動作するように有効な Particles2D ノードを示す必要がありま"
+"す。"
 
 #: scene/3d/scenario_fx.cpp
+#, fuzzy
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
+"1 つだけの WorldEnvironment は、シーン (またはインスタンス化されたシーンの"
+"セット) ごとに許可されます。"
 
 #: scene/3d/spatial_sample_player.cpp
 msgid ""
 "A SampleLibrary resource must be created or set in the 'samples' property in "
 "order for SpatialSamplePlayer to play sound."
 msgstr ""
+"SpatialSamplePlayer でサウンドを再生するためには SampleLibrary リソースを作成"
+"または 'samples' プロパティで設定する必要があります。"
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
+"SpriteFrames リソースを作成または AnimatedSprite3D フレームを表示するために"
+"は 'Frames' プロパティに設定する必要があります。"
 
 #: scene/gui/dialogs.cpp tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Cancel"
 msgstr "キャンセル"
 
-#: scene/gui/dialogs.cpp
+#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "決定"
 
@@ -240,16 +716,17 @@ msgstr "ファイルが既に存在します。上書きしますか？"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Recognized"
-msgstr ""
+msgstr "すべての認識"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "All Files (*)"
-msgstr ""
+msgstr "すべてのファイル(*)"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
-#: tools/editor/scenes_dock.cpp
+#: tools/editor/filesystem_dock.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Open"
 msgstr "開く"
 
@@ -259,7 +736,7 @@ msgstr "ファイルを開く"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr ""
+msgstr "ファイルを開く"
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a Directory"
@@ -283,17 +760,18 @@ msgstr "ファイルを保存"
 #: scene/gui/file_dialog.cpp tools/editor/editor_dir_dialog.cpp
 #: tools/editor/editor_file_dialog.cpp
 msgid "Create Folder"
-msgstr ""
+msgstr "フォルダを作成"
 
-#: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp tools/editor/editor_autoload_settings.cpp
+#: tools/editor/editor_file_dialog.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
-#: tools/editor/project_settings.cpp tools/editor/script_create_dialog.cpp
+#: tools/editor/script_create_dialog.cpp
 msgid "Path:"
-msgstr ""
+msgstr "Path:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "Directories & Files:"
-msgstr ""
+msgstr "ディレクトリまたはファイル:"
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 #: tools/editor/script_editor_debugger.cpp
@@ -371,13 +849,13 @@ msgid "Axis"
 msgstr "アナログ"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Cut"
 msgstr "切り取り"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
 msgid "Copy"
@@ -385,7 +863,7 @@ msgstr "コピー"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #: tools/editor/plugins/resource_preloader_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/plugins/sprite_frames_editor_plugin.cpp
 #: tools/editor/property_editor.cpp tools/editor/resources_dock.cpp
@@ -393,7 +871,7 @@ msgid "Paste"
 msgstr "貼り付け"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_export.cpp
 msgid "Select All"
@@ -407,7 +885,7 @@ msgid "Clear"
 msgstr "削除"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Undo"
 msgstr "元に戻す"
@@ -418,6 +896,9 @@ msgid ""
 "functions. Making them visible for editing is fine though, but they will "
 "hide upon running."
 msgstr ""
+"ポップアップは、popup() または popup*() 関数のいずれかを呼び出す場合を除き、"
+"既定では非表示になります。編集のためにそれらを可視化することは可能ですが、彼"
+"らは実行時に非表示になります。"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -426,11 +907,15 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
+"このビューポートは、レンダー ターゲットとして設定されていません。その内容を画"
+"面に直接表示する場合は、サイズを得ることができるように、コントロールの子をつ"
+"くります。それ以外の場合、レンダー ターゲットし、その内部のテクスチャ表示のい"
+"くつかのノードに割り当てます。"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "FreeType の初期化エラー。"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
@@ -440,24 +925,24 @@ msgstr "不明なフォント形式です。"
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "フォント読み込みエラー。"
 
 #: scene/resources/dynamic_font.cpp
 #: tools/editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Invalid font size."
-msgstr ""
+msgstr "無効なフォント サイズです。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Disabled"
-msgstr ""
+msgstr "無効"
 
 #: tools/editor/animation_editor.cpp
 msgid "All Selection"
-msgstr ""
+msgstr "すべて選択"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move Add Key"
-msgstr ""
+msgstr "追加したキーを移動"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -480,118 +965,122 @@ msgid "Anim Add Track"
 msgstr ""
 
 #: tools/editor/animation_editor.cpp
-msgid "Move Anim Track Up"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Move Anim Track Down"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Remove Anim Track"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
 msgstr ""
 
 #: tools/editor/animation_editor.cpp
+msgid "Move Anim Track Up"
+msgstr "Anim トラックを上に移動"
+
+#: tools/editor/animation_editor.cpp
+msgid "Move Anim Track Down"
+msgstr "Anim トラックを下に移動"
+
+#: tools/editor/animation_editor.cpp
+msgid "Remove Anim Track"
+msgstr "Anim トラックを削除"
+
+#: tools/editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr ""
+msgstr "これにトランジションを設定:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "Anim トラック名の変更"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr ""
+msgstr "Anim トラック補間の変更"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr ""
+msgstr "Anim トラック値モード変更"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "ノード カーブを編集"
 
 #: tools/editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "選択曲線を編集"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "Anim キー削除"
+
+#: tools/editor/animation_editor.cpp
+#: tools/editor/plugins/tile_map_editor_plugin.cpp
+msgid "Duplicate Selection"
+msgstr "選択範囲を複製"
+
+#: tools/editor/animation_editor.cpp
+msgid "Duplicate Transposed"
+msgstr "複製を転置"
+
+#: tools/editor/animation_editor.cpp
+msgid "Remove Selection"
+msgstr "選択しているものを削除"
 
 #: tools/editor/animation_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "継続的"
 
 #: tools/editor/animation_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "離散"
 
 #: tools/editor/animation_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "トリガー"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Key"
-msgstr ""
+msgstr "Anim キーを追加"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Move Keys"
-msgstr ""
+msgstr "Anim キーの移動"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale Selection"
-msgstr ""
+msgstr "スケールの選択"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale From Cursor"
 msgstr ""
 
 #: tools/editor/animation_editor.cpp
-#: tools/editor/plugins/tile_map_editor_plugin.cpp
-msgid "Duplicate Selection"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
-msgid "Duplicate Transposed"
-msgstr ""
-
-#: tools/editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr ""
+msgstr "次のステップへ"
 
 #: tools/editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr ""
+msgstr "前のステップへ"
 
 #: tools/editor/animation_editor.cpp tools/editor/property_editor.cpp
 msgid "Linear"
-msgstr ""
+msgstr "Linear"
 
 #: tools/editor/animation_editor.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr ""
+msgstr "Constant"
 
 #: tools/editor/animation_editor.cpp
 msgid "In"
-msgstr ""
+msgstr "In"
 
 #: tools/editor/animation_editor.cpp
 msgid "Out"
-msgstr ""
+msgstr "Out"
 
 #: tools/editor/animation_editor.cpp
 msgid "In-Out"
-msgstr ""
+msgstr "In-Out"
 
 #: tools/editor/animation_editor.cpp
 msgid "Out-In"
-msgstr ""
+msgstr "Out-In"
 
 #: tools/editor/animation_editor.cpp
 msgid "Transitions"
@@ -599,19 +1088,19 @@ msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "アニメーションの最適化"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr ""
+msgstr "アニメーションをクリーンアップ"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "%s の新しいトラックを作成し、キーを挿入しますか？"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
+msgstr "新しい %d トラックを作成し、キーを挿入しますか？"
 
 #: tools/editor/animation_editor.cpp tools/editor/create_dialog.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -620,203 +1109,208 @@ msgstr ""
 #: tools/editor/plugins/particles_editor_plugin.cpp
 #: tools/editor/project_manager.cpp tools/editor/script_create_dialog.cpp
 msgid "Create"
-msgstr ""
+msgstr "作成"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "Anim の作成・挿入"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr ""
+msgstr "Anim トラック ・ キーを挿入"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr ""
+msgstr "Anim キーを挿入"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr ""
+msgstr "Anim Len を変更"
 
 #: tools/editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr ""
+msgstr "Anim Loop を変更"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr ""
+msgstr "Anim は、型指定された値のキーを作成"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr ""
+msgstr "Anim 挿入"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "Anim スケールキー"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr ""
+msgstr "Anim コールトラックを追加"
 
 #: tools/editor/animation_editor.cpp
 msgid "Animation zoom."
-msgstr ""
+msgstr "アニメーション 拡大。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr ""
+msgstr "長さ:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
-msgstr ""
+msgstr "アニメーションの長さ (単位は秒)。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr ""
+msgstr "ステップ:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
-msgstr ""
+msgstr "カーソル ステップ スナップ (単位は秒)。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr ""
+msgstr "アニメーションのループを有効/無効。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Add new tracks."
-msgstr ""
+msgstr "新しいトラックを追加。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move current track up."
-msgstr ""
+msgstr "現在のトラックに移動します。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Move current track down."
-msgstr ""
+msgstr "現在のトラックを下へ移動します。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove selected track."
-msgstr ""
+msgstr "選択したトラックを削除します。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Track tools"
-msgstr ""
+msgstr "トラック ツール"
 
 #: tools/editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
-msgstr ""
+msgstr "それらをクリックすることで、個々のキーの編集を有効にします。"
 
 #: tools/editor/animation_editor.cpp
 msgid "Anim. Optimizer"
-msgstr ""
+msgstr "アニメーションのオプティマイザー"
 
 #: tools/editor/animation_editor.cpp
 msgid "Max. Linear Error:"
-msgstr ""
+msgstr "最大。線形エラー:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Max. Angular Error:"
-msgstr ""
+msgstr "最大。角度エラー:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr ""
+msgstr "最大最適化角度:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Optimize"
+msgstr "最適化"
+
+#: tools/editor/animation_editor.cpp
+msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
 msgstr ""
 
 #: tools/editor/animation_editor.cpp
 msgid "Key"
-msgstr ""
+msgstr "キー"
 
 #: tools/editor/animation_editor.cpp
 msgid "Transition"
-msgstr ""
+msgstr "遷移"
 
 #: tools/editor/animation_editor.cpp
 msgid "Scale Ratio:"
-msgstr ""
+msgstr "スケールの比率:"
 
 #: tools/editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr ""
+msgstr "ノード内の関数を呼び出しますか？"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove invalid keys"
-msgstr ""
+msgstr "無効なキーを削除"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr ""
+msgstr "未解決や空のトラックを削除"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-up all animations"
-msgstr ""
+msgstr "すべてのアニメーションをクリーンアップ"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr ""
+msgstr "クリーン アップ アニメーション(元に戻せません!)"
 
 #: tools/editor/animation_editor.cpp
 msgid "Clean-Up"
-msgstr ""
+msgstr "クリーンアップ"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr ""
+msgstr "配列のサイズを変更"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr ""
+msgstr "配列の値の種類の変更"
 
 #: tools/editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr ""
+msgstr "配列の値を変更"
 
 #: tools/editor/asset_library_editor_plugin.cpp tools/editor/create_dialog.cpp
 #: tools/editor/editor_help.cpp tools/editor/editor_node.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 #: tools/editor/settings_config_dialog.cpp
 msgid "Search:"
-msgstr ""
+msgstr "検索:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Sort:"
-msgstr ""
+msgstr "並べ替え:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Reverse"
-msgstr ""
+msgstr "逆"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
 msgid "Category:"
-msgstr ""
+msgstr "カテゴリー:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "All"
-msgstr ""
+msgstr "すべて"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Site:"
-msgstr ""
+msgstr "サイト:"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Support.."
-msgstr ""
+msgstr "サポート."
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "公式"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "コミュニティ"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr ""
+msgstr "テスト中"
 
 #: tools/editor/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -824,107 +1318,91 @@ msgstr ""
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List For '%s':"
-msgstr ""
-
-#: tools/editor/call_dialog.cpp
-msgid "Call"
-msgstr ""
-
-#: tools/editor/call_dialog.cpp tools/editor/connections_dialog.cpp
-#: tools/editor/import_settings.cpp
-#: tools/editor/plugins/animation_player_editor_plugin.cpp
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/resource_preloader_editor_plugin.cpp
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/sprite_frames_editor_plugin.cpp
-#: tools/editor/project_settings.cpp tools/editor/property_editor.cpp
-#: tools/editor/run_settings_dialog.cpp tools/editor/settings_config_dialog.cpp
-msgid "Close"
-msgstr ""
+msgstr "'%s' のメソッド一覧："
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List:"
-msgstr ""
+msgstr "メソッド一覧:"
 
 #: tools/editor/call_dialog.cpp
 msgid "Arguments:"
-msgstr ""
+msgstr "引数:"
 
 #: tools/editor/call_dialog.cpp
 msgid "Return:"
-msgstr ""
+msgstr "戻り値:"
 
 #: tools/editor/code_editor.cpp
 msgid "Go to Line"
-msgstr ""
+msgstr "行に移動"
 
 #: tools/editor/code_editor.cpp
 msgid "Line Number:"
-msgstr ""
+msgstr "行番号:"
 
 #: tools/editor/code_editor.cpp
 msgid "No Matches"
-msgstr ""
+msgstr "一致なし"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d Ocurrence(s)."
-msgstr ""
+msgstr "%d 箇所を置換しました。"
 
 #: tools/editor/code_editor.cpp
 msgid "Replace"
-msgstr ""
+msgstr "置換"
 
 #: tools/editor/code_editor.cpp
 msgid "Replace All"
-msgstr ""
+msgstr "すべて置換"
 
 #: tools/editor/code_editor.cpp
 msgid "Match Case"
-msgstr ""
+msgstr "大文字と小文字"
 
 #: tools/editor/code_editor.cpp
 msgid "Whole Words"
-msgstr ""
+msgstr "単語全体"
 
 #: tools/editor/code_editor.cpp
 msgid "Selection Only"
-msgstr ""
+msgstr "選択範囲のみ"
 
 #: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
 msgid "Search"
-msgstr ""
+msgstr "検索"
 
 #: tools/editor/code_editor.cpp tools/editor/editor_help.cpp
 msgid "Find"
-msgstr ""
+msgstr "検索"
 
 #: tools/editor/code_editor.cpp
 msgid "Next"
-msgstr ""
+msgstr "次"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d ocurrence(s)."
-msgstr ""
+msgstr "%d 箇所を置換しました。"
 
 #: tools/editor/code_editor.cpp
 msgid "Not found!"
-msgstr ""
+msgstr "見つかりません!"
 
 #: tools/editor/code_editor.cpp
 msgid "Replace By"
-msgstr ""
+msgstr "置換"
 
 #: tools/editor/code_editor.cpp
 msgid "Case Sensitive"
-msgstr ""
+msgstr "大文字小文字を区別"
 
 #: tools/editor/code_editor.cpp
 msgid "Backwards"
-msgstr ""
+msgstr "後方"
 
 #: tools/editor/code_editor.cpp
 msgid "Prompt On Replace"
@@ -932,11 +1410,25 @@ msgstr ""
 
 #: tools/editor/code_editor.cpp
 msgid "Skip"
+msgstr "スキップ"
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom In"
+msgstr ""
+
+#: tools/editor/code_editor.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Zoom Out"
+msgstr ""
+
+#: tools/editor/code_editor.cpp
+msgid "Reset Zoom"
 msgstr ""
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
-msgstr ""
+msgstr "ライン:"
 
 #: tools/editor/code_editor.cpp
 msgid "Col:"
@@ -944,29 +1436,37 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
+msgstr "対象となるノードのメソッドを指定する必要があります!"
+
+#: tools/editor/connections_dialog.cpp
+msgid ""
+"Target method not found! Specify a valid method or attach a script to target "
+"Node."
 msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
-msgstr ""
+msgstr "ノードに接続します。"
 
-#: tools/editor/connections_dialog.cpp tools/editor/groups_editor.cpp
+#: tools/editor/connections_dialog.cpp
+#: tools/editor/editor_autoload_settings.cpp tools/editor/groups_editor.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_settings.cpp
 msgid "Add"
-msgstr ""
+msgstr "追加"
 
 #: tools/editor/connections_dialog.cpp tools/editor/dependency_editor.cpp
 #: tools/editor/plugins/animation_tree_editor_plugin.cpp
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/project_manager.cpp
 msgid "Remove"
-msgstr ""
+msgstr "削除"
 
 #: tools/editor/connections_dialog.cpp
+#, fuzzy
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "余分に呼び出し引数を追加します。"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
@@ -974,11 +1474,11 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Path to Node:"
-msgstr ""
+msgstr "ノードへのパス:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Make Function"
-msgstr ""
+msgstr "関数を作成"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Deferred"
@@ -990,15 +1490,15 @@ msgstr ""
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect"
-msgstr ""
+msgstr "接続"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr ""
+msgstr "'%s' を '%s' に接続"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connecting Signal:"
-msgstr ""
+msgstr "信号を接続:"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Create Subscription"
@@ -1021,9 +1521,24 @@ msgstr ""
 msgid "Create New"
 msgstr ""
 
+#: tools/editor/create_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: tools/editor/filesystem_dock.cpp
+msgid "Favorites:"
+msgstr ""
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_file_dialog.cpp
+msgid "Recent:"
+msgstr ""
+
 #: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp tools/editor/quick_open.cpp
+#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/property_selector.cpp tools/editor/quick_open.cpp
 msgid "Matches:"
+msgstr ""
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
+#: tools/editor/property_selector.cpp tools/editor/script_editor_debugger.cpp
+msgid "Description:"
 msgstr ""
 
 #: tools/editor/dependency_editor.cpp
@@ -1039,6 +1554,8 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will not take effect unless reloaded."
 msgstr ""
+"シーン '%s' は現在編集中です。\n"
+"再読み込みしない限り、変更は反映されません。"
 
 #: tools/editor/dependency_editor.cpp
 msgid ""
@@ -1054,8 +1571,8 @@ msgstr ""
 msgid "Resource"
 msgstr ""
 
-#: tools/editor/dependency_editor.cpp tools/editor/project_manager.cpp
-#: tools/editor/project_settings.cpp
+#: tools/editor/dependency_editor.cpp tools/editor/editor_autoload_settings.cpp
+#: tools/editor/project_manager.cpp tools/editor/project_settings.cpp
 msgid "Path"
 msgstr ""
 
@@ -1096,7 +1613,7 @@ msgstr ""
 
 #: tools/editor/dependency_editor.cpp
 msgid "Scene failed to load due to missing dependencies:"
-msgstr ""
+msgstr "依存関係が不足しているのためシーンを読み込めませんでした。"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Open Anyway"
@@ -1135,14 +1652,98 @@ msgid "Delete selected files?"
 msgstr ""
 
 #: tools/editor/dependency_editor.cpp tools/editor/editor_node.cpp
+#: tools/editor/filesystem_dock.cpp
 #: tools/editor/plugins/item_list_editor_plugin.cpp
-#: tools/editor/scenes_dock.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "Delete"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name."
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Valid characters:"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing engine class name."
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing buit-in type name."
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid name. Must not collide with an existing global constant name."
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Invalid Path."
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "File does not exist."
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Not in resource path."
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Add AutoLoad"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Autoload '%s' already exists!"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Rename Autoload"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Toggle AutoLoad Globals"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Move Autoload"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Remove Autoload"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Enable"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Rearrange Autoloads"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Node Name:"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#: tools/editor/plugins/sample_library_editor_plugin.cpp
+#: tools/editor/project_manager.cpp
+msgid "Name"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "Singleton"
+msgstr ""
+
+#: tools/editor/editor_autoload_settings.cpp
+msgid "List:"
 msgstr ""
 
 #: tools/editor/editor_data.cpp
 msgid "Updating Scene"
-msgstr ""
+msgstr "シーンを更新"
 
 #: tools/editor/editor_data.cpp
 msgid "Storing local changes.."
@@ -1150,7 +1751,7 @@ msgstr ""
 
 #: tools/editor/editor_data.cpp
 msgid "Updating scene.."
-msgstr ""
+msgstr "シーンを更新しています.."
 
 #: tools/editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1193,19 +1794,11 @@ msgid "Focus Path"
 msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
-msgid "Mode Favorite Up"
+msgid "Move Favorite Up"
 msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
-msgid "Mode Favorite Down"
-msgstr ""
-
-#: tools/editor/editor_file_dialog.cpp tools/editor/scenes_dock.cpp
-msgid "Favorites:"
-msgstr ""
-
-#: tools/editor/editor_file_dialog.cpp
-msgid "Recent:"
+msgid "Move Favorite Down"
 msgstr ""
 
 #: tools/editor/editor_file_dialog.cpp
@@ -1213,19 +1806,19 @@ msgid "Preview:"
 msgstr ""
 
 #: tools/editor/editor_file_system.cpp
-msgid "Cannot go into subdir:"
-msgstr ""
-
-#: tools/editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr ""
 
-#: tools/editor/editor_help.cpp
-msgid "Search Classes"
+#: tools/editor/editor_help.cpp tools/editor/plugins/script_editor_plugin.cpp
+msgid "Search Help"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
 msgid "Class List:"
+msgstr ""
+
+#: tools/editor/editor_help.cpp
+msgid "Search Classes"
 msgstr ""
 
 #: tools/editor/editor_help.cpp tools/editor/property_editor.cpp
@@ -1250,23 +1843,11 @@ msgid "Public Methods:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
-msgid "Members:"
-msgstr ""
-
-#: tools/editor/editor_help.cpp
 msgid "GUI Theme Items:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
-msgid "Signals:"
-msgstr ""
-
-#: tools/editor/editor_help.cpp
 msgid "Constants:"
-msgstr ""
-
-#: tools/editor/editor_help.cpp tools/editor/script_editor_debugger.cpp
-msgid "Description:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
@@ -1322,12 +1903,9 @@ msgid "Importing:"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "Node From Scene"
-msgstr ""
-
-#: tools/editor/editor_node.cpp tools/editor/scenes_dock.cpp
-msgid "Re-Import.."
-msgstr ""
+msgstr "シーンからのノード"
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
@@ -1359,7 +1937,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Saving Scene"
-msgstr ""
+msgstr "シーンを保存"
 
 #: tools/editor/editor_node.cpp
 msgid "Analyzing"
@@ -1370,9 +1948,12 @@ msgid "Creating Thumbnail"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Couldn't save scene. Likely dependencies (instances) couldn't be satisfied."
 msgstr ""
+"シーンを保存できませんでした。おそらく依存関係 (インスタンス) を満たせていま"
+"せん。"
 
 #: tools/editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -1448,8 +2029,9 @@ msgid "Open in Help"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "There is no defined scene to run."
-msgstr ""
+msgstr "実行する定義済みのシーンはありません。"
 
 #: tools/editor/editor_node.cpp
 msgid ""
@@ -1466,15 +2048,21 @@ msgid ""
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Selected scene '%s' is not a scene file, select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"選択したシーン '%s' は、シーン ファイルではありません、有効なものを選択してい"
+"ますか？\n"
+"'アプリケーション' カテゴリの下の'プロジェクトの設定'で変更できます。"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "Current scene was never saved, please save it prior to running."
 msgstr ""
+"現在のシーンが保存されていませんでした、それ以前の実行中に保存してください。"
 
 #: tools/editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -1482,7 +2070,7 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Open Scene"
-msgstr ""
+msgstr "シーンを開く"
 
 #: tools/editor/editor_node.cpp
 msgid "Open Base Scene"
@@ -1530,11 +2118,11 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Quit"
-msgstr ""
+msgstr "終了"
 
 #: tools/editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr ""
+msgstr "エディターを終了しますか？"
 
 #: tools/editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
@@ -1563,7 +2151,7 @@ msgid ""
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Pick a Manu Scene"
+msgid "Pick a Main Scene"
 msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
@@ -1618,14 +2206,6 @@ msgid "Go to previously opened scene."
 msgstr ""
 
 #: tools/editor/editor_node.cpp
-msgid "Fullscreen Mode"
-msgstr ""
-
-#: tools/editor/editor_node.cpp
-msgid "Distraction Free Mode"
-msgstr ""
-
-#: tools/editor/editor_node.cpp
 msgid "Next tab"
 msgstr ""
 
@@ -1652,6 +2232,11 @@ msgstr ""
 #: tools/editor/editor_node.cpp
 msgid "Save Scene"
 msgstr ""
+
+#: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Save all Scenes"
+msgstr "ファイルを保存"
 
 #: tools/editor/editor_node.cpp
 msgid "Close Scene"
@@ -1685,7 +2270,7 @@ msgstr ""
 msgid "TileSet.."
 msgstr ""
 
-#: tools/editor/editor_node.cpp tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/editor_node.cpp tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Redo"
 msgstr ""
@@ -1704,6 +2289,10 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Quit to Project List"
+msgstr "終了してプロジェクトリストを開く"
+
+#: tools/editor/editor_node.cpp
+msgid "Distraction Free Mode"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1774,6 +2363,10 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Play custom scene"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid "Play Custom Scene"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1861,6 +2454,10 @@ msgid "Editor Layout"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
+msgid "Toggle Fullscreen"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
 msgid "Install Export Templates"
 msgstr ""
 
@@ -1882,6 +2479,10 @@ msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Update Changes"
+msgstr ""
+
+#: tools/editor/editor_node.cpp
+msgid "Disable Update Spinner"
 msgstr ""
 
 #: tools/editor/editor_node.cpp
@@ -1924,12 +2525,15 @@ msgstr ""
 msgid "FileSystem"
 msgstr ""
 
+#: tools/editor/editor_node.cpp tools/editor/node_dock.cpp
+msgid "Node"
+msgstr ""
+
 #: tools/editor/editor_node.cpp
 msgid "Output"
 msgstr ""
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
-#: tools/editor/import_settings.cpp
 msgid "Re-Import"
 msgstr ""
 
@@ -2093,16 +2697,96 @@ msgstr ""
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
 msgstr ""
 
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination files, doing nothing."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Same source and destination paths, doing nothing."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't move directories to within themselves."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Can't operate on '..'"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Pick New Name and Location For:"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "No files selected!"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Edit Dependencies.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "View Owners.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Rename or Move.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move To.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Info"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Show In File Manager"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Import.."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Previous Directory"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Next Directory"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Re-Scan Filesystem"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Toggle folder status as Favorite"
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Instance the selected scene(s) as child of the selected node."
+msgstr ""
+
+#: tools/editor/filesystem_dock.cpp
+msgid "Move"
+msgstr ""
+
 #: tools/editor/groups_editor.cpp
 msgid "Add to Group"
 msgstr ""
 
 #: tools/editor/groups_editor.cpp
 msgid "Remove from Group"
-msgstr ""
-
-#: tools/editor/import_settings.cpp
-msgid "Imported Resources"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_bitmask_import_plugin.cpp
@@ -2310,12 +2994,6 @@ msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Clips"
-msgstr ""
-
-#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#: tools/editor/plugins/sample_library_editor_plugin.cpp
-#: tools/editor/project_manager.cpp tools/editor/project_settings.cpp
-msgid "Name"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
@@ -2677,10 +3355,6 @@ msgstr ""
 
 #: tools/editor/multi_node_edit.cpp
 msgid "MultiNode Set"
-msgstr ""
-
-#: tools/editor/node_dock.cpp
-msgid "Node"
 msgstr ""
 
 #: tools/editor/node_dock.cpp
@@ -3058,10 +3732,6 @@ msgid "Post-Processing Texture #"
 msgstr ""
 
 #: tools/editor/plugins/baked_light_editor_plugin.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr ""
-
-#: tools/editor/plugins/baked_light_editor_plugin.cpp
 msgid "Bake!"
 msgstr ""
 
@@ -3125,8 +3795,9 @@ msgid "Paste Pose"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Select Mode (Q)"
-msgstr ""
+#, fuzzy
+msgid "Select Mode"
+msgstr "すべて選択"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -3145,13 +3816,12 @@ msgid "Alt+RMB: Depth list selection"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Move Mode (W)"
-msgstr ""
+#, fuzzy
+msgid "Move Mode"
+msgstr "追加したキーを移動"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rotate Mode (E)"
+msgid "Rotate Mode"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3183,14 +3853,6 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#: tools/editor/plugins/polygon_2d_editor_plugin.cpp
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-#: tools/editor/project_manager.cpp
-msgid "Edit"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3237,6 +3899,10 @@ msgid "Clear Bones"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Bones"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
 msgstr ""
 
@@ -3247,14 +3913,6 @@ msgstr ""
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom In"
-msgstr ""
-
-#: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom Out"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3278,7 +3936,7 @@ msgid "Anchor"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert Keys (Ins)"
+msgid "Insert Keys"
 msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -3817,6 +4475,7 @@ msgid "Clear UV"
 msgstr ""
 
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
 msgstr ""
 
@@ -3932,6 +4591,14 @@ msgid "Save Theme As.."
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+msgid "Next script"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid "Previous script"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/project_export.cpp
 msgid "File"
 msgstr ""
@@ -3943,6 +4610,10 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid "Soft Reload Script"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -3966,94 +4637,29 @@ msgid "Save Theme As"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/scene_tree_dock.cpp
-msgid "Move Up"
-msgstr ""
+#, fuzzy
+msgid "Close Docs"
+msgstr "閉じる"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/scene_tree_dock.cpp
-msgid "Move Down"
-msgstr ""
+#, fuzzy
+msgid "Close All"
+msgstr "閉じる"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Indent Left"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Indent Right"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Comment"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Clone Down"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Complete Symbol"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Trim Trailing Whitespace"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Auto Indent"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Soft Reload Script"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find.."
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+#: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find Next"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Find Previous"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Replace.."
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Function.."
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Goto Line.."
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Breakpoint"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Remove All Breakpoints"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Next Breakpoint"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Goto Previous Breakpoint"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -4093,14 +4699,6 @@ msgid "Move Right"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Help"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Contextual Help"
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Tutorials"
 msgstr ""
 
@@ -4114,10 +4712,6 @@ msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Search the class hierarchy."
-msgstr ""
-
-#: tools/editor/plugins/script_editor_plugin.cpp
-msgid "Search Help"
 msgstr ""
 
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -4153,6 +4747,86 @@ msgstr ""
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/script_editor_debugger.cpp
 msgid "Debugger"
+msgstr ""
+
+#: tools/editor/plugins/script_editor_plugin.cpp
+msgid ""
+"Built-in scripts can only be edited when the scene they belong to is loaded"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Pick Color"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
+msgid "Move Up"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
+msgid "Move Down"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Indent Left"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Indent Right"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Toggle Comment"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Clone Down"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Complete Symbol"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Trim Trailing Whitespace"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Auto Indent"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Remove All Breakpoints"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Next Breakpoint"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Previous Breakpoint"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Find Previous"
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Replace.."
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Goto Function.."
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+#: tools/editor/plugins/shader_editor_plugin.cpp
+msgid "Goto Line.."
+msgstr ""
+
+#: tools/editor/plugins/script_text_editor.cpp
+msgid "Contextual Help"
 msgstr ""
 
 #: tools/editor/plugins/shader_editor_plugin.cpp
@@ -4388,38 +5062,6 @@ msgid "Align with view"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Top (Num7)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Bottom (Shift+Num7)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Left (Num3)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Right (Shift+Num3)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Front (Num1)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Rear (Shift+Num1)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Perspective (Num5)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Orthogonal (Num5)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Environment"
 msgstr ""
 
@@ -4429,14 +5071,6 @@ msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Selection (F)"
-msgstr ""
-
-#: tools/editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view (Ctrl+Shift+F)"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -4456,7 +5090,59 @@ msgid "Could not instance scene!"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Move Mode (W)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Rotate Mode (E)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Bottom View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Top View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Rear View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Front View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Left View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Right View"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Switch Perspective/Orthogonal view"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Insert Animation Key"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Focus Origin"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Focus Selection"
+msgstr ""
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
+msgid "Align Selection With View"
 msgstr ""
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
@@ -4714,6 +5400,10 @@ msgstr ""
 #: tools/editor/plugins/theme_editor_plugin.cpp
 #: tools/editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Item"
+msgstr ""
+
+#: tools/editor/plugins/theme_editor_plugin.cpp
+msgid "Theme"
 msgstr ""
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
@@ -5178,6 +5868,14 @@ msgid "Couldn't create engine.cfg in project path."
 msgstr ""
 
 #: tools/editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid "Package Installed Successfully!"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
 msgid "Import Existing Project"
 msgstr ""
 
@@ -5198,6 +5896,14 @@ msgid "Project Path:"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
+msgid "Install Project:"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid "Install"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
 msgid "Browse"
 msgstr ""
 
@@ -5214,15 +5920,21 @@ msgid "Unnamed Project"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to open more than one projects?"
+msgid "Are you sure to open more than one project?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Are you sure to run more than one projects?"
+msgid "Are you sure to run more than one project?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
+msgid ""
+"You are about the scan %s folders for existing Godot projects. Do you "
+"confirm?"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
@@ -5242,12 +5954,16 @@ msgid "Scan"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
+msgid "Select a Folder to Scan"
+msgstr ""
+
+#: tools/editor/project_manager.cpp
 msgid "New Project"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
 msgid "Exit"
-msgstr ""
+msgstr "終了"
 
 #: tools/editor/project_settings.cpp
 msgid "Key "
@@ -5362,50 +6078,6 @@ msgid "Add Translation"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Invalid name."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Valid characters:"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing engine class name."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing buit-in type name."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Invalid name. Must not collide with an existing global constant name."
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Autoload '%s' already exists!"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Rename Autoload"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Toggle AutoLoad Globals"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Add Autoload"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Remove Autoload"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Move Autoload"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
 msgid "Remove Translation"
 msgstr ""
 
@@ -5427,10 +6099,6 @@ msgstr ""
 
 #: tools/editor/project_settings.cpp
 msgid "Remove Resource Remap Option"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Enable"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
@@ -5506,18 +6174,6 @@ msgid "AutoLoad"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Node Name:"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "List:"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
-msgid "Singleton"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
 msgid "Plugins"
 msgstr ""
 
@@ -5562,6 +6218,10 @@ msgid "Assign"
 msgstr ""
 
 #: tools/editor/property_editor.cpp
+msgid "New Script"
+msgstr ""
+
+#: tools/editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
 msgstr ""
 
@@ -5578,10 +6238,6 @@ msgid "On"
 msgstr ""
 
 #: tools/editor/property_editor.cpp
-msgid "Set"
-msgstr ""
-
-#: tools/editor/property_editor.cpp
 msgid "Properties:"
 msgstr ""
 
@@ -5592,6 +6248,16 @@ msgstr ""
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
 msgstr ""
+
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Property"
+msgstr "すべて選択"
+
+#: tools/editor/property_selector.cpp
+#, fuzzy
+msgid "Select Method"
+msgstr "すべて選択"
 
 #: tools/editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"
@@ -5663,6 +6329,10 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance the scenes at."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
@@ -5794,6 +6464,11 @@ msgid "Save Branch as Scene"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete (No Confirm)"
+msgstr "確認してください。"
+
+#: tools/editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
 msgstr ""
 
@@ -5801,6 +6476,10 @@ msgstr ""
 msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create a new script for the selected node."
 msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
@@ -5863,86 +6542,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Select a Node"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination files, doing nothing."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Same source and destination paths, doing nothing."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't move directories to within themselves."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Can't operate on '..'"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Pick New Name and Location For:"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "No files selected!"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Edit Dependencies.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "View Owners.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Copy Path"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Rename or Move.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move To.."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Info"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Show In File Manager"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Previous Directory"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Next Directory"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Re-Scan Filesystem"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Toggle folder status as Favorite"
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr ""
-
-#: tools/editor/scenes_dock.cpp
-msgid "Move"
 msgstr ""
 
 #: tools/editor/script_create_dialog.cpp

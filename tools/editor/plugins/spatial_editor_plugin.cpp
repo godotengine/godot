@@ -77,21 +77,30 @@ void SpatialEditorViewport::_update_camera() {
 
 String SpatialEditorGizmo::get_handle_name(int p_idx) const {
 
+	if (get_script_instance() && get_script_instance()->has_method("get_handle_name"))
+		return get_script_instance()->call("get_handle_name", p_idx);
+
 	return "";
 }
 
 Variant SpatialEditorGizmo::get_handle_value(int p_idx) const{
+
+	if (get_script_instance() && get_script_instance()->has_method("get_handle_value"))
+		return get_script_instance()->call("get_handle_value", p_idx);
 
 	return Variant();
 }
 
 void SpatialEditorGizmo::set_handle(int p_idx,Camera *p_camera, const Point2& p_point) {
 
+	if (get_script_instance() && get_script_instance()->has_method("set_handle"))
+		get_script_instance()->call("set_handle", p_idx, p_camera, p_point);
 }
 
 void SpatialEditorGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p_cancel){
 
-
+	if (get_script_instance() && get_script_instance()->has_method("commit_handle"))
+		get_script_instance()->call("commit_handle", p_idx, p_restore, p_cancel);
 }
 
 bool SpatialEditorGizmo::intersect_frustum(const Camera *p_camera,const Vector<Plane> &p_frustum) {
@@ -1969,35 +1978,15 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			_update_name();
 
 		} break;
+		case VIEW_CENTER_TO_ORIGIN: {
+
+			cursor.pos = Vector3(0,0,0);
+
+		} break;
 		case VIEW_CENTER_TO_SELECTION: {
 
-			if (!get_selected_count())
-				break;
+			focus_selection();
 
-			Vector3 center;
-			int count=0;
-
-			List<Node*> &selection = editor_selection->get_selected_node_list();
-
-			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
-
-				Spatial *sp = E->get()->cast_to<Spatial>();
-				if (!sp)
-					continue;
-
-				SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
-				if (!se)
-					continue;
-
-				center+=sp->get_global_transform().origin;
-				count++;
-			}
-
-			if( count != 0 ) {
-				center/=float(count);
-			}
-
-			cursor.pos=center;
 		} break;
 		case VIEW_ALIGN_SELECTION_WITH_VIEW: {
 
@@ -2314,6 +2303,38 @@ void SpatialEditorViewport::reset() {
 	_update_name();
 }
 
+
+void SpatialEditorViewport::focus_selection() {
+	if (!get_selected_count())
+		return;
+
+	Vector3 center;
+	int count=0;
+
+	List<Node*> &selection = editor_selection->get_selected_node_list();
+
+	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+		Spatial *sp = E->get()->cast_to<Spatial>();
+		if (!sp)
+			continue;
+
+		SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
+		if (!se)
+			continue;
+
+		center+=sp->get_global_transform().origin;
+		count++;
+	}
+
+	if( count != 0 ) {
+		center/=float(count);
+	}
+
+	cursor.pos=center;
+}
+
+
 SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, EditorNode *p_editor, int p_index) {
 
 	_edit.mode=TRANSFORM_NONE;
@@ -2375,6 +2396,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(VIEW_GIZMOS),true);
 
 	view_menu->get_popup()->add_separator();
+	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_selection_with_view"), VIEW_ALIGN_SELECTION_WITH_VIEW);
 	view_menu->get_popup()->connect("item_pressed",this,"_menu_option");
@@ -3135,6 +3157,8 @@ void SpatialEditor::_init_indicators() {
 		Vector<Color> origin_colors;
 		Vector<Vector3> origin_points;
 
+		Color grid_color = EditorSettings::get_singleton()->get("3d_editor/grid_color");
+
 		for(int i=0;i<3;i++) {
 			Vector3 axis;
 			axis[i]=1;
@@ -3152,10 +3176,10 @@ void SpatialEditor::_init_indicators() {
 			for(int j=-ORIGIN_GRID_SIZE;j<=ORIGIN_GRID_SIZE;j++) {
 
 
-				grid_colors[i].push_back(Color(axis.x,axis.y,axis.z,0.2));
-				grid_colors[i].push_back(Color(axis.x,axis.y,axis.z,0.2));
-				grid_colors[i].push_back(Color(axis.x,axis.y,axis.z,0.2));
-				grid_colors[i].push_back(Color(axis.x,axis.y,axis.z,0.2));
+				grid_colors[i].push_back(grid_color);
+				grid_colors[i].push_back(grid_color);
+				grid_colors[i].push_back(grid_color);
+				grid_colors[i].push_back(grid_color);
 				grid_points[i].push_back(axis_n1*ORIGIN_GRID_SIZE+axis_n2*j);
 				grid_points[i].push_back(-axis_n1*ORIGIN_GRID_SIZE+axis_n2*j);
 				grid_points[i].push_back(axis_n2*ORIGIN_GRID_SIZE+axis_n1*j);
@@ -3451,6 +3475,8 @@ void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 	if (!is_visible() || get_viewport()->gui_has_modal_stack())
 		return;
 
+#if 0
+//i don't remember this being used, why was it here?
 	{
 
 		EditorNode *en = editor;
@@ -3462,6 +3488,7 @@ void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 		}
 
 	}
+#endif
 
 	switch(p_event.type) {
 
@@ -3837,6 +3864,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("spatial_editor/switch_perspective_orthogonal", TTR("Switch Perspective/Orthogonal view"), KEY_KP_5);
 	ED_SHORTCUT("spatial_editor/snap", TTR("Snap"), KEY_S);
 	ED_SHORTCUT("spatial_editor/insert_anim_key", TTR("Insert Animation Key"), KEY_K);
+	ED_SHORTCUT("spatial_editor/focus_origin", TTR("Focus Origin"), KEY_O);
 	ED_SHORTCUT("spatial_editor/focus_selection", TTR("Focus Selection"), KEY_F);
 	ED_SHORTCUT("spatial_editor/align_selection_with_view", TTR("Align Selection With View"), KEY_MASK_ALT+KEY_MASK_CMD+KEY_F);
 
