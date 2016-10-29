@@ -1352,7 +1352,15 @@ def use_windows_spawn_fix(self, platform=None):
     if (os.name!="nt"):
 	return #not needed, only for windows
 
-    self.split_drivers=True
+    # On Windows, due to the limited command line length, when creating a static library
+    # from a very high number of objects SCons will invoke "ar" once per object file;
+    # that makes object files with same names to be overwritten so the last wins and
+    # the library looses symbols defined by overwritten objects.
+    # By enabling quick append instead of the default mode (replacing), libraries will
+    # got built correctly regardless the invokation strategy.
+    # Furthermore, since SCons will rebuild the library from scratch when an object file
+    # changes, no multiple versions of the same object file will be present.
+    self.Replace(ARFLAGS='q')
 
     import subprocess
 
