@@ -58,7 +58,7 @@ Error TCP_Server::_listen(uint16_t p_port, IP_Address::AddrType p_type, DVector<
 
 void TCP_Server::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("listen","port","accepted_hosts"),&TCP_Server::_listen,DEFVAL(IP_Address::TYPE_IPV4), DEFVAL(DVector<String>()));
+	ObjectTypeDB::bind_method(_MD("listen","port","ip_type", "accepted_hosts"),&TCP_Server::_listen,DEFVAL(IP_Address::TYPE_ANY),DEFVAL(DVector<String>()));
 	ObjectTypeDB::bind_method(_MD("is_connection_available"),&TCP_Server::is_connection_available);
 	ObjectTypeDB::bind_method(_MD("take_connection"),&TCP_Server::take_connection);
 	ObjectTypeDB::bind_method(_MD("stop"),&TCP_Server::stop);

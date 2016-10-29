@@ -212,8 +212,8 @@ Array IP::_get_local_addresses() const {
 
 void IP::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("resolve_hostname","host"),&IP::resolve_hostname);
-	ObjectTypeDB::bind_method(_MD("resolve_hostname_queue_item","host"),&IP::resolve_hostname_queue_item);
+	ObjectTypeDB::bind_method(_MD("resolve_hostname","host","ip_type"),&IP::resolve_hostname,DEFVAL(IP_Address::TYPE_ANY));
+	ObjectTypeDB::bind_method(_MD("resolve_hostname_queue_item","host","ip_type"),&IP::resolve_hostname_queue_item,DEFVAL(IP_Address::TYPE_ANY));
 	ObjectTypeDB::bind_method(_MD("get_resolve_item_status","id"),&IP::get_resolve_item_status);
 	ObjectTypeDB::bind_method(_MD("get_resolve_item_address","id"),&IP::get_resolve_item_address);
 	ObjectTypeDB::bind_method(_MD("erase_resolve_item","id"),&IP::erase_resolve_item);
