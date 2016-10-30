@@ -151,18 +151,6 @@ void Container::_notification(int p_what) {
 				queue_sort();
 			}
 		} break;
-		case NOTIFICATION_SORT_CHILDREN: {
-
-			Size2 s = get_size();
-
-			for (int i=0; i<get_child_count();i++) {
-				Control *c = get_child(i)->cast_to<Control>();
-				if (!c || !c->is_visible() || c->is_set_as_toplevel())
-					continue;
-
-				fit_child_in_rect(c,Rect2(0, 0, s.width, s.height));
-			}
-		}
 	}
 }
 
