@@ -2143,6 +2143,120 @@
 	<constants>
 	</constants>
 </class>
+<class name="AStar" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="add_point">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="pos" type="Vector3">
+			</argument>
+			<argument index="2" name="weight_scale" type="float" default="1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="are_points_connected" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear">
+			<description>
+			</description>
+		</method>
+		<method name="connect_points">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="disconnect_points">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_available_point_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="to_pos" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_pos_in_segment" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="to_pos" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_id_path">
+			<return type="IntArray">
+			</return>
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_path">
+			<return type="Vector3Array">
+			</return>
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_pos" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_weight_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_point">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="AcceptDialog" inherits="WindowDialog" category="Core">
 	<brief_description>
 		Base dialog for user notification.
@@ -6345,6 +6459,8 @@
 		<method name="add_button">
 			<argument index="0" name="text" type="String">
 			</argument>
+			<argument index="1" name="tooltip" type="String" default="&quot;&quot;">
+			</argument>
 			<description>
 				Append a new button to the array, with the specified text.
 			</description>
@@ -6353,6 +6469,8 @@
 			<argument index="0" name="icon" type="Texture">
 			</argument>
 			<argument index="1" name="text" type="String" default="&quot;&quot;">
+			</argument>
+			<argument index="2" name="tooltip" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 				Append a new button to the array, with the specified icon and text.
@@ -6395,6 +6513,14 @@
 				Return the text of the specified button.
 			</description>
 		</method>
+		<method name="get_button_tooltip" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="button_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_hovered" qualifiers="const">
 			<return type="int">
 			</return>
@@ -6425,6 +6551,14 @@
 			</argument>
 			<description>
 				Define the text of the specified button.
+			</description>
+		</method>
+		<method name="set_button_tooltip">
+			<argument index="0" name="button_idx" type="int">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_selected">
@@ -45855,6 +45989,12 @@
 		<method name="free_rid">
 			<argument index="0" name="arg0" type="RID">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_default_clear_color" qualifiers="const">
+			<return type="Color">
+			</return>
 			<description>
 			</description>
 		</method>
