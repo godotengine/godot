@@ -180,9 +180,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t>& p_html, const St
 
 		String current_line = lines[i];
 		current_line = current_line.replace("$GODOT_TMEM",itos((1<<(max_memory+5))*1024*1024));
-		current_line = current_line.replace("$GODOT_FS",p_name+"fs.js");
-		current_line = current_line.replace("$GODOT_MEM",p_name+".mem");
-		current_line = current_line.replace("$GODOT_JS",p_name+".js");
+		current_line = current_line.replace("$GODOT_BASE",p_name);
 		current_line = current_line.replace("$GODOT_CANVAS_WIDTH",Globals::get_singleton()->get("display/width"));
 		current_line = current_line.replace("$GODOT_CANVAS_HEIGHT",Globals::get_singleton()->get("display/height"));
 		current_line = current_line.replace("$GODOT_HEAD_TITLE",!html_title.empty()?html_title:(String) Globals::get_singleton()->get("application/name"));
@@ -319,14 +317,17 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 		}
 		if (file=="godot.js") {
 
-			//_fix_godot(data);
 			file=p_path.get_file().basename()+".js";
 		}
 
 		if (file=="godot.mem") {
 
-			//_fix_godot(data);
 			file=p_path.get_file().basename()+".mem";
+		}
+
+		if (file=="godot.wasm") {
+
+			file=p_path.get_file().basename()+".wasm";
 		}
 
 		String dst = p_path.get_base_dir().plus_file(file);
