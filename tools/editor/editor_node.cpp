@@ -101,6 +101,7 @@
 #include "plugins/collision_shape_2d_editor_plugin.h"
 #include "main/input_default.h"
 // end
+#include "tools/editor/editor_settings.h"
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
 #include "tools/editor/io_plugins/editor_font_import_plugin.h"
@@ -1666,12 +1667,15 @@ void EditorNode::_edit_current() {
 
 	if (main_plugin) {
 
-		if (main_plugin!=editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible() || ScriptEditor::get_singleton()->can_take_away_focus())) {
+		// special case if use of external editor is true
+		if (main_plugin->get_name() == "Script" && bool(EditorSettings::get_singleton()->get("external_editor/use_external_editor"))){
+			main_plugin->edit(current_obj);
+		}
 
+		else if (main_plugin!=editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible() || ScriptEditor::get_singleton()->can_take_away_focus())) {
 			// update screen main_plugin
 
 			if (!changing_scene) {
-
 				if (editor_plugin_screen)
 					editor_plugin_screen->make_visible(false);
 				editor_plugin_screen=main_plugin;
