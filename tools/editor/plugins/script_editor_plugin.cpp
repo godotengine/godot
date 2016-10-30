@@ -945,7 +945,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		}
 	}
 
-	EditorHelp *help = tab_container->get_child(selected)->cast_to<EditorHelp>();
+	EditorHelp *help = tab_container->get_current_tab_control()->cast_to<EditorHelp>();
 	if (help) {
 
 		switch(p_option) {
