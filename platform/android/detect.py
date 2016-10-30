@@ -34,10 +34,8 @@ def get_flags():
 
 	return [
 		('tools', 'no'),
-		('nedmalloc', 'no'),
-		('builtin_zlib', 'no'),
-                ('openssl','builtin'), #use builtin openssl
-        ]
+		('openssl', 'builtin'), #use builtin openssl
+	]
 
 
 def create(env):
@@ -98,7 +96,7 @@ def configure(env):
 
 	if env['android_arch']=='x86':
 		env['NDK_TARGET']=env['NDK_TARGET_X86']
-		env["x86_opt_gcc"]=True
+		env["x86_libtheora_opt_gcc"]=True
 
 	if env['PLATFORM'] == 'win32':
 		env.Tool('gcc')
@@ -124,19 +122,20 @@ def configure(env):
 
 	gcc_path=env["ANDROID_NDK_ROOT"]+"/toolchains/"+env["NDK_TARGET"]+"/prebuilt/";
 
-	if (sys.platform.find("linux")==0):
-		if (platform.architecture()[0]=='64bit' or os.path.isdir(gcc_path+"linux-x86_64/bin")): # check was not working
+	if (sys.platform.startswith("linux")):
+		if (platform.machine().endswith('64')):
 			gcc_path=gcc_path+"/linux-x86_64/bin"
 		else:
 			gcc_path=gcc_path+"/linux-x86/bin"
-	elif (sys.platform=="darwin"):
-		gcc_path=gcc_path+"/darwin-x86_64/bin" #this may be wrong
+	elif (sys.platform.startswith("darwin")):
+		gcc_path=gcc_path+"/darwin-x86_64/bin"
 		env['SHLINKFLAGS'][1] = '-shared'
 		env['SHLIBSUFFIX'] = '.so'
-	elif (os.name=="nt"):
-		gcc_path=gcc_path+"/windows-x86_64/bin" #this may be wrong
-
-
+	elif (sys.platform.startswith('win')):
+                if (platform.machine().endswith('64')):
+			gcc_path=gcc_path+"/windows-x86_64/bin"
+                else:
+			gcc_path=gcc_path+"/windows-x86/bin"
 
 	env['ENV']['PATH'] = gcc_path+":"+env['ENV']['PATH']
 	if env['android_arch']=='x86':
@@ -168,11 +167,11 @@ def configure(env):
 
 	env['neon_enabled']=False
 	if env['android_arch']=='x86':
-		env['CCFLAGS'] = string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__GLIBC__  -Wno-psabi -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED')
+		env.Append(CCFLAGS=string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__GLIBC__  -Wno-psabi -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED'))
 	elif env["android_arch"]=="armv6":
-		env['CCFLAGS'] = string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__ARM_ARCH_6__ -D__GLIBC__  -Wno-psabi -march=armv6 -mfpu=vfp -mfloat-abi=softfp -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED')
+		env.Append(CCFLAGS=string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__ARM_ARCH_6__ -D__GLIBC__  -Wno-psabi -march=armv6 -mfpu=vfp -mfloat-abi=softfp -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED'))
 	elif env["android_arch"]=="armv7":
-		env['CCFLAGS'] = string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__ARM_ARCH_7__ -D__ARM_ARCH_7A__ -D__GLIBC__  -Wno-psabi -march=armv7-a -mfloat-abi=softfp -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED')
+		env.Append(CCFLAGS=string.split('-DNO_STATVFS -fpic -ffunction-sections -funwind-tables -fstack-protector -fvisibility=hidden -D__ARM_ARCH_7__ -D__ARM_ARCH_7A__ -D__GLIBC__  -Wno-psabi -march=armv7-a -mfloat-abi=softfp -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED'))
 		if env['android_neon']=='yes':
 			env['neon_enabled']=True
 			env.Append(CCFLAGS=['-mfpu=neon','-D__ARM_NEON__'])
@@ -204,7 +203,8 @@ def configure(env):
 	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL','-DMPC_FIXED_POINT'])
 #	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
 
-	if(env["opus"]=="yes"):
+	# TODO: Move that to opus module's config
+	if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
 		if (env["android_arch"]=="armv6" or env["android_arch"]=="armv7"):
 			env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
 		env.opus_fixed_point="yes"

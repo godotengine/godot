@@ -332,6 +332,10 @@ World::World() {
 	sound_space = SpatialSoundServer::get_singleton()->space_create();
 
 	PhysicsServer::get_singleton()->space_set_active(space,true);
+	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_GRAVITY,GLOBAL_DEF("physics/default_gravity",9.8));
+	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_GRAVITY_VECTOR,GLOBAL_DEF("physics/default_gravity_vector",Vector3(0,-1,0)));
+	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_LINEAR_DAMP,GLOBAL_DEF("physics/default_linear_damp",0.1));
+	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_ANGULAR_DAMP,GLOBAL_DEF("physics/default_angular_damp",0.1));
 
 #ifdef _3D_DISABLED
 	indexer = NULL;

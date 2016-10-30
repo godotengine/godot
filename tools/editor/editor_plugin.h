@@ -131,6 +131,9 @@ public:
 
 	Control *get_base_control();
 
+	void make_bottom_panel_item_visible(Control *p_item);
+	void hide_bottom_panel();
+
 	void add_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
 	void remove_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
 

@@ -38,6 +38,7 @@ def get_flags():
 	return [
 		('tools', 'no'),
 		('webp', 'yes'),
+		('builtin_zlib', 'yes'),
 		('openssl','builtin'), #use builtin openssl
 	]
 
@@ -165,7 +166,8 @@ def configure(env):
 	env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
 	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DMPC_FIXED_POINT'])
 
-	if(env["opus"]=="yes"):
+	# TODO: Move that to opus module's config
+	if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
 		env.opus_fixed_point="yes"
 		if env["arch"]=="x86":
 			pass

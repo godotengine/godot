@@ -653,6 +653,7 @@ void TextureRegionEditor::edit(Object *p_obj)
 		} else {
 			p_obj->connect("texture_changed",this,"_edit_region");
 		}
+		p_obj->add_change_receptor(this);
 		p_obj->connect("exit_tree",this,"_node_removed",varray(p_obj),CONNECT_ONESHOT);
 		_edit_region();
 	} else {
@@ -671,6 +672,12 @@ void TextureRegionEditor::edit(Object *p_obj)
 		atlas_tex = Ref<AtlasTexture>(NULL);
 	}
 	edit_draw->update();
+}
+
+void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+	if ((String)p_prop == "region_rect") {
+		_edit_region();
+	}
 }
 
 void TextureRegionEditor::_edit_region()

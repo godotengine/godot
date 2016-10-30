@@ -36,6 +36,7 @@
 #include "servers/visual/particle_system_sw.h"
 #include "gl_context/context_gl.h"
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef GLEW_ENABLED
 #define   _GL_HALF_FLOAT_OES      0x140B
@@ -1998,7 +1999,6 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 				if (use_VBO) {
 
 					elem_size=VS::ARRAY_WEIGHTS_SIZE*sizeof(GLushort);
-					elem_count=VS::ARRAY_WEIGHTS_SIZE;
 					valid_local=false;
 					bind=true;
 					normalize=true;
@@ -2007,7 +2007,6 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 
 				} else {
 					elem_size=VS::ARRAY_WEIGHTS_SIZE*sizeof(GLfloat);
-					elem_count=VS::ARRAY_WEIGHTS_SIZE;
 					valid_local=false;
 					bind=false;
 					datatype=GL_FLOAT;
@@ -2019,7 +2018,6 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 
 				if (use_VBO) {
 					elem_size=VS::ARRAY_WEIGHTS_SIZE*sizeof(GLubyte);
-					elem_count=VS::ARRAY_WEIGHTS_SIZE;
 					valid_local=false;
 					bind=true;
 					datatype=GL_UNSIGNED_BYTE;
@@ -2027,7 +2025,6 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 				} else {
 
 					elem_size=VS::ARRAY_WEIGHTS_SIZE*sizeof(GLushort);
-					elem_count=VS::ARRAY_WEIGHTS_SIZE;
 					valid_local=false;
 					bind=false;
 					datatype=GL_UNSIGNED_SHORT;
@@ -5459,9 +5456,16 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 	}
 
 
-	light_data[VL_LIGHT_ATTENUATION][0]=l->vars[VS::LIGHT_PARAM_ENERGY];
-	light_data[VL_LIGHT_ATTENUATION][1]=l->vars[VS::LIGHT_PARAM_RADIUS];
-	light_data[VL_LIGHT_ATTENUATION][2]=l->vars[VS::LIGHT_PARAM_ATTENUATION];
+	light_data[VL_LIGHT_ATTENUATION][0] = l->vars[VS::LIGHT_PARAM_ENERGY];
+
+	if (l->type == VS::LIGHT_DIRECTIONAL) {
+		light_data[VL_LIGHT_ATTENUATION][1] = l->directional_shadow_param[VS::LIGHT_DIRECTIONAL_SHADOW_PARAM_MAX_DISTANCE];
+	}
+	else{
+		light_data[VL_LIGHT_ATTENUATION][1] = l->vars[VS::LIGHT_PARAM_RADIUS];
+	}
+
+	light_data[VL_LIGHT_ATTENUATION][2] = l->vars[VS::LIGHT_PARAM_ATTENUATION];
 
 	light_data[VL_LIGHT_SPOT_ATTENUATION][0]=Math::cos(Math::deg2rad(l->vars[VS::LIGHT_PARAM_SPOT_ANGLE]));
 	light_data[VL_LIGHT_SPOT_ATTENUATION][1]=l->vars[VS::LIGHT_PARAM_SPOT_ATTENUATION];
@@ -7021,6 +7025,10 @@ void RasterizerGLES2::_process_glow_bloom() {
 }
 
 void RasterizerGLES2::_process_hdr() {
+
+	if (framebuffer.luminance.empty()) {
+		return;
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.luminance[0].fbo);
 	glActiveTexture(GL_TEXTURE0);
@@ -10813,14 +10821,52 @@ void RasterizerGLES2::init() {
 		print_line(String("GLES2: Using GLEW ") + (const char*) glewGetString(GLEW_VERSION));
 	}
 
+	// Godot makes use of functions from ARB_framebuffer_object extension which is not implemented by all drivers.
+	// On the other hand, these drivers might implement the older EXT_framebuffer_object extension
+	// with which current source code is backward compatible.
+
+	bool framebuffer_object_is_supported = glewIsSupported("GL_ARB_framebuffer_object");
+
+	if ( !framebuffer_object_is_supported ) {
+		WARN_PRINT("GL_ARB_framebuffer_object not supported by your graphics card.");
+
+		if ( glewIsSupported("GL_EXT_framebuffer_object") ) {
+			// falling-back to the older EXT function if present
+			WARN_PRINT("Falling-back to GL_EXT_framebuffer_object.");
+
+			glIsRenderbuffer = glIsRenderbufferEXT;
+			glBindRenderbuffer = glBindRenderbufferEXT;
+			glDeleteRenderbuffers = glDeleteRenderbuffersEXT;
+			glGenRenderbuffers = glGenRenderbuffersEXT;
+			glRenderbufferStorage = glRenderbufferStorageEXT;
+			glGetRenderbufferParameteriv = glGetRenderbufferParameterivEXT;
+			glIsFramebuffer = glIsFramebufferEXT;
+			glBindFramebuffer = glBindFramebufferEXT;
+			glDeleteFramebuffers = glDeleteFramebuffersEXT;
+			glGenFramebuffers = glGenFramebuffersEXT;
+			glCheckFramebufferStatus = glCheckFramebufferStatusEXT;
+			glFramebufferTexture1D = glFramebufferTexture1DEXT;
+			glFramebufferTexture2D = glFramebufferTexture2DEXT;
+			glFramebufferTexture3D = glFramebufferTexture3DEXT;
+			glFramebufferRenderbuffer = glFramebufferRenderbufferEXT;
+			glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameterivEXT;
+			glGenerateMipmap = glGenerateMipmapEXT;
+
+			framebuffer_object_is_supported = true;
+		}
+		else {
+			ERR_PRINT("Framebuffer Object is not supported by your graphics card.");
+		}
+	}
+
 	// Check for GL 2.1 compatibility, if not bail out
-	if (!glewIsSupported("GL_VERSION_2_1")) {
+	if (!(glewIsSupported("GL_VERSION_2_1") && framebuffer_object_is_supported)) {
 		ERR_PRINT("Your system's graphic drivers seem not to support OpenGL 2.1 / GLES 2.0, sorry :(\n"
-			  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
+			  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot is now going to terminate.");
 		OS::get_singleton()->alert("Your system's graphic drivers seem not to support OpenGL 2.1 / GLES 2.0, sorry :(\n"
 					   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
 					   "Fatal error: Insufficient OpenGL / GLES drivers");
-		// TODO: If it's even possible, we should stop the execution without segfault and memory leaks :)
+		exit(1);
 	}
 #endif
 

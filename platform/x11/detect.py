@@ -68,13 +68,10 @@ def get_opts():
 def get_flags():
 
 	return [
-	('builtin_zlib', 'no'),
-	('glew', 'yes'),
-	("openssl", "yes"),
-	('freetype','yes'), #use system freetype
-
-	#("theora","no"),
-        ]
+	("openssl", "system"),
+	('freetype', 'system'),
+	('libpng', 'system'),
+	]
 
 
 
@@ -96,10 +93,6 @@ def configure(env):
 			env["LD"]="clang++"
 		env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
 		env.extra_suffix=".llvm"
-
-		if (env["colored"]=="yes"):
-			if sys.stdout.isatty():
-				env.Append(CXXFLAGS=["-fcolor-diagnostics"])
 
 	if (env["use_sanitizer"]=="yes"):
 		env.Append(CXXFLAGS=['-fsanitize=address','-fno-omit-frame-pointer'])
@@ -140,22 +133,54 @@ def configure(env):
 	env.ParseConfig('pkg-config xcursor --cflags --libs')
 	env.ParseConfig('pkg-config xrandr --cflags --libs')
 
-	if (env["openssl"]=="yes"):
+	if (env["openssl"] == "system"):
 		env.ParseConfig('pkg-config openssl --cflags --libs')
 
+	if (env["libwebp"] == "system"):
+		env.ParseConfig('pkg-config libwebp --cflags --libs')
 
-	if (env["freetype"]=="yes"):
+	if (env["freetype"] == "system"):
+		env["libpng"] = "system"  # Freetype links against libpng
 		env.ParseConfig('pkg-config freetype2 --cflags --libs')
 
+	if (env["libpng"] == "system"):
+		env.ParseConfig('pkg-config libpng --cflags --libs')
 
+	if (env["enet"] == "system"):
+		env.ParseConfig('pkg-config libenet --cflags --libs')
+
+	if (env["squish"] == "system" and env["tools"] == "yes"):
+		env.ParseConfig('pkg-config libsquish --cflags --libs')
+
+	# Sound and video libraries
+	# Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
+
+	if (env["libtheora"] == "system"):
+		env["libogg"] = "system"  # Needed to link against system libtheora
+		env["libvorbis"] = "system"  # Needed to link against system libtheora
+		env.ParseConfig('pkg-config theora theoradec --cflags --libs')
+
+	if (env["libvorbis"] == "system"):
+		env["libogg"] = "system"  # Needed to link against system libvorbis
+		env.ParseConfig('pkg-config vorbis vorbisfile --cflags --libs')
+
+	if (env["opus"] == "system"):
+		env["libogg"] = "system"  # Needed to link against system opus
+		env.ParseConfig('pkg-config opus opusfile --cflags --libs')
+
+	if (env["libogg"] == "system"):
+		env.ParseConfig('pkg-config ogg --cflags --libs')
 
 
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED'])
 
+	if (env["glew"] == "system"):
+		env.ParseConfig('pkg-config glew --cflags --libs')
+
 	if os.system("pkg-config --exists alsa")==0:
 		print("Enabling ALSA")
 		env.Append(CPPFLAGS=["-DALSA_ENABLED"])
-		env.Append(LIBS=['asound'])
+		env.ParseConfig('pkg-config alsa --cflags --libs')
 	else:
 		print("ALSA libraries not found, disabling driver")
 
@@ -208,5 +233,5 @@ def configure(env):
 
 	list_of_x86 = ['x86_64', 'x86', 'i386', 'i586']
 	if any(platform.machine() in s for s in list_of_x86):
-		env["x86_opt_gcc"]=True
+		env["x86_libtheora_opt_gcc"]=True
 

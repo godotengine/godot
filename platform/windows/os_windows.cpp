@@ -29,7 +29,6 @@
 #include "drivers/gles2/rasterizer_gles2.h"
 
 #include "os_windows.h"
-#include "drivers/nedmalloc/memory_pool_static_nedmalloc.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
 #include "os/memory_pool_dynamic_static.h"
 #include "drivers/windows/thread_windows.h"
@@ -1312,10 +1311,13 @@ void OS_Windows::finalize_core() {
 
 void OS_Windows::vprint(const char* p_format, va_list p_list, bool p_stderr) {
 
-	char buf[16384+1];
-	int len = vsnprintf(buf,16384,p_format,p_list);
+	const unsigned int BUFFER_SIZE = 16384;
+	char buf[BUFFER_SIZE+1]; // +1 for the terminating character
+	int len = vsnprintf(buf,BUFFER_SIZE,p_format,p_list);
 	if (len<=0)
 		return;
+	if(len >= BUFFER_SIZE)
+		len = BUFFER_SIZE; // Output is too big, will be truncated
 	buf[len]=0;
 
 
@@ -1364,13 +1366,16 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 		POINT pos = { (int) center.x, (int) center.y };
 		ClientToScreen(hWnd, &pos);
 		SetCursorPos(pos.x, pos.y);
-		ShowCursor(false);
 	} else {
-		ShowCursor(true);
 		ReleaseCapture();
 		ClipCursor(NULL);
 	}
 
+	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_HIDDEN) {
+		hCursor = SetCursor(NULL);
+	} else {
+		SetCursor(hCursor);
+	}
 }
 
 OS_Windows::MouseMode OS_Windows::get_mouse_mode() const{
@@ -2154,10 +2159,15 @@ String OS_Windows::get_stdin_string(bool p_block) {
 }
 
 
+void OS_Windows::enable_for_stealing_focus(ProcessID pid) {
+
+	AllowSetForegroundWindow(pid);
+
+}
+
 void OS_Windows::move_window_to_foreground() {
 
 	SetForegroundWindow(hWnd);
-	BringWindowToTop(hWnd);
 
 }
 
@@ -2410,6 +2420,9 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverManagerSW::add_driver(&driver_rtaudio);
+#endif
+#ifdef XAUDIO2_ENABLED
+	AudioDriverManagerSW::add_driver(&driver_xaudio2);
 #endif
 
 }

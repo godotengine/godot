@@ -31,17 +31,18 @@
 
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
+#include "scene/gui/button_group.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/label.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/2d/canvas_item.h"
-
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
-
+class CanvasItemEditorViewport;
 
 class CanvasItemEditorSelectedItem : public Object {
 
@@ -451,6 +452,51 @@ public:
 	CanvasItemEditorPlugin(EditorNode *p_node);
 	~CanvasItemEditorPlugin();
 
+};
+
+class CanvasItemEditorViewport : public VBoxContainer {
+	OBJ_TYPE( CanvasItemEditorViewport, VBoxContainer );
+
+	String default_type;
+	Vector<String> types;
+
+	Vector<String> selected_files;
+	Node* target_node;
+	Point2 drop_pos;
+
+	EditorNode* editor;
+	EditorData* editor_data;
+	CanvasItemEditor* canvas;
+	Node2D* preview;
+	AcceptDialog* accept;
+	WindowDialog* selector;
+	Label* selector_label;
+	Label* label;
+	Label* label_desc;
+	ButtonGroup* btn_group;
+
+	void _on_mouse_exit();
+	void _on_select_type(Object* selected);
+	void _on_change_type();
+
+	void _create_preview(const Vector<String>& files) const;
+	void _remove_preview();
+
+	bool _cyclical_dependency_exists(const String& p_target_scene_path, Node* p_desired_node);
+	void _create_nodes(Node* parent, Node* child, String& path, const Point2& p_point);
+	bool _create_instance(Node* parent, String& path, const Point2& p_point);
+	void _perform_drop_data();
+
+	static void _bind_methods();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	virtual bool can_drop_data(const Point2& p_point,const Variant& p_data) const;
+	virtual void drop_data(const Point2& p_point,const Variant& p_data);
+
+	CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor* p_canvas);
 };
 
 #endif

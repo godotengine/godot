@@ -101,6 +101,7 @@
 #include "plugins/collision_shape_2d_editor_plugin.h"
 #include "main/input_default.h"
 // end
+#include "tools/editor/editor_settings.h"
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
 #include "tools/editor/io_plugins/editor_font_import_plugin.h"
@@ -266,10 +267,12 @@ void EditorNode::_notification(int p_what) {
 				circle_step=0;
 
 			circle_step_msec=tick;
-		circle_step_frame=frame+1;
+		    circle_step_frame=frame+1;
 
-			update_menu->set_icon(gui_base->get_icon("Progress"+itos(circle_step+1),"EditorIcons"));
-
+            // update the circle itself only when its enabled
+            if (!update_menu->get_popup()->is_item_checked(3)){
+                update_menu->set_icon(gui_base->get_icon("Progress"+itos(circle_step+1),"EditorIcons"));
+            }
 		}
 
 		scene_root->set_size_override(true,Size2(Globals::get_singleton()->get("display/width"),Globals::get_singleton()->get("display/height")));
@@ -1664,12 +1667,15 @@ void EditorNode::_edit_current() {
 
 	if (main_plugin) {
 
-		if (main_plugin!=editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible() || ScriptEditor::get_singleton()->can_take_away_focus())) {
+		// special case if use of external editor is true
+		if (main_plugin->get_name() == "Script" && bool(EditorSettings::get_singleton()->get("external_editor/use_external_editor"))){
+			main_plugin->edit(current_obj);
+		}
 
+		else if (main_plugin!=editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible() || ScriptEditor::get_singleton()->can_take_away_focus())) {
 			// update screen main_plugin
 
 			if (!changing_scene) {
-
 				if (editor_plugin_screen)
 					editor_plugin_screen->make_visible(false);
 				editor_plugin_screen=main_plugin;
@@ -2678,7 +2684,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		} break;
 		case RUN_PLAY_NATIVE: {
-			
+
 			bool autosave = EDITOR_DEF("run/auto_save_before_running",true);
 			if (autosave) {
 				_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
@@ -2797,6 +2803,10 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			update_menu->get_popup()->set_item_checked(1,true);
 			OS::get_singleton()->set_low_processor_usage_mode(true);
 		} break;
+        case SETTINGS_UPDATE_SPINNER_HIDE: {
+			update_menu->set_icon(gui_base->get_icon("Collapse","EditorIcons"));
+            update_menu->get_popup()->toggle_item_checked(3);
+        } break;
 		case SETTINGS_PREFERENCES: {
 
 			settings_config_dialog->popup_edit_settings();
@@ -3017,6 +3027,10 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
 		for(int i=0;i<singleton->main_editor_buttons.size();i++) {
 
 			if (p_editor->get_name()==singleton->main_editor_buttons[i]->get_text()) {
+
+				if (singleton->main_editor_buttons[i]->is_pressed()) {
+					singleton->_editor_select(EDITOR_SCRIPT);
+				}
 
 				memdelete( singleton->main_editor_buttons[i] );
 				singleton->main_editor_buttons.remove(i);
@@ -6060,6 +6074,8 @@ EditorNode::EditorNode() {
 	p=update_menu->get_popup();
 	p->add_check_item(TTR("Update Always"),SETTINGS_UPDATE_ALWAYS);
 	p->add_check_item(TTR("Update Changes"),SETTINGS_UPDATE_CHANGES);
+    p->add_separator();
+    p->add_check_item(TTR("Disable Update Spinner"),SETTINGS_UPDATE_SPINNER_HIDE);
 	p->set_item_checked(1,true);
 
 	//sources_button->connect();
@@ -6254,9 +6270,9 @@ EditorNode::EditorNode() {
 
 	overridden_default_layout=-1;
 	default_layout.instance();
-	default_layout->set_value(docks_section, "dock_3", TTR("Scene"));
-	default_layout->set_value(docks_section, "dock_4", TTR("FileSystem"));
-	default_layout->set_value(docks_section, "dock_5", TTR("Inspector"));
+	default_layout->set_value(docks_section, "dock_3", TTR("FileSystem"));
+	default_layout->set_value(docks_section, "dock_5", TTR("Scene"));
+	default_layout->set_value(docks_section, "dock_6", TTR("Inspector")+","+TTR("Node"));
 
 	for(int i=0;i<DOCK_SLOT_MAX/2;i++)
 		default_layout->set_value(docks_section, "dock_hsplit_"+itos(i+1), 0);

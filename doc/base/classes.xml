@@ -2153,6 +2153,120 @@
 	<constants>
 	</constants>
 </class>
+<class name="AStar" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="add_point">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="pos" type="Vector3">
+			</argument>
+			<argument index="2" name="weight_scale" type="float" default="1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="are_points_connected" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear">
+			<description>
+			</description>
+		</method>
+		<method name="connect_points">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="disconnect_points">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_available_point_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="to_pos" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_pos_in_segment" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="to_pos" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_id_path">
+			<return type="IntArray">
+			</return>
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_path">
+			<return type="Vector3Array">
+			</return>
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_pos" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_weight_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_point">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="AcceptDialog" inherits="WindowDialog" category="Core">
 	<brief_description>
 		Base dialog for user notification.
@@ -4024,7 +4138,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area enters this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -4044,7 +4158,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area exits this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -4366,7 +4480,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area enters this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -4386,7 +4500,7 @@
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
-			<argument index="3" name="area_shape" type="int">
+			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
 				This signal triggers only once when an area exits this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
@@ -5341,18 +5455,6 @@
 			<description>
 			</description>
 		</method>
-	</methods>
-	<constants>
-	</constants>
-</class>
-<class name="AudioStreamSpeex" inherits="AudioStream" category="Core">
-	<brief_description>
-		Speex audio stream driver.
-	</brief_description>
-	<description>
-		Speex audio stream driver. Speex is very useful for compressed speech. It allows loading a very large amount of speech in memory at little IO/latency cost.
-	</description>
-	<methods>
 	</methods>
 	<constants>
 	</constants>
@@ -6755,6 +6857,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_custom_viewport" qualifiers="const">
+			<return type="Viewport">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_drag_margin" qualifiers="const">
 			<return type="float">
 			</return>
@@ -6854,6 +6962,12 @@
 		</method>
 		<method name="set_anchor_mode">
 			<argument index="0" name="anchor_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_viewport">
+			<argument index="0" name="viewport" type="Viewport">
 			</argument>
 			<description>
 			</description>
@@ -7560,6 +7674,12 @@
 		Canvas Item layer. [CanvasItem] nodes that are direct or indirect children of a [CanvasLayer] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index 0, so a [CanvasLayer] with index -1 will be drawn below, and one with index 1 will be drawn above. This is very useful for HUDs (in layer 1+ or above), or backgrounds (in layer -1 or below).
 	</description>
 	<methods>
+		<method name="get_custom_viewport" qualifiers="const">
+			<return type="Viewport">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_layer" qualifiers="const">
 			<return type="int">
 			</return>
@@ -7602,18 +7722,17 @@
 				Return the base transform for this layer.
 			</description>
 		</method>
-		<method name="get_viewport" qualifiers="const">
-			<return type="RID">
-			</return>
-			<description>
-				Return the viewport RID for this layer.
-			</description>
-		</method>
 		<method name="get_world_2d" qualifiers="const">
 			<return type="World2D">
 			</return>
 			<description>
 				Return the [World2D] used by this layer.
+			</description>
+		</method>
+		<method name="set_custom_viewport">
+			<argument index="0" name="viewport" type="Viewport">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_layer">
@@ -8672,6 +8791,28 @@
 			</return>
 			<description>
 				Return the array size.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="ColorFrame" inherits="Control" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_frame_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_frame_color">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -11660,7 +11801,7 @@
 			<argument index="1" name="canvas" type="Control">
 			</argument>
 			<description>
-				This function is called every time the 2D canvas editor draws (which overlays over the edited scene). Drawing over the supplied control will draw over the edited scene. To convert from control coordinates to edited scene coordinates (including zoom and offset), a transform is also provided. If you require this control to be redraw, call [method update_canvas]().
+				This function is called every time the 2D canvas editor draws (which overlays over the edited scene). Drawing over the supplied control will draw over the edited scene. To convert from control coordinates to edited scene coordinates (including zoom and offset), a transform is also provided. If you require this control to be redraw, call [method update_canvas].
 			</description>
 		</method>
 		<method name="forward_spatial_input_event" qualifiers="virtual">
@@ -11769,6 +11910,10 @@
 				Return true if this is a main screen editor plugin (it goes in the main screen selector together with 2D, 3D, Script).
 			</description>
 		</method>
+		<method name="hide_bottom_panel">
+			<description>
+			</description>
+		</method>
 		<method name="inspect_object">
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -11776,6 +11921,12 @@
 			</argument>
 			<description>
 				Inspect an object in the inspector.
+			</description>
+		</method>
+		<method name="make_bottom_panel_item_visible">
+			<argument index="0" name="item" type="Control">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="make_visible" qualifiers="virtual">
@@ -11847,7 +11998,7 @@
 		</method>
 		<method name="update_canvas">
 			<description>
-				Updates the control used to draw the edited scene over the 2D canvas. This is used together with [method forward_canvas_input_event]().
+				Updates the control used to draw the edited scene over the 2D canvas. This is used together with [method forward_canvas_input_event].
 			</description>
 		</method>
 	</methods>
@@ -12076,7 +12227,7 @@
 			<return type="Array">
 			</return>
 			<description>
-			Get the list of selected nodes, optimized for transform operations (ie, moving them, rotating, etc). This list avoids situations where a node is selected and also chid/grandchild.
+				Get the list of selected nodes, optimized for transform operations (ie, moving them, rotating, etc). This list avoids situations where a node is selected and also chid/grandchild.
 			</description>
 		</method>
 		<method name="remove_node">
@@ -16487,6 +16638,38 @@
 				Returns the current value of the joystick axis at given index (see JOY_* constants in [@Global Scope])
 			</description>
 		</method>
+		<method name="get_joy_axis_index_from_string">
+			<return type="int">
+			</return>
+			<argument index="0" name="axis" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_axis_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="axis_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_button_index_from_string">
+			<return type="int">
+			</return>
+			<argument index="0" name="button" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_button_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="button_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_joy_guid" qualifiers="const">
 			<return type="String">
 			</return>
@@ -20115,6 +20298,9 @@
 		<constant name="UNDERLINE_MODE_ON_HOVER" value="1">
 			The LinkButton will show an underline at the bottom of its text when the mouse cursor is over it.
 		</constant>
+		<constant name="UNDERLINE_MODE_NEVER" value="2">
+			The LinkButton will never show an underline at the bottom of its text.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="font" type="Font">
@@ -22079,8 +22265,10 @@
 </class>
 <class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" category="Core">
 	<brief_description>
+		PacketPeer implementation using the ENet library.
 	</brief_description>
 	<description>
+		A connection (or a listening server) that should be passed to [method SceneTree.set_network_peer]. Socket events can be handled by connecting to [SceneTree] signals.
 	</description>
 	<methods>
 		<method name="close_connection">
@@ -22435,6 +22623,7 @@
 		Nodes can also process input events. When set, the [method _input] function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the [method _unhandled_input] function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI [Control] nodes), ensuring that the node only receives the events that were meant for it.
 		To keep track of the scene hierarchy (especially when instancing scenes into other scenes), an "owner" can be set for the node with [method set_owner]. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
 		Finally, when a node is freed with [method free] or [method queue_free], it will also free all its children.
+		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]) it is possible to use the built-in RPC (remote procedure call) system to easily communicate over the network. By calling [method rpc] with a method name, it will be called locally, and in all connected peers (peers = clients and the server that accepts connections), with behaviour varying depending on the network mode ([method set_network_mode]) on the receiving peer. To identify which [Node] receives the RPC call Godot will use it's [NodePath] (make sure node names are the same on all peers).
 	</description>
 	<methods>
 		<method name="_enter_tree" qualifiers="virtual">
@@ -22872,6 +23061,7 @@
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
+				Send a remote procedure call request to all peers on the network (and locally), optionally sending additional data as arguments. Call request will be received by nodes with the same [NodePath].
 			</description>
 		</method>
 		<method name="rpc_config">
@@ -22880,6 +23070,7 @@
 			<argument index="1" name="mode" type="int">
 			</argument>
 			<description>
+				Change the method's RPC mode (one of RPC_MODE_* constants).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
@@ -22888,12 +23079,14 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
+				Send a [method rpc] to a specific peer identified by [i]peer_id[/i].
 			</description>
 		</method>
 		<method name="rpc_unreliable" qualifiers="vararg">
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
+				Send a [method rpc] using an unreliable protocol.
 			</description>
 		</method>
 		<method name="rpc_unreliable_id" qualifiers="vararg">
@@ -22902,6 +23095,7 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
+				Send a [method rpc] to a specific peer identified by [i]peer_id[/i] using an unreliable protocol.
 			</description>
 		</method>
 		<method name="rset">
@@ -22910,6 +23104,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Remotely change property's value on other peers (and locally).
 			</description>
 		</method>
 		<method name="rset_config">
@@ -22918,6 +23113,7 @@
 			<argument index="1" name="mode" type="int">
 			</argument>
 			<description>
+				Change the property's RPC mode (one of RPC_MODE_* constants).
 			</description>
 		</method>
 		<method name="rset_id">
@@ -22928,6 +23124,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
+				Remotely change property's value on a specific peer identified by [i]peer_id[/i].
 			</description>
 		</method>
 		<method name="rset_unreliable">
@@ -22936,6 +23133,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Remotely change property's value on other peers (and locally) using an unreliable protocol.
 			</description>
 		</method>
 		<method name="rset_unreliable_id">
@@ -22946,6 +23144,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
+				Remotely change property's value on a specific peer identified by [i]peer_id[/i] using an unreliable protocol.
 			</description>
 		</method>
 		<method name="set_display_folded">
@@ -22979,6 +23178,7 @@
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+				Change the networking mode of the [Node], where [i]mode[/i] is one of the constants NETWORK_MODE_*. Master nodes will only call gdscript methods defined as [i]master func[/i] if a RPC call is received (slave nodes will only call [i]slave func[/i]; both will call [i]remote func[/i] if the call is not local, and [i]sync func[/i] in any case). Inherit mode looks at the parent node to determine the value (root node depends on the [SceneTree] having a networking peer set with [method SceneTree.set_network_peer])
 			</description>
 		</method>
 		<method name="set_owner">
@@ -26070,7 +26270,7 @@
 	</methods>
 	<constants>
 		<constant name="PARAM_DIRECTION" value="0">
-			Direction in radians at which the particles will be launched, Notice that when the direction is set to 0 the particles will be launched to the negative
+			Direction in degrees at which the particles will be launched, Notice that when the direction is set to 0 the particles will be launched to the negative
 		</constant>
 		<constant name="PARAM_SPREAD" value="1">
 		</constant>
@@ -26084,7 +26284,7 @@
 			Velocity at which the particles will orbit around the emitter center
 		</constant>
 		<constant name="PARAM_GRAVITY_DIRECTION" value="5">
-			Direction in radians at which the particles will be attracted
+			Direction in degrees at which the particles will be attracted
 		</constant>
 		<constant name="PARAM_GRAVITY_STRENGTH" value="6">
 			Strength of the gravitation attraction for each particle
@@ -31666,128 +31866,16 @@
 </class>
 <class name="RayCast" inherits="Spatial" category="Core">
 	<brief_description>
+		Query the closest object intersecting a ray.
 	</brief_description>
 	<description>
-	</description>
-	<methods>
-		<method name="add_exception">
-			<argument index="0" name="node" type="Object">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="add_exception_rid">
-			<argument index="0" name="rid" type="RID">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="clear_exceptions">
-			<description>
-			</description>
-		</method>
-		<method name="get_cast_to" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collider" qualifiers="const">
-			<return type="Object">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collider_shape" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_normal" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_point" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-				Returns collision point. This point is in [b]global[/b] coordinate system.
-			</description>
-		</method>
-		<method name="get_layer_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_type_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_colliding" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="remove_exception">
-			<argument index="0" name="node" type="Object">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="remove_exception_rid">
-			<argument index="0" name="rid" type="RID">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_cast_to">
-			<argument index="0" name="local_point" type="Vector3">
-			</argument>
-			<description>
-				Sets to which point ray should be casted. This point is in [b]local[/b] coordinate system.
-			</description>
-		</method>
-		<method name="set_enabled">
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_layer_mask">
-			<argument index="0" name="mask" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_type_mask">
-			<argument index="0" name="mask" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-	</methods>
-	<constants>
-	</constants>
-</class>
-<class name="RayCast2D" inherits="Node2D" category="Core">
-	<brief_description>
-		Query the closest object intersecting a ray
-	</brief_description>
-	<description>
-		A RayCast2D represents a line from its origin to its destination position [code]cast_to[/code], it is used to query the 2D space in order to find the closest object intersecting with the ray.
+		A RayCast represents a line from its origin to its destination position [code]cast_to[/code], it is used to query the 3D space in order to find the closest object intersecting with the ray.
+
+		RayCast can ignore some objects by adding them to the exception list via [code]add_exception[/code], setting proper filtering with layers, or by filtering object types with type masks.
+
+		Only enabled raycasts will be able to query the space and report collisions!
+
+		RayCast calculates intersection every fixed frame (see [Node]), and the result is cached so it can be used later until the next frame. If multiple queries are required between fixed frames (or during the same frame) use [method force_raycast_update] after adjusting the raycast.
 	</description>
 	<methods>
 		<method name="add_exception">
@@ -31808,11 +31896,161 @@
 				Removes all collision exception for this ray.
 			</description>
 		</method>
+		<method name="force_raycast_update">
+			<description>
+				Updates the collision information in case if this object's properties changed during the current frame (for example position, rotation or the cast_point). Note, [code]set_enabled[/code] is not required for this to work.
+			</description>
+		</method>
+		<method name="get_cast_to" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the destination point of this ray object.
+			</description>
+		</method>
+		<method name="get_collider" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+				Return the closest object the ray is pointing to. Note that this does not consider the length of the vector, so you must also use [method is_colliding] to check if the object returned is actually colliding with the ray.
+			</description>
+		</method>
+		<method name="get_collider_shape" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the collision shape of the closest object the ray is pointing to.
+			</description>
+		</method>
+		<method name="get_collision_normal" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the normal of the intersecting object shape face containing the collision point.
+			</description>
+		</method>
+		<method name="get_collision_point" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns collision point. This point is in [b]global[/b] coordinate system.
+			</description>
+		</method>
+		<method name="get_layer_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the layer mask for this ray.
+			</description>
+		</method>
+		<method name="get_type_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the type mask (types of objects to detect) for this ray. The value is a sum (bitwise OR'd) of constants available for [PhysicsDirectSpaceState].
+			</description>
+		</method>
+		<method name="is_colliding" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the closest object the ray is pointing to is colliding with the vector (considering the vector length).
+			</description>
+		</method>
+		<method name="is_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether this raycast is enabled or not.
+			</description>
+		</method>
+		<method name="remove_exception">
+			<argument index="0" name="node" type="Object">
+			</argument>
+			<description>
+				Removes a collision exception so the ray does report collisions with the specified [code]node[/code].
+			</description>
+		</method>
+		<method name="remove_exception_rid">
+			<argument index="0" name="rid" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cast_to">
+			<argument index="0" name="local_point" type="Vector3">
+			</argument>
+			<description>
+				Sets to which point ray should be casted. This point is in [b]local[/b] coordinate system.
+			</description>
+		</method>
+		<method name="set_enabled">
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Enables the RayCast2D. Only enabled raycasts will be able to query the space and report collisions.
+			</description>
+		</method>
+		<method name="set_layer_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+				Set the mask to filter objects. Only objects with at least the same mask element set will be detected.
+			</description>
+		</method>
+		<method name="set_type_mask">
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+				Set the types of objects to detect. For [code]mask[/code] use a logic sum (OR operation) of constants defined in [PhysicsDirectSpaceState], eg. [code]PhysicsDirectSpaceState.TYPE_MASK_STATIC_BODY | PhysicsDirectSpaceState.TYPE_MASK_KINEMATIC_BODY[/code] to detect only those two types.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="RayCast2D" inherits="Node2D" category="Core">
+	<brief_description>
+		Query the closest object intersecting a ray.
+	</brief_description>
+	<description>
+		A RayCast2D represents a line from its origin to its destination position [code]cast_to[/code], it is used to query the 2D space in order to find the closest object intersecting with the ray.
+
+		RayCast2D can ignore some objects by adding them to the exception list via [code]add_exception[/code], setting proper filtering with layers, or by filtering object types with type masks.
+
+		Only enabled raycasts will be able to query the space and report collisions!
+
+		RayCast2D calculates intersection every fixed frame (see [Node]), and the result is cached so it can be used later until the next frame. If multiple queries are required between fixed frames (or during the same frame) use [method force_raycast_update] after adjusting the raycast.
+	</description>
+	<methods>
+		<method name="add_exception">
+			<argument index="0" name="node" type="Object">
+			</argument>
+			<description>
+				Adds a collision exception so the ray does not report collisions with the specified [code]node[/code].
+			</description>
+		</method>
+		<method name="add_exception_rid">
+			<argument index="0" name="rid" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_exceptions">
+			<description>
+				Removes all collision exception for this ray.
+			</description>
+		</method>
+		<method name="force_raycast_update">
+			<description>
+				Updates the collision information in case if this object's properties changed during the current frame (for example position, rotation or the cast_point). Note, [code]set_enabled[/code] is not required for this to work.
+			</description>
+		</method>
 		<method name="get_cast_to" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the destination point of this ray object
+				Return the destination point of this ray object.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
@@ -31840,13 +32078,14 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the collision point in which the ray intersects the closest object.
+				Returns the collision point in which the ray intersects the closest object. This point is in [b]global[/b] coordinate system.
 			</description>
 		</method>
 		<method name="get_exclude_parent_body" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether this ray should hit your parent node, if it's a body.
 			</description>
 		</method>
 		<method name="get_layer_mask" qualifiers="const">
@@ -31860,6 +32099,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the type mask (types of objects to detect) for this ray. The value is a sum (bitwise OR'd) of constants available for [Physics2DDirectSpaceState].
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
@@ -31873,7 +32113,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this raycast is enabled or not
+				Returns whether this raycast is enabled or not.
 			</description>
 		</method>
 		<method name="remove_exception">
@@ -31907,18 +32147,21 @@
 			<argument index="0" name="mask" type="bool">
 			</argument>
 			<description>
+				Toggle whether this ray should hit your parent node, if it's a body.
 			</description>
 		</method>
 		<method name="set_layer_mask">
 			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
+				Set the mask to filter objects. Only objects with at least the same mask element set will be detected.
 			</description>
 		</method>
 		<method name="set_type_mask">
 			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
+				Set the types of objects to detect. For [code]mask[/code] use a logic sum (OR operation) of constants defined in [Physics2DDirectSpaceState], eg. [code]Physics2DDirectSpaceState.TYPE_MASK_STATIC_BODY | Physics2DDirectSpaceState.TYPE_MASK_KINEMATIC_BODY[/code] to detect only those two types.
 			</description>
 		</method>
 	</methods>
@@ -32274,6 +32517,7 @@
 		would be read as [code]"(?:\\.|[^"])*"[/code]
 		Currently supported features:
 		* Capturing [code]()[/code] and non-capturing [code](?:)[/code] groups
+		* Named capturing groups [code](?P&lt;name&gt;)[/code]
 		* Any character [code].[/code]
 		* Shorthand character classes [code]\w \W \s \S \d \D[/code]
 		* User-defined character classes such as [code][A-Za-z][/code]
@@ -32282,7 +32526,7 @@
 		* Lazy (non-greedy) quantifiers [code]*?[/code]
 		* Beginning [code]^[/code] and end [code]$[/code] anchors
 		* Alternation [code]|[/code]
-		* Backreferences [code]\1[/code] and [code]\g{1}[/code]
+		* Backreferences [code]\1[/code], [code]\g{1}[/code], and [code]\g&lt;name&gt;[/code]
 		* POSIX character classes [code][[:alnum:]][/code]
 		* Lookahead [code](?=)[/code], [code](?!)[/code] and lookbehind [code](?&lt;=)[/code], [code](?&lt;!)[/code]
 		* ASCII [code]\xFF[/code] and Unicode [code]\uFFFF[/code] code points (in a style similar to Python)
@@ -32291,7 +32535,7 @@
 	<methods>
 		<method name="clear">
 			<description>
-				This method resets the state of the object, as it was freshly created. Namely, it unassigns the regular expression of this object, and forgets all captures made by the last [method find].
+				This method resets the state of the object, as it was freshly created. Namely, it unassigns the regular expression of this object.
 			</description>
 		</method>
 		<method name="compile">
@@ -32299,14 +32543,40 @@
 			</return>
 			<argument index="0" name="pattern" type="String">
 			</argument>
-			<argument index="1" name="capture" type="int" default="9">
-			</argument>
 			<description>
-				Compiles and assign the regular expression pattern to use. The limit on the number of capturing groups can be specified or made unlimited if negative.
+				Compiles and assign the regular expression pattern to use.
 			</description>
 		</method>
-		<method name="find" qualifiers="const">
+		<method name="get_group_count" qualifiers="const">
 			<return type="int">
+			</return>
+			<description>
+				Returns the number of numeric capturing groups.
+			</description>
+		</method>
+		<method name="get_names" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of names of named capturing groups.
+			</description>
+		</method>
+		<method name="get_pattern" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the expression used to compile the code.
+			</description>
+		</method>
+		<method name="is_valid" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether this object has a valid regular expression assigned.
+			</description>
+		</method>
+		<method name="search" qualifiers="const">
+			<return type="Object">
 			</return>
 			<argument index="0" name="text" type="String">
 			</argument>
@@ -32315,45 +32585,98 @@
 			<argument index="2" name="end" type="int" default="-1">
 			</argument>
 			<description>
-				This method tries to find the pattern within the string, and returns the position where it was found. It also stores any capturing group (see [method get_capture]) for further retrieval.
+				Searches the text for the compiled pattern. Returns a [RegExMatch] container of the first matching reult if found, otherwise null. The region to search within can be specified without modifying where the start and end anchor would be.
 			</description>
 		</method>
-		<method name="get_capture" qualifiers="const">
+		<method name="sub" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="capture" type="int">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<argument index="1" name="replacement" type="String">
+			</argument>
+			<argument index="2" name="all" type="bool" default="false">
+			</argument>
+			<argument index="3" name="start" type="int" default="0">
+			</argument>
+			<argument index="4" name="end" type="int" default="-1">
 			</argument>
 			<description>
-				Returns a captured group. A captured group is the part of a string that matches a part of the pattern delimited by parentheses (unless they are non-capturing parentheses [i](?:)[/i]).
+				Searches the text for the compiled pattern and replaces it with the specified string. Escapes and backreferences such as [code]\1[/code] and [code]\g&lt;name&gt;[/code] expanded and resolved. By default only the first instance is replaced but it can be changed for all instances (global replacement). The region to search within can be specified without modifying where the start and end anchor would be.
 			</description>
 		</method>
-		<method name="get_capture_count" qualifiers="const">
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="RegExMatch" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="expand" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="template" type="String">
+			</argument>
+			<description>
+				Using results from the search, returns the specified string with escapes and backreferences such as [code]\1[/code] and [code]\g&lt;name&gt;[/code] expanded and resolved.
+			</description>
+		</method>
+		<method name="get_end" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="Variant" default="0">
+			</argument>
+			<description>
+				Returns the end position of the match in the string. An interger can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
+			</description>
+		</method>
+		<method name="get_group_array" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of the results of the numeric groups.
+			</description>
+		</method>
+		<method name="get_group_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of capturing groups. A captured group is the part of a string that matches a part of the pattern delimited by parentheses (unless they are non-capturing parentheses [i](?:)[/i]).
+				Returns the number of numeric capturing groups.
 			</description>
 		</method>
-		<method name="get_capture_start" qualifiers="const">
+		<method name="get_name_dict" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns a dictionary containing the named capturing groups and their results.
+			</description>
+		</method>
+		<method name="get_names" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of names of named capturing groups.
+			</description>
+		</method>
+		<method name="get_start" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="capture" type="int">
+			<argument index="0" name="name" type="Variant" default="0">
 			</argument>
 			<description>
+				Returns the starting position of the match in the string. An interger can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
 			</description>
 		</method>
-		<method name="get_captures" qualifiers="const">
-			<return type="StringArray">
+		<method name="get_string" qualifiers="const">
+			<return type="String">
 			</return>
+			<argument index="0" name="name" type="Variant" default="0">
+			</argument>
 			<description>
-				Return a list of all the captures made by the regular expression.
-			</description>
-		</method>
-		<method name="is_valid" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether this object has a valid regular expression assigned.
+				Returns the result of the match in the string. An interger can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
 			</description>
 		</method>
 	</methods>
@@ -35049,6 +35372,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns true if this SceneTree's [NetworkedMultiplayerPeer] is in server mode (listening for connections).
 			</description>
 		</method>
 		<method name="is_paused" qualifiers="const">
@@ -35145,6 +35469,7 @@
 			<argument index="0" name="peer" type="NetworkedMultiplayerPeer">
 			</argument>
 			<description>
+				Set the peer object to handle the RPC system (effectively enabling networking). Depending on the peer itself, the SceneTree will become a network server (check with [method is_network_server()]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to slave. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to SceneTree's signals.
 			</description>
 		</method>
 		<method name="set_pause">
@@ -40910,6 +41235,16 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="symbol_lookup">
+			<argument index="0" name="symbol" type="String">
+			</argument>
+			<argument index="1" name="row" type="int">
+			</argument>
+			<argument index="2" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="text_changed">
 			<description>
 				Emitted when the text changes.
@@ -42920,18 +43255,33 @@
 </class>
 <class name="Tree" inherits="Control" category="Core">
 	<brief_description>
+		Control to show a tree of items.
 	</brief_description>
 	<description>
+		This shows a tree of items that can be selected, expanded and collapsed. The tree can have multiple columns with custom controls like text editing, buttons and popups. It can be useful for structural displaying and interactions.
+		Trees are built via code, using [TreeItem] objects to create the structure. They have a single root but multiple root can be simulated if a dummy hidden root is added.
+		[codeblock]
+		func _ready():
+		    var tree = Tree.new()
+		    var root = tree.create_item()
+		    tree.set_hide_root(true)
+		    var child1 = tree.create_item(root)
+		    var child2 = tree.create_item(root)
+		    var subchild1 = tree.create_item(child1)
+		    subchild1.set_text(0, "Subchild1")
+		[/codeblock]
 	</description>
 	<methods>
 		<method name="are_column_titles_visible" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether the column titles are being shown.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
+				Clear the tree. This erases all of the items.
 			</description>
 		</method>
 		<method name="create_item">
@@ -42940,16 +43290,19 @@
 			<argument index="0" name="parent" type="TreeItem" default="NULL">
 			</argument>
 			<description>
+				Create an item in the tree and add it as the last child of [code]parent[/code]. If parent is not given, it will be added as the last child of the root, or it'll the be the root itself if the tree is empty.
 			</description>
 		</method>
 		<method name="ensure_cursor_is_visible">
 			<description>
+				Make the current selected item visible. This will scroll the tree to make sure the selected item is in sight.
 			</description>
 		</method>
 		<method name="get_allow_rmb_select" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether a right click can select items.
 			</description>
 		</method>
 		<method name="get_column_at_pos" qualifiers="const">
@@ -42958,6 +43311,7 @@
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Get the column index under the given point.
 			</description>
 		</method>
 		<method name="get_column_title" qualifiers="const">
@@ -42966,6 +43320,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Get the title of the given column.
 			</description>
 		</method>
 		<method name="get_column_width" qualifiers="const">
@@ -42974,36 +43329,42 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Get the width of the given column in pixels.
 			</description>
 		</method>
 		<method name="get_columns" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the amount of columns.
 			</description>
 		</method>
 		<method name="get_custom_popup_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
+				Get the rectangle for custom popups. Helper to create custom cell controls that display a popup. See [method TreeItem.set_cell_mode].
 			</description>
 		</method>
 		<method name="get_drop_mode_flags" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the flags of the current drop mode.
 			</description>
 		</method>
 		<method name="get_edited" qualifiers="const">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Get the current edited item. This is only available for custom cell mode.
 			</description>
 		</method>
 		<method name="get_edited_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the column of the cell for the current edited icon. This is only available for custom cell mode.
 			</description>
 		</method>
 		<method name="get_item_area_rect" qualifiers="const">
@@ -43014,6 +43375,7 @@
 			<argument index="1" name="column" type="int" default="-1">
 			</argument>
 			<description>
+				Get the rectangle area of the the specified item. If column is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
 			</description>
 		</method>
 		<method name="get_item_at_pos" qualifiers="const">
@@ -43022,6 +43384,7 @@
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Get the tree item at the specified position (relative to the tree origin position).
 			</description>
 		</method>
 		<method name="get_next_selected">
@@ -43030,42 +43393,49 @@
 			<argument index="0" name="from" type="TreeItem">
 			</argument>
 			<description>
+				Get the next selected item after the given one.
 			</description>
 		</method>
 		<method name="get_pressed_button" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the index of the last pressed button.
 			</description>
 		</method>
 		<method name="get_root">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Get the root item of the tree.
 			</description>
 		</method>
 		<method name="get_scroll" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Get the current scrolling position.
 			</description>
 		</method>
 		<method name="get_selected" qualifiers="const">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Get the currently selected item.
 			</description>
 		</method>
 		<method name="get_selected_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the column number of the current selection.
 			</description>
 		</method>
 		<method name="get_single_select_cell_editing_only_when_already_selected" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether the editing of a cell should only happen when it is already selected.
 			</description>
 		</method>
 		<method name="is_delayed_text_editor_enabled" qualifiers="const">
@@ -43078,12 +43448,14 @@
 			<return type="bool">
 			</return>
 			<description>
+				Get whether the folding arrow is hidden.
 			</description>
 		</method>
 		<method name="set_allow_rmb_select">
 			<argument index="0" name="allow" type="bool">
 			</argument>
 			<description>
+				Set whether or not a right mouse button click can select items.
 			</description>
 		</method>
 		<method name="set_column_expand">
@@ -43092,6 +43464,7 @@
 			<argument index="1" name="expand" type="bool">
 			</argument>
 			<description>
+				Set whether a column will have the "Expand" flag of [Control].
 			</description>
 		</method>
 		<method name="set_column_min_width">
@@ -43100,6 +43473,7 @@
 			<argument index="1" name="min_width" type="int">
 			</argument>
 			<description>
+				Set the minimum width of a column.
 			</description>
 		</method>
 		<method name="set_column_title">
@@ -43108,18 +43482,21 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
+				Set the title of a column.
 			</description>
 		</method>
 		<method name="set_column_titles_visible">
 			<argument index="0" name="visible" type="bool">
 			</argument>
 			<description>
+				Set whether the column titles visibility.
 			</description>
 		</method>
 		<method name="set_columns">
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+				Set the amount of columns.
 			</description>
 		</method>
 		<method name="set_delayed_text_editor">
@@ -43132,30 +43509,35 @@
 			<argument index="0" name="flags" type="int">
 			</argument>
 			<description>
+				Set the drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="set_hide_folding">
 			<argument index="0" name="hide" type="bool">
 			</argument>
 			<description>
+				Set whether the folding arrow should be hidden.
 			</description>
 		</method>
 		<method name="set_hide_root">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set whether the root of the tree should be hidden.
 			</description>
 		</method>
 		<method name="set_select_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+				Set the selection mode. Use one of the [code]SELECT_*[/code] constants.
 			</description>
 		</method>
 		<method name="set_single_select_cell_editing_only_when_already_selected">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set whether the editing of a cell should only happen when it is already selected.
 			</description>
 		</method>
 	</methods>
@@ -43168,32 +43550,38 @@
 			<argument index="2" name="id" type="int">
 			</argument>
 			<description>
+				Emitted when a button on the tree was pressed (see [method TreeItem.add_button]).
 			</description>
 		</signal>
 		<signal name="cell_selected">
 			<description>
+				Emitted when a cell is selected.
 			</description>
 		</signal>
 		<signal name="custom_popup_edited">
 			<argument index="0" name="arrow_clicked" type="bool">
 			</argument>
 			<description>
+				Emitted when a cell with the [code]CELL_MODE_CUSTOM[/code] is clicked to be edited.
 			</description>
 		</signal>
 		<signal name="empty_tree_rmb_selected">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Emitted when the right mouse button is pressed if RMB selection is active and the tree is empty.
 			</description>
 		</signal>
 		<signal name="item_activated">
 			<description>
+				Emitted when an item is activated (double-clicked).
 			</description>
 		</signal>
 		<signal name="item_collapsed">
 			<argument index="0" name="item" type="Object">
 			</argument>
 			<description>
+				Emitted when an item is collapsed by a click on the folding arrow.
 			</description>
 		</signal>
 		<signal name="item_double_clicked">
@@ -43202,16 +43590,19 @@
 		</signal>
 		<signal name="item_edited">
 			<description>
+				Emitted when an item is editted.
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
+				Emitted when an item is selected with right mouse button.
 			</description>
 		</signal>
 		<signal name="item_selected">
 			<description>
+				Emitted when an item is selected with right mouse button.
 			</description>
 		</signal>
 		<signal name="multi_selected">
@@ -43916,10 +44307,10 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String">
+			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Stop animating and completely remove a tween, given its object and property/method pair.
+				Stop animating and completely remove a tween, given its object and property/method pair. Passing empty String as key will remove all tweens for given object.
 			</description>
 		</method>
 		<method name="remove_all">
@@ -43934,10 +44325,10 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String">
+			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Resets a tween to the initial value (the one given, not the one before the tween), given its object and property/method pair.
+				Resets a tween to the initial value (the one given, not the one before the tween), given its object and property/method pair. Passing empty String as key will reset all tweens for given object.
 			</description>
 		</method>
 		<method name="reset_all">
@@ -43952,10 +44343,10 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String">
+			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Continue animating a stopped tween, given its object and property/method pair.
+				Continue animating a stopped tween, given its object and property/method pair. Passing empty String as key will resume all tweens for given object.
 			</description>
 		</method>
 		<method name="resume_all">
@@ -44014,10 +44405,10 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String">
+			<argument index="1" name="key" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Stop animating a tween, given its object and property/method pair.
+				Stop animating a tween, given its object and property/method pair. Passing empty String as key will stop all tweens for given object.
 			</description>
 		</method>
 		<method name="stop_all">
@@ -44483,6 +44874,14 @@ do_property].
 			</argument>
 			<description>
 				Returns the angle in radians between the line connecting the two points and the x coordinate.
+			</description>
+		</method>
+		<method name="clamped">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="length" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="cubic_interpolate">
@@ -45238,136 +45637,160 @@ do_property].
 </class>
 <class name="VideoPlayer" inherits="Control" category="Core">
 	<brief_description>
+		Control to play video files.
 	</brief_description>
 	<description>
+		This control has the ability to play video streams. The only format accepted is the OGV Theora, so any other format must be converted before using in a project.
 	</description>
 	<methods>
 		<method name="get_audio_track" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the selected audio track (for multitrack videos).
 			</description>
 		</method>
 		<method name="get_buffering_msec" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the amount of miliseconds to store in buffer while playing.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
 			<return type="VideoStream">
 			</return>
 			<description>
+				Get the video stream.
 			</description>
 		</method>
 		<method name="get_stream_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Get the name of the video stream.
 			</description>
 		</method>
 		<method name="get_stream_pos" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Get the current position of the stream, in seconds.
 			</description>
 		</method>
 		<method name="get_video_texture">
 			<return type="Texture">
 			</return>
 			<description>
+				Get the current frame of the video as a [Texture].
 			</description>
 		</method>
 		<method name="get_volume" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Get the volume of the audio track as a linear value.
 			</description>
 		</method>
 		<method name="get_volume_db" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Get the volume of the audio track in decibels.
 			</description>
 		</method>
 		<method name="has_autoplay" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the video is set as autoplay.
 			</description>
 		</method>
 		<method name="has_expand" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the expand property is set.
 			</description>
 		</method>
 		<method name="is_paused" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the video is paused.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Get whether or not the video is playing.
 			</description>
 		</method>
 		<method name="play">
 			<description>
+				Start the video playback.
 			</description>
 		</method>
 		<method name="set_audio_track">
 			<argument index="0" name="track" type="int">
 			</argument>
 			<description>
+				Set the audio track (for multitrack videos).
 			</description>
 		</method>
 		<method name="set_autoplay">
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+				Set whether this node should start playing automatically.
 			</description>
 		</method>
 		<method name="set_buffering_msec">
 			<argument index="0" name="msec" type="int">
 			</argument>
 			<description>
+				Set the amount of miliseconds to buffer during playback.
 			</description>
 		</method>
 		<method name="set_expand">
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set the expand property. If enabled, the video will grow or shrink to fit the player size, otherwise it will play at the stream resolution.
 			</description>
 		</method>
 		<method name="set_paused">
 			<argument index="0" name="paused" type="bool">
 			</argument>
 			<description>
+				Set whether the video should pause the playback.
 			</description>
 		</method>
 		<method name="set_stream">
 			<argument index="0" name="stream" type="VideoStream">
 			</argument>
 			<description>
+				Set the video stream for this player.
 			</description>
 		</method>
 		<method name="set_volume">
 			<argument index="0" name="volume" type="float">
 			</argument>
 			<description>
+				Set the audio volume as a linear value.
 			</description>
 		</method>
 		<method name="set_volume_db">
 			<argument index="0" name="db" type="float">
 			</argument>
 			<description>
+				Set the audio volume in decibels.
 			</description>
 		</method>
 		<method name="stop">
 			<description>
+				Stop the video playback.
 			</description>
 		</method>
 	</methods>
@@ -45545,6 +45968,12 @@ do_property].
 			</return>
 			<description>
 				Return the 3D world of the viewport.
+			</description>
+		</method>
+		<method name="get_world_2d" qualifiers="const">
+			<return type="World2D">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
@@ -45768,6 +46197,12 @@ do_property].
 			</argument>
 			<description>
 				Change the 3D world of the viewport.
+			</description>
+		</method>
+		<method name="set_world_2d">
+			<argument index="0" name="world_2d" type="World2D">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="unhandled_input">
@@ -46090,8 +46525,20 @@ do_property].
 	<description>
 	</description>
 	<methods>
+		<method name="get_aabb" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_layer_mask" qualifiers="const">
 			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_transformed_aabb" qualifiers="const">
+			<return type="AABB">
 			</return>
 			<description>
 			</description>
@@ -49767,14 +50214,17 @@ do_property].
 </class>
 <class name="XMLParser" inherits="Reference" category="Core">
 	<brief_description>
+		Low-level class for creating parsers for XML files.
 	</brief_description>
 	<description>
+		This class can serve as base to make custom XML parsers. Since XML is a very flexible standard, this interface is low level so it can be applied to any possible schema.
 	</description>
 	<methods>
 		<method name="get_attribute_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the amount of attributes in the current element.
 			</description>
 		</method>
 		<method name="get_attribute_name" qualifiers="const">
@@ -49783,6 +50233,7 @@ do_property].
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Get the name of the attribute specified by the index in [code]idx[/code] argument.
 			</description>
 		</method>
 		<method name="get_attribute_value" qualifiers="const">
@@ -49791,12 +50242,14 @@ do_property].
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Get the value of the attribute specified by the index in [code]idx[/code] argument.
 			</description>
 		</method>
 		<method name="get_current_line" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the current line in the parsed file (currently not implemented).
 			</description>
 		</method>
 		<method name="get_named_attribute_value" qualifiers="const">
@@ -49805,6 +50258,7 @@ do_property].
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Get the value of a certain attribute of the current element by name. This will raise an error if the element has no such attribute.
 			</description>
 		</method>
 		<method name="get_named_attribute_value_safe" qualifiers="const">
@@ -49813,30 +50267,35 @@ do_property].
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Get the value of a certain attribute of the current element by name. This will return an empty [String] if the attribute is not found.
 			</description>
 		</method>
 		<method name="get_node_data" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Get the contents of a text node. This will raise an error in any other type of node.
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Get the name of the current element node. This will raise an error if the current node type is not [code]NODE_ELEMENT[/code] nor [code]NODE_ELEMENT_END[/code]
 			</description>
 		</method>
 		<method name="get_node_offset" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Get the byte offset of the current node since the beginning of the file or buffer.
 			</description>
 		</method>
 		<method name="get_node_type">
 			<return type="int">
 			</return>
 			<description>
+				Get the type of the current node. Compare with [code]NODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="has_attribute" qualifiers="const">
@@ -49845,12 +50304,14 @@ do_property].
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Check whether or not the current element has a certain attribute.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Check whether the current element is empty (this only works for completely empty tags, e.g. &lt;element \&gt;).
 			</description>
 		</method>
 		<method name="open">
@@ -49859,6 +50320,7 @@ do_property].
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+				Open a XML file for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="open_buffer">
@@ -49867,12 +50329,14 @@ do_property].
 			<argument index="0" name="buffer" type="RawArray">
 			</argument>
 			<description>
+				Open a XML raw buffer for parsing. This returns an error code.
 			</description>
 		</method>
 		<method name="read">
 			<return type="int">
 			</return>
 			<description>
+				Read the next node of the file. This returns an error code.
 			</description>
 		</method>
 		<method name="seek">
@@ -49881,27 +50345,36 @@ do_property].
 			<argument index="0" name="pos" type="int">
 			</argument>
 			<description>
+				Move the buffer cursor to a certain offset (since the beginning) and read the next node there. This returns an error code.
 			</description>
 		</method>
 		<method name="skip_section">
 			<description>
+				Skips the current section. If the node contains other elements, they will be ignored and the cursor will go to the closing of the current element.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="NODE_NONE" value="0">
+			There's no node (no file or buffer opened)
 		</constant>
 		<constant name="NODE_ELEMENT" value="1">
+			Element (tag)
 		</constant>
 		<constant name="NODE_ELEMENT_END" value="2">
+			End of element
 		</constant>
 		<constant name="NODE_TEXT" value="3">
+			Text node
 		</constant>
 		<constant name="NODE_COMMENT" value="4">
+			Comment node
 		</constant>
 		<constant name="NODE_CDATA" value="5">
+			CDATA content
 		</constant>
 		<constant name="NODE_UNKNOWN" value="6">
+			Unknown node
 		</constant>
 	</constants>
 </class>

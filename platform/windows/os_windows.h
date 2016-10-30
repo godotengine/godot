@@ -41,6 +41,9 @@
 #include "servers/audio/audio_server_sw.h"
 #include "servers/audio/sample_manager_sw.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
+#ifdef XAUDIO2_ENABLED
+#include "drivers/xaudio2/audio_driver_xaudio2.h"
+#endif
 #include "servers/spatial_sound/spatial_sound_server_sw.h"
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "drivers/unix/ip_unix.h"
@@ -136,6 +139,9 @@ class OS_Windows : public OS {
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
+#endif
+#ifdef XAUDIO2_ENABLED
+	AudioDriverXAudio2 driver_xaudio2;
 #endif
 
 	void _drag_event(int p_x, int p_y, int idx);
@@ -269,6 +275,7 @@ public:
 	virtual String get_locale() const;
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const; 
 
+	virtual void enable_for_stealing_focus(ProcessID pid);
 	virtual void move_window_to_foreground();
 	virtual String get_data_dir() const;
 	virtual String get_system_dir(SystemDir p_dir) const;

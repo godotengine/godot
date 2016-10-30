@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 Import('env')
 
 files = [
@@ -8,12 +10,14 @@ files = [
 	'#platform/windows/key_mapping_win.cpp',
 	'joystick_winrt.cpp',
 	'gl_context_egl.cpp',
-	'audio_driver_winrt.cpp',
 	'app.cpp',
 	'os_winrt.cpp',
 ]
 
-cmd = env.AlwaysBuild(env.ANGLE('libANGLE.lib', None))
+if "build_angle" in env and env["build_angle"]:
+	cmd = env.AlwaysBuild(env.ANGLE('libANGLE.lib', None))
 
 prog = env.Program('#bin/godot', files)
-env.Depends(prog, [cmd])
+
+if "build_angle" in env and env["build_angle"]:
+	env.Depends(prog, [cmd])

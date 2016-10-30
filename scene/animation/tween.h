@@ -143,6 +143,7 @@ private:
 
 	void _tween_process(float p_delta);
 	void _set_process(bool p_process,bool p_force=false);
+	void _remove(Object *p_node, String p_key, bool first_only);
 
 protected:
 

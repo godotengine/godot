@@ -1050,8 +1050,8 @@ void InputDefault::parse_mapping(String p_mapping) {
 		if (entry[idx] == "")
 			continue;
 
-		String from = entry[idx].get_slice(":", 1);
-		String to = entry[idx].get_slice(":", 0);
+		String from = entry[idx].get_slice(":", 1).replace(" ", "");
+		String to = entry[idx].get_slice(":", 0).replace(" ", "");
 
 		JoyEvent to_event = _find_to_event(to);
 		if (to_event.type == -1)
@@ -1158,4 +1158,62 @@ Array InputDefault::get_connected_joysticks() {
 		elem = elem->next();
 	}
 	return ret;
+}
+
+static const char* _buttons[] = {
+	"Face Button Bottom",
+	"Face Button Right",
+	"Face Button Left",
+	"Face Button Top",
+	"L",
+	"R",
+	"L2",
+	"R2",
+	"L3",
+	"R3",
+	"Select",
+	"Start",
+	"DPAD Up",
+	"DPAD Down",
+	"DPAD Left",
+	"DPAD Right"
+};
+
+static const char* _axes[] = {
+	"Left Stick X",
+	"Left Stick Y",
+	"Right Stick X",
+	"Right Stick Y",
+	"",
+	"",
+	"L2",
+	"R2"
+};
+
+String InputDefault::get_joy_button_string(int p_button) {
+	ERR_FAIL_INDEX_V(p_button, JOY_BUTTON_MAX, "");
+	return _buttons[p_button];
+}
+
+int InputDefault::get_joy_button_index_from_string(String p_button) {
+	for (int i = 0; i < JOY_BUTTON_MAX; i++) {
+		if (p_button == _buttons[i]) {
+			return i;
+		}
+	}
+	ERR_FAIL_V(-1);
+}
+
+String InputDefault::get_joy_axis_string(int p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, JOY_AXIS_MAX, "");
+	return _axes[p_axis];
+}
+
+int InputDefault::get_joy_axis_index_from_string(String p_axis) {
+	for (int i = 0; i < JOY_AXIS_MAX; i++) {
+		if (p_axis == _axes[i]) {
+			return i;
+		}
+	}
+	ERR_FAIL_V(-1);
 }

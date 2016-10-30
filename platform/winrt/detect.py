@@ -17,11 +17,6 @@ def can_build():
 		if (os.getenv("VSINSTALLDIR")):
 
 			if (os.getenv("ANGLE_SRC_PATH") == None):
-				print("You need to define ANGLE_SRC_PATH to the path of ANGLE source root.")
-				return False
-
-			if not os.path.isfile(str(os.getenv("ANGLE_SRC_PATH")) + "/winrt/10/src/angle.sln"):
-				print ("Couldn't find the ANGLE solution. Is ANGLE_SRC_PATH configured to the right path?")
 				return False
 
 			return True
@@ -34,7 +29,9 @@ def get_flags():
 
 	return [
 	('tools', 'no'),
+	('builtin_zlib', 'yes'),
 	('openssl', 'builtin'),
+	('xaudio2', 'yes'),
 	]
 
 
@@ -55,6 +52,9 @@ def configure(env):
 	env.Append(CPPPATH=[angle_root + '/include'])
 	jobs = str(env.GetOption("num_jobs"))
 	angle_build_cmd = "msbuild.exe " + angle_root + "/winrt/10/src/angle.sln /nologo /v:m /m:" + jobs + " /p:Configuration=Release /p:Platform="
+
+	if os.path.isfile(str(os.getenv("ANGLE_SRC_PATH")) + "/winrt/10/src/angle.sln"):
+		env["build_angle"] = True
 
 	if os.getenv('Platform') == "ARM":
 
@@ -146,7 +146,6 @@ def configure(env):
 	env.Append(CCFLAGS=['/DGLES2_ENABLED','/DGL_GLEXT_PROTOTYPES','/DEGL_EGLEXT_PROTOTYPES','/DANGLE_ENABLED'])
 
 	LIBS = [
-		'xaudio2',
 		'WindowsApp',
 		'mincore',
 		'libANGLE',

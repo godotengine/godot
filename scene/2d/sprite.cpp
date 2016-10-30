@@ -214,6 +214,7 @@ void Sprite::set_frame(int p_frame) {
 
 	frame=p_frame;
 
+	_change_notify("frame");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 

@@ -986,7 +986,18 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 			InputEvent ie;
 
-			if (id=="KEY") {
+			if (id=="NONE") {
+
+				ie.type=InputEvent::NONE;
+
+				get_token(p_stream,token,line,r_err_str);
+
+				if (token.type!=TK_PARENTHESIS_CLOSE) {
+					r_err_str="Expected ')'";
+					return ERR_PARSE_ERROR;
+				}
+
+			} else if (id=="KEY") {
 
 				get_token(p_stream,token,line,r_err_str);
 				if (token.type!=TK_COMMA) {
@@ -1166,16 +1177,16 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 		} else if (id=="IntArray") {
 
-			Vector<int32_t> args;
-			Error err = _parse_construct<int32_t>(p_stream,args,line,r_err_str);
+			Vector<int> args;
+			Error err = _parse_construct<int>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
-			DVector<int32_t> arr;
+			DVector<int> arr;
 			{
 				int len=args.size();
 				arr.resize(len);
-				DVector<int32_t>::Write w = arr.write();
+				DVector<int>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
 					w[i]=int(args[i]);
 				}
@@ -2092,6 +2103,9 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 				} break;
 				case InputEvent::JOYSTICK_MOTION: {
 					str+="JAXIS,"+itos(ev.joy_motion.axis)+","+itos(ev.joy_motion.axis_value);
+				} break;
+				case InputEvent::NONE: {
+					str+="NONE";
 				} break;
 				default: {}
 			}

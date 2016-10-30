@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 EnsureSConsVersion(0,14);
 
 
@@ -15,7 +17,6 @@ methods.update_version()
 platform_list = [] # list of platforms
 platform_opts = {} # options for each platform
 platform_flags = {} # flags for each platform
-
 
 active_platforms=[]
 active_platform_ids=[]
@@ -55,15 +56,17 @@ methods.save_active_platforms(active_platforms,active_platform_ids)
 
 custom_tools=['default']
 
-platform_arg = ARGUMENTS.get("platform", False)
+platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
 if (os.name=="posix"):
 	pass
 elif (os.name=="nt"):
-	if (os.getenv("VSINSTALLDIR")==None or platform_arg=="android"):
+	if ( os.getenv("VCINSTALLDIR")==None or platform_arg=="android"):
 		custom_tools=['mingw']
 
 env_base=Environment(tools=custom_tools);
+if 'TERM' in os.environ:
+	env_base['ENV']['TERM'] = os.environ['TERM']
 env_base.AppendENVPath('PATH', os.getenv('PATH'))
 env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
 env_base.global_defaults=global_defaults
@@ -98,9 +101,8 @@ env_base.__class__.disable_module = methods.disable_module
 env_base.__class__.add_source_files = methods.add_source_files
 env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 
-env_base["x86_opt_gcc"]=False
-env_base["x86_opt_vc"]=False
-env_base["armv7_opt_gcc"]=False
+env_base["x86_libtheora_opt_gcc"]=False
+env_base["x86_libtheora_opt_vc"]=False
 
 customs = ['custom.py']
 
@@ -120,32 +122,30 @@ opts.Add('platform','Platform: '+str(platform_list)+'.',"")
 opts.Add('p','Platform (same as platform=).',"")
 opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
-opts.Add('vorbis','Build Ogg Vorbis Support: (yes/no)','yes')
-opts.Add('opus','Build Opus Audio Format Support: (yes/no)','yes')
+opts.Add('libogg','Ogg library for ogg container support (system/builtin)','builtin')
+opts.Add('libvorbis','Ogg Vorbis library for vorbis support (system/builtin)','builtin')
+opts.Add('libtheora','Theora library for theora module (system/builtin)','builtin')
+opts.Add('opus','Opus and opusfile library for Opus format support: (system/builtin)','builtin')
 opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
-opts.Add('squish','Squish BC Texture Compression in editor (yes/no)','yes')
-opts.Add('theora','Theora Video (yes/no)','yes')
-opts.Add('theoralib','Theora Video (yes/no)','no')
-opts.Add('freetype','Freetype support in editor','builtin')
-opts.Add('speex','Speex Audio (yes/no)','yes')
+opts.Add('squish','Squish library for BC Texture Compression in editor (system/builtin)','builtin')
+opts.Add('freetype','Freetype library for TTF support via freetype module (system/builtin)','builtin')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')
-opts.Add('png','PNG Image loader support (yes/no)','yes')
-opts.Add('jpg','JPG Image loader support (yes/no)','yes')
-opts.Add('webp','WEBP Image loader support (yes/no)','yes')
-opts.Add('dds','DDS Texture loader support (yes/no)','yes')
-opts.Add('pvr','PVR (PowerVR) Texture loader support (yes/no)','yes')
-opts.Add('etc1','etc1 Texture compression support (yes/no)','yes')
-opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
-opts.Add('openssl','Use OpenSSL (yes/no/builtin)','no')
-opts.Add('musepack','Musepack Audio (yes/no)','yes')
-opts.Add("CXX", "Compiler");
-opts.Add("CCFLAGS", "Custom flags for the C++ compiler");
+opts.Add('libpng','libpng library for image loader support (system/builtin)','builtin')
+opts.Add('libwebp','libwebp library for webp module (system/builtin)','builtin')
+opts.Add('openssl','OpenSSL library for openssl module (system/builtin)','builtin')
+opts.Add('libmpcdec','libmpcdec library for mpc module (system/builtin)','builtin')
+opts.Add('enet','ENet library (system/builtin)','builtin')
+opts.Add('glew','GLEW library for the gl_context (system/builtin)','builtin')
+opts.Add('xaudio2','XAudio2 audio driver (yes/no)','no')
+opts.Add("CXX", "C++ Compiler")
+opts.Add("CC", "C Compiler")
+opts.Add("CCFLAGS", "Custom flags for the C/C++ compiler");
 opts.Add("CFLAGS", "Custom flags for the C compiler");
 opts.Add("LINKFLAGS", "Custom flags for the linker");
 opts.Add('unix_global_settings_path', 'unix-specific path to system-wide settings. Currently only used by templates.','')
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
-opts.Add('colored', 'Enable colored output for the compilation (yes/no)', 'no')
+opts.Add('verbose', 'Enable verbose output for the compilation (yes/no)', 'yes')
 opts.Add('deprecated','Enable deprecated features (yes/no)','yes')
 opts.Add('extra_suffix', 'Custom extra suffix added to the base filename of all generated binary files.', '')
 opts.Add('vsproj', 'Generate Visual Studio Project. (yes/no)', 'no')
@@ -158,7 +158,7 @@ for k in platform_opts.keys():
 		opts.Add(o[0],o[1],o[2])
 
 for x in module_list:
-	opts.Add('module_'+x+'_enabled', "Enable module '"+x+"'.", "yes")
+	opts.Add('module_'+x+'_enabled', "Enable module '"+x+"' (yes/no)", "yes")
 
 opts.Update(env_base) # update environment
 Help(opts.GenerateHelpText(env_base)) # generate help
@@ -254,14 +254,6 @@ if selected_platform in platform_list:
 	#must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
 	detect.configure(env)
 
-
-	if (env["freetype"]!="no"):
-		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
-		if (env["freetype"]=="builtin"):
-			env.Append(CPPPATH=['#drivers/freetype'])
-			env.Append(CPPPATH=['#drivers/freetype/freetype/include'])
-
-
 	#env['platform_libsuffix'] = env['LIBSUFFIX']
 
 	suffix="."+selected_platform
@@ -271,6 +263,8 @@ if selected_platform in platform_list:
 			print("Tools can only be built with targets 'debug' and 'release_debug'.")
 			sys.exit(255)
 		suffix+=".opt"
+
+		env.Append(CCFLAGS=['-DNDEBUG']);
 
 	elif (env["target"]=="release_debug"):
 		if (env["tools"]=="yes"):
@@ -322,48 +316,8 @@ if selected_platform in platform_list:
 	if (env.use_ptrcall):
 		env.Append(CPPFLAGS=['-DPTRCALL_ENABLED']);
 
-	if (env['musepack']=='yes'):
-		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
-
-	#if (env['openssl']!='no'):
-	#	env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
-	#	if (env['openssl']=="builtin"):
-	#		env.Append(CPPPATH=['#drivers/builtin_openssl2'])
-
-	if (env["builtin_zlib"]=='yes'):
-		env.Append(CPPPATH=['#drivers/builtin_zlib/zlib'])
-
 	# to test 64 bits compiltion
 	# env.Append(CPPFLAGS=['-m64'])
-
-	if (env_base['squish']=='yes'):
-		env.Append(CPPFLAGS=['-DSQUISH_ENABLED']);
-
-	if (env['vorbis']=='yes'):
-		env.Append(CPPFLAGS=['-DVORBIS_ENABLED']);
-	if (env['opus']=='yes'):
-		env.Append(CPPFLAGS=['-DOPUS_ENABLED']);
-
-
-	if (env['theora']=='yes'):
-		env['theoralib']='yes'
-		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);
-	if (env['theoralib']=='yes'):
-		env.Append(CPPFLAGS=['-DTHEORALIB_ENABLED']);
-
-	if (env['png']=='yes'):
-		env.Append(CPPFLAGS=['-DPNG_ENABLED']);
-	if (env['dds']=='yes'):
-		env.Append(CPPFLAGS=['-DDDS_ENABLED']);
-	if (env['pvr']=='yes'):
-		env.Append(CPPFLAGS=['-DPVR_ENABLED']);
-	if (env['jpg']=='yes'):
-		env.Append(CPPFLAGS=['-DJPG_ENABLED']);
-	if (env['webp']=='yes'):
-		env.Append(CPPFLAGS=['-DWEBP_ENABLED']);
-
-	if (env['speex']=='yes'):
-		env.Append(CPPFLAGS=['-DSPEEX_ENABLED']);
 
 	if (env['tools']=='yes'):
 		env.Append(CPPFLAGS=['-DTOOLS_ENABLED'])
@@ -380,11 +334,8 @@ if selected_platform in platform_list:
 	if (env['xml']=='yes'):
 		env.Append(CPPFLAGS=['-DXML_ENABLED'])
 
-	if (env['colored']=='yes'):
-		methods.colored(sys,env)
-
-	if (env['etc1']=='yes'):
-		env.Append(CPPFLAGS=['-DETC1_ENABLED'])
+	if (env['verbose']=='no'):
+		methods.no_verbose(sys,env)
 
 	Export('env')
 
@@ -432,9 +383,9 @@ if selected_platform in platform_list:
 		release_variants = ['release|Win32']+['release|x64']
 		release_debug_variants = ['release_debug|Win32']+['release_debug|x64']
 		variants = debug_variants + release_variants + release_debug_variants
-		debug_targets = ['Debug']+['Debug']
-		release_targets = ['Release']+['Release']
-		release_debug_targets = ['ReleaseDebug']+['ReleaseDebug']
+		debug_targets = ['bin\\godot.windows.tools.32.exe']+['bin\\godot.windows.tools.64.exe']
+		release_targets = ['bin\\godot.windows.opt.32.exe']+['bin\\godot.windows.opt.64.exe']
+		release_debug_targets = ['bin\\godot.windows.opt.tools.32.exe']+['bin\\godot.windows.opt.tools.64.exe']
 		targets = debug_targets + release_targets + release_debug_targets
 		msvproj = env.MSVSProject(target = ['#godot' + env['MSVSPROJECTSUFFIX'] ],
 								incs = env.vs_incs,

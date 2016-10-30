@@ -33,6 +33,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "tools/editor/editor_file_dialog.h"
+#include "tools/editor/editor_settings.h"
 #include "scene/gui/check_button.h"
 
 class ScriptCreateDialog : public ConfirmationDialog {
@@ -50,6 +51,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	AcceptDialog *alert;
 	bool path_valid;
 	String initial_bp;
+	EditorSettings *editor_settings;
 
 
 	void _path_changed(const String& p_path=String());

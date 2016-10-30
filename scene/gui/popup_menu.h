@@ -118,6 +118,8 @@ public:
 	void set_item_shortcut(int p_idx, const Ref<ShortCut>& p_shortcut);
 	void set_item_h_offset(int p_idx, int p_offset);
 
+	void toggle_item_checked(int p_idx);
+
 	String get_item_text(int p_idx) const;
 	Ref<Texture> get_item_icon(int p_idx) const;
 	bool is_item_checked(int p_idx) const;

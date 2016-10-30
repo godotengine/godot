@@ -1215,6 +1215,15 @@ void Object::emit_signal(const StringName& p_name,const Variant** p_args,int p_a
 
 	Signal *s = signal_map.getptr(p_name);
 	if (!s) {
+#ifdef DEBUG_ENABLED
+		bool signal_is_valid = ObjectTypeDB::has_signal(get_type_name(),p_name);
+		//check in script
+		if (!signal_is_valid && !script.is_null() && !Ref<Script>(script)->has_script_signal(p_name)) {
+			ERR_EXPLAIN("Can't emit non-existing signal " + String("\"")+p_name+"\".");
+			ERR_FAIL();
+		}
+#endif
+		//not connected? just return
 		return;
 	}
 

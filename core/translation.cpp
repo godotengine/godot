@@ -779,6 +779,11 @@ Vector<String> TranslationServer::get_all_locale_names(){
 }
 
 
+static String get_trimmed_locale(const String& p_locale) {
+
+	return p_locale.substr(0,2);
+}
+
 static bool is_valid_locale(const String& p_locale) {
 
 	const char **ptr=locale_list;
@@ -839,9 +844,20 @@ void Translation::_set_messages(const DVector<String>& p_messages){
 
 void Translation::set_locale(const String& p_locale) {
 
-	ERR_EXPLAIN("Invalid Locale: "+p_locale);
-	ERR_FAIL_COND(!is_valid_locale(p_locale));
-	locale=p_locale;
+	// replaces '-' with '_' for macOS Sierra-style locales
+	String univ_locale = p_locale.replace("-", "_");
+	
+	if(!is_valid_locale(univ_locale)) {
+		String trimmed_locale = get_trimmed_locale(univ_locale);
+		
+		ERR_EXPLAIN("Invalid Locale: "+trimmed_locale);
+		ERR_FAIL_COND(!is_valid_locale(trimmed_locale));
+		
+		locale=trimmed_locale;
+	}
+	else {
+		locale=univ_locale;
+	}
 }
 
 void Translation::add_message( const StringName& p_src_text, const StringName& p_xlated_text ) {
@@ -906,9 +922,20 @@ Translation::Translation() {
 
 void TranslationServer::set_locale(const String& p_locale) {
 
-	ERR_EXPLAIN("Invalid Locale: "+p_locale);
-	ERR_FAIL_COND(!is_valid_locale(p_locale));
-	locale=p_locale;
+	// replaces '-' with '_' for macOS Sierra-style locales
+	String univ_locale = p_locale.replace("-", "_");
+	
+	if(!is_valid_locale(univ_locale)) {
+		String trimmed_locale = get_trimmed_locale(univ_locale);
+		
+		ERR_EXPLAIN("Invalid Locale: "+trimmed_locale);
+		ERR_FAIL_COND(!is_valid_locale(trimmed_locale));
+		
+		locale=trimmed_locale;
+	}
+	else {
+		locale=univ_locale;
+	}
 }
 
 String TranslationServer::get_locale() const {
