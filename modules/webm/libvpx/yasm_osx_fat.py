@@ -3,9 +3,9 @@
 import sys
 import os
 
-includes    = sys.argv[1]
+includes = sys.argv[1]
 output_file = sys.argv[2]
-input_file  = sys.argv[3]
+input_file = sys.argv[3]
 
 can_remove = {}
 

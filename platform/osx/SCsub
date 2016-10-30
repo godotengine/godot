@@ -12,4 +12,4 @@ files = [
     'joystick_osx.cpp',
 ]
 
-env.Program('#bin/godot',files)
+env.Program('#bin/godot', files)

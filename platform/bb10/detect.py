@@ -53,7 +53,7 @@ def configure(env):
     env['OBJSUFFIX'] = ".qnx.${qnx_target}.o"
     env['LIBSUFFIX'] = ".qnx.${qnx_target}.a"
     env['PROGSUFFIX'] = ".qnx.${qnx_target}"
-    print("PROGSUFFIX: "+env['PROGSUFFIX']+" target: "+env['qnx_target'])
+    print("PROGSUFFIX: " + env['PROGSUFFIX'] + " target: " + env['qnx_target'])
 
     env.PrependENVPath('PATH', env['QNX_CONFIGURATION'] + '/bin')
     env.PrependENVPath('PATH', env['QNX_CONFIGURATION'] + '/usr/bin')
@@ -66,23 +66,23 @@ def configure(env):
     env['AR'] = '$qnx_prefix-ar'
     env['RANLIB'] = '$qnx_prefix-ranlib'
 
-    env.Append(CPPPATH = ['#platform/bb10'])
-    env.Append(LIBPATH = ['#platform/bb10/lib/$qnx_target', '#platform/bb10/lib/$qnx_target_ver'])
-    env.Append(CCFLAGS = string.split('-DBB10_ENABLED -DUNIX_ENABLED -DGLES2_ENABLED -DGLES1_ENABLED -D_LITTLE_ENDIAN -DNO_THREADS -DNO_FCNTL'))
-    if env['bb10_exceptions']=="yes":
-        env.Append(CCFLAGS = ['-fexceptions'])
+    env.Append(CPPPATH=['#platform/bb10'])
+    env.Append(LIBPATH=['#platform/bb10/lib/$qnx_target', '#platform/bb10/lib/$qnx_target_ver'])
+    env.Append(CCFLAGS=string.split('-DBB10_ENABLED -DUNIX_ENABLED -DGLES2_ENABLED -DGLES1_ENABLED -D_LITTLE_ENDIAN -DNO_THREADS -DNO_FCNTL'))
+    if env['bb10_exceptions'] == "yes":
+        env.Append(CCFLAGS=['-fexceptions'])
     else:
-        env.Append(CCFLAGS = ['-fno-exceptions'])
+        env.Append(CCFLAGS=['-fno-exceptions'])
 
-    #env.Append(LINKFLAGS = string.split()
+    # env.Append(LINKFLAGS = string.split()
 
-    if (env["target"]=="release"):
+    if (env["target"] == "release"):
 
-        env.Append(CCFLAGS=['-O3','-DRELEASE_BUILD'])
+        env.Append(CCFLAGS=['-O3', '-DRELEASE_BUILD'])
 
-    elif (env["target"]=="debug"):
+    elif (env["target"] == "debug"):
 
-        env.Append(CCFLAGS=['-g', '-O0','-DDEBUG_ENABLED', '-D_DEBUG'])
+        env.Append(CCFLAGS=['-g', '-O0', '-DDEBUG_ENABLED', '-D_DEBUG'])
         env.Append(LINKFLAGS=['-g'])
 
     env.Append(LIBS=['bps', 'pps', 'screen', 'socket', 'EGL', 'GLESv2', 'GLESv1_CM', 'm', 'asound'])

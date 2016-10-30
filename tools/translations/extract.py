@@ -78,7 +78,7 @@ for fname in matches:
                 msg += l[pos]
                 pos += 1
 
-            location = os.path.relpath(fname).replace('\\','/')
+            location = os.path.relpath(fname).replace('\\', '/')
             if (line_nb):
                 location += ":" + str(lc)
 
@@ -115,7 +115,7 @@ shutil.move("tools.pot", "tools/translations/tools.pot")
 
 # TODO: Make that in a portable way, if we care; if not, kudos to Unix users
 if (os.name == "posix"):
-    added = subprocess.check_output("git diff tools/translations/tools.pot | grep \+msgid | wc -l", shell = True)
-    removed = subprocess.check_output("git diff tools/translations/tools.pot | grep \\\-msgid | wc -l", shell = True)
+    added = subprocess.check_output("git diff tools/translations/tools.pot | grep \+msgid | wc -l", shell=True)
+    removed = subprocess.check_output("git diff tools/translations/tools.pot | grep \\\-msgid | wc -l", shell=True)
     print("\n# Template changes compared to the staged status:")
     print("#   Additions: %s msgids.\n#   Deletions: %s msgids." % (int(added), int(removed)))

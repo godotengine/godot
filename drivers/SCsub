@@ -2,7 +2,7 @@
 
 Import('env')
 
-env.drivers_sources=[]
+env.drivers_sources = []
 
 if ("builtin_zlib" in env and env["builtin_zlib"] == "yes"):
     SConscript("zlib/SCsub");
@@ -28,15 +28,15 @@ SConscript("png/SCsub");
 
 # Tools override
 # FIXME: Should likely be integrated in the tools/ codebase
-if (env["tools"]=="yes"):
+if (env["tools"] == "yes"):
     SConscript("convex_decomp/SCsub");
 
-if env['vsproj']=="yes":
+if env['vsproj'] == "yes":
     env.AddToVSProject(env.drivers_sources)
 
 if env.split_drivers:
     env.split_lib("drivers")
 else:
-    env.add_source_files(env.drivers_sources,"*.cpp")
-    lib = env.Library("drivers",env.drivers_sources)
+    env.add_source_files(env.drivers_sources, "*.cpp")
+    lib = env.Library("drivers", env.drivers_sources)
     env.Prepend(LIBS=[lib])

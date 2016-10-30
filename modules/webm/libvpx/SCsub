@@ -248,10 +248,10 @@ libvpx_sources_arm_neon_gas_apple = [libvpx_dir + file for file in libvpx_source
 Import('env')
 Import('env_webm')
 
-env_webm.Append(CPPPATH = [libvpx_dir])
+env_webm.Append(CPPPATH=[libvpx_dir])
 
 env_libvpx = env.Clone()
-env_libvpx.Append(CPPPATH = [libvpx_dir])
+env_libvpx.Append(CPPPATH=[libvpx_dir])
 
 cpu_bits = env["bits"]
 osx_fat = (env["platform"] == 'osx' and cpu_bits == 'fat')

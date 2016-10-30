@@ -5,7 +5,7 @@ Import('env')
 # Not building in a separate env as core needs it
 
 # Thirdparty source files
-if (env["freetype"] != "system"): # builtin
+if (env["freetype"] != "system"):  # builtin
     thirdparty_dir = "#thirdparty/freetype/"
     thirdparty_sources = [
         "src/autofit/autofit.c",
@@ -56,13 +56,13 @@ if (env["freetype"] != "system"): # builtin
 
     # Include header for WinRT to fix build issues
     if "platform" in env and env["platform"] == "winrt":
-        env.Append(CCFLAGS = ['/FI', '"modules/freetype/winrtdef.h"'])
+        env.Append(CCFLAGS=['/FI', '"modules/freetype/winrtdef.h"'])
 
-    env.Append(CPPPATH = [thirdparty_dir, thirdparty_dir + "/include"])
+    env.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
 
     # also requires libpng headers
-    if (env["libpng"] != "system"): # builtin
-        env.Append(CPPPATH = ["#thirdparty/libpng"])
+    if (env["libpng"] != "system"):  # builtin
+        env.Append(CPPPATH=["#thirdparty/libpng"])
 
     """ FIXME: Remove this commented code if Windows can handle the monolithic lib
 	# fix for Windows' shell miserably failing on long lines, split in two libraries
@@ -81,10 +81,10 @@ if (env["freetype"] != "system"): # builtin
 	"""
 
     lib = env.Library("freetype_builtin", thirdparty_sources)
-    env.Append(LIBS = [lib])
+    env.Append(LIBS=[lib])
 
 # Godot source files
 env.add_source_files(env.modules_sources, "*.cpp")
-env.Append(CCFLAGS = ['-DFREETYPE_ENABLED'])
+env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
 
 Export('env')

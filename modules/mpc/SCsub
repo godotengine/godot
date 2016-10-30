@@ -6,7 +6,7 @@ Import('env_modules')
 env_mpc = env_modules.Clone()
 
 # Thirdparty source files
-if (env["libmpcdec"] != "system"): # builtin
+if (env["libmpcdec"] != "system"):  # builtin
     thirdparty_dir = "#thirdparty/libmpcdec/"
     thirdparty_sources = [
         "huffman.c",
@@ -22,7 +22,7 @@ if (env["libmpcdec"] != "system"): # builtin
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_mpc.add_source_files(env.modules_sources, thirdparty_sources)
-    env_mpc.Append(CPPPATH = [thirdparty_dir])
+    env_mpc.Append(CPPPATH=[thirdparty_dir])
 
 # Godot source files
 env_mpc.add_source_files(env.modules_sources, "*.cpp")
