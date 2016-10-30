@@ -130,8 +130,8 @@ special_icons = {
 }
 
 theme_icons = {
-      'icon_close': dict(output_names=['close', 'close_hl']),
-      'tab_menu': dict(output_names=['tab_menu_hl'])
+    'icon_close': dict(output_names=['close', 'close_hl']),
+    'tab_menu': dict(output_names=['tab_menu_hl'])
 }
 
 export_icons()

@@ -9,11 +9,11 @@ env_pvr = env_modules.Clone()
 # Not unbundled so far since not widespread as shared library
 thirdparty_dir = "#thirdparty/pvrtccompressor/"
 thirdparty_sources = [
-	"BitScale.cpp",
-	"MortonTable.cpp",
-	"PvrTcDecoder.cpp",
-	"PvrTcEncoder.cpp",
-	"PvrTcPacket.cpp",
+    "BitScale.cpp",
+    "MortonTable.cpp",
+    "PvrTcDecoder.cpp",
+    "PvrTcEncoder.cpp",
+    "PvrTcPacket.cpp",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 

@@ -3,20 +3,20 @@
 Import('env')
 
 javascript_files = [
-	"os_javascript.cpp",
-	"audio_driver_javascript.cpp",
-	"javascript_main.cpp",
-	"audio_server_javascript.cpp",
-	"javascript_eval.cpp"
+    "os_javascript.cpp",
+    "audio_driver_javascript.cpp",
+    "javascript_main.cpp",
+    "audio_server_javascript.cpp",
+    "javascript_eval.cpp"
 ]
 
 env_javascript = env.Clone()
 if env['target'] == "profile":
-	env_javascript.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
+    env_javascript.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
 
 javascript_objects=[]
 for x in javascript_files:
-	javascript_objects.append( env_javascript.Object( x ) )
+    javascript_objects.append( env_javascript.Object( x ) )
 
 env.Append(LINKFLAGS=["-s","EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_function','_main_after_fs_sync']\""])
 env.Append(LINKFLAGS=["--shell-file",'"platform/javascript/godot_shell.html"'])

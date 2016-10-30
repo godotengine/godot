@@ -9,7 +9,7 @@ env_jpg = env_modules.Clone()
 # Not unbundled for now as they are not commonly available as shared library
 thirdparty_dir = "#thirdparty/jpeg-compressor/"
 thirdparty_sources = [
-	"jpgd.cpp",
+    "jpgd.cpp",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 

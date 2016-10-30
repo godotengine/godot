@@ -8,17 +8,17 @@ Import('env')
 # No check here as already done in drivers/SCsub
 thirdparty_dir = "#thirdparty/zlib/"
 thirdparty_sources = [
-	"adler32.c",
-	"compress.c",
-	"crc32.c",
-	"deflate.c",
-	"infback.c",
-	"inffast.c",
-	"inflate.c",
-	"inftrees.c",
-	"trees.c",
-	"uncompr.c",
-	"zutil.c",
+    "adler32.c",
+    "compress.c",
+    "crc32.c",
+    "deflate.c",
+    "infback.c",
+    "inffast.c",
+    "inflate.c",
+    "inftrees.c",
+    "trees.c",
+    "uncompr.c",
+    "zutil.c",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
