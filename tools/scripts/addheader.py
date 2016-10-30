@@ -56,7 +56,6 @@ while (fname != ""):
     else:
         text = header.replace("$filename", fsingle)
 
-
     while (l != ""):
         if ((l.find("//") != 0 and l.find("/*") != 0 and l.strip() != "") or bc):
             text += l
@@ -69,4 +68,3 @@ while (fname != ""):
     fr.close()
     # print(text)
     fname = f.readline()
-

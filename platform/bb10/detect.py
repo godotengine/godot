@@ -7,8 +7,10 @@ import methods
 def is_active():
     return True
 
+
 def get_name():
     return "BlackBerry 10"
+
 
 def can_build():
 
@@ -16,6 +18,7 @@ def can_build():
     if (not os.environ.has_key("QNX_TARGET")):
         return False
     return True
+
 
 def get_opts():
 
@@ -29,6 +32,7 @@ def get_opts():
         ('bb10_exceptions', 'Use exceptions when compiling on bb10', 'no'),
     ]
 
+
 def get_flags():
 
     return [
@@ -36,6 +40,7 @@ def get_flags():
         ('builtin_zlib', 'yes'),
         ('module_theora_enabled', 'no'),
     ]
+
 
 def configure(env):
 
@@ -86,4 +91,3 @@ def configure(env):
         env.Append(LINKFLAGS=['-g'])
 
     env.Append(LIBS=['bps', 'pps', 'screen', 'socket', 'EGL', 'GLESv2', 'GLESv1_CM', 'm', 'asound'])
-

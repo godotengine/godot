@@ -251,7 +251,6 @@ def run(target, source, env):
         else:
             text += t
 
-
     f = open(target[0].path, "w")
     f.write(text)
     f.close()

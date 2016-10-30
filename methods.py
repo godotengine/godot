@@ -1,5 +1,6 @@
 import os
 
+
 def add_source_files(self, sources, filetype, lib_env=None, shared=False):
     import glob;
     import string;
@@ -26,7 +27,6 @@ def build_shader_header(target, source, env):
         name = name[name.rfind("/") + 1:]
         name = name[name.rfind("\\") + 1:]
         name = name.replace(".", "_")
-
 
         fs = open(str(x), "r")
         fd = open(str(x) + ".h", "w")
@@ -94,7 +94,6 @@ def build_glsl_header(filename):
             if (not ifdefline in conditionals):
                 conditionals += [ifdefline]
 
-
         import re
         if re.search(r"^\s*uniform", line):
 
@@ -137,8 +136,6 @@ def build_glsl_header(filename):
                         ubos += [(x, uboidx)]
                         ubo_names += [x]
 
-
-
             else:
                 uline = line.replace("uniform", "");
                 uline = uline.replace(";", "");
@@ -160,7 +157,6 @@ def build_glsl_header(filename):
             uline = uline.replace(";", "");
             uline = uline[uline.find(" "):].strip()
 
-
             if (uline.find("//") != -1):
                 name, bind = uline.split("//")
                 if (bind.find("attrib:") != -1):
@@ -172,7 +168,6 @@ def build_glsl_header(filename):
             uline = line.replace("out", "").strip();
             uline = uline.replace(";", "");
             uline = uline[uline.find(" "):].strip()
-
 
             if (uline.find("//") != -1):
                 name, bind = uline.split("//")
@@ -330,7 +325,6 @@ def build_glsl_header(filename):
 
     fd.write("\n\n#undef _FU\n\n\n");
 
-
     fd.write("\tvirtual void init() {\n\n");
     if (len(conditionals)):
 
@@ -360,8 +354,6 @@ def build_glsl_header(filename):
         fd.write("\t\t};\n\n");
     else:
         fd.write("\t\tstatic AttributePair *_attribute_pairs=NULL;\n")
-
-
 
     if (len(fbos)):
         fd.write("\t\tstatic FBOPair _fbo_pairs[]={\n")
@@ -394,7 +386,6 @@ def build_glsl_header(filename):
 
     fd.write("\t\tstatic const int _vertex_code_start=" + str(vertex_offset) + ";\n")
 
-
     fd.write("\t\tstatic const char* _fragment_code=\"\\\n")
     for x in fragment_lines:
         fd.write("\t\t\t" + x + "\n");
@@ -416,9 +407,7 @@ def build_glsl_headers(target, source, env):
 
         build_glsl_header(str(x));
 
-
     return 0
-
 
 
 def build_hlsl_dx9_header(filename):
@@ -527,7 +516,6 @@ def build_hlsl_dx9_header(filename):
             fd.write("\t\t" + x.upper() + ",\n");
         fd.write("\t};\n\n");
 
-
     if (len(conditionals)):
         fd.write("\t_FORCE_INLINE_ void set_conditional(Conditionals p_conditional,bool p_enable)  {  _set_conditional(p_conditional,p_enable); }\n\n");
 
@@ -597,7 +585,6 @@ def build_hlsl_dx9_header(filename):
 
     fd.write("\n\n#undef _FU\n\n\n");
 
-
     fd.write("\tvirtual void init(IDirect3DDevice9 *p_device,ShaderSupport p_version) {\n\n");
     if (len(conditionals)):
 
@@ -630,14 +617,12 @@ def build_hlsl_dx9_header(filename):
         fd.write("\t\tstatic const char **_uniform_strings=NULL;\n")
         fd.write("\t\tstatic const bool *_fragment_uniforms=NULL;\n")
 
-
     fd.write("\t\tstatic const char* _vertex_code=\"\\\n")
     for x in vertex_lines:
         fd.write("\t\t\t" + x + "\n");
     fd.write("\t\t\";\n\n");
 
     fd.write("\t\tstatic const int _vertex_code_start=" + str(vertex_offset) + ";\n")
-
 
     fd.write("\t\tstatic const char* _fragment_code=\"\\\n")
     for x in fragment_lines:
@@ -660,11 +645,11 @@ def build_hlsl_dx9_headers(target, source, env):
 
         build_hlsl_dx9_header(str(x));
 
-
     return 0
 
 
 class LegacyGLHeaderStruct:
+
     def __init__(self):
         self.vertex_lines = []
         self.fragment_lines = []
@@ -685,6 +670,7 @@ class LegacyGLHeaderStruct:
         self.line_offset = 0
         self.vertex_offset = 0
         self.fragment_offset = 0
+
 
 def include_file_in_legacygl_header(filename, header_data, depth):
     fs = open(filename, "r")
@@ -767,8 +753,6 @@ def include_file_in_legacygl_header(filename, header_data, depth):
                     header_data.texunits += [(x, texunit)]
                     header_data.texunit_names += [x]
 
-
-
         elif (line.find("uniform") != -1):
             uline = line.replace("uniform", "");
             uline = uline.replace(";", "");
@@ -784,7 +768,6 @@ def include_file_in_legacygl_header(filename, header_data, depth):
                 if (not x in header_data.uniforms):
                     header_data.uniforms += [x]
 
-
         if ((line.strip().find("in ") == 0 or line.strip().find("attribute ") == 0) and line.find("attrib:") != -1):
             uline = line.replace("in ", "");
             uline = uline.replace("attribute ", "");
@@ -792,14 +775,12 @@ def include_file_in_legacygl_header(filename, header_data, depth):
             uline = uline.replace(";", "");
             uline = uline[uline.find(" "):].strip()
 
-
             if (uline.find("//") != -1):
                 name, bind = uline.split("//")
                 if (bind.find("attrib:") != -1):
                     name = name.strip()
                     bind = bind.replace("attrib:", "").strip()
                     header_data.attributes += [(name, bind)]
-
 
         line = line.replace("\r", "")
         line = line.replace("\n", "")
@@ -818,7 +799,6 @@ def include_file_in_legacygl_header(filename, header_data, depth):
     fs.close();
 
     return header_data
-
 
 
 def build_legacygl_header(filename, include, class_suffix, output_attribs):
@@ -847,7 +827,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
     fd.write("class " + out_file_class + " : public Shader" + class_suffix + " {\n\n");
     fd.write("\t virtual String get_shader_name() const { return \"" + out_file_class + "\"; }\n");
 
-
     fd.write("public:\n\n");
 
     if (len(header_data.conditionals)):
@@ -855,7 +834,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
         for x in header_data.conditionals:
             fd.write("\t\t" + x.upper() + ",\n");
         fd.write("\t};\n\n");
-
 
     if (len(header_data.uniforms)):
         fd.write("\tenum Uniforms {\n");
@@ -965,9 +943,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
 
     fd.write("\n\n#undef _FU\n\n\n");
 
-
     fd.write("\tvirtual void init() {\n\n");
-
 
     enum_value_count = 0;
 
@@ -1001,7 +977,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
 
             fd.write("\t\t\t{(uint64_t(1<<" + str(bits) + ")-1)<<" + str(bitofs) + "," + str(bitofs) + "," + strs + "},\n");
             bitofs += bits
-
 
         fd.write("\t\t};\n\n");
 
@@ -1046,7 +1021,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
         else:
             fd.write("\t\tstatic AttributePair *_attribute_pairs=NULL;\n")
 
-
     if (len(header_data.texunits)):
         fd.write("\t\tstatic TexUnitPair _texunit_pairs[]={\n")
         for x in header_data.texunits:
@@ -1065,7 +1039,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
 
     fd.write("\t\tstatic const int _vertex_code_start=" + str(header_data.vertex_offset) + ";\n")
 
-
     fd.write("\t\tstatic const char _fragment_code[]={\n")
     for x in header_data.fragment_lines:
         for i in range(len(x)):
@@ -1083,7 +1056,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
 
     fd.write("\t};\n\n")
 
-
     if (len(enum_constants)):
 
         fd.write("\tenum EnumConditionals {\n")
@@ -1091,7 +1063,6 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
             fd.write("\t\t" + x.upper() + ",\n");
         fd.write("\t};\n\n");
         fd.write("\tvoid set_enum_conditional(EnumConditionals p_cond) { _set_enum_conditional(p_cond); }\n")
-
 
     fd.write("};\n\n");
     fd.write("#endif\n\n");
@@ -1104,13 +1075,14 @@ def build_legacygl_headers(target, source, env):
 
         build_legacygl_header(str(x), include="drivers/legacygl/shader_lgl.h", class_suffix="LGL", output_attribs=False);
 
-
     return 0
+
 
 def build_gles2_headers(target, source, env):
 
     for x in source:
         build_legacygl_header(str(x), include="drivers/gles2/shader_gles2.h", class_suffix="GLES2", output_attribs=True)
+
 
 def update_version():
 
@@ -1120,7 +1092,6 @@ def update_version():
         rev = os.getenv("BUILD_REVISION")
         print("Using custom revision: " + rev)
     import version
-
 
     f = open("core/version.h", "wb")
     f.write("#define VERSION_SHORT_NAME " + str(version.short_name) + "\n")
@@ -1133,6 +1104,7 @@ def update_version():
     f.write("#define VERSION_STATUS " + str(version.status) + "\n")
     import datetime
     f.write("#define VERSION_YEAR " + str(datetime.datetime.now().year) + "\n")
+
 
 def parse_cg_file(fname, uniforms, sizes, conditionals):
 
@@ -1204,8 +1176,9 @@ def build_cg_shader(sname):
     fd.write("\t};\n");
 
 
-
 import glob
+
+
 def detect_modules():
 
     module_list = []
@@ -1260,7 +1233,6 @@ void unregister_module_types() {
     return module_list
 
 
-
 def win32_spawn(sh, escape, cmd, args, env):
     import subprocess
     newargs = ' '.join(args[1:])
@@ -1309,43 +1281,60 @@ def win32_spawn(sh, escape, cmd, args, spawnenv):
 	return exit_code
 """
 
+
 def android_add_maven_repository(self, url):
     self.android_maven_repos.append(url)
 
+
 def android_add_dependency(self, depline):
     self.android_dependencies.append(depline)
+
 
 def android_add_java_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
     self.android_java_dirs.append(base_path)
 
+
 def android_add_res_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
     self.android_res_dirs.append(base_path)
+
+
 def android_add_aidl_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
     self.android_aidl_dirs.append(base_path)
+
+
 def android_add_jni_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
     self.android_jni_dirs.append(base_path)
+
+
 def android_add_default_config(self, config):
     self.android_default_config.append(config)
+
 
 def android_add_to_manifest(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
     f = open(base_path, "rb")
     self.android_manifest_chunk += f.read()
+
+
 def android_add_to_permissions(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
     f = open(base_path, "rb")
     self.android_permission_chunk += f.read()
+
+
 def android_add_to_attributes(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
     f = open(base_path, "rb")
     self.android_appattributes_chunk += f.read()
 
+
 def disable_module(self):
     self.disabled_modules.append(self.current_module)
+
 
 def use_windows_spawn_fix(self, platform=None):
 
@@ -1503,6 +1492,7 @@ def no_verbose(sys, env):
     env.Append(JARCOMSTR=[java_library_message])
     env.Append(JAVACCOMSTR=[java_compile_source_message])
 
+
 def detect_visual_c_compiler_version(tools_env):
     # tools_env is the variable scons uses to call tools that execute tasks, SCons's env['ENV'] that executes tasks...
     # (see the SCons documentation for more information on what it does)...
@@ -1542,7 +1532,6 @@ def detect_visual_c_compiler_version(tools_env):
             or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index)):
         vc_chosen_compiler_index = vc_amd64_x86_compiler_detection_index
         vc_chosen_compiler_str = "amd64_x86"
-
 
     # Now check the 32 bit compilers
     vc_x86_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN;")

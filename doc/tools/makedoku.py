@@ -53,13 +53,11 @@ def make_class_list(class_list, columns):
             indexers += [n]
         last_initial = n[:1]
 
-
     row_max = 0
 
     for n in range(0, columns):
         if (len(fit_columns[n]) > row_max):
             row_max = len(fit_columns[n])
-
 
     for r in range(0, row_max):
         s = "|"
@@ -139,7 +137,6 @@ def dokuize_text(text):
             else:
                 tag_text = "[" + tag_text + "]"
 
-
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
 
@@ -172,8 +169,6 @@ def make_method(f, name, m, declare, event=False):
 
         mdata["argidx"].append(idx)
         mdata[idx] = a
-
-
 
     if (not event):
         if (-1 in mdata["argidx"]):
@@ -211,7 +206,6 @@ def make_method(f, name, m, declare, event=False):
 
         if ("default" in arg.attrib):
             s += "=" + arg.attrib["default"]
-
 
         argfound = True
 
@@ -270,8 +264,6 @@ def make_doku_class(node):
                 s += " - " + c.text.strip()
             f.write(s + "\n")
 
-
-
     constants = node.find("constants")
     if(constants != None and len(list(constants)) > 0):
         f.write("=====  Numeric Constants  ======\n")
@@ -283,7 +275,6 @@ def make_doku_class(node):
             if (c.text.strip() != ""):
                 s += " - " + c.text.strip()
             f.write(s + "\n")
-
 
     descr = node.find("description")
     if (descr != None and descr.text.strip() != ""):
@@ -304,10 +295,6 @@ def make_doku_class(node):
             f.write("\\\\\n")
             f.write(dokuize_text(d.text.strip()))
             f.write("\n")
-
-
-
-
 
     """
   div=ET.Element("div")
@@ -510,5 +497,3 @@ make_class_list(class_names, 4)
 for cn in class_names:
     c = classes[cn]
     make_doku_class(c)
-
-

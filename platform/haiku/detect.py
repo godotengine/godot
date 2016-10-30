@@ -1,11 +1,14 @@
 import os
 import sys
 
+
 def is_active():
     return True
 
+
 def get_name():
     return "Haiku"
+
 
 def can_build():
     if (os.name != "posix"):
@@ -16,14 +19,17 @@ def can_build():
 
     return True
 
+
 def get_opts():
     return [
         ('debug_release', 'Add debug symbols to release version', 'no')
     ]
 
+
 def get_flags():
     return [
     ]
+
 
 def configure(env):
     is64 = sys.maxsize > 2**32

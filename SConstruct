@@ -85,7 +85,6 @@ env_base.use_ptrcall = False
 env_base.split_drivers = False
 
 
-
 env_base.__class__.android_add_maven_repository = methods.android_add_maven_repository
 env_base.__class__.android_add_dependency = methods.android_add_dependency
 env_base.__class__.android_add_java_dir = methods.android_add_java_dir
@@ -199,7 +198,6 @@ elif env_base['p'] != "":
     env_base["platform"] = selected_platform
 
 
-
 if selected_platform in platform_list:
 
     sys.path.append("./platform/" + selected_platform)
@@ -298,7 +296,6 @@ if selected_platform in platform_list:
     sys.path.remove("./platform/" + selected_platform)
     sys.modules.pop('detect')
 
-
     env.module_list = []
 
     for x in module_list:
@@ -313,7 +310,6 @@ if selected_platform in platform_list:
             env.module_list.append(x)
         sys.path.remove(tmppath)
         sys.modules.pop('config')
-
 
     if (env.use_ptrcall):
         env.Append(CPPFLAGS=['-DPTRCALL_ENABLED']);
@@ -370,7 +366,6 @@ if selected_platform in platform_list:
         # That said, it's not needed to be set so far but I'm leaving it here so that this comment
         # has a purpose.
         # env['MSVS_VERSION']='9.0'
-
 
         # Calls a CMD with /C(lose) and /V(delayed environment variable expansion) options.
         # And runs vcvarsall bat for the propper arhitecture and scons for propper configuration

@@ -12,8 +12,10 @@ html_escape_table = {
 
 html_unescape_table = {v: k for k, v in html_escape_table.items()}
 
+
 def html_escape(text):
     return escape(text, html_escape_table)
+
 
 def html_unescape(text):
     return unescape(text, html_unescape_table)
@@ -41,11 +43,13 @@ def validate_tag(elem, tag):
         print("Tag mismatch, expected '" + tag + "', got " + elem.tag);
         sys.exit(255)
 
+
 def make_html_bottom(body):
     # make_html_top(body,True)
     ET.SubElement(body, "hr")
     copyright = ET.SubElement(body, "span")
     copyright.text = "Copyright 2008-2010 Codenix SRL"
+
 
 def make_html_top(body, bottom=False):
 
@@ -81,8 +85,6 @@ def make_html_top(body, bottom=False):
     a.text = "Inheritance"
     if (not bottom):
         ET.SubElement(body, "hr")
-
-
 
 
 def make_html_class_list(class_list, columns):
@@ -128,7 +130,6 @@ def make_html_class_list(class_list, columns):
         if (len(fit_columns[n]) > row_max):
             row_max = len(fit_columns[n])
 
-
     for r in range(0, row_max):
         tr = ET.SubElement(table, "tr")
         for c in range(0, columns):
@@ -155,7 +156,6 @@ def make_html_class_list(class_list, columns):
             a.attrib["href"] = link
             a.text = classname
 
-
     if (not single_page):
         cat_class_list = ET.Element("html")
         csscc = ET.SubElement(cat_class_list, "link")
@@ -168,9 +168,6 @@ def make_html_class_list(class_list, columns):
         cat_class_parent = bodycc
     else:
         cat_class_parent = div
-
-
-
 
     h1 = ET.SubElement(cat_class_parent, "h2")
     h1.text = "Class List By Category"
@@ -227,7 +224,6 @@ def make_html_class_list(class_list, columns):
         catet_out = ET.ElementTree(cat_class_list)
         catet_out.write("category.html")
 
-
     if (not single_page):
         inh_class_list = ET.Element("html")
         cssic = ET.SubElement(inh_class_list, "link")
@@ -239,9 +235,6 @@ def make_html_class_list(class_list, columns):
         inh_class_parent = bodyic
     else:
         inh_class_parent = div
-
-
-
 
     h1 = ET.SubElement(inh_class_parent, "h2")
     h1.text = "Class List By Inheritance"
@@ -268,7 +261,6 @@ def make_html_class_list(class_list, columns):
             else:
                 parent_list = parent_list.find("list")
 
-
         else:
             parent_list = itemlist
 
@@ -277,7 +269,6 @@ def make_html_class_list(class_list, columns):
         class_inh_table[clss.attrib["name"]] = item
         make_type(clss.attrib["name"], item)
 
-
     for c in class_list:
         add_class(classes[c])
 
@@ -285,10 +276,6 @@ def make_html_class_list(class_list, columns):
         make_html_bottom(bodyic)
         catet_out = ET.ElementTree(inh_class_list)
         catet_out.write("inheritance.html")
-
-
-
-
 
     # h1=ET.SubElement(div,"h2")
     #h1.text="Class List By Inheritance"
@@ -312,7 +299,6 @@ def make_type(p_type, p_parent):
         span = ET.SubElement(p_parent, "span")
         span.attrib["class"] = "datatype"
         span.text = p_type + " "
-
 
 
 def make_text_def(class_name, parent, text):
@@ -370,7 +356,6 @@ def make_text_def(class_name, parent, text):
             else:
                 tag_text = "[" + tag_text + "]"
 
-
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
 
@@ -384,16 +369,12 @@ def make_text_def(class_name, parent, text):
         print("Error parsing description text: '" + text + "'")
         sys.exit(255)
 
-
     return tnode
-
-
 
 
 def make_method_def(name, m, declare, event=False):
 
     mdata = {}
-
 
     if (not declare):
         div = ET.Element("tr")
@@ -457,14 +438,12 @@ def make_method_def(name, m, declare, event=False):
             span = ET.SubElement(func_parent, "span")
             span.text = " "
 
-
         make_type(arg.attrib["type"], func_parent)
 
         span = ET.SubElement(func_parent, "span")
         span.text = arg.attrib["name"]
         if ("default" in arg.attrib):
             span.text = span.text + "=" + arg.attrib["default"]
-
 
     span = ET.SubElement(func_parent, "span")
     span.attrib["class"] = "symbol"
@@ -533,7 +512,6 @@ def make_html_class(node):
         else:
             a.attrib["href"] = "category.html#" + catname
 
-
     methods = node.find("methods")
 
     if(methods != None and len(list(methods)) > 0):
@@ -561,7 +539,6 @@ def make_html_class(node):
             #li = ET.SubElement(div2, "li")
             event_table.append(make_method_def(node.attrib["name"], m, False, True))
 
-
     members = node.find("members")
     if(members != None and len(list(members)) > 0):
 
@@ -582,7 +559,6 @@ def make_html_class(node):
             span = ET.SubElement(div3, "span")
             span.attrib["class"] = "member_description"
             span.text = c.text
-
 
     constants = node.find("constants")
     if(constants != None and len(list(constants)) > 0):
@@ -613,7 +589,6 @@ def make_html_class(node):
 
 #  ET.SubElement(div,"br")
 
-
     descr = node.find("description")
     if (descr != None and descr.text.strip() != ""):
         h4 = ET.SubElement(div, "h4")
@@ -623,8 +598,6 @@ def make_html_class(node):
 #   div2=ET.SubElement(div,"div")
 #   div2.attrib["class"]="description";
 #   div2.text=descr.text
-
-
 
     if(methods != None or events != None):
 
@@ -646,7 +619,6 @@ def make_html_class(node):
             div2 = ET.SubElement(div, "div")
             div2.attrib["class"] = "method_doc";
 
-
             div2.append(make_method_def(node.attrib["name"], m, True))
             #anchor = ET.SubElement(div2, "a")
             # anchor.attrib["name"] =
@@ -654,7 +626,6 @@ def make_html_class(node):
             # div3=ET.SubElement(div2,"div")
             # div3.attrib["class"]="description";
             # div3.text=descr.text
-
 
     return div
 
@@ -688,7 +659,6 @@ if (not single_page):
     make_html_top(body)
 
 
-
 class_names.sort()
 
 body.append(make_html_class_list(class_names, 5))
@@ -717,4 +687,3 @@ if (single_page):
 else:
     make_html_bottom(body)
     et_out.write("alphabetical.html")
-

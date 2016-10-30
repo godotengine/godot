@@ -64,7 +64,6 @@ text = """
 """
 
 
-
 for i in range(1, 8):
 
     tp = ""
@@ -81,8 +80,3 @@ for i in range(1, 8):
 
     t = text.replace("$argtp", tp).replace("$argp", p).replace("$argt", t).replace("$num", str(i))
     print(t)
-
-
-
-
-

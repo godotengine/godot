@@ -54,7 +54,6 @@ for x in shaders:
 
     sf = open(x, "rb");
 
-
     b = sf.readline();
     while(b != ""):
         if (b.endswith("\r\n")):

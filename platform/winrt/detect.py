@@ -8,8 +8,10 @@ import methods
 def is_active():
     return True
 
+
 def get_name():
     return "WinRT"
+
 
 def can_build():
     if (os.name == "nt"):
@@ -22,8 +24,10 @@ def can_build():
             return True
     return False
 
+
 def get_opts():
     return []
+
 
 def get_flags():
 
@@ -129,11 +133,9 @@ def configure(env):
         env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
         env.Append(LINKFLAGS=['/DEBUG'])
 
-
     env.Append(CCFLAGS=string.split('/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /D "_UNICODE" /D "UNICODE" /D "WINAPI_FAMILY=WINAPI_FAMILY_APP" /errorReport:prompt /WX- /Zc:forScope /Gd /EHsc /nologo'))
     env.Append(CXXFLAGS=string.split('/ZW /FS'))
     env.Append(CCFLAGS=['/AI', os.environ['VCINSTALLDIR'] + '\\vcpackages', '/AI', os.environ['WINDOWSSDKDIR'] + '\\References\\CommonConfiguration\\Neutral'])
-
 
     env["PROGSUFFIX"] = "." + arch + env["PROGSUFFIX"]
     env["OBJSUFFIX"] = "." + arch + env["OBJSUFFIX"]

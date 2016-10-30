@@ -6,16 +6,18 @@ import sys
 def is_active():
     return True
 
+
 def get_name():
     return "OSX"
+
 
 def can_build():
 
     if (sys.platform == "darwin" or os.environ.has_key("OSXCROSS_ROOT")):
         return True
 
-
     return False
+
 
 def get_opts():
 
@@ -25,11 +27,11 @@ def get_opts():
 
     ]
 
+
 def get_flags():
 
     return [
     ]
-
 
 
 def configure(env):
@@ -51,8 +53,6 @@ def configure(env):
 
         env.Append(CCFLAGS=['-g3', '-Wall', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
-
-
     if (not os.environ.has_key("OSXCROSS_ROOT")):
         # regular native build
         if (env["bits"] == "64"):
@@ -72,13 +72,11 @@ def configure(env):
         else:
             basecmd = root + "/target/bin/i386-apple-" + env["osxcross_sdk"] + "-"
 
-
         env['CC'] = basecmd + "cc"
         env['CXX'] = basecmd + "c++"
         env['AR'] = basecmd + "ar"
         env['RANLIB'] = basecmd + "ranlib"
         env['AS'] = basecmd + "as"
-
 
     env.Append(CPPFLAGS=["-DAPPLE_STYLE_KEYS"])
     env.Append(CPPFLAGS=['-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DOSX_ENABLED'])

@@ -7,6 +7,7 @@ import platform
 def is_active():
     return True
 
+
 def get_name():
     return "X11"
 
@@ -50,8 +51,8 @@ def can_build():
         print("xrandr not found.. x11 disabled.")
         return False
 
-
     return True  # X11 enabled
+
 
 def get_opts():
 
@@ -65,6 +66,7 @@ def get_opts():
         ('debug_release', 'Add debug symbols to release version', 'no'),
     ]
 
+
 def get_flags():
 
     return [
@@ -72,7 +74,6 @@ def get_flags():
         ('freetype', 'system'),
         ('libpng', 'system'),
     ]
-
 
 
 def configure(env):
@@ -104,12 +105,10 @@ def configure(env):
         env.Append(LINKFLAGS=['-fsanitize=address'])
         env.extra_suffix += "s"
 
-
     # if (env["tools"]=="no"):
     #	#no tools suffix
     #	env['OBJSUFFIX'] = ".nt"+env['OBJSUFFIX']
     #	env['LIBSUFFIX'] = ".nt"+env['LIBSUFFIX']
-
 
     if (env["target"] == "release"):
 
@@ -174,7 +173,6 @@ def configure(env):
     if (env["libogg"] == "system"):
         env.ParseConfig('pkg-config ogg --cflags --libs')
 
-
     env.Append(CPPFLAGS=['-DOPENGL_ENABLED'])
 
     if (env["glew"] == "system"):
@@ -223,7 +221,6 @@ def configure(env):
         env.Append(CPPFLAGS=['-m64'])
         env.Append(LINKFLAGS=['-m64', '-L/usr/lib/i686-linux-gnu'])
 
-
     import methods
 
     env.Append(BUILDERS={'GLSL120': env.Builder(action=methods.build_legacygl_headers, suffix='glsl.h', src_suffix='.glsl')})
@@ -237,4 +234,3 @@ def configure(env):
     list_of_x86 = ['x86_64', 'x86', 'i386', 'i586']
     if any(platform.machine() in s for s in list_of_x86):
         env["x86_libtheora_opt_gcc"] = True
-

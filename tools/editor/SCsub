@@ -14,7 +14,6 @@ def make_doc_header(target, source, env):
     import zlib
     buf = zlib.compress(buf)
 
-
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _DOC_DATA_RAW_H\n")
     g.write("#define _DOC_DATA_RAW_H\n")
@@ -25,7 +24,6 @@ def make_doc_header(target, source, env):
         g.write(str(ord(buf[i])) + ",\n")
     g.write("};\n")
     g.write("#endif")
-
 
 
 def make_certs_header(target, source, env):
@@ -39,7 +37,6 @@ def make_certs_header(target, source, env):
     import zlib
     buf = zlib.compress(buf)
 
-
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _CERTS_RAW_H\n")
     g.write("#define _CERTS_RAW_H\n")
@@ -50,11 +47,6 @@ def make_certs_header(target, source, env):
         g.write(str(ord(buf[i])) + ",\n")
     g.write("};\n")
     g.write("#endif")
-
-
-
-
-
 
 
 if (env["tools"] == "yes"):
