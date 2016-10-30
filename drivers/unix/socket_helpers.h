@@ -3,6 +3,13 @@
 
 #include <string.h>
 
+#ifdef WINDOWS_ENABLED
+ // Workaround mingw missing flags!
+ #ifndef IPV6_V6ONLY
+  #define IPV6_V6ONLY 27
+ #endif
+#endif
+
 // helpers for sockaddr -> IP_Address and back, should work for posix and winsock. All implementations should use this
 
 static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p_ip, int p_port) {
