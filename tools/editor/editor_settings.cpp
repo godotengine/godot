@@ -1032,7 +1032,6 @@ String EditorSettings::get_last_selected_language()
 	String path = get_project_settings_path().plus_file("project_metadata.cfg");
 	Error err = cf->load(path);
 	if (err != OK) {
-		WARN_PRINTS("Can't load config file: " + path);
 		return "";
 	}
 	Variant last_selected_language = cf->get_value("script_setup", "last_selected_language");
@@ -1045,11 +1044,7 @@ void EditorSettings::set_last_selected_language(String p_language)
 {
 	Ref<ConfigFile> cf = memnew( ConfigFile );
 	String path = get_project_settings_path().plus_file("project_metadata.cfg");
-	Error err = cf->load(path);
-	if (err != OK) {
-		WARN_PRINTS("Can't load config file: " + path);
-		return;
-	}
+	cf->load(path);
 	cf->set_value("script_setup", "last_selected_language", p_language);
 	cf->save(path);
 }
