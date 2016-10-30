@@ -57,7 +57,7 @@
 #define _EXT_ATC_RGBA_INTERPOLATED_ALPHA_AMD    0x87EE
 
 
-
+#define _EXT_TEXTURE_CUBE_MAP_SEAMLESS                   0x884F
 
 #define _GL_TEXTURE_MAX_ANISOTROPY_EXT          0x84FE
 #define _GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT      0x84FF
@@ -3946,6 +3946,8 @@ void RasterizerStorageGLES3::initialize() {
 	}
 
 	shaders.cubemap_filter.init();
+
+	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
 void RasterizerStorageGLES3::finalize() {
