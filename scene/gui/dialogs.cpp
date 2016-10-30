@@ -232,6 +232,8 @@ String AcceptDialog::get_text() const {
 void AcceptDialog::set_text(String p_text) {
 
 	label->set_text(p_text);
+	minimum_size_changed();
+	_update_child_rect();
 }
 
 void AcceptDialog::set_hide_on_ok(bool p_hide) {
@@ -252,15 +254,16 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 }
 
 void AcceptDialog::_update_child_rect() {
-
+	Size2 label_size=label->get_minimum_size();
+	if (label->get_text().empty()) {
+		label_size.height = 0;
+	}
 	int margin = get_constant("margin","Dialogs");
 	Size2 size = get_size();
 	Size2 hminsize = hbc->get_combined_minimum_size();
 
-	Vector2 cpos(margin,margin);
-	Vector2 csize(size.x-margin*2,size.y-margin*3-hminsize.y);
-	label->set_pos(cpos);
-	label->set_size(csize);
+	Vector2 cpos(margin,margin+label_size.height);
+	Vector2 csize(size.x-margin*2,size.y-margin*3-hminsize.y-label_size.height);
 
 	if (child) {
 
