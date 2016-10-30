@@ -254,52 +254,40 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 }
 
 void AcceptDialog::_update_child_rect() {
-
-	const int margin = get_constant("margin","Dialogs");
-	const Size2 size = get_size();
+	Size2 label_size=label->get_minimum_size();
+	if (label->get_text().empty()) {
+		label_size.height = 0;
+	}
+	int margin = get_constant("margin","Dialogs");
+	Size2 size = get_size();
 	Size2 hminsize = hbc->get_combined_minimum_size();
 
-	const Size2 max_csize(
-		size.width - margin * 2,
-		size.height - margin * 3 - hminsize.height);
-	hminsize.width = max_csize.width;
+	Vector2 cpos(margin,margin+label_size.height);
+	Vector2 csize(size.x-margin*2,size.y-margin*3-hminsize.y-label_size.height);
 
-	Point2 cpos(margin, margin);
-	Size2 csize = label->get_combined_minimum_size();
-	if(label->get_text().empty())
-		csize.y = 0;
-	csize.x = MIN(csize.width, max_csize.width);
-	csize.y = MIN(csize.height, max_csize.height);
-	label->set_pos(cpos);
-	label->set_size(csize);
-
-	if(child) {
-		const float child_y_offset = csize.height + (csize.height > 0 ? margin : 0);
-		cpos.y += child_y_offset;
-		csize = max_csize;
-		csize.height -= child_y_offset;
+	if (child) {
 
 		child->set_pos(cpos);
 		child->set_size(csize);
 	}
 
-	cpos.y += csize.height + margin;
+	cpos.y+=csize.y+margin;
+	csize.y=hminsize.y;
 
 	hbc->set_pos(cpos);
-	hbc->set_size(hminsize);
+	hbc->set_size(csize);
+
 }
 
 Size2 AcceptDialog::get_minimum_size() const {
 
 	int margin = get_constant("margin","Dialogs");
 	Size2 minsize = label->get_combined_minimum_size();
-	if(label->get_text().empty())
-		minsize.y = 0;
 	if (child) {
 
 		Size2 cminsize = child->get_combined_minimum_size();
 		minsize.x=MAX(cminsize.x,minsize.x);
-		minsize.y += cminsize.y + (minsize.y > 0 ? margin : 0);
+		minsize.y=MAX(cminsize.y,minsize.y);
 	}
 
 	Size2 hminsize = hbc->get_combined_minimum_size();
