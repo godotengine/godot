@@ -1402,6 +1402,50 @@ def use_windows_spawn_fix(self, platform=None):
     self['SPAWN'] = mySpawn
 
 
+def split_lib(self, libname):
+	import string
+	env = self
+
+	num = 0
+	cur_base = ""
+	max_src = 64
+	list = []
+	lib_list = []
+
+	for f in getattr(env, libname + "_sources"):
+		fname = ""
+		if type(f) == type(""):
+			fname = env.File(f).path
+		else:
+			fname = env.File(f)[0].path
+		fname = fname.replace("\\", "/")
+		base = string.join(fname.split("/")[:2], "/")
+		if base != cur_base and len(list) > max_src:
+			if num > 0:
+				lib = env.Library(libname + str(num), list)
+				lib_list.append(lib)
+				list = []
+			num = num + 1
+		cur_base = base
+		list.append(f)
+
+	lib = env.Library(libname + str(num), list)
+	lib_list.append(lib)
+
+	if len(lib_list) > 0:
+		import os, sys
+		if os.name == 'posix' and sys.platform == 'msys':
+			env.Replace(ARFLAGS = ['rcsT'])
+			lib = env.Library(libname + "_collated", lib_list)
+			lib_list = [lib]
+
+	lib_base = []
+	env.add_source_files(lib_base, "*.cpp")
+	lib_list.insert(0, env.Library(libname, lib_base))
+
+	env.Prepend(LIBS = lib_list)
+
+
 def save_active_platforms(apnames,ap):
 
 	for x in ap:

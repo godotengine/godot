@@ -35,6 +35,9 @@ if (env["tools"]=="yes"):
 if env['vsproj']=="yes":
 	env.AddToVSProject(env.drivers_sources)
 
-env.add_source_files(env.drivers_sources,"*.cpp")
-lib = env.Library("drivers",env.drivers_sources)
-env.Prepend(LIBS=[lib])
+if env.split_drivers:
+	env.split_lib("drivers")
+else:
+	env.add_source_files(env.drivers_sources,"*.cpp")
+	lib = env.Library("drivers",env.drivers_sources)
+	env.Prepend(LIBS=[lib])
