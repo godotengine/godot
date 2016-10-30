@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_driver_types.cpp                                            */
+/*  regex.h                                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,48 +26,89 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_driver_types.h"
 
-#include "core/math/geometry.h"
-#include "png/image_loader_png.h"
-#include "png/resource_saver_png.h"
+#ifndef REGEX_H
+#define REGEX_H
 
-#ifdef TOOLS_ENABLED
-#include "convex_decomp/b2d_decompose.h"
-#endif
+#include "core/vector.h"
+#include "core/ustring.h"
+#include "core/dictionary.h"
+#include "core/reference.h"
+#include "core/resource.h"
 
-#ifdef TOOLS_ENABLED
-#include "platform/windows/export/export.h"
-#endif
+class RegExNode;
 
-static ImageLoaderPNG *image_loader_png=NULL;
-static ResourceSaverPNG *resource_saver_png=NULL;
+class RegExMatch : public Reference {
 
+	OBJ_TYPE(RegExMatch, Reference);
 
-void register_core_driver_types() {
+	struct Group {
+		Variant name;
+		int start;
+		int length;
+	};
 
-	image_loader_png = memnew( ImageLoaderPNG );
-	ImageLoader::add_image_format_loader( image_loader_png );
+	Vector<Group> captures;
+	String string;
 
-	resource_saver_png = memnew( ResourceSaverPNG );
-	ResourceSaver::add_resource_format_saver(resource_saver_png);
-}
+	friend class RegEx;
+	friend class RegExSearch;
+	friend class RegExNodeCapturing;
+	friend class RegExNodeBackReference;
 
-void unregister_core_driver_types() {
+protected:
 
-	if (image_loader_png)
-		memdelete( image_loader_png );
-	if (resource_saver_png)
-		memdelete( resource_saver_png );
-}
+	static void _bind_methods();
 
+public:
 
-void register_driver_types() {
+	String expand(const String& p_template) const;
 
-#ifdef TOOLS_ENABLED
-	Geometry::_decompose_func=b2d_decompose;
-#endif
-}
+	int get_group_count() const;
+	Array get_group_array() const;
 
-void unregister_driver_types() {
-}
+	Array get_names() const;
+	Dictionary get_name_dict() const;
+
+	String get_string(const Variant& p_name) const;
+	int get_start(const Variant& p_name) const;
+	int get_end(const Variant& p_name) const;
+
+	RegExMatch();
+
+};
+
+class RegEx : public Resource {
+
+	OBJ_TYPE(RegEx, Resource);
+
+	RegExNode* root;
+	Vector<Variant> group_names;
+	String pattern;
+	int lookahead_depth;
+
+protected:
+
+	static void _bind_methods();
+
+public:
+
+	void clear();
+	Error compile(const String& p_pattern);
+
+	Ref<RegExMatch> search(const String& p_text, int p_start = 0, int p_end = -1) const;
+	String sub(const String& p_text, const String& p_replacement, bool p_all = false, int p_start = 0, int p_end = -1) const;
+
+	bool is_valid() const;
+	String get_pattern() const;
+	int get_group_count() const;
+	Array get_names() const;
+
+	RegEx();
+	RegEx(const String& p_pattern);
+	~RegEx();
+
+};
+
+#endif // REGEX_H
+
