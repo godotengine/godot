@@ -3,6 +3,13 @@
 
 #include <string.h>
 
+#ifdef WINDOWS_ENABLED
+ // Workaround mingw missing flags!
+ #ifndef IPV6_V6ONLY
+  #define IPV6_V6ONLY 27
+ #endif
+#endif
+
 // helpers for sockaddr -> IP_Address and back, should work for posix and winsock. All implementations should use this
 
 static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p_ip, int p_port) {
@@ -44,6 +51,27 @@ static size_t _set_listen_sockaddr(struct sockaddr_storage* p_addr, int p_port, 
 		return sizeof(sockaddr_in6);
 	};
 };
+
+static int _socket_create(IP_Address::AddrType p_type, int type, int protocol) {
+
+	ERR_FAIL_COND_V(p_type > IP_Address::TYPE_ANY || p_type < IP_Address::TYPE_NONE, ERR_INVALID_PARAMETER);
+
+	int family = p_type == IP_Address::TYPE_IPV4 ? AF_INET : AF_INET6;
+	int sockfd = socket(family, type, protocol);
+
+	ERR_FAIL_COND_V( sockfd == -1, -1 );
+
+	if(family == AF_INET6) {
+		// Ensure IPv4 over IPv6 is enabled
+		int no = 0;
+		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&no, sizeof(no)) != 0) {
+			WARN_PRINT("Unable to set IPv4 address mapping over IPv6");
+		}
+	}
+
+	return sockfd;
+}
+
 
 static void _set_ip_addr_port(IP_Address& r_ip, int& r_port, struct sockaddr_storage* p_addr) {
 

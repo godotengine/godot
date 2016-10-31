@@ -32,6 +32,7 @@
 #include "stream_peer.h"
 
 #include "ip_address.h"
+#include "io/ip.h"
 
 class StreamPeerTCP : public StreamPeer {
 
@@ -50,6 +51,7 @@ public:
 
 protected:
 
+	virtual Error _connect(const String& p_address, int p_port, IP_Address::AddrType p_type = IP_Address::TYPE_ANY);
 	static StreamPeerTCP* (*_create)();
 	static void _bind_methods();
 
