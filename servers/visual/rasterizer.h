@@ -109,8 +109,12 @@ public:
 
 	virtual RID light_instance_create(RID p_light)=0;
 	virtual void light_instance_set_transform(RID p_light_instance,const Transform& p_transform)=0;
+	virtual void light_instance_mark_visible(RID p_light_instance)=0;
+
 
 	virtual void render_scene(const Transform& p_cam_transform,CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_directional_lights,int p_directional_light_count,RID p_environment)=0;
+
+	virtual void set_scene_pass(uint64_t p_pass)=0;
 
 	virtual bool free(RID p_rid)=0;
 

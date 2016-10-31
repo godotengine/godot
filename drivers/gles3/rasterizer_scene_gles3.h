@@ -7,7 +7,11 @@
 class RasterizerSceneGLES3 : public RasterizerScene {
 public:
 
+	uint64_t shadow_atlas_realloc_tolerance_msec;
+
+
 	uint64_t render_pass;
+	uint64_t scene_pass;
 	uint32_t current_material_index;
 	uint32_t current_geometry_index;
 
@@ -62,8 +66,58 @@ public:
 
 	} state;
 
+	/* SHADOW ATLAS API */
 
+	struct ShadowAtlas : public RID_Data {
 
+		enum {
+			SHADOW_INDEX_DIRTY_BIT=(1<<31),
+			QUADRANT_SHIFT=27,
+			SHADOW_INDEX_MASK=(1<<QUADRANT_SHIFT)-1,
+			SHADOW_INVALID=0xFFFFFFFF
+		};
+
+		struct Quadrant {
+
+			uint32_t subdivision;
+
+			struct Shadow {
+				RID owner;
+				uint64_t version;
+				uint64_t alloc_tick;
+
+				Shadow() {
+					version=0;
+					alloc_tick=0;
+				}
+			};
+
+			Vector<Shadow> shadows;
+
+			Quadrant() {
+				subdivision=0; //not in use
+			}
+
+		} quadrants[4];
+
+		int size_order[4];
+		uint32_t smallest_subdiv;
+
+		int size;
+
+		GLuint fbo;
+		GLuint depth;
+
+		Map<RID,uint32_t> shadow_owners;
+	};
+
+	RID_Owner<ShadowAtlas> shadow_atlas_owner;
+
+	RID shadow_atlas_create();
+	void shadow_atlas_set_size(RID p_atlas,int p_size);
+	void shadow_atlas_set_quadrant_subdivision(RID p_atlas,int p_quadrant,int p_subdivision);
+	bool _shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
+	uint32_t shadow_atlas_update_light(RID p_atlas,RID p_light_intance,float p_coverage,uint64_t p_light_version);
 
 	/* ENVIRONMENT API */
 
@@ -159,6 +213,7 @@ public:
 		GLuint light_ubo;
 
 		uint64_t shadow_pass;
+		uint64_t last_scene_pass;
 		uint64_t last_pass;
 		uint16_t light_index;
 
@@ -166,6 +221,7 @@ public:
 
 		CameraMatrix shadow_projection[4];
 
+		Set<RID> shadow_atlases; //shadow atlases where this light is registered
 
 		LightInstance() { }
 
@@ -175,6 +231,7 @@ public:
 
 	virtual RID light_instance_create(RID p_light);
 	virtual void light_instance_set_transform(RID p_light_instance,const Transform& p_transform);
+	virtual void light_instance_mark_visible(RID p_light_instance);
 
 	/* RENDER LIST */
 
@@ -190,6 +247,7 @@ public:
 			SORT_KEY_LIGHT_TYPE_SHIFT=54, //type is most important
 			SORT_KEY_LIGHT_INDEX_SHIFT=38, //type is most important
 			SORT_KEY_LIGHT_INDEX_UNSHADED=uint64_t(0xF) << SORT_KEY_LIGHT_TYPE_SHIFT, //type is most important
+			SORT_KEY_LIGHT_MASK=(uint64_t(0xFFFFF) << SORT_KEY_LIGHT_INDEX_SHIFT), //type is most important
 			SORT_KEY_MATERIAL_INDEX_SHIFT=22,
 			SORT_KEY_GEOMETRY_INDEX_SHIFT=6,
 			SORT_KEY_GEOMETRY_TYPE_SHIFT=2,
@@ -327,7 +385,7 @@ public:
 	void _draw_skybox(RID p_skybox, CameraMatrix& p_projection, const Transform& p_transform, bool p_vflip, float p_scale);
 
 	void _setup_environment(Environment *env,CameraMatrix& p_cam_projection, const Transform& p_cam_transform);
-	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform);
+	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform,const CameraMatrix& p_camera_projection);
 	void _copy_screen();
 	void _copy_to_front_buffer(Environment *env);
 
@@ -336,6 +394,8 @@ public:
 	virtual bool free(RID p_rid);
 
 	void _generate_brdf();
+
+	virtual void set_scene_pass(uint64_t p_pass);
 
 	void initialize();
 	void finalize();

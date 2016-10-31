@@ -1107,6 +1107,8 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewp
 	render_pass++;
 	uint32_t camera_layer_mask=camera->visible_layers;
 
+	VSG::scene_render->set_scene_pass(render_pass);
+
 
 	/* STEP 1 - SETUP CAMERA */
 	CameraMatrix camera_matrix;
@@ -1266,6 +1268,7 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewp
 					//do not add this light if no geometry is affected by it..
 					light_cull_result[light_cull_count]=ins;
 					light_instance_cull_result[light_cull_count]=light->instance;
+					VSG::scene_render->light_instance_mark_visible(light->instance); //mark it visible for shadow allocation later
 
 					light_cull_count++;
 				}
@@ -1486,6 +1489,7 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewp
 	}
 		// add geometry
 #endif
+
 
 
 	VSG::scene_render->render_scene(camera->transform, camera_matrix,ortho,(RasterizerScene::InstanceBase**)instance_cull_result,cull_count,light_instance_cull_result,light_cull_count,directional_light_ptr,directional_light_count,environment);
