@@ -3746,6 +3746,7 @@ bool CanvasItemEditorViewport::_create_instance(Node* parent, String& path, cons
 
 	if (editor->get_edited_scene()->get_filename()!="") { // cyclical instancing
 		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_filename(), instanced_scene)) {
+			memdelete(instanced_scene);
 			return false;
 		}
 	}
