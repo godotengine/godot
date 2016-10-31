@@ -49,7 +49,7 @@ def create(env):
     if "applelink" in tools:
         tools.remove("applelink")
         env.Tool('gcc')
-    return env.Clone(tools=tools);
+    return env.Clone(tools=tools)
 
 
 def configure(env):
@@ -124,7 +124,7 @@ def configure(env):
         else:
             env.extra_suffix = ".armv7" + env.extra_suffix
 
-    gcc_path = env["ANDROID_NDK_ROOT"] + "/toolchains/" + env["NDK_TARGET"] + "/prebuilt/";
+    gcc_path = env["ANDROID_NDK_ROOT"] + "/toolchains/" + env["NDK_TARGET"] + "/prebuilt/"
 
     if (sys.platform.startswith("linux")):
         if (platform.machine().endswith('64')):

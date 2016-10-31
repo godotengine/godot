@@ -61,7 +61,7 @@ for x in (range(len(sys.argv) - 1)):
                 if (glpos == -1):
                     continue
 
-            ret = line[:glpos].strip();
+            ret = line[:glpos].strip()
 
             line = line[glpos:].strip()
             namepos = line.find("(")
@@ -127,14 +127,14 @@ header_code = """\
 
 f.write("#include <stddef.h>\n\n\n")
 
-f.write(header_code);
+f.write(header_code)
 
 f.write("#ifdef __cplusplus\nextern \"C\" {\n#endif\n\n\n")
 f.write("#if defined(_WIN32) && !defined(__CYGWIN__)\n")
 f.write("#define GLWRP_APIENTRY __stdcall\n")
-f.write("#else\n");
+f.write("#else\n")
 f.write("#define GLWRP_APIENTRY \n")
-f.write("#endif\n\n");
+f.write("#endif\n\n")
 for x in types:
     f.write(x + "\n")
 
@@ -150,7 +150,7 @@ for x in functions:
     f.write("#define " + x["name"] + " __wrapper_" + x["name"] + "\n")
 
 f.write("\n\n")
-f.write("typedef void (*GLWrapperFuncPtr)(void);\n\n");
+f.write("typedef void (*GLWrapperFuncPtr)(void);\n\n")
 f.write("void glWrapperInit( GLWrapperFuncPtr (*wrapperFunc)(const char*) );\n")
 
 f.write("#ifdef __cplusplus\n}\n#endif\n")

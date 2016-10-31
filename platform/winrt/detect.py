@@ -49,7 +49,7 @@ def configure(env):
         sys.exit()
 
     arch = ""
-    env['ENV'] = os.environ;
+    env['ENV'] = os.environ
 
     # ANGLE
     angle_root = os.getenv("ANGLE_SRC_PATH")

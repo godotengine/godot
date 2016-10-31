@@ -9,7 +9,8 @@ def tof(filepath):
     content = content.replace("0x", "")
     content = content.split(',')
     for i in range(len(content)):
-        if len(content[i]) == 1: content[i] = "0" + content[i]
+        if len(content[i]) == 1:
+            content[i] = "0" + content[i]
     content = "".join(content)
     with open(filepath + ".file", 'wb') as f:
         content = f.write(content.decode("hex"))

@@ -26,11 +26,11 @@ def write_string(_f, text, newline=True):
 
 
 def escape(ret):
-    ret = ret.replace("&", "&amp;");
-    ret = ret.replace("<", "&gt;");
-    ret = ret.replace(">", "&lt;");
-    ret = ret.replace("'", "&apos;");
-    ret = ret.replace("\"", "&quot;");
+    ret = ret.replace("&", "&amp;")
+    ret = ret.replace("<", "&gt;")
+    ret = ret.replace(">", "&lt;")
+    ret = ret.replace("'", "&apos;")
+    ret = ret.replace("\"", "&quot;")
     return ret
 
 
@@ -138,22 +138,22 @@ def write_class(c):
             for a in list(m):
                 if (a.tag == "return"):
                     typ = get_tag(a, "type")
-                    write_string(f, '<return' + typ + '>');
-                    write_string(f, '</return>');
+                    write_string(f, '<return' + typ + '>')
+                    write_string(f, '</return>')
                 elif (a.tag == "argument"):
 
                     default = get_tag(a, "default")
 
-                    write_string(f, '<argument index="' + a.attrib["index"] + '" name="' + escape(a.attrib["name"]) + '" type="' + a.attrib["type"] + '"' + default + '>');
-                    write_string(f, '</argument>');
+                    write_string(f, '<argument index="' + a.attrib["index"] + '" name="' + escape(a.attrib["name"]) + '" type="' + a.attrib["type"] + '"' + default + '>')
+                    write_string(f, '</argument>')
 
-            write_string(f, '<description>');
+            write_string(f, '<description>')
             if (old_class != None):
                 old_method_descr = find_method_descr(old_class, m.attrib["name"])
                 if (old_method_descr):
                     write_string(f, escape(escape(old_method_descr.strip())))
 
-            write_string(f, '</description>');
+            write_string(f, '</description>')
             dec_tab()
             write_string(f, "</method>")
         dec_tab()
@@ -173,15 +173,15 @@ def write_class(c):
             for a in list(m):
                 if (a.tag == "argument"):
 
-                    write_string(f, '<argument index="' + a.attrib["index"] + '" name="' + escape(a.attrib["name"]) + '" type="' + a.attrib["type"] + '">');
-                    write_string(f, '</argument>');
+                    write_string(f, '<argument index="' + a.attrib["index"] + '" name="' + escape(a.attrib["name"]) + '" type="' + a.attrib["type"] + '">')
+                    write_string(f, '</argument>')
 
-            write_string(f, '<description>');
+            write_string(f, '<description>')
             if (old_class != None):
                 old_signal_descr = find_signal_descr(old_class, m.attrib["name"])
                 if (old_signal_descr):
                     write_string(f, escape(old_signal_descr.strip()))
-            write_string(f, '</description>');
+            write_string(f, '</description>')
             dec_tab()
             write_string(f, "</signal>")
         dec_tab()

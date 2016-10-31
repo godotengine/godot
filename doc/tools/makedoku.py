@@ -17,7 +17,7 @@ if len(input_list) < 1:
 
 def validate_tag(elem, tag):
     if (elem.tag != tag):
-        print("Tag mismatch, expected '" + tag + "', got " + elem.tag);
+        print("Tag mismatch, expected '" + tag + "', got " + elem.tag)
         sys.exit(255)
 
 

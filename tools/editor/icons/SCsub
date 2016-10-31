@@ -22,42 +22,42 @@ def make_editor_icons_action(target, source, env):
     for x in pixmaps:
 
         x = str(x)
-        var_str = os.path.basename(x)[:-4] + "_png";
+        var_str = os.path.basename(x)[:-4] + "_png"
         # print(var_str)
 
-        s.write("static const unsigned char " + var_str + "[]={\n");
+        s.write("static const unsigned char " + var_str + "[]={\n")
 
-        pngf = open(x, "rb");
+        pngf = open(x, "rb")
 
-        b = pngf.read(1);
+        b = pngf.read(1)
         while(len(b) == 1):
             s.write(hex(ord(b)))
-            b = pngf.read(1);
+            b = pngf.read(1)
             if (len(b) == 1):
                 s.write(",")
 
-        s.write("\n};\n\n");
+        s.write("\n};\n\n")
 
-        pngf.close();
-        var_str = os.path.basename(x)[:-4] + "_hidpi_png";
+        pngf.close()
+        var_str = os.path.basename(x)[:-4] + "_hidpi_png"
         try:
 
             pngf = open(os.path.dirname(x) + "/2x/" + os.path.basename(x), "rb")
 
-            s.write("static const unsigned char " + var_str + "[]={\n");
+            s.write("static const unsigned char " + var_str + "[]={\n")
 
-            b = pngf.read(1);
+            b = pngf.read(1)
             while(len(b) == 1):
                 s.write(hex(ord(b)))
-                b = pngf.read(1);
+                b = pngf.read(1)
                 if (len(b) == 1):
                     s.write(",")
 
-            s.write("\n};\n\n\n");
+            s.write("\n};\n\n\n")
             hidpi_list.append(x)
 
         except:
-            s.write("static const unsigned char* " + var_str + "=NULL;\n\n\n");
+            s.write("static const unsigned char* " + var_str + "=NULL;\n\n\n")
 
     s.write("static Ref<ImageTexture> make_icon(const uint8_t* p_png,const uint8_t* p_hidpi_png) {\n")
     s.write("\tRef<ImageTexture> texture( memnew( ImageTexture ) );\n")
@@ -74,12 +74,12 @@ def make_editor_icons_action(target, source, env):
     for x in pixmaps:
 
         x = os.path.basename(str(x))
-        type = x[5:-4].title().replace("_", "");
-        var_str = x[:-4] + "_png";
-        var_str_hidpi = x[:-4] + "_hidpi_png";
-        s.write("\tp_theme->set_icon(\"" + type + "\",\"EditorIcons\",make_icon(" + var_str + "," + var_str_hidpi + "));\n");
+        type = x[5:-4].title().replace("_", "")
+        var_str = x[:-4] + "_png"
+        var_str_hidpi = x[:-4] + "_hidpi_png"
+        s.write("\tp_theme->set_icon(\"" + type + "\",\"EditorIcons\",make_icon(" + var_str + "," + var_str_hidpi + "));\n")
 
-    s.write("\n\n}\n\n");
+    s.write("\n\n}\n\n")
 
     f = open(dst, "wb")
     f.write(s.getvalue())

@@ -47,11 +47,11 @@ def make_translations_header(target, source, env):
         xl_names.append([name, len(buf), str(decomp_size)])
 
     g.write("struct EditorTranslationList {\n")
-    g.write("\tconst char* lang;\n");
-    g.write("\tint comp_size;\n");
-    g.write("\tint uncomp_size;\n");
-    g.write("\tconst unsigned char* data;\n");
-    g.write("};\n\n");
+    g.write("\tconst char* lang;\n")
+    g.write("\tint comp_size;\n")
+    g.write("\tint uncomp_size;\n")
+    g.write("\tconst unsigned char* data;\n")
+    g.write("};\n\n")
     g.write("static EditorTranslationList _editor_translations[]={\n")
     for x in xl_names:
         g.write("\t{ \"" + x[0] + "\", " + str(x[1]) + ", " + str(x[2]) + ",_translation_" + x[0] + "_compressed},\n")
@@ -112,8 +112,8 @@ if (env["tools"] != "no"):
     env.Depends('#tools/editor/builtin_fonts.h', flist)
     env.Command('#tools/editor/builtin_fonts.h', flist, make_fonts_header)
 
-    SConscript('editor/SCsub');
-    SConscript('collada/SCsub');
+    SConscript('editor/SCsub')
+    SConscript('collada/SCsub')
     SConscript('doc/SCsub')
 
     lib = env.Library("tool", env.tool_sources)

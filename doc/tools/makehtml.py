@@ -40,7 +40,7 @@ if len(input_list) < 1:
 
 def validate_tag(elem, tag):
     if (elem.tag != tag):
-        print("Tag mismatch, expected '" + tag + "', got " + elem.tag);
+        print("Tag mismatch, expected '" + tag + "', got " + elem.tag)
         sys.exit(255)
 
 
@@ -90,7 +90,7 @@ def make_html_top(body, bottom=False):
 def make_html_class_list(class_list, columns):
 
     div = ET.Element("div")
-    div.attrib["class"] = "ClassList";
+    div.attrib["class"] = "ClassList"
 
     h1 = ET.SubElement(div, "h2")
     h1.text = "Alphabetical Class List"
@@ -463,7 +463,7 @@ def make_method_def(name, m, declare, event=False):
 def make_html_class(node):
 
     div = ET.Element("div")
-    div.attrib["class"] = "class";
+    div.attrib["class"] = "class"
 
     a = ET.SubElement(div, "a")
     a.attrib["name"] = node.attrib["name"]
@@ -482,7 +482,7 @@ def make_html_class(node):
         ET.SubElement(div, "br")
 
         div2 = ET.SubElement(div, "div")
-        div2.attrib["class"] = "inheritance";
+        div2.attrib["class"] = "inheritance"
 
         span = ET.SubElement(div2, "span")
         span.text = "Inherits: "
@@ -493,7 +493,7 @@ def make_html_class(node):
         ET.SubElement(div, "br")
 
         div3 = ET.SubElement(div, "div")
-        div3.attrib["class"] = "category";
+        div3.attrib["class"] = "category"
 
         span = ET.SubElement(div3, "span")
         span.attrib["class"] = "category"
@@ -520,7 +520,7 @@ def make_html_class(node):
         h4.text = "Public Methods:"
 
         method_table = ET.SubElement(div, "table")
-        method_table.attrib["class"] = "method_list";
+        method_table.attrib["class"] = "method_list"
 
         for m in list(methods):
             #li = ET.SubElement(div2, "li")
@@ -533,7 +533,7 @@ def make_html_class(node):
         h4.text = "Events:"
 
         event_table = ET.SubElement(div, "table")
-        event_table.attrib["class"] = "method_list";
+        event_table.attrib["class"] = "method_list"
 
         for m in list(events):
             #li = ET.SubElement(div2, "li")
@@ -545,13 +545,13 @@ def make_html_class(node):
         h4 = ET.SubElement(div, "h4")
         h4.text = "Public Variables:"
         div2 = ET.SubElement(div, "div")
-        div2.attrib["class"] = "member_list";
+        div2.attrib["class"] = "member_list"
 
         for c in list(members):
 
             li = ET.SubElement(div2, "li")
             div3 = ET.SubElement(li, "div")
-            div3.attrib["class"] = "member";
+            div3.attrib["class"] = "member"
             make_type(c.attrib["type"], div3)
             span = ET.SubElement(div3, "span")
             span.attrib["class"] = "identifier member_name"
@@ -566,12 +566,12 @@ def make_html_class(node):
         h4 = ET.SubElement(div, "h4")
         h4.text = "Constants:"
         div2 = ET.SubElement(div, "div")
-        div2.attrib["class"] = "constant_list";
+        div2.attrib["class"] = "constant_list"
 
         for c in list(constants):
             li = ET.SubElement(div2, "li")
             div3 = ET.SubElement(li, "div")
-            div3.attrib["class"] = "constant";
+            div3.attrib["class"] = "constant"
 
             span = ET.SubElement(div3, "span")
             span.attrib["class"] = "identifier constant_name"
@@ -614,10 +614,10 @@ def make_html_class(node):
             descr = m.find("description")
 
             if (descr == None or descr.text.strip() == ""):
-                continue;
+                continue
 
             div2 = ET.SubElement(div, "div")
-            div2.attrib["class"] = "method_doc";
+            div2.attrib["class"] = "method_doc"
 
             div2.append(make_method_def(node.attrib["name"], m, True))
             #anchor = ET.SubElement(div2, "a")
@@ -675,7 +675,7 @@ for cn in class_names:
         css.attrib["type"] = "text/css"
         body2 = ET.SubElement(html2, "body")
         make_html_top(body2)
-        body2.append(make_html_class(c));
+        body2.append(make_html_class(c))
         make_html_bottom(body2)
         et_out = ET.ElementTree(html2)
         et_out.write(c.attrib["name"] + ".html")

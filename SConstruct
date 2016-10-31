@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-EnsureSConsVersion(0, 14);
+EnsureSConsVersion(0, 14)
 
 
 import string
@@ -37,7 +37,7 @@ for x in glob.glob("platform/*"):
         global_defaults.append(x[9:])
     if (detect.is_active()):
         active_platforms.append(detect.get_name())
-        active_platform_ids.append(x);
+        active_platform_ids.append(x)
     if (detect.can_build()):
         x = x.replace("platform/", "")  # rest of world
         x = x.replace("platform\\", "")  # win32
@@ -64,7 +64,7 @@ elif (os.name == "nt"):
     if (os.getenv("VCINSTALLDIR") == None or platform_arg == "android"):
         custom_tools = ['mingw']
 
-env_base = Environment(tools=custom_tools);
+env_base = Environment(tools=custom_tools)
 if 'TERM' in os.environ:
     env_base['ENV']['TERM'] = os.environ['TERM']
 env_base.AppendENVPath('PATH', os.getenv('PATH'))
@@ -140,9 +140,9 @@ opts.Add('glew', 'GLEW library for the gl_context (system/builtin)', 'builtin')
 opts.Add('xaudio2', 'XAudio2 audio driver (yes/no)', 'no')
 opts.Add("CXX", "C++ Compiler")
 opts.Add("CC", "C Compiler")
-opts.Add("CCFLAGS", "Custom flags for the C/C++ compiler");
-opts.Add("CFLAGS", "Custom flags for the C compiler");
-opts.Add("LINKFLAGS", "Custom flags for the linker");
+opts.Add("CCFLAGS", "Custom flags for the C/C++ compiler")
+opts.Add("CFLAGS", "Custom flags for the C compiler")
+opts.Add("LINKFLAGS", "Custom flags for the linker")
 opts.Add('unix_global_settings_path', 'unix-specific path to system-wide settings. Currently only used by templates.', '')
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
@@ -180,11 +180,11 @@ sys.modules.pop('detect')
 """
 
 if (env_base['target'] == 'debug'):
-    env_base.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC']);
+    env_base.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
     env_base.Append(CPPFLAGS=['-DSCI_NAMESPACE'])
 
 if (env_base['deprecated'] != 'no'):
-    env_base.Append(CPPFLAGS=['-DENABLE_DEPRECATED']);
+    env_base.Append(CPPFLAGS=['-DENABLE_DEPRECATED'])
 
 env_base.platforms = {}
 
@@ -264,7 +264,7 @@ if selected_platform in platform_list:
             sys.exit(255)
         suffix += ".opt"
 
-        env.Append(CCFLAGS=['-DNDEBUG']);
+        env.Append(CCFLAGS=['-DNDEBUG'])
 
     elif (env["target"] == "release_debug"):
         if (env["tools"] == "yes"):
@@ -312,7 +312,7 @@ if selected_platform in platform_list:
         sys.modules.pop('config')
 
     if (env.use_ptrcall):
-        env.Append(CPPFLAGS=['-DPTRCALL_ENABLED']);
+        env.Append(CPPFLAGS=['-DPTRCALL_ENABLED'])
 
     # to test 64 bits compiltion
     # env.Append(CPPFLAGS=['-m64'])
@@ -349,7 +349,7 @@ if selected_platform in platform_list:
     SConscript("modules/SCsub")
     SConscript("main/SCsub")
 
-    SConscript("platform/" + selected_platform + "/SCsub");  # build selected platform
+    SConscript("platform/" + selected_platform + "/SCsub")  # build selected platform
 
     # Microsoft Visual Studio Project Generation
     if (env['vsproj']) == "yes":

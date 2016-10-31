@@ -267,7 +267,7 @@ def configure(env):
         env.Append(LIBPATH=[p for p in os.getenv("LIB").split(";")])
         env.Append(CCFLAGS=["/I" + DIRECTX_PATH + "/Include"])
         env.Append(LIBPATH=[DIRECTX_PATH + "/Lib/x86"])
-        env['ENV'] = os.environ;
+        env['ENV'] = os.environ
 
         # This detection function needs the tools env (that is env['ENV'], not SCons's env), and that is why it's this far bellow in the code
         compiler_version_str = methods.detect_visual_c_compiler_version(env['ENV'])
@@ -323,10 +323,10 @@ def configure(env):
             env.Append(LINKFLAGS=['-static'])
             env.Append(LINKFLAGS=['-static-libgcc'])
             env.Append(LINKFLAGS=['-static-libstdc++'])
-            mingw_prefix = env["mingw_prefix"];
+            mingw_prefix = env["mingw_prefix"]
         else:
             env.Append(LINKFLAGS=['-static'])
-            mingw_prefix = env["mingw_prefix_64"];
+            mingw_prefix = env["mingw_prefix_64"]
 
         nulstr = ""
 

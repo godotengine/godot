@@ -682,6 +682,6 @@ env_openssl.add_source_files(env.modules_sources, "*.c")
 # platform/winrt need to know openssl is available, pass to main env
 if "platform" in env and env["platform"] == "winrt":
     env.Append(CPPPATH=[thirdparty_dir])
-    env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
+    env.Append(CPPFLAGS=['-DOPENSSL_ENABLED'])
 
 Export('env')
