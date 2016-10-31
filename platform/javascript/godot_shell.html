@@ -351,24 +351,7 @@
 			};
 		};
 	//]]></script>
-	<script type="text/javascript" src="$GODOT_FS"></script>
-	<script>
-		(function() {
-			var memoryInitializer = "$GODOT_MEM";
-			if (typeof Module.locateFile === "function") {
-				memoryInitializer = Module.locateFile(memoryInitializer);
-			} else if (Module.memoryInitializerPrefixURL) {
-				memoryInitializer = Module.memoryInitializerPrefixURL + memoryInitializer;
-			}
-			var xhr = Module.memoryInitializerRequest = new XMLHttpRequest();
-			xhr.open("GET", memoryInitializer, true);
-			xhr.responseType = "arraybuffer";
-			xhr.send(null);
-		})();
-
-		var script = document.createElement("script");
-		script.src = "$GODOT_JS";
-		document.body.appendChild(script);
-	</script>
+	<script type="text/javascript" src="$GODOT_BASEfs.js"></script>
+	{{{ SCRIPT }}}
 </body>
 </html>
