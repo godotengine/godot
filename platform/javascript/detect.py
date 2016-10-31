@@ -18,8 +18,7 @@ def can_build():
 def get_opts():
 
 	return [
-		['compress','Compress JS Executable','no'],
-		['javascript_eval','Enable JavaScript eval interface','yes']
+		['javascript_eval','Enable JavaScript eval interface','yes'],
 	]
 
 def get_flags():
@@ -84,12 +83,6 @@ def configure(env):
 
 	if env['javascript_eval'] == 'yes':
 		env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
-
-	if (env["compress"]=="yes"):
-		lzma_binpath = em_path+"/third_party/lzma.js/lzma-native"
-		lzma_decoder = em_path+"/third_party/lzma.js/lzma-decoder.js"
-		lzma_dec = "LZMA.decompress"
-		env.Append(LINKFLAGS=['--compression',lzma_binpath+","+lzma_decoder+","+lzma_dec])
 
 	env.Append(LINKFLAGS=['-s','ASM_JS=1'])
 	env.Append(LINKFLAGS=['-O2'])
