@@ -3685,7 +3685,7 @@ void CanvasItemEditorViewport::_create_nodes(Node* parent, Node* child, String& 
 	editor_data->get_undo_redo().add_do_reference(child);
 	editor_data->get_undo_redo().add_undo_method(parent,"remove_child",child);
 
-	String new_name=parent->validate_child_name(child);
+	String new_name=parent->validate_child_name(child->get_name());
 	ScriptEditorDebugger *sed=ScriptEditor::get_singleton()->get_debugger();
 	editor_data->get_undo_redo().add_do_method(sed,"live_debug_create_node",editor->get_edited_scene()->get_path_to(parent),child->get_type(),new_name);
 	editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(editor->get_edited_scene()->get_path_to(parent))+"/"+new_name));
@@ -3758,7 +3758,7 @@ bool CanvasItemEditorViewport::_create_instance(Node* parent, String& path, cons
 	editor_data->get_undo_redo().add_do_reference(instanced_scene);
 	editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced_scene);
 
-	String new_name=parent->validate_child_name(instanced_scene);
+	String new_name=parent->validate_child_name(instanced_scene->get_name());
 	ScriptEditorDebugger *sed=ScriptEditor::get_singleton()->get_debugger();
 	editor_data->get_undo_redo().add_do_method(sed,"live_debug_instance_node",editor->get_edited_scene()->get_path_to(parent),path,new_name);
 	editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(editor->get_edited_scene()->get_path_to(parent))+"/"+new_name));
