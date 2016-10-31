@@ -1069,7 +1069,6 @@ EditorSettings::EditorSettings() {
 	}
 
 	_load_defaults();
-	save_changed_setting=false;
 
 
 }
