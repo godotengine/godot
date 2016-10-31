@@ -3,27 +3,27 @@
 Import('env')
 
 
-common_win=[
-	"context_gl_win.cpp",
-	"os_windows.cpp",
-	"ctxgl_procaddr.cpp",
-	"key_mapping_win.cpp",
-	"tcp_server_winsock.cpp",
-	"packet_peer_udp_winsock.cpp",
-	"stream_peer_winsock.cpp",
-	"joystick.cpp",
+common_win = [
+    "context_gl_win.cpp",
+    "os_windows.cpp",
+    "ctxgl_procaddr.cpp",
+    "key_mapping_win.cpp",
+    "tcp_server_winsock.cpp",
+    "packet_peer_udp_winsock.cpp",
+    "stream_peer_winsock.cpp",
+    "joystick.cpp",
 ]
 
-restarget="godot_res"+env["OBJSUFFIX"]
+restarget = "godot_res" + env["OBJSUFFIX"]
 
-obj = env.RES(restarget,'godot_res.rc')
+obj = env.RES(restarget, 'godot_res.rc')
 
 common_win.append(obj)
 
-env.Program('#bin/godot',['godot_win.cpp']+common_win,PROGSUFFIX=env["PROGSUFFIX"])
+env.Program('#bin/godot', ['godot_win.cpp'] + common_win, PROGSUFFIX=env["PROGSUFFIX"])
 
 # Microsoft Visual Studio Project Generation
-if (env['vsproj'])=="yes":
-	env.vs_srcs = env.vs_srcs + ["platform/windows/godot_win.cpp"]
-	for x in common_win:
-		env.vs_srcs = env.vs_srcs + ["platform/windows/" + str(x)]
+if (env['vsproj']) == "yes":
+    env.vs_srcs = env.vs_srcs + ["platform/windows/godot_win.cpp"]
+    for x in common_win:
+        env.vs_srcs = env.vs_srcs + ["platform/windows/" + str(x)]

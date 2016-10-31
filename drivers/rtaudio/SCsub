@@ -7,12 +7,12 @@ Import('env')
 # Thirdparty source files
 thirdparty_dir = "#thirdparty/rtaudio/"
 thirdparty_sources = [
-	"RtAudio.cpp",
+    "RtAudio.cpp",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env.add_source_files(env.drivers_sources, thirdparty_sources)
-env.Append(CPPPATH = [thirdparty_dir])
+env.Append(CPPPATH=[thirdparty_dir])
 
 # Driver source files
 env.add_source_files(env.drivers_sources, "*.cpp")

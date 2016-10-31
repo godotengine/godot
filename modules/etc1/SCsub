@@ -9,12 +9,12 @@ env_etc1 = env_modules.Clone()
 # Not unbundled so far since not widespread as shared library
 thirdparty_dir = "#thirdparty/rg-etc1/"
 thirdparty_sources = [
-	"rg_etc1.cpp",
+    "rg_etc1.cpp",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_etc1.add_source_files(env.modules_sources, thirdparty_sources)
-env_etc1.Append(CPPPATH = [thirdparty_dir])
+env_etc1.Append(CPPPATH=[thirdparty_dir])
 
 # Godot source files
 env_etc1.add_source_files(env.modules_sources, "*.cpp")

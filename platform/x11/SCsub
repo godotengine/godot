@@ -3,11 +3,11 @@
 Import('env')
 
 
-common_x11=[\
-	"context_gl_x11.cpp",\
-	"os_x11.cpp",\
-	"key_mapping_x11.cpp",\
-	"joystick_linux.cpp",\
+common_x11 = [\
+    "context_gl_x11.cpp",\
+    "os_x11.cpp",\
+    "key_mapping_x11.cpp",\
+    "joystick_linux.cpp",\
 ]
 
-env.Program('#bin/godot',['godot_x11.cpp']+common_x11)
+env.Program('#bin/godot', ['godot_x11.cpp'] + common_x11)

@@ -2,11 +2,11 @@
 
 Import('env')
 
-env.main_sources=[]
-env.add_source_files(env.main_sources,"*.cpp")
+env.main_sources = []
+env.add_source_files(env.main_sources, "*.cpp")
 
 Export('env')
 
-lib = env.Library("main",env.main_sources)
+lib = env.Library("main", env.main_sources)
 
 env.Prepend(LIBS=[lib])
