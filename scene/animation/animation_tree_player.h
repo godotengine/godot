@@ -111,7 +111,6 @@ private:
 		Variant value;
 
 		bool skip;
-		float total_weight;
 	};
 
 
