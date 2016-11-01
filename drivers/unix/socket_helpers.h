@@ -10,6 +10,10 @@
  #endif
 #endif
 
+#ifdef WINRT_ENABLED
+#define in6addr_any IN6ADDR_ANY_INIT
+#endif
+
 // helpers for sockaddr -> IP_Address and back, should work for posix and winsock. All implementations should use this
 
 static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p_ip, int p_port) {
