@@ -2,6 +2,6 @@
 
 Import('env')
 
-env.add_source_files(env.tool_sources,"*.cpp")
+env.add_source_files(env.tool_sources, "*.cpp")
 
 Export('env')

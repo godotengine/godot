@@ -82,7 +82,7 @@ def make_class_list(class_list, columns):
             else:
                 s += ' | '
 
-            s += '[' + classname + '](class_'+ classname.lower()+') | '
+            s += '[' + classname + '](class_' + classname.lower() + ') | '
 
         s += '\n'
         f.write(s)
@@ -126,14 +126,14 @@ def dokuize_text(text):
 
                 if param.find('.') != -1:
                     (class_param, method_param) = param.split('.')
-                    tag_text = '['+class_param+'.'+method_param.replace("_","&#95;")+'](' + class_param.lower() + '#' \
+                    tag_text = '[' + class_param + '.' + method_param.replace("_", "&#95;") + '](' + class_param.lower() + '#' \
                         + method_param + ')'
                 else:
-                    tag_text = '[' + param.replace("_","&#95;") + '](#' + param + ')'
+                    tag_text = '[' + param.replace("_", "&#95;") + '](#' + param + ')'
             elif cmd.find('image=') == 0:
                 tag_text = '![](' + cmd[6:] + ')'
             elif cmd.find('url=') == 0:
-                tag_text = '[' + cmd[4:] + ']('+cmd[4:]
+                tag_text = '[' + cmd[4:] + '](' + cmd[4:]
             elif cmd == '/url':
                 tag_text = ')'
             elif cmd == 'center':
@@ -205,9 +205,9 @@ def make_method(
         # a.attrib["name"]=name+"_"+m.attrib["name"]
         # a.text=name+"::"+m.attrib["name"]
 
-        s += ' **'+m.attrib['name'].replace("_","&#95;")+'** '
+        s += ' **' + m.attrib['name'].replace("_", "&#95;") + '** '
     else:
-        s += ' **['+ m.attrib['name'].replace("_","&#95;")+'](#' + m.attrib['name'] + ')** '
+        s += ' **[' + m.attrib['name'].replace("_", "&#95;") + '](#' + m.attrib['name'] + ')** '
 
     s += ' **(**'
     argfound = False
@@ -245,13 +245,13 @@ def make_doku_class(node):
 
     name = node.attrib['name']
 
-    f = open("class_"+name.lower() + '.md', 'wb')
+    f = open("class_" + name.lower() + '.md', 'wb')
 
     f.write('#  ' + name + '  \n')
 
     if 'inherits' in node.attrib:
         inh = node.attrib['inherits'].strip()
-        f.write('####**Inherits:** '+make_type(inh)+'\n')
+        f.write('####**Inherits:** ' + make_type(inh) + '\n')
     if 'category' in node.attrib:
         f.write('####**Category:** ' + node.attrib['category'].strip()
                 + '\n')
@@ -313,7 +313,7 @@ def make_doku_class(node):
             d = m.find('description')
             if d == None or d.text.strip() == '':
                 continue
-            f.write('\n#### <a name="'+m.attrib['name']+'">' + m.attrib['name'] + '</a>\n')
+            f.write('\n#### <a name="' + m.attrib['name'] + '">' + m.attrib['name'] + '</a>\n')
             make_method(f, node.attrib['name'], m, True)
             f.write('\n')
             f.write(dokuize_text(d.text.strip()))

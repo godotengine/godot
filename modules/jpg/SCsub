@@ -14,7 +14,7 @@ thirdparty_sources = [
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_jpg.add_source_files(env.modules_sources, thirdparty_sources)
-env_jpg.Append(CPPPATH = [thirdparty_dir])
+env_jpg.Append(CPPPATH=[thirdparty_dir])
 
 # Godot's own source files
 env_jpg.add_source_files(env.modules_sources, "*.cpp")

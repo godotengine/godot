@@ -6,7 +6,7 @@ Import('env_modules')
 env_opus = env_modules.Clone()
 
 # Thirdparty source files
-if (env["opus"] != "system"): # builtin
+if (env["opus"] != "system"):  # builtin
     thirdparty_dir = "#thirdparty/opus/"
 
     thirdparty_sources = [
@@ -129,8 +129,8 @@ if (env["opus"] != "system"): # builtin
 
     opus_sources_silk = []
 
-    if("opus_fixed_point" in env and env.opus_fixed_point=="yes"):
-        env_opus.Append(CFLAGS = ["-DFIXED_POINT"])
+    if("opus_fixed_point" in env and env.opus_fixed_point == "yes"):
+        env_opus.Append(CFLAGS=["-DFIXED_POINT"])
         opus_sources_silk = [
             "silk/fixed/schur64_FIX.c",
             "silk/fixed/residual_energy16_FIX.c",
@@ -205,11 +205,11 @@ if (env["opus"] != "system"): # builtin
         "silk/fixed",
         "silk/float",
     ]
-    env_opus.Append(CPPPATH = [thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
+    env_opus.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
 
     # also requires libogg
-    if (env["libogg"] != "system"): # builtin
-        env_opus.Append(CPPPATH = ["#thirdparty/libogg"])
+    if (env["libogg"] != "system"):  # builtin
+        env_opus.Append(CPPPATH=["#thirdparty/libogg"])
 
 # Module files
 env_opus.add_source_files(env.modules_sources, "*.cpp")

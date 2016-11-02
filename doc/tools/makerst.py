@@ -24,11 +24,11 @@ def validate_tag(elem, tag):
 class_names = []
 classes = {}
 
-def ul_string(str,ul):
-    str+="\n"
-    for i in range(len(str)-1):
-        str+=ul
-    str+="\n"
+def ul_string(str, ul):
+    str += "\n"
+    for i in range(len(str) - 1):
+        str += ul
+    str += "\n"
     return str
 
 def make_class_list(class_list, columns):
@@ -89,7 +89,7 @@ def make_class_list(class_list, columns):
             else:
                 s += ' | '
 
-            s += '[' + classname + '](class_'+ classname.lower()+') | '
+            s += '[' + classname + '](class_' + classname.lower() + ') | '
 
         s += '\n'
         f.write(s)
@@ -99,7 +99,7 @@ def make_class_list(class_list, columns):
     f.write("\n")
 
 
-def rstize_text(text,cclass):
+def rstize_text(text, cclass):
 
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
@@ -109,9 +109,9 @@ def rstize_text(text,cclass):
             break
 
         pre_text = text[:pos]
-        while text[pos+1] == '\t':
+        while text[pos + 1] == '\t':
             pos += 1
-        post_text = text[pos+1:]
+        post_text = text[pos + 1:]
 
         # Handle codeblocks
         if post_text.startswith("[codeblock]"):
@@ -130,14 +130,14 @@ def rstize_text(text,cclass):
                     break
 
                 to_skip = 0
-                while code_pos+to_skip+1 < len(code_text) and code_text[code_pos+to_skip+1] == '\t':
+                while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == '\t':
                     to_skip += 1
 
-                if len(code_text[code_pos+to_skip+1:])==0:
+                if len(code_text[code_pos + to_skip + 1:]) == 0:
                     code_text = code_text[:code_pos] + "\n"
                     code_pos += 1
                 else:
-                    code_text = code_text[:code_pos] + "\n    " + code_text[code_pos+to_skip+1:]
+                    code_text = code_text[:code_pos] + "\n    " + code_text[code_pos + to_skip + 1:]
                     code_pos += 5 - to_skip
 
             text = pre_text + "\n[codeblock]" + code_text + post_text
@@ -163,7 +163,7 @@ def rstize_text(text,cclass):
         pos = text.find('_', pos)
         if pos == -1:
             break
-        if not text[pos + 1].isalnum(): # don't escape within a snake_case word
+        if not text[pos + 1].isalnum():  # don't escape within a snake_case word
             text = text[:pos] + "\_" + text[pos + 1:]
             pos += 2
         else:
@@ -186,7 +186,7 @@ def rstize_text(text,cclass):
 
         if tag_text in class_names:
             tag_text = make_type(tag_text)
-        else: # command
+        else:  # command
             cmd = tag_text
             space_pos = tag_text.find(' ')
             if cmd.find('html') == 0:
@@ -199,13 +199,13 @@ def rstize_text(text,cclass):
 
                 if param.find('.') != -1:
                     (class_param, method_param) = param.split('.')
-                    tag_text = ':ref:`'+class_param+'.'+method_param+'<class_' + class_param + '_' + method_param + '>`'
+                    tag_text = ':ref:`' + class_param + '.' + method_param + '<class_' + class_param + '_' + method_param + '>`'
                 else:
-                    tag_text = ':ref:`' + param + '<class_' + cclass +"_"+ param + '>`'
+                    tag_text = ':ref:`' + param + '<class_' + cclass + "_" + param + '>`'
             elif cmd.find('image=') == 0:
-                tag_text = "" #'![](' + cmd[6:] + ')'
+                tag_text = ""  # '![](' + cmd[6:] + ')'
             elif cmd.find('url=') == 0:
-                tag_text = ':ref:`' + cmd[4:] + '<'+cmd[4:]+">`"
+                tag_text = ':ref:`' + cmd[4:] + '<' + cmd[4:] + ">`"
             elif cmd == '/url':
                 tag_text = ')'
             elif cmd == 'center':
@@ -234,7 +234,7 @@ def rstize_text(text,cclass):
             elif cmd == 'code' or cmd == '/code':
                 tag_text = '``'
             else:
-                tag_text = ':ref:`' + tag_text + '<class_'+tag_text.lower()+'>`'
+                tag_text = ':ref:`' + tag_text + '<class_' + tag_text.lower() + '>`'
 
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
@@ -248,7 +248,7 @@ def rstize_text(text,cclass):
 def make_type(t):
     global class_names
     if t in class_names:
-        return ':ref:`'+t+'<class_' + t.lower()+'>`'
+        return ':ref:`' + t + '<class_' + t.lower() + '>`'
     return t
 
 
@@ -262,7 +262,7 @@ def make_method(
         pp=None
 ):
 
-    if (declare or pp==None):
+    if (declare or pp == None):
         t = '- '
     else:
         t = ""
@@ -289,16 +289,16 @@ def make_method(
             t += 'void'
         t += ' '
 
-    if declare or pp==None:
+    if declare or pp == None:
 
         # span.attrib["class"]="funcdecl"
         # a=ET.SubElement(span,"a")
         # a.attrib["name"]=name+"_"+m.attrib["name"]
         # a.text=name+"::"+m.attrib["name"]
 
-        s = ' **'+m.attrib['name']+'** '
+        s = ' **' + m.attrib['name'] + '** '
     else:
-        s = ':ref:`'+ m.attrib['name']+'<class_' + cname+"_"+m.attrib['name'] + '>` '
+        s = ':ref:`' + m.attrib['name'] + '<class_' + cname + "_" + m.attrib['name'] + '>` '
 
     s += ' **(**'
     argfound = False
@@ -331,16 +331,16 @@ def make_method(
 
 #	f.write(s)
     if (not declare):
-        if (pp!=None):
-            pp.append( (t,s) )
+        if (pp != None):
+            pp.append((t, s))
         else:
-            f.write("- "+t+" "+s+"\n")
+            f.write("- " + t + " " + s + "\n")
     else:
-        f.write(t+s+"\n")
+        f.write(t + s + "\n")
 
 
 def make_heading(title, underline):
-    return title + '\n' + underline*len(title) + "\n\n"
+    return title + '\n' + underline * len(title) + "\n\n"
 
 
 
@@ -348,47 +348,47 @@ def make_rst_class(node):
 
     name = node.attrib['name']
 
-    f = codecs.open("class_"+name.lower() + '.rst', 'wb', 'utf-8')
+    f = codecs.open("class_" + name.lower() + '.rst', 'wb', 'utf-8')
 
     # Warn contributors not to edit this file directly
     f.write(".. Generated automatically by doc/tools/makerst.py in Godot's source tree.\n")
     f.write(".. DO NOT EDIT THIS FILE, but the doc/base/classes.xml source instead.\n\n")
 
-    f.write(".. _class_"+name+":\n\n")
+    f.write(".. _class_" + name + ":\n\n")
     f.write(make_heading(name, '='))
 
     if 'inherits' in node.attrib:
         inh = node.attrib['inherits'].strip()
 #		whle inh in classes[cn]
         f.write('**Inherits:** ')
-        first=True
+        first = True
         while(inh in classes):
             if (not first):
                 f.write(" **<** ")
             else:
-                first=False
+                first = False
 
             f.write(make_type(inh))
             inode = classes[inh]
             if ('inherits' in inode.attrib):
-                inh=inode.attrib['inherits'].strip()
+                inh = inode.attrib['inherits'].strip()
             else:
-                inh=None
+                inh = None
 
 
         f.write("\n\n")
 
-    inherited=[]
+    inherited = []
     for cn in classes:
-        c=classes[cn]
+        c = classes[cn]
         if 'inherits' in c.attrib:
-            if (c.attrib['inherits'].strip()==name):
+            if (c.attrib['inherits'].strip() == name):
                 inherited.append(c.attrib['name'])
 
     if (len(inherited)):
         f.write('**Inherited By:** ')
         for i in range(len(inherited)):
-            if (i>0):
+            if (i > 0):
                 f.write(", ")
             f.write(make_type(inherited[i]))
         f.write("\n\n")
@@ -398,41 +398,41 @@ def make_rst_class(node):
     f.write(make_heading('Brief Description', '-'))
     briefd = node.find('brief_description')
     if briefd != None:
-        f.write(rstize_text(briefd.text.strip(),name) + "\n\n")
+        f.write(rstize_text(briefd.text.strip(), name) + "\n\n")
 
     methods = node.find('methods')
 
     if methods != None and len(list(methods)) > 0:
         f.write(make_heading('Member Functions', '-'))
-        ml=[]
+        ml = []
         for m in list(methods):
-            make_method(f, node.attrib['name'], m, False,name,False,ml)
+            make_method(f, node.attrib['name'], m, False, name, False, ml)
         longest_t = 0
         longest_s = 0
         for s in ml:
             sl = len(s[0])
-            if (sl>longest_s):
-                longest_s=sl
+            if (sl > longest_s):
+                longest_s = sl
             tl = len(s[1])
-            if (tl>longest_t):
-                longest_t=tl
+            if (tl > longest_t):
+                longest_t = tl
 
-        sep="+"
-        for i in range(longest_s+2):
-            sep+="-"
-        sep+="+"
-        for i in range(longest_t+2):
-            sep+="-"
-        sep+="+\n"
+        sep = "+"
+        for i in range(longest_s + 2):
+            sep += "-"
+        sep += "+"
+        for i in range(longest_t + 2):
+            sep += "-"
+        sep += "+\n"
         f.write(sep)
         for s in ml:
             rt = s[0]
-            while( len(rt) < longest_s ):
-                rt+=" "
+            while(len(rt) < longest_s):
+                rt += " "
             st = s[1]
-            while( len(st) < longest_t ):
-                st+=" "
-            f.write("| "+rt+" | "+st+" |\n")
+            while(len(st) < longest_t):
+                st += " "
+            f.write("| " + rt + " | " + st + " |\n")
             f.write(sep)
         f.write('\n')
 
@@ -441,7 +441,7 @@ def make_rst_class(node):
     if events != None and len(list(events)) > 0:
         f.write(make_heading('Signals', '-'))
         for m in list(events):
-            make_method(f, node.attrib['name'], m, True,name, True)
+            make_method(f, node.attrib['name'], m, True, name, True)
         f.write('\n')
 
     members = node.find('members')
@@ -466,28 +466,28 @@ def make_rst_class(node):
             if 'value' in c.attrib:
                 s += ' = **' + c.attrib['value'] + '**'
             if c.text.strip() != '':
-                s += ' --- ' + rstize_text(c.text.strip(),name)
+                s += ' --- ' + rstize_text(c.text.strip(), name)
             f.write(s + '\n')
         f.write('\n')
 
     descr = node.find('description')
     if descr != None and descr.text.strip() != '':
         f.write(make_heading('Description', '-'))
-        f.write(rstize_text(descr.text.strip(),name) + "\n\n")
+        f.write(rstize_text(descr.text.strip(), name) + "\n\n")
 
     methods = node.find('methods')
     if methods != None and len(list(methods)) > 0:
         f.write(make_heading('Member Function Description', '-'))
         for m in list(methods):
-            f.write(".. _class_"+name+"_"+m.attrib['name']+":\n\n")
+            f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
 #			f.write(ul_string(m.attrib['name'],"^"))
             #f.write('\n<a name="'+m.attrib['name']+'">' + m.attrib['name'] + '</a>\n------\n')
-            make_method(f, node.attrib['name'], m, True,name)
+            make_method(f, node.attrib['name'], m, True, name)
             f.write('\n')
             d = m.find('description')
             if d == None or d.text.strip() == '':
                 continue
-            f.write(rstize_text(d.text.strip(),name))
+            f.write(rstize_text(d.text.strip(), name))
             f.write("\n\n")
         f.write('\n')
 
@@ -510,7 +510,7 @@ for file in input_list:
 
 class_names.sort()
 
-#Don't make class list for Sphinx, :toctree: handles it
+# Don't make class list for Sphinx, :toctree: handles it
 #make_class_list(class_names, 2)
 
 for cn in class_names:

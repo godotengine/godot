@@ -2,8 +2,8 @@
 
 Import('env')
 
-env.add_source_files(env.core_sources,"*.cpp")
-env.add_source_files(env.core_sources,"*.c")
-#env.core_sources.append("io/fastlz.c")
+env.add_source_files(env.core_sources, "*.cpp")
+env.add_source_files(env.core_sources, "*.c")
+# env.core_sources.append("io/fastlz.c")
 
 Export('env')

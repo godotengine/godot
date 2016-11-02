@@ -14,7 +14,7 @@ thirdparty_sources = [
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_etc1.add_source_files(env.modules_sources, thirdparty_sources)
-env_etc1.Append(CPPPATH = [thirdparty_dir])
+env_etc1.Append(CPPPATH=[thirdparty_dir])
 
 # Godot source files
 env_etc1.add_source_files(env.modules_sources, "*.cpp")

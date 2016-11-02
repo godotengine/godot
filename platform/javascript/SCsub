@@ -15,14 +15,14 @@ env_javascript = env.Clone()
 if env['target'] == "profile":
     env_javascript.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
 
-javascript_objects=[]
+javascript_objects = []
 for x in javascript_files:
-    javascript_objects.append( env_javascript.Object( x ) )
+    javascript_objects.append(env_javascript.Object(x))
 
-env.Append(LINKFLAGS=["-s","EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_function','_main_after_fs_sync']\""])
+env.Append(LINKFLAGS=["-s", "EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_function','_main_after_fs_sync']\""])
 
 prog = None
 
-#env_javascript.SharedLibrary("#platform/javascript/libgodot_javascript.so",[javascript_objects])
+# env_javascript.SharedLibrary("#platform/javascript/libgodot_javascript.so",[javascript_objects])
 
-env.Program('#bin/godot',javascript_objects,PROGSUFFIX=env["PROGSUFFIX"]+".html")
+env.Program('#bin/godot', javascript_objects, PROGSUFFIX=env["PROGSUFFIX"] + ".html")

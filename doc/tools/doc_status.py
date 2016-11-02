@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 ################################################################################
 
 flags = {
-    'c': platform.platform() != 'Windows', # Disable by default on windows, since we use ANSI escape codes
+    'c': platform.platform() != 'Windows',  # Disable by default on windows, since we use ANSI escape codes
     'b': False,
     'g': False,
     's': False,
@@ -62,15 +62,15 @@ long_flags = {
 table_columns = ['name', 'brief_description', 'description', 'methods', 'constants', 'members', 'signals']
 table_column_names = ['Name', 'Brief Desc.', 'Desc.', 'Methods', 'Constants', 'Members', 'Signals']
 colors = {
-    'name': [36], # cyan
-    'part_big_problem': [4, 31], # underline, red
-    'part_problem': [31], # red
-    'part_mostly_good': [33], # yellow
-    'part_good': [32], # green
-    'url': [4, 34], # underline, blue
-    'section': [1, 4], # bold, underline
-    'state_off': [36], # cyan
-    'state_on': [1, 35], # bold, magenta/plum
+    'name': [36],  # cyan
+    'part_big_problem': [4, 31],  # underline, red
+    'part_problem': [31],  # red
+    'part_mostly_good': [33],  # yellow
+    'part_good': [32],  # green
+    'url': [4, 34],  # underline, blue
+    'section': [1, 4],  # bold, underline
+    'state_off': [36],  # cyan
+    'state_on': [1, 35],  # bold, magenta/plum
 }
 overall_progress_description_weigth = 10
 
@@ -105,7 +105,7 @@ def nonescape_len(s):
 ################################################################################
 
 class ClassStatusProgress:
-    def __init__(self, described = 0, total = 0):
+    def __init__(self, described=0, total=0):
         self.described = described
         self.total = total
 
@@ -127,12 +127,12 @@ class ClassStatusProgress:
             return self.to_colored_string()
 
     def to_colored_string(self, format='{has}/{total}', pad_format='{pad_described}{s}{pad_total}'):
-        ratio = self.described/self.total if self.total != 0 else 1
-        percent = round(100*ratio)
-        s = format.format(has = str(self.described), total = str(self.total), percent = str(percent))
+        ratio = self.described / self.total if self.total != 0 else 1
+        percent = round(100 * ratio)
+        s = format.format(has=str(self.described), total=str(self.total), percent=str(percent))
         if self.described >= self.total:
             s = color('part_good', s)
-        elif self.described >= self.total/4*3:
+        elif self.described >= self.total / 4 * 3:
             s = color('part_mostly_good', s)
         elif self.described > 0:
             s = color('part_problem', s)
@@ -142,7 +142,7 @@ class ClassStatusProgress:
         pad_described = ''.ljust(pad_size - len(str(self.described)))
         pad_percent = ''.ljust(3 - len(str(percent)))
         pad_total = ''.ljust(pad_size - len(str(self.total)))
-        return pad_format.format(pad_described = pad_described, pad_total = pad_total, pad_percent = pad_percent, s = s)
+        return pad_format.format(pad_described=pad_described, pad_total=pad_total, pad_percent=pad_percent, s=s)
 
 
 class ClassStatus:
@@ -231,7 +231,7 @@ class ClassStatus:
                     status.progresses[tag.tag].increment(len(sub_tag.text.strip()) > 0)
 
             elif tag.tag in ['theme_items']:
-                pass #Ignore those tags, since they seem to lack description at all
+                pass  # Ignore those tags, since they seem to lack description at all
 
             else:
                 print(tag.tag, tag.attrib)
@@ -296,10 +296,10 @@ if len(input_file_list) < 1 or flags['h']:
             if long_flags[synonym] == flag:
                 synonyms.append(color('name', '--' + synonym))
 
-        print(('{synonyms} (Currently '+color('state_'+('on' if flags[flag] else 'off'), '{value}')+')\n\t{description}').format(
-            synonyms = ', '.join(synonyms),
-            value = ('on' if flags[flag] else 'off'),
-            description = flag_descriptions[flag]
+        print(('{synonyms} (Currently ' + color('state_' + ('on' if flags[flag] else 'off'), '{value}') + ')\n\t{description}').format(
+            synonyms=', '.join(synonyms),
+            value=('on' if flags[flag] else 'off'),
+            description=flag_descriptions[flag]
         ))
     sys.exit(0)
 
@@ -413,9 +413,9 @@ for row_i, row in enumerate(table):
     for cell_i, cell in enumerate(row):
         padding_needed = table_column_sizes[cell_i] - nonescape_len(cell) + 2
         if cell_i == 0:
-            row_string += table_row_chars[2] + cell + table_row_chars[2]*(padding_needed-1)
+            row_string += table_row_chars[2] + cell + table_row_chars[2] * (padding_needed - 1)
         else:
-            row_string += table_row_chars[2]*math.floor(padding_needed/2) + cell + table_row_chars[2]*math.ceil((padding_needed/2))
+            row_string += table_row_chars[2] * math.floor(padding_needed / 2) + cell + table_row_chars[2] * math.ceil((padding_needed / 2))
         row_string += table_column_chars
 
     print(row_string)

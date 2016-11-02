@@ -6,7 +6,7 @@ Import('env_modules')
 env_theora = env_modules.Clone()
 
 # Thirdparty source files
-if (env["libtheora"] != "system"): # builtin
+if (env["libtheora"] != "system"):  # builtin
     thirdparty_dir = "#thirdparty/libtheora/"
     thirdparty_sources = [
         #"analyze.c",
@@ -66,18 +66,18 @@ if (env["libtheora"] != "system"): # builtin
         thirdparty_sources += thirdparty_sources_x86_vc
 
     if (env["x86_libtheora_opt_gcc"] or env["x86_libtheora_opt_vc"]):
-        env_theora.Append(CCFLAGS = ["-DOC_X86_ASM"])
+        env_theora.Append(CCFLAGS=["-DOC_X86_ASM"])
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_theora.add_source_files(env.modules_sources, thirdparty_sources)
-    env_theora.Append(CPPPATH = [thirdparty_dir])
+    env_theora.Append(CPPPATH=[thirdparty_dir])
 
     # also requires libogg and libvorbis
-    if (env["libogg"] != "system"): # builtin
-        env_theora.Append(CPPPATH = ["#thirdparty/libogg"])
-    if (env["libvorbis"] != "system"): # builtin
-        env_theora.Append(CPPPATH = ["#thirdparty/libvorbis"])
+    if (env["libogg"] != "system"):  # builtin
+        env_theora.Append(CPPPATH=["#thirdparty/libogg"])
+    if (env["libvorbis"] != "system"):  # builtin
+        env_theora.Append(CPPPATH=["#thirdparty/libvorbis"])
 
 # Godot source files
 env_theora.add_source_files(env.modules_sources, "*.cpp")
