@@ -1,11 +1,11 @@
 
 
 def can_build(platform):
-  return True
-  
-  
+    return True
+
+
 def configure(env):
-	pass
-  
-  
-  
+    pass
+
+
+

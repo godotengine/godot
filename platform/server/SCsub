@@ -4,7 +4,7 @@ Import('env')
 
 
 common_server=[\
-	"os_server.cpp",\
+    "os_server.cpp",\
 ]
 
 env.Program('#bin/godot_server',['godot_server.cpp']+common_server)

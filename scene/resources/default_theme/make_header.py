@@ -22,21 +22,21 @@ f.write("\n\n\n");
 
 for x in pixmaps:
 
-	var_str=x[:-4]+"_png";
+    var_str=x[:-4]+"_png";
 
-	f.write("static const unsigned char "+ var_str +"[]={\n");
+    f.write("static const unsigned char "+ var_str +"[]={\n");
 
-	pngf=open(x,"rb");
+    pngf=open(x,"rb");
 
-	b=pngf.read(1);
-	while(len(b)==1):
-		f.write(hex(ord(b)))
-		b=pngf.read(1);
-		if (len(b)==1):
-			f.write(",")
+    b=pngf.read(1);
+    while(len(b)==1):
+        f.write(hex(ord(b)))
+        b=pngf.read(1);
+        if (len(b)==1):
+            f.write(",")
 
-	f.write("\n};\n\n\n");
-	pngf.close();
+    f.write("\n};\n\n\n");
+    pngf.close();
 
 #Generate shaders block
 
@@ -48,25 +48,25 @@ f.write("\n\n\n");
 
 for x in shaders:
 
-	var_str=x[:-4]+"_shader_code";
+    var_str=x[:-4]+"_shader_code";
 
-	f.write("static const char *"+ var_str +"=\n");
+    f.write("static const char *"+ var_str +"=\n");
 
-	sf=open(x,"rb");
+    sf=open(x,"rb");
 
 
-	b=sf.readline();
-	while(b!=""):
-		if (b.endswith("\r\n")):
-			b=b[:-2]
-		if (b.endswith("\n")):
-			b=b[:-1]
-		f.write("			\""+b)
-		b=sf.readline();
-		if (b!=""):
-			f.write("\"\n")
+    b=sf.readline();
+    while(b!=""):
+        if (b.endswith("\r\n")):
+            b=b[:-2]
+        if (b.endswith("\n")):
+            b=b[:-1]
+        f.write("			\""+b)
+        b=sf.readline();
+        if (b!=""):
+            f.write("\"\n")
 
-	f.write("\";\n\n\n");
-	sf.close();
+    f.write("\";\n\n\n");
+    sf.close();
 
 f.close();
