@@ -84,7 +84,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.23
+- Version: 1.6.26
 - License: libpng/zlib
 
 Files extracted from upstream source:

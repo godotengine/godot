@@ -1,8 +1,8 @@
 
 /* pngget.c - retrieval of values from info struct
  *
- * Last changed in libpng 1.6.17 [March 26, 2015]
- * Copyright (c) 1998-2002,2004,2006-2015 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.26 [October 20, 2016]
+ * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -338,7 +338,7 @@ ppi_from_ppm(png_uint_32 ppm)
    png_fixed_point result;
    if (ppm <= PNG_UINT_31_MAX && png_muldiv(&result, (png_int_32)ppm, 127,
        5000) != 0)
-      return result;
+      return (png_uint_32)result;
 
    /* Overflow. */
    return 0;
@@ -486,7 +486,7 @@ png_get_signature(png_const_structrp png_ptr, png_const_inforp info_ptr)
 #ifdef PNG_bKGD_SUPPORTED
 png_uint_32 PNGAPI
 png_get_bKGD(png_const_structrp png_ptr, png_inforp info_ptr,
-   png_color_16p *background)
+    png_color_16p *background)
 {
    if (png_ptr != NULL && info_ptr != NULL &&
        (info_ptr->valid & PNG_INFO_bKGD) != 0 &&
@@ -526,28 +526,28 @@ png_get_cHRM(png_const_structrp png_ptr, png_const_inforp info_ptr,
 
       if (white_x != NULL)
          *white_x = png_float(png_ptr,
-            info_ptr->colorspace.end_points_xy.whitex, "cHRM white X");
+             info_ptr->colorspace.end_points_xy.whitex, "cHRM white X");
       if (white_y != NULL)
          *white_y = png_float(png_ptr,
-            info_ptr->colorspace.end_points_xy.whitey, "cHRM white Y");
+             info_ptr->colorspace.end_points_xy.whitey, "cHRM white Y");
       if (red_x != NULL)
          *red_x = png_float(png_ptr, info_ptr->colorspace.end_points_xy.redx,
-            "cHRM red X");
+             "cHRM red X");
       if (red_y != NULL)
          *red_y = png_float(png_ptr, info_ptr->colorspace.end_points_xy.redy,
-            "cHRM red Y");
+             "cHRM red Y");
       if (green_x != NULL)
          *green_x = png_float(png_ptr,
-            info_ptr->colorspace.end_points_xy.greenx, "cHRM green X");
+             info_ptr->colorspace.end_points_xy.greenx, "cHRM green X");
       if (green_y != NULL)
          *green_y = png_float(png_ptr,
-            info_ptr->colorspace.end_points_xy.greeny, "cHRM green Y");
+             info_ptr->colorspace.end_points_xy.greeny, "cHRM green Y");
       if (blue_x != NULL)
          *blue_x = png_float(png_ptr, info_ptr->colorspace.end_points_xy.bluex,
-            "cHRM blue X");
+             "cHRM blue X");
       if (blue_y != NULL)
          *blue_y = png_float(png_ptr, info_ptr->colorspace.end_points_xy.bluey,
-            "cHRM blue Y");
+             "cHRM blue Y");
       return (PNG_INFO_cHRM);
    }
 
@@ -556,42 +556,42 @@ png_get_cHRM(png_const_structrp png_ptr, png_const_inforp info_ptr,
 
 png_uint_32 PNGAPI
 png_get_cHRM_XYZ(png_const_structrp png_ptr, png_const_inforp info_ptr,
-   double *red_X, double *red_Y, double *red_Z, double *green_X,
-   double *green_Y, double *green_Z, double *blue_X, double *blue_Y,
-   double *blue_Z)
+    double *red_X, double *red_Y, double *red_Z, double *green_X,
+    double *green_Y, double *green_Z, double *blue_X, double *blue_Y,
+    double *blue_Z)
 {
    if (png_ptr != NULL && info_ptr != NULL &&
-      (info_ptr->colorspace.flags & PNG_COLORSPACE_HAVE_ENDPOINTS) != 0)
+       (info_ptr->colorspace.flags & PNG_COLORSPACE_HAVE_ENDPOINTS) != 0)
    {
       png_debug1(1, "in %s retrieval function", "cHRM_XYZ(float)");
 
       if (red_X != NULL)
          *red_X = png_float(png_ptr, info_ptr->colorspace.end_points_XYZ.red_X,
-            "cHRM red X");
+             "cHRM red X");
       if (red_Y != NULL)
          *red_Y = png_float(png_ptr, info_ptr->colorspace.end_points_XYZ.red_Y,
-            "cHRM red Y");
+             "cHRM red Y");
       if (red_Z != NULL)
          *red_Z = png_float(png_ptr, info_ptr->colorspace.end_points_XYZ.red_Z,
-            "cHRM red Z");
+             "cHRM red Z");
       if (green_X != NULL)
          *green_X = png_float(png_ptr,
-            info_ptr->colorspace.end_points_XYZ.green_X, "cHRM green X");
+             info_ptr->colorspace.end_points_XYZ.green_X, "cHRM green X");
       if (green_Y != NULL)
          *green_Y = png_float(png_ptr,
-            info_ptr->colorspace.end_points_XYZ.green_Y, "cHRM green Y");
+             info_ptr->colorspace.end_points_XYZ.green_Y, "cHRM green Y");
       if (green_Z != NULL)
          *green_Z = png_float(png_ptr,
-            info_ptr->colorspace.end_points_XYZ.green_Z, "cHRM green Z");
+             info_ptr->colorspace.end_points_XYZ.green_Z, "cHRM green Z");
       if (blue_X != NULL)
          *blue_X = png_float(png_ptr,
-            info_ptr->colorspace.end_points_XYZ.blue_X, "cHRM blue X");
+             info_ptr->colorspace.end_points_XYZ.blue_X, "cHRM blue X");
       if (blue_Y != NULL)
          *blue_Y = png_float(png_ptr,
-            info_ptr->colorspace.end_points_XYZ.blue_Y, "cHRM blue Y");
+             info_ptr->colorspace.end_points_XYZ.blue_Y, "cHRM blue Y");
       if (blue_Z != NULL)
          *blue_Z = png_float(png_ptr,
-            info_ptr->colorspace.end_points_XYZ.blue_Z, "cHRM blue Z");
+             info_ptr->colorspace.end_points_XYZ.blue_Z, "cHRM blue Z");
       return (PNG_INFO_cHRM);
    }
 
@@ -681,8 +681,8 @@ png_get_gAMA_fixed(png_const_structrp png_ptr, png_const_inforp info_ptr,
    png_debug1(1, "in %s retrieval function", "gAMA");
 
    if (png_ptr != NULL && info_ptr != NULL &&
-      (info_ptr->colorspace.flags & PNG_COLORSPACE_HAVE_GAMMA) != 0 &&
-      file_gamma != NULL)
+       (info_ptr->colorspace.flags & PNG_COLORSPACE_HAVE_GAMMA) != 0 &&
+       file_gamma != NULL)
    {
       *file_gamma = info_ptr->colorspace.gamma;
       return (PNG_INFO_gAMA);
@@ -704,7 +704,7 @@ png_get_gAMA(png_const_structrp png_ptr, png_const_inforp info_ptr,
       file_gamma != NULL)
    {
       *file_gamma = png_float(png_ptr, info_ptr->colorspace.gamma,
-         "png_get_gAMA");
+          "png_get_gAMA");
       return (PNG_INFO_gAMA);
    }
 
@@ -901,7 +901,7 @@ png_get_sCAL_fixed(png_const_structrp png_ptr, png_const_inforp info_ptr,
        */
       *width = png_fixed(png_ptr, atof(info_ptr->scal_s_width), "sCAL width");
       *height = png_fixed(png_ptr, atof(info_ptr->scal_s_height),
-         "sCAL height");
+          "sCAL height");
       return (PNG_INFO_sCAL);
    }
 
