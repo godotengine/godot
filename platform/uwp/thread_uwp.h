@@ -29,7 +29,7 @@
 #ifndef THREAD_WINRT_H
 #define THREAD_WINRT_H
 
-#ifdef WINRT_ENABLED
+#ifdef UWP_ENABLED
 
 #include "os/thread.h"
 

@@ -139,7 +139,7 @@ def configure(env):
     env["OBJSUFFIX"] = "." + arch + env["OBJSUFFIX"]
     env["LIBSUFFIX"] = "." + arch + env["LIBSUFFIX"]
 
-    env.Append(CCFLAGS=['/DWINRT_ENABLED'])
+    env.Append(CCFLAGS=['/DUWP_ENABLED'])
     env.Append(CCFLAGS=['/DWINDOWS_ENABLED'])
     env.Append(CCFLAGS=['/DTYPED_METHOD_BIND'])
 

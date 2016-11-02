@@ -125,7 +125,7 @@ void FileAccessWindows::close() {
 
 		bool rename_error;
 
-#ifdef WINRT_ENABLED
+#ifdef UWP_ENABLED
 		// WinRT has no PathFileExists, so we check attributes instead
 		DWORD fileAttr;
 

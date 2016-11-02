@@ -44,7 +44,7 @@ int RAND_poll(void)
 	return 1;
 	}
 
-#if defined(WINRT_ENABLED)
+#if defined(UWP_ENABLED)
 extern "C"
 {
 #include<stdio.h>
@@ -152,4 +152,4 @@ extern "C"
 	void *OPENSSL_UplinkTable [26]= {0};
 } //extern C
 
-#endif /*defined(WINRT_ENABLED)*/
+#endif /*defined(UWP_ENABLED)*/
