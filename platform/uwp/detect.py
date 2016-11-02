@@ -10,7 +10,7 @@ def is_active():
 
 
 def get_name():
-    return "WinRT"
+    return "UWP"
 
 
 def can_build():

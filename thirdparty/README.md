@@ -14,7 +14,7 @@ Files extracted from upstream source:
 - LICENSE file
 
 Important: Some files have been modified by Godot developers so that they work
-for all platforms (especially WinRT). Check the diff with the 1.3.13 tarball
+for all platforms (especially UWP). Check the diff with the 1.3.13 tarball
 before the next update.
 
 

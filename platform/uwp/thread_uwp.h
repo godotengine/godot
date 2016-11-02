@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef THREAD_WINRT_H
-#define THREAD_WINRT_H
+#ifndef THREAD_UWP_H
+#define THREAD_UWP_H
 
 #ifdef UWP_ENABLED
 
@@ -35,15 +35,15 @@
 
 #include <thread>
 
-class ThreadWinrt : public Thread {
+class ThreadUWP : public Thread {
 
 	std::thread thread;
 
-	static Thread* create_func_winrt(ThreadCreateCallback p_callback,void *,const Settings&);
-	static ID get_thread_ID_func_winrt();
-	static void wait_to_finish_func_winrt(Thread* p_thread);
+	static Thread* create_func_uwp(ThreadCreateCallback p_callback,void *,const Settings&);
+	static ID get_thread_ID_func_uwp();
+	static void wait_to_finish_func_uwp(Thread* p_thread);
 
-	ThreadWinrt();
+	ThreadUWP();
 public:
 
 
@@ -52,7 +52,7 @@ public:
 	static void make_default();
 
 
-	~ThreadWinrt();
+	~ThreadUWP();
 
 };
 

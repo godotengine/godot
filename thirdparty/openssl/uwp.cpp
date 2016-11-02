@@ -1,7 +1,7 @@
 /* Snippets extracted from https://github.com/Microsoft/openssl/blob/ec7e430e06e4e3ac87c183dee33cb216814cf980/ms/winrt.cpp
  * Adapted for Godot definitions
  */
-/* winrt.cpp
+/* uwp.cpp
  * Copyright 2014 Microsoft Corporation
  * C++/CX Entropy/shims for Windows Phone/Windows Store platform
  * written by Alejandro Jimenez Martinez
@@ -144,7 +144,7 @@ extern "C"
 		{
 		return 0;
 		}
-	int winrt_GetTickCount(void)
+	int uwp_GetTickCount(void)
 		{
 		LARGE_INTEGER t;
 		return(int) (QueryPerformanceCounter(&t) ? t.QuadPart : 0);
