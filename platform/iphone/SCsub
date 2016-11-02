@@ -23,7 +23,7 @@ iphone_lib = [
 
 #iphone_lib = env.Library('iphone', iphone_lib)
 
-env_ios = env.Clone();
+env_ios = env.Clone()
 
 
 if env['ios_gles22_override'] == "yes":

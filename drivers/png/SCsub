@@ -33,7 +33,7 @@ if (env["libpng"] == "builtin"):
     import os
     if ("neon_enabled" in env and env["neon_enabled"]) and os.name != "nt":
         env_png.Append(CPPFLAGS=["-DPNG_ARM_NEON_OPT=2"])
-        env_neon = env_png.Clone();
+        env_neon = env_png.Clone()
         if "S_compiler" in env:
             env_neon['CC'] = env['S_compiler']
         neon_sources = []

@@ -75,7 +75,7 @@ def configure(env):
             env.Append(CCFLAGS=['-g', '-pg'])
             env.Append(LINKFLAGS=['-pg'])
 
-        env['ENV'] = os.environ;
+        env['ENV'] = os.environ
         # fix environment for windows phone 8.1
         env['ENV']['WINDOWSPHONEKITDIR'] = env['ENV']['WINDOWSPHONEKITDIR'].replace("8.0", "8.1")  # wtf
         env['ENV']['INCLUDE'] = env['ENV']['INCLUDE'].replace("8.0", "8.1")
@@ -117,7 +117,7 @@ def configure(env):
         env.Append(CCFLAGS=['/AI', os.environ['VCINSTALLDIR'] + '\\vcpackages', '/AI', os.environ['WINDOWSSDKDIR'] + '\\References\\CommonConfiguration\\Neutral'])
         env.Append(CCFLAGS=['/DWINAPI_FAMILY=WINAPI_FAMILY_APP', '/D_WIN32_WINNT=0x0603', '/DNTDDI_VERSION=0x06030000'])
 
-        env['ENV'] = os.environ;
+        env['ENV'] = os.environ
 
     env["PROGSUFFIX"] = "." + arch + env["PROGSUFFIX"]
     env["OBJSUFFIX"] = "." + arch + env["OBJSUFFIX"]
