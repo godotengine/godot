@@ -71,7 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "object.h"
 #include "tools/editor/editor_import_export.h"
 #include "tools/editor/editor_node.h"
-#include "platform/winrt/logo.h"
+#include "platform/uwp/logo.h"
 #include "os/file_access.h"
 #include "io/zip.h"
 #include "io/unzip.h"
@@ -2339,7 +2339,7 @@ Error EditorExportPlatformWinrt::export_project(const String & p_path, bool p_de
 
 EditorExportPlatformWinrt::EditorExportPlatformWinrt() {
 
-	Image img(_winrt_logo);
+	Image img(_uwp_logo);
 	logo = Ref<ImageTexture>(memnew(ImageTexture));
 	logo->create_from_image(img);
 
@@ -2384,7 +2384,7 @@ EditorExportPlatformWinrt::EditorExportPlatformWinrt() {
 EditorExportPlatformWinrt::~EditorExportPlatformWinrt() {}
 
 
-void register_winrt_exporter() {
+void register_uwp_exporter() {
 
 	Ref<EditorExportPlatformWinrt> exporter = Ref<EditorExportPlatformWinrt>(memnew(EditorExportPlatformWinrt));
 	EditorImportExport::get_singleton()->add_export_platform(exporter);

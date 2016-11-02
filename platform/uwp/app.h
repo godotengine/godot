@@ -32,7 +32,7 @@
 
 #include <wrl.h>
 
-#include "os_winrt.h"
+#include "os_uwp.h"
 #include "GLES2/gl2.h"
 
 namespace GodotWinRT

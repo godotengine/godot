@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_winrt.h                                                           */
+/*  os_uwp.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -55,7 +55,7 @@
 #include <stdio.h>
 #include "main/input_default.h"
 
-#include "joystick_winrt.h"
+#include "joystick_uwp.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

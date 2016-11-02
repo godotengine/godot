@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joystick.cpp                                                         */
+/*  joystick_uwp.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "joystick_winrt.h"
+#include "joystick_uwp.h"
 
 using namespace Windows::Gaming::Input;
 using namespace Windows::Foundation;

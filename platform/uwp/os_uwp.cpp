@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_winrt.cpp                                                         */
+/*  os_uwp.cpp                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,10 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "os_winrt.h"
+#include "os_uwp.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
 #include "os/memory_pool_dynamic_static.h"
-#include "thread_winrt.h"
+#include "thread_uwp.h"
 #include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/mutex_windows.h"
 #include "main/main.h"
