@@ -37,7 +37,6 @@ def get_flags():
 
     return [
         ('tools', 'no'),
-        ('builtin_zlib', 'yes'),
         ('module_theora_enabled', 'no'),
     ]
 

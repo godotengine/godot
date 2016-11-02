@@ -37,7 +37,6 @@ def get_flags():
 
     return [
         ('tools', 'no'),
-        ('openssl', 'builtin'),  # use builtin openssl
     ]
 
 
