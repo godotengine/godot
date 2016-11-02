@@ -6,7 +6,7 @@ Import('env_modules')
 env_speex = env_modules.Clone()
 
 # Thirdparty source files
-if (env["speex"] != "system"):  # builtin
+if (env['builtin_speex'] != 'no'):
     thirdparty_dir = "#thirdparty/speex/"
 
     thirdparty_sources = [
@@ -59,7 +59,7 @@ if (env["speex"] != "system"):  # builtin
     env_speex.Append(CPPPATH=[thirdparty_dir])
 
     # also requires libogg
-    if (env["libogg"] != "system"):  # builtin
+    if (env['builtin_libogg'] != 'no'):
         env_speex.Append(CPPPATH=["#thirdparty/libogg"])
 
 # Module files

@@ -30,10 +30,9 @@ def get_flags():
 
     return [
         ('tools', 'no'),
-        ('builtin_zlib', 'yes'),
-        ('module_speex_enabled', 'no'),
         ('module_etc1_enabled', 'no'),
         ('module_mpc_enabled', 'no'),
+        ('module_speex_enabled', 'no'),
         ('module_theora_enabled', 'no'),
     ]
 
