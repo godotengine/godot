@@ -3,11 +3,14 @@ import sys
 import string
 import platform
 
+
 def is_active():
     return True
 
+
 def get_name():
     return "Android"
+
 
 def can_build():
 
@@ -16,6 +19,7 @@ def can_build():
         return False
 
     return True
+
 
 def get_opts():
 
@@ -46,6 +50,7 @@ def create(env):
         tools.remove("applelink")
         env.Tool('gcc')
     return env.Clone(tools=tools);
+
 
 def configure(env):
 
@@ -101,7 +106,6 @@ def configure(env):
     if env['PLATFORM'] == 'win32':
         env.Tool('gcc')
         env['SHLIBSUFFIX'] = '.so'
-
 
     neon_text = ""
     if env["android_arch"] == "armv7" and env['android_neon'] == 'yes':
@@ -240,7 +244,6 @@ def configure(env):
             env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi-v7a"])
         env.Append(LIBS=['gnustl_static'])
         env.Append(CCFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST'])
-
 
     import methods
     env.Append(BUILDERS={'GLSL120': env.Builder(action=methods.build_legacygl_headers, suffix='glsl.h', src_suffix='.glsl')})

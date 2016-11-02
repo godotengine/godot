@@ -6,6 +6,3 @@ def can_build(platform):
 
 def configure(env):
     pass
-
-
-

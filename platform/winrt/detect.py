@@ -9,8 +9,10 @@ import string
 def is_active():
     return True
 
+
 def get_name():
     return "WinRT"
+
 
 def can_build():
     if (os.name == "nt"):
@@ -19,8 +21,10 @@ def can_build():
             return True
     return False
 
+
 def get_opts():
     return []
+
 
 def get_flags():
 
@@ -71,7 +75,6 @@ def configure(env):
             env.Append(CCFLAGS=['-g', '-pg'])
             env.Append(LINKFLAGS=['-pg'])
 
-
         env['ENV'] = os.environ;
         # fix environment for windows phone 8.1
         env['ENV']['WINDOWSPHONEKITDIR'] = env['ENV']['WINDOWSPHONEKITDIR'].replace("8.0", "8.1")  # wtf
@@ -86,7 +89,6 @@ def configure(env):
         env.Append(LINKFLAGS=['/MANIFEST:NO', '/NXCOMPAT', '/DYNAMICBASE', "kernel32.lib", '/MACHINE:X64', '/WINMD', '/APPCONTAINER', '/MANIFESTUAC:NO', '/ERRORREPORT:PROMPT', '/NOLOGO', '/TLBID:1'])
 
         env.Append(LIBPATH=['#platform/winrt/x64/lib'])
-
 
         if (env["target"] == "release"):
 
@@ -110,7 +112,6 @@ def configure(env):
             env.Append(CCFLAGS=['-g', '-pg'])
             env.Append(LINKFLAGS=['-pg'])
 
-
         env.Append(CCFLAGS=string.split('/MP /GS /wd"4453" /wd"28204" /Zc:wchar_t /Gm- /Od /fp:precise /D "_UNICODE" /D "UNICODE" /D "WINAPI_FAMILY=WINAPI_FAMILY_APP" /errorReport:prompt /WX- /Zc:forScope /RTC1 /Gd /MDd /EHsc /nologo'))
         env.Append(CXXFLAGS=string.split('/ZW'))
         env.Append(CCFLAGS=['/AI', os.environ['VCINSTALLDIR'] + '\\vcpackages', '/AI', os.environ['WINDOWSSDKDIR'] + '\\References\\CommonConfiguration\\Neutral'])
@@ -118,11 +119,9 @@ def configure(env):
 
         env['ENV'] = os.environ;
 
-
     env["PROGSUFFIX"] = "." + arch + env["PROGSUFFIX"]
     env["OBJSUFFIX"] = "." + arch + env["OBJSUFFIX"]
     env["LIBSUFFIX"] = "." + arch + env["LIBSUFFIX"]
-
 
     #env.Append(CCFLAGS=['/Gd','/GR','/nologo', '/EHsc'])
     #env.Append(CXXFLAGS=['/TP', '/ZW'])

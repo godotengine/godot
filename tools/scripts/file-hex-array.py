@@ -2,6 +2,7 @@ import binascii
 import os.path
 import sys
 
+
 def tof(filepath):
     with open(filepath, 'r') as f:
         content = f.read()
@@ -15,6 +16,7 @@ def tof(filepath):
     print(os.path.basename(filepath) + ".file created.")
     exit(0)
 
+
 def toa(filepath):
     with open(filepath, 'rb') as f:
         content = f.read()
@@ -27,6 +29,7 @@ def toa(filepath):
         content = f.write(content)
     print(os.path.basename(filepath) + ".array created.")
     exit(0)
+
 
 def usage():
     print("========================================================\n\

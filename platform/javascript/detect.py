@@ -2,11 +2,14 @@ import os
 import sys
 import string
 
+
 def is_active():
     return True
 
+
 def get_name():
     return "JavaScript"
+
 
 def can_build():
 
@@ -15,11 +18,13 @@ def can_build():
         return False
     return True
 
+
 def get_opts():
 
     return [
         ['compress', 'Compress JS Executable', 'no']
     ]
+
 
 def get_flags():
 
@@ -31,7 +36,6 @@ def get_flags():
         ('module_mpc_enabled', 'no'),
         ('module_theora_enabled', 'no'),
     ]
-
 
 
 def configure(env):

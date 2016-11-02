@@ -5,8 +5,10 @@ import sys
 def is_active():
     return True
 
+
 def get_name():
     return "iOS"
+
 
 def can_build():
 
@@ -16,6 +18,7 @@ def can_build():
         return True
 
     return False
+
 
 def get_opts():
 
@@ -33,6 +36,7 @@ def get_opts():
         ('ios_sim', 'Build simulator binary', 'no'),
     ]
 
+
 def get_flags():
 
     return [
@@ -41,7 +45,6 @@ def get_flags():
         ('builtin_zlib', 'yes'),
         ('openssl', 'builtin'),  # use builtin openssl
     ]
-
 
 
 def configure(env):

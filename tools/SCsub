@@ -10,11 +10,9 @@ Export('env')
 
 def make_translations_header(target, source, env):
 
-
     dst = target[0].srcnode().abspath
 
     g = open(dst, "wb")
-
 
     """"
 	"""
@@ -65,11 +63,9 @@ def make_translations_header(target, source, env):
 
 def make_fonts_header(target, source, env):
 
-
     dst = target[0].srcnode().abspath
 
     g = open(dst, "wb")
-
 
     """"
 	"""

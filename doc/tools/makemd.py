@@ -343,4 +343,3 @@ make_class_list(class_names, 2)
 for cn in class_names:
     c = classes[cn]
     make_doku_class(c)
-

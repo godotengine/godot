@@ -24,12 +24,14 @@ def validate_tag(elem, tag):
 class_names = []
 classes = {}
 
+
 def ul_string(str, ul):
     str += "\n"
     for i in range(len(str) - 1):
         str += ul
     str += "\n"
     return str
+
 
 def make_class_list(class_list, columns):
 
@@ -343,7 +345,6 @@ def make_heading(title, underline):
     return title + '\n' + underline * len(title) + "\n\n"
 
 
-
 def make_rst_class(node):
 
     name = node.attrib['name']
@@ -374,7 +375,6 @@ def make_rst_class(node):
                 inh = inode.attrib['inherits'].strip()
             else:
                 inh = None
-
 
         f.write("\n\n")
 
@@ -435,7 +435,6 @@ def make_rst_class(node):
             f.write("| " + rt + " | " + st + " |\n")
             f.write(sep)
         f.write('\n')
-
 
     events = node.find('signals')
     if events != None and len(list(events)) > 0:
@@ -516,4 +515,3 @@ class_names.sort()
 for cn in class_names:
     c = classes[cn]
     make_rst_class(c)
-

@@ -75,7 +75,6 @@ colors = {
 overall_progress_description_weigth = 10
 
 
-
 ################################################################################
 #                                    Utils                                     #
 ################################################################################
@@ -84,6 +83,7 @@ def validate_tag(elem, tag):
     if elem.tag != tag:
         print('Tag mismatch, expected "' + tag + '", got ' + elem.tag)
         sys.exit(255)
+
 
 def color(color, string):
     if flags['c']:
@@ -95,9 +95,10 @@ def color(color, string):
         return string
 
 ansi_escape = re.compile(r'\x1b[^m]*m')
+
+
 def nonescape_len(s):
     return len(ansi_escape.sub('', s))
-
 
 
 ################################################################################
@@ -105,6 +106,7 @@ def nonescape_len(s):
 ################################################################################
 
 class ClassStatusProgress:
+
     def __init__(self, described=0, total=0):
         self.described = described
         self.total = total
@@ -146,6 +148,7 @@ class ClassStatusProgress:
 
 
 class ClassStatus:
+
     def __init__(self, name=''):
         self.name = name
         self.has_brief_description = True
@@ -239,7 +242,6 @@ class ClassStatus:
         return status
 
 
-
 ################################################################################
 #                                  Arguments                                   #
 ################################################################################
@@ -304,7 +306,6 @@ if len(input_file_list) < 1 or flags['h']:
     sys.exit(0)
 
 
-
 ################################################################################
 #                               Parse class list                               #
 ################################################################################
@@ -332,7 +333,6 @@ class_names.sort()
 
 if len(input_class_list) < 1:
     input_class_list = class_names
-
 
 
 ################################################################################
@@ -372,8 +372,6 @@ for cn in input_class_list:
         row.append(out['comment'])
 
     table.append(row)
-
-
 
 
 ################################################################################
@@ -427,4 +425,3 @@ print(divider_string)
 
 if total_status.is_ok() and not flags['g']:
     print('All listed classes are ' + color('part_good', 'OK') + '!')
-

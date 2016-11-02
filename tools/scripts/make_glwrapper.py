@@ -87,7 +87,6 @@ for x in (range(len(sys.argv) - 1)):
             print(funcdata)
 
 
-
 # print(types)
 # print(constants)
 # print(functions)
@@ -177,7 +176,3 @@ for x in functions:
 f.write("\n\n")
 f.write("}\n")
 f.write("\n\n")
-
-
-
-

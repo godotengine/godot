@@ -33,7 +33,6 @@ while(l != ""):
         s = x.split("=")
         d[s[0]] = s[1]
 
-
     if (t == "common"):
         font_height = d["lineHeight"]
         font_ascent = d["base"]
@@ -48,8 +47,6 @@ while(l != ""):
         font_chars.append(d["yoffset"])
         font_chars.append(d["xadvance"])
         font_cc += 1
-
-
 
     l = f.readline()
 

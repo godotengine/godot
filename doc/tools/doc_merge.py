@@ -16,12 +16,14 @@ tab = 0
 
 old_classes = {}
 
+
 def write_string(_f, text, newline=True):
     for t in range(tab):
         _f.write("\t")
     _f.write(text)
     if (newline):
         _f.write("\n")
+
 
 def escape(ret):
     ret = ret.replace("&", "&amp;");
@@ -36,6 +38,7 @@ def inc_tab():
     global tab
     tab += 1
 
+
 def dec_tab():
     global tab
     tab -= 1
@@ -43,11 +46,13 @@ def dec_tab():
 write_string(f, '<?xml version="1.0" encoding="UTF-8" ?>')
 write_string(f, '<doc version="' + new_doc.attrib["version"] + '">')
 
+
 def get_tag(node, name):
     tag = ""
     if (name in node.attrib):
         tag = ' ' + name + '="' + escape(node.attrib[name]) + '" '
     return tag
+
 
 def find_method_descr(old_class, name):
 
@@ -61,6 +66,7 @@ def find_method_descr(old_class, name):
 
     return None
 
+
 def find_signal_descr(old_class, name):
 
     signals = old_class.find("signals")
@@ -72,6 +78,7 @@ def find_signal_descr(old_class, name):
                     return description.text
 
     return None
+
 
 def find_constant_descr(old_class, name):
 
@@ -85,6 +92,7 @@ def find_constant_descr(old_class, name):
                     return m.text
     return None
 
+
 def write_class(c):
     class_name = c.attrib["name"]
     print("Parsing Class: " + class_name)
@@ -92,7 +100,6 @@ def write_class(c):
         old_class = old_classes[class_name]
     else:
         old_class = None
-
 
     category = get_tag(c, "category")
     inherits = get_tag(c, "inherits")
@@ -105,7 +112,6 @@ def write_class(c):
         old_brief_descr = old_class.find("brief_description")
         if (old_brief_descr != None):
             write_string(f, escape(old_brief_descr.text.strip()))
-
 
     write_string(f, "</brief_description>")
 
@@ -207,5 +213,3 @@ for c in list(old_doc):
 for c in list(new_doc):
     write_class(c)
 write_string(f, '</doc>\n')
-
-

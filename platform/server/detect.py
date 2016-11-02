@@ -6,6 +6,7 @@ import sys
 def is_active():
     return True
 
+
 def get_name():
     return "Server"
 
@@ -17,6 +18,7 @@ def can_build():
 
     return True  # enabled
 
+
 def get_opts():
 
     return [
@@ -24,11 +26,11 @@ def get_opts():
         ('force_32_bits', 'Force 32 bits binary', 'no')
     ]
 
+
 def get_flags():
 
     return [
     ]
-
 
 
 def configure(env):
@@ -47,12 +49,10 @@ def configure(env):
         else:
             env["bits"] = "32"
 
-
     # if (env["tools"]=="no"):
     #	#no tools suffix
     #	env['OBJSUFFIX'] = ".nt"+env['OBJSUFFIX']
     #	env['LIBSUFFIX'] = ".nt"+env['LIBSUFFIX']
-
 
     if (env["target"] == "release"):
 
@@ -73,4 +73,3 @@ def configure(env):
         env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
         env["CC"] = "clang"
         env["LD"] = "clang++"
-

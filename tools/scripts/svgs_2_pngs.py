@@ -73,7 +73,6 @@ def export_icons():
             svg_to_png(source_path, theme_dir_base + theme_out_icon_name, 90)
 
 
-
 def export_theme():
     svgs_path = theme_dir_source
     file_names = [f for f in listdir(svgs_path) if isfile(join(svgs_path, f))]

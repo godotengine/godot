@@ -94,8 +94,10 @@ import sys
 def is_active():
     return True
 
+
 def get_name():
     return "Windows"
+
 
 def can_build():
 
@@ -140,6 +142,7 @@ def can_build():
 
     return False
 
+
 def get_opts():
 
     mingw = ""
@@ -159,11 +162,11 @@ def get_opts():
     if (os.getenv("MINGW64_PREFIX")):
         mingw64 = os.getenv("MINGW64_PREFIX")
 
-
     return [
         ('mingw_prefix', 'Mingw Prefix', mingw32),
         ('mingw_prefix_64', 'Mingw Prefix 64 bits', mingw64),
     ]
+
 
 def get_flags():
 
@@ -171,6 +174,7 @@ def get_flags():
         ('builtin_zlib', 'yes'),
         ('openssl', 'builtin'),  # use builtin openssl
     ]
+
 
 def build_res_file(target, source, env):
 
@@ -192,6 +196,7 @@ def build_res_file(target, source, env):
             return 1
     return 0
 
+
 def configure(env):
 
     env.Append(CPPPATH=['#platform/windows'])
@@ -201,7 +206,6 @@ def configure(env):
         env['ENV']['TMP'] = os.environ['TMP']
         env.Append(CPPPATH=['#platform/windows/include'])
         env.Append(LIBPATH=['#platform/windows/lib'])
-
 
         if (env["target"] == "release"):
 
@@ -225,7 +229,6 @@ def configure(env):
             env.Append(CCFLAGS=['/Z7', '/DDEBUG_ENABLED', '/DDEBUG_MEMORY_ENABLED', '/DD3D_DEBUG_INFO', '/Od'])
             env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
             env.Append(LINKFLAGS=['/DEBUG'])
-
 
         env.Append(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo'])
         env.Append(CXXFLAGS=['/TP'])
@@ -319,8 +322,6 @@ def configure(env):
         else:
             nulstr = ">nul"
 
-
-
         # if os.system(mingw_prefix+"gcc --version"+nulstr)!=0:
             # #not really super consistent but..
             # print("Can't find Windows compiler: "+mingw_prefix)
@@ -345,8 +346,6 @@ def configure(env):
 
             env.Append(CCFLAGS=['-g', '-Wall', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
-
-
         env["CC"] = mingw_prefix + "gcc"
         env['AS'] = mingw_prefix + "as"
         env['CXX'] = mingw_prefix + "g++"
@@ -369,9 +368,6 @@ def configure(env):
         # env.Append(CPPFLAGS=['-march=i686'])
         # env.Append(LINKFLAGS=['-march=i686'])
 
-
-
-
         #'d3dx9d'
         env.Append(CPPFLAGS=['-DMINGW_ENABLED'])
         # env.Append(LINKFLAGS=['-g'])
@@ -385,6 +381,7 @@ def configure(env):
     env.Append(BUILDERS={'GLSL': env.Builder(action=methods.build_glsl_headers, suffix='glsl.h', src_suffix='.glsl')})
     env.Append(BUILDERS={'HLSL9': env.Builder(action=methods.build_hlsl_dx9_headers, suffix='hlsl.h', src_suffix='.hlsl')})
     env.Append(BUILDERS={'GLSL120GLES': env.Builder(action=methods.build_gles2_headers, suffix='glsl.h', src_suffix='.glsl')})
+
 
 def detect_visual_c_compiler_version(tools_env):
     # tools_env is the variable scons uses to call tools that execute tasks, SCons's env['ENV'] that executes tasks...
@@ -425,7 +422,6 @@ def detect_visual_c_compiler_version(tools_env):
             or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index)):
         vc_chosen_compiler_index = vc_amd64_x86_compiler_detection_index
         vc_chosen_compiler_str = "amd64_x86"
-
 
     # Now check the 32 bit compilers
     vc_x86_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN;")
