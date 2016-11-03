@@ -201,6 +201,7 @@ if (env['builtin_opus'] != 'no'):
     thirdparty_include_paths = [
         "",
         "celt",
+        "opus",
         "silk",
         "silk/fixed",
         "silk/float",

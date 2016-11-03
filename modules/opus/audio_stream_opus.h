@@ -36,7 +36,7 @@
 #include "os/file_access.h"
 #include "scene/resources/audio_stream.h"
 
-#include <opusfile.h>
+#include <opus/opusfile.h>
 
 class AudioStreamPlaybackOpus : public AudioStreamPlayback {
 
