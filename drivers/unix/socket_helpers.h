@@ -3,11 +3,11 @@
 
 #include <string.h>
 
-#ifdef WINDOWS_ENABLED
- // Workaround mingw missing flags!
- #ifndef IPV6_V6ONLY
-  #define IPV6_V6ONLY 27
- #endif
+#if defined(__MINGW32__ ) && (!defined(__MINGW64_VERSION_MAJOR) || __MINGW64_VERSION_MAJOR < 4)
+  // Workaround for mingw-w64 < 4.0
+  #ifndef IPV6_V6ONLY
+    #define IPV6_V6ONLY 27
+  #endif
 #endif
 
 // helpers for sockaddr -> IP_Address and back, should work for posix and winsock. All implementations should use this
