@@ -24,7 +24,7 @@ if (env['builtin_libogg'] != 'no'):
 if (env['builtin_libvorbis'] != 'no'):
     env_webm.Append(CPPPATH=["#thirdparty/libvorbis"])
 if (env['builtin_opus'] != 'no'):
-    env_webm.Append(CPPPATH=["#thirdparty"])
+    env_webm.Append(CPPPATH=["#thirdparty/opus"])
 
 if (env['builtin_libvpx'] != 'no'):
     Export('env_webm')

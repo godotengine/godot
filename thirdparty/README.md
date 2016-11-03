@@ -158,7 +158,7 @@ Files extracted from upstream source:
 
 - all .c and .h files in src/ (both opus and opusfile),
   except `opus_demo.c`
-- all .h files in include/ (both opus and opusfile)
+- all .h files in include/ (both opus and opusfile) as opus/
 - COPYING
 
 
