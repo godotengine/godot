@@ -2164,6 +2164,8 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 	uint32_t import_flags=0;
 	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_DETECT_LOOP)
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_DETECT_LOOP;
+	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_KEEP_VALUE_TRACKS)
+		import_flags |= EditorSceneImporter::IMPORT_ANIMATION_KEEP_VALUE_TRACKS;
 	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_OPTIMIZE)
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_OPTIMIZE;
 	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS)
