@@ -1,7 +1,7 @@
 
 /* png.h - header file for PNG reference library
  *
- * libpng version 1.6.23, June 9, 2016
+ * libpng version 1.6.26, October 20, 2016
  *
  * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
@@ -12,7 +12,7 @@
  * Authors and maintainers:
  *   libpng versions 0.71, May 1995, through 0.88, January 1996: Guy Schalnat
  *   libpng versions 0.89, June 1996, through 0.96, May 1997: Andreas Dilger
- *   libpng versions 0.97, January 1998, through 1.6.23, June 9, 2016:
+ *   libpng versions 0.97, January 1998, through 1.6.26, October 20, 2016:
  *     Glenn Randers-Pehrson.
  *   See also "Contributing Authors", below.
  */
@@ -29,7 +29,7 @@
  * files that are distributed with libpng have other copyright owners and
  * are released under other open source licenses.
  *
- * libpng versions 1.0.7, July 1, 2000 through 1.6.23, June 9, 2016 are
+ * libpng versions 1.0.7, July 1, 2000 through 1.6.26, October 20, 2016 are
  * Copyright (c) 2000-2002, 2004, 2006-2016 Glenn Randers-Pehrson, are
  * derived from libpng-1.0.6, and are distributed according to the same
  * disclaimer and license as libpng-1.0.6 with the following individuals
@@ -41,6 +41,7 @@
  *    Cosmin Truta
  *    Gilles Vollant
  *    James Yu
+ *    Mandar Sahastrabuddhe
  *
  * and with the following additions to the disclaimer:
  *
@@ -217,7 +218,7 @@
  *    ...
  *    1.5.27                  15    10527  15.so.15.27[.0]
  *    ...
- *    1.6.23                  16    10623  16.so.16.23[.0]
+ *    1.6.26                  16    10626  16.so.16.26[.0]
  *
  *    Henceforth the source version will match the shared-library major
  *    and minor numbers; the shared-library major version number will be
@@ -245,13 +246,13 @@
  * Y2K compliance in libpng:
  * =========================
  *
- *    June 9, 2016
+ *    October 20, 2016
  *
  *    Since the PNG Development group is an ad-hoc body, we can't make
  *    an official declaration.
  *
  *    This is your unofficial assurance that libpng from version 0.71 and
- *    upward through 1.6.23 are Y2K compliant.  It is my belief that
+ *    upward through 1.6.26 are Y2K compliant.  It is my belief that
  *    earlier versions were also Y2K compliant.
  *
  *    Libpng only has two year fields.  One is a 2-byte unsigned integer
@@ -313,9 +314,8 @@
  */
 
 /* Version information for png.h - this should match the version in png.c */
-#define PNG_LIBPNG_VER_STRING "1.6.23"
-#define PNG_HEADER_VERSION_STRING \
-     " libpng version 1.6.23 - June 9, 2016\n"
+#define PNG_LIBPNG_VER_STRING "1.6.26"
+#define PNG_HEADER_VERSION_STRING " libpng version 1.6.26 - October 20, 2016\n"
 
 #define PNG_LIBPNG_VER_SONUM   16
 #define PNG_LIBPNG_VER_DLLNUM  16
@@ -323,7 +323,7 @@
 /* These should match the first 3 components of PNG_LIBPNG_VER_STRING: */
 #define PNG_LIBPNG_VER_MAJOR   1
 #define PNG_LIBPNG_VER_MINOR   6
-#define PNG_LIBPNG_VER_RELEASE 23
+#define PNG_LIBPNG_VER_RELEASE 26
 
 /* This should match the numeric part of the final component of
  * PNG_LIBPNG_VER_STRING, omitting any leading zero:
@@ -354,20 +354,20 @@
  * version 1.0.0 was mis-numbered 100 instead of 10000).  From
  * version 1.0.1 it's    xxyyzz, where x=major, y=minor, z=release
  */
-#define PNG_LIBPNG_VER 10623 /* 1.6.23 */
+#define PNG_LIBPNG_VER 10626 /* 1.6.26 */
 
 /* Library configuration: these options cannot be changed after
  * the library has been built.
  */
 #ifndef PNGLCONF_H
-    /* If pnglibconf.h is missing, you can
-     * copy scripts/pnglibconf.h.prebuilt to pnglibconf.h
-     */
+/* If pnglibconf.h is missing, you can
+ * copy scripts/pnglibconf.h.prebuilt to pnglibconf.h
+ */
 #   include "pnglibconf.h"
 #endif
 
 #ifndef PNG_VERSION_INFO_ONLY
-   /* Machine specific configuration. */
+/* Machine specific configuration. */
 #  include "pngconf.h"
 #endif
 
@@ -464,7 +464,7 @@ extern "C" {
 /* This triggers a compiler error in png.c, if png.c and png.h
  * do not agree upon the version number.
  */
-typedef char* png_libpng_version_1_6_23;
+typedef char* png_libpng_version_1_6_26;
 
 /* Basic control structions.  Read libpng-manual.txt or libpng.3 for more info.
  *
@@ -657,17 +657,17 @@ typedef png_time * * png_timepp;
  */
 typedef struct png_unknown_chunk_t
 {
-    png_byte name[5]; /* Textual chunk name with '\0' terminator */
-    png_byte *data;   /* Data, should not be modified on read! */
-    png_size_t size;
+   png_byte name[5]; /* Textual chunk name with '\0' terminator */
+   png_byte *data;   /* Data, should not be modified on read! */
+   png_size_t size;
 
-    /* On write 'location' must be set using the flag values listed below.
-     * Notice that on read it is set by libpng however the values stored have
-     * more bits set than are listed below.  Always treat the value as a
-     * bitmask.  On write set only one bit - setting multiple bits may cause the
-     * chunk to be written in multiple places.
-     */
-    png_byte location; /* mode of operation at read time */
+   /* On write 'location' must be set using the flag values listed below.
+    * Notice that on read it is set by libpng however the values stored have
+    * more bits set than are listed below.  Always treat the value as a
+    * bitmask.  On write set only one bit - setting multiple bits may cause the
+    * chunk to be written in multiple places.
+    */
+   png_byte location; /* mode of operation at read time */
 }
 png_unknown_chunk;
 
@@ -2300,8 +2300,10 @@ PNG_EXPORT(171, void, png_set_sCAL_s, (png_const_structrp png_ptr,
  *    except for the IHDR, PLTE, tRNS, IDAT, and IEND chunks (which continue to
  *    be processed by libpng.
  */
+#ifdef PNG_HANDLE_AS_UNKNOWN_SUPPORTED
 PNG_EXPORT(172, void, png_set_keep_unknown_chunks, (png_structrp png_ptr,
     int keep, png_const_bytep chunk_list, int num_chunks));
+#endif /* HANDLE_AS_UNKNOWN */
 
 /* The "keep" PNG_HANDLE_CHUNK_ parameter for the specified chunk is returned;
  * the result is therefore true (non-zero) if special handling is required,
@@ -2309,7 +2311,7 @@ PNG_EXPORT(172, void, png_set_keep_unknown_chunks, (png_structrp png_ptr,
  */
 PNG_EXPORT(173, int, png_handle_as_unknown, (png_const_structrp png_ptr,
     png_const_bytep chunk_name));
-#endif
+#endif /* SET_UNKNOWN_CHUNKS */
 
 #ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
 PNG_EXPORT(174, void, png_set_unknown_chunks, (png_const_structrp png_ptr,
@@ -2530,33 +2532,37 @@ PNG_EXPORT(216, png_uint_32, png_get_io_chunk_type,
 
  /* fg and bg should be in `gamma 1.0' space; alpha is the opacity */
 
-#  define png_composite(composite, fg, alpha, bg)         \
-     { png_uint_16 temp = (png_uint_16)((png_uint_16)(fg) \
-           * (png_uint_16)(alpha)                         \
-           + (png_uint_16)(bg)*(png_uint_16)(255          \
-           - (png_uint_16)(alpha)) + 128);                \
-       (composite) = (png_byte)(((temp + (temp >> 8)) >> 8) & 0xff); }
+#  define png_composite(composite, fg, alpha, bg)        \
+   {                                                     \
+      png_uint_16 temp = (png_uint_16)((png_uint_16)(fg) \
+          * (png_uint_16)(alpha)                         \
+          + (png_uint_16)(bg)*(png_uint_16)(255          \
+          - (png_uint_16)(alpha)) + 128);                \
+      (composite) = (png_byte)(((temp + (temp >> 8)) >> 8) & 0xff); \
+   }
 
-#  define png_composite_16(composite, fg, alpha, bg)       \
-     { png_uint_32 temp = (png_uint_32)((png_uint_32)(fg)  \
-           * (png_uint_32)(alpha)                          \
-           + (png_uint_32)(bg)*(65535                      \
-           - (png_uint_32)(alpha)) + 32768);               \
-       (composite) = (png_uint_16)(0xffff & ((temp + (temp >> 16)) >> 16)); }
+#  define png_composite_16(composite, fg, alpha, bg)     \
+   {                                                     \
+      png_uint_32 temp = (png_uint_32)((png_uint_32)(fg) \
+          * (png_uint_32)(alpha)                         \
+          + (png_uint_32)(bg)*(65535                     \
+          - (png_uint_32)(alpha)) + 32768);              \
+      (composite) = (png_uint_16)(0xffff & ((temp + (temp >> 16)) >> 16)); \
+   }
 
 #else  /* Standard method using integer division */
 
-#  define png_composite(composite, fg, alpha, bg)                        \
-     (composite) =                                                       \
-         (png_byte)(0xff & (((png_uint_16)(fg) * (png_uint_16)(alpha) +  \
-         (png_uint_16)(bg) * (png_uint_16)(255 - (png_uint_16)(alpha)) + \
-         127) / 255))
+#  define png_composite(composite, fg, alpha, bg)                      \
+   (composite) =                                                       \
+       (png_byte)(0xff & (((png_uint_16)(fg) * (png_uint_16)(alpha) +  \
+       (png_uint_16)(bg) * (png_uint_16)(255 - (png_uint_16)(alpha)) + \
+       127) / 255))
 
-#  define png_composite_16(composite, fg, alpha, bg)                         \
-     (composite) =                                                           \
-         (png_uint_16)(0xffff & (((png_uint_32)(fg) * (png_uint_32)(alpha) + \
-         (png_uint_32)(bg)*(png_uint_32)(65535 - (png_uint_32)(alpha)) +     \
-         32767) / 65535))
+#  define png_composite_16(composite, fg, alpha, bg)                       \
+   (composite) =                                                           \
+       (png_uint_16)(0xffff & (((png_uint_32)(fg) * (png_uint_32)(alpha) + \
+       (png_uint_32)(bg)*(png_uint_32)(65535 - (png_uint_32)(alpha)) +     \
+       32767) / 65535))
 #endif /* READ_COMPOSITE_NODIV */
 
 #ifdef PNG_READ_INT_FUNCTIONS_SUPPORTED
@@ -2592,38 +2598,38 @@ PNG_EXPORT(207, void, png_save_uint_16, (png_bytep buf, unsigned int i));
  * format for negative values, which is almost certainly true.
  */
 #  define PNG_get_uint_32(buf) \
-     (((png_uint_32)(*(buf)) << 24) + \
-      ((png_uint_32)(*((buf) + 1)) << 16) + \
-      ((png_uint_32)(*((buf) + 2)) << 8) + \
-      ((png_uint_32)(*((buf) + 3))))
+   (((png_uint_32)(*(buf)) << 24) + \
+    ((png_uint_32)(*((buf) + 1)) << 16) + \
+    ((png_uint_32)(*((buf) + 2)) << 8) + \
+    ((png_uint_32)(*((buf) + 3))))
 
    /* From libpng-1.4.0 until 1.4.4, the png_get_uint_16 macro (but not the
     * function) incorrectly returned a value of type png_uint_32.
     */
 #  define PNG_get_uint_16(buf) \
-     ((png_uint_16) \
-      (((unsigned int)(*(buf)) << 8) + \
-       ((unsigned int)(*((buf) + 1)))))
+   ((png_uint_16) \
+    (((unsigned int)(*(buf)) << 8) + \
+    ((unsigned int)(*((buf) + 1)))))
 
 #  define PNG_get_int_32(buf) \
-     ((png_int_32)((*(buf) & 0x80) \
-      ? -((png_int_32)(((png_get_uint_32(buf)^0xffffffffU)+1U)&0x7fffffffU)) \
-      : (png_int_32)png_get_uint_32(buf)))
+   ((png_int_32)((*(buf) & 0x80) \
+    ? -((png_int_32)(((png_get_uint_32(buf)^0xffffffffU)+1U)&0x7fffffffU)) \
+    : (png_int_32)png_get_uint_32(buf)))
 
-   /* If PNG_PREFIX is defined the same thing as below happens in pnglibconf.h,
-    * but defining a macro name prefixed with PNG_PREFIX.
-    */
+/* If PNG_PREFIX is defined the same thing as below happens in pnglibconf.h,
+ * but defining a macro name prefixed with PNG_PREFIX.
+ */
 #  ifndef PNG_PREFIX
-#     define png_get_uint_32(buf) PNG_get_uint_32(buf)
-#     define png_get_uint_16(buf) PNG_get_uint_16(buf)
-#     define png_get_int_32(buf)  PNG_get_int_32(buf)
+#    define png_get_uint_32(buf) PNG_get_uint_32(buf)
+#    define png_get_uint_16(buf) PNG_get_uint_16(buf)
+#    define png_get_int_32(buf)  PNG_get_int_32(buf)
 #  endif
 #else
 #  ifdef PNG_PREFIX
-      /* No macros; revert to the (redefined) function */
-#     define PNG_get_uint_32 (png_get_uint_32)
-#     define PNG_get_uint_16 (png_get_uint_16)
-#     define PNG_get_int_32  (png_get_int_32)
+   /* No macros; revert to the (redefined) function */
+#    define PNG_get_uint_32 (png_get_uint_32)
+#    define PNG_get_uint_16 (png_get_uint_16)
+#    define PNG_get_int_32  (png_get_int_32)
 #  endif
 #endif
 
@@ -3171,9 +3177,9 @@ PNG_EXPORT(245, int, png_image_write_to_memory, (png_imagep image, void *memory,
 #define PNG_IMAGE_PNG_SIZE_MAX_(image, image_size)\
    ((8U/*sig*/+25U/*IHDR*/+16U/*gAMA*/+44U/*cHRM*/+12U/*IEND*/+\
     (((image).format&PNG_FORMAT_FLAG_COLORMAP)?/*colormap: PLTE, tRNS*/\
-     12U+3U*(image).colormap_entries/*PLTE data*/+\
-     (((image).format&PNG_FORMAT_FLAG_ALPHA)?\
-      12U/*tRNS*/+(image).colormap_entries:0U):0U)+\
+    12U+3U*(image).colormap_entries/*PLTE data*/+\
+    (((image).format&PNG_FORMAT_FLAG_ALPHA)?\
+    12U/*tRNS*/+(image).colormap_entries:0U):0U)+\
     12U)+(12U*((image_size)/PNG_ZBUF_SIZE))/*IDAT*/+(image_size))
    /* A helper for the following macro; if your compiler cannot handle the
     * following macro use this one with the result of
@@ -3221,7 +3227,10 @@ PNG_EXPORT(245, int, png_image_write_to_memory, (png_imagep image, void *memory,
 #endif
 #define PNG_MAXIMUM_INFLATE_WINDOW 2 /* SOFTWARE: force maximum window */
 #define PNG_SKIP_sRGB_CHECK_PROFILE 4 /* SOFTWARE: Check ICC profile for sRGB */
-#define PNG_OPTION_NEXT  6 /* Next option - numbers must be even */
+#ifdef PNG_MIPS_MSA_API_SUPPORTED
+#  define PNG_MIPS_MSA   6 /* HARDWARE: MIPS Msa SIMD instructions supported */
+#endif
+#define PNG_OPTION_NEXT  8 /* Next option - numbers must be even */
 
 /* Return values: NOTE: there are four values and 'off' is *not* zero */
 #define PNG_OPTION_UNSET   0 /* Unset - defaults to off */

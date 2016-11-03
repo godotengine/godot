@@ -1,9 +1,9 @@
 
 /* pngconf.h - machine configurable file for libpng
  *
- * libpng version 1.6.23, June 9, 2016
+ * libpng version 1.6.26, October 20, 2016
  *
- * Copyright (c) 1998-2002,2004,2006-2015 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -188,27 +188,27 @@
    * compatible with GCC or Visual C because of different calling conventions.
    */
 #  if PNG_API_RULE == 2
-    /* If this line results in an error, either because __watcall is not
-     * understood or because of a redefine just below you cannot use *this*
-     * build of the library with the compiler you are using.  *This* build was
-     * build using Watcom and applications must also be built using Watcom!
-     */
+   /* If this line results in an error, either because __watcall is not
+    * understood or because of a redefine just below you cannot use *this*
+    * build of the library with the compiler you are using.  *This* build was
+    * build using Watcom and applications must also be built using Watcom!
+    */
 #    define PNGCAPI __watcall
 #  endif
 
 #  if defined(__GNUC__) || (defined(_MSC_VER) && (_MSC_VER >= 800))
 #    define PNGCAPI __cdecl
 #    if PNG_API_RULE == 1
-       /* If this line results in an error __stdcall is not understood and
-        * PNG_API_RULE should not have been set to '1'.
-        */
+   /* If this line results in an error __stdcall is not understood and
+    * PNG_API_RULE should not have been set to '1'.
+    */
 #      define PNGAPI __stdcall
 #    endif
 #  else
-    /* An older compiler, or one not detected (erroneously) above,
-     * if necessary override on the command line to get the correct
-     * variants for the compiler.
-     */
+   /* An older compiler, or one not detected (erroneously) above,
+    * if necessary override on the command line to get the correct
+    * variants for the compiler.
+    */
 #    ifndef PNGCAPI
 #      define PNGCAPI _cdecl
 #    endif
@@ -225,10 +225,10 @@
 
 #  if (defined(_MSC_VER) && _MSC_VER < 800) ||\
       (defined(__BORLANDC__) && __BORLANDC__ < 0x500)
-    /* older Borland and MSC
-     * compilers used '__export' and required this to be after
-     * the type.
-     */
+   /* older Borland and MSC
+    * compilers used '__export' and required this to be after
+    * the type.
+    */
 #    ifndef PNG_EXPORT_TYPE
 #      define PNG_EXPORT_TYPE(type) type PNG_IMPEXP
 #    endif
@@ -244,9 +244,9 @@
 #  if (defined(__IBMC__) || defined(__IBMCPP__)) && defined(__OS2__)
 #    define PNGAPI _System
 #  else /* !Windows/x86 && !OS/2 */
-    /* Use the defaults, or define PNG*API on the command line (but
-     * this will have to be done for every compile!)
-     */
+   /* Use the defaults, or define PNG*API on the command line (but
+    * this will have to be done for every compile!)
+    */
 #  endif /* other system, !OS/2 */
 #endif /* !Windows/x86 */
 
@@ -267,7 +267,7 @@
  */
 #ifndef PNG_IMPEXP
 #  if defined(PNG_USE_DLL) && defined(PNG_DLL_IMPORT)
-     /* This forces use of a DLL, disallowing static linking */
+   /* This forces use of a DLL, disallowing static linking */
 #    define PNG_IMPEXP PNG_DLL_IMPORT
 #  endif
 
@@ -340,7 +340,7 @@
    * less efficient code.
    */
 #  if defined(__clang__) && defined(__has_attribute)
-     /* Clang defines both __clang__ and __GNUC__. Check __clang__ first. */
+   /* Clang defines both __clang__ and __GNUC__. Check __clang__ first. */
 #    if !defined(PNG_USE_RESULT) && __has_attribute(__warn_unused_result__)
 #      define PNG_USE_RESULT __attribute__((__warn_unused_result__))
 #    endif
@@ -507,9 +507,9 @@
 #  error "libpng requires a signed 32-bit (or more) type"
 #endif
 
-#if UINT_MAX > 4294967294
+#if UINT_MAX > 4294967294U
    typedef unsigned int png_uint_32;
-#elif ULONG_MAX > 4294967294
+#elif ULONG_MAX > 4294967294U
    typedef unsigned long int png_uint_32;
 #else
 #  error "libpng requires an unsigned 32-bit (or more) type"
