@@ -209,7 +209,7 @@ def configure(env):
     env.Append(CPPPATH=['#platform/windows'])
 
     # Targeted Windows version: Vista (and later)
-    env.Append(CPPFLAGS=['-D_WIN32_WINNT=0x0600'])
+    winver = "0x0600" # Windows Vista is the minimum target for windows builds
 
     env['is_mingw'] = False
     if (os.name == "nt" and os.getenv("VCINSTALLDIR")):
@@ -217,6 +217,7 @@ def configure(env):
         env['ENV']['TMP'] = os.environ['TMP']
         env.Append(CPPPATH=['#platform/windows/include'])
         env.Append(LIBPATH=['#platform/windows/lib'])
+        env.Append(CCFLAGS=['/DWINVER=%s' % winver, '/D_WIN32_WINNT=%s' % winver])
 
         if (env["target"] == "release"):
 
@@ -311,6 +312,7 @@ def configure(env):
         env.use_windows_spawn_fix()
 
         # build using mingw
+        env.Append(CCFLAGS=['-DWINVER=%s' % winver, '-D_WIN32_WINNT=%s' % winver])
         if (os.name == "nt"):
             env['ENV']['TMP'] = os.environ['TMP']  # way to go scons, you can be so stupid sometimes
         else:
