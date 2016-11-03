@@ -33,8 +33,6 @@ def get_flags():
 
     return [
         ('tools', 'no'),
-        ('builtin_zlib', 'yes'),
-        ('openssl', 'builtin'),
         ('xaudio2', 'yes'),
     ]
 

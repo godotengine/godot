@@ -6,7 +6,7 @@ Import('env_modules')
 env_vorbis = env_modules.Clone()
 
 # Thirdparty source files
-if (env["libvorbis"] != "system"):  # builtin
+if (env['builtin_libvorbis'] != 'no'):
     thirdparty_dir = "#thirdparty/libvorbis/"
     thirdparty_sources = [
         #"analysis.c",
@@ -42,7 +42,7 @@ if (env["libvorbis"] != "system"):  # builtin
     env_vorbis.Append(CPPPATH=[thirdparty_dir])
 
     # also requires libogg
-    if (env["libogg"] != "system"):  # builtin
+    if (env['builtin_libogg'] != 'no'):
         env_vorbis.Append(CPPPATH=["#thirdparty/libogg"])
 
 # Godot source files
