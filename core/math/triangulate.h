@@ -56,7 +56,7 @@ public:
 
 
 private:
-	static bool snip(const Vector<Vector2> &p_contour,int u,int v,int w,int n,int *V);
+	static bool snip(const Vector<Vector2> &p_contour,int u,int v,int w,int n,const Vector<int>& V);
 
 };
 
