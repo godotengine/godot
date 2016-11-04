@@ -517,6 +517,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 
 			List<Node*> selection = editor_selection->get_selected_node_list();
+			if (selection.size()==0)
+				break;
 
 			List<Node*> reselect;
 
