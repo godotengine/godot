@@ -722,7 +722,7 @@ void SceneTreeDock::_notification(int p_what) {
 			}
 			button_add->set_icon(get_icon("Add","EditorIcons"));
 			button_instance->set_icon(get_icon("Instance","EditorIcons"));
-			button_create_script->set_icon(get_icon("Script","EditorIcons"));
+			button_create_script->set_icon(get_icon("ScriptCreate","EditorIcons"));
 			button_load_script->set_icon(get_icon("Script", "EditorIcons"));
 			button_clear_script->set_icon(get_icon("Remove", "EditorIcons"));
 
@@ -1848,7 +1848,7 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 		//menu->add_icon_item(get_icon("Groups","EditorIcons"),TTR("Edit Groups"),TOOL_GROUP);
 		//menu->add_icon_item(get_icon("Connect","EditorIcons"),TTR("Edit Connections"),TOOL_CONNECT);
 		menu->add_separator();
-		menu->add_icon_shortcut(get_icon("Script", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_script"), TOOL_CREATE_SCRIPT);
+		menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_script"), TOOL_CREATE_SCRIPT);
 		menu->add_icon_shortcut(get_icon("Script", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/load_script"), TOOL_LOAD_SCRIPT);
 		menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
 		menu->add_separator();
