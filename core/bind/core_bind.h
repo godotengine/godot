@@ -503,12 +503,16 @@ class _Marshalls : public Reference {
 
 	OBJ_TYPE(_Marshalls,Reference);
 
+	static _Marshalls* singleton;
+
 protected:
 
 	static void _bind_methods();
 
 
 public:
+
+	static _Marshalls* get_singleton();
 
 	String variant_to_base64(const Variant& p_var);
 	Variant base64_to_variant(const String& p_str);
@@ -519,7 +523,8 @@ public:
 	String utf8_to_base64(const String& p_str);
 	String base64_to_utf8(const String& p_str);
 
-	_Marshalls() {};
+	_Marshalls() { singleton = this; }
+	~_Marshalls() { singleton = NULL; }
 };
 
 

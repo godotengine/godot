@@ -177,7 +177,7 @@ void register_core_singletons() {
 	Globals::get_singleton()->add_singleton( Globals::Singleton("ResourceSaver",_ResourceSaver::get_singleton()) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("PathRemap",PathRemap::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("OS",_OS::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("Marshalls",_marshalls ) );
+	Globals::get_singleton()->add_singleton( Globals::Singleton("Marshalls",_Marshalls::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("TranslationServer",TranslationServer::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("TS",TranslationServer::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("Input",Input::get_singleton() ) );
