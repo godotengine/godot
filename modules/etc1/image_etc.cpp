@@ -30,7 +30,7 @@
 #include "image.h"
 #include "rg_etc1.h"
 #include "print_string.h"
-#include "os/copymem.h"
+#include <string.h>
 static void _decompress_etc(Image *p_img) {
 
 	ERR_FAIL_COND(p_img->get_format()!=Image::FORMAT_ETC);
@@ -147,7 +147,7 @@ static void _compress_etc(Image *p_img) {
 //				print_line("x: "+itos(x)+" y: "+itos(y));
 
 				uint8_t block[4*4*4];
-				zeromem(block,4*4*4);
+				memset(block,0,4*4*4);
 				uint8_t cblock[8];
 
 				int maxy = MIN(imgh,4);

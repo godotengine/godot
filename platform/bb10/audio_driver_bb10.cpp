@@ -58,7 +58,7 @@ Error AudioDriverBB10::init(const char* p_name) {
 	pcm_open = true;
 
 	snd_pcm_channel_info_t cinfo;
-	zeromem(&cinfo, sizeof (cinfo));
+	memset(&cinfo, 0, sizeof (cinfo));
 	cinfo.channel = SND_PCM_CHANNEL_PLAYBACK;
 	snd_pcm_plugin_info(pcm_handle, &cinfo);
 
@@ -73,7 +73,7 @@ Error AudioDriverBB10::init(const char* p_name) {
 	output_format = cinfo.max_voices >= 2 ? OUTPUT_STEREO : OUTPUT_MONO;
 
 	snd_pcm_channel_params_t cp;
-	zeromem(&cp, sizeof(cp));
+	memset(&cp, 0, sizeof(cp));
 	cp.mode = SND_PCM_MODE_BLOCK;
 	cp.channel = SND_PCM_CHANNEL_PLAYBACK;
 	cp.start_mode = SND_PCM_START_DATA;
@@ -95,9 +95,9 @@ Error AudioDriverBB10::init(const char* p_name) {
 	ERR_FAIL_COND_V(ret < 0, FAILED);
 
 	snd_mixer_group_t group;
-	zeromem(&group, sizeof(group));
+	memset(&group, 0, sizeof(group));
 	snd_pcm_channel_setup_t setup;
-	zeromem(&setup, sizeof(setup));
+	memset(&setup, 0, sizeof(setup));
 	setup.channel = SND_PCM_CHANNEL_PLAYBACK;
 	setup.mode = SND_PCM_MODE_BLOCK;
 	setup.mixer_gid = &group.gid;
@@ -168,7 +168,7 @@ void AudioDriverBB10::thread_func(void* p_udata) {
 				};
 				printf("pcm_write underrun %i, errno %i\n", (int)ad->thread_exited, errno);
 				snd_pcm_channel_status_t status;
-				zeromem(&status, sizeof(status));
+				memset(&status, 0, sizeof(status));
 				// put in non-blocking mode
 				snd_pcm_nonblock_mode(ad->pcm_handle, 1);
 				status.channel = SND_PCM_CHANNEL_PLAYBACK;

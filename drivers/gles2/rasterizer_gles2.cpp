@@ -2211,7 +2211,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 						uint16_t vector[3]={ make_half_float(src[i].x), make_half_float(src[i].y), make_half_float(src[i].z) };
 
-						copymem(&p_mem[a.ofs+i*stride], vector, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], vector, a.size);
 
 						if (i==0) {
 
@@ -2229,7 +2229,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 						GLfloat vector[3]={ src[i].x, src[i].y, src[i].z };
 
-						copymem(&p_mem[a.ofs+i*stride], vector, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], vector, a.size);
 
 						if (i==0) {
 
@@ -2272,7 +2272,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 							0,
 						};
 
-						copymem(&p_mem[a.ofs+i*stride], vector, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], vector, a.size);
 
 					}
 
@@ -2281,7 +2281,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 
 						GLfloat vector[3]={ src[i].x, src[i].y, src[i].z };
-						copymem(&p_mem[a.ofs+i*stride], vector, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], vector, a.size);
 
 					}
 				}
@@ -2311,7 +2311,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 							CLAMP(src[i*4+3]*127,-128,127)
 						};
 
-						copymem(&p_mem[a.ofs+i*stride], xyzw, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], xyzw, a.size);
 
 					}
 
@@ -2326,7 +2326,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 							src[i*4+3]
 						};
 
-						copymem(&p_mem[a.ofs+i*stride], xyzw, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], xyzw, a.size);
 
 					}
 				}
@@ -2358,7 +2358,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 						colors[j]=CLAMP( int((src[i][j])*255.0), 0,255 );
 					}
 
-						copymem(&p_mem[a.ofs+i*stride], colors, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], colors, a.size);
 
 				}
 
@@ -2386,7 +2386,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 					for (int i=0;i<p_surface->array_len;i++) {
 
 						uint16_t uv[2]={ make_half_float(src[i].x) , make_half_float(src[i].y) };
-						copymem(&p_mem[a.ofs+i*stride], uv, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], uv, a.size);
 					}
 
 				} else {
@@ -2394,7 +2394,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 						GLfloat uv[2]={ src[i].x , src[i].y };
 
-						copymem(&p_mem[a.ofs+i*stride], uv, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], uv, a.size);
 
 					}
 				}
@@ -2435,7 +2435,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 							data[j]=CLAMP(src[i*VS::ARRAY_WEIGHTS_SIZE+j]*65535,0,65535);
 						}
 
-						copymem(&p_mem[a.ofs+i*stride], data, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], data, a.size);
 					}
 				} else {
 
@@ -2446,7 +2446,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 							data[j]=src[i*VS::ARRAY_WEIGHTS_SIZE+j];
 						}
 
-						copymem(&p_mem[a.ofs+i*stride], data, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], data, a.size);
 
 
 					}
@@ -2483,7 +2483,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 						}
 
-						copymem(&p_mem[a.ofs+i*stride], data, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], data, a.size);
 
 
 					}
@@ -2498,7 +2498,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 						}
 
-						copymem(&p_mem[a.ofs+i*stride], data, a.size);
+						memcpy(&p_mem[a.ofs+i*stride], data, a.size);
 
 
 					}
@@ -2526,11 +2526,11 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 					if (a.size==2) {
 						uint16_t v=src[i];
 
-						copymem(&p_index_mem[i*a.size], &v, a.size);
+						memcpy(&p_index_mem[i*a.size], &v, a.size);
 					} else {
 						uint32_t v=src[i];
 
-						copymem(&p_index_mem[i*a.size], &v, a.size);
+						memcpy(&p_index_mem[i*a.size], &v, a.size);
 					}
 				}
 

@@ -69,7 +69,7 @@ bool AudioStreamGibberish::mix(int32_t *p_buffer, int p_frames) {
 	if (!active)
 		return false;
 
-	zeromem(p_buffer,p_frames*sizeof(int32_t));
+	memset(p_buffer,0,p_frames*sizeof(int32_t));
 
 	if (!paused && active_voices==0) {
 

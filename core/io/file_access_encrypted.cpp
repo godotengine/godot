@@ -29,12 +29,12 @@
 #include "file_access_encrypted.h"
 #include "aes256.h"
 #include "md5.h"
-#include "os/copymem.h"
 #include "print_string.h"
 #define COMP_MAGIC 0x43454447
 
 #include "core/variant.h"
 #include <stdio.h>
+#include <string.h>
 
 Error FileAccessEncrypted::open_and_parse(FileAccess *p_base,const Vector<uint8_t>& p_key,Mode p_mode) {
 
@@ -146,7 +146,7 @@ void FileAccessEncrypted::close() {
 		MD5Final(&md5);
 
 		compressed.resize(len);
-		zeromem( compressed.ptr(), len );
+		memset( compressed.ptr(), 0, len );
 		for(int i=0;i<data.size();i++) {
 			compressed[i]=data[i];
 		}

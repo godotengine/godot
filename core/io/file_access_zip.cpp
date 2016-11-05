@@ -31,7 +31,8 @@
 #include "file_access_zip.h"
 
 #include "core/os/file_access.h"
-#include "core/os/copymem.h"
+
+#include <string.h>
 
 ZipArchive* ZipArchive::instance = NULL;
 
@@ -134,7 +135,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	ERR_FAIL_COND_V(!f, NULL);
 
 	zlib_filefunc_def io;
-	zeromem(&io, sizeof(io));
+	memset(&io, 0, sizeof(io));
 
 	io.opaque = f;
 	io.zopen_file = godot_open;

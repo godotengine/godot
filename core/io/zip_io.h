@@ -32,7 +32,8 @@
 #include "io/zip.h"
 #include "io/unzip.h"
 #include "os/file_access.h"
-#include "os/copymem.h"
+
+#include <string.h>
 
 
 static void* zipio_open(void* data, const char* p_fname, int mode) {
@@ -119,7 +120,7 @@ static int zipio_testerror(voidpf opaque, voidpf stream) {
 static voidpf zipio_alloc(voidpf opaque, uInt items, uInt size) {
 
 	voidpf ptr =memalloc(items*size);
-	zeromem(ptr,items*size);
+	memset(ptr,0,items*size);
 	return ptr;
 }
 

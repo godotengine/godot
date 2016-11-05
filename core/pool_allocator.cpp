@@ -30,14 +30,14 @@
 #include "error_macros.h"
 #include "core/os/os.h"
 #include "os/memory.h"
-#include "os/copymem.h"
 #include "print_string.h"
 #include <assert.h>
+#include <string.h>
 #define COMPACT_CHUNK( m_entry , m_to_pos ) 			\
 do {								\
 	void *_dst=&((unsigned char*)pool)[m_to_pos];	\
 	void *_src=&((unsigned char*)pool)[(m_entry).pos];	\
-	movemem(_dst,_src,aligned((m_entry).len));			\
+	memmove(_dst,_src,aligned((m_entry).len));			\
 	(m_entry).pos=m_to_pos;					\
 } while (0);
 

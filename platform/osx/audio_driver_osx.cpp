@@ -55,7 +55,7 @@ Error AudioDriverOSX::init() {
 	const AudioUnitElement bus = output_bus;
 	const AudioUnitScope scope = kAudioUnitScope_Input;
 
-	zeromem(&desc, sizeof(desc));
+	memset(&desc, 0, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
 	desc.componentSubType = 0;  /* !!! FIXME: ? */
 	comp = AudioComponentFindNext(NULL, &desc);
@@ -70,7 +70,7 @@ Error AudioDriverOSX::init() {
 								  scope, bus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	zeromem(&callback, sizeof(AURenderCallbackStruct));
+	memset(&callback, 0, sizeof(AURenderCallbackStruct));
 	callback.inputProc = &AudioDriverOSX::output_callback;
 	callback.inputProcRefCon = this;
 	result = AudioUnitSetProperty(audio_unit,
@@ -113,7 +113,7 @@ OSStatus AudioDriverOSX::output_callback(void *inRefCon,
 	if (!mix) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 			abuf = &ioData->mBuffers[i];
-			zeromem(abuf->mData, abuf->mDataByteSize);
+			memset(abuf->mData, 0, abuf->mDataByteSize);
 		};
 		return 0;
 	};

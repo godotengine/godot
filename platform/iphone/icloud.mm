@@ -84,7 +84,7 @@ Variant nsobject_to_variant(NSObject* object) {
 			ret.resize([data length]);
 			{
 				ByteArray::Write w = ret.write();
-				copymem(w.ptr(), [data bytes], [data length]);
+				memcpy(w.ptr(), [data bytes], [data length]);
 			}
 		}
 		return ret;

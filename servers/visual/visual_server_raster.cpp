@@ -6165,7 +6165,7 @@ void VisualServerRaster::_process_sampled_light(const Transform& p_camera,Instan
 	}
 
 
-	zeromem(dp_map,sizeof(Color)*dp_size);
+	memset(dp_map,0,sizeof(Color)*dp_size);
 	bool valid=false;
 	int samples=0;
 
@@ -6953,7 +6953,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 
 	int child_item_count=ci->child_items.size();
 	CanvasItem **child_items=(CanvasItem**)alloca(child_item_count*sizeof(CanvasItem*));
-	copymem(child_items,ci->child_items.ptr(),child_item_count*sizeof(CanvasItem*));
+	memcpy(child_items,ci->child_items.ptr(),child_item_count*sizeof(CanvasItem*));
 
 	if (ci->clip) {
 		if (p_canvas_clip != NULL) {

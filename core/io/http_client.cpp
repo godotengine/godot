@@ -546,7 +546,7 @@ ByteArray HTTPClient::read_response_body_chunk() {
 					ret.resize(chunk.size()-2);
 					{
 						ByteArray::Write w = ret.write();
-						copymem(w.ptr(),chunk.ptr(),chunk.size()-2);
+						memcpy(w.ptr(),chunk.ptr(),chunk.size()-2);
 					}
 					chunk.clear();
 

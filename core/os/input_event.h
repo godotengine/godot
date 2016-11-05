@@ -31,9 +31,11 @@
 
 
 #include "typedefs.h"
-#include "os/copymem.h"
 #include "ustring.h"
 #include "math_2d.h"
+
+#include <string.h>
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -301,7 +303,7 @@ struct InputEvent {
 	InputEvent xform_by(const Matrix32& p_xform) const;
 	bool operator==(const InputEvent &p_event) const;
 	operator String() const;
-	InputEvent() { zeromem(this,sizeof(InputEvent)); }
+	InputEvent() { memset(this,0,sizeof(InputEvent)); }
 };
 
 

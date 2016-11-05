@@ -275,7 +275,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				DVector<uint8_t> data;
 				data.resize(datalen);
 				DVector<uint8_t>::Write wr = data.write();
-				copymem(&wr[0],&buf[20],datalen);
+				memcpy(&wr[0],&buf[20],datalen);
 				wr = DVector<uint8_t>::Write();
 
 
@@ -879,7 +879,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 				if (buf) {
 					encode_uint32(utf8.length(),buf);
 					buf+=4;
-					copymem(buf,utf8.get_data(),utf8.length());
+					memcpy(buf,utf8.get_data(),utf8.length());
 					buf+=pad+utf8.length();
 				}
 
@@ -896,7 +896,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			if (buf) {
 				encode_uint32(utf8.length(),buf);
 				buf+=4;
-				copymem(buf,utf8.get_data(),utf8.length());
+				memcpy(buf,utf8.get_data(),utf8.length());
 			}
 
 			r_len+=4+utf8.length();
@@ -949,7 +949,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 				for(int i=0;i<3;i++) {
 					for(int j=0;j<2;j++) {
 
-						copymem(&buf[(i*2+j)*4],&val.elements[i][j],sizeof(float));
+						memcpy(&buf[(i*2+j)*4],&val.elements[i][j],sizeof(float));
 					}
 				}
 			}
@@ -1007,7 +1007,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 				for(int i=0;i<3;i++) {
 					for(int j=0;j<3;j++) {
 
-						copymem(&buf[(i*3+j)*4],&val.elements[i][j],sizeof(float));
+						memcpy(&buf[(i*3+j)*4],&val.elements[i][j],sizeof(float));
 					}
 				}
 			}
@@ -1023,7 +1023,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 				for(int i=0;i<3;i++) {
 					for(int j=0;j<3;j++) {
 
-						copymem(&buf[(i*3+j)*4],&val.basis.elements[i][j],sizeof(float));
+						memcpy(&buf[(i*3+j)*4],&val.basis.elements[i][j],sizeof(float));
 					}
 				}
 
@@ -1066,7 +1066,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 				int ds=data.size();
 				encode_uint32(ds,&buf[16]);
 				DVector<uint8_t>::Read r = data.read();
-				copymem(&buf[20],&r[0],ds);
+				memcpy(&buf[20],&r[0],ds);
 			}
 
 			int pad=0;
@@ -1187,7 +1187,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 				if (buf) {
 					encode_uint32(utf8.length()+1,buf);
 					buf+=4;
-					copymem(buf,utf8.get_data(),utf8.length()+1);
+					memcpy(buf,utf8.get_data(),utf8.length()+1);
 				}
 
 				r_len+=4+utf8.length()+1;
@@ -1242,7 +1242,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 				encode_uint32(datalen,buf);
 				buf+=4;
 				DVector<uint8_t>::Read r = data.read();
-				copymem(buf,&r[0],datalen*datasize);
+				memcpy(buf,&r[0],datalen*datasize);
 
 			}
 
@@ -1308,7 +1308,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 				if (buf) {
 					encode_uint32(utf8.length()+1,buf);
 					buf+=4;
-					copymem(buf,utf8.get_data(),utf8.length()+1);
+					memcpy(buf,utf8.get_data(),utf8.length()+1);
 					buf+=utf8.length()+1;
 				}
 

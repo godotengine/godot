@@ -410,7 +410,7 @@ void SpatialSound2DServerSW::source_set_audio_stream(RID p_source, AudioServer::
 	} else {
 		streaming_sources.insert(source);
 		active_voices.insert(ActiveVoice(source,VOICE_IS_STREAM));
-		zeromem(source->stream_data.filter_state,sizeof(Source::StreamData::FilterState)*4); //reset filter for safetyness
+		memset(source->stream_data.filter_state,0,sizeof(Source::StreamData::FilterState)*4); //reset filter for safetyness
 		p_stream->set_mix_rate(AudioServer::get_singleton()->get_default_mix_rate());
 	}
 

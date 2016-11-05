@@ -29,10 +29,10 @@
 #include "image.h"
 #include "hash_map.h"
 #include "core/io/image_loader.h"
-#include "core/os/copymem.h"
 #include "hq2x.h"
 #include "print_string.h"
 #include <stdio.h>
+#include <string.h>
 
 
 const char* Image::format_names[Image::FORMAT_MAX]={
@@ -325,7 +325,7 @@ void Image::set_pallete(const DVector<uint8_t>& p_data) {
 	DVector<uint8_t>::Read r = p_data.read();
 	const unsigned char *src=r.ptr();
 
-	copymem(dst, src, len);
+	memcpy(dst, src, len);
 };
 
 int Image::get_width() const {
@@ -961,7 +961,7 @@ void Image::shrink_x2() {
 			DVector<uint8_t>::Write w=new_img.write();
 			DVector<uint8_t>::Read r=data.read();
 
-			copymem(w.ptr(),&r[ofs],new_size);
+			memcpy(w.ptr(),&r[ofs],new_size);
 		}
 
 		mipmaps--;
@@ -1113,7 +1113,7 @@ void Image::clear_mipmaps() {
 		DVector<uint8_t>::Read r = data.read();
 		DVector<uint8_t>::Write w = pallete.write();
 
-		copymem(&w[0],&r[data.size()-palsize],palsize);
+		memcpy(&w[0],&r[data.size()-palsize],palsize);
 	}
 
 	data.resize(ofs+palsize);
@@ -1123,7 +1123,7 @@ void Image::clear_mipmaps() {
 		DVector<uint8_t>::Read r = pallete.read();
 		DVector<uint8_t>::Write w = data.write();
 
-		copymem(&w[ofs],&r[0],palsize);
+		memcpy(&w[ofs],&r[0],palsize);
 	}
 
 	mipmaps=0;
@@ -1181,7 +1181,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps,Format p_format
 	data.resize( size );
 	{
 		DVector<uint8_t>::Write w= data.write();
-		zeromem(w.ptr(),size);
+		memset(w.ptr(),0,size);
 	}
 
 	width=p_width;

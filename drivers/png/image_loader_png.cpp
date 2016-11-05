@@ -316,7 +316,7 @@ static void _write_png_data(png_structp png_ptr,png_bytep data, png_size_t p_len
 
 	v.resize(vs+p_length);
 	DVector<uint8_t>::Write w = v.write();
-	copymem(&w[vs],data,p_length);
+	memcpy(&w[vs],data,p_length);
 	//print_line("png write: "+itos(p_length));
 }
 

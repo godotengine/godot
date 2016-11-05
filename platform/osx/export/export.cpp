@@ -223,7 +223,7 @@ void EditorExportPlatformOSX::_make_icon(const Image& p_icon,Vector<uint8_t>& ic
 		memdelete(f);
 		len+=8;
 		len=BSWAP32(len);
-		copymem(&data[ofs],name[index],4);
+		memcpy(&data[ofs],name[index],4);
 		encode_uint32(len,&data[ofs+4]);
 		index++;
 		size/=2;

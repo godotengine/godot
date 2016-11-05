@@ -790,11 +790,11 @@ Error RasterizerIPhone::mesh_surface_set_array(RID p_mesh, int p_surface,VS::Arr
 					if (a.size<=(1<<8)) {
 						uint8_t v=src[i];
 
-						copymem(&surface->array_local[i*a.size], &v, a.size);
+						memcpy(&surface->array_local[i*a.size], &v, a.size);
 					} else {
 						uint16_t v=src[i];
 
-						copymem(&surface->array_local[i*a.size], &v, a.size);
+						memcpy(&surface->array_local[i*a.size], &v, a.size);
 					}
 
 				} else {
@@ -844,7 +844,7 @@ Error RasterizerIPhone::mesh_surface_set_array(RID p_mesh, int p_surface,VS::Arr
 				if (surface->array_local == 0) {
 					glBufferSubData( GL_ARRAY_BUFFER, a.ofs+i*surface->stride, a.size , vector );
 				} else {
-					copymem(&surface->array_local[a.ofs+i*surface->stride], vector, a.size);
+					memcpy(&surface->array_local[a.ofs+i*surface->stride], vector, a.size);
 				}
 
 				if (p_type==VS::ARRAY_VERTEX) {
@@ -894,7 +894,7 @@ Error RasterizerIPhone::mesh_surface_set_array(RID p_mesh, int p_surface,VS::Arr
 					glBufferSubData( GL_ARRAY_BUFFER, a.ofs+i*surface->stride, a.size , xyzw );
 				} else {
 
-					copymem(&surface->array_local[a.ofs+i*surface->stride], xyzw, a.size);
+					memcpy(&surface->array_local[a.ofs+i*surface->stride], xyzw, a.size);
 				};
 
 			}
@@ -930,7 +930,7 @@ Error RasterizerIPhone::mesh_surface_set_array(RID p_mesh, int p_surface,VS::Arr
 				if (surface->array_local == 0)
 					glBufferSubData( GL_ARRAY_BUFFER, a.ofs+i*surface->stride, a.size , colors );
 				else
-					copymem(&surface->array_local[a.ofs+i*surface->stride], colors, a.size);
+					memcpy(&surface->array_local[a.ofs+i*surface->stride], colors, a.size);
 
 			}
 
@@ -961,7 +961,7 @@ Error RasterizerIPhone::mesh_surface_set_array(RID p_mesh, int p_surface,VS::Arr
 				if (surface->array_local == 0)
 					glBufferSubData( GL_ARRAY_BUFFER, a.ofs+i*surface->stride, a.size , uv );
 				else
-					copymem(&surface->array_local[a.ofs+i*surface->stride], uv, a.size);
+					memcpy(&surface->array_local[a.ofs+i*surface->stride], uv, a.size);
 
 			}
 
@@ -995,7 +995,7 @@ Error RasterizerIPhone::mesh_surface_set_array(RID p_mesh, int p_surface,VS::Arr
 				if (surface->array_local == 0)
 					glBufferSubData( GL_ARRAY_BUFFER, a.ofs+i*surface->stride, a.size , data );
 				else
-					copymem(&surface->array_local[a.ofs+i*surface->stride], data, a.size);
+					memcpy(&surface->array_local[a.ofs+i*surface->stride], data, a.size);
 
 
 			}

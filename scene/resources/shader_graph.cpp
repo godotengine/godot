@@ -2506,7 +2506,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			DEF_SCALAR(0);
 			static const int curve_map_len=256;
 			bool mapped[256];
-			zeromem(mapped,sizeof(mapped));
+			memset(mapped,0,sizeof(mapped));
 			DVector<uint8_t> cmap;
 			cmap.resize(curve_map_len);
 			{
