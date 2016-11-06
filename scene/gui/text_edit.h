@@ -95,6 +95,8 @@ class TextEdit : public Control  {
 		Color word_highlighted_color;
 		Color search_result_color;
 		Color search_result_border_color;
+		Color symbol_color;
+		Color background_color;
 
 		int row_height;
 		int line_spacing;
@@ -187,9 +189,7 @@ class TextEdit : public Control  {
 
 
 	//syntax coloring
-	Color symbol_color;
 	HashMap<String,Color> keywords;
-	Color custom_bg_color;
 
 	Vector<ColorRegion> color_regions;
 
@@ -471,8 +471,6 @@ public:
 
 	void add_keyword_color(const String& p_keyword,const Color& p_color);
 	void add_color_region(const String& p_begin_key=String(),const String& p_end_key=String(),const Color &p_color=Color(),bool p_line_only=false);
-	void set_symbol_color(const Color& p_color);
-	void set_custom_bg_color(const Color& p_color);
 	void clear_colors();
 
 	int get_v_scroll() const;

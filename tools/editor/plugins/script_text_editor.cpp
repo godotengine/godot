@@ -100,7 +100,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	/* keyword color */
 
 
-	text_edit->set_custom_bg_color(EDITOR_DEF("text_editor/background_color",Color(0,0,0,0)));
+	text_edit->add_color_override("background_color", EDITOR_DEF("text_editor/background_color",Color(0,0,0,0)));
 	text_edit->add_color_override("completion_background_color", EDITOR_DEF("text_editor/completion_background_color", Color(0,0,0,0)));
 	text_edit->add_color_override("completion_selected_color", EDITOR_DEF("text_editor/completion_selected_color", Color::html("434244")));
 	text_edit->add_color_override("completion_existing_color", EDITOR_DEF("text_editor/completion_existing_color", Color::html("21dfdfdf")));
@@ -122,6 +122,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	text_edit->add_color_override("breakpoint_color", EDITOR_DEF("text_editor/breakpoint_color", Color(0.8,0.8,0.4,0.2)));
 	text_edit->add_color_override("search_result_color",EDITOR_DEF("text_editor/search_result_color",Color(0.05,0.25,0.05,1)));
 	text_edit->add_color_override("search_result_border_color",EDITOR_DEF("text_editor/search_result_border_color",Color(0.1,0.45,0.1,1)));
+	text_edit->add_color_override("symbol_color",EDITOR_DEF("text_editor/symbol_color",Color::hex(0x005291ff)));
 	text_edit->add_constant_override("line_spacing", EDITOR_DEF("text_editor/line_spacing",4));
 
 	Color keyword_color= EDITOR_DEF("text_editor/keyword_color",Color(0.5,0.0,0.2));
@@ -190,11 +191,6 @@ void ScriptTextEditor::_load_theme_settings() {
 		String end = string.get_slice_count(" ")>1?string.get_slice(" ",1):String();
 		text_edit->add_color_region(beg,end,string_color,end=="");
 	}
-
-	//colorize symbols
-	Color symbol_color= EDITOR_DEF("text_editor/symbol_color",Color::hex(0x005291ff));
-	text_edit->set_symbol_color(symbol_color);
-
 }
 
 
