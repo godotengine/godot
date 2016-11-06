@@ -46238,7 +46238,7 @@ do_property].
 			<argument index="0" name="to_pos" type="Vector2">
 			</argument>
 			<description>
-				Wrap the mouse to a position, relative to the viewport.
+				Warp the mouse to a position, relative to the viewport.
 			</description>
 		</method>
 	</methods>
