@@ -10,7 +10,7 @@
  #endif
 #endif
 
-#ifdef WINRT_ENABLED
+#ifdef UWP_ENABLED
 #define in6addr_any IN6ADDR_ANY_INIT
 #endif
 

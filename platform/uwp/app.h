@@ -32,10 +32,10 @@
 
 #include <wrl.h>
 
-#include "os_winrt.h"
+#include "os_uwp.h"
 #include "GLES2/gl2.h"
 
-namespace GodotWinRT
+namespace GodotUWP
 {
     ref class App sealed : public Windows::ApplicationModel::Core::IFrameworkView
     {
@@ -97,7 +97,7 @@ namespace GodotWinRT
         EGLSurface mEglSurface;
 
 		CoreWindow^ window;
-		OSWinrt* os;
+		OSUWP* os;
 
 		int last_touch_x[32]; // 20 fingers, index 31 reserved for the mouse
 		int last_touch_y[32];

@@ -10,7 +10,7 @@ def is_active():
 
 
 def get_name():
-    return "WinRT"
+    return "UWP"
 
 
 def can_build():
@@ -42,7 +42,7 @@ def configure(env):
     if(env["bits"] != "default"):
         print "Error: bits argument is disabled for MSVC"
         print ("Bits argument is not supported for MSVC compilation. Architecture depends on the Native/Cross Compile Tools Prompt/Developer Console (or Visual Studio settings)"
-               + " that is being used to run SCons. As a consequence, bits argument is disabled. Run scons again without bits argument (example: scons p=winrt) and SCons will attempt to detect what MSVC compiler"
+               + " that is being used to run SCons. As a consequence, bits argument is disabled. Run scons again without bits argument (example: scons p=uwp) and SCons will attempt to detect what MSVC compiler"
                + " will be executed and inform you.")
         sys.exit()
 
@@ -104,7 +104,7 @@ def configure(env):
             env.Append(LIBPATH=[os.environ['VCINSTALLDIR'] + 'lib/store/amd64'])
             env.Append(LIBPATH=[angle_root + '/winrt/10/src/Release_x64/lib'])
 
-    env.Append(CPPPATH=['#platform/winrt', '#drivers/windows'])
+    env.Append(CPPPATH=['#platform/uwp', '#drivers/windows'])
     env.Append(LINKFLAGS=['/MANIFEST:NO', '/NXCOMPAT', '/DYNAMICBASE', '/WINMD', '/APPCONTAINER', '/ERRORREPORT:PROMPT', '/NOLOGO', '/TLBID:1', '/NODEFAULTLIB:"kernel32.lib"', '/NODEFAULTLIB:"ole32.lib"'])
     env.Append(CPPFLAGS=['/D', '__WRL_NO_DEFAULT_LIB__', '/D', 'WIN32'])
     env.Append(CPPFLAGS=['/FU', os.environ['VCINSTALLDIR'] + 'lib/store/references/platform.winmd'])
@@ -139,7 +139,7 @@ def configure(env):
     env["OBJSUFFIX"] = "." + arch + env["OBJSUFFIX"]
     env["LIBSUFFIX"] = "." + arch + env["LIBSUFFIX"]
 
-    env.Append(CCFLAGS=['/DWINRT_ENABLED'])
+    env.Append(CCFLAGS=['/DUWP_ENABLED'])
     env.Append(CCFLAGS=['/DWINDOWS_ENABLED'])
     env.Append(CCFLAGS=['/DTYPED_METHOD_BIND'])
 

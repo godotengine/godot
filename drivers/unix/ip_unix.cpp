@@ -40,7 +40,7 @@
   #ifndef AI_V4MAPPED
     #define AI_V4MAPPED 0x00000800
   #endif
- #ifdef WINRT_ENABLED
+ #ifdef UWP_ENABLED
   #include <ws2tcpip.h>
   #include <winsock2.h>
   #include <windows.h>
@@ -124,7 +124,7 @@ IP_Address IP_Unix::_resolve_hostname(const String& p_hostname, IP_Address::Addr
 
 #if defined(WINDOWS_ENABLED)
 
-#if defined(WINRT_ENABLED)
+#if defined(UWP_ENABLED)
 
 void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 

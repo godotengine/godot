@@ -54,9 +54,9 @@ if (env['builtin_freetype'] != 'no'):
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    # Include header for WinRT to fix build issues
-    if "platform" in env and env["platform"] == "winrt":
-        env.Append(CCFLAGS=['/FI', '"modules/freetype/winrtdef.h"'])
+    # Include header for UWP to fix build issues
+    if "platform" in env and env["platform"] == "uwp":
+        env.Append(CCFLAGS=['/FI', '"modules/freetype/uwpdef.h"'])
 
     env.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
 

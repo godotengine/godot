@@ -28,7 +28,7 @@ enet_initialize (void)
        return -1;
     }
 
-#ifndef WINRT_ENABLED
+#ifndef UWP_ENABLED
     timeBeginPeriod (1);
 #endif
 
@@ -38,14 +38,14 @@ enet_initialize (void)
 void
 enet_deinitialize (void)
 {
-#ifndef WINRT_ENABLED
+#ifndef UWP_ENABLED
     timeEndPeriod (1);
 #endif
 
     WSACleanup ();
 }
 
-#ifdef WINRT_ENABLED
+#ifdef UWP_ENABLED
 enet_uint32
 timeGetTime() {
 	ULONGLONG ticks = GetTickCount64();

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  winrtdef.h                                                           */
+/*  thread_uwp.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,7 +26,49 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include "thread_uwp.h"
 
-// "generic" is a reserved keyword in C++/CX code
-// this avoids the errors in the variable name from Freetype code
-#define generic freetype_generic
+#include "os/memory.h"
+
+Thread* ThreadUWP::create_func_uwp(ThreadCreateCallback p_callback,void *p_user,const Settings&) {
+
+	ThreadUWP* thread = memnew(ThreadUWP);
+
+
+	std::thread new_thread(p_callback, p_user);
+	std::swap(thread->thread, new_thread);
+
+	return thread;
+};
+
+Thread::ID ThreadUWP::get_thread_ID_func_uwp() {
+
+	return std::hash<std::thread::id>()(std::this_thread::get_id());
+};
+
+void ThreadUWP::wait_to_finish_func_uwp(Thread* p_thread) {
+
+	ThreadUWP *tp=static_cast<ThreadUWP*>(p_thread);
+	tp->thread.join();
+};
+
+
+Thread::ID ThreadUWP::get_ID() const {
+
+	return std::hash<std::thread::id>()(thread.get_id());
+};
+
+void ThreadUWP::make_default() {
+	create_func = create_func_uwp;
+	get_thread_ID_func = get_thread_ID_func_uwp;
+	wait_to_finish_func = wait_to_finish_func_uwp;
+};
+
+ThreadUWP::ThreadUWP() {
+
+};
+
+ThreadUWP::~ThreadUWP() {
+
+};
+

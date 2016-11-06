@@ -648,8 +648,8 @@ if (env['builtin_openssl'] != 'no'):
         "crypto/bn/bn_asm.c",
     ]
 
-    if "platform" in env and env["platform"] == "winrt":
-        thirdparty_sources += ['winrt.cpp']
+    if "platform" in env and env["platform"] == "uwp":
+        thirdparty_sources += ['uwp.cpp']
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
@@ -679,8 +679,8 @@ if (env['builtin_openssl'] != 'no'):
 env_openssl.add_source_files(env.modules_sources, "*.cpp")
 env_openssl.add_source_files(env.modules_sources, "*.c")
 
-# platform/winrt need to know openssl is available, pass to main env
-if "platform" in env and env["platform"] == "winrt":
+# platform/uwp need to know openssl is available, pass to main env
+if "platform" in env and env["platform"] == "uwp":
     env.Append(CPPPATH=[thirdparty_dir])
     env.Append(CPPFLAGS=['-DOPENSSL_ENABLED'])
 
