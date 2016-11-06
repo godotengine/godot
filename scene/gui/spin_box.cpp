@@ -51,7 +51,10 @@ void SpinBox::_text_entered(const String& p_string) {
 
 	//if (!p_string.is_numeric())
 	//	return;
-	set_val( p_string.to_double() );
+	String value = p_string;
+	if (prefix!="" && p_string.begins_with(prefix))
+		value = p_string.substr(prefix.length(), p_string.length()-prefix.length());
+	set_val( value.to_double() );
 	_value_changed(0);
 }
 
