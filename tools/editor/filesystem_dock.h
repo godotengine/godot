@@ -113,6 +113,7 @@ private:
 	int history_pos;
 
 	String path;
+	String last_path;
 
 	bool initialized;
 
@@ -124,7 +125,9 @@ private:
 	void _go_to_dir(const String& p_dir);
 	void _select_file(int p_idx);
 
-	bool _create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir);
+	void _get_unfolded_paths(TreeItem& root, Vector<String>& paths);
+	void _save_unfolded();
+	bool _create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir,Set<String>& unfolded);
 	void _thumbnail_done(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata);
 	void _find_inside_move_files(EditorFileSystemDirectory *efsd,Vector<String>& files);
 	void _find_remaps(EditorFileSystemDirectory *efsd,Map<String,String> &renames,List<String>& to_remaps);
@@ -144,6 +147,7 @@ private:
 
 
 	void _dir_selected();
+	void _item_collapsed(Variant item);
 	void _update_tree();
 	void _rescan();
 	void _set_scannig_mode();

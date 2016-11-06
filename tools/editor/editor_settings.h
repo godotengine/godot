@@ -98,6 +98,7 @@ private:
 	String project_config_path;
 
 	Vector<String> favorite_dirs;
+	Vector<String> unfolded_dirs;
 	Vector<String> recent_dirs;
 
 	Vector<Ref<Translation> > translations;
@@ -142,10 +143,14 @@ public:
 	void set_favorite_dirs(const Vector<String>& p_favorite_dirs);
 	Vector<String> get_favorite_dirs() const;
 
+	void set_unfolded_dirs(const Vector<String>& p_unfolded_dirs);
+	Vector<String> get_unfolded_dirs() const;
+
 	void set_recent_dirs(const Vector<String>& p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
 
 	void load_favorites();
+	void load_unfolded();
 
 	void list_text_editor_themes();
 	void load_text_editor_theme();

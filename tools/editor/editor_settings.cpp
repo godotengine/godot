@@ -361,6 +361,7 @@ void EditorSettings::create() {
 		singleton->setup_language();
 		singleton->setup_network();
 		singleton->load_favorites();
+		singleton->load_unfolded();
 		singleton->list_text_editor_themes();
 
 		return;
@@ -792,6 +793,21 @@ Vector<String> EditorSettings::get_favorite_dirs() const {
 }
 
 
+void EditorSettings::set_unfolded_dirs(const Vector<String>& p_unfolded_dirs) {
+	unfolded_dirs = p_unfolded_dirs;
+	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("unfolded_dirs"), FileAccess::WRITE);
+	if(f) {
+		for(int i = 0; i<unfolded_dirs.size(); ++i)
+			f->store_line(unfolded_dirs[i]);
+		memdelete(f);
+	}
+}
+
+Vector<String> EditorSettings::get_unfolded_dirs() const {
+	return unfolded_dirs;
+}
+
+
 void EditorSettings::set_recent_dirs(const Vector<String>& p_recent) {
 
 	recent_dirs=p_recent;
@@ -837,6 +853,28 @@ void EditorSettings::load_favorites() {
 		memdelete(f);
 	}
 
+}
+
+void EditorSettings::load_unfolded() {
+	const String unfolded_file = get_project_settings_path().plus_file("unfolded_dirs");
+	if(FileAccess::exists(unfolded_file)) {
+		FileAccess *f = FileAccess::open(unfolded_file, FileAccess::READ);
+		if(f) {
+			String line = f->get_line().strip_edges();
+			while(line != "") {
+				unfolded_dirs.push_back(line);
+				line = f->get_line().strip_edges();
+			}
+			memdelete(f);
+		}
+	}
+	else {
+		Vector<String> udirs;
+		udirs.push_back("res://");
+		udirs.push_back(TTR("Favorites:"));
+
+		set_unfolded_dirs(udirs);
+	}
 }
 
 void EditorSettings::list_text_editor_themes() {
@@ -1059,6 +1097,9 @@ void EditorSettings::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_favorite_dirs","dirs"),&EditorSettings::set_favorite_dirs);
 	ObjectTypeDB::bind_method(_MD("get_favorite_dirs"),&EditorSettings::get_favorite_dirs);
+
+	ObjectTypeDB::bind_method(_MD("set_unfolded_dirs", "dirs"), &EditorSettings::set_unfolded_dirs);
+	ObjectTypeDB::bind_method(_MD("get_unfolded_dirs"), &EditorSettings::get_unfolded_dirs);
 
 	ObjectTypeDB::bind_method(_MD("set_recent_dirs","dirs"),&EditorSettings::set_recent_dirs);
 	ObjectTypeDB::bind_method(_MD("get_recent_dirs"),&EditorSettings::get_recent_dirs);
