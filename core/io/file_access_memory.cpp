@@ -29,9 +29,10 @@
 #include "file_access_memory.h"
 
 #include "os/dir_access.h"
-#include "os/copymem.h"
 #include "globals.h"
 #include "map.h"
+
+#include <string.h>
 
 static Map<String, Vector<uint8_t> >* files = NULL;
 
@@ -160,7 +161,7 @@ int FileAccessMemory::get_buffer(uint8_t *p_dst,int p_length) const {
 		WARN_PRINT("Reading less data than requested");
 	};
 
-	copymem(p_dst, &data[pos], read);
+	memcpy(p_dst, &data[pos], read);
 	pos += p_length;
 
 	return read;
@@ -186,7 +187,7 @@ void FileAccessMemory::store_buffer(const uint8_t *p_src,int p_length) {
 		WARN_PRINT("Writing less data than requested");
 	}
 
-	copymem(&data[pos], p_src, write);
+	memcpy(&data[pos], p_src, write);
 	pos += p_length;
 }
 

@@ -115,7 +115,7 @@ BakedLightBaker::MeshTexture* BakedLightBaker::_get_mat_tex(const Ref<Texture>& 
 		mt.tex_h=image.get_height();
 		int len = image.get_width()*image.get_height()*4;
 		mt.tex.resize(len);
-		copymem(mt.tex.ptr(),r.ptr(),len);
+		memcpy(mt.tex.ptr(),r.ptr(),len);
 
 		textures.push_back(mt);
 		tex_map[p_tex]=&textures.back()->get();
@@ -1911,10 +1911,10 @@ void BakedLightBaker::update_octree_images(DVector<uint8_t> &p_octree,DVector<ui
 
 
 	DVector<uint8_t>::Write w = p_octree.write();
-	zeromem(w.ptr(),len);
+	memset(w.ptr(),0,len);
 
 	DVector<uint8_t>::Write iw = p_light.write();
-	zeromem(iw.ptr(),ilen);
+	memset(iw.ptr(),0,ilen);
 
 	float gamma = baked_light->get_gamma_adjust();
 	float mult = baked_light->get_energy_multiplier();
@@ -2387,7 +2387,7 @@ Error BakedLightBaker::transfer_to_lightmaps() {
 		ERR_FAIL_COND_V( baked_textures[i].width<=0 || baked_textures[i].height<=0,ERR_UNCONFIGURED );
 
 		baked_textures[i].data.resize( baked_textures[i].width*baked_textures[i].height*4 );
-		zeromem(baked_textures[i].data.ptr(),baked_textures[i].data.size());
+		memset(baked_textures[i].data.ptr(),0,baked_textures[i].data.size());
 		ep.step(TTR("Allocating Texture #")+itos(i+1),i);
 	}
 
@@ -2616,7 +2616,7 @@ Error BakedLightBaker::transfer_to_lightmaps() {
 		dv.resize(baked_textures[i].data.size());
 		{
 			DVector<uint8_t>::Write w = dv.write();
-			copymem(w.ptr(),baked_textures[i].data.ptr(),baked_textures[i].data.size());
+			memcpy(w.ptr(),baked_textures[i].data.ptr(),baked_textures[i].data.size());
 		}
 
 		Image img(baked_textures[i].width,baked_textures[i].height,0,Image::FORMAT_RGBA,dv);

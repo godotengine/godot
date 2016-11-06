@@ -28,7 +28,8 @@
 /*************************************************************************/
 #include "matrix3.h"
 #include "math_funcs.h"
-#include "os/copymem.h"
+
+#include <string.h>
 
 #define cofac(row1,col1, row2, col2)\
 	(elements[row1][col1] * elements[row2][col2] - elements[row1][col2] * elements[row2][col1])

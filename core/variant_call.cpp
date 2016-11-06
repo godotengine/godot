@@ -304,7 +304,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 		size_t len = charstr.length();
 		retval.resize(len);
 		ByteArray::Write w = retval.write();
-		copymem(w.ptr(), charstr.ptr(), len);
+		memcpy(w.ptr(), charstr.ptr(), len);
 		w = DVector<uint8_t>::Write();
 
 		r_ret = retval;
@@ -319,7 +319,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 		size_t len = charstr.length();
 		retval.resize(len);
 		ByteArray::Write w = retval.write();
-		copymem(w.ptr(), charstr.ptr(), len);
+		memcpy(w.ptr(), charstr.ptr(), len);
 		w = DVector<uint8_t>::Write();
 
 		r_ret = retval;
@@ -491,7 +491,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 			ByteArray::Read r = ba->read();
 			CharString cs;
 			cs.resize(ba->size()+1);
-			copymem(cs.ptr(),r.ptr(),ba->size());
+			memcpy(cs.ptr(),r.ptr(),ba->size());
 			cs[ba->size()]=0;
 
 			s = cs.get_data();

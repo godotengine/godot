@@ -1696,7 +1696,7 @@ Variant VisualScriptInstance::_call_internal(const StringName& p_method, void* p
 				state->flow_stack_pos=flow_stack_pos;
 				state->stack.resize(p_stack_size);
 				state->pass=p_pass;
-				copymem(state->stack.ptr(),p_stack,p_stack_size);
+				memcpy(state->stack.ptr(),p_stack,p_stack_size);
 				//step 2, run away, return directly
 				r_error.error=Variant::CallError::CALL_OK;
 
@@ -1991,7 +1991,7 @@ Variant VisualScriptInstance::call(const StringName& p_method, const Variant** p
 		sequence_bits[i]=false; //all starts as false
 	}
 
-	zeromem(pass_stack,f->pass_stack_size*sizeof(int));
+	memset(pass_stack,0,f->pass_stack_size*sizeof(int));
 
 	Map<int,VisualScriptNodeInstance*>::Element *E = instances.find(f->node);
 	if (!E) {

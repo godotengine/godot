@@ -28,8 +28,8 @@
 /*************************************************************************/
 #include "memory.h"
 #include "error_macros.h"
-#include "copymem.h"
 #include <stdio.h>
+#include <string.h>
 void * operator new(size_t p_size,const char *p_description) {
 
 	return Memory::alloc_static( p_size, p_description );

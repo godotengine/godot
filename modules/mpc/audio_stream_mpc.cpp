@@ -90,7 +90,7 @@ int AudioStreamPlaybackMPC::_read_file(void *p_dst,int p_bytes) {
 		p_bytes=streamlen-data_ofs;
 	}
 
-	copymem(p_dst,&r[data_ofs],p_bytes);
+	memcpy(p_dst,&r[data_ofs],p_bytes);
 	//print_line("read file: "+itos(p_bytes));
 	data_ofs+=p_bytes;
 	return p_bytes;

@@ -2313,7 +2313,7 @@ Error EditorExportPlatformWinrt::export_project(const String & p_path, bool p_de
 		int base = clf.size();
 		clf.resize(base + 4 + txt.length());
 		encode_uint32(txt.length(), &clf[base]);
-		copymem(&clf[base + 4], txt.ptr(), txt.length());
+		memcpy(&clf[base + 4], txt.ptr(), txt.length());
 		print_line(itos(i) + " param: " + cl[i]);
 	}
 

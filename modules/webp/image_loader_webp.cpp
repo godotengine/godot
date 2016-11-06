@@ -67,7 +67,7 @@ static DVector<uint8_t> _webp_lossy_pack(const Image& p_image,float p_quality) {
 	w[1]='E';
 	w[2]='B';
 	w[3]='P';
-	copymem(&w[4],dst_buff,dst_size);
+	memcpy(&w[4],dst_buff,dst_size);
 	free(dst_buff);
 	w=DVector<uint8_t>::Write();
 	return dst;

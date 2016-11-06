@@ -34,7 +34,8 @@
 #include "error_macros.h"
 #include "math_funcs.h"
 #include "os/memory.h"
-#include "os/copymem.h"
+
+#include <string.h>
 
 #define CP_PRINTERR(m_err) ERR_PRINT(m_err)
 #define CP_ERR_COND(m_cond) ERR_FAIL_COND(m_cond)
@@ -47,6 +48,6 @@
 #define CP_REALLOC(m_mem,m_size) memrealloc(m_mem,m_size)
 #define CP_FREE(m_mem) memfree(m_mem)
 
-#define cp_memzero(m_mem,m_size) zeromem(m_mem,m_size)
+#define cp_memzero(m_mem,m_size) memset(m_mem,0,m_size)
 
 #endif // CP_CONFIG_H

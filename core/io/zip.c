@@ -1985,7 +1985,7 @@ extern int ZEXPORT zipRemoveExtraInfoBlock (char* pData, int* dataLen, short sHe
   if(size < *dataLen)
   {
     // clean old extra info block.
-    memset(pData,0, *dataLen);
+    memset(pData, 0, *dataLen);
 
     // copy the new extra info block over the old
     if(size > 0)
