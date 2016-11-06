@@ -2043,6 +2043,13 @@ _Directory::~_Directory() {
 		memdelete(d);
 }
 
+_Marshalls* _Marshalls::singleton=NULL;
+
+_Marshalls *_Marshalls::get_singleton()
+{
+	return singleton;
+}
+
 String _Marshalls::variant_to_base64(const Variant& p_var) {
 
 	int len;
