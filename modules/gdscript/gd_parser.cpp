@@ -3375,7 +3375,16 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				
 
 			} break;
-
+			
+			case GDTokenizer::TK_CONSTANT: {
+				if(tokenizer->get_token_constant().get_type() == Variant::STRING) {
+					tokenizer->advance();
+					// Ignore
+				} else {
+					_set_error(String()+"Unexpected constant of type: "+Variant::get_type_name(tokenizer->get_token_constant().get_type()));
+					return;
+				}
+			} break;
 
 			default: {
 
