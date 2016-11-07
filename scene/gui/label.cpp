@@ -118,19 +118,19 @@ void Label::_notification(int p_what) {
 					//nothing
 				} break;
 				case VALIGN_CENTER: {
-					vbegin=(size.y - lines_visible * font_h) / 2;
+					vbegin=(size.y - (lines_visible * font_h - line_spacing)) / 2;
 					vsep=0;
 
 				} break;
 				case VALIGN_BOTTOM: {
-					vbegin=size.y - lines_visible * font_h;
+					vbegin=size.y - (lines_visible * font_h - line_spacing);
 					vsep=0;
 
 				} break;
 				case VALIGN_FILL: {
 					vbegin=0;
 					if (lines_visible>1) {
-						vsep=(size.y - lines_visible * font_h) / (lines_visible - 1);
+						vsep=(size.y - (lines_visible * font_h - line_spacing)) / (lines_visible - 1);
 					} else {
 						vsep=0;
 					}
