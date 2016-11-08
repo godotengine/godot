@@ -318,7 +318,7 @@ public:
 	Error set_thread_name(const String& p_name);
 
 	void set_use_vsync(bool p_enable);
-	bool is_vsnc_enabled() const;
+	bool is_vsync_enabled() const;
 
 	Dictionary get_engine_version() const;
 

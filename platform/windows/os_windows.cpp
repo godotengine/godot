@@ -2388,7 +2388,7 @@ void OS_Windows::set_use_vsync(bool p_enable) {
 		gl_context->set_use_vsync(p_enable);
 }
 
-bool OS_Windows::is_vsnc_enabled() const{
+bool OS_Windows::is_vsync_enabled() const{
 
 	if (gl_context)
 		return gl_context->is_using_vsync();
