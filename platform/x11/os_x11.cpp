@@ -1951,7 +1951,7 @@ void OS_X11::set_use_vsync(bool p_enable) {
 		return context_gl->set_use_vsync(p_enable);
 }
 
-bool OS_X11::is_vsnc_enabled() const {
+bool OS_X11::is_vsync_enabled() const {
 
 	if (context_gl)
 		return context_gl->is_using_vsync();
