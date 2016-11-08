@@ -57,6 +57,8 @@ public:
 	void set_instance_path(const String& p_name);
 	String get_instance_path() const;
 
+	Dictionary get_stored_values(bool p_with_order = false);
+
 	void replace_by_instance(const Ref<PackedScene>& p_custom_scene=Ref<PackedScene>());
 
 	InstancePlaceholder();
