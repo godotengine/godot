@@ -1630,7 +1630,7 @@ static bool _is_node_visible(Node* p_node) {
 
 static bool _has_visible_children(Node* p_node) {
 
-	bool collapsed = p_node->has_meta("_editor_collapsed") ? (bool)p_node->get_meta("_editor_collapsed") : false;
+	bool collapsed = p_node->is_displayed_folded();
 	if (collapsed)
 		return false;
 
@@ -1653,7 +1653,7 @@ static Node* _find_last_visible(Node* p_node) {
 
 	Node* last=NULL;
 
-	bool collapsed = p_node->has_meta("_editor_collapsed") ? (bool)p_node->get_meta("_editor_collapsed") : false;
+	bool collapsed = p_node->is_displayed_folded();
 
 	if (!collapsed)	{
 		for(int i=0;i<p_node->get_child_count();i++) {
@@ -1688,36 +1688,9 @@ void SceneTreeDock::_normalize_drop(Node*& to_node, int &to_pos, int p_type) {
 			ERR_EXPLAIN("Cannot perform drop above the root node!");
 			ERR_FAIL();
 		}
-		Node* upper_sibling=NULL;
 
-		for(int i=0;i<to_node->get_index();i++) {
-			Node *c =to_node->get_parent()->get_child(i);
-			if (_is_node_visible(c)) {
-				upper_sibling=c;
-			}
-		}
-
-
-		if (upper_sibling) {
-			//quite complicated, look for next visible in tree
-			upper_sibling=_find_last_visible(upper_sibling);
-
-			if (upper_sibling->get_parent()==to_node->get_parent()) {
-				//just insert over this node because nothing is above at an upper level
-				to_pos=to_node->get_index();
-				to_node=to_node->get_parent();
-			} else {
-				to_pos=-1; //insert last in whathever is up
-				to_node=upper_sibling->get_parent(); //insert at a parent of whathever is up
-			}
-
-
-		} else {
-			//just insert over this node because nothing is above at the same level
-			to_pos=to_node->get_index();
-			to_node=to_node->get_parent();
-
-		}
+		to_pos=to_node->get_index();
+		to_node=to_node->get_parent();
 
 	} else if (p_type==1) {
 			//drop at below selected node
