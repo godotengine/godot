@@ -295,7 +295,7 @@ public:
 	virtual String get_joy_guid(int p_device) const;
 
 	virtual void set_use_vsync(bool p_enable);
-	virtual bool is_vsnc_enabled() const;
+	virtual bool is_vsync_enabled() const;
 
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();

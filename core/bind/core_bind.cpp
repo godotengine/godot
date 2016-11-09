@@ -480,9 +480,9 @@ void _OS::set_use_vsync(bool p_enable) {
 	OS::get_singleton()->set_use_vsync(p_enable);
 }
 
-bool _OS::is_vsnc_enabled() const {
+bool _OS::is_vsync_enabled() const {
 
-	return OS::get_singleton()->is_vsnc_enabled();
+	return OS::get_singleton()->is_vsync_enabled();
 }
 
 
@@ -1172,7 +1172,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_thread_name","name"),&_OS::set_thread_name);
 
 	ObjectTypeDB::bind_method(_MD("set_use_vsync","enable"),&_OS::set_use_vsync);
-	ObjectTypeDB::bind_method(_MD("is_vsnc_enabled"),&_OS::is_vsnc_enabled);
+	ObjectTypeDB::bind_method(_MD("is_vsync_enabled"),&_OS::is_vsync_enabled);
 
 	ObjectTypeDB::bind_method(_MD("get_engine_version"),&_OS::get_engine_version);
 

@@ -24152,7 +24152,7 @@
 				Return true if the window is resizable.
 			</description>
 		</method>
-		<method name="is_vsnc_enabled" qualifiers="const">
+		<method name="is_vsync_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
