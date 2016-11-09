@@ -96,8 +96,20 @@ void ScriptCreateDialog::_class_name_changed(const String& p_name) {
 
 void ScriptCreateDialog::ok_pressed() {
 
-	if (class_name->is_editable() && !_validate(class_name->get_text())) {
+	if (create_new){
+		_create_new();
+	} else {
+		_load_exist();
+	}
 
+	create_new=true;
+	_update_controls();
+
+}
+
+void ScriptCreateDialog::_create_new() {
+
+	if (class_name->is_editable() && !_validate(class_name->get_text())) {
 		alert->set_text(TTR("Class name is invalid!"));
 		alert->popup_centered_minsize();
 		return;
@@ -105,21 +117,14 @@ void ScriptCreateDialog::ok_pressed() {
 	if (!_validate(parent_name->get_text())) {
 		alert->set_text(TTR("Parent class name is invalid!"));
 		alert->popup_centered_minsize();
-
 		return;
-
 	}
-
 
 	String cname;
 	if (class_name->is_editable())
 		cname=class_name->get_text();
 
-
-
-
 	Ref<Script> scr = ScriptServer::get_language( language_menu->get_selected() )->get_template(cname,parent_name->get_text());
-	//scr->set_source_code(text);
 
 	String selected_language = language_menu->get_item_text(language_menu->get_selected());
 	editor_settings->set_last_selected_language(selected_language);
@@ -127,34 +132,40 @@ void ScriptCreateDialog::ok_pressed() {
 	if (cname!="")
 		scr->set_name(cname);
 
-
 	if (!internal->is_pressed()) {
-
-
 		String lpath = Globals::get_singleton()->localize_path(file_path->get_text());
 		scr->set_path(lpath);
 		if (!path_valid) {
-
 			alert->set_text(TTR("Invalid path!"));
 			alert->popup_centered_minsize();
 			return;
-
 		}
 		Error err = ResourceSaver::save(lpath,scr,ResourceSaver::FLAG_CHANGE_PATH);
 		if (err!=OK) {
-
 			alert->set_text(TTR("Could not create script in filesystem."));
 			alert->popup_centered_minsize();
 			return;
 		}
-		//scr->set_path(lpath);
-	//EditorFileSystem::get_singleton()->update_file(lpath,scr->get_type());
-
-
 	}
 
 	hide();
 	emit_signal("script_created",scr);
+
+}
+
+void ScriptCreateDialog::_load_exist() {
+
+	String path=file_path->get_text();
+	RES p_script = ResourceLoader::load(path, "Script");
+	if (p_script.is_null()) {
+		alert->get_ok()->set_text(TTR("Ugh"));
+		alert->set_text(vformat(TTR("Error loading script from %s"), path));
+		alert->popup_centered_minsize();
+		return;
+	}
+
+	hide();
+	emit_signal("script_created",p_script.get_ref_ptr());
 
 }
 
@@ -166,10 +177,35 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	} else {
 		class_name->set_editable(false);
 	}
-	if (file_path->get_text().basename()==initial_bp) {
-		file_path->set_text(initial_bp+"."+ScriptServer::get_language( l )->get_extension());
-		_path_changed(file_path->get_text());
+
+	String selected_ext="."+ScriptServer::get_language( l )->get_extension();
+	String path=file_path->get_text();
+	String extension="";
+	if (path.find(".")>=0) {
+		extension=path.extension();
 	}
+
+	if (extension.length()==0) {
+		// add extension if none
+		path+=selected_ext;
+		_path_changed(path);
+	} else {
+		// change extension by selected language
+		List<String> extensions;
+		// get all possible extensions for script
+		for (int l=0;l<language_menu->get_item_count();l++) {
+			ScriptServer::get_language( l )->get_recognized_extensions(&extensions);
+		}
+
+		for(List<String>::Element *E=extensions.front();E;E=E->next()) {
+			if (E->get().nocasecmp_to(extension)==0) {
+				path=path.basename()+selected_ext;
+				_path_changed(path);
+				break;
+			}
+		}
+	}
+	file_path->set_text(path);
 	_class_name_changed(class_name->get_text());
 
 }
@@ -191,8 +227,10 @@ void ScriptCreateDialog::_browse_path() {
 	file_browse->clear_filters();
 	List<String> extensions;
 
-	int l=language_menu->get_selected();
-	ScriptServer::get_language( l )->get_recognized_extensions(&extensions);
+	// get all possible extensions for script
+	for (int l=0;l<language_menu->get_item_count();l++) {
+		ScriptServer::get_language( l )->get_recognized_extensions(&extensions);
+	}
 
 	for(List<String>::Element *E=extensions.front();E;E=E->next()) {
 		file_browse->add_filter("*."+E->get());
@@ -246,46 +284,54 @@ void ScriptCreateDialog::_path_changed(const String& p_path) {
 		memdelete(d);
 	}
 
-
-
 	FileAccess *f = FileAccess::create(FileAccess::ACCESS_RESOURCES);
-
-	if (f->file_exists(p)) {
-
-		path_error_label->set_text(TTR("File exists"));
-		path_error_label->add_color_override("font_color",Color(1,0.4,0.0,0.8));
-		memdelete(f);
-		return;
-	}
-
+	create_new=!f->file_exists(p);
 	memdelete(f);
 
 	String extension=p.extension();
 	List<String> extensions;
 
-	int l=language_menu->get_selected();
-	ScriptServer::get_language( l )->get_recognized_extensions(&extensions);
+	// get all possible extensions for script
+	for (int l=0;l<language_menu->get_item_count();l++) {
+		ScriptServer::get_language( l )->get_recognized_extensions(&extensions);
+	}
 
 	bool found=false;
+	int index=0;
 	for(List<String>::Element *E=extensions.front();E;E=E->next()) {
 		if (E->get().nocasecmp_to(extension)==0) {
+			language_menu->select(index); // change Language option by extension
 			found=true;
 			break;
 		}
+		index++;
 	}
 
 	if (!found) {
-
 		path_error_label->set_text(TTR("Invalid extension"));
 		path_error_label->add_color_override("font_color",Color(1,0.4,0.0,0.8));
 		return;
 	}
 
+	_update_controls();
 
-	path_error_label->set_text(TTR("Valid path"));
 	path_error_label->add_color_override("font_color",Color(0,1.0,0.8,0.8));
 
 	path_valid=true;
+
+}
+
+void ScriptCreateDialog::_update_controls() {
+
+	if (create_new) {
+		path_error_label->set_text(TTR("Create new script"));
+		get_ok()->set_text(TTR("Create"));
+	} else {
+		path_error_label->set_text(TTR("Load existing script"));
+		get_ok()->set_text(TTR("Load"));
+	}
+	parent_name->set_editable(create_new);
+	internal->set_disabled(!create_new);
 
 }
 
@@ -376,7 +422,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	set_size(Size2(200,150));
 	set_hide_on_ok(false);
-	set_title(TTR("Create Node Script"));
+	set_title(TTR("Attach Node Script"));
 
 	file_browse = memnew( EditorFileDialog );
 	file_browse->connect("file_selected",this,"_file_selected");
@@ -385,4 +431,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	alert = memnew( AcceptDialog );
 	add_child(alert);
 	_lang_changed(0);
+
+	create_new=true;
 }
