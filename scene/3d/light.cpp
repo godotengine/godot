@@ -202,7 +202,7 @@ void Light::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "light/negative"), _SCS("set_negative"), _SCS("is_negative"));
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/specular"), _SCS("set_param"), _SCS("get_param"), PARAM_SPECULAR);
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "light/cull_mask"), _SCS("set_cull_mask"), _SCS("get_cull_mask"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "shadow/enabled"), _SCS("set_shadow"), _SCS("has_shadow"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "shadow/enabled"), _SCS("set_shadow"), _SCS("has_shadow"));
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/darkness"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_DARKNESS);
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/normal_bias"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_NORMAL_BIAS);
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/bias"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_BIAS);
@@ -222,7 +222,6 @@ void Light::_bind_methods() {
 	BIND_CONSTANT( PARAM_SHADOW_SPLIT_1_OFFSET );
 	BIND_CONSTANT( PARAM_SHADOW_SPLIT_2_OFFSET );
 	BIND_CONSTANT( PARAM_SHADOW_SPLIT_3_OFFSET );
-	BIND_CONSTANT( PARAM_SHADOW_SPLIT_4_OFFSET );
 	BIND_CONSTANT( PARAM_SHADOW_NORMAL_BIAS );
 	BIND_CONSTANT( PARAM_SHADOW_BIAS );
 	BIND_CONSTANT( PARAM_SHADOW_BIAS_SPLIT_SCALE );
@@ -255,7 +254,6 @@ Light::Light(VisualServer::LightType p_type) {
 	set_param(PARAM_SHADOW_SPLIT_1_OFFSET,0.1);
 	set_param(PARAM_SHADOW_SPLIT_2_OFFSET,0.2);
 	set_param(PARAM_SHADOW_SPLIT_3_OFFSET,0.5);
-	set_param(PARAM_SHADOW_SPLIT_4_OFFSET,1.0);
 	set_param(PARAM_SHADOW_NORMAL_BIAS,0.1);
 	set_param(PARAM_SHADOW_BIAS,0.1);
 	set_param(PARAM_SHADOW_BIAS_SPLIT_SCALE,0.1);
@@ -279,36 +277,107 @@ Light::~Light() {
 }
 /////////////////////////////////////////
 
+void DirectionalLight::set_shadow_mode(ShadowMode p_mode) {
+
+	shadow_mode=p_mode;
+	VS::get_singleton()->light_directional_set_shadow_mode(light,VS::LightDirectionalShadowMode(p_mode));
+}
+
+DirectionalLight::ShadowMode DirectionalLight::get_shadow_mode() const {
+
+	return shadow_mode;
+}
+
+void DirectionalLight::set_blend_splits(bool p_enable) {
+
+	blend_splits=p_enable;
+}
+
+bool DirectionalLight::is_blend_splits_enabled() const {
+
+	return blend_splits;
+}
+
 
 void DirectionalLight::_bind_methods() {
 
+	ObjectTypeDB::bind_method( _MD("set_shadow_mode","mode"),&DirectionalLight::set_shadow_mode);
+	ObjectTypeDB::bind_method( _MD("get_shadow_mode"),&DirectionalLight::get_shadow_mode);
 
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "pssm/split_1"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_1_OFFSET);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "pssm/split_2"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_2_OFFSET);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "pssm/split_3"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_3_OFFSET);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "pssm/split_4"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_4_OFFSET);
+	ObjectTypeDB::bind_method( _MD("set_blend_splits","enabled"),&DirectionalLight::set_blend_splits);
+	ObjectTypeDB::bind_method( _MD("is_blend_splits_enabled"),&DirectionalLight::is_blend_splits_enabled);
+
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "directional/shadow_mode",PROPERTY_HINT_ENUM,"Orthogonal,PSSM 2 Splits,PSSM 4 Splits"), _SCS("set_shadow_mode"), _SCS("get_shadow_mode"));
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "directional/split_1"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_1_OFFSET);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "directional/split_2"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_2_OFFSET);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "directional/split_3"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_3_OFFSET);
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "directional/blend_splits"), _SCS("set_blend_splits"), _SCS("is_blend_splits_enabled"));
+
+	BIND_CONSTANT( SHADOW_ORTHOGONAL );
+	BIND_CONSTANT( SHADOW_PARALLEL_2_SPLITS );
+	BIND_CONSTANT( SHADOW_PARALLEL_4_SPLITS );
 
 }
 
 
 DirectionalLight::DirectionalLight() : Light( VisualServer::LIGHT_DIRECTIONAL ) {
 
-
-
+	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
+	blend_splits=false;
 }
+
+void OmniLight::set_shadow_mode(ShadowMode p_mode) {
+
+	shadow_mode=p_mode;
+	VS::get_singleton()->light_omni_set_shadow_mode(light,VS::LightOmniShadowMode(p_mode));
+}
+
+OmniLight::ShadowMode OmniLight::get_shadow_mode() const{
+
+	return shadow_mode;
+}
+
+void OmniLight::set_shadow_detail(ShadowDetail p_detail){
+
+	shadow_detail=p_detail;
+	VS::get_singleton()->light_omni_set_shadow_detail(light,VS::LightOmniShadowDetail(p_detail));
+}
+OmniLight::ShadowDetail OmniLight::get_shadow_detail() const{
+
+	return shadow_detail;
+}
+
+
 
 
 void OmniLight::_bind_methods() {
 
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/range"), _SCS("set_param"), _SCS("get_param"), PARAM_RANGE);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/attenuation"), _SCS("set_param"), _SCS("get_param"), PARAM_ATTENUATION);
+	ObjectTypeDB::bind_method( _MD("set_shadow_mode","mode"),&OmniLight::set_shadow_mode);
+	ObjectTypeDB::bind_method( _MD("get_shadow_mode"),&OmniLight::get_shadow_mode);
+
+	ObjectTypeDB::bind_method( _MD("set_shadow_detail","detail"),&OmniLight::set_shadow_detail);
+	ObjectTypeDB::bind_method( _MD("get_shadow_detail"),&OmniLight::get_shadow_detail);
+
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "omni/range"), _SCS("set_param"), _SCS("get_param"), PARAM_RANGE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "omni/attenuation"), _SCS("set_param"), _SCS("get_param"), PARAM_ATTENUATION);
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "omni/shadow_mode",PROPERTY_HINT_ENUM,"Dual Paraboloid,Cube"), _SCS("set_shadow_mode"), _SCS("get_shadow_mode"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "omni/shadow_detail",PROPERTY_HINT_ENUM,"Vertical,Horizontal"), _SCS("set_shadow_detail"), _SCS("get_shadow_detail"));
+
+}
+
+OmniLight::OmniLight() : Light( VisualServer::LIGHT_OMNI ) {
+
+	set_shadow_mode(SHADOW_DUAL_PARABOLOID);
+	set_shadow_detail(SHADOW_DETAIL_HORIZONTAL);
 
 }
 
 void SpotLight::_bind_methods() {
 
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/spot_angle"), _SCS("set_param"), _SCS("get_param"), PARAM_SPOT_ANGLE);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/spot_attenuation"), _SCS("set_param"), _SCS("get_param"), PARAM_SPOT_ATTENUATION);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "spot/range"), _SCS("set_param"), _SCS("get_param"), PARAM_RANGE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "spot/attenuation"), _SCS("set_param"), _SCS("get_param"), PARAM_ATTENUATION);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "spot/spot_angle"), _SCS("set_param"), _SCS("get_param"), PARAM_SPOT_ANGLE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "spot/spot_attenuation"), _SCS("set_param"), _SCS("get_param"), PARAM_SPOT_ATTENUATION);
 
 }
 

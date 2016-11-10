@@ -122,7 +122,9 @@ protected:
 
 public:
 
-	void add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes=Array());
+	void add_surface_from_arrays(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes=Array());
+	void add_surface(uint32_t p_format,PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>());
+
 	Array surface_get_arrays(int p_surface) const;
 	virtual Array surface_get_morph_arrays(int p_surface) const;
 

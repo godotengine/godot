@@ -133,7 +133,7 @@ void EditorSpatialGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mat
 	a[Mesh::ARRAY_COLOR]=color;
 
 
-	mesh->add_surface(Mesh::PRIMITIVE_LINES,a);
+	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES,a);
 	mesh->surface_set_material(0,p_material);
 
 	if (p_billboard) {
@@ -182,7 +182,7 @@ void EditorSpatialGizmo::add_unscaled_billboard(const Ref<Material>& p_material,
 	a.resize(Mesh::ARRAY_MAX);
 	a[Mesh::ARRAY_VERTEX]=vs;
 	a[Mesh::ARRAY_TEX_UV]=uv;
-	mesh->add_surface(Mesh::PRIMITIVE_TRIANGLE_FAN,a);
+	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLE_FAN,a);
 	mesh->surface_set_material(0,p_material);
 
 	if (true) {
@@ -259,7 +259,7 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 
 	}
 	a[VS::ARRAY_COLOR]=colors;
-	mesh->add_surface(Mesh::PRIMITIVE_POINTS,a);
+	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_POINTS,a);
 	mesh->surface_set_material(0,SpatialEditorGizmos::singleton->handle2_material);
 
 	if (p_billboard) {
@@ -2321,7 +2321,7 @@ void NavigationMeshSpatialGizmo::redraw() {
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
 	a[0]=tmeshfaces;
-	m->add_surface(Mesh::PRIMITIVE_TRIANGLES,a);
+	m->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES,a);
 	m->surface_set_material(0,navmesh->is_enabled()?SpatialEditorGizmos::singleton->navmesh_solid_material:SpatialEditorGizmos::singleton->navmesh_solid_material_disabled);
 	add_mesh(m);
 	add_collision_segments(lines);
@@ -3090,7 +3090,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 		d.resize(VS::ARRAY_MAX);
 		d[Mesh::ARRAY_VERTEX]=cursor_points;
 		d[Mesh::ARRAY_COLOR]=cursor_colors;
-		pos3d_mesh->add_surface(Mesh::PRIMITIVE_LINES,d);
+		pos3d_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES,d);
 		pos3d_mesh->surface_set_material(0,mat);
 	}
 
@@ -3114,7 +3114,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 		d.resize(VS::ARRAY_MAX);
 		d[Mesh::ARRAY_VERTEX] = cursor_points;
 		d[Mesh::ARRAY_COLOR] = cursor_colors;
-		listener_line_mesh->add_surface(Mesh::PRIMITIVE_LINES, d);
+		listener_line_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, d);
 		listener_line_mesh->surface_set_material(0, mat);
 	}
 

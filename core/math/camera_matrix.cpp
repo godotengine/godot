@@ -495,6 +495,28 @@ void CameraMatrix::set_light_bias() {
 
 }
 
+void CameraMatrix::set_light_atlas_rect(const Rect2& p_rect) {
+
+	float *m=&matrix[0][0];
+
+	m[0]=p_rect.size.width,
+	m[1]=0.0,
+	m[2]=0.0,
+	m[3]=0.0,
+	m[4]=0.0,
+	m[5]=p_rect.size.height,
+	m[6]=0.0,
+	m[7]=0.0,
+	m[8]=0.0,
+	m[9]=0.0,
+	m[10]=1.0,
+	m[11]=0.0,
+	m[12]=p_rect.pos.x,
+	m[13]=p_rect.pos.y,
+	m[14]=0.0,
+	m[15]=1.0;
+}
+
 CameraMatrix::operator String() const {
 
 	String str;

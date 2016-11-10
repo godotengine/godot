@@ -824,8 +824,6 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 
 	bool prev_distance_field=false;
 
-
-
 	while(p_item_list) {
 
 		Item *ci=p_item_list;

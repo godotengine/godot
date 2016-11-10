@@ -687,6 +687,10 @@ public:
 	BIND2RC(uint32_t,mesh_surface_get_format,RID,int)
 	BIND2RC(PrimitiveType,mesh_surface_get_primitive_type,RID,int)
 
+	BIND2RC(AABB,mesh_surface_get_aabb,RID,int)
+	BIND2RC(Vector<DVector<uint8_t> >,mesh_surface_get_blend_shapes,RID,int)
+	BIND2RC(Vector<AABB>,mesh_surface_get_skeleton_aabb,RID,int)
+
 	BIND2(mesh_remove_surface,RID,int)
 	BIND1RC(int,mesh_get_surface_count,RID)
 
@@ -758,6 +762,9 @@ public:
 	BIND2(light_set_negative,RID,bool )
 	BIND2(light_set_cull_mask,RID ,uint32_t )
 	BIND2(light_set_shader,RID ,RID )
+
+	BIND2(light_omni_set_shadow_mode,RID,LightOmniShadowMode)
+	BIND2(light_omni_set_shadow_detail,RID,LightOmniShadowDetail)
 
 	BIND2(light_directional_set_shadow_mode,RID,LightDirectionalShadowMode)
 
@@ -847,7 +854,8 @@ public:
 
 	BIND2(viewport_set_global_canvas_transform,RID,const Matrix32& )
 	BIND3(viewport_set_canvas_layer,RID ,RID ,int )
-
+	BIND2(viewport_set_shadow_atlas_size,RID ,int )
+	BIND3(viewport_set_shadow_atlas_quadrant_subdivision,RID ,int, int )
 
 	/* ENVIRONMENT API */
 

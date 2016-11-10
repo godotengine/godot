@@ -330,6 +330,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				SL::FunctionNode *fnode=pnode->functions[i].function;
 
+				current_func_name=fnode->name;
 
 				if (fnode->name=="vertex") {
 
@@ -401,6 +402,14 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			else
 				code=_mkid(vnode->name);
 
+			if (vnode->name==time_name) {
+				if (current_func_name==vertex_name) {
+					r_gen_code.uses_vertex_time=true;
+				}
+				if (current_func_name==fragment_name) {
+					r_gen_code.uses_fragment_time=true;
+				}
+			}
 
 		} break;
 		case SL::Node::TYPE_CONSTANT: {
@@ -536,6 +545,8 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String& p_code, 
 	r_gen_code.fragment=String();
 	r_gen_code.fragment_global=String();
 	r_gen_code.light=String();
+	r_gen_code.uses_fragment_time=false;
+	r_gen_code.uses_vertex_time=false;
 
 
 
@@ -645,7 +656,9 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 
 
 
-
+	vertex_name="vertex";
+	fragment_name="fragment";
+	time_name="TIME";
 
 
 

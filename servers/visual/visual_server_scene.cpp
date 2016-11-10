@@ -96,7 +96,10 @@ void* VisualServerScene::_instance_pair(void *p_self, OctreeElementID, Instance 
 
 		List<InstanceLightData::PairInfo>::Element *E = light->geometries.push_back(pinfo);
 
-		light->shadow_sirty=true;
+		if (geom->can_cast_shadows) {
+
+			light->shadow_dirty=true;
+		}
 		geom->lighting_dirty=true;
 
 		return E; //this element should make freeing faster
@@ -180,7 +183,9 @@ void VisualServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance
 		geom->lighting.erase(E->get().L);
 		light->geometries.erase(E);
 
-		light->shadow_sirty=true;
+		if (geom->can_cast_shadows) {
+			light->shadow_dirty=true;
+		}
 		geom->lighting_dirty=true;
 
 
@@ -346,6 +351,12 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base){
 		}
 
 		instance->morph_values.clear();
+
+		for(int i=0;i<instance->materials.size();i++) {
+			if (instance->materials[i].is_valid()) {
+				VSG::storage->material_remove_instance_owner(instance->materials[i],instance);
+			}
+		}
 		instance->materials.clear();
 
 #if 0
@@ -667,7 +678,16 @@ void VisualServerScene::instance_set_surface_material(RID p_instance,int p_surfa
 
 	ERR_FAIL_INDEX(p_surface,instance->materials.size());
 
+	if (instance->materials[p_surface].is_valid()) {
+		VSG::storage->material_remove_instance_owner(instance->materials[p_surface],instance);
+	}
 	instance->materials[p_surface]=p_material;
+	instance->base_material_changed();
+
+	if (instance->materials[p_surface].is_valid()) {
+		VSG::storage->material_add_instance_owner(instance->materials[p_surface],instance);
+	}
+
 
 }
 
@@ -791,12 +811,14 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance,VS::InstanceFl
 
 		} break;
 		case VS::INSTANCE_FLAG_CAST_SHADOW: {
-			/*if (p_enabled == true) {
-				instance->cast_shadows = SHADOW_CASTING_SETTING_ON;
+			if (p_enabled == true) {
+				instance->cast_shadows = VS::SHADOW_CASTING_SETTING_ON;
 			}
 			else {
-				instance->cast_shadows = SHADOW_CASTING_SETTING_OFF;
-			}*/
+				instance->cast_shadows = VS::SHADOW_CASTING_SETTING_OFF;
+			}
+
+			instance->base_material_changed(); // to actually compute if shadows are visible or not
 
 		} break;
 		case VS::INSTANCE_FLAG_DEPH_SCALE: {
@@ -820,8 +842,15 @@ void VisualServerScene::instance_geometry_set_material_override(RID p_instance, 
 	Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND( !instance );
 
+	if (instance->material_override.is_valid()) {
+		VSG::storage->material_remove_instance_owner(instance->material_override,instance);
+	}
 	instance->material_override=p_material;
+	instance->base_material_changed();
 
+	if (instance->material_override.is_valid()) {
+		VSG::storage->material_add_instance_owner(instance->material_override,instance);
+	}
 
 }
 
@@ -843,6 +872,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 		InstanceLightData *light = static_cast<InstanceLightData*>(p_instance->base_data);
 
 		VSG::scene_render->light_instance_set_transform( light->instance, p_instance->transform );
+		light->shadow_dirty=true;
 
 	}
 
@@ -860,11 +890,13 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 	if ((1<<p_instance->base_type)&VS::INSTANCE_GEOMETRY_MASK) {
 
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData*>(p_instance->base_data);
-		//make sure lights are updated
+		//make sure lights are updated if it casts shadow
 
-		for (List<Instance*>::Element *E=geom->lighting.front();E;E=E->next()) {
-			InstanceLightData *light = static_cast<InstanceLightData*>(E->get()->base_data);
-			light->shadow_sirty=true;
+		if (geom->can_cast_shadows) {
+			for (List<Instance*>::Element *E=geom->lighting.front();E;E=E->next()) {
+				InstanceLightData *light = static_cast<InstanceLightData*>(E->get()->base_data);
+				light->shadow_dirty=true;
+			}
 		}
 
 	}
@@ -1095,8 +1127,370 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 
 
 
-void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewport_size) {
 
+
+void VisualServerScene::_light_instance_update_shadow(Instance *p_instance,Camera* p_camera,RID p_shadow_atlas,Scenario* p_scenario,Size2 p_viewport_rect) {
+
+
+	InstanceLightData * light = static_cast<InstanceLightData*>(p_instance->base_data);
+
+	switch(VSG::storage->light_get_type(p_instance->base)) {
+
+		case VS::LIGHT_DIRECTIONAL: {
+
+			float max_distance = p_camera->zfar;
+			float shadow_max = VSG::storage->light_get_param(p_instance->base,VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
+			if (shadow_max>0) {
+				max_distance=MIN(shadow_max,max_distance);
+			}
+			max_distance=MAX(max_distance,p_camera->znear+0.001);
+
+			float range = max_distance-p_camera->znear;
+
+			int splits=0;
+			switch(VSG::storage->light_directional_get_shadow_mode(p_instance->base)) {
+				case VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL: splits=1; break;
+				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS: splits=2; break;
+				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS: splits=4; break;
+			}
+
+			float distances[5];
+
+			distances[0]=p_camera->znear;
+			for(int i=0;i<splits;i++) {
+				distances[i+1]=p_camera->znear+VSG::storage->light_get_param(p_instance->base,VS::LightParam(VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET+i))*range;
+			};
+
+			distances[splits]=max_distance;
+
+			float texture_size=VSG::scene_render->get_directional_light_shadow_size(light->instance);
+
+			bool overlap = false;//rasterizer->light_instance_get_pssm_shadow_overlap(p_light->light_info->instance);
+
+			for (int i=0;i<splits;i++) {
+
+				// setup a camera matrix for that range!
+				CameraMatrix camera_matrix;
+
+				switch(p_camera->type) {
+
+					case Camera::ORTHOGONAL: {
+
+						camera_matrix.set_orthogonal(
+							p_camera->size,
+							p_viewport_rect.width / p_viewport_rect.height,
+							distances[(i==0 || !overlap )?i:i-1],
+							distances[i+1],
+							p_camera->vaspect
+
+						);
+					} break;
+					case Camera::PERSPECTIVE: {
+
+
+						camera_matrix.set_perspective(
+							p_camera->fov,
+							p_viewport_rect.width / (float)p_viewport_rect.height,
+							distances[(i==0 || !overlap )?i:i-1],
+							distances[i+1],
+							p_camera->vaspect
+
+						);
+
+					} break;
+				}
+
+				//obtain the frustum endpoints
+
+				Vector3 endpoints[8]; // frustum plane endpoints
+				bool res = camera_matrix.get_endpoints(p_camera->transform,endpoints);
+				ERR_CONTINUE(!res);
+
+				// obtain the light frustm ranges (given endpoints)
+
+				Vector3 x_vec=p_instance->transform.basis.get_axis( Vector3::AXIS_X ).normalized();
+				Vector3 y_vec=p_instance->transform.basis.get_axis( Vector3::AXIS_Y ).normalized();
+				Vector3 z_vec=p_instance->transform.basis.get_axis( Vector3::AXIS_Z ).normalized();
+				//z_vec points agsint the camera, like in default opengl
+
+				float x_min,x_max;
+				float y_min,y_max;
+				float z_min,z_max;
+
+				float x_min_cam,x_max_cam;
+				float y_min_cam,y_max_cam;
+				float z_min_cam,z_max_cam;
+
+
+				//used for culling
+				for(int j=0;j<8;j++) {
+
+					float d_x=x_vec.dot(endpoints[j]);
+					float d_y=y_vec.dot(endpoints[j]);
+					float d_z=z_vec.dot(endpoints[j]);
+
+					if (j==0 || d_x<x_min)
+						x_min=d_x;
+					if (j==0 || d_x>x_max)
+						x_max=d_x;
+
+					if (j==0 || d_y<y_min)
+						y_min=d_y;
+					if (j==0 || d_y>y_max)
+						y_max=d_y;
+
+					if (j==0 || d_z<z_min)
+						z_min=d_z;
+					if (j==0 || d_z>z_max)
+						z_max=d_z;
+
+
+				}
+
+
+
+
+
+				{
+					//camera viewport stuff
+					//this trick here is what stabilizes the shadow (make potential jaggies to not move)
+					//at the cost of some wasted resolution. Still the quality increase is very well worth it
+
+
+					Vector3 center;
+
+					for(int j=0;j<8;j++) {
+
+						center+=endpoints[j];
+					}
+					center/=8.0;
+
+					//center=x_vec*(x_max-x_min)*0.5 + y_vec*(y_max-y_min)*0.5 + z_vec*(z_max-z_min)*0.5;
+
+					float radius=0;
+
+					for(int j=0;j<8;j++) {
+
+						float d = center.distance_to(endpoints[j]);
+						if (d>radius)
+							radius=d;
+					}
+
+
+					radius *= texture_size/(texture_size-2.0); //add a texel by each side, so stepified texture will always fit
+
+					x_max_cam=x_vec.dot(center)+radius;
+					x_min_cam=x_vec.dot(center)-radius;
+					y_max_cam=y_vec.dot(center)+radius;
+					y_min_cam=y_vec.dot(center)-radius;
+					z_max_cam=z_vec.dot(center)+radius;
+					z_min_cam=z_vec.dot(center)-radius;
+
+					float unit = radius*2.0/texture_size;
+
+					x_max_cam=Math::stepify(x_max_cam,unit);
+					x_min_cam=Math::stepify(x_min_cam,unit);
+					y_max_cam=Math::stepify(y_max_cam,unit);
+					y_min_cam=Math::stepify(y_min_cam,unit);
+
+				}
+
+				//now that we now all ranges, we can proceed to make the light frustum planes, for culling octree
+
+				Vector<Plane> light_frustum_planes;
+				light_frustum_planes.resize(6);
+
+				//right/left
+				light_frustum_planes[0]=Plane( x_vec, x_max );
+				light_frustum_planes[1]=Plane( -x_vec, -x_min );
+				//top/bottom
+				light_frustum_planes[2]=Plane( y_vec, y_max );
+				light_frustum_planes[3]=Plane( -y_vec, -y_min );
+				//near/far
+				light_frustum_planes[4]=Plane( z_vec, z_max+1e6 );
+				light_frustum_planes[5]=Plane( -z_vec, -z_min ); // z_min is ok, since casters further than far-light plane are not needed
+
+				int cull_count = p_scenario->octree.cull_convex(light_frustum_planes,instance_shadow_cull_result,MAX_INSTANCE_CULL,VS::INSTANCE_GEOMETRY_MASK);
+
+				// a pre pass will need to be needed to determine the actual z-near to be used
+
+
+				for (int j=0;j<cull_count;j++) {
+
+					float min,max;
+					Instance *instance = instance_shadow_cull_result[j];
+					if (!instance->visible || !((1<<instance->base_type)&VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData*>(instance->base_data)->can_cast_shadows) {
+						cull_count--;
+						SWAP(instance_shadow_cull_result[j],instance_shadow_cull_result[cull_count]);
+						j--;
+
+					}
+
+					instance->transformed_aabb.project_range_in_plane(Plane(z_vec,0),min,max);
+					if (max>z_max)
+						z_max=max;
+				}
+
+				{
+					CameraMatrix ortho_camera;
+					real_t half_x = (x_max_cam-x_min_cam) * 0.5;
+					real_t half_y = (y_max_cam-y_min_cam) * 0.5;
+
+
+					ortho_camera.set_orthogonal( -half_x, half_x,-half_y,half_y, 0, (z_max-z_min_cam) );
+
+					Transform ortho_transform;
+					ortho_transform.basis=p_instance->transform.basis;
+					ortho_transform.origin=x_vec*(x_min_cam+half_x)+y_vec*(y_min_cam+half_y)+z_vec*z_max;
+
+					VSG::scene_render->light_instance_set_shadow_transform(light->instance,ortho_camera,ortho_transform,0,distances[i+1],i);
+				}
+
+
+
+				VSG::scene_render->render_shadow(light->instance,p_shadow_atlas,i,(RasterizerScene::InstanceBase**)instance_shadow_cull_result,cull_count);
+
+			}
+
+		} break;
+		case VS::LIGHT_OMNI: {
+
+			VS::LightOmniShadowMode shadow_mode = VSG::storage->light_omni_get_shadow_mode(p_instance->base);
+
+			switch(shadow_mode) {
+				case VS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID: {
+
+					for(int i=0;i<2;i++) {
+
+						//using this one ensures that raster deferred will have it
+
+						float radius = VSG::storage->light_get_param( p_instance->base, VS::LIGHT_PARAM_RANGE);
+
+						float z =i==0?-1:1;
+						Vector<Plane> planes;
+						planes.resize(5);
+						planes[0]=p_instance->transform.xform(Plane(Vector3(0,0,z),radius));
+						planes[1]=p_instance->transform.xform(Plane(Vector3(1,0,z).normalized(),radius));
+						planes[2]=p_instance->transform.xform(Plane(Vector3(-1,0,z).normalized(),radius));
+						planes[3]=p_instance->transform.xform(Plane(Vector3(0,1,z).normalized(),radius));
+						planes[4]=p_instance->transform.xform(Plane(Vector3(0,-1,z).normalized(),radius));
+
+
+						int cull_count = p_scenario->octree.cull_convex(planes,instance_shadow_cull_result,MAX_INSTANCE_CULL,VS::INSTANCE_GEOMETRY_MASK);
+
+						for (int j=0;j<cull_count;j++) {
+
+							Instance *instance = instance_shadow_cull_result[j];
+							if (!instance->visible || !((1<<instance->base_type)&VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData*>(instance->base_data)->can_cast_shadows) {
+								cull_count--;
+								SWAP(instance_shadow_cull_result[j],instance_shadow_cull_result[cull_count]);
+								j--;
+
+							}
+						}
+
+						VSG::scene_render->light_instance_set_shadow_transform(light->instance,CameraMatrix(),p_instance->transform,radius,0,i);
+						VSG::scene_render->render_shadow(light->instance,p_shadow_atlas,i,(RasterizerScene::InstanceBase**)instance_shadow_cull_result,cull_count);
+					}
+				} break;
+				case VS::LIGHT_OMNI_SHADOW_CUBE: {
+
+					float radius = VSG::storage->light_get_param( p_instance->base, VS::LIGHT_PARAM_RANGE);
+					CameraMatrix cm;
+					cm.set_perspective(90,1,0.01,radius);
+
+					for(int i=0;i<6;i++) {
+
+						//using this one ensures that raster deferred will have it
+
+
+
+						static const Vector3 view_normals[6]={
+							Vector3(-1, 0, 0),
+							Vector3(+1, 0, 0),
+							Vector3( 0,-1, 0),
+							Vector3( 0,+1, 0),
+							Vector3( 0, 0,-1),
+							Vector3( 0, 0,+1)
+						};
+						static const Vector3 view_up[6]={
+							Vector3( 0,-1, 0),
+							Vector3( 0,-1, 0),
+							Vector3( 0, 0,-1),
+							Vector3( 0, 0,+1),
+							Vector3( 0,-1, 0),
+							Vector3( 0,-1, 0)
+						};
+
+						Transform xform = p_instance->transform * Transform().looking_at(view_normals[i],view_up[i]);
+
+
+						Vector<Plane> planes = cm.get_projection_planes(xform);
+
+						int cull_count = p_scenario->octree.cull_convex(planes,instance_shadow_cull_result,MAX_INSTANCE_CULL,VS::INSTANCE_GEOMETRY_MASK);
+
+						for (int j=0;j<cull_count;j++) {
+
+							Instance *instance = instance_shadow_cull_result[j];
+							if (!instance->visible || !((1<<instance->base_type)&VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData*>(instance->base_data)->can_cast_shadows) {
+								cull_count--;
+								SWAP(instance_shadow_cull_result[j],instance_shadow_cull_result[cull_count]);
+								j--;
+
+							}
+						}
+
+						VSG::scene_render->light_instance_set_shadow_transform(light->instance,cm,xform,radius,0,i);
+						VSG::scene_render->render_shadow(light->instance,p_shadow_atlas,i,(RasterizerScene::InstanceBase**)instance_shadow_cull_result,cull_count);
+					}
+
+					//restore the regular DP matrix
+					VSG::scene_render->light_instance_set_shadow_transform(light->instance,CameraMatrix(),p_instance->transform,radius,0,0);
+
+				} break;
+			}
+
+
+		} break;
+		case VS::LIGHT_SPOT: {
+
+
+			float radius = VSG::storage->light_get_param( p_instance->base, VS::LIGHT_PARAM_RANGE);
+			float angle = VSG::storage->light_get_param( p_instance->base, VS::LIGHT_PARAM_SPOT_ANGLE);
+
+			CameraMatrix cm;
+			cm.set_perspective( 90, 1.0, 0.01, radius );
+			print_line("perspective: "+cm);
+
+			Vector<Plane> planes = cm.get_projection_planes(p_instance->transform);
+			int cull_count = p_scenario->octree.cull_convex(planes,instance_shadow_cull_result,MAX_INSTANCE_CULL,VS::INSTANCE_GEOMETRY_MASK);
+
+			for (int j=0;j<cull_count;j++) {
+
+				Instance *instance = instance_shadow_cull_result[j];
+				if (!instance->visible || !((1<<instance->base_type)&VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData*>(instance->base_data)->can_cast_shadows) {
+					cull_count--;
+					SWAP(instance_shadow_cull_result[j],instance_shadow_cull_result[cull_count]);
+					j--;
+
+				}
+			}
+
+
+			print_line("MOMONGO");
+			VSG::scene_render->light_instance_set_shadow_transform(light->instance,cm,p_instance->transform,radius,0,0);
+			VSG::scene_render->render_shadow(light->instance,p_shadow_atlas,0,(RasterizerScene::InstanceBase**)instance_shadow_cull_result,cull_count);
+
+		} break;
+	}
+
+}
+
+
+
+
+
+void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewport_size,RID p_shadow_atlas) {
 
 
 	Camera *camera = camera_owner.getornull(p_camera);
@@ -1112,7 +1506,9 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewp
 
 	/* STEP 1 - SETUP CAMERA */
 	CameraMatrix camera_matrix;
+	Transform camera_inverse_xform = camera->transform.affine_inverse();
 	bool ortho=false;
+
 
 	switch(camera->type) {
 		case Camera::ORTHOGONAL: {
@@ -1268,12 +1664,14 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewp
 					//do not add this light if no geometry is affected by it..
 					light_cull_result[light_cull_count]=ins;
 					light_instance_cull_result[light_cull_count]=light->instance;
-					VSG::scene_render->light_instance_mark_visible(light->instance); //mark it visible for shadow allocation later
+					if (p_shadow_atlas.is_valid() && VSG::storage->light_has_shadow(ins->base)) {
+						VSG::scene_render->light_instance_mark_visible(light->instance); //mark it visible for shadow allocation later
+					}
 
 					light_cull_count++;
 				}
 
-//				rasterizer->light_instance_set_active_hint(ins->light_info->instance);
+
 			}
 
 		} else if ((1<<ins->base_type)&VS::INSTANCE_GEOMETRY_MASK && ins->visible && ins->cast_shadows!=VS::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {
@@ -1386,6 +1784,10 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewp
 
 	// directional lights
 	{
+
+		Instance** lights_with_shadow = (Instance**)alloca(sizeof(Instance*)*light_cull_count);
+		int directional_shadow_count=0;
+
 		for (List<Instance*>::Element *E=scenario->directional_lights.front();E;E=E->next()) {
 
 			if (light_cull_count+directional_light_count>=MAX_LIGHTS_CULLED) {
@@ -1401,42 +1803,142 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewp
 			//check shadow..
 
 
-/*			if (light && light->light_info->enabled && rasterizer->light_has_shadow(light->base_rid)) {
-				//rasterizer->light_instance_set_active_hint(light->light_info->instance);
-				_light_instance_update_shadow(light,p_scenario,camera,cull_range);
+			if (light && VSG::storage->light_has_shadow(E->get()->base)) {
+				lights_with_shadow[directional_shadow_count++]=E->get();
+
 			}
-*/
 
 			//add to list
 
-
 			directional_light_ptr[directional_light_count++]=light->instance;
+		}
+
+		VSG::scene_render->set_directional_shadow_count(directional_shadow_count);
+
+		for(int i=0;i<directional_shadow_count;i++) {
+
+			   _light_instance_update_shadow(lights_with_shadow[i],camera,p_shadow_atlas,scenario,p_viewport_size);
 
 		}
 	}
 
-#if 0
-	{ //this should eventually change to
-		//assign shadows by distance to camera
-		SortArray<Instance*,_InstanceLightsort> sorter;
-		sorter.sort(light_cull_result,light_cull_count);
+
+	{ //setup shadow maps
+
+		//SortArray<Instance*,_InstanceLightsort> sorter;
+		//sorter.sort(light_cull_result,light_cull_count);
 		for (int i=0;i<light_cull_count;i++) {
 
 			Instance *ins = light_cull_result[i];
 
-			if (!rasterizer->light_has_shadow(ins->base_rid) || !shadows_enabled)
+			if (!p_shadow_atlas.is_valid() || !VSG::storage->light_has_shadow(ins->base))
 				continue;
 
-			/* for far shadows?
-			if (ins->version == ins->light_info->last_version && rasterizer->light_instance_has_far_shadow(ins->light_info->instance))
-				continue; // didn't change
-			*/
+			InstanceLightData * light = static_cast<InstanceLightData*>(ins->base_data);
 
-			_light_instance_update_shadow(ins,p_scenario,camera,cull_range);
-			ins->light_info->last_version=ins->version;
+			float coverage;
+
+			{	//compute coverage
+
+
+				Transform cam_xf = camera->transform;
+				float zn = camera_matrix.get_z_near();
+				Plane p (cam_xf.origin + cam_xf.basis.get_axis(2) * -zn, -cam_xf.basis.get_axis(2) ); //camera near plane
+
+				float vp_w,vp_h; //near plane size in screen coordinates
+				camera_matrix.get_viewport_size(vp_w,vp_h);
+
+
+				switch(VSG::storage->light_get_type(ins->base)) {
+
+					case VS::LIGHT_OMNI: {
+
+						float radius = VSG::storage->light_get_param(ins->base,VS::LIGHT_PARAM_RANGE);
+
+						//get two points parallel to near plane
+						Vector3 points[2]={
+							ins->transform.origin,
+							ins->transform.origin+cam_xf.basis.get_axis(0)*radius
+						};
+
+						if (!ortho) {
+							//if using perspetive, map them to near plane
+							for(int j=0;j<2;j++) {
+								if (p.distance_to(points[j]) < 0 )	{
+									points[j].z=-zn; //small hack to keep size constant when hitting the screen
+
+								}
+
+								p.intersects_segment(cam_xf.origin,points[j],&points[j]); //map to plane
+							}
+
+
+						}
+
+						float screen_diameter = points[0].distance_to(points[1])*2;
+						coverage = screen_diameter / (vp_w+vp_h);
+					} break;
+					case VS::LIGHT_SPOT: {
+
+						float radius = VSG::storage->light_get_param(ins->base,VS::LIGHT_PARAM_RANGE);
+						float angle = VSG::storage->light_get_param(ins->base,VS::LIGHT_PARAM_SPOT_ANGLE);
+
+
+						float w = radius*Math::sin(Math::deg2rad(angle));
+						float d = radius*Math::cos(Math::deg2rad(angle));
+
+
+						Vector3 base = ins->transform.origin-ins->transform.basis.get_axis(2).normalized()*d;
+
+						Vector3 points[2]={
+							base,
+							base+cam_xf.basis.get_axis(0)*w
+						};
+
+						if (!ortho) {
+							//if using perspetive, map them to near plane
+							for(int j=0;j<2;j++) {
+								if (p.distance_to(points[j]) < 0 )	{
+									points[j].z=-zn; //small hack to keep size constant when hitting the screen
+
+								}
+
+								p.intersects_segment(cam_xf.origin,points[j],&points[j]); //map to plane
+							}
+
+
+						}
+
+						float screen_diameter = points[0].distance_to(points[1])*2;
+						coverage = screen_diameter / (vp_w+vp_h);
+
+
+					} break;
+					default: {
+						ERR_PRINT("Invalid Light Type");
+					}
+				}
+
+			}
+
+
+			if (light->shadow_dirty) {
+				light->last_version++;
+				light->shadow_dirty=false;
+			}
+
+
+
+			bool redraw = VSG::scene_render->shadow_atlas_update_light(p_shadow_atlas,light->instance,coverage,light->last_version);
+
+			if (redraw) {
+				//must redraw!
+				_light_instance_update_shadow(ins,camera,p_shadow_atlas,scenario,p_viewport_size);
+			}
+
 		}
 	}
-#endif
+
 	/* ENVIRONMENT */
 
 	RID environment;
@@ -1492,7 +1994,8 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario,Size2 p_viewp
 
 
 
-	VSG::scene_render->render_scene(camera->transform, camera_matrix,ortho,(RasterizerScene::InstanceBase**)instance_cull_result,cull_count,light_instance_cull_result,light_cull_count,directional_light_ptr,directional_light_count,environment);
+	VSG::scene_render->render_scene(camera->transform, camera_matrix,ortho,(RasterizerScene::InstanceBase**)instance_cull_result,cull_count,light_instance_cull_result,light_cull_count+directional_light_count,environment,p_shadow_atlas);
+
 
 }
 
@@ -1505,9 +2008,77 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 		_update_instance_aabb(p_instance);
 
 	if (p_instance->update_materials) {
+
 		if (p_instance->base_type==VS::INSTANCE_MESH) {
-			p_instance->materials.resize(VSG::storage->mesh_get_surface_count(p_instance->base));
+			//remove materials no longer used and un-own them
+
+			int new_mat_count = VSG::storage->mesh_get_surface_count(p_instance->base);
+			for(int i=p_instance->materials.size()-1;i>=new_mat_count;i--) {
+				if (p_instance->materials[i].is_valid()) {
+					VSG::storage->material_remove_instance_owner(p_instance->materials[i],p_instance);
+				}
+			}
+			p_instance->materials.resize(new_mat_count);
 		}
+
+		if ((1<<p_instance->base_type)&VS::INSTANCE_GEOMETRY_MASK) {
+
+			InstanceGeometryData *geom = static_cast<InstanceGeometryData*>(p_instance->base_data);
+
+			bool can_cast_shadows=true;
+
+			if (p_instance->cast_shadows==VS::SHADOW_CASTING_SETTING_OFF) {
+				can_cast_shadows=false;
+			} else if (p_instance->material_override.is_valid()) {
+				can_cast_shadows=VSG::storage->material_casts_shadows(p_instance->material_override);
+			} else {
+
+				RID mesh;
+
+				if (p_instance->base_type==VS::INSTANCE_MESH) {
+					mesh=p_instance->base;
+				} else if (p_instance->base_type==VS::INSTANCE_MULTIMESH) {
+
+				}
+
+				if (mesh.is_valid()) {
+
+					bool cast_shadows=false;
+
+					for(int i=0;i<p_instance->materials.size();i++) {
+
+
+						RID mat = p_instance->materials[i].is_valid()?p_instance->materials[i]:VSG::storage->mesh_surface_get_material(mesh,i);
+
+						if (!mat.is_valid()) {
+							cast_shadows=true;
+							break;
+						}
+
+						if (VSG::storage->material_casts_shadows(mat)) {
+							cast_shadows=true;
+							break;
+						}
+					}
+
+					if (!cast_shadows) {
+						can_cast_shadows=false;
+					}
+				}
+
+			}
+
+			if (can_cast_shadows!=geom->can_cast_shadows) {
+				//ability to cast shadows change, let lights now
+				for (List<Instance*>::Element *E=geom->lighting.front();E;E=E->next()) {
+					InstanceLightData *light = static_cast<InstanceLightData*>(E->get()->base_data);
+					light->shadow_dirty=true;
+				}
+
+				geom->can_cast_shadows=can_cast_shadows;
+			}
+		}
+
 	}
 
 	_update_instance(p_instance);
@@ -1557,6 +2128,7 @@ bool VisualServerScene::free(RID p_rid) {
 		instance_set_room(p_rid,RID());
 		instance_set_scenario(p_rid,RID());
 		instance_set_base(p_rid,RID());
+		instance_geometry_set_material_override(p_rid,RID());
 
 		if (instance->skeleton.is_valid())
 			instance_attach_skeleton(p_rid,RID());

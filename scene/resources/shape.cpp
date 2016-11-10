@@ -77,7 +77,7 @@ Ref<Mesh> Shape::get_debug_mesh() {
 
 		SceneTree *st=OS::get_singleton()->get_main_loop()->cast_to<SceneTree>();
 
-		debug_mesh_cache->add_surface(Mesh::PRIMITIVE_LINES,arr);
+		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES,arr);
 
 		if (st) {
 			debug_mesh_cache->surface_set_material(0,st->get_debug_collision_material());

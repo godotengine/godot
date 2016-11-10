@@ -195,6 +195,7 @@ public:
 		//aabb stuff
 		bool update_aabb;
 		bool update_materials;
+
 		SelfList<Instance> update_item;
 
 
@@ -230,6 +231,11 @@ public:
 		virtual void base_changed() {
 
 			singleton->_instance_queue_update(this,true,true);
+		}
+
+		virtual void base_material_changed() {
+
+			singleton->_instance_queue_update(this,false,true);
 		}
 
 
@@ -282,10 +288,12 @@ public:
 
 		List<Instance*> lighting;
 		bool lighting_dirty;
+		bool can_cast_shadows;
 
 		InstanceGeometryData() {
 
 			lighting_dirty=false;
+			can_cast_shadows=true;
 		}
 	};
 
@@ -298,18 +306,18 @@ public:
 		};
 
 		RID instance;
-		uint64_t last_hash;
+		uint64_t last_version;
 		List<Instance*>::Element *D; // directional light in scenario
 
-		bool shadow_sirty;
+		bool shadow_dirty;
 
 		List<PairInfo> geometries;
 
 		InstanceLightData() {
 
-			shadow_sirty=true;
+			shadow_dirty=true;
 			D=NULL;
-			last_hash=0;
+			last_version=0;
 		}
 	};
 
@@ -360,8 +368,9 @@ public:
 	_FORCE_INLINE_ void _update_instance_aabb(Instance *p_instance);
 	_FORCE_INLINE_ void _update_dirty_instance(Instance *p_instance);
 
+	_FORCE_INLINE_ void _light_instance_update_shadow(Instance *p_instance,Camera* p_camera,RID p_shadow_atlas,Scenario* p_scenario,Size2 p_viewport_rect);
 
-	void render_camera(RID p_camera, RID p_scenario, Size2 p_viewport_size);
+	void render_camera(RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
 	void update_dirty_instances();
 	bool free(RID p_rid);
 

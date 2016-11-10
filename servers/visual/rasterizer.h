@@ -39,6 +39,16 @@
 class RasterizerScene {
 public:
 
+	/* SHADOW ATLAS API */
+
+	virtual RID shadow_atlas_create()=0;
+	virtual void shadow_atlas_set_size(RID p_atlas,int p_size)=0;
+	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas,int p_quadrant,int p_subdivision)=0;
+	virtual bool shadow_atlas_update_light(RID p_atlas,RID p_light_intance,float p_coverage,uint64_t p_light_version)=0;
+
+	virtual int get_directional_light_shadow_size(RID p_light_intance)=0;
+	virtual void set_directional_shadow_count(int p_count)=0;
+
 	/* ENVIRONMENT API */
 
 	virtual RID environment_create()=0;
@@ -93,6 +103,7 @@ public:
 
 		virtual void base_removed()=0;
 		virtual void base_changed()=0;
+		virtual void base_material_changed()=0;
 
 		InstanceBase() : dependency_item(this) {
 
@@ -109,10 +120,11 @@ public:
 
 	virtual RID light_instance_create(RID p_light)=0;
 	virtual void light_instance_set_transform(RID p_light_instance,const Transform& p_transform)=0;
+	virtual void light_instance_set_shadow_transform(RID p_light_instance,const CameraMatrix& p_projection,const Transform& p_transform,float p_far,float p_split,int p_pass)=0;
 	virtual void light_instance_mark_visible(RID p_light_instance)=0;
 
-
-	virtual void render_scene(const Transform& p_cam_transform,CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_directional_lights,int p_directional_light_count,RID p_environment)=0;
+	virtual void render_scene(const Transform& p_cam_transform,const CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID p_environment,RID p_shadow_atlas)=0;
+	virtual void render_shadow(RID p_light,RID p_shadow_atlas,int p_pass,InstanceBase** p_cull_result,int p_cull_count)=0;
 
 	virtual void set_scene_pass(uint64_t p_pass)=0;
 
@@ -179,6 +191,12 @@ public:
 
 	virtual void material_set_line_width(RID p_material, float p_width)=0;
 
+	virtual bool material_is_animated(RID p_material)=0;
+	virtual bool material_casts_shadows(RID p_material)=0;
+
+	virtual void material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance)=0;
+	virtual void material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance)=0;
+
 	/* MESH API */
 
 	virtual RID mesh_create()=0;
@@ -204,6 +222,10 @@ public:
 
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const=0;
 	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const=0;
+
+	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const=0;
+	virtual Vector<DVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const=0;
+	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const=0;
 
 	virtual void mesh_remove_surface(RID p_mesh,int p_index)=0;
 	virtual int mesh_get_surface_count(RID p_mesh) const=0;
@@ -279,10 +301,21 @@ public:
 	virtual void light_set_cull_mask(RID p_light,uint32_t p_mask)=0;
 	virtual void light_set_shader(RID p_light,RID p_shader)=0;
 
+	virtual void light_omni_set_shadow_mode(RID p_light,VS::LightOmniShadowMode p_mode)=0;
+	virtual void light_omni_set_shadow_detail(RID p_light,VS::LightOmniShadowDetail p_detail)=0;
+
 	virtual void light_directional_set_shadow_mode(RID p_light,VS::LightDirectionalShadowMode p_mode)=0;
+
+	virtual VS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light)=0;
+	virtual VS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light)=0;
+
+	virtual bool light_has_shadow(RID p_light) const=0;
 
 	virtual VS::LightType light_get_type(RID p_light) const=0;
 	virtual AABB light_get_aabb(RID p_light) const=0;
+	virtual float light_get_param(RID p_light,VS::LightParam p_param)=0;
+	virtual uint64_t light_get_version(RID p_light) const=0;
+
 
 	/* PROBE API */
 

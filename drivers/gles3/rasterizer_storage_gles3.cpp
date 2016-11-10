@@ -1290,12 +1290,13 @@ void RasterizerStorageGLES3::_update_shader(Shader* p_shader) const {
 
 			shaders.actions_scene.render_mode_values["cull_front"]=Pair<int*,int>(&p_shader->spatial.cull_mode,Shader::Spatial::CULL_MODE_FRONT);
 			shaders.actions_scene.render_mode_values["cull_back"]=Pair<int*,int>(&p_shader->spatial.cull_mode,Shader::Spatial::CULL_MODE_BACK);
-			shaders.actions_scene.render_mode_values["cull_disable"]=Pair<int*,int>(&p_shader->spatial.cull_mode,Shader::Spatial::CULL_MODE_DISABLED);
+			shaders.actions_scene.render_mode_values["cull_disabled"]=Pair<int*,int>(&p_shader->spatial.cull_mode,Shader::Spatial::CULL_MODE_DISABLED);
 
 			shaders.actions_scene.render_mode_flags["unshaded"]=&p_shader->spatial.unshaded;
 			shaders.actions_scene.render_mode_flags["ontop"]=&p_shader->spatial.ontop;
 
 			shaders.actions_scene.usage_flag_pointers["ALPHA"]=&p_shader->spatial.uses_alpha;
+			shaders.actions_scene.usage_flag_pointers["VERTEX"]=&p_shader->spatial.uses_vertex;
 
 			actions=&shaders.actions_scene;
 			actions->uniforms=&p_shader->uniforms;
@@ -1317,6 +1318,9 @@ void RasterizerStorageGLES3::_update_shader(Shader* p_shader) const {
 	p_shader->ubo_offsets=gen_code.uniform_offsets;
 	p_shader->texture_count=gen_code.texture_uniforms.size();
 	p_shader->texture_hints=gen_code.texture_hints;
+
+	p_shader->uses_vertex_time=gen_code.uses_vertex_time;
+	p_shader->uses_fragment_time=gen_code.uses_fragment_time;
 
 	//all materials using this shader will have to be invalidated, unfortunately
 
@@ -1534,6 +1538,57 @@ void RasterizerStorageGLES3::material_set_line_width(RID p_material, float p_wid
 
 
 }
+
+bool RasterizerStorageGLES3::material_is_animated(RID p_material)  {
+
+	Material *material = material_owner.get(  p_material );
+	ERR_FAIL_COND_V(!material,false);
+	if (material->dirty_list.in_list()) {
+		_update_material(material);
+	}
+
+	return material->is_animated_cache;
+
+}
+bool RasterizerStorageGLES3::material_casts_shadows(RID p_material)  {
+
+	Material *material = material_owner.get(  p_material );
+	ERR_FAIL_COND_V(!material,false);
+	if (material->dirty_list.in_list()) {
+		_update_material(material);
+	}
+
+	return material->can_cast_shadow_cache;
+}
+
+void RasterizerStorageGLES3::material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) {
+
+	Material *material = material_owner.get(  p_material );
+	ERR_FAIL_COND(!material);
+
+	Map<RasterizerScene::InstanceBase*,int>::Element *E=material->instance_owners.find(p_instance);
+	if (E) {
+		E->get()++;
+	} else {
+		material->instance_owners[p_instance]=1;
+	}
+}
+
+void RasterizerStorageGLES3::material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) {
+
+	Material *material = material_owner.get(  p_material );
+	ERR_FAIL_COND(!material);
+
+	Map<RasterizerScene::InstanceBase*,int>::Element *E=material->instance_owners.find(p_instance);
+	ERR_FAIL_COND(!E);
+	E->get()--;
+
+	if (E->get()==0) {
+		material->instance_owners.erase(E);
+	}
+}
+
+
 
 _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, const Variant& value, uint8_t *data,bool p_linear_color) {
 	switch(type) {
@@ -2011,6 +2066,48 @@ void RasterizerStorageGLES3::_update_material(Material* material) {
 	if (material->dirty_list.in_list())
 		_material_dirty_list.remove( &material->dirty_list );
 
+
+	if (material->shader && material->shader->dirty_list.in_list()) {
+		_update_shader(material->shader);
+	}
+	//update caches
+
+	{
+		bool can_cast_shadow = false;
+		bool is_animated = false;
+
+		if (material->shader && material->shader->mode==VS::SHADER_SPATIAL) {
+			if (!material->shader->spatial.uses_alpha && material->shader->spatial.blend_mode==Shader::Spatial::BLEND_MODE_MIX) {
+				can_cast_shadow=true;
+			}
+
+			if (material->shader->spatial.uses_discard && material->shader->uses_fragment_time) {
+				is_animated=true;
+			}
+
+			if (material->shader->spatial.uses_vertex && material->shader->uses_vertex_time) {
+				is_animated=true;
+			}
+
+		}
+
+		if (can_cast_shadow!=material->can_cast_shadow_cache || is_animated!=material->is_animated_cache) {
+			material->can_cast_shadow_cache=can_cast_shadow;
+			material->is_animated_cache=is_animated;
+
+			for(Map<Instantiable*,int>::Element *E=material->instantiable_owners.front();E;E=E->next()) {
+				E->key()->instance_material_change_notify();
+			}
+
+			for(Map<RasterizerScene::InstanceBase*,int>::Element *E=material->instance_owners.front();E;E=E->next()) {
+				E->key()->base_material_changed();
+			}
+
+		}
+
+	}
+
+
 	//clear ubo if it needs to be cleared
 	if (material->ubo_size) {
 
@@ -2101,6 +2198,36 @@ void RasterizerStorageGLES3::_update_material(Material* material) {
 	}
 
 }
+
+void RasterizerStorageGLES3::_material_add_instantiable(RID p_material,Instantiable *p_instantiable) {
+
+	Material * material = material_owner.getornull(p_material);
+	ERR_FAIL_COND(!material);
+
+	Map<Instantiable*,int>::Element *I = material->instantiable_owners.find(p_instantiable);
+
+	if (I) {
+		I->get()++;
+	} else {
+		material->instantiable_owners[p_instantiable]=1;
+	}
+
+}
+
+void RasterizerStorageGLES3::_material_remove_instantiable(RID p_material,Instantiable *p_instantiable) {
+
+	Material * material = material_owner.getornull(p_material);
+	ERR_FAIL_COND(!material);
+
+	Map<Instantiable*,int>::Element *I = material->instantiable_owners.find(p_instantiable);
+	ERR_FAIL_COND(!I);
+
+	I->get()--;
+	if (I->get()==0) {
+		material->instantiable_owners.erase(I);
+	}
+}
+
 
 void RasterizerStorageGLES3::update_dirty_materials() {
 
@@ -2406,6 +2533,8 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 	surface->active=true;
 	surface->array_len=p_vertex_count;
 	surface->index_array_len=p_index_count;
+	surface->array_byte_size=p_array.size();
+	surface->index_array_byte_size=p_index_array.size();
 	surface->primitive=p_primitive;
 	surface->mesh=mesh;
 	surface->format=p_format;
@@ -2556,7 +2685,21 @@ void RasterizerStorageGLES3::mesh_surface_set_material(RID p_mesh, int p_surface
 	ERR_FAIL_COND(!mesh);
 	ERR_FAIL_INDEX(p_surface,mesh->surfaces.size());
 
+	if (mesh->surfaces[p_surface]->material==p_material)
+		return;
+
+	if (mesh->surfaces[p_surface]->material.is_valid()) {
+		_material_remove_instantiable(mesh->surfaces[p_surface]->material,mesh);
+	}
+
 	mesh->surfaces[p_surface]->material=p_material;
+
+	if (mesh->surfaces[p_surface]->material.is_valid()) {
+		_material_add_instantiable(mesh->surfaces[p_surface]->material,mesh);
+	}
+
+	mesh->instance_material_change_notify();
+
 
 }
 RID RasterizerStorageGLES3::mesh_surface_get_material(RID p_mesh, int p_surface) const{
@@ -2595,17 +2738,17 @@ DVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_array(RID p_mesh, int 
 	Surface *surface = mesh->surfaces[p_surface];
 
 	glBindBuffer(GL_ARRAY_BUFFER,surface->vertex_id);
-	void * data = glMapBufferRange(GL_ARRAY_BUFFER,0,surface->array_len,GL_MAP_READ_BIT);
+	void * data = glMapBufferRange(GL_ARRAY_BUFFER,0,surface->array_byte_size,GL_MAP_READ_BIT);
 
 	ERR_FAIL_COND_V(!data,DVector<uint8_t>());
 
 	DVector<uint8_t> ret;
-	ret.resize(surface->array_len);
+	ret.resize(surface->array_byte_size);
 
 	{
 
 		DVector<uint8_t>::Write w = ret.write();
-		copymem(w.ptr(),data,surface->array_len);
+		copymem(w.ptr(),data,surface->array_byte_size);
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
@@ -2622,18 +2765,18 @@ DVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_index_array(RID p_mesh
 
 	ERR_FAIL_COND_V(surface->index_array_len==0,DVector<uint8_t>());
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,surface->vertex_id);
-	void * data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,0,surface->index_array_len,GL_MAP_READ_BIT);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,surface->index_id);
+	void * data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,0,surface->index_array_byte_size,GL_MAP_READ_BIT);
 
 	ERR_FAIL_COND_V(!data,DVector<uint8_t>());
 
 	DVector<uint8_t> ret;
-	ret.resize(surface->index_array_len);
+	ret.resize(surface->index_array_byte_size);
 
 	{
 
 		DVector<uint8_t>::Write w = ret.write();
-		copymem(w.ptr(),data,surface->index_array_len);
+		copymem(w.ptr(),data,surface->index_array_byte_size);
 	}
 
 	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
@@ -2662,6 +2805,59 @@ VS::PrimitiveType RasterizerStorageGLES3::mesh_surface_get_primitive_type(RID p_
 	return mesh->surfaces[p_surface]->primitive;
 }
 
+AABB RasterizerStorageGLES3::mesh_surface_get_aabb(RID p_mesh, int p_surface) const {
+
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,AABB());
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),AABB());
+
+	return mesh->surfaces[p_surface]->aabb;
+
+
+}
+Vector<DVector<uint8_t> > RasterizerStorageGLES3::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const{
+
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,Vector<DVector<uint8_t> >());
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),Vector<DVector<uint8_t> >());
+
+	Vector<DVector<uint8_t> > bsarr;
+
+	for(int i=0;i<mesh->surfaces[p_surface]->morph_targets.size();i++) {
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,mesh->surfaces[p_surface]->morph_targets[i].vertex_id);
+		void * data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,0,mesh->surfaces[p_surface]->array_byte_size,GL_MAP_READ_BIT);
+
+		ERR_FAIL_COND_V(!data,Vector<DVector<uint8_t> >());
+
+		DVector<uint8_t> ret;
+		ret.resize(mesh->surfaces[p_surface]->array_byte_size);
+
+		{
+
+			DVector<uint8_t>::Write w = ret.write();
+			copymem(w.ptr(),data,mesh->surfaces[p_surface]->array_byte_size);
+		}
+
+		bsarr.push_back(ret);
+
+		glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+	}
+
+	return bsarr;
+
+}
+Vector<AABB> RasterizerStorageGLES3::mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const{
+
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh,Vector<AABB >());
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),Vector<AABB >());
+
+	return mesh->surfaces[p_surface]->skeleton_bone_aabb;
+
+}
+
+
 void RasterizerStorageGLES3::mesh_remove_surface(RID p_mesh, int p_surface){
 
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
@@ -2669,6 +2865,10 @@ void RasterizerStorageGLES3::mesh_remove_surface(RID p_mesh, int p_surface){
 	ERR_FAIL_INDEX(p_surface,mesh->surfaces.size());
 
 	Surface *surface = mesh->surfaces[p_surface];
+
+	if (surface->material.is_valid()) {
+		_material_remove_instantiable(surface->material,mesh);
+	}
 
 	glDeleteBuffers(1,&surface->vertex_id);
 	if (surface->index_id) {
@@ -2682,6 +2882,8 @@ void RasterizerStorageGLES3::mesh_remove_surface(RID p_mesh, int p_surface){
 		glDeleteBuffers(1,&surface->morph_targets[i].vertex_id);
 		glDeleteVertexArrays(1,&surface->morph_targets[i].array_id);
 	}
+
+	mesh->instance_material_change_notify();
 
 	memdelete(surface);
 
@@ -2971,7 +3173,6 @@ RID RasterizerStorageGLES3::light_create(VS::LightType p_type){
 	light->param[VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET]=0.1;
 	light->param[VS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET]=0.3;
 	light->param[VS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET]=0.6;
-	light->param[VS::LIGHT_PARAM_SHADOW_SPLIT_4_OFFSET]=1.0;
 	light->param[VS::LIGHT_PARAM_SHADOW_NORMAL_BIAS]=0.1;
 	light->param[VS::LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE]=0.1;
 
@@ -2981,6 +3182,10 @@ RID RasterizerStorageGLES3::light_create(VS::LightType p_type){
 	light->negative=false;
 	light->cull_mask=0xFFFFFFFF;
 	light->directional_shadow_mode=VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
+	light->omni_shadow_mode=VS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
+	light->omni_shadow_detail=VS::LIGHT_OMNI_SHADOW_DETAIL_VERTICAL;
+
+	light->version=0;
 
 	return light_owner.make_rid(light);
 }
@@ -2998,9 +3203,23 @@ void RasterizerStorageGLES3::light_set_param(RID p_light,VS::LightParam p_param,
 	ERR_FAIL_COND(!light);
 	ERR_FAIL_INDEX(p_param,VS::LIGHT_PARAM_MAX);
 
-	if (p_param==VS::LIGHT_PARAM_RANGE || p_param==VS::LIGHT_PARAM_SPOT_ANGLE) {
-		light->instance_change_notify();
+	switch(p_param) {
+		case VS::LIGHT_PARAM_RANGE:
+		case VS::LIGHT_PARAM_SPOT_ANGLE:
+		case VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE:
+		case VS::LIGHT_PARAM_SHADOW_DARKNESS:
+		case VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET:
+		case VS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET:
+		case VS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET:
+		case VS::LIGHT_PARAM_SHADOW_NORMAL_BIAS:
+		case VS::LIGHT_PARAM_SHADOW_BIAS:
+		case VS::LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE: {
+
+			light->version++;
+			light->instance_change_notify();
+		} break;
 	}
+
 	light->param[p_param]=p_value;
 }
 void RasterizerStorageGLES3::light_set_shadow(RID p_light,bool p_enabled){
@@ -3008,6 +3227,10 @@ void RasterizerStorageGLES3::light_set_shadow(RID p_light,bool p_enabled){
 	Light * light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 	light->shadow=p_enabled;
+
+	light->version++;
+	light->instance_change_notify();
+
 
 }
 void RasterizerStorageGLES3::light_set_projector(RID p_light,RID p_texture){
@@ -3021,9 +3244,8 @@ void RasterizerStorageGLES3::light_set_attenuation_texure(RID p_light,RID p_text
 
 	Light * light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
-
-
 }
+
 void RasterizerStorageGLES3::light_set_negative(RID p_light,bool p_enable){
 
 	Light * light = light_owner.getornull(p_light);
@@ -3037,6 +3259,10 @@ void RasterizerStorageGLES3::light_set_cull_mask(RID p_light,uint32_t p_mask){
 	ERR_FAIL_COND(!light);
 
 	light->cull_mask=p_mask;
+
+	light->version++;
+	light->instance_change_notify();
+
 }
 void RasterizerStorageGLES3::light_set_shader(RID p_light,RID p_shader){
 
@@ -3045,21 +3271,91 @@ void RasterizerStorageGLES3::light_set_shader(RID p_light,RID p_shader){
 
 }
 
+void RasterizerStorageGLES3::light_omni_set_shadow_mode(RID p_light,VS::LightOmniShadowMode p_mode) {
+
+	Light * light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->omni_shadow_mode=p_mode;
+
+	light->version++;
+	light->instance_change_notify();
+
+
+}
+
+VS::LightOmniShadowMode RasterizerStorageGLES3::light_omni_get_shadow_mode(RID p_light) {
+
+	const Light * light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light,VS::LIGHT_OMNI_SHADOW_CUBE);
+
+	return light->omni_shadow_mode;
+}
+
+
+void RasterizerStorageGLES3::light_omni_set_shadow_detail(RID p_light,VS::LightOmniShadowDetail p_detail) {
+
+	Light * light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->omni_shadow_detail=p_detail;
+	light->version++;
+	light->instance_change_notify();
+}
+
 
 void RasterizerStorageGLES3::light_directional_set_shadow_mode(RID p_light,VS::LightDirectionalShadowMode p_mode){
 
 	Light * light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
+	light->directional_shadow_mode=p_mode;
+	light->version++;
+	light->instance_change_notify();
+
 }
+
+VS::LightDirectionalShadowMode RasterizerStorageGLES3::light_directional_get_shadow_mode(RID p_light) {
+
+	const Light * light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light,VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);
+
+	return light->directional_shadow_mode;
+}
+
 
 VS::LightType RasterizerStorageGLES3::light_get_type(RID p_light) const {
 
 	const Light * light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light,VS::LIGHT_DIRECTIONAL);
 
-	return VS::LIGHT_DIRECTIONAL;
+	return light->type;
 }
+
+float RasterizerStorageGLES3::light_get_param(RID p_light,VS::LightParam p_param) {
+
+	const Light * light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light,VS::LIGHT_DIRECTIONAL);
+
+	return light->param[p_param];
+}
+
+bool RasterizerStorageGLES3::light_has_shadow(RID p_light) const {
+
+	const Light * light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light,VS::LIGHT_DIRECTIONAL);
+
+	return light->shadow;
+}
+
+uint64_t RasterizerStorageGLES3::light_get_version(RID p_light) const {
+
+	const Light * light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light,0);
+
+	return light->version;
+}
+
 
 AABB RasterizerStorageGLES3::light_get_aabb(RID p_light) const {
 

@@ -1823,6 +1823,19 @@ void SpatialEditorViewport::_notification(int p_what) {
 				surface->update();
 		}
 
+
+		int shadowmap_size = Globals::get_singleton()->get("rendering/shadow_atlas/size");
+		int atlas_q0 = Globals::get_singleton()->get("rendering/shadow_atlas/quadrant_0_subdiv");
+		int atlas_q1 = Globals::get_singleton()->get("rendering/shadow_atlas/quadrant_1_subdiv");
+		int atlas_q2 = Globals::get_singleton()->get("rendering/shadow_atlas/quadrant_2_subdiv");
+		int atlas_q3 = Globals::get_singleton()->get("rendering/shadow_atlas/quadrant_3_subdiv");
+
+		viewport->set_shadow_atlas_size(shadowmap_size);
+		viewport->set_shadow_atlas_quadrant_subdiv(0,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
+		viewport->set_shadow_atlas_quadrant_subdiv(1,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q1));
+		viewport->set_shadow_atlas_quadrant_subdiv(2,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
+		viewport->set_shadow_atlas_quadrant_subdiv(3,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
+
 	}
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
@@ -2354,6 +2367,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	c->set_area_as_parent_rect();
 	viewport = memnew( Viewport );
 	viewport->set_disable_input(true);
+
 	c->add_child(viewport);
 	surface = memnew( Control );
 	add_child(surface);

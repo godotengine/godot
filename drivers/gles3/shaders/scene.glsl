@@ -1,7 +1,6 @@
 [vertex]
 
 
-#define ENABLE_UV_INTERP
 /*
 from VisualServer:
 
@@ -56,6 +55,15 @@ layout(std140) uniform SceneData { //ubo:0
 	highp vec4 bg_color;
 	float ambient_energy;
 	float bg_energy;
+
+	float shadow_z_offset;
+	float shadow_z_slope_scale;
+	float shadow_dual_paraboloid_render_zfar;
+	float shadow_dual_paraboloid_render_side;
+
+	vec2 shadow_atlas_pixel_size;
+	vec2 directional_shadow_pixel_size;
+
 };
 
 uniform highp mat4 world_transform;
@@ -68,25 +76,13 @@ layout(std140) uniform LightData { //ubo:3
 	mediump vec4 light_direction_attenuation;
 	mediump vec4 light_color_energy;
 	mediump vec4 light_params; //cone attenuation, specular, shadow darkening,
+	mediump vec4 light_clamp;
 	mediump vec4 shadow_split_offsets;
 	highp mat4 shadow_matrix1;
 	highp mat4 shadow_matrix2;
 	highp mat4 shadow_matrix3;
 	highp mat4 shadow_matrix4;
 };
-
-#ifdef USE_FORWARD_1_SHADOW_MAP
-out mediump vec4 forward_shadow_pos1;
-#endif
-
-#ifdef USE_FORWARD_2_SHADOW_MAP
-out mediump vec4 forward_shadow_pos2;
-#endif
-
-#ifdef USE_FORWARD_4_SHADOW_MAP
-out mediump vec4 forward_shadow_pos3;
-out mediump vec4 forward_shadow_pos4;
-#endif
 
 #endif
 
@@ -120,13 +116,6 @@ varying vec4 position_interp;
 
 #endif
 
-#ifdef USE_SHADOW_PASS
-
-uniform highp float shadow_z_offset;
-uniform highp float shadow_z_slope_scale;
-
-#endif
-
 
 VERTEX_SHADER_GLOBALS
 
@@ -141,6 +130,11 @@ MATERIAL_UNIFORMS
 
 #endif
 
+#ifdef RENDER_SHADOW_DUAL_PARABOLOID
+
+out highp float dp_clip;
+
+#endif
 
 void main() {
 
@@ -206,15 +200,6 @@ VERTEX_SHADER_CODE
 
 }
 
-
-#ifdef USE_SHADOW_PASS
-
-	float z_ofs = shadow_z_offset;
-	z_ofs += (1.0-abs(normal_interp.z))*shadow_z_slope_scale;
-	vertex_interp.z-=z_ofs;
-#endif
-
-
 	vertex_interp = vertex.xyz;
 	normal_interp = normal;
 
@@ -223,7 +208,41 @@ VERTEX_SHADER_CODE
 	binormal_interp = binormal;
 #endif
 
-#if !defined(SKIP_TRANSFORM_USED)
+#ifdef RENDER_SHADOW
+
+
+#ifdef RENDER_SHADOW_DUAL_PARABOLOID
+
+	vertex_interp.z*= shadow_dual_paraboloid_render_side;
+	normal_interp.z*= shadow_dual_paraboloid_render_side;
+
+	dp_clip=vertex_interp.z; //this attempts to avoid noise caused by objects sent to the other parabolloid side due to bias
+
+	//for dual paraboloid shadow mapping, this is the fastest but least correct way, as it curves straight edges
+
+	highp vec3 vtx = vertex_interp+normalize(vertex_interp)*shadow_z_offset;
+	highp float distance = length(vtx);
+	vtx = normalize(vtx);
+	vtx.xy/=1.0-vtx.z;
+	vtx.z=(distance/shadow_dual_paraboloid_render_zfar);
+	vtx.z=vtx.z * 2.0 - 1.0;
+
+	vertex.xyz=vtx;
+	vertex.w=1.0;
+
+
+#else
+
+	float z_ofs = shadow_z_offset;
+	z_ofs += (1.0-abs(normal_interp.z))*shadow_z_slope_scale;
+	vertex_interp.z-=z_ofs;
+
+#endif //RENDER_SHADOW_DUAL_PARABOLOID
+
+#endif //RENDER_SHADOW
+
+
+#if !defined(SKIP_TRANSFORM_USED) && !defined(RENDER_SHADOW_DUAL_PARABOLOID)
 	gl_Position = projection_matrix * vec4(vertex_interp,1.0);
 #else
 	gl_Position = vertex;
@@ -238,11 +257,6 @@ VERTEX_SHADER_CODE
 
 
 #define M_PI 3.14159265359
-
-
-#define ENABLE_UV_INTERP
-//hack to use uv if no uv present so it works with lightmap
-
 
 /* Varyings */
 
@@ -318,6 +332,15 @@ layout(std140) uniform SceneData {
 	highp vec4 bg_color;
 	float ambient_energy;
 	float bg_energy;
+
+	float shadow_z_offset;
+	float shadow_z_slope_scale;
+	float shadow_dual_paraboloid_render_zfar;
+	float shadow_dual_paraboloid_render_side;
+
+	vec2 shadow_atlas_pixel_size;
+	vec2 directional_shadow_pixel_size;
+
 };
 
 
@@ -328,7 +351,8 @@ layout(std140) uniform LightData {
 	highp vec4 light_pos_inv_radius;
 	mediump vec4 light_direction_attenuation;
 	mediump vec4 light_color_energy;
-	mediump vec4 light_params; //cone attenuation, specular, shadow darkening,
+	mediump vec4 light_params; //cone attenuation, specular, shadow darkening, shadow enabled
+	mediump vec4 light_clamp;
 	mediump vec4 shadow_split_offsets;
 	highp mat4 shadow_matrix1;
 	highp mat4 shadow_matrix2;
@@ -336,20 +360,12 @@ layout(std140) uniform LightData {
 	highp mat4 shadow_matrix4;
 };
 
-#ifdef USE_FORWARD_1_SHADOW_MAP
-in mediump vec4 forward_shadow_pos1;
 #endif
 
-#ifdef USE_FORWARD_2_SHADOW_MAP
-in mediump vec4 forward_shadow_pos2;
-#endif
 
-#ifdef USE_FORWARD_4_SHADOW_MAP
-in mediump vec4 forward_shadow_pos3;
-in mediump vec4 forward_shadow_pos4;
-#endif
+uniform highp sampler2DShadow directional_shadow; //texunit:-4
+uniform highp sampler2DShadow shadow_atlas; //texunit:-3
 
-#endif
 
 #ifdef USE_MULTIPLE_RENDER_TARGETS
 
@@ -408,10 +424,27 @@ void light_compute(vec3 normal, vec3 light_vec,vec3 eye_vec,vec3 diffuse_color, 
 }
 
 
+float sample_shadow(highp sampler2DShadow shadow, vec2 shadow_pixel_size, vec2 pos, float depth, vec4 clamp_rect) {
+
+	return textureProj(shadow,vec4(pos,depth,1.0));
+}
+
+#ifdef RENDER_SHADOW_DUAL_PARABOLOID
+
+in highp float dp_clip;
+
+#endif
+
 void main() {
 
+#ifdef RENDER_SHADOW_DUAL_PARABOLOID
+
+	if (dp_clip>0.0)
+		discard;
+#endif
+
 	//lay out everything, whathever is unused is optimized away anyway
-	vec3 vertex = vertex_interp;
+	highp vec3 vertex = vertex_interp;
 	vec3 albedo = vec3(0.8,0.8,0.8);
 	vec3 specular = vec3(0.2,0.2,0.2);
 	float roughness = 1.0;
@@ -528,27 +561,216 @@ FRAGMENT_SHADER_CODE
 #endif
 
 
-#ifdef USE_FORWARD_LIGHTING
-
 #ifdef USE_FORWARD_DIRECTIONAL
 
-	light_compute(normal,light_direction_attenuation.xyz,eye_vec,albedo,specular,roughness,1.0,diffuse_light,specular_light);
+	float light_attenuation=1.0;
+
+#ifdef LIGHT_DIRECTIONAL_SHADOW
+
+	if (gl_FragCoord.w > shadow_split_offsets.w) {
+
+	vec3 pssm_coord;
+
+#ifdef LIGHT_USE_PSSM_BLEND
+	float pssm_blend;
+	vec3 pssm_coord2;
+	bool use_blend=true;
+	vec3 light_pssm_split_inv = 1.0/shadow_split_offsets.xyz;
+	float w_inv = 1.0/gl_FragCoord.w;
 #endif
+
+
+#ifdef LIGHT_USE_PSSM4
+
+
+	if (gl_FragCoord.w > shadow_split_offsets.y) {
+
+		if (gl_FragCoord.w > shadow_split_offsets.x) {
+
+			highp vec4 splane=(shadow_matrix1 * vec4(vertex,1.0));
+			pssm_coord=splane.xyz/splane.w;
+			ambient_light=vec3(1.0,0.4,0.4);
+
+
+#if defined(LIGHT_USE_PSSM_BLEND)
+
+			splane=(shadow_matrix2 * vec4(vertex,1.0));
+			pssm_coord2=splane.xyz/splane.w;
+			pssm_blend=smoothstep(0.0,light_pssm_split_inv.x,w_inv);
+#endif
+
+		} else {
+
+			highp vec4 splane=(shadow_matrix2 * vec4(vertex,1.0));
+			pssm_coord=splane.xyz/splane.w;
+			ambient_light=vec3(0.4,1.0,0.4);
+
+#if defined(LIGHT_USE_PSSM_BLEND)
+			splane=(shadow_matrix3 * vec4(vertex,1.0));
+			pssm_coord2=splane.xyz/splane.w;
+			pssm_blend=smoothstep(light_pssm_split_inv.x,light_pssm_split_inv.y,w_inv);
+#endif
+
+		}
+	} else {
+
+
+		if (gl_FragCoord.w > shadow_split_offsets.z) {
+
+			highp vec4 splane=(shadow_matrix3 * vec4(vertex,1.0));
+			pssm_coord=splane.xyz/splane.w;
+			ambient_light=vec3(0.4,0.4,1.0);
+
+#if defined(LIGHT_USE_PSSM_BLEND)
+			splane=(shadow_matrix4 * vec4(vertex,1.0));
+			pssm_coord2=splane.xyz/splane.w;
+			pssm_blend=smoothstep(light_pssm_split_inv.y,light_pssm_split_inv.z,w_inv);
+#endif
+
+		} else {
+			highp vec4 splane=(shadow_matrix4 * vec4(vertex,1.0));
+			pssm_coord=splane.xyz/splane.w;
+			diffuse_light*=vec3(1.0,0.4,1.0);
+
+#if defined(LIGHT_USE_PSSM_BLEND)
+			use_blend=false;
+
+#endif
+
+		}
+	}
+
+#endif //LIGHT_USE_PSSM4
+
+#ifdef LIGHT_USE_PSSM2
+
+	if (gl_FragCoord.w > shadow_split_offsets.x) {
+
+		highp vec4 splane=(shadow_matrix1 * vec4(vertex,1.0));
+		pssm_coord=splane.xyz/splane.w;
+
+
+#if defined(LIGHT_USE_PSSM_BLEND)
+
+		splane=(shadow_matrix2 * vec4(vertex,1.0));
+		pssm_coord2=splane.xyz/splane.w;
+		pssm_blend=smoothstep(0.0,light_pssm_split_inv.x,w_inv);
+#endif
+
+	} else {
+		highp vec4 splane=(shadow_matrix2 * vec4(vertex,1.0));
+		pssm_coord=splane.xyz/splane.w;
+#if defined(LIGHT_USE_PSSM_BLEND)
+		use_blend=false;
+
+#endif
+
+	}
+
+#endif //LIGHT_USE_PSSM2
+
+#if !defined(LIGHT_USE_PSSM4) && !defined(LIGHT_USE_PSSM2)
+	{ //regular orthogonal
+		highp vec4 splane=(shadow_matrix1 * vec4(vertex,1.0));
+		pssm_coord=splane.xyz/splane.w;
+	}
+#endif
+
+
+	//one one sample
+	light_attenuation=sample_shadow(directional_shadow,directional_shadow_pixel_size,pssm_coord.xy,pssm_coord.z,light_clamp);
+
+
+#if defined(LIGHT_USE_PSSM_BLEND)
+	if (use_blend) {
+		float light_attenuation2=sample_shadow(directional_shadow,directional_shadow_pixel_size,pssm_coord2.xy,pssm_coord2.z,light_clamp);
+		light_attenuation=mix(light_attenuation,light_attenuation2,pssm_blend);
+	}
+#endif
+
+	}
+
+#endif //LIGHT_DIRECTIONAL_SHADOW
+
+	light_compute(normal,-light_direction_attenuation.xyz,eye_vec,albedo,specular,roughness,light_attenuation,diffuse_light,specular_light);
+
+
+#endif //USE_FORWARD_DIRECTIONAL
+
 
 #ifdef USE_FORWARD_OMNI
 
 	vec3 light_rel_vec = light_pos_inv_radius.xyz-vertex;
 	float normalized_distance = length( light_rel_vec )*light_pos_inv_radius.w;
 	float light_attenuation = pow( max(1.0 - normalized_distance, 0.0), light_direction_attenuation.w );
+
+	if (light_params.w>0.5) {
+		//there is a shadowmap
+
+		highp vec3 splane=(shadow_matrix1 * vec4(vertex,1.0)).xyz;
+		float shadow_len=length(splane);
+		splane=normalize(splane);
+		vec4 clamp_rect=light_clamp;
+
+		if (splane.z>=0.0) {
+
+			splane.z+=1.0;
+
+			clamp_rect.y+=clamp_rect.w;
+
+		} else {
+
+			splane.z=1.0 - splane.z;
+
+			//if (clamp_rect.z<clamp_rect.w) {
+			//	clamp_rect.x+=clamp_rect.z;
+			//} else {
+			//	clamp_rect.y+=clamp_rect.w;
+			//}
+
+		}
+
+		splane.xy/=splane.z;
+		splane.xy=splane.xy * 0.5 + 0.5;
+		splane.z = shadow_len * light_pos_inv_radius.w;
+
+		splane.xy = clamp_rect.xy+splane.xy*clamp_rect.zw;
+
+		light_attenuation*=sample_shadow(shadow_atlas,shadow_atlas_pixel_size,splane.xy,splane.z,clamp_rect);
+	}
+
 	light_compute(normal,normalize(light_rel_vec),eye_vec,albedo,specular,roughness,light_attenuation,diffuse_light,specular_light);
 
-#endif
+
+#endif //USE_FORWARD_OMNI
 
 #ifdef USE_FORWARD_SPOT
 
-#endif
+	vec3 light_rel_vec = light_pos_inv_radius.xyz-vertex;
+	float normalized_distance = length( light_rel_vec )*light_pos_inv_radius.w;
+	float light_attenuation = pow( max(1.0 - normalized_distance, 0.0), light_direction_attenuation.w );
+	vec3 spot_dir = light_direction_attenuation.xyz;
+	float spot_cutoff=light_params.y;
+	float scos = max(dot(-normalize(light_rel_vec), spot_dir),spot_cutoff);
+	float rim = (1.0 - scos) / (1.0 - spot_cutoff);
+	light_attenuation *= 1.0 - pow( rim, light_params.x);
 
-#endif
+	if (light_params.w>0.5) {
+		//there is a shadowmap
+
+		highp vec4 splane=(shadow_matrix1 * vec4(vertex,1.0));
+		splane.xyz/=splane.w;
+	//	splane.xy=splane.xy*0.5+0.5;
+
+		//splane.xy=light_clamp.xy+splane.xy*light_clamp.zw;
+		light_attenuation*=sample_shadow(shadow_atlas,shadow_atlas_pixel_size,splane.xy,splane.z,light_clamp);
+
+	}
+
+	light_compute(normal,normalize(light_rel_vec),eye_vec,albedo,specular,roughness,light_attenuation,diffuse_light,specular_light);
+
+#endif //USE_FORWARD_SPOT
+
 
 
 #if defined(USE_LIGHT_SHADER_CODE)
@@ -559,6 +781,11 @@ LIGHT_SHADER_CODE
 
 }
 #endif
+
+#ifdef RENDER_SHADOW
+//nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
+#else
+
 
 #ifdef USE_MULTIPLE_RENDER_TARGETS
 
@@ -574,13 +801,17 @@ LIGHT_SHADER_CODE
 
 #else
 
+
 #ifdef SHADELESS
 	frag_color=vec4(albedo,alpha);
 #else
 	frag_color=vec4(ambient_light+diffuse_light+specular_light,alpha);
-#endif
+#endif //SHADELESS
 
-#endif
+#endif //USE_MULTIPLE_RENDER_TARGETS
+
+#endif //RENDER_SHADOW
+
 
 }
 

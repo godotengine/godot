@@ -51,6 +51,8 @@ class VisualServer : public Object {
 	DVector<String> _shader_get_param_list(RID p_shader) const;
 	void _camera_set_orthogonal(RID p_camera,float p_size,float p_z_near,float p_z_far);
 	void _canvas_item_add_style_box(RID p_item, const Rect2& p_rect, const Rect2& p_source, RID p_texture,const Vector<float>& p_margins, const Color& p_modulate=Color(1,1,1));
+	Array _get_array_from_surface(uint32_t p_format,DVector<uint8_t> p_vertex_data,int p_vertex_len,DVector<uint8_t> p_index_data,int p_index_len) const;
+
 protected:
 	RID _make_test_cube();
 	void _free_internal_rids();
@@ -258,9 +260,14 @@ public:
 	virtual DVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const=0;
 	virtual DVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const=0;
 
+	virtual Array mesh_surface_get_arrays(RID p_mesh,int p_surface) const;
 
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const=0;
 	virtual PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const=0;
+
+	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const=0;
+	virtual Vector<DVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const=0;
+	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const=0;
 
 	virtual void mesh_remove_surface(RID p_mesh,int p_index)=0;
 	virtual int mesh_get_surface_count(RID p_mesh) const=0;
@@ -354,7 +361,6 @@ public:
 		LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET,
 		LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET,
 		LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET,
-		LIGHT_PARAM_SHADOW_SPLIT_4_OFFSET,
 		LIGHT_PARAM_SHADOW_NORMAL_BIAS,
 		LIGHT_PARAM_SHADOW_BIAS,
 		LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE,
@@ -372,10 +378,25 @@ public:
 	virtual void light_set_cull_mask(RID p_light,uint32_t p_mask)=0;
 	virtual void light_set_shader(RID p_light,RID p_shader)=0;
 
+	// omni light
+	enum LightOmniShadowMode {
+		LIGHT_OMNI_SHADOW_DUAL_PARABOLOID,
+		LIGHT_OMNI_SHADOW_CUBE,
+	};
+
+	virtual void light_omni_set_shadow_mode(RID p_light,LightOmniShadowMode p_mode)=0;
+
+	// omni light
+	enum LightOmniShadowDetail {
+		LIGHT_OMNI_SHADOW_DETAIL_VERTICAL,
+		LIGHT_OMNI_SHADOW_DETAIL_HORIZONTAL
+	};
+
+	virtual void light_omni_set_shadow_detail(RID p_light,LightOmniShadowDetail p_detail)=0;
+
 	// directional light
 	enum LightDirectionalShadowMode {
 		LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL,
-		LIGHT_DIRECTIONAL_SHADOW_PERSPECTIVE,
 		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS,
 		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS
 	};
@@ -474,6 +495,9 @@ public:
 
 	virtual void viewport_set_global_canvas_transform(RID p_viewport,const Matrix32& p_transform)=0;
 	virtual void viewport_set_canvas_layer(RID p_viewport,RID p_canvas,int p_layer)=0;
+
+	virtual void viewport_set_shadow_atlas_size(RID p_viewport,int p_size)=0;
+	virtual void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport,int p_quadrant,int p_subdiv)=0;
 
 
 	/* ENVIRONMENT API */

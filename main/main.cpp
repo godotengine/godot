@@ -1296,6 +1296,17 @@ bool Main::start() {
 			appname = TranslationServer::get_singleton()->translate(appname);
 			OS::get_singleton()->set_window_title(appname);
 
+			int shadow_atlas_size = GLOBAL_DEF("rendering/shadow_atlas/size",2048);
+			int shadow_atlas_q0_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_0_subdiv",2);
+			int shadow_atlas_q1_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_1_subdiv",2);
+			int shadow_atlas_q2_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_2_subdiv",3);
+			int shadow_atlas_q3_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_3_subdiv",4);
+
+			sml->get_root()->set_shadow_atlas_size(shadow_atlas_size);
+			sml->get_root()->set_shadow_atlas_quadrant_subdiv(0,Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q0_subdiv));
+			sml->get_root()->set_shadow_atlas_quadrant_subdiv(1,Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q1_subdiv));
+			sml->get_root()->set_shadow_atlas_quadrant_subdiv(2,Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q2_subdiv));
+			sml->get_root()->set_shadow_atlas_quadrant_subdiv(3,Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q3_subdiv));
 
 		} else {
 			GLOBAL_DEF("display/stretch_mode","disabled");
@@ -1304,7 +1315,17 @@ bool Main::start() {
 			Globals::get_singleton()->set_custom_property_info("display/stretch_aspect",PropertyInfo(Variant::STRING,"display/stretch_aspect",PROPERTY_HINT_ENUM,"ignore,keep,keep_width,keep_height"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/auto_accept_quit",true));
 
+			GLOBAL_DEF("rendering/shadow_atlas/size",2048);
+			Globals::get_singleton()->set_custom_property_info("rendering/shadow_atlas/size",PropertyInfo(Variant::INT,"rendering/shadow_atlas/size",PROPERTY_HINT_RANGE,"256,16384"));
 
+			GLOBAL_DEF("rendering/shadow_atlas/quadrant_0_subdiv",2);
+			GLOBAL_DEF("rendering/shadow_atlas/quadrant_1_subdiv",2);
+			GLOBAL_DEF("rendering/shadow_atlas/quadrant_2_subdiv",3);
+			GLOBAL_DEF("rendering/shadow_atlas/quadrant_3_subdiv",4);
+			Globals::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_0_subdiv",PropertyInfo(Variant::INT,"rendering/shadow_atlas/quadrant_0_subdiv",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+			Globals::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_1_subdiv",PropertyInfo(Variant::INT,"rendering/shadow_atlas/quadrant_1_subdiv",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+			Globals::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_2_subdiv",PropertyInfo(Variant::INT,"rendering/shadow_atlas/quadrant_2_subdiv",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+			Globals::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_3_subdiv",PropertyInfo(Variant::INT,"rendering/shadow_atlas/quadrant_3_subdiv",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
 		}
 
 

@@ -3,6 +3,7 @@
 
 #include "rasterizer_storage_gles3.h"
 #include "drivers/gles3/shaders/scene.glsl.h"
+#include "drivers/gles3/shaders/cube_to_dp.glsl.h"
 
 class RasterizerSceneGLES3 : public RasterizerScene {
 public:
@@ -16,9 +17,12 @@ public:
 	uint32_t current_geometry_index;
 
 	RID default_material;
+	RID default_material_twosided;
 	RID default_shader;
+	RID default_shader_twosided;
 
 	RasterizerStorageGLES3 *storage;
+
 
 	struct State {
 
@@ -29,6 +33,7 @@ public:
 		int current_depth_draw;
 
 		SceneShaderGLES3 scene_shader;
+		CubeToDpShaderGLES3 cube_to_dp_shader;
 
 
 		struct SceneDataUBO {
@@ -41,6 +46,12 @@ public:
 			float bg_color[4];
 			float ambient_energy;
 			float bg_energy;
+			float shadow_z_offset;
+			float shadow_slope_scale;
+			float shadow_dual_paraboloid_render_zfar;
+			float shadow_dual_paraboloid_render_side;
+			float shadow_atlas_pixel_size[2];
+			float shadow_directional_pixel_size[2];
 
 		} ubo_data;
 
@@ -62,7 +73,7 @@ public:
 		GLuint skybox_verts;
 		GLuint skybox_array;
 
-
+		bool cull_front;
 
 	} state;
 
@@ -71,7 +82,6 @@ public:
 	struct ShadowAtlas : public RID_Data {
 
 		enum {
-			SHADOW_INDEX_DIRTY_BIT=(1<<31),
 			QUADRANT_SHIFT=27,
 			SHADOW_INDEX_MASK=(1<<QUADRANT_SHIFT)-1,
 			SHADOW_INVALID=0xFFFFFFFF
@@ -111,13 +121,35 @@ public:
 		Map<RID,uint32_t> shadow_owners;
 	};
 
+	struct ShadowCubeMap {
+
+		GLuint fbo_id[6];
+		GLuint cubemap;
+		int size;
+	};
+
+	Vector<ShadowCubeMap> shadow_cubemaps;
+
 	RID_Owner<ShadowAtlas> shadow_atlas_owner;
 
 	RID shadow_atlas_create();
 	void shadow_atlas_set_size(RID p_atlas,int p_size);
 	void shadow_atlas_set_quadrant_subdivision(RID p_atlas,int p_quadrant,int p_subdivision);
 	bool _shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
-	uint32_t shadow_atlas_update_light(RID p_atlas,RID p_light_intance,float p_coverage,uint64_t p_light_version);
+	bool shadow_atlas_update_light(RID p_atlas,RID p_light_intance,float p_coverage,uint64_t p_light_version);
+
+
+	struct DirectionalShadow {
+		GLuint fbo;
+		GLuint depth;
+		int light_count;
+		int size;
+		int current_light;
+	} directional_shadow;
+
+	virtual int get_directional_light_shadow_size(RID p_light_intance);
+	virtual void set_directional_shadow_count(int p_count);
+
 
 	/* ENVIRONMENT API */
 
@@ -174,12 +206,12 @@ public:
 
 	struct LightInstance : public RID_Data {
 
-		struct SplitInfo {
+		struct ShadowTransform {
 
 			CameraMatrix camera;
 			Transform transform;
-			float near;
 			float far;
+			float split;
 		};
 
 		struct LightDataUBO {
@@ -188,6 +220,7 @@ public:
 			float light_direction_attenuation[4];
 			float light_color_energy[4];
 			float light_params[4]; //cone attenuation, specular, shadow darkening,
+			float light_clamp[4]; //cone attenuation, specular, shadow darkening,
 			float shadow_split_offsets[4];
 			float shadow_matrix1[16];
 			float shadow_matrix2[16];
@@ -197,13 +230,11 @@ public:
 		} light_ubo_data;
 
 
-		SplitInfo split_info[4];
+		ShadowTransform shadow_transform[4];
 
+		RID self;
 		RID light;
 		RasterizerStorageGLES3::Light *light_ptr;
-
-		CameraMatrix shadow_matrix[4];
-
 		Transform transform;
 
 		Vector3 light_vector;
@@ -214,12 +245,17 @@ public:
 
 		uint64_t shadow_pass;
 		uint64_t last_scene_pass;
+		uint64_t last_scene_shadow_pass;
 		uint64_t last_pass;
 		uint16_t light_index;
+		uint16_t light_directional_index;
+
+		uint32_t current_shadow_atlas_key;
 
 		Vector2 dp;
 
-		CameraMatrix shadow_projection[4];
+		Rect2 directional_rect;
+
 
 		Set<RID> shadow_atlases; //shadow atlases where this light is registered
 
@@ -231,6 +267,7 @@ public:
 
 	virtual RID light_instance_create(RID p_light);
 	virtual void light_instance_set_transform(RID p_light_instance,const Transform& p_transform);
+	virtual void light_instance_set_shadow_transform(RID p_light_instance,const CameraMatrix& p_projection,const Transform& p_transform,float p_far,float p_split,int p_pass);
 	virtual void light_instance_mark_visible(RID p_light_instance);
 
 	/* RENDER LIST */
@@ -371,26 +408,31 @@ public:
 
 	RenderList render_list;
 
+	_FORCE_INLINE_ void _set_cull(bool p_front,bool p_reverse_cull);
+
 	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES3::Material* p_material,bool p_alpha_pass);
 	_FORCE_INLINE_ void _setup_transform(InstanceBase *p_instance,const Transform& p_view_transform,const CameraMatrix& p_projection);
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *e);
 	_FORCE_INLINE_ void _render_geometry(RenderList::Element *e);
 	_FORCE_INLINE_ void _setup_light(LightInstance *p_light);
 
-	void _render_list(RenderList::Element **p_elements, int p_element_count, const Transform& p_view_transform, const CameraMatrix& p_projection, RasterizerStorageGLES3::Texture *p_base_env, bool p_reverse_cull, bool p_alpha_pass);
+	void _render_list(RenderList::Element **p_elements, int p_element_count, const Transform& p_view_transform, const CameraMatrix& p_projection, RasterizerStorageGLES3::Texture *p_base_env, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow);
 
 
-	_FORCE_INLINE_ void _add_geometry(  RasterizerStorageGLES3::Geometry* p_geometry,  InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner,int p_material);
+	_FORCE_INLINE_ void _add_geometry(  RasterizerStorageGLES3::Geometry* p_geometry,  InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner,int p_material,bool p_shadow);
 
-	void _draw_skybox(RID p_skybox, CameraMatrix& p_projection, const Transform& p_transform, bool p_vflip, float p_scale);
+	void _draw_skybox(RID p_skybox, const CameraMatrix& p_projection, const Transform& p_transform, bool p_vflip, float p_scale);
 
-	void _setup_environment(Environment *env,CameraMatrix& p_cam_projection, const Transform& p_cam_transform);
-	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform,const CameraMatrix& p_camera_projection);
+	void _setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform& p_cam_transform);
+	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, const CameraMatrix& p_camera_projection, RID p_shadow_atlas);
 	void _copy_screen();
 	void _copy_to_front_buffer(Environment *env);
+	void _copy_texture_to_front_buffer(GLuint p_texture); //used for debug
 
-	virtual void render_scene(const Transform& p_cam_transform,CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_directional_lights,int p_directional_light_count,RID p_environment);
+	void _fill_render_list(InstanceBase** p_cull_result,int p_cull_count,bool p_shadow);
 
+	virtual void render_scene(const Transform& p_cam_transform,const CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID p_environment,RID p_shadow_atlas);
+	virtual void render_shadow(RID p_light,RID p_shadow_atlas,int p_pass,InstanceBase** p_cull_result,int p_cull_count);
 	virtual bool free(RID p_rid);
 
 	void _generate_brdf();

@@ -208,7 +208,7 @@ public:
 	    }
 	}
 
-	static _FORCE_INLINE_ float halfptr_to_float(uint16_t *h) {
+	static _FORCE_INLINE_ float halfptr_to_float(const uint16_t *h) {
 
 		union {
 			uint32_t u32;

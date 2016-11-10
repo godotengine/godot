@@ -32,6 +32,9 @@ public:
 		String fragment;
 		String light;
 
+		bool uses_fragment_time;
+		bool uses_vertex_time;
+
 	};
 
 private:
@@ -49,6 +52,10 @@ private:
 	String _dump_node_code(ShaderLanguage::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions& p_actions, const DefaultIdentifierActions& p_default_actions);
 
 
+	StringName current_func_name;
+	StringName vertex_name;
+	StringName fragment_name;
+	StringName time_name;
 
 	Set<StringName> used_name_defines;
 	Set<StringName> used_rmode_defines;

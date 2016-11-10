@@ -1297,6 +1297,39 @@ bool Viewport::get_clear_on_new_frame() const{
 	return clear_on_new_frame;
 }
 
+void Viewport::set_shadow_atlas_size(int p_size) {
+
+	shadow_atlas_size=p_size;
+	VS::get_singleton()->viewport_set_shadow_atlas_size(viewport,p_size);
+}
+
+int Viewport::get_shadow_atlas_size() const{
+
+	return shadow_atlas_size;
+}
+
+void Viewport::set_shadow_atlas_quadrant_subdiv(int p_quadrant,ShadowAtlasQuadrantSubdiv p_subdiv){
+
+
+	ERR_FAIL_INDEX(p_quadrant,4);
+	ERR_FAIL_INDEX(p_subdiv,SHADOW_ATLAS_QUADRANT_SUBDIV_MAX);
+
+	if (shadow_atlas_quadrant_subdiv[p_quadrant]==p_subdiv)
+		return;
+
+	shadow_atlas_quadrant_subdiv[p_quadrant]=p_subdiv;
+	static const int subdiv[SHADOW_ATLAS_QUADRANT_SUBDIV_MAX]={0,1,4,16,64,256,1024};
+
+	VS::get_singleton()->viewport_set_shadow_atlas_quadrant_subdivision(viewport,p_quadrant,subdiv[p_subdiv]);
+
+}
+Viewport::ShadowAtlasQuadrantSubdiv Viewport::get_shadow_atlas_quadrant_subdiv(int p_quadrant) const{
+
+	ERR_FAIL_INDEX_V(p_quadrant,4,SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
+	return shadow_atlas_quadrant_subdiv[p_quadrant];
+}
+
+
 void Viewport::clear() {
 
 	//clear=true;
@@ -2661,6 +2694,12 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
 	ObjectTypeDB::bind_method(_MD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
 
+	ObjectTypeDB::bind_method(_MD("set_shadow_atlas_size","size"), &Viewport::set_shadow_atlas_size);
+	ObjectTypeDB::bind_method(_MD("get_shadow_atlas_size"), &Viewport::get_shadow_atlas_size);
+
+	ObjectTypeDB::bind_method(_MD("set_shadow_atlas_quadrant_subdiv","quadrant","subdiv"), &Viewport::set_shadow_atlas_quadrant_subdiv);
+	ObjectTypeDB::bind_method(_MD("get_shadow_atlas_quadrant_subdiv","quadrant"), &Viewport::get_shadow_atlas_quadrant_subdiv);
+
 	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"size"), _SCS("set_size"), _SCS("get_size") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"own_world"), _SCS("set_use_own_world"), _SCS("is_using_own_world") );
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world",PROPERTY_HINT_RESOURCE_TYPE,"World"), _SCS("set_world"), _SCS("get_world") );
@@ -2674,6 +2713,11 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"physics/object_picking"), _SCS("set_physics_object_picking"), _SCS("get_physics_object_picking") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gui/disable_input"), _SCS("set_disable_input"), _SCS("is_input_disabled") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"3d/disable_3d"), _SCS("set_disable_3d"), _SCS("is_3d_disabled") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_atlas/size"), _SCS("set_shadow_atlas_size"), _SCS("get_shadow_atlas_size") );
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas/quad_0",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),0 );
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas/quad_1",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),1 );
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas/quad_2",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),2 );
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas/quad_3",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),3 );
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 
@@ -2682,6 +2726,14 @@ void Viewport::_bind_methods() {
 	BIND_CONSTANT( UPDATE_WHEN_VISIBLE  );
 	BIND_CONSTANT( UPDATE_ALWAYS  );
 
+	BIND_CONSTANT( SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED );
+	BIND_CONSTANT( SHADOW_ATLAS_QUADRANT_SUBDIV_1 );
+	BIND_CONSTANT( SHADOW_ATLAS_QUADRANT_SUBDIV_4 );
+	BIND_CONSTANT( SHADOW_ATLAS_QUADRANT_SUBDIV_16 );
+	BIND_CONSTANT( SHADOW_ATLAS_QUADRANT_SUBDIV_64 );
+	BIND_CONSTANT( SHADOW_ATLAS_QUADRANT_SUBDIV_256 );
+	BIND_CONSTANT( SHADOW_ATLAS_QUADRANT_SUBDIV_1024 );
+	BIND_CONSTANT( SHADOW_ATLAS_QUADRANT_SUBDIV_MAX );
 }
 
 
@@ -2718,6 +2770,15 @@ Viewport::Viewport() {
 	physics_object_capture=0;
 	physics_object_over=0;
 	physics_last_mousepos=Vector2(1e20,1e20);
+
+	shadow_atlas_size=0;
+	for(int i=0;i<4;i++) {
+		shadow_atlas_quadrant_subdiv[0]=SHADOW_ATLAS_QUADRANT_SUBDIV_MAX;
+	}
+	set_shadow_atlas_quadrant_subdiv(0,SHADOW_ATLAS_QUADRANT_SUBDIV_4);
+	set_shadow_atlas_quadrant_subdiv(1,SHADOW_ATLAS_QUADRANT_SUBDIV_4);
+	set_shadow_atlas_quadrant_subdiv(2,SHADOW_ATLAS_QUADRANT_SUBDIV_16);
+	set_shadow_atlas_quadrant_subdiv(3,SHADOW_ATLAS_QUADRANT_SUBDIV_64);
 
 
 	String id=itos(get_instance_ID());

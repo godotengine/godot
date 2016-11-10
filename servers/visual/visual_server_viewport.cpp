@@ -64,7 +64,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 
 	if (!p_viewport->disable_3d && p_viewport->camera.is_valid()) {
 
-		VSG::scene->render_camera(p_viewport->camera,p_viewport->scenario,p_viewport->size);
+		VSG::scene->render_camera(p_viewport->camera,p_viewport->scenario,p_viewport->size,p_viewport->shadow_atlas);
 	}
 
 	if (!p_viewport->hide_canvas) {
@@ -287,7 +287,8 @@ RID VisualServerViewport::viewport_create() {
 	viewport->self=rid;
 	viewport->hide_scenario=false;
 	viewport->hide_canvas=false;
-	viewport->render_target=VSG::storage->render_target_create();
+	viewport->render_target=VSG::storage->render_target_create();	
+	viewport->shadow_atlas=VSG::scene_render->shadow_atlas_create();
 
 	return rid;
 
@@ -496,6 +497,27 @@ void VisualServerViewport::viewport_set_canvas_layer(RID p_viewport,RID p_canvas
 
 }
 
+void VisualServerViewport::viewport_set_shadow_atlas_size(RID p_viewport,int p_size) {
+
+	Viewport * viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->shadow_atlas_size=p_size;
+
+	VSG::scene_render->shadow_atlas_set_size( viewport->shadow_atlas, viewport->shadow_atlas_size);
+
+}
+
+void VisualServerViewport::viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport,int p_quadrant,int p_subdiv) {
+
+	Viewport * viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	VSG::scene_render->shadow_atlas_set_quadrant_subdivision( viewport->shadow_atlas, p_quadrant, p_subdiv);
+
+}
+
+
 bool VisualServerViewport::free(RID p_rid) {
 
 	Viewport * viewport = viewport_owner.getornull(p_rid);
@@ -504,6 +526,7 @@ bool VisualServerViewport::free(RID p_rid) {
 
 
 	VSG::storage->free( viewport->render_target );
+	VSG::scene_render->free( viewport->shadow_atlas );
 
 	while(viewport->canvas_map.front()) {
 		viewport_remove_canvas(p_rid,viewport->canvas_map.front()->key());

@@ -84,7 +84,7 @@ ShaderTypes::ShaderTypes()
 
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_front");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_back");
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_disable");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_disabled");
 
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("unshaded");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("ontop");

@@ -30,6 +30,7 @@
 #define CAMERA_MATRIX_H
 
 #include "transform.h"
+#include "math_2d.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -53,6 +54,7 @@ struct CameraMatrix {
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
+	void set_light_atlas_rect(const Rect2& p_rect);
 	void set_perspective(float p_fovy_degrees, float p_aspect, float p_z_near, float p_z_far,bool p_flip_fov=false);
 	void set_orthogonal(float p_left, float p_right, float p_bottom, float p_top,  float p_znear, float p_zfar);
 	void set_orthogonal(float p_size, float p_aspect, float p_znear, float p_zfar,bool p_flip_fov=false);

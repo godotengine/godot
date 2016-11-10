@@ -845,7 +845,7 @@ Ref<Mesh> SceneTree::get_debug_contact_mesh() {
 	arr[Mesh::ARRAY_INDEX]=indices;
 
 
-	debug_contact_mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES,arr);
+	debug_contact_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES,arr);
 	debug_contact_mesh->surface_set_material(0,mat);
 
 	return debug_contact_mesh;

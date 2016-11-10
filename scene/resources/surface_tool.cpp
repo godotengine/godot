@@ -410,7 +410,7 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 
 	}
 
-	mesh->add_surface(primitive,a);
+	mesh->add_surface_from_arrays(primitive,a);
 	if (material.is_valid())
 		mesh->surface_set_material(surface,material);
 

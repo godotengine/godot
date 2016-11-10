@@ -99,6 +99,38 @@ public:
 
 
 
+	struct Instantiable : public RID_Data {
+
+		SelfList<RasterizerScene::InstanceBase>::List instance_list;
+
+		_FORCE_INLINE_ void instance_change_notify() {
+
+			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+			while(instances) {
+
+				instances->self()->base_changed();
+				instances=instances->next();
+			}
+		}
+
+		_FORCE_INLINE_ void instance_material_change_notify() {
+
+			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+			while(instances) {
+
+				instances->self()->base_material_changed();
+				instances=instances->next();
+			}
+		}
+
+		Instantiable() {  }
+		virtual ~Instantiable() {
+
+			while(instance_list.first()) {
+				instance_list.first()->self()->base_removed();
+			}
+		}
+	};
 
 
 
@@ -282,8 +314,13 @@ public:
 			bool uses_alpha;
 			bool unshaded;
 			bool ontop;
+			bool uses_vertex;
+			bool uses_discard;
 
 		} spatial;
+
+		bool uses_vertex_time;
+		bool uses_fragment_time;
 
 		Shader() : dirty_list(this) {
 
@@ -315,6 +352,8 @@ public:
 
 	void update_dirty_shaders();
 
+
+
 	/* COMMON MATERIAL API */
 
 	struct Material : public RID_Data {
@@ -331,7 +370,15 @@ public:
 		uint32_t index;
 		uint64_t last_pass;
 
+		Map<Instantiable*,int> instantiable_owners;
+		Map<RasterizerScene::InstanceBase*,int> instance_owners;
+
+		bool can_cast_shadow_cache;
+		bool is_animated_cache;
+
 		Material() : list(this), dirty_list(this) {
+			can_cast_shadow_cache=false;
+			is_animated_cache=false;
 			shader=NULL;
 			line_width=1.0;
 			ubo_id=0;
@@ -343,6 +390,8 @@ public:
 
 	mutable SelfList<Material>::List _material_dirty_list;
 	void _material_make_dirty(Material *p_material) const;
+	void _material_add_instantiable(RID p_material,Instantiable *p_instantiable);
+	void _material_remove_instantiable(RID p_material, Instantiable *p_instantiable);
 
 
 	mutable RID_Owner<Material> material_owner;
@@ -357,34 +406,18 @@ public:
 
 	virtual void material_set_line_width(RID p_material, float p_width);
 
+	virtual bool material_is_animated(RID p_material);
+	virtual bool material_casts_shadows(RID p_material);
+
+	virtual void material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);
+	virtual void material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);
+
 	void _update_material(Material* material);
 
 	void update_dirty_materials();
 
 	/* MESH API */
 
-	struct Instantiable : public RID_Data {
-
-		SelfList<RasterizerScene::InstanceBase>::List instance_list;
-
-		_FORCE_INLINE_ void instance_change_notify() {
-
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-			while(instances) {
-
-				instances->self()->base_changed();
-				instances=instances->next();
-			}
-		}
-
-		Instantiable() {  }
-		virtual ~Instantiable() {
-
-			while(instance_list.first()) {
-				instance_list.first()->self()->base_removed();
-			}
-		}
-	};
 
 	struct Geometry : Instantiable {
 
@@ -455,7 +488,8 @@ public:
 		int index_array_len;
 		int max_bone;
 
-		int array_bytes;
+		int array_byte_size;
+		int index_array_byte_size;
 
 
 		VS::PrimitiveType primitive;
@@ -464,7 +498,8 @@ public:
 
 		Surface() {
 
-			array_bytes=0;
+			array_byte_size=0;
+			index_array_byte_size=0;
 			mesh=NULL;
 			format=0;
 			array_id=0;
@@ -525,6 +560,10 @@ public:
 
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const;
 	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
+
+	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
+	virtual Vector<DVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const;
+	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const;
 
 	virtual void mesh_remove_surface(RID p_mesh, int p_surface);
 	virtual int mesh_get_surface_count(RID p_mesh) const;
@@ -598,7 +637,10 @@ public:
 		bool shadow;
 		bool negative;
 		uint32_t cull_mask;
+		VS::LightOmniShadowMode omni_shadow_mode;
+		VS::LightOmniShadowDetail omni_shadow_detail;
 		VS::LightDirectionalShadowMode directional_shadow_mode;
+		uint64_t version;
 	};
 
 	mutable RID_Owner<Light> light_owner;
@@ -614,11 +656,22 @@ public:
 	virtual void light_set_cull_mask(RID p_light,uint32_t p_mask);
 	virtual void light_set_shader(RID p_light,RID p_shader);
 
+	virtual void light_omni_set_shadow_mode(RID p_light,VS::LightOmniShadowMode p_mode);
+
+	virtual void light_omni_set_shadow_detail(RID p_light,VS::LightOmniShadowDetail p_detail);
 
 	virtual void light_directional_set_shadow_mode(RID p_light,VS::LightDirectionalShadowMode p_mode);
+	virtual VS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light);
+	virtual VS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light);
+
+	virtual bool light_has_shadow(RID p_light) const;
 
 	virtual VS::LightType light_get_type(RID p_light) const;
+	virtual float light_get_param(RID p_light,VS::LightParam p_param);
+
 	virtual AABB light_get_aabb(RID p_light) const;
+	virtual uint64_t light_get_version(RID p_light) const;
+
 	/* PROBE API */
 
 	virtual RID reflection_probe_create();

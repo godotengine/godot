@@ -152,7 +152,7 @@ void FixedSpatialMaterial::_update_shader() {
 	switch(cull_mode) {
 		case CULL_BACK: code+=",cull_back"; break;
 		case CULL_FRONT: code+=",cull_front"; break;
-		case CULL_DISABLED: code+=",cull_disable"; break;
+		case CULL_DISABLED: code+=",cull_disabled"; break;
 
 	}
 

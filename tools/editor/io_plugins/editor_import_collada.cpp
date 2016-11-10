@@ -1468,7 +1468,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 				mr.push_back(a);
 			}
 
-			p_mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES,d,mr);
+			p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES,d,mr);
 
 			if (material.is_valid()) {
 				p_mesh->surface_set_material(surface, material);

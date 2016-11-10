@@ -1021,7 +1021,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primi
 					break;
 				}
 				/* determine wether using 16 or 32 bits indices */
-				if (array_len>(1<<16)) {
+				if (array_len>=(1<<16)) {
 
 					elem_size=4;
 
@@ -1086,6 +1086,454 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primi
 	}
 
 	mesh_add_surface(p_mesh,format,p_primitive,vertex_array,array_len,index_array,index_array_len,aabb,blend_shape_data,bone_aabb);
+
+}
+
+Array VisualServer::_get_array_from_surface(uint32_t p_format,DVector<uint8_t> p_vertex_data,int p_vertex_len,DVector<uint8_t> p_index_data,int p_index_len) const {
+
+
+	uint32_t offsets[ARRAY_MAX];
+
+	int total_elem_size=0;
+
+	for (int i=0;i<VS::ARRAY_MAX;i++) {
+
+
+		offsets[i]=0; //reset
+
+		if (!(p_format&(1<<i))) // no array
+			continue;
+
+
+		int elem_size=0;
+
+		switch(i) {
+
+			case VS::ARRAY_VERTEX: {
+
+
+				if (p_format&ARRAY_FLAG_USE_2D_VERTICES) {
+					elem_size=2;
+				} else {
+					elem_size=3;
+				}
+
+				if (p_format&ARRAY_COMPRESS_VERTEX) {
+					elem_size*=sizeof(int16_t);
+				} else {
+					elem_size*=sizeof(float);
+				}
+
+			} break;
+			case VS::ARRAY_NORMAL: {
+
+				if (p_format&ARRAY_COMPRESS_NORMAL) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(float)*3;
+				}
+
+			} break;
+
+			case VS::ARRAY_TANGENT: {
+				if (p_format&ARRAY_COMPRESS_TANGENT) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(float)*4;
+				}
+
+			} break;
+			case VS::ARRAY_COLOR: {
+
+				if (p_format&ARRAY_COMPRESS_COLOR) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(float)*4;
+				}
+			} break;
+			case VS::ARRAY_TEX_UV: {
+				if (p_format&ARRAY_COMPRESS_TEX_UV) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(float)*2;
+				}
+
+			} break;
+
+			case VS::ARRAY_TEX_UV2: {
+				if (p_format&ARRAY_COMPRESS_TEX_UV2) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(float)*2;
+				}
+
+			} break;
+			case VS::ARRAY_WEIGHTS: {
+
+				if (p_format&ARRAY_COMPRESS_WEIGHTS) {
+					elem_size=sizeof(uint16_t)*4;
+				} else {
+					elem_size=sizeof(float)*4;
+				}
+
+			} break;
+			case VS::ARRAY_BONES: {
+
+				if (p_format&ARRAY_FLAG_USE_16_BIT_BONES) {
+					elem_size=sizeof(uint32_t);
+				} else {
+					elem_size=sizeof(uint16_t)*4;
+				}
+
+			} break;
+			case VS::ARRAY_INDEX: {
+
+				if (p_index_len<=0) {
+					ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
+					break;
+				}
+				/* determine wether using 16 or 32 bits indices */
+				if (p_index_len>=(1<<16)) {
+
+					elem_size=4;
+
+				} else {
+					elem_size=2;
+				}
+				offsets[i]=elem_size;
+				continue;
+			} break;
+			default: {
+				ERR_FAIL_V( Array() );
+			}
+		}
+
+		offsets[i]=total_elem_size;
+		total_elem_size+=elem_size;
+
+
+	}
+
+	Array ret;
+	ret.resize(VS::ARRAY_MAX);
+
+	DVector<uint8_t>::Read r = p_vertex_data.read();
+
+	for(int i=0;i<VS::ARRAY_MAX;i++) {
+
+		if (!(p_format&(1<<i)))
+			continue;
+
+
+		switch(i) {
+
+			case VS::ARRAY_VERTEX: {
+
+
+				if (p_format&ARRAY_FLAG_USE_2D_VERTICES) {
+
+					DVector<Vector2> arr_2d;
+					arr_2d.resize(p_vertex_len);
+
+					if (p_format&ARRAY_COMPRESS_VERTEX) {
+
+						DVector<Vector2>::Write w = arr_2d.write();
+
+						for(int j=0;j<p_vertex_len;j++) {
+
+							const uint16_t *v = (const uint16_t*)&r[j*total_elem_size+offsets[i]];
+							w[j]=Vector2(Math::halfptr_to_float(&v[0]),Math::halfptr_to_float(&v[1]));
+						}
+					} else {
+
+						DVector<Vector2>::Write w = arr_2d.write();
+
+						for(int j=0;j<p_vertex_len;j++) {
+
+							const float *v = (const float*)&r[j*total_elem_size+offsets[i]];
+							w[j]=Vector2(v[0],v[1]);
+						}
+					}
+
+					ret[i]=arr_2d;
+				} else {
+
+					DVector<Vector3> arr_3d;
+					arr_3d.resize(p_vertex_len);
+
+					if (p_format&ARRAY_COMPRESS_VERTEX) {
+
+						DVector<Vector3>::Write w = arr_3d.write();
+
+						for(int j=0;j<p_vertex_len;j++) {
+
+							const uint16_t *v = (const uint16_t*)&r[j*total_elem_size+offsets[i]];
+							w[j]=Vector3(Math::halfptr_to_float(&v[0]),Math::halfptr_to_float(&v[1]),Math::halfptr_to_float(&v[1]));
+						}
+					} else {
+
+						DVector<Vector3>::Write w = arr_3d.write();
+
+						for(int j=0;j<p_vertex_len;j++) {
+
+							const float *v = (const float*)&r[j*total_elem_size+offsets[i]];
+							w[j]=Vector3(v[0],v[1],v[2]);
+						}
+					}
+
+					ret[i]=arr_3d;
+				}
+
+
+			} break;
+			case VS::ARRAY_NORMAL: {
+				DVector<Vector3> arr;
+				arr.resize(p_vertex_len);
+
+				if (p_format&ARRAY_COMPRESS_NORMAL) {
+
+					DVector<Vector3>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+
+						const uint8_t *v = (const uint8_t*)&r[j*total_elem_size+offsets[i]];
+						w[j]=Vector3( float(v[0]/255.0)*2.0-1.0, float(v[1]/255.0)*2.0-1.0, float(v[2]/255.0)*2.0-1.0 );
+					}
+				} else {
+					DVector<Vector3>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+
+						const float *v = (const float*)&r[j*total_elem_size+offsets[i]];
+						w[j]=Vector3(v[0],v[1],v[2]);
+					}
+				}
+
+				ret[i]=arr;
+
+			} break;
+
+			case VS::ARRAY_TANGENT: {
+				DVector<float> arr;
+				arr.resize(p_vertex_len*4);
+				if (p_format&ARRAY_COMPRESS_TANGENT) {
+					DVector<float>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+
+						const uint8_t *v = (const uint8_t*)&r[j*total_elem_size+offsets[i]];
+						for(int k=0;k<4;k++) {
+							w[j*4+k]=float(v[k]/255.0)*2.0-1.0;
+						}
+					}
+				} else {
+
+					DVector<float>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+						const float *v = (const float*)&r[j*total_elem_size+offsets[i]];
+						for(int k=0;k<4;k++) {
+							w[j*4+k]=v[k];
+						}
+					}
+
+				}
+
+				ret[i]=arr;
+
+			} break;
+			case VS::ARRAY_COLOR: {
+
+				DVector<Color> arr;
+				arr.resize(p_vertex_len);
+
+				if (p_format&ARRAY_COMPRESS_COLOR) {
+
+					DVector<Color>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+
+						const uint8_t *v = (const uint8_t*)&r[j*total_elem_size+offsets[i]];
+						w[j]=Color( float(v[0]/255.0)*2.0-1.0, float(v[1]/255.0)*2.0-1.0, float(v[2]/255.0)*2.0-1.0, float(v[3]/255.0)*2.0-1.0 );
+					}
+				} else {
+					DVector<Color>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+
+						const float *v = (const float*)&r[j*total_elem_size+offsets[i]];
+						w[j]=Color(v[0],v[1],v[2],v[3]);
+					}
+				}
+
+				ret[i]=arr;
+			} break;
+			case VS::ARRAY_TEX_UV: {
+
+				DVector<Vector2> arr;
+				arr.resize(p_vertex_len);
+
+				if (p_format&ARRAY_COMPRESS_TEX_UV) {
+
+					DVector<Vector2>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+
+						const uint16_t *v = (const uint16_t*)&r[j*total_elem_size+offsets[i]];
+						w[j]=Vector2(Math::halfptr_to_float(&v[0]),Math::halfptr_to_float(&v[1]));
+					}
+				} else {
+
+					DVector<Vector2>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+
+						const float *v = (const float*)&r[j*total_elem_size+offsets[i]];
+						w[j]=Vector2(v[0],v[1]);
+					}
+				}
+
+				ret[i]=arr;
+			} break;
+
+			case VS::ARRAY_TEX_UV2: {
+				DVector<Vector2> arr;
+				arr.resize(p_vertex_len);
+
+				if (p_format&ARRAY_COMPRESS_TEX_UV2) {
+
+					DVector<Vector2>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+
+						const uint16_t *v = (const uint16_t*)&r[j*total_elem_size+offsets[i]];
+						w[j]=Vector2(Math::halfptr_to_float(&v[0]),Math::halfptr_to_float(&v[1]));
+					}
+				} else {
+
+					DVector<Vector2>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+
+						const float *v = (const float*)&r[j*total_elem_size+offsets[i]];
+						w[j]=Vector2(v[0],v[1]);
+					}
+				}
+
+				ret[i]=arr;
+
+			} break;
+			case VS::ARRAY_WEIGHTS: {
+
+				DVector<float> arr;
+				arr.resize(p_vertex_len*4);
+				if (p_format&ARRAY_COMPRESS_WEIGHTS) {
+					DVector<float>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+
+						const uint16_t *v = (const uint16_t*)&r[j*total_elem_size+offsets[i]];
+						for(int k=0;k<4;k++) {
+							w[j*4+k]=float(v[k]/65535.0)*2.0-1.0;
+						}
+					}
+				} else {
+
+					DVector<float>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+						const float *v = (const float*)&r[j*total_elem_size+offsets[i]];
+						for(int k=0;k<4;k++) {
+							w[j*4+k]=v[k];
+						}
+					}
+
+				}
+
+				ret[i]=arr;
+
+			} break;
+			case VS::ARRAY_BONES: {
+
+				DVector<int> arr;
+				arr.resize(p_vertex_len*4);
+				if (p_format&ARRAY_FLAG_USE_16_BIT_BONES) {
+
+					DVector<int>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+
+						const uint16_t *v = (const uint16_t*)&r[j*total_elem_size+offsets[i]];
+						for(int k=0;k<4;k++) {
+							w[j*4+k]=v[k];
+						}
+					}
+				} else {
+
+					DVector<int>::Write w = arr.write();
+
+					for(int j=0;j<p_vertex_len;j++) {
+						const int *v = (const int*)&r[j*total_elem_size+offsets[i]];
+						for(int k=0;k<4;k++) {
+							w[j*4+k]=v[k];
+						}
+					}
+
+				}
+
+				ret[i]=arr;
+
+			} break;
+			case VS::ARRAY_INDEX: {
+				/* determine wether using 16 or 32 bits indices */
+
+				DVector<uint8_t>::Read ir = p_index_data.read();
+
+				DVector<int> arr;
+				arr.resize(p_index_len);
+				if (p_index_len<(1<<16)) {
+
+					DVector<int>::Write w = arr.write();
+
+					for(int j=0;j<p_index_len;j++) {
+
+						const uint16_t *v = (const uint16_t*)&ir[j*2];
+						w[j]=*v;
+					}
+				} else {
+
+					DVector<int>::Write w = arr.write();
+
+					for(int j=0;j<p_index_len;j++) {
+						const int *v = (const int*)&ir[j*4];
+						w[j]=*v;
+					}
+
+				}
+				ret[i]=arr;
+			} break;
+			default: {
+				ERR_FAIL_V( ret );
+			}
+		}
+	}
+
+	return ret;
+}
+
+Array VisualServer::mesh_surface_get_arrays(RID p_mesh,int p_surface) const {
+
+	DVector<uint8_t> vertex_data = mesh_surface_get_array(p_mesh,p_surface);
+	ERR_FAIL_COND_V(vertex_data.size()==0,Array());
+	int vertex_len = mesh_surface_get_array_len(p_mesh,p_surface);
+
+	DVector<uint8_t> index_data = mesh_surface_get_index_array(p_mesh,p_surface);
+	int index_len = mesh_surface_get_array_index_len(p_mesh,p_surface);
+
+	uint32_t format = mesh_surface_get_format(p_mesh,p_surface);
+
+
+	return _get_array_from_surface(format,vertex_data,vertex_len,index_data,index_len);
 
 }
 

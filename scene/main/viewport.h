@@ -86,6 +86,18 @@ public:
 		UPDATE_ALWAYS
 	};
 
+	enum ShadowAtlasQuadrantSubdiv {
+		SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED,
+		SHADOW_ATLAS_QUADRANT_SUBDIV_1,
+		SHADOW_ATLAS_QUADRANT_SUBDIV_4,
+		SHADOW_ATLAS_QUADRANT_SUBDIV_16,
+		SHADOW_ATLAS_QUADRANT_SUBDIV_64,
+		SHADOW_ATLAS_QUADRANT_SUBDIV_256,
+		SHADOW_ATLAS_QUADRANT_SUBDIV_1024,
+		SHADOW_ATLAS_QUADRANT_SUBDIV_MAX,
+
+	};
+
 private:
 
 friend class ViewportTexture;
@@ -119,8 +131,6 @@ friend class ViewportTexture;
 	RID contact_2d_debug;
 	RID contact_3d_debug_multimesh;
 	RID contact_3d_debug_instance;
-
-
 
 	bool size_override;
 	bool size_override_stretch;
@@ -174,6 +184,9 @@ friend class ViewportTexture;
 	UpdateMode update_mode;
 	RID texture_rid;
 	Ref<ViewportTexture> texture;
+
+	int shadow_atlas_size;
+	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 
 	struct GUI {
@@ -347,6 +360,11 @@ public:
 	UpdateMode get_update_mode() const;
 	Ref<ViewportTexture> get_texture() const;
 
+	void set_shadow_atlas_size(int p_size);
+	int get_shadow_atlas_size() const;
+
+	void set_shadow_atlas_quadrant_subdiv(int p_quadrant,ShadowAtlasQuadrantSubdiv p_subdiv);
+	ShadowAtlasQuadrantSubdiv get_shadow_atlas_quadrant_subdiv(int p_quadrant) const;
 
 	Vector2 get_camera_coords(const Vector2& p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
@@ -393,4 +411,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(Viewport::UpdateMode);
+VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
+
 #endif

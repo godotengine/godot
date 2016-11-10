@@ -45,22 +45,21 @@ class Light : public VisualInstance {
 public:
 
 	enum Param {
-		PARAM_ENERGY,
-		PARAM_SPECULAR,
-		PARAM_RANGE,
-		PARAM_ATTENUATION,
-		PARAM_SPOT_ANGLE,
-		PARAM_SPOT_ATTENUATION,
-		PARAM_SHADOW_MAX_DISTANCE,
-		PARAM_SHADOW_DARKNESS,
-		PARAM_SHADOW_SPLIT_1_OFFSET,
-		PARAM_SHADOW_SPLIT_2_OFFSET,
-		PARAM_SHADOW_SPLIT_3_OFFSET,
-		PARAM_SHADOW_SPLIT_4_OFFSET,
-		PARAM_SHADOW_NORMAL_BIAS,
-		PARAM_SHADOW_BIAS,
-		PARAM_SHADOW_BIAS_SPLIT_SCALE,
-		PARAM_MAX
+		PARAM_ENERGY = VS::LIGHT_PARAM_ENERGY,
+		PARAM_SPECULAR = VS::LIGHT_PARAM_SPECULAR,
+		PARAM_RANGE = VS::LIGHT_PARAM_RANGE,
+		PARAM_ATTENUATION = VS::LIGHT_PARAM_ATTENUATION,
+		PARAM_SPOT_ANGLE = VS::LIGHT_PARAM_SPOT_ANGLE,
+		PARAM_SPOT_ATTENUATION = VS::LIGHT_PARAM_SPOT_ATTENUATION,
+		PARAM_SHADOW_MAX_DISTANCE = VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE,
+		PARAM_SHADOW_DARKNESS = VS::LIGHT_PARAM_SHADOW_DARKNESS,
+		PARAM_SHADOW_SPLIT_1_OFFSET = VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET,
+		PARAM_SHADOW_SPLIT_2_OFFSET = VS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET,
+		PARAM_SHADOW_SPLIT_3_OFFSET = VS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET,
+		PARAM_SHADOW_NORMAL_BIAS = VS::LIGHT_PARAM_SHADOW_NORMAL_BIAS,
+		PARAM_SHADOW_BIAS = VS::LIGHT_PARAM_SHADOW_BIAS,
+		PARAM_SHADOW_BIAS_SPLIT_SCALE = VS::LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE,
+		PARAM_MAX = VS::LIGHT_PARAM_MAX
 	};
 
 private:
@@ -126,30 +125,68 @@ class DirectionalLight : public Light {
 
 public:
 
+	enum ShadowMode {
+		SHADOW_ORTHOGONAL,
+		SHADOW_PARALLEL_2_SPLITS,
+		SHADOW_PARALLEL_4_SPLITS
+	};
 
 private:
 
+	bool blend_splits;
+	ShadowMode shadow_mode;
 
 protected:
 	static void _bind_methods();
 public:
 
+	void set_shadow_mode(ShadowMode p_mode);
+	ShadowMode get_shadow_mode() const;
+
+	void set_blend_splits(bool p_enable);
+	bool is_blend_splits_enabled() const;
 
 	DirectionalLight();
 };
 
+VARIANT_ENUM_CAST(DirectionalLight::ShadowMode)
 
 class OmniLight : public Light {
 
 	OBJ_TYPE( OmniLight, Light );
+public:
+	// omni light
+	enum ShadowMode {
+		SHADOW_DUAL_PARABOLOID,
+		SHADOW_CUBE,
+	};
+
+	// omni light
+	enum ShadowDetail {
+		SHADOW_DETAIL_VERTICAL,
+		SHADOW_DETAIL_HORIZONTAL
+	};
+
+private:
+
+	ShadowMode shadow_mode;
+	ShadowDetail shadow_detail;
 protected:
 	static void _bind_methods();
 
 public:
 
+	void set_shadow_mode(ShadowMode p_mode);
+	ShadowMode get_shadow_mode() const;
 
-	OmniLight() : Light( VisualServer::LIGHT_OMNI ) { }
+	void set_shadow_detail(ShadowDetail p_detail);
+	ShadowDetail get_shadow_detail() const;
+
+	OmniLight();
 };
+
+VARIANT_ENUM_CAST(OmniLight::ShadowMode)
+VARIANT_ENUM_CAST(OmniLight::ShadowDetail)
 
 class SpotLight : public Light {
 
