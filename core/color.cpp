@@ -29,6 +29,8 @@
 #include "color.h"
 #include "math_funcs.h"
 #include "print_string.h"
+#include "map.h"
+#include "color_names.inc"
 
 uint32_t Color::to_ARGB32() const {
 
@@ -327,7 +329,25 @@ bool Color::html_is_valid(const String& p_color) {
 
 }
 
-
+Color Color::named(const String &p_name) {
+	if (_named_colors.empty()) _populate_named_colors(); // from color_names.inc
+	String name = p_name;
+	// Normalize name
+	name = name.replace(" ", "");
+	name = name.replace("-", "");
+	name = name.replace("_", "");
+	name = name.replace("'", "");
+	name = name.replace(".", "");
+	name = name.to_lower();
+	
+	const Map<String, Color>::Element* color = _named_colors.find(name);
+	if(color) {
+		return color->value();
+	} else {
+		ERR_EXPLAIN("Invalid Color Name: "+p_name);
+		ERR_FAIL_V(Color());
+	}
+}
 
 String _to_hex(float p_val) {
 
