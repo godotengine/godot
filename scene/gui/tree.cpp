@@ -1331,7 +1331,7 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 				int root_ofs = children_pos.x + (hide_folding?cache.hseparation:cache.item_margin);
 				int parent_ofs = p_pos.x + (hide_folding?cache.hseparation:cache.item_margin);
 				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h/2)-cache.offset+p_draw_ofs;
-				if (c->get_children() > 0)
+				if (c->get_children() != NULL)
 					root_pos -= Point2i(cache.arrow->get_width(),0);
 
 				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width()/2, p_pos.y + label_h/2 + cache.arrow->get_height()/2)-cache.offset+p_draw_ofs;
