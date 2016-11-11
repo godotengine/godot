@@ -204,7 +204,6 @@ public:
 		float extra_margin;
 		uint32_t object_ID;
 		bool visible;
-		uint32_t layer_mask;
 
 		float lod_begin;
 		float lod_end;
@@ -253,7 +252,6 @@ public:
 
 			object_ID=0;
 			visible=true;
-			layer_mask=1;
 
 			lod_begin=0;
 			lod_end=0;

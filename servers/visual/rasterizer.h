@@ -78,6 +78,7 @@ public:
 		Transform transform;
 
 		int depth_layer;
+		uint32_t layer_mask;
 
 		//RID sampled_light;
 
@@ -114,6 +115,7 @@ public:
 			billboard=false;
 			billboard_y=false;
 			depth_layer=0;
+			layer_mask=1;
 
 		}
 	};
@@ -295,16 +297,17 @@ public:
 	virtual void light_set_color(RID p_light,const Color& p_color)=0;
 	virtual void light_set_param(RID p_light,VS::LightParam p_param,float p_value)=0;
 	virtual void light_set_shadow(RID p_light,bool p_enabled)=0;
+	virtual void light_set_shadow_color(RID p_light,const Color& p_color)=0;
 	virtual void light_set_projector(RID p_light,RID p_texture)=0;
-	virtual void light_set_attenuation_texure(RID p_light,RID p_texture)=0;
 	virtual void light_set_negative(RID p_light,bool p_enable)=0;
 	virtual void light_set_cull_mask(RID p_light,uint32_t p_mask)=0;
-	virtual void light_set_shader(RID p_light,RID p_shader)=0;
 
 	virtual void light_omni_set_shadow_mode(RID p_light,VS::LightOmniShadowMode p_mode)=0;
 	virtual void light_omni_set_shadow_detail(RID p_light,VS::LightOmniShadowDetail p_detail)=0;
 
 	virtual void light_directional_set_shadow_mode(RID p_light,VS::LightDirectionalShadowMode p_mode)=0;
+	virtual void light_directional_set_blend_splits(RID p_light,bool p_enable)=0;
+	virtual bool light_directional_get_blend_splits(RID p_light) const=0;
 
 	virtual VS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light)=0;
 	virtual VS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light)=0;

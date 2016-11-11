@@ -757,16 +757,16 @@ public:
 	BIND2(light_set_color,RID,const Color&)
 	BIND3(light_set_param,RID ,LightParam ,float )
 	BIND2(light_set_shadow,RID ,bool )
+	BIND2(light_set_shadow_color,RID ,const Color& )
 	BIND2(light_set_projector,RID,RID )
-	BIND2(light_set_attenuation_texure,RID,RID )
 	BIND2(light_set_negative,RID,bool )
 	BIND2(light_set_cull_mask,RID ,uint32_t )
-	BIND2(light_set_shader,RID ,RID )
 
 	BIND2(light_omni_set_shadow_mode,RID,LightOmniShadowMode)
 	BIND2(light_omni_set_shadow_detail,RID,LightOmniShadowDetail)
 
 	BIND2(light_directional_set_shadow_mode,RID,LightDirectionalShadowMode)
+	BIND2(light_directional_set_blend_splits,RID,bool)
 
 	/* PROBE API */
 

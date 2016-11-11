@@ -68,23 +68,25 @@ layout(std140) uniform SceneData { //ubo:0
 
 uniform highp mat4 world_transform;
 
-#ifdef USE_FORWARD_LIGHTING
+#ifdef USE_LIGHT_DIRECTIONAL
 
-layout(std140) uniform LightData { //ubo:3
+layout(std140) uniform DirectionalLightData { //ubo:3
 
 	highp vec4 light_pos_inv_radius;
 	mediump vec4 light_direction_attenuation;
 	mediump vec4 light_color_energy;
-	mediump vec4 light_params; //cone attenuation, specular, shadow darkening,
+	mediump vec4 light_params; //cone attenuation, angle, specular, shadow enabled,
 	mediump vec4 light_clamp;
-	mediump vec4 shadow_split_offsets;
+	mediump vec4 shadow_color;
 	highp mat4 shadow_matrix1;
 	highp mat4 shadow_matrix2;
 	highp mat4 shadow_matrix3;
 	highp mat4 shadow_matrix4;
+	mediump vec4 shadow_split_offsets;
 };
 
 #endif
+
 
 /* Varyings */
 
@@ -343,28 +345,69 @@ layout(std140) uniform SceneData {
 
 };
 
+//directional light data
 
-#ifdef USE_FORWARD_LIGHTING
+#ifdef USE_LIGHT_DIRECTIONAL
 
-layout(std140) uniform LightData {
+layout(std140) uniform DirectionalLightData {
 
 	highp vec4 light_pos_inv_radius;
 	mediump vec4 light_direction_attenuation;
 	mediump vec4 light_color_energy;
-	mediump vec4 light_params; //cone attenuation, specular, shadow darkening, shadow enabled
+	mediump vec4 light_params; //cone attenuation, angle, specular, shadow enabled,
 	mediump vec4 light_clamp;
-	mediump vec4 shadow_split_offsets;
+	mediump vec4 shadow_color;
 	highp mat4 shadow_matrix1;
 	highp mat4 shadow_matrix2;
 	highp mat4 shadow_matrix3;
 	highp mat4 shadow_matrix4;
+	mediump vec4 shadow_split_offsets;
 };
-
-#endif
 
 
 uniform highp sampler2DShadow directional_shadow; //texunit:-4
+
+#endif
+
+//omni and spot
+
+struct LightData {
+
+	highp vec4 light_pos_inv_radius;
+	mediump vec4 light_direction_attenuation;
+	mediump vec4 light_color_energy;
+	mediump vec4 light_params; //cone attenuation, angle, specular, shadow enabled,
+	mediump vec4 light_clamp;
+	mediump vec4 shadow_color;
+	highp mat4 shadow_matrix;
+
+};
+
+
+layout(std140) uniform OmniLightData { //ubo:4
+
+	LightData omni_lights[MAX_LIGHT_DATA_STRUCTS];
+};
+
+layout(std140) uniform SpotLightData { //ubo:5
+
+	LightData spot_lights[MAX_LIGHT_DATA_STRUCTS];
+};
+
+
 uniform highp sampler2DShadow shadow_atlas; //texunit:-3
+
+
+#ifdef USE_FORWARD_LIGHTING
+
+uniform int omni_light_indices[MAX_FORWARD_LIGHTS];
+uniform int omni_light_count;
+
+uniform int spot_light_indices[MAX_FORWARD_LIGHTS];
+uniform int spot_light_count;
+
+#endif
+
 
 
 #ifdef USE_MULTIPLE_RENDER_TARGETS
@@ -415,18 +458,51 @@ float specularGGX(vec3 N, vec3 V, vec3 L, float roughness, float F0)
     return dotNL * D * F * vis;
 }
 
-void light_compute(vec3 normal, vec3 light_vec,vec3 eye_vec,vec3 diffuse_color, vec3 specular_color, float roughness, float attenuation, inout vec3 diffuse, inout vec3 specular) {
+void light_compute(vec3 normal, vec3 light_vec,vec3 eye_vec,vec3 light_color,vec3 diffuse_color, vec3 specular_color, float roughness, inout vec3 diffuse, inout vec3 specular) {
 
-	diffuse += max(0.0,dot(normal,light_vec)) * diffuse_color * attenuation;
+	diffuse += max(0.0,dot(normal,light_vec)) * light_color * diffuse_color;
 	//specular += specular_ggx( roughness, max(0.0,dot(normal,eye_vec)) ) * specular_color * attenuation;
 	float s = roughness > 0.0 ? specularGGX(normal,eye_vec,light_vec,roughness,1.0) : 0.0;
-	specular += s * specular_color * attenuation;
+	specular += s * light_color * specular_color;
 }
 
 
 float sample_shadow(highp sampler2DShadow shadow, vec2 shadow_pixel_size, vec2 pos, float depth, vec4 clamp_rect) {
 
+#ifdef SHADOW_MODE_PCF_13
+
+	float avg=textureProj(shadow,vec4(pos,depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(shadow_pixel_size.x,0.0),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(-shadow_pixel_size.x,0.0),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(0.0,shadow_pixel_size.y),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(0.0,-shadow_pixel_size.y),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(shadow_pixel_size.x,shadow_pixel_size.y),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(-shadow_pixel_size.x,shadow_pixel_size.y),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(shadow_pixel_size.x,-shadow_pixel_size.y),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(-shadow_pixel_size.x,-shadow_pixel_size.y),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(shadow_pixel_size.x*2.0,0.0),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(-shadow_pixel_size.x*2.0,0.0),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(0.0,shadow_pixel_size.y*2.0),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(0.0,-shadow_pixel_size.y*2.0),depth,1.0));
+	return avg*(1.0/13.0);
+
+#endif
+
+#ifdef SHADOW_MODE_PCF_5
+
+	float avg=textureProj(shadow,vec4(pos,depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(shadow_pixel_size.x,0.0),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(-shadow_pixel_size.x,0.0),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(0.0,shadow_pixel_size.y),depth,1.0));
+	avg+=textureProj(shadow,vec4(pos+vec2(0.0,-shadow_pixel_size.y),depth,1.0));
+	return avg*(1.0/5.0);
+#endif
+
+#if !defined(SHADOW_MODE_PCF_5) && !defined(SHADOW_MODE_PCF_13)
+
 	return textureProj(shadow,vec4(pos,depth,1.0));
+#endif
+
 }
 
 #ifdef RENDER_SHADOW_DUAL_PARABOLOID
@@ -434,6 +510,73 @@ float sample_shadow(highp sampler2DShadow shadow, vec2 shadow_pixel_size, vec2 p
 in highp float dp_clip;
 
 #endif
+
+void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 albedo, vec3 specular, float roughness, inout vec3 diffuse_light, inout vec3 specular_light) {
+
+	vec3 light_rel_vec = omni_lights[idx].light_pos_inv_radius.xyz-vertex;
+	float normalized_distance = length( light_rel_vec )*omni_lights[idx].light_pos_inv_radius.w;
+	vec3 light_attenuation = vec3(pow( max(1.0 - normalized_distance, 0.0), omni_lights[idx].light_direction_attenuation.w ));
+
+	if (omni_lights[idx].light_params.w>0.5) {
+		//there is a shadowmap
+
+		highp vec3 splane=(omni_lights[idx].shadow_matrix * vec4(vertex,1.0)).xyz;
+		float shadow_len=length(splane);
+		splane=normalize(splane);
+		vec4 clamp_rect=omni_lights[idx].light_clamp;
+
+		if (splane.z>=0.0) {
+
+			splane.z+=1.0;
+
+			clamp_rect.y+=clamp_rect.w;
+
+		} else {
+
+			splane.z=1.0 - splane.z;
+
+			//if (clamp_rect.z<clamp_rect.w) {
+			//	clamp_rect.x+=clamp_rect.z;
+			//} else {
+			//	clamp_rect.y+=clamp_rect.w;
+			//}
+
+		}
+
+		splane.xy/=splane.z;
+		splane.xy=splane.xy * 0.5 + 0.5;
+		splane.z = shadow_len * omni_lights[idx].light_pos_inv_radius.w;
+
+		splane.xy = clamp_rect.xy+splane.xy*clamp_rect.zw;
+
+		light_attenuation*=mix(omni_lights[idx].shadow_color.rgb,vec3(1.0),sample_shadow(shadow_atlas,shadow_atlas_pixel_size,splane.xy,splane.z,clamp_rect));
+	}
+
+	light_compute(normal,normalize(light_rel_vec),eye_vec,omni_lights[idx].light_color_energy.rgb*light_attenuation,albedo,specular,roughness,diffuse_light,specular_light);
+
+}
+
+void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 albedo, vec3 specular, float roughness, inout vec3 diffuse_light, inout vec3 specular_light) {
+
+	vec3 light_rel_vec = spot_lights[idx].light_pos_inv_radius.xyz-vertex;
+	float normalized_distance = length( light_rel_vec )*spot_lights[idx].light_pos_inv_radius.w;
+	vec3 light_attenuation = vec3(pow( max(1.0 - normalized_distance, 0.0), spot_lights[idx].light_direction_attenuation.w ));
+	vec3 spot_dir = spot_lights[idx].light_direction_attenuation.xyz;
+	float spot_cutoff=spot_lights[idx].light_params.y;
+	float scos = max(dot(-normalize(light_rel_vec), spot_dir),spot_cutoff);
+	float rim = (1.0 - scos) / (1.0 - spot_cutoff);
+	light_attenuation *= 1.0 - pow( rim, spot_lights[idx].light_params.x);
+
+	if (spot_lights[idx].light_params.w>0.5) {
+		//there is a shadowmap
+		highp vec4 splane=(spot_lights[idx].shadow_matrix * vec4(vertex,1.0));
+		splane.xyz/=splane.w;
+		light_attenuation*=mix(spot_lights[idx].shadow_color.rgb,vec3(1.0),sample_shadow(shadow_atlas,shadow_atlas_pixel_size,splane.xy,splane.z,spot_lights[idx].light_clamp));
+	}
+
+	light_compute(normal,normalize(light_rel_vec),eye_vec,spot_lights[idx].light_color_energy.rgb*light_attenuation,albedo,specular,roughness,diffuse_light,specular_light);
+
+}
 
 void main() {
 
@@ -561,9 +704,9 @@ FRAGMENT_SHADER_CODE
 #endif
 
 
-#ifdef USE_FORWARD_DIRECTIONAL
+#ifdef USE_LIGHT_DIRECTIONAL
 
-	float light_attenuation=1.0;
+	vec3 light_attenuation=vec3(1.0);
 
 #ifdef LIGHT_DIRECTIONAL_SHADOW
 
@@ -589,7 +732,6 @@ FRAGMENT_SHADER_CODE
 
 			highp vec4 splane=(shadow_matrix1 * vec4(vertex,1.0));
 			pssm_coord=splane.xyz/splane.w;
-			ambient_light=vec3(1.0,0.4,0.4);
 
 
 #if defined(LIGHT_USE_PSSM_BLEND)
@@ -603,7 +745,6 @@ FRAGMENT_SHADER_CODE
 
 			highp vec4 splane=(shadow_matrix2 * vec4(vertex,1.0));
 			pssm_coord=splane.xyz/splane.w;
-			ambient_light=vec3(0.4,1.0,0.4);
 
 #if defined(LIGHT_USE_PSSM_BLEND)
 			splane=(shadow_matrix3 * vec4(vertex,1.0));
@@ -619,7 +760,6 @@ FRAGMENT_SHADER_CODE
 
 			highp vec4 splane=(shadow_matrix3 * vec4(vertex,1.0));
 			pssm_coord=splane.xyz/splane.w;
-			ambient_light=vec3(0.4,0.4,1.0);
 
 #if defined(LIGHT_USE_PSSM_BLEND)
 			splane=(shadow_matrix4 * vec4(vertex,1.0));
@@ -678,12 +818,12 @@ FRAGMENT_SHADER_CODE
 
 
 	//one one sample
-	light_attenuation=sample_shadow(directional_shadow,directional_shadow_pixel_size,pssm_coord.xy,pssm_coord.z,light_clamp);
+	light_attenuation=mix(shadow_color.rgb,vec3(1.0),sample_shadow(directional_shadow,directional_shadow_pixel_size,pssm_coord.xy,pssm_coord.z,light_clamp));
 
 
 #if defined(LIGHT_USE_PSSM_BLEND)
 	if (use_blend) {
-		float light_attenuation2=sample_shadow(directional_shadow,directional_shadow_pixel_size,pssm_coord2.xy,pssm_coord2.z,light_clamp);
+		vec3 light_attenuation2=mix(shadow_color.rgb,vec3(1.0),sample_shadow(directional_shadow,directional_shadow_pixel_size,pssm_coord2.xy,pssm_coord2.z,light_clamp));
 		light_attenuation=mix(light_attenuation,light_attenuation2,pssm_blend);
 	}
 #endif
@@ -692,84 +832,24 @@ FRAGMENT_SHADER_CODE
 
 #endif //LIGHT_DIRECTIONAL_SHADOW
 
-	light_compute(normal,-light_direction_attenuation.xyz,eye_vec,albedo,specular,roughness,light_attenuation,diffuse_light,specular_light);
+	light_compute(normal,-light_direction_attenuation.xyz,eye_vec,light_color_energy.rgb*light_attenuation,albedo,specular,roughness,diffuse_light,specular_light);
 
 
-#endif //USE_FORWARD_DIRECTIONAL
+#endif //#USE_LIGHT_DIRECTIONAL
 
 
-#ifdef USE_FORWARD_OMNI
+#ifdef USE_FORWARD_LIGHTING
 
-	vec3 light_rel_vec = light_pos_inv_radius.xyz-vertex;
-	float normalized_distance = length( light_rel_vec )*light_pos_inv_radius.w;
-	float light_attenuation = pow( max(1.0 - normalized_distance, 0.0), light_direction_attenuation.w );
-
-	if (light_params.w>0.5) {
-		//there is a shadowmap
-
-		highp vec3 splane=(shadow_matrix1 * vec4(vertex,1.0)).xyz;
-		float shadow_len=length(splane);
-		splane=normalize(splane);
-		vec4 clamp_rect=light_clamp;
-
-		if (splane.z>=0.0) {
-
-			splane.z+=1.0;
-
-			clamp_rect.y+=clamp_rect.w;
-
-		} else {
-
-			splane.z=1.0 - splane.z;
-
-			//if (clamp_rect.z<clamp_rect.w) {
-			//	clamp_rect.x+=clamp_rect.z;
-			//} else {
-			//	clamp_rect.y+=clamp_rect.w;
-			//}
-
-		}
-
-		splane.xy/=splane.z;
-		splane.xy=splane.xy * 0.5 + 0.5;
-		splane.z = shadow_len * light_pos_inv_radius.w;
-
-		splane.xy = clamp_rect.xy+splane.xy*clamp_rect.zw;
-
-		light_attenuation*=sample_shadow(shadow_atlas,shadow_atlas_pixel_size,splane.xy,splane.z,clamp_rect);
+	for(int i=0;i<omni_light_count;i++) {
+		light_process_omni(omni_light_indices[i],vertex,eye_vec,normal,albedo,specular,roughness,diffuse_light,specular_light);
 	}
 
-	light_compute(normal,normalize(light_rel_vec),eye_vec,albedo,specular,roughness,light_attenuation,diffuse_light,specular_light);
-
-
-#endif //USE_FORWARD_OMNI
-
-#ifdef USE_FORWARD_SPOT
-
-	vec3 light_rel_vec = light_pos_inv_radius.xyz-vertex;
-	float normalized_distance = length( light_rel_vec )*light_pos_inv_radius.w;
-	float light_attenuation = pow( max(1.0 - normalized_distance, 0.0), light_direction_attenuation.w );
-	vec3 spot_dir = light_direction_attenuation.xyz;
-	float spot_cutoff=light_params.y;
-	float scos = max(dot(-normalize(light_rel_vec), spot_dir),spot_cutoff);
-	float rim = (1.0 - scos) / (1.0 - spot_cutoff);
-	light_attenuation *= 1.0 - pow( rim, light_params.x);
-
-	if (light_params.w>0.5) {
-		//there is a shadowmap
-
-		highp vec4 splane=(shadow_matrix1 * vec4(vertex,1.0));
-		splane.xyz/=splane.w;
-	//	splane.xy=splane.xy*0.5+0.5;
-
-		//splane.xy=light_clamp.xy+splane.xy*light_clamp.zw;
-		light_attenuation*=sample_shadow(shadow_atlas,shadow_atlas_pixel_size,splane.xy,splane.z,light_clamp);
-
+	for(int i=0;i<spot_light_count;i++) {
+		light_process_spot(spot_light_indices[i],vertex,eye_vec,normal,albedo,specular,roughness,diffuse_light,specular_light);
 	}
 
-	light_compute(normal,normalize(light_rel_vec),eye_vec,albedo,specular,roughness,light_attenuation,diffuse_light,specular_light);
+#endif
 
-#endif //USE_FORWARD_SPOT
 
 
 

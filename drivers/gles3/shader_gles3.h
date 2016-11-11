@@ -175,6 +175,8 @@ private:
 	CharString vertex_code2;
 	CharString vertex_code3;
 
+	Vector<CharString> custom_defines;
+
 	int base_material_tex_index;
 
 	Version * get_current_version();
@@ -356,6 +358,10 @@ public:
 	void finish();
 
 	void set_base_material_tex_index(int p_idx);
+
+	void add_custom_define(const String& p_define) {
+		custom_defines.push_back(p_define.utf8());
+	}
 
 	virtual ~ShaderGLES3();
 

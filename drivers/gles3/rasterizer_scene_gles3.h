@@ -8,6 +8,15 @@
 class RasterizerSceneGLES3 : public RasterizerScene {
 public:
 
+	enum ShadowFilterMode {
+		SHADOW_FILTER_NEAREST,
+		SHADOW_FILTER_PCF5,
+		SHADOW_FILTER_PCF13,
+	};
+
+
+	ShadowFilterMode shadow_filter_mode;
+
 	uint64_t shadow_atlas_realloc_tolerance_msec;
 
 
@@ -25,6 +34,7 @@ public:
 
 
 	struct State {
+
 
 
 		bool texscreen_copied;
@@ -72,6 +82,22 @@ public:
 
 		GLuint skybox_verts;
 		GLuint skybox_array;
+
+		GLuint directional_ubo;
+
+		GLuint spot_array_ubo;
+		GLuint omni_array_ubo;
+
+		uint32_t ubo_light_size;
+		uint8_t *spot_array_tmp;
+		uint8_t *omni_array_tmp;
+
+		int max_ubo_lights;
+		int max_forward_lights_per_object;
+
+		int spot_light_count;
+		int omni_light_count;
+		int directional_light_count;
 
 		bool cull_front;
 
@@ -204,6 +230,22 @@ public:
 
 	/* LIGHT INSTANCE */
 
+	struct LightDataUBO {
+
+		float light_pos_inv_radius[4];
+		float light_direction_attenuation[4];
+		float light_color_energy[4];
+		float light_params[4]; //spot attenuation, spot angle, specular, shadow enabled
+		float light_clamp[4];
+		float light_shadow_color[4];
+		float shadow_matrix1[16]; //up to here for spot and omni, rest is for directional
+		float shadow_matrix2[16];
+		float shadow_matrix3[16];
+		float shadow_matrix4[16];
+		float shadow_split_offsets[4];
+
+	};
+
 	struct LightInstance : public RID_Data {
 
 		struct ShadowTransform {
@@ -214,20 +256,6 @@ public:
 			float split;
 		};
 
-		struct LightDataUBO {
-
-			float light_pos_inv_radius[4];
-			float light_direction_attenuation[4];
-			float light_color_energy[4];
-			float light_params[4]; //cone attenuation, specular, shadow darkening,
-			float light_clamp[4]; //cone attenuation, specular, shadow darkening,
-			float shadow_split_offsets[4];
-			float shadow_matrix1[16];
-			float shadow_matrix2[16];
-			float shadow_matrix3[16];
-			float shadow_matrix4[16];
-
-		} light_ubo_data;
 
 
 		ShadowTransform shadow_transform[4];
@@ -240,8 +268,6 @@ public:
 		Vector3 light_vector;
 		Vector3 spot_vector;
 		float linear_att;
-
-		GLuint light_ubo;
 
 		uint64_t shadow_pass;
 		uint64_t last_scene_pass;
@@ -280,14 +306,16 @@ public:
 			SORT_FLAG_INSTANCING=2,
 			MAX_DIRECTIONAL_LIGHTS=16,
 			MAX_LIGHTS=4096,
-			SORT_KEY_DEPTH_LAYER_SHIFT=58,
-			SORT_KEY_LIGHT_TYPE_SHIFT=54, //type is most important
-			SORT_KEY_LIGHT_INDEX_SHIFT=38, //type is most important
-			SORT_KEY_LIGHT_INDEX_UNSHADED=uint64_t(0xF) << SORT_KEY_LIGHT_TYPE_SHIFT, //type is most important
-			SORT_KEY_LIGHT_MASK=(uint64_t(0xFFFFF) << SORT_KEY_LIGHT_INDEX_SHIFT), //type is most important
-			SORT_KEY_MATERIAL_INDEX_SHIFT=22,
-			SORT_KEY_GEOMETRY_INDEX_SHIFT=6,
-			SORT_KEY_GEOMETRY_TYPE_SHIFT=2,
+
+
+			SORT_KEY_DEPTH_LAYER_SHIFT=60,
+			SORT_KEY_UNSHADED_FLAG=uint64_t(1)<<59,
+			SORT_KEY_NO_DIRECTIONAL_FLAG=uint64_t(1)<<58,
+			SORT_KEY_SHADING_SHIFT=58,
+			SORT_KEY_SHADING_MASK=3,
+			SORT_KEY_MATERIAL_INDEX_SHIFT=40,
+			SORT_KEY_GEOMETRY_INDEX_SHIFT=20,
+			SORT_KEY_GEOMETRY_TYPE_SHIFT=15,
 			SORT_KEY_SKELETON_FLAG=2,
 			SORT_KEY_MIRROR_FLAG=1
 
@@ -302,8 +330,6 @@ public:
 			RasterizerStorageGLES3::Material *material;
 			RasterizerStorageGLES3::GeometryOwner *owner;
 			uint64_t sort_key;
-			bool *additive_ptr;
-			bool additive;
 
 		};
 
@@ -313,6 +339,7 @@ public:
 
 		int element_count;
 		int alpha_element_count;
+
 
 		void clear() {
 
@@ -399,12 +426,10 @@ public:
 	};
 
 
+	LightInstance *directional_light;
+	LightInstance *directional_lights[RenderList::MAX_DIRECTIONAL_LIGHTS];
 
-	LightInstance *directional_light_instances[RenderList::MAX_DIRECTIONAL_LIGHTS];
-	int directional_light_instance_count;
 
-	LightInstance *light_instances[RenderList::MAX_LIGHTS];
-	int light_instance_count;
 
 	RenderList render_list;
 
@@ -414,9 +439,9 @@ public:
 	_FORCE_INLINE_ void _setup_transform(InstanceBase *p_instance,const Transform& p_view_transform,const CameraMatrix& p_projection);
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *e);
 	_FORCE_INLINE_ void _render_geometry(RenderList::Element *e);
-	_FORCE_INLINE_ void _setup_light(LightInstance *p_light);
+	_FORCE_INLINE_ void _setup_light(RenderList::Element *e);
 
-	void _render_list(RenderList::Element **p_elements, int p_element_count, const Transform& p_view_transform, const CameraMatrix& p_projection, RasterizerStorageGLES3::Texture *p_base_env, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow);
+	void _render_list(RenderList::Element **p_elements, int p_element_count, const Transform& p_view_transform, const CameraMatrix& p_projection, RasterizerStorageGLES3::Texture *p_base_env, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow, bool p_directional_add);
 
 
 	_FORCE_INLINE_ void _add_geometry(  RasterizerStorageGLES3::Geometry* p_geometry,  InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner,int p_material,bool p_shadow);
@@ -424,6 +449,7 @@ public:
 	void _draw_skybox(RID p_skybox, const CameraMatrix& p_projection, const Transform& p_transform, bool p_vflip, float p_scale);
 
 	void _setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform& p_cam_transform);
+	void _setup_directional_light(int p_index, const Transform &p_camera_inverse_transform);
 	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, const CameraMatrix& p_camera_projection, RID p_shadow_atlas);
 	void _copy_screen();
 	void _copy_to_front_buffer(Environment *env);
@@ -439,6 +465,7 @@ public:
 
 	virtual void set_scene_pass(uint64_t p_pass);
 
+	void iteration();
 	void initialize();
 	void finalize();
 	RasterizerSceneGLES3();

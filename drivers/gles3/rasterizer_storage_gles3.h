@@ -634,12 +634,15 @@ public:
 		VS::LightType type;
 		float param[VS::LIGHT_PARAM_MAX];
 		Color color;
+		Color shadow_color;
+		RID projector;
 		bool shadow;
 		bool negative;
 		uint32_t cull_mask;
 		VS::LightOmniShadowMode omni_shadow_mode;
 		VS::LightOmniShadowDetail omni_shadow_detail;
 		VS::LightDirectionalShadowMode directional_shadow_mode;
+		bool directional_blend_splits;
 		uint64_t version;
 	};
 
@@ -650,17 +653,19 @@ public:
 	virtual void light_set_color(RID p_light,const Color& p_color);
 	virtual void light_set_param(RID p_light,VS::LightParam p_param,float p_value);
 	virtual void light_set_shadow(RID p_light,bool p_enabled);
+	virtual void light_set_shadow_color(RID p_light,const Color& p_color);
 	virtual void light_set_projector(RID p_light,RID p_texture);
-	virtual void light_set_attenuation_texure(RID p_light,RID p_texture);
 	virtual void light_set_negative(RID p_light,bool p_enable);
 	virtual void light_set_cull_mask(RID p_light,uint32_t p_mask);
-	virtual void light_set_shader(RID p_light,RID p_shader);
+
 
 	virtual void light_omni_set_shadow_mode(RID p_light,VS::LightOmniShadowMode p_mode);
-
 	virtual void light_omni_set_shadow_detail(RID p_light,VS::LightOmniShadowDetail p_detail);
 
 	virtual void light_directional_set_shadow_mode(RID p_light,VS::LightDirectionalShadowMode p_mode);
+	virtual void light_directional_set_blend_splits(RID p_light,bool p_enable);
+	virtual bool light_directional_get_blend_splits(RID p_light) const;
+
 	virtual VS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light);
 	virtual VS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light);
 

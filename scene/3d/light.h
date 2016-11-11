@@ -52,7 +52,6 @@ public:
 		PARAM_SPOT_ANGLE = VS::LIGHT_PARAM_SPOT_ANGLE,
 		PARAM_SPOT_ATTENUATION = VS::LIGHT_PARAM_SPOT_ATTENUATION,
 		PARAM_SHADOW_MAX_DISTANCE = VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE,
-		PARAM_SHADOW_DARKNESS = VS::LIGHT_PARAM_SHADOW_DARKNESS,
 		PARAM_SHADOW_SPLIT_1_OFFSET = VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET,
 		PARAM_SHADOW_SPLIT_2_OFFSET = VS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET,
 		PARAM_SHADOW_SPLIT_3_OFFSET = VS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET,
@@ -66,6 +65,7 @@ private:
 
 	Color color;
 	float param[PARAM_MAX];
+	Color shadow_color;
 	bool shadow;
 	bool negative;
 	uint32_t cull_mask;
@@ -106,6 +106,9 @@ public:
 
 	void set_color(const Color& p_color);
 	Color get_color() const;
+
+	void set_shadow_color(const Color& p_shadow_color);
+	Color get_shadow_color() const;
 
 
 	virtual AABB get_aabb() const;

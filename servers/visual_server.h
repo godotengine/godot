@@ -357,7 +357,6 @@ public:
 		LIGHT_PARAM_SPOT_ANGLE,
 		LIGHT_PARAM_SPOT_ATTENUATION,
 		LIGHT_PARAM_SHADOW_MAX_DISTANCE,
-		LIGHT_PARAM_SHADOW_DARKNESS,
 		LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET,
 		LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET,
 		LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET,
@@ -372,11 +371,10 @@ public:
 	virtual void light_set_color(RID p_light,const Color& p_color)=0;
 	virtual void light_set_param(RID p_light,LightParam p_param,float p_value)=0;
 	virtual void light_set_shadow(RID p_light,bool p_enabled)=0;
+	virtual void light_set_shadow_color(RID p_light,const Color& p_color)=0;
 	virtual void light_set_projector(RID p_light,RID p_texture)=0;
-	virtual void light_set_attenuation_texure(RID p_light,RID p_texture)=0;
 	virtual void light_set_negative(RID p_light,bool p_enable)=0;
 	virtual void light_set_cull_mask(RID p_light,uint32_t p_mask)=0;
-	virtual void light_set_shader(RID p_light,RID p_shader)=0;
 
 	// omni light
 	enum LightOmniShadowMode {
@@ -402,6 +400,7 @@ public:
 	};
 
 	virtual void light_directional_set_shadow_mode(RID p_light,LightDirectionalShadowMode p_mode)=0;
+	virtual void light_directional_set_blend_splits(RID p_light,bool p_enable)=0;
 
 	/* PROBE API */
 

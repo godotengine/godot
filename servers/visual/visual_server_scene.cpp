@@ -1165,7 +1165,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance,Camer
 
 			float texture_size=VSG::scene_render->get_directional_light_shadow_size(light->instance);
 
-			bool overlap = false;//rasterizer->light_instance_get_pssm_shadow_overlap(p_light->light_info->instance);
+			bool overlap = VSG::storage->light_directional_get_blend_splits(p_instance->base);
 
 			for (int i=0;i<splits;i++) {
 

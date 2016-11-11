@@ -228,7 +228,14 @@ ShaderGLES3::Version* ShaderGLES3::get_current_version() {
 #endif
 
 
+
 	int define_line_ofs=1;
+
+	for(int i=0;i<custom_defines.size();i++) {
+
+		strings.push_back(custom_defines[i].get_data());
+		define_line_ofs++;
+	}
 
 	for(int j=0;j<conditional_count;j++) {
 		
@@ -242,6 +249,8 @@ ShaderGLES3::Version* ShaderGLES3::get_current_version() {
 		}
 
 	}
+
+
 	
 	//keep them around during the function
 	CharString code_string;

@@ -3169,7 +3169,6 @@ RID RasterizerStorageGLES3::light_create(VS::LightType p_type){
 	light->param[VS::LIGHT_PARAM_RANGE]=1.0;
 	light->param[VS::LIGHT_PARAM_SPOT_ANGLE]=45;
 	light->param[VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE]=0;
-	light->param[VS::LIGHT_PARAM_SHADOW_DARKNESS]=0;
 	light->param[VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET]=0.1;
 	light->param[VS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET]=0.3;
 	light->param[VS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET]=0.6;
@@ -3184,6 +3183,7 @@ RID RasterizerStorageGLES3::light_create(VS::LightType p_type){
 	light->directional_shadow_mode=VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
 	light->omni_shadow_mode=VS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
 	light->omni_shadow_detail=VS::LIGHT_OMNI_SHADOW_DETAIL_VERTICAL;
+	light->directional_blend_splits=false;
 
 	light->version=0;
 
@@ -3207,7 +3207,6 @@ void RasterizerStorageGLES3::light_set_param(RID p_light,VS::LightParam p_param,
 		case VS::LIGHT_PARAM_RANGE:
 		case VS::LIGHT_PARAM_SPOT_ANGLE:
 		case VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE:
-		case VS::LIGHT_PARAM_SHADOW_DARKNESS:
 		case VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET:
 		case VS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET:
 		case VS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET:
@@ -3230,20 +3229,22 @@ void RasterizerStorageGLES3::light_set_shadow(RID p_light,bool p_enabled){
 
 	light->version++;
 	light->instance_change_notify();
+}
 
+void RasterizerStorageGLES3::light_set_shadow_color(RID p_light,const Color& p_color) {
+
+	Light * light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+	light->shadow_color=p_color;
 
 }
+
 void RasterizerStorageGLES3::light_set_projector(RID p_light,RID p_texture){
 
 	Light * light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
-
-}
-void RasterizerStorageGLES3::light_set_attenuation_texure(RID p_light,RID p_texture){
-
-	Light * light = light_owner.getornull(p_light);
-	ERR_FAIL_COND(!light);
+	light->projector=p_texture;
 }
 
 void RasterizerStorageGLES3::light_set_negative(RID p_light,bool p_enable){
@@ -3262,12 +3263,6 @@ void RasterizerStorageGLES3::light_set_cull_mask(RID p_light,uint32_t p_mask){
 
 	light->version++;
 	light->instance_change_notify();
-
-}
-void RasterizerStorageGLES3::light_set_shader(RID p_light,RID p_shader){
-
-	Light * light = light_owner.getornull(p_light);
-	ERR_FAIL_COND(!light);
 
 }
 
@@ -3313,6 +3308,26 @@ void RasterizerStorageGLES3::light_directional_set_shadow_mode(RID p_light,VS::L
 	light->version++;
 	light->instance_change_notify();
 
+}
+
+void RasterizerStorageGLES3::light_directional_set_blend_splits(RID p_light,bool p_enable) {
+
+	Light * light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->directional_blend_splits=p_enable;
+	light->version++;
+	light->instance_change_notify();
+
+}
+
+
+bool RasterizerStorageGLES3::light_directional_get_blend_splits(RID p_light) const {
+
+	const Light * light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light,false);
+
+	return light->directional_blend_splits;
 }
 
 VS::LightDirectionalShadowMode RasterizerStorageGLES3::light_directional_get_shadow_mode(RID p_light) {
