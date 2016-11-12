@@ -72,6 +72,11 @@ uint32_t VisualServerRaster::texture_get_flags(RID p_texture) const {
 
 	return rasterizer->texture_get_flags(p_texture);
 }
+
+uint32_t VisualServerRaster::texture_get_texid(RID p_texture) const {
+	return rasterizer->texture_get_texid(p_texture);
+};
+
 Image::Format VisualServerRaster::texture_get_format(RID p_texture) const {
 
 	return rasterizer->texture_get_format(p_texture);

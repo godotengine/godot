@@ -1241,10 +1241,11 @@ int InputDefault::add_tracker(TrackerType p_type, String p_name, bool p_tracks_o
 bool InputDefault::remove_tracker(int p_idx) {
 	if (trackers.find(p_idx) != NULL) {
 		int was_tracker_type = get_tracker_type(p_idx);
+		String was_tracker_name = get_tracker_name(p_idx);
 		bool success = trackers.erase(p_idx);
 
 		// and again, let GD know a tracker was remove, again especially handy when controllers are turned off so we can react to that.
-		emit_signal("tracker_removed", p_idx, was_tracker_type);
+		emit_signal("tracker_removed", p_idx, was_tracker_type, was_tracker_name);
 
 		return success;
 	} else {

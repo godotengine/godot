@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_openvr = env_modules.Clone()
+
+# Link in openVR
+
+# need to select this for the right platform...
+# also this only works if you rename the openvr_api file to openvr_api.lib.windows.tools.64.lib, have to figure this out
+env.Append(LIBPATH=['#thirdparty/openvr/lib/win64/'])
+env.Append(LIBS=['openvr_api.lib'])
+
+# have to figure out how to copy openvr_api.dll next to godot :(
+
+# add location of openvr headers
+openvr_headers = "#thirdparty/openvr/headers/"
+env_openvr.Append(CPPPATH=[openvr_headers])
+
+# Godot source files
+env_openvr.add_source_files(env.modules_sources, "*.cpp")

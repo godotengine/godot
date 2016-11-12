@@ -89,6 +89,7 @@ public:
 	FUNC2(texture_set_flags, RID, uint32_t);
 	FUNC1RC(Image::Format, texture_get_format, RID);
 	FUNC1RC(uint32_t, texture_get_flags, RID);
+	FUNC1RC(uint32_t, texture_get_texid, RID);
 	FUNC1RC(uint32_t, texture_get_width, RID);
 	FUNC1RC(uint32_t, texture_get_height, RID);
 	FUNC3(texture_set_size_override, RID, int, int);

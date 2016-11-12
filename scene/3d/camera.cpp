@@ -756,20 +756,21 @@ uint32_t Camera::get_visible_layers() const {
 }
 
 Vector<Plane> Camera::get_frustum() const {
-
-	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
-
-	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-	CameraMatrix cm;
-	if (mode == PROJECTION_PERSPECTIVE) {
-		cm.set_perspective(fov, viewport_size.get_aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	} else if (mode == PROJECTION_FRUSTUM) {
-		cm = frustum.make_camera_matrix(viewport_size.get_aspect(), keep_aspect == KEEP_WIDTH, near, far);
+	if (is_inside_world()) {
+		Size2 viewport_size = get_viewport()->get_visible_rect().size;
+		CameraMatrix cm;
+		if (mode == PROJECTION_PERSPECTIVE) {
+			cm.set_perspective(fov, viewport_size.get_aspect(), near, far, keep_aspect == KEEP_WIDTH);
+		} if (mode == PROJECTION_FRUSTUM) {
+			cm = frustum.make_camera_matrix(viewport_size.get_aspect(), keep_aspect == KEEP_WIDTH, near, far);
+		} else {
+			cm.set_orthogonal(size, viewport_size.get_aspect(), near, far, keep_aspect==KEEP_WIDTH);
+		}
+	 
+		return cm.get_projection_planes(get_camera_transform());
 	} else {
-		cm.set_orthogonal(size, viewport_size.get_aspect(), near, far, keep_aspect == KEEP_WIDTH);
+		return Vector<Plane>();
 	}
- 
-	return cm.get_projection_planes(get_camera_transform());
 }
 
 void Camera::set_v_offset(float p_offset) {

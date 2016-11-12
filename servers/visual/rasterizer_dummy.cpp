@@ -73,6 +73,12 @@ void RasterizerDummy::texture_set_flags(RID p_texture, uint32_t p_flags) {
 	uint32_t cube = texture->flags & VS::TEXTURE_FLAG_CUBEMAP;
 	texture->flags = p_flags | cube; // can't remove a cube from being a cube
 }
+
+uint32_t RasterizerDummy::texture_get_texid(RID p_texture) const {
+	/* not supported */
+	return 0;
+};
+
 uint32_t RasterizerDummy::texture_get_flags(RID p_texture) const {
 
 	Texture *texture = texture_owner.get(p_texture);

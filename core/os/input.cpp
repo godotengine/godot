@@ -104,7 +104,7 @@ void Input::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "connected")));
 	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::INT, "type")));
-	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::INT, "type")));
+	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::STRING, "name")));
 }
 
 void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
