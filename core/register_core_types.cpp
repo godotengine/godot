@@ -34,6 +34,7 @@
 #include "os/main_loop.h"
 #include "io/packet_peer.h"
 #include "math/a_star.h"
+#include "math/triangle_mesh.h"
 #include "globals.h"
 #include "object_type_db.h"
 #include "geometry.h"
@@ -134,6 +135,7 @@ void register_core_types() {
 	ObjectTypeDB::register_type<PHashTranslation>();
 	ObjectTypeDB::register_type<UndoRedo>();
 	ObjectTypeDB::register_type<HTTPClient>();
+	ObjectTypeDB::register_type<TriangleMesh>();
 
 	ObjectTypeDB::register_virtual_type<ResourceInteractiveLoader>();
 
