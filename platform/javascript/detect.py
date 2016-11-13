@@ -86,7 +86,6 @@ def configure(env):
 
     if env['wasm'] == 'yes':
         env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
-        env.Append(LINKFLAGS=['-s', '\'BINARYEN_METHOD="native-wasm"\''])
         # Maximum memory size is baked into the WebAssembly binary during
         # compilation, so we need to enable memory growth to allow setting
         # TOTAL_MEMORY at runtime. The value set at runtime must be higher than
