@@ -918,6 +918,7 @@ void LineEdit::set_text(String p_text) {
 	update();
 	cursor_pos=0;
 	window_pos=0;
+	_text_changed();
 }
 
 void LineEdit::clear() {
