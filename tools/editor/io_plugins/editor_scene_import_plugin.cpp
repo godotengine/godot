@@ -894,9 +894,9 @@ void EditorSceneImportDialog::_browse() {
 
 void EditorSceneImportDialog::_browse_target() {
 
+	save_select->popup_centered_ratio();
 	if (save_path->get_text()!="")
 		save_select->set_current_path(save_path->get_text());
-	save_select->popup_centered_ratio();
 
 }
 
