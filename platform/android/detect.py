@@ -130,18 +130,17 @@ def configure(env):
         else:
             env.extra_suffix = ".armv7" + env.extra_suffix
 
+    mt_link = True
     if (sys.platform.startswith("linux")):
-        if (platform.machine().endswith('64')):
-            host_subpath = "linux-x86_64"
-        else:
-            host_subpath = "linux-x86"
+        host_subpath = "linux-x86_64"
     elif (sys.platform.startswith("darwin")):
         host_subpath = "darwin-x86_64"
     elif (sys.platform.startswith('win')):
         if (platform.machine().endswith('64')):
             host_subpath = "windows-x86_64"
         else:
-            host_subpath = "windows-x86"
+            mt_link = False
+            host_subpath = "windows"
 
     compiler_path = env["ANDROID_NDK_ROOT"] + \
         "/toolchains/llvm/prebuilt/" + host_subpath + "/bin"
@@ -205,14 +204,15 @@ def configure(env):
         env['SHLIBSUFFIX'] = '.so'
 
     env['LINKFLAGS'] = ['-shared', '--sysroot=' +
-                        sysroot, '-Wl,--warn-shared-textrel',
-                        '-Wl,--threads']
+                        sysroot, '-Wl,--warn-shared-textrel']
     env.Append(LINKFLAGS=string.split(
         '-Wl,--fix-cortex-a8'))
     env.Append(LINKFLAGS=string.split(
         '-Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now'))
     env.Append(LINKFLAGS=string.split(
         '-Wl,-soname,libgodot_android.so -Wl,--gc-sections'))
+    if mt_link:
+        env.Append(LINKFLAGS=['-Wl,--threads'])
     env.Append(LINKFLAGS=target_opts)
     env.Append(LINKFLAGS=common_opts)
 
