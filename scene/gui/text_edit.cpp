@@ -3327,7 +3327,7 @@ void TextEdit::set_text(String p_text){
 	cursor_set_column(0);
 	update();
 	setting_text=false;
-
+	_text_changed_emit();
 	//get_range()->set(0);
 };
 
