@@ -332,7 +332,7 @@ static int frame_count = 0;
 	if (motionInitialised) {
 		///@TODO is this the right place to clean this up?
     [motionManager stopDeviceMotionUpdates];
-    // no free ?
+    [motionManager release];
     motionManager = nil;
     motionInitialised = NO;	
 	};
