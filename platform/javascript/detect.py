@@ -76,6 +76,7 @@ def configure(env):
     if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
         env.opus_fixed_point = "yes"
 
+    # These flags help keep the file size down
     env.Append(CPPFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST', '-fno-rtti'])
     env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DNO_FCNTL', '-DMPC_FIXED_POINT', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
     env.Append(CPPFLAGS=['-DGLES2_ENABLED'])
@@ -85,7 +86,12 @@ def configure(env):
 
     if env['wasm'] == 'yes':
         env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
-        env.Append(LINKFLAGS=['-s', '\'BINARYEN_METHOD="native-wasm"\''])
+        # Maximum memory size is baked into the WebAssembly binary during
+        # compilation, so we need to enable memory growth to allow setting
+        # TOTAL_MEMORY at runtime. The value set at runtime must be higher than
+        # what is set during compilation, check TOTAL_MEMORY in Emscripten's
+        # src/settings.js for the default.
+        env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
         env["PROGSUFFIX"] += ".webassembly"
     else:
         env.Append(CPPFLAGS=['-s', 'ASM_JS=1'])
