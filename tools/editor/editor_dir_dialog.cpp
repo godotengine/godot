@@ -145,7 +145,7 @@ void EditorDirDialog::set_current_path(const String& p_path) {
 	if (p.begins_with("res://"))
 		p = p.replace_first("res://","");
 
-	Vector<String> dirs = p.split("/");
+	Vector<String> dirs = p.split("/",false);
 
 	TreeItem *r=tree->get_root();
 	for(int i=0;i<dirs.size();i++) {
