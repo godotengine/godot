@@ -103,6 +103,12 @@ void PathSpatialGizmo::set_handle(int p_idx,Camera *p_camera, const Point2& p_po
 
 		if (p.intersects_ray(ray_from,ray_dir,&inters)) {
 
+			if(SpatialEditor::get_singleton()->is_snap_enabled())
+			{
+				float snap = SpatialEditor::get_singleton()->get_translate_snap();
+				inters.snap(snap);
+			}
+			
 			Vector3 local = gi.xform(inters);
 			c->set_point_pos(p_idx,local);
 		}
