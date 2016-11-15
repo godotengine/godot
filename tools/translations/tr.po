@@ -34,14 +34,6 @@ msgid "step argument is zero!"
 msgstr "Adım argümanı sıfır!"
 
 #: modules/gdscript/gd_functions.cpp
-msgid ""
-"Paths cannot start with '/', absolute paths must start with 'res://', "
-"'user://', or 'local://'"
-msgstr ""
-"Yollar '/' ile başlayamaz, mutlak yollar 'res://', 'user://' veya 'local://' "
-"ile başlamalıdır"
-
-#: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
 msgstr "Örneği mevcut olan bir bir kod değil"
 
@@ -401,20 +393,20 @@ msgstr "henüz basıldı"
 msgid "just released"
 msgstr "henüz bırakıldı"
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid ""
 "Couldn't read the certficate file. Are the path and password both correct?"
 msgstr "Sertifika dosyası okunamadı. Yol ve şifrenin her ikisi de doğru mu?"
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Error creating the signature object."
 msgstr "İmza nesnesini yaratmada hata."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Error creating the package signature."
 msgstr "Paket imzasını yaratmada hata."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
@@ -422,55 +414,55 @@ msgstr ""
 "Hiçbir dışa aktarım şablonu bulunmadı.\n"
 "Dışa aktarım şabloları indirin ve yükleyin.."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Custom debug package not found."
 msgstr "Özel yanlış ayıklama paketi bulunmadı."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Custom release package not found."
 msgstr "Özel yayım paketi bulunmadı."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid unique name."
 msgstr "Geçersiz benzersiz isim."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
 msgstr "Geçersiz ürün GUID'i (küresel benzersiz tanıtıcı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid publisher GUID."
 msgstr "Geçersiz yayıncı GUID'i (küresel benzersiz tanıtıcı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid background color."
 msgstr "Geçersiz arkaplan rengi."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
 msgstr "Geçersiz Dükkan Logo resim boyutları (50x50 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
 msgstr "Geçersiz kare 44x44 logo resim boyutları (44x44 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
 msgstr "Geçersiz kare 71x71 logo resim boyutları (71x71 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
 msgstr "Geçersiz kare 150x150 logo resim boyutları (150x150 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
 msgstr "Geçersiz kare 310x310 logo resim boyutları (310x310 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
 msgstr "Geçersiz kare 310x150 logo resim boyutları (310x150 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "Geçersiz açılış erkanı resim boyutları (620x300 olmalı)."
 
@@ -654,7 +646,8 @@ msgstr ""
 msgid "Cancel"
 msgstr "İptal"
 
-#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "Tamam"
 
@@ -1870,7 +1863,9 @@ msgstr ""
 msgid "Save Resource As.."
 msgstr "Kaynağı Farklı Kaydet.."
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Anlıyorum.."
 
@@ -2096,7 +2091,9 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr ""
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp tools/editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr ""
 
@@ -3005,6 +3002,11 @@ msgid "Auto"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Root Node Name:"
+msgstr "Düğüm adı:"
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr ""
 
@@ -3904,6 +3906,50 @@ msgstr "Değeri Ata"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Add %s"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Adding %s..."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create Node"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Error instancing scene from %s"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Change default type"
+msgstr "Dizinin türünü degistir"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Drag & drop + Shift : Add node as sibling\n"
+"Drag & drop + Alt : Change node type"
 msgstr ""
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
@@ -6153,7 +6199,7 @@ msgstr ""
 msgid "Dir.."
 msgstr ""
 
-#: tools/editor/property_editor.cpp
+#: tools/editor/property_editor.cpp tools/editor/script_create_dialog.cpp
 msgid "Load"
 msgstr ""
 
@@ -6269,23 +6315,11 @@ msgid "Scene Run Settings"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Error instancing scene from %s"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
@@ -6327,10 +6361,6 @@ msgid "This operation can't be done without a scene."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr ""
 
@@ -6352,10 +6382,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Create Node"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
@@ -6397,8 +6423,14 @@ msgid "Change Type"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Add Script"
-msgstr ""
+#, fuzzy
+msgid "Attach Script"
+msgstr "Betiği Çalıştır"
+
+#: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
+msgstr "Betiği Çalıştır"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6424,7 +6456,11 @@ msgid ""
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Create a new script for the selected node."
+msgid "Attach a new or existing script for the selected node."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
 msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
@@ -6529,6 +6565,11 @@ msgid "Could not create script in filesystem."
 msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "Yazı tipi yüklerken hata."
+
+#: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "Dosya yolu boş"
 
@@ -6542,16 +6583,17 @@ msgid "Invalid base path"
 msgstr "Geçersiz üst yol"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "Dosya mevcut"
-
-#: tools/editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "Geçersiz uzantı"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "Geçerli yol"
+#, fuzzy
+msgid "Create new script"
+msgstr "Düğüm Betiği Oluştur"
+
+#: tools/editor/script_create_dialog.cpp
+msgid "Load existing script"
+msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6562,7 +6604,8 @@ msgid "Built-In Script"
 msgstr "Gömme Betik"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Create Node Script"
+#, fuzzy
+msgid "Attach Node Script"
 msgstr "Düğüm Betiği Oluştur"
 
 #: tools/editor/script_editor_debugger.cpp
@@ -6728,3 +6771,16 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#~ msgid ""
+#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
+#~ "'user://', or 'local://'"
+#~ msgstr ""
+#~ "Yollar '/' ile başlayamaz, mutlak yollar 'res://', 'user://' veya "
+#~ "'local://' ile başlamalıdır"
+
+#~ msgid "File exists"
+#~ msgstr "Dosya mevcut"
+
+#~ msgid "Valid path"
+#~ msgstr "Geçerli yol"

@@ -37,14 +37,6 @@ msgid "step argument is zero!"
 msgstr "Аргумент шага равен нулю!"
 
 #: modules/gdscript/gd_functions.cpp
-msgid ""
-"Paths cannot start with '/', absolute paths must start with 'res://', "
-"'user://', or 'local://'"
-msgstr ""
-"Путь не может начинаться с '/', абсолютные пути должны начинаться с "
-"'res://', 'user://' или 'local://'"
-
-#: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
 msgstr "Скрипт без экземпляра"
 
@@ -402,20 +394,20 @@ msgstr "просто нажата"
 msgid "just released"
 msgstr "просто отпущена"
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid ""
 "Couldn't read the certficate file. Are the path and password both correct?"
 msgstr "Не могу прочитать файл сертификата. Уверены, что путь и пароль верны?"
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Error creating the signature object."
 msgstr "Ошибка при создании объекта подписи."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Error creating the package signature."
 msgstr "Ошибка при создании подписи пакета."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
@@ -423,55 +415,55 @@ msgstr ""
 "Шаблоны экспорта не найдены.\n"
 "Скачайте и установите шаблоны экспорта."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Custom debug package not found."
 msgstr "Пользовательский отладочный пакет не найден."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Custom release package not found."
 msgstr "Пользовательский релизный пакет не найден."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid unique name."
 msgstr "Неверное уникальное имя."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
 msgstr "Неверный GUID продукта."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid publisher GUID."
 msgstr "Неверный GUID издателя."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid background color."
 msgstr "Недопустимый цвет фона."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
 msgstr "Неверные размеры логотипа для магазина (должны быть 50х50)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
 msgstr "Неверные размеры квадратного логотипа 44x44 (должны быть 44x44)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
 msgstr "Неверные размеры квадратного логотипа 71x71 (должны быть 71x71)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
 msgstr "Неверные размеры квадратного логотипа 150x150 (должны быть 150x150)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
 msgstr "Неверные размеры квадратного логотипа 310x310 (должны быть 310x310)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
 msgstr "Неверные размеры широкого логотипа 310x150 (должны быть 310x150)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "Неверные размеры заставки (должны быть 620x300)."
 
@@ -697,7 +689,8 @@ msgstr ""
 msgid "Cancel"
 msgstr "Отмена"
 
-#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "Ок"
 
@@ -1929,7 +1922,9 @@ msgstr "Ошибка при сохранении ресурса!"
 msgid "Save Resource As.."
 msgstr "Сохранить ресурс как.."
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Ясно.."
 
@@ -2167,7 +2162,9 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr "Выберите главную сцену"
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp tools/editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr "Ясно"
 
@@ -3104,6 +3101,11 @@ msgid "Auto"
 msgstr "Авто"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Root Node Name:"
+msgstr "Имя Узла:"
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr "Отсутствуют следующие файлы:"
 
@@ -4013,6 +4015,51 @@ msgstr "Установить значение"
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
 msgstr "Привязка (пиксели):"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Add %s"
+msgstr "Добавить все"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Adding %s..."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create Node"
+msgstr "Создать узел"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Error instancing scene from %s"
+msgstr "Ошибка добавления сцены из %s"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr "Ок :("
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr "Нет родителя для добавления потомка."
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "Эта операция требует одного выбранного узла."
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Change default type"
+msgstr "Изменено стандартное значение"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Drag & drop + Shift : Add node as sibling\n"
+"Drag & drop + Alt : Change node type"
+msgstr ""
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -6266,7 +6313,7 @@ msgstr "Файл.."
 msgid "Dir.."
 msgstr "Папка.."
 
-#: tools/editor/property_editor.cpp
+#: tools/editor/property_editor.cpp tools/editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Загрузить"
 
@@ -6381,24 +6428,12 @@ msgid "Scene Run Settings"
 msgstr "Параметры запуска сцены"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "Ок :("
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr "Нет родителя для добавления потомка."
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
 msgstr "Нет родителя для добавления сюда сцены."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "Ошибка при загрузке сцены из %s"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Error instancing scene from %s"
-msgstr "Ошибка добавления сцены из %s"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Ok"
@@ -6441,10 +6476,6 @@ msgid "This operation can't be done without a scene."
 msgstr "Эта операция не может быть выполнена без сцены."
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "Эта операция требует одного выбранного узла."
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr "Эта операция не может быть сделана на редактируемой сцене."
 
@@ -6467,10 +6498,6 @@ msgstr "Невозможно работать с узлами, от которы
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "Удалить узел(узлы)"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Create Node"
-msgstr "Создать узел"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
@@ -6513,8 +6540,14 @@ msgid "Change Type"
 msgstr "Изменить тип"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Add Script"
+#, fuzzy
+msgid "Attach Script"
 msgstr "Добавить скрипт"
+
+#: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
+msgstr "Создать скрипт"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6541,7 +6574,13 @@ msgstr ""
 "не существует."
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Create a new script for the selected node."
+#, fuzzy
+msgid "Attach a new or existing script for the selected node."
+msgstr "Создать новый скрипт для выбранного узла."
+
+#: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear a script for the selected node."
 msgstr "Создать новый скрипт для выбранного узла."
 
 #: tools/editor/scene_tree_editor.cpp
@@ -6645,6 +6684,11 @@ msgid "Could not create script in filesystem."
 msgstr "Не удалось создать скрипт в файловой системе."
 
 #: tools/editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "Ошибка при загрузке сцены из %s"
+
+#: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "Путь не назначен"
 
@@ -6657,16 +6701,18 @@ msgid "Invalid base path"
 msgstr "Недопустимый базовый путь"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "Файл существует"
-
-#: tools/editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "Недопустимое расширение"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "Допустимый путь"
+#, fuzzy
+msgid "Create new script"
+msgstr "Создать скрипт"
+
+#: tools/editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Load existing script"
+msgstr "Следующий скрипт"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6677,7 +6723,8 @@ msgid "Built-In Script"
 msgstr "Встроенный Скрипт"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Create Node Script"
+#, fuzzy
+msgid "Attach Node Script"
 msgstr "Создать скрипт для узла"
 
 #: tools/editor/script_editor_debugger.cpp
@@ -6843,6 +6890,19 @@ msgstr "Изменена длинна луча"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Изменены границы уведомителя"
+
+#~ msgid ""
+#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
+#~ "'user://', or 'local://'"
+#~ msgstr ""
+#~ "Путь не может начинаться с '/', абсолютные пути должны начинаться с "
+#~ "'res://', 'user://' или 'local://'"
+
+#~ msgid "File exists"
+#~ msgstr "Файл существует"
+
+#~ msgid "Valid path"
+#~ msgstr "Допустимый путь"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "

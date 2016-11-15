@@ -36,14 +36,6 @@ msgid "step argument is zero!"
 msgstr "step argument è zero!"
 
 #: modules/gdscript/gd_functions.cpp
-msgid ""
-"Paths cannot start with '/', absolute paths must start with 'res://', "
-"'user://', or 'local://'"
-msgstr ""
-"I percorsi non possono iniziare per '/', i percorsi assoluti devono iniziare "
-"per 'res://', 'user://', oppure 'local://'"
-
-#: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
 msgstr "Non è uno script con un istanza"
 
@@ -402,22 +394,22 @@ msgstr "appena premuto"
 msgid "just released"
 msgstr "appena rilasciato"
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid ""
 "Couldn't read the certficate file. Are the path and password both correct?"
 msgstr ""
 "Impossibile leggere il file del certificatio. Il percorso e la pasword sono "
 "entrambi corretti?"
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Error creating the signature object."
 msgstr "Errore in creazione del signature object."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Error creating the package signature."
 msgstr "Errore di creazione della firma del pacchetto."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
@@ -425,66 +417,66 @@ msgstr ""
 "Nessun template di esportazione trovato.\n"
 "Scarica ed installa i template di esportazione."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Custom debug package not found."
 msgstr "Pacchetto di debug personalizzato non trovato."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Custom release package not found."
 msgstr "Pacchetto di release personalizzato non trovato."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid unique name."
 msgstr "Nome unico invalido."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
 msgstr "GUID prodotto invalido."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid publisher GUID."
 msgstr "GUID publisher invalido."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid background color."
 msgstr "Colore di background invalido."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
 msgstr ""
 "Dimensioni dell'immagine dello Store Logo invalide (dovrebbero essere 50x50)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
 msgstr ""
 "Dimensioni non valide dell'immagine del logo quadrato 44x44 (dovrebbero "
 "essere 44x44)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
 msgstr ""
 "Dimensioni non valide dell'immagine del logo quadrato 71x71 (dovrebbero "
 "essere 71x71)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
 msgstr ""
 "Dimensioni non valide dell'immagine del logo quadrato 150x150 (dovrebbero "
 "essere 150x150)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
 msgstr ""
 "Dimensioni non valide dell'immagine del logo quadrato 310x310 (dovrebbero "
 "essere 310x310)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
 msgstr ""
 "Dimensioni non valide dell'immagine del logo quadrato 310x150 (dovrebbero "
 "essere 310x150)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
 "Dimensioni non valide dell'immagine dello splash screen (dovrebbero essere "
@@ -719,7 +711,8 @@ msgstr ""
 msgid "Cancel"
 msgstr "Annulla"
 
-#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "OK"
 
@@ -1952,7 +1945,9 @@ msgstr "Errore salvando la Risorsa!"
 msgid "Save Resource As.."
 msgstr "Salva Risorsa Come.."
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Capisco.."
 
@@ -2192,7 +2187,9 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr "Scegli una Scena Principale"
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp tools/editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr "Ugh"
 
@@ -3130,6 +3127,11 @@ msgid "Auto"
 msgstr "Auto"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Root Node Name:"
+msgstr "Nome Nodo:"
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr "I File Seguenti sono Mancanti:"
 
@@ -4036,6 +4038,51 @@ msgstr "Imposta un Valore"
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
 msgstr "Snap (Pixels):"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Add %s"
+msgstr "Aggiungi Tutti"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Adding %s..."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create Node"
+msgstr "Crea Nodo"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Error instancing scene from %s"
+msgstr "Errore istanziamento scena da %s"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr "OK :("
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr "Nessun genitore del quale istanziare un figlio."
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "Questa operazione richiede un solo nodo selezionato."
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Change default type"
+msgstr "Cambia Valore di Default"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Drag & drop + Shift : Add node as sibling\n"
+"Drag & drop + Alt : Change node type"
+msgstr ""
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -6293,7 +6340,7 @@ msgstr "File.."
 msgid "Dir.."
 msgstr "Dir.."
 
-#: tools/editor/property_editor.cpp
+#: tools/editor/property_editor.cpp tools/editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Carica"
 
@@ -6406,24 +6453,12 @@ msgid "Scene Run Settings"
 msgstr "Impostazioni Esecuzione Scena"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "OK :("
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr "Nessun genitore del quale istanziare un figlio."
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
 msgstr "Nessun genitore nel quale istanziare una scena."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "Errore caricamento scena da %s"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Error instancing scene from %s"
-msgstr "Errore istanziamento scena da %s"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Ok"
@@ -6466,10 +6501,6 @@ msgid "This operation can't be done without a scene."
 msgstr "Questa operazione non può essere eseguita senza una scena."
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "Questa operazione richiede un solo nodo selezionato."
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr "Questa operazione no può essere eseguita su scene istanziate."
 
@@ -6492,10 +6523,6 @@ msgstr "Impossibile operare su nodi da cuoi la scena corrente eredita!"
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "Rimuovi nodo(i)"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Create Node"
-msgstr "Crea Nodo"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
@@ -6538,8 +6565,14 @@ msgid "Change Type"
 msgstr "Cambia Tipo"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Add Script"
+#, fuzzy
+msgid "Attach Script"
 msgstr "Aggiungi Script"
+
+#: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
+msgstr "Crea Script"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6566,7 +6599,13 @@ msgstr ""
 "root esiste."
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Create a new script for the selected node."
+#, fuzzy
+msgid "Attach a new or existing script for the selected node."
+msgstr "Crea un nuovo script per il nodo selezionato."
+
+#: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear a script for the selected node."
 msgstr "Crea un nuovo script per il nodo selezionato."
 
 #: tools/editor/scene_tree_editor.cpp
@@ -6670,6 +6709,11 @@ msgid "Could not create script in filesystem."
 msgstr "Impossibile creare script in filesystem."
 
 #: tools/editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "Errore caricamento scena da %s"
+
+#: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "Percorso vuoto"
 
@@ -6682,16 +6726,18 @@ msgid "Invalid base path"
 msgstr "Percorso di base invalido"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "File esistente"
-
-#: tools/editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "Estensione Invalida"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "Percorso valido"
+#, fuzzy
+msgid "Create new script"
+msgstr "Crea Script"
+
+#: tools/editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Load existing script"
+msgstr "Script successivo"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6702,7 +6748,8 @@ msgid "Built-In Script"
 msgstr "Built-In Script"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Create Node Script"
+#, fuzzy
+msgid "Attach Node Script"
 msgstr "Crea Script Nodo"
 
 #: tools/editor/script_editor_debugger.cpp
@@ -6868,6 +6915,19 @@ msgstr "Cambia lunghezza Ray Shape"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Cambia Estensione di Notifier"
+
+#~ msgid ""
+#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
+#~ "'user://', or 'local://'"
+#~ msgstr ""
+#~ "I percorsi non possono iniziare per '/', i percorsi assoluti devono "
+#~ "iniziare per 'res://', 'user://', oppure 'local://'"
+
+#~ msgid "File exists"
+#~ msgstr "File esistente"
+
+#~ msgid "Valid path"
+#~ msgstr "Percorso valido"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "
