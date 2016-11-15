@@ -24,12 +24,6 @@ msgid "step argument is zero!"
 msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
-msgid ""
-"Paths cannot start with '/', absolute paths must start with 'res://', "
-"'user://', or 'local://'"
-msgstr ""
-
-#: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
 msgstr ""
 
@@ -220,7 +214,8 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr ""
 
@@ -1448,7 +1443,9 @@ msgstr ""
 msgid "Save Resource As.."
 msgstr ""
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr ""
 
@@ -1673,7 +1670,9 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr ""
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr ""
 
@@ -2580,6 +2579,10 @@ msgid "Auto"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Root Node Name:"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr ""
 
@@ -3481,6 +3484,49 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Add %s"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Adding %s..."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create Node"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Error instancing scene from %s"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Change default type"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Drag & drop + Shift : Add node as sibling\n"
+"Drag & drop + Alt : Change node type"
 msgstr ""
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
@@ -5828,23 +5874,11 @@ msgid "Scene Run Settings"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Error instancing scene from %s"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
@@ -5886,10 +5920,6 @@ msgid "This operation can't be done without a scene."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr ""
 
@@ -5911,10 +5941,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Create Node"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp

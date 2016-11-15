@@ -4,6 +4,7 @@
 #
 # 纯洁的坏蛋 <tqj.zyy@gmail.com>, 2016.
 # 孤月蓝风 <trlanfeng@foxmail.com>, 2016.
+# ageazrael <ageazrael@gmail.com>, 2016.
 # Bruce Guo <guoboism@hotmail.com>, 2016.
 # Geequlim <geequlim@gmail.com>, 2016.
 # Luo Jun <vipsbpig@gmail.com>, 2016.
@@ -14,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-10-01 09:03+0000\n"
-"Last-Translator: oberon-tonya <360119124@qq.com>\n"
+"PO-Revision-Date: 2016-10-28 04:51+0000\n"
+"Last-Translator: ageazrael <ageazrael@gmail.com>\n"
 "Language-Team: Chinese (China) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/zh_CN/>\n"
 "Language: zh_CN\n"
@@ -36,12 +37,6 @@ msgstr "没有足够的字节来解码或格式不正确。"
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
 msgstr "step参数为0！"
-
-#: modules/gdscript/gd_functions.cpp
-msgid ""
-"Paths cannot start with '/', absolute paths must start with 'res://', "
-"'user://', or 'local://'"
-msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
@@ -262,7 +257,8 @@ msgstr ""
 msgid "Cancel"
 msgstr "取消"
 
-#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "好的"
 
@@ -888,7 +884,7 @@ msgstr "%s的方法列表"
 
 #: tools/editor/call_dialog.cpp
 msgid "Call"
-msgstr "调用"
+msgstr "调用到"
 
 #: tools/editor/call_dialog.cpp tools/editor/connections_dialog.cpp
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
@@ -1477,7 +1473,7 @@ msgstr "配置.."
 
 #: tools/editor/editor_log.cpp
 msgid " Output:"
-msgstr "输出"
+msgstr " 输出"
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
 msgid "Re-Importing"
@@ -1503,7 +1499,9 @@ msgstr "保存资源出错！"
 msgid "Save Resource As.."
 msgstr "资源另存为.."
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "好吧.."
 
@@ -1736,7 +1734,9 @@ msgstr "退出到项目管理窗口(未保存的修改将丢失)？"
 msgid "Pick a Main Scene"
 msgstr "选择主场景"
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "额"
 
@@ -2673,6 +2673,11 @@ msgid "Auto"
 msgstr "自动"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Root Node Name:"
+msgstr "节点名称:"
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr "找不到下列文件:"
 
@@ -3585,6 +3590,51 @@ msgstr "设置值"
 msgid "Snap (Pixels):"
 msgstr "吸附（像素）："
 
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Add %s"
+msgstr "添加所有"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Adding %s..."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create Node"
+msgstr "新节点"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Error instancing scene from %s"
+msgstr "从%s实例化场景出错！"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr "好吧"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr "没有选中节点来添加实例。"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "此操作只能应用于单个选中节点。"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Change default type"
+msgstr "修改默认值"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Drag & drop + Shift : Add node as sibling\n"
+"Drag & drop + Alt : Change node type"
+msgstr ""
+
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: tools/editor/plugins/navigation_polygon_editor_plugin.cpp
@@ -4336,7 +4386,7 @@ msgstr "调试"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Breakpoint"
-msgstr "切换断点"
+msgstr "设置断点"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Remove All Breakpoints"
@@ -4522,7 +4572,7 @@ msgstr "修改默认值"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change XForm Uniform"
-msgstr "修改Uniform XForm "
+msgstr "修改Uniform XForm"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Texture Uniform"
@@ -5944,14 +5994,6 @@ msgid "Scene Run Settings"
 msgstr "场景运行设置"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "好吧"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr "没有选中节点来添加实例。"
-
-#: tools/editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "No parent to instance the scenes at."
 msgstr "没有选中节点来添加实例。"
@@ -5959,10 +6001,6 @@ msgstr "没有选中节点来添加实例。"
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "从%s加载场景出错！"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Error instancing scene from %s"
-msgstr "从%s实例化场景出错！"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Ok"
@@ -6003,10 +6041,6 @@ msgid "This operation can't be done without a scene."
 msgstr "此操作必须在打开一个场景后才能执行。"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "此操作只能应用于单个选中节点。"
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr "此操作不能应用于实例化的场景。"
 
@@ -6029,10 +6063,6 @@ msgstr "无法操作此节点，因为当前场景继承自该节点！"
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "移除节点"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Create Node"
-msgstr "新节点"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
@@ -6073,8 +6103,9 @@ msgid "Change Type"
 msgstr "更改类型"
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Add Script"
-msgstr "添加脚本"
+msgstr "脚本"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6230,6 +6261,7 @@ msgid "Built-In Script"
 msgstr "内置脚本"
 
 #: tools/editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Create Node Script"
 msgstr "创建脚本"
 
@@ -6299,7 +6331,7 @@ msgstr "远程对象属性。"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Profiler"
-msgstr ""
+msgstr "性能分析"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -6378,8 +6410,9 @@ msgid "Change Sphere Shape Radius"
 msgstr "更改球体半径"
 
 #: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
 msgid "Change Box Shape Extents"
-msgstr ""
+msgstr "改变方框大小"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Radius"
@@ -6398,6 +6431,12 @@ msgstr "更改射线形状长度"
 #, fuzzy
 msgid "Change Notifier Extents"
 msgstr "更改通知器级别"
+
+#~ msgid ""
+#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
+#~ "'user://', or 'local://'"
+#~ msgstr ""
+#~ "路径不能以'/'符号打头，绝对路径必须以'res://'、'user://'或者'local://'打头"
 
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
@@ -6424,20 +6463,17 @@ msgstr "更改通知器级别"
 #~ msgid "Stack overflow with stack depth: "
 #~ msgstr "堆栈深度溢出： "
 
-#, fuzzy
 #~ msgid "Functions:"
 #~ msgstr "函数:"
 
 #~ msgid "Variables:"
 #~ msgstr "变量："
 
-#, fuzzy
 #~ msgid "Name is not a valid identifier:"
 #~ msgstr "名称不是有效的标识符："
 
-#, fuzzy
 #~ msgid "Name already in use by another func/var/signal:"
-#~ msgstr "名称已经被其他的函数/变量/信号占用："
+#~ msgstr "名称已经被其他的函数/变量/事件占用："
 
 #~ msgid "Rename Function"
 #~ msgstr "重命名函数"
@@ -6445,83 +6481,92 @@ msgstr "更改通知器级别"
 #~ msgid "Rename Variable"
 #~ msgstr "重命名变量"
 
-#, fuzzy
 #~ msgid "Rename Signal"
-#~ msgstr "重命名信号"
+#~ msgstr "重命名事件"
 
-#, fuzzy
 #~ msgid "Add Function"
 #~ msgstr "添加函数"
 
-#, fuzzy
 #~ msgid "Add Variable"
 #~ msgstr "添加变量"
 
-#, fuzzy
 #~ msgid "Add Signal"
-#~ msgstr "添加信号"
+#~ msgstr "添加事件"
 
-#, fuzzy
 #~ msgid "Remove Function"
-#~ msgstr "移除函数"
+#~ msgstr "删除函数"
 
-#, fuzzy
 #~ msgid "Remove Variable"
-#~ msgstr "移除变量"
+#~ msgstr "删除变量"
 
-#, fuzzy
 #~ msgid "Editing Variable:"
 #~ msgstr "编辑变量："
 
-#, fuzzy
 #~ msgid "Remove Signal"
-#~ msgstr "移除信号"
+#~ msgstr "删除事件"
 
-#, fuzzy
 #~ msgid "Editing Signal:"
-#~ msgstr "连接事件:"
+#~ msgstr "编辑事件:"
 
-#, fuzzy
 #~ msgid "Change Expression"
-#~ msgstr "更改类型"
+#~ msgstr "更改表达式"
 
-#, fuzzy
 #~ msgid "Add Node"
-#~ msgstr "添加子节点"
+#~ msgstr "添加节点"
 
 #, fuzzy
 #~ msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
-#~ msgstr "按住Meta键放置一个访问器，按住Shift键放置一个通用签名"
+#~ msgstr "按住Meta键放置一个Getter节点，按住Shift键放置一个通用签名。"
 
 #, fuzzy
+#~ msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
+#~ msgstr "按住Ctrl键放置一个Getter节点。按住Shift键放置一个通用签名。"
+
+#~ msgid "Hold Meta to drop a simple reference to the node."
+#~ msgstr "按住Meta键放置一个场景节点的引用节点。"
+
+#~ msgid "Hold Ctrl to drop a simple reference to the node."
+#~ msgstr "按住Ctrl键放置一个场景节点的引用节点。"
+
+#~ msgid "Hold Meta to drop a Variable Setter."
+#~ msgstr "按住Meta键放置变量的Setter节点。"
+
 #~ msgid "Hold Ctrl to drop a Variable Setter."
-#~ msgstr "按住Ctrl键放置一个变量设定器。"
+#~ msgstr "按住Ctrl键放置变量的Setter节点。"
 
-#, fuzzy
 #~ msgid "Add Preload Node"
-#~ msgstr "添加子节点"
+#~ msgstr "添加Preload节点"
 
 #, fuzzy
 #~ msgid "Add Node(s) From Tree"
 #~ msgstr "从场景导入节点"
 
 #~ msgid "Add Getter Property"
-#~ msgstr "添加访问器属性"
+#~ msgstr "添加 Getter Property"
 
 #~ msgid "Add Setter Property"
-#~ msgstr "添加设置器"
+#~ msgstr "添加 Setter Property"
 
-#, fuzzy
 #~ msgid "Condition"
-#~ msgstr "拷贝动画"
+#~ msgstr "条件节点（Condition）"
 
-#, fuzzy
+#~ msgid "Sequence"
+#~ msgstr "序列节点（Sequence）"
+
+#~ msgid "Switch"
+#~ msgstr "选择节点（Switch）"
+
+#~ msgid "Iterator"
+#~ msgstr "遍历节点（Iterator）"
+
+#~ msgid "While"
+#~ msgstr "条件循环节点（While）"
+
 #~ msgid "Return"
-#~ msgstr "返回:"
+#~ msgstr "返回节点（Return）"
 
-#, fuzzy
 #~ msgid "Get"
-#~ msgstr "设置"
+#~ msgstr "获取"
 
 #~ msgid "Base Type:"
 #~ msgstr "基础类型："
@@ -6529,41 +6574,33 @@ msgstr "更改通知器级别"
 #~ msgid "Available Nodes:"
 #~ msgstr "有效节点："
 
-#, fuzzy
 #~ msgid "Select or create a function to edit graph"
-#~ msgstr "在 edit graph 中选择或者建立一个函数"
+#~ msgstr "选择或创建一个函数来编辑图"
 
-#, fuzzy
 #~ msgid "Edit Signal Arguments:"
-#~ msgstr "额外调用参数:"
+#~ msgstr "编辑事件参数:"
 
-#, fuzzy
 #~ msgid "Edit Variable:"
-#~ msgstr "变量"
+#~ msgstr "编辑变量:"
 
 #, fuzzy
 #~ msgid "Change"
 #~ msgstr "更改类型"
 
-#, fuzzy
 #~ msgid "Delete Selected"
-#~ msgstr "删除选中的文件？"
+#~ msgstr "删除选择的节点"
 
-#, fuzzy
 #~ msgid "Find Node Type"
-#~ msgstr "查找下一项"
+#~ msgstr "查找节点类型"
 
-#, fuzzy
 #~ msgid "Copy Nodes"
-#~ msgstr "拷贝姿势"
+#~ msgstr "复制节点"
 
-#, fuzzy
 #~ msgid "Cut Nodes"
-#~ msgstr "新节点"
+#~ msgstr "剪切节点"
 
-#, fuzzy
 #~ msgid "Paste Nodes"
-#~ msgstr "粘贴姿势"
+#~ msgstr "粘贴节点"
 
 #~ msgid "Input type not iterable: "
 #~ msgstr "输入类型不可迭代： "
@@ -6600,18 +6637,31 @@ msgstr "更改通知器级别"
 #~ msgid "VariableSet not found in script: "
 #~ msgstr "脚本中未找到VariableSet： "
 
-#, fuzzy
 #~ msgid "Custom node has no _step() method, can't process graph."
-#~ msgstr "自定义节点具备no_step()方法，不能生成图像"
+#~ msgstr "自定义脚本节点不包含_step()方法，不能生成图。"
 
 #~ msgid ""
 #~ "Invalid return value from _step(), must be integer (seq out), or string "
 #~ "(error)."
-#~ msgstr "_step()的返回值无效，必须是整形（seq out），或字符串（error）。"
+#~ msgstr "_step()的返回值无效，必须是整形（seq out）或字符串（error）。"
+
+#~ msgid ""
+#~ "Couldn't read the certficate file. Are the path and password both correct?"
+#~ msgstr "无法读取证书文件。路径和密码是否都正确？"
 
 #, fuzzy
 #~ msgid "Error creating the signature object."
 #~ msgstr "写入项目PCK文件出错！"
+
+#~ msgid "Error creating the package signature."
+#~ msgstr "创建包(PCK)签名时出错。"
+
+#~ msgid ""
+#~ "No export templates found.\n"
+#~ "Download and install export templates."
+#~ msgstr ""
+#~ "找不到导出模版。\n"
+#~ "下载并安装导出模版。"
 
 #, fuzzy
 #~ msgid "Invalid unique name."
@@ -6625,9 +6675,11 @@ msgstr "更改通知器级别"
 #~ msgid "Invalid publisher GUID."
 #~ msgstr "父路径非法"
 
-#, fuzzy
 #~ msgid "Invalid background color."
-#~ msgstr "自定义字体文件非法。"
+#~ msgstr "无效的背景颜色。"
+
+#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
+#~ msgstr "Logo图片尺寸无效（图像尺寸必须是50x50）。"
 
 #, fuzzy
 #~ msgid "Path property must point to a valid Spatial node to work."
@@ -6662,8 +6714,36 @@ msgstr "更改通知器级别"
 #~ msgstr "选择模式（Q）"
 
 #, fuzzy
-#~ msgid "Create a new script for the selected node."
+#~ msgid "Attach Script"
+#~ msgstr "添加脚本"
+
+#, fuzzy
+#~ msgid "Clear Script"
+#~ msgstr "创建脚本"
+
+#, fuzzy
+#~ msgid "Attach a new or existing script for the selected node."
 #~ msgstr "将选中的场景实例为选中节点的子节点。"
+
+#, fuzzy
+#~ msgid "Clear a script for the selected node."
+#~ msgstr "将选中的场景实例为选中节点的子节点。"
+
+#, fuzzy
+#~ msgid "Error loading script from %s"
+#~ msgstr "从%s加载场景出错！"
+
+#, fuzzy
+#~ msgid "Create new script"
+#~ msgstr "创建脚本"
+
+#, fuzzy
+#~ msgid "Load existing script"
+#~ msgstr "下一个脚本"
+
+#, fuzzy
+#~ msgid "Attach Node Script"
+#~ msgstr "创建脚本"
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "无法打开目录:"

@@ -41,12 +41,6 @@ msgid "step argument is zero!"
 msgstr "¡El argumento «step» es cero!"
 
 #: modules/gdscript/gd_functions.cpp
-msgid ""
-"Paths cannot start with '/', absolute paths must start with 'res://', "
-"'user://', or 'local://'"
-msgstr ""
-
-#: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
 msgstr "No es un script con una instancia"
 
@@ -291,7 +285,8 @@ msgstr ""
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "Aceptar"
 
@@ -1545,7 +1540,9 @@ msgstr "¡Hubo un error al guardar el recurso!"
 msgid "Save Resource As.."
 msgstr "Guardar recurso como…"
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Muy bien…"
 
@@ -1786,7 +1783,9 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr "Elige una escena principal"
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "Vaya"
 
@@ -2725,6 +2724,11 @@ msgid "Auto"
 msgstr "Auto"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Root Node Name:"
+msgstr "Nombre del nodo:"
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr "Faltan los siguientes archivos:"
 
@@ -3640,6 +3644,51 @@ msgstr "Establecer valor"
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
 msgstr "Fijar (Pixeles):"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Add %s"
+msgstr "Añadir todos"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Adding %s..."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create Node"
+msgstr "Crear nodo"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Error instancing scene from %s"
+msgstr "Error al instanciar escena desde %s"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr "Muy bien :("
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr "No hay padre al que instanciarle un hijo."
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "Esta operación requiere un solo nodo seleccionado."
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Change default type"
+msgstr "Cambiar Valor por Defecto"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Drag & drop + Shift : Add node as sibling\n"
+"Drag & drop + Alt : Change node type"
+msgstr ""
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -6010,24 +6059,12 @@ msgid "Scene Run Settings"
 msgstr "Ajustes de ejecución de escena"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "Muy bien :("
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr "No hay padre al que instanciarle un hijo."
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
 msgstr "No hay padre donde instanciar la escena."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "Error al cargar escena desde %s"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Error instancing scene from %s"
-msgstr "Error al instanciar escena desde %s"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Ok"
@@ -6070,10 +6107,6 @@ msgid "This operation can't be done without a scene."
 msgstr "Esta operación no puede realizarse sin una escena."
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "Esta operación requiere un solo nodo seleccionado."
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr "Esta operación no puede realizarse en escenas instanciadas."
 
@@ -6096,10 +6129,6 @@ msgstr "¡No se puede operar sobre los nodos heredados por la escena actual!"
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "Borrar nodos"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Create Node"
-msgstr "Crear nodo"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
@@ -6142,8 +6171,9 @@ msgid "Change Type"
 msgstr "Cambiar tipo"
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Add Script"
-msgstr "Añadir script"
+msgstr "Script"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6303,8 +6333,9 @@ msgid "Built-In Script"
 msgstr "Script integrado"
 
 #: tools/editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Create Node Script"
-msgstr "Crear script de nodo"
+msgstr "Crear script"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6740,8 +6771,37 @@ msgstr "Cambiar Alcances de Notificadores"
 #~ msgid "Select Method"
 #~ msgstr "Modo de selección"
 
-#~ msgid "Create a new script for the selected node."
+#, fuzzy
+#~ msgid "Attach Script"
+#~ msgstr "Añadir script"
+
+#, fuzzy
+#~ msgid "Clear Script"
+#~ msgstr "Crear script"
+
+#, fuzzy
+#~ msgid "Attach a new or existing script for the selected node."
 #~ msgstr "Crear un nuevo script para el nodo seleccionado."
+
+#, fuzzy
+#~ msgid "Clear a script for the selected node."
+#~ msgstr "Crear un nuevo script para el nodo seleccionado."
+
+#, fuzzy
+#~ msgid "Error loading script from %s"
+#~ msgstr "Error al cargar escena desde %s"
+
+#, fuzzy
+#~ msgid "Create new script"
+#~ msgstr "Crear script"
+
+#, fuzzy
+#~ msgid "Load existing script"
+#~ msgstr "Script siguiente"
+
+#, fuzzy
+#~ msgid "Attach Node Script"
+#~ msgstr "Crear script de nodo"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "

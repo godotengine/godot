@@ -4,6 +4,7 @@
 #
 # Adrian Węcławski <weclawskiadrian@gmail.com>, 2016.
 # Daniel Lewan <vision360.daniel@gmail.com>, 2016.
+# Kajetan Kuszczyński <kajetanek99@gmail.com>, 2016.
 # Kamil Lewan <lewan.kamil@gmail.com>, 2016.
 # Karol Walasek <coreconviction@gmail.com>, 2016.
 # Mietek Szcześniak <ravaging@go2.pl>, 2016.
@@ -13,8 +14,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-08-16 18:01+0000\n"
-"Last-Translator: Mietek Szcześniak <ravaging@go2.pl>\n"
+"PO-Revision-Date: 2016-10-29 09:04+0000\n"
+"Last-Translator: Kajetan Kuszczyński <kajetanek99@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.9-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -35,12 +36,6 @@ msgstr "Brak miejsca dla bajtów dekodujących, lub zły format."
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
 msgstr "argument kroku jest zerowy!"
-
-#: modules/gdscript/gd_functions.cpp
-msgid ""
-"Paths cannot start with '/', absolute paths must start with 'res://', "
-"'user://', or 'local://'"
-msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
@@ -285,7 +280,8 @@ msgstr ""
 msgid "Cancel"
 msgstr "Anuluj"
 
-#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "OK"
 
@@ -1526,7 +1522,9 @@ msgstr "Błąd podczas zapisu zasobu!"
 msgid "Save Resource As.."
 msgstr "Zapisz zasób jako..."
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Widzę.."
 
@@ -1764,7 +1762,9 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr "Wybierz główną scenę"
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Ugh"
 msgstr "Błąd"
@@ -2699,6 +2699,11 @@ msgid "Auto"
 msgstr "Automatyczny"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Root Node Name:"
+msgstr "Nazwa węzła:"
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr "Brakuje następujących plików:"
 
@@ -3608,6 +3613,51 @@ msgstr "Ustaw Wartość"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Add %s"
+msgstr "Dodaj wszystko"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Adding %s..."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create Node"
+msgstr "Utwórz węzeł"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Error instancing scene from %s"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr "OK :("
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Change default type"
+msgstr "Zmień Wartość Domyślną"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Drag & drop + Shift : Add node as sibling\n"
+"Drag & drop + Alt : Change node type"
 msgstr ""
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
@@ -5955,24 +6005,12 @@ msgid "Scene Run Settings"
 msgstr "Ustawienia uruchomienia sceny"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "OK :("
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "Błąd przy ładowaniu sceny z %s"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Error instancing scene from %s"
-msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Ok"
@@ -6013,10 +6051,6 @@ msgid "This operation can't be done without a scene."
 msgstr "Ta operacja nie może zostać wykonana bez sceny."
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr ""
 
@@ -6039,10 +6073,6 @@ msgstr ""
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "Usuń węzeł(y)"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Create Node"
-msgstr "Utwórz węzeł"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
@@ -6083,8 +6113,9 @@ msgid "Change Type"
 msgstr "Zmień typ"
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Add Script"
-msgstr "Dodaj skrypt"
+msgstr "Skrypt"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6241,8 +6272,9 @@ msgid "Built-In Script"
 msgstr "Wbudowany skrypt"
 
 #: tools/editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Create Node Script"
-msgstr "Utwórz skrypt dla węzła"
+msgstr "Utwórz Skrypt"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6407,6 +6439,13 @@ msgstr "Zmień długość Ray Shape"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#~ msgid ""
+#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
+#~ "'user://', or 'local://'"
+#~ msgstr ""
+#~ "Ścieżki nie mogą zaczynać się od '/', ścieżki absolutne muszą zaczynać "
+#~ "się od 'res://', 'user://', lub 'local://'"
 
 #~ msgid ""
 #~ "Return value must be assigned to first element of node working memory! "
@@ -6611,8 +6650,37 @@ msgstr ""
 #~ msgid "Select Method"
 #~ msgstr "Tryb zaznaczenia"
 
-#~ msgid "Create a new script for the selected node."
+#, fuzzy
+#~ msgid "Attach Script"
+#~ msgstr "Dodaj skrypt"
+
+#, fuzzy
+#~ msgid "Clear Script"
+#~ msgstr "Utwórz Skrypt"
+
+#, fuzzy
+#~ msgid "Attach a new or existing script for the selected node."
 #~ msgstr "Utwórz nowy skrypt dla zaznaczonego węzła."
+
+#, fuzzy
+#~ msgid "Clear a script for the selected node."
+#~ msgstr "Utwórz nowy skrypt dla zaznaczonego węzła."
+
+#, fuzzy
+#~ msgid "Error loading script from %s"
+#~ msgstr "Błąd przy ładowaniu sceny z %s"
+
+#, fuzzy
+#~ msgid "Create new script"
+#~ msgstr "Utwórz Skrypt"
+
+#, fuzzy
+#~ msgid "Load existing script"
+#~ msgstr "Następny skrypt"
+
+#, fuzzy
+#~ msgid "Attach Node Script"
+#~ msgstr "Utwórz skrypt dla węzła"
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "Nie można iść do podkatalogu:"
