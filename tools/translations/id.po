@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Abdul Aziz Muslim Alqudsy <abdul.aziz.muslim.alqudsy@gmail.com>, 2016.
+# Andevid Dynmyn <doyan4forum@gmail.com>, 2016.
 # Andinawan Asa <asaandinawan@gmail.com>, 2016.
 # Khairul Hidayat <khairulcyber4rt@gmail.com>, 2016.
 # yursan9 <rizal.sagi@gmail.com>, 2016.
@@ -10,15 +11,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-08-27 02:11+0000\n"
-"Last-Translator: yursan9 <rizal.sagi@gmail.com>\n"
+"PO-Revision-Date: 2016-10-15 04:17+0000\n"
+"Last-Translator: Andevid Dynmyn <doyan4forum@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.9-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -36,10 +37,13 @@ msgid "step argument is zero!"
 msgstr "Langkah argumen adalah nol!"
 
 #: modules/gdscript/gd_functions.cpp
+#, fuzzy
 msgid ""
 "Paths cannot start with '/', absolute paths must start with 'res://', "
 "'user://', or 'local://'"
 msgstr ""
+"Path tidak bisa diawali dengan '/', tetapi absolut path harus diawali dengan "
+"'res://', 'user://', atau 'local://'"
 
 #: modules/gdscript/gd_functions.cpp
 #, fuzzy
@@ -6795,8 +6799,9 @@ msgid "Live Edit Root:"
 msgstr ""
 
 #: tools/editor/script_editor_debugger.cpp
+#, fuzzy
 msgid "Set From Tree"
-msgstr ""
+msgstr "Menyetel Dari Keturunan"
 
 #: tools/editor/settings_config_dialog.cpp
 msgid "Shortcuts"
@@ -6804,19 +6809,21 @@ msgstr ""
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
-msgstr ""
+msgstr "Ganti Radius Lampu"
 
 #: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
 msgid "Change Camera FOV"
-msgstr ""
+msgstr "Ganti FOV Kamera"
 
 #: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
 msgid "Change Camera Size"
-msgstr ""
+msgstr "Ganti Ukuran Kamera"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Sphere Shape Radius"
-msgstr ""
+msgstr "Ganti Radius Bentuk Bola"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Box Shape Extents"

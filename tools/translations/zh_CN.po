@@ -4,6 +4,7 @@
 #
 # 纯洁的坏蛋 <tqj.zyy@gmail.com>, 2016.
 # 孤月蓝风 <trlanfeng@foxmail.com>, 2016.
+# ageazrael <ageazrael@gmail.com>, 2016.
 # Bruce Guo <guoboism@hotmail.com>, 2016.
 # Geequlim <geequlim@gmail.com>, 2016.
 # Luo Jun <vipsbpig@gmail.com>, 2016.
@@ -14,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-10-01 09:03+0000\n"
-"Last-Translator: oberon-tonya <360119124@qq.com>\n"
+"PO-Revision-Date: 2016-10-28 04:51+0000\n"
+"Last-Translator: ageazrael <ageazrael@gmail.com>\n"
 "Language-Team: Chinese (China) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/zh_CN/>\n"
 "Language: zh_CN\n"
@@ -44,6 +45,7 @@ msgid ""
 "Paths cannot start with '/', absolute paths must start with 'res://', "
 "'user://', or 'local://'"
 msgstr ""
+"路径不能以'/'符号打头，绝对路径必须以'res://'、'user://'或者'local://'打头"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
@@ -105,7 +107,6 @@ msgid "Stack overflow with stack depth: "
 msgstr "堆栈深度溢出： "
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Functions:"
 msgstr "函数:"
 
@@ -118,14 +119,12 @@ msgid "Signals:"
 msgstr "事件:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Name is not a valid identifier:"
 msgstr "名称不是有效的标识符："
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Name already in use by another func/var/signal:"
-msgstr "名称已经被其他的函数/变量/信号占用："
+msgstr "名称已经被其他的函数/变量/事件占用："
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Function"
@@ -136,90 +135,78 @@ msgid "Rename Variable"
 msgstr "重命名变量"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Signal"
-msgstr "重命名信号"
+msgstr "重命名事件"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function"
 msgstr "添加函数"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Variable"
 msgstr "添加变量"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Signal"
-msgstr "添加信号"
+msgstr "添加事件"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Function"
-msgstr "移除函数"
+msgstr "删除函数"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Variable"
-msgstr "移除变量"
+msgstr "删除变量"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Editing Variable:"
 msgstr "编辑变量："
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Signal"
-msgstr "移除信号"
+msgstr "删除事件"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Editing Signal:"
-msgstr "连接事件:"
+msgstr "编辑事件:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Expression"
-msgstr "更改类型"
+msgstr "更改表达式"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node"
-msgstr "添加子节点"
+msgstr "添加节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
-msgstr "按住Meta键放置一个访问器，按住Shift键放置一个通用签名"
+msgstr "按住Meta键放置一个Getter节点，按住Shift键放置一个通用签名。"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
-msgstr ""
+msgstr "按住Ctrl键放置一个Getter节点。按住Shift键放置一个通用签名。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a simple reference to the node."
-msgstr ""
+msgstr "按住Meta键放置一个场景节点的引用节点。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
-msgstr ""
+msgstr "按住Ctrl键放置一个场景节点的引用节点。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Variable Setter."
-msgstr ""
+msgstr "按住Meta键放置变量的Setter节点。"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Hold Ctrl to drop a Variable Setter."
-msgstr "按住Ctrl键放置一个变量设定器。"
+msgstr "按住Ctrl键放置变量的Setter节点。"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Preload Node"
-msgstr "添加子节点"
+msgstr "添加Preload节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -228,46 +215,43 @@ msgstr "从场景导入节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
-msgstr "添加访问器属性"
+msgstr "添加 Getter Property"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
-msgstr "添加设置器"
+msgstr "添加 Setter Property"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Condition"
-msgstr "拷贝动画"
+msgstr "条件节点（Condition）"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "序列节点（Sequence）"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
-msgstr ""
+msgstr "选择节点（Switch）"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "遍历节点（Iterator）"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr ""
+msgstr "条件循环节点（While）"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Return"
-msgstr "返回:"
+msgstr "返回节点（Return）"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
 msgid "Call"
-msgstr "调用"
+msgstr "调用到"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Get"
-msgstr "设置"
+msgstr "获取"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/property_editor.cpp
@@ -296,9 +280,8 @@ msgid "Available Nodes:"
 msgstr "有效节点："
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Select or create a function to edit graph"
-msgstr "在 edit graph 中选择或者建立一个函数"
+msgstr "选择或创建一个函数来编辑图"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
 #: tools/editor/connections_dialog.cpp
@@ -314,14 +297,12 @@ msgid "Close"
 msgstr "关闭"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Signal Arguments:"
-msgstr "额外调用参数:"
+msgstr "编辑事件参数:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Variable:"
-msgstr "变量"
+msgstr "编辑变量:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -329,34 +310,29 @@ msgid "Change"
 msgstr "更改类型"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete Selected"
-msgstr "删除选中的文件？"
+msgstr "删除选择的节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/script_text_editor.cpp
 msgid "Toggle Breakpoint"
-msgstr "切换断点"
+msgstr "设置断点"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Find Node Type"
-msgstr "查找下一项"
+msgstr "查找节点类型"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Copy Nodes"
-msgstr "拷贝姿势"
+msgstr "复制节点"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Cut Nodes"
-msgstr "新节点"
+msgstr "剪切节点"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Paste Nodes"
-msgstr "粘贴姿势"
+msgstr "粘贴节点"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -405,15 +381,14 @@ msgid "VariableSet not found in script: "
 msgstr "脚本中未找到VariableSet： "
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Custom node has no _step() method, can't process graph."
-msgstr "自定义节点具备no_step()方法，不能生成图像"
+msgstr "自定义脚本节点不包含_step()方法，不能生成图。"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
-msgstr "_step()的返回值无效，必须是整形（seq out），或字符串（error）。"
+msgstr "_step()的返回值无效，必须是整形（seq out）或字符串（error）。"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just pressed"
@@ -426,7 +401,7 @@ msgstr ""
 #: platform/winrt/export/export.cpp
 msgid ""
 "Couldn't read the certficate file. Are the path and password both correct?"
-msgstr ""
+msgstr "无法读取证书文件。路径和密码是否都正确？"
 
 #: platform/winrt/export/export.cpp
 #, fuzzy
@@ -435,13 +410,15 @@ msgstr "写入项目PCK文件出错！"
 
 #: platform/winrt/export/export.cpp
 msgid "Error creating the package signature."
-msgstr ""
+msgstr "创建包(PCK)签名时出错。"
 
 #: platform/winrt/export/export.cpp
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
 msgstr ""
+"找不到导出模版。\n"
+"下载并安装导出模版。"
 
 #: platform/winrt/export/export.cpp
 msgid "Custom debug package not found."
@@ -467,13 +444,12 @@ msgid "Invalid publisher GUID."
 msgstr "父路径非法"
 
 #: platform/winrt/export/export.cpp
-#, fuzzy
 msgid "Invalid background color."
-msgstr "自定义字体文件非法。"
+msgstr "无效的背景颜色。"
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "Logo图片尺寸无效（图像尺寸必须是50x50）。"
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
@@ -1892,7 +1868,7 @@ msgstr "配置.."
 
 #: tools/editor/editor_log.cpp
 msgid " Output:"
-msgstr "输出"
+msgstr " 输出"
 
 #: tools/editor/editor_node.cpp tools/editor/editor_reimport_dialog.cpp
 msgid "Re-Importing"
@@ -4936,7 +4912,7 @@ msgstr "修改默认值"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change XForm Uniform"
-msgstr "修改Uniform XForm "
+msgstr "修改Uniform XForm"
 
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Texture Uniform"
@@ -6734,7 +6710,7 @@ msgstr "远程对象属性。"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Profiler"
-msgstr ""
+msgstr "性能分析"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -6813,8 +6789,9 @@ msgid "Change Sphere Shape Radius"
 msgstr "更改球体半径"
 
 #: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
 msgid "Change Box Shape Extents"
-msgstr ""
+msgstr "改变方框大小"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Radius"

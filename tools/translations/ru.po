@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-09-14 21:55+0000\n"
+"PO-Revision-Date: 2016-10-17 19:47+0000\n"
 "Last-Translator: DimOkGamer <dimokgamer@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.8\n"
+"X-Generator: Weblate 2.9-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -41,6 +41,8 @@ msgid ""
 "Paths cannot start with '/', absolute paths must start with 'res://', "
 "'user://', or 'local://'"
 msgstr ""
+"Путь не может начинаться с '/', абсолютные пути должны начинаться с "
+"'res://', 'user://' или 'local://'"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
@@ -172,9 +174,8 @@ msgid "Editing Signal:"
 msgstr "Редактирование сигнала:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Expression"
-msgstr "Изменить тип"
+msgstr "Изменить выражение"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
@@ -225,40 +226,36 @@ msgid "Add Setter Property"
 msgstr "Добавить устанавливающее свойство"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Condition"
-msgstr "Копировать анимацию"
+msgstr "Условие"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "Последовательность"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Switch"
-msgstr "Высота"
+msgstr "Переключатель"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "Итератор"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr ""
+msgstr "Пока"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Return"
-msgstr "Возвращение:"
+msgstr "Возвращение"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
 msgid "Call"
 msgstr "Вызов"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Get"
-msgstr "Задан"
+msgstr "Получить"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/property_editor.cpp
@@ -399,87 +396,84 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just pressed"
-msgstr ""
+msgstr "просто нажата"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
-msgstr ""
+msgstr "просто отпущена"
 
 #: platform/winrt/export/export.cpp
 msgid ""
 "Couldn't read the certficate file. Are the path and password both correct?"
-msgstr ""
+msgstr "Не могу прочитать файл сертификата. Уверены, что путь и пароль верны?"
 
 #: platform/winrt/export/export.cpp
-#, fuzzy
 msgid "Error creating the signature object."
-msgstr "Ошибка записи PCK файла!"
+msgstr "Ошибка при создании объекта подписи."
 
 #: platform/winrt/export/export.cpp
 msgid "Error creating the package signature."
-msgstr ""
+msgstr "Ошибка при создании подписи пакета."
 
 #: platform/winrt/export/export.cpp
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
 msgstr ""
+"Шаблоны экспорта не найдены.\n"
+"Скачайте и установите шаблоны экспорта."
 
 #: platform/winrt/export/export.cpp
 msgid "Custom debug package not found."
-msgstr ""
+msgstr "Пользовательский отладочный пакет не найден."
 
 #: platform/winrt/export/export.cpp
 msgid "Custom release package not found."
-msgstr ""
+msgstr "Пользовательский релизный пакет не найден."
 
 #: platform/winrt/export/export.cpp
-#, fuzzy
 msgid "Invalid unique name."
-msgstr "Недопустимое имя."
+msgstr "Неверное уникальное имя."
 
 #: platform/winrt/export/export.cpp
-#, fuzzy
 msgid "Invalid product GUID."
-msgstr "Недопустимый размер шрифта."
+msgstr "Неверный GUID продукта."
 
 #: platform/winrt/export/export.cpp
-#, fuzzy
 msgid "Invalid publisher GUID."
-msgstr "Недопустимый базовый путь"
+msgstr "Неверный GUID издателя."
 
 #: platform/winrt/export/export.cpp
-#, fuzzy
 msgid "Invalid background color."
-msgstr "Недопустимый шрифт пользовательского источника."
+msgstr "Недопустимый цвет фона."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "Неверные размеры логотипа для магазина (должны быть 50х50)."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr ""
+msgstr "Неверные размеры квадратного логотипа 44x44 (должны быть 44x44)."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr ""
+msgstr "Неверные размеры квадратного логотипа 71x71 (должны быть 71x71)."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr ""
+msgstr "Неверные размеры квадратного логотипа 150x150 (должны быть 150x150)."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr ""
+msgstr "Неверные размеры квадратного логотипа 310x310 (должны быть 310x310)."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
+msgstr "Неверные размеры широкого логотипа 310x150 (должны быть 310x150)."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr ""
+msgstr "Неверные размеры заставки (должны быть 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -673,11 +667,8 @@ msgstr ""
 "Navigation. Он предоставляет только навигационные данные."
 
 #: scene/3d/remote_transform.cpp
-#, fuzzy
 msgid "Path property must point to a valid Spatial node to work."
-msgstr ""
-"Для корректной работы свойство Path должно указывать на действующий узел "
-"Particles2D."
+msgstr "Свойство Path должно указывать на действительный Spatial узел."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -1452,6 +1443,8 @@ msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
+"Целевой метод не найден! Укажите правильный метод или прикрепите скрипт на "
+"целевой узел."
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -2495,9 +2488,8 @@ msgid "Editor Layout"
 msgstr "Макет редактора"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Toggle Fullscreen"
-msgstr "Полноэкранный режим"
+msgstr "Переключить полноэкранный режим"
 
 #: tools/editor/editor_node.cpp
 msgid "Install Export Templates"
@@ -2525,7 +2517,7 @@ msgstr "Обновлять при изменениях"
 
 #: tools/editor/editor_node.cpp
 msgid "Disable Update Spinner"
-msgstr ""
+msgstr "Отключить счётчик обновлений"
 
 #: tools/editor/editor_node.cpp
 msgid "Inspector"
@@ -3958,9 +3950,8 @@ msgid "Clear Bones"
 msgstr "Очистить кости"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Bones"
-msgstr "Создать кости"
+msgstr "Показать кости"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
@@ -4701,9 +4692,8 @@ msgid "Close Docs"
 msgstr "Закрыть документацию"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close All"
-msgstr "Закрыть"
+msgstr "Закрыть всё"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -4818,9 +4808,8 @@ msgstr ""
 "принадлежат, загружена"
 
 #: tools/editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Pick Color"
-msgstr "Цвет"
+msgstr "Выбрать цвет"
 
 #: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
 msgid "Move Up"
@@ -5198,9 +5187,8 @@ msgid "Insert Animation Key"
 msgstr "Вставить ключ анимации"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Focus Origin"
-msgstr "Отображать начало координат"
+msgstr "Фокус на центре"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
@@ -5468,9 +5456,8 @@ msgid "Remove Item"
 msgstr "Удалить элемент"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme"
-msgstr "Сохранить тему"
+msgstr "Тема"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -6288,9 +6275,8 @@ msgid "Assign"
 msgstr "Назначить"
 
 #: tools/editor/property_editor.cpp
-#, fuzzy
 msgid "New Script"
-msgstr "Следующий скрипт"
+msgstr "Новый скрипт"
 
 #: tools/editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"

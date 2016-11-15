@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-09-11 09:26+0000\n"
+"PO-Revision-Date: 2016-10-11 08:26+0000\n"
 "Last-Translator: Roger BR <drai_kin@hotmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.8\n"
+"X-Generator: Weblate 2.9-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -38,6 +38,8 @@ msgid ""
 "Paths cannot start with '/', absolute paths must start with 'res://', "
 "'user://', or 'local://'"
 msgstr ""
+"No es pot començar un camí per '/'. Els camins absoluts han de començar per "
+"'res://', 'user://' o 'local://'"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
@@ -231,19 +233,19 @@ msgstr "Transició"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "Seqüència"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
-msgstr ""
+msgstr "commutador"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "Iterador"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr ""
+msgstr "Mentre"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -256,12 +258,12 @@ msgstr "Crida"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Get"
-msgstr ""
+msgstr "Obtenir"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/property_editor.cpp
 msgid "Set"
-msgstr ""
+msgstr "Especifica"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -399,38 +401,42 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just pressed"
-msgstr ""
+msgstr "premut"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
-msgstr ""
+msgstr "alliberat"
 
 #: platform/winrt/export/export.cpp
 msgid ""
 "Couldn't read the certficate file. Are the path and password both correct?"
 msgstr ""
+"No s'ha pogut llegir el certificat. Comproveu que tant el camí com la "
+"contrasenya són correctes"
 
 #: platform/winrt/export/export.cpp
 msgid "Error creating the signature object."
-msgstr ""
+msgstr "No s'ha pogut l'objecte signatura."
 
 #: platform/winrt/export/export.cpp
 msgid "Error creating the package signature."
-msgstr ""
+msgstr "No s'ha pogut crear el paquet signatura."
 
 #: platform/winrt/export/export.cpp
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
 msgstr ""
+"No s'ha trobat cap plantilla.\n"
+"Descarregueu i instal·leu alguna plantilla d'exportació."
 
 #: platform/winrt/export/export.cpp
 msgid "Custom debug package not found."
-msgstr ""
+msgstr "No s'ha trobat cap paquet de depuració personalitzat."
 
 #: platform/winrt/export/export.cpp
 msgid "Custom release package not found."
-msgstr ""
+msgstr "No s'ha trobat cap paquet de llançament personalitzat."
 
 #: platform/winrt/export/export.cpp
 #, fuzzy
@@ -444,7 +450,7 @@ msgstr "La mida de la lletra no és vàlida."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid publisher GUID."
-msgstr ""
+msgstr "GUID d'editor no vàlid."
 
 #: platform/winrt/export/export.cpp
 #, fuzzy
@@ -453,31 +459,33 @@ msgstr "Lletra personalitzada no vàlida."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "Imatge Store Logo no vàlida. La mida hauria de ser 50x50 ."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr ""
+msgstr "Imatge Logo quadrat 44x44 no vàlida. La mida hauria de ser 44x44."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr ""
+msgstr "Imatge Logo quadrat 71x71 no vàlida. La mida hauria de ser 71x71 ."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr ""
+msgstr "Imatge logo quadrat 150x150 no vàlida. La mida hauria de ser 150x150 ."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr ""
+msgstr "Imatge logo quadrat 310x310 no vàlida. La mida hauria de ser 310x310."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
+msgstr "Imatge logo quadrat 310x150 no vàlida. La mida hauria de ser 310x150."
 
 #: platform/winrt/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
+"Imatge de la pantalla de presentació no vàlida. La mida hauria de ser "
+"620x300."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -485,7 +493,7 @@ msgid ""
 "order for AnimatedSprite to display frames."
 msgstr ""
 "Un recurs del tipus SpriteFrames s'ha de crear or especificar en la "
-"propietat \"Quadres (Frames)\" perquè AnimatedSprite pugui mostrar els "
+"propietat \"Fotogrames (Frames)\" perquè AnimatedSprite pugui mostrar els "
 "quadres."
 
 #: scene/2d/canvas_modulate.cpp
@@ -494,7 +502,7 @@ msgid ""
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
 "Només es permet un sol CanvasModulate per escena (o conjunt d'escenes "
-"instanciades). El primer funcionara, mentre que la resta seran ignorats."
+"instanciades). El primer funcionarà, mentre que la resta seran ignorats."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
