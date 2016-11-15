@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.1.stable.custom_build" name="Engine Types">
+<doc version="2.1.1.stable.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 		Built-in GDScript functions.
@@ -17600,6 +17600,14 @@
 			</return>
 			<description>
 				Retrieve the path to the [PackedScene] resource file that is loaded by default when calling [method replace_by_instance].
+			</description>
+		</method>
+		<method name="get_stored_values">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="with_order" type="bool" default="false">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="replace_by_instance">
