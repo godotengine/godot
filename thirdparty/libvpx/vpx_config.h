@@ -9,7 +9,11 @@
 #ifndef VPX_CONFIG_H
 #define VPX_CONFIG_H
 #define RESTRICT
-#define INLINE inline
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+	#define INLINE __inline
+#else
+	#define INLINE inline
+#endif
 
 #define HAVE_MIPS32 0
 #define HAVE_MEDIA 0
