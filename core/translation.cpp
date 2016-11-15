@@ -292,6 +292,7 @@ static const char* locale_list[]={
 "pa_PK", //  Panjabi (Pakistan)
 "pl", //  Polish
 "pl_PL", //  Polish (Poland)
+"pr", //  Pirate
 "ps_AF", //  Pushto (Afghanistan)
 "pt", //  Portuguese
 "pt_BR", //  Portuguese (Brazil)
@@ -650,6 +651,7 @@ static const char* locale_names[]={
 "Panjabi (Pakistan)",
 "Polish",
 "Polish (Poland)",
+"Pirate",
 "Pushto (Afghanistan)",
 "Portuguese",
 "Portuguese (Brazil)",
