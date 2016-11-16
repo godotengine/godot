@@ -880,6 +880,9 @@ bool OS_X11::is_window_minimized() const {
 }
 
 void OS_X11::set_window_maximized(bool p_enabled) {
+
+	if (is_window_maximized() == p_enabled) return;
+
 	// Using EWMH -- Extended Window Manager Hints
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
@@ -898,6 +901,23 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
 	maximized = p_enabled;
+
+	//wait until the window has been resized and update video mode
+	while (true) {
+		XEvent ev;
+		XNextEvent(x11_display, &ev);
+		if (ev.type == ConfigureNotify) {
+			XConfigureEvent &xc = ev.xconfigure;
+			if (xc.send_event == 1 &&
+			   (xc.width == get_screen_size(get_current_screen()).width || (!p_enabled && xc.width < current_videomode.width))) {
+
+				current_videomode.width=xc.width;
+				current_videomode.height=xc.height;
+				break;
+			};
+		}
+	};
+
 }
 
 bool OS_X11::is_window_maximized() const {
@@ -1990,6 +2010,7 @@ OS_X11::OS_X11() {
 	AudioDriverManagerSW::add_driver(&driver_alsa);
 #endif
 
+	maximized = false;
 	minimized = false;
 	xim_style=0L;
 	mouse_mode=MOUSE_MODE_VISIBLE;
