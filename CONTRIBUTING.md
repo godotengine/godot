@@ -63,6 +63,8 @@ The short title is the most important part, as it is what will appear in the `sh
 Here's an example of a well-formatted commit log (note how the extended description is also manually wrapped at 80 chars for readability):
 
 ```
+Prevent French fries carbonization by fixing heat regulation
+
 When using the French fries frying module, Godot would not regulate the heat
 and thus bring the oil bath to supercritical liquid conditions, thus causing
 unwanted side effects in the physics engine.
