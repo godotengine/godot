@@ -203,8 +203,11 @@ static int frame_count = 0;
 				// Just using polling approach for now, we can set this up so it sends data to us in intervals, might be better.
 				// See Apple reference pages for more details:
 				// https://developer.apple.com/reference/coremotion/cmmotionmanager?language=objc
+
+				// Apple splits our accelerometer date into a gravity and user movement component. We add them back together
+				CMAcceleration gravity = motionManager.deviceMotion.gravity;
 				CMAcceleration acceleration = motionManager.deviceMotion.userAcceleration;
-				OSIPhone::get_singleton()->update_accelerometer(acceleration.x, acceleration.y, acceleration.z);
+				OSIPhone::get_singleton()->update_accelerometer(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z);
 
 				CMMagneticField magnetic = motionManager.deviceMotion.magneticField.field;
 				OSIPhone::get_singleton()->update_magnetometer(magnetic.x, magnetic.y, magnetic.z);

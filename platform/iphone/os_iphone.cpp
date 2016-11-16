@@ -371,8 +371,7 @@ void OSIPhone::update_magnetometer(float p_x, float p_y, float p_z) {
 };
 
 void OSIPhone::update_gyroscope(float p_x, float p_y, float p_z) {
-	///@TODO I've made the Z negative like the original accelerometer code, this probably needs more work
-	input->set_gyroscope(Vector3(p_x, p_y, -p_z));
+	input->set_gyroscope(Vector3(p_x, p_y, p_z));
 };
 
 void OSIPhone::delete_main_loop() {
