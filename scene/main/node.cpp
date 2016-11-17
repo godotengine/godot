@@ -166,6 +166,7 @@ void Node::_notification(int p_notification) {
 
 void Node::_propagate_ready() {
 
+	data.ready_notified=true;
 	data.blocked++;
 	for (int i=0;i<data.children.size();i++) {
 
@@ -2662,7 +2663,9 @@ void Node::_set_tree(SceneTree *p_tree) {
 
 
 		_propagate_enter_tree();
-		_propagate_ready(); //reverse_notification(NOTIFICATION_READY);
+		if (!data.parent || data.parent->data.ready_notified) { // No parent (root) or parent ready
+			_propagate_ready(); //reverse_notification(NOTIFICATION_READY);
+		}
 
 		tree_changed_b=data.tree;
 
@@ -2999,6 +3002,7 @@ Node::Node() {
 	data.fixed_process=false;
 	data.idle_process=false;
 	data.inside_tree=false;
+	data.ready_notified=false;
 
 	data.owner=NULL;
 	data.OW=NULL;
