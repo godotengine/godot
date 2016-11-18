@@ -97,6 +97,9 @@ struct RegExNode {
 			memdelete(next);
 	}
 
+	// For avoiding RTTI
+	virtual bool is_look_behind() { return false; }
+
 	virtual int test(RegExSearch& s, int pos) const {
 
 		return next ? next->test(s, pos) : -1;
@@ -750,6 +753,8 @@ struct RegExNodeLookBehind : public RegExNodeGroup {
 		reset_pos = true;
 	}
 
+	virtual bool is_look_behind() { return true; }
+
 	virtual int test(RegExSearch& s, int pos) const {
 
 		if (pos < length)
@@ -1089,7 +1094,7 @@ Error RegEx::compile(const String& p_pattern) {
 						REGEX_COMPILE_FAIL("backreference not found");
 
 					for (int i = 0; i < stack.size(); ++i)
-						if (dynamic_cast<RegExNodeLookBehind*>(stack[i]))
+						if (stack[i]->is_look_behind())
 							REGEX_COMPILE_FAIL("backreferences inside lookbehind not supported");
 
 					for (int i = 0; i < group_names.size(); ++i) {
@@ -1112,7 +1117,7 @@ Error RegEx::compile(const String& p_pattern) {
 					c = d;
 
 					for (int i = 0; i < stack.size(); ++i)
-						if (dynamic_cast<RegExNodeLookBehind*>(stack[i]))
+						if (stack[i]->is_look_behind())
 							REGEX_COMPILE_FAIL("backreferences inside lookbehind not supported");
 
 					int ref = -1;
@@ -1238,7 +1243,7 @@ Error RegEx::compile(const String& p_pattern) {
 				break;
 			case '|':
 				for (int i = 0; i < stack.size(); ++i)
-					if (dynamic_cast<RegExNodeLookBehind*>(stack[i]))
+					if (stack[i]->is_look_behind())
 						REGEX_COMPILE_FAIL("alternations inside lookbehind not supported");
 				stack[0]->add_childset();
 				break;
@@ -1312,7 +1317,7 @@ Error RegEx::compile(const String& p_pattern) {
 
 						if (min_val != max_val)
 							for (int i = 0; i < stack.size(); ++i)
-								if (dynamic_cast<RegExNodeLookBehind*>(stack[i]))
+								if (stack[i]->is_look_behind())
 									REGEX_COMPILE_FAIL("variable length quantifiers inside lookbehind not supported");
 
 						RegExNodeQuantifier* quant = memnew(RegExNodeQuantifier(min_val, max_val));

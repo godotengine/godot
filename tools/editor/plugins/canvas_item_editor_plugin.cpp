@@ -529,16 +529,23 @@ void CanvasItemEditor::_find_canvas_items_at_rect(const Rect2& p_rect,Node* p_no
 	CanvasItem *c=p_node->cast_to<CanvasItem>();
 
 
-	for (int i=p_node->get_child_count()-1;i>=0;i--) {
+	bool inherited=p_node!=get_tree()->get_edited_scene_root() && p_node->get_filename()!="";
+	bool editable=false;
+	if (inherited){
+		editable=EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node);
+	}
+	bool lock_children=p_node->has_meta("_edit_group_") && p_node->get_meta("_edit_group_");
+	if (!lock_children && (!inherited || editable)) {
+		for (int i=p_node->get_child_count()-1;i>=0;i--) {
 
-		if (c && !c->is_set_as_toplevel())
-			_find_canvas_items_at_rect(p_rect,p_node->get_child(i),p_parent_xform * c->get_transform(),p_canvas_xform,r_items);
-		else {
-			CanvasLayer *cl = p_node->cast_to<CanvasLayer>();
-			_find_canvas_items_at_rect(p_rect,p_node->get_child(i),transform,cl?cl->get_transform():p_canvas_xform,r_items);
+			if (c && !c->is_set_as_toplevel())
+				_find_canvas_items_at_rect(p_rect,p_node->get_child(i),p_parent_xform * c->get_transform(),p_canvas_xform,r_items);
+			else {
+				CanvasLayer *cl = p_node->cast_to<CanvasLayer>();
+				_find_canvas_items_at_rect(p_rect,p_node->get_child(i),transform,cl?cl->get_transform():p_canvas_xform,r_items);
+			}
 		}
 	}
-
 
 	if (c && c->is_visible() && !c->has_meta("_edit_lock_") && !c->cast_to<CanvasLayer>()) {
 

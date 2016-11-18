@@ -542,7 +542,7 @@ void OS::set_use_vsync(bool p_enable) {
 
 }
 
-bool OS::is_vsnc_enabled() const{
+bool OS::is_vsync_enabled() const{
 
 	return true;
 }

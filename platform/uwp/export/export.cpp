@@ -71,7 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "object.h"
 #include "tools/editor/editor_import_export.h"
 #include "tools/editor/editor_node.h"
-#include "platform/winrt/logo.h"
+#include "platform/uwp/logo.h"
 #include "os/file_access.h"
 #include "io/zip.h"
 #include "io/unzip.h"
@@ -432,9 +432,9 @@ public:
 	~AppxPackager();
 };
 
-class EditorExportPlatformWinrt : public EditorExportPlatform {
+class EditorExportPlatformUWP : public EditorExportPlatform {
 
-	OBJ_TYPE(EditorExportPlatformWinrt, EditorExportPlatform);
+	OBJ_TYPE(EditorExportPlatformUWP, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
 
@@ -528,8 +528,8 @@ public:
 
 	virtual Error export_project(const String& p_path, bool p_debug, int p_flags = 0);
 
-	EditorExportPlatformWinrt();
-	~EditorExportPlatformWinrt();
+	EditorExportPlatformUWP();
+	~EditorExportPlatformUWP();
 };
 
 
@@ -1452,7 +1452,7 @@ Error AppxPackager::sign(const CertFile & p_cert, const AppxDigests & digests, P
 ////////////////////////////////////////////////////////////////////
 
 
-bool EditorExportPlatformWinrt::_valid_resource_name(const String &p_name) const {
+bool EditorExportPlatformUWP::_valid_resource_name(const String &p_name) const {
 
 	if (p_name.empty()) return false;
 	if (p_name.ends_with(".")) return false;
@@ -1472,7 +1472,7 @@ bool EditorExportPlatformWinrt::_valid_resource_name(const String &p_name) const
 	return true;
 }
 
-bool EditorExportPlatformWinrt::_valid_guid(const String & p_guid) const {
+bool EditorExportPlatformUWP::_valid_guid(const String & p_guid) const {
 
 	Vector<String> parts = p_guid.split("-");
 
@@ -1485,7 +1485,7 @@ bool EditorExportPlatformWinrt::_valid_guid(const String & p_guid) const {
 	return true;
 }
 
-bool EditorExportPlatformWinrt::_valid_bgcolor(const String & p_color) const {
+bool EditorExportPlatformUWP::_valid_bgcolor(const String & p_color) const {
 
 	if (p_color.empty()) return true;
 	if (p_color.begins_with("#") && p_color.is_valid_html_color()) return true;
@@ -1529,7 +1529,7 @@ bool EditorExportPlatformWinrt::_valid_bgcolor(const String & p_color) const {
 	return false;
 }
 
-bool EditorExportPlatformWinrt::_valid_image(const Ref<ImageTexture> p_image, int p_width, int p_height) const {
+bool EditorExportPlatformUWP::_valid_image(const Ref<ImageTexture> p_image, int p_width, int p_height) const {
 
 	if (!p_image.is_valid()) return false;
 
@@ -1553,7 +1553,7 @@ bool EditorExportPlatformWinrt::_valid_image(const Ref<ImageTexture> p_image, in
 	return valid_w && valid_h;
 }
 
-Vector<uint8_t> EditorExportPlatformWinrt::_fix_manifest(const Vector<uint8_t> &p_template, bool p_give_internet) const {
+Vector<uint8_t> EditorExportPlatformUWP::_fix_manifest(const Vector<uint8_t> &p_template, bool p_give_internet) const {
 
 	String result = String::utf8((const char*)p_template.ptr(), p_template.size());
 
@@ -1659,7 +1659,7 @@ Vector<uint8_t> EditorExportPlatformWinrt::_fix_manifest(const Vector<uint8_t> &
 	return r_ret;
 }
 
-Vector<uint8_t> EditorExportPlatformWinrt::_get_image_data(const String & p_path) {
+Vector<uint8_t> EditorExportPlatformUWP::_get_image_data(const String & p_path) {
 
 	Vector<uint8_t> data;
 	Ref<ImageTexture> ref;
@@ -1741,7 +1741,7 @@ Vector<uint8_t> EditorExportPlatformWinrt::_get_image_data(const String & p_path
 	return data;
 }
 
-Error EditorExportPlatformWinrt::save_appx_file(void * p_userdata, const String & p_path, const Vector<uint8_t>& p_data, int p_file, int p_total) {
+Error EditorExportPlatformUWP::save_appx_file(void * p_userdata, const String & p_path, const Vector<uint8_t>& p_data, int p_file, int p_total) {
 
 	AppxPackager *packager = (AppxPackager*)p_userdata;
 	String dst_path = p_path.replace_first("res://", "game/");
@@ -1751,7 +1751,7 @@ Error EditorExportPlatformWinrt::save_appx_file(void * p_userdata, const String 
 	return OK;
 }
 
-bool EditorExportPlatformWinrt::_should_compress_asset(const String & p_path, const Vector<uint8_t>& p_data) {
+bool EditorExportPlatformUWP::_should_compress_asset(const String & p_path, const Vector<uint8_t>& p_data) {
 
 	/* TODO: This was copied verbatim from Android export. It should be
 	 * refactored to the parent class and also be used for .zip export.
@@ -1800,7 +1800,7 @@ bool EditorExportPlatformWinrt::_should_compress_asset(const String & p_path, co
 	return true;
 }
 
-bool EditorExportPlatformWinrt::_set(const StringName& p_name, const Variant& p_value) {
+bool EditorExportPlatformUWP::_set(const StringName& p_name, const Variant& p_value) {
 
 	String n = p_name;
 
@@ -1906,7 +1906,7 @@ bool EditorExportPlatformWinrt::_set(const StringName& p_name, const Variant& p_
 	return true;
 }
 
-bool EditorExportPlatformWinrt::_get(const StringName& p_name, Variant &r_ret) const {
+bool EditorExportPlatformUWP::_get(const StringName& p_name, Variant &r_ret) const {
 
 	String n = p_name;
 
@@ -2002,7 +2002,7 @@ bool EditorExportPlatformWinrt::_get(const StringName& p_name, Variant &r_ret) c
 	return true;
 }
 
-void EditorExportPlatformWinrt::_get_property_list(List<PropertyInfo>* p_list) const {
+void EditorExportPlatformUWP::_get_property_list(List<PropertyInfo>* p_list) const {
 
 	p_list->push_back(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "appx"));
 	p_list->push_back(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "appx"));
@@ -2071,14 +2071,14 @@ void EditorExportPlatformWinrt::_get_property_list(List<PropertyInfo>* p_list) c
 
 }
 
-bool EditorExportPlatformWinrt::can_export(String * r_error) const {
+bool EditorExportPlatformUWP::can_export(String * r_error) const {
 
 	String err;
 	bool valid = true;
 
-	if (!exists_export_template("winrt_x86_debug.zip") || !exists_export_template("winrt_x86_release.zip")
-		|| !exists_export_template("winrt_arm_debug.zip") || !exists_export_template("winrt_arm_release.zip")
-		|| !exists_export_template("winrt_x64_debug.zip") || !exists_export_template("winrt_x64_release.zip")) {
+	if (!exists_export_template("uwp_x86_debug.zip") || !exists_export_template("uwp_x86_release.zip")
+		|| !exists_export_template("uwp_arm_debug.zip") || !exists_export_template("uwp_arm_release.zip")
+		|| !exists_export_template("uwp_x64_debug.zip") || !exists_export_template("uwp_x64_release.zip")) {
 		valid = false;
 		err += TTR("No export templates found.\nDownload and install export templates.") + "\n";
 	}
@@ -2154,7 +2154,7 @@ bool EditorExportPlatformWinrt::can_export(String * r_error) const {
 	return valid;
 }
 
-Error EditorExportPlatformWinrt::export_project(const String & p_path, bool p_debug, int p_flags) {
+Error EditorExportPlatformUWP::export_project(const String & p_path, bool p_debug, int p_flags) {
 
 	String src_appx;
 
@@ -2170,30 +2170,30 @@ Error EditorExportPlatformWinrt::export_project(const String & p_path, bool p_de
 		if (p_debug) {
 			switch (arch) {
 				case X86: {
-					src_appx = find_export_template("winrt_x86_debug.zip", &err);
+					src_appx = find_export_template("uwp_x86_debug.zip", &err);
 					break;
 				}
 				case X64: {
-					src_appx = find_export_template("winrt_x64_debug.zip", &err);
+					src_appx = find_export_template("uwp_x64_debug.zip", &err);
 					break;
 				}
 				case ARM: {
-					src_appx = find_export_template("winrt_arm_debug.zip", &err);
+					src_appx = find_export_template("uwp_arm_debug.zip", &err);
 					break;
 				}
 			}
 		} else {
 			switch (arch) {
 				case X86: {
-					src_appx = find_export_template("winrt_x86_release.zip", &err);
+					src_appx = find_export_template("uwp_x86_release.zip", &err);
 					break;
 				}
 				case X64: {
-					src_appx = find_export_template("winrt_x64_release.zip", &err);
+					src_appx = find_export_template("uwp_x64_release.zip", &err);
 					break;
 				}
 				case ARM: {
-					src_appx = find_export_template("winrt_arm_release.zip", &err);
+					src_appx = find_export_template("uwp_arm_release.zip", &err);
 					break;
 				}
 			}
@@ -2337,9 +2337,9 @@ Error EditorExportPlatformWinrt::export_project(const String & p_path, bool p_de
 	return OK;
 }
 
-EditorExportPlatformWinrt::EditorExportPlatformWinrt() {
+EditorExportPlatformUWP::EditorExportPlatformUWP() {
 
-	Image img(_winrt_logo);
+	Image img(_uwp_logo);
 	logo = Ref<ImageTexture>(memnew(ImageTexture));
 	logo->create_from_image(img);
 
@@ -2381,11 +2381,11 @@ EditorExportPlatformWinrt::EditorExportPlatformWinrt() {
 	certificate_pass = "";
 }
 
-EditorExportPlatformWinrt::~EditorExportPlatformWinrt() {}
+EditorExportPlatformUWP::~EditorExportPlatformUWP() {}
 
 
-void register_winrt_exporter() {
+void register_uwp_exporter() {
 
-	Ref<EditorExportPlatformWinrt> exporter = Ref<EditorExportPlatformWinrt>(memnew(EditorExportPlatformWinrt));
+	Ref<EditorExportPlatformUWP> exporter = Ref<EditorExportPlatformUWP>(memnew(EditorExportPlatformUWP));
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
 }

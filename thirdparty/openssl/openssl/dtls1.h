@@ -81,7 +81,7 @@
 #   include <sys/time.h>
 #  endif
 # endif
-#ifdef WINRT_ENABLED
+#ifdef UWP_ENABLED
 #include <winsock2.h>
 #endif
 

@@ -18023,7 +18023,7 @@
 			<argument index="1" name="action" type="String">
 			</argument>
 			<description>
-				Return whether the given event is part of an existing action.
+				Return whether the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
 			</description>
 		</method>
 		<method name="get_action_from_id" qualifiers="const">
@@ -23878,7 +23878,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the name of the host OS. Possible values are: "Android", "BlackBerry 10", "Flash", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "WinRT", "X11"
+				Return the name of the host OS. Possible values are: "Android", "BlackBerry 10", "Flash", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "UWP", "X11"
 			</description>
 		</method>
 		<method name="get_process_ID" qualifiers="const">
@@ -24152,7 +24152,7 @@
 				Return true if the window is resizable.
 			</description>
 		</method>
-		<method name="is_vsnc_enabled" qualifiers="const">
+		<method name="is_vsync_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -46238,7 +46238,7 @@ do_property].
 			<argument index="0" name="to_pos" type="Vector2">
 			</argument>
 			<description>
-				Wrap the mouse to a position, relative to the viewport.
+				Warp the mouse to a position, relative to the viewport.
 			</description>
 		</method>
 	</methods>

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  thread_uwp.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,4 +26,38 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-void register_winrt_exporter();
+#ifndef THREAD_UWP_H
+#define THREAD_UWP_H
+
+#ifdef UWP_ENABLED
+
+#include "os/thread.h"
+
+#include <thread>
+
+class ThreadUWP : public Thread {
+
+	std::thread thread;
+
+	static Thread* create_func_uwp(ThreadCreateCallback p_callback,void *,const Settings&);
+	static ID get_thread_ID_func_uwp();
+	static void wait_to_finish_func_uwp(Thread* p_thread);
+
+	ThreadUWP();
+public:
+
+
+	virtual ID get_ID() const;
+
+	static void make_default();
+
+
+	~ThreadUWP();
+
+};
+
+
+#endif
+
+#endif
+

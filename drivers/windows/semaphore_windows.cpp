@@ -71,7 +71,7 @@ void SemaphoreWindows::make_default() {
 
 SemaphoreWindows::SemaphoreWindows() {
 
-#ifdef WINRT_ENABLED
+#ifdef UWP_ENABLED
 	semaphore=CreateSemaphoreEx(
 		NULL,
 		0,

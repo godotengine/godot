@@ -14,7 +14,7 @@ Files extracted from upstream source:
 - LICENSE file
 
 Important: Some files have been modified by Godot developers so that they work
-for all platforms (especially WinRT). Check the diff with the 1.3.13 tarball
+for all platforms (especially UWP). Check the diff with the 1.3.13 tarball
 before the next update.
 
 
@@ -84,7 +84,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.23
+- Version: 1.6.26
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -158,7 +158,7 @@ Files extracted from upstream source:
 
 - all .c and .h files in src/ (both opus and opusfile),
   except `opus_demo.c`
-- all .h files in include/ (both opus and opusfile)
+- all .h files in include/ (both opus and opusfile) as opus/
 - COPYING
 
 

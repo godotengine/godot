@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joystick.h                                                           */
+/*  joystick_uwp.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,20 +26,20 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef JOYSTICK_WINRT_H
-#define JOYSTICK_WINRT_H
+#ifndef JOYSTICK_UWP_H
+#define JOYSTICK_UWP_H
 
 #include "main/input_default.h"
 
-ref class JoystickWinrt sealed {
+ref class JoystickUWP sealed {
 
 internal:
 
 	void register_events();
 	uint32_t process_controllers(uint32_t p_last_id);
 
-	JoystickWinrt();
-	JoystickWinrt(InputDefault* p_input);
+	JoystickUWP();
+	JoystickUWP(InputDefault* p_input);
 
 private:
 

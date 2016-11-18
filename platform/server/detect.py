@@ -66,6 +66,51 @@ def configure(env):
 
         env.Append(CCFLAGS=['-g2', '-Wall', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
+
+    # Shared libraries, when requested
+
+    if (env['builtin_openssl'] == 'no'):
+        env.ParseConfig('pkg-config openssl --cflags --libs')
+
+    if (env['builtin_libwebp'] == 'no'):
+        env.ParseConfig('pkg-config libwebp --cflags --libs')
+
+    if (env['builtin_freetype'] == 'no'):
+        env['builtin_libpng'] = 'no'  # Freetype links against libpng
+        env.ParseConfig('pkg-config freetype2 --cflags --libs')
+
+    if (env['builtin_libpng'] == 'no'):
+        env.ParseConfig('pkg-config libpng --cflags --libs')
+
+    if (env['builtin_enet'] == 'no'):
+        env.ParseConfig('pkg-config libenet --cflags --libs')
+
+    if (env['builtin_squish'] == 'no' and env["tools"] == "yes"):
+        env.ParseConfig('pkg-config libsquish --cflags --libs')
+
+    # Sound and video libraries
+    # Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
+
+    if (env['builtin_libtheora'] == 'no'):
+        env['builtin_libogg'] = 'no'  # Needed to link against system libtheora
+        env['builtin_libvorbis'] = 'no'  # Needed to link against system libtheora
+        env.ParseConfig('pkg-config theora theoradec --cflags --libs')
+
+    if (env['builtin_libvpx'] == 'no'):
+        env.ParseConfig('pkg-config vpx --cflags --libs')
+
+    if (env['builtin_libvorbis'] == 'no'):
+        env['builtin_libogg'] = 'no'  # Needed to link against system libvorbis
+        env.ParseConfig('pkg-config vorbis vorbisfile --cflags --libs')
+
+    if (env['builtin_opus'] == 'no'):
+        env['builtin_libogg'] = 'no'  # Needed to link against system opus
+        env.ParseConfig('pkg-config opus opusfile --cflags --libs')
+
+    if (env['builtin_libogg'] == 'no'):
+        env.ParseConfig('pkg-config ogg --cflags --libs')
+
+
     env.Append(CPPFLAGS=['-DSERVER_ENABLED', '-DUNIX_ENABLED'])
     env.Append(LIBS=['pthread', 'z'])  # TODO detect linux/BSD!
 

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_winrt.h                                                           */
+/*  os_uwp.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef OSWinrt_H
-#define OSWinrt_H
+#ifndef OSUWP_H
+#define OSUWP_H
 
 #include "os/input.h"
 #include "os/os.h"
@@ -55,12 +55,12 @@
 #include <stdio.h>
 #include "main/input_default.h"
 
-#include "joystick_winrt.h"
+#include "joystick_uwp.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class OSWinrt : public OS {
+class OSUWP : public OS {
 
 public:
 
@@ -137,7 +137,7 @@ private:
 
 	InputDefault *input;
 
-	JoystickWinrt^ joystick;
+	JoystickUWP^ joystick;
 
 	Windows::System::Display::DisplayRequest^ display_request;
 
@@ -159,7 +159,7 @@ private:
 
 	internal:
 		ManagedType() { alert_close_handle = false; }
-		property OSWinrt* os;
+		property OSUWP* os;
 	};
 	ManagedType^ managed_object;
 	Windows::Devices::Sensors::Accelerometer^ accelerometer;
@@ -273,8 +273,8 @@ public:
 
 	void queue_key_event(KeyEvent &p_event);
 
-	OSWinrt();
-	~OSWinrt();
+	OSUWP();
+	~OSUWP();
 
 };
 

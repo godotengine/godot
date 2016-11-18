@@ -53,7 +53,7 @@ using namespace Windows::System;
 using namespace Windows::System::Threading::Core;
 using namespace Microsoft::WRL;
 
-using namespace GodotWinRT;
+using namespace GodotUWP;
 
 // Helper to convert a length in device-independent pixels (DIPs) to a length in physical pixels.
 inline float ConvertDipsToPixels(float dips, float dpi)
@@ -63,7 +63,7 @@ inline float ConvertDipsToPixels(float dips, float dpi)
 }
 
 // Implementation of the IFrameworkViewSource interface, necessary to run our app.
-ref class GodotWinrtViewSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
+ref class GodotUWPViewSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
 {
 public:
     virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView()
@@ -76,7 +76,7 @@ public:
 [Platform::MTAThread]
 int main(Platform::Array<Platform::String^>^)
 {
-    auto godotApplicationSource = ref new GodotWinrtViewSource();
+    auto godotApplicationSource = ref new GodotUWPViewSource();
     CoreApplication::Run(godotApplicationSource);
     return 0;
 }
@@ -105,7 +105,7 @@ void App::Initialize(CoreApplicationView^ applicationView)
     // Information about the Suspending and Resuming event handlers can be found here:
     // http://msdn.microsoft.com/en-us/library/windows/apps/xaml/hh994930.aspx
 
-	os = new OSWinrt;
+	os = new OSUWP;
 
 }
 
@@ -157,7 +157,7 @@ void App::SetWindow(CoreWindow^ p_window)
 	unsigned int argc;
 	char** argv = get_command_line(&argc);
 
-	Main::setup("winrt", argc, argv, false);
+	Main::setup("uwp", argc, argv, false);
 
 	// The CoreWindow has been created, so EGL can be initialized.
 	ContextEGL* context = memnew(ContextEGL(window));
@@ -431,7 +431,7 @@ void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 void App::key_event(Windows::UI::Core::CoreWindow^ sender, bool p_pressed, Windows::UI::Core::KeyEventArgs^ key_args, Windows::UI::Core::CharacterReceivedEventArgs^ char_args)
 {
 
-	OSWinrt::KeyEvent ke;
+	OSUWP::KeyEvent ke;
 
 	InputModifierState mod;
 	mod.meta = false;
@@ -445,14 +445,14 @@ void App::key_event(Windows::UI::Core::CoreWindow^ sender, bool p_pressed, Windo
 	
 	if (key_args != nullptr) {
 		
-		ke.type = OSWinrt::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
+		ke.type = OSUWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
 		ke.unicode = 0;
 		ke.scancode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
 		ke.echo = (!p_pressed && !key_args->KeyStatus.IsKeyReleased) || (p_pressed && key_args->KeyStatus.WasKeyDown);
 
 	} else {
 
-		ke.type = OSWinrt::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
+		ke.type = OSUWP::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
 		ke.unicode = char_args->KeyCode;
 		ke.scancode = 0;
 		ke.echo = (!p_pressed && !char_args->KeyStatus.IsKeyReleased) || (p_pressed && char_args->KeyStatus.WasKeyDown);

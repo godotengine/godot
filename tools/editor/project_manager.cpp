@@ -75,15 +75,22 @@ private:
 	String zip_title;
 	AcceptDialog *dialog_error;
 
-	bool _test_path() {
+	String _test_path() {
 
 		error->set_text("");
 		get_ok()->set_disabled(true);
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (project_path->get_text() != "" && d->change_dir(project_path->get_text())!=OK) {
+		String valid_path;
+		if (d->change_dir(project_path->get_text())==OK){
+			valid_path=project_path->get_text();
+		} else if (d->change_dir(project_path->get_text().strip_edges())==OK) {
+			valid_path=project_path->get_text().strip_edges();
+		}
+
+		if (valid_path == "") {
 			error->set_text(TTR("Invalid project path, the path must exist!"));
 			memdelete(d);
-			return false;
+			return "";
 		}
 
 		if (mode!=MODE_IMPORT) {
@@ -92,30 +99,29 @@ private:
 
 				error->set_text(TTR("Invalid project path, engine.cfg must not exist."));
 				memdelete(d);
-				return false;
+				return "";
 			}
 
 		} else {
 
-			if (project_path->get_text() != "" && !d->file_exists("engine.cfg")) {
+			if (valid_path != "" && !d->file_exists("engine.cfg")) {
 
 				error->set_text(TTR("Invalid project path, engine.cfg must exist."));
 				memdelete(d);
-				return false;
+				return "";
 			}
 		}
 
 		memdelete(d);
 		get_ok()->set_disabled(false);
-		return true;
+		return valid_path;
 
 	}
 
 	void _path_text_changed(const String& p_path) {
 
-		if ( _test_path() ) {
-
-			String sp=p_path;
+		String sp=_test_path();
+		if ( sp!="" ) {
 
 			sp=sp.replace("\\","/");
 			int lidx=sp.find_last("/");
@@ -141,7 +147,7 @@ private:
 		}
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
-		_path_text_changed(p);
+		_path_text_changed(sp);
 		get_ok()->call_deferred("grab_focus");
 	}
 
@@ -150,7 +156,7 @@ private:
 		String p = p_path;
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
-		_path_text_changed(p);
+		_path_text_changed(sp);
 		get_ok()->call_deferred("grab_focus");
 	}
 
@@ -173,27 +179,15 @@ private:
 
 	void ok_pressed() {
 
-		if (!_test_path())
+		String dir=_test_path();
+		if (dir=="") {
+			error->set_text(TTR("Invalid project path (changed anything?)."));
 			return;
-
-		String dir;
+		}
 
 		if (mode==MODE_IMPORT) {
-			dir=project_path->get_text();
-
-
+			// nothing to do
 		} else {
-			DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-
-			if (d->change_dir(project_path->get_text())!=OK) {
-				error->set_text(TTR("Invalid project path (changed anything?)."));
-				memdelete(d);
-				return;
-			}
-
-			dir=d->get_current_dir();
-			memdelete(d);
-
 			if (mode==MODE_NEW) {
 
 
@@ -321,8 +315,6 @@ private:
 
 			}
 
-
-
 		}
 
 		dir=dir.replace("\\","/");
@@ -335,7 +327,7 @@ private:
 
 
 		hide();
-		emit_signal("project_created");
+		emit_signal("project_created", dir);
 
 	}
 
@@ -402,7 +394,7 @@ public:
 			popup_centered(Size2(500,125)*EDSCALE);
 
 		}
-
+		project_path->grab_focus();
 
 		_test_path();
 	}
@@ -882,6 +874,7 @@ void ProjectManager::_load_recent_projects() {
 		hb->add_child(tf);
 
 		VBoxContainer *vb = memnew(VBoxContainer);
+		vb->set_name("project");
 		hb->add_child(vb);
 		Control *ec = memnew( Control );
 		ec->set_custom_minimum_size(Size2(0,1));
@@ -891,6 +884,7 @@ void ProjectManager::_load_recent_projects() {
 		title->add_color_override("font_color",font_color);
 		vb->add_child(title);
 		Label *fpath = memnew( Label(path) );
+		fpath->set_name("path");
 		vb->add_child(fpath);
 		fpath->set_opacity(0.5);
 		fpath->add_color_override("font_color",font_color);
@@ -910,6 +904,43 @@ void ProjectManager::_load_recent_projects() {
 	EditorSettings::get_singleton()->save();
 
 	tabs->set_current_tab(0);
+}
+
+void ProjectManager::_on_project_created(const String& dir) {
+	bool has_already=false;
+	for (int i=0;i<scroll_childs->get_child_count();i++) {
+		HBoxContainer *hb=scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+		Label *fpath=hb->get_node(NodePath("project/path"))->cast_to<Label>();
+		if (fpath->get_text()==dir) {
+			has_already=true;
+			break;
+		}
+	}
+	if (has_already) {
+		_update_scroll_pos(dir);
+	} else {
+		_load_recent_projects();
+		scroll->connect("draw", this, "_update_scroll_pos", varray(dir), CONNECT_ONESHOT);
+	}
+}
+
+void ProjectManager::_update_scroll_pos(const String& dir) {
+	for (int i=0;i<scroll_childs->get_child_count();i++) {
+		HBoxContainer *hb=scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+		Label *fpath=hb->get_node(NodePath("project/path"))->cast_to<Label>();
+		if (fpath->get_text()==dir) {
+			last_clicked=hb->get_meta("name");
+			selected_list.clear();
+			selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
+			_update_project_buttons();
+			int last_y_visible=scroll->get_v_scroll()+scroll->get_size().y;
+			int offset_diff=(hb->get_pos().y + hb->get_size().y)-last_y_visible;
+
+			if (offset_diff>0)
+				scroll->set_v_scroll(scroll->get_v_scroll()+offset_diff);
+			break;
+		}
+	}
 }
 
 void ProjectManager::_open_project_confirm() {
@@ -1164,6 +1195,8 @@ void ProjectManager::_bind_methods() {
 	ObjectTypeDB::bind_method("_erase_project_confirm",&ProjectManager::_erase_project_confirm);
 	ObjectTypeDB::bind_method("_exit_dialog",&ProjectManager::_exit_dialog);
 	ObjectTypeDB::bind_method("_load_recent_projects",&ProjectManager::_load_recent_projects);
+	ObjectTypeDB::bind_method("_on_project_created",&ProjectManager::_on_project_created);
+	ObjectTypeDB::bind_method("_update_scroll_pos",&ProjectManager::_update_scroll_pos);
 	ObjectTypeDB::bind_method("_panel_draw",&ProjectManager::_panel_draw);
 	ObjectTypeDB::bind_method("_panel_input",&ProjectManager::_panel_input);
 	ObjectTypeDB::bind_method("_unhandled_input",&ProjectManager::_unhandled_input);
@@ -1382,7 +1415,7 @@ ProjectManager::ProjectManager() {
 	npdialog = memnew( NewProjectDialog );
 	gui_base->add_child(npdialog);
 
-	npdialog->connect("project_created", this,"_load_recent_projects");
+	npdialog->connect("project_created", this,"_on_project_created");
 	_load_recent_projects();
 
 	if ( EditorSettings::get_singleton()->get("global/autoscan_project_path") ) {

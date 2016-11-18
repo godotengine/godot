@@ -209,6 +209,7 @@ public:
 			OP_INDEX_NAMED,
 			//unary operators
 			OP_NEG,
+			OP_POS,
 			OP_NOT,
 			OP_BIT_INVERT,
 			OP_PREINC,

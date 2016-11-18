@@ -853,7 +853,7 @@ void LineEdit::_reset_caret_blink_timer() {
 
 void LineEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	if (is_visible()) {
+	if (is_visible() && has_focus() && window_has_focus) {
 		update();
 	}
 }
@@ -918,6 +918,7 @@ void LineEdit::set_text(String p_text) {
 	update();
 	cursor_pos=0;
 	window_pos=0;
+	_text_changed();
 }
 
 void LineEdit::clear() {

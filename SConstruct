@@ -104,6 +104,8 @@ env_base.__class__.split_lib = methods.split_lib
 env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
 
+# Build options
+
 customs = ['custom.py']
 
 profile = ARGUMENTS.get("profile", False)
@@ -115,41 +117,53 @@ if profile:
         customs.append(profile + ".py")
 
 opts = Variables(customs, ARGUMENTS)
-opts.Add('target', 'Compile Target (debug/release_debug/release).', "debug")
-opts.Add('arch', 'Platform dependent architecture (arm/arm64/x86/x64/mips/etc)', "")
-opts.Add('bits', 'Compile Target Bits (default/32/64/fat).', "default")
-opts.Add('platform', 'Platform: ' + str(platform_list) + '.', "")
-opts.Add('p', 'Platform (same as platform=).', "")
-opts.Add('tools', 'Build Tools (Including Editor): (yes/no)', 'yes')
-opts.Add('gdscript', 'Build GDSCript support: (yes/no)', 'yes')
-opts.Add('libogg', 'Ogg library for ogg container support (system/builtin)', 'builtin')
-opts.Add('libvorbis', 'Ogg Vorbis library for vorbis support (system/builtin)', 'builtin')
-opts.Add('libtheora', 'Theora library for theora module (system/builtin)', 'builtin')
-opts.Add('libvpx', 'VPX library for webm module (system/builtin)', 'builtin')
-opts.Add('opus', 'Opus and opusfile library for Opus format support: (system/builtin)', 'builtin')
-opts.Add('minizip', 'Build Minizip Archive Support: (yes/no)', 'yes')
-opts.Add('squish', 'Squish library for BC Texture Compression in editor (system/builtin)', 'builtin')
-opts.Add('freetype', 'Freetype library for TTF support via freetype module (system/builtin)', 'builtin')
-opts.Add('xml', 'XML Save/Load support (yes/no)', 'yes')
-opts.Add('libpng', 'libpng library for image loader support (system/builtin)', 'builtin')
-opts.Add('libwebp', 'libwebp library for webp module (system/builtin)', 'builtin')
-opts.Add('openssl', 'OpenSSL library for openssl module (system/builtin)', 'builtin')
-opts.Add('libmpcdec', 'libmpcdec library for mpc module (system/builtin)', 'builtin')
-opts.Add('enet', 'ENet library (system/builtin)', 'builtin')
-opts.Add('glew', 'GLEW library for the gl_context (system/builtin)', 'builtin')
-opts.Add('xaudio2', 'XAudio2 audio driver (yes/no)', 'no')
-opts.Add("CXX", "C++ Compiler")
-opts.Add("CC", "C Compiler")
-opts.Add("CCFLAGS", "Custom flags for the C/C++ compiler")
+
+# Target build options
+opts.Add('arch', "Platform-dependent architecture (arm/arm64/x86/x64/mips/etc)", '')
+opts.Add('bits', "Target platform bits (default/32/64/fat)", 'default')
+opts.Add('p', "Platform (alias for 'platform')", '')
+opts.Add('platform', "Target platform: any in " + str(platform_list), '')
+opts.Add('target', "Compilation target (debug/release_debug/release)", 'debug')
+opts.Add('tools', "Build the tools a.k.a. the Godot editor (yes/no)", 'yes')
+
+# Components
+opts.Add('deprecated', "Enable deprecated features (yes/no)", 'yes')
+opts.Add('gdscript', "Build GDSCript support (yes/no)", 'yes')
+opts.Add('minizip', "Build minizip archive support (yes/no)", 'yes')
+opts.Add('xaudio2', "XAudio2 audio driver (yes/no)", 'no')
+opts.Add('xml', "XML format support for resources (yes/no)", 'yes')
+
+# Advanced options
+opts.Add('disable_3d', "Disable 3D nodes for smaller executable (yes/no)", 'no')
+opts.Add('disable_advanced_gui', "Disable advance 3D gui nodes and behaviors (yes/no)", 'no')
+opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
+opts.Add('unix_global_settings_path', "UNIX-specific path to system-wide settings. Currently only used for templates", '')
+opts.Add('verbose', "Enable verbose output for the compilation (yes/no)", 'yes')
+opts.Add('vsproj', "Generate Visual Studio Project. (yes/no)", 'no')
+
+# Thirdparty libraries
+opts.Add('builtin_enet', "Use the builtin enet library (yes/no)", 'yes')
+opts.Add('builtin_freetype', "Use the builtin freetype library (yes/no)", 'yes')
+opts.Add('builtin_glew', "Use the builtin glew library (yes/no)", 'yes')
+opts.Add('builtin_libmpcdec', "Use the builtin libmpcdec library (yes/no)", 'yes')
+opts.Add('builtin_libogg', "Use the builtin libogg library (yes/no)", 'yes')
+opts.Add('builtin_libpng', "Use the builtin libpng library (yes/no)", 'yes')
+opts.Add('builtin_libtheora', "Use the builtin libtheora library (yes/no)", 'yes')
+opts.Add('builtin_libvorbis', "Use the builtin libvorbis library (yes/no)", 'yes')
+opts.Add('builtin_libvpx', "Use the builtin libvpx library (yes/no)", 'yes')
+opts.Add('builtin_libwebp', "Use the builtin libwebp library (yes/no)", 'yes')
+opts.Add('builtin_openssl', "Use the builtin openssl library (yes/no)", 'yes')
+opts.Add('builtin_opus', "Use the builtin opus library (yes/no)", 'yes')
+opts.Add('builtin_squish', "Use the builtin squish library (yes/no)", 'yes')
+opts.Add('builtin_zlib', "Use the builtin zlib library (yes/no)", 'yes')
+
+# Environment setup
+opts.Add("CXX", "C++ compiler")
+opts.Add("CC", "C compiler")
+opts.Add("CCFLAGS", "Custom flags for the C and C++ compilers")
 opts.Add("CFLAGS", "Custom flags for the C compiler")
 opts.Add("LINKFLAGS", "Custom flags for the linker")
-opts.Add('unix_global_settings_path', 'unix-specific path to system-wide settings. Currently only used by templates.', '')
-opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
-opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
-opts.Add('verbose', 'Enable verbose output for the compilation (yes/no)', 'yes')
-opts.Add('deprecated', 'Enable deprecated features (yes/no)', 'yes')
-opts.Add('extra_suffix', 'Custom extra suffix added to the base filename of all generated binary files.', '')
-opts.Add('vsproj', 'Generate Visual Studio Project. (yes/no)', 'no')
+
 
 # add platform specific options
 

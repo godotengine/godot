@@ -2485,6 +2485,12 @@ void Node::replace_by(Node* p_node,bool p_keep_data) {
 			rd.name=E->get().name;
 			rd.value=get(rd.name);
 		}
+
+		List<GroupInfo> groups;
+		get_groups(&groups);
+
+		for(List<GroupInfo>::Element *E=groups.front();E;E=E->next())
+			p_node->add_to_group(E->get().name, E->get().persistent);
 	}
 
 	_replace_connections_target(p_node);
