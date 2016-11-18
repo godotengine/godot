@@ -45,9 +45,7 @@
 #include "javascript_eval.h"
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2,int w, int h, bool fs);
-typedef int (*OpenURIFunc)(const String&);
 typedef String (*GetDataDirFunc)();
-typedef String (*GetLocaleFunc)();
 
 class OS_JavaScript : public OS_Unix {
 public:
@@ -85,9 +83,7 @@ private:
 	VideoMode default_videomode;
 	MainLoop * main_loop;
 
-	OpenURIFunc open_uri_func;
 	GetDataDirFunc get_data_dir_func;
-	GetLocaleFunc get_locale_func;
 
 #ifdef JAVASCRIPT_EVAL_ENABLED
 	JavaScript* javascript_eval;
@@ -121,9 +117,12 @@ public:
 
 	//static OS* get_singleton();
 
-	virtual void vprint(const char* p_format, va_list p_list, bool p_stderr=false);
-	virtual void print(const char *p_format, ... );
-	virtual void alert(const String& p_alert);
+	virtual void print_error(const char* p_function, const char* p_file, int p_line, const char *p_code, const char* p_rationale, ErrorType p_type) {
+
+		OS::print_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+	}
+
+	virtual void alert(const String& p_alert,const String& p_title="ALERT!");
 
 
 	virtual void set_mouse_show(bool p_show);
@@ -164,8 +163,8 @@ public:
 
 	virtual Error shell_open(String p_uri);
 	virtual String get_data_dir() const;
+	String get_executable_path() const;
 	virtual String get_resource_dir() const;
-	virtual String get_locale() const;
 
 	void process_accelerometer(const Vector3& p_accelerometer);
 	void process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points);
@@ -175,7 +174,7 @@ public:
 	virtual String get_joy_guid(int p_device) const;
 	bool joy_connection_changed(int p_type, const EmscriptenGamepadEvent *p_event);
 
-	OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func);
+	OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func);
 	~OS_JavaScript();
 
 };

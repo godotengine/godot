@@ -37,6 +37,7 @@
 #include "main/main.h"
 
 #include "core/globals.h"
+#include "stdlib.h"
 #include "emscripten.h"
 #include "dom_keys.h"
 
@@ -89,7 +90,9 @@ static InputEvent _setup_key_event(const EmscriptenKeyboardEvent *emscripten_eve
 	ev.key.scancode = dom2godot_scancode(emscripten_event->keyCode);
 
 	String unicode = String::utf8(emscripten_event->key);
+	// check if empty or multi-character (e.g. `CapsLock`)
 	if (unicode.length()!=1) {
+		// might be empty as well, but better than nonsense
 		unicode = String::utf8(emscripten_event->charValue);
 	}
 	if (unicode.length()==1) {
@@ -152,6 +155,25 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 		gfx_init_func(gfx_init_ud,use_gl2,p_desired.width,p_desired.height,p_desired.fullscreen);
 
 	default_videomode=p_desired;
+
+	// find locale, emscripten only sets "C"
+	char locale_ptr[16];
+	EM_ASM_({
+		var locale = "";
+		if (Module.locale) {
+			// best case: server-side script reads Accept-Language early and
+			// defines the locale to be read here
+			locale = Module.locale;
+		} else {
+			// no luck, use what the JS engine can tell us
+			// if this turns out not compatible enough, add tests for
+			// browserLanguage, systemLanguage and userLanguage
+			locale = navigator.languages ? navigator.languages[0] : navigator.language;
+		}
+		locale = locale.split('.')[0];
+		stringToUTF8(locale, $0, 16);
+	}, locale_ptr);
+	setenv("LANG", locale_ptr, true);
 
 	print_line("Init Audio");
 
@@ -254,32 +276,11 @@ void OS_JavaScript::finalize() {
 	memdelete(input);
 }
 
+void OS_JavaScript::alert(const String& p_alert,const String& p_title) {
 
-void OS_JavaScript::vprint(const char* p_format, va_list p_list, bool p_stderr) {
-
-	if (p_stderr) {
-
-		vfprintf(stderr,p_format,p_list);
-		fflush(stderr);
-	} else {
-
-		vprintf(p_format,p_list);
-		fflush(stdout);
-	}
-}
-
-void OS_JavaScript::print(const char *p_format, ... ) {
-
-	va_list argp;
-	va_start(argp, p_format);
-	vprintf(p_format, argp );
-	va_end(argp);
-
-}
-
-void OS_JavaScript::alert(const String& p_alert) {
-
-	print("ALERT: %s\n",p_alert.utf8().get_data());
+	EM_ASM_({
+		window.alert(UTF8ToString($0));
+	}, p_alert.utf8().get_data());
 }
 
 
@@ -306,9 +307,12 @@ int OS_JavaScript::get_mouse_button_state() const {
 
 	return 0;
 }
+
 void OS_JavaScript::set_window_title(const String& p_title) {
 
-
+	EM_ASM_({
+		document.title = UTF8ToString($0);
+	}, p_title.utf8().get_data());
 }
 
 //interesting byt not yet
@@ -664,24 +668,16 @@ void OS_JavaScript::reload_gfx() {
 }
 
 Error OS_JavaScript::shell_open(String p_uri) {
-
-	if (open_uri_func)
-		return open_uri_func(p_uri)?ERR_CANT_OPEN:OK;
-	return ERR_UNAVAILABLE;
-};
+	EM_ASM_({
+		window.open(UTF8ToString($0), '_blank');
+	}, p_uri.utf8().get_data());
+	return OK;
+}
 
 String OS_JavaScript::get_resource_dir() const {
 
 	return "/"; //javascript has it's own filesystem for resources inside the APK
 }
-
-String OS_JavaScript::get_locale() const {
-
-	if (get_locale_func)
-		return get_locale_func();
-	return OS_Unix::get_locale();
-}
-
 
 String OS_JavaScript::get_data_dir() const {
 
@@ -691,6 +687,10 @@ String OS_JavaScript::get_data_dir() const {
 	//return Globals::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };
 
+String OS_JavaScript::get_executable_path() const {
+
+	return String();
+}
 
 void OS_JavaScript::_close_notification_funcs(const String& p_file,int p_flags) {
 
@@ -757,9 +757,7 @@ String OS_JavaScript::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
-OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func) {
-
-
+OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func) {
 	default_videomode.width=800;
 	default_videomode.height=600;
 	default_videomode.fullscreen=true;
@@ -772,9 +770,7 @@ OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, Ope
 	gl_extensions=NULL;
 	rasterizer=NULL;
 
-	open_uri_func=p_open_uri_func;
 	get_data_dir_func=p_get_data_dir_func;
-	get_locale_func=p_get_locale_func;
 	FileAccessUnix::close_notification_func=_close_notification_funcs;
 
 	time_to_save_sync=-1;
