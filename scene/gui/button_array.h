@@ -59,6 +59,7 @@ private:
 
 	int selected;
 	int hover;
+	bool flat;
 	double min_button_size;
 
 	Vector<Button> buttons;
@@ -78,6 +79,9 @@ public:
 
 	void set_align(Align p_align);
 	Align get_align() const;
+
+	void set_flat(bool p_flat);
+	bool is_flat() const;
 
 	void add_button(const String& p_button,const String& p_tooltip="");
 	void add_icon_button(const Ref<Texture>& p_icon,const String& p_button="",const String& p_tooltip="");
