@@ -196,7 +196,6 @@ static int frame_count = 0;
 	}; break; // no fallthrough
 
 	default: {
-
 		if (OSIPhone::get_singleton()) {
 //			OSIPhone::get_singleton()->update_accelerometer(accel[0], accel[1], accel[2]);
 			if (motionInitialised) {
@@ -207,14 +206,42 @@ static int frame_count = 0;
 				// Apple splits our accelerometer date into a gravity and user movement component. We add them back together
 				CMAcceleration gravity = motionManager.deviceMotion.gravity;
 				CMAcceleration acceleration = motionManager.deviceMotion.userAcceleration;
-				OSIPhone::get_singleton()->update_accelerometer(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z);
 
+				///@TODO We don't seem to be getting data here, is my device broken or is this code incorrect?
 				CMMagneticField magnetic = motionManager.deviceMotion.magneticField.field;
-				OSIPhone::get_singleton()->update_magnetometer(magnetic.x, magnetic.y, magnetic.z);
 
 				///@TODO we can access rotationRate as a CMRotationRate variable (processed date) or CMGyroData (raw data), have to see what works best
 				CMRotationRate rotation = motionManager.deviceMotion.rotationRate;
-				OSIPhone::get_singleton()->update_gyroscope(rotation.x, rotation.y, rotation.z);
+
+				// Adjust for screen orientation.
+				// [[UIDevice currentDevice] orientation] changes even if we've fixed our orientation which is not
+				// a good thing when you're trying to get your user to move the screen in all directions and want consistent output
+
+				///@TODO Using [[UIApplication sharedApplication] statusBarOrientation] is a bit of a hack. Godot obviously knows the orientation so maybe we 
+				// can use that instead?
+
+				switch ([[UIApplication sharedApplication] statusBarOrientation]) {
+				case UIDeviceOrientationLandscapeLeft: {
+					OSIPhone::get_singleton()->update_accelerometer(-(acceleration.y + gravity.y), acceleration.x + gravity.x, acceleration.z + gravity.z);
+					OSIPhone::get_singleton()->update_magnetometer(-magnetic.y, magnetic.x, magnetic.z);
+					OSIPhone::get_singleton()->update_gyroscope(-rotation.y, rotation.x, rotation.z);
+				}; break;
+				case UIDeviceOrientationLandscapeRight: {
+					OSIPhone::get_singleton()->update_accelerometer(acceleration.y + gravity.y, acceleration.x + gravity.x, acceleration.z + gravity.z);
+					OSIPhone::get_singleton()->update_magnetometer(magnetic.y, magnetic.x, magnetic.z);
+					OSIPhone::get_singleton()->update_gyroscope(rotation.y, rotation.x, rotation.z);
+				}; break;
+				case UIDeviceOrientationPortraitUpsideDown: {
+					OSIPhone::get_singleton()->update_accelerometer(-(acceleration.x + gravity.x), acceleration.y + gravity.y, acceleration.z + gravity.z);
+					OSIPhone::get_singleton()->update_magnetometer(-magnetic.x, magnetic.y, magnetic.z);
+					OSIPhone::get_singleton()->update_gyroscope(-rotation.x, rotation.y, rotation.z);
+				}; break;
+				default: { // assume portrait
+					OSIPhone::get_singleton()->update_accelerometer(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z);
+					OSIPhone::get_singleton()->update_magnetometer(magnetic.x, magnetic.y, magnetic.z);
+					OSIPhone::get_singleton()->update_gyroscope(rotation.x, rotation.y, rotation.z);
+				}; break;
+				};
 			}
 
 			bool quit_request = OSIPhone::get_singleton()->iterate();
