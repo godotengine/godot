@@ -166,6 +166,7 @@
 #include "scene/resources/sample.h"
 #include "scene/audio/sample_player.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/sky_box.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/room.h"
@@ -203,6 +204,7 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/quad.h"
 #include "scene/3d/light.h"
+#include "scene/3d/reflection_probe.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/portal.h"
 #include "scene/resources/environment.h"
@@ -421,6 +423,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<DirectionalLight>();
 	ObjectTypeDB::register_type<OmniLight>();
 	ObjectTypeDB::register_type<SpotLight>();
+	ObjectTypeDB::register_type<ReflectionProbe>();
 	ObjectTypeDB::register_type<AnimationTreePlayer>();
 	ObjectTypeDB::register_type<Portal>();
 	//ObjectTypeDB::register_type<Particles>();
@@ -578,6 +581,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Environment>();
 	ObjectTypeDB::register_type<World2D>();
 	ObjectTypeDB::register_virtual_type<Texture>();
+	ObjectTypeDB::register_virtual_type<SkyBox>();
+	ObjectTypeDB::register_type<ImageSkyBox>();
 	ObjectTypeDB::register_type<ImageTexture>();
 	ObjectTypeDB::register_type<AtlasTexture>();
 	ObjectTypeDB::register_type<LargeTexture>();

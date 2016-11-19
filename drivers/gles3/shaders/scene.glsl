@@ -64,6 +64,8 @@ layout(std140) uniform SceneData { //ubo:0
 	vec2 shadow_atlas_pixel_size;
 	vec2 directional_shadow_pixel_size;
 
+	float reflection_multiplier;
+
 };
 
 uniform highp mat4 world_transform;
@@ -288,11 +290,11 @@ in vec3 normal_interp;
 //used on forward mainly
 uniform bool no_ambient_light;
 
-
-#ifdef USE_RADIANCE_CUBEMAP
-
 uniform sampler2D brdf_texture; //texunit:-1
-uniform samplerCube radiance_cube; //texunit:-2
+
+#ifdef USE_RADIANCE_MAP
+
+uniform sampler2D radiance_map; //texunit:-2
 
 
 layout(std140) uniform Radiance { //ubo:2
@@ -342,6 +344,8 @@ layout(std140) uniform SceneData {
 
 	vec2 shadow_atlas_pixel_size;
 	vec2 directional_shadow_pixel_size;
+
+	float reflection_multiplier;
 
 };
 
@@ -398,6 +402,24 @@ layout(std140) uniform SpotLightData { //ubo:5
 uniform highp sampler2DShadow shadow_atlas; //texunit:-3
 
 
+struct ReflectionData {
+
+	mediump vec4 box_extents;
+	mediump vec4 box_offset;
+	mediump vec4 params; // intensity, 0, interior , boxproject
+	mediump vec4 ambient; //ambient color, energy
+	mediump vec4 atlas_clamp;
+	highp mat4 local_matrix; //up to here for spot and omni, rest is for directional
+	//notes: for ambientblend, use distance to edge to blend between already existing global environment
+};
+
+layout(std140) uniform ReflectionProbeData { //ubo:6
+
+	ReflectionData reflections[MAX_REFLECTION_DATA_STRUCTS];
+};
+uniform mediump sampler2D reflection_atlas; //texunit:-5
+
+
 #ifdef USE_FORWARD_LIGHTING
 
 uniform int omni_light_indices[MAX_FORWARD_LIGHTS];
@@ -405,6 +427,9 @@ uniform int omni_light_count;
 
 uniform int spot_light_indices[MAX_FORWARD_LIGHTS];
 uniform int spot_light_count;
+
+uniform int reflection_indices[MAX_FORWARD_LIGHTS];
+uniform int reflection_count;
 
 #endif
 
@@ -578,6 +603,120 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 al
 
 }
 
+void reflection_process(int idx, vec3 vertex, vec3 normal,float roughness,vec3 ambient,vec3 skybox,vec2 brdf, inout highp vec4 reflection_accum,inout highp vec4 ambient_accum) {
+
+	vec3 ref_vec = normalize(reflect(vertex,normal));
+	vec3 local_pos = (reflections[idx].local_matrix * vec4(vertex,1.0)).xyz;
+	vec3 box_extents = reflections[idx].box_extents.xyz;
+
+	if (any(greaterThan(abs(local_pos),box_extents))) { //out of the reflection box
+		return;
+	}
+
+	vec3 inner_pos = abs(local_pos / box_extents);
+	float blend = max(inner_pos.x,max(inner_pos.y,inner_pos.z));
+	//make blend more rounded
+	blend=mix(length(inner_pos),blend,blend);
+	blend*=blend;
+	blend=1.001-blend;
+
+	if (reflections[idx].params.x>0.0){// compute reflection
+
+		vec3 local_ref_vec = (reflections[idx].local_matrix * vec4(ref_vec,0.0)).xyz;
+
+		if (reflections[idx].params.w > 0.5) { //box project
+
+			vec3 nrdir = normalize(local_ref_vec);
+			vec3 rbmax = (box_extents - local_pos)/nrdir;
+			vec3 rbmin = (-box_extents - local_pos)/nrdir;
+
+
+			vec3 rbminmax = mix(rbmin,rbmax,greaterThan(nrdir,vec3(0.0,0.0,0.0)));
+
+			float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+			vec3 posonbox = local_pos + nrdir * fa;
+			local_ref_vec = posonbox - reflections[idx].box_offset.xyz;
+		}
+
+
+
+		vec3 splane=normalize(local_ref_vec);
+		vec4 clamp_rect=reflections[idx].atlas_clamp;
+
+		splane.z*=-1.0;
+		if (splane.z>=0.0) {
+			splane.z+=1.0;
+			clamp_rect.y+=clamp_rect.w;
+		} else {
+			splane.z=1.0 - splane.z;
+			splane.y=-splane.y;
+		}
+
+		splane.xy/=splane.z;
+		splane.xy=splane.xy * 0.5 + 0.5;
+
+		splane.xy = splane.xy * clamp_rect.zw + clamp_rect.xy;
+		splane.xy = clamp(splane.xy,clamp_rect.xy,clamp_rect.xy+clamp_rect.zw);
+
+		highp vec4 reflection;
+		reflection.rgb = textureLod(reflection_atlas,splane.xy,roughness*5.0).rgb * ( brdf.x + brdf.y);
+		if (reflections[idx].params.z < 0.5) {
+			reflection.rgb = mix(skybox,reflection.rgb,blend);
+		}
+		reflection.rgb*=reflections[idx].params.x;
+		reflection.a = blend;
+		reflection.rgb*=reflection.a;
+
+		reflection_accum+=reflection;
+	}
+
+	if (reflections[idx].ambient.a>0.0) { //compute ambient using skybox
+
+
+		vec3 local_amb_vec = (reflections[idx].local_matrix * vec4(normal,0.0)).xyz;
+
+		vec3 splane=normalize(local_amb_vec);
+		vec4 clamp_rect=reflections[idx].atlas_clamp;
+
+		splane.z*=-1.0;
+		if (splane.z>=0.0) {
+			splane.z+=1.0;
+			clamp_rect.y+=clamp_rect.w;
+		} else {
+			splane.z=1.0 - splane.z;
+			splane.y=-splane.y;
+		}
+
+		splane.xy/=splane.z;
+		splane.xy=splane.xy * 0.5 + 0.5;
+
+		splane.xy = splane.xy * clamp_rect.zw + clamp_rect.xy;
+		splane.xy = clamp(splane.xy,clamp_rect.xy,clamp_rect.xy+clamp_rect.zw);
+
+		highp vec4 ambient_out;
+		ambient_out.a=blend;
+		ambient_out.rgb = textureLod(reflection_atlas,splane.xy,5.0).rgb;
+		ambient_out.rgb=mix(reflections[idx].ambient.rgb,ambient_out.rgb,reflections[idx].ambient.a);
+		if (reflections[idx].params.z < 0.5) {
+			ambient_out.rgb = mix(ambient,ambient_out.rgb,blend);
+		}
+
+		ambient_out.rgb *= ambient_out.a;
+		ambient_accum+=ambient_out;
+	} else {
+
+		highp vec4 ambient_out;
+		ambient_out.a=blend;
+		ambient_out.rgb=reflections[idx].ambient.rgb;
+		if (reflections[idx].params.z < 0.5) {
+			ambient_out.rgb = mix(ambient,ambient_out.rgb,blend);
+		}
+		ambient_out.rgb *= ambient_out.a;
+		ambient_accum+=ambient_out;
+
+	}
+}
+
 void main() {
 
 #ifdef RENDER_SHADOW_DUAL_PARABOLOID
@@ -666,31 +805,56 @@ FRAGMENT_SHADER_CODE
 
 	vec3 eye_vec = -normalize( vertex_interp );
 
-#ifdef USE_RADIANCE_CUBEMAP
+#ifndef RENDER_SHADOW
+	float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
+	vec2 brdf = texture(brdf_texture, vec2(roughness, ndotv)).xy;
+#endif
+
+#ifdef USE_RADIANCE_MAP
 
 	if (no_ambient_light) {
 		ambient_light=vec3(0.0,0.0,0.0);
 	} else {
 		{
 
-			float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
-			vec2 brdf = texture(brdf_texture, vec2(roughness, ndotv)).xy;
+
 
 			float lod = roughness * 5.0;
-			vec3 r = reflect(-eye_vec,normal); //2.0 * ndotv * normal - view; // reflect(v, n);
-			r=normalize((radiance_inverse_xform * vec4(r,0.0)).xyz);
-			vec3 radiance = textureLod(radiance_cube, r, lod).xyz * ( brdf.x + brdf.y);
 
-			specular_light=mix(albedo,radiance,specular);
+			{ //read radiance from dual paraboloid
+
+				vec3 ref_vec = reflect(-eye_vec,normal); //2.0 * ndotv * normal - view; // reflect(v, n);
+				ref_vec=normalize((radiance_inverse_xform * vec4(ref_vec,0.0)).xyz);
+
+				vec3 norm = normalize(ref_vec);
+				float y_ofs=0.0;
+				if (norm.z>=0.0) {
+
+					norm.z+=1.0;
+					y_ofs+=0.5;
+				} else {
+					norm.z=1.0 - norm.z;
+					norm.y=-norm.y;
+				}
+
+				norm.xy/=norm.z;
+				norm.xy=norm.xy * vec2(0.5,0.25) + vec2(0.5,0.25+y_ofs);
+				vec3 radiance = textureLod(radiance_map, norm.xy, lod).xyz * ( brdf.x + brdf.y);
+				specular_light=mix(albedo,radiance,specular);
+
+			}
+			//no longer a cubemap
+			//vec3 radiance = textureLod(radiance_cube, r, lod).xyz * ( brdf.x + brdf.y);
 
 		}
 
 		{
 
-			vec3 ambient_dir=normalize((radiance_inverse_xform * vec4(normal,0.0)).xyz);
+			/*vec3 ambient_dir=normalize((radiance_inverse_xform * vec4(normal,0.0)).xyz);
 			vec3 env_ambient=textureLod(radiance_cube, ambient_dir, 5.0).xyz;
 
-			ambient_light=mix(ambient_light_color.rgb,env_ambient,radiance_ambient_contribution);
+			ambient_light=mix(ambient_light_color.rgb,env_ambient,radiance_ambient_contribution);*/
+			ambient_light=vec3(0.0,0.0,0.0);
 		}
 	}
 
@@ -840,6 +1004,21 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_FORWARD_LIGHTING
 
+	highp vec4 reflection_accum = vec4(0.0,0.0,0.0,0.0);
+	highp vec4 ambient_accum = vec4(0.0,0.0,0.0,0.0);
+
+	for(int i=0;i<reflection_count;i++) {
+		reflection_process(reflection_indices[i],vertex,normal,roughness,ambient_light,specular_light,brdf,reflection_accum,ambient_accum);
+	}
+
+	if (reflection_accum.a>0.0) {
+		specular_light=reflection_accum.rgb/reflection_accum.a;
+		specular_light*=specular;
+	}
+	if (ambient_accum.a>0.0) {
+		ambient_light=ambient_accum.rgb/ambient_accum.a;
+	}
+
 	for(int i=0;i<omni_light_count;i++) {
 		light_process_omni(omni_light_indices[i],vertex,eye_vec,normal,albedo,specular,roughness,diffuse_light,specular_light);
 	}
@@ -847,6 +1026,8 @@ FRAGMENT_SHADER_CODE
 	for(int i=0;i<spot_light_count;i++) {
 		light_process_spot(spot_light_indices[i],vertex,eye_vec,normal,albedo,specular,roughness,diffuse_light,specular_light);
 	}
+
+
 
 #endif
 
@@ -866,6 +1047,7 @@ LIGHT_SHADER_CODE
 //nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
 #else
 
+	specular_light*=reflection_multiplier;
 
 #ifdef USE_MULTIPLE_RENDER_TARGETS
 

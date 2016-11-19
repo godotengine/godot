@@ -520,26 +520,29 @@ void VisualServerViewport::viewport_set_shadow_atlas_quadrant_subdivision(RID p_
 
 bool VisualServerViewport::free(RID p_rid) {
 
-	Viewport * viewport = viewport_owner.getornull(p_rid);
-	if (!viewport)
-		return false;
+	if (viewport_owner.owns(p_rid)) {
+
+		Viewport * viewport = viewport_owner.getornull(p_rid);
 
 
-	VSG::storage->free( viewport->render_target );
-	VSG::scene_render->free( viewport->shadow_atlas );
+		VSG::storage->free( viewport->render_target );
+		VSG::scene_render->free( viewport->shadow_atlas );
 
-	while(viewport->canvas_map.front()) {
-		viewport_remove_canvas(p_rid,viewport->canvas_map.front()->key());
+		while(viewport->canvas_map.front()) {
+			viewport_remove_canvas(p_rid,viewport->canvas_map.front()->key());
+		}
+
+		viewport_set_scenario(p_rid,RID());
+		active_viewports.erase(viewport);
+
+		viewport_owner.free(p_rid);
+		memdelete(viewport);
+
+
+		return true;
 	}
 
-	viewport_set_scenario(p_rid,RID());
-	active_viewports.erase(viewport);
-
-	viewport_owner.free(p_rid);
-	memdelete(viewport);
-
-
-	return true;
+	return false;
 
 }
 

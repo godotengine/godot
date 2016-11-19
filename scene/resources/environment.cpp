@@ -44,16 +44,15 @@ void Environment::set_background(BGMode p_bg) {
 	_change_notify();
 }
 
-void Environment::set_skybox(const Ref<CubeMap>& p_skybox){
+void Environment::set_skybox(const Ref<SkyBox> &p_skybox){
 
 	bg_skybox=p_skybox;
 
 	RID sb_rid;
 	if (bg_skybox.is_valid())
 		sb_rid=bg_skybox->get_rid();
-	print_line("skybox valid: "+itos(sb_rid.is_valid()));
 
-	VS::get_singleton()->environment_set_skybox(environment,sb_rid,Globals::get_singleton()->get("rendering/skybox/radiance_cube_resolution"));
+	VS::get_singleton()->environment_set_skybox(environment,sb_rid);
 }
 
 void Environment::set_skybox_scale(float p_scale) {
@@ -97,7 +96,7 @@ Environment::BGMode Environment::get_background() const{
 
 	return bg_mode;
 }
-Ref<CubeMap> Environment::get_skybox() const{
+Ref<SkyBox> Environment::get_skybox() const{
 
 	return bg_skybox;
 }
@@ -326,7 +325,7 @@ void Environment::_bind_methods() {
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"background/mode",PROPERTY_HINT_ENUM,"Clear Color,Custom Color,Skybox,Canvas,Keep"),_SCS("set_background"),_SCS("get_background") );
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"background/skybox",PROPERTY_HINT_RESOURCE_TYPE,"CubeMap"),_SCS("set_skybox"),_SCS("get_skybox") );
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"background/skybox",PROPERTY_HINT_RESOURCE_TYPE,"SkyBox"),_SCS("set_skybox"),_SCS("get_skybox") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"background/skybox_scale",PROPERTY_HINT_RANGE,"0,32,0.01"),_SCS("set_skybox_scale"),_SCS("get_skybox_scale") );
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"background/color"),_SCS("set_bg_color"),_SCS("get_bg_color") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"background/energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_bg_energy"),_SCS("get_bg_energy") );

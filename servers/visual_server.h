@@ -127,8 +127,6 @@ public:
 
 	virtual void texture_set_shrink_all_x2_on_set_data(bool p_enable)=0;
 
-	virtual RID texture_create_radiance_cubemap(RID p_source,int p_resolution=-1) const=0;
-
 	struct TextureInfo {
 		RID texture;
 		Size2 size;
@@ -139,6 +137,10 @@ public:
 
 	virtual void texture_debug_usage(List<TextureInfo> *r_info)=0;
 
+	/* SKYBOX API */
+
+	virtual RID skybox_create()=0;
+	virtual void skybox_set_texture(RID p_skybox,RID p_cube_map,int p_radiance_size)=0;
 
 	/* SHADER API */
 
@@ -406,14 +408,23 @@ public:
 
 	virtual RID reflection_probe_create()=0;
 
+	enum ReflectionProbeUpdateMode {
+		REFLECTION_PROBE_UPDATE_ONCE,
+		REFLECTION_PROBE_UPDATE_ALWAYS,
+	};
+
+
+	virtual void reflection_probe_set_update_mode(RID p_probe, ReflectionProbeUpdateMode p_mode)=0;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity)=0;
-	virtual void reflection_probe_set_clip(RID p_probe, float p_near, float p_far)=0;
-	virtual void reflection_probe_set_min_blend_distance(RID p_probe, float p_distance)=0;
+	virtual void reflection_probe_set_interior_ambient(RID p_probe, const Color& p_color)=0;
+	virtual void reflection_probe_set_interior_ambient_energy(RID p_probe, float p_energy)=0;
+	virtual void reflection_probe_set_interior_ambient_probe_contribution(RID p_probe, float p_contrib)=0;
+	virtual void reflection_probe_set_max_distance(RID p_probe, float p_distance)=0;
 	virtual void reflection_probe_set_extents(RID p_probe, const Vector3& p_extents)=0;
 	virtual void reflection_probe_set_origin_offset(RID p_probe, const Vector3& p_offset)=0;
-	virtual void reflection_probe_set_enable_parallax_correction(RID p_probe, bool p_enable)=0;
-	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution)=0;
-	virtual void reflection_probe_set_hide_skybox(RID p_probe, bool p_hide)=0;
+	virtual void reflection_probe_set_as_interior(RID p_probe, bool p_enable)=0;
+	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable)=0;
+	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable)=0;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers)=0;
 
 
@@ -514,7 +525,7 @@ public:
 	};
 
 	virtual void environment_set_background(RID p_env,EnvironmentBG p_bg)=0;
-	virtual void environment_set_skybox(RID p_env,RID p_skybox,int p_radiance_size)=0;
+	virtual void environment_set_skybox(RID p_env,RID p_skybox)=0;
 	virtual void environment_set_skybox_scale(RID p_env,float p_scale)=0;
 	virtual void environment_set_bg_color(RID p_env,const Color& p_color)=0;
 	virtual void environment_set_bg_energy(RID p_env,float p_energy)=0;
@@ -563,6 +574,7 @@ public:
 
 	virtual void scenario_set_debug(RID p_scenario,ScenarioDebugMode p_debug_mode)=0;
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment)=0;
+	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_size,int p_subdiv)=0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment)=0;
 
 

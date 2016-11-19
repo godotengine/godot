@@ -151,14 +151,47 @@ vec2 Hammersley(uint i, uint N) {
      return vec2(float(i)/float(N), radicalInverse_VdC(i));
 }
 
-#define SAMPLE_COUNT 1024u
+
+
+#ifdef LOW_QUALITY
+
+#define SAMPLE_COUNT 64u
+
+#else
+
+#define SAMPLE_COUNT 512u
+
+#endif
+
+uniform bool z_flip;
 
 void main() {
 
+#ifdef USE_DUAL_PARABOLOID
+
+	vec3 N = vec3( uv_interp * 2.0 - 1.0, 0.0 );
+	N.z = 0.5 - 0.5*((N.x * N.x) + (N.y * N.y));
+	N = normalize(N);
+
+	if (!z_flip) {
+		N.y=-N.y; //y is flipped to improve blending between both sides
+	} else {
+		N.z=-N.z;
+	}
+
+
+#else
 	vec2 uv         = (uv_interp * 2.0) - 1.0;
 	vec3 N          = texelCoordToVec(uv, face_id);
-
+#endif
 	//vec4 color = color_interp;
+
+#ifdef USE_DIRECT_WRITE
+
+	frag_color=vec4(texture(N,source_cube).rgb,1.0);
+
+#else
+
 	vec4 sum = vec4(0.0, 0.0, 0.0, 0.0);
 
 	for(uint sampleNum = 0u; sampleNum < SAMPLE_COUNT; sampleNum++) {
@@ -178,5 +211,8 @@ void main() {
 	sum /= sum.a;
 
 	frag_color = vec4(sum.rgb, 1.0);
+
+#endif
+
 }
 

@@ -2296,6 +2296,7 @@ SceneTree::SceneTree() {
 	collision_debug_contacts=GLOBAL_DEF("debug/collision_max_contacts_displayed",10000);
 
 
+
 	tree_version=1;
 	fixed_process_time=1;
 	idle_process_time=1;
@@ -2318,6 +2319,12 @@ SceneTree::SceneTree() {
 	root->set_as_audio_listener(true);
 	root->set_as_audio_listener_2d(true);
 	current_scene=NULL;
+
+	int ref_atlas_size = GLOBAL_DEF("rendering/reflections/atlas_size",2048);
+	int ref_atlas_subdiv = GLOBAL_DEF("rendering/reflections/atlas_subdiv",8);
+
+	VS::get_singleton()->scenario_set_reflection_atlas_size(root->get_world()->get_scenario(),ref_atlas_size,ref_atlas_subdiv);
+
 
 	stretch_mode=STRETCH_MODE_DISABLED;
 	stretch_aspect=STRETCH_ASPECT_IGNORE;

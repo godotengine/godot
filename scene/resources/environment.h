@@ -32,6 +32,7 @@
 #include "resource.h"
 #include "servers/visual_server.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/sky_box.h"
 
 class Environment : public Resource {
 
@@ -69,7 +70,7 @@ private:
 	RID environment;
 
 	BGMode bg_mode;
-	Ref<CubeMap> bg_skybox;
+	Ref<SkyBox> bg_skybox;
 	float bg_skybox_scale;
 	Color bg_color;
 	float bg_energy;
@@ -102,7 +103,7 @@ public:
 
 
 	void set_background(BGMode p_bg);
-	void set_skybox(const Ref<CubeMap>& p_skybox);
+	void set_skybox(const Ref<SkyBox>& p_skybox);
 	void set_skybox_scale(float p_scale);
 	void set_bg_color(const Color& p_color);
 	void set_bg_energy(float p_energy);
@@ -112,7 +113,7 @@ public:
 	void set_ambient_light_skybox_contribution(float p_energy);
 
 	BGMode get_background() const;
-	Ref<CubeMap> get_skybox() const;
+	Ref<SkyBox> get_skybox() const;
 	float get_skybox_scale() const;
 	Color get_bg_color() const;
 	float get_bg_energy() const;

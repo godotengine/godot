@@ -122,10 +122,12 @@ void RasterizerGLES3::begin_frame(){
 	storage->frame.time[1]=Math::fmod(time_total,3600);
 	storage->frame.time[2]=Math::fmod(time_total,900);
 	storage->frame.time[3]=Math::fmod(time_total,60);
+	storage->frame.count++;
 
 	storage->update_dirty_shaders();
 	storage->update_dirty_materials();
 	scene->iteration();
+
 
 }
 

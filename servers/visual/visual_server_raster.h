@@ -629,7 +629,10 @@ public:
 	BIND1(texture_set_shrink_all_x2_on_set_data,bool)
 	BIND1(texture_debug_usage,List<TextureInfo>*)
 
+	/* SKYBOX API */
 
+	BIND0R(RID,skybox_create)
+	BIND3(skybox_set_texture,RID,RID,int)
 
 	/* SHADER API */
 
@@ -772,16 +775,18 @@ public:
 
 	BIND0R(RID,reflection_probe_create)
 
+	BIND2(reflection_probe_set_update_mode,RID, ReflectionProbeUpdateMode )
 	BIND2(reflection_probe_set_intensity,RID, float )
-	BIND3(reflection_probe_set_clip,RID, float , float )
-	BIND2(reflection_probe_set_min_blend_distance,RID, float )
+	BIND2(reflection_probe_set_interior_ambient,RID, const Color& )
+	BIND2(reflection_probe_set_interior_ambient_energy,RID, float )
+	BIND2(reflection_probe_set_interior_ambient_probe_contribution,RID, float )
+	BIND2(reflection_probe_set_max_distance,RID, float )
 	BIND2(reflection_probe_set_extents,RID, const Vector3& )
 	BIND2(reflection_probe_set_origin_offset,RID, const Vector3& )
-	BIND2(reflection_probe_set_enable_parallax_correction,RID, bool )
-	BIND2(reflection_probe_set_resolution,RID, int )
-	BIND2(reflection_probe_set_hide_skybox,RID, bool )
+	BIND2(reflection_probe_set_as_interior,RID, bool )
+	BIND2(reflection_probe_set_enable_box_projection,RID, bool )
+	BIND2(reflection_probe_set_enable_shadows,RID, bool )
 	BIND2(reflection_probe_set_cull_mask,RID, uint32_t )
-
 
 	/* ROOM API */
 
@@ -866,7 +871,7 @@ public:
 	BIND0R(RID,environment_create)
 
 	BIND2(environment_set_background,RID ,EnvironmentBG )
-	BIND3(environment_set_skybox,RID,RID ,int )
+	BIND2(environment_set_skybox,RID,RID )
 	BIND2(environment_set_skybox_scale,RID,float)
 	BIND2(environment_set_bg_color,RID,const Color& )
 	BIND2(environment_set_bg_energy,RID,float )
@@ -890,6 +895,7 @@ public:
 
 	BIND2(scenario_set_debug,RID,ScenarioDebugMode )
 	BIND2(scenario_set_environment,RID, RID )
+	BIND3(scenario_set_reflection_atlas_size,RID, int,int )
 	BIND2(scenario_set_fallback_environment,RID, RID )
 
 

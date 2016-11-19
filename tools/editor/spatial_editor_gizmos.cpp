@@ -245,6 +245,7 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 	Array a;
 	a.resize(VS::ARRAY_MAX);
 	a[VS::ARRAY_VERTEX]=p_handles;
+	print_line("handles?: "+itos(p_handles.size()));
 	DVector<Color> colors;
 	{
 		colors.resize(p_handles.size());
@@ -2238,6 +2239,164 @@ VisibilityNotifierGizmo::VisibilityNotifierGizmo(VisibilityNotifier* p_notifier)
 ////////
 
 
+///
+
+
+String ReflectionProbeGizmo::get_handle_name(int p_idx) const {
+
+	switch(p_idx) {
+		case 0: return "Extents X";
+		case 1: return "Extents Y";
+		case 2: return "Extents Z";
+		case 3: return "Origin X";
+		case 4: return "Origin Y";
+		case 5: return "Origin Z";
+	}
+
+	return "";
+}
+Variant ReflectionProbeGizmo::get_handle_value(int p_idx) const{
+
+	return AABB(probe->get_extents(),probe->get_origin_offset());
+}
+void ReflectionProbeGizmo::set_handle(int p_idx,Camera *p_camera, const Point2& p_point){
+
+	Transform gt = probe->get_global_transform();
+	//gt.orthonormalize();
+	Transform gi = gt.affine_inverse();
+
+
+	if (p_idx<3) {
+		Vector3 extents = probe->get_extents();
+
+		Vector3 ray_from = p_camera->project_ray_origin(p_point);
+		Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+		Vector3 sg[2]={gi.xform(ray_from),gi.xform(ray_from+ray_dir*16384)};
+
+		Vector3 axis;
+		axis[p_idx]=1.0;
+
+		Vector3 ra,rb;
+		Geometry::get_closest_points_between_segments(Vector3(),axis*16384,sg[0],sg[1],ra,rb);
+		float d = ra[p_idx];
+		if (d<0.001)
+			d=0.001;
+
+		extents[p_idx]=d;
+		probe->set_extents(extents);
+	} else {
+
+		p_idx-=3;
+
+		Vector3 origin = probe->get_origin_offset();
+		origin[p_idx]=0;
+
+		Vector3 ray_from = p_camera->project_ray_origin(p_point);
+		Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+		Vector3 sg[2]={gi.xform(ray_from),gi.xform(ray_from+ray_dir*16384)};
+
+		Vector3 axis;
+		axis[p_idx]=1.0;
+
+		Vector3 ra,rb;
+		Geometry::get_closest_points_between_segments(origin-axis*16384,origin+axis*16384,sg[0],sg[1],ra,rb);
+		float d = ra[p_idx];
+		d+=0.25;
+
+		origin[p_idx]=d;
+		probe->set_origin_offset(origin);
+
+	}
+}
+
+void ReflectionProbeGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p_cancel){
+
+	AABB restore = p_restore;
+
+	if (p_cancel) {
+		probe->set_extents(restore.pos);
+		probe->set_origin_offset(restore.size);
+		return;
+	}
+
+	UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Change Probe Extents"));
+	ur->add_do_method(probe,"set_extents",probe->get_extents());
+	ur->add_do_method(probe,"set_origin_offset",probe->get_origin_offset());
+	ur->add_undo_method(probe,"set_extents",restore.pos);
+	ur->add_undo_method(probe,"set_origin_offset",restore.size);
+	ur->commit_action();
+
+}
+
+void ReflectionProbeGizmo::redraw(){
+
+	clear();
+
+	Vector<Vector3> lines;
+	Vector<Vector3> internal_lines;
+	Vector3 extents = probe->get_extents();
+
+	AABB aabb;
+	aabb.pos=-extents;
+	aabb.size=extents*2;
+
+	for(int i=0;i<12;i++) {
+		Vector3 a,b;
+		aabb.get_edge(i,a,b);
+		lines.push_back(a);
+		lines.push_back(b);
+	}
+
+	for(int i=0;i<8;i++) {
+		Vector3 ep = aabb.get_endpoint(i);
+		internal_lines.push_back(probe->get_origin_offset());
+		internal_lines.push_back(ep);
+
+
+	}
+
+	Vector<Vector3> handles;
+
+
+	for(int i=0;i<3;i++) {
+
+		Vector3 ax;
+		ax[i]=aabb.pos[i]+aabb.size[i];
+		handles.push_back(ax);
+	}
+
+	for(int i=0;i<3;i++) {
+
+
+		Vector3 orig_handle=probe->get_origin_offset();
+		orig_handle[i]-=0.25;
+		lines.push_back(orig_handle);
+		handles.push_back(orig_handle);
+
+		orig_handle[i]+=0.5;
+		lines.push_back(orig_handle);
+	}
+
+	add_lines(lines,SpatialEditorGizmos::singleton->reflection_probe_material);
+	add_lines(internal_lines,SpatialEditorGizmos::singleton->reflection_probe_material_internal);
+	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
+	add_collision_segments(lines);
+	add_handles(handles);
+
+}
+ReflectionProbeGizmo::ReflectionProbeGizmo(ReflectionProbe* p_probe){
+
+	probe=p_probe;
+	set_spatial_node(p_probe);
+}
+
+////////
+
+
+
 
 void NavigationMeshSpatialGizmo::redraw() {
 
@@ -2929,6 +3088,12 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 		return misg;
 	}
 
+	if (p_spatial->cast_to<ReflectionProbe>()) {
+
+		Ref<ReflectionProbeGizmo> misg = memnew( ReflectionProbeGizmo(p_spatial->cast_to<ReflectionProbe>()) );
+		return misg;
+	}
+
 	if (p_spatial->cast_to<VehicleWheel>()) {
 
 		Ref<VehicleWheelSpatialGizmo> misg = memnew( VehicleWheelSpatialGizmo(p_spatial->cast_to<VehicleWheel>()) );
@@ -3132,6 +3297,8 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	raycast_material = create_line_material(Color(1.0,0.8,0.6));
 	car_wheel_material = create_line_material(Color(0.6,0.8,1.0));
 	visibility_notifier_material = create_line_material(Color(1.0,0.5,1.0));
+	reflection_probe_material = create_line_material(Color(0.5,1.0,0.7));
+	reflection_probe_material_internal = create_line_material(Color(0.3,0.8,0.5,0.4));
 	joint_material = create_line_material(Color(0.6,0.8,1.0));
 
 	stream_player_icon = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));

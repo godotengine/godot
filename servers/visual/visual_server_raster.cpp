@@ -94,6 +94,7 @@ void VisualServerRaster::draw(){
 
 	VSG::rasterizer->begin_frame();
 	VSG::viewport->draw_viewports();
+	VSG::scene->render_probes();
 	//_draw_cursors_and_margins();
 	VSG::rasterizer->end_frame();
 	//draw_extra_frame=VS:rasterizer->needs_to_draw_next_frame();

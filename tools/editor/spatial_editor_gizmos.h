@@ -45,6 +45,7 @@
 #include "scene/3d/portal.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/navigation_mesh.h"
+#include "scene/3d/reflection_probe.h"
 
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/collision_polygon.h"
@@ -307,6 +308,25 @@ public:
 };
 
 
+class ReflectionProbeGizmo  : public EditorSpatialGizmo {
+
+	OBJ_TYPE(ReflectionProbeGizmo ,EditorSpatialGizmo);
+
+
+	ReflectionProbe* probe;
+
+public:
+
+	virtual String get_handle_name(int p_idx) const;
+	virtual Variant get_handle_value(int p_idx) const;
+	virtual void set_handle(int p_idx,Camera *p_camera, const Point2& p_point);
+	virtual void commit_handle(int p_idx,const Variant& p_restore,bool p_cancel=false);
+
+	void redraw();
+	ReflectionProbeGizmo(ReflectionProbe* p_notifier=NULL);
+
+};
+
 
 class CollisionShapeSpatialGizmo  : public EditorSpatialGizmo {
 
@@ -337,6 +357,7 @@ public:
 	CollisionPolygonSpatialGizmo(CollisionPolygon* p_polygon=NULL);
 
 };
+
 
 
 class RayCastSpatialGizmo  : public EditorSpatialGizmo {
@@ -473,6 +494,8 @@ public:
 	Ref<FixedSpatialMaterial> light_material_directional_icon;
 	Ref<FixedSpatialMaterial> camera_material;
 	Ref<FixedSpatialMaterial> skeleton_material;
+	Ref<FixedSpatialMaterial> reflection_probe_material;
+	Ref<FixedSpatialMaterial> reflection_probe_material_internal;
 	Ref<FixedSpatialMaterial> room_material;
 	Ref<FixedSpatialMaterial> portal_material;
 	Ref<FixedSpatialMaterial> raycast_material;

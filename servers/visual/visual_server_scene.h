@@ -16,8 +16,9 @@ public:
 
 		MAX_INSTANCE_CULL=65536,
 		MAX_LIGHTS_CULLED=4096,
+		MAX_REFLECTION_PROBES_CULLED=4096,
 		MAX_ROOM_CULL=32,
-		MAX_EXTERIOR_PORTALS=128,
+		MAX_EXTERIOR_PORTALS=128,		
 	};
 
 	uint64_t render_pass;
@@ -156,6 +157,9 @@ public:
 		List<Instance*> directional_lights;
 		RID environment;
 		RID fallback_environment;
+		RID reflection_probe_shadow_atlas;
+		RID reflection_atlas;
+
 
 		SelfList<Instance>::List instances;
 
@@ -172,6 +176,7 @@ public:
 	virtual void scenario_set_debug(RID p_scenario,VS::ScenarioDebugMode p_debug_mode);
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
+	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_size,int p_subdiv);
 
 
 	/* INSTANCING API */
@@ -288,13 +293,43 @@ public:
 		bool lighting_dirty;
 		bool can_cast_shadows;
 
+		List<Instance*> reflection_probes;
+		bool reflection_dirty;
+
 		InstanceGeometryData() {
 
 			lighting_dirty=false;
+			reflection_dirty=true;
 			can_cast_shadows=true;
 		}
 	};
 
+	struct InstanceReflectionProbeData : public InstanceBaseData {
+
+
+		Instance *owner;
+
+		struct PairInfo {
+			List<Instance*>::Element *L; //light iterator in geometry
+			Instance *geometry;
+		};
+		List<PairInfo> geometries;
+
+
+		RID instance;
+		bool reflection_dirty;
+		SelfList<InstanceReflectionProbeData> update_list;
+
+		int render_step;
+
+		InstanceReflectionProbeData() : update_list(this) {
+
+			reflection_dirty=true;
+			render_step=-1;
+		}
+	};
+
+	SelfList<InstanceReflectionProbeData>::List reflection_probe_render_list;
 
 	struct InstanceLightData : public InstanceBaseData {
 
@@ -325,6 +360,8 @@ public:
 	Instance *light_cull_result[MAX_LIGHTS_CULLED];
 	RID light_instance_cull_result[MAX_LIGHTS_CULLED];
 	int light_cull_count;
+	RID reflection_probe_instance_cull_result[MAX_REFLECTION_PROBES_CULLED];
+	int reflection_probe_cull_count;
 
 
 	RID_Owner<Instance> instance_owner;
@@ -366,10 +403,15 @@ public:
 	_FORCE_INLINE_ void _update_instance_aabb(Instance *p_instance);
 	_FORCE_INLINE_ void _update_dirty_instance(Instance *p_instance);
 
-	_FORCE_INLINE_ void _light_instance_update_shadow(Instance *p_instance,Camera* p_camera,RID p_shadow_atlas,Scenario* p_scenario,Size2 p_viewport_rect);
+	_FORCE_INLINE_ void _light_instance_update_shadow(Instance *p_instance,const Transform p_cam_transform,const CameraMatrix& p_cam_projection,bool p_cam_orthogonal,RID p_shadow_atlas,Scenario* p_scenario);
 
-	void render_camera(RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
+	void _render_scene(const Transform p_cam_transform, const CameraMatrix& p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+
+	void render_camera(RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);	
 	void update_dirty_instances();
+
+	bool _render_probe_step(Instance* p_instance,int p_step);
+	void render_probes();
 	bool free(RID p_rid);
 
 	VisualServerScene();
