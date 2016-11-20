@@ -116,7 +116,6 @@ void VideoPlayer::_notification(int p_notification) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			//set_idle_process(false); //don't annoy
 			if (stream.is_valid() && autoplay && !get_tree()->is_editor_hint()) {
 				play();
 			}
@@ -131,7 +130,7 @@ void VideoPlayer::_notification(int p_notification) {
 			if (!playback->is_playing())
 				return;
 
-			double audio_time = OS::get_singleton()->get_ticks_usec()/1000000.0; //AudioServer::get_singleton()->get_mix_time();
+			double audio_time = USEC_TO_SEC(OS::get_singleton()->get_ticks_usec()); //AudioServer::get_singleton()->get_mix_time();
 
 			double delta = last_audio_time==0?0:audio_time-last_audio_time;
 			last_audio_time=audio_time;
@@ -140,13 +139,6 @@ void VideoPlayer::_notification(int p_notification) {
 
 
 			playback->update(delta);
-
-			/*int prev_width = texture->get_width();
-			stream->pop_frame(texture);
-			if (prev_width == 0) {
-				update();
-				minimum_size_changed();
-			};*/
 
 		} break;
 
@@ -158,8 +150,6 @@ void VideoPlayer::_notification(int p_notification) {
 				return;
 
 			Size2 s=expand?get_size():texture->get_size();
-			RID ci = get_canvas_item();
-			printf("drawing with size %f, %f\n", s.x, s.y);
 			draw_texture_rect(texture,Rect2(Point2(),s),false);
 
 		} break;
@@ -208,10 +198,17 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 		playback->set_paused(paused);
 		texture=playback->get_texture();
 
+		const int channels = playback->get_channels();
+
 		AudioServer::get_singleton()->lock();
-		resampler.setup(playback->get_channels(),playback->get_mix_rate(),server_mix_rate,buffering_ms,0);
+		if (channels > 0)
+			resampler.setup(channels,playback->get_mix_rate(),server_mix_rate,buffering_ms,0);
+		else
+			resampler.clear();
 		AudioServer::get_singleton()->unlock();
-		playback->set_mix_callback(_audio_mix_callback,this);
+
+		if (channels > 0)
+			playback->set_mix_callback(_audio_mix_callback,this);
 
 	} else {
 		texture.unref();
@@ -251,7 +248,7 @@ void VideoPlayer::stop() {
 
 	playback->stop();
 	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
-	resampler.clear();
+	resampler.flush();
 	set_process(false);
 	last_audio_time=0;
 };
@@ -360,8 +357,8 @@ bool VideoPlayer::has_autoplay() const {
 
 void VideoPlayer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_stream","stream:Stream"),&VideoPlayer::set_stream);
-	ObjectTypeDB::bind_method(_MD("get_stream:Stream"),&VideoPlayer::get_stream);
+	ObjectTypeDB::bind_method(_MD("set_stream","stream:VideoStream"),&VideoPlayer::set_stream);
+	ObjectTypeDB::bind_method(_MD("get_stream:VideoStream"),&VideoPlayer::get_stream);
 
 	ObjectTypeDB::bind_method(_MD("play"),&VideoPlayer::play);
 	ObjectTypeDB::bind_method(_MD("stop"),&VideoPlayer::stop);
@@ -429,5 +426,6 @@ VideoPlayer::~VideoPlayer() {
 
 	if (stream_rid.is_valid())
 		AudioServer::get_singleton()->free(stream_rid);
+	resampler.clear(); //Not necessary here, but make in consistent with other "stream_player" classes
 };
 

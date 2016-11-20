@@ -37,6 +37,7 @@
 #include "area_pair_2d_sw.h"
 #include "broad_phase_2d_sw.h"
 #include "collision_object_2d_sw.h"
+#include "globals.h"
 
 
 class Physics2DDirectSpaceStateSW : public Physics2DDirectSpaceState {
@@ -60,6 +61,20 @@ public:
 
 class Space2DSW {
 
+public:
+
+	enum ElapsedTime {
+		ELAPSED_TIME_INTEGRATE_FORCES,
+		ELAPSED_TIME_GENERATE_ISLANDS,
+		ELAPSED_TIME_SETUP_CONSTRAINTS,
+		ELAPSED_TIME_SOLVE_CONSTRAINTS,
+		ELAPSED_TIME_INTEGRATE_VELOCITIES,
+		ELAPSED_TIME_MAX
+
+	};
+private:
+
+	uint64_t elapsed_time[ELAPSED_TIME_MAX];
 
 	Physics2DDirectSpaceStateSW *direct_access;
 	RID self;
@@ -170,7 +185,7 @@ public:
 
 	int get_collision_pairs() const { return collision_pairs; }
 
-	bool test_body_motion(Body2DSW *p_body, const Vector2&p_motion, float p_margin, Physics2DServer::MotionResult *r_result);
+	bool test_body_motion(Body2DSW *p_body, const Matrix32 &p_from, const Vector2&p_motion, float p_margin, Physics2DServer::MotionResult *r_result);
 
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
@@ -181,6 +196,9 @@ public:
 
 
 	Physics2DDirectSpaceStateSW *get_direct_state();
+
+	void set_elapsed_time(ElapsedTime p_time,uint64_t p_msec) { elapsed_time[p_time]=p_msec; }
+	uint64_t get_elapsed_time(ElapsedTime p_time) const { return elapsed_time[p_time]; }
 
 	Space2DSW();
 	~Space2DSW();

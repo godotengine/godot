@@ -68,7 +68,7 @@ void Material::set_flag(Flag p_flag,bool p_enabled) {
 
 void Material::set_blend_mode(BlendMode p_blend_mode) {
 
-	ERR_FAIL_INDEX(p_blend_mode,3);
+	ERR_FAIL_INDEX(p_blend_mode,4);
 	blend_mode=p_blend_mode;
 	VisualServer::get_singleton()->material_set_blend_mode(material,(VS::MaterialBlendMode)p_blend_mode);
 	_change_notify();
@@ -406,10 +406,10 @@ void FixedMaterial::_bind_methods() {
 	BIND_CONSTANT( PARAM_SHADE_PARAM );
 	BIND_CONSTANT( PARAM_MAX );
 
-	BIND_CONSTANT( TEXCOORD_SPHERE );
 	BIND_CONSTANT( TEXCOORD_UV );
 	BIND_CONSTANT( TEXCOORD_UV_TRANSFORM );
 	BIND_CONSTANT( TEXCOORD_UV2 );
+	BIND_CONSTANT( TEXCOORD_SPHERE );
 
 	BIND_CONSTANT( FLAG_USE_ALPHA );
 	BIND_CONSTANT( FLAG_USE_COLOR_ARRAY );

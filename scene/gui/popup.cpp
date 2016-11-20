@@ -44,6 +44,8 @@ void Popup::_notification(int p_what) {
 			notification(NOTIFICATION_POPUP_HIDE);
 			emit_signal("popup_hide");
 		}
+
+		update_configuration_warning();
 	}
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
@@ -123,8 +125,6 @@ void Popup::set_as_minsize() {
 
 		}
 
-		print_line(String(c->get_type())+": "+minsize);
-
 		total_minsize.width = MAX( total_minsize.width, minsize.width );
 		total_minsize.height = MAX( total_minsize.height, minsize.height );
 	}
@@ -165,8 +165,6 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 				minsize[j]+=margin_end;
 
 		}
-
-		print_line(String(c->get_type())+": "+minsize);
 
 		total_minsize.width = MAX( total_minsize.width, minsize.width );
 		total_minsize.height = MAX( total_minsize.height, minsize.height );
@@ -282,6 +280,14 @@ Popup::Popup() {
 	hide();
 }
 
+String Popup::get_configuration_warning() const {
+
+	if (is_visible()) {
+		return TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine though, but they will hide upon running.");
+	}
+
+	return String();
+}
 
 Popup::~Popup()
 {

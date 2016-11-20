@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  instance_placeholder.cpp                                             */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "instance_placeholder.h"
 
 #include "scene/resources/packed_scene.h"
@@ -73,11 +101,28 @@ void InstancePlaceholder::replace_by_instance(const Ref<PackedScene> &p_custom_s
 	base->remove_child(this);
 	base->add_child(scene);
 	base->move_child(scene,pos);
-
 }
+
+Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
+
+	Dictionary ret;
+	StringArray order;
+
+	for(List<PropSet>::Element *E=stored_values.front();E;E=E->next()) {
+		ret[E->get().name] = E->get().value;
+		if (p_with_order)
+			order.push_back(E->get().name);
+	};
+
+	if (p_with_order)
+		ret[".order"] = order;
+
+	return ret;
+};
 
 void InstancePlaceholder::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("get_stored_values","with_order"),&InstancePlaceholder::get_stored_values,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("replace_by_instance","custom_scene:PackedScene"),&InstancePlaceholder::replace_by_instance,DEFVAL(Variant()));
 	ObjectTypeDB::bind_method(_MD("get_instance_path"),&InstancePlaceholder::get_instance_path);
 }

@@ -94,13 +94,13 @@ Vector2 CanvasLayer::get_offset() const {
 }
 
 
-void CanvasLayer::set_rotation(real_t p_rotation) {
+void CanvasLayer::set_rotation(real_t p_radians) {
 
 	if (locrotscale_dirty)
 		_update_locrotscale();
 
 
-	rot=p_rotation;
+	rot=p_radians;
 	_update_xform();
 
 }
@@ -113,6 +113,29 @@ real_t CanvasLayer::get_rotation() const {
 	return rot;
 }
 
+void CanvasLayer::set_rotationd(real_t p_degrees) {
+
+	set_rotation(Math::deg2rad(p_degrees));
+}
+
+real_t CanvasLayer::get_rotationd() const {
+
+	return Math::rad2deg(get_rotation());
+}
+
+// Kept for compatibility after rename to {s,g}et_rotationd.
+// Could be removed after a couple releases.
+void CanvasLayer::_set_rotationd(real_t p_degrees) {
+
+	WARN_PRINT("Deprecated method CanvasLayer._set_rotationd(): This method was renamed to set_rotationd. Please adapt your code accordingly, as the old method will be obsoleted.");
+	set_rotationd(p_degrees);
+}
+
+real_t CanvasLayer::_get_rotationd() const {
+
+	WARN_PRINT("Deprecated method CanvasLayer._get_rotationd(): This method was renamed to get_rotationd. Please adapt your code accordingly, as the old method will be obsoleted.");
+	return get_rotationd();
+}
 
 void CanvasLayer::set_scale(const Vector2& p_scale) {
 
@@ -121,7 +144,6 @@ void CanvasLayer::set_scale(const Vector2& p_scale) {
 
 	scale=p_scale;
 	_update_xform();
-
 
 }
 
@@ -146,20 +168,13 @@ void CanvasLayer::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			Node *n = this;
-			vp=NULL;
+			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
 
-			while(n) {
+				vp=custom_viewport;
+			} else {
+				vp=Node::get_viewport();
 
-				if (n->cast_to<Viewport>()) {
-
-					vp = n->cast_to<Viewport>();
-					break;
-				}
-				n=n->get_parent();
 			}
-
-
 			ERR_FAIL_COND(!vp);
 			viewport=vp->get_viewport();
 
@@ -183,6 +198,7 @@ Size2 CanvasLayer::get_viewport_size() const {
 	if (!is_inside_tree())
 		return Size2(1,1);
 
+
 	Rect2 r = vp->get_visible_rect();
 	return r.size;
 }
@@ -193,14 +209,41 @@ RID CanvasLayer::get_viewport() const {
 	return viewport;
 }
 
-void CanvasLayer::_set_rotationd(real_t p_rotation) {
+void CanvasLayer::set_custom_viewport(Node *p_viewport) {
+	ERR_FAIL_NULL(p_viewport);
+	if (is_inside_tree()) {
+		VisualServer::get_singleton()->viewport_remove_canvas(viewport,canvas->get_canvas());
+		viewport=RID();
+	}
 
-	set_rotation(Math::deg2rad(p_rotation));
+	custom_viewport=p_viewport->cast_to<Viewport>();
+
+	if (custom_viewport) {
+		custom_viewport_id=custom_viewport->get_instance_ID();
+	} else {
+		custom_viewport_id=0;
+	}
+
+	if (is_inside_tree()) {
+
+
+		if (custom_viewport)
+			vp=custom_viewport;
+		else
+			vp=Node::get_viewport();
+
+		viewport = vp->get_viewport();
+
+		VisualServer::get_singleton()->viewport_attach_canvas(viewport,canvas->get_canvas());
+		VisualServer::get_singleton()->viewport_set_canvas_layer(viewport,canvas->get_canvas(),layer);
+		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport,canvas->get_canvas(),transform);
+	}
+
 }
 
-real_t CanvasLayer::_get_rotationd() const {
+Node* CanvasLayer::get_custom_viewport() const {
 
-	return Math::rad2deg(get_rotation());
+	return custom_viewport;
 }
 
 
@@ -216,22 +259,29 @@ void CanvasLayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&CanvasLayer::set_offset);
 	ObjectTypeDB::bind_method(_MD("get_offset"),&CanvasLayer::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_rotation","rotation"),&CanvasLayer::set_rotation);
+	ObjectTypeDB::bind_method(_MD("set_rotation","radians"),&CanvasLayer::set_rotation);
 	ObjectTypeDB::bind_method(_MD("get_rotation"),&CanvasLayer::get_rotation);
 
-	ObjectTypeDB::bind_method(_MD("_set_rotationd","rotationd"),&CanvasLayer::_set_rotationd);
+	ObjectTypeDB::bind_method(_MD("set_rotationd","degrees"),&CanvasLayer::set_rotationd);
+	ObjectTypeDB::bind_method(_MD("get_rotationd"),&CanvasLayer::get_rotationd);
+
+	// TODO: Obsolete those two methods (old name) properly (GH-4397)
+	ObjectTypeDB::bind_method(_MD("_set_rotationd","degrees"),&CanvasLayer::_set_rotationd);
 	ObjectTypeDB::bind_method(_MD("_get_rotationd"),&CanvasLayer::_get_rotationd);
 
 	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&CanvasLayer::set_scale);
 	ObjectTypeDB::bind_method(_MD("get_scale"),&CanvasLayer::get_scale);
 
-	ObjectTypeDB::bind_method(_MD("get_world_2d:Canvas"),&CanvasLayer::get_world_2d);
-	ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
+	ObjectTypeDB::bind_method(_MD("set_custom_viewport","viewport:Viewport"),&CanvasLayer::set_custom_viewport);
+	ObjectTypeDB::bind_method(_MD("get_custom_viewport:Viewport"),&CanvasLayer::get_custom_viewport);
+
+	ObjectTypeDB::bind_method(_MD("get_world_2d:World2D"),&CanvasLayer::get_world_2d);
+//	ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer",PROPERTY_HINT_RANGE,"-128,128,1"),_SCS("set_layer"),_SCS("get_layer") );
 	//ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"transform",PROPERTY_HINT_RANGE),_SCS("set_transform"),_SCS("get_transform") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"rotation"),_SCS("_set_rotationd"),_SCS("_get_rotationd") );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"rotation"),_SCS("set_rotationd"),_SCS("get_rotationd") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scale"),_SCS("set_scale"),_SCS("get_scale") );
 
 }
@@ -244,4 +294,6 @@ CanvasLayer::CanvasLayer() {
 	locrotscale_dirty=false;
 	layer=1;
 	canvas = Ref<World2D>( memnew(World2D) );
+	custom_viewport=NULL;
+	custom_viewport_id=0;
 }

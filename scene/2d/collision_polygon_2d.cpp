@@ -297,6 +297,20 @@ Vector2 CollisionPolygon2D::_get_shape_range() const {
 	return Vector2(shape_from,shape_to);
 }
 
+String CollisionPolygon2D::get_configuration_warning() const {
+
+	if (!get_parent()->cast_to<CollisionObject2D>()) {
+		return TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+	}
+
+	if (polygon.empty()) {
+		return TTR("An empty CollisionPolygon2D has no effect on collision.");
+
+	}
+
+	return String();
+}
+
 void CollisionPolygon2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_add_to_collision_object"),&CollisionPolygon2D::_add_to_collision_object);

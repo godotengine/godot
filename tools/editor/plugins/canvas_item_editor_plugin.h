@@ -31,17 +31,18 @@
 
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
+#include "scene/gui/button_group.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/label.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/2d/canvas_item.h"
-
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
-
+class CanvasItemEditorViewport;
 
 class CanvasItemEditorSelectedItem : public Object {
 
@@ -124,6 +125,7 @@ class CanvasItemEditor : public VBoxContainer {
 		VIEW_FRAME_TO_SELECTION,
 		SKELETON_MAKE_BONES,
 		SKELETON_CLEAR_BONES,
+		SKELETON_SHOW_BONES,
 		SKELETON_SET_IK_CHAIN,
 		SKELETON_CLEAR_IK_CHAIN
 
@@ -175,6 +177,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool snap_rotation;
 	bool snap_relative;
 	bool snap_pixel;
+	bool skeleton_show_bones;
 	bool box_selecting;
 	Point2 box_selecting_to;
 	bool key_pos;
@@ -256,6 +259,7 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *ungroup_button;
 
 	MenuButton *edit_menu;
+	PopupMenu *skeleton_menu;
 	MenuButton *view_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
@@ -295,6 +299,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 
 	int handle_len;
+	bool _is_part_of_subscene(CanvasItem *p_item);
 	CanvasItem* _select_canvas_item_at_pos(const Point2 &p_pos,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform);
 	void _find_canvas_items_at_pos(const Point2 &p_pos,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform, Vector<_SelectResult> &r_items);
 	void _find_canvas_items_at_rect(const Rect2& p_rect,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform,List<CanvasItem*> *r_items);
@@ -350,6 +355,8 @@ class CanvasItemEditor : public VBoxContainer {
 
 	void _viewport_input_event(const InputEvent& p_event);
 	void _viewport_draw();
+
+	void _focus_selection(int p_op);
 
 	void _set_anchor(Control::AnchorType p_left,Control::AnchorType p_top,Control::AnchorType p_right,Control::AnchorType p_bottom);
 
@@ -413,10 +420,12 @@ public:
 
 	Control *get_viewport_control() { return viewport; }
 
-
 	bool get_remove_list(List<Node*> *p_list);
 	void set_undo_redo(UndoRedo *p_undo_redo) {undo_redo=p_undo_redo; }
 	void edit(CanvasItem *p_canvas_item);
+
+	void focus_selection();
+
 	CanvasItemEditor(EditorNode *p_editor);
 };
 
@@ -443,6 +452,51 @@ public:
 	CanvasItemEditorPlugin(EditorNode *p_node);
 	~CanvasItemEditorPlugin();
 
+};
+
+class CanvasItemEditorViewport : public VBoxContainer {
+	OBJ_TYPE( CanvasItemEditorViewport, VBoxContainer );
+
+	String default_type;
+	Vector<String> types;
+
+	Vector<String> selected_files;
+	Node* target_node;
+	Point2 drop_pos;
+
+	EditorNode* editor;
+	EditorData* editor_data;
+	CanvasItemEditor* canvas;
+	Node2D* preview;
+	AcceptDialog* accept;
+	WindowDialog* selector;
+	Label* selector_label;
+	Label* label;
+	Label* label_desc;
+	ButtonGroup* btn_group;
+
+	void _on_mouse_exit();
+	void _on_select_type(Object* selected);
+	void _on_change_type();
+
+	void _create_preview(const Vector<String>& files) const;
+	void _remove_preview();
+
+	bool _cyclical_dependency_exists(const String& p_target_scene_path, Node* p_desired_node);
+	void _create_nodes(Node* parent, Node* child, String& path, const Point2& p_point);
+	bool _create_instance(Node* parent, String& path, const Point2& p_point);
+	void _perform_drop_data();
+
+	static void _bind_methods();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	virtual bool can_drop_data(const Point2& p_point,const Variant& p_data) const;
+	virtual void drop_data(const Point2& p_point,const Variant& p_data);
+
+	CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor* p_canvas);
 };
 
 #endif

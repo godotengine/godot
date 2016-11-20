@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  server_wrap_mt_common.h                                              */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 
 #define FUNC0R(m_r,m_type)\
 	virtual m_r m_type() { \
@@ -698,3 +726,64 @@
 		}\
 	}
 
+#define FUNC8R(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			m_r ret;\
+			command_queue.push_and_ret( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8, &ret);\
+			SYNC_DEBUG\
+			return ret;\
+		} else {\
+			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}
+
+#define FUNC8RC(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) const { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			m_r ret;\
+			command_queue.push_and_ret( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8, &ret);\
+			SYNC_DEBUG\
+			return ret;\
+		} else {\
+			return server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}
+
+
+#define FUNC8S(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			command_queue.push_and_sync( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8);\
+		} else {\
+			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}
+
+#define FUNC8SC(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) const { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			command_queue.push_and_sync( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8);\
+		} else {\
+			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}
+
+
+#define FUNC8(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			command_queue.push( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8);\
+		} else {\
+			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}
+
+#define FUNC8C(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) const { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			command_queue.push( server_name, &ServerName::m_type,p1, p2, p3, p4, p5, p6, p7, p8);\
+		} else {\
+			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}

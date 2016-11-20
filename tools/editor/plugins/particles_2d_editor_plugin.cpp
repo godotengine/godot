@@ -26,10 +26,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "particles_2d_editor_plugin.h"
 #include "canvas_item_editor_plugin.h"
 #include "io/image_loader.h"
-
+#include "scene/gui/separator.h"
 
 void Particles2DEditorPlugin::edit(Object *p_object) {
 
@@ -49,12 +50,10 @@ void Particles2DEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 
-		sep->show();
-		menu->show();
+		toolbar->show();
 	} else {
 
-		menu->hide();
-		sep->hide();
+		toolbar->hide();
 	}
 
 }
@@ -67,7 +66,7 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 
 	Image img;
 	Error err = ImageLoader::load_image(p_file,&img);
-	ERR_EXPLAIN("Error loading image: "+p_file);
+	ERR_EXPLAIN(TTR("Error loading image:")+" "+p_file);
 	ERR_FAIL_COND(err!=OK);
 
 	img.convert(Image::FORMAT_GRAYSCALE_ALPHA);
@@ -93,7 +92,7 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 
 	valid_positions.resize(vpc);
 
-	ERR_EXPLAIN("No pixels with transparency > 128 in image..");
+	ERR_EXPLAIN(TTR("No pixels with transparency > 128 in image.."));
 	ERR_FAIL_COND(valid_positions.size()==0);
 
 	DVector<Point2> epoints;
@@ -111,7 +110,7 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 
 	w = DVector<Point2>::Write();
 
-	undo_redo->create_action("Set Emission Mask");
+	undo_redo->create_action(TTR("Set Emission Mask"));
 	undo_redo->add_do_method(particles,"set_emission_points",epoints);
 	undo_redo->add_do_method(particles,"set_emission_half_extents",extents);
 	undo_redo->add_undo_method(particles,"set_emission_points",particles->get_emission_points());
@@ -131,7 +130,7 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
 
-			undo_redo->create_action("Clear Emission Mask");
+			undo_redo->create_action(TTR("Clear Emission Mask"));
 			undo_redo->add_do_method(particles,"set_emission_points",DVector<Vector2>());
 			undo_redo->add_undo_method(particles,"set_emission_points",particles->get_emission_points());
 			undo_redo->commit_action();
@@ -164,34 +163,35 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	particles=NULL;
 	editor=p_node;
 	undo_redo=editor->get_undo_redo();
-	sep = memnew( VSeparator );
-	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(sep);
-	sep->hide();
+
+	toolbar = memnew( HBoxContainer );
+	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
+	toolbar->hide();
+
+	toolbar->add_child( memnew( VSeparator ) );
 
 	menu = memnew( MenuButton );
-	menu->get_popup()->add_item("Load Emission Mask",MENU_LOAD_EMISSION_MASK);
-	menu->get_popup()->add_item("Clear Emission Mask",MENU_CLEAR_EMISSION_MASK);
+	menu->get_popup()->add_item(TTR("Load Emission Mask"),MENU_LOAD_EMISSION_MASK);
+	menu->get_popup()->add_item(TTR("Clear Emission Mask"),MENU_CLEAR_EMISSION_MASK);
 	menu->set_text("Particles");
+	toolbar->add_child(menu);
 
-	file = memnew(EditorFileDialog);
-	add_child(file);
+	file = memnew( EditorFileDialog );
 	List<String> ext;
 	ImageLoader::get_recognized_extensions(&ext);
 	for(List<String>::Element *E=ext.front();E;E=E->next()) {
 		file->add_filter("*."+E->get()+"; "+E->get().to_upper());
 	}
 	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(menu);
+	toolbar->add_child(file);
+
 	epoints = memnew( SpinBox );
 	epoints->set_min(1);
 	epoints->set_max(8192);
 	epoints->set_step(1);
 	epoints->set_val(512);
-	file->get_vbox()->add_margin_child("Generated Point Count:",epoints);
-	menu->hide();
-
+	file->get_vbox()->add_margin_child(TTR("Generated Point Count:"),epoints);
 }
-
 
 Particles2DEditorPlugin::~Particles2DEditorPlugin()
 {

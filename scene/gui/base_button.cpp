@@ -31,6 +31,7 @@
 #include "print_string.h"
 #include "button_group.h"
 #include "scene/scene_string_names.h"
+#include "scene/main/viewport.h"
 
 void BaseButton::_input_event(InputEvent p_event) {
 
@@ -53,6 +54,8 @@ void BaseButton::_input_event(InputEvent p_event) {
 			if (status.click_on_press) {
 
 				if (b.pressed) {
+
+					emit_signal("button_down");
 
 					if (!toggle_mode) { //mouse press attempt
 
@@ -85,6 +88,8 @@ void BaseButton::_input_event(InputEvent p_event) {
 
 				} else {
 
+					emit_signal("button_up");
+
 					if (status.press_attempt && status.pressing_inside) {
 //						released();
 						emit_signal("released");
@@ -99,9 +104,11 @@ void BaseButton::_input_event(InputEvent p_event) {
 
 				status.press_attempt=true;
 				status.pressing_inside=true;
+				emit_signal("button_down");
 
 			} else {
 
+				emit_signal("button_up");
 
 				if (status.press_attempt &&status.pressing_inside) {
 
@@ -172,6 +179,7 @@ void BaseButton::_input_event(InputEvent p_event) {
 					status.pressing_button++;
 					status.press_attempt=true;
 					status.pressing_inside=true;
+					emit_signal("button_down");
 
 				} else if (status.press_attempt) {
 
@@ -183,6 +191,8 @@ void BaseButton::_input_event(InputEvent p_event) {
 
 					status.press_attempt=false;
 					status.pressing_inside=false;
+
+					emit_signal("button_up");
 
 					if (!toggle_mode) { //mouse press attempt
 
@@ -225,11 +235,31 @@ void BaseButton::_notification(int p_what) {
 		status.hovering=false;
 		update();
 	}
+	if (p_what==NOTIFICATION_DRAG_BEGIN) {
+
+		if (status.press_attempt) {
+			status.press_attempt=false;
+			status.pressing_button=0;
+			update();
+		}
+	}
+	
+	if (p_what==NOTIFICATION_FOCUS_ENTER) {
+		
+		status.hovering=true;
+		update();
+	}
+
 	if (p_what==NOTIFICATION_FOCUS_EXIT) {
 
 		if (status.pressing_button && status.press_attempt) {
 			status.press_attempt=false;
 			status.pressing_button=0;
+			status.hovering=false;
+			update();
+		} else if (status.hovering) {
+			status.hovering=false;
+			update();
 		}
 	}
 
@@ -289,7 +319,7 @@ void BaseButton::set_disabled(bool p_disabled) {
 	if (p_disabled)
 		set_focus_mode(FOCUS_NONE);
 	else
-		set_focus_mode(FOCUS_ALL);
+		set_focus_mode(enabled_focus_mode);
 }
 
 bool BaseButton::is_disabled() const {
@@ -377,12 +407,65 @@ bool BaseButton::get_click_on_press() const {
 	return status.click_on_press;
 }
 
+void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
 
+	enabled_focus_mode = p_mode;
+	if (!status.disabled) {
+		set_focus_mode( p_mode );
+	}
+}
 
+Control::FocusMode BaseButton::get_enabled_focus_mode() const {
+
+	return enabled_focus_mode;
+}
+
+void BaseButton::set_shortcut(const Ref<ShortCut>& p_shortcut) {
+
+	if (shortcut.is_null() == p_shortcut.is_null())
+		return;
+
+	shortcut=p_shortcut;
+	set_process_unhandled_input(shortcut.is_valid());
+}
+
+Ref<ShortCut> BaseButton:: get_shortcut() const {
+	return shortcut;
+}
+
+void BaseButton::_unhandled_input(InputEvent p_event) {
+
+	if (!is_disabled() && is_visible() && p_event.is_pressed() && !p_event.is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
+
+		if (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this))
+			return; //ignore because of modal window
+
+		if (is_toggle_mode()) {
+			set_pressed(!is_pressed());
+			emit_signal("toggled",is_pressed());
+		}
+
+		emit_signal("pressed");
+	}
+}
+
+String BaseButton::get_tooltip(const Point2& p_pos) const {
+
+	String tooltip=Control::get_tooltip(p_pos);
+	if (shortcut.is_valid() && shortcut->is_valid()) {
+		if (tooltip.find("$sc")!=-1) {
+			tooltip=tooltip.replace_first("$sc","("+shortcut->get_as_text()+")");
+		} else {
+			tooltip+=" ("+shortcut->get_as_text()+")";
+		}
+	}
+	return tooltip;
+}
 
 void BaseButton::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&BaseButton::_input_event);
+	ObjectTypeDB::bind_method(_MD("_unhandled_input"),&BaseButton::_unhandled_input);
 	ObjectTypeDB::bind_method(_MD("set_pressed","pressed"),&BaseButton::set_pressed);
 	ObjectTypeDB::bind_method(_MD("is_pressed"),&BaseButton::is_pressed);
 	ObjectTypeDB::bind_method(_MD("is_hovered"),&BaseButton::is_hovered);
@@ -393,17 +476,25 @@ void BaseButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_click_on_press","enable"),&BaseButton::set_click_on_press);
 	ObjectTypeDB::bind_method(_MD("get_click_on_press"),&BaseButton::get_click_on_press);
 	ObjectTypeDB::bind_method(_MD("get_draw_mode"),&BaseButton::get_draw_mode);
+	ObjectTypeDB::bind_method(_MD("set_enabled_focus_mode","mode"),&BaseButton::set_enabled_focus_mode);
+	ObjectTypeDB::bind_method(_MD("get_enabled_focus_mode"),&BaseButton::get_enabled_focus_mode);
+	ObjectTypeDB::bind_method(_MD("set_shortcut","shortcut"),&BaseButton::set_shortcut);
+	ObjectTypeDB::bind_method(_MD("get_shortcut"),&BaseButton::get_shortcut);
 
 	BIND_VMETHOD(MethodInfo("_pressed"));
 	BIND_VMETHOD(MethodInfo("_toggled",PropertyInfo(Variant::BOOL,"pressed")));
 
 	ADD_SIGNAL( MethodInfo("pressed" ) );
 	ADD_SIGNAL( MethodInfo("released" ) );
+	ADD_SIGNAL( MethodInfo("button_up") );
+	ADD_SIGNAL( MethodInfo("button_down") );
 	ADD_SIGNAL( MethodInfo("toggled", PropertyInfo( Variant::BOOL,"pressed") ) );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "disabled"), _SCS("set_disabled"), _SCS("is_disabled"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "is_pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "click_on_press"), _SCS("set_click_on_press"), _SCS("get_click_on_press"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT,"enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All" ), _SCS("set_enabled_focus_mode"), _SCS("get_enabled_focus_mode") );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "shortcut",PROPERTY_HINT_RESOURCE_TYPE,"ShortCut"), _SCS("set_shortcut"), _SCS("get_shortcut"));
 
 
 	BIND_CONSTANT( DRAW_NORMAL );
@@ -424,6 +515,7 @@ BaseButton::BaseButton() {
 	status.click_on_press=false;
 	status.pressing_button=0;
 	set_focus_mode( FOCUS_ALL );
+	enabled_focus_mode = FOCUS_ALL;
 	group=NULL;
 
 

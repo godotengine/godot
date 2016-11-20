@@ -57,6 +57,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <dlfcn.h>
 
 //stupid linux.h
 #ifdef KEY_TAB
@@ -105,6 +106,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	last_timestamp=0;
 	last_mouse_pos_valid=false;
 	last_keyrelease_time=0;
+	xdnd_version = 0;
 
 	if (get_render_thread_mode()==RENDER_SEPARATE_THREAD) {
 		XInitThreads();
@@ -114,7 +116,40 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	x11_display = XOpenDisplay(NULL);
 
 	char * modifiers = XSetLocaleModifiers ("@im=none");
-	ERR_FAIL_COND( modifiers == NULL );
+	if (modifiers==NULL) {
+		WARN_PRINT("Error setting locale modifiers");
+	}
+
+	const char* err;
+	xrr_get_monitors = NULL;
+	xrr_free_monitors = NULL;
+	int xrandr_major = 0;
+	int xrandr_minor = 0;
+	int event_base, error_base;
+	xrandr_ext_ok = XRRQueryExtension(x11_display,&event_base, &error_base);
+	xrandr_handle = dlopen("libXrandr.so.2", RTLD_LAZY);
+	if (!xrandr_handle) {
+		err = dlerror();
+		fprintf(stderr, "could not load libXrandr.so.2, Error: %s\n", err);
+	}
+	else {
+		XRRQueryVersion(x11_display, &xrandr_major, &xrandr_minor);
+		if (((xrandr_major << 8) | xrandr_minor) >= 0x0105) {
+			xrr_get_monitors = (xrr_get_monitors_t) dlsym(xrandr_handle, "XRRGetMonitors");
+			if (!xrr_get_monitors) {
+				err = dlerror();
+				fprintf(stderr, "could not find symbol XRRGetMonitors\nError: %s\n", err);
+			}
+			else {
+				xrr_free_monitors = (xrr_free_monitors_t) dlsym(xrandr_handle, "XRRFreeMonitors");
+				if (!xrr_free_monitors) {
+					err = dlerror();
+					fprintf(stderr, "could not find XRRFreeMonitors\nError: %s\n", err);
+					xrr_get_monitors = NULL;
+				}
+			}
+		}
+	}
 
 	xim = XOpenIM (x11_display, NULL, NULL, NULL);
 
@@ -181,8 +216,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
 
-#if 1
-	// NEW_WM_API
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
 	// needed for lxde/openbox, possibly others
@@ -232,22 +265,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XSetWMNormalHints(x11_display, x11_window, xsh);
 		XFree(xsh);
 	}
-#else
-	capture_idle = 0;
-	minimized = false;
-	maximized = false;
-
-	if (current_videomode.fullscreen) {
-		//set_wm_border(false);
-		set_wm_fullscreen(true);
-	}
-	if (!current_videomode.resizable) {
-		int screen = get_current_screen();
-		Size2i screen_size = get_screen_size(screen);
-		set_window_size(screen_size);
-		set_window_resizable(false);
-	}
-#endif
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -311,7 +328,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	/* set the name and class hints for the window manager to use */
 	classHint = XAllocClassHint();
 	if (classHint) {
-		classHint->res_name = (char *)"Godot";
+		classHint->res_name = (char *)"Godot_Engine";
 		classHint->res_class = (char *)"Godot";
 	}
 	XSetClassHint(x11_display, x11_window, classHint);
@@ -405,7 +422,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		 XFreeGC(x11_display, gc);
 
 
-
 		 if (cursor == None)
 		 {
 			 ERR_PRINT("FAILED CREATING CURSOR");
@@ -415,6 +431,19 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	}
 	set_cursor_shape(CURSOR_BUSY);
 
+	//Set Xdnd (drag & drop) support
+	Atom XdndAware = XInternAtom(x11_display, "XdndAware", False);
+	Atom version=5;
+	XChangeProperty(x11_display, x11_window, XdndAware, XA_ATOM, 32, PropModeReplace, (unsigned char*)&version, 1);
+
+	xdnd_enter = XInternAtom(x11_display, "XdndEnter", False);
+	xdnd_position = XInternAtom(x11_display, "XdndPosition", False);
+	xdnd_status = XInternAtom(x11_display, "XdndStatus", False);
+	xdnd_action_copy = XInternAtom(x11_display, "XdndActionCopy", False);
+	xdnd_drop = XInternAtom(x11_display, "XdndDrop", False);
+	xdnd_finished = XInternAtom(x11_display, "XdndFinished", False);
+	xdnd_selection = XInternAtom(x11_display, "XdndSelection", False);
+	requested = None;
 
 	visual_server->init();
 	//
@@ -465,6 +494,9 @@ void OS_X11::finalize() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
+
+	if (xrandr_handle)
+		dlclose(xrandr_handle);
 
 	XUnmapWindow( x11_display, x11_window );
 	XDestroyWindow( x11_display, x11_window );
@@ -528,7 +560,7 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 				    ButtonPressMask | ButtonReleaseMask |
 				    PointerMotionMask, GrabModeAsync, GrabModeAsync,
 				    x11_window, None, CurrentTime) !=
-		       GrabSuccess)  {
+				GrabSuccess)  {
 			ERR_PRINT("NO GRAB");
 		}
 
@@ -541,6 +573,8 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 	} else {
 		do_mouse_warp=false;
 	}
+
+	XFlush(x11_display);
 }
 
 void OS_X11::warp_mouse_pos(const Point2& p_to) {
@@ -589,22 +623,6 @@ OS::VideoMode OS_X11::get_video_mode(int p_screen) const {
 
 void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 }
-
-//#ifdef NEW_WM_API
-#if 0
-// Just now not needed. Can be used for a possible OS.set_border(bool) method
-void OS_X11::set_wm_border(bool p_enabled) {
-	// needed for lxde/openbox, possibly others
-	Hints hints;
-	Atom property;
-	hints.flags = 2;
-	hints.decorations = p_enabled ? 1L : 0L;
-	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-	XMapRaised(x11_display, x11_window);
-	//XMoveResizeWindow(x11_display, x11_window, 0, 0, 800, 800);
-}
-#endif
 
 void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	// Using EWMH -- Extened Window Manager Hints
@@ -706,6 +724,46 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 	return size;
 }
 
+int OS_X11::get_screen_dpi(int p_screen) const {
+
+	//invalid screen?
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
+
+	//Get physical monitor Dimensions through XRandR and calculate dpi
+	Size2 sc = get_screen_size(p_screen);
+	if (xrandr_ext_ok) {
+		int count = 0;
+		if (xrr_get_monitors) {
+			xrr_monitor_info *monitors = xrr_get_monitors(x11_display, x11_window, true, &count);
+			if (p_screen < count) {
+				double xdpi = sc.width  / (double) monitors[p_screen].mwidth  * 25.4;
+				double ydpi = sc.height / (double) monitors[p_screen].mheight * 25.4;
+				xrr_free_monitors(monitors);
+				return (xdpi + ydpi) / 2;
+			}
+			xrr_free_monitors(monitors);
+		}
+		else if (p_screen == 0) {
+			XRRScreenSize *sizes = XRRSizes(x11_display, 0, &count);
+			if (sizes) {
+				double xdpi = sc.width  / (double) sizes[0].mwidth  * 25.4;
+				double ydpi = sc.height / (double) sizes[0].mheight * 25.4;
+				return (xdpi + ydpi) / 2;
+			}
+		}
+	}
+
+	int width_mm  = DisplayWidthMM(x11_display, p_screen);
+	int height_mm = DisplayHeightMM(x11_display, p_screen);
+	double xdpi = (width_mm  ? sc.width  / (double) width_mm  * 25.4 : 0);
+	double ydpi = (height_mm ? sc.height / (double) height_mm * 25.4 : 0);
+	if (xdpi || xdpi)
+		return  (xdpi + ydpi)/(xdpi && ydpi ? 2 : 1);
+
+	//could not get dpi
+	return 96;
+}
+
 Point2 OS_X11::get_window_position() const {
 	int x,y;
 	Window child;
@@ -718,54 +776,7 @@ Point2 OS_X11::get_window_position() const {
 }
 
 void OS_X11::set_window_position(const Point2& p_position) {
-	// Using EWMH -- Extended Window Manager Hints
-	// to get the size of the decoration
-#if 0
-	Atom property = XInternAtom(x11_display,"_NET_FRAME_EXTENTS", True);
-	Atom type;
-	int format;
-	unsigned long len;
-	unsigned long remaining;
-	unsigned char *data = NULL;
-	int result;
-
-	result = XGetWindowProperty(
-		x11_display,
-		x11_window,
-		property,
-		0,
-		32,
-		False,
-		AnyPropertyType,
-		&type,
-		&format,
-		&len,
-		&remaining,
-		&data
-	);
-
-	long left = 0L;
-	long top = 0L;
-
-	if( result == Success ) {
-		long *extends = (long *) data;
-
-		left = extends[0];
-		top = extends[2];
-
-		XFree(data);
-	}
-
-	int screen = get_current_screen();
-	Point2i screen_position = get_screen_position(screen);
-
-	left -= screen_position.x;
-	top -= screen_position.y;
-
-	XMoveWindow(x11_display,x11_window,p_position.x - left,p_position.y - top);
-#else
 	XMoveWindow(x11_display,x11_window,p_position.x,p_position.y);
-#endif
 }
 
 Size2 OS_X11::get_window_size() const {
@@ -809,20 +820,19 @@ bool OS_X11::is_window_resizable() const {
 }
 
 void OS_X11::set_window_minimized(bool p_enabled) {
-        // Using ICCCM -- Inter-Client Communication Conventions Manual
-        XEvent xev;
-        Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
+	// Using ICCCM -- Inter-Client Communication Conventions Manual
+	XEvent xev;
+	Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
 
-        memset(&xev, 0, sizeof(xev));
-        xev.type = ClientMessage;
-        xev.xclient.window = x11_window;
-        xev.xclient.message_type = wm_change;
-        xev.xclient.format = 32;
-        xev.xclient.data.l[0] = p_enabled ? WM_IconicState : WM_NormalState;
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = x11_window;
+	xev.xclient.message_type = wm_change;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = p_enabled ? WM_IconicState : WM_NormalState;
 
-        XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
-        //XEvent xev;
 	Atom wm_state     =  XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_hidden    =  XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False);
 
@@ -886,47 +896,33 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 	xev.xclient.data.l[2] = wm_max_vert;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-/* sorry this does not fix it, fails on multi monitor
-	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
-	current_videomode.width = xwa.width;
-	current_videomode.height = xwa.height;
-//*/
-
-//	current_videomode.width = wm_max_horz;
-//	current_videomode.height = wm_max_vert;
-
-	//Size2 ss = get_screen_size(get_current_screen());
-	//current_videomode.width=ss.width;
-	//current_videomode.height=ss.height;
-
 
 	maximized = p_enabled;
 }
 
 bool OS_X11::is_window_maximized() const {
 	// Using EWMH -- Extended Window Manager Hints
-        Atom property = XInternAtom(x11_display,"_NET_WM_STATE",False );
-        Atom type;
-        int format;
-        unsigned long len;
-        unsigned long remaining;
-        unsigned char *data = NULL;
+	Atom property = XInternAtom(x11_display,"_NET_WM_STATE",False );
+	Atom type;
+	int format;
+	unsigned long len;
+	unsigned long remaining;
+	unsigned char *data = NULL;
 
-        int result = XGetWindowProperty(
-                x11_display,
-                x11_window,
-                property,
-                0,
-                1024,
-                False,
-                XA_ATOM,
-                &type,
-                &format,
-                &len,
-                &remaining,
-                &data
-        );
+	int result = XGetWindowProperty(
+			x11_display,
+			x11_window,
+			property,
+			0,
+			1024,
+			False,
+			XA_ATOM,
+			&type,
+			&format,
+			&len,
+			&remaining,
+			&data
+	);
 
 	if(result == Success) {
 		Atom *atoms = (Atom*) data;
@@ -950,6 +946,26 @@ bool OS_X11::is_window_maximized() const {
 	return false;
 }
 
+void OS_X11::request_attention() {
+	// Using EWMH -- Extended Window Manager Hints
+	//
+	// Sets the _NET_WM_STATE_DEMANDS_ATTENTION atom for WM_STATE
+	// Will be unset by the window manager after user react on the request for attention
+	//
+	XEvent xev;
+	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+	Atom wm_attention = XInternAtom(x11_display, "_NET_WM_STATE_DEMANDS_ATTENTION", False);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = x11_window;
+	xev.xclient.message_type = wm_state;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = _NET_WM_STATE_ADD;
+	xev.xclient.data.l[1] = wm_attention;
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+}
 
 InputModifierState OS_X11::get_key_modifier_state(unsigned int p_x11_state) {
 
@@ -1160,8 +1176,87 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 		event.key.mod.shift=true;
 	}
 
+	//don't set mod state if modifier keys are released by themselves
+	//else event.is_action() will not work correctly here
+	if (!event.key.pressed) {
+		if (event.key.scancode == KEY_SHIFT)
+			event.key.mod.shift = false;
+		else if (event.key.scancode == KEY_CONTROL)
+			event.key.mod.control = false;
+		else if (event.key.scancode == KEY_ALT)
+			event.key.mod.alt = false;
+		else if (event.key.scancode == KEY_META)
+			event.key.mod.meta = false;
+	}
+
 	//printf("key: %x\n",event.key.scancode);
 	input->parse_input_event( event);
+}
+
+struct Property
+{
+	unsigned char *data;
+	int format, nitems;
+	Atom type;
+};
+
+static Property read_property(Display* p_display, Window p_window, Atom p_property) {
+
+	Atom actual_type;
+	int actual_format;
+	unsigned long nitems;
+	unsigned long bytes_after;
+	unsigned char *ret=0;
+
+	int read_bytes = 1024;
+
+	//Keep trying to read the property until there are no
+	//bytes unread.
+	do
+	{
+		if(ret != 0)
+			XFree(ret);
+
+		XGetWindowProperty(p_display, p_window, p_property, 0, read_bytes, False, AnyPropertyType,
+					   &actual_type, &actual_format, &nitems, &bytes_after,
+					   &ret);
+
+		read_bytes *= 2;
+
+	}while(bytes_after != 0);
+
+	Property p = {ret, actual_format, nitems, actual_type};
+
+	return p;
+}
+
+static Atom pick_target_from_list(Display* p_display, Atom *p_list, int p_count) {
+
+	static const char* target_type = "text/uri-list";
+
+	for (int i = 0; i < p_count; i++) {
+
+		Atom atom = p_list[i];
+
+		if (atom != None && String(XGetAtomName(p_display, atom)) == target_type)
+				return atom;
+	}
+	return None;
+}
+
+static Atom pick_target_from_atoms(Display* p_disp, Atom p_t1, Atom p_t2, Atom p_t3) {
+
+	static const char* target_type = "text/uri-list";
+	if (p_t1 != None && String(XGetAtomName(p_disp, p_t1)) == target_type)
+		return p_t1;
+
+	if (p_t2 != None && String(XGetAtomName(p_disp, p_t2)) == target_type)
+		return p_t2;
+
+	if (p_t3 != None && String(XGetAtomName(p_disp, p_t3)) == target_type)
+		return p_t3;
+
+	return None;
 }
 
 void OS_X11::process_xevents() {
@@ -1204,11 +1299,6 @@ void OS_X11::process_xevents() {
 		} break;
 		case FocusIn:
 			minimized = false;
-#ifdef NEW_WM_API
-			if(current_videomode.fullscreen) {
-				set_wm_fullscreen(true);
-			}
-#endif
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 				XGrabPointer(x11_display, x11_window, True,
@@ -1219,12 +1309,6 @@ void OS_X11::process_xevents() {
 			break;
 
 		case FocusOut:
-#ifdef NEW_WM_API
-			if(current_videomode.fullscreen) {
-				set_wm_fullscreen(false);
-				set_window_minimized(true);
-			}
-#endif
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 				//dear X11, I try, I really try, but you never work, you do whathever you want.
@@ -1368,13 +1452,6 @@ void OS_X11::process_xevents() {
 
 			Point2i rel = pos - last_mouse_pos;
 
-#ifdef NEW_WM_API
-			if (mouse_mode==MOUSE_MODE_CAPTURED) {
-				pos.x = current_videomode.width / 2;
-				pos.y = current_videomode.height / 2;
-			}
-#endif
-
 			InputEvent motion_event;
 			motion_event.ID=++event_id;
 			motion_event.type=InputEvent::MOUSE_MOTION;
@@ -1454,11 +1531,96 @@ void OS_X11::process_xevents() {
 			XFlush (x11_display);
 		} break;
 
+		case SelectionNotify:
+
+			if (event.xselection.target == requested) {
+
+				Property p = read_property(x11_display, x11_window, XInternAtom(x11_display, "PRIMARY", 0));
+
+				Vector<String> files = String((char *)p.data).split("\n", false);
+				for (int i = 0; i < files.size(); i++) {
+					files[i] = files[i].replace("file://", "").replace("%20", " ").strip_escapes();
+				}
+				main_loop->drop_files(files);
+
+				//Reply that all is well.
+				XClientMessageEvent m;
+				memset(&m, 0, sizeof(m));
+				m.type = ClientMessage;
+				m.display = x11_display;
+				m.window = xdnd_source_window;
+				m.message_type = xdnd_finished;
+				m.format=32;
+				m.data.l[0] = x11_window;
+				m.data.l[1] = 1;
+				m.data.l[2] = xdnd_action_copy; //We only ever copy.
+
+				XSendEvent(x11_display, xdnd_source_window, False, NoEventMask, (XEvent*)&m);
+			}
+			break;
 
 		case ClientMessage:
 
 			if ((unsigned int)event.xclient.data.l[0]==(unsigned int)wm_delete)
 				main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+
+			else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_enter) {
+
+				//File(s) have been dragged over the window, check for supported target (text/uri-list)
+				xdnd_version = ( event.xclient.data.l[1] >> 24);
+				Window source = event.xclient.data.l[0];
+				bool more_than_3 = event.xclient.data.l[1] & 1;
+				if (more_than_3) {
+					Property p = read_property(x11_display, source, XInternAtom(x11_display, "XdndTypeList", False));
+					requested = pick_target_from_list(x11_display, (Atom*)p.data, p.nitems);
+				}
+				else
+					requested = pick_target_from_atoms(x11_display, event.xclient.data.l[2],event.xclient.data.l[3], event.xclient.data.l[4]);
+			}
+			else if ((unsigned int)event.xclient.message_type == (unsigned int )xdnd_position) {
+
+				//xdnd position event, reply with an XDND status message
+				//just depending on type of data for now
+				XClientMessageEvent m;
+				memset(&m, 0, sizeof(m));
+				m.type = ClientMessage;
+				m.display = event.xclient.display;
+				m.window = event.xclient.data.l[0];
+				m.message_type = xdnd_status;
+				m.format=32;
+				m.data.l[0] = x11_window;
+				m.data.l[1] = (requested != None);
+				m.data.l[2] = 0; //empty rectangle
+				m.data.l[3] = 0;
+				m.data.l[4] = xdnd_action_copy;
+
+				XSendEvent(x11_display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+				XFlush(x11_display);
+			}
+			else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_drop) {
+
+				if (requested != None) {
+					xdnd_source_window = event.xclient.data.l[0];
+					if(xdnd_version >= 1)
+						XConvertSelection(x11_display, xdnd_selection, requested, XInternAtom(x11_display, "PRIMARY", 0), x11_window, event.xclient.data.l[2]);
+					else
+						XConvertSelection(x11_display, xdnd_selection, requested, XInternAtom(x11_display, "PRIMARY", 0), x11_window, CurrentTime);
+				}
+				else {
+					//Reply that we're not interested.
+					XClientMessageEvent m;
+					memset(&m, 0, sizeof(m));
+					m.type = ClientMessage;
+					m.display = event.xclient.display;
+					m.window = event.xclient.data.l[0];
+					m.message_type = xdnd_finished;
+					m.format=32;
+					m.data.l[0] = x11_window;
+					m.data.l[1] = 0;
+					m.data.l[2] = None; //Failed.
+					XSendEvent(x11_display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+				}
+			}
 			break;
 		default:
 			break;
@@ -1529,7 +1691,6 @@ static String _get_clipboard(Atom p_source, Window x11_window, ::Display* x11_di
 
 	if (Sown == x11_window) {
 
-		printf("returning internal clipboard\n");
 		return p_internal_clipboard;
 	};
 
@@ -1573,7 +1734,7 @@ static String _get_clipboard(Atom p_source, Window x11_window, ::Display* x11_di
 
 	return ret;
 
-};
+}
 
 String OS_X11::get_clipboard() const {
 
@@ -1585,7 +1746,7 @@ String OS_X11::get_clipboard() const {
 	};
 
 	return ret;
-};
+}
 
 String OS_X11::get_name() {
 
@@ -1785,6 +1946,20 @@ String OS_X11::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
+void OS_X11::set_use_vsync(bool p_enable) {
+	if (context_gl)
+		return context_gl->set_use_vsync(p_enable);
+}
+
+bool OS_X11::is_vsync_enabled() const {
+
+	if (context_gl)
+		return context_gl->is_using_vsync();
+
+	return true;
+}
+
+
 void OS_X11::set_context(int p_context) {
 
 	XClassHint* classHint = NULL;
@@ -1818,4 +1993,4 @@ OS_X11::OS_X11() {
 	minimized = false;
 	xim_style=0L;
 	mouse_mode=MOUSE_MODE_VISIBLE;
-};
+}

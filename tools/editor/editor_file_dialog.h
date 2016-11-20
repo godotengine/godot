@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  file_dialog.h                                                        */
+/*  editor_file_dialog.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,8 +26,6 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
-
 #ifndef EDITORFILEDIALOG_H
 #define EDITORFILEDIALOG_H
 
@@ -35,7 +33,6 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/dialogs.h"
 #include "os/dir_access.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/texture_frame.h"
@@ -66,7 +63,8 @@ public:
 		MODE_OPEN_FILE,
 		MODE_OPEN_FILES,
 		MODE_OPEN_DIR,
-		MODE_SAVE_FILE,
+		MODE_OPEN_ANY,
+		MODE_SAVE_FILE
 	};
 
 	typedef Ref<Texture> (*GetIconFunc)(const String&);
@@ -132,6 +130,7 @@ private:
 	bool show_hidden_files;
 	DisplayMode display_mode;
 
+	bool disable_overwrite_warning;
 	bool invalidated;
 
 	void update_dir();
@@ -217,6 +216,9 @@ public:
 	static void set_default_display_mode(DisplayMode p_mode);
 
 	void invalidate();
+
+	void set_disable_overwrite_warning(bool p_disable);
+	bool is_overwrite_warning_disabled() const;
 
 	EditorFileDialog();
 	~EditorFileDialog();

@@ -53,13 +53,26 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_mouse_button_pressed","button"),&Input::is_mouse_button_pressed);
 	ObjectTypeDB::bind_method(_MD("is_joy_button_pressed","device","button"),&Input::is_joy_button_pressed);
 	ObjectTypeDB::bind_method(_MD("is_action_pressed","action"),&Input::is_action_pressed);
+	ObjectTypeDB::bind_method(_MD("is_action_just_pressed","action"),&Input::is_action_just_pressed);
+	ObjectTypeDB::bind_method(_MD("is_action_just_released","action"),&Input::is_action_just_released);
 	ObjectTypeDB::bind_method(_MD("add_joy_mapping","mapping", "update_existing"),&Input::add_joy_mapping, DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("remove_joy_mapping","guid"),&Input::remove_joy_mapping);
 	ObjectTypeDB::bind_method(_MD("is_joy_known","device"),&Input::is_joy_known);
 	ObjectTypeDB::bind_method(_MD("get_joy_axis","device","axis"),&Input::get_joy_axis);
 	ObjectTypeDB::bind_method(_MD("get_joy_name","device"),&Input::get_joy_name);
 	ObjectTypeDB::bind_method(_MD("get_joy_guid","device"),&Input::get_joy_guid);
+	ObjectTypeDB::bind_method(_MD("get_connected_joysticks"),&Input::get_connected_joysticks);
+	ObjectTypeDB::bind_method(_MD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
+	ObjectTypeDB::bind_method(_MD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
+	ObjectTypeDB::bind_method(_MD("get_joy_button_string", "button_index"), &Input::get_joy_button_string);
+	ObjectTypeDB::bind_method(_MD("get_joy_button_index_from_string", "button"), &Input::get_joy_button_index_from_string);
+	ObjectTypeDB::bind_method(_MD("get_joy_axis_string", "axis_index"), &Input::get_joy_axis_string);
+	ObjectTypeDB::bind_method(_MD("get_joy_axis_index_from_string", "axis"), &Input::get_joy_axis_index_from_string);
+	ObjectTypeDB::bind_method(_MD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
 	ObjectTypeDB::bind_method(_MD("get_accelerometer"),&Input::get_accelerometer);
+	ObjectTypeDB::bind_method(_MD("get_magnetometer"),&Input::get_magnetometer);
+	ObjectTypeDB::bind_method(_MD("get_gyroscope"),&Input::get_gyroscope);
 	//ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos); - this is not the function you want
 	ObjectTypeDB::bind_method(_MD("get_mouse_speed"),&Input::get_mouse_speed);
 	ObjectTypeDB::bind_method(_MD("get_mouse_button_mask"),&Input::get_mouse_button_mask);
@@ -81,7 +94,7 @@ void Input::get_argument_options(const StringName& p_function,int p_idx,List<Str
 #ifdef TOOLS_ENABLED
 
 	String pf=p_function;
-	if (p_idx==0 && (pf=="is_action_pressed" || pf=="action_press" || pf=="action_release")) {
+	if (p_idx==0 && (pf=="is_action_pressed" || pf=="action_press" || pf=="action_release" || pf=="is_action_just_pressed" || pf=="is_action_just_released")) {
 
 		List<PropertyInfo> pinfo;
 		Globals::get_singleton()->get_property_list(&pinfo);

@@ -34,8 +34,57 @@
  */
 
 bool InputEvent::operator==(const InputEvent &p_event) const {
+	if (type != p_event.type){
+		return false;
+	}
 
-	return true;
+	switch(type) {
+		case NONE:
+			return true;
+		case KEY:
+			return key.unicode == p_event.key.unicode
+				&& key.scancode == p_event.key.scancode
+				&& key.echo == p_event.key.echo
+				&& key.pressed == p_event.key.pressed
+				&& key.mod == p_event.key.mod;
+		case MOUSE_MOTION:
+			return mouse_motion.x == p_event.mouse_motion.x
+				&& mouse_motion.y == p_event.mouse_motion.y
+				&& mouse_motion.relative_x == p_event.mouse_motion.relative_x
+				&& mouse_motion.relative_y == p_event.mouse_motion.relative_y
+				&& mouse_motion.button_mask == p_event.mouse_motion.button_mask
+				&& key.mod == p_event.key.mod;
+		case MOUSE_BUTTON:
+			return mouse_button.pressed == p_event.mouse_button.pressed
+				&& mouse_button.x == p_event.mouse_button.x
+				&& mouse_button.y == p_event.mouse_button.y
+				&& mouse_button.button_index == p_event.mouse_button.button_index
+				&& mouse_button.button_mask == p_event.mouse_button.button_mask
+				&& key.mod == p_event.key.mod;
+		case JOYSTICK_MOTION:
+			return joy_motion.axis == p_event.joy_motion.axis
+				&& joy_motion.axis_value == p_event.joy_motion.axis_value;
+		case JOYSTICK_BUTTON:
+			return joy_button.pressed == p_event.joy_button.pressed
+				&& joy_button.button_index == p_event.joy_button.button_index
+				&& joy_button.pressure == p_event.joy_button.pressure;
+		case SCREEN_TOUCH:
+			return screen_touch.pressed == p_event.screen_touch.pressed
+				&& screen_touch.index == p_event.screen_touch.index
+				&& screen_touch.x == p_event.screen_touch.x
+				&& screen_touch.y == p_event.screen_touch.y;
+		case SCREEN_DRAG:
+			return screen_drag.index == p_event.screen_drag.index
+				&& screen_drag.x == p_event.screen_drag.x
+				&& screen_drag.y == p_event.screen_drag.y;
+		case ACTION:
+			return action.action == p_event.action.action
+				&& action.pressed == p_event.action.pressed;
+		default:
+			ERR_PRINT("No logic to compare InputEvents of this type, this shouldn't happen.");
+	}
+
+	return false;
 }
 InputEvent::operator String() const {
 
@@ -156,7 +205,7 @@ bool InputEvent::is_pressed() const {
 		case MOUSE_BUTTON: return mouse_button.pressed;
 		case JOYSTICK_BUTTON: return joy_button.pressed;
 		case SCREEN_TOUCH: return screen_touch.pressed;
-		case JOYSTICK_MOTION: return InputMap::get_singleton()->event_is_joy_motion_action_pressed(*this);
+		case JOYSTICK_MOTION: return ABS(joy_motion.axis_value) > 0.5;
 		case ACTION: return action.pressed;
 		default: {}
 	}
@@ -198,4 +247,63 @@ uint32_t InputEventKey::get_scancode_with_modifiers() const {
 
 	return sc;
 
+}
+
+InputEvent InputEvent::xform_by(const Matrix32& p_xform) const {
+
+
+	InputEvent ev=*this;
+
+	switch(ev.type) {
+
+		case InputEvent::MOUSE_BUTTON: {
+
+			Vector2 g = p_xform.xform(Vector2(ev.mouse_button.global_x,ev.mouse_button.global_y));
+			Vector2 l = p_xform.xform(Vector2(ev.mouse_button.x,ev.mouse_button.y));
+			ev.mouse_button.x=l.x;
+			ev.mouse_button.y=l.y;
+			ev.mouse_button.global_x=g.x;
+			ev.mouse_button.global_y=g.y;
+
+		} break;
+		case InputEvent::MOUSE_MOTION: {
+
+			Vector2 g = p_xform.xform(Vector2(ev.mouse_motion.global_x,ev.mouse_motion.global_y));
+			Vector2 l = p_xform.xform(Vector2(ev.mouse_motion.x,ev.mouse_motion.y));
+			Vector2 r = p_xform.basis_xform(Vector2(ev.mouse_motion.relative_x,ev.mouse_motion.relative_y));
+			Vector2 s = p_xform.basis_xform(Vector2(ev.mouse_motion.speed_x,ev.mouse_motion.speed_y));
+			ev.mouse_motion.x=l.x;
+			ev.mouse_motion.y=l.y;
+			ev.mouse_motion.global_x=g.x;
+			ev.mouse_motion.global_y=g.y;
+			ev.mouse_motion.relative_x=r.x;
+			ev.mouse_motion.relative_y=r.y;
+			ev.mouse_motion.speed_x=s.x;
+			ev.mouse_motion.speed_y=s.y;
+
+		} break;
+		case InputEvent::SCREEN_TOUCH: {
+
+
+			Vector2 t = p_xform.xform(Vector2(ev.screen_touch.x,ev.screen_touch.y));
+			ev.screen_touch.x=t.x;
+			ev.screen_touch.y=t.y;
+
+		} break;
+		case InputEvent::SCREEN_DRAG: {
+
+
+			Vector2 t = p_xform.xform(Vector2(ev.screen_drag.x,ev.screen_drag.y));
+			Vector2 r = p_xform.basis_xform(Vector2(ev.screen_drag.relative_x,ev.screen_drag.relative_y));
+			Vector2 s = p_xform.basis_xform(Vector2(ev.screen_drag.speed_x,ev.screen_drag.speed_y));
+			ev.screen_drag.x=t.x;
+			ev.screen_drag.y=t.y;
+			ev.screen_drag.relative_x=r.x;
+			ev.screen_drag.relative_y=r.y;
+			ev.screen_drag.speed_x=s.x;
+			ev.screen_drag.speed_y=s.y;
+		} break;
+	}
+
+	return ev;
 }

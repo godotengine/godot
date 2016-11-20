@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  polygon_2d.h                                                         */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #ifndef POLYGON_2D_H
 #define POLYGON_2D_H
 
@@ -9,9 +37,10 @@ class Polygon2D : public Node2D {
 
 	DVector<Vector2> polygon;
 	DVector<Vector2> uv;
+	DVector<Color> vertex_colors;
 	Color color;
 	Ref<Texture> texture;
-	Vector2 tex_scale;
+	Size2 tex_scale;
 	Vector2 tex_ofs;
 	bool tex_tile;
 	float tex_rot;
@@ -40,6 +69,9 @@ public:
 	void set_color(const Color& p_color);
 	Color get_color() const;
 
+	void set_vertex_colors(const DVector<Color>& p_colors);
+	DVector<Color> get_vertex_colors() const;
+
 	void set_texture(const Ref<Texture>& p_texture);
 	Ref<Texture> get_texture() const;
 
@@ -49,8 +81,8 @@ public:
 	void set_texture_rotation(float p_rot);
 	float get_texture_rotation() const;
 
-	void set_texture_scale(const Vector2& p_scale);
-	Vector2 get_texture_scale() const;
+	void set_texture_scale(const Size2& p_scale);
+	Size2 get_texture_scale() const;
 
 	void set_invert(bool p_rot);
 	bool get_invert() const;

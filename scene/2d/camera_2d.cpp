@@ -29,6 +29,8 @@
 #include "camera_2d.h"
 #include "scene/scene_string_names.h"
 #include "servers/visual_server.h"
+#include "core/math/math_funcs.h"
+#include <editor/editor_node.h>
 
 void Camera2D::_update_scroll() {
 
@@ -37,15 +39,16 @@ void Camera2D::_update_scroll() {
 		return;
 
 	if (get_tree()->is_editor_hint()) {
-	//	update(); //will just be drawn
-		//??
+		update(); //will just be drawn
 		return;
 	}
 
 	if (current) {
+
+		ERR_FAIL_COND( custom_viewport && !ObjectDB::get_instance(custom_viewport_id) );
+
 		Matrix32 xform = get_camera_transform();
 
-		RID vp =  viewport->get_viewport();
 		if (viewport) {
 		       viewport->set_canvas_transform( xform );
 		}
@@ -73,8 +76,9 @@ Matrix32 Camera2D::get_camera_transform()  {
 	if (!get_tree())
 		return Matrix32();
 
-	Size2 screen_size = get_viewport_rect().size;
-	screen_size=get_viewport_rect().size;
+	ERR_FAIL_COND_V( custom_viewport && !ObjectDB::get_instance(custom_viewport_id), Matrix32() );
+
+	Size2 screen_size = viewport->get_visible_rect().size;
 
 
 	Point2 new_camera_pos = get_global_transform().get_origin();
@@ -85,7 +89,7 @@ Matrix32 Camera2D::get_camera_transform()  {
 
 		if (anchor_mode==ANCHOR_MODE_DRAG_CENTER) {
 
-			if (h_drag_enabled) {
+			if (h_drag_enabled && !get_tree()->is_editor_hint()) {
 				camera_pos.x = MIN( camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_RIGHT]));
 				camera_pos.x = MAX( camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * drag_margin[MARGIN_LEFT]));
 			} else {
@@ -97,7 +101,7 @@ Matrix32 Camera2D::get_camera_transform()  {
 				}
 			}
 
-			if (v_drag_enabled) {
+			if (v_drag_enabled && !get_tree()->is_editor_hint()) {
 
 				camera_pos.y = MIN( camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_BOTTOM]));
 				camera_pos.y = MAX( camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * drag_margin[MARGIN_TOP]));
@@ -116,9 +120,27 @@ Matrix32 Camera2D::get_camera_transform()  {
 			camera_pos=new_camera_pos;
 		}
 
+		Point2 screen_offset = (anchor_mode==ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom) : Point2());
+		Rect2 screen_rect(-screen_offset+camera_pos,screen_size*zoom);
+		
+		if (offset!=Vector2()) 
+			screen_rect.pos+=offset;
+		
+		if (limit_smoothing_enabled) {
+			if (screen_rect.pos.x < limit[MARGIN_LEFT])
+				camera_pos.x -= screen_rect.pos.x - limit[MARGIN_LEFT];
+			
+			if (screen_rect.pos.x + screen_rect.size.x > limit[MARGIN_RIGHT])
+				camera_pos.x -= screen_rect.pos.x + screen_rect.size.x - limit[MARGIN_RIGHT];
 
+			if (screen_rect.pos.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
+				camera_pos.y -= screen_rect.pos.y + screen_rect.size.y - limit[MARGIN_BOTTOM];
 
-		if (smoothing_enabled) {
+			if (screen_rect.pos.y < limit[MARGIN_TOP])
+				camera_pos.y -= screen_rect.pos.y - limit[MARGIN_TOP];
+		}
+
+		if (smoothing_enabled && !get_tree()->is_editor_hint()) {
 
 			float c = smoothing*get_fixed_process_delta_time();
 			smoothed_camera_pos = ((camera_pos-smoothed_camera_pos)*c)+smoothed_camera_pos;
@@ -145,20 +167,20 @@ Matrix32 Camera2D::get_camera_transform()  {
 		screen_offset = screen_offset.rotated(angle);
 	}
 
-	Rect2 screen_rect(-screen_offset+ret_camera_pos,screen_size);
+	Rect2 screen_rect(-screen_offset+ret_camera_pos,screen_size*zoom);
+	if (screen_rect.pos.x < limit[MARGIN_LEFT])
+		screen_rect.pos.x = limit[MARGIN_LEFT];
+	
 	if (screen_rect.pos.x + screen_rect.size.x > limit[MARGIN_RIGHT])
 		screen_rect.pos.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
 
 	if (screen_rect.pos.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
 		screen_rect.pos.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
 
-
-	if (screen_rect.pos.x < limit[MARGIN_LEFT])
-		screen_rect.pos.x=limit[MARGIN_LEFT];
-
 	if (screen_rect.pos.y < limit[MARGIN_TOP])
 		screen_rect.pos.y =limit[MARGIN_TOP];
-
+	
+	
 	if (offset!=Vector2()) {
 
 		screen_rect.pos+=offset;
@@ -222,14 +244,10 @@ void Camera2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 
-			viewport = NULL;
-			Node *n=this;
-			while(n){
-
-				viewport = n->cast_to<Viewport>();
-				if (viewport)
-					break;
-				n=n->get_parent();
+			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
+				viewport=custom_viewport;
+			} else {
+				viewport=get_viewport();
 			}
 
 			canvas = get_canvas();
@@ -241,6 +259,10 @@ void Camera2D::_notification(int p_what) {
 			add_to_group(group_name);
 			add_to_group(canvas_group_name);
 
+			if(get_tree()->is_editor_hint()) {
+				set_fixed_process(false);
+			}
+
 			_update_scroll();
 			first=true;
 
@@ -248,14 +270,41 @@ void Camera2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
-			if (is_current()) {
-				if (viewport) {
+			if (is_current()) {				
+				if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
 					viewport->set_canvas_transform( Matrix32() );
 				}
 			}
 			remove_from_group(group_name);
 			remove_from_group(canvas_group_name);
 			viewport=NULL;
+
+		} break;
+		case NOTIFICATION_DRAW: {
+
+			if (!is_inside_tree() || !get_tree()->is_editor_hint())
+				break;
+
+			Color area_axis_color(0.5, 0.42, 0.87, 0.63);
+			float area_axis_width = 1;
+			if(current)
+				area_axis_width = 3;
+
+			Matrix32 inv_camera_transform = get_camera_transform().affine_inverse();
+			Size2 screen_size = get_viewport_rect().size;
+
+			Vector2 screen_endpoints[4]= {
+				inv_camera_transform.xform(Vector2(0, 0)),
+				inv_camera_transform.xform(Vector2(screen_size.width,0)),
+				inv_camera_transform.xform(Vector2(screen_size.width, screen_size.height)),
+				inv_camera_transform.xform(Vector2(0, screen_size.height))
+			};
+
+			Matrix32 inv_transform = get_global_transform().affine_inverse(); // undo global space
+
+			for(int i=0;i<4;i++) {
+				draw_line(inv_transform.xform(screen_endpoints[i]), inv_transform.xform(screen_endpoints[(i+1)%4]), area_axis_color, area_axis_width);
+			}
 
 		} break;
 	}
@@ -353,6 +402,17 @@ int Camera2D::get_limit(Margin p_margin) const{
 
 }
 
+void Camera2D::set_limit_smoothing_enabled(bool enable) {
+
+	limit_smoothing_enabled = enable;
+	_update_scroll();
+}
+
+bool Camera2D::is_limit_smoothing_enabled() const{
+
+	return limit_smoothing_enabled;
+}
+
 void Camera2D::set_drag_margin(Margin p_margin,float p_drag_margin) {
 
 	ERR_FAIL_INDEX(p_margin,4);
@@ -379,11 +439,42 @@ void Camera2D::force_update_scroll() {
 	_update_scroll();
 }
 
+void Camera2D::reset_smoothing() {
+
+	smoothed_camera_pos = camera_pos;
+	_update_scroll();
+}
+
+void Camera2D::align() {
+
+	ERR_FAIL_COND( custom_viewport && !ObjectDB::get_instance(custom_viewport_id) );
+
+	Size2 screen_size = viewport->get_visible_rect().size;
+
+	Point2 current_camera_pos = get_global_transform().get_origin();
+	if (anchor_mode==ANCHOR_MODE_DRAG_CENTER) {
+		if (h_ofs<0) {
+			camera_pos.x = current_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_RIGHT] * h_ofs;
+		} else {
+			camera_pos.x = current_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_LEFT] * h_ofs;
+		}
+		if (v_ofs<0) {
+			camera_pos.y = current_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_TOP] * v_ofs;
+		} else {
+			camera_pos.y = current_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_BOTTOM] * v_ofs;
+		}
+	} else if (anchor_mode==ANCHOR_MODE_FIXED_TOP_LEFT){
+
+		camera_pos=current_camera_pos;
+	}
+
+	_update_scroll();
+}
 
 void Camera2D::set_follow_smoothing(float p_speed) {
 
 	smoothing=p_speed;
-	if (smoothing>0)
+	if (smoothing>0 && !(is_inside_tree() && get_tree()->is_editor_hint()))
 		set_fixed_process(true);
 	else
 		set_fixed_process(false);
@@ -460,6 +551,42 @@ bool Camera2D::is_follow_smoothing_enabled() const {
 	return smoothing_enabled;
 }
 
+void Camera2D::set_custom_viewport(Node *p_viewport) {
+	ERR_FAIL_NULL(p_viewport);
+	if (is_inside_tree()) {
+		remove_from_group(group_name);
+		remove_from_group(canvas_group_name);
+	}
+
+	custom_viewport=p_viewport->cast_to<Viewport>();
+
+	if (custom_viewport) {
+		custom_viewport_id=custom_viewport->get_instance_ID();
+	} else {
+		custom_viewport_id=0;
+	}
+
+	if (is_inside_tree()) {
+
+		if (custom_viewport)
+			viewport=custom_viewport;
+		else
+			viewport=get_viewport();
+
+		RID vp = viewport->get_viewport();
+		group_name = "__cameras_"+itos(vp.get_id());
+		canvas_group_name ="__cameras_c"+itos(canvas.get_id());
+		add_to_group(group_name);
+		add_to_group(canvas_group_name);
+	}
+
+}
+
+Node* Camera2D::get_custom_viewport() const {
+
+	return custom_viewport;
+}
+
 
 void Camera2D::_bind_methods() {
 
@@ -478,12 +605,14 @@ void Camera2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_update_scroll"),&Camera2D::_update_scroll);
 
-
 	ObjectTypeDB::bind_method(_MD("_set_current","current"),&Camera2D::_set_current);
 	ObjectTypeDB::bind_method(_MD("is_current"),&Camera2D::is_current);
 
 	ObjectTypeDB::bind_method(_MD("set_limit","margin","limit"),&Camera2D::set_limit);
 	ObjectTypeDB::bind_method(_MD("get_limit","margin"),&Camera2D::get_limit);
+
+	ObjectTypeDB::bind_method(_MD("set_limit_smoothing_enabled","limit_smoothing_enabled"),&Camera2D::set_limit_smoothing_enabled);
+	ObjectTypeDB::bind_method(_MD("is_limit_smoothing_enabled"),&Camera2D::is_limit_smoothing_enabled);
 
 	ObjectTypeDB::bind_method(_MD("set_v_drag_enabled","enabled"),&Camera2D::set_v_drag_enabled);
 	ObjectTypeDB::bind_method(_MD("is_v_drag_enabled"),&Camera2D::is_v_drag_enabled);
@@ -506,6 +635,8 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_zoom","zoom"),&Camera2D::set_zoom);
 	ObjectTypeDB::bind_method(_MD("get_zoom"),&Camera2D::get_zoom);
 
+	ObjectTypeDB::bind_method(_MD("set_custom_viewport","viewport:Viewport"),&Camera2D::set_custom_viewport);
+	ObjectTypeDB::bind_method(_MD("get_custom_viewport:Viewport"),&Camera2D::get_custom_viewport);
 
 	ObjectTypeDB::bind_method(_MD("set_follow_smoothing","follow_smoothing"),&Camera2D::set_follow_smoothing);
 	ObjectTypeDB::bind_method(_MD("get_follow_smoothing"),&Camera2D::get_follow_smoothing);
@@ -514,6 +645,8 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_follow_smoothing_enabled"),&Camera2D::is_follow_smoothing_enabled);
 
 	ObjectTypeDB::bind_method(_MD("force_update_scroll"),&Camera2D::force_update_scroll);
+	ObjectTypeDB::bind_method(_MD("reset_smoothing"),&Camera2D::reset_smoothing);
+	ObjectTypeDB::bind_method(_MD("align"),&Camera2D::align);
 
 	ObjectTypeDB::bind_method(_MD("_set_old_smoothing","follow_smoothing"),&Camera2D::_set_old_smoothing);
 
@@ -527,6 +660,7 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit/top"),_SCS("set_limit"),_SCS("get_limit"),MARGIN_TOP);
 	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit/right"),_SCS("set_limit"),_SCS("get_limit"),MARGIN_RIGHT);
 	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit/bottom"),_SCS("set_limit"),_SCS("get_limit"),MARGIN_BOTTOM);
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"limit/smoothed"),_SCS("set_limit_smoothing_enabled"),_SCS("is_limit_smoothing_enabled") );
 
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"drag_margin/h_enabled"),_SCS("set_h_drag_enabled"),_SCS("is_h_drag_enabled") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"drag_margin/v_enabled"),_SCS("set_v_drag_enabled"),_SCS("is_v_drag_enabled") );
@@ -559,6 +693,7 @@ Camera2D::Camera2D() {
 	limit[MARGIN_TOP]=-10000000;
 	limit[MARGIN_RIGHT]=10000000;
 	limit[MARGIN_BOTTOM]=10000000;
+	
 	drag_margin[MARGIN_LEFT]=0.2;
 	drag_margin[MARGIN_TOP]=0.2;
 	drag_margin[MARGIN_RIGHT]=0.2;
@@ -566,6 +701,9 @@ Camera2D::Camera2D() {
 	camera_pos=Vector2();
 	first=true;
 	smoothing_enabled=false;
+	limit_smoothing_enabled=false;
+	custom_viewport=NULL;
+	custom_viewport_id=0;
 
 	smoothing=5.0;
 	zoom = Vector2(1, 1);

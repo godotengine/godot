@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  light_occluder_2d_editor_plugin.cpp                                  */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "light_occluder_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
@@ -57,7 +85,7 @@ void LightOccluder2DEditor::_menu_option(int p_option) {
 
 void LightOccluder2DEditor::_wip_close(bool p_closed) {
 
-	undo_redo->create_action("Create Poly");
+	undo_redo->create_action(TTR("Create Poly"));
 	undo_redo->add_undo_method(node->get_occluder_polygon().ptr(),"set_polygon",node->get_occluder_polygon()->get_polygon());
 	undo_redo->add_do_method(node->get_occluder_polygon().ptr(),"set_polygon",wip);
 	undo_redo->add_undo_method(node->get_occluder_polygon().ptr(),"set_closed",node->get_occluder_polygon()->is_closed());
@@ -164,7 +192,7 @@ bool LightOccluder2DEditor::forward_input_event(const InputEvent& p_event) {
 
 								if (poly.size() < 3) {
 
-									undo_redo->create_action("Edit Poly");
+									undo_redo->create_action(TTR("Edit Poly"));
 									undo_redo->add_undo_method(node->get_occluder_polygon().ptr(),"set_polygon",poly);
 									poly.push_back(cpoint);
 									undo_redo->add_do_method(node->get_occluder_polygon().ptr(),"set_polygon",poly);
@@ -244,7 +272,7 @@ bool LightOccluder2DEditor::forward_input_event(const InputEvent& p_event) {
 
 								ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
 								poly[edited_point]=edited_point_pos;
-								undo_redo->create_action("Edit Poly");
+								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_do_method(node->get_occluder_polygon().ptr(),"set_polygon",poly);
 								undo_redo->add_undo_method(node->get_occluder_polygon().ptr(),"set_polygon",pre_move_edit);
 								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
@@ -278,7 +306,7 @@ bool LightOccluder2DEditor::forward_input_event(const InputEvent& p_event) {
 						if (closest_idx>=0) {
 
 
-							undo_redo->create_action("Edit Poly (Remove Point)");
+							undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 							undo_redo->add_undo_method(node->get_occluder_polygon().ptr(),"set_polygon",poly);
 							poly.remove(closest_idx);
 							undo_redo->add_do_method(node->get_occluder_polygon().ptr(),"set_polygon",poly);
@@ -336,8 +364,6 @@ void LightOccluder2DEditor::_canvas_draw() {
 	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 
-	int len = poly.size();
-
 	for(int i=0;i<poly.size();i++) {
 
 
@@ -393,7 +419,7 @@ void LightOccluder2DEditor::_create_poly()  {
 
 	if (!node)
 		return;
-	undo_redo->create_action("Create Occluder Polygon");
+	undo_redo->create_action(TTR("Create Occluder Polygon"));
 	undo_redo->add_do_method(node,"set_occluder_polygon",Ref<OccluderPolygon2D>(memnew( OccluderPolygon2D)));
 	undo_redo->add_undo_method(node,"set_occluder_polygon",Variant(REF()));
 	undo_redo->commit_action();
@@ -421,17 +447,17 @@ LightOccluder2DEditor::LightOccluder2DEditor(EditorNode *p_editor) {
 	add_child(button_create);
 	button_create->connect("pressed",this,"_menu_option",varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
-	button_create->set_tooltip("Create a new polygon from scratch");
+	button_create->set_tooltip(TTR("Create a new polygon from scratch."));
 
 	button_edit = memnew( ToolButton );
 	add_child(button_edit);
 	button_edit->connect("pressed",this,"_menu_option",varray(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
-	button_edit->set_tooltip("Edit existing polygon:\nLMB: Move Point.\nCtrl+LMB: Split Segment.\nRMB: Erase Point.");
+	button_edit->set_tooltip(TTR("Edit existing polygon:")+"\n"+TTR("LMB: Move Point.")+"\n"+TTR("Ctrl+LMB: Split Segment.")+"\n"+TTR("RMB: Erase Point."));
 
 	create_poly = memnew( ConfirmationDialog );
 	add_child(create_poly);
-	create_poly->get_ok()->set_text("Create");
+	create_poly->get_ok()->set_text(TTR("Create"));
 
 
 	//add_constant_override("separation",0);
@@ -441,7 +467,7 @@ LightOccluder2DEditor::LightOccluder2DEditor(EditorNode *p_editor) {
 	add_child(options);
 	options->set_area_as_parent_rect();
 	options->set_text("Polygon");
-	//options->get_popup()->add_item("Parse BBCODE",PARSE_BBCODE);
+	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 #endif
 

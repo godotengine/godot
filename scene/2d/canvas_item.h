@@ -60,7 +60,6 @@ protected:
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
 
-	void _shader_changed();
 	static void _bind_methods();
 
 	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
@@ -158,7 +157,7 @@ protected:
 
 	_FORCE_INLINE_ void _notify_transform() { if (!is_inside_tree()) return; _notify_transform(this); if (!block_transform_notify && notify_local_transform) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED); }
 
-	void item_rect_changed();
+	void item_rect_changed(bool p_size_changed=true);
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -208,7 +207,7 @@ public:
 
 	/* DRAWING API */
 
-	void draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width=1.0);
+	void draw_line(const Point2& p_from, const Point2& p_to, const Color& p_color, float p_width=1.0, bool p_antialiased=false);
 	void draw_rect(const Rect2& p_rect, const Color& p_color);
 	void draw_circle(const Point2& p_pos, float p_radius, const Color& p_color);
 	void draw_texture(const Ref<Texture>& p_texture, const Point2& p_pos, const Color &p_modulate=Color(1,1,1,1));
@@ -223,6 +222,7 @@ public:
 	float draw_char(const Ref<Font>& p_font,const Point2& p_pos, const String& p_char,const String& p_next="",const Color& p_modulate=Color(1,1,1));
 
 	void draw_set_transform(const Point2& p_offset, float p_rot, const Size2& p_scale);
+	void draw_set_transform_matrix(const Matrix32& p_matrix);
 
 	/* RECT / TRANSFORM */
 
@@ -239,6 +239,8 @@ public:
 
 	virtual Matrix32 get_global_transform() const;
 	virtual Matrix32 get_global_transform_with_canvas() const;
+
+	Rect2 get_item_and_children_rect() const;
 
 	CanvasItem *get_toplevel() const;
 	_FORCE_INLINE_ RID get_canvas_item() const { return canvas_item; }
@@ -261,6 +263,7 @@ public:
 	bool get_use_parent_material() const;
 
 	InputEvent make_input_local(const InputEvent& pevent) const;
+	Vector2 make_canvas_pos_local(const Vector2& screen_point) const;
 
 	Vector2 get_global_mouse_pos() const;
 	Vector2 get_local_mouse_pos() const;

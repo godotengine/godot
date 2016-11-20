@@ -116,10 +116,20 @@ void ResourceSaver::get_recognized_extensions(const RES& p_resource,List<String>
 
 }
 
-void ResourceSaver::add_resource_format_saver(ResourceFormatSaver *p_format_saver) {
+void ResourceSaver::add_resource_format_saver(ResourceFormatSaver *p_format_saver, bool p_at_front) {
 
 	ERR_FAIL_COND( saver_count >= MAX_SAVERS );
-	saver[saver_count++]=p_format_saver;
+
+	if (p_at_front) {
+		for(int i=saver_count;i>0;i--) {
+			saver[i]=saver[i-1];
+		}
+		saver[0]=p_format_saver;
+		saver_count++;
+	} else {
+		saver[saver_count++]=p_format_saver;
+	}
+
 }
 
 

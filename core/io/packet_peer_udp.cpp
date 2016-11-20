@@ -1,27 +1,50 @@
+/*************************************************************************/
+/*  packet_peer_udp.cpp                                                  */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "packet_peer_udp.h"
 #include "io/ip.h"
 
-
 PacketPeerUDP* (*PacketPeerUDP::_create)()=NULL;
 
-int PacketPeerUDP::_get_packet_address() const {
-
-	IP_Address ip = get_packet_address();
-	return ip.host;
-}
+VARIANT_ENUM_CAST(IP_Address::AddrType);
 
 String PacketPeerUDP::_get_packet_ip() const {
 
 	return get_packet_address();
 }
 
-Error PacketPeerUDP::_set_send_address(const String& p_address,int p_port) {
+Error PacketPeerUDP::_set_send_address(const String& p_address,int p_port,IP_Address::AddrType p_type) {
 
 	IP_Address ip;
 	if (p_address.is_valid_ip_address()) {
 		ip=p_address;
 	} else {
-		ip=IP::get_singleton()->resolve_hostname(p_address);
+		ip=IP::get_singleton()->resolve_hostname(p_address, p_type);
 		if (ip==IP_Address())
 			return ERR_CANT_RESOLVE;
 	}
@@ -32,14 +55,14 @@ Error PacketPeerUDP::_set_send_address(const String& p_address,int p_port) {
 
 void PacketPeerUDP::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("listen:Error","port","recv_buf_size"),&PacketPeerUDP::listen,DEFVAL(65536));
+	ObjectTypeDB::bind_method(_MD("listen:Error","port","ip_type", "recv_buf_size"),&PacketPeerUDP::listen,DEFVAL(IP_Address::TYPE_ANY),DEFVAL(65536));
 	ObjectTypeDB::bind_method(_MD("close"),&PacketPeerUDP::close);
 	ObjectTypeDB::bind_method(_MD("wait:Error"),&PacketPeerUDP::wait);
 	ObjectTypeDB::bind_method(_MD("is_listening"),&PacketPeerUDP::is_listening);
 	ObjectTypeDB::bind_method(_MD("get_packet_ip"),&PacketPeerUDP::_get_packet_ip);
-	ObjectTypeDB::bind_method(_MD("get_packet_address"),&PacketPeerUDP::_get_packet_address);
+	//ObjectTypeDB::bind_method(_MD("get_packet_address"),&PacketPeerUDP::_get_packet_address);
 	ObjectTypeDB::bind_method(_MD("get_packet_port"),&PacketPeerUDP::get_packet_port);
-	ObjectTypeDB::bind_method(_MD("set_send_address","host","port"),&PacketPeerUDP::_set_send_address);
+	ObjectTypeDB::bind_method(_MD("set_send_address","host","port","ip_type"),&PacketPeerUDP::_set_send_address,DEFVAL(IP_Address::TYPE_ANY));
 
 
 }

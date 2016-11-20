@@ -152,7 +152,7 @@ void SamplePlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	p_list->push_back( PropertyInfo( Variant::STRING, "play/play", PROPERTY_HINT_ENUM, en,PROPERTY_USAGE_EDITOR));
+	p_list->push_back( PropertyInfo( Variant::STRING, "play/play", PROPERTY_HINT_ENUM, en,PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_ANIMATE_AS_TRIGGER));
 	p_list->push_back( PropertyInfo( Variant::INT, "config/polyphony", PROPERTY_HINT_RANGE, "1,256,1"));
 	p_list->push_back( PropertyInfo( Variant::OBJECT, "config/samples", PROPERTY_HINT_RESOURCE_TYPE, "SampleLibrary"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "default/volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"));
@@ -290,7 +290,7 @@ void SamplePlayer::stop_all() {
 
 #define _GET_VOICE\
 	uint32_t voice=p_voice&0xFFFF;\
-	ERR_FAIL_COND(voice > (uint32_t)voices.size());\
+	ERR_FAIL_COND(voice >= (uint32_t)voices.size());\
 	Voice &v=voices[voice];\
 	if (v.check!=uint32_t(p_voice>>16))\
 		return;\
@@ -381,7 +381,7 @@ void SamplePlayer::set_reverb(VoiceID p_voice,ReverbRoomType p_room,float p_send
 
 #define _GET_VOICE_V(m_ret)\
 	uint32_t voice=p_voice&0xFFFF;\
-	ERR_FAIL_COND_V(voice > (uint32_t)voices.size(),m_ret);\
+	ERR_FAIL_COND_V(voice >= (uint32_t)voices.size(),m_ret);\
 	const Voice &v=voices[voice];\
 	if (v.check!=(p_voice>>16))\
 		return m_ret;\
@@ -600,6 +600,14 @@ float SamplePlayer::get_default_reverb() const {
 	return _default.reverb_send;
 }
 
+String SamplePlayer::get_configuration_warning() const {
+
+	if (library.is_null()) {
+		return TTR("A SampleLibrary resource must be created or set in the 'samples' property in order for SamplePlayer to play sound.");
+	}
+
+	return String();
+}
 
 void SamplePlayer::_bind_methods() {
 

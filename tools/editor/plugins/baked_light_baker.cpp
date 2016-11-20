@@ -1,4 +1,31 @@
-
+/*************************************************************************/
+/*  baked_light_baker.cpp                                                */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "baked_light_baker.h"
 #include <stdlib.h>
 #include <cmath>
@@ -618,7 +645,6 @@ void BakedLightBaker::_octree_insert(int p_octant,Triangle* p_triangle, int p_de
 					leaf_list=child_idx;
 					cell_count++;
 
-					int lz = lights.size();
 					for(int ci=0;ci<8;ci++) {
 						child->light_accum[ci][0]=0;
 						child->light_accum[ci][1]=0;
@@ -728,14 +754,14 @@ void BakedLightBaker::_make_octree() {
 	for(int i=0;i<8;i++)
 		root->children[i]=0;
 
-	EditorProgress ep("bake_octree","Parsing "+itos(triangles.size())+" Triangles:",triangles.size());
+	EditorProgress ep("bake_octree",vformat(TTR("Parsing %d Triangles:"), triangles.size()),triangles.size());
 
 	for(int i=0;i<triangles.size();i++) {
 
 		_octree_insert(0,&triangles[i],octree_depth-1);
 		if ((i%1000)==0) {
 
-			ep.step("Triangle# "+itos(i),i);
+			ep.step(TTR("Triangle #")+itos(i),i);
 		}
 	}
 
@@ -989,8 +1015,6 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 	//ray_aabb.expand_to(p_end);
 
 
-	const BVH *bvhptr = bvh;
-
 	bstack[0]=bvh;
 	stack[0]=TEST_AABB_BIT;
 
@@ -1153,8 +1177,6 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 		diffuse_at_point.g=res_light.g*diffuse_at_point.g;
 		diffuse_at_point.b=res_light.b*diffuse_at_point.b;
 
-		float ret=1e6;
-
 		if (p_bounces>0) {
 
 
@@ -1196,7 +1218,7 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 #endif
 
 
-				ret=_throw_ray(thread_stack,p_bake_direct,r_point,r_point+rn*p_rest,p_rest,diffuse_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1);
+				_throw_ray(thread_stack,p_bake_direct,r_point,r_point+rn*p_rest,p_rest,diffuse_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1);
 			}
 
 			if (use_specular && (specular_at_point.r>CMP_EPSILON || specular_at_point.g>CMP_EPSILON || specular_at_point.b>CMP_EPSILON)) {
@@ -1666,7 +1688,7 @@ void BakedLightBaker::throw_rays(ThreadStack& thread_stack,int p_amount) {
 					Vector3 from = dl.pos;
 
 					double r1 = double(rand())/RAND_MAX;
-					double r2 = double(rand())/RAND_MAX;
+					//double r2 = double(rand())/RAND_MAX;
 					double r3 = double(rand())/RAND_MAX;
 
 					float d=Math::tan(Math::deg2rad(dl.spot_angle));
@@ -1716,7 +1738,7 @@ void BakedLightBaker::bake(const Ref<BakedLight> &p_light, Node* p_node) {
 	cell_count=0;
 
 	base_inv=p_node->cast_to<Spatial>()->get_global_transform().affine_inverse();
-	EditorProgress ep("bake","Light Baker Setup:",5);
+	EditorProgress ep("bake",TTR("Light Baker Setup:"),5);
 	baked_light=p_light;
 	lattice_size=baked_light->get_initial_lattice_subdiv();
 	octree_depth=baked_light->get_cell_subdivision();
@@ -1743,18 +1765,22 @@ void BakedLightBaker::bake(const Ref<BakedLight> &p_light, Node* p_node) {
 	}
 
 
-	ep.step("Parsing Geometry",0);
+	ep.step(TTR("Parsing Geometry"),0);
 	_parse_geometry(p_node);
 	mat_map.clear();
 	tex_map.clear();
 	print_line("\ttotal triangles: "+itos(triangles.size()));
-	ep.step("Fixing Lights",1);
+	// no geometry
+	if (triangles.size() == 0) {
+		return;
+	}
+	ep.step(TTR("Fixing Lights"),1);
 	_fix_lights();
-	ep.step("Making BVH",2);
+	ep.step(TTR("Making BVH"),2);
 	_make_bvh();
-	ep.step("Creating Light Octree",3);
+	ep.step(TTR("Creating Light Octree"),3);
 	_make_octree();
-	ep.step("Creating Octree Texture",4);
+	ep.step(TTR("Creating Octree Texture"),4);
 	_make_octree_texture();
 	baking=true;
 	_start_thread();
@@ -1967,7 +1993,6 @@ void BakedLightBaker::update_octree_images(DVector<uint8_t> &p_octree,DVector<ui
 	const double *normptr=norm_arr.ptr();
 */
 	double norm = 1.0/double(total_rays);
-	int lz=lights.size();
 	mult/=multiplier;
 	double saturation = baked_light->get_saturation();
 
@@ -2234,8 +2259,6 @@ void BakedLightBaker::_plot_pixel_to_lightmap(int x, int y, int width, int heigh
 					continue;
 				n/=len;
 
-				const BVH *bvhptr = bvh;
-
 				bstack[0]=bvh;
 				stack[0]=TEST_RAY_BIT;
 
@@ -2357,7 +2380,7 @@ Error BakedLightBaker::transfer_to_lightmaps() {
 	if (!triangles.size() || baked_textures.size()==0)
 		return ERR_UNCONFIGURED;
 
-	EditorProgress ep("transfer_to_lightmaps","Transfer to Lightmaps:",baked_textures.size()*2+triangles.size());
+	EditorProgress ep("transfer_to_lightmaps",TTR("Transfer to Lightmaps:"),baked_textures.size()*2+triangles.size());
 
 	for(int i=0;i<baked_textures.size();i++) {
 
@@ -2365,7 +2388,7 @@ Error BakedLightBaker::transfer_to_lightmaps() {
 
 		baked_textures[i].data.resize( baked_textures[i].width*baked_textures[i].height*4 );
 		zeromem(baked_textures[i].data.ptr(),baked_textures[i].data.size());
-		ep.step("Allocating Texture #"+itos(i+1),i);
+		ep.step(TTR("Allocating Texture #")+itos(i+1),i);
 	}
 
 	Vector<double> norm_arr;
@@ -2377,12 +2400,10 @@ Error BakedLightBaker::transfer_to_lightmaps() {
 	float gamma = baked_light->get_gamma_adjust();
 	float mult = baked_light->get_energy_multiplier();
 
-
-	const double *normptr=norm_arr.ptr();
 	for(int i=0;i<triangles.size();i++) {
 
 		if (i%200==0) {
-			ep.step("Baking Triangle #"+itos(i),i+baked_textures.size());
+			ep.step(TTR("Baking Triangle #")+itos(i),i+baked_textures.size());
 		}
 		Triangle &t=triangles[i];
 		if (t.baked_texture<0 || t.baked_texture>=baked_textures.size())
@@ -2505,13 +2526,12 @@ Error BakedLightBaker::transfer_to_lightmaps() {
 
 		{
 
-			ep.step("Post-Processing Texture #"+itos(i),i+baked_textures.size()+triangles.size());
+			ep.step(TTR("Post-Processing Texture #")+itos(i),i+baked_textures.size()+triangles.size());
 
 			BakeTexture &bt=baked_textures[i];
 
 			Vector<uint8_t> copy_data=bt.data;
 			uint8_t *data=bt.data.ptr();
-			uint8_t *src_data=copy_data.ptr();
 			const int max_radius=8;
 			const int shadow_radius=2;
 			const int max_dist=0x7FFFFFFF;

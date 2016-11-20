@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  editor_mesh_import_plugin.cpp                                        */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "editor_mesh_import_plugin.h"
 
 #include "tools/editor/editor_file_dialog.h"
@@ -173,7 +201,7 @@ public:
 
 	void popup_import(const String& p_path) {
 
-		popup_centered(Size2(400,400));
+		popup_centered(Size2(400,400)*EDSCALE);
 
 		if (p_path!="") {
 
@@ -202,7 +230,14 @@ public:
 
 		Vector<String> meshes = import_path->get_text().split(",");
 		if (meshes.size()==0) {
-			error_dialog->set_text("No meshes to import!");
+			error_dialog->set_text(TTR("No meshes to import!"));
+			error_dialog->popup_centered_minsize();
+			return;
+		}
+
+		String dst = save_path->get_text();
+		if (dst=="") {
+			error_dialog->set_text(TTR("Save path is empty!"));
 			error_dialog->popup_centered_minsize();
 			return;
 		}
@@ -224,16 +259,9 @@ public:
 
 			imd->add_source(EditorImportPlugin::validate_source_path(meshes[i]));
 
-			String dst = save_path->get_text();
-			if (dst=="") {
-				error_dialog->set_text("Save path is empty!");
-				error_dialog->popup_centered_minsize();
-				return;
-			}
+			String file_path = dst.plus_file(meshes[i].get_file().basename()+".msh");
 
-			dst = dst.plus_file(meshes[i].get_file().basename()+".msh");
-
-			plugin->import(dst,imd);
+			plugin->import(file_path,imd);
 		}
 
 		hide();
@@ -261,7 +289,7 @@ public:
 
 		plugin=p_plugin;
 
-		set_title("Single Mesh Import");
+		set_title(TTR("Single Mesh Import"));
 		set_hide_on_ok(false);
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
@@ -269,7 +297,7 @@ public:
 		set_child_rect(vbc);
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
-		vbc->add_margin_child("Source Mesh(es):",hbc);
+		vbc->add_margin_child(TTR("Source Mesh(es):"),hbc);
 
 		import_path = memnew( LineEdit );
 		import_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -282,7 +310,7 @@ public:
 		import_choose->connect("pressed", this,"_browse");
 
 		hbc = memnew( HBoxContainer );
-		vbc->add_margin_child("Target Path:",hbc);
+		vbc->add_margin_child(TTR("Target Path:"),hbc);
 
 		save_path = memnew( LineEdit );
 		save_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -306,7 +334,7 @@ public:
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");
-		get_ok()->set_text("Import");
+		get_ok()->set_text(TTR("Import"));
 
 		error_dialog = memnew( AcceptDialog );
 		add_child(error_dialog);
@@ -315,7 +343,7 @@ public:
 
 		option_editor = memnew( PropertyEditor );
 		option_editor->hide_top_label();
-		vbc->add_margin_child("Options:",option_editor,true);
+		vbc->add_margin_child(TTR("Options:"),option_editor,true);
 	}
 
 	~EditorMeshImportDialog() {
@@ -331,7 +359,7 @@ String EditorMeshImportPlugin::get_name() const {
 }
 String EditorMeshImportPlugin::get_visible_name() const{
 
-	return "3D Mesh";
+	return TTR("Mesh");
 }
 void EditorMeshImportPlugin::import_dialog(const String& p_from){
 
@@ -362,7 +390,7 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 				if (mesh->surface_get_name(i)!="")
 					name=mesh->surface_get_name(i);
 				else
-					name="Surface "+itos(i+1);
+					name=vformat(TTR("Surface %d"),i+1);
 
 				name_map[name]=mesh->surface_get_material(i);
 			}
@@ -468,7 +496,6 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 					}
 
 					int vtx = face[idx][0].to_int()-1;
-					print_line("vtx: "+itos(vtx)+"/"+itos(vertices.size()));
 					ERR_FAIL_INDEX_V(vtx,vertices.size(),ERR_PARSE_ERROR);
 
 					Vector3 vertex = vertices[vtx];
@@ -492,13 +519,13 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 				//new object/surface
 				if (generate_normals || force_smooth)
 					surf_tool->generate_normals();
-				if (uvs.size() && (normals.size() || generate_normals))
+				if (uvs.size() && (normals.size() || generate_normals) && generate_tangents)
 					surf_tool->generate_tangents();
 
 				surf_tool->index();
 				mesh = surf_tool->commit(mesh);
 				if (name=="")
-					name="Surface "+itos(mesh->get_surface_count()-1);
+					name=vformat(TTR("Surface %d"),mesh->get_surface_count()-1);
 				mesh->surface_set_name(mesh->get_surface_count()-1,name);
 				name="";
 				surf_tool->clear();
@@ -536,9 +563,28 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 }
 
 
+void EditorMeshImportPlugin::import_from_drop(const Vector<String>& p_drop, const String &p_dest_path) {
+
+
+	Vector<String> files;
+	for(int i=0;i<p_drop.size();i++) {
+		String ext = p_drop[i].extension().to_lower();
+		String file = p_drop[i].get_file();
+		if (ext=="obj") {
+
+			files.push_back(p_drop[i]);
+		}
+	}
+
+	if (files.size()) {
+		import_dialog();
+		dialog->_choose_files(files);
+		dialog->_choose_save_dir(p_dest_path);
+	}
+}
+
 EditorMeshImportPlugin::EditorMeshImportPlugin(EditorNode* p_editor) {
 
 	dialog = memnew( EditorMeshImportDialog(this));
 	p_editor->get_gui_base()->add_child(dialog);
 }
-

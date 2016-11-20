@@ -280,6 +280,7 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 void BoxContainer::add_spacer(bool p_begin) {
 
 	Control *c = memnew( Control );
+	c->set_stop_mouse(false);
 	if (vertical)
 		c->set_v_size_flags(SIZE_EXPAND_FILL);
 	else
@@ -300,6 +301,7 @@ BoxContainer::BoxContainer(bool p_vertical) {
 
 void BoxContainer::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("add_spacer","begin"),&BoxContainer::add_spacer);
 	ObjectTypeDB::bind_method(_MD("get_alignment"),&BoxContainer::get_alignment);
 	ObjectTypeDB::bind_method(_MD("set_alignment","alignment"),&BoxContainer::set_alignment);
 

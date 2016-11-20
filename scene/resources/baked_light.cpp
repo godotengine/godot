@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  baked_light.cpp                                                      */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "baked_light.h"
 #include "servers/visual_server.h"
 
@@ -256,6 +284,38 @@ float BakedLight::get_ao_strength() const {
 	return ao_strength;
 }
 
+void BakedLight::set_realtime_color_enabled(const bool p_realtime_color_enabled) {
+
+	VS::get_singleton()->baked_light_set_realtime_color_enabled(baked_light, p_realtime_color_enabled);
+}
+
+bool BakedLight::get_realtime_color_enabled() const {
+
+	return VS::get_singleton()->baked_light_get_realtime_color_enabled(baked_light);
+}
+
+
+void BakedLight::set_realtime_color(const Color &p_realtime_color) {
+
+	VS::get_singleton()->baked_light_set_realtime_color(baked_light, p_realtime_color);
+}
+
+Color BakedLight::get_realtime_color() const {
+
+	return VS::get_singleton()->baked_light_get_realtime_color(baked_light);
+}
+
+void BakedLight::set_realtime_energy(const float p_realtime_energy) {
+
+	VS::get_singleton()->baked_light_set_realtime_energy(baked_light, p_realtime_energy);
+}
+
+float BakedLight::get_realtime_energy() const {
+
+	return VS::get_singleton()->baked_light_get_realtime_energy(baked_light);
+}
+
+
 
 void BakedLight::set_energy_multiplier(float p_multiplier){
 
@@ -434,6 +494,15 @@ void BakedLight::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_ao_strength","ao_strength"),&BakedLight::set_ao_strength);
 	ObjectTypeDB::bind_method(_MD("get_ao_strength"),&BakedLight::get_ao_strength);
 
+	ObjectTypeDB::bind_method(_MD("set_realtime_color_enabled", "enabled"), &BakedLight::set_realtime_color_enabled);
+	ObjectTypeDB::bind_method(_MD("get_realtime_color_enabled"), &BakedLight::get_realtime_color_enabled);
+
+	ObjectTypeDB::bind_method(_MD("set_realtime_color", "tint"), &BakedLight::set_realtime_color);
+	ObjectTypeDB::bind_method(_MD("get_realtime_color"), &BakedLight::get_realtime_color);
+
+	ObjectTypeDB::bind_method(_MD("set_realtime_energy", "energy"), &BakedLight::set_realtime_energy);
+	ObjectTypeDB::bind_method(_MD("get_realtime_energy"), &BakedLight::get_realtime_energy);
+
 	ObjectTypeDB::bind_method(_MD("set_format","format"),&BakedLight::set_format);
 	ObjectTypeDB::bind_method(_MD("get_format"),&BakedLight::get_format);
 
@@ -479,6 +548,11 @@ void BakedLight::_bind_methods(){
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"advanced/light_tint",PROPERTY_HINT_RANGE,"0.0,1.0,0.01"),_SCS("set_tint"),_SCS("get_tint"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"advanced/ao_radius",PROPERTY_HINT_RANGE,"0.0,16.0,0.01"),_SCS("set_ao_radius"),_SCS("get_ao_radius"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"advanced/ao_strength",PROPERTY_HINT_RANGE,"0.0,1.0,0.01"),_SCS("set_ao_strength"),_SCS("get_ao_strength"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "realtime/enabled"), _SCS("set_realtime_color_enabled"), _SCS("get_realtime_color_enabled"));
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "realtime/color", PROPERTY_HINT_COLOR_NO_ALPHA), _SCS("set_realtime_color"), _SCS("get_realtime_color"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "realtime/energy", PROPERTY_HINT_RANGE, "0.01,4096.0,0.01"), _SCS("set_realtime_energy"), _SCS("get_realtime_energy"));
+
 
 	BIND_CONSTANT(  MODE_OCTREE );
 	BIND_CONSTANT(  MODE_LIGHTMAPS );

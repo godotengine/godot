@@ -87,6 +87,8 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"funcref",
 		"convert",
 		"typeof",
+		"type_exists",
+		"char",
 		"str",
 		"print",
 		"printt",
@@ -120,11 +122,13 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 	if (p_arg_count<m_count) {\
 		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;\
 		r_error.argument=m_count;\
+		r_ret=Variant();\
 		return;\
 	}\
 	if (p_arg_count>m_count) {\
 		r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;\
 		r_error.argument=m_count;\
+		r_ret=Variant();\
 		return;\
 	}
 
@@ -133,6 +137,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;\
 		r_error.argument=m_arg;\
 		r_error.expected=Variant::REAL;\
+		r_ret=Variant();\
 		return;\
 	}
 
@@ -244,6 +249,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
 				r_error.expected=Variant::REAL;
+				r_ret=Variant();
 			}
 		} break;
 		case MATH_SIGN: {
@@ -261,6 +267,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 					r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument=0;
 					r_error.expected=Variant::REAL;
+					r_ret=Variant();
 				}
 		} break;
 		case MATH_POW: {
@@ -298,7 +305,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		case MATH_DECIMALS: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::decimals(*p_args[0]);
+			r_ret=Math::step_decimals(*p_args[0]);
 		} break;
 		case MATH_STEPIFY: {
 			VALIDATE_ARG_COUNT(2);
@@ -442,6 +449,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
 				r_error.expected=Variant::OBJECT;
+				r_ret=Variant();
 				return;
 
 			}
@@ -479,7 +487,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
 				r_error.expected=Variant::OBJECT;
-				r_ret=Variant();
+				r_ret=Variant();				
 				return;
 
 			}
@@ -495,7 +503,6 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 			Ref<FuncRef> fr = memnew( FuncRef);
 
-			Object *obj = *p_args[0];
 			fr->set_instance(*p_args[0]);
 			fr->set_function(*p_args[1]);
 
@@ -508,8 +515,11 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			int type=*p_args[1];
 			if (type<0 || type>=Variant::VARIANT_MAX) {
 
-				ERR_PRINT("Invalid type argument to convert()");
-				r_ret=Variant::NIL;
+				r_ret=RTR("Invalid type argument to convert(), use TYPE_* constants.");
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::INT;
+				return;
 
 			} else {
 
@@ -522,6 +532,18 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			VALIDATE_ARG_COUNT(1);
 			r_ret = p_args[0]->get_type();
 
+		} break;
+		case TYPE_EXISTS: {
+
+			VALIDATE_ARG_COUNT(1);
+			r_ret = ObjectTypeDB::type_exists(*p_args[0]);
+
+		} break;
+		case TEXT_CHAR: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			CharType result[2] = {*p_args[0], 0};
+			r_ret=String(result);
 		} break;
 		case TEXT_STR: {
 
@@ -638,7 +660,8 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
 				r_error.expected=Variant::STRING;
-				r_ret=Variant();
+				r_ret="Parse error at line "+itos(line)+": "+errs;
+				return;
 			}
 
 		} break;
@@ -652,7 +675,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
 				r_error.expected=Variant::NIL;
-				r_ret=Variant();
+				r_ret="Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).";
 				return;
 			}
 
@@ -680,11 +703,10 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				ByteArray::Read r=varr.read();
 				Error err = decode_variant(ret,r.ptr(),varr.size(),NULL);
 				if (err!=OK) {
-					ERR_PRINT("Not enough bytes for decoding..");
+					r_ret=RTR("Not enough bytes for decoding bytes, or invalid format.");
 					r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument=0;
 					r_error.expected=Variant::RAW_ARRAY;
-					r_ret=Variant();
 					return;
 				}
 
@@ -701,6 +723,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 					r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 					r_error.argument=1;
+					r_ret=Variant();
 
 				} break;
 				case 1: {
@@ -759,9 +782,9 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 					int incr=*p_args[2];
 					if (incr==0) {
 
-						ERR_EXPLAIN("step argument is zero!");
+						r_ret=RTR("step argument is zero!");
 						r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
-						ERR_FAIL();
+						return;
 					}
 
 					Array arr(true);
@@ -812,6 +835,8 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 					r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 					r_error.argument=3;
+					r_ret=Variant();
+
 				} break;
 			}
 
@@ -822,8 +847,9 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
 				r_ret=Variant();
+			} else {
+				r_ret=ResourceLoader::load(*p_args[0]);
 			}
-			r_ret=ResourceLoader::load(*p_args[0]);
 
 		} break;
 		case INST2DICT: {
@@ -847,8 +873,8 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 					r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument=0;
 					r_error.expected=Variant::DICTIONARY;
-					ERR_PRINT("Not a script with an instance");
-
+					r_ret=RTR("Not a script with an instance");
+					return;
 				} else {
 
 					GDInstance *ins = static_cast<GDInstance*>(obj->get_script_instance());
@@ -858,7 +884,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 						r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 						r_error.argument=0;
 						r_error.expected=Variant::DICTIONARY;
-						ERR_PRINT("Not based on a script");
+						r_ret=RTR("Not based on a script");
 						return;
 
 					}
@@ -879,8 +905,10 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 						r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 						r_error.argument=0;
 						r_error.expected=Variant::DICTIONARY;
-						print_line("PATH: "+p->path);
-						ERR_PRINT("Not based on a resource file");
+						r_ret=Variant();
+
+
+						r_ret=RTR("Not based on a resource file");
 
 						return;
 					}
@@ -926,6 +954,8 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
 				r_error.expected=Variant::DICTIONARY;
+				r_ret=Variant();
+
 				return;
 			}
 
@@ -936,6 +966,8 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
 				r_error.expected=Variant::OBJECT;
+				r_ret=RTR("Invalid instance dictionary format (missing @path)");
+
 				return;
 			}
 
@@ -945,6 +977,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
 				r_error.expected=Variant::OBJECT;
+				r_ret=RTR("Invalid instance dictionary format (can't load script at @path)");
 				return;
 			}
 
@@ -955,6 +988,8 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
 				r_error.expected=Variant::OBJECT;
+				r_ret=Variant();
+				r_ret=RTR("Invalid instance dictionary format (invalid script at @path)");
 				return;
 			}
 
@@ -971,20 +1006,22 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 					r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument=0;
 					r_error.expected=Variant::OBJECT;
+					r_ret=Variant();
+					r_ret=RTR("Invalid instance dictionary (invalid subclasses)");
 					return;
 				}
 			}
 
 			r_ret = gdscr->_new(NULL,0,r_error);
 
-            GDInstance *ins = static_cast<GDInstance*>(static_cast<Object*>(r_ret)->get_script_instance());
-            Ref<GDScript> gd_ref = ins->get_script();
+			GDInstance *ins = static_cast<GDInstance*>(static_cast<Object*>(r_ret)->get_script_instance());
+			Ref<GDScript> gd_ref = ins->get_script();
 
-            for(Map<StringName,GDScript::MemberInfo>::Element *E = gd_ref->member_indices.front(); E; E = E->next()) {
-                if(d.has(E->key())) {
-                    ins->members[E->get().index] = d[E->key()];
-                }
-            }
+			for(Map<StringName,GDScript::MemberInfo>::Element *E = gd_ref->member_indices.front(); E; E = E->next()) {
+				if(d.has(E->key())) {
+					ins->members[E->get().index] = d[E->key()];
+				}
+			}
 
 		} break;
 		case HASH: {
@@ -998,11 +1035,15 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			if (p_arg_count<3) {
 				r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 				r_error.argument=3;
+				r_ret=Variant();
+
 				return;
 			}
 			if (p_arg_count>4) {
 				r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 				r_error.argument=4;
+				r_ret=Variant();
+
 				return;
 			}
 
@@ -1010,11 +1051,11 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 
-			Color color(*p_args[0],*p_args[1],*p_args[2]);
+			Color color((float)*p_args[0]/255.0f,(float)*p_args[1]/255.0f,(float)*p_args[2]/255.0f);
 
 			if (p_arg_count==4) {
 				VALIDATE_ARG_NUM(3);
-				color.a=*p_args[3];
+				color.a=(float)*p_args[3]/255.0f;
 			}
 
 			r_ret=color;
@@ -1036,6 +1077,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			if (p_args[0]->get_type()!=Variant::INT && p_args[0]->get_type()!=Variant::REAL) {
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
+				r_error.expected=Variant::INT;
 				r_ret=Variant();
 				break;
 			}
@@ -1046,7 +1088,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		} break;
 		case FUNC_MAX: {
 
-			ERR_FAIL_V();
+			ERR_FAIL();
 		} break;
 
 	}
@@ -1098,6 +1140,8 @@ bool GDFunctions::is_deterministic(Function p_func) {
 		case LOGIC_NEAREST_PO2:
 		case TYPE_CONVERT:
 		case TYPE_OF:
+		case TYPE_EXISTS:
+		case TEXT_CHAR:
 		case TEXT_STR:
 		case COLOR8:
 // enable for debug only, otherwise not desirable - case GEN_RANGE:
@@ -1226,12 +1270,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_ISNAN: {
-			MethodInfo mi("isnan",PropertyInfo(Variant::REAL,"s"));
+			MethodInfo mi("is_nan",PropertyInfo(Variant::REAL,"s"));
 			mi.return_val.type=Variant::REAL;
 			return mi;
 		} break;
 		case MATH_ISINF: {
-			MethodInfo mi("isinf",PropertyInfo(Variant::REAL,"s"));
+			MethodInfo mi("is_inf",PropertyInfo(Variant::REAL,"s"));
 			mi.return_val.type=Variant::REAL;
 			return mi;
 		} break;
@@ -1281,12 +1325,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_SEED: {
-			MethodInfo mi("seed",PropertyInfo(Variant::REAL,"seed"));
+			MethodInfo mi("seed",PropertyInfo(Variant::INT,"seed"));
 			mi.return_val.type=Variant::NIL;
 			return mi;
 		} break;
 		case MATH_RANDSEED: {
-			MethodInfo mi("rand_seed",PropertyInfo(Variant::REAL,"seed"));
+			MethodInfo mi("rand_seed",PropertyInfo(Variant::INT,"seed"));
 			mi.return_val.type=Variant::ARRAY;
 			return mi;
 		} break;
@@ -1358,6 +1402,20 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("typeof",PropertyInfo(Variant::NIL,"what"));
 			mi.return_val.type=Variant::INT;
+			return mi;
+
+		} break;
+		case TYPE_EXISTS: {
+
+			MethodInfo mi("type_exists",PropertyInfo(Variant::STRING,"type"));
+			mi.return_val.type=Variant::BOOL;
+			return mi;
+
+		} break;
+		case TEXT_CHAR: {
+
+			MethodInfo mi("char",PropertyInfo(Variant::INT,"ascii"));
+			mi.return_val.type=Variant::STRING;
 			return mi;
 
 		} break;

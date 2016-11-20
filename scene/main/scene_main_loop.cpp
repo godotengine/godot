@@ -44,6 +44,30 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
+#include "io/marshalls.h"
+
+void SceneTreeTimer::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_time_left","time"),&SceneTreeTimer::set_time_left);
+	ObjectTypeDB::bind_method(_MD("get_time_left"),&SceneTreeTimer::get_time_left);
+
+	ADD_SIGNAL(MethodInfo("timeout"));
+}
+
+
+void SceneTreeTimer::set_time_left(float p_time) {
+	time_left=p_time;
+}
+
+float SceneTreeTimer::get_time_left() const {
+	return time_left;
+}
+
+
+SceneTreeTimer::SceneTreeTimer() {
+	time_left=0;
+}
+
 
 void SceneTree::tree_changed() {
 
@@ -64,7 +88,7 @@ void SceneTree::node_removed(Node *p_node) {
 }
 
 
-void SceneTree::add_to_group(const StringName& p_group, Node *p_node) {
+SceneTree::Group *SceneTree::add_to_group(const StringName& p_group, Node *p_node) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E) {
@@ -73,10 +97,12 @@ void SceneTree::add_to_group(const StringName& p_group, Node *p_node) {
 
 	if (E->get().nodes.find(p_node)!=-1) {
 		ERR_EXPLAIN("Already in group: "+p_group);
-		ERR_FAIL();
+		ERR_FAIL_V(&E->get());
 	}
 	E->get().nodes.push_back(p_node);
-	E->get().last_tree_version=0;
+	//E->get().last_tree_version=0;
+	E->get().changed=true;
+	return &E->get();
 }
 
 void SceneTree::remove_from_group(const StringName& p_group, Node *p_node) {
@@ -125,7 +151,7 @@ void SceneTree::_flush_ugc() {
 
 void SceneTree::_update_group_order(Group& g) {
 
-	if (g.last_tree_version==tree_version)
+	if (!g.changed)
 		return;
 	if (g.nodes.empty())
 		return;
@@ -135,7 +161,8 @@ void SceneTree::_update_group_order(Group& g) {
 
 	SortArray<Node*,Node::Comparator> node_sort;
 	node_sort.sort(nodes,node_count);
-	g.last_tree_version=tree_version;
+	g.changed=false;
+
 }
 
 
@@ -147,8 +174,6 @@ void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const
 	Group &g=E->get();
 	if (g.nodes.empty())
 		return;
-
-	_update_group_order(g);
 
 
 	if (p_call_flags&GROUP_CALL_UNIQUE && !(p_call_flags&GROUP_CALL_REALTIME)) {
@@ -174,6 +199,8 @@ void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const
 		unique_group_calls[ug]=args;
 		return;
 	}
+
+	_update_group_order(g);
 
 	Vector<Node*> nodes_copy = g.nodes;
 	Node **nodes = &nodes_copy[0];
@@ -518,6 +545,8 @@ bool SceneTree::idle(float p_time){
 
 	idle_process_time=p_time;
 
+	_network_poll();
+
 	emit_signal("idle_frame");
 
 	_flush_transform_notifications();
@@ -543,6 +572,23 @@ bool SceneTree::idle(float p_time){
 	root_lock--;
 
 	_flush_delete_queue();
+
+	//go through timers
+
+	for (List<Ref<SceneTreeTimer> >::Element *E=timers.front();E;) {
+
+		List<Ref<SceneTreeTimer> >::Element *N = E->next();
+
+		float time_left = E->get()->get_time_left();
+		time_left-=p_time;
+		E->get()->set_time_left(time_left);
+
+		if (time_left<0) {
+			E->get()->emit_signal("timeout");
+			timers.erase(E);
+		}
+		E=N;
+	}
 
 	return _quit;
 }
@@ -1002,6 +1048,7 @@ static void _fill_array(Node *p_node, Array& array, int p_level) {
 	array.push_back(p_level);
 	array.push_back(p_node->get_name());
 	array.push_back(p_node->get_type());
+	array.push_back(p_node->get_instance_ID());
 	for(int i=0;i<p_node->get_child_count();i++) {
 
 		_fill_array(p_node->get_child(i),array,p_level+1);
@@ -1592,6 +1639,518 @@ void SceneTree::_live_edit_reparent_node_func(const NodePath& p_at,const NodePat
 
 
 #endif
+
+
+void SceneTree::drop_files(const Vector<String>& p_files,int p_from_screen) {
+
+	emit_signal("files_dropped",p_files,p_from_screen);
+	MainLoop::drop_files(p_files,p_from_screen);
+}
+
+
+Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec) {
+
+	Ref<SceneTreeTimer> stt;
+	stt.instance();
+	stt->set_time_left(p_delay_sec);
+	timers.push_back(stt);
+	return stt;
+}
+
+void SceneTree::_network_peer_connected(int p_id) {
+
+
+	connected_peers.insert(p_id);
+	path_get_cache.insert(p_id,PathGetCache());
+
+
+	emit_signal("network_peer_connected",p_id);
+}
+
+void SceneTree::_network_peer_disconnected(int p_id) {
+
+	connected_peers.erase(p_id);
+	path_get_cache.erase(p_id); //I no longer need your cache, sorry
+	emit_signal("network_peer_disconnected",p_id);
+}
+
+void SceneTree::_connected_to_server() {
+
+	emit_signal("connected_to_server");
+}
+
+void SceneTree::_connection_failed() {
+
+	emit_signal("connection_failed");
+}
+
+void SceneTree::_server_disconnected() {
+
+	emit_signal("server_disconnected");
+}
+
+void SceneTree::set_network_peer(const Ref<NetworkedMultiplayerPeer>& p_network_peer) {
+	if (network_peer.is_valid()) {
+		network_peer->disconnect("peer_connected",this,"_network_peer_connected");
+		network_peer->disconnect("peer_disconnected",this,"_network_peer_disconnected");
+		network_peer->disconnect("connection_succeeded",this,"_connected_to_server");
+		network_peer->disconnect("connection_failed",this,"_connection_failed");
+		network_peer->disconnect("server_disconnected",this,"_server_disconnected");
+		connected_peers.clear();
+		path_get_cache.clear();
+		path_send_cache.clear();
+		last_send_cache_id=1;
+	}
+
+	ERR_EXPLAIN("Supplied NetworkedNetworkPeer must be connecting or connected.");
+	ERR_FAIL_COND(p_network_peer.is_valid() && p_network_peer->get_connection_status()==NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED);
+
+	network_peer=p_network_peer;
+
+	if (network_peer.is_valid()) {
+		network_peer->connect("peer_connected",this,"_network_peer_connected");
+		network_peer->connect("peer_disconnected",this,"_network_peer_disconnected");
+		network_peer->connect("connection_succeeded",this,"_connected_to_server");
+		network_peer->connect("connection_failed",this,"_connection_failed");
+		network_peer->connect("server_disconnected",this,"_server_disconnected");
+	}
+}
+
+bool SceneTree::is_network_server() const {
+
+	ERR_FAIL_COND_V(!network_peer.is_valid(),false);
+	return network_peer->is_server();
+
+}
+
+int SceneTree::get_network_unique_id() const {
+
+	ERR_FAIL_COND_V(!network_peer.is_valid(),0);
+	return network_peer->get_unique_id();
+}
+
+void SceneTree::set_refuse_new_network_connections(bool p_refuse) {
+	ERR_FAIL_COND(!network_peer.is_valid());
+	network_peer->set_refuse_new_connections(p_refuse);
+}
+
+bool SceneTree::is_refusing_new_network_connections() const {
+
+	ERR_FAIL_COND_V(!network_peer.is_valid(),false);
+
+	return network_peer->is_refusing_new_connections();
+
+}
+
+
+void SceneTree::_rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const StringName& p_name,const Variant** p_arg,int p_argcount) {
+
+	if (network_peer.is_null()) {
+		ERR_EXPLAIN("Attempt to remote call/set when networking is not active in SceneTree.");
+		ERR_FAIL();
+	}
+
+	if (network_peer->get_connection_status()==NetworkedMultiplayerPeer::CONNECTION_CONNECTING) {
+		ERR_EXPLAIN("Attempt to remote call/set when networking is not connected yet in SceneTree.");
+		ERR_FAIL();
+	}
+
+	if (network_peer->get_connection_status()==NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED) {
+		ERR_EXPLAIN("Attempt to remote call/set when networking is disconnected.");
+		ERR_FAIL();
+	}
+
+	if (p_argcount>255) {
+		ERR_EXPLAIN("Too many arguments >255.");
+		ERR_FAIL();
+	}
+
+	if (p_to!=0 && !connected_peers.has(ABS(p_to))) {
+		if (p_to==get_network_unique_id()) {
+			ERR_EXPLAIN("Attempt to remote call/set yourself! unique ID: "+itos(get_network_unique_id()));
+		} else {
+			ERR_EXPLAIN("Attempt to remote call unexisting ID: "+itos(p_to));
+
+		}
+
+		ERR_FAIL();
+	}
+
+	NodePath from_path = p_from->get_path();
+	ERR_FAIL_COND(from_path.is_empty());
+
+
+
+	//see if the path is cached
+	PathSentCache *psc = path_send_cache.getptr(from_path);
+	if (!psc) {
+		//path is not cached, create
+		path_send_cache[from_path]=PathSentCache();
+		psc = path_send_cache.getptr(from_path);
+		psc->id=last_send_cache_id++;
+
+	}
+
+
+	//create base packet, lots of harcode because it must be tight
+
+	int ofs=0;
+
+#define MAKE_ROOM(m_amount) if (packet_cache.size() < m_amount) packet_cache.resize(m_amount);
+
+	//encode type
+	MAKE_ROOM(1);
+	packet_cache[0]=p_set ? NETWORK_COMMAND_REMOTE_SET : NETWORK_COMMAND_REMOTE_CALL;
+	ofs+=1;
+
+	//encode ID
+	MAKE_ROOM(ofs+4);
+	encode_uint32(psc->id,&packet_cache[ofs]);
+	ofs+=4;
+
+	//encode function name
+	CharString name = String(p_name).utf8();
+	int len = encode_cstring(name.get_data(),NULL);
+	MAKE_ROOM(ofs+len);
+	encode_cstring(name.get_data(),&packet_cache[ofs]);
+	ofs+=len;
+
+	if (p_set) {
+		//set argument
+		Error err = encode_variant(*p_arg[0],NULL,len);
+		ERR_FAIL_COND(err!=OK);
+		MAKE_ROOM(ofs+len);
+		encode_variant(*p_arg[0],&packet_cache[ofs],len);
+		ofs+=len;
+
+	} else {
+		//call arguments
+		MAKE_ROOM(ofs+1);
+		packet_cache[ofs]=p_argcount;
+		ofs+=1;
+		for(int i=0;i<p_argcount;i++) {
+			Error err = encode_variant(*p_arg[i],NULL,len);
+			ERR_FAIL_COND(err!=OK);
+			MAKE_ROOM(ofs+len);
+			encode_variant(*p_arg[i],&packet_cache[ofs],len);
+			ofs+=len;
+		}
+
+	}
+
+	//see if all peers have cached path (is so, call can be fast)
+	bool has_all_peers=true;
+
+	List<int> peers_to_add; //if one is missing, take note to add it
+
+	for (Set<int>::Element *E=connected_peers.front();E;E=E->next()) {
+
+		if (p_to<0 && E->get()==-p_to)
+			continue; //continue, excluded
+
+		if (p_to>0 && E->get()!=p_to)
+			continue; //continue, not for this peer
+
+		Map<int,bool>::Element *F = psc->confirmed_peers.find(E->get());
+
+		if (!F || F->get()==false) {
+			//path was not cached, or was cached but is unconfirmed
+			if (!F) {
+				//not cached at all, take note
+				peers_to_add.push_back(E->get());
+			}
+
+			has_all_peers=false;
+		}
+	}
+
+	//those that need to be added, send a message for this
+
+	for (List<int>::Element *E=peers_to_add.front();E;E=E->next()) {
+
+		//encode function name
+		CharString pname = String(from_path).utf8();
+		int len = encode_cstring(pname.get_data(),NULL);
+
+		Vector<uint8_t> packet;
+
+		packet.resize(1+4+len);
+		packet[0]=NETWORK_COMMAND_SIMPLIFY_PATH;
+		encode_uint32(psc->id,&packet[1]);
+		encode_cstring(pname.get_data(),&packet[5]);
+
+		network_peer->set_target_peer(E->get()); //to all of you
+		network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
+		network_peer->put_packet(packet.ptr(),packet.size());
+
+		psc->confirmed_peers.insert(E->get(),false); //insert into confirmed, but as false since it was not confirmed
+	}
+
+	//take chance and set transfer mode, since all send methods will use it
+	network_peer->set_transfer_mode(p_unreliable ? NetworkedMultiplayerPeer::TRANSFER_MODE_UNRELIABLE : NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
+
+	if (has_all_peers) {
+
+		//they all have verified paths, so send fast
+		network_peer->set_target_peer(p_to); //to all of you
+		network_peer->put_packet(packet_cache.ptr(),ofs); //a message with love
+	} else {
+		//not all verified path, so send one by one
+
+		//apend path at the end, since we will need it for some packets
+		CharString pname = String(from_path).utf8();
+		int path_len = encode_cstring(pname.get_data(),NULL);
+		MAKE_ROOM(ofs+path_len);
+		encode_cstring(pname.get_data(),&packet_cache[ofs]);
+
+
+		for (Set<int>::Element *E=connected_peers.front();E;E=E->next()) {
+
+			if (p_to<0 && E->get()==-p_to)
+				continue; //continue, excluded
+
+			if (p_to>0 && E->get()!=p_to)
+				continue; //continue, not for this peer
+
+			Map<int,bool>::Element *F = psc->confirmed_peers.find(E->get());
+			ERR_CONTINUE(!F);//should never happen
+
+			network_peer->set_target_peer(E->get()); //to this one specifically
+
+			if (F->get()==true) {
+				//this one confirmed path, so use id
+				encode_uint32(psc->id,&packet_cache[1]);
+				network_peer->put_packet(packet_cache.ptr(),ofs);
+			} else {
+				//this one did not confirm path yet, so use entire path (sorry!)
+				encode_uint32(0x80000000|ofs,&packet_cache[1]); //offset to path and flag
+				network_peer->put_packet(packet_cache.ptr(),ofs+path_len);
+			}
+
+		}
+	}
+}
+
+
+void SceneTree::_network_process_packet(int p_from, const uint8_t* p_packet, int p_packet_len) {
+
+	ERR_FAIL_COND(p_packet_len<5);
+
+	uint8_t packet_type = p_packet[0];
+
+	switch(packet_type) {
+
+		case NETWORK_COMMAND_REMOTE_CALL:
+		case NETWORK_COMMAND_REMOTE_SET: {
+
+			ERR_FAIL_COND(p_packet_len<5);
+			uint32_t target = decode_uint32(&p_packet[1]);
+
+
+			Node *node=NULL;
+
+			if (target&0x80000000) {
+
+				int ofs = target&0x7FFFFFFF;
+				ERR_FAIL_COND(ofs>=p_packet_len);
+
+				String paths;
+				paths.parse_utf8((const char*)&p_packet[ofs],p_packet_len-ofs);
+
+				NodePath np = paths;
+
+				node = get_root()->get_node(np);
+				if (node==NULL) {
+					ERR_EXPLAIN("Failed to get path from RPC: "+String(np));
+					ERR_FAIL_COND(node==NULL);
+				}
+			} else {
+
+				int id = target;
+
+				Map<int,PathGetCache>::Element *E=path_get_cache.find(p_from);
+				ERR_FAIL_COND(!E);
+
+				Map<int,PathGetCache::NodeInfo>::Element *F=E->get().nodes.find(id);
+				ERR_FAIL_COND(!F);
+
+				PathGetCache::NodeInfo *ni = &F->get();
+				//do proper caching later
+
+				node = get_root()->get_node(ni->path);
+				if (node==NULL) {
+					ERR_EXPLAIN("Failed to get cached path from RPC: "+String(ni->path));
+					ERR_FAIL_COND(node==NULL);
+				}
+
+
+			}
+
+			ERR_FAIL_COND(p_packet_len<6);
+
+			//detect cstring end
+			int len_end=5;
+			for(;len_end<p_packet_len;len_end++) {
+				if (p_packet[len_end]==0) {
+					break;
+				}
+			}
+
+			ERR_FAIL_COND(len_end>=p_packet_len);
+
+			StringName name = String::utf8((const char*)&p_packet[5]);
+
+
+
+
+			if (packet_type==NETWORK_COMMAND_REMOTE_CALL) {
+
+				if (!node->can_call_rpc(name))
+					return;
+
+				int ofs = len_end+1;
+
+				ERR_FAIL_COND(ofs>=p_packet_len);
+
+				int argc = p_packet[ofs];
+				Vector<Variant> args;
+				Vector<const Variant*> argp;
+				args.resize(argc);
+				argp.resize(argc);
+
+				ofs++;
+
+				for(int i=0;i<argc;i++) {
+
+					ERR_FAIL_COND(ofs>=p_packet_len);
+					int vlen;
+					Error err = decode_variant(args[i],&p_packet[ofs],p_packet_len-ofs,&vlen);
+					ERR_FAIL_COND(err!=OK);
+					//args[i]=p_packet[3+i];
+					argp[i]=&args[i];					
+					ofs+=vlen;
+				}
+
+				Variant::CallError ce;
+
+				node->call(name,argp.ptr(),argc,ce);
+				if (ce.error!=Variant::CallError::CALL_OK) {
+					String error = Variant::get_call_error_text(node,name,argp.ptr(),argc,ce);
+					error="RPC - "+error;
+					ERR_PRINTS(error);
+				}
+
+			} else {
+
+				if (!node->can_call_rset(name))
+					return;
+
+				int ofs = len_end+1;
+
+				ERR_FAIL_COND(ofs>=p_packet_len);
+
+				Variant value;
+				decode_variant(value,&p_packet[ofs],p_packet_len-ofs);
+
+				bool valid;
+
+				node->set(name,value,&valid);
+				if (!valid) {
+					String error = "Error setting remote property '"+String(name)+"', not found in object of type "+node->get_type();
+					ERR_PRINTS(error);
+				}
+			}
+
+		} break;
+		case NETWORK_COMMAND_SIMPLIFY_PATH: {
+
+			ERR_FAIL_COND(p_packet_len<5);
+			int id = decode_uint32(&p_packet[1]);
+
+			String paths;
+			paths.parse_utf8((const char*)&p_packet[5],p_packet_len-5);
+
+			NodePath path = paths;
+
+			if (!path_get_cache.has(p_from)) {
+				path_get_cache[p_from]=PathGetCache();
+			}
+
+			PathGetCache::NodeInfo ni;
+			ni.path=path;
+			ni.instance=0;
+
+			path_get_cache[p_from].nodes[id]=ni;
+
+
+			{
+				//send ack
+
+				//encode path
+				CharString pname = String(path).utf8();
+				int len = encode_cstring(pname.get_data(),NULL);
+
+				Vector<uint8_t> packet;
+
+				packet.resize(1+len);
+				packet[0]=NETWORK_COMMAND_CONFIRM_PATH;
+				encode_cstring(pname.get_data(),&packet[1]);
+
+				network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
+				network_peer->set_target_peer(p_from);
+				network_peer->put_packet(packet.ptr(),packet.size());
+			}
+		} break;
+		case NETWORK_COMMAND_CONFIRM_PATH: {
+
+			String paths;
+			paths.parse_utf8((const char*)&p_packet[1],p_packet_len-1);
+
+			NodePath path = paths;
+
+			PathSentCache *psc = path_send_cache.getptr(path);
+			ERR_FAIL_COND(!psc);
+
+			Map<int,bool>::Element *E=psc->confirmed_peers.find(p_from);
+			ERR_FAIL_COND(!E);
+			E->get()=true;
+		} break;
+	}
+
+}
+
+void SceneTree::_network_poll() {
+
+	if (!network_peer.is_valid() || network_peer->get_connection_status()==NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED)
+		return;
+
+	network_peer->poll();
+
+	if (!network_peer.is_valid()) //it's possible that polling might have resulted in a disconnection, so check here
+		return;
+
+	while(network_peer->get_available_packet_count()) {
+
+		int sender = network_peer->get_packet_peer();
+		const uint8_t *packet;
+		int len;
+
+		Error err = network_peer->get_packet(&packet,len);
+		if (err!=OK) {
+			ERR_PRINT("Error getting packet!");
+		}
+
+		_network_process_packet(sender,packet,len);
+
+		if (!network_peer.is_valid()) {
+			break; //it's also possible that a packet or RPC caused a disconnection, so also check here
+		}
+	}
+
+
+}
+
+
 void SceneTree::_bind_methods() {
 
 
@@ -1622,6 +2181,8 @@ void SceneTree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_paused"),&SceneTree::is_paused);
 	ObjectTypeDB::bind_method(_MD("set_input_as_handled"),&SceneTree::set_input_as_handled);
 
+	ObjectTypeDB::bind_method(_MD("create_timer:SceneTreeTimer","time_sec"),&SceneTree::create_timer);
+
 
 	ObjectTypeDB::bind_method(_MD("get_node_count"),&SceneTree::get_node_count);
 	ObjectTypeDB::bind_method(_MD("get_frame"),&SceneTree::get_frame);
@@ -1639,13 +2200,9 @@ void SceneTree::_bind_methods() {
 	mi.arguments.push_back( PropertyInfo( Variant::INT, "flags"));
 	mi.arguments.push_back( PropertyInfo( Variant::STRING, "group"));
 	mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
-	Vector<Variant> defargs;
-	for(int i=0;i<VARIANT_ARG_MAX;i++) {
-		mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-		defargs.push_back(Variant());
-	}
 
-	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi,defargs);
+
+	ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi);
 
 	ObjectTypeDB::bind_method(_MD("set_current_scene","child_node:Node"),&SceneTree::set_current_scene);
 	ObjectTypeDB::bind_method(_MD("get_current_scene:Node"),&SceneTree::get_current_scene);
@@ -1657,12 +2214,32 @@ void SceneTree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_change_scene"),&SceneTree::_change_scene);
 
+
+	ObjectTypeDB::bind_method(_MD("set_network_peer","peer:NetworkedMultiplayerPeer"),&SceneTree::set_network_peer);
+	ObjectTypeDB::bind_method(_MD("is_network_server"),&SceneTree::is_network_server);
+	ObjectTypeDB::bind_method(_MD("get_network_unique_id"),&SceneTree::get_network_unique_id);
+	ObjectTypeDB::bind_method(_MD("set_refuse_new_network_connections","refuse"),&SceneTree::set_refuse_new_network_connections);
+	ObjectTypeDB::bind_method(_MD("is_refusing_new_network_connections"),&SceneTree::is_refusing_new_network_connections);
+	ObjectTypeDB::bind_method(_MD("_network_peer_connected"),&SceneTree::_network_peer_connected);
+	ObjectTypeDB::bind_method(_MD("_network_peer_disconnected"),&SceneTree::_network_peer_disconnected);
+	ObjectTypeDB::bind_method(_MD("_connected_to_server"),&SceneTree::_connected_to_server);
+	ObjectTypeDB::bind_method(_MD("_connection_failed"),&SceneTree::_connection_failed);
+	ObjectTypeDB::bind_method(_MD("_server_disconnected"),&SceneTree::_server_disconnected);
+
 	ADD_SIGNAL( MethodInfo("tree_changed") );
 	ADD_SIGNAL( MethodInfo("node_removed",PropertyInfo( Variant::OBJECT, "node") ) );
 	ADD_SIGNAL( MethodInfo("screen_resized") );
+	ADD_SIGNAL( MethodInfo("node_configuration_warning_changed",PropertyInfo( Variant::OBJECT, "node")) );
 
 	ADD_SIGNAL( MethodInfo("idle_frame"));
 	ADD_SIGNAL( MethodInfo("fixed_frame"));
+
+	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
+	ADD_SIGNAL( MethodInfo("network_peer_connected",PropertyInfo(Variant::INT,"id")));
+	ADD_SIGNAL( MethodInfo("network_peer_disconnected",PropertyInfo(Variant::INT,"id")));
+	ADD_SIGNAL( MethodInfo("connected_to_server"));
+	ADD_SIGNAL( MethodInfo("connection_failed"));
+	ADD_SIGNAL( MethodInfo("server_disconnected"));
 
 	BIND_CONSTANT( GROUP_CALL_DEFAULT );
 	BIND_CONSTANT( GROUP_CALL_REVERSE );
@@ -1762,6 +2339,8 @@ SceneTree::SceneTree() {
 	}
 
 	live_edit_root=NodePath("/root");
+
+	last_send_cache_id=1;
 
 #endif
 

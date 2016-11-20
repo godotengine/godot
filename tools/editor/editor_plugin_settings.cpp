@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  editor_plugin_settings.cpp                                           */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "editor_plugin_settings.h"
 #include "scene/gui/margin_container.h"
 #include "io/config_file.h"
@@ -150,9 +178,9 @@ void EditorPluginSettings::_bind_methods() {
 EditorPluginSettings::EditorPluginSettings() {
 
 	HBoxContainer *title_hb = memnew( HBoxContainer );
-	title_hb->add_child(memnew( Label("Installed Plugins:")));
+	title_hb->add_child(memnew( Label(TTR("Installed Plugins:"))));
 	title_hb->add_spacer();
-	update_list = memnew( Button("Update") );
+	update_list = memnew( Button(TTR("Update")) );
 	update_list->connect("pressed",this,"update_plugins");
 	title_hb->add_child(update_list);
 	add_child(title_hb);
@@ -161,10 +189,10 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	plugin_list->set_columns(4);
 	plugin_list->set_column_titles_visible(true);
-	plugin_list->set_column_title(0,"Name:");
-	plugin_list->set_column_title(1,"Version:");
-	plugin_list->set_column_title(2,"Author:");
-	plugin_list->set_column_title(3,"Status:");
+	plugin_list->set_column_title(0,TTR("Name:"));
+	plugin_list->set_column_title(1,TTR("Version:"));
+	plugin_list->set_column_title(2,TTR("Author:"));
+	plugin_list->set_column_title(3,TTR("Status:"));
 	plugin_list->set_column_expand(0,true);
 	plugin_list->set_column_expand(1,false);
 	plugin_list->set_column_expand(2,false);
@@ -185,4 +213,3 @@ EditorPluginSettings::EditorPluginSettings() {
 	updating=false;
 
 }
-

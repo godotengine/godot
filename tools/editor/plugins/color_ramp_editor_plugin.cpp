@@ -1,21 +1,42 @@
-/*
- * color_ramp_editor_plugin.cpp
- */
-
+/*************************************************************************/
+/*  color_ramp_editor_plugin.cpp                                         */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "color_ramp_editor_plugin.h"
 #include "spatial_editor_plugin.h"
 #include "canvas_item_editor_plugin.h"
 
-ColorRampEditorPlugin::ColorRampEditorPlugin(EditorNode *p_node, bool p_2d) {
+ColorRampEditorPlugin::ColorRampEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	ramp_editor = memnew( ColorRampEdit );
 
-	_2d=p_2d;
-	if (p_2d)
-		add_control_to_container(CONTAINER_CANVAS_EDITOR_BOTTOM,ramp_editor);
-	else
-		add_control_to_container(CONTAINER_SPATIAL_EDITOR_BOTTOM,ramp_editor);
+
+	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM,ramp_editor);
 
 	ramp_editor->set_custom_minimum_size(Size2(100, 48));
 	ramp_editor->hide();
@@ -33,10 +54,8 @@ void ColorRampEditorPlugin::edit(Object *p_object) {
 
 bool ColorRampEditorPlugin::handles(Object *p_object) const {
 
-	if (_2d)
-		return p_object->is_type("ColorRamp") && CanvasItemEditor::get_singleton()->is_visible() == true;
-	else
-		return p_object->is_type("ColorRamp") && SpatialEditor::get_singleton()->is_visible() == true;
+	return p_object->is_type("ColorRamp");
+
 }
 
 void ColorRampEditorPlugin::make_visible(bool p_visible) {
@@ -63,9 +82,9 @@ void ColorRampEditorPlugin::_ramp_changed() {
 		Vector<Color> old_colors=color_ramp_ref->get_colors();
 
 		if (old_offsets.size()!=new_offsets.size())
-			ur->create_action("Add/Remove Color Ramp Point");
+			ur->create_action(TTR("Add/Remove Color Ramp Point"));
 		else
-			ur->create_action("Modify Color Ramp",true);
+			ur->create_action(TTR("Modify Color Ramp"),UndoRedo::MERGE_ENDS);
 		ur->add_do_method(this,"undo_redo_color_ramp",new_offsets,new_colors);
 		ur->add_undo_method(this,"undo_redo_color_ramp",old_offsets,old_colors);
 		ur->commit_action();

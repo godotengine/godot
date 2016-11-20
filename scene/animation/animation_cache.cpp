@@ -301,7 +301,7 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 			} break;
 			case Animation::TYPE_VALUE: {
 
-				if (animation->value_track_is_continuous(i)) {
+				if (animation->value_track_get_update_mode(i)==Animation::UPDATE_CONTINUOUS || (animation->value_track_get_update_mode(i)==Animation::UPDATE_DISCRETE && p_delta==0)) {
 					Variant v = animation->value_track_interpolate(i,p_time);
 					set_track_value(i,v);
 				} else {

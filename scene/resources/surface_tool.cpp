@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "surface_tool.h"
+#include "method_bind_ext.inc"
 
 #define _VERTEX_SNAP 0.0001
 #define EQ_VERTEX_DIST 0.00001
@@ -196,6 +197,35 @@ void SurfaceTool::add_smooth_group(bool p_smooth) {
 	}
 }
 
+void SurfaceTool::add_triangle_fan(const Vector<Vector3>& p_vertexes, const Vector<Vector2>& p_uvs, const Vector<Color>& p_colors,const Vector<Vector2>& p_uv2s, const Vector<Vector3>& p_normals, const Vector<Plane>& p_tangents) {
+	ERR_FAIL_COND(!begun);
+	ERR_FAIL_COND(primitive!=Mesh::PRIMITIVE_TRIANGLES);
+	ERR_FAIL_COND(p_vertexes.size()<3);
+
+#define ADD_POINT(n)\
+	{\
+		if(p_colors.size() > n)\
+			add_color(p_colors[n]);\
+		if(p_uvs.size() > n)\
+			add_uv(p_uvs[n]);\
+		if(p_uv2s.size() > n)\
+			add_uv2(p_uv2s[n]);\
+		if(p_normals.size() > n)\
+			add_normal(p_normals[n]);\
+		if(p_tangents.size() > n)\
+			add_tangent(p_tangents[n]);\
+		add_vertex(p_vertexes[n]);\
+	}
+
+	for(int i=0;i<p_vertexes.size() - 2;i++) {
+		ADD_POINT(0);
+		ADD_POINT(i+1);
+		ADD_POINT(i+2);
+	}
+
+#undef ADD_POINT
+
+}
 
 void SurfaceTool::add_index( int p_index) {
 
@@ -722,8 +752,6 @@ void SurfaceTool::generate_normals() {
 	if (smooth_groups.has(0))
 		smooth=smooth_groups[0];
 
-	print_line("SMOOTH BEGIN? "+itos(smooth));
-
 	List< Vertex >::Element *B=vertex_array.front();
 	for(List< Vertex >::Element *E=B;E;) {
 
@@ -826,12 +854,14 @@ void SurfaceTool::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_bones","bones"),&SurfaceTool::add_bones);
 	ObjectTypeDB::bind_method(_MD("add_weights","weights"),&SurfaceTool::add_weights);
 	ObjectTypeDB::bind_method(_MD("add_smooth_group","smooth"),&SurfaceTool::add_smooth_group);
+	ObjectTypeDB::bind_method(_MD("add_triangle_fan", "vertexes", "uvs", "colors", "uv2s", "normals", "tangents"),&SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()),DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
 	ObjectTypeDB::bind_method(_MD("set_material","material:Material"),&SurfaceTool::set_material);
 	ObjectTypeDB::bind_method(_MD("index"),&SurfaceTool::index);
 	ObjectTypeDB::bind_method(_MD("deindex"),&SurfaceTool::deindex);
 	///ObjectTypeDB::bind_method(_MD("generate_flat_normals"),&SurfaceTool::generate_flat_normals);
 	ObjectTypeDB::bind_method(_MD("generate_normals"),&SurfaceTool::generate_normals);
-	ObjectTypeDB::bind_method(_MD("commit:Mesh","existing:Mesh"),&SurfaceTool::commit,DEFVAL( RefPtr() ));
+	ObjectTypeDB::bind_method(_MD("add_index", "index"), &SurfaceTool::add_index);
+	ObjectTypeDB::bind_method(_MD("commit:Mesh","existing:Mesh"),&SurfaceTool::commit,DEFVAL(Variant()));
 	ObjectTypeDB::bind_method(_MD("clear"),&SurfaceTool::clear);
 
 }

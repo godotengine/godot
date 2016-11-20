@@ -181,22 +181,22 @@ void FileDialog::_action_pressed() {
 
 	String f=dir_access->get_current_dir().plus_file(file->get_text());
 
-	if (mode==MODE_OPEN_FILE && dir_access->file_exists(f)) {
+	if ((mode==MODE_OPEN_ANY || mode==MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 		emit_signal("file_selected",f);
 		hide();
-	}
-
-	if (mode==MODE_OPEN_DIR) {
-
+	}else if (mode==MODE_OPEN_ANY || mode==MODE_OPEN_DIR) {
 
 		String path=dir_access->get_current_dir();
-		/*if (tree->get_selected()) {
-			Dictionary d = tree->get_selected()->get_metadata(0);
-			if (d["dir"]) {
-				path=path+"/"+String(d["name"]);
-			}
-		}*/
+
 		path=path.replace("\\","/");
+
+		if (TreeItem* item = tree->get_selected()) {
+			Dictionary d = item->get_metadata(0);
+			if (d["dir"]) {
+				path=path.plus_file(d["name"]);
+			}
+		}
+
 		emit_signal("dir_selected",path);
 		hide();
 	}
@@ -260,7 +260,7 @@ void FileDialog::_action_pressed() {
 		}
 
 		if (dir_access->file_exists(f)) {
-			confirm_save->set_text("File Exists, Overwrite?");
+			confirm_save->set_text(RTR("File Exists, Overwrite?"));
 			confirm_save->popup_centered(Size2(200,80));
 		} else {
 
@@ -304,7 +304,7 @@ void FileDialog::_tree_dc_selected() {
 	if (d["dir"]) {
 
 		dir_access->change_dir(d["name"]);
-		if (mode==MODE_OPEN_FILE || mode==MODE_OPEN_FILES || mode==MODE_OPEN_DIR)
+		if (mode==MODE_OPEN_FILE || mode==MODE_OPEN_FILES || mode==MODE_OPEN_DIR || mode==MODE_OPEN_ANY)
 			file->set_text("");
 		call_deferred("_update_file_list");
 		call_deferred("_update_dir");
@@ -341,22 +341,27 @@ void FileDialog::update_file_list() {
 		}
 	}
 
+	if (dirs.find("..")==NULL) {
+		//may happen if lacking permissions
+		dirs.push_back("..");
+	}
+
 	dirs.sort_custom<NoCaseComparator>();
 	files.sort_custom<NoCaseComparator>();
 
 	while(!dirs.empty()) {
+		String& dir_name = dirs.front()->get();
+		TreeItem *ti=tree->create_item(root);
+		ti->set_text(0,dir_name+"/");
+		ti->set_icon(0,folder);
 
-		if (dirs.front()->get()!=".") {
-			TreeItem *ti=tree->create_item(root);
-			ti->set_text(0,dirs.front()->get()+"/");
-			ti->set_icon(0,folder);
-			Dictionary d;
-			d["name"]=dirs.front()->get();
-			d["dir"]=true;
-			ti->set_metadata(0,d);
-		}
+		Dictionary d;
+		d["name"]=dir_name;
+		d["dir"]=true;
+
+		ti->set_metadata(0,d);
+
 		dirs.pop_front();
-
 	}
 
 	dirs.clear();
@@ -465,19 +470,19 @@ void FileDialog::update_filters() {
 		if (max_filters<filters.size())
 			all_filters+=", ...";
 
-		filter->add_item("All Recognized ( "+all_filters+" )");
+		filter->add_item(RTR("All Recognized")+" ( "+all_filters+" )");
 	}
 	for(int i=0;i<filters.size();i++) {
 
 		String flt=filters[i].get_slice(";",0).strip_edges();
 		String desc=filters[i].get_slice(";",1).strip_edges();
 		if (desc.length())
-			filter->add_item(desc+" ( "+flt+" )");
+			filter->add_item(String(XL_MESSAGE(desc))+" ( "+flt+" )");
 		else
 			filter->add_item("( "+flt+" )");
 	}
 
-	filter->add_item("All Files (*)");
+	filter->add_item(RTR("All Files (*)"));
 
 }
 
@@ -493,6 +498,16 @@ void FileDialog::add_filter(const String& p_filter) {
 	update_filters();
 	invalidate();
 
+}
+
+void FileDialog::set_filters(const Vector<String>& p_filters){
+	filters=p_filters;
+	update_filters();
+	invalidate();
+}
+
+Vector<String> FileDialog::get_filters() const{
+	return filters;
 }
 
 String FileDialog::get_current_dir() const {
@@ -550,10 +565,11 @@ void FileDialog::set_mode(Mode p_mode) {
 	mode=p_mode;
 	switch(mode) {
 
-		case MODE_OPEN_FILE: get_ok()->set_text("Open"); set_title("Open a File"); makedir->hide(); break;
-		case MODE_OPEN_FILES: get_ok()->set_text("Open"); set_title("Open File(s)"); makedir->hide(); break;
-		case MODE_SAVE_FILE: get_ok()->set_text("Save"); set_title("Save a File"); makedir->show(); break;
-		case MODE_OPEN_DIR: get_ok()->set_text("Open"); set_title("Open a Directory"); makedir->show(); break;
+		case MODE_OPEN_FILE: get_ok()->set_text(RTR("Open")); set_title(RTR("Open a File")); makedir->hide(); break;
+		case MODE_OPEN_FILES: get_ok()->set_text(RTR("Open")); set_title(RTR("Open File(s)")); makedir->hide(); break;
+		case MODE_OPEN_DIR: get_ok()->set_text(RTR("Open")); set_title(RTR("Open a Directory")); makedir->show(); break;
+		case MODE_OPEN_ANY: get_ok()->set_text(RTR("Open")); set_title(RTR("Open a File or Directory")); makedir->show(); break;
+		case MODE_SAVE_FILE: get_ok()->set_text(RTR("Save")); set_title(RTR("Save a File")); makedir->show(); break;
 	}
 
 	if (mode==MODE_OPEN_FILES) {
@@ -614,7 +630,6 @@ FileDialog::Access FileDialog::get_access() const{
 
 void FileDialog::_make_dir_confirm() {
 
-
 	Error err = dir_access->make_dir( makedirname->get_text() );
 	if (err==OK) {
 		dir_access->change_dir(makedirname->get_text());
@@ -624,6 +639,7 @@ void FileDialog::_make_dir_confirm() {
 	} else {
 		mkdirerr->popup_centered_minsize(Size2(250,50));
 	}
+	makedirname->set_text(""); // reset label
 }
 
 
@@ -682,6 +698,8 @@ void FileDialog::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("clear_filters"),&FileDialog::clear_filters);
 	ObjectTypeDB::bind_method(_MD("add_filter","filter"),&FileDialog::add_filter);
+	ObjectTypeDB::bind_method(_MD("set_filters","filters"),&FileDialog::set_filters);
+	ObjectTypeDB::bind_method(_MD("get_filters"),&FileDialog::get_filters);
 	ObjectTypeDB::bind_method(_MD("get_current_dir"),&FileDialog::get_current_dir);
 	ObjectTypeDB::bind_method(_MD("get_current_file"),&FileDialog::get_current_file);
 	ObjectTypeDB::bind_method(_MD("get_current_path"),&FileDialog::get_current_path);
@@ -710,11 +728,18 @@ void FileDialog::_bind_methods() {
 	BIND_CONSTANT( MODE_OPEN_FILE );
 	BIND_CONSTANT( MODE_OPEN_FILES );
 	BIND_CONSTANT( MODE_OPEN_DIR );
+	BIND_CONSTANT( MODE_OPEN_ANY );
+
 	BIND_CONSTANT( MODE_SAVE_FILE );
 
 	BIND_CONSTANT( ACCESS_RESOURCES );
 	BIND_CONSTANT( ACCESS_USERDATA );
 	BIND_CONSTANT( ACCESS_FILESYSTEM );
+
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"),_SCS("set_mode"),_SCS("get_mode") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"),_SCS("set_access"),_SCS("get_access") );
+	ADD_PROPERTY( PropertyInfo(Variant::STRING_ARRAY, "filters"),_SCS("set_filters"),_SCS("get_filters") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "show_hidden_files"),_SCS("set_show_hidden_files"),_SCS("is_showing_hidden_files") );
 
 }
 
@@ -741,7 +766,7 @@ FileDialog::FileDialog() {
 	set_child_rect(vbc);
 
 	mode=MODE_SAVE_FILE;
-	set_title("Save a File");
+	set_title(RTR("Save a File"));
 
 	dir = memnew(LineEdit);
 	HBoxContainer *pathhb = memnew( HBoxContainer );
@@ -757,24 +782,24 @@ FileDialog::FileDialog() {
 	drives->connect("item_selected",this,"_select_drive");
 
 	makedir = memnew( Button );
-	makedir->set_text("Create Folder");
+	makedir->set_text(RTR("Create Folder"));
 	makedir->connect("pressed",this,"_make_dir");
 	pathhb->add_child(makedir);
 
-	vbc->add_margin_child("Path:",pathhb);
+	vbc->add_margin_child(RTR("Path:"),pathhb);
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
-	vbc->add_margin_child("Directories & Files:",tree,true);
+	vbc->add_margin_child(RTR("Directories & Files:"),tree,true);
 
 	file = memnew(LineEdit);
 	//add_child(file);
-	vbc->add_margin_child("File:",file);
+	vbc->add_margin_child(RTR("File:"),file);
 
 
 	filter = memnew( OptionButton );
 	//add_child(filter);
-	vbc->add_margin_child("Filter:",filter);
+	vbc->add_margin_child(RTR("Filter:"),filter);
 	filter->set_clip_text(true);//too many extensions overflow it
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -799,21 +824,21 @@ FileDialog::FileDialog() {
 	confirm_save->connect("confirmed", this,"_save_confirm_pressed");
 
 	makedialog = memnew( ConfirmationDialog );
-	makedialog->set_title("Create Folder");
+	makedialog->set_title(RTR("Create Folder"));
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
 	makedialog->set_child_rect(makevb);
 	makedirname = memnew( LineEdit );
-	makevb->add_margin_child("Name:",makedirname);
+	makevb->add_margin_child(RTR("Name:"),makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed",this,"_make_dir_confirm");
 	mkdirerr = memnew( AcceptDialog );
-	mkdirerr->set_text("Could not create folder.");
+	mkdirerr->set_text(RTR("Could not create folder."));
 	add_child(mkdirerr);
 
 	exterr = memnew( AcceptDialog );
-	exterr->set_text("Must use a valid extension.");
+	exterr->set_text(RTR("Must use a valid extension."));
 	add_child(exterr);
 
 
@@ -877,3 +902,4 @@ LineEditFileChooser::LineEditFileChooser() {
 	dialog->connect("files_selected",this,"_chosen");
 
 }
+

@@ -40,6 +40,7 @@ import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.os.*;
 import android.util.Log;
+import android.util.DisplayMetrics;
 import android.graphics.*;
 import android.text.method.*;
 import android.text.*;
@@ -287,6 +288,11 @@ public class GodotIO {
 
 		try {
 			ad.files = am.list(path);
+			// no way to find path is directory or file exactly.
+			// but if ad.files.length==0, then it's an empty directory or file.
+			if (ad.files.length==0) {
+				return -1;
+			}
 		} catch (IOException e) {
 
 			System.out.printf("Exception on dir_open: %s\n",e);
@@ -511,6 +517,11 @@ public class GodotIO {
 
 	public String getModel() {
 		return Build.MODEL;
+	}
+
+	public int getScreenDPI() {
+		DisplayMetrics metrics = applicationContext.getResources().getDisplayMetrics();
+		return (int)(metrics.density * 160f);
 	}
 
 	public boolean needsReloadHooks() {

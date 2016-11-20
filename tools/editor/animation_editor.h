@@ -99,6 +99,12 @@ class AnimationKeyEditor : public VBoxContainer  {
 		CURVE_SET_CONSTANT
 	};
 
+	enum {
+		RIGHT_MENU_DUPLICATE,
+		RIGHT_MENU_DUPLICATE_TRANSPOSE,
+		RIGHT_MENU_REMOVE
+	};
+
 	struct MouseOver {
 
 		enum Over {
@@ -262,6 +268,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 	EditorSelection *editor_selection;
 
+	Label *select_anim_warning;
 
 
 	float _get_zoom_scale() const;
@@ -313,6 +320,9 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 	void _add_call_track(const NodePath& p_base);
 
+	void _anim_duplicate_keys(bool transpose = false);
+	void _anim_delete_keys();
+
 	void _root_removed();
 protected:
 
@@ -334,6 +344,7 @@ public:
 	void insert_value_key(const String& p_property, const Variant& p_value, bool p_advance);
 	void insert_transform_key(Spatial *p_node,const String& p_sub,const Transform& p_xform);
 
+	void show_select_node_warning(bool p_show) { select_anim_warning->set_hidden(!p_show); }
 	AnimationKeyEditor();
 	~AnimationKeyEditor();
 };

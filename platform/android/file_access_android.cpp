@@ -74,6 +74,7 @@ void FileAccessAndroid::close() {
 	AAsset_close(a);
 	a=NULL;
 }
+
 bool FileAccessAndroid::is_open() const {
 
 	return a!=NULL;
@@ -92,6 +93,7 @@ void FileAccessAndroid::seek(size_t p_position) {
 	}
 
 }
+
 void FileAccessAndroid::seek_end(int64_t p_position) {
 
 	ERR_FAIL_COND(!a);
@@ -99,10 +101,12 @@ void FileAccessAndroid::seek_end(int64_t p_position) {
 	pos=len+p_position;
 
 }
+
 size_t FileAccessAndroid::get_pos() const {
 
 	return pos;
 }
+
 size_t FileAccessAndroid::get_len() const {
 
 	return len;
@@ -128,6 +132,7 @@ uint8_t FileAccessAndroid::get_8() const {
 	return byte;
 
 }
+
 int FileAccessAndroid::get_buffer(uint8_t *p_dst, int p_length) const {
 
 

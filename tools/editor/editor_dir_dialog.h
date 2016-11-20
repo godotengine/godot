@@ -53,6 +53,10 @@ class EditorDirDialog : public ConfirmationDialog {
 	void _make_dir_confirm();
 
 	void ok_pressed();
+
+	bool must_reload;
+
+
 protected:
 
 	void _notification(int p_what);

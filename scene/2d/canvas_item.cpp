@@ -112,20 +112,8 @@ void CanvasItemMaterial::_get_property_list( List<PropertyInfo> *p_list) const {
 void CanvasItemMaterial::set_shader(const Ref<Shader>& p_shader) {
 
 	ERR_FAIL_COND(p_shader.is_valid() && p_shader->get_mode()!=Shader::MODE_CANVAS_ITEM);
-#ifdef TOOLS_ENABLED
 
-	if (shader.is_valid()) {
-		shader->disconnect("changed",this,"_shader_changed");
-	}
-#endif
 	shader=p_shader;
-
-#ifdef TOOLS_ENABLED
-
-	if (shader.is_valid()) {
-		shader->connect("changed",this,"_shader_changed");
-	}
-#endif
 
 	RID rid;
 	if (shader.is_valid())
@@ -149,11 +137,6 @@ void CanvasItemMaterial::set_shader_param(const StringName& p_param,const Varian
 Variant CanvasItemMaterial::get_shader_param(const StringName& p_param) const{
 
 	return VS::get_singleton()->canvas_item_material_get_shader_param(material,p_param);
-}
-
-void CanvasItemMaterial::_shader_changed() {
-
-
 }
 
 RID CanvasItemMaterial::get_rid() const {
@@ -455,19 +438,14 @@ void CanvasItem::_enter_canvas() {
 	if ((!get_parent() || !get_parent()->cast_to<CanvasItem>()) || toplevel) {
 
 		Node *n = this;
-		Viewport *viewport=NULL;
+
 		canvas_layer=NULL;
 
 		while(n) {
 
-			if (n->cast_to<Viewport>()) {
-
-				viewport = n->cast_to<Viewport>();
+			canvas_layer = n->cast_to<CanvasLayer>();
+			if (canvas_layer) {
 				break;
-			}
-			if (!canvas_layer && n->cast_to<CanvasLayer>()) {
-
-				canvas_layer = n->cast_to<CanvasLayer>();
 			}
 			n=n->get_parent();
 		}
@@ -476,7 +454,7 @@ void CanvasItem::_enter_canvas() {
 		if (canvas_layer)
 			canvas=canvas_layer->get_world_2d()->get_canvas();
 		else
-			canvas=viewport->find_world_2d()->get_canvas();
+			canvas=get_viewport()->find_world_2d()->get_canvas();
 
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,canvas);
 
@@ -488,6 +466,7 @@ void CanvasItem::_enter_canvas() {
 	} else {
 
 		CanvasItem *parent = get_parent_item();
+		canvas_layer=parent->canvas_layer;
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,parent->get_canvas_item());
 		parent->_queue_sort_children();
 	}
@@ -671,21 +650,22 @@ int CanvasItem::get_light_mask() const{
 }
 
 
-void CanvasItem::item_rect_changed() {
+void CanvasItem::item_rect_changed(bool p_size_changed) {
 
-	update();
+	if (p_size_changed)
+		update();
 	emit_signal(SceneStringNames::get_singleton()->item_rect_changed);
 }
 
 
-void CanvasItem::draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width) {
+void CanvasItem::draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width,bool p_antialiased) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 		ERR_FAIL();
 	}
 
-	VisualServer::get_singleton()->canvas_item_add_line(canvas_item,p_from,p_to,p_color,p_width);
+	VisualServer::get_singleton()->canvas_item_add_line(canvas_item,p_from,p_to,p_color,p_width,p_antialiased);
 }
 
 void CanvasItem::draw_rect(const Rect2& p_rect, const Color& p_color) {
@@ -775,6 +755,17 @@ void CanvasItem::draw_set_transform(const Point2& p_offset, float p_rot, const S
 	Matrix32 xform(p_rot,p_offset);
 	xform.scale_basis(p_scale);
 	VisualServer::get_singleton()->canvas_item_add_set_transform(canvas_item,xform);
+}
+
+void CanvasItem::draw_set_transform_matrix(const Matrix32& p_matrix) {
+
+	if (!drawing) {
+		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+		ERR_FAIL();
+	}
+
+	VisualServer::get_singleton()->canvas_item_add_set_transform(canvas_item,p_matrix);
+
 }
 
 void CanvasItem::draw_polygon(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, Ref<Texture> p_texture) {
@@ -958,77 +949,35 @@ Ref<CanvasItemMaterial> CanvasItem::get_material() const{
 	return material;
 }
 
+Vector2 CanvasItem::make_canvas_pos_local(const Vector2& screen_point) const {
+
+	ERR_FAIL_COND_V(!is_inside_tree(),screen_point);
+
+	Matrix32 local_matrix = (get_canvas_transform() * 
+			get_global_transform()).affine_inverse();
+
+	return local_matrix.xform(screen_point);
+}
 
 InputEvent CanvasItem::make_input_local(const InputEvent& p_event) const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),p_event);
 
-	InputEvent ev = p_event;
+	return p_event.xform_by( (get_canvas_transform() * get_global_transform()).affine_inverse() );
 
-	Matrix32 local_matrix = (get_canvas_transform() * get_global_transform()).affine_inverse();
-
-	switch(ev.type) {
-
-		case InputEvent::MOUSE_BUTTON: {
-
-			Vector2 g = local_matrix.xform(Vector2(ev.mouse_button.global_x,ev.mouse_button.global_y));
-			Vector2 l = local_matrix.xform(Vector2(ev.mouse_button.x,ev.mouse_button.y));
-			ev.mouse_button.x=l.x;
-			ev.mouse_button.y=l.y;
-			ev.mouse_button.global_x=g.x;
-			ev.mouse_button.global_y=g.y;
-
-		} break;
-		case InputEvent::MOUSE_MOTION: {
-
-			Vector2 g = local_matrix.xform(Vector2(ev.mouse_motion.global_x,ev.mouse_motion.global_y));
-			Vector2 l = local_matrix.xform(Vector2(ev.mouse_motion.x,ev.mouse_motion.y));
-			Vector2 r = local_matrix.basis_xform(Vector2(ev.mouse_motion.relative_x,ev.mouse_motion.relative_y));
-			Vector2 s = local_matrix.basis_xform(Vector2(ev.mouse_motion.speed_x,ev.mouse_motion.speed_y));
-			ev.mouse_motion.x=l.x;
-			ev.mouse_motion.y=l.y;
-			ev.mouse_motion.global_x=g.x;
-			ev.mouse_motion.global_y=g.y;
-			ev.mouse_motion.relative_x=r.x;
-			ev.mouse_motion.relative_y=r.y;
-			ev.mouse_motion.speed_x=s.x;
-			ev.mouse_motion.speed_y=s.y;
-
-		} break;
-		case InputEvent::SCREEN_TOUCH: {
-
-
-			Vector2 t = local_matrix.xform(Vector2(ev.screen_touch.x,ev.screen_touch.y));
-			ev.screen_touch.x=t.x;
-			ev.screen_touch.y=t.y;
-
-		} break;
-		case InputEvent::SCREEN_DRAG: {
-
-
-			Vector2 t = local_matrix.xform(Vector2(ev.screen_drag.x,ev.screen_drag.y));
-			Vector2 r = local_matrix.basis_xform(Vector2(ev.screen_drag.relative_x,ev.screen_drag.relative_y));
-			Vector2 s = local_matrix.basis_xform(Vector2(ev.screen_drag.speed_x,ev.screen_drag.speed_y));
-			ev.screen_drag.x=t.x;
-			ev.screen_drag.y=t.y;
-			ev.screen_drag.relative_x=r.x;
-			ev.screen_drag.relative_y=r.y;
-			ev.screen_drag.speed_x=s.x;
-			ev.screen_drag.speed_y=s.y;
-		} break;
-	}
-
-	return ev;
 }
 
 
 Vector2 CanvasItem::get_global_mouse_pos() const {
 
-	return get_viewport_transform().affine_inverse().xform(Input::get_singleton()->get_mouse_pos());
+	ERR_FAIL_COND_V(!get_viewport(),Vector2());
+	return get_canvas_transform().affine_inverse().xform( get_viewport()->get_mouse_pos() );
 }
 Vector2 CanvasItem::get_local_mouse_pos() const{
 
-	return (get_viewport_transform() * get_global_transform()).affine_inverse().xform(Input::get_singleton()->get_mouse_pos());
+	ERR_FAIL_COND_V(!get_viewport(),Vector2());
+
+	return get_global_transform().affine_inverse().xform( get_global_mouse_pos() );
 }
 
 
@@ -1041,12 +990,14 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_is_visible_"),&CanvasItem::_is_visible_);
 
 	ObjectTypeDB::bind_method(_MD("edit_set_state","state"),&CanvasItem::edit_set_state);
-	ObjectTypeDB::bind_method(_MD("edit_get"),&CanvasItem::edit_get_state);
+	ObjectTypeDB::bind_method(_MD("edit_get_state:Variant"),&CanvasItem::edit_get_state);
 	ObjectTypeDB::bind_method(_MD("edit_set_rect","rect"),&CanvasItem::edit_set_rect);
 	ObjectTypeDB::bind_method(_MD("edit_rotate","degrees"),&CanvasItem::edit_rotate);
 
 	ObjectTypeDB::bind_method(_MD("get_item_rect"),&CanvasItem::get_item_rect);
+	ObjectTypeDB::bind_method(_MD("get_item_and_children_rect"),&CanvasItem::get_item_and_children_rect);
 	//ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
+
 	ObjectTypeDB::bind_method(_MD("get_canvas_item"),&CanvasItem::get_canvas_item);
 
 	ObjectTypeDB::bind_method(_MD("is_visible"),&CanvasItem::is_visible);
@@ -1078,20 +1029,21 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_is_on_top"),&CanvasItem::_is_on_top);
 	//ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
 
-	ObjectTypeDB::bind_method(_MD("draw_line","from","to","color","width"),&CanvasItem::draw_line,DEFVAL(1.0));
+	ObjectTypeDB::bind_method(_MD("draw_line","from","to","color","width","antialiased"),&CanvasItem::draw_line,DEFVAL(1.0),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_rect","rect","color"),&CanvasItem::draw_rect);
 	ObjectTypeDB::bind_method(_MD("draw_circle","pos","radius","color"),&CanvasItem::draw_circle);
 	ObjectTypeDB::bind_method(_MD("draw_texture","texture:Texture","pos","modulate"),&CanvasItem::draw_texture,DEFVAL(Color(1,1,1,1)));
 	ObjectTypeDB::bind_method(_MD("draw_texture_rect","texture:Texture","rect","tile","modulate","transpose"),&CanvasItem::draw_texture_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_texture_rect_region","texture:Texture","rect","src_rect","modulate","transpose"),&CanvasItem::draw_texture_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("draw_style_box","style_box:StyleBox","rect"),&CanvasItem::draw_style_box);
-	ObjectTypeDB::bind_method(_MD("draw_primitive","points","colors","uvs","texture:Texture","width"),&CanvasItem::draw_primitive,DEFVAL(Array()),DEFVAL(Ref<Texture>()),DEFVAL(1.0));
-	ObjectTypeDB::bind_method(_MD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_polygon,DEFVAL(Array()),DEFVAL(Ref<Texture>()));
-	ObjectTypeDB::bind_method(_MD("draw_colored_polygon","points","color","uvs","texture:Texture"),&CanvasItem::draw_colored_polygon,DEFVAL(Array()),DEFVAL(Ref<Texture>()));
+	ObjectTypeDB::bind_method(_MD("draw_primitive","points","colors","uvs","texture:Texture","width"),&CanvasItem::draw_primitive,DEFVAL(Variant()),DEFVAL(1.0));
+	ObjectTypeDB::bind_method(_MD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_polygon,DEFVAL(Vector2Array()),DEFVAL(Variant()));
+	ObjectTypeDB::bind_method(_MD("draw_colored_polygon","points","color","uvs","texture:Texture"),&CanvasItem::draw_colored_polygon,DEFVAL(Vector2Array()),DEFVAL(Variant()));
 	ObjectTypeDB::bind_method(_MD("draw_string","font:Font","pos","text","modulate","clip_w"),&CanvasItem::draw_string,DEFVAL(Color(1,1,1)),DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("draw_char","font:Font","pos","char","next","modulate"),&CanvasItem::draw_char,DEFVAL(Color(1,1,1)));
 
 	ObjectTypeDB::bind_method(_MD("draw_set_transform","pos","rot","scale"),&CanvasItem::draw_set_transform);
+	ObjectTypeDB::bind_method(_MD("draw_set_transform_matrix","xform"),&CanvasItem::draw_set_transform_matrix);
 	ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
 	ObjectTypeDB::bind_method(_MD("get_global_transform"),&CanvasItem::get_global_transform);
 	ObjectTypeDB::bind_method(_MD("get_global_transform_with_canvas"),&CanvasItem::get_global_transform_with_canvas);
@@ -1110,6 +1062,8 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_use_parent_material","enable"),&CanvasItem::set_use_parent_material);
 	ObjectTypeDB::bind_method(_MD("get_use_parent_material"),&CanvasItem::get_use_parent_material);
 
+	ObjectTypeDB::bind_method(_MD("make_canvas_pos_local","screen_point"),
+			&CanvasItem::make_canvas_pos_local);
 	ObjectTypeDB::bind_method(_MD("make_input_local","event"),&CanvasItem::make_input_local);
 
 	BIND_VMETHOD(MethodInfo("_draw"));
@@ -1176,11 +1130,9 @@ Matrix32 CanvasItem::get_viewport_transform() const {
 			return canvas_layer->get_transform();
 		}
 
-	} else if (get_viewport()) {
+	} else {
 		return get_viewport()->get_final_transform() * get_viewport()->get_canvas_transform();
 	}
-
-	return Matrix32();
 
 }
 
@@ -1199,6 +1151,23 @@ int CanvasItem::get_canvas_layer() const {
 		return canvas_layer->get_layer();
 	else
 		return 0;
+}
+
+
+Rect2 CanvasItem::get_item_and_children_rect() const {
+
+	Rect2 rect = get_item_rect();
+
+
+	for(int i=0;i<get_child_count();i++) {
+		CanvasItem *c=get_child(i)->cast_to<CanvasItem>();
+		if (c) {
+			Rect2 sir = c->get_transform().xform(c->get_item_and_children_rect());
+			rect = rect.merge(sir);
+		}
+	}
+
+	return rect;
 }
 
 CanvasItem::CanvasItem() : xform_change(this) {

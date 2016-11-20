@@ -48,9 +48,11 @@ SceneStringNames::SceneStringNames() {
 	item_rect_changed=StaticCString::create("item_rect_changed");
 	size_flags_changed=StaticCString::create("size_flags_changed");
 	minimum_size_changed=StaticCString::create("minimum_size_changed");
+	sleeping_state_changed=StaticCString::create("sleeping_state_changed");
 
 	finished=StaticCString::create("finished");
 	animation_changed=StaticCString::create("animation_changed");
+	animation_started=StaticCString::create("animation_started");
 
 	mouse_enter=StaticCString::create("mouse_enter");
 	mouse_exit=StaticCString::create("mouse_exit");
@@ -169,5 +171,16 @@ SceneStringNames::SceneStringNames() {
 	blend_times=StaticCString::create("blend_times");
 	speed=StaticCString::create("speed");
 
+	node_configuration_warning_changed = StaticCString::create("node_configuration_warning_changed");
+
 	path_pp=NodePath("..");
+
+	_default=StaticCString::create("default");
+
+	for(int i=0;i<MAX_MATERIALS;i++) {
+
+		mesh_materials[i]="material/"+itos(i);
+	}
+
+	_mesh_changed=StaticCString::create("_mesh_changed");
 }

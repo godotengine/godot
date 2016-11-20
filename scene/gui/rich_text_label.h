@@ -280,6 +280,7 @@ protected:
 
 public:
 
+	String get_text();
 	void add_text(const String& p_text);
 	void add_image(const Ref<Texture>& p_image);
 	void add_newline();

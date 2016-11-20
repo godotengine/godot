@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  baked_light_instance.cpp                                             */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "baked_light_instance.h"
 #include "scene/scene_string_names.h"
 
@@ -32,6 +60,8 @@ void BakedLightInstance::set_baked_light(const Ref<BakedLight>& p_baked_light) {
 //			VS::get_singleton()->instance_geometry_set_baked_light(E->get()->get_instance(),baked_light.is_valid()?get_instance():RID());
 //		}
 	}
+
+	update_configuration_warning();
 }
 
 Ref<BakedLight> BakedLightInstance::get_baked_light() const{
@@ -46,6 +76,14 @@ AABB BakedLightInstance::get_aabb() const {
 DVector<Face3> BakedLightInstance::get_faces(uint32_t p_usage_flags) const {
 
 	return DVector<Face3>();
+}
+
+
+String BakedLightInstance::get_configuration_warning() const {
+	if (get_baked_light().is_null()) {
+		return TTR("BakedLightInstance does not contain a BakedLight resource.");
+	}
+	return String();
 }
 
 

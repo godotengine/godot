@@ -35,19 +35,23 @@
 #include "io/md5.h"
 #include "io/marshalls.h"
 #include "globals.h"
+#include "scene/gui/check_button.h"
+#include "scene/gui/button_group.h"
+#include "scene/gui/margin_container.h"
+#include "scene/io/resource_format_image.h"
 
 static const char *flag_names[]={
-	"Streaming Format",
-	"Fix Border Alpha",
-	"Alpha Bit Hint",
-	"Compress Extra (PVRTC2)",
-	"No MipMaps",
-	"Repeat",
-	"Filter (Magnifying)",
-	"Premultiply Alpha",
-	"Convert SRGB->Linear",
-	"Convert NormalMap to XY",
-	"Use Anisotropy",
+	("Streaming Format"),
+	("Fix Border Alpha"),
+	("Alpha Bit Hint"),
+	("Compress Extra (PVRTC2)"),
+	("No MipMaps"),
+	("Repeat"),
+	("Filter (Magnifying)"),
+	("Premultiply Alpha"),
+	("Convert SRGB->Linear"),
+	("Convert NormalMap to XY"),
+	("Use Anisotropy"),
 	NULL
 };
 
@@ -144,8 +148,6 @@ void EditorImportTextureOptions::_changed() {
 
 void EditorImportTextureOptions::_bind_methods() {
 
-	print_line("bind toptions");
-
 	ObjectTypeDB::bind_method("_changed",&EditorImportTextureOptions::_changed);
 	ObjectTypeDB::bind_method("_changedp",&EditorImportTextureOptions::_changedp);
 
@@ -164,22 +166,23 @@ void EditorImportTextureOptions::_notification(int p_what) {
 
 void EditorImportTextureOptions::show_2d_notice() {
 
-	notice_for_2d->show();
+	//notice_for_2d->show();
 }
 
 EditorImportTextureOptions::EditorImportTextureOptions() {
 
 
+	add_constant_override("separation",3);
 	updating=false;
 	format = memnew( OptionButton );
 
-	format->add_item("Uncompressed",EditorTextureImportPlugin::IMAGE_FORMAT_UNCOMPRESSED);
-	format->add_item("Compress Lossless (PNG)",EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSLESS);
-	format->add_item("Compress Lossy (WebP)",EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
-	format->add_item("Compress (VRAM)",EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM);
+	format->add_item(TTR("Uncompressed"),EditorTextureImportPlugin::IMAGE_FORMAT_UNCOMPRESSED);
+	format->add_item(TTR("Compress Lossless (PNG)"),EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSLESS);
+	format->add_item(TTR("Compress Lossy (WebP)"),EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
+	format->add_item(TTR("Compress (VRAM)"),EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM);
 
 
-	add_margin_child("Texture Format",format);
+	add_margin_child(TTR("Texture Format"),format);
 
 	quality_vb = memnew( VBoxContainer );
 
@@ -199,7 +202,7 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 	hs->set_step(0.01);
 	hs->set_val(0.7);
 	quality=hs;
-	quality_vb->add_margin_child("Texture Compression Quality (WebP):",quality_hb);
+	quality_vb->add_margin_child(TTR("Texture Compression Quality (WebP):"),quality_hb);
 
 	add_child(quality_vb);
 
@@ -221,14 +224,8 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 		fname++;
 	}
 
-	add_margin_child("Texture Options",flags,true);
+	add_margin_child(TTR("Texture Options"),flags,true);
 
-	notice_for_2d = memnew( Label );
-	notice_for_2d->set_text("NOTICE: You are not forced to import textures for 2D projects. Just copy your .jpg or .png files to your project, and change export options later. Atlases can be generated on export too.");
-	notice_for_2d->set_custom_minimum_size(Size2(0,50));
-	notice_for_2d->set_autowrap(true);
-	add_child(notice_for_2d);
-	notice_for_2d->hide();
 
 }
 
@@ -242,8 +239,13 @@ class EditorTextureImportDialog : public ConfirmationDialog  {
 	OBJ_TYPE(EditorTextureImportDialog,ConfirmationDialog);
 
 
+
+	HBoxContainer *mode_hb;
+	CheckBox *mode_check[EditorTextureImportPlugin::MODE_MAX];
+
 	EditorImportTextureOptions *texture_options;
 
+	EditorTextureImportPlugin::Mode mode;
 	//EditorNode *editor;
 
 	LineEdit *import_path;
@@ -255,11 +257,16 @@ class EditorTextureImportDialog : public ConfirmationDialog  {
 	ConfirmationDialog *error_dialog;
 	CheckButton *crop_source;
 	SpinBox *size;
-	bool atlas;
-	bool large;
+
+	MarginContainer *size_mc;
+	Label* size_label;
+
+	Label* source_label;
+	Label *notice_for_2d;
 
 	EditorTextureImportPlugin *plugin;
 
+	void _mode_changed(int p_mode);
 	void _choose_files(const Vector<String>& p_path);
 	void _choose_file(const String& p_path);
 	void _choose_save_dir(const String& p_path);
@@ -274,9 +281,23 @@ protected:
 	static void _bind_methods();
 public:
 
+
+	void setup_multiple_import_3d(const Vector<String>& p_path,const String& p_dest) {
+
+		_mode_changed(EditorTextureImportPlugin::MODE_TEXTURE_3D);
+		_choose_files(p_path);
+		_choose_save_dir(p_dest);
+	}
+
+	void add_sources_and_dest(const Vector<String>& p_path,const String& p_dest) {
+
+		_choose_files(p_path);
+		_choose_save_dir(p_dest);
+	}
+
 	Error import(const String& p_from, const String& p_to, const String& p_preset);
 	void popup_import(const String &p_from=String());
-	EditorTextureImportDialog(EditorTextureImportPlugin *p_plugin=NULL,bool p_2d=false,bool p_atlas=false,bool p_large=false);
+	EditorTextureImportDialog(EditorTextureImportPlugin *p_plugin=NULL);
 };
 
 
@@ -329,38 +350,38 @@ void EditorTextureImportDialog::_import() {
 
 	if (!files.size()) {
 
-		error_dialog->set_text("Please specify some files!");
-		error_dialog->popup_centered(Size2(200,100));
+		error_dialog->set_text(TTR("Please specify some files!"));
+		error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 		return;
 	}
 
 	String dst_path=save_path->get_text();
 
 	if (save_path->get_text().strip_edges()=="") {
-		error_dialog->set_text("Target path is empty.");
+		error_dialog->set_text(TTR("Target path is empty."));
 		error_dialog->popup_centered_minsize();
 		return;
 	}
 
 	if (!save_path->get_text().begins_with("res://")) {
-		error_dialog->set_text("Target path must be full resource path.");
+		error_dialog->set_text(TTR("Target path must be a complete resource path."));
 		error_dialog->popup_centered_minsize();
 		return;
 	}
 
 
-	if (!atlas && !large && !DirAccess::exists(save_path->get_text())) {
-		error_dialog->set_text("Target path must exist.");
+	if (mode!=EditorTextureImportPlugin::MODE_ATLAS && mode!=EditorTextureImportPlugin::MODE_LARGE && !DirAccess::exists(save_path->get_text())) {
+		error_dialog->set_text(TTR("Target path must exist."));
 		error_dialog->popup_centered_minsize();
 		return;
 	}
 
-	if (atlas) { //atlas
+	if (mode==EditorTextureImportPlugin::MODE_ATLAS) { //atlas
 
 		if (files.size()==0) {
 
-			error_dialog->set_text("At least one file needed for Atlas.");
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->set_text(TTR("At least one file needed for Atlas."));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 
 		}
@@ -378,21 +399,22 @@ void EditorTextureImportDialog::_import() {
 		imd->set_option("atlas_size",int(size->get_val()));
 		imd->set_option("large",false);
 		imd->set_option("crop",crop_source->is_pressed());
+		imd->set_option("mode",mode);
 
 		Error err = plugin->import(dst_file,imd);
 		if (err) {
 
-			error_dialog->set_text("Error importing: "+dst_file.get_file());
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->set_text(TTR("Error importing:")+" "+dst_file.get_file());
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 
 		}
-	} else if (large) { //atlas
+	} else if (mode==EditorTextureImportPlugin::MODE_LARGE) { //large
 
 		if (files.size()!=1) {
 
-			error_dialog->set_text("Only one file is required for large texture");
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->set_text(TTR("Only one file is required for large texture."));
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 
 		}
@@ -410,12 +432,13 @@ void EditorTextureImportDialog::_import() {
 		imd->set_option("large",true);
 		imd->set_option("large_cell_size",int(size->get_val()));
 		imd->set_option("crop",crop_source->is_pressed());
+		imd->set_option("mode",mode);
 
 		Error err = plugin->import(dst_file,imd);
 		if (err) {
 
-			error_dialog->set_text("Error importing: "+dst_file.get_file());
-			error_dialog->popup_centered(Size2(200,100));
+			error_dialog->set_text(TTR("Error importing:")+" "+dst_file.get_file());
+			error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			return;
 
 		}
@@ -434,12 +457,13 @@ void EditorTextureImportDialog::_import() {
 			imd->set_option("quality",texture_options->get_quality());
 			imd->set_option("atlas",false);
 			imd->set_option("large",false);
+			imd->set_option("mode",mode);
 
 			Error err = plugin->import(dst_file,imd);
 			if (err) {
 
-				error_dialog->set_text("Error importing: "+dst_file.get_file());
-				error_dialog->popup_centered(Size2(200,100));
+				error_dialog->set_text(TTR("Error importing:")+" "+dst_file.get_file());
+				error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 				return;
 
 			}
@@ -456,7 +480,7 @@ void EditorTextureImportDialog::_browse() {
 
 void EditorTextureImportDialog::_browse_target() {
 
-	if (atlas || large) {
+	if (mode==EditorTextureImportPlugin::MODE_ATLAS || mode==EditorTextureImportPlugin::MODE_LARGE) {
 		save_file_select->popup_centered_ratio();
 	} else {
 		save_select->popup_centered_ratio();
@@ -467,12 +491,28 @@ void EditorTextureImportDialog::_browse_target() {
 
 void EditorTextureImportDialog::popup_import(const String& p_from) {
 
-	popup_centered(Size2(400,400));
+	popup_centered(Size2(600,500)*EDSCALE);
 	if (p_from!="") {
 		Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(p_from);
 		ERR_FAIL_COND(!rimd.is_valid());
 
-		if (plugin->get_mode()==EditorTextureImportPlugin::MODE_ATLAS || plugin->get_mode()==EditorTextureImportPlugin::MODE_LARGE)
+		if (rimd->has_option("mode")) {
+			//new imported stuff uses this option
+			_mode_changed(rimd->get_option("mode"));
+		} else {
+			//this one is for compatibility, will have to guess it
+			if (rimd->has_option("atlas") && rimd->get_option("atlas")) {
+				_mode_changed(EditorTextureImportPlugin::MODE_ATLAS);
+			} else if (rimd->has_option("large") && rimd->get_option("large")) {
+				_mode_changed(EditorTextureImportPlugin::MODE_LARGE);
+			} else {
+				//guess by usage of mipmaps..?
+				_mode_changed(EditorTextureImportPlugin::MODE_TEXTURE_2D);
+			}
+
+		}
+
+		if (mode==EditorTextureImportPlugin::MODE_ATLAS || mode==EditorTextureImportPlugin::MODE_LARGE)
 			save_path->set_text(p_from);
 		else
 			save_path->set_text(p_from.get_base_dir());
@@ -518,6 +558,81 @@ Error EditorTextureImportDialog::import(const String& p_from, const String& p_to
 	return OK;
 }
 
+void EditorTextureImportDialog::_mode_changed(int p_mode) {
+
+	mode = EditorTextureImportPlugin::Mode(p_mode);
+
+	for(int i=0;i<EditorTextureImportPlugin::MODE_MAX;i++) {
+		mode_check[i]->set_pressed(i==mode);
+	}
+
+	if (p_mode==EditorTextureImportPlugin::MODE_ATLAS) {
+
+		size_label->set_text(TTR("Max Texture Size:"));
+		size->set_val(2048);
+		crop_source->show();
+		size_label->show();
+		size->show();
+
+		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS|EditorTextureImportPlugin::IMAGE_FLAG_FILTER);
+		texture_options->set_quality(0.7);
+		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
+		set_title(TTR("Import Textures for Atlas (2D)"));
+
+	} else {
+		crop_source->hide();
+	}
+
+
+	if (p_mode==EditorTextureImportPlugin::MODE_LARGE) {
+
+		size_label->set_text(TTR("Cell Size:"));
+		size->set_val(256);
+		size_label->show();
+		size->show();
+
+		file_select->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+		save_file_select->add_filter("*.ltex;"+TTR("Large Texture"));
+
+		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS|EditorTextureImportPlugin::IMAGE_FLAG_FILTER);
+		texture_options->set_quality(0.7);
+		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSLESS);
+		set_title(TTR("Import Large Textures (2D)"));
+		source_label->set_text(TTR("Source Texture"));
+
+	} else {
+		file_select->set_mode(EditorFileDialog::MODE_OPEN_FILES);
+		save_file_select->add_filter("*.tex;"+TTR("Base Atlas Texture"));
+		source_label->set_text(TTR("Source Texture(s)"));
+	}
+
+	if (p_mode==EditorTextureImportPlugin::MODE_TEXTURE_2D) {
+
+		size_label->hide();
+		size->hide();
+
+		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS|EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_FILTER);
+		texture_options->set_quality(0.7);
+		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
+		notice_for_2d->show();
+		set_title(TTR("Import Textures for 2D"));
+
+	} else {
+		notice_for_2d->hide();
+	}
+
+	if (p_mode==EditorTextureImportPlugin::MODE_TEXTURE_3D) {
+
+		size_label->hide();
+		size->hide();
+		//texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_);
+		//texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS);
+		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_FILTER|EditorTextureImportPlugin::IMAGE_FLAG_REPEAT);
+		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM);
+		set_title(TTR("Import Textures for 3D"));
+	}
+}
+
 void EditorTextureImportDialog::_bind_methods() {
 
 
@@ -527,28 +642,64 @@ void EditorTextureImportDialog::_bind_methods() {
 	ObjectTypeDB::bind_method("_import",&EditorTextureImportDialog::_import);
 	ObjectTypeDB::bind_method("_browse",&EditorTextureImportDialog::_browse);
 	ObjectTypeDB::bind_method("_browse_target",&EditorTextureImportDialog::_browse_target);
+	ObjectTypeDB::bind_method("_mode_changed",&EditorTextureImportDialog::_mode_changed);
 //	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 }
 
-EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* p_plugin, bool p_2d, bool p_atlas,bool p_large) {
+EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* p_plugin) {
 
 
-	atlas=p_atlas;
-	large=p_large;
+
+
+
 	plugin=p_plugin;
-	set_title("Import Textures");
+	set_title(TTR("Import Textures"));
 
+	mode_hb = memnew( HBoxContainer );
+	add_child(mode_hb);
+	set_child_rect(mode_hb);
+
+	VBoxContainer *vbcg = memnew( VBoxContainer);
+
+
+	mode_hb->add_child(vbcg);
+	mode_hb->add_constant_override("separation",15);
+	ButtonGroup *bg = memnew( ButtonGroup );
+	vbcg->add_margin_child("Import Mode",bg);
+
+	for(int i=0;i<EditorTextureImportPlugin::MODE_MAX;i++) {
+		String mode_name[EditorTextureImportPlugin::MODE_MAX]={
+			TTR("2D Texture"),
+			TTR("3D Texture"),
+			TTR("Atlas Texture"),
+			TTR("Large Texture")
+		};
+
+
+		mode_check[i]=memnew(CheckBox);
+		bg->add_child(mode_check[i]);
+		mode_check[i]->set_text(mode_name[i]);
+		mode_check[i]->connect("pressed",this,"_mode_changed",varray(i));
+	}
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	add_child(vbc);
-	set_child_rect(vbc);
+	mode_hb->add_child(vbc);
+	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc->add_constant_override("separation",4);
 
+	notice_for_2d = memnew( Label );
+	notice_for_2d->set_text(TTR("NOTICE: Importing 2D textures is not mandatory. Just copy png/jpg files to the project."));
+	//notice_for_2d->set_custom_minimum_size(Size2(0,50));
+	notice_for_2d->set_autowrap(true);
+	notice_for_2d->hide();
+	vbcg->add_child(notice_for_2d);
+	notice_for_2d->set_v_size_flags(SIZE_EXPAND_FILL);
+	notice_for_2d->set_valign(Label::VALIGN_BOTTOM);
 
 	VBoxContainer *source_vb=memnew(VBoxContainer);
-	if (large)
-		vbc->add_margin_child("Source Texture:",source_vb);
-	else
-		vbc->add_margin_child("Source Texture(s):",source_vb);
+	MarginContainer *source_mc = vbc->add_margin_child(TTR("Source Texture(s):"),source_vb);
+
+	source_label = vbc->get_child(source_mc->get_index()-1)->cast_to<Label>();
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 	source_vb->add_child(hbc);
@@ -559,9 +710,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	crop_source = memnew( CheckButton );
 	crop_source->set_pressed(true);
 	source_vb->add_child(crop_source);
-	crop_source->set_text("Crop empty space.");
-	if (!p_atlas)
-		crop_source->hide();
+	crop_source->set_text(TTR("Crop empty space."));
 
 
 	Button * import_choose = memnew( Button );
@@ -571,19 +720,16 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	import_choose->connect("pressed", this,"_browse");
 
 	hbc = memnew( HBoxContainer );
-	vbc->add_margin_child("Target Path:",hbc);
+	vbc->add_margin_child(TTR("Target Path:"),hbc);
 
 	size = memnew( SpinBox );
 	size->set_min(128);
 	size->set_max(16384);
 
-	if (p_atlas) {
-		size->set_val(2048);
-		vbc->add_margin_child("Max Texture size:",size);
-	} else {
-		size->set_val(256);
-		vbc->add_margin_child("Cell Size:",size);
-	}
+
+	size->set_val(256);
+	size_mc=vbc->add_margin_child(TTR("Cell Size:"),size);
+	size_label=vbc->get_child(size_mc->get_index()-1)->cast_to<Label>();
 
 
 	save_path = memnew( LineEdit );
@@ -599,10 +745,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	file_select = memnew(EditorFileDialog);
 	file_select->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(file_select);
-	if (!large)
-		file_select->set_mode(EditorFileDialog::MODE_OPEN_FILES);
-	else
-		file_select->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+
 	file_select->connect("files_selected", this,"_choose_files");
 	file_select->connect("file_selected", this,"_choose_file");
 
@@ -611,10 +754,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	add_child(save_file_select);
 	save_file_select->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	save_file_select->clear_filters();
-	if (large)
-		save_file_select->add_filter("*.ltex;Large Texture");
-	else
-		save_file_select->add_filter("*.tex;Base Atlas Texture");
+
 	save_file_select->connect("file_selected", this,"_choose_save_dir");
 
 	save_select = memnew(	EditorDirDialog );
@@ -624,7 +764,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	save_select->connect("dir_selected", this,"_choose_save_dir");
 
 	get_ok()->connect("pressed", this,"_import");
-	get_ok()->set_text("Import");
+	get_ok()->set_text(TTR("Import"));
 
 	//move stuff up
 	//for(int i=0;i<4;i++)
@@ -632,7 +772,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 	error_dialog = memnew ( ConfirmationDialog );
 	add_child(error_dialog);
-	error_dialog->get_ok()->set_text("Accept");
+	error_dialog->get_ok()->set_text(TTR("Accept"));
 //	error_dialog->get_cancel()->hide();
 
 	set_hide_on_ok(false);
@@ -641,36 +781,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	vbc->add_child(texture_options);
 	texture_options->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	if (atlas) {
-
-		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS|EditorTextureImportPlugin::IMAGE_FLAG_FILTER);
-		texture_options->set_quality(0.7);
-		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
-		//texture_options->show_2d_notice();
-		set_title("Import Textures for Atlas (2D)");
-	} else if (large) {
-
-		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS|EditorTextureImportPlugin::IMAGE_FLAG_FILTER);
-		texture_options->set_quality(0.7);
-		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSLESS);
-		texture_options->show_2d_notice();
-		set_title("Import Large Textures (2D)");
-
-	} else if (p_2d) {
-
-		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS|EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_FILTER);
-		texture_options->set_quality(0.7);
-		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
-		texture_options->show_2d_notice();
-		set_title("Import Textures for 2D");
-	} else {
-
-		//texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_);
-		//texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS);
-		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_FILTER|EditorTextureImportPlugin::IMAGE_FLAG_REPEAT);
-		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM);
-		set_title("Import Textures for 3D");
-	}
+	_mode_changed(EditorTextureImportPlugin::MODE_TEXTURE_3D);
 
 
 //	GLOBAL_DEF("import/shared_textures","res://");
@@ -686,6 +797,8 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 String EditorTextureImportPlugin::get_name() const {
 
+	return "texture";
+#if 0 //old names, kept for compatibility reference
 	switch(mode) {
 		case MODE_TEXTURE_2D: {
 
@@ -707,34 +820,14 @@ String EditorTextureImportPlugin::get_name() const {
 
 	}
 
-	return "";
 
+	return "";
+#endif
 }
 
 String EditorTextureImportPlugin::get_visible_name() const {
 
-	switch(mode) {
-		case MODE_TEXTURE_2D: {
-
-			return "2D Texture";
-		} break;
-		case MODE_TEXTURE_3D: {
-
-			return "3D Texture";
-
-		} break;
-		case MODE_ATLAS: {
-
-			return "2D Atlas Texture";
-		} break;
-		case MODE_LARGE: {
-
-			return "2D Large Texture";
-		} break;
-
-	}
-
-	return "";
+	return TTR("Texture");
 
 }
 void EditorTextureImportPlugin::import_dialog(const String& p_from) {
@@ -1000,16 +1093,16 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		int cell_size=from->get_option("large_cell_size");
 		ERR_FAIL_COND_V(cell_size<128 || cell_size>16384,ERR_CANT_OPEN);
 
-		EditorProgress pg("ltex","Import Large Texture",3);
+		EditorProgress pg("ltex",TTR("Import Large Texture"),3);
 
-		pg.step("Load Source Image",0);
+		pg.step(TTR("Load Source Image"),0);
 		Image img;
 		Error err = ImageLoader::load_image(src_path,&img);
 		if (err) {
 			return err;
 		}
 
-		pg.step("Slicing",1);
+		pg.step(TTR("Slicing"),1);
 
 		Map<Vector2,Image> pieces;
 		for(int i=0;i<img.get_width();i+=cell_size) {
@@ -1038,7 +1131,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		}
 
 		existing->set_size(Size2(img.get_width(),img.get_height()));
-		pg.step("Inserting",2);
+		pg.step(TTR("Inserting"),2);
 
 		for (Map<Vector2,Image>::Element *E=pieces.front();E;E=E->next()) {
 
@@ -1050,14 +1143,15 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		if (!p_external) {
 			from->set_editor(get_name());
+			from->set_source_md5(0,FileAccess::get_md5(src_path));
 			existing->set_path(p_path);
 			existing->set_import_metadata(from);
 		}
-		pg.step("Saving",3);
+		pg.step(TTR("Saving"),3);
 
 		err = ResourceSaver::save(p_path,existing);
 		if (err!=OK) {
-			EditorNode::add_io_error("Couldn't save large texture: "+p_path);
+			EditorNode::add_io_error(TTR("Couldn't save large texture:")+" "+p_path);
 			return err;
 		}
 
@@ -1072,7 +1166,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		bool alpha=false;
 		bool crop = from->get_option("crop");
 
-		EditorProgress ep("make_atlas","Build Atlas For: "+p_path.get_file(),from->get_source_count()+3);
+		EditorProgress ep("make_atlas",TTR("Build Atlas For:")+" "+p_path.get_file(),from->get_source_count()+3);
 
 		print_line("sources: "+itos(from->get_source_count()));
 
@@ -1081,12 +1175,12 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			String path = EditorImportPlugin::expand_source_path(from->get_source_path(i));
 			String md5 = FileAccess::get_md5(path);
 			from->set_source_md5(i,FileAccess::get_md5(path));
-			ep.step("Loading Image: "+path,i);
+			ep.step(TTR("Loading Image:")+" "+path,i);
 			print_line("source path: "+path+" md5 "+md5);
 			Image src;
 			Error err = ImageLoader::load_image(path,&src);
 			if (err) {
-				EditorNode::add_io_error("Couldn't load image: "+path);
+				EditorNode::add_io_error(TTR("Couldn't load image:")+" "+path);
 				return err;
 			}
 
@@ -1095,9 +1189,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 			tsources.push_back(src);
 		}
-		ep.step("Converting Images",sources.size());
-
-		int base_index=0;
+		ep.step(TTR("Converting Images"),sources.size());
 
 
 		Map<uint64_t,int> source_md5;
@@ -1154,7 +1246,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		Vector<Size2i> src_sizes;
 		Vector<Rect2> crops;
 
-		ep.step("Cropping Images",sources.size()+1);
+		ep.step(TTR("Cropping Images"),sources.size()+1);
 
 		for(int j=0;j<sources.size();j++) {
 
@@ -1176,9 +1268,9 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		Size2i dst_size;
 		EditorAtlas::fit(src_sizes,dst_positions,dst_size);
 
-		print_line("size that workeD: "+itos(dst_size.width)+","+itos(dst_size.height));
+		print_line("size that worked: "+itos(dst_size.width)+","+itos(dst_size.height));
 
-		ep.step("Blitting Images",sources.size()+2);
+		ep.step(TTR("Blitting Images"),sources.size()+2);
 
 		bool blit_to_po2=tex_flags&Texture::FLAG_MIPMAPS;
 		int atlas_w=dst_size.width;
@@ -1217,21 +1309,30 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			ERR_CONTINUE( !source_map.has(i) );
 			for (List<int>::Element *E=source_map[i].front();E;E=E->next()) {
 
-				String apath = p_path.get_base_dir().plus_file(from->get_source_path(E->get()).get_file().basename()+".atex");
+				String apath;
+				String spath = from->get_source_path(E->get()).get_file();
+
+				if (p_external) {
+					apath = p_path.get_base_dir().plus_file(spath.basename()+"."+from->get_source_path(E->get()).md5_text()+".atex");
+				} else {
+					apath = p_path.get_base_dir().plus_file(spath.basename()+".atex");
+				}
 
 				Ref<AtlasTexture> at;
 
 				if (ResourceCache::has(apath)) {
+
 					at = Ref<AtlasTexture>( ResourceCache::get(apath)->cast_to<AtlasTexture>() );
 				} else {
 
 					at = Ref<AtlasTexture>( memnew( AtlasTexture ) );
+
 				}
 				at->set_region(region);
 				at->set_margin(margin);
 				at->set_path(apath);
 				atlases[E->get()]=at;
-				print_line("Atlas Tex: "+apath);
+
 			}
 		}
 		if (ResourceCache::has(p_path)) {
@@ -1291,7 +1392,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 				atlases[i]->set_atlas(texture);
 				Error err = ResourceSaver::save(apath,atlases[i]);
 				if (err) {
-					EditorNode::add_io_error("Couldn't save atlas image: "+apath);
+					EditorNode::add_io_error(TTR("Couldn't save atlas image:")+" "+apath);
 					return err;
 				}
 				//from->set_source_md5(i,FileAccess::get_md5(apath));
@@ -1433,7 +1534,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 	Error err = ResourceSaver::save(p_path,texture,save_flags);
 	if (err!=OK) {
-		EditorNode::add_io_error("Couldn't save converted texture: "+p_path);
+		EditorNode::add_io_error(TTR("Couldn't save converted texture:")+" "+p_path);
 		return err;
 	}
 
@@ -1489,16 +1590,9 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 				} break; //use default
 			}
 
+			String validated_path=EditorImportPlugin::validate_source_path(p_path);
 
-			int flags=0;
-
-			if (Globals::get_singleton()->get("image_loader/filter"))
-				flags|=IMAGE_FLAG_FILTER;
-			if (!Globals::get_singleton()->get("image_loader/gen_mipmaps"))
-				flags|=IMAGE_FLAG_NO_MIPMAPS;
-			if (!Globals::get_singleton()->get("image_loader/repeat"))
-				flags|=IMAGE_FLAG_REPEAT;
-
+			int flags=texture_flags_to_export_flags(ResourceFormatLoaderImage::load_image_flags(validated_path));
 			flags|=IMAGE_FLAG_FIX_BORDER_ALPHA;
 
 			print_line("group format"+itos(group_format));
@@ -1507,7 +1601,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 			rimd->set_option("quality",group_lossy_quality);
 			rimd->set_option("atlas",false);
 			rimd->set_option("shrink",group_shrink);
-			rimd->add_source(EditorImportPlugin::validate_source_path(p_path),FileAccess::get_md5(p_path));
+			rimd->add_source(validated_path,FileAccess::get_md5(p_path));
 
 		} else if (EditorImportExport::get_singleton()->get_image_formats().has(p_path.extension().to_lower()) && EditorImportExport::get_singleton()->get_export_image_action()!=EditorImportExport::IMAGE_ACTION_NONE) {
 			//handled by general image export settings
@@ -1519,22 +1613,16 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 				case EditorImportExport::IMAGE_ACTION_COMPRESS_RAM: rimd->set_option("format",IMAGE_FORMAT_COMPRESS_RAM); break;
 			}
 
-			int flags=0;
+			String validated_path=EditorImportPlugin::validate_source_path(p_path);
 
-			if (Globals::get_singleton()->get("image_loader/filter"))
-				flags|=IMAGE_FLAG_FILTER;
-			if (!Globals::get_singleton()->get("image_loader/gen_mipmaps"))
-				flags|=IMAGE_FLAG_NO_MIPMAPS;
-			if (!Globals::get_singleton()->get("image_loader/repeat"))
-				flags|=IMAGE_FLAG_REPEAT;
-
+			int flags=texture_flags_to_export_flags(ResourceFormatLoaderImage::load_image_flags(validated_path));
 			flags|=IMAGE_FLAG_FIX_BORDER_ALPHA;
 
 			rimd->set_option("shrink",EditorImportExport::get_singleton()->get_export_image_shrink());
 			rimd->set_option("flags",flags);
 			rimd->set_option("quality",EditorImportExport::get_singleton()->get_export_image_quality());
 			rimd->set_option("atlas",false);
-			rimd->add_source(EditorImportPlugin::validate_source_path(p_path),FileAccess::get_md5(p_path));
+			rimd->add_source(validated_path,FileAccess::get_md5(p_path));
 
 		} else {
 			return Vector<uint8_t>();
@@ -1626,15 +1714,118 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 	return ret;
 }
 
+uint32_t EditorTextureImportPlugin::texture_flags_to_export_flags(uint32_t p_tex_flags) const {
 
-EditorTextureImportPlugin *EditorTextureImportPlugin::singleton[EditorTextureImportPlugin::MODE_MAX]={NULL,NULL,NULL,NULL};
+	uint32_t flags=0;
 
-EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor, Mode p_mode) {
+	if (!(p_tex_flags&Texture::FLAG_MIPMAPS)) {
+		flags|=IMAGE_FLAG_NO_MIPMAPS;
+	}
+	if (p_tex_flags&Texture::FLAG_REPEAT) {
+		flags|=IMAGE_FLAG_REPEAT;
+	}
+	if (p_tex_flags&Texture::FLAG_FILTER) {
+		flags|=IMAGE_FLAG_FILTER;
+	}
+	if (p_tex_flags&Texture::FLAG_ANISOTROPIC_FILTER) {
+		flags|=IMAGE_FLAG_USE_ANISOTROPY;
+	}
+	if (p_tex_flags&Texture::FLAG_CONVERT_TO_LINEAR) {
+		flags|=IMAGE_FLAG_CONVERT_TO_LINEAR;
+	}
+	/* // no correspondence yet
+	if (p_tex_flags&Texture::TEXTURE_FLAG_MIRRORED_REPEAT) {
+		flags|=;
+	}*/
 
-	singleton[p_mode]=this;
+	return flags;
+}
+
+void EditorTextureImportPlugin::import_from_drop(const Vector<String>& p_drop,const String& p_dest_path) {
+
+	Vector<String> valid;
+
+	List<String> valid_extensions;
+	ImageLoader::get_recognized_extensions(&valid_extensions);
+	for(int i=0;i<p_drop.size();i++) {
+
+		String extension=p_drop[i].extension().to_lower();
+
+		for (List<String>::Element *E=valid_extensions.front();E;E=E->next()) {
+
+			if (E->get()==extension) {
+				valid.push_back(p_drop[i]);
+				break;
+			}
+		}
+	}
+
+	if (valid.size()) {
+		dialog->popup_import();
+		dialog->setup_multiple_import_3d(valid,p_dest_path);
+	}
+}
+
+void EditorTextureImportPlugin::reimport_multiple_files(const Vector<String>& p_list) {
+
+	Vector<String> valid;
+
+
+	for(int i=0;i<p_list.size();i++) {
+
+		Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(p_list[i]);
+		String type = rimd->get_editor();
+		if (type=="texture" || type.begins_with("texture_")) {
+
+			if ((rimd->has_option("atlas") && rimd->get_option("atlas")) || (rimd->has_option("large") && rimd->get_option("large"))) {
+				continue;
+			}
+
+			valid.push_back(p_list[i]);
+		}
+	}
+
+	if (valid.size()) {
+
+		dialog->popup_import(valid[0]);
+
+		Vector<String> sources;
+		for(int i=0;i<valid.size();i++) {
+			int idx;
+			EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->find_file(valid[i],&idx);
+			if (efsd) {
+				for(int j=0;j<efsd->get_source_count(idx);j++) {
+					String file = expand_source_path(efsd->get_source_file(idx,j));
+					if (sources.find(file)==-1) {
+						sources.push_back(file);
+					}
+
+				}
+			}
+		}
+
+		if (sources.size()) {
+
+			dialog->add_sources_and_dest(sources,valid[0].get_base_dir());
+		}
+	}
+}
+
+bool EditorTextureImportPlugin::can_reimport_multiple_files() const {
+
+	return true;
+
+}
+
+
+
+EditorTextureImportPlugin *EditorTextureImportPlugin::singleton=NULL;
+
+EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor) {
+
+	singleton=this;
 	editor=p_editor;
-	mode=p_mode;
-	dialog = memnew( EditorTextureImportDialog(this,p_mode==MODE_TEXTURE_2D || p_mode==MODE_ATLAS || p_mode==MODE_LARGE,p_mode==MODE_ATLAS,p_mode==MODE_LARGE) );
+	dialog = memnew( EditorTextureImportDialog(this) );
 	editor->get_gui_base()->add_child(dialog);
 
 }
@@ -1662,7 +1853,7 @@ EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor, Mode 
 	} else if (EditorImportExport::get_singleton()->image_get_export_group(p_path)) {
 
 
-		Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture_2d");
+		Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture");
 		if (pl.is_valid()) {
 			Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
 			if (ce.size()) {
@@ -1676,7 +1867,7 @@ EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor, Mode 
 		String xt = p_path.extension().to_lower();
 		if (EditorImportExport::get_singleton()->get_image_formats().has(xt)) { //should check for more I guess?
 
-			Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture_2d");
+			Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture");
 			if (pl.is_valid()) {
 				Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
 				if (ce.size()) {

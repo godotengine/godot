@@ -27,6 +27,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.os.Messenger;
+import android.support.v4.app.NotificationCompat;
 
 /**
  * This class handles displaying the notification associated with the download
@@ -48,8 +49,9 @@ public class DownloadNotification implements IDownloaderClient {
 
     private IDownloaderClient mClientProxy;
     final ICustomNotification mCustomNotification;
-    private Notification mNotification;
-    private Notification mCurrentNotification;
+    // NotificationCompat.Builder is used to support API < 16. This can be changed to Notification.Builder if minimum API >= 16.
+    private NotificationCompat.Builder mNotificationBuilder;
+    private NotificationCompat.Builder mCurrentNotificationBuilder;
     private CharSequence mLabel;
     private String mCurrentText;
     private PendingIntent mContentIntent;
@@ -132,17 +134,14 @@ public class DownloadNotification implements IDownloaderClient {
             }
             mCurrentText = mContext.getString(stringDownloadID);
             mCurrentTitle = mLabel.toString();
-            mCurrentNotification.tickerText = mLabel + ": " + mCurrentText;
-            mCurrentNotification.icon = iconResource;
-            mCurrentNotification.setLatestEventInfo(mContext, mCurrentTitle, mCurrentText,
-                    mContentIntent);
-            if (ongoingEvent) {
-                mCurrentNotification.flags |= Notification.FLAG_ONGOING_EVENT;
-            } else {
-                mCurrentNotification.flags &= ~Notification.FLAG_ONGOING_EVENT;
-                mCurrentNotification.flags |= Notification.FLAG_AUTO_CANCEL;
-            }
-            mNotificationManager.notify(NOTIFICATION_ID, mCurrentNotification);
+            mCurrentNotificationBuilder.setTicker(mLabel + ": " + mCurrentText);
+            mCurrentNotificationBuilder.setSmallIcon(iconResource);
+            mCurrentNotificationBuilder.setContentTitle(mCurrentTitle);
+            mCurrentNotificationBuilder.setContentText(mCurrentText);
+            mCurrentNotificationBuilder.setContentIntent(mContentIntent);
+            mCurrentNotificationBuilder.setOngoing(ongoingEvent);
+            mCurrentNotificationBuilder.setAutoCancel(!ongoingEvent);
+            mNotificationManager.notify(NOTIFICATION_ID, mCurrentNotificationBuilder.build());
         }
     }
 
@@ -154,10 +153,12 @@ public class DownloadNotification implements IDownloaderClient {
         }
         if (progress.mOverallTotal <= 0) {
             // we just show the text
-            mNotification.tickerText = mCurrentTitle;
-            mNotification.icon = android.R.drawable.stat_sys_download;
-            mNotification.setLatestEventInfo(mContext, mLabel, mCurrentText, mContentIntent);
-            mCurrentNotification = mNotification;
+            mNotificationBuilder.setTicker(mCurrentTitle);
+            mNotificationBuilder.setSmallIcon(android.R.drawable.stat_sys_download);
+            mNotificationBuilder.setContentTitle(mCurrentTitle);
+            mNotificationBuilder.setContentText(mCurrentText);
+            mNotificationBuilder.setContentIntent(mContentIntent);
+            mCurrentNotificationBuilder = mNotificationBuilder;
         } else {
             mCustomNotification.setCurrentBytes(progress.mOverallProgress);
             mCustomNotification.setTotalBytes(progress.mOverallTotal);
@@ -166,9 +167,9 @@ public class DownloadNotification implements IDownloaderClient {
             mCustomNotification.setTicker(mLabel + ": " + mCurrentText);
             mCustomNotification.setTitle(mLabel);
             mCustomNotification.setTimeRemaining(progress.mTimeRemaining);
-            mCurrentNotification = mCustomNotification.updateNotification(mContext);
+            mCurrentNotificationBuilder = mCustomNotification.updateNotification(mContext);
         }
-        mNotificationManager.notify(NOTIFICATION_ID, mCurrentNotification);
+        mNotificationManager.notify(NOTIFICATION_ID, mCurrentNotificationBuilder.build());
     }
 
     public interface ICustomNotification {
@@ -186,7 +187,7 @@ public class DownloadNotification implements IDownloaderClient {
 
         void setTimeRemaining(long timeRemaining);
 
-        Notification updateNotification(Context c);
+        NotificationCompat.Builder updateNotification(Context c);
     }
 
     /**
@@ -219,8 +220,8 @@ public class DownloadNotification implements IDownloaderClient {
                 mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         mCustomNotification = CustomNotificationFactory
                 .createCustomNotification();
-        mNotification = new Notification();
-        mCurrentNotification = mNotification;
+        mNotificationBuilder = new NotificationCompat.Builder(ctx);
+        mCurrentNotificationBuilder = mNotificationBuilder;
 
     }
 

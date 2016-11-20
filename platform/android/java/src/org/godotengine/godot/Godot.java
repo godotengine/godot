@@ -115,7 +115,17 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
     private int mState;
 	private boolean keep_screen_on=true;
 
-    private void setState(int newState) {
+	static private Intent mCurrentIntent;
+
+	@Override public void onNewIntent(Intent intent) {
+		mCurrentIntent = intent;
+	}
+
+	static public Intent getCurrentIntent() {
+		return mCurrentIntent;
+	}
+
+	private void setState(int newState) {
         if (mState != newState) {
             mState = newState;
             mStatusText.setText(Helpers.getDownloaderStringResourceIDFromState(newState));
@@ -206,6 +216,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
+	private Sensor mMagnetometer;
+	private Sensor mGyroscope;
 
 	public FrameLayout layout;
 	public RelativeLayout adLayout;
@@ -374,6 +386,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
+		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
+		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 
 		result_callback = null;
 
@@ -464,7 +480,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 				// Build the full path to the app's expansion files
 				try {
-					expansion_pack_path = Environment.getExternalStorageDirectory().toString() + "/Android/obb/"+this.getPackageName();
+					expansion_pack_path = Helpers.getSaveFilePath(getApplicationContext());
 					expansion_pack_path+="/"+"main."+getPackageManager().getPackageInfo(getPackageName(), 0).versionCode+"."+this.getPackageName()+".obb";
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -542,6 +558,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			}
 		}
 
+		mCurrentIntent = getIntent();
+
 		initializeGodot();
 
 		
@@ -587,7 +605,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 
 		mView.onResume();
-		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
+		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
+		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 		GodotLib.focusin();
 		if(use_immersive && Build.VERSION.SDK_INT >= 19.0){ // check if the application runs on an android 4.4+
 			Window window = getWindow();
@@ -646,7 +666,17 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		float x = adjustedValues[0];
 		float y = adjustedValues[1];
 		float z = adjustedValues[2];
-		GodotLib.accelerometer(x,y,z);
+
+		int typeOfSensor = event.sensor.getType();
+		if (typeOfSensor == event.sensor.TYPE_ACCELEROMETER) {
+			GodotLib.accelerometer(x,y,z);
+		}
+		if (typeOfSensor == event.sensor.TYPE_MAGNETIC_FIELD) {
+			GodotLib.magnetometer(x,y,z);
+		}
+		if (typeOfSensor == event.sensor.TYPE_GYROSCOPE) {
+			GodotLib.gyroscope(x,y,z);
+		}
 	}
 
 	@Override public final void onAccuracyChanged(Sensor sensor, int accuracy) {

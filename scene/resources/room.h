@@ -50,13 +50,13 @@ protected:
 
 public:
 
-	virtual RID get_rid();
+	virtual RID get_rid() const;
 
 	void set_bounds( const BSP_Tree& p_bounds );
 	BSP_Tree get_bounds() const;
 
 	void set_geometry_hint(const DVector<Face3>& geometry_hint);
-	const DVector<Face3>& get_geometry_hint() const;
+	DVector<Face3> get_geometry_hint() const;
 
 	RoomBounds();
 	~RoomBounds();

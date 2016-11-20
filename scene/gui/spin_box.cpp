@@ -39,7 +39,7 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_value_changed(double) {
 
-	String value = String::num(get_val(),Math::decimals(get_step()));
+	String value = String::num(get_val(),Math::step_decimals(get_step()));
 	if (prefix!="")
 		value=prefix+" "+value;
 	if (suffix!="")
@@ -51,7 +51,10 @@ void SpinBox::_text_entered(const String& p_string) {
 
 	//if (!p_string.is_numeric())
 	//	return;
-	set_val( p_string.to_double() );
+	String value = p_string;
+	if (prefix!="" && p_string.begins_with(prefix))
+		value = p_string.substr(prefix.length(), p_string.length()-prefix.length());
+	set_val( value.to_double() );
 	_value_changed(0);
 }
 

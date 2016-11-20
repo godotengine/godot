@@ -53,6 +53,12 @@ uint32_t NodePath::hash() const {
 
 }
 
+void NodePath::prepend_period() {
+
+	if (data->path.size() && data->path[0].operator String()!=".") {
+		data->path.insert(0,".");
+	}
+}
 
 bool NodePath::is_absolute() const {
 
@@ -329,7 +335,6 @@ NodePath::NodePath(const String& p_path) {
 	Vector<StringName> subpath;
 
 	int absolute=(path[0]=='/')?1:0;;
-	bool valid=false;
 	bool last_is_slash=true;
 	int slices=0;
 	int subpath_pos=path.find(":");
@@ -358,6 +363,7 @@ NodePath::NodePath(const String& p_path) {
 
 				from=i+1;
 			}
+
 		}
 
 		path=path.substr(0,subpath_pos);
@@ -373,9 +379,10 @@ NodePath::NodePath(const String& p_path) {
 			if (last_is_slash)
 				slices++;
 
-			valid=true;
 			last_is_slash=false;
 		}
+
+
 	}
 
 	if (slices==0 && !absolute && !property)
@@ -409,6 +416,7 @@ NodePath::NodePath(const String& p_path) {
 		} else {
 			last_is_slash=false;
 		}
+
 	}
 
 

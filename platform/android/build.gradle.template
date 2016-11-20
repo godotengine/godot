@@ -3,7 +3,7 @@ buildscript {
 		jcenter()
 	}
 	dependencies {
-		classpath 'com.android.tools.build:gradle:1.2.0'
+		classpath 'com.android.tools.build:gradle:2.1.0'
 	}
 }
 
@@ -17,18 +17,20 @@ allprojects {
 }
 
 dependencies {
-
-	$$GRADLE_DEPENDENCIES$$    
+	compile 'com.android.support:support-v4:23.+'  // can be removed if minSdkVersion 16 and modify DownloadNotification.java & V14CustomNotification.java
+	$$GRADLE_DEPENDENCIES$$
 }
 
 android {
 
 	lintOptions {
 		abortOnError false
+		disable 'MissingTranslation'
 	}
 
-	compileSdkVersion 19
-	buildToolsVersion "19.1"
+	compileSdkVersion 23
+	buildToolsVersion "23.0.3"
+	useLibrary 'org.apache.http.legacy'
 
 	packagingOptions {
 		exclude 'META-INF/LICENSE'
@@ -36,35 +38,49 @@ android {
 	}
 	defaultConfig {
 		minSdkVersion 14
-		targetSdkVersion 19
+		targetSdkVersion 23
+		$$GRADLE_DEFAULT_CONFIG$$
+	}
+	// Both signing and zip-aligning will be done at export time
+	buildTypes.all { buildType ->
+		buildType.zipAlignEnabled false
+		buildType.signingConfig null
 	}
 	sourceSets {
 		main {
 			manifest.srcFile 'AndroidManifest.xml'
 			java.srcDirs = ['src'
-				$$GRADLE_JAVA_DIRS$$    
+				$$GRADLE_JAVA_DIRS$$
 			]
 			resources.srcDirs = [
 				'res'
-				$$GRADLE_RES_DIRS$$    
+				$$GRADLE_RES_DIRS$$  
 			]
 			res.srcDirs = ['res']
 		//            libs.srcDirs = ['libs']
 			aidl.srcDirs = [
 				'aidl'
-				$$GRADLE_AIDL_DIRS$$    
+				$$GRADLE_AIDL_DIRS$$   
 			]
 			assets.srcDirs = [
 				'assets'
-				$$GRADLE_ASSET_DIRS$$    				
+				$$GRADLE_ASSET_DIRS$$
 			]
 			jniLibs.srcDirs = [
-				'libs'
-				$$GRADLE_JNI_DIRS$$    								
-			] 
+				$$GRADLE_JNI_DIRS$$
+			]
 		}
-
+		debug.jniLibs.srcDirs = [
+			'libs/debug'
+			$$GRADLE_JNI_DIRS$$
+		]
+		release.jniLibs.srcDirs = [
+			'libs/release'
+			$$GRADLE_JNI_DIRS$$
+		]
 	}
-
-
+	applicationVariants.all { variant ->
+		// ApplicationVariant is undocumented, but this method is widely used; may break with another version of the Android Gradle plugin
+		variant.outputs.get(0).setOutputFile(new File("${projectDir}/../../../bin", "android_${variant.name}.apk"))
+	}
 }

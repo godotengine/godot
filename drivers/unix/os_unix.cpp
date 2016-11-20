@@ -44,6 +44,10 @@
 #include "stream_peer_tcp_posix.h"
 #include "packet_peer_udp_posix.h"
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
 #ifdef __FreeBSD__
 #include <sys/param.h>
 #endif
@@ -251,6 +255,9 @@ OS::Date OS_Unix::get_date(bool utc) const {
 		lt=localtime(&t);
 	Date ret;
 	ret.year=1900+lt->tm_year;
+	// Index starting at 1 to match OS_Unix::get_date
+	//   and Windows SYSTEMTIME and tm_mon follows the typical structure 
+	//   of 0-11, noted here: http://www.cplusplus.com/reference/ctime/tm/
 	ret.month=(Month)(lt->tm_mon + 1);
 	ret.day=lt->tm_mday;
 	ret.weekday=(Weekday)lt->tm_wday;
@@ -258,6 +265,7 @@ OS::Date OS_Unix::get_date(bool utc) const {
 	
 	return ret;
 }
+
 OS::Time OS_Unix::get_time(bool utc) const {
 	time_t t=time(NULL);
 	struct tm *lt;
@@ -349,7 +357,6 @@ Error OS_Unix::execute(const String& p_path, const List<String>& p_arguments,boo
 
 	pid_t pid = fork();
 	ERR_FAIL_COND_V(pid<0,ERR_CANT_FORK);
-	//print("execute: %s\n",p_path.utf8().get_data());
 
 
 	if (pid==0) {
@@ -383,11 +390,9 @@ Error OS_Unix::execute(const String& p_path, const List<String>& p_arguments,boo
 	if (p_blocking) {
 
 		int status;
-		pid_t rpid = waitpid(pid,&status,0);
+		waitpid(pid,&status,0);
 		if (r_exitcode)
 			*r_exitcode=WEXITSTATUS(status);
-
-		print("returned: %i, waiting for: %i\n",rpid,pid);
 	} else {
 
 		if (r_child_id)
@@ -456,7 +461,7 @@ int OS_Unix::get_processor_count() const {
 
 String OS_Unix::get_data_dir() const {
 
-	String an = Globals::get_singleton()->get("application/name");
+	String an = get_safe_application_name();
 	if (an!="") {
 
 
@@ -490,7 +495,6 @@ String OS_Unix::get_executable_path() const {
 	char buf[256];
 	memset(buf,0,256);
 	readlink("/proc/self/exe", buf, sizeof(buf));
-	//print_line("Exec path is:"+String(buf));
 	String b;
 	b.parse_utf8(buf);
 	if (b=="") {
@@ -504,6 +508,23 @@ String OS_Unix::get_executable_path() const {
 	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);
 
 	return String(resolved_path);
+#elif defined(__APPLE__)
+	char temp_path[1];
+	uint32_t buff_size=1;
+	_NSGetExecutablePath(temp_path, &buff_size);
+
+	char* resolved_path = new char[buff_size + 1];
+
+	if (_NSGetExecutablePath(resolved_path, &buff_size) == 1)
+		WARN_PRINT("MAXPATHLEN is too small");
+
+	String path(resolved_path);
+	delete[] resolved_path;
+
+	return path;
+#elif defined(EMSCRIPTEN)
+	// We return nothing
+	return String();
 #else
 	ERR_PRINT("Warning, don't know how to obtain executable path on this OS! Please override this function properly.");
 	return OS::get_executable_path();

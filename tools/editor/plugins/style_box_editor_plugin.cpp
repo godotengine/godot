@@ -61,7 +61,7 @@ StyleBoxEditor::StyleBoxEditor() {
 	panel->set_area_as_parent_rect();
 
 	Label *l = memnew( Label );
-	l->set_text("StyleBox Preview:");
+	l->set_text(TTR("StyleBox Preview:"));
 	l->set_pos(Point2(5,5));
 	panel->add_child(l);
 
@@ -92,6 +92,7 @@ void StyleBoxEditorPlugin::make_visible(bool p_visible){
 
 	if (p_visible) {
 		button->show();
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(stylebox_editor);
 
 	} else {
 		if (stylebox_editor->is_visible())

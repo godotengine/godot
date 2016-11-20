@@ -39,6 +39,8 @@
 */
 
 class Camera;
+class Camera2D;
+class Listener;
 class Control;
 class CanvasItem;
 class Panel;
@@ -92,6 +94,9 @@ friend class RenderTargetTexture;
 	Control *parent_control;
 	Viewport *parent;
 
+	Listener *listener;
+	Set<Listener*> listeners;
+
 	Camera *camera;
 	Set<Camera*> cameras;
 
@@ -100,10 +105,10 @@ friend class RenderTargetTexture;
 	RID current_canvas;
 
 	bool audio_listener;
-	RID listener;
+	RID internal_listener;
 
 	bool audio_listener_2d;
-	RID listener_2d;
+	RID internal_listener_2d;
 
 	Matrix32 canvas_transform;
 	Matrix32 global_canvas_transform;
@@ -159,6 +164,7 @@ friend class RenderTargetTexture;
 
 	void _propagate_enter_world(Node *p_node);
 	void _propagate_exit_world(Node *p_node);
+	void _propagate_viewport_notification(Node *p_node, int p_what);
 
 
 	void _update_stretch_transform();
@@ -262,6 +268,15 @@ friend class Control;
 
 	Control *_gui_get_focus_owner();
 
+	Vector2 _get_window_offset() const;
+
+friend class Listener;
+	void _listener_transform_changed_notify();
+	void _listener_set(Listener* p_listener);
+	bool _listener_add(Listener* p_listener); //true if first
+	void _listener_remove(Listener* p_listener);
+	void _listener_make_next_current(Listener* p_exclude);
+
 friend class Camera;
 	void _camera_transform_changed_notify();
 	void _camera_set(Camera* p_camera);
@@ -275,7 +290,7 @@ protected:
 	static void _bind_methods();
 public:
 
-
+	Listener* get_listener() const;
 	Camera* get_camera() const;
 
 	void set_as_audio_listener(bool p_enable);
@@ -290,9 +305,11 @@ public:
 	RID get_viewport() const;
 
 	void set_world(const Ref<World>& p_world);
+	void set_world_2d(const Ref<World2D>& p_world_2d);
 	Ref<World> get_world() const;
 	Ref<World> find_world() const;
 
+	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;
 
 
@@ -361,6 +378,10 @@ public:
 
 	bool gui_has_modal_stack() const;
 
+	Variant gui_get_drag_data() const;
+	Control *get_modal_stack_top() const;
+
+	virtual String get_configuration_warning() const;
 
 	Viewport();
 	~Viewport();

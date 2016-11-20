@@ -1351,13 +1351,21 @@ ShaderGraph::ShaderGraph(Mode p_mode) : Shader(p_mode) {
 
 	//shader = VisualServer::get_singleton()->shader_create();
 	_pending_update_shader=false;
-	Node out;
-	out.id=0;
-	out.pos=Vector2(250,20);
-	out.type=NODE_OUTPUT;
+
+	Node input;
+	input.id=1;
+	input.pos=Vector2(50,40);
+	input.type=NODE_INPUT;
+
+	Node output;
+	output.id=0;
+	output.pos=Vector2(350,40);
+	output.type=NODE_OUTPUT;
+
 	for(int i=0;i<3;i++) {
 
-		shader[i].node_map.insert(0,out);
+		shader[i].node_map.insert(0,output);
+		shader[i].node_map.insert(1,input);
 	}
 }
 
@@ -1475,6 +1483,8 @@ const ShaderGraph::InOutParamInfo ShaderGraph::inout_param_info[]={
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightColor","LIGHT_COLOR.rgb","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightAlpha","LIGHT_COLOR.a","",SLOT_TYPE_SCALAR,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightHeight","LIGHT_HEIGHT","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"ShadowColor","LIGHT_SHADOW.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"ShadowAlpha","LIGHT_SHADOW.a","",SLOT_TYPE_SCALAR,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"TexPixelSize","vec3(TEXTURE_PIXEL_SIZE,0)","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Var1","VAR1.rgb","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Var2","VAR2.rgb","",SLOT_TYPE_VEC,SLOT_IN},
@@ -1482,6 +1492,8 @@ const ShaderGraph::InOutParamInfo ShaderGraph::inout_param_info[]={
 	//canvas item light out
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightColor","LIGHT.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightAlpha","LIGHT.a","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"ShadowColor","SHADOW.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"ShadowAlpha","SHADOW.a","",SLOT_TYPE_SCALAR,SLOT_OUT},
 	//end
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,NULL,NULL,NULL,SLOT_TYPE_SCALAR,SLOT_OUT},
 

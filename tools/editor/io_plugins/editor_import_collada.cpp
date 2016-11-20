@@ -88,8 +88,8 @@ struct ColladaImport {
 	Error _create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,const Map<String,Collada::NodeGeometry::Material>& p_material_map,const Collada::MeshData &meshdata,const Transform& p_local_xform,const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_data, const Collada::MorphControllerData *p_morph_data,Vector<Ref<Mesh> > p_morph_meshes=Vector<Ref<Mesh> >());
 	Error load(const String& p_path, int p_flags, bool p_force_make_tangents=false);
 	void _fix_param_animation_tracks();
-	void create_animation(int p_clip,bool p_make_tracks_in_all_bones);
-	void create_animations(bool p_make_tracks_in_all_bones);
+	void create_animation(int p_clip,bool p_make_tracks_in_all_bones, bool p_import_value_tracks);
+	void create_animations(bool p_make_tracks_in_all_bones, bool p_import_value_tracks);
 
 	Set<String> tracks_in_clips;
 	Vector<String> missing_textures;
@@ -355,6 +355,10 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 	p_parent->add_child(node);
 	node->set_owner(scene);
 
+	if (p_node->empty_draw_type!="") {
+		node->set_meta("empty_draw_type", Variant(p_node->empty_draw_type));
+	}
+	
 	for(int i=0;i<p_node->children.size();i++) {
 
 		Error err = _create_scene(p_node->children[i],node);
@@ -463,6 +467,7 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 	material->set_parameter(FixedMaterial::PARAM_SPECULAR_EXP,effect.shininess);
 	material->set_flag(Material::FLAG_DOUBLE_SIDED,effect.double_sided);
+	material->set_flag(Material::FLAG_UNSHADED,effect.unshaded);
 
 
 
@@ -1893,7 +1898,7 @@ void ColladaImport::_fix_param_animation_tracks() {
 
 }
 
-void ColladaImport::create_animations(bool p_make_tracks_in_all_bones) {
+void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_import_value_tracks) {
 
 
 	_fix_param_animation_tracks();
@@ -1938,14 +1943,14 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones) {
 
 	}
 
-	create_animation(-1,p_make_tracks_in_all_bones);
+	create_animation(-1,p_make_tracks_in_all_bones, p_import_value_tracks);
 	//print_line("clipcount: "+itos(collada.state.animation_clips.size()));
 	for(int i=0;i<collada.state.animation_clips.size();i++)
-		create_animation(i,p_make_tracks_in_all_bones);
+		create_animation(i, p_make_tracks_in_all_bones, p_import_value_tracks);
 
 }
 
-void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones) {
+void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones, bool p_import_value_tracks) {
 
 	Ref<Animation> animation = Ref<Animation>( memnew( Animation ));
 
@@ -2072,6 +2077,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		animation->add_track(Animation::TYPE_TRANSFORM);
 		int track = animation->get_track_count() -1;
 		animation->track_set_path( track , path );
+		animation->track_set_imported( track , true ); //helps merging later
 
 		Vector<float> snapshots = base_snapshots;
 
@@ -2224,6 +2230,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 			animation->add_track(Animation::TYPE_TRANSFORM);
 			int track = animation->get_track_count() -1;
 			animation->track_set_path( track , path );
+			animation->track_set_imported( track , true ); //helps merging later
 
 
 			Transform xform = cn->compute_transform(collada);
@@ -2244,67 +2251,68 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 
 
-
-	for(int i=0;i<valid_animated_properties.size();i++) {
-
-
-		int ti = valid_animated_properties[i];
-
-		if (p_clip==-1) {
-
-			if (track_filter.has(ti))
-				continue;
-		} else {
-
-			if (!track_filter.has(ti))
-				continue;
-
-		}
+	if (p_import_value_tracks) {
+		for (int i = 0; i < valid_animated_properties.size(); i++) {
 
 
-		Collada::AnimationTrack &at = collada.state.animation_tracks[ ti ];
+			int ti = valid_animated_properties[i];
 
-		// take snapshots
-		if (!collada.state.scene_map.has(at.target))
-			continue;
+			if (p_clip == -1) {
 
-		NodeMap &nm = node_map[at.target];
-		String path = scene->get_path_to(nm.node);
+				if (track_filter.has(ti))
+					continue;
+			}
+			else {
 
-		Collada::Node *cn = collada.state.scene_map[at.target];
-		//if (cn->ignore_anim) {
-		//	print_line("warning, ignoring property animation on node: "+nm.path);
-			//continue;
-		//}
+				if (!track_filter.has(ti))
+					continue;
 
-		animation->add_track(Animation::TYPE_VALUE);
-		int track = animation->get_track_count() -1;
-		path = path +":"+at.param;
-		animation->track_set_path( track , path );
-
-		for(int i=0;i<at.keys.size();i++) {
-
-			float time = at.keys[i].time;
-			Variant value;
-			Vector<float> data = at.keys[i].data;
-			if (data.size()==1) {
-				//push a float
-				value=data[0];
-
-			} else if (data.size()==16) {
-				//matrix
-				print_line("value keys for matrices not supported");
-			} else {
-
-				print_line("don't know what to do with this amount of value keys: "+itos(data.size()));
 			}
 
-			animation->track_insert_key(track,time,value);
+
+			Collada::AnimationTrack &at = collada.state.animation_tracks[ti];
+
+			// take snapshots
+			if (!collada.state.scene_map.has(at.target))
+				continue;
+
+			NodeMap &nm = node_map[at.target];
+			String path = scene->get_path_to(nm.node);
+
+			animation->add_track(Animation::TYPE_VALUE);
+			int track = animation->get_track_count() - 1;
+
+			path = path + ":" + at.param;
+			animation->track_set_path(track, path);
+			animation->track_set_imported(track, true); //helps merging later
+
+
+			for (int i = 0; i < at.keys.size(); i++) {
+
+				float time = at.keys[i].time;
+				Variant value;
+				Vector<float> data = at.keys[i].data;
+				if (data.size() == 1) {
+					//push a float
+					value = data[0];
+
+				}
+				else if (data.size() == 16) {
+					//matrix
+					print_line("value keys for matrices not supported");
+				}
+				else {
+
+					print_line("don't know what to do with this amount of value keys: " + itos(data.size()));
+				}
+
+				animation->track_insert_key(track, time, value);
+			}
+
+
+			tracks_found = true;
+
 		}
-
-
-		tracks_found=true;
-
 	}
 
 
@@ -2369,7 +2377,7 @@ Node* EditorSceneImporterCollada::import_scene(const String& p_path, uint32_t p_
 
 	if (p_flags&IMPORT_ANIMATION) {
 
-		state.create_animations(p_flags&IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS);
+		state.create_animations(p_flags&IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS,p_flags&EditorSceneImporter::IMPORT_ANIMATION_KEEP_VALUE_TRACKS);
 		AnimationPlayer *ap = memnew( AnimationPlayer );
 		for(int i=0;i<state.animations.size();i++) {
 			String name;
@@ -2406,7 +2414,7 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String& p_path
 	ERR_FAIL_COND_V(err!=OK,RES());
 
 
-	state.create_animations(p_flags&EditorSceneImporter::IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS);
+	state.create_animations(p_flags&EditorSceneImporter::IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS,p_flags&EditorSceneImporter::IMPORT_ANIMATION_KEEP_VALUE_TRACKS);
 	if (state.scene)
 		memdelete(state.scene);
 

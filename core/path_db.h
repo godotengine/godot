@@ -72,6 +72,8 @@ public:
 
 	NodePath rel_path_to(const NodePath& p_np) const;
 
+	void prepend_period();
+
 	StringName get_property() const;
 
 	NodePath get_parent() const;

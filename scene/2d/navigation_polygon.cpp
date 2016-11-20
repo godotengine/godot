@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  navigation_polygon.cpp                                               */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "navigation_polygon.h"
 #include "navigation2d.h"
 #include "triangulator.h"
@@ -413,6 +441,7 @@ void NavigationPolygonInstance::set_navigation_polygon(const Ref<NavigationPolyg
 	}
 	//update_gizmo();
 	_change_notify("navpoly");
+	update_configuration_warning();
 
 }
 
@@ -425,6 +454,28 @@ void NavigationPolygonInstance::_navpoly_changed() {
 
 	if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()))
 		update();
+}
+
+
+String NavigationPolygonInstance::get_configuration_warning() const {
+
+	if (!is_visible() || !is_inside_tree())
+		return String();
+
+	if (!navpoly.is_valid()) {
+		return TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
+	}
+	const Node2D *c=this;
+	while(c) {
+
+		if (c->cast_to<Navigation2D>()) {
+			return String();
+		}
+
+		c=c->get_parent()->cast_to<Node2D>();
+	}
+
+	return TTR("NavigationPolygonInstance must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
 }
 
 void NavigationPolygonInstance::_bind_methods() {

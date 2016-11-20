@@ -244,7 +244,7 @@ FRAGMENT_SHADER_CODE
 
 	vec2 light_uv = light_uv_interp.xy;
 	vec4 light = texture2D(light_texture,light_uv) * light_color;
-#if defined(USE_LIGHT_SHADOW_COLOR)
+#if defined(USE_OUTPUT_SHADOW_COLOR)
 	vec4 shadow_color=vec4(0.0,0.0,0.0,0.0);
 #endif
 
@@ -380,7 +380,7 @@ LIGHT_SHADER_CODE
 
 #endif
 
-#if defined(USE_LIGHT_SHADOW_COLOR)
+#if defined(USE_OUTPUT_SHADOW_COLOR)
 	color=mix(shadow_color,color,shadow_attenuation);
 #else
 	//color*=shadow_attenuation;

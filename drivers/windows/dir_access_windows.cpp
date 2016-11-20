@@ -37,12 +37,6 @@
 #include <stdio.h>
 #include "print_string.h"
 
-#ifdef WINRT_ENABLED
-#include <Synchapi.h>
-#include <collection.h>
-#include <ppltasks.h>
-#endif
-
 /*
 
 [03:57] <reduz> yessopie, so i dont havemak to rely on unicows
@@ -69,7 +63,7 @@ bool DirAccessWindows::list_dir_begin() {
 
 	_cisdir=false;
 	_cishidden=false;
-	
+
 	list_dir_end();
 	p->h = FindFirstFileExW((current_dir+"\\*").c_str(), FindExInfoStandard, &p->fu, FindExSearchNameMatch, NULL, 0);
 
@@ -83,7 +77,7 @@ String DirAccessWindows::get_next() {
 	if (p->h==INVALID_HANDLE_VALUE)
 		return "";
 
-	
+
 	_cisdir=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 	_cishidden=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN);
 
@@ -135,14 +129,6 @@ Error DirAccessWindows::change_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
 
-#ifdef WINRT_ENABLED
-
-	p_dir = fix_path(p_dir);
-	current_dir = normalize_path(p_dir);
-
-	return OK;
-#else
-
 
 	p_dir=fix_path(p_dir);
 
@@ -178,35 +164,26 @@ Error DirAccessWindows::change_dir(String p_dir) {
 	//}
 
 	return worked?OK:ERR_INVALID_PARAMETER;
-#endif
 }
 
 Error DirAccessWindows::make_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
 
-#ifdef WINRT_ENABLED
-
-	return ERR_CANT_CREATE;
-
-#else
+	if (p_dir.is_rel_path())
+		p_dir=get_current_dir().plus_file(p_dir);
 
 	p_dir=fix_path(p_dir);
-	
-	//p_dir.replace("/","\\");
+	p_dir = p_dir.replace("/","\\");
 
 	bool success;
 	int err;
 
-	wchar_t real_current_dir_name[2048];
-	GetCurrentDirectoryW(2048,real_current_dir_name);
-
-	SetCurrentDirectoryW(current_dir.c_str());
+	p_dir="\\\\?\\"+p_dir; //done according to
+// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
 
 	success=CreateDirectoryW(p_dir.c_str(), NULL);
 	err = GetLastError();
-
-	SetCurrentDirectoryW(real_current_dir_name);
 
 	if (success) {
 		return OK;
@@ -217,8 +194,6 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	};
 
 	return ERR_CANT_CREATE;
-
-#endif
 }
 
 
@@ -249,7 +224,7 @@ bool DirAccessWindows::file_exists(String p_file) {
 		p_file=get_current_dir().plus_file(p_file);
 
 	p_file=fix_path(p_file);
-	
+
 	//p_file.replace("/","\\");
 
 	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
@@ -261,7 +236,6 @@ bool DirAccessWindows::file_exists(String p_file) {
 		return false;
 
 	return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
-
 }
 
 bool DirAccessWindows::dir_exists(String p_dir) {
@@ -270,8 +244,8 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 
 	if (p_dir.is_rel_path())
 		p_dir=get_current_dir().plus_file(p_dir);
-	else
-		p_dir=fix_path(p_dir);
+
+	p_dir=fix_path(p_dir);
 
 	//p_dir.replace("/","\\");
 
@@ -284,20 +258,19 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 	if (INVALID_FILE_ATTRIBUTES == fileAttr)
 		    return false;
 	return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
-
 }
 
 Error DirAccessWindows::rename(String p_path,String p_new_path) {
 
 	if (p_path.is_rel_path())
 		p_path=get_current_dir().plus_file(p_path);
-	else
-		p_path=fix_path(p_path);
+
+	p_path=fix_path(p_path);
 
 	if (p_new_path.is_rel_path())
 		p_new_path=get_current_dir().plus_file(p_new_path);
-	else
-		p_new_path=fix_path(p_new_path);
+
+	p_new_path=fix_path(p_new_path);
 
 	if (file_exists(p_new_path)) {
 		if (remove(p_new_path) != OK) {
@@ -312,8 +285,9 @@ Error DirAccessWindows::remove(String p_path)  {
 
 	if (p_path.is_rel_path())
 		p_path=get_current_dir().plus_file(p_path);
-	else
-		p_path=fix_path(p_path);
+
+	p_path=fix_path(p_path);
+
 
 	printf("erasing %s\n",p_path.utf8().get_data());
 	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
@@ -359,8 +333,13 @@ FileType DirAccessWindows::get_file_type(const String& p_file) const {
 */
 size_t  DirAccessWindows::get_space_left() {
 
-	return -1;
-};
+	uint64_t bytes = 0;
+	if (!GetDiskFreeSpaceEx(NULL,(PULARGE_INTEGER)&bytes,NULL,NULL))
+		return 0;
+
+	//this is either 0 or a value in bytes.
+	return (size_t)bytes;
+}
 
 DirAccessWindows::DirAccessWindows() {
 
@@ -370,7 +349,7 @@ DirAccessWindows::DirAccessWindows() {
 
 	drive_count=0;
 
-#ifdef WINRT_ENABLED
+#ifdef UWP_ENABLED
 	Windows::Storage::StorageFolder ^install_folder = Windows::ApplicationModel::Package::Current->InstalledLocation;
 	change_dir(install_folder->Path->Data());
 

@@ -69,6 +69,50 @@ uint32_t PhysicsBody::get_layer_mask() const {
 	return layer_mask;
 }
 
+void PhysicsBody::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask=p_mask;
+	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(),p_mask);
+}
+
+uint32_t PhysicsBody::get_collision_mask() const {
+
+	return collision_mask;
+}
+
+void PhysicsBody::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_collision_mask(mask);
+
+}
+
+bool PhysicsBody::get_collision_mask_bit(int p_bit) const{
+
+	return get_collision_mask()&(1<<p_bit);
+}
+
+
+void PhysicsBody::set_layer_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_layer_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_layer_mask(mask);
+
+}
+
+bool PhysicsBody::get_layer_mask_bit(int p_bit) const{
+
+	return get_layer_mask()&(1<<p_bit);
+}
+
 void PhysicsBody::add_collision_exception_with(Node* p_node) {
 
 	ERR_FAIL_NULL(p_node);
@@ -92,17 +136,42 @@ void PhysicsBody::remove_collision_exception_with(Node* p_node) {
 	PhysicsServer::get_singleton()->body_remove_collision_exception(get_rid(),physics_body->get_rid());
 }
 
+void PhysicsBody::_set_layers(uint32_t p_mask) {
+	set_layer_mask(p_mask);
+	set_collision_mask(p_mask);
+}
+
+uint32_t PhysicsBody::_get_layers() const{
+
+	return get_layer_mask();
+}
 
 void PhysicsBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody::get_layer_mask);
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask","mask"),&PhysicsBody::set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&PhysicsBody::get_collision_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask_bit","bit","value"),&PhysicsBody::set_collision_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask_bit","bit"),&PhysicsBody::get_collision_mask_bit);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask_bit","bit","value"),&PhysicsBody::set_layer_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask_bit","bit"),&PhysicsBody::get_layer_mask_bit);
+
+	ObjectTypeDB::bind_method(_MD("_set_layers","mask"),&PhysicsBody::_set_layers);
+	ObjectTypeDB::bind_method(_MD("_get_layers"),&PhysicsBody::_get_layers);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS,"",0),_SCS("_set_layers"),_SCS("_get_layers")); //for backwards compat
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 }
 
 
 PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) : CollisionObject( PhysicsServer::get_singleton()->body_create(p_mode), false) {
 
 	layer_mask=1;
+	collision_mask=1;
 
 }
 
@@ -328,6 +397,18 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 	state=(PhysicsDirectBodyState*)p_state; //trust it
 #endif
 
+	set_ignore_transform_notification(true);
+	set_global_transform(state->get_transform());
+	linear_velocity=state->get_linear_velocity();
+	angular_velocity=state->get_angular_velocity();
+	if(sleeping!=state->is_sleeping()) {
+		sleeping=state->is_sleeping();
+		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
+	}
+	if (get_script_instance())
+		get_script_instance()->call("_integrate_forces",state);
+	set_ignore_transform_notification(false);
+
 	if (contact_monitor) {
 
 		contact_monitor->locked=true;
@@ -415,14 +496,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 
 	}
 
-	set_ignore_transform_notification(true);
-	set_global_transform(state->get_transform());
-	linear_velocity=state->get_linear_velocity();
-	angular_velocity=state->get_angular_velocity();
-	sleeping=state->is_sleeping();
-	if (get_script_instance())
-		get_script_instance()->call("_integrate_forces",state);
-	set_ignore_transform_notification(false);
+
 
 	state=NULL;
 }
@@ -811,6 +885,7 @@ void RigidBody::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("body_exit_shape",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"local_shape")));
 	ADD_SIGNAL( MethodInfo("body_enter",PropertyInfo(Variant::OBJECT,"body")));
 	ADD_SIGNAL( MethodInfo("body_exit",PropertyInfo(Variant::OBJECT,"body")));
+	ADD_SIGNAL( MethodInfo("sleeping_state_changed"));
 
 	BIND_CONSTANT( MODE_STATIC );
 	BIND_CONSTANT( MODE_KINEMATIC );

@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  navigation_mesh.cpp                                                  */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "navigation_mesh.h"
 #include "navigation.h"
 #include "mesh_instance.h"
@@ -329,6 +357,7 @@ void NavigationMeshInstance::set_navigation_mesh(const Ref<NavigationMesh>& p_na
 		nav_id = navigation->navmesh_create(navmesh,get_relative_transform(navigation),this);
 	}
 	update_gizmo();
+	update_configuration_warning();
 
 }
 
@@ -336,6 +365,27 @@ Ref<NavigationMesh> NavigationMeshInstance::get_navigation_mesh() const{
 
 	return navmesh;
 }
+
+String NavigationMeshInstance::get_configuration_warning() const {
+
+	if (!is_visible() || !is_inside_tree())
+		return String();
+
+	if (!navmesh.is_valid()) {
+		return TTR("A NavigationMesh resource must be set or created for this node to work.");
+	}
+	const Spatial *c=this;
+	while(c) {
+
+		if (c->cast_to<Navigation>())
+			return String();
+
+		c=c->get_parent()->cast_to<Spatial>();
+	}
+
+	return TTR("NavigationMeshInstance must be a child or grandchild to a Navigation node. It only provides navigation data.");
+}
+
 
 void NavigationMeshInstance::_bind_methods() {
 

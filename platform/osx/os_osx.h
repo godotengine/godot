@@ -31,6 +31,7 @@
 
 
 #include "os/input.h"
+#include "joystick_osx.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
 #include "servers/visual_server.h"
@@ -59,7 +60,7 @@ public:
 	bool force_quit;
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
-	VideoMode current_videomode;
+
 	List<String> args;
 	MainLoop *main_loop;
 	unsigned int event_id;
@@ -76,6 +77,7 @@ public:
 	SpatialSound2DServerSW *spatial_sound_2d_server;
 
 	InputDefault *input;
+	JoystickOSX *joystick_osx;
 
 	/* objc */
 
@@ -104,9 +106,22 @@ public:
 	bool minimized;
 	bool maximized;
 	bool zoomed;
+
 	Vector<Rect2> screens;
+	Vector<int> screen_dpi;
+
+	Size2 window_size;
 	int current_screen;
 	Rect2 restore_rect;
+
+	float _mouse_scale(float p_scale) {
+		if (display_scale>1.0)
+			return p_scale;
+		else
+			return 1.0;
+	}
+
+	float display_scale;
 protected:
 
 	virtual int get_video_driver_count() const;
@@ -128,6 +143,8 @@ public:
 	void wm_minimized(bool p_minimized);
 
 	virtual String get_name();
+
+	virtual void alert(const String& p_alert, const String& p_title="ALERT!");
 
 	virtual void set_cursor_shape(CursorShape p_shape);
 
@@ -173,6 +190,9 @@ public:
 	virtual int get_current_screen() const;
 	virtual void set_current_screen(int p_screen);
 	virtual Point2 get_screen_position(int p_screen=0) const;
+	virtual Size2 get_screen_size(int p_screen=0) const;
+	virtual int get_screen_dpi(int p_screen=0) const;
+
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2& p_position);
 	virtual void set_window_size(const Size2 p_size);
@@ -184,8 +204,8 @@ public:
 	virtual bool is_window_minimized() const;
 	virtual void set_window_maximized(bool p_enabled);
 	virtual bool is_window_maximized() const;
-	Size2 get_screen_size(int p_screen);
-
+	virtual void request_attention();
+	virtual String get_joy_guid(int p_device) const;
 
 	void run();
 

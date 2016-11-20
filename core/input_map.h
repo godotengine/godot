@@ -35,18 +35,21 @@
 class InputMap : public Object {
 
 	OBJ_TYPE( InputMap, Object );
-	static InputMap *singleton;
-
+public:
 	struct Action {
 		int id;
 		List<InputEvent> inputs;
 	};
+private:
+	static InputMap *singleton;
+
 	mutable Map<StringName, Action> input_map;
 	mutable Map<int,StringName> input_id_map;
 
-	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event) const;
+	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event, bool p_mod_ignore) const;
 
 	Array _get_action_list(const StringName& p_action);
+	Array _get_actions();
 
 protected:
 
@@ -59,6 +62,7 @@ public:
 	bool has_action(const StringName& p_action) const;
 	int get_action_id(const StringName& p_action) const;
 	StringName get_action_from_id(int p_id) const;
+	List<StringName> get_actions() const;
 	void add_action(const StringName& p_action);
 	void erase_action(const StringName& p_action);
 
@@ -68,10 +72,10 @@ public:
 
 	const List<InputEvent> *get_action_list(const StringName& p_action);
 	bool event_is_action(const InputEvent& p_event, const StringName& p_action) const;
-	bool event_is_joy_motion_action_pressed(const InputEvent& p_event) const;
 
-
+	const Map<StringName, Action>& get_action_map() const;
 	void load_from_globals();
+	void load_default();
 
 	InputMap();
 };

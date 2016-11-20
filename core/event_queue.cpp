@@ -92,7 +92,7 @@ Error EventQueue::push_call(uint32_t p_instance_ID, const StringName& p_method, 
 		*v=p_arg5;
 	}
 
-	if (buffer_max_used>buffer_end);
+	if (buffer_end > buffer_max_used)
 		buffer_max_used=buffer_end;
 
 	return OK;

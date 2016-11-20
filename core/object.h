@@ -67,6 +67,17 @@ enum PropertyHint {
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
+	PROPERTY_HINT_OBJECT_ID,
+	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
+	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, ///< so something else can provide this (used in scripts)
+	PROPERTY_HINT_METHOD_OF_VARIANT_TYPE, ///< a method of a type
+	PROPERTY_HINT_METHOD_OF_BASE_TYPE, ///< a method of a base type
+	PROPERTY_HINT_METHOD_OF_INSTANCE, ///< a method of an instance
+	PROPERTY_HINT_METHOD_OF_SCRIPT, ///< a method of a script & base
+	PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE, ///< a property of a type
+	PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, ///< a property of a base type
+	PROPERTY_HINT_PROPERTY_OF_INSTANCE, ///< a property of an instance
+	PROPERTY_HINT_PROPERTY_OF_SCRIPT, ///< a property of a script & base
 	PROPERTY_HINT_MAX,
 };
 
@@ -84,6 +95,10 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_STORE_IF_NONZERO=512, //only store if nonzero
 	PROPERTY_USAGE_STORE_IF_NONONE=1024, //only store if false
 	PROPERTY_USAGE_NO_INSTANCE_STATE=2048,
+	PROPERTY_USAGE_RESTART_IF_CHANGED=4096,
+	PROPERTY_USAGE_SCRIPT_VARIABLE=8192,
+	PROPERTY_USAGE_STORE_IF_NULL=16384,
+	PROPERTY_USAGE_ANIMATE_AS_TRIGGER=32768,
 
 	PROPERTY_USAGE_DEFAULT=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK|PROPERTY_USAGE_INTERNATIONALIZED,
@@ -111,6 +126,11 @@ struct PropertyInfo {
 
 	_FORCE_INLINE_ PropertyInfo added_usage(int p_fl) const { PropertyInfo pi=*this; pi.usage|=p_fl; return pi; }
 
+
+	operator Dictionary() const;
+
+	static PropertyInfo from_dict(const Dictionary& p_dict);
+
 	PropertyInfo() { type=Variant::NIL; hint=PROPERTY_HINT_NONE; usage = PROPERTY_USAGE_DEFAULT; }
 	PropertyInfo( Variant::Type p_type, const String p_name, PropertyHint p_hint=PROPERTY_HINT_NONE, const String& p_hint_string="",uint32_t p_usage=PROPERTY_USAGE_DEFAULT) {
 		type=p_type; name=p_name; hint=p_hint; hint_string=p_hint_string; usage=p_usage;
@@ -135,6 +155,9 @@ struct MethodInfo {
 
 	inline bool  operator<(const MethodInfo& p_method) const { return id==p_method.id?(name < p_method.name):(id<p_method.id); }
 
+	operator Dictionary() const;
+
+	static MethodInfo from_dict(const Dictionary& p_dict);
 	MethodInfo();
 	MethodInfo(const String& p_name);
 	MethodInfo(const String& p_name, const PropertyInfo& p_param1);
@@ -274,12 +297,12 @@ virtual void _get_property_listv(List<PropertyInfo> *p_list,bool p_reversed) con
 	}\
 	p_list->push_back( PropertyInfo(Variant::NIL,get_type_static(),PROPERTY_HINT_NONE,String(),PROPERTY_USAGE_CATEGORY));\
 	if (!_is_gpl_reversed())\
-		ObjectTypeDB::get_property_list(#m_type,p_list,true);\
+		ObjectTypeDB::get_property_list(#m_type,p_list,true,this);\
 	if (m_type::_get_get_property_list() != m_inherits::_get_get_property_list()) {\
 		_get_property_list(p_list);\
 	}\
 	if (_is_gpl_reversed())\
-		ObjectTypeDB::get_property_list(#m_type,p_list,true);\
+		ObjectTypeDB::get_property_list(#m_type,p_list,true,this);\
 	if (p_reversed) {\
 		m_inherits::_get_property_listv(p_list,p_reversed);\
 	}\
@@ -387,6 +410,7 @@ friend void postinitialize_handler(Object*);
 	bool _can_translate;
 #ifdef TOOLS_ENABLED
 	bool _edited;
+	uint32_t _edited_version;
 #endif
 	ScriptInstance *script_instance;
 	RefPtr script;
@@ -461,6 +485,9 @@ protected:
 	Array _get_method_list_bind() const;
 
 	void _clear_internal_resource_paths(const Variant &p_var);
+
+friend class ObjectTypeDB;
+	virtual void _validate_property(PropertyInfo& property) const;
 
 public: //should be protected, but bug in clang++
 	static void initialize_type();
@@ -585,6 +612,7 @@ public:
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
 	bool is_edited() const;
+	uint32_t get_edited_version() const; //this function is used to check when something changed beyond a point, it's used mainly for generating previews
 #endif
 
 	void set_script_instance(ScriptInstance *p_instance);
@@ -597,6 +625,8 @@ public:
 	void get_signal_list(List<MethodInfo> *p_signals ) const;
 	void get_signal_connection_list(const StringName& p_signal,List<Connection> *p_connections) const;
 	void get_all_signal_connections(List<Connection> *p_connections) const;
+	bool has_persistent_signal_connections() const;
+	void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
 	Error connect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method,const Vector<Variant>& p_binds=Vector<Variant>(),uint32_t p_flags=0);
 	void disconnect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method);

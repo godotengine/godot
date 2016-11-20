@@ -35,7 +35,9 @@ Size2 ProgressBar::get_minimum_size() const {
 	Ref<Font> font = get_font("font");
 
 	Size2 ms=bg->get_minimum_size()+bg->get_center_size();
-	ms.height=MAX(ms.height,bg->get_minimum_size().height+font->get_height());
+	if (percent_visible) {
+		ms.height=MAX(ms.height,bg->get_minimum_size().height+font->get_height());
+	}
 	return ms;
 }
 
@@ -49,7 +51,6 @@ void ProgressBar::_notification(int p_what) {
 		Ref<StyleBox> fg = get_stylebox("fg");
 		Ref<Font> font = get_font("font");
 		Color font_color=get_color("font_color");
-		Color font_color_shadow=get_color("font_color_shadow");
 
 		draw_style_box(bg,Rect2(Point2(),get_size()));
 		float r = get_unit_value();
@@ -61,7 +62,6 @@ void ProgressBar::_notification(int p_what) {
 		}
 
 		if (percent_visible) {
-			int fh=font->get_height();
 			String txt=itos(int(get_unit_value()*100))+"%";
 			font->draw_halign(get_canvas_item(),Point2(0,font->get_ascent()+(get_size().height-font->get_height())/2),HALIGN_CENTER,get_size().width,txt,font_color);
 		}

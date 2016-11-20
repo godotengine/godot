@@ -28,50 +28,24 @@
 /*************************************************************************/
 #include "menu_button.h"
 #include "os/keyboard.h"
+#include "scene/main/viewport.h"
 
 
 void MenuButton::_unhandled_key_input(InputEvent p_event) {
 
-	//check accelerators
 
-	if (p_event.type==InputEvent::KEY && p_event.key.pressed) {
+	if (p_event.is_pressed() && !p_event.is_echo() && (p_event.type==InputEvent::KEY || p_event.type==InputEvent::ACTION || p_event.type==InputEvent::JOYSTICK_BUTTON)) {
 
 		if (!get_parent() || !is_visible() || is_disabled())
 			return;
 
-		uint32_t code=p_event.key.scancode;
-		if (code==0)
-			code=p_event.key.unicode;
-
-		if (p_event.key.mod.control)
-			code|=KEY_MASK_CTRL;
-		if (p_event.key.mod.alt)
-			code|=KEY_MASK_ALT;
-		if (p_event.key.mod.meta)
-			code|=KEY_MASK_META;
-		if (p_event.key.mod.shift)
-			code|=KEY_MASK_SHIFT;
+		if (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this))
+			return; //ignore because of modal window
 
 
-		int item = popup->find_item_by_accelerator(code);
-
-
-		if (item>=0 && ! popup->is_item_disabled(item))
-			popup->activate_item(item);
-		/*
-		for(int i=0;i<items.size();i++) {
-
-
-			if (items[i].accel==0)
-				continue;
-
-			if (items[i].accel==code) {
-
-				emit_signal("item_pressed",items[i].ID);
-			}
-		}*/
+		if (popup->activate_item_by_event(p_event))
+			accept_event();
 	}
-
 }
 
 
@@ -139,7 +113,7 @@ MenuButton::MenuButton() {
 
 
 	set_flat(true);
-	set_focus_mode(FOCUS_NONE);
+	set_enabled_focus_mode(FOCUS_NONE);
 	popup = memnew( PopupMenu );
 	popup->hide();
 	add_child(popup);

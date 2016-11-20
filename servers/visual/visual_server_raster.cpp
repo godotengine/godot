@@ -127,6 +127,11 @@ void VisualServerRaster::texture_debug_usage(List<TextureInfo> *r_info){
 	rasterizer->texture_debug_usage(r_info);
 }
 
+void VisualServerRaster::texture_set_shrink_all_x2_on_set_data(bool p_enable) {
+
+	rasterizer->texture_set_shrink_all_x2_on_set_data(p_enable);
+}
+
 /* SHADER API */
 
 RID VisualServerRaster::shader_create(ShaderMode p_mode) {
@@ -393,7 +398,7 @@ void VisualServerRaster::mesh_add_custom_surface(RID p_mesh,const Variant& p_dat
 void VisualServerRaster::mesh_add_surface(RID p_mesh,PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes,bool p_alpha_sort) {
 
 	VS_CHANGED;
-	_dependency_queue_update(p_mesh,true);
+	_dependency_queue_update(p_mesh,true,true);
 	rasterizer->mesh_add_surface(p_mesh,p_primitive,p_arrays,p_blend_shapes,p_alpha_sort);
 
 }
@@ -447,6 +452,7 @@ VisualServer::PrimitiveType VisualServerRaster::mesh_surface_get_primitive_type(
 void VisualServerRaster::mesh_remove_surface(RID p_mesh,int p_surface){
 
 	rasterizer->mesh_remove_surface(p_mesh,p_surface);
+	_dependency_queue_update(p_mesh,true,true);
 }
 
 int VisualServerRaster::mesh_get_surface_count(RID p_mesh) const{
@@ -475,6 +481,8 @@ void VisualServerRaster::mesh_clear(RID p_mesh) {
 	while(rasterizer->mesh_get_surface_count(p_mesh)) {
 		rasterizer->mesh_remove_surface(p_mesh,0);
 	}
+
+	_dependency_queue_update(p_mesh,true,true);
 }
 
 
@@ -1081,6 +1089,9 @@ RID VisualServerRaster::baked_light_create() {
 	baked_light->data.octree_lattice_divide=0;
 	baked_light->data.octree_steps=1;
 	baked_light->data.lightmap_multiplier=1.0;
+	baked_light->data.realtime_color_enabled=false;
+	baked_light->data.realtime_color=Color(1.0, 1.0, 1.0);
+	baked_light->data.realtime_energy = 1.0;
 
 	return baked_light_owner.make_rid( baked_light );
 
@@ -1323,6 +1334,63 @@ void VisualServerRaster::baked_light_clear_lightmaps(RID p_baked_light){
 	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
 	ERR_FAIL_COND(!baked_light);
 	baked_light->data.lightmaps.clear();
+
+}
+
+void VisualServerRaster::baked_light_set_realtime_color_enabled(RID p_baked_light, const bool p_enabled) {
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+
+	baked_light->data.realtime_color_enabled = p_enabled;
+
+}
+
+bool VisualServerRaster::baked_light_get_realtime_color_enabled(RID p_baked_light) const{
+
+	const BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light, false);
+
+	return baked_light->data.realtime_color_enabled;
+
+}
+
+void VisualServerRaster::baked_light_set_realtime_color(RID p_baked_light, const Color& p_color) {
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+
+	baked_light->data.realtime_color = p_color;
+
+}
+
+Color VisualServerRaster::baked_light_get_realtime_color(RID p_baked_light) const{
+
+	const BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light, Color(1.0, 1.0, 1.0));
+
+	return baked_light->data.realtime_color;
+
+}
+
+void VisualServerRaster::baked_light_set_realtime_energy(RID p_baked_light, const float p_energy) {
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+
+	baked_light->data.realtime_energy = p_energy;
+
+}
+
+float VisualServerRaster::baked_light_get_realtime_energy(RID p_baked_light) const{
+
+	const BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light, 1.0f);
+
+	return baked_light->data.realtime_energy;
 
 }
 
@@ -1973,7 +2041,7 @@ Variant VisualServerRaster::environment_fx_get_param(RID p_env,EnvironmentFxPara
 
 /* SCENARIO API */
 
-void VisualServerRaster::_dependency_queue_update(RID p_rid,bool p_update_aabb) {
+void VisualServerRaster::_dependency_queue_update(RID p_rid,bool p_update_aabb,bool p_update_materials) {
 
 	Map< RID, Set<RID> >::Element * E = instance_dependency_map.find( p_rid );
 
@@ -1986,17 +2054,19 @@ void VisualServerRaster::_dependency_queue_update(RID p_rid,bool p_update_aabb) 
 	while(I) {
 
 		Instance *ins = instance_owner.get( I->get() );
-		_instance_queue_update( ins , p_update_aabb );
+		_instance_queue_update( ins , p_update_aabb, p_update_materials );
 
 		I = I->next();
 	}
 
 }
 
-void VisualServerRaster::_instance_queue_update(Instance *p_instance,bool p_update_aabb) {
+void VisualServerRaster::_instance_queue_update(Instance *p_instance,bool p_update_aabb,bool p_update_materials) {
 
 	if (p_update_aabb)
 		p_instance->update_aabb=true;
+	if (p_update_materials)
+		p_instance->update_materials=true;
 
 	if (p_instance->update)
 		return;
@@ -2208,6 +2278,7 @@ void VisualServerRaster::instance_set_base(RID p_instance, RID p_base) {
 		}
 
 		instance->data.morph_values.clear();
+		instance->data.materials.clear();
 
 	}
 
@@ -2221,6 +2292,7 @@ void VisualServerRaster::instance_set_base(RID p_instance, RID p_base) {
 		if (rasterizer->is_mesh(p_base)) {
 			instance->base_type=INSTANCE_MESH;
 			instance->data.morph_values.resize( rasterizer->mesh_get_morph_target_count(p_base));
+			instance->data.materials.resize( rasterizer->mesh_get_surface_count(p_base));
 		} else if (rasterizer->is_multimesh(p_base)) {
 			instance->base_type=INSTANCE_MULTIMESH;
 		} else if (rasterizer->is_immediate(p_base)) {
@@ -2444,6 +2516,16 @@ float VisualServerRaster::instance_get_morph_target_weight(RID p_instance,int p_
 	ERR_FAIL_INDEX_V( p_shape, instance->data.morph_values.size(), 0 );
 	return instance->data.morph_values[p_shape];
 }
+
+void VisualServerRaster::instance_set_surface_material(RID p_instance,int p_surface, RID p_material) {
+
+	VS_CHANGED;
+	Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND( !instance);
+	ERR_FAIL_INDEX( p_surface, instance->data.materials.size() );
+	instance->data.materials[p_surface]=p_material;
+}
+
 
 void VisualServerRaster::instance_set_transform(RID p_instance, const Transform& p_transform) {
 	VS_CHANGED;
@@ -2981,6 +3063,7 @@ void VisualServerRaster::_update_instance(Instance *p_instance) {
 
 	}
 
+
 	if (p_instance->aabb.has_no_surface())
 		return;
 
@@ -3236,10 +3319,17 @@ void VisualServerRaster::_update_instances() {
 		if (instance->update_aabb)
 			_update_instance_aabb(instance);
 
+		if (instance->update_materials) {
+			if (instance->base_type==INSTANCE_MESH) {
+				instance->data.materials.resize(rasterizer->mesh_get_surface_count(instance->base_rid));
+			}
+		}
+
 		_update_instance(instance);
 
 		instance->update=false;
 		instance->update_aabb=false;
+		instance->update_materials=false;
 		instance->update_next=0;
 	}
 }
@@ -3539,7 +3629,7 @@ float VisualServerRaster::canvas_item_get_self_opacity(RID p_item, float p_self_
 }
 
 
-void VisualServerRaster::canvas_item_add_line(RID p_item, const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width) {
+void VisualServerRaster::canvas_item_add_line(RID p_item, const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width,bool p_antialiased) {
 	VS_CHANGED;
 	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
 	ERR_FAIL_COND(!canvas_item);
@@ -3550,6 +3640,7 @@ void VisualServerRaster::canvas_item_add_line(RID p_item, const Point2& p_from, 
 	line->from=p_from;
 	line->to=p_to;
 	line->width=p_width;
+	line->antialiased=p_antialiased;
 	canvas_item->rect_dirty=true;
 
 
@@ -3596,8 +3687,11 @@ void VisualServerRaster::canvas_item_add_texture_rect(RID p_item, const Rect2& p
 	rect->modulate=p_modulate;
 	rect->rect=p_rect;
 	rect->flags=0;
-	if (p_tile)
+	if (p_tile) {
 		rect->flags|=Rasterizer::CANVAS_RECT_TILE;
+		rect->flags|=Rasterizer::CANVAS_RECT_REGION;
+		rect->source=Rect2(0,0,p_rect.size.width,p_rect.size.height);
+	}
 
 	if (p_rect.size.x<0) {
 
@@ -3652,7 +3746,7 @@ void VisualServerRaster::canvas_item_add_texture_rect_region(RID p_item, const R
 
 }
 
-void VisualServerRaster::canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center,const Color& p_modulate) {
+void VisualServerRaster::canvas_item_add_style_box(RID p_item, const Rect2& p_rect, const Rect2& p_source, RID p_texture, const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center,const Color& p_modulate) {
 
 	VS_CHANGED;
 	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
@@ -3662,6 +3756,7 @@ void VisualServerRaster::canvas_item_add_style_box(RID p_item, const Rect2& p_re
 	ERR_FAIL_COND(!style);
 	style->texture=p_texture;
 	style->rect=p_rect;
+	style->source=p_source;
 	style->draw_center=p_draw_center;
 	style->color=p_modulate;
 	style->margin[MARGIN_LEFT]=p_topleft.x;
@@ -4354,12 +4449,13 @@ void VisualServerRaster::cursor_set_rotation(float p_rotation, int p_cursor) {
 	cursors[p_cursor].rot = p_rotation;
 };
 
-void VisualServerRaster::cursor_set_texture(RID p_texture, const Point2 &p_center_offset, int p_cursor) {
+void VisualServerRaster::cursor_set_texture(RID p_texture, const Point2 &p_center_offset, int p_cursor, const Rect2 &p_region) {
 	VS_CHANGED;
 	ERR_FAIL_INDEX(p_cursor, MAX_CURSORS);
 
 	cursors[p_cursor].texture = p_texture;
 	cursors[p_cursor].center = p_center_offset;
+	cursors[p_cursor].region = p_region;
 };
 
 void VisualServerRaster::cursor_set_visible(bool p_visible, int p_cursor) {
@@ -4749,11 +4845,6 @@ void VisualServerRaster::_instance_draw(Instance *p_instance) {
 	switch(p_instance->base_type) {
 
 		case INSTANCE_MESH: {
-			const float *morphs = NULL;
-			if (!p_instance->data.morph_values.empty()) {
-				morphs=&p_instance->data.morph_values[0];
-			}
-
 			rasterizer->add_mesh(p_instance->base_rid, &p_instance->data);
 		} break;
 		case INSTANCE_MULTIMESH: {
@@ -5133,8 +5224,6 @@ void VisualServerRaster::_light_instance_update_lispsm_shadow(Instance *p_light,
 
 	Vector3 light_vec = -p_light->data.transform.basis.get_axis(2);
 	Vector3 view_vec = -p_camera->transform.basis.get_axis(2);
-	float viewdot = light_vec.normalized().dot(view_vec.normalized());
-
 
 	float near_dist=1;
 
@@ -6372,7 +6461,6 @@ void VisualServerRaster::_render_no_camera(Viewport *p_viewport,Camera *p_camera
 void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario) {
 
 
-	uint64_t t = OS::get_singleton()->get_ticks_usec();
 	render_pass++;
 	uint32_t camera_layer_mask=p_camera->visible_layers;
 
@@ -7444,8 +7532,13 @@ void VisualServerRaster::_draw_cursors_and_margins() {
 
 		RID tex = cursors[i].texture?cursors[i].texture:default_cursor_texture;
 		ERR_CONTINUE( !tex );
-		Point2 size(texture_get_width(tex), texture_get_height(tex));
-		rasterizer->canvas_draw_rect(Rect2(cursors[i].pos, size), 0, Rect2(), tex, Color(1, 1, 1, 1));
+		if (cursors[i].region.has_no_area()) {
+			Point2 size(texture_get_width(tex), texture_get_height(tex));
+			rasterizer->canvas_draw_rect(Rect2(cursors[i].pos-cursors[i].center, size), 0, Rect2(), tex, Color(1, 1, 1, 1));
+		} else {
+			Point2 size = cursors[i].region.size;
+			rasterizer->canvas_draw_rect(Rect2(cursors[i].pos-cursors[i].center, size), Rasterizer::CANVAS_RECT_REGION, cursors[i].region, tex, Color(1, 1, 1, 1));
+		}
 	};
 
 
@@ -7517,6 +7610,11 @@ bool VisualServerRaster::has_feature(Features p_feature) const {
 void VisualServerRaster::set_default_clear_color(const Color& p_color) {
 
 	clear_color=p_color;
+}
+
+Color VisualServerRaster::get_default_clear_color() const {
+
+	return clear_color;
 }
 
 void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_color,bool p_scale) {

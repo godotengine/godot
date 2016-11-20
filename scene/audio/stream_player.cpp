@@ -77,7 +77,7 @@ void StreamPlayer::sp_update() {
 			if (to_mix==0) {
 				if (!stop_request) {
 					stop_request=true;
-					call_deferred("stop");
+					call_deferred("_do_stop");
 				}
 				return;
 			}
@@ -91,7 +91,10 @@ void StreamPlayer::sp_update() {
 	}
 }
 
-
+void StreamPlayer::_do_stop() {
+	stop();
+	emit_signal("finished");
+}
 
 void StreamPlayer::_notification(int p_what) {
 
@@ -181,7 +184,7 @@ void StreamPlayer::stop() {
 	stop_request=false;
 	playback->stop();
 	resampler.flush();
-	emit_signal("finished");
+	
 
 	//set_idle_process(false);
 }
@@ -342,8 +345,8 @@ int StreamPlayer::get_buffering_msec() const{
 
 void StreamPlayer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_stream","stream:Stream"),&StreamPlayer::set_stream);
-	ObjectTypeDB::bind_method(_MD("get_stream:Stream"),&StreamPlayer::get_stream);
+	ObjectTypeDB::bind_method(_MD("set_stream","stream:AudioStream"),&StreamPlayer::set_stream);
+	ObjectTypeDB::bind_method(_MD("get_stream:AudioStream"),&StreamPlayer::get_stream);
 
 	ObjectTypeDB::bind_method(_MD("play","offset"),&StreamPlayer::play,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("stop"),&StreamPlayer::stop);
@@ -381,6 +384,7 @@ void StreamPlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_set_play","play"),&StreamPlayer::_set_play);
 	ObjectTypeDB::bind_method(_MD("_get_play"),&StreamPlayer::_get_play);
+	ObjectTypeDB::bind_method(_MD("_do_stop"),&StreamPlayer::_do_stop);
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "stream/stream", PROPERTY_HINT_RESOURCE_TYPE,"AudioStream"), _SCS("set_stream"), _SCS("get_stream") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/play"), _SCS("_set_play"), _SCS("_get_play") );
@@ -388,7 +392,7 @@ void StreamPlayer::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL, "stream/volume_db", PROPERTY_HINT_RANGE,"-80,24,0.01"), _SCS("set_volume_db"), _SCS("get_volume_db") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/autoplay"), _SCS("set_autoplay"), _SCS("has_autoplay") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/paused"), _SCS("set_paused"), _SCS("is_paused") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "stream/loop_restart_time"), _SCS("set_loop_restart_time"), _SCS("get_loop_restart_time") );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL, "stream/loop_restart_time"), _SCS("set_loop_restart_time"), _SCS("get_loop_restart_time") );
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "stream/buffering_ms"), _SCS("set_buffering_msec"), _SCS("get_buffering_msec") );
 
 	ADD_SIGNAL(MethodInfo("finished"));

@@ -38,6 +38,7 @@ class ParallaxLayer : public Node2D {
 	Point2 orig_offset;
 	Point2 orig_scale;
 	Size2 motion_scale;
+	Vector2 motion_offset;
 	Vector2 mirroring;
 	void _update_mirroring();
 
@@ -48,6 +49,9 @@ protected:
 
 public:
 
+	void set_motion_offset(const Size2& p_scale);
+	Size2 get_motion_offset() const;
+
 	void set_motion_scale(const Size2& p_scale);
 	Size2 get_motion_scale() const;
 
@@ -56,6 +60,7 @@ public:
 
 	void set_base_offset_and_scale(const Point2& p_offsetf,float p_scale);
 
+	virtual String get_configuration_warning() const;
 	ParallaxLayer();
 };
 

@@ -65,7 +65,8 @@ public:
 		REVERB_SMALL,
 		REVERB_MEDIUM,
 		REVERB_LARGE,
-		REVERB_HALL
+		REVERB_HALL,
+		MAX_REVERBS
 	};
 
 	virtual ChannelID channel_alloc(RID p_sample)=0;
@@ -169,7 +170,7 @@ public:
 
 	virtual void sample_set_signed_data(RID p_sample, const DVector<float>& p_buffer);
 	virtual void sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer)=0;
-	virtual const DVector<uint8_t> sample_get_data(RID p_sample) const=0;
+	virtual DVector<uint8_t> sample_get_data(RID p_sample) const=0;
 
 	virtual void sample_set_mix_rate(RID p_sample,int p_rate)=0;
 	virtual int sample_get_mix_rate(RID p_sample) const=0;

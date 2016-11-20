@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  link_button.cpp                                                      */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "link_button.h"
 
 
@@ -59,13 +87,13 @@ void LinkButton::_notification(int p_what) {
 					else
 						color=get_color("font_color");
 
-					do_underline=true;
+					do_underline=underline_mode!=UNDERLINE_MODE_NEVER;
 
 				} break;
 				case DRAW_HOVER: {
 
 					color=get_color("font_color_hover");
-					do_underline=true;
+					do_underline=underline_mode!=UNDERLINE_MODE_NEVER;
 
 				} break;
 				case DRAW_DISABLED: {
@@ -111,14 +139,15 @@ void LinkButton::_bind_methods() {
 
 	BIND_CONSTANT( 	UNDERLINE_MODE_ALWAYS );
 	BIND_CONSTANT( 	UNDERLINE_MODE_ON_HOVER );
+	BIND_CONSTANT( 	UNDERLINE_MODE_NEVER );
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING,"text"), _SCS("set_text"), _SCS("get_text"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT,"underline",PROPERTY_HINT_ENUM,"Always,On Hover"), _SCS("set_underline_mode"), _SCS("get_underline_mode"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT,"underline",PROPERTY_HINT_ENUM,"Always,On Hover,Never"), _SCS("set_underline_mode"), _SCS("get_underline_mode"));
 
 }
 
 LinkButton::LinkButton() {
 	underline_mode=UNDERLINE_MODE_ALWAYS;
-	set_focus_mode(FOCUS_NONE);
+	set_enabled_focus_mode(FOCUS_NONE);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
 }

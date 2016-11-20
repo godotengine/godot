@@ -28,9 +28,10 @@
 /*************************************************************************/
 #include "thread_windows.h"
 
-#if defined(WINDOWS_ENABLED) && !defined(WINRT_ENABLED)
+#if defined(WINDOWS_ENABLED) && !defined(UWP_ENABLED)
 
 #include "os/memory.h"
+
 
 Thread::ID ThreadWindows::get_ID() const {
 
@@ -45,8 +46,14 @@ Thread* ThreadWindows::create_thread_windows() {
 DWORD ThreadWindows::thread_callback( LPVOID userdata ) {
 
 	ThreadWindows *t=reinterpret_cast<ThreadWindows*>(userdata);
-	t->callback(t->user);
+
+	ScriptServer::thread_enter(); //scripts may need to attach a stack
+
 	t->id=(ID)GetCurrentThreadId(); // must implement
+	t->callback(t->user);
+
+	ScriptServer::thread_exit();
+
 	return 0;
 }
 

@@ -69,6 +69,8 @@ public:
 	bool is_shared() const;
 
 	bool has(const Variant& p_key) const;
+	bool has_all(const Array& p_keys) const;
+
 	void erase(const Variant& p_key);
 
 	bool operator==(const Dictionary& p_dictionary) const;
@@ -79,6 +81,9 @@ public:
 	const Variant* next(const Variant* p_key=NULL) const;
 
 	Array keys() const;
+	Array values() const;
+
+	Dictionary copy() const;
 
 	Dictionary(const Dictionary& p_from);
 	Dictionary(bool p_shared=false);

@@ -61,6 +61,8 @@ protected:
 
 	static void _bind_methods();;
 
+	virtual void _validate_property(PropertyInfo& property) const;
+
 public:
 
 	virtual void edit_set_pivot(const Point2& p_pivot);
@@ -141,6 +143,8 @@ public:
 	Color get_modulate() const;
 
 	virtual Rect2 get_item_rect() const;
+
+	virtual String get_configuration_warning() const;
 
 	ViewportSprite();
 };

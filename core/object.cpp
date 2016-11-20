@@ -59,28 +59,110 @@ struct _ObjectDebugLock {
 
 #endif
 
+
+PropertyInfo::operator Dictionary() const {
+
+	Dictionary d;
+	d["name"]=name;
+	d["type"]=type;
+	d["hint"]=hint;
+	d["hint_string"]=hint_string;
+	d["usage"]=usage;
+	return d;
+
+}
+
+PropertyInfo PropertyInfo::from_dict(const Dictionary& p_dict) {
+
+	PropertyInfo pi;
+
+	if (p_dict.has("type"))
+		pi.type=Variant::Type(int(p_dict["type"]));
+
+	if (p_dict.has("name"))
+		pi.name=p_dict["name"];
+
+	if (p_dict.has("hint"))
+		pi.hint=PropertyHint(int(p_dict["hint"]));
+
+	if (p_dict.has("hint_string"))
+
+		pi.hint_string=p_dict["hint_string"];
+
+	if (p_dict.has("usage"))
+		pi.usage=p_dict["usage"];
+
+	return pi;
+}
+
+
 Array convert_property_list(const List<PropertyInfo> * p_list) {
 
 	Array va;
 	for (const List<PropertyInfo>::Element *E=p_list->front();E;E=E->next()) {
 
-		const PropertyInfo &pi = E->get();
-		Dictionary d;
-		d["name"]=pi.name;
-		d["type"]=pi.type;
-		d["hint"]=pi.hint;
-		d["hint_string"]=pi.hint_string;
-		d["usage"]=pi.usage;
-		va.push_back(d);
+
+		va.push_back(Dictionary(E->get()));
 	}
 
 	return va;
+}
+
+MethodInfo::operator Dictionary() const {
+
+
+	Dictionary d;
+	d["name"]=name;
+	d["args"]=convert_property_list(&arguments);
+	Array da;
+	for(int i=0;i<default_arguments.size();i++)
+		da.push_back(default_arguments[i]);
+	d["default_args"]=da;
+	d["flags"]=flags;
+	d["id"]=id;
+	Dictionary r = return_val;
+	d["return"]=r;
+	return d;
+
 }
 
 MethodInfo::MethodInfo() {
 
 	id=0;
 	flags=METHOD_FLAG_NORMAL;
+}
+
+MethodInfo MethodInfo::from_dict(const Dictionary& p_dict) {
+
+	MethodInfo mi;
+
+	if (p_dict.has("name"))
+		mi.name=p_dict["name"];
+	Array args;
+	if (p_dict.has("args")) {
+		args=p_dict["args"];
+	}
+
+	for(int i=0;i<args.size();i++) {
+		Dictionary d = args[i];
+		mi.arguments.push_back(PropertyInfo::from_dict(d));
+	}
+	Array defargs;
+	if (p_dict.has("default_args")) {
+		defargs=p_dict["default_args"];
+	}
+	for(int i=0;i<defargs.size();i++) {
+		mi.default_arguments.push_back(defargs[i]);
+	}
+
+	if (p_dict.has("return")) {
+		mi.return_val=PropertyInfo::from_dict(p_dict["return"]);
+	}
+
+	if (p_dict.has("flags"))
+		mi.flags=p_dict["flags"];
+
+	return mi;
 }
 
 MethodInfo::MethodInfo(const String& p_name) {
@@ -463,6 +545,11 @@ void Object::get_property_list(List<PropertyInfo> *p_list,bool p_reversed) const
 	}
 
 }
+
+void Object::_validate_property(PropertyInfo& property) const {
+
+}
+
 void Object::get_method_list(List<MethodInfo> *p_list) const {
 
 	ObjectTypeDB::get_method_list(get_type_name(),p_list);
@@ -1007,25 +1094,6 @@ Array Object::_get_property_list_bind() const {
 }
 
 
-static Dictionary _get_dict_from_method(const MethodInfo &mi) {
-
-	Dictionary d;
-	d["name"]=mi.name;
-	d["args"]=convert_property_list(&mi.arguments);
-	Array da;
-	for(int i=0;i<mi.default_arguments.size();i++)
-		da.push_back(mi.default_arguments[i]);
-	d["default_args"]=da;
-	d["flags"]=mi.flags;
-	d["id"]=mi.id;
-	Dictionary r;
-	r["type"]=mi.return_val.type;
-	r["hint"]=mi.return_val.hint;
-	r["hint_string"]=mi.return_val.hint_string;
-	d["return_type"]=r;
-	return d;
-
-}
 
 Array Object::_get_method_list_bind() const {
 
@@ -1035,7 +1103,7 @@ Array Object::_get_method_list_bind() const {
 
 	for(List<MethodInfo>::Element *E=ml.front();E;E=E->next()) {
 
-		Dictionary d = _get_dict_from_method(E->get());
+		Dictionary d = E->get();
 		//va.push_back(d);
 		ret.push_back(d);
 	}
@@ -1147,6 +1215,15 @@ void Object::emit_signal(const StringName& p_name,const Variant** p_args,int p_a
 
 	Signal *s = signal_map.getptr(p_name);
 	if (!s) {
+#ifdef DEBUG_ENABLED
+		bool signal_is_valid = ObjectTypeDB::has_signal(get_type_name(),p_name);
+		//check in script
+		if (!signal_is_valid && !script.is_null() && !Ref<Script>(script)->has_script_signal(p_name)) {
+			ERR_EXPLAIN("Can't emit non-existing signal " + String("\"")+p_name+"\".");
+			ERR_FAIL();
+		}
+#endif
+		//not connected? just return
 		return;
 	}
 
@@ -1244,6 +1321,7 @@ void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
 		argc++;
 	}
 
+
 	emit_signal(p_name,argptr,argc);
 
 }
@@ -1299,7 +1377,7 @@ Array Object::_get_signal_list() const{
 	Array ret;
 	for (List<MethodInfo>::Element *E=signal_list.front();E;E=E->next()) {
 
-		ret.push_back(_get_dict_from_method(E->get()));
+		ret.push_back(Dictionary(E->get()));
 	}
 
 	return ret;
@@ -1314,14 +1392,16 @@ Array Object::_get_signal_connection_list(const String& p_signal) const{
 	for (List<Connection>::Element *E=conns.front();E;E=E->next()) {
 
 		Connection &c=E->get();
-		Dictionary rc;
-		rc["signal"]=c.signal;
-		rc["method"]=c.method;
-		rc["source"]=c.source;
-		rc["target"]=c.target;
-		rc["binds"]=c.binds;
-		rc["flags"]=c.flags;
-		ret.push_back(rc);
+		if (c.signal == p_signal){
+			Dictionary rc;
+			rc["signal"]=c.signal;
+			rc["method"]=c.method;
+			rc["source"]=c.source;
+			rc["target"]=c.target;
+			rc["binds"]=c.binds;
+			rc["flags"]=c.flags;
+			ret.push_back(rc);
+		}
 	}
 
 	return ret;
@@ -1377,6 +1457,31 @@ void Object::get_signal_connection_list(const StringName& p_signal,List<Connecti
 
 }
 
+bool Object::has_persistent_signal_connections() const {
+
+	const StringName *S=NULL;
+
+	while((S=signal_map.next(S))) {
+
+		const Signal *s=&signal_map[*S];
+
+		for(int i=0;i<s->slot_map.size();i++) {
+
+			if (s->slot_map.getv(i).conn.flags&CONNECT_PERSIST)
+				return true;
+		}
+	}
+
+	return false;
+}
+
+void Object::get_signals_connected_to_this(List<Connection> *p_connections) const {
+
+	for (const List<Connection>::Element *E=connections.front();E;E=E->next()) {
+		p_connections->push_back(E->get());
+	}
+}
+
 
 Error Object::connect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method,const Vector<Variant>& p_binds,uint32_t p_flags) {
 
@@ -1390,7 +1495,7 @@ Error Object::connect(const StringName& p_signal, Object *p_to_object, const Str
 			signal_is_valid=true;
 
 		if (!signal_is_valid) {
-			ERR_EXPLAIN("Attempt to connect nonexistent signal '"+p_signal+"' to method '"+p_to_method+"'");
+			ERR_EXPLAIN("In Object of type '"+String(get_type())+"': Attempt to connect nonexistent signal '"+p_signal+"' to method '"+p_to_object->get_type()+"."+p_to_method+"'");
 			ERR_FAIL_COND_V(!signal_is_valid,ERR_INVALID_PARAMETER);
 		}
 		signal_map[p_signal]=Signal();
@@ -1462,7 +1567,7 @@ void Object::disconnect(const StringName& p_signal, Object *p_to_object, const S
 		ERR_EXPLAIN("Disconnecting nonexistent signal '"+p_signal+"', slot: "+itos(target._id)+":"+target.method);
 		ERR_FAIL();
 	}
-	int prev = p_to_object->connections.size();
+
 	p_to_object->connections.erase(s->slot_map[target].cE);
 	s->slot_map.erase(target);
 
@@ -1548,6 +1653,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 				_clear_internal_resource_paths(d[E->get()]);
 			}
 		} break;
+		default: {}
 	}
 
 }
@@ -1597,42 +1703,26 @@ void Object::_bind_methods() {
 		MethodInfo mi;
 		mi.name="emit_signal";
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "signal"));
-		Vector<Variant> defargs;
-		for(int i=0;i<VARIANT_ARG_MAX;i++) {
-			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-			defargs.push_back(Variant());
-		}
 
-
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"emit_signal",&Object::_emit_signal,mi,defargs);
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"emit_signal",&Object::_emit_signal,mi);
 	}
 
 	{
 		MethodInfo mi;
 		mi.name="call";
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
-		Vector<Variant> defargs;
-		for(int i=0;i<10;i++) {
-			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-			defargs.push_back(Variant());
-		}
 
 
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call",&Object::_call_bind,mi,defargs);
+
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call:Variant",&Object::_call_bind,mi);
 	}
 
 	{
 		MethodInfo mi;
 		mi.name="call_deferred";
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
-		Vector<Variant> defargs;
-		for(int i=0;i<VARIANT_ARG_MAX;i++) {
-			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
-			defargs.push_back(Variant());
-		}
 
-
-		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call_deferred",&Object::_call_deferred_bind,mi,defargs);
+		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_deferred",&Object::_call_deferred_bind,mi);
 	}
 
 	ObjectTypeDB::bind_method(_MD("callv:Variant","method","arg_array"),&Object::callv);
@@ -1750,12 +1840,18 @@ bool Object::is_queued_for_deletion() const {
 void Object::set_edited(bool p_edited) {
 
 	_edited=p_edited;
+	_edited_version++;
 }
 
 bool Object::is_edited() const {
 
 	return _edited;
 
+}
+
+uint32_t Object::get_edited_version() const {
+
+	return _edited_version;
 }
 #endif
 
@@ -1772,6 +1868,7 @@ Object::Object() {
 #ifdef TOOLS_ENABLED
 
 	_edited=false;
+	_edited_version=0;
 #endif
 
 #ifdef DEBUG_ENABLED

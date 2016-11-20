@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  sprite_3d.h                                                          */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #ifndef SPRITE_3D_H
 #define SPRITE_3D_H
 
@@ -130,6 +158,8 @@ class Sprite3D : public SpriteBase3D {
 protected:
 	virtual void _draw();
 	static void _bind_methods();
+
+	virtual void _validate_property(PropertyInfo& property) const;
 public:
 
 
@@ -158,12 +188,14 @@ public:
 //	~Sprite3D();
 };
 
+#if 0
 class AnimatedSprite3D : public SpriteBase3D {
 
 	OBJ_TYPE(AnimatedSprite3D,SpriteBase3D);
 	Ref<SpriteFrames> frames;
 
 
+	StringName animation;
 	int frame;
 
 protected:
@@ -185,6 +217,68 @@ public:
 	AnimatedSprite3D();
 //	~AnimatedSprite3D();
 };
+#endif
+
+
+
+
+class AnimatedSprite3D : public SpriteBase3D {
+
+	OBJ_TYPE(AnimatedSprite3D,SpriteBase3D);
+
+	Ref<SpriteFrames> frames;
+	bool playing;
+	StringName animation;
+	int frame;
+
+	bool centered;
+	Point2 offset;
+
+	float timeout;
+
+	bool hflip;
+	bool vflip;
+
+	Color modulate;
+
+	void _res_changed();
+
+	void _reset_timeout();
+	void _set_playing(bool p_playing);
+	bool _is_playing() const;
+
+
+protected:
+
+	virtual void _draw();
+	static void _bind_methods();
+	void _notification(int p_what);
+	virtual void _validate_property(PropertyInfo& property) const;
+
+public:
+
+
+
+	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
+	Ref<SpriteFrames> get_sprite_frames() const;
+
+	void play(const StringName& p_animation=StringName());
+	void stop();
+	bool is_playing() const;
+
+	void set_animation(const StringName& p_animation);
+	StringName get_animation() const;
+
+	void set_frame(int p_frame);
+	int get_frame() const;
+
+
+	virtual Rect2 get_item_rect() const;
+
+	virtual String get_configuration_warning() const;
+	AnimatedSprite3D();
+};
+
 
 VARIANT_ENUM_CAST(SpriteBase3D::DrawFlags);
 VARIANT_ENUM_CAST(SpriteBase3D::AlphaCutMode);

@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  packet_peer_udp.h                                                    */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #ifndef PACKET_PEER_UDP_H
 #define PACKET_PEER_UDP_H
 
@@ -12,14 +40,13 @@ protected:
 	static PacketPeerUDP* (*_create)();
 	static void _bind_methods();
 
-	int _get_packet_address() const;
 	String _get_packet_ip() const;
 
-	virtual Error _set_send_address(const String& p_address,int p_port);
+	virtual Error _set_send_address(const String& p_address,int p_port, IP_Address::AddrType p_address_type = IP_Address::TYPE_ANY);
 
 public:
 
-	virtual Error listen(int p_port,int p_recv_buffer_size=65536)=0;
+	virtual Error listen(int p_port, IP_Address::AddrType p_address_type = IP_Address::TYPE_ANY, int p_recv_buffer_size=65536)=0;
 	virtual void close()=0;
 	virtual Error wait()=0;
 	virtual bool is_listening() const=0;

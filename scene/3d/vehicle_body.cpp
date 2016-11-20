@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  vehicle_body.cpp                                                     */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "vehicle_body.h"
 
 #define ROLLING_INFLUENCE_FIX
@@ -460,7 +488,6 @@ real_t VehicleBody::_ray_cast(int p_idx,PhysicsDirectBodyState *s) {
 void	VehicleBody::_update_suspension(PhysicsDirectBodyState *s)
 {
 
-	real_t deltaTime = s->get_step();
 	real_t chassisMass = mass;
 
 	for (int w_it=0; w_it<wheels.size(); w_it++)
@@ -568,21 +595,16 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 			    b2invinertia,
 			    b2invmass);
 
-	real_t jacDiagAB = jac.getDiagonal();
-	real_t jacDiagABInv = real_t(1.) / jacDiagAB;
-
 	real_t rel_vel = jac.getRelativeVelocity(
 				s->get_linear_velocity(),
 				s->get_transform().basis.transposed().xform(s->get_angular_velocity()),
 				b2lv,
 				b2trans.xform(b2av));
-	real_t a;
-	a=jacDiagABInv;
 
 
 	rel_vel = normal.dot(vel);
 
-	//todo: move this into proper structure
+	//TODO: move this into proper structure
 	real_t contactDamping = real_t(0.4);
 #define ONLY_USE_LINEAR_MASS
 #ifdef ONLY_USE_LINEAR_MASS
@@ -614,16 +636,16 @@ VehicleBody::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDirec
 		denom0= s->get_inverse_mass() + frictionDirectionWorld.dot(vec);
 	}
 
+	/* TODO: Why is this code unused?
 	if (body1) {
 
 		Vector3 r0 = frictionPosWorld - body1->get_global_transform().origin;
 		Vector3 c0 = (r0).cross(frictionDirectionWorld);
 		Vector3 vec = s->get_inverse_inertia_tensor().xform_inv(c0).cross(r0);
 		//denom1= body1->get_inverse_mass() + frictionDirectionWorld.dot(vec);
-		denom1=0;
 
 	}
-
+	*/
 
 	real_t	relaxation = 1.f;
 	m_jacDiagABInv = relaxation/(denom0+denom1);
@@ -936,7 +958,7 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 		wheel.m_deltaRotation *= real_t(0.99);//damping of rotation when not in contact
 
 	}
-
+	linear_velocity = s->get_linear_velocity();
 }
 
 void VehicleBody::set_mass(real_t p_mass) {
@@ -990,6 +1012,10 @@ float VehicleBody::get_steering() const{
 	return m_steeringValue;
 }
 
+Vector3 VehicleBody::get_linear_velocity() const
+{
+	return linear_velocity;
+}
 
 void VehicleBody::_bind_methods(){
 
@@ -1007,6 +1033,8 @@ void VehicleBody::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("set_steering","steering"),&VehicleBody::set_steering);
 	ObjectTypeDB::bind_method(_MD("get_steering"),&VehicleBody::get_steering);
+
+	ObjectTypeDB::bind_method(_MD("get_linear_velocity"),&VehicleBody::get_linear_velocity);
 
 	ObjectTypeDB::bind_method(_MD("_direct_state_changed"),&VehicleBody::_direct_state_changed);
 

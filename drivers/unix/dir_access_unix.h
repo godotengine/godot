@@ -51,7 +51,10 @@ class DirAccessUnix : public DirAccess {
 	String current_dir;
 	bool _cisdir;
 	bool _cishidden;
-	
+protected:
+
+	virtual String fix_unicode_name(const char* p_name) const { return String::utf8(p_name); }
+
 public:
 	
 	virtual bool list_dir_begin(); ///< This starts dir listing

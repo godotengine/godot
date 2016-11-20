@@ -30,6 +30,7 @@
 #include "tools/editor/editor_settings.h"
 
 #include "spatial_editor_plugin.h"
+#include "scene/resources/shader_graph.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/keyboard.h"
@@ -76,16 +77,31 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	/* keyword color */
 
-	get_text_edit()->set_custom_bg_color(EDITOR_DEF("text_editor/background_color",Color(0,0,0,0)));
+	get_text_edit()->add_color_override("background_color", EDITOR_DEF("text_editor/background_color",Color(0,0,0,0)));
+	get_text_edit()->add_color_override("completion_background_color", EDITOR_DEF("text_editor/completion_background_color", Color(0,0,0,0)));
+	get_text_edit()->add_color_override("completion_selected_color", EDITOR_DEF("text_editor/completion_selected_color", Color::html("434244")));
+	get_text_edit()->add_color_override("completion_existing_color", EDITOR_DEF("text_editor/completion_existing_color", Color::html("21dfdfdf")));
+	get_text_edit()->add_color_override("completion_scroll_color", EDITOR_DEF("text_editor/completion_scroll_color", Color::html("ffffff")));
+	get_text_edit()->add_color_override("completion_font_color", EDITOR_DEF("text_editor/completion_font_color", Color::html("aaaaaa")));
 	get_text_edit()->add_color_override("font_color",EDITOR_DEF("text_editor/text_color",Color(0,0,0)));
+	get_text_edit()->add_color_override("line_number_color",EDITOR_DEF("text_editor/line_number_color",Color(0,0,0)));
+	get_text_edit()->add_color_override("caret_color",EDITOR_DEF("text_editor/caret_color",Color(0,0,0)));
+	get_text_edit()->add_color_override("caret_background_color",EDITOR_DEF("text_editor/caret_background_color",Color(0,0,0)));
 	get_text_edit()->add_color_override("font_selected_color",EDITOR_DEF("text_editor/text_selected_color",Color(1,1,1)));
 	get_text_edit()->add_color_override("selection_color",EDITOR_DEF("text_editor/selection_color",Color(0.2,0.2,1)));
 	get_text_edit()->add_color_override("brace_mismatch_color",EDITOR_DEF("text_editor/brace_mismatch_color",Color(1,0.2,0.2)));
 	get_text_edit()->add_color_override("current_line_color",EDITOR_DEF("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15)));
+	get_text_edit()->add_color_override("word_highlighted_color",EDITOR_DEF("text_editor/word_highlighted_color",Color(0.8,0.9,0.9,0.15)));
+	get_text_edit()->add_color_override("number_color",EDITOR_DEF("text_editor/number_color",Color(0.9,0.6,0.0,2)));
+	get_text_edit()->add_color_override("function_color",EDITOR_DEF("text_editor/function_color",Color(0.4,0.6,0.8)));
+	get_text_edit()->add_color_override("member_variable_color",EDITOR_DEF("text_editor/member_variable_color",Color(0.9,0.3,0.3)));
+	get_text_edit()->add_color_override("mark_color", EDITOR_DEF("text_editor/mark_color", Color(1.0,0.4,0.4,0.4)));
+	get_text_edit()->add_color_override("breakpoint_color", EDITOR_DEF("text_editor/breakpoint_color", Color(0.8,0.8,0.4,0.2)));
+	get_text_edit()->add_color_override("search_result_color",EDITOR_DEF("text_editor/search_result_color",Color(0.05,0.25,0.05,1)));
+	get_text_edit()->add_color_override("search_result_border_color",EDITOR_DEF("text_editor/search_result_border_color",Color(0.1,0.45,0.1,1)));
+	get_text_edit()->add_color_override("symbol_color",EDITOR_DEF("text_editor/symbol_color",Color::hex(0x005291ff)));
 
 	Color keyword_color= EDITOR_DEF("text_editor/keyword_color",Color(0.5,0.0,0.2));
-
-	get_text_edit()->set_syntax_coloring(true);
 
 
 	List<String> keywords;
@@ -106,9 +122,10 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	get_text_edit()->add_color_region("/*","*/",comment_color,false);
 	get_text_edit()->add_color_region("//","",comment_color,false);
-	//colorize strings
+
+	/*//colorize strings
 	Color string_color = EDITOR_DEF("text_editor/string_color",Color::hex(0x6b6f00ff));
-	/*
+
 	List<String> strings;
 	shader->get_shader_mode()->get_string_delimiters(&strings);
 
@@ -119,11 +136,6 @@ void ShaderTextEditor::_load_theme_settings() {
 		String end = string.get_slice_count(" ")>1?string.get_slice(" ",1):String();
 		get_text_edit()->add_color_region(beg,end,string_color,end=="");
 	}*/
-
-	//colorize symbols
-	Color symbol_color= EDITOR_DEF("text_editor/symbol_color",Color::hex(0x005291ff));
-	get_text_edit()->set_symbol_color(symbol_color);
-
 }
 
 
@@ -136,12 +148,10 @@ void ShaderTextEditor::_validate_script() {
 	//List<StringName> params;
 	//shader->get_param_list(&params);
 
-	print_line("compile: type: "+itos(type)+" code:\n"+code);
-
 	Error err = ShaderLanguage::compile(code,type,NULL,NULL,&errortxt,&line,&col);
 
 	if (err!=OK) {
-		String error_text="error("+itos(line+1)+","+itos(col)+"): "+errortxt;
+		String error_text="error("+itos(line+1)+","+itos(col+1)+"): "+errortxt;
 		set_error(error_text);
 		get_text_edit()->set_line_as_marked(line,true);
 
@@ -206,18 +216,19 @@ void ShaderEditor::_menu_option(int p_option) {
 		} break;
 		case SEARCH_FIND: {
 
-			find_replace_dialog->set_text_edit(current->get_text_edit());
-			find_replace_dialog->popup_search();
+			current->get_find_replace_bar()->popup_search();
 		} break;
 		case SEARCH_FIND_NEXT: {
 
-			find_replace_dialog->set_text_edit(current->get_text_edit());
-			 find_replace_dialog->search_next();
+			current->get_find_replace_bar()->search_next();
+		} break;
+		case SEARCH_FIND_PREV: {
+
+			current->get_find_replace_bar()->search_prev();
 		} break;
 		case SEARCH_REPLACE: {
 
-			find_replace_dialog->set_text_edit(current->get_text_edit());
-			find_replace_dialog->popup_replace();
+			current->get_find_replace_bar()->popup_replace();
 		} break;
 //		case SEARCH_LOCATE_SYMBOL: {
 
@@ -355,9 +366,16 @@ void ShaderEditor::_params_changed() {
 	light_editor->_validate_script();
 }
 
+void ShaderEditor::_editor_settings_changed() {
+
+	vertex_editor->update_editor_settings();
+	fragment_editor->update_editor_settings();
+	light_editor->update_editor_settings();
+}
 
 void ShaderEditor::_bind_methods() {
 
+	ObjectTypeDB::bind_method("_editor_settings_changed",&ShaderEditor::_editor_settings_changed);
 	ObjectTypeDB::bind_method("_tab_changed",&ShaderEditor::_tab_changed);
 	ObjectTypeDB::bind_method("_menu_option",&ShaderEditor::_menu_option);
 	ObjectTypeDB::bind_method("_params_changed",&ShaderEditor::_params_changed);
@@ -450,35 +468,33 @@ ShaderEditor::ShaderEditor() {
 	edit_menu = memnew( MenuButton );
 	add_child(edit_menu);
 	edit_menu->set_pos(Point2(5,-1));
-	edit_menu->set_text("Edit");
-	edit_menu->get_popup()->add_item("Undo",EDIT_UNDO,KEY_MASK_CMD|KEY_Z);
-	edit_menu->get_popup()->add_item("Redo",EDIT_REDO,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_Z);
+	edit_menu->set_text(TTR("Edit"));
+	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/undo", TTR("Undo"), KEY_MASK_CMD|KEY_Z), EDIT_UNDO);
+	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/redo", TTR("Redo"), KEY_MASK_CMD|KEY_Y), EDIT_REDO);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Cut",EDIT_CUT,KEY_MASK_CMD|KEY_X);
-	edit_menu->get_popup()->add_item("Copy",EDIT_COPY,KEY_MASK_CMD|KEY_C);
-	edit_menu->get_popup()->add_item("Paste",EDIT_PASTE,KEY_MASK_CMD|KEY_V);
+	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/cut", TTR("Cut"), KEY_MASK_CMD|KEY_X), EDIT_CUT);
+	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy", TTR("Copy"), KEY_MASK_CMD|KEY_C), EDIT_COPY);
+	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/paste", TTR("Paste"), KEY_MASK_CMD|KEY_V), EDIT_PASTE);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Select All",EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
+	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/select_all", TTR("Select All"), KEY_MASK_CMD|KEY_A), EDIT_SELECT_ALL);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 
 	search_menu = memnew( MenuButton );
 	add_child(search_menu);
 	search_menu->set_pos(Point2(38,-1));
-	search_menu->set_text("Search");
-	search_menu->get_popup()->add_item("Find..",SEARCH_FIND,KEY_MASK_CMD|KEY_F);
-	search_menu->get_popup()->add_item("Find Next",SEARCH_FIND_NEXT,KEY_F3);
-	search_menu->get_popup()->add_item("Replace..",SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
+	search_menu->set_text(TTR("Search"));
+	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find.."), KEY_MASK_CMD|KEY_F), SEARCH_FIND);
+	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), SEARCH_FIND_NEXT);
+	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT|KEY_F3), SEARCH_FIND_PREV);
+	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/replace", TTR("Replace.."), KEY_MASK_CMD|KEY_R), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
 //	search_menu->get_popup()->add_item("Locate Symbol..",SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
-	search_menu->get_popup()->add_item("Goto Line..",SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_G);
+	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/goto_line", TTR("Goto Line.."), KEY_MASK_CMD|KEY_L), SEARCH_GOTO_LINE);
 	search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 
 	tab_container->connect("tab_changed", this,"_tab_changed");
-
-	find_replace_dialog = memnew(FindReplaceDialog);
-	add_child(find_replace_dialog);
 
 	erase_tab_confirm = memnew( ConfirmationDialog );
 	add_child(erase_tab_confirm);
@@ -490,15 +506,15 @@ ShaderEditor::ShaderEditor() {
 
 	vertex_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(vertex_editor);
-	vertex_editor->set_name("Vertex");
+	vertex_editor->set_name(TTR("Vertex"));
 
 	fragment_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(fragment_editor);
-	fragment_editor->set_name("Fragment");
+	fragment_editor->set_name(TTR("Fragment"));
 
 	light_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(light_editor);
-	light_editor->set_name("Lighting");
+	light_editor->set_name(TTR("Lighting"));
 
 	tab_container->set_current_tab(1);
 
@@ -506,39 +522,49 @@ ShaderEditor::ShaderEditor() {
 	vertex_editor->connect("script_changed", this,"apply_shaders");
 	fragment_editor->connect("script_changed", this,"apply_shaders");
 	light_editor->connect("script_changed", this,"apply_shaders");
+	EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
+
+	_editor_settings_changed();
 }
 
 
 void ShaderEditorPlugin::edit(Object *p_object) {
 
-	if (!p_object->cast_to<Shader>())
+	Shader* s = p_object->cast_to<Shader>();
+	if (!s || s->cast_to<ShaderGraph>()) {
+		shader_editor->hide(); //Dont edit ShaderGraph
 		return;
+	}
 
-	shader_editor->edit(p_object->cast_to<Shader>());
+	if (_2d && s->get_mode()==Shader::MODE_CANVAS_ITEM)
+		shader_editor->edit(s);
+	else if (!_2d && s->get_mode()==Shader::MODE_MATERIAL)
+		shader_editor->edit(s);
 
 }
 
 bool ShaderEditorPlugin::handles(Object *p_object) const {
 
+	bool handles = true;
 	Shader *shader=p_object->cast_to<Shader>();
-	if (!shader)
-		return false;
-	if (_2d)
-		return shader->get_mode()==Shader::MODE_CANVAS_ITEM;
-	else
+	if (!shader || shader->cast_to<ShaderGraph>()) // Dont handle ShaderGraph's
+		handles = false;
+	if (handles && _2d)
+		handles = shader->get_mode()==Shader::MODE_CANVAS_ITEM;
+	else if (handles && !_2d)
 		return shader->get_mode()==Shader::MODE_MATERIAL;
+
+	if (!handles)
+		shader_editor->hide();
+	return handles;
 }
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		shader_editor->show();
-		//shader_editor->set_process(true);
 	} else {
-
 		shader_editor->apply_shaders();
-		//shader_editor->hide();
-		//shader_editor->set_process(false);
 	}
 
 }

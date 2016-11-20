@@ -109,16 +109,27 @@ void EditorQuickOpen::_sbox_input(const InputEvent& p_ie) {
 
 }
 
-void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
+float EditorQuickOpen::_path_cmp(String search, String path) const {
+
+	if (search == path) {
+		return 1.2f;
+	}
+	if (path.findn(search) != -1) {
+		return 1.1f;
+	}
+	return path.to_lower().similarity(search.to_lower());
+}
+
+void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector< Pair< String, Ref<Texture> > > &list) {
 
 	if (!add_directories) {
 		for(int i=0;i<efsd->get_subdir_count();i++) {
 
-			_parse_fs(efsd->get_subdir(i));
+			_parse_fs(efsd->get_subdir(i), list);
 		}
 	}
 
-	TreeItem *root = search_options->get_root();
+	String search_text = search_box->get_text();
 
 	if (add_directories) {
 		String path = efsd->get_path();
@@ -126,11 +137,27 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 			path+="/";
 		if (path!="res://") {
 			path=path.substr(6,path.length());
-			if (path.findn(search_box->get_text())!=-1) {
-				TreeItem *ti = search_options->create_item(root);
-				ti->set_text(0,path);
-				Ref<Texture> icon = get_icon("folder","FileDialog");
-				ti->set_icon(0,icon);
+			if (search_text.is_subsequence_ofi(path)) {
+				Pair< String, Ref<Texture> > pair;
+				pair.first = path;
+				pair.second = get_icon("folder", "FileDialog");
+
+				if (search_text != String() && list.size() > 0) {
+
+					float this_sim = _path_cmp(search_text, path);
+					float other_sim = _path_cmp(list[0].first, path);
+					int pos = 1;
+
+					while (pos < list.size() && this_sim <= other_sim) {
+						other_sim = _path_cmp(list[pos++].first, path);
+					}
+
+					pos = this_sim >= other_sim ? pos - 1 : pos;
+					list.insert(pos, pair);
+
+				} else {
+					list.push_back(pair);
+				}
 			}
 		}
 	}
@@ -138,12 +165,29 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 
 		String file = efsd->get_file_path(i);
 		file=file.substr(6,file.length());
-		if (ObjectTypeDB::is_type(efsd->get_file_type(i),base_type) && (search_box->get_text()=="" || file.findn(search_box->get_text())!=-1)) {
 
-			TreeItem *ti = search_options->create_item(root);
-			ti->set_text(0,file);
-			Ref<Texture> icon = get_icon( (has_icon(efsd->get_file_type(i),ei)?efsd->get_file_type(i):ot),ei);
-			ti->set_icon(0,icon);
+		if (ObjectTypeDB::is_type(efsd->get_file_type(i),base_type) && (search_text.is_subsequence_ofi(file))) {
+			Pair< String, Ref<Texture> > pair;
+			pair.first = file;
+			pair.second = get_icon((has_icon(efsd->get_file_type(i), ei) ? efsd->get_file_type(i) : ot), ei);
+
+			if (search_text != String() && list.size() > 0) {
+
+				float this_sim = _path_cmp(search_text, file);
+				float other_sim = _path_cmp(list[0].first, file);
+				int pos = 1;
+
+				while (pos < list.size() && this_sim <= other_sim) {
+					other_sim = _path_cmp(list[pos++].first, file);
+				}
+
+				pos = this_sim >= other_sim ? pos - 1 : pos;
+				list.insert(pos, pair);
+
+			} else {
+
+				list.push_back(pair);
+			}
 		}
 	}
 
@@ -151,7 +195,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 	if (add_directories) {
 		for(int i=0;i<efsd->get_subdir_count();i++) {
 
-			_parse_fs(efsd->get_subdir(i));
+			_parse_fs(efsd->get_subdir(i), list);
 		}
 	}
 
@@ -159,10 +203,18 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd) {
 
 void EditorQuickOpen::_update_search() {
 
-
 	search_options->clear();
 	TreeItem *root = search_options->create_item();
-	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
+	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem();
+	Vector< Pair< String, Ref<Texture> > > list;
+
+	_parse_fs(efsd, list);
+
+	for (int i = 0; i < list.size(); i++) {
+		TreeItem *ti = search_options->create_item(root);
+		ti->set_text(0, list[i].first);
+		ti->set_icon(0, list[i].second);
+	}
 
 	if (root->get_children()) {
 		TreeItem *ti = root->get_children();
@@ -216,12 +268,12 @@ EditorQuickOpen::EditorQuickOpen() {
 	add_child(vbc);
 	set_child_rect(vbc);
 	search_box = memnew( LineEdit );
-	vbc->add_margin_child("Search:",search_box);
+	vbc->add_margin_child(TTR("Search:"),search_box);
 	search_box->connect("text_changed",this,"_text_changed");
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
-	vbc->add_margin_child("Matches:",search_options,true);
-	get_ok()->set_text("Open");
+	vbc->add_margin_child(TTR("Matches:"),search_options,true);
+	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);

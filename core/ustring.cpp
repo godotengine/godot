@@ -32,6 +32,7 @@
 #include "print_string.h"
 #include "math_funcs.h"
 #include "io/md5.h"
+#include "io/sha256.h"
 #include "ucaps.h"
 #include "color.h"
 #include "variant.h"
@@ -256,13 +257,10 @@ bool String::operator==(const StrRange &p_range) const {
 		return true;
 
 	const CharType *c_str=p_range.c_str;
-
-	int l=length();
-
-	const CharType *dst = p_range.c_str;
+	const CharType *dst = &operator[](0);
 
 	/* Compare char by char */
-	for (int i=0;i<l;i++) {
+	for (int i=0;i<len;i++) {
 
 		if (c_str[i]!=dst[i])
 			return false;
@@ -849,21 +847,23 @@ const CharType * String::c_str() const {
 }
 
 String String::md5(const uint8_t *p_md5) {
+	return String::hex_encode_buffer(p_md5, 16);
+}
+
+String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
+	static const char hex[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
 
 	String ret;
+	char v[2]={0,0};
 
-	for(int i=0;i<16;i++) {
-
-		static const char hex[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
-		char v[2]={0,0};
-		v[0]=hex[p_md5[i]>>4];
+	for(int i=0;i<p_len;i++) {
+		v[0]=hex[p_buffer[i]>>4];
 		ret+=v;
-		v[0]=hex[p_md5[i]&0xF];
+		v[0]=hex[p_buffer[i]&0xF];
 		ret+=v;
 	}
 
 	return ret;
-
 }
 
 String String::chr(CharType p_char) {
@@ -1543,11 +1543,11 @@ String::String(const StrRange& p_range) {
 	copy_from(p_range.c_str,p_range.len);
 }
 
-int String::hex_to_int() const {
+int String::hex_to_int(bool p_with_prefix) const {
 
     int l = length();
-    if (l<3)
-           return 0;
+	if (p_with_prefix && l<3)
+		return 0;
 
     const CharType *s=ptr();
 
@@ -1556,15 +1556,16 @@ int String::hex_to_int() const {
     if (sign<0) {
         s++;
         l--;
-        if (l<2)
+		if (p_with_prefix && l<2)
             return 0;
     }
 
-    if (s[0]!='0' || s[1]!='x')
-           return 0;
-
-    s+=2;
-    l-=2;
+	if (p_with_prefix) {
+		if (s[0]!='0' || s[1]!='x')
+			return 0;
+		s+=2;
+		l-=2;
+	};
 
     int hex=0;
 
@@ -2389,6 +2390,16 @@ String String::md5_text() const {
 	return String::md5(ctx.digest);
 }
 
+String String::sha256_text() const {
+	CharString cs=utf8();
+	unsigned char hash[32];
+	sha256_context ctx;
+	sha256_init(&ctx);
+	sha256_hash(&ctx,(unsigned char*)cs.ptr(),cs.length());
+	sha256_done(&ctx, hash);
+	return String::hex_encode_buffer(hash, 32);
+}
+
 Vector<uint8_t> String::md5_buffer() const {
 
 	CharString cs=utf8();
@@ -2405,6 +2416,23 @@ Vector<uint8_t> String::md5_buffer() const {
 
 	return ret;
 };
+
+Vector<uint8_t> String::sha256_buffer() const {
+	CharString cs = utf8();
+	unsigned char hash[32];
+	sha256_context ctx;
+	sha256_init(&ctx);
+	sha256_hash(&ctx, (unsigned char*)cs.ptr(), cs.length());
+	sha256_done(&ctx, hash);
+
+	Vector<uint8_t> ret;
+	ret.resize(32);
+	for (int i = 0; i < 32; i++) {
+		ret[i] = hash[i];
+	}
+
+	return ret;
+}
 
 
 String String::insert(int p_at_pos,String p_string) const {
@@ -2752,6 +2780,94 @@ bool String::begins_with(const char* p_string) const {
 
 }
 
+bool String::is_subsequence_of(const String& p_string) const {
+
+	return _base_is_subsequence_of(p_string, false);
+}
+
+bool String::is_subsequence_ofi(const String& p_string) const {
+
+	return _base_is_subsequence_of(p_string, true);
+}
+
+bool String::_base_is_subsequence_of(const String& p_string, bool case_insensitive) const {
+
+	int len=length();
+	if (len == 0) {
+		// Technically an empty string is subsequence of any string
+		return true;
+	}
+
+	if (len > p_string.length()) {
+		return false;
+	}
+
+	const CharType *src = &operator[](0);
+	const CharType *tgt = &p_string[0];
+
+	for (;*src && *tgt;tgt++) {
+		bool match = false;
+		if (case_insensitive) {
+			CharType srcc = _find_lower(*src);
+			CharType tgtc = _find_lower(*tgt);
+			match = srcc == tgtc;
+		} else {
+			match = *src == *tgt;
+		}
+		if (match) {
+			src++;
+			if(!*src) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+Vector<String> String::bigrams() const {
+	int n_pairs = length() - 1;
+	Vector<String> b;
+	if(n_pairs <= 0) {
+		return b;
+	}
+	b.resize(n_pairs);
+	for(int i = 0; i < n_pairs; i++) {
+		b[i] = substr(i,2);
+	}
+	return b;
+}
+
+// Similarity according to Sorensen-Dice coefficient
+float String::similarity(const String& p_string) const {
+	if(operator==(p_string)) {
+		// Equal strings are totally similar
+		return 1.0f;
+	}
+	if (length() < 2 || p_string.length() < 2) {
+		// No way to calculate similarity without a single bigram
+		return 0.0f;
+	}
+
+	Vector<String> src_bigrams = bigrams();
+	Vector<String> tgt_bigrams = p_string.bigrams();
+
+	int src_size = src_bigrams.size();
+	int tgt_size = tgt_bigrams.size();
+
+	float sum = src_size + tgt_size;
+	float inter = 0;
+	for (int i = 0; i < src_size; i++) {
+		for (int j = 0; j < tgt_size; j++) {
+			if (src_bigrams[i] == tgt_bigrams[j]) {
+				inter++;
+				break;
+			}
+		}
+	}
+
+	return (2.0f * inter)/sum;
+}
 
 static bool _wildcard_match(const CharType* p_pattern, const CharType* p_string,bool p_case_sensitive) {
 	switch (*p_pattern) {
@@ -2867,25 +2983,29 @@ CharType String::ord_at(int p_idx) const {
 	return operator[](p_idx);
 }
 
-String String::strip_edges() const {
+String String::strip_edges(bool left, bool right) const {
 
 	int len=length();
 	int beg=0,end=len;
 
-	for (int i=0;i<length();i++) {
+	if(left) {
+		for (int i=0;i<len;i++) {
 
-		if (operator[](i)<=32)
-			beg++;
-		else
-			break;
+			if (operator[](i)<=32)
+				beg++;
+			else
+				break;
+		}
 	}
 
-	for (int i=(int)(length()-1);i>=0;i--) {
+	if(right) {
+		for (int i=(int)(len-1);i>=0;i--) {
 
-		if (operator[](i)<=32)
-			end--;
-		else
-			break;
+			if (operator[](i)<=32)
+				end--;
+			else
+				break;
+		}
 	}
 
 	if (beg==0 && end==len)
@@ -2954,6 +3074,11 @@ String String::simplify_path() const {
 	}
 
 	s =s.replace("\\","/");
+	while(true){ // in case of using 2 or more slash
+		String compare = s.replace("//","/");
+		if (s==compare) break;
+		else s=compare;
+	}
 	Vector<String> dirs = s.split("/",false);
 
 	for(int i=0;i<dirs.size();i++) {
@@ -3054,7 +3179,7 @@ bool String::is_valid_identifier() const {
 
 //kind of poor should be rewritten properly
 
-String String::world_wrap(int p_chars_per_line) const {
+String String::word_wrap(int p_chars_per_line) const {
 
 	int from=0;
 	int last_space=0;
@@ -3372,7 +3497,7 @@ bool String::is_valid_integer() const {
 		return false;
 
 	int from=0;
-	if (operator[](0)=='+' || operator[](0)=='-')
+	if (len!=1 && (operator[](0)=='+' || operator[](0)=='-'))
 		from++;
 
 	for(int i=from;i<len;i++) {
@@ -3385,6 +3510,36 @@ bool String::is_valid_integer() const {
 	return true;
 
 }
+
+bool String::is_valid_hex_number(bool p_with_prefix) const {
+
+	int from = 0;
+	int len = length();
+
+	if (len!=1 && (operator[](0)=='+' || operator[](0)=='-'))
+		from++;
+
+	if (p_with_prefix) {
+
+		if (len < 2)
+			return false;
+		if (operator[](from) != '0' || operator[](from+1) != 'x') {
+			return false;
+		};
+		from += 2;
+	};
+
+	for (int i=from; i<len; i++) {
+
+		CharType c = operator[](i);
+		if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
+			continue;
+		return false;
+	};
+
+	return true;
+};
+
 
 bool String::is_valid_float() const {
 
@@ -3522,20 +3677,41 @@ bool String::is_valid_html_color() const {
 
 }
 
+
 bool String::is_valid_ip_address() const {
 
-	Vector<String> ip = split(".");
-	if (ip.size()!=4)
-		return false;
-	for(int i=0;i<ip.size();i++) {
+	if (find(":") >= 0) {
 
-		String n = ip[i];
-		if (!n.is_valid_integer())
+		Vector<String> ip = split(":");
+		for (int i=0; i<ip.size(); i++) {
+
+			String n = ip[i];
+			if (n.empty())
+				continue;
+			if (n.is_valid_hex_number(false)) {
+				int nint = n.hex_to_int(false);
+				if (nint < 0 || nint > 0xffff)
+					return false;
+				continue;
+			};
+			if (!n.is_valid_ip_address())
+				return false;
+		};
+
+	} else {
+		Vector<String> ip = split(".");
+		if (ip.size()!=4)
 			return false;
-		int val = n.to_int();
-		if (val<0 || val>255)
-			return false;
-	}
+		for(int i=0;i<ip.size();i++) {
+
+			String n = ip[i];
+			if (!n.is_valid_integer())
+				return false;
+			int val = n.to_int();
+			if (val<0 || val>255)
+				return false;
+		}
+	};
 
 	return true;
 }
@@ -3629,13 +3805,14 @@ String String::percent_decode() const {
 
 	CharString pe;
 
-	for(int i=0;i<length();i++) {
+	CharString cs = utf8();
+	for(int i=0;i<cs.length();i++) {
 
-		uint8_t c=operator[](i);
+		uint8_t c = cs[i];
 		if (c=='%' && i<length()-2) {
 
-			uint8_t a = LOWERCASE(operator[](i+1));
-			uint8_t b = LOWERCASE(operator[](i+2));
+			uint8_t a = LOWERCASE(cs[i+1]);
+			uint8_t b = LOWERCASE(cs[i+2]);
 
 			c=0;
 			if (a>='0' && a<='9')
@@ -3716,7 +3893,6 @@ String String::lpad(int min_length, const String& character) const {
 String String::sprintf(const Array& values, bool* error) const {
 	String formatted;
 	CharType* self = (CharType*)c_str();
-	int num_items = values.size();
 	bool in_format = false;
 	int value_index = 0;
 	int min_chars;
@@ -3955,3 +4131,34 @@ String String::sprintf(const Array& values, bool* error) const {
 	*error = false;
 	return formatted;
 }
+
+#include "translation.h"
+
+#ifdef TOOLS_ENABLED
+String TTR(const String& p_text) {
+
+	if (TranslationServer::get_singleton()) {
+		return TranslationServer::get_singleton()->tool_translate(p_text);
+	}
+
+	return p_text;
+}
+
+#endif
+
+String RTR(const String& p_text) {
+
+
+
+	if (TranslationServer::get_singleton()) {
+		String rtr = TranslationServer::get_singleton()->tool_translate(p_text);
+		if (rtr==String() || rtr==p_text) {
+			return TranslationServer::get_singleton()->translate(p_text);
+		} else {
+			return rtr;
+		}
+	}
+
+	return p_text;
+}
+

@@ -40,8 +40,6 @@ int TabContainer::_get_top_margin() const {
 
 	int h = MAX( tab_bg->get_minimum_size().height,tab_fg->get_minimum_size().height);
 
-//	h+=MIN( get_constant("label_valign_fg"), get_constant("label_valign_bg") );
-
 	int ch = font->get_height();;
 	for(int i=0;i<get_child_count();i++) {
 
@@ -207,9 +205,7 @@ void TabContainer::_notification(int p_what) {
 			Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 			Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
 			Ref<Texture> incr = get_icon("increment");
-			Ref<Texture> incr_hl = get_icon("increment_hilite");
 			Ref<Texture> decr = get_icon("decrement");
-			Ref<Texture> decr_hl = get_icon("decrement_hilite");
 			Ref<Texture> menu = get_icon("menu");
 			Ref<Texture> menu_hl = get_icon("menu_hl");
 			Ref<Font> font = get_font("font");
@@ -218,9 +214,6 @@ void TabContainer::_notification(int p_what) {
 
 			int side_margin = get_constant("side_margin");
 			int top_margin = _get_top_margin();
-
-			int label_valign_fg = get_constant("label_valign_fg");
-			int label_valign_bg = get_constant("label_valign_bg");
 
 
 			Size2 top_size = Size2( size.width, top_margin );
@@ -338,17 +331,14 @@ void TabContainer::_notification(int p_what) {
 
 
 				Ref<StyleBox> sb;
-				int va;
 				Color col;
 
 				if (idx==current) {
 
 					sb=tab_fg;
-					va=label_valign_fg;
 					col=color_fg;
 				} else {
 					sb=tab_bg;
-					va=label_valign_bg;
 					col=color_bg;
 				}
 
@@ -371,23 +361,7 @@ void TabContainer::_notification(int p_what) {
 				}
 
 				font->draw(ci, Point2i( lpos.x, sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-font->get_height())/2+font->get_ascent() ), s, col );
-				//ofs+=sb_ms.x+w;
 
-				/*
-				int sb_mw = sb->get_minimum_size().width;
-				int font_ofs = sb_mw / 2;
-
-				Rect2i rect =Rect2( ofs, 0, w+sb_mw, top_margin);
-
-				rect.size
-				sb->draw(ci,rect);
-				rect.y+=va;
-				rect.height+=va;
-				int font_y = (rect.height - font->get_height())/2;
-
-				font->draw(ci, Point2( ofs+font_ofs, va+font_y ), s, col );
-
-*/
 				idx++;
 			}
 
@@ -411,6 +385,11 @@ void TabContainer::_notification(int p_what) {
 			panel->draw(ci, Rect2( 0, top_size.height, size.width, size.height-top_size.height));
 
 		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			if (get_tab_count() > 0) {
+				call_deferred("set_current_tab",get_current_tab()); //wait until all changed theme
+			}
+		} break;
 	}
 }
 
@@ -421,6 +400,7 @@ void TabContainer::_child_renamed_callback() {
 
 void TabContainer::add_child_notify(Node *p_child) {
 
+	Control::add_child_notify(p_child);
 
 	Control *c = p_child->cast_to<Control>();
 	if (!c)
@@ -472,7 +452,6 @@ void TabContainer::set_current_tab(int p_current) {
 
 	ERR_FAIL_INDEX( p_current, get_tab_count() );
 
-    //printf("DEBUG %p: set_current_tab to %i\n", this, p_current);
 	current=p_current;
 
 	int idx=0;
@@ -554,8 +533,9 @@ Control* TabContainer::get_current_tab_control() const {
 
 void TabContainer::remove_child_notify(Node *p_child) {
 
+	Control::remove_child_notify(p_child);
+
 	int tc = get_tab_count();
-//	bool set_curent=false;
 	if (current==tc-1) {
 		current--;
 		if (current<0)
@@ -700,13 +680,10 @@ Size2 TabContainer::get_minimum_size() const {
 		if (c->is_set_as_toplevel())
 			continue;
 
-		if (!c->has_meta("_tab_name"))
-			continue;
-
 		if (!c->is_visible())
 			continue;
 
-		Size2 cms = c->get_minimum_size();
+		Size2 cms = c->get_combined_minimum_size();
 		ms.x=MAX(ms.x,cms.x);
 		ms.y=MAX(ms.y,cms.y);
 	}
@@ -717,6 +694,9 @@ Size2 TabContainer::get_minimum_size() const {
 
 	ms.y+=MAX(tab_bg->get_minimum_size().y,tab_fg->get_minimum_size().y);
 	ms.y+=font->get_height();
+
+	Ref<StyleBox> sb = get_stylebox("panel");
+	ms+=sb->get_minimum_size();
 
 	return ms;
 }

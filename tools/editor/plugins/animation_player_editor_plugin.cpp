@@ -43,6 +43,7 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 
 		key_editor->set_animation(Ref<Animation>());
 		key_editor->set_root(NULL);
+		key_editor->show_select_node_warning(true);
 		_update_player();
 		//editor->animation_editor_make_visible(false);
 
@@ -116,7 +117,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		tool_anim->set_icon(get_icon("Tools","EditorIcons"));
 		tool_anim->get_popup()->connect("item_pressed",this,"_animation_tool_menu");
 
-		blend_editor.next->connect("text_changed",this,"_blend_editor_next_changed");
+		blend_editor.next->connect("item_selected", this, "_blend_editor_next_changed");
 
 		nodename->set_icon(get_icon("AnimationPlayer","EditorIcons"));
 
@@ -144,7 +145,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 	String current = animation->get_item_text( animation->get_selected() );
 	if (player->get_autoplay()==current) {
 		//unset
-		undo_redo->create_action("Toggle Autoplay");
+		undo_redo->create_action(TTR("Toggle Autoplay"));
 		undo_redo->add_do_method(player,"set_autoplay","");
 		undo_redo->add_undo_method(player,"set_autoplay",player->get_autoplay());
 		undo_redo->add_do_method(this,"_animation_player_changed",player);
@@ -154,7 +155,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 
 	} else {
 		//set
-		undo_redo->create_action("Toggle Autoplay");
+		undo_redo->create_action(TTR("Toggle Autoplay"));
 		undo_redo->add_do_method(player,"set_autoplay",current);
 		undo_redo->add_undo_method(player,"set_autoplay",player->get_autoplay());
 		undo_redo->add_do_method(this,"_animation_player_changed",player);
@@ -317,10 +318,10 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 void AnimationPlayerEditor::_animation_new() {
 
 	renaming=false;
-	name_title->set_text("New Animation Name:");
+	name_title->set_text(TTR("New Animation Name:"));
 
 	int count=1;
-	String base="New Anim";
+	String base=TTR("New Anim");
 	while(true) {
 		String attempt  = base;
 		if (count>1)
@@ -345,7 +346,7 @@ void AnimationPlayerEditor::_animation_rename() {
 	int selected = animation->get_selected();
 	String selected_name = animation->get_item_text(selected);
 
-	name_title->set_text("Change Animation Name:");
+	name_title->set_text(TTR("Change Animation Name:"));
 	name->set_text(selected_name);
 	renaming=true;
 	name_dialog->popup_centered(Size2(300,90));
@@ -376,14 +377,14 @@ void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource>& p_resou
 	int flg = 0;
 	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
 		flg |= ResourceSaver::FLAG_COMPRESS;
-	if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
-		flg |= ResourceSaver::FLAG_RELATIVE_PATHS;
+	//if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+	//	flg |= ResourceSaver::FLAG_RELATIVE_PATHS;
 
 	String path = Globals::get_singleton()->localize_path(p_path);
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err != OK) {
-		accept->set_text("Error saving resource!");
+		accept->set_text(TTR("Error saving resource!"));
 		accept->popup_centered_minsize();
 		return;
 	}
@@ -407,7 +408,6 @@ void AnimationPlayerEditor::_animation_save(const Ref<Resource>& p_resource) {
 void AnimationPlayerEditor::_animation_save_as(const Ref<Resource>& p_resource) {
 
 	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-	bool relpaths = (p_resource->has_meta("__editor_relpaths__") && p_resource->get_meta("__editor_relpaths__").operator bool());
 
 	List<String> extensions;
 	ResourceSaver::get_recognized_extensions(p_resource, &extensions);
@@ -437,7 +437,7 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource>& p_resource) 
 
 	}
 	file->popup_centered_ratio();
-	file->set_title("Save Resource As..");
+	file->set_title(TTR("Save Resource As.."));
 	current_option = RESOURCE_SAVE;
 }
 void AnimationPlayerEditor::_animation_remove() {
@@ -449,7 +449,7 @@ void AnimationPlayerEditor::_animation_remove() {
 	Ref<Animation> anim =  player->get_animation(current);
 
 
-	undo_redo->create_action("Remove Animation");
+	undo_redo->create_action(TTR("Remove Animation"));
 	undo_redo->add_do_method(player,"remove_animation",current);
 	undo_redo->add_undo_method(player,"add_animation",current,anim);
 	undo_redo->add_do_method(this,"_animation_player_changed",player);
@@ -485,7 +485,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 
 	String new_name = name->get_text();
 	if (new_name=="" || new_name.find(":")!=-1 || new_name.find("/")!=-1) {
-		error_dialog->set_text("ERROR: Invalid animation name!");
+		error_dialog->set_text(TTR("ERROR: Invalid animation name!"));
 		error_dialog->popup_centered_minsize();
 		return;
 	}
@@ -496,7 +496,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	}
 
 	if (player->has_animation(new_name)) {
-		error_dialog->set_text("ERROR: Animation Name Already Exists!");
+		error_dialog->set_text(TTR("ERROR: Animation name already exists!"));
 		error_dialog->popup_centered_minsize();
 		return;
 	}
@@ -505,7 +505,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim =  player->get_animation(current);
 
-		undo_redo->create_action("Rename Animation");
+		undo_redo->create_action(TTR("Rename Animation"));
 		undo_redo->add_do_method(player,"rename_animation",current,new_name);
 		undo_redo->add_do_method(anim.ptr(),"set_name",new_name);
 		undo_redo->add_undo_method(player,"rename_animation",new_name,current);
@@ -521,7 +521,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		Ref<Animation> new_anim = Ref<Animation>(memnew( Animation ));
 		new_anim->set_name(new_name);
 
-		undo_redo->create_action("Add Animation");
+		undo_redo->create_action(TTR("Add Animation"));
 		undo_redo->add_do_method(player,"add_animation",new_name,new_anim);
 		undo_redo->add_undo_method(player,"remove_animation",new_name);
 		undo_redo->add_do_method(this,"_animation_player_changed",player);
@@ -536,14 +536,19 @@ void AnimationPlayerEditor::_animation_name_edited() {
 }
 
 
-void AnimationPlayerEditor::_blend_editor_next_changed(const String& p_string) {
+void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
 
 	if (animation->get_item_count()==0)
 		return;
 
 	String current = animation->get_item_text(animation->get_selected());
-	player->animation_set_next(current,p_string);
 
+	undo_redo->create_action(TTR("Blend Next Changed"));
+	undo_redo->add_do_method(player,"animation_set_next",current,blend_editor.next->get_item_text(p_idx));
+	undo_redo->add_undo_method(player,"animation_set_next",current,player->animation_get_next(current));
+	undo_redo->add_do_method(this,"_animation_player_changed",player);
+	undo_redo->add_undo_method(this,"_animation_player_changed",player);
+	undo_redo->commit_action();
 }
 
 void AnimationPlayerEditor::_animation_blend() {
@@ -569,6 +574,11 @@ void AnimationPlayerEditor::_animation_blend() {
 	TreeItem *root = blend_editor.tree->create_item();
 	updating_blends=true;
 
+	int i = 0;
+	bool anim_found = false;
+	blend_editor.next->clear();
+	blend_editor.next->add_item("", i);
+
 	for(List<StringName>::Element *E=anims.front();E;E=E->next()) {
 
 		String to=E->get();
@@ -579,9 +589,20 @@ void AnimationPlayerEditor::_animation_blend() {
 		blend->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
 		blend->set_range_config(1,0,3600,0.001);
 		blend->set_range(1,player->get_blend_time(current,to));
+
+		i++;
+		blend_editor.next->add_item(to, i);
+		if (to == player->animation_get_next(current)) {
+			blend_editor.next->select(i);
+			anim_found = true;
+		}
 	}
 
-	blend_editor.next->set_text( player->animation_get_next(current) );
+	// make sure we reset it else it becomes out of sync and could contain a deleted animation
+	if (!anim_found) {
+		blend_editor.next->select(0);
+		player->animation_set_next(current, blend_editor.next->get_item_text(0));
+	}
 
 	updating_blends=false;
 }
@@ -605,7 +626,7 @@ void AnimationPlayerEditor::_blend_edited() {
 	float blend_time = selected->get_range(1);
 	float prev_blend_time = player->get_blend_time(current,to);
 
-	undo_redo->create_action("Change Blend Time");
+	undo_redo->create_action(TTR("Change Blend Time"));
 	undo_redo->add_do_method(player,"set_blend_time",current,to,blend_time);
 	undo_redo->add_undo_method(player,"set_blend_time",current,to,prev_blend_time);
 	undo_redo->add_do_method(this,"_animation_player_changed",player);
@@ -615,6 +636,9 @@ void AnimationPlayerEditor::_blend_edited() {
 }
 
 void AnimationPlayerEditor::ensure_visibility() {
+
+	if (player && pin->is_pressed())
+		return; // another player is pinned, don't reset
 
 	_animation_edit();
 }
@@ -642,7 +666,7 @@ void AnimationPlayerEditor::set_state(const Dictionary& p_state) {
 			return;
 
 		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["player"]);
-		if (n && n->cast_to<AnimationPlayer>()) {
+		if (n && n->cast_to<AnimationPlayer>() && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
 			player=n->cast_to<AnimationPlayer>();
 			_update_player();
 			show();
@@ -714,7 +738,7 @@ void AnimationPlayerEditor::_dialog_action(String p_file) {
 			if (p_file.find(".") != -1)
 				p_file = p_file.substr(0, p_file.find("."));
 
-			undo_redo->create_action("Load Animation");
+			undo_redo->create_action(TTR("Load Animation"));
 			undo_redo->add_do_method(player, "add_animation", p_file, res);
 			undo_redo->add_undo_method(player, "remove_animation", p_file);
 			if (player->has_animation(p_file)) {
@@ -809,6 +833,7 @@ void AnimationPlayerEditor::_update_player() {
 	remove_anim->set_disabled(animlist.size()==0);
 	resource_edit_anim->set_disabled(animlist.size()==0);
 	save_anim->set_disabled(animlist.size() == 0);
+	tool_anim->set_disabled(player==NULL);
 
 
 	int active_idx=-1;
@@ -866,9 +891,11 @@ void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 		return; //ignore, pinned
 	player=p_player;
 
-	if (player)
+	if (player) {
 		_update_player();
-	else {
+		key_editor->show_select_node_warning(false);
+	} else {
+		key_editor->show_select_node_warning(true);
 
 //		hide();
 
@@ -907,9 +934,10 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	}
 
 
-	undo_redo->create_action("Duplicate Animation");
+	undo_redo->create_action(TTR("Duplicate Animation"));
 	undo_redo->add_do_method(player,"add_animation",new_name,new_anim);
 	undo_redo->add_undo_method(player,"remove_animation",new_name);
+	undo_redo->add_do_method(player,"animation_set_next",new_name,player->animation_get_next(current));
 	undo_redo->add_do_method(this,"_animation_player_changed",player);
 	undo_redo->add_undo_method(this,"_animation_player_changed",player);
 	undo_redo->commit_action();
@@ -927,7 +955,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 
 }
 
-void AnimationPlayerEditor::_seek_value_changed(float p_value) {
+void AnimationPlayerEditor::_seek_value_changed(float p_value,bool p_set) {
 
 	if (updating || !player || player->is_playing()) {
 		return;
@@ -955,13 +983,14 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value) {
 			pos=anim->get_length();
 	}
 
-	if (player->is_valid()) {
+	if (player->is_valid() && !p_set) {
 		float cpos = player->get_current_animation_pos();
 
 		player->seek_delta(pos,pos-cpos);
 	} else {
 		player->seek(pos,true);
 	}
+
 
 	key_editor->set_anim_pos(pos);
 
@@ -1053,6 +1082,7 @@ void AnimationPlayerEditor::_editor_load(){
 
 void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) {
 
+
 	frame->set_max(p_len);
 
 }
@@ -1067,7 +1097,7 @@ void AnimationPlayerEditor::_animation_key_editor_anim_step_changed(float p_len)
 }
 
 
-void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos) {
+void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos,bool p_drag) {
 
 	if (!is_visible())
 		return;
@@ -1077,7 +1107,11 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos) {
 	if (player->is_playing()	)
 		return;
 
-	frame->set_val(p_pos);
+	updating=true;
+	frame->set_val(p_pos);	
+	updating=false;
+	_seek_value_changed(p_pos,!p_drag);
+
 	EditorNode::get_singleton()->get_property_editor()->refresh();
 
 
@@ -1093,6 +1127,7 @@ void AnimationPlayerEditor::_hide_anim_editors() {
 
 	key_editor->set_animation(Ref<Animation>());
 	key_editor->set_root(NULL);
+	key_editor->show_select_node_warning(true);
 //		editor->animation_editor_make_visible(false);
 
 }
@@ -1105,7 +1140,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		case TOOL_COPY_ANIM: {
 
 			if (!animation->get_item_count()) {
-				error_dialog->set_text("ERROR: No animation to copy!");
+				error_dialog->set_text(TTR("ERROR: No animation to copy!"));
 				error_dialog->popup_centered_minsize();
 				return;
 			}
@@ -1120,14 +1155,14 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
 			Ref<Animation> anim = EditorSettings::get_singleton()->get_resource_clipboard();
 			if (!anim.is_valid()) {
-				error_dialog->set_text("ERROR: No animation resource on clipboard!");
+				error_dialog->set_text(TTR("ERROR: No animation resource on clipboard!"));
 				error_dialog->popup_centered_minsize();
 				return;
 			}
 
 			String name = anim->get_name();
 			if (name=="") {
-				name="Pasted Animation";
+				name=TTR("Pasted Animation");
 			}
 
 			int idx=1;
@@ -1138,7 +1173,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 				name=base+" "+itos(idx);
 			}
 
-			undo_redo->create_action("Paste Animation");
+			undo_redo->create_action(TTR("Paste Animation"));
 			undo_redo->add_do_method(player,"add_animation",name,anim);
 			undo_redo->add_undo_method(player,"remove_animation",name);
 			undo_redo->add_do_method(this,"_animation_player_changed",player);
@@ -1152,7 +1187,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		case TOOL_EDIT_RESOURCE: {
 
 			if (!animation->get_item_count()) {
-				error_dialog->set_text("ERROR: No animation to edit!");
+				error_dialog->set_text(TTR("ERROR: No animation to edit!"));
 				error_dialog->popup_centered_minsize();
 				return;
 			}
@@ -1229,7 +1264,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_animation_edit"),&AnimationPlayerEditor::_animation_edit);
 	ObjectTypeDB::bind_method(_MD("_animation_resource_edit"),&AnimationPlayerEditor::_animation_resource_edit);
 	ObjectTypeDB::bind_method(_MD("_dialog_action"),&AnimationPlayerEditor::_dialog_action);
-	ObjectTypeDB::bind_method(_MD("_seek_value_changed"),&AnimationPlayerEditor::_seek_value_changed);
+	ObjectTypeDB::bind_method(_MD("_seek_value_changed"),&AnimationPlayerEditor::_seek_value_changed,DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("_animation_player_changed"),&AnimationPlayerEditor::_animation_player_changed);
 	ObjectTypeDB::bind_method(_MD("_blend_edited"),&AnimationPlayerEditor::_blend_edited);
 //	ObjectTypeDB::bind_method(_MD("_seek_frame_changed"),&AnimationPlayerEditor::_seek_frame_changed);
@@ -1281,25 +1316,25 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 
 	play_bw_from = memnew( ToolButton );
-	play_bw_from->set_tooltip("Play backwards selected animation from current pos. (A)");
+	play_bw_from->set_tooltip(TTR("Play selected animation backwards from current pos. (A)"));
 	hb->add_child(play_bw_from);
 
 	play_bw = memnew( ToolButton );
-	play_bw->set_tooltip("Play backwards selected animation from end. (Shift+A)");
+	play_bw->set_tooltip(TTR("Play selected animation backwards from end. (Shift+A)"));
 	hb->add_child(play_bw);
 
 	stop = memnew( ToolButton );
 	stop->set_toggle_mode(true);
 	hb->add_child(stop);
-	stop->set_tooltip("Stop animation playback. (S)");
+	stop->set_tooltip(TTR("Stop animation playback. (S)"));
 
 	play = memnew( ToolButton );
-	play->set_tooltip("Play selected animation from start. (Shift+D)");
+	play->set_tooltip(TTR("Play selected animation from start. (Shift+D)"));
 	hb->add_child(play);
 
 
 	play_from = memnew( ToolButton );
-	play_from->set_tooltip("Play selected animation from current pos. (D)");
+	play_from->set_tooltip(TTR("Play selected animation from current pos. (D)"));
 	hb->add_child(play_from);
 
 
@@ -1312,7 +1347,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	hb->add_child(frame);
 	frame->set_custom_minimum_size(Size2(60,0));
 	frame->set_stretch_ratio(2);
-	frame->set_tooltip("Animation position (in seconds).");
+	frame->set_tooltip(TTR("Animation position (in seconds)."));
 
 	hb->add_child( memnew( VSeparator));
 
@@ -1320,24 +1355,28 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	hb->add_child(scale);
 	scale->set_h_size_flags(SIZE_EXPAND_FILL);
 	scale->set_stretch_ratio(1);
-	scale->set_tooltip("Scale animation playback globally for the node.");
+	scale->set_tooltip(TTR("Scale animation playback globally for the node."));
 	scale->hide();
 
 
 	add_anim = memnew( ToolButton );
-	add_anim->set_tooltip("Create new animation in player.");
+	ED_SHORTCUT("animation_player_editor/add_animation", TTR("Create new animation in player."));
+	add_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/add_animation"));
+	add_anim->set_tooltip(TTR("Create new animation in player."));
 
 	hb->add_child(add_anim);
 
 
 	load_anim = memnew( ToolButton );
-	load_anim->set_tooltip("Load an animation from disk.");
+	ED_SHORTCUT("animation_player_editor/load_from_disk", TTR("Load animation from disk."));
+	add_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/load_from_disk"));
+	load_anim->set_tooltip(TTR("Load an animation from disk."));
 	hb->add_child(load_anim);
 
 	save_anim = memnew(MenuButton);
-	save_anim->set_tooltip("Save the current animation");
-	save_anim->get_popup()->add_item("Save", ANIM_SAVE);
-	save_anim->get_popup()->add_item("Save As..", ANIM_SAVE_AS);
+	save_anim->set_tooltip(TTR("Save the current animation"));
+	save_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save", TTR("Save")), ANIM_SAVE);
+	save_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/save_as", TTR("Save As")), ANIM_SAVE_AS);
 	save_anim->set_focus_mode(Control::FOCUS_NONE);
 	hb->add_child(save_anim);
 
@@ -1347,38 +1386,45 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 	duplicate_anim = memnew( ToolButton );
 	hb->add_child(duplicate_anim);
-	duplicate_anim->set_tooltip("Duplicate Animation");
+	ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate Animation"));
+	duplicate_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/duplicate_animation"));
+	duplicate_anim->set_tooltip(TTR("Duplicate Animation"));
 
 	rename_anim = memnew( ToolButton );
 	hb->add_child(rename_anim);
-	rename_anim->set_tooltip("Rename Animation");
+	ED_SHORTCUT("animation_player_editor/rename_animation", TTR("Rename Animation"));
+	rename_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/rename_animation"));
+	rename_anim->set_tooltip(TTR("Rename Animation"));
 
 	remove_anim = memnew( ToolButton );
 
 	hb->add_child(remove_anim);
-	remove_anim->set_tooltip("Remove Animation");
+	ED_SHORTCUT("animation_player_editor/remove_animation", TTR("Remove Animation"));
+	remove_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/remove_animation"));
+	remove_anim->set_tooltip(TTR("Remove Animation"));
 
 
 	animation = memnew( OptionButton );
 	hb->add_child(animation);
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
-	animation->set_tooltip("Display list of animations in player.");
+	animation->set_tooltip(TTR("Display list of animations in player."));
+	animation->set_clip_text(true);
 
 	autoplay = memnew( ToolButton );
 	hb->add_child(autoplay);
-	autoplay->set_tooltip("Autoplay On Load");
+	autoplay->set_tooltip(TTR("Autoplay on Load"));
 
 
 
 	blend_anim = memnew( ToolButton );
 	hb->add_child(blend_anim);
-	blend_anim->set_tooltip("Edit Target Blend Times");
+	blend_anim->set_tooltip(TTR("Edit Target Blend Times"));
 
 	tool_anim = memnew( MenuButton);
 	//tool_anim->set_flat(false);
-	tool_anim->set_tooltip("Animation Tools");
-	tool_anim->get_popup()->add_item("Copy Animation",TOOL_COPY_ANIM);
-	tool_anim->get_popup()->add_item("Paste Animation",TOOL_PASTE_ANIM);
+	tool_anim->set_tooltip(TTR("Animation Tools"));
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/copy_animation", TTR("Copy Animation")),TOOL_COPY_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation", TTR("Paste Animation")),TOOL_PASTE_ANIM);
 	//tool_anim->get_popup()->add_separator();
 	//tool_anim->get_popup()->add_item("Edit Anim Resource",TOOL_PASTE_ANIM);
 	hb->add_child(tool_anim);
@@ -1400,7 +1446,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	add_child(file);
 
 	name_dialog = memnew( ConfirmationDialog );
-	name_dialog->set_title("Create New Animation");
+	name_dialog->set_title(TTR("Create New Animation"));
 	name_dialog->set_hide_on_ok(false);
 	add_child(name_dialog);
 	name = memnew( LineEdit );
@@ -1411,33 +1457,33 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 
 	l = memnew( Label );
-	l->set_text("Animation Name:");
+	l->set_text(TTR("Animation Name:"));
 	l->set_pos( Point2(10,10) );
 
 	name_dialog->add_child(l);
 	name_title=l;
 
 	error_dialog = memnew( ConfirmationDialog );
-	error_dialog->get_ok()->set_text("Close");
+	error_dialog->get_ok()->set_text(TTR("Close"));
 	//error_dialog->get_cancel()->set_text("Close");
-	error_dialog->set_text("Error!");
+	error_dialog->set_text(TTR("Error!"));
 	add_child(error_dialog);
 
 	name_dialog->connect("confirmed", this,"_animation_name_edited");
 
 	blend_editor.dialog = memnew( AcceptDialog );
 	add_child(blend_editor.dialog);
-	blend_editor.dialog->get_ok()->set_text("Close");
+	blend_editor.dialog->get_ok()->set_text(TTR("Close"));
 	blend_editor.dialog->set_hide_on_ok(true);
 	VBoxContainer *blend_vb = memnew( VBoxContainer);
 	blend_editor.dialog->add_child(blend_vb);
 	blend_editor.dialog->set_child_rect(blend_vb);
 	blend_editor.tree = memnew( Tree );
 	blend_editor.tree->set_columns(2);
-	blend_vb->add_margin_child("Blend Times: ",blend_editor.tree,true);
-	blend_editor.next = memnew( LineEdit );
-	blend_vb->add_margin_child("Next (Auto Queue):",blend_editor.next);
-	blend_editor.dialog->set_title("Cross-Animation Blend Times");
+	blend_vb->add_margin_child(TTR("Blend Times:"),blend_editor.tree,true);
+	blend_editor.next = memnew( OptionButton );
+	blend_vb->add_margin_child(TTR("Next (Auto Queue):"),blend_editor.next);
+	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
 	updating_blends=false;
 
 	blend_editor.tree->connect("item_edited",this,"_blend_edited");
@@ -1462,8 +1508,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	animation->connect("item_selected", this,"_animation_selected",Vector<Variant>(),true);
 	resource_edit_anim->connect("pressed", this,"_animation_resource_edit");
 	file->connect("file_selected", this,"_dialog_action");
-	 frame->connect("value_changed", this, "_seek_value_changed",Vector<Variant>(),true);
-	 scale->connect("text_entered", this, "_scale_changed",Vector<Variant>(),true);
+	frame->connect("value_changed", this, "_seek_value_changed",Vector<Variant>(),true);
+	scale->connect("text_entered", this, "_scale_changed",Vector<Variant>(),true);
 
 
 
@@ -1490,6 +1536,8 @@ void AnimationPlayerEditorPlugin::edit(Object *p_object) {
 	if (!p_object)
 		return;
 	anim_editor->edit(p_object->cast_to<AnimationPlayer>());
+
+
 }
 
 bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
@@ -1500,7 +1548,8 @@ bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		anim_editor->show();
+
+		editor->make_bottom_panel_item_visible(anim_editor);
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();
 //		editor->animation_panel_make_visible(true);
@@ -1518,7 +1567,7 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin(EditorNode *p_node) {
 	anim_editor = memnew( AnimationPlayerEditor(editor) );
 	anim_editor->set_undo_redo(editor->get_undo_redo());
 
-	editor->add_bottom_panel_item("Animation",anim_editor);
+	editor->add_bottom_panel_item(TTR("Animation"),anim_editor);
 	/*
 	editor->get_viewport()->add_child(anim_editor);
 	anim_editor->set_area_as_parent_rect();
@@ -1536,5 +1585,3 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin(EditorNode *p_node) {
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin()
 {
 }
-
-

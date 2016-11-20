@@ -121,7 +121,7 @@ protected:
 	void _take_over_path(const String& p_path);
 public:
 
-	virtual bool can_reload_from_file();
+	virtual bool editor_can_reload_from_file();
 	virtual void reload_from_file();
 
 	void register_owner(Object *p_owner);
@@ -142,7 +142,11 @@ public:
 	Ref<ResourceImportMetadata> get_import_metadata() const;
 
 
+
+
 #ifdef TOOLS_ENABLED
+
+	uint32_t hash_edited_version() const;
 
 	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time=p_time; }
 	uint64_t get_last_modified_time() const { return last_modified_time; }

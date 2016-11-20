@@ -217,6 +217,9 @@ public:
 	void set_mass(real_t p_mass);
 	real_t get_mass() const;
 
+	void set_inertia(real_t p_inertia);
+	real_t get_inertia() const;
+
 	void set_weight(real_t p_weight);
 	real_t get_weight() const;
 
@@ -261,10 +264,15 @@ public:
 	void set_continuous_collision_detection_mode(CCDMode p_mode);
 	CCDMode get_continuous_collision_detection_mode() const;
 
-	void apply_impulse(const Vector2& p_pos, const Vector2& p_impulse);
+	void apply_impulse(const Vector2& p_offset, const Vector2& p_impulse);
 
 	void set_applied_force(const Vector2& p_force);
 	Vector2 get_applied_force() const;
+
+	void set_applied_torque(const float p_torque);
+	float get_applied_torque() const;
+
+	void add_force(const Vector2& p_offset, const Vector2& p_force);
 
 
 
@@ -294,6 +302,12 @@ class KinematicBody2D : public PhysicsBody2D {
 	Variant collider_metadata;
 	Vector2 travel;
 
+	Vector2 move_and_slide_floor_velocity;
+	bool move_and_slide_on_floor;
+	bool move_and_slide_on_ceiling;
+	bool move_and_slide_on_wall;
+	Array move_and_slide_colliders;
+
 	Variant _get_collider() const;
 
 	_FORCE_INLINE_ bool _ignores_mode(Physics2DServer::BodyMode) const;
@@ -305,7 +319,7 @@ public:
 	Vector2 move(const Vector2& p_motion);
 	Vector2 move_to(const Vector2& p_position);
 
-	bool test_move(const Vector2& p_motion);
+	bool test_move(const Matrix32 &p_from, const Vector2& p_motion);
 	bool is_colliding() const;
 
 	Vector2 get_travel() const;
@@ -320,6 +334,13 @@ public:
 
 	void set_collision_margin(float p_margin);
 	float get_collision_margin() const;
+
+	Vector2 move_and_slide(const Vector2& p_linear_velocity, const Vector2& p_floor_direction=Vector2(0,0), float p_slope_stop_min_velocity=5, int p_max_bounces=4);
+	bool is_move_and_slide_on_floor() const;
+	bool is_move_and_slide_on_wall() const;
+	bool is_move_and_slide_on_ceiling() const;
+	Array get_move_and_slide_colliders() const;
+
 
 	KinematicBody2D();
 	~KinematicBody2D();

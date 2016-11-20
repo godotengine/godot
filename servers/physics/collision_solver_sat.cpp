@@ -1230,7 +1230,6 @@ static void _collision_capsule_convex_polygon(const ShapeSW *p_a,const Transform
 	const Geometry::MeshData::Edge *edges = mesh.edges.ptr();
 	int edge_count = mesh.edges.size();
 	const Vector3 *vertices = mesh.vertices.ptr();
-	int vertex_count = mesh.vertices.size();
 
 	// faces of B
 	for (int i=0;i<face_count;i++) {

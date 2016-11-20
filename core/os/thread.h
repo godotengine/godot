@@ -39,6 +39,8 @@
 
 typedef void (*ThreadCreateCallback)(void *p_userdata);
 
+
+
 class Thread {
 public:
 
@@ -65,14 +67,13 @@ protected:
 	static void (*wait_to_finish_func)(Thread*);
 	static Error (*set_name_func)(const String&);
 
-    friend class Main;
+	friend class Main;
 
-    static ID _main_thread_id;
+	static ID _main_thread_id;
 
 
 	Thread();
 public:
-
 
 	virtual ID get_ID() const=0;
 

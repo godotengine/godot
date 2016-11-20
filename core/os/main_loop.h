@@ -64,6 +64,8 @@ public:
 	virtual bool idle(float p_time);
 	virtual void finish();
 
+	virtual void drop_files(const Vector<String>& p_files,int p_from_screen=0);
+
 	void set_init_script(const Ref<Script>& p_init_script);
 
 	MainLoop();

@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  immediate_geometry.cpp                                               */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "immediate_geometry.h"
 
 
@@ -44,6 +72,7 @@ void ImmediateGeometry::add_vertex(const Vector3& p_vertex){
 	if (empty) {
 		aabb.pos=p_vertex;
 		aabb.size=Vector3();
+		empty=false;
 	} else {
 		aabb.expand_to(p_vertex);
 	}
@@ -74,7 +103,7 @@ DVector<Face3> ImmediateGeometry::get_faces(uint32_t p_usage_flags) const {
 
 
 
-void ImmediateGeometry::add_sphere(int p_lats,int p_lons,float p_radius) {
+void ImmediateGeometry::add_sphere(int p_lats, int p_lons, float p_radius, bool p_add_uv) {
 
 	for(int i = 1; i <= p_lats; i++) {
 		double lat0 = Math_PI * (-0.5 + (double) (i - 1) / p_lats);
@@ -104,6 +133,10 @@ void ImmediateGeometry::add_sphere(int p_lats,int p_lons,float p_radius) {
 			};
 
 #define ADD_POINT(m_idx)\
+	if (p_add_uv) {\
+		set_uv(Vector2(Math::atan2(v[m_idx].x,v[m_idx].z)/Math_PI * 0.5+0.5,v[m_idx].y*0.5+0.5));\
+		set_tangent(Plane(Vector3(-v[m_idx].z,v[m_idx].y,v[m_idx].x),1));		\
+	}\
 	set_normal(v[m_idx]);\
 	add_vertex(v[m_idx]*p_radius);
 
@@ -121,14 +154,14 @@ void ImmediateGeometry::add_sphere(int p_lats,int p_lons,float p_radius) {
 
 void ImmediateGeometry::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("begin","primitive","texture:Texture"),&ImmediateGeometry::begin);
+	ObjectTypeDB::bind_method(_MD("begin","primitive","texture:Texture"),&ImmediateGeometry::begin,DEFVAL(Ref<Texture>()));
 	ObjectTypeDB::bind_method(_MD("set_normal","normal"),&ImmediateGeometry::set_normal);
 	ObjectTypeDB::bind_method(_MD("set_tangent","tangent"),&ImmediateGeometry::set_tangent);
 	ObjectTypeDB::bind_method(_MD("set_color","color"),&ImmediateGeometry::set_color);
 	ObjectTypeDB::bind_method(_MD("set_uv","uv"),&ImmediateGeometry::set_uv);
 	ObjectTypeDB::bind_method(_MD("set_uv2","uv"),&ImmediateGeometry::set_uv2);
 	ObjectTypeDB::bind_method(_MD("add_vertex","pos"),&ImmediateGeometry::add_vertex);
-	ObjectTypeDB::bind_method(_MD("add_sphere","lats","lons","radius"),&ImmediateGeometry::add_sphere);
+	ObjectTypeDB::bind_method(_MD("add_sphere","lats","lons","radius","add_uv"),&ImmediateGeometry::add_sphere,DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("end"),&ImmediateGeometry::end);
 	ObjectTypeDB::bind_method(_MD("clear"),&ImmediateGeometry::clear);
 

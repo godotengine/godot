@@ -62,6 +62,7 @@ public:
 	StringName exit_tree;
 	StringName size_flags_changed;
 	StringName minimum_size_changed;
+	StringName sleeping_state_changed;
 	StringName idle;
 	StringName iteration;
 	StringName update;
@@ -78,6 +79,7 @@ public:
 
 	StringName finished;
 	StringName animation_changed;
+	StringName animation_started;
 
 	StringName body_enter_shape;
 	StringName body_enter;
@@ -180,6 +182,15 @@ public:
 
 	NodePath path_pp;
 
+	StringName _default;
+
+	StringName node_configuration_warning_changed;
+
+	enum {
+		MAX_MATERIALS=32
+	};
+	StringName mesh_materials[MAX_MATERIALS];
+	StringName _mesh_changed;
 
 };
 

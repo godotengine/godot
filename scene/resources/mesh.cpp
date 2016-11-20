@@ -31,7 +31,7 @@
 #include "scene/resources/convex_polygon_shape.h"
 #include "surface_tool.h"
 
-static const char*_array_name[]={
+static const char* _array_name[]={
 	"vertex_array",
 	"normal_array",
 	"tangent_array",
@@ -147,12 +147,6 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 		}
 
 
-		return true;
-	}
-
-	if (what=="custom_aabb") {
-
-		surface_set_custom_aabb(idx,p_value);
 		return true;
 	}
 
@@ -288,6 +282,7 @@ void Mesh::add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Arr
 
 	triangle_mesh=Ref<TriangleMesh>();
 	_change_notify();
+	emit_changed();
 
 }
 
@@ -387,6 +382,7 @@ void Mesh::surface_remove(int p_idx) {
 	triangle_mesh=Ref<TriangleMesh>();
 	_recompute_aabb();
 	_change_notify();
+	emit_changed();
 }
 
 
@@ -491,6 +487,8 @@ void Mesh::add_surface_from_mesh_data(const Geometry::MeshData& p_mesh_data) {
 
 	surfaces.push_back(s);
 	_change_notify();
+
+	emit_changed();
 }
 
 RID Mesh::get_rid() const {
@@ -850,7 +848,6 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 	}
 
 	{
-		int tc=0;
 		DVector<int>::Write ir;
 		DVector<int> indices =arrays[ARRAY_INDEX];
 		bool has_indices=false;

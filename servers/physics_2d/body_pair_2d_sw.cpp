@@ -298,19 +298,17 @@ bool BodyPair2DSW::setup(float p_step) {
 		if (A->is_using_one_way_collision()) {
 			Vector2 direction = A->get_one_way_collision_direction();
 			bool valid=false;
-			for(int i=0;i<contact_count;i++) {
-				Contact& c = contacts[i];
+			if (B->get_linear_velocity().dot(direction)>=0){
+				for(int i=0;i<contact_count;i++) {
+					Contact& c = contacts[i];
+					if (!c.reused)
+						continue;
+					if (c.normal.dot(direction)<0)
+						continue;
 
-				if (c.normal.dot(direction)<0)
-					continue;
-				if (B->get_linear_velocity().dot(direction)<0)
-					continue;
-
-				if (!c.reused) {
-					continue;
+					valid=true;
+					break;
 				}
-
-				valid=true;
 			}
 
 			if (!valid) {
@@ -323,20 +321,17 @@ bool BodyPair2DSW::setup(float p_step) {
 		if (B->is_using_one_way_collision()) {
 			Vector2 direction = B->get_one_way_collision_direction();
 			bool valid=false;
-			for(int i=0;i<contact_count;i++) {
+			if (A->get_linear_velocity().dot(direction)>=0){
+				for(int i=0;i<contact_count;i++) {
+					Contact& c = contacts[i];
+					if (!c.reused)
+						continue;
+					if (c.normal.dot(direction)<0)
+						continue;
 
-				Contact& c = contacts[i];
-
-				if (c.normal.dot(direction)<0)
-					continue;
-				if (A->get_linear_velocity().dot(direction)<0)
-					continue;
-
-				if (!c.reused) {
-					continue;
+					valid=true;
+					break;
 				}
-
-				valid=true;
 			}
 			if (!valid) {
 				collided=false;

@@ -313,6 +313,8 @@ struct engine {
 
     ASensorManager* sensorManager;
     const ASensor* accelerometerSensor;
+    const ASensor* magnetometerSensor;
+    const ASensor* gyroscopeSensor;
     ASensorEventQueue* sensorEventQueue;
 
     bool display_active;
@@ -736,14 +738,40 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 			engine->accelerometerSensor, (1000L/60)*1000);
 
 	    }
+	    // Also start monitoring the magnetometer.
+	    if (engine->magnetometerSensor != NULL) {
+		ASensorEventQueue_enableSensor(engine->sensorEventQueue,
+			engine->magnetometerSensor);
+		// We'd like to get 60 events per second (in us).
+		ASensorEventQueue_setEventRate(engine->sensorEventQueue,
+			engine->magnetometerSensor, (1000L/60)*1000);
+
+	    }
+	    // And the gyroscope.
+	    if (engine->gyroscopeSensor != NULL) {
+		ASensorEventQueue_enableSensor(engine->sensorEventQueue,
+			engine->gyroscopeSensor);
+		// We'd like to get 60 events per second (in us).
+		ASensorEventQueue_setEventRate(engine->sensorEventQueue,
+			engine->gyroscopeSensor, (1000L/60)*1000);
+
+	    }
 	    engine->animating = 1;
 	    break;
 	case APP_CMD_LOST_FOCUS:
-	    // When our app loses focus, we stop monitoring the accelerometer.
+	    // When our app loses focus, we stop monitoring the sensors.
 	    // This is to avoid consuming battery while not being used.
 	    if (engine->accelerometerSensor != NULL) {
 		ASensorEventQueue_disableSensor(engine->sensorEventQueue,
 			engine->accelerometerSensor);
+	    }
+	    if (engine->magnetometerSensor != NULL) {
+		ASensorEventQueue_disableSensor(engine->sensorEventQueue,
+			engine->magnetometerSensor);
+	    }
+	    if (engine->gyroscopeSensor != NULL) {
+		ASensorEventQueue_disableSensor(engine->sensorEventQueue,
+			engine->gyroscopeSensor);
 	    }
 	    // Also stop animating.
 	    engine->animating = 0;
@@ -768,10 +796,14 @@ void android_main(struct android_app* state) {
 
      FileAccessAndroid::asset_manager=state->activity->assetManager;
 
-     // Prepare to monitor accelerometer
+     // Prepare to monitor sensors
      engine.sensorManager = ASensorManager_getInstance();
      engine.accelerometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
-	     ASENSOR_TYPE_ACCELEROMETER);
+           ASENSOR_TYPE_ACCELEROMETER);
+     engine.magnetometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
+           ASENSOR_TYPE_MAGNETIC_FIELD);
+     engine.gyroscopeSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
+           ASENSOR_TYPE_GYROSCOPE);
      engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager,
 	     state->looper, LOOPER_ID_USER, NULL, NULL);
 
@@ -812,16 +844,25 @@ void android_main(struct android_app* state) {
 	     // If a sensor has data, process it now.
 	    // LOGI("events\n");
 	     if (ident == LOOPER_ID_USER) {
-		 if (engine.accelerometerSensor != NULL) {
+		 if (engine.accelerometerSensor != NULL || engine.magnetometerSensor != NULL || engine.gyroscopeSensor != NULL) {
 		     ASensorEvent event;
 		     while (ASensorEventQueue_getEvents(engine.sensorEventQueue,
 			     &event, 1) > 0) {
 
 
 			     if (engine.os) {
+				  if (event.acceleration != NULL) {
 				     engine.os->process_accelerometer(Vector3(event.acceleration.x, event.acceleration.y,
 									      event.acceleration.z));
-
+				  }
+				  if (event.magnetic != NULL) {
+				     engine.os->process_magnetometer(Vector3(event.magnetic.x, event.magnetic.y,
+									      event.magnetic.z));
+				  }
+				  if (event.vector != NULL) {
+				     engine.os->process_gyroscope(Vector3(event.vector.x, event.vector.y,
+									      event.vector.z));
+				  }
 			     }
 
 		     }
@@ -889,7 +930,7 @@ static Variant::Type get_jni_type(const String& p_type) {
 		{"java.lang.String",Variant::STRING},
 		{"[I",Variant::INT_ARRAY},
 		{"[F",Variant::REAL_ARRAY},
-		{"[java.lang.String",Variant::STRING_ARRAY},
+		{"[Ljava.lang.String;",Variant::STRING_ARRAY},
 		{NULL,Variant::NIL}
 	};
 
@@ -920,7 +961,7 @@ static const char* get_jni_sig(const String& p_type) {
 		{"java.lang.String","Ljava/lang/String;"},
 		{"[I","[I"},
 		{"[F","[F"},
-		{"[java.lang.String","[Ljava/lang/String;"},
+		{"[Ljava.lang.String;","[Ljava/lang/String;"},
 		{NULL,"V"}
 	};
 

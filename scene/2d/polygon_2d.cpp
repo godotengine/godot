@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  polygon_2d.cpp                                                       */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "polygon_2d.h"
 
 Rect2 Polygon2D::get_item_rect() const {
@@ -145,7 +173,18 @@ void Polygon2D::_notification(int p_what) {
 
 
 			Vector<Color> colors;
-			colors.push_back(color);
+			int color_len=vertex_colors.size();
+			colors.resize(len);
+			{
+				DVector<Color>::Read color_r=vertex_colors.read();
+				for(int i=0;i<color_len && i<len;i++){
+					colors[i]=color_r[i];
+				}
+				for(int i=color_len;i<len;i++){
+					colors[i]=color;
+				}
+			}
+
 			Vector<int> indices = Geometry::triangulate_polygon(points);
 
 			VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(),indices,points,colors,uvs,texture.is_valid()?texture->get_rid():RID());
@@ -186,6 +225,16 @@ void Polygon2D::set_color(const Color& p_color){
 Color Polygon2D::get_color() const{
 
 	return color;
+}
+
+void Polygon2D::set_vertex_colors(const DVector<Color>& p_colors){
+
+	vertex_colors=p_colors;
+	update();
+}
+DVector<Color> Polygon2D::get_vertex_colors() const{
+
+	return vertex_colors;
 }
 
 void Polygon2D::set_texture(const Ref<Texture>& p_texture){
@@ -239,12 +288,12 @@ float Polygon2D::_get_texture_rotationd() const{
 }
 
 
-void Polygon2D::set_texture_scale(const Vector2& p_scale){
+void Polygon2D::set_texture_scale(const Size2& p_scale){
 
 	tex_scale=p_scale;
 	update();
 }
-Vector2 Polygon2D::get_texture_scale() const{
+Size2 Polygon2D::get_texture_scale() const{
 
 	return tex_scale;
 }
@@ -293,6 +342,9 @@ void Polygon2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_color","color"),&Polygon2D::set_color);
 	ObjectTypeDB::bind_method(_MD("get_color"),&Polygon2D::get_color);
 
+	ObjectTypeDB::bind_method(_MD("set_vertex_colors","vertex_colors"),&Polygon2D::set_vertex_colors);
+	ObjectTypeDB::bind_method(_MD("get_vertex_colors"),&Polygon2D::get_vertex_colors);
+
 	ObjectTypeDB::bind_method(_MD("set_texture","texture"),&Polygon2D::set_texture);
 	ObjectTypeDB::bind_method(_MD("get_texture"),&Polygon2D::get_texture);
 
@@ -323,6 +375,7 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"uv"),_SCS("set_uv"),_SCS("get_uv"));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR_ARRAY,"vertex_colors"),_SCS("set_vertex_colors"),_SCS("get_vertex_colors"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture/offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));

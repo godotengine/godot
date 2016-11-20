@@ -47,12 +47,15 @@ void Slider::_input_event(InputEvent p_event) {
 		if (mb.button_index==BUTTON_LEFT) {
 
 			if (mb.pressed)	{
+				Ref<Texture> grabber = get_icon(mouse_inside||has_focus()?"grabber_hilite":"grabber");				
 				grab.pos=orientation==VERTICAL?mb.y:mb.x;
-				double max = orientation==VERTICAL ? get_size().height : get_size().width ;
+				double grab_width = (double)grabber->get_size().width;
+				double grab_height = (double)grabber->get_size().height;
+				double max = orientation==VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
 				if (orientation==VERTICAL)
-					set_unit_value( 1 - ((double)grab.pos / max) );
+					set_unit_value( 1 - (((double)grab.pos - (grab_height / 2.0)) / max) );
 				else
-					set_unit_value((double)grab.pos / max);
+					set_unit_value(((double)grab.pos - (grab_width/2.0)) / max);
 				grab.active=true;
 				grab.uvalue=get_unit_value();
 			} else {
@@ -237,6 +240,7 @@ void Slider::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "tick_count", PROPERTY_HINT_RANGE,"0,4096,1"), _SCS("set_ticks"), _SCS("get_ticks") );
         ADD_PROPERTY( PropertyInfo( Variant::BOOL, "ticks_on_borders" ), _SCS("set_ticks_on_borders"), _SCS("get_ticks_on_borders") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT,"focus_mode", PROPERTY_HINT_ENUM, "None,Click,All" ), _SCS("set_focus_mode"), _SCS("get_focus_mode") );
 
 }
 

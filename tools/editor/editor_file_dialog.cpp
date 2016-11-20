@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  editor_file_dialog.cpp                                               */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "editor_file_dialog.h"
 #include "scene/gui/label.h"
 #include "scene/gui/center_container.h"
@@ -7,7 +35,7 @@
 #include "editor_settings.h"
 #include "scene/gui/margin_container.h"
 #include "os/file_access.h"
-
+#include "editor_scale.h"
 EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func=NULL;
 EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func=NULL;
 
@@ -70,35 +98,64 @@ void EditorFileDialog::_unhandled_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::KEY && is_window_modal_on_top()) {
 
-		const InputEventKey &k=p_event.key;
+		if (p_event.key.pressed) {
 
-		if (k.pressed) {
+			bool handled=false;
 
-			bool handled=true;
-
-			switch (k.scancode) {
-
-				case KEY_H: {
-
-					if (k.mod.command) {
-
-						bool show=!show_hidden_files;
-						set_show_hidden_files(show);
-						EditorSettings::get_singleton()->set("file_dialog/show_hidden_files",show);
-					} else {
-						handled=false;
-					}
-
-				} break;
-				case KEY_F5: {
-
-					invalidate();
-				} break;
-				default: { handled=false; }
+			if (ED_IS_SHORTCUT("file_dialog/go_back", p_event)) {
+				_go_back();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/go_forward", p_event)) {
+				_go_forward();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/go_up", p_event)) {
+				_go_up();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/refresh", p_event)) {
+				invalidate();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/toggle_hidden_files", p_event)) {
+				bool show=!show_hidden_files;
+				set_show_hidden_files(show);
+				EditorSettings::get_singleton()->set("file_dialog/show_hidden_files",show);
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/toggle_favorite", p_event)) {
+				_favorite_toggled(favorite->is_pressed());
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/toggle_mode", p_event)) {
+				if (mode_thumbnails->is_pressed()) {
+					set_display_mode(DISPLAY_LIST);
+				} else {
+					set_display_mode(DISPLAY_THUMBNAILS);
+				}
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/create_folder", p_event)) {
+				_make_dir();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
+				dir->grab_focus();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/move_favorite_up", p_event)) {
+				_favorite_move_up();
+				handled=true;
+			}
+			if (ED_IS_SHORTCUT("file_dialog/move_favorite_down", p_event)) {
+				_favorite_move_down();
+				handled=true;
 			}
 
-			if (handled)
+			if (handled) {
 				accept_event();
+			}
 		}
 	}
 }
@@ -273,23 +330,27 @@ void EditorFileDialog::_action_pressed() {
 
 	String f=dir_access->get_current_dir().plus_file(file->get_text());
 
-	if (mode==MODE_OPEN_FILE && dir_access->file_exists(f)) {
+	if ((mode==MODE_OPEN_ANY || mode==MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 		_save_to_recent();
 		emit_signal("file_selected",f);
 		hide();
-	}
-
-	if (mode==MODE_OPEN_DIR) {
-
+	}else if (mode==MODE_OPEN_ANY || mode==MODE_OPEN_DIR) {
 
 		String path=dir_access->get_current_dir();
-		/*if (tree->get_selected()) {
-			Dictionary d = tree->get_selected()->get_metadata(0);
-			if (d["dir"]) {
-				path=path+"/"+String(d["name"]);
-			}
-		}*/
+
 		path=path.replace("\\","/");
+
+		for(int i=0;i<item_list->get_item_count();i++) {
+			if (item_list->is_selected(i)) {
+				Dictionary d=item_list->get_item_metadata(i);
+				if (d["dir"]) {
+					path=path.plus_file(d["name"]);
+
+					break;
+				}
+			}
+		}
+
 		_save_to_recent();
 		emit_signal("dir_selected",path);
 		hide();
@@ -349,13 +410,13 @@ void EditorFileDialog::_action_pressed() {
 
 		if (!valid) {
 
-			exterr->popup_centered_minsize(Size2(250,80));
+			exterr->popup_centered_minsize(Size2(250,80)*EDSCALE);
 			return;
 
 		}
 
-		if (dir_access->file_exists(f)) {
-			confirm_save->set_text("File Exists, Overwrite?");
+		if (dir_access->file_exists(f) && !disable_overwrite_warning) {
+			confirm_save->set_text(TTR("File Exists, Overwrite?"));
 			confirm_save->popup_centered(Size2(200,80));
 		} else {
 
@@ -411,10 +472,7 @@ void EditorFileDialog::_item_dc_selected(int p_item) {
 
 	if (d["dir"]) {
 
-		//print_line("change dir: "+String(d["name"]));
 		dir_access->change_dir(d["name"]);
-		if (mode==MODE_OPEN_FILE || mode==MODE_OPEN_FILES || mode==MODE_OPEN_DIR)
-			file->set_text("");
 		call_deferred("_update_file_list");
 		call_deferred("_update_dir");
 
@@ -433,6 +491,7 @@ void EditorFileDialog::update_file_list() {
 
 
 	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	thumbnail_size*=EDSCALE;
 	Ref<Texture> folder_thumbnail;
 	Ref<Texture> file_thumbnail;
 
@@ -444,7 +503,7 @@ void EditorFileDialog::update_file_list() {
 		item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 		item_list->set_fixed_column_width(thumbnail_size*3/2);
 		item_list->set_max_text_lines(2);
-		item_list->set_min_icon_size(Size2(thumbnail_size,thumbnail_size));
+		item_list->set_fixed_icon_size(Size2(thumbnail_size,thumbnail_size));
 
 		if (!has_icon("ResizedFolder","EditorIcons")) {
 			Ref<ImageTexture> folder = get_icon("FolderBig","EditorIcons");
@@ -476,7 +535,7 @@ void EditorFileDialog::update_file_list() {
 		item_list->set_max_columns(1);
 		item_list->set_max_text_lines(1);
 		item_list->set_fixed_column_width(0);
-		item_list->set_min_icon_size(Size2());
+		item_list->set_fixed_icon_size(Size2());
 		if (preview->get_texture().is_valid())
 			preview_vb->show();
 
@@ -509,29 +568,35 @@ void EditorFileDialog::update_file_list() {
 		}
 	}
 
+	if (dirs.find("..")==NULL) {
+		//may happen if lacking permissions
+		dirs.push_back("..");
+	}
+
 	dirs.sort_custom<NoCaseComparator>();
 	files.sort_custom<NoCaseComparator>();
 
 	while(!dirs.empty()) {
+		const String& dir_name=dirs.front()->get();
 
-		if (dirs.front()->get()!=".") {
-			item_list->add_item(dirs.front()->get()+"/");
-			if (display_mode==DISPLAY_THUMBNAILS) {
+		item_list->add_item(dir_name+"/");
 
-				item_list->set_item_icon(item_list->get_item_count()-1,folder_thumbnail);
-			} else {
+		if (display_mode==DISPLAY_THUMBNAILS) {
 
-				item_list->set_item_icon(item_list->get_item_count()-1,folder);
-			}
+			item_list->set_item_icon(item_list->get_item_count()-1,folder_thumbnail);
+		} else {
 
-			Dictionary d;
-			d["name"]=dirs.front()->get();
-			d["path"]=String();
-			d["dir"]=true;
-			item_list->set_item_metadata( item_list->get_item_count() -1, d);
+			item_list->set_item_icon(item_list->get_item_count()-1,folder);
 		}
-		dirs.pop_front();
 
+		Dictionary d;
+		d["name"]=dir_name;
+		d["path"]=String();
+		d["dir"]=true;
+
+		item_list->set_item_metadata( item_list->get_item_count() -1, d);
+
+		dirs.pop_front();
 	}
 
 	dirs.clear();
@@ -679,7 +744,7 @@ void EditorFileDialog::update_filters() {
 		if (max_filters<filters.size())
 			all_filters+=", ...";
 
-		filter->add_item("All Recognized ( "+all_filters+" )");
+		filter->add_item(TTR("All Recognized")+" ( "+all_filters+" )");
 	}
 	for(int i=0;i<filters.size();i++) {
 
@@ -691,7 +756,7 @@ void EditorFileDialog::update_filters() {
 			filter->add_item("( "+flt+" )");
 	}
 
-	filter->add_item("All Files (*)");
+	filter->add_item(TTR("All Files (*)"));
 
 }
 
@@ -769,10 +834,11 @@ void EditorFileDialog::set_mode(Mode p_mode) {
 	mode=p_mode;
 	switch(mode) {
 
-		case MODE_OPEN_FILE: get_ok()->set_text("Open"); set_title("Open a File"); makedir->hide(); break;
-		case MODE_OPEN_FILES: get_ok()->set_text("Open"); set_title("Open File(s)"); makedir->hide(); break;
-		case MODE_SAVE_FILE: get_ok()->set_text("Save"); set_title("Save a File"); makedir->show(); break;
-		case MODE_OPEN_DIR: get_ok()->set_text("Open"); set_title("Open a Directory"); makedir->show(); break;
+		case MODE_OPEN_FILE: get_ok()->set_text(TTR("Open")); set_title("Open a File"); makedir->hide(); break;
+		case MODE_OPEN_FILES: get_ok()->set_text(TTR("Open")); set_title("Open File(s)"); makedir->hide(); break;
+		case MODE_OPEN_DIR: get_ok()->set_text(TTR("Open")); set_title("Open a Directory"); makedir->show(); break;
+		case MODE_OPEN_ANY: get_ok()->set_text(TTR("Open")); set_title("Open a File or Directory"); makedir->show(); break;
+		case MODE_SAVE_FILE: get_ok()->set_text(TTR("Save")); set_title("Save a File"); makedir->show(); break;
 	}
 
 	if (mode==MODE_OPEN_FILES) {
@@ -832,7 +898,6 @@ EditorFileDialog::Access EditorFileDialog::get_access() const{
 
 void EditorFileDialog::_make_dir_confirm() {
 
-
 	Error err = dir_access->make_dir( makedirname->get_text() );
 	if (err==OK) {
 		dir_access->change_dir(makedirname->get_text());
@@ -842,14 +907,15 @@ void EditorFileDialog::_make_dir_confirm() {
 		_push_history();
 
 	} else {
-		mkdirerr->popup_centered_minsize(Size2(250,50));
+		mkdirerr->popup_centered_minsize(Size2(250,50)*EDSCALE);
 	}
+	makedirname->set_text(""); // reset label
 }
 
 
 void EditorFileDialog::_make_dir() {
 
-	makedialog->popup_centered_minsize(Size2(250,80));
+	makedialog->popup_centered_minsize(Size2(250,80)*EDSCALE);
 	makedirname->grab_focus();
 
 }
@@ -1129,6 +1195,8 @@ void EditorFileDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_display_mode","mode"),&EditorFileDialog::set_display_mode);
 	ObjectTypeDB::bind_method(_MD("get_display_mode"),&EditorFileDialog::get_display_mode);
 	ObjectTypeDB::bind_method(_MD("_thumbnail_result"),&EditorFileDialog::_thumbnail_result);
+	ObjectTypeDB::bind_method(_MD("set_disable_overwrite_warning","disable"),&EditorFileDialog::set_disable_overwrite_warning);
+	ObjectTypeDB::bind_method(_MD("is_overwrite_warning_disabled"),&EditorFileDialog::is_overwrite_warning_disabled);
 
 	ObjectTypeDB::bind_method(_MD("_recent_selected"),&EditorFileDialog::_recent_selected);
 	ObjectTypeDB::bind_method(_MD("_go_back"),&EditorFileDialog::_go_back);
@@ -1149,6 +1217,7 @@ void EditorFileDialog::_bind_methods() {
 	BIND_CONSTANT( MODE_OPEN_FILE );
 	BIND_CONSTANT( MODE_OPEN_FILES );
 	BIND_CONSTANT( MODE_OPEN_DIR );
+	BIND_CONSTANT( MODE_OPEN_ANY );
 	BIND_CONSTANT( MODE_SAVE_FILE );
 
 	BIND_CONSTANT( ACCESS_RESOURCES );
@@ -1201,18 +1270,41 @@ void EditorFileDialog::_save_to_recent() {
 
 }
 
+void EditorFileDialog::set_disable_overwrite_warning(bool p_disable) {
+
+	disable_overwrite_warning=p_disable;
+}
+
+bool EditorFileDialog::is_overwrite_warning_disabled() const{
+
+	return disable_overwrite_warning;
+}
+
+
 EditorFileDialog::EditorFileDialog() {
 
 	show_hidden_files=default_show_hidden_files;
 	display_mode=default_display_mode;
 	local_history_pos=0;
-
+	disable_overwrite_warning=false;
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);
 
 	mode=MODE_SAVE_FILE;
-	set_title("Save a File");
+	set_title(TTR("Save a File"));
+
+	ED_SHORTCUT("file_dialog/go_back", TTR("Go Back"), KEY_MASK_ALT|KEY_LEFT);
+	ED_SHORTCUT("file_dialog/go_forward", TTR("Go Forward"), KEY_MASK_ALT|KEY_RIGHT);
+	ED_SHORTCUT("file_dialog/go_up", TTR("Go Up"), KEY_MASK_ALT|KEY_UP);
+	ED_SHORTCUT("file_dialog/refresh", TTR("Refresh"), KEY_F5);
+	ED_SHORTCUT("file_dialog/toggle_hidden_files", TTR("Toggle Hidden Files"), KEY_MASK_CMD|KEY_H);
+	ED_SHORTCUT("file_dialog/toggle_favorite", TTR("Toggle Favorite"), KEY_MASK_ALT|KEY_F);
+	ED_SHORTCUT("file_dialog/toggle_mode", TTR("Toggle Mode"), KEY_MASK_ALT|KEY_V);
+	ED_SHORTCUT("file_dialog/create_folder", TTR("Create Folder"), KEY_MASK_CMD|KEY_N);
+	ED_SHORTCUT("file_dialog/focus_path", TTR("Focus Path"), KEY_MASK_CMD|KEY_D);
+	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KEY_MASK_CMD|KEY_UP);
+	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KEY_MASK_CMD|KEY_DOWN);
 
 	HBoxContainer *pathhb = memnew( HBoxContainer );
 
@@ -1258,13 +1350,13 @@ EditorFileDialog::EditorFileDialog() {
 	drives->connect("item_selected",this,"_select_drive");
 
 	makedir = memnew( Button );
-	makedir->set_text("Create Folder");
+	makedir->set_text(TTR("Create Folder"));
 	makedir->connect("pressed",this,"_make_dir");
 	pathhb->add_child(makedir);
 
 	list_hb = memnew( HBoxContainer );
 
-	vbc->add_margin_child("Path:",pathhb);
+	vbc->add_margin_child(TTR("Path:"),pathhb);
 	vbc->add_child(list_hb);
 	list_hb->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -1272,7 +1364,7 @@ EditorFileDialog::EditorFileDialog() {
 	list_hb->add_child(fav_vb);
 	HBoxContainer *fav_hb = memnew( HBoxContainer );
 	fav_vb->add_child(fav_hb);
-	fav_hb->add_child(memnew(Label("Favorites:")));
+	fav_hb->add_child(memnew(Label(TTR("Favorites:"))));
 	fav_hb->add_spacer();
 	fav_up = memnew( ToolButton );
 	fav_hb->add_child(fav_up);
@@ -1292,7 +1384,7 @@ EditorFileDialog::EditorFileDialog() {
 	favorites->connect("item_selected",this,"_favorite_selected");
 
 	recent = memnew( ItemList );
-	fav_vb->add_margin_child("Recent:",recent,true);
+	fav_vb->add_margin_child(TTR("Recent:"),recent,true);
 	recent->connect("item_selected",this,"_recent_selected");
 
 	VBoxContainer *item_vb = memnew( VBoxContainer );
@@ -1301,7 +1393,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	item_list = memnew( ItemList );
 	item_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	item_vb->add_margin_child("Directories & Files:",item_list,true);
+	item_vb->add_margin_child(TTR("Directories & Files:"),item_list,true);
 
 	HBoxContainer* filter_hb = memnew( HBoxContainer );
 	item_vb->add_child(filter_hb);
@@ -1313,7 +1405,7 @@ EditorFileDialog::EditorFileDialog() {
 	preview_vb = memnew( VBoxContainer );
 	filter_hb->add_child(preview_vb);
 	CenterContainer *prev_cc = memnew( CenterContainer );
-	preview_vb->add_margin_child("Preview:",prev_cc);
+	preview_vb->add_margin_child(TTR("Preview:"),prev_cc);
 	preview = memnew( TextureFrame );
 	prev_cc->add_child(preview);
 	preview_vb->hide();
@@ -1321,12 +1413,12 @@ EditorFileDialog::EditorFileDialog() {
 
 	file = memnew(LineEdit);
 	//add_child(file);
-	filter_vb->add_margin_child("File:",file);
+	filter_vb->add_margin_child(TTR("File:"),file);
 
 
 	filter = memnew( OptionButton );
 	//add_child(filter);
-	filter_vb->add_margin_child("Filter:",filter);
+	filter_vb->add_margin_child(TTR("Filter:"),filter);
 	filter->set_clip_text(true);//too many extensions overflow it
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -1351,21 +1443,21 @@ EditorFileDialog::EditorFileDialog() {
 	confirm_save->connect("confirmed", this,"_save_confirm_pressed");
 
 	makedialog = memnew( ConfirmationDialog );
-	makedialog->set_title("Create Folder");
+	makedialog->set_title(TTR("Create Folder"));
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
 	makedialog->set_child_rect(makevb);
 	makedirname = memnew( LineEdit );
-	makevb->add_margin_child("Name:",makedirname);
+	makevb->add_margin_child(TTR("Name:"),makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed",this,"_make_dir_confirm");
 	mkdirerr = memnew( AcceptDialog );
-	mkdirerr->set_text("Could not create folder.");
+	mkdirerr->set_text(TTR("Could not create folder."));
 	add_child(mkdirerr);
 
 	exterr = memnew( AcceptDialog );
-	exterr->set_text("Must use a valid extension.");
+	exterr->set_text(TTR("Must use a valid extension."));
 	add_child(exterr);
 
 
@@ -1431,5 +1523,6 @@ EditorLineEditFileChooser::EditorLineEditFileChooser() {
 	dialog->connect("file_selected",this,"_chosen");
 	dialog->connect("dir_selected",this,"_chosen");
 	dialog->connect("files_selected",this,"_chosen");
+
 
 }

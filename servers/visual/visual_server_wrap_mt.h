@@ -101,6 +101,8 @@ public:
 	FUNC2(texture_set_path,RID,const String&);
 	FUNC1RC(String,texture_get_path,RID);
 
+	FUNC1(texture_set_shrink_all_x2_on_set_data,bool);
+
 	virtual void texture_debug_usage(List<TextureInfo> *r_info) {
 		//pass directly, should lock the server anyway
 		visual_server->texture_debug_usage(r_info);
@@ -391,6 +393,14 @@ public:
 	FUNC3(baked_light_add_lightmap,RID,RID,int);
 	FUNC1(baked_light_clear_lightmaps,RID);
 
+	FUNC2(baked_light_set_realtime_color_enabled, RID, const bool);
+	FUNC1RC(bool, baked_light_get_realtime_color_enabled, RID);
+
+	FUNC2(baked_light_set_realtime_color, RID, const Color&);
+	FUNC1RC(Color, baked_light_get_realtime_color, RID);
+
+	FUNC2(baked_light_set_realtime_energy, RID, const float);
+	FUNC1RC(float, baked_light_get_realtime_energy, RID);
 
 	FUNC0R(RID,baked_light_sampler_create);
 
@@ -515,6 +525,8 @@ public:
 	FUNC3(instance_set_morph_target_weight,RID,int, float);
 	FUNC2RC(float,instance_get_morph_target_weight,RID,int);
 
+	FUNC3(instance_set_surface_material,RID,int, RID);
+
 	FUNC2(instance_set_transform,RID, const Transform&);
 	FUNC1RC(Transform,instance_get_transform,RID);
 
@@ -590,12 +602,12 @@ public:
 
 	FUNC2(canvas_item_attach_viewport,RID, RID );
 
-	FUNC5(canvas_item_add_line,RID, const Point2& , const Point2& ,const Color& ,float );
+	FUNC6(canvas_item_add_line,RID, const Point2& , const Point2& ,const Color& ,float,bool);
 	FUNC3(canvas_item_add_rect,RID, const Rect2& , const Color& );
 	FUNC4(canvas_item_add_circle,RID, const Point2& , float ,const Color& );
 	FUNC6(canvas_item_add_texture_rect,RID, const Rect2& , RID ,bool ,const Color&,bool );
 	FUNC6(canvas_item_add_texture_rect_region,RID, const Rect2& , RID ,const Rect2& ,const Color&,bool );
-	FUNC7(canvas_item_add_style_box,RID, const Rect2& , RID ,const Vector2& ,const Vector2&, bool ,const Color& );
+	FUNC8(canvas_item_add_style_box,RID, const Rect2& , const Rect2&, RID ,const Vector2& ,const Vector2&, bool ,const Color& );
 	FUNC6(canvas_item_add_primitive,RID, const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID ,float );
 	FUNC5(canvas_item_add_polygon,RID, const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID );
 	FUNC7(canvas_item_add_triangle_array,RID, const Vector<int>& , const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID , int );
@@ -668,7 +680,7 @@ public:
 
 	/* CURSOR */
 	FUNC2(cursor_set_rotation,float , int ); // radians
-	FUNC3(cursor_set_texture,RID , const Point2 &, int );
+	FUNC4(cursor_set_texture,RID , const Point2 &, int, const Rect2 &);
 	FUNC2(cursor_set_visible,bool , int );
 	FUNC2(cursor_set_pos,const Point2& , int );
 
@@ -706,6 +718,7 @@ public:
 
 	FUNC3(set_boot_image,const Image& , const Color&,bool );
 	FUNC1(set_default_clear_color,const Color& );
+	FUNC0RC(Color,get_default_clear_color );
 
 	FUNC0R(RID,get_test_cube );
 

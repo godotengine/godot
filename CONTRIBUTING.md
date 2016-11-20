@@ -54,6 +54,30 @@ Also try to make commits that bring the engine from one stable state to another 
 
 This git style guide has some good practices to have in mind: https://github.com/agis-/git-style-guide
 
+#### Format your commit logs with readability in mind
+
+The way you format your commit logs is quite important to ensure that the commit history and changelog will be easy to read and understand. A git commit log is formatted as a short title (first line) and an extended description (everything after the first line and an empty separation line).
+
+The short title is the most important part, as it is what will appear in the `shortlog` changelog (one line per commit, so no description shown) or in the GitHub interface unless you click the "expand" button. As the name tells it, try to keep that first line relatively short (ideally <= 50 chars, though it's rare to be able to tell enough in so few characters, so you can go a bit higher) - it should describe what the commit does globally, while details would go in the description. Typically, if you can't keep the title short because you have too much stuff to mention, it means that you should probably split your changes in several commits :)
+
+Here's an example of a well-formatted commit log (note how the extended description is also manually wrapped at 80 chars for readability):
+
+```
+Prevent French fries carbonization by fixing heat regulation
+
+When using the French fries frying module, Godot would not regulate the heat
+and thus bring the oil bath to supercritical liquid conditions, thus causing
+unwanted side effects in the physics engine.
+
+By fixing the regulation system via an added binding to the internal feature,
+this commit now ensures that Godot will not go past the ebullition temperature
+of cooking oil under normal atmosheric conditions.
+
+Fixes #1789, long live the Realm!
+```
+
+*Note:* When using the GitHub online editor (or worse, the drag and drop feature), *please* edit the commit title to something meaningful. Commits named "Update my_file.cpp" will not be accepted.
+
 Thanks!
 
 The Godot development team

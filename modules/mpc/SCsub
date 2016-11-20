@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_mpc = env_modules.Clone()
+
+# Thirdparty source files
+if (env['builtin_libmpcdec'] != 'no'):
+    thirdparty_dir = "#thirdparty/libmpcdec/"
+    thirdparty_sources = [
+        "huffman.c",
+        "mpc_bits_reader.c",
+        "mpc_decoder.c",
+        "mpc_demux.c",
+        "mpc_reader.c",
+        "requant.c",
+        "streaminfo.c",
+        "synth_filter.c",
+    ]
+
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_mpc.add_source_files(env.modules_sources, thirdparty_sources)
+    env_mpc.Append(CPPPATH=[thirdparty_dir])
+
+# Godot source files
+env_mpc.add_source_files(env.modules_sources, "*.cpp")

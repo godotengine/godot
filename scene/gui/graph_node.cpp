@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  graph_node.cpp                                                       */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "graph_node.h"
 #include "method_bind_ext.inc"
 
@@ -155,14 +183,45 @@ void GraphNode::_resort() {
 
 }
 
+bool GraphNode::has_point(const Point2& p_point) const {
+
+	if (comment) {
+		Ref<StyleBox> comment = get_stylebox("comment");
+		Ref<Texture> resizer =get_icon("resizer");
+
+		if (Rect2(get_size()-resizer->get_size(), resizer->get_size()).has_point(p_point)) {
+			return true;
+		}
+		if (Rect2(0,0,get_size().width,comment->get_margin(MARGIN_TOP)).has_point(p_point)) {
+			return true;
+		}
+
+		return false;
+
+	} else {
+		return Control::has_point(p_point);
+	}
+}
 
 void GraphNode::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
 
-		Ref<StyleBox> sb=get_stylebox(selected ? "selectedframe" : "frame");
+		Ref<StyleBox> sb;
+
+		if (comment) {
+			sb = get_stylebox( selected? "commentfocus" : "comment");
+
+		} else {
+
+			sb = get_stylebox( selected ? "selectedframe" : "frame");
+		}
+
+		sb=sb->duplicate();
+		sb->call("set_modulate",modulate);
 		Ref<Texture> port =get_icon("port");
 		Ref<Texture> close =get_icon("close");
+		Ref<Texture> resizer =get_icon("resizer");
 		int close_offset = get_constant("close_offset");
 		Ref<Font> title_font = get_font("title_font");
 		int title_offset = get_constant("title_offset");
@@ -170,7 +229,24 @@ void GraphNode::_notification(int p_what) {
 		Point2i icofs = -port->get_size()*0.5;
 		int edgeofs=get_constant("port_offset");
 		icofs.y+=sb->get_margin(MARGIN_TOP);
+
+
+
 		draw_style_box(sb,Rect2(Point2(),get_size()));
+
+		switch(overlay) {
+			case OVERLAY_DISABLED: {
+
+			} break;
+			case OVERLAY_BREAKPOINT: {
+
+				draw_style_box(get_stylebox("breakpoint"),Rect2(Point2(),get_size()));
+			} break;
+			case OVERLAY_POSITION: {
+				draw_style_box(get_stylebox("position"),Rect2(Point2(),get_size()));
+
+			} break;
+		}
 
 		int w = get_size().width-sb->get_minimum_size().x;
 
@@ -195,11 +271,26 @@ void GraphNode::_notification(int p_what) {
 				continue;
 			const Slot &s=slot_info[E->key()];
 			//left
-			if (s.enable_left)
-				port->draw(get_canvas_item(),icofs+Point2(edgeofs,cache_y[E->key()]),s.color_left);
-			if (s.enable_right)
-				port->draw(get_canvas_item(),icofs+Point2(get_size().x-edgeofs,cache_y[E->key()]),s.color_right);
+			if (s.enable_left) {
+				Ref<Texture> p = port;
+				if (s.custom_slot_left.is_valid()) {
+					p=s.custom_slot_left;
+				}
+				p->draw(get_canvas_item(),icofs+Point2(edgeofs,cache_y[E->key()]),s.color_left);
+			}
+			if (s.enable_right) {
+				Ref<Texture> p = port;
+				if (s.custom_slot_right.is_valid()) {
+					p=s.custom_slot_right;
+				}
+				p->draw(get_canvas_item(),icofs+Point2(get_size().x-edgeofs,cache_y[E->key()]),s.color_right);
+			}
 
+		}
+
+
+		if (resizeable) {
+			draw_texture(resizer,get_size()-resizer->get_size());
 		}
 	}
 
@@ -211,7 +302,7 @@ void GraphNode::_notification(int p_what) {
 }
 
 
-void GraphNode::set_slot(int p_idx,bool p_enable_left,int p_type_left,const Color& p_color_left, bool p_enable_right,int p_type_right,const Color& p_color_right) {
+void GraphNode::set_slot(int p_idx,bool p_enable_left,int p_type_left,const Color& p_color_left, bool p_enable_right,int p_type_right,const Color& p_color_right,const Ref<Texture>& p_custom_left,const Ref<Texture>& p_custom_right) {
 
 	ERR_FAIL_COND(p_idx<0);
 
@@ -227,6 +318,8 @@ void GraphNode::set_slot(int p_idx,bool p_enable_left,int p_type_left,const Colo
 	s.enable_right=p_enable_right;
 	s.type_right=p_type_right;
 	s.color_right=p_color_right;
+	s.custom_slot_left=p_custom_left;
+	s.custom_slot_right=p_custom_right;
 	slot_info[p_idx]=s;
 	update();
 	connpos_dirty=true;
@@ -531,18 +624,99 @@ Color GraphNode::get_connection_output_color(int p_idx) {
 void GraphNode::_input_event(const InputEvent& p_ev) {
 
 	if (p_ev.type==InputEvent::MOUSE_BUTTON) {
-		get_parent_control()->grab_focus();
+
+		ERR_EXPLAIN("GraphNode must be the child of a GraphEdit node.");
+		ERR_FAIL_COND(get_parent_control() == NULL);
+
+		print_line("INPUT EVENT BUTTON");
+
 		if(p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
 
 			Vector2 mpos = Vector2(p_ev.mouse_button.x,p_ev.mouse_button.y);
 			if (close_rect.size!=Size2() && close_rect.has_point(mpos)) {
 				emit_signal("close_request");
+				accept_event();
 				return;
 			}
+
+			Ref<Texture> resizer =get_icon("resizer");
+
+			if (resizeable && mpos.x > get_size().x-resizer->get_width() && mpos.y > get_size().y-resizer->get_height()) {
+
+				resizing=true;
+				resizing_from=mpos;
+				resizing_from_size=get_size();
+				accept_event();
+				return;
+			}
+
+			//send focus to parent
 			emit_signal("raise_request");
+			get_parent_control()->grab_focus();
+
 		}
+
+		if(!p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
+			resizing=false;
+		}
+
 	}
 
+
+	if (resizing && p_ev.type==InputEvent::MOUSE_MOTION) {
+		Vector2 mpos = Vector2(p_ev.mouse_motion.x,p_ev.mouse_motion.y);
+
+		Vector2 diff = mpos - resizing_from;
+
+		emit_signal("resize_request",resizing_from_size+diff);
+
+	}
+
+
+}
+
+void GraphNode::set_modulate(const Color &p_color) {
+
+	modulate=p_color;
+	update();
+}
+
+Color GraphNode::get_modulate() const{
+
+	return modulate;
+}
+void GraphNode::set_overlay(Overlay p_overlay) {
+
+	overlay=p_overlay;
+	update();
+}
+
+GraphNode::Overlay GraphNode::get_overlay() const{
+
+	return overlay;
+}
+
+void GraphNode::set_comment(bool p_enable) {
+
+	comment=p_enable;
+	update();
+}
+
+bool GraphNode::is_comment() const{
+
+	return comment;
+}
+
+
+void GraphNode::set_resizeable(bool p_enable) {
+
+	resizeable=p_enable;
+	update();
+}
+
+bool GraphNode::is_resizeable() const{
+
+	return resizeable;
 }
 
 
@@ -552,7 +726,7 @@ void GraphNode::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_title"),&GraphNode::get_title);
 	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphNode::_input_event);
 
-	ObjectTypeDB::bind_method(_MD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right"),&GraphNode::set_slot);
+	ObjectTypeDB::bind_method(_MD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right","custom_left","custom_right"),&GraphNode::set_slot,DEFVAL(Ref<Texture>()),DEFVAL(Ref<Texture>()));
 	ObjectTypeDB::bind_method(_MD("clear_slot","idx"),&GraphNode::clear_slot);
 	ObjectTypeDB::bind_method(_MD("clear_all_slots","idx"),&GraphNode::clear_all_slots);
 	ObjectTypeDB::bind_method(_MD("is_slot_enabled_left","idx"),&GraphNode::is_slot_enabled_left);
@@ -565,6 +739,15 @@ void GraphNode::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&GraphNode::set_offset);
 	ObjectTypeDB::bind_method(_MD("get_offset"),&GraphNode::get_offset);
 
+	ObjectTypeDB::bind_method(_MD("set_comment","comment"),&GraphNode::set_comment);
+	ObjectTypeDB::bind_method(_MD("is_comment"),&GraphNode::is_comment);
+
+	ObjectTypeDB::bind_method(_MD("set_resizeable","resizeable"),&GraphNode::set_resizeable);
+	ObjectTypeDB::bind_method(_MD("is_resizeable"),&GraphNode::is_resizeable);
+
+	ObjectTypeDB::bind_method(_MD("set_selected","selected"),&GraphNode::set_selected);
+	ObjectTypeDB::bind_method(_MD("is_selected"),&GraphNode::is_selected);
+
 	ObjectTypeDB::bind_method(_MD("get_connection_output_count"),&GraphNode::get_connection_output_count);
 	ObjectTypeDB::bind_method(_MD("get_connection_input_count"),&GraphNode::get_connection_input_count);
 
@@ -575,21 +758,39 @@ void GraphNode::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_connection_input_type","idx"),&GraphNode::get_connection_input_type);
 	ObjectTypeDB::bind_method(_MD("get_connection_input_color","idx"),&GraphNode::get_connection_input_color);
 
+	ObjectTypeDB::bind_method(_MD("set_modulate","color"),&GraphNode::set_modulate);
+	ObjectTypeDB::bind_method(_MD("get_modulate"),&GraphNode::get_modulate);
 
 	ObjectTypeDB::bind_method(_MD("set_show_close_button","show"),&GraphNode::set_show_close_button);
 	ObjectTypeDB::bind_method(_MD("is_close_button_visible"),&GraphNode::is_close_button_visible);
 
+	ObjectTypeDB::bind_method(_MD("set_overlay","overlay"),&GraphNode::set_overlay);
+	ObjectTypeDB::bind_method(_MD("get_overlay"),&GraphNode::get_overlay);
+
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"title"),_SCS("set_title"),_SCS("get_title"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"show_close"),_SCS("set_show_close_button"),_SCS("is_close_button_visible"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"resizeable"),_SCS("set_resizeable"),_SCS("is_resizeable"));
 
 	ADD_SIGNAL(MethodInfo("offset_changed"));
 	ADD_SIGNAL(MethodInfo("dragged",PropertyInfo(Variant::VECTOR2,"from"),PropertyInfo(Variant::VECTOR2,"to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));
 	ADD_SIGNAL(MethodInfo("close_request"));
+	ADD_SIGNAL(MethodInfo("resize_request",PropertyInfo(Variant::VECTOR2,"new_minsize")));
+
+	BIND_CONSTANT( OVERLAY_DISABLED );
+	BIND_CONSTANT( OVERLAY_BREAKPOINT );
+	BIND_CONSTANT( OVERLAY_POSITION );
 }
 
 GraphNode::GraphNode() {
+
+	overlay=OVERLAY_DISABLED;
 	show_close=false;
 	connpos_dirty=true;
 	set_stop_mouse(false);
+	modulate=Color(1,1,1,1);
+	comment=false;
+	resizeable=false;
+	resizing=false;
+	selected=false;
 }

@@ -438,8 +438,9 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				case InputEvent::JOYSTICK_MOTION: {
 
 					ie.joy_motion.axis=decode_uint32(&buf[12]);
+					ie.joy_motion.axis_value=decode_float(&buf[16]);
 					if (r_len)
-						(*r_len)+=4;
+						(*r_len)+=8;
 				} break;
 			}
 
@@ -684,7 +685,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			if (count) {
 				varray.resize(count);
 				DVector<Vector2>::Write w = varray.write();
-				const float *r = (const float*)buf;
 
 				for(int i=0;i<(int)count;i++) {
 
@@ -723,7 +723,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			if (count) {
 				varray.resize(count);
 				DVector<Vector3>::Write w = varray.write();
-				const float *r = (const float*)buf;
 
 				for(int i=0;i<(int)count;i++) {
 
@@ -763,7 +762,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			if (count) {
 				carray.resize(count);
 				DVector<Color>::Write w = carray.write();
-				const float *r = (const float*)buf;
 
 				for(int i=0;i<(int)count;i++) {
 
@@ -1154,8 +1152,9 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 
 						int axis = ie.joy_motion.axis;
 						encode_uint32(axis,&buf[llen]);
+						encode_float(ie.joy_motion.axis_value, &buf[llen+4]);
 					}
-					llen+=4;
+					llen+=8;
 				} break;
 			}
 

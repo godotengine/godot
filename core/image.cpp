@@ -30,7 +30,7 @@
 #include "hash_map.h"
 #include "core/io/image_loader.h"
 #include "core/os/copymem.h"
-
+#include "hq2x.h"
 #include "print_string.h"
 #include <stdio.h>
 
@@ -901,6 +901,104 @@ static void _generate_po2_mipmap(const uint8_t* p_src, uint8_t* p_dst, uint32_t 
 }
 
 
+void Image::expand_x2_hq2x() {
+
+	ERR_FAIL_COND(format>=FORMAT_INDEXED);
+
+	Format current = format;
+	bool mipmaps=get_mipmaps();
+	if (mipmaps) {
+		clear_mipmaps();
+	}
+
+	if (current!=FORMAT_RGBA)
+		convert(FORMAT_RGBA);
+
+	DVector<uint8_t> dest;
+	dest.resize(width*2*height*2*4);
+
+	{
+		DVector<uint8_t>::Read r = data.read();
+		DVector<uint8_t>::Write w = dest.write();
+
+		hq2x_resize((const uint32_t*)r.ptr(),width,height,(uint32_t*)w.ptr());
+
+	}
+
+	width*=2;
+	height*=2;
+	data=dest;
+
+
+	if (current!=FORMAT_RGBA)
+		convert(current);
+
+	if (mipmaps) {
+		generate_mipmaps();
+	}
+
+}
+
+void Image::shrink_x2() {
+
+	ERR_FAIL_COND(format==FORMAT_INDEXED || format==FORMAT_INDEXED_ALPHA);
+	ERR_FAIL_COND( data.size()==0 );
+
+
+
+	if (mipmaps) {
+
+		//just use the lower mipmap as base and copy all
+		DVector<uint8_t> new_img;
+
+		int ofs = get_mipmap_offset(1);
+
+		int new_size = data.size()-ofs;
+		new_img.resize(new_size);
+
+
+		{
+			DVector<uint8_t>::Write w=new_img.write();
+			DVector<uint8_t>::Read r=data.read();
+
+			copymem(w.ptr(),&r[ofs],new_size);
+		}
+
+		mipmaps--;
+		width/=2;
+		height/=2;
+		data=new_img;
+
+	} else {
+
+		DVector<uint8_t> new_img;
+
+		ERR_FAIL_COND( format>=FORMAT_INDEXED );
+		int ps = get_format_pixel_size(format);
+		new_img.resize((width/2)*(height/2)*ps);
+
+		{
+			DVector<uint8_t>::Write w=new_img.write();
+			DVector<uint8_t>::Read r=data.read();
+
+			switch(format) {
+
+				case FORMAT_GRAYSCALE:
+				case FORMAT_INTENSITY: _generate_po2_mipmap<1>(r.ptr(), w.ptr(), width,height); break;
+				case FORMAT_GRAYSCALE_ALPHA: _generate_po2_mipmap<2>(r.ptr(), w.ptr(), width,height); break;
+				case FORMAT_RGB: _generate_po2_mipmap<3>(r.ptr(), w.ptr(), width,height); break;
+				case FORMAT_RGBA: _generate_po2_mipmap<4>(r.ptr(), w.ptr(), width,height); break;
+				default: {}
+			}
+		}
+
+		width/=2;
+		height/=2;
+		data=new_img;
+
+	}
+}
+
 Error Image::generate_mipmaps(int p_mipmaps,bool p_keep_existing)  {
 
 	if (!_can_modify(format)) {
@@ -1637,8 +1735,17 @@ Error Image::_decompress_bc() {
 
 	print_line("decompressing bc");
 
+	int wd=width,ht=height;
+	if (wd%4!=0) {
+		wd+=4-(wd%4);
+	}
+	if (ht%4!=0) {
+		ht+=4-(ht%4);
+	}
+
+
 	int mm;
-	int size = _get_dst_image_size(width,height,FORMAT_RGBA,mm,mipmaps);
+	int size = _get_dst_image_size(wd,ht,FORMAT_RGBA,mm,mipmaps);
 
 	DVector<uint8_t> newdata;
 	newdata.resize(size);
@@ -1648,7 +1755,8 @@ Error Image::_decompress_bc() {
 
 	int rofs=0;
 	int wofs=0;
-	int wd=width,ht=height;
+
+	//print_line("width: "+itos(wd)+" height: "+itos(ht));
 
 	for(int i=0;i<=mm;i++) {
 
@@ -1944,6 +2052,7 @@ Error Image::_decompress_bc() {
 				ht/=2;
 
 			} break;
+			default: {}
 		}
 
 	}
@@ -1953,6 +2062,11 @@ Error Image::_decompress_bc() {
 
 	data=newdata;
 	format=FORMAT_RGBA;
+	if (wd!=width || ht!=height) {
+		//todo, crop
+		width=wd;
+		height=ht;
+	}
 
 	return OK;
 }

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="godot_project_name_string">godot-project-name</string>
-    <string name="testuf8">元気です</string>
-    <string name="testuf2">元気です元気です元気です</string>
     <string name="text_paused_cellular">Would you like to enable downloading over cellular connections? Depending on your data plan, this may cost you money.</string>
     <string name="text_paused_cellular_2">If you choose not to enable downloading over cellular connections, the download will automatically resume when wi-fi is available.</string>
     <string name="text_button_resume_cellular">Resume download</string>
@@ -32,7 +30,7 @@
     <string name="notification_download_failed">Download unsuccessful</string>
 
 
-    <string name="state_unknown">Starting..."</string>
+    <string name="state_unknown">Starting...</string>
     <string name="state_idle">Waiting for download to start</string>
     <string name="state_fetching_url">Looking for resources to download</string>
     <string name="state_connecting">Connecting to the download server</string>

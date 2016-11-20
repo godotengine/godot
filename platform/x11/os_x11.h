@@ -52,6 +52,7 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xcursor/Xcursor.h>
+#include <X11/extensions/Xrandr.h>
 
 // Hints for X11 fullscreen
 typedef struct {
@@ -62,6 +63,20 @@ typedef struct {
 	unsigned long status;
 } Hints;
 
+typedef struct _xrr_monitor_info {
+    Atom name;
+    Bool primary;
+    Bool automatic;
+    int noutput;
+    int x;
+    int y;
+    int width;
+    int height;
+    int mwidth;
+    int mheight;
+    RROutput *outputs;
+} xrr_monitor_info;
+
 #undef CursorShape
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -70,6 +85,17 @@ typedef struct {
 class OS_X11 : public OS_Unix {
 
 	Atom wm_delete;
+	Atom xdnd_enter;
+	Atom xdnd_position;
+	Atom xdnd_status;
+	Atom xdnd_action_copy;
+	Atom xdnd_drop;
+	Atom xdnd_finished;
+	Atom xdnd_selection;
+	Atom requested;
+
+	int  xdnd_version;
+
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 	ContextGL_X11 *context_gl;
 #endif
@@ -78,6 +104,7 @@ class OS_X11 : public OS_Unix {
 	VideoMode current_videomode;
 	List<String> args;
 	Window x11_window;
+	Window xdnd_source_window;
 	MainLoop *main_loop;
 	::Display* x11_display;
 	char *xmbstring;
@@ -150,6 +177,12 @@ class OS_X11 : public OS_Unix {
 	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
 
+	typedef xrr_monitor_info* (*xrr_get_monitors_t)(Display *dpy, Window window, Bool get_active, int *nmonitors);
+	typedef void (*xrr_free_monitors_t)(xrr_monitor_info* monitors);
+	xrr_get_monitors_t xrr_get_monitors;
+	xrr_free_monitors_t xrr_free_monitors;
+	void *xrandr_handle;
+	Bool xrandr_ext_ok;
 
 protected:
 
@@ -207,6 +240,7 @@ public:
 	virtual void set_current_screen(int p_screen);
 	virtual Point2 get_screen_position(int p_screen=0) const;
 	virtual Size2 get_screen_size(int p_screen=0) const;
+	virtual int get_screen_dpi(int p_screen=0) const;
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2& p_position);
 	virtual Size2 get_window_size() const;
@@ -219,6 +253,7 @@ public:
 	virtual bool is_window_minimized() const;
 	virtual void set_window_maximized(bool p_enabled);
 	virtual bool is_window_maximized() const;
+	virtual void request_attention();
 
 	virtual void move_window_to_foreground();
 	virtual void alert(const String& p_alert,const String& p_title="ALERT!");
@@ -227,6 +262,9 @@ public:
 	virtual String get_joy_guid(int p_device) const;
 
 	virtual void set_context(int p_context);
+
+	virtual void set_use_vsync(bool p_enable);
+	virtual bool is_vsync_enabled() const;
 
 	void run();
 

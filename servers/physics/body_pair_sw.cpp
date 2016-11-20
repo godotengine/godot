@@ -221,7 +221,7 @@ bool BodyPairSW::_test_ccd(float p_step,BodySW *p_A, int p_shape_A,const Transfo
 bool BodyPairSW::setup(float p_step) {
 
 	//cannot collide
-	if ((A->get_layer_mask()&B->get_layer_mask())==0 || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported()==0 && B->get_max_contacts_reported()==0)) {
+	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported()==0 && B->get_max_contacts_reported()==0)) {
 		collided=false;
 		return false;
 	}
@@ -307,10 +307,6 @@ bool BodyPairSW::setup(float p_step) {
 		}
 #endif
 
-
-		int gather_A = A->can_report_contacts();
-		int gather_B = B->can_report_contacts();
-
 		c.rA = global_A;
 		c.rB = global_B-offset_B;
 
@@ -327,13 +323,13 @@ bool BodyPairSW::setup(float p_step) {
 #endif
 
 		if (A->can_report_contacts()) {
-			Vector3 crB = A->get_angular_velocity().cross( c.rA ) + A->get_linear_velocity();
-			A->add_contact(global_A,-c.normal,depth,shape_A,global_B,shape_B,B->get_instance_id(),B->get_self(),crB);
+			Vector3 crA = A->get_angular_velocity().cross( c.rA ) + A->get_linear_velocity();
+			A->add_contact(global_A,-c.normal,depth,shape_A,global_B,shape_B,B->get_instance_id(),B->get_self(),crA);
 		}
 
 		if (B->can_report_contacts()) {
-			Vector3 crA = A->get_angular_velocity().cross( c.rB ) + A->get_linear_velocity();
-			B->add_contact(global_B,c.normal,depth,shape_B,global_A,shape_A,A->get_instance_id(),A->get_self(),crA);
+			Vector3 crB = B->get_angular_velocity().cross( c.rB ) + B->get_linear_velocity();
+			B->add_contact(global_B,c.normal,depth,shape_B,global_A,shape_A,A->get_instance_id(),A->get_self(),crB);
 		}
 
 		if (A->is_shape_set_as_trigger(shape_A) || B->is_shape_set_as_trigger(shape_B) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC)) {

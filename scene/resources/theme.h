@@ -46,6 +46,15 @@ class Theme : public Resource {
 
 	static Ref<Theme> default_theme;
 
+
+	//keep a reference count to font, so each time the font changes, we emit theme changed too
+	Map< Ref<Font>, int> font_refcount;
+
+	void _ref_font(Ref<Font> p_sc);
+	void _unref_font( Ref<Font> p_sc);
+	void _emit_theme_changed();
+
+
 	HashMap<StringName,HashMap<StringName,Ref<Texture>,StringNameHasher >, StringNameHasher >  icon_map;
 	HashMap<StringName,HashMap<StringName,Ref<StyleBox>,StringNameHasher >,StringNameHasher > style_map;
 	HashMap<StringName,HashMap<StringName,Ref<Font>,StringNameHasher >,StringNameHasher > font_map;
@@ -65,6 +74,7 @@ protected:
 
 	DVector<String> _get_icon_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_icon_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_stylebox_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_stylebox_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
+	DVector<String> _get_stylebox_types(void) const { DVector<String> ilret; List<StringName> il; get_stylebox_types(&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_font_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_font_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_color_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_color_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_constant_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_constant_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
@@ -100,6 +110,7 @@ public:
 	bool has_stylebox(const StringName& p_name,const StringName& p_type) const;
 	void clear_stylebox(const StringName& p_name,const StringName& p_type);
 	void get_stylebox_list(StringName p_type, List<StringName> *p_list) const;
+	void get_stylebox_types(List<StringName> *p_list) const;
 
 	void set_font(const StringName& p_name,const StringName& p_type,const Ref<Font>& p_font);
 	Ref<Font> get_font(const StringName& p_name,const StringName& p_type) const;

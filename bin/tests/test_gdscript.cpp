@@ -222,6 +222,7 @@ static String _parser_expr(const GDParser::Node *p_expr) {
 				case GDParser::OperatorNode::OP_BIT_AND: { txt=_parser_expr(c_node->arguments[0])+"&"+_parser_expr(c_node->arguments[1]); } break;;
 				case GDParser::OperatorNode::OP_BIT_OR: { txt=_parser_expr(c_node->arguments[0])+"|"+_parser_expr(c_node->arguments[1]); } break;
 				case GDParser::OperatorNode::OP_BIT_XOR: { txt=_parser_expr(c_node->arguments[0])+"^"+_parser_expr(c_node->arguments[1]); } break;
+				default: {}
 
 			}
 
@@ -487,12 +488,12 @@ static String _disassemble_addr(const Ref<GDScript>& p_script,const GDFunction& 
 static void _disassemble_class(const Ref<GDScript>& p_class,const Vector<String>& p_code) {
 
 
-	const Map<StringName,GDFunction>& mf = p_class->debug_get_member_functions();
+	const Map<StringName,GDFunction*>& mf = p_class->debug_get_member_functions();
 
-	for(const Map<StringName,GDFunction>::Element *E=mf.front();E;E=E->next()) {
+	for(const Map<StringName,GDFunction*>::Element *E=mf.front();E;E=E->next()) {
 
 
-		const GDFunction &func=E->get();
+		const GDFunction &func=*E->get();
 		const int *code = func.get_code();
 		int codelen=func.get_code_size();
 		String defargs;

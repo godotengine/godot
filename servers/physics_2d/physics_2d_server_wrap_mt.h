@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  physics_2d_server_wrap_mt.h                                          */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #ifndef PHYSICS2DSERVERWRAPMT_H
 #define PHYSICS2DSERVERWRAPMT_H
 
@@ -205,6 +233,7 @@ public:
 	FUNC2(body_set_applied_torque,RID,float);
 	FUNC1RC(float,body_get_applied_torque,RID);
 
+	FUNC3(body_add_force,RID,const Vector2&,const Vector2&);
 	FUNC3(body_apply_impulse,RID,const Vector2&,const Vector2&);
 	FUNC2(body_set_axis_velocity,RID,const Vector2&);
 
@@ -237,10 +266,10 @@ public:
 
 	FUNC2(body_set_pickable,RID,bool);
 
-	bool body_test_motion(RID p_body,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL) {
+	bool body_test_motion(RID p_body,const Matrix32& p_from,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL) {
 
 		ERR_FAIL_COND_V(main_thread!=Thread::get_caller_ID(),false);
-		return physics_2d_server->body_test_motion(p_body,p_motion,p_margin,r_result);
+		return physics_2d_server->body_test_motion(p_body,p_from,p_motion,p_margin,r_result);
 	}
 
 	/* JOINT API */

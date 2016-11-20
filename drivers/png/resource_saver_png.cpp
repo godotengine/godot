@@ -27,11 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_saver_png.h"
-#include "scene/resources/texture.h"
-#include "drivers/png/png.h"
-#include "os/file_access.h"
-#include "globals.h"
+
 #include "core/image.h"
+#include "globals.h"
+#include "os/file_access.h"
+#include "scene/resources/texture.h"
+
+#include <png.h>
 
 static void _write_png_data(png_structp png_ptr,png_bytep data, png_size_t p_length) {
 
@@ -133,7 +135,6 @@ Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
 	}
 
 	int pngf=0;
-	int pngb=8;
 	int cs=0;
 
 

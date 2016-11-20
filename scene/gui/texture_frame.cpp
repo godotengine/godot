@@ -37,26 +37,51 @@ void TextureFrame::_notification(int p_what) {
 			return;
 
 
-		Size2 s=expand?get_size():texture->get_size();
-		RID ci = get_canvas_item();
-		draw_texture_rect(texture,Rect2(Point2(),s),false,modulate);
+		switch(stretch_mode) {
+			case STRETCH_SCALE_ON_EXPAND: {
+				Size2 s=expand?get_size():texture->get_size();
+				draw_texture_rect(texture,Rect2(Point2(),s),false,modulate);
+			} break;
+			case STRETCH_SCALE: {
+				draw_texture_rect(texture,Rect2(Point2(),get_size()),false,modulate);
+			} break;
+			case STRETCH_TILE: {
+				draw_texture_rect(texture,Rect2(Point2(),get_size()),true,modulate);
+			} break;
+			case STRETCH_KEEP: {
+				draw_texture_rect(texture,Rect2(Point2(),texture->get_size()),false,modulate);
 
-/*
-		Vector<Point2> points;
-		points.resize(4);
-		points[0]=Point2(0,0);
-		points[1]=Point2(s.x,0);
-		points[2]=Point2(s.x,s.y);
-		points[3]=Point2(0,s.y);
-		Vector<Point2> uvs;
-		uvs.resize(4);
-		uvs[0]=Point2(0,0);
-		uvs[1]=Point2(1,0);
-		uvs[2]=Point2(1,1);
-		uvs[3]=Point2(0,1);
+			} break;
+			case STRETCH_KEEP_CENTERED: {
 
-		VisualServer::get_singleton()->canvas_item_add_primitive(ci,points,Vector<Color>(),uvs,texture->get_rid());
-*/
+				Vector2 ofs = (get_size() - texture->get_size())/2;
+				draw_texture_rect(texture,Rect2(ofs,texture->get_size()),false,modulate);
+			} break;
+			case STRETCH_KEEP_ASPECT_CENTERED:
+			case STRETCH_KEEP_ASPECT: {
+
+				Size2 size=get_size();
+				int tex_width = texture->get_width() * size.height / texture ->get_height();
+				int tex_height = size.height;
+
+				if (tex_width>size.width) {
+					tex_width=size.width;
+					tex_height=texture->get_height() * tex_width / texture->get_width();
+				}
+
+				int ofs_x = 0;
+				int ofs_y = 0;
+
+				if (stretch_mode==STRETCH_KEEP_ASPECT_CENTERED) {
+					ofs_x+=(size.width - tex_width)/2;
+					ofs_y+=(size.height - tex_height)/2;
+				}
+
+				draw_texture_rect(texture,Rect2(ofs_x,ofs_y,tex_width,tex_height));
+			} break;
+
+		}
+
 	}
 }
 
@@ -76,10 +101,21 @@ void TextureFrame::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_modulate"), & TextureFrame::get_modulate );
 	ObjectTypeDB::bind_method(_MD("set_expand","enable"), & TextureFrame::set_expand );
 	ObjectTypeDB::bind_method(_MD("has_expand"), & TextureFrame::has_expand );
+	ObjectTypeDB::bind_method(_MD("set_stretch_mode","stretch_mode"), & TextureFrame::set_stretch_mode );
+	ObjectTypeDB::bind_method(_MD("get_stretch_mode"), & TextureFrame::get_stretch_mode );
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"),_SCS("get_texture") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "stretch_mode",PROPERTY_HINT_ENUM,"Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered"), _SCS("set_stretch_mode"),_SCS("get_stretch_mode") );
+
+	BIND_CONSTANT( STRETCH_SCALE_ON_EXPAND );
+	BIND_CONSTANT( STRETCH_SCALE );
+	BIND_CONSTANT( STRETCH_TILE );
+	BIND_CONSTANT( STRETCH_KEEP );
+	BIND_CONSTANT( STRETCH_KEEP_CENTERED );
+	BIND_CONSTANT( STRETCH_KEEP_ASPECT );
+	BIND_CONSTANT( STRETCH_KEEP_ASPECT_CENTERED );
 
 }
 
@@ -121,12 +157,24 @@ bool TextureFrame::has_expand() const {
 	return expand;
 }
 
+void TextureFrame::set_stretch_mode(StretchMode p_mode) {
+
+	stretch_mode=p_mode;
+	update();
+}
+
+TextureFrame::StretchMode TextureFrame::get_stretch_mode() const {
+
+	return stretch_mode;
+}
+
 TextureFrame::TextureFrame() {
 
 
 	expand=false;
 	modulate=Color(1,1,1,1);
 	set_ignore_mouse(true);
+	stretch_mode=STRETCH_SCALE_ON_EXPAND;
 }
 
 

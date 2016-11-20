@@ -482,6 +482,24 @@ Transform Collada::_read_transform(XMLParser& parser) {
 	return _read_transform_from_array(array);
 }
 
+String Collada::_read_empty_draw_type(XMLParser& parser) {
+
+	String empty_draw_type = "";
+	
+	if (parser.is_empty())
+		return empty_draw_type;
+	
+	while (parser.read()==OK) {
+		if (parser.get_node_type() == XMLParser::NODE_TEXT) {
+			empty_draw_type = parser.get_node_data();
+		}
+		else
+		if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END)
+			break; // end parsing text
+	}
+	return empty_draw_type;
+}
+
 Variant Collada::_parse_param(XMLParser& parser) {
 
 	if (parser.is_empty())
@@ -663,9 +681,6 @@ void Collada::_parse_effect_material(XMLParser& parser,Effect &effect,String &id
 											} else {
 												String uri = effect.params[surface];
 
-												int channel=0;
-												//if (parser.has_attribute("texcoord"))
-
 
 												if (what=="diffuse") {
 													effect.diffuse.texture=uri;
@@ -718,6 +733,9 @@ void Collada::_parse_effect_material(XMLParser& parser,Effect &effect,String &id
 				effect.found_double_sided=true;
 				effect.double_sided=parser.get_node_data().to_int();
 				COLLADA_PRINT("double sided: "+itos(parser.get_node_data().to_int()));
+			} else if (parser.get_node_name()=="unshaded") {
+				parser.read();
+				effect.unshaded=parser.get_node_data().to_int();
 			} else if (parser.get_node_name()=="bump") {
 
 				// color or texture types
@@ -737,9 +755,6 @@ void Collada::_parse_effect_material(XMLParser& parser,Effect &effect,String &id
 									ERR_PRINT(String("Couldn't find surface: "+surface+" in material:"+id).utf8().get_data());
 								} else {
 									String uri = effect.params[surface];
-
-									int channel=0;
-									//if (parser.has_attribute("texcoord"))
 
 									if (parser.has_attribute("bumptype") && parser.get_attribute_value("bumptype")!="NORMALMAP") {
 										WARN_PRINT("'bump' texture type is not NORMALMAP, only NORMALMAP is supported.")
@@ -1664,6 +1679,8 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 
 	Vector<Node::XForm> xform_list;
 	Vector<Node*> children;
+	
+	String empty_draw_type="";
 
 	Node *node=NULL;
 
@@ -1771,7 +1788,9 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 
 				   xform_list.push_back(xf);
 
-			} else if (section=="technique" || section=="extra") {
+			} else if (section=="empty_draw_type") {
+				empty_draw_type = _read_empty_draw_type(parser);
+			} else if (section == "technique" || section=="extra") {
 
 			} else if (section!="node") {
 				//usually what defines the type of node
@@ -1817,6 +1836,7 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 
 	node->name=name;
 	node->id=id;
+	node->empty_draw_type=empty_draw_type;
 
 	if (node->children.size()==1) {
 		if (node->children[0]->noname && !node->noname) {
@@ -2610,7 +2630,6 @@ void Collada::_find_morph_nodes(VisualScene *p_vscene,Node *p_node) {
 					base=sk.base;
 				} else if (state.morph_controller_data_map.has(base)) {
 
-					MorphControllerData &sk = state.morph_controller_data_map[base];
 					state.morph_ownership_map[base]=nj->id;
 					break;
 				} else {

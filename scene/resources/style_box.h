@@ -81,8 +81,10 @@ class StyleBoxTexture : public StyleBox {
 
 	float expand_margin[4];
 	float margin[4];
+	Rect2 region_rect;
 	Ref<Texture> texture;
 	bool draw_center;
+	Color modulate;
 
 
 protected:
@@ -98,12 +100,18 @@ public:
 	void set_margin_size(Margin p_margin,float p_size);
 	float get_margin_size(Margin p_margin) const;
 
+	void set_region_rect(const Rect2& p_region_rect);
+	Rect2 get_region_rect() const;
+
 	void set_texture(RES p_texture);
 	RES get_texture() const;
 
 	void set_draw_center(bool p_draw);
 	bool get_draw_center() const;
 	virtual Size2 get_center_size() const;
+
+	void set_modulate(const Color& p_modulate);
+	Color get_modulate() const;
 
 
 	virtual void draw(RID p_canvas_item,const Rect2& p_rect) const;

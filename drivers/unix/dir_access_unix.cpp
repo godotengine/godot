@@ -66,9 +66,9 @@ bool DirAccessUnix::file_exists(String p_file) {
 
 
 	if (p_file.is_rel_path())
-		p_file=current_dir+"/"+p_file;
-	else
-		p_file=fix_path(p_file);
+		p_file=current_dir.plus_file(p_file);
+
+	p_file=fix_path(p_file);
 
 	struct stat flags;
 	bool success = 	(stat(p_file.utf8().get_data(),&flags)==0);
@@ -88,8 +88,8 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 
 	if (p_dir.is_rel_path())
 		p_dir=get_current_dir().plus_file(p_dir);
-	else
-		p_dir=fix_path(p_dir);
+
+	p_dir=fix_path(p_dir);
 
 	struct stat flags;
 	bool success = 	(stat(p_dir.utf8().get_data(),&flags)==0);
@@ -104,9 +104,9 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 uint64_t DirAccessUnix::get_modified_time(String p_file) {
 
 	if (p_file.is_rel_path())
-		p_file=current_dir+"/"+p_file;
-	else
-		p_file=fix_path(p_file);
+		p_file=current_dir.plus_file(p_file);
+
+	p_file=fix_path(p_file);
 
 	struct stat flags;
 	bool success = 	(stat(p_file.utf8().get_data(),&flags)==0);
@@ -138,11 +138,9 @@ String DirAccessUnix::get_next() {
 	//typedef struct stat Stat;
 	struct stat flags;
 
-	String fname;
-	if (fname.parse_utf8(entry->d_name))
-		fname=entry->d_name; //no utf8, maybe latin?
+	String fname = fix_unicode_name(entry->d_name);
 
-	String f=current_dir+"/"+fname;
+	String f=current_dir.plus_file(fname);
 
 	if (stat(f.utf8().get_data(),&flags)==0) {
 
@@ -201,8 +199,20 @@ Error DirAccessUnix::make_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
 
+	if (p_dir.is_rel_path())
+		p_dir=get_current_dir().plus_file(p_dir);
+
+
 	p_dir=fix_path(p_dir);
-	
+
+
+#if 1
+
+
+	bool success=(mkdir(p_dir.utf8().get_data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)==0);
+	int err = errno;
+
+#else
 	char real_current_dir_name[2048];
 	getcwd(real_current_dir_name,2048);
 	chdir(current_dir.utf8().get_data()); //ascii since this may be unicode or wathever the host os wants
@@ -211,7 +221,7 @@ Error DirAccessUnix::make_dir(String p_dir) {
 	int err = errno;
 
 	chdir(real_current_dir_name);
-
+#endif
 	if (success) {
 		return OK;
 	};
@@ -238,7 +248,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 
 	chdir(current_dir.utf8().get_data()); //ascii since this may be unicode or wathever the host os wants
 	bool worked=(chdir(p_dir.utf8().get_data())==0); // we can only give this utf8
-#ifndef IPHONE_ENABLED
+
 	String base = _get_root_path();
 	if (base!="") {
 
@@ -248,7 +258,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 		if (!new_dir.begins_with(base))
 			worked=false;
 	}
-#endif
+
 	if (worked) {
 
 		getcwd(real_current_dir_name,2048);
@@ -280,13 +290,13 @@ Error DirAccessUnix::rename(String p_path,String p_new_path) {
 
 	if (p_path.is_rel_path())
 		p_path=get_current_dir().plus_file(p_path);
-	else
-		p_path=fix_path(p_path);
+
+	p_path=fix_path(p_path);
 
 	if (p_new_path.is_rel_path())
 		p_new_path=get_current_dir().plus_file(p_new_path);
-	else
-		p_new_path=fix_path(p_new_path);
+
+	p_new_path=fix_path(p_new_path);
 
 	return ::rename(p_path.utf8().get_data(),p_new_path.utf8().get_data())==0?OK:FAILED;
 }
@@ -294,8 +304,8 @@ Error DirAccessUnix::remove(String p_path)  {
 
 	if (p_path.is_rel_path())
 		p_path=get_current_dir().plus_file(p_path);
-	else
-		p_path=fix_path(p_path);
+
+	p_path=fix_path(p_path);
 
 	struct stat flags;
 	if ((stat(p_path.utf8().get_data(),&flags)!=0))
@@ -314,7 +324,7 @@ size_t DirAccessUnix::get_space_left() {
 	struct statvfs vfs;
 	if (statvfs(current_dir.utf8().get_data(), &vfs) != 0) {
 
-		return -1;
+		return 0;
 	};
 
 	return vfs.f_bfree * vfs.f_bsize;

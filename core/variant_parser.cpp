@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  variant_parser.cpp                                                   */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "variant_parser.h"
 #include "io/resource_loader.h"
 #include "os/keyboard.h"
@@ -958,7 +986,18 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 			InputEvent ie;
 
-			if (id=="KEY") {
+			if (id=="NONE") {
+
+				ie.type=InputEvent::NONE;
+
+				get_token(p_stream,token,line,r_err_str);
+
+				if (token.type!=TK_PARENTHESIS_CLOSE) {
+					r_err_str="Expected ')'";
+					return ERR_PARSE_ERROR;
+				}
+
+			} else if (id=="KEY") {
 
 				get_token(p_stream,token,line,r_err_str);
 				if (token.type!=TK_COMMA) {
@@ -1138,16 +1177,16 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 		} else if (id=="IntArray") {
 
-			Vector<int32_t> args;
-			Error err = _parse_construct<int32_t>(p_stream,args,line,r_err_str);
+			Vector<int> args;
+			Error err = _parse_construct<int>(p_stream,args,line,r_err_str);
 			if (err)
 				return err;
 
-			DVector<int32_t> arr;
+			DVector<int> arr;
 			{
 				int len=args.size();
 				arr.resize(len);
-				DVector<int32_t>::Write w = arr.write();
+				DVector<int>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
 					w[i]=int(args[i]);
 				}
@@ -1205,7 +1244,9 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				}
 				get_token(p_stream,token,line,r_err_str);
 
-				if (token.type!=TK_STRING) {
+				if (token.type==TK_PARENTHESIS_CLOSE) {
+					break;
+				} else if (token.type!=TK_STRING) {
 					r_err_str="Expected string";
 					return ERR_PARSE_ERROR;
 				}
@@ -1747,7 +1788,20 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 		}
 
 		if (c>32) {
-			if (c!='=') {
+			if (c=='"') { //quoted
+				p_stream->saved='"';
+				Token tk;
+				Error err = get_token(p_stream,tk,line,r_err_str);
+				if (err)
+					return err;
+				if (tk.type!=TK_STRING) {
+					r_err_str="Error reading quoted string";
+					return err;
+				}
+
+				what=tk.value;
+
+			} else if (c!='=') {
 				what+=String::chr(c);
 			} else {
 				r_assign=what;
@@ -1789,6 +1843,14 @@ Error VariantParser::parse(Stream *p_stream, Variant& r_ret, String &r_err_str, 
 //////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+static String rtosfix(double p_value) {
+
+
+	if (p_value==0.0)
+		return "0"; //avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
+	else
+		return rtoss(p_value);
+}
 
 Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud,EncodeResourceFunc p_encode_res_func,void* p_encode_res_ud) {
 
@@ -1807,7 +1869,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::REAL: {
 
-			String s = rtoss(p_variant.operator real_t());
+			String s = rtosfix(p_variant.operator real_t());
 			if (s.find(".")==-1 && s.find("e")==-1)
 				s+=".0";
 			p_store_string_func(p_store_string_ud, s );
@@ -1822,35 +1884,35 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 		case Variant::VECTOR2: {
 
 			Vector2 v = p_variant;
-			p_store_string_func(p_store_string_ud,"Vector2( "+rtoss(v.x) +", "+rtoss(v.y)+" )" );
+			p_store_string_func(p_store_string_ud,"Vector2( "+rtosfix(v.x) +", "+rtosfix(v.y)+" )" );
 		} break;
 		case Variant::RECT2: {
 
 			Rect2 aabb = p_variant;
-			p_store_string_func(p_store_string_ud,"Rect2( "+rtoss(aabb.pos.x) +", "+rtoss(aabb.pos.y) +", "+rtoss(aabb.size.x) +", "+rtoss(aabb.size.y)+" )" );
+			p_store_string_func(p_store_string_ud,"Rect2( "+rtosfix(aabb.pos.x) +", "+rtosfix(aabb.pos.y) +", "+rtosfix(aabb.size.x) +", "+rtosfix(aabb.size.y)+" )" );
 
 		} break;
 		case Variant::VECTOR3: {
 
 			Vector3 v = p_variant;
-			p_store_string_func(p_store_string_ud,"Vector3( "+rtoss(v.x) +", "+rtoss(v.y)+", "+rtoss(v.z)+" )");
+			p_store_string_func(p_store_string_ud,"Vector3( "+rtosfix(v.x) +", "+rtosfix(v.y)+", "+rtosfix(v.z)+" )");
 		} break;
 		case Variant::PLANE: {
 
 			Plane p = p_variant;
-			p_store_string_func(p_store_string_ud,"Plane( "+rtoss(p.normal.x) +", "+rtoss(p.normal.y)+", "+rtoss(p.normal.z)+", "+rtoss(p.d)+" )" );
+			p_store_string_func(p_store_string_ud,"Plane( "+rtosfix(p.normal.x) +", "+rtosfix(p.normal.y)+", "+rtosfix(p.normal.z)+", "+rtosfix(p.d)+" )" );
 
 		} break;
 		case Variant::_AABB: {
 
 			AABB aabb = p_variant;
-			p_store_string_func(p_store_string_ud,"AABB( "+rtoss(aabb.pos.x) +", "+rtoss(aabb.pos.y) +", "+rtoss(aabb.pos.z) +", "+rtoss(aabb.size.x) +", "+rtoss(aabb.size.y) +", "+rtoss(aabb.size.z)+" )"  );
+			p_store_string_func(p_store_string_ud,"AABB( "+rtosfix(aabb.pos.x) +", "+rtosfix(aabb.pos.y) +", "+rtosfix(aabb.pos.z) +", "+rtosfix(aabb.size.x) +", "+rtosfix(aabb.size.y) +", "+rtosfix(aabb.size.z)+" )"  );
 
 		} break;
 		case Variant::QUAT: {
 
 			Quat quat = p_variant;
-			p_store_string_func(p_store_string_ud,"Quat( "+rtoss(quat.x)+", "+rtoss(quat.y)+", "+rtoss(quat.z)+", "+rtoss(quat.w)+" )");
+			p_store_string_func(p_store_string_ud,"Quat( "+rtosfix(quat.x)+", "+rtosfix(quat.y)+", "+rtosfix(quat.z)+", "+rtosfix(quat.w)+" )");
 
 		} break;
 		case Variant::MATRIX32: {
@@ -1862,7 +1924,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 
 					if (i!=0 || j!=0)
 						s+=", ";
-					s+=rtoss( m3.elements[i][j] );
+					s+=rtosfix( m3.elements[i][j] );
 				}
 			}
 
@@ -1878,7 +1940,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 
 					if (i!=0 || j!=0)
 						s+=", ";
-					s+=rtoss( m3.elements[i][j] );
+					s+=rtosfix( m3.elements[i][j] );
 				}
 			}
 
@@ -1895,11 +1957,11 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 
 					if (i!=0 || j!=0)
 						s+=", ";
-					s+=rtoss( m3.elements[i][j] );
+					s+=rtosfix( m3.elements[i][j] );
 				}
 			}
 
-			s=s+", "+rtoss(t.origin.x) +", "+rtoss(t.origin.y)+", "+rtoss(t.origin.z);
+			s=s+", "+rtosfix(t.origin.x) +", "+rtosfix(t.origin.y)+", "+rtosfix(t.origin.z);
 
 			p_store_string_func(p_store_string_ud,s+" )");
 		} break;
@@ -1908,7 +1970,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 		case Variant::COLOR: {
 
 			Color c = p_variant;
-			p_store_string_func(p_store_string_ud,"Color( "+rtoss(c.r) +", "+rtoss(c.g)+", "+rtoss(c.b)+", "+rtoss(c.a)+" )");
+			p_store_string_func(p_store_string_ud,"Color( "+rtosfix(c.r) +", "+rtosfix(c.g)+", "+rtosfix(c.b)+", "+rtosfix(c.a)+" )");
 
 		} break;
 		case Variant::IMAGE: {
@@ -2011,7 +2073,47 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::INPUT_EVENT: {
 
-			p_store_string_func(p_store_string_ud,"InputEvent()"); //will be added later
+			String str="InputEvent(";
+
+			InputEvent ev=p_variant;
+			switch(ev.type) {
+				case InputEvent::KEY: {
+
+					str+="KEY,"+itos(ev.key.scancode);
+					String mod;
+					if (ev.key.mod.alt)
+						mod+="A";
+					if (ev.key.mod.shift)
+						mod+="S";
+					if (ev.key.mod.control)
+						mod+="C";
+					if (ev.key.mod.meta)
+						mod+="M";
+
+					if (mod!=String())
+						str+=","+mod;
+				} break;
+				case InputEvent::MOUSE_BUTTON: {
+
+					str+="MBUTTON,"+itos(ev.mouse_button.button_index);
+				} break;
+				case InputEvent::JOYSTICK_BUTTON: {
+					str+="JBUTTON,"+itos(ev.joy_button.button_index);
+
+				} break;
+				case InputEvent::JOYSTICK_MOTION: {
+					str+="JAXIS,"+itos(ev.joy_motion.axis)+","+itos(ev.joy_motion.axis_value);
+				} break;
+				case InputEvent::NONE: {
+					str+="NONE";
+				} break;
+				default: {}
+			}
+
+			str+=")";
+
+			p_store_string_func(p_store_string_ud,str); //will be added later
+
 		} break;
 		case Variant::DICTIONARY: {
 
@@ -2106,7 +2208,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 
 				if (i>0)
 					p_store_string_func(p_store_string_ud,", ");
-				p_store_string_func(p_store_string_ud,rtoss(ptr[i]));
+				p_store_string_func(p_store_string_ud,rtosfix(ptr[i]));
 			}
 
 			p_store_string_func(p_store_string_ud," )");
@@ -2147,7 +2249,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 
 				if (i>0)
 					p_store_string_func(p_store_string_ud,", ");
-				p_store_string_func(p_store_string_ud,rtoss(ptr[i].x)+", "+rtoss(ptr[i].y) );
+				p_store_string_func(p_store_string_ud,rtosfix(ptr[i].x)+", "+rtosfix(ptr[i].y) );
 			}
 
 			p_store_string_func(p_store_string_ud," )");
@@ -2165,7 +2267,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 
 				if (i>0)
 					p_store_string_func(p_store_string_ud,", ");
-				p_store_string_func(p_store_string_ud,rtoss(ptr[i].x)+", "+rtoss(ptr[i].y)+", "+rtoss(ptr[i].z) );
+				p_store_string_func(p_store_string_ud,rtosfix(ptr[i].x)+", "+rtosfix(ptr[i].y)+", "+rtosfix(ptr[i].z) );
 			}
 
 			p_store_string_func(p_store_string_ud," )");
@@ -2185,7 +2287,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 				if (i>0)
 					p_store_string_func(p_store_string_ud,", ");
 
-				p_store_string_func(p_store_string_ud,rtoss(ptr[i].r)+", "+rtoss(ptr[i].g)+", "+rtoss(ptr[i].b)+", "+rtoss(ptr[i].a) );
+				p_store_string_func(p_store_string_ud,rtosfix(ptr[i].r)+", "+rtosfix(ptr[i].g)+", "+rtosfix(ptr[i].b)+", "+rtosfix(ptr[i].a) );
 
 			}
 			p_store_string_func(p_store_string_ud," )");

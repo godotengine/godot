@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  core_bind.cpp                                                        */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "core_bind.h"
 #include "os/os.h"
 #include "geometry.h"
@@ -14,6 +42,20 @@
 #define SECS_DAY  (24L * 60L * 60L)
 #define LEAPYEAR(year)  (!((year) % 4) && (((year) % 100) || !((year) % 400)))
 #define YEARSIZE(year)  (LEAPYEAR(year) ? 366 : 365)
+#define SECOND_KEY "second"
+#define MINUTE_KEY "minute"
+#define HOUR_KEY "hour"
+#define DAY_KEY "day"
+#define MONTH_KEY "month"
+#define YEAR_KEY "year"
+#define WEEKDAY_KEY "weekday"
+#define DST_KEY "dst"
+
+/// Table of number of days in each month (for regular year and leap year)
+static const unsigned int MONTH_DAYS_TABLE[2][12] = {
+	{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+};
 
 _ResourceLoader *_ResourceLoader::singleton=NULL;
 
@@ -212,6 +254,11 @@ Size2 _OS::get_screen_size(int p_screen) const {
 	return OS::get_singleton()->get_screen_size(p_screen);
 }
 
+int _OS::get_screen_dpi(int p_screen) const {
+
+	return  OS::get_singleton()->get_screen_dpi(p_screen);
+}
+
 Point2 _OS::get_window_position() const {
 	return OS::get_singleton()->get_window_position();
 }
@@ -388,6 +435,18 @@ String _OS::get_locale() const {
 	return OS::get_singleton()->get_locale();
 }
 
+String _OS::get_latin_keyboard_variant() const {
+	switch( OS::get_singleton()->get_latin_keyboard_variant() ) {
+		case OS::LATIN_KEYBOARD_QWERTY: return "QWERTY";
+		case OS::LATIN_KEYBOARD_QWERTZ: return "QWERTZ";
+		case OS::LATIN_KEYBOARD_AZERTY: return "AZERTY";
+		case OS::LATIN_KEYBOARD_QZERTY: return "QZERTY";
+		case OS::LATIN_KEYBOARD_DVORAK: return "DVORAK";
+		case OS::LATIN_KEYBOARD_NEO   : return "NEO";
+		default: return "ERROR";
+	}
+}
+
 String _OS::get_model_name() const {
 
     return OS::get_singleton()->get_model_name();
@@ -416,6 +475,15 @@ Error _OS::set_thread_name(const String& p_name) {
 
 	return Thread::set_name(p_name);
 };
+
+void _OS::set_use_vsync(bool p_enable) {
+	OS::get_singleton()->set_use_vsync(p_enable);
+}
+
+bool _OS::is_vsync_enabled() const {
+
+	return OS::get_singleton()->is_vsync_enabled();
+}
 
 
 /*
@@ -485,15 +553,34 @@ void _OS::set_icon(const Image& p_icon) {
 	OS::get_singleton()->set_icon(p_icon);
 }
 
+/**
+ *  Get current datetime with consideration for utc and
+ *     dst
+ */
+Dictionary _OS::get_datetime(bool utc) const {
+
+	Dictionary dated = get_date(utc);
+	Dictionary timed = get_time(utc);
+
+	List<Variant> keys;
+	timed.get_key_list(&keys);
+
+	for(int i = 0; i < keys.size(); i++) {
+		dated[keys[i]] = timed[keys[i]];
+	}
+
+	return dated;
+}
+
 Dictionary _OS::get_date(bool utc) const {
 
 	OS::Date date = OS::get_singleton()->get_date(utc);
 	Dictionary dated;
-	dated["year"]=date.year;
-	dated["month"]=date.month;
-	dated["day"]=date.day;
-	dated["weekday"]=date.weekday;
-	dated["dst"]=date.dst;
+	dated[YEAR_KEY]=date.year;
+	dated[MONTH_KEY]=date.month;
+	dated[DAY_KEY]=date.day;
+	dated[WEEKDAY_KEY]=date.weekday;
+	dated[DST_KEY]=date.dst;
 	return dated;
 }
 
@@ -501,20 +588,117 @@ Dictionary _OS::get_time(bool utc) const {
 
 	OS::Time time = OS::get_singleton()->get_time(utc);
 	Dictionary timed;
-	timed["hour"]=time.hour;
-	timed["minute"]=time.min;
-	timed["second"]=time.sec;
+	timed[HOUR_KEY]=time.hour;
+	timed[MINUTE_KEY]=time.min;
+	timed[SECOND_KEY]=time.sec;
 	return timed;
 }
 
 /**
- *  Get a dictionary of time values when given epoc time
+ *  Get a epoch time value from a dictionary of time values
+ *  @p datetime must be populated with the following keys:
+ *    day, hour, minute, month, second, year. (dst is ignored).
+ *
+ *    You can pass the output from
+ *   get_datetime_from_unix_time directly into this function
+ *
+ * @param datetime dictionary of date and time values to convert
+ *
+ * @return epoch calculated
+ */
+uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
+
+	// Bunch of conversion constants
+	static const unsigned int SECONDS_PER_MINUTE = 60;
+	static const unsigned int MINUTES_PER_HOUR = 60;
+	static const unsigned int HOURS_PER_DAY = 24;
+	static const unsigned int SECONDS_PER_HOUR = MINUTES_PER_HOUR *
+		SECONDS_PER_MINUTE;
+	static const unsigned int SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY;
+
+	// Get all time values from the dictionary, set to zero if it doesn't exist.
+	//   Risk incorrect calculation over throwing errors
+	unsigned int second = ((datetime.has(SECOND_KEY))?
+			static_cast<unsigned int>(datetime[SECOND_KEY]): 0);
+	unsigned int minute = ((datetime.has(MINUTE_KEY))?
+			static_cast<unsigned int>(datetime[MINUTE_KEY]): 0);
+	unsigned int hour = ((datetime.has(HOUR_KEY))?
+			static_cast<unsigned int>(datetime[HOUR_KEY]): 0);
+	unsigned int day = ((datetime.has(DAY_KEY))?
+			static_cast<unsigned int>(datetime[DAY_KEY]): 0);
+	unsigned int month = ((datetime.has(MONTH_KEY))?
+			static_cast<unsigned int>(datetime[MONTH_KEY]) -1: 0);
+	unsigned int year = ((datetime.has(YEAR_KEY))?
+			static_cast<unsigned int>(datetime[YEAR_KEY]):0);
+
+	/// How many days come before each month (0-12)
+	static const unsigned short int DAYS_PAST_THIS_YEAR_TABLE[2][13] =
+	{
+		/* Normal years.  */
+		{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
+		/* Leap years.  */
+		{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
+	};
+
+	ERR_EXPLAIN("Invalid second value of: " + itos(second));
+	ERR_FAIL_COND_V( second > 59, 0);
+
+	ERR_EXPLAIN("Invalid minute value of: " + itos(minute));
+	ERR_FAIL_COND_V( minute > 59, 0);
+
+	ERR_EXPLAIN("Invalid hour value of: " + itos(hour));
+	ERR_FAIL_COND_V( hour > 23, 0);
+
+	ERR_EXPLAIN("Invalid month value of: " + itos(month+1));
+	ERR_FAIL_COND_V( month+1 > 12, 0);
+
+	// Do this check after month is tested as valid
+	ERR_EXPLAIN("Invalid day value of: " + itos(day) + " which is larger "
+			"than "+ itos(MONTH_DAYS_TABLE[LEAPYEAR(year)][month]));
+	ERR_FAIL_COND_V( day > MONTH_DAYS_TABLE[LEAPYEAR(year)][month], 0);
+
+	// Calculate all the seconds from months past in this year
+	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR =
+		DAYS_PAST_THIS_YEAR_TABLE[LEAPYEAR(year)][month] * SECONDS_PER_DAY;
+
+	uint64_t SECONDS_FROM_YEARS_PAST = 0;
+	for(unsigned int iyear = EPOCH_YR; iyear < year; iyear++) {
+
+		SECONDS_FROM_YEARS_PAST += YEARSIZE(iyear) *
+			SECONDS_PER_DAY;
+	}
+
+	uint64_t epoch =
+		second +
+		minute * SECONDS_PER_MINUTE +
+		hour * SECONDS_PER_HOUR +
+		// Subtract 1 from day, since the current day isn't over yet
+		//   and we cannot count all 24 hours.
+		(day-1) * SECONDS_PER_DAY +
+		SECONDS_FROM_MONTHS_PAST_THIS_YEAR +
+		SECONDS_FROM_YEARS_PAST;
+	return epoch;
+
+}
+
+/**
+ *  Get a dictionary of time values when given epoch time
  *
  *  Dictionary Time values will be a union if values from #get_time
- *    and #get_date dictionaries (with the exception of dst = 
- *    day light standard time, as it cannot be determined from epoc)
+ *    and #get_date dictionaries (with the exception of dst =
+ *    day light standard time, as it cannot be determined from epoch)
+ *
+ * @param unix_time_val epoch time to convert
+ *
+ * @return dictionary of date and time values
  */
-Dictionary _OS::get_time_from_unix_time( uint64_t unix_time_val) const {
+Dictionary _OS::get_datetime_from_unix_time( uint64_t unix_time_val) const {
+
+	// Just fail if unix time is negative (when interpreted as an int).
+	//  This means the user passed in a negative value by accident
+	ERR_EXPLAIN("unix_time_val was really huge!"+ itos(unix_time_val) +
+			" You probably passed in a negative value!");
+	ERR_FAIL_COND_V( (int64_t)unix_time_val < 0, Dictionary());
 
 	OS::Date date;
 	OS::Time time;
@@ -530,40 +714,35 @@ Dictionary _OS::get_time_from_unix_time( uint64_t unix_time_val) const {
 	time.hour = dayclock / 3600;
 
 	/* day 0 was a thursday */
-	date.weekday = static_cast<OS::Weekday>((dayno + 4) % 7);       
+	date.weekday = static_cast<OS::Weekday>((dayno + 4) % 7);
 
 	while (dayno >= YEARSIZE(year)) {
 		dayno -= YEARSIZE(year);
 		year++;
 	}
 
-	date.year = year; 
-
-	// Table of number of days in each month (for regular year and leap year)
-	const unsigned int _ytab[2][12] = {
-		{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
-		{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
-	};
+	date.year = year;
 
 	size_t imonth = 0;
 
-	while (dayno >= _ytab[LEAPYEAR(year)][imonth]) {
-		dayno -= _ytab[LEAPYEAR(year)][imonth];
+	while (dayno >= MONTH_DAYS_TABLE[LEAPYEAR(year)][imonth]) {
+		dayno -= MONTH_DAYS_TABLE[LEAPYEAR(year)][imonth];
 		imonth++;
 	}
 
-	date.month = static_cast<OS::Month>(imonth);
+	/// Add 1 to month to make sure months are indexed starting at 1
+	date.month = static_cast<OS::Month>(imonth+1);
 
 	date.day = dayno + 1;
 
 	Dictionary timed;
-	timed["hour"]=time.hour;
-	timed["minute"]=time.min;
-	timed["second"]=time.sec;
-	timed["year"]=date.year;
-	timed["month"]=date.month;
-	timed["day"]=date.day;
-	timed["weekday"]=date.weekday;
+	timed[HOUR_KEY]=time.hour;
+	timed[MINUTE_KEY]=time.min;
+	timed[SECOND_KEY]=time.sec;
+	timed[YEAR_KEY]=date.year;
+	timed[MONTH_KEY]=date.month;
+	timed[DAY_KEY]=date.day;
+	timed[WEEKDAY_KEY]=date.weekday;
 
 	return timed;
 }
@@ -579,7 +758,7 @@ Dictionary _OS::get_time_zone_info() const {
 uint64_t _OS::get_unix_time() const {
 
 	return OS::get_singleton()->get_unix_time();
-};
+}
 
 uint64_t _OS::get_system_time_secs() const {
 	return OS::get_singleton()->get_system_time_secs();
@@ -678,7 +857,6 @@ void _OS::print_all_textures_by_size() {
 
 	for(List<_OSCoreBindImg>::Element *E=imgs.front();E;E=E->next()) {
 
-		print_line(E->get().path+" - "+String::humanize_size(E->get().vram)+"  ("+E->get().size+") - total:"+String::humanize_size(total) );
 		total-=E->get().vram;
 	}
 }
@@ -712,23 +890,21 @@ void _OS::print_resources_by_type(const Vector<String>& p_types) {
 
 
 		type_count[r->get_type()]++;
-
-		print_line(r->get_type()+": "+r->get_path());
-
-		List<String> metas;
-		r->get_meta_list(&metas);
-		for (List<String>::Element* me = metas.front(); me; me = me->next()) {
-			print_line(" "+String(me->get()) + ": " + r->get_meta(me->get()));
-		};
-	}
-
-	for(Map<String,int>::Element *E=type_count.front();E;E=E->next()) {
-
-		print_line(E->key()+" count: "+itos(E->get()));
 	}
 
 };
 
+bool _OS::has_virtual_keyboard() const {
+	return OS::get_singleton()->has_virtual_keyboard();
+}
+
+void _OS::show_virtual_keyboard(const String& p_existing_text) {
+	OS::get_singleton()->show_virtual_keyboard(p_existing_text, Rect2());
+}
+
+void _OS::hide_virtual_keyboard() {
+	OS::get_singleton()->hide_virtual_keyboard();
+}
 
 void _OS::print_all_resources(const String& p_to_file ) {
 
@@ -778,6 +954,11 @@ void _OS::native_video_stop() {
 
 	OS::get_singleton()->native_video_stop();
 };
+
+void _OS::request_attention() {
+
+	OS::get_singleton()->request_attention();
+}
 
 bool _OS::is_debug_build() const {
 
@@ -837,6 +1018,11 @@ void _OS::alert(const String& p_alert,const String& p_title) {
 	OS::get_singleton()->alert(p_alert,p_title);
 }
 
+Dictionary _OS::get_engine_version() const {
+
+	return OS::get_singleton()->get_engine_version();
+}
+
 _OS *_OS::singleton=NULL;
 
 void _OS::_bind_methods() {
@@ -859,6 +1045,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_current_screen","screen"),&_OS::set_current_screen);
 	ObjectTypeDB::bind_method(_MD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_screen_dpi","screen"),&_OS::get_screen_dpi,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
 	ObjectTypeDB::bind_method(_MD("set_window_position","position"),&_OS::set_window_position);
 	ObjectTypeDB::bind_method(_MD("get_window_size"),&_OS::get_window_size);
@@ -871,6 +1058,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_window_minimized"),&_OS::is_window_minimized);
 	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
 	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
+	ObjectTypeDB::bind_method(_MD("request_attention"), &_OS::request_attention);
 
 	ObjectTypeDB::bind_method(_MD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
 	ObjectTypeDB::bind_method(_MD("get_borderless_window"), &_OS::get_borderless_window);
@@ -911,12 +1099,15 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_cmdline_args"),&_OS::get_cmdline_args);
 	ObjectTypeDB::bind_method(_MD("get_main_loop"),&_OS::get_main_loop);
 
+	ObjectTypeDB::bind_method(_MD("get_datetime","utc"),&_OS::get_datetime,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_date","utc"),&_OS::get_date,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
-	ObjectTypeDB::bind_method(_MD("get_time_from_unix_time", "unix_time_val"),
-			&_OS::get_time_from_unix_time);
+	ObjectTypeDB::bind_method(_MD("get_datetime_from_unix_time", "unix_time_val"),
+			&_OS::get_datetime_from_unix_time);
+	ObjectTypeDB::bind_method(_MD("get_unix_time_from_datetime", "datetime"),
+			&_OS::get_unix_time_from_datetime);
 	ObjectTypeDB::bind_method(_MD("get_system_time_secs"), &_OS::get_system_time_secs);
 
 	ObjectTypeDB::bind_method(_MD("set_icon","icon"),&_OS::set_icon);
@@ -926,6 +1117,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_ticks_msec"),&_OS::get_ticks_msec);
 	ObjectTypeDB::bind_method(_MD("get_splash_tick_msec"),&_OS::get_splash_tick_msec);
 	ObjectTypeDB::bind_method(_MD("get_locale"),&_OS::get_locale);
+	ObjectTypeDB::bind_method(_MD("get_latin_keyboard_variant"),&_OS::get_latin_keyboard_variant);
 	ObjectTypeDB::bind_method(_MD("get_model_name"),&_OS::get_model_name);
 
 	ObjectTypeDB::bind_method(_MD("get_custom_level"),&_OS::get_custom_level);
@@ -942,6 +1134,9 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("dump_memory_to_file","file"),&_OS::dump_memory_to_file);
 	ObjectTypeDB::bind_method(_MD("dump_resources_to_file","file"),&_OS::dump_resources_to_file);
+	ObjectTypeDB::bind_method(_MD("has_virtual_keyboard"),&_OS::has_virtual_keyboard);
+	ObjectTypeDB::bind_method(_MD("show_virtual_keyboard", "existing_text"),&_OS::show_virtual_keyboard,DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("hide_virtual_keyboard"),&_OS::hide_virtual_keyboard);
 	ObjectTypeDB::bind_method(_MD("print_resources_in_use","short"),&_OS::print_resources_in_use,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("print_all_resources","tofile"),&_OS::print_all_resources,DEFVAL(""));
 
@@ -976,6 +1171,10 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_thread_name","name"),&_OS::set_thread_name);
 
+	ObjectTypeDB::bind_method(_MD("set_use_vsync","enable"),&_OS::set_use_vsync);
+	ObjectTypeDB::bind_method(_MD("is_vsync_enabled"),&_OS::is_vsync_enabled);
+
+	ObjectTypeDB::bind_method(_MD("get_engine_version"),&_OS::get_engine_version);
 
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );
@@ -1393,13 +1592,20 @@ DVector<uint8_t> _File::get_buffer(int p_length) const{
 
 String _File::get_as_text() const {
 
+	ERR_FAIL_COND_V(!f, String());
+
 	String text;
+	size_t original_pos = f->get_pos();
+	f->seek(0);
+
 	String l = get_line();
 	while(!eof_reached()) {
 		text+=l+"\n";
 		l = get_line();
 	}
 	text+=l;
+
+	f->seek(original_pos);
 
 	return text;
 
@@ -1410,6 +1616,12 @@ String _File::get_as_text() const {
 String _File::get_md5(const String& p_path) const {
 
 	return FileAccess::get_md5(p_path);
+
+}
+
+String _File::get_sha256(const String& p_path) const {
+
+	return FileAccess::get_sha256(p_path);
 
 }
 
@@ -1603,6 +1815,7 @@ void _File::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_line"),&_File::get_line);
 	ObjectTypeDB::bind_method(_MD("get_as_text"),&_File::get_as_text);
 	ObjectTypeDB::bind_method(_MD("get_md5","path"),&_File::get_md5);
+	ObjectTypeDB::bind_method(_MD("get_sha256","path"),&_File::get_sha256);
 	ObjectTypeDB::bind_method(_MD("get_endian_swap"),&_File::get_endian_swap);
 	ObjectTypeDB::bind_method(_MD("set_endian_swap","enable"),&_File::set_endian_swap);
 	ObjectTypeDB::bind_method(_MD("get_error:Error"),&_File::get_error);
@@ -1711,29 +1924,57 @@ String _Directory::get_current_dir() {
 Error _Directory::make_dir(String p_dir){
 
 	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
+	if (!p_dir.is_rel_path()) {
+		DirAccess *d = DirAccess::create_for_path(p_dir);
+		Error err = d->make_dir(p_dir);
+		memdelete(d);
+		return err;
+
+	}
 	return d->make_dir(p_dir);
 }
 Error _Directory::make_dir_recursive(String p_dir){
 
 	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
+	if (!p_dir.is_rel_path()) {
+		DirAccess *d = DirAccess::create_for_path(p_dir);
+		Error err = d->make_dir_recursive(p_dir);
+		memdelete(d);
+		return err;
+
+	}
 	return d->make_dir_recursive(p_dir);
 }
 
 bool _Directory::file_exists(String p_file){
 
 	ERR_FAIL_COND_V(!d,false);
+
+	if (!p_file.is_rel_path()) {
+		return FileAccess::exists(p_file);
+	}
+
 	return d->file_exists(p_file);
 }
 
 bool _Directory::dir_exists(String p_dir) {
 	ERR_FAIL_COND_V(!d,false);
-	return d->dir_exists(p_dir);
+	if (!p_dir.is_rel_path()) {
+
+		DirAccess *d = DirAccess::create_for_path(p_dir);
+		bool exists = d->dir_exists(p_dir);
+		memdelete(d);
+		return exists;
+
+	} else {
+		return d->dir_exists(p_dir);
+	}
 }
 
 int _Directory::get_space_left(){
 
 	ERR_FAIL_COND_V(!d,0);
-	return d->get_space_left();
+	return d->get_space_left()/1024*1024; //return value in megabytes, given binding is int
 }
 
 Error _Directory::copy(String p_from,String p_to){
@@ -1744,12 +1985,26 @@ Error _Directory::copy(String p_from,String p_to){
 Error _Directory::rename(String p_from, String p_to){
 
 	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
+	if (!p_from.is_rel_path()) {
+		DirAccess *d = DirAccess::create_for_path(p_from);
+		Error err = d->rename(p_from,p_to);
+		memdelete(d);
+		return err;
+	}
+
 	return d->rename(p_from,p_to);
 
 }
 Error _Directory::remove(String p_name){
 
 	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
+	if (!p_name.is_rel_path()) {
+		DirAccess *d = DirAccess::create_for_path(p_name);
+		Error err = d->remove(p_name);
+		memdelete(d);
+		return err;
+	}
+
 	return d->remove(p_name);
 }
 
@@ -1765,15 +2020,15 @@ void _Directory::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_drive","idx"),&_Directory::get_drive);
 	ObjectTypeDB::bind_method(_MD("change_dir:Error","todir"),&_Directory::change_dir);
 	ObjectTypeDB::bind_method(_MD("get_current_dir"),&_Directory::get_current_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir:Error","name"),&_Directory::make_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","name"),&_Directory::make_dir_recursive);
-	ObjectTypeDB::bind_method(_MD("file_exists","name"),&_Directory::file_exists);
-	ObjectTypeDB::bind_method(_MD("dir_exists","name"),&_Directory::dir_exists);
+	ObjectTypeDB::bind_method(_MD("make_dir:Error","path"),&_Directory::make_dir);
+	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","path"),&_Directory::make_dir_recursive);
+	ObjectTypeDB::bind_method(_MD("file_exists","path"),&_Directory::file_exists);
+	ObjectTypeDB::bind_method(_MD("dir_exists","path"),&_Directory::dir_exists);
 //	ObjectTypeDB::bind_method(_MD("get_modified_time","file"),&_Directory::get_modified_time);
 	ObjectTypeDB::bind_method(_MD("get_space_left"),&_Directory::get_space_left);
 	ObjectTypeDB::bind_method(_MD("copy:Error","from","to"),&_Directory::copy);
 	ObjectTypeDB::bind_method(_MD("rename:Error","from","to"),&_Directory::rename);
-	ObjectTypeDB::bind_method(_MD("remove:Error","file"),&_Directory::remove);
+	ObjectTypeDB::bind_method(_MD("remove:Error","path"),&_Directory::remove);
 
 }
 
@@ -1786,6 +2041,13 @@ _Directory::~_Directory() {
 
 	if (d)
 		memdelete(d);
+}
+
+_Marshalls* _Marshalls::singleton=NULL;
+
+_Marshalls *_Marshalls::get_singleton()
+{
+	return singleton;
 }
 
 String _Marshalls::variant_to_base64(const Variant& p_var) {

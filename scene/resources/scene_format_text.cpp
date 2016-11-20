@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  scene_format_text.cpp                                                */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "scene_format_text.h"
 
 #include "globals.h"
@@ -39,12 +67,17 @@ Error ResourceInteractiveLoaderText::_parse_sub_resource(VariantParser::Stream* 
 
 	String path = local_path+"::"+itos(index);
 
-	if (!ResourceCache::has(path)) {
-		r_err_str="Can't load cached sub-resource: "+path;
-		return ERR_PARSE_ERROR;
-	}
+	if (!ignore_resource_parsing) {
 
-	r_res=RES(ResourceCache::get(path));
+		if (!ResourceCache::has(path)) {
+			r_err_str="Can't load cached sub-resource: "+path;
+			return ERR_PARSE_ERROR;
+		}
+
+		r_res=RES(ResourceCache::get(path));
+	} else {
+		r_res=RES();
+	}
 
 	VariantParser::get_token(p_stream,token,line,r_err_str);
 	if (token.type!=VariantParser::TK_PARENTHESIS_CLOSE) {
@@ -67,25 +100,29 @@ Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream* 
 
 	int id = token.value;
 
+	if (!ignore_resource_parsing) {
 
-	if (!ext_resources.has(id)) {
-		r_err_str="Can't load cached ext-resource #"+itos(id);
-		return ERR_PARSE_ERROR;
-	}
+		if (!ext_resources.has(id)) {
+			r_err_str="Can't load cached ext-resource #"+itos(id);
+			return ERR_PARSE_ERROR;
+		}
 
-	String path = ext_resources[id].path;
-	String type = ext_resources[id].type;
+		String path = ext_resources[id].path;
+		String type = ext_resources[id].type;
 
-	if (path.find("://")==-1 && path.is_rel_path()) {
-		// path is relative to file being loaded, so convert to a resource path
-		path=Globals::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
+		if (path.find("://")==-1 && path.is_rel_path()) {
+			// path is relative to file being loaded, so convert to a resource path
+			path=Globals::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 
-	}
+		}
 
-	r_res=ResourceLoader::load(path,type);
+		r_res=ResourceLoader::load(path,type);
 
-	if (r_res.is_null()) {
-		WARN_PRINT(String("Couldn't load external resource: "+path).utf8().get_data());
+		if (r_res.is_null()) {
+			WARN_PRINT(String("Couldn't load external resource: "+path).utf8().get_data());
+		}
+	} else {
+		r_res=RES();
 	}
 
 	VariantParser::get_token(p_stream,token,line,r_err_str);
@@ -367,7 +404,9 @@ Error ResourceInteractiveLoaderText::poll() {
 		}
 
 		if (next_tag.fields.has("parent")) {
-			parent=packed_scene->get_state()->add_node_path(next_tag.fields["parent"]);
+			NodePath np = next_tag.fields["parent"];
+			np.prepend_period(); //compatible to how it manages paths internally
+			parent=packed_scene->get_state()->add_node_path(np);
 		}
 
 
@@ -597,6 +636,7 @@ void ResourceInteractiveLoaderText::get_dependencies(FileAccess *f,List<String> 
 
 
 	open(f);
+	ignore_resource_parsing=true;
 	ERR_FAIL_COND(error!=OK);
 
 	while(next_tag.name=="ext_resource") {
@@ -634,6 +674,7 @@ void ResourceInteractiveLoaderText::get_dependencies(FileAccess *f,List<String> 
 		Error err = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp);
 
 		if (err) {
+			print_line(error_text+" - "+itos(lines));
 			error_text="Unexpected end of file";
 			_printerr();
 			error=ERR_FILE_CORRUPT;
@@ -648,7 +689,7 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 
 	open(p_f,true);
 	ERR_FAIL_COND_V(error!=OK,error);
-
+	ignore_resource_parsing=true;
 	//FileAccess
 
 	FileAccess *fw = NULL;
@@ -766,7 +807,7 @@ void ResourceInteractiveLoaderText::open(FileAccess *p_f,bool p_skip_first_tag) 
 
 	stream.f=f;
 	is_scene=false;
-
+	ignore_resource_parsing=false;
 	resource_current=0;
 
 
@@ -850,6 +891,8 @@ String ResourceInteractiveLoaderText::recognize(FileAccess *p_f) {
 	f=p_f;
 
 	stream.f=f;
+
+	ignore_resource_parsing=true;
 
 
 	VariantParser::Tag tag;
@@ -1112,7 +1155,12 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant& p_variant,b
 
 }
 
+static String _valprop(const String& p_name) {
 
+	if (p_name.find("\"")!=-1 || p_name.find("=")!=-1 || p_name.find(" ")!=-1)
+		return "\""+p_name.c_escape()+"\"";
+	return p_name;
+}
 
 Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_resource,uint32_t p_flags) {
 
@@ -1241,6 +1289,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			}
 
 			internal_resources[res]=idx;
+#ifdef TOOLS_ENABLED
+			res->set_edited(false);
+#endif
+
 
 		}
 
@@ -1263,12 +1315,12 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 				if ((PE->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero())||(PE->get().usage&PROPERTY_USAGE_STORE_IF_NONONE && value.is_one()) )
 					continue;
 
-				if (PE->get().type==Variant::OBJECT && value.is_zero())
+				if (PE->get().type==Variant::OBJECT && value.is_zero() && !(PE->get().usage&PROPERTY_USAGE_STORE_IF_NULL))
 					continue;
 
 				String vars;
 				VariantWriter::write_to_string(value,vars,_write_resources,this);
-				f->store_string(name+" = "+vars+"\n");
+				f->store_string(_valprop(name)+" = "+vars+"\n");
 			}
 
 
@@ -1292,8 +1344,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			Vector<StringName> groups = state->get_node_groups(i);
 
 
-			if (instance.is_valid())
-				print_line("for path "+String(path)+" instance "+instance->get_path());
 
 			String header="[node";
 			header+=" name=\""+String(name)+"\"";
@@ -1344,7 +1394,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 				String vars;
 				VariantWriter::write_to_string(state->get_node_property_value(i,j),vars,_write_resources,this);
 
-				f->store_string(String(state->get_node_property_name(i,j))+" = "+vars+"\n");
+				f->store_string(_valprop(String(state->get_node_property_name(i,j)))+" = "+vars+"\n");
 			}
 
 			if (state->get_node_property_count(i)) {

@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  export.cpp                                                           */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "version.h"
 #include "export.h"
 #include "tools/editor/editor_settings.h"
@@ -69,7 +97,7 @@ public:
 	virtual String get_device_info(int p_device) const;
 	virtual Error run(int p_device,int p_flags=0);
 
-	virtual bool requieres_password(bool p_debug) const { return !p_debug; }
+	virtual bool requires_password(bool p_debug) const { return !p_debug; }
 	virtual String get_binary_extension() const { return "bar"; }
 	virtual Error export_project(const String& p_path,bool p_debug,int p_flags=0);
 
@@ -532,95 +560,99 @@ void EditorExportPlatformBB10::_device_poll_thread(void *ud) {
 		if (windows)
 			bb_deploy+=".bat";
 
-		if (!FileAccess::exists(bb_deploy)) {
-			OS::get_singleton()->delay_usec(3000000);
-			continue; //adb not configured
-		}
+		if (FileAccess::exists(bb_deploy)) {
 
-		Vector<Device> devices;
+			Vector<Device> devices;
 
 
-		for (int i=0;i<MAX_DEVICES;i++) {
+			for (int i=0;i<MAX_DEVICES;i++) {
 
-			String host = EditorSettings::get_singleton()->get("blackberry/device_"+itos(i+1)+"/host");
-			if (host==String())
-				continue;
-			String pass = EditorSettings::get_singleton()->get("blackberry/device_"+itos(i+1)+"/password");
-			if (pass==String())
-				continue;
+				String host = EditorSettings::get_singleton()->get("blackberry/device_"+itos(i+1)+"/host");
+				if (host==String())
+					continue;
+				String pass = EditorSettings::get_singleton()->get("blackberry/device_"+itos(i+1)+"/password");
+				if (pass==String())
+					continue;
 
-			List<String> args;
-			args.push_back("-listDeviceInfo");
-			args.push_back(host);
-			args.push_back("-password");
-			args.push_back(pass);
+				List<String> args;
+				args.push_back("-listDeviceInfo");
+				args.push_back(host);
+				args.push_back("-password");
+				args.push_back(pass);
 
 
-			int ec;
-			String dp;
+				int ec;
+				String dp;
 
-			Error err = OS::get_singleton()->execute(bb_deploy,args,true,NULL,&dp,&ec);
+				Error err = OS::get_singleton()->execute(bb_deploy,args,true,NULL,&dp,&ec);
 
-			if (err==OK && ec==0) {
+				if (err==OK && ec==0) {
 
-				Device dev;
-				dev.index=i;
-				String descr;
-				Vector<String> ls=dp.split("\n");
+					Device dev;
+					dev.index=i;
+					String descr;
+					Vector<String> ls=dp.split("\n");
 
-				for(int i=0;i<ls.size();i++) {
+					for(int i=0;i<ls.size();i++) {
 
-					String l = ls[i].strip_edges();
-					if (l.begins_with("modelfullname::")) {
-						dev.name=l.get_slice("::",1);
-						descr+="Model: "+dev.name+"\n";
+						String l = ls[i].strip_edges();
+						if (l.begins_with("modelfullname::")) {
+							dev.name=l.get_slice("::",1);
+							descr+="Model: "+dev.name+"\n";
+						}
+						if (l.begins_with("modelnumber::")) {
+							String s = l.get_slice("::",1);
+							dev.name+=" ("+s+")";
+							descr+="Model Number: "+s+"\n";
+						}
+						if (l.begins_with("scmbundle::"))
+							descr+="OS Version: "+l.get_slice("::",1)+"\n";
+						if (l.begins_with("[n]debug_token_expiration::"))
+							descr+="Debug Token Expires:: "+l.get_slice("::",1)+"\n";
+
 					}
-					if (l.begins_with("modelnumber::")) {
-						String s = l.get_slice("::",1);
-						dev.name+=" ("+s+")";
-						descr+="Model Number: "+s+"\n";
-					}
-					if (l.begins_with("scmbundle::"))
-						descr+="OS Version: "+l.get_slice("::",1)+"\n";
-					if (l.begins_with("[n]debug_token_expiration::"))
-						descr+="Debug Token Expires:: "+l.get_slice("::",1)+"\n";
 
+					dev.description=descr;
+					devices.push_back(dev);
 				}
 
-				dev.description=descr;
-				devices.push_back(dev);
 			}
 
-		}
-
-		bool changed=false;
+			bool changed=false;
 
 
-		ea->device_lock->lock();
+			ea->device_lock->lock();
 
-		if (ea->devices.size()!=devices.size()) {
-			changed=true;
-		} else {
+			if (ea->devices.size()!=devices.size()) {
+				changed=true;
+			} else {
 
-			for(int i=0;i<ea->devices.size();i++) {
+				for(int i=0;i<ea->devices.size();i++) {
 
-				if (ea->devices[i].index!=devices[i].index) {
-					changed=true;
-					break;
+					if (ea->devices[i].index!=devices[i].index) {
+						changed=true;
+						break;
+					}
 				}
 			}
+
+			if (changed) {
+
+				ea->devices=devices;
+				ea->devices_changed=true;
+			}
+
+			ea->device_lock->unlock();
 		}
 
-		if (changed) {
 
-			ea->devices=devices;
-			ea->devices_changed=true;
+		uint64_t wait = 3000000;
+		uint64_t time = OS::get_singleton()->get_ticks_usec();
+		while(OS::get_singleton()->get_ticks_usec() - time < wait ) {
+			OS::get_singleton()->delay_usec(1000);
+			if (ea->quit_request)
+				break;
 		}
-
-		ea->device_lock->unlock();
-
-		OS::get_singleton()->delay_usec(3000000);
-
 	}
 
 }
@@ -682,7 +714,6 @@ Error EditorExportPlatformBB10::run(int p_device, int p_flags) {
 	args.push_back("-installApp");
 	args.push_back("-launchApp");
 	args.push_back("-device");
-	int idx = devices[p_device].index;
 	String host = EditorSettings::get_singleton()->get("blackberry/device_"+itos(p_device+1)+"/host");
 	String pass = EditorSettings::get_singleton()->get("blackberry/device_"+itos(p_device+1)+"/password");
 	args.push_back(host);

@@ -75,6 +75,8 @@ public:
 	void set_particles_path(NodePath p_path);
 	NodePath get_particles_path() const;
 
+	virtual String get_configuration_warning() const;
+
 	ParticleAttractor2D();
 };
 

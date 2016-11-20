@@ -297,6 +297,7 @@ void TextureProgress::_bind_methods() {
 TextureProgress::TextureProgress()
 {
 	mode=FILL_LEFT_TO_RIGHT;
+	rad_init_angle=0;
 	rad_center_off=Point2();
 	rad_max_degrees=360;
 }

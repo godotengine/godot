@@ -243,6 +243,7 @@ Ref<ResourceImportMetadata> ResourceLoader::load_import_metadata(const String &p
 			break;
 	}
 
+
 	return ret;
 
 }
@@ -318,7 +319,11 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 		if (OS::get_singleton()->is_stdout_verbose())
 			print_line("load resource: "+local_path+" (cached)");
 
-		return RES( ResourceCache::get(local_path ) );
+		Ref<Resource> res_cached = ResourceCache::get(local_path);
+		Ref<ResourceInteractiveLoaderDefault> ril = Ref<ResourceInteractiveLoaderDefault>(memnew(ResourceInteractiveLoaderDefault));
+
+		ril->resource = res_cached;
+		return ril;
 	}
 
 	if (OS::get_singleton()->is_stdout_verbose())
@@ -355,10 +360,18 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 
 }
 
-void ResourceLoader::add_resource_format_loader(ResourceFormatLoader *p_format_loader) {
+void ResourceLoader::add_resource_format_loader(ResourceFormatLoader *p_format_loader, bool p_at_front) {
 
 	ERR_FAIL_COND( loader_count >= MAX_LOADERS );
-	loader[loader_count++]=p_format_loader;
+	if (p_at_front) {
+		for(int i=loader_count;i>0;i--) {
+			loader[i]=loader[i-1];
+		}
+		loader[0]=p_format_loader;
+		loader_count++;
+	} else {
+		loader[loader_count++]=p_format_loader;
+	}
 }
 
 void ResourceLoader::get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -438,7 +451,6 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
 	String extension=remapped_path.extension();
 
-	bool found=false;
 	for (int i=0;i<loader_count;i++) {
 
 		String result = loader[i]->get_resource_type(local_path);

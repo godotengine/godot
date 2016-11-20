@@ -120,6 +120,7 @@ void Sprite::set_texture(const Ref<Texture>& p_texture) {
 	}
 #endif
 	update();
+	emit_signal("texture_changed");
 	item_rect_changed();
 }
 
@@ -213,6 +214,7 @@ void Sprite::set_frame(int p_frame) {
 
 	frame=p_frame;
 
+	_change_notify("frame");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
@@ -287,6 +289,17 @@ Rect2 Sprite::get_item_rect() const {
 }
 
 
+
+void Sprite::_validate_property(PropertyInfo& property) const {
+
+	if (property.name=="frame") {
+
+		property.hint=PROPERTY_HINT_SPRITE_FRAME;
+
+		property.hint_string="0,"+itos(vframes*hframes-1)+",1";
+	}
+}
+
 void Sprite::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_texture","texture:Texture"),&Sprite::set_texture);
@@ -323,6 +336,7 @@ void Sprite::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_modulate"),&Sprite::get_modulate);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_texture"),_SCS("get_texture"));
 	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));
@@ -529,6 +543,25 @@ Rect2 ViewportSprite::get_item_rect() const {
 	return Rect2(ofs,s);
 }
 
+String ViewportSprite::get_configuration_warning() const {
+
+	if (!has_node(viewport_path) || !get_node(viewport_path) || !get_node(viewport_path)->cast_to<Viewport>()) {
+		return TTR("Path property must point to a valid Viewport node to work. Such Viewport must be set to 'render target' mode.");
+	} else {
+
+		Node *n = get_node(viewport_path);
+		if (n) {
+			Viewport *vp = n->cast_to<Viewport>();
+			if (!vp->is_set_as_render_target()) {
+
+				return TTR("The Viewport set in the path property must be set as 'render target' in order for this sprite to work.");
+			}
+		}
+	}
+
+	return String();
+
+}
 
 void ViewportSprite::_bind_methods() {
 

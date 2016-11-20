@@ -39,8 +39,8 @@
 #define SAFE_RELEASE(x) \
 if(x != NULL)           \
 {                       \
-    x->Release();       \
-    x = NULL;           \
+	x->Release();       \
+	x = NULL;           \
 }
 #endif
 
@@ -96,16 +96,23 @@ private:
 
 		int id;
 		bool attached;
+		bool vibrating;
 		DWORD last_packet;
 		XINPUT_STATE state;
+		uint64_t ff_timestamp;
+		uint64_t ff_end_timestamp;
 
 		xinput_gamepad() {
 			attached = false;
+			vibrating = false;
+			ff_timestamp = 0;
+			ff_end_timestamp = 0;
 			last_packet = 0;
 		}
 	};
 
 	typedef DWORD (WINAPI *XInputGetState_t) (DWORD dwUserIndex, XINPUT_STATE* pState);
+	typedef DWORD (WINAPI *XInputSetState_t) (DWORD dwUserIndex, XINPUT_VIBRATION* pVibration);
 
 	HWND* hWnd;
 	HANDLE xinput_dll;
@@ -132,9 +139,12 @@ private:
 	bool have_device(const GUID &p_guid);
 	bool is_xinput_device(const GUID* p_guid);
 	bool setup_dinput_joystick(const DIDEVICEINSTANCE* instance);
+	void joystick_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
+	void joystick_vibration_stop_xinput(int p_device, uint64_t p_timestamp);
 
 	InputDefault::JoyAxis axis_correct(int p_val, bool p_xinput = false, bool p_trigger = false, bool p_negate = false) const;
 	XInputGetState_t xinput_get_state;
+	XInputSetState_t xinput_set_state;
 };
 
 #endif

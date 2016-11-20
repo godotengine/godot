@@ -72,6 +72,8 @@ bool Animation::_set(const StringName& p_name, const Variant& p_value) {
 			track_set_path(track,p_value);
 		else if (what=="interp")
 			track_set_interpolation_type(track,InterpolationType(p_value.operator int()));
+		else if (what=="imported")
+			track_set_imported(track,p_value);
 		else if (what == "keys" || what=="key_values") {
 
 			if (track_get_type(track)==TYPE_TRANSFORM) {
@@ -154,8 +156,21 @@ bool Animation::_set(const StringName& p_name, const Variant& p_value) {
 				Dictionary d = p_value;
 				ERR_FAIL_COND_V(!d.has("times"),false);
 				ERR_FAIL_COND_V(!d.has("values"),false);
-				if (d.has("cont"))
-					vt->continuous=d["cont"];
+				if (d.has("cont")) {
+					bool v = d["cont"];
+					vt->update_mode=v?UPDATE_CONTINUOUS:UPDATE_DISCRETE;
+				}
+
+				if (d.has("update")) {
+					int um =d["update"];
+					if (um<0)
+						um=0;
+					else if (um>2)
+						um=2;
+					vt->update_mode=UpdateMode(um);
+				}
+
+
 
 				DVector<float> times=d["times"];
 				Array values=d["values"];
@@ -276,6 +291,8 @@ bool Animation::_get(const StringName& p_name,Variant &r_ret) const {
 			r_ret=track_get_path(track);
 		else if (what=="interp")
 			r_ret = track_get_interpolation_type(track);
+		else if (what=="imported")
+			r_ret = track_is_imported(track);
 		else if (what=="keys") {
 
 			if (track_get_type(track)==TYPE_TRANSFORM) {
@@ -353,7 +370,7 @@ bool Animation::_get(const StringName& p_name,Variant &r_ret) const {
 				d["transitions"]=key_transitions;
 				d["values"]=key_values;
 				if (track_get_type(track)==TYPE_VALUE) {
-					d["cont"]=value_track_is_continuous(track);
+					d["update"]=value_track_get_update_mode(track);
 				}
 
 				r_ret=d;
@@ -394,7 +411,7 @@ bool Animation::_get(const StringName& p_name,Variant &r_ret) const {
 				d["transitions"]=key_transitions;
 				d["values"]=key_values;
 				if (track_get_type(track)==TYPE_VALUE) {
-					d["cont"]=value_track_is_continuous(track);
+					d["update"]=value_track_get_update_mode(track);
 				}
 
 				r_ret=d;
@@ -423,6 +440,7 @@ void Animation::_get_property_list( List<PropertyInfo> *p_list) const {
 		p_list->push_back( PropertyInfo( Variant::STRING, "tracks/"+itos(i)+"/type", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 		p_list->push_back( PropertyInfo( Variant::NODE_PATH, "tracks/"+itos(i)+"/path", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 		p_list->push_back( PropertyInfo( Variant::INT, "tracks/"+itos(i)+"/interp", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
+		p_list->push_back( PropertyInfo( Variant::BOOL, "tracks/"+itos(i)+"/imported", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 		p_list->push_back( PropertyInfo( Variant::ARRAY, "tracks/"+itos(i)+"/keys", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 	}
 }
@@ -1373,7 +1391,7 @@ Variant Animation::value_track_interpolate(int p_track, float p_time) const {
 	bool ok;
 
 
-	Variant res = _interpolate( vt->values, p_time, vt->interpolation, &ok );
+	Variant res = _interpolate( vt->values, p_time, vt->update_mode==UPDATE_CONTINUOUS?vt->interpolation:INTERPOLATION_NEAREST, &ok );
 
 
 	if (ok) {
@@ -1461,27 +1479,29 @@ void Animation::value_track_get_key_indices(int p_track, float p_time, float p_d
 
 }
 
-void Animation::value_track_set_continuous(int p_track, bool p_continuous) {
+void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t=tracks[p_track];
 	ERR_FAIL_COND( t->type != TYPE_VALUE );
+	ERR_FAIL_INDEX(p_mode,3);
 
 	ValueTrack * vt = static_cast<ValueTrack*>(t);
-	vt->continuous=p_continuous;
+	vt->update_mode=p_mode;
 
 }
 
-bool Animation::value_track_is_continuous(int p_track) const{
+Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const {
 
-	ERR_FAIL_INDEX_V(p_track, tracks.size(), false);
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), UPDATE_CONTINUOUS);
 	Track *t=tracks[p_track];
-	ERR_FAIL_COND_V( t->type != TYPE_VALUE, false );
+	ERR_FAIL_COND_V( t->type != TYPE_VALUE, UPDATE_CONTINUOUS );
 
 	ValueTrack * vt = static_cast<ValueTrack*>(t);
-	return vt->continuous;
+	return vt->update_mode;
 
 }
+
 
 void Animation::_method_track_get_key_indices_in_range(const MethodTrack * mt, float from_time, float to_time,List<int> *p_indices) const {
 
@@ -1623,6 +1643,20 @@ void Animation::track_move_up(int p_track) {
 	emit_changed();
 }
 
+void Animation::track_set_imported(int p_track,bool p_imported) {
+
+	ERR_FAIL_INDEX(p_track,tracks.size());
+	tracks[p_track]->imported=p_imported;
+}
+
+bool Animation::track_is_imported(int p_track) const{
+
+	ERR_FAIL_INDEX_V(p_track,tracks.size(),false);
+	return tracks[p_track]->imported;
+
+}
+
+
 void Animation::track_move_down(int p_track) {
 
 	if (p_track>0 && p_track<tracks.size()) {
@@ -1657,6 +1691,10 @@ void Animation::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("track_move_up","idx"),&Animation::track_move_up);
 	ObjectTypeDB::bind_method(_MD("track_move_down","idx"),&Animation::track_move_down);
 
+	ObjectTypeDB::bind_method(_MD("track_set_imported","idx","imported"),&Animation::track_set_imported);
+	ObjectTypeDB::bind_method(_MD("track_is_imported","idx"),&Animation::track_is_imported);
+
+
 	ObjectTypeDB::bind_method(_MD("transform_track_insert_key","idx","time","loc","rot","scale"),&Animation::transform_track_insert_key);
 	ObjectTypeDB::bind_method(_MD("track_insert_key","idx","time","key","transition"),&Animation::track_insert_key,DEFVAL(1));
 	ObjectTypeDB::bind_method(_MD("track_remove_key","idx","key_idx"),&Animation::track_remove_key);
@@ -1676,8 +1714,8 @@ void Animation::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("transform_track_interpolate","idx","time_sec"),&Animation::_transform_track_interpolate);
-	ObjectTypeDB::bind_method(_MD("value_track_set_continuous","idx","continuous"),&Animation::value_track_set_continuous);
-	ObjectTypeDB::bind_method(_MD("value_track_is_continuous","idx"),&Animation::value_track_is_continuous);
+	ObjectTypeDB::bind_method(_MD("value_track_set_update_mode","idx","mode"),&Animation::value_track_set_update_mode);
+	ObjectTypeDB::bind_method(_MD("value_track_get_update_mode","idx"),&Animation::value_track_get_update_mode);
 
 	ObjectTypeDB::bind_method(_MD("value_track_get_key_indices","idx","time_sec","delta"),&Animation::_value_track_get_key_indices);
 
@@ -1703,6 +1741,11 @@ void Animation::_bind_methods() {
 	BIND_CONSTANT( INTERPOLATION_NEAREST );
 	BIND_CONSTANT( INTERPOLATION_LINEAR );
 	BIND_CONSTANT( INTERPOLATION_CUBIC );
+
+	BIND_CONSTANT( UPDATE_CONTINUOUS );
+	BIND_CONSTANT( UPDATE_DISCRETE );
+	BIND_CONSTANT( UPDATE_TRIGGER );
+
 
 }
 
@@ -1953,9 +1996,6 @@ void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,fl
 }
 
 void Animation::optimize(float p_allowed_linear_err,float p_allowed_angular_err,float p_angle_max) {
-
-
-	int total_tt=0;
 
 	for(int i=0;i<tracks.size();i++) {
 

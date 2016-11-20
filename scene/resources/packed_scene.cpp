@@ -375,7 +375,7 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 						PackState ps;
 						ps.node=node;
 						ps.state=state;
-						pack_state_stack.push_front(ps);
+						pack_state_stack.push_back(ps);
 						instanced_by_owner=false;
 					}
 				}
@@ -471,15 +471,12 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 		}
 	}
 #endif
-	int subscene_prop_search_from=0;
 
 	// all setup, we then proceed to check all properties for the node
 	// and save the ones that are worth saving
 
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
-
-	bool saved_script=false;
 
 	for (List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
 
@@ -528,26 +525,22 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 					break;
 				}
 			}
-#if 0
-// this workaround ended up causing problems:
-https://github.com/godotengine/godot/issues/3127
-			if (saved_script && exists && p_node->get_script_instance()) {
-				//if this is an overriden value by another script, save it anyway
-				//as the script change will erase it
-				//https://github.com/godotengine/godot/issues/2958
 
-				bool valid=false;
-				p_node->get_script_instance()->get_property_type(name,&valid);
-				if (valid) {
-					exists=false;
-					isdefault=false;
+
+			if (exists) {
+
+				//check if already exists and did not change
+				if (value.get_type()==Variant::REAL && original.get_type()==Variant::REAL) {
+					//this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
+					float a = value;
+					float b = original;
+
+					if (Math::abs(a-b)<CMP_EPSILON)
+						continue;
+				} else if (bool(Variant::evaluate(Variant::OP_EQUAL,value,original))) {
+
+					continue;
 				}
-			}
-
-#endif
-			if (exists && bool(Variant::evaluate(Variant::OP_EQUAL,value,original))) {
-				//exists and did not change
-				continue;
 			}
 
 			if (!exists && isdefault) {
@@ -564,9 +557,6 @@ https://github.com/godotengine/godot/issues/3127
 				continue;
 			}
 		}
-
-		if (name=="script/script")
-			saved_script=true;
 
 		NodeData::Property prop;
 		prop.name=_nm_get_string( name,name_map);
@@ -719,6 +709,7 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 
 	List<MethodInfo> _signals;
 	p_node->get_signal_list(&_signals);
+	_signals.sort();
 
 	//ERR_FAIL_COND_V( !node_map.has(p_node), ERR_BUG);
 	//NodeData &nd = nodes[node_map[p_node]];
@@ -728,6 +719,9 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 
 		List<Node::Connection> conns;
 		p_node->get_signal_connection_list(E->get().name,&conns);
+
+		conns.sort();
+
 		for(List<Node::Connection>::Element *F=conns.front();F;F=F->next()) {
 
 			const Node::Connection &c = F->get();
@@ -738,20 +732,60 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 			// only connections that originate or end into main saved scene are saved
 			// everything else is discarded
 
-			Node *n=c.target->cast_to<Node>();
-			if (!n) {
+
+			Node *target=c.target->cast_to<Node>();
+
+
+			if (!target) {
 				continue;
 			}
 
-			//source node is outside saved scene?
-			bool src_is_out = p_node!=p_owner && (p_node->get_filename()!=String() || p_node->get_owner()!=p_owner);
-			//target node is outside saved scene?
-			bool dst_is_out = n!=p_owner && (n->get_filename()!=String() || n->get_owner()!=p_owner);
+			//find if this connection already exists
+			Node *common_parent = target->find_common_parent_with(p_node);
 
-			//if both are out, ignore connection
-			if (src_is_out && dst_is_out) {
+			ERR_CONTINUE(!common_parent);
+
+			if (common_parent!=p_owner && common_parent->get_filename()==String()) {
+				common_parent=common_parent->get_owner();
+			}
+
+			bool exists=false;
+
+			//go through ownership chain to see if this exists
+			while(common_parent) {
+
+
+
+				Ref<SceneState> ps;
+
+				if (common_parent==p_owner)
+					ps=common_parent->get_scene_inherited_state();
+				else
+					ps=common_parent->get_scene_instance_state();
+
+
+				if (ps.is_valid()) {
+
+					NodePath signal_from = common_parent->get_path_to(p_node);
+					NodePath signal_to = common_parent->get_path_to(target);
+
+					if (ps->has_connection(signal_from,c.signal,signal_to,c.method)) {
+						exists=true;
+						break;
+					}
+
+				}
+
+				if (common_parent==p_owner)
+					break;
+				else
+					common_parent=common_parent->get_owner();
+			}
+
+			if (exists) { //already exists (comes from instance or inheritance), so don't save
 				continue;
 			}
+
 
 
 			{
@@ -766,7 +800,7 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 						Ref<SceneState> state = nl->get_scene_inherited_state();
 						if (state.is_valid()) {
 							int from_node = state->find_node_by_path(nl->get_path_to(p_node));
-							int to_node = state->find_node_by_path(nl->get_path_to(n));
+							int to_node = state->find_node_by_path(nl->get_path_to(target));
 
 							if (from_node>=0 && to_node>=0) {
 								//this one has state for this node, save
@@ -784,7 +818,7 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 							Ref<SceneState> state = nl->get_scene_instance_state();
 							if (state.is_valid()) {
 								int from_node = state->find_node_by_path(nl->get_path_to(p_node));
-								int to_node = state->find_node_by_path(nl->get_path_to(n));
+								int to_node = state->find_node_by_path(nl->get_path_to(target));
 
 								if (from_node>=0 && to_node>=0) {
 									//this one has state for this node, save
@@ -825,14 +859,14 @@ Error SceneState::_parse_connections(Node *p_owner,Node *p_node, Map<StringName,
 
 			int target_id;
 
-			if (node_map.has(n)) {
-				target_id=node_map[n];
+			if (node_map.has(target)) {
+				target_id=node_map[target];
 			} else {
-				if (nodepath_map.has(n)) {
-					target_id=FLAG_ID_IS_PATH|nodepath_map[n];
+				if (nodepath_map.has(target)) {
+					target_id=FLAG_ID_IS_PATH|nodepath_map[target];
 				} else {
 					int sidx=nodepath_map.size();
-					nodepath_map[n]=sidx;
+					nodepath_map[target]=sidx;
 					target_id=FLAG_ID_IS_PATH|sidx;
 				}
 			}
@@ -1403,8 +1437,7 @@ NodePath SceneState::get_node_path(int p_idx,bool p_for_parent) const {
 		}
 	}
 
-	for(int i=0;i<base_path.get_name_count();i++) {
-		StringName sn = base_path.get_name(i);
+	for(int i=base_path.get_name_count()-1;i>=0;i--) {
 		sub_path.insert(0,base_path.get_name(i));
 	}
 
@@ -1485,6 +1518,8 @@ StringName SceneState::get_connection_method(int p_idx) const{
 	return names[connections[p_idx].method];
 
 }
+
+
 int SceneState::get_connection_flags(int p_idx) const{
 
 	ERR_FAIL_INDEX_V(p_idx,connections.size(),-1);
@@ -1493,12 +1528,44 @@ int SceneState::get_connection_flags(int p_idx) const{
 
 Array SceneState::get_connection_binds(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx,connections.size(),-1);
+	ERR_FAIL_INDEX_V(p_idx,connections.size(),Array());
 	Array binds;
 	for(int i=0;i<connections[p_idx].binds.size();i++) {
 		binds.push_back(variants[connections[p_idx].binds[i]]);
 	}
 	return binds;
+}
+
+bool SceneState::has_connection(const NodePath& p_node_from, const StringName& p_signal, const NodePath& p_node_to, const StringName& p_method) const {
+
+	for(int i=0;i<connections.size();i++) {
+		const ConnectionData &c = connections[i];
+
+		NodePath np_from;
+
+		if (c.from&FLAG_ID_IS_PATH) {
+			np_from=node_paths[c.from&FLAG_MASK];
+		} else {
+			np_from=get_node_path(c.from);
+		}
+
+		NodePath np_to;
+
+		if (c.to&FLAG_ID_IS_PATH) {
+			np_to=node_paths[c.to&FLAG_MASK];
+		} else {
+			np_to=get_node_path(c.to);
+		}
+
+		StringName sn_signal=names[c.signal];
+		StringName sn_method=names[c.method];
+
+		if (np_from==p_node_from && sn_signal==p_signal && np_to==p_node_to && sn_method==p_method) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 Vector<NodePath> SceneState::get_editable_instances() const {
@@ -1510,6 +1577,16 @@ int SceneState::add_name(const StringName& p_name) {
 
 	names.push_back(p_name);
 	return names.size()-1;
+}
+
+int SceneState::find_name(const StringName& p_name) const {
+
+	for(int i=0;i<names.size();i++) {
+		if (names[i]==p_name)
+			return i;
+	}
+
+	return -1;
 }
 
 int SceneState::add_value(const Variant& p_value) {

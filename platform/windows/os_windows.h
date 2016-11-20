@@ -41,6 +41,9 @@
 #include "servers/audio/audio_server_sw.h"
 #include "servers/audio/sample_manager_sw.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
+#ifdef XAUDIO2_ENABLED
+#include "drivers/xaudio2/audio_driver_xaudio2.h"
+#endif
 #include "servers/spatial_sound/spatial_sound_server_sw.h"
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "drivers/unix/ip_unix.h"
@@ -104,6 +107,10 @@ class OS_Windows : public OS {
 	HINSTANCE	hInstance;		// Holds The Instance Of The Application
 	HWND hWnd;
 
+	uint32_t move_timer_id;
+
+	HCURSOR hCursor;
+
 	Size2 window_rect;
 	VideoMode video_mode;
 
@@ -132,6 +139,9 @@ class OS_Windows : public OS {
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
+#endif
+#ifdef XAUDIO2_ENABLED
+	AudioDriverXAudio2 driver_xaudio2;
 #endif
 
 	void _drag_event(int p_x, int p_y, int idx);
@@ -170,6 +180,7 @@ protected:
 		HMONITOR hMonitor;
 		HDC hdcMonitor;
 		Rect2 rect;
+		int dpi;
 
 
 	};
@@ -211,6 +222,8 @@ public:
 	virtual void set_current_screen(int p_screen);
 	virtual Point2 get_screen_position(int p_screen=0) const;
 	virtual Size2 get_screen_size(int p_screen=0) const;
+	virtual int get_screen_dpi(int p_screen=0) const;
+
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2& p_position);
 	virtual Size2 get_window_size() const;
@@ -223,6 +236,7 @@ public:
 	virtual bool is_window_minimized() const;
 	virtual void set_window_maximized(bool p_enabled);
 	virtual bool is_window_maximized() const;
+	virtual void request_attention();
 
 	virtual void set_borderless_window(int p_borderless);
 	virtual bool get_borderless_window();
@@ -245,6 +259,7 @@ public:
 
 	virtual Error execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id=NULL,String* r_pipe=NULL,int *r_exitcode=NULL);
 	virtual Error kill(const ProcessID& p_pid);
+	virtual int get_process_ID() const;
 
 	virtual bool has_environment(const String& p_var) const;
 	virtual String get_environment(const String& p_var) const;
@@ -258,7 +273,9 @@ public:
 	virtual String get_executable_path() const;
 
 	virtual String get_locale() const;
+	virtual LatinKeyboardVariant get_latin_keyboard_variant() const; 
 
+	virtual void enable_for_stealing_focus(ProcessID pid);
 	virtual void move_window_to_foreground();
 	virtual String get_data_dir() const;
 	virtual String get_system_dir(SystemDir p_dir) const;
@@ -276,6 +293,9 @@ public:
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
+
+	virtual void set_use_vsync(bool p_enable);
+	virtual bool is_vsync_enabled() const;
 
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();

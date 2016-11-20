@@ -44,21 +44,26 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 
 
 }
-String GDScriptLanguage::get_template(const String& p_class_name, const String& p_base_class_name) const {
+Ref<Script> GDScriptLanguage::get_template(const String& p_class_name, const String& p_base_class_name) const {
 
 	String _template = String()+
-	"\nextends %BASE%\n\n"+
-	"# member variables here, example:\n"+
-	"# var a=2\n"+
-	"# var b=\"textvar\"\n\n"+
+	"extends %BASE%\n\n"+
+	"# class member variables go here, for example:\n"+
+	"# var a = 2\n"+
+	"# var b = \"textvar\"\n\n"+
 	"func _ready():\n"+
 	"\t# Called every time the node is added to the scene.\n"+
 	"\t# Initialization here\n"+
-	"\tpass\n"+
-	"\n"+
-	"\n";
+	"\tpass\n";
 
-	return _template.replace("%BASE%",p_base_class_name);
+	_template = _template.replace("%BASE%",p_base_class_name);
+
+	Ref<GDScript> script;
+	script.instance();
+	script->set_source_code(_template);
+
+	return script;
+
 }
 
 
@@ -212,7 +217,7 @@ String GDScriptLanguage::debug_get_stack_level_source(int p_level) const {
 
     ERR_FAIL_INDEX_V(p_level,_debug_call_stack_pos,"");
     int l = _debug_call_stack_pos - p_level -1;
-    return _call_stack[l].function->get_script()->get_path();
+    return _call_stack[l].function->get_source();
 
 }
 void GDScriptLanguage::debug_get_stack_level_locals(int p_level,List<String> *p_locals, List<Variant> *p_values, int p_max_subitems,int p_max_depth) {
@@ -297,7 +302,7 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 	}
 	{
 		MethodInfo mi;
-		mi.name="yield";
+		mi.name="yield:GDFunctionState";
 		mi.arguments.push_back(PropertyInfo(Variant::OBJECT,"object"));
 		mi.arguments.push_back(PropertyInfo(Variant::STRING,"signal"));
 		mi.default_arguments.push_back(Variant::NIL);
@@ -328,7 +333,7 @@ String GDScriptLanguage::make_function(const String& p_class,const String& p_nam
 		for(int i=0;i<p_args.size();i++) {
 			if (i>0)
 				s+=", ";
-			s+=p_args[i];
+			s+=p_args[i].get_slice(":",0);
 		}
 		s+=" ";
 	}
@@ -346,6 +351,7 @@ struct GDCompletionIdentifier {
 	Ref<GDScript> script;
 	Variant::Type type;
 	Variant value; //im case there is a value, also return it
+
 };
 
 
@@ -449,62 +455,21 @@ static Ref<Reference> _get_parent_class(GDCompletionContext& context) {
 			}
 
 			String base=context._class->extends_class[0];
-			const GDParser::ClassNode *p = context._class->owner;
-			Ref<GDScript> base_class;
-#if 0
-			while(p) {
 
-				if (p->subclasses.has(base)) {
+			if (context._class->extends_class.size()>1) {
 
-					base_class=p->subclasses[base];
-					break;
-				}
-				p=p->_owner;
+				return REF();
+
 			}
-#endif
-			if (base_class.is_valid()) {
-#if 0
-				for(int i=1;i<context._class->extends_class.size();i++) {
+			//if not found, try engine classes
+			if (!GDScriptLanguage::get_singleton()->get_global_map().has(base)) {
 
-					String subclass=context._class->extends_class[i];
-
-					if (base_class->subclasses.has(subclass)) {
-
-						base_class=base_class->subclasses[subclass];
-					} else {
-
-						//print_line("Could not find subclass: "+subclass);
-						return _get_type_from_class(context); //fail please
-					}
-				}
-
-				script=base_class;
-#endif
-
-			} else {
-
-				if (context._class->extends_class.size()>1) {
-
-					return REF();
-
-
-				}
-				//if not found, try engine classes
-				if (!GDScriptLanguage::get_singleton()->get_global_map().has(base)) {
-
-					return REF();
-				}
-
-				int base_idx = GDScriptLanguage::get_singleton()->get_global_map()[base];
-				native = GDScriptLanguage::get_singleton()->get_global_array()[base_idx];
-				if (!native.is_valid()) {
-
-					print_line("Global not a class: '"+base+"'");
-
-				}
-				return native;
+				return REF();
 			}
 
+			int base_idx = GDScriptLanguage::get_singleton()->get_global_map()[base];
+			native = GDScriptLanguage::get_singleton()->get_global_array()[base_idx];
+			return native;
 
 		}
 
@@ -971,6 +936,7 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 	return false;
 }
 
+
 static bool _guess_identifier_type_in_block(GDCompletionContext& context,int p_line,const StringName& p_identifier,GDCompletionIdentifier &r_type) {
 
 
@@ -1024,7 +990,7 @@ static bool _guess_identifier_type_in_block(GDCompletionContext& context,int p_l
 }
 
 
-static bool _guess_identifier_from_assignment_in_function(GDCompletionContext& context,const StringName& p_identifier, const StringName& p_function,GDCompletionIdentifier &r_type) {
+static bool _guess_identifier_from_assignment_in_function(GDCompletionContext& context, int p_src_line, const StringName& p_identifier, const StringName& p_function,GDCompletionIdentifier &r_type) {
 
 	const GDParser::FunctionNode* func=NULL;
 	for(int i=0;i<context._class->functions.size();i++) {
@@ -1039,7 +1005,9 @@ static bool _guess_identifier_from_assignment_in_function(GDCompletionContext& c
 
 	for(int i=0;i<func->body->statements.size();i++) {
 
-
+		if (func->body->statements[i]->line == p_src_line) {
+			break;
+		}
 
 		if (func->body->statements[i]->type==GDParser::BlockNode::TYPE_OPERATOR) {
 			const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(func->body->statements[i]);
@@ -1160,11 +1128,11 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 				}
 
 				//try to guess from assignment in construtor or _ready
-				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_ready",r_type))
+				if (_guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,"_ready",r_type))
 					return true;
-				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_enter_tree",r_type))
+				if (_guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,"_enter_tree",r_type))
 					return true;
-				if (_guess_identifier_from_assignment_in_function(context,p_identifier,"_init",r_type))
+				if (_guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,"_init",r_type))
 					return true;
 
 				return false;
@@ -1310,9 +1278,9 @@ static void _find_identifiers_in_class(GDCompletionContext& context,bool p_stati
 				}
 			}
 
-			for (const Map<StringName,GDFunction>::Element *E=script->get_member_functions().front();E;E=E->next()) {
-				if (!p_static || E->get().is_static()) {
-					if (E->get().get_argument_count())
+			for (const Map<StringName,GDFunction*>::Element *E=script->get_member_functions().front();E;E=E->next()) {
+				if (!p_static || E->get()->is_static()) {
+					if (E->get()->get_argument_count())
 						result.insert(E->key().operator String()+"(");
 					else
 						result.insert(E->key().operator String()+"()");
@@ -1495,7 +1463,7 @@ static void _make_function_hint(const GDParser::FunctionNode* p_func,int p_argid
 }
 
 
-static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const StringName& p_method,const GDCompletionIdentifier& id, int p_argidx, Set<String>& result, String& arghint) {
+static void _find_type_arguments(GDCompletionContext& context,const GDParser::Node*p_node,int p_line,const StringName& p_method,const GDCompletionIdentifier& id, int p_argidx, Set<String>& result, String& arghint) {
 
 
 	//print_line("find type arguments?");
@@ -1536,10 +1504,10 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 					if (scr) {
 						while (scr) {
 
-							for (const Map<StringName,GDFunction>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
-								if (E->get().is_static() && p_method==E->get().get_name()) {
+							for (const Map<StringName,GDFunction*>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
+								if (E->get()->is_static() && p_method==E->get()->get_name()) {
 									arghint="static func "+String(p_method)+"(";
-									for(int i=0;i<E->get().get_argument_count();i++) {
+									for(int i=0;i<E->get()->get_argument_count();i++) {
 										if (i>0)
 											arghint+=", ";
 										else
@@ -1547,12 +1515,12 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 										if (i==p_argidx) {
 											arghint+=String::chr(0xFFFF);
 										}
-										arghint+="var "+E->get().get_argument_name(i);
-										int deffrom = E->get().get_argument_count()-E->get().get_default_argument_count();
+										arghint+="var "+E->get()->get_argument_name(i);
+										int deffrom = E->get()->get_argument_count()-E->get()->get_default_argument_count();
 										if (i>=deffrom) {
 											int defidx = deffrom-i;
-											if (defidx>=0 && defidx<E->get().get_default_argument_count()) {
-												arghint+="="+E->get().get_default_argument(defidx).get_construct_string();
+											if (defidx>=0 && defidx<E->get()->get_default_argument_count()) {
+												arghint+="="+E->get()->get_default_argument(defidx).get_construct_string();
 											}
 										}
 										if (i==p_argidx) {
@@ -1670,10 +1638,10 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 
 						if (code=="") {
 
-							for (const Map<StringName,GDFunction>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
-								if (p_method==E->get().get_name()) {
+							for (const Map<StringName,GDFunction*>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
+								if (p_method==E->get()->get_name()) {
 									arghint="func "+String(p_method)+"(";
-									for(int i=0;i<E->get().get_argument_count();i++) {
+									for(int i=0;i<E->get()->get_argument_count();i++) {
 										if (i>0)
 											arghint+=", ";
 										else
@@ -1681,12 +1649,12 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 										if (i==p_argidx) {
 											arghint+=String::chr(0xFFFF);
 										}
-										arghint+="var "+E->get().get_argument_name(i);
-										int deffrom = E->get().get_argument_count()-E->get().get_default_argument_count();
+										arghint+="var "+E->get()->get_argument_name(i);
+										int deffrom = E->get()->get_argument_count()-E->get()->get_default_argument_count();
 										if (i>=deffrom) {
 											int defidx = deffrom-i;
-											if (defidx>=0 && defidx<E->get().get_default_argument_count()) {
-												arghint+="="+E->get().get_default_argument(defidx).get_construct_string();
+											if (defidx>=0 && defidx<E->get()->get_default_argument_count()) {
+												arghint+="="+E->get()->get_default_argument(defidx).get_construct_string();
 											}
 										}
 										if (i==p_argidx) {
@@ -1732,8 +1700,30 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 				if (p_argidx==0) {
 					List<MethodInfo> sigs;
 					ObjectTypeDB::get_signal_list(id.obj_type,&sigs);
+
+					if (id.script.is_valid()) {
+						id.script->get_script_signal_list(&sigs);
+					} else if (id.value.get_type()==Variant::OBJECT) {
+						Object *obj = id.value;
+						if (obj && !obj->get_script().is_null()) {
+							Ref<Script> scr=obj->get_script();
+							if (scr.is_valid()) {
+								scr->get_script_signal_list(&sigs);
+							}
+						}
+					}
+
 					for (List<MethodInfo>::Element *E=sigs.front();E;E=E->next()) {
 						result.insert("\""+E->get().name+"\"");
+					}
+
+				} else if (p_argidx==2){
+
+
+					if (context._class) {
+						for(int i=0;i<context._class->functions.size();i++) {
+							result.insert("\""+context._class->functions[i]->name+"\"");
+						}
 					}
 				}
 				/*if (p_argidx==2) {
@@ -1926,16 +1916,16 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 				if (script.is_valid()) {
 
 
-					for (const Map<StringName,GDFunction>::Element *E=script->get_member_functions().front();E;E=E->next()) {
+					for (const Map<StringName,GDFunction*>::Element *E=script->get_member_functions().front();E;E=E->next()) {
 
 						if (E->key()==id->name) {
 
-							if (context.function && context.function->_static && !E->get().is_static())
+							if (context.function && context.function->_static && !E->get()->is_static())
 								continue;
 
 
 							arghint = "func "+id->name.operator String()+String("(");
-							for(int i=0;i<E->get().get_argument_count();i++) {
+							for(int i=0;i<E->get()->get_argument_count();i++) {
 								if (i>0)
 									arghint+=", ";
 								else
@@ -1943,12 +1933,12 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 								if (i==p_argidx) {
 									arghint+=String::chr(0xFFFF);
 								}
-								arghint+=E->get().get_argument_name(i);
-								int deffrom = E->get().get_argument_count()-E->get().get_default_argument_count();
+								arghint+=E->get()->get_argument_name(i);
+								int deffrom = E->get()->get_argument_count()-E->get()->get_default_argument_count();
 								if (i>=deffrom) {
 									int defidx = deffrom-i;
-									if (defidx>=0 && defidx<E->get().get_default_argument_count()) {
-										arghint+="="+E->get().get_default_argument(defidx).get_construct_string();
+									if (defidx>=0 && defidx<E->get()->get_default_argument_count()) {
+										arghint+="="+E->get()->get_default_argument(defidx).get_construct_string();
 									}
 								}
 								if (i==p_argidx) {
@@ -1956,7 +1946,7 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 								}
 
 							}
-							if (E->get().get_argument_count()>0)
+							if (E->get()->get_argument_count()>0)
 								arghint+=" ";
 							arghint+=")";
 							return;
@@ -1976,7 +1966,7 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 						if (!context._class->owner)
 							ci.value=context.base;
 
-						_find_type_arguments(p_node,p_line,id->name,ci,p_argidx,result,arghint);
+						_find_type_arguments(context,p_node,p_line,id->name,ci,p_argidx,result,arghint);
 						//guess type..
 						/*
 						List<MethodInfo> methods;
@@ -1999,7 +1989,7 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 			GDCompletionIdentifier ci;
 			if (_guess_expression_type(context,op->arguments[0],p_line,ci)) {
 
-				_find_type_arguments(p_node,p_line,id->name,ci,p_argidx,result,arghint);
+				_find_type_arguments(context,p_node,p_line,id->name,ci,p_argidx,result,arghint);
 				return;
 			}
 
@@ -2103,12 +2093,10 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 }
 
 Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base_path, Object*p_owner, List<String>* r_options, String &r_call_hint) {
-	//print_line( p_code.replace(String::chr(0xFFFF),"<cursor>"));
 
 	GDParser p;
-	//Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="",bool p_for_completion=false);
 
-	Error err = p.parse(p_code,p_base_path,false,"",true);
+	p.parse(p_code,p_base_path,false,"",true);
 	bool isfunction=false;
 	Set<String> options;
 
@@ -2122,10 +2110,8 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 	switch(p.get_completion_type()) {
 
 		case GDParser::COMPLETION_NONE: {
-			print_line("No completion");
 		} break;
 		case GDParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
-			print_line("Built in type constant");
 			List<StringName> constants;
 			Variant::get_numeric_constants_for_type(p.get_completion_built_in_constant(),&constants);
 			for(List<StringName>::Element *E=constants.front();E;E=E->next()) {
@@ -2141,7 +2127,6 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 			_find_identifiers(context,p.get_completion_line(),isfunction,options);
 		} break;
 		case GDParser::COMPLETION_PARENT_FUNCTION: {
-			print_line("parent function");
 
 		} break;
 		case GDParser::COMPLETION_METHOD:
@@ -2158,7 +2143,18 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 			GDCompletionIdentifier t;
 			if (_guess_expression_type(context,static_cast<const GDParser::OperatorNode *>(node)->arguments[0],p.get_completion_line(),t)) {
 
-				if (t.type==Variant::OBJECT && t.obj_type!=StringName()) {
+				if (t.type==Variant::OBJECT && t.obj_type=="GDNativeClass") {
+					//native enum
+					Ref<GDNativeClass> gdn = t.value;
+					if (gdn.is_valid()) {
+						StringName cn = gdn->get_name();
+						List<String> cnames;
+						ObjectTypeDB::get_integer_constant_list(cn,&cnames);
+						for (List<String>::Element *E=cnames.front();E;E=E->next()) {
+							options.insert(E->get());
+						}
+					}
+				} else if (t.type==Variant::OBJECT && t.obj_type!=StringName()) {
 
 					Ref<GDScript> on_script;
 
@@ -2178,8 +2174,8 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 											options.insert(E->key());
 										}
 									}
-									for (const Map<StringName,GDFunction>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
-										if (E->get().is_static())
+									for (const Map<StringName,GDFunction*>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
+										if (E->get()->is_static())
 											options.insert(E->key());
 									}
 
@@ -2210,7 +2206,6 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 								if (code!="") {
 									//if there is code, parse it. This way is slower but updates in real-time
 									GDParser p;
-									//Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="",bool p_for_completion=false);
 
 									Error err = p.parse(scr->get_source_code(),scr->get_path().get_base_dir(),true,"",false);
 
@@ -2266,8 +2261,8 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 											options.insert(E->key());
 										}
 									}
-									for (const Map<StringName,GDFunction>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
-										if (E->get().get_argument_count())
+									for (const Map<StringName,GDFunction*>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
+										if (E->get()->get_argument_count())
 											options.insert(String(E->key())+"()");
 										else
 											options.insert(String(E->key())+"(");
@@ -2427,7 +2422,24 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 				}
 			}
 		} break;
+		case GDParser::COMPLETION_YIELD: {
 
+			const GDParser::Node *node = p.get_completion_node();
+
+			GDCompletionIdentifier t;
+			if (!_guess_expression_type(context,node,p.get_completion_line(),t))
+				break;
+
+			if (t.type==Variant::OBJECT && t.obj_type!=StringName()) {
+
+				List<MethodInfo> sigs;
+				ObjectTypeDB::get_signal_list(t.obj_type,&sigs);
+				for (List<MethodInfo>::Element *E=sigs.front();E;E=E->next()) {
+					options.insert("\""+E->get().name+"\"");
+				}
+			}
+
+		} break;
 
 	}
 
@@ -2512,3 +2524,442 @@ void GDScriptLanguage::auto_indent_code(String& p_code,int p_from_line,int p_to_
 	}
 
 }
+
+#ifdef TOOLS_ENABLED
+
+Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol,const String& p_base_path, Object*p_owner,LookupResult& r_result) {
+
+
+	//before parsing, try the usual stuff
+	if (ObjectTypeDB::type_exists(p_symbol)) {
+		r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS;
+		r_result.class_name=p_symbol;
+		return OK;
+	}
+
+	for(int i=0;i<Variant::VARIANT_MAX;i++) {
+		Variant::Type t = Variant::Type(i);
+		if (Variant::get_type_name(t)==p_symbol) {
+			r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS;
+			r_result.class_name=Variant::get_type_name(t);
+			return OK;
+		}
+	}
+
+	for(int i=0;i<GDFunctions::FUNC_MAX;i++) {
+		if (GDFunctions::get_func_name(GDFunctions::Function(i))==p_symbol) {
+			r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+			r_result.class_name="@GDScript";
+			r_result.class_member=p_symbol;
+			return OK;
+		}
+	}
+
+	GDParser p;
+	p.parse(p_code,p_base_path,false,"",true);
+
+	if (p.get_completion_type()==GDParser::COMPLETION_NONE)
+		return ERR_CANT_RESOLVE;
+
+	GDCompletionContext context;
+
+	context._class=p.get_completion_class();
+	context.block=p.get_completion_block();
+	context.function=p.get_completion_function();
+	context.base=p_owner;
+	context.base_path=p_base_path;
+	bool isfunction=false;
+
+	switch(p.get_completion_type()) {
+
+		case GDParser::COMPLETION_NONE: {
+		} break;
+		case GDParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
+
+			r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+			r_result.class_name=Variant::get_type_name(p.get_completion_built_in_constant());
+			r_result.class_member=p_symbol;
+			return OK;
+
+		} break;
+		case GDParser::COMPLETION_FUNCTION: {
+
+
+			if (context._class && context._class->functions.size()) {
+				for(int i=0;i<context._class->functions.size();i++) {
+					if (context._class->functions[i]->name==p_symbol) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+						r_result.location=context._class->functions[i]->line;
+						return OK;
+					}
+				}
+			}
+
+			Ref<GDScript> parent = _get_parent_class(context);
+			while(parent.is_valid()) {
+				int line = parent->get_member_line(p_symbol);
+				if (line>=0) {
+					r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+					r_result.location=line;
+					r_result.script=parent;
+					return OK;
+
+				}
+
+				parent=parent->get_base();
+			}
+
+			GDCompletionIdentifier identifier = _get_native_class(context);
+			print_line("identifier: "+String(identifier.obj_type));
+
+			if (ObjectTypeDB::has_method(identifier.obj_type,p_symbol)) {
+
+				r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+				r_result.class_name=identifier.obj_type;
+				r_result.class_member=p_symbol;
+				return OK;
+			}
+
+
+		} break;
+		case GDParser::COMPLETION_IDENTIFIER: {
+
+			//check if a function
+			if (p.get_completion_identifier_is_function()) {
+				if (context._class && context._class->functions.size()) {
+					for(int i=0;i<context._class->functions.size();i++) {
+						if (context._class->functions[i]->name==p_symbol) {
+							r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+							r_result.location=context._class->functions[i]->line;
+							return OK;
+						}
+					}
+				}
+
+				Ref<GDScript> parent = _get_parent_class(context);
+				while(parent.is_valid()) {
+					int line = parent->get_member_line(p_symbol);
+					if (line>=0) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+						r_result.location=line;
+						r_result.script=parent;
+						return OK;
+
+					}
+
+					parent=parent->get_base();
+				}
+
+				GDCompletionIdentifier identifier = _get_native_class(context);
+
+
+				if (ObjectTypeDB::has_method(identifier.obj_type,p_symbol)) {
+
+					r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+					r_result.class_name=identifier.obj_type;
+					r_result.class_member=p_symbol;
+					return OK;
+				}
+			} else {
+
+
+				const GDParser::BlockNode *block=context.block;
+				//search in blocks going up (local var?)
+				while(block) {
+
+
+
+					for (int i=0;i<block->statements.size();i++) {
+
+						if (block->statements[i]->line>p.get_completion_line())
+							continue;
+
+
+						if (block->statements[i]->type==GDParser::BlockNode::TYPE_LOCAL_VAR) {
+
+							const GDParser::LocalVarNode *lv=static_cast<const GDParser::LocalVarNode *>(block->statements[i]);
+
+							if (lv->assign && lv->name==p_symbol) {
+
+								r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+								r_result.location=block->statements[i]->line;
+								return OK;
+							}
+						}
+					}
+					block=block->parent_block;
+				}
+
+				//guess from function arguments
+				if (context.function && context.function->name!=StringName()) {
+
+					for(int i=0;i<context.function->arguments.size();i++) {
+
+						if (context.function->arguments[i]==p_symbol) {
+							r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+							r_result.location=context.function->line;
+							return OK;
+						}
+
+					}
+				}
+
+				//guess in class constants
+
+				for(int i=0;i<context._class->constant_expressions.size();i++) {
+
+					if (context._class->constant_expressions[i].identifier==p_symbol) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+						r_result.location=context._class->constant_expressions[i].expression->line;
+						return OK;
+					}
+				}
+
+				//guess in class variables
+				if (!(context.function && context.function->_static)) {
+
+					for(int i=0;i<context._class->variables.size();i++) {
+
+						if (context._class->variables[i].identifier==p_symbol) {
+
+							r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+							r_result.location=context._class->variables[i].line;
+							return OK;
+						}
+					}
+				}
+
+				//guess in autoloads as singletons
+				List<PropertyInfo> props;
+				Globals::get_singleton()->get_property_list(&props);
+
+				for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+
+					String s = E->get().name;
+					if (!s.begins_with("autoload/"))
+						continue;
+					String name = s.get_slice("/",1);
+					if (name==String(p_symbol)) {
+
+						String path = Globals::get_singleton()->get(s);
+						if (path.begins_with("*")) {
+							String script =path.substr(1,path.length());
+
+							if (!script.ends_with(".gd")) {
+								//not a script, try find the script anyway,
+								//may have some success
+								script=script.basename()+".gd";
+							}
+
+							if (FileAccess::exists(script)) {
+
+								r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+								r_result.location=0;
+								r_result.script=ResourceLoader::load(script);
+								return OK;
+							}
+						}
+					}
+				}
+
+				//global
+				for(Map<StringName,int>::Element *E=GDScriptLanguage::get_singleton()->get_global_map().front();E;E=E->next()) {
+					if (E->key()==p_symbol) {
+
+						Variant value = GDScriptLanguage::get_singleton()->get_global_array()[E->get()];
+						if (value.get_type()==Variant::OBJECT) {
+							Object *obj = value;
+							if (obj) {
+
+								if (obj->cast_to<GDNativeClass>()) {
+									r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS;
+									r_result.class_name=obj->cast_to<GDNativeClass>()->get_name();
+
+								} else {
+									r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS;
+									r_result.class_name=obj->get_type();
+								}
+								return OK;
+							}
+						} else {
+
+							r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+							r_result.class_name="@Global Scope";
+							r_result.class_member=p_symbol;
+							return OK;
+						}
+					}
+
+				}
+#if 0
+				GDCompletionIdentifier identifier;
+				if (_guess_identifier_type(context,p.get_completion_line(),p_symbol,identifier)) {
+
+					print_line("var type: "+Variant::get_type_name(identifier.type));
+					if (identifier.script.is_valid()) {
+						print_line("var script: "+identifier.script->get_path());
+					}
+					print_line("obj type: "+String(identifier.obj_type));
+					print_line("value: "+String(identifier.value));
+				}
+#endif
+			}
+
+		} break;
+		case GDParser::COMPLETION_PARENT_FUNCTION: {
+
+		} break;
+		case GDParser::COMPLETION_METHOD:
+			isfunction=true;
+		case GDParser::COMPLETION_INDEX: {
+
+			const GDParser::Node *node = p.get_completion_node();
+			if (node->type!=GDParser::Node::TYPE_OPERATOR)
+				break;
+
+
+
+
+			GDCompletionIdentifier t;
+			if (_guess_expression_type(context,static_cast<const GDParser::OperatorNode *>(node)->arguments[0],p.get_completion_line(),t)) {
+
+				if (t.type==Variant::OBJECT && t.obj_type=="GDNativeClass") {
+					//native enum
+					Ref<GDNativeClass> gdn = t.value;
+					if (gdn.is_valid()) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+						r_result.class_name=gdn->get_name();;
+						r_result.class_member=p_symbol;
+						return OK;
+
+					}
+				} else if (t.type==Variant::OBJECT && t.obj_type!=StringName()) {
+
+					Ref<GDScript> on_script;
+
+					if (t.value.get_type()) {
+						Object *obj=t.value;
+
+
+						if (obj) {
+
+
+							on_script=obj->get_script();
+
+							if (on_script.is_valid()) {
+								int loc = on_script->get_member_line(p_symbol);
+								if (loc>=0) {
+									r_result.script=on_script;
+									r_result.type=ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+									r_result.location=loc;
+									return OK;
+								}
+							}
+						}
+					}
+
+					if (ObjectTypeDB::has_method(t.obj_type,p_symbol)) {
+
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+						r_result.class_name=t.obj_type;
+						r_result.class_member=p_symbol;
+						return OK;
+
+					}
+
+					bool success;
+					ObjectTypeDB::get_integer_constant(t.obj_type,p_symbol,&success);
+					if (success) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+						r_result.class_name=t.obj_type;
+						r_result.class_member=p_symbol;
+						return OK;
+					}
+
+					ObjectTypeDB::get_property_type(t.obj_type,p_symbol,&success);
+
+					if (success) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY;
+						r_result.class_name=t.obj_type;
+						r_result.class_member=p_symbol;
+						return OK;
+					}
+
+
+				} else {
+
+					Variant::CallError ce;
+					Variant v = Variant::construct(t.type,NULL,0,ce);
+
+					bool valid;
+					v.get_numeric_constant_value(t.type,p_symbol,&valid);
+					if (valid) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+						r_result.class_name=Variant::get_type_name(t.type);
+						r_result.class_member=p_symbol;
+						return OK;
+					}
+
+					//todo check all inputevent types for property
+
+					v.get(p_symbol,&valid);
+
+					if (valid) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY;
+						r_result.class_name=Variant::get_type_name(t.type);
+						r_result.class_member=p_symbol;
+						return OK;
+					}
+
+					if (v.has_method(p_symbol)) {
+
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+						r_result.class_name=Variant::get_type_name(t.type);
+						r_result.class_member=p_symbol;
+						return OK;
+
+					}
+
+
+				}
+			}
+
+
+		} break;
+		case GDParser::COMPLETION_CALL_ARGUMENTS: {
+
+			return ERR_CANT_RESOLVE;
+		} break;
+		case GDParser::COMPLETION_VIRTUAL_FUNC: {
+
+			GDCompletionIdentifier cid = _get_native_class(context);
+
+			if (cid.obj_type!=StringName()) {
+				List<MethodInfo> vm;
+				ObjectTypeDB::get_virtual_methods(cid.obj_type,&vm);
+				for(List<MethodInfo>::Element *E=vm.front();E;E=E->next()) {
+
+					if (p_symbol==E->get().name) {
+
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
+						r_result.class_name=cid.obj_type;
+						r_result.class_member=p_symbol;
+						return OK;
+
+					}
+				}
+			}
+		} break;
+		case GDParser::COMPLETION_YIELD: {
+
+			return ERR_CANT_RESOLVE;
+
+		} break;
+
+	}
+
+
+	return ERR_CANT_RESOLVE;
+}
+
+#endif

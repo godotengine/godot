@@ -7,7 +7,7 @@
       >
 <supports-screens android:smallScreens="true"
                       android:normalScreens="true"
-                      android:largeScreens="false"
+                      android:largeScreens="true"
                       android:xlargeScreens="true"/>
 
     <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon" android:allowBackup="false" $$ADD_APPATTRIBUTE_CHUNKS$$ >
@@ -200,6 +200,6 @@ $$ADD_PERMISSION_CHUNKS$$
 <uses-permission android:name="godot.custom.18"/>
 <uses-permission android:name="godot.custom.19"/>
 
-<uses-sdk android:minSdkVersion="10" android:targetSdkVersion="19"/>
+<uses-sdk android:minSdkVersion="10" android:targetSdkVersion="23"/>
          
 </manifest> 

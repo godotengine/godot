@@ -30,7 +30,7 @@
 #include "core_string_names.h"
 #include <stdio.h>
 #include "os/file_access.h"
-
+#include "io/resource_loader.h"
 
 void ResourceImportMetadata::set_editor(const String& p_editor) {
 
@@ -95,10 +95,9 @@ bool ResourceImportMetadata::has_option(const String& p_key) const {
 
 	return options.has(p_key);
 }
+
 Variant ResourceImportMetadata::get_option(const String& p_key) const {
 
-	if (!options.has(p_key))
-		print_line(p_key);
 	ERR_FAIL_COND_V(!options.has(p_key),Variant());
 
 	return options[p_key];
@@ -133,6 +132,7 @@ void ResourceImportMetadata::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_source","path","md5"),&ResourceImportMetadata::add_source, "");
 	ObjectTypeDB::bind_method(_MD("get_source_path","idx"),&ResourceImportMetadata::get_source_path);
 	ObjectTypeDB::bind_method(_MD("get_source_md5","idx"),&ResourceImportMetadata::get_source_md5);
+	ObjectTypeDB::bind_method(_MD("set_source_md5","idx", "md5"),&ResourceImportMetadata::set_source_md5);
 	ObjectTypeDB::bind_method(_MD("remove_source","idx"),&ResourceImportMetadata::remove_source);
 	ObjectTypeDB::bind_method(_MD("get_source_count"),&ResourceImportMetadata::get_source_count);
 	ObjectTypeDB::bind_method(_MD("set_option","key","value"),&ResourceImportMetadata::set_option);
@@ -217,14 +217,36 @@ String Resource::get_name() const {
 	return name;
 }
 
-bool Resource::can_reload_from_file() {
+bool Resource::editor_can_reload_from_file() {
 
-	return false;
+	return true; //by default yes
 }
 
 void Resource::reload_from_file() {
 
 
+	String path=get_path();
+	if (!path.is_resource_file())
+		return;
+
+	Ref<Resource> s = ResourceLoader::load(path,get_type(),true);
+
+	if (!s.is_valid())
+		return;
+
+	List<PropertyInfo> pi;
+	s->get_property_list(&pi);
+
+	for (List<PropertyInfo>::Element *E=pi.front();E;E=E->next()) {
+
+		if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
+			continue;
+		if (E->get().name=="resource/path")
+			continue; //do not change path
+
+		set(E->get().name,s->get(E->get().name));
+
+	}
 }
 
 
@@ -330,6 +352,31 @@ Ref<ResourceImportMetadata> Resource::get_import_metadata() const {
 
 }
 
+#ifdef TOOLS_ENABLED
+
+uint32_t Resource::hash_edited_version() const {
+
+	uint32_t hash = hash_djb2_one_32(get_edited_version());
+
+	List<PropertyInfo> plist;
+	get_property_list(&plist);
+
+	for (List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
+
+		if (E->get().type==Variant::OBJECT && E->get().hint==PROPERTY_HINT_RESOURCE_TYPE) {
+			RES res = get(E->get().name);
+			if (res.is_valid()) {
+				hash = hash_djb2_one_32(res->hash_edited_version(),hash);
+			}
+		}
+	}
+
+	return hash;
+
+}
+
+#endif
+
 
 Resource::Resource() {
 
@@ -339,6 +386,8 @@ Resource::Resource() {
 
 	subindex=0;
 }
+
+
 
 
 Resource::~Resource() {
@@ -437,8 +486,6 @@ void ResourceCache::dump(const char* p_file,bool p_short) {
 		if (!p_short) {
 			if (f)
 				f->store_line(r->get_type()+": "+r->get_path());
-			else
-				print_line(r->get_type()+": "+r->get_path());
 		}
 	}
 
@@ -446,8 +493,6 @@ void ResourceCache::dump(const char* p_file,bool p_short) {
 
 		if (f)
 			f->store_line(E->key()+" count: "+itos(E->get()));
-		else
-			print_line(E->key()+" count: "+itos(E->get()));
 	}
 	if (f) {
 		f->close();

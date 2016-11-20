@@ -94,10 +94,10 @@ Error GameCenter::connect() {
                 ret["error_description"] = [error.localizedDescription UTF8String];
                 GameCenter::get_singleton()->connected = false;
             };
-            
+
             pending_events.push_back(ret);
         };
-	
+
 	});
 
 	return OK;
@@ -156,7 +156,7 @@ Error GameCenter::award_achievement(Variant p_params) {
 	if (params.has("show_completion_banner")) {
 		achievement.showsCompletionBanner = params["show_completion_banner"] ? YES : NO;
 	}
-	
+
 	[GKAchievement reportAchievements:@[achievement] withCompletionHandler:^(NSError *error) {
 
 		Dictionary ret;
@@ -189,30 +189,30 @@ void GameCenter::request_achievement_descriptions() {
 			IntArray maximum_points;
 			Array hidden;
 			Array replayable;
-			
+
 			for (int i=0; i<[descriptions count]; i++) {
 
 				GKAchievementDescription* description = [descriptions objectAtIndex:i];
-				
+
 				const char* str = [description.identifier UTF8String];
 				names.push_back(String::utf8(str != NULL ? str : ""));
-				
+
 				str = [description.title UTF8String];
 				titles.push_back(String::utf8(str != NULL ? str : ""));
-				  
+
 				str = [description.unachievedDescription UTF8String];
 				unachieved_descriptions.push_back(String::utf8(str != NULL ? str : ""));
-				
+
 				str = [description.achievedDescription UTF8String];
 				achieved_descriptions.push_back(String::utf8(str != NULL ? str : ""));
-				
+
 				maximum_points.push_back(description.maximumPoints);
-				
+
 				hidden.push_back(description.hidden == YES);
-				
+
 				replayable.push_back(description.replayable == YES);
 			}
-			
+
 			ret["names"] = names;
 			ret["titles"] = titles;
 			ret["unachieved_descriptions"] = unachieved_descriptions;
@@ -220,7 +220,7 @@ void GameCenter::request_achievement_descriptions() {
 			ret["maximum_points"] = maximum_points;
 			ret["hidden"] = hidden;
 			ret["replayable"] = replayable;
-			
+
 		} else {
 			ret["result"] = "error";
 			ret["error_code"] = error.code;
@@ -241,19 +241,19 @@ void GameCenter::request_achievements() {
 			ret["result"] = "ok";
 			StringArray names;
 			RealArray percentages;
-					
+
 			for (int i=0; i<[achievements count]; i++) {
 
 				GKAchievement* achievement = [achievements objectAtIndex:i];
 				const char* str = [achievement.identifier UTF8String];
 				names.push_back(String::utf8(str != NULL ? str : ""));
-				
+
 				percentages.push_back(achievement.percentComplete);
 			}
-			
+
 			ret["names"] = names;
 			ret["progress"] = percentages;
-			
+
 		} else {
 			ret["result"] = "error";
 			ret["error_code"] = error.code;
@@ -275,7 +275,7 @@ void GameCenter::reset_achievements() {
 			ret["result"] = "error";
 			ret["error_code"] = error.code;
 		};
-		
+
 		pending_events.push_back(ret);
 	}];
 };
@@ -311,7 +311,7 @@ Error GameCenter::show_game_center(Variant p_params) {
 
 	ViewController *root_controller=(ViewController *)((AppDelegate *)[[UIApplication sharedApplication] delegate]).window.rootViewController;
 	ERR_FAIL_COND_V(!root_controller, FAILED);
-	
+
 	controller.gameCenterDelegate = root_controller;
 	controller.viewState = view_state;
 	if (view_state == GKGameCenterViewControllerStateLeaderboards) {
@@ -322,14 +322,14 @@ Error GameCenter::show_game_center(Variant p_params) {
 			controller.leaderboardIdentifier = name_str;
 		}
 	}
- 
+
 	[root_controller presentViewController: controller animated: YES completion:nil];
-	
-	return OK;	
+
+	return OK;
 };
 
 void GameCenter::game_center_closed() {
-	
+
 	Dictionary ret;
         ret["type"] = "show_game_center";
 	ret["result"] = "ok";

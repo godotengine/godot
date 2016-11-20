@@ -429,6 +429,7 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 				return true;
 			i++;
 		}
+
 	} else if (invalid_types) {
 
 
@@ -439,6 +440,8 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 				return false;
 			i++;
 		}
+
+		return true;
 	}
 
 	return false;
@@ -457,7 +460,6 @@ bool Variant::can_convert_strict(Variant::Type p_type_from,Variant::Type p_type_
 	};
 
 	const Type *valid_types=NULL;
-	const Type *invalid_types=NULL;
 
 	switch(p_type_to) {
 		case BOOL: {
@@ -677,16 +679,6 @@ bool Variant::can_convert_strict(Variant::Type p_type_from,Variant::Type p_type_
 
 			if (p_type_from==valid_types[i])
 				return true;
-			i++;
-		}
-	} else if (invalid_types) {
-
-
-		int i=0;
-		while(invalid_types[i]!=NIL) {
-
-			if (p_type_from==invalid_types[i])
-				return false;
 			i++;
 		}
 	}
@@ -1445,12 +1437,12 @@ Variant::operator unsigned char() const {
 
 	return 0;
 }
-#ifndef CHARTYPE_16BITS
+
 Variant::operator CharType() const {
 
 	return operator unsigned int();
 }
-#endif
+
 
 Variant::operator float() const {
 
@@ -1515,15 +1507,43 @@ Variant::operator String() const {
 		case INT: return String::num(_data._int);
 		case REAL: return String::num(_data._real);
 		case STRING: return *reinterpret_cast<const String*>(_data._mem);
-		case VECTOR2: return operator Vector2();
-		case RECT2: return operator Rect2();
-		case MATRIX32: return operator Matrix32();
-		case VECTOR3: return operator Vector3();
+		case VECTOR2: return "("+operator Vector2()+")";
+		case RECT2: return "("+operator Rect2()+")";
+		case MATRIX32: {
+
+			Matrix32 mat32 = operator Matrix32();
+			return "("+Variant(mat32.elements[0]).operator String()+", "+Variant(mat32.elements[1]).operator String()+", "+Variant(mat32.elements[2]).operator String()+")";
+		} break;
+		case VECTOR3: return "("+operator Vector3()+")";
 		case PLANE: return operator Plane();
 		//case QUAT:
 		case _AABB: return operator AABB();
-		case QUAT: return operator Quat();
-		case MATRIX3: return operator Matrix3();
+		case QUAT: return "("+operator Quat()+")";
+		case MATRIX3: {
+
+			Matrix3 mat3 = operator Matrix3();
+
+			String mtx("(");
+			for (int i=0;i<3;i++) {
+
+				if (i!=0)
+					mtx+=", ";
+
+				mtx+="(";
+
+				for (int j=0;j<3;j++) {
+
+					if (j!=0)
+						mtx+=", ";
+
+					mtx+=Variant( mat3.elements[i][j] ).operator String();
+				}
+
+				mtx+=")";
+			}
+
+			return mtx+")";
+		} break;
 		case TRANSFORM: return operator Transform();
 		case NODE_PATH: return operator NodePath();
 		case INPUT_EVENT: return operator InputEvent();
@@ -1556,63 +1576,81 @@ Variant::operator String() const {
 
 			return str;
 		} break;
-		case VECTOR3_ARRAY: {
+		case VECTOR2_ARRAY: {
 
-			DVector<Vector3> vec = operator DVector<Vector3>();
-			String str;
+			DVector<Vector2> vec = operator DVector<Vector2>();
+			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+Variant( vec[i] );
 			}
+			str += "]";
+			return str;
+		} break;
+		case VECTOR3_ARRAY: {
+
+			DVector<Vector3> vec = operator DVector<Vector3>();
+			String str("[");
+			for(int i=0;i<vec.size();i++) {
+
+				if (i>0)
+					str+=", ";
+				str=str+Variant( vec[i] );
+			}
+			str += "]";
 			return str;
 		} break;
 		case STRING_ARRAY: {
 
 			DVector<String> vec = operator DVector<String>();
-			String str;
+			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+vec[i];
 			}
+			str += "]";
 			return str;
 		} break;
 		case INT_ARRAY: {
 
 			DVector<int> vec = operator DVector<int>();
-			String str;
+			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+itos(vec[i]);
 			}
+			str += "]";
 			return str;
 		} break;
 		case REAL_ARRAY: {
 
 			DVector<real_t> vec = operator DVector<real_t>();
-			String str;
+			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+rtos(vec[i]);
 			}
+			str += "]";
 			return str;
 		} break;
 		case ARRAY: {
 
 			Array arr = operator Array();
-			String str;
+			String str("[");
 			for (int i=0; i<arr.size(); i++) {
 				if (i)
 					str+=", ";
 				str += String(arr[i]);
 			};
+			str += "]";
 			return str;
 
 		} break;
@@ -3017,9 +3055,9 @@ String Variant::get_call_error_text(Object* p_base, const StringName& p_method,c
 		int errorarg=ce.argument;
 		err_text="Cannot convert argument "+itos(errorarg+1)+" from "+Variant::get_type_name(p_argptrs[errorarg]->get_type())+" to "+Variant::get_type_name(ce.expected)+".";
 	} else if (ce.error==Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text="Expected "+itos(ce.argument)+" arguments.";
+		err_text="Method expected "+itos(ce.argument)+" arguments, but called with "+itos(p_argcount)+".";
 	} else if (ce.error==Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text="Expected "+itos(ce.argument)+" arguments.";
+		err_text="Method expected "+itos(ce.argument)+" arguments, but called with "+itos(p_argcount)+".";
 	} else if (ce.error==Variant::CallError::CALL_ERROR_INVALID_METHOD) {
 		err_text="Method not found.";
 	} else if (ce.error==Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
@@ -3035,4 +3073,48 @@ String Variant::get_call_error_text(Object* p_base, const StringName& p_method,c
 		class_name+="("+script->get_path().get_file()+")";
 	}
 	return "'"+class_name+"::"+String(p_method)+"': "+err_text;
+}
+
+
+String vformat(const String& p_text, const Variant& p1,const Variant& p2,const Variant& p3,const Variant& p4,const Variant& p5) {
+
+	Array args;
+	if (p1.get_type()!=Variant::NIL) {
+
+		args.push_back(p1);
+
+		if (p2.get_type()!=Variant::NIL) {
+
+			args.push_back(p2);
+
+			if (p3.get_type()!=Variant::NIL) {
+
+				args.push_back(p3);
+
+				if (p4.get_type()!=Variant::NIL) {
+
+					args.push_back(p4);
+
+					if (p5.get_type()!=Variant::NIL) {
+
+						args.push_back(p5);
+
+					}
+
+				}
+
+
+			}
+
+		}
+
+	}
+
+	bool error=false;
+	String fmt = p_text.sprintf(args,&error);
+
+	ERR_FAIL_COND_V(error,String());
+
+	return fmt;
+
 }

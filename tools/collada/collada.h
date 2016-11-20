@@ -75,6 +75,7 @@ public:
 		float shininess;
 		bool found_double_sided;
 		bool double_sided;
+		bool unshaded;
 
 		String get_texture_path(const String& p_source,Collada& state) const;
 
@@ -83,7 +84,7 @@ public:
 			double_sided=true;
 			found_double_sided=false;
 			shininess=40;
-
+			unshaded=false;
 		}
 	};
 
@@ -403,6 +404,7 @@ public:
 
 		String name;
 		String id;
+		String empty_draw_type;
 		bool noname;
 		Vector<XForm> xform_list;
 		Transform default_transform;
@@ -635,6 +637,7 @@ private: // private stuff
 	Vector<float> _read_float_array(XMLParser& parser);
 	Vector<String> _read_string_array(XMLParser& parser);
 	Transform _read_transform(XMLParser& parser);
+	String _read_empty_draw_type(XMLParser& parser);
 
 	void _joint_set_owner(Collada::Node *p_node, NodeSkeleton *p_owner);
 	void _create_skeletons(Collada::Node **p_node, NodeSkeleton *p_skeleton=NULL);

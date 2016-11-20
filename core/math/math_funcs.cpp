@@ -41,37 +41,16 @@ static uint32_t Q[4096];
 #endif
 
 uint32_t Math::rand_from_seed(uint32_t *seed) {
-
-#if 1
-	uint32_t k;
-	uint32_t s = (*seed);
-	if (s == 0)
-		s = 0x12345987;
-	k = s / 127773;
-	s = 16807 * (s - k * 127773) - 2836 * k;
-//	if (s < 0)
-//		s += 2147483647;
-	(*seed) = s;
-	return (s & Math::RANDOM_MAX);
-#else
-	*seed = *seed * 1103515245 + 12345;
-	return (*seed % ((unsigned int)RANDOM_MAX + 1));
-#endif
+	// Xorshift31 PRNG
+	if ( *seed == 0 ) *seed = Math::RANDOM_MAX;
+	(*seed) ^= (*seed) << 13;
+	(*seed) ^= (*seed) >> 17;
+	(*seed) ^= (*seed) << 5;
+	return (*seed) & Math::RANDOM_MAX;
 }
 
 void Math::seed(uint32_t x) {
-#if 0
-	int i;
-
-	Q[0] = x;
-	Q[1] = x + PHI;
-	Q[2] = x + PHI + PHI;
-
-	for (i = 3; i < 4096; i++)
-		Q[i] = Q[i - 3] ^ Q[i - 2] ^ PHI ^ i;
-#else
 	default_seed=x;
-#endif
 }
 
 void Math::randomize() {
@@ -82,12 +61,12 @@ void Math::randomize() {
 
 uint32_t Math::rand() {
 
-	return rand_from_seed(&default_seed)&0x7FFFFFFF;
+	return rand_from_seed(&default_seed);
 }
 
 double Math::randf() {
 
-	return (double)rand() / (double)RANDOM_MAX;
+	return (double)rand() / (double)Math::RANDOM_MAX;
 }
 
 double Math::sin(double p_x) {
@@ -135,18 +114,20 @@ double Math::rad2deg(double p_y) {
 
 double Math::round(double p_val) {
 
-	if (p_val>0) {
+	if (p_val>=0) {
 		return ::floor(p_val+0.5);
 	} else {
 		p_val=-p_val;
 		return -::floor(p_val+0.5);
 	}
 }
+
 double Math::asin(double p_x) {
 
 	return ::asin(p_x);
 
 }
+
 double Math::acos(double p_x) {
 
 	return ::acos(p_x);
@@ -204,25 +185,29 @@ double Math::ceil(double p_x) {
 	return ::ceil(p_x);
 }
 
-int Math::decimals(double p_step) {
+int Math::step_decimals(double p_step) {
 
-	int max=4;
-	double llimit = Math::pow(0.1,max);
-	double ulimit = 1.0-llimit;
-	int i=0;
-	while( max) {
+	static const int maxn=9;
+	static const double sd[maxn]={
+		0.9999, // somehow compensate for floating point error
+		0.09999,
+		0.009999,
+		0.0009999,
+		0.00009999,
+		0.000009999,
+		0.0000009999,
+		0.00000009999,
+		0.000000009999
+	};
 
-		float d = absf(p_step) - Math::floor(absf(p_step));
-
-		if (d<llimit || d>ulimit)
-			break;
-		p_step*=10.0;
-		max--;
-		i++;
+	double as=absf(p_step);
+	for(int i=0;i<maxn;i++) {
+		if (as>=sd[i]) {
+			return i;
+		}
 	}
 
-	return i;
-
+	return maxn;
 }
 
 double Math::ease(double p_x, double p_c) {

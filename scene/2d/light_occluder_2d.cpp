@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  light_occluder_2d.cpp                                                */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "light_occluder_2d.h"
 
 
@@ -44,6 +72,8 @@ RID OccluderPolygon2D::get_rid() const {
 
 	return occ_polygon;
 }
+
+
 
 void OccluderPolygon2D::_bind_methods() {
 
@@ -176,6 +206,20 @@ void LightOccluder2D::set_occluder_light_mask(int p_mask) {
 int LightOccluder2D::get_occluder_light_mask() const{
 
 	return mask;
+}
+
+
+String LightOccluder2D::get_configuration_warning() const {
+
+	if (!occluder_polygon.is_valid()) {
+		return TTR("An occluder polygon must be set (or drawn) for this occluder to take effect.");
+	}
+
+	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size()==0) {
+		return TTR("The occluder polygon for this occluder is empty. Please draw a polygon!");
+	}
+
+	return String();
 }
 
 void LightOccluder2D::_bind_methods() {

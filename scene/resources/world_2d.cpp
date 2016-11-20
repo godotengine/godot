@@ -235,19 +235,20 @@ struct SpatialIndexer2D {
 			List<VisibilityNotifier2D*> added;
 			List<VisibilityNotifier2D*> removed;
 
-			for(int i=begin.x;i<=end.x;i++) {
+			int visible_cells=(end.x-begin.x)*(end.y-begin.y);
 
-				for(int j=begin.y;j<=end.y;j++) {
+			if (visible_cells>10000) {
 
-					CellKey ck;
-					ck.x=i;
-					ck.y=j;
+				//well you zoomed out a lot, it's your problem. To avoid freezing in the for loops below, we'll manually check cell by cell
 
-					Map<CellKey,CellData>::Element *F=cells.find(ck);
-					if (!F) {
+				for (Map<CellKey,CellData>::Element *F=cells.front();F;F=F->next()) {
+
+					const CellKey &ck=F->key();
+
+					if (ck.x<begin.x || ck.x>end.x)
 						continue;
-					}
-
+					if (ck.y<begin.y || ck.y>end.y)
+						continue;
 
 					//notifiers in cell
 					for (Map<VisibilityNotifier2D*,CellRef>::Element *G=F->get().notifiers.front();G;G=G->next()) {
@@ -259,6 +260,38 @@ struct SpatialIndexer2D {
 							added.push_back(G->key());
 						} else {
 							H->get()=pass;
+						}
+					}
+				}
+
+			} else {
+
+				//check cells in grid fashion
+				for(int i=begin.x;i<=end.x;i++) {
+
+					for(int j=begin.y;j<=end.y;j++) {
+
+						CellKey ck;
+						ck.x=i;
+						ck.y=j;
+
+						Map<CellKey,CellData>::Element *F=cells.find(ck);
+						if (!F) {
+							continue;
+						}
+
+
+						//notifiers in cell
+						for (Map<VisibilityNotifier2D*,CellRef>::Element *G=F->get().notifiers.front();G;G=G->next()) {
+
+							Map<VisibilityNotifier2D*,uint64_t>::Element *H=E->get().notifiers.find(G->key());
+							if (!H) {
+
+								H=E->get().notifiers.insert(G->key(),pass);
+								added.push_back(G->key());
+							} else {
+								H->get()=pass;
+							}
 						}
 					}
 				}
@@ -373,14 +406,16 @@ World2D::World2D() {
 	Physics2DServer::get_singleton()->space_set_active(space,true);
 	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_GRAVITY,GLOBAL_DEF("physics_2d/default_gravity",98));
 	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_GRAVITY_VECTOR,GLOBAL_DEF("physics_2d/default_gravity_vector",Vector2(0,1)));
-	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_LINEAR_DAMP,GLOBAL_DEF("physics_2d/default_density",0.1));
+	// TODO: Remove this deprecation warning and compatibility code for 2.2 or 3.0
+	if (Globals::get_singleton()->get("physics_2d/default_density") && !Globals::get_singleton()->get("physics_2d/default_linear_damp")) {
+		WARN_PRINT("Deprecated parameter 'physics_2d/default_density'. It was renamed to 'physics_2d/default_linear_damp', adjusting your project settings accordingly (make sure to adjust scripts that potentially rely on 'physics_2d/default_density'.");
+		Globals::get_singleton()->set("physics_2d/default_linear_damp", Globals::get_singleton()->get("physics_2d/default_density"));
+		Globals::get_singleton()->set_persisting("physics_2d/default_linear_damp", true);
+		Globals::get_singleton()->set_persisting("physics_2d/default_density", false);
+		Globals::get_singleton()->save();
+	}
+	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_LINEAR_DAMP,GLOBAL_DEF("physics_2d/default_linear_damp",0.1));
 	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_ANGULAR_DAMP,GLOBAL_DEF("physics_2d/default_angular_damp",1));
-	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS,1.0);
-	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_CONTACT_MAX_SEPARATION,1.5);
-	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION,0.3);
-	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD,2);
-	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS,0.2);
-
 	indexer = memnew( SpatialIndexer2D );
 
 }

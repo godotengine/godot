@@ -270,7 +270,6 @@ if (m_height > line_height) {\
 					if (p_mode!=PROCESS_CACHE) {
 						lh=line<l.height_caches.size()?l.height_caches[line]:1;
 					}
-					bool found_space=false;
 
 					while (c[end]!=0 && !(end && c[end-1]==' ' && c[end]!=' ')) {
 
@@ -278,31 +277,19 @@ if (m_height > line_height) {\
 						if (c[end]=='\t') {
 							cw=tab_size*font->get_char_size(' ').width;
 						}
-						w+=cw;
 
-						if (c[end]==' ') {
-
-							fw+=cw;
-							/*
-							if (p_mode==PROCESS_CACHE) {
-								fw+=cw;
-							} else if (align==ALIGN_FILL && line<l.space_caches.size() && l.space_caches[line]>0) {
-								//print_line(String(c,end)+": "+itos(l.offset_caches[line])+"/"+itos(l.space_caches[line]));
-								//sub_space=cw;
-								found_space=true;
-							} else {
-								fw+=cw;
-							}*/
-						} else {
-							fw+=cw;
+						if (end>0 && w+cw+begin > p_width ) {
+							break; //don't allow lines longer than assigned width
 						}
+
+						w+=cw;
+						fw+=cw;
 
 						end++;
 					}
 
 					ENSURE_WIDTH(w);
 
-					//print_line("END: "+String::chr(c[end])+".");
 					if (end && c[end-1]==' ') {
 						if (p_mode==PROCESS_CACHE) {
 							spaces_size+=font->get_char_size(' ').width;
@@ -314,18 +301,10 @@ if (m_height > line_height) {\
 						}
 						spaces++;
 
-						/*
-						if (found_space) {
-							int ln = MIN(l.offset_caches.size()-1,line);
-
-							fw+=l.offset_caches[ln]/l.space_caches[ln];
-						}*/
-
 					}
 
 
 					{
-
 
 						int ofs=0;
 
@@ -333,29 +312,20 @@ if (m_height > line_height) {\
 							int pofs=wofs+ofs;
 
 
-
-
 							if (p_mode==PROCESS_POINTER && r_click_char && p_click_pos.y>=p_ofs.y+y && p_click_pos.y<=p_ofs.y+y+lh) {
 								//int o = (wofs+w)-p_click_pos.x;
 
 
 								int cw=font->get_char_size(c[i],c[i+1]).x;
+
 								if (c[i]=='\t') {
 									cw=tab_size*font->get_char_size(' ').width;
 								}
 
+
 								if (p_click_pos.x-cw/2>p_ofs.x+align_ofs+pofs) {
 
 									rchar=int((&c[i])-cf);
-									//print_line("GOT: "+itos(rchar));
-
-
-									//if (i==end-1 && p_click_pos.x+cw/2 > pofs)
-									//	rchar++;
-									//int o = (wofs+w)-p_click_pos.x;
-
-								//	if (o>cw/2)
-								//		rchar++;
 								}
 
 
@@ -374,6 +344,8 @@ if (m_height > line_height) {\
 								int cw=0;
 
 								bool visible = visible_characters<0 || p_char_count<visible_characters;
+								if (c[i]=='\t')
+									visible=false;
 
 								if (selected) {
 
@@ -393,12 +365,9 @@ if (m_height > line_height) {\
 								}
 
 
-								//print_line("draw char: "+String::chr(c[i]));
-
 								if (underline) {
 									Color uc=color;
 									uc.a*=0.5;
-									//VS::get_singleton()->canvas_item_add_line(ci,Point2(pofs,y+ascent+2),Point2(pofs+cw,y+ascent+2),uc);
 									int uy = y+lh-fh+ascent+2;
 									VS::get_singleton()->canvas_item_add_line(ci,p_ofs+Point2(align_ofs+pofs,uy),p_ofs+Point2(align_ofs+pofs+cw,uy),uc);
 								}
@@ -453,28 +422,6 @@ if (m_height > line_height) {\
 				if (p_mode!=PROCESS_CACHE)
 					lh = line<l.height_caches.size()?l.height_caches[line]:1;
 
-
-#if 0
-				if (p_mode==PROCESS_POINTER && r_click_item ) {
-					//previous last "wrapped" line
-					int pl = line-1;
-					if (pl<0 || lines[pl].height_caches.size()==0)
-						break;
-					int py=lines[pl].offset_caches[ lines[pl].offset_caches.size() -1 ];
-					int ph=lines[pl].height_caches[ lines[pl].height_caches.size() -1 ];
-					print_line("py: "+itos(py));
-					print_line("ph: "+itos(ph));
-
-					rchar=0;
-					if (p_click_pos.y>=py && p_click_pos.y<=py+ph) {
-						if (r_outside) *r_outside=true;
-						*r_click_item=it;
-						*r_click_char=rchar;
-						return;
-					}
-				}
-
-#endif
 			} break;
 			case ITEM_TABLE: {
 
@@ -484,7 +431,6 @@ if (m_height > line_height) {\
 				int vseparation=get_constant("table_vseparation");
 				Color ccolor = _find_color(table,p_base_color);
 				Vector2 draw_ofs = Point2(wofs,y);
-				int max_y=get_size().height;
 
 				if (p_mode==PROCESS_CACHE) {
 
@@ -716,8 +662,9 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (use_bbcode)
-				parse_bbcode(bbcode);
+			if (bbcode != "")
+				set_bbcode(bbcode);
+
 			main->first_invalid_line=0; //invalidate ALL
 			update();
 
@@ -1494,7 +1441,6 @@ bool RichTextLabel::is_scroll_following() const {
 
 Error RichTextLabel::parse_bbcode(const String& p_bbcode) {
 
-
 	clear();
 	return append_bbcode(p_bbcode);
 }
@@ -1816,7 +1762,6 @@ bool RichTextLabel::search(const String& p_string,bool p_from_selection) {
 		charidx=selection.to_char+1;
 	}
 
-	int line=-1;
 	while(it) {
 
 		if (it->type==ITEM_TEXT) {
@@ -1913,6 +1858,10 @@ void RichTextLabel::set_bbcode(const String& p_bbcode) {
 	bbcode=p_bbcode;
 	if (is_inside_tree() && use_bbcode)
 		parse_bbcode(p_bbcode);
+	else { // raw text
+		clear();
+		add_text(p_bbcode);
+	}
 }
 
 String RichTextLabel::get_bbcode() const {
@@ -1924,19 +1873,37 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	if (use_bbcode==p_enable)
 		return;
 	use_bbcode=p_enable;
-	if (is_inside_tree() && use_bbcode)
-		parse_bbcode(bbcode);
+	set_bbcode(bbcode);
 }
 
 bool RichTextLabel::is_using_bbcode() const {
 
 	return use_bbcode;
 }
+
+String RichTextLabel::get_text() {
+	String text = "";
+	Item *it = main;
+	while (it) {
+		if (it->type == ITEM_TEXT) {
+			ItemText *t = static_cast<ItemText*>(it);
+			text += t->text;
+		} else if (it->type == ITEM_NEWLINE) {
+			text += "\n";
+		} else if (it->type == ITEM_INDENT) {
+			text += "\t";
+		}
+		it=_get_next_item(it,true);
+	}
+	return text;
+}
+
 void RichTextLabel::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&RichTextLabel::_input_event);
 	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&RichTextLabel::_scroll_changed);
+	ObjectTypeDB::bind_method(_MD("get_text"),&RichTextLabel::get_text);
 	ObjectTypeDB::bind_method(_MD("add_text","text"),&RichTextLabel::add_text);
 	ObjectTypeDB::bind_method(_MD("add_image","image:Texture"),&RichTextLabel::add_image);
 	ObjectTypeDB::bind_method(_MD("newline"),&RichTextLabel::add_newline);

@@ -33,9 +33,11 @@
 #include "os/main_loop.h"
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
-#include "scene/main/scene_singleton.h"
 #include "os/thread_safe.h"
 #include "self_list.h"
+#include "io/networked_multiplayer_peer.h"
+
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -47,6 +49,22 @@ class Node;
 class Viewport;
 class Material;
 class Mesh;
+
+
+
+class SceneTreeTimer : public Reference {
+	OBJ_TYPE(SceneTreeTimer,Reference);
+
+	float time_left;
+protected:
+	static void _bind_methods();
+public:
+
+	void set_time_left(float p_time);
+	float get_time_left() const;
+
+	SceneTreeTimer();
+};
 
 class SceneTree : public MainLoop {
 
@@ -76,8 +94,9 @@ private:
 	struct Group {
 
 		Vector<Node*> nodes;
-		uint64_t last_tree_version;
-		Group() { last_tree_version=0; };
+		//uint64_t last_tree_version;
+		bool changed;
+		Group() {  changed=false; };
 	};
 
 	Viewport *root;
@@ -135,7 +154,7 @@ private:
 	void _flush_ugc();
 	void _flush_transform_notifications();
 
-	void _update_group_order(Group& g);
+	_FORCE_INLINE_ void _update_group_order(Group& g);
 	void _update_listener();
 
 	Array _get_nodes_in_group(const StringName& p_group);
@@ -155,14 +174,67 @@ private:
 	void _change_scene(Node* p_to);
 	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
+	List<Ref<SceneTreeTimer> > timers;
+
+
+	///network///
+
+	enum NetworkCommands {
+		NETWORK_COMMAND_REMOTE_CALL,
+		NETWORK_COMMAND_REMOTE_SET,
+		NETWORK_COMMAND_SIMPLIFY_PATH,
+		NETWORK_COMMAND_CONFIRM_PATH,
+	};
+
+	Ref<NetworkedMultiplayerPeer> network_peer;
+
+	Set<int> connected_peers;
+	void _network_peer_connected(int p_id);
+	void _network_peer_disconnected(int p_id);
+
+	void _connected_to_server();
+	void _connection_failed();
+	void _server_disconnected();
+
+	//path sent caches
+	struct PathSentCache {
+		Map<int,bool> confirmed_peers;
+		int id;
+	};
+
+	HashMap<NodePath,PathSentCache> path_send_cache;
+	int last_send_cache_id;
+
+	//path get caches
+	struct PathGetCache {
+		struct NodeInfo {
+			NodePath path;
+			ObjectID instance;
+		};
+
+		Map<int,NodeInfo> nodes;
+	};
+
+	Map<int,PathGetCache> path_get_cache;
+
+	Vector<uint8_t> packet_cache;
+
+	void _network_process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void _network_poll();
+
 	static SceneTree *singleton;
 friend class Node;
+
+
+
+
+	void _rpc(Node* p_from,int p_to,bool p_unreliable,bool p_set,const StringName& p_name,const Variant** p_arg,int p_argcount);
 
 	void tree_changed();
 	void node_removed(Node *p_node);
 
 
-	void add_to_group(const StringName& p_group, Node *p_node);
+	Group* add_to_group(const StringName& p_group, Node *p_node);
 	void remove_from_group(const StringName& p_group, Node *p_node);
 
 	void _notify_group_pause(const StringName& p_group,int p_notification);
@@ -232,6 +304,7 @@ friend class Viewport;
 
 #endif
 protected:
+
 
 	void _notification(int p_notification);
 	static void _bind_methods();
@@ -339,11 +412,23 @@ public:
 	Error change_scene_to(const Ref<PackedScene>& p_scene);
 	Error reload_current_scene();
 
+	Ref<SceneTreeTimer> create_timer(float p_delay_sec);
+
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node * p_current);
 
 	static SceneTree* get_singleton() { return singleton; }
 
+	void drop_files(const Vector<String>& p_files,int p_from_screen=0);
+
+	//network API
+
+	void set_network_peer(const Ref<NetworkedMultiplayerPeer>& p_network_peer);
+	bool is_network_server() const;
+	int get_network_unique_id() const;
+
+	void set_refuse_new_network_connections(bool p_refuse);
+	bool is_refusing_new_network_connections() const;
 
 	SceneTree();
 	~SceneTree();

@@ -39,9 +39,9 @@
 @author Juan Linietsky <reduzio@gmail.com>
 */
 
-class GroupsEditor : public AcceptDialog {
+class GroupsEditor : public VBoxContainer {
 
-	OBJ_TYPE(GroupsEditor,AcceptDialog);
+	OBJ_TYPE(GroupsEditor,VBoxContainer);
 
 	Node *node;
 

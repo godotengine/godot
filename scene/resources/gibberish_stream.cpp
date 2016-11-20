@@ -29,6 +29,9 @@
 #include "gibberish_stream.h"
 #include "servers/audio_server.h"
 
+//TODO: This class needs to be adapted to the new AudioStream API,
+// or dropped if nobody cares about fixing it :) (GH-3307)
+
 #if 0
 
 int AudioStreamGibberish::get_channel_count() const {

@@ -34,6 +34,7 @@
 #include "editor_node.h"
 #include "io/resource_saver.h"
 #include "editor_settings.h"
+#include "editor_resource_preview.h"
 
 EditorFileSystem *EditorFileSystem::singleton=NULL;
 
@@ -149,6 +150,41 @@ bool EditorFileSystemDirectory::is_missing_sources(int p_idx) const {
 	return false;
 }
 
+bool EditorFileSystemDirectory::have_sources_changed(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,files.size(),false);
+	return files[p_idx]->meta.sources_changed;
+
+}
+
+int EditorFileSystemDirectory::get_source_count(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,files.size(),0);
+	if (!files[p_idx]->meta.enabled)
+		return 0;
+	return files[p_idx]->meta.sources.size();
+}
+String EditorFileSystemDirectory::get_source_file(int p_idx,int p_source) const {
+
+	ERR_FAIL_INDEX_V(p_idx,files.size(),String());
+	ERR_FAIL_INDEX_V(p_source,files[p_idx]->meta.sources.size(),String());
+	if (!files[p_idx]->meta.enabled)
+		return String();
+
+	return files[p_idx]->meta.sources[p_source].path;
+
+}
+bool EditorFileSystemDirectory::is_source_file_missing(int p_idx,int p_source) const {
+
+	ERR_FAIL_INDEX_V(p_idx,files.size(),false);
+	ERR_FAIL_INDEX_V(p_source,files[p_idx]->meta.sources.size(),false);
+	if (!files[p_idx]->meta.enabled)
+		return false;
+
+	return files[p_idx]->meta.sources[p_source].missing;
+}
+
+
 StringName EditorFileSystemDirectory::get_file_type(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx,files.size(),"");
@@ -172,10 +208,14 @@ void EditorFileSystemDirectory::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_file_count"),&EditorFileSystemDirectory::get_file_count);
 	ObjectTypeDB::bind_method(_MD("get_file","idx"),&EditorFileSystemDirectory::get_file);
 	ObjectTypeDB::bind_method(_MD("get_file_path","idx"),&EditorFileSystemDirectory::get_file_path);
-	ObjectTypeDB::bind_method(_MD("get_file_types","idx"),&EditorFileSystemDirectory::get_file_type);
+	ObjectTypeDB::bind_method(_MD("get_file_type","idx"),&EditorFileSystemDirectory::get_file_type);
 	ObjectTypeDB::bind_method(_MD("is_missing_sources","idx"),&EditorFileSystemDirectory::is_missing_sources);
 	ObjectTypeDB::bind_method(_MD("get_name"),&EditorFileSystemDirectory::get_name);
-	ObjectTypeDB::bind_method(_MD("get_parent"),&EditorFileSystemDirectory::get_parent);
+	ObjectTypeDB::bind_method(_MD("get_path"),&EditorFileSystemDirectory::get_path);
+	ObjectTypeDB::bind_method(_MD("get_parent:EditorFileSystemDirectory"),&EditorFileSystemDirectory::get_parent);
+	ObjectTypeDB::bind_method(_MD("find_file_index","name"),&EditorFileSystemDirectory::find_file_index);
+	ObjectTypeDB::bind_method(_MD("find_dir_index","name"),&EditorFileSystemDirectory::find_dir_index);
+
 
 }
 
@@ -210,8 +250,11 @@ EditorFileSystemDirectory::ImportMeta EditorFileSystem::_get_meta(const String& 
 	EditorFileSystemDirectory::ImportMeta m;
 	if (imd.is_null()) {
 		m.enabled=false;
+		m.sources_changed=false;
 	} else {
 		m.enabled=true;
+		m.sources_changed=false;
+
 		for(int i=0;i<imd->get_source_count();i++) {
 			EditorFileSystemDirectory::ImportMeta::Source s;
 			s.path=imd->get_source_path(i);
@@ -583,33 +626,42 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess 
 	int total = dirs.size()+files.size();
 	int idx=0;
 
+
 	for (List<String>::Element *E=dirs.front();E;E=E->next(),idx++) {
 
 		if (da->change_dir(E->get())==OK) {
 
-			EditorFileSystemDirectory *efd = memnew( EditorFileSystemDirectory );
+			String d = da->get_current_dir();
 
-			efd->parent=p_dir;
-			efd->name=E->get();
-
-			_scan_new_dir(efd,da,p_progress.get_sub(idx,total));
-
-			int idx=0;
-			for(int i=0;i<p_dir->subdirs.size();i++) {
-
-				if (efd->name<p_dir->subdirs[i]->name)
-					break;
-				idx++;
-			}
-			if (idx==p_dir->subdirs.size()) {
-				p_dir->subdirs.push_back(efd);
+			if (d==cd || !d.begins_with(cd)) {
+				da->change_dir(cd); //avoid recursion
 			} else {
-				p_dir->subdirs.insert(idx,efd);
-			}
 
-			da->change_dir("..");
+
+				EditorFileSystemDirectory *efd = memnew( EditorFileSystemDirectory );
+
+				efd->parent=p_dir;
+				efd->name=E->get();
+
+				_scan_new_dir(efd,da,p_progress.get_sub(idx,total));
+
+				int idx=0;
+				for(int i=0;i<p_dir->subdirs.size();i++) {
+
+					if (efd->name<p_dir->subdirs[i]->name)
+						break;
+					idx++;
+				}
+				if (idx==p_dir->subdirs.size()) {
+					p_dir->subdirs.push_back(efd);
+				} else {
+					p_dir->subdirs.insert(idx,efd);
+				}
+
+				da->change_dir("..");
+			}
 		} else {
-			ERR_PRINTS("Can't go into subdir: "+E->get());
+			ERR_PRINTS("Cannot go into subdir: "+E->get());
 		}
 
 		p_progress.update(idx,total);
@@ -649,7 +701,13 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess 
 				ia.dir=p_dir;
 				ia.file=E->get();
 				scan_actions.push_back(ia);
+				fi->meta.sources_changed=true;
+			} else {
+				fi->meta.sources_changed=false;
 			}
+
+		} else {
+			fi->meta.sources_changed=true;
 		}
 
 		p_dir->files.push_back(fi);
@@ -764,6 +822,9 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const S
 						ia.dir=p_dir;
 						ia.file=f;
 						scan_actions.push_back(ia);
+						fi->meta.sources_changed=true;
+					} else {
+						fi->meta.sources_changed=false;
 					}
 
 				} else {
@@ -774,11 +835,9 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const S
 			}
 
 		}
+
 		da->list_dir_end();
 		memdelete(da);
-
-
-
 
 	}
 
@@ -794,13 +853,19 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const S
 			continue;
 
 		}
+
 		if (_check_meta_sources(p_dir->files[i]->meta)) {
 			ItemAction ia;
 			ia.action=ItemAction::ACTION_FILE_SOURCES_CHANGED;
 			ia.dir=p_dir;
 			ia.file=p_dir->files[i]->file;
 			scan_actions.push_back(ia);
+			p_dir->files[i]->meta.sources_changed=true;
+		} else {
+			p_dir->files[i]->meta.sources_changed=false;
 		}
+
+		EditorResourcePreview::get_singleton()->check_for_invalidation(p_dir->get_file_path(i));
 	}
 
 	for(int i=0;i<p_dir->subdirs.size();i++) {
@@ -823,7 +888,7 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 
 	EditorFileSystem *efs = (EditorFileSystem*)_userdata;
 	if (efs->filesystem) {
-		EditorProgressBG pr("sources","ScanSources",1000);
+		EditorProgressBG pr("sources",TTR("ScanSources"),1000);
 		ScanProgress sp;
 		sp.progress=&pr;
 		sp.hi=1;
@@ -851,7 +916,7 @@ void EditorFileSystem::scan_sources() {
 
 	if (!use_threads) {
 		if (filesystem) {
-			EditorProgressBG pr("sources","ScanSources",1000);
+			EditorProgressBG pr("sources",TTR("ScanSources"),1000);
 			ScanProgress sp;
 			sp.progress=&pr;
 			sp.hi=1;
@@ -900,7 +965,7 @@ void EditorFileSystem::_notification(int p_what) {
 				Thread::wait_to_finish(thread);
 				memdelete(thread);
 				thread=NULL;
-				WARN_PRINT("Scan thread aborted...");
+				WARN_PRINTS("Scan thread aborted...");
 				set_process(false);
 
 			}
@@ -1113,6 +1178,25 @@ String EditorFileSystem::get_file_type(const String& p_file) const {
 
 }
 
+EditorFileSystemDirectory* EditorFileSystem::find_file(const String& p_file,int* r_index) const {
+
+	if (!filesystem || scanning)
+	    return NULL;
+
+	EditorFileSystemDirectory *fs=NULL;
+	int cpos=-1;
+	if (!_find_file(p_file,&fs,cpos)) {
+
+	    return NULL;
+	}
+
+
+	if (r_index)
+		*r_index=cpos;
+
+	return fs;
+}
+
 
 EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
 
@@ -1252,6 +1336,7 @@ void EditorFileSystem::update_file(const String& p_file) {
 	fs->files[cpos]->modified_time=FileAccess::get_modified_time(p_file);
 	fs->files[cpos]->meta=_get_meta(p_file);
 
+	EditorResourcePreview::get_singleton()->call_deferred("check_for_invalidation",p_file);
 	call_deferred("emit_signal","filesystem_changed"); //update later
 
 }
@@ -1260,10 +1345,22 @@ void EditorFileSystem::update_file(const String& p_file) {
 
 void EditorFileSystem::_bind_methods() {
 
+
+	ObjectTypeDB::bind_method(_MD("get_filesystem:EditorFileSystemDirectory"),&EditorFileSystem::get_filesystem);
+	ObjectTypeDB::bind_method(_MD("is_scanning"),&EditorFileSystem::is_scanning);
+	ObjectTypeDB::bind_method(_MD("get_scanning_progress"),&EditorFileSystem::get_scanning_progress);
+	ObjectTypeDB::bind_method(_MD("scan"),&EditorFileSystem::scan);
+	ObjectTypeDB::bind_method(_MD("scan_sources"),&EditorFileSystem::scan_sources);
+	ObjectTypeDB::bind_method(_MD("update_file","path"),&EditorFileSystem::update_file);
+	ObjectTypeDB::bind_method(_MD("get_path:EditorFileSystemDirectory","path"),&EditorFileSystem::get_path);
+	ObjectTypeDB::bind_method(_MD("get_file_type","path"),&EditorFileSystem::get_file_type);
+
 	ADD_SIGNAL( MethodInfo("filesystem_changed") );
 	ADD_SIGNAL( MethodInfo("sources_changed",PropertyInfo(Variant::BOOL,"exist")) );
 
 }
+
+
 
 EditorFileSystem::EditorFileSystem() {
 

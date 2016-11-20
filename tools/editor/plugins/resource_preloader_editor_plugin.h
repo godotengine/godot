@@ -58,7 +58,7 @@ class ResourcePreloaderEditor : public PanelContainer {
 
 	void _load_pressed();
 	void _load_scene_pressed();
-	void _file_load_request(const String& p_path);
+	void _files_load_request(const Vector<String>& p_paths);
 	void _paste_pressed();
 	void _delete_pressed();
 	void _delete_confirm_pressed();
@@ -66,6 +66,11 @@ class ResourcePreloaderEditor : public PanelContainer {
 	void _item_edited();
 
 	UndoRedo *undo_redo;
+
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+
 
 protected:
 	void _notification(int p_what);

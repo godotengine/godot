@@ -31,16 +31,11 @@
 #include "stream_peer_winsock.h"
 
 #include <winsock2.h>
+#include <ws2tcpip.h>
+
+#include "drivers/unix/socket_helpers.h"
 
 int winsock_refcount = 0;
-
-static void set_addr_in(struct sockaddr_in& their_addr, const IP_Address& p_host, uint16_t p_port) {
-
-	their_addr.sin_family = AF_INET;    // host byte order
-	their_addr.sin_port = htons(p_port);  // short, network byte order
-	their_addr.sin_addr = *((struct in_addr*)&p_host.host);
-	memset(&(their_addr.sin_zero), '\0', 8);
-};
 
 StreamPeerTCP* StreamPeerWinsock::_create() {
 
@@ -92,10 +87,10 @@ Error StreamPeerWinsock::_poll_connection(bool p_block) const {
 		_block(sockfd, false, true);
 	};
 
-	struct sockaddr_in their_addr;
-	set_addr_in(their_addr, peer_host, peer_port);
+	struct sockaddr_storage their_addr;
+	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port);
 
-	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(struct sockaddr)) == SOCKET_ERROR) {
+	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == SOCKET_ERROR) {
 
 		int err = WSAGetLastError();
 		if (err == WSAEISCONN) {
@@ -299,9 +294,10 @@ void StreamPeerWinsock::set_socket(int p_sockfd, IP_Address p_host, int p_port) 
 
 Error StreamPeerWinsock::connect(const IP_Address& p_host, uint16_t p_port) {
 
-	ERR_FAIL_COND_V( p_host.host == 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V( p_host.type == IP_Address::TYPE_NONE, ERR_INVALID_PARAMETER);
 
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
+	sockfd = _socket_create(p_host.type, SOCK_STREAM, IPPROTO_TCP);
+	if (sockfd  == INVALID_SOCKET) {
 		ERR_PRINT("Socket creation failed!");
 		disconnect();
 		//perror("socket");
@@ -315,10 +311,10 @@ Error StreamPeerWinsock::connect(const IP_Address& p_host, uint16_t p_port) {
 		return FAILED;
 	};
 
-	struct sockaddr_in their_addr;
-	set_addr_in(their_addr, p_host, p_port);
+	struct sockaddr_storage their_addr;
+	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port);
 
-	if (::connect(sockfd, (struct sockaddr *)&their_addr,sizeof(struct sockaddr)) == SOCKET_ERROR) {
+	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == SOCKET_ERROR) {
 
 		if (WSAGetLastError() != WSAEWOULDBLOCK) {
 			ERR_PRINT("Connection to remote host failed!");

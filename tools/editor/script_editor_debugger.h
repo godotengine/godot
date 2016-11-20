@@ -33,6 +33,7 @@
 #include "scene/gui/button.h"
 #include "core/io/tcp_server.h"
 #include "core/io/packet_peer.h"
+#include "property_editor.h"
 
 class Tree;
 class PropertyEditor;
@@ -46,6 +47,11 @@ class AcceptDialog;
 class TreeItem;
 class HSplitContainer;
 class ItemList;
+class EditorProfiler;
+
+
+
+class ScriptEditorDebuggerInspectedObject;
 
 class ScriptEditorDebugger : public Control {
 
@@ -59,11 +65,22 @@ class ScriptEditorDebugger : public Control {
 	LineEdit *clicked_ctrl;
 	LineEdit *clicked_ctrl_type;
 	LineEdit *live_edit_root;
-	Tree *scene_tree;
-	HSplitContainer *info;
-	Button *scene_tree_refresh;
 	Button *le_set;
 	Button *le_clear;
+
+
+
+	Tree *inspect_scene_tree;
+	HSplitContainer *inspect_info;
+	PropertyEditor *inspect_properties;
+	float inspect_scene_tree_timeout;
+	float inspect_edited_object_timeout;
+	ObjectID inspected_object_id;
+	ScriptEditorDebuggerInspectedObject *inspected_object;
+	bool updating_scene_tree;
+	Set<ObjectID> unfold_cache;
+
+
 
 	HSplitContainer *error_split;
 	ItemList *error_list;
@@ -93,6 +110,8 @@ class ScriptEditorDebugger : public Control {
 	Vector<float> perf_max;
 	Vector<TreeItem*> perf_items;
 
+	Map<int,String> profiler_signature;
+
 	Tree *perf_monitors;
 	Control *perf_draw;
 
@@ -115,6 +134,7 @@ class ScriptEditorDebugger : public Control {
 	int last_path_id;
 	Map<String,int> res_path_cache;
 
+	EditorProfiler *profiler;
 
 	EditorNode *editor;
 
@@ -127,8 +147,13 @@ class ScriptEditorDebugger : public Control {
 	void _stack_dump_frame_selected();
 	void _output_clear();
 
+
+	void _scene_tree_folded(Object* obj);
+	void _scene_tree_selected();
 	void _scene_tree_request();
 	void _parse_message(const String& p_msg,const Array& p_data);
+	void _scene_tree_property_select_object(ObjectID p_object);
+	void _scene_tree_property_value_edited(const String& p_prop,const Variant& p_value);
 
 	void _video_mem_request();
 
@@ -147,6 +172,13 @@ class ScriptEditorDebugger : public Control {
 
 	void _error_selected(int p_idx);
 	void _error_stack_selected(int p_idx);
+
+	void _profiler_activate(bool p_enable);
+	void _profiler_seeked();
+
+
+
+	void _paused();
 
 protected:
 
@@ -184,6 +216,8 @@ public:
 	void set_hide_on_stop(bool p_hide);
 
 	void set_tool_button(Button *p_tb) { debugger_button=p_tb; }
+
+	void reload_scripts();
 
 	virtual Size2 get_minimum_size() const;
 	ScriptEditorDebugger(EditorNode *p_editor=NULL);

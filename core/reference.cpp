@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "reference.h"
-
+#include "script_language.h"
 
 
 bool Reference::init_ref() {
@@ -66,11 +66,21 @@ int Reference::reference_get_count() const {
 void Reference::reference(){
 
 	refcount.ref();
+	if (get_script_instance()) {
+		get_script_instance()->refcount_incremented();
+	}
 
 }
 bool Reference::unreference(){
 
-	return refcount.unref();
+	bool die = refcount.unref();
+
+	if (get_script_instance()) {
+		die = die && get_script_instance()->refcount_decremented();
+	}
+
+	return die;
+
 }
 
 Reference::Reference() {

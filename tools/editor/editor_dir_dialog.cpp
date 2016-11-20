@@ -30,6 +30,7 @@
 #include "os/os.h"
 #include "os/keyboard.h"
 #include "tools/editor/editor_settings.h"
+#include "tools/editor/editor_file_system.h"
 
 
 void EditorDirDialog::_update_dir(TreeItem* p_item) {
@@ -77,6 +78,11 @@ void EditorDirDialog::_update_dir(TreeItem* p_item) {
 
 void EditorDirDialog::reload() {
 
+	if (!is_visible()) {
+		must_reload=true;
+		return;
+	}
+
 	tree->clear();
 	TreeItem *root = tree->create_item();
 	root->set_metadata(0,"res://");
@@ -84,13 +90,30 @@ void EditorDirDialog::reload() {
 	root->set_text(0,"/");
 	_update_dir(root);
 	_item_collapsed(root);
+	must_reload=false;
+
 }
+
 
 void EditorDirDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 		reload();
-		tree->connect("item_collapsed",this,"_item_collapsed",varray(),CONNECT_DEFERRED);
+
+		if (!tree->is_connected("item_collapsed",this,"_item_collapsed")) {
+			tree->connect("item_collapsed",this,"_item_collapsed",varray(),CONNECT_DEFERRED);
+		}
+
+		if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed",this,"reload")) {
+			EditorFileSystem::get_singleton()->connect("filesystem_changed",this,"reload");
+		}
+
+	}
+
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+		if (must_reload && is_visible()) {
+			reload();
+		}
 	}
 }
 
@@ -120,9 +143,9 @@ void EditorDirDialog::set_current_path(const String& p_path) {
 	reload();
 	String p = p_path;
 	if (p.begins_with("res://"))
-		p.replace_first("res://","");
+		p = p.replace_first("res://","");
 
-	Vector<String> dirs = p.split("/");
+	Vector<String> dirs = p.split("/",false);
 
 	TreeItem *r=tree->get_root();
 	for(int i=0;i<dirs.size();i++) {
@@ -139,13 +162,13 @@ void EditorDirDialog::set_current_path(const String& p_path) {
 		ERR_FAIL_COND(!p);
 		String pp = p->get_metadata(0);
 		if (pp=="") {
+			p->set_metadata(0,String(r->get_metadata(0)).plus_file(d));
 			_update_dir(p);
-			updating=true;
-			p->set_collapsed(false);
-			updating=false;
-			_item_collapsed(p);
-
 		}
+		updating=true;
+		p->set_collapsed(false);
+		updating=false;
+		_item_collapsed(p);
 		r=p;
 	}
 
@@ -168,10 +191,14 @@ void EditorDirDialog::ok_pressed() {
 void EditorDirDialog::_make_dir() {
 
 	TreeItem *ti=tree->get_selected();
-	if (!ti)
+	if (!ti) {
+		mkdirerr->set_text("Please select a base directory first");
+		mkdirerr->popup_centered_minsize();
 		return;
+	}
 
 	makedialog->popup_centered_minsize(Size2(250,80));
+	makedirname->grab_focus();
 }
 
 void EditorDirDialog::_make_dir_confirm() {
@@ -181,14 +208,17 @@ void EditorDirDialog::_make_dir_confirm() {
 		return;
 
 	String dir = ti->get_metadata(0);
+
 	DirAccess *d = DirAccess::open(dir);
 	ERR_FAIL_COND(!d);
 	Error err = d->make_dir(makedirname->get_text());
+
 	if (err!=OK) {
 		mkdirerr->popup_centered_minsize(Size2(250,80));
 	} else {
-		reload();
+		set_current_path(dir.plus_file(makedirname->get_text()));
 	}
+	makedirname->set_text(""); // reset label
 }
 
 
@@ -197,6 +227,7 @@ void EditorDirDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_item_collapsed"),&EditorDirDialog::_item_collapsed);
 	ObjectTypeDB::bind_method(_MD("_make_dir"),&EditorDirDialog::_make_dir);
 	ObjectTypeDB::bind_method(_MD("_make_dir_confirm"),&EditorDirDialog::_make_dir_confirm);
+	ObjectTypeDB::bind_method(_MD("reload"),&EditorDirDialog::reload);
 
 	ADD_SIGNAL(MethodInfo("dir_selected",PropertyInfo(Variant::STRING,"dir")));
 }
@@ -207,7 +238,7 @@ EditorDirDialog::EditorDirDialog() {
 
 	updating=false;
 
-	set_title("Choose a Directory");
+	set_title(TTR("Choose a Directory"));
 	set_hide_on_ok(false);
 
 	tree = memnew( Tree );
@@ -215,11 +246,11 @@ EditorDirDialog::EditorDirDialog() {
 	set_child_rect(tree);
 	tree->connect("item_activated",this,"_ok");
 
-	makedir = add_button("Create Folder",OS::get_singleton()->get_swap_ok_cancel()?true:false,"makedir");
+	makedir = add_button(TTR("Create Folder"),OS::get_singleton()->get_swap_ok_cancel()?true:false,"makedir");
 	makedir->connect("pressed",this,"_make_dir");
 
 	makedialog = memnew( ConfirmationDialog );
-	makedialog->set_title("Create Folder");
+	makedialog->set_title(TTR("Create Folder"));
 	add_child(makedialog);
 
 	VBoxContainer *makevb= memnew( VBoxContainer );
@@ -227,14 +258,18 @@ EditorDirDialog::EditorDirDialog() {
 	makedialog->set_child_rect(makevb);
 
 	makedirname = memnew( LineEdit );
-	makevb->add_margin_child("Name:",makedirname);
+	makevb->add_margin_child(TTR("Name:"),makedirname);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed",this,"_make_dir_confirm");
 
 	mkdirerr = memnew( AcceptDialog );
-	mkdirerr->set_text("Could not create folder.");
+	mkdirerr->set_text(TTR("Could not create folder."));
 	add_child(mkdirerr);
 
-	get_ok()->set_text("Choose");
+	get_ok()->set_text(TTR("Choose"));
+
+	must_reload=false;
+
+
 
 }

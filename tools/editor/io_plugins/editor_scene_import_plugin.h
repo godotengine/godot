@@ -45,6 +45,7 @@
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "scene/resources/animation.h"
 
+
 class EditorNode;
 class EditorSceneImportDialog;
 
@@ -59,6 +60,7 @@ public:
 		IMPORT_ANIMATION_DETECT_LOOP=4,
 		IMPORT_ANIMATION_OPTIMIZE=8,
 		IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS=16,
+		IMPORT_ANIMATION_KEEP_VALUE_TRACKS=32,
 		IMPORT_GENERATE_TANGENT_ARRAYS=256,
 		IMPORT_FAIL_ON_MISSING_DEPENDENCIES=512
 
@@ -111,17 +113,13 @@ class EditorSceneImportPlugin : public EditorImportPlugin {
 	void _create_clips(Node *scene, const Array& p_clips, bool p_bake_all);
 	void _filter_anim_tracks(Ref<Animation> anim,Set<String> &keep);
 	void _filter_tracks(Node *scene, const String& p_text);
-	void _merge_existing_node(Node *p_node,Node *p_imported_scene,Set<Ref<Resource> >& checked_resources,Set<Node*> &checked_nodes);
-
-	void _add_new_nodes(Node *p_node,Node *p_imported,Node *p_imported_scene,Node *p_existing_scene,Set<Node*> &checked_nodes);
 	void _optimize_animations(Node *scene, float p_max_lin_error,float p_max_ang_error,float p_max_angle);
 
-	void _merge_scenes(Node *p_node, Node *p_imported);
-	void _scan_materials(Node*p_base,Node *p_node,Map<String,Ref<Material> > &mesh_materials,Map<String,Ref<Material> >& override_materials);
-	void _apply_materials(Node*p_base,Node *p_node,Map<String,Ref<Material> > &mesh_materials,Map<String,Ref<Material> >& override_materials,Set<Ref<Mesh> >& meshes_processed);
-	void _merge_materials(Node *p_node,Node *p_imported);
-
 	void _tag_import_paths(Node *p_scene,Node *p_node);
+
+	void _find_resources_to_merge(Node *scene, Node *node, bool p_merge_material, Map<String,Ref<Material> >&materials, bool p_merge_anims, Map<String,Ref<Animation> >& merged_anims, Set<Ref<Mesh> > &tested_meshes);
+	void _merge_found_resources(Node *scene, Node *node, bool p_merge_material, const Map<String, Ref<Material> > &materials, bool p_merge_anims, const Map<String,Ref<Animation> >& merged_anims, Set<Ref<Mesh> > &tested_meshes);
+
 
 public:
 
@@ -141,6 +139,9 @@ public:
 		SCENE_FLAG_CREATE_NAVMESH=1<<17,
 		SCENE_FLAG_DETECT_LIGHTMAP_LAYER=1<<18,
 
+		SCENE_FLAG_MERGE_KEEP_MATERIALS=1<<20,
+		SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS=1<<21,
+
 		SCENE_FLAG_REMOVE_NOIMP=1<<24,
 		SCENE_FLAG_IMPORT_ANIMATIONS=1<<25,
 		SCENE_FLAG_COMPRESS_GEOMETRY=1<<26,
@@ -150,12 +151,6 @@ public:
 		SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY=1<<30,
 	};
 
-	enum SceneUpdate {
-		SCENE_UPDATE_REPLACE_WITH_NEW,
-		SCENE_UPDATE_REPLACE_WITH_NEW_KEEP_MATERIALS,
-		SCENE_UPDATE_KEEP_OLD_MERGE_CHANGES,
-		SCENE_UPDATE_KEEP_OLD,
-	};
 
 
 	virtual String get_name() const;
@@ -168,6 +163,8 @@ public:
 
 	void add_importer(const Ref<EditorSceneImporter>& p_importer);
 	const Vector<Ref<EditorSceneImporter> >& get_importers() { return importers; }
+
+	virtual void import_from_drop(const Vector<String>& p_drop,const String& p_dest_path);
 
 	EditorSceneImportPlugin(EditorNode* p_editor=NULL);
 
