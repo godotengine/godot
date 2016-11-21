@@ -52,6 +52,7 @@ static int _get_datatype_size(SL::DataType p_type) {
 }
 
 
+
 static String _prestr(SL::DataPrecision p_pres) {
 
 
@@ -248,7 +249,11 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			r_gen_code.texture_hints.resize(max_texture_uniforms);
 
 			Vector<int> uniform_sizes;
+			Vector<int> uniform_alignments;
+			Vector<StringName> uniform_defines;
 			uniform_sizes.resize(max_uniforms);
+			uniform_alignments.resize(max_uniforms);
+			uniform_defines.resize(max_uniforms);
 
 			for(Map<StringName,SL::ShaderNode::Uniform>::Element *E=pnode->uniforms.front();E;E=E->next()) {
 
@@ -272,19 +277,31 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 						r_gen_code.defines.push_back(String("#define USE_MATERIAL\n").ascii());
 					}
-					r_gen_code.uniforms+=ucode;
+					uniform_defines[E->get().order]=ucode;
 					uniform_sizes[E->get().order]=_get_datatype_size(E->get().type);
+					uniform_alignments[E->get().order]=MIN(16,_get_datatype_size(E->get().type));
 				}
 
 				p_actions.uniforms->insert(E->key(),E->get());
 
 			}
 
+			for(int i=0;i<max_uniforms;i++) {
+				r_gen_code.uniforms+=uniform_defines[i];
+			}
 			// add up
 			for(int i=0;i<uniform_sizes.size();i++) {
 
-				if (i>0)
+				if (i>0) {
+
+					int align = uniform_sizes[i-1] % uniform_alignments[i];
+					if (align!=0) {
+						uniform_sizes[i-1]+=uniform_alignments[i]-align;
+					}
+
 					uniform_sizes[i]=uniform_sizes[i]+uniform_sizes[i-1];
+
+				}
 			}
 			//offset
 			r_gen_code.uniform_offsets.resize(uniform_sizes.size());
@@ -294,8 +311,21 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					r_gen_code.uniform_offsets[i]=uniform_sizes[i-1];
 				else
 					r_gen_code.uniform_offsets[i]=0;
+
+
+			}
+/*
+			for(Map<StringName,SL::ShaderNode::Uniform>::Element *E=pnode->uniforms.front();E;E=E->next()) {
+
+				if (SL::is_sampler_type(E->get().type)) {
+					continue;
+				}
+
+				print_line("u - "+String(E->key())+" offset: "+itos(r_gen_code.uniform_offsets[E->get().order]));
+
 			}
 
+*/
 			if (uniform_sizes.size()) {
 				r_gen_code.uniform_total_size=uniform_sizes[ uniform_sizes.size() -1 ];
 			} else {
@@ -549,12 +579,10 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String& p_code, 
 	r_gen_code.uses_vertex_time=false;
 
 
-
 	used_name_defines.clear();
 	used_rmode_defines.clear();
 
 	_dump_node_code(parser.get_shader(),1,r_gen_code,*p_actions,actions[p_mode]);
-
 
 	return OK;
 
@@ -636,8 +664,14 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["ALPHA"]="alpha";
 	actions[VS::SHADER_SPATIAL].renames["SPECULAR"]="specular";
 	actions[VS::SHADER_SPATIAL].renames["ROUGHNESS"]="roughness";
+	actions[VS::SHADER_SPATIAL].renames["RIM"]="rim";
+	actions[VS::SHADER_SPATIAL].renames["RIM_TINT"]="rim_tint";
+	actions[VS::SHADER_SPATIAL].renames["CLEARCOAT"]="clearcoat";
+	actions[VS::SHADER_SPATIAL].renames["CLEARCOAT_GLOSS"]="clearcoat_gloss";
+	actions[VS::SHADER_SPATIAL].renames["ANISOTROPY"]="anisotropy";
+	actions[VS::SHADER_SPATIAL].renames["ANISOTROPY_FLOW"]="anisotropy_flow";
+	actions[VS::SHADER_SPATIAL].renames["AO"]="ao";
 	actions[VS::SHADER_SPATIAL].renames["EMISSION"]="emission";
-	actions[VS::SHADER_SPATIAL].renames["SPECIAL"]="special";
 	actions[VS::SHADER_SPATIAL].renames["DISCARD"]="_discard";
 //	actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"]=ShaderLanguage::TYPE_VEC2;
 	actions[VS::SHADER_SPATIAL].renames["POINT_COORD"]="gl_PointCoord";
@@ -645,6 +679,13 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 
 	actions[VS::SHADER_SPATIAL].usage_defines["TANGENT"]="#define ENABLE_TANGENT_INTERP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["BINORMAL"]="@TANGENT";
+	actions[VS::SHADER_SPATIAL].usage_defines["RIM"]="#define LIGHT_USE_RIM\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["RIM_TINT"]="@RIM";
+	actions[VS::SHADER_SPATIAL].usage_defines["CLEARCOAT"]="#define LIGHT_USE_CLEARCOAT\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["CLEARCOAT_GLOSS"]="@CLEARCOAT";
+	actions[VS::SHADER_SPATIAL].usage_defines["ANISOTROPY"]="#define LIGHT_USE_ANISOTROPY\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["ANISOTROPY_FLOW"]="@ANISOTROPY";
+	actions[VS::SHADER_SPATIAL].usage_defines["AO"]="#define ENABLE_AO\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["UV"]="#define ENABLE_UV_INTERP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["UV2"]="#define ENABLE_UV2_INTERP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["NORMALMAP"]="#define ENABLE_NORMALMAP\n";

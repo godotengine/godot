@@ -1035,8 +1035,12 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material* p_m
 		if (!t) {
 			//check hints
 			switch(texture_hints[i]) {
+				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO:
 				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
 					glBindTexture(GL_TEXTURE_2D,storage->resources.black_tex);
+				} break;
+				case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
+					glBindTexture(GL_TEXTURE_2D,storage->resources.aniso_tex);
 				} break;
 				case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
 					glBindTexture(GL_TEXTURE_2D,storage->resources.normal_tex);
@@ -1046,7 +1050,6 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material* p_m
 				} break;
 			}
 
-			glBindTexture(GL_TEXTURE_2D,storage->resources.white_tex);
 			continue;
 		}
 
@@ -1054,7 +1057,7 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material* p_m
 			//if SRGB decode extension is present, simply switch the texture to whathever is needed
 			bool must_srgb=false;
 
-			if (t->srgb && texture_hints[i]==ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO) {
+			if (t->srgb && (texture_hints[i]==ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || texture_hints[i]==ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO)) {
 				must_srgb=true;
 			}
 

@@ -60,6 +60,13 @@ ShaderTypes::ShaderTypes()
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["ALPHA"]=ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["SPECULAR"]=ShaderLanguage::TYPE_VEC3;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["ROUGHNESS"]=ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["RIM"]=ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["RIM_TINT"]=ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["CLEARCOAT"]=ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["CLEARCOAT_GLOSS"]=ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["ANISOTROPY"]=ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["ANISOTROPY_FLOW"]=ShaderLanguage::TYPE_VEC2;
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["AO"]=ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["EMISSION"]=ShaderLanguage::TYPE_VEC3;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["SPECIAL"]=ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"]["DISCARD"]=ShaderLanguage::TYPE_BOOL;

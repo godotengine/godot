@@ -2285,6 +2285,7 @@ void RasterizerStorageGLES3::_update_material(Material* material) {
 			if (V) {
 				//user provided				
 				_fill_std140_variant_ubo_value(E->get().type,V->get(),data,material->shader->mode==VS::SHADER_SPATIAL);
+
 			} else if (E->get().default_value.size()){
 				//default value
 				_fill_std140_ubo_value(E->get().type,E->get().default_value,data);
@@ -3304,7 +3305,7 @@ RID RasterizerStorageGLES3::light_create(VS::LightType p_type){
 	light->type=p_type;
 
 	light->param[VS::LIGHT_PARAM_ENERGY]=1.0;
-	light->param[VS::LIGHT_PARAM_SPECULAR]=1.0;
+	light->param[VS::LIGHT_PARAM_SPECULAR]=0.5;
 	light->param[VS::LIGHT_PARAM_RANGE]=1.0;
 	light->param[VS::LIGHT_PARAM_SPOT_ANGLE]=45;
 	light->param[VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE]=0;
@@ -4491,7 +4492,7 @@ void RasterizerStorageGLES3::initialize() {
 
 		glGenTextures(1, &resources.black_tex);
 		unsigned char blacktexdata[8*8*3];
-		for(int i=0;i<8*8;i++) {
+		for(int i=0;i<8*8*3;i++) {
 			blacktexdata[i]=0;
 		}
 
@@ -4512,6 +4513,21 @@ void RasterizerStorageGLES3::initialize() {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D,resources.normal_tex);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE,normaltexdata);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D,0);
+
+
+		glGenTextures(1, &resources.aniso_tex);
+		unsigned char anisotexdata[8*8*3];
+		for(int i=0;i<8*8*3;i+=3) {
+			anisotexdata[i+0]=255;
+			anisotexdata[i+1]=128;
+			anisotexdata[i+2]=0;
+		}
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D,resources.aniso_tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE,anisotexdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D,0);
 

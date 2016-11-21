@@ -183,7 +183,9 @@ const char * ShaderLanguage::token_names[TK_MAX]={
 	"HINT_WHITE_TEXTURE",
 	"HINT_BLACK_TEXTURE",
 	"HINT_NORMAL_TEXTURE",
+	"HINT_ANISO_TEXTURE",
 	"HINT_ALBEDO_TEXTURE",
+	"HINT_BLACK_ALBEDO_TEXTURE",
 	"HINT_COLOR",
 	"HINT_RANGE",
 	"CURSOR",
@@ -263,7 +265,9 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[]={
 	{TK_HINT_WHITE_TEXTURE,"hint_white"},
 	{TK_HINT_BLACK_TEXTURE,"hint_black"},
 	{TK_HINT_NORMAL_TEXTURE,"hint_normal"},
+	{TK_HINT_ANISO_TEXTURE,"hint_aniso"},
 	{TK_HINT_ALBEDO_TEXTURE,"hint_albedo"},
+	{TK_HINT_BLACK_ALBEDO_TEXTURE,"hint_black_albedo"},
 	{TK_HINT_COLOR,"hint_color"},
 	{TK_HINT_RANGE,"hint_range"},
 
@@ -3303,8 +3307,12 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 							uniform.hint=ShaderNode::Uniform::HINT_BLACK;
 						} else if (tk.type==TK_HINT_NORMAL_TEXTURE) {
 							uniform.hint=ShaderNode::Uniform::HINT_NORMAL;
+						} else if (tk.type==TK_HINT_ANISO_TEXTURE) {
+							uniform.hint=ShaderNode::Uniform::HINT_ANISO;
 						} else if (tk.type==TK_HINT_ALBEDO_TEXTURE) {
 							uniform.hint=ShaderNode::Uniform::HINT_ALBEDO;
+						} else if (tk.type==TK_HINT_BLACK_ALBEDO_TEXTURE) {
+							uniform.hint=ShaderNode::Uniform::HINT_BLACK_ALBEDO;
 						} else if (tk.type==TK_HINT_COLOR) {
 							if (type!=TYPE_VEC4) {
 								_set_error("Color hint is for vec4 only");
@@ -3327,12 +3335,20 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 
 							tk = _get_token();
 
+							float sign=1.0;
+
+							if (tk.type==TK_OP_SUB) {
+								sign=-1.0;
+								tk = _get_token();
+							}
+
 							if (tk.type!=TK_REAL_CONSTANT && tk.type!=TK_INT_CONSTANT) {
 								_set_error("Expected integer constant");
 								return ERR_PARSE_ERROR;
 							}
 
 							uniform.hint_range[0]=tk.constant;
+							uniform.hint_range[0]*=sign;
 
 							tk = _get_token();
 
@@ -3343,12 +3359,21 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 
 							tk = _get_token();
 
+							sign=1.0;
+
+							if (tk.type==TK_OP_SUB) {
+								sign=-1.0;
+								tk = _get_token();
+							}
+
+
 							if (tk.type!=TK_REAL_CONSTANT && tk.type!=TK_INT_CONSTANT) {
 								_set_error("Expected integer constant after ','");
 								return ERR_PARSE_ERROR;
 							}
 
 							uniform.hint_range[1]=tk.constant;
+							uniform.hint_range[1]*=sign;
 
 							tk = _get_token();
 

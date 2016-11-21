@@ -74,6 +74,7 @@ public:
 		GLuint white_tex;
 		GLuint black_tex;
 		GLuint normal_tex;
+		GLuint aniso_tex;
 
 		GLuint quadie;
 		GLuint quadie_array;

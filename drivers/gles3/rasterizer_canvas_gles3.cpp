@@ -934,8 +934,12 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 					if (!t) {
 
 						switch(texture_hints[i]) {
+							case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO:
 							case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
 								glBindTexture(GL_TEXTURE_2D,storage->resources.black_tex);
+							} break;
+							case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
+								glBindTexture(GL_TEXTURE_2D,storage->resources.aniso_tex);
 							} break;
 							case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
 								glBindTexture(GL_TEXTURE_2D,storage->resources.normal_tex);

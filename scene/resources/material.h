@@ -69,9 +69,9 @@ public:
 		TEXTURE_SPECULAR,
 		TEXTURE_EMISSION,
 		TEXTURE_NORMAL,
-		TEXTURE_SHEEN,
+		TEXTURE_RIM,
 		TEXTURE_CLEARCOAT,
-		TEXTURE_ANISOTROPY,
+		TEXTURE_FLOWMAP,
 		TEXTURE_AMBIENT_OCCLUSION,
 		TEXTURE_HEIGHT,
 		TEXTURE_SUBSURFACE_SCATTERING,
@@ -95,7 +95,7 @@ public:
 		FEATURE_TRANSPARENT,
 		FEATURE_EMISSION,
 		FEATURE_NORMAL_MAPPING,
-		FEATURE_SHEEN,
+		FEATURE_RIM,
 		FEATURE_CLEARCOAT,
 		FEATURE_ANISOTROPY,
 		FEATURE_AMBIENT_OCCLUSION,
@@ -205,9 +205,10 @@ private:
 		StringName specular;
 		StringName roughness;
 		StringName emission;
+		StringName emission_energy;
 		StringName normal_scale;
-		StringName sheen;
-		StringName sheen_color;
+		StringName rim;
+		StringName rim_tint;
 		StringName clearcoat;
 		StringName clearcoat_gloss;
 		StringName anisotropy;
@@ -216,6 +217,10 @@ private:
 		StringName refraction;
 		StringName refraction_roughness;
 		StringName point_size;
+		StringName uv1_scale;
+		StringName uv1_offset;
+		StringName uv2_scale;
+		StringName uv2_offset;
 		StringName texture_names[TEXTURE_MAX];
 
 	};
@@ -234,9 +239,10 @@ private:
 	Color specular;
 	float roughness;
 	Color emission;
+	float emission_energy;
 	float normal_scale;
-	float sheen;
-	Color sheen_color;
+	float rim;
+	float rim_tint;
 	float clearcoat;
 	float clearcoat_gloss;
 	float anisotropy;
@@ -246,6 +252,12 @@ private:
 	float refraction_roughness;
 	float line_width;
 	float point_size;
+
+	Vector2 uv1_scale;
+	Vector2 uv1_offset;
+
+	Vector2 uv2_scale;
+	Vector2 uv2_offset;
 
 	DetailUV detail_uv;
 
@@ -282,14 +294,17 @@ public:
 	void set_emission(const Color& p_emission);
 	Color get_emission() const;
 
+	void set_emission_energy(float p_emission_energy);
+	float get_emission_energy() const;
+
 	void set_normal_scale(float p_normal_scale);
 	float get_normal_scale() const;
 
-	void set_sheen(float p_sheen);
-	float get_sheen() const;
+	void set_rim(float p_rim);
+	float get_rim() const;
 
-	void set_sheen_color(const Color& p_sheen_color);
-	Color get_sheen_color() const;
+	void set_rim_tint(float p_rim_tint);
+	float get_rim_tint() const;
 
 	void set_clearcoat(float p_clearcoat);
 	float get_clearcoat() const;
@@ -344,6 +359,18 @@ public:
 
 	void set_feature(Feature p_feature,bool p_enabled);
 	bool get_feature(Feature p_feature) const;
+
+	void set_uv1_scale(const Vector2& p_scale);
+	Vector2 get_uv1_scale() const;
+
+	void set_uv1_offset(const Vector2& p_offset);
+	Vector2 get_uv1_offset() const;
+
+	void set_uv2_scale(const Vector2& p_scale);
+	Vector2 get_uv2_scale() const;
+
+	void set_uv2_offset(const Vector2& p_offset);
+	Vector2 get_uv2_offset() const;
 
 	static void init_shaders();
 	static void finish_shaders();

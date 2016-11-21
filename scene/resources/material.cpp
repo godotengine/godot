@@ -64,25 +64,30 @@ void FixedSpatialMaterial::init_shaders() {
 	shader_names->specular="specular";
 	shader_names->roughness="roughness";
 	shader_names->emission="emission";
+	shader_names->emission_energy="emission_energy";
 	shader_names->normal_scale="normal_scale";
-	shader_names->sheen="sheen";
-	shader_names->sheen_color="sheen_color";
+	shader_names->rim="rim";
+	shader_names->rim_tint="rim_tint";
 	shader_names->clearcoat="clearcoat";
 	shader_names->clearcoat_gloss="clearcoat_gloss";
-	shader_names->anisotropy="anisotropy";
+	shader_names->anisotropy="anisotropy_ratio";
 	shader_names->height_scale="height_scale";
 	shader_names->subsurface_scattering="subsurface_scattering";
 	shader_names->refraction="refraction";
 	shader_names->refraction_roughness="refraction_roughness";
 	shader_names->point_size="point_size";
+	shader_names->uv1_scale="uv1_scale";
+	shader_names->uv1_offset="uv1_offset";
+	shader_names->uv2_scale="uv2_scale";
+	shader_names->uv2_offset="uv2_offset";
 
 	shader_names->texture_names[TEXTURE_ALBEDO]="texture_albedo";
 	shader_names->texture_names[TEXTURE_SPECULAR]="texture_specular";
 	shader_names->texture_names[TEXTURE_EMISSION]="texture_emission";
 	shader_names->texture_names[TEXTURE_NORMAL]="texture_normal";
-	shader_names->texture_names[TEXTURE_SHEEN]="texture_sheen";
+	shader_names->texture_names[TEXTURE_RIM]="texture_rim";
 	shader_names->texture_names[TEXTURE_CLEARCOAT]="texture_clearcoat";
-	shader_names->texture_names[TEXTURE_ANISOTROPY]="texture_anisotropy";
+	shader_names->texture_names[TEXTURE_FLOWMAP]="texture_flowmap";
 	shader_names->texture_names[TEXTURE_AMBIENT_OCCLUSION]="texture_ambient_occlusion";
 	shader_names->texture_names[TEXTURE_HEIGHT]="texture_height";
 	shader_names->texture_names[TEXTURE_SUBSURFACE_SCATTERING]="texture_subsurface_scattering";
@@ -172,6 +177,46 @@ void FixedSpatialMaterial::_update_shader() {
 	code+="uniform float roughness : hint_range(0,1);\n";
 	code+="uniform float point_size : hint_range(0,128);\n";
 	code+="uniform sampler2D texture_specular : hint_white;\n";
+	code+="uniform vec2 uv1_scale;\n";
+	code+="uniform vec2 uv1_offset;\n";
+	code+="uniform vec2 uv2_scale;\n";
+	code+="uniform vec2 uv2_offset;\n";
+
+	if (features[FEATURE_EMISSION]) {
+
+		code+="uniform sampler2D texture_emission : hint_black_albedo;\n";
+		code+="uniform vec4 emission : hint_color;\n";
+		code+="uniform float emission_energy;\n";
+	}
+
+	if (features[FEATURE_NORMAL_MAPPING]) {
+		code+="uniform sampler2D texture_normal : hint_normal;\n";
+		code+="uniform float normal_scale : hint_range(-16,16);\n";
+	}
+	if (features[FEATURE_RIM]) {
+		code+="uniform float rim : hint_range(0,1);\n";
+		code+="uniform float rim_tint : hint_range(0,1);\n";
+		code+="uniform sampler2D texture_rim : hint_white;\n";
+	}
+	if (features[FEATURE_CLEARCOAT]) {
+		code+="uniform float clearcoat : hint_range(0,1);\n";
+		code+="uniform float clearcoat_gloss : hint_range(0,1);\n";
+		code+="uniform sampler2D texture_clearcoat : hint_white;\n";
+	}
+	if (features[FEATURE_ANISOTROPY]) {
+		code+="uniform float anisotropy_ratio : hint_range(0,256);\n";
+		code+="uniform sampler2D texture_flowmap : hint_aniso;\n";
+	}
+	if (features[FEATURE_AMBIENT_OCCLUSION]) {
+		code+="uniform sampler2D texture_ambient_occlusion : hint_white;\n";
+	}
+
+	if (features[FEATURE_DETAIL]) {
+		code+="uniform sampler2D texture_detail_albedo : hint_albedo;\n";
+		code+="uniform sampler2D texture_detail_normal : hint_normal;\n";
+		code+="uniform sampler2D texture_detail_mask : hint_white;\n";
+	}
+
 	code+="\n\n";
 
 	code+="void vertex() {\n";
@@ -183,6 +228,10 @@ void FixedSpatialMaterial::_update_shader() {
 	if (flags[FLAG_USE_POINT_SIZE]) {
 
 		code+="\tPOINT_SIZE=point_size;\n";
+	}
+	code+="\tUV=UV*uv1_scale+uv1_offset;\n";
+	if (detail_blend_mode==DETAIL_UV_2) {
+		code+="\tUV2=UV2*uv2_scale+uv2_offset;\n";
 	}
 
 	code+="}\n";
@@ -203,6 +252,66 @@ void FixedSpatialMaterial::_update_shader() {
 	if (features[FEATURE_TRANSPARENT]) {
 		code+="\tALPHA = albedo.a * albedo_tex.a;\n";
 	}
+
+	if (features[FEATURE_EMISSION]) {
+		code+="\tEMISSION = (emission.rgb+texture(texture_emission,UV).rgb)*emission_energy;\n";
+	}
+
+	if (features[FEATURE_NORMAL_MAPPING]) {
+		code+="\tNORMALMAP = texture(texture_normal,UV).rgb;\n";
+		code+="\tNORMALMAP_DEPTH = normal_scale;\n";
+	}
+
+	if (features[FEATURE_RIM]) {
+		code+="\tvec2 rim_tex = texture(texture_rim,UV).xw;\n";
+		code+="\tRIM = rim*rim_tex.x;";
+		code+="\tRIM_TINT = rim_tint*rim_tex.y;\n";
+	}
+
+	if (features[FEATURE_CLEARCOAT]) {
+		code+="\tvec2 clearcoat_tex = texture(texture_clearcoat,UV).xw;\n";
+		code+="\tCLEARCOAT = clearcoat*clearcoat_tex.x;";
+		code+="\tCLEARCOAT_GLOSS = clearcoat_gloss*clearcoat_tex.y;\n";
+	}
+
+	if (features[FEATURE_ANISOTROPY]) {
+		code+="\tvec4 anisotropy_tex = texture(texture_flowmap,UV);\n";
+		code+="\tANISOTROPY = anisotropy_ratio*anisotropy_tex.a;\n";
+		code+="\tANISOTROPY_FLOW = anisotropy_tex.rg*2.0-1.0;\n";
+	}
+
+	if (features[FEATURE_AMBIENT_OCCLUSION]) {
+		code+="\tAO = texture(texture_ambient_occlusion,UV).r;\n";
+	}
+
+	if (features[FEATURE_DETAIL]) {
+		String det_uv=detail_uv==DETAIL_UV_1?"UV":"UV2";
+		code+="\tvec4 detail_tex = texture(texture_detail_albedo,"+det_uv+");\n";
+		code+="\tvec4 detail_norm_tex = texture(texture_detail_normal,"+det_uv+");\n";
+		code+="\tvec4 detail_mask_tex = texture(texture_detail_mask,UV);\n";
+
+		switch(detail_blend_mode) {
+			case BLEND_MODE_MIX: {
+				code+="\tvec3 detail = mix(ALBEDO.rgb,detail_tex.rgb,detail_tex.a);\n";
+			} break;
+			case BLEND_MODE_ADD: {
+				code+="\tvec3 detail = mix(ALBEDO.rgb,ALBEDO.rgb+detail_tex.rgb,detail_tex.a);\n";
+			} break;
+			case BLEND_MODE_SUB: {
+				code+="\tvec3 detail = mix(ALBEDO.rgb,ALBEDO.rgb-detail_tex.rgb,detail_tex.a);\n";
+			} break;
+			case BLEND_MODE_MUL: {
+				code+="\tvec3 detail = mix(ALBEDO.rgb,ALBEDO.rgb*detail_tex.rgb,detail_tex.a);\n";
+			} break;
+
+		}
+
+		code+="\tvec3 detail_norm = mix(NORMALMAP,detail_norm_tex.rgb,detail_tex.a);\n";
+
+		code+="\tNORMALMAP = mix(NORMALMAP,detail_norm,detail_mask_tex.r);\n";
+		code+="\tALBEDO.rgb = mix(ALBEDO.rgb,detail,detail_mask_tex.r);\n";
+	}
+
 	code+="\tvec4 specular_tex = texture(texture_specular,UV);\n";
 	code+="\tSPECULAR = specular.rgb * specular_tex.rgb;\n";
 	code+="\tROUGHNESS = specular.a * roughness;\n";
@@ -308,6 +417,18 @@ Color FixedSpatialMaterial::get_emission() const{
 	return emission;
 }
 
+
+void FixedSpatialMaterial::set_emission_energy(float p_emission_energy){
+
+	emission_energy=p_emission_energy;
+	VS::get_singleton()->material_set_param(_get_material(),shader_names->emission_energy,p_emission_energy);
+
+}
+float FixedSpatialMaterial::get_emission_energy() const{
+
+	return emission_energy;
+}
+
 void FixedSpatialMaterial::set_normal_scale(float p_normal_scale){
 
 	normal_scale=p_normal_scale;
@@ -319,27 +440,27 @@ float FixedSpatialMaterial::get_normal_scale() const{
 	return normal_scale;
 }
 
-void FixedSpatialMaterial::set_sheen(float p_sheen){
+void FixedSpatialMaterial::set_rim(float p_rim){
 
-	sheen=p_sheen;
-	VS::get_singleton()->material_set_param(_get_material(),shader_names->sheen,p_sheen);
+	rim=p_rim;
+	VS::get_singleton()->material_set_param(_get_material(),shader_names->rim,p_rim);
 
-
-}
-float FixedSpatialMaterial::get_sheen() const{
-
-	return sheen;
-}
-
-void FixedSpatialMaterial::set_sheen_color(const Color& p_sheen_color){
-
-	sheen_color=p_sheen_color;
-	VS::get_singleton()->material_set_param(_get_material(),shader_names->sheen_color,p_sheen_color);
 
 }
-Color FixedSpatialMaterial::get_sheen_color() const{
+float FixedSpatialMaterial::get_rim() const{
 
-	return sheen_color;
+	return rim;
+}
+
+void FixedSpatialMaterial::set_rim_tint(float p_rim_tint){
+
+	rim_tint=p_rim_tint;
+	VS::get_singleton()->material_set_param(_get_material(),shader_names->rim_tint,p_rim_tint);
+
+}
+float FixedSpatialMaterial::get_rim_tint() const{
+
+	return rim_tint;
 }
 
 void FixedSpatialMaterial::set_clearcoat(float p_clearcoat){
@@ -565,7 +686,8 @@ void FixedSpatialMaterial::_validate_feature(const String& text, Feature feature
 
 void FixedSpatialMaterial::_validate_property(PropertyInfo& property) const {
 	_validate_feature("normal",FEATURE_NORMAL_MAPPING,property);
-	_validate_feature("sheen",FEATURE_SHEEN,property);
+	_validate_feature("emission",FEATURE_EMISSION,property);
+	_validate_feature("rim",FEATURE_RIM,property);
 	_validate_feature("clearcoat",FEATURE_CLEARCOAT,property);
 	_validate_feature("anisotropy",FEATURE_ANISOTROPY,property);
 	_validate_feature("ao",FEATURE_AMBIENT_OCCLUSION,property);
@@ -598,6 +720,53 @@ float FixedSpatialMaterial::get_point_size() const {
 	return point_size;
 }
 
+
+void FixedSpatialMaterial::set_uv1_scale(const Vector2& p_scale) {
+
+	uv1_scale=p_scale;
+	VS::get_singleton()->material_set_param(_get_material(),shader_names->uv1_scale,p_scale);
+}
+
+Vector2 FixedSpatialMaterial::get_uv1_scale() const{
+
+	return uv1_scale;
+}
+
+void FixedSpatialMaterial::set_uv1_offset(const Vector2& p_offset){
+
+	uv1_offset=p_offset;
+	VS::get_singleton()->material_set_param(_get_material(),shader_names->uv1_offset,p_offset);
+
+}
+Vector2 FixedSpatialMaterial::get_uv1_offset() const{
+
+	return uv1_offset;
+}
+
+
+void FixedSpatialMaterial::set_uv2_scale(const Vector2& p_scale) {
+
+	uv2_scale=p_scale;
+	VS::get_singleton()->material_set_param(_get_material(),shader_names->uv2_scale,p_scale);
+}
+
+Vector2 FixedSpatialMaterial::get_uv2_scale() const{
+
+	return uv2_scale;
+}
+
+void FixedSpatialMaterial::set_uv2_offset(const Vector2& p_offset){
+
+	uv2_offset=p_offset;
+	VS::get_singleton()->material_set_param(_get_material(),shader_names->uv2_offset,p_offset);
+
+}
+
+Vector2 FixedSpatialMaterial::get_uv2_offset() const{
+
+	return uv2_offset;
+}
+
 void FixedSpatialMaterial::_bind_methods() {
 
 
@@ -613,14 +782,17 @@ void FixedSpatialMaterial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_emission","emission"),&FixedSpatialMaterial::set_emission);
 	ObjectTypeDB::bind_method(_MD("get_emission"),&FixedSpatialMaterial::get_emission);
 
+	ObjectTypeDB::bind_method(_MD("set_emission_energy","emission_energy"),&FixedSpatialMaterial::set_emission_energy);
+	ObjectTypeDB::bind_method(_MD("get_emission_energy"),&FixedSpatialMaterial::get_emission_energy);
+
 	ObjectTypeDB::bind_method(_MD("set_normal_scale","normal_scale"),&FixedSpatialMaterial::set_normal_scale);
 	ObjectTypeDB::bind_method(_MD("get_normal_scale"),&FixedSpatialMaterial::get_normal_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_sheen","sheen"),&FixedSpatialMaterial::set_sheen);
-	ObjectTypeDB::bind_method(_MD("get_sheen"),&FixedSpatialMaterial::get_sheen);
+	ObjectTypeDB::bind_method(_MD("set_rim","rim"),&FixedSpatialMaterial::set_rim);
+	ObjectTypeDB::bind_method(_MD("get_rim"),&FixedSpatialMaterial::get_rim);
 
-	ObjectTypeDB::bind_method(_MD("set_sheen_color","sheen_color"),&FixedSpatialMaterial::set_sheen_color);
-	ObjectTypeDB::bind_method(_MD("get_sheen_color"),&FixedSpatialMaterial::get_sheen_color);
+	ObjectTypeDB::bind_method(_MD("set_rim_tint","rim_tint"),&FixedSpatialMaterial::set_rim_tint);
+	ObjectTypeDB::bind_method(_MD("get_rim_tint"),&FixedSpatialMaterial::get_rim_tint);
 
 	ObjectTypeDB::bind_method(_MD("set_clearcoat","clearcoat"),&FixedSpatialMaterial::set_clearcoat);
 	ObjectTypeDB::bind_method(_MD("get_clearcoat"),&FixedSpatialMaterial::get_clearcoat);
@@ -676,6 +848,18 @@ void FixedSpatialMaterial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_detail_blend_mode","detail_blend_mode"),&FixedSpatialMaterial::set_detail_blend_mode);
 	ObjectTypeDB::bind_method(_MD("get_detail_blend_mode"),&FixedSpatialMaterial::get_detail_blend_mode);
 
+	ObjectTypeDB::bind_method(_MD("set_uv1_scale","scale"),&FixedSpatialMaterial::set_uv1_scale);
+	ObjectTypeDB::bind_method(_MD("get_uv1_scale"),&FixedSpatialMaterial::get_uv1_scale);
+
+	ObjectTypeDB::bind_method(_MD("set_uv1_offset","offset"),&FixedSpatialMaterial::set_uv1_offset);
+	ObjectTypeDB::bind_method(_MD("get_uv1_offset"),&FixedSpatialMaterial::get_uv1_offset);
+
+	ObjectTypeDB::bind_method(_MD("set_uv2_scale","scale"),&FixedSpatialMaterial::set_uv2_scale);
+	ObjectTypeDB::bind_method(_MD("get_uv2_scale"),&FixedSpatialMaterial::get_uv2_scale);
+
+	ObjectTypeDB::bind_method(_MD("set_uv2_offset","offset"),&FixedSpatialMaterial::set_uv2_offset);
+	ObjectTypeDB::bind_method(_MD("get_uv2_offset"),&FixedSpatialMaterial::get_uv2_offset);
+
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags/transparent"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags/unshaded"),_SCS("set_flag"),_SCS("get_flag"),FLAG_UNSHADED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags/on_top"),_SCS("set_flag"),_SCS("get_flag"),FLAG_ONTOP);
@@ -693,27 +877,32 @@ void FixedSpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"albedo/color"),_SCS("set_albedo"),_SCS("get_albedo"));
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"albedo/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_ALBEDO);
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"specular/color"),_SCS("set_specular"),_SCS("get_specular"));
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"specular/color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_specular"),_SCS("get_specular"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"specular/roughness",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_roughness"),_SCS("get_roughness"));
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"specular/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_SPECULAR);
+
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"emission/enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_EMISSION);
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"emission/color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_emission"),_SCS("get_emission"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"emission/energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_emission_energy"),_SCS("get_emission_energy"));
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"emission/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_EMISSION);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"normal/enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_NORMAL_MAPPING);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"normal/scale",PROPERTY_HINT_RANGE,"-16,16,0.01"),_SCS("set_normal_scale"),_SCS("get_normal_scale"));
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"normal/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_NORMAL);
 
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"sheen/enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_SHEEN);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"sheen/amount",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_sheen"),_SCS("get_sheen"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"sheen/color"),_SCS("set_sheen_color"),_SCS("get_sheen_color"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"sheen/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_SHEEN);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"rim/enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_RIM);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"rim/amount",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_rim"),_SCS("get_rim"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"rim/tint",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_rim_tint"),_SCS("get_rim_tint"));
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"rim/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_RIM);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"clearcoat/enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_CLEARCOAT);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"clearcoat/amount",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_clearcoat"),_SCS("get_clearcoat"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"clearcoat/gloss"),_SCS("set_clearcoat_gloss"),_SCS("get_clearcoat_gloss"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"clearcoat/gloss",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_clearcoat_gloss"),_SCS("get_clearcoat_gloss"));
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"clearcoat/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_CLEARCOAT);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"anisotropy/enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_ANISOTROPY);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"anisotropy/amount",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_anisotropy"),_SCS("get_anisotropy"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"anisotropy/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_ANISOTROPY);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"anisotropy/anisotropy",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_anisotropy"),_SCS("get_anisotropy"));
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"anisotropy/flowmap",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_FLOWMAP);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"ao/enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"ao/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_AMBIENT_OCCLUSION);
@@ -738,13 +927,19 @@ void FixedSpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"detail/albedo",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_DETAIL_ALBEDO);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"detail/normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_DETAIL_NORMAL);
 
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv1/scale"),_SCS("set_uv1_scale"),_SCS("get_uv1_scale"));
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv1/offset"),_SCS("set_uv1_offset"),_SCS("get_uv1_offset"));
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv2/scale"),_SCS("set_uv2_scale"),_SCS("get_uv2_scale"));
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv2/offset"),_SCS("set_uv2_offset"),_SCS("get_uv2_offset"));
+
+
 	BIND_CONSTANT( TEXTURE_ALBEDO );
 	BIND_CONSTANT( TEXTURE_SPECULAR );
 	BIND_CONSTANT( TEXTURE_EMISSION );
 	BIND_CONSTANT( TEXTURE_NORMAL );
-	BIND_CONSTANT( TEXTURE_SHEEN );
+	BIND_CONSTANT( TEXTURE_RIM );
 	BIND_CONSTANT( TEXTURE_CLEARCOAT );
-	BIND_CONSTANT( TEXTURE_ANISOTROPY );
+	BIND_CONSTANT( TEXTURE_FLOWMAP );
 	BIND_CONSTANT( TEXTURE_AMBIENT_OCCLUSION );
 	BIND_CONSTANT( TEXTURE_HEIGHT );
 	BIND_CONSTANT( TEXTURE_SUBSURFACE_SCATTERING );
@@ -762,7 +957,7 @@ void FixedSpatialMaterial::_bind_methods() {
 	BIND_CONSTANT( FEATURE_TRANSPARENT );
 	BIND_CONSTANT( FEATURE_EMISSION );
 	BIND_CONSTANT( FEATURE_NORMAL_MAPPING );
-	BIND_CONSTANT( FEATURE_SHEEN );
+	BIND_CONSTANT( FEATURE_RIM );
 	BIND_CONSTANT( FEATURE_CLEARCOAT );
 	BIND_CONSTANT( FEATURE_ANISOTROPY );
 	BIND_CONSTANT( FEATURE_AMBIENT_OCCLUSION );
@@ -808,10 +1003,11 @@ FixedSpatialMaterial::FixedSpatialMaterial() : element(this) {
 	set_specular(Color(0.1,0.1,0.1));
 	set_roughness(0.0);
 	set_emission(Color(0,0,0));
+	set_emission_energy(1.0);
 	set_normal_scale(1);
-	set_sheen(0);
-	set_sheen_color(Color(1,1,1,1));
-	set_clearcoat(0);
+	set_rim(1.0);
+	set_rim_tint(0.5);
+	set_clearcoat(1);
 	set_clearcoat_gloss(0.5);
 	set_anisotropy(0);
 	set_height_scale(1);
@@ -820,6 +1016,10 @@ FixedSpatialMaterial::FixedSpatialMaterial() : element(this) {
 	set_refraction_roughness(0);
 	set_line_width(1);
 	set_point_size(1);
+	set_uv1_offset(Vector2(0,0));
+	set_uv1_scale(Vector2(1,1));
+	set_uv2_offset(Vector2(0,0));
+	set_uv2_scale(Vector2(1,1));
 
 	detail_uv=DETAIL_UV_1;
 	blend_mode=BLEND_MODE_MIX;

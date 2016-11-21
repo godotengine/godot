@@ -254,7 +254,7 @@ Light::Light(VisualServer::LightType p_type) {
 	set_cull_mask(0xFFFFFFFF);
 
 	set_param(PARAM_ENERGY,1);
-	set_param(PARAM_SPECULAR,1);
+	set_param(PARAM_SPECULAR,0.5);
 	set_param(PARAM_RANGE,5);
 	set_param(PARAM_ATTENUATION,1);
 	set_param(PARAM_SPOT_ANGLE,45);
