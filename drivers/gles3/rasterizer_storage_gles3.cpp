@@ -2416,12 +2416,15 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 		if (! (p_format&(1<<i) ) ) {
 			attribs[i].enabled=false;
 			morph_attribs[i].enabled=false;
+			attribs[i].integer=false;
+			morph_attribs[i].integer=false;
 			continue;
 		}
 
 		attribs[i].enabled=true;
 		attribs[i].offset=stride;
 		attribs[i].index=i;
+		attribs[i].integer=false;
 
 		if (has_morph) {
 			morph_attribs[i].enabled=true;
@@ -2573,21 +2576,16 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 
 				attribs[i].size=4;
 
-				if (p_format&VS::ARRAY_COMPRESS_BONES) {
-
-					if (p_format&VS::ARRAY_FLAG_USE_16_BIT_BONES) {
-						attribs[i].type=GL_UNSIGNED_SHORT;
-						stride+=8;
-					} else {
-						attribs[i].type=GL_UNSIGNED_BYTE;
-						stride+=4;
-					}
-				} else {
+				if (p_format&VS::ARRAY_FLAG_USE_16_BIT_BONES) {
 					attribs[i].type=GL_UNSIGNED_SHORT;
 					stride+=8;
+				} else {
+					attribs[i].type=GL_UNSIGNED_BYTE;
+					stride+=4;
 				}
 
 				attribs[i].normalized=GL_FALSE;
+				attribs[i].integer=true;
 
 				if (has_morph) {
 					morph_attribs[i].normalized=GL_FALSE;
@@ -2727,7 +2725,11 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 			if (!attribs[i].enabled)
 				continue;
 
-			glVertexAttribPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].normalized,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+			if (attribs[i].integer) {
+				glVertexAttribIPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+			} else {
+				glVertexAttribPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].normalized,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+			}
 			glEnableVertexAttribArray(attribs[i].index);
 
 		}
@@ -2765,7 +2767,11 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 				if (!attribs[i].enabled)
 					continue;
 
-				glVertexAttribPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].normalized,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+				if (attribs[i].integer) {
+					glVertexAttribIPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+				} else {
+					glVertexAttribPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].normalized,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+				}
 				glEnableVertexAttribArray(attribs[i].index);
 
 			}
@@ -3270,31 +3276,196 @@ RID RasterizerStorageGLES3::immediate_get_material(RID p_immediate) const{
 
 RID RasterizerStorageGLES3::skeleton_create(){
 
-	return RID();
+	Skeleton *skeleton = memnew( Skeleton );
+	return skeleton_owner.make_rid(skeleton);
 }
+
 void RasterizerStorageGLES3::skeleton_allocate(RID p_skeleton,int p_bones,bool p_2d_skeleton){
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+	ERR_FAIL_COND(!skeleton);
+	ERR_FAIL_COND(p_bones<0);
+
+	if (skeleton->size==p_bones && skeleton->use_2d==p_2d_skeleton)
+		return;
+
+	if (skeleton->ubo) {
+		glDeleteBuffers(1,&skeleton->ubo);
+		skeleton->ubo=0;
+	}
+
+	skeleton->size=p_bones;
+	if (p_2d_skeleton) {
+		skeleton->bones.resize(p_bones*8);
+		for(int i=0;i<skeleton->bones.size();i+=8) {
+			skeleton->bones[i+0]=1;
+			skeleton->bones[i+1]=0;
+			skeleton->bones[i+2]=0;
+			skeleton->bones[i+3]=0;
+			skeleton->bones[i+4]=0;
+			skeleton->bones[i+5]=1;
+			skeleton->bones[i+6]=0;
+			skeleton->bones[i+7]=0;
+		}
+
+	} else {
+		skeleton->bones.resize(p_bones*12);
+		for(int i=0;i<skeleton->bones.size();i+=12) {
+			skeleton->bones[i+0]=1;
+			skeleton->bones[i+1]=0;
+			skeleton->bones[i+2]=0;
+			skeleton->bones[i+3]=0;
+			skeleton->bones[i+4]=0;
+			skeleton->bones[i+5]=1;
+			skeleton->bones[i+6]=0;
+			skeleton->bones[i+7]=0;
+			skeleton->bones[i+8]=0;
+			skeleton->bones[i+9]=0;
+			skeleton->bones[i+10]=1;
+			skeleton->bones[i+11]=0;
+		}
+
+	}
+
+
+
+	if (p_bones) {
+		glGenBuffers(1, &skeleton->ubo);
+		glBindBuffer(GL_UNIFORM_BUFFER, skeleton->ubo);
+		glBufferData(GL_UNIFORM_BUFFER, skeleton->bones.size()*sizeof(float), NULL, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+	if (!skeleton->update_list.in_list()) {
+		skeleton_update_list.add(&skeleton->update_list);
+	}
+
+	skeleton->instance_change_notify();
 
 
 }
 int RasterizerStorageGLES3::skeleton_get_bone_count(RID p_skeleton) const{
 
-	return 0;
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+	ERR_FAIL_COND_V(!skeleton,0);
+
+	return skeleton->size;
 }
+
 void RasterizerStorageGLES3::skeleton_bone_set_transform(RID p_skeleton,int p_bone, const Transform& p_transform){
 
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND(!skeleton);
+	ERR_FAIL_INDEX(p_bone,skeleton->size);
+	ERR_FAIL_COND(skeleton->use_2d);
+
+	float * bones = skeleton->bones.ptr();
+	bones[p_bone*12+ 0]=p_transform.basis.elements[0][0];
+	bones[p_bone*12+ 1]=p_transform.basis.elements[0][1];
+	bones[p_bone*12+ 2]=p_transform.basis.elements[0][2];
+	bones[p_bone*12+ 3]=p_transform.origin.x;
+	bones[p_bone*12+ 4]=p_transform.basis.elements[1][0];
+	bones[p_bone*12+ 5]=p_transform.basis.elements[1][1];
+	bones[p_bone*12+ 6]=p_transform.basis.elements[1][2];
+	bones[p_bone*12+ 7]=p_transform.origin.y;
+	bones[p_bone*12+ 8]=p_transform.basis.elements[2][0];
+	bones[p_bone*12+ 9]=p_transform.basis.elements[2][1];
+	bones[p_bone*12+10]=p_transform.basis.elements[2][2];
+	bones[p_bone*12+11]=p_transform.origin.z;
+
+	if (!skeleton->update_list.in_list()) {
+		skeleton_update_list.add(&skeleton->update_list);
+	}
 
 }
+
+
 Transform RasterizerStorageGLES3::skeleton_bone_get_transform(RID p_skeleton,int p_bone) const{
 
-	return Transform();
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND_V(!skeleton,Transform());
+	ERR_FAIL_INDEX_V(p_bone,skeleton->size,Transform());
+	ERR_FAIL_COND_V(skeleton->use_2d,Transform());
+
+	float * bones = skeleton->bones.ptr();
+	Transform mtx;
+	mtx.basis.elements[0][0]=bones[p_bone*12+ 0];
+	mtx.basis.elements[0][1]=bones[p_bone*12+ 1];
+	mtx.basis.elements[0][2]=bones[p_bone*12+ 2];
+	mtx.origin.x=bones[p_bone*12+ 3];
+	mtx.basis.elements[1][0]=bones[p_bone*12+ 4];
+	mtx.basis.elements[1][1]=bones[p_bone*12+ 5];
+	mtx.basis.elements[1][2]=bones[p_bone*12+ 6];
+	mtx.origin.y=bones[p_bone*12+ 7];
+	mtx.basis.elements[2][0]=bones[p_bone*12+ 8];
+	mtx.basis.elements[2][1]=bones[p_bone*12+ 9];
+	mtx.basis.elements[2][2]=bones[p_bone*12+10];
+	mtx.origin.z=bones[p_bone*12+11];
+
+	return mtx;
 }
 void RasterizerStorageGLES3::skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Matrix32& p_transform){
 
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND(!skeleton);
+	ERR_FAIL_INDEX(p_bone,skeleton->size);
+	ERR_FAIL_COND(!skeleton->use_2d);
+
+	float * bones = skeleton->bones.ptr();
+	bones[p_bone*12+ 0]=p_transform.elements[0][0];
+	bones[p_bone*12+ 1]=p_transform.elements[1][0];
+	bones[p_bone*12+ 2]=0;
+	bones[p_bone*12+ 3]=p_transform.elements[2][0];
+	bones[p_bone*12+ 4]=p_transform.elements[0][1];
+	bones[p_bone*12+ 5]=p_transform.elements[1][1];
+	bones[p_bone*12+ 6]=0;
+	bones[p_bone*12+ 7]=p_transform.elements[2][1];
+
+	if (!skeleton->update_list.in_list()) {
+		skeleton_update_list.add(&skeleton->update_list);
+	}
 
 }
 Matrix32 RasterizerStorageGLES3::skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone) const{
 
-	return Matrix32();
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+
+	ERR_FAIL_COND_V(!skeleton,Matrix32());
+	ERR_FAIL_INDEX_V(p_bone,skeleton->size,Matrix32());
+	ERR_FAIL_COND_V(!skeleton->use_2d,Matrix32());
+
+	Matrix32 mtx;
+
+	float * bones = skeleton->bones.ptr();
+	mtx.elements[0][0]=bones[p_bone*12+ 0];
+	mtx.elements[1][0]=bones[p_bone*12+ 1];
+	mtx.elements[2][0]=bones[p_bone*12+ 3];
+	mtx.elements[0][1]=bones[p_bone*12+ 4];
+	mtx.elements[1][1]=bones[p_bone*12+ 5];
+	mtx.elements[2][1]=bones[p_bone*12+ 7];
+
+	return mtx;
+}
+
+void RasterizerStorageGLES3::update_dirty_skeletons() {
+
+	while(skeleton_update_list.first()) {
+
+		Skeleton *skeleton = skeleton_update_list.first()->self();
+		if (skeleton->size) {
+			glBindBuffer(GL_UNIFORM_BUFFER, skeleton->ubo);
+			glBufferSubData(GL_UNIFORM_BUFFER,0,skeleton->bones.size()*sizeof(float),skeleton->bones.ptr());
+			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		}
+		skeleton->instance_change_notify();
+
+		skeleton_update_list.remove(skeleton_update_list.first());
+	}
+
 }
 
 /* Light API */
@@ -3795,7 +3966,12 @@ void RasterizerStorageGLES3::instance_add_dependency(RID p_base,RasterizerScene:
 			ERR_FAIL_COND(!inst);
 		} break;
 		default: {
-			ERR_FAIL();
+			if (skeleton_owner.owns(p_base)) {
+				inst=skeleton_owner.getornull(p_base);
+			}
+			if (!inst) {
+				ERR_FAIL();
+			}
 		}
 	}
 
@@ -3821,7 +3997,12 @@ void RasterizerStorageGLES3::instance_remove_dependency(RID p_base,RasterizerSce
 			ERR_FAIL_COND(!inst);
 		} break;
 		default: {
-			ERR_FAIL();
+			if (skeleton_owner.owns(p_base)) {
+				inst=skeleton_owner.getornull(p_base);
+			}
+			if (!inst) {
+				ERR_FAIL();
+			}
 		}
 	}
 
@@ -4377,6 +4558,17 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 
 		material_owner.free(p_rid);
 		memdelete(material);
+
+	} else if (skeleton_owner.owns(p_rid)) {
+
+		// delete the texture
+		Skeleton *skeleton = skeleton_owner.get(p_rid);
+		if (skeleton->update_list.in_list()) {
+			skeleton_update_list.remove(&skeleton->update_list);
+		}
+		skeleton_allocate(p_rid,0,false);
+		skeleton_owner.free(p_rid);
+		memdelete(skeleton);
 
 	} else if (mesh_owner.owns(p_rid)) {
 

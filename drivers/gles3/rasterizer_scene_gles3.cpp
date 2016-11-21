@@ -1329,6 +1329,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 	int current_blend_mode=-1;
 
 	int prev_shading=-1;
+	RID prev_skeleton;
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS,true); //by default unshaded (easier to set)
 
@@ -1338,6 +1339,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 
 		RenderList::Element *e = p_elements[i];
 		RasterizerStorageGLES3::Material* material= e->material;
+		RID skeleton = e->instance->skeleton;
 
 		bool rebind=first;
 
@@ -1466,6 +1468,18 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 
 		}
 
+		if (prev_skeleton!=skeleton) {
+			if (prev_skeleton.is_valid() != skeleton.is_valid()) {
+				state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON,skeleton.is_valid());
+				rebind=true;
+			}
+			if (skeleton.is_valid()) {
+				RasterizerStorageGLES3::Skeleton *sk = storage->skeleton_owner.getornull(skeleton);
+				if (sk->size) {
+					glBindBufferBase(GL_UNIFORM_BUFFER,7,sk->ubo);
+				}
+			}
+		}
 
 		if (material!=prev_material || rebind) {
 
@@ -1495,6 +1509,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 		prev_base_type=e->instance->base_type;
 		prev_geometry=e->geometry;
 		prev_shading=shading;
+		prev_skeleton=skeleton;
 		first=false;
 
 	}
@@ -1504,6 +1519,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 	glFrontFace(GL_CW);
 	glBindVertexArray(0);
 
+	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON,false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP,false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_FORWARD_LIGHTING,false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHT_DIRECTIONAL,false);
@@ -3468,6 +3484,10 @@ void RasterizerSceneGLES3::initialize() {
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 		state.scene_shader.add_custom_define("#define MAX_REFLECTION_DATA_STRUCTS "+itos(state.max_ubo_reflections)+"\n");
+
+		state.max_skeleton_bones=max_ubo_size/(12*sizeof(float));
+		state.scene_shader.add_custom_define("#define MAX_SKELETON_BONES "+itos(state.max_skeleton_bones)+"\n");
+
 
 	}
 

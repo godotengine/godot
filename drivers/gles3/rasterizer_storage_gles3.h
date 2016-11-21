@@ -465,6 +465,7 @@ public:
 		struct Attrib {
 
 			bool enabled;
+			bool integer;
 			GLuint index;
 			GLint size;
 			GLenum type;
@@ -631,6 +632,26 @@ public:
 	virtual RID immediate_get_material(RID p_immediate) const;
 
 	/* SKELETON API */
+
+	struct Skeleton : Instantiable {
+		int size;
+		bool use_2d;
+		Vector<float> bones; //4x3 or 4x2 depending on what is needed
+		GLuint ubo;
+		SelfList<Skeleton> update_list;
+
+		Skeleton() : update_list(this) {
+			size=0;
+			use_2d=false;
+			ubo=0;
+		}
+	};
+
+	mutable RID_Owner<Skeleton> skeleton_owner;
+
+	SelfList<Skeleton>::List skeleton_update_list;
+
+	void update_dirty_skeletons();
 
 	virtual RID skeleton_create();
 	virtual void skeleton_allocate(RID p_skeleton,int p_bones,bool p_2d_skeleton=false);

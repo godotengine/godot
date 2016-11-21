@@ -1007,11 +1007,25 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primi
 			} break;
 			case VS::ARRAY_BONES: {
 
-				if (p_compress_format&ARRAY_FLAG_USE_16_BIT_BONES) {
-					elem_size=sizeof(uint32_t);
-				} else {
-					elem_size=sizeof(uint16_t)*4;
+				DVector<int> bones = p_arrays[VS::ARRAY_BONES];
+				int max_bone=0;
+
+				{
+					int bc = bones.size();
+					DVector<int>::Read r=bones.read();
+					for(int j=0;j<bc;j++) {
+						max_bone=MAX(r[j],max_bone);
+					}
 				}
+
+				if (max_bone > 255) {
+					p_compress_format|=ARRAY_FLAG_USE_16_BIT_BONES;
+					elem_size=sizeof(uint16_t)*4;
+				} else {
+					p_compress_format&=~ARRAY_FLAG_USE_16_BIT_BONES;
+					elem_size=sizeof(uint32_t);
+				}
+
 
 			} break;
 			case VS::ARRAY_INDEX: {
@@ -1043,7 +1057,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primi
 	}
 
 	uint32_t mask = (1<<ARRAY_MAX)-1;
-	format|=~mask&p_compress_format; //make the full format
+	format|=(~mask)&p_compress_format; //make the full format
 
 
 	int array_size = total_elem_size * array_len;

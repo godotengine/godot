@@ -98,6 +98,7 @@ public:
 		int max_ubo_lights;
 		int max_forward_lights_per_object;
 		int max_ubo_reflections;
+		int max_skeleton_bones;
 
 
 

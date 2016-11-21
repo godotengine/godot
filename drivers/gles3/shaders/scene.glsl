@@ -22,17 +22,27 @@ ARRAY_INDEX=8,
 
 layout(location=0) in highp vec4 vertex_attrib;
 layout(location=1) in vec3 normal_attrib;
+#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 layout(location=2) in vec4 tangent_attrib;
+#endif
+
+#if defined(ENABLE_COLOR_INTERP)
 layout(location=3) in vec4 color_attrib;
+#endif
+
+#if defined(ENABLE_UV_INTERP)
 layout(location=4) in vec2 uv_attrib;
+#endif
+
+#if defined(ENABLE_UV2_INTERP)
 layout(location=5) in vec2 uv2_attrib;
+#endif
 
 uniform float normal_mult;
 
 #ifdef USE_SKELETON
-layout(location=6) mediump ivec4 bone_indices; // attrib:6
-layout(location=7) mediump vec4 bone_weights; // attrib:7
-uniform highp sampler2D skeleton_matrices;
+layout(location=6) in ivec4 bone_indices; // attrib:6
+layout(location=7) in vec4 bone_weights; // attrib:7
 #endif
 
 #ifdef USE_ATTRIBUTE_INSTANCING
@@ -140,6 +150,15 @@ out highp float dp_clip;
 
 #endif
 
+#ifdef USE_SKELETON
+
+layout(std140) uniform SkeletonData { //ubo:7
+
+	mat3x4 skeleton[MAX_SKELETON_BONES];
+};
+
+#endif
+
 void main() {
 
 	highp vec4 vertex = vertex_attrib; // vec4(vertex_attrib.xyz * data_attrib.x,1.0);
@@ -152,23 +171,25 @@ void main() {
 	float binormalf = tangent_attrib.a;
 #endif
 
+
 #ifdef USE_SKELETON
 
 	{
 		//skeleton transform
-		highp mat4 m=mat4(texture2D(skeleton_matrices,vec2((bone_indices.x*3.0+0.0)*skeltex_pixel_size,0.0)),texture2D(skeleton_matrices,vec2((bone_indices.x*3.0+1.0)*skeltex_pixel_size,0.0)),texture2D(skeleton_matrices,vec2((bone_indices.x*3.0+2.0)*skeltex_pixel_size,0.0)),vec4(0.0,0.0,0.0,1.0))*bone_weights.x;
-		m+=mat4(texture2D(skeleton_matrices,vec2((bone_indices.y*3.0+0.0)*skeltex_pixel_size,0.0)),texture2D(skeleton_matrices,vec2((bone_indices.y*3.0+1.0)*skeltex_pixel_size,0.0)),texture2D(skeleton_matrices,vec2((bone_indices.y*3.0+2.0)*skeltex_pixel_size,0.0)),vec4(0.0,0.0,0.0,1.0))*bone_weights.y;
-		m+=mat4(texture2D(skeleton_matrices,vec2((bone_indices.z*3.0+0.0)*skeltex_pixel_size,0.0)),texture2D(skeleton_matrices,vec2((bone_indices.z*3.0+1.0)*skeltex_pixel_size,0.0)),texture2D(skeleton_matrices,vec2((bone_indices.z*3.0+2.0)*skeltex_pixel_size,0.0)),vec4(0.0,0.0,0.0,1.0))*bone_weights.z;
-		m+=mat4(texture2D(skeleton_matrices,vec2((bone_indices.w*3.0+0.0)*skeltex_pixel_size,0.0)),texture2D(skeleton_matrices,vec2((bone_indices.w*3.0+1.0)*skeltex_pixel_size,0.0)),texture2D(skeleton_matrices,vec2((bone_indices.w*3.0+2.0)*skeltex_pixel_size,0.0)),vec4(0.0,0.0,0.0,1.0))*bone_weights.w;
+		highp mat3x4 m=skeleton[bone_indices.x]*bone_weights.x;
+		m+=skeleton[bone_indices.y]*bone_weights.y;
+		m+=skeleton[bone_indices.z]*bone_weights.z;
+		m+=skeleton[bone_indices.w]*bone_weights.w;
 
-		vertex = vertex_in * m;
-		normal = (vec4(normal,0.0) * m).xyz;
+		vertex.xyz = vertex * m;
+
+		normal = vec4(normal,0.0) * m;
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
-		tangent = (vec4(tangent,0.0) * m).xyz;
+		tangent.xyz = vec4(tangent.xyz,0.0) * mn;
 #endif
 	}
+#endif // USE_SKELETON1
 
-#endif
 
 #if !defined(SKIP_TRANSFORM_USED)
 
