@@ -32,7 +32,6 @@
 #include "script_language.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
-
 #include "gd_function.h"
 class GDNativeClass : public Reference {
 
@@ -196,7 +195,6 @@ public:
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
 
-
 	virtual ScriptLanguage *get_language() const;
 
 	virtual int get_member_line(const StringName& p_member) const {
@@ -232,7 +230,6 @@ friend class GDCompiler;
 	Map<StringName, Ref<GDFunctionObject> > functions;
 	Vector< GDLambdaFunctionObject* > lambda_functions;
 	bool base_ref;
-
 
 	void _ml_call_reversed(GDScript *sptr,const StringName& p_method,const Variant** p_args,int p_argcount);
 	Ref<GDFunctionObject> get_function(StringName p_name);
