@@ -15526,7 +15526,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns a status string like STATUS_REQUESTING. Need to call [method poll] in order to get status updates.
+				Returns a STATUS_* enum constant. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">
