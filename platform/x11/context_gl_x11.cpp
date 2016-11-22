@@ -76,6 +76,13 @@ static GLWrapperFuncPtr wrapper_get_proc_address(const char* p_function) {
 
 }*/
 
+static bool ctxErrorOccurred = false;
+static int ctxErrorHandler( Display *dpy, XErrorEvent *ev )
+{
+    ctxErrorOccurred = true;
+    return 0;
+}
+
 Error ContextGL_X11::initialize() {
 
 
@@ -133,20 +140,30 @@ Error ContextGL_X11::initialize() {
 		//};
 
 
+	int (*oldHandler)(Display*, XErrorEvent*) =
+		     XSetErrorHandler(&ctxErrorHandler);
+
+
 	if (!opengl_3_context) {
 		//oldstyle context:
 		p->glx_context = glXCreateContext(x11_display, vi, 0, GL_TRUE);
 	} else {
 		static int context_attribs[] = {
 			GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-			GLX_CONTEXT_MINOR_VERSION_ARB, 0,
-			GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_DEBUG_BIT_ARB,
+			GLX_CONTEXT_MINOR_VERSION_ARB, 3,
+			GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB|GLX_CONTEXT_DEBUG_BIT_ARB,
 			None
 		};
 
 		p->glx_context = glXCreateContextAttribsARB(x11_display, fbc[0], NULL, true, context_attribs);
-		ERR_FAIL_COND_V(!p->glx_context,ERR_UNCONFIGURED);
+		ERR_EXPLAIN("Could not obtain an OpenGL 3.3 context!");
+		ERR_FAIL_COND_V(ctxErrorOccurred || !p->glx_context,ERR_UNCONFIGURED);
 	}
+
+	XSync( x11_display, False );
+	XSetErrorHandler( oldHandler );
+
+	print_line("ALL IS GOOD");
 
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
 

@@ -62,7 +62,21 @@
 #define _GL_TEXTURE_MAX_ANISOTROPY_EXT          0x84FE
 #define _GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT      0x84FF
 
+#define _EXT_COMPRESSED_R11_EAC 0x9270
+#define _EXT_COMPRESSED_SIGNED_R11_EAC 0x9271
+#define _EXT_COMPRESSED_RG11_EAC 0x9272
+#define _EXT_COMPRESSED_SIGNED_RG11_EAC 0x9273
+#define _EXT_COMPRESSED_RGB8_ETC2 0x9274
+#define _EXT_COMPRESSED_SRGB8_ETC2 0x9275
+#define _EXT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 0x9276
+#define _EXT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 0x9277
+#define _EXT_COMPRESSED_RGBA8_ETC2_EAC 0x9278
+#define _EXT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC 0x9279
 
+#define _EXT_COMPRESSED_RGBA_BPTC_UNORM 0x8E8C
+#define _EXT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM 0x8E8D
+#define _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
+#define _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT 0x8E8F
 
 Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_internal_format,GLenum &r_gl_type,bool &r_compressed,bool &srgb) {
 
@@ -77,17 +91,16 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 	switch(p_format) {
 
 		case Image::FORMAT_L8: {
-			r_gl_internal_format=GL_LUMINANCE;
-			r_gl_format=GL_LUMINANCE;
+			r_gl_internal_format=GL_R8;
+			r_gl_format=GL_RED;
 			r_gl_type=GL_UNSIGNED_BYTE;
 
 		} break;
 		case Image::FORMAT_LA8: {
 
-			r_gl_internal_format=GL_LUMINANCE_ALPHA;
-			r_gl_format=GL_LUMINANCE_ALPHA;
+			r_gl_internal_format=GL_RG8;
+			r_gl_format=GL_RG;
 			r_gl_type=GL_UNSIGNED_BYTE;
-
 		} break;
 		case Image::FORMAT_R8: {
 
@@ -120,8 +133,9 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 
 		} break;
 		case Image::FORMAT_RGB565: {
-
-			r_gl_internal_format=GL_RGB565;
+#warning TODO: Convert tod 555 if 565 is not supported (GLES3.3-)
+			r_gl_internal_format=GL_RGB5;
+			//r_gl_internal_format=GL_RGB565;
 			r_gl_format=GL_RGB;
 			r_gl_type=GL_UNSIGNED_SHORT_5_6_5;
 
@@ -287,7 +301,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 			if (config.bptc_supported) {
 
 
-				r_gl_internal_format=(config.srgb_decode_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:GL_COMPRESSED_RGBA_BPTC_UNORM;
+				r_gl_internal_format=(config.srgb_decode_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:_EXT_COMPRESSED_RGBA_BPTC_UNORM;
 				r_gl_format=GL_RGBA;
 				r_gl_type=GL_UNSIGNED_BYTE;
 				r_compressed=true;
@@ -303,7 +317,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 			if (config.bptc_supported) {
 
 
-				r_gl_internal_format=GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT;
+				r_gl_internal_format=_EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT;
 				r_gl_format=GL_RGB;
 				r_gl_type=GL_FLOAT;
 				r_compressed=true;
@@ -316,7 +330,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 			if (config.bptc_supported) {
 
 
-				r_gl_internal_format=GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
+				r_gl_internal_format=_EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
 				r_gl_format=GL_RGB;
 				r_gl_type=GL_FLOAT;
 				r_compressed=true;
@@ -413,7 +427,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 
 			if (config.etc2_supported) {
 
-				r_gl_internal_format=GL_COMPRESSED_R11_EAC;
+				r_gl_internal_format=_EXT_COMPRESSED_R11_EAC;
 				r_gl_format=GL_RED;
 				r_gl_type=GL_UNSIGNED_BYTE;
 				r_compressed=true;
@@ -427,7 +441,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 
 			if (config.etc2_supported) {
 
-				r_gl_internal_format=GL_COMPRESSED_SIGNED_R11_EAC;
+				r_gl_internal_format=_EXT_COMPRESSED_SIGNED_R11_EAC;
 				r_gl_format=GL_RED;
 				r_gl_type=GL_UNSIGNED_BYTE;
 				r_compressed=true;
@@ -441,7 +455,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 
 			if (config.etc2_supported) {
 
-				r_gl_internal_format=GL_COMPRESSED_RG11_EAC;
+				r_gl_internal_format=_EXT_COMPRESSED_RG11_EAC;
 				r_gl_format=GL_RG;
 				r_gl_type=GL_UNSIGNED_BYTE;
 				r_compressed=true;
@@ -454,7 +468,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 		case Image::FORMAT_ETC2_RG11S: {
 			if (config.etc2_supported) {
 
-				r_gl_internal_format=GL_COMPRESSED_SIGNED_RG11_EAC;
+				r_gl_internal_format=_EXT_COMPRESSED_SIGNED_RG11_EAC;
 				r_gl_format=GL_RG;
 				r_gl_type=GL_UNSIGNED_BYTE;
 				r_compressed=true;
@@ -467,7 +481,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 
 			if (config.etc2_supported) {
 
-				r_gl_internal_format=(config.srgb_decode_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?GL_COMPRESSED_SRGB8_ETC2:GL_COMPRESSED_RGB8_ETC2;
+				r_gl_internal_format=(config.srgb_decode_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB8_ETC2:_EXT_COMPRESSED_RGB8_ETC2;
 				r_gl_format=GL_RGB;
 				r_gl_type=GL_UNSIGNED_BYTE;
 				r_compressed=true;
@@ -483,7 +497,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 
 			if (config.etc2_supported) {
 
-				r_gl_internal_format=(config.srgb_decode_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:GL_COMPRESSED_RGBA8_ETC2_EAC;
+				r_gl_internal_format=(config.srgb_decode_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:_EXT_COMPRESSED_RGBA8_ETC2_EAC;
 				r_gl_format=GL_RGBA;
 				r_gl_type=GL_UNSIGNED_BYTE;
 				r_compressed=true;
@@ -499,7 +513,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 
 			if (config.etc2_supported) {
 
-				r_gl_internal_format=(config.srgb_decode_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
+				r_gl_internal_format=(config.srgb_decode_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:_EXT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
 				r_gl_format=GL_RGBA;
 				r_gl_type=GL_UNSIGNED_BYTE;
 				r_compressed=true;
@@ -709,6 +723,32 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture,const Image& p_image
 		glTexParameterf( texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	}
 
+	//set swizle for older format compatibility
+	switch(texture->format) {
+
+		case Image::FORMAT_L8: {
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_R,GL_RED);
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_G,GL_RED);
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_B,GL_RED);
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_A,GL_ONE);
+
+		} break;
+		case Image::FORMAT_LA8: {
+
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_R,GL_RED);
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_G,GL_RED);
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_B,GL_RED);
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_A,GL_GREEN);
+		} break;
+		default: {
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_R,GL_RED);
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_G,GL_GREEN);
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_B,GL_BLUE);
+			glTexParameteri(texture->target,GL_TEXTURE_SWIZZLE_A,GL_ALPHA);
+
+		} break;
+
+	}
 	if (config.use_anisotropic_filter) {
 
 		if (texture->flags&VS::TEXTURE_FLAG_ANISOTROPIC_FILTER) {
@@ -782,7 +822,7 @@ Image RasterizerStorageGLES3::texture_get_data(RID p_texture,VS::CubeMapSide p_c
 	ERR_FAIL_COND_V(texture->data_size==0,Image());
 	ERR_FAIL_COND_V(texture->render_target,Image());
 
-#ifdef GLEW_ENABLED
+#ifdef GLES_OVER_GL
 
 	DVector<uint8_t> data;
 
@@ -5068,9 +5108,14 @@ void RasterizerStorageGLES3::initialize() {
 	///
 
 	{
-		Vector<String> ext= String((const char*)glGetString( GL_EXTENSIONS )).split(" ",false);
-		for(int i=0;i<ext.size();i++) {
-			config.extensions.insert(ext[i]);
+
+		int max_extensions=0;
+		glGetIntegerv(GL_NUM_EXTENSIONS,&max_extensions);
+		for(int i=0;i<max_extensions;i++) {
+			const GLubyte *s = glGetStringi( GL_EXTENSIONS,i );
+			if (!s)
+				break;
+			config.extensions.insert((const char*)s);
 		}
 	}
 
@@ -5082,7 +5127,7 @@ void RasterizerStorageGLES3::initialize() {
 	config.etc_supported=config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
 	config.latc_supported=config.extensions.has("GL_EXT_texture_compression_latc");
 	config.bptc_supported=config.extensions.has("GL_ARB_texture_compression_bptc");
-#ifdef GLEW_ENABLED
+#ifdef GLES_OVER_GL
 	config.etc2_supported=false;
 #else
 	config.etc2_supported=true;
@@ -5166,7 +5211,7 @@ void RasterizerStorageGLES3::initialize() {
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,&config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&config.max_texture_size);
 
-#ifdef GLEW_ENABLED
+#ifdef GLES_OVER_GL
 	config.use_rgba_2d_shadows=false;
 #else
 	config.use_rgba_2d_shadows=true;

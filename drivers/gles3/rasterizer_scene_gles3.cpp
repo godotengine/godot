@@ -934,7 +934,7 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material* p_m
 	}
 
 	if (state.current_line_width!=p_material->line_width) {
-		glLineWidth(p_material->line_width);
+		//glLineWidth(MAX(p_material->line_width,1.0));
 		state.current_line_width=p_material->line_width;
 	}
 
@@ -1109,17 +1109,17 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e) {
 			int stride = (multi_mesh->xform_floats+multi_mesh->color_floats)*4;
 			glEnableVertexAttribArray(8);
 			glVertexAttribPointer(8,4,GL_FLOAT,GL_FALSE,stride,((uint8_t*)NULL)+0);
-			glVertexAttribDivisorARB(8,1);
+			glVertexAttribDivisor(8,1);
 			glEnableVertexAttribArray(9);
 			glVertexAttribPointer(9,4,GL_FLOAT,GL_FALSE,stride,((uint8_t*)NULL)+4*4);
-			glVertexAttribDivisorARB(9,1);
+			glVertexAttribDivisor(9,1);
 
 			int color_ofs;
 
 			if (multi_mesh->transform_format==VS::MULTIMESH_TRANSFORM_3D) {
 				glEnableVertexAttribArray(10);
 				glVertexAttribPointer(10,4,GL_FLOAT,GL_FALSE,stride,((uint8_t*)NULL)+8*4);
-				glVertexAttribDivisorARB(10,1);
+				glVertexAttribDivisor(10,1);
 				color_ofs=12*4;
 			} else {
 				glDisableVertexAttribArray(10);
@@ -1136,13 +1136,13 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e) {
 				case VS::MULTIMESH_COLOR_8BIT: {
 					glEnableVertexAttribArray(11);
 					glVertexAttribPointer(11,4,GL_UNSIGNED_BYTE,GL_TRUE,stride,((uint8_t*)NULL)+color_ofs);
-					glVertexAttribDivisorARB(11,1);
+					glVertexAttribDivisor(11,1);
 
 				} break;
 				case VS::MULTIMESH_COLOR_FLOAT: {
 					glEnableVertexAttribArray(11);
 					glVertexAttribPointer(11,4,GL_FLOAT,GL_FALSE,stride,((uint8_t*)NULL)+color_ofs);
-					glVertexAttribDivisorARB(11,1);
+					glVertexAttribDivisor(11,1);
 				} break;
 			}
 
@@ -1191,11 +1191,11 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 			if (s->index_array_len>0) {
 
-				glDrawElementsInstancedARB(gl_primitive[s->primitive],s->index_array_len, (s->array_len>=(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0,amount);
+				glDrawElementsInstanced(gl_primitive[s->primitive],s->index_array_len, (s->array_len>=(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0,amount);
 
 			} else {
 
-				glDrawArraysInstancedARB(gl_primitive[s->primitive],0,s->array_len,amount);
+				glDrawArraysInstanced(gl_primitive[s->primitive],0,s->array_len,amount);
 
 			}
 
@@ -3648,10 +3648,9 @@ void RasterizerSceneGLES3::initialize() {
 	}
 
 
-#ifdef GLEW_ENABLED
+#ifdef GLES_OVER_GL
 //"desktop" opengl needs this.
-	glEnable(GL_POINT_SPRITE);
-	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+	glEnable(GL_PROGRAM_POINT_SIZE);
 
 #endif
 }

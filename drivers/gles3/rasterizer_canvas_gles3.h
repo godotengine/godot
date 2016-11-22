@@ -21,6 +21,9 @@ public:
 		GLuint canvas_quad_vertices;
 		GLuint canvas_quad_array;
 
+		GLuint primitive_quad_buffer;
+		GLuint primitive_quad_buffer_arrays[4];
+
 	} data;
 
 	struct State {

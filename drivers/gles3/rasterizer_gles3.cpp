@@ -18,46 +18,69 @@ RasterizerScene *RasterizerGLES3::get_scene() {
 	return scene;
 }
 
+#define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
+#define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
+#define _EXT_DEBUG_CALLBACK_FUNCTION_ARB 0x8244
+#define _EXT_DEBUG_CALLBACK_USER_PARAM_ARB 0x8245
+#define _EXT_DEBUG_SOURCE_API_ARB 0x8246
+#define _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB 0x8247
+#define _EXT_DEBUG_SOURCE_SHADER_COMPILER_ARB 0x8248
+#define _EXT_DEBUG_SOURCE_THIRD_PARTY_ARB 0x8249
+#define _EXT_DEBUG_SOURCE_APPLICATION_ARB 0x824A
+#define _EXT_DEBUG_SOURCE_OTHER_ARB 0x824B
+#define _EXT_DEBUG_TYPE_ERROR_ARB 0x824C
+#define _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB 0x824D
+#define _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB 0x824E
+#define _EXT_DEBUG_TYPE_PORTABILITY_ARB 0x824F
+#define _EXT_DEBUG_TYPE_PERFORMANCE_ARB 0x8250
+#define _EXT_DEBUG_TYPE_OTHER_ARB 0x8251
+#define _EXT_MAX_DEBUG_MESSAGE_LENGTH_ARB 0x9143
+#define _EXT_MAX_DEBUG_LOGGED_MESSAGES_ARB 0x9144
+#define _EXT_DEBUG_LOGGED_MESSAGES_ARB 0x9145
+#define _EXT_DEBUG_SEVERITY_HIGH_ARB 0x9146
+#define _EXT_DEBUG_SEVERITY_MEDIUM_ARB 0x9147
+#define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
+#define _EXT_DEBUG_OUTPUT 0x92E0
 
 static void _gl_debug_print(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam)
 {
 
-	if (type==GL_DEBUG_TYPE_OTHER_ARB)
+	if (type==_EXT_DEBUG_TYPE_OTHER_ARB)
 		return;
 
 	print_line("mesege");
 	char debSource[256], debType[256], debSev[256];
-    if(source == GL_DEBUG_SOURCE_API_ARB)
+    if(source == _EXT_DEBUG_SOURCE_API_ARB)
 	strcpy(debSource, "OpenGL");
-    else if(source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
+    else if(source == _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
 	strcpy(debSource, "Windows");
-    else if(source == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB)
+    else if(source == _EXT_DEBUG_SOURCE_SHADER_COMPILER_ARB)
 	strcpy(debSource, "Shader Compiler");
-    else if(source == GL_DEBUG_SOURCE_THIRD_PARTY_ARB)
+    else if(source == _EXT_DEBUG_SOURCE_THIRD_PARTY_ARB)
 	strcpy(debSource, "Third Party");
-    else if(source == GL_DEBUG_SOURCE_APPLICATION_ARB)
+    else if(source == _EXT_DEBUG_SOURCE_APPLICATION_ARB)
 	strcpy(debSource, "Application");
-    else if(source == GL_DEBUG_SOURCE_OTHER_ARB)
+    else if(source == _EXT_DEBUG_SOURCE_OTHER_ARB)
 	strcpy(debSource, "Other");
 
-    if(type == GL_DEBUG_TYPE_ERROR_ARB)
+    if(type == _EXT_DEBUG_TYPE_ERROR_ARB)
 	strcpy(debType, "Error");
-    else if(type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
+    else if(type == _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
 	strcpy(debType, "Deprecated behavior");
-    else if(type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
+    else if(type == _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
 	strcpy(debType, "Undefined behavior");
-    else if(type == GL_DEBUG_TYPE_PORTABILITY_ARB)
+    else if(type == _EXT_DEBUG_TYPE_PORTABILITY_ARB)
 	strcpy(debType, "Portability");
-    else if(type == GL_DEBUG_TYPE_PERFORMANCE_ARB)
+    else if(type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB)
 	strcpy(debType, "Performance");
-    else if(type == GL_DEBUG_TYPE_OTHER_ARB)
+    else if(type == _EXT_DEBUG_TYPE_OTHER_ARB)
 	strcpy(debType, "Other");
 
-    if(severity == GL_DEBUG_SEVERITY_HIGH_ARB)
+    if(severity == _EXT_DEBUG_SEVERITY_HIGH_ARB)
 	strcpy(debSev, "High");
-    else if(severity == GL_DEBUG_SEVERITY_MEDIUM_ARB)
+    else if(severity == _EXT_DEBUG_SEVERITY_MEDIUM_ARB)
 	strcpy(debSev, "Medium");
-    else if(severity == GL_DEBUG_SEVERITY_LOW_ARB)
+    else if(severity == _EXT_DEBUG_SEVERITY_LOW_ARB)
 	strcpy(debSev, "Low");
 
 	String output = String()+ "GL ERROR: Source: " + debSource + "\tType: " + debType + "\tID: " + itos(id) + "\tSeverity: " + debSev + "\tMessage: " + message;
@@ -66,6 +89,16 @@ static void _gl_debug_print(GLenum source,GLenum type,GLuint id,GLenum severity,
 
 }
 
+
+typedef void (*DEBUGPROCARB)(GLenum source,
+					     GLenum type,
+					     GLuint id,
+					     GLenum severity,
+					     GLsizei length,
+					     const char* message,
+					     const void* userParam);
+
+typedef void (* DebugMessageCallbackARB) (DEBUGPROCARB callback, const void *userParam);
 
 void RasterizerGLES3::initialize() {
 
@@ -91,9 +124,17 @@ void RasterizerGLES3::initialize() {
 	}
 #endif
 
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+#ifdef GLAD_ENABLED
+
+	if(!gladLoadGL()) {
+		ERR_PRINT("Error initializing GLAD");
+	}
+
+	glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 	glDebugMessageCallbackARB(_gl_debug_print, NULL);
-	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(_EXT_DEBUG_OUTPUT);
+
+#endif
 
 
 /*	glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_ERROR_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);

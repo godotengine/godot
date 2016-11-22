@@ -220,7 +220,7 @@ ShaderGLES3::Version* ShaderGLES3::get_current_version() {
 	/* SETUP CONDITIONALS */
 	
 	Vector<const char*> strings;
-#ifdef GLEW_ENABLED
+#ifdef GLES_OVER_GL
 	//strings.push_back("#version 330\n");
 	strings.push_back("#version 300 es\n");
 #else
@@ -709,6 +709,8 @@ void ShaderGLES3::setup(const char** p_conditional_defines, int p_conditional_co
 		}
 	}
 
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,&max_image_units);
+
 }
 
 void ShaderGLES3::finish() {
@@ -804,7 +806,7 @@ ShaderGLES3::ShaderGLES3() {
 	last_custom_code=1;
 	uniforms_dirty = true;
 	base_material_tex_index=0;
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,&max_image_units);
+
 }
 
 
