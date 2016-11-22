@@ -352,6 +352,7 @@ void TileMap::_update_dirty_quadrants() {
 				xform.set_origin( q.pos );
 				vs->canvas_item_set_transform( canvas_item, xform );
 				vs->canvas_item_set_light_mask(canvas_item,get_light_mask());
+				vs->canvas_item_set_blend_mode(canvas_item,VS::MaterialBlendMode(get_blend_mode()));
 
 				q.canvas_items.push_back(canvas_item);
 
@@ -1189,6 +1190,14 @@ void TileMap::set_light_mask(int p_light_mask) {
 		}
 	}
 }
+
+void TileMap::set_blend_mode(BlendMode p_blend_mode) {
+
+	CanvasItem::set_blend_mode(p_blend_mode);
+	_recreate_quadrants();
+	
+}
+
 
 void TileMap::_bind_methods() {
 
