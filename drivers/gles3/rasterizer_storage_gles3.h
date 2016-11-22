@@ -482,6 +482,7 @@ public:
 		uint32_t format;
 
 		GLuint array_id;
+		GLuint instancing_array_id;
 		GLuint vertex_id;
 		GLuint index_id;
 
@@ -591,20 +592,53 @@ public:
 
 	/* MULTIMESH API */
 
+	struct MultiMesh : public GeometryOwner {
+		RID mesh;
+		int size;
+		VS::MultimeshTransformFormat transform_format;
+		VS::MultimeshColorFormat color_format;
+		Vector<float> data;
+		AABB aabb;
+		SelfList<MultiMesh> update_list;
+		GLuint buffer;
+		int visible_instances;
+
+		int xform_floats;
+		int color_floats;
+
+		bool dirty_aabb;
+		bool dirty_data;
+
+		MultiMesh() : update_list(this) {
+			dirty_aabb=true;
+			dirty_data=true;
+			xform_floats=0;
+			color_floats=0;
+			visible_instances=-1;
+			size=0;
+			buffer=0;
+			transform_format=VS::MULTIMESH_TRANSFORM_2D;
+			color_format=VS::MULTIMESH_COLOR_NONE;
+		}
+	};
+
+	mutable RID_Owner<MultiMesh> multimesh_owner;
+
+	SelfList<MultiMesh>::List multimesh_update_list;
+
+	void update_dirty_multimeshes();
 
 	virtual RID multimesh_create();
 
-	virtual void multimesh_allocate(RID p_multimesh,int p_instances,VS::MultimeshTransformFormat p_transform_format,VS::MultimeshColorFormat p_color_format,bool p_gen_aabb=true);
+	virtual void multimesh_allocate(RID p_multimesh,int p_instances,VS::MultimeshTransformFormat p_transform_format,VS::MultimeshColorFormat p_color_format);
 	virtual int multimesh_get_instance_count(RID p_multimesh) const;
 
 	virtual void multimesh_set_mesh(RID p_multimesh,RID p_mesh);
-	virtual void multimesh_set_custom_aabb(RID p_multimesh,const AABB& p_aabb);
 	virtual void multimesh_instance_set_transform(RID p_multimesh,int p_index,const Transform& p_transform);
 	virtual void multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Matrix32& p_transform);
 	virtual void multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color);
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const;
-	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const;
 
 	virtual Transform multimesh_instance_get_transform(RID p_multimesh,int p_index) const;
 	virtual Matrix32 multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const;
@@ -613,7 +647,7 @@ public:
 	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible);
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
 
-	virtual AABB multimesh_get_aabb(RID p_mesh) const;
+	virtual AABB multimesh_get_aabb(RID p_multimesh) const;
 
 	/* IMMEDIATE API */
 

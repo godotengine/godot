@@ -45,7 +45,7 @@ layout(location=6) in ivec4 bone_indices; // attrib:6
 layout(location=7) in vec4 bone_weights; // attrib:7
 #endif
 
-#ifdef USE_ATTRIBUTE_INSTANCING
+#ifdef USE_INSTANCING
 
 layout(location=8) in highp vec4 instance_xform0;
 layout(location=9) in highp vec4 instance_xform1;
@@ -171,6 +171,10 @@ void main() {
 	float binormalf = tangent_attrib.a;
 #endif
 
+#if defined(ENABLE_COLOR_INTERP)
+	color_interp = color_attrib;
+#endif
+
 
 #ifdef USE_SKELETON
 
@@ -191,6 +195,23 @@ void main() {
 #endif // USE_SKELETON1
 
 
+#ifdef USE_INSTANCING
+
+	{
+		highp mat3x4 m=mat3x4(instance_xform0,instance_xform1,instance_xform2);
+
+		vertex.xyz = vertex * m;
+		normal = vec4(normal,0.0) * m;
+#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+		tangent.xyz = vec4(tangent.xyz,0.0) * mn;
+#endif
+
+#if defined(ENABLE_COLOR_INTERP)
+		color_interp*=instance_color;
+#endif
+	}
+#endif //USE_INSTANCING
+
 #if !defined(SKIP_TRANSFORM_USED)
 
 	vertex = modelview * vertex;
@@ -207,9 +228,6 @@ void main() {
 
 
 
-#if defined(ENABLE_COLOR_INTERP)
-	color_interp = color_attrib;
-#endif
 
 #if defined(ENABLE_UV_INTERP)
 	uv_interp = uv_attrib;

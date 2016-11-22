@@ -285,7 +285,6 @@ public:
 	virtual RID multimesh_create()=0;
 
 	enum MultimeshTransformFormat {
-		MULTIMESH_TRANSFORM_NONE,
 		MULTIMESH_TRANSFORM_2D,
 		MULTIMESH_TRANSFORM_3D,
 	};
@@ -296,17 +295,16 @@ public:
 		MULTIMESH_COLOR_FLOAT,
 	};
 
-	virtual void multimesh_allocate(RID p_multimesh,int p_instances,MultimeshTransformFormat p_transform_format,MultimeshColorFormat p_color_format,bool p_gen_aabb=true)=0;
+	virtual void multimesh_allocate(RID p_multimesh,int p_instances,MultimeshTransformFormat p_transform_format,MultimeshColorFormat p_color_format)=0;
 	virtual int multimesh_get_instance_count(RID p_multimesh) const=0;
 
 	virtual void multimesh_set_mesh(RID p_multimesh,RID p_mesh)=0;
-	virtual void multimesh_set_custom_aabb(RID p_multimesh,const AABB& p_aabb)=0;
 	virtual void multimesh_instance_set_transform(RID p_multimesh,int p_index,const Transform& p_transform)=0;
 	virtual void multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Matrix32& p_transform)=0;
 	virtual void multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color)=0;
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const=0;
-	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const=0;
+	virtual AABB multimesh_get_aabb(RID p_multimesh) const=0;
 
 	virtual Transform multimesh_instance_get_transform(RID p_multimesh,int p_index) const=0;
 	virtual Matrix32 multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const=0;

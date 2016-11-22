@@ -1282,7 +1282,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format,DVector<uint8_t> p
 						for(int j=0;j<p_vertex_len;j++) {
 
 							const uint16_t *v = (const uint16_t*)&r[j*total_elem_size+offsets[i]];
-							w[j]=Vector3(Math::halfptr_to_float(&v[0]),Math::halfptr_to_float(&v[1]),Math::halfptr_to_float(&v[1]));
+							w[j]=Vector3(Math::halfptr_to_float(&v[0]),Math::halfptr_to_float(&v[1]),Math::halfptr_to_float(&v[2]));
 						}
 					} else {
 

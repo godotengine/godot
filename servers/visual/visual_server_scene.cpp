@@ -562,6 +562,11 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base){
 				InstanceGeometryData *geom = memnew( InstanceGeometryData );
 				instance->base_data=geom;
 			} break;
+			case VS::INSTANCE_MULTIMESH: {
+
+				InstanceGeometryData *geom = memnew( InstanceGeometryData );
+				instance->base_data=geom;
+			} break;
 			case VS::INSTANCE_REFLECTION_PROBE: {
 
 				InstanceReflectionProbeData *reflection_probe = memnew( InstanceReflectionProbeData );
@@ -764,7 +769,18 @@ void VisualServerScene::instance_attach_skeleton(RID p_instance,RID p_skeleton){
 	Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND( !instance );
 
+	if (instance->skeleton==p_skeleton)
+		return;
+
+	if (instance->skeleton.is_valid()) {
+		VSG::storage->instance_remove_dependency(p_skeleton,instance);
+	}
+
 	instance->skeleton=p_skeleton;
+
+	if (instance->skeleton.is_valid()) {
+		VSG::storage->instance_add_dependency(p_skeleton,instance);
+	}
 
 	_instance_queue_update(instance,true);
 }
@@ -1125,12 +1141,13 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 			new_aabb = VSG::storage->mesh_get_aabb(p_instance->base,p_instance->skeleton);
 
 		} break;
-#if 0
+
 		case VisualServer::INSTANCE_MULTIMESH: {
 
-			new_aabb = rasterizer->multimesh_get_aabb(p_instance->base);
+			new_aabb = VSG::storage->multimesh_get_aabb(p_instance->base);
 
 		} break;
+#if 0
 		case VisualServer::INSTANCE_IMMEDIATE: {
 
 			new_aabb = rasterizer->immediate_get_aabb(p_instance->base);
@@ -2238,38 +2255,63 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 				can_cast_shadows=VSG::storage->material_casts_shadows(p_instance->material_override);
 			} else {
 
-				RID mesh;
+
 
 				if (p_instance->base_type==VS::INSTANCE_MESH) {
-					mesh=p_instance->base;
+					RID mesh=p_instance->base;
+
+					if (mesh.is_valid()) {
+						bool cast_shadows=false;
+
+						for(int i=0;i<p_instance->materials.size();i++) {
+
+
+							RID mat = p_instance->materials[i].is_valid()?p_instance->materials[i]:VSG::storage->mesh_surface_get_material(mesh,i);
+
+							if (!mat.is_valid()) {
+								cast_shadows=true;
+								break;
+							}
+
+							if (VSG::storage->material_casts_shadows(mat)) {
+								cast_shadows=true;
+								break;
+							}
+						}
+
+						if (!cast_shadows) {
+							can_cast_shadows=false;
+						}
+					}
+
 				} else if (p_instance->base_type==VS::INSTANCE_MULTIMESH) {
+					RID mesh = VSG::storage->multimesh_get_mesh(p_instance->base);
+					if (mesh.is_valid()) {
+						bool cast_shadows=false;
 
-				}
+						int sc = VSG::storage->mesh_get_surface_count(mesh);
+						for(int i=0;i<sc;i++) {
 
-				if (mesh.is_valid()) {
+							RID mat =VSG::storage->mesh_surface_get_material(mesh,i);
 
-					bool cast_shadows=false;
+							if (!mat.is_valid()) {
+								cast_shadows=true;
+								break;
+							}
 
-					for(int i=0;i<p_instance->materials.size();i++) {
-
-
-						RID mat = p_instance->materials[i].is_valid()?p_instance->materials[i]:VSG::storage->mesh_surface_get_material(mesh,i);
-
-						if (!mat.is_valid()) {
-							cast_shadows=true;
-							break;
+							if (VSG::storage->material_casts_shadows(mat)) {
+								cast_shadows=true;
+								break;
+							}
 						}
 
-						if (VSG::storage->material_casts_shadows(mat)) {
-							cast_shadows=true;
-							break;
+						if (!cast_shadows) {
+							can_cast_shadows=false;
 						}
 					}
-
-					if (!cast_shadows) {
-						can_cast_shadows=false;
-					}
 				}
+
+
 
 			}
 
@@ -2335,9 +2377,9 @@ bool VisualServerScene::free(RID p_rid) {
 		instance_set_scenario(p_rid,RID());
 		instance_set_base(p_rid,RID());
 		instance_geometry_set_material_override(p_rid,RID());
+		instance_attach_skeleton(p_rid,RID());
 
-		if (instance->skeleton.is_valid())
-			instance_attach_skeleton(p_rid,RID());
+		update_dirty_instances(); //in case something changed this
 
 		instance_owner.free(p_rid);
 		memdelete(instance);

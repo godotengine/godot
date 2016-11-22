@@ -462,22 +462,6 @@ void Viewport::_notification(int p_what) {
 
 				VS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh,point_count);
 
-				if (point_count>0) {
-					AABB aabb;
-
-					Transform t;
-					for(int i=0;i<point_count;i++) {
-
-						if (i==0)
-							aabb.pos=points[i];
-						else
-							aabb.expand_to(points[i]);
-						t.origin=points[i];
-						VisualServer::get_singleton()->multimesh_instance_set_transform(contact_3d_debug_multimesh,i,t);
-					}
-					aabb.grow(aabb.get_longest_axis_size()*0.01);
-					VisualServer::get_singleton()->multimesh_set_custom_aabb(contact_3d_debug_multimesh,aabb);
-				}
 			}
 
 

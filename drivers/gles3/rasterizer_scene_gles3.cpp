@@ -1098,6 +1098,55 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e) {
 			glBindVertexArray(s->array_id); // everything is so easy nowadays
 
 		} break;
+
+		case VS::INSTANCE_MULTIMESH: {
+
+			RasterizerStorageGLES3::MultiMesh *multi_mesh = static_cast<RasterizerStorageGLES3::MultiMesh*>(e->owner);
+			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface*>(e->geometry);
+			glBindVertexArray(s->instancing_array_id); // use the instancing array ID
+			glBindBuffer(GL_ARRAY_BUFFER,multi_mesh->buffer); //modify the buffer
+
+			int stride = (multi_mesh->xform_floats+multi_mesh->color_floats)*4;
+			glEnableVertexAttribArray(8);
+			glVertexAttribPointer(8,4,GL_FLOAT,GL_FALSE,stride,((uint8_t*)NULL)+0);
+			glVertexAttribDivisorARB(8,1);
+			glEnableVertexAttribArray(9);
+			glVertexAttribPointer(9,4,GL_FLOAT,GL_FALSE,stride,((uint8_t*)NULL)+4*4);
+			glVertexAttribDivisorARB(9,1);
+
+			int color_ofs;
+
+			if (multi_mesh->transform_format==VS::MULTIMESH_TRANSFORM_3D) {
+				glEnableVertexAttribArray(10);
+				glVertexAttribPointer(10,4,GL_FLOAT,GL_FALSE,stride,((uint8_t*)NULL)+8*4);
+				glVertexAttribDivisorARB(10,1);
+				color_ofs=12*4;
+			} else {
+				glDisableVertexAttribArray(10);
+				glVertexAttrib4f(10,0,0,1,0);
+				color_ofs=8*4;
+			}
+
+			switch(multi_mesh->color_format) {
+
+				case VS::MULTIMESH_COLOR_NONE: {
+					glDisableVertexAttribArray(11);
+					glVertexAttrib4f(11,1,1,1,1);
+				} break;
+				case VS::MULTIMESH_COLOR_8BIT: {
+					glEnableVertexAttribArray(11);
+					glVertexAttribPointer(11,4,GL_UNSIGNED_BYTE,GL_TRUE,stride,((uint8_t*)NULL)+color_ofs);
+					glVertexAttribDivisorARB(11,1);
+
+				} break;
+				case VS::MULTIMESH_COLOR_FLOAT: {
+					glEnableVertexAttribArray(11);
+					glVertexAttribPointer(11,4,GL_FLOAT,GL_FALSE,stride,((uint8_t*)NULL)+color_ofs);
+					glVertexAttribDivisorARB(11,1);
+				} break;
+			}
+
+		} break;
 	}
 
 }
@@ -1133,6 +1182,25 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 			}
 
 		} break;
+		case VS::INSTANCE_MULTIMESH: {
+
+			RasterizerStorageGLES3::MultiMesh *multi_mesh = static_cast<RasterizerStorageGLES3::MultiMesh*>(e->owner);
+			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface*>(e->geometry);
+
+			int amount = MAX(multi_mesh->size,multi_mesh->visible_instances);
+
+			if (s->index_array_len>0) {
+
+				glDrawElementsInstancedARB(gl_primitive[s->primitive],s->index_array_len, (s->array_len>=(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0,amount);
+
+			} else {
+
+				glDrawArraysInstancedARB(gl_primitive[s->primitive],0,s->array_len,amount);
+
+			}
+
+		} break;
+
 	}
 
 }
@@ -1481,6 +1549,11 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 			}
 		}
 
+		if ((prev_base_type==VS::INSTANCE_MULTIMESH) != (e->instance->base_type==VS::INSTANCE_MULTIMESH)) {
+			state.scene_shader.set_conditional(SceneShaderGLES3::USE_INSTANCING,e->instance->base_type==VS::INSTANCE_MULTIMESH);
+			rebind=true;
+		}
+
 		if (material!=prev_material || rebind) {
 
 			rebind = _setup_material(material,p_alpha_pass);
@@ -1519,6 +1592,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 	glFrontFace(GL_CW);
 	glBindVertexArray(0);
 
+	state.scene_shader.set_conditional(SceneShaderGLES3::USE_INSTANCING,false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON,false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP,false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_FORWARD_LIGHTING,false);
@@ -2413,6 +2487,24 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase** p_cull_result,int p_
 
 			} break;
 			case VS::INSTANCE_MULTIMESH: {
+
+				RasterizerStorageGLES3::MultiMesh *multi_mesh = storage->multimesh_owner.getptr(inst->base);
+				ERR_CONTINUE(!multi_mesh);
+
+				if (multi_mesh->size==0 || multi_mesh->visible_instances==0)
+					continue;
+
+				RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.getptr(multi_mesh->mesh);
+				if (!mesh)
+					continue; //mesh not assigned
+
+				int ssize = mesh->surfaces.size();
+
+				for (int i=0;i<ssize;i++) {
+
+					RasterizerStorageGLES3::Surface *s = mesh->surfaces[i];
+					_add_geometry(s,inst,multi_mesh,-1,p_shadow);
+				}
 
 			} break;
 			case VS::INSTANCE_IMMEDIATE: {

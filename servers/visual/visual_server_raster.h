@@ -707,17 +707,16 @@ public:
 
 	BIND0R(RID,multimesh_create)
 
-	BIND5(multimesh_allocate,RID,int,MultimeshTransformFormat,MultimeshColorFormat,bool)
+	BIND4(multimesh_allocate,RID,int,MultimeshTransformFormat,MultimeshColorFormat)
 	BIND1RC(int,multimesh_get_instance_count,RID)
 
 	BIND2(multimesh_set_mesh,RID,RID)
-	BIND2(multimesh_set_custom_aabb,RID,const AABB&)
 	BIND3(multimesh_instance_set_transform,RID,int,const Transform&)
 	BIND3(multimesh_instance_set_transform_2d,RID,int,const Matrix32& )
 	BIND3(multimesh_instance_set_color,RID,int,const Color&)
 
 	BIND1RC(RID,multimesh_get_mesh,RID)
-	BIND1RC(AABB,multimesh_get_custom_aabb,RID)
+	BIND1RC(AABB,multimesh_get_aabb,RID)
 
 	BIND2RC(Transform,multimesh_instance_get_transform,RID,int )
 	BIND2RC(Matrix32,multimesh_instance_get_transform_2d,RID,int)

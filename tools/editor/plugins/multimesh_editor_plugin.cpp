@@ -195,6 +195,8 @@ void MultiMeshEditor::_populate() {
 
 	int instance_count=populate_amount->get_val();
 
+	multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
+	multimesh->set_color_format(MultiMesh::COLOR_NONE);
 	multimesh->set_instance_count(instance_count);
 
 	float _tilt_random = populate_tilt_random->get_val();
@@ -247,10 +249,10 @@ void MultiMeshEditor::_populate() {
 
 
 		multimesh->set_instance_transform(i,xform);
-		multimesh->set_instance_color(i,Color(1,1,1,1));
+
 	}
 
-	multimesh->generate_aabb();
+
 
 	node->set_multimesh(multimesh);
 
@@ -386,6 +388,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_scale_random->set_min(0);
 	populate_scale_random->set_max(1);
 	populate_scale_random->set_val(0);
+	populate_scale_random->set_step(0.01);
 
 	vbc->add_margin_child(TTR("Random Scale:"),populate_scale_random);
 
@@ -393,6 +396,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_scale->set_min(0.001);
 	populate_scale->set_max(4096);
 	populate_scale->set_val(1);
+	populate_scale->set_step(0.01);
 
 	vbc->add_margin_child(TTR("Scale:"),populate_scale);
 

@@ -39,7 +39,6 @@ class MultiMesh : public Resource {
 public:
 
 	enum TransformFormat {
-		TRANSFORM_NONE = VS::MULTIMESH_TRANSFORM_NONE,
 		TRANSFORM_2D = VS::MULTIMESH_TRANSFORM_2D,
 		TRANSFORM_3D = VS::MULTIMESH_TRANSFORM_3D
 	};
@@ -50,7 +49,6 @@ public:
 		COLOR_FLOAT = VS::MULTIMESH_COLOR_FLOAT,
 	};
 private:
-	AABB aabb;
 	Ref<Mesh> mesh;
 	RID multimesh;
 	TransformFormat transform_format;
@@ -87,10 +85,7 @@ public:
 	void set_instance_color(int p_instance, const Color& p_color);
 	Color get_instance_color(int p_instance) const;
 
-	void set_aabb(const AABB& p_aabb);
 	virtual AABB get_aabb() const;
-
-	void generate_aabb();
 
 	virtual RID get_rid() const;
 

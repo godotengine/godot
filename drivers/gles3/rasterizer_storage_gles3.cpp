@@ -2716,30 +2716,44 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 
 		//generate arrays for faster state switching
 
-		glGenVertexArrays(1,&surface->array_id);
-		glBindVertexArray(surface->array_id);
-		glBindBuffer(GL_ARRAY_BUFFER,surface->vertex_id);
+		for(int i=0;i<2;i++) {
 
-		for(int i=0;i<VS::ARRAY_MAX-1;i++) {
-
-			if (!attribs[i].enabled)
-				continue;
-
-			if (attribs[i].integer) {
-				glVertexAttribIPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+			if (i==0) {
+				//for normal draw
+				glGenVertexArrays(1,&surface->array_id);
+				glBindVertexArray(surface->array_id);
+				glBindBuffer(GL_ARRAY_BUFFER,surface->vertex_id);
 			} else {
-				glVertexAttribPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].normalized,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+				//for instancing draw (can be changed and no one cares)
+				glGenVertexArrays(1,&surface->instancing_array_id);
+				glBindVertexArray(surface->instancing_array_id);
+				glBindBuffer(GL_ARRAY_BUFFER,surface->vertex_id);
+
 			}
-			glEnableVertexAttribArray(attribs[i].index);
 
+
+			for(int i=0;i<VS::ARRAY_MAX-1;i++) {
+
+				if (!attribs[i].enabled)
+					continue;
+
+				if (attribs[i].integer) {
+					glVertexAttribIPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+				} else {
+					glVertexAttribPointer(attribs[i].index,attribs[i].size,attribs[i].type,attribs[i].normalized,attribs[i].stride,((uint8_t*)0)+attribs[i].offset);
+				}
+				glEnableVertexAttribArray(attribs[i].index);
+
+			}
+
+			if (surface->index_id) {
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,surface->index_id);
+			}
+
+			glBindVertexArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 		}
-
-		if (surface->index_id) {
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,surface->index_id);
-		}
-
-		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
 
 	}
 
@@ -3068,14 +3082,14 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh,RID p_skeleton) const{
 
 	if (mesh->custom_aabb!=AABB())
 		return mesh->custom_aabb;
-/*
+
 	Skeleton *sk=NULL;
 	if (p_skeleton.is_valid())
 		sk=skeleton_owner.get(p_skeleton);
-*/
+
 	AABB aabb;
-	/*
-	if (sk && sk->bones.size()!=0) {
+
+	if (sk && sk->size!=0) {
 
 
 		for (int i=0;i<mesh->surfaces.size();i++) {
@@ -3088,21 +3102,67 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh,RID p_skeleton) const{
 				const AABB *skbones = mesh->surfaces[i]->skeleton_bone_aabb.ptr();
 				const bool *skused = mesh->surfaces[i]->skeleton_bone_used.ptr();
 
-				int sbs = sk->bones.size();
+				int sbs = sk->size;
 				ERR_CONTINUE(bs>sbs);
-				Skeleton::Bone *skb = sk->bones.ptr();
+				float *skb = sk->bones.ptr();
+
+
 
 				bool first=true;
-				for(int j=0;j<bs;j++) {
+				if (sk->use_2d) {
+					for(int j=0;j<bs;j++) {
 
-					if (!skused[j])
-						continue;
-					AABB baabb = skb[ j ].transform_aabb ( skbones[j] );
-					if (first) {
-						laabb=baabb;
-						first=false;
-					} else {
-						laabb.merge_with(baabb);
+						if (!skused[j])
+							continue;
+
+						float *dataptr = &skb[8*j];
+
+						Transform mtx;
+
+						mtx.basis.elements[0][0]=dataptr[ 0];
+						mtx.basis.elements[0][1]=dataptr[ 1];
+						mtx.origin[0]=dataptr[ 3];
+						mtx.basis.elements[1][0]=dataptr[ 4];
+						mtx.basis.elements[1][1]=dataptr[ 5];
+						mtx.origin[1]=dataptr[ 7];
+
+						AABB baabb = mtx.xform( skbones[j] );
+						if (first) {
+							laabb=baabb;
+							first=false;
+						} else {
+							laabb.merge_with(baabb);
+						}
+					}
+				} else {
+					for(int j=0;j<bs;j++) {
+
+						if (!skused[j])
+							continue;
+
+						float *dataptr = &skb[12*j];
+
+						Transform mtx;
+						mtx.basis.elements[0][0]=dataptr[ 0];
+						mtx.basis.elements[0][1]=dataptr[ 1];
+						mtx.basis.elements[0][2]=dataptr[ 2];
+						mtx.origin.x=dataptr[ 3];
+						mtx.basis.elements[1][0]=dataptr[ 4];
+						mtx.basis.elements[1][1]=dataptr[ 5];
+						mtx.basis.elements[1][2]=dataptr[ 6];
+						mtx.origin.y=dataptr[ 7];
+						mtx.basis.elements[2][0]=dataptr[ 8];
+						mtx.basis.elements[2][1]=dataptr[ 9];
+						mtx.basis.elements[2][2]=dataptr[10];
+						mtx.origin.z=dataptr[11];
+
+						AABB baabb = mtx.xform ( skbones[j] );
+						if (first) {
+							laabb=baabb;
+							first=false;
+						} else {
+							laabb.merge_with(baabb);
+						}
 					}
 				}
 
@@ -3117,7 +3177,7 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh,RID p_skeleton) const{
 				aabb.merge_with(laabb);
 		}
 	} else {
-*/
+
 		for (int i=0;i<mesh->surfaces.size();i++) {
 
 			if (i==0)
@@ -3125,9 +3185,9 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh,RID p_skeleton) const{
 			else
 				aabb.merge_with(mesh->surfaces[i]->aabb);
 		}
-/*
+
 	}
-*/
+
 	return aabb;
 
 }
@@ -3146,75 +3206,431 @@ void RasterizerStorageGLES3::mesh_clear(RID p_mesh){
 
 RID RasterizerStorageGLES3::multimesh_create(){
 
-	return RID();
+	MultiMesh *multimesh = memnew( MultiMesh );
+	return multimesh_owner.make_rid(multimesh);
 }
 
-void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh,int p_instances,VS::MultimeshTransformFormat p_transform_format,VS::MultimeshColorFormat p_color_format,bool p_gen_aabb){
+void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format){
 
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+
+	if (multimesh->size==p_instances && multimesh->transform_format==p_transform_format && multimesh->color_format==p_color_format)
+		return;
+
+	if (multimesh->buffer) {
+		glDeleteBuffers(1,&multimesh->buffer);
+		multimesh->data.resize(0);
+	}
+
+	multimesh->size=p_instances;
+	multimesh->transform_format=p_transform_format;
+	multimesh->color_format=p_color_format;
+
+	if (multimesh->size) {
+
+		if (multimesh->transform_format==VS::MULTIMESH_TRANSFORM_2D) {
+			multimesh->xform_floats=8;
+		} else {
+			multimesh->xform_floats=12;
+
+		}
+
+		if (multimesh->color_format==VS::MULTIMESH_COLOR_NONE) {
+			multimesh->color_floats=0;
+		} else if (multimesh->color_format==VS::MULTIMESH_COLOR_8BIT) {
+			multimesh->color_floats=1;
+		} else if (multimesh->color_format==VS::MULTIMESH_COLOR_FLOAT) {
+			multimesh->color_floats=4;
+		}
+
+		int format_floats = multimesh->color_floats+multimesh->xform_floats;
+		multimesh->data.resize(format_floats*p_instances);
+		for(int i=0;i<p_instances;i+=format_floats) {
+
+			int color_from=0;
+
+			if (multimesh->transform_format==VS::MULTIMESH_TRANSFORM_2D) {
+				multimesh->data[i+0]=1.0;
+				multimesh->data[i+1]=0.0;
+				multimesh->data[i+2]=0.0;
+				multimesh->data[i+3]=0.0;
+				multimesh->data[i+4]=0.0;
+				multimesh->data[i+5]=1.0;
+				multimesh->data[i+6]=0.0;
+				multimesh->data[i+7]=0.0;
+				color_from=8;
+			} else {
+				multimesh->data[i+0]=1.0;
+				multimesh->data[i+1]=0.0;
+				multimesh->data[i+2]=0.0;
+				multimesh->data[i+3]=0.0;
+				multimesh->data[i+4]=0.0;
+				multimesh->data[i+5]=1.0;
+				multimesh->data[i+6]=0.0;
+				multimesh->data[i+7]=0.0;
+				multimesh->data[i+8]=0.0;
+				multimesh->data[i+9]=0.0;
+				multimesh->data[i+10]=1.0;
+				multimesh->data[i+11]=0.0;
+				color_from=12;
+			}
+
+			if (multimesh->color_format==VS::MULTIMESH_COLOR_NONE) {
+				//none
+			} else if (multimesh->color_format==VS::MULTIMESH_COLOR_8BIT) {
+
+				union {
+					uint32_t colu;
+					float colf;
+				} cu;
+
+				cu.colu=0xFFFFFFFF;
+				multimesh->data[i+color_from+0]=cu.colf;
+
+			} else if (multimesh->color_format==VS::MULTIMESH_COLOR_FLOAT) {
+				multimesh->data[i+color_from+0]=1.0;
+				multimesh->data[i+color_from+1]=1.0;
+				multimesh->data[i+color_from+2]=1.0;
+				multimesh->data[i+color_from+3]=1.0;
+			}
+		}
+
+		glGenBuffers(1,&multimesh->buffer);
+		glBindBuffer(GL_ARRAY_BUFFER,multimesh->buffer);
+		glBufferData(GL_ARRAY_BUFFER,multimesh->data.size()*sizeof(float),NULL,GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER,0);
+
+	}
+
+	multimesh->dirty_data=true;
+	multimesh->dirty_aabb=true;
+
+	if (!multimesh->update_list.in_list()) {
+		multimesh_update_list.add(&multimesh->update_list);
+	}
 
 }
+
 int RasterizerStorageGLES3::multimesh_get_instance_count(RID p_multimesh) const{
 
-	return 0;
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh,0);
+
+	return multimesh->size;
 }
 
 void RasterizerStorageGLES3::multimesh_set_mesh(RID p_multimesh,RID p_mesh){
 
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
 
+	multimesh->mesh=p_mesh;
+
+	multimesh->dirty_aabb=true;
+
+	if (!multimesh->update_list.in_list()) {
+		multimesh_update_list.add(&multimesh->update_list);
+	}
 }
-void RasterizerStorageGLES3::multimesh_set_custom_aabb(RID p_multimesh,const AABB& p_aabb){
 
-
-}
 void RasterizerStorageGLES3::multimesh_instance_set_transform(RID p_multimesh,int p_index,const Transform& p_transform){
 
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_INDEX(p_index,multimesh->size);
+	ERR_FAIL_COND(multimesh->transform_format==VS::MULTIMESH_TRANSFORM_2D);
 
+	int stride = multimesh->color_floats+multimesh->xform_floats;
+	float *dataptr=&multimesh->data[stride*p_index];
+
+	dataptr[ 0]=p_transform.basis.elements[0][0];
+	dataptr[ 1]=p_transform.basis.elements[0][1];
+	dataptr[ 2]=p_transform.basis.elements[0][2];
+	dataptr[ 3]=p_transform.origin.x;
+	dataptr[ 4]=p_transform.basis.elements[1][0];
+	dataptr[ 5]=p_transform.basis.elements[1][1];
+	dataptr[ 6]=p_transform.basis.elements[1][2];
+	dataptr[ 7]=p_transform.origin.y;
+	dataptr[ 8]=p_transform.basis.elements[2][0];
+	dataptr[ 9]=p_transform.basis.elements[2][1];
+	dataptr[10]=p_transform.basis.elements[2][2];
+	dataptr[11]=p_transform.origin.z;
+
+	multimesh->dirty_data=true;
+	multimesh->dirty_aabb=true;
+
+	if (!multimesh->update_list.in_list()) {
+		multimesh_update_list.add(&multimesh->update_list);
+	}
 }
+
 void RasterizerStorageGLES3::multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Matrix32& p_transform){
 
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_INDEX(p_index,multimesh->size);
+	ERR_FAIL_COND(multimesh->transform_format==VS::MULTIMESH_TRANSFORM_3D);
 
+	int stride = multimesh->color_floats+multimesh->xform_floats;
+	float *dataptr=&multimesh->data[stride*p_index];
+
+	dataptr[ 0]=p_transform.elements[0][0];
+	dataptr[ 1]=p_transform.elements[1][0];
+	dataptr[ 2]=0;
+	dataptr[ 3]=p_transform.elements[2][0];
+	dataptr[ 4]=p_transform.elements[0][1];
+	dataptr[ 5]=p_transform.elements[1][1];
+	dataptr[ 6]=0;
+	dataptr[ 7]=p_transform.elements[2][1];
+
+	multimesh->dirty_data=true;
+	multimesh->dirty_aabb=true;
+
+	if (!multimesh->update_list.in_list()) {
+		multimesh_update_list.add(&multimesh->update_list);
+	}
 }
 void RasterizerStorageGLES3::multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color){
 
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_INDEX(p_index,multimesh->size);
+	ERR_FAIL_COND(multimesh->color_format==VS::MULTIMESH_COLOR_NONE);
 
+	int stride = multimesh->color_floats+multimesh->xform_floats;
+	float *dataptr=&multimesh->data[stride*p_index+multimesh->color_floats];
+
+	if (multimesh->color_format==VS::MULTIMESH_COLOR_8BIT) {
+		union {
+			uint32_t colu;
+			float colf;
+		} cu;
+
+		cu.colu=p_color.to_32();
+		dataptr[ 0]=cu.colf;
+
+	} else if (multimesh->color_format==VS::MULTIMESH_COLOR_FLOAT) {
+		dataptr[ 0]=p_color.r;
+		dataptr[ 1]=p_color.g;
+		dataptr[ 2]=p_color.b;
+		dataptr[ 3]=p_color.a;
+	}
+
+
+	multimesh->dirty_data=true;
+	multimesh->dirty_aabb=true;
+
+	if (!multimesh->update_list.in_list()) {
+		multimesh_update_list.add(&multimesh->update_list);
+	}
 }
 
 RID RasterizerStorageGLES3::multimesh_get_mesh(RID p_multimesh) const{
 
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh,RID());
 
-	return RID();
+	return multimesh->mesh;
 }
-AABB RasterizerStorageGLES3::multimesh_get_custom_aabb(RID p_multimesh) const{
 
-	return AABB();
-}
 
 Transform RasterizerStorageGLES3::multimesh_instance_get_transform(RID p_multimesh,int p_index) const{
 
-	return Transform();
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh,Transform());
+	ERR_FAIL_INDEX_V(p_index,multimesh->size,Transform());
+	ERR_FAIL_COND_V(multimesh->transform_format==VS::MULTIMESH_TRANSFORM_2D,Transform());
+
+	int stride = multimesh->color_floats+multimesh->xform_floats;
+	float *dataptr=&multimesh->data[stride*p_index];
+
+	Transform xform;
+
+	xform.basis.elements[0][0]=dataptr[ 0];
+	xform.basis.elements[0][1]=dataptr[ 1];
+	xform.basis.elements[0][2]=dataptr[ 2];
+	xform.origin.x=dataptr[ 3];
+	xform.basis.elements[1][0]=dataptr[ 4];
+	xform.basis.elements[1][1]=dataptr[ 5];
+	xform.basis.elements[1][2]=dataptr[ 6];
+	xform.origin.y=dataptr[ 7];
+	xform.basis.elements[2][0]=dataptr[ 8];
+	xform.basis.elements[2][1]=dataptr[ 9];
+	xform.basis.elements[2][2]=dataptr[10];
+	xform.origin.z=dataptr[11];
+
+	return xform;
 }
 Matrix32 RasterizerStorageGLES3::multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const{
 
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh,Matrix32());
+	ERR_FAIL_INDEX_V(p_index,multimesh->size,Matrix32());
+	ERR_FAIL_COND_V(multimesh->transform_format==VS::MULTIMESH_TRANSFORM_3D,Matrix32());
 
-	return Matrix32();
+	int stride = multimesh->color_floats+multimesh->xform_floats;
+	float *dataptr=&multimesh->data[stride*p_index];
+
+	Matrix32 xform;
+
+	xform.elements[0][0]=dataptr[ 0];
+	xform.elements[1][0]=dataptr[ 1];
+	xform.elements[2][0]=dataptr[ 3];
+	xform.elements[0][1]=dataptr[ 4];
+	xform.elements[1][1]=dataptr[ 5];
+	xform.elements[2][1]=dataptr[ 7];
+
+	return xform;
 }
+
 Color RasterizerStorageGLES3::multimesh_instance_get_color(RID p_multimesh,int p_index) const{
 
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh,Color());
+	ERR_FAIL_INDEX_V(p_index,multimesh->size,Color());
+	ERR_FAIL_COND_V(multimesh->color_format==VS::MULTIMESH_COLOR_NONE,Color());
+
+	int stride = multimesh->color_floats+multimesh->xform_floats;
+	float *dataptr=&multimesh->data[stride*p_index+multimesh->color_floats];
+
+	if (multimesh->color_format==VS::MULTIMESH_COLOR_8BIT) {
+		union {
+			uint32_t colu;
+			float colf;
+		} cu;
+
+		return Color::hex(cu.colu);
+
+	} else if (multimesh->color_format==VS::MULTIMESH_COLOR_FLOAT) {
+		Color c;
+		c.r=dataptr[ 0];
+		c.g=dataptr[ 1];
+		c.b=dataptr[ 2];
+		c.a=dataptr[ 3];
+
+		return c;
+	}
+
 	return Color();
+
 }
 
 void RasterizerStorageGLES3::multimesh_set_visible_instances(RID p_multimesh,int p_visible){
 
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
 
+	multimesh->visible_instances=p_visible;
 }
 int RasterizerStorageGLES3::multimesh_get_visible_instances(RID p_multimesh) const{
 
-	return 0;
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh,-1);
+
+	return multimesh->visible_instances;
 }
 
-AABB RasterizerStorageGLES3::multimesh_get_aabb(RID p_mesh) const{
+AABB RasterizerStorageGLES3::multimesh_get_aabb(RID p_multimesh) const{
 
-	return AABB();
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh,AABB());
+
+	const_cast<RasterizerStorageGLES3*>(this)->update_dirty_multimeshes(); //update pending AABBs
+
+	return multimesh->aabb;
+}
+
+void RasterizerStorageGLES3::update_dirty_multimeshes() {
+
+	while(multimesh_update_list.first()) {
+
+		MultiMesh *multimesh = multimesh_update_list.first()->self();
+
+		if (multimesh->size && multimesh->dirty_data) {
+
+
+			glBindBuffer(GL_ARRAY_BUFFER,multimesh->buffer);
+			glBufferSubData(GL_ARRAY_BUFFER,0,multimesh->data.size()*sizeof(float),multimesh->data.ptr());
+			glBindBuffer(GL_ARRAY_BUFFER,0);
+
+
+		}
+
+
+
+		if (multimesh->size && multimesh->dirty_aabb) {
+
+			AABB mesh_aabb;
+
+			if (multimesh->mesh.is_valid()) {
+				mesh_aabb=mesh_get_aabb(multimesh->mesh,RID());
+			} else {
+				mesh_aabb.size+=Vector3(0.001,0.001,0.001);
+			}
+
+			int stride=multimesh->color_floats+multimesh->xform_floats;
+			int count = multimesh->data.size();
+			float *data=multimesh->data.ptr();
+
+			AABB aabb;
+
+			if (multimesh->transform_format==VS::MULTIMESH_TRANSFORM_2D) {
+
+				for(int i=0;i<count;i+=stride) {
+
+					float *dataptr=&data[i];
+					Transform xform;
+					xform.basis[0][0]=dataptr[ 0];
+					xform.basis[0][1]=dataptr[ 1];
+					xform.origin[0]=dataptr[ 3];
+					xform.basis[1][0]=dataptr[ 4];
+					xform.basis[1][1]=dataptr[ 5];
+					xform.origin[1]=dataptr[ 7];
+
+					AABB laabb = xform.xform(mesh_aabb);
+					if (i==0)
+						aabb=laabb;
+					else
+						aabb.merge_with(laabb);
+				}
+			} else {
+
+				for(int i=0;i<count;i+=stride) {
+
+					float *dataptr=&data[i];
+					Transform xform;
+
+					xform.basis.elements[0][0]=dataptr[ 0];
+					xform.basis.elements[0][1]=dataptr[ 1];
+					xform.basis.elements[0][2]=dataptr[ 2];
+					xform.origin.x=dataptr[ 3];
+					xform.basis.elements[1][0]=dataptr[ 4];
+					xform.basis.elements[1][1]=dataptr[ 5];
+					xform.basis.elements[1][2]=dataptr[ 6];
+					xform.origin.y=dataptr[ 7];
+					xform.basis.elements[2][0]=dataptr[ 8];
+					xform.basis.elements[2][1]=dataptr[ 9];
+					xform.basis.elements[2][2]=dataptr[10];
+					xform.origin.z=dataptr[11];
+
+					AABB laabb = xform.xform(mesh_aabb);
+					if (i==0)
+						aabb=laabb;
+					else
+						aabb.merge_with(laabb);
+				}
+			}
+
+			multimesh->aabb=aabb;
+		}
+		multimesh->dirty_aabb=false;
+		multimesh->dirty_data=false;
+
+		multimesh->instance_change_notify();
+
+		multimesh_update_list.remove(multimesh_update_list.first());
+	}
 }
 
 /* IMMEDIATE API */
@@ -3957,6 +4373,10 @@ void RasterizerStorageGLES3::instance_add_dependency(RID p_base,RasterizerScene:
 			inst = mesh_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
 		} break;
+		case VS::INSTANCE_MULTIMESH: {
+			inst = multimesh_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
 		case VS::INSTANCE_REFLECTION_PROBE: {
 			inst = reflection_probe_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
@@ -3987,6 +4407,10 @@ void RasterizerStorageGLES3::instance_remove_dependency(RID p_base,RasterizerSce
 			inst = mesh_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
 
+		} break;
+		case VS::INSTANCE_MULTIMESH: {
+			inst = multimesh_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
 		} break;
 		case VS::INSTANCE_REFLECTION_PROBE: {
 			inst = reflection_probe_owner.getornull(p_base);
@@ -4482,6 +4906,9 @@ VS::InstanceType RasterizerStorageGLES3::get_base_type(RID p_rid) const {
 	if (mesh_owner.owns(p_rid)) {
 		return VS::INSTANCE_MESH;
 	}
+	if (multimesh_owner.owns(p_rid)) {
+		return VS::INSTANCE_MULTIMESH;
+	}
 	if (light_owner.owns(p_rid)) {
 		return VS::INSTANCE_LIGHT;
 	}
@@ -4579,6 +5006,17 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 
 		mesh_owner.free(p_rid);
 		memdelete(mesh);
+
+	} else if (multimesh_owner.owns(p_rid)) {
+
+		// delete the texture
+		MultiMesh *multimesh = multimesh_owner.get(p_rid);
+
+		multimesh_allocate(p_rid,0,VS::MULTIMESH_TRANSFORM_2D,VS::MULTIMESH_COLOR_NONE); //frees multimesh
+		update_dirty_multimeshes();
+
+		multimesh_owner.free(p_rid);
+		memdelete(multimesh);
 
 	} else if (light_owner.owns(p_rid)) {
 
