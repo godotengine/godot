@@ -150,6 +150,16 @@ void Array::erase(const Variant& p_value) {
 	_p->array.erase(p_value);
 }
 
+Variant Array::front() const {
+	ERR_FAIL_COND_V(_p->array.size() == 0, Variant());
+	return operator[](0);
+}
+
+Variant Array::back() const {
+	ERR_FAIL_COND_V(_p->array.size() == 0, Variant());
+	return operator[](_p->array.size() - 1);
+}
+
 int Array::find(const Variant& p_value, int p_from) const {
 
 	return _p->array.find(p_value, p_from);
