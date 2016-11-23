@@ -1027,59 +1027,75 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material* p_m
 	RID* textures = p_material->textures.ptr();
 	ShaderLanguage::ShaderNode::Uniform::Hint* texture_hints = p_material->shader->texture_hints.ptr();
 
+	state.current_main_tex=0;
+
 	for(int i=0;i<tc;i++) {
 
 		glActiveTexture(GL_TEXTURE0+i);
 
+		GLenum target;
+		GLuint tex;
+
 		RasterizerStorageGLES3::Texture *t = storage->texture_owner.getornull( textures[i] );
+
 		if (!t) {
 			//check hints
+			target=GL_TEXTURE_2D;
+
 			switch(texture_hints[i]) {
 				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO:
 				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
-					glBindTexture(GL_TEXTURE_2D,storage->resources.black_tex);
+					tex=storage->resources.black_tex;
 				} break;
 				case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
-					glBindTexture(GL_TEXTURE_2D,storage->resources.aniso_tex);
+					tex=storage->resources.aniso_tex;
 				} break;
 				case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
-					glBindTexture(GL_TEXTURE_2D,storage->resources.normal_tex);
+					tex=storage->resources.normal_tex;
 				} break;
 				default: {
-					glBindTexture(GL_TEXTURE_2D,storage->resources.white_tex);
+					tex=storage->resources.white_tex;
 				} break;
 			}
 
-			continue;
-		}
 
-		if (storage->config.srgb_decode_supported) {
-			//if SRGB decode extension is present, simply switch the texture to whathever is needed
-			bool must_srgb=false;
+		} else {
 
-			if (t->srgb && (texture_hints[i]==ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || texture_hints[i]==ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO)) {
-				must_srgb=true;
-			}
+			if (storage->config.srgb_decode_supported) {
+				//if SRGB decode extension is present, simply switch the texture to whathever is needed
+				bool must_srgb=false;
 
-			if (t->using_srgb!=must_srgb) {
-				if (must_srgb) {
-					glTexParameteri(t->target,_TEXTURE_SRGB_DECODE_EXT,_DECODE_EXT);
+				if (t->srgb && (texture_hints[i]==ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || texture_hints[i]==ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO)) {
+					must_srgb=true;
+				}
+
+				if (t->using_srgb!=must_srgb) {
+					if (must_srgb) {
+						glTexParameteri(t->target,_TEXTURE_SRGB_DECODE_EXT,_DECODE_EXT);
 #ifdef TOOLS_ENABLED
-					if (!(t->flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) {
-						t->flags|=VS::TEXTURE_FLAG_CONVERT_TO_LINEAR;
-						//notify that texture must be set to linear beforehand, so it works in other platforms when exported
-					}
+						if (!(t->flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) {
+							t->flags|=VS::TEXTURE_FLAG_CONVERT_TO_LINEAR;
+							//notify that texture must be set to linear beforehand, so it works in other platforms when exported
+						}
 #endif
 
-				} else {
-					glTexParameteri(t->target,_TEXTURE_SRGB_DECODE_EXT,_SKIP_DECODE_EXT);
+					} else {
+						glTexParameteri(t->target,_TEXTURE_SRGB_DECODE_EXT,_SKIP_DECODE_EXT);
+					}
+					t->using_srgb=must_srgb;
 				}
-				t->using_srgb=must_srgb;
 			}
+
+			target=t->target;
+			tex = t->tex_id;
+
 		}
 
+		glBindTexture(target,tex);
 
-		glBindTexture(t->target,t->tex_id);
+		if (i==0) {
+			state.current_main_tex=tex;
+		}
 	}
 
 
@@ -1199,6 +1215,125 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 			}
 
+		} break;
+		case VS::INSTANCE_IMMEDIATE: {
+
+			bool restore_tex=false;
+			const RasterizerStorageGLES3::Immediate *im = static_cast<const RasterizerStorageGLES3::Immediate*>( e->geometry );
+
+			if (im->building) {
+				return;
+			}
+
+			glBindBuffer(GL_ARRAY_BUFFER, state.immediate_buffer);
+			glBindVertexArray(state.immediate_array);
+
+
+			for(const List< RasterizerStorageGLES3::Immediate::Chunk>::Element *E=im->chunks.front();E;E=E->next()) {
+
+				const  RasterizerStorageGLES3::Immediate::Chunk &c=E->get();
+				if (c.vertices.empty()) {
+					continue;
+				}
+
+				int vertices = c.vertices.size();
+				uint32_t buf_ofs=0;
+
+				if (c.texture.is_valid() && storage->texture_owner.owns(c.texture)) {
+
+					const RasterizerStorageGLES3::Texture *t = storage->texture_owner.get(c.texture);
+					glActiveTexture(GL_TEXTURE0);
+					glBindTexture(t->target,t->tex_id);
+					restore_tex=true;
+
+
+				} else if (restore_tex) {
+
+					glActiveTexture(GL_TEXTURE0);
+					glBindTexture(GL_TEXTURE_2D,state.current_main_tex);
+					restore_tex=false;
+				}
+
+
+
+				if (!c.normals.empty()) {
+
+					glEnableVertexAttribArray(VS::ARRAY_NORMAL);
+					glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(Vector3)*vertices,c.normals.ptr());
+					glVertexAttribPointer(VS::ARRAY_NORMAL, 3, GL_FLOAT, false,sizeof(Vector3)*vertices,((uint8_t*)NULL)+buf_ofs);
+					buf_ofs+=sizeof(Vector3)*vertices;
+
+				} else {
+
+					glDisableVertexAttribArray(VS::ARRAY_NORMAL);
+				}
+
+				if (!c.tangents.empty()) {
+
+					glEnableVertexAttribArray(VS::ARRAY_TANGENT);
+					glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(Plane)*vertices,c.tangents.ptr());
+					glVertexAttribPointer(VS::ARRAY_TANGENT, 4, GL_FLOAT, false,sizeof(Plane)*vertices,((uint8_t*)NULL)+buf_ofs);
+					buf_ofs+=sizeof(Plane)*vertices;
+
+				} else {
+
+					glDisableVertexAttribArray(VS::ARRAY_TANGENT);
+				}
+
+				if (!c.colors.empty()) {
+
+					glEnableVertexAttribArray(VS::ARRAY_COLOR);
+					glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(Color)*vertices,c.colors.ptr());
+					glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, false,sizeof(Color),((uint8_t*)NULL)+buf_ofs);
+					buf_ofs+=sizeof(Color)*vertices;
+
+				} else {
+
+					glDisableVertexAttribArray(VS::ARRAY_COLOR);
+					glVertexAttrib4f(VS::ARRAY_COLOR,1,1,1,1);
+				}
+
+
+				if (!c.uvs.empty()) {
+
+					glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
+					glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(Vector2)*vertices,c.uvs.ptr());
+					glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, false,sizeof(Vector2),((uint8_t*)NULL)+buf_ofs);
+					buf_ofs+=sizeof(Vector2)*vertices;
+
+				} else {
+
+					glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
+				}
+
+				if (!c.uvs2.empty()) {
+
+					glEnableVertexAttribArray(VS::ARRAY_TEX_UV2);
+					glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(Vector2)*vertices,c.uvs2.ptr());
+					glVertexAttribPointer(VS::ARRAY_TEX_UV2, 2, GL_FLOAT, false,sizeof(Vector2),((uint8_t*)NULL)+buf_ofs);
+					buf_ofs+=sizeof(Vector2)*vertices;
+
+				} else {
+
+					glDisableVertexAttribArray(VS::ARRAY_TEX_UV2);
+				}
+
+
+				glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+				glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(Vector3)*vertices,c.vertices.ptr());
+				glVertexAttribPointer(VS::ARRAY_VERTEX, 3, GL_FLOAT, false,sizeof(Vector3),((uint8_t*)NULL)+buf_ofs);
+				glDrawArrays(gl_primitive[c.primitive],0,c.vertices.size());
+
+
+			}
+
+
+			if (restore_tex) {
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D,state.current_main_tex);
+				restore_tex=false;
+			}
 		} break;
 
 	}
@@ -3647,6 +3782,21 @@ void RasterizerSceneGLES3::initialize() {
 		}
 	}
 
+	{
+
+
+		uint32_t immediate_buffer_size=GLOBAL_DEF("rendering/gles3/immediate_buffer_size_kb",2048);
+
+		glGenBuffers(1, &state.immediate_buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, state.immediate_buffer);
+		glBufferData(GL_ARRAY_BUFFER, immediate_buffer_size*1024, NULL, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glGenVertexArrays(1,&state.immediate_array);
+
+
+
+	}
 
 #ifdef GLES_OVER_GL
 //"desktop" opengl needs this.

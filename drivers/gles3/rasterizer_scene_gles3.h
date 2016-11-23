@@ -41,6 +41,7 @@ public:
 		int current_blend_mode;
 		float current_line_width;
 		int current_depth_draw;
+		GLuint current_main_tex;
 
 		SceneShaderGLES3 scene_shader;
 		CubeToDpShaderGLES3 cube_to_dp_shader;
@@ -89,6 +90,9 @@ public:
 		GLuint spot_array_ubo;
 		GLuint omni_array_ubo;
 		GLuint reflection_array_ubo;
+
+		GLuint immediate_buffer;
+		GLuint immediate_array;
 
 		uint32_t ubo_light_size;
 		uint8_t *spot_array_tmp;
