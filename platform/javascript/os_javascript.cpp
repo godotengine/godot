@@ -299,13 +299,15 @@ bool OS_JavaScript::is_mouse_grab_enabled() const {
 	//*sigh* technology has evolved so much since i was a kid..
 	return false;
 }
+
 Point2 OS_JavaScript::get_mouse_pos() const {
 
-	return Point2();
+	return input->get_mouse_pos();
 }
+
 int OS_JavaScript::get_mouse_button_state() const {
 
-	return 0;
+	return last_button_mask;
 }
 
 void OS_JavaScript::set_window_title(const String& p_title) {
@@ -426,6 +428,9 @@ void OS_JavaScript::push_input(const InputEvent& p_ev) {
 	ev.ID=last_id++;
 	if (ev.type==InputEvent::MOUSE_MOTION) {
 		input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+	}
+	else if (ev.type==InputEvent::MOUSE_BUTTON) {
+		last_button_mask = ev.mouse_button.button_mask;
 	}
 	input->parse_input_event(p_ev);
 }
@@ -765,6 +770,7 @@ OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, Get
 
 	gfx_init_func=p_gfx_init_func;
 	gfx_init_ud=p_gfx_init_ud;
+	last_button_mask=0;
 	main_loop=NULL;
 	last_id=1;
 	gl_extensions=NULL;
