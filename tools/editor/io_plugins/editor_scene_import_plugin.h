@@ -115,6 +115,8 @@ class EditorSceneImportPlugin : public EditorImportPlugin {
 	void _filter_tracks(Node *scene, const String& p_text);
 	void _optimize_animations(Node *scene, float p_max_lin_error,float p_max_ang_error,float p_max_angle);
 
+	void _find_materials(Node *scene, Node *node, Set<Ref<Material> > &materials, Set<Ref<Mesh> > &tested_meshes);
+	Error _save_material(const String& path, Ref< Material > material);
 	void _tag_import_paths(Node *p_scene,Node *p_node);
 
 	void _find_resources_to_merge(Node *scene, Node *node, bool p_merge_material, Map<String,Ref<Material> >&materials, bool p_merge_anims, Map<String,Ref<Animation> >& merged_anims, Set<Ref<Mesh> > &tested_meshes);
@@ -138,6 +140,7 @@ public:
 		SCENE_FLAG_DETECT_VCOLOR=1<<16,
 		SCENE_FLAG_CREATE_NAVMESH=1<<17,
 		SCENE_FLAG_DETECT_LIGHTMAP_LAYER=1<<18,
+		SCENE_FLAG_SEPARATE_MATERIALS=1<<19,
 
 		SCENE_FLAG_MERGE_KEEP_MATERIALS=1<<20,
 		SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS=1<<21,
