@@ -150,6 +150,9 @@ public:
 	};
 
 	/* COMPILER */
+  #ifdef TYPE_BOOL
+  #undef TYPE_BOOL
+  #endif
 
 	enum DataType {
 		TYPE_VOID,

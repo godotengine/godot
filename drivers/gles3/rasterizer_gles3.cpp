@@ -130,9 +130,9 @@ void RasterizerGLES3::initialize() {
 		ERR_PRINT("Error initializing GLAD");
 	}
 
-	glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-	glDebugMessageCallbackARB(_gl_debug_print, NULL);
-	glEnable(_EXT_DEBUG_OUTPUT);
+	//glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+	//glDebugMessageCallbackARB(_gl_debug_print, NULL);
+	//glEnable(_EXT_DEBUG_OUTPUT);
 
 #endif
 
@@ -199,7 +199,7 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target){
 		storage->frame.current_rt=rt;
 		storage->frame.clear_request=false;
 
-		glViewport(0,0,rt->width,rt->height);				
+		glViewport(0,0,rt->width,rt->height);
 
 	} else {
 		storage->frame.current_rt=NULL;

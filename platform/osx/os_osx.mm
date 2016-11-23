@@ -36,15 +36,12 @@
 
 #include "sem_osx.h"
 #include "servers/visual/visual_server_raster.h"
-//#include "drivers/opengl/rasterizer_gl.h"
-//#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "os_osx.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "print_string.h"
 #include "servers/physics/physics_server_sw.h"
-#include "drivers/gles2/rasterizer_instance_gles2.h"
-#include "servers/visual/visual_server_wrap_mt.h"
 #include "main/main.h"
 #include "os/keyboard.h"
 #include "dir_access_osx.h"
@@ -911,7 +908,7 @@ int OS_OSX::get_video_driver_count() const {
 }
 const char * OS_OSX::get_video_driver_name(int p_driver) const {
 
-	return "GLES2";
+	return "GLES3";
 }
 
 OS::VideoMode OS_OSX::get_default_video_mode() const {
@@ -1023,8 +1020,8 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	ADD_ATTR(NSOpenGLPFAClosestPolicy);
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-	if (false/* use gl3*/)
-		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
+	//if (false/* use gl3*/)
+	ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
 #endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 
 	ADD_ATTR2(NSOpenGLPFAColorSize, colorBits);
@@ -1085,14 +1082,18 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	AudioDriverManagerSW::add_driver(&audio_driver_osx);
 
 
-	rasterizer = instance_RasterizerGLES2();
+	RasterizerGLES3::register_config();
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
+  RasterizerGLES3::make_current();
 
+	visual_server = memnew( VisualServerRaster );
+
+  #if 0
 	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
 
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
+  #endif
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
