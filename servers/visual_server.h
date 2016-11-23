@@ -319,7 +319,7 @@ public:
 	virtual RID immediate_create()=0;
 	virtual void immediate_begin(RID p_immediate,PrimitiveType p_rimitive,RID p_texture=RID())=0;
 	virtual void immediate_vertex(RID p_immediate,const Vector3& p_vertex)=0;
-	virtual void immediate_vertex_2d(RID p_immediate,const Vector3& p_vertex)=0;
+	virtual void immediate_vertex_2d(RID p_immediate,const Vector2& p_vertex);
 	virtual void immediate_normal(RID p_immediate,const Vector3& p_normal)=0;
 	virtual void immediate_tangent(RID p_immediate,const Plane& p_tangent)=0;
 	virtual void immediate_color(RID p_immediate,const Color& p_color)=0;

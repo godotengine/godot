@@ -651,10 +651,41 @@ public:
 
 	/* IMMEDIATE API */
 
+	struct Immediate : public Geometry {
+
+		struct Chunk {
+
+			RID texture;
+			VS::PrimitiveType primitive;
+			Vector<Vector3> vertices;
+			Vector<Vector3> normals;
+			Vector<Plane> tangents;
+			Vector<Color> colors;
+			Vector<Vector2> uvs;
+			Vector<Vector2> uvs2;
+		};
+
+		List<Chunk> chunks;
+		bool building;
+		int mask;
+		AABB aabb;
+
+		Immediate() { type=GEOMETRY_IMMEDIATE; building=false;}
+
+	};
+
+	Vector3 chunk_vertex;
+	Vector3 chunk_normal;
+	Plane chunk_tangent;
+	Color chunk_color;
+	Vector2 chunk_uv;
+	Vector2 chunk_uv2;
+
+	mutable RID_Owner<Immediate> immediate_owner;
+
 	virtual RID immediate_create();
 	virtual void immediate_begin(RID p_immediate,VS::PrimitiveType p_rimitive,RID p_texture=RID());
-	virtual void immediate_vertex(RID p_immediate,const Vector3& p_vertex);
-	virtual void immediate_vertex_2d(RID p_immediate,const Vector3& p_vertex);
+	virtual void immediate_vertex(RID p_immediate,const Vector3& p_vertex);	
 	virtual void immediate_normal(RID p_immediate,const Vector3& p_normal);
 	virtual void immediate_tangent(RID p_immediate,const Plane& p_tangent);
 	virtual void immediate_color(RID p_immediate,const Color& p_color);
@@ -664,6 +695,7 @@ public:
 	virtual void immediate_clear(RID p_immediate);
 	virtual void immediate_set_material(RID p_immediate,RID p_material);
 	virtual RID immediate_get_material(RID p_immediate) const;
+	virtual AABB immediate_get_aabb(RID p_immediate) const;
 
 	/* SKELETON API */
 

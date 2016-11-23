@@ -276,8 +276,7 @@ void RasterizerGLES3::end_frame(){
 
 	canvas->draw_generic_textured_rect(Rect2(0,0,15,15),Rect2(0,0,1,1));
 #endif
-	if (ContextGL::get_singleton())
-		ContextGL::get_singleton()->swap_buffers();
+	OS::get_singleton()->swap_buffers();
 }
 
 void RasterizerGLES3::finalize(){

@@ -1648,6 +1648,10 @@ void VisualServer::mesh_add_surface_from_planes( RID p_mesh, const DVector<Plane
 
 }
 
+void VisualServer::immediate_vertex_2d(RID p_immediate,const Vector2& p_vertex) {
+	immediate_vertex(p_immediate,Vector3(p_vertex.x,p_vertex.y,0));
+}
+
 RID VisualServer::instance_create2(RID p_base, RID p_scenario) {
 
 	RID instance = instance_create();

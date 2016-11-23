@@ -285,7 +285,6 @@ public:
 	virtual RID immediate_create()=0;
 	virtual void immediate_begin(RID p_immediate,VS::PrimitiveType p_rimitive,RID p_texture=RID())=0;
 	virtual void immediate_vertex(RID p_immediate,const Vector3& p_vertex)=0;
-	virtual void immediate_vertex_2d(RID p_immediate,const Vector3& p_vertex)=0;
 	virtual void immediate_normal(RID p_immediate,const Vector3& p_normal)=0;
 	virtual void immediate_tangent(RID p_immediate,const Plane& p_tangent)=0;
 	virtual void immediate_color(RID p_immediate,const Color& p_color)=0;
@@ -295,6 +294,8 @@ public:
 	virtual void immediate_clear(RID p_immediate)=0;
 	virtual void immediate_set_material(RID p_immediate,RID p_material)=0;
 	virtual RID immediate_get_material(RID p_immediate) const=0;
+	virtual AABB immediate_get_aabb(RID p_immediate) const=0;
+
 
 	/* SKELETON API */
 
