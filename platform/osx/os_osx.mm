@@ -1084,16 +1084,16 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	RasterizerGLES3::register_config();
 
-  RasterizerGLES3::make_current();
+        RasterizerGLES3::make_current();
 
 	visual_server = memnew( VisualServerRaster );
 
-  #if 0
+        #if 0
 	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
 
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
-  #endif
+        #endif
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
