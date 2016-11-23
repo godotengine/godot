@@ -152,6 +152,7 @@ public:
 
 	int set_base_framebuffer(int p_fb);
 
+	void update_gravity(float p_x, float p_y, float p_z);
 	void update_accelerometer(float p_x, float p_y, float p_z);
 	void update_magnetometer(float p_x, float p_y, float p_z);
 	void update_gyroscope(float p_x, float p_y, float p_z);

@@ -323,6 +323,10 @@ void OSIPhone::touches_cancelled() {
 
 static const float ACCEL_RANGE = 1;
 
+void OSIPhone::update_gravity(float p_x, float p_y, float p_z) {
+	input->set_gravity(Vector3(p_x, p_y, p_z));
+};
+
 void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 
 	// Found out the Z should not be negated! Pass as is!

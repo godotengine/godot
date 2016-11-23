@@ -218,25 +218,29 @@ static int frame_count = 0;
 				// a good thing when you're trying to get your user to move the screen in all directions and want consistent output
 
 				///@TODO Using [[UIApplication sharedApplication] statusBarOrientation] is a bit of a hack. Godot obviously knows the orientation so maybe we 
-				// can use that instead?
+				// can use that instead? (note that left and right seem swapped)
 
 				switch ([[UIApplication sharedApplication] statusBarOrientation]) {
 				case UIDeviceOrientationLandscapeLeft: {
-					OSIPhone::get_singleton()->update_accelerometer(-(acceleration.y + gravity.y), acceleration.x + gravity.x, acceleration.z + gravity.z);
+					OSIPhone::get_singleton()->update_gravity(-gravity.y, gravity.x, gravity.z);
+					OSIPhone::get_singleton()->update_accelerometer(-(acceleration.y + gravity.y), (acceleration.x + gravity.x), acceleration.z + gravity.z);
 					OSIPhone::get_singleton()->update_magnetometer(-magnetic.y, magnetic.x, magnetic.z);
 					OSIPhone::get_singleton()->update_gyroscope(-rotation.y, rotation.x, rotation.z);
 				}; break;
 				case UIDeviceOrientationLandscapeRight: {
-					OSIPhone::get_singleton()->update_accelerometer(acceleration.y + gravity.y, acceleration.x + gravity.x, acceleration.z + gravity.z);
-					OSIPhone::get_singleton()->update_magnetometer(magnetic.y, magnetic.x, magnetic.z);
-					OSIPhone::get_singleton()->update_gyroscope(rotation.y, rotation.x, rotation.z);
+					OSIPhone::get_singleton()->update_gravity(gravity.y, -gravity.x, gravity.z);
+					OSIPhone::get_singleton()->update_accelerometer((acceleration.y + gravity.y), -(acceleration.x + gravity.x), acceleration.z + gravity.z);
+					OSIPhone::get_singleton()->update_magnetometer(magnetic.y, -magnetic.x, magnetic.z);
+					OSIPhone::get_singleton()->update_gyroscope(rotation.y, -rotation.x, rotation.z);
 				}; break;
 				case UIDeviceOrientationPortraitUpsideDown: {
-					OSIPhone::get_singleton()->update_accelerometer(-(acceleration.x + gravity.x), acceleration.y + gravity.y, acceleration.z + gravity.z);
+					OSIPhone::get_singleton()->update_gravity(-gravity.x, gravity.y, gravity.z);
+					OSIPhone::get_singleton()->update_accelerometer(-(acceleration.x + gravity.x), (acceleration.y + gravity.y), acceleration.z + gravity.z);
 					OSIPhone::get_singleton()->update_magnetometer(-magnetic.x, magnetic.y, magnetic.z);
 					OSIPhone::get_singleton()->update_gyroscope(-rotation.x, rotation.y, rotation.z);
 				}; break;
 				default: { // assume portrait
+					OSIPhone::get_singleton()->update_gravity(gravity.x, gravity.y, gravity.z);
 					OSIPhone::get_singleton()->update_accelerometer(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z);
 					OSIPhone::get_singleton()->update_magnetometer(magnetic.x, magnetic.y, magnetic.z);
 					OSIPhone::get_singleton()->update_gyroscope(rotation.x, rotation.y, rotation.z);
