@@ -519,8 +519,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				}
 
 				if (current_block && current_block->outer_stack(identifier) && current_function) {
-					LambdaFunctionNode *in = dynamic_cast<LambdaFunctionNode*>(current_function);
-					if (in) in->insert_require(identifier);
+					if (current_function->type == Node::TYPE_LAMBDA_FUNCTION) static_cast<LambdaFunctionNode*>(current_function)->insert_require(identifier);
 				}
 				IdentifierNode* id = alloc_node<IdentifierNode>();
 				id->name=identifier;
@@ -574,8 +573,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				expr = id;
 
 				if (current_block && current_block->outer_stack(identifier) && current_function) {
-					LambdaFunctionNode *in = dynamic_cast<LambdaFunctionNode*>(current_function);
-					if (in) in->insert_require(identifier);
+					if (current_function->type == Node::TYPE_LAMBDA_FUNCTION) static_cast<LambdaFunctionNode*>(current_function)->insert_require(identifier);
 				}
 			}
 
