@@ -1332,7 +1332,11 @@ void OS_Windows::vprint(const char* p_format, va_list p_list, bool p_stderr) {
 	if (p_stderr)
 		fwprintf(stderr,L"%s",wbuf);
 	else
+	#ifndef __MINGW32__
 		wprintf(L"%s",wbuf);
+	#else
+		wprintf(L"%S",wbuf);
+	#endif
 
 #ifdef STDOUT_FILE
 	//vwfprintf(stdo,p_format,p_list);
