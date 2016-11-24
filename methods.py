@@ -671,6 +671,7 @@ class LegacyGLHeaderStruct:
 		self.fragment_lines=[]
 		self.uniforms=[]
 		self.attributes=[]
+		self.feedbacks=[]
 		self.fbos=[]
 		self.conditionals=[]
 		self.enums={}
@@ -822,6 +823,20 @@ def include_file_in_legacygl_header( filename, header_data, depth ):
 					name=name.strip()
 					bind=bind.replace("attrib:","").strip()
 					header_data.attributes+=[(name,bind)]
+
+		if ( line.strip().find("out ")==0 and line.find("tfb:")!=-1):
+			uline = line.replace("out ","");
+			uline = uline.replace("highp ","");
+			uline = uline.replace(";","");
+			uline = uline[ uline.find(" "): ].strip()
+
+
+			if (uline.find("//")!=-1):
+				name,bind = uline.split("//")
+				if (bind.find("tfb:")!=-1):
+					name=name.strip()
+					bind=bind.replace("tfb:","").strip()
+					header_data.feedbacks+=[(name,bind)]
 
 
 		line=line.replace("\r","")
@@ -1039,12 +1054,14 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 		fd.write("\t\tstatic const Enum *_enums=NULL;\n")
 		fd.write("\t\tstatic const EnumValue *_enum_values=NULL;\n")
 
+	conditionals_found = []
 	if (len(header_data.conditionals)):
 
 		fd.write("\t\tstatic const char* _conditional_strings[]={\n")
 		if (len(header_data.conditionals)):
 			for x in header_data.conditionals:
 				fd.write("\t\t\t\"#define "+x+"\\n\",\n");
+				conditionals_found.append(x)
 		fd.write("\t\t};\n\n");
 	else:
 		fd.write("\t\tstatic const char **_conditional_strings=NULL;\n")
@@ -1070,6 +1087,24 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 		else:
 			fd.write("\t\tstatic AttributePair *_attribute_pairs=NULL;\n")
 
+	feedback_count=0
+
+	if (len(header_data.feedbacks)):
+
+		fd.write("\t\tstatic const Feedback _feedbacks[]={\n")
+		for x in header_data.feedbacks:
+			name = x[0]
+			cond = x[1]
+			if (cond in conditionals_found):
+				fd.write("\t\t\t{\""+name+"\","+str(conditionals_found.index(cond))+"},\n");
+			else:
+				fd.write("\t\t\t{\""+name+"\",-1},\n");
+
+			feedback_count+=1
+
+		fd.write("\t\t};\n\n");
+	else:
+		fd.write("\t\tstatic const Feedback* _feedbacks=NULL;\n")
 
 	if (len(header_data.texunits)):
 		fd.write("\t\tstatic TexUnitPair _texunit_pairs[]={\n")
@@ -1109,9 +1144,9 @@ def build_legacygl_header( filename, include, class_suffix, output_attribs ):
 	fd.write("\t\tstatic const int _fragment_code_start="+str(header_data.fragment_offset)+";\n")
 
 	if output_attribs:
-		fd.write("\t\tsetup(_conditional_strings,"+str(len(header_data.conditionals))+",_uniform_strings,"+str(len(header_data.uniforms))+",_attribute_pairs,"+str(len(header_data.attributes))+", _texunit_pairs,"+str(len(header_data.texunits))+",_ubo_pairs,"+str(len(header_data.ubos))+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
+		fd.write("\t\tsetup(_conditional_strings,"+str(len(header_data.conditionals))+",_uniform_strings,"+str(len(header_data.uniforms))+",_attribute_pairs,"+str(len(header_data.attributes))+", _texunit_pairs,"+str(len(header_data.texunits))+",_ubo_pairs,"+str(len(header_data.ubos))+",_feedbacks,"+str(feedback_count)+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
 	else:
-		fd.write("\t\tsetup(_conditional_strings,"+str(len(header_data.conditionals))+",_uniform_strings,"+str(len(header_data.uniforms))+",_texunit_pairs,"+str(len(header_data.texunits))+",_enums,"+str(len(header_data.enums))+",_enum_values,"+str(enum_value_count)+",_ubo_pairs,"+str(len(header_data.ubos))+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
+		fd.write("\t\tsetup(_conditional_strings,"+str(len(header_data.conditionals))+",_uniform_strings,"+str(len(header_data.uniforms))+",_texunit_pairs,"+str(len(header_data.texunits))+",_enums,"+str(len(header_data.enums))+",_enum_values,"+str(enum_value_count)+",_ubo_pairs,"+str(len(header_data.ubos))+",_feedbacks,"+str(feedback_count)+",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
 
 	fd.write("\t};\n\n")
 

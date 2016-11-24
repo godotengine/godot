@@ -709,7 +709,7 @@ Error VisualServer::_surface_set_data(Array p_arrays,uint32_t p_format,uint32_t 
 			} break;
 			case VS::ARRAY_BONES: {
 
-				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::REAL_ARRAY, ERR_INVALID_PARAMETER );
+				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::INT_ARRAY, ERR_INVALID_PARAMETER );
 
 				DVector<int> array = p_arrays[ai];
 
@@ -912,7 +912,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primi
 					bsformat|=(1<<j);
 			}
 
-			ERR_FAIL_COND( (bsformat)!=(format&(VS::ARRAY_FORMAT_BONES-1)));
+			ERR_FAIL_COND( (bsformat)!=(format&(VS::ARRAY_FORMAT_INDEX-1)));
 		}
 	}
 
@@ -1089,7 +1089,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primi
 		DVector<uint8_t> noindex;
 
 		AABB laabb;
-		Error err = _surface_set_data(p_blend_shapes[i],format&~ARRAY_FORMAT_INDEX,offsets,total_elem_size,vertex_array,array_len,noindex,0,laabb,bone_aabb);
+		Error err = _surface_set_data(p_blend_shapes[i],format&~ARRAY_FORMAT_INDEX,offsets,total_elem_size,vertex_array_shape,array_len,noindex,0,laabb,bone_aabb);
 		aabb.merge_with(laabb);
 		if (err) {
 			ERR_EXPLAIN("Invalid blend shape array format for surface");
@@ -1194,9 +1194,9 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format,DVector<uint8_t> p
 			case VS::ARRAY_BONES: {
 
 				if (p_format&ARRAY_FLAG_USE_16_BIT_BONES) {
-					elem_size=sizeof(uint32_t);
-				} else {
 					elem_size=sizeof(uint16_t)*4;
+				} else {
+					elem_size=sizeof(uint32_t);
 				}
 
 			} break;
@@ -1487,7 +1487,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format,DVector<uint8_t> p
 					DVector<int>::Write w = arr.write();
 
 					for(int j=0;j<p_vertex_len;j++) {
-						const int *v = (const int*)&r[j*total_elem_size+offsets[i]];
+						const uint8_t *v = (const uint8_t*)&r[j*total_elem_size+offsets[i]];
 						for(int k=0;k<4;k++) {
 							w[j*4+k]=v[k];
 						}

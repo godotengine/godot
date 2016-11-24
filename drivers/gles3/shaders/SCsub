@@ -7,4 +7,5 @@ if env['BUILDERS'].has_key('GLES3_GLSL'):
 	env.GLES3_GLSL('scene.glsl');
 	env.GLES3_GLSL('cubemap_filter.glsl');
 	env.GLES3_GLSL('cube_to_dp.glsl');
+	env.GLES3_GLSL('blend_shape.glsl');
 

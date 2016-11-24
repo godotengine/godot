@@ -6,6 +6,7 @@
 #include "shader_gles3.h"
 #include "shaders/copy.glsl.h"
 #include "shaders/canvas.glsl.h"
+#include "shaders/blend_shape.glsl.h"
 #include "shaders/cubemap_filter.glsl.h"
 #include "self_list.h"
 #include "shader_compiler_gles3.h"
@@ -65,6 +66,8 @@ public:
 
 		CubemapFilterShaderGLES3 cubemap_filter;
 
+		BlendShapeShaderGLES3 blend_shapes;
+
 		ShaderCompilerGLES3::IdentifierActions actions_canvas;
 		ShaderCompilerGLES3::IdentifierActions actions_scene;
 	} shaders;
@@ -78,6 +81,9 @@ public:
 
 		GLuint quadie;
 		GLuint quadie_array;
+
+		GLuint transform_feedback_buffers[2];
+		GLuint transform_feedback_array;
 
 	} resources;
 
@@ -133,8 +139,33 @@ public:
 		}
 	};
 
+	struct GeometryOwner : public Instantiable {
+
+		virtual ~GeometryOwner() {}
+	};
+	struct Geometry : Instantiable {
+
+		enum Type {
+			GEOMETRY_INVALID,
+			GEOMETRY_SURFACE,
+			GEOMETRY_IMMEDIATE,
+			GEOMETRY_MULTISURFACE,
+		};
 
 
+		Type type;
+		RID material;
+		uint64_t last_pass;
+		uint32_t index;
+
+		virtual void material_changed_notify() {}
+
+		Geometry() {
+			last_pass=0;
+			index=0;
+		}
+
+	};
 
 
 
@@ -384,7 +415,7 @@ public:
 		uint32_t index;
 		uint64_t last_pass;
 
-		Map<Instantiable*,int> instantiable_owners;
+		Map<Geometry*,int> geometry_owners;
 		Map<RasterizerScene::InstanceBase*,int> instance_owners;
 
 		bool can_cast_shadow_cache;
@@ -404,8 +435,8 @@ public:
 
 	mutable SelfList<Material>::List _material_dirty_list;
 	void _material_make_dirty(Material *p_material) const;
-	void _material_add_instantiable(RID p_material,Instantiable *p_instantiable);
-	void _material_remove_instantiable(RID p_material, Instantiable *p_instantiable);
+	void _material_add_geometry(RID p_material,Geometry *p_instantiable);
+	void _material_remove_geometry(RID p_material, Geometry *p_instantiable);
 
 
 	mutable RID_Owner<Material> material_owner;
@@ -433,31 +464,9 @@ public:
 	/* MESH API */
 
 
-	struct Geometry : Instantiable {
 
-		enum Type {
-			GEOMETRY_INVALID,
-			GEOMETRY_SURFACE,
-			GEOMETRY_IMMEDIATE,
-			GEOMETRY_MULTISURFACE,
-		};
 
-		Type type;
-		RID material;
-		uint64_t last_pass;
-		uint32_t index;
 
-		Geometry() {
-			last_pass=0;
-			index=0;
-		}
-
-	};
-
-	struct GeometryOwner : public Instantiable {
-
-		virtual ~GeometryOwner() {}
-	};
 
 	struct Mesh;
 	struct Surface : public Geometry {
@@ -475,7 +484,7 @@ public:
 		};
 
 		Attrib attribs[VS::ARRAY_MAX];
-		Attrib morph_attribs[VS::ARRAY_MAX];
+
 
 
 		Mesh *mesh;
@@ -511,6 +520,10 @@ public:
 		VS::PrimitiveType primitive;
 
 		bool active;
+
+		virtual void material_changed_notify() {
+			mesh->instance_material_change_notify();
+		}
 
 		Surface() {
 
@@ -589,6 +602,8 @@ public:
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const;
 	virtual void mesh_clear(RID p_mesh);
+
+	void mesh_render_blend_shapes(Surface *s, float *p_weights);
 
 	/* MULTIMESH API */
 
@@ -699,12 +714,13 @@ public:
 
 	/* SKELETON API */
 
-	struct Skeleton : Instantiable {
+	struct Skeleton : RID_Data {
 		int size;
 		bool use_2d;
 		Vector<float> bones; //4x3 or 4x2 depending on what is needed
 		GLuint ubo;
 		SelfList<Skeleton> update_list;
+		Set<RasterizerScene::InstanceBase*> instances; //instances using skeleton
 
 		Skeleton() : update_list(this) {
 			size=0;
@@ -843,6 +859,8 @@ public:
 	virtual void portal_set_disable_distance(RID p_portal, float p_distance);
 	virtual void portal_set_disabled_color(RID p_portal, const Color& p_color);
 
+	virtual void instance_add_skeleton(RID p_skeleton,RasterizerScene::InstanceBase *p_instance);
+	virtual void instance_remove_skeleton(RID p_skeleton,RasterizerScene::InstanceBase *p_instance);
 
 	virtual void instance_add_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance);
 	virtual void instance_remove_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance);

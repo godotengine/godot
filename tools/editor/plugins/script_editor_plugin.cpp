@@ -1840,6 +1840,8 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 
 void ScriptEditor::_help_class_open(const String& p_class) {
 
+	if (p_class=="")
+		return;
 
 	for(int i=0;i<tab_container->get_child_count();i++) {
 
