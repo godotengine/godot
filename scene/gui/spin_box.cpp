@@ -92,6 +92,9 @@ void SpinBox::_range_click_timeout() {
 
 void SpinBox::_input_event(const InputEvent& p_event) {
 
+	if (!is_editable()) {
+		return;
+	}
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed) {
 		const InputEventMouseButton &mb=p_event.mouse_button;
 
@@ -110,19 +113,24 @@ void SpinBox::_input_event(const InputEvent& p_event) {
 				range_click_timer->set_one_shot(true);
 				range_click_timer->start();
 
+				line_edit->grab_focus();
 			} break;
 			case BUTTON_RIGHT: {
 
 				set_val(  (up?get_max():get_min()) );
-
+				line_edit->grab_focus();
 			} break;
 			case BUTTON_WHEEL_UP: {
-
-				set_val( get_val() + get_step() );
+				if (line_edit->has_focus()) {
+					set_val( get_val() + get_step() );
+					accept_event();
+				}
 			} break;
 			case BUTTON_WHEEL_DOWN: {
-
-				set_val( get_val() - get_step() );
+				if (line_edit->has_focus()) {
+					set_val( get_val() - get_step() );
+					accept_event();
+				}
 			} break;
 		}
 	}
