@@ -80,10 +80,12 @@ def configure(env):
 
     env.Append(CPPFLAGS=["-DAPPLE_STYLE_KEYS"])
     env.Append(CPPFLAGS=['-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DOSX_ENABLED'])
+    env.Append(CPPFLAGS=["-mmacosx-version-min=10.9"])
     env.Append(LIBS=['pthread'])
     #env.Append(CPPFLAGS=['-F/Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks', '-isysroot', '/Developer/SDKs/MacOSX10.4u.sdk', '-mmacosx-version-min=10.4'])
     #env.Append(LINKFLAGS=['-mmacosx-version-min=10.4', '-isysroot', '/Developer/SDKs/MacOSX10.4u.sdk', '-Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk'])
     env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'OpenGL', '-framework', 'AGL', '-framework', 'AudioUnit', '-lz', '-framework', 'IOKit', '-framework', 'ForceFeedback'])
+    env.Append(LINKFLAGS=["-mmacosx-version-min=10.9"])
 
     if (env["CXX"] == "clang++"):
         env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
