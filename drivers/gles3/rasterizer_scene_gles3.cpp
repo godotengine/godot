@@ -1111,7 +1111,16 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e) {
 		case VS::INSTANCE_MESH: {
 
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface*>(e->geometry);
-			glBindVertexArray(s->array_id); // everything is so easy nowadays
+
+			if (s->morph_targets.size() && e->instance->morph_values.size()) {
+				//blend shapes, use transform feedback
+				storage->mesh_render_blend_shapes(s,e->instance->morph_values.ptr());
+				//rebind shader
+				state.scene_shader.bind();
+			} else {
+
+				glBindVertexArray(s->array_id); // everything is so easy nowadays
+			}
 
 		} break;
 

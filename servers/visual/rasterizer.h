@@ -380,7 +380,8 @@ public:
 	virtual void portal_set_disable_distance(RID p_portal, float p_distance)=0;
 	virtual void portal_set_disabled_color(RID p_portal, const Color& p_color)=0;
 
-
+	virtual void instance_add_skeleton(RID p_skeleton,RasterizerScene::InstanceBase *p_instance)=0;
+	virtual void instance_remove_skeleton(RID p_skeleton,RasterizerScene::InstanceBase *p_instance)=0;
 
 	virtual void instance_add_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance)=0;
 	virtual void instance_remove_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance)=0;

@@ -355,7 +355,30 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 				w=DVector<Color>::Write();
 				a[i]=array;
 			} break;
-			case Mesh::ARRAY_FORMAT_BONES:
+			case Mesh::ARRAY_FORMAT_BONES: {
+
+
+				DVector<int> array;
+				array.resize(varr_len*4);
+				DVector<int>::Write w = array.write();
+
+				int idx=0;
+				for(List< Vertex >::Element *E=vertex_array.front();E;E=E->next(),idx+=4) {
+
+					const Vertex &v=E->get();
+
+					ERR_CONTINUE( v.bones.size()!=4 );
+
+					for(int j=0;j<4;j++) {
+						w[idx+j]=v.bones[j];
+					}
+
+				}
+
+				w=DVector<int>::Write();
+				a[i]=array;
+
+			} break;
 			case Mesh::ARRAY_FORMAT_WEIGHTS: {
 
 
@@ -367,18 +390,11 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 				for(List< Vertex >::Element *E=vertex_array.front();E;E=E->next(),idx+=4) {
 
 					const Vertex &v=E->get();
+					ERR_CONTINUE( v.weights.size()!=4 );
 
 					for(int j=0;j<4;j++) {
-						switch(i) {
-							case Mesh::ARRAY_WEIGHTS: {
-								ERR_CONTINUE( v.weights.size()!=4 );
-								w[idx+j]=v.weights[j];
-							} break;
-							case Mesh::ARRAY_BONES: {
-								ERR_CONTINUE( v.bones.size()!=4 );
-								w[idx+j]=v.bones[j];
-							} break;
-						}
+
+						w[idx+j]=v.weights[j];
 					}
 
 				}

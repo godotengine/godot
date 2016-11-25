@@ -316,14 +316,14 @@ void Mesh::add_surface(uint32_t p_format,PrimitiveType p_primitive,const DVector
 
 }
 
-void Mesh::add_surface_from_arrays(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes) {
+void Mesh::add_surface_from_arrays(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes,uint32_t p_flags) {
 
 
 	ERR_FAIL_COND(p_arrays.size()!=ARRAY_MAX);
 
 	Surface s;
 
-	VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh,(VisualServer::PrimitiveType)p_primitive, p_arrays,p_blend_shapes);
+	VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh,(VisualServer::PrimitiveType)p_primitive, p_arrays,p_blend_shapes,p_flags);
 	surfaces.push_back(s);
 
 
@@ -1024,7 +1024,7 @@ void Mesh::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_morph_target_mode","mode"),&Mesh::set_morph_target_mode);
 	ObjectTypeDB::bind_method(_MD("get_morph_target_mode"),&Mesh::get_morph_target_mode);
 
-	ObjectTypeDB::bind_method(_MD("add_surface_from_arrays","primitive","arrays","blend_shapes"),&Mesh::add_surface_from_arrays,DEFVAL(Array()));
+	ObjectTypeDB::bind_method(_MD("add_surface_from_arrays","primitive","arrays","blend_shapes","compress_flags"),&Mesh::add_surface_from_arrays,DEFVAL(Array()),DEFVAL(ARRAY_COMPRESS_DEFAULT));
 	ObjectTypeDB::bind_method(_MD("get_surface_count"),&Mesh::get_surface_count);
 	ObjectTypeDB::bind_method(_MD("surface_remove","surf_idx"),&Mesh::surface_remove);
 	ObjectTypeDB::bind_method(_MD("surface_get_array_len","surf_idx"),&Mesh::surface_get_array_len);

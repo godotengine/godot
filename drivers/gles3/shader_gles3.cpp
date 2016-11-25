@@ -502,6 +502,25 @@ ShaderGLES3::Version* ShaderGLES3::get_current_version() {
 		glBindAttribLocation(v.id, attribute_pairs[i].index, attribute_pairs[i].name );
 	}
 
+	//if feedback exists, set it up
+
+	if (feedback_count) {
+		Vector<const char*> feedback;
+		for(int i=0;i<feedback_count;i++) {
+
+			if (feedbacks[i].conditional==-1 || (1<<feedbacks[i].conditional)&conditional_version.version) {
+				//conditional for this feedback is enabled
+				print_line("tf varying: "+itos(feedback.size())+" "+String(feedbacks[i].name));
+				feedback.push_back(feedbacks[i].name);
+			}
+		}
+
+		if (feedback.size()) {
+			glTransformFeedbackVaryings(v.id,feedback.size(),feedback.ptr(),GL_INTERLEAVED_ATTRIBS );
+		}
+
+	}
+
 	glLinkProgram(v.id);
 	
 	glGetProgramiv(v.id, GL_LINK_STATUS, &status);
@@ -604,7 +623,7 @@ GLint ShaderGLES3::get_uniform_location(const String& p_name) const {
 }
 
 
-void ShaderGLES3::setup(const char** p_conditional_defines, int p_conditional_count,const char** p_uniform_names,int p_uniform_count, const AttributePair* p_attribute_pairs, int p_attribute_count, const TexUnitPair *p_texunit_pairs, int p_texunit_pair_count, const UBOPair *p_ubo_pairs, int p_ubo_pair_count,const char*p_vertex_code, const char *p_fragment_code,int p_vertex_code_start,int p_fragment_code_start) {
+void ShaderGLES3::setup(const char** p_conditional_defines, int p_conditional_count,const char** p_uniform_names,int p_uniform_count, const AttributePair* p_attribute_pairs, int p_attribute_count, const TexUnitPair *p_texunit_pairs, int p_texunit_pair_count, const UBOPair *p_ubo_pairs, int p_ubo_pair_count, const Feedback* p_feedback, int p_feedback_count,const char*p_vertex_code, const char *p_fragment_code,int p_vertex_code_start,int p_fragment_code_start) {
 
 	ERR_FAIL_COND(version);
 	conditional_version.key=0;
@@ -623,6 +642,8 @@ void ShaderGLES3::setup(const char** p_conditional_defines, int p_conditional_co
 	attribute_pair_count=p_attribute_count;
 	ubo_pairs=p_ubo_pairs;
 	ubo_count=p_ubo_pair_count;
+	feedbacks=p_feedback;
+	feedback_count=p_feedback_count;
 
 	//split vertex and shader code (thank you, retarded shader compiler programmers from you know what company).
 	{

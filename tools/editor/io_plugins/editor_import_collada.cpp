@@ -85,7 +85,7 @@ struct ColladaImport {
 	Error _create_scene(Collada::Node *p_node, Spatial *p_parent);
 	Error _create_resources(Collada::Node *p_node);
 	Error _create_material(const String& p_material);
-	Error _create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,const Map<String,Collada::NodeGeometry::Material>& p_material_map,const Collada::MeshData &meshdata,const Transform& p_local_xform,const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_data, const Collada::MorphControllerData *p_morph_data,Vector<Ref<Mesh> > p_morph_meshes=Vector<Ref<Mesh> >());
+	Error _create_mesh_surfaces(bool p_optimize, Ref<Mesh>& p_mesh, const Map<String,Collada::NodeGeometry::Material>& p_material_map, const Collada::MeshData &meshdata, const Transform& p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_data, const Collada::MorphControllerData *p_morph_data, Vector<Ref<Mesh> > p_morph_meshes=Vector<Ref<Mesh> >(), bool p_for_morph=false);
 	Error load(const String& p_path, int p_flags, bool p_force_make_tangents=false);
 	void _fix_param_animation_tracks();
 	void create_animation(int p_clip,bool p_make_tracks_in_all_bones);
@@ -597,7 +597,7 @@ static void _generate_tangents_and_binormals(const DVector<int>& p_indices,const
 	}
 }
 
-Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,const Map<String,Collada::NodeGeometry::Material>& p_material_map,const Collada::MeshData &meshdata,const Transform& p_local_xform,const Vector<int> &bone_remap, const Collada::SkinControllerData *skin_controller, const Collada::MorphControllerData *p_morph_data,Vector<Ref<Mesh> > p_morph_meshes) {
+Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,const Map<String,Collada::NodeGeometry::Material>& p_material_map,const Collada::MeshData &meshdata,const Transform& p_local_xform,const Vector<int> &bone_remap, const Collada::SkinControllerData *skin_controller, const Collada::MorphControllerData *p_morph_data,Vector<Ref<Mesh> > p_morph_meshes,bool p_for_morph) {
 
 
 	bool local_xform_mirror=p_local_xform.basis.determinant() < 0;
@@ -1072,7 +1072,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 			DVector<Color> final_color_array;
 			DVector<Vector3> final_uv_array;
 			DVector<Vector3> final_uv2_array;
-			DVector<float> final_bone_array;
+			DVector<int> final_bone_array;
 			DVector<float> final_weight_array;
 
 			uint32_t final_format=0;
@@ -1223,12 +1223,12 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 			if (has_weights) {
 				DVector<float> weightarray;
-				DVector<float> bonearray;
+				DVector<int> bonearray;
 
 				weightarray.resize(vertex_array.size()*4);
 				DVector<float>::Write weightarrayw = weightarray.write();
 				bonearray.resize(vertex_array.size()*4);
-				DVector<float>::Write bonearrayw = bonearray.write();
+				DVector<int>::Write bonearrayw = bonearray.write();
 
 				for(int k=0;k<vlen;k++) {
 					float sum=0;
@@ -1237,7 +1237,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 						if (l<vertex_array[k].weights.size()) {
 							weightarrayw[k*VS::ARRAY_WEIGHTS_SIZE+l]=vertex_array[k].weights[l].weight;
 							sum+=weightarrayw[k*VS::ARRAY_WEIGHTS_SIZE+l];
-							bonearrayw[k*VS::ARRAY_WEIGHTS_SIZE+l]=vertex_array[k].weights[l].bone_idx;
+							bonearrayw[k*VS::ARRAY_WEIGHTS_SIZE+l]=int(vertex_array[k].weights[l].bone_idx);
 							//COLLADA_PRINT(itos(k)+": "+rtos(bonearrayw[k*VS::ARRAY_WEIGHTS_SIZE+l])+":"+rtos(weightarray[k*VS::ARRAY_WEIGHTS_SIZE+l]));
 						} else {
 
@@ -1254,7 +1254,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 				}
 
 				weightarrayw = DVector<float>::Write();
-				bonearrayw = DVector<float>::Write();
+				bonearrayw = DVector<int>::Write();
 
 				final_weight_array = weightarray;
 				final_bone_array = bonearray;
@@ -1461,14 +1461,20 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 			//	print_line("want surface "+itos(mi)+" has "+itos(p_morph_meshes[mi]->get_surface_count()));
 				Array a = p_morph_meshes[mi]->surface_get_arrays(surface);
-				a[Mesh::ARRAY_BONES]=Variant();
-				a[Mesh::ARRAY_WEIGHTS]=Variant();
+				//add valid weight and bone arrays if they exist, TODO check if they are unique to shape (generally not)
+
+				if (final_weight_array.size())
+					a[Mesh::ARRAY_WEIGHTS]=final_weight_array;
+				if (final_bone_array.size())
+					a[Mesh::ARRAY_BONES]=final_bone_array;
+
 				a[Mesh::ARRAY_INDEX]=Variant();
 				//a.resize(Mesh::ARRAY_MAX); //no need for index
 				mr.push_back(a);
 			}
 
-			p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES,d,mr);
+
+			p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES,d,mr,p_for_morph?0:Mesh::ARRAY_COMPRESS_DEFAULT);
 
 			if (material.is_valid()) {
 				p_mesh->surface_set_material(surface, material);
@@ -1692,7 +1698,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 							if (collada.state.mesh_data_map.has(meshid)) {
 								Ref<Mesh> mesh=Ref<Mesh>(memnew( Mesh ));
 								const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
-								Error err = _create_mesh_surfaces(false,mesh,ng->material_map,meshdata,apply_xform,bone_remap,skin,NULL);
+								Error err = _create_mesh_surfaces(false,mesh,ng->material_map,meshdata,apply_xform,bone_remap,skin,NULL,Vector<Ref<Mesh> >(),true);
 								ERR_FAIL_COND_V(err,err);
 
 								morphs.push_back(mesh);

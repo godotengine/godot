@@ -77,6 +77,22 @@ public:
 		ARRAY_FORMAT_WEIGHTS=1<<ARRAY_WEIGHTS,
 		ARRAY_FORMAT_INDEX=1<<ARRAY_INDEX,
 
+		ARRAY_COMPRESS_BASE=(ARRAY_INDEX+1),
+		ARRAY_COMPRESS_VERTEX=1<<(ARRAY_VERTEX+ARRAY_COMPRESS_BASE), // mandatory
+		ARRAY_COMPRESS_NORMAL=1<<(ARRAY_NORMAL+ARRAY_COMPRESS_BASE),
+		ARRAY_COMPRESS_TANGENT=1<<(ARRAY_TANGENT+ARRAY_COMPRESS_BASE),
+		ARRAY_COMPRESS_COLOR=1<<(ARRAY_COLOR+ARRAY_COMPRESS_BASE),
+		ARRAY_COMPRESS_TEX_UV=1<<(ARRAY_TEX_UV+ARRAY_COMPRESS_BASE),
+		ARRAY_COMPRESS_TEX_UV2=1<<(ARRAY_TEX_UV2+ARRAY_COMPRESS_BASE),
+		ARRAY_COMPRESS_BONES=1<<(ARRAY_BONES+ARRAY_COMPRESS_BASE),
+		ARRAY_COMPRESS_WEIGHTS=1<<(ARRAY_WEIGHTS+ARRAY_COMPRESS_BASE),
+		ARRAY_COMPRESS_INDEX=1<<(ARRAY_INDEX+ARRAY_COMPRESS_BASE),
+
+		ARRAY_FLAG_USE_2D_VERTICES=ARRAY_COMPRESS_INDEX<<1,
+		ARRAY_FLAG_USE_16_BIT_BONES=ARRAY_COMPRESS_INDEX<<2,
+
+		ARRAY_COMPRESS_DEFAULT=ARRAY_COMPRESS_VERTEX|ARRAY_COMPRESS_NORMAL|ARRAY_COMPRESS_TANGENT|ARRAY_COMPRESS_COLOR|ARRAY_COMPRESS_TEX_UV|ARRAY_COMPRESS_TEX_UV2|ARRAY_COMPRESS_WEIGHTS
+
 	};
 
 	enum PrimitiveType {
@@ -122,7 +138,7 @@ protected:
 
 public:
 
-	void add_surface_from_arrays(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes=Array());
+	void add_surface_from_arrays(PrimitiveType p_primitive, const Array& p_arrays, const Array& p_blend_shapes=Array(), uint32_t p_flags=ARRAY_COMPRESS_DEFAULT);
 	void add_surface(uint32_t p_format,PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>());
 
 	Array surface_get_arrays(int p_surface) const;
