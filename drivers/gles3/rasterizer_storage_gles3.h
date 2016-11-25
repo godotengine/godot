@@ -130,12 +130,20 @@ public:
 			}
 		}
 
+		_FORCE_INLINE_ void instance_remove_deps() {
+			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
+			while(instances) {
+
+				SelfList<RasterizerScene::InstanceBase> *next = instances->next();
+				instances->self()->base_removed();
+				instances=next;
+			}
+		}
+
+
 		Instantiable() {  }
 		virtual ~Instantiable() {
 
-			while(instance_list.first()) {
-				instance_list.first()->self()->base_removed();
-			}
 		}
 	};
 

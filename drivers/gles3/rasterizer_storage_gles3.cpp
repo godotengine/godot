@@ -5272,6 +5272,7 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 		// delete the texture
 		Shader *shader = shader_owner.get(p_rid);
 
+
 		if (shader->shader)
 			shader->shader->free_custom_shader(shader->custom_code_id);
 
@@ -5348,7 +5349,7 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 
 		// delete the texture
 		Mesh *mesh = mesh_owner.get(p_rid);
-
+		mesh->instance_remove_deps();
 		mesh_clear(p_rid);
 
 		mesh_owner.free(p_rid);
@@ -5358,6 +5359,7 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 
 		// delete the texture
 		MultiMesh *multimesh = multimesh_owner.get(p_rid);
+		multimesh->instance_remove_deps();
 
 		multimesh_allocate(p_rid,0,VS::MULTIMESH_TRANSFORM_2D,VS::MULTIMESH_COLOR_NONE); //frees multimesh
 		update_dirty_multimeshes();
@@ -5367,6 +5369,7 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 	} else if (immediate_owner.owns(p_rid)) {
 
 		Immediate *immediate = immediate_owner.get(p_rid);
+		immediate->instance_remove_deps();
 
 		immediate_owner.free(p_rid);
 		memdelete(immediate);
@@ -5374,9 +5377,19 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 
 		// delete the texture
 		Light *light = light_owner.get(p_rid);
+		light->instance_remove_deps();
 
 		light_owner.free(p_rid);
 		memdelete(light);
+
+	} else if (reflection_probe_owner.owns(p_rid)) {
+
+		// delete the texture
+		ReflectionProbe *reflection_probe = reflection_probe_owner.get(p_rid);
+		reflection_probe->instance_remove_deps();
+
+		reflection_probe_owner.free(p_rid);
+		memdelete(reflection_probe);
 
 	} else if (canvas_occluder_owner.owns(p_rid)) {
 
