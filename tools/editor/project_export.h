@@ -73,6 +73,7 @@ private:
 	bool pending_update_tree;
 	AcceptDialog *error;
 	ConfirmationDialog *confirm;
+	ConfirmationDialog *confirm_keystore;
 
 	Button *button_reload;
 	LineEdit *filters, *filters_exclude;
@@ -145,6 +146,9 @@ private:
 	SpinBox *sample_max_hz;
 	CheckButton *sample_trim;
 
+	ConfirmationDialog* keystore_create_dialog;
+	EditorFileDialog* keystore_file_dialog;
+
 
 	void _export_mode_changed(int p_idx);
 	void _prop_edited(String what);
@@ -190,6 +194,13 @@ private:
 	void _export_action_pck(const String& p_file);
 	void ok_pressed();
 	void custom_action(const String&);
+	LineEdit* _create_keystore_input(Control* container, const String& p_label, const String& name);
+	void _create_android_keystore_window();
+	void _create_android_keystore();
+	bool _check_android_setting(const Ref<EditorExportPlatform>& exporter);
+	void _check_keystore_path(const String& path);
+	void _keystore_dir_selected(const String& path);
+	void _keystore_created();
 
 	void _save_export_cfg();
 	void _format_toggled();
