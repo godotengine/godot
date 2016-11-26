@@ -81,7 +81,8 @@ private:
 	const char* gl_extensions;
 
 	InputDefault *input;
-	VideoMode default_videomode;
+	bool window_maximized;
+	VideoMode video_mode;
 	MainLoop * main_loop;
 
 	GetDataDirFunc get_data_dir_func;
@@ -140,7 +141,15 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
 
+	virtual Size2 get_screen_size(int p_screen=0) const;
+
+	virtual void set_window_size(const Size2);
 	virtual Size2 get_window_size() const;
+	virtual void set_window_maximized(bool p_enabled);
+	virtual bool is_window_maximized() const { return window_maximized; }
+	virtual void set_window_fullscreen(bool p_enable);
+	virtual bool is_window_fullscreen() const;
+
 	virtual String get_name();
 	virtual MainLoop *get_main_loop() const;
 
@@ -158,7 +167,6 @@ public:
 	virtual bool has_touchscreen_ui_hint() const;
 
 	void set_opengl_extensions(const char* p_gl_extensions);
-	void set_display_size(Size2 p_size);
 
 	void reload_gfx();
 
