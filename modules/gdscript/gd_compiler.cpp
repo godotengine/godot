@@ -1305,7 +1305,8 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 #endif
 		}
 		stack_level=p_func->arguments.size();
-		if (const GDParser::LambdaFunctionNode *infunc = dynamic_cast<const GDParser::LambdaFunctionNode*>(p_func)) {
+		if (p_func->type == Node::TYPE_LAMBDA_FUNCTION) {
+			const GDParser::LambdaFunctionNode *infunc = static_cast<const GDParser::LambdaFunctionNode*>(p_func);
 			for (int i = 0; i < infunc->require_keys.size(); ++i) {
 				codegen.add_stack_identifier(infunc->require_keys[i],stack_level+i);
 			}
