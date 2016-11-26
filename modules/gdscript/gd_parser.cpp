@@ -632,6 +632,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			};
 
 			Node *key=NULL;
+			Set<Variant> keys;
 
 			DictExpect expecting=DICT_EXPECT_KEY;
 
@@ -726,6 +727,15 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 						if (!value)
 							return NULL;
 						expecting=DICT_EXPECT_COMMA;
+
+						if (key->type == GDParser::Node::TYPE_CONSTANT) {						
+							Variant const& keyName = static_cast<const GDParser::ConstantNode*>(key)->value;
+
+							if (keys.has(keyName)) {
+								_set_error("Duplicate key found in Dictionary literal");
+							}
+							keys.insert(keyName);
+						}
 
 						DictionaryNode::Pair pair;
 						pair.key=key;
