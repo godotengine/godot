@@ -832,7 +832,7 @@ ScrollBar::ScrollBar(Orientation p_orientation)
 
 	if (focus_by_default)
 		set_focus_mode( FOCUS_ALL );
-
+	set_step(0);
 
 }
 
