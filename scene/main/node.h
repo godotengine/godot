@@ -103,6 +103,7 @@ private:
 		StringName name;
 		SceneTree *tree;
 		bool inside_tree;
+		bool ready_notified;
 #ifdef TOOLS_ENABLED
 		NodePath import_path; //path used when imported, used by scene editors to keep tracking
 #endif

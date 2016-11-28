@@ -172,7 +172,10 @@ void Node::_propagate_ready() {
 		data.children[i]->_propagate_ready();
 	}
 	data.blocked--;
-	notification(NOTIFICATION_READY);
+	if(!data.ready_notified) {
+		data.ready_notified=true;
+		notification(NOTIFICATION_READY);
+	}
 
 }
 
@@ -2999,6 +3002,7 @@ Node::Node() {
 	data.fixed_process=false;
 	data.idle_process=false;
 	data.inside_tree=false;
+	data.ready_notified=false;
 
 	data.owner=NULL;
 	data.OW=NULL;
