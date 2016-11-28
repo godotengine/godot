@@ -142,7 +142,7 @@ public:
 				if (require_keys.find(p_key) < 0) {
 					require_keys.push_back(p_key);
 				}else if (parent->type == Node::TYPE_LAMBDA_FUNCTION) {
-					LambdaFunctionNode *func = static_cast<LambdaFunctionNode*>(parent)
+					LambdaFunctionNode *func = static_cast<LambdaFunctionNode*>(parent);
 					func->insert_require(p_key);
 				}
 			}
