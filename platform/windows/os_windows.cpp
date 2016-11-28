@@ -1329,10 +1329,18 @@ void OS_Windows::vprint(const char* p_format, va_list p_list, bool p_stderr) {
 	MultiByteToWideChar(CP_UTF8,0,buf,len,wbuf,wlen);
 	wbuf[wlen]=0;
 
+// Recent MinGW and MSVC compilers seem to disagree on the case here
+#ifdef __MINGW32__
 	if (p_stderr)
-		fwprintf(stderr,L"%s",wbuf);
+		fwprintf(stderr, L"%S", wbuf);
 	else
-		wprintf(L"%s",wbuf);
+		wprintf(L"%S", wbuf);
+#else  // MSVC
+	if (p_stderr)
+		fwprintf(stderr, L"%s", wbuf);
+	else
+		wprintf(L"%s", wbuf);
+#endif
 
 #ifdef STDOUT_FILE
 	//vwfprintf(stdo,p_format,p_list);
