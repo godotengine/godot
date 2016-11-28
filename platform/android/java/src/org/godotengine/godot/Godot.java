@@ -295,6 +295,25 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			});
 		}
 	}
+
+	public void alert(final String message, final String title) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				AlertDialog.Builder builder = new AlertDialog.Builder(getInstance());
+				builder.setMessage(message).setTitle(title);
+				builder.setPositiveButton(
+					"OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.cancel();
+						}
+					});
+				AlertDialog dialog = builder.create();
+				dialog.show();
+			}
+		});
+	}
 	
 	private static Godot _self;
 	
