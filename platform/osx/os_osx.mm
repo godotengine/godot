@@ -1084,7 +1084,7 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	RasterizerGLES3::register_config();
 
-        RasterizerGLES3::make_current();
+	RasterizerGLES3::make_current();
 
 	visual_server = memnew( VisualServerRaster );
 
