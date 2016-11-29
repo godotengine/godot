@@ -185,6 +185,30 @@ uniform vec2 texpixel_size;
 
 FRAGMENT_SHADER_GLOBALS
 
+uniform float shadow_filter_radius;
+
+uniform vec2 kern[16] = vec2[]
+(
+	vec2(0.151205, 0.340969),
+	vec2(0.349872, -0.70755),
+	vec2(0.946959, 0.663325),
+	vec2(0.849958, -0.760292),
+	vec2(-0.792296, 0.463846),
+	vec2(0.45069, 0.832586),
+	vec2(-0.637487, -0.522192),
+	vec2(0.0185288, -0.162319),
+	vec2(0.622725, -0.289341),
+	vec2(-0.265502, 0.0830657),
+	vec2(-0.604604, 0.99042),
+	vec2(-0.228469, -0.911768),
+	vec2(-0.486144, -0.481575),
+	vec2(-0.0477502, 0.603215),
+	vec2(0.727942, 0.152266),
+	vec2(-0.890052, -0.0117375)
+);
+
+#define KERNWIDTH 4
+
 
 void main() {
 
@@ -328,34 +352,45 @@ LIGHT_SHADER_CODE
 
 #endif
 
+#ifdef SHADOW_PCF_MEDIUM
 
+		for (int iy = 0; iy < 2; iy++)
+		{
+			int y = int(mod(gl_FragCoord.y + iy, KERNWIDTH));
 
-#ifdef SHADOW_PCF5
+			for (int ix = 0; ix < 2; ix++)
+			{
+				int x = int(mod(gl_FragCoord.x + ix, KERNWIDTH));
 
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*2.0,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*2.0,sh))<sz?0.0:1.0;
-		shadow_attenuation/=5.0;
+				vec2 sample = kern[y * KERNWIDTH + x];
+				vec2 offset = ((sample - 1.0) * 0.5 + vec2(ix, iy)) * shadowpixel_size * shadow_filter_radius;
+
+				shadow_attenuation += SHADOW_DEPTH(shadow_texture, vec2(su, sh) + offset) < sz ? 0.0 : 1.0;
+			}
+		}
+
+		shadow_attenuation *= 0.25;
 
 #endif
 
-#ifdef SHADOW_PCF13
+#ifdef SHADOW_PCF_HIGH
 
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*2.0,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*3.0,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*4.0,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*5.0,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*6.0,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*2.0,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*3.0,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*4.0,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*5.0,sh))<sz?0.0:1.0;
-		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*6.0,sh))<sz?0.0:1.0;
-		shadow_attenuation/=13.0;
+		for (int iy = 0; iy < 3; iy++)
+		{
+			int y = int(mod(gl_FragCoord.y + iy, KERNWIDTH));
+
+			for (int ix = 0; ix < 3; ix++)
+			{
+				int x = int(mod(gl_FragCoord.x + ix, KERNWIDTH));
+
+				vec2 sample = kern[y * KERNWIDTH + x];
+				vec2 offset = (sample + (vec2(ix, iy) - 1.0) * 2.0) * 0.333333 * shadowpixel_size * shadow_filter_radius;
+
+				shadow_attenuation += SHADOW_DEPTH(shadow_texture, vec2(su, sh) + offset) < sz ? 0.0 : 1.0;
+			}
+		}
+
+		shadow_attenuation *= 0.111111;
 
 #endif
 
@@ -374,9 +409,14 @@ LIGHT_SHADER_CODE
 
 #endif
 
-#if !defined(SHADOW_PCF5) && !defined(SHADOW_PCF13) && !defined(SHADOW_ESM)
+#if !defined(SHADOW_PCF_MEDIUM) && !defined(SHADOW_PCF_HIGH) && !defined(SHADOW_ESM)
 
-		shadow_attenuation = SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size,sh))<sz?0.0:1.0;
+		int x = int(mod(gl_FragCoord.x, KERNWIDTH));
+		int y = int(mod(gl_FragCoord.y, KERNWIDTH));
+
+		vec2 offset = kern[y * KERNWIDTH + x] * shadowpixel_size * shadow_filter_radius;
+
+		shadow_attenuation = SHADOW_DEPTH(shadow_texture, vec2(su, sh) + offset) < sz ? 0.0 : 1.0;
 
 #endif
 

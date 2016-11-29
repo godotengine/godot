@@ -166,9 +166,9 @@ protected:
 public:
 
 	enum ShadowFilterTechnique {
-		SHADOW_FILTER_NONE,
-		SHADOW_FILTER_PCF5,
-		SHADOW_FILTER_PCF13,
+		SHADOW_FILTER_PCF_LOW,
+		SHADOW_FILTER_PCF_MEDIUM,
+		SHADOW_FILTER_PCF_HIGH,
 		SHADOW_FILTER_ESM,
 		SHADOW_FILTER_VSM,
 	};
@@ -603,6 +603,7 @@ public:
 		RID canvas;
 		RID shadow_buffer;
 		int shadow_buffer_size;
+		float shadow_filter_radius;
 		float shadow_esm_mult;
 		Color shadow_color;
 
@@ -640,6 +641,7 @@ public:
 			mask_next_ptr=NULL;
 			filter_next_ptr=NULL;
 			shadow_buffer_size=2048;
+			shadow_filter_radius=5.0;
 			shadow_esm_mult=80;
 
 		}

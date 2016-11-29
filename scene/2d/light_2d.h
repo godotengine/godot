@@ -59,6 +59,7 @@ private:
 	int item_mask;
 	int item_shadow_mask;
 	int shadow_buffer_size;
+	float shadow_filter_radius;
 	float shadow_esm_multiplier;
 	Mode mode;
 	Ref<Texture> texture;
@@ -126,6 +127,9 @@ public:
 
 	void set_shadow_buffer_size( int p_size );
 	int get_shadow_buffer_size() const;
+
+	void set_shadow_filter_radius( float p_filter_radius);
+	float get_shadow_filter_radius() const;
 
 	void set_shadow_esm_multiplier( float p_multiplier);
 	float get_shadow_esm_multiplier() const;
