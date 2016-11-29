@@ -50,6 +50,7 @@ float sRGB_gamma_correct(float c){
 
 
 uniform float stuff;
+uniform vec2 pixel_size;
 
 in vec2 uv2_interp;
 
@@ -80,6 +81,24 @@ void main() {
 #ifdef DISABLE_ALPHA
 	color.a=1.0;
 #endif
+
+
+#ifdef GAUSSIAN_HORIZONTAL
+	color*=0.38774;
+	color+=texture( source,  uv_interp+vec2( 1.0, 0.0)*pixel_size )*0.24477;
+	color+=texture( source,  uv_interp+vec2( 2.0, 0.0)*pixel_size )*0.06136;
+	color+=texture( source,  uv_interp+vec2(-1.0, 0.0)*pixel_size )*0.24477;
+	color+=texture( source,  uv_interp+vec2(-2.0, 0.0)*pixel_size )*0.06136;
+#endif
+
+#ifdef GAUSSIAN_VERTICAL
+	color*=0.38774;
+	color+=texture( source,  uv_interp+vec2( 0.0, 1.0)*pixel_size )*0.24477;
+	color+=texture( source,  uv_interp+vec2( 0.0, 2.0)*pixel_size )*0.06136;
+	color+=texture( source,  uv_interp+vec2( 0.0,-1.0)*pixel_size )*0.24477;
+	color+=texture( source,  uv_interp+vec2( 0.0,-2.0)*pixel_size )*0.06136;
+#endif
+
 
 	frag_color = color;
 }

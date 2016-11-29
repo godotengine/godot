@@ -94,6 +94,14 @@ private:
 	float adjustment_brightness;
 	Ref<Texture> adjustment_color_correction;
 
+	bool ssr_enabled;
+	int ssr_max_steps;
+	float ssr_accel;
+	float ssr_fade;
+	float ssr_depth_tolerance;
+	bool ssr_smooth;
+	bool ssr_roughness;
+
 protected:
 
 	static void _bind_methods();
@@ -161,6 +169,27 @@ public:
 
 	void set_adjustment_color_correction(const Ref<Texture>& p_ramp);
 	Ref<Texture> get_adjustment_color_correction() const;
+
+	void set_ssr_enabled(bool p_enable);
+	bool is_ssr_enabled() const;
+
+	void set_ssr_max_steps(int p_steps);
+	int get_ssr_max_steps() const;
+
+	void set_ssr_accel(float p_accel);
+	float get_ssr_accel() const;
+
+	void set_ssr_fade(float p_fade);
+	float get_ssr_fade() const;
+
+	void set_ssr_depth_tolerance(float p_depth_tolerance);
+	float get_ssr_depth_tolerance() const;
+
+	void set_ssr_smooth(bool p_enable);
+	bool is_ssr_smooth() const;
+
+	void set_ssr_rough(bool p_enable);
+	bool is_ssr_rough() const;
 
 
 	virtual RID get_rid() const;

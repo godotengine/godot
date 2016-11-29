@@ -393,8 +393,8 @@ ShaderGLES3::Version* ShaderGLES3::get_current_version() {
 
 	strings.resize(strings_base_size);
 	//fragment precision is medium
-	strings.push_back("precision mediump float;\n");
-	strings.push_back("precision mediump int;\n");
+	strings.push_back("precision highp float;\n");
+	strings.push_back("precision highp int;\n");
 
 #if 0
 	if (cc) {

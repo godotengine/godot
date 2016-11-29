@@ -300,6 +300,84 @@ void Environment::_validate_property(PropertyInfo& property) const {
 
 }
 
+void Environment::set_ssr_enabled(bool p_enable) {
+
+	ssr_enabled=p_enable;
+	VS::get_singleton()->environment_set_ssr(environment,ssr_enabled,ssr_max_steps,ssr_accel,ssr_fade,ssr_depth_tolerance,ssr_smooth,ssr_roughness);
+}
+
+bool Environment::is_ssr_enabled() const{
+
+	return ssr_enabled;
+}
+
+void Environment::set_ssr_max_steps(int p_steps){
+
+	ssr_max_steps=p_steps;
+	VS::get_singleton()->environment_set_ssr(environment,ssr_enabled,ssr_max_steps,ssr_accel,ssr_fade,ssr_depth_tolerance,ssr_smooth,ssr_roughness);
+
+}
+int Environment::get_ssr_max_steps() const {
+
+	return ssr_max_steps;
+}
+
+void Environment::set_ssr_accel(float p_accel) {
+
+	ssr_accel=p_accel;
+	VS::get_singleton()->environment_set_ssr(environment,ssr_enabled,ssr_max_steps,ssr_accel,ssr_fade,ssr_depth_tolerance,ssr_smooth,ssr_roughness);
+
+}
+float Environment::get_ssr_accel() const {
+
+	return ssr_accel;
+}
+
+void Environment::set_ssr_fade(float p_fade) {
+
+	ssr_fade=p_fade;
+	VS::get_singleton()->environment_set_ssr(environment,ssr_enabled,ssr_max_steps,ssr_accel,ssr_fade,ssr_depth_tolerance,ssr_smooth,ssr_roughness);
+
+}
+float Environment::get_ssr_fade() const {
+
+	return ssr_fade;
+}
+
+void Environment::set_ssr_depth_tolerance(float p_depth_tolerance) {
+
+	ssr_depth_tolerance=p_depth_tolerance;
+	VS::get_singleton()->environment_set_ssr(environment,ssr_enabled,ssr_max_steps,ssr_accel,ssr_fade,ssr_depth_tolerance,ssr_smooth,ssr_roughness);
+
+}
+float Environment::get_ssr_depth_tolerance() const {
+
+	return ssr_depth_tolerance;
+}
+
+void Environment::set_ssr_smooth(bool p_enable) {
+
+	ssr_smooth=p_enable;
+	VS::get_singleton()->environment_set_ssr(environment,ssr_enabled,ssr_max_steps,ssr_accel,ssr_fade,ssr_depth_tolerance,ssr_smooth,ssr_roughness);
+
+}
+bool Environment::is_ssr_smooth() const {
+
+	return ssr_smooth;
+}
+
+void Environment::set_ssr_rough(bool p_enable) {
+
+	ssr_roughness=p_enable;
+	VS::get_singleton()->environment_set_ssr(environment,ssr_enabled,ssr_max_steps,ssr_accel,ssr_fade,ssr_depth_tolerance,ssr_smooth,ssr_roughness);
+
+}
+bool Environment::is_ssr_rough() const {
+
+	return ssr_roughness;
+}
+
+
 void Environment::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_background","mode"),&Environment::set_background);
@@ -334,6 +412,37 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_light/energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_ambient_light_energy"),_SCS("get_ambient_light_energy") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_light/skybox_contribution",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_ambient_light_skybox_contribution"),_SCS("get_ambient_light_skybox_contribution") );
 
+
+	ObjectTypeDB::bind_method(_MD("set_ssr_enabled","enabled"),&Environment::set_ssr_enabled);
+	ObjectTypeDB::bind_method(_MD("is_ssr_enabled"),&Environment::is_ssr_enabled);
+
+	ObjectTypeDB::bind_method(_MD("set_ssr_max_steps","max_steps"),&Environment::set_ssr_max_steps);
+	ObjectTypeDB::bind_method(_MD("get_ssr_max_steps"),&Environment::get_ssr_max_steps);
+
+	ObjectTypeDB::bind_method(_MD("set_ssr_accel","accel"),&Environment::set_ssr_accel);
+	ObjectTypeDB::bind_method(_MD("get_ssr_accel"),&Environment::get_ssr_accel);
+
+	ObjectTypeDB::bind_method(_MD("set_ssr_fade","fade"),&Environment::set_ssr_fade);
+	ObjectTypeDB::bind_method(_MD("get_ssr_fade"),&Environment::get_ssr_fade);
+
+	ObjectTypeDB::bind_method(_MD("set_ssr_depth_tolerance","depth_tolerance"),&Environment::set_ssr_depth_tolerance);
+	ObjectTypeDB::bind_method(_MD("get_ssr_depth_tolerance"),&Environment::get_ssr_depth_tolerance);
+
+	ObjectTypeDB::bind_method(_MD("set_ssr_smooth","smooth"),&Environment::set_ssr_smooth);
+	ObjectTypeDB::bind_method(_MD("is_ssr_smooth"),&Environment::is_ssr_smooth);
+
+	ObjectTypeDB::bind_method(_MD("set_ssr_rough","rough"),&Environment::set_ssr_rough);
+	ObjectTypeDB::bind_method(_MD("is_ssr_rough"),&Environment::is_ssr_rough);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ss_reflections/enable"),_SCS("set_ssr_enabled"),_SCS("is_ssr_enabled") );
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"ss_reflections/max_steps",PROPERTY_HINT_RANGE,"1,512,1"),_SCS("set_ssr_max_steps"),_SCS("get_ssr_max_steps") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ss_reflections/accel",PROPERTY_HINT_RANGE,"0,4,0.01"),_SCS("set_ssr_accel"),_SCS("get_ssr_accel") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ss_reflections/fade",PROPERTY_HINT_EXP_EASING),_SCS("set_ssr_fade"),_SCS("get_ssr_fade") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ss_reflections/depth_tolerance",PROPERTY_HINT_RANGE,"0.1,128,0.1"),_SCS("set_ssr_depth_tolerance"),_SCS("get_ssr_depth_tolerance") );
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ss_reflections/accel_smooth"),_SCS("set_ssr_smooth"),_SCS("is_ssr_smooth") );
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ss_reflections/roughness"),_SCS("set_ssr_rough"),_SCS("is_ssr_rough") );
+
+
 	ObjectTypeDB::bind_method(_MD("set_tonemapper","mode"),&Environment::set_tonemapper);
 	ObjectTypeDB::bind_method(_MD("get_tonemapper"),&Environment::get_tonemapper);
 
@@ -357,6 +466,9 @@ void Environment::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_tonemap_auto_exposure_scale","exposure_scale"),&Environment::set_tonemap_auto_exposure_scale);
 	ObjectTypeDB::bind_method(_MD("get_tonemap_auto_exposure_scale"),&Environment::get_tonemap_auto_exposure_scale);
+
+
+
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"tonemap/mode",PROPERTY_HINT_ENUM,"Linear,Log,Reindhart,Filmic,Aces"),_SCS("set_tonemapper"),_SCS("get_tonemapper") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tonemap/exposure",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_tonemap_exposure"),_SCS("get_tonemap_exposure") );
@@ -440,6 +552,14 @@ Environment::Environment() {
 	set_adjustment_enable(adjustment_enabled); //update
 
 	environment = VS::get_singleton()->environment_create();
+
+	ssr_enabled=false;
+	ssr_max_steps=64;
+	ssr_accel=0.04;
+	ssr_fade=2.0;
+	ssr_depth_tolerance=0.2;
+	ssr_smooth=true;
+	ssr_roughness=true;
 
 }
 

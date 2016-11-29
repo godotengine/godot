@@ -877,11 +877,8 @@ public:
 
 	struct RenderTarget : public RID_Data {
 
-		struct Color {
-			GLuint fbo;
-			GLuint color;
-		} front,back;
-
+		GLuint fbo;
+		GLuint color;
 		GLuint depth;
 
 		struct Buffers {
@@ -890,7 +887,34 @@ public:
 			GLuint specular;
 			GLuint diffuse;
 			GLuint normal_sr;
+			GLuint temporal;
 		} buffers;
+
+		struct Effects {
+
+			struct MipMaps {
+
+				struct Size {
+					GLuint fbo;
+					int width;
+					int height;
+				};
+
+				Vector<Size> sizes;
+				GLuint color;
+				int levels;
+
+				MipMaps() { color=0; levels=0;}
+			};
+
+			MipMaps mip_maps[2]; //first mipmap chain starts from full-screen
+			//GLuint depth2; //depth for the second mipmap chain, in case of desiring upsampling
+
+			Effects() {
+
+			}
+
+		} effects;
 
 		int width,height;
 
@@ -905,8 +929,7 @@ public:
 			width=0;
 			height=0;
 			depth=0;
-			front.fbo=0;
-			back.fbo=0;
+			fbo=0;
 			buffers.fbo=0;
 			buffers.alpha_fbo=0;
 			used_in_frame=false;

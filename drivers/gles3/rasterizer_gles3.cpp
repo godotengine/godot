@@ -178,7 +178,7 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target){
 
 	if (!p_render_target.is_valid() && storage->frame.current_rt && storage->frame.clear_request) {
 		//handle pending clear request, if the framebuffer was not cleared
-		glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->front.fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->fbo);
 		print_line("unbind clear of: "+storage->frame.clear_request_color);
 		glClearColor(
 			storage->frame.clear_request_color.r,
@@ -213,7 +213,7 @@ void RasterizerGLES3::restore_render_target() {
 
 	ERR_FAIL_COND(storage->frame.current_rt==NULL);
 	RasterizerStorageGLES3::RenderTarget * rt = storage->frame.current_rt;
-	glBindFramebuffer(GL_FRAMEBUFFER,rt->front.fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER,rt->fbo);
 	glViewport(0,0,rt->width,rt->height);
 
 }
@@ -238,7 +238,7 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target,const Rec
 	glDisable(GL_BLEND);
 	glBindFramebuffer(GL_FRAMEBUFFER,storage->config.system_fbo);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D,rt->front.color);
+	glBindTexture(GL_TEXTURE_2D,rt->color);
 	canvas->draw_generic_textured_rect(p_screen_rect,Rect2(0,0,1,-1));
 	glBindTexture(GL_TEXTURE_2D,0);
 	canvas->canvas_end();

@@ -1189,8 +1189,10 @@ LIGHT_SHADER_CODE
 #endif //ENABLE_AO
 
 	diffuse_buffer=vec4(emission+diffuse_light+ambient_light,ambient_scale);
-	specular_buffer=vec4(specular_light,0.0);
-	normal_mr_buffer=vec4(normal.x,normal.y,max(specular.r,max(specular.g,specular.b)),roughness);
+	specular_buffer=vec4(specular_light,max(specular.r,max(specular.g,specular.b)));
+
+
+	normal_mr_buffer=vec4(normalize(normal)*0.5+0.5,roughness);
 
 #else
 

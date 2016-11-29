@@ -4,6 +4,9 @@
 #include "rasterizer_storage_gles3.h"
 #include "drivers/gles3/shaders/scene.glsl.h"
 #include "drivers/gles3/shaders/cube_to_dp.glsl.h"
+#include "drivers/gles3/shaders/resolve.glsl.h"
+#include "drivers/gles3/shaders/screen_space_reflection.glsl.h"
+#include "drivers/gles3/shaders/effect_blur.glsl.h"
 
 class RasterizerSceneGLES3 : public RasterizerScene {
 public:
@@ -45,6 +48,9 @@ public:
 
 		SceneShaderGLES3 scene_shader;
 		CubeToDpShaderGLES3 cube_to_dp_shader;
+		ResolveShaderGLES3 resolve_shader;
+		ScreenSpaceReflectionShaderGLES3 ssr_shader;
+		EffectBlurShaderGLES3 effect_blur_shader;
 
 
 		struct SceneDataUBO {
@@ -289,6 +295,15 @@ public:
 
 		int canvas_max_layer;
 
+		bool ssr_enabled;
+		int ssr_max_steps;
+		float ssr_accel;
+		float ssr_fade;
+		float ssr_depth_tolerance;
+		bool ssr_smooth;
+		bool ssr_roughness;
+
+
 
 		Environment() {
 			bg_mode=VS::ENV_BG_CLEAR_COLOR;
@@ -298,6 +313,15 @@ public:
 			ambient_energy=1.0;
 			ambient_skybox_contribution=0.0;
 			canvas_max_layer=0;
+
+			ssr_enabled=false;
+			ssr_max_steps=64;
+			ssr_accel=0.04;
+			ssr_fade=2.0;
+			ssr_depth_tolerance=0.2;
+			ssr_smooth=true;
+			ssr_roughness=true;
+
 		}
 	};
 
@@ -315,6 +339,8 @@ public:
 
 	virtual void environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode);
 	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture);
+
+	virtual void environment_set_ssr(RID p_env,bool p_enable, int p_max_steps,float p_accel,float p_fade,float p_depth_tolerance,bool p_smooth,bool p_roughness);
 
 	virtual void environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,float p_auto_exp_scale,VS::EnvironmentToneMapper p_tone_mapper);
 	virtual void environment_set_adjustment(RID p_env,bool p_enable,float p_brightness,float p_contrast,float p_saturation,RID p_ramp);
@@ -551,6 +577,7 @@ public:
 
 	void _fill_render_list(InstanceBase** p_cull_result,int p_cull_count,bool p_shadow);
 
+	void _render_mrts(Environment *env, const CameraMatrix &p_cam_projection);
 	virtual void render_scene(const Transform& p_cam_transform,const CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_reflection_probe_cull_result,int p_reflection_probe_cull_count,RID p_environment,RID p_shadow_atlas,RID p_reflection_atlas,RID p_reflection_probe,int p_reflection_probe_pass);
 	virtual void render_shadow(RID p_light,RID p_shadow_atlas,int p_pass,InstanceBase** p_cull_result,int p_cull_count);
 	virtual bool free(RID p_rid);
