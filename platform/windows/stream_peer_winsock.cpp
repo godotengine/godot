@@ -289,8 +289,9 @@ void StreamPeerWinsock::disconnect() {
 	peer_port = 0;
 };
 
-void StreamPeerWinsock::set_socket(int p_sockfd, IP_Address p_host, int p_port) {
+void StreamPeerWinsock::set_socket(int p_sockfd, IP_Address p_host, int p_port, IP_Address::AddrType p_ip_type) {
 
+	ip_type = p_ip_type;
 	sockfd = p_sockfd;
 	status = STATUS_CONNECTING;
 	peer_host = p_host;
@@ -301,7 +302,7 @@ Error StreamPeerWinsock::connect(const IP_Address& p_host, uint16_t p_port) {
 
 	ERR_FAIL_COND_V( p_host.type == IP_Address::TYPE_NONE, ERR_INVALID_PARAMETER);
 
-	sockfd = _socket_create(p_host.type, SOCK_STREAM, IPPROTO_TCP);
+	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
 	if (sockfd  == INVALID_SOCKET) {
 		ERR_PRINT("Socket creation failed!");
 		disconnect();
@@ -367,6 +368,7 @@ StreamPeerWinsock::StreamPeerWinsock() {
 	sockfd = INVALID_SOCKET;
 	status = STATUS_NONE;
 	peer_port = 0;
+	ip_type = IP_Address::TYPE_ANY;
 };
 
 StreamPeerWinsock::~StreamPeerWinsock() {

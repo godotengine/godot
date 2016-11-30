@@ -71,7 +71,7 @@ Error PacketPeerUDPWinsock::get_packet(const uint8_t **r_buffer,int &r_buffer_si
 }
 Error PacketPeerUDPWinsock::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 
-	int sock = _get_socket(peer_addr.type);
+	int sock = _get_socket();
 	ERR_FAIL_COND_V( sock == -1, FAILED );
 	struct sockaddr_storage addr;
 	size_t addr_size = _set_sockaddr(&addr, peer_addr, peer_port);
@@ -112,14 +112,14 @@ void PacketPeerUDPWinsock::_set_blocking(bool p_blocking) {
 	};
 }
 
-Error PacketPeerUDPWinsock::listen(int p_port, IP_Address::AddrType p_type, int p_recv_buffer_size) {
+Error PacketPeerUDPWinsock::listen(int p_port, int p_recv_buffer_size) {
 
 	close();
-	int sock = _get_socket(p_type);
+	int sock = _get_socket();
 	if (sock == -1 )
 		return ERR_CANT_CREATE;
 
-	if(p_type == IP_Address::TYPE_IPV6) {
+	if(ip_type == IP_Address::TYPE_IPV6) {
 		// Use IPv6 only socket
 		int yes = 1;
 		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&yes, sizeof(yes)) != 0) {
@@ -128,7 +128,7 @@ Error PacketPeerUDPWinsock::listen(int p_port, IP_Address::AddrType p_type, int 
 	}
 
 	struct sockaddr_storage addr = {0};
-	size_t addr_size = _set_listen_sockaddr(&addr, p_port, p_type, NULL);
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, ip_type, NULL);
 
 	if (bind(sock, (struct sockaddr*)&addr, addr_size) == -1 ) {
 		close();
@@ -242,12 +242,12 @@ int PacketPeerUDPWinsock::get_packet_port() const{
 	return packet_port;
 }
 
-int PacketPeerUDPWinsock::_get_socket(IP_Address::AddrType p_type) {
+int PacketPeerUDPWinsock::_get_socket() {
 
 	if (sockfd != -1)
 		return sockfd;
 
-	sockfd = _socket_create(p_type, SOCK_DGRAM, IPPROTO_UDP);
+	sockfd = _socket_create(ip_type, SOCK_DGRAM, IPPROTO_UDP);
 
 	return sockfd;
 }
@@ -277,6 +277,7 @@ PacketPeerUDPWinsock::PacketPeerUDPWinsock() {
 	packet_port=0;
 	queue_count=0;
 	peer_port=0;
+	ip_type = IP_Address::TYPE_ANY;
 }
 
 PacketPeerUDPWinsock::~PacketPeerUDPWinsock() {

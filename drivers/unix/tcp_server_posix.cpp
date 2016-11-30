@@ -68,14 +68,14 @@ void TCPServerPosix::make_default() {
 	TCP_Server::_create = TCPServerPosix::_create;
 };
 
-Error TCPServerPosix::listen(uint16_t p_port, IP_Address::AddrType p_type, const List<String> *p_accepted_hosts) {
+Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
 
 	int sockfd;
-	sockfd = _socket_create(p_type, SOCK_STREAM, IPPROTO_TCP);
+	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
 
 	ERR_FAIL_COND_V(sockfd == -1, FAILED);
 
-	if(p_type == IP_Address::TYPE_IPV6) {
+	if(ip_type == IP_Address::TYPE_IPV6) {
 		// Use IPv6 only socket
 		int yes = 1;
 		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&yes, sizeof(yes)) != 0) {
@@ -95,7 +95,7 @@ Error TCPServerPosix::listen(uint16_t p_port, IP_Address::AddrType p_type, const
 	}
 
 	struct sockaddr_storage addr;
-	size_t addr_size = _set_listen_sockaddr(&addr, p_port, p_type, p_accepted_hosts);
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, ip_type, p_accepted_hosts);
 
 	// automatically fill with my IP TODO: use p_accepted_hosts
 
@@ -164,7 +164,7 @@ Ref<StreamPeerTCP> TCPServerPosix::take_connection() {
 	int port;
 	_set_ip_addr_port(ip, port, &their_addr);
 
-	conn->set_socket(fd, ip, port);
+	conn->set_socket(fd, ip, port, ip_type);
 
 	return conn;
 };
@@ -183,6 +183,7 @@ void TCPServerPosix::stop() {
 TCPServerPosix::TCPServerPosix() {
 
 	listen_sockfd = -1;
+	ip_type = IP_Address::TYPE_ANY;
 };
 
 TCPServerPosix::~TCPServerPosix() {

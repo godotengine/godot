@@ -122,8 +122,9 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 	return OK;
 };
 
-void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port) {
+void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port, IP_Address::AddrType p_ip_type) {
 
+	ip_type = p_ip_type;
 	sockfd = p_sockfd;
 #ifndef NO_FCNTL
 	fcntl(sockfd, F_SETFL, O_NONBLOCK);
@@ -142,7 +143,7 @@ Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 
 	ERR_FAIL_COND_V( p_host.type == IP_Address::TYPE_NONE, ERR_INVALID_PARAMETER);
 
-	sockfd = _socket_create(p_host.type, SOCK_STREAM, IPPROTO_TCP);
+	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
 	if (sockfd == -1) {
 		ERR_PRINT("Socket creation failed!");
 		disconnect();
@@ -392,6 +393,7 @@ StreamPeerTCPPosix::StreamPeerTCPPosix() {
 	sockfd = -1;
 	status = STATUS_NONE;
 	peer_port = 0;
+	ip_type = IP_Address::TYPE_ANY;
 };
 
 StreamPeerTCPPosix::~StreamPeerTCPPosix() {
