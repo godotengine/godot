@@ -100,7 +100,12 @@ IP_Address IP_Unix::_resolve_hostname(const String& p_hostname, IP_Address::Addr
 		hints.ai_flags = 0;
 	} else {
 		hints.ai_family = AF_UNSPEC;
+#ifdef ANDROID_ENABLED
+		// AI_V4MAPPED is not supported by android getaadrinfo
+		hints.ai_flags = AI_ADDRCONFIG;
+#else
 		hints.ai_flags = (AI_V4MAPPED | AI_ADDRCONFIG);
+#endif
 	};
 
 	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
