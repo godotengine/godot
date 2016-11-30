@@ -48,6 +48,8 @@ bool TileSet::_set(const StringName& p_name, const Variant& p_value) {
 		tile_set_texture_offset(id,p_value);
 	else if (what=="material")
 		tile_set_material(id,p_value);
+	else if (what=="modulate")
+		tile_set_modulate(id,p_value);
 	else if (what=="shape_offset")
 		tile_set_shape_offset(id,p_value);
 	else if (what=="region")
@@ -91,6 +93,8 @@ bool TileSet::_get(const StringName& p_name,Variant &r_ret) const{
 		r_ret=tile_get_texture_offset(id);
 	else if (what=="material")
 		r_ret=tile_get_material(id);
+	else if (what=="modulate")
+		r_ret=tile_get_modulate(id);
 	else if (what=="shape_offset")
 		r_ret=tile_get_shape_offset(id);
 	else if (what=="region")
@@ -124,6 +128,7 @@ void TileSet::_get_property_list( List<PropertyInfo> *p_list) const{
 		p_list->push_back(PropertyInfo(Variant::OBJECT,pre+"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2,pre+"tex_offset"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT,pre+"material",PROPERTY_HINT_RESOURCE_TYPE,"CanvasItemMaterial"));
+		p_list->push_back(PropertyInfo(Variant::COLOR,pre+"modulate"));
 		p_list->push_back(PropertyInfo(Variant::RECT2,pre+"region"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2,pre+"occluder_offset"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT,pre+"occluder",PROPERTY_HINT_RESOURCE_TYPE,"OccluderPolygon2D"));
@@ -174,6 +179,20 @@ Ref<CanvasItemMaterial> TileSet::tile_get_material(int p_id) const{
 	return tile_map[p_id].material;
 }
 
+
+void TileSet::tile_set_modulate(int p_id,const Color &p_modulate) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].modulate=p_modulate;
+	emit_changed();
+
+}
+
+Color TileSet::tile_get_modulate(int p_id) const{
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id),Color(1,1,1));
+	return tile_map[p_id].modulate;
+}
 
 void TileSet::tile_set_texture_offset(int p_id,const Vector2 &p_offset) {
 
