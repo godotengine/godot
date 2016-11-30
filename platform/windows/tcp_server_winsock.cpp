@@ -63,13 +63,13 @@ void TCPServerWinsock::cleanup() {
 };
 
 
-Error TCPServerWinsock::listen(uint16_t p_port, IP_Address::AddrType p_type,const List<String> *p_accepted_hosts) {
+Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
 
 	int sockfd;
-	sockfd = _socket_create(p_type, SOCK_STREAM, IPPROTO_TCP);
+	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
 	ERR_FAIL_COND_V(sockfd == INVALID_SOCKET, FAILED);
 
-	if(p_type == IP_Address::TYPE_IPV6) {
+	if(ip_type == IP_Address::TYPE_IPV6) {
 		// Use IPv6 only socket
 		int yes = 1;
 		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&yes, sizeof(yes)) != 0) {
@@ -85,7 +85,7 @@ Error TCPServerWinsock::listen(uint16_t p_port, IP_Address::AddrType p_type,cons
 	};
 
 	struct sockaddr_storage my_addr;
-	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, p_type, p_accepted_hosts);
+	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, ip_type, p_accepted_hosts);
 
 	int reuse=1;
 	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
@@ -158,7 +158,7 @@ Ref<StreamPeerTCP> TCPServerWinsock::take_connection() {
 	int port;
 	_set_ip_addr_port(ip, port, &their_addr);
 
-	conn->set_socket(fd, ip, port);
+	conn->set_socket(fd, ip, port, ip_type);
 
 	return conn;
 };
@@ -176,6 +176,7 @@ void TCPServerWinsock::stop() {
 TCPServerWinsock::TCPServerWinsock() {
 
 	listen_sockfd = INVALID_SOCKET;
+	ip_type = IP_Address::TYPE_ANY;
 };
 
 TCPServerWinsock::~TCPServerWinsock() {
