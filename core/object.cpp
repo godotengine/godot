@@ -1019,6 +1019,19 @@ void Object::cancel_delete() {
 	_predelete_ok=true;
 }
 
+bool Object::_iter_init(Variant& arg, bool& valid){
+	valid = false;
+	return false;
+}
+bool Object::_iter_next(Variant& arg, bool& valid){
+	valid = false;
+	return false;
+}
+Variant Object::_iter_get(const Variant& arg, bool& valid){
+	valid = false;
+	return Variant();
+}
+
 void Object::set_script(const RefPtr& p_script) {
 
 	if (script==p_script)
@@ -1864,6 +1877,7 @@ Object::Object() {
 	_instance_ID = ObjectDB::add_instance(this);
 	_can_translate=true;
 	_is_queued_for_deletion=false;
+	_script_use_iter=true;
 	script_instance=NULL;
 #ifdef TOOLS_ENABLED
 

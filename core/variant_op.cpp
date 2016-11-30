@@ -2947,13 +2947,22 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 				return false;
 			}
 #endif
+			Object *obj = _get_obj().obj;
+			if(	!(obj->has_method(CoreStringNames::get_singleton()->_iter_init)
+				&& obj->has_method(CoreStringNames::get_singleton()->_iter_next)
+				&& obj->has_method(CoreStringNames::get_singleton()->_iter_get))
+			){
+				obj->use_script_iter(false);
+				return obj->_iter_init(r_iter, valid);
+			}
+			obj->use_script_iter(true);
 			Variant::CallError ce;
 			ce.error=Variant::CallError::CALL_OK;
 			Array ref(true);
 			ref.push_back(r_iter);
 			Variant vref=ref;
 			const Variant *refp[]={&vref};
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_init,refp,1,ce);
+			Variant ret = obj->call(CoreStringNames::get_singleton()->_iter_init,refp,1,ce);
 
 			if (ref.size()!=1 || ce.error!=Variant::CallError::CALL_OK) {
 				valid=false;
@@ -3073,13 +3082,17 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 				return false;
 			}
 #endif
+			Object *obj = _get_obj().obj;
+			if(!obj->has_script_iter()){
+				return obj->_iter_next(r_iter, valid);
+			}
 			Variant::CallError ce;
 			ce.error=Variant::CallError::CALL_OK;
 			Array ref(true);
 			ref.push_back(r_iter);
 			Variant vref=ref;
 			const Variant *refp[]={&vref};
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_next,refp,1,ce);
+			Variant ret = obj->call(CoreStringNames::get_singleton()->_iter_next,refp,1,ce);
 
 			if (ref.size()!=1 || ce.error!=Variant::CallError::CALL_OK) {
 				valid=false;
@@ -3217,10 +3230,14 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 				return Variant();
 			}
 #endif
+			Object *obj = _get_obj().obj;
+			if(!obj->has_script_iter()){
+				return obj->_iter_get(r_iter, r_valid);
+			}
 			Variant::CallError ce;
 			ce.error=Variant::CallError::CALL_OK;
 			const Variant *refp[]={&r_iter};
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_get,refp,1,ce);
+			Variant ret = obj->call(CoreStringNames::get_singleton()->_iter_get,refp,1,ce);
 
 			if (ce.error!=Variant::CallError::CALL_OK) {
 				r_valid=false;
