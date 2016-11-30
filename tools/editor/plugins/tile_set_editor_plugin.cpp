@@ -76,6 +76,8 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 		p_library->tile_set_texture(id,texture);
 		p_library->tile_set_material(id,material);
 
+		p_library->tile_set_modulate(id,mi->get_modulate());
+
 		Vector2 phys_offset;
 		Size2 s;
 
