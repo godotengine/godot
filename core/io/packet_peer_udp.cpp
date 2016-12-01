@@ -31,8 +31,6 @@
 
 PacketPeerUDP* (*PacketPeerUDP::_create)()=NULL;
 
-VARIANT_ENUM_CAST(IP_Address::AddrType);
-
 String PacketPeerUDP::_get_packet_ip() const {
 
 	return get_packet_address();
@@ -83,5 +81,5 @@ PacketPeerUDP* PacketPeerUDP::create() {
 
 PacketPeerUDP::PacketPeerUDP()
 {
-	ip_type = IP_Address::TYPE_ANY;
+	ip_type = IP::TYPE_ANY;
 }

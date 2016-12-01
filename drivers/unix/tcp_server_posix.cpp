@@ -176,7 +176,7 @@ void TCPServerPosix::stop() {
 TCPServerPosix::TCPServerPosix() {
 
 	listen_sockfd = -1;
-	ip_type = IP_Address::TYPE_ANY;
+	ip_type = IP::TYPE_ANY;
 };
 
 TCPServerPosix::~TCPServerPosix() {

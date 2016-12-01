@@ -251,7 +251,7 @@ PacketPeerUDPPosix::PacketPeerUDPPosix() {
 	packet_port=0;
 	queue_count=0;
 	peer_port=0;
-	ip_type = IP_Address::TYPE_ANY;
+	ip_type = IP::TYPE_ANY;
 }
 
 PacketPeerUDPPosix::~PacketPeerUDPPosix() {

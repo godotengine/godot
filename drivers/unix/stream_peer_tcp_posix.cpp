@@ -122,7 +122,7 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 	return OK;
 };
 
-void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port, IP_Address::AddrType p_ip_type) {
+void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_ip_type) {
 
 	ip_type = p_ip_type;
 	sockfd = p_sockfd;
@@ -393,7 +393,7 @@ StreamPeerTCPPosix::StreamPeerTCPPosix() {
 	sockfd = -1;
 	status = STATUS_NONE;
 	peer_port = 0;
-	ip_type = IP_Address::TYPE_ANY;
+	ip_type = IP::TYPE_ANY;
 };
 
 StreamPeerTCPPosix::~StreamPeerTCPPosix() {

@@ -87,15 +87,15 @@ static IP_Address _sockaddr2ip(struct sockaddr* p_addr) {
 	return ip;
 };
 
-IP_Address IP_Unix::_resolve_hostname(const String& p_hostname, IP_Address::AddrType p_type) {
+IP_Address IP_Unix::_resolve_hostname(const String& p_hostname, Type p_type) {
 
 	struct addrinfo hints;
 	struct addrinfo* result;
 
 	memset(&hints, 0, sizeof(struct addrinfo));
-	if (p_type == IP_Address::TYPE_IPV4) {
+	if (p_type == TYPE_IPV4) {
 		hints.ai_family = AF_INET;
-	} else if (p_type == IP_Address::TYPE_IPV6) {
+	} else if (p_type == TYPE_IPV6) {
 		hints.ai_family = AF_INET6;
 		hints.ai_flags = 0;
 	} else {

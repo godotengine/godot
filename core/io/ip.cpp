@@ -32,7 +32,6 @@
 #include "hash_map.h"
 
 VARIANT_ENUM_CAST(IP::ResolverStatus);
-VARIANT_ENUM_CAST(IP_Address::AddrType);
 
 /************* RESOLVER ******************/
 
@@ -44,12 +43,12 @@ struct _IP_ResolverPrivate {
 		volatile IP::ResolverStatus status;
 		IP_Address response;
 		String hostname;
-		IP_Address::AddrType type;
+		IP::Type type;
 
 		void clear() {
 			status = IP::RESOLVER_STATUS_NONE;
 			response = IP_Address();
-			type = IP_Address::TYPE_NONE;
+			type = IP::TYPE_NONE;
 			hostname="";
 		};
 
@@ -112,7 +111,7 @@ struct _IP_ResolverPrivate {
 
 
 
-IP_Address IP::resolve_hostname(const String& p_hostname, IP_Address::AddrType p_type) {
+IP_Address IP::resolve_hostname(const String& p_hostname, IP::Type p_type) {
 
 	GLOBAL_LOCK_FUNCTION;
 
@@ -126,7 +125,7 @@ IP_Address IP::resolve_hostname(const String& p_hostname, IP_Address::AddrType p
 	return res;
 
 }
-IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname, IP_Address::AddrType p_type) {
+IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname, IP::Type p_type) {
 
 	GLOBAL_LOCK_FUNCTION;
 
@@ -212,8 +211,8 @@ Array IP::_get_local_addresses() const {
 
 void IP::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("resolve_hostname","host","ip_type"),&IP::resolve_hostname,DEFVAL(IP_Address::TYPE_ANY));
-	ObjectTypeDB::bind_method(_MD("resolve_hostname_queue_item","host","ip_type"),&IP::resolve_hostname_queue_item,DEFVAL(IP_Address::TYPE_ANY));
+	ObjectTypeDB::bind_method(_MD("resolve_hostname","host","ip_type"),&IP::resolve_hostname,DEFVAL(IP::TYPE_ANY));
+	ObjectTypeDB::bind_method(_MD("resolve_hostname_queue_item","host","ip_type"),&IP::resolve_hostname_queue_item,DEFVAL(IP::TYPE_ANY));
 	ObjectTypeDB::bind_method(_MD("get_resolve_item_status","id"),&IP::get_resolve_item_status);
 	ObjectTypeDB::bind_method(_MD("get_resolve_item_address","id"),&IP::get_resolve_item_address);
 	ObjectTypeDB::bind_method(_MD("erase_resolve_item","id"),&IP::erase_resolve_item);
@@ -228,6 +227,10 @@ void IP::_bind_methods() {
 	BIND_CONSTANT( RESOLVER_MAX_QUERIES );
 	BIND_CONSTANT( RESOLVER_INVALID_ID );
 
+	BIND_CONSTANT( TYPE_NONE );
+	BIND_CONSTANT( TYPE_IPV4 );
+	BIND_CONSTANT( TYPE_IPV6 );
+	BIND_CONSTANT( TYPE_ANY );
 }
 
 

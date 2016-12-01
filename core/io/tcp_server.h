@@ -38,7 +38,7 @@ class TCP_Server : public Reference {
 	OBJ_TYPE( TCP_Server, Reference );
 protected:
 
-	IP_Address::AddrType ip_type;
+	IP::Type ip_type;
 
 	static TCP_Server* (*_create)();
 

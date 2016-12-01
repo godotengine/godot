@@ -30,8 +30,6 @@
 
 TCP_Server* (*TCP_Server::_create)()=NULL;
 
-VARIANT_ENUM_CAST(IP_Address::AddrType);
-
 Ref<TCP_Server> TCP_Server::create_ref() {
 
 	if (!_create)
@@ -68,5 +66,5 @@ void TCP_Server::_bind_methods() {
 
 TCP_Server::TCP_Server()
 {
-	ip_type = IP_Address::TYPE_ANY;
+	ip_type = IP::TYPE_ANY;
 }
