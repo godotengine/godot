@@ -16,18 +16,30 @@
 
 // helpers for sockaddr -> IP_Address and back, should work for posix and winsock. All implementations should use this
 
-static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p_ip, int p_port) {
+static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p_ip, int p_port, IP_Address::AddrType p_sock_type = IP_Address::TYPE_ANY) {
 
 	memset(p_addr, 0, sizeof(struct sockaddr_storage));
-	if (p_ip.type == IP_Address::TYPE_IPV6) {
+
+	// Dual stack (ANY) or matching ip type is required
+	ERR_FAIL_COND_V(p_sock_type != IP_Address::TYPE_ANY && p_sock_type != p_ip.type,0);
+
+	// IPv6 socket
+	if (p_sock_type == IP_Address::TYPE_IPV6 || p_sock_type == IP_Address::TYPE_ANY) {
 
 		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)p_addr;
 		addr6->sin6_family = AF_INET6;
 		addr6->sin6_port = htons(p_port);
-		copymem(&addr6->sin6_addr.s6_addr, p_ip.field8, 16);
+		if(p_ip.type == IP_Address::TYPE_IPV4) {
+			// Remapping needed
+			uint16_t base[8] = {0x0, 0x0, 0x0, 0x0, 0x0, 0xffff, p_ip.field16[0], p_ip.field16[1]};
+			copymem(&addr6->sin6_addr.s6_addr, base, 16);
+
+		} else {
+			copymem(&addr6->sin6_addr.s6_addr, p_ip.field8, 16);
+		}
 		return sizeof(sockaddr_in6);
 
-	} else {
+	} else { // IPv4 socket
 
 		struct sockaddr_in* addr4 = (struct sockaddr_in*)p_addr;
 		addr4->sin_family = AF_INET;    // host byte order
