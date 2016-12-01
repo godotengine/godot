@@ -51,8 +51,14 @@ Error PacketPeerUDP::_set_send_address(const String& p_address, int p_port) {
 	return OK;
 }
 
+void PacketPeerUDP::set_ip_type(IP::Type p_type) {
+	close();
+	ip_type = p_type;
+}
+
 void PacketPeerUDP::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("set_ip_type","ip_type"),&PacketPeerUDP::set_ip_type);
 	ObjectTypeDB::bind_method(_MD("listen:Error","port", "recv_buf_size"),&PacketPeerUDP::listen,DEFVAL(65536));
 	ObjectTypeDB::bind_method(_MD("close"),&PacketPeerUDP::close);
 	ObjectTypeDB::bind_method(_MD("wait:Error"),&PacketPeerUDP::wait);

@@ -49,6 +49,7 @@ protected:
 
 public:
 
+	virtual void set_ip_type(IP::Type p_type);
 	virtual Error listen(int p_port, int p_recv_buffer_size=65536)=0;
 	virtual void close()=0;
 	virtual Error wait()=0;
