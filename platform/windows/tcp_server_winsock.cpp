@@ -168,7 +168,7 @@ void TCPServerWinsock::stop() {
 TCPServerWinsock::TCPServerWinsock() {
 
 	listen_sockfd = INVALID_SOCKET;
-	ip_type = IP_Address::TYPE_ANY;
+	ip_type = IP::TYPE_ANY;
 };
 
 TCPServerWinsock::~TCPServerWinsock() {

@@ -16,15 +16,15 @@
 
 // helpers for sockaddr -> IP_Address and back, should work for posix and winsock. All implementations should use this
 
-static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p_ip, int p_port, IP_Address::AddrType p_sock_type = IP_Address::TYPE_ANY) {
+static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p_ip, int p_port, IP::Type p_sock_type = IP::TYPE_ANY) {
 
 	memset(p_addr, 0, sizeof(struct sockaddr_storage));
 
 	// Dual stack (ANY) or matching ip type is required
-	ERR_FAIL_COND_V(p_sock_type != IP_Address::TYPE_ANY && p_sock_type != p_ip.type,0);
+	ERR_FAIL_COND_V(p_sock_type != IP::TYPE_ANY && p_sock_type != p_ip.type,0);
 
 	// IPv6 socket
-	if (p_sock_type == IP_Address::TYPE_IPV6 || p_sock_type == IP_Address::TYPE_ANY) {
+	if (p_sock_type == IP::TYPE_IPV6 || p_sock_type == IP::TYPE_ANY) {
 
 		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)p_addr;
 		addr6->sin6_family = AF_INET6;
@@ -49,10 +49,10 @@ static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p
 	};
 };
 
-static size_t _set_listen_sockaddr(struct sockaddr_storage* p_addr, int p_port, IP_Address::AddrType p_address_type, const List<String> *p_accepted_hosts) {
+static size_t _set_listen_sockaddr(struct sockaddr_storage* p_addr, int p_port, IP::Type p_sock_type, const List<String> *p_accepted_hosts) {
 
 	memset(p_addr, 0, sizeof(struct sockaddr_storage));
-	if (p_address_type == IP_Address::TYPE_IPV4) {
+	if (p_sock_type == IP::TYPE_IPV4) {
 		struct sockaddr_in* addr4 = (struct sockaddr_in*)p_addr;
 		addr4->sin_family = AF_INET;
 		addr4->sin_port = htons(p_port);
@@ -68,18 +68,18 @@ static size_t _set_listen_sockaddr(struct sockaddr_storage* p_addr, int p_port, 
 	};
 };
 
-static int _socket_create(IP_Address::AddrType p_type, int type, int protocol) {
+static int _socket_create(IP::Type p_type, int type, int protocol) {
 
-	ERR_FAIL_COND_V(p_type > IP_Address::TYPE_ANY || p_type < IP_Address::TYPE_NONE, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_type > IP::TYPE_ANY || p_type < IP::TYPE_NONE, ERR_INVALID_PARAMETER);
 
-	int family = p_type == IP_Address::TYPE_IPV4 ? AF_INET : AF_INET6;
+	int family = p_type == IP::TYPE_IPV4 ? AF_INET : AF_INET6;
 	int sockfd = socket(family, type, protocol);
 
 	ERR_FAIL_COND_V( sockfd == -1, -1 );
 
 	if(family == AF_INET6) {
 		// Select IPv4 over IPv6 mapping
-		int opt = p_type != IP_Address::TYPE_ANY;
+		int opt = p_type != IP::TYPE_ANY;
 		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&opt, sizeof(opt)) != 0) {
 			WARN_PRINT("Unable to set/unset IPv4 address mapping over IPv6");
 		}

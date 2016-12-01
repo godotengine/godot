@@ -51,7 +51,7 @@ public:
 
 protected:
 
-	IP_Address::AddrType ip_type;
+	IP::Type ip_type;
 
 	virtual Error _connect(const String& p_address, int p_port);
 	static StreamPeerTCP* (*_create)();

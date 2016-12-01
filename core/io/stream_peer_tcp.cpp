@@ -30,8 +30,6 @@
 
 StreamPeerTCP* (*StreamPeerTCP::_create)()=NULL;
 
-VARIANT_ENUM_CAST(IP_Address::AddrType);
-
 Error StreamPeerTCP::_connect(const String& p_address,int p_port) {
 
 	IP_Address ip;
@@ -79,7 +77,7 @@ StreamPeerTCP* StreamPeerTCP::create() {
 
 StreamPeerTCP::StreamPeerTCP() {
 
-	ip_type = IP_Address::TYPE_ANY;
+	ip_type = IP::TYPE_ANY;
 }
 
 StreamPeerTCP::~StreamPeerTCP() {

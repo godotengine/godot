@@ -68,7 +68,7 @@ public:
 
 	virtual int get_available_bytes() const;
 
-	void set_socket(int p_sockfd, IP_Address p_host, int p_port, IP_Address::AddrType p_ip_type);
+	void set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_ip_type);
 
 	virtual IP_Address get_connected_host() const;
 	virtual uint16_t get_connected_port() const;

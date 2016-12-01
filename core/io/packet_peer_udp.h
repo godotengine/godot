@@ -30,6 +30,7 @@
 #define PACKET_PEER_UDP_H
 
 
+#include "io/ip.h"
 #include "io/packet_peer.h"
 
 class PacketPeerUDP : public PacketPeer {
@@ -37,7 +38,7 @@ class PacketPeerUDP : public PacketPeer {
 
 protected:
 
-	IP_Address::AddrType ip_type;
+	IP::Type ip_type;
 
 	static PacketPeerUDP* (*_create)();
 	static void _bind_methods();

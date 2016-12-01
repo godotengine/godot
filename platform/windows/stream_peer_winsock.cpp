@@ -289,7 +289,7 @@ void StreamPeerWinsock::disconnect() {
 	peer_port = 0;
 };
 
-void StreamPeerWinsock::set_socket(int p_sockfd, IP_Address p_host, int p_port, IP_Address::AddrType p_ip_type) {
+void StreamPeerWinsock::set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_ip_type) {
 
 	ip_type = p_ip_type;
 	sockfd = p_sockfd;
@@ -368,7 +368,7 @@ StreamPeerWinsock::StreamPeerWinsock() {
 	sockfd = INVALID_SOCKET;
 	status = STATUS_NONE;
 	peer_port = 0;
-	ip_type = IP_Address::TYPE_ANY;
+	ip_type = IP::TYPE_ANY;
 };
 
 StreamPeerWinsock::~StreamPeerWinsock() {
