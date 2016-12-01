@@ -127,14 +127,6 @@ Error PacketPeerUDPPosix::listen(int p_port, int p_recv_buffer_size) {
 	if (sock == -1 )
 		return ERR_CANT_CREATE;
 
-	if(ip_type == IP_Address::TYPE_IPV6) {
-		// Use IPv6 only socket
-		int yes = 1;
-		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&yes, sizeof(yes)) != 0) {
-				WARN_PRINT("Unable to unset IPv4 address mapping over IPv6");
-		}
-	}
-
 	sockaddr_storage addr = {0};
 	size_t addr_size = _set_listen_sockaddr(&addr, p_port, ip_type, NULL);
 

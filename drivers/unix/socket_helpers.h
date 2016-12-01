@@ -78,10 +78,10 @@ static int _socket_create(IP_Address::AddrType p_type, int type, int protocol) {
 	ERR_FAIL_COND_V( sockfd == -1, -1 );
 
 	if(family == AF_INET6) {
-		// Ensure IPv4 over IPv6 is enabled
-		int no = 0;
-		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&no, sizeof(no)) != 0) {
-			WARN_PRINT("Unable to set IPv4 address mapping over IPv6");
+		// Select IPv4 over IPv6 mapping
+		int opt = p_type != IP_Address::TYPE_ANY;
+		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&opt, sizeof(opt)) != 0) {
+			WARN_PRINT("Unable to set/unset IPv4 address mapping over IPv6");
 		}
 	}
 
