@@ -29,6 +29,10 @@
 #include "http_client.h"
 #include "io/stream_peer_ssl.h"
 
+void HTTPClient::set_ip_type(IP::Type p_type) {
+	tcp_connection->set_ip_type(p_type);
+}
+
 Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_verify_host, IP::Type p_addr_type){
 
 	close();

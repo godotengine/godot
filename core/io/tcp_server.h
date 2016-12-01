@@ -47,6 +47,7 @@ protected:
 	static void _bind_methods();
 public:
 
+	virtual void set_ip_type(IP::Type p_type);
 	virtual Error listen(uint16_t p_port, const List<String> *p_accepted_hosts=NULL)=0;
 	virtual bool is_connection_available() const=0;
 	virtual Ref<StreamPeerTCP> take_connection()=0;

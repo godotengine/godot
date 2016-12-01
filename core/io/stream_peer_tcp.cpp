@@ -45,8 +45,14 @@ Error StreamPeerTCP::_connect(const String& p_address,int p_port) {
 	return OK;
 }
 
+void StreamPeerTCP::set_ip_type(IP::Type p_type) {
+	disconnect();
+	ip_type = p_type;
+}
+
 void StreamPeerTCP::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("set_ip_type","ip_type"),&StreamPeerTCP::set_ip_type);
 	ObjectTypeDB::bind_method(_MD("connect","host","port"),&StreamPeerTCP::_connect);
 	ObjectTypeDB::bind_method(_MD("is_connected"),&StreamPeerTCP::is_connected);
 	ObjectTypeDB::bind_method(_MD("get_status"),&StreamPeerTCP::get_status);

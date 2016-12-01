@@ -59,6 +59,7 @@ protected:
 
 public:
 
+	virtual void set_ip_type(IP::Type p_type);
 	virtual Error connect(const IP_Address& p_host, uint16_t p_port)=0;
 
 	//read/write from streampeer

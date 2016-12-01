@@ -28,6 +28,10 @@
 /*************************************************************************/
 #include "http_request.h"
 
+void HTTPRequest::set_ip_type(IP::Type p_type) {
+	client->set_ip_type(p_type);
+}
+
 void HTTPRequest::_redirect_request(const String& p_new_url) {
 
 
