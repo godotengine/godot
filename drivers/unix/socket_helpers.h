@@ -92,7 +92,7 @@ static void _set_ip_addr_port(IP_Address& r_ip, int& r_port, struct sockaddr_sto
 		r_ip.type = IP_Address::TYPE_IPV6;
 
 		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)p_addr;
-		copymem(&addr6->sin6_addr.s6_addr, r_ip.field8, 16);
+		copymem(&r_ip.field8, addr6->sin6_addr.s6_addr, 16);
 
 		r_port = ntohs(addr6->sin6_port);
 	};
