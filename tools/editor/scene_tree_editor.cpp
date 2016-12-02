@@ -725,6 +725,12 @@ void SceneTreeEditor::set_selected(Node *p_node,bool p_emit_selected) {
 	TreeItem* item=p_node?_find(tree->get_root(),p_node->get_path()):NULL;
 
 	if (item) {
+		// make visible when it's collapsed
+		TreeItem* node=item->get_parent();
+		while (node && node!=tree->get_root()) {
+			node->set_collapsed(false);
+			node=node->get_parent();
+		}
 		item->select(0);
 		item->set_as_cursor(0);
 		selected=p_node;
