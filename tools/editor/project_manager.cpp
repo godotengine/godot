@@ -1154,7 +1154,7 @@ void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
 				dir->list_dir_begin();
 				String file = dir->get_next();
 				while(confirm && file!=String()) {
-					if (!da->current_is_dir() && file.ends_with("engine.cfg")) {
+					if (!dir->current_is_dir() && file.ends_with("engine.cfg")) {
 						confirm = false;
 					}
 					file = dir->get_next();
