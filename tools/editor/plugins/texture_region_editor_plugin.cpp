@@ -388,9 +388,9 @@ void TextureRegionEditor::_region_input(const InputEvent& p_input)
 					drag_index = -1;
 				}
 			}
-		} else if (mb.button_index == BUTTON_WHEEL_UP) {
+		} else if (mb.button_index == BUTTON_WHEEL_UP && mb.pressed) {
 			_zoom_in();
-		} else if (mb.button_index == BUTTON_WHEEL_DOWN) {
+		} else if (mb.button_index == BUTTON_WHEEL_DOWN && mb.pressed) {
 			_zoom_out();
 		}
 	} else if (p_input.type==InputEvent::MOUSE_MOTION) {
