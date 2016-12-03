@@ -133,6 +133,7 @@ public:
 	void set_point_out(int p_index, const Vector2& p_out);
 	Vector2 get_point_out(int p_index) const;
 	void remove_point(int p_index);
+	void clear_points();
 
 	Vector2 interpolate(int p_index, float p_offset) const;
 	Vector2 interpolatef(real_t p_findex) const;
@@ -211,6 +212,7 @@ public:
 	void set_point_out(int p_index, const Vector3& p_out);
 	Vector3 get_point_out(int p_index) const;
 	void remove_point(int p_index);
+	void clear_points();
 
 	Vector3 interpolate(int p_index, float p_offset) const;
 	Vector3 interpolatef(real_t p_findex) const;
