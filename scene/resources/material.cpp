@@ -72,7 +72,7 @@ void FixedSpatialMaterial::init_shaders() {
 	shader_names->clearcoat_gloss="clearcoat_gloss";
 	shader_names->anisotropy="anisotropy_ratio";
 	shader_names->height_scale="height_scale";
-	shader_names->subsurface_scattering="subsurface_scattering";
+	shader_names->subsurface_scattering_strength="subsurface_scattering_strength";
 	shader_names->refraction="refraction";
 	shader_names->refraction_roughness="refraction_roughness";
 	shader_names->point_size="point_size";
@@ -217,6 +217,14 @@ void FixedSpatialMaterial::_update_shader() {
 		code+="uniform sampler2D texture_detail_mask : hint_white;\n";
 	}
 
+	if (features[FEATURE_SUBSURACE_SCATTERING]) {
+
+		code+="uniform float subsurface_scattering_strength : hint_range(0,1);\n";
+		code+="uniform sampler2D texture_subsurface_scattering : hint_white;\n";
+
+	}
+
+
 	code+="\n\n";
 
 	code+="void vertex() {\n";
@@ -230,7 +238,7 @@ void FixedSpatialMaterial::_update_shader() {
 		code+="\tPOINT_SIZE=point_size;\n";
 	}
 	code+="\tUV=UV*uv1_scale+uv1_offset;\n";
-	if (detail_blend_mode==DETAIL_UV_2) {
+	if (detail_uv==DETAIL_UV_2) {
 		code+="\tUV2=UV2*uv2_scale+uv2_offset;\n";
 	}
 
@@ -282,6 +290,12 @@ void FixedSpatialMaterial::_update_shader() {
 
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
 		code+="\tAO = texture(texture_ambient_occlusion,UV).r;\n";
+	}
+
+	if (features[FEATURE_SUBSURACE_SCATTERING]) {
+
+		code+="\tfloat sss_tex = texture(texture_subsurface_scattering,UV).r;\n";
+		code+="\tSSS_STRENGTH=subsurface_scattering_strength*sss_tex;\n";
 	}
 
 	if (features[FEATURE_DETAIL]) {
@@ -512,17 +526,18 @@ float FixedSpatialMaterial::get_height_scale() const{
 	return height_scale;
 }
 
-void FixedSpatialMaterial::set_subsurface_scattering(float p_subsurface_scattering){
 
-	subsurface_scattering=p_subsurface_scattering;
-	VS::get_singleton()->material_set_param(_get_material(),shader_names->subsurface_scattering,subsurface_scattering);
+void FixedSpatialMaterial::set_subsurface_scattering_strength(float p_subsurface_scattering_strength){
+
+	subsurface_scattering_strength=p_subsurface_scattering_strength;
+	VS::get_singleton()->material_set_param(_get_material(),shader_names->subsurface_scattering_strength,subsurface_scattering_strength);
 
 
 }
 
-float FixedSpatialMaterial::get_subsurface_scattering() const{
+float FixedSpatialMaterial::get_subsurface_scattering_strength() const{
 
-	return subsurface_scattering;
+	return subsurface_scattering_strength;
 }
 
 void FixedSpatialMaterial::set_refraction(float p_refraction){
@@ -806,8 +821,8 @@ void FixedSpatialMaterial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_height_scale","height_scale"),&FixedSpatialMaterial::set_height_scale);
 	ObjectTypeDB::bind_method(_MD("get_height_scale"),&FixedSpatialMaterial::get_height_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_subsurface_scattering","subsurface_scattering"),&FixedSpatialMaterial::set_subsurface_scattering);
-	ObjectTypeDB::bind_method(_MD("get_subsurface_scattering"),&FixedSpatialMaterial::get_subsurface_scattering);
+	ObjectTypeDB::bind_method(_MD("set_subsurface_scattering_strength","strength"),&FixedSpatialMaterial::set_subsurface_scattering_strength);
+	ObjectTypeDB::bind_method(_MD("get_subsurface_scattering_strength"),&FixedSpatialMaterial::get_subsurface_scattering_strength);
 
 	ObjectTypeDB::bind_method(_MD("set_refraction","refraction"),&FixedSpatialMaterial::set_refraction);
 	ObjectTypeDB::bind_method(_MD("get_refraction"),&FixedSpatialMaterial::get_refraction);
@@ -912,7 +927,7 @@ void FixedSpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"height/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_HEIGHT);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"subsurf_scatter/enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_SUBSURACE_SCATTERING);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"subsurf_scatter/amount",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_subsurface_scattering"),_SCS("get_subsurface_scattering"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"subsurf_scatter/strength",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_subsurface_scattering_strength"),_SCS("get_subsurface_scattering_strength"));
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"subsurf_scatter/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_SUBSURFACE_SCATTERING);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"refraction/enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_REFRACTION);
@@ -1011,7 +1026,7 @@ FixedSpatialMaterial::FixedSpatialMaterial() : element(this) {
 	set_clearcoat_gloss(0.5);
 	set_anisotropy(0);
 	set_height_scale(1);
-	set_subsurface_scattering(0);
+	set_subsurface_scattering_strength(0);
 	set_refraction(0);
 	set_refraction_roughness(0);
 	set_line_width(1);

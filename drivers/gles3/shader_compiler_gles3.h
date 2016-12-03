@@ -58,6 +58,7 @@ private:
 	StringName time_name;
 
 	Set<StringName> used_name_defines;
+	Set<StringName> used_flag_pointers;
 	Set<StringName> used_rmode_defines;
 	Set<StringName> internal_functions;
 

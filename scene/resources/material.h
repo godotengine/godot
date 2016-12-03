@@ -213,7 +213,7 @@ private:
 		StringName clearcoat_gloss;
 		StringName anisotropy;
 		StringName height_scale;
-		StringName subsurface_scattering;
+		StringName subsurface_scattering_strength;
 		StringName refraction;
 		StringName refraction_roughness;
 		StringName point_size;
@@ -247,7 +247,7 @@ private:
 	float clearcoat_gloss;
 	float anisotropy;
 	float height_scale;
-	float subsurface_scattering;
+	float subsurface_scattering_strength;
 	float refraction;
 	float refraction_roughness;
 	float line_width;
@@ -318,8 +318,8 @@ public:
 	void set_height_scale(float p_height_scale);
 	float get_height_scale() const;
 
-	void set_subsurface_scattering(float p_subsurface_scattering);
-	float get_subsurface_scattering() const;
+	void set_subsurface_scattering_strength(float p_strength);
+	float get_subsurface_scattering_strength() const;
 
 	void set_refraction(float p_refraction);
 	float get_refraction() const;

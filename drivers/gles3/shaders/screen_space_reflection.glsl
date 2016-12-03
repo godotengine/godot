@@ -23,7 +23,6 @@ in vec2 pos_interp;
 uniform sampler2D source_diffuse; //texunit:0
 uniform sampler2D source_normal_roughness; //texunit:1
 uniform sampler2D source_depth; //texunit:2
-uniform sampler2D source_diffuse_mipmaps; //texunit:3
 
 uniform float camera_z_near;
 uniform float camera_z_far;
@@ -295,11 +294,7 @@ void main() {
 
 				vec4 sample_color;
 				{
-					sample_color = textureLod(source_diffuse_mipmaps,sample_pos,max(1.0,mipmap));
-					if (mipmap<1.0) { //we use another image as base to avoid copying all the screen unnecesarily
-						vec4 base_sample_color = textureLod(source_diffuse,sample_pos,0.0);
-						sample_color = mix(base_sample_color,sample_color,mipmap);
-					}
+					sample_color = textureLod(source_diffuse,sample_pos,mipmap);
 				}
 
 				//multiply by gloss

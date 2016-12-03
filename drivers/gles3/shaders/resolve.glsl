@@ -17,11 +17,8 @@ void main() {
 
 
 in vec2 uv_interp;
-uniform sampler2D source_diffuse; //texunit:0
-uniform sampler2D source_specular; //texunit:1
-
-
-uniform sampler2D source_ssr_ssao; //texunit:2
+uniform sampler2D source_specular; //texunit:0
+uniform sampler2D source_ssr; //texunit:1
 
 uniform float stuff;
 
@@ -31,15 +28,14 @@ layout(location = 0) out vec4 frag_color;
 
 void main() {
 
-	vec4 diffuse = texture( source_diffuse,  uv_interp );
 	vec4 specular = texture( source_specular,  uv_interp );
 
 #ifdef USE_SSR
 
-	vec4 ssr = textureLod(source_ssr_ssao,uv_interp,0.0);
+	vec4 ssr = textureLod(source_ssr,uv_interp,0.0);
 	specular.rgb = mix(specular.rgb,ssr.rgb*specular.a,ssr.a);
 #endif
 
-	frag_color = vec4(diffuse.rgb,1.0)+vec4(specular.rgb,1.0);
+	frag_color = vec4(specular.rgb,1.0);
 }
 

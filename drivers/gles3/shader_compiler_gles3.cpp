@@ -422,9 +422,9 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				used_name_defines.insert(vnode->name);
 			}
 
-			if (p_actions.usage_flag_pointers.has(vnode->name) && !used_name_defines.has(vnode->name)) {
+			if (p_actions.usage_flag_pointers.has(vnode->name) && !used_flag_pointers.has(vnode->name)) {
 				*p_actions.usage_flag_pointers[vnode->name]=true;
-				used_name_defines.insert(vnode->name);
+				used_flag_pointers.insert(vnode->name);
 			}
 
 			if (p_default_actions.renames.has(vnode->name))
@@ -670,6 +670,8 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["CLEARCOAT_GLOSS"]="clearcoat_gloss";
 	actions[VS::SHADER_SPATIAL].renames["ANISOTROPY"]="anisotropy";
 	actions[VS::SHADER_SPATIAL].renames["ANISOTROPY_FLOW"]="anisotropy_flow";
+	actions[VS::SHADER_SPATIAL].renames["SSS_SPREAD"]="sss_spread";
+	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"]="sss_strength";
 	actions[VS::SHADER_SPATIAL].renames["AO"]="ao";
 	actions[VS::SHADER_SPATIAL].renames["EMISSION"]="emission";
 	actions[VS::SHADER_SPATIAL].renames["DISCARD"]="_discard";
@@ -691,6 +693,11 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].usage_defines["NORMALMAP"]="#define ENABLE_NORMALMAP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["NORMALMAP_DEPTH"]="@NORMALMAP";
 	actions[VS::SHADER_SPATIAL].usage_defines["COLOR"]="#define ENABLE_COLOR_INTERP\n";
+
+	actions[VS::SHADER_SPATIAL].usage_defines["SSS_STRENGTH"]="#define ENABLE_SSS_MOTION\n";
+
+	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"]="sss_strength";
+
 
 	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_transform"]="#define SKIP_TRANSFORM_USED\n";
 

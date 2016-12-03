@@ -7,6 +7,7 @@
 #include "drivers/gles3/shaders/resolve.glsl.h"
 #include "drivers/gles3/shaders/screen_space_reflection.glsl.h"
 #include "drivers/gles3/shaders/effect_blur.glsl.h"
+#include "drivers/gles3/shaders/subsurf_scattering.glsl.h"
 
 class RasterizerSceneGLES3 : public RasterizerScene {
 public:
@@ -22,6 +23,15 @@ public:
 
 	uint64_t shadow_atlas_realloc_tolerance_msec;
 
+	enum SubSurfaceScatterQuality {
+		SSS_QUALITY_LOW,
+		SSS_QUALITY_MEDIUM,
+		SSS_QUALITY_HIGH,
+	};
+
+	SubSurfaceScatterQuality subsurface_scatter_quality;
+	float subsurface_scatter_size;
+	bool subsurface_scatter_follow_surface;
 
 	uint64_t render_pass;
 	uint64_t scene_pass;
@@ -51,6 +61,7 @@ public:
 		ResolveShaderGLES3 resolve_shader;
 		ScreenSpaceReflectionShaderGLES3 ssr_shader;
 		EffectBlurShaderGLES3 effect_blur_shader;
+		SubsurfScatteringShaderGLES3 sss_shader;
 
 
 		struct SceneDataUBO {
@@ -118,6 +129,7 @@ public:
 		int reflection_probe_count;
 
 		bool cull_front;
+		bool used_sss;
 
 	} state;
 

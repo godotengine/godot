@@ -369,6 +369,7 @@ public:
 			bool ontop;
 			bool uses_vertex;
 			bool uses_discard;
+			bool uses_sss;
 
 		} spatial;
 
@@ -886,8 +887,8 @@ public:
 			GLuint alpha_fbo; //single buffer, just diffuse (for alpha pass)
 			GLuint specular;
 			GLuint diffuse;
-			GLuint normal_sr;
-			GLuint temporal;
+			GLuint normal_rough;
+			GLuint motion_sss;
 		} buffers;
 
 		struct Effects {

@@ -1809,6 +1809,10 @@ void RasterizerSceneGLES3::_add_geometry(  RasterizerStorageGLES3::Geometry* p_g
 		mirror=!mirror;
 	}
 
+	if (m->shader->spatial.uses_sss) {
+		state.used_sss=true;
+	}
+
 	if (p_shadow) {
 
 		if (has_blend_alpha || (has_base_alpha && m->shader->spatial.depth_draw_mode!=RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS))
@@ -1825,6 +1829,7 @@ void RasterizerSceneGLES3::_add_geometry(  RasterizerStorageGLES3::Geometry* p_g
 		has_alpha=false;
 
 	}
+
 
 
 	RenderList::Element *e = has_alpha ? render_list.add_alpha_element() : render_list.add_element();
@@ -2620,6 +2625,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase** p_cull_result,int p_
 
 	current_geometry_index=0;
 	current_material_index=0;
+	state.used_sss=false;
 
 	//fill list
 
@@ -2683,6 +2689,50 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env,const CameraMatrix &p_c
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 
+	if (state.used_sss) {//sss enabled
+		//copy diffuse while performing sss
+
+		state.sss_shader.set_conditional(SubsurfScatteringShaderGLES3::USE_11_SAMPLES,subsurface_scatter_quality==SSS_QUALITY_LOW);
+		state.sss_shader.set_conditional(SubsurfScatteringShaderGLES3::USE_17_SAMPLES,subsurface_scatter_quality==SSS_QUALITY_MEDIUM);
+		state.sss_shader.set_conditional(SubsurfScatteringShaderGLES3::USE_25_SAMPLES,subsurface_scatter_quality==SSS_QUALITY_HIGH);
+		state.sss_shader.set_conditional(SubsurfScatteringShaderGLES3::ENABLE_FOLLOW_SURFACE,subsurface_scatter_follow_surface);
+		state.sss_shader.bind();
+		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::MAX_RADIUS,subsurface_scatter_size);
+		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::FOVY,p_cam_projection.get_fov());
+		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::CAMERA_Z_NEAR,p_cam_projection.get_z_near());
+		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::CAMERA_Z_FAR,p_cam_projection.get_z_far());
+		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::DIR,Vector2(1,0));
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->buffers.diffuse);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->buffers.motion_sss);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->depth);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+
+		glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->fbo); //copy to front first
+
+		_copy_screen();
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->color);
+		state.sss_shader.set_uniform(SubsurfScatteringShaderGLES3::DIR,Vector2(0,1));
+		glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo); // copy to base level
+		_copy_screen();
+
+	} else {
+		// just copy diffuse
+		storage->shaders.copy.bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->buffers.diffuse);
+		glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo); // copy to base level
+		_copy_screen();
+
+	}
+
+
+
 	if (env->ssr_enabled) {
 		//blur diffuse into effect mipmaps using separatable convolution
 		//storage->shaders.copy.set_conditional(CopyShaderGLES3::GAUSSIAN_HORIZONTAL,true);
@@ -2698,11 +2748,7 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env,const CameraMatrix &p_c
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE,Vector2(1.0/vp_w,1.0/vp_h));
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD,float(i));
 			glActiveTexture(GL_TEXTURE0);
-			if (i==0) {
-				glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->buffers.diffuse);
-			} else {
-				glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->effects.mip_maps[0].color); //previous level, since mipmaps[0] starts one level bigger
-			}
+			glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->effects.mip_maps[0].color); //previous level, since mipmaps[0] starts one level bigger
 			glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->effects.mip_maps[1].sizes[i].fbo);
 			_copy_screen();
 			state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GAUSSIAN_HORIZONTAL,false);
@@ -2748,7 +2794,7 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env,const CameraMatrix &p_c
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->buffers.diffuse);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->buffers.normal_sr);
+		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->buffers.normal_rough);
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->depth);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
@@ -2764,21 +2810,25 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env,const CameraMatrix &p_c
 	}
 
 
+	//copy reflection over diffuse, resolving SSR if needed
 	state.resolve_shader.set_conditional(ResolveShaderGLES3::USE_SSR,env->ssr_enabled);
 	state.resolve_shader.bind();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->buffers.diffuse);
-	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->buffers.specular);
 	if (env->ssr_enabled) {
-		glActiveTexture(GL_TEXTURE2);
+		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->effects.mip_maps[1].color);
 	}
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo);
-	//glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->fbo);
+	glEnable(GL_BLEND);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_ONE,GL_ONE); //use additive to accumulate one over the other
+
 	_copy_screen();
+
+	glDisable(GL_BLEND); //end additive
 
 	state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::SIMPLE_COPY,true);
 	state.effect_blur_shader.bind();
@@ -2839,6 +2889,7 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 	bool use_mrt=true;
 
 
+
 	_fill_render_list(p_cull_result,p_cull_count,false);
 	//
 
@@ -2893,11 +2944,17 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 			draw_buffers.push_back(GL_COLOR_ATTACHMENT0);
 			draw_buffers.push_back(GL_COLOR_ATTACHMENT1);
 			draw_buffers.push_back(GL_COLOR_ATTACHMENT2);
+			if (state.used_sss) {
+				draw_buffers.push_back(GL_COLOR_ATTACHMENT3);
+			}
 			glDrawBuffers(draw_buffers.size(),draw_buffers.ptr());
 
 			Color black(0,0,0,0);
 			glClearBufferfv(GL_COLOR,1,black.components); // specular
 			glClearBufferfv(GL_COLOR,2,black.components); // normal metal rough
+			if (state.used_sss) {
+				glClearBufferfv(GL_COLOR,3,black.components); // normal metal rough
+			}
 
 		} else {
 
@@ -3968,11 +4025,25 @@ void RasterizerSceneGLES3::initialize() {
 	state.resolve_shader.init();
 	state.ssr_shader.init();
 	state.effect_blur_shader.init();
+	state.sss_shader.init();
+
+
+	{
+		GLOBAL_DEF("rendering/gles3/subsurface_scattering/quality",1);
+		Globals::get_singleton()->set_custom_property_info("rendering/gles3/subsurface_scattering/quality",PropertyInfo(Variant::INT,"rendering/gles3/subsurface_scattering/quality",PROPERTY_HINT_ENUM,"Low,Medium,High"));
+		GLOBAL_DEF("rendering/gles3/subsurface_scattering/max_size",1.0);
+		Globals::get_singleton()->set_custom_property_info("rendering/gles3/subsurface_scattering/max_size",PropertyInfo(Variant::INT,"rendering/gles3/subsurface_scattering/max_size",PROPERTY_HINT_RANGE,"0.01,8,0.01"));
+		GLOBAL_DEF("rendering/gles3/subsurface_scattering/follow_surface",false);
+	}
+
 }
 
 void RasterizerSceneGLES3::iteration() {
 
 	shadow_filter_mode=ShadowFilterMode(int(Globals::get_singleton()->get("rendering/gles3/shadow_filter_mode")));
+	subsurface_scatter_follow_surface=Globals::get_singleton()->get("rendering/gles3/subsurface_scattering/follow_surface");
+	subsurface_scatter_quality=SubSurfaceScatterQuality(int(Globals::get_singleton()->get("rendering/gles3/subsurface_scattering/quality")));
+	subsurface_scatter_size=Globals::get_singleton()->get("rendering/gles3/subsurface_scattering/max_size");
 }
 
 void RasterizerSceneGLES3::finalize(){

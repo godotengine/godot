@@ -1555,7 +1555,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance,const
 			float angle = VSG::storage->light_get_param( p_instance->base, VS::LIGHT_PARAM_SPOT_ANGLE);
 
 			CameraMatrix cm;
-			cm.set_perspective( angle, 1.0, 0.01, radius );
+			cm.set_perspective( angle*2.0, 1.0, 0.01, radius );
 
 
 			Vector<Plane> planes = cm.get_projection_planes(p_instance->transform);

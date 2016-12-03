@@ -1456,6 +1456,7 @@ void RasterizerStorageGLES3::_update_shader(Shader* p_shader) const {
 			p_shader->spatial.uses_alpha=false;
 			p_shader->spatial.unshaded=false;
 			p_shader->spatial.ontop=false;
+			p_shader->spatial.uses_sss=false;
 
 			shaders.actions_scene.render_mode_values["blend_add"]=Pair<int*,int>(&p_shader->spatial.blend_mode,Shader::Spatial::BLEND_MODE_ADD);
 			shaders.actions_scene.render_mode_values["blend_mix"]=Pair<int*,int>(&p_shader->spatial.blend_mode,Shader::Spatial::BLEND_MODE_MIX);
@@ -1476,6 +1477,8 @@ void RasterizerStorageGLES3::_update_shader(Shader* p_shader) const {
 
 			shaders.actions_scene.usage_flag_pointers["ALPHA"]=&p_shader->spatial.uses_alpha;
 			shaders.actions_scene.usage_flag_pointers["VERTEX"]=&p_shader->spatial.uses_vertex;
+
+			shaders.actions_scene.usage_flag_pointers["SSS_STRENGTH"]=&p_shader->spatial.uses_sss;
 
 			actions=&shaders.actions_scene;
 			actions->uniforms=&p_shader->uniforms;
@@ -4771,7 +4774,8 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 		glDeleteFramebuffers(1,&rt->buffers.alpha_fbo);
 		glDeleteTextures(1,&rt->buffers.diffuse);
 		glDeleteTextures(1,&rt->buffers.specular);
-		glDeleteTextures(1,&rt->buffers.normal_sr);
+		glDeleteTextures(1,&rt->buffers.normal_rough);
+		glDeleteTextures(1,&rt->buffers.motion_sss);
 		rt->buffers.fbo=0;
 		rt->buffers.alpha_fbo=0;
 	}
@@ -4923,14 +4927,23 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, rt->buffers.specular, 0);
 
-		glGenTextures(1, &rt->buffers.normal_sr);
-		glBindTexture(GL_TEXTURE_2D, rt->buffers.normal_sr);
+		glGenTextures(1, &rt->buffers.normal_rough);
+		glBindTexture(GL_TEXTURE_2D, rt->buffers.normal_rough);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,  rt->width, rt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, rt->buffers.normal_sr, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, rt->buffers.normal_rough, 0);
+
+		glGenTextures(1, &rt->buffers.motion_sss);
+		glBindTexture(GL_TEXTURE_2D, rt->buffers.motion_sss);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32UI,  rt->width, rt->height, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, rt->buffers.motion_sss, 0);
 
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

@@ -218,7 +218,7 @@ void Light::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "light/cull_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_cull_mask"), _SCS("get_cull_mask"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "shadow/enabled"), _SCS("set_shadow"), _SCS("has_shadow"));
 	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "shadow/color",PROPERTY_HINT_COLOR_NO_ALPHA), _SCS("set_shadow_color"), _SCS("get_shadow_color"));
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/bias",PROPERTY_HINT_RANGE,"0,16,0.01"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_BIAS);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/bias",PROPERTY_HINT_RANGE,"-16,16,0.01"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_BIAS);
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/max_distance",PROPERTY_HINT_RANGE,"0,65536,0.1"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_MAX_DISTANCE);
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "editor/editor_only"), _SCS("set_editor_only"), _SCS("is_editor_only"));
 
