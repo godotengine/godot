@@ -563,7 +563,7 @@ void Particles2D::_notification(int p_what) {
 					}
 				}
 
-				float initial_size = param[PARAM_INITIAL_SIZE]+param[PARAM_INITIAL_SIZE]*_rand_from_seed(&rand_seed)*randomness[PARAM_FINAL_SIZE];
+				float initial_size = param[PARAM_INITIAL_SIZE]+param[PARAM_INITIAL_SIZE]*_rand_from_seed(&rand_seed)*randomness[PARAM_INITIAL_SIZE];
 				float final_size = param[PARAM_FINAL_SIZE]+param[PARAM_FINAL_SIZE]*_rand_from_seed(&rand_seed)*randomness[PARAM_FINAL_SIZE];
 
 				float size_mult=initial_size*(1.0-ptime) + final_size*ptime;
