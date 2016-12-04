@@ -2991,7 +2991,7 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env,const CameraMatrix &p_c
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE,GL_ONE); //use additive to accumulate one over the other
 
-	//_copy_screen();
+	_copy_screen();
 
 	glDisable(GL_BLEND); //end additive
 
