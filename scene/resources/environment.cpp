@@ -377,6 +377,102 @@ bool Environment::is_ssr_rough() const {
 	return ssr_roughness;
 }
 
+void Environment::set_ssao_enabled(bool p_enable) {
+
+	ssao_enabled=p_enable;
+	VS::get_singleton()->environment_set_ssao(environment,ssao_enabled,ssao_radius,ssao_intensity,ssao_radius2,ssao_intensity2,ssao_bias,ssao_direct_light_affect,ssao_color,ssao_blur);
+
+}
+
+bool Environment::is_ssao_enabled() const{
+
+	return ssao_enabled;
+}
+
+void Environment::set_ssao_radius(float p_radius){
+
+	ssao_radius=p_radius;
+	VS::get_singleton()->environment_set_ssao(environment,ssao_enabled,ssao_radius,ssao_intensity,ssao_radius2,ssao_intensity2,ssao_bias,ssao_direct_light_affect,ssao_color,ssao_blur);
+}
+float Environment::get_ssao_radius() const{
+
+	return ssao_radius;
+}
+
+
+void Environment::set_ssao_intensity(float p_intensity){
+
+	ssao_intensity=p_intensity;
+	VS::get_singleton()->environment_set_ssao(environment,ssao_enabled,ssao_radius,ssao_intensity,ssao_radius2,ssao_intensity2,ssao_bias,ssao_direct_light_affect,ssao_color,ssao_blur);
+}
+
+float Environment::get_ssao_intensity() const{
+
+	return ssao_intensity;
+}
+
+void Environment::set_ssao_radius2(float p_radius){
+
+	ssao_radius2=p_radius;
+	VS::get_singleton()->environment_set_ssao(environment,ssao_enabled,ssao_radius,ssao_intensity,ssao_radius2,ssao_intensity2,ssao_bias,ssao_direct_light_affect,ssao_color,ssao_blur);
+}
+float Environment::get_ssao_radius2() const{
+
+	return ssao_radius2;
+}
+
+
+void Environment::set_ssao_intensity2(float p_intensity){
+
+	ssao_intensity2=p_intensity;
+	VS::get_singleton()->environment_set_ssao(environment,ssao_enabled,ssao_radius,ssao_intensity,ssao_radius2,ssao_intensity2,ssao_bias,ssao_direct_light_affect,ssao_color,ssao_blur);
+}
+float Environment::get_ssao_intensity2() const{
+
+	return ssao_intensity2;
+}
+
+void Environment::set_ssao_bias(float p_bias){
+
+	ssao_bias=p_bias;
+	VS::get_singleton()->environment_set_ssao(environment,ssao_enabled,ssao_radius,ssao_intensity,ssao_radius2,ssao_intensity2,ssao_bias,ssao_direct_light_affect,ssao_color,ssao_blur);
+}
+float Environment::get_ssao_bias() const{
+
+	return ssao_bias;
+}
+
+void Environment::set_ssao_direct_light_affect(float p_direct_light_affect){
+
+	ssao_direct_light_affect=p_direct_light_affect;
+	VS::get_singleton()->environment_set_ssao(environment,ssao_enabled,ssao_radius,ssao_intensity,ssao_radius2,ssao_intensity2,ssao_bias,ssao_direct_light_affect,ssao_color,ssao_blur);
+}
+float Environment::get_ssao_direct_light_affect() const{
+
+	return ssao_direct_light_affect;
+}
+
+
+void Environment::set_ssao_color(const Color& p_color) {
+
+	ssao_color=p_color;
+	VS::get_singleton()->environment_set_ssao(environment,ssao_enabled,ssao_radius,ssao_intensity,ssao_radius2,ssao_intensity2,ssao_bias,ssao_direct_light_affect,ssao_color,ssao_blur);
+}
+
+Color Environment::get_ssao_color() const {
+
+	return ssao_color;
+}
+
+void Environment::set_ssao_blur(bool p_enable) {
+
+	ssao_blur=p_enable;
+	VS::get_singleton()->environment_set_ssao(environment,ssao_enabled,ssao_radius,ssao_intensity,ssao_radius2,ssao_intensity2,ssao_bias,ssao_direct_light_affect,ssao_color,ssao_blur);
+}
+bool Environment::is_ssao_blur_enabled() const {
+
+	return ssao_blur;
+}
 
 void Environment::_bind_methods() {
 
@@ -441,6 +537,43 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ss_reflections/depth_tolerance",PROPERTY_HINT_RANGE,"0.1,128,0.1"),_SCS("set_ssr_depth_tolerance"),_SCS("get_ssr_depth_tolerance") );
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ss_reflections/accel_smooth"),_SCS("set_ssr_smooth"),_SCS("is_ssr_smooth") );
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ss_reflections/roughness"),_SCS("set_ssr_rough"),_SCS("is_ssr_rough") );
+
+	ObjectTypeDB::bind_method(_MD("set_ssao_enabled","enabled"),&Environment::set_ssao_enabled);
+	ObjectTypeDB::bind_method(_MD("is_ssao_enabled"),&Environment::is_ssao_enabled);
+
+	ObjectTypeDB::bind_method(_MD("set_ssao_radius","radius"),&Environment::set_ssao_radius);
+	ObjectTypeDB::bind_method(_MD("get_ssao_radius"),&Environment::get_ssao_radius);
+
+	ObjectTypeDB::bind_method(_MD("set_ssao_intensity","intensity"),&Environment::set_ssao_intensity);
+	ObjectTypeDB::bind_method(_MD("get_ssao_intensity"),&Environment::get_ssao_intensity);
+
+	ObjectTypeDB::bind_method(_MD("set_ssao_radius2","radius"),&Environment::set_ssao_radius2);
+	ObjectTypeDB::bind_method(_MD("get_ssao_radius2"),&Environment::get_ssao_radius2);
+
+	ObjectTypeDB::bind_method(_MD("set_ssao_intensity2","intensity"),&Environment::set_ssao_intensity2);
+	ObjectTypeDB::bind_method(_MD("get_ssao_intensity2"),&Environment::get_ssao_intensity2);
+
+	ObjectTypeDB::bind_method(_MD("set_ssao_bias","bias"),&Environment::set_ssao_bias);
+	ObjectTypeDB::bind_method(_MD("get_ssao_bias"),&Environment::get_ssao_bias);
+
+	ObjectTypeDB::bind_method(_MD("set_ssao_direct_light_affect","amount"),&Environment::set_ssao_direct_light_affect);
+	ObjectTypeDB::bind_method(_MD("get_ssao_direct_light_affect"),&Environment::get_ssao_direct_light_affect);
+
+	ObjectTypeDB::bind_method(_MD("set_ssao_color","color"),&Environment::set_ssao_color);
+	ObjectTypeDB::bind_method(_MD("get_ssao_color"),&Environment::get_ssao_color);
+
+	ObjectTypeDB::bind_method(_MD("set_ssao_blur","enabled"),&Environment::set_ssao_blur);
+	ObjectTypeDB::bind_method(_MD("is_ssao_blur_enabled"),&Environment::is_ssao_blur_enabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ambient_occlusion/enable"),_SCS("set_ssao_enabled"),_SCS("is_ssao_enabled") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_occlusion/radius",PROPERTY_HINT_RANGE,"0.1,16,0.1"),_SCS("set_ssao_radius"),_SCS("get_ssao_radius") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_occlusion/intensity",PROPERTY_HINT_RANGE,"0.0,9,0.1"),_SCS("set_ssao_intensity"),_SCS("get_ssao_intensity") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_occlusion/radius2",PROPERTY_HINT_RANGE,"0.0,16,0.1"),_SCS("set_ssao_radius2"),_SCS("get_ssao_radius2") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_occlusion/intensity2",PROPERTY_HINT_RANGE,"0.0,9,0.1"),_SCS("set_ssao_intensity2"),_SCS("get_ssao_intensity2") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_occlusion/bias",PROPERTY_HINT_RANGE,"0.001,8,0.001"),_SCS("set_ssao_bias"),_SCS("get_ssao_bias") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_occlusion/light_affect",PROPERTY_HINT_RANGE,"0.00,1,0.01"),_SCS("set_ssao_direct_light_affect"),_SCS("get_ssao_direct_light_affect") );
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"ambient_occlusion/color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_ssao_color"),_SCS("get_ssao_color") );
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ambient_occlusion/blur"),_SCS("set_ssao_blur"),_SCS("is_ssao_blur_enabled") );
 
 
 	ObjectTypeDB::bind_method(_MD("set_tonemapper","mode"),&Environment::set_tonemapper);
@@ -560,6 +693,15 @@ Environment::Environment() {
 	ssr_depth_tolerance=0.2;
 	ssr_smooth=true;
 	ssr_roughness=true;
+
+	ssao_enabled=false;
+	ssao_radius=1;
+	ssao_intensity=1;
+	ssao_radius2=0;
+	ssao_intensity2=1;
+	ssao_bias=0.01;
+	ssao_direct_light_affect=false;
+	ssao_blur=true;
 
 }
 

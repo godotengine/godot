@@ -911,6 +911,17 @@ public:
 			MipMaps mip_maps[2]; //first mipmap chain starts from full-screen
 			//GLuint depth2; //depth for the second mipmap chain, in case of desiring upsampling
 
+			struct SSAO {
+				GLuint blur_fbo[2]; // blur fbo
+				GLuint blur_red[2]; // 8 bits red buffer
+
+				GLuint linear_depth;
+
+				Vector<GLuint> depth_mipmap_fbos; //fbos for depth mipmapsla ver
+
+				SSAO() { blur_fbo[0]=0; blur_fbo[1]=0; linear_depth=0; }
+			} ssao;
+
 			Effects() {
 
 			}

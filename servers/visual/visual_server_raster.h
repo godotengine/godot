@@ -876,6 +876,8 @@ public:
 	BIND2(environment_set_canvas_max_layer,RID,int )
 	BIND4(environment_set_ambient_light,RID,const Color& ,float,float )
 	BIND8(environment_set_ssr,RID,bool,int,float,float,float,bool,bool )
+	BIND10(environment_set_ssao,RID ,bool , float , float , float,float,float , float ,const Color &,bool )
+
 
 	BIND7(environment_set_glow,RID,bool ,int ,float ,float ,float ,EnvironmentGlowBlendMode )
 	BIND5(environment_set_fog,RID,bool ,float ,float ,RID )

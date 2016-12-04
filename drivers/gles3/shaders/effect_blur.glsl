@@ -19,11 +19,21 @@ void main() {
 in vec2 uv_interp;
 uniform sampler2D source_color; //texunit:0
 
+#ifdef SSAO_MERGE
+uniform sampler2D source_ssao; //texunit:1
+#endif
+
 uniform float lod;
 uniform vec2 pixel_size;
 
 
 layout(location = 0) out vec4 frag_color;
+
+#ifdef SSAO_MERGE
+
+uniform vec4 ssao_color;
+
+#endif
 
 void main() {
 
@@ -52,6 +62,13 @@ void main() {
 	frag_color = color;
 #endif
 
+#ifdef SSAO_MERGE
 
+	vec4 color =textureLod( source_color,  uv_interp,0.0);
+	float ssao =textureLod( source_ssao,  uv_interp,0.0).r;
+
+	frag_color = vec4( mix(color.rgb,color.rgb*mix(ssao_color.rgb,vec3(1.0),ssao),color.a), 1.0 );
+
+#endif
 }
 

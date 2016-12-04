@@ -76,6 +76,7 @@ layout(std140) uniform SceneData { //ubo:0
 
 	float reflection_multiplier;
 	float subsurface_scatter_width;
+	float ambient_occlusion_affect_light;
 
 };
 
@@ -387,6 +388,7 @@ layout(std140) uniform SceneData {
 
 	float reflection_multiplier;
 	float subsurface_scatter_width;
+	float ambient_occlusion_affect_light;
 
 };
 
@@ -1223,7 +1225,7 @@ LIGHT_SHADER_CODE
 	float max_ambient=max(ambient_light.r,max(ambient_light.g,ambient_light.b));
 	float max_diffuse=max(diffuse_light.r,max(diffuse_light.g,diffuse_light.b));
 	float total_ambient = max_ambient+max_diffuse+max_emission;
-	float ambient_scale = (total_ambient>0.0) ? max_ambient/total_ambient : 0.0;
+	float ambient_scale = (total_ambient>0.0) ? (max_ambient+ambient_occlusion_affect_light*max_diffuse)/total_ambient : 0.0;
 #endif //ENABLE_AO
 
 	diffuse_buffer=vec4(emission+diffuse_light+ambient_light,ambient_scale);

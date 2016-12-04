@@ -8,6 +8,9 @@
 #include "drivers/gles3/shaders/screen_space_reflection.glsl.h"
 #include "drivers/gles3/shaders/effect_blur.glsl.h"
 #include "drivers/gles3/shaders/subsurf_scattering.glsl.h"
+#include "drivers/gles3/shaders/ssao_minify.glsl.h"
+#include "drivers/gles3/shaders/ssao.glsl.h"
+#include "drivers/gles3/shaders/ssao_blur.glsl.h"
 
 class RasterizerSceneGLES3 : public RasterizerScene {
 public:
@@ -62,6 +65,9 @@ public:
 		ScreenSpaceReflectionShaderGLES3 ssr_shader;
 		EffectBlurShaderGLES3 effect_blur_shader;
 		SubsurfScatteringShaderGLES3 sss_shader;
+		SsaoMinifyShaderGLES3 ssao_minify_shader;
+		SsaoShaderGLES3 ssao_shader;
+		SsaoBlurShaderGLES3 ssao_blur_shader;
 
 
 		struct SceneDataUBO {
@@ -81,6 +87,8 @@ public:
 			float shadow_atlas_pixel_size[2];
 			float shadow_directional_pixel_size[2];
 			float reflection_multiplier;
+			float subsurface_scatter_width;
+			float ambient_occlusion_affect_light;
 
 		} ubo_data;
 
@@ -316,6 +324,15 @@ public:
 		bool ssr_roughness;
 
 
+		bool ssao_enabled;
+		float ssao_intensity;
+		float ssao_radius;
+		float ssao_intensity2;
+		float ssao_radius2;
+		float ssao_bias;
+		float ssao_light_affect;
+		Color ssao_color;
+		bool ssao_filter;
 
 		Environment() {
 			bg_mode=VS::ENV_BG_CLEAR_COLOR;
@@ -333,6 +350,16 @@ public:
 			ssr_depth_tolerance=0.2;
 			ssr_smooth=true;
 			ssr_roughness=true;
+
+			ssao_enabled=false;
+			ssao_intensity=1.0;
+			ssao_radius=1.0;
+			ssao_intensity2=1.0;
+			ssao_radius2=0.0;
+			ssao_bias=0.01;
+			ssao_light_affect=0;
+			ssao_filter=true;
+
 
 		}
 	};
@@ -353,6 +380,7 @@ public:
 	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture);
 
 	virtual void environment_set_ssr(RID p_env,bool p_enable, int p_max_steps,float p_accel,float p_fade,float p_depth_tolerance,bool p_smooth,bool p_roughness);
+	virtual void environment_set_ssao(RID p_env,bool p_enable, float p_radius, float p_radius2, float p_intensity2, float p_intensity, float p_bias, float p_light_affect,const Color &p_color,bool p_blur);
 
 	virtual void environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,float p_auto_exp_scale,VS::EnvironmentToneMapper p_tone_mapper);
 	virtual void environment_set_adjustment(RID p_env,bool p_enable,float p_brightness,float p_contrast,float p_saturation,RID p_ramp);

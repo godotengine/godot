@@ -102,6 +102,17 @@ private:
 	bool ssr_smooth;
 	bool ssr_roughness;
 
+	bool ssao_enabled;
+	float ssao_radius;
+	float ssao_intensity;
+	float ssao_radius2;
+	float ssao_intensity2;
+	float ssao_bias;
+	float ssao_direct_light_affect;
+	Color ssao_color;
+	bool ssao_blur;
+
+
 protected:
 
 	static void _bind_methods();
@@ -190,6 +201,34 @@ public:
 
 	void set_ssr_rough(bool p_enable);
 	bool is_ssr_rough() const;
+
+	void set_ssao_enabled(bool p_enable);
+	bool is_ssao_enabled() const;
+
+	void set_ssao_radius(float p_radius);
+	float get_ssao_radius() const;
+
+	void set_ssao_intensity(float p_intensity);
+	float get_ssao_intensity() const;
+
+	void set_ssao_radius2(float p_radius);
+	float get_ssao_radius2() const;
+
+	void set_ssao_intensity2(float p_intensity);
+	float get_ssao_intensity2() const;
+
+	void set_ssao_bias(float p_bias);
+	float get_ssao_bias() const;
+
+	void set_ssao_direct_light_affect(float p_direct_light_affect);
+	float get_ssao_direct_light_affect() const;
+
+	void set_ssao_color(const Color& p_color);
+	Color get_ssao_color() const;
+
+	void set_ssao_blur(bool p_enable);
+	bool is_ssao_blur_enabled() const;
+
 
 
 	virtual RID get_rid() const;

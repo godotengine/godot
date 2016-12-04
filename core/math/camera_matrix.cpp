@@ -534,6 +534,15 @@ float CameraMatrix::get_aspect() const {
 	return w/h;
 }
 
+int CameraMatrix::get_pixels_per_meter(int p_for_pixel_width) const {
+
+
+	Vector3 result = xform(Vector3(1,0,-1));
+
+	return int((result.x * 0.5 + 0.5) * p_for_pixel_width);
+
+}
+
 float CameraMatrix::get_fov() const {
 	const float * matrix = (const float*)this->matrix;
 

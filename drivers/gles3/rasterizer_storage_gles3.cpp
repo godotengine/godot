@@ -4785,6 +4785,20 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 		rt->depth=0;
 	}
 
+	if (rt->effects.ssao.blur_fbo[0]) {
+		glDeleteFramebuffers(1,&rt->effects.ssao.blur_fbo[0]);
+		glDeleteTextures(1,&rt->effects.ssao.blur_red[0]);
+		glDeleteFramebuffers(1,&rt->effects.ssao.blur_fbo[1]);
+		glDeleteTextures(1,&rt->effects.ssao.blur_red[1]);
+		for(int i=0;i<rt->effects.ssao.depth_mipmap_fbos.size();i++) {
+			glDeleteFramebuffers(1,&rt->effects.ssao.depth_mipmap_fbos[i]);
+		}
+
+		rt->effects.ssao.depth_mipmap_fbos.clear();
+
+		glDeleteTextures(1,&rt->effects.ssao.linear_depth);
+	}
+
 	Texture *tex = texture_owner.get(rt->texture);
 	tex->alloc_height=0;
 	tex->alloc_width=0;
@@ -5043,6 +5057,67 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+
+		}
+		///////////////// ssao
+
+		//AO strength textures
+		for(int i=0;i<2;i++) {
+
+			glGenFramebuffers(1, &rt->effects.ssao.blur_fbo[i]);
+			glBindFramebuffer(GL_FRAMEBUFFER, rt->effects.ssao.blur_fbo[i]);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+					       GL_TEXTURE_2D, rt->depth, 0);
+
+			glGenTextures(1, &rt->effects.ssao.blur_red[i]);
+			glBindTexture(GL_TEXTURE_2D, rt->effects.ssao.blur_red[i]);
+
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_R8,  rt->width, rt->height, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.ssao.blur_red[i], 0);
+
+			status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			if (status != GL_FRAMEBUFFER_COMPLETE) {
+				_render_target_clear(rt);
+				ERR_FAIL_COND( status != GL_FRAMEBUFFER_COMPLETE );
+			}
+
+		}
+		//5 mip levels for depth texture, but base is read separately
+
+		glGenTextures(1, &rt->effects.ssao.linear_depth);
+		glBindTexture(GL_TEXTURE_2D, rt->effects.ssao.linear_depth);
+
+		int ssao_w=rt->width/2;
+		int ssao_h=rt->height/2;
+
+
+		for(int i=0;i<4;i++) { //5, but 4 mips, base is read directly to save bw
+
+			glTexImage2D(GL_TEXTURE_2D, i, GL_R16UI,  ssao_w, ssao_h, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, NULL);
+			ssao_w>>=1;
+			ssao_h>>=1;
+		}
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 3);
+
+		for(int i=0;i<4;i++) { //5, but 4 mips, base is read directly to save bw
+
+			GLuint fbo;
+			glGenFramebuffers(1, &fbo);
+			glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.ssao.linear_depth, i);
+			rt->effects.ssao.depth_mipmap_fbos.push_back(fbo);
 		}
 
 	}
@@ -5653,6 +5728,7 @@ void RasterizerStorageGLES3::initialize() {
 		glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
 	}
 
+	//generic quadie for copying without touching skybox
 
 	{
 		//transform feedback buffers

@@ -12,5 +12,8 @@ if env['BUILDERS'].has_key('GLES3_GLSL'):
 	env.GLES3_GLSL('screen_space_reflection.glsl');
 	env.GLES3_GLSL('effect_blur.glsl');
 	env.GLES3_GLSL('subsurf_scattering.glsl');
+	env.GLES3_GLSL('ssao.glsl');
+	env.GLES3_GLSL('ssao_minify.glsl');
+	env.GLES3_GLSL('ssao_blur.glsl');
 
 

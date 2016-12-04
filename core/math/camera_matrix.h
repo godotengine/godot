@@ -87,6 +87,7 @@ struct CameraMatrix {
 
 	void scale_translate_to_fit(const AABB& p_aabb);
 	void make_scale(const Vector3 &p_scale);
+	int get_pixels_per_meter(int p_for_pixel_width) const;
 	operator Transform() const;
 
 	CameraMatrix();
