@@ -1677,7 +1677,7 @@ bool OS_Windows::is_window_minimized() const{
 	wp.length = sizeof(wp);
 	GetWindowPlacement(hWnd, &wp);
 
-	return wp.showCmd == SW_MINIMIZE; 
+	return wp.showCmd == SW_SHOWMINIMIZED; 
 }
 void OS_Windows::set_window_maximized(bool p_enabled){
 
@@ -1697,7 +1697,7 @@ bool OS_Windows::is_window_maximized() const{
 	wp.length = sizeof(wp);
 	GetWindowPlacement(hWnd, &wp);
 
-	return wp.showCmd == SW_MAXIMIZE; 
+	return wp.showCmd == SW_SHOWMAXIMIZED; 
 }
 
 
