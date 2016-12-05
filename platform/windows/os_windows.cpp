@@ -1697,7 +1697,7 @@ bool OS_Windows::is_window_maximized() const{
 	wp.length = sizeof(wp);
 	GetWindowPlacement(hWnd, &wp);
 
-	return wp.showCmd == SW_MAXIMIZEE; 
+	return wp.showCmd == SW_MAXIMIZE; 
 }
 
 
