@@ -1529,12 +1529,31 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				}
 
 			} else if (m.button_mask&2) {
+			
+				if (nav_scheme == NAVIGATION_GODOT) {
 
-				if (nav_scheme == NAVIGATION_MAYA && m.mod.alt) {
-					nav_mode = NAVIGATION_ZOOM;
+					int mod = 0;
+					if (m.mod.shift)
+						mod=KEY_SHIFT;
+					if (m.mod.alt)
+						mod=KEY_ALT;
+					if (m.mod.control)
+						mod=KEY_CONTROL;
+					if (m.mod.meta)
+						mod=KEY_META;
+
+					if (mod == _get_key_modifier("3d_editor/pan_modifier"))
+						nav_mode = NAVIGATION_PAN;
+					else if (mod == _get_key_modifier("3d_editor/zoom_modifier"))
+						nav_mode = NAVIGATION_ZOOM;
+					else if (mod == _get_key_modifier("3d_editor/orbit_modifier"))
+						nav_mode = NAVIGATION_ORBIT;
+
+				} else if( nav_scheme == NAVIGATION_MAYA && m.mod.alt ) {
+						nav_mode = NAVIGATION_ZOOM;
 				}
 
-			} else if (m.button_mask&4) {
+			} else if( m.button_mask&4 ) {
 
 				if (nav_scheme == NAVIGATION_GODOT) {
 
@@ -1555,8 +1574,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					else if (mod == _get_key_modifier("3d_editor/orbit_modifier"))
 						nav_mode = NAVIGATION_ORBIT;
 
-				} else if (nav_scheme == NAVIGATION_MAYA) {
-					if (m.mod.alt)
+				} else if (nav_scheme == NAVIGATION_MAYA && m.mod.alt ) {
 						nav_mode = NAVIGATION_PAN;
 				}
 
