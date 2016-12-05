@@ -76,12 +76,14 @@ Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer,int &r_buffer_size
 	uint32_t size;
 	uint8_t type;
 	rb.read(&type, 1, true);
-	if (type == IP_Address::TYPE_IPV4) {
-		rb.read((uint8_t*)&packet_ip.field8,4,true);
-		packet_ip.type = IP_Address::TYPE_IPV4;
+	if (type == IP::TYPE_IPV4) {
+		uint8_t ip[4];
+		rb.read(ip,4,true);
+		packet_ip.set_ipv4(ip);
 	} else {
-		rb.read((uint8_t*)&packet_ip.field8,16,true);
-		packet_ip.type = IP_Address::TYPE_IPV6;
+		uint8_t ipv6[16];
+		rb.read(ipv6,16,true);
+		packet_ip.set_ipv6(ipv6);
 	};
 	rb.read((uint8_t*)&packet_port,4,true);
 	rb.read((uint8_t*)&size,4,true);
@@ -94,7 +96,7 @@ Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer,int &r_buffer_size
 }
 Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 
-	ERR_FAIL_COND_V(peer_addr.type == IP_Address::TYPE_NONE, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(peer_addr == IP_Address(), ERR_UNCONFIGURED);
 
 	int sock = _get_socket();
 	ERR_FAIL_COND_V( sock == -1, FAILED );
@@ -163,7 +165,7 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 		uint32_t port = 0;
 
 		if (from.ss_family == AF_INET) {
-			uint8_t type = (uint8_t)IP_Address::TYPE_IPV4;
+			uint8_t type = (uint8_t)IP::TYPE_IPV4;
 			rb.write(&type, 1);
 			struct sockaddr_in* sin_from = (struct sockaddr_in*)&from;
 			rb.write((uint8_t*)&sin_from->sin_addr, 4);
@@ -171,7 +173,7 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 
 		} else if (from.ss_family == AF_INET6) {
 
-			uint8_t type = (uint8_t)IP_Address::TYPE_IPV6;
+			uint8_t type = (uint8_t)IP::TYPE_IPV6;
 			rb.write(&type, 1);
 
 			struct sockaddr_in6* s6_from = (struct sockaddr_in6*)&from;
@@ -181,7 +183,7 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 
 		} else {
 			// WARN_PRINT("Ignoring packet with unknown address family");
-			uint8_t type = (uint8_t)IP_Address::TYPE_NONE;
+			uint8_t type = (uint8_t)IP::TYPE_NONE;
 			rb.write(&type, 1);
 		};
 

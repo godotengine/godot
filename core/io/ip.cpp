@@ -82,7 +82,7 @@ struct _IP_ResolverPrivate {
 				continue;
 			queue[i].response=IP::get_singleton()->resolve_hostname(queue[i].hostname, queue[i].type);
 
-			if (queue[i].response.type==IP_Address::TYPE_NONE)
+			if (queue[i].response==IP_Address())
 				queue[i].status=IP::RESOLVER_STATUS_ERROR;
 			else
 				queue[i].status=IP::RESOLVER_STATUS_DONE;
@@ -116,7 +116,8 @@ IP_Address IP::resolve_hostname(const String& p_hostname, IP::Type p_type) {
 	GLOBAL_LOCK_FUNCTION;
 
 	if (resolver->cache.has(p_hostname))
-		if (resolver->cache[p_hostname].type & p_type != 0)
+		if ((resolver->cache[p_hostname].is_ipv4() && p_type != IP::TYPE_IPV6) ||
+			(!resolver->cache[p_hostname].is_ipv4() && p_type != IP::TYPE_IPV4))
 			return resolver->cache[p_hostname];
 		// requested type is different from type in cache. continue resolution, if successful it'll overwrite cache
 
@@ -138,7 +139,9 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname, IP::Typ
 
 	resolver->queue[id].hostname=p_hostname;
 	resolver->queue[id].type = p_type;
-	if (resolver->cache.has(p_hostname) && (resolver->cache[p_hostname].type & p_type) != 0) {
+	if (resolver->cache.has(p_hostname) &&
+		((resolver->cache[p_hostname].is_ipv4() && p_type != IP::TYPE_IPV6) ||
+		(!resolver->cache[p_hostname].is_ipv4() && p_type != IP::TYPE_IPV4))) {
 		resolver->queue[id].response=resolver->cache[p_hostname];
 		resolver->queue[id].status=IP::RESOLVER_STATUS_DONE;
 	} else {

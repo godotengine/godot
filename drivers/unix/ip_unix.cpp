@@ -75,13 +75,10 @@ static IP_Address _sockaddr2ip(struct sockaddr* p_addr) {
 	IP_Address ip;
 	if (p_addr->sa_family == AF_INET) {
 		struct sockaddr_in* addr = (struct sockaddr_in*)p_addr;
-		ip.field32[0] = *((unsigned long*)&addr->sin_addr);
-		ip.type = IP_Address::TYPE_IPV4;
+		ip.set_ipv4((uint8_t *)&(addr->sin_addr));
 	} else {
 		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)p_addr;
-		for (int i=0; i<16; i++)
-			ip.field8[i] = addr6->sin6_addr.s6_addr[i];
-		ip.type = IP_Address::TYPE_IPV6;
+		ip.set_ipv6(addr6->sin6_addr.s6_addr);
 	};
 
 	return ip;
@@ -189,15 +186,12 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 
 				SOCKADDR_IN* ipv4 = reinterpret_cast<SOCKADDR_IN*>(address->Address.lpSockaddr);
 
-				ip.field32[0] = *((unsigned long*)&ipv4->sin_addr);
-				ip.type = IP_Address::TYPE_IPV4;
+				ip.set_ipv4((uint8_t *)&(ipv4->sin_addr));
 			} else { // ipv6
 
 				SOCKADDR_IN6* ipv6 = reinterpret_cast<SOCKADDR_IN6*>(address->Address.lpSockaddr);
-				for (int i=0; i<16; i++) {
-					ip.field8[i] = ipv6->sin6_addr.s6_addr[i];
-				};
-				ip.type = IP_Address::TYPE_IPV6;
+
+				ip.set_ipv6(ipv6->sin6_addr.s6_addr);
 			};
 
 

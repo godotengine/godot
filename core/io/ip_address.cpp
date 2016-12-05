@@ -38,21 +38,18 @@ IP_Address::operator Variant() const {
 
 IP_Address::operator String() const {
 
-	if (type == TYPE_NONE)
-		return "0.0.0.0";
-	if (type == TYPE_IPV4)
-		return itos(field8[0])+"."+itos(field8[1])+"."+itos(field8[2])+"."+itos(field8[3]);
-	else {
-		String ret;
-		for (int i=0; i<8; i++) {
-			if (i > 0)
-				ret = ret + ":";
-			uint16_t num = (field8[i*2] << 8) + field8[i*2+1];
-			ret = ret + String::num_int64(num, 16);
-		};
-
-		return ret;
+	if(is_ipv4())
+		// IPv4 address mapped to IPv6
+		return itos(field8[12])+"."+itos(field8[13])+"."+itos(field8[14])+"."+itos(field8[15]);
+	String ret;
+	for (int i=0; i<8; i++) {
+		if (i > 0)
+			ret = ret + ":";
+		uint16_t num = (field8[i*2] << 8) + field8[i*2+1];
+		ret = ret + String::num_int64(num, 16);
 	};
+
+	return ret;
 }
 
 static void _parse_hex(const String& p_string, int p_start, uint8_t* p_dst) {
@@ -176,17 +173,41 @@ void IP_Address::clear() {
 	memset(&field8[0], 0, sizeof(field8));
 };
 
+bool IP_Address::is_ipv4() const{
+	return (field32[0]==0 && field32[1]==0 && field16[4]==0 && field16[5]==0xffff);
+}
+
+const uint8_t *IP_Address::get_ipv4() const{
+	ERR_FAIL_COND_V(!is_ipv4(),0);
+	return &(field8[12]);
+}
+
+void IP_Address::set_ipv4(const uint8_t *p_ip) {
+	clear();
+	field16[5]=0xffff;
+	field32[3]=*((const uint32_t *)p_ip);
+}
+
+const uint8_t *IP_Address::get_ipv6() const{
+	return field8;
+}
+
+void IP_Address::set_ipv6(const uint8_t *p_buf) {
+	clear();
+	for (int i=0; i<16; i++)
+		field8[i] = p_buf[i];
+}
+
 IP_Address::IP_Address(const String& p_string) {
 
 	clear();
 	if (p_string.find(":") >= 0) {
 
 		_parse_ipv6(p_string);
-		type = TYPE_IPV6;
 	} else {
-
-		_parse_ipv4(p_string, 0, &field8[0]);
-		type = TYPE_IPV4;
+		// Mapped to IPv6
+		field16[5] = 0xffff;
+		_parse_ipv4(p_string, 0, &field8[12]);
 	};
 }
 
@@ -198,25 +219,22 @@ _FORCE_INLINE_ static void _32_to_buf(uint8_t* p_dst, uint32_t p_n) {
 	p_dst[3] = (p_n >> 0) & 0xff;
 };
 
-IP_Address::IP_Address(uint32_t p_a,uint32_t p_b,uint32_t p_c,uint32_t p_d, IP_Address::AddrType p_type) {
+IP_Address::IP_Address(uint32_t p_a,uint32_t p_b,uint32_t p_c,uint32_t p_d, bool is_v6) {
 
-	type = p_type;
-	memset(&field8[0], 0, sizeof(field8));
-	if (p_type == TYPE_IPV4) {
-		field8[0]=p_a;
-		field8[1]=p_b;
-		field8[2]=p_c;
-		field8[3]=p_d;
-	} else if (type == TYPE_IPV6) {
+	clear();
+	if (!is_v6) {
+		// Mapped to IPv6
+		field16[5]=0xffff;
+		field8[12]=p_a;
+		field8[13]=p_b;
+		field8[14]=p_c;
+		field8[15]=p_d;
+	} else {
 
 		_32_to_buf(&field8[0], p_a);
 		_32_to_buf(&field8[4], p_b);
 		_32_to_buf(&field8[8], p_c);
 		_32_to_buf(&field8[12], p_d);
-	} else {
-		type = TYPE_NONE;
-		ERR_EXPLAIN("Invalid type specified for IP_Address (use TYPE_IPV4 or TYPE_IPV6");
-		ERR_FAIL();
-	};
+	}
 
 }
