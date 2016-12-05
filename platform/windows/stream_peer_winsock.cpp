@@ -300,7 +300,7 @@ void StreamPeerWinsock::set_socket(int p_sockfd, IP_Address p_host, int p_port, 
 
 Error StreamPeerWinsock::connect(const IP_Address& p_host, uint16_t p_port) {
 
-	ERR_FAIL_COND_V( p_host.type == IP_Address::TYPE_NONE, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V( p_host == IP_Address(), ERR_INVALID_PARAMETER);
 
 	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
 	if (sockfd  == INVALID_SOCKET) {
