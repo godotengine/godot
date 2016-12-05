@@ -70,6 +70,12 @@ Vector2 Camera2D::get_zoom() const {
 	return zoom;
 };
 
+void Camera2D::shake(float intensity_x, float intensity_y){
+	Vector2 *instance = memnew(Vector2(Math::random(-intensity_x, intensity_x), Math::random(-intensity_y, intensity_y)));
+	Vector2& intensity = *instance;
+	offset = intensity;
+	_update_scroll();
+}
 
 Matrix32 Camera2D::get_camera_transform()  {
 
@@ -604,6 +610,7 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_make_current"),&Camera2D::_make_current);
 
 	ObjectTypeDB::bind_method(_MD("_update_scroll"),&Camera2D::_update_scroll);
+	ObjectTypeDB::bind_method(_MD("shake"), &Camera2D::shake);
 
 	ObjectTypeDB::bind_method(_MD("_set_current","current"),&Camera2D::_set_current);
 	ObjectTypeDB::bind_method(_MD("is_current"),&Camera2D::is_current);
