@@ -34,6 +34,7 @@
 #include "os/main_loop.h"
 #include "io/packet_peer.h"
 #include "math/a_star.h"
+#include "math/triangle_mesh.h"
 #include "globals.h"
 #include "object_type_db.h"
 #include "geometry.h"
@@ -49,6 +50,7 @@
 #include "os/input.h"
 #include "core/io/xml_parser.h"
 #include "io/http_client.h"
+#include "io/pck_packer.h"
 #include "packed_data_container.h"
 #include "func_ref.h"
 #include "input_map.h"
@@ -133,6 +135,7 @@ void register_core_types() {
 	ObjectTypeDB::register_type<PHashTranslation>();
 	ObjectTypeDB::register_type<UndoRedo>();
 	ObjectTypeDB::register_type<HTTPClient>();
+	ObjectTypeDB::register_type<TriangleMesh>();
 
 	ObjectTypeDB::register_virtual_type<ResourceInteractiveLoader>();
 
@@ -145,6 +148,8 @@ void register_core_types() {
 	ObjectTypeDB::register_type<XMLParser>();
 
 	ObjectTypeDB::register_type<ConfigFile>();
+
+	ObjectTypeDB::register_type<PCKPacker>();
 
 	ObjectTypeDB::register_type<PackedDataContainer>();
 	ObjectTypeDB::register_virtual_type<PackedDataContainerRef>();
@@ -174,7 +179,7 @@ void register_core_singletons() {
 	Globals::get_singleton()->add_singleton( Globals::Singleton("ResourceSaver",_ResourceSaver::get_singleton()) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("PathRemap",PathRemap::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("OS",_OS::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("Marshalls",_marshalls ) );
+	Globals::get_singleton()->add_singleton( Globals::Singleton("Marshalls",_Marshalls::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("TranslationServer",TranslationServer::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("TS",TranslationServer::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("Input",Input::get_singleton() ) );

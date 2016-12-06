@@ -35,7 +35,7 @@ void HTTPRequest::_redirect_request(const String& p_new_url) {
 
 Error HTTPRequest::_request() {
 
-	print_line("Requesting:\n\tURL: "+url+"\n\tString: "+request_string+"\n\tPort: "+itos(port)+"\n\tSSL: "+itos(use_ssl)+"\n\tValidate SSL: "+itos(validate_ssl));
+	//print_line("Requesting:\n\tURL: "+url+"\n\tString: "+request_string+"\n\tPort: "+itos(port)+"\n\tSSL: "+itos(use_ssl)+"\n\tValidate SSL: "+itos(validate_ssl));
 	return client->connect(url,port,use_ssl,validate_ssl);
 }
 
@@ -53,36 +53,36 @@ Error HTTPRequest::_parse_url(const String& p_url) {
 	downloaded=0;
 	redirections=0;
 
-	print_line("1 url: "+url);
+	//print_line("1 url: "+url);
 	if (url.begins_with("http://")) {
 
 		url=url.substr(7,url.length()-7);
-		print_line("no SSL");
+		//print_line("no SSL");
 
 	} else if (url.begins_with("https://")) {
 		url=url.substr(8,url.length()-8);
 		use_ssl=true;
 		port=443;
-		print_line("yes SSL");
+		//print_line("yes SSL");
 	} else {
 		ERR_EXPLAIN("Malformed URL");
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
 
-	print_line("2 url: "+url);
+	//print_line("2 url: "+url);
 
 	int slash_pos = url.find("/");
 
 	if (slash_pos!=-1) {
 		request_string=url.substr(slash_pos,url.length());
 		url=url.substr(0,slash_pos);
-		print_line("request string: "+request_string);
+		//print_line("request string: "+request_string);
 	} else {
 		request_string="/";
-		print_line("no request");
+		//print_line("no request");
 	}
 
-	print_line("3 url: "+url);
+	//print_line("3 url: "+url);
 
 	int colon_pos = url.find(":");
 	if (colon_pos!=-1) {
@@ -91,7 +91,7 @@ Error HTTPRequest::_parse_url(const String& p_url) {
 		ERR_FAIL_COND_V(port<1 || port > 65535,ERR_INVALID_PARAMETER);
 	}
 
-	print_line("4 url: "+url);
+	//print_line("4 url: "+url);
 
 	return OK;
 }
@@ -224,7 +224,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 	response_headers.resize(0);
 	downloaded=0;
 	for (List<String>::Element *E=rheaders.front();E;E=E->next()) {
-		print_line("HEADER: "+E->get());
+		//print_line("HEADER: "+E->get());
 		response_headers.push_back(E->get());
 	}
 
@@ -245,7 +245,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 			}
 		}
 
-		print_line("NEW LOCATION: "+new_request);
+		//print_line("NEW LOCATION: "+new_request);
 
 		if (new_request!="") {
 			//process redirect
@@ -261,7 +261,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 
 			err = _request();
 
-			print_line("new connection: "+itos(err));
+			//print_line("new connection: "+itos(err));
 			if (err==OK) {
 				request_sent=false;
 				got_response=false;

@@ -165,7 +165,7 @@ public:
 
 
 	//Error connect_and_get(const String& p_url,bool p_verify_host=true); //connects to a full url and perform request
-	Error connect(const String &p_host,int p_port,bool p_ssl=false,bool p_verify_host=true);
+	Error connect(const String &p_host,int p_port,bool p_ssl=false,bool p_verify_host=true, IP_Address::AddrType p_addr_type = IP_Address::TYPE_ANY);
 
 	void set_connection(const Ref<StreamPeer>& p_connection);
 	Ref<StreamPeer> get_connection() const;

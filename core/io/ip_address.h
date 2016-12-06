@@ -33,22 +33,48 @@
 
 struct IP_Address {
 
-	union {
-		uint8_t field[4];
-		uint32_t host;
+public:
+	enum AddrType {
+		TYPE_NONE = 0,
+		TYPE_IPV4 = 1,
+		TYPE_IPV6 = 2,
+
+		TYPE_ANY = 3,
 	};
 
+	AddrType type;
+
+	union {
+		uint8_t field8[16];
+		uint16_t field16[8];
+		uint32_t field32[4];
+	};
+
+protected:
+	void _parse_ipv6(const String& p_string);
+	void _parse_ipv4(const String& p_string, int p_start, uint8_t* p_ret);
+
+public:
 	//operator Variant() const;
 	bool operator==(const IP_Address& p_ip) const {
-		return host==p_ip.host;
+		for (int i=0; i<4; i++)
+			if (field32[i] != p_ip.field32[i])
+				return false;
+		return true;
 	}
 	bool operator!=(const IP_Address& p_ip) const {
-		return host!=p_ip.host;
+		for (int i=0; i<4; i++)
+			if (field32[i] != p_ip.field32[i])
+				return true;
+		return false;
 	}
+
+	void clear();
+
 	operator String() const;
 	IP_Address(const String& p_string);
-	IP_Address(uint8_t p_a,uint8_t p_b,uint8_t p_c,uint8_t p_d);
-	IP_Address() { host=0; }
+	IP_Address(uint32_t p_a,uint32_t p_b,uint32_t p_c,uint32_t p_d, AddrType p_type=TYPE_IPV4);
+	IP_Address() { clear(); type=TYPE_NONE; }
 };
 
 

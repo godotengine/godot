@@ -34,6 +34,4 @@
 #define PTHREAD_BSD_SET_NAME
 #endif
 
-#define GLES2_INCLUDE_H "gl_context/GL/glew.h"
-
-
+#define GLES2_INCLUDE_H "GL/glew.h"

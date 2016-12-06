@@ -121,6 +121,7 @@ bool GDParser::_parse_arguments(Node* p_parent,Vector<Node*>& p_args,bool p_stat
 		tokenizer->advance();
 	} else {
 
+		parenthesis ++;
 		int argidx=0;
 
 		while(true) {
@@ -165,6 +166,7 @@ bool GDParser::_parse_arguments(Node* p_parent,Vector<Node*>& p_args,bool p_stat
 			}
 
 		}
+		parenthesis --;
 	}
 
 	return true;
@@ -364,10 +366,16 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			OperatorNode *yield = alloc_node<OperatorNode>();
 			yield->op=OperatorNode::OP_YIELD;
 
+			while (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+				tokenizer->advance();
+			}
+
 			if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {
 				expr=yield;
 				tokenizer->advance();
 			} else {
+
+				parenthesis ++;
 
 				Node *object = _parse_and_reduce_expression(p_parent,p_static);
 				if (!object)
@@ -375,7 +383,6 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				yield->arguments.push_back(object);
 
 				if (tokenizer->get_token()!=GDTokenizer::TK_COMMA) {
-
 					_set_error("Expected ',' after first argument of 'yield'");
 					return NULL;
 				}
@@ -403,10 +410,11 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				yield->arguments.push_back(signal);
 
 				if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
-
 					_set_error("Expected ')' after second argument of 'yield'");
 					return NULL;
 				}
+
+				parenthesis --;
 
 				tokenizer->advance();
 
@@ -532,14 +540,15 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				expr = id;
 			}
 
-		} else if (/*tokenizer->get_token()==GDTokenizer::TK_OP_ADD ||*/ tokenizer->get_token()==GDTokenizer::TK_OP_SUB || tokenizer->get_token()==GDTokenizer::TK_OP_NOT || tokenizer->get_token()==GDTokenizer::TK_OP_BIT_INVERT) {
+		} else if (tokenizer->get_token()==GDTokenizer::TK_OP_ADD || tokenizer->get_token()==GDTokenizer::TK_OP_SUB || tokenizer->get_token()==GDTokenizer::TK_OP_NOT || tokenizer->get_token()==GDTokenizer::TK_OP_BIT_INVERT) {
 
-			//single prefix operators like !expr -expr ++expr --expr
+			//single prefix operators like !expr +expr -expr ++expr --expr
 			alloc_node<OperatorNode>();
 			Expression e;
 			e.is_op=true;
 
 			switch(tokenizer->get_token()) {
+				case GDTokenizer::TK_OP_ADD: e.op=OperatorNode::OP_POS; break;
 				case GDTokenizer::TK_OP_SUB: e.op=OperatorNode::OP_NEG; break;
 				case GDTokenizer::TK_OP_NOT: e.op=OperatorNode::OP_NOT; break;
 				case GDTokenizer::TK_OP_BIT_INVERT: e.op=OperatorNode::OP_BIT_INVERT;; break;
@@ -987,6 +996,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 				case OperatorNode::OP_BIT_INVERT: priority=0; unary=true; break;
 				case OperatorNode::OP_NEG: priority=1; unary=true; break;
+				case OperatorNode::OP_POS: priority=1; unary=true; break;
 
 				case OperatorNode::OP_MUL: priority=2; break;
 				case OperatorNode::OP_DIV: priority=2; break;
@@ -1504,6 +1514,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 
 				//unary operators
 				case OperatorNode::OP_NEG: { _REDUCE_UNARY(Variant::OP_NEGATE); } break;
+				case OperatorNode::OP_POS: { _REDUCE_UNARY(Variant::OP_POSITIVE); } break;
 				case OperatorNode::OP_NOT: { _REDUCE_UNARY(Variant::OP_NOT); } break;
 				case OperatorNode::OP_BIT_INVERT: { _REDUCE_UNARY(Variant::OP_BIT_NEGATE); } break;
 				//binary operators (in precedence order)
@@ -1705,6 +1716,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 			case GDTokenizer::TK_CF_IF: {
 
 				tokenizer->advance();
+				
 				Node *condition = _parse_and_reduce_expression(p_block,p_static);
 				if (!condition) {
 					if (_recover_from_completion()) {
@@ -2305,6 +2317,11 @@ void GDParser::_parse_class(ClassNode *p_class) {
 					bool defaulting=false;
 					while(true) {
 
+						if (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+							tokenizer->advance();
+							continue;
+						}
+
 						if (tokenizer->get_token()==GDTokenizer::TK_PR_VAR) {
 
 							tokenizer->advance(); //var before the identifier is allowed
@@ -2357,6 +2374,10 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							default_values.push_back(on);
 						}
 
+						while (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+							tokenizer->advance();
+						}
+
 						if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
 							tokenizer->advance();
 							continue;
@@ -2398,6 +2419,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 							if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
 								//has arguments
+								parenthesis ++;
 								while(true) {
 
 									Node *arg = _parse_and_reduce_expression(p_class,_static);
@@ -2415,6 +2437,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 									break;
 
 								}
+								parenthesis --;
 							}
 
 							tokenizer->advance();
@@ -2478,6 +2501,10 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_OPEN) {
 					tokenizer->advance();
 					while(true) {
+						if (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+							tokenizer->advance();
+							continue;
+						}
 
 
 						if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {
@@ -2492,6 +2519,10 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 						sig.arguments.push_back(tokenizer->get_token_identifier());
 						tokenizer->advance();
+
+						while (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+							tokenizer->advance();
+						}
 
 						if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
 							tokenizer->advance();
@@ -3101,6 +3132,16 @@ void GDParser::_parse_class(ClassNode *p_class) {
 							}
 							member._export.type=cn->value.get_type();
 							member._export.usage|=PROPERTY_USAGE_SCRIPT_VARIABLE;
+							if (cn->value.get_type()==Variant::OBJECT) {
+								Object *obj = cn->value;
+								Resource *res = obj->cast_to<Resource>();
+								if(res==NULL) {
+									_set_error("Exported constant not a type or resource.");
+									return;
+								}
+								member._export.hint=PROPERTY_HINT_RESOURCE_TYPE;
+								member._export.hint_string=res->get_type();
+							}
 						}
 					}
 #ifdef TOOLS_ENABLED
@@ -3337,7 +3378,16 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				
 
 			} break;
-
+			
+			case GDTokenizer::TK_CONSTANT: {
+				if(tokenizer->get_token_constant().get_type() == Variant::STRING) {
+					tokenizer->advance();
+					// Ignore
+				} else {
+					_set_error(String()+"Unexpected constant of type: "+Variant::get_type_name(tokenizer->get_token_constant().get_type()));
+					return;
+				}
+			} break;
 
 			default: {
 

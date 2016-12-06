@@ -701,6 +701,13 @@ void PopupMenu::set_item_submenu(int p_idx, const String& p_submenu) {
 	update();
 }
 
+void PopupMenu::toggle_item_checked(int p_idx) {
+
+	ERR_FAIL_INDEX(p_idx,items.size());
+	items[p_idx].checked = !items[p_idx].checked;
+	update();
+}
+
 String PopupMenu::get_item_text(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx,items.size(),"");
@@ -1061,33 +1068,40 @@ void PopupMenu::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_icon_check_shortcut","texture","shortcut:ShortCut","id"),&PopupMenu::add_icon_check_shortcut,DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("add_check_shortcut","shortcut:ShortCut","id"),&PopupMenu::add_check_shortcut,DEFVAL(-1));
 
-
 	ObjectTypeDB::bind_method(_MD("set_item_text","idx","text"),&PopupMenu::set_item_text);
 	ObjectTypeDB::bind_method(_MD("set_item_icon","idx","icon"),&PopupMenu::set_item_icon);
+	ObjectTypeDB::bind_method(_MD("set_item_checked","idx","checked"),&PopupMenu::set_item_checked);
+	ObjectTypeDB::bind_method(_MD("set_item_ID","idx","id"),&PopupMenu::set_item_ID);
 	ObjectTypeDB::bind_method(_MD("set_item_accelerator","idx","accel"),&PopupMenu::set_item_accelerator);
 	ObjectTypeDB::bind_method(_MD("set_item_metadata","idx","metadata"),&PopupMenu::set_item_metadata);
-	ObjectTypeDB::bind_method(_MD("set_item_checked","idx","checked"),&PopupMenu::set_item_checked);
 	ObjectTypeDB::bind_method(_MD("set_item_disabled","idx","disabled"),&PopupMenu::set_item_disabled);
-	ObjectTypeDB::bind_method(_MD("set_item_shortcut","idx","shortcut:ShortCut"),&PopupMenu::set_item_shortcut);
 	ObjectTypeDB::bind_method(_MD("set_item_submenu","idx","submenu"),&PopupMenu::set_item_submenu);
 	ObjectTypeDB::bind_method(_MD("set_item_as_separator","idx","enable"),&PopupMenu::set_item_as_separator);
 	ObjectTypeDB::bind_method(_MD("set_item_as_checkable","idx","enable"),&PopupMenu::set_item_as_checkable);
-	ObjectTypeDB::bind_method(_MD("set_item_ID","idx","id"),&PopupMenu::set_item_ID);
+	ObjectTypeDB::bind_method(_MD("set_item_tooltip","idx","tooltip"),&PopupMenu::set_item_tooltip);
+	ObjectTypeDB::bind_method(_MD("set_item_shortcut","idx","shortcut:ShortCut"),&PopupMenu::set_item_shortcut);
+
+	ObjectTypeDB::bind_method(_MD("toggle_item_checked","idx"), &PopupMenu::toggle_item_checked);
+
 	ObjectTypeDB::bind_method(_MD("get_item_text","idx"),&PopupMenu::get_item_text);
 	ObjectTypeDB::bind_method(_MD("get_item_icon","idx"),&PopupMenu::get_item_icon);
-	ObjectTypeDB::bind_method(_MD("get_item_metadata","idx"),&PopupMenu::get_item_metadata);
+	ObjectTypeDB::bind_method(_MD("is_item_checked","idx"),&PopupMenu::is_item_checked);
+	ObjectTypeDB::bind_method(_MD("get_item_ID","idx"),&PopupMenu::get_item_ID);
+	ObjectTypeDB::bind_method(_MD("get_item_index","id"),&PopupMenu::get_item_index);
 	ObjectTypeDB::bind_method(_MD("get_item_accelerator","idx"),&PopupMenu::get_item_accelerator);
-	ObjectTypeDB::bind_method(_MD("get_item_shortcut:ShortCut","idx"),&PopupMenu::get_item_shortcut);
+	ObjectTypeDB::bind_method(_MD("get_item_metadata","idx"),&PopupMenu::get_item_metadata);
+	ObjectTypeDB::bind_method(_MD("is_item_disabled","idx"),&PopupMenu::is_item_disabled);
 	ObjectTypeDB::bind_method(_MD("get_item_submenu","idx"),&PopupMenu::get_item_submenu);
 	ObjectTypeDB::bind_method(_MD("is_item_separator","idx"),&PopupMenu::is_item_separator);
 	ObjectTypeDB::bind_method(_MD("is_item_checkable","idx"),&PopupMenu::is_item_checkable);
-	ObjectTypeDB::bind_method(_MD("is_item_checked","idx"),&PopupMenu::is_item_checked);
-	ObjectTypeDB::bind_method(_MD("is_item_disabled","idx"),&PopupMenu::is_item_disabled);
-	ObjectTypeDB::bind_method(_MD("get_item_ID","idx"),&PopupMenu::get_item_ID);
-	ObjectTypeDB::bind_method(_MD("get_item_index","id"),&PopupMenu::get_item_index);
+	ObjectTypeDB::bind_method(_MD("get_item_tooltip","idx"),&PopupMenu::get_item_tooltip);
+	ObjectTypeDB::bind_method(_MD("get_item_shortcut:ShortCut","idx"),&PopupMenu::get_item_shortcut);
+
 	ObjectTypeDB::bind_method(_MD("get_item_count"),&PopupMenu::get_item_count);
-	ObjectTypeDB::bind_method(_MD("add_separator"),&PopupMenu::add_separator);
+
 	ObjectTypeDB::bind_method(_MD("remove_item","idx"),&PopupMenu::remove_item);
+
+	ObjectTypeDB::bind_method(_MD("add_separator"),&PopupMenu::add_separator);
 	ObjectTypeDB::bind_method(_MD("clear"),&PopupMenu::clear);
 
 	ObjectTypeDB::bind_method(_MD("_set_items"),&PopupMenu::_set_items);
@@ -1125,5 +1139,3 @@ PopupMenu::PopupMenu() {
 
 PopupMenu::~PopupMenu() {
 }
-
-

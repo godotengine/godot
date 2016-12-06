@@ -67,6 +67,9 @@ public:
 	void insert(int p_pos, const Variant& p_value);
 	void remove(int p_pos);
 
+	Variant front() const;
+	Variant back() const;
+
 	void sort();
 	void sort_custom(Object *p_obj,const StringName& p_function);
 	void invert();
@@ -80,8 +83,8 @@ public:
 	void erase(const Variant& p_value);
 
 	void push_front(const Variant& p_value);
-	void pop_back();
-	void pop_front();
+	Variant pop_back();
+	Variant pop_front();
 
 	Array(const Array& p_from);
 	Array(bool p_shared=false);

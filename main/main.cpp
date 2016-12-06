@@ -57,7 +57,6 @@
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
 
-#include "tools/pck/pck_packer.h"
 #endif
 
 #include "io/file_access_network.h"
@@ -160,7 +159,7 @@ void Main::print_help(const char* p_binary) {
 		OS::get_singleton()->print("%s",OS::get_singleton()->get_video_driver_name(i));
 	}
 	OS::get_singleton()->print(")\n");
-	OS::get_singleton()->print("\t-ldpi\t : Force low-dpi mode (OSX Only)");
+	OS::get_singleton()->print("\t-ldpi\t : Force low-dpi mode (OSX Only)\n");
 
 	OS::get_singleton()->print("\t-ad DRIVER\t : Audio Driver (");
 	for (int i=0;i<OS::get_singleton()->get_audio_driver_count();i++) {
@@ -170,8 +169,7 @@ void Main::print_help(const char* p_binary) {
 		OS::get_singleton()->print("%s",OS::get_singleton()->get_audio_driver_name(i));
 	}
     OS::get_singleton()->print(")\n");
-	OS::get_singleton()->print("\t-rthread <mode>\t : Render Thread Mode ('unsafe', 'safe', 'separate).");
-	OS::get_singleton()->print(")\n");
+	OS::get_singleton()->print("\t-rthread <mode>\t : Render Thread Mode ('unsafe', 'safe', 'separate').\n");
 	OS::get_singleton()->print("\t-s,-script [script] : Run a script.\n");
 	OS::get_singleton()->print("\t-d,-debug : Debug (local stdout debugger).\n");
 	OS::get_singleton()->print("\t-rdebug ADDRESS : Remote debug (<ip>:<port> host address).\n");
@@ -555,6 +553,16 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 					OS::get_singleton()->print("Invalid debug host string\n");
 					goto error;
 				}
+				N=I->next()->next();
+			} else {
+				goto error;
+
+			}
+		} else if (I->get()=="-epid") {
+			if (I->next()) {
+
+				int editor_pid=I->next()->get().to_int();
+				Globals::get_singleton()->set("editor_pid",editor_pid);
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -996,7 +1004,7 @@ Error Main::setup2() {
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::set_current_api(ObjectTypeDB::API_EDITOR);
 	EditorNode::register_editor_types();
-	ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
+
 	ObjectTypeDB::set_current_api(ObjectTypeDB::API_CORE);
 
 #endif
@@ -1755,4 +1763,3 @@ void Main::cleanup() {
 
 
 }
-

@@ -1,4 +1,6 @@
+#!/usr/bin/python
+
 Import('env')
 Export('env')
 
-SConscript('tests/SCsub');
+SConscript('tests/SCsub')

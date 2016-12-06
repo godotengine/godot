@@ -1,116 +1,42 @@
+#!/usr/bin/env python
+
 Import('env')
 
-env_drivers = env.Clone()
+env.drivers_sources = []
 
-env.drivers_sources=[]
-#env.add_source_files(env.drivers_sources,"*.cpp")
-env_drivers.Append(CPPPATH=["vorbis"])
+if ("builtin_zlib" in env and env["builtin_zlib"] == "yes"):
+    SConscript("zlib/SCsub")
 
-Export('env_drivers')
+# OS drivers
+SConscript('unix/SCsub')
+SConscript('windows/SCsub')
 
-SConscript('unix/SCsub');
-SConscript('alsa/SCsub');
-SConscript('pulseaudio/SCsub');
-SConscript('windows/SCsub');
-SConscript('gles2/SCsub');
-SConscript('gl_context/SCsub');
-SConscript('pnm/SCsub');
+# Sounds drivers
+SConscript('alsa/SCsub')
+SConscript('pulseaudio/SCsub')
+if (env["platform"] == "windows"):
+    SConscript("rtaudio/SCsub")
+if (env["xaudio2"] == "yes"):
+    SConscript("xaudio2/SCsub")
 
-if (env['openssl']!='no'):
-	env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
-	env_drivers.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
-	if (env['openssl']=="builtin"):
-		env_drivers.Append(CPPPATH=['#drivers/builtin_openssl2'])
-		SConscript("builtin_openssl2/SCsub");
+# Graphics drivers
+SConscript('gles2/SCsub')
+SConscript('gl_context/SCsub')
 
-	SConscript('openssl/SCsub')
+# Core dependencies
+SConscript("png/SCsub")
 
+# Tools override
+# FIXME: Should likely be integrated in the tools/ codebase
+if (env["tools"] == "yes"):
+    SConscript("convex_decomp/SCsub")
 
-if (env["png"]=="yes"):
-	SConscript("png/SCsub");
-if (env["jpg"]=="yes"):
-	#SConscript("jpg/SCsub");
-	SConscript("jpegd/SCsub");
-if (env["webp"]=="yes"):
-	SConscript("webp/SCsub");
-SConscript("dds/SCsub");
-SConscript("pvr/SCsub");
-SConscript("etc1/SCsub")
-if (env["builtin_zlib"]=="yes"):
-	SConscript("builtin_zlib/SCsub");
+if env['vsproj'] == "yes":
+    env.AddToVSProject(env.drivers_sources)
 
-SConscript("rtaudio/SCsub");
-SConscript("nedmalloc/SCsub");
-SConscript("nrex/SCsub");
-SConscript("chibi/SCsub");
-if (env["vorbis"]=="yes" or env["speex"]=="yes" or env["theoralib"]=="yes" or env["opus"]=="yes"):
-        SConscript("ogg/SCsub");
-if (env["vorbis"]=="yes"):
-        SConscript("vorbis/SCsub");
-if (env["opus"]=="yes"):
-	SConscript('opus/SCsub');
-if (env["tools"]=="yes"):
-	SConscript("convex_decomp/SCsub");
-
-if (env["theoralib"]=="yes"):
-	SConscript("theora/SCsub");
-if (env['speex']=='yes'):
-	SConscript("speex/SCsub");
-if (env['musepack']=='yes'):
-	SConscript("mpc/SCsub");
-if (env["squish"]=="yes" and env["tools"]=="yes"):
-	SConscript("squish/SCsub");
-if (env["freetype"]!="no"):
-	SConscript("freetype/SCsub");
-
-num = 0
-cur_base = ""
-total = len(env.drivers_sources)
-max_src = 64
-list = []
-lib_list = []
-
-import string
-
-if env['vsproj']=="yes":
-	env.AddToVSProject(env.drivers_sources)
-
-if (env.split_drivers): #split drivers, this used to be needed for windows until separate builders for windows were created
-
-	for f in env.drivers_sources:
-		fname = ""
-		if type(f) == type(""):
-			fname = env.File(f).path
-		else:
-			fname = env.File(f)[0].path
-		fname = fname.replace("\\", "/")
-		base = string.join(fname.split("/")[:2], "/")
-		if base != cur_base and len(list) > max_src:
-			if num > 0:
-				lib = env_drivers.Library("drivers"+str(num), list)
-				lib_list.append(lib)
-				list = []
-			num = num+1
-		cur_base = base
-		list.append(f)
-
-	lib = env_drivers.Library("drivers"+str(num), list)
-	lib_list.append(lib)
-
-	if len(lib_list) > 0:
-		import os, sys
-		if os.name=='posix' and sys.platform=='msys':
-			env.Replace(ARFLAGS=['rcsT'])
-
-			lib = env_drivers.Library("drivers_collated", lib_list)
-			lib_list = [lib]
-
-	drivers_base=[]
-	env_drivers.add_source_files(drivers_base,"*.cpp")
-	lib_list.insert(0, env_drivers.Library("drivers", drivers_base))
-
-	env.Prepend(LIBS=lib_list)
+if env.split_drivers:
+    env.split_lib("drivers")
 else:
-	env_drivers.add_source_files(env.drivers_sources,"*.cpp")
-	lib = env_drivers.Library("drivers",env.drivers_sources)
-	env.Prepend(LIBS=[lib])
+    env.add_source_files(env.drivers_sources, "*.cpp")
+    lib = env.Library("drivers", env.drivers_sources)
+    env.Prepend(LIBS=[lib])

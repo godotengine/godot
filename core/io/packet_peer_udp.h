@@ -40,14 +40,13 @@ protected:
 	static PacketPeerUDP* (*_create)();
 	static void _bind_methods();
 
-	int _get_packet_address() const;
 	String _get_packet_ip() const;
 
-	virtual Error _set_send_address(const String& p_address,int p_port);
+	virtual Error _set_send_address(const String& p_address,int p_port, IP_Address::AddrType p_address_type = IP_Address::TYPE_ANY);
 
 public:
 
-	virtual Error listen(int p_port,int p_recv_buffer_size=65536)=0;
+	virtual Error listen(int p_port, IP_Address::AddrType p_address_type = IP_Address::TYPE_ANY, int p_recv_buffer_size=65536)=0;
 	virtual void close()=0;
 	virtual Error wait()=0;
 	virtual bool is_listening() const=0;

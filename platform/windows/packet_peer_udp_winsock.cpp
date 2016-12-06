@@ -29,6 +29,9 @@
 #include "packet_peer_udp_winsock.h"
 
 #include <winsock2.h>
+#include <ws2tcpip.h>
+
+#include "drivers/unix/socket_helpers.h"
 
 int PacketPeerUDPWinsock::get_available_packet_count() const {
 
@@ -48,7 +51,15 @@ Error PacketPeerUDPWinsock::get_packet(const uint8_t **r_buffer,int &r_buffer_si
 		return ERR_UNAVAILABLE;
 
 	uint32_t size;
-	rb.read((uint8_t*)&packet_ip.host,4,true);
+	uint8_t type;
+	rb.read(&type, 1, true);
+	if (type == IP_Address::TYPE_IPV4) {
+		rb.read((uint8_t*)&packet_ip.field8,4,true);
+		packet_ip.type = IP_Address::TYPE_IPV4;
+	} else {
+		rb.read((uint8_t*)&packet_ip.field8,16,true);
+		packet_ip.type = IP_Address::TYPE_IPV6;
+	};
 	rb.read((uint8_t*)&packet_port,4,true);
 	rb.read((uint8_t*)&size,4,true);
 	rb.read(packet_buffer,size,true);
@@ -60,19 +71,16 @@ Error PacketPeerUDPWinsock::get_packet(const uint8_t **r_buffer,int &r_buffer_si
 }
 Error PacketPeerUDPWinsock::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 
-	int sock = _get_socket();
+	int sock = _get_socket(peer_addr.type);
 	ERR_FAIL_COND_V( sock == -1, FAILED );
-	struct sockaddr_in addr;
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(peer_port);
-	addr.sin_addr = *((struct in_addr*)&peer_addr.host);
-
+	struct sockaddr_storage addr;
+	size_t addr_size = _set_sockaddr(&addr, peer_addr, peer_port);
 
 	_set_blocking(true);
 
 	errno = 0;
 	int err;
-	while ( (err = sendto(sock, (const char*)p_buffer, p_buffer_size, 0, (struct sockaddr*)&addr, sizeof(addr))) != p_buffer_size) {
+	while ( (err = sendto(sock, (const char*)p_buffer, p_buffer_size, 0, (struct sockaddr*)&addr, addr_size)) != p_buffer_size) {
 
 		if (WSAGetLastError() != WSAEWOULDBLOCK) {
 			return FAILED;
@@ -104,17 +112,25 @@ void PacketPeerUDPWinsock::_set_blocking(bool p_blocking) {
 	};
 }
 
-Error PacketPeerUDPWinsock::listen(int p_port, int p_recv_buffer_size){
+Error PacketPeerUDPWinsock::listen(int p_port, IP_Address::AddrType p_type, int p_recv_buffer_size) {
 
 	close();
-	int sock = _get_socket();
+	int sock = _get_socket(p_type);
 	if (sock == -1 )
 		return ERR_CANT_CREATE;
-	sockaddr_in addr = {0};
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(p_port);
-	addr.sin_addr.s_addr = INADDR_ANY;
-	if (bind(sock, (struct sockaddr*)&addr, sizeof(sockaddr_in)) == -1 ) {
+
+	if(p_type == IP_Address::TYPE_IPV6) {
+		// Use IPv6 only socket
+		int yes = 1;
+		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&yes, sizeof(yes)) != 0) {
+				WARN_PRINT("Unable to unset IPv4 address mapping over IPv6");
+		}
+	}
+
+	struct sockaddr_storage addr = {0};
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, p_type, NULL);
+
+	if (bind(sock, (struct sockaddr*)&addr, addr_size) == -1 ) {
 		close();
 		return ERR_UNAVAILABLE;
 	}
@@ -146,17 +162,41 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 	_set_blocking(p_wait);
 
 
-	struct sockaddr_in from = {0};
-	int len = sizeof(struct sockaddr_in);
+	struct sockaddr_storage from = {0};
+	int len = sizeof(struct sockaddr_storage);
 	int ret;
 	while ( (ret = recvfrom(sockfd, (char*)recv_buffer, MIN((int)sizeof(recv_buffer),MAX(rb.space_left()-12, 0)), 0, (struct sockaddr*)&from, &len)) > 0) {
-		rb.write((uint8_t*)&from.sin_addr, 4);
-		uint32_t port = ntohs(from.sin_port);
+
+		uint32_t port = 0;
+
+		if (from.ss_family == AF_INET) {
+			uint8_t type = (uint8_t)IP_Address::TYPE_IPV4;
+			rb.write(&type, 1);
+			struct sockaddr_in* sin_from = (struct sockaddr_in*)&from;
+			rb.write((uint8_t*)&sin_from->sin_addr, 4);
+			port = ntohs(sin_from->sin_port);
+
+		} else if (from.ss_family == AF_INET6) {
+
+			uint8_t type = (uint8_t)IP_Address::TYPE_IPV6;
+			rb.write(&type, 1);
+
+			struct sockaddr_in6* s6_from = (struct sockaddr_in6*)&from;
+			rb.write((uint8_t*)&s6_from->sin6_addr, 16);
+
+			port = ntohs(s6_from->sin6_port);
+
+		} else {
+			// WARN_PRINT("Ignoring packet with unknown address family");
+			uint8_t type = (uint8_t)IP_Address::TYPE_NONE;
+			rb.write(&type, 1);
+		};
+
 		rb.write((uint8_t*)&port, 4);
 		rb.write((uint8_t*)&ret, 4);
 		rb.write(recv_buffer, ret);
 
-		len = sizeof(struct sockaddr_in);
+		len = sizeof(struct sockaddr_storage);
 		++queue_count;
 	};
 
@@ -202,14 +242,12 @@ int PacketPeerUDPWinsock::get_packet_port() const{
 	return packet_port;
 }
 
-int PacketPeerUDPWinsock::_get_socket() {
+int PacketPeerUDPWinsock::_get_socket(IP_Address::AddrType p_type) {
 
 	if (sockfd != -1)
 		return sockfd;
 
-	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	ERR_FAIL_COND_V( sockfd == -1, -1 );
-	//fcntl(sockfd, F_SETFL, O_NONBLOCK);
+	sockfd = _socket_create(p_type, SOCK_DGRAM, IPPROTO_UDP);
 
 	return sockfd;
 }

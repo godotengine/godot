@@ -5,13 +5,14 @@
 # António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
 # George Marques <george@gmarqu.es>, 2016.
 # Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
+# Mailson Silva Marins <mailsons335@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2016-08-11 15:38+0000\n"
-"Last-Translator: António Sarmento <antonio.luis.sarmento@gmail.com>\n"
+"PO-Revision-Date: 2016-09-02 21:07+0000\n"
+"Last-Translator: Mailson Silva Marins <mailsons335@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -19,12 +20,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.8\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argumento de tipo inválido para convert(), use constantes TYPE_*."
+msgstr "Argumento de tipo inválido para converter(), use constantes TYPE_*."
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -120,9 +121,8 @@ msgid "Rename Function"
 msgstr "Renomear Função"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Variable"
-msgstr "Renomear Amostra"
+msgstr "renomeie variável"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Signal"
@@ -159,6 +159,11 @@ msgstr "Remover Sinal"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Signal:"
 msgstr "Editando Sinal:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Expression"
+msgstr "Alterar Tipo"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
@@ -207,6 +212,47 @@ msgid "Add Setter Property"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Condition"
+msgstr "Copiar Animação"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Sequence"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Switch"
+msgstr "Pitch"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Iterator"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "While"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Return"
+msgstr "Retornar:"
+
+#: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
+msgid "Call"
+msgstr "Chamar"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Get"
+msgstr "Definir"
+
+#: modules/visual_script/visual_script_editor.cpp
+#: tools/editor/property_editor.cpp
+msgid "Set"
+msgstr "Definir"
+
+#: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/plugins/polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -216,9 +262,8 @@ msgid "Edit"
 msgstr "Editar"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Base Type:"
-msgstr "Tipo de Dados:"
+msgstr "Tipo de Base:"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/editor_help.cpp
 msgid "Members:"
@@ -341,6 +386,90 @@ msgstr ""
 msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "just pressed"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "just released"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Couldn't read the certficate file. Are the path and password both correct?"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Error creating the signature object."
+msgstr "Erro ao escrever o PCK do projeto!"
+
+#: platform/uwp/export/export.cpp
+msgid "Error creating the package signature."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"No export templates found.\n"
+"Download and install export templates."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Custom debug package not found."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Custom release package not found."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid unique name."
+msgstr "Nome Inválido."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid product GUID."
+msgstr "Tamanho de fonte inválido."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid publisher GUID."
+msgstr "Caminho base inválido"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid background color."
+msgstr "Origem personalizada da fonte inválida."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp
@@ -531,6 +660,11 @@ msgstr ""
 "NavigationMeshInstance deve ser filho ou neto de um nó Navigation. Ele "
 "apenas fornece dados de navegação."
 
+#: scene/3d/remote_transform.cpp
+#, fuzzy
+msgid "Path property must point to a valid Spatial node to work."
+msgstr "A propriedade Caminho deve apontar a um nó Particles2D para funcionar."
+
 #: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
@@ -558,7 +692,8 @@ msgstr ""
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "OK"
 
@@ -1181,10 +1316,6 @@ msgid "Method List For '%s':"
 msgstr "Lista de Métodos para \"%s\":"
 
 #: tools/editor/call_dialog.cpp
-msgid "Call"
-msgstr "Chamar"
-
-#: tools/editor/call_dialog.cpp
 msgid "Method List:"
 msgstr "Lista de Métodos:"
 
@@ -1303,6 +1434,12 @@ msgid "Method in target Node must be specified!"
 msgstr "O método no Nó destino precisa ser especificado!"
 
 #: tools/editor/connections_dialog.cpp
+msgid ""
+"Target method not found! Specify a valid method or attach a script to target "
+"Node."
+msgstr ""
+
+#: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
 msgstr "Conectar ao Nó:"
 
@@ -1377,6 +1514,15 @@ msgstr "Sinais"
 #: tools/editor/create_dialog.cpp
 msgid "Create New"
 msgstr "Criar Novo"
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_file_dialog.cpp
+#: tools/editor/filesystem_dock.cpp
+msgid "Favorites:"
+msgstr "Favoritos:"
+
+#: tools/editor/create_dialog.cpp tools/editor/editor_file_dialog.cpp
+msgid "Recent:"
+msgstr "Recente:"
 
 #: tools/editor/create_dialog.cpp tools/editor/editor_help.cpp
 #: tools/editor/plugins/script_editor_plugin.cpp
@@ -1657,14 +1803,6 @@ msgstr "Mover Favorito Acima"
 msgid "Move Favorite Down"
 msgstr "Mover Favorito Abaixo"
 
-#: tools/editor/editor_file_dialog.cpp tools/editor/filesystem_dock.cpp
-msgid "Favorites:"
-msgstr "Favoritos:"
-
-#: tools/editor/editor_file_dialog.cpp
-msgid "Recent:"
-msgstr "Recente:"
-
 #: tools/editor/editor_file_dialog.cpp
 msgid "Preview:"
 msgstr "Previsualização:"
@@ -1782,7 +1920,9 @@ msgstr "Erro ao salvar Recurso!"
 msgid "Save Resource As.."
 msgstr "Salvar Recuso como..."
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Entendo..."
 
@@ -2020,7 +2160,9 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr "Escolha uma Cena Principal"
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp tools/editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr "Ugh"
 
@@ -2072,14 +2214,6 @@ msgstr "Cena"
 #: tools/editor/editor_node.cpp
 msgid "Go to previously opened scene."
 msgstr "Ir para cena aberta anteriormente."
-
-#: tools/editor/editor_node.cpp
-msgid "Fullscreen Mode"
-msgstr "Modo Tela-Cheia"
-
-#: tools/editor/editor_node.cpp
-msgid "Distraction Free Mode"
-msgstr "Modo Sem Distrações"
 
 #: tools/editor/editor_node.cpp
 msgid "Next tab"
@@ -2165,6 +2299,10 @@ msgstr "Reverter Cena"
 #: tools/editor/editor_node.cpp
 msgid "Quit to Project List"
 msgstr "Sair para a Lista de Projetos"
+
+#: tools/editor/editor_node.cpp
+msgid "Distraction Free Mode"
+msgstr "Modo Sem Distrações"
 
 #: tools/editor/editor_node.cpp
 msgid "Import assets to the project."
@@ -2344,6 +2482,11 @@ msgid "Editor Layout"
 msgstr "Layout do Editor"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
+msgid "Toggle Fullscreen"
+msgstr "Modo Tela-Cheia"
+
+#: tools/editor/editor_node.cpp
 msgid "Install Export Templates"
 msgstr "Instalar Models de Exportação"
 
@@ -2366,6 +2509,10 @@ msgstr "Atualizar Sempre"
 #: tools/editor/editor_node.cpp
 msgid "Update Changes"
 msgstr "Atualizar nas Mudanças"
+
+#: tools/editor/editor_node.cpp
+msgid "Disable Update Spinner"
+msgstr ""
 
 #: tools/editor/editor_node.cpp
 msgid "Inspector"
@@ -2406,6 +2553,10 @@ msgstr "Propriedades do objeto."
 #: tools/editor/editor_node.cpp
 msgid "FileSystem"
 msgstr "Arquivos"
+
+#: tools/editor/editor_node.cpp tools/editor/node_dock.cpp
+msgid "Node"
+msgstr "Nó"
 
 #: tools/editor/editor_node.cpp
 msgid "Output"
@@ -2948,6 +3099,11 @@ msgid "Auto"
 msgstr "Auto"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Root Node Name:"
+msgstr "Nome do Nó:"
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr "Os Seguintes Arquivos estão Faltando:"
 
@@ -3244,10 +3400,6 @@ msgstr "Tradução"
 #: tools/editor/multi_node_edit.cpp
 msgid "MultiNode Set"
 msgstr "Múltiplos Nós definidos"
-
-#: tools/editor/node_dock.cpp
-msgid "Node"
-msgstr "Nó"
 
 #: tools/editor/node_dock.cpp
 msgid "Groups"
@@ -3799,6 +3951,11 @@ msgid "Clear Bones"
 msgstr "Limpar Ossos"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Bones"
+msgstr "Fazer Ossos"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
 msgstr "Fazer Cadeia de IK"
 
@@ -3858,6 +4015,51 @@ msgstr "Defina um Valor"
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
 msgstr "Snap (Pixels):"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Add %s"
+msgstr "Adicionar Todos"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Adding %s..."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create Node"
+msgstr "Criar Nó"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Error instancing scene from %s"
+msgstr "Erro ao instanciar cena de %s"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr "OK :("
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr "Sem nó pai onde instanciar um filho."
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr "Essa operação requer um único nó selecionado."
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Change default type"
+msgstr "Alterar Valor Padrão"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Drag & drop + Shift : Add node as sibling\n"
+"Drag & drop + Alt : Change node type"
+msgstr ""
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -4538,6 +4740,11 @@ msgid "Close Docs"
 msgstr "Fechar Docs"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Close All"
+msgstr "Fechar"
+
+#: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/script_text_editor.cpp
 #: tools/editor/plugins/shader_editor_plugin.cpp
 msgid "Find.."
@@ -4648,6 +4855,11 @@ msgid ""
 msgstr ""
 "Scripts embutidos só podem ser editados quando a cena a qual pertencem está "
 "carregada"
+
+#: tools/editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Pick Color"
+msgstr "Cor"
 
 #: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
 msgid "Move Up"
@@ -5025,6 +5237,11 @@ msgid "Insert Animation Key"
 msgstr "Inserir Chanve de Animação"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Focus Origin"
+msgstr "Ver Origem"
+
+#: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "Focar Seleção"
 
@@ -5288,6 +5505,11 @@ msgstr "Adicionar Todos"
 #: tools/editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Item"
 msgstr "Remover Item"
+
+#: tools/editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme"
+msgstr "Salvar Tema"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -6099,13 +6321,18 @@ msgstr "Arquivo..."
 msgid "Dir.."
 msgstr "Dir..."
 
-#: tools/editor/property_editor.cpp
+#: tools/editor/property_editor.cpp tools/editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Carregar"
 
 #: tools/editor/property_editor.cpp
 msgid "Assign"
 msgstr "Atribuir"
+
+#: tools/editor/property_editor.cpp
+#, fuzzy
+msgid "New Script"
+msgstr "Próximo Script"
 
 #: tools/editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -6122,10 +6349,6 @@ msgstr "Bit %d, val %d."
 #: tools/editor/property_editor.cpp
 msgid "On"
 msgstr "Ativo"
-
-#: tools/editor/property_editor.cpp
-msgid "Set"
-msgstr "Definir"
 
 #: tools/editor/property_editor.cpp
 msgid "Properties:"
@@ -6214,14 +6437,6 @@ msgid "Scene Run Settings"
 msgstr "Configurações de Carregamento da Cena"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "OK :("
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr "Sem nó pai onde instanciar um filho."
-
-#: tools/editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "No parent to instance the scenes at."
 msgstr "Sem nó pai onde instanciar um filho."
@@ -6229,10 +6444,6 @@ msgstr "Sem nó pai onde instanciar um filho."
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
 msgstr "Erro ao carregar cena de %s"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Error instancing scene from %s"
-msgstr "Erro ao instanciar cena de %s"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Ok"
@@ -6275,10 +6486,6 @@ msgid "This operation can't be done without a scene."
 msgstr "Essa operação não pode ser realizada sem uma cena."
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr "Essa operação requer um único nó selecionado."
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr "Essa operação não pode ser realizada em cenas instanciadas."
 
@@ -6301,10 +6508,6 @@ msgstr "Não é possível operar em nós que a cena atual herda!"
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
 msgstr "Remover Nó(s)"
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Create Node"
-msgstr "Criar Nó"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid ""
@@ -6347,8 +6550,14 @@ msgid "Change Type"
 msgstr "Alterar Tipo"
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Add Script"
+#, fuzzy
+msgid "Attach Script"
 msgstr "Adicionar Script"
+
+#: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
+msgstr "Criar Script"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6375,7 +6584,13 @@ msgstr ""
 "existe um nó raiz."
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Create a new script for the selected node."
+#, fuzzy
+msgid "Attach a new or existing script for the selected node."
+msgstr "Criar um script novo para o nó selecionado."
+
+#: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear a script for the selected node."
 msgstr "Criar um script novo para o nó selecionado."
 
 #: tools/editor/scene_tree_editor.cpp
@@ -6479,6 +6694,11 @@ msgid "Could not create script in filesystem."
 msgstr "Não foi possível criar o script no sistema de arquivos."
 
 #: tools/editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "Erro ao carregar cena de %s"
+
+#: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "O caminho está vazio"
 
@@ -6491,16 +6711,18 @@ msgid "Invalid base path"
 msgstr "Caminho base inválido"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "O arquivo existe"
-
-#: tools/editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "Extensão inválida"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "Caminho válido"
+#, fuzzy
+msgid "Create new script"
+msgstr "Criar Script"
+
+#: tools/editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Load existing script"
+msgstr "Próximo Script"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6511,7 +6733,8 @@ msgid "Built-In Script"
 msgstr "Script Embutido"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Create Node Script"
+#, fuzzy
+msgid "Attach Node Script"
 msgstr "Criar Script para Nó"
 
 #: tools/editor/script_editor_debugger.cpp
@@ -6677,6 +6900,12 @@ msgstr "Mudar o tamanho do Shape Ray"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Alterar a Extensão do Notificador"
+
+#~ msgid "File exists"
+#~ msgstr "O arquivo existe"
+
+#~ msgid "Valid path"
+#~ msgstr "Caminho válido"
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "Não é possível ir ao subdiretório:"

@@ -37,6 +37,7 @@
 #include "main/main.h"
 
 #include "core/globals.h"
+#include "stdlib.h"
 #include "emscripten.h"
 #include "dom_keys.h"
 
@@ -77,6 +78,59 @@ void OS_JavaScript::set_opengl_extensions(const char* p_gl_extensions) {
 	gl_extensions=p_gl_extensions;
 }
 
+static EM_BOOL _browser_resize_callback(int event_type, const EmscriptenUiEvent *ui_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_RESIZE, false);
+
+	OS_JavaScript* os = static_cast<OS_JavaScript*>(user_data);
+
+	// the order in which _browser_resize_callback and
+	// _fullscreen_change_callback are called is browser-dependent,
+	// so try adjusting for fullscreen in both
+	if (os->is_window_fullscreen() || os->is_window_maximized()) {
+
+		OS::VideoMode vm = os->get_video_mode();
+		vm.width = ui_event->windowInnerWidth;
+		vm.height = ui_event->windowInnerHeight;
+		os->set_video_mode(vm);
+		emscripten_set_canvas_size(ui_event->windowInnerWidth, ui_event->windowInnerHeight);
+	}
+	return false;
+}
+
+static Size2 _windowed_size;
+
+static EM_BOOL _fullscreen_change_callback(int event_type, const EmscriptenFullscreenChangeEvent *event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_FULLSCREENCHANGE, false);
+
+	OS_JavaScript* os = static_cast<OS_JavaScript*>(user_data);
+	String id = String::utf8(event->id);
+
+	// empty id is canvas
+	if (id.empty() || id=="canvas") {
+
+		OS::VideoMode vm = os->get_video_mode();
+		// this event property is the only reliable information on
+		// browser fullscreen state
+		vm.fullscreen = event->isFullscreen;
+
+		if (event->isFullscreen) {
+			vm.width = event->screenWidth;
+			vm.height = event->screenHeight;
+			os->set_video_mode(vm);
+			emscripten_set_canvas_size(vm.width, vm.height);
+		}
+		else {
+			os->set_video_mode(vm);
+			if (!os->is_window_maximized()) {
+				os->set_window_size(_windowed_size);
+			}
+		}
+	}
+	return false;
+}
+
 static InputEvent _setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
 
 	InputEvent ev;
@@ -89,7 +143,9 @@ static InputEvent _setup_key_event(const EmscriptenKeyboardEvent *emscripten_eve
 	ev.key.scancode = dom2godot_scancode(emscripten_event->keyCode);
 
 	String unicode = String::utf8(emscripten_event->key);
+	// check if empty or multi-character (e.g. `CapsLock`)
 	if (unicode.length()!=1) {
+		// might be empty as well, but better than nonsense
 		unicode = String::utf8(emscripten_event->charValue);
 	}
 	if (unicode.length()==1) {
@@ -151,7 +207,30 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	if (gfx_init_func)
 		gfx_init_func(gfx_init_ud,use_gl2,p_desired.width,p_desired.height,p_desired.fullscreen);
 
-	default_videomode=p_desired;
+	// nothing to do here, can't fulfil fullscreen request due to
+	// browser security, window size is already set from HTML
+	video_mode=p_desired;
+	video_mode.fullscreen=false;
+	_windowed_size=get_window_size();
+
+	// find locale, emscripten only sets "C"
+	char locale_ptr[16];
+	EM_ASM_({
+		var locale = "";
+		if (Module.locale) {
+			// best case: server-side script reads Accept-Language early and
+			// defines the locale to be read here
+			locale = Module.locale;
+		} else {
+			// no luck, use what the JS engine can tell us
+			// if this turns out not compatible enough, add tests for
+			// browserLanguage, systemLanguage and userLanguage
+			locale = navigator.languages ? navigator.languages[0] : navigator.language;
+		}
+		locale = locale.split('.')[0];
+		stringToUTF8(locale, $0, 16);
+	}, locale_ptr);
+	setenv("LANG", locale_ptr, true);
 
 	print_line("Init Audio");
 
@@ -210,26 +289,23 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 
 	input = memnew( InputDefault );
 
-	EMSCRIPTEN_RESULT result = emscripten_set_keydown_callback(NULL, this , true, &_keydown_callback);
-	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
-		ERR_PRINTS( "Error while setting Emscripten keydown callback: Code " + itos(result) );
-	}
-	result = emscripten_set_keypress_callback(NULL, this, true, &_keypress_callback);
-	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
-		ERR_PRINTS( "Error while setting Emscripten keypress callback: Code " + itos(result) );
-	}
-	result = emscripten_set_keyup_callback(NULL, this, true, &_keyup_callback);
-	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
-		ERR_PRINTS( "Error while setting Emscripten keyup callback: Code " + itos(result) );
-	}
-	result = emscripten_set_gamepadconnected_callback(NULL, true, &joy_callback_func);
-	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
-		ERR_PRINTS( "Error while setting Emscripten gamepadconnected callback: Code " + itos(result) );
-	}
-	result = emscripten_set_gamepaddisconnected_callback(NULL, true, &joy_callback_func);
-	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
-		ERR_PRINTS( "Error while setting Emscripten gamepaddisconnected callback: Code " + itos(result) );
-	}
+#define EM_CHECK(ev) if (result!=EMSCRIPTEN_RESULT_SUCCESS)\
+	ERR_PRINTS("Error while setting " #ev " callback: Code " + itos(result))
+#define SET_EM_CALLBACK(ev, cb) result = emscripten_set_##ev##_callback(NULL, this, true, &cb); EM_CHECK(ev)
+#define SET_EM_CALLBACK_NODATA(ev, cb) result = emscripten_set_##ev##_callback(NULL, true, &cb); EM_CHECK(ev)
+
+	EMSCRIPTEN_RESULT result;
+	SET_EM_CALLBACK(keydown, _keydown_callback)
+	SET_EM_CALLBACK(keypress, _keypress_callback)
+	SET_EM_CALLBACK(keyup, _keyup_callback)
+	SET_EM_CALLBACK(resize, _browser_resize_callback)
+	SET_EM_CALLBACK(fullscreenchange, _fullscreen_change_callback)
+	SET_EM_CALLBACK_NODATA(gamepadconnected, joy_callback_func)
+	SET_EM_CALLBACK_NODATA(gamepaddisconnected, joy_callback_func)
+
+#undef SET_EM_CALLBACK_NODATA
+#undef SET_EM_CALLBACK
+#undef EM_CHECK
 
 #ifdef JAVASCRIPT_EVAL_ENABLED
 	javascript_eval = memnew(JavaScript);
@@ -254,32 +330,11 @@ void OS_JavaScript::finalize() {
 	memdelete(input);
 }
 
+void OS_JavaScript::alert(const String& p_alert,const String& p_title) {
 
-void OS_JavaScript::vprint(const char* p_format, va_list p_list, bool p_stderr) {
-
-	if (p_stderr) {
-
-		vfprintf(stderr,p_format,p_list);
-		fflush(stderr);
-	} else {
-
-		vprintf(p_format,p_list);
-		fflush(stdout);
-	}
-}
-
-void OS_JavaScript::print(const char *p_format, ... ) {
-
-	va_list argp;
-	va_start(argp, p_format);
-	vprintf(p_format, argp );
-	va_end(argp);
-
-}
-
-void OS_JavaScript::alert(const String& p_alert) {
-
-	print("ALERT: %s\n",p_alert.utf8().get_data());
+	EM_ASM_({
+		window.alert(UTF8ToString($0));
+	}, p_alert.utf8().get_data());
 }
 
 
@@ -298,17 +353,22 @@ bool OS_JavaScript::is_mouse_grab_enabled() const {
 	//*sigh* technology has evolved so much since i was a kid..
 	return false;
 }
+
 Point2 OS_JavaScript::get_mouse_pos() const {
 
-	return Point2();
+	return input->get_mouse_pos();
 }
+
 int OS_JavaScript::get_mouse_button_state() const {
 
-	return 0;
+	return last_button_mask;
 }
+
 void OS_JavaScript::set_window_title(const String& p_title) {
 
-
+	EM_ASM_({
+		document.title = UTF8ToString($0);
+	}, p_title.utf8().get_data());
 }
 
 //interesting byt not yet
@@ -317,22 +377,92 @@ void OS_JavaScript::set_window_title(const String& p_title) {
 
 void OS_JavaScript::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
 
-
+	video_mode = p_video_mode;
 }
 
 OS::VideoMode OS_JavaScript::get_video_mode(int p_screen) const {
 
-	return default_videomode;
+	return video_mode;
+}
+
+Size2 OS_JavaScript::get_screen_size(int p_screen) const {
+
+	ERR_FAIL_COND_V(p_screen!=0, Size2());
+
+	EmscriptenFullscreenChangeEvent ev;
+	EMSCRIPTEN_RESULT result = emscripten_get_fullscreen_status(&ev);
+	ERR_FAIL_COND_V(result!=EMSCRIPTEN_RESULT_SUCCESS, Size2());
+	return Size2(ev.screenWidth, ev.screenHeight);
+}
+
+void OS_JavaScript::set_window_size(const Size2 p_size) {
+
+	window_maximized = false;
+	if (is_window_fullscreen()) {
+		set_window_fullscreen(false);
+	}
+	_windowed_size = p_size;
+	video_mode.width = p_size.x;
+	video_mode.height = p_size.y;
+	emscripten_set_canvas_size(p_size.x, p_size.y);
 }
 
 Size2 OS_JavaScript::get_window_size() const {
 
-	return Vector2(default_videomode.width,default_videomode.height);
+	int canvas[3];
+	emscripten_get_canvas_size(canvas, canvas+1, canvas+2);
+	return Size2(canvas[0], canvas[1]);
+}
+
+void OS_JavaScript::set_window_maximized(bool p_enabled) {
+
+	window_maximized = p_enabled;
+	if (p_enabled) {
+
+		if (is_window_fullscreen()) {
+			// _browser_resize callback will set canvas size
+			set_window_fullscreen(false);
+		}
+		else {
+			video_mode.width = EM_ASM_INT_V(return window.innerWidth);
+			video_mode.height = EM_ASM_INT_V(return window.innerHeight);
+			emscripten_set_canvas_size(video_mode.width, video_mode.height);
+		}
+	}
+	else {
+		set_window_size(_windowed_size);
+	}
+}
+
+void OS_JavaScript::set_window_fullscreen(bool p_enable) {
+
+	if (p_enable==is_window_fullscreen()) {
+		return;
+	}
+
+	// only requesting changes here, if successful, canvas is resized in
+	// _browser_resize_callback or _fullscreen_change_callback
+	EMSCRIPTEN_RESULT result;
+	if (p_enable) {
+		EM_ASM(Module.requestFullscreen(false, false););
+	}
+	else {
+		result = emscripten_exit_fullscreen();
+		if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+			ERR_PRINTS("Failed to exit fullscreen: Code " + itos(result));
+		}
+	}
+}
+
+bool OS_JavaScript::is_window_fullscreen() const {
+
+	return video_mode.fullscreen;
 }
 
 void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
-	p_list->push_back(default_videomode);
+	Size2 screen = get_screen_size();
+	p_list->push_back(OS::VideoMode(screen.width, screen.height, true));
 }
 
 String OS_JavaScript::get_name() {
@@ -422,6 +552,9 @@ void OS_JavaScript::push_input(const InputEvent& p_ev) {
 	ev.ID=last_id++;
 	if (ev.type==InputEvent::MOUSE_MOTION) {
 		input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+	}
+	else if (ev.type==InputEvent::MOUSE_BUTTON) {
+		last_button_mask = ev.mouse_button.button_mask;
 	}
 	input->parse_input_event(p_ev);
 }
@@ -649,39 +782,25 @@ void OS_JavaScript::main_loop_request_quit() {
 		main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 }
 
-void OS_JavaScript::set_display_size(Size2 p_size) {
-
-	default_videomode.width=p_size.x;
-	default_videomode.height=p_size.y;
-}
-
 void OS_JavaScript::reload_gfx() {
 
 	if (gfx_init_func)
-		gfx_init_func(gfx_init_ud,use_gl2,default_videomode.width,default_videomode.height,default_videomode.fullscreen);
+		gfx_init_func(gfx_init_ud,use_gl2,video_mode.width,video_mode.height,video_mode.fullscreen);
 	if (rasterizer)
 		rasterizer->reload_vram();
 }
 
 Error OS_JavaScript::shell_open(String p_uri) {
-
-	if (open_uri_func)
-		return open_uri_func(p_uri)?ERR_CANT_OPEN:OK;
-	return ERR_UNAVAILABLE;
-};
+	EM_ASM_({
+		window.open(UTF8ToString($0), '_blank');
+	}, p_uri.utf8().get_data());
+	return OK;
+}
 
 String OS_JavaScript::get_resource_dir() const {
 
 	return "/"; //javascript has it's own filesystem for resources inside the APK
 }
-
-String OS_JavaScript::get_locale() const {
-
-	if (get_locale_func)
-		return get_locale_func();
-	return OS_Unix::get_locale();
-}
-
 
 String OS_JavaScript::get_data_dir() const {
 
@@ -691,6 +810,10 @@ String OS_JavaScript::get_data_dir() const {
 	//return Globals::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };
 
+String OS_JavaScript::get_executable_path() const {
+
+	return String();
+}
 
 void OS_JavaScript::_close_notification_funcs(const String& p_file,int p_flags) {
 
@@ -757,24 +880,18 @@ String OS_JavaScript::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
-OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func) {
-
-
-	default_videomode.width=800;
-	default_videomode.height=600;
-	default_videomode.fullscreen=true;
-	default_videomode.resizable=false;
+OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func) {
 
 	gfx_init_func=p_gfx_init_func;
 	gfx_init_ud=p_gfx_init_ud;
+	last_button_mask=0;
 	main_loop=NULL;
 	last_id=1;
 	gl_extensions=NULL;
 	rasterizer=NULL;
+	window_maximized=false;
 
-	open_uri_func=p_open_uri_func;
 	get_data_dir_func=p_get_data_dir_func;
-	get_locale_func=p_get_locale_func;
 	FileAccessUnix::close_notification_func=_close_notification_funcs;
 
 	time_to_save_sync=-1;

@@ -51,7 +51,7 @@ def export_icons():
         # name without extensions
         name_only = file_name.replace('.svg', '')
 
-        out_icon_names = [name_only] # export to a png with the same file name
+        out_icon_names = [name_only]  # export to a png with the same file name
         theme_out_icon_names = []
         # special cases
         if special_icons.has_key(name_only):
@@ -73,7 +73,6 @@ def export_icons():
             svg_to_png(source_path, theme_dir_base + theme_out_icon_name, 90)
 
 
-
 def export_theme():
     svgs_path = theme_dir_source
     file_names = [f for f in listdir(svgs_path) if isfile(join(svgs_path, f))]
@@ -82,7 +81,7 @@ def export_theme():
         # name without extensions
         name_only = file_name.replace('.svg', '')
 
-        out_icon_names = [name_only] # export to a png with the same file name
+        out_icon_names = [name_only]  # export to a png with the same file name
         # special cases
         if theme_icons.has_key(name_only):
             special_icon = theme_icons[name_only]
@@ -102,36 +101,36 @@ special_icons = {
         output_names=['icon_add'],
         theme_output_names=['icon_add', 'icon_zoom_more']
     ),
-    'icon_new': dict( output_names=['icon_file'] ),
-    'icon_animation_tree_player': dict( output_names=['icon_animation_tree'] ),
+    'icon_new': dict(output_names=['icon_file']),
+    'icon_animation_tree_player': dict(output_names=['icon_animation_tree']),
     'icon_tool_rotate': dict(
         output_names=['icon_reload'],
-        theme_output_names= ['icon_reload']
+        theme_output_names=['icon_reload']
     ),
-    'icon_multi_edit': dict( output_names=['icon_multi_node_edit'] ),
+    'icon_multi_edit': dict(output_names=['icon_multi_node_edit']),
     'icon_folder': dict(
         output_names=['icon_load', 'icon_open'],
-        theme_output_names= ['icon_folder']
+        theme_output_names=['icon_folder']
     ),
-    'icon_file_list': dict( output_names=['icon_enum'] ),
-    'icon_collision_2d': dict( output_names=['icon_collision_polygon_2d', 'icon_polygon_2d'] ),
-    'icon_class_list': dict( output_names=['icon_filesystem'] ),
-    'icon_color_ramp': dict( output_names=['icon_graph_color_ramp'] ),
-    'icon_translation': dict( output_names=['icon_p_hash_translation'] ),
-    'icon_shader': dict( output_names=['icon_shader_material', 'icon_material_shader'] ),
-    'icon_canvas_item_shader_graph': dict( output_names=['icon_material_shader_graph'] ),
+    'icon_file_list': dict(output_names=['icon_enum']),
+    'icon_collision_2d': dict(output_names=['icon_collision_polygon_2d', 'icon_polygon_2d']),
+    'icon_class_list': dict(output_names=['icon_filesystem']),
+    'icon_color_ramp': dict(output_names=['icon_graph_color_ramp']),
+    'icon_translation': dict(output_names=['icon_p_hash_translation']),
+    'icon_shader': dict(output_names=['icon_shader_material', 'icon_material_shader']),
+    'icon_canvas_item_shader_graph': dict(output_names=['icon_material_shader_graph']),
 
-    'icon_color_pick': dict( theme_output_names= ['icon_color_pick'], avoid_self=True ),
-    'icon_play': dict( theme_output_names= ['icon_play'] ),
-    'icon_stop': dict( theme_output_names= ['icon_stop'] ),
-    'icon_zoom_less': dict( theme_output_names= ['icon_zoom_less'], avoid_self=True ),
-    'icon_zoom_reset': dict( theme_output_names= ['icon_zoom_reset'], avoid_self=True ),
+    'icon_color_pick': dict(theme_output_names=['icon_color_pick'], avoid_self=True),
+    'icon_play': dict(theme_output_names=['icon_play']),
+    'icon_stop': dict(theme_output_names=['icon_stop']),
+    'icon_zoom_less': dict(theme_output_names=['icon_zoom_less'], avoid_self=True),
+    'icon_zoom_reset': dict(theme_output_names=['icon_zoom_reset'], avoid_self=True),
     'icon_snap': dict(theme_output_names=['icon_snap'])
 }
 
 theme_icons = {
-      'icon_close': dict(output_names=['close', 'close_hl']),
-      'tab_menu': dict(output_names=['tab_menu_hl'])
+    'icon_close': dict(output_names=['close', 'close_hl']),
+    'tab_menu': dict(output_names=['tab_menu_hl'])
 }
 
 export_icons()

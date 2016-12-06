@@ -116,6 +116,8 @@ public:
 	void set_item_tooltip(int p_idx,const String& p_tooltip);
 	void set_item_shortcut(int p_idx, const Ref<ShortCut>& p_shortcut);
 
+	void toggle_item_checked(int p_idx);
+
 	String get_item_text(int p_idx) const;
 	Ref<Texture> get_item_icon(int p_idx) const;
 	bool is_item_checked(int p_idx) const;

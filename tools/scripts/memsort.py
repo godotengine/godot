@@ -1,35 +1,35 @@
 
 import sys
 
-arg="memdump.txt"
+arg = "memdump.txt"
 
-if (len(sys.argv)>1):
-	arg=sys.argv[1]
+if (len(sys.argv) > 1):
+    arg = sys.argv[1]
 
-f = open(arg,"rb")
+f = open(arg, "rb")
 
 
-l=f.readline()
+l = f.readline()
 
 
 sum = {}
-cnt={}
+cnt = {}
 
 
-while(l!=""):
+while(l != ""):
 
-	s=l.split("-")
-	amount = int(s[1])
-	what=s[2]
-	if (what in sum):
-		sum[what]+=amount
-		cnt[what]+=1
-	else:
-		sum[what]=amount
-		cnt[what]=1
+    s = l.split("-")
+    amount = int(s[1])
+    what = s[2]
+    if (what in sum):
+        sum[what] += amount
+        cnt[what] += 1
+    else:
+        sum[what] = amount
+        cnt[what] = 1
 
-	l=f.readline()
+    l = f.readline()
 
 
 for x in sum:
-	print(x.strip()+"("+str(cnt[x])+"):\n: "+str(sum[x]))
+    print(x.strip() + "(" + str(cnt[x]) + "):\n: " + str(sum[x]))

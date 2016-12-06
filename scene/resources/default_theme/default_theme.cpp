@@ -490,6 +490,7 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 	t->set_font("font","TextEdit", default_font );
 
+	t->set_color("background_color", "TextEdit", Color(0,0,0,0));
 	t->set_color("completion_background_color", "TextEdit",Color::html("2C2A32"));
 	t->set_color("completion_selected_color", "TextEdit",Color::html("434244"));
 	t->set_color("completion_existing_color", "TextEdit",Color::html("21dfdfdf"));
@@ -714,6 +715,8 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 	t->set_constant("item_margin","Tree",12 *scale);
 	t->set_constant("button_margin","Tree",4 *scale);
 	t->set_constant("draw_relationship_lines", "Tree", 0);
+	t->set_constant("scroll_border", "Tree", 4);
+	t->set_constant("scroll_speed", "Tree", 12);
 
 
 	// ItemList
@@ -896,10 +899,9 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 
 	// HButtonArray
-
-	t->set_stylebox("normal","HButtonArray", make_stylebox( button_normal_png,4,4,4,4,0,4,22,4) );
-	t->set_stylebox("selected","HButtonArray", make_stylebox( button_pressed_png,4,4,4,4,0,4,22,4) );
-	t->set_stylebox("hover","HButtonArray", make_stylebox( button_hover_png,4,4,4,4) );
+	t->set_stylebox("normal","HButtonArray", sb_button_normal);
+	t->set_stylebox("selected","HButtonArray", sb_button_pressed);
+	t->set_stylebox("hover","HButtonArray", sb_button_hover);
 
 	t->set_font("font","HButtonArray", default_font);
 	t->set_font("font_selected","HButtonArray", default_font);
@@ -907,17 +909,17 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 	t->set_color("font_color","HButtonArray", control_font_color_low );
 	t->set_color("font_color_selected","HButtonArray", control_font_color_hover );
 
-	t->set_constant("icon_separator","HButtonArray", 4 *scale );
-	t->set_constant("button_separator","HButtonArray", 8 *scale );
+	t->set_constant("icon_separator","HButtonArray", 2 *scale );
+	t->set_constant("button_separator","HButtonArray", 4 *scale );
 
 	t->set_stylebox("focus","HButtonArray", focus );
 
 
 	// VButtonArray
 
-	t->set_stylebox("normal","VButtonArray", make_stylebox( button_normal_png,4,4,4,4,0,4,22,4) );
-	t->set_stylebox("selected","VButtonArray", make_stylebox( button_pressed_png,4,4,4,4,0,4,22,4) );
-	t->set_stylebox("hover","VButtonArray", make_stylebox( button_hover_png,4,4,4,4) );
+	t->set_stylebox("normal","VButtonArray", sb_button_normal);
+	t->set_stylebox("selected","VButtonArray", sb_button_pressed);
+	t->set_stylebox("hover","VButtonArray", sb_button_hover);
 
 	t->set_font("font","VButtonArray", default_font);
 	t->set_font("font_selected","VButtonArray", default_font);
@@ -925,8 +927,8 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 	t->set_color("font_color","VButtonArray", control_font_color_low );
 	t->set_color("font_color_selected","VButtonArray", control_font_color_hover );
 
-	t->set_constant("icon_separator","VButtonArray", 4 *scale);
-	t->set_constant("button_separator","VButtonArray", 8 *scale);
+	t->set_constant("icon_separator","VButtonArray", 2 *scale);
+	t->set_constant("button_separator","VButtonArray", 4 *scale);
 
 	t->set_stylebox("focus","VButtonArray", focus );
 

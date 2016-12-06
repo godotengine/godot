@@ -41,37 +41,16 @@ static uint32_t Q[4096];
 #endif
 
 uint32_t Math::rand_from_seed(uint32_t *seed) {
-
-#if 1
-	uint32_t k;
-	uint32_t s = (*seed);
-	if (s == 0)
-		s = 0x12345987;
-	k = s / 127773;
-	s = 16807 * (s - k * 127773) - 2836 * k;
-//	if (s < 0)
-//		s += 2147483647;
-	(*seed) = s;
-	return (s & Math::RANDOM_MAX);
-#else
-	*seed = *seed * 1103515245 + 12345;
-	return (*seed % ((unsigned int)RANDOM_MAX + 1));
-#endif
+	// Xorshift31 PRNG
+	if ( *seed == 0 ) *seed = Math::RANDOM_MAX;
+	(*seed) ^= (*seed) << 13;
+	(*seed) ^= (*seed) >> 17;
+	(*seed) ^= (*seed) << 5;
+	return (*seed) & Math::RANDOM_MAX;
 }
 
 void Math::seed(uint32_t x) {
-#if 0
-	int i;
-
-	Q[0] = x;
-	Q[1] = x + PHI;
-	Q[2] = x + PHI + PHI;
-
-	for (i = 3; i < 4096; i++)
-		Q[i] = Q[i - 3] ^ Q[i - 2] ^ PHI ^ i;
-#else
 	default_seed=x;
-#endif
 }
 
 void Math::randomize() {
@@ -82,12 +61,12 @@ void Math::randomize() {
 
 uint32_t Math::rand() {
 
-	return rand_from_seed(&default_seed)&0x7FFFFFFF;
+	return rand_from_seed(&default_seed);
 }
 
 double Math::randf() {
 
-	return (double)rand() / (double)RANDOM_MAX;
+	return (double)rand() / (double)Math::RANDOM_MAX;
 }
 
 double Math::sin(double p_x) {

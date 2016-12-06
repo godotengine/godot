@@ -480,10 +480,10 @@ void Control::_notification(int p_notification) {
 			if (is_set_as_toplevel()) {
 				data.SI=get_viewport()->_gui_add_subwindow_control(this);
 
-				/*if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
+				if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
 					data.theme_owner=data.parent->data.theme_owner;
 					notification(NOTIFICATION_THEME_CHANGED);
-				}*/
+				}
 
 			} else {
 
@@ -519,10 +519,10 @@ void Control::_notification(int p_notification) {
 
 				if (parent_control) {
 					//do nothing, has a parent control
-					/*if (data.theme.is_null() && parent_control->data.theme_owner) {
+					if (data.theme.is_null() && parent_control->data.theme_owner) {
 						data.theme_owner=parent_control->data.theme_owner;
 						notification(NOTIFICATION_THEME_CHANGED);
-					}*/
+					}
 				} else if (subwindow) {
 					//is a subwindow (process input before other controls for that canvas)
 					data.SI=get_viewport()->_gui_add_subwindow_control(this);
@@ -1725,11 +1725,11 @@ Control *Control::find_next_valid_focus() const {
 
 		if (next_child==this) // no next control->
 			return (get_focus_mode()==FOCUS_ALL)?next_child:NULL;
-
-		if (next_child->get_focus_mode()==FOCUS_ALL)
-			return next_child;
-
-		from = next_child;
+		if (next_child) {
+			if (next_child->get_focus_mode()==FOCUS_ALL)
+				return next_child;
+			from = next_child;
+		} else break;
 	}
 
 	return NULL;

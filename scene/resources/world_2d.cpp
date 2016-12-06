@@ -416,12 +416,6 @@ World2D::World2D() {
 	}
 	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_LINEAR_DAMP,GLOBAL_DEF("physics_2d/default_linear_damp",0.1));
 	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_ANGULAR_DAMP,GLOBAL_DEF("physics_2d/default_angular_damp",1));
-	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS,1.0);
-	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_CONTACT_MAX_SEPARATION,1.5);
-	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION,0.3);
-	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD,2);
-	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS,0.2);
-
 	indexer = memnew( SpatialIndexer2D );
 
 }

@@ -50,6 +50,7 @@ class EditorLog : public VBoxContainer {
 	HBoxContainer *title_hb;
 //	PaneDrag *pd;
 	Control *ec;
+	PanelContainer *pc;
 
 	static void _error_handler(void *p_self, const char*p_func, const char*p_file,int p_line, const char*p_error,const char*p_errorexp,ErrorHandlerType p_type);
 
@@ -64,6 +65,7 @@ protected:
 
 	static void _bind_methods();
 	void _notification(int p_what);
+	void _override_logger_styles();
 public:
 
 	void add_message(const String& p_msg, bool p_error=false);

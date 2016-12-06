@@ -382,7 +382,7 @@ void VisualServer::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("mesh_create"),&VisualServer::mesh_create);
-	ObjectTypeDB::bind_method(_MD("mesh_add_surface"),&VisualServer::mesh_add_surface, DEFVAL(NO_INDEX_ARRAY));
+	ObjectTypeDB::bind_method(_MD("mesh_add_surface"),&VisualServer::mesh_add_surface, DEFVAL(Array()), DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("mesh_surface_set_material"),&VisualServer::mesh_surface_set_material,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("mesh_surface_get_material"),&VisualServer::mesh_surface_get_material);
 
@@ -531,6 +531,7 @@ void VisualServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("canvas_item_set_self_opacity"),&VisualServer::canvas_item_set_self_opacity);
 	ObjectTypeDB::bind_method(_MD("canvas_item_get_self_opacity"),&VisualServer::canvas_item_get_self_opacity);
 	ObjectTypeDB::bind_method(_MD("canvas_item_set_z"),&VisualServer::canvas_item_set_z);
+	ObjectTypeDB::bind_method(_MD("canvas_item_set_sort_children_by_y"),&VisualServer::canvas_item_set_sort_children_by_y);
 
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_line"),&VisualServer::canvas_item_add_line, DEFVAL(1.0), DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_rect"),&VisualServer::canvas_item_add_rect);
@@ -563,6 +564,7 @@ void VisualServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("free_rid"),&VisualServer::free);
 
 	ObjectTypeDB::bind_method(_MD("set_default_clear_color"),&VisualServer::set_default_clear_color);
+	ObjectTypeDB::bind_method(_MD("get_default_clear_color"),&VisualServer::get_default_clear_color);
 
 	ObjectTypeDB::bind_method(_MD("get_render_info"),&VisualServer::get_render_info);
 

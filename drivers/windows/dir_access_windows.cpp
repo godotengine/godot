@@ -349,7 +349,7 @@ DirAccessWindows::DirAccessWindows() {
 
 	drive_count=0;
 
-#ifdef WINRT_ENABLED
+#ifdef UWP_ENABLED
 	Windows::Storage::StorageFolder ^install_folder = Windows::ApplicationModel::Package::Current->InstalledLocation;
 	change_dir(install_folder->Path->Data());
 

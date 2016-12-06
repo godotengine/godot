@@ -482,12 +482,20 @@ void TextEdit::_notification(int p_what) {
 			Color color = cache.font_color;
 			int in_region=-1;
 
+			if (line_length_guideline) {
+				int x=xmargin_beg+cache.font->get_char_size('0').width*line_length_guideline_col-cursor.x_ofs;
+				if (x>xmargin_beg && x<xmargin_end) {
+					Color guideline_color(color.r,color.g,color.b,color.a*0.25f);
+					VisualServer::get_singleton()->canvas_item_add_line(ci,Point2(x,0),Point2(x,cache.size.height),guideline_color);
+				}
+			}
+
 			if (syntax_coloring) {
 
-				if (custom_bg_color.a>0.01) {
+				if (cache.background_color.a>0.01) {
 
 					Point2i ofs = Point2i(cache.style_normal->get_offset())/2.0;
-					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(ofs, get_size()-cache.style_normal->get_minimum_size()+ofs),custom_bg_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(ofs, get_size()-cache.style_normal->get_minimum_size()+ofs),cache.background_color);
 				}
 				//compute actual region to start (may be inside say, a comment).
 				//slow in very large documments :( but ok for source!
@@ -685,6 +693,8 @@ void TextEdit::_notification(int p_what) {
 			// get the highlighted words
 			String highlighted_text = get_selection_text();
 
+			String line_num_padding = line_numbers_zero_padded ? "0" : " ";
+
 			for (int i=0;i<visible_rows;i++) {
 
 				int line=i+cursor.line_ofs;
@@ -750,7 +760,7 @@ void TextEdit::_notification(int p_what) {
 				if (cache.line_number_w) {
 					String fc = String::num(line+1);
 					while (fc.length() < line_number_char_count) {
-						fc="0"+fc;
+						fc=line_num_padding+fc;
 					}
 
 					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT)+cache.breakpoint_gutter_width,ofs_y+cache.font->get_ascent()),fc,cache.line_number_color);
@@ -897,7 +907,7 @@ void TextEdit::_notification(int p_what) {
 						else if (in_function_name)
 							color=cache.function_color;
 						else if (is_symbol)
-							color=symbol_color;
+							color=cache.symbol_color;
 						else if (is_number)
 							color=cache.number_color;
 
@@ -1245,15 +1255,19 @@ void TextEdit::_notification(int p_what) {
 			}
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->show_virtual_keyboard(get_text(),get_global_rect());
+			if (raised_from_completion) {
+				VisualServer::get_singleton()->canvas_item_set_z(get_canvas_item(), 1);
+			}
 
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->hide_virtual_keyboard();
-
+			if (raised_from_completion) {
+				VisualServer::get_singleton()->canvas_item_set_z(get_canvas_item(), 0);
+			}
 		} break;
-
 	}
 }
 
@@ -1651,7 +1665,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					update();
 				}
 
-				if (mb.button_index==BUTTON_RIGHT) {
+				if (mb.button_index==BUTTON_RIGHT && context_menu_enabled) {
 
 					menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
 					menu->set_size(Vector2(1,1));
@@ -3313,7 +3327,7 @@ void TextEdit::set_text(String p_text){
 	cursor_set_column(0);
 	update();
 	setting_text=false;
-
+	_text_changed_emit();
 	//get_range()->set(0);
 };
 
@@ -3444,7 +3458,7 @@ void TextEdit::_reset_caret_blink_timer() {
 
 void TextEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	if (is_visible()) {
+	if (is_visible() && has_focus() && window_has_focus) {
 		update();
 	}
 }
@@ -3475,6 +3489,8 @@ void TextEdit::_update_caches() {
 	cache.word_highlighted_color=get_color("word_highlighted_color");
 	cache.search_result_color=get_color("search_result_color");
 	cache.search_result_border_color=get_color("search_result_border_color");
+	cache.symbol_color=get_color("symbol_color");
+	cache.background_color=get_color("background_color");
 	cache.line_spacing=get_constant("line_spacing");
 	cache.row_height = cache.font->get_height() + cache.line_spacing;
 	cache.tab_icon=get_icon("tab");
@@ -3486,15 +3502,8 @@ void TextEdit::_update_caches() {
 void TextEdit::clear_colors() {
 
 	keywords.clear();
-	color_regions.clear();;
+	color_regions.clear();
 	text.clear_caches();
-	custom_bg_color=Color(0,0,0,0);
-}
-
-void TextEdit::set_custom_bg_color(const Color& p_color) {
-
-	custom_bg_color=p_color;
-	update();
 }
 
 void TextEdit::add_keyword_color(const String& p_keyword,const Color& p_color) {
@@ -3510,12 +3519,6 @@ void TextEdit::add_color_region(const String& p_begin_key,const String& p_end_ke
 	text.clear_caches();
 	update();
 
-}
-
-void TextEdit::set_symbol_color(const Color& p_color) {
-
-	symbol_color=p_color;
-	update();
 }
 
 void TextEdit::set_syntax_coloring(bool p_enabled) {
@@ -4197,12 +4200,17 @@ void TextEdit::_confirm_completion() {
 
 
 void TextEdit::_cancel_code_hint() {
+
+	VisualServer::get_singleton()->canvas_item_set_z(get_canvas_item(), 0);
+	raised_from_completion = false;
 	completion_hint="";
 	update();
 }
 
 void TextEdit::_cancel_completion() {
 
+	VisualServer::get_singleton()->canvas_item_set_z(get_canvas_item(), 0);
+	raised_from_completion = false;
 	if (!completion_active)
 		return;
 
@@ -4382,6 +4390,8 @@ void TextEdit::query_code_comple() {
 
 void TextEdit::set_code_hint(const String& p_hint) {
 
+	VisualServer::get_singleton()->canvas_item_set_z(get_canvas_item(), 1);
+	raised_from_completion = true;
 	completion_hint=p_hint;
 	completion_hint_offset=-0xFFFF;
 	update();
@@ -4389,7 +4399,8 @@ void TextEdit::set_code_hint(const String& p_hint) {
 
 void TextEdit::code_complete(const Vector<String> &p_strings) {
 
-
+	VisualServer::get_singleton()->canvas_item_set_z(get_canvas_item(), 1);
+	raised_from_completion = true;
 	completion_strings=p_strings;
 	completion_active=true;
 	completion_current="";
@@ -4500,8 +4511,24 @@ void TextEdit::set_show_line_numbers(bool p_show) {
 	update();
 }
 
+void TextEdit::set_line_numbers_zero_padded(bool p_zero_padded) {
+
+	line_numbers_zero_padded=p_zero_padded;
+	update();
+}
+
 bool TextEdit::is_show_line_numbers_enabled() const {
 	return line_numbers;
+}
+
+void TextEdit::set_show_line_length_guideline(bool p_show) {
+	line_length_guideline=p_show;
+	update();
+}
+
+void TextEdit::set_line_length_guideline_column(int p_column) {
+	line_length_guideline_col=p_column;
+	update();
 }
 
 void TextEdit::set_draw_breakpoint_gutter(bool p_draw) {
@@ -4569,6 +4596,9 @@ bool TextEdit::is_selecting_identifiers_on_hover_enabled() const {
 	return select_identifiers_enabled;
 }
 
+void TextEdit::set_context_menu_enabled(bool p_enable) {
+	context_menu_enabled = p_enable;
+}
 
 PopupMenu *TextEdit::get_menu() const {
 	return menu;
@@ -4648,8 +4678,6 @@ void TextEdit::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("add_keyword_color","keyword","color"),&TextEdit::add_keyword_color);
 	ObjectTypeDB::bind_method(_MD("add_color_region","begin_key","end_key","color","line_only"),&TextEdit::add_color_region,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("set_symbol_color","color"),&TextEdit::set_symbol_color);
-	ObjectTypeDB::bind_method(_MD("set_custom_bg_color","color"),&TextEdit::set_custom_bg_color);
 	ObjectTypeDB::bind_method(_MD("clear_colors"),&TextEdit::clear_colors);
 	ObjectTypeDB::bind_method(_MD("menu_option"),&TextEdit::menu_option);
 	ObjectTypeDB::bind_method(_MD("get_menu:PopupMenu"),&TextEdit::get_menu);
@@ -4734,7 +4762,6 @@ TextEdit::TextEdit()  {
 	caret_blink_timer->connect("timeout", this,"_toggle_draw_caret");
 	cursor_set_blink_enabled(false);
 
-	custom_bg_color=Color(0,0,0,0);
 	idle_detect = memnew( Timer );
 	add_child(idle_detect);
 	idle_detect->set_one_shot(true);
@@ -4778,6 +4805,9 @@ TextEdit::TextEdit()  {
 	completion_line_ofs=0;
 	tooltip_obj=NULL;
 	line_numbers=false;
+	line_numbers_zero_padded=false;
+	line_length_guideline=false;
+	line_length_guideline_col=80;
 	draw_breakpoint_gutter=false;
 	next_operation_is_complex=false;
 	scroll_past_end_of_file_enabled=false;
@@ -4789,6 +4819,9 @@ TextEdit::TextEdit()  {
 	window_has_focus=true;
 	select_identifiers_enabled=false;
 
+	raised_from_completion = false;
+
+	context_menu_enabled=true;
 	menu = memnew( PopupMenu );
 	add_child(menu);
 	menu->add_item(TTR("Cut"),MENU_CUT,KEY_MASK_CMD|KEY_X);

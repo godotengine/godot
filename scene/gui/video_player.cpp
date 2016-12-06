@@ -248,7 +248,7 @@ void VideoPlayer::stop() {
 
 	playback->stop();
 	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
-	resampler.clear();
+	resampler.flush();
 	set_process(false);
 	last_audio_time=0;
 };
@@ -426,5 +426,6 @@ VideoPlayer::~VideoPlayer() {
 
 	if (stream_rid.is_valid())
 		AudioServer::get_singleton()->free(stream_rid);
+	resampler.clear(); //Not necessary here, but make in consistent with other "stream_player" classes
 };
 

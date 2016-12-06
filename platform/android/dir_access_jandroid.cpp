@@ -154,7 +154,7 @@ Error DirAccessJAndroid::change_dir(String p_dir){
 
 String DirAccessJAndroid::get_current_dir(){
 
-	return "/"+current_dir;
+	return "res://"+current_dir;
 }
 
 bool DirAccessJAndroid::file_exists(String p_file){
@@ -203,7 +203,6 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 		return false;
 
 	env->CallVoidMethod(io,_dir_close,res);
-	env->DeleteLocalRef(js);
 
 	return true;
 }
@@ -269,6 +268,6 @@ DirAccessJAndroid::DirAccessJAndroid() {
 
 DirAccessJAndroid::~DirAccessJAndroid() {
 
-	list_dir_end();;
+	list_dir_end();
 }
 #endif

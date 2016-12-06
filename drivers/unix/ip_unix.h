@@ -36,7 +36,7 @@
 class IP_Unix : public IP {
 	OBJ_TYPE(IP_Unix, IP);
 
-	virtual IP_Address _resolve_hostname(const String& p_hostname);
+	virtual IP_Address _resolve_hostname(const String& p_hostname, IP_Address::AddrType p_type);
 
 	static IP* _create_unix();
 public:

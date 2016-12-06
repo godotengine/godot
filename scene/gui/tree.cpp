@@ -32,6 +32,7 @@
 #include "os/keyboard.h"
 #include "globals.h"
 #include "os/input.h"
+#include "scene/main/viewport.h"
 
 
 
@@ -829,6 +830,8 @@ void Tree::update_cache() {
 	cache.guide_width=get_constant("guide_width");
 	cache.draw_relationship_lines=get_constant("draw_relationship_lines");
 	cache.relationship_line_color=get_color("relationship_line_color");
+	cache.scroll_border=get_constant("scroll_border");
+	cache.scroll_speed=get_constant("scroll_speed");
 
 	cache.title_button = get_stylebox("title_button_normal");
 	cache.title_button_pressed = get_stylebox("title_button_pressed");
@@ -1328,7 +1331,7 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 				int root_ofs = children_pos.x + (hide_folding?cache.hseparation:cache.item_margin);
 				int parent_ofs = p_pos.x + (hide_folding?cache.hseparation:cache.item_margin);
 				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h/2)-cache.offset+p_draw_ofs;
-				if (c->get_children() > 0)
+				if (c->get_children() != NULL)
 					root_pos -= Point2i(cache.arrow->get_width(),0);
 
 				Point2i parent_pos = Point2i(parent_ofs - cache.arrow->get_width()/2, p_pos.y + label_h/2 + cache.arrow->get_height()/2)-cache.offset+p_draw_ofs;
@@ -1701,16 +1704,11 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 			} break;
 			case TreeItem::CELL_MODE_CHECK: {
 
-				Ref<Texture> checked = cache.checked;
 				bring_up_editor=false; //checkboxes are not edited with editor
-				if (x>=0 && x<= checked->get_width()+cache.hseparation ) {
-
-
-					p_item->set_checked(col,!c.checked);
-					item_edited(col,p_item);
-					click_handled=true;
-					//p_item->edited_signal.call(col);
-				}
+				p_item->set_checked(col, !c.checked);
+				item_edited(col, p_item);
+				click_handled = true;
+				//p_item->edited_signal.call(col);
 
 			} break;
 			case TreeItem::CELL_MODE_RANGE:
@@ -2365,19 +2363,11 @@ void Tree::_input_event(InputEvent p_event) {
 							Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 							warp_mouse(range_drag_capture_pos);
 						} else {
-
-							if (delayed_text_editor) {
-								uint64_t diff = OS::get_singleton()->get_ticks_msec() - first_selection_time;
-								if (diff >= 400 && diff <= 800)
-									edit_selected();
-								// fast double click
-								else if (diff < 400) {
-									emit_signal("item_double_clicked");
-								}
-
-								first_selection_time = OS::get_singleton()->get_ticks_msec();
-							} else {
+							Rect2 rect = get_selected()->get_meta("__focus_rect");
+							if (rect.has_point(Point2(p_event.mouse_button.x,p_event.mouse_button.y))) {
 								edit_selected();
+							} else {
+								emit_signal("item_double_clicked");
 							}
 						}
 						pressing_for_editor=false;
@@ -2681,11 +2671,17 @@ void Tree::_notification(int p_what) {
 	if (p_what==NOTIFICATION_DRAG_END) {
 
 		drop_mode_flags=0;
+		scrolling = false;
+		set_fixed_process(false);
 		update();
 	}
 	if (p_what==NOTIFICATION_DRAG_BEGIN) {
 
 		single_select_defer=NULL;
+		if (cache.scroll_speed > 0 && get_rect().has_point(get_viewport()->get_mouse_pos() - get_global_pos())) {
+			scrolling = true;
+			set_fixed_process(true);
+		}
 	}
 	if (p_what==NOTIFICATION_FIXED_PROCESS) {
 
@@ -2730,6 +2726,28 @@ void Tree::_notification(int p_what) {
 			} else {
 
 			}
+		}
+		
+		if (scrolling) {
+			Point2 point = get_viewport()->get_mouse_pos() - get_global_pos();
+			if (point.x < cache.scroll_border) {
+				point.x -= cache.scroll_border;
+			} else if (point.x > get_size().width - cache.scroll_border) {
+				point.x -= get_size().width - cache.scroll_border;
+			} else {
+				point.x = 0;
+			}
+			if (point.y < cache.scroll_border) {
+				point.y -= cache.scroll_border;
+			} else if (point.y > get_size().height - cache.scroll_border) {
+				point.y -= get_size().height - cache.scroll_border;
+			} else {
+				point.y = 0;
+			}
+			point *= cache.scroll_speed * get_fixed_process_delta_time();
+			point += get_scroll();
+			h_scroll->set_val(point.x);
+			v_scroll->set_val(point.y);
 		}
 	}
 
@@ -2895,8 +2913,6 @@ void Tree::item_selected(int p_column,TreeItem *p_item) {
 
 		p_item->cells[p_column].selected=true;
 		//emit_signal("multi_selected",p_item,p_column,true); - NO this is for TreeItem::select
-		if (delayed_text_editor)
-			first_selection_time = OS::get_singleton()->get_ticks_msec();
 
 	} else {
 
@@ -3546,15 +3562,6 @@ bool Tree::get_allow_rmb_select() const{
 }
 
 
-void Tree::set_delayed_text_editor(bool enabled) {
-	delayed_text_editor = enabled;
-}
-
-bool Tree::is_delayed_text_editor_enabled() const {
-	return delayed_text_editor;
-}
-
-
 void Tree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_range_click_timeout"),&Tree::_range_click_timeout);
@@ -3607,10 +3614,6 @@ void Tree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_allow_rmb_select","allow"),&Tree::set_allow_rmb_select);
 	ObjectTypeDB::bind_method(_MD("get_allow_rmb_select"),&Tree::get_allow_rmb_select);
-
-	ObjectTypeDB::bind_method(_MD("set_delayed_text_editor","enable"),&Tree::set_delayed_text_editor);
-	ObjectTypeDB::bind_method(_MD("is_delayed_text_editor_enabled"),&Tree::is_delayed_text_editor_enabled);
-
 
 	ObjectTypeDB::bind_method(_MD("set_single_select_cell_editing_only_when_already_selected","enable"),&Tree::set_single_select_cell_editing_only_when_already_selected);
 	ObjectTypeDB::bind_method(_MD("get_single_select_cell_editing_only_when_already_selected"),&Tree::get_single_select_cell_editing_only_when_already_selected);
@@ -3725,9 +3728,6 @@ Tree::Tree() {
 	force_select_on_already_selected=false;
 
 	allow_rmb_select=false;
-
-	first_selection_time = 0;
-	delayed_text_editor = false;
 }
 
 

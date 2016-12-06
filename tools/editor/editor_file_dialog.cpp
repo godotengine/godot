@@ -336,15 +336,21 @@ void EditorFileDialog::_action_pressed() {
 		hide();
 	}else if (mode==MODE_OPEN_ANY || mode==MODE_OPEN_DIR) {
 
-
 		String path=dir_access->get_current_dir();
-		/*if (tree->get_selected()) {
-			Dictionary d = tree->get_selected()->get_metadata(0);
-			if (d["dir"]) {
-				path=path+"/"+String(d["name"]);
-			}
-		}*/
+
 		path=path.replace("\\","/");
+
+		for(int i=0;i<item_list->get_item_count();i++) {
+			if (item_list->is_selected(i)) {
+				Dictionary d=item_list->get_item_metadata(i);
+				if (d["dir"]) {
+					path=path.plus_file(d["name"]);
+
+					break;
+				}
+			}
+		}
+
 		_save_to_recent();
 		emit_signal("dir_selected",path);
 		hide();
@@ -571,25 +577,26 @@ void EditorFileDialog::update_file_list() {
 	files.sort_custom<NoCaseComparator>();
 
 	while(!dirs.empty()) {
+		const String& dir_name=dirs.front()->get();
 
-		if (dirs.front()->get()!=".") {
-			item_list->add_item(dirs.front()->get()+"/");
-			if (display_mode==DISPLAY_THUMBNAILS) {
+		item_list->add_item(dir_name+"/");
 
-				item_list->set_item_icon(item_list->get_item_count()-1,folder_thumbnail);
-			} else {
+		if (display_mode==DISPLAY_THUMBNAILS) {
 
-				item_list->set_item_icon(item_list->get_item_count()-1,folder);
-			}
+			item_list->set_item_icon(item_list->get_item_count()-1,folder_thumbnail);
+		} else {
 
-			Dictionary d;
-			d["name"]=dirs.front()->get();
-			d["path"]=String();
-			d["dir"]=true;
-			item_list->set_item_metadata( item_list->get_item_count() -1, d);
+			item_list->set_item_icon(item_list->get_item_count()-1,folder);
 		}
-		dirs.pop_front();
 
+		Dictionary d;
+		d["name"]=dir_name;
+		d["path"]=String();
+		d["dir"]=true;
+
+		item_list->set_item_metadata( item_list->get_item_count() -1, d);
+
+		dirs.pop_front();
 	}
 
 	dirs.clear();

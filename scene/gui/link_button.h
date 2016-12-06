@@ -40,7 +40,8 @@ public:
 
 	enum UnderlineMode {
 		UNDERLINE_MODE_ALWAYS,
-		UNDERLINE_MODE_ON_HOVER
+		UNDERLINE_MODE_ON_HOVER,
+		UNDERLINE_MODE_NEVER
 	};
 private:
 	String text;

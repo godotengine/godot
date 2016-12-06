@@ -31,6 +31,9 @@
 #include "stream_peer_winsock.h"
 
 #include <winsock2.h>
+#include <ws2tcpip.h>
+
+#include "drivers/unix/socket_helpers.h"
 
 extern int winsock_refcount;
 
@@ -60,11 +63,19 @@ void TCPServerWinsock::cleanup() {
 };
 
 
-Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
+Error TCPServerWinsock::listen(uint16_t p_port, IP_Address::AddrType p_type,const List<String> *p_accepted_hosts) {
 
 	int sockfd;
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	sockfd = _socket_create(p_type, SOCK_STREAM, IPPROTO_TCP);
 	ERR_FAIL_COND_V(sockfd == INVALID_SOCKET, FAILED);
+
+	if(p_type == IP_Address::TYPE_IPV6) {
+		// Use IPv6 only socket
+		int yes = 1;
+		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&yes, sizeof(yes)) != 0) {
+				WARN_PRINT("Unable to unset IPv4 address mapping over IPv6");
+		}
+	}
 
 	unsigned long par = 1;
 	if (ioctlsocket(sockfd, FIONBIO, &par)) {
@@ -73,11 +84,8 @@ Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_ho
 		return FAILED;
 	};
 
-	struct sockaddr_in my_addr;
-	my_addr.sin_family = AF_INET;         // host byte order
-	my_addr.sin_port = htons(p_port);     // short, network byte order
-	my_addr.sin_addr.s_addr = INADDR_ANY; // automatically fill with my IP TODO: use p_accepted_hosts
-	memset(my_addr.sin_zero, '\0', sizeof my_addr.sin_zero);
+	struct sockaddr_storage my_addr;
+	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, p_type, p_accepted_hosts);
 
 	int reuse=1;
 	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
@@ -86,7 +94,7 @@ Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_ho
 	}
 
 
-	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof my_addr) != SOCKET_ERROR) {
+	if (bind(sockfd, (struct sockaddr *)&my_addr, addr_size) != SOCKET_ERROR) {
 
 		if (::listen(sockfd, SOMAXCONN) == SOCKET_ERROR) {
 
@@ -140,16 +148,17 @@ Ref<StreamPeerTCP> TCPServerWinsock::take_connection() {
 		return NULL;
 	};
 
-	struct sockaddr_in their_addr;
+	struct sockaddr_storage their_addr;
 	int sin_size = sizeof(their_addr);
 	int fd = accept(listen_sockfd, (struct sockaddr *)&their_addr, &sin_size);
 	ERR_FAIL_COND_V(fd == INVALID_SOCKET, NULL);
 
 	Ref<StreamPeerWinsock> conn = memnew(StreamPeerWinsock);
 	IP_Address ip;
-	ip.host = (uint32_t)their_addr.sin_addr.s_addr;
+	int port;
+	_set_ip_addr_port(ip, port, &their_addr);
 
-	conn->set_socket(fd, ip, ntohs(their_addr.sin_port));
+	conn->set_socket(fd, ip, port);
 
 	return conn;
 };

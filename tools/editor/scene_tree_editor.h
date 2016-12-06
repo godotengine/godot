@@ -137,6 +137,9 @@ class SceneTreeEditor : public Control {
 
 	Timer* update_timer;
 
+	List<StringName> *script_types;
+	bool _is_script_type(const StringName &p_type) const;
+
 public:
 
 	void set_filter(const String& p_filter);

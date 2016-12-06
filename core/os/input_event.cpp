@@ -50,7 +50,8 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 		case MOUSE_MOTION:
 			return mouse_motion.x == p_event.mouse_motion.x
 				&& mouse_motion.y == p_event.mouse_motion.y
-				&& mouse_motion.relative_x == p_event.mouse_motion.relative_y
+				&& mouse_motion.relative_x == p_event.mouse_motion.relative_x
+				&& mouse_motion.relative_y == p_event.mouse_motion.relative_y
 				&& mouse_motion.button_mask == p_event.mouse_motion.button_mask
 				&& key.mod == p_event.key.mod;
 		case MOUSE_BUTTON:

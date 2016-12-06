@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_ogg = env_modules.Clone()
+
+# Thirdparty source files
+if (env['builtin_libogg'] != 'no'):
+    thirdparty_dir = "#thirdparty/libogg/"
+    thirdparty_sources = [
+        "bitwise.c",
+        "framing.c",
+    ]
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_ogg.add_source_files(env.modules_sources, thirdparty_sources)
+    env_ogg.Append(CPPPATH=[thirdparty_dir])
+
+# Godot source files
+env_ogg.add_source_files(env.modules_sources, "*.cpp")

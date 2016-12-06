@@ -41,11 +41,11 @@ protected:
 	static TCP_Server* (*_create)();
 
 	//bind helper
-	Error _listen(uint16_t p_port,DVector<String> p_accepted_hosts=DVector<String>());
+	Error _listen(uint16_t p_port, IP_Address::AddrType p_type = IP_Address::TYPE_ANY ,DVector<String> p_accepted_hosts=DVector<String>());
 	static void _bind_methods();
 public:
 
-	virtual Error listen(uint16_t p_port,const List<String> *p_accepted_hosts=NULL)=0;
+	virtual Error listen(uint16_t p_port, IP_Address::AddrType p_type = IP_Address::TYPE_ANY, const List<String> *p_accepted_hosts=NULL)=0;
 	virtual bool is_connection_available() const=0;
 	virtual Ref<StreamPeerTCP> take_connection()=0;
 

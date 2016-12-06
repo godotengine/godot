@@ -150,6 +150,16 @@ void Array::erase(const Variant& p_value) {
 	_p->array.erase(p_value);
 }
 
+Variant Array::front() const {
+	ERR_FAIL_COND_V(_p->array.size() == 0, Variant());
+	return operator[](0);
+}
+
+Variant Array::back() const {
+	ERR_FAIL_COND_V(_p->array.size() == 0, Variant());
+	return operator[](_p->array.size() - 1);
+}
+
 int Array::find(const Variant& p_value, int p_from) const {
 
 	return _p->array.find(p_value, p_from);
@@ -276,16 +286,26 @@ void Array::push_front(const Variant& p_value) {
 	_p->array.insert(0,p_value);
 }
 
-void Array::pop_back(){
+Variant Array::pop_back(){
 
-	if (!_p->array.empty())
-		_p->array.resize( _p->array.size() -1 );
+	if (!_p->array.empty()) {
+		int n = _p->array.size() - 1;
+		Variant ret = _p->array.get(n);
+		_p->array.resize(n);
+		return ret;
+	}
+	return Variant();
 
 }
-void Array::pop_front(){
 
-	if (!_p->array.empty())
+Variant Array::pop_front(){
+
+	if (!_p->array.empty()) {
+		Variant ret = _p->array.get(0);
 		_p->array.remove(0);
+		return ret;
+	}
+	return Variant();
 
 }
 

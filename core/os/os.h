@@ -372,6 +372,7 @@ public:
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);
 	ScreenOrientation get_screen_orientation() const;
 
+	virtual void enable_for_stealing_focus(ProcessID pid) {}
 	virtual void move_window_to_foreground() {}
 
 	virtual void debug_break();
@@ -430,7 +431,7 @@ public:
 	virtual void set_context(int p_context);
 
 	virtual void set_use_vsync(bool p_enable);
-	virtual bool is_vsnc_enabled() const;
+	virtual bool is_vsync_enabled() const;
 
 	Dictionary get_engine_version() const;
 

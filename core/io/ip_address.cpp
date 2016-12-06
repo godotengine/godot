@@ -32,29 +32,191 @@ IP_Address::operator Variant() const {
 
 	return operator String();
 }*/
+
+#include <string.h>
+#include <stdio.h>
+
 IP_Address::operator String() const {
 
-	return itos(field[0])+"."+itos(field[1])+"."+itos(field[2])+"."+itos(field[3]);
+	if (type == TYPE_NONE)
+		return "0.0.0.0";
+	if (type == TYPE_IPV4)
+		return itos(field8[0])+"."+itos(field8[1])+"."+itos(field8[2])+"."+itos(field8[3]);
+	else {
+		String ret;
+		for (int i=0; i<8; i++) {
+			if (i > 0)
+				ret = ret + ":";
+			uint16_t num = (field8[i*2] << 8) + field8[i*2+1];
+			ret = ret + String::num_int64(num, 16);
+		};
+
+		return ret;
+	};
 }
 
-IP_Address::IP_Address(const String& p_string) {
+static void _parse_hex(const String& p_string, int p_start, uint8_t* p_dst) {
 
-	host=0;
-	int slices = p_string.get_slice_count(".");
+	uint16_t ret = 0;
+	for (int i=p_start; i<p_start + 4; i++) {
+
+		if (i >= p_string.length()) {
+			break;
+		};
+
+		int n = 0;
+		CharType c = p_string[i];
+		if (c >= '0' && c <= '9') {
+
+			n = c - '0';
+		} else if (c >= 'a' && c <= 'f') {
+			n = 10 + (c - 'a');
+		} else if (c >= 'A' && c <= 'F') {
+			n = 10 + (c - 'A');
+		} else if (c == ':') {
+			break;
+		} else {
+			ERR_EXPLAIN("Invalid character in ipv6 address: " + p_string);
+			ERR_FAIL();
+		};
+		ret = ret << 4;
+		ret += n;
+	};
+
+	p_dst[0] = ret >> 8;
+	p_dst[1] = ret & 0xff;
+};
+
+void IP_Address::_parse_ipv6(const String& p_string) {
+
+	static const int parts_total = 8;
+	int parts[parts_total] = {0};
+	int parts_count = 0;
+	bool part_found = false;
+	bool part_skip = false;
+	bool part_ipv4 = false;
+	int parts_idx = 0;
+
+	for (int i=0; i<p_string.length(); i++) {
+
+		CharType c = p_string[i];
+		if (c == ':') {
+
+			if (i == 0) {
+				continue; // next must be a ":"
+			};
+			if (!part_found) {
+				part_skip = true;
+				parts[parts_idx++] = -1;
+			};
+			part_found = false;
+		} else if (c == '.') {
+
+			part_ipv4 = true;
+
+		} else if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+			if (!part_found) {
+				parts[parts_idx++] = i;
+				part_found = true;
+				++parts_count;
+			};
+		} else {
+
+			ERR_EXPLAIN("Invalid character in IPv6 address: " + p_string);
+			ERR_FAIL();
+		};
+	};
+
+	int parts_extra = 0;
+	if (part_skip) {
+		parts_extra = parts_total - parts_count;
+	};
+
+	int idx = 0;
+	for (int i=0; i<parts_idx; i++) {
+
+		if (parts[i] == -1) {
+
+			for (int j=0; j<parts_extra; j++) {
+				field16[idx++] = 0;
+			};
+			continue;
+		};
+
+		if (part_ipv4 && i == parts_idx - 1) {
+			_parse_ipv4(p_string, parts[i], (uint8_t*)&field16[idx]); // should be the last one
+		} else {
+			_parse_hex(p_string, parts[i], (uint8_t*)&(field16[idx++]));
+		};
+	};
+
+};
+
+void IP_Address::_parse_ipv4(const String& p_string, int p_start, uint8_t* p_ret) {
+
+	String ip;
+	if (p_start != 0) {
+		ip = p_string.substr(p_start, p_string.length() - p_start);
+	} else {
+		ip = p_string;
+	};
+
+	int slices = ip.get_slice_count(".");
 	if (slices!=4) {
-		ERR_EXPLAIN("Invalid IP Address String: "+p_string);
+		ERR_EXPLAIN("Invalid IP Address String: "+ip);
 		ERR_FAIL();
 	}
 	for(int i=0;i<4;i++) {
-
-		field[i]=p_string.get_slicec('.',i).to_int();
+		p_ret[i]=ip.get_slicec('.',i).to_int();
 	}
+};
+
+void IP_Address::clear() {
+
+	memset(&field8[0], 0, sizeof(field8));
+};
+
+IP_Address::IP_Address(const String& p_string) {
+
+	clear();
+	if (p_string.find(":") >= 0) {
+
+		_parse_ipv6(p_string);
+		type = TYPE_IPV6;
+	} else {
+
+		_parse_ipv4(p_string, 0, &field8[0]);
+		type = TYPE_IPV4;
+	};
 }
 
-IP_Address::IP_Address(uint8_t p_a,uint8_t p_b,uint8_t p_c,uint8_t p_d) {
+_FORCE_INLINE_ static void _32_to_buf(uint8_t* p_dst, uint32_t p_n) {
 
-	field[0]=p_a;
-	field[1]=p_b;
-	field[2]=p_c;
-	field[3]=p_d;
+	p_dst[0] = (p_n >> 24) & 0xff;
+	p_dst[1] = (p_n >> 16) & 0xff;
+	p_dst[2] = (p_n >> 8) & 0xff;
+	p_dst[3] = (p_n >> 0) & 0xff;
+};
+
+IP_Address::IP_Address(uint32_t p_a,uint32_t p_b,uint32_t p_c,uint32_t p_d, IP_Address::AddrType p_type) {
+
+	type = p_type;
+	memset(&field8[0], 0, sizeof(field8));
+	if (p_type == TYPE_IPV4) {
+		field8[0]=p_a;
+		field8[1]=p_b;
+		field8[2]=p_c;
+		field8[3]=p_d;
+	} else if (type == TYPE_IPV6) {
+
+		_32_to_buf(&field8[0], p_a);
+		_32_to_buf(&field8[4], p_b);
+		_32_to_buf(&field8[8], p_c);
+		_32_to_buf(&field8[12], p_d);
+	} else {
+		type = TYPE_NONE;
+		ERR_EXPLAIN("Invalid type specified for IP_Address (use TYPE_IPV4 or TYPE_IPV6");
+		ERR_FAIL();
+	};
+
 }
