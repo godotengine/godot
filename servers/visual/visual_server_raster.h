@@ -882,7 +882,8 @@ public:
 	BIND7(environment_set_glow,RID,bool ,int ,float ,float ,float ,EnvironmentGlowBlendMode )
 	BIND5(environment_set_fog,RID,bool ,float ,float ,RID )
 
-	BIND9(environment_set_tonemap,RID,bool ,float ,float ,float ,float ,float,float ,EnvironmentToneMapper )
+	BIND9(environment_set_tonemap,RID,EnvironmentToneMapper, float ,float ,bool, float ,float ,float,float  )
+
 	BIND6(environment_set_adjustment,RID,bool ,float ,float ,float ,RID )
 
 

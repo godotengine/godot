@@ -890,10 +890,23 @@ void RasterizerSceneGLES3::environment_set_ssao(RID p_env,bool p_enable, float p
 
 }
 
+void RasterizerSceneGLES3::environment_set_tonemap(RID p_env,VS::EnvironmentToneMapper p_tone_mapper,float p_exposure,float p_white,bool p_auto_exposure,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,float p_auto_exp_scale) {
 
-void RasterizerSceneGLES3::environment_set_tonemap(RID p_env, bool p_enable, float p_exposure, float p_white, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale, VS::EnvironmentToneMapper p_tone_mapper){
+	Environment *env=environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+
+	env->tone_mapper=p_tone_mapper;
+	env->tone_mapper_exposure=p_exposure;
+	env->tone_mapper_exposure_white=p_white;
+	env->auto_exposure=p_auto_exposure;
+	env->auto_exposure_speed=p_auto_exp_speed;
+	env->auto_exposure_min=p_min_luminance;
+	env->auto_exposure_max=p_max_luminance;
+	env->auto_exposure_grey=p_auto_exp_scale;
 
 }
+
 
 void RasterizerSceneGLES3::environment_set_adjustment(RID p_env,bool p_enable,float p_brightness,float p_contrast,float p_saturation,RID p_ramp) {
 
@@ -3010,6 +3023,172 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env,const CameraMatrix &p_c
 
 }
 
+void RasterizerSceneGLES3::_post_process(Environment *env){
+
+	//copy to front buffer
+
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDepthFunc(GL_LEQUAL);
+	glColorMask(1,1,1,1);
+
+	//turn off everything used
+
+	if (!env) {
+		//no environment, simply return and convert to SRGB
+		glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->fbo);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->buffers.diffuse);
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB,true);
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA,true);
+		storage->shaders.copy.bind();
+
+		_copy_screen();
+
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB,false);
+		storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA,false);	//compute luminance
+
+		return;
+
+	}
+
+
+	//order of operation
+	//1) DOF Blur (first blur, then copy to buffer applying the blur)
+	//2) Motion Blur
+	//3) Bloom
+	//4) Tonemap
+	//5) Adjustments
+
+	GLuint composite_from = storage->frame.current_rt->buffers.diffuse;
+
+
+	if ( env->auto_exposure) {
+
+		//compute auto exposure
+		//first step, copy from image to luminance buffer
+		state.exposure_shader.set_conditional(ExposureShaderGLES3::EXPOSURE_BEGIN,true);
+		state.exposure_shader.bind();
+		int ss[2]={
+			storage->frame.current_rt->width,
+			storage->frame.current_rt->height,
+		};
+		int ds[2]={
+			exposure_shrink_size,
+			exposure_shrink_size,
+		};
+
+		glUniform2iv(state.exposure_shader.get_uniform(ExposureShaderGLES3::SOURCE_RENDER_SIZE),1,ss);
+		glUniform2iv(state.exposure_shader.get_uniform(ExposureShaderGLES3::TARGET_SIZE),1,ds);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->buffers.diffuse);
+
+
+		glBindFramebuffer(GL_FRAMEBUFFER,exposure_shrink[0].fbo);
+		glViewport(0,0,exposure_shrink_size,exposure_shrink_size);
+
+		_copy_screen();
+
+
+
+
+
+		//second step, shrink to 2x2 pixels
+		state.exposure_shader.set_conditional(ExposureShaderGLES3::EXPOSURE_BEGIN,false);
+		state.exposure_shader.bind();
+		//shrink from second to previous to last level
+
+		int s_size=exposure_shrink_size/3;
+		for(int i=1;i<exposure_shrink.size()-1;i++) {
+
+			glBindFramebuffer(GL_FRAMEBUFFER,exposure_shrink[i].fbo);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D,exposure_shrink[i-1].color);
+
+			_copy_screen();
+
+			glViewport(0,0,s_size,s_size);
+
+			s_size/=3;
+
+		}
+		//third step, shrink to 1x1 pixel taking in consideration the previous exposure
+		state.exposure_shader.set_conditional(ExposureShaderGLES3::EXPOSURE_END,true);
+
+		uint64_t tick = OS::get_singleton()->get_ticks_usec();
+		uint64_t tick_diff = storage->frame.current_rt->last_exposure_tick==0?0:tick-storage->frame.current_rt->last_exposure_tick;
+		storage->frame.current_rt->last_exposure_tick=tick;
+
+		if (tick_diff==0 || tick_diff>1000000) {
+			state.exposure_shader.set_conditional(ExposureShaderGLES3::EXPOSURE_FORCE_SET,true);
+
+		}
+
+		state.exposure_shader.bind();
+
+		glBindFramebuffer(GL_FRAMEBUFFER,exposure_shrink[exposure_shrink.size()-1].fbo);
+		glViewport(0,0,1,1);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D,exposure_shrink[exposure_shrink.size()-2].color);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->exposure.color); //read from previous
+
+
+		state.exposure_shader.set_uniform(ExposureShaderGLES3::EXPOSURE_ADJUST,env->auto_exposure_speed*(tick_diff/1000000.0));
+		state.exposure_shader.set_uniform(ExposureShaderGLES3::MAX_LUMINANCE,env->auto_exposure_max);
+		state.exposure_shader.set_uniform(ExposureShaderGLES3::MIN_LUMINANCE,env->auto_exposure_min);
+
+		_copy_screen();
+
+		state.exposure_shader.set_conditional(ExposureShaderGLES3::EXPOSURE_FORCE_SET,false);
+		state.exposure_shader.set_conditional(ExposureShaderGLES3::EXPOSURE_END,false);
+
+		//last step, swap with the framebuffer exposure, so the right exposure is kept int he framebuffer
+		SWAP(exposure_shrink[exposure_shrink.size()-1].fbo,storage->frame.current_rt->exposure.fbo);
+		SWAP(exposure_shrink[exposure_shrink.size()-1].color,storage->frame.current_rt->exposure.color);
+
+
+		glViewport(0,0,storage->frame.current_rt->width,storage->frame.current_rt->height);
+
+	}
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->fbo);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D,composite_from);
+
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FILMIC_TONEMAPPER,env->tone_mapper==VS::ENV_TONE_MAPPER_FILMIC);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_ACES_TONEMAPPER,env->tone_mapper==VS::ENV_TONE_MAPPER_ACES);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_REINDHART_TONEMAPPER,env->tone_mapper==VS::ENV_TONE_MAPPER_REINHARDT);
+
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_AUTO_EXPOSURE,env->auto_exposure);
+
+	state.tonemap_shader.bind();
+
+	state.tonemap_shader.set_uniform(TonemapShaderGLES3::EXPOSURE,env->tone_mapper_exposure);
+	state.tonemap_shader.set_uniform(TonemapShaderGLES3::WHITE,env->tone_mapper_exposure_white);
+
+
+	if (env->auto_exposure)	{
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->exposure.color);
+		state.tonemap_shader.set_uniform(TonemapShaderGLES3::AUTO_EXPOSURE_GREY,env->auto_exposure_grey);
+
+	}
+
+	_copy_screen();
+
+	//turn off everything used
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_AUTO_EXPOSURE,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FILMIC_TONEMAPPER,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_ACES_TONEMAPPER,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_REINDHART_TONEMAPPER,false);
+
+}
 
 void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_reflection_probe_cull_result,int p_reflection_probe_cull_count,RID p_environment,RID p_shadow_atlas,RID p_reflection_atlas,RID p_reflection_probe,int p_reflection_probe_pass){
 
@@ -3056,8 +3235,7 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 	render_list.clear();
 
 
-	bool use_mrt=true;
-
+	bool use_mrt=false;
 
 
 	_fill_render_list(p_cull_result,p_cull_count,false);
@@ -3072,6 +3250,7 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 	//rendering to a probe cubemap side
 	ReflectionProbeInstance *probe = reflection_probe_instance_owner.getornull(p_reflection_probe);
 	GLuint current_fbo;
+
 
 
 	if (probe) {
@@ -3099,6 +3278,8 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 		glBindFramebuffer(GL_FRAMEBUFFER,current_fbo);
 
 	} else {
+
+		use_mrt = state.used_sss || (env && (env->ssao_enabled || env->ssr_enabled)); //only enable MRT rendering if any of these is enabled
 
 		glViewport(0,0,storage->frame.current_rt->width,storage->frame.current_rt->height);
 
@@ -3267,9 +3448,11 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 		return;
 	}
 
-	_copy_to_front_buffer(env);
 
-/*	if (shadow_atlas) {
+	_post_process(env);
+
+
+	if (false && shadow_atlas) {
 
 		//_copy_texture_to_front_buffer(shadow_atlas->depth);
 		storage->canvas->canvas_begin();
@@ -3279,7 +3462,17 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 		storage->canvas->draw_generic_textured_rect(Rect2(0,0,storage->frame.current_rt->width/2,storage->frame.current_rt->height/2),Rect2(0,0,1,1));
 
 	}
-*/
+
+	if (false && storage->frame.current_rt) {
+
+		//_copy_texture_to_front_buffer(shadow_atlas->depth);
+		storage->canvas->canvas_begin();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D,exposure_shrink[4].color);
+//		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->exposure.color);
+		storage->canvas->draw_generic_textured_rect(Rect2(0,0,storage->frame.current_rt->width/16,storage->frame.current_rt->height/16),Rect2(0,0,1,1));
+
+	}
 
 	if (false && reflection_atlas && storage->frame.current_rt) {
 
@@ -4199,6 +4392,8 @@ void RasterizerSceneGLES3::initialize() {
 	state.ssao_minify_shader.init();
 	state.ssao_shader.init();
 	state.ssao_blur_shader.init();
+	state.exposure_shader.init();
+	state.tonemap_shader.init();
 
 
 	{
@@ -4207,6 +4402,34 @@ void RasterizerSceneGLES3::initialize() {
 		GLOBAL_DEF("rendering/gles3/subsurface_scattering/max_size",1.0);
 		Globals::get_singleton()->set_custom_property_info("rendering/gles3/subsurface_scattering/max_size",PropertyInfo(Variant::INT,"rendering/gles3/subsurface_scattering/max_size",PROPERTY_HINT_RANGE,"0.01,8,0.01"));
 		GLOBAL_DEF("rendering/gles3/subsurface_scattering/follow_surface",false);
+	}
+
+	exposure_shrink_size=243;
+	int max_exposure_shrink_size=exposure_shrink_size;
+
+	while(max_exposure_shrink_size>0) {
+
+		RasterizerStorageGLES3::RenderTarget::Exposure e;
+
+		glGenFramebuffers(1, &e.fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, e.fbo);
+
+		glGenTextures(1, &e.color);
+		glBindTexture(GL_TEXTURE_2D, e.color);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F,  max_exposure_shrink_size, max_exposure_shrink_size, 0, GL_RED, GL_FLOAT, NULL);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,  e.color, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		exposure_shrink.push_back(e);
+		max_exposure_shrink_size/=3;
+
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		ERR_CONTINUE(status!=GL_FRAMEBUFFER_COMPLETE);
+
+
 	}
 
 }

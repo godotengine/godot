@@ -58,10 +58,9 @@ public:
 
 	enum ToneMapper {
 		TONE_MAPPER_LINEAR,
-		TONE_MAPPER_LOG,
 		TONE_MAPPER_REINHARDT,
 		TONE_MAPPER_FILMIC,
-		TONE_MAPPER_ACES_FILMIC
+		TONE_MAPPER_ACES
 	};
 
 
@@ -86,7 +85,7 @@ private:
 	float tonemap_auto_exposure_max;
 	float tonemap_auto_exposure_min;
 	float tonemap_auto_exposure_speed;
-	float tonemap_auto_exposure_scale;
+	float tonemap_auto_exposure_grey;
 
 	bool adjustment_enabled;
 	float adjustment_contrast;
@@ -163,8 +162,8 @@ public:
 	void set_tonemap_auto_exposure_speed(float p_auto_exposure_speed);
 	float get_tonemap_auto_exposure_speed() const;
 
-	void set_tonemap_auto_exposure_scale(float p_auto_exposure_scale);
-	float get_tonemap_auto_exposure_scale() const;
+	void set_tonemap_auto_exposure_grey(float p_auto_exposure_grey);
+	float get_tonemap_auto_exposure_grey() const;
 
 	void set_adjustment_enable(bool p_enable);
 	bool is_adjustment_enabled() const;

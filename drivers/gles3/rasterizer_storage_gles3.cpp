@@ -4799,6 +4799,10 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 		glDeleteTextures(1,&rt->effects.ssao.linear_depth);
 	}
 
+	if (rt->exposure.fbo) {
+		glDeleteFramebuffers(1,&rt->exposure.fbo);
+		glDeleteTextures(1,&rt->exposure.color);
+	}
 	Texture *tex = texture_owner.get(rt->texture);
 	tex->alloc_height=0;
 	tex->alloc_width=0;
@@ -5118,6 +5122,23 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 			glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->effects.ssao.linear_depth, i);
 			rt->effects.ssao.depth_mipmap_fbos.push_back(fbo);
+		}
+
+
+		//////Exposure
+
+		glGenFramebuffers(1, &rt->exposure.fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->exposure.fbo);
+
+		glGenTextures(1, &rt->exposure.color);
+		glBindTexture(GL_TEXTURE_2D, rt->exposure.color);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F,  1, 1, 0, GL_RED, GL_FLOAT, NULL);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,  rt->exposure.color, 0);
+
+		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			_render_target_clear(rt);
+			ERR_FAIL_COND( status != GL_FRAMEBUFFER_COMPLETE );
 		}
 
 	}

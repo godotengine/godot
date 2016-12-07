@@ -15,5 +15,7 @@ if env['BUILDERS'].has_key('GLES3_GLSL'):
 	env.GLES3_GLSL('ssao.glsl');
 	env.GLES3_GLSL('ssao_minify.glsl');
 	env.GLES3_GLSL('ssao_blur.glsl');
+	env.GLES3_GLSL('exposure.glsl');
+	env.GLES3_GLSL('tonemap.glsl');
 
 

@@ -11,6 +11,8 @@
 #include "drivers/gles3/shaders/ssao_minify.glsl.h"
 #include "drivers/gles3/shaders/ssao.glsl.h"
 #include "drivers/gles3/shaders/ssao_blur.glsl.h"
+#include "drivers/gles3/shaders/exposure.glsl.h"
+#include "drivers/gles3/shaders/tonemap.glsl.h"
 
 class RasterizerSceneGLES3 : public RasterizerScene {
 public:
@@ -48,6 +50,9 @@ public:
 
 	RasterizerStorageGLES3 *storage;
 
+	Vector<RasterizerStorageGLES3::RenderTarget::Exposure> exposure_shrink;
+	int exposure_shrink_size;
+
 
 	struct State {
 
@@ -68,6 +73,8 @@ public:
 		SsaoMinifyShaderGLES3 ssao_minify_shader;
 		SsaoShaderGLES3 ssao_shader;
 		SsaoBlurShaderGLES3 ssao_blur_shader;
+		ExposureShaderGLES3 exposure_shader;
+		TonemapShaderGLES3 tonemap_shader;
 
 
 		struct SceneDataUBO {
@@ -334,6 +341,15 @@ public:
 		Color ssao_color;
 		bool ssao_filter;
 
+		VS::EnvironmentToneMapper tone_mapper;
+		float tone_mapper_exposure;
+		float tone_mapper_exposure_white;
+		bool auto_exposure;
+		float auto_exposure_speed;
+		float auto_exposure_min;
+		float auto_exposure_max;
+		float auto_exposure_grey;
+
 		Environment() {
 			bg_mode=VS::ENV_BG_CLEAR_COLOR;
 			skybox_scale=1.0;
@@ -360,6 +376,14 @@ public:
 			ssao_light_affect=0;
 			ssao_filter=true;
 
+			tone_mapper=VS::ENV_TONE_MAPPER_LINEAR;
+			tone_mapper_exposure=1.0;
+			tone_mapper_exposure_white=1.0;
+			auto_exposure=false;
+			auto_exposure_speed=0.5;
+			auto_exposure_min=0.05;
+			auto_exposure_max=8;
+			auto_exposure_grey=0.4;
 
 		}
 	};
@@ -382,7 +406,8 @@ public:
 	virtual void environment_set_ssr(RID p_env,bool p_enable, int p_max_steps,float p_accel,float p_fade,float p_depth_tolerance,bool p_smooth,bool p_roughness);
 	virtual void environment_set_ssao(RID p_env,bool p_enable, float p_radius, float p_radius2, float p_intensity2, float p_intensity, float p_bias, float p_light_affect,const Color &p_color,bool p_blur);
 
-	virtual void environment_set_tonemap(RID p_env,bool p_enable,float p_exposure,float p_white,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,float p_auto_exp_scale,VS::EnvironmentToneMapper p_tone_mapper);
+	virtual void environment_set_tonemap(RID p_env,VS::EnvironmentToneMapper p_tone_mapper,float p_exposure,float p_white,bool p_auto_exposure,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,float p_auto_exp_scale);
+
 	virtual void environment_set_adjustment(RID p_env,bool p_enable,float p_brightness,float p_contrast,float p_saturation,RID p_ramp);
 
 
@@ -618,6 +643,8 @@ public:
 	void _fill_render_list(InstanceBase** p_cull_result,int p_cull_count,bool p_shadow);
 
 	void _render_mrts(Environment *env, const CameraMatrix &p_cam_projection);
+	void _post_process(Environment *env);
+
 	virtual void render_scene(const Transform& p_cam_transform,const CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_reflection_probe_cull_result,int p_reflection_probe_cull_count,RID p_environment,RID p_shadow_atlas,RID p_reflection_atlas,RID p_reflection_probe,int p_reflection_probe_pass);
 	virtual void render_shadow(RID p_light,RID p_shadow_atlas,int p_pass,InstanceBase** p_cull_result,int p_cull_count);
 	virtual bool free(RID p_rid);

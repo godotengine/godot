@@ -922,11 +922,18 @@ public:
 				SSAO() { blur_fbo[0]=0; blur_fbo[1]=0; linear_depth=0; }
 			} ssao;
 
-			Effects() {
-
-			}
+			Effects() {}
 
 		} effects;
+
+		struct Exposure {
+			GLuint fbo;
+			GLuint color;
+
+			Exposure() { fbo=0; }
+		} exposure;
+
+		uint64_t last_exposure_tick;
 
 		int width,height;
 
@@ -950,6 +957,8 @@ public:
 			flags[RENDER_TARGET_TRANSPARENT]=false;
 			flags[RENDER_TARGET_NO_3D]=false;
 			flags[RENDER_TARGET_NO_SAMPLING]=false;
+
+			last_exposure_tick=0;
 		}
 	};
 
