@@ -35,10 +35,13 @@
 _FORCE_INLINE_ static bool _match_object_type_query(CollisionObjectSW *p_object, uint32_t p_layer_mask, uint32_t p_type_mask) {
 
 	if (p_object->get_type()==CollisionObjectSW::TYPE_AREA)
-		return p_type_mask&PhysicsDirectSpaceState::TYPE_MASK_AREA;
+        return p_type_mask&PhysicsDirectSpaceState::TYPE_MASK_AREA;
 
-	if (((p_object->get_layer_mask()&p_layer_mask)==0) && ((p_object->get_collision_mask()&p_layer_mask)==0))
-		return false;
+    if (!p_object->get_layer_mask() || !p_layer_mask)
+        return false;
+
+    //if ((p_layer_mask&p_object->get_collision_mask() || p_object->get_layer_mask()&p_collision_mask) == 0)
+        //return false;
 
 	BodySW *body = static_cast<BodySW*>(p_object);
 
@@ -193,7 +196,7 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transfo
 }
 
 
-bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform& p_xform,const Vector3& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask,ShapeRestInfo *r_info) {
+bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform& p_xform,const Vector3& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_collision_mask, uint32_t p_object_type_mask,ShapeRestInfo *r_info) {
 
 
 
@@ -228,11 +231,14 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform&
 			continue;
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
-			continue; //ignore excluded
+            continue; //ignore excluded
 
 
-		const CollisionObjectSW *col_obj=space->intersection_query_results[i];
+        const CollisionObjectSW *col_obj=space->intersection_query_results[i];
 		int shape_idx=space->intersection_query_subindex_results[i];
+
+        if (((p_layer_mask&col_obj->get_collision_mask()) || (col_obj->get_layer_mask()&p_collision_mask))==0)
+            continue;
 
 		Vector3 point_A,point_B;
 		Vector3 sep_axis=p_motion.normalized();
@@ -321,7 +327,7 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform&
 	return true;
 }
 
-bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform& p_shape_xform,float p_margin,Vector3 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask){
+bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform& p_shape_xform,float p_margin,Vector3 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude,uint32_t p_layer_mask, uint32_t p_collision_mask,uint32_t p_object_type_mask){
 
 	if (p_result_max<=0)
 		return 0;
@@ -350,26 +356,30 @@ bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform& p_sh
 	}
 
 
-	for(int i=0;i<amount;i++) {
+    for(int i=0;i<amount;i++) {
 
-		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
-			continue;
+        if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
+            continue;
 
-		const CollisionObjectSW *col_obj=space->intersection_query_results[i];
-		int shape_idx=space->intersection_query_subindex_results[i];
+        const CollisionObjectSW *col_obj=space->intersection_query_results[i];
+        int shape_idx=space->intersection_query_subindex_results[i];
 
-		if (p_exclude.has( col_obj->get_self() )) {
-			continue;
-		}
+        if (p_exclude.has( col_obj->get_self() )) {
+            continue;
+        }
 
-		//print_line("AGAINST: "+itos(col_obj->get_self().get_id())+":"+itos(shape_idx));
-		//print_line("THE ABBB: "+(col_obj->get_transform() * col_obj->get_shape_transform(shape_idx)).xform(col_obj->get_shape(shape_idx)->get_aabb()));
+        if (((p_layer_mask&col_obj->get_collision_mask()) || (col_obj->get_layer_mask()&p_collision_mask))==0)
+            continue;
 
-		if (CollisionSolverSW::solve_static(shape,p_shape_xform,col_obj->get_shape(shape_idx),col_obj->get_transform() * col_obj->get_shape_transform(shape_idx),cbkres,cbkptr,NULL,p_margin)) {
-			collided=true;
-		}
+        //print_line("AGAINST: "+itos(col_obj->get_self().get_id())+":"+itos(shape_idx));
+        //print_line("THE ABBB: "+(col_obj->get_transform() * col_obj->get_shape_transform(shape_idx)).xform(col_obj->get_shape(shape_idx)->get_aabb()));
 
-	}
+            if (CollisionSolverSW::solve_static(shape,p_shape_xform,col_obj->get_shape(shape_idx),col_obj->get_transform() * col_obj->get_shape_transform(shape_idx),cbkres,cbkptr,NULL,p_margin)) {
+                collided=true;
+        }
+
+
+    }
 
 	r_result_count=cbk.amount;
 
@@ -406,7 +416,7 @@ static void _rest_cbk_result(const Vector3& p_point_A,const Vector3& p_point_B,v
 	rd->best_shape=rd->shape;
 
 }
-bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform& p_shape_xform,float p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform& p_shape_xform,float p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_collision_mask, uint32_t p_object_type_mask) {
 
 
 	ShapeSW *shape = static_cast<PhysicsServerSW*>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
@@ -433,6 +443,9 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform& p_shape_
 
 		if (p_exclude.has( col_obj->get_self() ))
 			continue;
+
+        if (((p_layer_mask&col_obj->get_collision_mask()) || (col_obj->get_layer_mask()&p_collision_mask))==0)
+            continue;
 
 		rcd.object=col_obj;
 		rcd.shape=shape_idx;
