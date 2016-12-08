@@ -35,13 +35,12 @@
 _FORCE_INLINE_ static bool _match_object_type_query(CollisionObjectSW *p_object, uint32_t p_layer_mask, uint32_t p_type_mask) {
 
 	if (p_object->get_type()==CollisionObjectSW::TYPE_AREA)
-        return p_type_mask&PhysicsDirectSpaceState::TYPE_MASK_AREA;
+		return p_type_mask&PhysicsDirectSpaceState::TYPE_MASK_AREA;
 
-    if (!p_object->get_layer_mask() || !p_layer_mask)
-        return false;
-
-    //if ((p_layer_mask&p_object->get_collision_mask() || p_object->get_layer_mask()&p_collision_mask) == 0)
-        //return false;
+	//originally checked layer against layer, but now we have collision masks
+	//so here we can just check both objects have a valid layer instead
+	if (!p_object->get_layer_mask() || !p_layer_mask)
+		return false;
 
 	BodySW *body = static_cast<BodySW*>(p_object);
 
@@ -231,14 +230,14 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform&
 			continue;
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
-            continue; //ignore excluded
+			continue; //ignore excluded
 
 
-        const CollisionObjectSW *col_obj=space->intersection_query_results[i];
+		const CollisionObjectSW *col_obj=space->intersection_query_results[i];
 		int shape_idx=space->intersection_query_subindex_results[i];
 
-        if (((p_layer_mask&col_obj->get_collision_mask()) || (col_obj->get_layer_mask()&p_collision_mask))==0)
-            continue;
+		if (((p_layer_mask&col_obj->get_collision_mask()) || (col_obj->get_layer_mask()&p_collision_mask))==0)
+			continue;
 
 		Vector3 point_A,point_B;
 		Vector3 sep_axis=p_motion.normalized();
@@ -356,30 +355,30 @@ bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform& p_sh
 	}
 
 
-    for(int i=0;i<amount;i++) {
+	for(int i=0;i<amount;i++) {
 
-        if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
-            continue;
+		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
+			continue;
 
-        const CollisionObjectSW *col_obj=space->intersection_query_results[i];
-        int shape_idx=space->intersection_query_subindex_results[i];
+		const CollisionObjectSW *col_obj=space->intersection_query_results[i];
+		int shape_idx=space->intersection_query_subindex_results[i];
 
-        if (p_exclude.has( col_obj->get_self() )) {
-            continue;
-        }
+		if (p_exclude.has( col_obj->get_self() )) {
+			continue;
+		}
 
-        if (((p_layer_mask&col_obj->get_collision_mask()) || (col_obj->get_layer_mask()&p_collision_mask))==0)
-            continue;
+		if (((p_layer_mask&col_obj->get_collision_mask()) || (col_obj->get_layer_mask()&p_collision_mask))==0)
+			continue;
 
-        //print_line("AGAINST: "+itos(col_obj->get_self().get_id())+":"+itos(shape_idx));
-        //print_line("THE ABBB: "+(col_obj->get_transform() * col_obj->get_shape_transform(shape_idx)).xform(col_obj->get_shape(shape_idx)->get_aabb()));
+		//print_line("AGAINST: "+itos(col_obj->get_self().get_id())+":"+itos(shape_idx));
+		//print_line("THE ABBB: "+(col_obj->get_transform() * col_obj->get_shape_transform(shape_idx)).xform(col_obj->get_shape(shape_idx)->get_aabb()));
 
-            if (CollisionSolverSW::solve_static(shape,p_shape_xform,col_obj->get_shape(shape_idx),col_obj->get_transform() * col_obj->get_shape_transform(shape_idx),cbkres,cbkptr,NULL,p_margin)) {
-                collided=true;
-        }
+			if (CollisionSolverSW::solve_static(shape,p_shape_xform,col_obj->get_shape(shape_idx),col_obj->get_transform() * col_obj->get_shape_transform(shape_idx),cbkres,cbkptr,NULL,p_margin)) {
+				collided=true;
+		}
 
 
-    }
+	}
 
 	r_result_count=cbk.amount;
 
@@ -444,8 +443,8 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform& p_shape_
 		if (p_exclude.has( col_obj->get_self() ))
 			continue;
 
-        if (((p_layer_mask&col_obj->get_collision_mask()) || (col_obj->get_layer_mask()&p_collision_mask))==0)
-            continue;
+		if (((p_layer_mask&col_obj->get_collision_mask()) || (col_obj->get_layer_mask()&p_collision_mask))==0)
+			continue;
 
 		rcd.object=col_obj;
 		rcd.shape=shape_idx;
