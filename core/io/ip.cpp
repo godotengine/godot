@@ -107,6 +107,10 @@ struct _IP_ResolverPrivate {
 
 	HashMap<String, IP_Address> cache;
 
+	static String get_cache_key(String p_hostname, IP::Type p_type) {
+		return itos(p_type) + p_hostname;
+	}
+
 };
 
 
@@ -115,14 +119,12 @@ IP_Address IP::resolve_hostname(const String& p_hostname, IP::Type p_type) {
 
 	GLOBAL_LOCK_FUNCTION;
 
-	if (resolver->cache.has(p_hostname))
-		if ((resolver->cache[p_hostname].is_ipv4() && p_type != IP::TYPE_IPV6) ||
-			(!resolver->cache[p_hostname].is_ipv4() && p_type != IP::TYPE_IPV4))
-			return resolver->cache[p_hostname];
-		// requested type is different from type in cache. continue resolution, if successful it'll overwrite cache
+	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
+	if (resolver->cache.has(key))
+		return resolver->cache[key];
 
 	IP_Address res = _resolve_hostname(p_hostname, p_type);
-	resolver->cache[p_hostname]=res;
+	resolver->cache[key]=res;
 	return res;
 
 }
@@ -137,12 +139,11 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname, IP::Typ
 		return id;
 	}
 
+	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
 	resolver->queue[id].hostname=p_hostname;
 	resolver->queue[id].type = p_type;
-	if (resolver->cache.has(p_hostname) &&
-		((resolver->cache[p_hostname].is_ipv4() && p_type != IP::TYPE_IPV6) ||
-		(!resolver->cache[p_hostname].is_ipv4() && p_type != IP::TYPE_IPV4))) {
-		resolver->queue[id].response=resolver->cache[p_hostname];
+	if (resolver->cache.has(key)) {
+		resolver->queue[id].response=resolver->cache[key];
 		resolver->queue[id].status=IP::RESOLVER_STATUS_DONE;
 	} else {
 		resolver->queue[id].response=IP_Address();
@@ -196,7 +197,10 @@ void IP::clear_cache(const String &p_hostname) {
 	if (p_hostname.empty()) {
 		resolver->cache.clear();
 	} else {
-		resolver->cache.erase(p_hostname);
+		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_NONE));
+		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_IPV4));
+		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_IPV6));
+		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_ANY));
 	}
 };
 
