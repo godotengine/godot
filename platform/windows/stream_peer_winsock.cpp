@@ -98,7 +98,12 @@ Error StreamPeerWinsock::_poll_connection(bool p_block) const {
 			return OK;
 		};
 
-		return OK;
+		if (errno == WSAEINPROGRESS || errno == WSAEALREADY) {
+			return OK;
+		}
+
+		status = STATUS_ERROR;
+		return ERR_CONNECTION_ERROR;
 	} else {
 
 		status = STATUS_CONNECTED;
