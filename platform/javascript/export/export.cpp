@@ -183,6 +183,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t>& p_html, const St
 		current_line = current_line.replace("$GODOT_FS",p_name+"fs.js");
 		current_line = current_line.replace("$GODOT_MEM",p_name+".mem");
 		current_line = current_line.replace("$GODOT_JS",p_name+".js");
+		current_line = current_line.replace("$GODOT_ASM",p_name+".asm.js");
 		current_line = current_line.replace("$GODOT_CANVAS_WIDTH",Globals::get_singleton()->get("display/width"));
 		current_line = current_line.replace("$GODOT_CANVAS_HEIGHT",Globals::get_singleton()->get("display/height"));
 		current_line = current_line.replace("$GODOT_HEAD_TITLE",!html_title.empty()?html_title:(String) Globals::get_singleton()->get("application/name"));
@@ -321,6 +322,11 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 
 			//_fix_godot(data);
 			file=p_path.get_file().basename()+".js";
+		}
+
+		if (file=="godot.asm.js") {
+
+			file=p_path.get_file().basename()+".asm.js";
 		}
 
 		if (file=="godot.mem") {

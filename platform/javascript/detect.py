@@ -91,6 +91,7 @@ def configure(env):
         env.Append(LINKFLAGS=['--compression', lzma_binpath + "," + lzma_decoder + "," + lzma_dec])
 
     env.Append(LINKFLAGS=['-s', 'ASM_JS=1'])
+    env.Append(LINKFLAGS=['--separate-asm'])
     env.Append(LINKFLAGS=['-O2'])
     # env.Append(LINKFLAGS=['-g4'])
 
