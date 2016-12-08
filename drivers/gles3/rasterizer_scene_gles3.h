@@ -341,6 +341,15 @@ public:
 		Color ssao_color;
 		bool ssao_filter;
 
+		bool glow_enabled;
+		int glow_levels;
+		float glow_intensity;
+		float glow_strength;
+		float glow_bloom;
+		VS::EnvironmentGlowBlendMode glow_blend_mode;
+		float glow_hdr_bleed_treshold;
+		float glow_hdr_bleed_scale;
+
 		VS::EnvironmentToneMapper tone_mapper;
 		float tone_mapper_exposure;
 		float tone_mapper_exposure_white;
@@ -349,6 +358,7 @@ public:
 		float auto_exposure_min;
 		float auto_exposure_max;
 		float auto_exposure_grey;
+
 
 		Environment() {
 			bg_mode=VS::ENV_BG_CLEAR_COLOR;
@@ -385,6 +395,16 @@ public:
 			auto_exposure_max=8;
 			auto_exposure_grey=0.4;
 
+			glow_enabled=false;
+			glow_levels=(1<<2)|(1<<4);
+			glow_intensity=0.8;
+			glow_strength=1.0;
+			glow_bloom=0.0;
+			glow_blend_mode=VS::GLOW_BLEND_MODE_SOFTLIGHT;
+			glow_hdr_bleed_treshold=1.0;
+			glow_hdr_bleed_scale=2.0;
+
+
 		}
 	};
 
@@ -400,7 +420,7 @@ public:
 	virtual void environment_set_canvas_max_layer(RID p_env,int p_max_layer);
 	virtual void environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy=1.0,float p_skybox_contribution=0.0);
 
-	virtual void environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode);
+	virtual void environment_set_glow(RID p_env,bool p_enable,int p_level_flags,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode,float p_hdr_bleed_treshold,float p_hdr_bleed_scale);
 	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture);
 
 	virtual void environment_set_ssr(RID p_env,bool p_enable, int p_max_steps,float p_accel,float p_fade,float p_depth_tolerance,bool p_smooth,bool p_roughness);

@@ -79,6 +79,8 @@ public:
 		ARRAY_WEIGHTS_SIZE=4,
 		CANVAS_ITEM_Z_MIN=-4096,
 		CANVAS_ITEM_Z_MAX=4096,
+		MAX_GLOW_LEVELS=7,
+
 
 
 
@@ -538,9 +540,9 @@ public:
 		GLOW_BLEND_MODE_ADDITIVE,
 		GLOW_BLEND_MODE_SCREEN,
 		GLOW_BLEND_MODE_SOFTLIGHT,
-		GLOW_BLEND_MODE_DISABLED,
+		GLOW_BLEND_MODE_REPLACE,
 	};
-	virtual void environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,EnvironmentGlowBlendMode p_blend_mode)=0;
+	virtual void environment_set_glow(RID p_env,bool p_enable,int p_level_flags,float p_intensity,float p_strength,float p_bloom_treshold,EnvironmentGlowBlendMode p_blend_mode,float p_hdr_bleed_treshold,float p_hdr_bleed_scale)=0;
 	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture)=0;
 
 

@@ -5020,8 +5020,8 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 				w>>=1;
 				h>>=1;
 
-				if (w<32 || h<32)
-					break; //going less than 32 is pointless
+				if (w<2 || h<2)
+					break;
 
 				level++;
 

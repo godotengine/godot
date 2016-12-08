@@ -879,7 +879,7 @@ public:
 	BIND10(environment_set_ssao,RID ,bool , float , float , float,float,float , float ,const Color &,bool )
 
 
-	BIND7(environment_set_glow,RID,bool ,int ,float ,float ,float ,EnvironmentGlowBlendMode )
+	BIND9(environment_set_glow,RID,bool ,int ,float ,float ,float ,EnvironmentGlowBlendMode,float,float )
 	BIND5(environment_set_fog,RID,bool ,float ,float ,RID )
 
 	BIND9(environment_set_tonemap,RID,EnvironmentToneMapper, float ,float ,bool, float ,float ,float,float  )

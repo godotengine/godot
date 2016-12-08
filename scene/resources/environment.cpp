@@ -474,6 +474,110 @@ bool Environment::is_ssao_blur_enabled() const {
 	return ssao_blur;
 }
 
+void Environment::set_glow_enabled(bool p_enabled) {
+
+	glow_enabled=p_enabled;
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+}
+
+bool Environment::is_glow_enabled() const{
+
+	return glow_enabled;
+}
+
+void Environment::set_glow_level(int p_level,bool p_enabled){
+
+	ERR_FAIL_INDEX(p_level,VS::MAX_GLOW_LEVELS);
+
+	if (p_enabled)
+		glow_levels|=(1<<p_level);
+	else
+		glow_levels&=~(1<<p_level);
+
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+
+}
+bool Environment::is_glow_level_enabled(int p_level) const{
+
+	ERR_FAIL_INDEX_V(p_level,VS::MAX_GLOW_LEVELS,false);
+
+	return glow_levels&(1<<p_level);
+}
+
+void Environment::set_glow_intensity(float p_intensity){
+
+	glow_intensity=p_intensity;
+
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+
+}
+float Environment::get_glow_intensity() const{
+
+	return glow_intensity;
+}
+
+void Environment::set_glow_strength(float p_strength){
+
+	glow_strength=p_strength;
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+
+}
+float Environment::get_glow_strength() const{
+
+	return glow_strength;
+}
+
+void Environment::set_glow_bloom(float p_treshold){
+
+	glow_bloom=p_treshold;
+
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+
+}
+float Environment::get_glow_bloom() const{
+
+	return glow_bloom;
+}
+
+void Environment::set_glow_blend_mode(GlowBlendMode p_mode){
+
+	glow_blend_mode=p_mode;
+
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+
+}
+Environment::GlowBlendMode Environment::get_glow_blend_mode() const{
+
+	return glow_blend_mode;
+}
+
+void Environment::set_glow_hdr_bleed_treshold(float p_treshold){
+
+	glow_hdr_bleed_treshold=p_treshold;
+
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+
+}
+float Environment::get_glow_hdr_bleed_treshold() const{
+
+	return glow_hdr_bleed_treshold;
+}
+
+void Environment::set_glow_hdr_bleed_scale(float p_scale){
+
+	glow_hdr_bleed_scale=p_scale;
+
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+
+}
+float Environment::get_glow_hdr_bleed_scale() const{
+
+	return glow_hdr_bleed_scale;
+}
+
+
+
+
 void Environment::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_background","mode"),&Environment::set_background);
@@ -530,7 +634,7 @@ void Environment::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_ssr_rough","rough"),&Environment::set_ssr_rough);
 	ObjectTypeDB::bind_method(_MD("is_ssr_rough"),&Environment::is_ssr_rough);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ss_reflections/enable"),_SCS("set_ssr_enabled"),_SCS("is_ssr_enabled") );
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ss_reflections/enabled"),_SCS("set_ssr_enabled"),_SCS("is_ssr_enabled") );
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"ss_reflections/max_steps",PROPERTY_HINT_RANGE,"1,512,1"),_SCS("set_ssr_max_steps"),_SCS("get_ssr_max_steps") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ss_reflections/accel",PROPERTY_HINT_RANGE,"0,4,0.01"),_SCS("set_ssr_accel"),_SCS("get_ssr_accel") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ss_reflections/fade",PROPERTY_HINT_EXP_EASING),_SCS("set_ssr_fade"),_SCS("get_ssr_fade") );
@@ -565,7 +669,7 @@ void Environment::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_ssao_blur","enabled"),&Environment::set_ssao_blur);
 	ObjectTypeDB::bind_method(_MD("is_ssao_blur_enabled"),&Environment::is_ssao_blur_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ambient_occlusion/enable"),_SCS("set_ssao_enabled"),_SCS("is_ssao_enabled") );
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ambient_occlusion/enabled"),_SCS("set_ssao_enabled"),_SCS("is_ssao_enabled") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_occlusion/radius",PROPERTY_HINT_RANGE,"0.1,16,0.1"),_SCS("set_ssao_radius"),_SCS("get_ssao_radius") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_occlusion/intensity",PROPERTY_HINT_RANGE,"0.0,9,0.1"),_SCS("set_ssao_intensity"),_SCS("get_ssao_intensity") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_occlusion/radius2",PROPERTY_HINT_RANGE,"0.0,16,0.1"),_SCS("set_ssao_radius2"),_SCS("get_ssao_radius2") );
@@ -574,6 +678,48 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_occlusion/light_affect",PROPERTY_HINT_RANGE,"0.00,1,0.01"),_SCS("set_ssao_direct_light_affect"),_SCS("get_ssao_direct_light_affect") );
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"ambient_occlusion/color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_ssao_color"),_SCS("get_ssao_color") );
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ambient_occlusion/blur"),_SCS("set_ssao_blur"),_SCS("is_ssao_blur_enabled") );
+
+
+	ObjectTypeDB::bind_method(_MD("set_glow_enabled","enabled"),&Environment::set_glow_enabled);
+	ObjectTypeDB::bind_method(_MD("is_glow_enabled"),&Environment::is_glow_enabled);
+
+	ObjectTypeDB::bind_method(_MD("set_glow_level","idx","enabled"),&Environment::set_glow_level);
+	ObjectTypeDB::bind_method(_MD("is_glow_level_enabled","idx"),&Environment::is_glow_level_enabled);
+
+	ObjectTypeDB::bind_method(_MD("set_glow_intensity","intensity"),&Environment::set_glow_intensity);
+	ObjectTypeDB::bind_method(_MD("get_glow_intensity"),&Environment::get_glow_intensity);
+
+	ObjectTypeDB::bind_method(_MD("set_glow_strength","strength"),&Environment::set_glow_strength);
+	ObjectTypeDB::bind_method(_MD("get_glow_strength"),&Environment::get_glow_strength);
+
+	ObjectTypeDB::bind_method(_MD("set_glow_bloom","amount"),&Environment::set_glow_bloom);
+	ObjectTypeDB::bind_method(_MD("get_glow_bloom"),&Environment::get_glow_bloom);
+
+	ObjectTypeDB::bind_method(_MD("set_glow_blend_mode","mode"),&Environment::set_glow_blend_mode);
+	ObjectTypeDB::bind_method(_MD("get_glow_blend_mode"),&Environment::get_glow_blend_mode);
+
+	ObjectTypeDB::bind_method(_MD("set_glow_hdr_bleed_treshold","treshold"),&Environment::set_glow_hdr_bleed_treshold);
+	ObjectTypeDB::bind_method(_MD("get_glow_hdr_bleed_treshold"),&Environment::get_glow_hdr_bleed_treshold);
+
+	ObjectTypeDB::bind_method(_MD("set_glow_hdr_bleed_scale","scale"),&Environment::set_glow_hdr_bleed_scale);
+	ObjectTypeDB::bind_method(_MD("get_glow_hdr_bleed_scale"),&Environment::get_glow_hdr_bleed_scale);
+
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"glow/enabled"),_SCS("set_glow_enabled"),_SCS("is_glow_enabled") );
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"glow/levels/1"),_SCS("set_glow_level"),_SCS("is_glow_level_enabled"),0 );
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"glow/levels/2"),_SCS("set_glow_level"),_SCS("is_glow_level_enabled"),1 );
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"glow/levels/3"),_SCS("set_glow_level"),_SCS("is_glow_level_enabled"),2 );
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"glow/levels/4"),_SCS("set_glow_level"),_SCS("is_glow_level_enabled"),3 );
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"glow/levels/5"),_SCS("set_glow_level"),_SCS("is_glow_level_enabled"),4 );
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"glow/levels/6"),_SCS("set_glow_level"),_SCS("is_glow_level_enabled"),5 );
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"glow/levels/7"),_SCS("set_glow_level"),_SCS("is_glow_level_enabled"),6 );
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"glow/intensity",PROPERTY_HINT_RANGE,"0.0,8.0,0.01"),_SCS("set_glow_intensity"),_SCS("get_glow_intensity") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"glow/strength",PROPERTY_HINT_RANGE,"0.0,2.0,0.01"),_SCS("set_glow_strength"),_SCS("get_glow_strength") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"glow/bloom",PROPERTY_HINT_RANGE,"0.0,1.0,0.01"),_SCS("set_glow_bloom"),_SCS("get_glow_bloom") );
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"glow/blend_mode",PROPERTY_HINT_ENUM,"Additive,Screen,Softlight,Replace"),_SCS("set_glow_blend_mode"),_SCS("get_glow_blend_mode") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"glow/hdr_treshold",PROPERTY_HINT_RANGE,"0.0,4.0,0.01"),_SCS("set_glow_hdr_bleed_treshold"),_SCS("get_glow_hdr_bleed_treshold") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"glow/hdr_scale",PROPERTY_HINT_RANGE,"0.0,4.0,0.01"),_SCS("set_glow_hdr_bleed_scale"),_SCS("get_glow_hdr_bleed_scale") );
 
 
 	ObjectTypeDB::bind_method(_MD("set_tonemapper","mode"),&Environment::set_tonemapper);
@@ -601,12 +747,10 @@ void Environment::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_tonemap_auto_exposure_grey"),&Environment::get_tonemap_auto_exposure_grey);
 
 
-
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"tonemap/mode",PROPERTY_HINT_ENUM,"Linear,Reindhart,Filmic,Aces"),_SCS("set_tonemapper"),_SCS("get_tonemapper") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tonemap/exposure",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_tonemap_exposure"),_SCS("get_tonemap_exposure") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tonemap/white",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_tonemap_white"),_SCS("get_tonemap_white") );
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"auto_exposure/enable"),_SCS("set_tonemap_auto_exposure"),_SCS("get_tonemap_auto_exposure") );
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"auto_exposure/enabled"),_SCS("set_tonemap_auto_exposure"),_SCS("get_tonemap_auto_exposure") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"auto_exposure/scale",PROPERTY_HINT_RANGE,"0.01,64,0.01"),_SCS("set_tonemap_auto_exposure_grey"),_SCS("get_tonemap_auto_exposure_grey") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"auto_exposure/min_luma",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_tonemap_auto_exposure_min"),_SCS("get_tonemap_auto_exposure_min") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"auto_exposure/max_luma",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_tonemap_auto_exposure_max"),_SCS("get_tonemap_auto_exposure_max") );
@@ -646,7 +790,7 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT(GLOW_BLEND_MODE_ADDITIVE);
 	BIND_CONSTANT(GLOW_BLEND_MODE_SCREEN);
 	BIND_CONSTANT(GLOW_BLEND_MODE_SOFTLIGHT);
-	BIND_CONSTANT(GLOW_BLEND_MODE_DISABLED);
+	BIND_CONSTANT(GLOW_BLEND_MODE_REPLACE);
 	BIND_CONSTANT(TONE_MAPPER_LINEAR);
 	BIND_CONSTANT(TONE_MAPPER_REINHARDT);
 	BIND_CONSTANT(TONE_MAPPER_FILMIC);
@@ -701,6 +845,15 @@ Environment::Environment() {
 	ssao_bias=0.01;
 	ssao_direct_light_affect=false;
 	ssao_blur=true;
+
+	glow_enabled=false;
+	glow_levels=(1<<2)|(1<<4);
+	glow_intensity=0.8;
+	glow_strength=1.0;
+	glow_bloom=0.0;
+	glow_blend_mode=GLOW_BLEND_MODE_SOFTLIGHT;
+	glow_hdr_bleed_treshold=1.0;
+	glow_hdr_bleed_scale=2.0;
 
 }
 

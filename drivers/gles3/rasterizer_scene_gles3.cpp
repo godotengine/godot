@@ -850,7 +850,19 @@ void RasterizerSceneGLES3::environment_set_ambient_light(RID p_env, const Color&
 
 }
 
-void RasterizerSceneGLES3::environment_set_glow(RID p_env,bool p_enable,int p_radius,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode){
+void RasterizerSceneGLES3::environment_set_glow(RID p_env,bool p_enable,int p_level_flags,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode,float p_hdr_bleed_treshold,float p_hdr_bleed_scale) {
+
+	Environment *env=environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->glow_enabled=p_enable;
+	env->glow_levels=p_level_flags;
+	env->glow_intensity=p_intensity;
+	env->glow_strength=p_strength;
+	env->glow_bloom=p_bloom_treshold;
+	env->glow_blend_mode=p_blend_mode;
+	env->glow_hdr_bleed_treshold=p_hdr_bleed_treshold;
+	env->glow_hdr_bleed_scale=p_hdr_bleed_scale;
 
 }
 void RasterizerSceneGLES3::environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture){
@@ -3155,6 +3167,95 @@ void RasterizerSceneGLES3::_post_process(Environment *env){
 	}
 
 
+	int max_glow_level=-1;
+	int glow_mask=0;
+
+
+	if (env->glow_enabled) {
+
+
+		for(int i=0;i<VS::MAX_GLOW_LEVELS;i++) {
+			if (env->glow_levels&(1<<i)) {
+
+				if (i>=storage->frame.current_rt->effects.mip_maps[1].sizes.size()) {
+					max_glow_level=storage->frame.current_rt->effects.mip_maps[1].sizes.size()-1;
+					glow_mask|=1<<max_glow_level;
+
+				} else {
+					max_glow_level=i;
+					glow_mask|=(1<<i);
+				}
+
+			}
+		}
+
+
+		//blur diffuse into effect mipmaps using separatable convolution
+		//storage->shaders.copy.set_conditional(CopyShaderGLES3::GAUSSIAN_HORIZONTAL,true);
+
+		for(int i=0;i<(max_glow_level+1);i++) {
+
+
+			int vp_w = storage->frame.current_rt->effects.mip_maps[1].sizes[i].width;
+			int vp_h = storage->frame.current_rt->effects.mip_maps[1].sizes[i].height;
+			glViewport(0,0,vp_w,vp_h);
+			//horizontal pass
+			if (i==0) {
+				state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_FIRST_PASS,true);
+				state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_USE_AUTO_EXPOSURE,env->auto_exposure);
+			}
+
+			state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_GAUSSIAN_HORIZONTAL,true);
+			state.effect_blur_shader.bind();
+			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE,Vector2(1.0/vp_w,1.0/vp_h));
+			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD,float(i));
+			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_STRENGTH,env->glow_strength);
+
+			glActiveTexture(GL_TEXTURE0);
+			if (i==0) {
+				glBindTexture(GL_TEXTURE_2D,composite_from);
+
+				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::EXPOSURE,env->tone_mapper_exposure);
+				if (env->auto_exposure) {
+					state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::AUTO_EXPOSURE_GREY,env->auto_exposure_grey);
+				}
+
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->exposure.color);
+
+				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_BLOOM,env->glow_bloom);
+				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_HDR_TRESHOLD,env->glow_hdr_bleed_treshold);
+				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_HDR_SCALE,env->glow_hdr_bleed_scale);
+
+			} else {
+				glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->effects.mip_maps[0].color); //previous level, since mipmaps[0] starts one level bigger
+			}
+			glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->effects.mip_maps[1].sizes[i].fbo);
+			_copy_screen();
+			state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_GAUSSIAN_HORIZONTAL,false);
+			state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_FIRST_PASS,false);
+			state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_USE_AUTO_EXPOSURE,false);
+
+			//vertical pass
+			state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_GAUSSIAN_VERTICAL,true);
+			state.effect_blur_shader.bind();
+			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE,Vector2(1.0/vp_w,1.0/vp_h));
+			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD,float(i));
+			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_STRENGTH,env->glow_strength);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->effects.mip_maps[1].color);
+			glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->effects.mip_maps[0].sizes[i+1].fbo); //next level, since mipmaps[0] starts one level bigger
+			_copy_screen();
+			state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_GAUSSIAN_VERTICAL,false);
+		}
+
+		glViewport(0,0,storage->frame.current_rt->width,storage->frame.current_rt->height);
+
+	}
+
+
+
+
 	glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->fbo);
 
 	glActiveTexture(GL_TEXTURE0);
@@ -3166,11 +3267,55 @@ void RasterizerSceneGLES3::_post_process(Environment *env){
 
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_AUTO_EXPOSURE,env->auto_exposure);
 
+
+
+	if (max_glow_level>=0) {
+
+
+		for(int i=0;i<(max_glow_level+1);i++) {
+
+			if (glow_mask&(1<<i)) {
+				if (i==0) {
+					state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL1,true);
+				}
+				if (i==1) {
+					state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL2,true);
+				}
+				if (i==2) {
+					state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL3,true);
+				}
+				if (i==3) {
+					state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL4,true);
+				}
+				if (i==4) {
+					state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL5,true);
+				}
+				if (i==5) {
+					state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL6,true);
+				}
+				if (i==6) {
+					state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL7,true);
+				}
+			}
+		}
+
+		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_SCREEN,env->glow_blend_mode==VS::GLOW_BLEND_MODE_SCREEN);
+		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_SOFTLIGHT,env->glow_blend_mode==VS::GLOW_BLEND_MODE_SOFTLIGHT);
+		state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_REPLACE,env->glow_blend_mode==VS::GLOW_BLEND_MODE_REPLACE);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->effects.mip_maps[0].color);
+
+	}
+
 	state.tonemap_shader.bind();
 
 	state.tonemap_shader.set_uniform(TonemapShaderGLES3::EXPOSURE,env->tone_mapper_exposure);
 	state.tonemap_shader.set_uniform(TonemapShaderGLES3::WHITE,env->tone_mapper_exposure_white);
 
+	if (max_glow_level>=0) {
+
+		state.tonemap_shader.set_uniform(TonemapShaderGLES3::GLOW_INTENSITY,env->glow_intensity);
+	}
 
 	if (env->auto_exposure)	{
 
@@ -3180,6 +3325,8 @@ void RasterizerSceneGLES3::_post_process(Environment *env){
 
 	}
 
+
+
 	_copy_screen();
 
 	//turn off everything used
@@ -3187,7 +3334,16 @@ void RasterizerSceneGLES3::_post_process(Environment *env){
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FILMIC_TONEMAPPER,false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_ACES_TONEMAPPER,false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_REINDHART_TONEMAPPER,false);
-
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL1,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL2,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL3,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL4,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL5,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL6,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL7,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_REPLACE,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_SCREEN,false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_SOFTLIGHT,false);
 }
 
 void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_reflection_probe_cull_result,int p_reflection_probe_cull_count,RID p_environment,RID p_shadow_atlas,RID p_reflection_atlas,RID p_reflection_probe,int p_reflection_probe_pass){

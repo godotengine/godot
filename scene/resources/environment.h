@@ -49,12 +49,7 @@ public:
 		BG_MAX
 	};
 
-	enum GlowBlendMode {
-		GLOW_BLEND_MODE_ADDITIVE,
-		GLOW_BLEND_MODE_SCREEN,
-		GLOW_BLEND_MODE_SOFTLIGHT,
-		GLOW_BLEND_MODE_DISABLED,
-	};
+
 
 	enum ToneMapper {
 		TONE_MAPPER_LINEAR,
@@ -63,6 +58,12 @@ public:
 		TONE_MAPPER_ACES
 	};
 
+	enum GlowBlendMode {
+		GLOW_BLEND_MODE_ADDITIVE,
+		GLOW_BLEND_MODE_SCREEN,
+		GLOW_BLEND_MODE_SOFTLIGHT,
+		GLOW_BLEND_MODE_REPLACE,
+	};
 
 
 private:
@@ -110,6 +111,15 @@ private:
 	float ssao_direct_light_affect;
 	Color ssao_color;
 	bool ssao_blur;
+
+	bool glow_enabled;
+	int glow_levels;
+	float glow_intensity;
+	float glow_strength;
+	float glow_bloom;
+	GlowBlendMode glow_blend_mode;
+	float glow_hdr_bleed_treshold;
+	float glow_hdr_bleed_scale;
 
 
 protected:
@@ -229,6 +239,31 @@ public:
 	bool is_ssao_blur_enabled() const;
 
 
+	void set_glow_enabled(bool p_enabled);
+	bool is_glow_enabled() const;
+
+	void set_glow_level(int p_level,bool p_enabled);
+	bool is_glow_level_enabled(int p_level) const;
+
+	void set_glow_intensity(float p_intensity);
+	float get_glow_intensity() const;
+
+	void set_glow_strength(float p_strength);
+	float get_glow_strength() const;
+
+	void set_glow_bloom(float p_treshold);
+	float get_glow_bloom() const;
+
+	void set_glow_blend_mode(GlowBlendMode p_mode);
+	GlowBlendMode get_glow_blend_mode() const;
+
+	void set_glow_hdr_bleed_treshold(float p_treshold);
+	float get_glow_hdr_bleed_treshold() const;
+
+	void set_glow_hdr_bleed_scale(float p_scale);
+	float get_glow_hdr_bleed_scale() const;
+
+
 
 	virtual RID get_rid() const;
 
@@ -240,8 +275,8 @@ public:
 
 
 VARIANT_ENUM_CAST(Environment::BGMode)
-VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
+VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 
 
 #endif // ENVIRONMENT_H
