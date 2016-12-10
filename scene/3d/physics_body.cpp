@@ -1304,7 +1304,7 @@ void KinematicBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collision_pos"),&KinematicBody::get_collision_pos);
 	ObjectTypeDB::bind_method(_MD("get_collision_normal"),&KinematicBody::get_collision_normal);
 	ObjectTypeDB::bind_method(_MD("get_collider_velocity"),&KinematicBody::get_collider_velocity);
-	ObjectTypeDB::bind_method(_MD("get_collider:Object"),&KinematicBody::_get_collider);
+	ObjectTypeDB::bind_method(_MD("get_collider:Variant"),&KinematicBody::_get_collider);
 	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&KinematicBody::get_collider_shape);
 
 
