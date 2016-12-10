@@ -41,6 +41,90 @@ uniform highp float glow_intensity;
 
 layout(location = 0) out vec4 frag_color;
 
+#ifdef USE_GLOW_FILTER_BICUBIC
+
+// w0, w1, w2, and w3 are the four cubic B-spline basis functions
+float w0(float a)
+{
+    return (1.0/6.0)*(a*(a*(-a + 3.0) - 3.0) + 1.0);
+}
+
+float w1(float a)
+{
+    return (1.0/6.0)*(a*a*(3.0*a - 6.0) + 4.0);
+}
+
+float w2(float a)
+{
+    return (1.0/6.0)*(a*(a*(-3.0*a + 3.0) + 3.0) + 1.0);
+}
+
+float w3(float a)
+{
+    return (1.0/6.0)*(a*a*a);
+}
+
+// g0 and g1 are the two amplitude functions
+float g0(float a)
+{
+    return w0(a) + w1(a);
+}
+
+float g1(float a)
+{
+    return w2(a) + w3(a);
+}
+
+// h0 and h1 are the two offset functions
+float h0(float a)
+{
+    return -1.0 + w1(a) / (w0(a) + w1(a));
+}
+
+float h1(float a)
+{
+    return 1.0 + w3(a) / (w2(a) + w3(a));
+}
+
+uniform ivec2 glow_texture_size;
+
+vec4 texture2D_bicubic(sampler2D tex, vec2 uv,int p_lod)
+{
+	float lod=float(p_lod);
+	vec2 tex_size = vec2(glow_texture_size >> p_lod);
+	vec2 pixel_size =1.0/tex_size;
+	uv = uv*tex_size + 0.5;
+	vec2 iuv = floor( uv );
+	vec2 fuv = fract( uv );
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - 0.5) * pixel_size;
+	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - 0.5) * pixel_size;
+	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - 0.5) * pixel_size;
+	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - 0.5) * pixel_size;
+
+	return g0(fuv.y) * (g0x * textureLod(tex, p0,lod)  +
+			    g1x * textureLod(tex, p1,lod)) +
+			g1(fuv.y) * (g0x * textureLod(tex, p2,lod)  +
+				     g1x * textureLod(tex, p3,lod));
+}
+
+
+
+#define GLOW_TEXTURE_SAMPLE(m_tex,m_uv,m_lod) texture2D_bicubic(m_tex,m_uv,m_lod)
+
+#else
+
+#define GLOW_TEXTURE_SAMPLE(m_tex,m_uv,m_lod) textureLod(m_tex,m_uv,float(m_lod))
+
+#endif
+
 
 void main() {
 
@@ -60,31 +144,32 @@ void main() {
 	vec3 glow = vec3(0.0);
 
 #ifdef USE_GLOW_LEVEL1
-	glow+=textureLod(source_glow,uv_interp,1.0).rgb;
+
+	glow+=GLOW_TEXTURE_SAMPLE(source_glow,uv_interp,1).rgb;
 #endif
 
 #ifdef USE_GLOW_LEVEL2
-	glow+=textureLod(source_glow,uv_interp,2.0).rgb;
+	glow+=GLOW_TEXTURE_SAMPLE(source_glow,uv_interp,2).rgb;
 #endif
 
 #ifdef USE_GLOW_LEVEL3
-	glow+=textureLod(source_glow,uv_interp,3.0).rgb;
+	glow+=GLOW_TEXTURE_SAMPLE(source_glow,uv_interp,3).rgb;
 #endif
 
 #ifdef USE_GLOW_LEVEL4
-	glow+=textureLod(source_glow,uv_interp,4.0).rgb;
+	glow+=GLOW_TEXTURE_SAMPLE(source_glow,uv_interp,4).rgb;
 #endif
 
 #ifdef USE_GLOW_LEVEL5
-	glow+=textureLod(source_glow,uv_interp,5.0).rgb;
+	glow+=GLOW_TEXTURE_SAMPLE(source_glow,uv_interp,5).rgb;
 #endif
 
 #ifdef USE_GLOW_LEVEL6
-	glow+=textureLod(source_glow,uv_interp,6.0).rgb;
+	glow+=GLOW_TEXTURE_SAMPLE(source_glow,uv_interp,6).rgb;
 #endif
 
 #ifdef USE_GLOW_LEVEL7
-	glow+=textureLod(source_glow,uv_interp,7.0).rgb;
+	glow+=GLOW_TEXTURE_SAMPLE(source_glow,uv_interp,7).rgb;
 #endif
 
 

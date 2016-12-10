@@ -536,13 +536,22 @@ public:
 	//set default SSR options
 	//set default SSSSS options
 
+	enum EnvironmentDOFBlurQuality {
+		ENV_DOF_BLUR_QUALITY_LOW,
+		ENV_DOF_BLUR_QUALITY_MEDIUM,
+		ENV_DOF_BLUR_QUALITY_HIGH,
+	};
+
+	virtual void environment_set_dof_blur_near(RID p_env,bool p_enable,float p_distance,float p_transition,float p_far_amount,EnvironmentDOFBlurQuality p_quality)=0;
+	virtual void environment_set_dof_blur_far(RID p_env,bool p_enable,float p_distance,float p_transition,float p_far_amount,EnvironmentDOFBlurQuality p_quality)=0;
+
 	enum EnvironmentGlowBlendMode {
 		GLOW_BLEND_MODE_ADDITIVE,
 		GLOW_BLEND_MODE_SCREEN,
 		GLOW_BLEND_MODE_SOFTLIGHT,
 		GLOW_BLEND_MODE_REPLACE,
 	};
-	virtual void environment_set_glow(RID p_env,bool p_enable,int p_level_flags,float p_intensity,float p_strength,float p_bloom_treshold,EnvironmentGlowBlendMode p_blend_mode,float p_hdr_bleed_treshold,float p_hdr_bleed_scale)=0;
+	virtual void environment_set_glow(RID p_env,bool p_enable,int p_level_flags,float p_intensity,float p_strength,float p_bloom_treshold,EnvironmentGlowBlendMode p_blend_mode,float p_hdr_bleed_treshold,float p_hdr_bleed_scale,bool p_bicubic_upscale)=0;
 	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture)=0;
 
 

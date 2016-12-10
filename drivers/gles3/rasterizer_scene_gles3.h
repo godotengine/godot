@@ -349,6 +349,7 @@ public:
 		VS::EnvironmentGlowBlendMode glow_blend_mode;
 		float glow_hdr_bleed_treshold;
 		float glow_hdr_bleed_scale;
+		bool glow_bicubic_upscale;
 
 		VS::EnvironmentToneMapper tone_mapper;
 		float tone_mapper_exposure;
@@ -359,6 +360,17 @@ public:
 		float auto_exposure_max;
 		float auto_exposure_grey;
 
+		bool dof_blur_far_enabled;
+		float dof_blur_far_distance;
+		float dof_blur_far_transition;
+		float dof_blur_far_amount;
+		VS::EnvironmentDOFBlurQuality dof_blur_far_quality;
+
+		bool dof_blur_near_enabled;
+		float dof_blur_near_distance;
+		float dof_blur_near_transition;
+		float dof_blur_near_amount;
+		VS::EnvironmentDOFBlurQuality dof_blur_near_quality;
 
 		Environment() {
 			bg_mode=VS::ENV_BG_CLEAR_COLOR;
@@ -403,7 +415,19 @@ public:
 			glow_blend_mode=VS::GLOW_BLEND_MODE_SOFTLIGHT;
 			glow_hdr_bleed_treshold=1.0;
 			glow_hdr_bleed_scale=2.0;
+			glow_bicubic_upscale=false;
 
+			dof_blur_far_enabled=false;
+			dof_blur_far_distance=10;
+			dof_blur_far_transition=5;
+			dof_blur_far_amount=0.1;
+			dof_blur_far_quality=VS::ENV_DOF_BLUR_QUALITY_MEDIUM;
+
+			dof_blur_near_enabled=false;
+			dof_blur_near_distance=2;
+			dof_blur_near_transition=1;
+			dof_blur_near_amount=0.1;
+			dof_blur_near_quality=VS::ENV_DOF_BLUR_QUALITY_MEDIUM;
 
 		}
 	};
@@ -420,11 +444,14 @@ public:
 	virtual void environment_set_canvas_max_layer(RID p_env,int p_max_layer);
 	virtual void environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy=1.0,float p_skybox_contribution=0.0);
 
-	virtual void environment_set_glow(RID p_env,bool p_enable,int p_level_flags,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode,float p_hdr_bleed_treshold,float p_hdr_bleed_scale);
+	virtual void environment_set_dof_blur_near(RID p_env,bool p_enable,float p_distance,float p_transition,float p_far_amount,VS::EnvironmentDOFBlurQuality p_quality);
+	virtual void environment_set_dof_blur_far(RID p_env,bool p_enable,float p_distance,float p_transition,float p_far_amount,VS::EnvironmentDOFBlurQuality p_quality);
+	virtual void environment_set_glow(RID p_env,bool p_enable,int p_level_flags,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode,float p_hdr_bleed_treshold,float p_hdr_bleed_scale,bool p_bicubic_upscale);
 	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture);
 
 	virtual void environment_set_ssr(RID p_env,bool p_enable, int p_max_steps,float p_accel,float p_fade,float p_depth_tolerance,bool p_smooth,bool p_roughness);
 	virtual void environment_set_ssao(RID p_env,bool p_enable, float p_radius, float p_radius2, float p_intensity2, float p_intensity, float p_bias, float p_light_affect,const Color &p_color,bool p_blur);
+
 
 	virtual void environment_set_tonemap(RID p_env,VS::EnvironmentToneMapper p_tone_mapper,float p_exposure,float p_white,bool p_auto_exposure,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,float p_auto_exp_scale);
 
@@ -663,7 +690,7 @@ public:
 	void _fill_render_list(InstanceBase** p_cull_result,int p_cull_count,bool p_shadow);
 
 	void _render_mrts(Environment *env, const CameraMatrix &p_cam_projection);
-	void _post_process(Environment *env);
+	void _post_process(Environment *env, const CameraMatrix &p_cam_projection);
 
 	virtual void render_scene(const Transform& p_cam_transform,const CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_reflection_probe_cull_result,int p_reflection_probe_cull_count,RID p_environment,RID p_shadow_atlas,RID p_reflection_atlas,RID p_reflection_probe,int p_reflection_probe_pass);
 	virtual void render_shadow(RID p_light,RID p_shadow_atlas,int p_pass,InstanceBase** p_cull_result,int p_cull_count);

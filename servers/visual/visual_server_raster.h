@@ -879,7 +879,10 @@ public:
 	BIND10(environment_set_ssao,RID ,bool , float , float , float,float,float , float ,const Color &,bool )
 
 
-	BIND9(environment_set_glow,RID,bool ,int ,float ,float ,float ,EnvironmentGlowBlendMode,float,float )
+
+	BIND6(environment_set_dof_blur_near,RID,bool ,float,float,float,EnvironmentDOFBlurQuality)
+	BIND6(environment_set_dof_blur_far,RID,bool ,float,float,float,EnvironmentDOFBlurQuality)
+	BIND10(environment_set_glow,RID,bool ,int ,float ,float ,float ,EnvironmentGlowBlendMode,float,float,bool )
 	BIND5(environment_set_fog,RID,bool ,float ,float ,RID )
 
 	BIND9(environment_set_tonemap,RID,EnvironmentToneMapper, float ,float ,bool, float ,float ,float,float  )

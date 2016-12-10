@@ -477,7 +477,7 @@ bool Environment::is_ssao_blur_enabled() const {
 void Environment::set_glow_enabled(bool p_enabled) {
 
 	glow_enabled=p_enabled;
-	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold,glow_bicubic_upscale);
 }
 
 bool Environment::is_glow_enabled() const{
@@ -494,7 +494,7 @@ void Environment::set_glow_level(int p_level,bool p_enabled){
 	else
 		glow_levels&=~(1<<p_level);
 
-	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold,glow_bicubic_upscale);
 
 }
 bool Environment::is_glow_level_enabled(int p_level) const{
@@ -508,7 +508,7 @@ void Environment::set_glow_intensity(float p_intensity){
 
 	glow_intensity=p_intensity;
 
-	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold,glow_bicubic_upscale);
 
 }
 float Environment::get_glow_intensity() const{
@@ -519,7 +519,7 @@ float Environment::get_glow_intensity() const{
 void Environment::set_glow_strength(float p_strength){
 
 	glow_strength=p_strength;
-	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold,glow_bicubic_upscale);
 
 }
 float Environment::get_glow_strength() const{
@@ -531,7 +531,7 @@ void Environment::set_glow_bloom(float p_treshold){
 
 	glow_bloom=p_treshold;
 
-	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold,glow_bicubic_upscale);
 
 }
 float Environment::get_glow_bloom() const{
@@ -543,7 +543,7 @@ void Environment::set_glow_blend_mode(GlowBlendMode p_mode){
 
 	glow_blend_mode=p_mode;
 
-	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold,glow_bicubic_upscale);
 
 }
 Environment::GlowBlendMode Environment::get_glow_blend_mode() const{
@@ -555,7 +555,7 @@ void Environment::set_glow_hdr_bleed_treshold(float p_treshold){
 
 	glow_hdr_bleed_treshold=p_treshold;
 
-	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold,glow_bicubic_upscale);
 
 }
 float Environment::get_glow_hdr_bleed_treshold() const{
@@ -567,7 +567,7 @@ void Environment::set_glow_hdr_bleed_scale(float p_scale){
 
 	glow_hdr_bleed_scale=p_scale;
 
-	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold);
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold,glow_bicubic_upscale);
 
 }
 float Environment::get_glow_hdr_bleed_scale() const{
@@ -575,7 +575,128 @@ float Environment::get_glow_hdr_bleed_scale() const{
 	return glow_hdr_bleed_scale;
 }
 
+void Environment::set_glow_bicubic_upscale(bool p_enable) {
 
+	glow_bicubic_upscale=p_enable;
+	VS::get_singleton()->environment_set_glow(environment,glow_enabled,glow_levels,glow_intensity,glow_strength,glow_bloom,VS::EnvironmentGlowBlendMode(glow_blend_mode),glow_hdr_bleed_treshold,glow_hdr_bleed_treshold,glow_bicubic_upscale);
+
+}
+
+bool Environment::is_glow_bicubic_upscale_enabled() const {
+
+	return glow_bicubic_upscale;
+}
+
+
+void Environment::set_dof_blur_far_enabled(bool p_enable) {
+
+	dof_blur_far_enabled=p_enable;
+	VS::get_singleton()->environment_set_dof_blur_far(environment,dof_blur_far_enabled,dof_blur_far_distance,dof_blur_far_transition,dof_blur_far_amount,VS::EnvironmentDOFBlurQuality(dof_blur_far_quality));
+}
+
+bool Environment::is_dof_blur_far_enabled() const{
+
+	return dof_blur_far_enabled;
+}
+
+void Environment::set_dof_blur_far_distance(float p_distance){
+
+	dof_blur_far_distance=p_distance;
+	VS::get_singleton()->environment_set_dof_blur_far(environment,dof_blur_far_enabled,dof_blur_far_distance,dof_blur_far_transition,dof_blur_far_amount,VS::EnvironmentDOFBlurQuality(dof_blur_far_quality));
+
+}
+float Environment::get_dof_blur_far_distance() const{
+
+	return dof_blur_far_distance;
+}
+
+void Environment::set_dof_blur_far_transition(float p_distance){
+
+	dof_blur_far_transition=p_distance;
+	VS::get_singleton()->environment_set_dof_blur_far(environment,dof_blur_far_enabled,dof_blur_far_distance,dof_blur_far_transition,dof_blur_far_amount,VS::EnvironmentDOFBlurQuality(dof_blur_far_quality));
+}
+float Environment::get_dof_blur_far_transition() const{
+
+	return dof_blur_far_transition;
+}
+
+void Environment::set_dof_blur_far_amount(float p_amount){
+
+	dof_blur_far_amount=p_amount;
+	VS::get_singleton()->environment_set_dof_blur_far(environment,dof_blur_far_enabled,dof_blur_far_distance,dof_blur_far_transition,dof_blur_far_amount,VS::EnvironmentDOFBlurQuality(dof_blur_far_quality));
+
+}
+float Environment::get_dof_blur_far_amount() const{
+
+	return dof_blur_far_amount;
+}
+
+void Environment::set_dof_blur_far_quality(DOFBlurQuality p_quality) {
+
+	dof_blur_far_quality=p_quality;
+	VS::get_singleton()->environment_set_dof_blur_far(environment,dof_blur_far_enabled,dof_blur_far_distance,dof_blur_far_transition,dof_blur_far_amount,VS::EnvironmentDOFBlurQuality(dof_blur_far_quality));
+}
+
+Environment::DOFBlurQuality Environment::get_dof_blur_far_quality() const {
+
+	return dof_blur_far_quality;
+}
+
+
+void Environment::set_dof_blur_near_enabled(bool p_enable) {
+
+	dof_blur_near_enabled=p_enable;
+	VS::get_singleton()->environment_set_dof_blur_near(environment,dof_blur_near_enabled,dof_blur_near_distance,dof_blur_near_transition,dof_blur_near_amount,VS::EnvironmentDOFBlurQuality(dof_blur_near_quality));
+}
+
+bool Environment::is_dof_blur_near_enabled() const{
+
+	return dof_blur_near_enabled;
+}
+
+void Environment::set_dof_blur_near_distance(float p_distance){
+
+	dof_blur_near_distance=p_distance;
+	VS::get_singleton()->environment_set_dof_blur_near(environment,dof_blur_near_enabled,dof_blur_near_distance,dof_blur_near_transition,dof_blur_near_amount,VS::EnvironmentDOFBlurQuality(dof_blur_near_quality));
+}
+
+float Environment::get_dof_blur_near_distance() const{
+
+	return dof_blur_near_distance;
+}
+
+void Environment::set_dof_blur_near_transition(float p_distance){
+
+	dof_blur_near_transition=p_distance;
+	VS::get_singleton()->environment_set_dof_blur_near(environment,dof_blur_near_enabled,dof_blur_near_distance,dof_blur_near_transition,dof_blur_near_amount,VS::EnvironmentDOFBlurQuality(dof_blur_near_quality));
+}
+
+float Environment::get_dof_blur_near_transition() const{
+
+	return dof_blur_near_transition;
+}
+
+void Environment::set_dof_blur_near_amount(float p_amount){
+
+	dof_blur_near_amount=p_amount;
+	VS::get_singleton()->environment_set_dof_blur_near(environment,dof_blur_near_enabled,dof_blur_near_distance,dof_blur_near_transition,dof_blur_near_amount,VS::EnvironmentDOFBlurQuality(dof_blur_near_quality));
+}
+
+float Environment::get_dof_blur_near_amount() const{
+
+	return dof_blur_near_amount;
+}
+
+void Environment::set_dof_blur_near_quality(DOFBlurQuality p_quality) {
+
+	dof_blur_near_quality=p_quality;
+	VS::get_singleton()->environment_set_dof_blur_near(environment,dof_blur_near_enabled,dof_blur_near_distance,dof_blur_near_transition,dof_blur_near_amount,VS::EnvironmentDOFBlurQuality(dof_blur_near_quality));
+}
+
+Environment::DOFBlurQuality Environment::get_dof_blur_near_quality() const {
+
+	return dof_blur_near_quality;
+}
 
 
 void Environment::_bind_methods() {
@@ -679,6 +800,48 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"ambient_occlusion/color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_ssao_color"),_SCS("get_ssao_color") );
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ambient_occlusion/blur"),_SCS("set_ssao_blur"),_SCS("is_ssao_blur_enabled") );
 
+	ObjectTypeDB::bind_method(_MD("set_dof_blur_far_enabled","enabled"),&Environment::set_dof_blur_far_enabled);
+	ObjectTypeDB::bind_method(_MD("is_dof_blur_far_enabled"),&Environment::is_dof_blur_far_enabled);
+
+	ObjectTypeDB::bind_method(_MD("set_dof_blur_far_distance","intensity"),&Environment::set_dof_blur_far_distance);
+	ObjectTypeDB::bind_method(_MD("get_dof_blur_far_distance"),&Environment::get_dof_blur_far_distance);
+
+	ObjectTypeDB::bind_method(_MD("set_dof_blur_far_transition","intensity"),&Environment::set_dof_blur_far_transition);
+	ObjectTypeDB::bind_method(_MD("get_dof_blur_far_transition"),&Environment::get_dof_blur_far_transition);
+
+	ObjectTypeDB::bind_method(_MD("set_dof_blur_far_amount","intensity"),&Environment::set_dof_blur_far_amount);
+	ObjectTypeDB::bind_method(_MD("get_dof_blur_far_amount"),&Environment::get_dof_blur_far_amount);
+
+	ObjectTypeDB::bind_method(_MD("set_dof_blur_far_quality","intensity"),&Environment::set_dof_blur_far_quality);
+	ObjectTypeDB::bind_method(_MD("get_dof_blur_far_quality"),&Environment::get_dof_blur_far_quality);
+
+	ObjectTypeDB::bind_method(_MD("set_dof_blur_near_enabled","enabled"),&Environment::set_dof_blur_near_enabled);
+	ObjectTypeDB::bind_method(_MD("is_dof_blur_near_enabled"),&Environment::is_dof_blur_near_enabled);
+
+	ObjectTypeDB::bind_method(_MD("set_dof_blur_near_distance","intensity"),&Environment::set_dof_blur_near_distance);
+	ObjectTypeDB::bind_method(_MD("get_dof_blur_near_distance"),&Environment::get_dof_blur_near_distance);
+
+	ObjectTypeDB::bind_method(_MD("set_dof_blur_near_transition","intensity"),&Environment::set_dof_blur_near_transition);
+	ObjectTypeDB::bind_method(_MD("get_dof_blur_near_transition"),&Environment::get_dof_blur_near_transition);
+
+	ObjectTypeDB::bind_method(_MD("set_dof_blur_near_amount","intensity"),&Environment::set_dof_blur_near_amount);
+	ObjectTypeDB::bind_method(_MD("get_dof_blur_near_amount"),&Environment::get_dof_blur_near_amount);
+
+	ObjectTypeDB::bind_method(_MD("set_dof_blur_near_quality","level"),&Environment::set_dof_blur_near_quality);
+	ObjectTypeDB::bind_method(_MD("get_dof_blur_near_quality"),&Environment::get_dof_blur_near_quality);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"dof_blur_far/enabled"),_SCS("set_dof_blur_far_enabled"),_SCS("is_dof_blur_far_enabled") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dof_blur_far/distance",PROPERTY_HINT_EXP_RANGE,"0.01,8192,0.01"),_SCS("set_dof_blur_far_distance"),_SCS("get_dof_blur_far_distance") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dof_blur_far/transition",PROPERTY_HINT_EXP_RANGE,"0.01,8192,0.01"),_SCS("set_dof_blur_far_transition"),_SCS("get_dof_blur_far_transition") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dof_blur_far/amount",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_dof_blur_far_amount"),_SCS("get_dof_blur_far_amount") );
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"dof_blur_far/quality",PROPERTY_HINT_ENUM,"Low,Medium,High"),_SCS("set_dof_blur_far_quality"),_SCS("get_dof_blur_far_quality") );
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"dof_blur_near/enabled"),_SCS("set_dof_blur_near_enabled"),_SCS("is_dof_blur_near_enabled") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dof_blur_near/distance",PROPERTY_HINT_EXP_RANGE,"0.01,8192,0.01"),_SCS("set_dof_blur_near_distance"),_SCS("get_dof_blur_near_distance") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dof_blur_near/transition",PROPERTY_HINT_EXP_RANGE,"0.01,8192,0.01"),_SCS("set_dof_blur_near_transition"),_SCS("get_dof_blur_near_transition") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dof_blur_near/amount",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_dof_blur_near_amount"),_SCS("get_dof_blur_near_amount") );
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"dof_blur_near/quality",PROPERTY_HINT_ENUM,"Low,Medium,High"),_SCS("set_dof_blur_near_quality"),_SCS("get_dof_blur_near_quality") );
+
 
 	ObjectTypeDB::bind_method(_MD("set_glow_enabled","enabled"),&Environment::set_glow_enabled);
 	ObjectTypeDB::bind_method(_MD("is_glow_enabled"),&Environment::is_glow_enabled);
@@ -704,6 +867,8 @@ void Environment::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_glow_hdr_bleed_scale","scale"),&Environment::set_glow_hdr_bleed_scale);
 	ObjectTypeDB::bind_method(_MD("get_glow_hdr_bleed_scale"),&Environment::get_glow_hdr_bleed_scale);
 
+	ObjectTypeDB::bind_method(_MD("set_glow_bicubic_upscale","enabled"),&Environment::set_glow_bicubic_upscale);
+	ObjectTypeDB::bind_method(_MD("is_glow_bicubic_upscale_enabled"),&Environment::is_glow_bicubic_upscale_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"glow/enabled"),_SCS("set_glow_enabled"),_SCS("is_glow_enabled") );
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"glow/levels/1"),_SCS("set_glow_level"),_SCS("is_glow_level_enabled"),0 );
@@ -720,6 +885,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"glow/blend_mode",PROPERTY_HINT_ENUM,"Additive,Screen,Softlight,Replace"),_SCS("set_glow_blend_mode"),_SCS("get_glow_blend_mode") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"glow/hdr_treshold",PROPERTY_HINT_RANGE,"0.0,4.0,0.01"),_SCS("set_glow_hdr_bleed_treshold"),_SCS("get_glow_hdr_bleed_treshold") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"glow/hdr_scale",PROPERTY_HINT_RANGE,"0.0,4.0,0.01"),_SCS("set_glow_hdr_bleed_scale"),_SCS("get_glow_hdr_bleed_scale") );
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"glow/bicubic_upscale"),_SCS("set_glow_bicubic_upscale"),_SCS("is_glow_bicubic_upscale_enabled") );
 
 
 	ObjectTypeDB::bind_method(_MD("set_tonemapper","mode"),&Environment::set_tonemapper);
@@ -795,6 +961,9 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT(TONE_MAPPER_REINHARDT);
 	BIND_CONSTANT(TONE_MAPPER_FILMIC);
 	BIND_CONSTANT(TONE_MAPPER_ACES);
+	BIND_CONSTANT(DOF_BLUR_QUALITY_LOW);
+	BIND_CONSTANT(DOF_BLUR_QUALITY_MEDIUM);
+	BIND_CONSTANT(DOF_BLUR_QUALITY_HIGH);
 
 
 }
@@ -854,6 +1023,19 @@ Environment::Environment() {
 	glow_blend_mode=GLOW_BLEND_MODE_SOFTLIGHT;
 	glow_hdr_bleed_treshold=1.0;
 	glow_hdr_bleed_scale=2.0;
+	glow_bicubic_upscale=false;
+
+	dof_blur_far_enabled=false;
+	dof_blur_far_distance=10;
+	dof_blur_far_transition=5;
+	dof_blur_far_amount=0.1;
+	dof_blur_far_quality=DOF_BLUR_QUALITY_MEDIUM;
+
+	dof_blur_near_enabled=false;
+	dof_blur_near_distance=2;
+	dof_blur_near_transition=1;
+	dof_blur_near_amount=0.1;
+	dof_blur_near_quality=DOF_BLUR_QUALITY_MEDIUM;
 
 }
 

@@ -65,6 +65,11 @@ public:
 		GLOW_BLEND_MODE_REPLACE,
 	};
 
+	enum DOFBlurQuality {
+		DOF_BLUR_QUALITY_LOW,
+		DOF_BLUR_QUALITY_MEDIUM,
+		DOF_BLUR_QUALITY_HIGH,
+	};
 
 private:
 	RID environment;
@@ -120,7 +125,19 @@ private:
 	GlowBlendMode glow_blend_mode;
 	float glow_hdr_bleed_treshold;
 	float glow_hdr_bleed_scale;
+	bool glow_bicubic_upscale;
 
+	bool dof_blur_far_enabled;
+	float dof_blur_far_distance;
+	float dof_blur_far_transition;
+	float dof_blur_far_amount;
+	DOFBlurQuality dof_blur_far_quality;
+
+	bool dof_blur_near_enabled;
+	float dof_blur_near_distance;
+	float dof_blur_near_transition;
+	float dof_blur_near_amount;
+	DOFBlurQuality dof_blur_near_quality;
 
 protected:
 
@@ -199,7 +216,7 @@ public:
 	void set_ssr_accel(float p_accel);
 	float get_ssr_accel() const;
 
-	void set_ssr_fade(float p_fade);
+	void set_ssr_fade(float p_transition);
 	float get_ssr_fade() const;
 
 	void set_ssr_depth_tolerance(float p_depth_tolerance);
@@ -263,6 +280,38 @@ public:
 	void set_glow_hdr_bleed_scale(float p_scale);
 	float get_glow_hdr_bleed_scale() const;
 
+	void set_glow_bicubic_upscale(bool p_enable);
+	bool is_glow_bicubic_upscale_enabled() const;
+
+	void set_dof_blur_far_enabled(bool p_enable);
+	bool is_dof_blur_far_enabled() const;
+
+	void set_dof_blur_far_distance(float p_distance);
+	float get_dof_blur_far_distance() const;
+
+	void set_dof_blur_far_transition(float p_distance);
+	float get_dof_blur_far_transition() const;
+
+	void set_dof_blur_far_amount(float p_amount);
+	float get_dof_blur_far_amount() const;
+
+	void set_dof_blur_far_quality(DOFBlurQuality p_quality);
+	DOFBlurQuality get_dof_blur_far_quality() const;
+
+	void set_dof_blur_near_enabled(bool p_enable);
+	bool is_dof_blur_near_enabled() const;
+
+	void set_dof_blur_near_distance(float p_distance);
+	float get_dof_blur_near_distance() const;
+
+	void set_dof_blur_near_transition(float p_distance);
+	float get_dof_blur_near_transition() const;
+
+	void set_dof_blur_near_amount(float p_amount);
+	float get_dof_blur_near_amount() const;
+
+	void set_dof_blur_near_quality(DOFBlurQuality p_quality);
+	DOFBlurQuality get_dof_blur_near_quality() const;
 
 
 	virtual RID get_rid() const;
@@ -277,6 +326,6 @@ public:
 VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
-
+VARIANT_ENUM_CAST(Environment::DOFBlurQuality)
 
 #endif // ENVIRONMENT_H

@@ -61,7 +61,9 @@ public:
 	virtual void environment_set_canvas_max_layer(RID p_env,int p_max_layer)=0;
 	virtual void environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy=1.0,float p_skybox_contribution=0.0)=0;
 
-	virtual void environment_set_glow(RID p_env,bool p_enable,int p_level_flags,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode,float p_hdr_bleed_treshold,float p_hdr_bleed_scale)=0;
+	virtual void environment_set_dof_blur_near(RID p_env,bool p_enable,float p_distance,float p_transition,float p_far_amount,VS::EnvironmentDOFBlurQuality p_quality)=0;
+	virtual void environment_set_dof_blur_far(RID p_env,bool p_enable,float p_distance,float p_transition,float p_far_amount,VS::EnvironmentDOFBlurQuality p_quality)=0;
+	virtual void environment_set_glow(RID p_env,bool p_enable,int p_level_flags,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode,float p_hdr_bleed_treshold,float p_hdr_bleed_scale,bool p_bicubic_upscale)=0;
 	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture)=0;
 
 	virtual void environment_set_ssr(RID p_env,bool p_enable, int p_max_steps,float p_accel,float p_fade,float p_depth_tolerance,bool p_smooth,bool p_roughness)=0;

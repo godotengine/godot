@@ -54,7 +54,7 @@ void CameraMatrix::set_zero() {
 }
 
 
-Plane CameraMatrix::xform4(const Plane& p_vec4) {
+Plane CameraMatrix::xform4(const Plane& p_vec4) const {
 
 	Plane ret;
 

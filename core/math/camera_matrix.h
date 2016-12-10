@@ -80,7 +80,7 @@ struct CameraMatrix {
 
 	CameraMatrix operator*(const CameraMatrix& p_matrix) const;
 
-	Plane xform4(const Plane& p_vec4);
+	Plane xform4(const Plane& p_vec4) const;
 	_FORCE_INLINE_ Vector3 xform(const Vector3& p_vec3) const;
 
 	operator String() const;
