@@ -80,6 +80,8 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"rad2deg",
 		"linear2db",
 		"db2linear",
+		"rad2vec",
+		"deg2vec",
 		"max",
 		"min",
 		"clamp",
@@ -108,8 +110,6 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"Color8",
 		"print_stack",
 		"instance_from_id",
-		"rad2vec",
-		"deg2vec",
 	};
 
 	return _names[p_func];
@@ -387,20 +387,12 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		case MATH_RAD2VEC: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			float v2x, v2y;
-			v2x = Math::cos(*p_args[0]);
-			v2y = Math::sin(*p_args[0]);
-			Vector2 v(v2x, v2y);
-			r_ret = v;
+			r_ret = Vector2(Math::cos(*p_args[0]),Math::sin(*p_args[0]));
 		} break;
 		case MATH_DEG2VEC: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			float v2x, v2y;
-			v2x = Math::cos(Math::deg2rad(*p_args[0]));
-			v2y = Math::sin(Math::deg2rad(*p_args[0]));
-			Vector2 v(v2x, v2y);
-			r_ret = v;
+			r_ret = Vector2(Math::cos(Math::deg2rad(*p_args[0])),Math::sin(Math::deg2rad(*p_args[0])))
 		} break;
 		case LOGIC_MAX: {
 			VALIDATE_ARG_COUNT(2);
