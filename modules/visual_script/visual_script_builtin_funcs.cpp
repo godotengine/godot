@@ -1268,5 +1268,4 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/var2bytes",create_builtin_func_node<VisualScriptBuiltinFunc::VAR_TO_BYTES>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/bytes2var",create_builtin_func_node<VisualScriptBuiltinFunc::BYTES_TO_VAR>);
 
-
 }
