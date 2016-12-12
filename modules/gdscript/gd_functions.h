@@ -101,6 +101,8 @@ public:
 		COLOR8,
 		PRINT_STACK,
 		INSTANCE_FROM_ID,
+		RAD2VEC,
+		DEG2VEC,
 		FUNC_MAX
 
 	};

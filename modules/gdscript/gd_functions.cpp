@@ -35,6 +35,7 @@
 #include "os/os.h"
 #include "variant_parser.h"
 #include "io/marshalls.h"
+#include "math_2d.h"
 
 const char *GDFunctions::get_func_name(Function p_func) {
 
@@ -107,6 +108,8 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"Color8",
 		"print_stack",
 		"instance_from_id",
+		"rad2vec",
+		"deg2vec",
 	};
 
 	return _names[p_func];
@@ -1086,6 +1089,29 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			r_ret=ObjectDB::get_instance(id);
 
 		} break;
+
+		case RAD2VEC: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			float v2x, v2y;
+			v2x = Math::cos(*p_args[0]);
+			v2y = Math::sin(*p_args[0]);
+			Vector2 v = { v2x,v2y };
+			r_ret = v;
+
+		} break;
+
+		case DEG2VEC: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			float v2x, v2y;
+			v2x = Math::cos(Math::deg2rad(*p_args[0]));
+			v2y = Math::sin(Math::deg2rad(*p_args[0]));
+			Vector2 v = { v2x,v2y };
+			r_ret = v;
+
+		} break;
+
 		case FUNC_MAX: {
 
 			ERR_FAIL();
