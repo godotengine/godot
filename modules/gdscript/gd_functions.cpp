@@ -384,6 +384,24 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			VALIDATE_ARG_NUM(0);
 			r_ret=Math::db2linear(*p_args[0]);
 		} break;
+		case MATH_RAD2VEC: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			float v2x, v2y;
+			v2x = Math::cos(*p_args[0]);
+			v2y = Math::sin(*p_args[0]);
+			Vector2 v(v2x, v2y);
+			r_ret = v;
+		} break;
+		case MATH_DEG2VEC: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			float v2x, v2y;
+			v2x = Math::cos(Math::deg2rad(*p_args[0]));
+			v2y = Math::sin(Math::deg2rad(*p_args[0]));
+			Vector2 v(v2x, v2y);
+			r_ret = v;
+		} break;
 		case LOGIC_MAX: {
 			VALIDATE_ARG_COUNT(2);
 			if (p_args[0]->get_type()==Variant::INT && p_args[1]->get_type()==Variant::INT) {
@@ -1090,28 +1108,6 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 		} break;
 
-		case RAD2VEC: {
-			VALIDATE_ARG_COUNT(1);
-			VALIDATE_ARG_NUM(0);
-			float v2x, v2y;
-			v2x = Math::cos(*p_args[0]);
-			v2y = Math::sin(*p_args[0]);
-			Vector2 v = { v2x,v2y };
-			r_ret = v;
-
-		} break;
-
-		case DEG2VEC: {
-			VALIDATE_ARG_COUNT(1);
-			VALIDATE_ARG_NUM(0);
-			float v2x, v2y;
-			v2x = Math::cos(Math::deg2rad(*p_args[0]));
-			v2y = Math::sin(Math::deg2rad(*p_args[0]));
-			Vector2 v = { v2x,v2y };
-			r_ret = v;
-
-		} break;
-
 		case FUNC_MAX: {
 
 			ERR_FAIL();
@@ -1160,6 +1156,8 @@ bool GDFunctions::is_deterministic(Function p_func) {
 		case MATH_RAD2DEG:
 		case MATH_LINEAR2DB:
 		case MATH_DB2LINEAR:
+		case MATH_RAD2VEC:
+		case MATH_DEG2VEC:
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case LOGIC_CLAMP:
@@ -1378,6 +1376,16 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case MATH_DB2LINEAR: {
 			MethodInfo mi("db2linear",PropertyInfo(Variant::REAL,"db"));
 			mi.return_val.type=Variant::REAL;
+			return mi;
+		} break;
+		case MATH_RAD2VEC: {
+			MethodInfo mi("rad2vec",PropertyInfo(Variant::REAL, "rad"));
+			mi.return_val.type = Variant::VECTOR2;
+			return mi;
+		} break;
+		case MATH_DEG2VEC: {
+			MethodInfo mi("deg2vec", PropertyInfo(Variant::REAL, "deg"));
+			mi.return_val.type = Variant::VECTOR2;
 			return mi;
 		} break;
 		case LOGIC_MAX: {
