@@ -44,6 +44,7 @@
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "servers/audio/audio_driver_dummy.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "main/input_default.h"
@@ -168,6 +169,7 @@ class OS_X11 : public OS_Unix {
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
+	AudioDriverDummy driver_dummy;
 
 	Atom net_wm_icon;
 
