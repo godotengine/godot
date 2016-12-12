@@ -838,20 +838,12 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func,const Variant** p_inp
 		case VisualScriptBuiltinFunc::MATH_RAD2VEC: {
 
 			VALIDATE_ARG_NUM(0);
-			float v2x, v2y;
-			v2x = Math::cos(*p_inputs[0]);
-			v2y = Math::sin(*p_inputs[0]);
-			Vector2 v (v2x,v2y);
-			*r_return = v;
+			*r_return = Vector2(Math::cos(*p_args[0]), Math::sin(*p_args[0]));
 		} break;
 		case VisualScriptBuiltinFunc::MATH_DEG2VEC: {
 
 			VALIDATE_ARG_NUM(0);
-			float v2x, v2y;
-			v2x = Math::cos(Math::deg2rad(*p_inputs[0]));
-			v2y = Math::sin(Math::deg2rad(*p_inputs[0]));
-			Vector2 v(v2x, v2y);
-			*r_return = v;
+			*r_return = Vector2(Math::cos(Math::deg2rad(*p_args[0])), Math::sin(Math::deg2rad(*p_args[0])));
 		}
 		case VisualScriptBuiltinFunc::LOGIC_MAX: {
 
