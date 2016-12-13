@@ -903,8 +903,10 @@ void PopupMenu::activate_item(int p_item) {
 		next = next->get_parent();
 		pop = next->cast_to<PopupMenu>();
 	}
-	hide();
-
+	
+	if(hide_on_click) {
+		hide();
+        }
 }
 
 void PopupMenu::remove_item(int p_idx) {
@@ -1121,6 +1123,10 @@ void PopupMenu::set_invalidate_click_until_motion() {
 	invalidated_click=true;
 }
 
+void PopupMenu::set_hide_on_click(bool p_bool) {
+        hide_on_click=p_bool;
+}
+
 PopupMenu::PopupMenu() {
 
 
@@ -1128,7 +1134,7 @@ PopupMenu::PopupMenu() {
 
 	set_focus_mode(FOCUS_ALL);
 	set_as_toplevel(true);
-
+	set_hide_on_click(true);
 	submenu_timer = memnew( Timer );
 	submenu_timer->set_wait_time(0.3);
 	submenu_timer->set_one_shot(true);
