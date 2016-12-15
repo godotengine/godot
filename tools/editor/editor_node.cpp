@@ -5957,6 +5957,7 @@ EditorNode::EditorNode() {
 	debug_button->set_tooltip(TTR("Debug options"));
 
 	p=debug_button->get_popup();
+	p->set_hide_on_item_selection(false);
 	p->add_check_item(TTR("Deploy with Remote Debug"),RUN_DEPLOY_REMOTE_DEBUG);
 	p->set_item_tooltip(p->get_item_count()-1,TTR("When exporting or deploying, the resulting executable will attempt to connect to the IP of this computer in order to be debugged."));
 	p->add_check_item(TTR("Small Deploy with Network FS"),RUN_FILE_SERVER);
