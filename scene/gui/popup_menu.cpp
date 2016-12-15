@@ -903,8 +903,8 @@ void PopupMenu::activate_item(int p_item) {
 		next = next->get_parent();
 		pop = next->cast_to<PopupMenu>();
 	}
-	
-	if(hide_on_click) {
+	// Hides popup by default, unless otherwise specified using set_hide_on_select(p_bool)
+	if(hide_on_select) {
 		hide();
         }
 }
@@ -1108,11 +1108,15 @@ void PopupMenu::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_set_items"),&PopupMenu::_set_items);
 	ObjectTypeDB::bind_method(_MD("_get_items"),&PopupMenu::_get_items);
-
+    
+    ObjectTypeDB::bind_method(_MD("set_hide_on_select","enable"),&PopupMenu::set_hide_on_select);
+    ObjectTypeDB::bind_method(_MD("get_hide_on_select"),&PopupMenu::get_hide_on_select);
+    
 	ObjectTypeDB::bind_method(_MD("_submenu_timeout"),&PopupMenu::_submenu_timeout);
 
 	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_items"),_SCS("_get_items") );
-
+    ADD_PROPERTY( PropertyInfo(Variant::BOOL, "hide_on_select" ), _SCS("set_hide_on_select"), _SCS("get_hide_on_select") );
+    
 	ADD_SIGNAL( MethodInfo("item_pressed", PropertyInfo( Variant::INT,"ID") ) );
 
 }
@@ -1123,8 +1127,12 @@ void PopupMenu::set_invalidate_click_until_motion() {
 	invalidated_click=true;
 }
 
-void PopupMenu::set_hide_on_click(bool p_bool) {
-        hide_on_click=p_bool;
+// Hide on Select determines whether or not the popup will close after item selection
+void PopupMenu::set_hide_on_select(bool p_bool) {
+        hide_on_select=p_bool;
+}
+bool PopupMenu::get_hide_on_select() {
+    return hide_on_select;
 }
 
 PopupMenu::PopupMenu() {
@@ -1134,7 +1142,7 @@ PopupMenu::PopupMenu() {
 
 	set_focus_mode(FOCUS_ALL);
 	set_as_toplevel(true);
-	set_hide_on_click(true);
+	set_hide_on_select(true);
 	submenu_timer = memnew( Timer );
 	submenu_timer->set_wait_time(0.3);
 	submenu_timer->set_one_shot(true);
