@@ -3,6 +3,8 @@
 Import('env')
 env.editor_sources = []
 
+import os
+
 
 def make_certs_header(target, source, env):
 
@@ -29,11 +31,21 @@ def make_certs_header(target, source, env):
 
 def make_doc_header(target, source, env):
 
-    src = source[0].srcnode().abspath
     dst = target[0].srcnode().abspath
-    f = open(src, "rb")
     g = open(dst, "wb")
-    buf = f.read()
+    buf = ""
+    docbegin = ""
+    docend = ""
+    for s in source:
+        src = s.srcnode().abspath
+        f = open(src, "rb")
+        content = f.read()
+        buf += content[content.find("<class"): content.rfind("</doc>")]
+        if len(docbegin) == 0:
+            docbegin = content[0: content.find("<class")]
+        if len(docend) == 0:
+            docend = content[content.rfind("</doc>"): len(buf)]
+    buf = docbegin + buf + docend
     decomp_size = len(buf)
     import zlib
     buf = zlib.compress(buf)
@@ -146,8 +158,15 @@ if (env["tools"] == "yes"):
     f.close()
 
     # API documentation
-    env.Depends("#tools/editor/doc_data_compressed.h", "#doc/base/classes.xml")
-    env.Command("#tools/editor/doc_data_compressed.h", "#doc/base/classes.xml", make_doc_header)
+    docs = ["#doc/base/classes.xml"]
+    moduledir = os.path.join(os.getcwd(), "..", "..", "modules")
+    for m in os.listdir(moduledir):
+        curmodle = os.path.join(moduledir, m)
+        docfile = os.path.join(curmodle, "classes.xml")
+        if os.path.isdir(curmodle) and os.path.isfile(docfile):
+            docs.append(docfile)
+    env.Depends("#tools/editor/doc_data_compressed.h", docs)
+    env.Command("#tools/editor/doc_data_compressed.h", docs, make_doc_header)
 
     # Certificates
     env.Depends("#tools/editor/certs_compressed.h", "#thirdparty/certs/ca-certificates.crt")
