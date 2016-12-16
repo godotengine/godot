@@ -230,3 +230,7 @@ Quad::Quad() {
 	configured=false;
 
 }
+
+Quad::~Quad() {
+	VisualServer::get_singleton()->free(mesh);
+}
