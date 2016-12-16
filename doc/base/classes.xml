@@ -30931,7 +30931,7 @@
 				Clear the popup menu, in effect removing all items.
 			</description>
 		</method>
-		<method name="get_hide_on_item_selection">
+		<method name="is_hide_on_item_selection">
 			<return type="bool">
 			</return>
 			<description>

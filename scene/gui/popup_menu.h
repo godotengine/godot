@@ -154,8 +154,8 @@ public:
 	void clear_autohide_areas();
 
 	void set_invalidate_click_until_motion();
-	void set_hide_on_item_selection(bool p_bool);
-	bool get_hide_on_item_selection();
+	void set_hide_on_item_selection(bool p_enabled);
+	bool is_hide_on_item_selection();
 
 	PopupMenu();
 	~PopupMenu();
