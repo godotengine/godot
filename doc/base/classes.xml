@@ -33518,7 +33518,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return a list of the bodies colliding with this one.
+				Return a list of the bodies colliding with this one. By default, number of max contacts reported is at 0 , see [method set_max_contacts_reported] to increase it.
 			</description>
 		</method>
 		<method name="get_friction" qualifiers="const">
@@ -33879,7 +33879,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return a list of the bodies colliding with this one.
+				Return a list of the bodies colliding with this one. By default, number of max contacts reported is at 0 , see [method set_max_contacts_reported] to increase it. You must also enable contact monitor, see [method set_contact_monitor]
 			</description>
 		</method>
 		<method name="get_continuous_collision_detection_mode" qualifiers="const">
