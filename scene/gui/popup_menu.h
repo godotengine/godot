@@ -66,6 +66,7 @@ class PopupMenu : public Popup {
 	int mouse_over;
 	int submenu_over;
 	Rect2 parent_rect;
+	bool hide_on_select;
 	String _get_accel_text(int p_item) const;
 	int _get_mouse_over(const Point2& p_over) const;
 	virtual Size2 get_minimum_size() const;
@@ -153,6 +154,9 @@ public:
 	void clear_autohide_areas();
 
 	void set_invalidate_click_until_motion();
+    
+	void set_hide_on_select(bool p_bool);
+    bool get_hide_on_select();
 
 	PopupMenu();
 	~PopupMenu();
