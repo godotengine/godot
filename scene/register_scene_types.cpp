@@ -401,6 +401,7 @@ void register_scene_types() {
 	/* REGISTER 3D */
 
 	ObjectTypeDB::register_type<Spatial>();
+	ObjectTypeDB::register_virtual_type<SpatialGizmo>();
 	ObjectTypeDB::register_type<Skeleton>();
 	ObjectTypeDB::register_type<AnimationPlayer>();
 	ObjectTypeDB::register_type<Tween>();
