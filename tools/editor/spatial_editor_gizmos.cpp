@@ -2397,6 +2397,163 @@ ReflectionProbeGizmo::ReflectionProbeGizmo(ReflectionProbe* p_probe){
 
 
 
+///
+
+
+String GIProbeGizmo::get_handle_name(int p_idx) const {
+
+	switch(p_idx) {
+		case 0: return "Extents X";
+		case 1: return "Extents Y";
+		case 2: return "Extents Z";
+	}
+
+	return "";
+}
+Variant GIProbeGizmo::get_handle_value(int p_idx) const{
+
+	return probe->get_extents();
+}
+void GIProbeGizmo::set_handle(int p_idx,Camera *p_camera, const Point2& p_point){
+
+	Transform gt = probe->get_global_transform();
+	//gt.orthonormalize();
+	Transform gi = gt.affine_inverse();
+
+
+	Vector3 extents = probe->get_extents();
+
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+	Vector3 sg[2]={gi.xform(ray_from),gi.xform(ray_from+ray_dir*16384)};
+
+	Vector3 axis;
+	axis[p_idx]=1.0;
+
+	Vector3 ra,rb;
+	Geometry::get_closest_points_between_segments(Vector3(),axis*16384,sg[0],sg[1],ra,rb);
+	float d = ra[p_idx];
+	if (d<0.001)
+		d=0.001;
+
+	extents[p_idx]=d;
+	probe->set_extents(extents);
+
+}
+
+void GIProbeGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p_cancel){
+
+	Vector3 restore = p_restore;
+
+	if (p_cancel) {
+		probe->set_extents(restore);
+		return;
+	}
+
+	UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Change Probe Extents"));
+	ur->add_do_method(probe,"set_extents",probe->get_extents());
+	ur->add_undo_method(probe,"set_extents",restore);
+	ur->commit_action();
+
+}
+
+void GIProbeGizmo::redraw(){
+
+	clear();
+
+	Vector<Vector3> lines;
+	Vector3 extents = probe->get_extents();
+
+	static const int subdivs[GIProbe::SUBDIV_MAX]={64,128,256,512};
+
+	AABB aabb = AABB(-extents,extents*2);
+	int subdiv = subdivs[probe->get_subdiv()];
+	float cell_size = aabb.get_longest_axis_size()/subdiv;
+
+
+	for(int i=0;i<12;i++) {
+		Vector3 a,b;
+		aabb.get_edge(i,a,b);
+		lines.push_back(a);
+		lines.push_back(b);
+	}
+
+	add_lines(lines,SpatialEditorGizmos::singleton->gi_probe_material);
+	add_collision_segments(lines);
+
+	lines.clear();
+
+	for(int i=1;i<subdiv;i++) {
+
+		for(int j=0;j<3;j++) {
+
+
+
+			if (cell_size*i>aabb.size[j]) {
+				continue;
+			}
+
+			Vector2 dir;
+			dir[j]=1.0;
+			Vector2 ta,tb;
+			int j_n1=(j+1)%3;
+			int j_n2=(j+2)%3;
+			ta[j_n1]=1.0;
+			tb[j_n2]=1.0;
+
+
+			for(int k=0;k<4;k++) {
+
+				Vector3 from=aabb.pos,to=aabb.pos;
+				from[j]+= cell_size*i;
+				to[j]+=cell_size*i;
+
+				if (k&1) {
+					to[j_n1]+=aabb.size[j_n1];
+				} else {
+
+					to[j_n2]+=aabb.size[j_n2];
+				}
+
+				if (k&2) {
+					from[j_n1]+=aabb.size[j_n1];
+					from[j_n2]+=aabb.size[j_n2];
+				}
+
+				lines.push_back(from);
+				lines.push_back(to);
+			}
+
+		}
+
+	}
+
+	add_lines(lines,SpatialEditorGizmos::singleton->reflection_probe_material_internal);
+
+	Vector<Vector3> handles;
+
+
+	for(int i=0;i<3;i++) {
+
+		Vector3 ax;
+		ax[i]=aabb.pos[i]+aabb.size[i];
+		handles.push_back(ax);
+	}
+
+
+	add_handles(handles);
+
+}
+GIProbeGizmo::GIProbeGizmo(GIProbe* p_probe){
+
+	probe=p_probe;
+	set_spatial_node(p_probe);
+}
+
+////////
+
 
 void NavigationMeshSpatialGizmo::redraw() {
 
@@ -3093,6 +3250,11 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 		Ref<ReflectionProbeGizmo> misg = memnew( ReflectionProbeGizmo(p_spatial->cast_to<ReflectionProbe>()) );
 		return misg;
 	}
+	if (p_spatial->cast_to<GIProbe>()) {
+
+		Ref<GIProbeGizmo> misg = memnew( GIProbeGizmo(p_spatial->cast_to<GIProbe>()) );
+		return misg;
+	}
 
 	if (p_spatial->cast_to<VehicleWheel>()) {
 
@@ -3146,8 +3308,8 @@ Ref<FixedSpatialMaterial> SpatialEditorGizmos::create_line_material(const Color&
 	line_material->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
 	line_material->set_line_width(3.0);
 	line_material->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
-	line_material->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+	//line_material->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	//->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_albedo(p_base_color);
 
 	return line_material;
@@ -3298,7 +3460,9 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	car_wheel_material = create_line_material(Color(0.6,0.8,1.0));
 	visibility_notifier_material = create_line_material(Color(1.0,0.5,1.0));
 	reflection_probe_material = create_line_material(Color(0.5,1.0,0.7));
-	reflection_probe_material_internal = create_line_material(Color(0.3,0.8,0.5,0.4));
+	reflection_probe_material_internal = create_line_material(Color(0.3,0.8,0.5,0.15));
+	gi_probe_material = create_line_material(Color(0.7,1.0,0.5));
+	gi_probe_material_internal = create_line_material(Color(0.5,0.8,0.3,0.4));
 	joint_material = create_line_material(Color(0.6,0.8,1.0));
 
 	stream_player_icon = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));

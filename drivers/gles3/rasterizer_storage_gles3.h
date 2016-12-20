@@ -799,6 +799,7 @@ public:
 
 	virtual VS::LightType light_get_type(RID p_light) const;
 	virtual float light_get_param(RID p_light,VS::LightParam p_param);
+	virtual Color light_get_color(RID p_light);
 
 	virtual AABB light_get_aabb(RID p_light) const;
 	virtual uint64_t light_get_version(RID p_light) const;
@@ -867,6 +868,84 @@ public:
 	virtual void portal_set_enabled(RID p_portal, bool p_enabled);
 	virtual void portal_set_disable_distance(RID p_portal, float p_distance);
 	virtual void portal_set_disabled_color(RID p_portal, const Color& p_color);
+
+
+
+
+
+
+
+	/* GI PROBE API */
+
+	struct GIProbe : public Instantiable {
+
+
+		AABB bounds;
+		Transform to_cell;
+		float cell_size;
+
+		float dynamic_range;
+
+		uint32_t version;
+
+		DVector<int> dynamic_data;
+
+		RID data;
+		int data_width;
+		int data_height;
+		int data_depth;
+		VS::GIProbeDataFormat data_format;
+
+
+	};
+
+	mutable RID_Owner<GIProbe> gi_probe_owner;
+
+	virtual RID gi_probe_create();
+
+	virtual void gi_probe_set_bounds(RID p_probe,const AABB& p_bounds);
+	virtual AABB gi_probe_get_bounds(RID p_probe) const;
+
+	virtual void gi_probe_set_cell_size(RID p_probe, float p_size);
+	virtual float gi_probe_get_cell_size(RID p_probe) const;
+
+	virtual void gi_probe_set_to_cell_xform(RID p_probe,const Transform& p_xform);
+	virtual Transform gi_probe_get_to_cell_xform(RID p_probe) const;
+
+	virtual void gi_probe_set_dynamic_data(RID p_probe,const DVector<int>& p_data);
+	virtual DVector<int> gi_probe_get_dynamic_data(RID p_probe) const;
+
+	virtual void gi_probe_set_dynamic_range(RID p_probe,float p_range);
+	virtual float gi_probe_get_dynamic_range(RID p_probe) const;
+
+
+	virtual void gi_probe_set_static_data(RID p_gi_probe,const DVector<uint8_t>& p_data,VS::GIProbeDataFormat p_format,int p_width,int p_height,int p_depth);
+	virtual DVector<uint8_t> gi_probe_get_static_data(RID p_gi_probe) const;
+	virtual  VS::GIProbeDataFormat gi_probe_get_static_data_format(RID p_gi_probe) const;
+	virtual int gi_probe_get_static_data_width(RID p_probe) const;
+	virtual int gi_probe_get_static_data_height(RID p_probe) const;
+	virtual int gi_probe_get_static_data_depth(RID p_probe) const;
+
+	virtual RID gi_probe_get_data(RID p_probe); //get data in case this is static
+	virtual uint32_t gi_probe_get_version(RID p_probe);
+
+	struct GIProbeData : public RID_Data {
+
+		int width;
+		int height;
+		int depth;
+		int levels;
+		GLuint tex_id;
+
+		GIProbeData() {
+		}
+	};
+
+	mutable RID_Owner<GIProbeData> gi_probe_data_owner;
+
+	virtual RID gi_probe_dynamic_data_create(int p_width,int p_height,int p_depth);
+	virtual void gi_probe_dynamic_data_update_rgba8(RID p_gi_probe_data,int p_depth_slice,int p_slice_count,int p_mipmap,const void* p_data);
+
 
 	virtual void instance_add_skeleton(RID p_skeleton,RasterizerScene::InstanceBase *p_instance);
 	virtual void instance_remove_skeleton(RID p_skeleton,RasterizerScene::InstanceBase *p_instance);

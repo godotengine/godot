@@ -526,6 +526,25 @@ public:
 	virtual void light_instance_set_shadow_transform(RID p_light_instance,const CameraMatrix& p_projection,const Transform& p_transform,float p_far,float p_split,int p_pass);
 	virtual void light_instance_mark_visible(RID p_light_instance);
 
+	/* REFLECTION INSTANCE */
+
+	struct GIProbeInstance : public RID_Data {
+		RID data;
+		GLuint tex_cache;
+		Vector3 cell_size_cache;
+		Vector3 bounds;
+		Transform transform_to_data;
+	};
+
+
+
+	mutable RID_Owner<GIProbeInstance> gi_probe_instance_owner;
+
+	virtual RID gi_probe_instance_create();
+	virtual void gi_probe_instance_set_light_data(RID p_probe,RID p_data);
+	virtual void gi_probe_instance_set_transform_to_data(RID p_probe,const Transform& p_xform);
+	virtual void gi_probe_instance_set_bounds(RID p_probe,const Vector3& p_bounds);
+
 	/* RENDER LIST */
 
 	struct RenderList {
@@ -541,8 +560,9 @@ public:
 			SORT_KEY_DEPTH_LAYER_SHIFT=60,
 			SORT_KEY_UNSHADED_FLAG=uint64_t(1)<<59,
 			SORT_KEY_NO_DIRECTIONAL_FLAG=uint64_t(1)<<58,
-			SORT_KEY_SHADING_SHIFT=58,
-			SORT_KEY_SHADING_MASK=3,
+			SORT_KEY_GI_PROBES_FLAG=uint64_t(1)<<57,
+			SORT_KEY_SHADING_SHIFT=57,
+			SORT_KEY_SHADING_MASK=7,
 			SORT_KEY_MATERIAL_INDEX_SHIFT=40,
 			SORT_KEY_GEOMETRY_INDEX_SHIFT=20,
 			SORT_KEY_GEOMETRY_TYPE_SHIFT=15,
@@ -669,7 +689,7 @@ public:
 	_FORCE_INLINE_ void _setup_transform(InstanceBase *p_instance,const Transform& p_view_transform,const CameraMatrix& p_projection);
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *e);
 	_FORCE_INLINE_ void _render_geometry(RenderList::Element *e);
-	_FORCE_INLINE_ void _setup_light(RenderList::Element *e);
+	_FORCE_INLINE_ void _setup_light(RenderList::Element *e,const Transform& p_view_transform);
 
 	void _render_list(RenderList::Element **p_elements, int p_element_count, const Transform& p_view_transform, const CameraMatrix& p_projection, GLuint p_base_env, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow, bool p_directional_add, bool p_directional_shadows);
 

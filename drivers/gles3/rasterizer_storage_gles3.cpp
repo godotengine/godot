@@ -1514,6 +1514,7 @@ void RasterizerStorageGLES3::_update_shader(Shader* p_shader) const {
 	p_shader->valid=true;
 	p_shader->version++;
 
+
 }
 
 void RasterizerStorageGLES3::update_dirty_shaders() {
@@ -3600,16 +3601,15 @@ void RasterizerStorageGLES3::multimesh_instance_set_color(RID p_multimesh,int p_
 	ERR_FAIL_COND(multimesh->color_format==VS::MULTIMESH_COLOR_NONE);
 
 	int stride = multimesh->color_floats+multimesh->xform_floats;
-	float *dataptr=&multimesh->data[stride*p_index+multimesh->color_floats];
+	float *dataptr=&multimesh->data[stride*p_index+multimesh->xform_floats];
 
 	if (multimesh->color_format==VS::MULTIMESH_COLOR_8BIT) {
-		union {
-			uint32_t colu;
-			float colf;
-		} cu;
 
-		cu.colu=p_color.to_32();
-		dataptr[ 0]=cu.colf;
+		uint8_t *data8=(uint8_t*)dataptr;
+		data8[0]=CLAMP(p_color.r*255.0,0,255);
+		data8[1]=CLAMP(p_color.g*255.0,0,255);
+		data8[2]=CLAMP(p_color.b*255.0,0,255);
+		data8[3]=CLAMP(p_color.a*255.0,0,255);
 
 	} else if (multimesh->color_format==VS::MULTIMESH_COLOR_FLOAT) {
 		dataptr[ 0]=p_color.r;
@@ -3701,7 +3701,7 @@ Color RasterizerStorageGLES3::multimesh_instance_get_color(RID p_multimesh,int p
 			float colf;
 		} cu;
 
-		return Color::hex(cu.colu);
+		return Color::hex(BSWAP32(cu.colu));
 
 	} else if (multimesh->color_format==VS::MULTIMESH_COLOR_FLOAT) {
 		Color c;
@@ -4385,6 +4385,15 @@ float RasterizerStorageGLES3::light_get_param(RID p_light,VS::LightParam p_param
 	return light->param[p_param];
 }
 
+Color RasterizerStorageGLES3::light_get_color(RID p_light) {
+
+	const Light * light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light,Color());
+
+	return light->color;
+
+}
+
 bool RasterizerStorageGLES3::light_has_shadow(RID p_light) const {
 
 	const Light * light = light_owner.getornull(p_light);
@@ -4668,6 +4677,261 @@ void RasterizerStorageGLES3::portal_set_disabled_color(RID p_portal, const Color
 
 }
 
+RID RasterizerStorageGLES3::gi_probe_create() {
+
+	GIProbe *gip = memnew( GIProbe );
+
+	gip->data_width=0;
+	gip->data_height=0;
+	gip->data_depth=0;
+	gip->bounds=AABB(Vector3(),Vector3(1,1,1));
+	gip->dynamic_range=1.0;
+	gip->version=1;
+	gip->cell_size=1.0;
+
+	return gi_probe_owner.make_rid(gip);
+}
+
+void RasterizerStorageGLES3::gi_probe_set_bounds(RID p_probe,const AABB& p_bounds){
+
+	GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gip);
+
+	gip->bounds=p_bounds;
+	gip->version++;
+	gip->instance_change_notify();
+}
+AABB RasterizerStorageGLES3::gi_probe_get_bounds(RID p_probe) const{
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,AABB());
+
+	return gip->bounds;
+}
+
+void RasterizerStorageGLES3::gi_probe_set_cell_size(RID p_probe,float p_size) {
+
+	GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gip);
+
+	gip->cell_size=p_size;
+	gip->version++;
+	gip->instance_change_notify();
+}
+
+float RasterizerStorageGLES3::gi_probe_get_cell_size(RID p_probe) const {
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,0);
+
+	return gip->cell_size;
+
+}
+
+void RasterizerStorageGLES3::gi_probe_set_to_cell_xform(RID p_probe,const Transform& p_xform) {
+
+	GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gip);
+
+	gip->to_cell=p_xform;
+}
+
+Transform RasterizerStorageGLES3::gi_probe_get_to_cell_xform(RID p_probe) const {
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,Transform());
+
+	return gip->to_cell;
+
+}
+
+
+
+void RasterizerStorageGLES3::gi_probe_set_dynamic_data(RID p_probe,const DVector<int>& p_data){
+	GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gip);
+
+	gip->dynamic_data=p_data;
+	gip->version++;
+	gip->instance_change_notify();
+
+}
+DVector<int> RasterizerStorageGLES3::gi_probe_get_dynamic_data(RID p_probe) const{
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,DVector<int>());
+
+	return gip->dynamic_data;
+}
+
+void RasterizerStorageGLES3::gi_probe_set_dynamic_range(RID p_probe,float p_range){
+
+	GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gip);
+
+	gip->dynamic_range=p_range;
+
+}
+float RasterizerStorageGLES3::gi_probe_get_dynamic_range(RID p_probe) const{
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,0);
+
+	return gip->dynamic_range;
+}
+
+
+void RasterizerStorageGLES3::gi_probe_set_static_data(RID p_gi_probe,const DVector<uint8_t>& p_data,VS::GIProbeDataFormat p_format,int p_width,int p_height,int p_depth) {
+
+	GIProbe *gip = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND(!gip);
+
+	if (gip->data.is_valid()) {
+		free(gip->data);
+	}
+
+	gip->data=RID();
+	//this is platform dependent
+
+	gip->version++;
+	gip->instance_change_notify();
+
+}
+DVector<uint8_t> RasterizerStorageGLES3::gi_probe_get_static_data(RID p_gi_probe) const {
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gip,DVector<uint8_t>());
+
+	//platform dependent
+	return DVector<uint8_t>();
+}
+VS::GIProbeDataFormat RasterizerStorageGLES3::gi_probe_get_static_data_format(RID p_gi_probe) const {
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gip,VS::GI_PROBE_DATA_RGBA8);
+
+	return gip->data_format;
+}
+int RasterizerStorageGLES3::gi_probe_get_static_data_width(RID p_probe) const {
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,0);
+
+	return gip->data_width;
+}
+int RasterizerStorageGLES3::gi_probe_get_static_data_height(RID p_probe) const {
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,0);
+	return gip->data_height;
+}
+int RasterizerStorageGLES3::gi_probe_get_static_data_depth(RID p_probe) const {
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,0);
+	return gip->data_depth;
+}
+
+RID RasterizerStorageGLES3::gi_probe_get_data(RID p_probe) {
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,RID());
+
+	return gip->data;
+}
+
+uint32_t RasterizerStorageGLES3::gi_probe_get_version(RID p_probe) {
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,0);
+
+	return gip->version;
+}
+
+RID RasterizerStorageGLES3::gi_probe_dynamic_data_create(int p_width,int p_height,int p_depth) {
+
+	GIProbeData *gipd = memnew( GIProbeData );
+
+	gipd->width=p_width;
+	gipd->height=p_height;
+	gipd->depth=p_depth;
+
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1,&gipd->tex_id);
+	glBindTexture(GL_TEXTURE_3D,gipd->tex_id);
+
+	int level=0;
+
+	print_line("dyndata create");
+	while(true) {
+
+		Vector<uint8_t> data;
+		data.resize(p_width*p_height*p_depth*4);
+
+
+		for(int i=0;i<data.size();i+=4) {
+
+			data[i+0]=0xFF;
+			data[i+1]=0x00;
+			data[i+2]=0xFF;
+			data[i+3]=0xFF;
+		}
+
+		glTexImage3D(GL_TEXTURE_3D,level,GL_RGBA8,p_width,p_height,p_depth,0,GL_RGBA,GL_UNSIGNED_BYTE,data.ptr());
+		if (p_width<=1 || p_height<=1 || p_depth<=1)
+			break;
+		p_width>>=1;
+		p_height>>=1;
+		p_depth>>=1;
+		level++;
+	}
+
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, level);
+
+	gipd->levels=level+1;
+
+	return gi_probe_data_owner.make_rid(gipd);
+}
+
+void RasterizerStorageGLES3::gi_probe_dynamic_data_update_rgba8(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data) {
+
+	GIProbeData *gipd = gi_probe_data_owner.getornull(p_gi_probe_data);
+	ERR_FAIL_COND(!gipd);
+/*
+	Vector<uint8_t> data;
+	data.resize((gipd->width>>p_mipmap)*(gipd->height>>p_mipmap)*(gipd->depth>>p_mipmap)*4);
+
+	for(int i=0;i<(gipd->width>>p_mipmap);i++) {
+		for(int j=0;j<(gipd->height>>p_mipmap);j++) {
+			for(int k=0;k<(gipd->depth>>p_mipmap);k++) {
+
+				int ofs = (k*(gipd->height>>p_mipmap)*(gipd->width>>p_mipmap)) + j *(gipd->width>>p_mipmap) + i;
+				ofs*=4;
+				data[ofs+0]=i*0xFF/(gipd->width>>p_mipmap);
+				data[ofs+1]=j*0xFF/(gipd->height>>p_mipmap);
+				data[ofs+2]=k*0xFF/(gipd->depth>>p_mipmap);
+				data[ofs+3]=0xFF;
+			}
+		}
+	}
+*/
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_3D,gipd->tex_id);
+	glTexSubImage3D(GL_TEXTURE_3D,p_mipmap,0,0,p_depth_slice,gipd->width>>p_mipmap,gipd->height>>p_mipmap,p_slice_count,GL_RGBA,GL_UNSIGNED_BYTE,p_data);
+	//glTexImage3D(GL_TEXTURE_3D,p_mipmap,GL_RGBA8,gipd->width>>p_mipmap,gipd->height>>p_mipmap,gipd->depth>>p_mipmap,0,GL_RGBA,GL_UNSIGNED_BYTE,p_data);
+	//glTexImage3D(GL_TEXTURE_3D,p_mipmap,GL_RGBA8,gipd->width>>p_mipmap,gipd->height>>p_mipmap,gipd->depth>>p_mipmap,0,GL_RGBA,GL_UNSIGNED_BYTE,data.ptr());
+	print_line("update rgba8 "+itos(p_mipmap));
+}
+
+
+
+
 void RasterizerStorageGLES3::instance_add_skeleton(RID p_skeleton,RasterizerScene::InstanceBase *p_instance) {
 
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
@@ -4709,6 +4973,10 @@ void RasterizerStorageGLES3::instance_add_dependency(RID p_base,RasterizerScene:
 			inst = light_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
 		} break;
+		case VS::INSTANCE_GI_PROBE: {
+			inst = gi_probe_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
 		default: {
 			if (!inst) {
 				ERR_FAIL();
@@ -4742,6 +5010,10 @@ void RasterizerStorageGLES3::instance_remove_dependency(RID p_base,RasterizerSce
 		} break;
 		case VS::INSTANCE_LIGHT: {
 			inst = light_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		case VS::INSTANCE_GI_PROBE: {
+			inst = gi_probe_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
 		} break;
 		default: {
@@ -5395,17 +5667,25 @@ VS::InstanceType RasterizerStorageGLES3::get_base_type(RID p_rid) const {
 	if (mesh_owner.owns(p_rid)) {
 		return VS::INSTANCE_MESH;
 	}
+
 	if (multimesh_owner.owns(p_rid)) {
 		return VS::INSTANCE_MULTIMESH;
 	}
+
 	if (immediate_owner.owns(p_rid)) {
 		return VS::INSTANCE_IMMEDIATE;
 	}
+
 	if (light_owner.owns(p_rid)) {
 		return VS::INSTANCE_LIGHT;
 	}
+
 	if (reflection_probe_owner.owns(p_rid)) {
 		return VS::INSTANCE_REFLECTION_PROBE;
+	}
+
+	if (gi_probe_owner.owns(p_rid)) {
+		return VS::INSTANCE_GI_PROBE;
 	}
 
 	return VS::INSTANCE_NONE;
@@ -5560,6 +5840,27 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 
 		reflection_probe_owner.free(p_rid);
 		memdelete(reflection_probe);
+
+	} else if (gi_probe_owner.owns(p_rid)) {
+
+		// delete the texture
+		GIProbe *gi_probe = gi_probe_owner.get(p_rid);
+
+		if (gi_probe->data.is_valid()) {
+			free(gi_probe->data);
+		}
+
+		gi_probe_owner.free(p_rid);
+		memdelete(gi_probe);
+	} else if (gi_probe_data_owner.owns(p_rid)) {
+
+		// delete the texture
+		GIProbeData *gi_probe_data = gi_probe_data_owner.get(p_rid);
+
+		print_line("dyndata delete");
+		glDeleteTextures(1,&gi_probe_data->tex_id);
+		gi_probe_owner.free(p_rid);
+		memdelete(gi_probe_data);
 
 	} else if (canvas_occluder_owner.owns(p_rid)) {
 

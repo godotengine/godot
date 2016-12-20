@@ -91,6 +91,7 @@ public:
 		Vector<RID> materials;
 		Vector<RID> light_instances;
 		Vector<RID> reflection_probe_instances;
+		Vector<RID> gi_probe_instances;
 
 		Vector<float> morph_values;
 
@@ -108,12 +109,14 @@ public:
 		float depth; //used for sorting
 
 		SelfList<InstanceBase> dependency_item;
+		InstanceBase *baked_light; //baked light to use
+		SelfList<InstanceBase> baked_light_item;
 
 		virtual void base_removed()=0;
 		virtual void base_changed()=0;
 		virtual void base_material_changed()=0;
 
-		InstanceBase() : dependency_item(this) {
+		InstanceBase() : dependency_item(this), baked_light_item(this) {
 
 			base_type=VS::INSTANCE_NONE;
 			cast_shadows=VS::SHADOW_CASTING_SETTING_ON;
@@ -123,6 +126,7 @@ public:
 			billboard_y=false;
 			depth_layer=0;
 			layer_mask=1;
+			baked_light=NULL;
 
 		}
 	};
@@ -143,6 +147,11 @@ public:
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance)=0;
 	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas)=0;
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance)=0;
+
+	virtual RID gi_probe_instance_create()=0;
+	virtual void gi_probe_instance_set_light_data(RID p_probe,RID p_data)=0;
+	virtual void gi_probe_instance_set_transform_to_data(RID p_probe,const Transform& p_xform)=0;
+	virtual void gi_probe_instance_set_bounds(RID p_probe,const Vector3& p_bounds)=0;
 
 	virtual void render_scene(const Transform& p_cam_transform,const CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_reflection_probe_cull_result,int p_reflection_probe_cull_count,RID p_environment,RID p_shadow_atlas,RID p_reflection_atlas,RID p_reflection_probe,int p_reflection_probe_pass)=0;
 	virtual void render_shadow(RID p_light,RID p_shadow_atlas,int p_pass,InstanceBase** p_cull_result,int p_cull_count)=0;
@@ -340,6 +349,7 @@ public:
 	virtual VS::LightType light_get_type(RID p_light) const=0;
 	virtual AABB light_get_aabb(RID p_light) const=0;
 	virtual float light_get_param(RID p_light,VS::LightParam p_param)=0;
+	virtual Color light_get_color(RID p_light)=0;
 	virtual uint64_t light_get_version(RID p_light) const=0;
 
 
@@ -391,6 +401,39 @@ public:
 
 	virtual void instance_add_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance)=0;
 	virtual void instance_remove_dependency(RID p_base,RasterizerScene::InstanceBase *p_instance)=0;
+
+	/* GI PROBE API */
+
+	virtual RID gi_probe_create()=0;
+
+	virtual void gi_probe_set_bounds(RID p_probe,const AABB& p_bounds)=0;
+	virtual AABB gi_probe_get_bounds(RID p_probe) const=0;
+
+	virtual void gi_probe_set_cell_size(RID p_probe,float p_range)=0;
+	virtual float gi_probe_get_cell_size(RID p_probe) const=0;
+
+	virtual void gi_probe_set_to_cell_xform(RID p_probe,const Transform& p_xform)=0;
+	virtual Transform gi_probe_get_to_cell_xform(RID p_probe) const=0;
+
+	virtual void gi_probe_set_dynamic_data(RID p_probe,const DVector<int>& p_data)=0;
+	virtual DVector<int> gi_probe_get_dynamic_data(RID p_probe) const=0;
+
+	virtual void gi_probe_set_dynamic_range(RID p_probe,float p_range)=0;
+	virtual float gi_probe_get_dynamic_range(RID p_probe) const=0;
+
+
+	virtual void gi_probe_set_static_data(RID p_gi_probe,const DVector<uint8_t>& p_data,VS::GIProbeDataFormat p_format,int p_width,int p_height,int p_depth)=0;
+	virtual DVector<uint8_t> gi_probe_get_static_data(RID p_gi_probe) const=0;
+	virtual  VS::GIProbeDataFormat gi_probe_get_static_data_format(RID p_gi_probe) const=0;
+	virtual int gi_probe_get_static_data_width(RID p_probe) const=0;
+	virtual int gi_probe_get_static_data_height(RID p_probe) const=0;
+	virtual int gi_probe_get_static_data_depth(RID p_probe) const=0;
+
+	virtual RID gi_probe_get_data(RID p_probe)=0; //get data in case this is static
+	virtual uint32_t gi_probe_get_version(RID p_probe)=0;
+
+	virtual RID gi_probe_dynamic_data_create(int p_width,int p_height,int p_depth)=0;
+	virtual void gi_probe_dynamic_data_update_rgba8(RID p_gi_probe_data,int p_depth_slice,int p_slice_count,int p_mipmap,const void* p_data)=0;
 
 	/* RENDER TARGET */
 

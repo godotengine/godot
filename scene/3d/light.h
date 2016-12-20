@@ -37,6 +37,10 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
+
+class BakedLight;
+
 class Light : public VisualInstance {
 
 	OBJ_TYPE( Light, VisualInstance );
@@ -72,6 +76,8 @@ private:
 	VS::LightType type;
 	bool editor_only;
 	void _update_visibility();
+
+	BakedLight *baked_light;
 // bind helpers
 
 protected:

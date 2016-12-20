@@ -1010,6 +1010,48 @@ void RasterizerSceneGLES3::light_instance_mark_visible(RID p_light_instance) {
 	light_instance->last_scene_pass=scene_pass;
 }
 
+
+//////////////////////
+
+RID RasterizerSceneGLES3::gi_probe_instance_create() {
+
+	GIProbeInstance *gipi = memnew(GIProbeInstance);
+
+	return gi_probe_instance_owner.make_rid(gipi);
+}
+
+void RasterizerSceneGLES3::gi_probe_instance_set_light_data(RID p_probe,RID p_data) {
+
+	GIProbeInstance *gipi = gi_probe_instance_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gipi);
+	gipi->data=p_data;
+	if (p_data.is_valid()) {
+		RasterizerStorageGLES3::GIProbeData *gipd = storage->gi_probe_data_owner.getornull(p_data);
+		ERR_FAIL_COND(!gipd);
+		if (gipd) {
+			gipi->tex_cache=gipd->tex_id;
+			gipi->cell_size_cache.x=1.0/gipd->width;
+			gipi->cell_size_cache.y=1.0/gipd->height;
+			gipi->cell_size_cache.z=1.0/gipd->depth;
+		}
+	}
+}
+void RasterizerSceneGLES3::gi_probe_instance_set_transform_to_data(RID p_probe,const Transform& p_xform) {
+
+	GIProbeInstance *gipi = gi_probe_instance_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gipi);
+	gipi->transform_to_data=p_xform;
+
+}
+
+void RasterizerSceneGLES3::gi_probe_instance_set_bounds(RID p_probe,const Vector3& p_bounds) {
+
+	GIProbeInstance *gipi = gi_probe_instance_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gipi);
+	gipi->bounds=p_bounds;
+
+}
+
 ////////////////////////////
 ////////////////////////////
 ////////////////////////////
@@ -1438,7 +1480,7 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 }
 
-void RasterizerSceneGLES3::_setup_light(RenderList::Element *e) {
+void RasterizerSceneGLES3::_setup_light(RenderList::Element *e,const Transform& p_view_transform) {
 
 	int omni_indices[16];
 	int omni_count=0;
@@ -1509,7 +1551,33 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e) {
 		glUniform1iv(state.scene_shader.get_uniform(SceneShaderGLES3::REFLECTION_INDICES),reflection_count,reflection_indices);
 	}
 
+	int gi_probe_count = e->instance->gi_probe_instances.size();
+	if (gi_probe_count) {
+		const RID * ridp = e->instance->gi_probe_instances.ptr();
 
+		GIProbeInstance *gipi = gi_probe_instance_owner.getptr(ridp[0]);
+
+		glActiveTexture(GL_TEXTURE0+storage->config.max_texture_image_units-6);
+		glBindTexture(GL_TEXTURE_3D,gipi->tex_cache);
+		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_XFORM1, gipi->transform_to_data * p_view_transform);
+		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS1, gipi->bounds);
+		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_CELL_SIZE1, gipi->cell_size_cache);
+		if (gi_probe_count>1) {
+
+			GIProbeInstance *gipi2 = gi_probe_instance_owner.getptr(ridp[1]);
+
+			glActiveTexture(GL_TEXTURE0+storage->config.max_texture_image_units-7);
+			glBindTexture(GL_TEXTURE_3D,gipi2->tex_cache);
+			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_XFORM2, gipi2->transform_to_data * p_view_transform);
+			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS2, gipi2->bounds);
+			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_CELL_SIZE2, gipi2->cell_size_cache);
+
+			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE2_ENABLED, true );
+		} else {
+
+			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE2_ENABLED, false );
+		}
+	}
 }
 
 
@@ -1672,11 +1740,15 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 					state.scene_shader.set_conditional(SceneShaderGLES3::LIGHT_USE_PSSM_BLEND,false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::SHADOW_MODE_PCF_5,false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::SHADOW_MODE_PCF_13,false);
+					state.scene_shader.set_conditional(SceneShaderGLES3::USE_GI_PROBES,false);
 
 
 
 					//state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS,true);
 				} else {
+
+					state.scene_shader.set_conditional(SceneShaderGLES3::USE_GI_PROBES,e->instance->gi_probe_instances.size()>0);
+
 					state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS,false);
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_FORWARD_LIGHTING,!p_directional_add);
 					state.scene_shader.set_conditional(SceneShaderGLES3::USE_LIGHT_DIRECTIONAL,false);
@@ -1711,8 +1783,11 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 
 				}
 
+
+
 				rebind=true;
 			}
+
 
 			if (p_alpha_pass || p_directional_add) {
 				int desired_blend_mode;
@@ -1794,7 +1869,8 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 		}
 
 		if (!(e->sort_key&RenderList::SORT_KEY_UNSHADED_FLAG) && !p_directional_add && !p_shadow) {
-			_setup_light(e);
+			_setup_light(e,p_view_transform);
+
 		}
 
 
@@ -1837,6 +1913,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS,false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADOW_MODE_PCF_5,false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADOW_MODE_PCF_13,false);
+	state.scene_shader.set_conditional(SceneShaderGLES3::USE_GI_PROBES,false);
 
 }
 
@@ -1949,6 +2026,10 @@ void RasterizerSceneGLES3::_add_geometry(  RasterizerStorageGLES3::Geometry* p_g
 				return;
 
 			copymem(oe,e,sizeof(RenderList::Element));
+		}
+
+		if (e->instance->gi_probe_instances.size()) {
+			e->sort_key|=RenderList::SORT_KEY_GI_PROBES_FLAG;
 		}
 	}
 

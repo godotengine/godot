@@ -90,9 +90,10 @@ void VisualServerRaster::draw(){
 
 	changes=0;
 
+	VSG::rasterizer->begin_frame();
+
 	VSG::scene->update_dirty_instances(); //update scene stuff
 
-	VSG::rasterizer->begin_frame();
 	VSG::viewport->draw_viewports();
 	VSG::scene->render_probes();
 	//_draw_cursors_and_margins();

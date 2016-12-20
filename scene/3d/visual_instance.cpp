@@ -31,7 +31,6 @@
 #include "servers/visual_server.h"
 #include "room_instance.h"
 #include "scene/scene_string_names.h"
-#include "baked_light_instance.h"
 #include "skeleton.h"
 
 AABB VisualInstance::get_transformed_aabb() const {
@@ -227,7 +226,6 @@ void GeometryInstance::_notification(int p_what) {
 
 		if (flags[FLAG_USE_BAKED_LIGHT]) {
 
-			_find_baked_light();
 		}
 
 		_update_visibility();
@@ -236,11 +234,6 @@ void GeometryInstance::_notification(int p_what) {
 
 		if (flags[FLAG_USE_BAKED_LIGHT]) {
 
-			if (baked_light_instance) {
-		//		baked_light_instance->disconnect(SceneStringNames::get_singleton()->baked_light_changed,this,SceneStringNames::get_singleton()->_baked_light_changed);
-			//	baked_light_instance=NULL;
-			}
-			_baked_light_changed();
 
 		}
 
@@ -250,37 +243,6 @@ void GeometryInstance::_notification(int p_what) {
 	}
 
 
-}
-
-void GeometryInstance::_baked_light_changed() {
-
-	//if (!baked_light_instance)
-	//	VS::get_singleton()->instance_geometry_set_baked_light(get_instance(),RID());
-//	else
-//		VS::get_singleton()->instance_geometry_set_baked_light(get_instance(),baked_light_instance->get_baked_light_instance());
-
-}
-
-void GeometryInstance::_find_baked_light() {
-/*
-	Node *n=get_parent();
-	while(n) {
-
-		BakedLightInstance *bl=n->cast_to<BakedLightInstance>();
-		if (bl) {
-
-			baked_light_instance=bl;
-			baked_light_instance->connect(SceneStringNames::get_singleton()->baked_light_changed,this,SceneStringNames::get_singleton()->_baked_light_changed);
-			_baked_light_changed();
-
-			return;
-		}
-
-		n=n->get_parent();
-	}
-
-	_baked_light_changed();
-	*/
 }
 
 void GeometryInstance::_update_visibility() {
@@ -314,17 +276,6 @@ void GeometryInstance::set_flag(Flags p_flag,bool p_value) {
 	}
 	if (p_flag==FLAG_USE_BAKED_LIGHT) {
 
-	/*	if (is_inside_world()) {
-			if (!p_value) {
-				if (baked_light_instance) {
-					baked_light_instance->disconnect(SceneStringNames::get_singleton()->baked_light_changed,this,SceneStringNames::get_singleton()->_baked_light_changed);
-					baked_light_instance=NULL;
-				}
-				_baked_light_changed();
-			} else {
-				_find_baked_light();
-			}
-		}*/
 	}
 }
 
@@ -357,17 +308,8 @@ GeometryInstance::ShadowCastingSetting GeometryInstance::get_cast_shadows_settin
 	return shadow_casting_setting;
 }
 
-void GeometryInstance::set_baked_light_texture_id(int p_id) {
 
-//	baked_light_texture_id=p_id;
-//	VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),baked_light_texture_id);
 
-}
-
-int GeometryInstance::get_baked_light_texture_id() const{
-
-	return baked_light_texture_id;
-}
 
 void GeometryInstance::set_extra_cull_margin(float p_margin) {
 
@@ -405,15 +347,11 @@ void GeometryInstance::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_lod_min_distance"), &GeometryInstance::get_lod_min_distance);
 
 
-	ObjectTypeDB::bind_method(_MD("set_baked_light_texture_id","id"), &GeometryInstance::set_baked_light_texture_id);
-	ObjectTypeDB::bind_method(_MD("get_baked_light_texture_id"), &GeometryInstance::get_baked_light_texture_id);
-
 	ObjectTypeDB::bind_method(_MD("set_extra_cull_margin","margin"), &GeometryInstance::set_extra_cull_margin);
 	ObjectTypeDB::bind_method(_MD("get_extra_cull_margin"), &GeometryInstance::get_extra_cull_margin);
 
 	ObjectTypeDB::bind_method(_MD("get_aabb"),&GeometryInstance::get_aabb);
 
-	ObjectTypeDB::bind_method(_MD("_baked_light_changed"), &GeometryInstance::_baked_light_changed);
 
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/visible"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE);
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "geometry/material_override",PROPERTY_HINT_RESOURCE_TYPE,"Material"), _SCS("set_material_override"), _SCS("get_material_override"));
@@ -424,7 +362,6 @@ void GeometryInstance::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/depth_scale"), _SCS("set_flag"), _SCS("get_flag"),FLAG_DEPH_SCALE);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/visible_in_all_rooms"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE_IN_ALL_ROOMS);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/use_baked_light"), _SCS("set_flag"), _SCS("get_flag"),FLAG_USE_BAKED_LIGHT);
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "geometry/baked_light_tex_id"), _SCS("set_baked_light_texture_id"), _SCS("get_baked_light_texture_id"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod/min_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_min_distance"), _SCS("get_lod_min_distance"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod/min_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_min_hysteresis"), _SCS("get_lod_min_hysteresis"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod/max_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_max_distance"), _SCS("get_lod_max_distance"));
@@ -461,8 +398,6 @@ GeometryInstance::GeometryInstance() {
 	flags[FLAG_CAST_SHADOW]=true;
 
 	shadow_casting_setting=SHADOW_CASTING_SETTING_ON;
-	baked_light_instance=NULL;
-	baked_light_texture_id=0;
 	extra_cull_margin=0;
 //	VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
 

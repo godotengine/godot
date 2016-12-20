@@ -390,16 +390,16 @@ void Image::convert( Format p_new_format ){
 		case FORMAT_R8|(FORMAT_RG8<<8): _convert<1,false,2,false,false,false>( width, height,rptr, wptr ); break;
 		case FORMAT_R8|(FORMAT_RGB8<<8): _convert<1,false,3,false,false,false>( width, height,rptr, wptr ); break;
 		case FORMAT_R8|(FORMAT_RGBA8<<8): _convert<1,false,3,true,false,false>( width, height,rptr, wptr ); break;
-		case FORMAT_RG8|(FORMAT_L8<<8): _convert<1,false,1,false,false,true>( width, height,rptr, wptr ); break;
-		case FORMAT_RG8|(FORMAT_LA8<<8): _convert<1,false,1,true,false,true>( width, height,rptr, wptr ); break;
-		case FORMAT_RG8|(FORMAT_R8<<8): _convert<1,false,1,false,false,false>( width, height,rptr, wptr ); break;
-		case FORMAT_RG8|(FORMAT_RGB8<<8): _convert<1,false,3,false,false,false>( width, height,rptr, wptr ); break;
-		case FORMAT_RG8|(FORMAT_RGBA8<<8): _convert<1,false,3,true,false,false>( width, height,rptr, wptr ); break;
-		case FORMAT_RGB8|(FORMAT_L8<<8): _convert<2,false,1,false,false,true>( width, height,rptr, wptr ); break;
-		case FORMAT_RGB8|(FORMAT_LA8<<8): _convert<2,false,1,true,false,true>( width, height,rptr, wptr ); break;
-		case FORMAT_RGB8|(FORMAT_R8<<8): _convert<2,false,1,false,false,false>( width, height,rptr, wptr ); break;
-		case FORMAT_RGB8|(FORMAT_RG8<<8): _convert<2,false,2,false,false,false>( width, height,rptr, wptr ); break;
-		case FORMAT_RGB8|(FORMAT_RGBA8<<8): _convert<2,false,3,true,false,false>( width, height,rptr, wptr ); break;
+		case FORMAT_RG8|(FORMAT_L8<<8): _convert<2,false,1,false,false,true>( width, height,rptr, wptr ); break;
+		case FORMAT_RG8|(FORMAT_LA8<<8): _convert<2,false,1,true,false,true>( width, height,rptr, wptr ); break;
+		case FORMAT_RG8|(FORMAT_R8<<8): _convert<2,false,1,false,false,false>( width, height,rptr, wptr ); break;
+		case FORMAT_RG8|(FORMAT_RGB8<<8): _convert<2,false,3,false,false,false>( width, height,rptr, wptr ); break;
+		case FORMAT_RG8|(FORMAT_RGBA8<<8): _convert<2,false,3,true,false,false>( width, height,rptr, wptr ); break;
+		case FORMAT_RGB8|(FORMAT_L8<<8): _convert<3,false,1,false,false,true>( width, height,rptr, wptr ); break;
+		case FORMAT_RGB8|(FORMAT_LA8<<8): _convert<3,false,1,true,false,true>( width, height,rptr, wptr ); break;
+		case FORMAT_RGB8|(FORMAT_R8<<8): _convert<3,false,1,false,false,false>( width, height,rptr, wptr ); break;
+		case FORMAT_RGB8|(FORMAT_RG8<<8): _convert<3,false,2,false,false,false>( width, height,rptr, wptr ); break;
+		case FORMAT_RGB8|(FORMAT_RGBA8<<8): _convert<3,false,3,true,false,false>( width, height,rptr, wptr ); break;
 		case FORMAT_RGBA8|(FORMAT_L8<<8): _convert<3,true,1,false,false,true>( width, height,rptr, wptr ); break;
 		case FORMAT_RGBA8|(FORMAT_LA8<<8): _convert<3,true,1,true,false,true>( width, height,rptr, wptr ); break;
 		case FORMAT_RGBA8|(FORMAT_R8<<8): _convert<3,true,1,false,false,false>( width, height,rptr, wptr ); break;
@@ -414,7 +414,7 @@ void Image::convert( Format p_new_format ){
 
 	bool gen_mipmaps=mipmaps;
 
-	mipmaps=false;
+//	mipmaps=false;
 
 	*this=new_img;
 

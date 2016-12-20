@@ -394,7 +394,8 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 
-//				material->set_texture(FixedSpatialMaterial::PARAM_DIFFUSE,texture);
+				material->set_texture(FixedSpatialMaterial::TEXTURE_ALBEDO,texture);
+				material->set_albedo(Color(1,1,1,1));
 //				material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
@@ -413,6 +414,8 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
+				material->set_texture(FixedSpatialMaterial::TEXTURE_SPECULAR,texture);
+				material->set_specular(Color(1,1,1,1));
 
 //				material->set_texture(FixedSpatialMaterial::PARAM_SPECULAR,texture);
 //				material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR,Color(1,1,1,1));
@@ -435,7 +438,9 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 
-//				material->set_texture(FixedSpatialMaterial::PARAM_EMISSION,texture);
+				material->set_texture(FixedSpatialMaterial::TEXTURE_EMISSION,texture);
+				material->set_emission(Color(1,1,1,1));
+
 //				material->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,Color(1,1,1,1));
 			}else {
 //				missing_textures.push_back(texfile.get_file());
@@ -455,6 +460,8 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
+				material->set_texture(FixedSpatialMaterial::TEXTURE_NORMAL,texture);
+//				material->set_emission(Color(1,1,1,1));
 
 	//			material->set_texture(FixedSpatialMaterial::PARAM_NORMAL,texture);
 			}else {
@@ -466,8 +473,10 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 
 //	material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR_EXP,effect.shininess);
-//	material->set_flag(Material::FLAG_DOUBLE_SIDED,effect.double_sided);
-//	material->set_flag(Material::FLAG_UNSHADED,effect.unshaded);
+	if (effect.double_sided) {
+		material->set_cull_mode(FixedSpatialMaterial::CULL_DISABLED);
+	}
+	material->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,effect.unshaded);
 
 
 

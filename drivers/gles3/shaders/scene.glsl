@@ -838,6 +838,131 @@ void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 ta
 	}
 }
 
+#ifdef USE_GI_PROBES
+
+uniform mediump sampler3D gi_probe1; //texunit:-6
+uniform highp mat4 gi_probe_xform1;
+uniform highp vec3 gi_probe_bounds1;
+uniform highp vec3 gi_probe_cell_size1;
+
+uniform mediump sampler3D gi_probe2; //texunit:-7
+uniform highp mat4 gi_probe_xform2;
+uniform highp vec3 gi_probe_bounds2;
+uniform highp vec3 gi_probe_cell_size2;
+uniform bool gi_probe2_enabled;
+
+vec3 voxel_cone_trace(sampler3D probe, vec3 cell_size, vec3 pos, vec3 direction, float tan_half_angle, float max_distance) {
+
+
+	float dist = dot(direction,mix(vec3(-1.0),vec3(1.0),greaterThan(direction,vec3(0.0))))*2.0;
+	float alpha=0.0;
+	vec4 color = vec4(0.0);
+
+	while(dist < max_distance && alpha < 0.95) {
+		float diameter = max(1.0, 2.0 * tan_half_angle * dist);
+		vec4 scolor = textureLod(probe, (pos + dist * direction) * cell_size, log2(diameter) );
+		float a = (1.0 - alpha);
+		color.rgb += a * scolor.rgb;
+		alpha += a * scolor.a;
+		dist += diameter * 0.5;
+	}
+
+	return color.rgb;
+}
+
+void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_size,vec3 pos, mat3 normal_mtx,vec3 ref_vec, float roughness, out vec4 out_spec, out vec4 out_diff) {
+
+
+
+	vec3 probe_pos = (probe_xform * vec4(pos,1.0)).xyz;
+	vec3 ref_pos = (probe_xform * vec4(pos+ref_vec,1.0)).xyz;
+
+	ref_vec = normalize(ref_pos - probe_pos);
+
+/*	out_diff.rgb = voxel_cone_trace(probe,cell_size,probe_pos,normalize((probe_xform * vec4(ref_vec,0.0)).xyz),0.0 ,100.0);
+	out_diff.a = 1.0;
+	return;*/
+	//out_diff = vec4(textureLod(probe,probe_pos*cell_size,3.0).rgb,1.0);
+	//return;
+
+	if (any(bvec2(any(lessThan(probe_pos,vec3(0.0))),any(greaterThan(probe_pos,bounds)))))
+		return;
+
+	vec3 blendv = probe_pos/bounds * 2.0 - 1.0;
+	float blend = 1.001-max(blendv.x,max(blendv.y,blendv.z));
+	blend=1.0;
+
+	//radiance
+
+#define MAX_CONE_DIRS 6
+	vec3 cone_dirs[MAX_CONE_DIRS] = vec3[] (
+		vec3(0, 0, 1),
+		vec3(0.866025, 0, 0.5),
+		vec3(0.267617, 0.823639, 0.5),
+		vec3(-0.700629, 0.509037, 0.5),
+		vec3(-0.700629, -0.509037, 0.5),
+		vec3(0.267617, -0.823639, 0.5)
+	);
+
+	float cone_weights[MAX_CONE_DIRS] = float[](0.25, 0.15, 0.15, 0.15, 0.15, 0.15);
+
+	float max_distance = length(bounds);
+	vec3 light=vec3(0.0);
+	for(int i=0;i<MAX_CONE_DIRS;i++) {
+
+		vec3 dir = normalize( (probe_xform * vec4(pos + normal_mtx * cone_dirs[i],1.0)).xyz - probe_pos);
+		light+=cone_weights[i] * voxel_cone_trace(probe,cell_size,probe_pos,dir,0.577,max_distance);
+
+	}
+
+	out_diff = vec4(light*blend,blend);
+
+	//irradiance
+
+	vec3 irr_light =  voxel_cone_trace(probe,cell_size,probe_pos,ref_vec,tan(roughness * 0.5 * M_PI) ,max_distance);
+	//irr_light=vec3(0.0);
+
+	out_spec = vec4(irr_light*blend,blend);
+}
+
+
+void gi_probes_compute(vec3 pos, vec3 normal, float roughness, vec3 specular, inout vec3 out_specular, inout vec3 out_ambient) {
+
+
+	vec3 ref_vec = normalize(reflect(normalize(pos),normal));
+
+	//find arbitrary tangent and bitangent, then build a matrix
+	vec3 v0 = abs(normal.z) < 0.999 ? vec3(0, 0, 1) : vec3(0, 1, 0);
+	vec3 tangent = normalize(cross(v0, normal));
+	vec3 bitangent = normalize(cross(tangent, normal));
+	mat3 normal_mat = mat3(tangent,bitangent,normal);
+
+	vec4 diff_accum = vec4(0.0);
+	vec4 spec_accum = vec4(0.0);
+
+	gi_probe_compute(gi_probe1,gi_probe_xform1,gi_probe_bounds1,gi_probe_cell_size1,pos,normal_mat,ref_vec,roughness,spec_accum,diff_accum);
+
+	if (gi_probe2_enabled) {
+
+		gi_probe_compute(gi_probe2,gi_probe_xform2,gi_probe_bounds2,gi_probe_cell_size2,pos,normal_mat,ref_vec,roughness,spec_accum,diff_accum);
+	}
+
+	if (diff_accum.a>0.0) {
+		diff_accum.rgb/=diff_accum.a;
+	}
+
+	if (spec_accum.a>0.0) {
+		spec_accum.rgb/=spec_accum.a;
+	}
+
+	out_specular+=spec_accum.rgb;
+	out_ambient+=diff_accum.rgb;
+
+}
+
+#endif
+
+
 void main() {
 
 #ifdef RENDER_SHADOW_DUAL_PARABOLOID
@@ -1161,21 +1286,27 @@ FRAGMENT_SHADER_CODE
 
 #endif //#USE_LIGHT_DIRECTIONAL
 
+#ifdef USE_GI_PROBES
+	gi_probes_compute(vertex,normal,roughness,specular,specular_light,ambient_light);
+#endif
+
 
 #ifdef USE_FORWARD_LIGHTING
 
 	highp vec4 reflection_accum = vec4(0.0,0.0,0.0,0.0);
 	highp vec4 ambient_accum = vec4(0.0,0.0,0.0,0.0);
 
+
+
 	for(int i=0;i<reflection_count;i++) {
 		reflection_process(reflection_indices[i],vertex,normal,binormal,tangent,roughness,anisotropy,ambient_light,specular_light,brdf,reflection_accum,ambient_accum);
 	}
 
 	if (reflection_accum.a>0.0) {
-		specular_light=reflection_accum.rgb/reflection_accum.a;
+		specular_light+=reflection_accum.rgb/reflection_accum.a;
 	}
 	if (ambient_accum.a>0.0) {
-		ambient_light=ambient_accum.rgb/ambient_accum.a;
+		ambient_light+=ambient_accum.rgb/ambient_accum.a;
 	}
 
 	for(int i=0;i<omni_light_count;i++) {

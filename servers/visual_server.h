@@ -445,7 +445,39 @@ public:
 	virtual void portal_set_disable_distance(RID p_portal, float p_distance)=0;
 	virtual void portal_set_disabled_color(RID p_portal, const Color& p_color)=0;
 
-	/* BAKED LIGHT API */
+	/* GI PROBE API */
+
+	virtual RID gi_probe_create()=0;
+
+	virtual void gi_probe_set_bounds(RID p_probe,const AABB& p_bounds)=0;
+	virtual AABB gi_probe_get_bounds(RID p_probe) const=0;
+
+	virtual void gi_probe_set_cell_size(RID p_probe,float p_range)=0;
+	virtual float gi_probe_get_cell_size(RID p_probe) const=0;
+
+	virtual void gi_probe_set_to_cell_xform(RID p_probe,const Transform& p_xform)=0;
+	virtual Transform gi_probe_get_to_cell_xform(RID p_probe) const=0;
+
+	virtual void gi_probe_set_dynamic_data(RID p_probe,const DVector<int>& p_data)=0;
+	virtual DVector<int> gi_probe_get_dynamic_data(RID p_probe) const=0;
+
+	virtual void gi_probe_set_dynamic_range(RID p_probe,float p_range)=0;
+	virtual float gi_probe_get_dynamic_range(RID p_probe) const=0;
+
+	enum GIProbeDataFormat {
+		GI_PROBE_DATA_RGBA8,
+		GI_PROBE_DATA_DXT5,
+		GI_PROBE_DATA_ETC2_EAC,
+	};
+
+	virtual void gi_probe_set_static_data(RID p_gi_probe,const DVector<uint8_t>& p_data,GIProbeDataFormat p_format,int p_width,int p_height,int p_depth)=0;
+	virtual DVector<uint8_t> gi_probe_get_static_data(RID p_gi_probe) const=0;
+	virtual  GIProbeDataFormat gi_probe_get_static_data_format(RID p_gi_probe) const=0;
+	virtual int gi_probe_get_static_data_width(RID p_probe) const=0;
+	virtual int gi_probe_get_static_data_height(RID p_probe) const=0;
+	virtual int gi_probe_get_static_data_depth(RID p_probe) const=0;
+
+
 
 	/* CAMERA API */
 
@@ -600,9 +632,9 @@ public:
 		INSTANCE_REFLECTION_PROBE,
 		INSTANCE_ROOM,
 		INSTANCE_PORTAL,
+		INSTANCE_GI_PROBE,
 		INSTANCE_MAX,
-		/*INSTANCE_BAKED_LIGHT,
-		INSTANCE_BAKED_LIGHT_SAMPLER,*/
+		/*INSTANCE_BAKED_LIGHT_SAMPLER,*/
 
 		INSTANCE_GEOMETRY_MASK=(1<<INSTANCE_MESH)|(1<<INSTANCE_MULTIMESH)|(1<<INSTANCE_IMMEDIATE)
 	};

@@ -1692,7 +1692,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 		String str=name;
 		int layer = str.substr(str.find("lm")+3,str.length()).to_int();
-		mi->set_baked_light_texture_id(layer);
+		//mi->set_baked_light_texture_id(layer);
 	}
 
 	if (p_flags&SCENE_FLAG_CREATE_COLLISIONS && _teststr(name,"colonly")) {

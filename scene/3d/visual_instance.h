@@ -79,7 +79,7 @@ public:
 
 };
 
-class BakedLightInstance;
+class BakedLight;
 
 class GeometryInstance : public VisualInstance {
 
@@ -114,12 +114,9 @@ private:
 	float lod_max_distance;
 	float lod_min_hysteresis;
 	float lod_max_hysteresis;
-	void _find_baked_light();
-	BakedLightInstance *baked_light_instance;
-	int baked_light_texture_id;
+
 	float extra_cull_margin;
 
-	void _baked_light_changed();
 	void _update_visibility();
 protected:
 
@@ -147,9 +144,6 @@ public:
 
 	void set_material_override(const Ref<Material>& p_material);
 	Ref<Material> get_material_override() const;
-
-	void set_baked_light_texture_id(int p_id);
-	int get_baked_light_texture_id() const;
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;

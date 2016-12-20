@@ -803,11 +803,38 @@ public:
 	BIND2(portal_set_disable_distance,RID , float )
 	BIND2(portal_set_disabled_color,RID , const Color& )
 
-	/* CAMERA API */
+	/* BAKED LIGHT API */
+
+	BIND0R(RID, gi_probe_create)
+
+	BIND2(gi_probe_set_bounds,RID,const AABB&)
+	BIND1RC(AABB,gi_probe_get_bounds,RID)
+
+	BIND2(gi_probe_set_cell_size,RID,float)
+	BIND1RC(float,gi_probe_get_cell_size,RID)
+
+	BIND2(gi_probe_set_to_cell_xform,RID,const Transform&)
+	BIND1RC(Transform,gi_probe_get_to_cell_xform,RID)
+
+	BIND2(gi_probe_set_dynamic_range,RID,float)
+	BIND1RC(float,gi_probe_get_dynamic_range,RID)
+
+	BIND2(gi_probe_set_dynamic_data,RID,const DVector<int>& )
+	BIND1RC( DVector<int>,gi_probe_get_dynamic_data,RID)
+
+	BIND6(gi_probe_set_static_data,RID,const DVector<uint8_t>&,GIProbeDataFormat,int,int,int)
+	BIND1RC(DVector<uint8_t>,gi_probe_get_static_data,RID)
+	BIND1RC(GIProbeDataFormat,gi_probe_get_static_data_format,RID)
+	BIND1RC(int,gi_probe_get_static_data_width,RID)
+	BIND1RC(int,gi_probe_get_static_data_height,RID)
+	BIND1RC(int,gi_probe_get_static_data_depth,RID)
+
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::scene
+
+	/* CAMERA API */
 
 
 	BIND0R(RID, camera_create)
@@ -935,7 +962,6 @@ public:
 
 	BIND5(instance_geometry_set_draw_range,RID,float ,float ,float ,float )
 	BIND2(instance_geometry_set_as_instance_lod,RID,RID )
-
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton

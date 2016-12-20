@@ -205,6 +205,7 @@
 #include "scene/3d/quad.h"
 #include "scene/3d/light.h"
 #include "scene/3d/reflection_probe.h"
+#include "scene/3d/gi_probe.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/portal.h"
 #include "scene/resources/environment.h"
@@ -424,6 +425,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<OmniLight>();
 	ObjectTypeDB::register_type<SpotLight>();
 	ObjectTypeDB::register_type<ReflectionProbe>();
+	ObjectTypeDB::register_type<GIProbe>();
+	ObjectTypeDB::register_type<GIProbeData>();
 	ObjectTypeDB::register_type<AnimationTreePlayer>();
 	ObjectTypeDB::register_type<Portal>();
 	//ObjectTypeDB::register_type<Particles>();
@@ -455,7 +458,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<PathFollow>();
 	ObjectTypeDB::register_type<VisibilityNotifier>();
 	ObjectTypeDB::register_type<VisibilityEnabler>();
-	//ObjectTypeDB::register_type<BakedLightInstance>();
+	ObjectTypeDB::register_type<BakedLight>();
 	//ObjectTypeDB::register_type<BakedLightSampler>();
 	ObjectTypeDB::register_type<WorldEnvironment>();
 	ObjectTypeDB::register_type<RemoteTransform>();
