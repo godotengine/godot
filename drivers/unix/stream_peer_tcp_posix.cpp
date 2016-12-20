@@ -98,7 +98,7 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 	};
 
 	struct sockaddr_storage their_addr;
-	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port, ip_type);
+	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port, sock_type);
 
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == -1) {
 
@@ -125,6 +125,7 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_ip_type) {
 
 	ip_type = p_ip_type;
+	sock_type = p_ip_type;
 	sockfd = p_sockfd;
 #ifndef NO_FCNTL
 	fcntl(sockfd, F_SETFL, O_NONBLOCK);
@@ -143,7 +144,8 @@ Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 
 	ERR_FAIL_COND_V( p_host == IP_Address(), ERR_INVALID_PARAMETER);
 
-	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
+	sock_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+	sockfd = _socket_create(sock_type, SOCK_STREAM, IPPROTO_TCP);
 	if (sockfd == -1) {
 		ERR_PRINT("Socket creation failed!");
 		disconnect();
@@ -159,7 +161,7 @@ Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 #endif
 
 	struct sockaddr_storage their_addr;
-	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port, ip_type);
+	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port, sock_type);
 
 	errno = 0;
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == -1 && errno != EINPROGRESS) {
@@ -340,6 +342,8 @@ void StreamPeerTCPPosix::disconnect() {
 
 	if (sockfd != -1)
 		close(sockfd);
+
+	sock_type = IP::TYPE_NONE;
 	sockfd=-1;
 
 	status = STATUS_NONE;
@@ -390,6 +394,7 @@ uint16_t StreamPeerTCPPosix::get_connected_port() const {
 
 StreamPeerTCPPosix::StreamPeerTCPPosix() {
 
+	sock_type = IP::TYPE_NONE;
 	sockfd = -1;
 	status = STATUS_NONE;
 	peer_port = 0;

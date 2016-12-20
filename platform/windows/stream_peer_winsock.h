@@ -41,6 +41,7 @@ class StreamPeerWinsock : public StreamPeerTCP {
 protected:
 
 	mutable Status status;
+	IP::Type sock_type;
 
 	int sockfd;
 

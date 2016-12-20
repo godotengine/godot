@@ -35,14 +35,13 @@
 #include "core/io/stream_peer_tcp.h"
 #include "error_list.h"
 
-#include "core/io/ip_address.h"
-
 class StreamPeerTCPPosix : public StreamPeerTCP {
 
 protected:
 
 	mutable Status status;
 
+	IP::Type sock_type;
 	int sockfd;
 
 	Error _block(int p_sockfd, bool p_read, bool p_write) const;
