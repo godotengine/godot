@@ -33,8 +33,6 @@
 
 RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const String &p_path) {
 
-	String l = f->get_line();
-
 	enum Status {
 
 		STATUS_NONE,
