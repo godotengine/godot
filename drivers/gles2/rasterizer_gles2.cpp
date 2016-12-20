@@ -162,6 +162,8 @@ static _FORCE_INLINE_ uint16_t make_half_float(float f) {
     return hf;
 }
 
+const char* RasterizerGLES2::driver_name = "GLES2";
+
 void RasterizerGLES2::_draw_primitive(int p_points, const Vector3 *p_vertices, const Vector3 *p_normals, const Color* p_colors, const Vector3 *p_uvs,const Plane *p_tangents,int p_instanced) {
 
 	ERR_FAIL_COND(!p_vertices);
@@ -10810,9 +10812,7 @@ bool RasterizerGLES2::_test_depth_shadow_buffer() {
 
 void RasterizerGLES2::init() {
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("Using GLES2 video driver");
-	}
+	Rasterizer::init();
 
 #ifdef GLEW_ENABLED
 	GLuint res = glewInit();

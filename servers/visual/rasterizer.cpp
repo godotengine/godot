@@ -30,6 +30,10 @@
 #include "print_string.h"
 #include "os/os.h"
 
+
+const char* Rasterizer::driver_name = "???";
+
+
 RID Rasterizer::create_default_material() {
 
 	return material_create();
@@ -622,6 +626,12 @@ Rasterizer::Rasterizer() {
 
 	ERR_FAIL_COND( sizeof(FixedMaterialShaderKey)!=4);
 
+}
+
+void Rasterizer::init() {
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line("Uses " + String(driver_name) + " video driver");
+	}
 }
 
 RID Rasterizer::create_overdraw_debug_material() {

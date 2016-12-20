@@ -40,6 +40,12 @@
 class Rasterizer {
 protected:
 
+	/* Introspection API */
+
+	static const char* driver_name;
+
+
+	/* Misc API */
 
 	typedef void (*CanvasItemDrawViewportFunc)(VisualServer*owner,void*ud,const Rect2& p_rect);
 
@@ -172,7 +178,6 @@ public:
 		SHADOW_FILTER_ESM,
 		SHADOW_FILTER_VSM,
 	};
-
 
 
 	/* TEXTURE API */
@@ -1030,7 +1035,7 @@ public:
 
 	virtual void free(const RID& p_rid)=0;
 
-	virtual void init()=0;
+	virtual void init();
 	virtual void finish()=0;
 
 	virtual bool needs_to_draw_next_frame() const=0;
