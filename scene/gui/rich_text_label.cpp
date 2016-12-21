@@ -1179,7 +1179,8 @@ void RichTextLabel::add_text(const String& p_text) {
 			item->line=current_frame->lines.size();
 			_add_item(item,false);
 			current_frame->lines.resize(current_frame->lines.size()+1);
-			current_frame->lines[current_frame->lines.size()-1].from=item;
+			if (item->type!=ITEM_NEWLINE)
+				current_frame->lines[current_frame->lines.size()-1].from=item;
 			_invalidate_current_line(current_frame);
 
 		}
