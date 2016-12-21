@@ -130,9 +130,9 @@ void RasterizerGLES3::initialize() {
 		ERR_PRINT("Error initializing GLAD");
 	}
 
-	glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+//	glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 //	glDebugMessageCallbackARB(_gl_debug_print, NULL);
-	glEnable(_EXT_DEBUG_OUTPUT);
+//	glEnable(_EXT_DEBUG_OUTPUT);
 
 #endif
 
@@ -169,6 +169,14 @@ void RasterizerGLES3::begin_frame(){
 	storage->update_dirty_skeletons();
 	storage->update_dirty_shaders();
 	storage->update_dirty_materials();
+
+	storage->info.render_object_count=0;
+	storage->info.render_material_switch_count=0;
+	storage->info.render_surface_switch_count=0;
+	storage->info.render_shader_rebind_count=0;
+	storage->info.render_vertices_count=0;
+
+
 	scene->iteration();
 
 
@@ -277,6 +285,13 @@ void RasterizerGLES3::end_frame(){
 	canvas->draw_generic_textured_rect(Rect2(0,0,15,15),Rect2(0,0,1,1));
 #endif
 	OS::get_singleton()->swap_buffers();
+
+/*	print_line("objects: "+itos(storage->info.render_object_count));
+	print_line("material chages: "+itos(storage->info.render_material_switch_count));
+	print_line("surface changes: "+itos(storage->info.render_surface_switch_count));
+	print_line("shader changes: "+itos(storage->info.render_shader_rebind_count));
+	print_line("vertices: "+itos(storage->info.render_vertices_count));
+*/
 }
 
 void RasterizerGLES3::finalize(){

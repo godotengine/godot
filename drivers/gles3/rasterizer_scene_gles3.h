@@ -148,6 +148,7 @@ public:
 
 	} state;
 
+
 	/* SHADOW ATLAS API */
 
 	struct ShadowAtlas : public RID_Data {

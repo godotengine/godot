@@ -91,6 +91,12 @@ public:
 
 		uint64_t texture_mem;
 
+		uint32_t render_object_count;
+		uint32_t render_material_switch_count;
+		uint32_t render_surface_switch_count;
+		uint32_t render_shader_rebind_count;
+		uint32_t render_vertices_count;
+
 	} info;
 
 

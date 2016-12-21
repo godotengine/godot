@@ -569,7 +569,7 @@ void light_compute(vec3 N, vec3 L,vec3 V,vec3 B, vec3 T,vec3 light_color,vec3 di
 
 		float speci = dotNL * D * F * vis;
 
-		specular += speci * light_color * specular_color * specular_blob_intensity;
+		specular += speci * light_color /* specular_color*/ * specular_blob_intensity;
 
 #if defined(LIGHT_USE_CLEARCOAT)
 		float Dr = GTR1(dotNH, mix(.1,.001,clearcoat_gloss));
@@ -780,7 +780,8 @@ void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 ta
 		splane.xy = clamp(splane.xy,clamp_rect.xy,clamp_rect.xy+clamp_rect.zw);
 
 		highp vec4 reflection;
-		reflection.rgb = textureLod(reflection_atlas,splane.xy,roughness*5.0).rgb * ( brdf.x + brdf.y);
+		reflection.rgb = textureLod(reflection_atlas,splane.xy,roughness*5.0).rgb *  brdf.x + brdf.y;
+
 		if (reflections[idx].params.z < 0.5) {
 			reflection.rgb = mix(skybox,reflection.rgb,blend);
 		}
@@ -893,6 +894,7 @@ void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_s
 	blend=1.0;
 
 	//radiance
+#ifdef VCT_QUALITY_HIGH
 
 #define MAX_CONE_DIRS 6
 	vec3 cone_dirs[MAX_CONE_DIRS] = vec3[] (
@@ -905,13 +907,28 @@ void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_s
 	);
 
 	float cone_weights[MAX_CONE_DIRS] = float[](0.25, 0.15, 0.15, 0.15, 0.15, 0.15);
+	float cone_angle_tan = 0.577;
+#else
 
+#define MAX_CONE_DIRS 4
+
+	vec3 cone_dirs[MAX_CONE_DIRS] = vec3[] (
+			vec3(0.707107, 0, 0.707107),
+			vec3(0, 0.707107, 0.707107),
+			vec3(-0.707107, 0, 0.707107),
+			vec3(0, -0.707107, 0.707107)
+	);
+
+	float cone_weights[MAX_CONE_DIRS] = float[](0.25, 0.25, 0.25, 0.25);
+	float cone_angle_tan = 0.98269;
+
+#endif
 	float max_distance = length(bounds);
 	vec3 light=vec3(0.0);
 	for(int i=0;i<MAX_CONE_DIRS;i++) {
 
 		vec3 dir = normalize( (probe_xform * vec4(pos + normal_mtx * cone_dirs[i],1.0)).xyz - probe_pos);
-		light+=cone_weights[i] * voxel_cone_trace(probe,cell_size,probe_pos,dir,0.577,max_distance);
+		light+=cone_weights[i] * voxel_cone_trace(probe,cell_size,probe_pos,dir,cone_angle_tan,max_distance);
 
 	}
 
@@ -928,6 +945,7 @@ void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_s
 
 void gi_probes_compute(vec3 pos, vec3 normal, float roughness, vec3 specular, inout vec3 out_specular, inout vec3 out_ambient) {
 
+	roughness = roughness * roughness;
 
 	vec3 ref_vec = normalize(reflect(normalize(pos),normal));
 
@@ -1073,7 +1091,7 @@ FRAGMENT_SHADER_CODE
 #endif
 
 #ifdef ENABLE_CLIP_ALPHA
-	if (diffuse.a<0.99) {
+	if (albedo.a<0.99) {
 		//used for doublepass and shadowmapping
 		discard;
 	}
@@ -1082,8 +1100,6 @@ FRAGMENT_SHADER_CODE
 /////////////////////// LIGHTING //////////////////////////////
 
 	//apply energy conservation
-	vec3 diffuse=mix(albedo,vec3(0.0),specular);
-	specular = max(vec3(0.04),specular);
 
 	vec3 specular_light = vec3(0.0,0.0,0.0);
 	vec3 ambient_light;
@@ -1093,6 +1109,7 @@ FRAGMENT_SHADER_CODE
 
 #ifndef RENDER_SHADOW
 	float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
+
 	vec2 brdf = texture(brdf_texture, vec2(roughness, ndotv)).xy;
 #endif
 
@@ -1125,7 +1142,7 @@ FRAGMENT_SHADER_CODE
 
 				norm.xy/=norm.z;
 				norm.xy=norm.xy * vec2(0.5,0.25) + vec2(0.5,0.25+y_ofs);
-				specular_light = textureLod(radiance_map, norm.xy, lod).xyz * ( brdf.x + brdf.y);
+				specular_light = textureLod(radiance_map, norm.xy, lod).xyz * brdf.x + brdf.y;
 
 			}
 			//no longer a cubemap
@@ -1219,7 +1236,6 @@ FRAGMENT_SHADER_CODE
 		} else {
 			highp vec4 splane=(shadow_matrix4 * vec4(vertex,1.0));
 			pssm_coord=splane.xyz/splane.w;
-			diffuse_light*=vec3(1.0,0.4,1.0);
 
 #if defined(LIGHT_USE_PSSM_BLEND)
 			use_blend=false;
@@ -1281,7 +1297,7 @@ FRAGMENT_SHADER_CODE
 
 #endif //LIGHT_DIRECTIONAL_SHADOW
 
-	light_compute(normal,-light_direction_attenuation.xyz,eye_vec,binormal,tangent,light_color_energy.rgb*light_attenuation,diffuse,specular,light_params.z,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+	light_compute(normal,-light_direction_attenuation.xyz,eye_vec,binormal,tangent,light_color_energy.rgb*light_attenuation,albedo,specular,light_params.z,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 
 
 #endif //#USE_LIGHT_DIRECTIONAL
@@ -1310,11 +1326,11 @@ FRAGMENT_SHADER_CODE
 	}
 
 	for(int i=0;i<omni_light_count;i++) {
-		light_process_omni(omni_light_indices[i],vertex,eye_vec,normal,binormal,tangent,diffuse,specular,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+		light_process_omni(omni_light_indices[i],vertex,eye_vec,normal,binormal,tangent,albedo,specular,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 	}
 
 	for(int i=0;i<spot_light_count;i++) {
-		light_process_spot(spot_light_indices[i],vertex,eye_vec,normal,binormal,tangent,diffuse,specular,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+		light_process_spot(spot_light_indices[i],vertex,eye_vec,normal,binormal,tangent,albedo,specular,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 	}
 
 
@@ -1338,12 +1354,16 @@ LIGHT_SHADER_CODE
 #else
 
 	specular_light*=reflection_multiplier;
-	specular_light*=specular;
 	ambient_light*=albedo; //ambient must be multiplied by albedo at the end
 
 #if defined(ENABLE_AO)
 	ambient_light*=ao;
 #endif
+
+	//energy conservation
+	diffuse_light=mix(diffuse_light,vec3(0.0),specular);
+	ambient_light=mix(ambient_light,vec3(0.0),specular);
+	specular_light *= max(vec3(0.04),specular);
 
 #ifdef USE_MULTIPLE_RENDER_TARGETS
 

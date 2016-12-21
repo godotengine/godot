@@ -1331,9 +1331,13 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 				glDrawElements(gl_primitive[s->primitive],s->index_array_len, (s->array_len>=(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0);
 
+				storage->info.render_vertices_count+=s->index_array_len;
+
 			} else {
 
 				glDrawArrays(gl_primitive[s->primitive],0,s->array_len);
+
+				storage->info.render_vertices_count+=s->array_len;
 
 			}
 
@@ -1349,9 +1353,13 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 				glDrawElementsInstanced(gl_primitive[s->primitive],s->index_array_len, (s->array_len>=(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0,amount);
 
+				storage->info.render_vertices_count+=s->index_array_len * amount;
+
 			} else {
 
 				glDrawArraysInstanced(gl_primitive[s->primitive],0,s->array_len,amount);
+
+				storage->info.render_vertices_count+=s->array_len * amount;
 
 			}
 
@@ -1378,6 +1386,8 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 				int vertices = c.vertices.size();
 				uint32_t buf_ofs=0;
+
+				storage->info.render_vertices_count+=vertices;
 
 				if (c.texture.is_valid() && storage->texture_owner.owns(c.texture)) {
 
@@ -1704,6 +1714,8 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 
 	bool first=true;
 
+	storage->info.render_object_count+=p_element_count;
+
 	for (int i=0;i<p_element_count;i++) {
 
 		RenderList::Element *e = p_elements[i];
@@ -1864,8 +1876,13 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 
 		if (material!=prev_material || rebind) {
 
+			storage->info.render_material_switch_count++;
+
 			rebind = _setup_material(material,p_alpha_pass);
-//			_rinfo.mat_change_count++;
+
+			if (rebind) {
+				storage->info.render_shader_rebind_count++;
+			}
 		}
 
 		if (!(e->sort_key&RenderList::SORT_KEY_UNSHADED_FLAG) && !p_directional_add && !p_shadow) {
@@ -1877,6 +1894,8 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 		if (prev_base_type != e->instance->base_type || prev_geometry!=e->geometry) {
 
 			_setup_geometry(e);
+			storage->info.render_surface_switch_count++;
+
 		}
 
 		_set_cull(e->sort_key&RenderList::SORT_KEY_MIRROR_FLAG,p_reverse_cull);

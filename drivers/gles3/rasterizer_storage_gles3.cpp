@@ -826,14 +826,19 @@ Image RasterizerStorageGLES3::texture_get_data(RID p_texture,VS::CubeMapSide p_c
 
 	DVector<uint8_t> data;
 
-	int data_size = Image::get_image_data_size(texture->width,texture->height,texture->format,texture->mipmaps>1?-1:0);
+	int data_size = Image::get_image_data_size(texture->alloc_width,texture->alloc_height,texture->format,texture->mipmaps>1?-1:0);
 
-	data.resize(data_size);
+	data.resize(data_size*2); //add some memory at the end, just in case for buggy drivers
 	DVector<uint8_t>::Write wb = data.write();
 
 	glActiveTexture(GL_TEXTURE0);
 
 	glBindTexture(texture->target,texture->tex_id);
+
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+	print_line("GET FORMAT: "+Image::get_format_name(texture->format)+" mipmaps: "+itos(texture->mipmaps));
+
 
 	for(int i=0;i<texture->mipmaps;i++) {
 
@@ -848,13 +853,17 @@ Image RasterizerStorageGLES3::texture_get_data(RID p_texture,VS::CubeMapSide p_c
 			glGetCompressedTexImage(texture->target,i,&wb[ofs]);
 
 		} else {
+
 			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
 			glGetTexImage(texture->target,i,texture->gl_format_cache,texture->gl_type_cache,&wb[ofs]);
 		}
 	}
 
 
 	wb=DVector<uint8_t>::Write();
+
+	data.resize(data_size);
 
 	Image img(texture->alloc_width,texture->alloc_height,texture->mipmaps>1?true:false,texture->format,data);
 

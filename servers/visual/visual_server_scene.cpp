@@ -2060,7 +2060,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform,const Came
 	// directional lights
 	{
 
-		Instance** lights_with_shadow = (Instance**)alloca(sizeof(Instance*)*light_cull_count);
+		Instance** lights_with_shadow = (Instance**)alloca(sizeof(Instance*)*scenario->directional_lights.size());
 		int directional_shadow_count=0;
 
 		for (List<Instance*>::Element *E=scenario->directional_lights.front();E;E=E->next()) {
