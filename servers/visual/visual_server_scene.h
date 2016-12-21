@@ -9,7 +9,7 @@
 #include "self_list.h"
 #include "os/thread.h"
 #include "os/semaphore.h"
-#include "semaphore.h"
+#include "os/semaphore.h"
 
 class VisualServerScene {
 public:

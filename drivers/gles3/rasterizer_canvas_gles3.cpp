@@ -1257,16 +1257,16 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 		CameraMatrix projection;
 		{
 			real_t fov =  90;
-			real_t near = p_near;
-			real_t far = p_far;
+			real_t nearp = p_near;
+			real_t farp = p_far;
 			real_t aspect = 1.0;
 
-			real_t ymax = near * Math::tan( Math::deg2rad( fov * 0.5 ) );
+			real_t ymax = nearp * Math::tan( Math::deg2rad( fov * 0.5 ) );
 			real_t ymin = - ymax;
 			real_t xmin = ymin * aspect;
 			real_t xmax = ymax * aspect;
 
-			projection.set_frustum( xmin, xmax, ymin, ymax, near, far );
+			projection.set_frustum( xmin, xmax, ymin, ymax, nearp, farp );
 		}
 
 		Vector3 cam_target=Matrix3(Vector3(0,0,Math_PI*2*(i/4.0))).xform(Vector3(0,1,0));

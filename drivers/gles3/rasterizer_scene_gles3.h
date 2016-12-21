@@ -482,7 +482,7 @@ public:
 
 			CameraMatrix camera;
 			Transform transform;
-			float far;
+			float farplane;
 			float split;
 		};
 

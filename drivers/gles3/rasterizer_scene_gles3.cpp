@@ -996,7 +996,7 @@ void RasterizerSceneGLES3::light_instance_set_shadow_transform(RID p_light_insta
 
 	light_instance->shadow_transform[p_pass].camera=p_projection;
 	light_instance->shadow_transform[p_pass].transform=p_transform;
-	light_instance->shadow_transform[p_pass].far=p_far;
+	light_instance->shadow_transform[p_pass].farplane=p_far;
 	light_instance->shadow_transform[p_pass].split=p_split;
 
 }
@@ -4443,7 +4443,7 @@ static _FORCE_INLINE_ Vector3 ImportanceSampleGGX(Vector2 Xi, float Roughness, V
       float a = Roughness * Roughness; // DISNEY'S ROUGHNESS [see Burley'12 siggraph]
 
       // Compute distribution direction
-      float Phi = 2.0f * M_PI * Xi.x;
+      float Phi = 2.0f * Math_PI * Xi.x;
       float CosTheta = Math::sqrt((1.0f - Xi.y) / (1.0f + (a*a - 1.0f) * Xi.y));
       float SinTheta = Math::sqrt((float)Math::abs(1.0f - CosTheta * CosTheta));
 

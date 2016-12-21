@@ -162,8 +162,8 @@ Error ContextGL_Win::initialize() {
 	if (opengl_3_context) {
 
 		int attribs[] = {
-			 WGL_CONTEXT_MAJOR_VERSION_ARB, 3,//we want a 3.1 context
-			 WGL_CONTEXT_MINOR_VERSION_ARB, 2,
+			 WGL_CONTEXT_MAJOR_VERSION_ARB, 3,//we want a 3.3 context
+			 WGL_CONTEXT_MINOR_VERSION_ARB, 3,
 			 //and it shall be forward compatible so that we can only use up to date functionality
 			 WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
 		0}; //zero indicates the end of the array
@@ -182,7 +182,7 @@ Error ContextGL_Win::initialize() {
 		if (!(new_hRC=wglCreateContextAttribsARB(hDC,0, attribs)))
 		{
 			wglDeleteContext(hRC);
-			MessageBox(NULL,"Can't Create An OpenGL 3.1 Rendering Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
+			MessageBox(NULL,"Can't Create An OpenGL 3.3 Rendering Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
 			return ERR_CANT_CREATE;								// Return false
 		}
 		wglMakeCurrent(hDC,NULL);
@@ -191,11 +191,11 @@ Error ContextGL_Win::initialize() {
 
 		if (!wglMakeCurrent(hDC,hRC)) 				// Try To Activate The Rendering Context
 		{
-			MessageBox(NULL,"Can't Activate The GL 3.1 Rendering Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
+			MessageBox(NULL,"Can't Activate The GL 3.3 Rendering Context.","ERROR",MB_OK|MB_ICONEXCLAMATION);
 			return ERR_CANT_CREATE;							// Return FALSE
 		}
 
-		printf("Activated GL 3.1 context");
+		printf("Activated GL 3.3 context");
 	}
 
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)  wglGetProcAddress ("wglSwapIntervalEXT");

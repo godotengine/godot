@@ -133,7 +133,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 
 		} break;
 		case Image::FORMAT_RGB565: {
-#warning TODO: Convert tod 555 if 565 is not supported (GLES3.3-)
+//#warning TODO: Convert tod 555 if 565 is not supported (GLES3.3-)
 			r_gl_internal_format=GL_RGB5;
 			//r_gl_internal_format=GL_RGB565;
 			r_gl_format=GL_RGB;
