@@ -1848,7 +1848,6 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 			run_filename=scene->get_filename();
 		} else {
-			args=run_settings_dialog->get_custom_arguments();
 			current_filename=scene->get_filename();
 		}
 
@@ -1926,6 +1925,8 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 	List<String> breakpoints;
 	editor_data.get_editor_breakpoints(&breakpoints);
+    
+	args = Globals::get_singleton()->get("editor/main_run_args");
 
 	Error error = editor_run.run(run_filename,args,breakpoints,current_filename);
 
@@ -5458,7 +5459,7 @@ EditorNode::EditorNode() {
 
 	editor_import_export->load_config();
 
-	GLOBAL_DEF("editor/main_run_args","$exec -path $path -scene $scene $main_scene");
+	GLOBAL_DEF("editor/main_run_args","$scene");
 
 	ObjectTypeDB::set_type_enabled("CollisionShape",true);
 	ObjectTypeDB::set_type_enabled("CollisionShape2D",true);
