@@ -4610,7 +4610,17 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		}
 	}
 
-	fragment_globals+=light_globals; //both fragment anyway
+	//light and fragment are both fragment so put their globals together
+
+	Vector<String> light_globals_lines=light_globals.split("\n");
+	String* line=light_globals_lines.ptr();
+	for (int i=0;i<light_globals_lines.size();i++,line++) {
+		//avoid redefinition of uniforms if the same is used both at fragment and light
+		if (line->begins_with("uniform ") && line->is_subsequence_of(fragment_globals)) {
+			continue;
+		}
+		fragment_globals+=*line;
+	}
 
 
 	//print_line("compiled fragment: "+fragment_code);
