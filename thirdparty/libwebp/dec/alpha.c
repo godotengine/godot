@@ -67,7 +67,7 @@ static int ALPHInit(ALPHDecoder* const dec, const uint8_t* data,
   }
 
   dec->method_ = (data[0] >> 0) & 0x03;
-  dec->filter_ = (data[0] >> 2) & 0x03;
+  dec->filter_ = (WEBP_FILTER_TYPE)((data[0] >> 2) & 0x03);
   dec->pre_processing_ = (data[0] >> 4) & 0x03;
   rsrv = (data[0] >> 6) & 0x03;
   if (dec->method_ < ALPHA_NO_COMPRESSION ||

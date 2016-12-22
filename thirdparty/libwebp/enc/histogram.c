@@ -592,8 +592,8 @@ static int HistoQueueInit(HistoQueue* const histo_queue, const int max_index) {
   histo_queue->max_size = max_index * max_index;
   // We allocate max_size + 1 because the last element at index "size" is
   // used as temporary data (and it could be up to max_size).
-  histo_queue->queue = WebPSafeMalloc(histo_queue->max_size + 1,
-                                      sizeof(*histo_queue->queue));
+  histo_queue->queue = (HistogramPair*)WebPSafeMalloc(
+      histo_queue->max_size + 1, sizeof(*histo_queue->queue));
   return histo_queue->queue != NULL;
 }
 
@@ -659,7 +659,8 @@ static int HistogramCombineGreedy(VP8LHistogramSet* const image_histo) {
   int i, j;
   VP8LHistogram** const histograms = image_histo->histograms;
   // Indexes of remaining histograms.
-  int* const clusters = WebPSafeMalloc(image_histo_size, sizeof(*clusters));
+  int* const clusters =
+      (int*)WebPSafeMalloc(image_histo_size, sizeof(*clusters));
   // Priority queue of histogram pairs.
   HistoQueue histo_queue;
 

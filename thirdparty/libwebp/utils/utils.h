@@ -20,6 +20,7 @@
 #endif
 
 #include <assert.h>
+#include <limits.h>
 
 #include "../dsp/dsp.h"
 #include "../webp/types.h"
@@ -32,7 +33,14 @@ extern "C" {
 // Memory allocation
 
 // This is the maximum memory amount that libwebp will ever try to allocate.
-#define WEBP_MAX_ALLOCABLE_MEMORY (1ULL << 40)
+#ifndef WEBP_MAX_ALLOCABLE_MEMORY
+#if SIZE_MAX > (1ULL << 34)
+#define WEBP_MAX_ALLOCABLE_MEMORY (1ULL << 34)
+#else
+// For 32-bit targets keep this below INT_MAX to avoid valgrind warnings.
+#define WEBP_MAX_ALLOCABLE_MEMORY ((1ULL << 31) - (1 << 16))
+#endif
+#endif  // WEBP_MAX_ALLOCABLE_MEMORY
 
 // size-checking safe malloc/calloc: verify that the requested size is not too
 // large, or return NULL. You don't need to call these for constructs like

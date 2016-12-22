@@ -173,10 +173,10 @@ void WebPRescalerExportRow(WebPRescaler* const wrk) {
       WebPRescalerExportRowExpand(wrk);
     } else if (wrk->fxy_scale) {
       WebPRescalerExportRowShrink(wrk);
-    } else {  // very special case for src = dst = 1x1
+    } else {  // special case
       int i;
+      assert(wrk->src_height == wrk->dst_height && wrk->x_add == 1);
       assert(wrk->src_width == 1 && wrk->dst_width <= 2);
-      assert(wrk->src_height == 1 && wrk->dst_height == 1);
       for (i = 0; i < wrk->num_channels * wrk->dst_width; ++i) {
         wrk->dst[i] = wrk->irow[i];
         wrk->irow[i] = 0;
