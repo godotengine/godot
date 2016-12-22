@@ -175,8 +175,12 @@ static int CheckSizeArgumentsOverflow(uint64_t nmemb, size_t size) {
   }
 #endif
 #if defined(MALLOC_LIMIT)
-  if (mem_limit > 0 && total_mem + total_size >= mem_limit) {
-    return 0;   // fake fail!
+  if (mem_limit > 0) {
+    const uint64_t new_total_mem = (uint64_t)total_mem + total_size;
+    if (new_total_mem != (size_t)new_total_mem ||
+        new_total_mem > mem_limit) {
+      return 0;   // fake fail!
+    }
   }
 #endif
 

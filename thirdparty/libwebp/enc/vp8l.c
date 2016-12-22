@@ -34,8 +34,8 @@
 // Palette reordering for smaller sum of deltas (and for smaller storage).
 
 static int PaletteCompareColorsForQsort(const void* p1, const void* p2) {
-  const uint32_t a = WebPMemToUint32(p1);
-  const uint32_t b = WebPMemToUint32(p2);
+  const uint32_t a = WebPMemToUint32((uint8_t*)p1);
+  const uint32_t b = WebPMemToUint32((uint8_t*)p2);
   assert(a != b);
   return (a < b) ? -1 : 1;
 }
@@ -224,9 +224,8 @@ static int AnalyzeEntropy(const uint32_t* argb,
     {
       double entropy_comp[kHistoTotal];
       double entropy[kNumEntropyIx];
-      EntropyIx k;
-      EntropyIx last_mode_to_analyze =
-          use_palette ? kPalette : kSpatialSubGreen;
+      int k;
+      int last_mode_to_analyze = use_palette ? kPalette : kSpatialSubGreen;
       int j;
       // Let's add one zero to the predicted histograms. The zeros are removed
       // too efficiently by the pix_diff == 0 comparison, at least one of the
@@ -263,7 +262,7 @@ static int AnalyzeEntropy(const uint32_t* argb,
       *min_entropy_ix = kDirect;
       for (k = kDirect + 1; k <= last_mode_to_analyze; ++k) {
         if (entropy[*min_entropy_ix] > entropy[k]) {
-          *min_entropy_ix = k;
+          *min_entropy_ix = (EntropyIx)k;
         }
       }
       *red_and_blue_always_zero = 1;

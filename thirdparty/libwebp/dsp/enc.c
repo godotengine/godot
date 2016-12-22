@@ -335,7 +335,7 @@ static void Intra16Preds(uint8_t* dst,
 // luma 4x4 prediction
 
 #define DST(x, y) dst[(x) + (y) * BPS]
-#define AVG3(a, b, c) (((a) + 2 * (b) + (c) + 2) >> 2)
+#define AVG3(a, b, c) ((uint8_t)(((a) + 2 * (b) + (c) + 2) >> 2))
 #define AVG2(a, b) (((a) + (b) + 1) >> 1)
 
 static void VE4(uint8_t* dst, const uint8_t* top) {    // vertical
