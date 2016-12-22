@@ -53,12 +53,35 @@ DVector<int> GIProbeData::get_dynamic_data() const{
 	return VS::get_singleton()->gi_probe_get_dynamic_data(probe);
 }
 
-void GIProbeData::set_dynamic_range(float p_range){
+void GIProbeData::set_dynamic_range(int p_range){
 
 	VS::get_singleton()->gi_probe_set_dynamic_range(probe,p_range);
 
 }
-float GIProbeData::get_dynamic_range() const{
+
+void GIProbeData::set_energy(float p_range) {
+
+	VS::get_singleton()->gi_probe_set_energy(probe,p_range);
+}
+
+float GIProbeData::get_energy() const{
+
+	return VS::get_singleton()->gi_probe_get_energy(probe);
+
+}
+
+void GIProbeData::set_interior(bool p_enable) {
+
+	VS::get_singleton()->gi_probe_set_interior(probe,p_enable);
+
+}
+
+bool GIProbeData::is_interior() const{
+
+	return VS::get_singleton()->gi_probe_is_interior(probe);
+}
+
+int GIProbeData::get_dynamic_range() const{
 
 
 	return VS::get_singleton()->gi_probe_get_dynamic_range(probe);
@@ -154,14 +177,41 @@ Vector3 GIProbe::get_extents() const {
 	return extents;
 }
 
-void GIProbe::set_dynamic_range(float p_dynamic_range) {
+void GIProbe::set_dynamic_range(int p_dynamic_range) {
 
 	dynamic_range=p_dynamic_range;
 }
-float GIProbe::get_dynamic_range() const {
+int GIProbe::get_dynamic_range() const {
 
 	return dynamic_range;
 }
+
+void GIProbe::set_energy(float p_energy) {
+
+	energy=p_energy;
+	if (probe_data.is_valid()) {
+		probe_data->set_energy(energy);
+	}
+}
+float GIProbe::get_energy() const {
+
+	return energy;
+}
+
+void GIProbe::set_interior(bool p_enable) {
+
+	interior=p_enable;
+	if (probe_data.is_valid()) {
+		probe_data->set_interior(p_enable);
+	}
+}
+
+bool GIProbe::is_interior() const {
+
+	return interior;
+}
+
+
 
 #include "math.h"
 
@@ -384,6 +434,8 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 
 		Color albedo_accum;
 		Color emission_accum;
+		Vector3 normal_accum;
+
 		float alpha=0.0;
 
 		//map to a grid average in the best axis for this face
@@ -441,6 +493,9 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 				emission_accum.r+=p_material.emission[ofs].r;
 				emission_accum.g+=p_material.emission[ofs].g;
 				emission_accum.b+=p_material.emission[ofs].b;
+
+				normal_accum+=normal;
+
 				alpha+=1.0;
 
 			}
@@ -471,6 +526,7 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 			emission_accum.g=p_material.emission[ofs].g*alpha;
 			emission_accum.b=p_material.emission[ofs].b*alpha;
 
+			normal_accum*=alpha;
 
 
 		} else {
@@ -486,6 +542,9 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 			emission_accum.r*=accdiv;
 			emission_accum.g*=accdiv;
 			emission_accum.b*=accdiv;
+
+			normal_accum*=accdiv;
+
 		}
 
 		//put this temporarily here, corrected in a later step
@@ -495,6 +554,9 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 		p_baker->bake_cells[p_idx].emission[0]+=emission_accum.r;
 		p_baker->bake_cells[p_idx].emission[1]+=emission_accum.g;
 		p_baker->bake_cells[p_idx].emission[2]+=emission_accum.b;
+		p_baker->bake_cells[p_idx].normal[0]+=normal_accum.x;
+		p_baker->bake_cells[p_idx].normal[1]+=normal_accum.y;
+		p_baker->bake_cells[p_idx].normal[2]+=normal_accum.z;
 		p_baker->bake_cells[p_idx].alpha+=alpha;
 
 		static const Vector3 side_normals[6]={
@@ -506,11 +568,12 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 			Vector3( 0, 0, 1),
 		};
 
+		/*
 		for(int i=0;i<6;i++) {
 			if (normal.dot(side_normals[i])>CMP_EPSILON) {
 				p_baker->bake_cells[p_idx].used_sides|=(1<<i);
 			}
-		}
+		}*/
 
 
 	} else {
@@ -589,8 +652,27 @@ void GIProbe::_fixup_plot(int p_idx, int p_level,int p_x,int p_y, int p_z,Baker 
 		p_baker->bake_cells[p_idx].emission[1]/=alpha;
 		p_baker->bake_cells[p_idx].emission[2]/=alpha;
 
+		p_baker->bake_cells[p_idx].normal[0]/=alpha;
+		p_baker->bake_cells[p_idx].normal[1]/=alpha;
+		p_baker->bake_cells[p_idx].normal[2]/=alpha;
+
+		Vector3 n(p_baker->bake_cells[p_idx].normal[0],p_baker->bake_cells[p_idx].normal[1],p_baker->bake_cells[p_idx].normal[2]);
+		if (n.length()<0.01) {
+			//too much fight over normal, zero it
+			p_baker->bake_cells[p_idx].normal[0]=0;
+			p_baker->bake_cells[p_idx].normal[1]=0;
+			p_baker->bake_cells[p_idx].normal[2]=0;
+		} else {
+			n.normalize();
+			p_baker->bake_cells[p_idx].normal[0]=n.x;
+			p_baker->bake_cells[p_idx].normal[1]=n.y;
+			p_baker->bake_cells[p_idx].normal[2]=n.z;
+		}
+
+
 		p_baker->bake_cells[p_idx].alpha=1.0;
 
+		/*
 		//remove neighbours from used sides
 
 		for(int n=0;n<6;n++) {
@@ -653,6 +735,7 @@ void GIProbe::_fixup_plot(int p_idx, int p_level,int p_x,int p_y, int p_z,Baker 
 				p_baker->bake_cells[p_idx].used_sides&=~(1<<uint32_t(n));
 			}
 		}
+		*/
 	} else {
 
 
@@ -687,6 +770,9 @@ void GIProbe::_fixup_plot(int p_idx, int p_level,int p_x,int p_y, int p_z,Baker 
 		p_baker->bake_cells[p_idx].emission[0]=0;
 		p_baker->bake_cells[p_idx].emission[1]=0;
 		p_baker->bake_cells[p_idx].emission[2]=0;
+		p_baker->bake_cells[p_idx].normal[0]=0;
+		p_baker->bake_cells[p_idx].normal[1]=0;
+		p_baker->bake_cells[p_idx].normal[2]=0;
 		p_baker->bake_cells[p_idx].albedo[0]=0;
 		p_baker->bake_cells[p_idx].albedo[1]=0;
 		p_baker->bake_cells[p_idx].albedo[2]=0;
@@ -1024,7 +1110,21 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug){
 				w32[ofs++]=em;
 			}
 
-			w32[ofs++]=baker.bake_cells[i].used_sides;
+			//w32[ofs++]=baker.bake_cells[i].used_sides;
+			{ //normal
+
+				Vector3 n(baker.bake_cells[i].normal[0],baker.bake_cells[i].normal[1],baker.bake_cells[i].normal[2]);
+				n=n*Vector3(0.5,0.5,0.5)+Vector3(0.5,0.5,0.5);
+				uint32_t norm=0;
+
+
+				norm|=uint32_t(CLAMP( n.x*255.0, 0, 255))<<16;
+				norm|=uint32_t(CLAMP( n.y*255.0, 0, 255))<<8;
+				norm|=uint32_t(CLAMP( n.z*255.0, 0, 255))<<0;
+
+				w32[ofs++]=norm;
+			}
+
 			w32[ofs++]=uint32_t(baker.bake_cells[i].alpha*65535.0);
 
 		}
@@ -1036,6 +1136,9 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug){
 	probe_data->set_bounds(AABB(-extents,extents*2.0));
 	probe_data->set_cell_size(baker.po2_bounds.size[longest_axis]/baker.axis_cell_size[longest_axis]);
 	probe_data->set_dynamic_data(data);
+	probe_data->set_dynamic_range(dynamic_range);
+	probe_data->set_energy(energy);
+	probe_data->set_interior(interior);
 	probe_data->set_to_cell_xform(baker.to_cell_space);
 
 	set_probe_data(probe_data);
@@ -1212,13 +1315,21 @@ void GIProbe::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_dynamic_range","max"),&GIProbe::set_dynamic_range);
 	ObjectTypeDB::bind_method(_MD("get_dynamic_range"),&GIProbe::get_dynamic_range);
 
+	ObjectTypeDB::bind_method(_MD("set_energy","max"),&GIProbe::set_energy);
+	ObjectTypeDB::bind_method(_MD("get_energy"),&GIProbe::get_energy);
+
+	ObjectTypeDB::bind_method(_MD("set_interior","enable"),&GIProbe::set_interior);
+	ObjectTypeDB::bind_method(_MD("is_interior"),&GIProbe::is_interior);
+
 	ObjectTypeDB::bind_method(_MD("bake","from_node","create_visual_debug"),&GIProbe::bake,DEFVAL(Variant()),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("debug_bake"),&GIProbe::_debug_bake);
 	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("debug_bake"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"subdiv",PROPERTY_HINT_ENUM,"64,128,256,512"),_SCS("set_subdiv"),_SCS("get_subdiv"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"extents"),_SCS("set_extents"),_SCS("get_extents"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"dynamic_range",PROPERTY_HINT_RANGE,"0,8,0.01"),_SCS("set_dynamic_range"),_SCS("get_dynamic_range"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"dynamic_range",PROPERTY_HINT_RANGE,"1,16,1"),_SCS("set_dynamic_range"),_SCS("get_dynamic_range"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_energy"),_SCS("get_energy"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"interior"),_SCS("set_interior"),_SCS("is_interior"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"data",PROPERTY_HINT_RESOURCE_TYPE,"GIProbeData"),_SCS("set_probe_data"),_SCS("get_probe_data"));
 
 
@@ -1232,10 +1343,12 @@ void GIProbe::_bind_methods() {
 GIProbe::GIProbe() {
 
 	subdiv=SUBDIV_128;
-	dynamic_range=1.0;
+	dynamic_range=4;
+	energy=1.0;
 	extents=Vector3(10,10,10);
 	color_scan_cell_width=4;
 	bake_texture_size=128;
+	interior=false;
 
 	gi_probe = VS::get_singleton()->gi_probe_create();
 

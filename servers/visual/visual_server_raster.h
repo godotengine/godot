@@ -816,8 +816,14 @@ public:
 	BIND2(gi_probe_set_to_cell_xform,RID,const Transform&)
 	BIND1RC(Transform,gi_probe_get_to_cell_xform,RID)
 
-	BIND2(gi_probe_set_dynamic_range,RID,float)
-	BIND1RC(float,gi_probe_get_dynamic_range,RID)
+	BIND2(gi_probe_set_dynamic_range,RID,int)
+	BIND1RC(int,gi_probe_get_dynamic_range,RID)
+
+	BIND2(gi_probe_set_energy,RID,float)
+	BIND1RC(float,gi_probe_get_energy,RID)
+
+	BIND2(gi_probe_set_interior,RID,bool)
+	BIND1RC(bool,gi_probe_is_interior,RID)
 
 	BIND2(gi_probe_set_dynamic_data,RID,const DVector<int>& )
 	BIND1RC( DVector<int>,gi_probe_get_dynamic_data,RID)

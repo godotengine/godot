@@ -531,6 +531,7 @@ public:
 
 	struct GIProbeInstance : public RID_Data {
 		RID data;
+		RasterizerStorageGLES3::GIProbe *probe;
 		GLuint tex_cache;
 		Vector3 cell_size_cache;
 		Vector3 bounds;
@@ -542,7 +543,7 @@ public:
 	mutable RID_Owner<GIProbeInstance> gi_probe_instance_owner;
 
 	virtual RID gi_probe_instance_create();
-	virtual void gi_probe_instance_set_light_data(RID p_probe,RID p_data);
+	virtual void gi_probe_instance_set_light_data(RID p_probe,RID p_base,RID p_data);
 	virtual void gi_probe_instance_set_transform_to_data(RID p_probe,const Transform& p_xform);
 	virtual void gi_probe_instance_set_bounds(RID p_probe,const Vector3& p_bounds);
 

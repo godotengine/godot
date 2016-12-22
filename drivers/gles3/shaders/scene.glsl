@@ -845,14 +845,18 @@ uniform mediump sampler3D gi_probe1; //texunit:-6
 uniform highp mat4 gi_probe_xform1;
 uniform highp vec3 gi_probe_bounds1;
 uniform highp vec3 gi_probe_cell_size1;
+uniform highp float gi_probe_multiplier1;
+uniform bool gi_probe_blend_ambient1;
 
 uniform mediump sampler3D gi_probe2; //texunit:-7
 uniform highp mat4 gi_probe_xform2;
 uniform highp vec3 gi_probe_bounds2;
 uniform highp vec3 gi_probe_cell_size2;
+uniform highp float gi_probe_multiplier2;
 uniform bool gi_probe2_enabled;
+uniform bool gi_probe_blend_ambient2;
 
-vec3 voxel_cone_trace(sampler3D probe, vec3 cell_size, vec3 pos, vec3 direction, float tan_half_angle, float max_distance) {
+vec3 voxel_cone_trace(sampler3D probe, vec3 cell_size, vec3 pos, vec3 ambient, bool blend_ambient, vec3 direction, float tan_half_angle, float max_distance) {
 
 
 	float dist = dot(direction,mix(vec3(-1.0),vec3(1.0),greaterThan(direction,vec3(0.0))))*2.0;
@@ -868,10 +872,12 @@ vec3 voxel_cone_trace(sampler3D probe, vec3 cell_size, vec3 pos, vec3 direction,
 		dist += diameter * 0.5;
 	}
 
+	color.rgb = mix(color.rgb,mix(ambient,color.rgb,alpha),blend_ambient);
+
 	return color.rgb;
 }
 
-void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_size,vec3 pos, mat3 normal_mtx,vec3 ref_vec, float roughness, out vec4 out_spec, out vec4 out_diff) {
+void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_size,vec3 pos, vec3 ambient, vec3 environment, bool blend_ambient,float multiplier, mat3 normal_mtx,vec3 ref_vec, float roughness, out vec4 out_spec, out vec4 out_diff) {
 
 
 
@@ -928,15 +934,19 @@ void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_s
 	for(int i=0;i<MAX_CONE_DIRS;i++) {
 
 		vec3 dir = normalize( (probe_xform * vec4(pos + normal_mtx * cone_dirs[i],1.0)).xyz - probe_pos);
-		light+=cone_weights[i] * voxel_cone_trace(probe,cell_size,probe_pos,dir,cone_angle_tan,max_distance);
+		light+=cone_weights[i] * voxel_cone_trace(probe,cell_size,probe_pos,ambient,blend_ambient,dir,cone_angle_tan,max_distance);
 
 	}
+
+	light*=multiplier;
 
 	out_diff = vec4(light*blend,blend);
 
 	//irradiance
 
-	vec3 irr_light =  voxel_cone_trace(probe,cell_size,probe_pos,ref_vec,tan(roughness * 0.5 * M_PI) ,max_distance);
+	vec3 irr_light =  voxel_cone_trace(probe,cell_size,probe_pos,environment,blend_ambient,ref_vec,tan(roughness * 0.5 * M_PI) ,max_distance);
+
+	irr_light *= multiplier;
 	//irr_light=vec3(0.0);
 
 	out_spec = vec4(irr_light*blend,blend);
@@ -958,11 +968,18 @@ void gi_probes_compute(vec3 pos, vec3 normal, float roughness, vec3 specular, in
 	vec4 diff_accum = vec4(0.0);
 	vec4 spec_accum = vec4(0.0);
 
-	gi_probe_compute(gi_probe1,gi_probe_xform1,gi_probe_bounds1,gi_probe_cell_size1,pos,normal_mat,ref_vec,roughness,spec_accum,diff_accum);
+	vec3 ambient = out_ambient;
+	out_ambient = vec3(0.0);
+
+	vec3 environment = out_specular;
+
+	out_specular = vec3(0.0);
+
+	gi_probe_compute(gi_probe1,gi_probe_xform1,gi_probe_bounds1,gi_probe_cell_size1,pos,ambient,environment,gi_probe_blend_ambient1,gi_probe_multiplier1,normal_mat,ref_vec,roughness,spec_accum,diff_accum);
 
 	if (gi_probe2_enabled) {
 
-		gi_probe_compute(gi_probe2,gi_probe_xform2,gi_probe_bounds2,gi_probe_cell_size2,pos,normal_mat,ref_vec,roughness,spec_accum,diff_accum);
+		gi_probe_compute(gi_probe2,gi_probe_xform2,gi_probe_bounds2,gi_probe_cell_size2,pos,ambient,environment,gi_probe_blend_ambient2,gi_probe_multiplier2,normal_mat,ref_vec,roughness,spec_accum,diff_accum);
 	}
 
 	if (diff_accum.a>0.0) {

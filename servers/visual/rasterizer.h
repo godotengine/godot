@@ -149,7 +149,7 @@ public:
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance)=0;
 
 	virtual RID gi_probe_instance_create()=0;
-	virtual void gi_probe_instance_set_light_data(RID p_probe,RID p_data)=0;
+	virtual void gi_probe_instance_set_light_data(RID p_probe,RID p_base,RID p_data)=0;
 	virtual void gi_probe_instance_set_transform_to_data(RID p_probe,const Transform& p_xform)=0;
 	virtual void gi_probe_instance_set_bounds(RID p_probe,const Vector3& p_bounds)=0;
 
@@ -418,9 +418,14 @@ public:
 	virtual void gi_probe_set_dynamic_data(RID p_probe,const DVector<int>& p_data)=0;
 	virtual DVector<int> gi_probe_get_dynamic_data(RID p_probe) const=0;
 
-	virtual void gi_probe_set_dynamic_range(RID p_probe,float p_range)=0;
-	virtual float gi_probe_get_dynamic_range(RID p_probe) const=0;
+	virtual void gi_probe_set_dynamic_range(RID p_probe,int p_range)=0;
+	virtual int gi_probe_get_dynamic_range(RID p_probe) const=0;
 
+	virtual void gi_probe_set_energy(RID p_probe,float p_range)=0;
+	virtual float gi_probe_get_energy(RID p_probe) const=0;
+
+	virtual void gi_probe_set_interior(RID p_probe,bool p_enable)=0;
+	virtual bool gi_probe_is_interior(RID p_probe) const=0;
 
 	virtual void gi_probe_set_static_data(RID p_gi_probe,const DVector<uint8_t>& p_data,VS::GIProbeDataFormat p_format,int p_width,int p_height,int p_depth)=0;
 	virtual DVector<uint8_t> gi_probe_get_static_data(RID p_gi_probe) const=0;

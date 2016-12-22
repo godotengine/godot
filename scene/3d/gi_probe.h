@@ -31,8 +31,14 @@ public:
 	void set_dynamic_data(const DVector<int>& p_data);
 	DVector<int> get_dynamic_data() const;
 
-	void set_dynamic_range(float p_range);
-	float get_dynamic_range() const;
+	void set_dynamic_range(int p_range);
+	int get_dynamic_range() const;
+
+	void set_energy(float p_range);
+	float get_energy() const;
+
+	void set_interior(bool p_enable);
+	bool is_interior() const;
 
 	void set_static_data(const DVector<uint8_t>& p_data,DataFormat p_format,int p_width,int p_height,int p_depth);
 	DVector<uint8_t> get_static_data() const;
@@ -73,6 +79,7 @@ private:
 			uint32_t childs[8];
 			float albedo[3]; //albedo in RGB24
 			float emission[3]; //accumulated light in 16:16 fixed point (needs to be integer for moving lights fast)
+			float normal[3];
 			uint32_t used_sides;
 			float alpha; //used for upsampling
 
@@ -84,6 +91,7 @@ private:
 				for(int i=0;i<3;i++) {
 					emission[i]=0;
 					albedo[i]=0;
+					normal[i]=0;
 				}
 				alpha=0;
 				used_sides=0;
@@ -126,7 +134,9 @@ private:
 
 	Subdiv subdiv;
 	Vector3 extents;
-	float dynamic_range;
+	int dynamic_range;
+	float energy;
+	bool interior;
 
 	int color_scan_cell_width;
 	int bake_texture_size;
@@ -157,8 +167,15 @@ public:
 	void set_extents(const Vector3& p_extents);
 	Vector3 get_extents() const;
 
-	void set_dynamic_range(float p_dynamic_range);
-	float get_dynamic_range() const;
+	void set_dynamic_range(int p_dynamic_range);
+	int get_dynamic_range() const;
+
+	void set_energy(float p_energy);
+	float get_energy() const;
+
+	void set_interior(bool p_enable);
+	bool is_interior() const;
+
 
 	void bake(Node *p_from_node=NULL,bool p_create_visual_debug=false);
 

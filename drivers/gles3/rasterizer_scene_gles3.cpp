@@ -100,6 +100,8 @@ void RasterizerSceneGLES3::shadow_atlas_set_size(RID p_atlas,int p_size){
 
 		shadow_atlas->depth=0;
 		shadow_atlas->fbo=0;
+
+		print_line("erasing atlas");
 	}
 	for(int i=0;i<4;i++) {
 		//clear subdivisions
@@ -130,19 +132,18 @@ void RasterizerSceneGLES3::shadow_atlas_set_size(RID p_atlas,int p_size){
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadow_atlas->size, shadow_atlas->size, 0,
 			     GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 
-		//interpola nearest (though nvidia can improve this)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		// Remove artifact on the edges of the shadowmap
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		// We'll use a depth texture to store the depths in the shadow map
-		// Attach the depth texture to FBO depth attachment point
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
 				       GL_TEXTURE_2D, shadow_atlas->depth, 0);
+
+		glViewport(0,0,shadow_atlas->size,shadow_atlas->size);
+		glClearDepth(0);
+		glClear(GL_DEPTH_BUFFER_BIT);
+
 	}
 }
 
@@ -523,12 +524,19 @@ void RasterizerSceneGLES3::reflection_atlas_set_size(RID p_ref_atlas,int p_size)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 5);
+
 		mmsize=reflection_atlas->size;
 
 		for(int i=0;i<6;i++) {
 			glGenFramebuffers(1, &reflection_atlas->fbo[i]);
 			glBindFramebuffer(GL_FRAMEBUFFER, reflection_atlas->fbo[i]);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,  reflection_atlas->color, i);
+
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			ERR_CONTINUE(status!=GL_FRAMEBUFFER_COMPLETE);
+
 			glDisable(GL_SCISSOR_TEST);
 			glViewport(0,0,mmsize,mmsize);
 			glClearColor(0,0,0,0);
@@ -538,8 +546,6 @@ void RasterizerSceneGLES3::reflection_atlas_set_size(RID p_ref_atlas,int p_size)
 
 		}
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 5);
 
 	}
 
@@ -1020,11 +1026,12 @@ RID RasterizerSceneGLES3::gi_probe_instance_create() {
 	return gi_probe_instance_owner.make_rid(gipi);
 }
 
-void RasterizerSceneGLES3::gi_probe_instance_set_light_data(RID p_probe,RID p_data) {
+void RasterizerSceneGLES3::gi_probe_instance_set_light_data(RID p_probe, RID p_base, RID p_data) {
 
 	GIProbeInstance *gipi = gi_probe_instance_owner.getornull(p_probe);
 	ERR_FAIL_COND(!gipi);
 	gipi->data=p_data;
+	gipi->probe=storage->gi_probe_owner.getornull(p_base);
 	if (p_data.is_valid()) {
 		RasterizerStorageGLES3::GIProbeData *gipd = storage->gi_probe_data_owner.getornull(p_data);
 		ERR_FAIL_COND(!gipd);
@@ -1571,6 +1578,8 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e,const Transform& 
 		glBindTexture(GL_TEXTURE_3D,gipi->tex_cache);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_XFORM1, gipi->transform_to_data * p_view_transform);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS1, gipi->bounds);
+		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_MULTIPLIER1, gipi->probe?gipi->probe->dynamic_range*gipi->probe->energy:0.0);
+		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BLEND_AMBIENT1, gipi->probe?!gipi->probe->interior:false);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_CELL_SIZE1, gipi->cell_size_cache);
 		if (gi_probe_count>1) {
 
@@ -1581,7 +1590,8 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e,const Transform& 
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_XFORM2, gipi2->transform_to_data * p_view_transform);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS2, gipi2->bounds);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_CELL_SIZE2, gipi2->cell_size_cache);
-
+			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_MULTIPLIER2, gipi2->probe?gipi2->probe->dynamic_range*gipi2->probe->energy:0.0);
+			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BLEND_AMBIENT2, gipi2->probe?!gipi2->probe->interior:false);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE2_ENABLED, true );
 		} else {
 
@@ -4209,7 +4219,6 @@ void RasterizerSceneGLES3::render_shadow(RID p_light,RID p_shadow_atlas,int p_pa
 		fbo=shadow_atlas->fbo;
 		vp_height=shadow_atlas->size;
 
-
 		uint32_t key = shadow_atlas->shadow_owners[p_light];
 
 		uint32_t quadrant = (key >> ShadowAtlas::QUADRANT_SHIFT)&0x3;
@@ -4299,24 +4308,22 @@ void RasterizerSceneGLES3::render_shadow(RID p_light,RID p_shadow_atlas,int p_pa
 	render_list.sort_by_depth(false); //shadow is front to back for performance
 
 	glDepthMask(true);
-	glColorMask(0,0,0,0);
+	glColorMask(1,1,1,1);
 	glDisable(GL_BLEND);
 	glDisable(GL_DITHER);
 	glEnable(GL_DEPTH_TEST);
-
 	glBindFramebuffer(GL_FRAMEBUFFER,fbo);
 
 	if (custom_vp_size) {
 		glViewport(0,0,custom_vp_size,custom_vp_size);
 		glScissor(0,0,custom_vp_size,custom_vp_size);
 
+
 	} else {
 		glViewport(x,y,width,height);
 		glScissor(x,y,width,height);
 	}
 
-	//glViewport(x,vp_height-(height+y),width,height);
-	//glScissor(x,vp_height-(height+y),width,height);
 	glEnable(GL_SCISSOR_TEST);
 	glClearDepth(1.0);
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -4331,7 +4338,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light,RID p_shadow_atlas,int p_pa
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_SHADOW,true);
 
-	_render_list(render_list.elements,render_list.element_count,light_transform,light_projection,NULL,!flip_facing,false,true,false,false);
+	_render_list(render_list.elements,render_list.element_count,light_transform,light_projection,0,!flip_facing,false,true,false,false);
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_SHADOW,false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_SHADOW_DUAL_PARABOLOID,false);

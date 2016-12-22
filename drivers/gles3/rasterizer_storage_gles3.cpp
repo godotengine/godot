@@ -4695,6 +4695,8 @@ RID RasterizerStorageGLES3::gi_probe_create() {
 	gip->data_depth=0;
 	gip->bounds=AABB(Vector3(),Vector3(1,1,1));
 	gip->dynamic_range=1.0;
+	gip->energy=1.0;
+	gip->interior=false;
 	gip->version=1;
 	gip->cell_size=1.0;
 
@@ -4773,7 +4775,7 @@ DVector<int> RasterizerStorageGLES3::gi_probe_get_dynamic_data(RID p_probe) cons
 	return gip->dynamic_data;
 }
 
-void RasterizerStorageGLES3::gi_probe_set_dynamic_range(RID p_probe,float p_range){
+void RasterizerStorageGLES3::gi_probe_set_dynamic_range(RID p_probe,int p_range){
 
 	GIProbe *gip = gi_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!gip);
@@ -4781,12 +4783,47 @@ void RasterizerStorageGLES3::gi_probe_set_dynamic_range(RID p_probe,float p_rang
 	gip->dynamic_range=p_range;
 
 }
-float RasterizerStorageGLES3::gi_probe_get_dynamic_range(RID p_probe) const{
+int RasterizerStorageGLES3::gi_probe_get_dynamic_range(RID p_probe) const{
 
 	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!gip,0);
 
 	return gip->dynamic_range;
+}
+
+void RasterizerStorageGLES3::gi_probe_set_energy(RID p_probe,float p_range){
+
+	GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gip);
+
+	gip->energy=p_range;
+
+}
+
+void RasterizerStorageGLES3::gi_probe_set_interior(RID p_probe,bool p_enable) {
+
+	GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gip);
+
+	gip->interior=p_enable;
+
+}
+
+bool RasterizerStorageGLES3::gi_probe_is_interior(RID p_probe) const{
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,false);
+
+	return gip->interior;
+
+}
+
+float RasterizerStorageGLES3::gi_probe_get_energy(RID p_probe) const{
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,0);
+
+	return gip->energy;
 }
 
 

@@ -1641,6 +1641,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance,const
 							}
 						}
 
+
 						VSG::scene_render->light_instance_set_shadow_transform(light->instance,cm,xform,radius,0,i);
 						VSG::scene_render->render_shadow(light->instance,p_shadow_atlas,i,(RasterizerScene::InstanceBase**)instance_shadow_cull_result,cull_count);
 					}
@@ -2203,10 +2204,10 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform,const Came
 			}
 
 
-
 			bool redraw = VSG::scene_render->shadow_atlas_update_light(p_shadow_atlas,light->instance,coverage,light->last_version);
 
 			if (redraw) {
+				print_line("redraw shadow");
 				//must redraw!
 				_light_instance_update_shadow(ins,p_cam_transform,p_cam_projection,p_cam_orthogonal,p_shadow_atlas,scenario);
 			}
@@ -2407,6 +2408,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 
 		probe->dynamic.probe_data=VSG::storage->gi_probe_dynamic_data_create(header->width,header->height,header->depth);
 
+		probe->dynamic.bake_dynamic_range=VSG::storage->gi_probe_get_dynamic_range(p_instance->base);
 
 		probe->dynamic.mipmaps_3d.clear();
 
@@ -2443,7 +2445,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 
 		probe->dynamic.light_to_cell_xform=cell_to_xform * p_instance->transform.affine_inverse();
 
-		VSG::scene_render->gi_probe_instance_set_light_data(probe->probe_instance,probe->dynamic.probe_data);
+		VSG::scene_render->gi_probe_instance_set_light_data(probe->probe_instance,p_instance->base,probe->dynamic.probe_data);
 		VSG::scene_render->gi_probe_instance_set_transform_to_data(probe->probe_instance,probe->dynamic.light_to_cell_xform);
 
 
@@ -2457,7 +2459,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 		probe->dynamic.enabled=false;
 		probe->invalid=!data.is_valid();
 		if (data.is_valid()) {
-			VSG::scene_render->gi_probe_instance_set_light_data(probe->probe_instance,data);
+			VSG::scene_render->gi_probe_instance_set_light_data(probe->probe_instance,p_instance->base,data);
 		}
 	}
 
@@ -2541,6 +2543,30 @@ uint32_t VisualServerScene::_gi_bake_find_cell(const GIProbeDataCell *cells,int 
 
 }
 
+static float _get_normal_advance(const Vector3& p_normal ) {
+
+	Vector3 normal = p_normal;
+	Vector3 unorm = normal.abs();
+
+	if ( (unorm.x >= unorm.y) && (unorm.x >= unorm.z) ) {
+	    // x code
+	    unorm = normal.x > 0.0 ?  Vector3( 1.0, 0.0, 0.0 ) : Vector3( -1.0, 0.0, 0.0 ) ;
+	} else if ( (unorm.y > unorm.x) && (unorm.y >= unorm.z) ) {
+	    // y code
+	    unorm = normal.y > 0.0 ?  Vector3( 0.0, 1.0, 0.0 ) :  Vector3( 0.0, -1.0, 0.0 ) ;
+	} else if ( (unorm.z > unorm.x) && (unorm.z > unorm.y) ) {
+	    // z code
+	    unorm = normal.z > 0.0 ?  Vector3( 0.0, 0.0, 1.0 ) :  Vector3( 0.0, 0.0, -1.0 ) ;
+	} else {
+	    // oh-no we messed up code
+	    // has to be
+	    unorm = Vector3( 1.0, 0.0, 0.0 );
+	}
+
+	return 1.0/normal.dot(unorm);
+
+}
+
 void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header,const GIProbeDataCell *cells,InstanceGIProbeData::LocalData *local_data,const uint32_t *leaves,int leaf_count, const InstanceGIProbeData::LightCache& light_cache,int sign) {
 
 
@@ -2548,19 +2574,19 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header,con
 	int light_g = int(light_cache.color.g * light_cache.energy * 1024.0)*sign;
 	int light_b = int(light_cache.color.b * light_cache.energy * 1024.0)*sign;
 
+	float limits[3]={float(header->width),float(header->height),float(header->depth)};
+	Plane clip[3];
+	int clip_planes=0;
+
+
+
 	switch(light_cache.type) {
 
 		case VS::LIGHT_DIRECTIONAL: {
 
-			float limits[3]={float(header->width),float(header->height),float(header->depth)};
-			Plane clip[3];
-			int clip_planes=0;
 			float max_len = Vector3(limits[0],limits[1],limits[2]).length()*1.1;
 
 			Vector3 light_axis = -light_cache.transform.basis.get_axis(2).normalized();
-
-			print_line("transform directional, axis: "+light_axis);
-			print_line("limits: "+Vector3(limits[0],limits[1],limits[2]));
 
 			for(int i=0;i<3;i++) {
 
@@ -2578,29 +2604,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header,con
 				clip_planes++;
 			}
 
-			float distance_adv;
-			{
-				Vector3 normal = light_axis;
-				Vector3 unorm = normal.abs();
-
-				if ( (unorm.x >= unorm.y) && (unorm.x >= unorm.z) ) {
-				    // x code
-				    unorm = normal.x > 0.0 ?  Vector3( 1.0, 0.0, 0.0 ) : Vector3( -1.0, 0.0, 0.0 ) ;
-				} else if ( (unorm.y > unorm.x) && (unorm.y >= unorm.z) ) {
-				    // y code
-				    unorm = normal.y > 0.0 ?  Vector3( 0.0, 1.0, 0.0 ) :  Vector3( 0.0, -1.0, 0.0 ) ;
-				} else if ( (unorm.z > unorm.x) && (unorm.z > unorm.y) ) {
-				    // z code
-				    unorm = normal.z > 0.0 ?  Vector3( 0.0, 0.0, 1.0 ) :  Vector3( 0.0, 0.0, -1.0 ) ;
-				} else {
-				    // oh-no we messed up code
-				    // has to be
-				    unorm = Vector3( 1.0, 0.0, 0.0 );
-				}
-
-				distance_adv = 1.0/normal.dot(unorm);
-
-			}
+			float distance_adv = _get_normal_advance(light_axis);
 
 			int success_count=0;
 
@@ -2614,7 +2618,18 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header,con
 				InstanceGIProbeData::LocalData *light = &local_data[idx];
 
 				Vector3 to(light->pos[0]+0.5,light->pos[1]+0.5,light->pos[2]+0.5);
+				Vector3 norm (
+							(((cells[idx].normal>>16)&0xFF)/255.0)*2.0-1.0,
+							(((cells[idx].normal>>8)&0xFF)/255.0)*2.0-1.0,
+							(((cells[idx].normal>>0)&0xFF)/255.0)*2.0-1.0
+							 );
 
+
+				float att = norm.dot(-light_axis);
+				if (att<0.001) {
+					//not lighting towards this
+					continue;
+				}
 
 				Vector3 from = to - max_len * light_axis;
 
@@ -2642,14 +2657,128 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header,con
 
 				if (result==idx) {
 					//cell hit itself! hooray!
-					light->energy[0]+=(uint32_t(light_r)*((cell->albedo>>16)&0xFF))>>8;
-					light->energy[1]+=(uint32_t(light_g)*((cell->albedo>>8)&0xFF))>>8;
-					light->energy[2]+=(uint32_t(light_b)*((cell->albedo)&0xFF))>>8;
-					success_count++;
+					light->energy[0]+=int32_t(light_r*att*((cell->albedo>>16)&0xFF)/255.0);
+					light->energy[1]+=int32_t(light_g*att*((cell->albedo>>8)&0xFF)/255.0);
+					light->energy[2]+=int32_t(light_b*att*((cell->albedo)&0xFF)/255.0);
+				success_count++;
 				}
 			}
 			print_line("BAKE TIME: "+rtos((OS::get_singleton()->get_ticks_usec()-us)/1000000.0));
 			print_line("valid cells: "+itos(success_count));
+
+
+		} break;
+		case VS::LIGHT_OMNI:
+		case VS::LIGHT_SPOT: {
+
+
+			uint64_t us = OS::get_singleton()->get_ticks_usec();
+
+			Vector3 light_pos = light_cache.transform.origin;
+			Vector3 spot_axis = -light_cache.transform.basis.get_axis(2).normalized();
+
+
+			float local_radius = light_cache.radius * light_cache.transform.basis.get_axis(2).length();
+
+			for(int i=0;i<leaf_count;i++) {
+
+				uint32_t idx = leaves[i];
+
+				const GIProbeDataCell *cell = &cells[idx];
+				InstanceGIProbeData::LocalData *light = &local_data[idx];
+
+				Vector3 to(light->pos[0]+0.5,light->pos[1]+0.5,light->pos[2]+0.5);
+				Vector3 norm (
+							(((cells[idx].normal>>16)&0xFF)/255.0)*2.0-1.0,
+							(((cells[idx].normal>>8)&0xFF)/255.0)*2.0-1.0,
+							(((cells[idx].normal>>0)&0xFF)/255.0)*2.0-1.0
+							 );
+
+				Vector3 light_axis = (to - light_pos).normalized();
+				float distance_adv = _get_normal_advance(light_axis);
+
+				float att = norm.dot(-light_axis);
+				if (att<0.001) {
+					//not lighting towards this
+					continue;
+				}
+
+				{
+					float d = light_pos.distance_to(to);
+					if (d+distance_adv > local_radius)
+						continue; // too far away
+
+					float dt = CLAMP((d+distance_adv)/local_radius,0,1);
+					att*= pow(1.0-dt,light_cache.attenuation);
+				}
+
+
+				if (light_cache.type==VS::LIGHT_SPOT) {
+
+					float angle = Math::rad2deg(acos(light_axis.dot(spot_axis)));
+					if (angle > light_cache.spot_angle)
+						continue;
+
+					float d = CLAMP(angle/light_cache.spot_angle,1,0);
+					att*= pow(1.0-d,light_cache.spot_attenuation);
+
+				}
+
+				clip_planes=0;
+
+				for(int c=0;c<3;c++) {
+
+					if (ABS(light_axis[c])<CMP_EPSILON)
+						continue;
+					clip[clip_planes].normal[c]=1.0;
+
+					if (light_axis[c]<0) {
+
+						clip[clip_planes].d=limits[c]+1;
+					} else {
+						clip[clip_planes].d-=1.0;
+					}
+
+					clip_planes++;
+				}
+
+				Vector3 from = light_pos;
+
+				for(int j=0;j<clip_planes;j++) {
+
+					clip[j].intersects_segment(from,to,&from);
+				}
+
+				float distance = (to - from).length();
+
+
+
+				distance-=Math::fmod(distance,distance_adv); //make it reach the center of the box always, but this tame make it closer
+				from = to - light_axis * distance;
+
+				uint32_t result=0xFFFFFFFF;
+
+				while(distance>-distance_adv) { //use this to avoid precision errors
+
+					result = _gi_bake_find_cell(cells,int(floor(from.x)),int(floor(from.y)),int(floor(from.z)),header->cell_subdiv);
+					if (result!=0xFFFFFFFF) {
+						break;
+					}
+
+					from+=light_axis*distance_adv;
+					distance-=distance_adv;
+				}
+
+				if (result==idx) {
+					//cell hit itself! hooray!
+
+					light->energy[0]+=int32_t(light_r*att*((cell->albedo>>16)&0xFF)/255.0);
+					light->energy[1]+=int32_t(light_g*att*((cell->albedo>>8)&0xFF)/255.0);
+					light->energy[2]+=int32_t(light_b*att*((cell->albedo)&0xFF)/255.0);
+
+				}
+			}
+			print_line("BAKE TIME: "+rtos((OS::get_singleton()->get_ticks_usec()-us)/1000000.0));
 
 
 		} break;
@@ -2760,9 +2889,9 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 
 			uint32_t idx = level_cells[j];
 
-			uint32_t r = local_data[idx].energy[0]>>2;
-			uint32_t g = local_data[idx].energy[1]>>2;
-			uint32_t b = local_data[idx].energy[2]>>2;
+			uint32_t r = (uint32_t(local_data[idx].energy[0])/probe_data->dynamic.bake_dynamic_range)>>2;
+			uint32_t g = (uint32_t(local_data[idx].energy[1])/probe_data->dynamic.bake_dynamic_range)>>2;
+			uint32_t b = (uint32_t(local_data[idx].energy[2])/probe_data->dynamic.bake_dynamic_range)>>2;
 			uint32_t a = cells[idx].alpha>>8;
 
 			uint32_t mm_ofs = sizes[0]*sizes[1]*(local_data[idx].pos[2]) + sizes[0]*(local_data[idx].pos[1]) + (local_data[idx].pos[0]);

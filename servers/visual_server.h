@@ -461,8 +461,14 @@ public:
 	virtual void gi_probe_set_dynamic_data(RID p_probe,const DVector<int>& p_data)=0;
 	virtual DVector<int> gi_probe_get_dynamic_data(RID p_probe) const=0;
 
-	virtual void gi_probe_set_dynamic_range(RID p_probe,float p_range)=0;
-	virtual float gi_probe_get_dynamic_range(RID p_probe) const=0;
+	virtual void gi_probe_set_dynamic_range(RID p_probe,int p_range)=0;
+	virtual int gi_probe_get_dynamic_range(RID p_probe) const=0;
+
+	virtual void gi_probe_set_energy(RID p_probe,float p_range)=0;
+	virtual float gi_probe_get_energy(RID p_probe) const=0;
+
+	virtual void gi_probe_set_interior(RID p_probe,bool p_enable)=0;
+	virtual bool gi_probe_is_interior(RID p_probe) const=0;
 
 	enum GIProbeDataFormat {
 		GI_PROBE_DATA_RGBA8,

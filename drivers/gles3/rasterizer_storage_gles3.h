@@ -890,7 +890,9 @@ public:
 		Transform to_cell;
 		float cell_size;
 
-		float dynamic_range;
+		int dynamic_range;
+		float energy;
+		bool interior;
 
 		uint32_t version;
 
@@ -921,9 +923,14 @@ public:
 	virtual void gi_probe_set_dynamic_data(RID p_probe,const DVector<int>& p_data);
 	virtual DVector<int> gi_probe_get_dynamic_data(RID p_probe) const;
 
-	virtual void gi_probe_set_dynamic_range(RID p_probe,float p_range);
-	virtual float gi_probe_get_dynamic_range(RID p_probe) const;
+	virtual void gi_probe_set_dynamic_range(RID p_probe,int p_range);
+	virtual int gi_probe_get_dynamic_range(RID p_probe) const;
 
+	virtual void gi_probe_set_energy(RID p_probe,float p_range);
+	virtual float gi_probe_get_energy(RID p_probe) const;
+
+	virtual void gi_probe_set_interior(RID p_probe,bool p_enable);
+	virtual bool gi_probe_is_interior(RID p_probe) const;
 
 	virtual void gi_probe_set_static_data(RID p_gi_probe,const DVector<uint8_t>& p_data,VS::GIProbeDataFormat p_format,int p_width,int p_height,int p_depth);
 	virtual DVector<uint8_t> gi_probe_get_static_data(RID p_gi_probe) const;

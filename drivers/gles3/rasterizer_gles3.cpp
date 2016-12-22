@@ -130,9 +130,9 @@ void RasterizerGLES3::initialize() {
 		ERR_PRINT("Error initializing GLAD");
 	}
 
-//	glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-//	glDebugMessageCallbackARB(_gl_debug_print, NULL);
-//	glEnable(_EXT_DEBUG_OUTPUT);
+	glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+	glDebugMessageCallbackARB(_gl_debug_print, NULL);
+	glEnable(_EXT_DEBUG_OUTPUT);
 
 #endif
 

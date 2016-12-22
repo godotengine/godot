@@ -1283,6 +1283,9 @@ bool Viewport::get_clear_on_new_frame() const{
 
 void Viewport::set_shadow_atlas_size(int p_size) {
 
+	if (shadow_atlas_size==p_size)
+		return;
+
 	shadow_atlas_size=p_size;
 	VS::get_singleton()->viewport_set_shadow_atlas_size(viewport,p_size);
 }
