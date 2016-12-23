@@ -4743,7 +4743,7 @@ msgstr "Erreur d'importation"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
-msgstr "Improter un thème"
+msgstr "Importer un thème"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."
