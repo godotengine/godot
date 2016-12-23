@@ -43,7 +43,6 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	bake = memnew( Button );
-	bake->set_text("Bake GI!");
 	bake->set_icon(editor->get_gui_base()->get_icon("BakedLight","EditorIcons"));
 	bake->hide();;
 	bake->connect("pressed",this,"_bake");

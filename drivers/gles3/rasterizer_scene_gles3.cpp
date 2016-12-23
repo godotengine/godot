@@ -4706,7 +4706,7 @@ void RasterizerSceneGLES3::initialize() {
 		glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE,&max_ubo_size);
 		const int ubo_light_size=160;
 		state.ubo_light_size=ubo_light_size;
-		state.max_ubo_lights=max_ubo_size/ubo_light_size;
+		state.max_ubo_lights=MIN(RenderList::MAX_LIGHTS,max_ubo_size/ubo_light_size);
 		print_line("max ubo light: "+itos(state.max_ubo_lights));
 
 		state.spot_array_tmp = (uint8_t*)memalloc(ubo_light_size*state.max_ubo_lights);
@@ -4734,7 +4734,7 @@ void RasterizerSceneGLES3::initialize() {
 		state.scene_shader.add_custom_define("#define MAX_LIGHT_DATA_STRUCTS "+itos(state.max_ubo_lights)+"\n");
 		state.scene_shader.add_custom_define("#define MAX_FORWARD_LIGHTS "+itos(state.max_forward_lights_per_object)+"\n");
 
-		state.max_ubo_reflections=max_ubo_size/sizeof(ReflectionProbeDataUBO);
+		state.max_ubo_reflections=MIN(RenderList::MAX_REFLECTIONS,max_ubo_size/sizeof(ReflectionProbeDataUBO));
 		print_line("max ubo reflections: "+itos(state.max_ubo_reflections)+"  ubo size: "+itos(sizeof(ReflectionProbeDataUBO)));
 
 		state.reflection_array_tmp = (uint8_t*)memalloc(sizeof(ReflectionProbeDataUBO)*state.max_ubo_reflections);
@@ -4746,7 +4746,7 @@ void RasterizerSceneGLES3::initialize() {
 
 		state.scene_shader.add_custom_define("#define MAX_REFLECTION_DATA_STRUCTS "+itos(state.max_ubo_reflections)+"\n");
 
-		state.max_skeleton_bones=max_ubo_size/(12*sizeof(float));
+		state.max_skeleton_bones=MIN(2048,max_ubo_size/(12*sizeof(float)));
 		state.scene_shader.add_custom_define("#define MAX_SKELETON_BONES "+itos(state.max_skeleton_bones)+"\n");
 
 
