@@ -536,6 +536,8 @@ public:
 		Vector3 cell_size_cache;
 		Vector3 bounds;
 		Transform transform_to_data;
+
+		GIProbeInstance() { probe=NULL; tex_cache=0; }
 	};
 
 
