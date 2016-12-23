@@ -454,6 +454,7 @@ RID RasterizerSceneGLES3::reflection_atlas_create() {
 	ReflectionAtlas *reflection_atlas = memnew( ReflectionAtlas );
 	reflection_atlas->subdiv=0;
 	reflection_atlas->color=0;
+	reflection_atlas->size=0;
 	for(int i=0;i<6;i++) {
 		reflection_atlas->fbo[i]=0;
 	}
@@ -4575,6 +4576,9 @@ void RasterizerSceneGLES3::_generate_brdf() {
 }
 
 void RasterizerSceneGLES3::initialize() {
+
+
+	render_pass=0;
 
 	state.scene_shader.init();
 

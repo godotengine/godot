@@ -71,6 +71,7 @@ public:
 			disable_environment=false;
 			viewport_to_screen=0;
 			shadow_atlas_size=0;
+			disable_3d=false;
 
 		}
 	};

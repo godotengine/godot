@@ -579,6 +579,7 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String& p_code, 
 	r_gen_code.uses_vertex_time=false;
 
 
+
 	used_name_defines.clear();
 	used_rmode_defines.clear();
 

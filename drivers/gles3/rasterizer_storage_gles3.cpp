@@ -1476,9 +1476,11 @@ void RasterizerStorageGLES3::_update_shader(Shader* p_shader) const {
 			p_shader->spatial.depth_draw_mode=Shader::Spatial::DEPTH_DRAW_OPAQUE;
 			p_shader->spatial.cull_mode=Shader::Spatial::CULL_MODE_BACK;
 			p_shader->spatial.uses_alpha=false;
+			p_shader->spatial.uses_discard=false;
 			p_shader->spatial.unshaded=false;
 			p_shader->spatial.ontop=false;
 			p_shader->spatial.uses_sss=false;
+			p_shader->spatial.uses_vertex=false;
 
 			shaders.actions_scene.render_mode_values["blend_add"]=Pair<int*,int>(&p_shader->spatial.blend_mode,Shader::Spatial::BLEND_MODE_ADD);
 			shaders.actions_scene.render_mode_values["blend_mix"]=Pair<int*,int>(&p_shader->spatial.blend_mode,Shader::Spatial::BLEND_MODE_MIX);
@@ -1501,6 +1503,7 @@ void RasterizerStorageGLES3::_update_shader(Shader* p_shader) const {
 			shaders.actions_scene.usage_flag_pointers["VERTEX"]=&p_shader->spatial.uses_vertex;
 
 			shaders.actions_scene.usage_flag_pointers["SSS_STRENGTH"]=&p_shader->spatial.uses_sss;
+			shaders.actions_scene.usage_flag_pointers["DISCARD"]=&p_shader->spatial.uses_discard;
 
 			actions=&shaders.actions_scene;
 			actions->uniforms=&p_shader->uniforms;

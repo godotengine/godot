@@ -2760,7 +2760,7 @@ Viewport::Viewport() {
 
 	shadow_atlas_size=0;
 	for(int i=0;i<4;i++) {
-		shadow_atlas_quadrant_subdiv[0]=SHADOW_ATLAS_QUADRANT_SUBDIV_MAX;
+		shadow_atlas_quadrant_subdiv[i]=SHADOW_ATLAS_QUADRANT_SUBDIV_MAX;
 	}
 	set_shadow_atlas_quadrant_subdiv(0,SHADOW_ATLAS_QUADRANT_SUBDIV_4);
 	set_shadow_atlas_quadrant_subdiv(1,SHADOW_ATLAS_QUADRANT_SUBDIV_4);
