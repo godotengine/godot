@@ -899,11 +899,24 @@ void PopupMenu::activate_item(int p_item) {
 	Node *next = get_parent();
 	PopupMenu *pop = next->cast_to<PopupMenu>();
 	while (pop) {
-		pop->hide();
-		next = next->get_parent();
-		pop = next->cast_to<PopupMenu>();
+		// We close all parents that are chained together, 
+		// with hide_on_item_selection enabled
+		if(hide_on_item_selection && pop->is_hide_on_item_selection()) {
+			pop->hide();
+			next = next->get_parent();
+			pop = next->cast_to<PopupMenu>();
+		}
+		else {
+			// Break out of loop when the next parent has 
+			// hide_on_item_selection disabled
+			break;
+		}
 	}
-	hide();
+	// Hides popup by default; unless otherwise specified 
+	// by using set_hide_on_item_selection
+	if (hide_on_item_selection) {
+		hide();
+	}
 
 }
 
@@ -1019,6 +1032,16 @@ void PopupMenu::_set_items(const Array& p_items){
 
 }
 
+// Hide on item selection determines whether or not the popup will close after item selection
+void PopupMenu::set_hide_on_item_selection(bool p_enabled) {
+
+	hide_on_item_selection=p_enabled;
+}
+
+bool PopupMenu::is_hide_on_item_selection() {
+
+	return hide_on_item_selection;
+}
 
 String PopupMenu::get_tooltip(const Point2& p_pos) const {
 
@@ -1107,9 +1130,13 @@ void PopupMenu::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_set_items"),&PopupMenu::_set_items);
 	ObjectTypeDB::bind_method(_MD("_get_items"),&PopupMenu::_get_items);
 
+	ObjectTypeDB::bind_method(_MD("set_hide_on_item_selection","enable"),&PopupMenu::set_hide_on_item_selection);
+	ObjectTypeDB::bind_method(_MD("is_hide_on_item_selection"),&PopupMenu::is_hide_on_item_selection);
+
 	ObjectTypeDB::bind_method(_MD("_submenu_timeout"),&PopupMenu::_submenu_timeout);
 
 	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_items"),_SCS("_get_items") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL, "hide_on_item_selection" ), _SCS("set_hide_on_item_selection"), _SCS("is_hide_on_item_selection") );
 
 	ADD_SIGNAL( MethodInfo("item_pressed", PropertyInfo( Variant::INT,"ID") ) );
 
@@ -1128,6 +1155,7 @@ PopupMenu::PopupMenu() {
 
 	set_focus_mode(FOCUS_ALL);
 	set_as_toplevel(true);
+	set_hide_on_item_selection(true);
 
 	submenu_timer = memnew( Timer );
 	submenu_timer->set_wait_time(0.3);
