@@ -10,13 +10,11 @@ class GIProbeData : public Resource {
 
 	RID probe;
 
+protected:
+
+	static void _bind_methods();
 public:
 
-	enum DataFormat {
-		DATA_RGBA8,
-		DATA_DXT5,
-		DATA_ETC2_EAC,
-	};
 
 
 	void set_bounds(const AABB& p_bounds);
@@ -40,20 +38,13 @@ public:
 	void set_interior(bool p_enable);
 	bool is_interior() const;
 
-	void set_static_data(const DVector<uint8_t>& p_data,DataFormat p_format,int p_width,int p_height,int p_depth);
-	DVector<uint8_t> get_static_data() const;
-	DataFormat get_static_data_format() const;
-	int get_static_data_width() const;
-	int get_static_data_height() const;
-	int get_static_data_depth() const;
-
 	virtual RID get_rid() const;
 
 	GIProbeData();
 	~GIProbeData();
 };
 
-VARIANT_ENUM_CAST(GIProbeData::DataFormat);
+
 
 class GIProbe : public VisualInstance  {
 	OBJ_TYPE(GIProbe,VisualInstance);

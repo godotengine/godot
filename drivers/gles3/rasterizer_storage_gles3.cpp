@@ -645,6 +645,10 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture,const Image& p_image
 	bool srgb;
 
 
+	if (config.keep_original_textures && !(texture->flags&VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
+		texture->images[p_cube_side]=p_image;
+	}
+
 	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,internal_format,type,compressed,srgb);
 
 	if (config.shrink_textures_x2 && (p_image.has_mipmaps() || !p_image.is_compressed()) && !(texture->flags&VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
@@ -822,6 +826,9 @@ Image RasterizerStorageGLES3::texture_get_data(RID p_texture,VS::CubeMapSide p_c
 	ERR_FAIL_COND_V(texture->data_size==0,Image());
 	ERR_FAIL_COND_V(texture->render_target,Image());
 
+	if (!texture->images[p_cube_side].empty())
+		return texture->images[p_cube_side];
+
 #ifdef GLES_OVER_GL
 
 	DVector<uint8_t> data;
@@ -871,6 +878,7 @@ Image RasterizerStorageGLES3::texture_get_data(RID p_texture,VS::CubeMapSide p_c
 #else
 
 	ERR_EXPLAIN("Sorry, It's not posible to obtain images back in OpenGL ES");
+	return Image();
 #endif
 }
 
@@ -1045,6 +1053,11 @@ void RasterizerStorageGLES3::texture_debug_usage(List<VS::TextureInfo> *r_info){
 void RasterizerStorageGLES3::texture_set_shrink_all_x2_on_set_data(bool p_enable) {
 
 	config.shrink_textures_x2=p_enable;
+}
+
+void RasterizerStorageGLES3::textures_keep_original(bool p_enable) {
+
+	config.keep_original_textures=p_enable;
 }
 
 RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source,int p_resolution) const {
@@ -4690,9 +4703,6 @@ RID RasterizerStorageGLES3::gi_probe_create() {
 
 	GIProbe *gip = memnew( GIProbe );
 
-	gip->data_width=0;
-	gip->data_height=0;
-	gip->data_depth=0;
 	gip->bounds=AABB(Vector3(),Vector3(1,1,1));
 	gip->dynamic_range=1.0;
 	gip->energy=1.0;
@@ -4827,64 +4837,6 @@ float RasterizerStorageGLES3::gi_probe_get_energy(RID p_probe) const{
 }
 
 
-void RasterizerStorageGLES3::gi_probe_set_static_data(RID p_gi_probe,const DVector<uint8_t>& p_data,VS::GIProbeDataFormat p_format,int p_width,int p_height,int p_depth) {
-
-	GIProbe *gip = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND(!gip);
-
-	if (gip->data.is_valid()) {
-		free(gip->data);
-	}
-
-	gip->data=RID();
-	//this is platform dependent
-
-	gip->version++;
-	gip->instance_change_notify();
-
-}
-DVector<uint8_t> RasterizerStorageGLES3::gi_probe_get_static_data(RID p_gi_probe) const {
-
-	const GIProbe *gip = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gip,DVector<uint8_t>());
-
-	//platform dependent
-	return DVector<uint8_t>();
-}
-VS::GIProbeDataFormat RasterizerStorageGLES3::gi_probe_get_static_data_format(RID p_gi_probe) const {
-
-	const GIProbe *gip = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gip,VS::GI_PROBE_DATA_RGBA8);
-
-	return gip->data_format;
-}
-int RasterizerStorageGLES3::gi_probe_get_static_data_width(RID p_probe) const {
-
-	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
-	ERR_FAIL_COND_V(!gip,0);
-
-	return gip->data_width;
-}
-int RasterizerStorageGLES3::gi_probe_get_static_data_height(RID p_probe) const {
-
-	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
-	ERR_FAIL_COND_V(!gip,0);
-	return gip->data_height;
-}
-int RasterizerStorageGLES3::gi_probe_get_static_data_depth(RID p_probe) const {
-
-	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
-	ERR_FAIL_COND_V(!gip,0);
-	return gip->data_depth;
-}
-
-RID RasterizerStorageGLES3::gi_probe_get_data(RID p_probe) {
-
-	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
-	ERR_FAIL_COND_V(!gip,RID());
-
-	return gip->data;
-}
 
 uint32_t RasterizerStorageGLES3::gi_probe_get_version(RID p_probe) {
 
@@ -5892,9 +5844,6 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 		// delete the texture
 		GIProbe *gi_probe = gi_probe_owner.get(p_rid);
 
-		if (gi_probe->data.is_valid()) {
-			free(gi_probe->data);
-		}
 
 		gi_probe_owner.free(p_rid);
 		memdelete(gi_probe);
@@ -6119,6 +6068,7 @@ void RasterizerStorageGLES3::initialize() {
 	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	frame.count=0;
+	config.keep_original_textures=false;
 }
 
 void RasterizerStorageGLES3::finalize() {

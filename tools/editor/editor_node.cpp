@@ -99,6 +99,7 @@
 #include "plugins/light_occluder_2d_editor_plugin.h"
 #include "plugins/color_ramp_editor_plugin.h"
 #include "plugins/collision_shape_2d_editor_plugin.h"
+#include "plugins/gi_probe_editor_plugin.h"
 #include "main/input_default.h"
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
@@ -5361,6 +5362,8 @@ void EditorNode::_bind_methods() {
 
 EditorNode::EditorNode() {
 
+	VisualServer::get_singleton()->textures_keep_original(true);
+
 	EditorHelp::generate_doc(); //before any editor classes are crated
 	SceneState::set_disable_placeholders(true);
 	editor_initialize_certificates(); //for asset sharing
@@ -6567,6 +6570,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( SpriteFramesEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TextureRegionEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Particles2DEditorPlugin(this) ) );
+	add_editor_plugin( memnew( GIProbeEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Path2DEditorPlugin(this) ) );
 //	add_editor_plugin( memnew( PathEditorPlugin(this) ) );
 	//add_editor_plugin( memnew( BakedLightEditorPlugin(this) ) );

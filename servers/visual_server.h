@@ -139,6 +139,8 @@ public:
 
 	virtual void texture_debug_usage(List<TextureInfo> *r_info)=0;
 
+	virtual void textures_keep_original(bool p_enable)=0;
+
 	/* SKYBOX API */
 
 	virtual RID skybox_create()=0;
@@ -469,20 +471,6 @@ public:
 
 	virtual void gi_probe_set_interior(RID p_probe,bool p_enable)=0;
 	virtual bool gi_probe_is_interior(RID p_probe) const=0;
-
-	enum GIProbeDataFormat {
-		GI_PROBE_DATA_RGBA8,
-		GI_PROBE_DATA_DXT5,
-		GI_PROBE_DATA_ETC2_EAC,
-	};
-
-	virtual void gi_probe_set_static_data(RID p_gi_probe,const DVector<uint8_t>& p_data,GIProbeDataFormat p_format,int p_width,int p_height,int p_depth)=0;
-	virtual DVector<uint8_t> gi_probe_get_static_data(RID p_gi_probe) const=0;
-	virtual  GIProbeDataFormat gi_probe_get_static_data_format(RID p_gi_probe) const=0;
-	virtual int gi_probe_get_static_data_width(RID p_probe) const=0;
-	virtual int gi_probe_get_static_data_height(RID p_probe) const=0;
-	virtual int gi_probe_get_static_data_depth(RID p_probe) const=0;
-
 
 
 	/* CAMERA API */

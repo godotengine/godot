@@ -56,6 +56,8 @@ public:
 		int max_texture_size;
 
 		Set<String> extensions;
+
+		bool keep_original_textures;
 	} config;
 
 	mutable struct Shaders {
@@ -221,6 +223,8 @@ public:
 
 		RenderTarget *render_target;
 
+		Image images[6];
+
 		Texture() {
 
 			using_srgb=false;
@@ -271,6 +275,8 @@ public:
 	virtual void texture_debug_usage(List<VS::TextureInfo> *r_info);
 
 	virtual RID texture_create_radiance_cubemap(RID p_source,int p_resolution=-1) const;
+
+	virtual void textures_keep_original(bool p_enable);
 
 	/* SKYBOX API */
 
@@ -898,12 +904,6 @@ public:
 
 		DVector<int> dynamic_data;
 
-		RID data;
-		int data_width;
-		int data_height;
-		int data_depth;
-		VS::GIProbeDataFormat data_format;
-
 
 	};
 
@@ -932,14 +932,6 @@ public:
 	virtual void gi_probe_set_interior(RID p_probe,bool p_enable);
 	virtual bool gi_probe_is_interior(RID p_probe) const;
 
-	virtual void gi_probe_set_static_data(RID p_gi_probe,const DVector<uint8_t>& p_data,VS::GIProbeDataFormat p_format,int p_width,int p_height,int p_depth);
-	virtual DVector<uint8_t> gi_probe_get_static_data(RID p_gi_probe) const;
-	virtual  VS::GIProbeDataFormat gi_probe_get_static_data_format(RID p_gi_probe) const;
-	virtual int gi_probe_get_static_data_width(RID p_probe) const;
-	virtual int gi_probe_get_static_data_height(RID p_probe) const;
-	virtual int gi_probe_get_static_data_depth(RID p_probe) const;
-
-	virtual RID gi_probe_get_data(RID p_probe); //get data in case this is static
 	virtual uint32_t gi_probe_get_version(RID p_probe);
 
 	struct GIProbeData : public RID_Data {

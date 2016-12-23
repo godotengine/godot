@@ -1,12 +1,6 @@
 #include "gi_probe.h"
 #include "mesh_instance.h"
 
-enum DataFormat {
-	DATA_RGBA8,
-	DATA_DXT5,
-	DATA_ETC2_EAC,
-};
-
 
 void GIProbeData::set_bounds(const AABB& p_bounds) {
 
@@ -87,40 +81,45 @@ int GIProbeData::get_dynamic_range() const{
 	return VS::get_singleton()->gi_probe_get_dynamic_range(probe);
 }
 
-void GIProbeData::set_static_data(const DVector<uint8_t>& p_data,DataFormat p_format,int p_width,int p_height,int p_depth){
-
-	VS::get_singleton()->gi_probe_set_static_data(probe,p_data,VS::GIProbeDataFormat(p_format),p_width,p_height,p_depth);
-
-}
-DVector<uint8_t> GIProbeData::get_static_data() const{
-
-	return VS::get_singleton()->gi_probe_get_static_data(probe);
-
-}
-GIProbeData::DataFormat GIProbeData::get_static_data_format() const{
-
-	return GIProbeData::DataFormat(VS::get_singleton()->gi_probe_get_static_data_format(probe));
-
-}
-int GIProbeData::get_static_data_width() const{
-
-	return VS::get_singleton()->gi_probe_get_static_data_width(probe);
-
-}
-int GIProbeData::get_static_data_height() const{
-
-	return VS::get_singleton()->gi_probe_get_static_data_height(probe);
-
-}
-int GIProbeData::get_static_data_depth() const{
-
-	return VS::get_singleton()->gi_probe_get_static_data_depth(probe);
-
-}
 
 RID GIProbeData::get_rid() const {
 
 	return probe;
+}
+
+
+void GIProbeData::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_bounds","bounds"),&GIProbeData::set_bounds);
+	ObjectTypeDB::bind_method(_MD("get_bounds"),&GIProbeData::get_bounds);
+
+	ObjectTypeDB::bind_method(_MD("set_cell_size","cell_size"),&GIProbeData::set_cell_size);
+	ObjectTypeDB::bind_method(_MD("get_cell_size"),&GIProbeData::get_cell_size);
+
+	ObjectTypeDB::bind_method(_MD("set_to_cell_xform","to_cell_xform"),&GIProbeData::set_to_cell_xform);
+	ObjectTypeDB::bind_method(_MD("get_to_cell_xform"),&GIProbeData::get_to_cell_xform);
+
+	ObjectTypeDB::bind_method(_MD("set_dynamic_data","dynamic_data"),&GIProbeData::set_dynamic_data);
+	ObjectTypeDB::bind_method(_MD("get_dynamic_data"),&GIProbeData::get_dynamic_data);
+
+	ObjectTypeDB::bind_method(_MD("set_dynamic_range","dynamic_range"),&GIProbeData::set_dynamic_range);
+	ObjectTypeDB::bind_method(_MD("get_dynamic_range"),&GIProbeData::get_dynamic_range);
+
+	ObjectTypeDB::bind_method(_MD("set_energy","energy"),&GIProbeData::set_energy);
+	ObjectTypeDB::bind_method(_MD("get_energy"),&GIProbeData::get_energy);
+
+	ObjectTypeDB::bind_method(_MD("set_interior","interior"),&GIProbeData::set_interior);
+	ObjectTypeDB::bind_method(_MD("is_interior"),&GIProbeData::is_interior);
+
+	ADD_PROPERTY(PropertyInfo(Variant::_AABB,"bounds",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_bounds"),_SCS("get_bounds"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"cell_size",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_cell_size"),_SCS("get_cell_size"));
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM,"to_cell_xform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_to_cell_xform"),_SCS("get_to_cell_xform"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT_ARRAY,"dynamic_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_dynamic_data"),_SCS("get_dynamic_data"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"dynamic_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_dynamic_range"),_SCS("get_dynamic_range"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_energy"),_SCS("get_energy"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"interior",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_interior"),_SCS("is_interior"));
+
 }
 
 GIProbeData::GIProbeData() {

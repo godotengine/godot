@@ -2390,78 +2390,68 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 
 	probe->dynamic.light_data=VSG::storage->gi_probe_get_dynamic_data(p_instance->base);
 
-	if (probe->dynamic.light_data.size()) {
-		//using dynamic data
-		DVector<int>::Read r=probe->dynamic.light_data.read();
+	if (probe->dynamic.light_data.size()==0)
+	return;
+	//using dynamic data
+	DVector<int>::Read r=probe->dynamic.light_data.read();
 
-		const GIProbeDataHeader *header = (GIProbeDataHeader *)r.ptr();
+	const GIProbeDataHeader *header = (GIProbeDataHeader *)r.ptr();
 
-		probe->dynamic.local_data.resize(header->cell_count);
+	probe->dynamic.local_data.resize(header->cell_count);
 
-		DVector<InstanceGIProbeData::LocalData>::Write ldw = probe->dynamic.local_data.write();
+	DVector<InstanceGIProbeData::LocalData>::Write ldw = probe->dynamic.local_data.write();
 
-		const GIProbeDataCell *cells = (GIProbeDataCell*)&r[16];
+	const GIProbeDataCell *cells = (GIProbeDataCell*)&r[16];
 
-		probe->dynamic.level_cell_lists.resize(header->cell_subdiv);
+	probe->dynamic.level_cell_lists.resize(header->cell_subdiv);
 
-		_gi_probe_fill_local_data(0,0,0,0,0,cells,header,ldw.ptr(),probe->dynamic.level_cell_lists.ptr());
+	_gi_probe_fill_local_data(0,0,0,0,0,cells,header,ldw.ptr(),probe->dynamic.level_cell_lists.ptr());
 
-		probe->dynamic.probe_data=VSG::storage->gi_probe_dynamic_data_create(header->width,header->height,header->depth);
+	probe->dynamic.probe_data=VSG::storage->gi_probe_dynamic_data_create(header->width,header->height,header->depth);
 
-		probe->dynamic.bake_dynamic_range=VSG::storage->gi_probe_get_dynamic_range(p_instance->base);
+	probe->dynamic.bake_dynamic_range=VSG::storage->gi_probe_get_dynamic_range(p_instance->base);
 
-		probe->dynamic.mipmaps_3d.clear();
+	probe->dynamic.mipmaps_3d.clear();
 
-		probe->dynamic.grid_size[0]=header->width;
-		probe->dynamic.grid_size[1]=header->height;
-		probe->dynamic.grid_size[2]=header->depth;
+	probe->dynamic.grid_size[0]=header->width;
+	probe->dynamic.grid_size[1]=header->height;
+	probe->dynamic.grid_size[2]=header->depth;
 
-		for(int i=0;i<(int)header->cell_subdiv;i++) {
+	for(int i=0;i<(int)header->cell_subdiv;i++) {
 
-			uint32_t x = header->width >> i;
-			uint32_t y = header->height >> i;
-			uint32_t z = header->depth >> i;
+		uint32_t x = header->width >> i;
+		uint32_t y = header->height >> i;
+		uint32_t z = header->depth >> i;
 
-			//create and clear mipmap
-			DVector<uint8_t> mipmap;
-			mipmap.resize(x*y*z*4);
-			DVector<uint8_t>::Write w = mipmap.write();
-			zeromem(w.ptr(),x*y*z*4);
-			w = DVector<uint8_t>::Write();
+		//create and clear mipmap
+		DVector<uint8_t> mipmap;
+		mipmap.resize(x*y*z*4);
+		DVector<uint8_t>::Write w = mipmap.write();
+		zeromem(w.ptr(),x*y*z*4);
+		w = DVector<uint8_t>::Write();
 
-			probe->dynamic.mipmaps_3d.push_back(mipmap);
+		probe->dynamic.mipmaps_3d.push_back(mipmap);
 
-			if (x<=1 || y<=1 || z<=1)
-				break;
-		}
-
-		probe->dynamic.updating_stage=GI_UPDATE_STAGE_CHECK;
-		probe->invalid=false;
-		probe->dynamic.enabled=true;
-
-		Transform cell_to_xform = VSG::storage->gi_probe_get_to_cell_xform(p_instance->base);
-		AABB bounds = VSG::storage->gi_probe_get_bounds(p_instance->base);
-		float cell_size = VSG::storage->gi_probe_get_cell_size(p_instance->base);
-
-		probe->dynamic.light_to_cell_xform=cell_to_xform * p_instance->transform.affine_inverse();
-
-		VSG::scene_render->gi_probe_instance_set_light_data(probe->probe_instance,p_instance->base,probe->dynamic.probe_data);
-		VSG::scene_render->gi_probe_instance_set_transform_to_data(probe->probe_instance,probe->dynamic.light_to_cell_xform);
-
-
-
-		VSG::scene_render->gi_probe_instance_set_bounds(probe->probe_instance,bounds.size/cell_size);
-
-
-	} else {
-		RID data = VSG::storage->gi_probe_get_data(p_instance->base);
-
-		probe->dynamic.enabled=false;
-		probe->invalid=!data.is_valid();
-		if (data.is_valid()) {
-			VSG::scene_render->gi_probe_instance_set_light_data(probe->probe_instance,p_instance->base,data);
-		}
+		if (x<=1 || y<=1 || z<=1)
+			break;
 	}
+
+	probe->dynamic.updating_stage=GI_UPDATE_STAGE_CHECK;
+	probe->invalid=false;
+	probe->dynamic.enabled=true;
+
+	Transform cell_to_xform = VSG::storage->gi_probe_get_to_cell_xform(p_instance->base);
+	AABB bounds = VSG::storage->gi_probe_get_bounds(p_instance->base);
+	float cell_size = VSG::storage->gi_probe_get_cell_size(p_instance->base);
+
+	probe->dynamic.light_to_cell_xform=cell_to_xform * p_instance->transform.affine_inverse();
+
+	VSG::scene_render->gi_probe_instance_set_light_data(probe->probe_instance,p_instance->base,probe->dynamic.probe_data);
+	VSG::scene_render->gi_probe_instance_set_transform_to_data(probe->probe_instance,probe->dynamic.light_to_cell_xform);
+
+
+
+	VSG::scene_render->gi_probe_instance_set_bounds(probe->probe_instance,bounds.size/cell_size);
 
 	probe->base_version=VSG::storage->gi_probe_get_version(p_instance->base);
 

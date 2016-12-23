@@ -629,6 +629,8 @@ public:
 	BIND1(texture_set_shrink_all_x2_on_set_data,bool)
 	BIND1(texture_debug_usage,List<TextureInfo>*)
 
+	BIND1(textures_keep_original,bool)
+
 	/* SKYBOX API */
 
 	BIND0R(RID,skybox_create)
@@ -828,12 +830,6 @@ public:
 	BIND2(gi_probe_set_dynamic_data,RID,const DVector<int>& )
 	BIND1RC( DVector<int>,gi_probe_get_dynamic_data,RID)
 
-	BIND6(gi_probe_set_static_data,RID,const DVector<uint8_t>&,GIProbeDataFormat,int,int,int)
-	BIND1RC(DVector<uint8_t>,gi_probe_get_static_data,RID)
-	BIND1RC(GIProbeDataFormat,gi_probe_get_static_data_format,RID)
-	BIND1RC(int,gi_probe_get_static_data_width,RID)
-	BIND1RC(int,gi_probe_get_static_data_height,RID)
-	BIND1RC(int,gi_probe_get_static_data_depth,RID)
 
 
 #undef BINDBASE
