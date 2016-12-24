@@ -1926,6 +1926,9 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 		log->clear();
 	}
 
+	if (bool(EDITOR_DEF("run/always_open_output_on_play", true))) {
+		make_bottom_panel_item_visible(log);
+	}
 
 	List<String> breakpoints;
 	editor_data.get_editor_breakpoints(&breakpoints);
