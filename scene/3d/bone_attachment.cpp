@@ -137,3 +137,8 @@ BoneAttachment::BoneAttachment()
 	bound=false;
 
 }
+
+void BoneAttachment::_bind_methods(){
+	ObjectTypeDB::bind_method(_MD("set_bone_name","bone_name"),&BoneAttachment::set_bone_name);
+	ObjectTypeDB::bind_method(_MD("get_bone_name"),&BoneAttachment::get_bone_name);
+}
