@@ -42,7 +42,13 @@ RasterizerScene *RasterizerGLES3::get_scene() {
 #define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
 #define _EXT_DEBUG_OUTPUT 0x92E0
 
-static void _gl_debug_print(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam)
+#ifdef WINDOWS_ENABLED
+#define GLAPIENTRY APIENTRY
+#else
+#define GLAPIENTRY
+#endif
+
+static void GLAPIENTRY _gl_debug_print(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam)
 {
 
 	if (type==_EXT_DEBUG_TYPE_OTHER_ARB)

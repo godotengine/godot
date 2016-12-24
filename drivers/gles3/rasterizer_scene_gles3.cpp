@@ -1337,6 +1337,7 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 			if (s->index_array_len>0) {
 
+
 				glDrawElements(gl_primitive[s->primitive],s->index_array_len, (s->array_len>=(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0);
 
 				storage->info.render_vertices_count+=s->index_array_len;
@@ -1348,6 +1349,9 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 				storage->info.render_vertices_count+=s->array_len;
 
 			}
+
+
+
 
 		} break;
 		case VS::INSTANCE_MULTIMESH: {

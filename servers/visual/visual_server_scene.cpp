@@ -2699,7 +2699,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header,con
 						continue; // too far away
 
 					float dt = CLAMP((d+distance_adv)/local_radius,0,1);
-					att*= pow(1.0-dt,light_cache.attenuation);
+					att*= powf(1.0-dt,light_cache.attenuation);
 				}
 
 
@@ -2710,7 +2710,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header,con
 						continue;
 
 					float d = CLAMP(angle/light_cache.spot_angle,1,0);
-					att*= pow(1.0-d,light_cache.spot_attenuation);
+					att*= powf(1.0-d,light_cache.spot_attenuation);
 
 				}
 

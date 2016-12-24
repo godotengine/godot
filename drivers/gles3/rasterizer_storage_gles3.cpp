@@ -2481,6 +2481,8 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 
 	for(int i=0;i<VS::ARRAY_MAX;i++) {
 
+		attribs[i].index=i;
+
 		if (! (p_format&(1<<i) ) ) {
 			attribs[i].enabled=false;
 			attribs[i].integer=false;
@@ -2489,7 +2491,6 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 
 		attribs[i].enabled=true;
 		attribs[i].offset=stride;
-		attribs[i].index=i;
 		attribs[i].integer=false;
 
 		switch(i) {
@@ -2499,7 +2500,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 				if (p_format&VS::ARRAY_FLAG_USE_2D_VERTICES) {
 					attribs[i].size=2;
 				} else {
-					attribs[i].size=3;
+					attribs[i].size=(p_format&VS::ARRAY_COMPRESS_VERTEX)?4:3;
 				}
 
 				if (p_format&VS::ARRAY_COMPRESS_VERTEX) {
@@ -2719,18 +2720,20 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,surface->index_id);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER,index_array_size,ir.ptr(),GL_STATIC_DRAW);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0); //unbind
+
+
 		}
 
 		//generate arrays for faster state switching
 
-		for(int i=0;i<2;i++) {
+		for(int ai=0;ai<2;ai++) {
 
-			if (i==0) {
+			if (ai==0) {
 				//for normal draw
 				glGenVertexArrays(1,&surface->array_id);
 				glBindVertexArray(surface->array_id);
 				glBindBuffer(GL_ARRAY_BUFFER,surface->vertex_id);
-			} else if (i==1) {
+			} else if (ai==1) {
 				//for instancing draw (can be changed and no one cares)
 				glGenVertexArrays(1,&surface->instancing_array_id);
 				glBindVertexArray(surface->instancing_array_id);

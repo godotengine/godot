@@ -437,9 +437,9 @@ Error VisualServer::_surface_set_data(Array p_arrays,uint32_t p_format,uint32_t 
 						for (int i=0;i<p_vertex_array_len;i++) {
 
 
-							uint16_t vector[3]={ Math::make_half_float(src[i].x), Math::make_half_float(src[i].y), Math::make_half_float(src[i].z) };
+							uint16_t vector[4]={ Math::make_half_float(src[i].x), Math::make_half_float(src[i].y), Math::make_half_float(src[i].z), Math::make_half_float(1.0) };
 
-							copymem(&vw[p_offsets[ai]+i*p_stride], vector, sizeof(uint16_t)*3);
+							copymem(&vw[p_offsets[ai]+i*p_stride], vector, sizeof(uint16_t)*4);
 
 							if (i==0) {
 
@@ -952,6 +952,11 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primi
 					elem_size*=sizeof(float);
 				}
 
+				if (elem_size==6) {
+					//had to pad
+					elem_size=8;
+				}
+
 			} break;
 			case VS::ARRAY_NORMAL: {
 
@@ -1138,6 +1143,10 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format,DVector<uint8_t> p
 					elem_size*=sizeof(float);
 				}
 
+				if (elem_size==6) {
+					elem_size=8;
+				}
+
 			} break;
 			case VS::ARRAY_NORMAL: {
 
@@ -1207,7 +1216,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format,DVector<uint8_t> p
 					break;
 				}
 				/* determine wether using 16 or 32 bits indices */
-				if (p_index_len>=(1<<16)) {
+				if (p_vertex_len>=(1<<16)) {
 
 					elem_size=4;
 
@@ -1505,7 +1514,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format,DVector<uint8_t> p
 
 				DVector<int> arr;
 				arr.resize(p_index_len);
-				if (p_index_len<(1<<16)) {
+				if (p_vertex_len<(1<<16)) {
 
 					DVector<int>::Write w = arr.write();
 

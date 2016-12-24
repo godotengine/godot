@@ -775,8 +775,10 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 			DVector<int> indices = a[ARRAY_INDEX];
 			DVector<int>::Read ir = indices.read();
 
-			for(int i=0;i<ic;i++)
-				facesw[widx++]=vr[ ir[i] ];
+			for(int i=0;i<ic;i++) {
+				int index = ir[i];
+				facesw[widx++]=vr[ index ];
+			}
 
 		} else {
 

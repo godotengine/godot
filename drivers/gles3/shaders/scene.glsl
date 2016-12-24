@@ -872,7 +872,7 @@ vec3 voxel_cone_trace(sampler3D probe, vec3 cell_size, vec3 pos, vec3 ambient, b
 		dist += diameter * 0.5;
 	}
 
-	color.rgb = mix(color.rgb,mix(ambient,color.rgb,alpha),blend_ambient);
+	//color.rgb = mix(color.rgb,mix(ambient,color.rgb,alpha),blend_ambient);
 
 	return color.rgb;
 }
