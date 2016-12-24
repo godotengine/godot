@@ -48,6 +48,7 @@ protected:
 
 public:
 
+	Error put_text(const Variant& p_packet);//send pure utf8 string, no godot serialization.synchronized
 	virtual Error put_data(const uint8_t* p_data,int p_bytes)=0; ///< put a whole chunk of data, blocking until it sent
 	virtual Error put_partial_data(const uint8_t* p_data,int p_bytes, int &r_sent)=0; ///< put as much data as possible, without blocking.
 

@@ -29,6 +29,21 @@
 #include "stream_peer.h"
 #include "io/marshalls.h"
 
+Error StreamPeer::put_text(const Variant& p_packet) {
+
+	CharString utf8 = p_packet.operator String().utf8();
+
+	int len = utf8.length();
+
+	if (len==0)
+		return OK;
+	
+	uint8_t  *buf = (uint8_t*)alloca(len);
+	copymem(buf,utf8.get_data(),len);
+
+	return put_data(&buf[0],len);
+}
+
 Error StreamPeer::_put_data(const DVector<uint8_t>& p_data) {
 
 	int len = p_data.size();
@@ -389,6 +404,7 @@ Variant StreamPeer::get_var(){
 
 void StreamPeer::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("put_text", "var:var"),&StreamPeer::put_text);
 	ObjectTypeDB::bind_method(_MD("put_data","data"),&StreamPeer::_put_data);
 	ObjectTypeDB::bind_method(_MD("put_partial_data","data"),&StreamPeer::_put_partial_data);
 
