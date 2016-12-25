@@ -2460,6 +2460,8 @@ RID RasterizerStorageGLES3::mesh_create(){
 
 void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes,const Vector<AABB>& p_bone_aabbs){
 
+	DVector<uint8_t> array = p_array;
+
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 
@@ -2657,7 +2659,35 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 	int array_size = stride * p_vertex_count;
 	int index_array_size=0;
 
-	ERR_FAIL_COND(p_array.size()!=array_size);
+	print_line("desired size: "+itos(array_size)+" vcount "+itos(p_vertex_count)+" should be: "+itos(array.size()+p_vertex_count*2)+" but is "+itos(array.size()));
+	if (array.size()!=array_size && array.size()+p_vertex_count*2 == array_size) {
+		//old format, convert
+		array = DVector<uint8_t>();
+
+		array.resize( p_array.size()+p_vertex_count*2 );
+
+		DVector<uint8_t>::Write w = array.write();
+		DVector<uint8_t>::Read r = p_array.read();
+
+		uint16_t *w16 = (uint16_t*)w.ptr();
+		const uint16_t *r16 = (uint16_t*)r.ptr();
+
+		uint16_t one = Math::make_half_float(1);
+
+		for(int i=0;i<p_vertex_count;i++) {
+
+			*w16++ = *r16++;
+			*w16++ = *r16++;
+			*w16++ = *r16++;
+			*w16++ = one;
+			for(int j=0;j<(stride/2)-4;j++) {
+				*w16++ = *r16++;
+			}
+		}
+
+	}
+
+	ERR_FAIL_COND(array.size()!=array_size);
 
 	if (p_format&VS::ARRAY_FORMAT_INDEX) {
 
@@ -2680,7 +2710,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 	surface->active=true;
 	surface->array_len=p_vertex_count;
 	surface->index_array_len=p_index_count;
-	surface->array_byte_size=p_array.size();
+	surface->array_byte_size=array.size();
 	surface->index_array_byte_size=p_index_array.size();
 	surface->primitive=p_primitive;
 	surface->mesh=mesh;
@@ -2704,7 +2734,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 
 	{
 
-		DVector<uint8_t>::Read vr = p_array.read();
+		DVector<uint8_t>::Read vr = array.read();
 
 		glGenBuffers(1,&surface->vertex_id);
 		glBindBuffer(GL_ARRAY_BUFFER,surface->vertex_id);
@@ -5907,7 +5937,9 @@ void RasterizerStorageGLES3::initialize() {
 	{
 
 		int max_extensions=0;
+		print_line("getting extensions");
 		glGetIntegerv(GL_NUM_EXTENSIONS,&max_extensions);
+		print_line("total "+itos(max_extensions));
 		for(int i=0;i<max_extensions;i++) {
 			const GLubyte *s = glGetStringi( GL_EXTENSIONS,i );
 			if (!s)
