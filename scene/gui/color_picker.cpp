@@ -162,7 +162,7 @@ void ColorPicker::_html_entered(const String& p_html) {
 	if (!is_inside_tree())
 		return;
 
-	_update_color();
+	set_color(color);
 	emit_signal("color_changed",color);
 }
 
