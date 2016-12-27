@@ -448,7 +448,17 @@ RES ResourceFormatLoaderShader::load(const String &p_path, const String& p_origi
 
 void ResourceFormatLoaderShader::get_recognized_extensions(List<String> *p_extensions) const {
 
-	ObjectTypeDB::get_extensions_for_type("Shader", p_extensions);
+	List<String> extensions;
+	ObjectTypeDB::get_extensions_for_type("Shader",&extensions);
+	extensions.sort();
+
+	for (List<String>::Element*E=extensions.front();E;E=E->next()) {
+		String ext = E->get().to_lower();
+		p_extensions->push_back(ext);
+		p_extensions->push_back("x"+ext);
+	}
+
+	p_extensions->push_back("xml");
 }
 
 bool ResourceFormatLoaderShader::handles_type(const String& p_type) const {
