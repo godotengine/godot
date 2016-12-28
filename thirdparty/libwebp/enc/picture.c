@@ -88,8 +88,9 @@ int WebPPictureAllocARGB(WebPPicture* const picture, int width, int height) {
 }
 
 int WebPPictureAllocYUVA(WebPPicture* const picture, int width, int height) {
-  const WebPEncCSP uv_csp = picture->colorspace & WEBP_CSP_UV_MASK;
-  const int has_alpha = picture->colorspace & WEBP_CSP_ALPHA_BIT;
+  const WebPEncCSP uv_csp =
+      (WebPEncCSP)((int)picture->colorspace & WEBP_CSP_UV_MASK);
+  const int has_alpha = (int)picture->colorspace & WEBP_CSP_ALPHA_BIT;
   const int y_stride = width;
   const int uv_width = (width + 1) >> 1;
   const int uv_height = (height + 1) >> 1;

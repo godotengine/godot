@@ -381,36 +381,42 @@ static WEBP_INLINE uint8_t ConvertRGBToV(int r, int g, int b) {
   return clip_8b(128 + (v >> (YUV_FIX + SFIX)));
 }
 
-static int ConvertWRGBToYUV(const fixed_y_t* const best_y,
-                            const fixed_t* const best_uv,
+static int ConvertWRGBToYUV(const fixed_y_t* best_y, const fixed_t* best_uv,
                             WebPPicture* const picture) {
   int i, j;
+  uint8_t* dst_y = picture->y;
+  uint8_t* dst_u = picture->u;
+  uint8_t* dst_v = picture->v;
+  const fixed_t* const best_uv_base = best_uv;
   const int w = (picture->width + 1) & ~1;
   const int h = (picture->height + 1) & ~1;
   const int uv_w = w >> 1;
   const int uv_h = h >> 1;
-  for (j = 0; j < picture->height; ++j) {
+  for (best_uv = best_uv_base, j = 0; j < picture->height; ++j) {
     for (i = 0; i < picture->width; ++i) {
-      const int off = 3 * ((i >> 1) + (j >> 1) * uv_w);
-      const int off2 = i + j * picture->y_stride;
-      const int W = best_y[i + j * w];
+      const int off = 3 * (i >> 1);
+      const int W = best_y[i];
       const int r = best_uv[off + 0] + W;
       const int g = best_uv[off + 1] + W;
       const int b = best_uv[off + 2] + W;
-      picture->y[off2] = ConvertRGBToY(r, g, b);
+      dst_y[i] = ConvertRGBToY(r, g, b);
     }
+    best_y += w;
+    best_uv += (j & 1) * 3 * uv_w;
+    dst_y += picture->y_stride;
   }
-  for (j = 0; j < uv_h; ++j) {
-    uint8_t* const dst_u = picture->u + j * picture->uv_stride;
-    uint8_t* const dst_v = picture->v + j * picture->uv_stride;
+  for (best_uv = best_uv_base, j = 0; j < uv_h; ++j) {
     for (i = 0; i < uv_w; ++i) {
-      const int off = 3 * (i + j * uv_w);
+      const int off = 3 * i;
       const int r = best_uv[off + 0];
       const int g = best_uv[off + 1];
       const int b = best_uv[off + 2];
       dst_u[i] = ConvertRGBToU(r, g, b);
       dst_v[i] = ConvertRGBToV(r, g, b);
     }
+    best_uv += 3 * uv_w;
+    dst_u += picture->uv_stride;
+    dst_v += picture->uv_stride;
   }
   return 1;
 }
@@ -420,9 +426,9 @@ static int ConvertWRGBToYUV(const fixed_y_t* const best_y,
 
 #define SAFE_ALLOC(W, H, T) ((T*)WebPSafeMalloc((W) * (H), sizeof(T)))
 
-static int PreprocessARGB(const uint8_t* const r_ptr,
-                          const uint8_t* const g_ptr,
-                          const uint8_t* const b_ptr,
+static int PreprocessARGB(const uint8_t* r_ptr,
+                          const uint8_t* g_ptr,
+                          const uint8_t* b_ptr,
                           int step, int rgb_stride,
                           WebPPicture* const picture) {
   // we expand the right/bottom border if needed
@@ -435,20 +441,24 @@ static int PreprocessARGB(const uint8_t* const r_ptr,
   // TODO(skal): allocate one big memory chunk. But for now, it's easier
   // for valgrind debugging to have several chunks.
   fixed_y_t* const tmp_buffer = SAFE_ALLOC(w * 3, 2, fixed_y_t);   // scratch
-  fixed_y_t* const best_y = SAFE_ALLOC(w, h, fixed_y_t);
-  fixed_y_t* const target_y = SAFE_ALLOC(w, h, fixed_y_t);
+  fixed_y_t* const best_y_base = SAFE_ALLOC(w, h, fixed_y_t);
+  fixed_y_t* const target_y_base = SAFE_ALLOC(w, h, fixed_y_t);
   fixed_y_t* const best_rgb_y = SAFE_ALLOC(w, 2, fixed_y_t);
-  fixed_t* const best_uv = SAFE_ALLOC(uv_w * 3, uv_h, fixed_t);
-  fixed_t* const target_uv = SAFE_ALLOC(uv_w * 3, uv_h, fixed_t);
+  fixed_t* const best_uv_base = SAFE_ALLOC(uv_w * 3, uv_h, fixed_t);
+  fixed_t* const target_uv_base = SAFE_ALLOC(uv_w * 3, uv_h, fixed_t);
   fixed_t* const best_rgb_uv = SAFE_ALLOC(uv_w * 3, 1, fixed_t);
+  fixed_y_t* best_y = best_y_base;
+  fixed_y_t* target_y = target_y_base;
+  fixed_t* best_uv = best_uv_base;
+  fixed_t* target_uv = target_uv_base;
   int ok;
   int diff_sum = 0;
   const int first_diff_threshold = (int)(2.5 * w * h);
   const int min_improvement = 5;   // stop if improvement is below this %
   const int min_first_improvement = 80;
 
-  if (best_y == NULL || best_uv == NULL ||
-      target_y == NULL || target_uv == NULL ||
+  if (best_y_base == NULL || best_uv_base == NULL ||
+      target_y_base == NULL || target_uv_base == NULL ||
       best_rgb_y == NULL || best_rgb_uv == NULL ||
       tmp_buffer == NULL) {
     ok = WebPEncodingSetError(picture, VP8_ENC_ERROR_OUT_OF_MEMORY);
@@ -462,41 +472,47 @@ static int PreprocessARGB(const uint8_t* const r_ptr,
     const int is_last_row = (j == picture->height - 1);
     fixed_y_t* const src1 = tmp_buffer;
     fixed_y_t* const src2 = tmp_buffer + 3 * w;
-    const int off1 = j * rgb_stride;
-    const int off2 = off1 + rgb_stride;
-    const int uv_off = (j >> 1) * 3 * uv_w;
-    fixed_y_t* const dst_y = best_y + j * w;
 
     // prepare two rows of input
-    ImportOneRow(r_ptr + off1, g_ptr + off1, b_ptr + off1,
-                 step, picture->width, src1);
+    ImportOneRow(r_ptr, g_ptr, b_ptr, step, picture->width, src1);
     if (!is_last_row) {
-      ImportOneRow(r_ptr + off2, g_ptr + off2, b_ptr + off2,
+      ImportOneRow(r_ptr + rgb_stride, g_ptr + rgb_stride, b_ptr + rgb_stride,
                    step, picture->width, src2);
     } else {
       memcpy(src2, src1, 3 * w * sizeof(*src2));
     }
-    UpdateW(src1, target_y + (j + 0) * w, w);
-    UpdateW(src2, target_y + (j + 1) * w, w);
-    diff_sum += UpdateChroma(src1, src2, target_uv + uv_off, dst_y, uv_w);
-    memcpy(best_uv + uv_off, target_uv + uv_off, 3 * uv_w * sizeof(*best_uv));
-    memcpy(dst_y + w, dst_y, w * sizeof(*dst_y));
+    UpdateW(src1, target_y, w);
+    UpdateW(src2, target_y + w, w);
+    diff_sum += UpdateChroma(src1, src2, target_uv, best_y, uv_w);
+    memcpy(best_uv, target_uv, 3 * uv_w * sizeof(*best_uv));
+    memcpy(best_y + w, best_y, w * sizeof(*best_y));
+    best_y += 2 * w;
+    best_uv += 3 * uv_w;
+    target_y += 2 * w;
+    target_uv += 3 * uv_w;
+    r_ptr += 2 * rgb_stride;
+    g_ptr += 2 * rgb_stride;
+    b_ptr += 2 * rgb_stride;
   }
 
   // Iterate and resolve clipping conflicts.
   for (iter = 0; iter < kNumIterations; ++iter) {
     int k;
-    const fixed_t* cur_uv = best_uv;
-    const fixed_t* prev_uv = best_uv;
+    const fixed_t* cur_uv = best_uv_base;
+    const fixed_t* prev_uv = best_uv_base;
     const int old_diff_sum = diff_sum;
     diff_sum = 0;
+
+    best_y = best_y_base;
+    best_uv = best_uv_base;
+    target_y = target_y_base;
+    target_uv = target_uv_base;
     for (j = 0; j < h; j += 2) {
       fixed_y_t* const src1 = tmp_buffer;
       fixed_y_t* const src2 = tmp_buffer + 3 * w;
       {
         const fixed_t* const next_uv = cur_uv + ((j < h - 2) ? 3 * uv_w : 0);
-        InterpolateTwoRows(best_y + j * w, prev_uv, cur_uv, next_uv,
-                           w, src1, src2);
+        InterpolateTwoRows(best_y, prev_uv, cur_uv, next_uv, w, src1, src2);
         prev_uv = cur_uv;
         cur_uv = next_uv;
       }
@@ -507,16 +523,15 @@ static int PreprocessARGB(const uint8_t* const r_ptr,
 
       // update two rows of Y and one row of RGB
       for (i = 0; i < 2 * w; ++i) {
-        const int off = i + j * w;
-        const int diff_y = target_y[off] - best_rgb_y[i];
-        const int new_y = (int)best_y[off] + diff_y;
-        best_y[off] = clip_y(new_y);
+        const int diff_y = target_y[i] - best_rgb_y[i];
+        const int new_y = (int)best_y[i] + diff_y;
+        best_y[i] = clip_y(new_y);
       }
       for (i = 0; i < uv_w; ++i) {
-        const int off = 3 * (i + (j >> 1) * uv_w);
+        const int off = 3 * i;
         int W;
         for (k = 0; k <= 2; ++k) {
-          const int diff_uv = (int)target_uv[off + k] - best_rgb_uv[3 * i + k];
+          const int diff_uv = (int)target_uv[off + k] - best_rgb_uv[off + k];
           best_uv[off + k] += diff_uv;
         }
         W = RGBToGray(best_uv[off + 0], best_uv[off + 1], best_uv[off + 2]);
@@ -524,6 +539,10 @@ static int PreprocessARGB(const uint8_t* const r_ptr,
           best_uv[off + k] -= W;
         }
       }
+      best_y += 2 * w;
+      best_uv += 3 * uv_w;
+      target_y += 2 * w;
+      target_uv += 3 * uv_w;
     }
     // test exit condition
     if (diff_sum > 0) {
@@ -545,13 +564,13 @@ static int PreprocessARGB(const uint8_t* const r_ptr,
   }
 
   // final reconstruction
-  ok = ConvertWRGBToYUV(best_y, best_uv, picture);
+  ok = ConvertWRGBToYUV(best_y_base, best_uv_base, picture);
 
  End:
-  WebPSafeFree(best_y);
-  WebPSafeFree(best_uv);
-  WebPSafeFree(target_y);
-  WebPSafeFree(target_uv);
+  WebPSafeFree(best_y_base);
+  WebPSafeFree(best_uv_base);
+  WebPSafeFree(target_y_base);
+  WebPSafeFree(target_uv_base);
   WebPSafeFree(best_rgb_y);
   WebPSafeFree(best_rgb_uv);
   WebPSafeFree(tmp_buffer);
@@ -830,10 +849,10 @@ static WEBP_INLINE void ConvertRowsToUV(const uint16_t* rgb,
   }
 }
 
-static int ImportYUVAFromRGBA(const uint8_t* const r_ptr,
-                              const uint8_t* const g_ptr,
-                              const uint8_t* const b_ptr,
-                              const uint8_t* const a_ptr,
+static int ImportYUVAFromRGBA(const uint8_t* r_ptr,
+                              const uint8_t* g_ptr,
+                              const uint8_t* b_ptr,
+                              const uint8_t* a_ptr,
                               int step,         // bytes per pixel
                               int rgb_stride,   // bytes per scanline
                               float dithering,
@@ -900,36 +919,34 @@ static int ImportYUVAFromRGBA(const uint8_t* const r_ptr,
     // Downsample Y/U/V planes, two rows at a time
     for (y = 0; y < (height >> 1); ++y) {
       int rows_have_alpha = has_alpha;
-      const int off1 = (2 * y + 0) * rgb_stride;
-      const int off2 = (2 * y + 1) * rgb_stride;
       if (use_dsp) {
         if (is_rgb) {
-          WebPConvertRGB24ToY(r_ptr + off1, dst_y, width);
-          WebPConvertRGB24ToY(r_ptr + off2, dst_y + picture->y_stride, width);
+          WebPConvertRGB24ToY(r_ptr, dst_y, width);
+          WebPConvertRGB24ToY(r_ptr + rgb_stride,
+                              dst_y + picture->y_stride, width);
         } else {
-          WebPConvertBGR24ToY(b_ptr + off1, dst_y, width);
-          WebPConvertBGR24ToY(b_ptr + off2, dst_y + picture->y_stride, width);
+          WebPConvertBGR24ToY(b_ptr, dst_y, width);
+          WebPConvertBGR24ToY(b_ptr + rgb_stride,
+                              dst_y + picture->y_stride, width);
         }
       } else {
-        ConvertRowToY(r_ptr + off1, g_ptr + off1, b_ptr + off1, step,
-                      dst_y, width, rg);
-        ConvertRowToY(r_ptr + off2, g_ptr + off2, b_ptr + off2, step,
+        ConvertRowToY(r_ptr, g_ptr, b_ptr, step, dst_y, width, rg);
+        ConvertRowToY(r_ptr + rgb_stride,
+                      g_ptr + rgb_stride,
+                      b_ptr + rgb_stride, step,
                       dst_y + picture->y_stride, width, rg);
       }
       dst_y += 2 * picture->y_stride;
       if (has_alpha) {
-        rows_have_alpha &= !WebPExtractAlpha(a_ptr + off1, rgb_stride,
-                                             width, 2,
+        rows_have_alpha &= !WebPExtractAlpha(a_ptr, rgb_stride, width, 2,
                                              dst_a, picture->a_stride);
         dst_a += 2 * picture->a_stride;
       }
       // Collect averaged R/G/B(/A)
       if (!rows_have_alpha) {
-        AccumulateRGB(r_ptr + off1, g_ptr + off1, b_ptr + off1,
-                      step, rgb_stride, tmp_rgb, width);
+        AccumulateRGB(r_ptr, g_ptr, b_ptr, step, rgb_stride, tmp_rgb, width);
       } else {
-        AccumulateRGBA(r_ptr + off1, g_ptr + off1, b_ptr + off1, a_ptr + off1,
-                       rgb_stride, tmp_rgb, width);
+        AccumulateRGBA(r_ptr, g_ptr, b_ptr, a_ptr, rgb_stride, tmp_rgb, width);
       }
       // Convert to U/V
       if (rg == NULL) {
@@ -939,31 +956,33 @@ static int ImportYUVAFromRGBA(const uint8_t* const r_ptr,
       }
       dst_u += picture->uv_stride;
       dst_v += picture->uv_stride;
+      r_ptr += 2 * rgb_stride;
+      b_ptr += 2 * rgb_stride;
+      g_ptr += 2 * rgb_stride;
+      if (has_alpha) a_ptr += 2 * rgb_stride;
     }
     if (height & 1) {    // extra last row
-      const int off = 2 * y * rgb_stride;
       int row_has_alpha = has_alpha;
       if (use_dsp) {
         if (r_ptr < b_ptr) {
-          WebPConvertRGB24ToY(r_ptr + off, dst_y, width);
+          WebPConvertRGB24ToY(r_ptr, dst_y, width);
         } else {
-          WebPConvertBGR24ToY(b_ptr + off, dst_y, width);
+          WebPConvertBGR24ToY(b_ptr, dst_y, width);
         }
       } else {
-        ConvertRowToY(r_ptr + off, g_ptr + off, b_ptr + off, step,
-                      dst_y, width, rg);
+        ConvertRowToY(r_ptr, g_ptr, b_ptr, step, dst_y, width, rg);
       }
       if (row_has_alpha) {
-        row_has_alpha &= !WebPExtractAlpha(a_ptr + off, 0, width, 1, dst_a, 0);
+        row_has_alpha &= !WebPExtractAlpha(a_ptr, 0, width, 1, dst_a, 0);
       }
       // Collect averaged R/G/B(/A)
       if (!row_has_alpha) {
         // Collect averaged R/G/B
-        AccumulateRGB(r_ptr + off, g_ptr + off, b_ptr + off,
-                      step, /* rgb_stride = */ 0, tmp_rgb, width);
+        AccumulateRGB(r_ptr, g_ptr, b_ptr, step, /* rgb_stride = */ 0,
+                      tmp_rgb, width);
       } else {
-        AccumulateRGBA(r_ptr + off, g_ptr + off, b_ptr + off, a_ptr + off,
-                       /* rgb_stride = */ 0, tmp_rgb, width);
+        AccumulateRGBA(r_ptr, g_ptr, b_ptr, a_ptr, /* rgb_stride = */ 0,
+                       tmp_rgb, width);
       }
       if (rg == NULL) {
         WebPConvertRGBA32ToUV(tmp_rgb, dst_u, dst_v, uv_width);
@@ -1086,10 +1105,10 @@ static int Import(WebPPicture* const picture,
                   const uint8_t* const rgb, int rgb_stride,
                   int step, int swap_rb, int import_alpha) {
   int y;
-  const uint8_t* const r_ptr = rgb + (swap_rb ? 2 : 0);
-  const uint8_t* const g_ptr = rgb + 1;
-  const uint8_t* const b_ptr = rgb + (swap_rb ? 0 : 2);
-  const uint8_t* const a_ptr = import_alpha ? rgb + 3 : NULL;
+  const uint8_t* r_ptr = rgb + (swap_rb ? 2 : 0);
+  const uint8_t* g_ptr = rgb + 1;
+  const uint8_t* b_ptr = rgb + (swap_rb ? 0 : 2);
+  const uint8_t* a_ptr = import_alpha ? rgb + 3 : NULL;
   const int width = picture->width;
   const int height = picture->height;
 
@@ -1102,20 +1121,25 @@ static int Import(WebPPicture* const picture,
   VP8EncDspARGBInit();
 
   if (import_alpha) {
+    uint32_t* dst = picture->argb;
     assert(step == 4);
     for (y = 0; y < height; ++y) {
-      uint32_t* const dst = &picture->argb[y * picture->argb_stride];
-      const int offset = y * rgb_stride;
-      VP8PackARGB(a_ptr + offset, r_ptr + offset, g_ptr + offset,
-                  b_ptr + offset, width, dst);
+      VP8PackARGB(a_ptr, r_ptr, g_ptr, b_ptr, width, dst);
+      a_ptr += rgb_stride;
+      r_ptr += rgb_stride;
+      g_ptr += rgb_stride;
+      b_ptr += rgb_stride;
+      dst += picture->argb_stride;
     }
   } else {
+    uint32_t* dst = picture->argb;
     assert(step >= 3);
     for (y = 0; y < height; ++y) {
-      uint32_t* const dst = &picture->argb[y * picture->argb_stride];
-      const int offset = y * rgb_stride;
-      VP8PackRGB(r_ptr + offset, g_ptr + offset, b_ptr + offset,
-                 width, step, dst);
+      VP8PackRGB(r_ptr, g_ptr, b_ptr, width, step, dst);
+      r_ptr += rgb_stride;
+      g_ptr += rgb_stride;
+      b_ptr += rgb_stride;
+      dst += picture->argb_stride;
     }
   }
   return 1;

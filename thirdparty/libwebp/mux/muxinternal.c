@@ -16,7 +16,7 @@
 #include "./muxi.h"
 #include "../utils/utils.h"
 
-#define UNDEFINED_CHUNK_SIZE (-1)
+#define UNDEFINED_CHUNK_SIZE ((uint32_t)(-1))
 
 const ChunkInfo kChunks[] = {
   { MKFOURCC('V', 'P', '8', 'X'),  WEBP_CHUNK_VP8X,    VP8X_CHUNK_SIZE },
@@ -439,7 +439,7 @@ static int IsNotCompatible(int feature, int num_items) {
   return (feature != 0) != (num_items > 0);
 }
 
-#define NO_FLAG 0
+#define NO_FLAG ((WebPFeatureFlags)0)
 
 // Test basic constraints:
 // retrieval, maximum number of chunks by index (use -1 to skip)

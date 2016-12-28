@@ -110,7 +110,7 @@ int WebPPictureDistortion(const WebPPicture* src, const WebPPicture* ref,
           VP8SSIMAccumulatePlane(tmp1, w, tmp2, w, w, h, &stats[c]);
         }
       }
-      free(tmp_plane);
+      WebPSafeFree(tmp_plane);
     }
   } else {
     int has_alpha, uv_w, uv_h;
