@@ -2405,6 +2405,9 @@ void Tree::_input_event(InputEvent p_event) {
 
 			}
 
+			if (range_drag_enabled)
+				break;
+
 			switch(b.button_index) {
 				case BUTTON_RIGHT:
 				case BUTTON_LEFT: {
