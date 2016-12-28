@@ -208,13 +208,6 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 
 		if (n->is_type("Spatial")) {
 
-			Spatial *ci = n->cast_to<Spatial>();
-			if (!ci->is_visible() && ci->get_parent_spatial() && !ci->get_parent_spatial()->is_visible()) {
-				error->set_text(TTR("This item cannot be made visible because the parent is hidden. Unhide the parent first."));
-				error->popup_centered_minsize();
-				return;
-			}
-
 			bool v = !bool(n->call("is_hidden"));
 			undo_redo->create_action(TTR("Toggle Spatial Visible"));
 			undo_redo->add_do_method(n,"_set_visible_",!v);
@@ -222,12 +215,6 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 			undo_redo->commit_action();
 		} else if (n->is_type("CanvasItem")) {
 
-			CanvasItem *ci = n->cast_to<CanvasItem>();
-			if (!ci->is_visible() && ci->get_parent_item() && !ci->get_parent_item()->is_visible()) {
-				error->set_text(TTR("This item cannot be made visible because the parent is hidden. Unhide the parent first."));
-				error->popup_centered_minsize();
-				return;
-			}
 			bool v = !bool(n->call("is_hidden"));
 			undo_redo->create_action(TTR("Toggle CanvasItem Visible"));
 			undo_redo->add_do_method(n,v?"hide":"show");
