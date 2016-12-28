@@ -117,6 +117,7 @@ class SceneTreeEditor : public Control {
 	void _update_selection(TreeItem *item);
 	void _node_script_changed(Node *p_node);
 	void _node_visibility_changed(Node *p_node);
+	void _update_visibility_color(Node *p_node, TreeItem *p_item);
 	void _subscene_option(int p_idx);
 
 	void _node_replace_owner(Node* p_base,Node* p_node,Node* p_root);
