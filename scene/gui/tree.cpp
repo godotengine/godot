@@ -569,6 +569,15 @@ void TreeItem::set_button(int p_column,int p_idx,const Ref<Texture>& p_button){
 
 }
 
+void TreeItem::set_button_color(int p_column,int p_idx,const Color& p_color) {
+
+	ERR_FAIL_INDEX( p_column, cells.size() );
+	ERR_FAIL_INDEX( p_idx, cells[p_column].buttons.size() );
+	cells[p_column].buttons[p_idx].color=p_color;
+	_changed_notify(p_column);
+
+}
+
 void TreeItem::set_editable(int p_column,bool p_editable) {
 
 	ERR_FAIL_INDEX( p_column, cells.size() );
@@ -1061,7 +1070,7 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 				o.y+=(label_h-s.height)/2;
 				o+=cache.button_pressed->get_offset();
 
-				b->draw(ci,o,p_item->cells[i].buttons[j].disabled?Color(1,1,1,0.5):Color(1,1,1,1));
+				b->draw(ci,o,p_item->cells[i].buttons[j].disabled?Color(1,1,1,0.5):p_item->cells[i].buttons[j].color);
 				w-=s.width+cache.button_margin;
 				bw+=s.width+cache.button_margin;
 			}

@@ -93,7 +93,8 @@ friend class Tree;
 			int id;
 			bool disabled;
 			Ref<Texture> texture;
-			Button() { id=0; disabled=false; }
+			Color color;
+			Button() { id=0; disabled=false; color=Color(1,1,1,1); }
 		};
 
 		Vector< Button > buttons;
@@ -189,6 +190,7 @@ public:
 	int get_button_by_id(int p_column,int p_id) const;
 	bool is_button_disabled(int p_column,int p_idx) const;
 	void set_button(int p_column,int p_idx,const Ref<Texture>& p_button);
+	void set_button_color(int p_column,int p_idx,const Color& p_color);
 
 	/* range works for mode number or mode combo */
 
