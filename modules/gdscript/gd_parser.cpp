@@ -1457,6 +1457,15 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 						return op;
 					}
 
+					if (op->arguments[0]->type==Node::TYPE_OPERATOR) {
+						OperatorNode *on = static_cast<OperatorNode*>(op->arguments[0]);
+						if (on->op != OperatorNode::OP_INDEX && on->op != OperatorNode::OP_INDEX_NAMED) {
+							_set_error("Can't assign to an expression",tokenizer->get_token_line()-1);
+							error_line=op->line;
+							return op;
+						}
+					}
+
 				} break;
 				default: { break; }
 			}
