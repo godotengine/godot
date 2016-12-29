@@ -1478,6 +1478,15 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 						return op;
 					}
 
+					if (op->arguments[0]->type==Node::TYPE_OPERATOR) {
+						OperatorNode *on = static_cast<OperatorNode*>(op->arguments[0]);
+						if (on->op != OperatorNode::OP_INDEX && on->op != OperatorNode::OP_INDEX_NAMED) {
+							_set_error("Can't assign to an expression",tokenizer->get_token_line()-1);
+							error_line=op->line;
+							return op;
+						}
+					}
+
 				} break;
 				default: { break; }
 			}
@@ -2014,7 +2023,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 			} break;
 			default: {
 
-				Node *expression = _parse_and_reduce_expression(p_block,p_static,false,true);
+				Node *expression = _parse_and_reduce_expression(p_block,p_static,true,true);
 				if (!expression) {
 					if (_recover_from_completion()) {
 						break;
