@@ -106,9 +106,6 @@ bool EditorSettings::_get(const StringName& p_name,Variant &r_ret) const {
 			Ref<ShortCut> sc=E->get();
 
 			if (optimize_save) {
-				if (!sc->has_meta("original")) {
-					continue; //this came from settings but is not any longer used
-				}
 
 				InputEvent original = sc->get_meta("original");
 				if (sc->is_shortcut(original) || (original.type==InputEvent::NONE && sc->get_shortcut().type==InputEvent::NONE))
