@@ -356,6 +356,11 @@ void NavigationMeshInstance::set_navigation_mesh(const Ref<NavigationMesh>& p_na
 	if (navigation && navmesh.is_valid() && enabled) {
 		nav_id = navigation->navmesh_create(navmesh,get_relative_transform(navigation),this);
 	}
+	
+	if (debug_view && navmesh.is_valid()) {
+		debug_view->cast_to<MeshInstance>()->set_mesh( navmesh->get_debug_mesh() );
+	}
+	
 	update_gizmo();
 	update_configuration_warning();
 
