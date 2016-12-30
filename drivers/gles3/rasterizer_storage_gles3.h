@@ -941,6 +941,7 @@ public:
 		int depth;
 		int levels;
 		GLuint tex_id;
+		GIProbeCompression compression;
 
 		GIProbeData() {
 		}
@@ -948,9 +949,90 @@ public:
 
 	mutable RID_Owner<GIProbeData> gi_probe_data_owner;
 
-	virtual RID gi_probe_dynamic_data_create(int p_width,int p_height,int p_depth);
-	virtual void gi_probe_dynamic_data_update_rgba8(RID p_gi_probe_data,int p_depth_slice,int p_slice_count,int p_mipmap,const void* p_data);
+	virtual GIProbeCompression gi_probe_get_dynamic_data_get_preferred_compression() const;
+	virtual RID gi_probe_dynamic_data_create(int p_width,int p_height,int p_depth,GIProbeCompression p_compression);
+	virtual void gi_probe_dynamic_data_update(RID p_gi_probe_data,int p_depth_slice,int p_slice_count,int p_mipmap,const void* p_data);
 
+	/* PARTICLES */
+
+	struct Particles : public Instantiable {
+
+		bool emitting;
+		int amount;
+		float lifetime;
+		float pre_process_time;
+		float explosiveness;
+		float randomness;
+		AABB custom_aabb;
+		Vector3 gravity;
+		bool use_local_coords;
+		RID process_material;
+
+		VS::ParticlesEmissionShape emission_shape;
+		float emission_sphere_radius;
+		Vector3 emission_box_extents;
+		DVector<Vector3> emission_points;
+		GLuint emission_point_texture;
+
+		VS::ParticlesDrawOrder draw_order;
+		struct DrawPass {
+			RID mesh;
+			RID material;
+		};
+
+		Vector<DrawPass> draw_passes;
+
+		AABB computed_aabb;
+
+		Particles() {
+			emitting=false;
+			amount=0;
+			lifetime=1.0;;
+			pre_process_time=0.0;
+			explosiveness=0.0;
+			randomness=0.0;
+			use_local_coords=true;
+
+			draw_order=VS::PARTICLES_DRAW_ORDER_INDEX;
+			emission_shape=VS::PARTICLES_EMSSION_POINT;
+			emission_sphere_radius=1.0;
+			float emission_sphere_radius;
+			emission_box_extents=Vector3(1,1,1);
+			emission_point_texture=0;
+		}
+
+	};
+
+	mutable RID_Owner<Particles> particles_owner;
+
+	virtual RID particles_create();
+
+	virtual void particles_set_emitting(RID p_particles,bool p_emitting);
+	virtual void particles_set_amount(RID p_particles,int p_amount);
+	virtual void particles_set_lifetime(RID p_particles,float p_lifetime);
+	virtual void particles_set_pre_process_time(RID p_particles,float p_time);
+	virtual void particles_set_explosiveness_ratio(RID p_particles,float p_ratio);
+	virtual void particles_set_randomness_ratio(RID p_particles,float p_ratio);
+	virtual void particles_set_custom_aabb(RID p_particles,const AABB& p_aabb);
+	virtual void particles_set_gravity(RID p_particles,const Vector3& p_gravity);
+	virtual void particles_set_use_local_coordinates(RID p_particles,bool p_enable);
+	virtual void particles_set_process_material(RID p_particles,RID p_material);
+
+	virtual void particles_set_emission_shape(RID p_particles,VS::ParticlesEmissionShape p_shape);
+	virtual void particles_set_emission_sphere_radius(RID p_particles,float p_radius);
+	virtual void particles_set_emission_box_extents(RID p_particles,const Vector3& p_extents);
+	virtual void particles_set_emission_points(RID p_particles,const DVector<Vector3>& p_points);
+
+
+	virtual void particles_set_draw_order(RID p_particles,VS::ParticlesDrawOrder p_order);
+
+	virtual void particles_set_draw_passes(RID p_particles,int p_count);
+	virtual void particles_set_draw_pass_material(RID p_particles,int p_pass, RID p_material);
+	virtual void particles_set_draw_pass_mesh(RID p_particles,int p_pass, RID p_mesh);
+
+	virtual AABB particles_get_current_aabb(RID p_particles);
+
+	/* INSTANCE */
 
 	virtual void instance_add_skeleton(RID p_skeleton,RasterizerScene::InstanceBase *p_instance);
 	virtual void instance_remove_skeleton(RID p_skeleton,RasterizerScene::InstanceBase *p_instance);

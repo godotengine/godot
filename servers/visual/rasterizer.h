@@ -432,14 +432,44 @@ public:
 
 	virtual uint32_t gi_probe_get_version(RID p_probe)=0;
 
-	enum GIProbeCompress {
+	enum GIProbeCompression {
 		GI_PROBE_UNCOMPRESSED,
 		GI_PROBE_S3TC,
 		GI_PROBE_ETC2
 	};
 
-	virtual RID gi_probe_dynamic_data_create(int p_width,int p_height,int p_depth)=0;
-	virtual void gi_probe_dynamic_data_update_rgba8(RID p_gi_probe_data,int p_depth_slice,int p_slice_count,int p_mipmap,const void* p_data)=0;
+	virtual GIProbeCompression gi_probe_get_dynamic_data_get_preferred_compression() const=0;
+	virtual RID gi_probe_dynamic_data_create(int p_width,int p_height,int p_depth,GIProbeCompression p_compression)=0;
+	virtual void gi_probe_dynamic_data_update(RID p_gi_probe_data,int p_depth_slice,int p_slice_count,int p_mipmap,const void* p_data)=0;
+
+	/* PARTICLES */
+
+	virtual RID particles_create()=0;
+
+	virtual void particles_set_emitting(RID p_particles,bool p_emitting)=0;
+	virtual void particles_set_amount(RID p_particles,int p_amount)=0;
+	virtual void particles_set_lifetime(RID p_particles,float p_lifetime)=0;
+	virtual void particles_set_pre_process_time(RID p_particles,float p_time)=0;
+	virtual void particles_set_explosiveness_ratio(RID p_particles,float p_ratio)=0;
+	virtual void particles_set_randomness_ratio(RID p_particles,float p_ratio)=0;
+	virtual void particles_set_custom_aabb(RID p_particles,const AABB& p_aabb)=0;
+	virtual void particles_set_gravity(RID p_particles,const Vector3& p_gravity)=0;
+	virtual void particles_set_use_local_coordinates(RID p_particles,bool p_enable)=0;
+	virtual void particles_set_process_material(RID p_particles,RID p_material)=0;
+
+	virtual void particles_set_emission_shape(RID p_particles,VS::ParticlesEmissionShape p_shape)=0;
+	virtual void particles_set_emission_sphere_radius(RID p_particles,float p_radius)=0;
+	virtual void particles_set_emission_box_extents(RID p_particles,const Vector3& p_extents)=0;
+	virtual void particles_set_emission_points(RID p_particles,const DVector<Vector3>& p_points)=0;
+
+
+	virtual void particles_set_draw_order(RID p_particles,VS::ParticlesDrawOrder p_order)=0;
+
+	virtual void particles_set_draw_passes(RID p_particles,int p_count)=0;
+	virtual void particles_set_draw_pass_material(RID p_particles,int p_pass, RID p_material)=0;
+	virtual void particles_set_draw_pass_mesh(RID p_particles,int p_pass, RID p_mesh)=0;
+
+	virtual AABB particles_get_current_aabb(RID p_particles)=0;
 
 
 

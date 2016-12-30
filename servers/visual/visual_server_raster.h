@@ -830,6 +830,34 @@ public:
 	BIND2(gi_probe_set_dynamic_data,RID,const DVector<int>& )
 	BIND1RC( DVector<int>,gi_probe_get_dynamic_data,RID)
 
+	/* PARTICLES */
+
+	BIND0R(RID, particles_create)
+
+	BIND2(particles_set_emitting,RID,bool)
+	BIND2(particles_set_amount,RID,int )
+	BIND2(particles_set_lifetime,RID,float )
+	BIND2(particles_set_pre_process_time,RID,float )
+	BIND2(particles_set_explosiveness_ratio,RID,float )
+	BIND2(particles_set_randomness_ratio,RID,float )
+	BIND2(particles_set_custom_aabb,RID,const AABB& )
+	BIND2(particles_set_gravity,RID,const Vector3& )
+	BIND2(particles_set_use_local_coordinates,RID,bool )
+	BIND2(particles_set_process_material,RID,RID )
+
+	BIND2(particles_set_emission_shape,RID,VS::ParticlesEmissionShape )
+	BIND2(particles_set_emission_sphere_radius,RID,float )
+	BIND2(particles_set_emission_box_extents,RID,const Vector3& )
+	BIND2(particles_set_emission_points,RID,const DVector<Vector3>& )
+
+
+	BIND2(particles_set_draw_order,RID,VS::ParticlesDrawOrder )
+
+	BIND2(particles_set_draw_passes,RID,int )
+	BIND3(particles_set_draw_pass_material,RID,int , RID )
+	BIND3(particles_set_draw_pass_mesh,RID,int , RID )
+
+	BIND1R(AABB,particles_get_current_aabb,RID);
 
 
 #undef BINDBASE

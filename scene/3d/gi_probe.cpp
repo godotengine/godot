@@ -620,8 +620,10 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 			if (p_baker->bake_cells[p_idx].childs[i]==Baker::CHILD_EMPTY) {
 				//sub cell must be created
 
-				p_baker->bake_cells[p_idx].childs[i]=p_baker->bake_cells.size();
+				uint32_t child_idx = p_baker->bake_cells.size();
+				p_baker->bake_cells[p_idx].childs[i]=child_idx;
 				p_baker->bake_cells.resize( p_baker->bake_cells.size() + 1);
+				p_baker->bake_cells[child_idx].level=p_level+1;
 
 			}
 
@@ -1124,7 +1126,12 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug){
 				w32[ofs++]=norm;
 			}
 
-			w32[ofs++]=uint32_t(baker.bake_cells[i].alpha*65535.0);
+			{
+				uint16_t alpha = CLAMP(uint32_t(baker.bake_cells[i].alpha*65535.0),0,65535);
+				uint16_t level = baker.bake_cells[i].level;
+
+				w32[ofs++] = (uint32_t(level)<<16)|uint32_t(alpha);
+			}
 
 		}
 

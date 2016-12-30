@@ -899,8 +899,10 @@ void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_s
 	float blend = 1.001-max(blendv.x,max(blendv.y,blendv.z));
 	blend=1.0;
 
+	float max_distance = length(bounds);
+
 	//radiance
-#ifdef VCT_QUALITY_HIGH
+#ifndef VCT_QUALITY_HIGH
 
 #define MAX_CONE_DIRS 6
 	vec3 cone_dirs[MAX_CONE_DIRS] = vec3[] (
@@ -914,6 +916,7 @@ void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_s
 
 	float cone_weights[MAX_CONE_DIRS] = float[](0.25, 0.15, 0.15, 0.15, 0.15, 0.15);
 	float cone_angle_tan = 0.577;
+	float min_ref_tan = 0.0;
 #else
 
 #define MAX_CONE_DIRS 4
@@ -927,9 +930,10 @@ void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_s
 
 	float cone_weights[MAX_CONE_DIRS] = float[](0.25, 0.25, 0.25, 0.25);
 	float cone_angle_tan = 0.98269;
+	max_distance*=0.5;
+	float min_ref_tan = 0.2;
 
 #endif
-	float max_distance = length(bounds);
 	vec3 light=vec3(0.0);
 	for(int i=0;i<MAX_CONE_DIRS;i++) {
 
@@ -944,7 +948,7 @@ void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_s
 
 	//irradiance
 
-	vec3 irr_light =  voxel_cone_trace(probe,cell_size,probe_pos,environment,blend_ambient,ref_vec,tan(roughness * 0.5 * M_PI) ,max_distance);
+	vec3 irr_light =  voxel_cone_trace(probe,cell_size,probe_pos,environment,blend_ambient,ref_vec,max(min_ref_tan,tan(roughness * 0.5 * M_PI)) ,max_distance);
 
 	irr_light *= multiplier;
 	//irr_light=vec3(0.0);

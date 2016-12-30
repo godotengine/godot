@@ -422,6 +422,13 @@ public:
 			uint16_t energy[3]; //using 0..1024 for float range 0..1. integer is needed for deterministic add/remove of lights
 		};
 
+		struct CompBlockS3TC {
+			uint32_t offset; //offset in mipmap
+			uint32_t source_count; //sources
+			uint32_t sources[16]; //id for each source
+			uint8_t alpha[8]; //alpha block is pre-computed
+		};
+
 
 		struct Dynamic {
 
@@ -433,8 +440,10 @@ public:
 			RID probe_data;
 			bool enabled;
 			int bake_dynamic_range;
+			RasterizerStorage::GIProbeCompression compression;
 
 			Vector< DVector<uint8_t> > mipmaps_3d;
+			Vector< DVector<CompBlockS3TC> > mipmaps_s3tc; //for s3tc
 
 			int updating_stage;
 
@@ -538,7 +547,7 @@ public:
 		uint32_t albedo;
 		uint32_t emission;
 		uint32_t normal;
-		uint32_t alpha;
+		uint32_t level_alpha;
 	};
 
 	enum {

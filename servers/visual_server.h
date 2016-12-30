@@ -472,6 +472,53 @@ public:
 	virtual void gi_probe_set_interior(RID p_probe,bool p_enable)=0;
 	virtual bool gi_probe_is_interior(RID p_probe) const=0;
 
+	/* PARTICLES API */
+
+	virtual RID particles_create()=0;
+
+	virtual void particles_set_emitting(RID p_particles,bool p_emitting)=0;
+	virtual void particles_set_amount(RID p_particles,int p_amount)=0;
+	virtual void particles_set_lifetime(RID p_particles,float p_lifetime)=0;
+	virtual void particles_set_pre_process_time(RID p_particles,float p_time)=0;
+	virtual void particles_set_explosiveness_ratio(RID p_particles,float p_ratio)=0;
+	virtual void particles_set_randomness_ratio(RID p_particles,float p_ratio)=0;
+	virtual void particles_set_custom_aabb(RID p_particles,const AABB& p_aabb)=0;
+	virtual void particles_set_gravity(RID p_particles,const Vector3& p_gravity)=0;
+	virtual void particles_set_use_local_coordinates(RID p_particles,bool p_enable)=0;
+	virtual void particles_set_process_material(RID p_particles,RID p_material)=0;
+
+	enum ParticlesEmissionShape {
+		PARTICLES_EMSSION_POINT,
+		PARTICLES_EMSSION_SPHERE,
+		PARTICLES_EMSSION_BOX,
+		PARTICLES_EMSSION_POINTS,
+		PARTICLES_EMSSION_SEGMENTS,
+	};
+
+	virtual void particles_set_emission_shape(RID p_particles,ParticlesEmissionShape)=0;
+	virtual void particles_set_emission_sphere_radius(RID p_particles,float p_radius)=0;
+	virtual void particles_set_emission_box_extents(RID p_particles,const Vector3& p_extents)=0;
+	virtual void particles_set_emission_points(RID p_particles,const DVector<Vector3>& p_points)=0;
+
+	enum ParticlesDrawOrder {
+		PARTICLES_DRAW_ORDER_INDEX,
+		PARTICLES_DRAW_ORDER_LIFETIME,
+		PARTICLES_DRAW_ORDER_VIEW_DEPTH,
+	};
+
+	virtual void particles_set_draw_order(RID p_particles,ParticlesDrawOrder p_order)=0;
+
+	enum ParticlesDrawPassMode {
+		PARTICLES_DRAW_PASS_MODE_QUAD,
+		PARTICLES_DRAW_PASS_MODE_MESH
+	};
+
+
+	virtual void particles_set_draw_passes(RID p_particles,int p_count)=0;
+	virtual void particles_set_draw_pass_material(RID p_particles,int p_pass, RID p_material)=0;
+	virtual void particles_set_draw_pass_mesh(RID p_particles,int p_pass, RID p_mesh)=0;
+
+	virtual AABB particles_get_current_aabb(RID p_particles)=0;
 
 	/* CAMERA API */
 
@@ -483,7 +530,15 @@ public:
 	virtual void camera_set_environment(RID p_camera,RID p_env)=0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera,bool p_enable)=0;
 
+/*
+	enum ParticlesCollisionMode {
+		PARTICLES_COLLISION_NONE,
+		PARTICLES_COLLISION_TEXTURE,
+		PARTICLES_COLLISION_CUBEMAP,
+	};
 
+	virtual void particles_set_collision(RID p_particles,ParticlesCollisionMode p_mode,const Transform&, p_xform,const RID p_depth_tex,const RID p_normal_tex)=0;
+*/
 	/* VIEWPORT TARGET API */
 
 	virtual RID viewport_create()=0;
@@ -622,6 +677,7 @@ public:
 		INSTANCE_MESH,
 		INSTANCE_MULTIMESH,
 		INSTANCE_IMMEDIATE,
+		INSTANCE_PARTICLES,
 		INSTANCE_LIGHT,
 		INSTANCE_REFLECTION_PROBE,
 		INSTANCE_ROOM,

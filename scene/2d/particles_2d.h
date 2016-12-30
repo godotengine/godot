@@ -117,7 +117,6 @@ private:
 	float randomness[PARAM_MAX];
 
 	struct Particle {
-
 		bool active;
 		Point2 pos;
 		Vector2 velocity;

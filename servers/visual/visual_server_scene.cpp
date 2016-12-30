@@ -2391,7 +2391,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	probe->dynamic.light_data=VSG::storage->gi_probe_get_dynamic_data(p_instance->base);
 
 	if (probe->dynamic.light_data.size()==0)
-	return;
+		return;
 	//using dynamic data
 	DVector<int>::Read r=probe->dynamic.light_data.read();
 
@@ -2399,15 +2399,17 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 
 	probe->dynamic.local_data.resize(header->cell_count);
 
+	int cell_count = probe->dynamic.local_data.size();
 	DVector<InstanceGIProbeData::LocalData>::Write ldw = probe->dynamic.local_data.write();
-
 	const GIProbeDataCell *cells = (GIProbeDataCell*)&r[16];
 
 	probe->dynamic.level_cell_lists.resize(header->cell_subdiv);
 
 	_gi_probe_fill_local_data(0,0,0,0,0,cells,header,ldw.ptr(),probe->dynamic.level_cell_lists.ptr());
 
-	probe->dynamic.probe_data=VSG::storage->gi_probe_dynamic_data_create(header->width,header->height,header->depth);
+	probe->dynamic.compression = VSG::storage->gi_probe_get_dynamic_data_get_preferred_compression();
+
+	probe->dynamic.probe_data=VSG::storage->gi_probe_dynamic_data_create(header->width,header->height,header->depth,probe->dynamic.compression);
 
 	probe->dynamic.bake_dynamic_range=VSG::storage->gi_probe_get_dynamic_range(p_instance->base);
 
@@ -2417,6 +2419,14 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	probe->dynamic.grid_size[1]=header->height;
 	probe->dynamic.grid_size[2]=header->depth;
 
+	int size_limit = 1;
+	int size_divisor = 1;
+
+	if (probe->dynamic.compression==RasterizerStorage::GI_PROBE_S3TC) {
+		print_line("S3TC");
+		size_limit=4;
+		size_divisor=4;
+	}
 	for(int i=0;i<(int)header->cell_subdiv;i++) {
 
 		uint32_t x = header->width >> i;
@@ -2425,14 +2435,16 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 
 		//create and clear mipmap
 		DVector<uint8_t> mipmap;
-		mipmap.resize(x*y*z*4);
+		int size = x*y*z*4;
+		size/=size_divisor;
+		mipmap.resize(size);
 		DVector<uint8_t>::Write w = mipmap.write();
-		zeromem(w.ptr(),x*y*z*4);
+		zeromem(w.ptr(),size);
 		w = DVector<uint8_t>::Write();
 
 		probe->dynamic.mipmaps_3d.push_back(mipmap);
 
-		if (x<=1 || y<=1 || z<=1)
+		if (x<=size_limit || y<=size_limit || z<=size_limit)
 			break;
 	}
 
@@ -2449,11 +2461,131 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	VSG::scene_render->gi_probe_instance_set_light_data(probe->probe_instance,p_instance->base,probe->dynamic.probe_data);
 	VSG::scene_render->gi_probe_instance_set_transform_to_data(probe->probe_instance,probe->dynamic.light_to_cell_xform);
 
-
-
 	VSG::scene_render->gi_probe_instance_set_bounds(probe->probe_instance,bounds.size/cell_size);
 
 	probe->base_version=VSG::storage->gi_probe_get_version(p_instance->base);
+
+	//if compression is S3TC, fill it up
+	if (probe->dynamic.compression==RasterizerStorage::GI_PROBE_S3TC) {
+
+		//create all blocks
+		Vector<Map<uint32_t,InstanceGIProbeData::CompBlockS3TC> > comp_blocks;
+		int mipmap_count = probe->dynamic.mipmaps_3d.size();
+		comp_blocks.resize(mipmap_count);
+
+		for(int i=0;i<cell_count;i++) {
+
+			const GIProbeDataCell &c = cells[i];
+			const InstanceGIProbeData::LocalData &ld = ldw[i];
+			int level = c.level_alpha>>16;
+			int mipmap = header->cell_subdiv - level -1;
+			if (mipmap >= mipmap_count)
+				continue;//uninteresting
+
+
+			int blockx = (ld.pos[0]>>2);
+			int blocky = (ld.pos[1]>>2);
+			int blockz = (ld.pos[2]); //compression is x/y only
+
+			int blockw = (header->width >> mipmap) >> 2;
+			int blockh = (header->height >> mipmap) >> 2;
+
+			//print_line("cell "+itos(i)+" level "+itos(level)+"mipmap: "+itos(mipmap)+" pos: "+Vector3(blockx,blocky,blockz)+" size "+Vector2(blockw,blockh));
+
+			uint32_t key = blockz * blockw*blockh + blocky * blockw + blockx;
+
+			Map<uint32_t,InstanceGIProbeData::CompBlockS3TC> & cmap = comp_blocks[mipmap];
+
+			if (!cmap.has(key)) {
+
+				InstanceGIProbeData::CompBlockS3TC k;
+				k.offset=key; //use offset as counter first
+				k.source_count=0;
+				cmap[key]=k;
+			}
+
+			InstanceGIProbeData::CompBlockS3TC &k=cmap[key];
+			ERR_CONTINUE(k.source_count==16);
+			k.sources[k.source_count++]=i;
+		}
+
+		//fix the blocks, precomputing what is needed
+		probe->dynamic.mipmaps_s3tc.resize(mipmap_count);
+
+		for(int i=0;i<mipmap_count;i++) {
+			print_line("S3TC level: "+itos(i)+" blocks: "+itos(comp_blocks[i].size()));
+			probe->dynamic.mipmaps_s3tc[i].resize(comp_blocks[i].size());
+			DVector<InstanceGIProbeData::CompBlockS3TC>::Write w = probe->dynamic.mipmaps_s3tc[i].write();
+			int block_idx=0;
+
+			for (Map<uint32_t,InstanceGIProbeData::CompBlockS3TC>::Element *E=comp_blocks[i].front();E;E=E->next())  {
+
+				InstanceGIProbeData::CompBlockS3TC k = E->get();
+
+				//PRECOMPUTE ALPHA
+				int max_alpha=-100000;
+				int min_alpha=k.source_count==16 ?100000 :0; //if the block is not completely full, minimum is always 0, (and those blocks will map to 1, which will be zero)
+
+				uint8_t alpha_block[4][4]={ {0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0} };
+
+				for(int j=0;j<k.source_count;j++) {
+
+					int alpha = (cells[k.sources[j]].level_alpha>>8)&0xFF;
+					if (alpha<min_alpha)
+						min_alpha=alpha;
+					if (alpha>max_alpha)
+						max_alpha=alpha;
+					//fill up alpha block
+					alpha_block[ldw[k.sources[j]].pos[0]%4][ldw[k.sources[j]].pos[1]%4]=alpha;
+
+				}
+
+				//use the first mode (8 adjustable levels)
+				k.alpha[0]=max_alpha;
+				k.alpha[1]=min_alpha;
+
+				uint64_t alpha_bits=0;
+
+				if (max_alpha!=min_alpha) {
+
+					int idx=0;
+
+					for(int y=0;y<4;y++) {
+						for(int x=0;x<4;x++) {
+
+							//substract minimum
+							uint32_t a = uint32_t(alpha_block[x][y])-min_alpha;
+							//convert range to 3 bits
+							a =int((a * 7.0 / (max_alpha-min_alpha))+0.5);
+							a = CLAMP(a,0,7); //just to be sure
+							a = 7-a; //because range is inverted in this mode
+							if (a==0) {
+								//do none, remain
+							} else if (a==7) {
+								a=1;
+							} else {
+								a=a+1;
+							}
+
+							alpha_bits|=uint64_t(a)<<(idx*3);
+							idx++;
+						}
+					}
+				}
+
+				k.alpha[2]=(alpha_bits >> 0)&0xFF;
+				k.alpha[3]=(alpha_bits >> 8)&0xFF;
+				k.alpha[4]=(alpha_bits >> 16)&0xFF;
+				k.alpha[5]=(alpha_bits >> 24)&0xFF;
+				k.alpha[6]=(alpha_bits >> 32)&0xFF;
+				k.alpha[7]=(alpha_bits >> 40)&0xFF;
+
+				w[block_idx++]=k;
+
+			}
+
+		}
+	}
 
 }
 
@@ -2859,42 +2991,189 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 
 	//plot result to 3D texture!
 
-	for(int i=0;i<(int)header->cell_subdiv;i++) {
+	if (probe_data->dynamic.compression==RasterizerStorage::GI_PROBE_UNCOMPRESSED) {
 
-		int stage = header->cell_subdiv - i -1;
+		for(int i=0;i<(int)header->cell_subdiv;i++) {
 
-		if (stage >= probe_data->dynamic.mipmaps_3d.size())
-			continue; //no mipmap for this one
+			int stage = header->cell_subdiv - i -1;
 
-		print_line("generating mipmap stage: "+itos(stage));
-		int level_cell_count = probe_data->dynamic.level_cell_lists[ i ].size();
-		const uint32_t *level_cells = probe_data->dynamic.level_cell_lists[ i ].ptr();
+			if (stage >= probe_data->dynamic.mipmaps_3d.size())
+				continue; //no mipmap for this one
 
-		DVector<uint8_t>::Write lw = probe_data->dynamic.mipmaps_3d[stage].write();
-		uint8_t *mipmapw = lw.ptr();
+			print_line("generating mipmap stage: "+itos(stage));
+			int level_cell_count = probe_data->dynamic.level_cell_lists[ i ].size();
+			const uint32_t *level_cells = probe_data->dynamic.level_cell_lists[ i ].ptr();
 
-		uint32_t sizes[3]={header->width>>stage,header->height>>stage,header->depth>>stage};
+			DVector<uint8_t>::Write lw = probe_data->dynamic.mipmaps_3d[stage].write();
+			uint8_t *mipmapw = lw.ptr();
 
-		for(int j=0;j<level_cell_count;j++) {
+			uint32_t sizes[3]={header->width>>stage,header->height>>stage,header->depth>>stage};
 
-			uint32_t idx = level_cells[j];
+			for(int j=0;j<level_cell_count;j++) {
 
-			uint32_t r = (uint32_t(local_data[idx].energy[0])/probe_data->dynamic.bake_dynamic_range)>>2;
-			uint32_t g = (uint32_t(local_data[idx].energy[1])/probe_data->dynamic.bake_dynamic_range)>>2;
-			uint32_t b = (uint32_t(local_data[idx].energy[2])/probe_data->dynamic.bake_dynamic_range)>>2;
-			uint32_t a = cells[idx].alpha>>8;
+				uint32_t idx = level_cells[j];
 
-			uint32_t mm_ofs = sizes[0]*sizes[1]*(local_data[idx].pos[2]) + sizes[0]*(local_data[idx].pos[1]) + (local_data[idx].pos[0]);
-			mm_ofs*=4; //for RGBA (4 bytes)
+				uint32_t r = (uint32_t(local_data[idx].energy[0])/probe_data->dynamic.bake_dynamic_range)>>2;
+				uint32_t g = (uint32_t(local_data[idx].energy[1])/probe_data->dynamic.bake_dynamic_range)>>2;
+				uint32_t b = (uint32_t(local_data[idx].energy[2])/probe_data->dynamic.bake_dynamic_range)>>2;
+				uint32_t a = (cells[idx].level_alpha>>8)&0xFF;
 
-			mipmapw[mm_ofs+0]=uint8_t(CLAMP(r,0,255));
-			mipmapw[mm_ofs+1]=uint8_t(CLAMP(g,0,255));
-			mipmapw[mm_ofs+2]=uint8_t(CLAMP(b,0,255));
-			mipmapw[mm_ofs+3]=uint8_t(CLAMP(a,0,255));
+				uint32_t mm_ofs = sizes[0]*sizes[1]*(local_data[idx].pos[2]) + sizes[0]*(local_data[idx].pos[1]) + (local_data[idx].pos[0]);
+				mm_ofs*=4; //for RGBA (4 bytes)
+
+				mipmapw[mm_ofs+0]=uint8_t(CLAMP(r,0,255));
+				mipmapw[mm_ofs+1]=uint8_t(CLAMP(g,0,255));
+				mipmapw[mm_ofs+2]=uint8_t(CLAMP(b,0,255));
+				mipmapw[mm_ofs+3]=uint8_t(CLAMP(a,0,255));
+
+
+			}
+		}
+	} else if (probe_data->dynamic.compression==RasterizerStorage::GI_PROBE_S3TC) {
+
+
+		int mipmap_count = probe_data->dynamic.mipmaps_3d.size();
+
+		for(int mmi=0;mmi<mipmap_count;mmi++) {
+
+			DVector<uint8_t>::Write mmw = probe_data->dynamic.mipmaps_3d[mmi].write();
+			int block_count = probe_data->dynamic.mipmaps_s3tc[mmi].size();
+			DVector<InstanceGIProbeData::CompBlockS3TC>::Read mmr = probe_data->dynamic.mipmaps_s3tc[mmi].read();
+
+			for(int i=0;i<block_count;i++) {
+
+				const InstanceGIProbeData::CompBlockS3TC& b = mmr[i];
+
+				uint8_t *blockptr = &mmw[b.offset*16];
+				copymem(blockptr,b.alpha,8); //copy alpha part, which is precomputed
+
+				Vector3 colors[16];
+
+				for(int j=0;j<b.source_count;j++) {
+
+					colors[j].x=(local_data[b.sources[j]].energy[0]/float(probe_data->dynamic.bake_dynamic_range))/1024.0;
+					colors[j].y=(local_data[b.sources[j]].energy[1]/float(probe_data->dynamic.bake_dynamic_range))/1024.0;
+					colors[j].z=(local_data[b.sources[j]].energy[2]/float(probe_data->dynamic.bake_dynamic_range))/1024.0;
+				}
+				//super quick and dirty compression
+				//find 2 most futher apart
+				float distance=0;
+				Vector3 from,to;
+
+				if (b.source_count==16) {
+					//all cells are used so, find minmax between them
+					int further_apart[2]={0,0};
+					for(int j=0;j<b.source_count;j++) {
+						for(int k=j+1;k<b.source_count;k++) {
+							float d = colors[j].distance_squared_to(colors[k]);
+							if (d>distance) {
+								distance=d;
+								further_apart[0]=j;
+								further_apart[1]=k;
+							}
+						}
+					}
+
+					from = colors[further_apart[0]];
+					to = colors[further_apart[1]];
+
+				} else {
+					//if a block is missing, the priority is that this block remains black,
+					//otherwise the geometry will appear deformed
+					//correct shape wins over correct color in this case
+					//average all colors first
+					Vector3 average;
+
+					for(int j=0;j<b.source_count;j++) {
+						average+=colors[j];
+					}
+					average.normalize();
+					//find max distance in normal from average
+					for(int j=0;j<b.source_count;j++) {
+						float d = average.dot(colors[j]);
+						distance=MAX(d,distance);
+					}
+
+					from = Vector3(); //from black
+					to = average * distance;
+					//find max distance
+
+				}
+
+
+				int indices[16];
+				uint16_t color_0=0;
+				color_0 = CLAMP(int(from.x*31),0,31)<<11;
+				color_0 |= CLAMP(int(from.y*63),0,63)<<5;
+				color_0 |= CLAMP(int(from.z*31),0,31);
+
+				uint16_t color_1=0;
+				color_1 = CLAMP(int(to.x*31),0,31)<<11;
+				color_1 |= CLAMP(int(to.y*63),0,63)<<5;
+				color_1 |= CLAMP(int(to.z*31),0,31);
+
+				//if (color_1 > color_0) {
+					SWAP(color_1,color_0);
+					SWAP(from,to);
+				//}
+
+
+				if (distance>0) {
+
+					Vector3 dir = (to-from).normalized();
+
+
+					for(int j=0;j<b.source_count;j++) {
+
+						float d = (colors[j]-from).dot(dir) / distance;
+						indices[j]=int(d*3+0.5);
+
+						static const int index_swap[4]={0,3,1,2};
+
+						indices[j]=index_swap[CLAMP(indices[j],0,3)];
+
+
+					}
+				} else {
+					for(int j=0;j<b.source_count;j++) {
+						indices[j]=0;
+					}
+				}
+
+				//by default, 1 is black, otherwise it will be overriden by source
+
+				uint32_t index_block[16]={1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1 };
+
+				for(int j=0;j<b.source_count;j++) {
+
+					int x=local_data[b.sources[j]].pos[0]%4;
+					int y=local_data[b.sources[j]].pos[1]%4;
+
+					index_block[y*4+x]=indices[j];
+				}
+
+				uint32_t encode=0;
+
+				for(int j=0;j<16;j++) {
+					encode|=index_block[j]<<(j*2);
+				}
+
+				blockptr[8]=color_0&0xFF;
+				blockptr[9]=(color_0>>8)&0xFF;
+				blockptr[10]=color_1&0xFF;
+				blockptr[11]=(color_1>>8)&0xFF;
+				blockptr[12]=encode&0xFF;
+				blockptr[13]=(encode>>8)&0xFF;
+				blockptr[14]=(encode>>16)&0xFF;
+				blockptr[15]=(encode>>24)&0xFF;
+
+			}
 
 
 		}
+
 	}
+
 
 	//send back to main thread to update un little chunks
 	probe_data->dynamic.updating_stage=GI_UPDATE_STAGE_UPLOADING;
@@ -3055,7 +3334,7 @@ void VisualServerScene::render_probes() {
 
 						int mmsize = probe->dynamic.mipmaps_3d[i].size();
 						DVector<uint8_t>::Read r = probe->dynamic.mipmaps_3d[i].read();
-						VSG::storage->gi_probe_dynamic_data_update_rgba8(probe->dynamic.probe_data,0,probe->dynamic.grid_size[2]>>i,i,r.ptr());
+						VSG::storage->gi_probe_dynamic_data_update(probe->dynamic.probe_data,0,probe->dynamic.grid_size[2]>>i,i,r.ptr());
 					}
 
 

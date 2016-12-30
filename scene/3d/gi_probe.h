@@ -73,6 +73,7 @@ private:
 			float normal[3];
 			uint32_t used_sides;
 			float alpha; //used for upsampling
+			int level;
 
 			Cell() {
 				for(int i=0;i<8;i++) {
@@ -86,6 +87,7 @@ private:
 				}
 				alpha=0;
 				used_sides=0;
+				level=0;
 			}
 		};
 

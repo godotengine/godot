@@ -4882,37 +4882,45 @@ uint32_t RasterizerStorageGLES3::gi_probe_get_version(RID p_probe) {
 	return gip->version;
 }
 
-RID RasterizerStorageGLES3::gi_probe_dynamic_data_create(int p_width,int p_height,int p_depth) {
+RasterizerStorage::GIProbeCompression RasterizerStorageGLES3::gi_probe_get_dynamic_data_get_preferred_compression() const {
+	if (config.s3tc_supported) {
+		return GI_PROBE_S3TC;
+	} else {
+		return GI_PROBE_UNCOMPRESSED;
+	}
+}
+
+RID RasterizerStorageGLES3::gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression) {
 
 	GIProbeData *gipd = memnew( GIProbeData );
 
 	gipd->width=p_width;
 	gipd->height=p_height;
 	gipd->depth=p_depth;
+	gipd->compression=p_compression;
 
 	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1,&gipd->tex_id);
 	glBindTexture(GL_TEXTURE_3D,gipd->tex_id);
 
 	int level=0;
+	int min_size=1;
+
+	if (gipd->compression==GI_PROBE_S3TC) {
+		min_size=4;
+	}
 
 	print_line("dyndata create");
 	while(true) {
 
-		Vector<uint8_t> data;
-		data.resize(p_width*p_height*p_depth*4);
-
-
-		for(int i=0;i<data.size();i+=4) {
-
-			data[i+0]=0xFF;
-			data[i+1]=0x00;
-			data[i+2]=0xFF;
-			data[i+3]=0xFF;
+		if (gipd->compression==GI_PROBE_S3TC) {
+			int size = p_width * p_height * p_depth;
+			glCompressedTexImage3D(GL_TEXTURE_3D,level,_EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT,p_width,p_height,p_depth,0, size,NULL);
+		} else {
+			glTexImage3D(GL_TEXTURE_3D,level,GL_RGBA8,p_width,p_height,p_depth,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
 		}
 
-		glTexImage3D(GL_TEXTURE_3D,level,GL_RGBA8,p_width,p_height,p_depth,0,GL_RGBA,GL_UNSIGNED_BYTE,data.ptr());
-		if (p_width<=1 || p_height<=1 || p_depth<=1)
+		if (p_width<=min_size || p_height<=min_size || p_depth<=min_size)
 			break;
 		p_width>>=1;
 		p_height>>=1;
@@ -4933,7 +4941,7 @@ RID RasterizerStorageGLES3::gi_probe_dynamic_data_create(int p_width,int p_heigh
 	return gi_probe_data_owner.make_rid(gipd);
 }
 
-void RasterizerStorageGLES3::gi_probe_dynamic_data_update_rgba8(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data) {
+void RasterizerStorageGLES3::gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data) {
 
 	GIProbeData *gipd = gi_probe_data_owner.getornull(p_gi_probe_data);
 	ERR_FAIL_COND(!gipd);
@@ -4957,14 +4965,168 @@ void RasterizerStorageGLES3::gi_probe_dynamic_data_update_rgba8(RID p_gi_probe_d
 */
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_3D,gipd->tex_id);
-	glTexSubImage3D(GL_TEXTURE_3D,p_mipmap,0,0,p_depth_slice,gipd->width>>p_mipmap,gipd->height>>p_mipmap,p_slice_count,GL_RGBA,GL_UNSIGNED_BYTE,p_data);
+	if (gipd->compression==GI_PROBE_S3TC) {
+		int size = (gipd->width>>p_mipmap) * (gipd->height>>p_mipmap) * p_slice_count;
+		glCompressedTexSubImage3D(GL_TEXTURE_3D,p_mipmap,0,0,p_depth_slice,gipd->width>>p_mipmap,gipd->height>>p_mipmap,p_slice_count,_EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT,size, p_data);
+	} else {
+		glTexSubImage3D(GL_TEXTURE_3D,p_mipmap,0,0,p_depth_slice,gipd->width>>p_mipmap,gipd->height>>p_mipmap,p_slice_count,GL_RGBA,GL_UNSIGNED_BYTE,p_data);
+	}
 	//glTexImage3D(GL_TEXTURE_3D,p_mipmap,GL_RGBA8,gipd->width>>p_mipmap,gipd->height>>p_mipmap,gipd->depth>>p_mipmap,0,GL_RGBA,GL_UNSIGNED_BYTE,p_data);
 	//glTexImage3D(GL_TEXTURE_3D,p_mipmap,GL_RGBA8,gipd->width>>p_mipmap,gipd->height>>p_mipmap,gipd->depth>>p_mipmap,0,GL_RGBA,GL_UNSIGNED_BYTE,data.ptr());
-	print_line("update rgba8 "+itos(p_mipmap));
+
+}
+
+///////
+
+
+RID RasterizerStorageGLES3::particles_create() {
+
+	Particles *particles = memnew( Particles );
+
+
+	return particles_owner.make_rid(particles);
+}
+
+void RasterizerStorageGLES3::particles_set_emitting(RID p_particles,bool p_emitting) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->emitting=p_emitting;
+
+}
+void RasterizerStorageGLES3::particles_set_amount(RID p_particles,int p_amount) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+}
+void RasterizerStorageGLES3::particles_set_lifetime(RID p_particles,float p_lifetime){
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->lifetime=p_lifetime;
+}
+void RasterizerStorageGLES3::particles_set_pre_process_time(RID p_particles,float p_time) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->pre_process_time=p_time;
+
+}
+void RasterizerStorageGLES3::particles_set_explosiveness_ratio(RID p_particles,float p_ratio) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->explosiveness=p_ratio;
+}
+void RasterizerStorageGLES3::particles_set_randomness_ratio(RID p_particles,float p_ratio) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->randomness=p_ratio;
+
+}
+void RasterizerStorageGLES3::particles_set_custom_aabb(RID p_particles,const AABB& p_aabb) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->custom_aabb=p_aabb;
+
+}
+void RasterizerStorageGLES3::particles_set_gravity(RID p_particles,const Vector3& p_gravity) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->gravity=p_gravity;
+
+}
+void RasterizerStorageGLES3::particles_set_use_local_coordinates(RID p_particles,bool p_enable) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->use_local_coords=p_enable;
+}
+void RasterizerStorageGLES3::particles_set_process_material(RID p_particles,RID p_material) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->process_material=p_material;
+}
+
+void RasterizerStorageGLES3::particles_set_emission_shape(RID p_particles, VS::ParticlesEmissionShape p_shape) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->emission_shape=p_shape;
+}
+void RasterizerStorageGLES3::particles_set_emission_sphere_radius(RID p_particles,float p_radius) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->emission_sphere_radius=p_radius;
+}
+void RasterizerStorageGLES3::particles_set_emission_box_extents(RID p_particles,const Vector3& p_extents) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->emission_box_extents=p_extents;
+}
+void RasterizerStorageGLES3::particles_set_emission_points(RID p_particles,const DVector<Vector3>& p_points) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->emission_points=p_points;
 }
 
 
+void RasterizerStorageGLES3::particles_set_draw_order(RID p_particles,VS::ParticlesDrawOrder p_order) {
 
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->draw_order=p_order;
+}
+
+void RasterizerStorageGLES3::particles_set_draw_passes(RID p_particles,int p_count) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->draw_passes.resize(p_count);
+}
+void RasterizerStorageGLES3::particles_set_draw_pass_material(RID p_particles,int p_pass, RID p_material) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	ERR_FAIL_INDEX(p_pass,particles->draw_passes.size());
+	p_pass,particles->draw_passes[p_pass].material=p_material;
+
+}
+void RasterizerStorageGLES3::particles_set_draw_pass_mesh(RID p_particles,int p_pass, RID p_mesh) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	ERR_FAIL_INDEX(p_pass,particles->draw_passes.size());
+	p_pass,particles->draw_passes[p_pass].mesh=p_mesh;
+
+}
+
+AABB RasterizerStorageGLES3::particles_get_current_aabb(RID p_particles) {
+
+	const Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles,AABB());
+
+	return particles->computed_aabb;
+}
+
+////////
 
 void RasterizerStorageGLES3::instance_add_skeleton(RID p_skeleton,RasterizerScene::InstanceBase *p_instance) {
 
