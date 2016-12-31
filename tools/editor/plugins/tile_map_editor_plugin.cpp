@@ -1204,8 +1204,8 @@ void TileMapEditor::_canvas_draw() {
 			canvas_item_editor->draw_line(endpoints[i],endpoints[(i+1)%4],col,2);
 
 
-		if (tool==TOOL_SELECTING || tool==TOOL_PICKING) {
-
+		bool bucket_preview = EditorSettings::get_singleton()->get("tile_map/bucket_fill_preview");
+		if (tool==TOOL_SELECTING || tool==TOOL_PICKING || !bucket_preview) {
 			return;
 		}
 
@@ -1582,6 +1582,7 @@ TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("tile_map/preview_size",64);
 	EDITOR_DEF("tile_map/palette_item_hseparation",8);
 	EDITOR_DEF("tile_map/show_tile_names", true);
+	EDITOR_DEF("tile_map/bucket_fill_preview", true);
 
 	tile_map_editor = memnew( TileMapEditor(p_node) );
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE, tile_map_editor);
