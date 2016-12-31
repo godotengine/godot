@@ -2407,7 +2407,9 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 
 	_gi_probe_fill_local_data(0,0,0,0,0,cells,header,ldw.ptr(),probe->dynamic.level_cell_lists.ptr());
 
-	probe->dynamic.compression = VSG::storage->gi_probe_get_dynamic_data_get_preferred_compression();
+	bool compress = VSG::storage->gi_probe_is_compressed(p_instance->base);
+
+	probe->dynamic.compression = compress ? VSG::storage->gi_probe_get_dynamic_data_get_preferred_compression() : RasterizerStorage::GI_PROBE_UNCOMPRESSED;
 
 	probe->dynamic.probe_data=VSG::storage->gi_probe_dynamic_data_create(header->width,header->height,header->depth,probe->dynamic.compression);
 
@@ -3112,10 +3114,10 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 				color_1 |= CLAMP(int(to.y*63),0,63)<<5;
 				color_1 |= CLAMP(int(to.z*31),0,31);
 
-				//if (color_1 > color_0) {
+				if (color_1 > color_0) {
 					SWAP(color_1,color_0);
 					SWAP(from,to);
-				//}
+				}
 
 
 				if (distance>0) {

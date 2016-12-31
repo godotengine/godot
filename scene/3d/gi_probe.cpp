@@ -75,6 +75,19 @@ bool GIProbeData::is_interior() const{
 	return VS::get_singleton()->gi_probe_is_interior(probe);
 }
 
+
+bool GIProbeData::is_compressed() const{
+
+	return VS::get_singleton()->gi_probe_is_compressed(probe);
+}
+
+
+void GIProbeData::set_compress(bool p_enable) {
+
+	VS::get_singleton()->gi_probe_set_compress(probe,p_enable);
+
+}
+
 int GIProbeData::get_dynamic_range() const{
 
 
@@ -111,6 +124,9 @@ void GIProbeData::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_interior","interior"),&GIProbeData::set_interior);
 	ObjectTypeDB::bind_method(_MD("is_interior"),&GIProbeData::is_interior);
 
+	ObjectTypeDB::bind_method(_MD("set_compress","compress"),&GIProbeData::set_compress);
+	ObjectTypeDB::bind_method(_MD("is_compressed"),&GIProbeData::is_compressed);
+
 	ADD_PROPERTY(PropertyInfo(Variant::_AABB,"bounds",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_bounds"),_SCS("get_bounds"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"cell_size",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_cell_size"),_SCS("get_cell_size"));
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM,"to_cell_xform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_to_cell_xform"),_SCS("get_to_cell_xform"));
@@ -119,6 +135,7 @@ void GIProbeData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"dynamic_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_dynamic_range"),_SCS("get_dynamic_range"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_energy"),_SCS("get_energy"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"interior",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_interior"),_SCS("is_interior"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"compress",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_compress"),_SCS("is_compressed"));
 
 }
 
@@ -210,6 +227,19 @@ bool GIProbe::is_interior() const {
 	return interior;
 }
 
+
+void GIProbe::set_compress(bool p_enable) {
+
+	compress=p_enable;
+	if (probe_data.is_valid()) {
+		probe_data->set_compress(p_enable);
+	}
+}
+
+bool GIProbe::is_compressed() const {
+
+	return compress;
+}
 
 
 #include "math.h"
@@ -1145,6 +1175,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug){
 	probe_data->set_dynamic_range(dynamic_range);
 	probe_data->set_energy(energy);
 	probe_data->set_interior(interior);
+	probe_data->set_compress(compress);
 	probe_data->set_to_cell_xform(baker.to_cell_space);
 
 	set_probe_data(probe_data);
@@ -1327,6 +1358,9 @@ void GIProbe::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_interior","enable"),&GIProbe::set_interior);
 	ObjectTypeDB::bind_method(_MD("is_interior"),&GIProbe::is_interior);
 
+	ObjectTypeDB::bind_method(_MD("set_compress","enable"),&GIProbe::set_compress);
+	ObjectTypeDB::bind_method(_MD("is_compressed"),&GIProbe::is_compressed);
+
 	ObjectTypeDB::bind_method(_MD("bake","from_node","create_visual_debug"),&GIProbe::bake,DEFVAL(Variant()),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("debug_bake"),&GIProbe::_debug_bake);
 	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("debug_bake"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
@@ -1336,6 +1370,7 @@ void GIProbe::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"dynamic_range",PROPERTY_HINT_RANGE,"1,16,1"),_SCS("set_dynamic_range"),_SCS("get_dynamic_range"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_energy"),_SCS("get_energy"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"interior"),_SCS("set_interior"),_SCS("is_interior"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"compress"),_SCS("set_compress"),_SCS("is_compressed"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"data",PROPERTY_HINT_RESOURCE_TYPE,"GIProbeData"),_SCS("set_probe_data"),_SCS("get_probe_data"));
 
 
@@ -1355,6 +1390,7 @@ GIProbe::GIProbe() {
 	color_scan_cell_width=4;
 	bake_texture_size=128;
 	interior=false;
+	compress=false;
 
 	gi_probe = VS::get_singleton()->gi_probe_create();
 

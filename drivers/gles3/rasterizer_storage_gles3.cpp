@@ -4743,6 +4743,7 @@ RID RasterizerStorageGLES3::gi_probe_create() {
 	gip->dynamic_range=1.0;
 	gip->energy=1.0;
 	gip->interior=false;
+	gip->compress=false;
 	gip->version=1;
 	gip->cell_size=1.0;
 
@@ -4864,6 +4865,24 @@ bool RasterizerStorageGLES3::gi_probe_is_interior(RID p_probe) const{
 
 }
 
+
+void RasterizerStorageGLES3::gi_probe_set_compress(RID p_probe,bool p_enable) {
+
+	GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gip);
+
+	gip->compress=p_enable;
+
+}
+
+bool RasterizerStorageGLES3::gi_probe_is_compressed(RID p_probe) const{
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,false);
+
+	return gip->compress;
+
+}
 float RasterizerStorageGLES3::gi_probe_get_energy(RID p_probe) const{
 
 	const GIProbe *gip = gi_probe_owner.getornull(p_probe);

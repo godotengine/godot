@@ -38,6 +38,9 @@ public:
 	void set_interior(bool p_enable);
 	bool is_interior() const;
 
+	void set_compress(bool p_enable);
+	bool is_compressed() const;
+
 	virtual RID get_rid() const;
 
 	GIProbeData();
@@ -130,6 +133,7 @@ private:
 	int dynamic_range;
 	float energy;
 	bool interior;
+	bool compress;
 
 	int color_scan_cell_width;
 	int bake_texture_size;
@@ -169,6 +173,8 @@ public:
 	void set_interior(bool p_enable);
 	bool is_interior() const;
 
+	void set_compress(bool p_enable);
+	bool is_compressed() const;
 
 	void bake(Node *p_from_node=NULL,bool p_create_visual_debug=false);
 

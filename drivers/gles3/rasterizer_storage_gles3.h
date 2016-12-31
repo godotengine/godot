@@ -899,6 +899,7 @@ public:
 		int dynamic_range;
 		float energy;
 		bool interior;
+		bool compress;
 
 		uint32_t version;
 
@@ -931,6 +932,9 @@ public:
 
 	virtual void gi_probe_set_interior(RID p_probe,bool p_enable);
 	virtual bool gi_probe_is_interior(RID p_probe) const;
+
+	virtual void gi_probe_set_compress(RID p_probe,bool p_enable);
+	virtual bool gi_probe_is_compressed(RID p_probe) const;
 
 	virtual uint32_t gi_probe_get_version(RID p_probe);
 

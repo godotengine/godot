@@ -146,7 +146,7 @@ MATERIAL_UNIFORMS
 
 #endif
 
-#ifdef RENDER_SHADOW_DUAL_PARABOLOID
+#ifdef RENDER_DEPTH_DUAL_PARABOLOID
 
 out highp float dp_clip;
 
@@ -253,10 +253,10 @@ VERTEX_SHADER_CODE
 	binormal_interp = binormal;
 #endif
 
-#ifdef RENDER_SHADOW
+#ifdef RENDER_DEPTH
 
 
-#ifdef RENDER_SHADOW_DUAL_PARABOLOID
+#ifdef RENDER_DEPTH_DUAL_PARABOLOID
 
 	vertex_interp.z*= shadow_dual_paraboloid_render_side;
 	normal_interp.z*= shadow_dual_paraboloid_render_side;
@@ -282,12 +282,12 @@ VERTEX_SHADER_CODE
 	z_ofs += (1.0-abs(normal_interp.z))*shadow_z_slope_scale;
 	vertex_interp.z-=z_ofs;
 
-#endif //RENDER_SHADOW_DUAL_PARABOLOID
+#endif //RENDER_DEPTH_DUAL_PARABOLOID
 
-#endif //RENDER_SHADOW
+#endif //RENDER_DEPTH
 
 
-#if !defined(SKIP_TRANSFORM_USED) && !defined(RENDER_SHADOW_DUAL_PARABOLOID)
+#if !defined(SKIP_TRANSFORM_USED) && !defined(RENDER_DEPTH_DUAL_PARABOLOID)
 	gl_Position = projection_matrix * vec4(vertex_interp,1.0);
 #else
 	gl_Position = vertex;
@@ -622,7 +622,7 @@ float sample_shadow(highp sampler2DShadow shadow, vec2 shadow_pixel_size, vec2 p
 
 }
 
-#ifdef RENDER_SHADOW_DUAL_PARABOLOID
+#ifdef RENDER_DEPTH_DUAL_PARABOLOID
 
 in highp float dp_clip;
 
@@ -861,20 +861,20 @@ vec3 voxel_cone_trace(sampler3D probe, vec3 cell_size, vec3 pos, vec3 ambient, b
 
 	float dist = dot(direction,mix(vec3(-1.0),vec3(1.0),greaterThan(direction,vec3(0.0))))*2.0;
 	float alpha=0.0;
-	vec4 color = vec4(0.0);
+	vec3 color = vec3(0.0);
 
 	while(dist < max_distance && alpha < 0.95) {
 		float diameter = max(1.0, 2.0 * tan_half_angle * dist);
 		vec4 scolor = textureLod(probe, (pos + dist * direction) * cell_size, log2(diameter) );
 		float a = (1.0 - alpha);
-		color.rgb += a * scolor.rgb;
+		color += scolor.rgb * a;
 		alpha += a * scolor.a;
 		dist += diameter * 0.5;
 	}
 
 	//color.rgb = mix(color.rgb,mix(ambient,color.rgb,alpha),blend_ambient);
 
-	return color.rgb;
+	return color;
 }
 
 void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_size,vec3 pos, vec3 ambient, vec3 environment, bool blend_ambient,float multiplier, mat3 normal_mtx,vec3 ref_vec, float roughness, out vec4 out_spec, out vec4 out_diff) {
@@ -1004,7 +1004,7 @@ void gi_probes_compute(vec3 pos, vec3 normal, float roughness, vec3 specular, in
 
 void main() {
 
-#ifdef RENDER_SHADOW_DUAL_PARABOLOID
+#ifdef RENDER_DEPTH_DUAL_PARABOLOID
 
 	if (dp_clip>0.0)
 		discard;
@@ -1128,7 +1128,7 @@ FRAGMENT_SHADER_CODE
 
 	vec3 eye_vec = -normalize( vertex_interp );
 
-#ifndef RENDER_SHADOW
+#ifndef RENDER_DEPTH
 	float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
 
 	vec2 brdf = texture(brdf_texture, vec2(roughness, ndotv)).xy;
@@ -1370,7 +1370,7 @@ LIGHT_SHADER_CODE
 }
 #endif
 
-#ifdef RENDER_SHADOW
+#ifdef RENDER_DEPTH
 //nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
 #else
 
@@ -1424,7 +1424,7 @@ LIGHT_SHADER_CODE
 
 
 
-#endif //RENDER_SHADOW
+#endif //RENDER_DEPTH
 
 
 }

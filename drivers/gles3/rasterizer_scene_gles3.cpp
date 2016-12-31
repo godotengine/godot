@@ -3687,8 +3687,46 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 	state.ubo_data.subsurface_scatter_width=subsurface_scatter_size;
 
 
+	state.ubo_data.shadow_z_offset=0;
+	state.ubo_data.shadow_slope_scale=0;
+	state.ubo_data.shadow_dual_paraboloid_render_side=0;
+	state.ubo_data.shadow_dual_paraboloid_render_zfar=0;
 
 	_setup_environment(env,p_cam_projection,p_cam_transform);
+
+	bool fb_cleared=false;
+
+	glDepthFunc(GL_LEQUAL);
+
+
+	if (storage->frame.current_rt && true) {
+		//pre z pass
+		glDisable(GL_BLEND);
+		glDepthMask(GL_TRUE);
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_SCISSOR_TEST);
+		glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->fbo);
+		glViewport(0,0,storage->frame.current_rt->width,storage->frame.current_rt->height);
+
+		glColorMask(0,0,0,0);
+
+		glClearDepth(1.0);
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+
+		render_list.clear();
+		_fill_render_list(p_cull_result,p_cull_count,true);
+		render_list.sort_by_depth(false);
+		state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH,true);
+		_render_list(render_list.elements,render_list.element_count,p_cam_transform,p_cam_projection,0,false,false,true,false,false);
+		state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH,false);
+
+		glColorMask(1,1,1,1);
+
+		fb_cleared=true;
+		render_pass++;
+	}
+
 
 	_setup_lights(p_light_cull_result,p_light_cull_count,p_cam_transform.affine_inverse(),p_cam_projection,p_shadow_atlas);
 	_setup_reflections(p_reflection_probe_cull_result,p_reflection_probe_cull_count,p_cam_transform.affine_inverse(),p_cam_projection,p_reflection_atlas,env);
@@ -3778,9 +3816,10 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 		}
 	}
 
-
-	glClearDepth(1.0);
-	glClear(GL_DEPTH_BUFFER_BIT);
+	if (!fb_cleared) {
+		glClearDepth(1.0);
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
 
 	Color clear_color(0,0,0,0);
 
@@ -4287,7 +4326,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light,RID p_shadow_atlas,int p_pa
 				zfar=light->param[VS::LIGHT_PARAM_RANGE];
 				bias=light->param[VS::LIGHT_PARAM_SHADOW_BIAS];
 
-				state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_SHADOW_DUAL_PARABOLOID,true);
+				state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH_DUAL_PARABOLOID,true);
 			}
 
 		} else if (light->type==VS::LIGHT_SPOT) {
@@ -4341,12 +4380,12 @@ void RasterizerSceneGLES3::render_shadow(RID p_light,RID p_shadow_atlas,int p_pa
 
 	_setup_environment(NULL,light_projection,light_transform);
 
-	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_SHADOW,true);
+	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH,true);
 
 	_render_list(render_list.elements,render_list.element_count,light_transform,light_projection,0,!flip_facing,false,true,false,false);
 
-	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_SHADOW,false);
-	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_SHADOW_DUAL_PARABOLOID,false);
+	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH,false);
+	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH_DUAL_PARABOLOID,false);
 
 
 	if (light->type==VS::LIGHT_OMNI && light->omni_shadow_mode==VS::LIGHT_OMNI_SHADOW_CUBE && p_pass==5) {

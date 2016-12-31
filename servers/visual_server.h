@@ -472,6 +472,9 @@ public:
 	virtual void gi_probe_set_interior(RID p_probe,bool p_enable)=0;
 	virtual bool gi_probe_is_interior(RID p_probe) const=0;
 
+	virtual void gi_probe_set_compress(RID p_probe,bool p_enable)=0;
+	virtual bool gi_probe_is_compressed(RID p_probe) const=0;
+
 	/* PARTICLES API */
 
 	virtual RID particles_create()=0;

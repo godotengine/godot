@@ -404,7 +404,7 @@ void Image::convert( Format p_new_format ){
 		case FORMAT_RGBA8|(FORMAT_LA8<<8): _convert<3,true,1,true,false,true>( width, height,rptr, wptr ); break;
 		case FORMAT_RGBA8|(FORMAT_R8<<8): _convert<3,true,1,false,false,false>( width, height,rptr, wptr ); break;
 		case FORMAT_RGBA8|(FORMAT_RG8<<8): _convert<3,true,2,false,false,false>( width, height,rptr, wptr ); break;
-		case FORMAT_RGBA8|(FORMAT_RGB8<<8): _convert<3,true,3,true,false,false>( width, height,rptr, wptr ); break;
+		case FORMAT_RGBA8|(FORMAT_RGB8<<8): _convert<3,true,3,false,false,false>( width, height,rptr, wptr ); break;
 
 	}
 
