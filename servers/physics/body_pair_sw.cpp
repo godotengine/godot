@@ -307,8 +307,8 @@ bool BodyPairSW::setup(float p_step) {
 		}
 #endif
 
-		c.rA = global_A;
-		c.rB = global_B-offset_B;
+		c.rA = global_A-A->get_center_of_mass();
+		c.rB = global_B-B->get_center_of_mass()-offset_B;
 
 		// contact query reporting...
 #if 0
@@ -364,12 +364,12 @@ bool BodyPairSW::setup(float p_step) {
 		c.depth=depth;
 
 		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;
-		A->apply_impulse( c.rA, -j_vec );
-		B->apply_impulse( c.rB, j_vec );
+		A->apply_impulse( c.rA+A->get_center_of_mass(), -j_vec );
+		B->apply_impulse( c.rB+B->get_center_of_mass(), j_vec );
 		c.acc_bias_impulse=0;
 		Vector3 jb_vec = c.normal * c.acc_bias_impulse;
-		A->apply_bias_impulse( c.rA, -jb_vec );
-		B->apply_bias_impulse( c.rB, jb_vec );
+		A->apply_bias_impulse( c.rA+A->get_center_of_mass(), -jb_vec );
+		B->apply_bias_impulse( c.rB+B->get_center_of_mass(), jb_vec );
 
 		c.bounce = MAX(A->get_bounce(),B->get_bounce());
 		if (c.bounce) {
@@ -418,8 +418,8 @@ void BodyPairSW::solve(float p_step) {
 			Vector3 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
 
-			A->apply_bias_impulse(c.rA,-jb);
-			B->apply_bias_impulse(c.rB, jb);
+			A->apply_bias_impulse(c.rA+A->get_center_of_mass(),-jb);
+			B->apply_bias_impulse(c.rB+B->get_center_of_mass(), jb);
 
 			c.active=true;
 		}
@@ -442,8 +442,8 @@ void BodyPairSW::solve(float p_step) {
 			Vector3 j =c.normal * (c.acc_normal_impulse - jnOld);
 
 
-			A->apply_impulse(c.rA,-j);
-			B->apply_impulse(c.rB, j);
+			A->apply_impulse(c.rA+A->get_center_of_mass(),-j);
+			B->apply_impulse(c.rB+B->get_center_of_mass(), j);
 
 			c.active=true;
 		}
@@ -489,8 +489,8 @@ void BodyPairSW::solve(float p_step) {
 			jt = c.acc_tangent_impulse - jtOld;
 
 
-			A->apply_impulse( c.rA, -jt );
-			B->apply_impulse( c.rB, jt );
+			A->apply_impulse( c.rA+A->get_center_of_mass(), -jt );
+			B->apply_impulse( c.rB+B->get_center_of_mass(), jt );
 
 			c.active=true;
 

@@ -805,6 +805,15 @@ void PhysicsServerSW::body_apply_impulse(RID p_body, const Vector3& p_pos, const
 	body->wakeup();
 };
 
+void PhysicsServerSW::body_apply_torque_impulse(RID p_body, const Vector3& p_impulse) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_torque_impulse(p_impulse);
+	body->wakeup();
+};
+
 void PhysicsServerSW::body_set_axis_velocity(RID p_body, const Vector3& p_axis_velocity) {
 
 	BodySW *body = body_owner.get(p_body);

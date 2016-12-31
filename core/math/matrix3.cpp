@@ -100,6 +100,80 @@ Matrix3 Matrix3::orthonormalized() const {
 }
 
 
+bool Matrix3::is_symmetric() const {
+
+	if (Math::abs(elements[0][1] - elements[1][0]) > CMP_EPSILON)
+		return false;
+	if (Math::abs(elements[0][2] - elements[2][0]) > CMP_EPSILON)
+		return false;
+	if (Math::abs(elements[1][2] - elements[2][1]) > CMP_EPSILON)
+		return false;
+
+	return true;
+}
+
+
+Matrix3 Matrix3::diagonalize() {
+
+	//NOTE: only implemented for symmetric matrices
+	//with the Jacobi iterative method method
+	
+	ERR_FAIL_COND_V(!is_symmetric(), Matrix3());
+
+	const int ite_max = 1024;
+
+	real_t off_matrix_norm_2 = elements[0][1] * elements[0][1] + elements[0][2] * elements[0][2] + elements[1][2] * elements[1][2]; 
+
+	int ite = 0;
+	Matrix3 acc_rot;
+	while (off_matrix_norm_2 > CMP_EPSILON2 && ite++ < ite_max ) {
+		real_t el01_2 = elements[0][1] * elements[0][1];
+		real_t el02_2 = elements[0][2] * elements[0][2];
+		real_t el12_2 = elements[1][2] * elements[1][2];
+		// Find the pivot element
+		int i, j;
+		if (el01_2 > el02_2) {
+			if (el12_2 > el01_2) {
+				i = 1;
+				j = 2;
+			} else {
+				i = 0;
+				j = 1;
+			}	
+		} else {
+			if (el12_2 > el02_2) {
+				i = 1;
+				j = 2;
+			} else {
+				i = 0;
+				j = 2;
+			}
+		}
+
+		// Compute the rotation angle
+	    real_t angle;
+		if (Math::abs(elements[j][j] - elements[i][i]) < CMP_EPSILON) {
+			angle = Math_PI / 4;
+		} else {
+			angle = 0.5 * Math::atan(2 * elements[i][j] / (elements[j][j] - elements[i][i]));		
+		}
+
+		// Compute the rotation matrix
+		Matrix3 rot;
+		rot.elements[i][i] = rot.elements[j][j] = Math::cos(angle);
+		rot.elements[i][j] = - (rot.elements[j][i] = Math::sin(angle));
+
+		// Update the off matrix norm
+		off_matrix_norm_2 -= elements[i][j] * elements[i][j];
+
+		// Apply the rotation
+		*this = rot * *this * rot.transposed();
+		acc_rot = rot * acc_rot;
+	}
+
+	return acc_rot;
+}
+
 Matrix3 Matrix3::inverse() const {
 
 	Matrix3 inv=*this;

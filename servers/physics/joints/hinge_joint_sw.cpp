@@ -173,10 +173,10 @@ bool HingeJointSW::setup(float p_step) {
 		for (int i=0;i<3;i++)
 		{
 			memnew_placement(&m_jac[i], JacobianEntrySW(
-				A->get_transform().basis.transposed(),
-				B->get_transform().basis.transposed(),
-				pivotAInW - A->get_transform().origin,
-				pivotBInW - B->get_transform().origin,
+				A->get_principal_inertia_axes().transposed(),
+				B->get_principal_inertia_axes().transposed(),
+				pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
+				pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
 				normal[i],
 				A->get_inv_inertia(),
 				A->get_inv_mass(),
@@ -200,20 +200,20 @@ bool HingeJointSW::setup(float p_step) {
 	Vector3 hingeAxisWorld = A->get_transform().basis.xform( m_rbAFrame.basis.get_axis(2) );
 
 	memnew_placement(&m_jacAng[0],	JacobianEntrySW(jointAxis0,
-		A->get_transform().basis.transposed(),
-		B->get_transform().basis.transposed(),
+		A->get_principal_inertia_axes().transposed(),
+		B->get_principal_inertia_axes().transposed(),
 		A->get_inv_inertia(),
 		B->get_inv_inertia()));
 
 	memnew_placement(&m_jacAng[1],	JacobianEntrySW(jointAxis1,
-		A->get_transform().basis.transposed(),
-		B->get_transform().basis.transposed(),
+		A->get_principal_inertia_axes().transposed(),
+		B->get_principal_inertia_axes().transposed(),
 		A->get_inv_inertia(),
 		B->get_inv_inertia()));
 
 	memnew_placement(&m_jacAng[2],	JacobianEntrySW(hingeAxisWorld,
-		A->get_transform().basis.transposed(),
-		B->get_transform().basis.transposed(),
+		A->get_principal_inertia_axes().transposed(),
+		B->get_principal_inertia_axes().transposed(),
 		A->get_inv_inertia(),
 		B->get_inv_inertia()));
 

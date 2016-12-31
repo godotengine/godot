@@ -590,7 +590,7 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 			    rel_pos1,
 			    rel_pos2,
 			    normal,
-			    s->get_inverse_inertia(),
+			    s->get_inverse_inertia_tensor().get_main_diagonal(),
 			    1.0/mass,
 			    b2invinertia,
 			    b2invmass);

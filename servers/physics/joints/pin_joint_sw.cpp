@@ -44,10 +44,10 @@ bool PinJointSW::setup(float p_step) {
 	{
 		normal[i] = 1;
 		memnew_placement(&m_jac[i],JacobianEntrySW(
-			A->get_transform().basis.transposed(),
-			B->get_transform().basis.transposed(),
-			A->get_transform().xform(m_pivotInA) - A->get_transform().origin,
-			B->get_transform().xform(m_pivotInB) - B->get_transform().origin,
+			A->get_principal_inertia_axes().transposed(),
+			B->get_principal_inertia_axes().transposed(),
+			A->get_transform().xform(m_pivotInA) - A->get_transform().origin - A->get_center_of_mass(),
+			B->get_transform().xform(m_pivotInB) - B->get_transform().origin - B->get_center_of_mass(),
 			normal,
 			A->get_inv_inertia(),
 			A->get_inv_mass(),
