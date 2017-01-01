@@ -5502,6 +5502,7 @@ EditorNode::EditorNode() {
 	}
 	top_dark_sb->set_expand_margin_size(MARGIN_LEFT,20);
 	top_dark_sb->set_expand_margin_size(MARGIN_RIGHT,20);
+	top_dark_sb->set_expand_margin_size(MARGIN_TOP,20);
 
 	top_dark_panel->add_style_override("panel",top_dark_sb);
 	VBoxContainer *top_dark_vb = memnew( VBoxContainer );
