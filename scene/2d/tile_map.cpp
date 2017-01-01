@@ -268,10 +268,10 @@ void TileMap::_update_dirty_quadrants() {
 
 	if (!pending_update)
 		return;
-	if (!is_inside_tree())
+	if (!is_inside_tree() || !tile_set.is_valid()) {
+		pending_update = false;
 		return;
-	if (!tile_set.is_valid())
-		return;
+	}
 
 	VisualServer *vs = VisualServer::get_singleton();
 	Physics2DServer *ps = Physics2DServer::get_singleton();
