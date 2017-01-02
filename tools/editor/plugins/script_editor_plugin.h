@@ -219,9 +219,10 @@ class ScriptEditor : public VBoxContainer {
 
 	bool _test_script_times_on_disk(Ref<Script> p_for_script=Ref<Script>());
 
-	void _close_tab(int p_idx);
+	void _close_tab(int p_idx, bool p_save=true);
 
 	void _close_current_tab();
+	void _close_discard_current_tab(const String& p_str);
 	void _close_docs_tab();
 	void _close_all_tabs();
 
