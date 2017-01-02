@@ -953,6 +953,66 @@ BOOL CALLBACK OS_Windows::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPR
 	return TRUE;
 }
 
+HANDLE opengl_init_timeout_waitevent_hd; // HACKPART
+DWORD WINAPI opengl_init_timeout_thread_cb( LPVOID lpParam ) {
+	// HACK WORKAROUND :
+	// the opengl init timeout below is a HACK to WORKAROUND issue #6502 : 
+	// - AMD drivers around version 16.7.3 crash on OpenGL initialisation when
+	// DualGraphics CrossFire is enabled.
+	// It is a bug into the graphics drivers that also affect AAA commercial
+	// games since at least DOOM3 and RAGE, and which is not likely to be fixed
+	// anytime soon by AMD.
+	// After the crash, Godot will become a zombie process.
+	// So we launch a separate thread that will display a warning after a timeout,
+	// and that will kill the Godot zombie.
+	// If OpenGL manage to initialise before this timeout, the thread is terminated
+	// and life continues.
+	// Note : we use CreateThread(), because SetTimer() does not work.
+
+	DWORD state;
+	// we block till we receive the signal from the main thread, or till the timeout is reached
+	state = WaitForSingleObject( opengl_init_timeout_waitevent_hd, 7000 ); 
+	if ( state == WAIT_OBJECT_0 ) { // we received the signal ?
+		return 1; // quit this thread
+	}
+
+	// if the user is looking into the console, we help him/her to patient a little bit
+	// so we reduce the chances that (s)he closes the console too early, because maybe
+	// there is just a high CPU load that slowed down the initialisation process ... 
+	printf("Warning : GLES2 initialisation is taking too much time ...\n");
+	
+	state = WaitForSingleObject( opengl_init_timeout_waitevent_hd, 7000 );
+	if ( state == WAIT_OBJECT_0 ) {
+		return 1;
+	}
+	
+	// now 14 seconds is really too long and almost beyond average user patience.
+	// Chances that drivers init failed are too great.
+	// we can warn and inform the user before terminating godot.
+
+	static char * title = "Warning : OpenGL initialisation timeout reached.\n";
+	static char * msg = "You're seeing this message because your graphics drivers "
+	"failed to initialize in time, which means that they are likely to contain a bug.\n"
+	"If this fails again, try to disable Crossfire or SLI and/or update your graphics drivers.\n"
+	"If this problem persists, please, send a bug report to the developers of "
+	"your graphics drivers and/or to the developers of this program.";
+
+	printf(title);
+	printf(msg);
+	
+	MessageBox( NULL, msg, title, MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL );
+
+	// we do a last check just in case the GLES2 driver managed to init
+	// while the user was reading the messagebox. (it might happen in case of excessively high CPU/disk load).
+	
+	state = WaitForSingleObject( opengl_init_timeout_waitevent_hd, 7000 );
+	if ( state == WAIT_OBJECT_0 ) {
+		return 1;
+	}
+		
+	// We force the main thread to exit.
+	exit(0);
+}
 
 void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
 
@@ -987,7 +1047,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	wc.lpszClassName	= L"Engine";
 
 	if (!RegisterClassExW(&wc)) {
-		MessageBox(NULL,"Failed To Register The Window Class.","ERROR",MB_OK|MB_ICONEXCLAMATION);
+		MessageBox(NULL,"Failed To Register The Window Class.","ERROR",MB_OK|MB_ICONEXCLAMATION| MB_TASKMODAL);
 		return;											// Return
 	}
 
@@ -1062,7 +1122,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 		RECT rect;
 		if (!GetClientRect(hWnd, &rect)) {
-			MessageBoxW(NULL,L"Window Creation Error.",L"ERROR",MB_OK|MB_ICONEXCLAMATION);
+			MessageBoxW(NULL,L"Window Creation Error.",L"ERROR",MB_OK|MB_ICONEXCLAMATION| MB_TASKMODAL);
 			return;								// Return FALSE
 		};
 		video_mode.width = rect.right;
@@ -1071,7 +1131,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	} else {
 
 		if (!(hWnd=CreateWindowExW(dwExStyle,L"Engine",L"", dwStyle|WS_CLIPSIBLINGS|WS_CLIPCHILDREN, (GetSystemMetrics(SM_CXSCREEN)-WindowRect.right)/2, (GetSystemMetrics(SM_CYSCREEN)-WindowRect.bottom)/2, WindowRect.right-WindowRect.left,WindowRect.bottom-WindowRect.top, NULL,NULL, hInstance,NULL))) {
-			MessageBoxW(NULL,L"Window Creation Error.",L"ERROR",MB_OK|MB_ICONEXCLAMATION);
+			MessageBoxW(NULL,L"Window Creation Error.",L"ERROR",MB_OK|MB_ICONEXCLAMATION| MB_TASKMODAL);
 			return;								// Return FALSE
 		}
 
@@ -1079,8 +1139,30 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	};
 
 #if defined(OPENGL_ENABLED) || defined(GLES2_ENABLED) || defined(LEGACYGL_ENABLED)
+	// HACK WORKAROUND :
+	// the opengl init timeout below is a HACK to WORKAROUND issue #6502 : 
+	// - AMD drivers around version 16.7.3 crash on OpenGL initialisation when
+	// DualGraphics CrossFire is enabled.
+	// It is a bug into the graphics drivers that also affect AAA commercial
+	// games since at least DOOM3 and RAGE, and which is not likely to be fixed
+	// anytime soon by AMD.
+	// After the crash, Godot will become a zombie process.
+	// So we launch a separate thread that will display a warning after a timeout,
+	// and that will kill the Godot zombie.
+	// If OpenGL manage to initialise before this timeout, the thread is terminated
+	// and life continues.
+	// Note : we use CreateThread(), because SetTimer() does not work.
+
+	opengl_init_timeout_waitevent_hd = CreateEvent( NULL,TRUE,FALSE,NULL ); // HACKPART
+	opengl_init_timeout_thread_hd = CreateThread(NULL,0,opengl_init_timeout_thread_cb,0,0,NULL); // HACKPART
+
 	gl_context = memnew( ContextGL_Win(hWnd,false) );
 	gl_context->initialize();
+
+	SetEvent(opengl_init_timeout_waitevent_hd); // HACKPART // we tell to the thread that we succeeded and that it can exit.
+	WaitForSingleObject( opengl_init_timeout_thread_hd, INFINITE); // HACKPART // wait for the thread to actually close (should not take more than a few milliseconds)
+	CloseHandle( opengl_init_timeout_thread_hd ); // HACKPART
+	
 	rasterizer = memnew( RasterizerGLES2 );
 #else
  #ifdef DX9_ENABLED
