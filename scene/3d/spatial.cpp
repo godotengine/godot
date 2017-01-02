@@ -709,7 +709,7 @@ void Spatial::set_identity() {
 
 
 void Spatial::look_at(const Vector3& p_target, const Vector3& p_up_normal) {
-
+	
 	Transform lookat;
 	lookat.origin=get_global_transform().origin;
 	if (lookat.origin==p_target) {
@@ -733,6 +733,20 @@ void Spatial::look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, con
 	set_global_transform(lookat);
 
 }
+
+void Spatial::look_at_dir(const Vector3& p_target, const Vector3& p_up_normal){
+	
+	Transform lookatdir;
+	lookatdir.origin=get_global_transform().origin;
+	if (p_up_normal.cross(p_target)==Vector3()) {
+		ERR_EXPLAIN("Up vector and direction between node origin and target are aligned, look_at_dir() failed");
+		ERR_FAIL();
+	}
+	
+	lookatdir=lookatdir.looking_at_dir(p_target,p_up_normal);
+	set_global_transform(lookatdir);
+}
+
 
 void Spatial::set_notify_local_transform(bool p_enable) {
 	data.notify_local_transform=p_enable;
@@ -810,6 +824,8 @@ void Spatial::_bind_methods() {
 
 	ObjectTypeDB::bind_method( _MD("look_at","target","up"),&Spatial::look_at );
 	ObjectTypeDB::bind_method( _MD("look_at_from_pos","pos","target","up"),&Spatial::look_at_from_pos );
+	ObjectTypeDB::bind_method( _MD("look_at_dir","direction","up"),&Spatial::look_at_dir);
+	
 
 	BIND_CONSTANT( NOTIFICATION_TRANSFORM_CHANGED );
 	BIND_CONSTANT( NOTIFICATION_ENTER_WORLD );

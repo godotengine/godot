@@ -183,6 +183,7 @@ public:
 
 	void look_at(const Vector3& p_target, const Vector3& p_up_normal);
 	void look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, const Vector3& p_up_normal);
+	void look_at_dir(const Vector3& p_target, const Vector3& p_up_normal);
 
 	void set_notify_local_transform(bool p_enable);
 	bool is_local_transform_notification_enabled() const;
