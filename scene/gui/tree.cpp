@@ -1405,11 +1405,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 
 		if (select_mode==SELECT_ROW) {
 
-
-			if (p_selected==p_current) {
-
-				if (!c.selected) {
-
+			if (p_selected==p_current && !c.selected) {
 					c.selected=true;
 					selected_item=p_selected;
 					selected_col=0;
@@ -1419,23 +1415,16 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 						emitted_row=true;
 					}
 					//if (p_col==i)
-					//	p_current->selected_signal.call(p_col);
-				}
+					 //	p_current->selected_signal.call(p_col);
 
-			} else {
-
-				if (c.selected) {
+			} else if (c.selected) {
 
 					c.selected=false;
 					//p_current->deselected_signal.call(p_col);
-				}
-
 			}
-
 		} else if (select_mode==SELECT_SINGLE || select_mode==SELECT_MULTI) {
 
 			if (!r_in_range && &selected_cell==&c) {
-
 
 				if (!selected_cell.selected) {
 
@@ -1447,6 +1436,8 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					emit_signal("cell_selected");
 					if (select_mode==SELECT_MULTI)
 						emit_signal("multi_selected",p_current,i,true);
+					else if(select_mode == SELECT_SINGLE)
+						emit_signal("item_selected");
 
 				} else if (select_mode==SELECT_MULTI && (selected_item!=p_selected || selected_col!=i)) {
 
@@ -2935,8 +2926,7 @@ void Tree::item_selected(int p_column,TreeItem *p_item) {
 
 void Tree::item_deselected(int p_column,TreeItem *p_item) {
 
-	if (select_mode==SELECT_MULTI) {
-
+	if (select_mode==SELECT_MULTI || select_mode == SELECT_SINGLE) {
 		p_item->cells[p_column].selected=false;
 	}
 	update();
