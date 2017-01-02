@@ -460,27 +460,35 @@ Error ShaderLanguage::tokenize(const String& p_text,Vector<Token> *p_tokens,Stri
 	int pos=0;
 
 	int line=0;
+	int col=0;
 
 	while(pos<len) {
 
 		int advance=0;
 		int prev_line=line;
 		Token t = read_token(&p_text[pos],len-pos,line,advance);
-		t.line=prev_line;
+		t.line=line;
+		t.col=col;
 
 		if (t.type==TK_ERROR) {
 
 			if (r_error) {
 				*r_error=t.text;
 				*r_err_line=line;
+				*r_err_column=col;
 				return ERR_COMPILATION_FAILED;
 			}
 		}
 
+		if (line==prev_line) {
+			col+=advance;
+		} else {
+			col=0;
+			//p_tokens->push_back(Token(TK_LINE,itos(line)))
+		}
+
 		if (t.type!=TK_EMPTY)
 			p_tokens->push_back(t);
-		//if (prev_line!=line)
-		//	p_tokens->push_back(Token(TK_LINE,itos(line)));
 
 		pos+=advance;
 
@@ -589,7 +597,7 @@ bool ShaderLanguage::is_token_nonvoid_datatype(TokenType p_type) {
 
 bool ShaderLanguage::parser_is_at_function(Parser& parser) {
 
-	return (is_token_datatype(parser.get_token_type(0)) && parser.get_token_type(1)==TK_INDENTIFIER && parser.get_token_type(2)==TK_PARENTHESIS_OPEN);
+	return (is_token_datatype(parser.get_next_token_type(0)) && parser.get_next_token_type(1)==TK_INDENTIFIER && parser.get_next_token_type(2)==TK_PARENTHESIS_OPEN);
 }
 
 
@@ -662,7 +670,7 @@ Error ShaderLanguage::parse_function(Parser& parser,BlockNode *p_block) {
 
 	ProgramNode *program = (ProgramNode*)p_block->parent;
 
-	StringName name = parser.get_token(1).text;
+	StringName name = parser.get_next_token(1).text;
 
 	if (test_existing_identifier(p_block,name)) {
 
@@ -677,7 +685,7 @@ Error ShaderLanguage::parse_function(Parser& parser,BlockNode *p_block) {
 
 	function->name=name;
 
-	function->return_type=get_token_datatype(parser.get_token_type(0));
+	function->return_type=get_token_datatype(parser.get_next_token_type(0));
 
 	{ //add to programnode
 		ProgramNode::Function f;
@@ -691,13 +699,13 @@ Error ShaderLanguage::parse_function(Parser& parser,BlockNode *p_block) {
 	while(true) {
 
 		//end of arguments
-		if (parser.get_token_type(ofs)==TK_PARENTHESIS_CLOSE) {
+		if (parser.get_next_token_type(ofs)==TK_PARENTHESIS_CLOSE) {
 			ofs++;
 			break;
 		}
 		//next argument awaits
-		if (parser.get_token_type(ofs)==TK_COMMA) {
-			if (!is_token_nonvoid_datatype(parser.get_token_type(ofs+1))) {
+		if (parser.get_next_token_type(ofs)==TK_COMMA) {
+			if (!is_token_nonvoid_datatype(parser.get_next_token_type(ofs+1))) {
 				parser.set_error("Expected Identifier or ')' following ','");
 				return ERR_PARSE_ERROR;
 			}
@@ -707,19 +715,19 @@ Error ShaderLanguage::parse_function(Parser& parser,BlockNode *p_block) {
 
 
 
-		if (!is_token_nonvoid_datatype(parser.get_token_type(ofs+0))) {
+		if (!is_token_nonvoid_datatype(parser.get_next_token_type(ofs+0))) {
 			parser.set_error("Invalid Argument Type");
 			return ERR_PARSE_ERROR;
 		}
 
-		DataType identtype=get_token_datatype(parser.get_token_type(ofs+0));
+		DataType identtype=get_token_datatype(parser.get_next_token_type(ofs+0));
 
-		if (parser.get_token_type(ofs+1)!=TK_INDENTIFIER) {
+		if (parser.get_next_token_type(ofs+1)!=TK_INDENTIFIER) {
 			parser.set_error("Expected Argument Identifier");
 			return ERR_PARSE_ERROR;
 		}
 
-		StringName identname=parser.get_token(ofs+1).text;
+		StringName identname=parser.get_next_token(ofs+1).text;
 
 		if (test_existing_identifier(function,identname)) {
 			parser.set_error("Duplicate Argument Identifier: "+identname);
@@ -737,7 +745,7 @@ Error ShaderLanguage::parse_function(Parser& parser,BlockNode *p_block) {
 
 	parser.advance(ofs);
 	// match {
-	if (parser.get_token_type()!=TK_CURLY_BRACKET_OPEN) {
+	if (parser.get_next_token_type()!=TK_CURLY_BRACKET_OPEN) {
 		parser.set_error("Expected '{'");
 		return ERR_PARSE_ERROR;
 	}
@@ -1527,14 +1535,14 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 		Node *expr=NULL;
 
 
-		if (parser.get_token_type()==TK_PARENTHESIS_OPEN) {
+		if (parser.get_next_token_type()==TK_PARENTHESIS_OPEN) {
 			//handle subexpression
 			parser.advance();
 			Error err = parse_expression(parser,p_parent,&expr);
 			if (err)
 				return err;
 
-			if (parser.get_token_type()!=TK_PARENTHESIS_CLOSE) {
+			if (parser.get_next_token_type()!=TK_PARENTHESIS_CLOSE) {
 
 				parser.set_error("Expected ')' in expression");
 				return ERR_PARSE_ERROR;
@@ -1542,15 +1550,15 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 
 			parser.advance();
 
-		} else if (parser.get_token_type()==TK_REAL_CONSTANT) {
+		} else if (parser.get_next_token_type()==TK_REAL_CONSTANT) {
 
 
 			ConstantNode *constant = parser.create_node<ConstantNode>(p_parent);
-			constant->value=parser.get_token().text.operator String().to_double();
+			constant->value=parser.get_next_token().text.operator String().to_double();
 			constant->datatype=TYPE_FLOAT;
 			expr=constant;
 			parser.advance();
-		} else if (parser.get_token_type()==TK_TRUE) {
+		} else if (parser.get_next_token_type()==TK_TRUE) {
 			//print_line("found true");
 
 			//handle true constant
@@ -1559,7 +1567,7 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 			constant->datatype=TYPE_BOOL;
 			expr=constant;
 			parser.advance();
-		} else if (parser.get_token_type()==TK_FALSE) {
+		} else if (parser.get_next_token_type()==TK_FALSE) {
 
 			//handle false constant
 			ConstantNode *constant = parser.create_node<ConstantNode>(p_parent);
@@ -1567,21 +1575,21 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 			constant->datatype=TYPE_BOOL;
 			expr=constant;
 			parser.advance();
-		} else if (parser.get_token_type()==TK_TYPE_VOID) {
+		} else if (parser.get_next_token_type()==TK_TYPE_VOID) {
 
 			//make sure void is not used in expression
 			parser.set_error("Void value not allowed in Expression");
 			return ERR_PARSE_ERROR;
-		} else if (parser.get_token_type(1)==TK_PARENTHESIS_OPEN && (is_token_nonvoid_datatype(parser.get_token_type()) || parser.get_token_type()==TK_INDENTIFIER)) {
+		} else if (parser.get_next_token_type(1)==TK_PARENTHESIS_OPEN && (is_token_nonvoid_datatype(parser.get_next_token_type()) || parser.get_next_token_type()==TK_INDENTIFIER)) {
 
 
 			//function or constructor
 			StringName name;
 			DataType constructor=TYPE_VOID;
-			if (is_token_nonvoid_datatype(parser.get_token_type())) {
+			if (is_token_nonvoid_datatype(parser.get_next_token_type())) {
 
-				constructor=get_token_datatype(parser.get_token_type());
-				switch(get_token_datatype(parser.get_token_type())) {
+				constructor=get_token_datatype(parser.get_next_token_type());
+				switch(get_token_datatype(parser.get_next_token_type())) {
 				   case TYPE_BOOL: name="bool"; break;
 				   case TYPE_FLOAT: name="float"; break;
 				   case TYPE_VEC2: name="vec2"; break;
@@ -1594,7 +1602,7 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 				}
 			} else {
 
-				name=parser.get_token().text;
+				name=parser.get_next_token().text;
 			}
 
 			if (!test_existing_identifier(p_parent,name)) {
@@ -1615,7 +1623,7 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 
 			//parse parameters
 
-			if (parser.get_token_type()==TK_PARENTHESIS_CLOSE) {
+			if (parser.get_next_token_type()==TK_PARENTHESIS_CLOSE) {
 				parser.advance();
 			} else {
 
@@ -1628,13 +1636,13 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 						return err;
 					func->arguments.push_back(arg);
 
-					if (parser.get_token_type()==TK_PARENTHESIS_CLOSE) {
+					if (parser.get_next_token_type()==TK_PARENTHESIS_CLOSE) {
 						parser.advance();
 						break;
 
-					} else if (parser.get_token_type()==TK_COMMA) {
+					} else if (parser.get_next_token_type()==TK_COMMA) {
 
-						if (parser.get_token_type(1)==TK_PARENTHESIS_CLOSE) {
+						if (parser.get_next_token_type(1)==TK_PARENTHESIS_CLOSE) {
 
 							parser.set_error("Expression expected");
 							return ERR_PARSE_ERROR;
@@ -1658,14 +1666,14 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 
 			}
 
-		} else if (parser.get_token_type()==TK_INDENTIFIER) {
+		} else if (parser.get_next_token_type()==TK_INDENTIFIER) {
 			//probably variable
 
 
 			Node *node =p_parent;
 			bool existing=false;
 			DataType datatype;
-			StringName identifier=parser.get_token().text;
+			StringName identifier=parser.get_next_token().text;
 
 			while(node) {
 
@@ -1728,10 +1736,10 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 			parser.advance();
 			expr=varname;
 
-		} else if (parser.get_token_type()==TK_OP_SUB || parser.get_token_type()==TK_OP_NOT) {
+		} else if (parser.get_next_token_type()==TK_OP_SUB || parser.get_next_token_type()==TK_OP_NOT) {
 
 			//single prefix operators
-			TokenType token_type=parser.get_token_type();
+			TokenType token_type=parser.get_next_token_type();
 			parser.advance();
 			//Node *subexpr=NULL;
 			//Error err = parse_expression(parser,p_parent,&subexpr);
@@ -1758,9 +1766,9 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 
 		} else {
 			print_line("found bug?");
-			print_line("misplaced token: "+String(token_names[parser.get_token_type()]));
+			print_line("misplaced token: "+String(token_names[parser.get_next_token_type()]));
 
-			parser.set_error("Error parsing expression, misplaced: "+String(token_names[parser.get_token_type()]));
+			parser.set_error("Error parsing expression, misplaced: "+String(token_names[parser.get_next_token_type()]));
 			return ERR_PARSE_ERROR;
 			//nothing
 		}
@@ -1773,15 +1781,15 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 		/* OK now see what's NEXT to the operator.. */
 
 
-		if (parser.get_token_type()==TK_PERIOD) {
+		if (parser.get_next_token_type()==TK_PERIOD) {
 
-			if (parser.get_token_type(1)!=TK_INDENTIFIER) {
+			if (parser.get_next_token_type(1)!=TK_INDENTIFIER) {
 				parser.set_error("Expected identifier as member");
 				return ERR_PARSE_ERROR;
 			}
 
 			DataType dt = compute_node_type(expr);
-			String ident = parser.get_token(1).text;
+			String ident = parser.get_next_token(1).text;
 
 			bool ok=true;
 			DataType member_type;
@@ -1907,13 +1915,13 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 			//creates a subindexing expression in place
 
 
-		} else if (parser.get_token_type()==TK_BRACKET_OPEN) {
+		} else if (parser.get_next_token_type()==TK_BRACKET_OPEN) {
 			//todo
 			//subindexing has priority over any operator
 			//creates a subindexing expression in place
 
 
-		} /*else if (parser.get_token_type()==TK_OP_PLUS_PLUS || parser.get_token_type()==TK_OP_MINUS_MINUS) {
+		} /*else if (parser.get_next_token_type()==TK_OP_PLUS_PLUS || parser.get_next_token_type()==TK_OP_MINUS_MINUS) {
 			//todo
 			//inc/dec operators have priority over any operator
 			//creates a subindexing expression in place
@@ -1927,11 +1935,11 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 		expression.push_back(e);
 
 
-		if (is_token_operator(parser.get_token_type())) {
+		if (is_token_operator(parser.get_next_token_type())) {
 
 			Expression o;
 			o.is_op=true;
-			o.op=parser.get_token_type();
+			o.op=parser.get_next_token_type();
 			expression.push_back(o);
 			parser.advance();
 		} else {
@@ -2132,9 +2140,9 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 	return OK;
 
 /*
-			TokenType token_type=parser.get_token_type();
+			TokenType token_type=parser.get_next_token_type();
 			OperatorNode *op = parser.create_node<OperatorNode>(p_parent);
-			op->op=get_token_operator(parser.get_token_type());
+			op->op=get_token_operator(parser.get_next_token_type());
 
 			op->arguments.push_back(*r_expr); //expression goes as left
 			parser.advance();
@@ -2156,10 +2164,10 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 
 Error ShaderLanguage::parse_variable_declaration(Parser& parser,BlockNode *p_block) {
 
-	bool uniform = parser.get_token(-1).type==TK_UNIFORM;
+	bool uniform = parser.get_next_token(-1).type==TK_UNIFORM;
 
-	DataType type=get_token_datatype(parser.get_token_type(0));
-	bool iscolor = parser.get_token_type(0)==TK_TYPE_COLOR;
+	DataType type=get_token_datatype(parser.get_next_token_type(0));
+	bool iscolor = parser.get_next_token_type(0)==TK_TYPE_COLOR;
 
 	if (type==TYPE_VOID) {
 
@@ -2185,18 +2193,18 @@ Error ShaderLanguage::parse_variable_declaration(Parser& parser,BlockNode *p_blo
 	while(true) {
 
 
-		if (found && parser.get_token_type()!=TK_COMMA) {
+		if (found && parser.get_next_token_type()!=TK_COMMA) {
 			break;
 		}
 
-		if (parser.get_token_type()!=TK_INDENTIFIER) {
+		if (parser.get_next_token_type()!=TK_INDENTIFIER) {
 
 			parser.set_error("Identifier Expected");
 			return ERR_PARSE_ERROR;
 
 		}
 
-		StringName name = parser.get_token().text;
+		StringName name = parser.get_next_token().text;
 
 		if (test_existing_identifier(p_block,name)) {
 			parser.set_error("Duplicate Identifier (existing variable/function): "+name);
@@ -2207,7 +2215,7 @@ Error ShaderLanguage::parse_variable_declaration(Parser& parser,BlockNode *p_blo
 
 		parser.advance();
 		//see if declaration has an initializer
-		if (parser.get_token_type()==TK_OP_ASSIGN) {
+		if (parser.get_next_token_type()==TK_OP_ASSIGN) {
 			parser.advance();
 			OperatorNode * op = parser.create_node<OperatorNode>(p_block);
 			VariableNode * var = parser.create_node<VariableNode>(op);
@@ -2298,7 +2306,7 @@ Error ShaderLanguage::parse_variable_declaration(Parser& parser,BlockNode *p_blo
 
 	}
 
-	if (parser.get_token_type()!=TK_SEMICOLON) {
+	if (parser.get_next_token_type()!=TK_SEMICOLON) {
 		parser.set_error("Expected ';'");
 		return ERR_PARSE_ERROR;
 	}
@@ -2316,7 +2324,7 @@ Error ShaderLanguage::parse_flow_if(Parser& parser,Node *p_parent,Node **r_state
 
 	parser.advance();
 
-	if (parser.get_token_type()!=TK_PARENTHESIS_OPEN) {
+	if (parser.get_next_token_type()!=TK_PARENTHESIS_OPEN) {
 		parser.set_error("Expected '(' after 'if'");
 		return ERR_PARSE_ERROR;
 	}
@@ -2335,14 +2343,14 @@ Error ShaderLanguage::parse_flow_if(Parser& parser,Node *p_parent,Node **r_state
 
 	cf->statements.push_back(expression);
 
-	if (parser.get_token_type()!=TK_PARENTHESIS_CLOSE) {
+	if (parser.get_next_token_type()!=TK_PARENTHESIS_CLOSE) {
 		parser.set_error("Expected ')' after expression");
 		return ERR_PARSE_ERROR;
 	}
 
 	parser.advance();
 
-	if (parser.get_token_type()!=TK_CURLY_BRACKET_OPEN) {
+	if (parser.get_next_token_type()!=TK_CURLY_BRACKET_OPEN) {
 		parser.set_error("Expected statement block after 'if()'");
 		return ERR_PARSE_ERROR;
 	}
@@ -2354,11 +2362,11 @@ Error ShaderLanguage::parse_flow_if(Parser& parser,Node *p_parent,Node **r_state
 
 	cf->statements.push_back(substatement);
 
-	if (parser.get_token_type()==TK_CF_ELSE) {
+	if (parser.get_next_token_type()==TK_CF_ELSE) {
 
 		parser.advance();
 
-		if (parser.get_token_type()!=TK_CURLY_BRACKET_OPEN) {
+		if (parser.get_next_token_type()!=TK_CURLY_BRACKET_OPEN) {
 			parser.set_error("Expected statement block after 'else'");
 			return ERR_PARSE_ERROR;
 		}
@@ -2426,7 +2434,7 @@ Error ShaderLanguage::parse_flow_return(Parser& parser,Node *p_parent,Node **r_s
 	*r_statement=cf;
 
 
-	if (parser.get_token_type()!=TK_SEMICOLON) {
+	if (parser.get_next_token_type()!=TK_SEMICOLON) {
 		parser.set_error("Expected ';'");
 		return ERR_PARSE_ERROR;
 	}
@@ -2438,7 +2446,7 @@ Error ShaderLanguage::parse_statement(Parser& parser,Node *p_parent,Node **r_sta
 
 	*r_statement=NULL;
 
-	TokenType token_type = parser.get_token_type();
+	TokenType token_type = parser.get_next_token_type();
 
 	if (token_type==TK_CURLY_BRACKET_OPEN) {
 		//sub-block
@@ -2462,7 +2470,7 @@ Error ShaderLanguage::parse_statement(Parser& parser,Node *p_parent,Node **r_sta
 		if (err)
 			return err;
 
-		if (parser.get_token_type()!=TK_SEMICOLON) {
+		if (parser.get_next_token_type()!=TK_SEMICOLON) {
 			parser.set_error("Expected ';'");
 			return ERR_PARSE_ERROR;
 		}
@@ -2484,7 +2492,7 @@ Error ShaderLanguage::parse_block(Parser& parser,BlockNode *p_block) {
 			return OK; //bye
 		}
 
-		TokenType token_type = parser.get_token_type();
+		TokenType token_type = parser.get_next_token_type();
 
 		if (token_type==TK_CURLY_BRACKET_CLOSE) {
 			if (p_block->parent->type==Node::TYPE_PROGRAM) {
