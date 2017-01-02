@@ -208,13 +208,6 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 
 		if (n->is_type("Spatial")) {
 
-			Spatial *ci = n->cast_to<Spatial>();
-			if (!ci->is_visible() && ci->get_parent_spatial() && !ci->get_parent_spatial()->is_visible()) {
-				error->set_text(TTR("This item cannot be made visible because the parent is hidden. Unhide the parent first."));
-				error->popup_centered_minsize();
-				return;
-			}
-
 			bool v = !bool(n->call("is_hidden"));
 			undo_redo->create_action(TTR("Toggle Spatial Visible"));
 			undo_redo->add_do_method(n,"_set_visible_",!v);
@@ -222,12 +215,6 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 			undo_redo->commit_action();
 		} else if (n->is_type("CanvasItem")) {
 
-			CanvasItem *ci = n->cast_to<CanvasItem>();
-			if (!ci->is_visible() && ci->get_parent_item() && !ci->get_parent_item()->is_visible()) {
-				error->set_text(TTR("This item cannot be made visible because the parent is hidden. Unhide the parent first."));
-				error->popup_centered_minsize();
-				return;
-			}
 			bool v = !bool(n->call("is_hidden"));
 			undo_redo->create_action(TTR("Toggle CanvasItem Visible"));
 			undo_redo->add_do_method(n,v?"hide":"show");
@@ -415,6 +402,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			if (!p_node->is_connected("visibility_changed",this,"_node_visibility_changed"))
 				p_node->connect("visibility_changed",this,"_node_visibility_changed",varray(p_node));
 
+			_update_visibility_color(p_node, item);
 		} else if (p_node->is_type("Spatial")) {
 
 			bool h = p_node->call("is_hidden");
@@ -426,6 +414,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			if (!p_node->is_connected("visibility_changed",this,"_node_visibility_changed"))
 				p_node->connect("visibility_changed",this,"_node_visibility_changed",varray(p_node));
 
+			_update_visibility_color(p_node, item);
 		}
 
 	}
@@ -491,9 +480,20 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 	else
 		item->set_button(0,idx,get_icon("Visible","EditorIcons"));
 
-
+	_update_visibility_color(p_node, item);
 }
 
+void SceneTreeEditor::_update_visibility_color(Node *p_node, TreeItem *p_item) {
+	if (p_node->is_type("CanvasItem") || p_node->is_type("Spatial")) {
+		Color color(1,1,1,1);
+		bool visible_on_screen = p_node->call("is_visible");
+		if (!visible_on_screen) {
+			color = Color(0.6,0.6,0.6,1);
+		}
+		int idx=p_item->get_button_by_id(0,BUTTON_VISIBILITY);
+		p_item->set_button_color(0,idx,color);
+	}
+}
 
 void SceneTreeEditor::_node_script_changed(Node *p_node) {
 
