@@ -47,6 +47,8 @@ protected:
 	void _get_property_list( List<PropertyInfo>* p_list ) const;
 	void _notification(int p_what);
 
+	static void _bind_methods();
+
 public:
 
 	void set_bone_name(const String& p_name);
