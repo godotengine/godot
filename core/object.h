@@ -417,6 +417,7 @@ friend void postinitialize_handler(Object*);
 	Dictionary metadata;
 	mutable StringName _type_name;
 	mutable const StringName* _type_ptr;
+	bool _script_use_iter;
 
 	void _add_user_signal(const String& p_name, const Array& p_pargs=Array());
 	bool _has_user_signal(const StringName& p_name) const;
@@ -596,6 +597,17 @@ public:
 	//used mainly by script, get and set all INCLUDING string
 	virtual Variant getvar(const Variant& p_key, bool *r_valid=NULL) const;
 	virtual void setvar(const Variant& p_key, const Variant& p_value,bool *r_valid=NULL);
+
+
+	_FORCE_INLINE_ bool has_script_iter(){
+		return _script_use_iter;
+	}
+	_FORCE_INLINE_ void use_script_iter(bool use_script_iter){
+		_script_use_iter=use_script_iter;
+	}
+	virtual bool _iter_init(Variant& arg, bool& valid);
+	virtual bool _iter_next(Variant& arg, bool& valid);
+	virtual Variant _iter_get(const Variant& arg, bool& valid);
 
 	/* SCRIPT */
 
