@@ -41,6 +41,7 @@
 class Camera;
 class Camera2D;
 class Listener;
+class Listener2D;
 class Control;
 class CanvasItem;
 class Panel;
@@ -116,6 +117,9 @@ friend class ViewportTexture;
 
 	Listener *listener;
 	Set<Listener*> listeners;
+	
+	Listener2D *listener_2d;
+	Set<Listener2D*> listeners_2d;
 
 	Camera *camera;
 	Set<Camera*> cameras;
@@ -302,6 +306,13 @@ friend class Listener;
 	void _listener_remove(Listener* p_listener);
 	void _listener_make_next_current(Listener* p_exclude);
 
+friend class Listener2D;
+	void _listener_2d_transform_changed_notify();
+	void _listener_2d_set(Listener2D* p_listener_2d);
+	bool _listener_2d_add(Listener2D* p_listener_2d); //true if first
+	void _listener_2d_remove(Listener2D* p_listener_2d);
+	void _listener_2d_make_next_current(Listener2D* p_exclude_2d);
+
 friend class Camera;
 	void _camera_transform_changed_notify();
 	void _camera_set(Camera* p_camera);
@@ -316,6 +327,7 @@ protected:
 public:
 
 	Listener* get_listener() const;
+	Listener2D* get_listener_2d() const;
 	Camera* get_camera() const;
 
 	void set_as_audio_listener(bool p_enable);

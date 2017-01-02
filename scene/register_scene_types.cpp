@@ -107,6 +107,7 @@
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/collision_shape_2d.h"
 #include "scene/2d/collision_polygon_2d.h"
+#include "scene/2d/listener_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/sound_player_2d.h"
@@ -526,6 +527,7 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ObjectTypeDB::register_type<Camera2D>();
+	ObjectTypeDB::register_type<Listener2D>();
 	ObjectTypeDB::register_virtual_type<Joint2D>();
 	ObjectTypeDB::register_type<PinJoint2D>();
 	ObjectTypeDB::register_type<GrooveJoint2D>();
