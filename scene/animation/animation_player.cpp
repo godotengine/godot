@@ -257,14 +257,30 @@ void AnimationPlayer::_generate_node_caches(AnimationData* p_anim) {
 		}
 		ERR_CONTINUE(!child); // couldn't find the child node
 		uint32_t id=resource.is_valid()?resource->get_instance_ID():child->get_instance_ID();
-		int bone_idx=-1;
+		int idx=-1;
 
-		if (a->track_get_path(i).get_property() && child->cast_to<Skeleton>()) {
+		StringName track_property = a->track_get_path(i).get_property();
+		if (track_property) {
+			if (child->cast_to<Skeleton>()) {
+				idx = child->cast_to<Skeleton>()->find_bone(a->track_get_path(i).get_property());
+				if (idx == -1) {
 
-			bone_idx = child->cast_to<Skeleton>()->find_bone( a->track_get_path(i).get_property() );
-			if (bone_idx==-1) {
+					continue;
+				}
+			}
+			else if (child->cast_to<MeshInstance>()) {
+				if (track_property.operator String().begins_with("morph/")) {
 
-				continue;
+					if (!child->is_connected("mesh_changed", this, "_mesh_changed"))
+						child->connect("mesh_changed", this, "_mesh_changed", make_binds(child), CONNECT_ONESHOT);
+
+					StringName morph_name = track_property.operator String().get_slicec('/', 1);
+					idx = child->cast_to<MeshInstance>()->get_morph_track_index(morph_name);
+					if (idx == -1) {
+
+						continue;
+					}
+				}
 			}
 		}
 
@@ -275,7 +291,7 @@ void AnimationPlayer::_generate_node_caches(AnimationData* p_anim) {
 
 		TrackNodeCacheKey key;
 		key.id=id;
-		key.bone_idx=bone_idx;
+		key.idx=idx;
 
 
 		if (node_cache_map.has(key)) {
@@ -291,6 +307,7 @@ void AnimationPlayer::_generate_node_caches(AnimationData* p_anim) {
 			p_anim->node_cache[i]->node=child;
 			p_anim->node_cache[i]->resource=resource;
 			p_anim->node_cache[i]->node_2d=child->cast_to<Node2D>();
+			p_anim->node_cache[i]->mesh_instance=child->cast_to<MeshInstance>();
 			if (a->track_get_type(i)==Animation::TYPE_TRANSFORM) {
 				// special cases and caches for transform tracks
 
@@ -303,13 +320,13 @@ void AnimationPlayer::_generate_node_caches(AnimationData* p_anim) {
 					StringName bone_name=a->track_get_path(i).get_property();
 					if (bone_name.operator String()!="") {
 
-						p_anim->node_cache[i]->bone_idx=p_anim->node_cache[i]->skeleton->find_bone(bone_name);
-						if (p_anim->node_cache[i]->bone_idx<0) {
+						p_anim->node_cache[i]->idx=p_anim->node_cache[i]->skeleton->find_bone(bone_name);
+						if (p_anim->node_cache[i]->idx<0) {
 							// broken track (nonexistent bone)
 							p_anim->node_cache[i]->skeleton=NULL;
 							p_anim->node_cache[i]->spatial=NULL;
 							printf("bone is %ls\n", String(bone_name).c_str());
-							ERR_CONTINUE( p_anim->node_cache[i]->bone_idx<0 );
+							ERR_CONTINUE( p_anim->node_cache[i]->idx<0 );
 						} else {
 						}
 					} else {
@@ -339,6 +356,28 @@ void AnimationPlayer::_generate_node_caches(AnimationData* p_anim) {
 						pa.special=SP_NODE2D_ROT;
 					else if (pa.prop==SceneStringNames::get_singleton()->transform_scale)
 						pa.special=SP_NODE2D_SCALE;
+				}
+				else if (p_anim->node_cache[i]->mesh_instance) {
+					if (property.operator String() != "") {
+						if (property.operator String().begins_with("morph/")) {
+							StringName morph_name = property.operator String().get_slicec('/', 1);
+							p_anim->node_cache[i]->idx = child->cast_to<MeshInstance>()->get_morph_track_index(morph_name);
+							if (p_anim->node_cache[i]->idx<0) {
+								// broken track (nonexistent morph)
+								p_anim->node_cache[i]->mesh_instance = NULL;
+								p_anim->node_cache[i]->spatial = NULL;
+								printf("morph is %ls\n", String(morph_name).c_str());
+								ERR_CONTINUE(p_anim->node_cache[i]->idx<0);
+							}
+							else {
+								pa.special = SP_MORPH_TRACK;
+							}
+						} else {
+							p_anim->node_cache[i]->mesh_instance = NULL;
+						}
+					} else {
+						p_anim->node_cache[i]->mesh_instance = NULL;
+					}
 				}
 				p_anim->node_cache[i]->property_anim[property]=pa;
 			}
@@ -484,6 +523,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData* p_anim,float p
 #endif
 
 								static_cast<Node2D*>(pa->object)->set_scale(value);
+							} break;
+							case SP_MORPH_TRACK: {
+								static_cast<MeshInstance*>(pa->object)->set_morph_track_value(pa->owner->idx,pa->value_accum);
 							} break;
 						}
 
@@ -631,9 +673,9 @@ void AnimationPlayer::_animation_update_transforms() {
 			t.basis=nc->rot_accum;
 			t.basis.scale( nc->scale_accum );
 
-			if (nc->skeleton && nc->bone_idx>=0) {
+			if (nc->skeleton && nc->idx>=0) {
 
-				nc->skeleton->set_bone_pose( nc->bone_idx, t );
+				nc->skeleton->set_bone_pose( nc->idx, t );
 
 			} else if (nc->spatial) {
 
@@ -698,6 +740,15 @@ void AnimationPlayer::_animation_update_transforms() {
 #endif
 
 				static_cast<Node2D*>(pa->object)->set_scale(pa->value_accum);
+			} break;
+			case SP_MORPH_TRACK: {
+#ifdef DEBUG_ENABLED
+				if (pa->value_accum.get_type()!=Variant::REAL) {
+					ERR_PRINTS("Morph track key at time "+rtos(playback.current.pos)+" in Animation '"+get_current_animation()+"', Track '"+String(pa->owner->path)+"' not of type real");
+				}
+#endif
+
+				static_cast<MeshInstance*>(pa->object)->set_morph_track_value(pa->owner->idx,pa->value_accum);
 			} break;
 		}
 #else
@@ -1153,6 +1204,11 @@ void AnimationPlayer::_node_removed(Node *p_node) {
 	clear_caches(); // nodes contained here ar being removed, clear the caches
 }
 
+void AnimationPlayer::_mesh_changed(Node *p_node) {
+
+	clear_caches();
+}
+
 void AnimationPlayer::clear_caches() {
 
 
@@ -1293,6 +1349,7 @@ void AnimationPlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_node_removed"),&AnimationPlayer::_node_removed);
 	ObjectTypeDB::bind_method(_MD("_animation_changed"),&AnimationPlayer::_animation_changed);
+	ObjectTypeDB::bind_method(_MD("_mesh_changed"), &AnimationPlayer::_mesh_changed);
 
 	ObjectTypeDB::bind_method(_MD("add_animation","name","animation:Animation"),&AnimationPlayer::add_animation);
 	ObjectTypeDB::bind_method(_MD("remove_animation","name"),&AnimationPlayer::remove_animation);

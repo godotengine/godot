@@ -44,12 +44,12 @@ class MeshInstance : public GeometryInstance {
 
 	struct MorphTrack {
 
-		int idx;
+		String name;
 		float value;
-		MorphTrack() { idx=0; value=0; }
+		MorphTrack() { value=0; }
 	};
 
-	Map<StringName,MorphTrack> morph_tracks;
+	Vector<MorphTrack> morph_tracks;
 	Vector<Ref<Material> > materials;
 
 	void _mesh_changed();
@@ -67,6 +67,11 @@ public:
 
 	void set_mesh(const Ref<Mesh>& p_mesh);
 	Ref<Mesh> get_mesh() const;
+
+	void set_morph_track_value(const int p_idx, float p_value);
+	float get_morph_track_value(const int p_idx) const;
+	StringName get_morph_track_name(const int p_idx) const;
+	int get_morph_track_index(const StringName &p_name) const;
 
 	void set_skeleton_path(const NodePath& p_skeleton);
 	NodePath get_skeleton_path();
