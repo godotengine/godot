@@ -1,5 +1,5 @@
 short_name = "godot"
 name = "Godot Engine"
-major = 2
-minor = 2
+major = 3
+minor = 0
 status = "alpha"
