@@ -445,7 +445,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	_update_selected_editor_menu();
 }
 
-void ScriptEditor::_close_tab(int p_idx) {
+void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 
 	int selected = p_idx;
 	if (selected<0 || selected>=tab_container->get_child_count())
@@ -454,7 +454,9 @@ void ScriptEditor::_close_tab(int p_idx) {
 	Node *tselected = tab_container->get_child(selected);
 	ScriptEditorBase *current = tab_container->get_child(selected)->cast_to<ScriptEditorBase>();
 	if (current) {
-		apply_scripts();
+		if (p_save) {
+			apply_scripts();
+		}
 		if (current->get_edit_menu()) {
 			memdelete(current->get_edit_menu());
 		}
@@ -502,6 +504,11 @@ void ScriptEditor::_close_current_tab() {
 
 	_close_tab(tab_container->get_current_tab());
 
+}
+
+void ScriptEditor::_close_discard_current_tab(const String& p_str) {
+	_close_tab(tab_container->get_current_tab(), false);
+	erase_tab_confirm->hide();
 }
 
 void ScriptEditor::_close_docs_tab() {
@@ -2033,6 +2040,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_tab_changed",&ScriptEditor::_tab_changed);
 	ClassDB::bind_method("_menu_option",&ScriptEditor::_menu_option);
 	ClassDB::bind_method("_close_current_tab",&ScriptEditor::_close_current_tab);
+	ClassDB::bind_method("_close_discard_current_tab", &ScriptEditor::_close_discard_current_tab);
 	ClassDB::bind_method("_close_docs_tab", &ScriptEditor::_close_docs_tab);
 	ClassDB::bind_method("_close_all_tabs", &ScriptEditor::_close_all_tabs);
 	ClassDB::bind_method("_editor_play",&ScriptEditor::_editor_play);
@@ -2225,8 +2233,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	tab_container->connect("tab_changed", this,"_tab_changed");
 
 	erase_tab_confirm = memnew( ConfirmationDialog );
-	add_child(erase_tab_confirm);
+	erase_tab_confirm->get_ok()->set_text(TTR("Save"));
+	erase_tab_confirm->add_button(TTR("Discard"), OS::get_singleton()->get_swap_ok_cancel(), "discard");
 	erase_tab_confirm->connect("confirmed", this,"_close_current_tab");
+	erase_tab_confirm->connect("custom_action", this, "_close_discard_current_tab");
+	add_child(erase_tab_confirm);
 
 	script_create_dialog = memnew(ScriptCreateDialog);
 	script_create_dialog->set_title(TTR("Create Script"));
