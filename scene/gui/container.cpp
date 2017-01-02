@@ -170,3 +170,35 @@ Container::Container() {
 
 	pending_sort=false;
 }
+
+void ClipContainer::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_DRAW) {
+
+		VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(),clip);
+	}
+}
+
+void ClipContainer::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_clip","clip"),&ClipContainer::set_clip);
+	ObjectTypeDB::bind_method(_MD("is_clip"),&ClipContainer::is_clip);
+
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "clip"), _SCS("set_clip"),_SCS("is_clip"));
+}
+
+void ClipContainer::set_clip(bool p_clip) {
+
+	clip = p_clip;
+	update();
+}
+
+bool ClipContainer::is_clip() const {
+
+	return clip;
+}
+
+ClipContainer::ClipContainer() {
+
+	clip = true;
+}
