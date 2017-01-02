@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1256,7 +1256,7 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp.push_back(0xA9);
 	cp.push_back(0);
-	OS::get_singleton()->set_window_title(_MKSTR(VERSION_NAME)+String(" - ")+TTR("Project Manager")+" - "+cp+" 2008-2016 Juan Linietsky, Ariel Manzur.");
+	OS::get_singleton()->set_window_title(_MKSTR(VERSION_NAME)+String(" - ")+TTR("Project Manager")+" - "+cp+" 2008-2017 Juan Linietsky, Ariel Manzur.");
 
 	HBoxContainer *top_hb = memnew( HBoxContainer);
 	vb->add_child(top_hb);
