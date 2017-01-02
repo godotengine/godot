@@ -2023,7 +2023,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 			} break;
 			default: {
 
-				Node *expression = _parse_and_reduce_expression(p_block,p_static,true,true);
+				Node *expression = _parse_and_reduce_expression(p_block,p_static,false,true);
 				if (!expression) {
 					if (_recover_from_completion()) {
 						break;
