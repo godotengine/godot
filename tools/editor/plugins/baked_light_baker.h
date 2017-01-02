@@ -34,6 +34,110 @@
 #include "scene/3d/mesh_instance.h"
 #include "os/thread.h"
 
+#if !defined(BAKER_RNG_USE_C_RAND) \
+ && !defined(BAKER_RNG_USE_XONOROSHI128PLUS) \
+ && !defined(BAKER_RNG_USE_XORSHIFT128) \
+ && !defined(BAKER_RNG_USE_XORSHIFTSTAR) \
+ && !defined(BAKER_RNG_USE_XORSHIFTPLUS) \
+ && !defined(BAKER_RNG_USE_MT19937) \
+ && !defined(BAKER_RNG_USE_CXX11_MT19937) \
+ && !defined(BAKER_RNG_USE_XORSHIFT32)
+	//#define BAKER_RNG_USE_C_RAND
+	//#define BAKER_RNG_USE_XONOROSHI128PLUS
+	//#define BAKER_RNG_USE_XORSHIFT128
+	//#define BAKER_RNG_USE_XORSHIFTSTAR
+	//#define BAKER_RNG_USE_XORSHIFTPLUS
+	#define BAKER_RNG_USE_MT19937
+	//#define BAKER_RNG_USE_CXX11_MT19937
+	//#define BAKER_RNG_USE_XORSHIFT32
+#endif
+
+#ifdef BAKER_RNG_USE_XONOROSHI128PLUS
+	// from public domain : http://xoroshiro.di.unimi.it/xoroshiro128plus.c
+	#define BAKER_RNG_RAND_MAX 0xFFFFffffFFFFffffu 
+	#define RNG_rotl(x,k) ((uint64_t)( x << k ) | ( x >> ( 64 - k ))) 
+	class BLB_RNG {
+	private:
+		uint64_t s[2];
+	public:
+		uint64_t rand();
+		void seed(uint64_t value);
+	};
+#endif
+#ifdef BAKER_RNG_USE_XORSHIFT128
+	// from https://en.wikipedia.org/wiki/Xorshift
+	#define BAKER_RNG_RAND_MAX 0xffffFFFFu
+	class BLB_RNG {
+	private:
+		uint32_t x;
+		uint32_t y;
+		uint32_t z;
+		uint32_t w;
+		uint32_t t;
+	public:
+		uint32_t rand();
+		void seed(uint32_t value);
+	};
+#endif
+#ifdef BAKER_RNG_USE_XORSHIFTSTAR
+	// from https://en.wikipedia.org/wiki/Xorshift
+	#define BAKER_RNG_RAND_MAX 0xFFFFffffFFFFffffu
+	class BLB_RNG {
+	private:
+		uint64_t x;
+	public:
+		uint64_t rand();
+		void seed(uint64_t value);
+	};
+#endif
+#ifdef BAKER_RNG_USE_XORSHIFTPLUS
+	// from https://en.wikipedia.org/wiki/Xorshift
+	#define BAKER_RNG_RAND_MAX 0xFFFFffffFFFFffffu
+	class BLB_RNG {
+	private:
+		uint64_t s0;
+		uint64_t s1;
+	public:
+		uint64_t rand();
+		void seed(uint64_t value);
+	};
+#endif
+#ifdef BAKER_RNG_USE_MT19937
+	// from https://en.wikipedia.org/wiki/Mersenne_Twister
+	#define BAKER_RNG_RAND_MAX 0xFFFFffffu
+	class BLB_RNG {
+	private:
+		uint32_t x[624];
+		int index;
+	private:
+		void twist();
+	public:
+		uint32_t rand();
+		void seed(uint32_t value);
+	};
+#endif
+#ifdef BAKER_RNG_USE_CXX11_MT19937
+	#include <random>
+	#define BAKER_RNG_RAND_MAX 0xFFFFffffu
+	class BLB_RNG {
+	private:
+		std::mt19937 rng;
+	public:
+		uint32_t rand();
+		void seed(uint32_t value);
+	};
+#endif
+#ifdef BAKER_RNG_USE_XORSHIFT32
+	#define BAKER_RNG_RAND_MAX 0xFFFFffffu
+	class BLB_RNG {
+	private:
+		uint32_t x;
+	public:
+		uint32_t rand();
+		void seed(uint32_t value);
+	};
+#endif
+
 class BakedLightBaker {
 public:
 
@@ -249,6 +353,11 @@ public:
 
 	};
 
+	struct ThreadFuncArgs {
+		BakedLightBaker *back_light_baker;
+		uint32_t random_seed;
+	};
+
 
 	Vector<LightData> lights;
 
@@ -276,6 +385,9 @@ public:
 		uint32_t *octantptr_stack;
 		uint32_t *ray_stack;
 		BVH **bvh_stack;
+#ifndef BAKER_RNG_USE_C_RAND
+		BLB_RNG rng;
+#endif
 	};
 
 	Map<Vector3,Vector3> endpoint_normal;
@@ -341,6 +453,7 @@ public:
 	float total_light_area;
 
 	Vector<Thread*> threads;
+	Vector<ThreadFuncArgs> threads_func_args;
 
 	bool bake_thread_exit;
 	static void _bake_thread_func(void *arg);
