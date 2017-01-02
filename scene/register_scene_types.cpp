@@ -181,6 +181,7 @@
 #include "scene/resources/color_ramp.h"
 #include "scene/scene_string_names.h"
 
+#include "scene/resources/raw_text.h"
 
 #include "scene/3d/spatial.h"
 #include "scene/3d/remote_transform.h"
@@ -239,6 +240,9 @@ static ResourceFormatLoaderShader *resource_loader_shader=NULL;
 
 static ResourceFormatSaverText *resource_saver_text=NULL;
 static ResourceFormatLoaderText *resource_loader_text=NULL;
+
+static ResourceFormatSaverRawText *resource_saver_rawtext=NULL;
+static ResourceFormatLoaderRawText *resource_loader_rawtext=NULL;
 
 static ResourceFormatLoaderDynamicFont *resource_loader_dynamic_font=NULL;
 
@@ -602,6 +606,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<BitMap>();
 	ObjectTypeDB::register_type<ColorRamp>();
 
+	ObjectTypeDB::register_type<RawText>();
+
 	OS::get_singleton()->yield(); //may take time to init
 
 	ObjectTypeDB::register_type<Sample>();
@@ -648,6 +654,12 @@ void register_scene_types() {
 	resource_loader_text = memnew( ResourceFormatLoaderText );
 	ResourceLoader::add_resource_format_loader(resource_loader_text,true);
 
+	resource_saver_rawtext = memnew( ResourceFormatSaverRawText );
+	ResourceSaver::add_resource_format_saver(resource_saver_rawtext);
+
+	resource_loader_rawtext = memnew( ResourceFormatLoaderRawText );
+	ResourceLoader::add_resource_format_loader(resource_loader_rawtext);
+
 }
 
 void unregister_scene_types() {
@@ -673,5 +685,12 @@ void unregister_scene_types() {
 	if (resource_loader_text) {
 		memdelete(resource_loader_text);
 	}
+	if (resource_saver_rawtext) {
+		memdelete(resource_saver_rawtext);
+	}
+	if (resource_loader_rawtext) {
+		memdelete(resource_loader_rawtext);
+	}
+
 	SceneStringNames::free();
 }
