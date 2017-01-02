@@ -8,6 +8,7 @@
 #include "shaders/canvas.glsl.h"
 #include "shaders/blend_shape.glsl.h"
 #include "shaders/cubemap_filter.glsl.h"
+#include "shaders/particles.glsl.h"
 #include "self_list.h"
 #include "shader_compiler_gles3.h"
 
@@ -70,8 +71,11 @@ public:
 
 		BlendShapeShaderGLES3 blend_shapes;
 
+		ParticlesShaderGLES3 particles;
+
 		ShaderCompilerGLES3::IdentifierActions actions_canvas;
 		ShaderCompilerGLES3::IdentifierActions actions_scene;
+		ShaderCompilerGLES3::IdentifierActions actions_particles;
 	} shaders;
 
 	struct Resources {
@@ -384,6 +388,12 @@ public:
 			bool uses_sss;
 
 		} spatial;
+
+		struct Particles {
+
+
+		} particles;
+
 
 		bool uses_vertex_time;
 		bool uses_fragment_time;
@@ -988,7 +998,17 @@ public:
 
 		AABB computed_aabb;
 
-		Particles() {
+		GLuint particle_buffers[2];
+
+		SelfList<Particles> particle_element;
+
+		float phase;
+		float prev_phase;
+		uint64_t prev_ticks;
+
+		Transform origin;
+
+		Particles() : particle_element(this) {
 			emitting=false;
 			amount=0;
 			lifetime=1.0;;
@@ -1000,12 +1020,28 @@ public:
 			draw_order=VS::PARTICLES_DRAW_ORDER_INDEX;
 			emission_shape=VS::PARTICLES_EMSSION_POINT;
 			emission_sphere_radius=1.0;
-			float emission_sphere_radius;
 			emission_box_extents=Vector3(1,1,1);
 			emission_point_texture=0;
+			particle_buffers[0]=0;
+			particle_buffers[1]=0;
+
+			prev_ticks=0;
+
+			glGenBuffers(2,particle_buffers);
 		}
 
+		~Particles() {
+
+			glDeleteBuffers(2,particle_buffers);
+		}
+
+
 	};
+
+	SelfList<Particles>::List particle_update_list;
+
+	void update_particles();
+
 
 	mutable RID_Owner<Particles> particles_owner;
 
@@ -1054,11 +1090,15 @@ public:
 
 		struct Buffers {
 			GLuint fbo;
-			GLuint alpha_fbo; //single buffer, just diffuse (for alpha pass)
+			GLuint depth;
 			GLuint specular;
 			GLuint diffuse;
 			GLuint normal_rough;
 			GLuint motion_sss;
+
+			GLuint effect_fbo;
+			GLuint effect;
+
 		} buffers;
 
 		struct Effects {
@@ -1110,22 +1150,24 @@ public:
 		bool flags[RENDER_TARGET_FLAG_MAX];
 
 		bool used_in_frame;
+		VS::ViewportMSAA msaa;
 
 		RID texture;
 
 		RenderTarget() {
 
+			msaa=VS::VIEWPORT_MSAA_DISABLED;
 			width=0;
 			height=0;
 			depth=0;
 			fbo=0;
 			buffers.fbo=0;
-			buffers.alpha_fbo=0;
 			used_in_frame=false;
 
 			flags[RENDER_TARGET_VFLIP]=false;
 			flags[RENDER_TARGET_TRANSPARENT]=false;
 			flags[RENDER_TARGET_NO_3D]=false;
+			flags[RENDER_TARGET_HDR]=true;
 			flags[RENDER_TARGET_NO_SAMPLING]=false;
 
 			last_exposure_tick=0;
@@ -1143,6 +1185,7 @@ public:
 
 	virtual void render_target_set_flag(RID p_render_target,RenderTargetFlags p_flag,bool p_value);
 	virtual bool render_target_renedered_in_frame(RID p_render_target);
+	virtual void render_target_set_msaa(RID p_render_target,VS::ViewportMSAA p_msaa);
 
 	/* CANVAS SHADOW */
 
@@ -1187,6 +1230,8 @@ public:
 		Color clear_request_color;
 		int canvas_draw_commands;
 		float time[4];
+		float delta;
+		uint64_t prev_tick;
 		uint64_t count;
 	} frame;
 

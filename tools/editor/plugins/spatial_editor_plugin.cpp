@@ -1823,6 +1823,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 				surface->update();
 		}
 
+		//update shadow atlas if changed
 
 		int shadowmap_size = Globals::get_singleton()->get("rendering/shadow_atlas/size");
 		int atlas_q0 = Globals::get_singleton()->get("rendering/shadow_atlas/quadrant_0_subdiv");
@@ -1830,11 +1831,21 @@ void SpatialEditorViewport::_notification(int p_what) {
 		int atlas_q2 = Globals::get_singleton()->get("rendering/shadow_atlas/quadrant_2_subdiv");
 		int atlas_q3 = Globals::get_singleton()->get("rendering/shadow_atlas/quadrant_3_subdiv");
 
+
 		viewport->set_shadow_atlas_size(shadowmap_size);
 		viewport->set_shadow_atlas_quadrant_subdiv(0,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
 		viewport->set_shadow_atlas_quadrant_subdiv(1,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q1));
 		viewport->set_shadow_atlas_quadrant_subdiv(2,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
 		viewport->set_shadow_atlas_quadrant_subdiv(3,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
+
+		//update msaa if changed
+
+		int msaa_mode = Globals::get_singleton()->get("rendering/antialias/msaa");
+		viewport->set_msaa(Viewport::MSAA(msaa_mode));
+
+		bool hdr = Globals::get_singleton()->get("rendering/dynamic_range/hdr");
+		viewport->set_hdr(hdr);
+
 
 	}
 

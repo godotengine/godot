@@ -484,6 +484,7 @@ public:
 		RENDER_TARGET_TRANSPARENT,
 		RENDER_TARGET_NO_3D,
 		RENDER_TARGET_NO_SAMPLING,
+		RENDER_TARGET_HDR,
 		RENDER_TARGET_FLAG_MAX
 	};
 
@@ -492,6 +493,7 @@ public:
 	virtual RID render_target_get_texture(RID p_render_target) const=0;
 	virtual void render_target_set_flag(RID p_render_target,RenderTargetFlags p_flag,bool p_value)=0;
 	virtual bool render_target_renedered_in_frame(RID p_render_target)=0;
+	virtual void render_target_set_msaa(RID p_render_target,VS::ViewportMSAA p_msaa)=0;
 
 
 	/* CANVAS SHADOW */

@@ -703,12 +703,29 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_transform"]="#define SKIP_TRANSFORM_USED\n";
 
 
+	/* PARTICLES SHADER */
+
+	actions[VS::SHADER_PARTICLES].renames["COLOR"]="color";
+	actions[VS::SHADER_PARTICLES].renames["VELOCITY"]="out_velocity_active.xyz";
+	actions[VS::SHADER_PARTICLES].renames["MASS"]="mass";
+	actions[VS::SHADER_PARTICLES].renames["ACTIVE"]="active";
+	actions[VS::SHADER_PARTICLES].renames["RESTART"]="restart";
+	actions[VS::SHADER_PARTICLES].renames["CUSTOM"]="out_custom";
+	actions[VS::SHADER_PARTICLES].renames["TRANSFORM"]="xform";
+	actions[VS::SHADER_PARTICLES].renames["TIME"]="time";
+	actions[VS::SHADER_PARTICLES].renames["LIFETIME"]="lifetime";
+	actions[VS::SHADER_PARTICLES].renames["DELTA"]="delta";
+	actions[VS::SHADER_PARTICLES].renames["SEED"]="seed";
+	actions[VS::SHADER_PARTICLES].renames["ORIGIN"]="origin";
+	actions[VS::SHADER_PARTICLES].renames["INDEX"]="index";
+
+	actions[VS::SHADER_SPATIAL].render_mode_defines["disable_force"]="#define DISABLE_FORCE\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["disable_velocity"]="#define DISABLE_VELOCITY\n";
 
 
 	vertex_name="vertex";
 	fragment_name="fragment";
 	time_name="TIME";
-
 
 
 	List<String> func_list;

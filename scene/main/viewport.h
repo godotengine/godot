@@ -98,6 +98,14 @@ public:
 
 	};
 
+	enum MSAA {
+		MSAA_DISABLED,
+		MSAA_2X,
+		MSAA_4X,
+		MSAA_8X,
+		MSAA_16X,
+	};
+
 private:
 
 friend class ViewportTexture;
@@ -187,6 +195,9 @@ friend class ViewportTexture;
 
 	int shadow_atlas_size;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
+
+	MSAA msaa;
+	bool hdr;
 
 
 	struct GUI {
@@ -366,6 +377,12 @@ public:
 	void set_shadow_atlas_quadrant_subdiv(int p_quadrant,ShadowAtlasQuadrantSubdiv p_subdiv);
 	ShadowAtlasQuadrantSubdiv get_shadow_atlas_quadrant_subdiv(int p_quadrant) const;
 
+	void set_msaa(MSAA p_msaa);
+	MSAA get_msaa() const;
+
+	void set_hdr(bool p_hdr);
+	bool get_hdr() const;
+
 	Vector2 get_camera_coords(const Vector2& p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
@@ -410,7 +427,8 @@ public:
 
 };
 
-VARIANT_ENUM_CAST(Viewport::UpdateMode);
-VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
+VARIANT_ENUM_CAST( Viewport::UpdateMode );
+VARIANT_ENUM_CAST( Viewport::ShadowAtlasQuadrantSubdiv );
+VARIANT_ENUM_CAST( Viewport::MSAA );
 
 #endif

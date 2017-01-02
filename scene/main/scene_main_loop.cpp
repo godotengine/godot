@@ -2322,6 +2322,11 @@ SceneTree::SceneTree() {
 
 	int ref_atlas_size = GLOBAL_DEF("rendering/reflections/atlas_size",2048);
 	int ref_atlas_subdiv = GLOBAL_DEF("rendering/reflections/atlas_subdiv",8);
+	int msaa_mode = GLOBAL_DEF("rendering/antialias/msaa",0);
+	Globals::get_singleton()->set_custom_property_info("rendering/antialias/msaa",PropertyInfo(Variant::INT,"rendering/antialias/msaa",PROPERTY_HINT_ENUM,"Disabled,2x,4x,8x,16x"));
+	root->set_msaa(Viewport::MSAA(msaa_mode));
+	bool hdr = GLOBAL_DEF("rendering/dynamic_range/hdr",true);
+	root->set_hdr(hdr);
 
 	VS::get_singleton()->scenario_set_reflection_atlas_size(root->get_world()->get_scenario(),ref_atlas_size,ref_atlas_subdiv);
 

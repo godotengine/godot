@@ -484,7 +484,7 @@ layout(location=0) out vec4 diffuse_buffer;
 layout(location=1) out vec4 specular_buffer;
 layout(location=2) out vec4 normal_mr_buffer;
 #if defined (ENABLE_SSS_MOTION)
-layout(location=3) out uint motion_ssr_buffer;
+layout(location=3) out vec4 motion_ssr_buffer;
 #endif
 
 #else
@@ -902,7 +902,7 @@ void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_s
 	float max_distance = length(bounds);
 
 	//radiance
-#ifndef VCT_QUALITY_HIGH
+#ifdef VCT_QUALITY_HIGH
 
 #define MAX_CONE_DIRS 6
 	vec3 cone_dirs[MAX_CONE_DIRS] = vec3[] (
@@ -1407,7 +1407,7 @@ LIGHT_SHADER_CODE
 	normal_mr_buffer=vec4(normalize(normal)*0.5+0.5,roughness);
 
 #if defined (ENABLE_SSS_MOTION)
-	motion_ssr_buffer = uint(clamp(sqrt(sss_strength)*255.0,0.0,255))<<24;
+	motion_ssr_buffer = vec4(vec3(0.0),sss_strength);
 #endif
 
 #else

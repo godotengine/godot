@@ -517,6 +517,22 @@ void VisualServerViewport::viewport_set_shadow_atlas_quadrant_subdivision(RID p_
 
 }
 
+void VisualServerViewport::viewport_set_msaa(RID p_viewport,VS::ViewportMSAA p_msaa) {
+
+	Viewport * viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	VSG::storage->render_target_set_msaa(viewport->render_target,p_msaa);
+}
+
+void VisualServerViewport::viewport_set_hdr(RID p_viewport,bool p_enabled) {
+
+	Viewport * viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	VSG::storage->render_target_set_flag(viewport->render_target,RasterizerStorage::RENDER_TARGET_HDR,p_enabled);
+
+}
 
 bool VisualServerViewport::free(RID p_rid) {
 

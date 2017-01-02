@@ -156,7 +156,25 @@ ShaderTypes::ShaderTypes()
 	shader_modes[VS::SHADER_CANVAS_ITEM].modes.insert("light_only");
 
 
+	/************ PARTICLES **************************/
 
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["COLOR"]=ShaderLanguage::TYPE_VEC4;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["VELOCITY"]=ShaderLanguage::TYPE_VEC3;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["MASS"]=ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["ACTIVE"]=ShaderLanguage::TYPE_BOOL;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["RESTART"]=ShaderLanguage::TYPE_BOOL;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["CUSTOM"]=ShaderLanguage::TYPE_VEC4;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["TRANSFORM"]=ShaderLanguage::TYPE_MAT4;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["TIME"]=ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["LIFETIME"]=ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["DELTA"]=ShaderLanguage::TYPE_FLOAT;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["SEED"]=ShaderLanguage::TYPE_BOOL;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["ORIGIN"]=ShaderLanguage::TYPE_MAT4;
+	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["INDEX"]=ShaderLanguage::TYPE_INT;
+
+	shader_modes[VS::SHADER_PARTICLES].modes.insert("billboard");
+	shader_modes[VS::SHADER_PARTICLES].modes.insert("disable_force");
+	shader_modes[VS::SHADER_PARTICLES].modes.insert("disable_velocity");
 
 
 

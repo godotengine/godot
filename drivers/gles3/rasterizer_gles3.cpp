@@ -163,18 +163,30 @@ void RasterizerGLES3::initialize() {
 
 void RasterizerGLES3::begin_frame(){
 
-	double time_total = double(OS::get_singleton()->get_ticks_usec())/1000000.0;
+	uint64_t tick = OS::get_singleton()->get_ticks_usec();
+
+	double time_total = double(tick)/1000000.0;
 
 	storage->frame.time[0]=time_total;
 	storage->frame.time[1]=Math::fmod(time_total,3600);
 	storage->frame.time[2]=Math::fmod(time_total,900);
 	storage->frame.time[3]=Math::fmod(time_total,60);
 	storage->frame.count++;
+	storage->frame.delta = double(tick-storage->frame.prev_tick)/1000000.0;
+	if (storage->frame.prev_tick==0) {
+		//to avoid hiccups
+		storage->frame.delta=0.001;
+	}
+
+	storage->frame.prev_tick=tick;
+
+
 
 	storage->update_dirty_multimeshes();
 	storage->update_dirty_skeletons();
 	storage->update_dirty_shaders();
 	storage->update_dirty_materials();
+	storage->update_particles();
 
 	storage->info.render_object_count=0;
 	storage->info.render_material_switch_count=0;
@@ -184,6 +196,8 @@ void RasterizerGLES3::begin_frame(){
 
 
 	scene->iteration();
+
+
 
 
 }

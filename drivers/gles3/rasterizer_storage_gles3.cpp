@@ -1401,7 +1401,7 @@ void RasterizerStorageGLES3::shader_set_mode(RID p_shader,VS::ShaderMode p_mode)
 	ShaderGLES3* shaders[VS::SHADER_MAX]={
 		&scene->state.scene_shader,
 		&canvas->state.canvas_shader,
-		&canvas->state.canvas_shader,
+		&this->shaders.particles,
 
 	};
 
@@ -1509,6 +1509,11 @@ void RasterizerStorageGLES3::_update_shader(Shader* p_shader) const {
 			actions->uniforms=&p_shader->uniforms;
 
 
+		}
+		case VS::SHADER_PARTICLES: {
+
+			actions=&shaders.actions_particles;
+			actions->uniforms=&p_shader->uniforms;
 		}
 
 	}
@@ -4998,6 +5003,7 @@ void RasterizerStorageGLES3::gi_probe_dynamic_data_update(RID p_gi_probe_data, i
 ///////
 
 
+
 RID RasterizerStorageGLES3::particles_create() {
 
 	Particles *particles = memnew( Particles );
@@ -5018,7 +5024,30 @@ void RasterizerStorageGLES3::particles_set_amount(RID p_particles,int p_amount) 
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
+	int floats = p_amount*24;
+	float * data = memnew_arr(float,floats);
+
+	for(int i=0;i<floats;i++) {
+		data[i]=0;
+	}
+
+
+	glBindBuffer(GL_ARRAY_BUFFER,particles->particle_buffers[0]);
+	glBufferData(GL_ARRAY_BUFFER,floats*sizeof(float),data,GL_DYNAMIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER,particles->particle_buffers[1]);
+	glBufferData(GL_ARRAY_BUFFER,floats*sizeof(float),data,GL_DYNAMIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER,0);
+
+	particles->prev_ticks=0;
+	particles->phase=0;
+	particles->prev_phase=0;
+
+	memdelete_arr(data);
+
 }
+
 void RasterizerStorageGLES3::particles_set_lifetime(RID p_particles,float p_lifetime){
 
 	Particles *particles = particles_owner.getornull(p_particles);
@@ -5125,7 +5154,7 @@ void RasterizerStorageGLES3::particles_set_draw_pass_material(RID p_particles,in
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	ERR_FAIL_INDEX(p_pass,particles->draw_passes.size());
-	p_pass,particles->draw_passes[p_pass].material=p_material;
+	particles->draw_passes[p_pass].material=p_material;
 
 }
 void RasterizerStorageGLES3::particles_set_draw_pass_mesh(RID p_particles,int p_pass, RID p_mesh) {
@@ -5133,7 +5162,7 @@ void RasterizerStorageGLES3::particles_set_draw_pass_mesh(RID p_particles,int p_
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	ERR_FAIL_INDEX(p_pass,particles->draw_passes.size());
-	p_pass,particles->draw_passes[p_pass].mesh=p_mesh;
+	particles->draw_passes[p_pass].mesh=p_mesh;
 
 }
 
@@ -5143,6 +5172,124 @@ AABB RasterizerStorageGLES3::particles_get_current_aabb(RID p_particles) {
 	ERR_FAIL_COND_V(!particles,AABB());
 
 	return particles->computed_aabb;
+}
+
+void RasterizerStorageGLES3::update_particles() {
+
+	glEnable(GL_RASTERIZER_DISCARD);
+	glBindVertexArray(0);
+
+
+	while (particle_update_list.first()) {
+
+		//use transform feedback to process particles
+
+		Particles *particles = particle_update_list.first()->self();
+
+
+		Material *material = material_owner.getornull(particles->process_material);
+		if (!material || !material->shader || material->shader->mode!=VS::SHADER_PARTICLES) {
+
+			shaders.particles.set_custom_shader(0);
+		} else {
+			shaders.particles.set_custom_shader( material->shader->custom_code_id );
+
+			if (material->ubo_id) {
+
+				glBindBufferBase(GL_UNIFORM_BUFFER,0,material->ubo_id);
+			}
+
+			int tc = material->textures.size();
+			RID* textures = material->textures.ptr();
+			ShaderLanguage::ShaderNode::Uniform::Hint* texture_hints = material->shader->texture_hints.ptr();
+
+
+			for(int i=0;i<tc;i++) {
+
+				glActiveTexture(GL_TEXTURE0+i);
+
+				GLenum target;
+				GLuint tex;
+
+				RasterizerStorageGLES3::Texture *t = texture_owner.getornull( textures[i] );
+
+				if (!t) {
+					//check hints
+					target=GL_TEXTURE_2D;
+
+					switch(texture_hints[i]) {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO:
+						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
+							tex=resources.black_tex;
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
+							tex=resources.aniso_tex;
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
+							tex=resources.normal_tex;
+						} break;
+						default: {
+							tex=resources.white_tex;
+						} break;
+					}
+
+
+				} else {
+
+					target=t->target;
+					tex = t->tex_id;
+
+				}
+
+				glBindTexture(target,tex);
+			}
+
+		}
+
+		shaders.particles.bind();
+
+		shaders.particles.set_uniform(ParticlesShaderGLES3::ORIGIN,particles->origin);
+
+		float new_phase = Math::fmod(particles->phase+(frame.delta/particles->lifetime),1.0);
+
+		shaders.particles.set_uniform(ParticlesShaderGLES3::SYSTEM_PHASE,new_phase);
+		shaders.particles.set_uniform(ParticlesShaderGLES3::PREV_SYSTEM_PHASE,particles->phase);
+		particles->phase = new_phase;
+
+		shaders.particles.set_uniform(ParticlesShaderGLES3::TOTAL_PARTICLES,particles->amount);
+		shaders.particles.set_uniform(ParticlesShaderGLES3::TIME,0.0);
+		shaders.particles.set_uniform(ParticlesShaderGLES3::EXPLOSIVENESS,particles->explosiveness);
+		shaders.particles.set_uniform(ParticlesShaderGLES3::DELTA,frame.delta);
+		shaders.particles.set_uniform(ParticlesShaderGLES3::GRAVITY,particles->gravity);
+		shaders.particles.set_uniform(ParticlesShaderGLES3::ATTRACTOR_COUNT,0);
+
+
+
+
+		glBindBuffer(GL_ARRAY_BUFFER,particles->particle_buffers[0]);
+		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, particles->particle_buffers[1]);
+
+		for(int i=0;i<6;i++) {
+			glEnableVertexAttribArray(i);
+			glVertexAttribPointer(i,4,GL_FLOAT,GL_FALSE,sizeof(float)*4*6,((uint8_t*)0)+(i*16));
+		}
+
+
+		glBeginTransformFeedback(GL_POINTS);
+		glDrawArrays(GL_POINTS,0,particles->amount);
+		glEndTransformFeedback();
+
+		particle_update_list.remove(particle_update_list.first());
+
+		SWAP(particles->particle_buffers[0],particles->particle_buffers[1]);
+	}
+
+	glDisable(GL_RASTERIZER_DISCARD);
+
+	for(int i=0;i<6;i++) {
+		glDisableVertexAttribArray(i);
+	}
+
 }
 
 ////////
@@ -5258,13 +5405,15 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 
 	if (rt->buffers.fbo) {
 		glDeleteFramebuffers(1,&rt->buffers.fbo);
-		glDeleteFramebuffers(1,&rt->buffers.alpha_fbo);
-		glDeleteTextures(1,&rt->buffers.diffuse);
-		glDeleteTextures(1,&rt->buffers.specular);
-		glDeleteTextures(1,&rt->buffers.normal_rough);
-		glDeleteTextures(1,&rt->buffers.motion_sss);
+		glDeleteRenderbuffers(1,&rt->buffers.depth);
+		glDeleteRenderbuffers(1,&rt->buffers.diffuse);
+		glDeleteRenderbuffers(1,&rt->buffers.specular);
+		glDeleteRenderbuffers(1,&rt->buffers.normal_rough);
+		glDeleteRenderbuffers(1,&rt->buffers.motion_sss);
+		glDeleteFramebuffers(1,&rt->buffers.effect_fbo);
+		glDeleteTextures(1,&rt->buffers.effect);
+
 		rt->buffers.fbo=0;
-		rt->buffers.alpha_fbo=0;
 	}
 
 	if (rt->depth) {
@@ -5327,25 +5476,19 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 
 
 
-	if (config.render_arch==RENDER_ARCH_MOBILE || rt->flags[RENDER_TARGET_NO_3D]) {
+	if (!rt->flags[RENDER_TARGET_HDR] || rt->flags[RENDER_TARGET_NO_3D]) {
 
-		if (rt->flags[RENDER_TARGET_TRANSPARENT]) {
-			color_internal_format=GL_RGBA8;
-			color_format=GL_RGBA;
-			color_type=GL_UNSIGNED_BYTE;
-			image_format=Image::FORMAT_RGBA8;
-		} else {
-			color_internal_format=GL_RGB10_A2;
-			color_format=GL_RGBA;
-			color_type=GL_UNSIGNED_INT_2_10_10_10_REV;
-			image_format=Image::FORMAT_RGBA8;//todo
-		}
+		color_internal_format=GL_RGBA8;
+		color_format=GL_RGBA;
+		color_type=GL_UNSIGNED_BYTE;
+		image_format=Image::FORMAT_RGBA8;
 	} else {
 		color_internal_format=GL_RGBA16F;
 		color_format=GL_RGBA;
 		color_type=GL_HALF_FLOAT;
 		image_format=Image::FORMAT_RGBAH;
 	}
+
 
 	{
 		/* FRONT FBO */
@@ -5407,69 +5550,99 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 
 
 
+		static const int msaa_value[]={0,2,4,8,16};
+		int msaa=msaa_value[rt->msaa];
+
 		//regular fbo
 		glGenFramebuffers(1, &rt->buffers.fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, rt->buffers.fbo);
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-				       GL_TEXTURE_2D, rt->depth, 0);
+		glGenRenderbuffers(1, &rt->buffers.depth);
+		glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.depth);
+		if (msaa==0)
+			glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH24_STENCIL8,rt->width,rt->height);
+		else
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER,msaa,GL_DEPTH24_STENCIL8,rt->width,rt->height);
 
-		glGenTextures(1, &rt->buffers.diffuse);
-		glBindTexture(GL_TEXTURE_2D, rt->buffers.diffuse);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F,  rt->width, rt->height, 0, GL_RGBA, GL_HALF_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->buffers.diffuse, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,rt->buffers.depth);
+	
+		glGenRenderbuffers(1, &rt->buffers.diffuse);
+		glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.diffuse);
 
-		glGenTextures(1, &rt->buffers.specular);
-		glBindTexture(GL_TEXTURE_2D, rt->buffers.specular);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F,  rt->width, rt->height, 0, GL_RGBA, GL_HALF_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, rt->buffers.specular, 0);
+		if (msaa==0)
+			glRenderbufferStorage(GL_RENDERBUFFER,color_internal_format,rt->width,rt->height);
+		else
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER,msaa,GL_RGBA16F,rt->width,rt->height);
 
-		glGenTextures(1, &rt->buffers.normal_rough);
-		glBindTexture(GL_TEXTURE_2D, rt->buffers.normal_rough);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,  rt->width, rt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, rt->buffers.normal_rough, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER,rt->buffers.diffuse);
 
-		glGenTextures(1, &rt->buffers.motion_sss);
-		glBindTexture(GL_TEXTURE_2D, rt->buffers.motion_sss);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32UI,  rt->width, rt->height, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, rt->buffers.motion_sss, 0);
+		glGenRenderbuffers(1, &rt->buffers.specular);
+		glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.specular);
+
+		if (msaa==0)
+			glRenderbufferStorage(GL_RENDERBUFFER,GL_RGBA16F,rt->width,rt->height);
+		else
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER,msaa,color_internal_format,rt->width,rt->height);
+
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT1,GL_RENDERBUFFER,rt->buffers.specular);
+
+		glGenRenderbuffers(1, &rt->buffers.normal_rough);
+		glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.normal_rough);
+
+		if (msaa==0)
+			glRenderbufferStorage(GL_RENDERBUFFER,GL_RGBA8,rt->width,rt->height);
+		else
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER,msaa,GL_RGBA8,rt->width,rt->height);
+
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_RENDERBUFFER,rt->buffers.normal_rough);
+
+
+		glGenRenderbuffers(1, &rt->buffers.motion_sss);
+		glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.motion_sss);
+
+		if (msaa==0)
+			glRenderbufferStorage(GL_RENDERBUFFER,GL_RGBA8,rt->width,rt->height);
+		else
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER,msaa,GL_RGBA8,rt->width,rt->height);
+
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT3,GL_RENDERBUFFER,rt->buffers.motion_sss);
+
 
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		glBindFramebuffer(GL_FRAMEBUFFER, config.system_fbo);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			printf("err status: %x\n",status);
 			_render_target_clear(rt);
 			ERR_FAIL_COND( status != GL_FRAMEBUFFER_COMPLETE );
-		}	
+		}		
+
+		glBindRenderbuffer(GL_RENDERBUFFER,0);
+
+		// effect resolver
+
+		glGenFramebuffers(1, &rt->buffers.effect_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->buffers.effect_fbo);
+
+		glGenTextures(1, &rt->buffers.effect);
+		glBindTexture(GL_TEXTURE_2D, rt->buffers.effect);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, rt->width, rt->height, 0,
+			     GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+				       GL_TEXTURE_2D, rt->buffers.effect, 0);
 
 
-		//alpha fbo
-		glGenFramebuffers(1, &rt->buffers.alpha_fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, rt->buffers.alpha_fbo);
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			printf("err status: %x\n",status);
+			_render_target_clear(rt);
+			ERR_FAIL_COND( status != GL_FRAMEBUFFER_COMPLETE );
+		}
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-				       GL_TEXTURE_2D, rt->depth, 0);
-
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->buffers.diffuse, 0);
-
-		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		glBindFramebuffer(GL_FRAMEBUFFER, config.system_fbo);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
@@ -5499,7 +5672,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 
 				RenderTarget::Effects::MipMaps::Size mm;
 
-				glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA16F,  w, h, 0, GL_RGBA, GL_HALF_FLOAT, NULL);
+				glTexImage2D(GL_TEXTURE_2D, level, color_internal_format,  w, h, 0, color_format, color_type, NULL);
 				mm.width=w;
 				mm.height=h;
 				rt->effects.mip_maps[i].sizes.push_back(mm);
@@ -5709,6 +5882,20 @@ void RasterizerStorageGLES3::render_target_set_flag(RID p_render_target,RenderTa
 bool RasterizerStorageGLES3::render_target_renedered_in_frame(RID p_render_target){
 
 	return false;
+}
+
+void RasterizerStorageGLES3::render_target_set_msaa(RID p_render_target,VS::ViewportMSAA p_msaa) {
+
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	if (rt->msaa==p_msaa)
+		return;
+
+	_render_target_clear(rt);
+	rt->msaa=p_msaa;
+	_render_target_allocate(rt);
+
 }
 
 /* CANVAS SHADOW */
@@ -6283,10 +6470,13 @@ void RasterizerStorageGLES3::initialize() {
 	}
 
 	shaders.cubemap_filter.init();
+	shaders.particles.init();
 
 	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	frame.count=0;
+	frame.prev_tick=0;
+	frame.delta=0;
 	config.keep_original_textures=false;
 }
 

@@ -152,7 +152,7 @@ public:
 
 		SHADER_SPATIAL,
 		SHADER_CANVAS_ITEM,
-		SHADER_LIGHT,
+		SHADER_PARTICLES,
 		SHADER_MAX
 	};
 
@@ -593,6 +593,16 @@ public:
 	virtual void viewport_set_shadow_atlas_size(RID p_viewport,int p_size)=0;
 	virtual void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport,int p_quadrant,int p_subdiv)=0;
 
+	enum ViewportMSAA {
+		VIEWPORT_MSAA_DISABLED,
+		VIEWPORT_MSAA_2X,
+		VIEWPORT_MSAA_4X,
+		VIEWPORT_MSAA_8X,
+		VIEWPORT_MSAA_16X,
+	};
+
+	virtual void viewport_set_msaa(RID p_viewport,ViewportMSAA p_msaa)=0;
+	virtual void viewport_set_hdr(RID p_viewport,bool p_enabled)=0;
 
 	/* ENVIRONMENT API */
 

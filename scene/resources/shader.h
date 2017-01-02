@@ -44,7 +44,7 @@ public:
 
 		MODE_SPATIAL,
 		MODE_CANVAS_ITEM,
-		MODE_POST_PROCESS,
+		MODE_PARTICLES,
 		MODE_MAX
 	};
 private:
@@ -119,6 +119,14 @@ public:
 };
 
 
+class ParticlesShader : public Shader {
+
+	OBJ_TYPE(ParticlesShader,Shader);
+
+public:
+
+	ParticlesShader() : Shader(MODE_PARTICLES) {};
+};
 
 
 #endif // SHADER_H

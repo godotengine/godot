@@ -2593,6 +2593,36 @@ int Viewport::gui_get_canvas_sort_index() {
 	return gui.canvas_sort_index++;
 }
 
+void Viewport::set_msaa(MSAA p_msaa) {
+
+	ERR_FAIL_INDEX(p_msaa,5);
+	if (msaa==p_msaa)
+		return;
+	msaa=p_msaa;
+	VS::get_singleton()->viewport_set_msaa(viewport,VS::ViewportMSAA(p_msaa));
+}
+
+Viewport::MSAA Viewport::get_msaa() const {
+
+	return msaa;
+}
+
+void Viewport::set_hdr(bool p_hdr) {
+
+	if (hdr==p_hdr)
+		return;
+
+	hdr=p_hdr;
+	VS::get_singleton()->viewport_set_hdr(viewport,p_hdr);
+
+}
+
+bool Viewport::get_hdr() const{
+
+	return hdr;
+}
+
+
 
 void Viewport::_bind_methods() {
 
@@ -2643,6 +2673,12 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_update_mode","mode"), &Viewport::set_update_mode);
 	ObjectTypeDB::bind_method(_MD("get_update_mode"), &Viewport::get_update_mode);
 
+	ObjectTypeDB::bind_method(_MD("set_msaa","msaa"), &Viewport::set_msaa);
+	ObjectTypeDB::bind_method(_MD("get_msaa"), &Viewport::get_msaa);
+
+	ObjectTypeDB::bind_method(_MD("set_hdr","enable"), &Viewport::set_hdr);
+	ObjectTypeDB::bind_method(_MD("get_hdr"), &Viewport::get_hdr);
+
 	ObjectTypeDB::bind_method(_MD("get_texture:ViewportTexture"), &Viewport::get_texture);
 
 	ObjectTypeDB::bind_method(_MD("set_physics_object_picking","enable"), &Viewport::set_physics_object_picking);
@@ -2692,6 +2728,8 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world",PROPERTY_HINT_RESOURCE_TYPE,"World"), _SCS("set_world"), _SCS("get_world") );
 //	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world_2d",PROPERTY_HINT_RESOURCE_TYPE,"World2D"), _SCS("set_world_2d"), _SCS("get_world_2d") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), _SCS("set_transparent_background"), _SCS("has_transparent_background") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"msaa",PROPERTY_HINT_ENUM,"Disabled,2x,4x,8x,16x"), _SCS("set_msaa"), _SCS("get_msaa") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"hdr"), _SCS("set_hdr"), _SCS("get_hdr") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/v_flip"), _SCS("set_vflip"), _SCS("get_vflip") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/clear_on_new_frame"), _SCS("set_clear_on_new_frame"), _SCS("get_clear_on_new_frame") );
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target/update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), _SCS("set_update_mode"), _SCS("get_update_mode") );
@@ -2721,6 +2759,13 @@ void Viewport::_bind_methods() {
 	BIND_CONSTANT( SHADOW_ATLAS_QUADRANT_SUBDIV_256 );
 	BIND_CONSTANT( SHADOW_ATLAS_QUADRANT_SUBDIV_1024 );
 	BIND_CONSTANT( SHADOW_ATLAS_QUADRANT_SUBDIV_MAX );
+
+	BIND_CONSTANT( MSAA_DISABLED );
+	BIND_CONSTANT( MSAA_2X );
+	BIND_CONSTANT( MSAA_4X );
+	BIND_CONSTANT( MSAA_8X );
+	BIND_CONSTANT( MSAA_16X );
+
 }
 
 
@@ -2790,7 +2835,8 @@ Viewport::Viewport() {
 	gui.canvas_sort_index=0;
 
 
-
+	msaa=MSAA_DISABLED;
+	hdr=false;
 
 
 }

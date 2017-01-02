@@ -53,7 +53,6 @@ public:
 	Vector<RasterizerStorageGLES3::RenderTarget::Exposure> exposure_shrink;
 	int exposure_shrink_size;
 
-
 	struct State {
 
 
