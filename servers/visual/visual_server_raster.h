@@ -1005,6 +1005,7 @@ public:
 	virtual void viewport_set_render_target_update_mode(RID p_viewport,RenderTargetUpdateMode p_mode);
 	virtual RenderTargetUpdateMode viewport_get_render_target_update_mode(RID p_viewport) const;
 	virtual RID viewport_get_render_target_texture(RID p_viewport) const;
+	virtual void viewport_update_render_target(RID p_viewport);
 	virtual void viewport_set_render_target_vflip(RID p_viewport,bool p_enable);
 	virtual bool viewport_get_render_target_vflip(RID p_viewport) const;
 	virtual void viewport_set_render_target_clear_on_new_frame(RID p_viewport,bool p_enable);

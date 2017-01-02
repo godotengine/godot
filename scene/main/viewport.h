@@ -351,6 +351,8 @@ public:
 	RenderTargetUpdateMode get_render_target_update_mode() const;
 	Ref<RenderTargetTexture> get_render_target_texture() const;
 
+	void update_render_target();
+
 
 	Vector2 get_camera_coords(const Vector2& p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;

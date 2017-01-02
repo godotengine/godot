@@ -1657,6 +1657,17 @@ RID VisualServerRaster::viewport_get_render_target_texture(RID p_viewport) const
 	return viewport->render_target_texture;
 
 }
+void VisualServerRaster::viewport_update_render_target(RID p_viewport){
+
+        VS_CHANGED;
+        Viewport *viewport = viewport_owner.get( p_viewport );
+        ERR_FAIL_COND(!viewport);
+
+	if(viewport->render_target.is_valid() && viewport->render_target_update_mode==RENDER_TARGET_UPDATE_DISABLED){
+		viewport->render_target_update_mode = RENDER_TARGET_UPDATE_ONCE;
+                viewport_update_list.add(&viewport->update_list);
+	}
+}
 
 void VisualServerRaster::viewport_set_render_target_vflip(RID p_viewport,bool p_enable) {
 
