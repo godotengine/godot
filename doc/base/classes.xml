@@ -11859,6 +11859,13 @@
 				Get the main editor control. Use this as a parent for main screens.
 			</description>
 		</method>
+		<method name="edit_resource">
+			<argument index="0" name="p_resource" type="Resource">
+			</argument>
+			<description>
+				Tells the editor to handle the edit of the given resource. Ex: If you pass a Script as a argument, the editor will open the scriptEditor.
+			</description>
+		</method>
 		<method name="get_name" qualifiers="virtual">
 			<return type="String">
 			</return>
