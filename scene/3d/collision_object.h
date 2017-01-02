@@ -64,6 +64,8 @@ protected:
 
 	CollisionObject(RID p_rid, bool p_area);
 
+	Vector3 center_of_mass;
+
 	void _notification(int p_what);
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
@@ -94,6 +96,12 @@ public:
 	void set_capture_input_on_drag(bool p_capture);
 	bool get_capture_input_on_drag() const;
 
+	void set_center_of_mass(const Vector3& p_center_of_mass);
+	Vector3 get_center_of_mass() const;
+
+	Vector3 get_global_center_of_mass() const;
+
+	void calculate_center_of_mass();
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 

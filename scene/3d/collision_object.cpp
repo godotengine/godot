@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "collision_object.h"
+#include "body_shape.h"
 #include "servers/physics_server.h"
 #include "scene/scene_string_names.h"
 void CollisionObject::_update_shapes_from_children() {
@@ -50,7 +51,7 @@ void CollisionObject::_notification(int p_what) {
 			if (area)
 				PhysicsServer::get_singleton()->area_set_transform(rid,get_global_transform());
 			else
-				PhysicsServer::get_singleton()->body_set_state(rid,PhysicsServer::BODY_STATE_TRANSFORM,get_global_transform());
+				PhysicsServer::get_singleton()->body_set_state(rid,PhysicsServer::BODY_STATE_TRANSFORM,get_global_transform().translated(center_of_mass));
 
 			RID space = get_world()->get_space();
 			if (area) {
@@ -59,6 +60,7 @@ void CollisionObject::_notification(int p_what) {
 				PhysicsServer::get_singleton()->body_set_space(rid,space);
 
 			_update_pickable();
+			_update_shapes();
 		//get space
 		};
 
@@ -67,8 +69,9 @@ void CollisionObject::_notification(int p_what) {
 			if (area)
 				PhysicsServer::get_singleton()->area_set_transform(rid,get_global_transform());
 			else
-				PhysicsServer::get_singleton()->body_set_state(rid,PhysicsServer::BODY_STATE_TRANSFORM,get_global_transform());
+				PhysicsServer::get_singleton()->body_set_state(rid,PhysicsServer::BODY_STATE_TRANSFORM,get_global_transform().translated(center_of_mass));
 
+			_update_shapes();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
@@ -103,7 +106,18 @@ void CollisionObject::_update_shapes() {
 		if (area)
 			PhysicsServer::get_singleton()->area_add_shape(rid,shapes[i].shape->get_rid(),shapes[i].xform);
 		else {
-			PhysicsServer::get_singleton()->body_add_shape(rid,shapes[i].shape->get_rid(),shapes[i].xform);
+
+			Vector3 scale = Vector3(1.0, 1.0, 1.0);
+
+			if (is_inside_tree()) {
+				scale = get_global_transform().basis.get_scale();
+			}
+
+			Transform xform = shapes[i].xform;
+			xform.origin -= center_of_mass;
+			xform.scale(scale);
+
+			PhysicsServer::get_singleton()->body_add_shape(rid,shapes[i].shape->get_rid(),xform);
 			if (shapes[i].trigger)
 				PhysicsServer::get_singleton()->body_set_shape_as_trigger(rid,i,shapes[i].trigger);
 		}
@@ -232,7 +246,6 @@ void CollisionObject::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_shape_count"),&CollisionObject::get_shape_count);
 	ObjectTypeDB::bind_method(_MD("set_shape","shape_idx","shape:Shape"),&CollisionObject::set_shape);
 	ObjectTypeDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject::set_shape_transform);
-//    ObjectTypeDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject::set_shape_transform);
 	ObjectTypeDB::bind_method(_MD("set_shape_as_trigger","shape_idx","enable"),&CollisionObject::set_shape_as_trigger);
 	ObjectTypeDB::bind_method(_MD("is_shape_set_as_trigger","shape_idx"),&CollisionObject::is_shape_set_as_trigger);
 	ObjectTypeDB::bind_method(_MD("get_shape:Shape","shape_idx"),&CollisionObject::get_shape);
@@ -244,6 +257,12 @@ void CollisionObject::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_capture_input_on_drag","enable"),&CollisionObject::set_capture_input_on_drag);
 	ObjectTypeDB::bind_method(_MD("get_capture_input_on_drag"),&CollisionObject::get_capture_input_on_drag);
 	ObjectTypeDB::bind_method(_MD("get_rid"),&CollisionObject::get_rid);
+	
+	ObjectTypeDB::bind_method(_MD("set_center_of_mass", "center_of_mass"), &CollisionObject::set_center_of_mass);
+	ObjectTypeDB::bind_method(_MD("get_center_of_mass"), &CollisionObject::get_center_of_mass);
+	ObjectTypeDB::bind_method(_MD("get_global_center_of_mass"), &CollisionObject::get_global_center_of_mass);
+	ObjectTypeDB::bind_method(_MD("calculate_center_of_mass"), &CollisionObject::calculate_center_of_mass);
+
 	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::OBJECT,"camera"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));
 
 	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::OBJECT,"camera"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));
@@ -334,6 +353,7 @@ CollisionObject::CollisionObject(RID p_rid, bool p_area) {
 	area=p_area;
 	capture_input_on_drag=false;
 	ray_pickable=true;
+	center_of_mass = Vector3();
 	if (p_area) {
 		PhysicsServer::get_singleton()->area_attach_object_instance_ID(rid,get_instance_ID());
 	} else {
@@ -352,6 +372,43 @@ void CollisionObject::set_capture_input_on_drag(bool p_capture) {
 bool CollisionObject::get_capture_input_on_drag() const {
 
 	return capture_input_on_drag;
+}
+
+void CollisionObject::set_center_of_mass(const Vector3& p_center_of_mass){
+
+	center_of_mass = p_center_of_mass;
+
+	_update_shapes();
+}
+Vector3 CollisionObject::get_center_of_mass() const{
+
+	return center_of_mass;
+}
+
+Vector3 CollisionObject::get_global_center_of_mass() const {
+	return get_global_transform().translated(center_of_mass).origin;
+}
+
+void CollisionObject::calculate_center_of_mass(){
+
+	AABB center;
+
+	for (int i = 0; i < get_child_count(); i++){
+
+		int valid_shape_count = 0;
+		CollisionShape *c = get_child(i)->cast_to<CollisionShape>();
+		if (c) {
+
+			if (valid_shape_count == 0)
+				center.pos = c->get_transform().origin;
+			else
+				center.expand_to(c->get_transform().origin);
+
+			valid_shape_count++;
+		}
+	}
+
+	center_of_mass = center.pos + center.size*0.5;
 }
 
 

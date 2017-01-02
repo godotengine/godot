@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "physics_body.h"
+#include "collision_object.h"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody::_notification(int p_what) {
@@ -398,7 +399,11 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 #endif
 
 	set_ignore_transform_notification(true);
-	set_global_transform(state->get_transform());
+	Vector3 scale = get_global_transform().basis.get_scale();
+	Transform new_transform = state->get_transform();
+	new_transform.scale_basis(scale);
+	new_transform.translate(-center_of_mass);
+	set_global_transform(new_transform);
 	linear_velocity=state->get_linear_velocity();
 	angular_velocity=state->get_angular_velocity();
 	if(sleeping!=state->is_sleeping()) {
@@ -867,6 +872,7 @@ void RigidBody::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"mass",PROPERTY_HINT_EXP_RANGE,"0.01,65535,0.01"),_SCS("set_mass"),_SCS("get_mass"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"weight",PROPERTY_HINT_EXP_RANGE,"0.01,65535,0.01",PROPERTY_USAGE_EDITOR),_SCS("set_weight"),_SCS("get_weight"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_friction"),_SCS("get_friction"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"center_of_mass"), _SCS("set_center_of_mass"), _SCS("get_center_of_mass"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_bounce"),_SCS("get_bounce"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_scale",PROPERTY_HINT_RANGE,"-128,128,0.01"),_SCS("set_gravity_scale"),_SCS("get_gravity_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"custom_integrator"),_SCS("set_use_custom_integrator"),_SCS("is_using_custom_integrator"));

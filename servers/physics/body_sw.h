@@ -289,6 +289,7 @@ public:
 	 }
 
 	//void simulate_motion(const Transform& p_xform,real_t p_step);
+	void set_as_toplevel(const bool p_true);
 	void call_queries();
 	void wakeup_neighbours();
 
