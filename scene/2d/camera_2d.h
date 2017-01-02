@@ -134,6 +134,7 @@ public:
 	Node* get_custom_viewport() const;
 
 	Vector2 get_camera_pos() const;
+	void set_camera_pos(Vector2 pos);
 	void force_update_scroll();
 	void reset_smoothing();
 	void align();

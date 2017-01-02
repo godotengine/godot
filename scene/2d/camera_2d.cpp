@@ -433,6 +433,12 @@ Vector2 Camera2D::get_camera_pos() const {
 	return camera_pos;
 }
 
+void Camera2D::set_camera_pos(Vector2 pos) {
+
+
+	camera_pos = pos;
+}
+
 void Camera2D::force_update_scroll() {
 
 
@@ -630,6 +636,7 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_drag_margin","margin"),&Camera2D::get_drag_margin);
 
 	ObjectTypeDB::bind_method(_MD("get_camera_pos"),&Camera2D::get_camera_pos);
+	ObjectTypeDB::bind_method(_MD("set_camera_pos"),&Camera2D::set_camera_pos);
 	ObjectTypeDB::bind_method(_MD("get_camera_screen_center"),&Camera2D::get_camera_screen_center);
 
 	ObjectTypeDB::bind_method(_MD("set_zoom","zoom"),&Camera2D::set_zoom);
