@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,10 +63,10 @@ void TCPServerWinsock::cleanup() {
 };
 
 
-Error TCPServerWinsock::listen(uint16_t p_port, IP_Address::AddrType p_type,const List<String> *p_accepted_hosts) {
+Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
 
 	int sockfd;
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
 	ERR_FAIL_COND_V(sockfd == INVALID_SOCKET, FAILED);
 
 	unsigned long par = 1;
@@ -77,7 +77,7 @@ Error TCPServerWinsock::listen(uint16_t p_port, IP_Address::AddrType p_type,cons
 	};
 
 	struct sockaddr_storage my_addr;
-	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, p_type, p_accepted_hosts);
+	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, ip_type, p_accepted_hosts);
 
 	int reuse=1;
 	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
@@ -150,7 +150,7 @@ Ref<StreamPeerTCP> TCPServerWinsock::take_connection() {
 	int port;
 	_set_ip_addr_port(ip, port, &their_addr);
 
-	conn->set_socket(fd, ip, port);
+	conn->set_socket(fd, ip, port, ip_type);
 
 	return conn;
 };
@@ -168,6 +168,7 @@ void TCPServerWinsock::stop() {
 TCPServerWinsock::TCPServerWinsock() {
 
 	listen_sockfd = INVALID_SOCKET;
+	ip_type = IP::TYPE_ANY;
 };
 
 TCPServerWinsock::~TCPServerWinsock() {

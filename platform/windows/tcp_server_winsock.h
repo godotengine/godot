@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@ class TCPServerWinsock : public TCP_Server {
 
 public:
 
-	virtual Error listen(uint16_t p_port, IP_Address::AddrType p_type = IP_Address::TYPE_IPV4,const List<String> *p_accepted_hosts=NULL);
+	virtual Error listen(uint16_t p_port,const List<String> *p_accepted_hosts=NULL);
 	virtual bool is_connection_available() const;
 	virtual Ref<StreamPeerTCP> take_connection();
 

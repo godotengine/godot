@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,7 @@ void Label::_notification(int p_what) {
 		Ref<Font> font = get_font("font");
 		Color font_color = get_color("font_color");
 		Color font_color_shadow = get_color("font_color_shadow");
-		bool use_outlinde = get_constant("shadow_as_outline");
+		bool use_outline = get_constant("shadow_as_outline");
 		Point2 shadow_ofs(get_constant("shadow_offset_x"),get_constant("shadow_offset_y"));
 		int line_spacing = get_constant("line_spacing");
 
@@ -118,19 +118,19 @@ void Label::_notification(int p_what) {
 					//nothing
 				} break;
 				case VALIGN_CENTER: {
-					vbegin=(size.y - lines_visible * font_h) / 2;
+					vbegin=(size.y - (lines_visible * font_h - line_spacing)) / 2;
 					vsep=0;
 
 				} break;
 				case VALIGN_BOTTOM: {
-					vbegin=size.y - lines_visible * font_h;
+					vbegin=size.y - (lines_visible * font_h - line_spacing);
 					vsep=0;
 
 				} break;
 				case VALIGN_FILL: {
 					vbegin=0;
 					if (lines_visible>1) {
-						vsep=(size.y - lines_visible * font_h) / (lines_visible - 1);
+						vsep=(size.y - (lines_visible * font_h - line_spacing)) / (lines_visible - 1);
 					} else {
 						vsep=0;
 					}
@@ -247,7 +247,7 @@ void Label::_notification(int p_what) {
 							}
 
 							float move=font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+shadow_ofs, c, n,font_color_shadow );
-							if (use_outlinde) {
+							if (use_outline) {
 								font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(-shadow_ofs.x,shadow_ofs.y), c, n,font_color_shadow );
 								font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(shadow_ofs.x,-shadow_ofs.y), c, n,font_color_shadow );
 								font->draw_char(ci, Point2( x_ofs_shadow, y_ofs )+Vector2(-shadow_ofs.x,-shadow_ofs.y), c, n,font_color_shadow );

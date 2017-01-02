@@ -334,7 +334,7 @@ bool VisualScriptOperator::has_input_sequence_port() const{
 
 int VisualScriptOperator::get_input_value_port_count() const{
 
-	return (op==Variant::OP_BIT_NEGATE || op==Variant::OP_NOT || op==Variant::OP_NEGATE) ? 1 : 2;
+	return (op==Variant::OP_BIT_NEGATE || op==Variant::OP_NOT || op==Variant::OP_NEGATE || op==Variant::OP_POSITIVE) ? 1 : 2;
 }
 int VisualScriptOperator::get_output_value_port_count() const{
 
@@ -361,6 +361,7 @@ PropertyInfo VisualScriptOperator::get_input_value_port_info(int p_idx) const{
 		{Variant::NIL,Variant::NIL}, //OP_MULTIPLY,
 		{Variant::NIL,Variant::NIL}, //OP_DIVIDE,
 		{Variant::NIL,Variant::NIL}, //OP_NEGATE,
+		{Variant::NIL,Variant::NIL}, //OP_POSITIVE,
 		{Variant::INT,Variant::INT}, //OP_MODULE,
 		{Variant::STRING,Variant::STRING}, //OP_STRING_CONCAT,
 		//bitwise
@@ -403,6 +404,7 @@ PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const{
 		Variant::NIL, //OP_MULTIPLY,
 		Variant::NIL, //OP_DIVIDE,
 		Variant::NIL, //OP_NEGATE,
+		Variant::NIL, //OP_POSITIVE,
 		Variant::INT, //OP_MODULE,
 		Variant::STRING, //OP_STRING_CONCAT,
 		//bitwise
@@ -444,6 +446,7 @@ static const char* op_names[]={
 	"Multiply", //OP_MULTIPLY,
 	"Divide", //OP_DIVIDE,
 	"Negate", //OP_NEGATE,
+	"Positive", //OP_POSITIVE,
 	"Remainder", //OP_MODULE,
 	"Concat", //OP_STRING_CONCAT,
 	//bitwise
@@ -485,6 +488,7 @@ String VisualScriptOperator::get_text() const {
 		L"A x B", //OP_MULTIPLY,
 		L"A \u00F7 B", //OP_DIVIDE,
 		L"\u00AC A", //OP_NEGATE,
+		L"+ A", //OP_POSITIVE,
 		L"A mod B", //OP_MODULE,
 		L"A .. B", //OP_STRING_CONCAT,
 		//bitwise
@@ -3900,6 +3904,7 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("operators/math/multiply",create_op_node<Variant::OP_MULTIPLY>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/divide",create_op_node<Variant::OP_DIVIDE>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/negate",create_op_node<Variant::OP_NEGATE>);
+	VisualScriptLanguage::singleton->add_register_func("operators/math/positive",create_op_node<Variant::OP_POSITIVE>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/remainder",create_op_node<Variant::OP_MODULE>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/string_concat",create_op_node<Variant::OP_STRING_CONCAT>);
 	//bitwise

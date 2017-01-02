@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #include "stream_peer.h"
 
 #include "ip_address.h"
+#include "io/ip.h"
 
 class StreamPeerTCP : public StreamPeer {
 
@@ -50,11 +51,15 @@ public:
 
 protected:
 
+	IP::Type ip_type;
+
+	virtual Error _connect(const String& p_address, int p_port);
 	static StreamPeerTCP* (*_create)();
 	static void _bind_methods();
 
 public:
 
+	virtual void set_ip_type(IP::Type p_type);
 	virtual Error connect(const IP_Address& p_host, uint16_t p_port)=0;
 
 	//read/write from streampeer

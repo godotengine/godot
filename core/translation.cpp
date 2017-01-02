@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -292,6 +292,7 @@ static const char* locale_list[]={
 "pa_PK", //  Panjabi (Pakistan)
 "pl", //  Polish
 "pl_PL", //  Polish (Poland)
+"pr", //  Pirate
 "ps_AF", //  Pushto (Afghanistan)
 "pt", //  Portuguese
 "pt_BR", //  Portuguese (Brazil)
@@ -650,6 +651,7 @@ static const char* locale_names[]={
 "Panjabi (Pakistan)",
 "Polish",
 "Polish (Poland)",
+"Pirate",
 "Pushto (Afghanistan)",
 "Portuguese",
 "Portuguese (Brazil)",

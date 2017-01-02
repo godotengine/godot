@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -120,7 +120,7 @@ void Quad::_update() {
 	} else {
 		configured=true;
 	}
-	VS::get_singleton()->mesh_add_surface(mesh,VS::PRIMITIVE_TRIANGLES,arr);
+	VS::get_singleton()->mesh_add_surface_from_arrays(mesh,VS::PRIMITIVE_TRIANGLES,arr);
 
 	pending_update=false;
 }
@@ -229,4 +229,8 @@ Quad::Quad() {
 	set_base(mesh);
 	configured=false;
 
+}
+
+Quad::~Quad() {
+	VisualServer::get_singleton()->free(mesh);
 }

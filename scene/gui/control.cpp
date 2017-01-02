@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -480,10 +480,10 @@ void Control::_notification(int p_notification) {
 			if (is_set_as_toplevel()) {
 				data.SI=get_viewport()->_gui_add_subwindow_control(this);
 
-				/*if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
+				if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
 					data.theme_owner=data.parent->data.theme_owner;
 					notification(NOTIFICATION_THEME_CHANGED);
-				}*/
+				}
 
 			} else {
 
@@ -519,10 +519,10 @@ void Control::_notification(int p_notification) {
 
 				if (parent_control) {
 					//do nothing, has a parent control
-					/*if (data.theme.is_null() && parent_control->data.theme_owner) {
+					if (data.theme.is_null() && parent_control->data.theme_owner) {
 						data.theme_owner=parent_control->data.theme_owner;
 						notification(NOTIFICATION_THEME_CHANGED);
-					}*/
+					}
 				} else if (subwindow) {
 					//is a subwindow (process input before other controls for that canvas)
 					data.SI=get_viewport()->_gui_add_subwindow_control(this);

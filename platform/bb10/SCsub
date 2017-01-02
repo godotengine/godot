@@ -4,19 +4,19 @@ Import('env')
 
 bb10_lib = [
 
-	'bbutil.c',
-	'os_bb10.cpp',
-	'audio_driver_bb10.cpp',
-	'godot_bb10.cpp',
-	'payment_service.cpp',
+    'bbutil.c',
+    'os_bb10.cpp',
+    'audio_driver_bb10.cpp',
+    'godot_bb10.cpp',
+    'payment_service.cpp',
 ]
 
 env_bps = env.Clone()
 if env['bb10_payment_service'] == "yes":
-	env_bps.Append(CPPFLAGS=['-DPAYMENT_SERVICE_ENABLED'])
+    env_bps.Append(CPPFLAGS=['-DPAYMENT_SERVICE_ENABLED'])
 
 if env['bb10_lgles_override'] == "yes":
-	env_bps.Append(CPPFLAGS=['-DBB10_LGLES_OVERRIDE'])
+    env_bps.Append(CPPFLAGS=['-DBB10_LGLES_OVERRIDE'])
 
 
 prog = None

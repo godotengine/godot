@@ -112,18 +112,15 @@ WebPAnimDecoder* WebPAnimDecoderNewInternal(
   dec->info_.bgcolor = WebPDemuxGetI(dec->demux_, WEBP_FF_BACKGROUND_COLOR);
   dec->info_.frame_count = WebPDemuxGetI(dec->demux_, WEBP_FF_FRAME_COUNT);
 
-  {
-    const int canvas_bytes =
-        dec->info_.canvas_width * NUM_CHANNELS * dec->info_.canvas_height;
-    // Note: calloc() because we fill frame with zeroes as well.
-    dec->curr_frame_ = WebPSafeCalloc(1ULL, canvas_bytes);
-    if (dec->curr_frame_ == NULL) goto Error;
-    dec->prev_frame_disposed_ = WebPSafeCalloc(1ULL, canvas_bytes);
-    if (dec->prev_frame_disposed_ == NULL) goto Error;
-  }
+  // Note: calloc() because we fill frame with zeroes as well.
+  dec->curr_frame_ = (uint8_t*)WebPSafeCalloc(
+      dec->info_.canvas_width * NUM_CHANNELS, dec->info_.canvas_height);
+  if (dec->curr_frame_ == NULL) goto Error;
+  dec->prev_frame_disposed_ = (uint8_t*)WebPSafeCalloc(
+      dec->info_.canvas_width * NUM_CHANNELS, dec->info_.canvas_height);
+  if (dec->prev_frame_disposed_ == NULL) goto Error;
 
   WebPAnimDecoderReset(dec);
-
   return dec;
 
  Error:
@@ -144,9 +141,13 @@ static int IsFullFrame(int width, int height, int canvas_width,
 }
 
 // Clear the canvas to transparent.
-static void ZeroFillCanvas(uint8_t* buf, uint32_t canvas_width,
-                           uint32_t canvas_height) {
-  memset(buf, 0, canvas_width * NUM_CHANNELS * canvas_height);
+static int ZeroFillCanvas(uint8_t* buf, uint32_t canvas_width,
+                          uint32_t canvas_height) {
+  const uint64_t size =
+      (uint64_t)canvas_width * canvas_height * NUM_CHANNELS * sizeof(*buf);
+  if (size != (size_t)size) return 0;
+  memset(buf, 0, (size_t)size);
+  return 1;
 }
 
 // Clear given frame rectangle to transparent.
@@ -162,10 +163,13 @@ static void ZeroFillFrameRect(uint8_t* buf, int buf_stride, int x_offset,
 }
 
 // Copy width * height pixels from 'src' to 'dst'.
-static void CopyCanvas(const uint8_t* src, uint8_t* dst,
-                       uint32_t width, uint32_t height) {
+static int CopyCanvas(const uint8_t* src, uint8_t* dst,
+                      uint32_t width, uint32_t height) {
+  const uint64_t size = (uint64_t)width * height * NUM_CHANNELS;
+  if (size != (size_t)size) return 0;
   assert(src != NULL && dst != NULL);
-  memcpy(dst, src, width * NUM_CHANNELS * height);
+  memcpy(dst, src, (size_t)size);
+  return 1;
 }
 
 // Returns true if the current frame is a key-frame.
@@ -328,9 +332,14 @@ int WebPAnimDecoderGetNext(WebPAnimDecoder* dec,
   is_key_frame = IsKeyFrame(&iter, &dec->prev_iter_,
                             dec->prev_frame_was_keyframe_, width, height);
   if (is_key_frame) {
-    ZeroFillCanvas(dec->curr_frame_, width, height);
+    if (!ZeroFillCanvas(dec->curr_frame_, width, height)) {
+      goto Error;
+    }
   } else {
-    CopyCanvas(dec->prev_frame_disposed_, dec->curr_frame_, width, height);
+    if (!CopyCanvas(dec->prev_frame_disposed_, dec->curr_frame_,
+                    width, height)) {
+      goto Error;
+    }
   }
 
   // Decode.
@@ -393,6 +402,7 @@ int WebPAnimDecoderGetNext(WebPAnimDecoder* dec,
 
   // Update info of the previous frame and dispose it for the next iteration.
   dec->prev_frame_timestamp_ = timestamp;
+  WebPDemuxReleaseIterator(&dec->prev_iter_);
   dec->prev_iter_ = iter;
   dec->prev_frame_was_keyframe_ = is_key_frame;
   CopyCanvas(dec->curr_frame_, dec->prev_frame_disposed_, width, height);
@@ -421,6 +431,7 @@ int WebPAnimDecoderHasMoreFrames(const WebPAnimDecoder* dec) {
 void WebPAnimDecoderReset(WebPAnimDecoder* dec) {
   if (dec != NULL) {
     dec->prev_frame_timestamp_ = 0;
+    WebPDemuxReleaseIterator(&dec->prev_iter_);
     memset(&dec->prev_iter_, 0, sizeof(dec->prev_iter_));
     dec->prev_frame_was_keyframe_ = 0;
     dec->next_frame_ = 1;
@@ -434,6 +445,7 @@ const WebPDemuxer* WebPAnimDecoderGetDemuxer(const WebPAnimDecoder* dec) {
 
 void WebPAnimDecoderDelete(WebPAnimDecoder* dec) {
   if (dec != NULL) {
+    WebPDemuxReleaseIterator(&dec->prev_iter_);
     WebPDemuxDelete(dec->demux_);
     WebPSafeFree(dec->curr_frame_);
     WebPSafeFree(dec->prev_frame_disposed_);

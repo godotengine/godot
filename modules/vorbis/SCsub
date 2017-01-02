@@ -6,44 +6,44 @@ Import('env_modules')
 env_vorbis = env_modules.Clone()
 
 # Thirdparty source files
-if (env["libvorbis"] != "system"): # builtin
-	thirdparty_dir = "#thirdparty/libvorbis/"
-	thirdparty_sources = [
-		#"analysis.c",
-		#"barkmel.c",
-		"bitrate.c",
-		"block.c",
-		"codebook.c",
-		"envelope.c",
-		"floor0.c",
-		"floor1.c",
-		"info.c",
-		"lookup.c",
-		"lpc.c",
-		"lsp.c",
-		"mapping0.c",
-		"mdct.c",
-		"psy.c",
-		#"psytune.c",
-		"registry.c",
-		"res0.c",
-		"sharedbook.c",
-		"smallft.c",
-		"synthesis.c",
-		#"tone.c",
-		#"vorbisenc.c",
-		"vorbisfile.c",
-		"window.c",
-	]
+if (env['builtin_libvorbis'] != 'no'):
+    thirdparty_dir = "#thirdparty/libvorbis/"
+    thirdparty_sources = [
+        #"analysis.c",
+        #"barkmel.c",
+        "bitrate.c",
+        "block.c",
+        "codebook.c",
+        "envelope.c",
+        "floor0.c",
+        "floor1.c",
+        "info.c",
+        "lookup.c",
+        "lpc.c",
+        "lsp.c",
+        "mapping0.c",
+        "mdct.c",
+        "psy.c",
+        #"psytune.c",
+        "registry.c",
+        "res0.c",
+        "sharedbook.c",
+        "smallft.c",
+        "synthesis.c",
+        #"tone.c",
+        #"vorbisenc.c",
+        "vorbisfile.c",
+        "window.c",
+    ]
 
-	thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-	env_vorbis.add_source_files(env.modules_sources, thirdparty_sources)
-	env_vorbis.Append(CPPPATH = [thirdparty_dir])
+    env_vorbis.add_source_files(env.modules_sources, thirdparty_sources)
+    env_vorbis.Append(CPPPATH=[thirdparty_dir])
 
-	# also requires libogg
-	if (env["libogg"] != "system"): # builtin
-		env_vorbis.Append(CPPPATH = ["#thirdparty/libogg"])
+    # also requires libogg
+    if (env['builtin_libogg'] != 'no'):
+        env_vorbis.Append(CPPPATH=["#thirdparty/libogg"])
 
 # Godot source files
 env_vorbis.add_source_files(env.modules_sources, "*.cpp")

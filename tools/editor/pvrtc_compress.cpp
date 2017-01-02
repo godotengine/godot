@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,7 @@ static void _compress_image(Image::CompressMode p_mode,Image *p_image) {
 	if (EditorSettings::get_singleton()->get("PVRTC/fast_conversion").operator bool()) {
 		args.push_back("-pvrtcfast");
 	}
-	if (p_image->get_mipmaps()>0)
+	if (p_image->has_mipmaps())
 		args.push_back("-m");
 
 	Ref<ImageTexture> t = memnew( ImageTexture );

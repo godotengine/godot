@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,6 +73,8 @@ class SceneTree : public MainLoop {
 	OBJ_TYPE( SceneTree, MainLoop );
 public:
 
+
+	typedef void (*IdleCallback)();
 
 	enum StretchMode {
 
@@ -303,6 +305,15 @@ friend class Viewport;
 	static void _live_edit_reparent_node_funcs(void* self,const NodePath& p_at,const NodePath& p_new_place,const String& p_new_name,int p_at_pos) { reinterpret_cast<SceneTree*>(self)->_live_edit_reparent_node_func(p_at,p_new_place,p_new_name,p_at_pos); }
 
 #endif
+
+	enum {
+		MAX_IDLE_CALLBACKS=256
+	};
+
+	static IdleCallback idle_callbacks[MAX_IDLE_CALLBACKS];
+	static int idle_callback_count;
+	void _call_idle_callbacks();
+
 protected:
 
 
@@ -430,6 +441,7 @@ public:
 	void set_refuse_new_network_connections(bool p_refuse);
 	bool is_refusing_new_network_connections() const;
 
+	static void add_idle_callback(IdleCallback p_callback);
 	SceneTree();
 	~SceneTree();
 

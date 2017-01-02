@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1032,7 +1032,6 @@ String EditorSettings::get_last_selected_language()
 	String path = get_project_settings_path().plus_file("project_metadata.cfg");
 	Error err = cf->load(path);
 	if (err != OK) {
-		WARN_PRINTS("Can't load config file: " + path);
 		return "";
 	}
 	Variant last_selected_language = cf->get_value("script_setup", "last_selected_language");
@@ -1045,11 +1044,7 @@ void EditorSettings::set_last_selected_language(String p_language)
 {
 	Ref<ConfigFile> cf = memnew( ConfigFile );
 	String path = get_project_settings_path().plus_file("project_metadata.cfg");
-	Error err = cf->load(path);
-	if (err != OK) {
-		WARN_PRINTS("Can't load config file: " + path);
-		return;
-	}
+	cf->load(path);
 	cf->set_value("script_setup", "last_selected_language", p_language);
 	cf->save(path);
 }
@@ -1103,7 +1098,6 @@ EditorSettings::EditorSettings() {
 	}
 
 	_load_defaults();
-	save_changed_setting=false;
 
 
 }

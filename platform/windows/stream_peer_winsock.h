@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,7 +68,7 @@ public:
 
 	virtual int get_available_bytes() const;
 
-	void set_socket(int p_sockfd, IP_Address p_host, int p_port);
+	void set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_ip_type);
 
 	virtual IP_Address get_connected_host() const;
 	virtual uint16_t get_connected_port() const;

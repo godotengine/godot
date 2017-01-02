@@ -281,18 +281,6 @@ int VP8GetCostUV(VP8EncIterator* const it, const VP8ModeScore* const rd) {
 //------------------------------------------------------------------------------
 // Recording of token probabilities.
 
-// Record proba context used
-static int Record(int bit, proba_t* const stats) {
-  proba_t p = *stats;
-  if (p >= 0xffff0000u) {               // an overflow is inbound.
-    p = ((p + 1u) >> 1) & 0x7fff7fffu;  // -> divide the stats by 2.
-  }
-  // record bit count (lower 16 bits) and increment total count (upper 16 bits).
-  p += 0x00010000u + bit;
-  *stats = p;
-  return bit;
-}
-
 // We keep the table-free variant around for reference, in case.
 #define USE_LEVEL_CODE_TABLE
 
@@ -303,31 +291,31 @@ int VP8RecordCoeffs(int ctx, const VP8Residual* const res) {
   // should be stats[VP8EncBands[n]], but it's equivalent for n=0 or 1
   proba_t* s = res->stats[n][ctx];
   if (res->last  < 0) {
-    Record(0, s + 0);
+    VP8RecordStats(0, s + 0);
     return 0;
   }
   while (n <= res->last) {
     int v;
-    Record(1, s + 0);  // order of record doesn't matter
+    VP8RecordStats(1, s + 0);  // order of record doesn't matter
     while ((v = res->coeffs[n++]) == 0) {
-      Record(0, s + 1);
+      VP8RecordStats(0, s + 1);
       s = res->stats[VP8EncBands[n]][0];
     }
-    Record(1, s + 1);
-    if (!Record(2u < (unsigned int)(v + 1), s + 2)) {  // v = -1 or 1
+    VP8RecordStats(1, s + 1);
+    if (!VP8RecordStats(2u < (unsigned int)(v + 1), s + 2)) {  // v = -1 or 1
       s = res->stats[VP8EncBands[n]][1];
     } else {
       v = abs(v);
 #if !defined(USE_LEVEL_CODE_TABLE)
-      if (!Record(v > 4, s + 3)) {
-        if (Record(v != 2, s + 4))
-          Record(v == 4, s + 5);
-      } else if (!Record(v > 10, s + 6)) {
-        Record(v > 6, s + 7);
-      } else if (!Record((v >= 3 + (8 << 2)), s + 8)) {
-        Record((v >= 3 + (8 << 1)), s + 9);
+      if (!VP8RecordStats(v > 4, s + 3)) {
+        if (VP8RecordStats(v != 2, s + 4))
+          VP8RecordStats(v == 4, s + 5);
+      } else if (!VP8RecordStats(v > 10, s + 6)) {
+        VP8RecordStats(v > 6, s + 7);
+      } else if (!VP8RecordStats((v >= 3 + (8 << 2)), s + 8)) {
+        VP8RecordStats((v >= 3 + (8 << 1)), s + 9);
       } else {
-        Record((v >= 3 + (8 << 3)), s + 10);
+        VP8RecordStats((v >= 3 + (8 << 3)), s + 10);
       }
 #else
       if (v > MAX_VARIABLE_LEVEL) {
@@ -340,14 +328,14 @@ int VP8RecordCoeffs(int ctx, const VP8Residual* const res) {
         int i;
         for (i = 0; (pattern >>= 1) != 0; ++i) {
           const int mask = 2 << i;
-          if (pattern & 1) Record(!!(bits & mask), s + 3 + i);
+          if (pattern & 1) VP8RecordStats(!!(bits & mask), s + 3 + i);
         }
       }
 #endif
       s = res->stats[VP8EncBands[n]][2];
     }
   }
-  if (n < 16) Record(0, s + 0);
+  if (n < 16) VP8RecordStats(0, s + 0);
   return 1;
 }
 

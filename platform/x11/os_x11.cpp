@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "servers/visual/visual_server_raster.h"
-#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "os_x11.h"
 #include "key_mapping_x11.h"
 #include <stdio.h>
@@ -74,7 +74,7 @@ int OS_X11::get_video_driver_count() const {
 }
 
 const char * OS_X11::get_video_driver_name(int p_driver) const {
-	return "GLES2";
+	return "GLES3";
 }
 
 OS::VideoMode OS_X11::get_default_video_mode() const {
@@ -203,19 +203,22 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	//print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 
-	context_gl = memnew( ContextGL_X11( x11_display, x11_window,current_videomode, false ) );
+
+	context_gl = memnew( ContextGL_X11( x11_display, x11_window,current_videomode, true ) );
 	context_gl->initialize();
 
-	rasterizer = memnew( RasterizerGLES2 );
+	RasterizerGLES3::register_config();
+
+	RasterizerGLES3::make_current();
 
 #endif
-	visual_server = memnew( VisualServerRaster(rasterizer) );
-
+	visual_server = memnew( VisualServerRaster );
+#if 0
 	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
 
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
-
+#endif
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
 	// needed for lxde/openbox, possibly others
@@ -487,7 +490,7 @@ void OS_X11::finalize() {
 
 	visual_server->finish();
 	memdelete(visual_server);
-	memdelete(rasterizer);
+	//memdelete(rasterizer);
 
 	physics_server->finish();
 	memdelete(physics_server);
@@ -1878,7 +1881,7 @@ void OS_X11::set_icon(const Image& p_icon) {
 
 	if (!p_icon.empty()) {
 		Image img=p_icon;
-		img.convert(Image::FORMAT_RGBA);
+		img.convert(Image::FORMAT_RGBA8);
 
 		int w = img.get_width();
 		int h = img.get_height();
@@ -1951,7 +1954,7 @@ void OS_X11::set_use_vsync(bool p_enable) {
 		return context_gl->set_use_vsync(p_enable);
 }
 
-bool OS_X11::is_vsnc_enabled() const {
+bool OS_X11::is_vsync_enabled() const {
 
 	if (context_gl)
 		return context_gl->is_using_vsync();
@@ -1989,6 +1992,11 @@ OS_X11::OS_X11() {
 #ifdef ALSA_ENABLED
 	AudioDriverManagerSW::add_driver(&driver_alsa);
 #endif
+
+	if(AudioDriverManagerSW::get_driver_count() == 0){
+		WARN_PRINT("No sound driver found... Defaulting to dummy driver");
+		AudioDriverManagerSW::add_driver(&driver_dummy);
+	}
 
 	minimized = false;
 	xim_style=0L;

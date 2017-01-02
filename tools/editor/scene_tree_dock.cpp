@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,11 +80,11 @@ void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 	else if (ED_IS_SHORTCUT("scene_tree/duplicate", p_event)) {
 		_tool_selected(TOOL_DUPLICATE);
 	}
-	else if (ED_IS_SHORTCUT("scene_tree/add_script", p_event)) {
-		_tool_selected(TOOL_CREATE_SCRIPT);
+	else if (ED_IS_SHORTCUT("scene_tree/attach_script", p_event)) {
+		_tool_selected(TOOL_ATTACH_SCRIPT);
 	}
-	else if (ED_IS_SHORTCUT("scene_tree/load_script", p_event)) {
-		_tool_selected(TOOL_LOAD_SCRIPT);
+	else if(ED_IS_SHORTCUT("scene_tree/clear_script", p_event)) {
+		_tool_selected(TOOL_CLEAR_SCRIPT);
 	}
 	else if (ED_IS_SHORTCUT("scene_tree/move_up", p_event)) {
 		_tool_selected(TOOL_MOVE_UP);
@@ -269,24 +269,6 @@ void SceneTreeDock::_replace_with_branch_scene(const String& p_file,Node* base) 
 	scene_tree->set_selected(instanced_scene);
 }
 
-
-void SceneTreeDock::_file_selected(String p_file) {
-	RES p_script = ResourceLoader::load(p_file, "Script");
-	if (p_script.is_null()) {
-		accept->get_ok()->set_text(TTR("Ugh"));
-		accept->set_text(vformat(TTR("Error loading script from %s"), p_file));
-		accept->popup_centered_minsize();
-		return;
-	}
-
-	Node *selected = scene_tree->get_selected();
-	if (!selected)
-		return;
-	selected->set_script(p_script.get_ref_ptr());
-	editor->push_item(p_script.operator->());
-	file_dialog->hide();
-}
-
 bool SceneTreeDock::_cyclical_dependency_exists(const String& p_target_scene_path, Node* p_desired_node) {
 	int childCount = p_desired_node->get_child_count();
 
@@ -379,22 +361,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			//groups_editor->set_current(current);
 			//groups_editor->popup_centered_ratio();
 		} break;
-		case TOOL_LOAD_SCRIPT: {
-			Node *selected = scene_tree->get_selected();
-			if (!selected)
-				break;
-
-			file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-
-			List<String> extensions;
-			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-			file_dialog->clear_filters();
-			for (List<String>::Element *E = extensions.front(); E; E = E->next())
-				file_dialog->add_filter("*." + E->get() + " ; " + E->get().to_upper());
-
-			file_dialog->popup_centered_ratio();
-		} break;
-		case TOOL_CREATE_SCRIPT: {
+		case TOOL_ATTACH_SCRIPT: {
 
 			Node *selected = scene_tree->get_selected();
 			if (!selected)
@@ -412,6 +379,18 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				script_create_dialog->popup_centered(Size2(300,290));
 				//script_create_dialog->popup_centered_minsize();
 
+			}
+
+		} break;
+		case TOOL_CLEAR_SCRIPT: {
+			Node *selected = scene_tree->get_selected();
+			if(!selected)
+				break;
+
+			Ref<Script> existing = selected->get_script();
+			if(existing.is_valid()) {
+				const RefPtr empty;
+				selected->set_script(empty);
 			}
 
 		} break;
@@ -502,6 +481,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 
 			List<Node*> selection = editor_selection->get_selected_node_list();
+			if (selection.size()==0)
+				break;
 
 			List<Node*> reselect;
 
@@ -707,8 +688,8 @@ void SceneTreeDock::_notification(int p_what) {
 			}
 			button_add->set_icon(get_icon("Add","EditorIcons"));
 			button_instance->set_icon(get_icon("Instance","EditorIcons"));
-			button_create_script->set_icon(get_icon("Script","EditorIcons"));
-			button_load_script->set_icon(get_icon("Script", "EditorIcons"));
+			button_create_script->set_icon(get_icon("ScriptCreate","EditorIcons"));
+			button_clear_script->set_icon(get_icon("Remove", "EditorIcons"));
 
 
 			filter_icon->set_texture(get_icon("Zoom","EditorIcons"));
@@ -1338,12 +1319,18 @@ void SceneTreeDock::_selection_changed() {
 		_tool_selected(TOOL_MULTI_EDIT);
 	}
 
-	if (selection_size==1 && EditorNode::get_singleton()->get_editor_selection()->get_selection().front()->key()->get_script().is_null()) {
-		button_create_script->show();
-		button_load_script->show();
+	if (selection_size==1) {
+		if(EditorNode::get_singleton()->get_editor_selection()->get_selection().front()->key()->get_script().is_null()) {
+			button_create_script->show();
+			button_clear_script->hide();
+		}
+		else {
+			button_create_script->hide();
+			button_clear_script->show();
+		}
 	} else {
 		button_create_script->hide();
-		button_load_script->hide();
+		button_clear_script->hide();
 	}
 
 	//tool_buttons[TOOL_MULTI_EDIT]->set_disabled(EditorNode::get_singleton()->get_editor_selection()->get_selection().size()<2);
@@ -1603,7 +1590,7 @@ static bool _is_node_visible(Node* p_node) {
 
 static bool _has_visible_children(Node* p_node) {
 
-	bool collapsed = p_node->has_meta("_editor_collapsed") ? (bool)p_node->get_meta("_editor_collapsed") : false;
+	bool collapsed = p_node->is_displayed_folded();
 	if (collapsed)
 		return false;
 
@@ -1626,7 +1613,7 @@ static Node* _find_last_visible(Node* p_node) {
 
 	Node* last=NULL;
 
-	bool collapsed = p_node->has_meta("_editor_collapsed") ? (bool)p_node->get_meta("_editor_collapsed") : false;
+	bool collapsed = p_node->is_displayed_folded();
 
 	if (!collapsed)	{
 		for(int i=0;i<p_node->get_child_count();i++) {
@@ -1661,36 +1648,9 @@ void SceneTreeDock::_normalize_drop(Node*& to_node, int &to_pos, int p_type) {
 			ERR_EXPLAIN("Cannot perform drop above the root node!");
 			ERR_FAIL();
 		}
-		Node* upper_sibling=NULL;
 
-		for(int i=0;i<to_node->get_index();i++) {
-			Node *c =to_node->get_parent()->get_child(i);
-			if (_is_node_visible(c)) {
-				upper_sibling=c;
-			}
-		}
-
-
-		if (upper_sibling) {
-			//quite complicated, look for next visible in tree
-			upper_sibling=_find_last_visible(upper_sibling);
-
-			if (upper_sibling->get_parent()==to_node->get_parent()) {
-				//just insert over this node because nothing is above at an upper level
-				to_pos=to_node->get_index();
-				to_node=to_node->get_parent();
-			} else {
-				to_pos=-1; //insert last in whathever is up
-				to_node=upper_sibling->get_parent(); //insert at a parent of whathever is up
-			}
-
-
-		} else {
-			//just insert over this node because nothing is above at the same level
-			to_pos=to_node->get_index();
-			to_node=to_node->get_parent();
-
-		}
+		to_pos=to_node->get_index();
+		to_node=to_node->get_parent();
 
 	} else if (p_type==1) {
 			//drop at below selected node
@@ -1823,8 +1783,8 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 		//menu->add_icon_item(get_icon("Groups","EditorIcons"),TTR("Edit Groups"),TOOL_GROUP);
 		//menu->add_icon_item(get_icon("Connect","EditorIcons"),TTR("Edit Connections"),TOOL_CONNECT);
 		menu->add_separator();
-		menu->add_icon_shortcut(get_icon("Script", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_script"), TOOL_CREATE_SCRIPT);
-		menu->add_icon_shortcut(get_icon("Script", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/load_script"), TOOL_LOAD_SCRIPT);
+		menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+		menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
 		menu->add_separator();
 	}
 
@@ -1883,7 +1843,7 @@ void SceneTreeDock::_focus_node() {
 void SceneTreeDock::open_script_dialog(Node* p_for_node) {
 
 	scene_tree->set_selected(p_for_node,false);
-	_tool_selected(TOOL_CREATE_SCRIPT);
+	_tool_selected(TOOL_ATTACH_SCRIPT);
 }
 
 void SceneTreeDock::_bind_methods() {
@@ -1912,7 +1872,6 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_tree_rmb"),&SceneTreeDock::_tree_rmb);
 	ObjectTypeDB::bind_method(_MD("_filter_changed"),&SceneTreeDock::_filter_changed);
 	ObjectTypeDB::bind_method(_MD("_focus_node"),&SceneTreeDock::_focus_node);
-	ObjectTypeDB::bind_method(_MD("_file_selected"), &SceneTreeDock::_file_selected);
 
 
 	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
@@ -1936,8 +1895,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	ED_SHORTCUT("scene_tree/add_child_node",TTR("Add Child Node"), KEY_MASK_CMD|KEY_A);
 	ED_SHORTCUT("scene_tree/instance_scene",TTR("Instance Child Scene"));
 	ED_SHORTCUT("scene_tree/change_node_type", TTR("Change Type"));
-	ED_SHORTCUT("scene_tree/add_script", TTR("Add Script"));
-	ED_SHORTCUT("scene_tree/load_script", TTR("Load Script"));
+	ED_SHORTCUT("scene_tree/attach_script", TTR("Attach Script"));
+	ED_SHORTCUT("scene_tree/clear_script", TTR("Clear Script"));
 	ED_SHORTCUT("scene_tree/move_up", TTR("Move Up"), KEY_MASK_CMD | KEY_UP);
 	ED_SHORTCUT("scene_tree/move_down", TTR("Move Down"), KEY_MASK_CMD | KEY_DOWN);
 	ED_SHORTCUT("scene_tree/duplicate", TTR("Duplicate"),KEY_MASK_CMD | KEY_D);
@@ -1974,18 +1933,18 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_CREATE_SCRIPT, false));
-	tb->set_tooltip(TTR("Create a new script for the selected node."));
-	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/add_script"));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_ATTACH_SCRIPT, false));
+	tb->set_tooltip(TTR("Attach a new or existing script for the selected node."));
+	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/attach_script"));
 	filter_hbc->add_child(tb);
 	button_create_script=tb;
 
 	tb = memnew(ToolButton);
-	tb->connect("pressed", this, "_tool_selected", make_binds(TOOL_LOAD_SCRIPT, false));
-	tb->set_tooltip(TTR("Load a script for the selected node."));
-	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/load_script"));
+	tb->connect("pressed", this, "_tool_selected", make_binds(TOOL_CLEAR_SCRIPT, false));
+	tb->set_tooltip(TTR("Clear a script for the selected node."));
+	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/clear_script"));
 	filter_hbc->add_child(tb);
-	button_load_script = tb;
+	button_clear_script = tb;
 
 
 	scene_tree = memnew( SceneTreeEditor(false,true,true ));
@@ -2004,7 +1963,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	scene_tree->connect("nodes_dragged",this,"_nodes_drag_begin");
 
 	scene_tree->get_scene_tree()->connect("item_double_clicked", this, "_focus_node");
-	scene_tree->get_scene_tree()->set_delayed_text_editor(true);
 
 	scene_tree->set_undo_redo(&editor_data->get_undo_redo());
 	scene_tree->set_editor_selection(editor_selection);
@@ -2014,11 +1972,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	create_dialog->set_base_type("Node");
 	add_child(create_dialog);
 	create_dialog->connect("create",this,"_create");
-
-	file_dialog = memnew(EditorFileDialog);
-	add_child(file_dialog);
-	file_dialog->hide();
-	file_dialog->connect("file_selected", this, "_file_selected");
 
 	//groups_editor = memnew( GroupsEditor );
 	//add_child(groups_editor);

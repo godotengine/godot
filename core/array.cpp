@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -148,6 +148,16 @@ void Array::insert(int p_pos, const Variant& p_value) {
 void Array::erase(const Variant& p_value) {
 
 	_p->array.erase(p_value);
+}
+
+Variant Array::front() const {
+	ERR_FAIL_COND_V(_p->array.size() == 0, Variant());
+	return operator[](0);
+}
+
+Variant Array::back() const {
+	ERR_FAIL_COND_V(_p->array.size() == 0, Variant());
+	return operator[](_p->array.size() - 1);
 }
 
 int Array::find(const Variant& p_value, int p_from) const {

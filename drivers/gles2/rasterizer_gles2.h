@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -154,7 +154,7 @@ class RasterizerGLES2 : public Rasterizer {
 			flags=width=height=0;
 			tex_id=0;
 			data_size=0;
-			format=Image::FORMAT_GRAYSCALE;
+			format=Image::FORMAT_L8;
 			gl_components_cache=0;
 			format_has_alpha=false;
 			has_alpha=false;

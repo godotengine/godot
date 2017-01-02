@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +28,10 @@
 /*************************************************************************/
 #include "http_request.h"
 
+void HTTPRequest::set_ip_type(IP::Type p_type) {
+	client->set_ip_type(p_type);
+}
+
 void HTTPRequest::_redirect_request(const String& p_new_url) {
 
 
@@ -35,7 +39,7 @@ void HTTPRequest::_redirect_request(const String& p_new_url) {
 
 Error HTTPRequest::_request() {
 
-	print_line("Requesting:\n\tURL: "+url+"\n\tString: "+request_string+"\n\tPort: "+itos(port)+"\n\tSSL: "+itos(use_ssl)+"\n\tValidate SSL: "+itos(validate_ssl));
+	//print_line("Requesting:\n\tURL: "+url+"\n\tString: "+request_string+"\n\tPort: "+itos(port)+"\n\tSSL: "+itos(use_ssl)+"\n\tValidate SSL: "+itos(validate_ssl));
 	return client->connect(url,port,use_ssl,validate_ssl);
 }
 
@@ -53,36 +57,36 @@ Error HTTPRequest::_parse_url(const String& p_url) {
 	downloaded=0;
 	redirections=0;
 
-	print_line("1 url: "+url);
+	//print_line("1 url: "+url);
 	if (url.begins_with("http://")) {
 
 		url=url.substr(7,url.length()-7);
-		print_line("no SSL");
+		//print_line("no SSL");
 
 	} else if (url.begins_with("https://")) {
 		url=url.substr(8,url.length()-8);
 		use_ssl=true;
 		port=443;
-		print_line("yes SSL");
+		//print_line("yes SSL");
 	} else {
 		ERR_EXPLAIN("Malformed URL");
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
 
-	print_line("2 url: "+url);
+	//print_line("2 url: "+url);
 
 	int slash_pos = url.find("/");
 
 	if (slash_pos!=-1) {
 		request_string=url.substr(slash_pos,url.length());
 		url=url.substr(0,slash_pos);
-		print_line("request string: "+request_string);
+		//print_line("request string: "+request_string);
 	} else {
 		request_string="/";
-		print_line("no request");
+		//print_line("no request");
 	}
 
-	print_line("3 url: "+url);
+	//print_line("3 url: "+url);
 
 	int colon_pos = url.find(":");
 	if (colon_pos!=-1) {
@@ -91,7 +95,7 @@ Error HTTPRequest::_parse_url(const String& p_url) {
 		ERR_FAIL_COND_V(port<1 || port > 65535,ERR_INVALID_PARAMETER);
 	}
 
-	print_line("4 url: "+url);
+	//print_line("4 url: "+url);
 
 	return OK;
 }
@@ -224,7 +228,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 	response_headers.resize(0);
 	downloaded=0;
 	for (List<String>::Element *E=rheaders.front();E;E=E->next()) {
-		print_line("HEADER: "+E->get());
+		//print_line("HEADER: "+E->get());
 		response_headers.push_back(E->get());
 	}
 
@@ -245,7 +249,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 			}
 		}
 
-		print_line("NEW LOCATION: "+new_request);
+		//print_line("NEW LOCATION: "+new_request);
 
 		if (new_request!="") {
 			//process redirect
@@ -261,7 +265,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 
 			err = _request();
 
-			print_line("new connection: "+itos(err));
+			//print_line("new connection: "+itos(err));
 			if (err==OK) {
 				request_sent=false;
 				got_response=false;
@@ -535,6 +539,7 @@ int HTTPRequest::get_body_size() const{
 
 void HTTPRequest::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("set_ip_type","ip_type"),&HTTPRequest::set_ip_type);
 	ObjectTypeDB::bind_method(_MD("request","url","custom_headers","ssl_validate_domain","method","request_data"),&HTTPRequest::request,DEFVAL(StringArray()),DEFVAL(true),DEFVAL(HTTPClient::METHOD_GET),DEFVAL(String()));
 	ObjectTypeDB::bind_method(_MD("cancel_request"),&HTTPRequest::cancel_request);
 

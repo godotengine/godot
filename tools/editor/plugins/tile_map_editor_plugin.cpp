@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -289,7 +289,7 @@ void TileMapEditor::_pick_tile(const Point2& p_pos) {
 	canvas_item_editor->update();
 }
 
-DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase) {
+DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase, bool preview) {
 
 	int prev_id = node->get_cell(p_start.x, p_start.y);
 	int id = TileMap::INVALID_CELL;
@@ -300,9 +300,38 @@ DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase)
 			return DVector<Vector2>();
 	}
 
-	Rect2 r = node->get_item_rect();
+	Rect2i r = node->get_item_rect();
 	r.pos = r.pos/node->get_cell_size();
 	r.size = r.size/node->get_cell_size();
+
+	int area = r.get_area();
+	if(preview) {
+		// Test if we can re-use the result from preview bucket fill
+		bool invalidate_cache = false;
+		// Area changed
+		if(r != bucket_cache_rect)
+			_clear_bucket_cache();
+		// Cache grid is not initialized
+		if(bucket_cache_visited == 0) {
+			bucket_cache_visited = new bool[area];
+			invalidate_cache = true;
+		}
+		// Tile ID changed or position wasn't visited by the previous fill
+		int loc = (p_start.x - r.get_pos().x) + (p_start.y - r.get_pos().y) * r.get_size().x;
+		if(prev_id != bucket_cache_tile || !bucket_cache_visited[loc]) {
+			invalidate_cache = true;
+		}
+		if(invalidate_cache) {
+			for(int i = 0; i < area; ++i)
+				bucket_cache_visited[i] = false;
+			bucket_cache = DVector<Vector2>();
+			bucket_cache_tile = prev_id;
+			bucket_cache_rect = r;
+		}
+		else {
+			return bucket_cache;
+		}
+	}
 
 	DVector<Vector2> points;
 
@@ -319,9 +348,17 @@ DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase)
 
 		if (node->get_cell(n.x, n.y) == prev_id) {
 
-			node->set_cellv(n, id, flip_h, flip_v, transpose);
-
-			points.push_back(n);
+			if(preview) {
+				int loc = (n.x - r.get_pos().x) + (n.y - r.get_pos().y) * r.get_size().x;
+				if(bucket_cache_visited[loc])
+					continue;
+				bucket_cache_visited[loc] = true;
+				bucket_cache.push_back(n);
+			}
+			else {
+				node->set_cellv(n, id, flip_h, flip_v, transpose);
+				points.push_back(n);
+			}
 
 			queue.push_back(n + Point2i(0, 1));
 			queue.push_back(n + Point2i(0, -1));
@@ -330,7 +367,7 @@ DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase)
 		}
 	}
 
-	return points;
+	return preview ? bucket_cache : points;
 }
 
 void TileMapEditor::_fill_points(const DVector<Vector2> p_points, const Dictionary& p_op) {
@@ -466,6 +503,25 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h
 		canvas_item_editor->draw_texture_rect(t, rect, false, Color(1,1,1,0.5), p_transpose);
 	else
 		canvas_item_editor->draw_texture_rect_region(t, rect, r, Color(1,1,1,0.5), p_transpose);
+}
+
+void TileMapEditor::_draw_fill_preview(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Matrix32& p_xform) {
+
+	DVector<Vector2> points = _bucket_fill(p_point, false, true);
+	DVector<Vector2>::Read pr = points.read();
+	int len = points.size();
+	int time_after = OS::get_singleton()->get_ticks_msec();
+
+	for(int i = 0; i < len; ++i) {
+		_draw_cell(p_cell, pr[i], p_flip_h, p_flip_v, p_transpose, p_xform);
+	}
+}
+
+void TileMapEditor::_clear_bucket_cache() {
+	if(bucket_cache_visited) {
+		delete[] bucket_cache_visited;
+		bucket_cache_visited = 0;
+	}
 }
 
 void TileMapEditor::_update_copydata() {
@@ -1148,8 +1204,8 @@ void TileMapEditor::_canvas_draw() {
 			canvas_item_editor->draw_line(endpoints[i],endpoints[(i+1)%4],col,2);
 
 
-		if (tool==TOOL_SELECTING || tool==TOOL_PICKING || tool==TOOL_BUCKET) {
-
+		bool bucket_preview = EditorSettings::get_singleton()->get("tile_map/bucket_fill_preview");
+		if (tool==TOOL_SELECTING || tool==TOOL_PICKING || !bucket_preview) {
 			return;
 		}
 
@@ -1214,6 +1270,11 @@ void TileMapEditor::_canvas_draw() {
 
 			canvas_item_editor->draw_colored_polygon(points, Color(0.2,1.0,0.8,0.2));
 
+		} else if(tool == TOOL_BUCKET) {
+
+			int tile = get_selected_tile();
+			_draw_fill_preview(tile, over_tile, flip_h, flip_v, transpose, xform);
+
 		} else {
 
 			int st = get_selected_tile();
@@ -1263,6 +1324,8 @@ void TileMapEditor::edit(Node *p_tile_map) {
 
 	if (node)
 		node->connect("settings_changed",this,"_tileset_settings_changed");
+
+	_clear_bucket_cache();
 
 }
 
@@ -1364,6 +1427,9 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	flip_h=false;
 	flip_v=false;
 	transpose=false;
+
+	bucket_cache_tile = -1;
+	bucket_cache_visited = 0;
 
 	ED_SHORTCUT("tile_map_editor/erase_selection", TTR("Erase selection"), KEY_DELETE);
 	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find tile"), KEY_MASK_CMD+KEY_F);
@@ -1479,6 +1545,10 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	rotate_0->set_pressed(true);
 }
 
+TileMapEditor::~TileMapEditor() {
+	_clear_bucket_cache();
+}
+
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -1512,6 +1582,7 @@ TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("tile_map/preview_size",64);
 	EDITOR_DEF("tile_map/palette_item_hseparation",8);
 	EDITOR_DEF("tile_map/show_tile_names", true);
+	EDITOR_DEF("tile_map/bucket_fill_preview", true);
 
 	tile_map_editor = memnew( TileMapEditor(p_node) );
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE, tile_map_editor);

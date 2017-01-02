@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 #define CAMERA_MATRIX_H
 
 #include "transform.h"
+#include "math_2d.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -53,6 +54,7 @@ struct CameraMatrix {
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
+	void set_light_atlas_rect(const Rect2& p_rect);
 	void set_perspective(float p_fovy_degrees, float p_aspect, float p_z_near, float p_z_far,bool p_flip_fov=false);
 	void set_orthogonal(float p_left, float p_right, float p_bottom, float p_top,  float p_znear, float p_zfar);
 	void set_orthogonal(float p_size, float p_aspect, float p_znear, float p_zfar,bool p_flip_fov=false);
@@ -78,13 +80,14 @@ struct CameraMatrix {
 
 	CameraMatrix operator*(const CameraMatrix& p_matrix) const;
 
-	Plane xform4(const Plane& p_vec4);
+	Plane xform4(const Plane& p_vec4) const;
 	_FORCE_INLINE_ Vector3 xform(const Vector3& p_vec3) const;
 
 	operator String() const;
 
 	void scale_translate_to_fit(const AABB& p_aabb);
 	void make_scale(const Vector3 &p_scale);
+	int get_pixels_per_meter(int p_for_pixel_width) const;
 	operator Transform() const;
 
 	CameraMatrix();

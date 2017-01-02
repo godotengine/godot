@@ -7,7 +7,7 @@
 #elif defined(UNIX_ENABLED)
     #define __LINUX_ALSA__
 #elif defined(WINDOWS_ENABLED)
-    #if defined(WINRT_ENABLED)
+    #if defined(UWP_ENABLED)
         #define __RTAUDIO_DUMMY__
     #else
         #define __WINDOWS_DS__

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1313,7 +1313,7 @@ void OS_OSX::set_window_title(const String& p_title) {
 void OS_OSX::set_icon(const Image& p_icon) {
 
 	Image img=p_icon;
-	img.convert(Image::FORMAT_RGBA);
+	img.convert(Image::FORMAT_RGBA8);
 	NSBitmapImageRep *imgrep= [[[NSBitmapImageRep alloc] initWithBitmapDataPlanes: NULL
 			  pixelsWide: p_icon.get_width()
 			  pixelsHigh: p_icon.get_height()

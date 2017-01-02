@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -853,7 +853,7 @@ void LineEdit::_reset_caret_blink_timer() {
 
 void LineEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	if (is_visible()) {
+	if (is_visible() && has_focus() && window_has_focus) {
 		update();
 	}
 }
@@ -918,6 +918,7 @@ void LineEdit::set_text(String p_text) {
 	update();
 	cursor_pos=0;
 	window_pos=0;
+	_text_changed();
 }
 
 void LineEdit::clear() {

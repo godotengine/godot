@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,6 +68,7 @@ void OS::print_error(const char* p_function,const char* p_file,int p_line,const 
 		case ERR_ERROR: err_type="**ERROR**"; break;
 		case ERR_WARNING: err_type="**WARNING**"; break;
 		case ERR_SCRIPT: err_type="**SCRIPT ERROR**"; break;
+		case ERR_SHADER: err_type="**SHADER ERROR**"; break;
 	}
 
 	if (p_rationale && *p_rationale)
@@ -542,7 +543,7 @@ void OS::set_use_vsync(bool p_enable) {
 
 }
 
-bool OS::is_vsnc_enabled() const{
+bool OS::is_vsync_enabled() const{
 
 	return true;
 }

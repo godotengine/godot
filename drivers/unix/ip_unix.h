@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 class IP_Unix : public IP {
 	OBJ_TYPE(IP_Unix, IP);
 
-	virtual IP_Address _resolve_hostname(const String& p_hostname, IP_Address::AddrType p_type);
+	virtual IP_Address _resolve_hostname(const String& p_hostname, IP::Type p_type);
 
 	static IP* _create_unix();
 public:

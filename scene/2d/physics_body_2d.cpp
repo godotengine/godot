@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1394,7 +1394,7 @@ void KinematicBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collision_pos"),&KinematicBody2D::get_collision_pos);
 	ObjectTypeDB::bind_method(_MD("get_collision_normal"),&KinematicBody2D::get_collision_normal);
 	ObjectTypeDB::bind_method(_MD("get_collider_velocity"),&KinematicBody2D::get_collider_velocity);
-	ObjectTypeDB::bind_method(_MD("get_collider:Object"),&KinematicBody2D::_get_collider);
+	ObjectTypeDB::bind_method(_MD("get_collider:Variant"),&KinematicBody2D::_get_collider);
 	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&KinematicBody2D::get_collider_shape);
 	ObjectTypeDB::bind_method(_MD("get_collider_metadata:Variant"),&KinematicBody2D::get_collider_metadata);
 	ObjectTypeDB::bind_method(_MD("get_move_and_slide_colliders"),&KinematicBody2D::get_move_and_slide_colliders);

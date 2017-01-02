@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,9 +42,9 @@ static DVector<uint8_t> _webp_lossy_pack(const Image& p_image,float p_quality) {
 
 	Image img=p_image;
 	if (img.detect_alpha())
-		img.convert(Image::FORMAT_RGBA);
+		img.convert(Image::FORMAT_RGBA8);
 	else
-		img.convert(Image::FORMAT_RGB);
+		img.convert(Image::FORMAT_RGB8);
 
 	Size2 s(img.get_width(),img.get_height());
 	DVector<uint8_t> data = img.get_data();
@@ -52,7 +52,7 @@ static DVector<uint8_t> _webp_lossy_pack(const Image& p_image,float p_quality) {
 
 	uint8_t *dst_buff=NULL;
 	size_t dst_size=0;
-	if (img.get_format()==Image::FORMAT_RGB) {
+	if (img.get_format()==Image::FORMAT_RGB8) {
 
 		dst_size = WebPEncodeRGB(r.ptr(),s.width,s.height,3*s.width,CLAMP(p_quality*100.0,0,100.0),&dst_buff);
 	} else {
@@ -109,7 +109,7 @@ static Image _webp_lossy_unpack(const DVector<uint8_t>& p_buffer) {
 
 	dst_w = DVector<uint8_t>::Write();
 
-	return Image(features.width,features.height,0,features.has_alpha?Image::FORMAT_RGBA:Image::FORMAT_RGB,dst_image);
+	return Image(features.width,features.height,0,features.has_alpha?Image::FORMAT_RGBA8:Image::FORMAT_RGB8,dst_image);
 
 }
 
@@ -161,7 +161,7 @@ Error ImageLoaderWEBP::load_image(Image *p_image,FileAccess *f) {
 	src_r = DVector<uint8_t>::Read();
 	dst_w = DVector<uint8_t>::Write();
 
-	*p_image = Image(features.width,features.height,0,features.has_alpha?Image::FORMAT_RGBA:Image::FORMAT_RGB,dst_image);
+	*p_image = Image(features.width,features.height,0,features.has_alpha?Image::FORMAT_RGBA8:Image::FORMAT_RGB8,dst_image);
 
 
 	return OK;

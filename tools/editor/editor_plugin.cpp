@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,6 +74,11 @@ void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
 Control * EditorPlugin::get_editor_viewport() {
 
 	return EditorNode::get_singleton()->get_viewport();
+}
+
+void EditorPlugin::edit_resource(const Ref<Resource>& p_resource){
+
+	EditorNode::get_singleton()->edit_resource(p_resource);
 }
 
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location,Control *p_control) {
@@ -370,6 +375,7 @@ void EditorPlugin::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_selection:EditorSelection"),&EditorPlugin::get_selection);
 	ObjectTypeDB::bind_method(_MD("get_editor_settings:EditorSettings"),&EditorPlugin::get_editor_settings);
 	ObjectTypeDB::bind_method(_MD("queue_save_layout"),&EditorPlugin::queue_save_layout);
+	ObjectTypeDB::bind_method(_MD("edit_resource"),&EditorPlugin::edit_resource);
 
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_canvas_input_event",PropertyInfo(Variant::MATRIX32,"canvas_xform"),PropertyInfo(Variant::INPUT_EVENT,"event")));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo("forward_draw_over_canvas",PropertyInfo(Variant::MATRIX32,"canvas_xform"),PropertyInfo(Variant::OBJECT,"canvas:Control")));

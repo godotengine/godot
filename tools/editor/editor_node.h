@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@
 
 #include "fileserver/editor_file_server.h"
 #include "editor_resource_preview.h"
-
+#include "scene/gui/viewport_container.h"
 
 
 #include "progress_dialog.h"
@@ -208,7 +208,7 @@ private:
 
 	//Ref<ResourceImportMetadata> scene_import_metadata;
 
-	Control* scene_root_parent;
+	PanelContainer* scene_root_parent;
 	Control *gui_base;
 	VBoxContainer *main_vbox;
 

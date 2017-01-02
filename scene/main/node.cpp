@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -166,6 +166,7 @@ void Node::_notification(int p_notification) {
 
 void Node::_propagate_ready() {
 
+	data.ready_notified=true;
 	data.blocked++;
 	for (int i=0;i<data.children.size();i++) {
 
@@ -315,6 +316,12 @@ void Node::move_child(Node *p_child,int p_pos) {
 	}
 
 
+	if (p_child->data.pos==p_pos)
+		return; //do nothing
+
+	int motion_from = MIN(p_pos,p_child->data.pos);
+	int motion_to = MAX(p_pos,p_child->data.pos);
+
 	data.children.remove( p_child->data.pos );
 	data.children.insert( p_pos, p_child );
 
@@ -324,13 +331,13 @@ void Node::move_child(Node *p_child,int p_pos) {
 
 	data.blocked++;
 	//new pos first
-	for (int i=0;i<data.children.size();i++) {
+	for (int i=motion_from;i<=motion_to;i++) {
 
 		data.children[i]->data.pos=i;
 	}
 	// notification second
 	move_child_notify(p_child);
-	for (int i=0;i<data.children.size();i++) {
+	for (int i=motion_from;i<=motion_to;i++) {
 		data.children[i]->notification( NOTIFICATION_MOVED_IN_PARENT );
 
 	}
@@ -2485,6 +2492,12 @@ void Node::replace_by(Node* p_node,bool p_keep_data) {
 			rd.name=E->get().name;
 			rd.value=get(rd.name);
 		}
+
+		List<GroupInfo> groups;
+		get_groups(&groups);
+
+		for(List<GroupInfo>::Element *E=groups.front();E;E=E->next())
+			p_node->add_to_group(E->get().name, E->get().persistent);
 	}
 
 	_replace_connections_target(p_node);
@@ -2656,7 +2669,9 @@ void Node::_set_tree(SceneTree *p_tree) {
 
 
 		_propagate_enter_tree();
-		_propagate_ready(); //reverse_notification(NOTIFICATION_READY);
+		if (!data.parent || data.parent->data.ready_notified) { // No parent (root) or parent ready
+			_propagate_ready(); //reverse_notification(NOTIFICATION_READY);
+		}
 
 		tree_changed_b=data.tree;
 
@@ -2993,6 +3008,7 @@ Node::Node() {
 	data.fixed_process=false;
 	data.idle_process=false;
 	data.inside_tree=false;
+	data.ready_notified=false;
 
 	data.owner=NULL;
 	data.OW=NULL;

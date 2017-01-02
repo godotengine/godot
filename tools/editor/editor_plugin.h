@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,6 +101,7 @@ public:
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
 	Control* get_editor_viewport();
+	void edit_resource(const Ref<Resource>& p_resource);
 
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
 	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform, const InputEvent& p_event);

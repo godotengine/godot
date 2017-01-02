@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 #include "broad_phase_octree.h"
 #include "collision_object_sw.h"
 
-ID BroadPhaseOctree::create(CollisionObjectSW *p_object, int p_subindex) {
+BroadPhaseSW::ID BroadPhaseOctree::create(CollisionObjectSW *p_object, int p_subindex) {
 
 	ID oid = octree.create(p_object,AABB(),p_subindex,false,1<<p_object->get_type(),0);
 	return oid;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ private:
 	mutable Map<StringName, Action> input_map;
 	mutable Map<int,StringName> input_id_map;
 
-	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event) const;
+	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event, bool p_mod_ignore) const;
 
 	Array _get_action_list(const StringName& p_action);
 	Array _get_actions();

@@ -2,13 +2,13 @@
 
 Import('env')
 
-env.tests_sources=[]
-env.add_source_files(env.tests_sources,"*.cpp")
+env.tests_sources = []
+env.add_source_files(env.tests_sources, "*.cpp")
 
 Export('env')
 
-#SConscript('math/SCsub');
+# SConscript('math/SCsub');
 
-lib = env.Library("tests",env.tests_sources)
+lib = env.Library("tests", env.tests_sources)
 
 env.Prepend(LIBS=[lib])

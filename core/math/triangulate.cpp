@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,7 +71,7 @@ bool Triangulate::is_inside_triangle(float Ax, float Ay,
   return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
 };
 
-bool Triangulate::snip(const Vector<Vector2> &p_contour,int u,int v,int w,int n,int *V)
+bool Triangulate::snip(const Vector<Vector2> &p_contour,int u,int v,int w,int n,const Vector<int>& V)
 {
   int p;
   float Ax, Ay, Bx, By, Cx, Cy, Px, Py;
@@ -107,8 +107,8 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour,Vector<int> &result
   if ( n < 3 ) return false;
 
 
-
-  int *V = (int*)alloca(sizeof(int)*n);
+  Vector<int> V;
+  V.resize(n);
 
   /* we want a counter-clockwise polygon in V */
 
@@ -122,7 +122,7 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour,Vector<int> &result
   /*  remove nv-2 Vertices, creating 1 triangle every time */
   int count = 2*nv;   /* error detection */
 
-  for(int m=0, v=nv-1; nv>2; )
+  for(int v=nv-1; nv>2; )
   {
     /* if we loop, it is probably a non-simple polygon */
     if (0 >= (count--))
@@ -144,17 +144,9 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour,Vector<int> &result
       a = V[u]; b = V[v]; c = V[w];
 
       /* output Triangle */
-      /*
-      result.push_back( contour[a] );
-      result.push_back( contour[b] );
-      result.push_back( contour[c] );
-*/
-
       result.push_back( a );
       result.push_back( b );
       result.push_back( c );
-
-      m++;
 
       /* remove v from remaining polygon */
       for(s=v,t=v+1;t<nv;s++,t++)

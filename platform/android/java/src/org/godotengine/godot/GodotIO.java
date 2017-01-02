@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -288,6 +288,11 @@ public class GodotIO {
 
 		try {
 			ad.files = am.list(path);
+			// no way to find path is directory or file exactly.
+			// but if ad.files.length==0, then it's an empty directory or file.
+			if (ad.files.length==0) {
+				return -1;
+			}
 		} catch (IOException e) {
 
 			System.out.printf("Exception on dir_open: %s\n",e);

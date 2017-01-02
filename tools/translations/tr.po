@@ -1,46 +1,41 @@
 # Turkish translation of the Godot Engine editor
-# Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
+# Ceyhun Can Ulker <ceyhuncanu@gmail.com>, 2016.
 # Enes Kaya Öcal <ekayaocal@hotmail.com>, 2016.
 # M. Yavuz Uzun <myavuzuzun@yandex.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-08-18 00:13+0000\n"
-"Last-Translator: M. Yavuz Uzun <myavuzuzun@yandex.com>\n"
+"PO-Revision-Date: 2016-11-11 12:37+0000\n"
+"Last-Translator: Ceyhun Can Ulker <ceyhuncanu@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.9\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "convert() icin geçersiz tip argümanı, TYPE_* sabtilerini kullanın."
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "Geçersiz format ya da kod çözmek için yetersiz byte sayısı."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr ""
-
-#: modules/gdscript/gd_functions.cpp
-msgid ""
-"Paths cannot start with '/', absolute paths must start with 'res://', "
-"'user://', or 'local://'"
-msgstr ""
+msgstr "Adım argümanı sıfır!"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
-msgstr ""
+msgstr "Örneği mevcut olan bir bir kod değil"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
@@ -52,25 +47,28 @@ msgstr "Bir kaynak dosyasına bağlı değil"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr ""
+msgstr "Geçersiz örnek sözlük formatı (@path eksik)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr ""
+msgstr "Geçersiz örnek sözlük formatı (kod @path 'tan yüklenemiyor)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr ""
+msgstr "Geçersiz örnek sözlük formatı (@path 'taki kod geçersiz)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr ""
+msgstr "Geçersiz örnek sözlüğü (geçersiz altsınıflar)"
 
 #: modules/visual_script/visual_script.cpp
+#, fuzzy
 msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
 "properly!"
-msgstr "Çalışan hafıza olmadan düğüm yerleştirilmiş, lütfen belgeleri okuyun!"
+msgstr ""
+"Çalışan hafıza olmadan düğüm yerleştirilmiş, lütfen doğru yerleştirme "
+"üzerine olan belgeleri okuyun!"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -83,18 +81,20 @@ msgid ""
 "Return value must be assigned to first element of node working memory! Fix "
 "your node please."
 msgstr ""
+"Döndürülen değer, düğüm çalışan hafızasındaki ilk elemana atanmış olmalıdır! "
+"Lütfen düğümünüzü düzeltin."
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
-msgstr ""
+msgstr "Düğüm geçersiz bir dizi çıktısı döndürdü: "
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
-msgstr ""
+msgstr "Dizi bulundu fakat yığındaki düğüm değil, hata raporlayın!"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Stack overflow with stack depth: "
-msgstr ""
+msgstr "Şu derinlikte yığın taşması: "
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
@@ -162,7 +162,7 @@ msgstr "Sinyal Düzenleniyor:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
-msgstr ""
+msgstr "İfadeyi Değiştir"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
@@ -171,26 +171,30 @@ msgstr "Düğüm Ekle"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"Alıcı fonksiyon (Getter) bırakmak için Alt'a basılı tutun. Genelgeçer imzaya "
+"sahip bir fonksiyon bırakmak için Shift'e basılı tutun."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"Alıcı fonksiyon (Getter) bırakmak için Ctrl'e basılı tutun. Genelgeçer "
+"imzaya sahip bir fonksiyon bırakmak için Shift'e basılı tutun."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a simple reference to the node."
-msgstr ""
+msgstr "Bir düğüme basit bir başvuru bırakmak için Alt'a basılı tutun."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
-msgstr ""
+msgstr "Bir düğüme basit bir başvuru bırakmak için Ctrl'e basılı tutun."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Variable Setter."
-msgstr ""
+msgstr "Bir Değişken Atayıcı bırakmak için Alt'a basılı tutun."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Variable Setter."
-msgstr ""
+msgstr "Bir Değişken Atayıcı bırakmak için Ctrl'e basılı tutun."
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -216,15 +220,15 @@ msgstr "Animasyon Yükle"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "Dizi"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
-msgstr ""
+msgstr "Şalter"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "Yineleyici"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
@@ -232,20 +236,20 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Return"
-msgstr ""
+msgstr "Döndür"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
 msgid "Call"
-msgstr ""
+msgstr "Çağır"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Get"
-msgstr ""
+msgstr "Al"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/property_editor.cpp
 msgid "Set"
-msgstr ""
+msgstr "Ata"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
@@ -266,11 +270,11 @@ msgstr "Üyeler:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Available Nodes:"
-msgstr ""
+msgstr "Mevcut Düğümler:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit graph"
-msgstr ""
+msgstr "Çizgeyi düzenlemek için bir fonksiyon seçin ya da yaratın"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
 #: tools/editor/connections_dialog.cpp
@@ -287,7 +291,7 @@ msgstr "Kapat"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Signal Arguments:"
-msgstr ""
+msgstr "Sinyal Argümanlarını Düzenle:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Variable:"
@@ -304,176 +308,180 @@ msgstr "Seçilenleri Sil"
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/plugins/script_text_editor.cpp
 msgid "Toggle Breakpoint"
-msgstr ""
+msgstr "Kesme Noktası Aç/Kapa"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Find Node Type"
-msgstr ""
+msgstr "Düğüm Tipi Bul"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Copy Nodes"
-msgstr "Kaynağı Kopyala"
+msgstr "Düğümleri Kopyala"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
-msgstr ""
+msgstr "Düğümleri Kes"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Paste Nodes"
-msgstr "Kaynağı Yapıştır"
+msgstr "Düğümleri Yapıştır"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
-msgstr ""
+msgstr "Girdi tipi yinelenebilir değil: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
-msgstr ""
+msgstr "Yineleyici geçersiz hale geldi"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
-msgstr ""
+msgstr "Yineleyici geçersiz hale geldi: "
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Invalid index property name."
-msgstr "Geçersiz ebeveyn sınıf adı"
+msgstr "Geçersiz dizin özelliği adı."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr ""
+msgstr "Taban nesne bir Düğüm değil!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
-msgstr ""
+msgstr "Yol bir düğüme çıkmıyor!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr ""
+msgstr "Geçersiz dizin özelliği adı '%s', %s düğümünde."
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid ": Invalid argument of type: "
-msgstr "Geçersiz ebeveyn sınıf adı"
+msgstr ": Şu tip için geçersiz argüman: "
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid ": Invalid arguments: "
+msgstr ": Geçersiz argümanlar: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
-msgid ": Invalid arguments: "
-msgstr "Geçersiz ebeveyn sınıf adı"
-
-#: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
-msgstr ""
+msgstr "DeğilkenAl kodda bulunmadı: "
 
 #: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
 msgid "VariableSet not found in script: "
-msgstr ""
+msgstr "DeğişkenAta kodda bulunmadı: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
-msgstr ""
+msgstr "Özel düğüm _step() (adım) yöntemine sahip değil, çizgeyi işleyemez."
 
 #: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
 msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
 msgstr ""
+"_step()'ten geçersiz dönüş değeri, tam sayı (dizi çıkış) ya da dizgi (hata) "
+"olmalı."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just pressed"
-msgstr ""
+msgstr "henüz basıldı"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
-msgstr ""
+msgstr "henüz bırakıldı"
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid ""
 "Couldn't read the certficate file. Are the path and password both correct?"
-msgstr ""
+msgstr "Sertifika dosyası okunamadı. Yol ve şifrenin her ikisi de doğru mu?"
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Error creating the signature object."
-msgstr ""
+msgstr "İmza nesnesini yaratmada hata."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Error creating the package signature."
-msgstr ""
+msgstr "Paket imzasını yaratmada hata."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
 msgstr ""
+"Hiçbir dışa aktarım şablonu bulunmadı.\n"
+"Dışa aktarım şabloları indirin ve yükleyin.."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Custom debug package not found."
-msgstr ""
+msgstr "Özel yanlış ayıklama paketi bulunmadı."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Custom release package not found."
-msgstr ""
+msgstr "Özel yayım paketi bulunmadı."
 
-#: platform/winrt/export/export.cpp
-#, fuzzy
+#: platform/uwp/export/export.cpp
 msgid "Invalid unique name."
-msgstr "Geçersiz isim."
+msgstr "Geçersiz benzersiz isim."
 
-#: platform/winrt/export/export.cpp
-#, fuzzy
+#: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
-msgstr "Geçersiz yazı tipi boyutu."
+msgstr "Geçersiz ürün GUID'i (küresel benzersiz tanıtıcı)."
 
-#: platform/winrt/export/export.cpp
-#, fuzzy
+#: platform/uwp/export/export.cpp
 msgid "Invalid publisher GUID."
-msgstr "Geçersiz üst yol"
+msgstr "Geçersiz yayıncı GUID'i (küresel benzersiz tanıtıcı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid background color."
-msgstr ""
+msgstr "Geçersiz arkaplan rengi."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "Geçersiz Dükkan Logo resim boyutları (50x50 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr ""
+msgstr "Geçersiz kare 44x44 logo resim boyutları (44x44 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr ""
+msgstr "Geçersiz kare 71x71 logo resim boyutları (71x71 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr ""
+msgstr "Geçersiz kare 150x150 logo resim boyutları (150x150 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr ""
+msgstr "Geçersiz kare 310x310 logo resim boyutları (310x310 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
+msgstr "Geçersiz kare 310x150 logo resim boyutları (310x150 olmalı)."
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr ""
+msgstr "Geçersiz açılış erkanı resim boyutları (620x300 olmalı)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
+"Bir SpriteFrames kaynağı yaratılmalı ya da 'Kareler' özelliğine atanmalı ki "
+"AnimatedSprite kareleri gösterebilsin."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
+"Sahne başına (ya da bir grup örneklenmiş sahneler için) yalnızca bir görünür "
+"CanvasModulate'e izin verilir. İlk yaratılan çalışırken diğerleri ihmal "
+"edilecektir."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -481,10 +489,13 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon2D yalnızca CollisionObject2D'den türeyen düğümlere bir "
+"şekil temin etmeye hizmet eder. Lütfen onu yalnızca Area2D, StaticBody2D, "
+"RigidBody2D, KinematicBody2D vs.'ye bir şekil vermek için kullanın."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr ""
+msgstr "Boş bir CollisionPolygon2D'nin çarpışmaya hiçbir etkisi yoktur."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -492,12 +503,17 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionShape2D yalnızca CollisionObject2D'den türeyen düğümlere bir şekil "
+"temin etmeye hizmet eder. Lütfen onu yalnızca Area2D, StaticBody2D, "
+"RigidBody2D, KinematicBody2D vs.'ye bir şekil vermek için kullanın."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
+"CollisionShape2D'nin iş görebilmesi için ona bir şekil temin edilmesi "
+"gerekmektedir. Lütfen onun için bir şekil kaynağı yaratın!"
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -630,7 +646,8 @@ msgstr ""
 msgid "Cancel"
 msgstr "İptal"
 
-#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "Tamam"
 
@@ -1846,7 +1863,9 @@ msgstr ""
 msgid "Save Resource As.."
 msgstr "Kaynağı Farklı Kaydet.."
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Anlıyorum.."
 
@@ -2072,7 +2091,9 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr ""
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp tools/editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr ""
 
@@ -2981,6 +3002,11 @@ msgid "Auto"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Root Node Name:"
+msgstr "Düğüm adı:"
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr ""
 
@@ -3880,6 +3906,50 @@ msgstr "Değeri Ata"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Add %s"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Adding %s..."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create Node"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Error instancing scene from %s"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Change default type"
+msgstr "Dizinin türünü degistir"
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Drag & drop + Shift : Add node as sibling\n"
+"Drag & drop + Alt : Change node type"
 msgstr ""
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
@@ -6129,7 +6199,7 @@ msgstr ""
 msgid "Dir.."
 msgstr ""
 
-#: tools/editor/property_editor.cpp
+#: tools/editor/property_editor.cpp tools/editor/script_create_dialog.cpp
 msgid "Load"
 msgstr ""
 
@@ -6245,23 +6315,11 @@ msgid "Scene Run Settings"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Error instancing scene from %s"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
@@ -6303,10 +6361,6 @@ msgid "This operation can't be done without a scene."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr ""
 
@@ -6328,10 +6382,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Create Node"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
@@ -6373,8 +6423,14 @@ msgid "Change Type"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Add Script"
-msgstr ""
+#, fuzzy
+msgid "Attach Script"
+msgstr "Betiği Çalıştır"
+
+#: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
+msgstr "Betiği Çalıştır"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6400,7 +6456,11 @@ msgid ""
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Create a new script for the selected node."
+msgid "Attach a new or existing script for the selected node."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
 msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
@@ -6505,6 +6565,11 @@ msgid "Could not create script in filesystem."
 msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "Yazı tipi yüklerken hata."
+
+#: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "Dosya yolu boş"
 
@@ -6518,16 +6583,17 @@ msgid "Invalid base path"
 msgstr "Geçersiz üst yol"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "Dosya mevcut"
-
-#: tools/editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "Geçersiz uzantı"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "Geçerli yol"
+#, fuzzy
+msgid "Create new script"
+msgstr "Düğüm Betiği Oluştur"
+
+#: tools/editor/script_create_dialog.cpp
+msgid "Load existing script"
+msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6538,7 +6604,8 @@ msgid "Built-In Script"
 msgstr "Gömme Betik"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Create Node Script"
+#, fuzzy
+msgid "Attach Node Script"
 msgstr "Düğüm Betiği Oluştur"
 
 #: tools/editor/script_editor_debugger.cpp
@@ -6704,3 +6771,16 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#~ msgid ""
+#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
+#~ "'user://', or 'local://'"
+#~ msgstr ""
+#~ "Yollar '/' ile başlayamaz, mutlak yollar 'res://', 'user://' veya "
+#~ "'local://' ile başlamalıdır"
+
+#~ msgid "File exists"
+#~ msgstr "Dosya mevcut"
+
+#~ msgid "Valid path"
+#~ msgstr "Geçerli yol"

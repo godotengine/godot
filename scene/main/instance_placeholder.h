@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,8 @@ public:
 
 	void set_instance_path(const String& p_name);
 	String get_instance_path() const;
+
+	Dictionary get_stored_values(bool p_with_order = false);
 
 	void replace_by_instance(const Ref<PackedScene>& p_custom_scene=Ref<PackedScene>());
 

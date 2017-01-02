@@ -842,7 +842,7 @@ bool test_29() {
 	IP_Address ip0("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
 	OS::get_singleton()->print("ip0 is %ls\n", String(ip0).c_str());
 
-	IP_Address ip(0x0123, 0x4567, 0x89ab, 0xcdef, IP_Address::TYPE_IPV6);
+	IP_Address ip(0x0123, 0x4567, 0x89ab, 0xcdef, true);
 	OS::get_singleton()->print("ip6 is %ls\n", String(ip).c_str());
 
 	IP_Address ip2("fe80::52e5:49ff:fe93:1baf");

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,6 +75,7 @@ typedef bool (*VideoIsPlayingFunc)();
 typedef void (*VideoPauseFunc)();
 typedef void (*VideoStopFunc)();
 typedef void (*SetKeepScreenOnFunc)(bool p_enabled);
+typedef void (*AlertFunc)(const String&, const String&);
 
 class OS_Android : public OS_Unix {
 public:
@@ -154,6 +155,7 @@ private:
 	VideoPauseFunc video_pause_func;
 	VideoStopFunc video_stop_func;
 	SetKeepScreenOnFunc set_keep_screen_on_func;
+	AlertFunc alert_func;
 
 public:
 
@@ -181,7 +183,7 @@ public:
 
 	virtual void vprint(const char* p_format, va_list p_list, bool p_stderr=false);
 	virtual void print(const char *p_format, ... );
-	virtual void alert(const String& p_alert);
+	virtual void alert(const String& p_alert,const String& p_title="ALERT!");
 
 
 	virtual void set_mouse_show(bool p_show);
@@ -260,7 +262,7 @@ public:
 	virtual String get_joy_guid(int p_device) const;
 	void joy_connection_changed(int p_device, bool p_connected, String p_name);
 
-	OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion);
+	OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion);
 	~OS_Android();
 
 };

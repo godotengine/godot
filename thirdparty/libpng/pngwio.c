@@ -1,8 +1,8 @@
 
 /* pngwio.c - functions for data output
  *
- * Last changed in libpng 1.6.15 [November 20, 2014]
- * Copyright (c) 1998-2002,2004,2006-2014 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.24 [August 4, 2016]
+ * Copyright (c) 1998-2002,2004,2006-2014,2016 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -35,7 +35,7 @@ png_write_data(png_structrp png_ptr, png_const_bytep data, png_size_t length)
    /* NOTE: write_data_fn must not change the buffer! */
    if (png_ptr->write_data_fn != NULL )
       (*(png_ptr->write_data_fn))(png_ptr, png_constcast(png_bytep,data),
-         length);
+          length);
 
    else
       png_error(png_ptr, "Call to NULL write function");

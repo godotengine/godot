@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -136,16 +136,25 @@ double Range::get_page() const {
 }
 
 void Range::set_unit_value(double p_value) {
+
+	double v;
+
 	if (shared->exp_unit_value && get_min()>0) {
 
 		double exp_min = Math::log(get_min())/Math::log(2);
 		double exp_max = Math::log(get_max())/Math::log(2);
-		double v = Math::pow(2,exp_min+(exp_max-exp_min)*p_value);
-
-		set_val( v );
+		v = Math::pow(2,exp_min+(exp_max-exp_min)*p_value);
 	} else {
-		set_val( (get_max() - get_min()) * p_value + get_min() );
+
+		double percent = (get_max() - get_min()) * p_value;
+		if (get_step() > 0) {
+			double steps = round(percent / get_step());
+			v = steps * get_step() + get_min();
+		} else {
+			v = percent + get_min();
+		}
 	}
+	set_val( v );
 }
 double Range::get_unit_value() const {
 

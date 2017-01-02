@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,149 @@
 #include "default_mouse_cursor.xpm"
 #include "sort.h"
 #include "io/marshalls.h"
+#include "visual_server_canvas.h"
+#include "visual_server_global.h"
+#include "visual_server_scene.h"
+
 // careful, these may run in different threads than the visual server
+
+
+
+
+/* CURSOR */
+void VisualServerRaster::cursor_set_rotation(float p_rotation, int p_cursor ){
+
+}
+void VisualServerRaster::cursor_set_texture(RID p_texture, const Point2 &p_center_offset, int p_cursor, const Rect2 &p_region){
+
+}
+void VisualServerRaster::cursor_set_visible(bool p_visible, int p_cursor ){
+
+}
+void VisualServerRaster::cursor_set_pos(const Point2& p_pos, int p_cursor ){
+
+}
+
+/* BLACK BARS */
+
+
+void VisualServerRaster::black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom){
+
+}
+void VisualServerRaster::black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom){
+
+}
+
+
+/* FREE */
+
+void VisualServerRaster::free( RID p_rid ){
+
+	if (VSG::storage->free(p_rid))
+		return;
+	if (VSG::canvas->free(p_rid))
+		return;
+	if (VSG::viewport->free(p_rid))
+		return;
+	if (VSG::scene->free(p_rid))
+		return;
+
+}
+
+/* EVENT QUEUING */
+
+void VisualServerRaster::draw(){
+
+	//if (changes)
+	//	print_line("changes: "+itos(changes));
+
+	changes=0;
+
+	VSG::rasterizer->begin_frame();
+
+	VSG::scene->update_dirty_instances(); //update scene stuff
+
+	VSG::viewport->draw_viewports();
+	VSG::scene->render_probes();
+	//_draw_cursors_and_margins();
+	VSG::rasterizer->end_frame();
+	//draw_extra_frame=VS:rasterizer->needs_to_draw_next_frame();
+}
+void VisualServerRaster::sync(){
+
+}
+bool VisualServerRaster::has_changed() const{
+
+	return changes>0;
+}
+void VisualServerRaster::init(){
+
+	VSG::rasterizer->initialize();
+
+}
+void VisualServerRaster::finish(){
+
+	if (test_cube.is_valid()) {
+		free(test_cube);
+	}
+
+	VSG::rasterizer->finalize();
+}
+
+/* STATUS INFORMATION */
+
+
+int VisualServerRaster::get_render_info(RenderInfo p_info){
+
+	return 0;
+}
+
+
+
+/* TESTING */
+
+
+
+void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_color,bool p_scale){
+
+}
+void VisualServerRaster::set_default_clear_color(const Color& p_color){
+
+}
+
+bool VisualServerRaster::has_feature(Features p_feature) const {
+
+	return false;
+}
+
+RID VisualServerRaster::get_test_cube() {
+	if (!test_cube.is_valid()) {
+		test_cube=_make_test_cube();
+	}
+	return test_cube;
+}
+
+VisualServerRaster::VisualServerRaster() {
+
+	VSG::canvas = memnew( VisualServerCanvas);
+	VSG::viewport = memnew( VisualServerViewport);
+	VSG::scene = memnew( VisualServerScene );
+	VSG::rasterizer = Rasterizer::create();
+	VSG::storage=VSG::rasterizer->get_storage();
+	VSG::canvas_render=VSG::rasterizer->get_canvas();
+	VSG::scene_render=VSG::rasterizer->get_scene();
+
+}
+
+VisualServerRaster::~VisualServerRaster() {
+
+	memdelete(VSG::canvas);
+	memdelete(VSG::viewport);
+	memdelete(VSG::rasterizer);
+}
+
+
+#if 0
 
 BalloonAllocator<> *VisualServerRaster::OctreeAllocator::allocator=NULL;
 
@@ -265,33 +407,33 @@ RID VisualServerRaster::fixed_material_create() {
 	return rasterizer->fixed_material_create();
 }
 
-void VisualServerRaster::fixed_material_set_flag(RID p_material, FixedMaterialFlags p_flag, bool p_enabled) {
+void VisualServerRaster::fixed_material_set_flag(RID p_material, FixedSpatialMaterialFlags p_flag, bool p_enabled) {
 
 	rasterizer->fixed_material_set_flag(p_material,p_flag,p_enabled);
 }
 
-bool VisualServerRaster::fixed_material_get_flag(RID p_material, FixedMaterialFlags p_flag) const {
+bool VisualServerRaster::fixed_material_get_flag(RID p_material, FixedSpatialMaterialFlags p_flag) const {
 
 	return rasterizer->fixed_material_get_flag(p_material,p_flag);
 }
 
-void VisualServerRaster::fixed_material_set_param(RID p_material, FixedMaterialParam p_parameter, const Variant& p_value) {
+void VisualServerRaster::fixed_material_set_param(RID p_material, FixedSpatialMaterialParam p_parameter, const Variant& p_value) {
 	VS_CHANGED;
 	rasterizer->fixed_material_set_parameter(p_material,p_parameter,p_value);
 }
 
-Variant VisualServerRaster::fixed_material_get_param(RID p_material,FixedMaterialParam p_parameter) const {
+Variant VisualServerRaster::fixed_material_get_param(RID p_material,FixedSpatialMaterialParam p_parameter) const {
 
 	return rasterizer->fixed_material_get_parameter(p_material,p_parameter);
 }
 
 
-void VisualServerRaster::fixed_material_set_texture(RID p_material,FixedMaterialParam p_parameter, RID p_texture) {
+void VisualServerRaster::fixed_material_set_texture(RID p_material,FixedSpatialMaterialParam p_parameter, RID p_texture) {
 	VS_CHANGED;
 	rasterizer->fixed_material_set_texture(p_material,p_parameter,p_texture);
 }
 
-RID VisualServerRaster::fixed_material_get_texture(RID p_material,FixedMaterialParam p_parameter) const {
+RID VisualServerRaster::fixed_material_get_texture(RID p_material,FixedSpatialMaterialParam p_parameter) const {
 
 	return rasterizer->fixed_material_get_texture(p_material,p_parameter);
 }
@@ -299,12 +441,12 @@ RID VisualServerRaster::fixed_material_get_texture(RID p_material,FixedMaterialP
 
 
 
-void VisualServerRaster::fixed_material_set_texcoord_mode(RID p_material,FixedMaterialParam p_parameter, FixedMaterialTexCoordMode p_mode) {
+void VisualServerRaster::fixed_material_set_texcoord_mode(RID p_material,FixedSpatialMaterialParam p_parameter, FixedSpatialMaterialTexCoordMode p_mode) {
 	VS_CHANGED;
 	rasterizer->fixed_material_set_texcoord_mode(p_material,p_parameter,p_mode);
 }
 
-VS::FixedMaterialTexCoordMode VisualServerRaster::fixed_material_get_texcoord_mode(RID p_material,FixedMaterialParam p_parameter) const {
+VS::FixedSpatialMaterialTexCoordMode VisualServerRaster::fixed_material_get_texcoord_mode(RID p_material,FixedSpatialMaterialParam p_parameter) const {
 
 	return rasterizer->fixed_material_get_texcoord_mode(p_material,p_parameter);
 }
@@ -331,14 +473,14 @@ Transform VisualServerRaster::fixed_material_get_uv_transform(RID p_material) co
 	return rasterizer->fixed_material_get_uv_transform(p_material);
 }
 
-void VisualServerRaster::fixed_material_set_light_shader(RID p_material,FixedMaterialLightShader p_shader) {
+void VisualServerRaster::fixed_material_set_light_shader(RID p_material,FixedSpatialMaterialLightShader p_shader) {
 
 	VS_CHANGED;
 	rasterizer->fixed_material_set_light_shader(p_material,p_shader);
 
 }
 
-VisualServerRaster::FixedMaterialLightShader VisualServerRaster::fixed_material_get_light_shader(RID p_material) const{
+VisualServerRaster::FixedSpatialMaterialLightShader VisualServerRaster::fixed_material_get_light_shader(RID p_material) const{
 
 	return rasterizer->fixed_material_get_light_shader(p_material);
 }
@@ -1146,7 +1288,7 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 	if (p_octree.size()==0) {
 		if (baked_light->data.octree_texture.is_valid())
 			rasterizer->free(baked_light->data.octree_texture);
-		baked_light->data.octree_texture=RID();
+		baked_light->data.octree_texture;
 		baked_light->octree_aabb=AABB();
 		baked_light->octree_tex_size=Size2();
 	} else {
@@ -1203,7 +1345,7 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 			if (tex_w!=baked_light->octree_tex_size.x || tex_h!=baked_light->octree_tex_size.y) {
 
 				rasterizer->free(baked_light->data.octree_texture);
-				baked_light->data.octree_texture=RID();
+				baked_light->data.octree_texture;
 				baked_light->octree_tex_size.x=0;
 				baked_light->octree_tex_size.y=0;
 			}
@@ -1212,7 +1354,7 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 		if (baked_light->data.light_texture.is_valid()) {
 			if (!has_light_tex || light_tex_w!=baked_light->light_tex_size.x || light_tex_h!=baked_light->light_tex_size.y) {
 				rasterizer->free(baked_light->data.light_texture);
-				baked_light->data.light_texture=RID();
+				baked_light->data.light_texture;
 				baked_light->light_tex_size.x=0;
 				baked_light->light_tex_size.y=0;
 			}
@@ -1220,20 +1362,20 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 
 		if (!baked_light->data.octree_texture.is_valid()) {
 			baked_light->data.octree_texture=rasterizer->texture_create();
-			rasterizer->texture_allocate(baked_light->data.octree_texture,tex_w,tex_h,Image::FORMAT_RGBA,TEXTURE_FLAG_FILTER);
+			rasterizer->texture_allocate(baked_light->data.octree_texture,tex_w,tex_h,Image::FORMAT_RGBA8,TEXTURE_FLAG_FILTER);
 			baked_light->octree_tex_size.x=tex_w;
 			baked_light->octree_tex_size.y=tex_h;
 		}
 
 		if (!baked_light->data.light_texture.is_valid() && has_light_tex) {
 			baked_light->data.light_texture=rasterizer->texture_create();
-			rasterizer->texture_allocate(baked_light->data.light_texture,light_tex_w,light_tex_h,Image::FORMAT_RGBA,TEXTURE_FLAG_FILTER);
+			rasterizer->texture_allocate(baked_light->data.light_texture,light_tex_w,light_tex_h,Image::FORMAT_RGBA8,TEXTURE_FLAG_FILTER);
 			baked_light->light_tex_size.x=light_tex_w;
 			baked_light->light_tex_size.y=light_tex_h;
 
 		}
 
-		Image img(tex_w,tex_h,0,Image::FORMAT_RGBA,p_octree);
+		Image img(tex_w,tex_h,0,Image::FORMAT_RGBA8,p_octree);
 		rasterizer->texture_set_data(baked_light->data.octree_texture,img);
 
 	}
@@ -1276,7 +1418,7 @@ void VisualServerRaster::baked_light_set_light(RID p_baked_light,const DVector<u
 
 	print_line("w: "+itos(tex_w)+" h: "+itos(tex_h)+" lightsize: "+itos(p_light.size()));
 
-	Image img(tex_w,tex_h,0,Image::FORMAT_RGBA,p_light);
+	Image img(tex_w,tex_h,0,Image::FORMAT_RGBA8,p_light);
 	rasterizer->texture_set_data(baked_light->data.light_texture,img);
 
 
@@ -1611,8 +1753,8 @@ void VisualServerRaster::viewport_set_as_render_target(RID p_viewport,bool p_ena
 	if (!p_enable) {
 
 		rasterizer->free(viewport->render_target);
-		viewport->render_target=RID();
-		viewport->render_target_texture=RID();
+		viewport->render_target;
+		viewport->render_target_texture;
 		if (viewport->update_list.in_list())
 			viewport_update_list.remove(&viewport->update_list);
 
@@ -1811,7 +1953,7 @@ void VisualServerRaster::viewport_attach_camera(RID p_viewport,RID p_camera) {
 		// a camera
 		viewport->camera=p_camera;
 	} else {
-		viewport->camera=RID();
+		viewport->camera;
 	}
 
 }
@@ -1830,7 +1972,7 @@ void VisualServerRaster::viewport_set_scenario(RID p_viewport,RID p_scenario) {
 		// a camera
 		viewport->scenario=p_scenario;
 	} else {
-		viewport->scenario=RID();
+		viewport->scenario;
 	}
 
 }
@@ -2284,7 +2426,7 @@ void VisualServerRaster::instance_set_base(RID p_instance, RID p_base) {
 
 
 	instance->base_type=INSTANCE_NONE;
-	instance->base_rid=RID();
+	instance->base_rid;
 
 
 	if (p_base.is_valid()) {
@@ -3003,7 +3145,7 @@ void VisualServerRaster::instance_geometry_set_baked_light_sampler(RID p_instanc
 
 	if (instance->sampled_light) {
 		instance->sampled_light->baked_light_sampler_info->owned_instances.erase(instance);
-		instance->data.sampled_light=RID();
+		instance->data.sampled_light;
 	}
 
 	if(p_baked_light_sampler.is_valid()) {
@@ -3016,7 +3158,7 @@ void VisualServerRaster::instance_geometry_set_baked_light_sampler(RID p_instanc
 		instance->sampled_light=NULL;
 	}
 
-	instance->data.sampled_light=RID();
+	instance->data.sampled_light;
 
 }
 
@@ -3432,7 +3574,7 @@ void VisualServerRaster::canvas_item_set_parent(RID p_item,RID p_parent) {
 			item_owner->child_items.erase(canvas_item);
 		}
 
-		canvas_item->parent=RID();
+		canvas_item->parent;
 	}
 
 
@@ -4057,7 +4199,7 @@ void VisualServerRaster::canvas_light_attach_to_canvas(RID p_light,RID p_canvas)
 	}
 
 	if (!canvas_owner.owns(p_canvas))
-		p_canvas=RID();
+		p_canvas;
 	clight->canvas=p_canvas;
 
 	if (clight->canvas.is_valid()) {
@@ -4184,7 +4326,7 @@ void VisualServerRaster::canvas_light_set_shadow_enabled(RID p_light, bool p_ena
 		clight->shadow_buffer=rasterizer->canvas_light_shadow_buffer_create(clight->shadow_buffer_size);
 	} else {
 		rasterizer->free(clight->shadow_buffer);
-		clight->shadow_buffer=RID();
+		clight->shadow_buffer;
 
 	}
 
@@ -4246,7 +4388,7 @@ void VisualServerRaster::canvas_light_occluder_attach_to_canvas(RID p_occluder,R
 	}
 
 	if (!canvas_owner.owns(p_canvas))
-		p_canvas=RID();
+		p_canvas;
 
 	occluder->canvas=p_canvas;
 
@@ -4279,12 +4421,12 @@ void VisualServerRaster::canvas_light_occluder_set_polygon(RID p_occluder,RID p_
 	}
 
 	occluder->polygon=p_polygon;
-	occluder->polygon_buffer=RID();
+	occluder->polygon_buffer;
 
 	if (occluder->polygon.is_valid()) {
 		CanvasLightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get(p_polygon);
 		if (!occluder_poly)
-			occluder->polygon=RID();
+			occluder->polygon;
 		ERR_FAIL_COND(!occluder_poly);
 		occluder_poly->owners.insert(occluder);
 		occluder->polygon_buffer=occluder_poly->occluder;
@@ -4558,7 +4700,7 @@ void VisualServerRaster::free( RID p_rid ) {
 			//detach skeletons
 			for (Set<Instance*>::Element *F=E->get().front();F;F=F->next()) {
 
-				F->get()->data.skeleton=RID();
+				F->get()->data.skeleton;
 			}
 			skeleton_dependency_map.erase(E);
 		}
@@ -4688,17 +4830,17 @@ void VisualServerRaster::free( RID p_rid ) {
 
 		for (int i=0;i<canvas->child_items.size();i++) {
 
-			canvas->child_items[i].item->parent=RID();
+			canvas->child_items[i].item->parent;
 		}
 
 		for (Set<Rasterizer::CanvasLight*>::Element *E=canvas->lights.front();E;E=E->next()) {
 
-			E->get()->canvas=RID();
+			E->get()->canvas;
 		}
 
 		for (Set<Rasterizer::CanvasLightOccluderInstance*>::Element *E=canvas->occluders.front();E;E=E->next()) {
 
-			E->get()->canvas=RID();
+			E->get()->canvas;
 		}
 
 		canvas_owner.free( p_rid );
@@ -4726,7 +4868,7 @@ void VisualServerRaster::free( RID p_rid ) {
 
 		for (int i=0;i<canvas_item->child_items.size();i++) {
 
-			canvas_item->child_items[i]->parent=RID();
+			canvas_item->child_items[i]->parent;
 		}
 
 		if (canvas_item->material) {
@@ -4798,7 +4940,7 @@ void VisualServerRaster::free( RID p_rid ) {
 
 		while(occluder_poly->owners.size()) {
 
-			occluder_poly->owners.front()->get()->polygon=RID();
+			occluder_poly->owners.front()->get()->polygon;
 			occluder_poly->owners.erase( occluder_poly->owners.front() );
 		}
 
@@ -6417,7 +6559,7 @@ void VisualServerRaster::_process_sampled_light(const Transform& p_camera,Instan
 
 		for(Set<Instance*>::Element *F=p_sampled_light->baked_light_sampler_info->owned_instances.front();F;F=F->next()) {
 
-			F->get()->data.sampled_light=RID(); //do not use because nothing close
+			F->get()->data.sampled_light; //do not use because nothing close
 		}
 	}
 
@@ -7612,11 +7754,6 @@ void VisualServerRaster::set_default_clear_color(const Color& p_color) {
 	clear_color=p_color;
 }
 
-Color VisualServerRaster::get_default_clear_color() const {
-
-	return clear_color;
-}
-
 void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_color,bool p_scale) {
 
 	if (p_image.empty())
@@ -7684,7 +7821,7 @@ void VisualServerRaster::init() {
 
 	Image img;
 	img.create(default_mouse_cursor_xpm);
-	//img.convert(Image::FORMAT_RGB);
+	//img.convert(Image::FORMAT_RGB8);
 	default_cursor_texture = texture_create_from_image(img, 0);
 
 	aabb_random_points.resize( GLOBAL_DEF("render/aabb_random_points",16) );
@@ -7771,3 +7908,4 @@ VisualServerRaster::VisualServerRaster(Rasterizer *p_rasterizer) {
 VisualServerRaster::~VisualServerRaster()
 {
 }
+#endif

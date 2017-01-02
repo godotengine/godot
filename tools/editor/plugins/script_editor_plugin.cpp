@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -945,7 +945,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		}
 	}
 
-	EditorHelp *help = tab_container->get_child(selected)->cast_to<EditorHelp>();
+	EditorHelp *help = tab_container->get_current_tab_control()->cast_to<EditorHelp>();
 	if (help) {
 
 		switch(p_option) {
@@ -1841,6 +1841,8 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 
 void ScriptEditor::_help_class_open(const String& p_class) {
 
+	if (p_class=="")
+		return;
 
 	for(int i=0;i<tab_container->get_child_count();i++) {
 
@@ -1909,19 +1911,14 @@ void ScriptEditor::_update_selected_editor_menu() {
 				se->get_edit_menu()->hide();
 		}
 
-		EditorHelp *eh = tab_container->get_child(i)->cast_to<EditorHelp>();
-
-		if (eh) {
-
-			if (current)
-				script_search_menu->show();
-			else
-				script_search_menu->hide();
-		}
-
-
 	}
 
+	EditorHelp *eh=tab_container->get_current_tab_control()->cast_to<EditorHelp>();
+	if (eh) {
+		script_search_menu->show();
+	} else {
+		script_search_menu->hide();
+	}
 }
 
 void ScriptEditor::_update_history_pos(int p_new_pos) {

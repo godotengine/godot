@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -318,7 +318,7 @@ public:
 	Error set_thread_name(const String& p_name);
 
 	void set_use_vsync(bool p_enable);
-	bool is_vsnc_enabled() const;
+	bool is_vsync_enabled() const;
 
 	Dictionary get_engine_version() const;
 
@@ -503,12 +503,16 @@ class _Marshalls : public Reference {
 
 	OBJ_TYPE(_Marshalls,Reference);
 
+	static _Marshalls* singleton;
+
 protected:
 
 	static void _bind_methods();
 
 
 public:
+
+	static _Marshalls* get_singleton();
 
 	String variant_to_base64(const Variant& p_var);
 	Variant base64_to_variant(const String& p_str);
@@ -519,7 +523,8 @@ public:
 	String utf8_to_base64(const String& p_str);
 	String base64_to_utf8(const String& p_str);
 
-	_Marshalls() {};
+	_Marshalls() { singleton = this; }
+	~_Marshalls() { singleton = NULL; }
 };
 
 

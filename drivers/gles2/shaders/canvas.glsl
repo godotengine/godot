@@ -105,8 +105,8 @@ precision mediump float;
 precision mediump int;
 #endif
 
- // texunit:0
-uniform sampler2D texture;
+
+uniform sampler2D texture; // texunit:0
 
 varying vec2 uv_interp;
 varying vec4 color_interp;
@@ -319,7 +319,7 @@ LIGHT_SHADER_CODE
 
 #ifdef USE_DEPTH_SHADOWS
 
-#define SHADOW_DEPTH(m_tex,m_uv) (texture2D((m_tex),(m_uv)).z)
+#define SHADOW_DEPTH(m_tex,m_uv) (texture2D((m_tex),(m_uv)).r)
 
 #else
 
@@ -394,6 +394,7 @@ LIGHT_SHADER_CODE
 #endif
 //	color.rgb*=color.a;
 	gl_FragColor = color;
+
 
 }
 

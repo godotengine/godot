@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,9 +84,9 @@ Error jpeg_load_image_from_buffer(Image *p_image,const uint8_t* p_buffer, int p_
 
 	Image::Format fmt;
 	if (comps==1)
-		fmt=Image::FORMAT_GRAYSCALE;
+		fmt=Image::FORMAT_L8;
 	else
-		fmt=Image::FORMAT_RGBA;
+		fmt=Image::FORMAT_RGBA8;
 
 	dw = DVector<uint8_t>::Write();
 	p_image->create(image_width,image_height,0,fmt,data);

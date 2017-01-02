@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -531,9 +531,9 @@ void EditorExportPlatformAndroid::_fix_resources(Vector<uint8_t>& p_manifest) {
 
 	Vector<String> string_table;
 
-	printf("stirng block len: %i\n",string_block_len);
-	printf("stirng count: %i\n",string_count);
-	printf("flags: %x\n",string_flags);
+	//printf("stirng block len: %i\n",string_block_len);
+	//printf("stirng count: %i\n",string_count);
+	//printf("flags: %x\n",string_flags);
 
 	for(uint32_t i=0;i<string_count;i++) {
 
@@ -617,7 +617,7 @@ void EditorExportPlatformAndroid::_fix_resources(Vector<uint8_t>& p_manifest) {
 
 
 	p_manifest=ret;
-	printf("end\n");
+	//printf("end\n");
 }
 
 String EditorExportPlatformAndroid::get_project_name() const {
@@ -778,16 +778,16 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 					else
 						nspace="";
 
-					printf("ATTR %i NSPACE: %i\n",i,attr_nspace);
-					printf("ATTR %i NAME: %i (%s)\n",i,attr_name,attrname.utf8().get_data());
-					printf("ATTR %i VALUE: %i (%s)\n",i,attr_value,value.utf8().get_data());
-					printf("ATTR %i FLAGS: %x\n",i,attr_flags);
-					printf("ATTR %i RESID: %x\n",i,attr_resid);
+					//printf("ATTR %i NSPACE: %i\n",i,attr_nspace);
+					//printf("ATTR %i NAME: %i (%s)\n",i,attr_name,attrname.utf8().get_data());
+					//printf("ATTR %i VALUE: %i (%s)\n",i,attr_value,value.utf8().get_data());
+					//printf("ATTR %i FLAGS: %x\n",i,attr_flags);
+					//printf("ATTR %i RESID: %x\n",i,attr_resid);
 
 					//replace project information
 					if (tname=="manifest" && attrname=="package") {
 
-						print_line("FOUND PACKAGE");
+						print_line("FOUND package");
 						string_table[attr_value]=get_package_name();
 					}
 
@@ -796,14 +796,14 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 					//print_line("attrname: "+attrname);
 					if (tname=="manifest" && /*nspace=="android" &&*/ attrname=="versionCode") {
 
-						print_line("FOUND versioncode");
+						print_line("FOUND versionCode");
 						encode_uint32(version_code,&p_manifest[iofs+16]);
 					}
 
 
 					if (tname=="manifest" && /*nspace=="android" &&*/ attrname=="versionName") {
 
-						print_line("FOUND versionname");
+						print_line("FOUND versionName");
 						if (attr_value==0xFFFFFFFF) {
 							WARN_PRINT("Version name in a resource, should be plaintext")
 						} else
@@ -834,10 +834,10 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 
 						} else if (value.begins_with("godot.")) {
 							String perm = value.get_slice(".",1);
-							print_line("PERM: "+perm+" HAS: "+itos(perms.has(perm)));
 
 							if (perms.has(perm) || (p_give_internet && perm=="INTERNET")) {
 
+								print_line("PERM: "+perm);
 								string_table[attr_value]="android.permission."+perm;
 							}
 
@@ -871,12 +871,12 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 
 			} break;
 		}
-		printf("chunk %x: size: %d\n",chunk,size);
+		//printf("chunk %x: size: %d\n",chunk,size);
 
 		ofs+=size;
 	}
 
-	printf("end\n");
+	//printf("end\n");
 
 	//create new andriodmanifest binary
 
@@ -893,14 +893,14 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 
 		encode_uint32(ofs,&ret[string_table_begins+i*4]);
 		ofs+=string_table[i].length()*2+2+2;
-		print_line("ofs: "+itos(i)+": "+itos(ofs));
+		//print_line("ofs: "+itos(i)+": "+itos(ofs));
 	}
 	ret.resize(ret.size()+ofs);
 	uint8_t *chars=&ret[ret.size()-ofs];
 	for(int i=0;i<string_table.size();i++) {
 
 		String s = string_table[i];
-		print_line("savint string :"+s);
+		//print_line("savint string :"+s);
 		encode_uint16(s.length(),chars);
 		chars+=2;
 		for(int j=0;j<s.length();j++) { //include zero?
@@ -934,7 +934,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 
 	encode_uint32(new_stable_end-8,&ret[12]); //update new string table size
 
-	print_line("file size: "+itos(ret.size()));
+	//print_line("file size: "+itos(ret.size()));
 
 	p_manifest=ret;
 
@@ -949,7 +949,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 		header[i]=decode_uint32(&p_manifest[i*4]);
 	}
 
-	print_line("STO: "+itos(header[3]));
+	//print_line("STO: "+itos(header[3]));
 	uint32_t st_offset=9*4;
 	//ERR_FAIL_COND(header[3]!=0x24)
 	uint32_t string_count=header[4];

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -581,7 +581,6 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 			//LOG
 
 			if (EditorNode::get_log()->is_hidden()) {
-				log_forced_visible=true;
 				if (EditorNode::get_singleton()->are_bottom_panels_hidden()) {
 					EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
 				}
@@ -957,7 +956,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						break;
 
 					EditorNode::get_log()->add_message("** Debug Process Started **");
-					log_forced_visible=false;
 
 					ppeer->set_stream_peer(connection);
 
@@ -1089,8 +1087,8 @@ void ScriptEditorDebugger::start() {
 
 	stop();
 
-	if (!EditorNode::get_log()->is_visible()) {
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
+	if (is_visible()) {
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 	}
 
 	uint16_t port = GLOBAL_DEF("debug/remote_port",6007);
@@ -1131,13 +1129,6 @@ void ScriptEditorDebugger::stop(){
 
 	pending_in_queue=0;
 	message.clear();
-
-	if (log_forced_visible) {
-		//EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
-		if (EditorNode::get_log()->is_visible())
-			EditorNode::get_singleton()->hide_bottom_panel();
-		log_forced_visible=false;
-	}
 
 	node_path_cache.clear();
 	res_path_cache.clear();
@@ -1979,8 +1970,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 
 	msgdialog = memnew( AcceptDialog );
 	add_child(msgdialog);
-
-	log_forced_visible=false;
 
 	p_editor->get_undo_redo()->set_method_notify_callback(_method_changeds,this);
 	p_editor->get_undo_redo()->set_property_notify_callback(_property_changeds,this);

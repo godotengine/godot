@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,6 +97,12 @@ case m_name: {\
 	_RETURN( -p_a._data.m_type);\
 };
 
+#define DEFAULT_OP_NUM_POS(m_name,m_type)\
+case m_name: {\
+\
+	_RETURN( p_a._data.m_type);\
+};
+
 #define DEFAULT_OP_NUM_VEC(m_op,m_name,m_type)\
 case m_name: {\
 	switch(p_b.type) {\
@@ -136,6 +142,10 @@ case m_name: {\
 	_RETURN( -*reinterpret_cast<const m_type*>(p_a._data._mem));\
 }
 
+#define DEFAULT_OP_LOCALMEM_POS(m_name,m_type)\
+case m_name: {\
+	_RETURN( *reinterpret_cast<const m_type*>(p_a._data._mem));\
+}
 
 #define DEFAULT_OP_LOCALMEM_NUM(m_op,m_name,m_type)\
 case m_name: {switch(p_b.type) {\
@@ -740,6 +750,48 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 			}
 
 		} break;
+		case OP_POSITIVE: {
+				// Simple case when user defines variable as +value.
+				switch(p_a.type) {
+
+					DEFAULT_OP_FAIL(NIL);
+					DEFAULT_OP_FAIL(STRING);
+					DEFAULT_OP_FAIL(RECT2);
+					DEFAULT_OP_FAIL(MATRIX32);
+					DEFAULT_OP_FAIL(_AABB);
+					DEFAULT_OP_FAIL(MATRIX3);
+					DEFAULT_OP_FAIL(TRANSFORM);
+					DEFAULT_OP_NUM_POS(BOOL,_bool);
+					DEFAULT_OP_NUM_POS(INT,_int);
+					DEFAULT_OP_NUM_POS(REAL,_real);
+					DEFAULT_OP_LOCALMEM_POS(VECTOR3,Vector3);
+					DEFAULT_OP_LOCALMEM_POS(PLANE,Plane);
+					DEFAULT_OP_LOCALMEM_POS(QUAT,Quat);
+					DEFAULT_OP_LOCALMEM_POS(VECTOR2,Vector2);
+
+					DEFAULT_OP_FAIL(COLOR);
+					DEFAULT_OP_FAIL(IMAGE);
+					DEFAULT_OP_FAIL(NODE_PATH);
+					DEFAULT_OP_FAIL(_RID);
+					DEFAULT_OP_FAIL(OBJECT);
+					DEFAULT_OP_FAIL(INPUT_EVENT);
+					DEFAULT_OP_FAIL(DICTIONARY);
+					DEFAULT_OP_FAIL(ARRAY);
+					DEFAULT_OP_FAIL(RAW_ARRAY);
+					DEFAULT_OP_FAIL(INT_ARRAY);
+					DEFAULT_OP_FAIL(REAL_ARRAY);
+					DEFAULT_OP_FAIL(STRING_ARRAY);
+					DEFAULT_OP_FAIL(VECTOR2_ARRAY);
+					DEFAULT_OP_FAIL(VECTOR3_ARRAY);
+					DEFAULT_OP_FAIL(COLOR_ARRAY);
+					case VARIANT_MAX: {
+						r_valid=false;
+						return;
+
+					} break;
+					
+				}
+		} break;
 		case OP_NEGATE: {
 				switch(p_a.type) {
 
@@ -778,9 +830,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 						return;
 
 					} break;
-
 				}
-
 		} break;
 		case OP_MODULE: {
 			if (p_a.type==INT && p_b.type==INT) {

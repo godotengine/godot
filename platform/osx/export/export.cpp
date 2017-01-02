@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -207,7 +207,7 @@ void EditorExportPlatformOSX::_make_icon(const Image& p_icon,Vector<uint8_t>& ic
 	while(size>=16) {
 
 		Image copy = p_icon;
-		copy.convert(Image::FORMAT_RGBA);
+		copy.convert(Image::FORMAT_RGBA8);
 		copy.resize(size,size);
 		it->create_from_image(copy);
 		String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/icon.png";

@@ -3,13 +3,13 @@
 Import('env')
 
 files = [
-	'os_osx.mm',
-	'godot_main_osx.mm',
-	'audio_driver_osx.cpp',
-	'sem_osx.cpp',
-#	'context_gl_osx.cpp',
-	'dir_access_osx.mm',
-	'joystick_osx.cpp',
-	]
+    'os_osx.mm',
+    'godot_main_osx.mm',
+    'audio_driver_osx.cpp',
+    'sem_osx.cpp',
+    #	'context_gl_osx.cpp',
+    'dir_access_osx.mm',
+    'joystick_osx.cpp',
+]
 
-env.Program('#bin/godot',files)
+env.Program('#bin/godot', files)

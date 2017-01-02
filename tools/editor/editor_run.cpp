@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,15 +54,6 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 
 	args.push_back("-epid");
 	args.push_back(String::num(OS::get_singleton()->get_process_ID()));
-
-	if (p_custom_args!="") {
-
-		Vector<String> cargs=p_custom_args.split(" ",false);
-		for(int i=0;i<cargs.size();i++) {
-
-			args.push_back(cargs[i].replace("%20"," ").replace("$scene",p_edited_scene.replace(" ","%20")));
-		}
-	}
 
 	if (debug_collisions) {
 		args.push_back("-debugcol");
@@ -150,7 +141,12 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 		args.push_back(bpoints);
 	}
 
-	args.push_back(p_scene);
+	if (p_custom_args!="") {
+		Vector<String> cargs=p_custom_args.split(" ",false);
+		for(int i=0;i<cargs.size();i++) {
+			args.push_back(cargs[i].replace("$scene",p_scene).replace(" ","%20"));
+		}
+	}
 
 	String exec = OS::get_singleton()->get_executable_path();
 

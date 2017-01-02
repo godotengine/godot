@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -145,7 +145,7 @@ void EditorDirDialog::set_current_path(const String& p_path) {
 	if (p.begins_with("res://"))
 		p = p.replace_first("res://","");
 
-	Vector<String> dirs = p.split("/");
+	Vector<String> dirs = p.split("/",false);
 
 	TreeItem *r=tree->get_root();
 	for(int i=0;i<dirs.size();i++) {

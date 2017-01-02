@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ class AudioServerSW : public AudioServer {
 	virtual AudioMixer *get_mixer();
 	virtual void audio_mixer_chunk_callback(int p_frames);
 
-	struct Voice {
+	struct Voice : public RID_Data {
 
 		float volume;
 		volatile bool active;
@@ -67,7 +67,7 @@ class AudioServerSW : public AudioServer {
 	mutable RID_Owner<Voice> voice_owner;
 	SelfList<Voice>::List active_list;
 
-	struct Stream {
+	struct Stream : public RID_Data {
 		bool active;
 		List<Stream*>::Element *E;
 		AudioStream *audio_stream;

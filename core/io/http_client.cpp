@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,11 +29,14 @@
 #include "http_client.h"
 #include "io/stream_peer_ssl.h"
 
-VARIANT_ENUM_CAST(IP_Address::AddrType);
+void HTTPClient::set_ip_type(IP::Type p_type) {
+	ip_type = p_type;
+}
 
-Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_verify_host, IP_Address::AddrType p_addr_type){
+Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_verify_host){
 
 	close();
+	tcp_connection->set_ip_type(ip_type);
 	conn_port=p_port;
 	conn_host=p_host;
 
@@ -63,7 +66,7 @@ Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_ve
 		status=STATUS_CONNECTING;
 	} else {
 		//is hostname
-		resolving=IP::get_singleton()->resolve_hostname_queue_item(conn_host, p_addr_type);
+		resolving=IP::get_singleton()->resolve_hostname_queue_item(conn_host, ip_type);
 		status=STATUS_RESOLVING;
 
 	}
@@ -636,7 +639,8 @@ Error HTTPClient::_get_http_data(uint8_t* p_buffer, int p_bytes,int &r_received)
 
 void HTTPClient::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl","verify_host"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true),DEFVAL(IP_Address::TYPE_ANY));
+	ObjectTypeDB::bind_method(_MD("set_ip_type","ip_type"),&HTTPClient::set_ip_type);
+	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl","verify_host"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("set_connection","connection:StreamPeer"),&HTTPClient::set_connection);
 	ObjectTypeDB::bind_method(_MD("get_connection:StreamPeer"),&HTTPClient::get_connection);
 	ObjectTypeDB::bind_method(_MD("request_raw","method","url","headers","body"),&HTTPClient::request_raw);
@@ -762,6 +766,7 @@ String HTTPClient::query_string_from_dict(const Dictionary& p_dict) {
 
 HTTPClient::HTTPClient(){
 
+	ip_type = IP::TYPE_ANY;
 	tcp_connection = StreamPeerTCP::create_ref();
 	resolving = IP::RESOLVER_INVALID_ID;
 	status=STATUS_DISCONNECTED;

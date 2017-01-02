@@ -3,10 +3,10 @@
 Import('env')
 
 if env['BUILDERS'].has_key('GLSL120GLES'):
-	env.GLSL120GLES('material.glsl');
-	env.GLSL120GLES('canvas.glsl');
-	env.GLSL120GLES('canvas_shadow.glsl');
-	env.GLSL120GLES('blur.glsl');
-	env.GLSL120GLES('copy.glsl');
+    env.GLSL120GLES('material.glsl')
+    env.GLSL120GLES('canvas.glsl')
+    env.GLSL120GLES('canvas_shadow.glsl')
+    env.GLSL120GLES('blur.glsl')
+    env.GLSL120GLES('copy.glsl')
 
 Export('env')

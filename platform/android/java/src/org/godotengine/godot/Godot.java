@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -294,6 +294,25 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				}
 			});
 		}
+	}
+
+	public void alert(final String message, final String title) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				AlertDialog.Builder builder = new AlertDialog.Builder(getInstance());
+				builder.setMessage(message).setTitle(title);
+				builder.setPositiveButton(
+					"OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.cancel();
+						}
+					});
+				AlertDialog dialog = builder.create();
+				dialog.show();
+			}
+		});
 	}
 	
 	private static Godot _self;

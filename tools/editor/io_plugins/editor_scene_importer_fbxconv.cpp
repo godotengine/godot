@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/animation/animation_player.h"
 
-
+#if 0
 String EditorSceneImporterFBXConv::_id(const String& p_id) const {
 
 	return p_id.replace(":","_").replace("/","_");
@@ -482,29 +482,29 @@ void EditorSceneImporterFBXConv::_parse_materials(State& state) {
 		ERR_CONTINUE(!material.has("id"));
 		String id = _id(material["id"]);
 
-		Ref<FixedMaterial> mat = memnew( FixedMaterial );
+		Ref<FixedSpatialMaterial> mat = memnew( FixedSpatialMaterial );
 
 		if (material.has("diffuse")) {
-			mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,_get_color(material["diffuse"]));
+			mat->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,_get_color(material["diffuse"]));
 		}
 
 		if (material.has("specular")) {
-			mat->set_parameter(FixedMaterial::PARAM_SPECULAR,_get_color(material["specular"]));
+			mat->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR,_get_color(material["specular"]));
 		}
 
 		if (material.has("emissive")) {
-			mat->set_parameter(FixedMaterial::PARAM_EMISSION,_get_color(material["emissive"]));
+			mat->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,_get_color(material["emissive"]));
 		}
 
 		if (material.has("shininess")) {
 			float exp = material["shininess"];
-			mat->set_parameter(FixedMaterial::PARAM_SPECULAR_EXP,exp);
+			mat->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR_EXP,exp);
 		}
 
 		if (material.has("opacity")) {
-			Color c = mat->get_parameter(FixedMaterial::PARAM_DIFFUSE);
+			Color c = mat->get_parameter(FixedSpatialMaterial::PARAM_DIFFUSE);
 			c.a=material["opacity"];
-			mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,c);
+			mat->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,c);
 		}
 
 
@@ -536,15 +536,15 @@ void EditorSceneImporterFBXConv::_parse_materials(State& state) {
 
 					String type=texture["type"];
 					if (type=="DIFFUSE")
-						mat->set_texture(FixedMaterial::PARAM_DIFFUSE,tex);
+						mat->set_texture(FixedSpatialMaterial::PARAM_DIFFUSE,tex);
 					else if (type=="SPECULAR")
-						mat->set_texture(FixedMaterial::PARAM_SPECULAR,tex);
+						mat->set_texture(FixedSpatialMaterial::PARAM_SPECULAR,tex);
 					else if (type=="SHININESS")
-						mat->set_texture(FixedMaterial::PARAM_SPECULAR_EXP,tex);
+						mat->set_texture(FixedSpatialMaterial::PARAM_SPECULAR_EXP,tex);
 					else if (type=="NORMAL")
-						mat->set_texture(FixedMaterial::PARAM_NORMAL,tex);
+						mat->set_texture(FixedSpatialMaterial::PARAM_NORMAL,tex);
 					else if (type=="EMISSIVE")
-						mat->set_texture(FixedMaterial::PARAM_EMISSION,tex);
+						mat->set_texture(FixedSpatialMaterial::PARAM_EMISSION,tex);
 				}
 
 			}
@@ -1132,3 +1132,4 @@ EditorSceneImporterFBXConv::EditorSceneImporterFBXConv() {
 #endif
 
 }
+#endif

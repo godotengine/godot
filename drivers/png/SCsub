@@ -5,44 +5,44 @@ Import('env')
 env_png = env.Clone()
 
 # Thirdparty source files
-if (env["libpng"] == "builtin"):
-	thirdparty_dir = "#thirdparty/libpng/"
-	thirdparty_sources = [
-		"png.c",
-		"pngerror.c",
-		"pngget.c",
-		"pngmem.c",
-		"pngpread.c",
-		"pngread.c",
-		"pngrio.c",
-		"pngrtran.c",
-		"pngrutil.c",
-		"pngset.c",
-		"pngtrans.c",
-		"pngwio.c",
-		"pngwrite.c",
-		"pngwtran.c",
-		"pngwutil.c",
-	]
-	thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+if (env['builtin_libpng'] != 'no'):
+    thirdparty_dir = "#thirdparty/libpng/"
+    thirdparty_sources = [
+        "png.c",
+        "pngerror.c",
+        "pngget.c",
+        "pngmem.c",
+        "pngpread.c",
+        "pngread.c",
+        "pngrio.c",
+        "pngrtran.c",
+        "pngrutil.c",
+        "pngset.c",
+        "pngtrans.c",
+        "pngwio.c",
+        "pngwrite.c",
+        "pngwtran.c",
+        "pngwutil.c",
+    ]
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-	env_png.add_source_files(env.drivers_sources, thirdparty_sources)
-	env_png.Append(CPPPATH = [thirdparty_dir])
+    env_png.add_source_files(env.drivers_sources, thirdparty_sources)
+    env_png.Append(CPPPATH=[thirdparty_dir])
 
-	# Currently .ASM filter_neon.S does not compile on NT.
-	import os
-	if ("neon_enabled" in env and env["neon_enabled"]) and os.name!="nt":
-		env_png.Append(CPPFLAGS = ["-DPNG_ARM_NEON_OPT=2"])
-		env_neon = env_png.Clone();
-		if "S_compiler" in env:
-			env_neon['CC'] = env['S_compiler']
-		neon_sources = []
-		neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/arm_init.c"))
-		neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/filter_neon_intrinsics.c"))
-		neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/filter_neon.S"))
-		env.drivers_sources += neon_sources
-	else:
-		env_png.Append(CPPFLAGS = ["-DPNG_ARM_NEON_OPT=0"])
+    # Currently .ASM filter_neon.S does not compile on NT.
+    import os
+    if ("neon_enabled" in env and env["neon_enabled"]) and os.name != "nt":
+        env_png.Append(CPPFLAGS=["-DPNG_ARM_NEON_OPT=2"])
+        env_neon = env_png.Clone()
+        if "S_compiler" in env:
+            env_neon['CC'] = env['S_compiler']
+        neon_sources = []
+        neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/arm_init.c"))
+        neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/filter_neon_intrinsics.c"))
+        neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/filter_neon.S"))
+        env.drivers_sources += neon_sources
+    else:
+        env_png.Append(CPPFLAGS=["-DPNG_ARM_NEON_OPT=0"])
 
 # Godot source files
 env_png.add_source_files(env.drivers_sources, "*.cpp")

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -219,6 +219,8 @@ class PropertyEditor : public Control {
 	void _edit_button(Object *p_item, int p_column, int p_button);
 
 	void _node_removed(Node *p_node);
+
+friend class ProjectExportDialog;
 	void _edit_set(const String& p_name, const Variant& p_value);
 	void _draw_flags(Object *ti,const Rect2& p_rect);
 

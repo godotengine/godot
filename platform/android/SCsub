@@ -6,127 +6,127 @@ Import('env')
 
 android_files = [
 
-	'os_android.cpp',
-	'godot_android.cpp',
-	'file_access_android.cpp',
-	'dir_access_android.cpp',
-	'audio_driver_opensl.cpp',
-	'file_access_jandroid.cpp',
-	'dir_access_jandroid.cpp',
-	'thread_jandroid.cpp',
-	'audio_driver_jandroid.cpp',
-	'ifaddrs_android.cpp',
-	'android_native_app_glue.c',
-	'java_glue.cpp',
-	'cpu-features.c',
-	'java_class_wrapper.cpp'
+    'os_android.cpp',
+    'godot_android.cpp',
+    'file_access_android.cpp',
+    'dir_access_android.cpp',
+    'audio_driver_opensl.cpp',
+    'file_access_jandroid.cpp',
+    'dir_access_jandroid.cpp',
+    'thread_jandroid.cpp',
+    'audio_driver_jandroid.cpp',
+    'ifaddrs_android.cpp',
+    'android_native_app_glue.c',
+    'java_glue.cpp',
+    'cpu-features.c',
+    'java_class_wrapper.cpp'
 ]
 
-#env.Depends('#core/math/vector3.h', 'vector3_psp.h')
+# env.Depends('#core/math/vector3.h', 'vector3_psp.h')
 
 #obj = env.SharedObject('godot_android.cpp')
 
 env_android = env.Clone()
 if env['target'] == "profile":
-	env_android.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
+    env_android.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
 
-android_objects=[]
+android_objects = []
 for x in android_files:
-	android_objects.append( env_android.SharedObject( x ) )
+    android_objects.append(env_android.SharedObject(x))
 
 prog = None
 
-abspath=env.Dir(".").abspath
+abspath = env.Dir(".").abspath
 
 
-gradle_basein = open(abspath+"/build.gradle.template","rb")
-gradle_baseout = open(abspath+"/java/build.gradle","wb")
+gradle_basein = open(abspath + "/build.gradle.template", "rb")
+gradle_baseout = open(abspath + "/java/build.gradle", "wb")
 
 gradle_text = gradle_basein.read()
 
 
-gradle_maven_repos_text=""
+gradle_maven_repos_text = ""
 
 if len(env.android_maven_repos) > 0:
-	gradle_maven_repos_text+="maven {\n"
-	for x in env.android_maven_repos:
-		gradle_maven_repos_text+="\t\t"+x+"\n"
-	gradle_maven_repos_text+="\t}\n"
+    gradle_maven_repos_text += "maven {\n"
+    for x in env.android_maven_repos:
+        gradle_maven_repos_text += "\t\t" + x + "\n"
+    gradle_maven_repos_text += "\t}\n"
 
-gradle_maven_dependencies_text=""
+gradle_maven_dependencies_text = ""
 
 for x in env.android_dependencies:
-	gradle_maven_dependencies_text+=x+"\n"
+    gradle_maven_dependencies_text += x + "\n"
 
-gradle_java_dirs_text=""
+gradle_java_dirs_text = ""
 
 for x in env.android_java_dirs:
-	gradle_java_dirs_text+=",'"+x.replace("\\","/")+"'"
+    gradle_java_dirs_text += ",'" + x.replace("\\", "/") + "'"
 
 
-gradle_res_dirs_text=""
+gradle_res_dirs_text = ""
 
 for x in env.android_res_dirs:
-	gradle_res_dirs_text+=",'"+x.replace("\\","/")+"'"
+    gradle_res_dirs_text += ",'" + x.replace("\\", "/") + "'"
 
-gradle_aidl_dirs_text=""
+gradle_aidl_dirs_text = ""
 
 for x in env.android_aidl_dirs:
-	gradle_aidl_dirs_text+=",'"+x.replace("\\","/")+"'"
+    gradle_aidl_dirs_text += ",'" + x.replace("\\", "/") + "'"
 
-gradle_jni_dirs_text=""
+gradle_jni_dirs_text = ""
 
 for x in env.android_jni_dirs:
-	gradle_jni_dirs_text+=",'"+x.replace("\\","/")+"'"
+    gradle_jni_dirs_text += ",'" + x.replace("\\", "/") + "'"
 
-gradle_asset_dirs_text=""
+gradle_asset_dirs_text = ""
 
-gradle_default_config_text=""
+gradle_default_config_text = ""
 
 for x in env.android_default_config:
-	gradle_default_config_text+=x+"\n\t\t"
+    gradle_default_config_text += x + "\n\t\t"
 
-gradle_text = gradle_text.replace("$$GRADLE_REPOSITORY_URLS$$",gradle_maven_repos_text)
-gradle_text = gradle_text.replace("$$GRADLE_DEPENDENCIES$$",gradle_maven_dependencies_text)
-gradle_text = gradle_text.replace("$$GRADLE_JAVA_DIRS$$",gradle_java_dirs_text)
-gradle_text = gradle_text.replace("$$GRADLE_RES_DIRS$$",gradle_res_dirs_text)
-gradle_text = gradle_text.replace("$$GRADLE_ASSET_DIRS$$",gradle_asset_dirs_text)
-gradle_text = gradle_text.replace("$$GRADLE_AIDL_DIRS$$",gradle_aidl_dirs_text)
-gradle_text = gradle_text.replace("$$GRADLE_JNI_DIRS$$",gradle_jni_dirs_text)
-gradle_text = gradle_text.replace("$$GRADLE_DEFAULT_CONFIG$$",gradle_default_config_text)
+gradle_text = gradle_text.replace("$$GRADLE_REPOSITORY_URLS$$", gradle_maven_repos_text)
+gradle_text = gradle_text.replace("$$GRADLE_DEPENDENCIES$$", gradle_maven_dependencies_text)
+gradle_text = gradle_text.replace("$$GRADLE_JAVA_DIRS$$", gradle_java_dirs_text)
+gradle_text = gradle_text.replace("$$GRADLE_RES_DIRS$$", gradle_res_dirs_text)
+gradle_text = gradle_text.replace("$$GRADLE_ASSET_DIRS$$", gradle_asset_dirs_text)
+gradle_text = gradle_text.replace("$$GRADLE_AIDL_DIRS$$", gradle_aidl_dirs_text)
+gradle_text = gradle_text.replace("$$GRADLE_JNI_DIRS$$", gradle_jni_dirs_text)
+gradle_text = gradle_text.replace("$$GRADLE_DEFAULT_CONFIG$$", gradle_default_config_text)
 
 
-gradle_baseout.write( gradle_text )
+gradle_baseout.write(gradle_text)
 gradle_baseout.close()
 
 
-pp_basein = open(abspath+"/AndroidManifest.xml.template","rb")
-pp_baseout = open(abspath+"/java/AndroidManifest.xml","wb")
+pp_basein = open(abspath + "/AndroidManifest.xml.template", "rb")
+pp_baseout = open(abspath + "/java/AndroidManifest.xml", "wb")
 manifest = pp_basein.read()
-manifest = manifest.replace("$$ADD_APPLICATION_CHUNKS$$",env.android_manifest_chunk)
-manifest = manifest.replace("$$ADD_PERMISSION_CHUNKS$$",env.android_permission_chunk)
-manifest = manifest.replace("$$ADD_APPATTRIBUTE_CHUNKS$$",env.android_appattributes_chunk)
-pp_baseout.write( manifest )
+manifest = manifest.replace("$$ADD_APPLICATION_CHUNKS$$", env.android_manifest_chunk)
+manifest = manifest.replace("$$ADD_PERMISSION_CHUNKS$$", env.android_permission_chunk)
+manifest = manifest.replace("$$ADD_APPATTRIBUTE_CHUNKS$$", env.android_appattributes_chunk)
+pp_baseout.write(manifest)
 
 
-env_android.SharedLibrary("#bin/libgodot",[android_objects],SHLIBSUFFIX=env["SHLIBSUFFIX"])
+env_android.SharedLibrary("#bin/libgodot", [android_objects], SHLIBSUFFIX=env["SHLIBSUFFIX"])
 
 
 lib_arch_dir = ''
 if env['android_arch'] == 'armv6':
-	lib_arch_dir = 'armeabi'
+    lib_arch_dir = 'armeabi'
 elif env['android_arch'] == 'armv7':
-	lib_arch_dir = 'armeabi-v7a'
+    lib_arch_dir = 'armeabi-v7a'
 elif env['android_arch'] == 'x86':
-	lib_arch_dir = 'x86'
+    lib_arch_dir = 'x86'
 else:
-	print 'WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin'
+    print 'WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin'
 
 if lib_arch_dir != '':
-	if env['target'] == 'release':
-		lib_type_dir = 'release'
-	else: # release_debug, debug
-		lib_type_dir = 'debug'
-		
-	out_dir = '#platform/android/java/libs/'+lib_type_dir+'/'+lib_arch_dir
-	env_android.Command(out_dir+'/libgodot_android.so', '#bin/libgodot'+env['SHLIBSUFFIX'], Move("$TARGET", "$SOURCE"))
+    if env['target'] == 'release':
+        lib_type_dir = 'release'
+    else:  # release_debug, debug
+        lib_type_dir = 'debug'
+
+    out_dir = '#platform/android/java/libs/' + lib_type_dir + '/' + lib_arch_dir
+    env_android.Command(out_dir + '/libgodot_android.so', '#bin/libgodot' + env['SHLIBSUFFIX'], Move("$TARGET", "$SOURCE"))

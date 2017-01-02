@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -589,6 +589,11 @@ void ProjectExportDialog::custom_action(const String&) {
 		return;
 	}
 
+	if (platform.to_lower()=="android" && _check_android_setting(exporter)==false){
+		// not filled all field for Android release
+		return;
+	}
+
 	String extension = exporter->get_binary_extension();
 
 	file_export_password->set_editable( exporter->requires_password(exporter->is_debugging_enabled()) );
@@ -602,6 +607,204 @@ void ProjectExportDialog::custom_action(const String&) {
 
 }
 
+LineEdit* ProjectExportDialog::_create_keystore_input(Control* container, const String& p_label, const String& name) {
+
+	HBoxContainer* hb=memnew(HBoxContainer);
+	Label* lb=memnew(Label);
+	LineEdit* input=memnew(LineEdit);
+
+	lb->set_text(p_label);
+	lb->set_custom_minimum_size(Size2(140*EDSCALE,0));
+	lb->set_align(Label::ALIGN_RIGHT);
+
+	input->set_custom_minimum_size(Size2(170*EDSCALE,0));
+	input->set_name(name);
+
+	hb->add_constant_override("separation", 10*EDSCALE);
+	hb->add_child(lb);
+	hb->add_child(input);
+	container->add_child(hb);
+
+	return input;
+
+}
+
+void ProjectExportDialog::_create_android_keystore_window() {
+
+	keystore_file_dialog = memnew( EditorFileDialog );
+	add_child(keystore_file_dialog);
+	keystore_file_dialog->set_mode(EditorFileDialog::MODE_OPEN_DIR);
+	keystore_file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	keystore_file_dialog->set_current_dir( "res://" );
+
+	keystore_file_dialog->set_title(TTR("Target Path:"));
+	keystore_file_dialog->connect("dir_selected", this,"_keystore_dir_selected");
+
+	keystore_create_dialog=memnew(ConfirmationDialog);
+	VBoxContainer* vb=memnew(VBoxContainer);
+	vb->set_size(Size2(340*EDSCALE,0));
+	keystore_create_dialog->set_title(TTR("Create Android keystore"));
+
+	_create_keystore_input(vb, TTR("Full name"), "name");
+	_create_keystore_input(vb, TTR("Organizational unit"), "unit");
+	_create_keystore_input(vb, TTR("Organization"), "org");
+	_create_keystore_input(vb, TTR("City"), "city");
+	_create_keystore_input(vb, TTR("State"), "state");
+	_create_keystore_input(vb, TTR("2 letter country code"), "code");
+	_create_keystore_input(vb, TTR("User alias"), "alias");
+	LineEdit* pass=_create_keystore_input(vb, TTR("Password"), "pass");
+	pass->set_placeholder(TTR("at least 6 characters"));
+	_create_keystore_input(vb, TTR("File name"), "file");
+
+	Label* lb_path=memnew(Label);
+	LineEdit* path=memnew(LineEdit);
+	Button* btn=memnew(Button);
+	HBoxContainer* hb=memnew(HBoxContainer);
+
+	lb_path->set_text(TTR("Path : (better to save outside of project)"));
+	path->set_h_size_flags(SIZE_EXPAND_FILL);
+	path->set_name("path");
+	btn->set_text(" .. ");
+	btn->connect("pressed", keystore_file_dialog, "popup_centered_ratio");
+
+	vb->add_spacer();
+	vb->add_child(lb_path);
+	hb->add_child(path);
+	hb->add_child(btn);
+	vb->add_child(hb);
+
+	keystore_create_dialog->add_child(vb);
+	keystore_create_dialog->set_child_rect(vb);
+	add_child(keystore_create_dialog);
+
+	keystore_create_dialog->connect("confirmed", this, "_create_android_keystore");
+	path->connect("text_changed", this, "_check_keystore_path");
+
+	confirm_keystore = memnew(ConfirmationDialog);
+	confirm_keystore->connect("confirmed", keystore_create_dialog, "popup_centered_minsize");
+	add_child(confirm_keystore);
+
+}
+
+void ProjectExportDialog::_keystore_dir_selected(const String& path) {
+
+	LineEdit* edit=keystore_create_dialog->find_node("path", true, false)->cast_to<LineEdit>();
+	edit->set_text(path.simplify_path());
+
+}
+
+void ProjectExportDialog::_keystore_created() {
+
+	if (error->is_connected("popup_hide", this, "_keystore_created")){
+		error->disconnect("popup_hide", this, "_keystore_created");
+	}
+	custom_action("export_pck");
+
+}
+
+void ProjectExportDialog::_check_keystore_path(const String& path) {
+
+	LineEdit* edit=keystore_create_dialog->find_node("path", true, false)->cast_to<LineEdit>();
+	bool exists = DirAccess::exists(path);
+	if (!exists) {
+		edit->add_color_override("font_color", Color(1,0,0,1));
+	} else {
+		edit->add_color_override("font_color", Color(0,1,0,1));
+	}
+
+}
+
+void ProjectExportDialog::_create_android_keystore() {
+
+	Vector<String> names=String("name,unit,org,city,state,code,alias,pass").split(",");
+	String path=keystore_create_dialog->find_node("path", true, false)->cast_to<LineEdit>()->get_text();
+	String file=keystore_create_dialog->find_node("file", true, false)->cast_to<LineEdit>()->get_text();
+
+	if (file.ends_with(".keystore")==false) {
+		file+=".keystore";
+	}
+	String fullpath=path.plus_file(file);
+	String info="CN=$name, OU=$unit, O=$org, L=$city, S=$state, C=$code";
+	Dictionary dic;
+
+	for (int i=0;i<names.size();i++){
+		LineEdit* edit = keystore_create_dialog->find_node(names[i], true, false)->cast_to<LineEdit>();
+		dic[names[i]]=edit->get_text();
+		info=info.replace("$"+names[i], edit->get_text());
+	}
+
+	String jarsigner=EditorSettings::get_singleton()->get("android/jarsigner");
+	String keytool=jarsigner.get_base_dir().plus_file("keytool");
+	String os_name=OS::get_singleton()->get_name();
+	if (os_name.to_lower()=="windows") {
+		keytool+=".exe";
+	}
+
+	bool exist=FileAccess::exists(keytool);
+	if (!exist) {
+		error->set_text("Can't find 'keytool'");
+		error->popup_centered_minsize();
+		return;
+	}
+
+	List<String> args;
+	args.push_back("-genkey");
+	args.push_back("-v");
+	args.push_back("-keystore");
+	args.push_back(fullpath);
+	args.push_back("-alias");
+	args.push_back(dic["alias"]);
+	args.push_back("-storepass");
+	args.push_back(dic["pass"]);
+	args.push_back("-keypass");
+	args.push_back(dic["pass"]);
+	args.push_back("-keyalg");
+	args.push_back("RSA");
+	args.push_back("-keysize");
+	args.push_back("2048");
+	args.push_back("-validity");
+	args.push_back("10000");
+	args.push_back("-dname");
+	args.push_back(info);
+	int retval;
+	OS::get_singleton()->execute(keytool,args,true,NULL,NULL,&retval);
+
+	if (retval==0) { // success
+		platform_options->_edit_set("keystore/release", fullpath);
+		platform_options->_edit_set("keystore/release_user", dic["alias"]);
+		platform_options->_edit_set("keystore/release_password", dic["pass"]);
+
+		error->set_text("Android keystore created at \n"+fullpath);
+		error->connect("popup_hide", this, "_keystore_created");
+		error->popup_centered_minsize();
+	} else { // fail
+		error->set_text("Fail to create android keystore at \n"+fullpath);
+		error->popup_centered_minsize();
+	}
+
+}
+
+bool ProjectExportDialog::_check_android_setting(const Ref<EditorExportPlatform>& exporter) {
+
+	bool is_debugging = exporter->get("debug/debugging_enabled");
+	String release = exporter->get("keystore/release");
+	String user = exporter->get("keystore/release_user");
+	String password = exporter->get("keystore/release_password");
+
+	if (!is_debugging && (release=="" || user=="" || password=="")){
+		if (release==""){
+			confirm_keystore->set_text(TTR("Release keystore is not set.\nDo you want to create one?"));
+			confirm_keystore->popup_centered_minsize();
+		} else {
+			error->set_text(TTR("Fill Keystore/Release User and Release Password"));
+			error->popup_centered_minsize();
+		}
+		return false;
+	}
+
+	return true;
+
+}
 
 void ProjectExportDialog::_group_selected() {
 
@@ -1123,6 +1326,10 @@ void ProjectExportDialog::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("export_platform"),&ProjectExportDialog::export_platform);
+	ObjectTypeDB::bind_method(_MD("_create_android_keystore"),&ProjectExportDialog::_create_android_keystore);
+	ObjectTypeDB::bind_method(_MD("_check_keystore_path"),&ProjectExportDialog::_check_keystore_path);
+	ObjectTypeDB::bind_method(_MD("_keystore_dir_selected"),&ProjectExportDialog::_keystore_dir_selected);
+	ObjectTypeDB::bind_method(_MD("_keystore_created"),&ProjectExportDialog::_keystore_created);
 
 
 //	ADD_SIGNAL(MethodInfo("instance"));
@@ -1479,6 +1686,8 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	ei="EditorIcons";
 	ot="Object";
 	pending_update_tree=true;
+
+	_create_android_keystore_window();
 }
 
 

@@ -370,7 +370,7 @@ public:
 		tabc->set_size( Point2( 180,250 ) );
 
 
-		Ref<ImageTexture> text = memnew( ImageTexture );
+		/*Ref<ImageTexture> text = memnew( ImageTexture );
 		text->load("test_data/concave.png");
 
 		Sprite* sprite = memnew(Sprite);
@@ -383,7 +383,7 @@ public:
 		sprite->set_texture(text);
 		sprite->add_child(sprite2);
 		sprite2->set_pos(Point2(50, 50));
-		sprite2->show();
+		sprite2->show();*/
 	}
 
 

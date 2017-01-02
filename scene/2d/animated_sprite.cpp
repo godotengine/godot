@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -362,6 +362,9 @@ void AnimatedSprite::_notification(int p_what) {
 						}
 					} else {
 						frame++;
+						if (frame==fc-1) {
+							emit_signal(SceneStringNames::get_singleton()->finished);
+						}
 					}
 
 					update();
@@ -696,6 +699,7 @@ void AnimatedSprite::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_res_changed"),&AnimatedSprite::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "frames",PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), _SCS("set_sprite_frames"),_SCS("get_sprite_frames"));
 	ADD_PROPERTY( PropertyInfo( Variant::STRING, "animation"), _SCS("set_animation"),_SCS("get_animation"));

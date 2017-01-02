@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -960,9 +960,9 @@ void GridMap::_octant_bake(const OctantKey &p_key, const Ref<TriangleMesh>& p_tm
 
 						st->add_to_format(VS::ARRAY_FORMAT_COLOR);
 						if (m.is_valid()) {
-							Ref<FixedMaterial> fm = m;
+							Ref<FixedSpatialMaterial> fm = m;
 							if (fm.is_valid())
-								fm->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
+								fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_COLOR_ARRAY,true);
 						}
 					}
 				}

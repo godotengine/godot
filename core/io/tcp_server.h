@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,14 +38,17 @@ class TCP_Server : public Reference {
 	OBJ_TYPE( TCP_Server, Reference );
 protected:
 
+	IP::Type ip_type;
+
 	static TCP_Server* (*_create)();
 
 	//bind helper
-	Error _listen(uint16_t p_port, IP_Address::AddrType p_type = IP_Address::TYPE_IPV4 ,DVector<String> p_accepted_hosts=DVector<String>());
+	Error _listen(uint16_t p_port, DVector<String> p_accepted_hosts=DVector<String>());
 	static void _bind_methods();
 public:
 
-	virtual Error listen(uint16_t p_port, IP_Address::AddrType p_type = IP_Address::TYPE_IPV4, const List<String> *p_accepted_hosts=NULL)=0;
+	virtual void set_ip_type(IP::Type p_type);
+	virtual Error listen(uint16_t p_port, const List<String> *p_accepted_hosts=NULL)=0;
 	virtual bool is_connection_available() const=0;
 	virtual Ref<StreamPeerTCP> take_connection()=0;
 

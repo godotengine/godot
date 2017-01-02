@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -246,6 +246,15 @@ Node* CanvasLayer::get_custom_viewport() const {
 	return custom_viewport;
 }
 
+void CanvasLayer::reset_sort_index() {
+	sort_index=0;
+}
+
+int CanvasLayer::get_sort_index() {
+
+	return sort_index++;
+}
+
 
 void CanvasLayer::_bind_methods() {
 
@@ -296,4 +305,5 @@ CanvasLayer::CanvasLayer() {
 	canvas = Ref<World2D>( memnew(World2D) );
 	custom_viewport=NULL;
 	custom_viewport_id=0;
+	sort_index=0;
 }

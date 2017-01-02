@@ -1,4 +1,4 @@
-header="""\
+header = """\
 /*************************************************************************/
 /*  $filename                                                            */
 /*************************************************************************/
@@ -6,7 +6,7 @@ header="""\
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,44 +29,42 @@ header="""\
 /*************************************************************************/
 """
 
-f = open("files","rb")
+f = open("files", "rb")
 
 fname = f.readline()
-while (fname!=""):
+while (fname != ""):
 
-  fr = open(fname.strip(),"rb")
-  l = fr.readline()
-  bc=False
-  fsingle = fname.strip()
+    fr = open(fname.strip(), "rb")
+    l = fr.readline()
+    bc = False
+    fsingle = fname.strip()
 
-  if (fsingle.find("/")!=-1):
-    fsingle=fsingle[fsingle.rfind("/")+1:]
-  rep_fl="$filename"
-  rep_fi=fsingle
-  len_fl=len(rep_fl)
-  len_fi=len(rep_fi)
-  if (len_fi<len_fl):
-    for x in range(len_fl-len_fi):
-      rep_fi+=" "
-  elif (len_fl<len_fi):
-    for x in range(len_fi-len_fl):
-      rep_fl+=" "
-  if (header.find(rep_fl)!=-1):
-    text=header.replace(rep_fl,rep_fi)
-  else:
-    text=header.replace("$filename",fsingle)
+    if (fsingle.find("/") != -1):
+        fsingle = fsingle[fsingle.rfind("/") + 1:]
+    rep_fl = "$filename"
+    rep_fi = fsingle
+    len_fl = len(rep_fl)
+    len_fi = len(rep_fi)
+    if (len_fi < len_fl):
+        for x in range(len_fl - len_fi):
+            rep_fi += " "
+    elif (len_fl < len_fi):
+        for x in range(len_fi - len_fl):
+            rep_fl += " "
+    if (header.find(rep_fl) != -1):
+        text = header.replace(rep_fl, rep_fi)
+    else:
+        text = header.replace("$filename", fsingle)
 
+    while (l != ""):
+        if ((l.find("//") != 0 and l.find("/*") != 0 and l.strip() != "") or bc):
+            text += l
+            bc = True
+        l = fr.readline()
 
-  while (l!=""):
-    if ((l.find("//")!=0 and  l.find("/*")!=0 and l.strip()!="") or bc):
-      text+=l
-      bc=True
-    l=fr.readline()
-
-  fr.close()
-  fr=open(fname.strip(),"wb")
-  fr.write(text)
-  fr.close()
-  #print(text)
-  fname=f.readline()
-
+    fr.close()
+    fr = open(fname.strip(), "wb")
+    fr.write(text)
+    fr.close()
+    # print(text)
+    fname = f.readline()

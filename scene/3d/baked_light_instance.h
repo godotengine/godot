@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,37 +31,142 @@
 
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/baked_light.h"
+#include "scene/3d/multimesh_instance.h"
+
 
 class BakedLightBaker;
+class Light;
+
+class BakedLight : public VisualInstance {
+	OBJ_TYPE(BakedLight,VisualInstance);
+
+public:
+	enum DebugMode {
+		DEBUG_ALBEDO,
+		DEBUG_LIGHT
+	};
+
+private:
+	RID baked_light;
+	int cell_subdiv;
+	AABB bounds;
+	int cells_per_axis;
+
+	enum {
+		CHILD_EMPTY=0xFFFFFFFF,
+	};
 
 
-class BakedLightInstance : public VisualInstance {
-	OBJ_TYPE(BakedLightInstance,VisualInstance);
+	/* BAKE DATA */
 
-	Ref<BakedLight> baked_light;
+	struct BakeCell {
+
+		uint32_t childs[8];
+		float albedo[3]; //albedo in RGB24
+		float light[3]; //accumulated light in 16:16 fixed point (needs to be integer for moving lights fast)
+		float radiance[3]; //accumulated light in 16:16 fixed point (needs to be integer for moving lights fast)
+		uint32_t used_sides;
+		float alpha; //used for upsampling
+		uint32_t light_pass; //used for baking light
+
+		BakeCell() {
+			for(int i=0;i<8;i++) {
+				childs[i]=0xFFFFFFFF;
+			}
+
+			for(int i=0;i<3;i++) {
+				light[i]=0;
+				albedo[i]=0;
+				radiance[i]=0;
+			}
+			alpha=0;
+			light_pass=0;
+			used_sides=0;
+		}
+	};
 
 
+	int bake_texture_size;
+	int color_scan_cell_width;
+
+	struct MaterialCache {
+		//128x128 textures
+		Vector<Color> albedo;
+		Vector<Color> emission;
+	};
+
+
+	Vector<Color> _get_bake_texture(Image &p_image, const Color &p_color);
+
+
+
+	Map<Ref<Material>,MaterialCache> material_cache;
+	MaterialCache _get_material_cache(Ref<Material> p_material);
+
+	int bake_cells_alloc;
+	int bake_cells_used;
+	int zero_alphas;
+	Vector<int> bake_cells_level_used;
+	DVector<BakeCell> bake_cells;
+	DVector<BakeCell>::Write bake_cells_write;
+
+
+
+	void _plot_face(int p_idx,int p_level,const Vector3 *p_vtx,const Vector2* p_uv, const MaterialCache& p_material,const AABB& p_aabb);
+	void _fixup_plot(int p_idx, int p_level, int p_x, int p_y, int p_z);
+	void _bake_add_mesh(const Transform& p_xform,Ref<Mesh>& p_mesh);
+	void _bake_add_to_aabb(const Transform& p_xform,Ref<Mesh>& p_mesh,bool &first);
+
+	void _debug_mesh(int p_idx, int p_level, const AABB &p_aabb,DebugMode p_mode,Ref<MultiMesh> &p_multimesh,int &idx);
+	void _debug_mesh_albedo();
+	void _debug_mesh_light();
+
+
+	_FORCE_INLINE_ int _find_cell(int x,int y, int z);
+	int _plot_ray(const Vector3& p_from, const Vector3& p_to);
+
+	uint32_t light_pass;
+
+
+	void _bake_directional(int p_idx, int p_level, int p_x,int p_y,int p_z,const Vector3& p_dir,const Color& p_color,int p_sign);
+	void _upscale_light(int p_idx,int p_level);
+	void _bake_light(Light* p_light);
+
+	Color _cone_trace(const Vector3& p_from, const Vector3& p_dir, float p_half_angle);
+	void _bake_radiance(int p_idx, int p_level, int p_x,int p_y,int p_z);
+
+friend class GeometryInstance;
+
+	Set<GeometryInstance*> geometries;
+friend class Light;
+
+	Set<Light*> lights;
 protected:
 
 	static void _bind_methods();
 public:
 
+	void set_cell_subdiv(int p_subdiv);
+	int get_cell_subdiv() const;
 
-	RID get_baked_light_instance() const;
+	void bake();
+	void bake_lights();
+	void bake_radiance();
 
-	void set_baked_light(const Ref<BakedLight>& baked_light);
-	Ref<BakedLight> get_baked_light() const;
+
+	void create_debug_mesh(DebugMode p_mode);
 
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	String get_configuration_warning() const;
 
-	BakedLightInstance();
+	BakedLight();
+	~BakedLight();
 };
 
 
-
+#if 0
 class BakedLightSampler : public VisualInstance {
 	OBJ_TYPE(BakedLightSampler,VisualInstance);
 
@@ -101,5 +206,5 @@ public:
 
 VARIANT_ENUM_CAST( BakedLightSampler::Param );
 
-
+#endif
 #endif // BAKED_LIGHT_H

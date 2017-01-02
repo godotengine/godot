@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -201,7 +201,7 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 	arr.resize(Mesh::ARRAY_MAX);
 	arr[Mesh::ARRAY_VERTEX]=varr;
 
-	debug_mesh->add_surface(Mesh::PRIMITIVE_LINES,arr);
+	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES,arr);
 
 	return debug_mesh;
 }
@@ -356,6 +356,11 @@ void NavigationMeshInstance::set_navigation_mesh(const Ref<NavigationMesh>& p_na
 	if (navigation && navmesh.is_valid() && enabled) {
 		nav_id = navigation->navmesh_create(navmesh,get_relative_transform(navigation),this);
 	}
+	
+	if (debug_view && navmesh.is_valid()) {
+		debug_view->cast_to<MeshInstance>()->set_mesh( navmesh->get_debug_mesh() );
+	}
+	
 	update_gizmo();
 	update_configuration_warning();
 

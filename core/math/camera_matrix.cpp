@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,7 @@ void CameraMatrix::set_zero() {
 }
 
 
-Plane CameraMatrix::xform4(const Plane& p_vec4) {
+Plane CameraMatrix::xform4(const Plane& p_vec4) const {
 
 	Plane ret;
 
@@ -495,6 +495,28 @@ void CameraMatrix::set_light_bias() {
 
 }
 
+void CameraMatrix::set_light_atlas_rect(const Rect2& p_rect) {
+
+	float *m=&matrix[0][0];
+
+	m[0]=p_rect.size.width,
+	m[1]=0.0,
+	m[2]=0.0,
+	m[3]=0.0,
+	m[4]=0.0,
+	m[5]=p_rect.size.height,
+	m[6]=0.0,
+	m[7]=0.0,
+	m[8]=0.0,
+	m[9]=0.0,
+	m[10]=1.0,
+	m[11]=0.0,
+	m[12]=p_rect.pos.x,
+	m[13]=p_rect.pos.y,
+	m[14]=0.0,
+	m[15]=1.0;
+}
+
 CameraMatrix::operator String() const {
 
 	String str;
@@ -510,6 +532,15 @@ float CameraMatrix::get_aspect() const {
 	float w,h;
 	get_viewport_size(w,h);
 	return w/h;
+}
+
+int CameraMatrix::get_pixels_per_meter(int p_for_pixel_width) const {
+
+
+	Vector3 result = xform(Vector3(1,0,-1));
+
+	return int((result.x * 0.5 + 0.5) * p_for_pixel_width);
+
 }
 
 float CameraMatrix::get_fov() const {

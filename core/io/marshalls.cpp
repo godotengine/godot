@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1060,7 +1060,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			if (buf) {
 
 				encode_uint32(image.get_format(),&buf[0]);
-				encode_uint32(image.get_mipmaps(),&buf[4]);
+				encode_uint32(image.has_mipmaps(),&buf[4]);
 				encode_uint32(image.get_width(),&buf[8]);
 				encode_uint32(image.get_height(),&buf[12]);
 				int ds=data.size();

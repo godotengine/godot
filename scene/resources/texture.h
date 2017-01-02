@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,7 @@ public:
 		FLAG_FILTER=VisualServer::TEXTURE_FLAG_FILTER,
 		FLAG_ANISOTROPIC_FILTER=VisualServer::TEXTURE_FLAG_ANISOTROPIC_FILTER,
 		FLAG_CONVERT_TO_LINEAR=VisualServer::TEXTURE_FLAG_CONVERT_TO_LINEAR,
-		FLAG_VIDEO_SURFACE=VisualServer::TEXTURE_FLAG_VIDEO_SURFACE,
+		FLAG_VIDEO_SURFACE=VisualServer::TEXTURE_FLAG_USED_FOR_STREAMING,
 		FLAGS_DEFAULT=FLAG_MIPMAPS|FLAG_REPEAT|FLAG_FILTER,
 		FLAG_MIRRORED_REPEAT=VisualServer::TEXTURE_FLAG_MIRRORED_REPEAT
 	};

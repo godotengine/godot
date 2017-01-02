@@ -1,8 +1,8 @@
 
 /* pngrio.c - functions for data input
  *
- * Last changed in libpng 1.6.17 [March 26, 2015]
- * Copyright (c) 1998-2002,2004,2006-2015 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.24 [August 4, 2016]
+ * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -85,7 +85,7 @@ png_default_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
  */
 void PNGAPI
 png_set_read_fn(png_structrp png_ptr, png_voidp io_ptr,
-   png_rw_ptr read_data_fn)
+    png_rw_ptr read_data_fn)
 {
    if (png_ptr == NULL)
       return;

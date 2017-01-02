@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,7 +93,8 @@ friend class Tree;
 			int id;
 			bool disabled;
 			Ref<Texture> texture;
-			Button() { id=0; disabled=false; }
+			Color color;
+			Button() { id=0; disabled=false; color=Color(1,1,1,1); }
 		};
 
 		Vector< Button > buttons;
@@ -189,6 +190,7 @@ public:
 	int get_button_by_id(int p_column,int p_id) const;
 	bool is_button_disabled(int p_column,int p_idx) const;
 	void set_button(int p_column,int p_idx,const Ref<Texture>& p_button);
+	void set_button_color(int p_column,int p_idx,const Color& p_color);
 
 	/* range works for mode number or mode combo */
 
@@ -439,9 +441,6 @@ friend class TreeItem;
 	float last_drag_time;
 	float time_since_motion;*/
 
-	bool delayed_text_editor;
-	uint64_t first_selection_time;
-
 	float drag_speed;
 	float drag_from;
 	float drag_accum;
@@ -536,9 +535,6 @@ public:
 	bool get_allow_rmb_select() const;
 
 	void set_value_evaluator(ValueEvaluator *p_evaluator);
-
-	void set_delayed_text_editor(bool enabled);
-	bool is_delayed_text_editor_enabled() const;
 
 	Tree();
 	~Tree();

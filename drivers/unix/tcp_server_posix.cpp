@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,12 +68,13 @@ void TCPServerPosix::make_default() {
 	TCP_Server::_create = TCPServerPosix::_create;
 };
 
-Error TCPServerPosix::listen(uint16_t p_port, IP_Address::AddrType p_type, const List<String> *p_accepted_hosts) {
+Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
 
 	int sockfd;
-	int family = p_type == IP_Address::TYPE_IPV6 ? AF_INET6 : AF_INET;
-	sockfd = socket(family, SOCK_STREAM, 0);
+	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
+
 	ERR_FAIL_COND_V(sockfd == -1, FAILED);
+
 #ifndef NO_FCNTL
 	fcntl(sockfd, F_SETFL, O_NONBLOCK);
 #else
@@ -87,7 +88,7 @@ Error TCPServerPosix::listen(uint16_t p_port, IP_Address::AddrType p_type, const
 	}
 
 	struct sockaddr_storage addr;
-	size_t addr_size = _set_listen_sockaddr(&addr, p_port, p_type, p_accepted_hosts);
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, ip_type, p_accepted_hosts);
 
 	// automatically fill with my IP TODO: use p_accepted_hosts
 
@@ -156,7 +157,7 @@ Ref<StreamPeerTCP> TCPServerPosix::take_connection() {
 	int port;
 	_set_ip_addr_port(ip, port, &their_addr);
 
-	conn->set_socket(fd, ip, port);
+	conn->set_socket(fd, ip, port, ip_type);
 
 	return conn;
 };
@@ -175,6 +176,7 @@ void TCPServerPosix::stop() {
 TCPServerPosix::TCPServerPosix() {
 
 	listen_sockfd = -1;
+	ip_type = IP::TYPE_ANY;
 };
 
 TCPServerPosix::~TCPServerPosix() {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,14 +58,14 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src,float p_left, float p_top, flo
 		if (scale>1) {
 			Size2 orig_size = Size2(img.get_width(),img.get_height());
 
-			img.convert(Image::FORMAT_RGBA);
+			img.convert(Image::FORMAT_RGBA8);
 			img.expand_x2_hq2x();
 			if (scale!=2.0) {
 				img.resize(orig_size.x*scale,orig_size.y*scale);
 			}
 		} else if (scale<1) {
 			Size2 orig_size = Size2(img.get_width(),img.get_height());
-			img.convert(Image::FORMAT_RGBA);
+			img.convert(Image::FORMAT_RGBA8);
 			img.resize(orig_size.x*scale,orig_size.y*scale);
 		}
 
@@ -108,14 +108,14 @@ static Ref<Texture> make_icon(T p_src) {
 	if (scale>1) {
 		Size2 orig_size = Size2(img.get_width(),img.get_height());
 
-		img.convert(Image::FORMAT_RGBA);
+		img.convert(Image::FORMAT_RGBA8);
 		img.expand_x2_hq2x();
 		if (scale!=2.0) {
 			img.resize(orig_size.x*scale,orig_size.y*scale);
 		}
 	} else if (scale<1) {
 		Size2 orig_size = Size2(img.get_width(),img.get_height());
-		img.convert(Image::FORMAT_RGBA);
+		img.convert(Image::FORMAT_RGBA8);
 		img.resize(orig_size.x*scale,orig_size.y*scale);
 	}
 	texture->create_from_image( img,ImageTexture::FLAG_FILTER );
@@ -125,7 +125,7 @@ static Ref<Texture> make_icon(T p_src) {
 
 static Ref<Shader> make_shader(const char*vertex_code,const char*fragment_code,const char*lighting_code) {
 	Ref<Shader> shader = (memnew( Shader(Shader::MODE_CANVAS_ITEM) ));
-	shader->set_code(vertex_code, fragment_code, lighting_code);
+//	shader->set_code(vertex_code, fragment_code, lighting_code);
 
 	return shader;
 }
@@ -213,6 +213,8 @@ static Ref<StyleBox> make_empty_stylebox(float p_margin_left=-1, float p_margin_
 
 	return style;
 }
+
+
 
 void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref<Font> & large_font, Ref<Texture>& default_icon, Ref<StyleBox>& default_style, float p_scale) {
 
@@ -490,6 +492,7 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 	t->set_font("font","TextEdit", default_font );
 
+	t->set_color("background_color", "TextEdit", Color(0,0,0,0));
 	t->set_color("completion_background_color", "TextEdit",Color::html("2C2A32"));
 	t->set_color("completion_selected_color", "TextEdit",Color::html("434244"));
 	t->set_color("completion_existing_color", "TextEdit",Color::html("21dfdfdf"));
@@ -832,9 +835,14 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 	t->set_icon("screen_picker","ColorPicker", make_icon( icon_color_pick_png ) );
 	t->set_icon("add_preset","ColorPicker", make_icon( icon_add_png ) );
+	t->set_icon("color_area", "ColorPicker", make_icon( color_picker_main_png));
+	t->set_icon("color_hue", "ColorPicker", make_icon( color_picker_hue_png));
+	t->set_icon("color_sample", "ColorPicker", make_icon( color_picker_sample_png));
 
 	t->set_shader("uv_editor", "ColorPicker", make_shader("", uv_editor_shader_code, ""));
 	t->set_shader("w_editor", "ColorPicker", make_shader("", w_editor_shader_code, ""));
+
+
 
 	// TooltipPanel
 
@@ -898,10 +906,9 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 
 	// HButtonArray
-
-	t->set_stylebox("normal","HButtonArray", make_stylebox( button_normal_png,4,4,4,4,0,4,22,4) );
-	t->set_stylebox("selected","HButtonArray", make_stylebox( button_pressed_png,4,4,4,4,0,4,22,4) );
-	t->set_stylebox("hover","HButtonArray", make_stylebox( button_hover_png,4,4,4,4) );
+	t->set_stylebox("normal","HButtonArray", sb_button_normal);
+	t->set_stylebox("selected","HButtonArray", sb_button_pressed);
+	t->set_stylebox("hover","HButtonArray", sb_button_hover);
 
 	t->set_font("font","HButtonArray", default_font);
 	t->set_font("font_selected","HButtonArray", default_font);
@@ -909,17 +916,17 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 	t->set_color("font_color","HButtonArray", control_font_color_low );
 	t->set_color("font_color_selected","HButtonArray", control_font_color_hover );
 
-	t->set_constant("icon_separator","HButtonArray", 4 *scale );
-	t->set_constant("button_separator","HButtonArray", 8 *scale );
+	t->set_constant("icon_separator","HButtonArray", 2 *scale );
+	t->set_constant("button_separator","HButtonArray", 4 *scale );
 
 	t->set_stylebox("focus","HButtonArray", focus );
 
 
 	// VButtonArray
 
-	t->set_stylebox("normal","VButtonArray", make_stylebox( button_normal_png,4,4,4,4,0,4,22,4) );
-	t->set_stylebox("selected","VButtonArray", make_stylebox( button_pressed_png,4,4,4,4,0,4,22,4) );
-	t->set_stylebox("hover","VButtonArray", make_stylebox( button_hover_png,4,4,4,4) );
+	t->set_stylebox("normal","VButtonArray", sb_button_normal);
+	t->set_stylebox("selected","VButtonArray", sb_button_pressed);
+	t->set_stylebox("hover","VButtonArray", sb_button_hover);
 
 	t->set_font("font","VButtonArray", default_font);
 	t->set_font("font_selected","VButtonArray", default_font);
@@ -927,8 +934,8 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 	t->set_color("font_color","VButtonArray", control_font_color_low );
 	t->set_color("font_color_selected","VButtonArray", control_font_color_hover );
 
-	t->set_constant("icon_separator","VButtonArray", 4 *scale);
-	t->set_constant("button_separator","VButtonArray", 8 *scale);
+	t->set_constant("icon_separator","VButtonArray", 2 *scale);
+	t->set_constant("button_separator","VButtonArray", 4 *scale);
 
 	t->set_stylebox("focus","VButtonArray", focus );
 
@@ -960,7 +967,6 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 
 	t->set_icon( "logo","Icons", make_icon(logo_png) );
-
 
 
 	// Theme

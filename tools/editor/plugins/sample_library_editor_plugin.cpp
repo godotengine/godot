@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -236,7 +236,7 @@ void SampleLibraryEditor::_update_library() {
 
 		// Preview/edit
 		Ref<ImageTexture> preview( memnew( ImageTexture ));
-		preview->create(128,16,Image::FORMAT_RGB);
+		preview->create(128,16,Image::FORMAT_RGB8);
 		SampleEditor::generate_preview_texture(smp,preview);
 		ti->set_cell_mode(1,TreeItem::CELL_MODE_ICON);
 		ti->set_selectable(1,false);

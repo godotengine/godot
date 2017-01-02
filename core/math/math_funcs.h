@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -174,6 +174,108 @@ public:
 	static double pow(double x, double y);
 	static double log(double x);
 	static double exp(double x);
+
+
+	static _FORCE_INLINE_ uint32_t halfbits_to_floatbits(uint16_t h)
+	{
+	    uint16_t h_exp, h_sig;
+	    uint32_t f_sgn, f_exp, f_sig;
+
+	    h_exp = (h&0x7c00u);
+	    f_sgn = ((uint32_t)h&0x8000u) << 16;
+	    switch (h_exp) {
+		case 0x0000u: /* 0 or subnormal */
+		    h_sig = (h&0x03ffu);
+		    /* Signed zero */
+		    if (h_sig == 0) {
+			return f_sgn;
+		    }
+		    /* Subnormal */
+		    h_sig <<= 1;
+		    while ((h_sig&0x0400u) == 0) {
+			h_sig <<= 1;
+			h_exp++;
+		    }
+		    f_exp = ((uint32_t)(127 - 15 - h_exp)) << 23;
+		    f_sig = ((uint32_t)(h_sig&0x03ffu)) << 13;
+		    return f_sgn + f_exp + f_sig;
+		case 0x7c00u: /* inf or NaN */
+		    /* All-ones exponent and a copy of the significand */
+		    return f_sgn + 0x7f800000u + (((uint32_t)(h&0x03ffu)) << 13);
+		default: /* normalized */
+		    /* Just need to adjust the exponent and shift */
+		    return f_sgn + (((uint32_t)(h&0x7fffu) + 0x1c000u) << 13);
+	    }
+	}
+
+	static _FORCE_INLINE_ float halfptr_to_float(const uint16_t *h) {
+
+		union {
+			uint32_t u32;
+			float f32;
+		} u;
+
+		u.u32=halfbits_to_floatbits(*h);
+		return u.f32;
+	}
+
+	static _FORCE_INLINE_ uint16_t make_half_float(float f) {
+
+	    union {
+	       float fv;
+	       uint32_t ui;
+	    } ci;
+	    ci.fv=f;
+
+	    uint32_t    x = ci.ui;
+	    uint32_t    sign = (unsigned short)(x >> 31);
+	    uint32_t    mantissa;
+	    uint32_t    exp;
+	    uint16_t          hf;
+
+	    // get mantissa
+	    mantissa = x & ((1 << 23) - 1);
+	    // get exponent bits
+	    exp = x & (0xFF << 23);
+	    if (exp >= 0x47800000)
+	    {
+		// check if the original single precision float number is a NaN
+		if (mantissa && (exp == (0xFF << 23)))
+		{
+		    // we have a single precision NaN
+		    mantissa = (1 << 23) - 1;
+		}
+		else
+		{
+		    // 16-bit half-float representation stores number as Inf
+		    mantissa = 0;
+		}
+		hf = (((uint16_t)sign) << 15) | (uint16_t)((0x1F << 10)) |
+		      (uint16_t)(mantissa >> 13);
+	    }
+	    // check if exponent is <= -15
+	    else if (exp <= 0x38000000)
+	    {
+
+		/*// store a denorm half-float value or zero
+		exp = (0x38000000 - exp) >> 23;
+		mantissa >>= (14 + exp);
+
+		hf = (((uint16_t)sign) << 15) | (uint16_t)(mantissa);
+		*/
+		hf=0; //denormals do not work for 3D, convert to zero
+	    }
+	    else
+	    {
+		hf = (((uint16_t)sign) << 15) |
+		      (uint16_t)((exp - 0x38000000) >> 13) |
+		      (uint16_t)(mantissa >> 13);
+	    }
+
+	    return hf;
+	}
+
+
 
 };
 

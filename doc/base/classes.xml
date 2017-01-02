@@ -2519,6 +2519,11 @@
 				Emitted when frame is changed.
 			</description>
 		</signal>
+		<signal name="finished">
+			<description>
+				Emitted when the animation is finished (when it plays the last frame). If the animation is looping, this signal is emitted everytime the last frame is drawn, before looping.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 	</constants>
@@ -4654,6 +4659,20 @@
 			</argument>
 			<description>
 				Remove the first occurrence of a value from the array.
+			</description>
+		</method>
+		<method name="front">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the first element of the array if the array is not empty (size>0).
+			</description>
+		</method>
+		<method name="back">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the last element of the array if the array is not empty (size>0).
 			</description>
 		</method>
 		<method name="find">
@@ -11845,6 +11864,13 @@
 				Get the main editor control. Use this as a parent for main screens.
 			</description>
 		</method>
+		<method name="edit_resource">
+			<argument index="0" name="p_resource" type="Resource">
+			</argument>
+			<description>
+				Tells the editor to handle the edit of the given resource. Ex: If you pass a Script as a argument, the editor will open the scriptEditor.
+			</description>
+		</method>
 		<method name="get_name" qualifiers="virtual">
 			<return type="String">
 			</return>
@@ -13422,12 +13448,12 @@
 		</theme_item>
 	</theme_items>
 </class>
-<class name="FixedMaterial" inherits="Material" category="Core">
+<class name="FixedSpatialMaterial" inherits="Material" category="Core">
 	<brief_description>
 		Simple Material with a fixed parameter set.
 	</brief_description>
 	<description>
-		FixedMaterial is a simple type of material [Resource], which contains a fixed amount of parameters. It is the only type of material supported in fixed-pipeline devices and APIs. It is also an often a better alternative to [ShaderMaterial] for most simple use cases.
+		FixedSpatialMaterial is a simple type of material [Resource], which contains a fixed amount of parameters. It is the only type of material supported in fixed-pipeline devices and APIs. It is also an often a better alternative to [ShaderMaterial] for most simple use cases.
 	</description>
 	<methods>
 		<method name="get_fixed_flag" qualifiers="const">
@@ -15526,7 +15552,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns a status string like STATUS_REQUESTING. Need to call [method poll] in order to get status updates.
+				Returns a STATUS_* enum constant. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">
@@ -16068,8 +16094,10 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
+			<argument index="1" name="ip_type" type="int" default="IP.TYPE_ANY">
+			</argument>
 			<description>
-				Resolve a given hostname, blocking. Resolved hostname is returned as an IP.
+				Resolve a given hostname, blocking. Resolved hostname is returned as an IPv4 or IPv6 depending on "ip_type".
 			</description>
 		</method>
 		<method name="resolve_hostname_queue_item">
@@ -16077,8 +16105,10 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
+			<argument index="1" name="ip_type" type="int" default="IP.TYPE_ANY">
+			</argument>
 			<description>
-				Create a queue item for resolving a given hostname. The queue ID is returned, or RESOLVER_INVALID_ID on error.
+				Create a queue item for resolving a given hostname to an IPv4 or IPv6 depending on "ip_type". The queue ID is returned, or RESOLVER_INVALID_ID on error.
 			</description>
 		</method>
 	</methods>
@@ -16312,15 +16342,15 @@
 		</constant>
 		<constant name="COMPRESS_ETC" value="3">
 		</constant>
-		<constant name="FORMAT_GRAYSCALE" value="0">
+		<constant name="FORMAT_L8" value="0">
 		</constant>
 		<constant name="FORMAT_INTENSITY" value="1">
 		</constant>
-		<constant name="FORMAT_GRAYSCALE_ALPHA" value="2">
+		<constant name="FORMAT_LA8" value="2">
 		</constant>
-		<constant name="FORMAT_RGB" value="3">
+		<constant name="FORMAT_RGB8" value="3">
 		</constant>
-		<constant name="FORMAT_RGBA" value="4">
+		<constant name="FORMAT_RGBA8" value="4">
 		</constant>
 		<constant name="FORMAT_INDEXED" value="5">
 		</constant>
@@ -16330,23 +16360,23 @@
 		</constant>
 		<constant name="FORMAT_YUV_444" value="8">
 		</constant>
-		<constant name="FORMAT_BC1" value="9">
+		<constant name="FORMAT_DXT1" value="9">
 		</constant>
-		<constant name="FORMAT_BC2" value="10">
+		<constant name="FORMAT_DXT3" value="10">
 		</constant>
-		<constant name="FORMAT_BC3" value="11">
+		<constant name="FORMAT_DXT5" value="11">
 		</constant>
-		<constant name="FORMAT_BC4" value="12">
+		<constant name="FORMAT_ATI1" value="12">
 		</constant>
-		<constant name="FORMAT_BC5" value="13">
+		<constant name="FORMAT_ATI2" value="13">
 		</constant>
 		<constant name="FORMAT_PVRTC2" value="14">
 		</constant>
-		<constant name="FORMAT_PVRTC2_ALPHA" value="15">
+		<constant name="FORMAT_PVRTC2A" value="15">
 		</constant>
 		<constant name="FORMAT_PVRTC4" value="16">
 		</constant>
-		<constant name="FORMAT_PVRTC4_ALPHA" value="17">
+		<constant name="FORMAT_PVRTC4A" value="17">
 		</constant>
 		<constant name="FORMAT_ETC" value="18">
 		</constant>
@@ -18019,7 +18049,7 @@
 			<argument index="1" name="action" type="String">
 			</argument>
 			<description>
-				Return whether the given event is part of an existing action.
+				Return whether the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
 			</description>
 		</method>
 		<method name="get_action_from_id" qualifiers="const">
@@ -23874,7 +23904,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the name of the host OS. Possible values are: "Android", "BlackBerry 10", "Flash", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "WinRT", "X11"
+				Return the name of the host OS. Possible values are: "Android", "BlackBerry 10", "Flash", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "UWP", "X11"
 			</description>
 		</method>
 		<method name="get_process_ID" qualifiers="const">
@@ -24148,7 +24178,7 @@
 				Return true if the window is resizable.
 			</description>
 		</method>
-		<method name="is_vsnc_enabled" qualifiers="const">
+		<method name="is_vsync_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -25360,7 +25390,7 @@
 			<argument index="1" name="recv_buf_size" type="int" default="65536">
 			</argument>
 			<description>
-				Make this [PacketPeerUDP] listen on the "port" using a buffer size "recv_buf_size". Listens on all available adresses.
+				Make this [PacketPeerUDP] listen on the "port" with a buffer size "recv_buf_size". Listens on all available addresses.
 			</description>
 		</method>
 		<method name="set_send_address">
@@ -25371,7 +25401,7 @@
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
-				Set the destination address and port for sending packets and variables, a hostname will be resolved if valid.
+				Set the destination address and port for sending packets and variables, a hostname will be resolved using if valid.
 			</description>
 		</method>
 		<method name="wait">
@@ -30906,6 +30936,13 @@
 				Clear the popup menu, in effect removing all items.
 			</description>
 		</method>
+		<method name="is_hide_on_item_selection">
+			<return type="bool">
+			</return>
+			<description>
+				Returns a boolean that indicates whether or not the PopupMenu will hide on item selection.
+			</description>
+		</method>
 		<method name="get_item_ID" qualifiers="const">
 			<return type="int">
 			</return>
@@ -31023,6 +31060,13 @@
 			</argument>
 			<description>
 				Removes the item at index "idx" from the menu. Note that the indexes of items after the removed item are going to be shifted by one.
+			</description>
+		</method>
+		<method name="set_hide_on_item_selection">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Sets whether or not the PopupMenu will hide on item selection.
 			</description>
 		</method>
 		<method name="set_item_ID">
@@ -33493,7 +33537,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return a list of the bodies colliding with this one.
+				Return a list of the bodies colliding with this one. By default, number of max contacts reported is at 0 , see [method set_max_contacts_reported] to increase it.
 			</description>
 		</method>
 		<method name="get_friction" qualifiers="const">
@@ -33854,7 +33898,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return a list of the bodies colliding with this one.
+				Return a list of the bodies colliding with this one. By default, number of max contacts reported is at 0 , see [method set_max_contacts_reported] to increase it. You must also enable contact monitor, see [method set_contact_monitor]
 			</description>
 		</method>
 		<method name="get_continuous_collision_detection_mode" qualifiers="const">
@@ -39182,7 +39226,7 @@
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
-				Connect to the specified IP:port pair. Returns [OK] on success or [FAILED] on failure.
+				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [OK] on success or [FAILED] on failure.
 			</description>
 		</method>
 		<method name="disconnect">
@@ -40508,7 +40552,7 @@
 			<argument index="1" name="accepted_hosts" type="StringArray" default="StringArray([])">
 			</argument>
 			<description>
-				Listen on a port, alternatively give a white-list of accepted hosts.
+				Listen on a port using protocol, alternatively give a white-list of accepted hosts.
 			</description>
 		</method>
 		<method name="stop">
@@ -46220,7 +46264,7 @@ do_property].
 			<argument index="0" name="to_pos" type="Vector2">
 			</argument>
 			<description>
-				Wrap the mouse to a position, relative to the viewport.
+				Warp the mouse to a position, relative to the viewport.
 			</description>
 		</method>
 	</methods>

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,11 @@
 #include <string.h>
 
 #ifdef WINDOWS_ENABLED
- #ifdef WINRT_ENABLED
+  // Workaround mingw missing flags!
+  #ifndef AI_ADDRCONFIG
+    #define AI_ADDRCONFIG 0x00000400
+  #endif
+ #ifdef UWP_ENABLED
   #include <ws2tcpip.h>
   #include <winsock2.h>
   #include <windows.h>
@@ -68,30 +72,29 @@ static IP_Address _sockaddr2ip(struct sockaddr* p_addr) {
 	IP_Address ip;
 	if (p_addr->sa_family == AF_INET) {
 		struct sockaddr_in* addr = (struct sockaddr_in*)p_addr;
-		ip.field32[0] = *((unsigned long*)&addr->sin_addr);
-		ip.type = IP_Address::TYPE_IPV4;
+		ip.set_ipv4((uint8_t *)&(addr->sin_addr));
 	} else {
 		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)p_addr;
-		for (int i=0; i<16; i++)
-			ip.field8[i] = addr6->sin6_addr.s6_addr[i];
-		ip.type = IP_Address::TYPE_IPV6;
+		ip.set_ipv6(addr6->sin6_addr.s6_addr);
 	};
 
 	return ip;
 };
 
-IP_Address IP_Unix::_resolve_hostname(const String& p_hostname, IP_Address::AddrType p_type) {
+IP_Address IP_Unix::_resolve_hostname(const String& p_hostname, Type p_type) {
 
 	struct addrinfo hints;
 	struct addrinfo* result;
 
 	memset(&hints, 0, sizeof(struct addrinfo));
-	if (p_type == IP_Address::TYPE_IPV4) {
+	if (p_type == TYPE_IPV4) {
 		hints.ai_family = AF_INET;
-	} else if (p_type == IP_Address::TYPE_IPV6) {
+	} else if (p_type == TYPE_IPV6) {
 		hints.ai_family = AF_INET6;
+		hints.ai_flags = 0;
 	} else {
 		hints.ai_family = AF_UNSPEC;
+		hints.ai_flags = AI_ADDRCONFIG;
 	};
 
 	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
@@ -115,7 +118,7 @@ IP_Address IP_Unix::_resolve_hostname(const String& p_hostname, IP_Address::Addr
 
 #if defined(WINDOWS_ENABLED)
 
-#if defined(WINRT_ENABLED)
+#if defined(UWP_ENABLED)
 
 void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 
@@ -175,15 +178,12 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 
 				SOCKADDR_IN* ipv4 = reinterpret_cast<SOCKADDR_IN*>(address->Address.lpSockaddr);
 
-				ip.field32[0] = *((unsigned long*)&ipv4->sin_addr);
-				ip.type = IP_Address::TYPE_IPV4;
+				ip.set_ipv4((uint8_t *)&(ipv4->sin_addr));
 			} else { // ipv6
 
 				SOCKADDR_IN6* ipv6 = reinterpret_cast<SOCKADDR_IN6*>(address->Address.lpSockaddr);
-				for (int i=0; i<16; i++) {
-					ip.field8[i] = ipv6->sin6_addr.s6_addr[i];
-				};
-				ip.type = IP_Address::TYPE_IPV6;
+
+				ip.set_ipv6(ipv6->sin6_addr.s6_addr);
 			};
 
 

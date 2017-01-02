@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,7 +95,7 @@ class OS_Windows : public OS {
 	int old_x,old_y;
 	Point2i center;
 	unsigned int last_id;
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED) || defined(GLES2_ENABLED)
+#if defined(OPENGL_ENABLED)
 	ContextGL_Win *gl_context;
 #endif
 	VisualServer *visual_server;
@@ -295,7 +295,7 @@ public:
 	virtual String get_joy_guid(int p_device) const;
 
 	virtual void set_use_vsync(bool p_enable);
-	virtual bool is_vsnc_enabled() const;
+	virtual bool is_vsync_enabled() const;
 
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();

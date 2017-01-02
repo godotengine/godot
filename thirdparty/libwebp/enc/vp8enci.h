@@ -32,7 +32,7 @@ extern "C" {
 // version numbers
 #define ENC_MAJ_VERSION 0
 #define ENC_MIN_VERSION 5
-#define ENC_REV_VERSION 1
+#define ENC_REV_VERSION 2
 
 enum { MAX_LF_LEVELS = 64,       // Maximum loop filter level
        MAX_VARIABLE_LEVEL = 67,  // last (inclusive) level with variable cost
@@ -325,9 +325,7 @@ int VP8EmitTokens(VP8TBuffer* const b, VP8BitWriter* const bw,
                   const uint8_t* const probas, int final_pass);
 
 // record the coding of coefficients without knowing the probabilities yet
-int VP8RecordCoeffTokens(const int ctx, const int coeff_type,
-                         int first, int last,
-                         const int16_t* const coeffs,
+int VP8RecordCoeffTokens(int ctx, const struct VP8Residual* const res,
                          VP8TBuffer* const tokens);
 
 // Estimate the final coded size given a set of 'probas'.

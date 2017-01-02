@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -332,8 +332,8 @@ private:
 	bool grid_enabled;
 
 	Ref<Mesh> move_gizmo[3], rotate_gizmo[3];
-	Ref<FixedMaterial> gizmo_color[3];
-	Ref<FixedMaterial> gizmo_hl;
+	Ref<FixedSpatialMaterial> gizmo_color[3];
+	Ref<FixedSpatialMaterial> gizmo_hl;
 
 
 	int over_gizmo_handle;
@@ -345,8 +345,8 @@ private:
 	RID indicators_instance;
 	RID cursor_mesh;
 	RID cursor_instance;
-	RID indicator_mat;
-	RID cursor_material;
+	Ref<FixedSpatialMaterial> indicator_mat;
+	Ref<FixedSpatialMaterial> cursor_material;
 
 /*
 	struct Selected {
@@ -431,7 +431,7 @@ private:
 	float settings_default_light_rot_x;
 	float settings_default_light_rot_y;
 
-	Control *settings_light_base;
+	ViewportContainer *settings_light_base;
 	Viewport *settings_light_vp;
 	ColorPickerButton *settings_ambient_color;
 	Image settings_light_dir_image;

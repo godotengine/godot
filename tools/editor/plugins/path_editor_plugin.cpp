@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "scene/resources/curve.h"
 #include "os/keyboard.h"
 
+#if 0
 String PathSpatialGizmo::get_handle_name(int p_idx) const {
 
 	Ref<Curve3D> c = path->get_curve();
@@ -103,6 +104,12 @@ void PathSpatialGizmo::set_handle(int p_idx,Camera *p_camera, const Point2& p_po
 
 		if (p.intersects_ray(ray_from,ray_dir,&inters)) {
 
+			if(SpatialEditor::get_singleton()->is_snap_enabled())
+			{
+				float snap = SpatialEditor::get_singleton()->get_translate_snap();
+				inters.snap(snap);
+			}
+			
 			Vector3 local = gi.xform(inters);
 			c->set_point_pos(p_idx,local);
 		}
@@ -522,16 +529,16 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	editor=p_node;
 	singleton=this;
 
-	path_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	path_material->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.8) );
-	path_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	path_material = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));
+	path_material->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.8) );
+	path_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA, true);
 	path_material->set_line_width(3);
 	path_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	path_material->set_flag(Material::FLAG_UNSHADED,true);
 
-	path_thin_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	path_thin_material->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.4) );
-	path_thin_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	path_thin_material = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));
+	path_thin_material->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.4) );
+	path_thin_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA, true);
 	path_thin_material->set_line_width(1);
 	path_thin_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	path_thin_material->set_flag(Material::FLAG_UNSHADED,true);
@@ -593,3 +600,4 @@ PathEditorPlugin::~PathEditorPlugin()
 {
 }
 
+#endif

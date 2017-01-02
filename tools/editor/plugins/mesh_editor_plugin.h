@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +28,8 @@
 /*************************************************************************/
 #ifndef MESH_EDITOR_PLUGIN_H
 #define MESH_EDITOR_PLUGIN_H
+
+#if 0
 
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
@@ -93,3 +95,4 @@ public:
 };
 
 #endif // MESH_EDITOR_PLUGIN_H
+#endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -349,7 +349,7 @@ DirAccessWindows::DirAccessWindows() {
 
 	drive_count=0;
 
-#ifdef WINRT_ENABLED
+#ifdef UWP_ENABLED
 	Windows::Storage::StorageFolder ^install_folder = Windows::ApplicationModel::Package::Current->InstalledLocation;
 	change_dir(install_folder->Path->Data());
 

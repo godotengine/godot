@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,15 @@
 #define PACKET_PEER_UDP_H
 
 
+#include "io/ip.h"
 #include "io/packet_peer.h"
 
 class PacketPeerUDP : public PacketPeer {
 	OBJ_TYPE(PacketPeerUDP,PacketPeer);
 
 protected:
+
+	IP::Type ip_type;
 
 	static PacketPeerUDP* (*_create)();
 	static void _bind_methods();
@@ -46,7 +49,8 @@ protected:
 
 public:
 
-	virtual Error listen(int p_port, IP_Address::AddrType p_address_type = IP_Address::TYPE_IPV4, int p_recv_buffer_size=65536)=0;
+	virtual void set_ip_type(IP::Type p_type);
+	virtual Error listen(int p_port, int p_recv_buffer_size=65536)=0;
 	virtual void close()=0;
 	virtual Error wait()=0;
 	virtual bool is_listening() const=0;

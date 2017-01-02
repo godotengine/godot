@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -122,22 +122,64 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 
 	if (idx==surfaces.size()) {
 
-		if (what=="custom") {
-			add_custom_surface(p_value);
-			return true;
-
-		}
-
 		//create
 		Dictionary d=p_value;
 		ERR_FAIL_COND_V(!d.has("primitive"),false);
-		ERR_FAIL_COND_V(!d.has("arrays"),false);
-		ERR_FAIL_COND_V(!d.has("morph_arrays"),false);
 
-		bool alphasort = d.has("alphasort") && bool(d["alphasort"]);
+		if (d.has("arrays")) {
+			//old format
+			ERR_FAIL_COND_V(!d.has("morph_arrays"),false);
+			add_surface_from_arrays(PrimitiveType(int(d["primitive"])),d["arrays"],d["morph_arrays"]);
+
+		} else if (d.has("array_data")) {
+
+			DVector<uint8_t> array_data = d["array_data"];
+			DVector<uint8_t> array_index_data;
+			if (d.has("array_index_data"))
+				array_index_data=d["array_index_data"];
+
+			ERR_FAIL_COND_V(!d.has("format"),false);
+			uint32_t format = d["format"];
+
+			ERR_FAIL_COND_V(!d.has("primitive"),false);
+			uint32_t primitive = d["primitive"];
+
+			ERR_FAIL_COND_V(!d.has("vertex_count"),false);
+			int vertex_count = d["vertex_count"];
+
+			int index_count=0;
+			if (d.has("index_count"))
+				index_count=d["index_count"];
+
+			Vector< DVector<uint8_t> > morphs;
+
+			if (d.has("morph_data")) {
+				Array morph_data=d["morph_data"];
+				for(int i=0;i<morph_data.size();i++) {
+					DVector<uint8_t> morph = morph_data[i];
+					morphs.push_back(morph_data[i]);
+				}
+			}
+
+			ERR_FAIL_COND_V(!d.has("aabb"),false);
+			AABB aabb = d["aabb"];
+
+			Vector<AABB> bone_aabb;
+			if (d.has("bone_aabb")) {
+				Array baabb = d["bone_aabb"];
+				bone_aabb.resize(baabb.size());
+
+				for(int i=0;i<baabb.size();i++) {
+					bone_aabb[i]=baabb[i];
+				}
+			}
+
+			add_surface(format,PrimitiveType(primitive),array_data,vertex_count,array_index_data,index_count,aabb,morphs,bone_aabb);
+		} else {
+			ERR_FAIL_V(false);
+		}
 
 
-		add_surface(PrimitiveType(int(d["primitive"])),d["arrays"],d["morph_arrays"],alphasort);
 		if (d.has("material")) {
 
 			surface_set_material(idx,d["material"]);
@@ -193,10 +235,31 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 	ERR_FAIL_INDEX_V(idx,surfaces.size(),false);
 
 	Dictionary d;
-	d["primitive"]=surface_get_primitive_type(idx);
-	d["arrays"]=surface_get_arrays(idx);
-	d["morph_arrays"]=surface_get_morph_arrays(idx);
-	d["alphasort"]=surface_is_alpha_sorting_enabled(idx);
+
+	d["array_data"]=VS::get_singleton()->mesh_surface_get_array(mesh,idx);
+	d["vertex_count"]=VS::get_singleton()->mesh_surface_get_array_len(mesh,idx);
+	d["array_index_data"]=VS::get_singleton()->mesh_surface_get_index_array(mesh,idx);
+	d["index_count"]=VS::get_singleton()->mesh_surface_get_array_index_len(mesh,idx);
+	d["primitive"]=VS::get_singleton()->mesh_surface_get_primitive_type(mesh,idx);
+	d["format"]=VS::get_singleton()->mesh_surface_get_format(mesh,idx);
+	d["aabb"]=VS::get_singleton()->mesh_surface_get_aabb(mesh,idx);
+
+	Vector<AABB> skel_aabb = VS::get_singleton()->mesh_surface_get_skeleton_aabb(mesh,idx);
+	Array arr;
+	for(int i=0;i<skel_aabb.size();i++) {
+		arr[i]=skel_aabb[i];
+	}
+	d["skeleton_aabb"]=arr;
+
+	Vector< DVector<uint8_t> > morph_data = VS::get_singleton()->mesh_surface_get_blend_shapes(mesh,idx);
+
+	Array md;
+	for(int i=0;i<morph_data.size();i++) {
+		md.push_back(morph_data[i]);
+	}
+
+	d["morph_data"]=md;
+
 	Ref<Material> m = surface_get_material(idx);
 	if (m.is_valid())
 		d["material"]=m;
@@ -243,14 +306,24 @@ void Mesh::_recompute_aabb() {
 
 }
 
-void Mesh::add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes,bool p_alphasort) {
+void Mesh::add_surface(uint32_t p_format,PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes,const Vector<AABB>& p_bone_aabbs) {
+
+	Surface s;
+	s.aabb=p_aabb;
+	surfaces.push_back(s);
+
+	VisualServer::get_singleton()->mesh_add_surface(mesh,p_format,(VS::PrimitiveType)p_primitive,p_array,p_vertex_count,p_index_array,p_index_count,p_aabb,p_blend_shapes,p_bone_aabbs);
+
+}
+
+void Mesh::add_surface_from_arrays(PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes,uint32_t p_flags) {
 
 
 	ERR_FAIL_COND(p_arrays.size()!=ARRAY_MAX);
 
 	Surface s;
 
-	VisualServer::get_singleton()->mesh_add_surface(mesh,(VisualServer::PrimitiveType)p_primitive, p_arrays,p_blend_shapes,p_alphasort);
+	VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh,(VisualServer::PrimitiveType)p_primitive, p_arrays,p_blend_shapes,p_flags);
 	surfaces.push_back(s);
 
 
@@ -274,7 +347,6 @@ void Mesh::add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Arr
 		}
 
 		surfaces[surfaces.size()-1].aabb=aabb;
-		surfaces[surfaces.size()-1].alphasort=p_alphasort;
 
 		_recompute_aabb();
 
@@ -289,28 +361,17 @@ void Mesh::add_surface(PrimitiveType p_primitive,const Array& p_arrays,const Arr
 Array Mesh::surface_get_arrays(int p_surface) const {
 
 	ERR_FAIL_INDEX_V(p_surface,surfaces.size(),Array());
-	return VisualServer::get_singleton()->mesh_get_surface_arrays(mesh,p_surface);
+	return VisualServer::get_singleton()->mesh_surface_get_arrays(mesh,p_surface);
 
 }
 Array Mesh::surface_get_morph_arrays(int p_surface) const {
 
 	ERR_FAIL_INDEX_V(p_surface,surfaces.size(),Array());
-	return VisualServer::get_singleton()->mesh_get_surface_morph_arrays(mesh,p_surface);
+	return Array();
 
 }
 
 
-
-void Mesh::add_custom_surface(const Variant& p_data) {
-
-	Surface s;
-	s.aabb=AABB();
-	VisualServer::get_singleton()->mesh_add_custom_surface(mesh,p_data);
-	surfaces.push_back(s);
-
-	triangle_mesh=Ref<TriangleMesh>();
-	_change_notify();
-}
 
 
 int Mesh::get_surface_count() const {
@@ -418,11 +479,6 @@ Mesh::PrimitiveType Mesh::surface_get_primitive_type(int p_idx) const {
 	return (PrimitiveType)VisualServer::get_singleton()->mesh_surface_get_primitive_type( mesh, p_idx );
 }
 
-bool Mesh::surface_is_alpha_sorting_enabled(int p_idx) const {
-
-	ERR_FAIL_INDEX_V( p_idx, surfaces.size(), 0 );
-	return surfaces[p_idx].alphasort;
-}
 
 void Mesh::surface_set_material(int p_idx, const Ref<Material>& p_material) {
 
@@ -719,8 +775,10 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 			DVector<int> indices = a[ARRAY_INDEX];
 			DVector<int>::Read ir = indices.read();
 
-			for(int i=0;i<ic;i++)
-				facesw[widx++]=vr[ ir[i] ];
+			for(int i=0;i<ic;i++) {
+				int index = ir[i];
+				facesw[widx++]=vr[ index ];
+			}
 
 		} else {
 
@@ -954,7 +1012,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 
 	Ref<Mesh> newmesh = memnew( Mesh );
-	newmesh->add_surface(PRIMITIVE_TRIANGLES,arrays);
+	newmesh->add_surface_from_arrays(PRIMITIVE_TRIANGLES,arrays);
 	return newmesh;
 }
 
@@ -968,7 +1026,7 @@ void Mesh::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_morph_target_mode","mode"),&Mesh::set_morph_target_mode);
 	ObjectTypeDB::bind_method(_MD("get_morph_target_mode"),&Mesh::get_morph_target_mode);
 
-	ObjectTypeDB::bind_method(_MD("add_surface","primitive","arrays","morph_arrays","alphasort"),&Mesh::add_surface,DEFVAL(Array()),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("add_surface_from_arrays","primitive","arrays","blend_shapes","compress_flags"),&Mesh::add_surface_from_arrays,DEFVAL(Array()),DEFVAL(ARRAY_COMPRESS_DEFAULT));
 	ObjectTypeDB::bind_method(_MD("get_surface_count"),&Mesh::get_surface_count);
 	ObjectTypeDB::bind_method(_MD("surface_remove","surf_idx"),&Mesh::surface_remove);
 	ObjectTypeDB::bind_method(_MD("surface_get_array_len","surf_idx"),&Mesh::surface_get_array_len);

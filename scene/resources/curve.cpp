@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -464,6 +464,14 @@ void Curve2D::remove_point(int p_index) {
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
+void Curve2D::clear_points() {
+	if (!points.empty()) {
+		points.clear();
+		baked_cache_dirty=true;
+		emit_signal(CoreStringNames::get_singleton()->changed);
+	}
+}
+
 Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
 
 	int pc = points.size();
@@ -790,6 +798,7 @@ void Curve2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_point_out","idx","pos"),&Curve2D::set_point_out);
 	ObjectTypeDB::bind_method(_MD("get_point_out","idx"),&Curve2D::get_point_out);
 	ObjectTypeDB::bind_method(_MD("remove_point","idx"),&Curve2D::remove_point);
+	ObjectTypeDB::bind_method(_MD("clear_points"),&Curve2D::clear_points);
 	ObjectTypeDB::bind_method(_MD("interpolate","idx","t"),&Curve2D::interpolate);
 	ObjectTypeDB::bind_method(_MD("interpolatef","fofs"),&Curve2D::interpolatef);
 	//ObjectTypeDB::bind_method(_MD("bake","subdivs"),&Curve2D::bake,DEFVAL(10));
@@ -928,6 +937,15 @@ void Curve3D::remove_point(int p_index) {
 	points.remove(p_index);
 	baked_cache_dirty=true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+void Curve3D::clear_points() {
+
+	if (!points.empty()) {
+		points.clear();
+		baked_cache_dirty=true;
+		emit_signal(CoreStringNames::get_singleton()->changed);
+	}
 }
 
 Vector3 Curve3D::interpolate(int p_index, float p_offset) const {
@@ -1322,6 +1340,7 @@ void Curve3D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_point_out","idx","pos"),&Curve3D::set_point_out);
 	ObjectTypeDB::bind_method(_MD("get_point_out","idx"),&Curve3D::get_point_out);
 	ObjectTypeDB::bind_method(_MD("remove_point","idx"),&Curve3D::remove_point);
+	ObjectTypeDB::bind_method(_MD("clear_points"),&Curve3D::clear_points);
 	ObjectTypeDB::bind_method(_MD("interpolate","idx","t"),&Curve3D::interpolate);
 	ObjectTypeDB::bind_method(_MD("interpolatef","fofs"),&Curve3D::interpolatef);
 	//ObjectTypeDB::bind_method(_MD("bake","subdivs"),&Curve3D::bake,DEFVAL(10));

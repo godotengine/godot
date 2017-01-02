@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,6 +117,7 @@ class SceneTreeEditor : public Control {
 	void _update_selection(TreeItem *item);
 	void _node_script_changed(Node *p_node);
 	void _node_visibility_changed(Node *p_node);
+	void _update_visibility_color(Node *p_node, TreeItem *p_item);
 	void _subscene_option(int p_idx);
 
 	void _node_replace_owner(Node* p_base,Node* p_node,Node* p_root);

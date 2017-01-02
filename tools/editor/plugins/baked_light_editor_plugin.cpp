@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "io/resource_saver.h"
 
 
-
+#if 0
 
 
 void BakedLightEditor::_end_baking() {
@@ -145,7 +145,7 @@ void BakedLightEditor::_notification(int p_option) {
 
 #if 1
 //debug
-				Image img(baker->baked_octree_texture_w,baker->baked_octree_texture_h,0,Image::FORMAT_RGBA,octree_texture);
+				Image img(baker->baked_octree_texture_w,baker->baked_octree_texture_h,0,Image::FORMAT_RGBA8,octree_texture);
 				Ref<ImageTexture> it = memnew( ImageTexture );
 				it->create_from_image(img);
 				ResourceSaver::save("baked_octree.png",it);
@@ -373,3 +373,4 @@ BakedLightEditorPlugin::~BakedLightEditorPlugin()
 }
 
 
+#endif

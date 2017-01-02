@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -529,16 +529,23 @@ void CanvasItemEditor::_find_canvas_items_at_rect(const Rect2& p_rect,Node* p_no
 	CanvasItem *c=p_node->cast_to<CanvasItem>();
 
 
-	for (int i=p_node->get_child_count()-1;i>=0;i--) {
+	bool inherited=p_node!=get_tree()->get_edited_scene_root() && p_node->get_filename()!="";
+	bool editable=false;
+	if (inherited){
+		editable=EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node);
+	}
+	bool lock_children=p_node->has_meta("_edit_group_") && p_node->get_meta("_edit_group_");
+	if (!lock_children && (!inherited || editable)) {
+		for (int i=p_node->get_child_count()-1;i>=0;i--) {
 
-		if (c && !c->is_set_as_toplevel())
-			_find_canvas_items_at_rect(p_rect,p_node->get_child(i),p_parent_xform * c->get_transform(),p_canvas_xform,r_items);
-		else {
-			CanvasLayer *cl = p_node->cast_to<CanvasLayer>();
-			_find_canvas_items_at_rect(p_rect,p_node->get_child(i),transform,cl?cl->get_transform():p_canvas_xform,r_items);
+			if (c && !c->is_set_as_toplevel())
+				_find_canvas_items_at_rect(p_rect,p_node->get_child(i),p_parent_xform * c->get_transform(),p_canvas_xform,r_items);
+			else {
+				CanvasLayer *cl = p_node->cast_to<CanvasLayer>();
+				_find_canvas_items_at_rect(p_rect,p_node->get_child(i),transform,cl?cl->get_transform():p_canvas_xform,r_items);
+			}
 		}
 	}
-
 
 	if (c && c->is_visible() && !c->has_meta("_edit_lock_") && !c->cast_to<CanvasLayer>()) {
 
@@ -3327,7 +3334,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	vp_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	palette_split->add_child(vp_base);
 
-	Control *vp = memnew (Control);
+	ViewportContainer *vp = memnew (ViewportContainer);
+	vp->set_stretch(true);
 	vp_base->add_child(vp);
 	vp->set_area_as_parent_rect();
 	vp->add_child(p_editor->get_scene_root());
@@ -3681,7 +3689,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String>& files) cons
 				Ref<ImageTexture> texture=Ref<ImageTexture> ( ResourceCache::get(path)->cast_to<ImageTexture>() );
 				Sprite* sprite=memnew(Sprite);
 				sprite->set_texture(texture);
-				sprite->set_opacity(0.7f);
+				sprite->set_modulate(Color(1,1,1,0.7f));
 				preview->add_child(sprite);
 				label->show();
 				label_desc->show();
@@ -3797,6 +3805,7 @@ bool CanvasItemEditorViewport::_create_instance(Node* parent, String& path, cons
 
 	if (editor->get_edited_scene()->get_filename()!="") { // cyclical instancing
 		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_filename(), instanced_scene)) {
+			memdelete(instanced_scene);
 			return false;
 		}
 	}

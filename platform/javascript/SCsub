@@ -3,27 +3,35 @@
 Import('env')
 
 javascript_files = [
-	"os_javascript.cpp",
-	"audio_driver_javascript.cpp",
-	"javascript_main.cpp",
-	"audio_server_javascript.cpp",
-	"javascript_eval.cpp"
+    "os_javascript.cpp",
+    "audio_driver_javascript.cpp",
+    "javascript_main.cpp",
+    "audio_server_javascript.cpp",
+    "javascript_eval.cpp"
 ]
-
-#obj = env.SharedObject('godot_javascript.cpp')
 
 env_javascript = env.Clone()
 if env['target'] == "profile":
-	env_javascript.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
+    env_javascript.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
 
-javascript_objects=[]
+javascript_objects = []
 for x in javascript_files:
-	javascript_objects.append( env_javascript.Object( x ) )
+    javascript_objects.append(env_javascript.Object(x))
 
-env.Append(LINKFLAGS=["-s","EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_function','_main_after_fs_sync']\""])
+env.Append(LINKFLAGS=["-s", "EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_function','_main_after_fs_sync']\""])
+env.Append(LINKFLAGS=["--shell-file", '"platform/javascript/godot_shell.html"'])
 
-prog = None
+build = env.Program('#bin/godot', javascript_objects, PROGSUFFIX=env["PROGSUFFIX"] + ".html")
 
-#env_javascript.SharedLibrary("#platform/javascript/libgodot_javascript.so",[javascript_objects])
+def make_html_shell(target, source, env):
+    html_path = target[0].rstr()
+    assert html_path[:4] == 'bin/'
+    assert html_path[-5:] == '.html'
+    basename = html_path[4:-5]
+    with open(html_path, 'r+') as html_file:
+        fixed_html = html_file.read().replace('.html.mem', '.mem').replace(basename, '$GODOT_BASE')
+        html_file.seek(0)
+        html_file.truncate()
+        html_file.write(fixed_html)
 
-env.Program('#bin/godot',javascript_objects,PROGSUFFIX=env["PROGSUFFIX"]+".html")
+env.AddPostAction(build, Action(make_html_shell, "Creating HTML shell file"))

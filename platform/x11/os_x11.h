@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #include "drivers/unix/os_unix.h"
 #include "context_gl_x11.h"
 #include "servers/visual_server.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+//#include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/physics_server.h"
 #include "servers/audio/audio_server_sw.h"
@@ -44,6 +44,7 @@
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "servers/audio/audio_driver_dummy.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "main/input_default.h"
@@ -99,7 +100,7 @@ class OS_X11 : public OS_Unix {
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 	ContextGL_X11 *context_gl;
 #endif
-	Rasterizer *rasterizer;
+	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	List<String> args;
@@ -168,6 +169,7 @@ class OS_X11 : public OS_Unix {
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
+	AudioDriverDummy driver_dummy;
 
 	Atom net_wm_icon;
 
@@ -264,7 +266,7 @@ public:
 	virtual void set_context(int p_context);
 
 	virtual void set_use_vsync(bool p_enable);
-	virtual bool is_vsnc_enabled() const;
+	virtual bool is_vsync_enabled() const;
 
 	void run();
 

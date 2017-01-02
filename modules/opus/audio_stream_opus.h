@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Author: George Marques <george@gmarqu.es>                             */
 /*                                                                       */
@@ -36,7 +36,7 @@
 #include "os/file_access.h"
 #include "scene/resources/audio_stream.h"
 
-#include <opusfile.h>
+#include <opus/opusfile.h>
 
 class AudioStreamPlaybackOpus : public AudioStreamPlayback {
 

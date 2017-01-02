@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,25 +114,36 @@ Error ImageLoaderPNG::_load_image(void *rf_up,png_rw_ptr p_func,Image *p_image) 
 	printf("Color type:%i\n", color);
 	*/
 
+	bool update_info=false;
+
 	if (depth<8) { //only bit dept 8 per channel is handled
 
 		png_set_packing(png);
+		update_info=true;
+
 	};
+
+	if (png_get_color_type(png,info)==PNG_COLOR_TYPE_PALETTE) {
+		png_set_palette_to_rgb(png);
+		update_info=true;
+	}
 
 	if (depth > 8) {
 		png_set_strip_16(png);
-		png_read_update_info(png, info);
+		update_info=true;
 	}
 
 	if (png_get_valid(png,info,PNG_INFO_tRNS)) {
 //		png_set_expand_gray_1_2_4_to_8(png);
 		png_set_tRNS_to_alpha(png);
+		update_info=true;
+	}
+
+	if (update_info) {
 		png_read_update_info(png, info);
 		png_get_IHDR(png, info, &width, &height, &depth, &color, NULL, NULL, NULL);
 	}
 
-	int palette_colors = 0;
-	int palette_components = 0;
 	int components = 0;
 
 	Image::Format fmt;
@@ -141,38 +152,24 @@ Error ImageLoaderPNG::_load_image(void *rf_up,png_rw_ptr p_func,Image *p_image) 
 
 		case PNG_COLOR_TYPE_GRAY: {
 
-			fmt=Image::FORMAT_GRAYSCALE;
+			fmt=Image::FORMAT_L8;
 			components=1;
 		} break;
 		case PNG_COLOR_TYPE_GRAY_ALPHA: {
 
-			fmt=Image::FORMAT_GRAYSCALE_ALPHA;
+			fmt=Image::FORMAT_LA8;
 			components=2;
 		} break;
 		case PNG_COLOR_TYPE_RGB: {
 
-			fmt=Image::FORMAT_RGB;
+			fmt=Image::FORMAT_RGB8;
 			components=3;
 		} break;
 		case PNG_COLOR_TYPE_RGB_ALPHA: {
 
-			fmt=Image::FORMAT_RGBA;
+			fmt=Image::FORMAT_RGBA8;
 			components=4;
-		} break;
-		case PNG_COLOR_TYPE_PALETTE: {
-
-			int ntrans = 0;
-			png_get_tRNS(png, info, NULL, &ntrans, NULL);
-			//printf("transparent colors %i\n", ntrans);
-
-			fmt = ntrans > 0 ? Image::FORMAT_INDEXED_ALPHA : Image::FORMAT_INDEXED;
-			palette_components = ntrans > 0 ? 4 : 3;
-			components = 1;
-
-			png_colorp colors;
-			png_get_PLTE(png, info, &colors, &palette_colors);
-
-		} break;
+		} break;		
 		default: {
 
 			ERR_PRINT("INVALID PNG TYPE");
@@ -186,7 +183,7 @@ Error ImageLoaderPNG::_load_image(void *rf_up,png_rw_ptr p_func,Image *p_image) 
 
 	DVector<uint8_t> dstbuff;
 
-	dstbuff.resize( rowsize * height + palette_components * 256 ); // alloc the entire palette? - yes always
+	dstbuff.resize( rowsize * height  );
 
 	DVector<uint8_t>::Write dstbuff_write = dstbuff.write();
 
@@ -200,38 +197,6 @@ Error ImageLoaderPNG::_load_image(void *rf_up,png_rw_ptr p_func,Image *p_image) 
 
 	png_read_image(png, (png_bytep*)row_p);
 
-	if (palette_colors) {
-
-		uint8_t *r_pal = &data[components*width*height]; // end of the array
-		png_colorp colors;
-		int num;
-		png_get_PLTE(png, info, &colors, &num);
-
-		int ofs = 0;
-		for (int i=0; i < palette_colors; i++) {
-
-			r_pal[ofs + 0] = colors[i].red;
-			r_pal[ofs + 1] = colors[i].green;
-			r_pal[ofs + 2] = colors[i].blue;
-			if (palette_components == 4) {
-				r_pal[ofs + 3] = 255;
-			};
-			ofs += palette_components;
-		};
-
-		if (fmt == Image::FORMAT_INDEXED_ALPHA) {
-			png_color_16p alphas;
-			png_bytep alpha_idx;
-			int count;
-			png_get_tRNS(png, info, &alpha_idx, &count, &alphas);
-			for (int i=0; i<count; i++) {
-
-				//printf("%i: loading alpha fron transparent color %i, values %i, %i, %i, %i, %i\n", i, (int)alpha_idx[i], (int)alphas[i].index, (int)alphas[i].red, (int)alphas[i].green, (int)alphas[i].blue, (int)alphas[i].gray);
-				//r_pal[alpha_idx[i]] = alphas[i].gray >> 8;
-				r_pal[i*4+3] = alpha_idx[i];
-			};
-		};
-	};
 
 	memdelete_arr( row_p );
 
@@ -325,11 +290,11 @@ static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 
 
 	Image img = p_image;
-	if (img.get_format() > Image::FORMAT_INDEXED_ALPHA)
+	if (img.is_compressed())
 		img.decompress();
 
 
-	ERR_FAIL_COND_V(img.get_format() > Image::FORMAT_INDEXED_ALPHA, DVector<uint8_t>());
+	ERR_FAIL_COND_V(img.is_compressed(), DVector<uint8_t>());
 
 	png_structp png_ptr;
 	png_infop info_ptr;
@@ -366,22 +331,22 @@ static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 
 	switch(img.get_format()) {
 
-		case Image::FORMAT_GRAYSCALE: {
+		case Image::FORMAT_L8: {
 
 			pngf=PNG_COLOR_TYPE_GRAY;
 			cs=1;
 		} break;
-		case Image::FORMAT_GRAYSCALE_ALPHA: {
+		case Image::FORMAT_LA8: {
 
 			pngf=PNG_COLOR_TYPE_GRAY_ALPHA;
 			cs=2;
 		} break;
-		case Image::FORMAT_RGB: {
+		case Image::FORMAT_RGB8: {
 
 			pngf=PNG_COLOR_TYPE_RGB;
 			cs=3;
 		} break;
-		case Image::FORMAT_RGBA: {
+		case Image::FORMAT_RGBA8: {
 
 			pngf=PNG_COLOR_TYPE_RGB_ALPHA;
 			cs=4;
@@ -390,12 +355,12 @@ static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 
 			if (img.detect_alpha()) {
 
-				img.convert(Image::FORMAT_RGBA);
+				img.convert(Image::FORMAT_RGBA8);
 				pngf=PNG_COLOR_TYPE_RGB_ALPHA;
 				cs=4;
 			} else {
 
-				img.convert(Image::FORMAT_RGB);
+				img.convert(Image::FORMAT_RGB8);
 				pngf=PNG_COLOR_TYPE_RGB;
 				cs=3;
 			}

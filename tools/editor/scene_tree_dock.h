@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,8 +58,8 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_REPLACE,
 		TOOL_CONNECT,
 		TOOL_GROUP,
-		TOOL_CREATE_SCRIPT,
-		TOOL_LOAD_SCRIPT,
+		TOOL_ATTACH_SCRIPT,
+		TOOL_CLEAR_SCRIPT,
 		TOOL_MOVE_UP,
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
@@ -76,12 +76,11 @@ class SceneTreeDock : public VBoxContainer {
 
 	int current_option;
 	CreateDialog *create_dialog;
-	EditorFileDialog *file_dialog;
 
 	ToolButton *button_add;
 	ToolButton *button_instance;
 	ToolButton *button_create_script;
-	ToolButton *button_load_script;
+	ToolButton *button_clear_script;
 
 	SceneTreeEditor *scene_tree;
 

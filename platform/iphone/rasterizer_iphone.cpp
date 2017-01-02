@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -134,21 +134,21 @@ static Image _get_gl_image_and_format(const Image& p_image, Image::Format p_form
 
 	switch(p_format) {
 
-		case Image::FORMAT_GRAYSCALE: {
+		case Image::FORMAT_L8: {
 			r_gl_components=1;
 			r_gl_format=GL_LUMINANCE;
 
 		} break;
 		case Image::FORMAT_INTENSITY: {
 
-			image.convert(Image::FORMAT_RGBA);
+			image.convert(Image::FORMAT_RGBA8);
 			r_gl_components=4;
 			r_gl_format=GL_RGBA;
 			r_has_alpha_cache=true;
 		} break;
-		case Image::FORMAT_GRAYSCALE_ALPHA: {
+		case Image::FORMAT_LA8: {
 
-			image.convert(Image::FORMAT_RGBA);
+			image.convert(Image::FORMAT_RGBA8);
 			r_gl_components=4;
 			r_gl_format=GL_RGBA;
 			r_has_alpha_cache=true;
@@ -156,7 +156,7 @@ static Image _get_gl_image_and_format(const Image& p_image, Image::Format p_form
 
 		case Image::FORMAT_INDEXED: {
 
-			image.convert(Image::FORMAT_RGB);
+			image.convert(Image::FORMAT_RGB8);
 			r_gl_components=3;
 			r_gl_format=GL_RGB;
 
@@ -164,17 +164,17 @@ static Image _get_gl_image_and_format(const Image& p_image, Image::Format p_form
 
 		case Image::FORMAT_INDEXED_ALPHA: {
 
-			image.convert(Image::FORMAT_RGBA);
+			image.convert(Image::FORMAT_RGBA8);
 			r_gl_components=4;
 			r_gl_format=GL_RGB;
 			r_has_alpha_cache=true;
 
 		} break;
-		case Image::FORMAT_RGB: {
+		case Image::FORMAT_RGB8: {
 
 			r_gl_components=3; r_gl_format=GL_RGB;
 		} break;
-		case Image::FORMAT_RGBA: {
+		case Image::FORMAT_RGBA8: {
 
 			r_gl_components=4;
 			r_gl_format=GL_RGBA;
@@ -344,7 +344,7 @@ Image::Format RasterizerIPhone::texture_get_format(RID p_texture) const {
 
 	Texture * texture = texture_owner.get(p_texture);
 
-	ERR_FAIL_COND_V(!texture,Image::FORMAT_GRAYSCALE);
+	ERR_FAIL_COND_V(!texture,Image::FORMAT_L8);
 
 	return texture->format;
 }
@@ -486,7 +486,7 @@ RID RasterizerIPhone::material_create() {
 	return material_owner.make_rid( memnew( Material ) );
 }
 
-void RasterizerIPhone::fixed_material_set_parameter(RID p_material, VS::FixedMaterialParam p_parameter, const Variant& p_value) {
+void RasterizerIPhone::fixed_material_set_parameter(RID p_material, VS::FixedSpatialMaterialParam p_parameter, const Variant& p_value) {
 
 	Material *m=material_owner.get( p_material );
 	ERR_FAIL_COND(!m);
@@ -494,7 +494,7 @@ void RasterizerIPhone::fixed_material_set_parameter(RID p_material, VS::FixedMat
 
 	m->parameters[p_parameter] = p_value;
 }
-Variant RasterizerIPhone::fixed_material_get_parameter(RID p_material,VS::FixedMaterialParam p_parameter) const {
+Variant RasterizerIPhone::fixed_material_get_parameter(RID p_material,VS::FixedSpatialMaterialParam p_parameter) const {
 
 	Material *m=material_owner.get( p_material );
 	ERR_FAIL_COND_V(!m, Variant());
@@ -503,7 +503,7 @@ Variant RasterizerIPhone::fixed_material_get_parameter(RID p_material,VS::FixedM
 	return m->parameters[p_parameter];
 }
 
-void RasterizerIPhone::fixed_material_set_texture(RID p_material,VS::FixedMaterialParam p_parameter, RID p_texture) {
+void RasterizerIPhone::fixed_material_set_texture(RID p_material,VS::FixedSpatialMaterialParam p_parameter, RID p_texture) {
 
 	Material *m=material_owner.get( p_material );
 	ERR_FAIL_COND(!m);
@@ -511,7 +511,7 @@ void RasterizerIPhone::fixed_material_set_texture(RID p_material,VS::FixedMateri
 
 	m->textures[p_parameter] = p_texture;
 }
-RID RasterizerIPhone::fixed_material_get_texture(RID p_material,VS::FixedMaterialParam p_parameter) const {
+RID RasterizerIPhone::fixed_material_get_texture(RID p_material,VS::FixedSpatialMaterialParam p_parameter) const {
 
 	Material *m=material_owner.get( p_material );
 	ERR_FAIL_COND_V(!m, RID());
@@ -535,7 +535,7 @@ VS::MaterialBlendMode RasterizerIPhone::fixed_material_get_detail_blend_mode(RID
 	return m->detail_blend_mode;
 }
 
-void RasterizerIPhone::fixed_material_set_texcoord_mode(RID p_material,VS::FixedMaterialParam p_parameter, VS::FixedMaterialTexCoordMode p_mode) {
+void RasterizerIPhone::fixed_material_set_texcoord_mode(RID p_material,VS::FixedSpatialMaterialParam p_parameter, VS::FixedSpatialMaterialTexCoordMode p_mode) {
 
 	Material *m=material_owner.get( p_material );
 	ERR_FAIL_COND(!m);
@@ -543,7 +543,7 @@ void RasterizerIPhone::fixed_material_set_texcoord_mode(RID p_material,VS::Fixed
 
 	m->texcoord_mode[p_parameter] = p_mode;
 }
-VS::FixedMaterialTexCoordMode RasterizerIPhone::fixed_material_get_texcoord_mode(RID p_material,VS::FixedMaterialParam p_parameter) const {
+VS::FixedSpatialMaterialTexCoordMode RasterizerIPhone::fixed_material_get_texcoord_mode(RID p_material,VS::FixedSpatialMaterialParam p_parameter) const {
 
 	Material *m=material_owner.get( p_material );
 	ERR_FAIL_COND_V(!m, VS::FIXED_MATERIAL_TEXCOORD_TEXGEN);
@@ -552,7 +552,7 @@ VS::FixedMaterialTexCoordMode RasterizerIPhone::fixed_material_get_texcoord_mode
 	return m->texcoord_mode[p_parameter]; // for now
 }
 
-void RasterizerIPhone::fixed_material_set_texgen_mode(RID p_material,VS::FixedMaterialTexGenMode p_mode) {
+void RasterizerIPhone::fixed_material_set_texgen_mode(RID p_material,VS::FixedSpatialMaterialTexGenMode p_mode) {
 
 	Material *m=material_owner.get( p_material );
 	ERR_FAIL_COND(!m);
@@ -560,7 +560,7 @@ void RasterizerIPhone::fixed_material_set_texgen_mode(RID p_material,VS::FixedMa
 	m->texgen_mode = p_mode;
 };
 
-VS::FixedMaterialTexGenMode RasterizerIPhone::fixed_material_get_texgen_mode(RID p_material) const {
+VS::FixedSpatialMaterialTexGenMode RasterizerIPhone::fixed_material_get_texgen_mode(RID p_material) const {
 
 	Material *m=material_owner.get( p_material );
 	ERR_FAIL_COND_V(!m, VS::FIXED_MATERIAL_TEXGEN_SPHERE);

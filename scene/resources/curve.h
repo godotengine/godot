@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -133,6 +133,7 @@ public:
 	void set_point_out(int p_index, const Vector2& p_out);
 	Vector2 get_point_out(int p_index) const;
 	void remove_point(int p_index);
+	void clear_points();
 
 	Vector2 interpolate(int p_index, float p_offset) const;
 	Vector2 interpolatef(real_t p_findex) const;
@@ -211,6 +212,7 @@ public:
 	void set_point_out(int p_index, const Vector3& p_out);
 	Vector3 get_point_out(int p_index) const;
 	void remove_point(int p_index);
+	void clear_points();
 
 	Vector3 interpolate(int p_index, float p_offset) const;
 	Vector3 interpolatef(real_t p_findex) const;

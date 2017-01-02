@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,7 +88,7 @@ Error StreamPeerWinsock::_poll_connection(bool p_block) const {
 	};
 
 	struct sockaddr_storage their_addr;
-	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port);
+	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port, ip_type);
 
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == SOCKET_ERROR) {
 
@@ -98,7 +98,12 @@ Error StreamPeerWinsock::_poll_connection(bool p_block) const {
 			return OK;
 		};
 
-		return OK;
+		if (errno == WSAEINPROGRESS || errno == WSAEALREADY) {
+			return OK;
+		}
+
+		status = STATUS_ERROR;
+		return ERR_CONNECTION_ERROR;
 	} else {
 
 		status = STATUS_CONNECTED;
@@ -284,8 +289,9 @@ void StreamPeerWinsock::disconnect() {
 	peer_port = 0;
 };
 
-void StreamPeerWinsock::set_socket(int p_sockfd, IP_Address p_host, int p_port) {
+void StreamPeerWinsock::set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_ip_type) {
 
+	ip_type = p_ip_type;
 	sockfd = p_sockfd;
 	status = STATUS_CONNECTING;
 	peer_host = p_host;
@@ -294,10 +300,10 @@ void StreamPeerWinsock::set_socket(int p_sockfd, IP_Address p_host, int p_port) 
 
 Error StreamPeerWinsock::connect(const IP_Address& p_host, uint16_t p_port) {
 
-	ERR_FAIL_COND_V( p_host.type == IP_Address::TYPE_NONE, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V( p_host == IP_Address(), ERR_INVALID_PARAMETER);
 
-	int family = p_host.type == IP_Address::TYPE_IPV6 ? AF_INET6 : AF_INET;
-	if ((sockfd = socket(family, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
+	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
+	if (sockfd  == INVALID_SOCKET) {
 		ERR_PRINT("Socket creation failed!");
 		disconnect();
 		//perror("socket");
@@ -312,7 +318,7 @@ Error StreamPeerWinsock::connect(const IP_Address& p_host, uint16_t p_port) {
 	};
 
 	struct sockaddr_storage their_addr;
-	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port);
+	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port, ip_type);
 
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == SOCKET_ERROR) {
 
@@ -362,6 +368,7 @@ StreamPeerWinsock::StreamPeerWinsock() {
 	sockfd = INVALID_SOCKET;
 	status = STATUS_NONE;
 	peer_port = 0;
+	ip_type = IP::TYPE_ANY;
 };
 
 StreamPeerWinsock::~StreamPeerWinsock() {

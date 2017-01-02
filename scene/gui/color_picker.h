@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,8 +57,6 @@ private:
 	List<Color> presets;
 	ToolButton *btn_pick;
 	CheckButton *btn_mode;
-	Ref<CanvasItemMaterial> uv_material;
-	Ref<CanvasItemMaterial> w_material;
 	HSlider *scroll[4];
 	SpinBox *values[4];
 	Label *labels[4];

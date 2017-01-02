@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,6 +66,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/viewport_container.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/file_dialog.h"
@@ -165,6 +166,7 @@
 #include "scene/resources/sample.h"
 #include "scene/audio/sample_player.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/sky_box.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/room.h"
@@ -202,6 +204,8 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/quad.h"
 #include "scene/3d/light.h"
+#include "scene/3d/reflection_probe.h"
+#include "scene/3d/gi_probe.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/portal.h"
 #include "scene/resources/environment.h"
@@ -235,7 +239,6 @@ static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
 
 #endif
 static ResourceFormatLoaderTheme *resource_loader_theme=NULL;
-static ResourceFormatLoaderShader *resource_loader_shader=NULL;
 
 static ResourceFormatSaverText *resource_saver_text=NULL;
 static ResourceFormatLoaderText *resource_loader_text=NULL;
@@ -269,8 +272,6 @@ void register_scene_types() {
 	resource_loader_theme = memnew( ResourceFormatLoaderTheme );
 	ResourceLoader::add_resource_format_loader( resource_loader_theme );
 
-	resource_loader_shader = memnew( ResourceFormatLoaderShader );
-	ResourceLoader::add_resource_format_loader( resource_loader_shader );
 
 	bool default_theme_hidpi=GLOBAL_DEF("display/use_hidpi_theme",false);
 	Globals::get_singleton()->set_custom_property_info("display/use_hidpi_theme",PropertyInfo(Variant::BOOL,"display/use_hidpi_theme",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
@@ -303,7 +304,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_virtual_type<InstancePlaceholder>();
 
 	ObjectTypeDB::register_type<Viewport>();
-	ObjectTypeDB::register_virtual_type<RenderTargetTexture>();
+	ObjectTypeDB::register_type<ViewportTexture>();
 	ObjectTypeDB::register_type<HTTPRequest>();
 	ObjectTypeDB::register_type<Timer>();
 	ObjectTypeDB::register_type<CanvasLayer>();
@@ -393,6 +394,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<ConfirmationDialog>();
 	ObjectTypeDB::register_type<VideoPlayer>();
 	ObjectTypeDB::register_type<MarginContainer>();
+	ObjectTypeDB::register_type<ViewportContainer>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -401,6 +403,7 @@ void register_scene_types() {
 	/* REGISTER 3D */
 
 	ObjectTypeDB::register_type<Spatial>();
+	ObjectTypeDB::register_virtual_type<SpatialGizmo>();
 	ObjectTypeDB::register_type<Skeleton>();
 	ObjectTypeDB::register_type<AnimationPlayer>();
 	ObjectTypeDB::register_type<Tween>();
@@ -422,9 +425,12 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<DirectionalLight>();
 	ObjectTypeDB::register_type<OmniLight>();
 	ObjectTypeDB::register_type<SpotLight>();
+	ObjectTypeDB::register_type<ReflectionProbe>();
+	ObjectTypeDB::register_type<GIProbe>();
+	ObjectTypeDB::register_type<GIProbeData>();
 	ObjectTypeDB::register_type<AnimationTreePlayer>();
 	ObjectTypeDB::register_type<Portal>();
-	ObjectTypeDB::register_type<Particles>();
+	//ObjectTypeDB::register_type<Particles>();
 	ObjectTypeDB::register_type<Position3D>();
 	ObjectTypeDB::register_type<Quad>();
 	ObjectTypeDB::register_type<NavigationMeshInstance>();
@@ -453,8 +459,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<PathFollow>();
 	ObjectTypeDB::register_type<VisibilityNotifier>();
 	ObjectTypeDB::register_type<VisibilityEnabler>();
-	ObjectTypeDB::register_type<BakedLightInstance>();
-	ObjectTypeDB::register_type<BakedLightSampler>();
+	ObjectTypeDB::register_type<BakedLight>();
+	//ObjectTypeDB::register_type<BakedLightSampler>();
 	ObjectTypeDB::register_type<WorldEnvironment>();
 	ObjectTypeDB::register_type<RemoteTransform>();
 
@@ -489,7 +495,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Particles2D>();
 	ObjectTypeDB::register_type<ParticleAttractor2D>();
 	ObjectTypeDB::register_type<Sprite>();
-	ObjectTypeDB::register_type<ViewportSprite>();
+//	ObjectTypeDB::register_type<ViewportSprite>();
 	ObjectTypeDB::register_type<SpriteFrames>();
 	ObjectTypeDB::register_type<AnimatedSprite>();
 	ObjectTypeDB::register_type<Position2D>();
@@ -538,21 +544,24 @@ void register_scene_types() {
 	/* REGISTER RESOURCES */
 
 	ObjectTypeDB::register_virtual_type<Shader>();
-	ObjectTypeDB::register_virtual_type<ShaderGraph>();
+//	ObjectTypeDB::register_virtual_type<ShaderGraph>();
 	ObjectTypeDB::register_type<CanvasItemShader>();
-	ObjectTypeDB::register_type<CanvasItemShaderGraph>();
+//	ObjectTypeDB::register_type<CanvasItemShaderGraph>();
 
 #ifndef _3D_DISABLED
 	ObjectTypeDB::register_type<Mesh>();
 	ObjectTypeDB::register_virtual_type<Material>();
-	ObjectTypeDB::register_type<FixedMaterial>();
-	ObjectTypeDB::register_type<ShaderMaterial>();
+	ObjectTypeDB::register_type<FixedSpatialMaterial>();
+	SceneTree::add_idle_callback(FixedSpatialMaterial::flush_changes);
+	FixedSpatialMaterial::init_shaders();
+//	ObjectTypeDB::register_type<ShaderMaterial>();
 	ObjectTypeDB::register_type<RoomBounds>();
-	ObjectTypeDB::register_type<MaterialShaderGraph>();
-	ObjectTypeDB::register_type<MaterialShader>();
+//	ObjectTypeDB::register_type<MaterialShaderGraph>();
+	ObjectTypeDB::register_type<SpatialShader>();
+	ObjectTypeDB::register_type<ParticlesShader>();
 	ObjectTypeDB::add_compatibility_type("Shader","MaterialShader");
-	ObjectTypeDB::add_compatibility_type("ParticleSystemMaterial","FixedMaterial");
-	ObjectTypeDB::add_compatibility_type("UnshadedMaterial","FixedMaterial");
+	ObjectTypeDB::add_compatibility_type("ParticleSystemMaterial","FixedSpatialMaterial");
+	ObjectTypeDB::add_compatibility_type("UnshadedMaterial","FixedSpatialMaterial");
 	ObjectTypeDB::register_type<MultiMesh>();
 	ObjectTypeDB::register_type<MeshLibrary>();
 
@@ -568,7 +577,7 @@ void register_scene_types() {
 
 	ObjectTypeDB::register_type<SurfaceTool>();
 	ObjectTypeDB::register_type<MeshDataTool>();
-	ObjectTypeDB::register_type<BakedLight>();
+	//ObjectTypeDB::register_type<BakedLight>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -577,6 +586,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Environment>();
 	ObjectTypeDB::register_type<World2D>();
 	ObjectTypeDB::register_virtual_type<Texture>();
+	ObjectTypeDB::register_virtual_type<SkyBox>();
+	ObjectTypeDB::register_type<ImageSkyBox>();
 	ObjectTypeDB::register_type<ImageTexture>();
 	ObjectTypeDB::register_type<AtlasTexture>();
 	ObjectTypeDB::register_type<LargeTexture>();
@@ -590,8 +601,7 @@ void register_scene_types() {
 
 	ObjectTypeDB::register_type<StyleBoxEmpty>();
 	ObjectTypeDB::register_type<StyleBoxTexture>();
-	ObjectTypeDB::register_type<StyleBoxFlat>();
-	ObjectTypeDB::register_type<StyleBoxImageMask>();
+	ObjectTypeDB::register_type<StyleBoxFlat>();	
 	ObjectTypeDB::register_type<Theme>();
 
 	ObjectTypeDB::add_compatibility_type("Font","BitmapFont");
@@ -657,6 +667,7 @@ void unregister_scene_types() {
 	memdelete( resource_loader_wav );
 	memdelete( resource_loader_dynamic_font );
 
+
 #ifdef TOOLS_ENABLED
 
 
@@ -664,7 +675,6 @@ void unregister_scene_types() {
 
 
 	memdelete( resource_loader_theme );
-	memdelete( resource_loader_shader );
 
 	if (resource_saver_text) {
 		memdelete(resource_saver_text);
@@ -672,5 +682,7 @@ void unregister_scene_types() {
 	if (resource_loader_text) {
 		memdelete(resource_loader_text);
 	}
+
+	FixedSpatialMaterial::finish_shaders();
 	SceneStringNames::free();
 }

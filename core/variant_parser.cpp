@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -755,8 +755,17 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			}
 
 			get_token(p_stream,token,line,r_err_str);
-			if (token.type!=TK_NUMBER) {
-				r_err_str="Expected number (mipmaps)";
+
+			bool has_mipmaps=false;
+
+			if (token.type==TK_NUMBER) {
+				has_mipmaps=bool(token.value);
+			} else if (token.type==TK_IDENTIFIER && String(token.value)=="true") {
+				has_mipmaps=true;
+			} else if (token.type==TK_IDENTIFIER && String(token.value)=="false") {
+				has_mipmaps=false;
+			} else {
+				r_err_str="Expected number/true/false (mipmaps)";
 				return ERR_PARSE_ERROR;
 			}
 
@@ -778,32 +787,18 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 			String sformat=token.value;
 
-			Image::Format format;
+			Image::Format format=Image::FORMAT_MAX;
 
-			if (sformat=="GRAYSCALE") format=Image::FORMAT_GRAYSCALE;
-			else if (sformat=="INTENSITY") format=Image::FORMAT_INTENSITY;
-			else if (sformat=="GRAYSCALE_ALPHA") format=Image::FORMAT_GRAYSCALE_ALPHA;
-			else if (sformat=="RGB") format=Image::FORMAT_RGB;
-			else if (sformat=="RGBA") format=Image::FORMAT_RGBA;
-			else if (sformat=="INDEXED") format=Image::FORMAT_INDEXED;
-			else if (sformat=="INDEXED_ALPHA") format=Image::FORMAT_INDEXED_ALPHA;
-			else if (sformat=="BC1") format=Image::FORMAT_BC1;
-			else if (sformat=="BC2") format=Image::FORMAT_BC2;
-			else if (sformat=="BC3") format=Image::FORMAT_BC3;
-			else if (sformat=="BC4") format=Image::FORMAT_BC4;
-			else if (sformat=="BC5") format=Image::FORMAT_BC5;
-			else if (sformat=="PVRTC2") format=Image::FORMAT_PVRTC2;
-			else if (sformat=="PVRTC2_ALPHA") format=Image::FORMAT_PVRTC2_ALPHA;
-			else if (sformat=="PVRTC4") format=Image::FORMAT_PVRTC4;
-			else if (sformat=="PVRTC4_ALPHA") format=Image::FORMAT_PVRTC4_ALPHA;
-			else if (sformat=="ATC") format=Image::FORMAT_ATC;
-			else if (sformat=="ATC_ALPHA_EXPLICIT") format=Image::FORMAT_ATC_ALPHA_EXPLICIT;
-			else if (sformat=="ATC_ALPHA_INTERPOLATED") format=Image::FORMAT_ATC_ALPHA_INTERPOLATED;
-			else if (sformat=="CUSTOM") format=Image::FORMAT_CUSTOM;
-			else {
-				r_err_str="Invalid image format: '"+sformat+"'";
+			for(int i=0;i<Image::FORMAT_MAX;i++) {
+				if (Image::get_format_name(format)==sformat) {
+					format=Image::Format(i);
+				}
+			}
+
+			if (format==Image::FORMAT_MAX) {
+				r_err_str="Unknown image format: "+String(sformat);
 				return ERR_PARSE_ERROR;
-			};
+			}
 
 			int len = Image::get_image_data_size(width,height,format,mipmaps);
 
@@ -1986,35 +1981,8 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 			String imgstr="Image( ";
 			imgstr+=itos(img.get_width());
 			imgstr+=", "+itos(img.get_height());
-			imgstr+=", "+itos(img.get_mipmaps());
-			imgstr+=", ";
-
-			switch(img.get_format()) {
-
-				case Image::FORMAT_GRAYSCALE: imgstr+="GRAYSCALE"; break;
-				case Image::FORMAT_INTENSITY: imgstr+="INTENSITY"; break;
-				case Image::FORMAT_GRAYSCALE_ALPHA: imgstr+="GRAYSCALE_ALPHA"; break;
-				case Image::FORMAT_RGB: imgstr+="RGB"; break;
-				case Image::FORMAT_RGBA: imgstr+="RGBA"; break;
-				case Image::FORMAT_INDEXED : imgstr+="INDEXED"; break;
-				case Image::FORMAT_INDEXED_ALPHA: imgstr+="INDEXED_ALPHA"; break;
-				case Image::FORMAT_BC1: imgstr+="BC1"; break;
-				case Image::FORMAT_BC2: imgstr+="BC2"; break;
-				case Image::FORMAT_BC3: imgstr+="BC3"; break;
-				case Image::FORMAT_BC4: imgstr+="BC4"; break;
-				case Image::FORMAT_BC5: imgstr+="BC5"; break;
-				case Image::FORMAT_PVRTC2: imgstr+="PVRTC2"; break;
-				case Image::FORMAT_PVRTC2_ALPHA: imgstr+="PVRTC2_ALPHA"; break;
-				case Image::FORMAT_PVRTC4: imgstr+="PVRTC4"; break;
-				case Image::FORMAT_PVRTC4_ALPHA: imgstr+="PVRTC4_ALPHA"; break;
-				case Image::FORMAT_ETC: imgstr+="ETC"; break;
-				case Image::FORMAT_ATC: imgstr+="ATC"; break;
-				case Image::FORMAT_ATC_ALPHA_EXPLICIT: imgstr+="ATC_ALPHA_EXPLICIT"; break;
-				case Image::FORMAT_ATC_ALPHA_INTERPOLATED: imgstr+="ATC_ALPHA_INTERPOLATED"; break;
-				case Image::FORMAT_CUSTOM: imgstr+="CUSTOM"; break;
-				default: {}
-			}
-
+			imgstr+=", "+String(img.has_mipmaps()?"true":"false");
+			imgstr+=", "+Image::get_format_name(img.get_format());
 
 			String s;
 

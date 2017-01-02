@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -106,7 +106,7 @@ List<StringName> InputMap::get_actions() const {
 	return actions;
 }
 
-List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const InputEvent& p_event) const {
+List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const InputEvent& p_event, bool p_mod_ignore=false) const {
 
 	for (List<InputEvent>::Element *E=p_list.front();E;E=E->next()) {
 
@@ -122,7 +122,7 @@ List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const 
 
 			case InputEvent::KEY: {
 
-				same=(e.key.scancode==p_event.key.scancode && e.key.mod == p_event.key.mod);
+				same=(e.key.scancode==p_event.key.scancode && (p_mod_ignore || e.key.mod == p_event.key.mod));
 
 			} break;
 			case InputEvent::JOYSTICK_BUTTON: {
@@ -229,7 +229,7 @@ bool InputMap::event_is_action(const InputEvent& p_event, const StringName& p_ac
 		return p_event.action.action==E->get().id;
 	}
 
-	return _find_event(E->get().inputs,p_event)!=NULL;
+	return _find_event(E->get().inputs,p_event,!p_event.is_pressed())!=NULL;
 }
 
 const Map<StringName, InputMap::Action>& InputMap::get_action_map() const {

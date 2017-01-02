@@ -87,14 +87,16 @@ static int TBufferNewPage(VP8TBuffer* const b) {
 #define TOKEN_ID(t, b, ctx) \
     (NUM_PROBAS * ((ctx) + NUM_CTX * ((b) + NUM_BANDS * (t))))
 
-static WEBP_INLINE uint32_t AddToken(VP8TBuffer* const b,
-                                     uint32_t bit, uint32_t proba_idx) {
+static WEBP_INLINE uint32_t AddToken(VP8TBuffer* const b, uint32_t bit,
+                                     uint32_t proba_idx,
+                                     proba_t* const stats) {
   assert(proba_idx < FIXED_PROBA_BIT);
   assert(bit <= 1);
   if (b->left_ > 0 || TBufferNewPage(b)) {
     const int slot = --b->left_;
     b->tokens_[slot] = (bit << 15) | proba_idx;
   }
+  VP8RecordStats(bit, stats);
   return bit;
 }
 
@@ -108,13 +110,16 @@ static WEBP_INLINE void AddConstantToken(VP8TBuffer* const b,
   }
 }
 
-int VP8RecordCoeffTokens(const int ctx, const int coeff_type,
-                         int first, int last,
-                         const int16_t* const coeffs,
+int VP8RecordCoeffTokens(int ctx, const struct VP8Residual* const res,
                          VP8TBuffer* const tokens) {
-  int n = first;
+  const int16_t* const coeffs = res->coeffs;
+  const int coeff_type = res->coeff_type;
+  const int last = res->last;
+  int n = res->first;
   uint32_t base_id = TOKEN_ID(coeff_type, n, ctx);
-  if (!AddToken(tokens, last >= 0, base_id + 0)) {
+  // should be stats[VP8EncBands[n]], but it's equivalent for n=0 or 1
+  proba_t* s = res->stats[n][ctx];
+  if (!AddToken(tokens, last >= 0, base_id + 0, s + 0)) {
     return 0;
   }
 
@@ -122,18 +127,20 @@ int VP8RecordCoeffTokens(const int ctx, const int coeff_type,
     const int c = coeffs[n++];
     const int sign = c < 0;
     const uint32_t v = sign ? -c : c;
-    if (!AddToken(tokens, v != 0, base_id + 1)) {
+    if (!AddToken(tokens, v != 0, base_id + 1, s + 1)) {
       base_id = TOKEN_ID(coeff_type, VP8EncBands[n], 0);  // ctx=0
+      s = res->stats[VP8EncBands[n]][0];
       continue;
     }
-    if (!AddToken(tokens, v > 1, base_id + 2)) {
+    if (!AddToken(tokens, v > 1, base_id + 2, s + 2)) {
       base_id = TOKEN_ID(coeff_type, VP8EncBands[n], 1);  // ctx=1
+      s = res->stats[VP8EncBands[n]][1];
     } else {
-      if (!AddToken(tokens, v > 4, base_id + 3)) {
-        if (AddToken(tokens, v != 2, base_id + 4))
-          AddToken(tokens, v == 4, base_id + 5);
-      } else if (!AddToken(tokens, v > 10, base_id + 6)) {
-        if (!AddToken(tokens, v > 6, base_id + 7)) {
+      if (!AddToken(tokens, v > 4, base_id + 3, s + 3)) {
+        if (AddToken(tokens, v != 2, base_id + 4, s + 4))
+          AddToken(tokens, v == 4, base_id + 5, s + 5);
+      } else if (!AddToken(tokens, v > 10, base_id + 6, s + 6)) {
+        if (!AddToken(tokens, v > 6, base_id + 7, s + 7)) {
           AddConstantToken(tokens, v == 6, 159);
         } else {
           AddConstantToken(tokens, v >= 9, 165);
@@ -144,26 +151,26 @@ int VP8RecordCoeffTokens(const int ctx, const int coeff_type,
         const uint8_t* tab;
         uint32_t residue = v - 3;
         if (residue < (8 << 1)) {          // VP8Cat3  (3b)
-          AddToken(tokens, 0, base_id + 8);
-          AddToken(tokens, 0, base_id + 9);
+          AddToken(tokens, 0, base_id + 8, s + 8);
+          AddToken(tokens, 0, base_id + 9, s + 9);
           residue -= (8 << 0);
           mask = 1 << 2;
           tab = VP8Cat3;
         } else if (residue < (8 << 2)) {   // VP8Cat4  (4b)
-          AddToken(tokens, 0, base_id + 8);
-          AddToken(tokens, 1, base_id + 9);
+          AddToken(tokens, 0, base_id + 8, s + 8);
+          AddToken(tokens, 1, base_id + 9, s + 9);
           residue -= (8 << 1);
           mask = 1 << 3;
           tab = VP8Cat4;
         } else if (residue < (8 << 3)) {   // VP8Cat5  (5b)
-          AddToken(tokens, 1, base_id + 8);
-          AddToken(tokens, 0, base_id + 10);
+          AddToken(tokens, 1, base_id + 8, s + 8);
+          AddToken(tokens, 0, base_id + 10, s + 9);
           residue -= (8 << 2);
           mask = 1 << 4;
           tab = VP8Cat5;
         } else {                         // VP8Cat6 (11b)
-          AddToken(tokens, 1, base_id + 8);
-          AddToken(tokens, 1, base_id + 10);
+          AddToken(tokens, 1, base_id + 8, s + 8);
+          AddToken(tokens, 1, base_id + 10, s + 9);
           residue -= (8 << 3);
           mask = 1 << 10;
           tab = VP8Cat6;
@@ -174,9 +181,10 @@ int VP8RecordCoeffTokens(const int ctx, const int coeff_type,
         }
       }
       base_id = TOKEN_ID(coeff_type, VP8EncBands[n], 2);  // ctx=2
+      s = res->stats[VP8EncBands[n]][2];
     }
     AddConstantToken(tokens, sign, 128);
-    if (n == 16 || !AddToken(tokens, n <= last, base_id + 0)) {
+    if (n == 16 || !AddToken(tokens, n <= last, base_id + 0, s + 0)) {
       return 1;   // EOB
     }
   }

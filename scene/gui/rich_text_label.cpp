@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1179,7 +1179,8 @@ void RichTextLabel::add_text(const String& p_text) {
 			item->line=current_frame->lines.size();
 			_add_item(item,false);
 			current_frame->lines.resize(current_frame->lines.size()+1);
-			current_frame->lines[current_frame->lines.size()-1].from=item;
+			if (item->type!=ITEM_NEWLINE)
+				current_frame->lines[current_frame->lines.size()-1].from=item;
 			_invalidate_current_line(current_frame);
 
 		}

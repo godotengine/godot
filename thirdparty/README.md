@@ -14,7 +14,7 @@ Files extracted from upstream source:
 - LICENSE file
 
 Important: Some files have been modified by Godot developers so that they work
-for all platforms (especially WinRT). Check the diff with the 1.3.13 tarball
+for all platforms (especially UWP). Check the diff with the 1.3.13 tarball
 before the next update.
 
 
@@ -84,7 +84,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.23
+- Version: 1.6.26
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -93,6 +93,13 @@ Files extracted from upstream source:
   `example.c` and `pngtest.c`
 - the arm/ folder
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
+
+
+## libsimplewebm
+
+- Upstream: https://github.com/zaps166/libsimplewebm
+- Version: 05cfdc2 (git)
+- License: MIT, BSD-3-Clause
 
 
 ## libvorbis
@@ -108,10 +115,17 @@ Files extracted from upstream source:
 - COPYING
 
 
+## libvpx
+
+- Upstream: http://www.webmproject.org/code/
+- Version: 1.6.0
+- License: BSD-3-Clause
+
+
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 0.5.1
+- Version: 0.5.2
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -145,7 +159,7 @@ Files extracted from upstream source:
 
 - all .c and .h files in src/ (both opus and opusfile),
   except `opus_demo.c`
-- all .h files in include/ (both opus and opusfile)
+- all .h files in include/ (both opus and opusfile) as opus/
 - COPYING
 
 

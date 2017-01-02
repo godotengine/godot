@@ -2,9 +2,9 @@
 
 Import('env')
 
-env.add_source_files(env.scene_sources,"*.cpp")
-env.add_source_files(env.scene_sources,"*.c")
+env.add_source_files(env.scene_sources, "*.cpp")
+env.add_source_files(env.scene_sources, "*.c")
 
 Export('env')
 
-SConscript("default_theme/SCsub");
+SConscript("default_theme/SCsub")

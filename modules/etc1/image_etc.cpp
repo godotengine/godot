@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@ static void _decompress_etc(Image *p_img) {
 
 	DVector<uint8_t>::Read r = src.read();
 
-	int mmc=p_img->get_mipmaps();
+	int mmc=p_img->get_mipmap_count();
 
 
 	for(int i=0;i<=mmc;i++) {
@@ -93,9 +93,9 @@ static void _decompress_etc(Image *p_img) {
 
 	r=DVector<uint8_t>::Read();
 	//print_line("Re Creating ETC into regular image: w "+itos(p_img->get_width())+" h "+itos(p_img->get_height())+" mm "+itos(p_img->get_mipmaps()));
-	*p_img=Image(p_img->get_width(),p_img->get_height(),p_img->get_mipmaps(),Image::FORMAT_RGB,dst);
-	if (p_img->get_mipmaps())
-		p_img->generate_mipmaps(-1,true);
+	*p_img=Image(p_img->get_width(),p_img->get_height(),p_img->has_mipmaps(),Image::FORMAT_RGB8,dst);
+	if (p_img->has_mipmaps())
+		p_img->generate_mipmaps(true);
 
 
 }
@@ -108,11 +108,11 @@ static void _compress_etc(Image *p_img) {
 
 	ERR_FAIL_COND( nearest_power_of_2(imgw)!=imgw || nearest_power_of_2(imgh)!=imgh );
 
-	if (img.get_format()!=Image::FORMAT_RGB)
-		img.convert(Image::FORMAT_RGB);
+	if (img.get_format()!=Image::FORMAT_RGB8)
+		img.convert(Image::FORMAT_RGB8);
 
 
-	int mmc=img.get_mipmaps();
+	int mmc=img.get_mipmap_count();
 	if (mmc==0)
 		img.generate_mipmaps(); // force mipmaps, so it works on most hardware
 
@@ -186,7 +186,7 @@ static void _compress_etc(Image *p_img) {
 
 	}
 
-	*p_img=Image(p_img->get_width(),p_img->get_height(),mc-1,Image::FORMAT_ETC,dst_data);
+	*p_img=Image(p_img->get_width(),p_img->get_height(),(mc-1)?true:false,Image::FORMAT_ETC,dst_data);
 
 
 }

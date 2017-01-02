@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -151,18 +151,6 @@ void Container::_notification(int p_what) {
 				queue_sort();
 			}
 		} break;
-		case NOTIFICATION_SORT_CHILDREN: {
-
-			Size2 s = get_size();
-
-			for (int i=0; i<get_child_count();i++) {
-				Control *c = get_child(i)->cast_to<Control>();
-				if (!c || !c->is_visible() || c->is_set_as_toplevel())
-					continue;
-
-				fit_child_in_rect(c,Rect2(0, 0, s.width, s.height));
-			}
-		}
 	}
 }
 

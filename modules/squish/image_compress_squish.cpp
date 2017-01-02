@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@ void image_compress_squish(Image *p_image) {
 	int w=p_image->get_width();
 	int h=p_image->get_height();
 
-	if (p_image->get_mipmaps() == 0) {
+	if (!p_image->has_mipmaps() ) {
 		ERR_FAIL_COND( !w || w % 4 != 0);
 		ERR_FAIL_COND( !h || h % 4 != 0);
 	} else {
@@ -45,26 +45,26 @@ void image_compress_squish(Image *p_image) {
 		ERR_FAIL_COND( !h || h !=nearest_power_of_2(h) );
 	};
 
-	if (p_image->get_format()>=Image::FORMAT_BC1)
+	if (p_image->get_format()>=Image::FORMAT_DXT1)
 		return; //do not compress, already compressed
 
 	int shift=0;
 	int squish_comp=squish::kColourRangeFit;
 	Image::Format target_format;
 
-	if (p_image->get_format()==Image::FORMAT_GRAYSCALE_ALPHA) {
+	if (p_image->get_format()==Image::FORMAT_LA8) {
 		//compressed normalmap
-		target_format = Image::FORMAT_BC3; squish_comp|=squish::kDxt5;;
+		target_format = Image::FORMAT_DXT5; squish_comp|=squish::kDxt5;;
 	} else if (p_image->detect_alpha()!=Image::ALPHA_NONE) {
 
-		target_format = Image::FORMAT_BC2; squish_comp|=squish::kDxt3;;
+		target_format = Image::FORMAT_DXT3; squish_comp|=squish::kDxt3;;
 	} else {
-		target_format = Image::FORMAT_BC1; shift=1; squish_comp|=squish::kDxt1;;
+		target_format = Image::FORMAT_DXT1; shift=1; squish_comp|=squish::kDxt1;;
 	}
 
-	p_image->convert(Image::FORMAT_RGBA); //always expects rgba
+	p_image->convert(Image::FORMAT_RGBA8); //always expects rgba
 
-	int mm_count = p_image->get_mipmaps();
+	int mm_count = p_image->get_mipmap_count();
 
 	DVector<uint8_t> data;
 	int target_size = Image::get_image_data_size(w,h,target_format,mm_count);
@@ -87,6 +87,6 @@ void image_compress_squish(Image *p_image) {
 	rb = DVector<uint8_t>::Read();
 	wb = DVector<uint8_t>::Write();
 
-	p_image->create(p_image->get_width(),p_image->get_height(),p_image->get_mipmaps(),target_format,data);
+	p_image->create(p_image->get_width(),p_image->get_height(),p_image->has_mipmaps(),target_format,data);
 
 }

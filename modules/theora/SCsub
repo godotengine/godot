@@ -6,78 +6,78 @@ Import('env_modules')
 env_theora = env_modules.Clone()
 
 # Thirdparty source files
-if (env["libtheora"] != "system"): # builtin
-	thirdparty_dir = "#thirdparty/libtheora/"
-	thirdparty_sources = [
-		#"analyze.c",
-		#"apiwrapper.c",
-		"bitpack.c",
-		"cpu.c",
-		#"decapiwrapper.c",
-		"decinfo.c",
-		"decode.c",
-		"dequant.c",
-		#"encapiwrapper.c",
-		#"encfrag.c",
-		#"encinfo.c",
-		#"encode.c",
-		#"encoder_disabled.c",
-		#"enquant.c",
-		#"fdct.c",
-		"fragment.c",
-		"huffdec.c",
-		#"huffenc.c",
-		"idct.c",
-		"info.c",
-		"internal.c",
-		#"mathops.c",
-		#"mcenc.c",
-		"quant.c",
-		#"rate.c",
-		"state.c",
-		#"tokenize.c",
-	]
+if (env['builtin_libtheora'] != 'no'):
+    thirdparty_dir = "#thirdparty/libtheora/"
+    thirdparty_sources = [
+        #"analyze.c",
+        #"apiwrapper.c",
+        "bitpack.c",
+        "cpu.c",
+        #"decapiwrapper.c",
+        "decinfo.c",
+        "decode.c",
+        "dequant.c",
+        #"encapiwrapper.c",
+        #"encfrag.c",
+        #"encinfo.c",
+        #"encode.c",
+        #"encoder_disabled.c",
+        #"enquant.c",
+        #"fdct.c",
+        "fragment.c",
+        "huffdec.c",
+        #"huffenc.c",
+        "idct.c",
+        "info.c",
+        "internal.c",
+        #"mathops.c",
+        #"mcenc.c",
+        "quant.c",
+        #"rate.c",
+        "state.c",
+        #"tokenize.c",
+    ]
 
-	thirdparty_sources_x86 = [
-		#"x86/mmxencfrag.c",
-		#"x86/mmxfdct.c",
-		"x86/mmxfrag.c",
-		"x86/mmxidct.c",
-		"x86/mmxstate.c",
-		#"x86/sse2fdct.c",
-		#"x86/x86enc.c",
-		"x86/x86state.c",
-	]
+    thirdparty_sources_x86 = [
+        #"x86/mmxencfrag.c",
+        #"x86/mmxfdct.c",
+        "x86/mmxfrag.c",
+        "x86/mmxidct.c",
+        "x86/mmxstate.c",
+        #"x86/sse2fdct.c",
+        #"x86/x86enc.c",
+        "x86/x86state.c",
+    ]
 
-	thirdparty_sources_x86_vc = [
-		#"x86_vc/mmxencfrag.c",
-		#"x86_vc/mmxfdct.c",
-		"x86_vc/mmxfrag.c",
-		"x86_vc/mmxidct.c",
-		"x86_vc/mmxstate.c",
-		#"x86_vc/x86enc.c",
-		"x86_vc/x86state.c",
-	]
+    thirdparty_sources_x86_vc = [
+        #"x86_vc/mmxencfrag.c",
+        #"x86_vc/mmxfdct.c",
+        "x86_vc/mmxfrag.c",
+        "x86_vc/mmxidct.c",
+        "x86_vc/mmxstate.c",
+        #"x86_vc/x86enc.c",
+        "x86_vc/x86state.c",
+    ]
 
-	if (env["x86_libtheora_opt_gcc"]):
-		thirdparty_sources += thirdparty_sources_x86
+    if (env["x86_libtheora_opt_gcc"]):
+        thirdparty_sources += thirdparty_sources_x86
 
-	if (env["x86_libtheora_opt_vc"]):
-		thirdparty_sources += thirdparty_sources_x86_vc
+    if (env["x86_libtheora_opt_vc"]):
+        thirdparty_sources += thirdparty_sources_x86_vc
 
-	if (env["x86_libtheora_opt_gcc"] or env["x86_libtheora_opt_vc"]):
-		env_theora.Append(CCFLAGS = ["-DOC_X86_ASM"])
+    if (env["x86_libtheora_opt_gcc"] or env["x86_libtheora_opt_vc"]):
+        env_theora.Append(CCFLAGS=["-DOC_X86_ASM"])
 
-	thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-	env_theora.add_source_files(env.modules_sources, thirdparty_sources)
-	env_theora.Append(CPPPATH = [thirdparty_dir])
+    env_theora.add_source_files(env.modules_sources, thirdparty_sources)
+    env_theora.Append(CPPPATH=[thirdparty_dir])
 
-	# also requires libogg and libvorbis
-	if (env["libogg"] != "system"): # builtin
-		env_theora.Append(CPPPATH = ["#thirdparty/libogg"])
-	if (env["libvorbis"] != "system"): # builtin
-		env_theora.Append(CPPPATH = ["#thirdparty/libvorbis"])
+    # also requires libogg and libvorbis
+    if (env['builtin_libogg'] != 'no'):
+        env_theora.Append(CPPPATH=["#thirdparty/libogg"])
+    if (env['builtin_libvorbis'] != 'no'):
+        env_theora.Append(CPPPATH=["#thirdparty/libvorbis"])
 
 # Godot source files
 env_theora.add_source_files(env.modules_sources, "*.cpp")

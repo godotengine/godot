@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,14 +88,22 @@ void ScrollContainer::_input_event(const InputEvent& p_input_event) {
 
 			const InputEventMouseButton &mb=p_input_event.mouse_button;
 
-			if (mb.button_index==BUTTON_WHEEL_UP && mb.pressed && v_scroll->is_visible()) {
-
-				v_scroll->set_val( v_scroll->get_val()-v_scroll->get_page()/8 );
+			if (mb.button_index==BUTTON_WHEEL_UP && mb.pressed) {
+				if (h_scroll->is_visible() && !v_scroll->is_visible()){
+					// only horizontal is enabled, scroll horizontally
+					h_scroll->set_val( h_scroll->get_val()-h_scroll->get_page()/8 );
+				} else if (v_scroll->is_visible()) {
+					v_scroll->set_val( v_scroll->get_val()-v_scroll->get_page()/8 );
+				}
 			}
 
-			if (mb.button_index==BUTTON_WHEEL_DOWN && mb.pressed && v_scroll->is_visible()) {
-
-				v_scroll->set_val( v_scroll->get_val()+v_scroll->get_page()/8 );
+			if (mb.button_index==BUTTON_WHEEL_DOWN && mb.pressed) {
+				if (h_scroll->is_visible() && !v_scroll->is_visible()){
+					// only horizontal is enabled, scroll horizontally
+					h_scroll->set_val( h_scroll->get_val()+h_scroll->get_page()/8 );
+				} else if (v_scroll->is_visible()) {
+					v_scroll->set_val( v_scroll->get_val()+v_scroll->get_page()/8 );
+				}
 			}
 
 			if(!OS::get_singleton()->has_touchscreen_ui_hint())

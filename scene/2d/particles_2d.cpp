@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -563,7 +563,7 @@ void Particles2D::_notification(int p_what) {
 					}
 				}
 
-				float initial_size = param[PARAM_INITIAL_SIZE]+param[PARAM_INITIAL_SIZE]*_rand_from_seed(&rand_seed)*randomness[PARAM_FINAL_SIZE];
+				float initial_size = param[PARAM_INITIAL_SIZE]+param[PARAM_INITIAL_SIZE]*_rand_from_seed(&rand_seed)*randomness[PARAM_INITIAL_SIZE];
 				float final_size = param[PARAM_FINAL_SIZE]+param[PARAM_FINAL_SIZE]*_rand_from_seed(&rand_seed)*randomness[PARAM_FINAL_SIZE];
 
 				float size_mult=initial_size*(1.0-ptime) + final_size*ptime;

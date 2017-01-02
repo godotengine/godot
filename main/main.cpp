@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -127,7 +127,7 @@ static String unescape_cmdline(const String& p_str) {
 
 void Main::print_help(const char* p_binary) {
 
-	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2016 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2017 Juan Linietsky, Ariel Manzur.\n");
 	OS::get_singleton()->print("Usage: %s [options] [scene]\n",p_binary);
 	OS::get_singleton()->print("Options:\n");
 	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing engine.cfg\n");
@@ -159,7 +159,7 @@ void Main::print_help(const char* p_binary) {
 		OS::get_singleton()->print("%s",OS::get_singleton()->get_video_driver_name(i));
 	}
 	OS::get_singleton()->print(")\n");
-	OS::get_singleton()->print("\t-ldpi\t : Force low-dpi mode (OSX Only)");
+	OS::get_singleton()->print("\t-ldpi\t : Force low-dpi mode (OSX Only)\n");
 
 	OS::get_singleton()->print("\t-ad DRIVER\t : Audio Driver (");
 	for (int i=0;i<OS::get_singleton()->get_audio_driver_count();i++) {
@@ -169,8 +169,7 @@ void Main::print_help(const char* p_binary) {
 		OS::get_singleton()->print("%s",OS::get_singleton()->get_audio_driver_name(i));
 	}
     OS::get_singleton()->print(")\n");
-	OS::get_singleton()->print("\t-rthread <mode>\t : Render Thread Mode ('unsafe', 'safe', 'separate).");
-	OS::get_singleton()->print(")\n");
+	OS::get_singleton()->print("\t-rthread <mode>\t : Render Thread Mode ('unsafe', 'safe', 'separate').\n");
 	OS::get_singleton()->print("\t-s,-script [script] : Run a script.\n");
 	OS::get_singleton()->print("\t-d,-debug : Debug (local stdout debugger).\n");
 	OS::get_singleton()->print("\t-rdebug ADDRESS : Remote debug (<ip>:<port> host address).\n");
@@ -1300,6 +1299,17 @@ bool Main::start() {
 			appname = TranslationServer::get_singleton()->translate(appname);
 			OS::get_singleton()->set_window_title(appname);
 
+			int shadow_atlas_size = GLOBAL_DEF("rendering/shadow_atlas/size",2048);
+			int shadow_atlas_q0_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_0_subdiv",2);
+			int shadow_atlas_q1_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_1_subdiv",2);
+			int shadow_atlas_q2_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_2_subdiv",3);
+			int shadow_atlas_q3_subdiv = GLOBAL_DEF("rendering/shadow_atlas/quadrant_3_subdiv",4);
+
+			sml->get_root()->set_shadow_atlas_size(shadow_atlas_size);
+			sml->get_root()->set_shadow_atlas_quadrant_subdiv(0,Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q0_subdiv));
+			sml->get_root()->set_shadow_atlas_quadrant_subdiv(1,Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q1_subdiv));
+			sml->get_root()->set_shadow_atlas_quadrant_subdiv(2,Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q2_subdiv));
+			sml->get_root()->set_shadow_atlas_quadrant_subdiv(3,Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q3_subdiv));
 
 		} else {
 			GLOBAL_DEF("display/stretch_mode","disabled");
@@ -1308,7 +1318,17 @@ bool Main::start() {
 			Globals::get_singleton()->set_custom_property_info("display/stretch_aspect",PropertyInfo(Variant::STRING,"display/stretch_aspect",PROPERTY_HINT_ENUM,"ignore,keep,keep_width,keep_height"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/auto_accept_quit",true));
 
+			GLOBAL_DEF("rendering/shadow_atlas/size",2048);
+			Globals::get_singleton()->set_custom_property_info("rendering/shadow_atlas/size",PropertyInfo(Variant::INT,"rendering/shadow_atlas/size",PROPERTY_HINT_RANGE,"256,16384"));
 
+			GLOBAL_DEF("rendering/shadow_atlas/quadrant_0_subdiv",2);
+			GLOBAL_DEF("rendering/shadow_atlas/quadrant_1_subdiv",2);
+			GLOBAL_DEF("rendering/shadow_atlas/quadrant_2_subdiv",3);
+			GLOBAL_DEF("rendering/shadow_atlas/quadrant_3_subdiv",4);
+			Globals::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_0_subdiv",PropertyInfo(Variant::INT,"rendering/shadow_atlas/quadrant_0_subdiv",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+			Globals::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_1_subdiv",PropertyInfo(Variant::INT,"rendering/shadow_atlas/quadrant_1_subdiv",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+			Globals::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_2_subdiv",PropertyInfo(Variant::INT,"rendering/shadow_atlas/quadrant_2_subdiv",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+			Globals::get_singleton()->set_custom_property_info("rendering/shadow_atlas/quadrant_3_subdiv",PropertyInfo(Variant::INT,"rendering/shadow_atlas/quadrant_3_subdiv",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
 		}
 
 

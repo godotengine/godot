@@ -1,5 +1,5 @@
 # Chinese (Honk Kong) translation of the Godot Engine editor
-# Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Wesley (zx-wt) <ZX_WT@ymail.com>, 2016.
@@ -30,12 +30,6 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr ""
-
-#: modules/gdscript/gd_functions.cpp
-msgid ""
-"Paths cannot start with '/', absolute paths must start with 'res://', "
-"'user://', or 'local://'"
 msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
@@ -391,76 +385,76 @@ msgstr ""
 msgid "just released"
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid ""
 "Couldn't read the certficate file. Are the path and password both correct?"
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Error creating the signature object."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Error creating the package signature."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Custom debug package not found."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Custom release package not found."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Invalid unique name."
 msgstr "無效名稱"
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Invalid product GUID."
 msgstr "無效字型"
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid publisher GUID."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid background color."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
 msgstr ""
 
-#: platform/winrt/export/export.cpp
+#: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
 
@@ -631,7 +625,8 @@ msgstr ""
 msgid "Cancel"
 msgstr "取消"
 
-#: scene/gui/dialogs.cpp tools/editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "OK"
 msgstr "OK"
 
@@ -1852,7 +1847,9 @@ msgstr ""
 msgid "Save Resource As.."
 msgstr "把資源另存為..."
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "如來如此"
 
@@ -2080,7 +2077,9 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr "選擇主場景"
 
-#: tools/editor/editor_node.cpp tools/editor/scene_tree_dock.cpp
+#: tools/editor/editor_node.cpp
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp tools/editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr ""
 
@@ -2988,6 +2987,10 @@ msgid "Auto"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Root Node Name:"
+msgstr ""
+
+#: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr ""
 
@@ -3885,6 +3888,49 @@ msgstr ""
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap (Pixels):"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Add %s"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Adding %s..."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Create Node"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "Error instancing scene from %s"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "OK :("
+msgstr "OK :("
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "No parent to instance a child at."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#: tools/editor/scene_tree_dock.cpp
+msgid "This operation requires a single selected node."
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Change default type"
+msgstr ""
+
+#: tools/editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Drag & drop + Shift : Add node as sibling\n"
+"Drag & drop + Alt : Change node type"
 msgstr ""
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
@@ -6134,7 +6180,7 @@ msgstr ""
 msgid "Dir.."
 msgstr ""
 
-#: tools/editor/property_editor.cpp
+#: tools/editor/property_editor.cpp tools/editor/script_create_dialog.cpp
 msgid "Load"
 msgstr ""
 
@@ -6250,23 +6296,11 @@ msgid "Scene Run Settings"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "OK :("
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "No parent to instance a child at."
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Error instancing scene from %s"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
@@ -6308,10 +6342,6 @@ msgid "This operation can't be done without a scene."
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "This operation requires a single selected node."
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr ""
 
@@ -6333,10 +6363,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
-msgstr ""
-
-#: tools/editor/scene_tree_dock.cpp
-msgid "Create Node"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
@@ -6378,8 +6404,14 @@ msgid "Change Type"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Add Script"
-msgstr ""
+#, fuzzy
+msgid "Attach Script"
+msgstr "腳本"
+
+#: tools/editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
+msgstr "下一個腳本"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6404,7 +6436,11 @@ msgid ""
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
-msgid "Create a new script for the selected node."
+msgid "Attach a new or existing script for the selected node."
+msgstr ""
+
+#: tools/editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
 msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
@@ -6506,6 +6542,11 @@ msgid "Could not create script in filesystem."
 msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "載入字形出現錯誤"
+
+#: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "路徑為空"
 
@@ -6518,16 +6559,18 @@ msgid "Invalid base path"
 msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "檔案已存在"
-
-#: tools/editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "無效副檔名"
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "有效路徑"
+#, fuzzy
+msgid "Create new script"
+msgstr "新增"
+
+#: tools/editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Load existing script"
+msgstr "下一個腳本"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6538,8 +6581,9 @@ msgid "Built-In Script"
 msgstr ""
 
 #: tools/editor/script_create_dialog.cpp
-msgid "Create Node Script"
-msgstr ""
+#, fuzzy
+msgid "Attach Node Script"
+msgstr "下一個腳本"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6705,6 +6749,12 @@ msgstr ""
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#~ msgid "File exists"
+#~ msgstr "檔案已存在"
+
+#~ msgid "Valid path"
+#~ msgstr "有效路徑"
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "無法進入次要資料夾"

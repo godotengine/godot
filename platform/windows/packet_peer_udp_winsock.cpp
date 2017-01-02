@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,12 +53,14 @@ Error PacketPeerUDPWinsock::get_packet(const uint8_t **r_buffer,int &r_buffer_si
 	uint32_t size;
 	uint8_t type;
 	rb.read(&type, 1, true);
-	if (type == IP_Address::TYPE_IPV4) {
-		rb.read((uint8_t*)&packet_ip.field8,4,true);
-		packet_ip.type = IP_Address::TYPE_IPV4;
+	if (type == IP::TYPE_IPV4) {
+		uint8_t ip[4];
+		rb.read(ip,4,true);
+		packet_ip.set_ipv4(ip);
 	} else {
-		rb.read((uint8_t*)&packet_ip.field8,16,true);
-		packet_ip.type = IP_Address::TYPE_IPV6;
+		uint8_t ip[16];
+		rb.read(ip,16,true);
+		packet_ip.set_ipv6(ip);
 	};
 	rb.read((uint8_t*)&packet_port,4,true);
 	rb.read((uint8_t*)&size,4,true);
@@ -71,10 +73,10 @@ Error PacketPeerUDPWinsock::get_packet(const uint8_t **r_buffer,int &r_buffer_si
 }
 Error PacketPeerUDPWinsock::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 
-	int sock = _get_socket(peer_addr.type);
+	int sock = _get_socket();
 	ERR_FAIL_COND_V( sock == -1, FAILED );
 	struct sockaddr_storage addr;
-	size_t addr_size = _set_sockaddr(&addr, peer_addr, peer_port);
+	size_t addr_size = _set_sockaddr(&addr, peer_addr, peer_port, ip_type);
 
 	_set_blocking(true);
 
@@ -112,15 +114,15 @@ void PacketPeerUDPWinsock::_set_blocking(bool p_blocking) {
 	};
 }
 
-Error PacketPeerUDPWinsock::listen(int p_port, IP_Address::AddrType p_address_type, int p_recv_buffer_size) {
+Error PacketPeerUDPWinsock::listen(int p_port, int p_recv_buffer_size) {
 
 	close();
-	int sock = _get_socket(p_address_type);
+	int sock = _get_socket();
 	if (sock == -1 )
 		return ERR_CANT_CREATE;
 
 	struct sockaddr_storage addr = {0};
-	size_t addr_size = _set_listen_sockaddr(&addr, p_port, p_address_type, NULL);
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, ip_type, NULL);
 
 	if (bind(sock, (struct sockaddr*)&addr, addr_size) == -1 ) {
 		close();
@@ -162,7 +164,7 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 		uint32_t port = 0;
 
 		if (from.ss_family == AF_INET) {
-			uint8_t type = (uint8_t)IP_Address::TYPE_IPV4;
+			uint8_t type = (uint8_t)IP::TYPE_IPV4;
 			rb.write(&type, 1);
 			struct sockaddr_in* sin_from = (struct sockaddr_in*)&from;
 			rb.write((uint8_t*)&sin_from->sin_addr, 4);
@@ -170,7 +172,7 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 
 		} else if (from.ss_family == AF_INET6) {
 
-			uint8_t type = (uint8_t)IP_Address::TYPE_IPV6;
+			uint8_t type = (uint8_t)IP::TYPE_IPV6;
 			rb.write(&type, 1);
 
 			struct sockaddr_in6* s6_from = (struct sockaddr_in6*)&from;
@@ -180,7 +182,7 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 
 		} else {
 			// WARN_PRINT("Ignoring packet with unknown address family");
-			uint8_t type = (uint8_t)IP_Address::TYPE_NONE;
+			uint8_t type = (uint8_t)IP::TYPE_NONE;
 			rb.write(&type, 1);
 		};
 
@@ -234,16 +236,12 @@ int PacketPeerUDPWinsock::get_packet_port() const{
 	return packet_port;
 }
 
-int PacketPeerUDPWinsock::_get_socket(IP_Address::AddrType p_type) {
+int PacketPeerUDPWinsock::_get_socket() {
 
 	if (sockfd != -1)
 		return sockfd;
 
-	int family = p_type == IP_Address::TYPE_IPV6 ? AF_INET6 : AF_INET;
-
-	sockfd = socket(family, SOCK_DGRAM, IPPROTO_UDP);
-	ERR_FAIL_COND_V( sockfd == -1, -1 );
-	//fcntl(sockfd, F_SETFL, O_NONBLOCK);
+	sockfd = _socket_create(ip_type, SOCK_DGRAM, IPPROTO_UDP);
 
 	return sockfd;
 }
@@ -273,6 +271,7 @@ PacketPeerUDPWinsock::PacketPeerUDPWinsock() {
 	packet_port=0;
 	queue_count=0;
 	peer_port=0;
+	ip_type = IP::TYPE_ANY;
 }
 
 PacketPeerUDPWinsock::~PacketPeerUDPWinsock() {

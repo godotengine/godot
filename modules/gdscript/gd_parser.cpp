@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -540,14 +540,15 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				expr = id;
 			}
 
-		} else if (/*tokenizer->get_token()==GDTokenizer::TK_OP_ADD ||*/ tokenizer->get_token()==GDTokenizer::TK_OP_SUB || tokenizer->get_token()==GDTokenizer::TK_OP_NOT || tokenizer->get_token()==GDTokenizer::TK_OP_BIT_INVERT) {
+		} else if (tokenizer->get_token()==GDTokenizer::TK_OP_ADD || tokenizer->get_token()==GDTokenizer::TK_OP_SUB || tokenizer->get_token()==GDTokenizer::TK_OP_NOT || tokenizer->get_token()==GDTokenizer::TK_OP_BIT_INVERT) {
 
-			//single prefix operators like !expr -expr ++expr --expr
+			//single prefix operators like !expr +expr -expr ++expr --expr
 			alloc_node<OperatorNode>();
 			Expression e;
 			e.is_op=true;
 
 			switch(tokenizer->get_token()) {
+				case GDTokenizer::TK_OP_ADD: e.op=OperatorNode::OP_POS; break;
 				case GDTokenizer::TK_OP_SUB: e.op=OperatorNode::OP_NEG; break;
 				case GDTokenizer::TK_OP_NOT: e.op=OperatorNode::OP_NOT; break;
 				case GDTokenizer::TK_OP_BIT_INVERT: e.op=OperatorNode::OP_BIT_INVERT;; break;
@@ -995,6 +996,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 				case OperatorNode::OP_BIT_INVERT: priority=0; unary=true; break;
 				case OperatorNode::OP_NEG: priority=1; unary=true; break;
+				case OperatorNode::OP_POS: priority=1; unary=true; break;
 
 				case OperatorNode::OP_MUL: priority=2; break;
 				case OperatorNode::OP_DIV: priority=2; break;
@@ -1476,6 +1478,15 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 						return op;
 					}
 
+					if (op->arguments[0]->type==Node::TYPE_OPERATOR) {
+						OperatorNode *on = static_cast<OperatorNode*>(op->arguments[0]);
+						if (on->op != OperatorNode::OP_INDEX && on->op != OperatorNode::OP_INDEX_NAMED) {
+							_set_error("Can't assign to an expression",tokenizer->get_token_line()-1);
+							error_line=op->line;
+							return op;
+						}
+					}
+
 				} break;
 				default: { break; }
 			}
@@ -1512,6 +1523,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 
 				//unary operators
 				case OperatorNode::OP_NEG: { _REDUCE_UNARY(Variant::OP_NEGATE); } break;
+				case OperatorNode::OP_POS: { _REDUCE_UNARY(Variant::OP_POSITIVE); } break;
 				case OperatorNode::OP_NOT: { _REDUCE_UNARY(Variant::OP_NOT); } break;
 				case OperatorNode::OP_BIT_INVERT: { _REDUCE_UNARY(Variant::OP_BIT_NEGATE); } break;
 				//binary operators (in precedence order)
@@ -3375,7 +3387,16 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				
 
 			} break;
-
+			
+			case GDTokenizer::TK_CONSTANT: {
+				if(tokenizer->get_token_constant().get_type() == Variant::STRING) {
+					tokenizer->advance();
+					// Ignore
+				} else {
+					_set_error(String()+"Unexpected constant of type: "+Variant::get_type_name(tokenizer->get_token_constant().get_type()));
+					return;
+				}
+			} break;
 
 			default: {
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -801,7 +801,10 @@ void ItemList::_notification(int p_what) {
 		Size2 size = get_size();
 
 		float page = size.height-bg->get_minimum_size().height;
-		int width = size.width - mw - bg->get_minimum_size().width;
+		int width = size.width-bg->get_minimum_size().width;
+		if (!scroll_bar->is_hidden()){
+			width-=mw+bg->get_margin(MARGIN_RIGHT);
+		}
 		scroll_bar->set_page(page);
 
 		draw_style_box(bg,Rect2(Point2(),size));

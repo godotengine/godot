@@ -8,6 +8,7 @@ platform/osx/logo.h
 platform/windows/logo.h
 platform/x11/logo.h
 drivers/gles2/shaders/*.h
+drivers/gles3/shaders/*.h
 modules/register_module_types.cpp
 core/version.h
 core/method_bind.inc

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -377,13 +377,13 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 
 			if (InputMap::get_singleton()->event_is_action(p_event,E->key())) {
 
-				Action action;
-				action.fixed_frame=OS::get_singleton()->get_fixed_frames();
-				action.idle_frame=OS::get_singleton()->get_idle_frames();
-				action.pressed=p_event.is_pressed();
-
-				action_state[E->key()]=action;
-
+				if(is_action_pressed(E->key()) != p_event.is_pressed()) {
+					Action action;
+					action.fixed_frame=OS::get_singleton()->get_fixed_frames();
+					action.idle_frame=OS::get_singleton()->get_idle_frames();
+					action.pressed=p_event.is_pressed();
+					action_state[E->key()]=action;
+				}
 			}
 		}
 	}
@@ -739,8 +739,8 @@ static const char *s_ControllerMappings [] =
 	"c2a94d6963726f736f66742058626f78,Wireless X360 Controller,leftx:a0,lefty:a1,dpdown:b14,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:b11,lefttrigger:a2,x:b2,dpup:b13,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:b12,righttrigger:a5,b:b1,",
 	#endif
 
-	#ifdef WINRT_ENABLED
-	"__WINRT_GAMEPAD__,Xbox Controller,a:b2,b:b3,x:b4,y:b5,start:b0,back:b1,leftstick:b12,rightstick:b13,leftshoulder:b10,rightshoulder:b11,dpup:b6,dpdown:b7,dpleft:b8,dpright:b9,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,",
+	#ifdef UWP_ENABLED
+	"__UWP_GAMEPAD__,Xbox Controller,a:b2,b:b3,x:b4,y:b5,start:b0,back:b1,leftstick:b12,rightstick:b13,leftshoulder:b10,rightshoulder:b11,dpup:b6,dpdown:b7,dpleft:b8,dpright:b9,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,",
 	#endif
 	NULL
 };

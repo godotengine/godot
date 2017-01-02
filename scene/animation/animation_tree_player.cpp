@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -494,14 +494,7 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 		case NODE_OUTPUT: {
 
 			NodeOut *on = static_cast<NodeOut*>(nb);
-
-			for(TrackMap::Element *E=track_map.front();E;E=E->next()) {
-				E->get().total_weight = 0;
-			}
-
 			HashMap<NodePath, float> weights;
-
-
 
 			return _process_node(on->inputs[0].node,r_prev_anim,p_time,p_seek, p_fallback_weight, &weights);
 
@@ -544,15 +537,12 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 					NodePath track_path = an->animation->track_get_path(E->get().local_track);
 					if (an->filter.has(track_path) && an->filter[track_path]) {
 						E->get().weight = 0;
-						E->get().track->total_weight += p_fallback_weight;
 					} else {
 						if (p_weights->has(track_path)) {
 							float weight = (*p_weights)[track_path];
 							E->get().weight = weight;
-							E->get().track->total_weight += weight;
 						} else {
 							E->get().weight = p_fallback_weight;
-							E->get().track->total_weight += p_fallback_weight;
 						}
 					}
 					if (E->get().weight>CMP_EPSILON)
@@ -875,8 +865,6 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 				if (tr.track==NULL || tr.local_track<0 || tr.weight < CMP_EPSILON)
 					continue;
 
-				float blend=tr.weight / tr.track->total_weight;
-
 				switch(a->track_get_type(tr.local_track)) {
 					case Animation::TYPE_TRANSFORM: { ///< Transform a node or a bone.
 
@@ -885,14 +873,14 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 						Vector3 scale;
 						a->transform_track_interpolate(tr.local_track,anim_list->time,&loc,&rot,&scale);
 
-						tr.track->loc+=loc*blend;
+						tr.track->loc+=loc*tr.weight;
 
 						scale.x-=1.0;
 						scale.y-=1.0;
 						scale.z-=1.0;
-						tr.track->scale+=scale*blend;
+						tr.track->scale+=scale*tr.weight;
 
-						tr.track->rot = tr.track->rot * empty_rot.slerp(rot,blend);
+						tr.track->rot = tr.track->rot * empty_rot.slerp(rot,tr.weight);
 
 
 					} break;
@@ -900,7 +888,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 						if (a->value_track_get_update_mode(tr.local_track)==Animation::UPDATE_CONTINUOUS) {
 							Variant value = a->value_track_interpolate(tr.local_track,anim_list->time);
-							Variant::blend(tr.track->value,value,blend,tr.track->value);
+							Variant::blend(tr.track->value,value,tr.weight,tr.track->value);
 						} else {
 							int index = a->track_find_key(tr.local_track,anim_list->time);
 							tr.track->value = a->track_get_key_value(tr.local_track, index);

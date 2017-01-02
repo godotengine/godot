@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -573,7 +573,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	//blit to image and texture
 	{
 
-		Image img(tex.texture_size,tex.texture_size,0,Image::FORMAT_GRAYSCALE_ALPHA,tex.imgdata);
+		Image img(tex.texture_size,tex.texture_size,0,Image::FORMAT_LA8,tex.imgdata);
 
 		if (tex.texture.is_null()) {
 			tex.texture.instance();

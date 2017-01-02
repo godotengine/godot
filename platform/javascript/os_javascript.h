@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,9 +45,7 @@
 #include "javascript_eval.h"
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2,int w, int h, bool fs);
-typedef int (*OpenURIFunc)(const String&);
 typedef String (*GetDataDirFunc)();
-typedef String (*GetLocaleFunc)();
 
 class OS_JavaScript : public OS_Unix {
 public:
@@ -61,6 +59,7 @@ private:
 
 	Vector<TouchPos> touch;
 	Point2 last_mouse;
+	int last_button_mask;
 	unsigned int last_id;
 	GFXInitFunc gfx_init_func;
 	void*gfx_init_ud;
@@ -82,12 +81,11 @@ private:
 	const char* gl_extensions;
 
 	InputDefault *input;
-	VideoMode default_videomode;
+	bool window_maximized;
+	VideoMode video_mode;
 	MainLoop * main_loop;
 
-	OpenURIFunc open_uri_func;
 	GetDataDirFunc get_data_dir_func;
-	GetLocaleFunc get_locale_func;
 
 #ifdef JAVASCRIPT_EVAL_ENABLED
 	JavaScript* javascript_eval;
@@ -121,9 +119,12 @@ public:
 
 	//static OS* get_singleton();
 
-	virtual void vprint(const char* p_format, va_list p_list, bool p_stderr=false);
-	virtual void print(const char *p_format, ... );
-	virtual void alert(const String& p_alert);
+	virtual void print_error(const char* p_function, const char* p_file, int p_line, const char *p_code, const char* p_rationale, ErrorType p_type) {
+
+		OS::print_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+	}
+
+	virtual void alert(const String& p_alert,const String& p_title="ALERT!");
 
 
 	virtual void set_mouse_show(bool p_show);
@@ -140,7 +141,15 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
 
+	virtual Size2 get_screen_size(int p_screen=0) const;
+
+	virtual void set_window_size(const Size2);
 	virtual Size2 get_window_size() const;
+	virtual void set_window_maximized(bool p_enabled);
+	virtual bool is_window_maximized() const { return window_maximized; }
+	virtual void set_window_fullscreen(bool p_enable);
+	virtual bool is_window_fullscreen() const;
+
 	virtual String get_name();
 	virtual MainLoop *get_main_loop() const;
 
@@ -158,14 +167,13 @@ public:
 	virtual bool has_touchscreen_ui_hint() const;
 
 	void set_opengl_extensions(const char* p_gl_extensions);
-	void set_display_size(Size2 p_size);
 
 	void reload_gfx();
 
 	virtual Error shell_open(String p_uri);
 	virtual String get_data_dir() const;
+	String get_executable_path() const;
 	virtual String get_resource_dir() const;
-	virtual String get_locale() const;
 
 	void process_accelerometer(const Vector3& p_accelerometer);
 	void process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points);
@@ -175,7 +183,7 @@ public:
 	virtual String get_joy_guid(int p_device) const;
 	bool joy_connection_changed(int p_type, const EmscriptenGamepadEvent *p_event);
 
-	OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func);
+	OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func);
 	~OS_JavaScript();
 
 };

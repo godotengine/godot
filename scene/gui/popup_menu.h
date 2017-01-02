@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,6 +75,7 @@ class PopupMenu : public Popup {
 	void _submenu_timeout();
 
 	bool invalidated_click;
+	bool hide_on_item_selection;
 	Vector2 moved;
 
 	Array _get_items() const;
@@ -155,6 +156,8 @@ public:
 	void clear_autohide_areas();
 
 	void set_invalidate_click_until_motion();
+	void set_hide_on_item_selection(bool p_enabled);
+	bool is_hide_on_item_selection();
 
 	PopupMenu();
 	~PopupMenu();

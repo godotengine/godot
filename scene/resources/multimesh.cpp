@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -141,7 +141,7 @@ Ref<Mesh> MultiMesh::get_mesh() const {
 
 void MultiMesh::set_instance_count(int p_count) {
 
-	VisualServer::get_singleton()->multimesh_set_instance_count(multimesh,p_count);
+	VisualServer::get_singleton()->multimesh_allocate(multimesh,p_count,VS::MultimeshTransformFormat(transform_format),VS::MultimeshColorFormat(color_format));
 
 }
 int MultiMesh::get_instance_count() const {
@@ -174,45 +174,13 @@ Color MultiMesh::get_instance_color(int p_instance) const {
 
 }
 
-void MultiMesh::set_aabb(const AABB& p_aabb) {
 
-	aabb=p_aabb;
-	VisualServer::get_singleton()->multimesh_set_aabb(multimesh,p_aabb);
-
-
-}
 AABB MultiMesh::get_aabb() const {
 
-	return aabb;
+	return VisualServer::get_singleton()->multimesh_get_aabb(multimesh);
 
 }
 
-void MultiMesh::generate_aabb() {
-
-
-
-	ERR_EXPLAIN("Cannot generate AABB if mesh is null.");
-	ERR_FAIL_COND(mesh.is_null());
-
-	AABB base_aabb=mesh->get_aabb();
-
-	aabb=AABB();
-
-	int instance_count = get_instance_count();
-	for(int i=0;i<instance_count;i++) {
-
-
-		Transform xform = get_instance_transform(i);
-		if(i==0)
-			aabb=xform.xform(base_aabb);
-		else
-			aabb.merge_with(xform.xform(base_aabb));
-
-	}
-
-	set_aabb(aabb);
-
-}
 
 RID MultiMesh::get_rid() const {
 
@@ -220,20 +188,44 @@ RID MultiMesh::get_rid() const {
 
 }
 
+
+void MultiMesh::set_color_format(ColorFormat p_color_format) {
+
+	color_format=p_color_format;
+}
+
+MultiMesh::ColorFormat MultiMesh::get_color_format() const{
+
+	return color_format;
+}
+
+void MultiMesh::set_transform_format(TransformFormat p_transform_format){
+
+	transform_format=p_transform_format;
+}
+MultiMesh::TransformFormat MultiMesh::get_transform_format() const{
+
+	return transform_format;
+}
+
+
 void MultiMesh::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MultiMesh::set_mesh);
 	ObjectTypeDB::bind_method(_MD("get_mesh:Mesh"),&MultiMesh::get_mesh);
+	ObjectTypeDB::bind_method(_MD("set_color_format","format"),&MultiMesh::set_color_format);
+	ObjectTypeDB::bind_method(_MD("get_color_format"),&MultiMesh::get_color_format);
+	ObjectTypeDB::bind_method(_MD("set_transform_format","format"),&MultiMesh::set_transform_format);
+	ObjectTypeDB::bind_method(_MD("get_transform_format"),&MultiMesh::get_transform_format);
+
 	ObjectTypeDB::bind_method(_MD("set_instance_count","count"),&MultiMesh::set_instance_count);
 	ObjectTypeDB::bind_method(_MD("get_instance_count"),&MultiMesh::get_instance_count);
 	ObjectTypeDB::bind_method(_MD("set_instance_transform","instance","transform"),&MultiMesh::set_instance_transform);
 	ObjectTypeDB::bind_method(_MD("get_instance_transform","instance"),&MultiMesh::get_instance_transform);
 	ObjectTypeDB::bind_method(_MD("set_instance_color","instance","color"),&MultiMesh::set_instance_color);
 	ObjectTypeDB::bind_method(_MD("get_instance_color","instance"),&MultiMesh::get_instance_color);
-	ObjectTypeDB::bind_method(_MD("set_aabb","visibility_aabb"),&MultiMesh::set_aabb);
 	ObjectTypeDB::bind_method(_MD("get_aabb"),&MultiMesh::get_aabb);
 
-	ObjectTypeDB::bind_method(_MD("generate_aabb"),&MultiMesh::generate_aabb);
 
 	ObjectTypeDB::bind_method(_MD("_set_transform_array"),&MultiMesh::_set_transform_array);
 	ObjectTypeDB::bind_method(_MD("_get_transform_array"),&MultiMesh::_get_transform_array);
@@ -241,17 +233,28 @@ void MultiMesh::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_get_color_array"),&MultiMesh::_get_color_array);
 
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"color_format",PROPERTY_HINT_ENUM,"None,Byte,Float"), _SCS("set_color_format"), _SCS("get_color_format"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"transform_format",PROPERTY_HINT_ENUM,"2D,3D"), _SCS("set_transform_format"), _SCS("get_transform_format"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"instance_count",PROPERTY_HINT_RANGE,"0,16384,1"), _SCS("set_instance_count"), _SCS("get_instance_count"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"mesh",PROPERTY_HINT_RESOURCE_TYPE,"Mesh"), _SCS("set_mesh"), _SCS("get_mesh"));
-	ADD_PROPERTY(PropertyInfo(Variant::_AABB,"aabb"), _SCS("set_aabb"), _SCS("get_aabb") );
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3_ARRAY,"transform_array",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_transform_array"), _SCS("_get_transform_array"));
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR_ARRAY,"color_array",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_color_array"), _SCS("_get_color_array"));
+
+
+
+	BIND_CONSTANT( TRANSFORM_2D  );
+	BIND_CONSTANT( TRANSFORM_3D  );
+	BIND_CONSTANT( COLOR_NONE  );
+	BIND_CONSTANT( COLOR_8BIT  );
+	BIND_CONSTANT( COLOR_FLOAT  );
 
 }
 
 MultiMesh::MultiMesh() {
 
 	multimesh = VisualServer::get_singleton()->multimesh_create();
+	color_format=COLOR_NONE;
+	transform_format=TRANSFORM_2D;
 }
 
 MultiMesh::~MultiMesh() {
