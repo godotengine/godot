@@ -135,6 +135,7 @@ private:
 		int history_current;
 		Dictionary custom_state;
 		uint64_t version;
+		String md5;
 		NodePath live_edit_root;
 
 
@@ -184,10 +185,12 @@ public:
 	void remove_scene(int p_idx);
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node* p_root);
+	void set_edited_scene_md5(const String& p_md5);
 	void set_edited_scene_import_metadata(Ref<ResourceImportMetadata> p_mdata);
 	Ref<ResourceImportMetadata> get_edited_scene_import_metadata(int p_idx = -1) const;
 	int get_edited_scene() const;
 	Node* get_edited_scene_root(int p_idx = -1);
+	String get_edited_scene_md5() const;
 	int get_edited_scene_count() const;
 	String get_scene_title(int p_idx) const;
 	String get_scene_path(int p_idx) const;

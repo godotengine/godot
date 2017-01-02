@@ -765,7 +765,15 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 	return es.custom_state;
 }
 
+void EditorData::set_edited_scene_md5(const String& p_md5){
+	ERR_FAIL_INDEX(current_edited_scene,edited_scene.size());
+	edited_scene[current_edited_scene].md5 = p_md5;
+}
 
+String EditorData::get_edited_scene_md5() const{
+	ERR_FAIL_INDEX_V(current_edited_scene,edited_scene.size(), "");
+	return edited_scene[current_edited_scene].md5;
+}
 void EditorData::set_edited_scene_import_metadata(Ref<ResourceImportMetadata> p_mdata) {
 
 	ERR_FAIL_INDEX(current_edited_scene,edited_scene.size());
