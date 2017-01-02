@@ -63,6 +63,7 @@ void FixedSpatialMaterial::init_shaders() {
 	shader_names->albedo="albedo";
 	shader_names->specular="specular";
 	shader_names->roughness="roughness";
+	shader_names->metalness="metalness";
 	shader_names->emission="emission";
 	shader_names->emission_energy="emission_energy";
 	shader_names->normal_scale="normal_scale";
@@ -173,7 +174,12 @@ void FixedSpatialMaterial::_update_shader() {
 
 	code+="uniform vec4 albedo : hint_color;\n";
 	code+="uniform sampler2D texture_albedo : hint_albedo;\n";
-	code+="uniform vec4 specular : hint_color;\n";
+	if (specular_mode==SPECULAR_MODE_SPECULAR) {
+		code+="uniform vec4 specular : hint_color;\n";
+	} else {
+		code+="uniform float metalness;\n";
+	}
+
 	code+="uniform float roughness : hint_range(0,1);\n";
 	code+="uniform float point_size : hint_range(0,128);\n";
 	code+="uniform sampler2D texture_specular : hint_white;\n";
@@ -326,9 +332,17 @@ void FixedSpatialMaterial::_update_shader() {
 		code+="\tALBEDO.rgb = mix(ALBEDO.rgb,detail,detail_mask_tex.r);\n";
 	}
 
-	code+="\tvec4 specular_tex = texture(texture_specular,UV);\n";
-	code+="\tSPECULAR = specular.rgb * specular_tex.rgb;\n";
-	code+="\tROUGHNESS = specular.a * roughness;\n";
+	if (specular_mode==SPECULAR_MODE_SPECULAR) {
+
+		code+="\tvec4 specular_tex = texture(texture_specular,UV);\n";
+		code+="\tSPECULAR = specular.rgb * specular_tex.rgb;\n";
+		code+="\tROUGHNESS = specular_tex.a * roughness;\n";
+	} else {
+		code+="\tvec4 specular_tex = texture(texture_specular,UV);\n";
+		code+="\tSPECULAR = vec3(metalness * specular_tex.r);\n";
+		code+="\tROUGHNESS = specular_tex.a * roughness;\n";
+	}
+
 	code+="}\n";
 
 	ShaderData shader_data;
@@ -398,6 +412,17 @@ Color FixedSpatialMaterial::get_albedo() const{
 	return albedo;
 }
 
+void FixedSpatialMaterial::set_specular_mode(SpecularMode p_mode) {
+	specular_mode=p_mode;
+	_change_notify();
+	_queue_shader_change();
+}
+
+FixedSpatialMaterial::SpecularMode FixedSpatialMaterial::get_specular_mode() const {
+
+	return specular_mode;
+}
+
 void FixedSpatialMaterial::set_specular(const Color& p_specular){
 
 	specular=p_specular;
@@ -415,9 +440,23 @@ void FixedSpatialMaterial::set_roughness(float p_roughness){
 	VS::get_singleton()->material_set_param(_get_material(),shader_names->roughness,p_roughness);
 
 }
+
+
 float FixedSpatialMaterial::get_roughness() const{
 
 	return roughness;
+}
+
+void FixedSpatialMaterial::set_metalness(float p_metalness){
+
+	metalness=p_metalness;
+	VS::get_singleton()->material_set_param(_get_material(),shader_names->metalness,p_metalness);
+}
+
+
+float FixedSpatialMaterial::get_metalness() const{
+
+	return metalness;
 }
 
 void FixedSpatialMaterial::set_emission(const Color& p_emission){
@@ -711,6 +750,13 @@ void FixedSpatialMaterial::_validate_property(PropertyInfo& property) const {
 	_validate_feature("refraction",FEATURE_REFRACTION,property);
 	_validate_feature("detail",FEATURE_DETAIL,property);
 
+	if (property.name=="specular/color" && specular_mode==SPECULAR_MODE_METALLIC) {
+		property.usage=0;
+	}
+	if (property.name=="specular/metalness" && specular_mode==SPECULAR_MODE_SPECULAR) {
+		property.usage=0;
+	}
+
 }
 
 void FixedSpatialMaterial::set_line_width(float p_line_width) {
@@ -788,8 +834,14 @@ void FixedSpatialMaterial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_albedo","albedo"),&FixedSpatialMaterial::set_albedo);
 	ObjectTypeDB::bind_method(_MD("get_albedo"),&FixedSpatialMaterial::get_albedo);
 
+	ObjectTypeDB::bind_method(_MD("set_specular_mode","specular_mode"),&FixedSpatialMaterial::set_specular_mode);
+	ObjectTypeDB::bind_method(_MD("get_specular_mode"),&FixedSpatialMaterial::get_specular_mode);
+
 	ObjectTypeDB::bind_method(_MD("set_specular","specular"),&FixedSpatialMaterial::set_specular);
 	ObjectTypeDB::bind_method(_MD("get_specular"),&FixedSpatialMaterial::get_specular);
+
+	ObjectTypeDB::bind_method(_MD("set_metalness","metalness"),&FixedSpatialMaterial::set_metalness);
+	ObjectTypeDB::bind_method(_MD("get_metalness"),&FixedSpatialMaterial::get_metalness);
 
 	ObjectTypeDB::bind_method(_MD("set_roughness","roughness"),&FixedSpatialMaterial::set_roughness);
 	ObjectTypeDB::bind_method(_MD("get_roughness"),&FixedSpatialMaterial::get_roughness);
@@ -892,7 +944,9 @@ void FixedSpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"albedo/color"),_SCS("set_albedo"),_SCS("get_albedo"));
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"albedo/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_ALBEDO);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"specular/mode",PROPERTY_HINT_ENUM,"Metallic,Specular"),_SCS("set_specular_mode"),_SCS("get_specular_mode"));
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"specular/color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_specular"),_SCS("get_specular"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"specular/metalness",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_metalness"),_SCS("get_metalness"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"specular/roughness",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_roughness"),_SCS("get_roughness"));
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"specular/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_SPECULAR);
 
@@ -1008,15 +1062,21 @@ void FixedSpatialMaterial::_bind_methods() {
 	BIND_CONSTANT( DIFFUSE_LAMBERT_WRAP );
 	BIND_CONSTANT( DIFFUSE_OREN_NAYAR );
 	BIND_CONSTANT( DIFFUSE_BURLEY );
+
+	BIND_CONSTANT( SPECULAR_MODE_METALLIC );
+	BIND_CONSTANT( SPECULAR_MODE_SPECULAR );
+
 }
 
 
 FixedSpatialMaterial::FixedSpatialMaterial() : element(this) {
 
 	//initialize to right values
+	specular_mode=SPECULAR_MODE_METALLIC;
 	set_albedo(Color(0.7,0.7,0.7,1.0));
 	set_specular(Color(0.1,0.1,0.1));
 	set_roughness(0.0);
+	set_metalness(0.1);
 	set_emission(Color(0,0,0));
 	set_emission_energy(1.0);
 	set_normal_scale(1);

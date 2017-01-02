@@ -144,11 +144,16 @@ public:
 		DIFFUSE_BURLEY,
 	};
 
+	enum SpecularMode {
+		SPECULAR_MODE_METALLIC,
+		SPECULAR_MODE_SPECULAR,
+	};
+
 private:
 	union MaterialKey {
 
 		struct {
-			uint32_t feature_mask : 15;
+			uint32_t feature_mask : 14;
 			uint32_t detail_uv : 1;
 			uint32_t blend_mode : 2;
 			uint32_t depth_draw_mode : 2;
@@ -157,6 +162,7 @@ private:
 			uint32_t detail_blend_mode : 2;
 			uint32_t diffuse_mode : 2;
 			uint32_t invalid_key : 1;
+			uint32_t specular_mode : 1;
 		};
 
 		uint32_t key;
@@ -196,6 +202,7 @@ private:
 		}
 		mk.detail_blend_mode=detail_blend_mode;
 		mk.diffuse_mode=diffuse_mode;
+		mk.specular_mode=specular_mode;
 
 		return mk;
 	}
@@ -203,6 +210,7 @@ private:
 	struct ShaderNames {
 		StringName albedo;
 		StringName specular;
+		StringName metalness;
 		StringName roughness;
 		StringName emission;
 		StringName emission_energy;
@@ -237,6 +245,7 @@ private:
 
 	Color albedo;
 	Color specular;
+	float metalness;
 	float roughness;
 	Color emission;
 	float emission_energy;
@@ -267,6 +276,7 @@ private:
 	CullMode cull_mode;
 	bool flags[FLAG_MAX];
 	DiffuseMode diffuse_mode;
+	SpecularMode specular_mode;
 
 	bool features[FEATURE_MAX];
 
@@ -285,8 +295,14 @@ public:
 	void set_albedo(const Color& p_albedo);
 	Color get_albedo() const;
 
+	void set_specular_mode(SpecularMode p_mode);
+	SpecularMode get_specular_mode() const;
+
 	void set_specular(const Color& p_specular);
 	Color get_specular() const;
+
+	void set_metalness(float p_metalness);
+	float get_metalness() const;
 
 	void set_roughness(float p_roughness);
 	float get_roughness() const;
@@ -388,6 +404,7 @@ VARIANT_ENUM_CAST( FixedSpatialMaterial::DepthDrawMode )
 VARIANT_ENUM_CAST( FixedSpatialMaterial::CullMode )
 VARIANT_ENUM_CAST( FixedSpatialMaterial::Flags )
 VARIANT_ENUM_CAST( FixedSpatialMaterial::DiffuseMode )
+VARIANT_ENUM_CAST( FixedSpatialMaterial::SpecularMode )
 
 //////////////////////
 
