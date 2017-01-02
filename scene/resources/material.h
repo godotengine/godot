@@ -74,30 +74,23 @@ public:
 		DEPTH_DRAW_NEVER = VS::MATERIAL_DEPTH_DRAW_NEVER
 	};
 
-
-
-private:
-	BlendMode blend_mode;
-	bool flags[VS::MATERIAL_FLAG_MAX];
-	float line_width;
-	DepthDrawMode depth_draw_mode;
 protected:
 	RID material;
 
 	static void _bind_methods();
 
 public:
-	void set_flag(Flag p_flag,bool p_enabled);
-	bool get_flag(Flag p_flag) const;
+	virtual void set_flag(Flag p_flag,bool p_enabled) = 0;
+	virtual bool get_flag(Flag p_flag) const = 0;
 
-	void set_blend_mode(BlendMode p_blend_mode);
-	BlendMode get_blend_mode() const;
+	virtual void set_blend_mode(BlendMode p_blend_mode) = 0;
+	virtual BlendMode get_blend_mode() const = 0;
 
-	void set_depth_draw_mode(DepthDrawMode p_depth_draw_mode);
-	DepthDrawMode get_depth_draw_mode() const;
+	virtual void set_depth_draw_mode(DepthDrawMode p_depth_draw_mode) = 0;
+	virtual DepthDrawMode get_depth_draw_mode() const = 0;
 
-	void set_line_width(float p_width);
-	float get_line_width() const;
+	virtual void set_line_width(float p_width) = 0;
+	virtual float get_line_width() const = 0;
 
 	virtual RID get_rid() const;
 
@@ -110,10 +103,36 @@ VARIANT_ENUM_CAST( Material::DepthDrawMode );
 
 VARIANT_ENUM_CAST( Material::BlendMode );
 
+class SinglePassMaterial : public Material {
+	OBJ_TYPE(SinglePassMaterial, Material);
+	//REVERSE_GET_PROPERTY_LIST
+protected:
+	static void _bind_methods();
 
-class FixedMaterial : public Material {
+private:
+	BlendMode blend_mode;
+	bool flags[VS::MATERIAL_FLAG_MAX];
+	float line_width;
+	DepthDrawMode depth_draw_mode;
+public:
+	void set_flag(Flag p_flag, bool p_enabled);
+	bool get_flag(Flag p_flag) const;
 
-	OBJ_TYPE( FixedMaterial, Material );
+	void set_blend_mode(BlendMode p_blend_mode);
+	BlendMode get_blend_mode() const;
+
+	void set_depth_draw_mode(DepthDrawMode p_depth_draw_mode);
+	DepthDrawMode get_depth_draw_mode() const;
+
+	void set_line_width(float p_width);
+	float get_line_width() const;
+
+	SinglePassMaterial(const RID& p_rid = RID());
+};
+
+class FixedMaterial : public SinglePassMaterial {
+
+	OBJ_TYPE( FixedMaterial, SinglePassMaterial );
 	REVERSE_GET_PROPERTY_LIST
 public:
 
@@ -216,9 +235,9 @@ VARIANT_ENUM_CAST( FixedMaterial::TexCoordMode );
 VARIANT_ENUM_CAST( FixedMaterial::FixedFlag );
 VARIANT_ENUM_CAST( FixedMaterial::LightShader );
 
-class ShaderMaterial : public Material {
+class ShaderMaterial : public SinglePassMaterial {
 
-	OBJ_TYPE( ShaderMaterial, Material );
+	OBJ_TYPE( ShaderMaterial, SinglePassMaterial );
 
 	Ref<Shader> shader;
 
@@ -246,6 +265,73 @@ public:
 	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
 
 	ShaderMaterial();
+};
+
+class MultiPassMaterial : public Material {
+
+	OBJ_TYPE(MultiPassMaterial, Material);
+
+	struct Pass {
+		Ref<Shader> shader;
+
+		BlendMode blend_mode;
+		bool flags[VS::MATERIAL_FLAG_MAX];
+		float line_width;
+		DepthDrawMode depth_draw_mode;
+	};
+
+
+	Vector<Pass> passes;
+
+	void _shader_changed();
+
+protected:
+
+	bool _set(const StringName& p_name, const Variant& p_value);
+	bool _get(const StringName& p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	static void _bind_methods();
+
+public:
+	void set_pass_count(const int p_pass_count);
+	int get_pass_count() const;
+
+	void set_flag(Flag p_flag, bool p_enabled);
+	bool get_flag(Flag p_flag) const;
+
+	void set_blend_mode(BlendMode p_blend_mode);
+	BlendMode get_blend_mode() const;
+
+	void set_depth_draw_mode(DepthDrawMode p_depth_draw_mode);
+	DepthDrawMode get_depth_draw_mode() const;
+
+	void set_line_width(float p_width);
+	float get_line_width() const;
+
+	//
+	void set_pass_flag(const int p_pass_index, Flag p_flag, bool p_enabled);
+	bool get_pass_flag(const int p_pass_index, Flag p_flag) const;
+
+	void set_pass_blend_mode(const int p_pass_index, BlendMode p_blend_mode);
+	BlendMode get_pass_blend_mode(const int p_pass_index) const;
+
+	void set_pass_depth_draw_mode(const int p_pass_index, DepthDrawMode p_depth_draw_mode);
+	DepthDrawMode get_pass_depth_draw_mode(const int p_pass_index) const;
+
+	void set_pass_line_width(const int p_pass_index, float p_width);
+	float get_pass_line_width(const int p_pass_index) const;
+	//
+
+	void set_shader(const int p_pass_index, const Ref<Shader>& p_shader);
+	Ref<Shader> get_shader(const int p_pass_index) const;
+
+	void set_shader_param(const int p_pass_index, const StringName& p_param, const Variant& p_value);
+	Variant get_shader_param(const int p_pass_index, const StringName& p_param) const;
+
+	void get_argument_options(const StringName& p_function, int p_idx, List<String>*r_options) const;
+
+	MultiPassMaterial();
 };
 
 //////////////////////
