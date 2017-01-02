@@ -44224,7 +44224,7 @@
 				Returns the time needed for all tweens to end in seconds, measured from the start. Thus, if you have two tweens, one ending 10 seconds after the start and the other - 20 seconds, it would return 20 seconds, as by that time all tweens would have finished.
 			</description>
 		</method>
-		<method name="get_speed" qualifiers="const">
+		<method name="get_speed_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -44423,11 +44423,11 @@
 				Make the tween repeat after all tweens have finished.
 			</description>
 		</method>
-		<method name="set_speed">
+		<method name="set_speed_scale">
 			<argument index="0" name="speed" type="float">
 			</argument>
 			<description>
-				Set the speed multiplier of the tween. Set it to 1 for normal speed, 2 for two times nromal speed, and 0.5 for half of the normal speed. Setting it to 0 would pause the animation, but you might consider using [method set_active] or [method stop_all] and [method resume_all] for this.
+				Set the speed multiplier of the tween. Set it to 1 for normal speed, 2 for two times normal speed, and 0.5 for half of the normal speed. Setting it to 0 would pause the animation, but you might consider using [method set_active] or [method stop_all] and [method resume_all] for this.
 			</description>
 		</method>
 		<method name="set_tween_process_mode">
