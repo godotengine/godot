@@ -258,23 +258,13 @@ void ImageTexture::load(const String& p_path) {
 void ImageTexture::set_data(const Image& p_image) {
 
 	VisualServer::get_singleton()->texture_set_data(texture,p_image);
-	VisualServer::get_singleton()->texture_set_reload_hook(texture,0,StringName()); //hook is erased if data is changed
+
 	_change_notify();
 }
 
 void ImageTexture::_resource_path_changed() {
 
 	String path=get_path();
-	if (VS::get_singleton()->has_feature(VS::FEATURE_NEEDS_RELOAD_HOOK)) {
-		//this needs to be done much better, but probably will end up being deprecated as technology advances
-		if (path.is_resource_file() && ImageLoader::recognize(path.extension())) {
-
-			//hook is set only if path is hookable
-			VisualServer::get_singleton()->texture_set_reload_hook(texture,get_instance_ID(),"_reload_hook");
-		} else {
-			VisualServer::get_singleton()->texture_set_reload_hook(texture,0,StringName());
-		}
-	}
 }
 
 Image ImageTexture::get_data() const {
@@ -300,7 +290,7 @@ RID ImageTexture::get_rid() const {
 
 void ImageTexture::fix_alpha_edges() {
 
-	if (format==Image::FORMAT_RGBA /*&& !(flags&FLAG_CUBEMAP)*/) {
+	if (format==Image::FORMAT_RGBA8 /*&& !(flags&FLAG_CUBEMAP)*/) {
 
 		Image img = get_data();
 		img.fix_alpha_edges();
@@ -310,7 +300,7 @@ void ImageTexture::fix_alpha_edges() {
 
 void ImageTexture::premultiply_alpha() {
 
-	if (format==Image::FORMAT_RGBA /*&& !(flags&FLAG_CUBEMAP)*/) {
+	if (format==Image::FORMAT_RGBA8 /*&& !(flags&FLAG_CUBEMAP)*/) {
 
 		Image img = get_data();
 		img.premultiply_alpha();
@@ -337,7 +327,7 @@ void ImageTexture::shrink_x2_and_keep_size() {
 
 bool ImageTexture::has_alpha() const {
 
-	return ( format==Image::FORMAT_GRAYSCALE_ALPHA || format==Image::FORMAT_INDEXED_ALPHA || format==Image::FORMAT_RGBA );
+	return ( format==Image::FORMAT_LA8 || format==Image::FORMAT_RGBA8 );
 }
 
 

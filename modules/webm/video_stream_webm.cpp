@@ -127,7 +127,7 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 			}
 
 			frame_data.resize((webm->getWidth() * webm->getHeight()) << 2);
-			texture->create(webm->getWidth(), webm->getHeight(), Image::FORMAT_RGBA, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
+			texture->create(webm->getWidth(), webm->getHeight(), Image::FORMAT_RGBA8, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
 
 			return true;
 		}
@@ -318,7 +318,7 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 							}
 
 							if (converted)
-								texture->set_data(Image(image.w, image.h, 0, Image::FORMAT_RGBA, frame_data)); //Zero copy send to visual server
+								texture->set_data(Image(image.w, image.h, 0, Image::FORMAT_RGBA8, frame_data)); //Zero copy send to visual server
 						}
 
 						break;

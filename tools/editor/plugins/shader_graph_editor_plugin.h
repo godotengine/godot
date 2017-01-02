@@ -43,7 +43,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
+#if 0
 class GraphColorRampEdit : public Control {
 
 	OBJ_TYPE(GraphColorRampEdit,Control);
@@ -239,4 +239,4 @@ public:
 
 };
 #endif
-
+#endif

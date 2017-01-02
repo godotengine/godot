@@ -201,7 +201,7 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 	arr.resize(Mesh::ARRAY_MAX);
 	arr[Mesh::ARRAY_VERTEX]=varr;
 
-	debug_mesh->add_surface(Mesh::PRIMITIVE_LINES,arr);
+	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES,arr);
 
 	return debug_mesh;
 }

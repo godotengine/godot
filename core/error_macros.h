@@ -49,7 +49,8 @@
 enum ErrorHandlerType {
 	ERR_HANDLER_ERROR,
 	ERR_HANDLER_WARNING,
-	ERR_HANDLER_SCRIPT
+	ERR_HANDLER_SCRIPT,
+	ERR_HANDLER_SHADER,
 };
 
 typedef void (*ErrorHandlerFunc)(void*,const char*,const char*,int p_line,const char *, const char *,ErrorHandlerType p_type);

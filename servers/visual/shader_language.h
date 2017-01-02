@@ -46,12 +46,24 @@ public:
 	enum TokenType {
 
 		TK_EMPTY,
-		TK_INDENTIFIER,
+		TK_IDENTIFIER,
 		TK_TRUE,
 		TK_FALSE,
 		TK_REAL_CONSTANT,
+		TK_INT_CONSTANT,
 		TK_TYPE_VOID,
 		TK_TYPE_BOOL,
+		TK_TYPE_BVEC2,
+		TK_TYPE_BVEC3,
+		TK_TYPE_BVEC4,
+		TK_TYPE_INT,
+		TK_TYPE_IVEC2,
+		TK_TYPE_IVEC3,
+		TK_TYPE_IVEC4,
+		TK_TYPE_UINT,
+		TK_TYPE_UVEC2,
+		TK_TYPE_UVEC3,
+		TK_TYPE_UVEC4,
 		TK_TYPE_FLOAT,
 		TK_TYPE_VEC2,
 		TK_TYPE_VEC3,
@@ -59,9 +71,13 @@ public:
 		TK_TYPE_MAT2,
 		TK_TYPE_MAT3,
 		TK_TYPE_MAT4,
-		TK_TYPE_TEXTURE,
-		TK_TYPE_CUBEMAP,
-		TK_TYPE_COLOR,
+		TK_TYPE_SAMPLER2D,
+		TK_TYPE_ISAMPLER2D,
+		TK_TYPE_USAMPLER2D,
+		TK_TYPE_SAMPLERCUBE,
+		TK_PRECISION_LOW,
+		TK_PRECISION_MID,
+		TK_PRECISION_HIGH,
 		TK_OP_EQUAL,
 		TK_OP_NOT_EQUAL,
 		TK_OP_LESS,
@@ -75,14 +91,35 @@ public:
 		TK_OP_SUB,
 		TK_OP_MUL,
 		TK_OP_DIV,
-		TK_OP_NEG,
+		TK_OP_MOD,
+		TK_OP_SHIFT_LEFT,
+		TK_OP_SHIFT_RIGHT,
 		TK_OP_ASSIGN,
 		TK_OP_ASSIGN_ADD,
 		TK_OP_ASSIGN_SUB,
 		TK_OP_ASSIGN_MUL,
 		TK_OP_ASSIGN_DIV,
+		TK_OP_ASSIGN_MOD,
+		TK_OP_ASSIGN_SHIFT_LEFT,
+		TK_OP_ASSIGN_SHIFT_RIGHT,
+		TK_OP_ASSIGN_BIT_AND,
+		TK_OP_ASSIGN_BIT_OR,
+		TK_OP_ASSIGN_BIT_XOR,
+		TK_OP_BIT_AND,
+		TK_OP_BIT_OR,
+		TK_OP_BIT_XOR,
+		TK_OP_BIT_INVERT,
+		TK_OP_INCREMENT,
+		TK_OP_DECREMENT,
 		TK_CF_IF,
 		TK_CF_ELSE,
+		TK_CF_FOR,
+		TK_CF_WHILE,
+		TK_CF_DO,
+		TK_CF_SWITCH,
+		TK_CF_CASE,
+		TK_CF_BREAK,
+		TK_CF_CONTINUE,
 		TK_CF_RETURN,
 		TK_BRACKET_OPEN,
 		TK_BRACKET_CLOSE,
@@ -90,31 +127,44 @@ public:
 		TK_CURLY_BRACKET_CLOSE,
 		TK_PARENTHESIS_OPEN,
 		TK_PARENTHESIS_CLOSE,
+		TK_QUESTION,
 		TK_COMMA,
+		TK_COLON,
 		TK_SEMICOLON,
 		TK_PERIOD,
 		TK_UNIFORM,
+		TK_VARYING,
+		TK_RENDER_MODE,
+		TK_HINT_WHITE_TEXTURE,
+		TK_HINT_BLACK_TEXTURE,
+		TK_HINT_NORMAL_TEXTURE,
+		TK_HINT_ANISO_TEXTURE,
+		TK_HINT_ALBEDO_TEXTURE,
+		TK_HINT_BLACK_ALBEDO_TEXTURE,
+		TK_HINT_COLOR,
+		TK_HINT_RANGE,
+		TK_CURSOR,
 		TK_ERROR,
+		TK_EOF,
 		TK_MAX
 	};
 
-
-
 	/* COMPILER */
-
-	enum ShaderType {
-		SHADER_MATERIAL_VERTEX,
-		SHADER_MATERIAL_FRAGMENT,
-		SHADER_MATERIAL_LIGHT,
-		SHADER_CANVAS_ITEM_VERTEX,
-		SHADER_CANVAS_ITEM_FRAGMENT,
-		SHADER_CANVAS_ITEM_LIGHT,
-		SHADER_POST_PROCESS,
-	};
 
 	enum DataType {
 		TYPE_VOID,
 		TYPE_BOOL,
+		TYPE_BVEC2,
+		TYPE_BVEC3,
+		TYPE_BVEC4,
+		TYPE_INT,
+		TYPE_IVEC2,
+		TYPE_IVEC3,
+		TYPE_IVEC4,
+		TYPE_UINT,
+		TYPE_UVEC2,
+		TYPE_UVEC3,
+		TYPE_UVEC4,
 		TYPE_FLOAT,
 		TYPE_VEC2,
 		TYPE_VEC3,
@@ -122,30 +172,58 @@ public:
 		TYPE_MAT2,
 		TYPE_MAT3,
 		TYPE_MAT4,
-		TYPE_TEXTURE,
-		TYPE_CUBEMAP,
+		TYPE_SAMPLER2D,
+		TYPE_ISAMPLER2D,
+		TYPE_USAMPLER2D,
+		TYPE_SAMPLERCUBE,
+	};
+
+	enum DataPrecision {
+		PRECISION_LOWP,
+		PRECISION_MEDIUMP,
+		PRECISION_HIGHP,
+		PRECISION_DEFAULT,
 	};
 
 	enum Operator {
-		OP_ASSIGN,
+		OP_EQUAL,
+		OP_NOT_EQUAL,
+		OP_LESS,
+		OP_LESS_EQUAL,
+		OP_GREATER,
+		OP_GREATER_EQUAL,
+		OP_AND,
+		OP_OR,
+		OP_NOT,
+		OP_NEGATE,
 		OP_ADD,
 		OP_SUB,
 		OP_MUL,
 		OP_DIV,
+		OP_MOD,
+		OP_SHIFT_LEFT,
+		OP_SHIFT_RIGHT,
+		OP_ASSIGN,
 		OP_ASSIGN_ADD,
 		OP_ASSIGN_SUB,
 		OP_ASSIGN_MUL,
 		OP_ASSIGN_DIV,
-		OP_NEG,
-		OP_NOT,
-		OP_CMP_EQ,
-		OP_CMP_NEQ,
-		OP_CMP_LEQ,
-		OP_CMP_GEQ,
-		OP_CMP_LESS,
-		OP_CMP_GREATER,
-		OP_CMP_OR,
-		OP_CMP_AND,
+		OP_ASSIGN_MOD,
+		OP_ASSIGN_SHIFT_LEFT,
+		OP_ASSIGN_SHIFT_RIGHT,
+		OP_ASSIGN_BIT_AND,
+		OP_ASSIGN_BIT_OR,
+		OP_ASSIGN_BIT_XOR,
+		OP_BIT_AND,
+		OP_BIT_OR,
+		OP_BIT_XOR,
+		OP_BIT_INVERT,
+		OP_INCREMENT,
+		OP_DECREMENT,
+		OP_SELECT_IF,
+		OP_SELECT_ELSE, //used only internally, then only IF appears with 3 arguments
+		OP_POST_INCREMENT,
+		OP_POST_DECREMENT,
 		OP_CALL,
 		OP_CONSTRUCT,
 		OP_MAX
@@ -154,18 +232,21 @@ public:
 	enum FlowOperation {
 		FLOW_OP_IF,
 		FLOW_OP_RETURN,
-		//FLOW_OP_FOR,
-		//FLOW_OP_WHILE,
-		//FLOW_OP_DO,
-		//FLOW_OP_BREAK,
-		//FLOW_OP_CONTINUE,
+		FLOW_OP_FOR,
+		FLOW_OP_WHILE,
+		FLOW_OP_DO,
+		FLOW_OP_BREAK,
+		FLOW_OP_SWITCH,
+		FLOW_OP_CONTINUE
 
 	};
 
 	struct Node {
 
+		Node *next;
+
 		enum Type {
-			TYPE_PROGRAM,
+			TYPE_SHADER,
 			TYPE_FUNCTION,
 			TYPE_BLOCK,
 			TYPE_VARIABLE,
@@ -175,7 +256,6 @@ public:
 			TYPE_MEMBER
 		};
 
-		Node * parent;
 		Type type;
 
 		virtual DataType get_datatype() const { return TYPE_VOID; }
@@ -183,46 +263,75 @@ public:
 		virtual ~Node() {}
 	};
 
+	template<class T>
+	T* alloc_node() {
+		T* node = memnew(T);
+		node->next=nodes;
+		nodes=node;
+		return node;
+	}
+
+	Node *nodes;
+
 
 	struct OperatorNode : public Node {
 
 		DataType return_cache;
+		DataPrecision return_precision_cache;
 		Operator op;
 		Vector<Node*> arguments;
 		virtual DataType get_datatype() const { return return_cache; }
 
-		OperatorNode() { type=TYPE_OPERATOR; return_cache=TYPE_VOID; }
+		OperatorNode() { type=TYPE_OPERATOR; return_cache=TYPE_VOID; return_precision_cache=PRECISION_DEFAULT; }
 	};
 
 	struct VariableNode : public Node {
-		bool uniform;
 		DataType datatype_cache;
 		StringName name;
 		virtual DataType get_datatype() const { return datatype_cache; }
 
-		VariableNode() { type=TYPE_VARIABLE; datatype_cache=TYPE_VOID; uniform=false; }
+		VariableNode() { type=TYPE_VARIABLE; datatype_cache=TYPE_VOID;  }
 	};
 
 	struct ConstantNode : public Node {
 
 		DataType datatype;
-		Variant value;
+
+		union Value {
+			bool boolean;
+			float real;
+			int32_t sint;
+			uint32_t uint;
+		};
+
+		Vector<Value> values;
 		virtual DataType get_datatype() const { return datatype; }
 
 		ConstantNode() { type=TYPE_CONSTANT; }
 	};
 
-	struct BlockNode : public Node {
+	struct FunctionNode;
 
-		Map<StringName,DataType> variables;
+	struct BlockNode : public Node {
+		FunctionNode *parent_function;
+		BlockNode *parent_block;
+
+		struct Variable {
+			DataType type;
+			DataPrecision precision;
+			int line; //for completion
+		};
+
+		Map<StringName,Variable> variables;
 		List<Node*> statements;
-		BlockNode() { type=TYPE_BLOCK; }
+		BlockNode() { type=TYPE_BLOCK; parent_block=NULL; parent_function=NULL; }
 	};
 
 	struct ControlFlowNode : public Node {
 
 		FlowOperation flow_op;
-		Vector<Node*> statements;
+		Vector<Node*> expressions;
+		Vector<BlockNode*> blocks;
 		ControlFlowNode() { type=TYPE_CONTROL_FLOW; flow_op=FLOW_OP_IF;}
 	};
 
@@ -244,39 +353,67 @@ public:
 
 			StringName name;
 			DataType type;
+			DataPrecision precision;
 		};
 
 		StringName name;
 		DataType return_type;
+		DataPrecision return_precision;
 		Vector<Argument> arguments;
 		BlockNode *body;
 
-		FunctionNode() { type=TYPE_FUNCTION;  }
+		FunctionNode() { type=TYPE_FUNCTION;  return_precision=PRECISION_DEFAULT; }
 
 	};
 
-	struct Uniform {
 
-		int order;
-		DataType type;
-		Variant default_value;
-	};
-
-	struct ProgramNode : public Node {
+	struct ShaderNode : public Node {
 
 		struct Function {
 			StringName name;
 			FunctionNode*function;
+			Set<StringName> uses_function;
+			bool callable;
+		};
+
+		struct Varying {
+			DataType type;
+			DataPrecision precission;
+		};
+
+		struct Uniform {
+			enum Hint {
+				HINT_NONE,
+				HINT_COLOR,
+				HINT_RANGE,
+				HINT_ALBEDO,
+				HINT_BLACK_ALBEDO,
+				HINT_NORMAL,
+				HINT_BLACK,
+				HINT_WHITE,
+				HINT_ANISO,
+				HINT_MAX
+			};
+
+			int order;
+			int texture_order;
+			DataType type;
+			DataPrecision precission;
+			Vector<ConstantNode::Value> default_value;
+			Hint hint;
+			float hint_range[3];
+
+			Uniform() { hint=HINT_NONE; hint_range[0]=0; hint_range[1]=1; hint_range[2]=0.001;}
 		};
 
 
-		Map<StringName,DataType> builtin_variables;
+		Map<StringName,Varying> varyings;
 		Map<StringName,Uniform> uniforms;
+		Vector<StringName> render_modes;
 
 		Vector<Function> functions;
-		BlockNode *body;
 
-		ProgramNode() { type=TYPE_PROGRAM; }
+		ShaderNode() { type=TYPE_SHADER; }
 	};
 
 
@@ -284,12 +421,12 @@ public:
 
 		bool is_op;
 		union {
-			TokenType op;
+			Operator op;
 			Node *node;
 		};
 	};
 
-	typedef Error (*CompileFunc)(void*,ProgramNode*);
+
 
 	struct VarInfo {
 
@@ -297,61 +434,111 @@ public:
 		DataType type;
 	};
 
-private:
-
-
-
-	static const char * token_names[TK_MAX];
+	enum CompletionType {
+		COMPLETION_NONE,
+		COMPLETION_RENDER_MODE,
+		COMPLETION_MAIN_FUNCTION,
+		COMPLETION_IDENTIFIER,
+		COMPLETION_FUNCTION_CALL,
+		COMPLETION_CALL_ARGUMENTS,
+		COMPLETION_INDEX,
+	};
 
 	struct Token {
 
 		TokenType type;
 		StringName text;
-		uint16_t line,col;
-
-		Token(TokenType p_type=TK_EMPTY,const String& p_text=String()) { type=p_type; text=p_text; line=0; col=0; }
+		double constant;
+		uint16_t line;
 	};
 
 
+	static String get_operator_text(Operator p_op);
+	static String get_token_text(Token p_token);
 
-	static Token read_token(const CharType* p_text,int p_len,int &r_line,int &r_chars);
-	static Error tokenize(const String& p_text,Vector<Token> *p_tokens,String *r_error,int *r_err_line,int *r_err_column);
+	static bool is_token_datatype(TokenType p_type);
+	static DataType get_token_datatype(TokenType p_type);
+	static bool is_token_precision(TokenType p_type);
+	static DataPrecision get_token_precision(TokenType p_type);
+	static String get_datatype_name(DataType p_type);
+	static bool is_token_nonvoid_datatype(TokenType p_type);
+	static bool is_token_operator(TokenType p_type);
 
+	static bool convert_constant(ConstantNode* p_constant, DataType p_to_type,ConstantNode::Value *p_value=NULL);
+	static DataType get_scalar_type(DataType p_type);
+	static bool is_scalar_type(DataType p_type);
+	static bool is_sampler_type(DataType p_type);
 
+	static void get_keyword_list(List<String> *r_keywords);
+	static void get_builtin_funcs(List<String> *r_keywords);
+private:
 
+	struct KeyWord { TokenType token; const char *text;};
+	static const KeyWord keyword_list[];
 
-	class Parser {
+	bool error_set;
+	String error_str;
+	int error_line;
 
-		Vector<Token> tokens;
-		int pos;
-		String error;
-	public:
+	String code;
+	int char_idx;
+	int tk_line;
 
+	StringName current_function;
 
-		void set_error(const String& p_error) { error=p_error; }
-		void get_error(String *r_error, int *r_line, int *r_column) {
-
-			*r_error=error;
-			*r_line=get_token(pos).line;
-			*r_column=get_token(pos).col;
-		}
-
-
-
-		Token get_token(int ofs=0) const { int idx=pos+ofs; if (idx<0 || idx>=tokens.size()) return Token(TK_ERROR); return tokens[idx]; }
-		TokenType get_token_type(int ofs=0) const { int idx=pos+ofs;  if (idx<0 || idx>=tokens.size()) return TK_ERROR; return tokens[idx].type; }
-		void advance(int p_amount=1) { pos+=p_amount; }
-		bool is_at_end() const { return pos>=tokens.size(); }
-
-		ProgramNode *program;
-		template<class T>
-		T* create_node(Node *p_parent) { T*n=memnew( T ); nodegc.push_back(n); n->parent=p_parent; return n; }
-		List<Node*> nodegc;
-
-		Parser(const Vector<Token>& p_tokens) { tokens=p_tokens; pos=0;}
+	struct TkPos {
+		int char_idx;
+		int tk_line;
 	};
 
-	struct IntrinsicFuncDef {
+	TkPos _get_tkpos() {
+		TkPos tkp;
+		tkp.char_idx=char_idx;
+		tkp.tk_line=tk_line;
+		return tkp;
+	}
+
+
+	void _set_tkpos(TkPos p_pos) {
+		char_idx=p_pos.char_idx;
+		tk_line=p_pos.tk_line;
+	}
+
+	void _set_error(const String& p_str) {
+		if (error_set)
+			return;
+
+		error_line=tk_line;
+		error_set=true;
+		error_str=p_str;
+	}
+
+
+	static const char * token_names[TK_MAX];
+
+
+
+
+	Token _make_token(TokenType p_type, const StringName& p_text=StringName());
+	Token _get_token();
+
+	ShaderNode *shader;
+
+	enum IdentifierType {
+		IDENTIFIER_FUNCTION,
+		IDENTIFIER_UNIFORM,
+		IDENTIFIER_VARYING,
+		IDENTIFIER_FUNCTION_ARGUMENT,
+		IDENTIFIER_LOCAL_VAR,
+		IDENTIFIER_BUILTIN_VAR,
+	};
+
+	bool _find_identifier(const BlockNode* p_block,const Map<StringName, DataType> &p_builtin_types,const StringName& p_identifier, DataType *r_data_type=NULL, IdentifierType *r_type=NULL);
+
+	bool _validate_operator(OperatorNode *p_op,DataType *r_ret_type=NULL);
+
+
+	struct BuiltinFuncDef {
 
 		enum { MAX_ARGS=5 };
 		const char* name;
@@ -360,70 +547,50 @@ private:
 
 	};
 
-	static const IntrinsicFuncDef intrinsic_func_defs[];
-
-	struct OperatorDef {
-
-		enum { MAX_ARGS=2 };
-		Operator op;
-		DataType rettype;
-		const DataType args[MAX_ARGS];
-	};
-
-	static const OperatorDef operator_defs[];
-
-	struct BuiltinsDef {
-
-		const char* name;
-		DataType type;
-	};
-
-	static const BuiltinsDef vertex_builtins_defs[];
-	static const BuiltinsDef fragment_builtins_defs[];
-	static const BuiltinsDef light_builtins_defs[];
-
-	static const BuiltinsDef ci_vertex_builtins_defs[];
-	static const BuiltinsDef ci_fragment_builtins_defs[];
-	static const BuiltinsDef ci_light_builtins_defs[];
+	CompletionType completion_type;
+	int completion_line;
+	BlockNode *completion_block;
+	DataType completion_base;
+	StringName completion_function;
+	int completion_argument;
 
 
-	static const BuiltinsDef postprocess_fragment_builtins_defs[];
+	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName& identifier);
 
-	static DataType get_token_datatype(TokenType p_type);
-	static String get_datatype_name(DataType p_type);
-	static bool is_token_datatype(TokenType p_type);
-	static bool is_token_nonvoid_datatype(TokenType p_type);
+	static const BuiltinFuncDef builtin_func_defs[];
+	bool _validate_function_call(BlockNode* p_block, OperatorNode *p_func,DataType *r_ret_type);
 
-	static bool test_existing_identifier(Node *p_node,const StringName p_identifier,bool p_func=true,bool p_var=true,bool p_builtin=true);
+	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName,DataType>  &p_builtin_types, OperatorNode* p_func, int *r_complete_arg=NULL);
 
-	static bool parser_is_at_function(Parser& parser);
-	static DataType compute_node_type(Node *p_node);
+	Node* _parse_expression(BlockNode *p_block, const Map<StringName,DataType>  &p_builtin_types);
 
-	static Node* validate_function_call(Parser&parser, OperatorNode *p_func);
-	static Node* validate_operator(Parser& parser,OperatorNode *p_func);
-	static bool is_token_operator(TokenType p_type);
-	static Operator get_token_operator(TokenType p_type);
+	ShaderLanguage::Node* _reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
+	Node* _parse_and_reduce_expression(BlockNode *p_block,const Map<StringName,DataType>  &p_builtin_types);
 
-	static Error parse_expression(Parser& parser,Node *p_parent,Node **r_expr);
+	Error _parse_block(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, bool p_just_one=false, bool p_can_break=false, bool p_can_continue=false);
 
-	static Error parse_variable_declaration(Parser& parser,BlockNode *p_block);
-	static Error parse_function(Parser& parser,BlockNode *p_block);
-	static Error parse_flow_if(Parser& parser,Node *p_parent,Node **r_statement);
-	static Error parse_flow_return(Parser& parser,Node *p_parent,Node **r_statement);
-	static Error parse_statement(Parser& parser,Node *p_parent,Node **r_statement);
-	static Error parse_block(Parser& parser,BlockNode *p_block);
+	Error _parse_shader(const Map< StringName, Map<StringName,DataType> > &p_functions, const Set<String> &p_render_modes);
 
 
-	static Error parse(const Vector<Token> &p_tokens,ShaderType p_type,CompileFunc p_compile_func,void *p_userdata,String *r_error,int *r_err_line,int *r_err_column);
-
-;
 public:
 
-	static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
+//	static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
 
-	static Error compile(const String& p_code,ShaderType p_type, CompileFunc p_compile_func,void *p_userdata,String *r_error,int *r_err_line,int *r_err_column);
-	static String lex_debug(const String& p_code);
+	void clear();
+	Error compile(const String& p_code,const Map< StringName, Map<StringName,DataType> > &p_functions,const Set<String>& p_render_modes);
+	Error complete(const String& p_code,const Map< StringName, Map<StringName,DataType> > &p_functions,const Set<String>& p_render_modes,List<String>* r_options,String& r_call_hint);
 
+
+
+	String get_error_text();
+	int get_error_line();
+
+	ShaderNode *get_shader();
+
+	String token_debug(const String& p_code);
+
+	ShaderLanguage();
+	~ShaderLanguage();
 };
 
 

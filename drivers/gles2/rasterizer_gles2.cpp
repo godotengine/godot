@@ -376,7 +376,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 
 	switch(p_format) {
 
-		case Image::FORMAT_GRAYSCALE: {
+		case Image::FORMAT_L8: {
 			r_gl_components=1;
 			r_gl_format=GL_LUMINANCE;
 			r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_SLUMINANCE_NV:GL_LUMINANCE;
@@ -385,15 +385,15 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 		case Image::FORMAT_INTENSITY: {
 
 			if (!image.empty())
-				image.convert(Image::FORMAT_RGBA);
+				image.convert(Image::FORMAT_RGBA8);
 			r_gl_components=4;
 			r_gl_format=GL_RGBA;
 			r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
 			r_has_alpha_cache=true;
 		} break;
-		case Image::FORMAT_GRAYSCALE_ALPHA: {
+		case Image::FORMAT_LA8: {
 
-			//image.convert(Image::FORMAT_RGBA);
+			//image.convert(Image::FORMAT_RGBA8);
 			r_gl_components=2;
 			r_gl_format=GL_LUMINANCE_ALPHA;
 			r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_SLUMINANCE_ALPHA_NV:GL_LUMINANCE_ALPHA;
@@ -403,7 +403,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 		case Image::FORMAT_INDEXED: {
 
 			if (!image.empty())
-				image.convert(Image::FORMAT_RGB);
+				image.convert(Image::FORMAT_RGB8);
 			r_gl_components=3;
 			r_gl_format=GL_RGB;
 			r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_EXT:GL_RGB;
@@ -413,7 +413,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 		case Image::FORMAT_INDEXED_ALPHA: {
 
 			if (!image.empty())
-				image.convert(Image::FORMAT_RGBA);
+				image.convert(Image::FORMAT_RGBA8);
 			r_gl_components=4;
 
 			if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
@@ -432,7 +432,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			r_has_alpha_cache=true;
 
 		} break;
-		case Image::FORMAT_RGB: {
+		case Image::FORMAT_RGB8: {
 
 			r_gl_components=3;
 
@@ -450,7 +450,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				r_gl_internal_format=GL_RGB;
 			}
 		} break;
-		case Image::FORMAT_RGBA: {
+		case Image::FORMAT_RGBA8: {
 
 			r_gl_components=4;
 			if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
@@ -470,7 +470,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 
 			r_has_alpha_cache=true;
 		} break;
-		case Image::FORMAT_BC1: {
+		case Image::FORMAT_DXT1: {
 
 			if (!s3tc_supported || (!s3tc_srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) {
 
@@ -501,7 +501,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			};
 
 		} break;
-		case Image::FORMAT_BC2: {
+		case Image::FORMAT_DXT3: {
 
 			if (!s3tc_supported || (!s3tc_srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) {
 
@@ -533,7 +533,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			};
 
 		} break;
-		case Image::FORMAT_BC3: {
+		case Image::FORMAT_DXT5: {
 
 			if (!s3tc_supported || (!s3tc_srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) {
 
@@ -564,7 +564,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			};
 
 		} break;
-		case Image::FORMAT_BC4: {
+		case Image::FORMAT_ATI1: {
 
 			if (!latc_supported) {
 
@@ -595,7 +595,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			};
 
 		} break;
-		case Image::FORMAT_BC5: {
+		case Image::FORMAT_ATI2: {
 
 			if (!latc_supported ) {
 
@@ -657,7 +657,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			}
 
 		} break;
-		case Image::FORMAT_PVRTC2_ALPHA: {
+		case Image::FORMAT_PVRTC2A: {
 
 			if (!pvr_supported || (!pvr_srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) {
 
@@ -719,7 +719,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			}
 
 		} break;
-		case Image::FORMAT_PVRTC4_ALPHA: {
+		case Image::FORMAT_PVRTC4A: {
 
 			if (!pvr_supported  || (!pvr_srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) {
 
@@ -841,7 +841,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 		case Image::FORMAT_YUV_444: {
 
 			if (!image.empty())
-				image.convert(Image::FORMAT_RGB);
+				image.convert(Image::FORMAT_RGB8);
 			r_gl_internal_format=GL_RGB;
 			r_gl_components=3;
 
@@ -1145,7 +1145,7 @@ Image RasterizerGLES2::texture_get_data(RID p_texture,VS::CubeMapSide p_cube_sid
 
 	switch(texture->format) {
 
-		case Image::FORMAT_GRAYSCALE: {
+		case Image::FORMAT_L8: {
 
 			format=GL_LUMINANCE;
 			type=GL_UNSIGNED_BYTE;
@@ -1156,19 +1156,19 @@ Image RasterizerGLES2::texture_get_data(RID p_texture,VS::CubeMapSide p_cube_sid
 		case Image::FORMAT_INTENSITY: {
 			return Image();
 		} break;
-		case Image::FORMAT_GRAYSCALE_ALPHA: {
+		case Image::FORMAT_LA8: {
 
 			format=GL_LUMINANCE_ALPHA;
 			type=GL_UNSIGNED_BYTE;
 			pixelsize=2;
 
 		} break;
-		case Image::FORMAT_RGB: {
+		case Image::FORMAT_RGB8: {
 			format=GL_RGB;
 			type=GL_UNSIGNED_BYTE;
 			pixelsize=3;
 		} break;
-		case Image::FORMAT_RGBA: {
+		case Image::FORMAT_RGBA8: {
 
 			format=GL_RGBA;
 			type=GL_UNSIGNED_BYTE;
@@ -1178,18 +1178,18 @@ Image RasterizerGLES2::texture_get_data(RID p_texture,VS::CubeMapSide p_cube_sid
 
 			format=GL_RGB;
 			type=GL_UNSIGNED_BYTE;
-			fmt=Image::FORMAT_RGB;
+			fmt=Image::FORMAT_RGB8;
 			pixelsize=3;
 		} break;
 		case Image::FORMAT_INDEXED_ALPHA: {
 
 			format=GL_RGBA;
 			type=GL_UNSIGNED_BYTE;
-			fmt=Image::FORMAT_RGBA;
+			fmt=Image::FORMAT_RGBA8;
 			pixelsize=4;
 
 		} break;
-		case Image::FORMAT_BC1: {
+		case Image::FORMAT_DXT1: {
 
 			pixelsize=1; //doesn't matter much
 			format=GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
@@ -1198,14 +1198,14 @@ Image RasterizerGLES2::texture_get_data(RID p_texture,VS::CubeMapSide p_cube_sid
 			minw=minh=4;
 
 		} break;
-		case Image::FORMAT_BC2: {
+		case Image::FORMAT_DXT3: {
 			pixelsize=1; //doesn't matter much
 			format=GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 			compressed=true;
 			minw=minh=4;
 
 		} break;
-		case Image::FORMAT_BC3: {
+		case Image::FORMAT_DXT5: {
 
 			pixelsize=1; //doesn't matter much
 			format=GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
@@ -1213,7 +1213,7 @@ Image RasterizerGLES2::texture_get_data(RID p_texture,VS::CubeMapSide p_cube_sid
 			minw=minh=4;
 
 		} break;
-		case Image::FORMAT_BC4: {
+		case Image::FORMAT_ATI1: {
 
 			format=GL_COMPRESSED_RED_RGTC1;
 			pixelsize=1; //doesn't matter much
@@ -1222,7 +1222,7 @@ Image RasterizerGLES2::texture_get_data(RID p_texture,VS::CubeMapSide p_cube_sid
 			minw=minh=4;
 
 		} break;
-		case Image::FORMAT_BC5: {
+		case Image::FORMAT_ATI2: {
 
 			format=GL_COMPRESSED_RG_RGTC2;
 			pixelsize=1; //doesn't matter much
@@ -1359,7 +1359,7 @@ Image::Format RasterizerGLES2::texture_get_format(RID p_texture) const {
 
 	Texture * texture = texture_owner.get(p_texture);
 
-	ERR_FAIL_COND_V(!texture,Image::FORMAT_GRAYSCALE);
+	ERR_FAIL_COND_V(!texture,Image::FORMAT_L8);
 
 	return texture->format;
 }
@@ -4320,7 +4320,7 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 
 	w=DVector<uint8_t>::Write();
 
-	r_capture->create(viewport.width,viewport.height,0,Image::FORMAT_RGB,pixels);
+	r_capture->create(viewport.width,viewport.height,0,Image::FORMAT_RGB8,pixels);
 #else
 
 
@@ -4360,7 +4360,7 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 	}
 
 	w=DVector<uint8_t>::Write();
-	r_capture->create(viewport.width,viewport.height,0,Image::FORMAT_RGBA,pixels);
+	r_capture->create(viewport.width,viewport.height,0,Image::FORMAT_RGBA8,pixels);
 	//r_capture->flip_y();
 
 

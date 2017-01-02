@@ -107,6 +107,7 @@ public:
 	Sprite();
 };
 
+#if 0
 class ViewportSprite : public Node2D {
 
 	OBJ_TYPE( ViewportSprite, Node2D );
@@ -149,4 +150,5 @@ public:
 	ViewportSprite();
 };
 
+#endif
 #endif // SPRITE_H

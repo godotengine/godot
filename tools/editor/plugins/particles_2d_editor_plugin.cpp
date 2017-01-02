@@ -69,8 +69,8 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 	ERR_EXPLAIN(TTR("Error loading image:")+" "+p_file);
 	ERR_FAIL_COND(err!=OK);
 
-	img.convert(Image::FORMAT_GRAYSCALE_ALPHA);
-	ERR_FAIL_COND(img.get_format()!=Image::FORMAT_GRAYSCALE_ALPHA);
+	img.convert(Image::FORMAT_LA8);
+	ERR_FAIL_COND(img.get_format()!=Image::FORMAT_LA8);
 	Size2i s = Size2(img.get_width(),img.get_height());
 	ERR_FAIL_COND(s.width==0 || s.height==0);
 

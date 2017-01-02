@@ -553,39 +553,39 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 
 			Image::Format imgformat;
 
-
+/*
 			if (format=="grayscale") {
-				imgformat=Image::FORMAT_GRAYSCALE;
+				imgformat=Image::FORMAT_L8;
 			} else if (format=="intensity") {
 				imgformat=Image::FORMAT_INTENSITY;
 			} else if (format=="grayscale_alpha") {
-				imgformat=Image::FORMAT_GRAYSCALE_ALPHA;
+				imgformat=Image::FORMAT_LA8;
 			} else if (format=="rgb") {
-				imgformat=Image::FORMAT_RGB;
+				imgformat=Image::FORMAT_RGB8;
 			} else if (format=="rgba") {
-				imgformat=Image::FORMAT_RGBA;
+				imgformat=Image::FORMAT_RGBA8;
 			} else if (format=="indexed") {
 				imgformat=Image::FORMAT_INDEXED;
 			} else if (format=="indexed_alpha") {
 				imgformat=Image::FORMAT_INDEXED_ALPHA;
 			} else if (format=="bc1") {
-				imgformat=Image::FORMAT_BC1;
+				imgformat=Image::FORMAT_DXT1;
 			} else if (format=="bc2") {
-				imgformat=Image::FORMAT_BC2;
+				imgformat=Image::FORMAT_DXT3;
 			} else if (format=="bc3") {
-				imgformat=Image::FORMAT_BC3;
+				imgformat=Image::FORMAT_DXT5;
 			} else if (format=="bc4") {
-				imgformat=Image::FORMAT_BC4;
+				imgformat=Image::FORMAT_ATI1;
 			} else if (format=="bc5") {
-				imgformat=Image::FORMAT_BC5;
+				imgformat=Image::FORMAT_ATI2;
 			} else if (format=="pvrtc2") {
 				imgformat=Image::FORMAT_PVRTC2;
 			} else if (format=="pvrtc2a") {
-				imgformat=Image::FORMAT_PVRTC2_ALPHA;
+				imgformat=Image::FORMAT_PVRTC2A;
 			} else if (format=="pvrtc4") {
 				imgformat=Image::FORMAT_PVRTC4;
 			} else if (format=="pvrtc4a") {
-				imgformat=Image::FORMAT_PVRTC4_ALPHA;
+				imgformat=Image::FORMAT_PVRTC4A;
 			} else if (format=="etc") {
 				imgformat=Image::FORMAT_ETC;
 			} else if (format=="atc") {
@@ -599,7 +599,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 			} else {
 
 				ERR_FAIL_V( ERR_FILE_CORRUPT );
-			}
+			}*/
 
 
 			int datasize;
@@ -614,13 +614,6 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 				return OK;
 			};
 
-			if (imgformat==Image::FORMAT_CUSTOM) {
-
-				datasize=custom_size;
-			} else {
-
-				datasize = Image::get_image_data_size(h,w,imgformat,mipmaps);
-			}
 
 			if (datasize==0) {
 				//r_v = Image(w, h, imgformat);
@@ -2186,33 +2179,33 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 			params+="encoding=\"raw\"";
 			params+=" width=\""+itos(img.get_width())+"\"";
 			params+=" height=\""+itos(img.get_height())+"\"";
-			params+=" mipmaps=\""+itos(img.get_mipmaps())+"\"";
-
+			params+=" mipmaps=\""+itos(img.has_mipmaps())+"\"";
+/*
 			switch(img.get_format()) {
 
-				case Image::FORMAT_GRAYSCALE: params+=" format=\"grayscale\""; break;
+				case Image::FORMAT_L8: params+=" format=\"grayscale\""; break;
 				case Image::FORMAT_INTENSITY: params+=" format=\"intensity\""; break;
-				case Image::FORMAT_GRAYSCALE_ALPHA: params+=" format=\"grayscale_alpha\""; break;
-				case Image::FORMAT_RGB: params+=" format=\"rgb\""; break;
-				case Image::FORMAT_RGBA: params+=" format=\"rgba\""; break;
+				case Image::FORMAT_LA8: params+=" format=\"grayscale_alpha\""; break;
+				case Image::FORMAT_RGB8: params+=" format=\"rgb\""; break;
+				case Image::FORMAT_RGBA8: params+=" format=\"rgba\""; break;
 				case Image::FORMAT_INDEXED : params+=" format=\"indexed\""; break;
 				case Image::FORMAT_INDEXED_ALPHA: params+=" format=\"indexed_alpha\""; break;
-				case Image::FORMAT_BC1: params+=" format=\"bc1\""; break;
-				case Image::FORMAT_BC2: params+=" format=\"bc2\""; break;
-				case Image::FORMAT_BC3: params+=" format=\"bc3\""; break;
-				case Image::FORMAT_BC4: params+=" format=\"bc4\""; break;
-				case Image::FORMAT_BC5: params+=" format=\"bc5\""; break;
+				case Image::FORMAT_DXT1: params+=" format=\"bc1\""; break;
+				case Image::FORMAT_DXT3: params+=" format=\"bc2\""; break;
+				case Image::FORMAT_DXT5: params+=" format=\"bc3\""; break;
+				case Image::FORMAT_ATI1: params+=" format=\"bc4\""; break;
+				case Image::FORMAT_ATI2: params+=" format=\"bc5\""; break;
 				case Image::FORMAT_PVRTC2: params+=" format=\"pvrtc2\""; break;
-				case Image::FORMAT_PVRTC2_ALPHA: params+=" format=\"pvrtc2a\""; break;
+				case Image::FORMAT_PVRTC2A: params+=" format=\"pvrtc2a\""; break;
 				case Image::FORMAT_PVRTC4: params+=" format=\"pvrtc4\""; break;
-				case Image::FORMAT_PVRTC4_ALPHA: params+=" format=\"pvrtc4a\""; break;
+				case Image::FORMAT_PVRTC4A: params+=" format=\"pvrtc4a\""; break;
 				case Image::FORMAT_ETC: params+=" format=\"etc\""; break;
 				case Image::FORMAT_ATC: params+=" format=\"atc\""; break;
 				case Image::FORMAT_ATC_ALPHA_EXPLICIT: params+=" format=\"atcae\""; break;
 				case Image::FORMAT_ATC_ALPHA_INTERPOLATED: params+=" format=\"atcai\""; break;
 				case Image::FORMAT_CUSTOM: params+=" format=\"custom\" custom_size=\""+itos(img.get_data().size())+"\""; break;
 				default: {}
-			}
+			}*/
 		} break;
 		case Variant::NODE_PATH:		type="node_path"; break;
 		case Variant::OBJECT:	{

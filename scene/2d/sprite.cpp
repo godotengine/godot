@@ -377,7 +377,7 @@ Sprite::Sprite() {
 ///
 ///
 
-
+#if 0
 void ViewportSprite::edit_set_pivot(const Point2& p_pivot) {
 
 	set_offset(p_pivot);
@@ -589,3 +589,4 @@ ViewportSprite::ViewportSprite() {
 	centered=true;
 	modulate=Color(1,1,1,1);
 }
+#endif

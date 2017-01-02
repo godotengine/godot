@@ -53,7 +53,7 @@ class AudioServerSW : public AudioServer {
 	virtual AudioMixer *get_mixer();
 	virtual void audio_mixer_chunk_callback(int p_frames);
 
-	struct Voice {
+	struct Voice : public RID_Data {
 
 		float volume;
 		volatile bool active;
@@ -67,7 +67,7 @@ class AudioServerSW : public AudioServer {
 	mutable RID_Owner<Voice> voice_owner;
 	SelfList<Voice>::List active_list;
 
-	struct Stream {
+	struct Stream : public RID_Data {
 		bool active;
 		List<Stream*>::Element *E;
 		AudioStream *audio_stream;

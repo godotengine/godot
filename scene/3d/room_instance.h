@@ -45,6 +45,8 @@
 */
 
 
+
+
 class Room : public VisualInstance {
 
 	OBJ_TYPE( Room, VisualInstance );
@@ -65,7 +67,7 @@ private:
 
 
 	void _bounds_changed();
-	virtual RES _get_gizmo_geometry() const;
+
 
 protected:
 
@@ -89,7 +91,6 @@ public:
 	void set_simulate_acoustics(bool p_enable);
 	bool is_simulating_acoustics() const;
 
-	void compute_room_from_subtree();
 
 	RID get_sound_room() const;
 

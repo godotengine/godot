@@ -88,6 +88,10 @@ void OS_Unix::print_error(const char* p_function,const char* p_file,int p_line,c
 			print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n",p_function,err_details);
 			print("\E[0;35m   At: %s:%i.\E[0m\n",p_file,p_line);
 			break;
+		case ERR_SHADER:
+			print("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n",p_function,err_details);
+			print("\E[0;36m   At: %s:%i.\E[0m\n",p_file,p_line);
+			break;
 	}
 }
 

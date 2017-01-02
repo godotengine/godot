@@ -274,7 +274,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,b
 	Vector3 ray=_get_ray(p_pos);
 	Vector3 pos=_get_ray_pos(p_pos);
 
-	Vector<RID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_tree()->get_root()->get_world()->get_scenario() );
+	Vector<ObjectID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_tree()->get_root()->get_world()->get_scenario() );
 	Set<Ref<SpatialEditorGizmo> > found_gizmos;
 
 	//uint32_t closest=0;
@@ -286,8 +286,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,b
 
 	for (int i=0;i<instances.size();i++) {
 
-		uint32_t id=VisualServer::get_singleton()->instance_get_object_instance_ID(instances[i]);
-		Object *obj=ObjectDB::get_instance(id);
+		Object *obj=ObjectDB::get_instance(instances[i]);
 		if (!obj)
 			continue;
 
@@ -405,15 +404,15 @@ void SpatialEditorViewport::_find_items_at_pos(const Point2& p_pos,bool &r_inclu
 	Vector3 ray=_get_ray(p_pos);
 	Vector3 pos=_get_ray_pos(p_pos);
 
-	Vector<RID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_tree()->get_root()->get_world()->get_scenario() );
+	Vector<ObjectID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_tree()->get_root()->get_world()->get_scenario() );
 	Set<Ref<SpatialEditorGizmo> > found_gizmos;
 
 	r_includes_current=false;
 
 	for (int i=0;i<instances.size();i++) {
 
-		uint32_t id=VisualServer::get_singleton()->instance_get_object_instance_ID(instances[i]);
-		Object *obj=ObjectDB::get_instance(id);
+		Object *obj=ObjectDB::get_instance(instances[i]);
+
 		if (!obj)
 			continue;
 
@@ -534,14 +533,12 @@ void SpatialEditorViewport::_select_region() {
 
 	frustum.push_back( far );
 
-	Vector<RID> instances=VisualServer::get_singleton()->instances_cull_convex(frustum,get_tree()->get_root()->get_world()->get_scenario());
+	Vector<ObjectID> instances=VisualServer::get_singleton()->instances_cull_convex(frustum,get_tree()->get_root()->get_world()->get_scenario());
 
 
 	for (int i=0;i<instances.size();i++) {
 
-		uint32_t id=VisualServer::get_singleton()->instance_get_object_instance_ID(instances[i]);
-
-		Object *obj=ObjectDB::get_instance(id);
+		Object *obj=ObjectDB::get_instance(instances[i]);
 		if (!obj)
 			continue;
 		Spatial *sp = obj->cast_to<Spatial>();
@@ -877,7 +874,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 						if (b.mod.control) {
 
-							Vector<RID> instances=VisualServer::get_singleton()->instances_cull_ray(ray_origin,ray_dir,get_tree()->get_root()->get_world()->get_scenario() );
+							Vector<ObjectID> instances=VisualServer::get_singleton()->instances_cull_ray(ray_origin,ray_dir,get_tree()->get_root()->get_world()->get_scenario() );
 
 							Plane p(ray_origin,_get_camera_normal());
 
@@ -886,8 +883,9 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 							for (int i=0;i<instances.size();i++) {
 
-								uint32_t id=VisualServer::get_singleton()->instance_get_object_instance_ID(instances[i]);
-								Object *obj=ObjectDB::get_instance(id);
+
+								Object *obj=ObjectDB::get_instance(instances[i]);
+
 								if (!obj)
 									continue;
 
@@ -1825,6 +1823,30 @@ void SpatialEditorViewport::_notification(int p_what) {
 				surface->update();
 		}
 
+		//update shadow atlas if changed
+
+		int shadowmap_size = Globals::get_singleton()->get("rendering/shadow_atlas/size");
+		int atlas_q0 = Globals::get_singleton()->get("rendering/shadow_atlas/quadrant_0_subdiv");
+		int atlas_q1 = Globals::get_singleton()->get("rendering/shadow_atlas/quadrant_1_subdiv");
+		int atlas_q2 = Globals::get_singleton()->get("rendering/shadow_atlas/quadrant_2_subdiv");
+		int atlas_q3 = Globals::get_singleton()->get("rendering/shadow_atlas/quadrant_3_subdiv");
+
+
+		viewport->set_shadow_atlas_size(shadowmap_size);
+		viewport->set_shadow_atlas_quadrant_subdiv(0,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
+		viewport->set_shadow_atlas_quadrant_subdiv(1,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q1));
+		viewport->set_shadow_atlas_quadrant_subdiv(2,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
+		viewport->set_shadow_atlas_quadrant_subdiv(3,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
+
+		//update msaa if changed
+
+		int msaa_mode = Globals::get_singleton()->get("rendering/antialias/msaa");
+		viewport->set_msaa(Viewport::MSAA(msaa_mode));
+
+		bool hdr = Globals::get_singleton()->get("rendering/dynamic_range/hdr");
+		viewport->set_hdr(hdr);
+
+
 	}
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
@@ -2066,9 +2088,9 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			bool current = 	view_menu->get_popup()->is_item_checked( idx );
 			current=!current;
 			if (current)
-				camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index))|(1<<GIZMO_EDIT_LAYER)|(1<<GIZMO_GRID_LAYER) );
+				camera->set_cull_mask( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index))|(1<<GIZMO_EDIT_LAYER)|(1<<GIZMO_GRID_LAYER) );
 			else
-				camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index))|(1<<GIZMO_GRID_LAYER) );
+				camera->set_cull_mask( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index))|(1<<GIZMO_GRID_LAYER) );
 			view_menu->get_popup()->set_item_checked( idx, current );
 
 		} break;
@@ -2355,18 +2377,20 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	message_time=0;
 
 	spatial_editor=p_spatial_editor;
-	Control *c=memnew(Control);
+	ViewportContainer *c=memnew(ViewportContainer);
+	c->set_stretch(true);
 	add_child(c);
 	c->set_area_as_parent_rect();
 	viewport = memnew( Viewport );
 	viewport->set_disable_input(true);
+
 	c->add_child(viewport);
 	surface = memnew( Control );
 	add_child(surface);
 	surface->set_area_as_parent_rect();
 	camera = memnew(Camera);
 	camera->set_disable_gizmo(true);
-	camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+p_index))|(1<<GIZMO_EDIT_LAYER)|(1<<GIZMO_GRID_LAYER) );
+	camera->set_cull_mask( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+p_index))|(1<<GIZMO_EDIT_LAYER)|(1<<GIZMO_GRID_LAYER) );
 	//camera->set_environment(SpatialEditor::get_singleton()->get_viewport_environment());
 	viewport->add_child(camera);
 	camera->make_current();
@@ -2375,7 +2399,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu = memnew( MenuButton );
 	surface->add_child(view_menu);
 	view_menu->set_pos( Point2(4,4));
-	view_menu->set_self_opacity(0.5);
+	view_menu->set_self_modulate(Color(1,1,1,0.5));
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/left_view"), VIEW_LEFT);
@@ -2555,11 +2579,12 @@ void SpatialEditor::_generate_selection_box() {
 
 	}
 
-	Ref<FixedMaterial> mat = memnew( FixedMaterial );
-	mat->set_flag(Material::FLAG_UNSHADED,true);
-	mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1));
-	mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
-	mat->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
+	Ref<FixedSpatialMaterial> mat = memnew( FixedSpatialMaterial );
+	mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
+	mat->set_albedo(Color(1,1,1));
+	mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT,true);
+	mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR,true);
+	mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR,true);
 	st->set_material(mat);
 	selection_box = st->commit();
 }
@@ -2691,14 +2716,14 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 	}
 	if (d.has("ambient_light_color")) {
 		settings_ambient_color->set_color(d["ambient_light_color"]);
-		viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,d["ambient_light_color"]);
+		//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,d["ambient_light_color"]);
 	}
 
 	if (d.has("default_srgb")) {
 		bool use = d["default_srgb"];
 
-		viewport_environment->set_enable_fx(Environment::FX_SRGB,use);
-		view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB), use );
+		//viewport_environment->set_enable_fx(Environment::FX_SRGB,use);
+		//view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB), use );
 	}
 	if (d.has("show_grid")) {
 		bool use = d["show_grid"];
@@ -2898,9 +2923,9 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			bool is_checked = view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(p_option) );
 
 			if (is_checked) {
-				viewport_environment->set_enable_fx(Environment::FX_SRGB,false);
+				//viewport_environment->set_enable_fx(Environment::FX_SRGB,false);
 			} else {
-				viewport_environment->set_enable_fx(Environment::FX_SRGB,true);
+				//viewport_environment->set_enable_fx(Environment::FX_SRGB,true);
 			}
 
 			is_checked = ! is_checked;
@@ -3146,11 +3171,13 @@ void SpatialEditor::_init_indicators() {
 
 	{
 
-		indicator_mat = VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_ONTOP, false );
-		VisualServer::get_singleton()->fixed_material_set_flag(indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
-		VisualServer::get_singleton()->fixed_material_set_flag(indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
+		indicator_mat.instance();;
+		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
+		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP,true);
+		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR,true);
+		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR,true);
+
+		indicator_mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT,true);
 
 		DVector<Color> grid_colors[3];
 		DVector<Vector3> grid_points[3];
@@ -3192,8 +3219,8 @@ void SpatialEditor::_init_indicators() {
 			d.resize(VS::ARRAY_MAX);
 			d[VisualServer::ARRAY_VERTEX]=grid_points[i];
 			d[VisualServer::ARRAY_COLOR]=grid_colors[i];
-			VisualServer::get_singleton()->mesh_add_surface(grid[i],VisualServer::PRIMITIVE_LINES,d);
-			VisualServer::get_singleton()->mesh_surface_set_material(grid[i],0,indicator_mat);
+			VisualServer::get_singleton()->mesh_add_surface_from_arrays(grid[i],VisualServer::PRIMITIVE_LINES,d);
+			VisualServer::get_singleton()->mesh_surface_set_material(grid[i],0,indicator_mat->get_rid());
 			grid_instance[i] = VisualServer::get_singleton()->instance_create2(grid[i],get_tree()->get_root()->get_world()->get_scenario());
 
 			grid_visible[i]=false;
@@ -3211,8 +3238,8 @@ void SpatialEditor::_init_indicators() {
 		d[VisualServer::ARRAY_VERTEX]=origin_points;
 		d[VisualServer::ARRAY_COLOR]=origin_colors;
 
-		VisualServer::get_singleton()->mesh_add_surface(origin,VisualServer::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(origin,0,indicator_mat);
+		VisualServer::get_singleton()->mesh_add_surface_from_arrays(origin,VisualServer::PRIMITIVE_LINES,d);
+		VisualServer::get_singleton()->mesh_surface_set_material(origin,0,indicator_mat->get_rid());
 
 
 //		origin = VisualServer::get_singleton()->poly_create();
@@ -3243,17 +3270,15 @@ void SpatialEditor::_init_indicators() {
 		cursor_points.push_back(Vector3(0,-cs,0));
 		cursor_points.push_back(Vector3(0,0,+cs));
 		cursor_points.push_back(Vector3(0,0,-cs));
-		cursor_material=VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->fixed_material_set_param(cursor_material,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0,1,1));
-		VisualServer::get_singleton()->material_set_flag( cursor_material, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-		VisualServer::get_singleton()->fixed_material_set_flag(cursor_material, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
-		VisualServer::get_singleton()->fixed_material_set_flag(cursor_material, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
+		cursor_material.instance();
+		cursor_material->set_albedo(Color(0,1,1));
+		cursor_material->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
 
 		Array d;
 		d.resize(VS::ARRAY_MAX);
 		d[VS::ARRAY_VERTEX]=cursor_points;
-		VisualServer::get_singleton()->mesh_add_surface(cursor_mesh,VS::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(cursor_mesh,0,cursor_material);
+		VisualServer::get_singleton()->mesh_add_surface_from_arrays(cursor_mesh,VS::PRIMITIVE_LINES,d);
+		VisualServer::get_singleton()->mesh_surface_set_material(cursor_mesh,0,cursor_material->get_rid());
 
 		cursor_instance = VisualServer::get_singleton()->instance_create2(cursor_mesh,get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_layer_mask(cursor_instance,1<<SpatialEditorViewport::GIZMO_GRID_LAYER);
@@ -3271,11 +3296,11 @@ void SpatialEditor::_init_indicators() {
 
 		float gizmo_alph = EditorSettings::get_singleton()->get("3d_editor/manipulator_gizmo_opacity");
 
-		gizmo_hl = Ref<FixedMaterial>( memnew( FixedMaterial ) );
-		gizmo_hl->set_flag(Material::FLAG_UNSHADED, true);
-		gizmo_hl->set_flag(Material::FLAG_ONTOP, true);
-		gizmo_hl->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-		gizmo_hl->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,gizmo_alph+0.2f));
+		gizmo_hl = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ) );
+		gizmo_hl->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+		gizmo_hl->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
+		gizmo_hl->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+		gizmo_hl->set_albedo(Color(1,1,1,gizmo_alph+0.2f));
 
 		for(int i=0;i<3;i++) {
 
@@ -3283,14 +3308,14 @@ void SpatialEditor::_init_indicators() {
 			rotate_gizmo[i]=Ref<Mesh>( memnew( Mesh ) );
 
 
-			Ref<FixedMaterial> mat = memnew( FixedMaterial );
-			mat->set_flag(Material::FLAG_UNSHADED, true);
-			mat->set_flag(Material::FLAG_ONTOP, true);
-			mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+			Ref<FixedSpatialMaterial> mat = memnew( FixedSpatialMaterial );
+			mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+			mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
+			mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
 			Color col;
 			col[i]=1.0;
 			col.a= gizmo_alph;
-			mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,col);
+			mat->set_albedo(col);
 			gizmo_color[i]=mat;
 
 
@@ -3436,8 +3461,6 @@ void SpatialEditor::_finish_indicators() {
 
 	VisualServer::get_singleton()->free(cursor_instance);
 	VisualServer::get_singleton()->free(cursor_mesh);
-	VisualServer::get_singleton()->free(indicator_mat);
-	VisualServer::get_singleton()->free(cursor_material);
 }
 
 void SpatialEditor::_instance_scene() {
@@ -3730,7 +3753,7 @@ void SpatialEditor::clear() {
 	settings_default_light_rot_x=Math_PI*0.3;
 	settings_default_light_rot_y=Math_PI*0.2;
 
-	viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
+	//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
 	settings_ambient_color->set_color(Color(0.15,0.15,0.15));
 	if (!light_instance.is_valid())
 		_menu_item_pressed(MENU_VIEW_USE_DEFAULT_LIGHT);
@@ -3743,7 +3766,7 @@ void SpatialEditor::clear() {
 
 void SpatialEditor::_update_ambient_light_color(const Color& p_color) {
 
-	viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,settings_ambient_color->get_color());
+//	viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,settings_ambient_color->get_color());
 
 }
 
@@ -3982,7 +4005,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 
 
-	settings_light_base = memnew( Control );
+	settings_light_base = memnew( ViewportContainer );
 	settings_light_base->set_custom_minimum_size(Size2(128,128));
 	settings_light_base->connect("input_event",this,"_default_light_angle_input");
 	settings_vbc->add_margin_child(TTR("Default Light Normal:"),settings_light_base);
@@ -4013,8 +4036,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_vbc->add_margin_child(TTR("Ambient Light Color:"),settings_ambient_color);
 	settings_ambient_color->connect("color_changed",this,"_update_ambient_light_color");
 
-	viewport_environment->set_enable_fx(Environment::FX_AMBIENT_LIGHT,true);
-	viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
+//	viewport_environment->set_enable_fx(Environment::FX_AMBIENT_LIGHT,true);
+//	viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
 	settings_ambient_color->set_color(Color(0.15,0.15,0.15));
 
 

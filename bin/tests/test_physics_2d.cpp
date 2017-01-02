@@ -85,7 +85,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32,2,0,Image::FORMAT_GRAYSCALE_ALPHA,pixels);
+			Image image(32,2,0,Image::FORMAT_LA8,pixels);
 
 			body_shape_data[Physics2DServer::SHAPE_SEGMENT].image=vs->texture_create_from_image(image);
 
@@ -113,7 +113,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32,32,0,Image::FORMAT_GRAYSCALE_ALPHA,pixels);
+			Image image(32,32,0,Image::FORMAT_LA8,pixels);
 
 			body_shape_data[Physics2DServer::SHAPE_CIRCLE].image=vs->texture_create_from_image(image);
 
@@ -141,7 +141,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32,32,0,Image::FORMAT_GRAYSCALE_ALPHA,pixels);
+			Image image(32,32,0,Image::FORMAT_LA8,pixels);
 
 			body_shape_data[Physics2DServer::SHAPE_RECTANGLE].image=vs->texture_create_from_image(image);
 
@@ -173,7 +173,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32,64,0,Image::FORMAT_GRAYSCALE_ALPHA,pixels);
+			Image image(32,64,0,Image::FORMAT_LA8,pixels);
 
 			body_shape_data[Physics2DServer::SHAPE_CAPSULE].image=vs->texture_create_from_image(image);
 
@@ -381,7 +381,7 @@ public:
 			RID vp = vs->viewport_create();
 			canvas = vs->canvas_create();
 			vs->viewport_attach_canvas(vp,canvas);
-			vs->viewport_attach_to_screen(vp);
+			vs->viewport_attach_to_screen(vp,Rect2(Vector2(),OS::get_singleton()->get_window_size()));
 			Matrix32 smaller;
 			//smaller.scale(Vector2(0.6,0.6));
 			//smaller.elements[2]=Vector2(100,0);

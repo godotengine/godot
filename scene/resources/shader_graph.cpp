@@ -29,6 +29,7 @@
 #include "shader_graph.h"
 #include "scene/scene_string_names.h"
 
+#if 0
 Array ShaderGraph::_get_node_list(ShaderType p_type) const {
 
 	List<int> nodes;
@@ -2489,7 +2490,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 				}
 			}
 
-			Image gradient(color_ramp_len,1,0,Image::FORMAT_RGBA,cramp);
+			Image gradient(color_ramp_len,1,0,Image::FORMAT_RGBA8,cramp);
 			Ref<ImageTexture> it = memnew( ImageTexture );
 			it->create_from_image(gradient,Texture::FLAG_FILTER|Texture::FLAG_MIPMAPS);
 
@@ -2559,7 +2560,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 
 
-			Image gradient(curve_map_len,1,0,Image::FORMAT_GRAYSCALE,cmap);
+			Image gradient(curve_map_len,1,0,Image::FORMAT_L8,cmap);
 			Ref<ImageTexture> it = memnew( ImageTexture );
 			it->create_from_image(gradient,Texture::FLAG_FILTER|Texture::FLAG_MIPMAPS);
 
@@ -2660,3 +2661,5 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 #undef DEF_MATRIX
 #undef DEF_VEC
 }
+
+#endif

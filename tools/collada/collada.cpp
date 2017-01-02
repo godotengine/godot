@@ -463,7 +463,7 @@ Transform Collada::_read_transform(XMLParser& parser) {
 	if (parser.is_empty())
 		return Transform();
 
-	Vector<float> array;
+	Vector<String> array;
 	while(parser.read()==OK) {
 		// TODO: check for comments inside the element
 		// and ignore them.
@@ -471,7 +471,7 @@ Transform Collada::_read_transform(XMLParser& parser) {
 		if (parser.get_node_type() == XMLParser::NODE_TEXT) {
 			// parse float data
 			String str = parser.get_node_data();
-			array=str.split_floats(" ",false);
+			array=str.split_spaces();
 		}
 		else
 		if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END)
@@ -479,7 +479,13 @@ Transform Collada::_read_transform(XMLParser& parser) {
 	}
 
 	ERR_FAIL_COND_V(array.size()!=16,Transform());
-	return _read_transform_from_array(array);
+	Vector<float> farr;
+	farr.resize(16);
+	for(int i=0;i<16;i++) {
+		farr[i]=array[i].to_double();
+	}
+
+	return _read_transform_from_array(farr);
 }
 
 String Collada::_read_empty_draw_type(XMLParser& parser) {

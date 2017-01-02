@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "cube_grid_theme_editor_plugin.h"
 
+#if 0
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/physics_body.h"
 #include "scene/main/viewport.h"
@@ -353,4 +354,4 @@ MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
 	theme_editor->hide();
 
 }
-
+#endif

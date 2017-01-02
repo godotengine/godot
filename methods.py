@@ -122,7 +122,7 @@ def build_glsl_header(filename):
                 uline = line[:line.lower().find("//")]
                 uline = uline[uline.find("uniform") + len("uniform"):]
                 uline = uline.replace(";", "")
-                uline = uline.replace("{", "")
+                uline = uline.replace("{", "").strip()
                 lines = uline.split(",")
                 for x in lines:
 
@@ -228,6 +228,7 @@ def build_glsl_header(filename):
 
         fd.write("\t_FORCE_INLINE_ void set_conditional(Conditionals p_conditional,bool p_enable)  {  _set_conditional(p_conditional,p_enable); }\n\n")
     fd.write("\t#define _FU if (get_uniform(p_uniform)<0) return; ERR_FAIL_COND( get_active()!=this );\n\n ")
+    fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, bool p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value?1:0); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, double p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n")
     fd.write("\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint8_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n")
@@ -655,6 +656,7 @@ class LegacyGLHeaderStruct:
         self.fragment_lines = []
         self.uniforms = []
         self.attributes = []
+        self.feedbacks = []
         self.fbos = []
         self.conditionals = []
         self.enums = {}
@@ -753,7 +755,29 @@ def include_file_in_legacygl_header(filename, header_data, depth):
                     header_data.texunits += [(x, texunit)]
                     header_data.texunit_names += [x]
 
-        elif (line.find("uniform") != -1):
+        elif (line.find("uniform") != -1 and line.lower().find("ubo:") != -1):
+            # uniform buffer object
+            ubostr = line[line.find(":") + 1:].strip()
+            ubo = str(int(ubostr))
+            uline = line[:line.lower().find("//")]
+            uline = uline[uline.find("uniform") + len("uniform"):]
+            uline = uline.replace("highp", "")
+            uline = uline.replace(";", "")
+            uline = uline.replace("{", "").strip()
+            lines = uline.split(",")
+            for x in lines:
+
+                x = x.strip()
+                x = x[x.rfind(" ") + 1:]
+                if (x.find("[") != -1):
+                    # unfiorm array
+                    x = x[:x.find("[")]
+
+                if (not x in header_data.ubo_names):
+                    header_data.ubos += [(x, ubo)]
+                    header_data.ubo_names += [x]
+
+        elif (line.find("uniform") != -1 and line.find("{") == -1 and line.find(";") != -1):
             uline = line.replace("uniform", "")
             uline = uline.replace(";", "")
             lines = uline.split(",")
@@ -768,7 +792,7 @@ def include_file_in_legacygl_header(filename, header_data, depth):
                 if (not x in header_data.uniforms):
                     header_data.uniforms += [x]
 
-        if ((line.strip().find("in ") == 0 or line.strip().find("attribute ") == 0) and line.find("attrib:") != -1):
+        if (line.strip().find("attribute ") == 0 and line.find("attrib:") != -1):
             uline = line.replace("in ", "")
             uline = uline.replace("attribute ", "")
             uline = uline.replace("highp ", "")
@@ -781,6 +805,19 @@ def include_file_in_legacygl_header(filename, header_data, depth):
                     name = name.strip()
                     bind = bind.replace("attrib:", "").strip()
                     header_data.attributes += [(name, bind)]
+
+        if (line.strip().find("out ") == 0 and line.find("tfb:") != -1):
+            uline = line.replace("out ", "")
+            uline = uline.replace("highp ", "")
+            uline = uline.replace(";", "")
+            uline = uline[uline.find(" "):].strip()
+
+            if (uline.find("//") != -1):
+                name, bind = uline.split("//")
+                if (bind.find("tfb:") != -1):
+                    name = name.strip()
+                    bind = bind.replace("tfb:", "").strip()
+                    header_data.feedbacks += [(name, bind)]
 
         line = line.replace("\r", "")
         line = line.replace("\n", "")
@@ -991,12 +1028,14 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
         fd.write("\t\tstatic const Enum *_enums=NULL;\n")
         fd.write("\t\tstatic const EnumValue *_enum_values=NULL;\n")
 
+    conditionals_found = []
     if (len(header_data.conditionals)):
 
         fd.write("\t\tstatic const char* _conditional_strings[]={\n")
         if (len(header_data.conditionals)):
             for x in header_data.conditionals:
                 fd.write("\t\t\t\"#define " + x + "\\n\",\n")
+                conditionals_found.append(x)
         fd.write("\t\t};\n\n")
     else:
         fd.write("\t\tstatic const char **_conditional_strings=NULL;\n")
@@ -1021,6 +1060,25 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
         else:
             fd.write("\t\tstatic AttributePair *_attribute_pairs=NULL;\n")
 
+    feedback_count = 0
+
+    if (len(header_data.feedbacks)):
+
+        fd.write("\t\tstatic const Feedback _feedbacks[]={\n")
+        for x in header_data.feedbacks:
+            name = x[0]
+            cond = x[1]
+            if (cond in conditionals_found):
+                fd.write("\t\t\t{\"" + name + "\"," + str(conditionals_found.index(cond)) + "},\n")
+            else:
+                fd.write("\t\t\t{\"" + name + "\",-1},\n")
+
+            feedback_count += 1
+
+        fd.write("\t\t};\n\n")
+    else:
+        fd.write("\t\tstatic const Feedback* _feedbacks=NULL;\n")
+
     if (len(header_data.texunits)):
         fd.write("\t\tstatic TexUnitPair _texunit_pairs[]={\n")
         for x in header_data.texunits:
@@ -1028,6 +1086,14 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
         fd.write("\t\t};\n\n")
     else:
         fd.write("\t\tstatic TexUnitPair *_texunit_pairs=NULL;\n")
+
+    if (len(header_data.ubos)):
+        fd.write("\t\tstatic UBOPair _ubo_pairs[]={\n")
+        for x in header_data.ubos:
+            fd.write("\t\t\t{\"" + x[0] + "\"," + x[1] + "},\n")
+        fd.write("\t\t};\n\n")
+    else:
+        fd.write("\t\tstatic UBOPair *_ubo_pairs=NULL;\n")
 
     fd.write("\t\tstatic const char _vertex_code[]={\n")
     for x in header_data.vertex_lines:
@@ -1050,9 +1116,9 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
     fd.write("\t\tstatic const int _fragment_code_start=" + str(header_data.fragment_offset) + ";\n")
 
     if output_attribs:
-        fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_attribute_pairs," + str(len(header_data.attributes)) + ", _texunit_pairs," + str(len(header_data.texunits)) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
+        fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_attribute_pairs," + str(len(header_data.attributes)) + ", _texunit_pairs," + str(len(header_data.texunits)) + ",_ubo_pairs," + str(len(header_data.ubos)) + ",_feedbacks," + str(feedback_count) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
     else:
-        fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_texunit_pairs," + str(len(header_data.texunits)) + ",_enums," + str(len(header_data.enums)) + ",_enum_values," + str(enum_value_count) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
+        fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_texunit_pairs," + str(len(header_data.texunits)) + ",_enums," + str(len(header_data.enums)) + ",_enum_values," + str(enum_value_count) + ",_ubo_pairs," + str(len(header_data.ubos)) + ",_feedbacks," + str(feedback_count) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
 
     fd.write("\t};\n\n")
 
@@ -1082,6 +1148,12 @@ def build_gles2_headers(target, source, env):
 
     for x in source:
         build_legacygl_header(str(x), include="drivers/gles2/shader_gles2.h", class_suffix="GLES2", output_attribs=True)
+
+
+def build_gles3_headers(target, source, env):
+
+    for x in source:
+        build_legacygl_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3", output_attribs=True)
 
 
 def update_version():

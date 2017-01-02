@@ -328,7 +328,7 @@ Error MeshDataTool::commit_to_surface(const Ref<Mesh>& p_mesh) {
 
 	Ref<Mesh> ncmesh=p_mesh;
 	int sc = ncmesh->get_surface_count();
-	ncmesh->add_surface(Mesh::PRIMITIVE_TRIANGLES,arr);
+	ncmesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES,arr);
 	ncmesh->surface_set_material(sc,material);
 
 	return OK;

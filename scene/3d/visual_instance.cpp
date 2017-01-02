@@ -31,7 +31,6 @@
 #include "servers/visual_server.h"
 #include "room_instance.h"
 #include "scene/scene_string_names.h"
-#include "baked_light_instance.h"
 #include "skeleton.h"
 
 AABB VisualInstance::get_transformed_aabb() const {
@@ -52,7 +51,7 @@ void VisualInstance::_notification(int p_what) {
 			Room *room=NULL;
 			bool is_geom = cast_to<GeometryInstance>();
 
-			while(parent) {
+		/*	while(parent) {
 
 				room = parent->cast_to<Room>();
 				if (room)
@@ -64,7 +63,7 @@ void VisualInstance::_notification(int p_what) {
 				}
 
 				parent=parent->get_parent_spatial();
-			}
+			}*/
 
 
 
@@ -92,7 +91,7 @@ void VisualInstance::_notification(int p_what) {
 			VisualServer::get_singleton()->instance_set_scenario( instance, RID() );
 			VisualServer::get_singleton()->instance_set_room(instance,RID());
 			VisualServer::get_singleton()->instance_attach_skeleton( instance, RID() );
-			VS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
+		//	VS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
 
 
 		} break;
@@ -172,29 +171,54 @@ Ref<Material> GeometryInstance::get_material_override() const{
 
 
 
-void GeometryInstance::set_draw_range_begin(float p_dist){
+void GeometryInstance::set_lod_min_distance(float p_dist){
 
-	draw_begin=p_dist;
-	VS::get_singleton()->instance_geometry_set_draw_range(get_instance(),draw_begin,draw_end);
+	lod_min_distance=p_dist;
+	VS::get_singleton()->instance_geometry_set_draw_range(get_instance(),lod_min_distance,lod_max_distance,lod_min_hysteresis,lod_max_hysteresis);
 }
 
-float GeometryInstance::get_draw_range_begin() const{
+float GeometryInstance::get_lod_min_distance() const{
 
-	return draw_begin;
+	return lod_min_distance;
 }
 
 
-void GeometryInstance::set_draw_range_end(float p_dist) {
+void GeometryInstance::set_lod_max_distance(float p_dist) {
 
-	draw_end=p_dist;
-	VS::get_singleton()->instance_geometry_set_draw_range(get_instance(),draw_begin,draw_end);
+	lod_max_distance=p_dist;
+	VS::get_singleton()->instance_geometry_set_draw_range(get_instance(),lod_min_distance,lod_max_distance,lod_min_hysteresis,lod_max_hysteresis);
 
 }
 
-float GeometryInstance::get_draw_range_end() const {
+float GeometryInstance::get_lod_max_distance() const {
 
-	return draw_end;
+	return lod_max_distance;
 }
+
+void GeometryInstance::set_lod_min_hysteresis(float p_dist){
+
+	lod_min_hysteresis=p_dist;
+	VS::get_singleton()->instance_geometry_set_draw_range(get_instance(),lod_min_distance,lod_max_distance,lod_min_hysteresis,lod_max_hysteresis);
+}
+
+float GeometryInstance::get_lod_min_hysteresis() const{
+
+	return lod_min_hysteresis;
+}
+
+
+void GeometryInstance::set_lod_max_hysteresis(float p_dist) {
+
+	lod_max_hysteresis=p_dist;
+	VS::get_singleton()->instance_geometry_set_draw_range(get_instance(),lod_min_distance,lod_max_distance,lod_min_hysteresis,lod_max_hysteresis);
+
+}
+
+float GeometryInstance::get_lod_max_hysteresis() const {
+
+	return lod_max_hysteresis;
+}
+
 
 void GeometryInstance::_notification(int p_what) {
 
@@ -202,7 +226,6 @@ void GeometryInstance::_notification(int p_what) {
 
 		if (flags[FLAG_USE_BAKED_LIGHT]) {
 
-			_find_baked_light();
 		}
 
 		_update_visibility();
@@ -211,11 +234,6 @@ void GeometryInstance::_notification(int p_what) {
 
 		if (flags[FLAG_USE_BAKED_LIGHT]) {
 
-			if (baked_light_instance) {
-				baked_light_instance->disconnect(SceneStringNames::get_singleton()->baked_light_changed,this,SceneStringNames::get_singleton()->_baked_light_changed);
-				baked_light_instance=NULL;
-			}
-			_baked_light_changed();
 
 		}
 
@@ -225,36 +243,6 @@ void GeometryInstance::_notification(int p_what) {
 	}
 
 
-}
-
-void GeometryInstance::_baked_light_changed() {
-
-	if (!baked_light_instance)
-		VS::get_singleton()->instance_geometry_set_baked_light(get_instance(),RID());
-	else
-		VS::get_singleton()->instance_geometry_set_baked_light(get_instance(),baked_light_instance->get_baked_light_instance());
-
-}
-
-void GeometryInstance::_find_baked_light() {
-
-	Node *n=get_parent();
-	while(n) {
-
-		BakedLightInstance *bl=n->cast_to<BakedLightInstance>();
-		if (bl) {
-
-			baked_light_instance=bl;
-			baked_light_instance->connect(SceneStringNames::get_singleton()->baked_light_changed,this,SceneStringNames::get_singleton()->_baked_light_changed);
-			_baked_light_changed();
-
-			return;
-		}
-
-		n=n->get_parent();
-	}
-
-	_baked_light_changed();
 }
 
 void GeometryInstance::_update_visibility() {
@@ -288,17 +276,6 @@ void GeometryInstance::set_flag(Flags p_flag,bool p_value) {
 	}
 	if (p_flag==FLAG_USE_BAKED_LIGHT) {
 
-		if (is_inside_world()) {
-			if (!p_value) {
-				if (baked_light_instance) {
-					baked_light_instance->disconnect(SceneStringNames::get_singleton()->baked_light_changed,this,SceneStringNames::get_singleton()->_baked_light_changed);
-					baked_light_instance=NULL;
-				}
-				_baked_light_changed();
-			} else {
-				_find_baked_light();
-			}
-		}
 	}
 }
 
@@ -331,17 +308,8 @@ GeometryInstance::ShadowCastingSetting GeometryInstance::get_cast_shadows_settin
 	return shadow_casting_setting;
 }
 
-void GeometryInstance::set_baked_light_texture_id(int p_id) {
 
-	baked_light_texture_id=p_id;
-	VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),baked_light_texture_id);
 
-}
-
-int GeometryInstance::get_baked_light_texture_id() const{
-
-	return baked_light_texture_id;
-}
 
 void GeometryInstance::set_extra_cull_margin(float p_margin) {
 
@@ -366,41 +334,43 @@ void GeometryInstance::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_cast_shadows_setting", "shadow_casting_setting"), &GeometryInstance::set_cast_shadows_setting);
 	ObjectTypeDB::bind_method(_MD("get_cast_shadows_setting"), &GeometryInstance::get_cast_shadows_setting);
 
-	ObjectTypeDB::bind_method(_MD("set_draw_range_begin","mode"), &GeometryInstance::set_draw_range_begin);
-	ObjectTypeDB::bind_method(_MD("get_draw_range_begin"), &GeometryInstance::get_draw_range_begin);
+	ObjectTypeDB::bind_method(_MD("set_lod_max_hysteresis","mode"), &GeometryInstance::set_lod_max_hysteresis);
+	ObjectTypeDB::bind_method(_MD("get_lod_max_hysteresis"), &GeometryInstance::get_lod_max_hysteresis);
 
-	ObjectTypeDB::bind_method(_MD("set_draw_range_end","mode"), &GeometryInstance::set_draw_range_end);
-	ObjectTypeDB::bind_method(_MD("get_draw_range_end"), &GeometryInstance::get_draw_range_end);
+	ObjectTypeDB::bind_method(_MD("set_lod_max_distance","mode"), &GeometryInstance::set_lod_max_distance);
+	ObjectTypeDB::bind_method(_MD("get_lod_max_distance"), &GeometryInstance::get_lod_max_distance);
 
-	ObjectTypeDB::bind_method(_MD("set_baked_light_texture_id","id"), &GeometryInstance::set_baked_light_texture_id);
-	ObjectTypeDB::bind_method(_MD("get_baked_light_texture_id"), &GeometryInstance::get_baked_light_texture_id);
+	ObjectTypeDB::bind_method(_MD("set_lod_min_hysteresis","mode"), &GeometryInstance::set_lod_min_hysteresis);
+	ObjectTypeDB::bind_method(_MD("get_lod_min_hysteresis"), &GeometryInstance::get_lod_min_hysteresis);
+
+	ObjectTypeDB::bind_method(_MD("set_lod_min_distance","mode"), &GeometryInstance::set_lod_min_distance);
+	ObjectTypeDB::bind_method(_MD("get_lod_min_distance"), &GeometryInstance::get_lod_min_distance);
+
 
 	ObjectTypeDB::bind_method(_MD("set_extra_cull_margin","margin"), &GeometryInstance::set_extra_cull_margin);
 	ObjectTypeDB::bind_method(_MD("get_extra_cull_margin"), &GeometryInstance::get_extra_cull_margin);
 
 	ObjectTypeDB::bind_method(_MD("get_aabb"),&GeometryInstance::get_aabb);
 
-	ObjectTypeDB::bind_method(_MD("_baked_light_changed"), &GeometryInstance::_baked_light_changed);
 
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/visible"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE);
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "geometry/material_override",PROPERTY_HINT_RESOURCE_TYPE,"Material"), _SCS("set_material_override"), _SCS("get_material_override"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry/cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), _SCS("set_cast_shadows_setting"), _SCS("get_cast_shadows_setting"));
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/receive_shadows"), _SCS("set_flag"), _SCS("get_flag"),FLAG_RECEIVE_SHADOWS);
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "geometry/range_begin",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_draw_range_begin"), _SCS("get_draw_range_begin"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "geometry/range_end",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_draw_range_end"), _SCS("get_draw_range_end"));
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "geometry/extra_cull_margin",PROPERTY_HINT_RANGE,"0,16384,0"), _SCS("set_extra_cull_margin"), _SCS("get_extra_cull_margin"));
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/billboard"), _SCS("set_flag"), _SCS("get_flag"),FLAG_BILLBOARD);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/billboard_y"), _SCS("set_flag"), _SCS("get_flag"),FLAG_BILLBOARD_FIX_Y);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/depth_scale"), _SCS("set_flag"), _SCS("get_flag"),FLAG_DEPH_SCALE);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/visible_in_all_rooms"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE_IN_ALL_ROOMS);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/use_baked_light"), _SCS("set_flag"), _SCS("get_flag"),FLAG_USE_BAKED_LIGHT);
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "geometry/baked_light_tex_id"), _SCS("set_baked_light_texture_id"), _SCS("get_baked_light_texture_id"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod/min_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_min_distance"), _SCS("get_lod_min_distance"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod/min_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_min_hysteresis"), _SCS("get_lod_min_hysteresis"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod/max_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_max_distance"), _SCS("get_lod_max_distance"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod/max_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_max_hysteresis"), _SCS("get_lod_max_hysteresis"));
 
 //	ADD_SIGNAL( MethodInfo("visibility_changed"));
 
 	BIND_CONSTANT(FLAG_VISIBLE );
 	BIND_CONSTANT(FLAG_CAST_SHADOW );
-	BIND_CONSTANT(FLAG_RECEIVE_SHADOWS );
 	BIND_CONSTANT(FLAG_BILLBOARD );
 	BIND_CONSTANT(FLAG_BILLBOARD_FIX_Y );
 	BIND_CONSTANT(FLAG_DEPH_SCALE );
@@ -415,20 +385,21 @@ void GeometryInstance::_bind_methods() {
 }
 
 GeometryInstance::GeometryInstance() {
-	draw_begin=0;
-	draw_end=0;
+	lod_min_distance=0;
+	lod_max_distance=0;
+	lod_min_hysteresis=0;
+	lod_max_hysteresis=0;
+
 	for(int i=0;i<FLAG_MAX;i++) {
 		flags[i]=false;
 	}
 
 	flags[FLAG_VISIBLE]=true;
 	flags[FLAG_CAST_SHADOW]=true;
-	flags[FLAG_RECEIVE_SHADOWS]=true;
+
 	shadow_casting_setting=SHADOW_CASTING_SETTING_ON;
-	baked_light_instance=NULL;
-	baked_light_texture_id=0;
 	extra_cull_margin=0;
-	VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
+//	VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
 
 
 }

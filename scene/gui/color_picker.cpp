@@ -34,38 +34,21 @@
 #include "os/input.h"
 #include "os/keyboard.h"
 
-void update_material(Ref<CanvasItemMaterial>mat,const Color& p_color,float h,float s,float v) {
-	if (!mat.is_valid())
-		return;
-	Ref<Shader> sdr = mat->get_shader();
-	if (!sdr.is_valid())
-		return;
-
-	mat->set_shader_param("R",p_color.r);
-	mat->set_shader_param("G",p_color.g);
-	mat->set_shader_param("B",p_color.b);
-	mat->set_shader_param("H",h);
-	mat->set_shader_param("S",s);
-	mat->set_shader_param("V",v);
-	mat->set_shader_param("A",p_color.a);
-}
 
 void ColorPicker::_notification(int p_what) {
 
 
 	switch(p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			uv_material->set_shader(get_shader("uv_editor"));
-			w_material->set_shader(get_shader("w_editor"));
-			update_material(uv_material,color,h,s,v);
-			update_material(w_material,color,h,s,v);
+			uv_edit->set_texture(get_icon("color_main"));
+			w_edit->set_texture(get_icon("color_hue"));
+			sample->set_texture(get_icon("color_sample"));
+
 			_update_controls();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
 			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
-			update_material(uv_material, color,h,s,v);
-			update_material(w_material, color,h,s,v);
 
 			uv_edit->get_child(0)->cast_to<Control>()->update();
 			w_edit->get_child(0)->cast_to<Control>()->update();
@@ -109,8 +92,6 @@ void ColorPicker::set_color(const Color& p_color) {
 	if (!is_inside_tree())
 		return;
 
-	update_material(uv_material, color,h,s,v);
-	update_material(w_material, color,h,s,v);
 
 	uv_edit->get_child(0)->cast_to<Control>()->update();
 	w_edit->get_child(0)->cast_to<Control>()->update();
@@ -192,10 +173,24 @@ void ColorPicker::_update_presets()
 {
 	Size2 size=bt_add_preset->get_size();
 	preset->set_custom_minimum_size(Size2(size.width*presets.size(),size.height));
-	Image i(size.x*presets.size(),size.y, false, Image::FORMAT_RGB);
-	for (int y=0;y<size.y;y++)
-		for (int x=0;x<size.x*presets.size();x++)
-			i.put_pixel(x,y,presets[(int)x/size.x]);
+
+	DVector<uint8_t> img;
+	img.resize(size.x*presets.size()*size.y*3);
+
+	{
+		DVector<uint8_t>::Write w=img.write();
+		for (int y=0;y<size.y;y++) {
+			for (int x=0;x<size.x*presets.size();x++) {
+				int ofs = (y*(size.x*presets.size())+x)*3;
+				w[ofs+0]=uint8_t(CLAMP(presets[(int)x/size.x].r*255.0,0,255));
+				w[ofs+1]=uint8_t(CLAMP(presets[(int)x/size.x].g*255.0,0,255));
+				w[ofs+2]=uint8_t(CLAMP(presets[(int)x/size.x].b*255.0,0,255));
+			}
+		}
+	}
+
+	Image i(size.x*presets.size(),size.y, false, Image::FORMAT_RGB8,img);
+
 	Ref<ImageTexture> t;
 	t.instance();
 	t->create_from_image(i);
@@ -394,15 +389,23 @@ void ColorPicker::_screen_input(const InputEvent &ev)
 	} else if (ev.type==InputEvent::MOUSE_MOTION) {
 		const InputEventMouse &mev = ev.mouse_motion;
 		Viewport *r=get_tree()->get_root();
-		if (!r->get_rect().has_point(Point2(mev.global_x,mev.global_y)))
+		if (!r->get_visible_rect().has_point(Point2(mev.global_x,mev.global_y)))
 			return;
 		Image img =r->get_screen_capture();
 		if (!img.empty()) {
 			last_capture=img;
 			r->queue_screen_capture();
 		}
-		if (!last_capture.empty())
-			set_color(last_capture.get_pixel(mev.global_x,mev.global_y));
+		if (!last_capture.empty()) {
+			int pw = last_capture.get_format()==Image::FORMAT_RGBA8?4:3;
+			int ofs = (mev.global_y*last_capture.get_width()+mev.global_x)*pw;
+
+			DVector<uint8_t>::Read r = last_capture.get_data().read();
+
+			Color c( r[ofs+0]/255.0, r[ofs+1]/255.0, r[ofs+2]/255.0 );
+
+			set_color(c);
+		}
 	}
 }
 
@@ -474,22 +477,15 @@ ColorPicker::ColorPicker() :
 	HBoxContainer *hb_edit = memnew( HBoxContainer );
 
 	uv_edit= memnew ( TextureFrame );
-	Image i(256, 256, false, Image::FORMAT_RGB);
-	for (int y=0;y<256;y++)
-		for (int x=0;x<256;x++)
-			i.put_pixel(x,y,Color());
-	Ref<ImageTexture> t;
-	t.instance();
-	t->create_from_image(i);
-	uv_edit->set_texture(t);
+
+
+
 	uv_edit->set_ignore_mouse(false);
-	uv_edit->set_custom_minimum_size(Size2(256,256));
 	uv_edit->connect("input_event", this, "_uv_input");
 	Control *c= memnew( Control );
 	uv_edit->add_child(c);
 	c->set_area_as_parent_rect();
 	c->set_stop_mouse(false);
-	c->set_material(memnew ( CanvasItemMaterial ));
 	Vector<Variant> args=Vector<Variant>();
 	args.push_back(0);
 	args.push_back(c);
@@ -497,22 +493,14 @@ ColorPicker::ColorPicker() :
 
 	add_child(hb_edit);
 	w_edit= memnew( TextureFrame );
-	i = Image(15, 256, false, Image::FORMAT_RGB);
-	for (int y=0;y<256;y++)
-		for (int x=0;x<15;x++)
-			i.put_pixel(x,y,Color());
-	Ref<ImageTexture> tw;
-	tw.instance();
-	tw->create_from_image(i);
-	w_edit->set_texture(tw);
-	w_edit->set_ignore_mouse(false);
-	w_edit->set_custom_minimum_size(Size2(15,256));
+
+
+	w_edit->set_ignore_mouse(false);	
 	w_edit->connect("input_event", this, "_w_input");
 	c= memnew( Control );
 	w_edit->add_child(c);
 	c->set_area_as_parent_rect();
 	c->set_stop_mouse(false);
-	c->set_material(memnew ( CanvasItemMaterial ));
 	args.clear();
 	args.push_back(1);
 	args.push_back(c);
@@ -580,31 +568,8 @@ ColorPicker::ColorPicker() :
 	//_update_color();
 	updating=false;
 
-	uv_material.instance();
-	Ref<Shader> s_uv = get_shader("uv_editor");
-	uv_material->set_shader(s_uv);
-
-	w_material.instance();
-
-	Ref<Shader> s_w = get_shader("w_editor");
-	w_material->set_shader(s_w);
-
-	uv_edit->set_material(uv_material);
-	w_edit->set_material(w_material);
-
 	set_color(Color(1,1,1));
 
-	i.create(256,20,false,Image::FORMAT_RGB);
-	for (int y=0;y<20;y++)
-		for(int x=0;x<256;x++)
-			if ((x/4+y/4)%2)
-				i.put_pixel(x,y,Color(1,1,1));
-			else
-				i.put_pixel(x,y,Color(0.6,0.6,0.6));
-	Ref<ImageTexture> t_smpl;
-	t_smpl.instance();
-	t_smpl->create_from_image(i);
-	sample->set_texture(t_smpl);
 
 	HBoxContainer *bbc = memnew( HBoxContainer );
 	add_child(bbc);

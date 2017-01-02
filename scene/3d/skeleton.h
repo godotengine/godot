@@ -84,7 +84,6 @@ class Skeleton : public Spatial {
 		return bound;
 	}
 
-	virtual RES _get_gizmo_geometry() const;
 
 protected:
 

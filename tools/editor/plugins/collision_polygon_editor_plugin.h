@@ -40,6 +40,8 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
+#if 0
 class CanvasItemEditor;
 
 class CollisionPolygonEditor : public HBoxContainer {
@@ -60,8 +62,8 @@ class CollisionPolygonEditor : public HBoxContainer {
 	ToolButton *button_edit;
 
 
-	Ref<FixedMaterial> line_material;
-	Ref<FixedMaterial> handle_material;
+	Ref<FixedSpatialMaterial> line_material;
+	Ref<FixedSpatialMaterial> handle_material;
 
 	EditorNode *editor;
 	Panel *panel;
@@ -117,5 +119,5 @@ public:
 	~CollisionPolygonEditorPlugin();
 
 };
-
+#endif
 #endif // COLLISION_POLYGON_EDITOR_PLUGIN_H

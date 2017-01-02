@@ -31,6 +31,7 @@
 
 #include "tools/editor/editor_resource_preview.h"
 
+#if 0
 class EditorTexturePreviewPlugin : public EditorResourcePreviewGenerator {
 public:
 
@@ -123,5 +124,5 @@ public:
 	~EditorMeshPreviewPlugin();
 };
 
-
+#endif
 #endif // EDITORPREVIEWPLUGINS_H

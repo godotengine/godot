@@ -32,7 +32,7 @@
 #include "scene/resources/mesh_library.h"
 #include "tools/editor/editor_node.h"
 
-
+#if 0
 class MeshLibraryEditor : public Control {
 
 	OBJ_TYPE( MeshLibraryEditor, Control );
@@ -93,3 +93,4 @@ public:
 
 
 #endif // CUBE_GRID_THEME_EDITOR_PLUGIN_H
+#endif

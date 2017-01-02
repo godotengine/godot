@@ -79,7 +79,7 @@ public:
 
 };
 
-class BakedLightInstance;
+class BakedLight;
 
 class GeometryInstance : public VisualInstance {
 
@@ -89,7 +89,6 @@ public:
 	enum Flags {
 		FLAG_VISIBLE=VS::INSTANCE_FLAG_VISIBLE,
 		FLAG_CAST_SHADOW=VS::INSTANCE_FLAG_CAST_SHADOW,
-		FLAG_RECEIVE_SHADOWS=VS::INSTANCE_FLAG_RECEIVE_SHADOWS,
 		FLAG_BILLBOARD=VS::INSTANCE_FLAG_BILLBOARD,
 		FLAG_BILLBOARD_FIX_Y=VS::INSTANCE_FLAG_BILLBOARD_FIX_Y,
 		FLAG_DEPH_SCALE=VS::INSTANCE_FLAG_DEPH_SCALE,
@@ -97,6 +96,7 @@ public:
 		FLAG_USE_BAKED_LIGHT=VS::INSTANCE_FLAG_USE_BAKED_LIGHT,
 		FLAG_MAX=VS::INSTANCE_FLAG_MAX,
 	};
+
 
 	enum ShadowCastingSetting {
 		SHADOW_CASTING_SETTING_OFF=VS::SHADOW_CASTING_SETTING_OFF,
@@ -110,14 +110,13 @@ private:
 	bool flags[FLAG_MAX];
 	ShadowCastingSetting shadow_casting_setting;
 	Ref<Material> material_override;
-	float draw_begin;
-	float draw_end;
-	void _find_baked_light();
-	BakedLightInstance *baked_light_instance;
-	int baked_light_texture_id;
+	float lod_min_distance;
+	float lod_max_distance;
+	float lod_min_hysteresis;
+	float lod_max_hysteresis;
+
 	float extra_cull_margin;
 
-	void _baked_light_changed();
 	void _update_visibility();
 protected:
 
@@ -131,17 +130,20 @@ public:
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
 
-	void set_draw_range_begin(float p_dist);
-	float get_draw_range_begin() const;
+	void set_lod_min_distance(float p_dist);
+	float get_lod_min_distance() const;
 
-	void set_draw_range_end(float p_dist);
-	float get_draw_range_end() const;
+	void set_lod_max_distance(float p_dist);
+	float get_lod_max_distance() const;
+
+	void set_lod_min_hysteresis(float p_dist);
+	float get_lod_min_hysteresis() const;
+
+	void set_lod_max_hysteresis(float p_dist);
+	float get_lod_max_hysteresis() const;
 
 	void set_material_override(const Ref<Material>& p_material);
 	Ref<Material> get_material_override() const;
-
-	void set_baked_light_texture_id(int p_id);
-	int get_baked_light_texture_id() const;
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;

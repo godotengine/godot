@@ -26,9 +26,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "drivers/gles2/rasterizer_gles2.h"
 
 #include "os_windows.h"
+
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
 #include "os/memory_pool_dynamic_static.h"
 #include "drivers/windows/thread_windows.h"
@@ -41,7 +42,7 @@
 
 #include "servers/visual/visual_server_raster.h"
 #include "servers/audio/audio_server_sw.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+//#include "servers/visual/visual_server_wrap_mt.h"
 
 #include "tcp_server_winsock.h"
 #include "packet_peer_udp_winsock.h"
@@ -1078,21 +1079,24 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 	};
 
-#if defined(OPENGL_ENABLED) || defined(GLES2_ENABLED) || defined(LEGACYGL_ENABLED)
-	gl_context = memnew( ContextGL_Win(hWnd,false) );
+#if defined(OPENGL_ENABLED)
+	gl_context = memnew( ContextGL_Win(hWnd,true) );
 	gl_context->initialize();
-	rasterizer = memnew( RasterizerGLES2 );
+
+	RasterizerGLES3::register_config();
+
+	RasterizerGLES3::make_current();
 #else
  #ifdef DX9_ENABLED
 	rasterizer = memnew( RasterizerDX9(hWnd) );
  #endif
 #endif
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
-	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
-
-		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
-	}
+	visual_server = memnew( VisualServerRaster );
+	//if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
+//
+//		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
+//	}
 
 	//
 	physics_server = memnew( PhysicsServerSW );
@@ -1737,6 +1741,10 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				print("SCRIPT ERROR: %s: %s\n", p_function, err_details);
 				print("          At: %s:%i\n", p_file, p_line);
 				break;
+			case ERR_SHADER:
+				print("SHADER ERROR: %s: %s\n", p_function, err_details);
+				print("          At: %s:%i\n", p_file, p_line);
+				break;
 		}
 
 	} else {
@@ -1752,6 +1760,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 			case ERR_ERROR: basecol = FOREGROUND_RED; break;
 			case ERR_WARNING: basecol = FOREGROUND_RED | FOREGROUND_GREEN; break;
 			case ERR_SCRIPT: basecol = FOREGROUND_RED | FOREGROUND_BLUE; break;
+			case ERR_SHADER: basecol = FOREGROUND_GREEN | FOREGROUND_BLUE; break;
 		}
 
 		basecol |= current_bg;
@@ -1763,6 +1772,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("ERROR: "); break;
 				case ERR_WARNING: print("WARNING: "); break;
 				case ERR_SCRIPT: print("SCRIPT ERROR: "); break;
+				case ERR_SHADER: print("SHADER ERROR: "); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
@@ -1773,6 +1783,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("   At: "); break;
 				case ERR_WARNING: print("     At: "); break;
 				case ERR_SCRIPT: print("          At: "); break;
+				case ERR_SHADER: print("          At: "); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg);
@@ -1785,6 +1796,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("ERROR: %s: ", p_function); break;
 				case ERR_WARNING: print("WARNING: %s: ", p_function); break;
 				case ERR_SCRIPT: print("SCRIPT ERROR: %s: ", p_function); break;
+				case ERR_SHADER: print("SCRIPT ERROR: %s: ", p_function); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
@@ -1795,6 +1807,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("   At: "); break;
 				case ERR_WARNING: print("     At: "); break;
 				case ERR_SCRIPT: print("          At: "); break;
+				case ERR_SHADER: print("          At: "); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg);
@@ -2091,8 +2104,8 @@ void OS_Windows::set_icon(const Image& p_icon) {
 
 
 	Image icon=p_icon;
-	if (icon.get_format()!=Image::FORMAT_RGBA)
-		icon.convert(Image::FORMAT_RGBA);
+	if (icon.get_format()!=Image::FORMAT_RGBA8)
+		icon.convert(Image::FORMAT_RGBA8);
 	int w = icon.get_width();
 	int h = icon.get_height();
 

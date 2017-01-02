@@ -352,7 +352,6 @@ void TileMap::_update_dirty_quadrants() {
 				xform.set_origin( q.pos );
 				vs->canvas_item_set_transform( canvas_item, xform );
 				vs->canvas_item_set_light_mask(canvas_item,get_light_mask());
-				vs->canvas_item_set_blend_mode(canvas_item,VS::MaterialBlendMode(get_blend_mode()));
 
 				q.canvas_items.push_back(canvas_item);
 
@@ -478,7 +477,7 @@ void TileMap::_update_dirty_quadrants() {
 
 					_fix_cell_transform(xform,c,shape_ofs+center_ofs,s);
 
-					if (debug_canvas_item) {
+					if (debug_canvas_item.is_valid()) {
 						vs->canvas_item_add_set_transform(debug_canvas_item,xform);
 						shape->draw(debug_canvas_item,debug_collision_color);
 
@@ -489,7 +488,7 @@ void TileMap::_update_dirty_quadrants() {
 				}
 			}
 
-			if (debug_canvas_item) {
+			if (debug_canvas_item.is_valid()) {
 				vs->canvas_item_add_set_transform(debug_canvas_item,Matrix32());
 			}
 
@@ -542,24 +541,17 @@ void TileMap::_update_dirty_quadrants() {
 
 	if (quadrant_order_dirty) {
 
+		int index=-0x80000000; //always must be drawn below children
 		for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
 			Quadrant &q=E->get();
 			for (List<RID>::Element *E=q.canvas_items.front();E;E=E->next()) {
 
-				VS::get_singleton()->canvas_item_raise(E->get());
+				VS::get_singleton()->canvas_item_set_draw_index(E->get(),index++);
 			}
 		}
 
 		quadrant_order_dirty=false;
-	}
-
-	for(int i=0;i<get_child_count();i++) {
-
-		CanvasItem *c=get_child(i)->cast_to<CanvasItem>();
-
-		if (c)
-			VS::get_singleton()->canvas_item_raise(c->get_canvas_item());
 	}
 
 	_recompute_rect_cache();
@@ -1190,14 +1182,6 @@ void TileMap::set_light_mask(int p_light_mask) {
 		}
 	}
 }
-
-void TileMap::set_blend_mode(BlendMode p_blend_mode) {
-
-	CanvasItem::set_blend_mode(p_blend_mode);
-	_recreate_quadrants();
-	
-}
-
 
 void TileMap::_bind_methods() {
 

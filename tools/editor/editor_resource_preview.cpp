@@ -267,6 +267,8 @@ void EditorResourcePreview::_thread() {
 							memdelete(f);
 						}
 
+						cache_valid=false;
+
 						if (cache_valid) {
 
 							texture = ResourceLoader::load(cache_base+".png","ImageTexture",true);

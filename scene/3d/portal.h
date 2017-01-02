@@ -47,6 +47,7 @@ class Portal : public VisualInstance {
 	OBJ_TYPE(Portal, VisualInstance);
 
 	RID portal;
+	Vector<Point2> shape;
 
 	bool enabled;
 	float disable_distance;
@@ -55,7 +56,6 @@ class Portal : public VisualInstance {
 
 	AABB aabb;
 
-	virtual RES _get_gizmo_geometry() const;
 
 protected:
 

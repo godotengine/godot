@@ -255,8 +255,6 @@ public:
 	void set_occluder_light_mask(int p_mask);
 	int get_occluder_light_mask() const;
 
-	void set_blend_mode(BlendMode p_blend_mode);
-
 	virtual void set_light_mask(int p_light_mask);
 
 	void clear();

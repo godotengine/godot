@@ -96,45 +96,6 @@ void Portal::_get_property_list( List<PropertyInfo> *p_list) const {
 }
 
 
-RES Portal::_get_gizmo_geometry() const {
-
-	Ref<SurfaceTool> surface_tool( memnew( SurfaceTool ));
-
-	Ref<FixedMaterial> mat( memnew( FixedMaterial ));
-
-	mat->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(1.0,0.8,0.8,0.7) );
-	mat->set_line_width(4);
-	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-	mat->set_flag(Material::FLAG_UNSHADED,true);
-//	mat->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER,true);
-
-	surface_tool->begin(Mesh::PRIMITIVE_LINES);
-	surface_tool->set_material(mat);
-
-	Vector<Point2> shape = get_shape();
-
-	Vector2 center;
-	for (int i=0;i<shape.size();i++) {
-
-		int n=(i+1)%shape.size();
-		Vector<Vector3> points;
-		surface_tool->add_vertex( Vector3( shape[i].x, shape[i].y,0 ));
-		surface_tool->add_vertex( Vector3( shape[n].x, shape[n].y,0 ));
-		center+=shape[i];
-
-	}
-
-	if (shape.size()>0) {
-
-		center/=shape.size();
-		Vector<Vector3> points;
-		surface_tool->add_vertex( Vector3( center.x, center.y,0 ));
-		surface_tool->add_vertex( Vector3( center.x, center.y,1.0 ));
-	}
-
-	return surface_tool->commit();
-}
-
 
 
 AABB Portal::get_aabb() const {
@@ -178,18 +139,19 @@ void Portal::set_shape(const Vector<Point2>& p_shape) {
 
 
 	VisualServer::get_singleton()->portal_set_shape(portal, p_shape);
+	shape=p_shape;
 	update_gizmo();
 }
 
 Vector<Point2> Portal::get_shape() const {
 
-	return VisualServer::get_singleton()->portal_get_shape(portal);
+	return shape;
 }
 
 void Portal::set_connect_range(float p_range) {
 
 	connect_range=p_range;
-	VisualServer::get_singleton()->portal_set_connect_range(portal,p_range);
+	//VisualServer::get_singleton()->portal_set_connect_range(portal,p_range);
 }
 
 float Portal::get_connect_range() const {

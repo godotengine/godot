@@ -26,6 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#if 0
 #include "particles_editor_plugin.h"
 #include "io/resource_loader.h"
 #include "servers/visual/particle_system_sw.h"
@@ -456,3 +458,4 @@ ParticlesEditorPlugin::~ParticlesEditorPlugin()
 }
 
 
+#endif

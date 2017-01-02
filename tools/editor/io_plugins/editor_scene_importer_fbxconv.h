@@ -32,6 +32,7 @@
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
 #include "scene/3d/skeleton.h"
 
+#if 0
 
 class EditorSceneImporterFBXConv : public EditorSceneImporter {
 
@@ -107,3 +108,4 @@ public:
 };
 
 #endif // EDITOR_SCENE_IMPORTER_FBXCONV_H
+#endif

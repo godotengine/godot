@@ -37,7 +37,7 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-
+#if 0
 class ParticlesEditor : public Control {
 
 	OBJ_TYPE(ParticlesEditor, Control );
@@ -113,3 +113,4 @@ public:
 };
 
 #endif // PARTICLES_EDITOR_PLUGIN_H
+#endif

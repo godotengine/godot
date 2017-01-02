@@ -163,7 +163,7 @@ void Skeleton::_notification(int p_what) {
 			Bone *bonesptr=&bones[0];
 			int len=bones.size();
 
-			vs->skeleton_resize( skeleton, len ); // if same size, nothin really happens
+			vs->skeleton_allocate( skeleton, len ); // if same size, nothin really happens
 
 			// pose changed, rebuild cache of inverses
 			if (rest_global_inverse_dirty) {
@@ -513,51 +513,6 @@ void Skeleton::_make_dirty() {
 }
 
 
-RES Skeleton::_get_gizmo_geometry() const {
-
-	if (!GLOBAL_DEF("debug/draw_skeleton", true))
-		return RES();
-
-	if (bones.size()==0)
-		return RES();
-
-	Ref<SurfaceTool> surface_tool( memnew( SurfaceTool ));
-
-	Ref<FixedMaterial> mat( memnew( FixedMaterial ));
-
-	mat->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.6,1.0,0.3,0.1) );
-	mat->set_line_width(4);
-	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-	mat->set_flag(Material::FLAG_UNSHADED,true);
-	mat->set_flag(Material::FLAG_ONTOP,true);
-//	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
-
-	surface_tool->begin(Mesh::PRIMITIVE_LINES);
-	surface_tool->set_material(mat);
-
-
-	const Bone *bonesptr=&bones[0];
-	int len=bones.size();
-
-	for (int i=0;i<len;i++) {
-
-		const Bone &b=bonesptr[i];
-
-		Transform t;
-		if (b.parent<0)
-			continue;
-
-		Vector3 v1=(bonesptr[b.parent].pose_global * bonesptr[b.parent].rest_global_inverse).xform(bonesptr[b.parent].rest_global_inverse.affine_inverse().origin);
-		Vector3 v2=(b.pose_global * b.rest_global_inverse).xform(b.rest_global_inverse.affine_inverse().origin);
-
-		surface_tool->add_vertex(v1);
-		surface_tool->add_vertex(v2);
-
-	}
-
-	return surface_tool->commit();
-
-}
 
 void Skeleton::localize_rests() {
 

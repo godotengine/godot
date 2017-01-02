@@ -37,7 +37,7 @@
 #include "scene/gui/text_edit.h"
 #include "print_string.h"
 #include "servers/visual/shader_language.h"
-#include "drivers/gles2/shader_compiler_gles2.h"
+//#include "drivers/gles2/shader_compiler_gles2.h"
 
 
 typedef ShaderLanguage SL;
@@ -57,50 +57,54 @@ static String _mktab(int p_level) {
 
 static String _typestr(SL::DataType p_type) {
 
-	switch(p_type) {
-
-		case SL::TYPE_VOID: return "void";
-		case SL::TYPE_BOOL: return "bool";
-		case SL::TYPE_FLOAT: return "float";
-		case SL::TYPE_VEC2: return "vec2";
-		case SL::TYPE_VEC3: return "vec3";
-		case SL::TYPE_VEC4: return "vec4";
-		case SL::TYPE_MAT3: return "mat3";
-		case SL::TYPE_MAT4: return "mat4";
-		case SL::TYPE_TEXTURE: return "texture";
-		case SL::TYPE_CUBEMAP: return "cubemap";
-		default: {}
-	}
+	return ShaderLanguage::get_datatype_name(p_type);
 
 	return "";
 }
 
+
+static String _prestr(SL::DataPrecision p_pres) {
+
+
+	switch(p_pres) {
+		case SL::PRECISION_LOWP: return "lowp ";
+		case SL::PRECISION_MEDIUMP: return "mediump ";
+		case SL::PRECISION_HIGHP: return "highp ";
+		case SL::PRECISION_DEFAULT: return "";
+	}
+	return "";
+}
+
+
 static String _opstr(SL::Operator p_op) {
 
-	switch(p_op) {
-		case SL::OP_ASSIGN: return "=";
-		case SL::OP_ADD: return "+";
-		case SL::OP_SUB: return "-";
-		case SL::OP_MUL: return "*";
-		case SL::OP_DIV: return "/";
-		case SL::OP_ASSIGN_ADD: return "+=";
-		case SL::OP_ASSIGN_SUB: return "-=";
-		case SL::OP_ASSIGN_MUL: return "*=";
-		case SL::OP_ASSIGN_DIV: return "/=";
-		case SL::OP_NEG: return "-";
-		case SL::OP_NOT: return "!";
-		case SL::OP_CMP_EQ: return "==";
-		case SL::OP_CMP_NEQ: return "!=";
-		case SL::OP_CMP_LEQ: return "<=";
-		case SL::OP_CMP_GEQ: return ">=";
-		case SL::OP_CMP_LESS: return "<";
-		case SL::OP_CMP_GREATER: return ">";
-		case SL::OP_CMP_OR: return "||";
-		case SL::OP_CMP_AND: return "&&";
-		default: return "";
-	}
+	return ShaderLanguage::get_operator_text(p_op);
 
-	return "";
+
+}
+
+
+static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value>& p_values) {
+
+	switch(p_type) {
+		case SL::TYPE_BOOL:  return p_values[0].boolean?"true":"false";
+		case SL::TYPE_BVEC2:  return String()+"bvec2("+(p_values[0].boolean?"true":"false")+(p_values[1].boolean?"true":"false")+")";
+		case SL::TYPE_BVEC3:  return String()+"bvec3("+(p_values[0].boolean?"true":"false")+","+(p_values[1].boolean?"true":"false")+","+(p_values[2].boolean?"true":"false")+")";
+		case SL::TYPE_BVEC4:  return String()+"bvec4("+(p_values[0].boolean?"true":"false")+","+(p_values[1].boolean?"true":"false")+","+(p_values[2].boolean?"true":"false")+","+(p_values[3].boolean?"true":"false")+")";
+		case SL::TYPE_INT:  return rtos(p_values[0].sint);
+		case SL::TYPE_IVEC2:  return String()+"ivec2("+rtos(p_values[0].sint)+","+rtos(p_values[1].sint)+")";
+		case SL::TYPE_IVEC3:  return String()+"ivec3("+rtos(p_values[0].sint)+","+rtos(p_values[1].sint)+","+rtos(p_values[2].sint)+")";
+		case SL::TYPE_IVEC4:  return String()+"ivec4("+rtos(p_values[0].sint)+","+rtos(p_values[1].sint)+","+rtos(p_values[2].sint)+","+rtos(p_values[3].sint)+")";
+		case SL::TYPE_UINT:  return rtos(p_values[0].real);
+		case SL::TYPE_UVEC2:  return String()+"uvec2("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+")";
+		case SL::TYPE_UVEC3:  return String()+"uvec3("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+","+rtos(p_values[2].real)+")";
+		case SL::TYPE_UVEC4:  return String()+"uvec4("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+","+rtos(p_values[2].real)+","+rtos(p_values[3].real)+")";
+		case SL::TYPE_FLOAT:  return rtos(p_values[0].real);
+		case SL::TYPE_VEC2:  return String()+"vec2("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+")";
+		case SL::TYPE_VEC3:  return String()+"vec3("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+","+rtos(p_values[2].real)+")";
+		case SL::TYPE_VEC4:  return String()+"vec4("+rtos(p_values[0].real)+","+rtos(p_values[1].real)+","+rtos(p_values[2].real)+","+rtos(p_values[3].real)+")";
+		default: ERR_FAIL_V(String());
+	}
 }
 
 static String dump_node_code(SL::Node *p_node,int p_level) {
@@ -109,18 +113,48 @@ static String dump_node_code(SL::Node *p_node,int p_level) {
 
 	switch(p_node->type) {
 
-		case SL::Node::TYPE_PROGRAM: {
+		case SL::Node::TYPE_SHADER: {
 
-			SL::ProgramNode *pnode=(SL::ProgramNode*)p_node;
+			SL::ShaderNode *pnode=(SL::ShaderNode*)p_node;
 
-			for(Map<StringName,SL::Uniform>::Element *E=pnode->uniforms.front();E;E=E->next()) {
+			for(Map<StringName,SL::ShaderNode::Uniform>::Element *E=pnode->uniforms.front();E;E=E->next()) {
 
 				String ucode="uniform ";
-				ucode+=_typestr(E->get().type)+"="+String(E->get().default_value)+"\n";
-				code+=ucode;
+				ucode+=_prestr(E->get().precission);
+				ucode+=_typestr(E->get().type);
+				ucode+=" "+String(E->key());
+
+				if (E->get().default_value.size()) {
+					ucode+=" = "+get_constant_text(E->get().type,E->get().default_value);
+				}
+
+				static const char*hint_name[SL::ShaderNode::Uniform::HINT_MAX]={
+					"",
+					"color",
+					"range",
+					"albedo",
+					"normal",
+					"black",
+					"white"
+				};
+
+				if (E->get().hint)
+					ucode+=" : "+String(hint_name[E->get().hint]);
+
+				code+=ucode+"\n";
 
 			}
 
+			for(Map<StringName,SL::ShaderNode::Varying>::Element *E=pnode->varyings.front();E;E=E->next()) {
+
+				String vcode="varying ";
+				vcode+=_prestr(E->get().precission);
+				vcode+=_typestr(E->get().type);
+				vcode+=" "+String(E->key());
+
+				code+=vcode+"\n";
+
+			}
 			for(int i=0;i<pnode->functions.size();i++) {
 
 				SL::FunctionNode *fnode=pnode->functions[i].function;
@@ -131,16 +165,15 @@ static String dump_node_code(SL::Node *p_node,int p_level) {
 
 					if (i>0)
 						header+=", ";
-					header+=_typestr(fnode->arguments[i].type)+" "+fnode->arguments[i].name;
+					header+=_prestr(fnode->arguments[i].precision)+_typestr(fnode->arguments[i].type)+" "+fnode->arguments[i].name;
 				}
 
-				header+=") {\n";
+				header+=")\n";
 				code+=header;
 				code+=dump_node_code(fnode->body,p_level+1);
-				code+="}\n";
 			}
 
-			code+=dump_node_code(pnode->body,p_level);
+			//code+=dump_node_code(pnode->body,p_level);
 		} break;
 		case SL::Node::TYPE_FUNCTION: {
 
@@ -149,15 +182,23 @@ static String dump_node_code(SL::Node *p_node,int p_level) {
 			SL::BlockNode *bnode=(SL::BlockNode*)p_node;
 
 			//variables
-			for(Map<StringName,SL::DataType>::Element *E=bnode->variables.front();E;E=E->next()) {
+			code+=_mktab(p_level-1)+"{\n";
+			for(Map<StringName,SL::BlockNode::Variable>::Element *E=bnode->variables.front();E;E=E->next()) {
 
-				code+=_mktab(p_level)+_typestr(E->value())+" "+E->key()+";\n";
+				code+=_mktab(p_level)+_prestr(E->get().precision)+_typestr(E->get().type)+" "+E->key()+";\n";
 			}
 
 			for(int i=0;i<bnode->statements.size();i++) {
 
-				code+=_mktab(p_level)+dump_node_code(bnode->statements[i],p_level)+";\n";
+				String scode = dump_node_code(bnode->statements[i],p_level);
+
+				if (bnode->statements[i]->type==SL::Node::TYPE_CONTROL_FLOW || bnode->statements[i]->type==SL::Node::TYPE_CONTROL_FLOW) {
+					code+=scode; //use directly
+				} else {
+					code+=_mktab(p_level)+scode+";\n";
+				}
 			}
+			code+=_mktab(p_level-1)+"}\n";
 
 
 		} break;
@@ -168,18 +209,7 @@ static String dump_node_code(SL::Node *p_node,int p_level) {
 		} break;
 		case SL::Node::TYPE_CONSTANT: {
 			SL::ConstantNode *cnode=(SL::ConstantNode*)p_node;
-			switch(cnode->datatype) {
-
-
-				case SL::TYPE_BOOL: code=cnode->value.operator bool()?"true":"false"; break;
-				case SL::TYPE_FLOAT: code=cnode->value; break;
-				case SL::TYPE_VEC2: { Vector2 v = cnode->value; code="vec2("+rtos(v.x)+", "+rtos(v.y)+")"; } break;
-				case SL::TYPE_VEC3: { Vector3 v = cnode->value; code="vec3("+rtos(v.x)+", "+rtos(v.y)+", "+rtos(v.z)+")"; } break;
-				case SL::TYPE_VEC4: { Plane v = cnode->value; code="vec4("+rtos(v.normal.x)+", "+rtos(v.normal.y)+", "+rtos(v.normal.z)+", "+rtos(v.d)+")"; } break;
-				case SL::TYPE_MAT3: { Matrix3 x = cnode->value; code="mat3( vec3("+rtos(x.get_axis(0).x)+", "+rtos(x.get_axis(0).y)+", "+rtos(x.get_axis(0).z)+"), vec3("+rtos(x.get_axis(1).x)+", "+rtos(x.get_axis(1).y)+", "+rtos(x.get_axis(1).z)+"), vec3("+rtos(x.get_axis(2).x)+", "+rtos(x.get_axis(2).y)+", "+rtos(x.get_axis(2).z)+"))"; } break;
-				case SL::TYPE_MAT4: { Transform x = cnode->value; code="mat4( vec3("+rtos(x.basis.get_axis(0).x)+", "+rtos(x.basis.get_axis(0).y)+", "+rtos(x.basis.get_axis(0).z)+"), vec3("+rtos(x.basis.get_axis(1).x)+", "+rtos(x.basis.get_axis(1).y)+", "+rtos(x.basis.get_axis(1).z)+"), vec3("+rtos(x.basis.get_axis(2).x)+", "+rtos(x.basis.get_axis(2).y)+", "+rtos(x.basis.get_axis(2).z)+"), vec3("+rtos(x.origin.x)+", "+rtos(x.origin.y)+", "+rtos(x.origin.z)+"))"; } break;
-				default: code="<error: "+Variant::get_type_name(cnode->value.get_type())+" ("+itos(cnode->datatype)+">";
-			}
+			return get_constant_text(cnode->datatype,cnode->values);
 
 		} break;
 		case SL::Node::TYPE_OPERATOR: {
@@ -193,27 +223,24 @@ static String dump_node_code(SL::Node *p_node,int p_level) {
 				case SL::OP_ASSIGN_SUB:
 				case SL::OP_ASSIGN_MUL:
 				case SL::OP_ASSIGN_DIV:
+				case SL::OP_ASSIGN_SHIFT_LEFT:
+				case SL::OP_ASSIGN_SHIFT_RIGHT:
+				case SL::OP_ASSIGN_MOD:
+				case SL::OP_ASSIGN_BIT_AND:
+				case SL::OP_ASSIGN_BIT_OR:
+				case SL::OP_ASSIGN_BIT_XOR:
 					code=dump_node_code(onode->arguments[0],p_level)+_opstr(onode->op)+dump_node_code(onode->arguments[1],p_level);
 					break;
-
-				case SL::OP_ADD:
-				case SL::OP_SUB:
-				case SL::OP_MUL:
-				case SL::OP_DIV:
-				case SL::OP_CMP_EQ:
-				case SL::OP_CMP_NEQ:
-				case SL::OP_CMP_LEQ:
-				case SL::OP_CMP_GEQ:
-				case SL::OP_CMP_LESS:
-				case SL::OP_CMP_GREATER:
-				case SL::OP_CMP_OR:
-				case SL::OP_CMP_AND:
-
-					code="("+dump_node_code(onode->arguments[0],p_level)+_opstr(onode->op)+dump_node_code(onode->arguments[1],p_level)+")";
-					break;
-				case SL::OP_NEG:
+				case SL::OP_BIT_INVERT:
+				case SL::OP_NEGATE:
 				case SL::OP_NOT:
+				case SL::OP_DECREMENT:
+				case SL::OP_INCREMENT:
 					code=_opstr(onode->op)+dump_node_code(onode->arguments[0],p_level);
+					break;
+				case SL::OP_POST_DECREMENT:
+				case SL::OP_POST_INCREMENT:
+					code=dump_node_code(onode->arguments[0],p_level)+_opstr(onode->op);
 					break;
 				case SL::OP_CALL:
 				case SL::OP_CONSTRUCT:
@@ -225,7 +252,12 @@ static String dump_node_code(SL::Node *p_node,int p_level) {
 					}
 					code+=")";
 					break;
-				default: {}
+				default: {
+
+					code="("+dump_node_code(onode->arguments[0],p_level)+_opstr(onode->op)+dump_node_code(onode->arguments[1],p_level)+")";
+					break;
+
+				}
 			}
 
 		} break;
@@ -233,20 +265,19 @@ static String dump_node_code(SL::Node *p_node,int p_level) {
 			SL::ControlFlowNode *cfnode=(SL::ControlFlowNode*)p_node;
 			if (cfnode->flow_op==SL::FLOW_OP_IF) {
 
-				code+="if ("+dump_node_code(cfnode->statements[0],p_level)+") {\n";
-				code+=dump_node_code(cfnode->statements[1],p_level+1);
-				if (cfnode->statements.size()==3) {
+				code+=_mktab(p_level)+"if ("+dump_node_code(cfnode->expressions[0],p_level)+")\n";
+				code+=dump_node_code(cfnode->blocks[0],p_level+1);
+				if (cfnode->blocks.size()==2) {
 
-					code+="} else {\n";
-					code+=dump_node_code(cfnode->statements[2],p_level+1);
+					code+=_mktab(p_level)+"else\n";
+					code+=dump_node_code(cfnode->blocks[1],p_level+1);
 				}
 
-				code+="}\n";
 
 			} else if (cfnode->flow_op==SL::FLOW_OP_RETURN) {
 
-				if (cfnode->statements.size()) {
-					code="return "+dump_node_code(cfnode->statements[0],p_level);
+				if (cfnode->blocks.size()) {
+					code="return "+dump_node_code(cfnode->blocks[0],p_level);
 				} else {
 					code="return";
 				}
@@ -264,16 +295,14 @@ static String dump_node_code(SL::Node *p_node,int p_level) {
 
 }
 
-static Error recreate_code(void *p_str,SL::ProgramNode *p_program) {
+static Error recreate_code(void *p_str,SL::ShaderNode *p_program) {
 
-	print_line("recr");
+
 	String *str=(String*)p_str;
 
 	*str=dump_node_code(p_program,0);
 
 	return OK;
-
-
 }
 
 
@@ -283,6 +312,7 @@ MainLoop* test() {
 
 	if (cmdlargs.empty()) {
 		//try editor!
+		print_line("usage: godot -test shader_lang <shader>");
 		return NULL;
 	}
 
@@ -303,38 +333,29 @@ MainLoop* test() {
 		code+=c;
 	}
 
-	int errline;
-	int errcol;
-	String error;
-	print_line(SL::lex_debug(code));
-	Error err = SL::compile(code,ShaderLanguage::SHADER_MATERIAL_FRAGMENT,NULL,NULL,&error,&errline,&errcol);
+	SL sl;
+	print_line("tokens:\n\n"+sl.token_debug(code));
+
+	Map<StringName,Map<StringName,SL::DataType> > dt;
+	dt["fragment"]["ALBEDO"]=SL::TYPE_VEC3;
+
+	Set<String> rm;
+	rm.insert("popo");
+
+	Error err = sl.compile(code,dt,rm);
 
 	if (err) {
 
-		print_line("Error: "+itos(errline)+":"+itos(errcol)+" "+error);
+		print_line("Error at line: "+rtos(sl.get_error_line())+": "+sl.get_error_text());
 		return NULL;
+	} else {
+		String code;
+		recreate_code(&code,sl.get_shader());
+		print_line("code:\n\n"+code);
 	}
-
-	print_line("Compile OK! - pretty printing");
-
-	String rcode;
-	err = SL::compile(code,ShaderLanguage::SHADER_MATERIAL_FRAGMENT,recreate_code,&rcode,&error,&errline,&errcol);
-
-	if (!err) {
-		print_line(rcode);
-	}
-
-	ShaderCompilerGLES2 comp;
-	String codeline,globalsline;
-	SL::VarInfo vi;
-	vi.name="mongs";
-	vi.type=SL::TYPE_VEC3;
-
-
-	ShaderCompilerGLES2::Flags fl;
-	comp.compile(code,ShaderLanguage::SHADER_MATERIAL_FRAGMENT,codeline,globalsline,fl);
 
 	return NULL;
 }
+
 
 }

@@ -37,7 +37,7 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-
+#if 0
 class Particles : public GeometryInstance {
 public:
 
@@ -162,4 +162,5 @@ public:
 };
 
 VARIANT_ENUM_CAST( Particles::Variable );
+#endif
 #endif

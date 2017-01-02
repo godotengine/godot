@@ -311,7 +311,7 @@ void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<Imag
 	imgdata = DVector<uint8_t>::Write();
 
 
-	p_texture->set_data(Image(w,h,0,Image::FORMAT_RGB,img));
+	p_texture->set_data(Image(w,h,0,Image::FORMAT_RGB8,img));
 
 }
 
@@ -392,7 +392,7 @@ SampleEditor::SampleEditor() {
 	add_child(stop);
 
 	peakdisplay=Ref<ImageTexture>( memnew( ImageTexture) );
-	peakdisplay->create( EDITOR_DEF("audio/sample_editor_preview_width",512),EDITOR_DEF("audio/sample_editor_preview_height",128),Image::FORMAT_RGB);
+	peakdisplay->create( EDITOR_DEF("audio/sample_editor_preview_width",512),EDITOR_DEF("audio/sample_editor_preview_height",128),Image::FORMAT_RGB8);
 	sample_texframe->set_expand(true);
 	sample_texframe->set_texture(peakdisplay);
 

@@ -612,6 +612,8 @@ String String::get_slicec(CharType p_splitter, int p_slice) const {
 			if (p_slice==count) {
 
 				return substr(prev,i-prev);
+			} else if (c[i]==0) {
+				return String();
 			} else {
 				count++;
 				prev=i+1;

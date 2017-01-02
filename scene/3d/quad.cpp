@@ -120,7 +120,7 @@ void Quad::_update() {
 	} else {
 		configured=true;
 	}
-	VS::get_singleton()->mesh_add_surface(mesh,VS::PRIMITIVE_TRIANGLES,arr);
+	VS::get_singleton()->mesh_add_surface_from_arrays(mesh,VS::PRIMITIVE_TRIANGLES,arr);
 
 	pending_update=false;
 }

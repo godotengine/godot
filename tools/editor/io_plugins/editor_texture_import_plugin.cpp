@@ -843,33 +843,27 @@ void EditorTextureImportPlugin::compress_image(EditorExportPlatform::ImageCompre
 
 			//do absolutely nothing
 
-		} break;
-		case EditorExportPlatform::IMAGE_COMPRESSION_INDEXED: {
-
-			//quantize
-			image.quantize();
-
-		} break;
+		} break;	
 		case EditorExportPlatform::IMAGE_COMPRESSION_BC: {
 
 
 			// for maximum compatibility, BC shall always use mipmaps and be PO2
 			image.resize_to_po2();
-			if (image.get_mipmaps()==0)
+			if (!image.has_mipmaps())
 				image.generate_mipmaps();
 
-			image.compress(Image::COMPRESS_BC);
+			image.compress(Image::COMPRESS_S3TC);
 			/*
 			if (has_alpha) {
 
 				if (flags&IMAGE_FLAG_ALPHA_BIT) {
-					image.convert(Image::FORMAT_BC3);
+					image.convert(Image::FORMAT_DXT5);
 				} else {
-					image.convert(Image::FORMAT_BC2);
+					image.convert(Image::FORMAT_DXT3);
 				}
 			} else {
 
-				image.convert(Image::FORMAT_BC1);
+				image.convert(Image::FORMAT_DXT1);
 			}*/
 
 
@@ -880,24 +874,24 @@ void EditorTextureImportPlugin::compress_image(EditorExportPlatform::ImageCompre
 			// for maximum compatibility (hi apple!), PVRT shall always
 			// use mipmaps, be PO2 and square
 
-			if (image.get_mipmaps()==0)
+			if (!image.has_mipmaps())
 				image.generate_mipmaps();
 			image.resize_to_po2(true);
 
 			if (p_smaller) {
 
 				image.compress(Image::COMPRESS_PVRTC2);
-				//image.convert(has_alpha ? Image::FORMAT_PVRTC2_ALPHA : Image::FORMAT_PVRTC2);
+				//image.convert(has_alpha ? Image::FORMAT_PVRTC2A : Image::FORMAT_PVRTC2);
 			} else {
 				image.compress(Image::COMPRESS_PVRTC4);
-				//image.convert(has_alpha ? Image::FORMAT_PVRTC4_ALPHA : Image::FORMAT_PVRTC4);
+				//image.convert(has_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
 			}
 
 		} break;
 		case EditorExportPlatform::IMAGE_COMPRESSION_ETC1: {
 
 			image.resize_to_po2(); //square or not?
-			if (image.get_mipmaps()==0)
+			if (!image.has_mipmaps())
 				image.generate_mipmaps();
 			if (!image.detect_alpha()) {
 				//ETC1 is only opaque
@@ -930,18 +924,18 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 		ERR_FAIL_COND_V(image.empty(),ERR_INVALID_DATA);
 
 		bool has_alpha=image.detect_alpha();
-		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA) {
+		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA8) {
 
-			image.convert(Image::FORMAT_RGB);
+			image.convert(Image::FORMAT_RGB8);
 
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
 
 			image.fix_alpha_edges();
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_PREMULT_ALPHA) {
 
 			image.premultiply_alpha();
 		}
@@ -950,7 +944,7 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+		//if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
 
 		//	image.srgb_to_linear();
 		//}
@@ -989,18 +983,18 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 
 
 		bool has_alpha=image.detect_alpha();
-		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA) {
+		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA8) {
 
-			image.convert(Image::FORMAT_RGB);
+			image.convert(Image::FORMAT_RGB8);
 
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
 
 			image.fix_alpha_edges();
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_PREMULT_ALPHA) {
 
 			image.premultiply_alpha();
 		}
@@ -1009,7 +1003,7 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+		//if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
 //
 		//	print_line("CONVERT BECAUSE: "+itos(flags));
 		//	image.srgb_to_linear();
@@ -1200,9 +1194,9 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			Image src = tsources[i];
 
 			if (alpha) {
-				src.convert(Image::FORMAT_RGBA);
+				src.convert(Image::FORMAT_RGBA8);
 			} else {
-				src.convert(Image::FORMAT_RGB);
+				src.convert(Image::FORMAT_RGB8);
 			}
 
 			DVector<uint8_t> data = src.get_data();
@@ -1280,7 +1274,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			atlas_h=nearest_power_of_2(dst_size.height);
 		}
 		Image atlas;
-		atlas.create(atlas_w,atlas_h,0,alpha?Image::FORMAT_RGBA:Image::FORMAT_RGB);
+		atlas.create(atlas_w,atlas_h,0,alpha?Image::FORMAT_RGBA8:Image::FORMAT_RGB8);
 
 
 		atlases.resize(from->get_source_count());
@@ -1411,18 +1405,18 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		ERR_FAIL_COND_V(image.empty(),ERR_INVALID_DATA);
 
 		bool has_alpha=image.detect_alpha();
-		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA) {
+		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA8) {
 
-			image.convert(Image::FORMAT_RGB);
+			image.convert(Image::FORMAT_RGB8);
 
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
 
 			image.fix_alpha_edges();
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_PREMULT_ALPHA) {
 
 			image.premultiply_alpha();
 		}
@@ -1431,7 +1425,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+		//if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
 
 		//	image.srgb_to_linear();
 		//}
@@ -1470,18 +1464,18 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 
 		bool has_alpha=image.detect_alpha();
-		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA) {
+		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA8) {
 
-			image.convert(Image::FORMAT_RGB);
+			image.convert(Image::FORMAT_RGB8);
 
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
 
 			image.fix_alpha_edges();
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_PREMULT_ALPHA) {
 
 			image.premultiply_alpha();
 		}
@@ -1490,7 +1484,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+		//if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
 //
 		//	print_line("CONVERT BECAUSE: "+itos(flags));
 		//	image.srgb_to_linear();

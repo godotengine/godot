@@ -28,18 +28,16 @@
 /*************************************************************************/
 #include "rid.h"
 
-static SafeRefCount current_id;
 
+
+RID_Data::~RID_Data() {
+
+}
+
+
+SafeRefCount RID_OwnerBase::refcount;
 
 void RID_OwnerBase::init_rid() {
 
-	current_id.init(1);
+	refcount.init();
 }
-
-ID RID_OwnerBase::new_ID() {
-
-
-	ID id = current_id.refval();
-	return id;
-}
-

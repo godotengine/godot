@@ -34,6 +34,7 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
 class RoomBounds : public Resource {
 
 	OBJ_TYPE( RoomBounds, Resource );
@@ -42,8 +43,7 @@ class RoomBounds : public Resource {
 	RID area;
 	DVector<Face3> geometry_hint;
 
-	void _regenerate_bsp();
-	void _regenerate_bsp_cubic();
+
 protected:
 
 	static void _bind_methods();
@@ -52,8 +52,6 @@ public:
 
 	virtual RID get_rid() const;
 
-	void set_bounds( const BSP_Tree& p_bounds );
-	BSP_Tree get_bounds() const;
 
 	void set_geometry_hint(const DVector<Face3>& geometry_hint);
 	DVector<Face3> get_geometry_hint() const;
@@ -62,5 +60,7 @@ public:
 	~RoomBounds();
 
 };
+
+
 
 #endif // ROOM_H

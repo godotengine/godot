@@ -74,7 +74,7 @@ public:
 class SampleManagerMallocSW : public SampleManagerSW {
 
 
-	struct Sample {
+	struct Sample : public RID_Data {
 
 		void *data;
 		int length;

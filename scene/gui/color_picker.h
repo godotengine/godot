@@ -57,8 +57,6 @@ private:
 	List<Color> presets;
 	ToolButton *btn_pick;
 	CheckButton *btn_mode;
-	Ref<CanvasItemMaterial> uv_material;
-	Ref<CanvasItemMaterial> w_material;
 	HSlider *scroll[4];
 	SpinBox *values[4];
 	Label *labels[4];

@@ -35,7 +35,6 @@ class Position3D : public Spatial  {
 
 	OBJ_TYPE(Position3D,Spatial);
 
-	virtual RES _get_gizmo_geometry() const;
 
 public:
 

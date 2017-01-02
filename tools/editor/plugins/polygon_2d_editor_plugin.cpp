@@ -850,7 +850,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	uv_edit = memnew( AcceptDialog );
 	add_child(uv_edit);
 	uv_edit->set_title(TTR("Polygon 2D UV Editor"));
-	uv_edit->set_self_opacity(0.9);
+	uv_edit->set_self_modulate(Color(1,1,1,0.9));
 
 	VBoxContainer *uv_main_vb = memnew( VBoxContainer );
 	uv_edit->add_child(uv_main_vb);

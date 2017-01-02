@@ -36,7 +36,7 @@
 #include "spatial_sound_server.h"
 #include "spatial_sound_2d_server.h"
 #include "script_debugger_remote.h"
-
+#include "visual/shader_types.h"
 static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage>* r_usage) {
 
 	List<VS::TextureInfo> tinfo;
@@ -55,6 +55,8 @@ static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsag
 
 }
 
+ShaderTypes *shader_types=NULL;
+
 void register_server_types() {
 
 	Globals::get_singleton()->add_singleton( Globals::Singleton("VisualServer",VisualServer::get_singleton()) );
@@ -69,6 +71,8 @@ void register_server_types() {
 	Globals::get_singleton()->add_singleton( Globals::Singleton("SS",SpatialSoundServer::get_singleton()) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("SpatialSound2DServer",SpatialSound2DServer::get_singleton()) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("SS2D",SpatialSound2DServer::get_singleton()) );
+
+	shader_types = memnew( ShaderTypes );
 
 
 	ObjectTypeDB::register_virtual_type<Physics2DDirectBodyState>();
@@ -87,5 +91,5 @@ void register_server_types() {
 
 void unregister_server_types(){
 
-
+	memdelete( shader_types );
 }
