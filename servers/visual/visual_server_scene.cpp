@@ -2917,6 +2917,8 @@ void VisualServerScene::_bake_gi_downscale_light(int p_idx, int p_level, const G
 	p_local_data[p_idx].energy[1]=0;
 	p_local_data[p_idx].energy[2]=0;
 
+	int divisor=0;
+
 	for(int i=0;i<8;i++) {
 
 		uint32_t child = p_cells[p_idx].children[i];
@@ -2931,13 +2933,14 @@ void VisualServerScene::_bake_gi_downscale_light(int p_idx, int p_level, const G
 		p_local_data[p_idx].energy[0]+=p_local_data[child].energy[0];
 		p_local_data[p_idx].energy[1]+=p_local_data[child].energy[1];
 		p_local_data[p_idx].energy[2]+=p_local_data[child].energy[2];
+		divisor++;
 
 	}
 
 	//divide by eight for average
-	p_local_data[p_idx].energy[0]>>=3;
-	p_local_data[p_idx].energy[1]>>=3;
-	p_local_data[p_idx].energy[2]>>=3;
+	p_local_data[p_idx].energy[0]/=divisor;
+	p_local_data[p_idx].energy[1]/=divisor;
+	p_local_data[p_idx].energy[2]/=divisor;
 
 }
 
