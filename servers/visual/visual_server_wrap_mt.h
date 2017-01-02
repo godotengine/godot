@@ -450,6 +450,7 @@ public:
 
 	FUNC1(viewport_queue_screen_capture,RID);
 	FUNC1RC(Image,viewport_get_screen_capture,RID);
+	FUNC1RC(bool, viewport_is_screen_capture_queued, RID);
 
 	FUNC2(viewport_set_rect,RID,const ViewportRect&);
 	FUNC1RC(ViewportRect,viewport_get_rect,RID);
@@ -715,6 +716,7 @@ public:
 
 	FUNC1R(int,get_render_info,RenderInfo );
 	virtual bool has_feature(Features p_feature) const { return visual_server->has_feature(p_feature); }
+	FUNC1(set_swap_buffers_active, bool);
 
 	FUNC3(set_boot_image,const Image& , const Color&,bool );
 	FUNC1(set_default_clear_color,const Color& );

@@ -7999,7 +7999,8 @@ void RasterizerGLES2::end_frame() {
 	//print_line("VTX: "+itos(_rinfo.vertex_count)+" OBJ: "+itos(_rinfo.object_count)+" MAT: "+itos(_rinfo.mat_change_count)+" SHD: "+itos(_rinfo.shader_change_count)+" CI: "+itos(_rinfo.ci_draw_commands));
 
 	//print_line("TOTAL VTX: "+itos(_rinfo.vertex_count));
-	OS::get_singleton()->swap_buffers();
+	if(swap_buffers_active)
+		OS::get_singleton()->swap_buffers();
 }
 
 void RasterizerGLES2::flush_frame() {
@@ -11048,7 +11049,7 @@ void RasterizerGLES2::init() {
 	//etc_supported=false;
 
 #endif
-
+	swap_buffers_active = true;
 	//use_rgba_shadowmaps=true;
 
 
@@ -11213,6 +11214,9 @@ bool RasterizerGLES2::has_feature(VS::Features p_feature) const {
 	}
 }
 
+void RasterizerGLES2::set_swap_buffers_active(const bool p_active) {
+	swap_buffers_active = p_active;
+}
 
 void RasterizerGLES2::reload_vram() {
 

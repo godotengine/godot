@@ -357,6 +357,7 @@ public:
 
 	void queue_screen_capture();
 	Image get_screen_capture() const;
+	bool is_screen_capture_queued() const;
 
 	void set_use_own_world(bool p_world);
 	bool is_using_own_world() const;

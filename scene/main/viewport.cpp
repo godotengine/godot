@@ -1274,6 +1274,10 @@ Image Viewport::get_screen_capture() const {
 
 	return VS::get_singleton()->viewport_get_screen_capture(viewport);
 }
+bool Viewport::is_screen_capture_queued() const {
+
+	return VS::get_singleton()->viewport_is_screen_capture_queued(viewport);
+}
 
 Ref<RenderTargetTexture> Viewport::get_render_target_texture() const {
 
@@ -2632,6 +2636,7 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_size_override_stretch_enabled"), &Viewport::is_size_override_stretch_enabled);
 	ObjectTypeDB::bind_method(_MD("queue_screen_capture"), &Viewport::queue_screen_capture);
 	ObjectTypeDB::bind_method(_MD("get_screen_capture"), &Viewport::get_screen_capture);
+	ObjectTypeDB::bind_method(_MD("is_screen_capture_queued"), &Viewport::is_screen_capture_queued);
 
 	ObjectTypeDB::bind_method(_MD("set_as_render_target","enable"), &Viewport::set_as_render_target);
 	ObjectTypeDB::bind_method(_MD("is_set_as_render_target"), &Viewport::is_set_as_render_target);

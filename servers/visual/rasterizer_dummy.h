@@ -780,6 +780,7 @@ public:
 	virtual bool needs_to_draw_next_frame() const;
 
 	virtual bool has_feature(VS::Features p_feature) const;
+	virtual void set_swap_buffers_active(const bool p_active);
 
 	virtual void restore_framebuffer();
 

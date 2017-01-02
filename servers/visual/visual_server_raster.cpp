@@ -1731,6 +1731,13 @@ Image VisualServerRaster::viewport_get_screen_capture(RID p_viewport) const {
 	return ret;
 }
 
+bool VisualServerRaster::viewport_is_screen_capture_queued(RID p_viewport) const {
+
+	Viewport *viewport = (Viewport*)viewport_owner.get(p_viewport);
+	ERR_FAIL_COND_V(!viewport, false);
+	return viewport->queue_capture;
+}
+
 void VisualServerRaster::viewport_set_rect(RID p_viewport,const ViewportRect& p_rect) {
 	VS_CHANGED;
 	Viewport *viewport=NULL;
@@ -7605,6 +7612,11 @@ int VisualServerRaster::get_render_info(RenderInfo p_info) {
 bool VisualServerRaster::has_feature(Features p_feature) const {
 
 	return rasterizer->has_feature(p_feature); // lies for now
+}
+
+void VisualServerRaster::set_swap_buffers_active(const bool p_active) {
+
+	rasterizer->set_swap_buffers_active(p_active);
 }
 
 void VisualServerRaster::set_default_clear_color(const Color& p_color) {
