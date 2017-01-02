@@ -41,6 +41,7 @@ static const char* _light_param_names[VS::LIGHT_PARAM_MAX]={
 	"shadow/darkening",
 	"shadow/z_offset",
 	"shadow/z_slope_scale",
+	"shadow/filter_radius",
 	"shadow/esm_multiplier",
 	"shadow/blur_passes"
 };
@@ -530,6 +531,7 @@ void Light::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/darkening", PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_DARKENING );
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/z_offset", PROPERTY_HINT_RANGE, "0,128,0.001"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_Z_OFFSET);
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/z_slope_scale", PROPERTY_HINT_RANGE, "0,128,0.001"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_Z_SLOPE_SCALE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/filter_radius", PROPERTY_HINT_RANGE, "0,128,0.001"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_FILTER_RADIUS);
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/esm_multiplier", PROPERTY_HINT_RANGE, "1.0,512.0,0.1"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_ESM_MULTIPLIER);
 	ADD_PROPERTYI( PropertyInfo( Variant::INT, "shadow/blur_passes", PROPERTY_HINT_RANGE, "0,4,1"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_BLUR_PASSES);
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "projector",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_projector"), _SCS("get_projector"));
@@ -543,6 +545,7 @@ void Light::_bind_methods() {
 	BIND_CONSTANT( PARAM_SPOT_ATTENUATION );
 	BIND_CONSTANT( PARAM_SHADOW_DARKENING );
 	BIND_CONSTANT( PARAM_SHADOW_Z_OFFSET );
+	BIND_CONSTANT( PARAM_SHADOW_FILTER_RADIUS );
 
 
 	BIND_CONSTANT( COLOR_DIFFUSE );
@@ -570,6 +573,7 @@ Light::Light(VisualServer::LightType p_type) {
 	set_parameter(PARAM_SHADOW_DARKENING,0.0);
 	set_parameter(PARAM_SHADOW_Z_OFFSET,0.05);
 	set_parameter(PARAM_SHADOW_Z_SLOPE_SCALE,0);
+	set_parameter(PARAM_SHADOW_FILTER_RADIUS,5.0);
 	set_parameter(PARAM_SHADOW_ESM_MULTIPLIER,60);
 	set_parameter(PARAM_SHADOW_BLUR_PASSES,1);
 

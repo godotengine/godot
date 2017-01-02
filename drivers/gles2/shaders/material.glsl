@@ -626,6 +626,29 @@ uniform vec3 ambient_color;
 
 FRAGMENT_SHADER_GLOBALS
 
+uniform float shadow_filter_radius;
+
+uniform vec2 kern[16] = vec2[]
+(
+	vec2(0.151205, 0.340969),
+	vec2(0.349872, -0.70755),
+	vec2(0.946959, 0.663325),
+	vec2(0.849958, -0.760292),
+	vec2(-0.792296, 0.463846),
+	vec2(0.45069, 0.832586),
+	vec2(-0.637487, -0.522192),
+	vec2(0.0185288, -0.162319),
+	vec2(0.622725, -0.289341),
+	vec2(-0.265502, 0.0830657),
+	vec2(-0.604604, 0.99042),
+	vec2(-0.228469, -0.911768),
+	vec2(-0.486144, -0.481575),
+	vec2(-0.0477502, 0.603215),
+	vec2(0.727942, 0.152266),
+	vec2(-0.890052, -0.0117375)
+);
+
+#define KERNWIDTH 4
 
 
 #ifdef LIGHT_USE_SHADOW
@@ -661,34 +684,50 @@ uniform float shadow_darkening;
 #ifdef USE_SHADOW_PCF_HQ
 
 
-float SAMPLE_SHADOW_TEX( highp vec2 coord, highp float refdepth) {
+float SAMPLE_SHADOW_TEX(highp vec2 coord, highp float refdepth)
+{
+	float shadow = 0;
 
-	float avg=(SHADOW_DEPTH(shadow_texture,coord) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(shadow_texel_size.x,0.0)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(-shadow_texel_size.x,0.0)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,-shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(shadow_texel_size.x,shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(-shadow_texel_size.x,shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(shadow_texel_size.x,-shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(-shadow_texel_size.x,-shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(shadow_texel_size.x*2.0,0.0)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(-shadow_texel_size.x*2.0,0.0)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,shadow_texel_size.y*2.0)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,-shadow_texel_size.y*2.0)) < refdepth ?  0.0 : 1.0);
-	return avg*(1.0/13.0);
+	for (int iy = 0; iy < 3; iy++)
+	{
+		int y = int(mod(gl_FragCoord.y + iy, KERNWIDTH));
+
+		for (int ix = 0; ix < 3; ix++)
+		{
+			int x = int(mod(gl_FragCoord.x + ix, KERNWIDTH));
+
+			vec2 sample = kern[y * KERNWIDTH + x];
+			vec2 offset = (sample + (vec2(ix, iy) - 1.0) * 2.0) * 0.333333 * shadow_texel_size * shadow_filter_radius;
+
+			shadow += SHADOW_DEPTH(shadow_texture, coord + offset) < refdepth ? 0.0 : 1.0;
+		}
+	}
+
+	return shadow * 0.111111;
 }
 
 #else
 
-float SAMPLE_SHADOW_TEX( highp vec2 coord, highp float refdepth) {
+float SAMPLE_SHADOW_TEX(highp vec2 coord, highp float refdepth)
+{
+	float shadow = 0;
 
-	float avg=(SHADOW_DEPTH(shadow_texture,coord) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(shadow_texel_size.x,0.0)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(-shadow_texel_size.x,0.0)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
-	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,-shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
-	return avg*0.2;
+	for (int iy = 0; iy < 2; iy++)
+	{
+		int y = int(mod(gl_FragCoord.y + iy, KERNWIDTH));
+
+		for (int ix = 0; ix < 2; ix++)
+		{
+			int x = int(mod(gl_FragCoord.x + ix, KERNWIDTH));
+
+			vec2 sample = kern[y * KERNWIDTH + x];
+			vec2 offset = ((sample - 1.0) * 0.5 + vec2(ix, iy)) * shadow_texel_size * shadow_filter_radius;
+
+			shadow += SHADOW_DEPTH(shadow_texture, coord + offset) < refdepth ? 0.0 : 1.0;
+		}
+	}
+
+	return shadow * 0.25;
 }
 
 #endif
@@ -767,7 +806,15 @@ float SAMPLE_SHADOW_TEX(vec2 p_uv,float p_depth) {
 
 #if !defined(USE_SHADOW_PCF) && !defined(USE_SHADOW_ESM)
 
-#define SAMPLE_SHADOW_TEX(m_coord,m_depth) (SHADOW_DEPTH(shadow_texture,m_coord) < m_depth ?  0.0 : 1.0)
+float SAMPLE_SHADOW_TEX(highp vec2 coord, highp float refdepth)
+{
+	int x = int(mod(gl_FragCoord.x, KERNWIDTH));
+	int y = int(mod(gl_FragCoord.y, KERNWIDTH));
+
+	vec2 offset = kern[y * KERNWIDTH + x] * shadow_texel_size * shadow_filter_radius;
+
+	return SHADOW_DEPTH(shadow_texture, coord + offset) < refdepth ? 0.0 : 1.0;
+}
 
 #endif
 

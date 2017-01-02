@@ -4207,6 +4207,14 @@ void VisualServerRaster::canvas_light_set_shadow_buffer_size(RID p_light, int p_
 
 }
 
+void VisualServerRaster::canvas_light_set_shadow_filter_radius(RID p_light, float p_filter_radius) {
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->shadow_filter_radius=p_filter_radius;
+
+}
+
 void VisualServerRaster::canvas_light_set_shadow_esm_multiplier(RID p_light, float p_multiplier) {
 
 	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);

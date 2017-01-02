@@ -505,6 +505,7 @@ public:
 		LIGHT_PARAM_SHADOW_DARKENING,
 		LIGHT_PARAM_SHADOW_Z_OFFSET,
 		LIGHT_PARAM_SHADOW_Z_SLOPE_SCALE,
+		LIGHT_PARAM_SHADOW_FILTER_RADIUS,
 		LIGHT_PARAM_SHADOW_ESM_MULTIPLIER,
 		LIGHT_PARAM_SHADOW_BLUR_PASSES,
 		LIGHT_PARAM_MAX
@@ -1070,6 +1071,7 @@ public:
 	virtual void canvas_light_set_mode(RID p_light, CanvasLightMode p_mode)=0;
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled)=0;
 	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size)=0;
+	virtual void canvas_light_set_shadow_filter_radius(RID p_light, float p_filter_radius)=0;
 	virtual void canvas_light_set_shadow_esm_multiplier(RID p_light, float p_multiplier)=0;
 	virtual void canvas_light_set_shadow_color(RID p_light, const Color& p_color)=0;
 

@@ -292,6 +292,17 @@ int Light2D::get_shadow_buffer_size() const {
 	return shadow_buffer_size;
 }
 
+void Light2D::set_shadow_filter_radius( float p_filter_radius) {
+
+	shadow_filter_radius=p_filter_radius;
+	VS::get_singleton()->canvas_light_set_shadow_filter_radius(canvas_light,p_filter_radius);
+}
+
+float Light2D::get_shadow_filter_radius() const{
+
+	return shadow_filter_radius;
+}
+
 void Light2D::set_shadow_esm_multiplier( float p_multiplier) {
 
 	shadow_esm_multiplier=p_multiplier;
@@ -405,6 +416,9 @@ void Light2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_shadow_buffer_size","size"),&Light2D::set_shadow_buffer_size);
 	ObjectTypeDB::bind_method(_MD("get_shadow_buffer_size"),&Light2D::get_shadow_buffer_size);
 
+	ObjectTypeDB::bind_method(_MD("set_shadow_filter_radius","filter_radius"),&Light2D::set_shadow_filter_radius);
+	ObjectTypeDB::bind_method(_MD("get_shadow_filter_radius"),&Light2D::get_shadow_filter_radius);
+
 	ObjectTypeDB::bind_method(_MD("set_shadow_esm_multiplier","multiplier"),&Light2D::set_shadow_esm_multiplier);
 	ObjectTypeDB::bind_method(_MD("get_shadow_esm_multiplier"),&Light2D::get_shadow_esm_multiplier);
 
@@ -429,6 +443,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow/enabled"),_SCS("set_shadow_enabled"),_SCS("is_shadow_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"shadow/color"),_SCS("set_shadow_color"),_SCS("get_shadow_color"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/buffer_size",PROPERTY_HINT_RANGE,"32,16384,1"),_SCS("set_shadow_buffer_size"),_SCS("get_shadow_buffer_size"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/filter_radius",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_filter_radius"),_SCS("get_shadow_filter_radius"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow/esm_multiplier",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_esm_multiplier"),_SCS("get_shadow_esm_multiplier"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/item_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_shadow_mask"),_SCS("get_item_shadow_mask"));
 
@@ -457,6 +472,7 @@ Light2D::Light2D() {
 	item_shadow_mask=1;
 	mode=MODE_ADD;
 	shadow_buffer_size=2048;
+	shadow_filter_radius=5.0;
 	shadow_esm_multiplier=80;
 	energy=1.0;
 	shadow_color=Color(0,0,0,0);
