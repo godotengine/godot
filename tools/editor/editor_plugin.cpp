@@ -75,6 +75,11 @@ Control * EditorPlugin::get_editor_viewport() {
 	return EditorNode::get_singleton()->get_viewport();
 }
 
+void EditorPlugin::edit_resource(const Ref<Resource>& p_resource){
+
+	EditorNode::get_singleton()->edit_resource(p_resource);
+}
+
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location,Control *p_control) {
 
 	switch(p_location) {
@@ -327,6 +332,7 @@ void EditorPlugin::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_selection:EditorSelection"),&EditorPlugin::get_selection);
 	ObjectTypeDB::bind_method(_MD("get_editor_settings:EditorSettings"),&EditorPlugin::get_editor_settings);
 	ObjectTypeDB::bind_method(_MD("queue_save_layout"),&EditorPlugin::queue_save_layout);
+	ObjectTypeDB::bind_method(_MD("edit_resource"),&EditorPlugin::edit_resource);
 
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_input_event",PropertyInfo(Variant::INPUT_EVENT,"event")));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_spatial_input_event",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera"),PropertyInfo(Variant::INPUT_EVENT,"event")));
