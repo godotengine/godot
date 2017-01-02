@@ -39,7 +39,6 @@
 #include "scene/gui/texture_frame.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/check_button.h"
-#include "scene/resources/material.h"
 
 class ColorPicker : public BoxContainer {
 
@@ -49,8 +48,8 @@ private:
 
 	Control *screen;
 	Image last_capture;
-	TextureFrame *uv_edit;
-	TextureFrame *w_edit;
+	Control *uv_edit;
+	Control *w_edit;
 	TextureFrame *sample;
 	TextureFrame *preset;
 	Button *bt_add_preset;
