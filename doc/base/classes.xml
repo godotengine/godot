@@ -16089,7 +16089,7 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
-			<argument index="1" name="ip_type" type="int" default="int.IP_TYPE_ANY">
+			<argument index="1" name="ip_type" type="int" default="IP.TYPE_ANY">
 			</argument>
 			<description>
 				Resolve a given hostname, blocking. Resolved hostname is returned as an IPv4 or IPv6 depending on "ip_type".
@@ -16100,7 +16100,7 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
-			<argument index="1" name="ip_type" type="int" default="int.IP_TYPE_ANY">
+			<argument index="1" name="ip_type" type="int" default="IP.TYPE_ANY">
 			</argument>
 			<description>
 				Create a queue item for resolving a given hostname to an IPv4 or IPv6 depending on "ip_type". The queue ID is returned, or RESOLVER_INVALID_ID on error.
@@ -25382,15 +25382,10 @@
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="ip_type" type="int" default="int.IP_TYPE_ANY">
-			</argument>
-			<argument index="2" name="recv_buf_size" type="int" default="65536">
+			<argument index="1" name="recv_buf_size" type="int" default="65536">
 			</argument>
 			<description>
-				Make this [PacketPeerUDP] listen on the "port" using protocol "ip_type" and a buffer size "recv_buf_size". Listens on all available adresses.
-				IP_TYPE_IPV4 = IPv4 only
-				IP_TYPE_IPV6 = IPv6 only
-				IP_TYPE_ANY  = Dual stack (supports both IPv6 and IPv4 connections).
+				Make this [PacketPeerUDP] listen on the "port" with a buffer size "recv_buf_size". Listens on all available addresses.
 			</description>
 		</method>
 		<method name="set_send_address">
@@ -25400,10 +25395,8 @@
 			</argument>
 			<argument index="1" name="port" type="int">
 			</argument>
-			<argument index="2" name="ip_type" type="int" default="int.IP_TYPE_ANY">
-			</argument>
 			<description>
-				Set the destination address and port for sending packets and variables, a hostname will be resolved using "ip_type" (v4/v6/any) if valid.
+				Set the destination address and port for sending packets and variables, a hostname will be resolved using if valid.
 			</description>
 		</method>
 		<method name="wait">
@@ -39227,10 +39220,8 @@
 			</argument>
 			<argument index="1" name="port" type="int">
 			</argument>
-			<argument index="2" name="ip_type" type="int" default="int.IP_TYPE_ANY">
-			</argument>
 			<description>
-				Connect to the specified host:port pair. A hostname will be resolved using "ip_type" (v4/v6/any) if valid. Returns [OK] on success or [FAILED] on failure.
+				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [OK] on success or [FAILED] on failure.
 			</description>
 		</method>
 		<method name="disconnect">
@@ -40553,15 +40544,10 @@
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="ip_type" type="int" default="int.IP_TYPE_ANY">
-			</argument>
-			<argument index="2" name="accepted_hosts" type="StringArray" default="StringArray([])">
+			<argument index="1" name="accepted_hosts" type="StringArray" default="StringArray([])">
 			</argument>
 			<description>
-				Listen on a port using protocol "ip_type", alternatively give a white-list of accepted hosts.
-				IP_TYPE_IPV4 = IPv4 only
-				IP_TYPE_IPV6 = IPv6 only
-				IP_TYPE_ANY  = Dual stack (supports both IPv6 and IPv4 connections).
+				Listen on a port using protocol, alternatively give a white-list of accepted hosts.
 			</description>
 		</method>
 		<method name="stop">

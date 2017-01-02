@@ -98,7 +98,7 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 	};
 
 	struct sockaddr_storage their_addr;
-	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port);
+	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port, ip_type);
 
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == -1) {
 
@@ -107,7 +107,12 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 			return OK;
 		};
 
-		return OK;
+		if (errno == EINPROGRESS || errno == EALREADY) {
+			return OK;
+		}
+
+		status = STATUS_ERROR;
+		return ERR_CONNECTION_ERROR;
 	} else {
 
 		status = STATUS_CONNECTED;
@@ -117,8 +122,9 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 	return OK;
 };
 
-void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port) {
+void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_ip_type) {
 
+	ip_type = p_ip_type;
 	sockfd = p_sockfd;
 #ifndef NO_FCNTL
 	fcntl(sockfd, F_SETFL, O_NONBLOCK);
@@ -135,9 +141,9 @@ void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port)
 
 Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 
-	ERR_FAIL_COND_V( p_host.type == IP_Address::TYPE_NONE, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V( p_host == IP_Address(), ERR_INVALID_PARAMETER);
 
-	sockfd = _socket_create(p_host.type, SOCK_STREAM, IPPROTO_TCP);
+	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
 	if (sockfd == -1) {
 		ERR_PRINT("Socket creation failed!");
 		disconnect();
@@ -153,7 +159,7 @@ Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 #endif
 
 	struct sockaddr_storage their_addr;
-	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port);
+	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port, ip_type);
 
 	errno = 0;
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == -1 && errno != EINPROGRESS) {
@@ -387,6 +393,7 @@ StreamPeerTCPPosix::StreamPeerTCPPosix() {
 	sockfd = -1;
 	status = STATUS_NONE;
 	peer_port = 0;
+	ip_type = IP::TYPE_ANY;
 };
 
 StreamPeerTCPPosix::~StreamPeerTCPPosix() {

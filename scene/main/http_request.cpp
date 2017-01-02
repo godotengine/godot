@@ -28,6 +28,10 @@
 /*************************************************************************/
 #include "http_request.h"
 
+void HTTPRequest::set_ip_type(IP::Type p_type) {
+	client->set_ip_type(p_type);
+}
+
 void HTTPRequest::_redirect_request(const String& p_new_url) {
 
 
@@ -535,6 +539,7 @@ int HTTPRequest::get_body_size() const{
 
 void HTTPRequest::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("set_ip_type","ip_type"),&HTTPRequest::set_ip_type);
 	ObjectTypeDB::bind_method(_MD("request","url","custom_headers","ssl_validate_domain","method","request_data"),&HTTPRequest::request,DEFVAL(StringArray()),DEFVAL(true),DEFVAL(HTTPClient::METHOD_GET),DEFVAL(String()));
 	ObjectTypeDB::bind_method(_MD("cancel_request"),&HTTPRequest::cancel_request);
 

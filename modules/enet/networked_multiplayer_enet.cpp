@@ -77,7 +77,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 Error NetworkedMultiplayerENet::create_client(const IP_Address& p_ip, int p_port, int p_in_bandwidth, int p_out_bandwidth){
 
 	ERR_FAIL_COND_V(active,ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V(p_ip.type != IP_Address::TYPE_IPV4, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!p_ip.is_ipv4(), ERR_INVALID_PARAMETER);
 
 	host = enet_host_create (NULL /* create a client host */,
 		    1 /* only allow 1 outgoing connection */,
@@ -91,7 +91,7 @@ Error NetworkedMultiplayerENet::create_client(const IP_Address& p_ip, int p_port
 	_setup_compressor();
 
 	ENetAddress address;
-	address.host=p_ip.field32[0];
+	address.host=*((uint32_t *)p_ip.get_ipv4());
 	address.port=p_port;
 
 	//enet_address_set_host (& address, "localhost");
@@ -150,8 +150,7 @@ void NetworkedMultiplayerENet::poll(){
 				}
 
 				IP_Address ip;
-				ip.type = IP_Address::TYPE_IPV4;
-				ip.field32[0]=event.peer -> address.host;
+				ip.set_ipv4((uint8_t *)&(event.peer -> address.host));
 
 				int *new_id = memnew( int );
 				*new_id = event.data;
@@ -685,6 +684,6 @@ NetworkedMultiplayerENet::~NetworkedMultiplayerENet(){
 // sets IP for ENet to bind when using create_server
 // if no IP is set, then ENet bind to ENET_HOST_ANY
 void NetworkedMultiplayerENet::set_bind_ip(const IP_Address& p_ip){
-	ERR_FAIL_COND(p_ip.type != IP_Address::TYPE_IPV4);
-	bind_ip=p_ip.field32[0];
+	ERR_FAIL_COND(!p_ip.is_ipv4());
+	bind_ip=*(uint32_t *)p_ip.get_ipv4();
 }
