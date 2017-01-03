@@ -411,17 +411,17 @@ void SampleLibraryEditor::drop_data_fw(const Point2& p_point,const Variant& p_da
 
 void SampleLibraryEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&SampleLibraryEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_load_pressed"),&SampleLibraryEditor::_load_pressed);
-	ObjectTypeDB::bind_method(_MD("_item_edited"),&SampleLibraryEditor::_item_edited);
-	ObjectTypeDB::bind_method(_MD("_delete_pressed"),&SampleLibraryEditor::_delete_pressed);
-	ObjectTypeDB::bind_method(_MD("_file_load_request"),&SampleLibraryEditor::_file_load_request);
-	ObjectTypeDB::bind_method(_MD("_update_library"),&SampleLibraryEditor::_update_library);
-	ObjectTypeDB::bind_method(_MD("_button_pressed"),&SampleLibraryEditor::_button_pressed);
+	ClassDB::bind_method(_MD("_input_event"),&SampleLibraryEditor::_input_event);
+	ClassDB::bind_method(_MD("_load_pressed"),&SampleLibraryEditor::_load_pressed);
+	ClassDB::bind_method(_MD("_item_edited"),&SampleLibraryEditor::_item_edited);
+	ClassDB::bind_method(_MD("_delete_pressed"),&SampleLibraryEditor::_delete_pressed);
+	ClassDB::bind_method(_MD("_file_load_request"),&SampleLibraryEditor::_file_load_request);
+	ClassDB::bind_method(_MD("_update_library"),&SampleLibraryEditor::_update_library);
+	ClassDB::bind_method(_MD("_button_pressed"),&SampleLibraryEditor::_button_pressed);
 
-	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &SampleLibraryEditor::get_drag_data_fw);
-	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &SampleLibraryEditor::can_drop_data_fw);
-	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &SampleLibraryEditor::drop_data_fw);
+	ClassDB::bind_method(_MD("get_drag_data_fw"), &SampleLibraryEditor::get_drag_data_fw);
+	ClassDB::bind_method(_MD("can_drop_data_fw"), &SampleLibraryEditor::can_drop_data_fw);
+	ClassDB::bind_method(_MD("drop_data_fw"), &SampleLibraryEditor::drop_data_fw);
 
 }
 
@@ -497,7 +497,7 @@ void SampleLibraryEditorPlugin::edit(Object *p_object) {
 
 bool SampleLibraryEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("SampleLibrary");
+	return p_object->is_class("SampleLibrary");
 }
 
 void SampleLibraryEditorPlugin::make_visible(bool p_visible) {

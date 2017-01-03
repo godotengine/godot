@@ -37,7 +37,7 @@
 
 class ResourceInteractiveLoader : public Reference {
 
-	OBJ_TYPE(ResourceInteractiveLoader,Reference);
+	GDCLASS(ResourceInteractiveLoader,Reference);
 protected:
 
 	static void _bind_methods();

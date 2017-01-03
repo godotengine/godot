@@ -45,7 +45,7 @@
 
 class CreateDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(CreateDialog,ConfirmationDialog )
+	GDCLASS(CreateDialog,ConfirmationDialog )
 
 
 	Vector<String> favorite_list;
@@ -108,7 +108,7 @@ public:
 
 class CreateDialog : public ConfirmationDialog {
 
-	OBJ_TYPE( CreateDialog, ConfirmationDialog );
+	GDCLASS( CreateDialog, ConfirmationDialog );
 
 	Tree *tree;
 	Button *create;

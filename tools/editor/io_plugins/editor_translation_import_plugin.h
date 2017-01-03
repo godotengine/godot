@@ -37,7 +37,7 @@ class EditorTranslationImportDialog;
 
 class EditorTranslationImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorTranslationImportPlugin,EditorImportPlugin);
+	GDCLASS(EditorTranslationImportPlugin,EditorImportPlugin);
 
 	EditorTranslationImportDialog *dialog;
 public:

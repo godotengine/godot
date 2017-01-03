@@ -700,7 +700,7 @@ Error ResourceInteractiveLoaderBinary::poll(){
 
 	String t = get_unicode_string();
 
-	Object *obj = ObjectTypeDB::instance(t);
+	Object *obj = ClassDB::instance(t);
 	if (!obj) {
 		error=ERR_FILE_CORRUPT;
 		ERR_EXPLAIN(local_path+":Resource of unrecognized type in file: "+t);
@@ -711,7 +711,7 @@ Error ResourceInteractiveLoaderBinary::poll(){
 	if (!r) {
 		error=ERR_FILE_CORRUPT;
 		memdelete(obj); //bye
-		ERR_EXPLAIN(local_path+":Resoucre type in resource field not a resource, type is: "+obj->get_type());
+		ERR_EXPLAIN(local_path+":Resoucre type in resource field not a resource, type is: "+obj->get_class());
 		ERR_FAIL_COND_V(!r,ERR_FILE_CORRUPT);
 	}
 
@@ -1064,7 +1064,7 @@ void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String
 	}
 
 	List<String> extensions;
-	ObjectTypeDB::get_extensions_for_type(p_type,&extensions);
+	ClassDB::get_extensions_for_type(p_type,&extensions);
 
 	extensions.sort();
 
@@ -1077,7 +1077,7 @@ void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String
 void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *p_extensions) const{
 
 	List<String> extensions;
-	ObjectTypeDB::get_resource_base_extensions(&extensions);
+	ClassDB::get_resource_base_extensions(&extensions);
 	extensions.sort();
 
 	for(List<String>::Element *E=extensions.front();E;E=E->next()) {
@@ -2002,7 +2002,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	}
 
 	//f->store_32(saved_resources.size()+external_resources.size()); // load steps -not needed
-	save_unicode_string(p_resource->get_type());
+	save_unicode_string(p_resource->get_class());
 	uint64_t md_at = f->get_pos();
 	f->store_64(0); //offset to impoty metadata
 	for(int i=0;i<14;i++)
@@ -2019,7 +2019,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 
 
 			ResourceData &rd = resources.push_back(ResourceData())->get();
-			rd.type=E->get()->get_type();
+			rd.type=E->get()->get_class();
 
 			List<PropertyInfo> property_list;
 			E->get()->get_property_list( &property_list );
@@ -2064,7 +2064,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 
 	for(int i=0;i<save_order.size();i++) {
 
-		save_unicode_string(save_order[i]->get_save_type());
+		save_unicode_string(save_order[i]->get_save_class());
 		String path = save_order[i]->get_path();
 		path=relative_paths?local_path.path_to_file(path):path;
 		save_unicode_string(path);

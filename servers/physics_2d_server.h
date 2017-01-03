@@ -37,7 +37,7 @@ class Physics2DDirectSpaceState;
 
 class Physics2DDirectBodyState : public Object {
 
-	OBJ_TYPE( Physics2DDirectBodyState, Object );
+	GDCLASS( Physics2DDirectBodyState, Object );
 protected:
 	static void _bind_methods();
 public:
@@ -90,7 +90,7 @@ class Physics2DShapeQueryResult;
 //used for script
 class Physics2DShapeQueryParameters : public Reference {
 
-	OBJ_TYPE(Physics2DShapeQueryParameters, Reference);
+	GDCLASS(Physics2DShapeQueryParameters, Reference);
 friend class Physics2DDirectSpaceState;
 	RID shape;
 	Matrix32 transform;
@@ -133,7 +133,7 @@ public:
 
 class Physics2DDirectSpaceState : public Object {
 
-	OBJ_TYPE( Physics2DDirectSpaceState, Object );
+	GDCLASS( Physics2DDirectSpaceState, Object );
 
 	Dictionary _intersect_ray(const Vector2& p_from, const Vector2& p_to,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_layers=0,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
 
@@ -211,7 +211,7 @@ public:
 
 class Physics2DShapeQueryResult : public Reference {
 
-	OBJ_TYPE( Physics2DShapeQueryResult, Reference );
+	GDCLASS( Physics2DShapeQueryResult, Reference );
 
 	Vector<Physics2DDirectSpaceState::ShapeResult> result;
 
@@ -234,7 +234,7 @@ class Physics2DTestMotionResult;
 
 class Physics2DServer : public Object {
 
-	OBJ_TYPE( Physics2DServer, Object );
+	GDCLASS( Physics2DServer, Object );
 
 	static Physics2DServer * singleton;
 
@@ -576,7 +576,7 @@ public:
 
 class Physics2DTestMotionResult : public Reference {
 
-	OBJ_TYPE( Physics2DTestMotionResult, Reference );
+	GDCLASS( Physics2DTestMotionResult, Reference );
 
 	Physics2DServer::MotionResult result;
 	bool colliding;

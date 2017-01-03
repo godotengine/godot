@@ -34,7 +34,7 @@
 
 class SplitContainer : public Container {
 
-	OBJ_TYPE(SplitContainer,Container);
+	GDCLASS(SplitContainer,Container);
 public:
 	enum DraggerVisibility {
 		DRAGGER_VISIBLE,
@@ -86,7 +86,7 @@ VARIANT_ENUM_CAST(SplitContainer::DraggerVisibility);
 
 class HSplitContainer : public SplitContainer {
 
-	OBJ_TYPE(HSplitContainer,SplitContainer);
+	GDCLASS(HSplitContainer,SplitContainer);
 
 public:
 
@@ -96,7 +96,7 @@ public:
 
 class VSplitContainer : public SplitContainer {
 
-	OBJ_TYPE(VSplitContainer,SplitContainer);
+	GDCLASS(VSplitContainer,SplitContainer);
 
 public:
 

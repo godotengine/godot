@@ -35,7 +35,7 @@
 
 class VideoPlayer : public Control {
 
-	OBJ_TYPE(VideoPlayer,Control);
+	GDCLASS(VideoPlayer,Control);
 
 	struct InternalStream : public AudioServer::AudioStream {
 		VideoPlayer *player;

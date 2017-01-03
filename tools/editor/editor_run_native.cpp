@@ -129,7 +129,7 @@ void EditorRunNative::_run_native(int p_idx,const String& p_platform) {
 
 void EditorRunNative::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_run_native",&EditorRunNative::_run_native);
+	ClassDB::bind_method("_run_native",&EditorRunNative::_run_native);
 
 	ADD_SIGNAL(MethodInfo("native_run"));
 }

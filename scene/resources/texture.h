@@ -41,7 +41,7 @@
 
 class Texture : public Resource {
 
-	OBJ_TYPE( Texture, Resource );
+	GDCLASS( Texture, Resource );
 	OBJ_SAVE_TYPE( Texture ); //children are all saved as Texture, so they can be exchanged
 protected:
 
@@ -85,7 +85,7 @@ VARIANT_ENUM_CAST( Texture::Flags );
 
 class ImageTexture : public Texture {
 
-	OBJ_TYPE( ImageTexture, Texture );
+	GDCLASS( ImageTexture, Texture );
 	RES_BASE_EXTENSION("tex");
 public:
 	enum Storage {
@@ -164,7 +164,7 @@ VARIANT_ENUM_CAST( ImageTexture::Storage );
 
 class AtlasTexture : public Texture {
 
-	OBJ_TYPE( AtlasTexture, Texture );
+	GDCLASS( AtlasTexture, Texture );
 	RES_BASE_EXTENSION("atex");
 protected:
 
@@ -205,7 +205,7 @@ public:
 
 class LargeTexture : public Texture {
 
-	OBJ_TYPE( LargeTexture, Texture );
+	GDCLASS( LargeTexture, Texture );
 	RES_BASE_EXTENSION("ltex");
 protected:
 
@@ -256,7 +256,7 @@ public:
 
 class CubeMap : public Resource {
 
-	OBJ_TYPE( CubeMap, Resource );
+	GDCLASS( CubeMap, Resource );
 	RES_BASE_EXTENSION("cbm");
 public:
 	enum Storage {

@@ -60,7 +60,7 @@ public:
 	};
 
 private:
-	OBJ_TYPE( Particles, GeometryInstance );
+	GDCLASS( Particles, GeometryInstance );
 
 	RID particles;
 

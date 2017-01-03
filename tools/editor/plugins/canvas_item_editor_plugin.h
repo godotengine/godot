@@ -46,7 +46,7 @@ class CanvasItemEditorViewport;
 
 class CanvasItemEditorSelectedItem : public Object {
 
-	OBJ_TYPE(CanvasItemEditorSelectedItem,Object);
+	GDCLASS(CanvasItemEditorSelectedItem,Object);
 public:
 	Variant undo_state;
 	Vector2 undo_pivot;
@@ -60,7 +60,7 @@ public:
 
 class CanvasItemEditor : public VBoxContainer {
 
-	OBJ_TYPE(CanvasItemEditor, VBoxContainer );
+	GDCLASS(CanvasItemEditor, VBoxContainer );
 
 	EditorNode *editor;
 
@@ -431,7 +431,7 @@ public:
 
 class CanvasItemEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( CanvasItemEditorPlugin, EditorPlugin );
+	GDCLASS( CanvasItemEditorPlugin, EditorPlugin );
 
 	CanvasItemEditor *canvas_item_editor;
 	EditorNode *editor;
@@ -455,7 +455,7 @@ public:
 };
 
 class CanvasItemEditorViewport : public VBoxContainer {
-	OBJ_TYPE( CanvasItemEditorViewport, VBoxContainer );
+	GDCLASS( CanvasItemEditorViewport, VBoxContainer );
 
 	String default_type;
 	Vector<String> types;

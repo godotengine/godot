@@ -32,7 +32,7 @@
 #include "io/stream_peer.h"
 
 class StreamPeerSSL : public StreamPeer {
-	OBJ_TYPE(StreamPeerSSL,StreamPeer);
+	GDCLASS(StreamPeerSSL,StreamPeer);
 public:
 
 	typedef void (*LoadCertsFromMemory)(const ByteArray& p_certs);

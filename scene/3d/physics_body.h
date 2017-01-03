@@ -36,7 +36,7 @@
 
 class PhysicsBody : public CollisionObject {
 
-	OBJ_TYPE(PhysicsBody,CollisionObject);
+	GDCLASS(PhysicsBody,CollisionObject);
 
 	uint32_t layer_mask;
 	uint32_t collision_mask;
@@ -78,7 +78,7 @@ public:
 
 class StaticBody : public PhysicsBody {
 
-	OBJ_TYPE(StaticBody,PhysicsBody);
+	GDCLASS(StaticBody,PhysicsBody);
 
 	Vector3 constant_linear_velocity;
 	Vector3 constant_angular_velocity;
@@ -114,7 +114,7 @@ public:
 
 class RigidBody : public PhysicsBody {
 
-	OBJ_TYPE(RigidBody,PhysicsBody);
+	GDCLASS(RigidBody,PhysicsBody);
 public:
 
 	enum Mode {
@@ -284,7 +284,7 @@ VARIANT_ENUM_CAST(RigidBody::AxisLock);
 
 class KinematicBody : public PhysicsBody {
 
-	OBJ_TYPE(KinematicBody,PhysicsBody);
+	GDCLASS(KinematicBody,PhysicsBody);
 
 	float margin;
 	bool collide_static;

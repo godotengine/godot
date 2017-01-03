@@ -4,7 +4,7 @@
 #include "scene/resources/texture.h"
 
 class SkyBox : public Resource {
-	OBJ_TYPE(SkyBox,Resource);
+	GDCLASS(SkyBox,Resource);
 
 public:
 
@@ -32,7 +32,7 @@ VARIANT_ENUM_CAST(SkyBox::RadianceSize)
 
 
 class ImageSkyBox : public SkyBox {
-	OBJ_TYPE(ImageSkyBox,SkyBox);
+	GDCLASS(ImageSkyBox,SkyBox);
 
 public:
 

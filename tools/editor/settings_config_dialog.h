@@ -36,7 +36,7 @@
 
 class EditorSettingsDialog : public AcceptDialog {
 
-	OBJ_TYPE(EditorSettingsDialog,AcceptDialog);
+	GDCLASS(EditorSettingsDialog,AcceptDialog);
 
 
 

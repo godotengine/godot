@@ -35,7 +35,7 @@
 
 class Space2D : public Resource {
 
-	OBJ_TYPE(Space2D,Resource);
+	GDCLASS(Space2D,Resource);
 	bool active;
 	RID space;
 protected:

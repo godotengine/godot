@@ -95,14 +95,14 @@ Size2 TextureFrame::get_minimum_size() const {
 void TextureFrame::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_texture","texture"), & TextureFrame::set_texture );
-	ObjectTypeDB::bind_method(_MD("get_texture"), & TextureFrame::get_texture );
-	ObjectTypeDB::bind_method(_MD("set_modulate","modulate"), & TextureFrame::set_modulate );
-	ObjectTypeDB::bind_method(_MD("get_modulate"), & TextureFrame::get_modulate );
-	ObjectTypeDB::bind_method(_MD("set_expand","enable"), & TextureFrame::set_expand );
-	ObjectTypeDB::bind_method(_MD("has_expand"), & TextureFrame::has_expand );
-	ObjectTypeDB::bind_method(_MD("set_stretch_mode","stretch_mode"), & TextureFrame::set_stretch_mode );
-	ObjectTypeDB::bind_method(_MD("get_stretch_mode"), & TextureFrame::get_stretch_mode );
+	ClassDB::bind_method(_MD("set_texture","texture"), & TextureFrame::set_texture );
+	ClassDB::bind_method(_MD("get_texture"), & TextureFrame::get_texture );
+	ClassDB::bind_method(_MD("set_modulate","modulate"), & TextureFrame::set_modulate );
+	ClassDB::bind_method(_MD("get_modulate"), & TextureFrame::get_modulate );
+	ClassDB::bind_method(_MD("set_expand","enable"), & TextureFrame::set_expand );
+	ClassDB::bind_method(_MD("has_expand"), & TextureFrame::has_expand );
+	ClassDB::bind_method(_MD("set_stretch_mode","stretch_mode"), & TextureFrame::set_stretch_mode );
+	ClassDB::bind_method(_MD("get_stretch_mode"), & TextureFrame::get_stretch_mode );
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"),_SCS("get_texture") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );

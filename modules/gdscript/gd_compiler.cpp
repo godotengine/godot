@@ -208,7 +208,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 				if (nc) {
 
 					bool success=false;
-					int constant = ObjectTypeDB::get_integer_constant(nc->get_name(),identifier,&success);
+					int constant = ClassDB::get_integer_constant(nc->get_name(),identifier,&success);
 					if (success) {
 						Variant key=constant;
 						int idx;
@@ -1723,7 +1723,7 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 		}
 
 		if (native.is_valid()) {
-			if (ObjectTypeDB::has_signal(native->get_name(),name)) {
+			if (ClassDB::has_signal(native->get_name(),name)) {
 				_set_error("Signal '"+name+"' redefined (original in native class '"+String(native->get_name())+"')",p_class);
 				return ERR_ALREADY_EXISTS;
 			}

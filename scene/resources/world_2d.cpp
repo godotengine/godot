@@ -382,11 +382,11 @@ RID World2D::get_sound_space() {
 
 void World2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_canvas"),&World2D::get_canvas);
-	ObjectTypeDB::bind_method(_MD("get_space"),&World2D::get_space);
-	ObjectTypeDB::bind_method(_MD("get_sound_space"),&World2D::get_sound_space);
+	ClassDB::bind_method(_MD("get_canvas"),&World2D::get_canvas);
+	ClassDB::bind_method(_MD("get_space"),&World2D::get_space);
+	ClassDB::bind_method(_MD("get_sound_space"),&World2D::get_sound_space);
 
-	ObjectTypeDB::bind_method(_MD("get_direct_space_state:Physics2DDirectSpaceState"),&World2D::get_direct_space_state);
+	ClassDB::bind_method(_MD("get_direct_space_state:Physics2DDirectSpaceState"),&World2D::get_direct_space_state);
 
 }
 

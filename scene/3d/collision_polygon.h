@@ -36,7 +36,7 @@
 
 class CollisionPolygon : public Spatial {
 
-	OBJ_TYPE(CollisionPolygon,Spatial);
+	GDCLASS(CollisionPolygon,Spatial);
 public:
 
 	enum BuildMode {

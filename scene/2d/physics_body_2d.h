@@ -36,7 +36,7 @@
 
 class PhysicsBody2D : public CollisionObject2D {
 
-	OBJ_TYPE(PhysicsBody2D,CollisionObject2D);
+	GDCLASS(PhysicsBody2D,CollisionObject2D);
 
 	uint32_t mask;
 	uint32_t collision_mask;
@@ -83,7 +83,7 @@ public:
 
 class StaticBody2D : public PhysicsBody2D {
 
-	OBJ_TYPE(StaticBody2D,PhysicsBody2D);
+	GDCLASS(StaticBody2D,PhysicsBody2D);
 
 	Vector2 constant_linear_velocity;
 	real_t constant_angular_velocity;
@@ -118,7 +118,7 @@ public:
 
 class RigidBody2D : public PhysicsBody2D {
 
-	OBJ_TYPE(RigidBody2D,PhysicsBody2D);
+	GDCLASS(RigidBody2D,PhysicsBody2D);
 public:
 
 	enum Mode {
@@ -290,7 +290,7 @@ VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 
 class KinematicBody2D : public PhysicsBody2D {
 
-	OBJ_TYPE(KinematicBody2D,PhysicsBody2D);
+	GDCLASS(KinematicBody2D,PhysicsBody2D);
 
 	float margin;
 	bool colliding;

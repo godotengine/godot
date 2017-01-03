@@ -36,7 +36,7 @@
 
 class SpatialSound2DServerSW : public SpatialSound2DServer {
 
-	OBJ_TYPE(SpatialSound2DServerSW,SpatialSound2DServer);
+	GDCLASS(SpatialSound2DServerSW,SpatialSound2DServer);
 
 	_THREAD_SAFE_CLASS_
 

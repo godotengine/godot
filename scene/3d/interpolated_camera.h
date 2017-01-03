@@ -33,7 +33,7 @@
 
 class InterpolatedCamera : public Camera {
 
-	OBJ_TYPE(InterpolatedCamera,Camera);
+	GDCLASS(InterpolatedCamera,Camera);
 
 	bool enabled;
 	real_t speed;

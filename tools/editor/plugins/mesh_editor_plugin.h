@@ -40,7 +40,7 @@
 
 class MeshEditor : public Control {
 
-	OBJ_TYPE(MeshEditor, Control);
+	GDCLASS(MeshEditor, Control);
 
 
 
@@ -76,7 +76,7 @@ public:
 
 class MeshEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( MeshEditorPlugin, EditorPlugin );
+	GDCLASS( MeshEditorPlugin, EditorPlugin );
 
 	MeshEditor *mesh_editor;
 	EditorNode *editor;

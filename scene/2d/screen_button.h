@@ -35,7 +35,7 @@
 
 class TouchScreenButton : public Node2D {
 
-	OBJ_TYPE(TouchScreenButton,Node2D);
+	GDCLASS(TouchScreenButton,Node2D);
 public:
 
 	enum VisibilityMode {

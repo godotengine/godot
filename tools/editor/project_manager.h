@@ -40,7 +40,7 @@ class NewProjectDialog;
 class ProjectListFilter;
 
 class ProjectManager : public Control {
-	OBJ_TYPE( ProjectManager, Control );
+	GDCLASS( ProjectManager, Control );
 
 	Button *erase_btn;
 	Button *open_btn;
@@ -109,7 +109,7 @@ public:
 
 class ProjectListFilter : public HBoxContainer {
 
-	OBJ_TYPE( ProjectListFilter, HBoxContainer );
+	GDCLASS( ProjectListFilter, HBoxContainer );
 
 private:
 

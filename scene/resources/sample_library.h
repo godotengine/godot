@@ -35,7 +35,7 @@
 
 class SampleLibrary : public Resource {
 
-	OBJ_TYPE(SampleLibrary,Resource);
+	GDCLASS(SampleLibrary,Resource);
 
 	struct SampleData {
 

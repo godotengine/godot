@@ -36,7 +36,7 @@
 
 class ICloud : public Object {
 
-	OBJ_TYPE(ICloud, Object);
+	GDCLASS(ICloud, Object);
 
 	static ICloud* instance;
 	static void _bind_methods();

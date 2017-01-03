@@ -32,7 +32,7 @@
 #include "resource.h"
 
 class ColorRamp: public Resource {
-	OBJ_TYPE( ColorRamp, Resource );
+	GDCLASS( ColorRamp, Resource );
 	OBJ_SAVE_TYPE( ColorRamp );
 
 public:

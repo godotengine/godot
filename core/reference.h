@@ -39,7 +39,7 @@
 */
 class Reference : public Object{
 
-	OBJ_TYPE( Reference, Object );
+	GDCLASS( Reference, Object );
 friend class RefBase;
 	SafeRefCount refcount;
 	SafeRefCount refcount_init;
@@ -315,7 +315,7 @@ typedef Ref<Reference> REF;
 
 class WeakRef : public Reference {
 
-	OBJ_TYPE(WeakRef,Reference);
+	GDCLASS(WeakRef,Reference);
 
 	ObjectID ref;
 protected:

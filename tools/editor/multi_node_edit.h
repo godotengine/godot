@@ -33,7 +33,7 @@
 
 class MultiNodeEdit : public Reference {
 
-	OBJ_TYPE(MultiNodeEdit,Reference);
+	GDCLASS(MultiNodeEdit,Reference);
 
 	List<NodePath> nodes;
 	struct PLData {

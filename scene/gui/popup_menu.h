@@ -39,7 +39,7 @@
 
 class PopupMenu : public Popup {
 
-	OBJ_TYPE(PopupMenu, Popup );
+	GDCLASS(PopupMenu, Popup );
 
 	struct Item {
 		Ref<Texture> icon;

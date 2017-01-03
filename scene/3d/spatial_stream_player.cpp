@@ -329,45 +329,45 @@ int SpatialStreamPlayer::get_buffering_msec() const{
 
 void SpatialStreamPlayer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_stream","stream:AudioStream"),&SpatialStreamPlayer::set_stream);
-	ObjectTypeDB::bind_method(_MD("get_stream:AudioStream"),&SpatialStreamPlayer::get_stream);
+	ClassDB::bind_method(_MD("set_stream","stream:AudioStream"),&SpatialStreamPlayer::set_stream);
+	ClassDB::bind_method(_MD("get_stream:AudioStream"),&SpatialStreamPlayer::get_stream);
 
-	ObjectTypeDB::bind_method(_MD("play","offset"),&SpatialStreamPlayer::play,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("stop"),&SpatialStreamPlayer::stop);
+	ClassDB::bind_method(_MD("play","offset"),&SpatialStreamPlayer::play,DEFVAL(0));
+	ClassDB::bind_method(_MD("stop"),&SpatialStreamPlayer::stop);
 
-	ObjectTypeDB::bind_method(_MD("is_playing"),&SpatialStreamPlayer::is_playing);
+	ClassDB::bind_method(_MD("is_playing"),&SpatialStreamPlayer::is_playing);
 
-	ObjectTypeDB::bind_method(_MD("set_paused","paused"),&SpatialStreamPlayer::set_paused);
-	ObjectTypeDB::bind_method(_MD("is_paused"),&SpatialStreamPlayer::is_paused);
+	ClassDB::bind_method(_MD("set_paused","paused"),&SpatialStreamPlayer::set_paused);
+	ClassDB::bind_method(_MD("is_paused"),&SpatialStreamPlayer::is_paused);
 
-	ObjectTypeDB::bind_method(_MD("set_loop","enabled"),&SpatialStreamPlayer::set_loop);
-	ObjectTypeDB::bind_method(_MD("has_loop"),&SpatialStreamPlayer::has_loop);
+	ClassDB::bind_method(_MD("set_loop","enabled"),&SpatialStreamPlayer::set_loop);
+	ClassDB::bind_method(_MD("has_loop"),&SpatialStreamPlayer::has_loop);
 
-	ObjectTypeDB::bind_method(_MD("set_volume","volume"),&SpatialStreamPlayer::set_volume);
-	ObjectTypeDB::bind_method(_MD("get_volume"),&SpatialStreamPlayer::get_volume);
+	ClassDB::bind_method(_MD("set_volume","volume"),&SpatialStreamPlayer::set_volume);
+	ClassDB::bind_method(_MD("get_volume"),&SpatialStreamPlayer::get_volume);
 
-	ObjectTypeDB::bind_method(_MD("set_volume_db","db"),&SpatialStreamPlayer::set_volume_db);
-	ObjectTypeDB::bind_method(_MD("get_volume_db"),&SpatialStreamPlayer::get_volume_db);
+	ClassDB::bind_method(_MD("set_volume_db","db"),&SpatialStreamPlayer::set_volume_db);
+	ClassDB::bind_method(_MD("get_volume_db"),&SpatialStreamPlayer::get_volume_db);
 
-	ObjectTypeDB::bind_method(_MD("set_buffering_msec","msec"),&SpatialStreamPlayer::set_buffering_msec);
-	ObjectTypeDB::bind_method(_MD("get_buffering_msec"),&SpatialStreamPlayer::get_buffering_msec);
+	ClassDB::bind_method(_MD("set_buffering_msec","msec"),&SpatialStreamPlayer::set_buffering_msec);
+	ClassDB::bind_method(_MD("get_buffering_msec"),&SpatialStreamPlayer::get_buffering_msec);
 
-	ObjectTypeDB::bind_method(_MD("set_loop_restart_time","secs"),&SpatialStreamPlayer::set_loop_restart_time);
-	ObjectTypeDB::bind_method(_MD("get_loop_restart_time"),&SpatialStreamPlayer::get_loop_restart_time);
+	ClassDB::bind_method(_MD("set_loop_restart_time","secs"),&SpatialStreamPlayer::set_loop_restart_time);
+	ClassDB::bind_method(_MD("get_loop_restart_time"),&SpatialStreamPlayer::get_loop_restart_time);
 
-	ObjectTypeDB::bind_method(_MD("get_stream_name"),&SpatialStreamPlayer::get_stream_name);
-	ObjectTypeDB::bind_method(_MD("get_loop_count"),&SpatialStreamPlayer::get_loop_count);
+	ClassDB::bind_method(_MD("get_stream_name"),&SpatialStreamPlayer::get_stream_name);
+	ClassDB::bind_method(_MD("get_loop_count"),&SpatialStreamPlayer::get_loop_count);
 
-	ObjectTypeDB::bind_method(_MD("get_pos"),&SpatialStreamPlayer::get_pos);
-	ObjectTypeDB::bind_method(_MD("seek_pos","time"),&SpatialStreamPlayer::seek_pos);
+	ClassDB::bind_method(_MD("get_pos"),&SpatialStreamPlayer::get_pos);
+	ClassDB::bind_method(_MD("seek_pos","time"),&SpatialStreamPlayer::seek_pos);
 
-	ObjectTypeDB::bind_method(_MD("set_autoplay","enabled"),&SpatialStreamPlayer::set_autoplay);
-	ObjectTypeDB::bind_method(_MD("has_autoplay"),&SpatialStreamPlayer::has_autoplay);
+	ClassDB::bind_method(_MD("set_autoplay","enabled"),&SpatialStreamPlayer::set_autoplay);
+	ClassDB::bind_method(_MD("has_autoplay"),&SpatialStreamPlayer::has_autoplay);
 
-	ObjectTypeDB::bind_method(_MD("get_length"),&SpatialStreamPlayer::get_length);
+	ClassDB::bind_method(_MD("get_length"),&SpatialStreamPlayer::get_length);
 
-	ObjectTypeDB::bind_method(_MD("_set_play","play"),&SpatialStreamPlayer::_set_play);
-	ObjectTypeDB::bind_method(_MD("_get_play"),&SpatialStreamPlayer::_get_play);
+	ClassDB::bind_method(_MD("_set_play","play"),&SpatialStreamPlayer::_set_play);
+	ClassDB::bind_method(_MD("_get_play"),&SpatialStreamPlayer::_get_play);
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "stream/stream", PROPERTY_HINT_RESOURCE_TYPE,"AudioStream"), _SCS("set_stream"), _SCS("get_stream") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/play"), _SCS("_set_play"), _SCS("_get_play") );

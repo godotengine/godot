@@ -317,10 +317,10 @@ void MultiMeshEditor::_browse(bool p_source) {
 
 void MultiMeshEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_option",&MultiMeshEditor::_menu_option);
-	ObjectTypeDB::bind_method("_populate",&MultiMeshEditor::_populate);
-	ObjectTypeDB::bind_method("_browsed",&MultiMeshEditor::_browsed);
-	ObjectTypeDB::bind_method("_browse",&MultiMeshEditor::_browse);
+	ClassDB::bind_method("_menu_option",&MultiMeshEditor::_menu_option);
+	ClassDB::bind_method("_populate",&MultiMeshEditor::_populate);
+	ClassDB::bind_method("_browsed",&MultiMeshEditor::_browsed);
+	ClassDB::bind_method("_browse",&MultiMeshEditor::_browse);
 }
 
 MultiMeshEditor::MultiMeshEditor() {
@@ -431,7 +431,7 @@ void MultiMeshEditorPlugin::edit(Object *p_object) {
 
 bool MultiMeshEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("MultiMeshInstance");
+	return p_object->is_class("MultiMeshInstance");
 }
 
 void MultiMeshEditorPlugin::make_visible(bool p_visible) {

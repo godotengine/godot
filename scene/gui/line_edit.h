@@ -37,7 +37,7 @@
 */
 class LineEdit : public Control {
 
-	OBJ_TYPE( LineEdit, Control );
+	GDCLASS( LineEdit, Control );
 
 public:
 	enum Align {

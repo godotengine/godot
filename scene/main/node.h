@@ -42,7 +42,7 @@ class Viewport;
 class SceneState;
 class Node : public Object {
 
-	OBJ_TYPE( Node, Object );
+	GDCLASS( Node, Object );
 	OBJ_CATEGORY("Nodes");
 
 public:

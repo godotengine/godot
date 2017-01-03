@@ -701,26 +701,26 @@ Environment::DOFBlurQuality Environment::get_dof_blur_near_quality() const {
 
 void Environment::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_background","mode"),&Environment::set_background);
-	ObjectTypeDB::bind_method(_MD("set_skybox","skybox:CubeMap"),&Environment::set_skybox);
-	ObjectTypeDB::bind_method(_MD("set_skybox_scale","scale"),&Environment::set_skybox_scale);
-	ObjectTypeDB::bind_method(_MD("set_bg_color","color"),&Environment::set_bg_color);
-	ObjectTypeDB::bind_method(_MD("set_bg_energy","energy"),&Environment::set_bg_energy);
-	ObjectTypeDB::bind_method(_MD("set_canvas_max_layer","layer"),&Environment::set_canvas_max_layer);
-	ObjectTypeDB::bind_method(_MD("set_ambient_light_color","color"),&Environment::set_ambient_light_color);
-	ObjectTypeDB::bind_method(_MD("set_ambient_light_energy","energy"),&Environment::set_ambient_light_energy);
-	ObjectTypeDB::bind_method(_MD("set_ambient_light_skybox_contribution","energy"),&Environment::set_ambient_light_skybox_contribution);
+	ClassDB::bind_method(_MD("set_background","mode"),&Environment::set_background);
+	ClassDB::bind_method(_MD("set_skybox","skybox:CubeMap"),&Environment::set_skybox);
+	ClassDB::bind_method(_MD("set_skybox_scale","scale"),&Environment::set_skybox_scale);
+	ClassDB::bind_method(_MD("set_bg_color","color"),&Environment::set_bg_color);
+	ClassDB::bind_method(_MD("set_bg_energy","energy"),&Environment::set_bg_energy);
+	ClassDB::bind_method(_MD("set_canvas_max_layer","layer"),&Environment::set_canvas_max_layer);
+	ClassDB::bind_method(_MD("set_ambient_light_color","color"),&Environment::set_ambient_light_color);
+	ClassDB::bind_method(_MD("set_ambient_light_energy","energy"),&Environment::set_ambient_light_energy);
+	ClassDB::bind_method(_MD("set_ambient_light_skybox_contribution","energy"),&Environment::set_ambient_light_skybox_contribution);
 
 
-	ObjectTypeDB::bind_method(_MD("get_background"),&Environment::get_background);
-	ObjectTypeDB::bind_method(_MD("get_skybox:CubeMap"),&Environment::get_skybox);
-	ObjectTypeDB::bind_method(_MD("get_skybox_scale"),&Environment::get_skybox_scale);
-	ObjectTypeDB::bind_method(_MD("get_bg_color"),&Environment::get_bg_color);
-	ObjectTypeDB::bind_method(_MD("get_bg_energy"),&Environment::get_bg_energy);
-	ObjectTypeDB::bind_method(_MD("get_canvas_max_layer"),&Environment::get_canvas_max_layer);
-	ObjectTypeDB::bind_method(_MD("get_ambient_light_color"),&Environment::get_ambient_light_color);
-	ObjectTypeDB::bind_method(_MD("get_ambient_light_energy"),&Environment::get_ambient_light_energy);
-	ObjectTypeDB::bind_method(_MD("get_ambient_light_skybox_contribution"),&Environment::get_ambient_light_skybox_contribution);
+	ClassDB::bind_method(_MD("get_background"),&Environment::get_background);
+	ClassDB::bind_method(_MD("get_skybox:CubeMap"),&Environment::get_skybox);
+	ClassDB::bind_method(_MD("get_skybox_scale"),&Environment::get_skybox_scale);
+	ClassDB::bind_method(_MD("get_bg_color"),&Environment::get_bg_color);
+	ClassDB::bind_method(_MD("get_bg_energy"),&Environment::get_bg_energy);
+	ClassDB::bind_method(_MD("get_canvas_max_layer"),&Environment::get_canvas_max_layer);
+	ClassDB::bind_method(_MD("get_ambient_light_color"),&Environment::get_ambient_light_color);
+	ClassDB::bind_method(_MD("get_ambient_light_energy"),&Environment::get_ambient_light_energy);
+	ClassDB::bind_method(_MD("get_ambient_light_skybox_contribution"),&Environment::get_ambient_light_skybox_contribution);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"background/mode",PROPERTY_HINT_ENUM,"Clear Color,Custom Color,Skybox,Canvas,Keep"),_SCS("set_background"),_SCS("get_background") );
@@ -734,26 +734,26 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_light/skybox_contribution",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_ambient_light_skybox_contribution"),_SCS("get_ambient_light_skybox_contribution") );
 
 
-	ObjectTypeDB::bind_method(_MD("set_ssr_enabled","enabled"),&Environment::set_ssr_enabled);
-	ObjectTypeDB::bind_method(_MD("is_ssr_enabled"),&Environment::is_ssr_enabled);
+	ClassDB::bind_method(_MD("set_ssr_enabled","enabled"),&Environment::set_ssr_enabled);
+	ClassDB::bind_method(_MD("is_ssr_enabled"),&Environment::is_ssr_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_ssr_max_steps","max_steps"),&Environment::set_ssr_max_steps);
-	ObjectTypeDB::bind_method(_MD("get_ssr_max_steps"),&Environment::get_ssr_max_steps);
+	ClassDB::bind_method(_MD("set_ssr_max_steps","max_steps"),&Environment::set_ssr_max_steps);
+	ClassDB::bind_method(_MD("get_ssr_max_steps"),&Environment::get_ssr_max_steps);
 
-	ObjectTypeDB::bind_method(_MD("set_ssr_accel","accel"),&Environment::set_ssr_accel);
-	ObjectTypeDB::bind_method(_MD("get_ssr_accel"),&Environment::get_ssr_accel);
+	ClassDB::bind_method(_MD("set_ssr_accel","accel"),&Environment::set_ssr_accel);
+	ClassDB::bind_method(_MD("get_ssr_accel"),&Environment::get_ssr_accel);
 
-	ObjectTypeDB::bind_method(_MD("set_ssr_fade","fade"),&Environment::set_ssr_fade);
-	ObjectTypeDB::bind_method(_MD("get_ssr_fade"),&Environment::get_ssr_fade);
+	ClassDB::bind_method(_MD("set_ssr_fade","fade"),&Environment::set_ssr_fade);
+	ClassDB::bind_method(_MD("get_ssr_fade"),&Environment::get_ssr_fade);
 
-	ObjectTypeDB::bind_method(_MD("set_ssr_depth_tolerance","depth_tolerance"),&Environment::set_ssr_depth_tolerance);
-	ObjectTypeDB::bind_method(_MD("get_ssr_depth_tolerance"),&Environment::get_ssr_depth_tolerance);
+	ClassDB::bind_method(_MD("set_ssr_depth_tolerance","depth_tolerance"),&Environment::set_ssr_depth_tolerance);
+	ClassDB::bind_method(_MD("get_ssr_depth_tolerance"),&Environment::get_ssr_depth_tolerance);
 
-	ObjectTypeDB::bind_method(_MD("set_ssr_smooth","smooth"),&Environment::set_ssr_smooth);
-	ObjectTypeDB::bind_method(_MD("is_ssr_smooth"),&Environment::is_ssr_smooth);
+	ClassDB::bind_method(_MD("set_ssr_smooth","smooth"),&Environment::set_ssr_smooth);
+	ClassDB::bind_method(_MD("is_ssr_smooth"),&Environment::is_ssr_smooth);
 
-	ObjectTypeDB::bind_method(_MD("set_ssr_rough","rough"),&Environment::set_ssr_rough);
-	ObjectTypeDB::bind_method(_MD("is_ssr_rough"),&Environment::is_ssr_rough);
+	ClassDB::bind_method(_MD("set_ssr_rough","rough"),&Environment::set_ssr_rough);
+	ClassDB::bind_method(_MD("is_ssr_rough"),&Environment::is_ssr_rough);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ss_reflections/enabled"),_SCS("set_ssr_enabled"),_SCS("is_ssr_enabled") );
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"ss_reflections/max_steps",PROPERTY_HINT_RANGE,"1,512,1"),_SCS("set_ssr_max_steps"),_SCS("get_ssr_max_steps") );
@@ -763,32 +763,32 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ss_reflections/accel_smooth"),_SCS("set_ssr_smooth"),_SCS("is_ssr_smooth") );
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ss_reflections/roughness"),_SCS("set_ssr_rough"),_SCS("is_ssr_rough") );
 
-	ObjectTypeDB::bind_method(_MD("set_ssao_enabled","enabled"),&Environment::set_ssao_enabled);
-	ObjectTypeDB::bind_method(_MD("is_ssao_enabled"),&Environment::is_ssao_enabled);
+	ClassDB::bind_method(_MD("set_ssao_enabled","enabled"),&Environment::set_ssao_enabled);
+	ClassDB::bind_method(_MD("is_ssao_enabled"),&Environment::is_ssao_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_ssao_radius","radius"),&Environment::set_ssao_radius);
-	ObjectTypeDB::bind_method(_MD("get_ssao_radius"),&Environment::get_ssao_radius);
+	ClassDB::bind_method(_MD("set_ssao_radius","radius"),&Environment::set_ssao_radius);
+	ClassDB::bind_method(_MD("get_ssao_radius"),&Environment::get_ssao_radius);
 
-	ObjectTypeDB::bind_method(_MD("set_ssao_intensity","intensity"),&Environment::set_ssao_intensity);
-	ObjectTypeDB::bind_method(_MD("get_ssao_intensity"),&Environment::get_ssao_intensity);
+	ClassDB::bind_method(_MD("set_ssao_intensity","intensity"),&Environment::set_ssao_intensity);
+	ClassDB::bind_method(_MD("get_ssao_intensity"),&Environment::get_ssao_intensity);
 
-	ObjectTypeDB::bind_method(_MD("set_ssao_radius2","radius"),&Environment::set_ssao_radius2);
-	ObjectTypeDB::bind_method(_MD("get_ssao_radius2"),&Environment::get_ssao_radius2);
+	ClassDB::bind_method(_MD("set_ssao_radius2","radius"),&Environment::set_ssao_radius2);
+	ClassDB::bind_method(_MD("get_ssao_radius2"),&Environment::get_ssao_radius2);
 
-	ObjectTypeDB::bind_method(_MD("set_ssao_intensity2","intensity"),&Environment::set_ssao_intensity2);
-	ObjectTypeDB::bind_method(_MD("get_ssao_intensity2"),&Environment::get_ssao_intensity2);
+	ClassDB::bind_method(_MD("set_ssao_intensity2","intensity"),&Environment::set_ssao_intensity2);
+	ClassDB::bind_method(_MD("get_ssao_intensity2"),&Environment::get_ssao_intensity2);
 
-	ObjectTypeDB::bind_method(_MD("set_ssao_bias","bias"),&Environment::set_ssao_bias);
-	ObjectTypeDB::bind_method(_MD("get_ssao_bias"),&Environment::get_ssao_bias);
+	ClassDB::bind_method(_MD("set_ssao_bias","bias"),&Environment::set_ssao_bias);
+	ClassDB::bind_method(_MD("get_ssao_bias"),&Environment::get_ssao_bias);
 
-	ObjectTypeDB::bind_method(_MD("set_ssao_direct_light_affect","amount"),&Environment::set_ssao_direct_light_affect);
-	ObjectTypeDB::bind_method(_MD("get_ssao_direct_light_affect"),&Environment::get_ssao_direct_light_affect);
+	ClassDB::bind_method(_MD("set_ssao_direct_light_affect","amount"),&Environment::set_ssao_direct_light_affect);
+	ClassDB::bind_method(_MD("get_ssao_direct_light_affect"),&Environment::get_ssao_direct_light_affect);
 
-	ObjectTypeDB::bind_method(_MD("set_ssao_color","color"),&Environment::set_ssao_color);
-	ObjectTypeDB::bind_method(_MD("get_ssao_color"),&Environment::get_ssao_color);
+	ClassDB::bind_method(_MD("set_ssao_color","color"),&Environment::set_ssao_color);
+	ClassDB::bind_method(_MD("get_ssao_color"),&Environment::get_ssao_color);
 
-	ObjectTypeDB::bind_method(_MD("set_ssao_blur","enabled"),&Environment::set_ssao_blur);
-	ObjectTypeDB::bind_method(_MD("is_ssao_blur_enabled"),&Environment::is_ssao_blur_enabled);
+	ClassDB::bind_method(_MD("set_ssao_blur","enabled"),&Environment::set_ssao_blur);
+	ClassDB::bind_method(_MD("is_ssao_blur_enabled"),&Environment::is_ssao_blur_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ambient_occlusion/enabled"),_SCS("set_ssao_enabled"),_SCS("is_ssao_enabled") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ambient_occlusion/radius",PROPERTY_HINT_RANGE,"0.1,16,0.1"),_SCS("set_ssao_radius"),_SCS("get_ssao_radius") );
@@ -800,35 +800,35 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"ambient_occlusion/color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_ssao_color"),_SCS("get_ssao_color") );
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"ambient_occlusion/blur"),_SCS("set_ssao_blur"),_SCS("is_ssao_blur_enabled") );
 
-	ObjectTypeDB::bind_method(_MD("set_dof_blur_far_enabled","enabled"),&Environment::set_dof_blur_far_enabled);
-	ObjectTypeDB::bind_method(_MD("is_dof_blur_far_enabled"),&Environment::is_dof_blur_far_enabled);
+	ClassDB::bind_method(_MD("set_dof_blur_far_enabled","enabled"),&Environment::set_dof_blur_far_enabled);
+	ClassDB::bind_method(_MD("is_dof_blur_far_enabled"),&Environment::is_dof_blur_far_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_dof_blur_far_distance","intensity"),&Environment::set_dof_blur_far_distance);
-	ObjectTypeDB::bind_method(_MD("get_dof_blur_far_distance"),&Environment::get_dof_blur_far_distance);
+	ClassDB::bind_method(_MD("set_dof_blur_far_distance","intensity"),&Environment::set_dof_blur_far_distance);
+	ClassDB::bind_method(_MD("get_dof_blur_far_distance"),&Environment::get_dof_blur_far_distance);
 
-	ObjectTypeDB::bind_method(_MD("set_dof_blur_far_transition","intensity"),&Environment::set_dof_blur_far_transition);
-	ObjectTypeDB::bind_method(_MD("get_dof_blur_far_transition"),&Environment::get_dof_blur_far_transition);
+	ClassDB::bind_method(_MD("set_dof_blur_far_transition","intensity"),&Environment::set_dof_blur_far_transition);
+	ClassDB::bind_method(_MD("get_dof_blur_far_transition"),&Environment::get_dof_blur_far_transition);
 
-	ObjectTypeDB::bind_method(_MD("set_dof_blur_far_amount","intensity"),&Environment::set_dof_blur_far_amount);
-	ObjectTypeDB::bind_method(_MD("get_dof_blur_far_amount"),&Environment::get_dof_blur_far_amount);
+	ClassDB::bind_method(_MD("set_dof_blur_far_amount","intensity"),&Environment::set_dof_blur_far_amount);
+	ClassDB::bind_method(_MD("get_dof_blur_far_amount"),&Environment::get_dof_blur_far_amount);
 
-	ObjectTypeDB::bind_method(_MD("set_dof_blur_far_quality","intensity"),&Environment::set_dof_blur_far_quality);
-	ObjectTypeDB::bind_method(_MD("get_dof_blur_far_quality"),&Environment::get_dof_blur_far_quality);
+	ClassDB::bind_method(_MD("set_dof_blur_far_quality","intensity"),&Environment::set_dof_blur_far_quality);
+	ClassDB::bind_method(_MD("get_dof_blur_far_quality"),&Environment::get_dof_blur_far_quality);
 
-	ObjectTypeDB::bind_method(_MD("set_dof_blur_near_enabled","enabled"),&Environment::set_dof_blur_near_enabled);
-	ObjectTypeDB::bind_method(_MD("is_dof_blur_near_enabled"),&Environment::is_dof_blur_near_enabled);
+	ClassDB::bind_method(_MD("set_dof_blur_near_enabled","enabled"),&Environment::set_dof_blur_near_enabled);
+	ClassDB::bind_method(_MD("is_dof_blur_near_enabled"),&Environment::is_dof_blur_near_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_dof_blur_near_distance","intensity"),&Environment::set_dof_blur_near_distance);
-	ObjectTypeDB::bind_method(_MD("get_dof_blur_near_distance"),&Environment::get_dof_blur_near_distance);
+	ClassDB::bind_method(_MD("set_dof_blur_near_distance","intensity"),&Environment::set_dof_blur_near_distance);
+	ClassDB::bind_method(_MD("get_dof_blur_near_distance"),&Environment::get_dof_blur_near_distance);
 
-	ObjectTypeDB::bind_method(_MD("set_dof_blur_near_transition","intensity"),&Environment::set_dof_blur_near_transition);
-	ObjectTypeDB::bind_method(_MD("get_dof_blur_near_transition"),&Environment::get_dof_blur_near_transition);
+	ClassDB::bind_method(_MD("set_dof_blur_near_transition","intensity"),&Environment::set_dof_blur_near_transition);
+	ClassDB::bind_method(_MD("get_dof_blur_near_transition"),&Environment::get_dof_blur_near_transition);
 
-	ObjectTypeDB::bind_method(_MD("set_dof_blur_near_amount","intensity"),&Environment::set_dof_blur_near_amount);
-	ObjectTypeDB::bind_method(_MD("get_dof_blur_near_amount"),&Environment::get_dof_blur_near_amount);
+	ClassDB::bind_method(_MD("set_dof_blur_near_amount","intensity"),&Environment::set_dof_blur_near_amount);
+	ClassDB::bind_method(_MD("get_dof_blur_near_amount"),&Environment::get_dof_blur_near_amount);
 
-	ObjectTypeDB::bind_method(_MD("set_dof_blur_near_quality","level"),&Environment::set_dof_blur_near_quality);
-	ObjectTypeDB::bind_method(_MD("get_dof_blur_near_quality"),&Environment::get_dof_blur_near_quality);
+	ClassDB::bind_method(_MD("set_dof_blur_near_quality","level"),&Environment::set_dof_blur_near_quality);
+	ClassDB::bind_method(_MD("get_dof_blur_near_quality"),&Environment::get_dof_blur_near_quality);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"dof_blur_far/enabled"),_SCS("set_dof_blur_far_enabled"),_SCS("is_dof_blur_far_enabled") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dof_blur_far/distance",PROPERTY_HINT_EXP_RANGE,"0.01,8192,0.01"),_SCS("set_dof_blur_far_distance"),_SCS("get_dof_blur_far_distance") );
@@ -843,32 +843,32 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"dof_blur_near/quality",PROPERTY_HINT_ENUM,"Low,Medium,High"),_SCS("set_dof_blur_near_quality"),_SCS("get_dof_blur_near_quality") );
 
 
-	ObjectTypeDB::bind_method(_MD("set_glow_enabled","enabled"),&Environment::set_glow_enabled);
-	ObjectTypeDB::bind_method(_MD("is_glow_enabled"),&Environment::is_glow_enabled);
+	ClassDB::bind_method(_MD("set_glow_enabled","enabled"),&Environment::set_glow_enabled);
+	ClassDB::bind_method(_MD("is_glow_enabled"),&Environment::is_glow_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_glow_level","idx","enabled"),&Environment::set_glow_level);
-	ObjectTypeDB::bind_method(_MD("is_glow_level_enabled","idx"),&Environment::is_glow_level_enabled);
+	ClassDB::bind_method(_MD("set_glow_level","idx","enabled"),&Environment::set_glow_level);
+	ClassDB::bind_method(_MD("is_glow_level_enabled","idx"),&Environment::is_glow_level_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_glow_intensity","intensity"),&Environment::set_glow_intensity);
-	ObjectTypeDB::bind_method(_MD("get_glow_intensity"),&Environment::get_glow_intensity);
+	ClassDB::bind_method(_MD("set_glow_intensity","intensity"),&Environment::set_glow_intensity);
+	ClassDB::bind_method(_MD("get_glow_intensity"),&Environment::get_glow_intensity);
 
-	ObjectTypeDB::bind_method(_MD("set_glow_strength","strength"),&Environment::set_glow_strength);
-	ObjectTypeDB::bind_method(_MD("get_glow_strength"),&Environment::get_glow_strength);
+	ClassDB::bind_method(_MD("set_glow_strength","strength"),&Environment::set_glow_strength);
+	ClassDB::bind_method(_MD("get_glow_strength"),&Environment::get_glow_strength);
 
-	ObjectTypeDB::bind_method(_MD("set_glow_bloom","amount"),&Environment::set_glow_bloom);
-	ObjectTypeDB::bind_method(_MD("get_glow_bloom"),&Environment::get_glow_bloom);
+	ClassDB::bind_method(_MD("set_glow_bloom","amount"),&Environment::set_glow_bloom);
+	ClassDB::bind_method(_MD("get_glow_bloom"),&Environment::get_glow_bloom);
 
-	ObjectTypeDB::bind_method(_MD("set_glow_blend_mode","mode"),&Environment::set_glow_blend_mode);
-	ObjectTypeDB::bind_method(_MD("get_glow_blend_mode"),&Environment::get_glow_blend_mode);
+	ClassDB::bind_method(_MD("set_glow_blend_mode","mode"),&Environment::set_glow_blend_mode);
+	ClassDB::bind_method(_MD("get_glow_blend_mode"),&Environment::get_glow_blend_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_glow_hdr_bleed_treshold","treshold"),&Environment::set_glow_hdr_bleed_treshold);
-	ObjectTypeDB::bind_method(_MD("get_glow_hdr_bleed_treshold"),&Environment::get_glow_hdr_bleed_treshold);
+	ClassDB::bind_method(_MD("set_glow_hdr_bleed_treshold","treshold"),&Environment::set_glow_hdr_bleed_treshold);
+	ClassDB::bind_method(_MD("get_glow_hdr_bleed_treshold"),&Environment::get_glow_hdr_bleed_treshold);
 
-	ObjectTypeDB::bind_method(_MD("set_glow_hdr_bleed_scale","scale"),&Environment::set_glow_hdr_bleed_scale);
-	ObjectTypeDB::bind_method(_MD("get_glow_hdr_bleed_scale"),&Environment::get_glow_hdr_bleed_scale);
+	ClassDB::bind_method(_MD("set_glow_hdr_bleed_scale","scale"),&Environment::set_glow_hdr_bleed_scale);
+	ClassDB::bind_method(_MD("get_glow_hdr_bleed_scale"),&Environment::get_glow_hdr_bleed_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_glow_bicubic_upscale","enabled"),&Environment::set_glow_bicubic_upscale);
-	ObjectTypeDB::bind_method(_MD("is_glow_bicubic_upscale_enabled"),&Environment::is_glow_bicubic_upscale_enabled);
+	ClassDB::bind_method(_MD("set_glow_bicubic_upscale","enabled"),&Environment::set_glow_bicubic_upscale);
+	ClassDB::bind_method(_MD("is_glow_bicubic_upscale_enabled"),&Environment::is_glow_bicubic_upscale_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"glow/enabled"),_SCS("set_glow_enabled"),_SCS("is_glow_enabled") );
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"glow/levels/1"),_SCS("set_glow_level"),_SCS("is_glow_level_enabled"),0 );
@@ -888,29 +888,29 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"glow/bicubic_upscale"),_SCS("set_glow_bicubic_upscale"),_SCS("is_glow_bicubic_upscale_enabled") );
 
 
-	ObjectTypeDB::bind_method(_MD("set_tonemapper","mode"),&Environment::set_tonemapper);
-	ObjectTypeDB::bind_method(_MD("get_tonemapper"),&Environment::get_tonemapper);
+	ClassDB::bind_method(_MD("set_tonemapper","mode"),&Environment::set_tonemapper);
+	ClassDB::bind_method(_MD("get_tonemapper"),&Environment::get_tonemapper);
 
-	ObjectTypeDB::bind_method(_MD("set_tonemap_exposure","exposure"),&Environment::set_tonemap_exposure);
-	ObjectTypeDB::bind_method(_MD("get_tonemap_exposure"),&Environment::get_tonemap_exposure);
+	ClassDB::bind_method(_MD("set_tonemap_exposure","exposure"),&Environment::set_tonemap_exposure);
+	ClassDB::bind_method(_MD("get_tonemap_exposure"),&Environment::get_tonemap_exposure);
 
-	ObjectTypeDB::bind_method(_MD("set_tonemap_white","white"),&Environment::set_tonemap_white);
-	ObjectTypeDB::bind_method(_MD("get_tonemap_white"),&Environment::get_tonemap_white);
+	ClassDB::bind_method(_MD("set_tonemap_white","white"),&Environment::set_tonemap_white);
+	ClassDB::bind_method(_MD("get_tonemap_white"),&Environment::get_tonemap_white);
 
-	ObjectTypeDB::bind_method(_MD("set_tonemap_auto_exposure","auto_exposure"),&Environment::set_tonemap_auto_exposure);
-	ObjectTypeDB::bind_method(_MD("get_tonemap_auto_exposure"),&Environment::get_tonemap_auto_exposure);
+	ClassDB::bind_method(_MD("set_tonemap_auto_exposure","auto_exposure"),&Environment::set_tonemap_auto_exposure);
+	ClassDB::bind_method(_MD("get_tonemap_auto_exposure"),&Environment::get_tonemap_auto_exposure);
 
-	ObjectTypeDB::bind_method(_MD("set_tonemap_auto_exposure_max","exposure_max"),&Environment::set_tonemap_auto_exposure_max);
-	ObjectTypeDB::bind_method(_MD("get_tonemap_auto_exposure_max"),&Environment::get_tonemap_auto_exposure_max);
+	ClassDB::bind_method(_MD("set_tonemap_auto_exposure_max","exposure_max"),&Environment::set_tonemap_auto_exposure_max);
+	ClassDB::bind_method(_MD("get_tonemap_auto_exposure_max"),&Environment::get_tonemap_auto_exposure_max);
 
-	ObjectTypeDB::bind_method(_MD("set_tonemap_auto_exposure_min","exposure_min"),&Environment::set_tonemap_auto_exposure_min);
-	ObjectTypeDB::bind_method(_MD("get_tonemap_auto_exposure_min"),&Environment::get_tonemap_auto_exposure_min);
+	ClassDB::bind_method(_MD("set_tonemap_auto_exposure_min","exposure_min"),&Environment::set_tonemap_auto_exposure_min);
+	ClassDB::bind_method(_MD("get_tonemap_auto_exposure_min"),&Environment::get_tonemap_auto_exposure_min);
 
-	ObjectTypeDB::bind_method(_MD("set_tonemap_auto_exposure_speed","exposure_speed"),&Environment::set_tonemap_auto_exposure_speed);
-	ObjectTypeDB::bind_method(_MD("get_tonemap_auto_exposure_speed"),&Environment::get_tonemap_auto_exposure_speed);
+	ClassDB::bind_method(_MD("set_tonemap_auto_exposure_speed","exposure_speed"),&Environment::set_tonemap_auto_exposure_speed);
+	ClassDB::bind_method(_MD("get_tonemap_auto_exposure_speed"),&Environment::get_tonemap_auto_exposure_speed);
 
-	ObjectTypeDB::bind_method(_MD("set_tonemap_auto_exposure_grey","exposure_grey"),&Environment::set_tonemap_auto_exposure_grey);
-	ObjectTypeDB::bind_method(_MD("get_tonemap_auto_exposure_grey"),&Environment::get_tonemap_auto_exposure_grey);
+	ClassDB::bind_method(_MD("set_tonemap_auto_exposure_grey","exposure_grey"),&Environment::set_tonemap_auto_exposure_grey);
+	ClassDB::bind_method(_MD("get_tonemap_auto_exposure_grey"),&Environment::get_tonemap_auto_exposure_grey);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"tonemap/mode",PROPERTY_HINT_ENUM,"Linear,Reindhart,Filmic,Aces"),_SCS("set_tonemapper"),_SCS("get_tonemapper") );
@@ -922,20 +922,20 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"auto_exposure/max_luma",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_tonemap_auto_exposure_max"),_SCS("get_tonemap_auto_exposure_max") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"auto_exposure/speed",PROPERTY_HINT_RANGE,"0.01,64,0.01"),_SCS("set_tonemap_auto_exposure_speed"),_SCS("get_tonemap_auto_exposure_speed") );
 
-	ObjectTypeDB::bind_method(_MD("set_adjustment_enable","enabled"),&Environment::set_adjustment_enable);
-	ObjectTypeDB::bind_method(_MD("is_adjustment_enabled"),&Environment::is_adjustment_enabled);
+	ClassDB::bind_method(_MD("set_adjustment_enable","enabled"),&Environment::set_adjustment_enable);
+	ClassDB::bind_method(_MD("is_adjustment_enabled"),&Environment::is_adjustment_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_adjustment_brightness","brightness"),&Environment::set_adjustment_brightness);
-	ObjectTypeDB::bind_method(_MD("get_adjustment_brightness"),&Environment::get_adjustment_brightness);
+	ClassDB::bind_method(_MD("set_adjustment_brightness","brightness"),&Environment::set_adjustment_brightness);
+	ClassDB::bind_method(_MD("get_adjustment_brightness"),&Environment::get_adjustment_brightness);
 
-	ObjectTypeDB::bind_method(_MD("set_adjustment_contrast","contrast"),&Environment::set_adjustment_contrast);
-	ObjectTypeDB::bind_method(_MD("get_adjustment_contrast"),&Environment::get_adjustment_contrast);
+	ClassDB::bind_method(_MD("set_adjustment_contrast","contrast"),&Environment::set_adjustment_contrast);
+	ClassDB::bind_method(_MD("get_adjustment_contrast"),&Environment::get_adjustment_contrast);
 
-	ObjectTypeDB::bind_method(_MD("set_adjustment_saturation","saturation"),&Environment::set_adjustment_saturation);
-	ObjectTypeDB::bind_method(_MD("get_adjustment_saturation"),&Environment::get_adjustment_saturation);
+	ClassDB::bind_method(_MD("set_adjustment_saturation","saturation"),&Environment::set_adjustment_saturation);
+	ClassDB::bind_method(_MD("get_adjustment_saturation"),&Environment::get_adjustment_saturation);
 
-	ObjectTypeDB::bind_method(_MD("set_adjustment_color_correction","color_correction"),&Environment::set_adjustment_color_correction);
-	ObjectTypeDB::bind_method(_MD("get_adjustment_color_correction"),&Environment::get_adjustment_color_correction);
+	ClassDB::bind_method(_MD("set_adjustment_color_correction","color_correction"),&Environment::set_adjustment_color_correction);
+	ClassDB::bind_method(_MD("get_adjustment_color_correction"),&Environment::get_adjustment_color_correction);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"adjustment/enabled"),_SCS("set_adjustment_enable"),_SCS("is_adjustment_enabled") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"adjustment/brightness",PROPERTY_HINT_RANGE,"0.01,8,0.01"),_SCS("set_adjustment_brightness"),_SCS("get_adjustment_brightness") );

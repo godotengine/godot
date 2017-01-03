@@ -1518,7 +1518,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 		type=resource_type;
 	}
 
-	Object *obj = ObjectTypeDB::instance(type);
+	Object *obj = ClassDB::instance(type);
 	if (!obj) {
 		error=ERR_FILE_CORRUPT;
 		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": Object of unrecognized type in file: "+type);
@@ -1529,7 +1529,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 	if (!r) {
 		error=ERR_FILE_CORRUPT;
 		memdelete(obj); //bye
-		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": Object type in resource field not a resource, type is: "+obj->get_type());
+		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": Object type in resource field not a resource, type is: "+obj->get_class());
 		ERR_FAIL_COND_V(!r,ERR_FILE_CORRUPT);
 	}
 
@@ -1940,7 +1940,7 @@ void ResourceFormatLoaderXML::get_recognized_extensions_for_type(const String& p
 	}
 
 	List<String> extensions;
-	ObjectTypeDB::get_extensions_for_type(p_type,&extensions);
+	ClassDB::get_extensions_for_type(p_type,&extensions);
 
 	extensions.sort();
 
@@ -1958,7 +1958,7 @@ void ResourceFormatLoaderXML::get_recognized_extensions_for_type(const String& p
 void ResourceFormatLoaderXML::get_recognized_extensions(List<String> *p_extensions) const{
 
 	List<String> extensions;
-	ObjectTypeDB::get_resource_base_extensions(&extensions);
+	ClassDB::get_resource_base_extensions(&extensions);
 	extensions.sort();
 
 	for(List<String>::Element *E=extensions.front();E;E=E->next()) {
@@ -2225,7 +2225,7 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 
 				params="external=\""+itos(external_resources[res])+"\"";
 			} else {
-				params="resource_type=\""+res->get_save_type()+"\"";
+				params="resource_type=\""+res->get_save_class()+"\"";
 
 
 				if (res->get_path().length() && res->get_path().find("::")==-1) {
@@ -2734,7 +2734,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 
 	write_string("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>",false); //no escape
 	write_string("\n",false);
-	enter_tag("resource_file","type=\""+p_resource->get_type()+"\" subresource_count=\""+itos(saved_resources.size()+external_resources.size())+"\" version=\""+itos(VERSION_MAJOR)+"."+itos(VERSION_MINOR)+"\" version_name=\""+VERSION_FULL_NAME+"\"");
+	enter_tag("resource_file","type=\""+p_resource->get_class()+"\" subresource_count=\""+itos(saved_resources.size()+external_resources.size())+"\" version=\""+itos(VERSION_MAJOR)+"."+itos(VERSION_MINOR)+"\" version_name=\""+VERSION_FULL_NAME+"\"");
 	write_string("\n",false);
 
 	for(Map<RES,int>::Element *E=external_resources.front();E;E=E->next()) {
@@ -2742,7 +2742,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 		write_tabs();
 		String p = E->key()->get_path();
 
-		enter_tag("ext_resource","path=\""+p+"\" type=\""+E->key()->get_save_type()+"\" index=\""+itos(E->get())+"\""); //bundled
+		enter_tag("ext_resource","path=\""+p+"\" type=\""+E->key()->get_save_class()+"\" index=\""+itos(E->get())+"\""); //bundled
 		exit_tag("ext_resource"); //bundled
 		write_string("\n",false);
 	}
@@ -2775,7 +2775,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 		if (main)
 			enter_tag("main_resource",""); //bundled
 		else if (res->get_path().length() && res->get_path().find("::") == -1 )
-			enter_tag("resource","type=\""+res->get_type()+"\" path=\""+res->get_path()+"\""); //bundled
+			enter_tag("resource","type=\""+res->get_class()+"\" path=\""+res->get_path()+"\""); //bundled
 		else {
 
 			if (res->get_subindex()==0) {
@@ -2789,7 +2789,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 			}
 
 			int idx = res->get_subindex();
-			enter_tag("resource","type=\""+res->get_type()+"\" path=\"local://"+itos(idx)+"\"");
+			enter_tag("resource","type=\""+res->get_class()+"\" path=\"local://"+itos(idx)+"\"");
 			if (takeover_paths) {
 				res->set_path(p_path+"::"+itos(idx),true);
 			}

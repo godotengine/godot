@@ -410,7 +410,7 @@ Variant _jobject_to_variant(JNIEnv * env, jobject obj) {
 
 class JNISingleton : public Object {
 
-	OBJ_TYPE( JNISingleton, Object );
+	GDCLASS( JNISingleton, Object );
 
 
 	struct MethodData {

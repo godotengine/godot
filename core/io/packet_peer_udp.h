@@ -34,7 +34,7 @@
 #include "io/packet_peer.h"
 
 class PacketPeerUDP : public PacketPeer {
-	OBJ_TYPE(PacketPeerUDP,PacketPeer);
+	GDCLASS(PacketPeerUDP,PacketPeer);
 
 protected:
 

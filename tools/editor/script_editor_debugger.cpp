@@ -46,7 +46,7 @@
 
 class ScriptEditorDebuggerVariables : public Object {
 
-	OBJ_TYPE( ScriptEditorDebuggerVariables, Object );
+	GDCLASS( ScriptEditorDebuggerVariables, Object );
 
 	List<PropertyInfo> props;
 	Map<StringName,Variant> values;
@@ -114,7 +114,7 @@ public:
 
 class ScriptEditorDebuggerInspectedObject : public Object {
 
-	OBJ_TYPE( ScriptEditorDebuggerInspectedObject, Object);
+	GDCLASS( ScriptEditorDebuggerInspectedObject, Object);
 
 
 
@@ -1634,39 +1634,39 @@ void ScriptEditorDebugger::_paused() {
 
 void ScriptEditorDebugger::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_stack_dump_frame_selected"),&ScriptEditorDebugger::_stack_dump_frame_selected);
-	ObjectTypeDB::bind_method(_MD("debug_next"),&ScriptEditorDebugger::debug_next);
-	ObjectTypeDB::bind_method(_MD("debug_step"),&ScriptEditorDebugger::debug_step);
-	ObjectTypeDB::bind_method(_MD("debug_break"),&ScriptEditorDebugger::debug_break);
-	ObjectTypeDB::bind_method(_MD("debug_continue"),&ScriptEditorDebugger::debug_continue);
-	ObjectTypeDB::bind_method(_MD("_output_clear"),&ScriptEditorDebugger::_output_clear);
-	ObjectTypeDB::bind_method(_MD("_performance_draw"),&ScriptEditorDebugger::_performance_draw);
-	ObjectTypeDB::bind_method(_MD("_performance_select"),&ScriptEditorDebugger::_performance_select);
-	ObjectTypeDB::bind_method(_MD("_scene_tree_request"),&ScriptEditorDebugger::_scene_tree_request);
-	ObjectTypeDB::bind_method(_MD("_video_mem_request"),&ScriptEditorDebugger::_video_mem_request);
-	ObjectTypeDB::bind_method(_MD("_live_edit_set"),&ScriptEditorDebugger::_live_edit_set);
-	ObjectTypeDB::bind_method(_MD("_live_edit_clear"),&ScriptEditorDebugger::_live_edit_clear);
+	ClassDB::bind_method(_MD("_stack_dump_frame_selected"),&ScriptEditorDebugger::_stack_dump_frame_selected);
+	ClassDB::bind_method(_MD("debug_next"),&ScriptEditorDebugger::debug_next);
+	ClassDB::bind_method(_MD("debug_step"),&ScriptEditorDebugger::debug_step);
+	ClassDB::bind_method(_MD("debug_break"),&ScriptEditorDebugger::debug_break);
+	ClassDB::bind_method(_MD("debug_continue"),&ScriptEditorDebugger::debug_continue);
+	ClassDB::bind_method(_MD("_output_clear"),&ScriptEditorDebugger::_output_clear);
+	ClassDB::bind_method(_MD("_performance_draw"),&ScriptEditorDebugger::_performance_draw);
+	ClassDB::bind_method(_MD("_performance_select"),&ScriptEditorDebugger::_performance_select);
+	ClassDB::bind_method(_MD("_scene_tree_request"),&ScriptEditorDebugger::_scene_tree_request);
+	ClassDB::bind_method(_MD("_video_mem_request"),&ScriptEditorDebugger::_video_mem_request);
+	ClassDB::bind_method(_MD("_live_edit_set"),&ScriptEditorDebugger::_live_edit_set);
+	ClassDB::bind_method(_MD("_live_edit_clear"),&ScriptEditorDebugger::_live_edit_clear);
 
-	ObjectTypeDB::bind_method(_MD("_error_selected"),&ScriptEditorDebugger::_error_selected);
-	ObjectTypeDB::bind_method(_MD("_error_stack_selected"),&ScriptEditorDebugger::_error_stack_selected);
-	ObjectTypeDB::bind_method(_MD("_profiler_activate"),&ScriptEditorDebugger::_profiler_activate);
-	ObjectTypeDB::bind_method(_MD("_profiler_seeked"),&ScriptEditorDebugger::_profiler_seeked);
+	ClassDB::bind_method(_MD("_error_selected"),&ScriptEditorDebugger::_error_selected);
+	ClassDB::bind_method(_MD("_error_stack_selected"),&ScriptEditorDebugger::_error_stack_selected);
+	ClassDB::bind_method(_MD("_profiler_activate"),&ScriptEditorDebugger::_profiler_activate);
+	ClassDB::bind_method(_MD("_profiler_seeked"),&ScriptEditorDebugger::_profiler_seeked);
 
-	ObjectTypeDB::bind_method(_MD("_paused"),&ScriptEditorDebugger::_paused);
+	ClassDB::bind_method(_MD("_paused"),&ScriptEditorDebugger::_paused);
 
-	ObjectTypeDB::bind_method(_MD("_scene_tree_selected"),&ScriptEditorDebugger::_scene_tree_selected);
-	ObjectTypeDB::bind_method(_MD("_scene_tree_folded"),&ScriptEditorDebugger::_scene_tree_folded);
+	ClassDB::bind_method(_MD("_scene_tree_selected"),&ScriptEditorDebugger::_scene_tree_selected);
+	ClassDB::bind_method(_MD("_scene_tree_folded"),&ScriptEditorDebugger::_scene_tree_folded);
 
 
-	ObjectTypeDB::bind_method(_MD("live_debug_create_node"),&ScriptEditorDebugger::live_debug_create_node);
-	ObjectTypeDB::bind_method(_MD("live_debug_instance_node"),&ScriptEditorDebugger::live_debug_instance_node);
-	ObjectTypeDB::bind_method(_MD("live_debug_remove_node"),&ScriptEditorDebugger::live_debug_remove_node);
-	ObjectTypeDB::bind_method(_MD("live_debug_remove_and_keep_node"),&ScriptEditorDebugger::live_debug_remove_and_keep_node);
-	ObjectTypeDB::bind_method(_MD("live_debug_restore_node"),&ScriptEditorDebugger::live_debug_restore_node);
-	ObjectTypeDB::bind_method(_MD("live_debug_duplicate_node"),&ScriptEditorDebugger::live_debug_duplicate_node);
-	ObjectTypeDB::bind_method(_MD("live_debug_reparent_node"),&ScriptEditorDebugger::live_debug_reparent_node);
-	ObjectTypeDB::bind_method(_MD("_scene_tree_property_select_object"),&ScriptEditorDebugger::_scene_tree_property_select_object);
-	ObjectTypeDB::bind_method(_MD("_scene_tree_property_value_edited"),&ScriptEditorDebugger::_scene_tree_property_value_edited);
+	ClassDB::bind_method(_MD("live_debug_create_node"),&ScriptEditorDebugger::live_debug_create_node);
+	ClassDB::bind_method(_MD("live_debug_instance_node"),&ScriptEditorDebugger::live_debug_instance_node);
+	ClassDB::bind_method(_MD("live_debug_remove_node"),&ScriptEditorDebugger::live_debug_remove_node);
+	ClassDB::bind_method(_MD("live_debug_remove_and_keep_node"),&ScriptEditorDebugger::live_debug_remove_and_keep_node);
+	ClassDB::bind_method(_MD("live_debug_restore_node"),&ScriptEditorDebugger::live_debug_restore_node);
+	ClassDB::bind_method(_MD("live_debug_duplicate_node"),&ScriptEditorDebugger::live_debug_duplicate_node);
+	ClassDB::bind_method(_MD("live_debug_reparent_node"),&ScriptEditorDebugger::live_debug_reparent_node);
+	ClassDB::bind_method(_MD("_scene_tree_property_select_object"),&ScriptEditorDebugger::_scene_tree_property_select_object);
+	ClassDB::bind_method(_MD("_scene_tree_property_value_edited"),&ScriptEditorDebugger::_scene_tree_property_value_edited);
 
 	ADD_SIGNAL(MethodInfo("goto_script_line"));
 	ADD_SIGNAL(MethodInfo("breaked",PropertyInfo(Variant::BOOL,"reallydid"),PropertyInfo(Variant::BOOL,"can_debug")));

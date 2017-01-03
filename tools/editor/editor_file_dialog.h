@@ -42,7 +42,7 @@
 */
 class EditorFileDialog : public ConfirmationDialog {
 
-	OBJ_TYPE( EditorFileDialog, ConfirmationDialog );
+	GDCLASS( EditorFileDialog, ConfirmationDialog );
 
 public:
 
@@ -227,7 +227,7 @@ public:
 
 class EditorLineEditFileChooser : public HBoxContainer {
 
-	OBJ_TYPE( EditorLineEditFileChooser, HBoxContainer );
+	GDCLASS( EditorLineEditFileChooser, HBoxContainer );
 	Button *button;
 	LineEdit *line_edit;
 	EditorFileDialog *dialog;

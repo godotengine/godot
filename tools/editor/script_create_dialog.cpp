@@ -338,12 +338,12 @@ void ScriptCreateDialog::_update_controls() {
 
 void ScriptCreateDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_class_name_changed",&ScriptCreateDialog::_class_name_changed);
-	ObjectTypeDB::bind_method("_lang_changed",&ScriptCreateDialog::_lang_changed);
-	ObjectTypeDB::bind_method("_built_in_pressed",&ScriptCreateDialog::_built_in_pressed);
-	ObjectTypeDB::bind_method("_browse_path",&ScriptCreateDialog::_browse_path);
-	ObjectTypeDB::bind_method("_file_selected",&ScriptCreateDialog::_file_selected);
-	ObjectTypeDB::bind_method("_path_changed",&ScriptCreateDialog::_path_changed);
+	ClassDB::bind_method("_class_name_changed",&ScriptCreateDialog::_class_name_changed);
+	ClassDB::bind_method("_lang_changed",&ScriptCreateDialog::_lang_changed);
+	ClassDB::bind_method("_built_in_pressed",&ScriptCreateDialog::_built_in_pressed);
+	ClassDB::bind_method("_browse_path",&ScriptCreateDialog::_browse_path);
+	ClassDB::bind_method("_file_selected",&ScriptCreateDialog::_file_selected);
+	ClassDB::bind_method("_path_changed",&ScriptCreateDialog::_path_changed);
 	ADD_SIGNAL(MethodInfo("script_created",PropertyInfo(Variant::OBJECT,"script",PROPERTY_HINT_RESOURCE_TYPE,"Script")));
 }
 

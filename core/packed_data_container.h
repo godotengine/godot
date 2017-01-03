@@ -36,7 +36,7 @@
 
 class PackedDataContainer : public Resource {
 
-	OBJ_TYPE(PackedDataContainer,Resource);
+	GDCLASS(PackedDataContainer,Resource);
 
 	enum {
 		TYPE_DICT=0xFFFFFFFF,
@@ -87,7 +87,7 @@ public:
 };
 
 class PackedDataContainerRef : public Reference {
-	OBJ_TYPE(PackedDataContainerRef,Reference);
+	GDCLASS(PackedDataContainerRef,Reference);
 
 friend class PackedDataContainer;
 	uint32_t offset;

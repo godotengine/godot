@@ -194,18 +194,18 @@ Array SampleLibrary::_get_sample_list() const {
 
 void SampleLibrary::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("add_sample","name","sample:Sample"),&SampleLibrary::add_sample );
-	ObjectTypeDB::bind_method(_MD("get_sample:Sample","name"),&SampleLibrary::get_sample );
-	ObjectTypeDB::bind_method(_MD("has_sample","name"),&SampleLibrary::has_sample );
-	ObjectTypeDB::bind_method(_MD("remove_sample","name"),&SampleLibrary::remove_sample );
+	ClassDB::bind_method(_MD("add_sample","name","sample:Sample"),&SampleLibrary::add_sample );
+	ClassDB::bind_method(_MD("get_sample:Sample","name"),&SampleLibrary::get_sample );
+	ClassDB::bind_method(_MD("has_sample","name"),&SampleLibrary::has_sample );
+	ClassDB::bind_method(_MD("remove_sample","name"),&SampleLibrary::remove_sample );
 
-	ObjectTypeDB::bind_method(_MD("get_sample_list"),&SampleLibrary::_get_sample_list );
+	ClassDB::bind_method(_MD("get_sample_list"),&SampleLibrary::_get_sample_list );
 
-	ObjectTypeDB::bind_method(_MD("sample_set_volume_db","name","db"),&SampleLibrary::sample_set_volume_db );
-	ObjectTypeDB::bind_method(_MD("sample_get_volume_db","name"),&SampleLibrary::sample_get_volume_db );
+	ClassDB::bind_method(_MD("sample_set_volume_db","name","db"),&SampleLibrary::sample_set_volume_db );
+	ClassDB::bind_method(_MD("sample_get_volume_db","name"),&SampleLibrary::sample_get_volume_db );
 
-	ObjectTypeDB::bind_method(_MD("sample_set_pitch_scale","name","pitch"),&SampleLibrary::sample_set_pitch_scale );
-	ObjectTypeDB::bind_method(_MD("sample_get_pitch_scale","name"),&SampleLibrary::sample_get_pitch_scale );
+	ClassDB::bind_method(_MD("sample_set_pitch_scale","name","pitch"),&SampleLibrary::sample_set_pitch_scale );
+	ClassDB::bind_method(_MD("sample_get_pitch_scale","name"),&SampleLibrary::sample_get_pitch_scale );
 
 
 }

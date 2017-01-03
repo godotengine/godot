@@ -575,8 +575,8 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 	packet_peer_stream->put_var("message:inspect_object");
 	packet_peer_stream->put_var(props_to_send*5+4);
 	packet_peer_stream->put_var(p_id);
-	packet_peer_stream->put_var(obj->get_type());
-	if (obj->is_type("Resource") || obj->is_type("Node"))
+	packet_peer_stream->put_var(obj->get_class());
+	if (obj->is_class("Resource") || obj->is_class("Node"))
 		packet_peer_stream->put_var(obj->call("get_path"));
 	else
 		packet_peer_stream->put_var("");

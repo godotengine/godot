@@ -38,7 +38,7 @@
 #include "scene/3d/room_instance.h"
 class SoundRoomParams : public Node {
 
-	OBJ_TYPE( SoundRoomParams, Node );
+	GDCLASS( SoundRoomParams, Node );
 public:
 
 	enum Params {

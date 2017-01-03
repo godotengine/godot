@@ -35,7 +35,7 @@
 
 class EditorNameDialog : public ConfirmationDialog {
 
-	OBJ_TYPE( EditorNameDialog, ConfirmationDialog );
+	GDCLASS( EditorNameDialog, ConfirmationDialog );
 
 	LineEdit *name;
 

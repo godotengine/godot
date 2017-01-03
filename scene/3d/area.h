@@ -34,7 +34,7 @@
 
 class Area : public CollisionObject {
 
-	OBJ_TYPE( Area, CollisionObject );
+	GDCLASS( Area, CollisionObject );
 public:
 
 	enum SpaceOverride {

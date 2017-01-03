@@ -224,7 +224,7 @@ uint32_t ResourceFormatLoaderImage::load_image_flags(const String &p_path) {
 
 bool ResourceFormatLoaderImage::handles_type(const String& p_type) const {
 
-	return ObjectTypeDB::is_type(p_type,"Texture") || ObjectTypeDB::is_type(p_type,"CubeMap");
+	return ClassDB::is_parent_class(p_type,"Texture") || ClassDB::is_parent_class(p_type,"CubeMap");
 }
 
 void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *p_extensions) const {

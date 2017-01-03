@@ -1715,24 +1715,24 @@ void BakedLight::_debug_mesh_light() {
 
 void BakedLight::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_cell_subdiv","steps"),&BakedLight::set_cell_subdiv);
-	ObjectTypeDB::bind_method(_MD("get_cell_subdiv"),&BakedLight::get_cell_subdiv);
+	ClassDB::bind_method(_MD("set_cell_subdiv","steps"),&BakedLight::set_cell_subdiv);
+	ClassDB::bind_method(_MD("get_cell_subdiv"),&BakedLight::get_cell_subdiv);
 
-	ObjectTypeDB::bind_method(_MD("bake"),&BakedLight::bake);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("bake"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(_MD("bake"),&BakedLight::bake);
+	ClassDB::set_method_flags(get_class_static(),_SCS("bake"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ObjectTypeDB::bind_method(_MD("bake_lights"),&BakedLight::bake_lights);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("bake_lights"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(_MD("bake_lights"),&BakedLight::bake_lights);
+	ClassDB::set_method_flags(get_class_static(),_SCS("bake_lights"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ObjectTypeDB::bind_method(_MD("bake_radiance"),&BakedLight::bake_radiance);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("bake_radiance"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(_MD("bake_radiance"),&BakedLight::bake_radiance);
+	ClassDB::set_method_flags(get_class_static(),_SCS("bake_radiance"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ObjectTypeDB::bind_method(_MD("debug_mesh_albedo"),&BakedLight::_debug_mesh_albedo);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("debug_mesh_albedo"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(_MD("debug_mesh_albedo"),&BakedLight::_debug_mesh_albedo);
+	ClassDB::set_method_flags(get_class_static(),_SCS("debug_mesh_albedo"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 
-	ObjectTypeDB::bind_method(_MD("debug_mesh_light"),&BakedLight::_debug_mesh_light);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("debug_mesh_light"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(_MD("debug_mesh_light"),&BakedLight::_debug_mesh_light);
+	ClassDB::set_method_flags(get_class_static(),_SCS("debug_mesh_light"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"cell_subdiv"),_SCS("set_cell_subdiv"),_SCS("get_cell_subdiv"));
 	ADD_SIGNAL( MethodInfo("baked_light_changed"));
@@ -1794,11 +1794,11 @@ DVector<Face3> BakedLightSampler::get_faces(uint32_t p_usage_flags) const {
 
 void BakedLightSampler::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"),&BakedLightSampler::set_param);
-	ObjectTypeDB::bind_method(_MD("get_param","param"),&BakedLightSampler::get_param);
+	ClassDB::bind_method(_MD("set_param","param","value"),&BakedLightSampler::set_param);
+	ClassDB::bind_method(_MD("get_param","param"),&BakedLightSampler::get_param);
 
-	ObjectTypeDB::bind_method(_MD("set_resolution","resolution"),&BakedLightSampler::set_resolution);
-	ObjectTypeDB::bind_method(_MD("get_resolution"),&BakedLightSampler::get_resolution);
+	ClassDB::bind_method(_MD("set_resolution","resolution"),&BakedLightSampler::set_resolution);
+	ClassDB::bind_method(_MD("get_resolution"),&BakedLightSampler::get_resolution);
 
 
 	BIND_CONSTANT( PARAM_RADIUS );

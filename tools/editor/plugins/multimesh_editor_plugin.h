@@ -40,7 +40,7 @@
 
 class MultiMeshEditor : public Control {
 
-	OBJ_TYPE(MultiMeshEditor, Control );
+	GDCLASS(MultiMeshEditor, Control );
 
 friend class MultiMeshEditorPlugin;
 
@@ -86,7 +86,7 @@ public:
 
 class MultiMeshEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( MultiMeshEditorPlugin, EditorPlugin );
+	GDCLASS( MultiMeshEditorPlugin, EditorPlugin );
 
 	MultiMeshEditor *multimesh_editor;
 	EditorNode *editor;

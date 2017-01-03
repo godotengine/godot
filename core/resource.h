@@ -41,14 +41,14 @@
 
 #define RES_BASE_EXTENSION(m_ext)\
 public:\
-static void register_custom_data_to_otdb() { ObjectTypeDB::add_resource_base_extension(m_ext,get_type_static()); }\
+static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext,get_class_static()); }\
 virtual String get_base_extension() const { return m_ext; }\
 private:
 
 
 class ResourceImportMetadata : public Reference {
 
-	OBJ_TYPE( ResourceImportMetadata, Reference );
+	GDCLASS( ResourceImportMetadata, Reference );
 
 	struct Source {
 		String path;
@@ -88,7 +88,7 @@ public:
 
 class Resource : public Reference {
 
-	OBJ_TYPE( Resource, Reference );
+	GDCLASS( Resource, Reference );
 	OBJ_CATEGORY("Resources");
 	RES_BASE_EXTENSION("res");
 

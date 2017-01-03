@@ -232,36 +232,36 @@ float VehicleWheel::get_friction_slip() const{
 void VehicleWheel::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_radius","length"),&VehicleWheel::set_radius);
-	ObjectTypeDB::bind_method(_MD("get_radius"),&VehicleWheel::get_radius);
+	ClassDB::bind_method(_MD("set_radius","length"),&VehicleWheel::set_radius);
+	ClassDB::bind_method(_MD("get_radius"),&VehicleWheel::get_radius);
 
-	ObjectTypeDB::bind_method(_MD("set_suspension_rest_length","length"),&VehicleWheel::set_suspension_rest_length);
-	ObjectTypeDB::bind_method(_MD("get_suspension_rest_length"),&VehicleWheel::get_suspension_rest_length);
+	ClassDB::bind_method(_MD("set_suspension_rest_length","length"),&VehicleWheel::set_suspension_rest_length);
+	ClassDB::bind_method(_MD("get_suspension_rest_length"),&VehicleWheel::get_suspension_rest_length);
 
-	ObjectTypeDB::bind_method(_MD("set_suspension_travel","length"),&VehicleWheel::set_suspension_travel);
-	ObjectTypeDB::bind_method(_MD("get_suspension_travel"),&VehicleWheel::get_suspension_travel);
+	ClassDB::bind_method(_MD("set_suspension_travel","length"),&VehicleWheel::set_suspension_travel);
+	ClassDB::bind_method(_MD("get_suspension_travel"),&VehicleWheel::get_suspension_travel);
 
-	ObjectTypeDB::bind_method(_MD("set_suspension_stiffness","length"),&VehicleWheel::set_suspension_stiffness);
-	ObjectTypeDB::bind_method(_MD("get_suspension_stiffness"),&VehicleWheel::get_suspension_stiffness);
+	ClassDB::bind_method(_MD("set_suspension_stiffness","length"),&VehicleWheel::set_suspension_stiffness);
+	ClassDB::bind_method(_MD("get_suspension_stiffness"),&VehicleWheel::get_suspension_stiffness);
 
-	ObjectTypeDB::bind_method(_MD("set_suspension_max_force","length"),&VehicleWheel::set_suspension_max_force);
-	ObjectTypeDB::bind_method(_MD("get_suspension_max_force"),&VehicleWheel::get_suspension_max_force);
+	ClassDB::bind_method(_MD("set_suspension_max_force","length"),&VehicleWheel::set_suspension_max_force);
+	ClassDB::bind_method(_MD("get_suspension_max_force"),&VehicleWheel::get_suspension_max_force);
 
 
-	ObjectTypeDB::bind_method(_MD("set_damping_compression","length"),&VehicleWheel::set_damping_compression);
-	ObjectTypeDB::bind_method(_MD("get_damping_compression"),&VehicleWheel::get_damping_compression);
+	ClassDB::bind_method(_MD("set_damping_compression","length"),&VehicleWheel::set_damping_compression);
+	ClassDB::bind_method(_MD("get_damping_compression"),&VehicleWheel::get_damping_compression);
 
-	ObjectTypeDB::bind_method(_MD("set_damping_relaxation","length"),&VehicleWheel::set_damping_relaxation);
-	ObjectTypeDB::bind_method(_MD("get_damping_relaxation"),&VehicleWheel::get_damping_relaxation);
+	ClassDB::bind_method(_MD("set_damping_relaxation","length"),&VehicleWheel::set_damping_relaxation);
+	ClassDB::bind_method(_MD("get_damping_relaxation"),&VehicleWheel::get_damping_relaxation);
 
-	ObjectTypeDB::bind_method(_MD("set_use_as_traction","enable"),&VehicleWheel::set_use_as_traction);
-	ObjectTypeDB::bind_method(_MD("is_used_as_traction"),&VehicleWheel::is_used_as_traction);
+	ClassDB::bind_method(_MD("set_use_as_traction","enable"),&VehicleWheel::set_use_as_traction);
+	ClassDB::bind_method(_MD("is_used_as_traction"),&VehicleWheel::is_used_as_traction);
 
-	ObjectTypeDB::bind_method(_MD("set_use_as_steering","enable"),&VehicleWheel::set_use_as_steering);
-	ObjectTypeDB::bind_method(_MD("is_used_as_steering"),&VehicleWheel::is_used_as_steering);
+	ClassDB::bind_method(_MD("set_use_as_steering","enable"),&VehicleWheel::set_use_as_steering);
+	ClassDB::bind_method(_MD("is_used_as_steering"),&VehicleWheel::is_used_as_steering);
 
-	ObjectTypeDB::bind_method(_MD("set_friction_slip","length"),&VehicleWheel::set_friction_slip);
-	ObjectTypeDB::bind_method(_MD("get_friction_slip"),&VehicleWheel::get_friction_slip);
+	ClassDB::bind_method(_MD("set_friction_slip","length"),&VehicleWheel::set_friction_slip);
+	ClassDB::bind_method(_MD("get_friction_slip"),&VehicleWheel::get_friction_slip);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"type/traction"),_SCS("set_use_as_traction"),_SCS("is_used_as_traction"));
@@ -1019,24 +1019,24 @@ Vector3 VehicleBody::get_linear_velocity() const
 
 void VehicleBody::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_mass","mass"),&VehicleBody::set_mass);
-	ObjectTypeDB::bind_method(_MD("get_mass"),&VehicleBody::get_mass);
+	ClassDB::bind_method(_MD("set_mass","mass"),&VehicleBody::set_mass);
+	ClassDB::bind_method(_MD("get_mass"),&VehicleBody::get_mass);
 
-	ObjectTypeDB::bind_method(_MD("set_friction","friction"),&VehicleBody::set_friction);
-	ObjectTypeDB::bind_method(_MD("get_friction"),&VehicleBody::get_friction);
+	ClassDB::bind_method(_MD("set_friction","friction"),&VehicleBody::set_friction);
+	ClassDB::bind_method(_MD("get_friction"),&VehicleBody::get_friction);
 
-	ObjectTypeDB::bind_method(_MD("set_engine_force","engine_force"),&VehicleBody::set_engine_force);
-	ObjectTypeDB::bind_method(_MD("get_engine_force"),&VehicleBody::get_engine_force);
+	ClassDB::bind_method(_MD("set_engine_force","engine_force"),&VehicleBody::set_engine_force);
+	ClassDB::bind_method(_MD("get_engine_force"),&VehicleBody::get_engine_force);
 
-	ObjectTypeDB::bind_method(_MD("set_brake","brake"),&VehicleBody::set_brake);
-	ObjectTypeDB::bind_method(_MD("get_brake"),&VehicleBody::get_brake);
+	ClassDB::bind_method(_MD("set_brake","brake"),&VehicleBody::set_brake);
+	ClassDB::bind_method(_MD("get_brake"),&VehicleBody::get_brake);
 
-	ObjectTypeDB::bind_method(_MD("set_steering","steering"),&VehicleBody::set_steering);
-	ObjectTypeDB::bind_method(_MD("get_steering"),&VehicleBody::get_steering);
+	ClassDB::bind_method(_MD("set_steering","steering"),&VehicleBody::set_steering);
+	ClassDB::bind_method(_MD("get_steering"),&VehicleBody::get_steering);
 
-	ObjectTypeDB::bind_method(_MD("get_linear_velocity"),&VehicleBody::get_linear_velocity);
+	ClassDB::bind_method(_MD("get_linear_velocity"),&VehicleBody::get_linear_velocity);
 
-	ObjectTypeDB::bind_method(_MD("_direct_state_changed"),&VehicleBody::_direct_state_changed);
+	ClassDB::bind_method(_MD("_direct_state_changed"),&VehicleBody::_direct_state_changed);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"motion/engine_force",PROPERTY_HINT_RANGE,"0.00,1024.0,0.01"),_SCS("set_engine_force"),_SCS("get_engine_force"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"motion/brake",PROPERTY_HINT_RANGE,"0.0,1.0,0.01"),_SCS("set_brake"),_SCS("get_brake"));

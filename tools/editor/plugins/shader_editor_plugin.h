@@ -40,7 +40,7 @@
 
 class ShaderTextEditor : public CodeTextEditor {
 
-	OBJ_TYPE( ShaderTextEditor, CodeTextEditor );
+	GDCLASS( ShaderTextEditor, CodeTextEditor );
 
 	Ref<Shader> shader;
 
@@ -65,7 +65,7 @@ public:
 
 class ShaderEditor : public VBoxContainer {
 
-	OBJ_TYPE(ShaderEditor, VBoxContainer );
+	GDCLASS(ShaderEditor, VBoxContainer );
 
 	enum {
 
@@ -125,7 +125,7 @@ public:
 
 class ShaderEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ShaderEditorPlugin, EditorPlugin );
+	GDCLASS( ShaderEditorPlugin, EditorPlugin );
 
 	bool _2d;
 	ShaderEditor *shader_editor;

@@ -36,7 +36,7 @@
 #include "scene/gui/control.h"
 class Separator : public Control {
 
-	OBJ_TYPE( Separator, Control );
+	GDCLASS( Separator, Control );
 
 
 protected:
@@ -54,7 +54,7 @@ public:
 
 class VSeparator : public Separator {
 
-	OBJ_TYPE( VSeparator, Separator );
+	GDCLASS( VSeparator, Separator );
 
 public:
 
@@ -64,7 +64,7 @@ public:
 
 class HSeparator : public Separator {
 
-	OBJ_TYPE( HSeparator, Separator );
+	GDCLASS( HSeparator, Separator );
 
 public:
 

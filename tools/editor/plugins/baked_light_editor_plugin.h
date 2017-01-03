@@ -46,7 +46,7 @@ class MeshInstance;
 
 class BakedLightEditor : public Control {
 
-	OBJ_TYPE(BakedLightEditor, Control );
+	GDCLASS(BakedLightEditor, Control );
 
 
 	float update_timeout;
@@ -97,7 +97,7 @@ public:
 
 class BakedLightEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( BakedLightEditorPlugin, EditorPlugin );
+	GDCLASS( BakedLightEditorPlugin, EditorPlugin );
 
 	BakedLightEditor *baked_light_editor;
 	EditorNode *editor;

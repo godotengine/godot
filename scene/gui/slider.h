@@ -33,7 +33,7 @@
 
 class Slider : public Range {
 
-	OBJ_TYPE( Slider, Range );
+	GDCLASS( Slider, Range );
 
 	struct Grab {
 		int pos;
@@ -74,7 +74,7 @@ public:
 
 class HSlider : public Slider {
 
-	OBJ_TYPE( HSlider, Slider );
+	GDCLASS( HSlider, Slider );
 public:
 
 	HSlider() : Slider(HORIZONTAL) { set_v_size_flags(0);}
@@ -82,7 +82,7 @@ public:
 
 class VSlider : public Slider {
 
-	OBJ_TYPE( VSlider, Slider );
+	GDCLASS( VSlider, Slider );
 public:
 
 	VSlider() : Slider(VERTICAL) { set_h_size_flags(0);}

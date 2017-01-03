@@ -39,7 +39,7 @@ class Viewport;
 
 class World2D : public Resource {
 
-	OBJ_TYPE( World2D, Resource );
+	GDCLASS( World2D, Resource );
 
 	RID canvas;
 	RID space;

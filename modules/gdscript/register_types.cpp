@@ -48,7 +48,7 @@ ResourceFormatSaverGDScript *resource_saver_gd=NULL;
 
 class EditorExportGDScript : public EditorExportPlugin {
 
-	OBJ_TYPE(EditorExportGDScript,EditorExportPlugin);
+	GDCLASS(EditorExportGDScript,EditorExportPlugin);
 
 public:
 
@@ -138,8 +138,8 @@ static void register_editor_plugin() {
 
 void register_gdscript_types() {
 
-	ObjectTypeDB::register_type<GDScript>();
-	ObjectTypeDB::register_virtual_type<GDFunctionState>();
+	ClassDB::register_class<GDScript>();
+	ClassDB::register_virtual_class<GDFunctionState>();
 
 	script_language_gd=memnew( GDScriptLanguage );
 	//script_language_gd->init();

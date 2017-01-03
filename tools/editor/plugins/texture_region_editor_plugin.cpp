@@ -615,21 +615,21 @@ void TextureRegionEditor::_node_removed(Object *p_obj)
 
 void TextureRegionEditor::_bind_methods()
 {
-	ObjectTypeDB::bind_method(_MD("_edit_region"),&TextureRegionEditor::_edit_region);
-	ObjectTypeDB::bind_method(_MD("_region_draw"),&TextureRegionEditor::_region_draw);
-	ObjectTypeDB::bind_method(_MD("_region_input"),&TextureRegionEditor::_region_input);
-	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&TextureRegionEditor::_scroll_changed);
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&TextureRegionEditor::_node_removed);
-	ObjectTypeDB::bind_method(_MD("_set_snap_mode"),&TextureRegionEditor::_set_snap_mode);
-	ObjectTypeDB::bind_method(_MD("_set_snap_off_x"),&TextureRegionEditor::_set_snap_off_x);
-	ObjectTypeDB::bind_method(_MD("_set_snap_off_y"),&TextureRegionEditor::_set_snap_off_y);
-	ObjectTypeDB::bind_method(_MD("_set_snap_step_x"),&TextureRegionEditor::_set_snap_step_x);
-	ObjectTypeDB::bind_method(_MD("_set_snap_step_y"),&TextureRegionEditor::_set_snap_step_y);
-	ObjectTypeDB::bind_method(_MD("_set_snap_sep_x"),&TextureRegionEditor::_set_snap_sep_x);
-	ObjectTypeDB::bind_method(_MD("_set_snap_sep_y"),&TextureRegionEditor::_set_snap_sep_y);
-	ObjectTypeDB::bind_method(_MD("_zoom_in"),&TextureRegionEditor::_zoom_in);
-	ObjectTypeDB::bind_method(_MD("_zoom_reset"),&TextureRegionEditor::_zoom_reset);
-	ObjectTypeDB::bind_method(_MD("_zoom_out"),&TextureRegionEditor::_zoom_out);
+	ClassDB::bind_method(_MD("_edit_region"),&TextureRegionEditor::_edit_region);
+	ClassDB::bind_method(_MD("_region_draw"),&TextureRegionEditor::_region_draw);
+	ClassDB::bind_method(_MD("_region_input"),&TextureRegionEditor::_region_input);
+	ClassDB::bind_method(_MD("_scroll_changed"),&TextureRegionEditor::_scroll_changed);
+	ClassDB::bind_method(_MD("_node_removed"),&TextureRegionEditor::_node_removed);
+	ClassDB::bind_method(_MD("_set_snap_mode"),&TextureRegionEditor::_set_snap_mode);
+	ClassDB::bind_method(_MD("_set_snap_off_x"),&TextureRegionEditor::_set_snap_off_x);
+	ClassDB::bind_method(_MD("_set_snap_off_y"),&TextureRegionEditor::_set_snap_off_y);
+	ClassDB::bind_method(_MD("_set_snap_step_x"),&TextureRegionEditor::_set_snap_step_x);
+	ClassDB::bind_method(_MD("_set_snap_step_y"),&TextureRegionEditor::_set_snap_step_y);
+	ClassDB::bind_method(_MD("_set_snap_sep_x"),&TextureRegionEditor::_set_snap_sep_x);
+	ClassDB::bind_method(_MD("_set_snap_sep_y"),&TextureRegionEditor::_set_snap_sep_y);
+	ClassDB::bind_method(_MD("_zoom_in"),&TextureRegionEditor::_zoom_in);
+	ClassDB::bind_method(_MD("_zoom_reset"),&TextureRegionEditor::_zoom_reset);
+	ClassDB::bind_method(_MD("_zoom_out"),&TextureRegionEditor::_zoom_out);
 }
 
 void TextureRegionEditor::edit(Object *p_obj)
@@ -934,7 +934,7 @@ void TextureRegionEditorPlugin::edit(Object *p_node)
 
 bool TextureRegionEditorPlugin::handles(Object *p_obj) const
 {
-	return p_obj->is_type("Sprite") || p_obj->is_type("Patch9Frame") || p_obj->is_type("StyleBoxTexture") || p_obj->is_type("AtlasTexture");
+	return p_obj->is_class("Sprite") || p_obj->is_class("Patch9Frame") || p_obj->is_class("StyleBoxTexture") || p_obj->is_class("AtlasTexture");
 }
 
 void TextureRegionEditorPlugin::make_visible(bool p_visible)

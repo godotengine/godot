@@ -36,7 +36,7 @@ void register_mpc_types() {
 
 	mpc_stream_loader=memnew( ResourceFormatLoaderAudioStreamMPC );
 	ResourceLoader::add_resource_format_loader(mpc_stream_loader);
-	ObjectTypeDB::register_type<AudioStreamMPC>();
+	ClassDB::register_class<AudioStreamMPC>();
 }
 
 void unregister_mpc_types() {

@@ -32,7 +32,7 @@
 #include "reference.h"
 
 class StreamPeer : public Reference {
-	OBJ_TYPE( StreamPeer, Reference );
+	GDCLASS( StreamPeer, Reference );
 	OBJ_CATEGORY("Networking");
 protected:
 	static void _bind_methods();
@@ -94,7 +94,7 @@ public:
 
 class StreamPeerBuffer : public StreamPeer {
 
-	OBJ_TYPE(StreamPeerBuffer,StreamPeer);
+	GDCLASS(StreamPeerBuffer,StreamPeer);
 
 	DVector<uint8_t> data;
 	int pointer;

@@ -38,7 +38,7 @@
 */
 class Camera : public Spatial {
 
-	OBJ_TYPE( Camera, Spatial );
+	GDCLASS( Camera, Spatial );
 public:
 	enum Projection {
 

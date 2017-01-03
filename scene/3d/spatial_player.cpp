@@ -91,8 +91,8 @@ bool SpatialPlayer::_can_gizmo_scale() const {
 void SpatialPlayer::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"),&SpatialPlayer::set_param);
-	ObjectTypeDB::bind_method(_MD("get_param","param"),&SpatialPlayer::get_param);
+	ClassDB::bind_method(_MD("set_param","param","value"),&SpatialPlayer::set_param);
+	ClassDB::bind_method(_MD("get_param","param"),&SpatialPlayer::get_param);
 
 	BIND_CONSTANT( PARAM_VOLUME_DB );
 	BIND_CONSTANT( PARAM_PITCH_SCALE );

@@ -34,7 +34,7 @@
 
 class ScenePreloader : public Resource {
 
-	OBJ_TYPE( ScenePreloader, Resource );
+	GDCLASS( ScenePreloader, Resource );
 
 	Vector<StringName> names;
 	Vector<Variant> variants;

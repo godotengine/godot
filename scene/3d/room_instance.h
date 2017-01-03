@@ -49,7 +49,7 @@
 
 class Room : public VisualInstance {
 
-	OBJ_TYPE( Room, VisualInstance );
+	GDCLASS( Room, VisualInstance );
 public:
 
 

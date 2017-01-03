@@ -259,33 +259,33 @@ int CanvasLayer::get_sort_index() {
 void CanvasLayer::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_layer","layer"),&CanvasLayer::set_layer);
-	ObjectTypeDB::bind_method(_MD("get_layer"),&CanvasLayer::get_layer);
+	ClassDB::bind_method(_MD("set_layer","layer"),&CanvasLayer::set_layer);
+	ClassDB::bind_method(_MD("get_layer"),&CanvasLayer::get_layer);
 
-	ObjectTypeDB::bind_method(_MD("set_transform","transform"),&CanvasLayer::set_transform);
-	ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasLayer::get_transform);
+	ClassDB::bind_method(_MD("set_transform","transform"),&CanvasLayer::set_transform);
+	ClassDB::bind_method(_MD("get_transform"),&CanvasLayer::get_transform);
 
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&CanvasLayer::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&CanvasLayer::get_offset);
+	ClassDB::bind_method(_MD("set_offset","offset"),&CanvasLayer::set_offset);
+	ClassDB::bind_method(_MD("get_offset"),&CanvasLayer::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_rotation","radians"),&CanvasLayer::set_rotation);
-	ObjectTypeDB::bind_method(_MD("get_rotation"),&CanvasLayer::get_rotation);
+	ClassDB::bind_method(_MD("set_rotation","radians"),&CanvasLayer::set_rotation);
+	ClassDB::bind_method(_MD("get_rotation"),&CanvasLayer::get_rotation);
 
-	ObjectTypeDB::bind_method(_MD("set_rotationd","degrees"),&CanvasLayer::set_rotationd);
-	ObjectTypeDB::bind_method(_MD("get_rotationd"),&CanvasLayer::get_rotationd);
+	ClassDB::bind_method(_MD("set_rotationd","degrees"),&CanvasLayer::set_rotationd);
+	ClassDB::bind_method(_MD("get_rotationd"),&CanvasLayer::get_rotationd);
 
 	// TODO: Obsolete those two methods (old name) properly (GH-4397)
-	ObjectTypeDB::bind_method(_MD("_set_rotationd","degrees"),&CanvasLayer::_set_rotationd);
-	ObjectTypeDB::bind_method(_MD("_get_rotationd"),&CanvasLayer::_get_rotationd);
+	ClassDB::bind_method(_MD("_set_rotationd","degrees"),&CanvasLayer::_set_rotationd);
+	ClassDB::bind_method(_MD("_get_rotationd"),&CanvasLayer::_get_rotationd);
 
-	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&CanvasLayer::set_scale);
-	ObjectTypeDB::bind_method(_MD("get_scale"),&CanvasLayer::get_scale);
+	ClassDB::bind_method(_MD("set_scale","scale"),&CanvasLayer::set_scale);
+	ClassDB::bind_method(_MD("get_scale"),&CanvasLayer::get_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_custom_viewport","viewport:Viewport"),&CanvasLayer::set_custom_viewport);
-	ObjectTypeDB::bind_method(_MD("get_custom_viewport:Viewport"),&CanvasLayer::get_custom_viewport);
+	ClassDB::bind_method(_MD("set_custom_viewport","viewport:Viewport"),&CanvasLayer::set_custom_viewport);
+	ClassDB::bind_method(_MD("get_custom_viewport:Viewport"),&CanvasLayer::get_custom_viewport);
 
-	ObjectTypeDB::bind_method(_MD("get_world_2d:World2D"),&CanvasLayer::get_world_2d);
-//	ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
+	ClassDB::bind_method(_MD("get_world_2d:World2D"),&CanvasLayer::get_world_2d);
+//	ClassDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer",PROPERTY_HINT_RANGE,"-128,128,1"),_SCS("set_layer"),_SCS("get_layer") );
 	//ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"transform",PROPERTY_HINT_RANGE),_SCS("set_transform"),_SCS("get_transform") );

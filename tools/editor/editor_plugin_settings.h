@@ -37,7 +37,7 @@
 
 class EditorPluginSettings : public VBoxContainer {
 
-	OBJ_TYPE(EditorPluginSettings,VBoxContainer);
+	GDCLASS(EditorPluginSettings,VBoxContainer);
 
 	Button* update_list;
 	Tree *plugin_list;

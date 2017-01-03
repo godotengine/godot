@@ -78,16 +78,16 @@ void ResourceLoader::get_recognized_extensions_for_type(const String& p_type,Lis
 
 void ResourceInteractiveLoader::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_resource"),&ResourceInteractiveLoader::get_resource);
-	ObjectTypeDB::bind_method(_MD("poll"),&ResourceInteractiveLoader::poll);
-	ObjectTypeDB::bind_method(_MD("wait"),&ResourceInteractiveLoader::wait);
-	ObjectTypeDB::bind_method(_MD("get_stage"),&ResourceInteractiveLoader::get_stage);
-	ObjectTypeDB::bind_method(_MD("get_stage_count"),&ResourceInteractiveLoader::get_stage_count);
+	ClassDB::bind_method(_MD("get_resource"),&ResourceInteractiveLoader::get_resource);
+	ClassDB::bind_method(_MD("poll"),&ResourceInteractiveLoader::poll);
+	ClassDB::bind_method(_MD("wait"),&ResourceInteractiveLoader::wait);
+	ClassDB::bind_method(_MD("get_stage"),&ResourceInteractiveLoader::get_stage);
+	ClassDB::bind_method(_MD("get_stage_count"),&ResourceInteractiveLoader::get_stage_count);
 }
 
 class ResourceInteractiveLoaderDefault : public ResourceInteractiveLoader {
 
-	OBJ_TYPE( ResourceInteractiveLoaderDefault, ResourceInteractiveLoader );
+	GDCLASS( ResourceInteractiveLoaderDefault, ResourceInteractiveLoader );
 public:
 
 	Ref<Resource> resource;
@@ -285,7 +285,7 @@ String ResourceLoader::find_complete_path(const String& p_path,const String& p_t
 			for(List<String>::Element *E=candidates.front();E;E=E->next()) {
 
 				String rt = get_resource_type(E->get());
-				if (ObjectTypeDB::is_type(rt,p_type)) {
+				if (ClassDB::is_parent_class(rt,p_type)) {
 					return E->get();
 				}
 			}

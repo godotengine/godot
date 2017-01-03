@@ -54,9 +54,9 @@ bool Reference::init_ref() {
 
 void Reference::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("init_ref"),&Reference::init_ref);
-	ObjectTypeDB::bind_method(_MD("reference"),&Reference::reference);
-	ObjectTypeDB::bind_method(_MD("unreference"),&Reference::unreference);
+	ClassDB::bind_method(_MD("init_ref"),&Reference::init_ref);
+	ClassDB::bind_method(_MD("reference"),&Reference::reference);
+	ClassDB::bind_method(_MD("unreference"),&Reference::unreference);
 }
 
 int Reference::reference_get_count() const {
@@ -126,7 +126,7 @@ WeakRef::WeakRef() {
 
 void WeakRef::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_ref:Object"),&WeakRef::get_ref);
+	ClassDB::bind_method(_MD("get_ref:Object"),&WeakRef::get_ref);
 }
 #if 0
 

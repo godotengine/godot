@@ -45,7 +45,7 @@ Error MessageQueue::push_call(ObjectID p_id,const StringName& p_method,const Var
 	if ((buffer_end+room_needed) >= buffer_size) {
 		String type;
 		if (ObjectDB::get_instance(p_id))
-			type=ObjectDB::get_instance(p_id)->get_type();
+			type=ObjectDB::get_instance(p_id)->get_class();
 		print_line("failed method: "+type+":"+p_method+" target ID: "+itos(p_id));
 		statistics();
 
@@ -98,7 +98,7 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName& p_prop, const Vari
 	if ((buffer_end+room_needed) >= buffer_size) {
 		String type;
 		if (ObjectDB::get_instance(p_id))
-			type=ObjectDB::get_instance(p_id)->get_type();
+			type=ObjectDB::get_instance(p_id)->get_class();
 		print_line("failed set: "+type+":"+p_prop+" target ID: "+itos(p_id));
 		statistics();
 
@@ -133,7 +133,7 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 	if ((buffer_end+room_needed) >= buffer_size) {
 		String type;
 		if (ObjectDB::get_instance(p_id))
-			type=ObjectDB::get_instance(p_id)->get_type();
+			type=ObjectDB::get_instance(p_id)->get_class();
 		print_line("failed notification: "+itos(p_notification)+" target ID: "+itos(p_id));
 		statistics();
 

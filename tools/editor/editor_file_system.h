@@ -39,7 +39,7 @@ class FileAccess;
 struct EditorProgressBG;
 class EditorFileSystemDirectory : public Object {
 
-	OBJ_TYPE( EditorFileSystemDirectory,Object );
+	GDCLASS( EditorFileSystemDirectory,Object );
 
 	String name;
 	uint64_t modified_time;
@@ -122,7 +122,7 @@ public:
 
 class EditorFileSystem : public Node {
 
-	OBJ_TYPE( EditorFileSystem, Node );
+	GDCLASS( EditorFileSystem, Node );
 
 	_THREAD_SAFE_CLASS_
 

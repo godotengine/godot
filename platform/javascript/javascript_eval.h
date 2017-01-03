@@ -35,7 +35,7 @@
 
 class JavaScript : public Object {
 private:
-	OBJ_TYPE( JavaScript, Object );
+	GDCLASS( JavaScript, Object );
 
 	static JavaScript *singleton;
 

@@ -73,7 +73,7 @@ void ResourceFormatPKM::get_recognized_extensions(List<String> *p_extensions) co
 
 bool ResourceFormatPKM::handles_type(const String& p_type) const {
 
-	return ObjectTypeDB::is_type(p_type,"Texture");
+	return ClassDB::is_parent_class(p_type,"Texture");
 }
 
 String ResourceFormatPKM::get_resource_type(const String &p_path) const {

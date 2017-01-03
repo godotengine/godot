@@ -42,7 +42,7 @@ static const unsigned char convex_png[]={
 
 class TestPhysics2DMainLoop : public MainLoop {
 
-	OBJ_TYPE( TestPhysics2DMainLoop, MainLoop );
+	GDCLASS( TestPhysics2DMainLoop, MainLoop );
 
 
 	RID circle_img;
@@ -354,8 +354,8 @@ protected:
 	static void _bind_methods() {
 
 
-		ObjectTypeDB::bind_method(_MD("_body_moved"),&TestPhysics2DMainLoop::_body_moved);
-		ObjectTypeDB::bind_method(_MD("_ray_query_callback"),&TestPhysics2DMainLoop::_ray_query_callback);
+		ClassDB::bind_method(_MD("_body_moved"),&TestPhysics2DMainLoop::_body_moved);
+		ClassDB::bind_method(_MD("_ray_query_callback"),&TestPhysics2DMainLoop::_ray_query_callback);
 	}
 
 

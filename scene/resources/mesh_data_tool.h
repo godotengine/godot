@@ -33,7 +33,7 @@
 
 class MeshDataTool : public Reference  {
 
-	OBJ_TYPE(MeshDataTool,Reference);
+	GDCLASS(MeshDataTool,Reference);
 
 
 	int format;

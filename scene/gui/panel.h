@@ -35,7 +35,7 @@
 */
 class Panel : public Control{
 
-	OBJ_TYPE(Panel,Control);
+	GDCLASS(Panel,Control);
 protected:
 
 	void _notification(int p_what);

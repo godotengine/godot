@@ -44,7 +44,7 @@
 
 class Portal : public VisualInstance {
 
-	OBJ_TYPE(Portal, VisualInstance);
+	GDCLASS(Portal, VisualInstance);
 
 	RID portal;
 	Vector<Point2> shape;

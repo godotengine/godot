@@ -40,7 +40,7 @@ class RegExNode;
 
 class RegExMatch : public Reference {
 
-	OBJ_TYPE(RegExMatch, Reference);
+	GDCLASS(RegExMatch, Reference);
 
 	struct Group {
 		Variant name;
@@ -80,7 +80,7 @@ public:
 
 class RegEx : public Resource {
 
-	OBJ_TYPE(RegEx, Resource);
+	GDCLASS(RegEx, Resource);
 
 	RegExNode* root;
 	Vector<Variant> group_names;

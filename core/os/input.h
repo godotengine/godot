@@ -35,7 +35,7 @@
 
 class Input : public Object {
 
-	OBJ_TYPE( Input, Object );
+	GDCLASS( Input, Object );
 
 	static Input *singleton;
 

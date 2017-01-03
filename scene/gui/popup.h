@@ -36,7 +36,7 @@
 */
 class Popup : public Control {
 
-	OBJ_TYPE( Popup, Control );
+	GDCLASS( Popup, Control );
 
 	bool exclusive;
 	bool popped_up;
@@ -74,7 +74,7 @@ public:
 
 class PopupPanel : public Popup {
 
-	OBJ_TYPE(PopupPanel,Popup);
+	GDCLASS(PopupPanel,Popup);
 
 
 protected:

@@ -35,7 +35,7 @@
 class Translation : public Resource {
 
 
-	OBJ_TYPE( Translation, Resource );
+	GDCLASS( Translation, Resource );
 	OBJ_SAVE_TYPE( Translation );
 	RES_BASE_EXTENSION("xl");
 
@@ -68,7 +68,7 @@ public:
 
 class TranslationServer : public Object {
 
-	OBJ_TYPE(TranslationServer, Object);
+	GDCLASS(TranslationServer, Object);
 
 	String locale;
 	String fallback;

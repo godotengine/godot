@@ -53,8 +53,8 @@ void EditorPath::_add_children_to_popup(Object* p_obj,int p_depth) {
 
 		Ref<Texture> icon;
 
-		if (has_icon(obj->get_type(),"EditorIcons"))
-			icon=get_icon(obj->get_type(),"EditorIcons");
+		if (has_icon(obj->get_class(),"EditorIcons"))
+			icon=get_icon(obj->get_class(),"EditorIcons");
 		else
 			icon=get_icon("Object","EditorIcons");
 
@@ -121,12 +121,12 @@ void EditorPath::_notification(int p_what) {
 				if (!obj)
 					continue;
 
-				String type = obj->get_type();
+				String type = obj->get_class();
 
 				Ref<Texture> icon;
 
-				if (has_icon(obj->get_type(),"EditorIcons"))
-					icon=get_icon(obj->get_type(),"EditorIcons");
+				if (has_icon(obj->get_class(),"EditorIcons"))
+					icon=get_icon(obj->get_class(),"EditorIcons");
 				else
 					icon=get_icon("Object","EditorIcons");
 
@@ -151,17 +151,17 @@ void EditorPath::_notification(int p_what) {
 							name=r->get_name();
 
 						if (name=="")
-							name=r->get_type();
+							name=r->get_class();
 					} else if (obj->cast_to<Node>()) {
 
 						name=obj->cast_to<Node>()->get_name();
 					} else if (obj->cast_to<Resource>() && obj->cast_to<Resource>()->get_name()!="") {
 						name=obj->cast_to<Resource>()->get_name();
 					} else {
-						name=obj->get_type();
+						name=obj->get_class();
 					}
 
-					set_tooltip(obj->get_type());
+					set_tooltip(obj->get_class());
 
 
 					label_font->draw(ci,Point2i(ofs,(size.height-label_font->get_height())/2+label_font->get_ascent()),name,Color(1,1,1),left);
@@ -198,8 +198,8 @@ void EditorPath::_popup_select(int p_idx) {
 
 void EditorPath::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_input_event",&EditorPath::_input_event);
-	ObjectTypeDB::bind_method("_popup_select",&EditorPath::_popup_select);
+	ClassDB::bind_method("_input_event",&EditorPath::_input_event);
+	ClassDB::bind_method("_popup_select",&EditorPath::_popup_select);
 }
 
 EditorPath::EditorPath(EditorHistory *p_history) {

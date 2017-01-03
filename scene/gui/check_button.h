@@ -36,7 +36,7 @@
 */
 class CheckButton : public Button {
 
-	OBJ_TYPE( CheckButton, Button );
+	GDCLASS( CheckButton, Button );
 
 
 protected:

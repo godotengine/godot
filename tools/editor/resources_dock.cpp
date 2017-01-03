@@ -161,7 +161,7 @@ void ResourcesDock::save_resource_as(const Ref<Resource>& p_resource) {
 
 		String existing;
 		if (extensions.size()) {
-			existing="new_"+res->get_type().to_lower()+"."+extensions.front()->get().to_lower();
+			existing="new_"+res->get_class().to_lower()+"."+extensions.front()->get().to_lower();
 		}
 
 		file->set_current_file(existing);
@@ -214,7 +214,7 @@ void ResourcesDock::_update_name(TreeItem *item) {
 	else if (res->get_path()!="" && res->get_path().find("::")==-1)
 		item->set_text(0,res->get_path().get_file());
 	else
-		item->set_text(0,res->get_type()+" ("+itos(res->get_instance_ID())+")");
+		item->set_text(0,res->get_class()+" ("+itos(res->get_instance_ID())+")");
 
 }
 
@@ -267,8 +267,8 @@ void ResourcesDock::add_resource(const Ref<Resource>& p_resource) {
 	TreeItem *res = resources->create_item(root);
 	res->set_metadata(0,p_resource);
 
-	if (has_icon(p_resource->get_type(),"EditorIcons")) {
-		res->set_icon(0,get_icon(p_resource->get_type(),"EditorIcons"));
+	if (has_icon(p_resource->get_class(),"EditorIcons")) {
+		res->set_icon(0,get_icon(p_resource->get_class(),"EditorIcons"));
 	}
 
 	_update_name(res);
@@ -319,12 +319,12 @@ void ResourcesDock::_create() {
 
 void ResourcesDock::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_tool_selected"),&ResourcesDock::_tool_selected);
-	ObjectTypeDB::bind_method(_MD("_create"),&ResourcesDock::_create);
-	ObjectTypeDB::bind_method(_MD("_resource_selected"),&ResourcesDock::_resource_selected);
-	ObjectTypeDB::bind_method(_MD("_delete"),&ResourcesDock::_delete);
-	ObjectTypeDB::bind_method(_MD("remove_resource"),&ResourcesDock::remove_resource);
-	ObjectTypeDB::bind_method(_MD("_file_action"),&ResourcesDock::_file_action);
+	ClassDB::bind_method(_MD("_tool_selected"),&ResourcesDock::_tool_selected);
+	ClassDB::bind_method(_MD("_create"),&ResourcesDock::_create);
+	ClassDB::bind_method(_MD("_resource_selected"),&ResourcesDock::_resource_selected);
+	ClassDB::bind_method(_MD("_delete"),&ResourcesDock::_delete);
+	ClassDB::bind_method(_MD("remove_resource"),&ResourcesDock::remove_resource);
+	ClassDB::bind_method(_MD("_file_action"),&ResourcesDock::_file_action);
 
 
 

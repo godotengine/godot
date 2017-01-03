@@ -49,7 +49,7 @@ class EditorTextureImportDialog;
 
 class EditorTextureImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorTextureImportPlugin,EditorImportPlugin);
+	GDCLASS(EditorTextureImportPlugin,EditorImportPlugin);
 public:
 
 
@@ -119,7 +119,7 @@ public:
 
 class EditorTextureExportPlugin : public EditorExportPlugin {
 
-	OBJ_TYPE( EditorTextureExportPlugin, EditorExportPlugin);
+	GDCLASS( EditorTextureExportPlugin, EditorExportPlugin);
 
 
 public:
@@ -130,7 +130,7 @@ public:
 
 class EditorImportTextureOptions : public VBoxContainer {
 
-	OBJ_TYPE( EditorImportTextureOptions, VBoxContainer );
+	GDCLASS( EditorImportTextureOptions, VBoxContainer );
 
 
 	OptionButton *format;

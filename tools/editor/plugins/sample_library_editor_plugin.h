@@ -42,7 +42,7 @@
 
 class SampleLibraryEditor : public Panel {
 
-	OBJ_TYPE(SampleLibraryEditor, Panel );
+	GDCLASS(SampleLibraryEditor, Panel );
 
 
 
@@ -85,7 +85,7 @@ public:
 
 class SampleLibraryEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SampleLibraryEditorPlugin, EditorPlugin );
+	GDCLASS( SampleLibraryEditorPlugin, EditorPlugin );
 
 	SampleLibraryEditor *sample_library_editor;
 	EditorNode *editor;

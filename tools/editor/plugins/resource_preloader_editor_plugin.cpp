@@ -179,7 +179,7 @@ void ResourcePreloaderEditor::_paste_pressed() {
 	if (name=="")
 		name=r->get_path().get_file();
 	if (name=="")
-		name=r->get_type();
+		name=r->get_class();
 
 	String basename = name;
 	int counter=1;
@@ -248,7 +248,7 @@ void ResourcePreloaderEditor::_update_library() {
 		ERR_CONTINUE(r.is_null());
 
 		ti->set_tooltip(0,r->get_path());
-		String type = r->get_type();
+		String type = r->get_class();
 		ti->set_text(1,type);
 		ti->set_selectable(1,false);
 
@@ -381,19 +381,19 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2& p_point,const Variant& 
 
 void ResourcePreloaderEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&ResourcePreloaderEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_load_pressed"),&ResourcePreloaderEditor::_load_pressed);
-	ObjectTypeDB::bind_method(_MD("_item_edited"),&ResourcePreloaderEditor::_item_edited);
-	ObjectTypeDB::bind_method(_MD("_delete_pressed"),&ResourcePreloaderEditor::_delete_pressed);
-	ObjectTypeDB::bind_method(_MD("_paste_pressed"),&ResourcePreloaderEditor::_paste_pressed);
-	ObjectTypeDB::bind_method(_MD("_delete_confirm_pressed"),&ResourcePreloaderEditor::_delete_confirm_pressed);
-	ObjectTypeDB::bind_method(_MD("_files_load_request"),&ResourcePreloaderEditor::_files_load_request);
-	ObjectTypeDB::bind_method(_MD("_update_library"),&ResourcePreloaderEditor::_update_library);
+	ClassDB::bind_method(_MD("_input_event"),&ResourcePreloaderEditor::_input_event);
+	ClassDB::bind_method(_MD("_load_pressed"),&ResourcePreloaderEditor::_load_pressed);
+	ClassDB::bind_method(_MD("_item_edited"),&ResourcePreloaderEditor::_item_edited);
+	ClassDB::bind_method(_MD("_delete_pressed"),&ResourcePreloaderEditor::_delete_pressed);
+	ClassDB::bind_method(_MD("_paste_pressed"),&ResourcePreloaderEditor::_paste_pressed);
+	ClassDB::bind_method(_MD("_delete_confirm_pressed"),&ResourcePreloaderEditor::_delete_confirm_pressed);
+	ClassDB::bind_method(_MD("_files_load_request"),&ResourcePreloaderEditor::_files_load_request);
+	ClassDB::bind_method(_MD("_update_library"),&ResourcePreloaderEditor::_update_library);
 
 
-	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
-	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
-	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
+	ClassDB::bind_method(_MD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
+	ClassDB::bind_method(_MD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
+	ClassDB::bind_method(_MD("drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
 
 
 }
@@ -462,7 +462,7 @@ void ResourcePreloaderEditorPlugin::edit(Object *p_object) {
 
 bool ResourcePreloaderEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("ResourcePreloader");
+	return p_object->is_class("ResourcePreloader");
 }
 
 void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {

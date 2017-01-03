@@ -52,7 +52,7 @@ class EditorNode;
 
 
 class FileSystemDock : public VBoxContainer {
-	OBJ_TYPE( FileSystemDock, VBoxContainer );
+	GDCLASS( FileSystemDock, VBoxContainer );
 
 public:
 	enum DisplayMode {

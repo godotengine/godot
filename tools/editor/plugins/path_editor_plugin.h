@@ -35,7 +35,7 @@
 # if 0
 class PathSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(PathSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(PathSpatialGizmo,EditorSpatialGizmo);
 
 	Path* path;
 	mutable Vector3 original;
@@ -54,7 +54,7 @@ public:
 
 class PathEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( PathEditorPlugin, EditorPlugin );
+	GDCLASS( PathEditorPlugin, EditorPlugin );
 
 
 	Separator *sep;

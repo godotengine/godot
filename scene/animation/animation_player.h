@@ -39,7 +39,7 @@
 */
 
 class AnimationPlayer : public Node {
-	OBJ_TYPE( AnimationPlayer, Node );
+	GDCLASS( AnimationPlayer, Node );
 	OBJ_CATEGORY("Animation Nodes");
 
 public:

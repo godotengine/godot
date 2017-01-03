@@ -40,7 +40,7 @@ class Camera;
 class VisibilityNotifier;
 
 class World : public Resource {
-	OBJ_TYPE(World, Resource);
+	GDCLASS(World, Resource);
 	RES_BASE_EXTENSION("wrd");
 private:
 	RID space;

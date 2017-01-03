@@ -53,7 +53,7 @@ class EditorFileSystem;
 
 class EditorPlugin : public Node {
 
-	OBJ_TYPE( EditorPlugin, Node );
+	GDCLASS( EditorPlugin, Node );
 friend class EditorData;
 	UndoRedo *undo_redo;
 

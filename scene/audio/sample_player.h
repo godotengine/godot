@@ -34,7 +34,7 @@
 
 class SamplePlayer : public Node {
 
-	OBJ_TYPE( SamplePlayer, Node );
+	GDCLASS( SamplePlayer, Node );
 	OBJ_CATEGORY("Audio Nodes");
 public:
 

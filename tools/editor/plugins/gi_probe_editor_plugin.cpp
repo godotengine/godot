@@ -20,7 +20,7 @@ void GIProbeEditorPlugin::edit(Object *p_object) {
 
 bool GIProbeEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("GIProbe");
+	return p_object->is_class("GIProbe");
 }
 
 void GIProbeEditorPlugin::make_visible(bool p_visible) {
@@ -36,7 +36,7 @@ void GIProbeEditorPlugin::make_visible(bool p_visible) {
 
 void GIProbeEditorPlugin::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_bake",&GIProbeEditorPlugin::_bake);
+	ClassDB::bind_method("_bake",&GIProbeEditorPlugin::_bake);
 }
 
 GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {

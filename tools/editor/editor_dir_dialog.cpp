@@ -224,10 +224,10 @@ void EditorDirDialog::_make_dir_confirm() {
 
 void EditorDirDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_item_collapsed"),&EditorDirDialog::_item_collapsed);
-	ObjectTypeDB::bind_method(_MD("_make_dir"),&EditorDirDialog::_make_dir);
-	ObjectTypeDB::bind_method(_MD("_make_dir_confirm"),&EditorDirDialog::_make_dir_confirm);
-	ObjectTypeDB::bind_method(_MD("reload"),&EditorDirDialog::reload);
+	ClassDB::bind_method(_MD("_item_collapsed"),&EditorDirDialog::_item_collapsed);
+	ClassDB::bind_method(_MD("_make_dir"),&EditorDirDialog::_make_dir);
+	ClassDB::bind_method(_MD("_make_dir_confirm"),&EditorDirDialog::_make_dir_confirm);
+	ClassDB::bind_method(_MD("reload"),&EditorDirDialog::reload);
 
 	ADD_SIGNAL(MethodInfo("dir_selected",PropertyInfo(Variant::STRING,"dir")));
 }

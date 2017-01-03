@@ -46,7 +46,7 @@ class Panel;
 
 class Control : public CanvasItem {
 
-	OBJ_TYPE( Control, CanvasItem );
+	GDCLASS( Control, CanvasItem );
 	OBJ_CATEGORY("GUI Nodes");
 
 public:

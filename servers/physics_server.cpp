@@ -74,42 +74,42 @@ PhysicsServer * PhysicsServer::get_singleton() {
 
 void PhysicsDirectBodyState::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_total_gravity"),&PhysicsDirectBodyState::get_total_gravity);
-	ObjectTypeDB::bind_method(_MD("get_total_linear_damp"),&PhysicsDirectBodyState::get_total_linear_damp);
-	ObjectTypeDB::bind_method(_MD("get_total_angular_damp"),&PhysicsDirectBodyState::get_total_angular_damp);
+	ClassDB::bind_method(_MD("get_total_gravity"),&PhysicsDirectBodyState::get_total_gravity);
+	ClassDB::bind_method(_MD("get_total_linear_damp"),&PhysicsDirectBodyState::get_total_linear_damp);
+	ClassDB::bind_method(_MD("get_total_angular_damp"),&PhysicsDirectBodyState::get_total_angular_damp);
 
-	ObjectTypeDB::bind_method(_MD("get_inverse_mass"),&PhysicsDirectBodyState::get_inverse_mass);
-	ObjectTypeDB::bind_method(_MD("get_inverse_inertia"),&PhysicsDirectBodyState::get_inverse_inertia);
+	ClassDB::bind_method(_MD("get_inverse_mass"),&PhysicsDirectBodyState::get_inverse_mass);
+	ClassDB::bind_method(_MD("get_inverse_inertia"),&PhysicsDirectBodyState::get_inverse_inertia);
 
-	ObjectTypeDB::bind_method(_MD("set_linear_velocity","velocity"),&PhysicsDirectBodyState::set_linear_velocity);
-	ObjectTypeDB::bind_method(_MD("get_linear_velocity"),&PhysicsDirectBodyState::get_linear_velocity);
+	ClassDB::bind_method(_MD("set_linear_velocity","velocity"),&PhysicsDirectBodyState::set_linear_velocity);
+	ClassDB::bind_method(_MD("get_linear_velocity"),&PhysicsDirectBodyState::get_linear_velocity);
 
-	ObjectTypeDB::bind_method(_MD("set_angular_velocity","velocity"),&PhysicsDirectBodyState::set_angular_velocity);
-	ObjectTypeDB::bind_method(_MD("get_angular_velocity"),&PhysicsDirectBodyState::get_angular_velocity);
+	ClassDB::bind_method(_MD("set_angular_velocity","velocity"),&PhysicsDirectBodyState::set_angular_velocity);
+	ClassDB::bind_method(_MD("get_angular_velocity"),&PhysicsDirectBodyState::get_angular_velocity);
 
-	ObjectTypeDB::bind_method(_MD("set_transform","transform"),&PhysicsDirectBodyState::set_transform);
-	ObjectTypeDB::bind_method(_MD("get_transform"),&PhysicsDirectBodyState::get_transform);
+	ClassDB::bind_method(_MD("set_transform","transform"),&PhysicsDirectBodyState::set_transform);
+	ClassDB::bind_method(_MD("get_transform"),&PhysicsDirectBodyState::get_transform);
 
-	ObjectTypeDB::bind_method(_MD("add_force","force","pos"),&PhysicsDirectBodyState::add_force);
-	ObjectTypeDB::bind_method(_MD("apply_impulse","pos","j"),&PhysicsDirectBodyState::apply_impulse);
+	ClassDB::bind_method(_MD("add_force","force","pos"),&PhysicsDirectBodyState::add_force);
+	ClassDB::bind_method(_MD("apply_impulse","pos","j"),&PhysicsDirectBodyState::apply_impulse);
 
-	ObjectTypeDB::bind_method(_MD("set_sleep_state","enabled"),&PhysicsDirectBodyState::set_sleep_state);
-	ObjectTypeDB::bind_method(_MD("is_sleeping"),&PhysicsDirectBodyState::is_sleeping);
+	ClassDB::bind_method(_MD("set_sleep_state","enabled"),&PhysicsDirectBodyState::set_sleep_state);
+	ClassDB::bind_method(_MD("is_sleeping"),&PhysicsDirectBodyState::is_sleeping);
 
-	ObjectTypeDB::bind_method(_MD("get_contact_count"),&PhysicsDirectBodyState::get_contact_count);
+	ClassDB::bind_method(_MD("get_contact_count"),&PhysicsDirectBodyState::get_contact_count);
 
-	ObjectTypeDB::bind_method(_MD("get_contact_local_pos","contact_idx"),&PhysicsDirectBodyState::get_contact_local_pos);
-	ObjectTypeDB::bind_method(_MD("get_contact_local_normal","contact_idx"),&PhysicsDirectBodyState::get_contact_local_normal);
-	ObjectTypeDB::bind_method(_MD("get_contact_local_shape","contact_idx"),&PhysicsDirectBodyState::get_contact_local_shape);
-	ObjectTypeDB::bind_method(_MD("get_contact_collider","contact_idx"),&PhysicsDirectBodyState::get_contact_collider);
-	ObjectTypeDB::bind_method(_MD("get_contact_collider_pos","contact_idx"),&PhysicsDirectBodyState::get_contact_collider_pos);
-	ObjectTypeDB::bind_method(_MD("get_contact_collider_id","contact_idx"),&PhysicsDirectBodyState::get_contact_collider_id);
-	ObjectTypeDB::bind_method(_MD("get_contact_collider_object","contact_idx"),&PhysicsDirectBodyState::get_contact_collider_object);
-	ObjectTypeDB::bind_method(_MD("get_contact_collider_shape","contact_idx"),&PhysicsDirectBodyState::get_contact_collider_shape);
-	ObjectTypeDB::bind_method(_MD("get_contact_collider_velocity_at_pos","contact_idx"),&PhysicsDirectBodyState::get_contact_collider_velocity_at_pos);
-	ObjectTypeDB::bind_method(_MD("get_step"),&PhysicsDirectBodyState::get_step);
-	ObjectTypeDB::bind_method(_MD("integrate_forces"),&PhysicsDirectBodyState::integrate_forces);
-	ObjectTypeDB::bind_method(_MD("get_space_state:PhysicsDirectSpaceState"),&PhysicsDirectBodyState::get_space_state);
+	ClassDB::bind_method(_MD("get_contact_local_pos","contact_idx"),&PhysicsDirectBodyState::get_contact_local_pos);
+	ClassDB::bind_method(_MD("get_contact_local_normal","contact_idx"),&PhysicsDirectBodyState::get_contact_local_normal);
+	ClassDB::bind_method(_MD("get_contact_local_shape","contact_idx"),&PhysicsDirectBodyState::get_contact_local_shape);
+	ClassDB::bind_method(_MD("get_contact_collider","contact_idx"),&PhysicsDirectBodyState::get_contact_collider);
+	ClassDB::bind_method(_MD("get_contact_collider_pos","contact_idx"),&PhysicsDirectBodyState::get_contact_collider_pos);
+	ClassDB::bind_method(_MD("get_contact_collider_id","contact_idx"),&PhysicsDirectBodyState::get_contact_collider_id);
+	ClassDB::bind_method(_MD("get_contact_collider_object","contact_idx"),&PhysicsDirectBodyState::get_contact_collider_object);
+	ClassDB::bind_method(_MD("get_contact_collider_shape","contact_idx"),&PhysicsDirectBodyState::get_contact_collider_shape);
+	ClassDB::bind_method(_MD("get_contact_collider_velocity_at_pos","contact_idx"),&PhysicsDirectBodyState::get_contact_collider_velocity_at_pos);
+	ClassDB::bind_method(_MD("get_step"),&PhysicsDirectBodyState::get_step);
+	ClassDB::bind_method(_MD("integrate_forces"),&PhysicsDirectBodyState::integrate_forces);
+	ClassDB::bind_method(_MD("get_space_state:PhysicsDirectSpaceState"),&PhysicsDirectBodyState::get_space_state);
 
 }
 
@@ -193,24 +193,24 @@ Vector<RID> PhysicsShapeQueryParameters::get_exclude() const{
 
 void PhysicsShapeQueryParameters::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_shape","shape:Shape"),&PhysicsShapeQueryParameters::set_shape);
-	ObjectTypeDB::bind_method(_MD("set_shape_rid","shape"),&PhysicsShapeQueryParameters::set_shape_rid);
-	ObjectTypeDB::bind_method(_MD("get_shape_rid"),&PhysicsShapeQueryParameters::get_shape_rid);
+	ClassDB::bind_method(_MD("set_shape","shape:Shape"),&PhysicsShapeQueryParameters::set_shape);
+	ClassDB::bind_method(_MD("set_shape_rid","shape"),&PhysicsShapeQueryParameters::set_shape_rid);
+	ClassDB::bind_method(_MD("get_shape_rid"),&PhysicsShapeQueryParameters::get_shape_rid);
 
-	ObjectTypeDB::bind_method(_MD("set_transform","transform"),&PhysicsShapeQueryParameters::set_transform);
-	ObjectTypeDB::bind_method(_MD("get_transform"),&PhysicsShapeQueryParameters::get_transform);
+	ClassDB::bind_method(_MD("set_transform","transform"),&PhysicsShapeQueryParameters::set_transform);
+	ClassDB::bind_method(_MD("get_transform"),&PhysicsShapeQueryParameters::get_transform);
 
-	ObjectTypeDB::bind_method(_MD("set_margin","margin"),&PhysicsShapeQueryParameters::set_margin);
-	ObjectTypeDB::bind_method(_MD("get_margin"),&PhysicsShapeQueryParameters::get_margin);
+	ClassDB::bind_method(_MD("set_margin","margin"),&PhysicsShapeQueryParameters::set_margin);
+	ClassDB::bind_method(_MD("get_margin"),&PhysicsShapeQueryParameters::get_margin);
 
-	ObjectTypeDB::bind_method(_MD("set_layer_mask","layer_mask"),&PhysicsShapeQueryParameters::set_layer_mask);
-	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsShapeQueryParameters::get_layer_mask);
+	ClassDB::bind_method(_MD("set_layer_mask","layer_mask"),&PhysicsShapeQueryParameters::set_layer_mask);
+	ClassDB::bind_method(_MD("get_layer_mask"),&PhysicsShapeQueryParameters::get_layer_mask);
 
-	ObjectTypeDB::bind_method(_MD("set_object_type_mask","object_type_mask"),&PhysicsShapeQueryParameters::set_object_type_mask);
-	ObjectTypeDB::bind_method(_MD("get_object_type_mask"),&PhysicsShapeQueryParameters::get_object_type_mask);
+	ClassDB::bind_method(_MD("set_object_type_mask","object_type_mask"),&PhysicsShapeQueryParameters::set_object_type_mask);
+	ClassDB::bind_method(_MD("get_object_type_mask"),&PhysicsShapeQueryParameters::get_object_type_mask);
 
-	ObjectTypeDB::bind_method(_MD("set_exclude","exclude"),&PhysicsShapeQueryParameters::set_exclude);
-	ObjectTypeDB::bind_method(_MD("get_exclude"),&PhysicsShapeQueryParameters::get_exclude);
+	ClassDB::bind_method(_MD("set_exclude","exclude"),&PhysicsShapeQueryParameters::set_exclude);
+	ClassDB::bind_method(_MD("get_exclude"),&PhysicsShapeQueryParameters::get_exclude);
 
 
 }
@@ -359,14 +359,14 @@ PhysicsDirectSpaceState::PhysicsDirectSpaceState() {
 void PhysicsDirectSpaceState::_bind_methods() {
 
 
-//	ObjectTypeDB::bind_method(_MD("intersect_ray","from","to","exclude","umask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0));
-//	ObjectTypeDB::bind_method(_MD("intersect_shape:PhysicsShapeQueryResult","shape","xform","result_max","exclude","umask"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
+//	ClassDB::bind_method(_MD("intersect_ray","from","to","exclude","umask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0));
+//	ClassDB::bind_method(_MD("intersect_shape:PhysicsShapeQueryResult","shape","xform","result_max","exclude","umask"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
 
-	ObjectTypeDB::bind_method(_MD("intersect_ray:Dictionary","from","to","exclude","layer_mask","type_mask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0x7FFFFFFF),DEFVAL(TYPE_MASK_COLLISION));
-	ObjectTypeDB::bind_method(_MD("intersect_shape","shape:PhysicsShapeQueryParameters","max_results"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(32));
-	ObjectTypeDB::bind_method(_MD("cast_motion","shape:PhysicsShapeQueryParameters","motion"),&PhysicsDirectSpaceState::_cast_motion);
-	ObjectTypeDB::bind_method(_MD("collide_shape","shape:PhysicsShapeQueryParameters","max_results"),&PhysicsDirectSpaceState::_collide_shape,DEFVAL(32));
-	ObjectTypeDB::bind_method(_MD("get_rest_info","shape:PhysicsShapeQueryParameters"),&PhysicsDirectSpaceState::_get_rest_info);
+	ClassDB::bind_method(_MD("intersect_ray:Dictionary","from","to","exclude","layer_mask","type_mask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0x7FFFFFFF),DEFVAL(TYPE_MASK_COLLISION));
+	ClassDB::bind_method(_MD("intersect_shape","shape:PhysicsShapeQueryParameters","max_results"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(32));
+	ClassDB::bind_method(_MD("cast_motion","shape:PhysicsShapeQueryParameters","motion"),&PhysicsDirectSpaceState::_cast_motion);
+	ClassDB::bind_method(_MD("collide_shape","shape:PhysicsShapeQueryParameters","max_results"),&PhysicsDirectSpaceState::_collide_shape,DEFVAL(32));
+	ClassDB::bind_method(_MD("get_rest_info","shape:PhysicsShapeQueryParameters"),&PhysicsDirectSpaceState::_get_rest_info);
 
 
 	BIND_CONSTANT( TYPE_MASK_STATIC_BODY );
@@ -407,11 +407,11 @@ PhysicsShapeQueryResult::PhysicsShapeQueryResult() {
 
 void PhysicsShapeQueryResult::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_result_count"),&PhysicsShapeQueryResult::get_result_count);
-	ObjectTypeDB::bind_method(_MD("get_result_rid","idx"),&PhysicsShapeQueryResult::get_result_rid);
-	ObjectTypeDB::bind_method(_MD("get_result_object_id","idx"),&PhysicsShapeQueryResult::get_result_object_id);
-	ObjectTypeDB::bind_method(_MD("get_result_object","idx"),&PhysicsShapeQueryResult::get_result_object);
-	ObjectTypeDB::bind_method(_MD("get_result_object_shape","idx"),&PhysicsShapeQueryResult::get_result_object_shape);
+	ClassDB::bind_method(_MD("get_result_count"),&PhysicsShapeQueryResult::get_result_count);
+	ClassDB::bind_method(_MD("get_result_rid","idx"),&PhysicsShapeQueryResult::get_result_rid);
+	ClassDB::bind_method(_MD("get_result_object_id","idx"),&PhysicsShapeQueryResult::get_result_object_id);
+	ClassDB::bind_method(_MD("get_result_object","idx"),&PhysicsShapeQueryResult::get_result_object);
+	ClassDB::bind_method(_MD("get_result_object_shape","idx"),&PhysicsShapeQueryResult::get_result_object_shape);
 
 
 }
@@ -425,117 +425,117 @@ void PhysicsShapeQueryResult::_bind_methods() {
 void PhysicsServer::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("shape_create","type"),&PhysicsServer::shape_create);
-	ObjectTypeDB::bind_method(_MD("shape_set_data","shape","data"),&PhysicsServer::shape_set_data);
+	ClassDB::bind_method(_MD("shape_create","type"),&PhysicsServer::shape_create);
+	ClassDB::bind_method(_MD("shape_set_data","shape","data"),&PhysicsServer::shape_set_data);
 
-	ObjectTypeDB::bind_method(_MD("shape_get_type","shape"),&PhysicsServer::shape_get_type);
-	ObjectTypeDB::bind_method(_MD("shape_get_data","shape"),&PhysicsServer::shape_get_data);
-
-
-	ObjectTypeDB::bind_method(_MD("space_create"),&PhysicsServer::space_create);
-	ObjectTypeDB::bind_method(_MD("space_set_active","space","active"),&PhysicsServer::space_set_active);
-	ObjectTypeDB::bind_method(_MD("space_is_active","space"),&PhysicsServer::space_is_active);
-	ObjectTypeDB::bind_method(_MD("space_set_param","space","param","value"),&PhysicsServer::space_set_param);
-	ObjectTypeDB::bind_method(_MD("space_get_param","space","param"),&PhysicsServer::space_get_param);
-	ObjectTypeDB::bind_method(_MD("space_get_direct_state:PhysicsDirectSpaceState","space"),&PhysicsServer::space_get_direct_state);
-
-	ObjectTypeDB::bind_method(_MD("area_create"),&PhysicsServer::area_create);
-	ObjectTypeDB::bind_method(_MD("area_set_space","area","space"),&PhysicsServer::area_set_space);
-	ObjectTypeDB::bind_method(_MD("area_get_space","area"),&PhysicsServer::area_get_space);
-
-	ObjectTypeDB::bind_method(_MD("area_set_space_override_mode","area","mode"),&PhysicsServer::area_set_space_override_mode);
-	ObjectTypeDB::bind_method(_MD("area_get_space_override_mode","area"),&PhysicsServer::area_get_space_override_mode);
-
-	ObjectTypeDB::bind_method(_MD("area_add_shape","area","shape","transform"),&PhysicsServer::area_add_shape,DEFVAL(Transform()));
-	ObjectTypeDB::bind_method(_MD("area_set_shape","area","shape_idx","shape"),&PhysicsServer::area_set_shape);
-	ObjectTypeDB::bind_method(_MD("area_set_shape_transform","area","shape_idx","transform"),&PhysicsServer::area_set_shape_transform);
-
-	ObjectTypeDB::bind_method(_MD("area_get_shape_count","area"),&PhysicsServer::area_get_shape_count);
-	ObjectTypeDB::bind_method(_MD("area_get_shape","area","shape_idx"),&PhysicsServer::area_get_shape);
-	ObjectTypeDB::bind_method(_MD("area_get_shape_transform","area","shape_idx"),&PhysicsServer::area_get_shape_transform);
-
-	ObjectTypeDB::bind_method(_MD("area_remove_shape","area","shape_idx"),&PhysicsServer::area_remove_shape);
-	ObjectTypeDB::bind_method(_MD("area_clear_shapes","area"),&PhysicsServer::area_clear_shapes);
-
-	ObjectTypeDB::bind_method(_MD("area_set_layer_mask","area","mask"),&PhysicsServer::area_set_layer_mask);
-	ObjectTypeDB::bind_method(_MD("area_set_collision_mask","area","mask"),&PhysicsServer::area_set_collision_mask);
-
-	ObjectTypeDB::bind_method(_MD("area_set_param","area","param","value"),&PhysicsServer::area_set_param);
-	ObjectTypeDB::bind_method(_MD("area_set_transform","area","transform"),&PhysicsServer::area_set_transform);
-
-	ObjectTypeDB::bind_method(_MD("area_get_param","area","param"),&PhysicsServer::area_get_param);
-	ObjectTypeDB::bind_method(_MD("area_get_transform","area"),&PhysicsServer::area_get_transform);
-
-	ObjectTypeDB::bind_method(_MD("area_attach_object_instance_ID","area","id"),&PhysicsServer::area_attach_object_instance_ID);
-	ObjectTypeDB::bind_method(_MD("area_get_object_instance_ID","area"),&PhysicsServer::area_get_object_instance_ID);
-
-	ObjectTypeDB::bind_method(_MD("area_set_monitor_callback","area","receiver","method"),&PhysicsServer::area_set_monitor_callback);
-
-	ObjectTypeDB::bind_method(_MD("area_set_ray_pickable","area","enable"),&PhysicsServer::area_set_ray_pickable);
-	ObjectTypeDB::bind_method(_MD("area_is_ray_pickable","area"),&PhysicsServer::area_is_ray_pickable);
-
-	ObjectTypeDB::bind_method(_MD("body_create","mode","init_sleeping"),&PhysicsServer::body_create,DEFVAL(BODY_MODE_RIGID),DEFVAL(false));
-
-	ObjectTypeDB::bind_method(_MD("body_set_space","body","space"),&PhysicsServer::body_set_space);
-	ObjectTypeDB::bind_method(_MD("body_get_space","body"),&PhysicsServer::body_get_space);
-
-	ObjectTypeDB::bind_method(_MD("body_set_mode","body","mode"),&PhysicsServer::body_set_mode);
-	ObjectTypeDB::bind_method(_MD("body_get_mode","body"),&PhysicsServer::body_get_mode);
-
-	ObjectTypeDB::bind_method(_MD("body_set_layer_mask","body","mask"),&PhysicsServer::body_set_layer_mask);
-	ObjectTypeDB::bind_method(_MD("body_get_layer_mask","body"),&PhysicsServer::body_get_layer_mask);
-
-	ObjectTypeDB::bind_method(_MD("body_set_collision_mask","body","mask"),&PhysicsServer::body_set_collision_mask);
-	ObjectTypeDB::bind_method(_MD("body_get_collision_mask","body"),&PhysicsServer::body_get_collision_mask);
-
-	ObjectTypeDB::bind_method(_MD("body_add_shape","body","shape","transform"),&PhysicsServer::body_add_shape,DEFVAL(Transform()));
-	ObjectTypeDB::bind_method(_MD("body_set_shape","body","shape_idx","shape"),&PhysicsServer::body_set_shape);
-	ObjectTypeDB::bind_method(_MD("body_set_shape_transform","body","shape_idx","transform"),&PhysicsServer::body_set_shape_transform);
-
-	ObjectTypeDB::bind_method(_MD("body_get_shape_count","body"),&PhysicsServer::body_get_shape_count);
-	ObjectTypeDB::bind_method(_MD("body_get_shape","body","shape_idx"),&PhysicsServer::body_get_shape);
-	ObjectTypeDB::bind_method(_MD("body_get_shape_transform","body","shape_idx"),&PhysicsServer::body_get_shape_transform);
-
-	ObjectTypeDB::bind_method(_MD("body_remove_shape","body","shape_idx"),&PhysicsServer::body_remove_shape);
-	ObjectTypeDB::bind_method(_MD("body_clear_shapes","body"),&PhysicsServer::body_clear_shapes);
-
-	ObjectTypeDB::bind_method(_MD("body_attach_object_instance_ID","body","id"),&PhysicsServer::body_attach_object_instance_ID);
-	ObjectTypeDB::bind_method(_MD("body_get_object_instance_ID","body"),&PhysicsServer::body_get_object_instance_ID);
+	ClassDB::bind_method(_MD("shape_get_type","shape"),&PhysicsServer::shape_get_type);
+	ClassDB::bind_method(_MD("shape_get_data","shape"),&PhysicsServer::shape_get_data);
 
 
-	ObjectTypeDB::bind_method(_MD("body_set_enable_continuous_collision_detection","body","enable"),&PhysicsServer::body_set_enable_continuous_collision_detection);
-	ObjectTypeDB::bind_method(_MD("body_is_continuous_collision_detection_enabled","body"),&PhysicsServer::body_is_continuous_collision_detection_enabled);
+	ClassDB::bind_method(_MD("space_create"),&PhysicsServer::space_create);
+	ClassDB::bind_method(_MD("space_set_active","space","active"),&PhysicsServer::space_set_active);
+	ClassDB::bind_method(_MD("space_is_active","space"),&PhysicsServer::space_is_active);
+	ClassDB::bind_method(_MD("space_set_param","space","param","value"),&PhysicsServer::space_set_param);
+	ClassDB::bind_method(_MD("space_get_param","space","param"),&PhysicsServer::space_get_param);
+	ClassDB::bind_method(_MD("space_get_direct_state:PhysicsDirectSpaceState","space"),&PhysicsServer::space_get_direct_state);
+
+	ClassDB::bind_method(_MD("area_create"),&PhysicsServer::area_create);
+	ClassDB::bind_method(_MD("area_set_space","area","space"),&PhysicsServer::area_set_space);
+	ClassDB::bind_method(_MD("area_get_space","area"),&PhysicsServer::area_get_space);
+
+	ClassDB::bind_method(_MD("area_set_space_override_mode","area","mode"),&PhysicsServer::area_set_space_override_mode);
+	ClassDB::bind_method(_MD("area_get_space_override_mode","area"),&PhysicsServer::area_get_space_override_mode);
+
+	ClassDB::bind_method(_MD("area_add_shape","area","shape","transform"),&PhysicsServer::area_add_shape,DEFVAL(Transform()));
+	ClassDB::bind_method(_MD("area_set_shape","area","shape_idx","shape"),&PhysicsServer::area_set_shape);
+	ClassDB::bind_method(_MD("area_set_shape_transform","area","shape_idx","transform"),&PhysicsServer::area_set_shape_transform);
+
+	ClassDB::bind_method(_MD("area_get_shape_count","area"),&PhysicsServer::area_get_shape_count);
+	ClassDB::bind_method(_MD("area_get_shape","area","shape_idx"),&PhysicsServer::area_get_shape);
+	ClassDB::bind_method(_MD("area_get_shape_transform","area","shape_idx"),&PhysicsServer::area_get_shape_transform);
+
+	ClassDB::bind_method(_MD("area_remove_shape","area","shape_idx"),&PhysicsServer::area_remove_shape);
+	ClassDB::bind_method(_MD("area_clear_shapes","area"),&PhysicsServer::area_clear_shapes);
+
+	ClassDB::bind_method(_MD("area_set_layer_mask","area","mask"),&PhysicsServer::area_set_layer_mask);
+	ClassDB::bind_method(_MD("area_set_collision_mask","area","mask"),&PhysicsServer::area_set_collision_mask);
+
+	ClassDB::bind_method(_MD("area_set_param","area","param","value"),&PhysicsServer::area_set_param);
+	ClassDB::bind_method(_MD("area_set_transform","area","transform"),&PhysicsServer::area_set_transform);
+
+	ClassDB::bind_method(_MD("area_get_param","area","param"),&PhysicsServer::area_get_param);
+	ClassDB::bind_method(_MD("area_get_transform","area"),&PhysicsServer::area_get_transform);
+
+	ClassDB::bind_method(_MD("area_attach_object_instance_ID","area","id"),&PhysicsServer::area_attach_object_instance_ID);
+	ClassDB::bind_method(_MD("area_get_object_instance_ID","area"),&PhysicsServer::area_get_object_instance_ID);
+
+	ClassDB::bind_method(_MD("area_set_monitor_callback","area","receiver","method"),&PhysicsServer::area_set_monitor_callback);
+
+	ClassDB::bind_method(_MD("area_set_ray_pickable","area","enable"),&PhysicsServer::area_set_ray_pickable);
+	ClassDB::bind_method(_MD("area_is_ray_pickable","area"),&PhysicsServer::area_is_ray_pickable);
+
+	ClassDB::bind_method(_MD("body_create","mode","init_sleeping"),&PhysicsServer::body_create,DEFVAL(BODY_MODE_RIGID),DEFVAL(false));
+
+	ClassDB::bind_method(_MD("body_set_space","body","space"),&PhysicsServer::body_set_space);
+	ClassDB::bind_method(_MD("body_get_space","body"),&PhysicsServer::body_get_space);
+
+	ClassDB::bind_method(_MD("body_set_mode","body","mode"),&PhysicsServer::body_set_mode);
+	ClassDB::bind_method(_MD("body_get_mode","body"),&PhysicsServer::body_get_mode);
+
+	ClassDB::bind_method(_MD("body_set_layer_mask","body","mask"),&PhysicsServer::body_set_layer_mask);
+	ClassDB::bind_method(_MD("body_get_layer_mask","body"),&PhysicsServer::body_get_layer_mask);
+
+	ClassDB::bind_method(_MD("body_set_collision_mask","body","mask"),&PhysicsServer::body_set_collision_mask);
+	ClassDB::bind_method(_MD("body_get_collision_mask","body"),&PhysicsServer::body_get_collision_mask);
+
+	ClassDB::bind_method(_MD("body_add_shape","body","shape","transform"),&PhysicsServer::body_add_shape,DEFVAL(Transform()));
+	ClassDB::bind_method(_MD("body_set_shape","body","shape_idx","shape"),&PhysicsServer::body_set_shape);
+	ClassDB::bind_method(_MD("body_set_shape_transform","body","shape_idx","transform"),&PhysicsServer::body_set_shape_transform);
+
+	ClassDB::bind_method(_MD("body_get_shape_count","body"),&PhysicsServer::body_get_shape_count);
+	ClassDB::bind_method(_MD("body_get_shape","body","shape_idx"),&PhysicsServer::body_get_shape);
+	ClassDB::bind_method(_MD("body_get_shape_transform","body","shape_idx"),&PhysicsServer::body_get_shape_transform);
+
+	ClassDB::bind_method(_MD("body_remove_shape","body","shape_idx"),&PhysicsServer::body_remove_shape);
+	ClassDB::bind_method(_MD("body_clear_shapes","body"),&PhysicsServer::body_clear_shapes);
+
+	ClassDB::bind_method(_MD("body_attach_object_instance_ID","body","id"),&PhysicsServer::body_attach_object_instance_ID);
+	ClassDB::bind_method(_MD("body_get_object_instance_ID","body"),&PhysicsServer::body_get_object_instance_ID);
 
 
-	//ObjectTypeDB::bind_method(_MD("body_set_user_flags","flags""),&PhysicsServer::body_set_shape,DEFVAL(Transform));
-	//ObjectTypeDB::bind_method(_MD("body_get_user_flags","body","shape_idx","shape"),&PhysicsServer::body_get_shape);
+	ClassDB::bind_method(_MD("body_set_enable_continuous_collision_detection","body","enable"),&PhysicsServer::body_set_enable_continuous_collision_detection);
+	ClassDB::bind_method(_MD("body_is_continuous_collision_detection_enabled","body"),&PhysicsServer::body_is_continuous_collision_detection_enabled);
 
-	ObjectTypeDB::bind_method(_MD("body_set_param","body","param","value"),&PhysicsServer::body_set_param);
-	ObjectTypeDB::bind_method(_MD("body_get_param","body","param"),&PhysicsServer::body_get_param);
 
-	ObjectTypeDB::bind_method(_MD("body_set_state","body","state","value"),&PhysicsServer::body_set_state);
-	ObjectTypeDB::bind_method(_MD("body_get_state","body","state"),&PhysicsServer::body_get_state);
+	//ClassDB::bind_method(_MD("body_set_user_flags","flags""),&PhysicsServer::body_set_shape,DEFVAL(Transform));
+	//ClassDB::bind_method(_MD("body_get_user_flags","body","shape_idx","shape"),&PhysicsServer::body_get_shape);
 
-	ObjectTypeDB::bind_method(_MD("body_apply_impulse","body","pos","impulse"),&PhysicsServer::body_apply_impulse);
-	ObjectTypeDB::bind_method(_MD("body_set_axis_velocity","body","axis_velocity"),&PhysicsServer::body_set_axis_velocity);
+	ClassDB::bind_method(_MD("body_set_param","body","param","value"),&PhysicsServer::body_set_param);
+	ClassDB::bind_method(_MD("body_get_param","body","param"),&PhysicsServer::body_get_param);
 
-	ObjectTypeDB::bind_method(_MD("body_set_axis_lock","body","axis"),&PhysicsServer::body_set_axis_lock);
-	ObjectTypeDB::bind_method(_MD("body_get_axis_lock","body"),&PhysicsServer::body_get_axis_lock);
+	ClassDB::bind_method(_MD("body_set_state","body","state","value"),&PhysicsServer::body_set_state);
+	ClassDB::bind_method(_MD("body_get_state","body","state"),&PhysicsServer::body_get_state);
 
-	ObjectTypeDB::bind_method(_MD("body_add_collision_exception","body","excepted_body"),&PhysicsServer::body_add_collision_exception);
-	ObjectTypeDB::bind_method(_MD("body_remove_collision_exception","body","excepted_body"),&PhysicsServer::body_remove_collision_exception);
+	ClassDB::bind_method(_MD("body_apply_impulse","body","pos","impulse"),&PhysicsServer::body_apply_impulse);
+	ClassDB::bind_method(_MD("body_set_axis_velocity","body","axis_velocity"),&PhysicsServer::body_set_axis_velocity);
+
+	ClassDB::bind_method(_MD("body_set_axis_lock","body","axis"),&PhysicsServer::body_set_axis_lock);
+	ClassDB::bind_method(_MD("body_get_axis_lock","body"),&PhysicsServer::body_get_axis_lock);
+
+	ClassDB::bind_method(_MD("body_add_collision_exception","body","excepted_body"),&PhysicsServer::body_add_collision_exception);
+	ClassDB::bind_method(_MD("body_remove_collision_exception","body","excepted_body"),&PhysicsServer::body_remove_collision_exception);
 //	virtual void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions)=0;
 
-	ObjectTypeDB::bind_method(_MD("body_set_max_contacts_reported","body","amount"),&PhysicsServer::body_set_max_contacts_reported);
-	ObjectTypeDB::bind_method(_MD("body_get_max_contacts_reported","body"),&PhysicsServer::body_get_max_contacts_reported);
+	ClassDB::bind_method(_MD("body_set_max_contacts_reported","body","amount"),&PhysicsServer::body_set_max_contacts_reported);
+	ClassDB::bind_method(_MD("body_get_max_contacts_reported","body"),&PhysicsServer::body_get_max_contacts_reported);
 
-	ObjectTypeDB::bind_method(_MD("body_set_omit_force_integration","body","enable"),&PhysicsServer::body_set_omit_force_integration);
-	ObjectTypeDB::bind_method(_MD("body_is_omitting_force_integration","body"),&PhysicsServer::body_is_omitting_force_integration);
+	ClassDB::bind_method(_MD("body_set_omit_force_integration","body","enable"),&PhysicsServer::body_set_omit_force_integration);
+	ClassDB::bind_method(_MD("body_is_omitting_force_integration","body"),&PhysicsServer::body_is_omitting_force_integration);
 
-	ObjectTypeDB::bind_method(_MD("body_set_force_integration_callback","body","receiver","method","userdata"),&PhysicsServer::body_set_force_integration_callback,DEFVAL(Variant()));
+	ClassDB::bind_method(_MD("body_set_force_integration_callback","body","receiver","method","userdata"),&PhysicsServer::body_set_force_integration_callback,DEFVAL(Variant()));
 
-	ObjectTypeDB::bind_method(_MD("body_set_ray_pickable","body","enable"),&PhysicsServer::body_set_ray_pickable);
-	ObjectTypeDB::bind_method(_MD("body_is_ray_pickable","body"),&PhysicsServer::body_is_ray_pickable);
+	ClassDB::bind_method(_MD("body_set_ray_pickable","body","enable"),&PhysicsServer::body_set_ray_pickable);
+	ClassDB::bind_method(_MD("body_is_ray_pickable","body"),&PhysicsServer::body_is_ray_pickable);
 
 	/* JOINT API */
 
@@ -545,15 +545,15 @@ void PhysicsServer::_bind_methods() {
 	BIND_CONSTANT( JOINT_CONE_TWIST );
 	BIND_CONSTANT( JOINT_6DOF );
 
-	ObjectTypeDB::bind_method(_MD("joint_create_pin","body_A","local_A","body_B","local_B"),&PhysicsServer::joint_create_pin);
-	ObjectTypeDB::bind_method(_MD("pin_joint_set_param","joint","param","value"),&PhysicsServer::pin_joint_set_param);
-	ObjectTypeDB::bind_method(_MD("pin_joint_get_param","joint","param"),&PhysicsServer::pin_joint_get_param);
+	ClassDB::bind_method(_MD("joint_create_pin","body_A","local_A","body_B","local_B"),&PhysicsServer::joint_create_pin);
+	ClassDB::bind_method(_MD("pin_joint_set_param","joint","param","value"),&PhysicsServer::pin_joint_set_param);
+	ClassDB::bind_method(_MD("pin_joint_get_param","joint","param"),&PhysicsServer::pin_joint_get_param);
 
-	ObjectTypeDB::bind_method(_MD("pin_joint_set_local_A","joint","local_A"),&PhysicsServer::pin_joint_set_local_A);
-	ObjectTypeDB::bind_method(_MD("pin_joint_get_local_A","joint"),&PhysicsServer::pin_joint_get_local_A);
+	ClassDB::bind_method(_MD("pin_joint_set_local_A","joint","local_A"),&PhysicsServer::pin_joint_set_local_A);
+	ClassDB::bind_method(_MD("pin_joint_get_local_A","joint"),&PhysicsServer::pin_joint_get_local_A);
 
-	ObjectTypeDB::bind_method(_MD("pin_joint_set_local_B","joint","local_B"),&PhysicsServer::pin_joint_set_local_B);
-	ObjectTypeDB::bind_method(_MD("pin_joint_get_local_B","joint"),&PhysicsServer::pin_joint_get_local_B);
+	ClassDB::bind_method(_MD("pin_joint_set_local_B","joint","local_B"),&PhysicsServer::pin_joint_set_local_B);
+	ClassDB::bind_method(_MD("pin_joint_get_local_B","joint"),&PhysicsServer::pin_joint_get_local_B);
 
 	BIND_CONSTANT(PIN_JOINT_BIAS );
 	BIND_CONSTANT(PIN_JOINT_DAMPING );
@@ -571,18 +571,18 @@ void PhysicsServer::_bind_methods() {
 	BIND_CONSTANT(HINGE_JOINT_FLAG_USE_LIMIT);
 	BIND_CONSTANT(HINGE_JOINT_FLAG_ENABLE_MOTOR);
 
-	ObjectTypeDB::bind_method(_MD("joint_create_hinge","body_A","hinge_A","body_B","hinge_B"),&PhysicsServer::joint_create_hinge);
+	ClassDB::bind_method(_MD("joint_create_hinge","body_A","hinge_A","body_B","hinge_B"),&PhysicsServer::joint_create_hinge);
 
-	ObjectTypeDB::bind_method(_MD("hinge_joint_set_param","joint","param","value"),&PhysicsServer::hinge_joint_set_param);
-	ObjectTypeDB::bind_method(_MD("hinge_joint_get_param","joint","param"),&PhysicsServer::hinge_joint_get_param);
+	ClassDB::bind_method(_MD("hinge_joint_set_param","joint","param","value"),&PhysicsServer::hinge_joint_set_param);
+	ClassDB::bind_method(_MD("hinge_joint_get_param","joint","param"),&PhysicsServer::hinge_joint_get_param);
 
-	ObjectTypeDB::bind_method(_MD("hinge_joint_set_flag","joint","flag","enabled"),&PhysicsServer::hinge_joint_set_flag);
-	ObjectTypeDB::bind_method(_MD("hinge_joint_get_flag","joint","flag"),&PhysicsServer::hinge_joint_get_flag);
+	ClassDB::bind_method(_MD("hinge_joint_set_flag","joint","flag","enabled"),&PhysicsServer::hinge_joint_set_flag);
+	ClassDB::bind_method(_MD("hinge_joint_get_flag","joint","flag"),&PhysicsServer::hinge_joint_get_flag);
 
-	ObjectTypeDB::bind_method(_MD("joint_create_slider","body_A","local_ref_A","body_B","local_ref_B"),&PhysicsServer::joint_create_slider);
+	ClassDB::bind_method(_MD("joint_create_slider","body_A","local_ref_A","body_B","local_ref_B"),&PhysicsServer::joint_create_slider);
 
-	ObjectTypeDB::bind_method(_MD("slider_joint_set_param","joint","param","value"),&PhysicsServer::slider_joint_set_param);
-	ObjectTypeDB::bind_method(_MD("slider_joint_get_param","joint","param"),&PhysicsServer::slider_joint_get_param);
+	ClassDB::bind_method(_MD("slider_joint_set_param","joint","param","value"),&PhysicsServer::slider_joint_set_param);
+	ClassDB::bind_method(_MD("slider_joint_get_param","joint","param"),&PhysicsServer::slider_joint_get_param);
 
 	BIND_CONSTANT( SLIDER_JOINT_LINEAR_LIMIT_UPPER );
 	BIND_CONSTANT( SLIDER_JOINT_LINEAR_LIMIT_LOWER );
@@ -610,10 +610,10 @@ void PhysicsServer::_bind_methods() {
 	BIND_CONSTANT( SLIDER_JOINT_MAX );
 
 
-	ObjectTypeDB::bind_method(_MD("joint_create_cone_twist","body_A","local_ref_A","body_B","local_ref_B"),&PhysicsServer::joint_create_cone_twist);
+	ClassDB::bind_method(_MD("joint_create_cone_twist","body_A","local_ref_A","body_B","local_ref_B"),&PhysicsServer::joint_create_cone_twist);
 
-	ObjectTypeDB::bind_method(_MD("cone_twist_joint_set_param","joint","param","value"),&PhysicsServer::cone_twist_joint_set_param);
-	ObjectTypeDB::bind_method(_MD("cone_twist_joint_get_param","joint","param"),&PhysicsServer::cone_twist_joint_get_param);
+	ClassDB::bind_method(_MD("cone_twist_joint_set_param","joint","param","value"),&PhysicsServer::cone_twist_joint_set_param);
+	ClassDB::bind_method(_MD("cone_twist_joint_get_param","joint","param"),&PhysicsServer::cone_twist_joint_get_param);
 
 	BIND_CONSTANT( CONE_TWIST_JOINT_SWING_SPAN );
 	BIND_CONSTANT( CONE_TWIST_JOINT_TWIST_SPAN );
@@ -642,44 +642,44 @@ void PhysicsServer::_bind_methods() {
 	BIND_CONSTANT( G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT );
 	BIND_CONSTANT( G6DOF_JOINT_FLAG_ENABLE_MOTOR );
 
-	ObjectTypeDB::bind_method(_MD("joint_get_type","joint"),&PhysicsServer::joint_get_type);
+	ClassDB::bind_method(_MD("joint_get_type","joint"),&PhysicsServer::joint_get_type);
 
-	ObjectTypeDB::bind_method(_MD("joint_set_solver_priority","joint","priority"),&PhysicsServer::joint_set_solver_priority);
-	ObjectTypeDB::bind_method(_MD("joint_get_solver_priority","joint"),&PhysicsServer::joint_get_solver_priority);
+	ClassDB::bind_method(_MD("joint_set_solver_priority","joint","priority"),&PhysicsServer::joint_set_solver_priority);
+	ClassDB::bind_method(_MD("joint_get_solver_priority","joint"),&PhysicsServer::joint_get_solver_priority);
 
-	ObjectTypeDB::bind_method(_MD("joint_create_generic_6dof","body_A","local_ref_A","body_B","local_ref_B"),&PhysicsServer::joint_create_generic_6dof);
+	ClassDB::bind_method(_MD("joint_create_generic_6dof","body_A","local_ref_A","body_B","local_ref_B"),&PhysicsServer::joint_create_generic_6dof);
 
-	ObjectTypeDB::bind_method(_MD("generic_6dof_joint_set_param","joint","axis","param","value"),&PhysicsServer::generic_6dof_joint_set_param);
-	ObjectTypeDB::bind_method(_MD("generic_6dof_joint_get_param","joint","axis","param"),&PhysicsServer::generic_6dof_joint_get_param);
+	ClassDB::bind_method(_MD("generic_6dof_joint_set_param","joint","axis","param","value"),&PhysicsServer::generic_6dof_joint_set_param);
+	ClassDB::bind_method(_MD("generic_6dof_joint_get_param","joint","axis","param"),&PhysicsServer::generic_6dof_joint_get_param);
 
-	ObjectTypeDB::bind_method(_MD("generic_6dof_joint_set_flag","joint","axis","flag","enable"),&PhysicsServer::generic_6dof_joint_set_flag);
-	ObjectTypeDB::bind_method(_MD("generic_6dof_joint_get_flag","joint","axis","flag"),&PhysicsServer::generic_6dof_joint_get_flag);
+	ClassDB::bind_method(_MD("generic_6dof_joint_set_flag","joint","axis","flag","enable"),&PhysicsServer::generic_6dof_joint_set_flag);
+	ClassDB::bind_method(_MD("generic_6dof_joint_get_flag","joint","axis","flag"),&PhysicsServer::generic_6dof_joint_get_flag);
 
 
 /*
-	ObjectTypeDB::bind_method(_MD("joint_set_param","joint","param","value"),&PhysicsServer::joint_set_param);
-	ObjectTypeDB::bind_method(_MD("joint_get_param","joint","param"),&PhysicsServer::joint_get_param);
+	ClassDB::bind_method(_MD("joint_set_param","joint","param","value"),&PhysicsServer::joint_set_param);
+	ClassDB::bind_method(_MD("joint_get_param","joint","param"),&PhysicsServer::joint_get_param);
 
-	ObjectTypeDB::bind_method(_MD("pin_joint_create","anchor","body_a","body_b"),&PhysicsServer::pin_joint_create,DEFVAL(RID()));
-	ObjectTypeDB::bind_method(_MD("groove_joint_create","groove1_a","groove2_a","anchor_b","body_a","body_b"),&PhysicsServer::groove_joint_create,DEFVAL(RID()),DEFVAL(RID()));
-	ObjectTypeDB::bind_method(_MD("damped_spring_joint_create","anchor_a","anchor_b","body_a","body_b"),&PhysicsServer::damped_spring_joint_create,DEFVAL(RID()));
+	ClassDB::bind_method(_MD("pin_joint_create","anchor","body_a","body_b"),&PhysicsServer::pin_joint_create,DEFVAL(RID()));
+	ClassDB::bind_method(_MD("groove_joint_create","groove1_a","groove2_a","anchor_b","body_a","body_b"),&PhysicsServer::groove_joint_create,DEFVAL(RID()),DEFVAL(RID()));
+	ClassDB::bind_method(_MD("damped_spring_joint_create","anchor_a","anchor_b","body_a","body_b"),&PhysicsServer::damped_spring_joint_create,DEFVAL(RID()));
 
-	ObjectTypeDB::bind_method(_MD("damped_string_joint_set_param","joint","param","value"),&PhysicsServer::damped_string_joint_set_param,DEFVAL(RID()));
-	ObjectTypeDB::bind_method(_MD("damped_string_joint_get_param","joint","param"),&PhysicsServer::damped_string_joint_get_param);
+	ClassDB::bind_method(_MD("damped_string_joint_set_param","joint","param","value"),&PhysicsServer::damped_string_joint_set_param,DEFVAL(RID()));
+	ClassDB::bind_method(_MD("damped_string_joint_get_param","joint","param"),&PhysicsServer::damped_string_joint_get_param);
 
-	ObjectTypeDB::bind_method(_MD("joint_get_type","joint"),&PhysicsServer::joint_get_type);
+	ClassDB::bind_method(_MD("joint_get_type","joint"),&PhysicsServer::joint_get_type);
 */
-	ObjectTypeDB::bind_method(_MD("free_rid","rid"),&PhysicsServer::free);
+	ClassDB::bind_method(_MD("free_rid","rid"),&PhysicsServer::free);
 
-	ObjectTypeDB::bind_method(_MD("set_active","active"),&PhysicsServer::set_active);
+	ClassDB::bind_method(_MD("set_active","active"),&PhysicsServer::set_active);
 
-//	ObjectTypeDB::bind_method(_MD("init"),&PhysicsServer::init);
-//	ObjectTypeDB::bind_method(_MD("step"),&PhysicsServer::step);
-//	ObjectTypeDB::bind_method(_MD("sync"),&PhysicsServer::sync);
-	//ObjectTypeDB::bind_method(_MD("flush_queries"),&PhysicsServer::flush_queries);
+//	ClassDB::bind_method(_MD("init"),&PhysicsServer::init);
+//	ClassDB::bind_method(_MD("step"),&PhysicsServer::step);
+//	ClassDB::bind_method(_MD("sync"),&PhysicsServer::sync);
+	//ClassDB::bind_method(_MD("flush_queries"),&PhysicsServer::flush_queries);
 
 
-	ObjectTypeDB::bind_method(_MD("get_process_info","process_info"),&PhysicsServer::get_process_info);
+	ClassDB::bind_method(_MD("get_process_info","process_info"),&PhysicsServer::get_process_info);
 
 	BIND_CONSTANT( SHAPE_PLANE );
 	BIND_CONSTANT( SHAPE_RAY );

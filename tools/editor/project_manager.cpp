@@ -54,7 +54,7 @@
 
 class NewProjectDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(NewProjectDialog,ConfirmationDialog);
+	GDCLASS(NewProjectDialog,ConfirmationDialog);
 
 public:
 
@@ -335,11 +335,11 @@ protected:
 
 	static void _bind_methods() {
 
-		ObjectTypeDB::bind_method("_browse_path",&NewProjectDialog::_browse_path);
-		ObjectTypeDB::bind_method("_text_changed",&NewProjectDialog::_text_changed);
-		ObjectTypeDB::bind_method("_path_text_changed",&NewProjectDialog::_path_text_changed);
-		ObjectTypeDB::bind_method("_path_selected",&NewProjectDialog::_path_selected);
-		ObjectTypeDB::bind_method("_file_selected",&NewProjectDialog::_file_selected);
+		ClassDB::bind_method("_browse_path",&NewProjectDialog::_browse_path);
+		ClassDB::bind_method("_text_changed",&NewProjectDialog::_text_changed);
+		ClassDB::bind_method("_path_text_changed",&NewProjectDialog::_path_text_changed);
+		ClassDB::bind_method("_path_selected",&NewProjectDialog::_path_selected);
+		ClassDB::bind_method("_file_selected",&NewProjectDialog::_file_selected);
 		ADD_SIGNAL( MethodInfo("project_created") );
 	}
 
@@ -1183,27 +1183,27 @@ void ProjectManager::_scan_multiple_folders(StringArray p_files)
 
 void ProjectManager::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_open_project",&ProjectManager::_open_project);
-	ObjectTypeDB::bind_method("_open_project_confirm",&ProjectManager::_open_project_confirm);
-	ObjectTypeDB::bind_method("_run_project",&ProjectManager::_run_project);
-	ObjectTypeDB::bind_method("_run_project_confirm",&ProjectManager::_run_project_confirm);
-	ObjectTypeDB::bind_method("_scan_projects",&ProjectManager::_scan_projects);
-	ObjectTypeDB::bind_method("_scan_begin",&ProjectManager::_scan_begin);
-	ObjectTypeDB::bind_method("_import_project",&ProjectManager::_import_project);
-	ObjectTypeDB::bind_method("_new_project",&ProjectManager::_new_project);
-	ObjectTypeDB::bind_method("_erase_project",&ProjectManager::_erase_project);
-	ObjectTypeDB::bind_method("_erase_project_confirm",&ProjectManager::_erase_project_confirm);
-	ObjectTypeDB::bind_method("_exit_dialog",&ProjectManager::_exit_dialog);
-	ObjectTypeDB::bind_method("_load_recent_projects",&ProjectManager::_load_recent_projects);
-	ObjectTypeDB::bind_method("_on_project_created",&ProjectManager::_on_project_created);
-	ObjectTypeDB::bind_method("_update_scroll_pos",&ProjectManager::_update_scroll_pos);
-	ObjectTypeDB::bind_method("_panel_draw",&ProjectManager::_panel_draw);
-	ObjectTypeDB::bind_method("_panel_input",&ProjectManager::_panel_input);
-	ObjectTypeDB::bind_method("_unhandled_input",&ProjectManager::_unhandled_input);
-	ObjectTypeDB::bind_method("_favorite_pressed",&ProjectManager::_favorite_pressed);
-	ObjectTypeDB::bind_method("_install_project",&ProjectManager::_install_project);
-	ObjectTypeDB::bind_method("_files_dropped",&ProjectManager::_files_dropped);
-	ObjectTypeDB::bind_method(_MD("_scan_multiple_folders", "files"),&ProjectManager::_scan_multiple_folders);
+	ClassDB::bind_method("_open_project",&ProjectManager::_open_project);
+	ClassDB::bind_method("_open_project_confirm",&ProjectManager::_open_project_confirm);
+	ClassDB::bind_method("_run_project",&ProjectManager::_run_project);
+	ClassDB::bind_method("_run_project_confirm",&ProjectManager::_run_project_confirm);
+	ClassDB::bind_method("_scan_projects",&ProjectManager::_scan_projects);
+	ClassDB::bind_method("_scan_begin",&ProjectManager::_scan_begin);
+	ClassDB::bind_method("_import_project",&ProjectManager::_import_project);
+	ClassDB::bind_method("_new_project",&ProjectManager::_new_project);
+	ClassDB::bind_method("_erase_project",&ProjectManager::_erase_project);
+	ClassDB::bind_method("_erase_project_confirm",&ProjectManager::_erase_project_confirm);
+	ClassDB::bind_method("_exit_dialog",&ProjectManager::_exit_dialog);
+	ClassDB::bind_method("_load_recent_projects",&ProjectManager::_load_recent_projects);
+	ClassDB::bind_method("_on_project_created",&ProjectManager::_on_project_created);
+	ClassDB::bind_method("_update_scroll_pos",&ProjectManager::_update_scroll_pos);
+	ClassDB::bind_method("_panel_draw",&ProjectManager::_panel_draw);
+	ClassDB::bind_method("_panel_input",&ProjectManager::_panel_input);
+	ClassDB::bind_method("_unhandled_input",&ProjectManager::_unhandled_input);
+	ClassDB::bind_method("_favorite_pressed",&ProjectManager::_favorite_pressed);
+	ClassDB::bind_method("_install_project",&ProjectManager::_install_project);
+	ClassDB::bind_method("_files_dropped",&ProjectManager::_files_dropped);
+	ClassDB::bind_method(_MD("_scan_multiple_folders", "files"),&ProjectManager::_scan_multiple_folders);
 
 
 }
@@ -1486,9 +1486,9 @@ void ProjectListFilter::_notification(int p_what) {
 
 void ProjectListFilter::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_command"),&ProjectListFilter::_command);
-	ObjectTypeDB::bind_method(_MD("_search_text_changed"), &ProjectListFilter::_search_text_changed);
-	ObjectTypeDB::bind_method(_MD("_filter_option_selected"), &ProjectListFilter::_filter_option_selected);
+	ClassDB::bind_method(_MD("_command"),&ProjectListFilter::_command);
+	ClassDB::bind_method(_MD("_search_text_changed"), &ProjectListFilter::_search_text_changed);
+	ClassDB::bind_method(_MD("_filter_option_selected"), &ProjectListFilter::_filter_option_selected);
 
 	ADD_SIGNAL( MethodInfo("filter_changed") );
 }

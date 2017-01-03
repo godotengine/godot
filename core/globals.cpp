@@ -1420,21 +1420,21 @@ bool Globals::is_using_datapack() const {
 
 void Globals::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("has","name"),&Globals::has);
-	ObjectTypeDB::bind_method(_MD("set_order","name","pos"),&Globals::set_order);
-	ObjectTypeDB::bind_method(_MD("get_order","name"),&Globals::get_order);
-	ObjectTypeDB::bind_method(_MD("set_persisting","name","enable"),&Globals::set_persisting);
-	ObjectTypeDB::bind_method(_MD("is_persisting","name"),&Globals::is_persisting);
-	ObjectTypeDB::bind_method(_MD("add_property_info", "hint"),&Globals::_add_property_info_bind);
-	ObjectTypeDB::bind_method(_MD("clear","name"),&Globals::clear);
-	ObjectTypeDB::bind_method(_MD("localize_path","path"),&Globals::localize_path);
-	ObjectTypeDB::bind_method(_MD("globalize_path","path"),&Globals::globalize_path);
-	ObjectTypeDB::bind_method(_MD("save"),&Globals::save);
-	ObjectTypeDB::bind_method(_MD("has_singleton","name"),&Globals::has_singleton);
-	ObjectTypeDB::bind_method(_MD("get_singleton","name"),&Globals::get_singleton_object);
-	ObjectTypeDB::bind_method(_MD("load_resource_pack","pack"),&Globals::_load_resource_pack);
+	ClassDB::bind_method(_MD("has","name"),&Globals::has);
+	ClassDB::bind_method(_MD("set_order","name","pos"),&Globals::set_order);
+	ClassDB::bind_method(_MD("get_order","name"),&Globals::get_order);
+	ClassDB::bind_method(_MD("set_persisting","name","enable"),&Globals::set_persisting);
+	ClassDB::bind_method(_MD("is_persisting","name"),&Globals::is_persisting);
+	ClassDB::bind_method(_MD("add_property_info", "hint"),&Globals::_add_property_info_bind);
+	ClassDB::bind_method(_MD("clear","name"),&Globals::clear);
+	ClassDB::bind_method(_MD("localize_path","path"),&Globals::localize_path);
+	ClassDB::bind_method(_MD("globalize_path","path"),&Globals::globalize_path);
+	ClassDB::bind_method(_MD("save"),&Globals::save);
+	ClassDB::bind_method(_MD("has_singleton","name"),&Globals::has_singleton);
+	ClassDB::bind_method(_MD("get_singleton","name"),&Globals::get_singleton_object);
+	ClassDB::bind_method(_MD("load_resource_pack","pack"),&Globals::_load_resource_pack);
 
-	ObjectTypeDB::bind_method(_MD("save_custom","file"),&Globals::_save_custom_bnd);
+	ClassDB::bind_method(_MD("save_custom","file"),&Globals::_save_custom_bnd);
 
 }
 

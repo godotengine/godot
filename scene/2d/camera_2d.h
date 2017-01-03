@@ -35,7 +35,7 @@
 
 class Camera2D : public Node2D {
 
-	OBJ_TYPE( Camera2D, Node2D );
+	GDCLASS( Camera2D, Node2D );
 public:
 
 	enum AnchorMode {

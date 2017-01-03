@@ -375,7 +375,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				editor->push_item(existing.ptr());
 			else {
 				String path = selected->get_filename();
-				script_create_dialog->config(selected->get_type(),path);
+				script_create_dialog->config(selected->get_class(),path);
 				script_create_dialog->popup_centered(Size2(300,290));
 				//script_create_dialog->popup_centered_minsize();
 
@@ -748,7 +748,7 @@ Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node*,Node*> &duplimap) {
 		ERR_FAIL_COND_V(!node,NULL);
 		//node->generate_instance_state();
 	} else {
-		Object *obj = ObjectTypeDB::instance(p_node->get_type());
+		Object *obj = ClassDB::instance(p_node->get_class());
 		ERR_FAIL_COND_V(!obj,NULL);
 		node = obj->cast_to<Node>();
 		if (!node)
@@ -1378,7 +1378,7 @@ void SceneTreeDock::_create() {
 
 			String new_name = parent->validate_child_name(child);
 			ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
-			editor_data->get_undo_redo().add_do_method(sed,"live_debug_create_node",edited_scene->get_path_to(parent),child->get_type(),new_name);
+			editor_data->get_undo_redo().add_do_method(sed,"live_debug_create_node",edited_scene->get_path_to(parent),child->get_class(),new_name);
 			editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(edited_scene->get_path_to(parent))+"/"+new_name));
 
 		} else {
@@ -1831,7 +1831,7 @@ void SceneTreeDock::_focus_node() {
 	Node *node = scene_tree->get_selected();
 	ERR_FAIL_COND(!node);
 
-	if (node->is_type("CanvasItem")) {
+	if (node->is_class("CanvasItem")) {
 		CanvasItemEditorPlugin *editor = editor_data->get_editor("2D")->cast_to<CanvasItemEditorPlugin>();
 		editor->get_canvas_item_editor()->focus_selection();
 	} else {
@@ -1848,33 +1848,33 @@ void SceneTreeDock::open_script_dialog(Node* p_for_node) {
 
 void SceneTreeDock::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("_create"),&SceneTreeDock::_create);
-	//ObjectTypeDB::bind_method(_MD("_script_created"),&SceneTreeDock::_script_created);
-	ObjectTypeDB::bind_method(_MD("_node_reparent"),&SceneTreeDock::_node_reparent);
-	ObjectTypeDB::bind_method(_MD("_set_owners"),&SceneTreeDock::_set_owners);
-	ObjectTypeDB::bind_method(_MD("_node_selected"),&SceneTreeDock::_node_selected);
-	ObjectTypeDB::bind_method(_MD("_node_renamed"),&SceneTreeDock::_node_renamed);
-	ObjectTypeDB::bind_method(_MD("_script_created"),&SceneTreeDock::_script_created);
-	ObjectTypeDB::bind_method(_MD("_load_request"),&SceneTreeDock::_load_request);
-	ObjectTypeDB::bind_method(_MD("_script_open_request"),&SceneTreeDock::_script_open_request);
-	ObjectTypeDB::bind_method(_MD("_unhandled_key_input"),&SceneTreeDock::_unhandled_key_input);
-	ObjectTypeDB::bind_method(_MD("_input"),&SceneTreeDock::_input);
-	ObjectTypeDB::bind_method(_MD("_nodes_drag_begin"),&SceneTreeDock::_nodes_drag_begin);
-	ObjectTypeDB::bind_method(_MD("_delete_confirm"),&SceneTreeDock::_delete_confirm);
-	ObjectTypeDB::bind_method(_MD("_node_prerenamed"),&SceneTreeDock::_node_prerenamed);
-	ObjectTypeDB::bind_method(_MD("_import_subscene"),&SceneTreeDock::_import_subscene);
-	ObjectTypeDB::bind_method(_MD("_selection_changed"),&SceneTreeDock::_selection_changed);
-	ObjectTypeDB::bind_method(_MD("_new_scene_from"),&SceneTreeDock::_new_scene_from);
-	ObjectTypeDB::bind_method(_MD("_nodes_dragged"),&SceneTreeDock::_nodes_dragged);
-	ObjectTypeDB::bind_method(_MD("_files_dropped"),&SceneTreeDock::_files_dropped);
-	ObjectTypeDB::bind_method(_MD("_script_dropped"),&SceneTreeDock::_script_dropped);
-	ObjectTypeDB::bind_method(_MD("_tree_rmb"),&SceneTreeDock::_tree_rmb);
-	ObjectTypeDB::bind_method(_MD("_filter_changed"),&SceneTreeDock::_filter_changed);
-	ObjectTypeDB::bind_method(_MD("_focus_node"),&SceneTreeDock::_focus_node);
+	ClassDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected,DEFVAL(false));
+	ClassDB::bind_method(_MD("_create"),&SceneTreeDock::_create);
+	//ClassDB::bind_method(_MD("_script_created"),&SceneTreeDock::_script_created);
+	ClassDB::bind_method(_MD("_node_reparent"),&SceneTreeDock::_node_reparent);
+	ClassDB::bind_method(_MD("_set_owners"),&SceneTreeDock::_set_owners);
+	ClassDB::bind_method(_MD("_node_selected"),&SceneTreeDock::_node_selected);
+	ClassDB::bind_method(_MD("_node_renamed"),&SceneTreeDock::_node_renamed);
+	ClassDB::bind_method(_MD("_script_created"),&SceneTreeDock::_script_created);
+	ClassDB::bind_method(_MD("_load_request"),&SceneTreeDock::_load_request);
+	ClassDB::bind_method(_MD("_script_open_request"),&SceneTreeDock::_script_open_request);
+	ClassDB::bind_method(_MD("_unhandled_key_input"),&SceneTreeDock::_unhandled_key_input);
+	ClassDB::bind_method(_MD("_input"),&SceneTreeDock::_input);
+	ClassDB::bind_method(_MD("_nodes_drag_begin"),&SceneTreeDock::_nodes_drag_begin);
+	ClassDB::bind_method(_MD("_delete_confirm"),&SceneTreeDock::_delete_confirm);
+	ClassDB::bind_method(_MD("_node_prerenamed"),&SceneTreeDock::_node_prerenamed);
+	ClassDB::bind_method(_MD("_import_subscene"),&SceneTreeDock::_import_subscene);
+	ClassDB::bind_method(_MD("_selection_changed"),&SceneTreeDock::_selection_changed);
+	ClassDB::bind_method(_MD("_new_scene_from"),&SceneTreeDock::_new_scene_from);
+	ClassDB::bind_method(_MD("_nodes_dragged"),&SceneTreeDock::_nodes_dragged);
+	ClassDB::bind_method(_MD("_files_dropped"),&SceneTreeDock::_files_dropped);
+	ClassDB::bind_method(_MD("_script_dropped"),&SceneTreeDock::_script_dropped);
+	ClassDB::bind_method(_MD("_tree_rmb"),&SceneTreeDock::_tree_rmb);
+	ClassDB::bind_method(_MD("_filter_changed"),&SceneTreeDock::_filter_changed);
+	ClassDB::bind_method(_MD("_focus_node"),&SceneTreeDock::_focus_node);
 
 
-	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
+	ClassDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
 }
 
 

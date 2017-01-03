@@ -40,7 +40,7 @@
 
 class StreamEditor : public Control {
 
-	OBJ_TYPE(StreamEditor, Control );
+	GDCLASS(StreamEditor, Control );
 
 	Button * play;
 	Button * stop;
@@ -62,7 +62,7 @@ public:
 
 class StreamEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( StreamEditorPlugin, EditorPlugin );
+	GDCLASS( StreamEditorPlugin, EditorPlugin );
 
 	StreamEditor *stream_editor;
 	EditorNode *editor;

@@ -35,7 +35,7 @@
 
 class SceneState : public Reference {
 
-	OBJ_TYPE( SceneState, Reference );
+	GDCLASS( SceneState, Reference );
 
 
 	Vector<StringName> names;
@@ -189,7 +189,7 @@ public:
 
 class PackedScene : public Resource {
 
-	OBJ_TYPE(PackedScene, Resource );
+	GDCLASS(PackedScene, Resource );
 	RES_BASE_EXTENSION("scn");
 
 	Ref<SceneState> state;

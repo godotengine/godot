@@ -33,7 +33,7 @@
 
 class Position3D : public Spatial  {
 
-	OBJ_TYPE(Position3D,Spatial);
+	GDCLASS(Position3D,Spatial);
 
 
 public:

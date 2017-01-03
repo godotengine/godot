@@ -39,7 +39,7 @@
 
 class Particles2DEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( Particles2DEditorPlugin, EditorPlugin );
+	GDCLASS( Particles2DEditorPlugin, EditorPlugin );
 
 	enum {
 

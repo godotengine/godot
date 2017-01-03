@@ -34,7 +34,7 @@
 
 class CollisionObject : public Spatial {
 
-	OBJ_TYPE( CollisionObject, Spatial );
+	GDCLASS( CollisionObject, Spatial );
 
 	bool area;
 	RID rid;

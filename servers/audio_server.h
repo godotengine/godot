@@ -107,7 +107,7 @@ public:
 
 class AudioServer : public Object {
 
-	OBJ_TYPE( AudioServer, Object );
+	GDCLASS( AudioServer, Object );
 
 	static AudioServer *singleton;
 protected:

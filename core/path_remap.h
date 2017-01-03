@@ -36,7 +36,7 @@
 
 class PathRemap : public Object {
 
-	OBJ_TYPE(PathRemap,Object);
+	GDCLASS(PathRemap,Object);
 
 	static PathRemap* singleton;
 	struct RemapData {

@@ -23,8 +23,8 @@ void ColorFrame::_notification(int p_what) {
 
 void ColorFrame::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_frame_color","color"),&ColorFrame::set_frame_color);
-	ObjectTypeDB::bind_method(_MD("get_frame_color"),&ColorFrame::get_frame_color);
+	ClassDB::bind_method(_MD("set_frame_color","color"),&ColorFrame::set_frame_color);
+	ClassDB::bind_method(_MD("get_frame_color"),&ColorFrame::get_frame_color);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"color"),_SCS("set_frame_color"),_SCS("get_frame_color") );
 }

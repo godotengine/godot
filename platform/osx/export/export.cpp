@@ -43,7 +43,7 @@
 
 class EditorExportPlatformOSX : public EditorExportPlatform {
 
-	OBJ_TYPE( EditorExportPlatformOSX,EditorExportPlatform );
+	GDCLASS( EditorExportPlatformOSX,EditorExportPlatform );
 
 	String custom_release_package;
 	String custom_debug_package;

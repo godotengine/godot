@@ -1323,23 +1323,23 @@ void AnimationTreeEditor::_edit_filters() {
 
 void AnimationTreeEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method( "_add_menu_item", &AnimationTreeEditor::_add_menu_item );
-	ObjectTypeDB::bind_method( "_node_menu_item", &AnimationTreeEditor::_node_menu_item );
-	ObjectTypeDB::bind_method( "_input_event", &AnimationTreeEditor::_input_event );
-//	ObjectTypeDB::bind_method( "_node_param_changed", &AnimationTreeEditor::_node_param_changed );
-	ObjectTypeDB::bind_method( "_scroll_moved", &AnimationTreeEditor::_scroll_moved );
-	ObjectTypeDB::bind_method( "_edit_dialog_changeds", &AnimationTreeEditor::_edit_dialog_changeds );
-	ObjectTypeDB::bind_method( "_edit_dialog_changede", &AnimationTreeEditor::_edit_dialog_changede );
-	ObjectTypeDB::bind_method( "_edit_dialog_changedf", &AnimationTreeEditor::_edit_dialog_changedf );
-	ObjectTypeDB::bind_method( "_edit_dialog_changed", &AnimationTreeEditor::_edit_dialog_changed );
-	ObjectTypeDB::bind_method( "_edit_dialog_animation_changed", &AnimationTreeEditor::_edit_dialog_animation_changed );
-	ObjectTypeDB::bind_method( "_edit_dialog_edit_animation", &AnimationTreeEditor::_edit_dialog_edit_animation );
-	ObjectTypeDB::bind_method( "_play_toggled", &AnimationTreeEditor::_play_toggled );
-	ObjectTypeDB::bind_method( "_edit_oneshot_start", &AnimationTreeEditor::_edit_oneshot_start );
-	ObjectTypeDB::bind_method( "_file_dialog_selected", &AnimationTreeEditor::_file_dialog_selected);
-	ObjectTypeDB::bind_method( "_master_anim_menu_item", &AnimationTreeEditor::_master_anim_menu_item);
-	ObjectTypeDB::bind_method( "_edit_filters", &AnimationTreeEditor::_edit_filters);
-	ObjectTypeDB::bind_method( "_filter_edited", &AnimationTreeEditor::_filter_edited);
+	ClassDB::bind_method( "_add_menu_item", &AnimationTreeEditor::_add_menu_item );
+	ClassDB::bind_method( "_node_menu_item", &AnimationTreeEditor::_node_menu_item );
+	ClassDB::bind_method( "_input_event", &AnimationTreeEditor::_input_event );
+//	ClassDB::bind_method( "_node_param_changed", &AnimationTreeEditor::_node_param_changed );
+	ClassDB::bind_method( "_scroll_moved", &AnimationTreeEditor::_scroll_moved );
+	ClassDB::bind_method( "_edit_dialog_changeds", &AnimationTreeEditor::_edit_dialog_changeds );
+	ClassDB::bind_method( "_edit_dialog_changede", &AnimationTreeEditor::_edit_dialog_changede );
+	ClassDB::bind_method( "_edit_dialog_changedf", &AnimationTreeEditor::_edit_dialog_changedf );
+	ClassDB::bind_method( "_edit_dialog_changed", &AnimationTreeEditor::_edit_dialog_changed );
+	ClassDB::bind_method( "_edit_dialog_animation_changed", &AnimationTreeEditor::_edit_dialog_animation_changed );
+	ClassDB::bind_method( "_edit_dialog_edit_animation", &AnimationTreeEditor::_edit_dialog_edit_animation );
+	ClassDB::bind_method( "_play_toggled", &AnimationTreeEditor::_play_toggled );
+	ClassDB::bind_method( "_edit_oneshot_start", &AnimationTreeEditor::_edit_oneshot_start );
+	ClassDB::bind_method( "_file_dialog_selected", &AnimationTreeEditor::_file_dialog_selected);
+	ClassDB::bind_method( "_master_anim_menu_item", &AnimationTreeEditor::_master_anim_menu_item);
+	ClassDB::bind_method( "_edit_filters", &AnimationTreeEditor::_edit_filters);
+	ClassDB::bind_method( "_filter_edited", &AnimationTreeEditor::_filter_edited);
 
 }
 
@@ -1496,7 +1496,7 @@ void AnimationTreeEditorPlugin::edit(Object *p_object) {
 
 bool AnimationTreeEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("AnimationTreePlayer");
+	return p_object->is_class("AnimationTreePlayer");
 }
 
 void AnimationTreeEditorPlugin::make_visible(bool p_visible) {

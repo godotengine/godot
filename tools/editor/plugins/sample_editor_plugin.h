@@ -39,7 +39,7 @@
 
 class SampleEditor : public Panel {
 
-	OBJ_TYPE(SampleEditor, Panel );
+	GDCLASS(SampleEditor, Panel );
 
 
 	SamplePlayer *player;
@@ -69,7 +69,7 @@ public:
 
 class SampleEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SampleEditorPlugin, EditorPlugin );
+	GDCLASS( SampleEditorPlugin, EditorPlugin );
 
 	SampleEditor *sample_editor;
 	EditorNode *editor;

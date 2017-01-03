@@ -192,23 +192,23 @@ RID Sample::get_rid() const {
 void Sample::_bind_methods(){
 
 
-	ObjectTypeDB::bind_method(_MD("create","format","stereo","length"),&Sample::create);
-	ObjectTypeDB::bind_method(_MD("get_format"),&Sample::get_format);
-	ObjectTypeDB::bind_method(_MD("is_stereo"),&Sample::is_stereo);
-	ObjectTypeDB::bind_method(_MD("get_length"),&Sample::get_length);
-	ObjectTypeDB::bind_method(_MD("set_data","data"),&Sample::set_data);
-	ObjectTypeDB::bind_method(_MD("get_data"),&Sample::get_data);
-	ObjectTypeDB::bind_method(_MD("set_mix_rate","hz"),&Sample::set_mix_rate);
-	ObjectTypeDB::bind_method(_MD("get_mix_rate"),&Sample::get_mix_rate);
-	ObjectTypeDB::bind_method(_MD("set_loop_format","format"),&Sample::set_loop_format);
-	ObjectTypeDB::bind_method(_MD("get_loop_format"),&Sample::get_loop_format);
-	ObjectTypeDB::bind_method(_MD("set_loop_begin","pos"),&Sample::set_loop_begin);
-	ObjectTypeDB::bind_method(_MD("get_loop_begin"),&Sample::get_loop_begin);
-	ObjectTypeDB::bind_method(_MD("set_loop_end","pos"),&Sample::set_loop_end);
-	ObjectTypeDB::bind_method(_MD("get_loop_end"),&Sample::get_loop_end);
+	ClassDB::bind_method(_MD("create","format","stereo","length"),&Sample::create);
+	ClassDB::bind_method(_MD("get_format"),&Sample::get_format);
+	ClassDB::bind_method(_MD("is_stereo"),&Sample::is_stereo);
+	ClassDB::bind_method(_MD("get_length"),&Sample::get_length);
+	ClassDB::bind_method(_MD("set_data","data"),&Sample::set_data);
+	ClassDB::bind_method(_MD("get_data"),&Sample::get_data);
+	ClassDB::bind_method(_MD("set_mix_rate","hz"),&Sample::set_mix_rate);
+	ClassDB::bind_method(_MD("get_mix_rate"),&Sample::get_mix_rate);
+	ClassDB::bind_method(_MD("set_loop_format","format"),&Sample::set_loop_format);
+	ClassDB::bind_method(_MD("get_loop_format"),&Sample::get_loop_format);
+	ClassDB::bind_method(_MD("set_loop_begin","pos"),&Sample::set_loop_begin);
+	ClassDB::bind_method(_MD("get_loop_begin"),&Sample::get_loop_begin);
+	ClassDB::bind_method(_MD("set_loop_end","pos"),&Sample::set_loop_end);
+	ClassDB::bind_method(_MD("get_loop_end"),&Sample::get_loop_end);
 
-	ObjectTypeDB::bind_method(_MD("_set_data"),&Sample::_set_data);
-	ObjectTypeDB::bind_method(_MD("_get_data"),&Sample::_get_data);
+	ClassDB::bind_method(_MD("_set_data"),&Sample::_set_data);
+	ClassDB::bind_method(_MD("_get_data"),&Sample::_get_data);
 
 	ADD_PROPERTY( PropertyInfo( Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), _SCS("_set_data"), _SCS("_get_data") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "stereo"), _SCS(""), _SCS("is_stereo") );

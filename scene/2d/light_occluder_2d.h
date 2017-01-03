@@ -33,7 +33,7 @@
 
 class OccluderPolygon2D : public Resource {
 
-	OBJ_TYPE(OccluderPolygon2D,Resource);
+	GDCLASS(OccluderPolygon2D,Resource);
 public:
 
 	enum CullMode {
@@ -72,7 +72,7 @@ public:
 VARIANT_ENUM_CAST(OccluderPolygon2D::CullMode);
 
 class LightOccluder2D : public Node2D {
-	OBJ_TYPE(LightOccluder2D,Node2D);
+	GDCLASS(LightOccluder2D,Node2D);
 
 	RID occluder;
 	bool enabled;

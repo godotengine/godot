@@ -296,8 +296,8 @@ Vector<Color> GraphColorRampEdit::get_colors() const{
 
 void GraphColorRampEdit::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphColorRampEdit::_input_event);
-	ObjectTypeDB::bind_method(_MD("_color_changed"),&GraphColorRampEdit::_color_changed);
+	ClassDB::bind_method(_MD("_input_event"),&GraphColorRampEdit::_input_event);
+	ClassDB::bind_method(_MD("_color_changed"),&GraphColorRampEdit::_color_changed);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }
 
@@ -658,7 +658,7 @@ Vector<Vector2> GraphCurveMapEdit::get_points() const {
 
 void GraphCurveMapEdit::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphCurveMapEdit::_input_event);
+	ClassDB::bind_method(_MD("_input_event"),&GraphCurveMapEdit::_input_event);
 	ADD_SIGNAL(MethodInfo("curve_changed"));
 }
 
@@ -2695,49 +2695,49 @@ void ShaderGraphView::add_node(int p_type, const Vector2 &location) {
 
 void ShaderGraphView::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_update_graph",&ShaderGraphView::_update_graph);
-	ObjectTypeDB::bind_method("_begin_node_move", &ShaderGraphView::_begin_node_move);
-	ObjectTypeDB::bind_method("_node_moved",&ShaderGraphView::_node_moved);
-	ObjectTypeDB::bind_method("_end_node_move", &ShaderGraphView::_end_node_move);
-	ObjectTypeDB::bind_method("_move_node",&ShaderGraphView::_move_node);
-	ObjectTypeDB::bind_method("_node_removed",&ShaderGraphView::_node_removed);
-	ObjectTypeDB::bind_method("_connection_request",&ShaderGraphView::_connection_request);
-	ObjectTypeDB::bind_method("_disconnection_request",&ShaderGraphView::_disconnection_request);
-	ObjectTypeDB::bind_method("_duplicate_nodes_request", &ShaderGraphView::_duplicate_nodes_request);
-	ObjectTypeDB::bind_method("_duplicate_nodes", &ShaderGraphView::_duplicate_nodes);
-	ObjectTypeDB::bind_method("_delete_nodes_request", &ShaderGraphView::_delete_nodes_request);
+	ClassDB::bind_method("_update_graph",&ShaderGraphView::_update_graph);
+	ClassDB::bind_method("_begin_node_move", &ShaderGraphView::_begin_node_move);
+	ClassDB::bind_method("_node_moved",&ShaderGraphView::_node_moved);
+	ClassDB::bind_method("_end_node_move", &ShaderGraphView::_end_node_move);
+	ClassDB::bind_method("_move_node",&ShaderGraphView::_move_node);
+	ClassDB::bind_method("_node_removed",&ShaderGraphView::_node_removed);
+	ClassDB::bind_method("_connection_request",&ShaderGraphView::_connection_request);
+	ClassDB::bind_method("_disconnection_request",&ShaderGraphView::_disconnection_request);
+	ClassDB::bind_method("_duplicate_nodes_request", &ShaderGraphView::_duplicate_nodes_request);
+	ClassDB::bind_method("_duplicate_nodes", &ShaderGraphView::_duplicate_nodes);
+	ClassDB::bind_method("_delete_nodes_request", &ShaderGraphView::_delete_nodes_request);
 
-	ObjectTypeDB::bind_method("_default_changed",&ShaderGraphView::_default_changed);
-	ObjectTypeDB::bind_method("_scalar_const_changed",&ShaderGraphView::_scalar_const_changed);
-	ObjectTypeDB::bind_method("_vec_const_changed",&ShaderGraphView::_vec_const_changed);
-	ObjectTypeDB::bind_method("_rgb_const_changed",&ShaderGraphView::_rgb_const_changed);
-	ObjectTypeDB::bind_method("_xform_const_changed",&ShaderGraphView::_xform_const_changed);
-	ObjectTypeDB::bind_method("_scalar_op_changed",&ShaderGraphView::_scalar_op_changed);
-	ObjectTypeDB::bind_method("_vec_op_changed",&ShaderGraphView::_vec_op_changed);
-	ObjectTypeDB::bind_method("_vec_scalar_op_changed",&ShaderGraphView::_vec_scalar_op_changed);
-	ObjectTypeDB::bind_method("_rgb_op_changed",&ShaderGraphView::_rgb_op_changed);
-	ObjectTypeDB::bind_method("_xform_inv_rev_changed",&ShaderGraphView::_xform_inv_rev_changed);
-	ObjectTypeDB::bind_method("_scalar_func_changed",&ShaderGraphView::_scalar_func_changed);
-	ObjectTypeDB::bind_method("_vec_func_changed",&ShaderGraphView::_vec_func_changed);
-	ObjectTypeDB::bind_method("_scalar_input_changed",&ShaderGraphView::_scalar_input_changed);
-	ObjectTypeDB::bind_method("_vec_input_changed",&ShaderGraphView::_vec_input_changed);
-	ObjectTypeDB::bind_method("_xform_input_changed",&ShaderGraphView::_xform_input_changed);
-	ObjectTypeDB::bind_method("_rgb_input_changed",&ShaderGraphView::_rgb_input_changed);
-	ObjectTypeDB::bind_method("_tex_input_change",&ShaderGraphView::_tex_input_change);
-	ObjectTypeDB::bind_method("_cube_input_change",&ShaderGraphView::_cube_input_change);
-	ObjectTypeDB::bind_method("_input_name_changed",&ShaderGraphView::_input_name_changed);
-	ObjectTypeDB::bind_method("_tex_edited",&ShaderGraphView::_tex_edited);
-	ObjectTypeDB::bind_method("_variant_edited",&ShaderGraphView::_variant_edited);
-	ObjectTypeDB::bind_method("_cube_edited",&ShaderGraphView::_cube_edited);
-	ObjectTypeDB::bind_method("_comment_edited",&ShaderGraphView::_comment_edited);
-	ObjectTypeDB::bind_method("_color_ramp_changed",&ShaderGraphView::_color_ramp_changed);
-	ObjectTypeDB::bind_method("_curve_changed",&ShaderGraphView::_curve_changed);
+	ClassDB::bind_method("_default_changed",&ShaderGraphView::_default_changed);
+	ClassDB::bind_method("_scalar_const_changed",&ShaderGraphView::_scalar_const_changed);
+	ClassDB::bind_method("_vec_const_changed",&ShaderGraphView::_vec_const_changed);
+	ClassDB::bind_method("_rgb_const_changed",&ShaderGraphView::_rgb_const_changed);
+	ClassDB::bind_method("_xform_const_changed",&ShaderGraphView::_xform_const_changed);
+	ClassDB::bind_method("_scalar_op_changed",&ShaderGraphView::_scalar_op_changed);
+	ClassDB::bind_method("_vec_op_changed",&ShaderGraphView::_vec_op_changed);
+	ClassDB::bind_method("_vec_scalar_op_changed",&ShaderGraphView::_vec_scalar_op_changed);
+	ClassDB::bind_method("_rgb_op_changed",&ShaderGraphView::_rgb_op_changed);
+	ClassDB::bind_method("_xform_inv_rev_changed",&ShaderGraphView::_xform_inv_rev_changed);
+	ClassDB::bind_method("_scalar_func_changed",&ShaderGraphView::_scalar_func_changed);
+	ClassDB::bind_method("_vec_func_changed",&ShaderGraphView::_vec_func_changed);
+	ClassDB::bind_method("_scalar_input_changed",&ShaderGraphView::_scalar_input_changed);
+	ClassDB::bind_method("_vec_input_changed",&ShaderGraphView::_vec_input_changed);
+	ClassDB::bind_method("_xform_input_changed",&ShaderGraphView::_xform_input_changed);
+	ClassDB::bind_method("_rgb_input_changed",&ShaderGraphView::_rgb_input_changed);
+	ClassDB::bind_method("_tex_input_change",&ShaderGraphView::_tex_input_change);
+	ClassDB::bind_method("_cube_input_change",&ShaderGraphView::_cube_input_change);
+	ClassDB::bind_method("_input_name_changed",&ShaderGraphView::_input_name_changed);
+	ClassDB::bind_method("_tex_edited",&ShaderGraphView::_tex_edited);
+	ClassDB::bind_method("_variant_edited",&ShaderGraphView::_variant_edited);
+	ClassDB::bind_method("_cube_edited",&ShaderGraphView::_cube_edited);
+	ClassDB::bind_method("_comment_edited",&ShaderGraphView::_comment_edited);
+	ClassDB::bind_method("_color_ramp_changed",&ShaderGraphView::_color_ramp_changed);
+	ClassDB::bind_method("_curve_changed",&ShaderGraphView::_curve_changed);
 
-	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &ShaderGraphView::get_drag_data_fw);
-	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &ShaderGraphView::can_drop_data_fw);
-	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &ShaderGraphView::drop_data_fw);
+	ClassDB::bind_method(_MD("get_drag_data_fw"), &ShaderGraphView::get_drag_data_fw);
+	ClassDB::bind_method(_MD("can_drop_data_fw"), &ShaderGraphView::can_drop_data_fw);
+	ClassDB::bind_method(_MD("drop_data_fw"), &ShaderGraphView::drop_data_fw);
 
-	ObjectTypeDB::bind_method("_sg_updated",&ShaderGraphView::_sg_updated);
+	ClassDB::bind_method("_sg_updated",&ShaderGraphView::_sg_updated);
 }
 
 ShaderGraphView::ShaderGraphView(ShaderGraph::ShaderType p_type) {
@@ -2815,8 +2815,8 @@ void ShaderGraphEditor::_notification(int p_what) {
 
 void ShaderGraphEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_add_node",&ShaderGraphEditor::_add_node);
-	ObjectTypeDB::bind_method("_popup_requested",&ShaderGraphEditor::_popup_requested);
+	ClassDB::bind_method("_add_node",&ShaderGraphEditor::_add_node);
+	ClassDB::bind_method("_popup_requested",&ShaderGraphEditor::_popup_requested);
 }
 
 

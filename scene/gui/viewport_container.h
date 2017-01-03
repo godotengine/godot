@@ -5,7 +5,7 @@
 
 class ViewportContainer : public Container {
 
-	OBJ_TYPE( ViewportContainer, Container );
+	GDCLASS( ViewportContainer, Container );
 
 	bool stretch;
 protected:

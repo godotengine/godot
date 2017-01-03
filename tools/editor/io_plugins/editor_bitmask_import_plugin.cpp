@@ -11,7 +11,7 @@
 
 class _EditorBitMaskImportOptions : public Object {
 
-	OBJ_TYPE(_EditorBitMaskImportOptions, Object);
+	GDCLASS(_EditorBitMaskImportOptions, Object);
 public:
 
 	bool _set(const StringName& p_name, const Variant& p_value) {
@@ -42,7 +42,7 @@ public:
 
 class EditorBitMaskImportDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorBitMaskImportDialog, ConfirmationDialog);
+	GDCLASS(EditorBitMaskImportDialog, ConfirmationDialog);
 
 	EditorBitMaskImportPlugin *plugin;
 
@@ -162,11 +162,11 @@ public:
 	static void _bind_methods() {
 
 
-		ObjectTypeDB::bind_method("_choose_files", &EditorBitMaskImportDialog::_choose_files);
-		ObjectTypeDB::bind_method("_choose_save_dir", &EditorBitMaskImportDialog::_choose_save_dir);
-		ObjectTypeDB::bind_method("_import", &EditorBitMaskImportDialog::_import);
-		ObjectTypeDB::bind_method("_browse", &EditorBitMaskImportDialog::_browse);
-		ObjectTypeDB::bind_method("_browse_target", &EditorBitMaskImportDialog::_browse_target);
+		ClassDB::bind_method("_choose_files", &EditorBitMaskImportDialog::_choose_files);
+		ClassDB::bind_method("_choose_save_dir", &EditorBitMaskImportDialog::_choose_save_dir);
+		ClassDB::bind_method("_import", &EditorBitMaskImportDialog::_import);
+		ClassDB::bind_method("_browse", &EditorBitMaskImportDialog::_browse);
+		ClassDB::bind_method("_browse_target", &EditorBitMaskImportDialog::_browse_target);
 		//	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 	}
 

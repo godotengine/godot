@@ -37,7 +37,7 @@
 */
 class MeshInstance : public GeometryInstance {
 
-	OBJ_TYPE( MeshInstance, GeometryInstance );
+	GDCLASS( MeshInstance, GeometryInstance );
 
 	Ref<Mesh> mesh;
 	NodePath skeleton_path;

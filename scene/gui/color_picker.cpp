@@ -430,24 +430,24 @@ void ColorPicker::_screen_pick_pressed()
 
 void ColorPicker::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_color","color"),&ColorPicker::set_color);
-	ObjectTypeDB::bind_method(_MD("get_color"),&ColorPicker::get_color);
-	ObjectTypeDB::bind_method(_MD("set_raw_mode","mode"),&ColorPicker::set_raw_mode);
-	ObjectTypeDB::bind_method(_MD("is_raw_mode"),&ColorPicker::is_raw_mode);
-	ObjectTypeDB::bind_method(_MD("set_edit_alpha","show"),&ColorPicker::set_edit_alpha);
-	ObjectTypeDB::bind_method(_MD("is_editing_alpha"),&ColorPicker::is_editing_alpha);
-	ObjectTypeDB::bind_method(_MD("add_preset"), &ColorPicker::add_preset);
-	ObjectTypeDB::bind_method(_MD("_value_changed"),&ColorPicker::_value_changed);
-	ObjectTypeDB::bind_method(_MD("_html_entered"),&ColorPicker::_html_entered);
-	ObjectTypeDB::bind_method(_MD("_text_type_toggled"),&ColorPicker::_text_type_toggled);
-	ObjectTypeDB::bind_method(_MD("_add_preset_pressed"), &ColorPicker::_add_preset_pressed);
-	ObjectTypeDB::bind_method(_MD("_screen_pick_pressed"), &ColorPicker::_screen_pick_pressed);
-	ObjectTypeDB::bind_method(_MD("_sample_draw"),&ColorPicker::_sample_draw);
-	ObjectTypeDB::bind_method(_MD("_hsv_draw"),&ColorPicker::_hsv_draw);
-	ObjectTypeDB::bind_method(_MD("_uv_input"),&ColorPicker::_uv_input);
-	ObjectTypeDB::bind_method(_MD("_w_input"),&ColorPicker::_w_input);
-	ObjectTypeDB::bind_method(_MD("_preset_input"),&ColorPicker::_preset_input);
-	ObjectTypeDB::bind_method(_MD("_screen_input"),&ColorPicker::_screen_input);
+	ClassDB::bind_method(_MD("set_color","color"),&ColorPicker::set_color);
+	ClassDB::bind_method(_MD("get_color"),&ColorPicker::get_color);
+	ClassDB::bind_method(_MD("set_raw_mode","mode"),&ColorPicker::set_raw_mode);
+	ClassDB::bind_method(_MD("is_raw_mode"),&ColorPicker::is_raw_mode);
+	ClassDB::bind_method(_MD("set_edit_alpha","show"),&ColorPicker::set_edit_alpha);
+	ClassDB::bind_method(_MD("is_editing_alpha"),&ColorPicker::is_editing_alpha);
+	ClassDB::bind_method(_MD("add_preset"), &ColorPicker::add_preset);
+	ClassDB::bind_method(_MD("_value_changed"),&ColorPicker::_value_changed);
+	ClassDB::bind_method(_MD("_html_entered"),&ColorPicker::_html_entered);
+	ClassDB::bind_method(_MD("_text_type_toggled"),&ColorPicker::_text_type_toggled);
+	ClassDB::bind_method(_MD("_add_preset_pressed"), &ColorPicker::_add_preset_pressed);
+	ClassDB::bind_method(_MD("_screen_pick_pressed"), &ColorPicker::_screen_pick_pressed);
+	ClassDB::bind_method(_MD("_sample_draw"),&ColorPicker::_sample_draw);
+	ClassDB::bind_method(_MD("_hsv_draw"),&ColorPicker::_hsv_draw);
+	ClassDB::bind_method(_MD("_uv_input"),&ColorPicker::_uv_input);
+	ClassDB::bind_method(_MD("_w_input"),&ColorPicker::_w_input);
+	ClassDB::bind_method(_MD("_preset_input"),&ColorPicker::_preset_input);
+	ClassDB::bind_method(_MD("_screen_input"),&ColorPicker::_screen_input);
 
 	ADD_SIGNAL( MethodInfo("color_changed",PropertyInfo(Variant::COLOR,"color")));
 }
@@ -649,12 +649,12 @@ ColorPicker *ColorPickerButton::get_picker() {
 
 void ColorPickerButton::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_color","color"),&ColorPickerButton::set_color);
-	ObjectTypeDB::bind_method(_MD("get_color"),&ColorPickerButton::get_color);
-	ObjectTypeDB::bind_method(_MD("get_picker:ColorPicker"),&ColorPickerButton::get_picker);
-	ObjectTypeDB::bind_method(_MD("set_edit_alpha","show"),&ColorPickerButton::set_edit_alpha);
-	ObjectTypeDB::bind_method(_MD("is_editing_alpha"),&ColorPickerButton::is_editing_alpha);
-	ObjectTypeDB::bind_method(_MD("_color_changed"),&ColorPickerButton::_color_changed);
+	ClassDB::bind_method(_MD("set_color","color"),&ColorPickerButton::set_color);
+	ClassDB::bind_method(_MD("get_color"),&ColorPickerButton::get_color);
+	ClassDB::bind_method(_MD("get_picker:ColorPicker"),&ColorPickerButton::get_picker);
+	ClassDB::bind_method(_MD("set_edit_alpha","show"),&ColorPickerButton::set_edit_alpha);
+	ClassDB::bind_method(_MD("is_editing_alpha"),&ColorPickerButton::is_editing_alpha);
+	ClassDB::bind_method(_MD("_color_changed"),&ColorPickerButton::_color_changed);
 
 	ADD_SIGNAL( MethodInfo("color_changed",PropertyInfo(Variant::COLOR,"color")));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color") );

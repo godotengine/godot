@@ -434,7 +434,7 @@ public:
 
 class EditorExportPlatformUWP : public EditorExportPlatform {
 
-	OBJ_TYPE(EditorExportPlatformUWP, EditorExportPlatform);
+	GDCLASS(EditorExportPlatformUWP, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
 

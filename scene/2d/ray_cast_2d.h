@@ -33,7 +33,7 @@
 
 class RayCast2D : public Node2D {
 
-	OBJ_TYPE(RayCast2D,Node2D);
+	GDCLASS(RayCast2D,Node2D);
 
 
 	bool enabled;

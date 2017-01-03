@@ -119,7 +119,7 @@ void ItemListOptionButtonPlugin::set_object(Object *p_object) {
 
 bool ItemListOptionButtonPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("OptionButton");
+	return p_object->is_class("OptionButton");
 }
 
 int ItemListOptionButtonPlugin::get_flags() const {
@@ -153,7 +153,7 @@ ItemListOptionButtonPlugin::ItemListOptionButtonPlugin() {
 
 void ItemListPopupMenuPlugin::set_object(Object *p_object) {
 
-	if (p_object->is_type("MenuButton"))
+	if (p_object->is_class("MenuButton"))
 		pp = p_object->cast_to<MenuButton>()->get_popup();
 	else
 		pp = p_object->cast_to<PopupMenu>();
@@ -161,7 +161,7 @@ void ItemListPopupMenuPlugin::set_object(Object *p_object) {
 
 bool ItemListPopupMenuPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("PopupMenu") || p_object->is_type("MenuButton");
+	return p_object->is_class("PopupMenu") || p_object->is_class("MenuButton");
 }
 
 int ItemListPopupMenuPlugin::get_flags() const {
@@ -260,8 +260,8 @@ void ItemListEditor::edit(Node *p_item_list) {
 			item_plugins[i]->set_object(p_item_list);
 			property_editor->edit(item_plugins[i]);
 
-			if (has_icon(item_list->get_type(), "EditorIcons"))
-				toolbar_button->set_icon(get_icon(item_list->get_type(), "EditorIcons"));
+			if (has_icon(item_list->get_class(), "EditorIcons"))
+				toolbar_button->set_icon(get_icon(item_list->get_class(), "EditorIcons"));
 			else
 				toolbar_button->set_icon(Ref<Texture>());
 
@@ -287,9 +287,9 @@ bool ItemListEditor::handles(Object *p_object) const {
 
 void ItemListEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_edit_items",&ItemListEditor::_edit_items);
-	ObjectTypeDB::bind_method("_add_button",&ItemListEditor::_add_pressed);
-	ObjectTypeDB::bind_method("_delete_button",&ItemListEditor::_delete_pressed);
+	ClassDB::bind_method("_edit_items",&ItemListEditor::_edit_items);
+	ClassDB::bind_method("_add_button",&ItemListEditor::_add_pressed);
+	ClassDB::bind_method("_delete_button",&ItemListEditor::_delete_pressed);
 }
 
 ItemListEditor::ItemListEditor() {

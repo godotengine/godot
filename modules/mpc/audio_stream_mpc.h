@@ -38,7 +38,7 @@
 
 class AudioStreamPlaybackMPC : public AudioStreamPlayback {
 
-	OBJ_TYPE( AudioStreamPlaybackMPC, AudioStreamPlayback );
+	GDCLASS( AudioStreamPlaybackMPC, AudioStreamPlayback );
 
 	bool preload;
 	FileAccess *f;
@@ -118,7 +118,7 @@ public:
 
 class AudioStreamMPC : public AudioStream {
 
-	OBJ_TYPE( AudioStreamMPC, AudioStream );
+	GDCLASS( AudioStreamMPC, AudioStream );
 
 	String file;
 public:

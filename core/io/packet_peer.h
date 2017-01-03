@@ -34,7 +34,7 @@
 #include "ring_buffer.h"
 class PacketPeer : public Reference {
 
-	OBJ_TYPE( PacketPeer, Reference );
+	GDCLASS( PacketPeer, Reference );
 
 	Variant _bnd_get_var() const;
 	void _bnd_put_var(const Variant& p_var);
@@ -71,7 +71,7 @@ public:
 
 class PacketPeerStream : public PacketPeer {
 
-	OBJ_TYPE(PacketPeerStream,PacketPeer);
+	GDCLASS(PacketPeerStream,PacketPeer);
 
 	//the way the buffers work sucks, will change later
 

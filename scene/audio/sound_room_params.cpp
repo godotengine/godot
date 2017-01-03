@@ -134,14 +134,14 @@ bool SoundRoomParams::is_forcing_params_to_all_sources() {
 
 void SoundRoomParams::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"),&SoundRoomParams::set_param );
-	ObjectTypeDB::bind_method(_MD("get_param","param"),&SoundRoomParams::get_param );
+	ClassDB::bind_method(_MD("set_param","param","value"),&SoundRoomParams::set_param );
+	ClassDB::bind_method(_MD("get_param","param"),&SoundRoomParams::get_param );
 
-	ObjectTypeDB::bind_method(_MD("set_reverb_mode","reverb_mode","value"),&SoundRoomParams::set_reverb_mode );
-	ObjectTypeDB::bind_method(_MD("get_reverb_mode","reverb_mode"),&SoundRoomParams::get_reverb_mode );
+	ClassDB::bind_method(_MD("set_reverb_mode","reverb_mode","value"),&SoundRoomParams::set_reverb_mode );
+	ClassDB::bind_method(_MD("get_reverb_mode","reverb_mode"),&SoundRoomParams::get_reverb_mode );
 
-	ObjectTypeDB::bind_method(_MD("set_force_params_to_all_sources","enabled"),&SoundRoomParams::set_force_params_to_all_sources );
-	ObjectTypeDB::bind_method(_MD("is_forcing_params_to_all_sources"),&SoundRoomParams::is_forcing_params_to_all_sources );
+	ClassDB::bind_method(_MD("set_force_params_to_all_sources","enabled"),&SoundRoomParams::set_force_params_to_all_sources );
+	ClassDB::bind_method(_MD("is_forcing_params_to_all_sources"),&SoundRoomParams::is_forcing_params_to_all_sources );
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "reverb/mode", PROPERTY_HINT_ENUM, "Small,Medium,Large,Hall"), _SCS("set_reverb_mode"), _SCS("get_reverb_mode") );

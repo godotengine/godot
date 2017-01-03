@@ -251,19 +251,19 @@ bool SpinBox::is_editable() const {
 
 void SpinBox::_bind_methods() {
 
-	//ObjectTypeDB::bind_method(_MD("_value_changed"),&SpinBox::_value_changed);
-	ObjectTypeDB::bind_method(_MD("_input_event"),&SpinBox::_input_event);
-	ObjectTypeDB::bind_method(_MD("_text_entered"),&SpinBox::_text_entered);
-	ObjectTypeDB::bind_method(_MD("set_suffix","suffix"),&SpinBox::set_suffix);
-	ObjectTypeDB::bind_method(_MD("get_suffix"),&SpinBox::get_suffix);
-	ObjectTypeDB::bind_method(_MD("set_prefix","prefix"),&SpinBox::set_prefix);
-	ObjectTypeDB::bind_method(_MD("get_prefix"),&SpinBox::get_prefix);
-	ObjectTypeDB::bind_method(_MD("set_editable","editable"),&SpinBox::set_editable);
-	ObjectTypeDB::bind_method(_MD("is_editable"),&SpinBox::is_editable);
-	ObjectTypeDB::bind_method(_MD("_line_edit_focus_exit"),&SpinBox::_line_edit_focus_exit);
-	ObjectTypeDB::bind_method(_MD("get_line_edit"),&SpinBox::get_line_edit);
-	ObjectTypeDB::bind_method(_MD("_line_edit_input"),&SpinBox::_line_edit_input);
-	ObjectTypeDB::bind_method(_MD("_range_click_timeout"),&SpinBox::_range_click_timeout);
+	//ClassDB::bind_method(_MD("_value_changed"),&SpinBox::_value_changed);
+	ClassDB::bind_method(_MD("_input_event"),&SpinBox::_input_event);
+	ClassDB::bind_method(_MD("_text_entered"),&SpinBox::_text_entered);
+	ClassDB::bind_method(_MD("set_suffix","suffix"),&SpinBox::set_suffix);
+	ClassDB::bind_method(_MD("get_suffix"),&SpinBox::get_suffix);
+	ClassDB::bind_method(_MD("set_prefix","prefix"),&SpinBox::set_prefix);
+	ClassDB::bind_method(_MD("get_prefix"),&SpinBox::get_prefix);
+	ClassDB::bind_method(_MD("set_editable","editable"),&SpinBox::set_editable);
+	ClassDB::bind_method(_MD("is_editable"),&SpinBox::is_editable);
+	ClassDB::bind_method(_MD("_line_edit_focus_exit"),&SpinBox::_line_edit_focus_exit);
+	ClassDB::bind_method(_MD("get_line_edit"),&SpinBox::get_line_edit);
+	ClassDB::bind_method(_MD("_line_edit_input"),&SpinBox::_line_edit_input);
+	ClassDB::bind_method(_MD("_range_click_timeout"),&SpinBox::_range_click_timeout);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"editable"),_SCS("set_editable"),_SCS("is_editable"));

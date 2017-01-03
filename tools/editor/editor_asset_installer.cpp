@@ -331,7 +331,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 void EditorAssetInstaller::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_item_edited",&EditorAssetInstaller::_item_edited);
+	ClassDB::bind_method("_item_edited",&EditorAssetInstaller::_item_edited);
 
 }
 

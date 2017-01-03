@@ -171,12 +171,12 @@ Vector3 ProximityGroup::get_grid_radius() const {
 
 void ProximityGroup::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_group_name","name"), &ProximityGroup::set_group_name);
-	ObjectTypeDB::bind_method(_MD("broadcast","name", "parameters"), &ProximityGroup::broadcast);
-	ObjectTypeDB::bind_method(_MD("set_dispatch_mode","mode"), &ProximityGroup::set_dispatch_mode);
-	ObjectTypeDB::bind_method(_MD("_proximity_group_broadcast","name","params"), &ProximityGroup::_proximity_group_broadcast);
-	ObjectTypeDB::bind_method(_MD("set_grid_radius","radius"), &ProximityGroup::set_grid_radius);
-	ObjectTypeDB::bind_method(_MD("get_grid_radius"), &ProximityGroup::get_grid_radius);
+	ClassDB::bind_method(_MD("set_group_name","name"), &ProximityGroup::set_group_name);
+	ClassDB::bind_method(_MD("broadcast","name", "parameters"), &ProximityGroup::broadcast);
+	ClassDB::bind_method(_MD("set_dispatch_mode","mode"), &ProximityGroup::set_dispatch_mode);
+	ClassDB::bind_method(_MD("_proximity_group_broadcast","name","params"), &ProximityGroup::_proximity_group_broadcast);
+	ClassDB::bind_method(_MD("set_grid_radius","radius"), &ProximityGroup::set_grid_radius);
+	ClassDB::bind_method(_MD("get_grid_radius"), &ProximityGroup::get_grid_radius);
 
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "grid_radius"), _SCS("set_grid_radius"), _SCS("get_grid_radius"));
 

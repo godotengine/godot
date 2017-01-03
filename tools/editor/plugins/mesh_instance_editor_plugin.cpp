@@ -218,8 +218,8 @@ void MeshInstanceEditor::_create_outline_mesh() {
 
 void MeshInstanceEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_option",&MeshInstanceEditor::_menu_option);
-	ObjectTypeDB::bind_method("_create_outline_mesh",&MeshInstanceEditor::_create_outline_mesh);
+	ClassDB::bind_method("_menu_option",&MeshInstanceEditor::_menu_option);
+	ClassDB::bind_method("_create_outline_mesh",&MeshInstanceEditor::_create_outline_mesh);
 }
 
 MeshInstanceEditor::MeshInstanceEditor() {
@@ -274,7 +274,7 @@ void MeshInstanceEditorPlugin::edit(Object *p_object) {
 
 bool MeshInstanceEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("MeshInstance");
+	return p_object->is_class("MeshInstance");
 }
 
 void MeshInstanceEditorPlugin::make_visible(bool p_visible) {

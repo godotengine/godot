@@ -157,11 +157,11 @@ void VisualScriptYield::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptYield::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_yield_mode","mode"),&VisualScriptYield::set_yield_mode);
-	ObjectTypeDB::bind_method(_MD("get_yield_mode"),&VisualScriptYield::get_yield_mode);
+	ClassDB::bind_method(_MD("set_yield_mode","mode"),&VisualScriptYield::set_yield_mode);
+	ClassDB::bind_method(_MD("get_yield_mode"),&VisualScriptYield::get_yield_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_wait_time","sec"),&VisualScriptYield::set_wait_time);
-	ObjectTypeDB::bind_method(_MD("get_wait_time"),&VisualScriptYield::get_wait_time);
+	ClassDB::bind_method(_MD("set_wait_time","sec"),&VisualScriptYield::set_wait_time);
+	ClassDB::bind_method(_MD("get_wait_time"),&VisualScriptYield::get_wait_time);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Frame,FixedFrame,Time",PROPERTY_USAGE_NOEDITOR),_SCS("set_yield_mode"),_SCS("get_yield_mode"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"wait_time"),_SCS("set_wait_time"),_SCS("get_wait_time"));
@@ -270,7 +270,7 @@ StringName VisualScriptYieldSignal::_get_base_type() const {
 	else if (call_mode==CALL_MODE_NODE_PATH && get_visual_script().is_valid()) {
 		Node *path = _get_base_node();
 		if (path)
-			return path->get_type();
+			return path->get_class();
 
 	}
 
@@ -290,7 +290,7 @@ int VisualScriptYieldSignal::get_output_value_port_count() const{
 
 	MethodInfo sr;
 
-	if (!ObjectTypeDB::get_signal(_get_base_type(),signal,&sr))
+	if (!ClassDB::get_signal(_get_base_type(),signal,&sr))
 		return 0;
 
 	return sr.arguments.size();
@@ -315,7 +315,7 @@ PropertyInfo VisualScriptYieldSignal::get_output_value_port_info(int p_idx) cons
 
 	MethodInfo sr;
 
-	if (!ObjectTypeDB::get_signal(_get_base_type(),signal,&sr))
+	if (!ClassDB::get_signal(_get_base_type(),signal,&sr))
 		return PropertyInfo(); //no signal
 	ERR_FAIL_INDEX_V(p_idx,sr.arguments.size(),PropertyInfo());
 	return sr.arguments[p_idx];
@@ -440,7 +440,7 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo& property) const {
 
 		List<MethodInfo> methods;
 
-		ObjectTypeDB::get_signal_list(_get_base_type(),&methods);
+		ClassDB::get_signal_list(_get_base_type(),&methods);
 
 		List<String> mstring;
 		for (List<MethodInfo>::Element *E=methods.front();E;E=E->next()) {
@@ -468,17 +468,17 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptYieldSignal::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_base_type","base_type"),&VisualScriptYieldSignal::set_base_type);
-	ObjectTypeDB::bind_method(_MD("get_base_type"),&VisualScriptYieldSignal::get_base_type);
+	ClassDB::bind_method(_MD("set_base_type","base_type"),&VisualScriptYieldSignal::set_base_type);
+	ClassDB::bind_method(_MD("get_base_type"),&VisualScriptYieldSignal::get_base_type);
 
-	ObjectTypeDB::bind_method(_MD("set_signal","signal"),&VisualScriptYieldSignal::set_signal);
-	ObjectTypeDB::bind_method(_MD("get_signal"),&VisualScriptYieldSignal::get_signal);
+	ClassDB::bind_method(_MD("set_signal","signal"),&VisualScriptYieldSignal::set_signal);
+	ClassDB::bind_method(_MD("get_signal"),&VisualScriptYieldSignal::get_signal);
 
-	ObjectTypeDB::bind_method(_MD("set_call_mode","mode"),&VisualScriptYieldSignal::set_call_mode);
-	ObjectTypeDB::bind_method(_MD("get_call_mode"),&VisualScriptYieldSignal::get_call_mode);
+	ClassDB::bind_method(_MD("set_call_mode","mode"),&VisualScriptYieldSignal::set_call_mode);
+	ClassDB::bind_method(_MD("get_call_mode"),&VisualScriptYieldSignal::get_call_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_base_path","base_path"),&VisualScriptYieldSignal::set_base_path);
-	ObjectTypeDB::bind_method(_MD("get_base_path"),&VisualScriptYieldSignal::get_base_path);
+	ClassDB::bind_method(_MD("set_base_path","base_path"),&VisualScriptYieldSignal::set_base_path);
+	ClassDB::bind_method(_MD("get_base_path"),&VisualScriptYieldSignal::get_base_path);
 
 
 

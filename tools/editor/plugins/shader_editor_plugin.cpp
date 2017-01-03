@@ -391,12 +391,12 @@ void ShaderEditor::_editor_settings_changed() {
 
 void ShaderEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_editor_settings_changed",&ShaderEditor::_editor_settings_changed);
+	ClassDB::bind_method("_editor_settings_changed",&ShaderEditor::_editor_settings_changed);
 
-	ObjectTypeDB::bind_method("_menu_option",&ShaderEditor::_menu_option);
-	ObjectTypeDB::bind_method("_params_changed",&ShaderEditor::_params_changed);
-	ObjectTypeDB::bind_method("apply_shaders",&ShaderEditor::apply_shaders);
-//	ObjectTypeDB::bind_method("_close_current_tab",&ShaderEditor::_close_current_tab);
+	ClassDB::bind_method("_menu_option",&ShaderEditor::_menu_option);
+	ClassDB::bind_method("_params_changed",&ShaderEditor::_params_changed);
+	ClassDB::bind_method("apply_shaders",&ShaderEditor::apply_shaders);
+//	ClassDB::bind_method("_close_current_tab",&ShaderEditor::_close_current_tab);
 }
 
 void ShaderEditor::ensure_select_current() {

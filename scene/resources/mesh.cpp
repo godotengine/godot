@@ -1019,31 +1019,31 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 void Mesh::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("add_morph_target","name"),&Mesh::add_morph_target);
-	ObjectTypeDB::bind_method(_MD("get_morph_target_count"),&Mesh::get_morph_target_count);
-	ObjectTypeDB::bind_method(_MD("get_morph_target_name","index"),&Mesh::get_morph_target_name);
-	ObjectTypeDB::bind_method(_MD("clear_morph_targets"),&Mesh::clear_morph_targets);
-	ObjectTypeDB::bind_method(_MD("set_morph_target_mode","mode"),&Mesh::set_morph_target_mode);
-	ObjectTypeDB::bind_method(_MD("get_morph_target_mode"),&Mesh::get_morph_target_mode);
+	ClassDB::bind_method(_MD("add_morph_target","name"),&Mesh::add_morph_target);
+	ClassDB::bind_method(_MD("get_morph_target_count"),&Mesh::get_morph_target_count);
+	ClassDB::bind_method(_MD("get_morph_target_name","index"),&Mesh::get_morph_target_name);
+	ClassDB::bind_method(_MD("clear_morph_targets"),&Mesh::clear_morph_targets);
+	ClassDB::bind_method(_MD("set_morph_target_mode","mode"),&Mesh::set_morph_target_mode);
+	ClassDB::bind_method(_MD("get_morph_target_mode"),&Mesh::get_morph_target_mode);
 
-	ObjectTypeDB::bind_method(_MD("add_surface_from_arrays","primitive","arrays","blend_shapes","compress_flags"),&Mesh::add_surface_from_arrays,DEFVAL(Array()),DEFVAL(ARRAY_COMPRESS_DEFAULT));
-	ObjectTypeDB::bind_method(_MD("get_surface_count"),&Mesh::get_surface_count);
-	ObjectTypeDB::bind_method(_MD("surface_remove","surf_idx"),&Mesh::surface_remove);
-	ObjectTypeDB::bind_method(_MD("surface_get_array_len","surf_idx"),&Mesh::surface_get_array_len);
-	ObjectTypeDB::bind_method(_MD("surface_get_array_index_len","surf_idx"),&Mesh::surface_get_array_index_len);
-	ObjectTypeDB::bind_method(_MD("surface_get_format","surf_idx"),&Mesh::surface_get_format);
-	ObjectTypeDB::bind_method(_MD("surface_get_primitive_type","surf_idx"),&Mesh::surface_get_primitive_type);
-	ObjectTypeDB::bind_method(_MD("surface_set_material","surf_idx","material:Material"),&Mesh::surface_set_material);
-	ObjectTypeDB::bind_method(_MD("surface_get_material:Material","surf_idx"),&Mesh::surface_get_material);
-	ObjectTypeDB::bind_method(_MD("surface_set_name","surf_idx","name"),&Mesh::surface_set_name);
-	ObjectTypeDB::bind_method(_MD("surface_get_name","surf_idx"),&Mesh::surface_get_name);
-	ObjectTypeDB::bind_method(_MD("center_geometry"),&Mesh::center_geometry);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("center_geometry"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ObjectTypeDB::bind_method(_MD("regen_normalmaps"),&Mesh::regen_normalmaps);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("regen_normalmaps"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(_MD("add_surface_from_arrays","primitive","arrays","blend_shapes","compress_flags"),&Mesh::add_surface_from_arrays,DEFVAL(Array()),DEFVAL(ARRAY_COMPRESS_DEFAULT));
+	ClassDB::bind_method(_MD("get_surface_count"),&Mesh::get_surface_count);
+	ClassDB::bind_method(_MD("surface_remove","surf_idx"),&Mesh::surface_remove);
+	ClassDB::bind_method(_MD("surface_get_array_len","surf_idx"),&Mesh::surface_get_array_len);
+	ClassDB::bind_method(_MD("surface_get_array_index_len","surf_idx"),&Mesh::surface_get_array_index_len);
+	ClassDB::bind_method(_MD("surface_get_format","surf_idx"),&Mesh::surface_get_format);
+	ClassDB::bind_method(_MD("surface_get_primitive_type","surf_idx"),&Mesh::surface_get_primitive_type);
+	ClassDB::bind_method(_MD("surface_set_material","surf_idx","material:Material"),&Mesh::surface_set_material);
+	ClassDB::bind_method(_MD("surface_get_material:Material","surf_idx"),&Mesh::surface_get_material);
+	ClassDB::bind_method(_MD("surface_set_name","surf_idx","name"),&Mesh::surface_set_name);
+	ClassDB::bind_method(_MD("surface_get_name","surf_idx"),&Mesh::surface_get_name);
+	ClassDB::bind_method(_MD("center_geometry"),&Mesh::center_geometry);
+	ClassDB::set_method_flags(get_class_static(),_SCS("center_geometry"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(_MD("regen_normalmaps"),&Mesh::regen_normalmaps);
+	ClassDB::set_method_flags(get_class_static(),_SCS("regen_normalmaps"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ObjectTypeDB::bind_method(_MD("set_custom_aabb","aabb"),&Mesh::set_custom_aabb);
-	ObjectTypeDB::bind_method(_MD("get_custom_aabb"),&Mesh::get_custom_aabb);
+	ClassDB::bind_method(_MD("set_custom_aabb","aabb"),&Mesh::set_custom_aabb);
+	ClassDB::bind_method(_MD("get_custom_aabb"),&Mesh::get_custom_aabb);
 
 
 	BIND_CONSTANT( NO_INDEX_ARRAY );

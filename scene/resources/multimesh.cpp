@@ -211,26 +211,26 @@ MultiMesh::TransformFormat MultiMesh::get_transform_format() const{
 
 void MultiMesh::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MultiMesh::set_mesh);
-	ObjectTypeDB::bind_method(_MD("get_mesh:Mesh"),&MultiMesh::get_mesh);
-	ObjectTypeDB::bind_method(_MD("set_color_format","format"),&MultiMesh::set_color_format);
-	ObjectTypeDB::bind_method(_MD("get_color_format"),&MultiMesh::get_color_format);
-	ObjectTypeDB::bind_method(_MD("set_transform_format","format"),&MultiMesh::set_transform_format);
-	ObjectTypeDB::bind_method(_MD("get_transform_format"),&MultiMesh::get_transform_format);
+	ClassDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MultiMesh::set_mesh);
+	ClassDB::bind_method(_MD("get_mesh:Mesh"),&MultiMesh::get_mesh);
+	ClassDB::bind_method(_MD("set_color_format","format"),&MultiMesh::set_color_format);
+	ClassDB::bind_method(_MD("get_color_format"),&MultiMesh::get_color_format);
+	ClassDB::bind_method(_MD("set_transform_format","format"),&MultiMesh::set_transform_format);
+	ClassDB::bind_method(_MD("get_transform_format"),&MultiMesh::get_transform_format);
 
-	ObjectTypeDB::bind_method(_MD("set_instance_count","count"),&MultiMesh::set_instance_count);
-	ObjectTypeDB::bind_method(_MD("get_instance_count"),&MultiMesh::get_instance_count);
-	ObjectTypeDB::bind_method(_MD("set_instance_transform","instance","transform"),&MultiMesh::set_instance_transform);
-	ObjectTypeDB::bind_method(_MD("get_instance_transform","instance"),&MultiMesh::get_instance_transform);
-	ObjectTypeDB::bind_method(_MD("set_instance_color","instance","color"),&MultiMesh::set_instance_color);
-	ObjectTypeDB::bind_method(_MD("get_instance_color","instance"),&MultiMesh::get_instance_color);
-	ObjectTypeDB::bind_method(_MD("get_aabb"),&MultiMesh::get_aabb);
+	ClassDB::bind_method(_MD("set_instance_count","count"),&MultiMesh::set_instance_count);
+	ClassDB::bind_method(_MD("get_instance_count"),&MultiMesh::get_instance_count);
+	ClassDB::bind_method(_MD("set_instance_transform","instance","transform"),&MultiMesh::set_instance_transform);
+	ClassDB::bind_method(_MD("get_instance_transform","instance"),&MultiMesh::get_instance_transform);
+	ClassDB::bind_method(_MD("set_instance_color","instance","color"),&MultiMesh::set_instance_color);
+	ClassDB::bind_method(_MD("get_instance_color","instance"),&MultiMesh::get_instance_color);
+	ClassDB::bind_method(_MD("get_aabb"),&MultiMesh::get_aabb);
 
 
-	ObjectTypeDB::bind_method(_MD("_set_transform_array"),&MultiMesh::_set_transform_array);
-	ObjectTypeDB::bind_method(_MD("_get_transform_array"),&MultiMesh::_get_transform_array);
-	ObjectTypeDB::bind_method(_MD("_set_color_array"),&MultiMesh::_set_color_array);
-	ObjectTypeDB::bind_method(_MD("_get_color_array"),&MultiMesh::_get_color_array);
+	ClassDB::bind_method(_MD("_set_transform_array"),&MultiMesh::_set_transform_array);
+	ClassDB::bind_method(_MD("_get_transform_array"),&MultiMesh::_get_transform_array);
+	ClassDB::bind_method(_MD("_set_color_array"),&MultiMesh::_set_color_array);
+	ClassDB::bind_method(_MD("_get_color_array"),&MultiMesh::_get_color_array);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"color_format",PROPERTY_HINT_ENUM,"None,Byte,Float"), _SCS("set_color_format"), _SCS("get_color_format"));

@@ -44,7 +44,7 @@ class BakedLightInstance;
 class GridMap : public Spatial {
 
 
-	OBJ_TYPE( GridMap, Spatial );
+	GDCLASS( GridMap, Spatial );
 
 	enum {
 		MAP_DIRTY_TRANSFORMS=1,

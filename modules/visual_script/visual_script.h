@@ -9,7 +9,7 @@ class VisualScriptNodeInstance;
 class VisualScript;
 
 class VisualScriptNode : public Resource {
-	OBJ_TYPE(VisualScriptNode,Resource)
+	GDCLASS(VisualScriptNode,Resource)
 
 friend class VisualScript;
 
@@ -64,7 +64,7 @@ public:
 
 		Variant::Type type;
 		InputEvent::Type ev_type;
-		StringName obj_type;
+		StringName GDCLASS;
 		Ref<Script> script;
 
 		TypeGuess() { type=Variant::NIL; ev_type=InputEvent::NONE; }
@@ -143,7 +143,7 @@ public:
 
 class VisualScript : public Script {
 
-	OBJ_TYPE( VisualScript, Script )
+	GDCLASS( VisualScript, Script )
 
 	RES_BASE_EXTENSION("vs");
 
@@ -437,7 +437,7 @@ public:
 
 class VisualScriptFunctionState : public Reference {
 
-	OBJ_TYPE(VisualScriptFunctionState,Reference);
+	GDCLASS(VisualScriptFunctionState,Reference);
 friend class VisualScriptInstance;
 
 	ObjectID instance_id;

@@ -39,7 +39,7 @@
 
 class Globals : public Object {
 
-	OBJ_TYPE( Globals, Object );
+	GDCLASS( Globals, Object );
 	_THREAD_SAFE_CLASS_
 
 public:

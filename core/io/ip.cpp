@@ -218,13 +218,13 @@ Array IP::_get_local_addresses() const {
 
 void IP::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("resolve_hostname","host","ip_type"),&IP::resolve_hostname,DEFVAL(IP::TYPE_ANY));
-	ObjectTypeDB::bind_method(_MD("resolve_hostname_queue_item","host","ip_type"),&IP::resolve_hostname_queue_item,DEFVAL(IP::TYPE_ANY));
-	ObjectTypeDB::bind_method(_MD("get_resolve_item_status","id"),&IP::get_resolve_item_status);
-	ObjectTypeDB::bind_method(_MD("get_resolve_item_address","id"),&IP::get_resolve_item_address);
-	ObjectTypeDB::bind_method(_MD("erase_resolve_item","id"),&IP::erase_resolve_item);
-	ObjectTypeDB::bind_method(_MD("get_local_addresses"),&IP::_get_local_addresses);
-	ObjectTypeDB::bind_method(_MD("clear_cache"),&IP::clear_cache, DEFVAL(""));
+	ClassDB::bind_method(_MD("resolve_hostname","host","ip_type"),&IP::resolve_hostname,DEFVAL(IP::TYPE_ANY));
+	ClassDB::bind_method(_MD("resolve_hostname_queue_item","host","ip_type"),&IP::resolve_hostname_queue_item,DEFVAL(IP::TYPE_ANY));
+	ClassDB::bind_method(_MD("get_resolve_item_status","id"),&IP::get_resolve_item_status);
+	ClassDB::bind_method(_MD("get_resolve_item_address","id"),&IP::get_resolve_item_address);
+	ClassDB::bind_method(_MD("erase_resolve_item","id"),&IP::erase_resolve_item);
+	ClassDB::bind_method(_MD("get_local_addresses"),&IP::_get_local_addresses);
+	ClassDB::bind_method(_MD("clear_cache"),&IP::clear_cache, DEFVAL(""));
 
 	BIND_CONSTANT( RESOLVER_STATUS_NONE );
 	BIND_CONSTANT( RESOLVER_STATUS_WAITING );

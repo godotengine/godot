@@ -37,7 +37,7 @@
 
 class HTTPClient : public Reference {
 
-	OBJ_TYPE(HTTPClient,Reference);
+	GDCLASS(HTTPClient,Reference);
 public:
 
 	enum ResponseCode {

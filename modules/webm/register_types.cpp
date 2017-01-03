@@ -36,7 +36,7 @@ void register_webm_types() {
 
 	webm_stream_loader = memnew(ResourceFormatLoaderVideoStreamWebm);
 	ResourceLoader::add_resource_format_loader(webm_stream_loader);
-	ObjectTypeDB::register_type<VideoStreamWebm>();
+	ClassDB::register_class<VideoStreamWebm>();
 }
 
 void unregister_webm_types() {

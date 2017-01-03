@@ -7,7 +7,7 @@
 #include "servers/visual_server.h"
 
 class ReflectionProbe : public VisualInstance {
-	OBJ_TYPE(ReflectionProbe,VisualInstance);
+	GDCLASS(ReflectionProbe,VisualInstance);
 
 public:
 

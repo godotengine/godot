@@ -34,7 +34,7 @@
 
 class Bounds : public Resource {
 
-	OBJ_TYPE(Bounds,Resource);
+	GDCLASS(Bounds,Resource);
 	BSP_Tree bsp_tree;
 
 protected:

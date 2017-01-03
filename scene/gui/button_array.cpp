@@ -527,24 +527,24 @@ void ButtonArray::get_translatable_strings(List<String> *p_strings) const {
 
 void ButtonArray::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("add_button","text","tooltip"),&ButtonArray::add_button,DEFVAL(""));
-	ObjectTypeDB::bind_method(_MD("add_icon_button","icon:Texture","text","tooltip"),&ButtonArray::add_icon_button,DEFVAL(""),DEFVAL(""));
-	ObjectTypeDB::bind_method(_MD("set_button_text","button_idx","text"),&ButtonArray::set_button_text);
-	ObjectTypeDB::bind_method(_MD("set_button_tooltip","button_idx","text"),&ButtonArray::set_button_tooltip);
-	ObjectTypeDB::bind_method(_MD("set_button_icon","button_idx","icon:Texture"),&ButtonArray::set_button_icon);
-	ObjectTypeDB::bind_method(_MD("get_button_text","button_idx"),&ButtonArray::get_button_text);
-	ObjectTypeDB::bind_method(_MD("get_button_tooltip","button_idx"),&ButtonArray::get_button_tooltip);
-	ObjectTypeDB::bind_method(_MD("get_button_icon:Texture","button_idx"),&ButtonArray::get_button_icon);
-	ObjectTypeDB::bind_method(_MD("get_button_count"),&ButtonArray::get_button_count);
-	ObjectTypeDB::bind_method(_MD("set_flat","enabled"),&ButtonArray::set_flat);
-	ObjectTypeDB::bind_method(_MD("is_flat"),&ButtonArray::is_flat);
-	ObjectTypeDB::bind_method(_MD("get_selected"),&ButtonArray::get_selected);
-	ObjectTypeDB::bind_method(_MD("get_hovered"),&ButtonArray::get_hovered);
-	ObjectTypeDB::bind_method(_MD("set_selected","button_idx"),&ButtonArray::set_selected);
-	ObjectTypeDB::bind_method(_MD("erase_button","button_idx"),&ButtonArray::erase_button);
-	ObjectTypeDB::bind_method(_MD("clear"),&ButtonArray::clear);
+	ClassDB::bind_method(_MD("add_button","text","tooltip"),&ButtonArray::add_button,DEFVAL(""));
+	ClassDB::bind_method(_MD("add_icon_button","icon:Texture","text","tooltip"),&ButtonArray::add_icon_button,DEFVAL(""),DEFVAL(""));
+	ClassDB::bind_method(_MD("set_button_text","button_idx","text"),&ButtonArray::set_button_text);
+	ClassDB::bind_method(_MD("set_button_tooltip","button_idx","text"),&ButtonArray::set_button_tooltip);
+	ClassDB::bind_method(_MD("set_button_icon","button_idx","icon:Texture"),&ButtonArray::set_button_icon);
+	ClassDB::bind_method(_MD("get_button_text","button_idx"),&ButtonArray::get_button_text);
+	ClassDB::bind_method(_MD("get_button_tooltip","button_idx"),&ButtonArray::get_button_tooltip);
+	ClassDB::bind_method(_MD("get_button_icon:Texture","button_idx"),&ButtonArray::get_button_icon);
+	ClassDB::bind_method(_MD("get_button_count"),&ButtonArray::get_button_count);
+	ClassDB::bind_method(_MD("set_flat","enabled"),&ButtonArray::set_flat);
+	ClassDB::bind_method(_MD("is_flat"),&ButtonArray::is_flat);
+	ClassDB::bind_method(_MD("get_selected"),&ButtonArray::get_selected);
+	ClassDB::bind_method(_MD("get_hovered"),&ButtonArray::get_hovered);
+	ClassDB::bind_method(_MD("set_selected","button_idx"),&ButtonArray::set_selected);
+	ClassDB::bind_method(_MD("erase_button","button_idx"),&ButtonArray::erase_button);
+	ClassDB::bind_method(_MD("clear"),&ButtonArray::clear);
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&ButtonArray::_input_event);
+	ClassDB::bind_method(_MD("_input_event"),&ButtonArray::_input_event);
 
 	BIND_CONSTANT( ALIGN_BEGIN );
 	BIND_CONSTANT( ALIGN_CENTER );

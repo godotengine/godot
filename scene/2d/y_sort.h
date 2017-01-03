@@ -32,7 +32,7 @@
 #include "scene/2d/node_2d.h"
 
 class YSort : public Node2D {
-	OBJ_TYPE(YSort,Node2D);
+	GDCLASS(YSort,Node2D);
 	bool sort_enabled;
 	static void _bind_methods();
 public:

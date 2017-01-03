@@ -37,7 +37,7 @@
 
 class TileMap : public Node2D {
 
-	OBJ_TYPE( TileMap, Node2D );
+	GDCLASS( TileMap, Node2D );
 public:
 
 	enum Mode {

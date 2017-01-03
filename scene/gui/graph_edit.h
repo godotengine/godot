@@ -40,7 +40,7 @@ class GraphEdit;
 
 class GraphEditFilter : public Control {
 
-	OBJ_TYPE(GraphEditFilter,Control);
+	GDCLASS(GraphEditFilter,Control);
 
 	friend class GraphEdit;
 	GraphEdit *ge;
@@ -54,7 +54,7 @@ public:
 
 class GraphEdit : public Control {
 
-	OBJ_TYPE(GraphEdit,Control);
+	GDCLASS(GraphEdit,Control);
 public:
 
 	struct Connection {

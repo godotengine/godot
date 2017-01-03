@@ -831,101 +831,101 @@ Vector2 FixedSpatialMaterial::get_uv2_offset() const{
 void FixedSpatialMaterial::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_albedo","albedo"),&FixedSpatialMaterial::set_albedo);
-	ObjectTypeDB::bind_method(_MD("get_albedo"),&FixedSpatialMaterial::get_albedo);
+	ClassDB::bind_method(_MD("set_albedo","albedo"),&FixedSpatialMaterial::set_albedo);
+	ClassDB::bind_method(_MD("get_albedo"),&FixedSpatialMaterial::get_albedo);
 
-	ObjectTypeDB::bind_method(_MD("set_specular_mode","specular_mode"),&FixedSpatialMaterial::set_specular_mode);
-	ObjectTypeDB::bind_method(_MD("get_specular_mode"),&FixedSpatialMaterial::get_specular_mode);
+	ClassDB::bind_method(_MD("set_specular_mode","specular_mode"),&FixedSpatialMaterial::set_specular_mode);
+	ClassDB::bind_method(_MD("get_specular_mode"),&FixedSpatialMaterial::get_specular_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_specular","specular"),&FixedSpatialMaterial::set_specular);
-	ObjectTypeDB::bind_method(_MD("get_specular"),&FixedSpatialMaterial::get_specular);
+	ClassDB::bind_method(_MD("set_specular","specular"),&FixedSpatialMaterial::set_specular);
+	ClassDB::bind_method(_MD("get_specular"),&FixedSpatialMaterial::get_specular);
 
-	ObjectTypeDB::bind_method(_MD("set_metalness","metalness"),&FixedSpatialMaterial::set_metalness);
-	ObjectTypeDB::bind_method(_MD("get_metalness"),&FixedSpatialMaterial::get_metalness);
+	ClassDB::bind_method(_MD("set_metalness","metalness"),&FixedSpatialMaterial::set_metalness);
+	ClassDB::bind_method(_MD("get_metalness"),&FixedSpatialMaterial::get_metalness);
 
-	ObjectTypeDB::bind_method(_MD("set_roughness","roughness"),&FixedSpatialMaterial::set_roughness);
-	ObjectTypeDB::bind_method(_MD("get_roughness"),&FixedSpatialMaterial::get_roughness);
+	ClassDB::bind_method(_MD("set_roughness","roughness"),&FixedSpatialMaterial::set_roughness);
+	ClassDB::bind_method(_MD("get_roughness"),&FixedSpatialMaterial::get_roughness);
 
-	ObjectTypeDB::bind_method(_MD("set_emission","emission"),&FixedSpatialMaterial::set_emission);
-	ObjectTypeDB::bind_method(_MD("get_emission"),&FixedSpatialMaterial::get_emission);
+	ClassDB::bind_method(_MD("set_emission","emission"),&FixedSpatialMaterial::set_emission);
+	ClassDB::bind_method(_MD("get_emission"),&FixedSpatialMaterial::get_emission);
 
-	ObjectTypeDB::bind_method(_MD("set_emission_energy","emission_energy"),&FixedSpatialMaterial::set_emission_energy);
-	ObjectTypeDB::bind_method(_MD("get_emission_energy"),&FixedSpatialMaterial::get_emission_energy);
+	ClassDB::bind_method(_MD("set_emission_energy","emission_energy"),&FixedSpatialMaterial::set_emission_energy);
+	ClassDB::bind_method(_MD("get_emission_energy"),&FixedSpatialMaterial::get_emission_energy);
 
-	ObjectTypeDB::bind_method(_MD("set_normal_scale","normal_scale"),&FixedSpatialMaterial::set_normal_scale);
-	ObjectTypeDB::bind_method(_MD("get_normal_scale"),&FixedSpatialMaterial::get_normal_scale);
+	ClassDB::bind_method(_MD("set_normal_scale","normal_scale"),&FixedSpatialMaterial::set_normal_scale);
+	ClassDB::bind_method(_MD("get_normal_scale"),&FixedSpatialMaterial::get_normal_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_rim","rim"),&FixedSpatialMaterial::set_rim);
-	ObjectTypeDB::bind_method(_MD("get_rim"),&FixedSpatialMaterial::get_rim);
+	ClassDB::bind_method(_MD("set_rim","rim"),&FixedSpatialMaterial::set_rim);
+	ClassDB::bind_method(_MD("get_rim"),&FixedSpatialMaterial::get_rim);
 
-	ObjectTypeDB::bind_method(_MD("set_rim_tint","rim_tint"),&FixedSpatialMaterial::set_rim_tint);
-	ObjectTypeDB::bind_method(_MD("get_rim_tint"),&FixedSpatialMaterial::get_rim_tint);
+	ClassDB::bind_method(_MD("set_rim_tint","rim_tint"),&FixedSpatialMaterial::set_rim_tint);
+	ClassDB::bind_method(_MD("get_rim_tint"),&FixedSpatialMaterial::get_rim_tint);
 
-	ObjectTypeDB::bind_method(_MD("set_clearcoat","clearcoat"),&FixedSpatialMaterial::set_clearcoat);
-	ObjectTypeDB::bind_method(_MD("get_clearcoat"),&FixedSpatialMaterial::get_clearcoat);
+	ClassDB::bind_method(_MD("set_clearcoat","clearcoat"),&FixedSpatialMaterial::set_clearcoat);
+	ClassDB::bind_method(_MD("get_clearcoat"),&FixedSpatialMaterial::get_clearcoat);
 
-	ObjectTypeDB::bind_method(_MD("set_clearcoat_gloss","clearcoat_gloss"),&FixedSpatialMaterial::set_clearcoat_gloss);
-	ObjectTypeDB::bind_method(_MD("get_clearcoat_gloss"),&FixedSpatialMaterial::get_clearcoat_gloss);
+	ClassDB::bind_method(_MD("set_clearcoat_gloss","clearcoat_gloss"),&FixedSpatialMaterial::set_clearcoat_gloss);
+	ClassDB::bind_method(_MD("get_clearcoat_gloss"),&FixedSpatialMaterial::get_clearcoat_gloss);
 
-	ObjectTypeDB::bind_method(_MD("set_anisotropy","anisotropy"),&FixedSpatialMaterial::set_anisotropy);
-	ObjectTypeDB::bind_method(_MD("get_anisotropy"),&FixedSpatialMaterial::get_anisotropy);
+	ClassDB::bind_method(_MD("set_anisotropy","anisotropy"),&FixedSpatialMaterial::set_anisotropy);
+	ClassDB::bind_method(_MD("get_anisotropy"),&FixedSpatialMaterial::get_anisotropy);
 
-	ObjectTypeDB::bind_method(_MD("set_height_scale","height_scale"),&FixedSpatialMaterial::set_height_scale);
-	ObjectTypeDB::bind_method(_MD("get_height_scale"),&FixedSpatialMaterial::get_height_scale);
+	ClassDB::bind_method(_MD("set_height_scale","height_scale"),&FixedSpatialMaterial::set_height_scale);
+	ClassDB::bind_method(_MD("get_height_scale"),&FixedSpatialMaterial::get_height_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_subsurface_scattering_strength","strength"),&FixedSpatialMaterial::set_subsurface_scattering_strength);
-	ObjectTypeDB::bind_method(_MD("get_subsurface_scattering_strength"),&FixedSpatialMaterial::get_subsurface_scattering_strength);
+	ClassDB::bind_method(_MD("set_subsurface_scattering_strength","strength"),&FixedSpatialMaterial::set_subsurface_scattering_strength);
+	ClassDB::bind_method(_MD("get_subsurface_scattering_strength"),&FixedSpatialMaterial::get_subsurface_scattering_strength);
 
-	ObjectTypeDB::bind_method(_MD("set_refraction","refraction"),&FixedSpatialMaterial::set_refraction);
-	ObjectTypeDB::bind_method(_MD("get_refraction"),&FixedSpatialMaterial::get_refraction);
+	ClassDB::bind_method(_MD("set_refraction","refraction"),&FixedSpatialMaterial::set_refraction);
+	ClassDB::bind_method(_MD("get_refraction"),&FixedSpatialMaterial::get_refraction);
 
-	ObjectTypeDB::bind_method(_MD("set_refraction_roughness","refraction_roughness"),&FixedSpatialMaterial::set_refraction_roughness);
-	ObjectTypeDB::bind_method(_MD("get_refraction_roughness"),&FixedSpatialMaterial::get_refraction_roughness);
+	ClassDB::bind_method(_MD("set_refraction_roughness","refraction_roughness"),&FixedSpatialMaterial::set_refraction_roughness);
+	ClassDB::bind_method(_MD("get_refraction_roughness"),&FixedSpatialMaterial::get_refraction_roughness);
 
-	ObjectTypeDB::bind_method(_MD("set_line_width","line_width"),&FixedSpatialMaterial::set_line_width);
-	ObjectTypeDB::bind_method(_MD("get_line_width"),&FixedSpatialMaterial::get_line_width);
+	ClassDB::bind_method(_MD("set_line_width","line_width"),&FixedSpatialMaterial::set_line_width);
+	ClassDB::bind_method(_MD("get_line_width"),&FixedSpatialMaterial::get_line_width);
 
-	ObjectTypeDB::bind_method(_MD("set_point_size","point_size"),&FixedSpatialMaterial::set_point_size);
-	ObjectTypeDB::bind_method(_MD("get_point_size"),&FixedSpatialMaterial::get_point_size);
+	ClassDB::bind_method(_MD("set_point_size","point_size"),&FixedSpatialMaterial::set_point_size);
+	ClassDB::bind_method(_MD("get_point_size"),&FixedSpatialMaterial::get_point_size);
 
-	ObjectTypeDB::bind_method(_MD("set_detail_uv","detail_uv"),&FixedSpatialMaterial::set_detail_uv);
-	ObjectTypeDB::bind_method(_MD("get_detail_uv"),&FixedSpatialMaterial::get_detail_uv);
+	ClassDB::bind_method(_MD("set_detail_uv","detail_uv"),&FixedSpatialMaterial::set_detail_uv);
+	ClassDB::bind_method(_MD("get_detail_uv"),&FixedSpatialMaterial::get_detail_uv);
 
-	ObjectTypeDB::bind_method(_MD("set_blend_mode","blend_mode"),&FixedSpatialMaterial::set_blend_mode);
-	ObjectTypeDB::bind_method(_MD("get_blend_mode"),&FixedSpatialMaterial::get_blend_mode);
+	ClassDB::bind_method(_MD("set_blend_mode","blend_mode"),&FixedSpatialMaterial::set_blend_mode);
+	ClassDB::bind_method(_MD("get_blend_mode"),&FixedSpatialMaterial::get_blend_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_depth_draw_mode","depth_draw_mode"),&FixedSpatialMaterial::set_depth_draw_mode);
-	ObjectTypeDB::bind_method(_MD("get_depth_draw_mode"),&FixedSpatialMaterial::get_depth_draw_mode);
+	ClassDB::bind_method(_MD("set_depth_draw_mode","depth_draw_mode"),&FixedSpatialMaterial::set_depth_draw_mode);
+	ClassDB::bind_method(_MD("get_depth_draw_mode"),&FixedSpatialMaterial::get_depth_draw_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_cull_mode","cull_mode"),&FixedSpatialMaterial::set_cull_mode);
-	ObjectTypeDB::bind_method(_MD("get_cull_mode"),&FixedSpatialMaterial::get_cull_mode);
+	ClassDB::bind_method(_MD("set_cull_mode","cull_mode"),&FixedSpatialMaterial::set_cull_mode);
+	ClassDB::bind_method(_MD("get_cull_mode"),&FixedSpatialMaterial::get_cull_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_diffuse_mode","diffuse_mode"),&FixedSpatialMaterial::set_diffuse_mode);
-	ObjectTypeDB::bind_method(_MD("get_diffuse_mode"),&FixedSpatialMaterial::get_diffuse_mode);
+	ClassDB::bind_method(_MD("set_diffuse_mode","diffuse_mode"),&FixedSpatialMaterial::set_diffuse_mode);
+	ClassDB::bind_method(_MD("get_diffuse_mode"),&FixedSpatialMaterial::get_diffuse_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_flag","flag","enable"),&FixedSpatialMaterial::set_flag);
-	ObjectTypeDB::bind_method(_MD("get_flag"),&FixedSpatialMaterial::get_flag);
+	ClassDB::bind_method(_MD("set_flag","flag","enable"),&FixedSpatialMaterial::set_flag);
+	ClassDB::bind_method(_MD("get_flag"),&FixedSpatialMaterial::get_flag);
 
-	ObjectTypeDB::bind_method(_MD("set_feature","feature","enable"),&FixedSpatialMaterial::set_feature);
-	ObjectTypeDB::bind_method(_MD("get_feature","feature"),&FixedSpatialMaterial::get_feature);
+	ClassDB::bind_method(_MD("set_feature","feature","enable"),&FixedSpatialMaterial::set_feature);
+	ClassDB::bind_method(_MD("get_feature","feature"),&FixedSpatialMaterial::get_feature);
 
-	ObjectTypeDB::bind_method(_MD("set_texture","param:Texture","texture"),&FixedSpatialMaterial::set_texture);
-	ObjectTypeDB::bind_method(_MD("get_texture:Texture","param:Texture"),&FixedSpatialMaterial::get_texture);
+	ClassDB::bind_method(_MD("set_texture","param:Texture","texture"),&FixedSpatialMaterial::set_texture);
+	ClassDB::bind_method(_MD("get_texture:Texture","param:Texture"),&FixedSpatialMaterial::get_texture);
 
-	ObjectTypeDB::bind_method(_MD("set_detail_blend_mode","detail_blend_mode"),&FixedSpatialMaterial::set_detail_blend_mode);
-	ObjectTypeDB::bind_method(_MD("get_detail_blend_mode"),&FixedSpatialMaterial::get_detail_blend_mode);
+	ClassDB::bind_method(_MD("set_detail_blend_mode","detail_blend_mode"),&FixedSpatialMaterial::set_detail_blend_mode);
+	ClassDB::bind_method(_MD("get_detail_blend_mode"),&FixedSpatialMaterial::get_detail_blend_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_uv1_scale","scale"),&FixedSpatialMaterial::set_uv1_scale);
-	ObjectTypeDB::bind_method(_MD("get_uv1_scale"),&FixedSpatialMaterial::get_uv1_scale);
+	ClassDB::bind_method(_MD("set_uv1_scale","scale"),&FixedSpatialMaterial::set_uv1_scale);
+	ClassDB::bind_method(_MD("get_uv1_scale"),&FixedSpatialMaterial::get_uv1_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_uv1_offset","offset"),&FixedSpatialMaterial::set_uv1_offset);
-	ObjectTypeDB::bind_method(_MD("get_uv1_offset"),&FixedSpatialMaterial::get_uv1_offset);
+	ClassDB::bind_method(_MD("set_uv1_offset","offset"),&FixedSpatialMaterial::set_uv1_offset);
+	ClassDB::bind_method(_MD("get_uv1_offset"),&FixedSpatialMaterial::get_uv1_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_uv2_scale","scale"),&FixedSpatialMaterial::set_uv2_scale);
-	ObjectTypeDB::bind_method(_MD("get_uv2_scale"),&FixedSpatialMaterial::get_uv2_scale);
+	ClassDB::bind_method(_MD("set_uv2_scale","scale"),&FixedSpatialMaterial::set_uv2_scale);
+	ClassDB::bind_method(_MD("get_uv2_scale"),&FixedSpatialMaterial::get_uv2_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_uv2_offset","offset"),&FixedSpatialMaterial::set_uv2_offset);
-	ObjectTypeDB::bind_method(_MD("get_uv2_offset"),&FixedSpatialMaterial::get_uv2_offset);
+	ClassDB::bind_method(_MD("set_uv2_offset","offset"),&FixedSpatialMaterial::set_uv2_offset);
+	ClassDB::bind_method(_MD("get_uv2_offset"),&FixedSpatialMaterial::get_uv2_offset);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags/transparent"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags/unshaded"),_SCS("set_flag"),_SCS("get_flag"),FLAG_UNSHADED);

@@ -276,9 +276,9 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 
 void MeshLibraryEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_cbk",&MeshLibraryEditor::_menu_cbk);
-	ObjectTypeDB::bind_method("_menu_confirm",&MeshLibraryEditor::_menu_confirm);
-	ObjectTypeDB::bind_method("_import_scene_cbk",&MeshLibraryEditor::_import_scene_cbk);
+	ClassDB::bind_method("_menu_cbk",&MeshLibraryEditor::_menu_cbk);
+	ClassDB::bind_method("_menu_confirm",&MeshLibraryEditor::_menu_confirm);
+	ClassDB::bind_method("_import_scene_cbk",&MeshLibraryEditor::_import_scene_cbk);
 }
 
 MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {

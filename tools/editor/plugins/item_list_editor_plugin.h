@@ -44,7 +44,7 @@
 
 class ItemListPlugin : public Object {
 
-	OBJ_TYPE(ItemListPlugin,Object);
+	GDCLASS(ItemListPlugin,Object);
 
 protected:
 
@@ -100,7 +100,7 @@ public:
 
 class ItemListOptionButtonPlugin : public ItemListPlugin {
 
-	OBJ_TYPE(ItemListOptionButtonPlugin,ItemListPlugin);
+	GDCLASS(ItemListOptionButtonPlugin,ItemListPlugin);
 
 	OptionButton *ob;
 public:
@@ -130,7 +130,7 @@ public:
 
 class ItemListPopupMenuPlugin : public ItemListPlugin {
 
-	OBJ_TYPE(ItemListPopupMenuPlugin,ItemListPlugin);
+	GDCLASS(ItemListPopupMenuPlugin,ItemListPlugin);
 
 	PopupMenu *pp;
 public:
@@ -171,7 +171,7 @@ public:
 
 class ItemListEditor : public HBoxContainer {
 
-	OBJ_TYPE(ItemListEditor,HBoxContainer);
+	GDCLASS(ItemListEditor,HBoxContainer);
 
 	Node *item_list;
 
@@ -209,7 +209,7 @@ public:
 
 class ItemListEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE(ItemListEditorPlugin,EditorPlugin);
+	GDCLASS(ItemListEditorPlugin,EditorPlugin);
 
 	ItemListEditor *item_list_editor;
 	EditorNode *editor;

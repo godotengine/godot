@@ -33,7 +33,7 @@
 
 class GridContainer : public Container {
 
-	OBJ_TYPE(GridContainer,Container);
+	GDCLASS(GridContainer,Container);
 
 	int columns;
 protected:

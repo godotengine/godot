@@ -459,19 +459,19 @@ void FindReplaceBar::set_text_edit(TextEdit *p_text_edit) {
 
 void FindReplaceBar::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_unhandled_input",&FindReplaceBar::_unhandled_input);
+	ClassDB::bind_method("_unhandled_input",&FindReplaceBar::_unhandled_input);
 
-	ObjectTypeDB::bind_method("_editor_text_changed",&FindReplaceBar::_editor_text_changed);
-	ObjectTypeDB::bind_method("_search_text_changed",&FindReplaceBar::_search_text_changed);
-	ObjectTypeDB::bind_method("_search_text_entered",&FindReplaceBar::_search_text_entered);
-	ObjectTypeDB::bind_method("_replace_text_entered",&FindReplaceBar::_replace_text_entered);
-	ObjectTypeDB::bind_method("_search_current",&FindReplaceBar::search_current);
-	ObjectTypeDB::bind_method("_search_next",&FindReplaceBar::search_next);
-	ObjectTypeDB::bind_method("_search_prev",&FindReplaceBar::search_prev);
-	ObjectTypeDB::bind_method("_replace_pressed",&FindReplaceBar::_replace);
-	ObjectTypeDB::bind_method("_replace_all_pressed",&FindReplaceBar::_replace_all);
-	ObjectTypeDB::bind_method("_search_options_changed",&FindReplaceBar::_search_options_changed);
-	ObjectTypeDB::bind_method("_hide_pressed",&FindReplaceBar::_hide_bar);
+	ClassDB::bind_method("_editor_text_changed",&FindReplaceBar::_editor_text_changed);
+	ClassDB::bind_method("_search_text_changed",&FindReplaceBar::_search_text_changed);
+	ClassDB::bind_method("_search_text_entered",&FindReplaceBar::_search_text_entered);
+	ClassDB::bind_method("_replace_text_entered",&FindReplaceBar::_replace_text_entered);
+	ClassDB::bind_method("_search_current",&FindReplaceBar::search_current);
+	ClassDB::bind_method("_search_next",&FindReplaceBar::search_next);
+	ClassDB::bind_method("_search_prev",&FindReplaceBar::search_prev);
+	ClassDB::bind_method("_replace_pressed",&FindReplaceBar::_replace);
+	ClassDB::bind_method("_replace_all_pressed",&FindReplaceBar::_replace_all);
+	ClassDB::bind_method("_search_options_changed",&FindReplaceBar::_search_options_changed);
+	ClassDB::bind_method("_hide_pressed",&FindReplaceBar::_hide_bar);
 
 	ADD_SIGNAL(MethodInfo("search"));
 }
@@ -884,10 +884,10 @@ void FindReplaceDialog::search_next() {
 
 void FindReplaceDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_search_text_entered",&FindReplaceDialog::_search_text_entered);
-	ObjectTypeDB::bind_method("_replace_text_entered",&FindReplaceDialog::_replace_text_entered);
-	ObjectTypeDB::bind_method("_prompt_changed",&FindReplaceDialog::_prompt_changed);
-	ObjectTypeDB::bind_method("_skip_pressed",&FindReplaceDialog::_skip_pressed);
+	ClassDB::bind_method("_search_text_entered",&FindReplaceDialog::_search_text_entered);
+	ClassDB::bind_method("_replace_text_entered",&FindReplaceDialog::_replace_text_entered);
+	ClassDB::bind_method("_prompt_changed",&FindReplaceDialog::_prompt_changed);
+	ClassDB::bind_method("_skip_pressed",&FindReplaceDialog::_skip_pressed);
 	ADD_SIGNAL(MethodInfo("search"));
 	ADD_SIGNAL(MethodInfo("skip"));
 
@@ -1195,14 +1195,14 @@ void CodeTextEditor::_notification(int p_what) {
 
 void CodeTextEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_text_editor_input_event",&CodeTextEditor::_text_editor_input_event);
-	ObjectTypeDB::bind_method("_line_col_changed",&CodeTextEditor::_line_col_changed);
-	ObjectTypeDB::bind_method("_text_changed",&CodeTextEditor::_text_changed);
-	ObjectTypeDB::bind_method("_on_settings_change",&CodeTextEditor::_on_settings_change);
-	ObjectTypeDB::bind_method("_text_changed_idle_timeout",&CodeTextEditor::_text_changed_idle_timeout);
-	ObjectTypeDB::bind_method("_code_complete_timer_timeout",&CodeTextEditor::_code_complete_timer_timeout);
-	ObjectTypeDB::bind_method("_complete_request",&CodeTextEditor::_complete_request);
-	ObjectTypeDB::bind_method("_font_resize_timeout",&CodeTextEditor::_font_resize_timeout);
+	ClassDB::bind_method("_text_editor_input_event",&CodeTextEditor::_text_editor_input_event);
+	ClassDB::bind_method("_line_col_changed",&CodeTextEditor::_line_col_changed);
+	ClassDB::bind_method("_text_changed",&CodeTextEditor::_text_changed);
+	ClassDB::bind_method("_on_settings_change",&CodeTextEditor::_on_settings_change);
+	ClassDB::bind_method("_text_changed_idle_timeout",&CodeTextEditor::_text_changed_idle_timeout);
+	ClassDB::bind_method("_code_complete_timer_timeout",&CodeTextEditor::_code_complete_timer_timeout);
+	ClassDB::bind_method("_complete_request",&CodeTextEditor::_complete_request);
+	ClassDB::bind_method("_font_resize_timeout",&CodeTextEditor::_font_resize_timeout);
 
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));

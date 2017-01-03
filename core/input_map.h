@@ -34,7 +34,7 @@
 
 class InputMap : public Object {
 
-	OBJ_TYPE( InputMap, Object );
+	GDCLASS( InputMap, Object );
 public:
 	struct Action {
 		int id;

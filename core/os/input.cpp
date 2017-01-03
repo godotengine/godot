@@ -49,39 +49,39 @@ Input::MouseMode Input::get_mouse_mode() const {
 
 void Input::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("is_key_pressed","scancode"),&Input::is_key_pressed);
-	ObjectTypeDB::bind_method(_MD("is_mouse_button_pressed","button"),&Input::is_mouse_button_pressed);
-	ObjectTypeDB::bind_method(_MD("is_joy_button_pressed","device","button"),&Input::is_joy_button_pressed);
-	ObjectTypeDB::bind_method(_MD("is_action_pressed","action"),&Input::is_action_pressed);
-	ObjectTypeDB::bind_method(_MD("is_action_just_pressed","action"),&Input::is_action_just_pressed);
-	ObjectTypeDB::bind_method(_MD("is_action_just_released","action"),&Input::is_action_just_released);
-	ObjectTypeDB::bind_method(_MD("add_joy_mapping","mapping", "update_existing"),&Input::add_joy_mapping, DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("remove_joy_mapping","guid"),&Input::remove_joy_mapping);
-	ObjectTypeDB::bind_method(_MD("is_joy_known","device"),&Input::is_joy_known);
-	ObjectTypeDB::bind_method(_MD("get_joy_axis","device","axis"),&Input::get_joy_axis);
-	ObjectTypeDB::bind_method(_MD("get_joy_name","device"),&Input::get_joy_name);
-	ObjectTypeDB::bind_method(_MD("get_joy_guid","device"),&Input::get_joy_guid);
-	ObjectTypeDB::bind_method(_MD("get_connected_joysticks"),&Input::get_connected_joysticks);
-	ObjectTypeDB::bind_method(_MD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
-	ObjectTypeDB::bind_method(_MD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
-	ObjectTypeDB::bind_method(_MD("get_joy_button_string", "button_index"), &Input::get_joy_button_string);
-	ObjectTypeDB::bind_method(_MD("get_joy_button_index_from_string", "button"), &Input::get_joy_button_index_from_string);
-	ObjectTypeDB::bind_method(_MD("get_joy_axis_string", "axis_index"), &Input::get_joy_axis_string);
-	ObjectTypeDB::bind_method(_MD("get_joy_axis_index_from_string", "axis"), &Input::get_joy_axis_index_from_string);
-	ObjectTypeDB::bind_method(_MD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
-	ObjectTypeDB::bind_method(_MD("get_accelerometer"),&Input::get_accelerometer);
-	ObjectTypeDB::bind_method(_MD("get_magnetometer"),&Input::get_magnetometer);
-	ObjectTypeDB::bind_method(_MD("get_gyroscope"),&Input::get_gyroscope);
-	//ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos); - this is not the function you want
-	ObjectTypeDB::bind_method(_MD("get_mouse_speed"),&Input::get_mouse_speed);
-	ObjectTypeDB::bind_method(_MD("get_mouse_button_mask"),&Input::get_mouse_button_mask);
-	ObjectTypeDB::bind_method(_MD("set_mouse_mode","mode"),&Input::set_mouse_mode);
-	ObjectTypeDB::bind_method(_MD("get_mouse_mode"),&Input::get_mouse_mode);
-	ObjectTypeDB::bind_method(_MD("warp_mouse_pos","to"),&Input::warp_mouse_pos);
-	ObjectTypeDB::bind_method(_MD("action_press","action"),&Input::action_press);
-	ObjectTypeDB::bind_method(_MD("action_release","action"),&Input::action_release);
-	ObjectTypeDB::bind_method(_MD("set_custom_mouse_cursor","image:Texture","hotspot"),&Input::set_custom_mouse_cursor,DEFVAL(Vector2()));
+	ClassDB::bind_method(_MD("is_key_pressed","scancode"),&Input::is_key_pressed);
+	ClassDB::bind_method(_MD("is_mouse_button_pressed","button"),&Input::is_mouse_button_pressed);
+	ClassDB::bind_method(_MD("is_joy_button_pressed","device","button"),&Input::is_joy_button_pressed);
+	ClassDB::bind_method(_MD("is_action_pressed","action"),&Input::is_action_pressed);
+	ClassDB::bind_method(_MD("is_action_just_pressed","action"),&Input::is_action_just_pressed);
+	ClassDB::bind_method(_MD("is_action_just_released","action"),&Input::is_action_just_released);
+	ClassDB::bind_method(_MD("add_joy_mapping","mapping", "update_existing"),&Input::add_joy_mapping, DEFVAL(false));
+	ClassDB::bind_method(_MD("remove_joy_mapping","guid"),&Input::remove_joy_mapping);
+	ClassDB::bind_method(_MD("is_joy_known","device"),&Input::is_joy_known);
+	ClassDB::bind_method(_MD("get_joy_axis","device","axis"),&Input::get_joy_axis);
+	ClassDB::bind_method(_MD("get_joy_name","device"),&Input::get_joy_name);
+	ClassDB::bind_method(_MD("get_joy_guid","device"),&Input::get_joy_guid);
+	ClassDB::bind_method(_MD("get_connected_joysticks"),&Input::get_connected_joysticks);
+	ClassDB::bind_method(_MD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
+	ClassDB::bind_method(_MD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
+	ClassDB::bind_method(_MD("get_joy_button_string", "button_index"), &Input::get_joy_button_string);
+	ClassDB::bind_method(_MD("get_joy_button_index_from_string", "button"), &Input::get_joy_button_index_from_string);
+	ClassDB::bind_method(_MD("get_joy_axis_string", "axis_index"), &Input::get_joy_axis_string);
+	ClassDB::bind_method(_MD("get_joy_axis_index_from_string", "axis"), &Input::get_joy_axis_index_from_string);
+	ClassDB::bind_method(_MD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
+	ClassDB::bind_method(_MD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
+	ClassDB::bind_method(_MD("get_accelerometer"),&Input::get_accelerometer);
+	ClassDB::bind_method(_MD("get_magnetometer"),&Input::get_magnetometer);
+	ClassDB::bind_method(_MD("get_gyroscope"),&Input::get_gyroscope);
+	//ClassDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos); - this is not the function you want
+	ClassDB::bind_method(_MD("get_mouse_speed"),&Input::get_mouse_speed);
+	ClassDB::bind_method(_MD("get_mouse_button_mask"),&Input::get_mouse_button_mask);
+	ClassDB::bind_method(_MD("set_mouse_mode","mode"),&Input::set_mouse_mode);
+	ClassDB::bind_method(_MD("get_mouse_mode"),&Input::get_mouse_mode);
+	ClassDB::bind_method(_MD("warp_mouse_pos","to"),&Input::warp_mouse_pos);
+	ClassDB::bind_method(_MD("action_press","action"),&Input::action_press);
+	ClassDB::bind_method(_MD("action_release","action"),&Input::action_release);
+	ClassDB::bind_method(_MD("set_custom_mouse_cursor","image:Texture","hotspot"),&Input::set_custom_mouse_cursor,DEFVAL(Vector2()));
 
 	BIND_CONSTANT( MOUSE_MODE_VISIBLE );
 	BIND_CONSTANT( MOUSE_MODE_HIDDEN );

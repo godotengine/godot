@@ -70,8 +70,8 @@ Vector3 BoxShape::get_extents() const {
 
 void BoxShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_extents","extents"),&BoxShape::set_extents);
-	ObjectTypeDB::bind_method(_MD("get_extents"),&BoxShape::get_extents);
+	ClassDB::bind_method(_MD("set_extents","extents"),&BoxShape::set_extents);
+	ClassDB::bind_method(_MD("get_extents"),&BoxShape::get_extents);
 
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"extents"), _SCS("set_extents"), _SCS("get_extents")  );
 

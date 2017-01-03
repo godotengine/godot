@@ -34,7 +34,7 @@
 #include "scene/gui/tree.h"
 
 class EditorDirDialog : public ConfirmationDialog {
-	OBJ_TYPE(EditorDirDialog,ConfirmationDialog);
+	GDCLASS(EditorDirDialog,ConfirmationDialog);
 
 
 	ConfirmationDialog *makedialog;

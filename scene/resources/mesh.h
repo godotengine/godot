@@ -39,7 +39,7 @@
 */
 class Mesh : public Resource {
 
-	OBJ_TYPE( Mesh, Resource );
+	GDCLASS( Mesh, Resource );
 	RES_BASE_EXTENSION("msh");
 
 public:

@@ -167,17 +167,17 @@ bool Joint::get_exclude_nodes_from_collision() const{
 void Joint::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method( _MD("set_node_a","node"), &Joint::set_node_a );
-	ObjectTypeDB::bind_method( _MD("get_node_a"), &Joint::get_node_a );
+	ClassDB::bind_method( _MD("set_node_a","node"), &Joint::set_node_a );
+	ClassDB::bind_method( _MD("get_node_a"), &Joint::get_node_a );
 
-	ObjectTypeDB::bind_method( _MD("set_node_b","node"), &Joint::set_node_b );
-	ObjectTypeDB::bind_method( _MD("get_node_b"), &Joint::get_node_b );
+	ClassDB::bind_method( _MD("set_node_b","node"), &Joint::set_node_b );
+	ClassDB::bind_method( _MD("get_node_b"), &Joint::get_node_b );
 
-	ObjectTypeDB::bind_method( _MD("set_solver_priority","priority"), &Joint::set_solver_priority );
-	ObjectTypeDB::bind_method( _MD("get_solver_priority"), &Joint::get_solver_priority );
+	ClassDB::bind_method( _MD("set_solver_priority","priority"), &Joint::set_solver_priority );
+	ClassDB::bind_method( _MD("get_solver_priority"), &Joint::get_solver_priority );
 
-	ObjectTypeDB::bind_method( _MD("set_exclude_nodes_from_collision","enable"), &Joint::set_exclude_nodes_from_collision );
-	ObjectTypeDB::bind_method( _MD("get_exclude_nodes_from_collision"), &Joint::get_exclude_nodes_from_collision );
+	ClassDB::bind_method( _MD("set_exclude_nodes_from_collision","enable"), &Joint::set_exclude_nodes_from_collision );
+	ClassDB::bind_method( _MD("get_exclude_nodes_from_collision"), &Joint::get_exclude_nodes_from_collision );
 
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "nodes/node_a"), _SCS("set_node_a"),_SCS("get_node_a") );
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "nodes/node_b"), _SCS("set_node_b"),_SCS("get_node_b") );
@@ -202,8 +202,8 @@ Joint::Joint() {
 
 void PinJoint::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"),&PinJoint::set_param);
-	ObjectTypeDB::bind_method(_MD("get_param","param"),&PinJoint::get_param);
+	ClassDB::bind_method(_MD("set_param","param","value"),&PinJoint::set_param);
+	ClassDB::bind_method(_MD("get_param","param"),&PinJoint::get_param);
 
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/bias",PROPERTY_HINT_RANGE,"0.01,0.99,0.01"),_SCS("set_param"),_SCS("get_param"), PARAM_BIAS );
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/damping",PROPERTY_HINT_RANGE,"0.01,8.0,0.01"),_SCS("set_param"),_SCS("get_param"), PARAM_DAMPING );
@@ -291,17 +291,17 @@ float HingeJoint::_get_lower_limit() const {
 
 void HingeJoint::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"),&HingeJoint::set_param);
-	ObjectTypeDB::bind_method(_MD("get_param","param"),&HingeJoint::get_param);
+	ClassDB::bind_method(_MD("set_param","param","value"),&HingeJoint::set_param);
+	ClassDB::bind_method(_MD("get_param","param"),&HingeJoint::get_param);
 
-	ObjectTypeDB::bind_method(_MD("set_flag","flag","enabled"),&HingeJoint::set_flag);
-	ObjectTypeDB::bind_method(_MD("get_flag","flag"),&HingeJoint::get_flag);
+	ClassDB::bind_method(_MD("set_flag","flag","enabled"),&HingeJoint::set_flag);
+	ClassDB::bind_method(_MD("get_flag","flag"),&HingeJoint::get_flag);
 
-	ObjectTypeDB::bind_method(_MD("_set_upper_limit","upper_limit"),&HingeJoint::_set_upper_limit);
-	ObjectTypeDB::bind_method(_MD("_get_upper_limit"),&HingeJoint::_get_upper_limit);
+	ClassDB::bind_method(_MD("_set_upper_limit","upper_limit"),&HingeJoint::_set_upper_limit);
+	ClassDB::bind_method(_MD("_get_upper_limit"),&HingeJoint::_get_upper_limit);
 
-	ObjectTypeDB::bind_method(_MD("_set_lower_limit","lower_limit"),&HingeJoint::_set_lower_limit);
-	ObjectTypeDB::bind_method(_MD("_get_lower_limit"),&HingeJoint::_get_lower_limit);
+	ClassDB::bind_method(_MD("_set_lower_limit","lower_limit"),&HingeJoint::_set_lower_limit);
+	ClassDB::bind_method(_MD("_get_lower_limit"),&HingeJoint::_get_lower_limit);
 
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/bias",PROPERTY_HINT_RANGE,"0.01,0.99,0.01"),_SCS("set_param"),_SCS("get_param"), PARAM_BIAS );
 
@@ -446,15 +446,15 @@ float SliderJoint::_get_lower_limit_angular() const {
 
 void SliderJoint::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"),&SliderJoint::set_param);
-	ObjectTypeDB::bind_method(_MD("get_param","param"),&SliderJoint::get_param);
+	ClassDB::bind_method(_MD("set_param","param","value"),&SliderJoint::set_param);
+	ClassDB::bind_method(_MD("get_param","param"),&SliderJoint::get_param);
 
 
-	ObjectTypeDB::bind_method(_MD("_set_upper_limit_angular","upper_limit_angular"),&SliderJoint::_set_upper_limit_angular);
-	ObjectTypeDB::bind_method(_MD("_get_upper_limit_angular"),&SliderJoint::_get_upper_limit_angular);
+	ClassDB::bind_method(_MD("_set_upper_limit_angular","upper_limit_angular"),&SliderJoint::_set_upper_limit_angular);
+	ClassDB::bind_method(_MD("_get_upper_limit_angular"),&SliderJoint::_get_upper_limit_angular);
 
-	ObjectTypeDB::bind_method(_MD("_set_lower_limit_angular","lower_limit_angular"),&SliderJoint::_set_lower_limit_angular);
-	ObjectTypeDB::bind_method(_MD("_get_lower_limit_angular"),&SliderJoint::_get_lower_limit_angular);
+	ClassDB::bind_method(_MD("_set_lower_limit_angular","lower_limit_angular"),&SliderJoint::_set_lower_limit_angular);
+	ClassDB::bind_method(_MD("_get_lower_limit_angular"),&SliderJoint::_get_lower_limit_angular);
 
 
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"linear_limit/upper_distance",PROPERTY_HINT_RANGE,"-1024,1024,0.01"),_SCS("set_param"),_SCS("get_param"), PARAM_LINEAR_LIMIT_UPPER);
@@ -611,15 +611,15 @@ float ConeTwistJoint::_get_twist_span() const {
 
 void ConeTwistJoint::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"),&ConeTwistJoint::set_param);
-	ObjectTypeDB::bind_method(_MD("get_param","param"),&ConeTwistJoint::get_param);
+	ClassDB::bind_method(_MD("set_param","param","value"),&ConeTwistJoint::set_param);
+	ClassDB::bind_method(_MD("get_param","param"),&ConeTwistJoint::get_param);
 
 
-	ObjectTypeDB::bind_method(_MD("_set_swing_span","swing_span"),&ConeTwistJoint::_set_swing_span);
-	ObjectTypeDB::bind_method(_MD("_get_swing_span"),&ConeTwistJoint::_get_swing_span);
+	ClassDB::bind_method(_MD("_set_swing_span","swing_span"),&ConeTwistJoint::_set_swing_span);
+	ClassDB::bind_method(_MD("_get_swing_span"),&ConeTwistJoint::_get_swing_span);
 
-	ObjectTypeDB::bind_method(_MD("_set_twist_span","twist_span"),&ConeTwistJoint::_set_twist_span);
-	ObjectTypeDB::bind_method(_MD("_get_twist_span"),&ConeTwistJoint::_get_twist_span);
+	ClassDB::bind_method(_MD("_set_twist_span","twist_span"),&ConeTwistJoint::_set_twist_span);
+	ClassDB::bind_method(_MD("_get_twist_span"),&ConeTwistJoint::_get_twist_span);
 
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"swing_span",PROPERTY_HINT_RANGE,"-180,180,0.1"),_SCS("_set_swing_span"),_SCS("_get_swing_span") );
@@ -770,41 +770,41 @@ float Generic6DOFJoint::_get_angular_lo_limit_z() const{
 void Generic6DOFJoint::_bind_methods(){
 
 
-	ObjectTypeDB::bind_method(_MD("_set_angular_hi_limit_x","angle"),&Generic6DOFJoint::_set_angular_hi_limit_x);
-	ObjectTypeDB::bind_method(_MD("_get_angular_hi_limit_x"),&Generic6DOFJoint::_get_angular_hi_limit_x);
+	ClassDB::bind_method(_MD("_set_angular_hi_limit_x","angle"),&Generic6DOFJoint::_set_angular_hi_limit_x);
+	ClassDB::bind_method(_MD("_get_angular_hi_limit_x"),&Generic6DOFJoint::_get_angular_hi_limit_x);
 
-	ObjectTypeDB::bind_method(_MD("_set_angular_lo_limit_x","angle"),&Generic6DOFJoint::_set_angular_lo_limit_x);
-	ObjectTypeDB::bind_method(_MD("_get_angular_lo_limit_x"),&Generic6DOFJoint::_get_angular_lo_limit_x);
+	ClassDB::bind_method(_MD("_set_angular_lo_limit_x","angle"),&Generic6DOFJoint::_set_angular_lo_limit_x);
+	ClassDB::bind_method(_MD("_get_angular_lo_limit_x"),&Generic6DOFJoint::_get_angular_lo_limit_x);
 
-	ObjectTypeDB::bind_method(_MD("_set_angular_hi_limit_y","angle"),&Generic6DOFJoint::_set_angular_hi_limit_y);
-	ObjectTypeDB::bind_method(_MD("_get_angular_hi_limit_y"),&Generic6DOFJoint::_get_angular_hi_limit_y);
+	ClassDB::bind_method(_MD("_set_angular_hi_limit_y","angle"),&Generic6DOFJoint::_set_angular_hi_limit_y);
+	ClassDB::bind_method(_MD("_get_angular_hi_limit_y"),&Generic6DOFJoint::_get_angular_hi_limit_y);
 
-	ObjectTypeDB::bind_method(_MD("_set_angular_lo_limit_y","angle"),&Generic6DOFJoint::_set_angular_lo_limit_y);
-	ObjectTypeDB::bind_method(_MD("_get_angular_lo_limit_y"),&Generic6DOFJoint::_get_angular_lo_limit_y);
+	ClassDB::bind_method(_MD("_set_angular_lo_limit_y","angle"),&Generic6DOFJoint::_set_angular_lo_limit_y);
+	ClassDB::bind_method(_MD("_get_angular_lo_limit_y"),&Generic6DOFJoint::_get_angular_lo_limit_y);
 
-	ObjectTypeDB::bind_method(_MD("_set_angular_hi_limit_z","angle"),&Generic6DOFJoint::_set_angular_hi_limit_z);
-	ObjectTypeDB::bind_method(_MD("_get_angular_hi_limit_z"),&Generic6DOFJoint::_get_angular_hi_limit_z);
+	ClassDB::bind_method(_MD("_set_angular_hi_limit_z","angle"),&Generic6DOFJoint::_set_angular_hi_limit_z);
+	ClassDB::bind_method(_MD("_get_angular_hi_limit_z"),&Generic6DOFJoint::_get_angular_hi_limit_z);
 
-	ObjectTypeDB::bind_method(_MD("_set_angular_lo_limit_z","angle"),&Generic6DOFJoint::_set_angular_lo_limit_z);
-	ObjectTypeDB::bind_method(_MD("_get_angular_lo_limit_z"),&Generic6DOFJoint::_get_angular_lo_limit_z);
+	ClassDB::bind_method(_MD("_set_angular_lo_limit_z","angle"),&Generic6DOFJoint::_set_angular_lo_limit_z);
+	ClassDB::bind_method(_MD("_get_angular_lo_limit_z"),&Generic6DOFJoint::_get_angular_lo_limit_z);
 
-	ObjectTypeDB::bind_method(_MD("set_param_x","param","value"),&Generic6DOFJoint::set_param_x);
-	ObjectTypeDB::bind_method(_MD("get_param_x","param"),&Generic6DOFJoint::get_param_x);
+	ClassDB::bind_method(_MD("set_param_x","param","value"),&Generic6DOFJoint::set_param_x);
+	ClassDB::bind_method(_MD("get_param_x","param"),&Generic6DOFJoint::get_param_x);
 
-	ObjectTypeDB::bind_method(_MD("set_param_y","param","value"),&Generic6DOFJoint::set_param_y);
-	ObjectTypeDB::bind_method(_MD("get_param_y","param"),&Generic6DOFJoint::get_param_y);
+	ClassDB::bind_method(_MD("set_param_y","param","value"),&Generic6DOFJoint::set_param_y);
+	ClassDB::bind_method(_MD("get_param_y","param"),&Generic6DOFJoint::get_param_y);
 
-	ObjectTypeDB::bind_method(_MD("set_param_z","param","value"),&Generic6DOFJoint::set_param_z);
-	ObjectTypeDB::bind_method(_MD("get_param_z","param"),&Generic6DOFJoint::get_param_z);
+	ClassDB::bind_method(_MD("set_param_z","param","value"),&Generic6DOFJoint::set_param_z);
+	ClassDB::bind_method(_MD("get_param_z","param"),&Generic6DOFJoint::get_param_z);
 
-	ObjectTypeDB::bind_method(_MD("set_flag_x","flag","value"),&Generic6DOFJoint::set_flag_x);
-	ObjectTypeDB::bind_method(_MD("get_flag_x","flag"),&Generic6DOFJoint::get_flag_x);
+	ClassDB::bind_method(_MD("set_flag_x","flag","value"),&Generic6DOFJoint::set_flag_x);
+	ClassDB::bind_method(_MD("get_flag_x","flag"),&Generic6DOFJoint::get_flag_x);
 
-	ObjectTypeDB::bind_method(_MD("set_flag_y","flag","value"),&Generic6DOFJoint::set_flag_y);
-	ObjectTypeDB::bind_method(_MD("get_flag_y","flag"),&Generic6DOFJoint::get_flag_y);
+	ClassDB::bind_method(_MD("set_flag_y","flag","value"),&Generic6DOFJoint::set_flag_y);
+	ClassDB::bind_method(_MD("get_flag_y","flag"),&Generic6DOFJoint::get_flag_y);
 
-	ObjectTypeDB::bind_method(_MD("set_flag_z","flag","value"),&Generic6DOFJoint::set_flag_z);
-	ObjectTypeDB::bind_method(_MD("get_flag_z","flag"),&Generic6DOFJoint::get_flag_z);
+	ClassDB::bind_method(_MD("set_flag_z","flag","value"),&Generic6DOFJoint::set_flag_z);
+	ClassDB::bind_method(_MD("get_flag_z","flag"),&Generic6DOFJoint::get_flag_z);
 
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"linear_limit_x/enabled"),_SCS("set_flag_x"),_SCS("get_flag_x"),FLAG_ENABLE_LINEAR_LIMIT);
@@ -1170,22 +1170,22 @@ RID PhysicsJoint::_get_visual_instance_rid() const {
 
 void PhysicsJoint::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_get_visual_instance_rid"),&PhysicsJoint::_get_visual_instance_rid);
-	ObjectTypeDB::bind_method(_MD("set_body_A","path"),&PhysicsJoint::set_body_A);
-	ObjectTypeDB::bind_method(_MD("set_body_B"),&PhysicsJoint::set_body_B);
-	ObjectTypeDB::bind_method(_MD("get_body_A","path"),&PhysicsJoint::get_body_A);
-	ObjectTypeDB::bind_method(_MD("get_body_B"),&PhysicsJoint::get_body_B);
+	ClassDB::bind_method(_MD("_get_visual_instance_rid"),&PhysicsJoint::_get_visual_instance_rid);
+	ClassDB::bind_method(_MD("set_body_A","path"),&PhysicsJoint::set_body_A);
+	ClassDB::bind_method(_MD("set_body_B"),&PhysicsJoint::set_body_B);
+	ClassDB::bind_method(_MD("get_body_A","path"),&PhysicsJoint::get_body_A);
+	ClassDB::bind_method(_MD("get_body_B"),&PhysicsJoint::get_body_B);
 
-	ObjectTypeDB::bind_method(_MD("set_active","active"),&PhysicsJoint::set_active);
-	ObjectTypeDB::bind_method(_MD("is_active"),&PhysicsJoint::is_active);
+	ClassDB::bind_method(_MD("set_active","active"),&PhysicsJoint::set_active);
+	ClassDB::bind_method(_MD("is_active"),&PhysicsJoint::is_active);
 
-	ObjectTypeDB::bind_method(_MD("set_disable_collision","disable"),&PhysicsJoint::set_disable_collision);
-	ObjectTypeDB::bind_method(_MD("has_disable_collision"),&PhysicsJoint::has_disable_collision);
+	ClassDB::bind_method(_MD("set_disable_collision","disable"),&PhysicsJoint::set_disable_collision);
+	ClassDB::bind_method(_MD("has_disable_collision"),&PhysicsJoint::has_disable_collision);
 
 
-	ObjectTypeDB::bind_method("reconnect",&PhysicsJoint::reconnect);
+	ClassDB::bind_method("reconnect",&PhysicsJoint::reconnect);
 
-	ObjectTypeDB::bind_method(_MD("get_rid"),&PhysicsJoint::get_rid);
+	ClassDB::bind_method(_MD("get_rid"),&PhysicsJoint::get_rid);
 
 }
 

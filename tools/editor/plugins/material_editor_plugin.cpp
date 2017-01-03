@@ -93,8 +93,8 @@ void MaterialEditor::_button_pressed(Node* p_button) {
 
 void MaterialEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&MaterialEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_button_pressed"),&MaterialEditor::_button_pressed);
+	ClassDB::bind_method(_MD("_input_event"),&MaterialEditor::_input_event);
+	ClassDB::bind_method(_MD("_button_pressed"),&MaterialEditor::_button_pressed);
 
 }
 

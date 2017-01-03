@@ -204,7 +204,7 @@ public:
 
 class GDFunctionState : public Reference {
 
-	OBJ_TYPE(GDFunctionState,Reference);
+	GDCLASS(GDFunctionState,Reference);
 friend class GDFunction;
 	GDFunction *function;
 	GDFunction::CallState state;

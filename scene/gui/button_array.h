@@ -33,7 +33,7 @@
 
 class ButtonArray : public Control {
 
-	OBJ_TYPE(ButtonArray, Control);
+	GDCLASS(ButtonArray, Control);
 public:
 	enum Align {
 		ALIGN_BEGIN,
@@ -114,14 +114,14 @@ public:
 };
 
 class HButtonArray : public ButtonArray {
-	OBJ_TYPE(HButtonArray,ButtonArray);
+	GDCLASS(HButtonArray,ButtonArray);
 public:
 
 	HButtonArray() : ButtonArray(HORIZONTAL) {};
 };
 
 class VButtonArray : public ButtonArray {
-	OBJ_TYPE(VButtonArray,ButtonArray);
+	GDCLASS(VButtonArray,ButtonArray);
 public:
 
 	VButtonArray() : ButtonArray(VERTICAL) {};

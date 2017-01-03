@@ -177,19 +177,19 @@ Dictionary BitMap::_get_data() const{
 
 void BitMap::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("create","size"),&BitMap::create);
-	ObjectTypeDB::bind_method(_MD("create_from_image_alpha","image"),&BitMap::create_from_image_alpha);
+	ClassDB::bind_method(_MD("create","size"),&BitMap::create);
+	ClassDB::bind_method(_MD("create_from_image_alpha","image"),&BitMap::create_from_image_alpha);
 
-	ObjectTypeDB::bind_method(_MD("set_bit","pos","bit"),&BitMap::set_bit);
-	ObjectTypeDB::bind_method(_MD("get_bit","pos"),&BitMap::get_bit);
+	ClassDB::bind_method(_MD("set_bit","pos","bit"),&BitMap::set_bit);
+	ClassDB::bind_method(_MD("get_bit","pos"),&BitMap::get_bit);
 
-	ObjectTypeDB::bind_method(_MD("set_bit_rect","p_rect","bit"),&BitMap::set_bit_rect);
-	ObjectTypeDB::bind_method(_MD("get_true_bit_count"),&BitMap::get_true_bit_count);
+	ClassDB::bind_method(_MD("set_bit_rect","p_rect","bit"),&BitMap::set_bit_rect);
+	ClassDB::bind_method(_MD("get_true_bit_count"),&BitMap::get_true_bit_count);
 
-	ObjectTypeDB::bind_method(_MD("get_size"),&BitMap::get_size);
+	ClassDB::bind_method(_MD("get_size"),&BitMap::get_size);
 
-	ObjectTypeDB::bind_method(_MD("_set_data"),&BitMap::_set_data);
-	ObjectTypeDB::bind_method(_MD("_get_data"),&BitMap::_get_data);
+	ClassDB::bind_method(_MD("_set_data"),&BitMap::_set_data);
+	ClassDB::bind_method(_MD("_get_data"),&BitMap::_get_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_data"),_SCS("_get_data"));
 

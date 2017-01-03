@@ -37,7 +37,7 @@
 
 class TextEdit : public Control  {
 
-	OBJ_TYPE( TextEdit, Control );
+	GDCLASS( TextEdit, Control );
 
 	struct Cursor {
 		int last_fit_x;

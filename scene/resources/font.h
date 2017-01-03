@@ -39,7 +39,7 @@
 
 class Font : public Resource {
 
-	OBJ_TYPE( Font, Resource );
+	GDCLASS( Font, Resource );
 
 protected:
 
@@ -69,7 +69,7 @@ public:
 
 class BitmapFont : public Font {
 
-	OBJ_TYPE( BitmapFont, Font );
+	GDCLASS( BitmapFont, Font );
 	RES_BASE_EXTENSION("fnt");
 
 	Vector< Ref<Texture> > textures;

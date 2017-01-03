@@ -36,7 +36,7 @@
 
 class EditorSceneImporterFBXConv : public EditorSceneImporter {
 
-	OBJ_TYPE(EditorSceneImporterFBXConv,EditorSceneImporter );
+	GDCLASS(EditorSceneImporterFBXConv,EditorSceneImporter );
 
 
 	struct BoneInfo {

@@ -42,7 +42,7 @@
 
 class PhysicsDirectSpaceStateSW : public PhysicsDirectSpaceState {
 
-	OBJ_TYPE( PhysicsDirectSpaceStateSW, PhysicsDirectSpaceState );
+	GDCLASS( PhysicsDirectSpaceStateSW, PhysicsDirectSpaceState );
 public:
 
 	SpaceSW *space;

@@ -90,8 +90,8 @@ void EditorSubScene::_fill_tree(Node* p_node,TreeItem *p_parent) {
 	it->set_text(0,p_node->get_name());
 	it->set_editable(0,false);
 	it->set_selectable(0,true);
-	if (has_icon(p_node->get_type(),"EditorIcons")) {
-		it->set_icon(0,get_icon(p_node->get_type(),"EditorIcons"));
+	if (has_icon(p_node->get_class(),"EditorIcons")) {
+		it->set_icon(0,get_icon(p_node->get_class(),"EditorIcons"));
 
 	}
 
@@ -186,9 +186,9 @@ void EditorSubScene::clear() {
 
 void EditorSubScene::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_path_selected"),&EditorSubScene::_path_selected);
-	ObjectTypeDB::bind_method(_MD("_path_changed"),&EditorSubScene::_path_changed);
-	ObjectTypeDB::bind_method(_MD("_path_browse"),&EditorSubScene::_path_browse);
+	ClassDB::bind_method(_MD("_path_selected"),&EditorSubScene::_path_selected);
+	ClassDB::bind_method(_MD("_path_changed"),&EditorSubScene::_path_changed);
+	ClassDB::bind_method(_MD("_path_browse"),&EditorSubScene::_path_browse);
 	ADD_SIGNAL( MethodInfo("subscene_selected"));
 
 }

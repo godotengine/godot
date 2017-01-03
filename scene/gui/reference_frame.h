@@ -33,7 +33,7 @@
 
 class ReferenceFrame : public Control {
 
-	OBJ_TYPE( ReferenceFrame, Control);
+	GDCLASS( ReferenceFrame, Control);
 
 protected:
 

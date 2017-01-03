@@ -35,7 +35,7 @@
 
 class SpriteFrames : public Resource {
 
-	OBJ_TYPE(SpriteFrames,Resource);
+	GDCLASS(SpriteFrames,Resource);
 
 	struct Anim {
 
@@ -109,7 +109,7 @@ public:
 
 class AnimatedSprite : public Node2D {
 
-	OBJ_TYPE(AnimatedSprite,Node2D);
+	GDCLASS(AnimatedSprite,Node2D);
 
 	Ref<SpriteFrames> frames;
 	bool playing;

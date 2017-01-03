@@ -34,7 +34,7 @@
 
 class NavigationPolygon : public Resource  {
 
-	OBJ_TYPE( NavigationPolygon, Resource );
+	GDCLASS( NavigationPolygon, Resource );
 
 	DVector<Vector2> vertices;
 	struct Polygon {
@@ -84,7 +84,7 @@ class Navigation2D;
 
 class NavigationPolygonInstance : public Node2D {
 
-	OBJ_TYPE(NavigationPolygonInstance,Node2D);
+	GDCLASS(NavigationPolygonInstance,Node2D);
 
 	bool enabled;
 	int nav_id;

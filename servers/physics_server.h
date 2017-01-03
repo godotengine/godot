@@ -36,7 +36,7 @@ class PhysicsDirectSpaceState;
 
 class PhysicsDirectBodyState : public Object {
 
-	OBJ_TYPE( PhysicsDirectBodyState, Object );
+	GDCLASS( PhysicsDirectBodyState, Object );
 protected:
 	static void _bind_methods();
 public:
@@ -90,7 +90,7 @@ class PhysicsShapeQueryResult;
 
 class PhysicsShapeQueryParameters : public Reference {
 
-	OBJ_TYPE(PhysicsShapeQueryParameters, Reference);
+	GDCLASS(PhysicsShapeQueryParameters, Reference);
 friend class PhysicsDirectSpaceState;
 	RID shape;
 	Transform transform;
@@ -130,7 +130,7 @@ public:
 
 class PhysicsDirectSpaceState : public Object {
 
-	OBJ_TYPE( PhysicsDirectSpaceState, Object );
+	GDCLASS( PhysicsDirectSpaceState, Object );
 
 //	Variant _intersect_ray(const Vector3& p_from, const Vector3& p_to,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
 //	Variant _intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max=64,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
@@ -207,7 +207,7 @@ public:
 
 class PhysicsShapeQueryResult : public Reference {
 
-	OBJ_TYPE( PhysicsShapeQueryResult, Reference );
+	GDCLASS( PhysicsShapeQueryResult, Reference );
 
 	Vector<PhysicsDirectSpaceState::ShapeResult> result;
 
@@ -229,7 +229,7 @@ public:
 
 class PhysicsServer : public Object {
 
-	OBJ_TYPE( PhysicsServer, Object );
+	GDCLASS( PhysicsServer, Object );
 
 	static PhysicsServer * singleton;
 

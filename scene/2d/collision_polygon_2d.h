@@ -36,7 +36,7 @@
 
 class CollisionPolygon2D : public Node2D {
 
-	OBJ_TYPE(CollisionPolygon2D,Node2D);
+	GDCLASS(CollisionPolygon2D,Node2D);
 public:
 
 	enum BuildMode {

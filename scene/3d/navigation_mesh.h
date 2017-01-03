@@ -36,7 +36,7 @@ class Mesh;
 
 class NavigationMesh : public Resource  {
 
-	OBJ_TYPE( NavigationMesh, Resource );
+	GDCLASS( NavigationMesh, Resource );
 
 	DVector<Vector3> vertices;
 	struct Polygon {
@@ -83,7 +83,7 @@ class Navigation;
 
 class NavigationMeshInstance : public Spatial {
 
-	OBJ_TYPE(NavigationMeshInstance,Spatial);
+	GDCLASS(NavigationMeshInstance,Spatial);
 
 	bool enabled;
 	int nav_id;

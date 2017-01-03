@@ -64,8 +64,8 @@ Rect2 RectangleShape2D::get_rect() const {
 
 void RectangleShape2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_extents","extents"),&RectangleShape2D::set_extents);
-	ObjectTypeDB::bind_method(_MD("get_extents"),&RectangleShape2D::get_extents);
+	ClassDB::bind_method(_MD("set_extents","extents"),&RectangleShape2D::set_extents);
+	ClassDB::bind_method(_MD("get_extents"),&RectangleShape2D::get_extents);
 
 
 

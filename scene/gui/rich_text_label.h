@@ -34,7 +34,7 @@
 
 class RichTextLabel : public Control {
 
-	OBJ_TYPE( RichTextLabel, Control );
+	GDCLASS( RichTextLabel, Control );
 public:
 
 	enum Align {

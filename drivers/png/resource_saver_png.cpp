@@ -222,7 +222,7 @@ Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
 
 bool ResourceSaverPNG::recognize(const RES& p_resource) const {
 
-	return (p_resource.is_valid() && p_resource->is_type("ImageTexture"));
+	return (p_resource.is_valid() && p_resource->is_class("ImageTexture"));
 }
 void ResourceSaverPNG::get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const{
 

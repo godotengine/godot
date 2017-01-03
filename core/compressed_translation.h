@@ -33,7 +33,7 @@
 
 class PHashTranslation : public Translation {
 
-	OBJ_TYPE(PHashTranslation,Translation);
+	GDCLASS(PHashTranslation,Translation);
 
 
 	//this translation uses a sort of modified perfect hash algorithm

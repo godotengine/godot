@@ -41,7 +41,7 @@ class EditorPlugin;
 
 class EditorSettings : public Resource {
 
-	OBJ_TYPE( EditorSettings, Resource );
+	GDCLASS( EditorSettings, Resource );
 private:
 	_THREAD_SAFE_CLASS_
 

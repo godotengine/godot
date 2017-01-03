@@ -44,7 +44,7 @@
 
 class _EditorFontImportOptions : public Object {
 
-	OBJ_TYPE(_EditorFontImportOptions,Object);
+	GDCLASS(_EditorFontImportOptions,Object);
 public:
 
 	enum FontMode {
@@ -384,7 +384,7 @@ public:
 
 class EditorFontImportDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorFontImportDialog, ConfirmationDialog);
+	GDCLASS(EditorFontImportDialog, ConfirmationDialog);
 
 
 	EditorLineEditFileChooser *source;
@@ -572,14 +572,14 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 	static void _bind_methods() {
 
-		ObjectTypeDB::bind_method("_update",&EditorFontImportDialog::_update);
-		ObjectTypeDB::bind_method("_update_text",&EditorFontImportDialog::_update_text);
-		ObjectTypeDB::bind_method("_update_text2",&EditorFontImportDialog::_update_text2);
-		ObjectTypeDB::bind_method("_update_text3",&EditorFontImportDialog::_update_text3);
-		ObjectTypeDB::bind_method("_prop_changed",&EditorFontImportDialog::_prop_changed);
-		ObjectTypeDB::bind_method("_src_changed",&EditorFontImportDialog::_src_changed);
-		ObjectTypeDB::bind_method("_font_size_changed",&EditorFontImportDialog::_font_size_changed);
-		ObjectTypeDB::bind_method("_import",&EditorFontImportDialog::_import);
+		ClassDB::bind_method("_update",&EditorFontImportDialog::_update);
+		ClassDB::bind_method("_update_text",&EditorFontImportDialog::_update_text);
+		ClassDB::bind_method("_update_text2",&EditorFontImportDialog::_update_text2);
+		ClassDB::bind_method("_update_text3",&EditorFontImportDialog::_update_text3);
+		ClassDB::bind_method("_prop_changed",&EditorFontImportDialog::_prop_changed);
+		ClassDB::bind_method("_src_changed",&EditorFontImportDialog::_src_changed);
+		ClassDB::bind_method("_font_size_changed",&EditorFontImportDialog::_font_size_changed);
+		ClassDB::bind_method("_import",&EditorFontImportDialog::_import);
 
 	}
 

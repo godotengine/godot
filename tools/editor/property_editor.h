@@ -53,7 +53,7 @@ class PropertySelector;
 
 class CustomPropertyEditor : public Popup {
 
-	OBJ_TYPE( CustomPropertyEditor, Popup );
+	GDCLASS( CustomPropertyEditor, Popup );
 
 	enum {
 		MAX_VALUE_EDITORS=12,
@@ -163,7 +163,7 @@ public:
 
 class PropertyEditor : public Control {
 
-	OBJ_TYPE( PropertyEditor, Control );
+	GDCLASS( PropertyEditor, Control );
 
 	Tree *tree;
 	Label *top_label;
@@ -289,7 +289,7 @@ class SectionedPropertyEditorFilter;
 class SectionedPropertyEditor : public HBoxContainer {
 
 
-	OBJ_TYPE(SectionedPropertyEditor,HBoxContainer);
+	GDCLASS(SectionedPropertyEditor,HBoxContainer);
 
 	ObjectID obj;
 
@@ -317,7 +317,7 @@ public:
 };
 
 class PropertyValueEvaluator : public ValueEvaluator {
-	OBJ_TYPE( PropertyValueEvaluator, ValueEvaluator );
+	GDCLASS( PropertyValueEvaluator, ValueEvaluator );
 
 	Object *obj;
 	ScriptLanguage *script_language;

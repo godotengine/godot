@@ -6,7 +6,7 @@
 
 class NodeDock : public VBoxContainer {
 
-	OBJ_TYPE(NodeDock,VBoxContainer);
+	GDCLASS(NodeDock,VBoxContainer);
 
 	ToolButton *connections_button;
 	ToolButton *groups_button;

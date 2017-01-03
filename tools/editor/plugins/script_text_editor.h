@@ -35,7 +35,7 @@
 
 class ScriptTextEditor : public ScriptEditorBase {
 
-	OBJ_TYPE( ScriptTextEditor, ScriptEditorBase );
+	GDCLASS( ScriptTextEditor, ScriptEditorBase );
 
 	CodeTextEditor *code_editor;
 

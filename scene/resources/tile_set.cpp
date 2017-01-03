@@ -407,37 +407,37 @@ void TileSet::clear() {
 void TileSet::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("create_tile","id"),&TileSet::create_tile);
-	ObjectTypeDB::bind_method(_MD("tile_set_name","id","name"),&TileSet::tile_set_name);
-	ObjectTypeDB::bind_method(_MD("tile_get_name","id"),&TileSet::tile_get_name);
-	ObjectTypeDB::bind_method(_MD("tile_set_texture","id","texture:Texture"),&TileSet::tile_set_texture);
-	ObjectTypeDB::bind_method(_MD("tile_get_texture:Texture","id"),&TileSet::tile_get_texture);
-	ObjectTypeDB::bind_method(_MD("tile_set_material","id","material:CanvasItemMaterial"),&TileSet::tile_set_material);
-	ObjectTypeDB::bind_method(_MD("tile_get_material:CanvasItemMaterial","id"),&TileSet::tile_get_material);
-	ObjectTypeDB::bind_method(_MD("tile_set_texture_offset","id","texture_offset"),&TileSet::tile_set_texture_offset);
-	ObjectTypeDB::bind_method(_MD("tile_get_texture_offset","id"),&TileSet::tile_get_texture_offset);
-	ObjectTypeDB::bind_method(_MD("tile_set_shape_offset","id","shape_offset"),&TileSet::tile_set_shape_offset);
-	ObjectTypeDB::bind_method(_MD("tile_get_shape_offset","id"),&TileSet::tile_get_shape_offset);
-	ObjectTypeDB::bind_method(_MD("tile_set_region","id","region"),&TileSet::tile_set_region);
-	ObjectTypeDB::bind_method(_MD("tile_get_region","id"),&TileSet::tile_get_region);
-	ObjectTypeDB::bind_method(_MD("tile_set_shape","id","shape:Shape2D"),&TileSet::tile_set_shape);
-	ObjectTypeDB::bind_method(_MD("tile_get_shape:Shape2D","id"),&TileSet::tile_get_shape);
-	ObjectTypeDB::bind_method(_MD("tile_set_shapes","id","shapes"),&TileSet::_tile_set_shapes);
-	ObjectTypeDB::bind_method(_MD("tile_get_shapes","id"),&TileSet::_tile_get_shapes);
-	ObjectTypeDB::bind_method(_MD("tile_set_navigation_polygon","id","navigation_polygon:NavigationPolygon"),&TileSet::tile_set_navigation_polygon);
-	ObjectTypeDB::bind_method(_MD("tile_get_navigation_polygon:NavigationPolygon","id"),&TileSet::tile_get_navigation_polygon);
-	ObjectTypeDB::bind_method(_MD("tile_set_navigation_polygon_offset","id","navigation_polygon_offset"),&TileSet::tile_set_navigation_polygon_offset);
-	ObjectTypeDB::bind_method(_MD("tile_get_navigation_polygon_offset","id"),&TileSet::tile_get_navigation_polygon_offset);
-	ObjectTypeDB::bind_method(_MD("tile_set_light_occluder","id","light_occluder:OccluderPolygon2D"),&TileSet::tile_set_light_occluder);
-	ObjectTypeDB::bind_method(_MD("tile_get_light_occluder:OccluderPolygon2D","id"),&TileSet::tile_get_light_occluder);
-	ObjectTypeDB::bind_method(_MD("tile_set_occluder_offset","id","occluder_offset"),&TileSet::tile_set_occluder_offset);
-	ObjectTypeDB::bind_method(_MD("tile_get_occluder_offset","id"),&TileSet::tile_get_occluder_offset);
+	ClassDB::bind_method(_MD("create_tile","id"),&TileSet::create_tile);
+	ClassDB::bind_method(_MD("tile_set_name","id","name"),&TileSet::tile_set_name);
+	ClassDB::bind_method(_MD("tile_get_name","id"),&TileSet::tile_get_name);
+	ClassDB::bind_method(_MD("tile_set_texture","id","texture:Texture"),&TileSet::tile_set_texture);
+	ClassDB::bind_method(_MD("tile_get_texture:Texture","id"),&TileSet::tile_get_texture);
+	ClassDB::bind_method(_MD("tile_set_material","id","material:CanvasItemMaterial"),&TileSet::tile_set_material);
+	ClassDB::bind_method(_MD("tile_get_material:CanvasItemMaterial","id"),&TileSet::tile_get_material);
+	ClassDB::bind_method(_MD("tile_set_texture_offset","id","texture_offset"),&TileSet::tile_set_texture_offset);
+	ClassDB::bind_method(_MD("tile_get_texture_offset","id"),&TileSet::tile_get_texture_offset);
+	ClassDB::bind_method(_MD("tile_set_shape_offset","id","shape_offset"),&TileSet::tile_set_shape_offset);
+	ClassDB::bind_method(_MD("tile_get_shape_offset","id"),&TileSet::tile_get_shape_offset);
+	ClassDB::bind_method(_MD("tile_set_region","id","region"),&TileSet::tile_set_region);
+	ClassDB::bind_method(_MD("tile_get_region","id"),&TileSet::tile_get_region);
+	ClassDB::bind_method(_MD("tile_set_shape","id","shape:Shape2D"),&TileSet::tile_set_shape);
+	ClassDB::bind_method(_MD("tile_get_shape:Shape2D","id"),&TileSet::tile_get_shape);
+	ClassDB::bind_method(_MD("tile_set_shapes","id","shapes"),&TileSet::_tile_set_shapes);
+	ClassDB::bind_method(_MD("tile_get_shapes","id"),&TileSet::_tile_get_shapes);
+	ClassDB::bind_method(_MD("tile_set_navigation_polygon","id","navigation_polygon:NavigationPolygon"),&TileSet::tile_set_navigation_polygon);
+	ClassDB::bind_method(_MD("tile_get_navigation_polygon:NavigationPolygon","id"),&TileSet::tile_get_navigation_polygon);
+	ClassDB::bind_method(_MD("tile_set_navigation_polygon_offset","id","navigation_polygon_offset"),&TileSet::tile_set_navigation_polygon_offset);
+	ClassDB::bind_method(_MD("tile_get_navigation_polygon_offset","id"),&TileSet::tile_get_navigation_polygon_offset);
+	ClassDB::bind_method(_MD("tile_set_light_occluder","id","light_occluder:OccluderPolygon2D"),&TileSet::tile_set_light_occluder);
+	ClassDB::bind_method(_MD("tile_get_light_occluder:OccluderPolygon2D","id"),&TileSet::tile_get_light_occluder);
+	ClassDB::bind_method(_MD("tile_set_occluder_offset","id","occluder_offset"),&TileSet::tile_set_occluder_offset);
+	ClassDB::bind_method(_MD("tile_get_occluder_offset","id"),&TileSet::tile_get_occluder_offset);
 
-	ObjectTypeDB::bind_method(_MD("remove_tile","id"),&TileSet::remove_tile);
-	ObjectTypeDB::bind_method(_MD("clear"),&TileSet::clear);
-	ObjectTypeDB::bind_method(_MD("get_last_unused_tile_id"),&TileSet::get_last_unused_tile_id);
-	ObjectTypeDB::bind_method(_MD("find_tile_by_name","name"),&TileSet::find_tile_by_name);
-	ObjectTypeDB::bind_method(_MD("get_tiles_ids", "name"), &TileSet::_get_tiles_ids);
+	ClassDB::bind_method(_MD("remove_tile","id"),&TileSet::remove_tile);
+	ClassDB::bind_method(_MD("clear"),&TileSet::clear);
+	ClassDB::bind_method(_MD("get_last_unused_tile_id"),&TileSet::get_last_unused_tile_id);
+	ClassDB::bind_method(_MD("find_tile_by_name","name"),&TileSet::find_tile_by_name);
+	ClassDB::bind_method(_MD("get_tiles_ids", "name"), &TileSet::_get_tiles_ids);
 
 }
 

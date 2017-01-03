@@ -122,9 +122,9 @@ Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 
 void InstancePlaceholder::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_stored_values","with_order"),&InstancePlaceholder::get_stored_values,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("replace_by_instance","custom_scene:PackedScene"),&InstancePlaceholder::replace_by_instance,DEFVAL(Variant()));
-	ObjectTypeDB::bind_method(_MD("get_instance_path"),&InstancePlaceholder::get_instance_path);
+	ClassDB::bind_method(_MD("get_stored_values","with_order"),&InstancePlaceholder::get_stored_values,DEFVAL(false));
+	ClassDB::bind_method(_MD("replace_by_instance","custom_scene:PackedScene"),&InstancePlaceholder::replace_by_instance,DEFVAL(Variant()));
+	ClassDB::bind_method(_MD("get_instance_path"),&InstancePlaceholder::get_instance_path);
 }
 
 InstancePlaceholder::InstancePlaceholder() {

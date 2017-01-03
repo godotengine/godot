@@ -464,22 +464,22 @@ String BaseButton::get_tooltip(const Point2& p_pos) const {
 
 void BaseButton::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&BaseButton::_input_event);
-	ObjectTypeDB::bind_method(_MD("_unhandled_input"),&BaseButton::_unhandled_input);
-	ObjectTypeDB::bind_method(_MD("set_pressed","pressed"),&BaseButton::set_pressed);
-	ObjectTypeDB::bind_method(_MD("is_pressed"),&BaseButton::is_pressed);
-	ObjectTypeDB::bind_method(_MD("is_hovered"),&BaseButton::is_hovered);
-	ObjectTypeDB::bind_method(_MD("set_toggle_mode","enabled"),&BaseButton::set_toggle_mode);
-	ObjectTypeDB::bind_method(_MD("is_toggle_mode"),&BaseButton::is_toggle_mode);
-	ObjectTypeDB::bind_method(_MD("set_disabled","disabled"),&BaseButton::set_disabled);
-	ObjectTypeDB::bind_method(_MD("is_disabled"),&BaseButton::is_disabled);
-	ObjectTypeDB::bind_method(_MD("set_click_on_press","enable"),&BaseButton::set_click_on_press);
-	ObjectTypeDB::bind_method(_MD("get_click_on_press"),&BaseButton::get_click_on_press);
-	ObjectTypeDB::bind_method(_MD("get_draw_mode"),&BaseButton::get_draw_mode);
-	ObjectTypeDB::bind_method(_MD("set_enabled_focus_mode","mode"),&BaseButton::set_enabled_focus_mode);
-	ObjectTypeDB::bind_method(_MD("get_enabled_focus_mode"),&BaseButton::get_enabled_focus_mode);
-	ObjectTypeDB::bind_method(_MD("set_shortcut","shortcut"),&BaseButton::set_shortcut);
-	ObjectTypeDB::bind_method(_MD("get_shortcut"),&BaseButton::get_shortcut);
+	ClassDB::bind_method(_MD("_input_event"),&BaseButton::_input_event);
+	ClassDB::bind_method(_MD("_unhandled_input"),&BaseButton::_unhandled_input);
+	ClassDB::bind_method(_MD("set_pressed","pressed"),&BaseButton::set_pressed);
+	ClassDB::bind_method(_MD("is_pressed"),&BaseButton::is_pressed);
+	ClassDB::bind_method(_MD("is_hovered"),&BaseButton::is_hovered);
+	ClassDB::bind_method(_MD("set_toggle_mode","enabled"),&BaseButton::set_toggle_mode);
+	ClassDB::bind_method(_MD("is_toggle_mode"),&BaseButton::is_toggle_mode);
+	ClassDB::bind_method(_MD("set_disabled","disabled"),&BaseButton::set_disabled);
+	ClassDB::bind_method(_MD("is_disabled"),&BaseButton::is_disabled);
+	ClassDB::bind_method(_MD("set_click_on_press","enable"),&BaseButton::set_click_on_press);
+	ClassDB::bind_method(_MD("get_click_on_press"),&BaseButton::get_click_on_press);
+	ClassDB::bind_method(_MD("get_draw_mode"),&BaseButton::get_draw_mode);
+	ClassDB::bind_method(_MD("set_enabled_focus_mode","mode"),&BaseButton::set_enabled_focus_mode);
+	ClassDB::bind_method(_MD("get_enabled_focus_mode"),&BaseButton::get_enabled_focus_mode);
+	ClassDB::bind_method(_MD("set_shortcut","shortcut"),&BaseButton::set_shortcut);
+	ClassDB::bind_method(_MD("get_shortcut"),&BaseButton::get_shortcut);
 
 	BIND_VMETHOD(MethodInfo("_pressed"));
 	BIND_VMETHOD(MethodInfo("_toggled",PropertyInfo(Variant::BOOL,"pressed")));

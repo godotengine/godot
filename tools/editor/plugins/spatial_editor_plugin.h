@@ -45,7 +45,7 @@ class SpatialEditorGizmos;
 
 class SpatialEditorGizmo : public SpatialGizmo {
 
-	OBJ_TYPE(SpatialEditorGizmo,SpatialGizmo);
+	GDCLASS(SpatialEditorGizmo,SpatialGizmo);
 
 	bool selected;
 public:
@@ -66,7 +66,7 @@ public:
 
 class SpatialEditorViewport : public Control {
 
-	OBJ_TYPE( SpatialEditorViewport, Control );
+	GDCLASS( SpatialEditorViewport, Control );
 friend class SpatialEditor;
 	enum {
 
@@ -267,7 +267,7 @@ public:
 
 class SpatialEditorSelectedItem : public Object {
 
-	OBJ_TYPE(SpatialEditorSelectedItem,Object);
+	GDCLASS(SpatialEditorSelectedItem,Object);
 
 public:
 
@@ -283,7 +283,7 @@ public:
 
 class SpatialEditor : public VBoxContainer {
 
-	OBJ_TYPE(SpatialEditor, VBoxContainer );
+	GDCLASS(SpatialEditor, VBoxContainer );
 public:
 
 	enum ToolMode {
@@ -546,7 +546,7 @@ public:
 
 class SpatialEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SpatialEditorPlugin, EditorPlugin );
+	GDCLASS( SpatialEditorPlugin, EditorPlugin );
 
 	SpatialEditor *spatial_editor;
 	EditorNode *editor;

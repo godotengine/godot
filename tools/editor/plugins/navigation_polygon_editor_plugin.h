@@ -44,7 +44,7 @@ class CanvasItemEditor;
 
 class NavigationPolygonEditor : public HBoxContainer {
 
-	OBJ_TYPE(NavigationPolygonEditor, HBoxContainer );
+	GDCLASS(NavigationPolygonEditor, HBoxContainer );
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -94,7 +94,7 @@ public:
 
 class NavigationPolygonEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( NavigationPolygonEditorPlugin, EditorPlugin );
+	GDCLASS( NavigationPolygonEditorPlugin, EditorPlugin );
 
 	NavigationPolygonEditor *collision_polygon_editor;
 	EditorNode *editor;

@@ -41,7 +41,7 @@
 
 class EditorTranslationImportDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorTranslationImportDialog,ConfirmationDialog);
+	GDCLASS(EditorTranslationImportDialog,ConfirmationDialog);
 
 	EditorTranslationImportPlugin *plugin;
 
@@ -282,11 +282,11 @@ public:
 	static void _bind_methods() {
 
 
-		ObjectTypeDB::bind_method("_choose_file",&EditorTranslationImportDialog::_choose_file);
-		ObjectTypeDB::bind_method("_choose_save_dir",&EditorTranslationImportDialog::_choose_save_dir);
-		ObjectTypeDB::bind_method("_import",&EditorTranslationImportDialog::_import);
-		ObjectTypeDB::bind_method("_browse",&EditorTranslationImportDialog::_browse);
-		ObjectTypeDB::bind_method("_browse_target",&EditorTranslationImportDialog::_browse_target);
+		ClassDB::bind_method("_choose_file",&EditorTranslationImportDialog::_choose_file);
+		ClassDB::bind_method("_choose_save_dir",&EditorTranslationImportDialog::_choose_save_dir);
+		ClassDB::bind_method("_import",&EditorTranslationImportDialog::_import);
+		ClassDB::bind_method("_browse",&EditorTranslationImportDialog::_browse);
+		ClassDB::bind_method("_browse_target",&EditorTranslationImportDialog::_browse_target);
 	//	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 	}
 

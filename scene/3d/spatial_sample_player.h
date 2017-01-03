@@ -35,7 +35,7 @@
 
 class SpatialSamplePlayer : public SpatialPlayer {
 
-	OBJ_TYPE(SpatialSamplePlayer,SpatialPlayer);
+	GDCLASS(SpatialSamplePlayer,SpatialPlayer);
 public:
 
 	enum {

@@ -33,7 +33,7 @@
 
 class BoxContainer : public Container {
 
-	OBJ_TYPE(BoxContainer,Container);
+	GDCLASS(BoxContainer,Container);
 
 public:
 
@@ -68,7 +68,7 @@ public:
 
 class HBoxContainer : public BoxContainer {
 
-	OBJ_TYPE(HBoxContainer,BoxContainer);
+	GDCLASS(HBoxContainer,BoxContainer);
 
 public:
 
@@ -79,7 +79,7 @@ public:
 class MarginContainer;
 class VBoxContainer : public BoxContainer {
 
-	OBJ_TYPE(VBoxContainer,BoxContainer);
+	GDCLASS(VBoxContainer,BoxContainer);
 
 public:
 

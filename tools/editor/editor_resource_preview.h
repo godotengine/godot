@@ -55,7 +55,7 @@
 
 class EditorResourcePreviewGenerator : public Reference {
 
-	OBJ_TYPE(EditorResourcePreviewGenerator,Reference );
+	GDCLASS(EditorResourcePreviewGenerator,Reference );
 
 protected:
 
@@ -72,7 +72,7 @@ public:
 
 class EditorResourcePreview : public Node {
 
-	OBJ_TYPE(EditorResourcePreview,Node);
+	GDCLASS(EditorResourcePreview,Node);
 
 
 	static EditorResourcePreview* singleton;

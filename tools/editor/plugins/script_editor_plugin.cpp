@@ -240,9 +240,9 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 
 void ScriptEditorQuickOpen::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_text_changed"),&ScriptEditorQuickOpen::_text_changed);
-	ObjectTypeDB::bind_method(_MD("_confirmed"),&ScriptEditorQuickOpen::_confirmed);
-	ObjectTypeDB::bind_method(_MD("_sbox_input"),&ScriptEditorQuickOpen::_sbox_input);
+	ClassDB::bind_method(_MD("_text_changed"),&ScriptEditorQuickOpen::_text_changed);
+	ClassDB::bind_method(_MD("_confirmed"),&ScriptEditorQuickOpen::_confirmed);
+	ClassDB::bind_method(_MD("_sbox_input"),&ScriptEditorQuickOpen::_sbox_input);
 
 	ADD_SIGNAL(MethodInfo("goto_line",PropertyInfo(Variant::INT,"line")));
 
@@ -431,7 +431,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	}
 	if (c->cast_to<EditorHelp>()) {
 
-		script_name_label->set_text(c->cast_to<EditorHelp>()->get_class_name());
+		script_name_label->set_text(c->cast_to<EditorHelp>()->get_class());
 		script_icon->set_texture(get_icon("Help","EditorIcons"));
 		if (is_visible())
 			c->cast_to<EditorHelp>()->set_focused();
@@ -605,7 +605,7 @@ void ScriptEditor::_reload_scripts(){
 		}
 
 
-		Ref<Script> rel_script = ResourceLoader::load(script->get_path(),script->get_type(),true);
+		Ref<Script> rel_script = ResourceLoader::load(script->get_path(),script->get_class(),true);
 		ERR_CONTINUE(!rel_script.is_valid());
 		script->set_source_code( rel_script->get_source_code() );
 		script->set_last_modified_time( rel_script->get_last_modified_time() );
@@ -798,7 +798,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			if (tab_container->get_tab_count()>0) {
 				EditorHelp *eh = tab_container->get_child( tab_container->get_current_tab() )->cast_to<EditorHelp>();
 				if (eh) {
-					current=eh->get_class_name();
+					current=eh->get_class();
 				}
 			}
 
@@ -1423,7 +1423,7 @@ void ScriptEditor::_update_script_names() {
 		EditorHelp *eh = tab_container->get_child(i)->cast_to<EditorHelp>();
 		if (eh) {
 
-			String name = eh->get_class_name();
+			String name = eh->get_class();
 			Ref<Texture> icon = get_icon("Help","EditorIcons");
 			String tooltip = name+" Class Reference";
 
@@ -1827,7 +1827,7 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 
 		if (eh) {
 
-			helps.push_back(eh->get_class_name());
+			helps.push_back(eh->get_class());
 		}
 
 
@@ -1848,7 +1848,7 @@ void ScriptEditor::_help_class_open(const String& p_class) {
 
 		EditorHelp *eh = tab_container->get_child(i)->cast_to<EditorHelp>();
 
-		if (eh && eh->get_class_name()==p_class) {
+		if (eh && eh->get_class()==p_class) {
 
 			_go_to_tab(i);
 			_update_script_names();
@@ -1876,7 +1876,7 @@ void ScriptEditor::_help_class_goto(const String& p_desc) {
 
 		EditorHelp *eh = tab_container->get_child(i)->cast_to<EditorHelp>();
 
-		if (eh && eh->get_class_name()==cname) {
+		if (eh && eh->get_class()==cname) {
 
 			_go_to_tab(i);
 			eh->go_to_help(p_desc);
@@ -2029,43 +2029,43 @@ void ScriptEditor::register_create_script_editor_function(CreateScriptEditorFunc
 
 void ScriptEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_file_dialog_action",&ScriptEditor::_file_dialog_action);
-	ObjectTypeDB::bind_method("_tab_changed",&ScriptEditor::_tab_changed);
-	ObjectTypeDB::bind_method("_menu_option",&ScriptEditor::_menu_option);
-	ObjectTypeDB::bind_method("_close_current_tab",&ScriptEditor::_close_current_tab);
-	ObjectTypeDB::bind_method("_close_docs_tab", &ScriptEditor::_close_docs_tab);
-	ObjectTypeDB::bind_method("_close_all_tabs", &ScriptEditor::_close_all_tabs);
-	ObjectTypeDB::bind_method("_editor_play",&ScriptEditor::_editor_play);
-	ObjectTypeDB::bind_method("_editor_pause",&ScriptEditor::_editor_pause);
-	ObjectTypeDB::bind_method("_editor_stop",&ScriptEditor::_editor_stop);
-	ObjectTypeDB::bind_method("_add_callback",&ScriptEditor::_add_callback);
-	ObjectTypeDB::bind_method("_reload_scripts",&ScriptEditor::_reload_scripts);
-	ObjectTypeDB::bind_method("_resave_scripts",&ScriptEditor::_resave_scripts);
-	ObjectTypeDB::bind_method("_res_saved_callback",&ScriptEditor::_res_saved_callback);
-	ObjectTypeDB::bind_method("_goto_script_line",&ScriptEditor::_goto_script_line);
-	ObjectTypeDB::bind_method("_goto_script_line2",&ScriptEditor::_goto_script_line2);
-	ObjectTypeDB::bind_method("_help_search",&ScriptEditor::_help_search);
-	ObjectTypeDB::bind_method("_save_history",&ScriptEditor::_save_history);
+	ClassDB::bind_method("_file_dialog_action",&ScriptEditor::_file_dialog_action);
+	ClassDB::bind_method("_tab_changed",&ScriptEditor::_tab_changed);
+	ClassDB::bind_method("_menu_option",&ScriptEditor::_menu_option);
+	ClassDB::bind_method("_close_current_tab",&ScriptEditor::_close_current_tab);
+	ClassDB::bind_method("_close_docs_tab", &ScriptEditor::_close_docs_tab);
+	ClassDB::bind_method("_close_all_tabs", &ScriptEditor::_close_all_tabs);
+	ClassDB::bind_method("_editor_play",&ScriptEditor::_editor_play);
+	ClassDB::bind_method("_editor_pause",&ScriptEditor::_editor_pause);
+	ClassDB::bind_method("_editor_stop",&ScriptEditor::_editor_stop);
+	ClassDB::bind_method("_add_callback",&ScriptEditor::_add_callback);
+	ClassDB::bind_method("_reload_scripts",&ScriptEditor::_reload_scripts);
+	ClassDB::bind_method("_resave_scripts",&ScriptEditor::_resave_scripts);
+	ClassDB::bind_method("_res_saved_callback",&ScriptEditor::_res_saved_callback);
+	ClassDB::bind_method("_goto_script_line",&ScriptEditor::_goto_script_line);
+	ClassDB::bind_method("_goto_script_line2",&ScriptEditor::_goto_script_line2);
+	ClassDB::bind_method("_help_search",&ScriptEditor::_help_search);
+	ClassDB::bind_method("_save_history",&ScriptEditor::_save_history);
 
 
 
-	ObjectTypeDB::bind_method("_breaked",&ScriptEditor::_breaked);
-	ObjectTypeDB::bind_method("_show_debugger",&ScriptEditor::_show_debugger);
-	ObjectTypeDB::bind_method("_get_debug_tooltip",&ScriptEditor::_get_debug_tooltip);
-	ObjectTypeDB::bind_method("_autosave_scripts",&ScriptEditor::_autosave_scripts);
-	ObjectTypeDB::bind_method("_editor_settings_changed",&ScriptEditor::_editor_settings_changed);
-	ObjectTypeDB::bind_method("_update_script_names",&ScriptEditor::_update_script_names);
-	ObjectTypeDB::bind_method("_tree_changed",&ScriptEditor::_tree_changed);
-	ObjectTypeDB::bind_method("_script_selected",&ScriptEditor::_script_selected);
-	ObjectTypeDB::bind_method("_script_created",&ScriptEditor::_script_created);
-	ObjectTypeDB::bind_method("_script_split_dragged",&ScriptEditor::_script_split_dragged);
-	ObjectTypeDB::bind_method("_help_class_open",&ScriptEditor::_help_class_open);
-	ObjectTypeDB::bind_method("_help_class_goto",&ScriptEditor::_help_class_goto);
-	ObjectTypeDB::bind_method("_request_help",&ScriptEditor::_help_class_open);
-	ObjectTypeDB::bind_method("_history_forward",&ScriptEditor::_history_forward);
-	ObjectTypeDB::bind_method("_history_back",&ScriptEditor::_history_back);
-	ObjectTypeDB::bind_method("_live_auto_reload_running_scripts",&ScriptEditor::_live_auto_reload_running_scripts);
-	ObjectTypeDB::bind_method("_unhandled_input",&ScriptEditor::_unhandled_input);
+	ClassDB::bind_method("_breaked",&ScriptEditor::_breaked);
+	ClassDB::bind_method("_show_debugger",&ScriptEditor::_show_debugger);
+	ClassDB::bind_method("_get_debug_tooltip",&ScriptEditor::_get_debug_tooltip);
+	ClassDB::bind_method("_autosave_scripts",&ScriptEditor::_autosave_scripts);
+	ClassDB::bind_method("_editor_settings_changed",&ScriptEditor::_editor_settings_changed);
+	ClassDB::bind_method("_update_script_names",&ScriptEditor::_update_script_names);
+	ClassDB::bind_method("_tree_changed",&ScriptEditor::_tree_changed);
+	ClassDB::bind_method("_script_selected",&ScriptEditor::_script_selected);
+	ClassDB::bind_method("_script_created",&ScriptEditor::_script_created);
+	ClassDB::bind_method("_script_split_dragged",&ScriptEditor::_script_split_dragged);
+	ClassDB::bind_method("_help_class_open",&ScriptEditor::_help_class_open);
+	ClassDB::bind_method("_help_class_goto",&ScriptEditor::_help_class_goto);
+	ClassDB::bind_method("_request_help",&ScriptEditor::_help_class_open);
+	ClassDB::bind_method("_history_forward",&ScriptEditor::_history_forward);
+	ClassDB::bind_method("_history_back",&ScriptEditor::_history_back);
+	ClassDB::bind_method("_live_auto_reload_running_scripts",&ScriptEditor::_live_auto_reload_running_scripts);
+	ClassDB::bind_method("_unhandled_input",&ScriptEditor::_unhandled_input);
 
 }
 
@@ -2328,7 +2328,7 @@ bool ScriptEditorPlugin::handles(Object *p_object) const {
 		return valid;
 	}
 
-	return p_object->is_type("Script");
+	return p_object->is_class("Script");
 }
 
 void ScriptEditorPlugin::make_visible(bool p_visible) {

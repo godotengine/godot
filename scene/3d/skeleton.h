@@ -37,7 +37,7 @@
 */
 class Skeleton : public Spatial {
 
-	OBJ_TYPE( Skeleton, Spatial );
+	GDCLASS( Skeleton, Spatial );
 
 	struct Bone {
 

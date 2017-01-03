@@ -35,7 +35,7 @@
 
 class Shader : public Resource {
 
-	OBJ_TYPE(Shader,Resource);
+	GDCLASS(Shader,Resource);
 	OBJ_SAVE_TYPE( Shader );
 	RES_BASE_EXTENSION("shd");
 
@@ -102,7 +102,7 @@ VARIANT_ENUM_CAST( Shader::Mode );
 
 class SpatialShader : public Shader {
 
-	OBJ_TYPE(SpatialShader,Shader);
+	GDCLASS(SpatialShader,Shader);
 
 public:
 
@@ -111,7 +111,7 @@ public:
 
 class CanvasItemShader : public Shader {
 
-	OBJ_TYPE(CanvasItemShader,Shader);
+	GDCLASS(CanvasItemShader,Shader);
 
 public:
 
@@ -121,7 +121,7 @@ public:
 
 class ParticlesShader : public Shader {
 
-	OBJ_TYPE(ParticlesShader,Shader);
+	GDCLASS(ParticlesShader,Shader);
 
 public:
 

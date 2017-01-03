@@ -700,7 +700,7 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2& p_point,const Variant& p
 			String file = files[0];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 
-			if (!ObjectTypeDB::is_type(ftype,"Texture")) {
+			if (!ClassDB::is_parent_class(ftype,"Texture")) {
 				return false;
 			}
 
@@ -754,27 +754,27 @@ void SpriteFramesEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 
 void SpriteFramesEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&SpriteFramesEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_load_pressed"),&SpriteFramesEditor::_load_pressed);
-	ObjectTypeDB::bind_method(_MD("_empty_pressed"),&SpriteFramesEditor::_empty_pressed);
-	ObjectTypeDB::bind_method(_MD("_empty2_pressed"),&SpriteFramesEditor::_empty2_pressed);
-	ObjectTypeDB::bind_method(_MD("_item_edited"),&SpriteFramesEditor::_item_edited);
-	ObjectTypeDB::bind_method(_MD("_delete_pressed"),&SpriteFramesEditor::_delete_pressed);
-	ObjectTypeDB::bind_method(_MD("_paste_pressed"),&SpriteFramesEditor::_paste_pressed);
-	ObjectTypeDB::bind_method(_MD("_delete_confirm_pressed"),&SpriteFramesEditor::_delete_confirm_pressed);
-	ObjectTypeDB::bind_method(_MD("_file_load_request","files","atpos"),&SpriteFramesEditor::_file_load_request,DEFVAL(-1));
-	ObjectTypeDB::bind_method(_MD("_update_library","skipsel"),&SpriteFramesEditor::_update_library,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("_up_pressed"),&SpriteFramesEditor::_up_pressed);
-	ObjectTypeDB::bind_method(_MD("_down_pressed"),&SpriteFramesEditor::_down_pressed);
-	ObjectTypeDB::bind_method(_MD("_animation_select"),&SpriteFramesEditor::_animation_select);
-	ObjectTypeDB::bind_method(_MD("_animation_name_edited"),&SpriteFramesEditor::_animation_name_edited);
-	ObjectTypeDB::bind_method(_MD("_animation_add"),&SpriteFramesEditor::_animation_add);
-	ObjectTypeDB::bind_method(_MD("_animation_remove"),&SpriteFramesEditor::_animation_remove);
-	ObjectTypeDB::bind_method(_MD("_animation_loop_changed"),&SpriteFramesEditor::_animation_loop_changed);
-	ObjectTypeDB::bind_method(_MD("_animation_fps_changed"),&SpriteFramesEditor::_animation_fps_changed);
-	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &SpriteFramesEditor::get_drag_data_fw);
-	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &SpriteFramesEditor::can_drop_data_fw);
-	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &SpriteFramesEditor::drop_data_fw);
+	ClassDB::bind_method(_MD("_input_event"),&SpriteFramesEditor::_input_event);
+	ClassDB::bind_method(_MD("_load_pressed"),&SpriteFramesEditor::_load_pressed);
+	ClassDB::bind_method(_MD("_empty_pressed"),&SpriteFramesEditor::_empty_pressed);
+	ClassDB::bind_method(_MD("_empty2_pressed"),&SpriteFramesEditor::_empty2_pressed);
+	ClassDB::bind_method(_MD("_item_edited"),&SpriteFramesEditor::_item_edited);
+	ClassDB::bind_method(_MD("_delete_pressed"),&SpriteFramesEditor::_delete_pressed);
+	ClassDB::bind_method(_MD("_paste_pressed"),&SpriteFramesEditor::_paste_pressed);
+	ClassDB::bind_method(_MD("_delete_confirm_pressed"),&SpriteFramesEditor::_delete_confirm_pressed);
+	ClassDB::bind_method(_MD("_file_load_request","files","atpos"),&SpriteFramesEditor::_file_load_request,DEFVAL(-1));
+	ClassDB::bind_method(_MD("_update_library","skipsel"),&SpriteFramesEditor::_update_library,DEFVAL(false));
+	ClassDB::bind_method(_MD("_up_pressed"),&SpriteFramesEditor::_up_pressed);
+	ClassDB::bind_method(_MD("_down_pressed"),&SpriteFramesEditor::_down_pressed);
+	ClassDB::bind_method(_MD("_animation_select"),&SpriteFramesEditor::_animation_select);
+	ClassDB::bind_method(_MD("_animation_name_edited"),&SpriteFramesEditor::_animation_name_edited);
+	ClassDB::bind_method(_MD("_animation_add"),&SpriteFramesEditor::_animation_add);
+	ClassDB::bind_method(_MD("_animation_remove"),&SpriteFramesEditor::_animation_remove);
+	ClassDB::bind_method(_MD("_animation_loop_changed"),&SpriteFramesEditor::_animation_loop_changed);
+	ClassDB::bind_method(_MD("_animation_fps_changed"),&SpriteFramesEditor::_animation_fps_changed);
+	ClassDB::bind_method(_MD("get_drag_data_fw"), &SpriteFramesEditor::get_drag_data_fw);
+	ClassDB::bind_method(_MD("can_drop_data_fw"), &SpriteFramesEditor::can_drop_data_fw);
+	ClassDB::bind_method(_MD("drop_data_fw"), &SpriteFramesEditor::drop_data_fw);
 
 
 }
@@ -929,7 +929,7 @@ void SpriteFramesEditorPlugin::edit(Object *p_object) {
 
 bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("SpriteFrames");
+	return p_object->is_class("SpriteFrames");
 }
 
 void SpriteFramesEditorPlugin::make_visible(bool p_visible) {

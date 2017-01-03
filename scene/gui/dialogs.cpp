@@ -141,11 +141,11 @@ TextureButton *WindowDialog::get_close_button() {
 
 void WindowDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method( _MD("_input_event"),&WindowDialog::_input_event);
-	ObjectTypeDB::bind_method( _MD("set_title","title"),&WindowDialog::set_title);
-	ObjectTypeDB::bind_method( _MD("get_title"),&WindowDialog::get_title);
-	ObjectTypeDB::bind_method( _MD("_closed"),&WindowDialog::_closed);
-	ObjectTypeDB::bind_method( _MD("get_close_button:TextureButton"),&WindowDialog::get_close_button);
+	ClassDB::bind_method( _MD("_input_event"),&WindowDialog::_input_event);
+	ClassDB::bind_method( _MD("set_title","title"),&WindowDialog::set_title);
+	ClassDB::bind_method( _MD("get_title"),&WindowDialog::get_title);
+	ClassDB::bind_method( _MD("_closed"),&WindowDialog::_closed);
+	ClassDB::bind_method( _MD("get_close_button:TextureButton"),&WindowDialog::get_close_button);
 
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"window/title",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_title"),_SCS("get_title"));
 }
@@ -359,19 +359,19 @@ Button* AcceptDialog::add_cancel(const String &p_cancel) {
 
 void AcceptDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_ok"),&AcceptDialog::_ok_pressed);
-	ObjectTypeDB::bind_method(_MD("get_ok"),&AcceptDialog::get_ok);
-	ObjectTypeDB::bind_method(_MD("get_label"),&AcceptDialog::get_label);
-	ObjectTypeDB::bind_method(_MD("set_hide_on_ok","enabled"),&AcceptDialog::set_hide_on_ok);
-	ObjectTypeDB::bind_method(_MD("get_hide_on_ok"),&AcceptDialog::get_hide_on_ok);
-	ObjectTypeDB::bind_method(_MD("add_button:Button","text","right","action"),&AcceptDialog::add_button,DEFVAL(false),DEFVAL(""));
-	ObjectTypeDB::bind_method(_MD("add_cancel:Button","name"),&AcceptDialog::add_cancel);
-	ObjectTypeDB::bind_method(_MD("_builtin_text_entered"),&AcceptDialog::_builtin_text_entered);
-	ObjectTypeDB::bind_method(_MD("register_text_enter:LineEdit","line_edit"),&AcceptDialog::register_text_enter);
-	ObjectTypeDB::bind_method(_MD("_custom_action"),&AcceptDialog::_custom_action);
-	ObjectTypeDB::bind_method(_MD("set_text","text"),&AcceptDialog::set_text);
-	ObjectTypeDB::bind_method(_MD("get_text"),&AcceptDialog::get_text);
-	ObjectTypeDB::bind_method(_MD("set_child_rect","child:Control"),&AcceptDialog::set_child_rect);
+	ClassDB::bind_method(_MD("_ok"),&AcceptDialog::_ok_pressed);
+	ClassDB::bind_method(_MD("get_ok"),&AcceptDialog::get_ok);
+	ClassDB::bind_method(_MD("get_label"),&AcceptDialog::get_label);
+	ClassDB::bind_method(_MD("set_hide_on_ok","enabled"),&AcceptDialog::set_hide_on_ok);
+	ClassDB::bind_method(_MD("get_hide_on_ok"),&AcceptDialog::get_hide_on_ok);
+	ClassDB::bind_method(_MD("add_button:Button","text","right","action"),&AcceptDialog::add_button,DEFVAL(false),DEFVAL(""));
+	ClassDB::bind_method(_MD("add_cancel:Button","name"),&AcceptDialog::add_cancel);
+	ClassDB::bind_method(_MD("_builtin_text_entered"),&AcceptDialog::_builtin_text_entered);
+	ClassDB::bind_method(_MD("register_text_enter:LineEdit","line_edit"),&AcceptDialog::register_text_enter);
+	ClassDB::bind_method(_MD("_custom_action"),&AcceptDialog::_custom_action);
+	ClassDB::bind_method(_MD("set_text","text"),&AcceptDialog::set_text);
+	ClassDB::bind_method(_MD("get_text"),&AcceptDialog::get_text);
+	ClassDB::bind_method(_MD("set_child_rect","child:Control"),&AcceptDialog::set_child_rect);
 
 	ADD_SIGNAL( MethodInfo("confirmed") );
 	ADD_SIGNAL( MethodInfo("custom_action",PropertyInfo(Variant::STRING,"action")) );
@@ -429,7 +429,7 @@ AcceptDialog::~AcceptDialog()
 
 void ConfirmationDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_cancel:Button"),&ConfirmationDialog::get_cancel);
+	ClassDB::bind_method(_MD("get_cancel:Button"),&ConfirmationDialog::get_cancel);
 }
 
 Button *ConfirmationDialog::get_cancel() {

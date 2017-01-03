@@ -40,7 +40,7 @@
 #include "string.h"
 class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
-	OBJ_TYPE( EditorExportPlatformJavaScript,EditorExportPlatform );
+	GDCLASS( EditorExportPlatformJavaScript,EditorExportPlatform );
 
 	String custom_release_package;
 	String custom_debug_package;

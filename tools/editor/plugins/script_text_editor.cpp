@@ -154,7 +154,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	Color type_color= EDITOR_DEF("text_editor/engine_type_color",Color(0.0,0.2,0.4));
 
 	List<StringName> types;
-	ObjectTypeDB::get_type_list(&types);
+	ClassDB::get_class_list(&types);
 
 	for(List<StringName>::Element *E=types.front();E;E=E->next()) {
 
@@ -332,7 +332,7 @@ String ScriptTextEditor::get_name()  {
 	} else if (script->get_name()!="")
 		name=script->get_name();
 	else
-		name=script->get_type()+"("+itos(script->get_instance_ID())+")";
+		name=script->get_class()+"("+itos(script->get_instance_ID())+")";
 
 	return name;
 
@@ -340,8 +340,8 @@ String ScriptTextEditor::get_name()  {
 
 Ref<Texture> ScriptTextEditor::get_icon() {
 
-	if (get_parent_control() && get_parent_control()->has_icon(script->get_type(),"EditorIcons")) {
-		return get_parent_control()->get_icon(script->get_type(),"EditorIcons");
+	if (get_parent_control() && get_parent_control()->has_icon(script->get_class(),"EditorIcons")) {
+		return get_parent_control()->get_icon(script->get_class(),"EditorIcons");
 	}
 
 	return Ref<Texture>();
@@ -465,7 +465,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 
 		if (last_date!=date) {
 
-			Ref<Script> rel_script = ResourceLoader::load(script->get_path(),script->get_type(),true);
+			Ref<Script> rel_script = ResourceLoader::load(script->get_path(),script->get_class(),true);
 			ERR_CONTINUE(!rel_script.is_valid());
 			script->set_source_code( rel_script->get_source_code() );
 			script->set_last_modified_time( rel_script->get_last_modified_time() );
@@ -544,10 +544,10 @@ void ScriptTextEditor::_lookup_symbol(const String& p_symbol,int p_row, int p_co
 				StringName cname = result.class_name;
 				bool success;
 				while(true) {
-					ObjectTypeDB::get_integer_constant(cname,result.class_member,&success);
+					ClassDB::get_integer_constant(cname,result.class_member,&success);
 					if (success) {
 						result.class_name=cname;
-						cname=ObjectTypeDB::type_inherits_from(cname);
+						cname=ClassDB::get_parent_class(cname);
 					} else {
 						break;
 					}
@@ -566,9 +566,9 @@ void ScriptTextEditor::_lookup_symbol(const String& p_symbol,int p_row, int p_co
 				StringName cname = result.class_name;
 
 				while(true) {
-					if (ObjectTypeDB::has_method(cname,result.class_member)) {
+					if (ClassDB::has_method(cname,result.class_member)) {
 						result.class_name=cname;
-						cname=ObjectTypeDB::type_inherits_from(cname);
+						cname=ClassDB::get_parent_class(cname);
 					} else {
 						break;
 					}
@@ -973,19 +973,19 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 void ScriptTextEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_validate_script",&ScriptTextEditor::_validate_script);
-	ObjectTypeDB::bind_method("_load_theme_settings",&ScriptTextEditor::_load_theme_settings);
-	ObjectTypeDB::bind_method("_breakpoint_toggled",&ScriptTextEditor::_breakpoint_toggled);
-	ObjectTypeDB::bind_method("_edit_option",&ScriptTextEditor::_edit_option);
-	ObjectTypeDB::bind_method("_goto_line",&ScriptTextEditor::_goto_line);
-	ObjectTypeDB::bind_method("_lookup_symbol",&ScriptTextEditor::_lookup_symbol);
-	ObjectTypeDB::bind_method("_text_edit_input_event", &ScriptTextEditor::_text_edit_input_event);
-	ObjectTypeDB::bind_method("_color_changed", &ScriptTextEditor::_color_changed);
+	ClassDB::bind_method("_validate_script",&ScriptTextEditor::_validate_script);
+	ClassDB::bind_method("_load_theme_settings",&ScriptTextEditor::_load_theme_settings);
+	ClassDB::bind_method("_breakpoint_toggled",&ScriptTextEditor::_breakpoint_toggled);
+	ClassDB::bind_method("_edit_option",&ScriptTextEditor::_edit_option);
+	ClassDB::bind_method("_goto_line",&ScriptTextEditor::_goto_line);
+	ClassDB::bind_method("_lookup_symbol",&ScriptTextEditor::_lookup_symbol);
+	ClassDB::bind_method("_text_edit_input_event", &ScriptTextEditor::_text_edit_input_event);
+	ClassDB::bind_method("_color_changed", &ScriptTextEditor::_color_changed);
 
 
-	ObjectTypeDB::bind_method("get_drag_data_fw",&ScriptTextEditor::get_drag_data_fw);
-	ObjectTypeDB::bind_method("can_drop_data_fw",&ScriptTextEditor::can_drop_data_fw);
-	ObjectTypeDB::bind_method("drop_data_fw",&ScriptTextEditor::drop_data_fw);
+	ClassDB::bind_method("get_drag_data_fw",&ScriptTextEditor::get_drag_data_fw);
+	ClassDB::bind_method("can_drop_data_fw",&ScriptTextEditor::can_drop_data_fw);
+	ClassDB::bind_method("drop_data_fw",&ScriptTextEditor::drop_data_fw);
 
 }
 

@@ -194,8 +194,8 @@ void OutputStrings::add_line(const String& p_text, const Variant& p_meta, const 
 
 void OutputStrings::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_vscroll_changed",&OutputStrings::_vscroll_changed);
-	ObjectTypeDB::bind_method("_hscroll_changed",&OutputStrings::_hscroll_changed);
+	ClassDB::bind_method("_vscroll_changed",&OutputStrings::_vscroll_changed);
+	ClassDB::bind_method("_hscroll_changed",&OutputStrings::_hscroll_changed);
 }
 
 OutputStrings::OutputStrings() {

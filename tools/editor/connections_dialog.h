@@ -48,7 +48,7 @@ class ConnectDialogBinds;
 
 class ConnectDialog : public ConfirmationDialog {
 
-	OBJ_TYPE( ConnectDialog, ConfirmationDialog );
+	GDCLASS( ConnectDialog, ConfirmationDialog );
 
 
 	ConfirmationDialog *error;
@@ -97,7 +97,7 @@ public:
 
 class ConnectionsDock : public VBoxContainer {
 
-	OBJ_TYPE( ConnectionsDock , VBoxContainer );
+	GDCLASS( ConnectionsDock , VBoxContainer );
 
 	Button *connect_button;
 	EditorNode *editor;

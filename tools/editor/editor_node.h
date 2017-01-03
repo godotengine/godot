@@ -101,7 +101,7 @@ class EditorPluginList;
 
 class EditorNode : public Node {
 
-	OBJ_TYPE( EditorNode, Node );
+	GDCLASS( EditorNode, Node );
 
 public:
 	enum DockSlot {

@@ -36,7 +36,7 @@
 */
 class OptionButton : public Button {
 
-	OBJ_TYPE( OptionButton, Button );
+	GDCLASS( OptionButton, Button );
 
 	PopupMenu *popup;
 	int current;

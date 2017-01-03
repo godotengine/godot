@@ -136,23 +136,23 @@ void TextureButton::_notification(int p_what) {
 
 void TextureButton::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_normal_texture","texture:Texture"),&TextureButton::set_normal_texture);
-	ObjectTypeDB::bind_method(_MD("set_pressed_texture","texture:Texture"),&TextureButton::set_pressed_texture);
-	ObjectTypeDB::bind_method(_MD("set_hover_texture","texture:Texture"),&TextureButton::set_hover_texture);
-	ObjectTypeDB::bind_method(_MD("set_disabled_texture","texture:Texture"),&TextureButton::set_disabled_texture);
-	ObjectTypeDB::bind_method(_MD("set_focused_texture","texture:Texture"),&TextureButton::set_focused_texture);
-	ObjectTypeDB::bind_method(_MD("set_click_mask","mask:BitMap"),&TextureButton::set_click_mask);
-	ObjectTypeDB::bind_method(_MD("set_texture_scale","scale"),&TextureButton::set_texture_scale);
-	ObjectTypeDB::bind_method(_MD("set_modulate","color"),&TextureButton::set_modulate);
+	ClassDB::bind_method(_MD("set_normal_texture","texture:Texture"),&TextureButton::set_normal_texture);
+	ClassDB::bind_method(_MD("set_pressed_texture","texture:Texture"),&TextureButton::set_pressed_texture);
+	ClassDB::bind_method(_MD("set_hover_texture","texture:Texture"),&TextureButton::set_hover_texture);
+	ClassDB::bind_method(_MD("set_disabled_texture","texture:Texture"),&TextureButton::set_disabled_texture);
+	ClassDB::bind_method(_MD("set_focused_texture","texture:Texture"),&TextureButton::set_focused_texture);
+	ClassDB::bind_method(_MD("set_click_mask","mask:BitMap"),&TextureButton::set_click_mask);
+	ClassDB::bind_method(_MD("set_texture_scale","scale"),&TextureButton::set_texture_scale);
+	ClassDB::bind_method(_MD("set_modulate","color"),&TextureButton::set_modulate);
 
-	ObjectTypeDB::bind_method(_MD("get_normal_texture:Texture"),&TextureButton::get_normal_texture);
-	ObjectTypeDB::bind_method(_MD("get_pressed_texture:Texture"),&TextureButton::get_pressed_texture);
-	ObjectTypeDB::bind_method(_MD("get_hover_texture:Texture"),&TextureButton::get_hover_texture);
-	ObjectTypeDB::bind_method(_MD("get_disabled_texture:Texture"),&TextureButton::get_disabled_texture);
-	ObjectTypeDB::bind_method(_MD("get_focused_texture:Texture"),&TextureButton::get_focused_texture);
-	ObjectTypeDB::bind_method(_MD("get_click_mask:BitMap"),&TextureButton::get_click_mask);
-	ObjectTypeDB::bind_method(_MD("get_texture_scale"),&TextureButton::get_texture_scale);
-	ObjectTypeDB::bind_method(_MD("get_modulate"),&TextureButton::get_modulate);
+	ClassDB::bind_method(_MD("get_normal_texture:Texture"),&TextureButton::get_normal_texture);
+	ClassDB::bind_method(_MD("get_pressed_texture:Texture"),&TextureButton::get_pressed_texture);
+	ClassDB::bind_method(_MD("get_hover_texture:Texture"),&TextureButton::get_hover_texture);
+	ClassDB::bind_method(_MD("get_disabled_texture:Texture"),&TextureButton::get_disabled_texture);
+	ClassDB::bind_method(_MD("get_focused_texture:Texture"),&TextureButton::get_focused_texture);
+	ClassDB::bind_method(_MD("get_click_mask:BitMap"),&TextureButton::get_click_mask);
+	ClassDB::bind_method(_MD("get_texture_scale"),&TextureButton::get_texture_scale);
+	ClassDB::bind_method(_MD("get_modulate"),&TextureButton::get_modulate);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_normal_texture"), _SCS("get_normal_texture"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"textures/pressed",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_pressed_texture"), _SCS("get_pressed_texture"));

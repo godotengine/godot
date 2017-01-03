@@ -634,30 +634,30 @@ float CharacterCamera::get_autoturn_speed() const {
 
 void CharacterCamera::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_camera_type","type"),&CharacterCamera::set_camera_type);
-	ObjectTypeDB::bind_method(_MD("get_camera_type"),&CharacterCamera::get_camera_type);
-	ObjectTypeDB::bind_method(_MD("set_orbit","orbit"),&CharacterCamera::set_orbit);
-	ObjectTypeDB::bind_method(_MD("get_orbit"),&CharacterCamera::get_orbit);
-	ObjectTypeDB::bind_method(_MD("set_orbit_x","x"),&CharacterCamera::set_orbit_x);
-	ObjectTypeDB::bind_method(_MD("set_orbit_y","y"),&CharacterCamera::set_orbit_y);
-	ObjectTypeDB::bind_method(_MD("set_min_orbit_x","x"),&CharacterCamera::set_min_orbit_x);
-	ObjectTypeDB::bind_method(_MD("get_min_orbit_x"),&CharacterCamera::get_min_orbit_x);
-	ObjectTypeDB::bind_method(_MD("set_max_orbit_x","x"),&CharacterCamera::set_max_orbit_x);
-	ObjectTypeDB::bind_method(_MD("get_max_orbit_x"),&CharacterCamera::get_max_orbit_x);
-	ObjectTypeDB::bind_method(_MD("rotate_orbit"),&CharacterCamera::rotate_orbit);
-	ObjectTypeDB::bind_method(_MD("set_distance","distance"),&CharacterCamera::set_distance);
-	ObjectTypeDB::bind_method(_MD("get_distance"),&CharacterCamera::get_distance);
-	ObjectTypeDB::bind_method(_MD("set_clip","enable"),&CharacterCamera::set_clip);
-	ObjectTypeDB::bind_method(_MD("has_clip"),&CharacterCamera::has_clip);
-	ObjectTypeDB::bind_method(_MD("set_autoturn","enable"),&CharacterCamera::set_autoturn);
-	ObjectTypeDB::bind_method(_MD("has_autoturn"),&CharacterCamera::has_autoturn);
-	ObjectTypeDB::bind_method(_MD("set_autoturn_tolerance","degrees"),&CharacterCamera::set_autoturn_tolerance);
-	ObjectTypeDB::bind_method(_MD("get_autoturn_tolerance"),&CharacterCamera::get_autoturn_tolerance);
-	ObjectTypeDB::bind_method(_MD("set_autoturn_speed","speed"),&CharacterCamera::set_autoturn_speed);
-	ObjectTypeDB::bind_method(_MD("get_autoturn_speed"),&CharacterCamera::get_autoturn_speed);
-	ObjectTypeDB::bind_method(_MD("set_use_lookat_target","use","lookat"),&CharacterCamera::set_use_lookat_target, DEFVAL(Vector3()));
+	ClassDB::bind_method(_MD("set_camera_type","type"),&CharacterCamera::set_camera_type);
+	ClassDB::bind_method(_MD("get_camera_type"),&CharacterCamera::get_camera_type);
+	ClassDB::bind_method(_MD("set_orbit","orbit"),&CharacterCamera::set_orbit);
+	ClassDB::bind_method(_MD("get_orbit"),&CharacterCamera::get_orbit);
+	ClassDB::bind_method(_MD("set_orbit_x","x"),&CharacterCamera::set_orbit_x);
+	ClassDB::bind_method(_MD("set_orbit_y","y"),&CharacterCamera::set_orbit_y);
+	ClassDB::bind_method(_MD("set_min_orbit_x","x"),&CharacterCamera::set_min_orbit_x);
+	ClassDB::bind_method(_MD("get_min_orbit_x"),&CharacterCamera::get_min_orbit_x);
+	ClassDB::bind_method(_MD("set_max_orbit_x","x"),&CharacterCamera::set_max_orbit_x);
+	ClassDB::bind_method(_MD("get_max_orbit_x"),&CharacterCamera::get_max_orbit_x);
+	ClassDB::bind_method(_MD("rotate_orbit"),&CharacterCamera::rotate_orbit);
+	ClassDB::bind_method(_MD("set_distance","distance"),&CharacterCamera::set_distance);
+	ClassDB::bind_method(_MD("get_distance"),&CharacterCamera::get_distance);
+	ClassDB::bind_method(_MD("set_clip","enable"),&CharacterCamera::set_clip);
+	ClassDB::bind_method(_MD("has_clip"),&CharacterCamera::has_clip);
+	ClassDB::bind_method(_MD("set_autoturn","enable"),&CharacterCamera::set_autoturn);
+	ClassDB::bind_method(_MD("has_autoturn"),&CharacterCamera::has_autoturn);
+	ClassDB::bind_method(_MD("set_autoturn_tolerance","degrees"),&CharacterCamera::set_autoturn_tolerance);
+	ClassDB::bind_method(_MD("get_autoturn_tolerance"),&CharacterCamera::get_autoturn_tolerance);
+	ClassDB::bind_method(_MD("set_autoturn_speed","speed"),&CharacterCamera::set_autoturn_speed);
+	ClassDB::bind_method(_MD("get_autoturn_speed"),&CharacterCamera::get_autoturn_speed);
+	ClassDB::bind_method(_MD("set_use_lookat_target","use","lookat"),&CharacterCamera::set_use_lookat_target, DEFVAL(Vector3()));
 
-	ObjectTypeDB::bind_method(_MD("_ray_collision"),&CharacterCamera::_ray_collision);
+	ClassDB::bind_method(_MD("_ray_collision"),&CharacterCamera::_ray_collision);
 
 	BIND_CONSTANT( CAMERA_FIXED );
 	BIND_CONSTANT( CAMERA_FOLLOW );

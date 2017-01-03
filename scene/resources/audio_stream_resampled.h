@@ -34,7 +34,7 @@
 #if 0
 
 class AudioStreamResampled : public AudioStream {
-	OBJ_TYPE(AudioStreamResampled,AudioStream);
+	GDCLASS(AudioStreamResampled,AudioStream);
 
 	uint32_t rb_bits;
 	uint32_t rb_len;

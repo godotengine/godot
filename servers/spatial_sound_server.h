@@ -34,7 +34,7 @@
 #include "servers/audio_server.h"
 
 class SpatialSoundServer : public Object {
-	OBJ_TYPE(SpatialSoundServer,Object);
+	GDCLASS(SpatialSoundServer,Object);
 
 	static SpatialSoundServer *singleton;
 public:

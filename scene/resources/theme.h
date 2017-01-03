@@ -41,7 +41,7 @@
 */
 class Theme : public Resource {
 
-	OBJ_TYPE( Theme, Resource );
+	GDCLASS( Theme, Resource );
 	RES_BASE_EXTENSION("thm");
 
 	static Ref<Theme> default_theme;

@@ -42,7 +42,7 @@
 
 class AnimationTreeEditor : public Control {
 
-	OBJ_TYPE(AnimationTreeEditor, Control );
+	GDCLASS(AnimationTreeEditor, Control );
 
 	static const char* _node_type_names[];
 
@@ -172,7 +172,7 @@ public:
 
 class AnimationTreeEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( AnimationTreeEditorPlugin, EditorPlugin );
+	GDCLASS( AnimationTreeEditorPlugin, EditorPlugin );
 
 	AnimationTreeEditor *anim_tree_editor;
 	EditorNode *editor;

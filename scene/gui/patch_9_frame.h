@@ -35,7 +35,7 @@
 */
 class Patch9Frame : public Control {
 
-	OBJ_TYPE(Patch9Frame,Control);
+	GDCLASS(Patch9Frame,Control);
 
 	bool draw_center;
 	int margin[4];

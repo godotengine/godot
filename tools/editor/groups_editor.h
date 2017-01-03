@@ -41,7 +41,7 @@
 
 class GroupsEditor : public VBoxContainer {
 
-	OBJ_TYPE(GroupsEditor,VBoxContainer);
+	GDCLASS(GroupsEditor,VBoxContainer);
 
 	Node *node;
 

@@ -4607,80 +4607,80 @@ PopupMenu *TextEdit::get_menu() const {
 void TextEdit::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&TextEdit::_input_event);
-	ObjectTypeDB::bind_method(_MD("_scroll_moved"),&TextEdit::_scroll_moved);
-	ObjectTypeDB::bind_method(_MD("_cursor_changed_emit"),&TextEdit::_cursor_changed_emit);
-	ObjectTypeDB::bind_method(_MD("_text_changed_emit"),&TextEdit::_text_changed_emit);
-	ObjectTypeDB::bind_method(_MD("_push_current_op"),&TextEdit::_push_current_op);
-	ObjectTypeDB::bind_method(_MD("_click_selection_held"),&TextEdit::_click_selection_held);
-	ObjectTypeDB::bind_method(_MD("_toggle_draw_caret"),&TextEdit::_toggle_draw_caret);
+	ClassDB::bind_method(_MD("_input_event"),&TextEdit::_input_event);
+	ClassDB::bind_method(_MD("_scroll_moved"),&TextEdit::_scroll_moved);
+	ClassDB::bind_method(_MD("_cursor_changed_emit"),&TextEdit::_cursor_changed_emit);
+	ClassDB::bind_method(_MD("_text_changed_emit"),&TextEdit::_text_changed_emit);
+	ClassDB::bind_method(_MD("_push_current_op"),&TextEdit::_push_current_op);
+	ClassDB::bind_method(_MD("_click_selection_held"),&TextEdit::_click_selection_held);
+	ClassDB::bind_method(_MD("_toggle_draw_caret"),&TextEdit::_toggle_draw_caret);
 
 	BIND_CONSTANT( SEARCH_MATCH_CASE );
 	BIND_CONSTANT( SEARCH_WHOLE_WORDS );
 	BIND_CONSTANT( SEARCH_BACKWARDS );
 
 	/*
-    ObjectTypeDB::bind_method(_MD("delete_char"),&TextEdit::delete_char);
-    ObjectTypeDB::bind_method(_MD("delete_line"),&TextEdit::delete_line);
+    ClassDB::bind_method(_MD("delete_char"),&TextEdit::delete_char);
+    ClassDB::bind_method(_MD("delete_line"),&TextEdit::delete_line);
 */
 
-	ObjectTypeDB::bind_method(_MD("set_text","text"),&TextEdit::set_text);
-	ObjectTypeDB::bind_method(_MD("insert_text_at_cursor","text"),&TextEdit::insert_text_at_cursor);
+	ClassDB::bind_method(_MD("set_text","text"),&TextEdit::set_text);
+	ClassDB::bind_method(_MD("insert_text_at_cursor","text"),&TextEdit::insert_text_at_cursor);
 
-	ObjectTypeDB::bind_method(_MD("get_line_count"),&TextEdit::get_line_count);
-	ObjectTypeDB::bind_method(_MD("get_text"),&TextEdit::get_text);
-	ObjectTypeDB::bind_method(_MD("get_line","line"),&TextEdit::get_line);
+	ClassDB::bind_method(_MD("get_line_count"),&TextEdit::get_line_count);
+	ClassDB::bind_method(_MD("get_text"),&TextEdit::get_text);
+	ClassDB::bind_method(_MD("get_line","line"),&TextEdit::get_line);
 
-	ObjectTypeDB::bind_method(_MD("cursor_set_column","column","adjust_viewport"),&TextEdit::cursor_set_column,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("cursor_set_line","line","adjust_viewport"),&TextEdit::cursor_set_line,DEFVAL(false));
+	ClassDB::bind_method(_MD("cursor_set_column","column","adjust_viewport"),&TextEdit::cursor_set_column,DEFVAL(false));
+	ClassDB::bind_method(_MD("cursor_set_line","line","adjust_viewport"),&TextEdit::cursor_set_line,DEFVAL(false));
 
-	ObjectTypeDB::bind_method(_MD("cursor_get_column"),&TextEdit::cursor_get_column);
-	ObjectTypeDB::bind_method(_MD("cursor_get_line"),&TextEdit::cursor_get_line);
-	ObjectTypeDB::bind_method(_MD("cursor_set_blink_enabled", "enable"),&TextEdit::cursor_set_blink_enabled);
-	ObjectTypeDB::bind_method(_MD("cursor_get_blink_enabled"),&TextEdit::cursor_get_blink_enabled);
-	ObjectTypeDB::bind_method(_MD("cursor_set_blink_speed", "blink_speed"),&TextEdit::cursor_set_blink_speed);
-	ObjectTypeDB::bind_method(_MD("cursor_get_blink_speed"),&TextEdit::cursor_get_blink_speed);
-	ObjectTypeDB::bind_method(_MD("cursor_set_block_mode", "enable"), &TextEdit::cursor_set_block_mode);
-	ObjectTypeDB::bind_method(_MD("cursor_is_block_mode"), &TextEdit::cursor_is_block_mode);
+	ClassDB::bind_method(_MD("cursor_get_column"),&TextEdit::cursor_get_column);
+	ClassDB::bind_method(_MD("cursor_get_line"),&TextEdit::cursor_get_line);
+	ClassDB::bind_method(_MD("cursor_set_blink_enabled", "enable"),&TextEdit::cursor_set_blink_enabled);
+	ClassDB::bind_method(_MD("cursor_get_blink_enabled"),&TextEdit::cursor_get_blink_enabled);
+	ClassDB::bind_method(_MD("cursor_set_blink_speed", "blink_speed"),&TextEdit::cursor_set_blink_speed);
+	ClassDB::bind_method(_MD("cursor_get_blink_speed"),&TextEdit::cursor_get_blink_speed);
+	ClassDB::bind_method(_MD("cursor_set_block_mode", "enable"), &TextEdit::cursor_set_block_mode);
+	ClassDB::bind_method(_MD("cursor_is_block_mode"), &TextEdit::cursor_is_block_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_readonly","enable"),&TextEdit::set_readonly);
-	ObjectTypeDB::bind_method(_MD("set_wrap","enable"),&TextEdit::set_wrap);
-	ObjectTypeDB::bind_method(_MD("set_max_chars","amount"),&TextEdit::set_max_chars);
+	ClassDB::bind_method(_MD("set_readonly","enable"),&TextEdit::set_readonly);
+	ClassDB::bind_method(_MD("set_wrap","enable"),&TextEdit::set_wrap);
+	ClassDB::bind_method(_MD("set_max_chars","amount"),&TextEdit::set_max_chars);
 
-	ObjectTypeDB::bind_method(_MD("cut"),&TextEdit::cut);
-	ObjectTypeDB::bind_method(_MD("copy"),&TextEdit::copy);
-	ObjectTypeDB::bind_method(_MD("paste"),&TextEdit::paste);
-	ObjectTypeDB::bind_method(_MD("select_all"),&TextEdit::select_all);
-	ObjectTypeDB::bind_method(_MD("select","from_line","from_column","to_line","to_column"),&TextEdit::select);
+	ClassDB::bind_method(_MD("cut"),&TextEdit::cut);
+	ClassDB::bind_method(_MD("copy"),&TextEdit::copy);
+	ClassDB::bind_method(_MD("paste"),&TextEdit::paste);
+	ClassDB::bind_method(_MD("select_all"),&TextEdit::select_all);
+	ClassDB::bind_method(_MD("select","from_line","from_column","to_line","to_column"),&TextEdit::select);
 
-	ObjectTypeDB::bind_method(_MD("is_selection_active"),&TextEdit::is_selection_active);
-	ObjectTypeDB::bind_method(_MD("get_selection_from_line"),&TextEdit::get_selection_from_line);
-	ObjectTypeDB::bind_method(_MD("get_selection_from_column"),&TextEdit::get_selection_from_column);
-	ObjectTypeDB::bind_method(_MD("get_selection_to_line"),&TextEdit::get_selection_to_line);
-	ObjectTypeDB::bind_method(_MD("get_selection_to_column"),&TextEdit::get_selection_to_column);
-	ObjectTypeDB::bind_method(_MD("get_selection_text"),&TextEdit::get_selection_text);
-	ObjectTypeDB::bind_method(_MD("get_word_under_cursor"),&TextEdit::get_word_under_cursor);
-	ObjectTypeDB::bind_method(_MD("search","flags","from_line","from_column","to_line","to_column"),&TextEdit::_search_bind);
+	ClassDB::bind_method(_MD("is_selection_active"),&TextEdit::is_selection_active);
+	ClassDB::bind_method(_MD("get_selection_from_line"),&TextEdit::get_selection_from_line);
+	ClassDB::bind_method(_MD("get_selection_from_column"),&TextEdit::get_selection_from_column);
+	ClassDB::bind_method(_MD("get_selection_to_line"),&TextEdit::get_selection_to_line);
+	ClassDB::bind_method(_MD("get_selection_to_column"),&TextEdit::get_selection_to_column);
+	ClassDB::bind_method(_MD("get_selection_text"),&TextEdit::get_selection_text);
+	ClassDB::bind_method(_MD("get_word_under_cursor"),&TextEdit::get_word_under_cursor);
+	ClassDB::bind_method(_MD("search","flags","from_line","from_column","to_line","to_column"),&TextEdit::_search_bind);
 
-	ObjectTypeDB::bind_method(_MD("undo"),&TextEdit::undo);
-	ObjectTypeDB::bind_method(_MD("redo"),&TextEdit::redo);
-	ObjectTypeDB::bind_method(_MD("clear_undo_history"),&TextEdit::clear_undo_history);
+	ClassDB::bind_method(_MD("undo"),&TextEdit::undo);
+	ClassDB::bind_method(_MD("redo"),&TextEdit::redo);
+	ClassDB::bind_method(_MD("clear_undo_history"),&TextEdit::clear_undo_history);
 
-	ObjectTypeDB::bind_method(_MD("set_show_line_numbers", "enable"), &TextEdit::set_show_line_numbers);
-	ObjectTypeDB::bind_method(_MD("is_show_line_numbers_enabled"), &TextEdit::is_show_line_numbers_enabled);
+	ClassDB::bind_method(_MD("set_show_line_numbers", "enable"), &TextEdit::set_show_line_numbers);
+	ClassDB::bind_method(_MD("is_show_line_numbers_enabled"), &TextEdit::is_show_line_numbers_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_highlight_all_occurrences", "enable"), &TextEdit::set_highlight_all_occurrences);
-	ObjectTypeDB::bind_method(_MD("is_highlight_all_occurrences_enabled"), &TextEdit::is_highlight_all_occurrences_enabled);
+	ClassDB::bind_method(_MD("set_highlight_all_occurrences", "enable"), &TextEdit::set_highlight_all_occurrences);
+	ClassDB::bind_method(_MD("is_highlight_all_occurrences_enabled"), &TextEdit::is_highlight_all_occurrences_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_syntax_coloring","enable"),&TextEdit::set_syntax_coloring);
-	ObjectTypeDB::bind_method(_MD("is_syntax_coloring_enabled"),&TextEdit::is_syntax_coloring_enabled);
+	ClassDB::bind_method(_MD("set_syntax_coloring","enable"),&TextEdit::set_syntax_coloring);
+	ClassDB::bind_method(_MD("is_syntax_coloring_enabled"),&TextEdit::is_syntax_coloring_enabled);
 
 
-	ObjectTypeDB::bind_method(_MD("add_keyword_color","keyword","color"),&TextEdit::add_keyword_color);
-	ObjectTypeDB::bind_method(_MD("add_color_region","begin_key","end_key","color","line_only"),&TextEdit::add_color_region,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("clear_colors"),&TextEdit::clear_colors);
-	ObjectTypeDB::bind_method(_MD("menu_option"),&TextEdit::menu_option);
-	ObjectTypeDB::bind_method(_MD("get_menu:PopupMenu"),&TextEdit::get_menu);
+	ClassDB::bind_method(_MD("add_keyword_color","keyword","color"),&TextEdit::add_keyword_color);
+	ClassDB::bind_method(_MD("add_color_region","begin_key","end_key","color","line_only"),&TextEdit::add_color_region,DEFVAL(false));
+	ClassDB::bind_method(_MD("clear_colors"),&TextEdit::clear_colors);
+	ClassDB::bind_method(_MD("menu_option"),&TextEdit::menu_option);
+	ClassDB::bind_method(_MD("get_menu:PopupMenu"),&TextEdit::get_menu);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "syntax_highlighting"), _SCS("set_syntax_coloring"), _SCS("is_syntax_coloring_enabled"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), _SCS("set_show_line_numbers"), _SCS("is_show_line_numbers_enabled"));

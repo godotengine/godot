@@ -35,7 +35,7 @@
 
 class EditorSceneImporterCollada : public EditorSceneImporter {
 
-	OBJ_TYPE(EditorSceneImporterCollada,EditorSceneImporter );
+	GDCLASS(EditorSceneImporterCollada,EditorSceneImporter );
 public:
 
 	virtual uint32_t get_import_flags() const;

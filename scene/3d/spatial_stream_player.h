@@ -35,7 +35,7 @@
 
 class SpatialStreamPlayer : public SpatialPlayer {
 
-	OBJ_TYPE(SpatialStreamPlayer,SpatialPlayer);
+	GDCLASS(SpatialStreamPlayer,SpatialPlayer);
 
 	_THREAD_SAFE_CLASS_
 

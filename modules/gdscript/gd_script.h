@@ -35,7 +35,7 @@
 #include "gd_function.h"
 class GDNativeClass : public Reference {
 
-	OBJ_TYPE(GDNativeClass,Reference);
+	GDCLASS(GDNativeClass,Reference);
 
 	StringName name;
 protected:
@@ -55,7 +55,7 @@ public:
 class GDScript : public Script {
 
 
-	OBJ_TYPE(GDScript,Script);
+	GDCLASS(GDScript,Script);
 	bool tool;
 	bool valid;
 

@@ -35,7 +35,7 @@ class VehicleBody;
 
 class VehicleWheel : public Spatial {
 
-	OBJ_TYPE(VehicleWheel,Spatial);
+	GDCLASS(VehicleWheel,Spatial);
 
 friend class VehicleBody;
 
@@ -136,7 +136,7 @@ public:
 
 class VehicleBody : public PhysicsBody {
 
-	OBJ_TYPE(VehicleBody,PhysicsBody);
+	GDCLASS(VehicleBody,PhysicsBody);
 
 	real_t mass;
 	real_t friction;

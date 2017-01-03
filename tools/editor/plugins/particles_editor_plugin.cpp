@@ -332,12 +332,12 @@ void ParticlesEditor::_generate_emission_points() {
 
 void ParticlesEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_option",&ParticlesEditor::_menu_option);
-	ObjectTypeDB::bind_method("_resource_seleted",&ParticlesEditor::_resource_seleted);
-	ObjectTypeDB::bind_method("_node_selected",&ParticlesEditor::_node_selected);
-	ObjectTypeDB::bind_method("_generate_emission_points",&ParticlesEditor::_generate_emission_points);
+	ClassDB::bind_method("_menu_option",&ParticlesEditor::_menu_option);
+	ClassDB::bind_method("_resource_seleted",&ParticlesEditor::_resource_seleted);
+	ClassDB::bind_method("_node_selected",&ParticlesEditor::_node_selected);
+	ClassDB::bind_method("_generate_emission_points",&ParticlesEditor::_generate_emission_points);
 
-	//ObjectTypeDB::bind_method("_populate",&ParticlesEditor::_populate);
+	//ClassDB::bind_method("_populate",&ParticlesEditor::_populate);
 
 }
 

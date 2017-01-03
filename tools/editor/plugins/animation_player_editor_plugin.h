@@ -44,7 +44,7 @@
 class AnimationKeyEditor;
 class AnimationPlayerEditor : public VBoxContainer {
 
-	OBJ_TYPE(AnimationPlayerEditor, VBoxContainer );
+	GDCLASS(AnimationPlayerEditor, VBoxContainer );
 
 	EditorNode *editor;
 	AnimationPlayer *player;
@@ -193,7 +193,7 @@ public:
 
 class AnimationPlayerEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( AnimationPlayerEditorPlugin, EditorPlugin );
+	GDCLASS( AnimationPlayerEditorPlugin, EditorPlugin );
 
 	AnimationPlayerEditor *anim_editor;
 	EditorNode *editor;

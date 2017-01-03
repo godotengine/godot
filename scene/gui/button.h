@@ -35,7 +35,7 @@
 */
 class Button : public BaseButton {
 
-	OBJ_TYPE( Button, BaseButton );
+	GDCLASS( Button, BaseButton );
 public:
 
 

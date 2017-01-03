@@ -32,7 +32,7 @@ class FileAccess;
 
 class PCKPacker : public Reference {
 
-	OBJ_TYPE(PCKPacker, Reference);
+	GDCLASS(PCKPacker, Reference);
 
 	FileAccess* file;
 	int alignment;

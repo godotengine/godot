@@ -792,7 +792,7 @@ void SpatialEditorViewport::_list_select(InputEventMouseButton b) {
 			if (spat->has_meta("_editor_icon"))
 				icon=spat->get_meta("_editor_icon");
 			else
-				icon=get_icon( has_icon(spat->get_type(),"EditorIcons")?spat->get_type():String("Object"),"EditorIcons");
+				icon=get_icon( has_icon(spat->get_class(),"EditorIcons")?spat->get_class():String("Object"),"EditorIcons");
 
 			String node_path="/"+root_name+"/"+root_path.rel_path_to(spat->get_path());
 
@@ -800,7 +800,7 @@ void SpatialEditorViewport::_list_select(InputEventMouseButton b) {
 			selection_menu->set_item_icon(i, icon );
 			selection_menu->set_item_metadata(i, node_path);
 			selection_menu->set_item_tooltip(i,String(spat->get_name())+
-					"\nType: "+spat->get_type()+"\nPath: "+node_path);
+					"\nType: "+spat->get_class()+"\nPath: "+node_path);
 		}
 
 		selection_menu->set_global_pos(Vector2( b.global_x, b.global_y ));
@@ -2296,15 +2296,15 @@ Dictionary SpatialEditorViewport::get_state() const {
 
 void SpatialEditorViewport::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("_draw"),&SpatialEditorViewport::_draw);
-	ObjectTypeDB::bind_method(_MD("_smouseenter"),&SpatialEditorViewport::_smouseenter);
-	ObjectTypeDB::bind_method(_MD("_sinput"),&SpatialEditorViewport::_sinput);
-	ObjectTypeDB::bind_method(_MD("_menu_option"),&SpatialEditorViewport::_menu_option);
-	ObjectTypeDB::bind_method(_MD("_toggle_camera_preview"),&SpatialEditorViewport::_toggle_camera_preview);
-	ObjectTypeDB::bind_method(_MD("_preview_exited_scene"),&SpatialEditorViewport::_preview_exited_scene);
-	ObjectTypeDB::bind_method(_MD("update_transform_gizmo_view"),&SpatialEditorViewport::update_transform_gizmo_view);
-	ObjectTypeDB::bind_method(_MD("_selection_result_pressed"),&SpatialEditorViewport::_selection_result_pressed);
-	ObjectTypeDB::bind_method(_MD("_selection_menu_hide"),&SpatialEditorViewport::_selection_menu_hide);
+	ClassDB::bind_method(_MD("_draw"),&SpatialEditorViewport::_draw);
+	ClassDB::bind_method(_MD("_smouseenter"),&SpatialEditorViewport::_smouseenter);
+	ClassDB::bind_method(_MD("_sinput"),&SpatialEditorViewport::_sinput);
+	ClassDB::bind_method(_MD("_menu_option"),&SpatialEditorViewport::_menu_option);
+	ClassDB::bind_method(_MD("_toggle_camera_preview"),&SpatialEditorViewport::_toggle_camera_preview);
+	ClassDB::bind_method(_MD("_preview_exited_scene"),&SpatialEditorViewport::_preview_exited_scene);
+	ClassDB::bind_method(_MD("update_transform_gizmo_view"),&SpatialEditorViewport::update_transform_gizmo_view);
+	ClassDB::bind_method(_MD("_selection_result_pressed"),&SpatialEditorViewport::_selection_result_pressed);
+	ClassDB::bind_method(_MD("_selection_menu_hide"),&SpatialEditorViewport::_selection_menu_hide);
 
 	ADD_SIGNAL( MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")) );
 }
@@ -3702,17 +3702,17 @@ void SpatialEditor::_node_removed(Node* p_node) {
 
 void SpatialEditor::_bind_methods() {
 
-//	ObjectTypeDB::bind_method("_input_event",&SpatialEditor::_input_event);
-	ObjectTypeDB::bind_method("_unhandled_key_input",&SpatialEditor::_unhandled_key_input);
-	ObjectTypeDB::bind_method("_node_removed",&SpatialEditor::_node_removed);
-	ObjectTypeDB::bind_method("_menu_item_pressed",&SpatialEditor::_menu_item_pressed);
-	ObjectTypeDB::bind_method("_xform_dialog_action",&SpatialEditor::_xform_dialog_action);
-	ObjectTypeDB::bind_method("_instance_scene",&SpatialEditor::_instance_scene);
-	ObjectTypeDB::bind_method("_get_editor_data",&SpatialEditor::_get_editor_data);
-	ObjectTypeDB::bind_method("_request_gizmo",&SpatialEditor::_request_gizmo);
-	ObjectTypeDB::bind_method("_default_light_angle_input",&SpatialEditor::_default_light_angle_input);
-	ObjectTypeDB::bind_method("_update_ambient_light_color",&SpatialEditor::_update_ambient_light_color);
-	ObjectTypeDB::bind_method("_toggle_maximize_view",&SpatialEditor::_toggle_maximize_view);
+//	ClassDB::bind_method("_input_event",&SpatialEditor::_input_event);
+	ClassDB::bind_method("_unhandled_key_input",&SpatialEditor::_unhandled_key_input);
+	ClassDB::bind_method("_node_removed",&SpatialEditor::_node_removed);
+	ClassDB::bind_method("_menu_item_pressed",&SpatialEditor::_menu_item_pressed);
+	ClassDB::bind_method("_xform_dialog_action",&SpatialEditor::_xform_dialog_action);
+	ClassDB::bind_method("_instance_scene",&SpatialEditor::_instance_scene);
+	ClassDB::bind_method("_get_editor_data",&SpatialEditor::_get_editor_data);
+	ClassDB::bind_method("_request_gizmo",&SpatialEditor::_request_gizmo);
+	ClassDB::bind_method("_default_light_angle_input",&SpatialEditor::_default_light_angle_input);
+	ClassDB::bind_method("_update_ambient_light_color",&SpatialEditor::_update_ambient_light_color);
+	ClassDB::bind_method("_toggle_maximize_view",&SpatialEditor::_toggle_maximize_view);
 
 	ADD_SIGNAL( MethodInfo("transform_key_request") );
 
@@ -4168,7 +4168,7 @@ void SpatialEditorPlugin::edit(Object *p_object) {
 
 bool SpatialEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Spatial");
+	return p_object->is_class("Spatial");
 }
 
 Dictionary SpatialEditorPlugin::get_state() const {
@@ -4187,7 +4187,7 @@ void SpatialEditor::snap_cursor_to_plane(const Plane& p_plane) {
 
 void SpatialEditorPlugin::_bind_methods() {
 
-	ObjectTypeDB::bind_method("snap_cursor_to_plane",&SpatialEditorPlugin::snap_cursor_to_plane);
+	ClassDB::bind_method("snap_cursor_to_plane",&SpatialEditorPlugin::snap_cursor_to_plane);
 
 }
 

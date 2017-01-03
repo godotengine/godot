@@ -33,7 +33,7 @@
 
 class Polygon2D : public Node2D {
 
-	OBJ_TYPE(Polygon2D,Node2D);
+	GDCLASS(Polygon2D,Node2D);
 
 	DVector<Vector2> polygon;
 	DVector<Vector2> uv;

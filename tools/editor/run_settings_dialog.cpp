@@ -47,8 +47,8 @@ String RunSettingsDialog::get_custom_arguments() const {
 
 void RunSettingsDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_run_mode_changed",&RunSettingsDialog::_run_mode_changed);
-	//ObjectTypeDB::bind_method("_browse_selected_file",&RunSettingsDialog::_browse_selected_file);
+	ClassDB::bind_method("_run_mode_changed",&RunSettingsDialog::_run_mode_changed);
+	//ClassDB::bind_method("_browse_selected_file",&RunSettingsDialog::_browse_selected_file);
 }
 
 void RunSettingsDialog::_run_mode_changed(int idx) {

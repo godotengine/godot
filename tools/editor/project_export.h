@@ -49,7 +49,7 @@
 class EditorNode;
 
 class ProjectExportDialog : public ConfirmationDialog {
-	OBJ_TYPE( ProjectExportDialog, ConfirmationDialog );
+	GDCLASS( ProjectExportDialog, ConfirmationDialog );
 
 public:
 	enum ExportAction {
@@ -223,7 +223,7 @@ public:
 class EditorData;
 
 class ProjectExport : public ConfirmationDialog {
-	OBJ_TYPE( ProjectExport, ConfirmationDialog );
+	GDCLASS( ProjectExport, ConfirmationDialog );
 
 	EditorData *editor_data;
 

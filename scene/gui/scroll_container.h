@@ -35,7 +35,7 @@
 
 class ScrollContainer : public Container {
 
-	OBJ_TYPE(ScrollContainer, Container);
+	GDCLASS(ScrollContainer, Container);
 
 	HScrollBar* h_scroll;
 	VScrollBar* v_scroll;

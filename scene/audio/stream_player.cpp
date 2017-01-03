@@ -345,46 +345,46 @@ int StreamPlayer::get_buffering_msec() const{
 
 void StreamPlayer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_stream","stream:AudioStream"),&StreamPlayer::set_stream);
-	ObjectTypeDB::bind_method(_MD("get_stream:AudioStream"),&StreamPlayer::get_stream);
+	ClassDB::bind_method(_MD("set_stream","stream:AudioStream"),&StreamPlayer::set_stream);
+	ClassDB::bind_method(_MD("get_stream:AudioStream"),&StreamPlayer::get_stream);
 
-	ObjectTypeDB::bind_method(_MD("play","offset"),&StreamPlayer::play,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("stop"),&StreamPlayer::stop);
+	ClassDB::bind_method(_MD("play","offset"),&StreamPlayer::play,DEFVAL(0));
+	ClassDB::bind_method(_MD("stop"),&StreamPlayer::stop);
 
-	ObjectTypeDB::bind_method(_MD("is_playing"),&StreamPlayer::is_playing);
+	ClassDB::bind_method(_MD("is_playing"),&StreamPlayer::is_playing);
 
-	ObjectTypeDB::bind_method(_MD("set_paused","paused"),&StreamPlayer::set_paused);
-	ObjectTypeDB::bind_method(_MD("is_paused"),&StreamPlayer::is_paused);
+	ClassDB::bind_method(_MD("set_paused","paused"),&StreamPlayer::set_paused);
+	ClassDB::bind_method(_MD("is_paused"),&StreamPlayer::is_paused);
 
-	ObjectTypeDB::bind_method(_MD("set_loop","enabled"),&StreamPlayer::set_loop);
-	ObjectTypeDB::bind_method(_MD("has_loop"),&StreamPlayer::has_loop);
+	ClassDB::bind_method(_MD("set_loop","enabled"),&StreamPlayer::set_loop);
+	ClassDB::bind_method(_MD("has_loop"),&StreamPlayer::has_loop);
 
-	ObjectTypeDB::bind_method(_MD("set_volume","volume"),&StreamPlayer::set_volume);
-	ObjectTypeDB::bind_method(_MD("get_volume"),&StreamPlayer::get_volume);
+	ClassDB::bind_method(_MD("set_volume","volume"),&StreamPlayer::set_volume);
+	ClassDB::bind_method(_MD("get_volume"),&StreamPlayer::get_volume);
 
-	ObjectTypeDB::bind_method(_MD("set_volume_db","db"),&StreamPlayer::set_volume_db);
-	ObjectTypeDB::bind_method(_MD("get_volume_db"),&StreamPlayer::get_volume_db);
+	ClassDB::bind_method(_MD("set_volume_db","db"),&StreamPlayer::set_volume_db);
+	ClassDB::bind_method(_MD("get_volume_db"),&StreamPlayer::get_volume_db);
 
-	ObjectTypeDB::bind_method(_MD("set_buffering_msec","msec"),&StreamPlayer::set_buffering_msec);
-	ObjectTypeDB::bind_method(_MD("get_buffering_msec"),&StreamPlayer::get_buffering_msec);
+	ClassDB::bind_method(_MD("set_buffering_msec","msec"),&StreamPlayer::set_buffering_msec);
+	ClassDB::bind_method(_MD("get_buffering_msec"),&StreamPlayer::get_buffering_msec);
 
-	ObjectTypeDB::bind_method(_MD("set_loop_restart_time","secs"),&StreamPlayer::set_loop_restart_time);
-	ObjectTypeDB::bind_method(_MD("get_loop_restart_time"),&StreamPlayer::get_loop_restart_time);
+	ClassDB::bind_method(_MD("set_loop_restart_time","secs"),&StreamPlayer::set_loop_restart_time);
+	ClassDB::bind_method(_MD("get_loop_restart_time"),&StreamPlayer::get_loop_restart_time);
 
-	ObjectTypeDB::bind_method(_MD("get_stream_name"),&StreamPlayer::get_stream_name);
-	ObjectTypeDB::bind_method(_MD("get_loop_count"),&StreamPlayer::get_loop_count);
+	ClassDB::bind_method(_MD("get_stream_name"),&StreamPlayer::get_stream_name);
+	ClassDB::bind_method(_MD("get_loop_count"),&StreamPlayer::get_loop_count);
 
-	ObjectTypeDB::bind_method(_MD("get_pos"),&StreamPlayer::get_pos);
-	ObjectTypeDB::bind_method(_MD("seek_pos","time"),&StreamPlayer::seek_pos);
+	ClassDB::bind_method(_MD("get_pos"),&StreamPlayer::get_pos);
+	ClassDB::bind_method(_MD("seek_pos","time"),&StreamPlayer::seek_pos);
 
-	ObjectTypeDB::bind_method(_MD("set_autoplay","enabled"),&StreamPlayer::set_autoplay);
-	ObjectTypeDB::bind_method(_MD("has_autoplay"),&StreamPlayer::has_autoplay);
+	ClassDB::bind_method(_MD("set_autoplay","enabled"),&StreamPlayer::set_autoplay);
+	ClassDB::bind_method(_MD("has_autoplay"),&StreamPlayer::has_autoplay);
 
-	ObjectTypeDB::bind_method(_MD("get_length"),&StreamPlayer::get_length);
+	ClassDB::bind_method(_MD("get_length"),&StreamPlayer::get_length);
 
-	ObjectTypeDB::bind_method(_MD("_set_play","play"),&StreamPlayer::_set_play);
-	ObjectTypeDB::bind_method(_MD("_get_play"),&StreamPlayer::_get_play);
-	ObjectTypeDB::bind_method(_MD("_do_stop"),&StreamPlayer::_do_stop);
+	ClassDB::bind_method(_MD("_set_play","play"),&StreamPlayer::_set_play);
+	ClassDB::bind_method(_MD("_get_play"),&StreamPlayer::_get_play);
+	ClassDB::bind_method(_MD("_do_stop"),&StreamPlayer::_do_stop);
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "stream/stream", PROPERTY_HINT_RESOURCE_TYPE,"AudioStream"), _SCS("set_stream"), _SCS("get_stream") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/play"), _SCS("_set_play"), _SCS("_get_play") );

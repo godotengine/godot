@@ -147,20 +147,20 @@ uint32_t PhysicsBody::_get_layers() const{
 }
 
 void PhysicsBody::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody::set_layer_mask);
-	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody::get_layer_mask);
+	ClassDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody::set_layer_mask);
+	ClassDB::bind_method(_MD("get_layer_mask"),&PhysicsBody::get_layer_mask);
 
-	ObjectTypeDB::bind_method(_MD("set_collision_mask","mask"),&PhysicsBody::set_collision_mask);
-	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&PhysicsBody::get_collision_mask);
+	ClassDB::bind_method(_MD("set_collision_mask","mask"),&PhysicsBody::set_collision_mask);
+	ClassDB::bind_method(_MD("get_collision_mask"),&PhysicsBody::get_collision_mask);
 
-	ObjectTypeDB::bind_method(_MD("set_collision_mask_bit","bit","value"),&PhysicsBody::set_collision_mask_bit);
-	ObjectTypeDB::bind_method(_MD("get_collision_mask_bit","bit"),&PhysicsBody::get_collision_mask_bit);
+	ClassDB::bind_method(_MD("set_collision_mask_bit","bit","value"),&PhysicsBody::set_collision_mask_bit);
+	ClassDB::bind_method(_MD("get_collision_mask_bit","bit"),&PhysicsBody::get_collision_mask_bit);
 
-	ObjectTypeDB::bind_method(_MD("set_layer_mask_bit","bit","value"),&PhysicsBody::set_layer_mask_bit);
-	ObjectTypeDB::bind_method(_MD("get_layer_mask_bit","bit"),&PhysicsBody::get_layer_mask_bit);
+	ClassDB::bind_method(_MD("set_layer_mask_bit","bit","value"),&PhysicsBody::set_layer_mask_bit);
+	ClassDB::bind_method(_MD("get_layer_mask_bit","bit"),&PhysicsBody::get_layer_mask_bit);
 
-	ObjectTypeDB::bind_method(_MD("_set_layers","mask"),&PhysicsBody::_set_layers);
-	ObjectTypeDB::bind_method(_MD("_get_layers"),&PhysicsBody::_get_layers);
+	ClassDB::bind_method(_MD("_set_layers","mask"),&PhysicsBody::_set_layers);
+	ClassDB::bind_method(_MD("_get_layers"),&PhysicsBody::_get_layers);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS,"",0),_SCS("_set_layers"),_SCS("_get_layers")); //for backwards compat
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
@@ -230,19 +230,19 @@ Vector3 StaticBody::get_constant_angular_velocity() const {
 
 void StaticBody::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_constant_linear_velocity","vel"),&StaticBody::set_constant_linear_velocity);
-	ObjectTypeDB::bind_method(_MD("set_constant_angular_velocity","vel"),&StaticBody::set_constant_angular_velocity);
-	ObjectTypeDB::bind_method(_MD("get_constant_linear_velocity"),&StaticBody::get_constant_linear_velocity);
-	ObjectTypeDB::bind_method(_MD("get_constant_angular_velocity"),&StaticBody::get_constant_angular_velocity);
+	ClassDB::bind_method(_MD("set_constant_linear_velocity","vel"),&StaticBody::set_constant_linear_velocity);
+	ClassDB::bind_method(_MD("set_constant_angular_velocity","vel"),&StaticBody::set_constant_angular_velocity);
+	ClassDB::bind_method(_MD("get_constant_linear_velocity"),&StaticBody::get_constant_linear_velocity);
+	ClassDB::bind_method(_MD("get_constant_angular_velocity"),&StaticBody::get_constant_angular_velocity);
 
-	ObjectTypeDB::bind_method(_MD("set_friction","friction"),&StaticBody::set_friction);
-	ObjectTypeDB::bind_method(_MD("get_friction"),&StaticBody::get_friction);
+	ClassDB::bind_method(_MD("set_friction","friction"),&StaticBody::set_friction);
+	ClassDB::bind_method(_MD("get_friction"),&StaticBody::get_friction);
 
-	ObjectTypeDB::bind_method(_MD("set_bounce","bounce"),&StaticBody::set_bounce);
-	ObjectTypeDB::bind_method(_MD("get_bounce"),&StaticBody::get_bounce);
+	ClassDB::bind_method(_MD("set_bounce","bounce"),&StaticBody::set_bounce);
+	ClassDB::bind_method(_MD("get_bounce"),&StaticBody::get_bounce);
 
-	ObjectTypeDB::bind_method(_MD("add_collision_exception_with","body:PhysicsBody"),&PhysicsBody::add_collision_exception_with);
-	ObjectTypeDB::bind_method(_MD("remove_collision_exception_with","body:PhysicsBody"),&PhysicsBody::remove_collision_exception_with);
+	ClassDB::bind_method(_MD("add_collision_exception_with","body:PhysicsBody"),&PhysicsBody::add_collision_exception_with);
+	ClassDB::bind_method(_MD("remove_collision_exception_with","body:PhysicsBody"),&PhysicsBody::remove_collision_exception_with);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_friction"),_SCS("get_friction"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_bounce"),_SCS("get_bounce"));
@@ -800,66 +800,66 @@ Array RigidBody::get_colliding_bodies() const {
 
 void RigidBody::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_mode","mode"),&RigidBody::set_mode);
-	ObjectTypeDB::bind_method(_MD("get_mode"),&RigidBody::get_mode);
+	ClassDB::bind_method(_MD("set_mode","mode"),&RigidBody::set_mode);
+	ClassDB::bind_method(_MD("get_mode"),&RigidBody::get_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_mass","mass"),&RigidBody::set_mass);
-	ObjectTypeDB::bind_method(_MD("get_mass"),&RigidBody::get_mass);
+	ClassDB::bind_method(_MD("set_mass","mass"),&RigidBody::set_mass);
+	ClassDB::bind_method(_MD("get_mass"),&RigidBody::get_mass);
 
-	ObjectTypeDB::bind_method(_MD("set_weight","weight"),&RigidBody::set_weight);
-	ObjectTypeDB::bind_method(_MD("get_weight"),&RigidBody::get_weight);
+	ClassDB::bind_method(_MD("set_weight","weight"),&RigidBody::set_weight);
+	ClassDB::bind_method(_MD("get_weight"),&RigidBody::get_weight);
 
-	ObjectTypeDB::bind_method(_MD("set_friction","friction"),&RigidBody::set_friction);
-	ObjectTypeDB::bind_method(_MD("get_friction"),&RigidBody::get_friction);
+	ClassDB::bind_method(_MD("set_friction","friction"),&RigidBody::set_friction);
+	ClassDB::bind_method(_MD("get_friction"),&RigidBody::get_friction);
 
-	ObjectTypeDB::bind_method(_MD("set_bounce","bounce"),&RigidBody::set_bounce);
-	ObjectTypeDB::bind_method(_MD("get_bounce"),&RigidBody::get_bounce);
+	ClassDB::bind_method(_MD("set_bounce","bounce"),&RigidBody::set_bounce);
+	ClassDB::bind_method(_MD("get_bounce"),&RigidBody::get_bounce);
 
-	ObjectTypeDB::bind_method(_MD("set_linear_velocity","linear_velocity"),&RigidBody::set_linear_velocity);
-	ObjectTypeDB::bind_method(_MD("get_linear_velocity"),&RigidBody::get_linear_velocity);
+	ClassDB::bind_method(_MD("set_linear_velocity","linear_velocity"),&RigidBody::set_linear_velocity);
+	ClassDB::bind_method(_MD("get_linear_velocity"),&RigidBody::get_linear_velocity);
 
-	ObjectTypeDB::bind_method(_MD("set_angular_velocity","angular_velocity"),&RigidBody::set_angular_velocity);
-	ObjectTypeDB::bind_method(_MD("get_angular_velocity"),&RigidBody::get_angular_velocity);
+	ClassDB::bind_method(_MD("set_angular_velocity","angular_velocity"),&RigidBody::set_angular_velocity);
+	ClassDB::bind_method(_MD("get_angular_velocity"),&RigidBody::get_angular_velocity);
 
-	ObjectTypeDB::bind_method(_MD("set_gravity_scale","gravity_scale"),&RigidBody::set_gravity_scale);
-	ObjectTypeDB::bind_method(_MD("get_gravity_scale"),&RigidBody::get_gravity_scale);
+	ClassDB::bind_method(_MD("set_gravity_scale","gravity_scale"),&RigidBody::set_gravity_scale);
+	ClassDB::bind_method(_MD("get_gravity_scale"),&RigidBody::get_gravity_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_linear_damp","linear_damp"),&RigidBody::set_linear_damp);
-	ObjectTypeDB::bind_method(_MD("get_linear_damp"),&RigidBody::get_linear_damp);
+	ClassDB::bind_method(_MD("set_linear_damp","linear_damp"),&RigidBody::set_linear_damp);
+	ClassDB::bind_method(_MD("get_linear_damp"),&RigidBody::get_linear_damp);
 
-	ObjectTypeDB::bind_method(_MD("set_angular_damp","angular_damp"),&RigidBody::set_angular_damp);
-	ObjectTypeDB::bind_method(_MD("get_angular_damp"),&RigidBody::get_angular_damp);
+	ClassDB::bind_method(_MD("set_angular_damp","angular_damp"),&RigidBody::set_angular_damp);
+	ClassDB::bind_method(_MD("get_angular_damp"),&RigidBody::get_angular_damp);
 
 
-	ObjectTypeDB::bind_method(_MD("set_max_contacts_reported","amount"),&RigidBody::set_max_contacts_reported);
-	ObjectTypeDB::bind_method(_MD("get_max_contacts_reported"),&RigidBody::get_max_contacts_reported);
+	ClassDB::bind_method(_MD("set_max_contacts_reported","amount"),&RigidBody::set_max_contacts_reported);
+	ClassDB::bind_method(_MD("get_max_contacts_reported"),&RigidBody::get_max_contacts_reported);
 
-	ObjectTypeDB::bind_method(_MD("set_use_custom_integrator","enable"),&RigidBody::set_use_custom_integrator);
-	ObjectTypeDB::bind_method(_MD("is_using_custom_integrator"),&RigidBody::is_using_custom_integrator);
+	ClassDB::bind_method(_MD("set_use_custom_integrator","enable"),&RigidBody::set_use_custom_integrator);
+	ClassDB::bind_method(_MD("is_using_custom_integrator"),&RigidBody::is_using_custom_integrator);
 
-	ObjectTypeDB::bind_method(_MD("set_contact_monitor","enabled"),&RigidBody::set_contact_monitor);
-	ObjectTypeDB::bind_method(_MD("is_contact_monitor_enabled"),&RigidBody::is_contact_monitor_enabled);
+	ClassDB::bind_method(_MD("set_contact_monitor","enabled"),&RigidBody::set_contact_monitor);
+	ClassDB::bind_method(_MD("is_contact_monitor_enabled"),&RigidBody::is_contact_monitor_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_use_continuous_collision_detection","enable"),&RigidBody::set_use_continuous_collision_detection);
-	ObjectTypeDB::bind_method(_MD("is_using_continuous_collision_detection"),&RigidBody::is_using_continuous_collision_detection);
+	ClassDB::bind_method(_MD("set_use_continuous_collision_detection","enable"),&RigidBody::set_use_continuous_collision_detection);
+	ClassDB::bind_method(_MD("is_using_continuous_collision_detection"),&RigidBody::is_using_continuous_collision_detection);
 
-	ObjectTypeDB::bind_method(_MD("set_axis_velocity","axis_velocity"),&RigidBody::set_axis_velocity);
-	ObjectTypeDB::bind_method(_MD("apply_impulse","pos","impulse"),&RigidBody::apply_impulse);
+	ClassDB::bind_method(_MD("set_axis_velocity","axis_velocity"),&RigidBody::set_axis_velocity);
+	ClassDB::bind_method(_MD("apply_impulse","pos","impulse"),&RigidBody::apply_impulse);
 
-	ObjectTypeDB::bind_method(_MD("set_sleeping","sleeping"),&RigidBody::set_sleeping);
-	ObjectTypeDB::bind_method(_MD("is_sleeping"),&RigidBody::is_sleeping);
+	ClassDB::bind_method(_MD("set_sleeping","sleeping"),&RigidBody::set_sleeping);
+	ClassDB::bind_method(_MD("is_sleeping"),&RigidBody::is_sleeping);
 
-	ObjectTypeDB::bind_method(_MD("set_can_sleep","able_to_sleep"),&RigidBody::set_can_sleep);
-	ObjectTypeDB::bind_method(_MD("is_able_to_sleep"),&RigidBody::is_able_to_sleep);
+	ClassDB::bind_method(_MD("set_can_sleep","able_to_sleep"),&RigidBody::set_can_sleep);
+	ClassDB::bind_method(_MD("is_able_to_sleep"),&RigidBody::is_able_to_sleep);
 
-	ObjectTypeDB::bind_method(_MD("_direct_state_changed"),&RigidBody::_direct_state_changed);
-	ObjectTypeDB::bind_method(_MD("_body_enter_tree"),&RigidBody::_body_enter_tree);
-	ObjectTypeDB::bind_method(_MD("_body_exit_tree"),&RigidBody::_body_exit_tree);
+	ClassDB::bind_method(_MD("_direct_state_changed"),&RigidBody::_direct_state_changed);
+	ClassDB::bind_method(_MD("_body_enter_tree"),&RigidBody::_body_enter_tree);
+	ClassDB::bind_method(_MD("_body_exit_tree"),&RigidBody::_body_exit_tree);
 
-	ObjectTypeDB::bind_method(_MD("set_axis_lock","axis_lock"),&RigidBody::set_axis_lock);
-	ObjectTypeDB::bind_method(_MD("get_axis_lock"),&RigidBody::get_axis_lock);
+	ClassDB::bind_method(_MD("set_axis_lock","axis_lock"),&RigidBody::set_axis_lock);
+	ClassDB::bind_method(_MD("get_axis_lock"),&RigidBody::get_axis_lock);
 
-	ObjectTypeDB::bind_method(_MD("get_colliding_bodies"),&RigidBody::get_colliding_bodies);
+	ClassDB::bind_method(_MD("get_colliding_bodies"),&RigidBody::get_colliding_bodies);
 
 	BIND_VMETHOD(MethodInfo("_integrate_forces",PropertyInfo(Variant::OBJECT,"state:PhysicsDirectBodyState")));
 
@@ -1294,34 +1294,34 @@ float KinematicBody::get_collision_margin() const{
 void KinematicBody::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("move","rel_vec"),&KinematicBody::move);
-	ObjectTypeDB::bind_method(_MD("move_to","position"),&KinematicBody::move_to);
+	ClassDB::bind_method(_MD("move","rel_vec"),&KinematicBody::move);
+	ClassDB::bind_method(_MD("move_to","position"),&KinematicBody::move_to);
 
-	ObjectTypeDB::bind_method(_MD("can_teleport_to","position"),&KinematicBody::can_teleport_to);
+	ClassDB::bind_method(_MD("can_teleport_to","position"),&KinematicBody::can_teleport_to);
 
-	ObjectTypeDB::bind_method(_MD("is_colliding"),&KinematicBody::is_colliding);
+	ClassDB::bind_method(_MD("is_colliding"),&KinematicBody::is_colliding);
 
-	ObjectTypeDB::bind_method(_MD("get_collision_pos"),&KinematicBody::get_collision_pos);
-	ObjectTypeDB::bind_method(_MD("get_collision_normal"),&KinematicBody::get_collision_normal);
-	ObjectTypeDB::bind_method(_MD("get_collider_velocity"),&KinematicBody::get_collider_velocity);
-	ObjectTypeDB::bind_method(_MD("get_collider:Variant"),&KinematicBody::_get_collider);
-	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&KinematicBody::get_collider_shape);
+	ClassDB::bind_method(_MD("get_collision_pos"),&KinematicBody::get_collision_pos);
+	ClassDB::bind_method(_MD("get_collision_normal"),&KinematicBody::get_collision_normal);
+	ClassDB::bind_method(_MD("get_collider_velocity"),&KinematicBody::get_collider_velocity);
+	ClassDB::bind_method(_MD("get_collider:Variant"),&KinematicBody::_get_collider);
+	ClassDB::bind_method(_MD("get_collider_shape"),&KinematicBody::get_collider_shape);
 
 
-	ObjectTypeDB::bind_method(_MD("set_collide_with_static_bodies","enable"),&KinematicBody::set_collide_with_static_bodies);
-	ObjectTypeDB::bind_method(_MD("can_collide_with_static_bodies"),&KinematicBody::can_collide_with_static_bodies);
+	ClassDB::bind_method(_MD("set_collide_with_static_bodies","enable"),&KinematicBody::set_collide_with_static_bodies);
+	ClassDB::bind_method(_MD("can_collide_with_static_bodies"),&KinematicBody::can_collide_with_static_bodies);
 
-	ObjectTypeDB::bind_method(_MD("set_collide_with_kinematic_bodies","enable"),&KinematicBody::set_collide_with_kinematic_bodies);
-	ObjectTypeDB::bind_method(_MD("can_collide_with_kinematic_bodies"),&KinematicBody::can_collide_with_kinematic_bodies);
+	ClassDB::bind_method(_MD("set_collide_with_kinematic_bodies","enable"),&KinematicBody::set_collide_with_kinematic_bodies);
+	ClassDB::bind_method(_MD("can_collide_with_kinematic_bodies"),&KinematicBody::can_collide_with_kinematic_bodies);
 
-	ObjectTypeDB::bind_method(_MD("set_collide_with_rigid_bodies","enable"),&KinematicBody::set_collide_with_rigid_bodies);
-	ObjectTypeDB::bind_method(_MD("can_collide_with_rigid_bodies"),&KinematicBody::can_collide_with_rigid_bodies);
+	ClassDB::bind_method(_MD("set_collide_with_rigid_bodies","enable"),&KinematicBody::set_collide_with_rigid_bodies);
+	ClassDB::bind_method(_MD("can_collide_with_rigid_bodies"),&KinematicBody::can_collide_with_rigid_bodies);
 
-	ObjectTypeDB::bind_method(_MD("set_collide_with_character_bodies","enable"),&KinematicBody::set_collide_with_character_bodies);
-	ObjectTypeDB::bind_method(_MD("can_collide_with_character_bodies"),&KinematicBody::can_collide_with_character_bodies);
+	ClassDB::bind_method(_MD("set_collide_with_character_bodies","enable"),&KinematicBody::set_collide_with_character_bodies);
+	ClassDB::bind_method(_MD("can_collide_with_character_bodies"),&KinematicBody::can_collide_with_character_bodies);
 
-	ObjectTypeDB::bind_method(_MD("set_collision_margin","pixels"),&KinematicBody::set_collision_margin);
-	ObjectTypeDB::bind_method(_MD("get_collision_margin","pixels"),&KinematicBody::get_collision_margin);
+	ClassDB::bind_method(_MD("set_collision_margin","pixels"),&KinematicBody::set_collision_margin);
+	ClassDB::bind_method(_MD("get_collision_margin","pixels"),&KinematicBody::get_collision_margin);
 
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collide_with/static"),_SCS("set_collide_with_static_bodies"),_SCS("can_collide_with_static_bodies"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collide_with/kinematic"),_SCS("set_collide_with_kinematic_bodies"),_SCS("can_collide_with_kinematic_bodies"));

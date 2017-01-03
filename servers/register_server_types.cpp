@@ -75,16 +75,16 @@ void register_server_types() {
 	shader_types = memnew( ShaderTypes );
 
 
-	ObjectTypeDB::register_virtual_type<Physics2DDirectBodyState>();
-	ObjectTypeDB::register_virtual_type<Physics2DDirectSpaceState>();
-	ObjectTypeDB::register_virtual_type<Physics2DShapeQueryResult>();
-	ObjectTypeDB::register_type<Physics2DTestMotionResult>();
-	ObjectTypeDB::register_type<Physics2DShapeQueryParameters>();
+	ClassDB::register_virtual_class<Physics2DDirectBodyState>();
+	ClassDB::register_virtual_class<Physics2DDirectSpaceState>();
+	ClassDB::register_virtual_class<Physics2DShapeQueryResult>();
+	ClassDB::register_class<Physics2DTestMotionResult>();
+	ClassDB::register_class<Physics2DShapeQueryParameters>();
 
-	ObjectTypeDB::register_type<PhysicsShapeQueryParameters>();
-	ObjectTypeDB::register_virtual_type<PhysicsDirectBodyState>();
-	ObjectTypeDB::register_virtual_type<PhysicsDirectSpaceState>();
-	ObjectTypeDB::register_virtual_type<PhysicsShapeQueryResult>();
+	ClassDB::register_class<PhysicsShapeQueryParameters>();
+	ClassDB::register_virtual_class<PhysicsDirectBodyState>();
+	ClassDB::register_virtual_class<PhysicsDirectSpaceState>();
+	ClassDB::register_virtual_class<PhysicsShapeQueryResult>();
 
 	ScriptDebuggerRemote::resource_usage_func=_debugger_get_resource_usage;
 }

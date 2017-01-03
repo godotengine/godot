@@ -39,7 +39,7 @@
 
 class WorldEnvironment : public Spatial {
 
-	OBJ_TYPE(WorldEnvironment,Spatial );
+	GDCLASS(WorldEnvironment,Spatial );
 
 	Ref<Environment> environment;
 

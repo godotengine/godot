@@ -113,23 +113,23 @@ void ParticleAttractor2D::_set_owner(Particles2D* p_owner) {
 
 void ParticleAttractor2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_enabled","enabled"),&ParticleAttractor2D::set_enabled);
-	ObjectTypeDB::bind_method(_MD("is_enabled"),&ParticleAttractor2D::is_enabled);
+	ClassDB::bind_method(_MD("set_enabled","enabled"),&ParticleAttractor2D::set_enabled);
+	ClassDB::bind_method(_MD("is_enabled"),&ParticleAttractor2D::is_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_radius","radius"),&ParticleAttractor2D::set_radius);
-	ObjectTypeDB::bind_method(_MD("get_radius"),&ParticleAttractor2D::get_radius);
+	ClassDB::bind_method(_MD("set_radius","radius"),&ParticleAttractor2D::set_radius);
+	ClassDB::bind_method(_MD("get_radius"),&ParticleAttractor2D::get_radius);
 
-	ObjectTypeDB::bind_method(_MD("set_disable_radius","radius"),&ParticleAttractor2D::set_disable_radius);
-	ObjectTypeDB::bind_method(_MD("get_disable_radius"),&ParticleAttractor2D::get_disable_radius);
+	ClassDB::bind_method(_MD("set_disable_radius","radius"),&ParticleAttractor2D::set_disable_radius);
+	ClassDB::bind_method(_MD("get_disable_radius"),&ParticleAttractor2D::get_disable_radius);
 
-	ObjectTypeDB::bind_method(_MD("set_gravity","gravity"),&ParticleAttractor2D::set_gravity);
-	ObjectTypeDB::bind_method(_MD("get_gravity"),&ParticleAttractor2D::get_gravity);
+	ClassDB::bind_method(_MD("set_gravity","gravity"),&ParticleAttractor2D::set_gravity);
+	ClassDB::bind_method(_MD("get_gravity"),&ParticleAttractor2D::get_gravity);
 
-	ObjectTypeDB::bind_method(_MD("set_absorption","absorption"),&ParticleAttractor2D::set_absorption);
-	ObjectTypeDB::bind_method(_MD("get_absorption"),&ParticleAttractor2D::get_absorption);
+	ClassDB::bind_method(_MD("set_absorption","absorption"),&ParticleAttractor2D::set_absorption);
+	ClassDB::bind_method(_MD("get_absorption"),&ParticleAttractor2D::get_absorption);
 
-	ObjectTypeDB::bind_method(_MD("set_particles_path","path"),&ParticleAttractor2D::set_particles_path);
-	ObjectTypeDB::bind_method(_MD("get_particles_path"),&ParticleAttractor2D::get_particles_path);
+	ClassDB::bind_method(_MD("set_particles_path","path"),&ParticleAttractor2D::set_particles_path);
+	ClassDB::bind_method(_MD("get_particles_path"),&ParticleAttractor2D::get_particles_path);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"radius",PROPERTY_HINT_RANGE,"0.1,16000,0.1"),_SCS("set_radius"),_SCS("get_radius"));
@@ -1013,80 +1013,80 @@ void Particles2D::reset() {
 
 void Particles2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_emitting","active"),&Particles2D::set_emitting);
-	ObjectTypeDB::bind_method(_MD("is_emitting"),&Particles2D::is_emitting);
+	ClassDB::bind_method(_MD("set_emitting","active"),&Particles2D::set_emitting);
+	ClassDB::bind_method(_MD("is_emitting"),&Particles2D::is_emitting);
 
-	ObjectTypeDB::bind_method(_MD("set_amount","amount"),&Particles2D::set_amount);
-	ObjectTypeDB::bind_method(_MD("get_amount"),&Particles2D::get_amount);
+	ClassDB::bind_method(_MD("set_amount","amount"),&Particles2D::set_amount);
+	ClassDB::bind_method(_MD("get_amount"),&Particles2D::get_amount);
 
-	ObjectTypeDB::bind_method(_MD("set_lifetime","lifetime"),&Particles2D::set_lifetime);
-	ObjectTypeDB::bind_method(_MD("get_lifetime"),&Particles2D::get_lifetime);
+	ClassDB::bind_method(_MD("set_lifetime","lifetime"),&Particles2D::set_lifetime);
+	ClassDB::bind_method(_MD("get_lifetime"),&Particles2D::get_lifetime);
 
-	ObjectTypeDB::bind_method(_MD("set_time_scale","time_scale"),&Particles2D::set_time_scale);
-	ObjectTypeDB::bind_method(_MD("get_time_scale"),&Particles2D::get_time_scale);
+	ClassDB::bind_method(_MD("set_time_scale","time_scale"),&Particles2D::set_time_scale);
+	ClassDB::bind_method(_MD("get_time_scale"),&Particles2D::get_time_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_pre_process_time","time"),&Particles2D::set_pre_process_time);
-	ObjectTypeDB::bind_method(_MD("get_pre_process_time"),&Particles2D::get_pre_process_time);
+	ClassDB::bind_method(_MD("set_pre_process_time","time"),&Particles2D::set_pre_process_time);
+	ClassDB::bind_method(_MD("get_pre_process_time"),&Particles2D::get_pre_process_time);
 
-	ObjectTypeDB::bind_method(_MD("set_emit_timeout","value"),&Particles2D::set_emit_timeout);
-	ObjectTypeDB::bind_method(_MD("get_emit_timeout"),&Particles2D::get_emit_timeout);
+	ClassDB::bind_method(_MD("set_emit_timeout","value"),&Particles2D::set_emit_timeout);
+	ClassDB::bind_method(_MD("get_emit_timeout"),&Particles2D::get_emit_timeout);
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"),&Particles2D::set_param);
-	ObjectTypeDB::bind_method(_MD("get_param","param"),&Particles2D::get_param);
+	ClassDB::bind_method(_MD("set_param","param","value"),&Particles2D::set_param);
+	ClassDB::bind_method(_MD("get_param","param"),&Particles2D::get_param);
 
-	ObjectTypeDB::bind_method(_MD("set_randomness","param","value"),&Particles2D::set_randomness);
-	ObjectTypeDB::bind_method(_MD("get_randomness","param"),&Particles2D::get_randomness);
+	ClassDB::bind_method(_MD("set_randomness","param","value"),&Particles2D::set_randomness);
+	ClassDB::bind_method(_MD("get_randomness","param"),&Particles2D::get_randomness);
 
-	ObjectTypeDB::bind_method(_MD("set_texture:Texture","texture"),&Particles2D::set_texture);
-	ObjectTypeDB::bind_method(_MD("get_texture:Texture"),&Particles2D::get_texture);
+	ClassDB::bind_method(_MD("set_texture:Texture","texture"),&Particles2D::set_texture);
+	ClassDB::bind_method(_MD("get_texture:Texture"),&Particles2D::get_texture);
 
-	ObjectTypeDB::bind_method(_MD("set_color","color"),&Particles2D::set_color);
-	ObjectTypeDB::bind_method(_MD("get_color"),&Particles2D::get_color);
+	ClassDB::bind_method(_MD("set_color","color"),&Particles2D::set_color);
+	ClassDB::bind_method(_MD("get_color"),&Particles2D::get_color);
 
-	ObjectTypeDB::bind_method(_MD("set_color_ramp:ColorRamp","color_ramp"),&Particles2D::set_color_ramp);
-	ObjectTypeDB::bind_method(_MD("get_color_ramp:ColorRamp"),&Particles2D::get_color_ramp);
+	ClassDB::bind_method(_MD("set_color_ramp:ColorRamp","color_ramp"),&Particles2D::set_color_ramp);
+	ClassDB::bind_method(_MD("get_color_ramp:ColorRamp"),&Particles2D::get_color_ramp);
 
-	ObjectTypeDB::bind_method(_MD("set_emissor_offset","offset"),&Particles2D::set_emissor_offset);
-	ObjectTypeDB::bind_method(_MD("get_emissor_offset"),&Particles2D::get_emissor_offset);
+	ClassDB::bind_method(_MD("set_emissor_offset","offset"),&Particles2D::set_emissor_offset);
+	ClassDB::bind_method(_MD("get_emissor_offset"),&Particles2D::get_emissor_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_flip_h","enable"),&Particles2D::set_flip_h);
-	ObjectTypeDB::bind_method(_MD("is_flipped_h"),&Particles2D::is_flipped_h);
+	ClassDB::bind_method(_MD("set_flip_h","enable"),&Particles2D::set_flip_h);
+	ClassDB::bind_method(_MD("is_flipped_h"),&Particles2D::is_flipped_h);
 
-	ObjectTypeDB::bind_method(_MD("set_flip_v","enable"),&Particles2D::set_flip_v);
-	ObjectTypeDB::bind_method(_MD("is_flipped_v"),&Particles2D::is_flipped_v);
+	ClassDB::bind_method(_MD("set_flip_v","enable"),&Particles2D::set_flip_v);
+	ClassDB::bind_method(_MD("is_flipped_v"),&Particles2D::is_flipped_v);
 
-	ObjectTypeDB::bind_method(_MD("set_h_frames","enable"),&Particles2D::set_h_frames);
-	ObjectTypeDB::bind_method(_MD("get_h_frames"),&Particles2D::get_h_frames);
+	ClassDB::bind_method(_MD("set_h_frames","enable"),&Particles2D::set_h_frames);
+	ClassDB::bind_method(_MD("get_h_frames"),&Particles2D::get_h_frames);
 
-	ObjectTypeDB::bind_method(_MD("set_v_frames","enable"),&Particles2D::set_v_frames);
-	ObjectTypeDB::bind_method(_MD("get_v_frames"),&Particles2D::get_v_frames);
+	ClassDB::bind_method(_MD("set_v_frames","enable"),&Particles2D::set_v_frames);
+	ClassDB::bind_method(_MD("get_v_frames"),&Particles2D::get_v_frames);
 
-	ObjectTypeDB::bind_method(_MD("set_emission_half_extents","extents"),&Particles2D::set_emission_half_extents);
-	ObjectTypeDB::bind_method(_MD("get_emission_half_extents"),&Particles2D::get_emission_half_extents);
+	ClassDB::bind_method(_MD("set_emission_half_extents","extents"),&Particles2D::set_emission_half_extents);
+	ClassDB::bind_method(_MD("get_emission_half_extents"),&Particles2D::get_emission_half_extents);
 
-	ObjectTypeDB::bind_method(_MD("set_color_phases","phases"),&Particles2D::set_color_phases);
-	ObjectTypeDB::bind_method(_MD("get_color_phases"),&Particles2D::get_color_phases);
+	ClassDB::bind_method(_MD("set_color_phases","phases"),&Particles2D::set_color_phases);
+	ClassDB::bind_method(_MD("get_color_phases"),&Particles2D::get_color_phases);
 
-	ObjectTypeDB::bind_method(_MD("set_color_phase_color","phase","color"),&Particles2D::set_color_phase_color);
-	ObjectTypeDB::bind_method(_MD("get_color_phase_color","phase"),&Particles2D::get_color_phase_color);
+	ClassDB::bind_method(_MD("set_color_phase_color","phase","color"),&Particles2D::set_color_phase_color);
+	ClassDB::bind_method(_MD("get_color_phase_color","phase"),&Particles2D::get_color_phase_color);
 
-	ObjectTypeDB::bind_method(_MD("set_color_phase_pos","phase","pos"),&Particles2D::set_color_phase_pos);
-	ObjectTypeDB::bind_method(_MD("get_color_phase_pos","phase"),&Particles2D::get_color_phase_pos);
+	ClassDB::bind_method(_MD("set_color_phase_pos","phase","pos"),&Particles2D::set_color_phase_pos);
+	ClassDB::bind_method(_MD("get_color_phase_pos","phase"),&Particles2D::get_color_phase_pos);
 
-	ObjectTypeDB::bind_method(_MD("pre_process","time"),&Particles2D::pre_process);
-	ObjectTypeDB::bind_method(_MD("reset"),&Particles2D::reset);
+	ClassDB::bind_method(_MD("pre_process","time"),&Particles2D::pre_process);
+	ClassDB::bind_method(_MD("reset"),&Particles2D::reset);
 
-	ObjectTypeDB::bind_method(_MD("set_use_local_space","enable"),&Particles2D::set_use_local_space);
-	ObjectTypeDB::bind_method(_MD("is_using_local_space"),&Particles2D::is_using_local_space);
+	ClassDB::bind_method(_MD("set_use_local_space","enable"),&Particles2D::set_use_local_space);
+	ClassDB::bind_method(_MD("is_using_local_space"),&Particles2D::is_using_local_space);
 
-	ObjectTypeDB::bind_method(_MD("set_initial_velocity","velocity"),&Particles2D::set_initial_velocity);
-	ObjectTypeDB::bind_method(_MD("get_initial_velocity"),&Particles2D::get_initial_velocity);
+	ClassDB::bind_method(_MD("set_initial_velocity","velocity"),&Particles2D::set_initial_velocity);
+	ClassDB::bind_method(_MD("get_initial_velocity"),&Particles2D::get_initial_velocity);
 
-	ObjectTypeDB::bind_method(_MD("set_explosiveness","amount"),&Particles2D::set_explosiveness);
-	ObjectTypeDB::bind_method(_MD("get_explosiveness"),&Particles2D::get_explosiveness);
+	ClassDB::bind_method(_MD("set_explosiveness","amount"),&Particles2D::set_explosiveness);
+	ClassDB::bind_method(_MD("get_explosiveness"),&Particles2D::get_explosiveness);
 
-	ObjectTypeDB::bind_method(_MD("set_emission_points","points"),&Particles2D::set_emission_points);
-	ObjectTypeDB::bind_method(_MD("get_emission_points"),&Particles2D::get_emission_points);
+	ClassDB::bind_method(_MD("set_emission_points","points"),&Particles2D::set_emission_points);
+	ClassDB::bind_method(_MD("get_emission_points"),&Particles2D::get_emission_points);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"config/amount",PROPERTY_HINT_EXP_RANGE,"1,1024"),_SCS("set_amount"),_SCS("get_amount") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"config/lifetime",PROPERTY_HINT_EXP_RANGE,"0.1,3600,0.1"),_SCS("set_lifetime"),_SCS("get_lifetime") );

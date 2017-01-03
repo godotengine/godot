@@ -34,7 +34,7 @@
 
 class Navigation : public Spatial {
 
-	OBJ_TYPE( Navigation, Spatial);
+	GDCLASS( Navigation, Spatial);
 
 
 	union Point {

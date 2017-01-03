@@ -639,32 +639,32 @@ Error HTTPClient::_get_http_data(uint8_t* p_buffer, int p_bytes,int &r_received)
 
 void HTTPClient::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_ip_type","ip_type"),&HTTPClient::set_ip_type);
-	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl","verify_host"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true));
-	ObjectTypeDB::bind_method(_MD("set_connection","connection:StreamPeer"),&HTTPClient::set_connection);
-	ObjectTypeDB::bind_method(_MD("get_connection:StreamPeer"),&HTTPClient::get_connection);
-	ObjectTypeDB::bind_method(_MD("request_raw","method","url","headers","body"),&HTTPClient::request_raw);
-	ObjectTypeDB::bind_method(_MD("request","method","url","headers","body"),&HTTPClient::request,DEFVAL(String()));
-	ObjectTypeDB::bind_method(_MD("send_body_text","body"),&HTTPClient::send_body_text);
-	ObjectTypeDB::bind_method(_MD("send_body_data","body"),&HTTPClient::send_body_data);
-	ObjectTypeDB::bind_method(_MD("close"),&HTTPClient::close);
+	ClassDB::bind_method(_MD("set_ip_type","ip_type"),&HTTPClient::set_ip_type);
+	ClassDB::bind_method(_MD("connect:Error","host","port","use_ssl","verify_host"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true));
+	ClassDB::bind_method(_MD("set_connection","connection:StreamPeer"),&HTTPClient::set_connection);
+	ClassDB::bind_method(_MD("get_connection:StreamPeer"),&HTTPClient::get_connection);
+	ClassDB::bind_method(_MD("request_raw","method","url","headers","body"),&HTTPClient::request_raw);
+	ClassDB::bind_method(_MD("request","method","url","headers","body"),&HTTPClient::request,DEFVAL(String()));
+	ClassDB::bind_method(_MD("send_body_text","body"),&HTTPClient::send_body_text);
+	ClassDB::bind_method(_MD("send_body_data","body"),&HTTPClient::send_body_data);
+	ClassDB::bind_method(_MD("close"),&HTTPClient::close);
 
-	ObjectTypeDB::bind_method(_MD("has_response"),&HTTPClient::has_response);
-	ObjectTypeDB::bind_method(_MD("is_response_chunked"),&HTTPClient::is_response_chunked);
-	ObjectTypeDB::bind_method(_MD("get_response_code"),&HTTPClient::get_response_code);
-	ObjectTypeDB::bind_method(_MD("get_response_headers"),&HTTPClient::_get_response_headers);
-	ObjectTypeDB::bind_method(_MD("get_response_headers_as_dictionary"),&HTTPClient::_get_response_headers_as_dictionary);
-	ObjectTypeDB::bind_method(_MD("get_response_body_length"),&HTTPClient::get_response_body_length);
-	ObjectTypeDB::bind_method(_MD("read_response_body_chunk"),&HTTPClient::read_response_body_chunk);
-	ObjectTypeDB::bind_method(_MD("set_read_chunk_size","bytes"),&HTTPClient::set_read_chunk_size);
+	ClassDB::bind_method(_MD("has_response"),&HTTPClient::has_response);
+	ClassDB::bind_method(_MD("is_response_chunked"),&HTTPClient::is_response_chunked);
+	ClassDB::bind_method(_MD("get_response_code"),&HTTPClient::get_response_code);
+	ClassDB::bind_method(_MD("get_response_headers"),&HTTPClient::_get_response_headers);
+	ClassDB::bind_method(_MD("get_response_headers_as_dictionary"),&HTTPClient::_get_response_headers_as_dictionary);
+	ClassDB::bind_method(_MD("get_response_body_length"),&HTTPClient::get_response_body_length);
+	ClassDB::bind_method(_MD("read_response_body_chunk"),&HTTPClient::read_response_body_chunk);
+	ClassDB::bind_method(_MD("set_read_chunk_size","bytes"),&HTTPClient::set_read_chunk_size);
 
-	ObjectTypeDB::bind_method(_MD("set_blocking_mode","enabled"),&HTTPClient::set_blocking_mode);
-	ObjectTypeDB::bind_method(_MD("is_blocking_mode_enabled"),&HTTPClient::is_blocking_mode_enabled);
+	ClassDB::bind_method(_MD("set_blocking_mode","enabled"),&HTTPClient::set_blocking_mode);
+	ClassDB::bind_method(_MD("is_blocking_mode_enabled"),&HTTPClient::is_blocking_mode_enabled);
 
-	ObjectTypeDB::bind_method(_MD("get_status"),&HTTPClient::get_status);
-	ObjectTypeDB::bind_method(_MD("poll:Error"),&HTTPClient::poll);
+	ClassDB::bind_method(_MD("get_status"),&HTTPClient::get_status);
+	ClassDB::bind_method(_MD("poll:Error"),&HTTPClient::poll);
 
-    ObjectTypeDB::bind_method(_MD("query_string_from_dict:String","fields"),&HTTPClient::query_string_from_dict);
+    ClassDB::bind_method(_MD("query_string_from_dict:String","fields"),&HTTPClient::query_string_from_dict);
 
 
 	BIND_CONSTANT( METHOD_GET );

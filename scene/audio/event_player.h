@@ -34,7 +34,7 @@
 #include "scene/resources/event_stream.h"
 class EventPlayer : public Node {
 
-	OBJ_TYPE(EventPlayer,Node);
+	GDCLASS(EventPlayer,Node);
 
 
 	enum {

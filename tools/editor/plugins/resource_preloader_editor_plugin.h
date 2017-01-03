@@ -40,7 +40,7 @@
 
 class ResourcePreloaderEditor : public PanelContainer {
 
-	OBJ_TYPE(ResourcePreloaderEditor, PanelContainer );
+	GDCLASS(ResourcePreloaderEditor, PanelContainer );
 
 	Button *load;
 	Button *_delete;
@@ -86,7 +86,7 @@ public:
 
 class ResourcePreloaderEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ResourcePreloaderEditorPlugin, EditorPlugin );
+	GDCLASS( ResourcePreloaderEditorPlugin, EditorPlugin );
 
 	ResourcePreloaderEditor *preloader_editor;
 	EditorNode *editor;

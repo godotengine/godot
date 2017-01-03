@@ -34,7 +34,7 @@
 
 class ConfigFile : public Reference {
 
-	OBJ_TYPE(ConfigFile,Reference);
+	GDCLASS(ConfigFile,Reference);
 
 	Map< String, Map<String, Variant> > values;
 

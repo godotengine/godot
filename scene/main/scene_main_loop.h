@@ -53,7 +53,7 @@ class Mesh;
 
 
 class SceneTreeTimer : public Reference {
-	OBJ_TYPE(SceneTreeTimer,Reference);
+	GDCLASS(SceneTreeTimer,Reference);
 
 	float time_left;
 protected:
@@ -70,7 +70,7 @@ class SceneTree : public MainLoop {
 
 	_THREAD_SAFE_CLASS_
 
-	OBJ_TYPE( SceneTree, MainLoop );
+	GDCLASS( SceneTree, MainLoop );
 public:
 
 

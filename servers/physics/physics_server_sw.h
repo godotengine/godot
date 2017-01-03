@@ -39,7 +39,7 @@
 
 class PhysicsServerSW : public PhysicsServer {
 
-	OBJ_TYPE( PhysicsServerSW, PhysicsServer );
+	GDCLASS( PhysicsServerSW, PhysicsServer );
 
 friend class PhysicsDirectSpaceStateSW;
 	bool active;

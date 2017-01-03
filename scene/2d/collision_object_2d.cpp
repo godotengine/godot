@@ -221,20 +221,20 @@ void CollisionObject2D::_update_pickable() {
 
 void CollisionObject2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("add_shape","shape:Shape2D","transform"),&CollisionObject2D::add_shape,DEFVAL(Matrix32()));
-	ObjectTypeDB::bind_method(_MD("get_shape_count"),&CollisionObject2D::get_shape_count);
-	ObjectTypeDB::bind_method(_MD("set_shape","shape_idx","shape:Shape"),&CollisionObject2D::set_shape);
-	ObjectTypeDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject2D::set_shape_transform);
-	ObjectTypeDB::bind_method(_MD("set_shape_as_trigger","shape_idx","enable"),&CollisionObject2D::set_shape_as_trigger);
-	ObjectTypeDB::bind_method(_MD("get_shape:Shape2D","shape_idx"),&CollisionObject2D::get_shape);
-	ObjectTypeDB::bind_method(_MD("get_shape_transform","shape_idx"),&CollisionObject2D::get_shape_transform);
-	ObjectTypeDB::bind_method(_MD("is_shape_set_as_trigger","shape_idx"),&CollisionObject2D::is_shape_set_as_trigger);
-	ObjectTypeDB::bind_method(_MD("remove_shape","shape_idx"),&CollisionObject2D::remove_shape);
-	ObjectTypeDB::bind_method(_MD("clear_shapes"),&CollisionObject2D::clear_shapes);
-	ObjectTypeDB::bind_method(_MD("get_rid"),&CollisionObject2D::get_rid);
+	ClassDB::bind_method(_MD("add_shape","shape:Shape2D","transform"),&CollisionObject2D::add_shape,DEFVAL(Matrix32()));
+	ClassDB::bind_method(_MD("get_shape_count"),&CollisionObject2D::get_shape_count);
+	ClassDB::bind_method(_MD("set_shape","shape_idx","shape:Shape"),&CollisionObject2D::set_shape);
+	ClassDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject2D::set_shape_transform);
+	ClassDB::bind_method(_MD("set_shape_as_trigger","shape_idx","enable"),&CollisionObject2D::set_shape_as_trigger);
+	ClassDB::bind_method(_MD("get_shape:Shape2D","shape_idx"),&CollisionObject2D::get_shape);
+	ClassDB::bind_method(_MD("get_shape_transform","shape_idx"),&CollisionObject2D::get_shape_transform);
+	ClassDB::bind_method(_MD("is_shape_set_as_trigger","shape_idx"),&CollisionObject2D::is_shape_set_as_trigger);
+	ClassDB::bind_method(_MD("remove_shape","shape_idx"),&CollisionObject2D::remove_shape);
+	ClassDB::bind_method(_MD("clear_shapes"),&CollisionObject2D::clear_shapes);
+	ClassDB::bind_method(_MD("get_rid"),&CollisionObject2D::get_rid);
 
-	ObjectTypeDB::bind_method(_MD("set_pickable","enabled"),&CollisionObject2D::set_pickable);
-	ObjectTypeDB::bind_method(_MD("is_pickable"),&CollisionObject2D::is_pickable);
+	ClassDB::bind_method(_MD("set_pickable","enabled"),&CollisionObject2D::set_pickable);
+	ClassDB::bind_method(_MD("is_pickable"),&CollisionObject2D::is_pickable);
 
 	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::OBJECT,"viewport"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::INT,"shape_idx")));
 

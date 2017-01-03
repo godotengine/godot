@@ -44,7 +44,7 @@
 
 class ThemeEditor : public Control {
 
-	OBJ_TYPE( ThemeEditor, Control );
+	GDCLASS( ThemeEditor, Control );
 
 
 	ScrollContainer *scroll;
@@ -103,7 +103,7 @@ public:
 
 class ThemeEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ThemeEditorPlugin, EditorPlugin );
+	GDCLASS( ThemeEditorPlugin, EditorPlugin );
 
 	ThemeEditor *theme_editor;
 	EditorNode *editor;

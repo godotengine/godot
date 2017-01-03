@@ -171,8 +171,8 @@ void EditorPluginSettings::_plugin_activity_changed() {
 
 void EditorPluginSettings::_bind_methods() {
 
-	ObjectTypeDB::bind_method("update_plugins",&EditorPluginSettings::update_plugins);
-	ObjectTypeDB::bind_method("_plugin_activity_changed",&EditorPluginSettings::_plugin_activity_changed);
+	ClassDB::bind_method("update_plugins",&EditorPluginSettings::update_plugins);
+	ClassDB::bind_method("_plugin_activity_changed",&EditorPluginSettings::_plugin_activity_changed);
 }
 
 EditorPluginSettings::EditorPluginSettings() {

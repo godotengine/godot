@@ -57,7 +57,7 @@ class Camera;
 
 class EditorSpatialGizmo  : public SpatialEditorGizmo {
 
-	OBJ_TYPE(EditorSpatialGizmo,SpatialGizmo);
+	GDCLASS(EditorSpatialGizmo,SpatialGizmo);
 
 	struct Instance{
 
@@ -129,7 +129,7 @@ public:
 
 class LightSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(LightSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(LightSpatialGizmo,EditorSpatialGizmo);
 
 	Light* light;
 
@@ -148,7 +148,7 @@ public:
 
 class ListenerSpatialGizmo : public EditorSpatialGizmo {
 
-	OBJ_TYPE(ListenerSpatialGizmo, EditorSpatialGizmo);
+	GDCLASS(ListenerSpatialGizmo, EditorSpatialGizmo);
 
 	Listener* listener;
 
@@ -161,7 +161,7 @@ public:
 
 class CameraSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(CameraSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(CameraSpatialGizmo,EditorSpatialGizmo);
 
 	Camera* camera;
 
@@ -182,7 +182,7 @@ public:
 
 class MeshInstanceSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(MeshInstanceSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(MeshInstanceSpatialGizmo,EditorSpatialGizmo);
 
 	MeshInstance* mesh;
 
@@ -195,7 +195,7 @@ public:
 
 class Position3DSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(Position3DSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(Position3DSpatialGizmo,EditorSpatialGizmo);
 
 	Position3D* p3d;
 
@@ -208,7 +208,7 @@ public:
 
 class SkeletonSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(SkeletonSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(SkeletonSpatialGizmo,EditorSpatialGizmo);
 
 	Skeleton* skel;
 
@@ -224,7 +224,7 @@ public:
 
 class SpatialPlayerSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(SpatialPlayerSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(SpatialPlayerSpatialGizmo,EditorSpatialGizmo);
 
 	SpatialPlayer* splayer;
 
@@ -239,7 +239,7 @@ public:
 
 class TestCubeSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(TestCubeSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(TestCubeSpatialGizmo,EditorSpatialGizmo);
 
 	TestCube* tc;
 
@@ -252,7 +252,7 @@ public:
 
 class RoomSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(RoomSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(RoomSpatialGizmo,EditorSpatialGizmo);
 
 
 	struct _EdgeKey {
@@ -277,7 +277,7 @@ public:
 
 class PortalSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(PortalSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(PortalSpatialGizmo,EditorSpatialGizmo);
 
 	Portal* portal;
 
@@ -291,7 +291,7 @@ public:
 
 class VisibilityNotifierGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(VisibilityNotifierGizmo ,EditorSpatialGizmo);
+	GDCLASS(VisibilityNotifierGizmo ,EditorSpatialGizmo);
 
 
 	VisibilityNotifier* notifier;
@@ -311,7 +311,7 @@ public:
 
 class ReflectionProbeGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(ReflectionProbeGizmo ,EditorSpatialGizmo);
+	GDCLASS(ReflectionProbeGizmo ,EditorSpatialGizmo);
 
 
 	ReflectionProbe* probe;
@@ -330,7 +330,7 @@ public:
 
 class GIProbeGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(GIProbeGizmo ,EditorSpatialGizmo);
+	GDCLASS(GIProbeGizmo ,EditorSpatialGizmo);
 
 
 	GIProbe* probe;
@@ -350,7 +350,7 @@ public:
 
 class CollisionShapeSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(CollisionShapeSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(CollisionShapeSpatialGizmo,EditorSpatialGizmo);
 
 	CollisionShape* cs;
 
@@ -367,7 +367,7 @@ public:
 
 class CollisionPolygonSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(CollisionPolygonSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(CollisionPolygonSpatialGizmo,EditorSpatialGizmo);
 
 	CollisionPolygon* polygon;
 
@@ -382,7 +382,7 @@ public:
 
 class RayCastSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(RayCastSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(RayCastSpatialGizmo,EditorSpatialGizmo);
 
 	RayCast* raycast;
 
@@ -397,7 +397,7 @@ public:
 
 class VehicleWheelSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(VehicleWheelSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(VehicleWheelSpatialGizmo,EditorSpatialGizmo);
 
 	VehicleWheel* car_wheel;
 
@@ -411,7 +411,7 @@ public:
 
 class NavigationMeshSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(NavigationMeshSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(NavigationMeshSpatialGizmo,EditorSpatialGizmo);
 
 
 	struct _EdgeKey {
@@ -436,7 +436,7 @@ public:
 
 class PinJointSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(PinJointSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(PinJointSpatialGizmo,EditorSpatialGizmo);
 
 	PinJoint* p3d;
 
@@ -450,7 +450,7 @@ public:
 
 class HingeJointSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(HingeJointSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(HingeJointSpatialGizmo,EditorSpatialGizmo);
 
 	HingeJoint* p3d;
 
@@ -463,7 +463,7 @@ public:
 
 class SliderJointSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(SliderJointSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(SliderJointSpatialGizmo,EditorSpatialGizmo);
 
 	SliderJoint* p3d;
 
@@ -476,7 +476,7 @@ public:
 
 class ConeTwistJointSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(ConeTwistJointSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(ConeTwistJointSpatialGizmo,EditorSpatialGizmo);
 
 	ConeTwistJoint* p3d;
 
@@ -490,7 +490,7 @@ public:
 
 class Generic6DOFJointSpatialGizmo  : public EditorSpatialGizmo {
 
-	OBJ_TYPE(Generic6DOFJointSpatialGizmo,EditorSpatialGizmo);
+	GDCLASS(Generic6DOFJointSpatialGizmo,EditorSpatialGizmo);
 
 	Generic6DOFJoint* p3d;
 

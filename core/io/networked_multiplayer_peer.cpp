@@ -3,18 +3,18 @@
 
 void NetworkedMultiplayerPeer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_transfer_mode","mode"), &NetworkedMultiplayerPeer::set_transfer_mode );
-	ObjectTypeDB::bind_method(_MD("set_target_peer","id"), &NetworkedMultiplayerPeer::set_target_peer );
+	ClassDB::bind_method(_MD("set_transfer_mode","mode"), &NetworkedMultiplayerPeer::set_transfer_mode );
+	ClassDB::bind_method(_MD("set_target_peer","id"), &NetworkedMultiplayerPeer::set_target_peer );
 
-	ObjectTypeDB::bind_method(_MD("get_packet_peer"), &NetworkedMultiplayerPeer::get_packet_peer );
+	ClassDB::bind_method(_MD("get_packet_peer"), &NetworkedMultiplayerPeer::get_packet_peer );
 
-	ObjectTypeDB::bind_method(_MD("poll"), &NetworkedMultiplayerPeer::poll );
+	ClassDB::bind_method(_MD("poll"), &NetworkedMultiplayerPeer::poll );
 
-	ObjectTypeDB::bind_method(_MD("get_connection_status"), &NetworkedMultiplayerPeer::get_connection_status );
-	ObjectTypeDB::bind_method(_MD("get_unique_id"), &NetworkedMultiplayerPeer::get_unique_id );
+	ClassDB::bind_method(_MD("get_connection_status"), &NetworkedMultiplayerPeer::get_connection_status );
+	ClassDB::bind_method(_MD("get_unique_id"), &NetworkedMultiplayerPeer::get_unique_id );
 
-	ObjectTypeDB::bind_method(_MD("set_refuse_new_connections","enable"), &NetworkedMultiplayerPeer::set_refuse_new_connections );
-	ObjectTypeDB::bind_method(_MD("is_refusing_new_connections"), &NetworkedMultiplayerPeer::is_refusing_new_connections );
+	ClassDB::bind_method(_MD("set_refuse_new_connections","enable"), &NetworkedMultiplayerPeer::set_refuse_new_connections );
+	ClassDB::bind_method(_MD("is_refusing_new_connections"), &NetworkedMultiplayerPeer::is_refusing_new_connections );
 
 	BIND_CONSTANT( TRANSFER_MODE_UNRELIABLE );
 	BIND_CONSTANT( TRANSFER_MODE_UNRELIABLE_ORDERED );

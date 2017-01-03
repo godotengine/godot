@@ -776,19 +776,19 @@ void Polygon2DEditor::edit(Node *p_collision_polygon) {
 
 void Polygon2DEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_menu_option"),&Polygon2DEditor::_menu_option);
-	ObjectTypeDB::bind_method(_MD("_canvas_draw"),&Polygon2DEditor::_canvas_draw);
-	ObjectTypeDB::bind_method(_MD("_uv_mode"),&Polygon2DEditor::_uv_mode);
-	ObjectTypeDB::bind_method(_MD("_uv_draw"),&Polygon2DEditor::_uv_draw);
-	ObjectTypeDB::bind_method(_MD("_uv_input"),&Polygon2DEditor::_uv_input);
-	ObjectTypeDB::bind_method(_MD("_uv_scroll_changed"),&Polygon2DEditor::_uv_scroll_changed);
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&Polygon2DEditor::_node_removed);
-	ObjectTypeDB::bind_method(_MD("_set_use_snap"),&Polygon2DEditor::_set_use_snap);
-	ObjectTypeDB::bind_method(_MD("_set_show_grid"),&Polygon2DEditor::_set_show_grid);
-	ObjectTypeDB::bind_method(_MD("_set_snap_off_x"),&Polygon2DEditor::_set_snap_off_x);
-	ObjectTypeDB::bind_method(_MD("_set_snap_off_y"),&Polygon2DEditor::_set_snap_off_y);
-	ObjectTypeDB::bind_method(_MD("_set_snap_step_x"),&Polygon2DEditor::_set_snap_step_x);
-	ObjectTypeDB::bind_method(_MD("_set_snap_step_y"),&Polygon2DEditor::_set_snap_step_y);
+	ClassDB::bind_method(_MD("_menu_option"),&Polygon2DEditor::_menu_option);
+	ClassDB::bind_method(_MD("_canvas_draw"),&Polygon2DEditor::_canvas_draw);
+	ClassDB::bind_method(_MD("_uv_mode"),&Polygon2DEditor::_uv_mode);
+	ClassDB::bind_method(_MD("_uv_draw"),&Polygon2DEditor::_uv_draw);
+	ClassDB::bind_method(_MD("_uv_input"),&Polygon2DEditor::_uv_input);
+	ClassDB::bind_method(_MD("_uv_scroll_changed"),&Polygon2DEditor::_uv_scroll_changed);
+	ClassDB::bind_method(_MD("_node_removed"),&Polygon2DEditor::_node_removed);
+	ClassDB::bind_method(_MD("_set_use_snap"),&Polygon2DEditor::_set_use_snap);
+	ClassDB::bind_method(_MD("_set_show_grid"),&Polygon2DEditor::_set_show_grid);
+	ClassDB::bind_method(_MD("_set_snap_off_x"),&Polygon2DEditor::_set_snap_off_x);
+	ClassDB::bind_method(_MD("_set_snap_off_y"),&Polygon2DEditor::_set_snap_off_y);
+	ClassDB::bind_method(_MD("_set_snap_step_x"),&Polygon2DEditor::_set_snap_step_x);
+	ClassDB::bind_method(_MD("_set_snap_step_y"),&Polygon2DEditor::_set_snap_step_y);
 
 
 }
@@ -995,7 +995,7 @@ void Polygon2DEditorPlugin::edit(Object *p_object) {
 
 bool Polygon2DEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Polygon2D");
+	return p_object->is_class("Polygon2D");
 }
 
 void Polygon2DEditorPlugin::make_visible(bool p_visible) {

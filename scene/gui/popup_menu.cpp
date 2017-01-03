@@ -1092,61 +1092,61 @@ void PopupMenu::clear_autohide_areas(){
 
 void PopupMenu::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&PopupMenu::_input_event);
-	ObjectTypeDB::bind_method(_MD("add_icon_item","texture","label","id","accel"),&PopupMenu::add_icon_item,DEFVAL(-1),DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("add_item","label","id","accel"),&PopupMenu::add_item,DEFVAL(-1),DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("add_icon_check_item","texture","label","id","accel"),&PopupMenu::add_icon_check_item,DEFVAL(-1),DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("add_check_item","label","id","accel"),&PopupMenu::add_check_item,DEFVAL(-1),DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("add_submenu_item","label","submenu","id"),&PopupMenu::add_submenu_item,DEFVAL(-1));
+	ClassDB::bind_method(_MD("_input_event"),&PopupMenu::_input_event);
+	ClassDB::bind_method(_MD("add_icon_item","texture","label","id","accel"),&PopupMenu::add_icon_item,DEFVAL(-1),DEFVAL(0));
+	ClassDB::bind_method(_MD("add_item","label","id","accel"),&PopupMenu::add_item,DEFVAL(-1),DEFVAL(0));
+	ClassDB::bind_method(_MD("add_icon_check_item","texture","label","id","accel"),&PopupMenu::add_icon_check_item,DEFVAL(-1),DEFVAL(0));
+	ClassDB::bind_method(_MD("add_check_item","label","id","accel"),&PopupMenu::add_check_item,DEFVAL(-1),DEFVAL(0));
+	ClassDB::bind_method(_MD("add_submenu_item","label","submenu","id"),&PopupMenu::add_submenu_item,DEFVAL(-1));
 
-	ObjectTypeDB::bind_method(_MD("add_icon_shortcut","texture","shortcut:ShortCut","id"),&PopupMenu::add_icon_shortcut,DEFVAL(-1));
-	ObjectTypeDB::bind_method(_MD("add_shortcut","shortcut:ShortCut","id"),&PopupMenu::add_shortcut,DEFVAL(-1));
-	ObjectTypeDB::bind_method(_MD("add_icon_check_shortcut","texture","shortcut:ShortCut","id"),&PopupMenu::add_icon_check_shortcut,DEFVAL(-1));
-	ObjectTypeDB::bind_method(_MD("add_check_shortcut","shortcut:ShortCut","id"),&PopupMenu::add_check_shortcut,DEFVAL(-1));
+	ClassDB::bind_method(_MD("add_icon_shortcut","texture","shortcut:ShortCut","id"),&PopupMenu::add_icon_shortcut,DEFVAL(-1));
+	ClassDB::bind_method(_MD("add_shortcut","shortcut:ShortCut","id"),&PopupMenu::add_shortcut,DEFVAL(-1));
+	ClassDB::bind_method(_MD("add_icon_check_shortcut","texture","shortcut:ShortCut","id"),&PopupMenu::add_icon_check_shortcut,DEFVAL(-1));
+	ClassDB::bind_method(_MD("add_check_shortcut","shortcut:ShortCut","id"),&PopupMenu::add_check_shortcut,DEFVAL(-1));
 
-	ObjectTypeDB::bind_method(_MD("set_item_text","idx","text"),&PopupMenu::set_item_text);
-	ObjectTypeDB::bind_method(_MD("set_item_icon","idx","icon"),&PopupMenu::set_item_icon);
-	ObjectTypeDB::bind_method(_MD("set_item_checked","idx","checked"),&PopupMenu::set_item_checked);
-	ObjectTypeDB::bind_method(_MD("set_item_ID","idx","id"),&PopupMenu::set_item_ID);
-	ObjectTypeDB::bind_method(_MD("set_item_accelerator","idx","accel"),&PopupMenu::set_item_accelerator);
-	ObjectTypeDB::bind_method(_MD("set_item_metadata","idx","metadata"),&PopupMenu::set_item_metadata);
-	ObjectTypeDB::bind_method(_MD("set_item_disabled","idx","disabled"),&PopupMenu::set_item_disabled);
-	ObjectTypeDB::bind_method(_MD("set_item_submenu","idx","submenu"),&PopupMenu::set_item_submenu);
-	ObjectTypeDB::bind_method(_MD("set_item_as_separator","idx","enable"),&PopupMenu::set_item_as_separator);
-	ObjectTypeDB::bind_method(_MD("set_item_as_checkable","idx","enable"),&PopupMenu::set_item_as_checkable);
-	ObjectTypeDB::bind_method(_MD("set_item_tooltip","idx","tooltip"),&PopupMenu::set_item_tooltip);
-	ObjectTypeDB::bind_method(_MD("set_item_shortcut","idx","shortcut:ShortCut"),&PopupMenu::set_item_shortcut);
+	ClassDB::bind_method(_MD("set_item_text","idx","text"),&PopupMenu::set_item_text);
+	ClassDB::bind_method(_MD("set_item_icon","idx","icon"),&PopupMenu::set_item_icon);
+	ClassDB::bind_method(_MD("set_item_checked","idx","checked"),&PopupMenu::set_item_checked);
+	ClassDB::bind_method(_MD("set_item_ID","idx","id"),&PopupMenu::set_item_ID);
+	ClassDB::bind_method(_MD("set_item_accelerator","idx","accel"),&PopupMenu::set_item_accelerator);
+	ClassDB::bind_method(_MD("set_item_metadata","idx","metadata"),&PopupMenu::set_item_metadata);
+	ClassDB::bind_method(_MD("set_item_disabled","idx","disabled"),&PopupMenu::set_item_disabled);
+	ClassDB::bind_method(_MD("set_item_submenu","idx","submenu"),&PopupMenu::set_item_submenu);
+	ClassDB::bind_method(_MD("set_item_as_separator","idx","enable"),&PopupMenu::set_item_as_separator);
+	ClassDB::bind_method(_MD("set_item_as_checkable","idx","enable"),&PopupMenu::set_item_as_checkable);
+	ClassDB::bind_method(_MD("set_item_tooltip","idx","tooltip"),&PopupMenu::set_item_tooltip);
+	ClassDB::bind_method(_MD("set_item_shortcut","idx","shortcut:ShortCut"),&PopupMenu::set_item_shortcut);
 
-	ObjectTypeDB::bind_method(_MD("toggle_item_checked","idx"), &PopupMenu::toggle_item_checked);
+	ClassDB::bind_method(_MD("toggle_item_checked","idx"), &PopupMenu::toggle_item_checked);
 
-	ObjectTypeDB::bind_method(_MD("get_item_text","idx"),&PopupMenu::get_item_text);
-	ObjectTypeDB::bind_method(_MD("get_item_icon","idx"),&PopupMenu::get_item_icon);
-	ObjectTypeDB::bind_method(_MD("is_item_checked","idx"),&PopupMenu::is_item_checked);
-	ObjectTypeDB::bind_method(_MD("get_item_ID","idx"),&PopupMenu::get_item_ID);
-	ObjectTypeDB::bind_method(_MD("get_item_index","id"),&PopupMenu::get_item_index);
-	ObjectTypeDB::bind_method(_MD("get_item_accelerator","idx"),&PopupMenu::get_item_accelerator);
-	ObjectTypeDB::bind_method(_MD("get_item_metadata","idx"),&PopupMenu::get_item_metadata);
-	ObjectTypeDB::bind_method(_MD("is_item_disabled","idx"),&PopupMenu::is_item_disabled);
-	ObjectTypeDB::bind_method(_MD("get_item_submenu","idx"),&PopupMenu::get_item_submenu);
-	ObjectTypeDB::bind_method(_MD("is_item_separator","idx"),&PopupMenu::is_item_separator);
-	ObjectTypeDB::bind_method(_MD("is_item_checkable","idx"),&PopupMenu::is_item_checkable);
-	ObjectTypeDB::bind_method(_MD("get_item_tooltip","idx"),&PopupMenu::get_item_tooltip);
-	ObjectTypeDB::bind_method(_MD("get_item_shortcut:ShortCut","idx"),&PopupMenu::get_item_shortcut);
+	ClassDB::bind_method(_MD("get_item_text","idx"),&PopupMenu::get_item_text);
+	ClassDB::bind_method(_MD("get_item_icon","idx"),&PopupMenu::get_item_icon);
+	ClassDB::bind_method(_MD("is_item_checked","idx"),&PopupMenu::is_item_checked);
+	ClassDB::bind_method(_MD("get_item_ID","idx"),&PopupMenu::get_item_ID);
+	ClassDB::bind_method(_MD("get_item_index","id"),&PopupMenu::get_item_index);
+	ClassDB::bind_method(_MD("get_item_accelerator","idx"),&PopupMenu::get_item_accelerator);
+	ClassDB::bind_method(_MD("get_item_metadata","idx"),&PopupMenu::get_item_metadata);
+	ClassDB::bind_method(_MD("is_item_disabled","idx"),&PopupMenu::is_item_disabled);
+	ClassDB::bind_method(_MD("get_item_submenu","idx"),&PopupMenu::get_item_submenu);
+	ClassDB::bind_method(_MD("is_item_separator","idx"),&PopupMenu::is_item_separator);
+	ClassDB::bind_method(_MD("is_item_checkable","idx"),&PopupMenu::is_item_checkable);
+	ClassDB::bind_method(_MD("get_item_tooltip","idx"),&PopupMenu::get_item_tooltip);
+	ClassDB::bind_method(_MD("get_item_shortcut:ShortCut","idx"),&PopupMenu::get_item_shortcut);
 
-	ObjectTypeDB::bind_method(_MD("get_item_count"),&PopupMenu::get_item_count);
+	ClassDB::bind_method(_MD("get_item_count"),&PopupMenu::get_item_count);
 
-	ObjectTypeDB::bind_method(_MD("remove_item","idx"),&PopupMenu::remove_item);
+	ClassDB::bind_method(_MD("remove_item","idx"),&PopupMenu::remove_item);
 
-	ObjectTypeDB::bind_method(_MD("add_separator"),&PopupMenu::add_separator);
-	ObjectTypeDB::bind_method(_MD("clear"),&PopupMenu::clear);
+	ClassDB::bind_method(_MD("add_separator"),&PopupMenu::add_separator);
+	ClassDB::bind_method(_MD("clear"),&PopupMenu::clear);
 
-	ObjectTypeDB::bind_method(_MD("_set_items"),&PopupMenu::_set_items);
-	ObjectTypeDB::bind_method(_MD("_get_items"),&PopupMenu::_get_items);
+	ClassDB::bind_method(_MD("_set_items"),&PopupMenu::_set_items);
+	ClassDB::bind_method(_MD("_get_items"),&PopupMenu::_get_items);
 
-	ObjectTypeDB::bind_method(_MD("set_hide_on_item_selection","enable"),&PopupMenu::set_hide_on_item_selection);
-	ObjectTypeDB::bind_method(_MD("is_hide_on_item_selection"),&PopupMenu::is_hide_on_item_selection);
+	ClassDB::bind_method(_MD("set_hide_on_item_selection","enable"),&PopupMenu::set_hide_on_item_selection);
+	ClassDB::bind_method(_MD("is_hide_on_item_selection"),&PopupMenu::is_hide_on_item_selection);
 
-	ObjectTypeDB::bind_method(_MD("_submenu_timeout"),&PopupMenu::_submenu_timeout);
+	ClassDB::bind_method(_MD("_submenu_timeout"),&PopupMenu::_submenu_timeout);
 
 	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_items"),_SCS("_get_items") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL, "hide_on_item_selection" ), _SCS("set_hide_on_item_selection"), _SCS("is_hide_on_item_selection") );

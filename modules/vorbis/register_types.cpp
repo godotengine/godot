@@ -36,7 +36,7 @@ void register_vorbis_types() {
 
 	vorbis_stream_loader = memnew( ResourceFormatLoaderAudioStreamOGGVorbis );
 	ResourceLoader::add_resource_format_loader(vorbis_stream_loader);
-	ObjectTypeDB::register_type<AudioStreamOGGVorbis>();
+	ClassDB::register_class<AudioStreamOGGVorbis>();
 }
 
 void unregister_vorbis_types() {

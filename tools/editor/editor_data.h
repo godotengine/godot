@@ -218,7 +218,7 @@ public:
 
 class EditorSelection : public Object {
 
-	OBJ_TYPE(EditorSelection,Object);
+	GDCLASS(EditorSelection,Object);
 public:
 
 	Map<Node*,Object*> selection;

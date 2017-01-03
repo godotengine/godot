@@ -223,7 +223,7 @@ class EventStreamChibi;
 
 class EventStreamPlaybackChibi : public EventStreamPlayback {
 
-	OBJ_TYPE(EventStreamPlaybackChibi,EventStreamPlayback);
+	GDCLASS(EventStreamPlaybackChibi,EventStreamPlayback);
 
 	CPMixerImpl mixer;
 	uint64_t total_usec;
@@ -275,7 +275,7 @@ public:
 
 class EventStreamChibi : public EventStream {
 
-	OBJ_TYPE(EventStreamChibi,EventStream);
+	GDCLASS(EventStreamChibi,EventStream);
 
 friend class ResourceFormatLoaderChibi;
 friend class EventStreamPlaybackChibi;

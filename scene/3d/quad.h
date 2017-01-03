@@ -35,7 +35,7 @@
 
 class Quad : public GeometryInstance {
 
-	OBJ_TYPE(Quad,GeometryInstance);
+	GDCLASS(Quad,GeometryInstance);
 
 	Vector3::Axis axis;
 	bool centered;

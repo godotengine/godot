@@ -562,7 +562,7 @@ JavaObject::~JavaObject(){
 
 void JavaClassWrapper::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("wrap:JavaClass","name"),&JavaClassWrapper::wrap);
+	ClassDB::bind_method(_MD("wrap:JavaClass","name"),&JavaClassWrapper::wrap);
 }
 
 

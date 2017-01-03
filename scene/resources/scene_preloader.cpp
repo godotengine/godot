@@ -60,12 +60,12 @@ Node *ScenePreloader::instance() const {
 		const NodeData &n=nd[i];
 
 
-		if (!ObjectTypeDB::is_type_enabled(snames[n.type])) {
+		if (!ClassDB::is_class_enabled(snames[n.type])) {
 			ret_nodes[i]=NULL;
 			continue;
 		}
 
-		Object * obj = ObjectTypeDB::instance(snames[ n.type ]);
+		Object * obj = ClassDB::instance(snames[ n.type ]);
 		ERR_FAIL_COND_V(!obj,NULL);
 		Node *node = obj->cast_to<Node>();
 		ERR_FAIL_COND_V(!node,NULL);
@@ -149,7 +149,7 @@ void ScenePreloader::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Ma
 
 	NodeData nd;
 	nd.name=_nm_get_string(p_node->get_name(),name_map);
-	nd.type=_nm_get_string(p_node->get_type(),name_map);
+	nd.type=_nm_get_string(p_node->get_class(),name_map);
 	nd.parent=p_parent_idx;
 
 	List<PropertyInfo> plist;
@@ -423,12 +423,12 @@ Dictionary ScenePreloader::_get_bundled_scene() const {
 
 void ScenePreloader::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("load_scene","path"),&ScenePreloader::load_scene);
-	ObjectTypeDB::bind_method(_MD("get_scene_path"),&ScenePreloader::get_scene_path);
-	ObjectTypeDB::bind_method(_MD("instance:Node"),&ScenePreloader::instance);
-	ObjectTypeDB::bind_method(_MD("can_instance"),&ScenePreloader::can_instance);
-	ObjectTypeDB::bind_method(_MD("_set_bundled_scene"),&ScenePreloader::_set_bundled_scene);
-	ObjectTypeDB::bind_method(_MD("_get_bundled_scene"),&ScenePreloader::_get_bundled_scene);
+	ClassDB::bind_method(_MD("load_scene","path"),&ScenePreloader::load_scene);
+	ClassDB::bind_method(_MD("get_scene_path"),&ScenePreloader::get_scene_path);
+	ClassDB::bind_method(_MD("instance:Node"),&ScenePreloader::instance);
+	ClassDB::bind_method(_MD("can_instance"),&ScenePreloader::can_instance);
+	ClassDB::bind_method(_MD("_set_bundled_scene"),&ScenePreloader::_set_bundled_scene);
+	ClassDB::bind_method(_MD("_get_bundled_scene"),&ScenePreloader::_get_bundled_scene);
 
 	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_bundled",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_BUNDLE),_SCS("_set_bundled_scene"),_SCS("_get_bundled_scene"));
 #if 0

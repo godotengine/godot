@@ -35,7 +35,7 @@
 
 class SpatialSound2DServer : public Object {
 
-	OBJ_TYPE(SpatialSound2DServer,Object);
+	GDCLASS(SpatialSound2DServer,Object);
 	static SpatialSound2DServer *singleton;
 public:
 

@@ -34,7 +34,7 @@
 
 class ResourcePreloader : public Node {
 
-	OBJ_TYPE(ResourcePreloader,Node);
+	GDCLASS(ResourcePreloader,Node);
 
 	Map<StringName,RES > resources;
 

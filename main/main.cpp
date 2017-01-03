@@ -195,7 +195,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	RID_OwnerBase::init_rid();
 
 	OS::get_singleton()->initialize_core();
-	ObjectTypeDB::init();
+	ClassDB::init();
 
 	MAIN_PRINT("Main: Initialize CORE");
 
@@ -1002,10 +1002,10 @@ Error Main::setup2() {
 		}
 	}
 #ifdef TOOLS_ENABLED
-	ObjectTypeDB::set_current_api(ObjectTypeDB::API_EDITOR);
+	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	EditorNode::register_editor_types();
 
-	ObjectTypeDB::set_current_api(ObjectTypeDB::API_CORE);
+	ClassDB::set_current_api(ClassDB::API_CORE);
 
 #endif
 
@@ -1033,11 +1033,11 @@ Error Main::setup2() {
 	_start_success=true;
 	locale=String();
 
-	ObjectTypeDB::set_current_api(ObjectTypeDB::API_NONE); //no more api is registered at this point
+	ClassDB::set_current_api(ClassDB::API_NONE); //no more api is registered at this point
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("CORE API HASH: "+itos(ObjectTypeDB::get_api_hash(ObjectTypeDB::API_CORE)));
-		print_line("EDITOR API HASH: "+itos(ObjectTypeDB::get_api_hash(ObjectTypeDB::API_EDITOR)));
+		print_line("CORE API HASH: "+itos(ClassDB::get_api_hash(ClassDB::API_CORE)));
+		print_line("EDITOR API HASH: "+itos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	}
 	MAIN_PRINT("Main: Done");
 
@@ -1194,7 +1194,7 @@ bool Main::start() {
 
 
 			StringName instance_type=script_res->get_instance_base_type();
-			Object *obj = ObjectTypeDB::instance(instance_type);
+			Object *obj = ClassDB::instance(instance_type);
 			MainLoop *script_loop = obj?obj->cast_to<MainLoop>():NULL;
 			if (!script_loop) {
 				if (obj)
@@ -1219,12 +1219,12 @@ bool Main::start() {
 		main_loop_type="SceneTree";
 
 	if (!main_loop) {
-		if (!ObjectTypeDB::type_exists(main_loop_type)) {
+		if (!ClassDB::class_exists(main_loop_type)) {
 			OS::get_singleton()->alert("godot: error: MainLoop type doesn't exist: "+main_loop_type);
 			return false;
 		} else {
 
-			Object *ml = ObjectTypeDB::instance(main_loop_type);
+			Object *ml = ClassDB::instance(main_loop_type);
 			if (!ml) {
 				ERR_EXPLAIN("Can't instance MainLoop type");
 				ERR_FAIL_V(false);
@@ -1241,7 +1241,7 @@ bool Main::start() {
 		}
 	}
 
-	if (main_loop->is_type("SceneTree")) {
+	if (main_loop->is_class("SceneTree")) {
 
 		SceneTree *sml = main_loop->cast_to<SceneTree>();
 
@@ -1452,17 +1452,17 @@ bool Main::start() {
 					ERR_EXPLAIN("Can't autoload: "+path);
 					ERR_CONTINUE(res.is_null());
 					Node *n=NULL;
-					if (res->is_type("PackedScene")) {
+					if (res->is_class("PackedScene")) {
 						Ref<PackedScene> ps = res;
 						n=ps->instance();
-					} else if (res->is_type("Script")) {
+					} else if (res->is_class("Script")) {
 						Ref<Script> s = res;
 						StringName ibt = s->get_instance_base_type();
-						bool valid_type = ObjectTypeDB::is_type(ibt,"Node");
+						bool valid_type = ClassDB::is_parent_class(ibt,"Node");
 						ERR_EXPLAIN("Script does not inherit a Node: "+path);
 						ERR_CONTINUE( !valid_type );
 
-						Object *obj = ObjectTypeDB::instance(ibt);
+						Object *obj = ClassDB::instance(ibt);
 
 						ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: "+String(ibt));
 						ERR_CONTINUE( obj==NULL );

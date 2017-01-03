@@ -5,7 +5,7 @@
 
 class NetworkedMultiplayerPeer : public PacketPeer {
 
-	OBJ_TYPE(NetworkedMultiplayerPeer,PacketPeer);
+	GDCLASS(NetworkedMultiplayerPeer,PacketPeer);
 
 protected:
 	static void _bind_methods();

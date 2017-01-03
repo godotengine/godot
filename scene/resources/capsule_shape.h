@@ -33,7 +33,7 @@
 
 class CapsuleShape : public Shape {
 
-	OBJ_TYPE(CapsuleShape,Shape);
+	GDCLASS(CapsuleShape,Shape);
 	float radius;
 	float height;
 

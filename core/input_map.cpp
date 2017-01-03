@@ -34,19 +34,19 @@ InputMap *InputMap::singleton=NULL;
 
 void InputMap::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("has_action","action"),&InputMap::has_action);
-	ObjectTypeDB::bind_method(_MD("get_action_id","action"),&InputMap::get_action_id);
-	ObjectTypeDB::bind_method(_MD("get_action_from_id","id"),&InputMap::get_action_from_id);
-	ObjectTypeDB::bind_method(_MD("get_actions"),&InputMap::_get_actions);
-	ObjectTypeDB::bind_method(_MD("add_action","action"),&InputMap::add_action);
-	ObjectTypeDB::bind_method(_MD("erase_action","action"),&InputMap::erase_action);
+	ClassDB::bind_method(_MD("has_action","action"),&InputMap::has_action);
+	ClassDB::bind_method(_MD("get_action_id","action"),&InputMap::get_action_id);
+	ClassDB::bind_method(_MD("get_action_from_id","id"),&InputMap::get_action_from_id);
+	ClassDB::bind_method(_MD("get_actions"),&InputMap::_get_actions);
+	ClassDB::bind_method(_MD("add_action","action"),&InputMap::add_action);
+	ClassDB::bind_method(_MD("erase_action","action"),&InputMap::erase_action);
 
-	ObjectTypeDB::bind_method(_MD("action_add_event","action","event"),&InputMap::action_add_event);
-	ObjectTypeDB::bind_method(_MD("action_has_event","action","event"),&InputMap::action_has_event);
-	ObjectTypeDB::bind_method(_MD("action_erase_event","action","event"),&InputMap::action_erase_event);
-	ObjectTypeDB::bind_method(_MD("get_action_list","action"),&InputMap::_get_action_list);
-	ObjectTypeDB::bind_method(_MD("event_is_action","event","action"),&InputMap::event_is_action);
-	ObjectTypeDB::bind_method(_MD("load_from_globals"),&InputMap::load_from_globals);
+	ClassDB::bind_method(_MD("action_add_event","action","event"),&InputMap::action_add_event);
+	ClassDB::bind_method(_MD("action_has_event","action","event"),&InputMap::action_has_event);
+	ClassDB::bind_method(_MD("action_erase_event","action","event"),&InputMap::action_erase_event);
+	ClassDB::bind_method(_MD("get_action_list","action"),&InputMap::_get_action_list);
+	ClassDB::bind_method(_MD("event_is_action","event","action"),&InputMap::event_is_action);
+	ClassDB::bind_method(_MD("load_from_globals"),&InputMap::load_from_globals);
 
 }
 

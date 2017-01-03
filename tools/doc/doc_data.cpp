@@ -159,7 +159,7 @@ void DocData::generate(bool p_basic_types) {
 
 
 	List<StringName> classes;
-	ObjectTypeDB::get_type_list(&classes);
+	ClassDB::get_class_list(&classes);
 	classes.sort_custom<StringName::AlphCompare>();
 
 	while(classes.size()) {
@@ -172,11 +172,11 @@ void DocData::generate(bool p_basic_types) {
 		class_list[cname]=ClassDoc();
 		ClassDoc& c = class_list[cname];
 		c.name=cname;
-		c.inherits=ObjectTypeDB::type_inherits_from(name);
-		c.category=ObjectTypeDB::get_category(name);
+		c.inherits=ClassDB::get_parent_class(name);
+		c.category=ClassDB::get_category(name);
 
 		List<MethodInfo> method_list;
-		ObjectTypeDB::get_method_list(name,&method_list,true);
+		ClassDB::get_method_list(name,&method_list,true);
 		method_list.sort();
 
 
@@ -189,7 +189,7 @@ void DocData::generate(bool p_basic_types) {
 
 			method.name=E->get().name;
 
-			MethodBind *m = ObjectTypeDB::get_method(name,E->get().name);
+			MethodBind *m = ClassDB::get_method(name,E->get().name);
 
 
 			if (E->get().flags&METHOD_FLAG_VIRTUAL)
@@ -358,7 +358,7 @@ void DocData::generate(bool p_basic_types) {
 		}
 
 		List<MethodInfo> signal_list;
-		ObjectTypeDB::get_signal_list(name,&signal_list,true);
+		ClassDB::get_signal_list(name,&signal_list,true);
 
 		if (signal_list.size()) {
 
@@ -383,13 +383,13 @@ void DocData::generate(bool p_basic_types) {
 		}
 
 		List<String> constant_list;
-		ObjectTypeDB::get_integer_constant_list(name, &constant_list, true);
+		ClassDB::get_integer_constant_list(name, &constant_list, true);
 
 		for(List<String>::Element *E=constant_list.front();E;E=E->next()) {
 
 			ConstantDoc constant;
 			constant.name=E->get();
-			constant.value=itos(ObjectTypeDB::get_integer_constant(name, E->get()));
+			constant.value=itos(ClassDB::get_integer_constant(name, E->get()));
 			c.constants.push_back(constant);
 		}
 
@@ -590,9 +590,9 @@ void DocData::generate(bool p_basic_types) {
 			PropertyDoc pd;
 			Globals::Singleton &s=E->get();
 			pd.name=s.name;
-			pd.type=s.ptr->get_type();
-			while (String(ObjectTypeDB::type_inherits_from(pd.type))!="Object")
-				pd.type=ObjectTypeDB::type_inherits_from(pd.type);
+			pd.type=s.ptr->get_class();
+			while (String(ClassDB::get_parent_class(pd.type))!="Object")
+				pd.type=ClassDB::get_parent_class(pd.type);
 			if (pd.type.begins_with("_"))
 				pd.type=pd.type.substr(1,pd.type.length());
 			c.properties.push_back(pd);

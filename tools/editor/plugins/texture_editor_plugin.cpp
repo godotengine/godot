@@ -49,7 +49,7 @@ void TextureEditor::_notification(int p_what) {
 		if (texture->cast_to<ImageTexture>()) {
 			format = Image::get_format_name(texture->cast_to<ImageTexture>()->get_format());
 		} else {
-			format=texture->get_type();
+			format=texture->get_class();
 		}
 		String text = itos(texture->get_width())+"x"+itos(texture->get_height())+" "+format;
 
@@ -84,7 +84,7 @@ void TextureEditor::edit(Ref<Texture> p_texture) {
 
 void TextureEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&TextureEditor::_input_event);
+	ClassDB::bind_method(_MD("_input_event"),&TextureEditor::_input_event);
 
 }
 
@@ -106,7 +106,7 @@ void TextureEditorPlugin::edit(Object *p_object) {
 
 bool TextureEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Texture");
+	return p_object->is_class("Texture");
 }
 
 void TextureEditorPlugin::make_visible(bool p_visible) {

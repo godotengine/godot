@@ -34,7 +34,7 @@
 
 class MultiMesh : public Resource {
 
-	OBJ_TYPE( MultiMesh, Resource );
+	GDCLASS( MultiMesh, Resource );
 	RES_BASE_EXTENSION("mmsh");
 public:
 

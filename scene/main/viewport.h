@@ -50,7 +50,7 @@ class Viewport;
 
 class ViewportTexture : public Texture {
 
-	OBJ_TYPE( ViewportTexture, Texture );
+	GDCLASS( ViewportTexture, Texture );
 
 	int flags;
 friend class Viewport;
@@ -76,7 +76,7 @@ public:
 
 class Viewport : public Node {
 
-	OBJ_TYPE( Viewport, Node );
+	GDCLASS( Viewport, Node );
 public:
 
 	enum UpdateMode {

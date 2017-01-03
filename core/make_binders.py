@@ -17,8 +17,8 @@ public:
 		return Variant::NIL;
 	}
 #endif
-	virtual String get_instance_type() const {
-		return T::get_type_static();
+	virtual String get_instance_class() const {
+		return T::get_class_static();
 	}
 
 	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
@@ -97,7 +97,7 @@ public:
 		return Variant::NIL;
 	}
 #endif
-	virtual String get_instance_type() const {
+	virtual String get_instance_class() const {
 		return type_name;
 	}
 
@@ -159,7 +159,7 @@ MethodBind* create_method_bind($ifret R$ $ifnoret void$ (T::*p_method)($arg, P@$
 	} u;
 	u.sm=p_method;
 	a->method=u.dm;
-	a->type_name=T::get_type_static();
+	a->type_name=T::get_class_static();
 	return a;
 }
 #endif

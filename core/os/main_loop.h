@@ -37,7 +37,7 @@
 */
 class MainLoop : public Object {
 
-	OBJ_TYPE( MainLoop, Object );
+	GDCLASS( MainLoop, Object );
 	OBJ_CATEGORY("Main Loop");
 
 	Ref<Script> init_script;

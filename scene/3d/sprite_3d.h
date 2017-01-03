@@ -35,7 +35,7 @@
 
 class SpriteBase3D : public GeometryInstance {
 
-	OBJ_TYPE(SpriteBase3D,GeometryInstance);
+	GDCLASS(SpriteBase3D,GeometryInstance);
 public:
 
 	enum DrawFlags {
@@ -144,7 +144,7 @@ public:
 
 class Sprite3D : public SpriteBase3D {
 
-	OBJ_TYPE(Sprite3D,SpriteBase3D);
+	GDCLASS(Sprite3D,SpriteBase3D);
 	Ref<Texture> texture;
 
 
@@ -191,7 +191,7 @@ public:
 #if 0
 class AnimatedSprite3D : public SpriteBase3D {
 
-	OBJ_TYPE(AnimatedSprite3D,SpriteBase3D);
+	GDCLASS(AnimatedSprite3D,SpriteBase3D);
 	Ref<SpriteFrames> frames;
 
 
@@ -224,7 +224,7 @@ public:
 
 class AnimatedSprite3D : public SpriteBase3D {
 
-	OBJ_TYPE(AnimatedSprite3D,SpriteBase3D);
+	GDCLASS(AnimatedSprite3D,SpriteBase3D);
 
 	Ref<SpriteFrames> frames;
 	bool playing;

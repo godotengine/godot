@@ -37,7 +37,7 @@
 #include "os/thread.h"
 class AudioServerSW : public AudioServer {
 
-	OBJ_TYPE( AudioServerSW, AudioServer );
+	GDCLASS( AudioServerSW, AudioServer );
 
 	_THREAD_SAFE_CLASS_
 

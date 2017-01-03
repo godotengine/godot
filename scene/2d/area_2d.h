@@ -34,7 +34,7 @@
 
 class Area2D : public CollisionObject2D {
 
-	OBJ_TYPE( Area2D, CollisionObject2D );
+	GDCLASS( Area2D, CollisionObject2D );
 public:
 
 	enum SpaceOverride {

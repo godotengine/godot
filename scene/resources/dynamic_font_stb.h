@@ -14,7 +14,7 @@ class DynamicFont;
 
 class DynamicFontData : public Resource {
 
-	OBJ_TYPE(DynamicFontData,Resource);
+	GDCLASS(DynamicFontData,Resource);
 
 	bool valid;
 
@@ -64,7 +64,7 @@ public:
 
 class DynamicFontAtSize : public Reference {
 
-	OBJ_TYPE(DynamicFontAtSize,Reference);
+	GDCLASS(DynamicFontAtSize,Reference);
 
 
 	int rect_margin;
@@ -124,7 +124,7 @@ public:
 
 class DynamicFont : public Font {
 
-	OBJ_TYPE( DynamicFont, Font );
+	GDCLASS( DynamicFont, Font );
 
 	Ref<DynamicFontData> data;
 	Ref<DynamicFontAtSize> data_at_size;

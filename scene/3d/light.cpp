@@ -221,27 +221,27 @@ bool Light::is_editor_only() const{
 void Light::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_editor_only","editor_only"), &Light::set_editor_only );
-	ObjectTypeDB::bind_method(_MD("is_editor_only"), &Light::is_editor_only );
+	ClassDB::bind_method(_MD("set_editor_only","editor_only"), &Light::set_editor_only );
+	ClassDB::bind_method(_MD("is_editor_only"), &Light::is_editor_only );
 
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"), &Light::set_param );
-	ObjectTypeDB::bind_method(_MD("get_param","param"), &Light::get_param );
+	ClassDB::bind_method(_MD("set_param","param","value"), &Light::set_param );
+	ClassDB::bind_method(_MD("get_param","param"), &Light::get_param );
 
-	ObjectTypeDB::bind_method(_MD("set_shadow","enabled"), &Light::set_shadow );
-	ObjectTypeDB::bind_method(_MD("has_shadow"), &Light::has_shadow );
+	ClassDB::bind_method(_MD("set_shadow","enabled"), &Light::set_shadow );
+	ClassDB::bind_method(_MD("has_shadow"), &Light::has_shadow );
 
-	ObjectTypeDB::bind_method(_MD("set_negative","enabled"), &Light::set_negative );
-	ObjectTypeDB::bind_method(_MD("is_negative"), &Light::is_negative );
+	ClassDB::bind_method(_MD("set_negative","enabled"), &Light::set_negative );
+	ClassDB::bind_method(_MD("is_negative"), &Light::is_negative );
 
-	ObjectTypeDB::bind_method(_MD("set_cull_mask","cull_mask"), &Light::set_cull_mask );
-	ObjectTypeDB::bind_method(_MD("get_cull_mask"), &Light::get_cull_mask );
+	ClassDB::bind_method(_MD("set_cull_mask","cull_mask"), &Light::set_cull_mask );
+	ClassDB::bind_method(_MD("get_cull_mask"), &Light::get_cull_mask );
 
-	ObjectTypeDB::bind_method(_MD("set_color","color"), &Light::set_color );
-	ObjectTypeDB::bind_method(_MD("get_color"), &Light::get_color );
+	ClassDB::bind_method(_MD("set_color","color"), &Light::set_color );
+	ClassDB::bind_method(_MD("get_color"), &Light::get_color );
 
-	ObjectTypeDB::bind_method(_MD("set_shadow_color","shadow_color"), &Light::set_shadow_color );
-	ObjectTypeDB::bind_method(_MD("get_shadow_color"), &Light::get_shadow_color );
+	ClassDB::bind_method(_MD("set_shadow_color","shadow_color"), &Light::set_shadow_color );
+	ClassDB::bind_method(_MD("get_shadow_color"), &Light::get_shadow_color );
 
 	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "light/color",PROPERTY_HINT_COLOR_NO_ALPHA), _SCS("set_color"), _SCS("get_color"));
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light/energy",PROPERTY_HINT_RANGE,"0,16,0.01"), _SCS("set_param"), _SCS("get_param"), PARAM_ENERGY);
@@ -345,11 +345,11 @@ bool DirectionalLight::is_blend_splits_enabled() const {
 
 void DirectionalLight::_bind_methods() {
 
-	ObjectTypeDB::bind_method( _MD("set_shadow_mode","mode"),&DirectionalLight::set_shadow_mode);
-	ObjectTypeDB::bind_method( _MD("get_shadow_mode"),&DirectionalLight::get_shadow_mode);
+	ClassDB::bind_method( _MD("set_shadow_mode","mode"),&DirectionalLight::set_shadow_mode);
+	ClassDB::bind_method( _MD("get_shadow_mode"),&DirectionalLight::get_shadow_mode);
 
-	ObjectTypeDB::bind_method( _MD("set_blend_splits","enabled"),&DirectionalLight::set_blend_splits);
-	ObjectTypeDB::bind_method( _MD("is_blend_splits_enabled"),&DirectionalLight::is_blend_splits_enabled);
+	ClassDB::bind_method( _MD("set_blend_splits","enabled"),&DirectionalLight::set_blend_splits);
+	ClassDB::bind_method( _MD("is_blend_splits_enabled"),&DirectionalLight::is_blend_splits_enabled);
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "directional_shadow/mode",PROPERTY_HINT_ENUM,"Orthogonal,PSSM 2 Splits,PSSM 4 Splits"), _SCS("set_shadow_mode"), _SCS("get_shadow_mode"));
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "directional_shadow/split_1",PROPERTY_HINT_RANGE,"0,1,0.001"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_SPLIT_1_OFFSET);
@@ -398,11 +398,11 @@ OmniLight::ShadowDetail OmniLight::get_shadow_detail() const{
 
 void OmniLight::_bind_methods() {
 
-	ObjectTypeDB::bind_method( _MD("set_shadow_mode","mode"),&OmniLight::set_shadow_mode);
-	ObjectTypeDB::bind_method( _MD("get_shadow_mode"),&OmniLight::get_shadow_mode);
+	ClassDB::bind_method( _MD("set_shadow_mode","mode"),&OmniLight::set_shadow_mode);
+	ClassDB::bind_method( _MD("get_shadow_mode"),&OmniLight::get_shadow_mode);
 
-	ObjectTypeDB::bind_method( _MD("set_shadow_detail","detail"),&OmniLight::set_shadow_detail);
-	ObjectTypeDB::bind_method( _MD("get_shadow_detail"),&OmniLight::get_shadow_detail);
+	ClassDB::bind_method( _MD("set_shadow_detail","detail"),&OmniLight::set_shadow_detail);
+	ClassDB::bind_method( _MD("get_shadow_detail"),&OmniLight::get_shadow_detail);
 
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "omni/range",PROPERTY_HINT_RANGE,"0,65536,0.1"), _SCS("set_param"), _SCS("get_param"), PARAM_RANGE);
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "omni/attenuation",PROPERTY_HINT_EXP_EASING), _SCS("set_param"), _SCS("get_param"), PARAM_ATTENUATION);

@@ -36,7 +36,7 @@
 
 class Environment : public Resource {
 
-	OBJ_TYPE(Environment,Resource);
+	GDCLASS(Environment,Resource);
 public:
 
 	enum BGMode {

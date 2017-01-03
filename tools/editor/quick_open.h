@@ -35,7 +35,7 @@
 #include "pair.h"
 class EditorQuickOpen : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorQuickOpen,ConfirmationDialog )
+	GDCLASS(EditorQuickOpen,ConfirmationDialog )
 
 	LineEdit *search_box;
 	Tree *search_options;

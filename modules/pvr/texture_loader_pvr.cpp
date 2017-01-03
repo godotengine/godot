@@ -180,7 +180,7 @@ void ResourceFormatPVR::get_recognized_extensions(List<String> *p_extensions) co
 }
 bool ResourceFormatPVR::handles_type(const String& p_type) const {
 
-	return ObjectTypeDB::is_type(p_type,"Texture");
+	return ClassDB::is_parent_class(p_type,"Texture");
 }
 String ResourceFormatPVR::get_resource_type(const String &p_path) const {
 

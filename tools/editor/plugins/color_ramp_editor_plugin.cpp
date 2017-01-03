@@ -54,7 +54,7 @@ void ColorRampEditorPlugin::edit(Object *p_object) {
 
 bool ColorRampEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("ColorRamp");
+	return p_object->is_class("ColorRamp");
 
 }
 
@@ -106,6 +106,6 @@ ColorRampEditorPlugin::~ColorRampEditorPlugin(){
 }
 
 void ColorRampEditorPlugin::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("ramp_changed"),&ColorRampEditorPlugin::_ramp_changed);
-	ObjectTypeDB::bind_method(_MD("undo_redo_color_ramp","offsets","colors"),&ColorRampEditorPlugin::_undo_redo_color_ramp);
+	ClassDB::bind_method(_MD("ramp_changed"),&ColorRampEditorPlugin::_ramp_changed);
+	ClassDB::bind_method(_MD("undo_redo_color_ramp","offsets","colors"),&ColorRampEditorPlugin::_undo_redo_color_ramp);
 }

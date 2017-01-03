@@ -37,7 +37,7 @@
 
 class Performance : public Object {
 
-	OBJ_TYPE(Performance,Object);
+	GDCLASS(Performance,Object);
 
 	static Performance *singleton;
 	static void _bind_methods();

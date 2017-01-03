@@ -33,7 +33,7 @@
 
 class RayCast : public Spatial {
 
-	OBJ_TYPE(RayCast,Spatial);
+	GDCLASS(RayCast,Spatial);
 
 
 	bool enabled;

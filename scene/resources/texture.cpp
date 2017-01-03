@@ -63,16 +63,16 @@ bool Texture::get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2
 
 void Texture::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_width"),&Texture::get_width);
-	ObjectTypeDB::bind_method(_MD("get_height"),&Texture::get_height);
-	ObjectTypeDB::bind_method(_MD("get_size"),&Texture::get_size);
-	ObjectTypeDB::bind_method(_MD("get_rid"),&Texture::get_rid);
-	ObjectTypeDB::bind_method(_MD("has_alpha"),&Texture::has_alpha);
-	ObjectTypeDB::bind_method(_MD("set_flags","flags"),&Texture::set_flags);
-	ObjectTypeDB::bind_method(_MD("get_flags"),&Texture::get_flags);
-	ObjectTypeDB::bind_method(_MD("draw","canvas_item","pos","modulate","transpose"),&Texture::draw,DEFVAL(Color(1,1,1)),DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("draw_rect","canvas_item","rect","tile","modulate","transpose"),&Texture::draw_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("draw_rect_region","canvas_item","rect","src_rect","modulate","transpose"),&Texture::draw_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ClassDB::bind_method(_MD("get_width"),&Texture::get_width);
+	ClassDB::bind_method(_MD("get_height"),&Texture::get_height);
+	ClassDB::bind_method(_MD("get_size"),&Texture::get_size);
+	ClassDB::bind_method(_MD("get_rid"),&Texture::get_rid);
+	ClassDB::bind_method(_MD("has_alpha"),&Texture::has_alpha);
+	ClassDB::bind_method(_MD("set_flags","flags"),&Texture::set_flags);
+	ClassDB::bind_method(_MD("get_flags"),&Texture::get_flags);
+	ClassDB::bind_method(_MD("draw","canvas_item","pos","modulate","transpose"),&Texture::draw,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ClassDB::bind_method(_MD("draw_rect","canvas_item","rect","tile","modulate","transpose"),&Texture::draw_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ClassDB::bind_method(_MD("draw_rect_region","canvas_item","rect","src_rect","modulate","transpose"),&Texture::draw_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
 
 	BIND_CONSTANT( FLAG_MIPMAPS );
 	BIND_CONSTANT( FLAG_REPEAT );
@@ -407,27 +407,27 @@ void ImageTexture::_set_data(Dictionary p_data) {
 
 void ImageTexture::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("create","width","height","format","flags"),&ImageTexture::create,DEFVAL(FLAGS_DEFAULT));
-	ObjectTypeDB::bind_method(_MD("create_from_image","image","flags"),&ImageTexture::create_from_image,DEFVAL(FLAGS_DEFAULT));
-	ObjectTypeDB::bind_method(_MD("get_format"),&ImageTexture::get_format);
-	ObjectTypeDB::bind_method(_MD("load","path"),&ImageTexture::load);
-	ObjectTypeDB::bind_method(_MD("set_data","image"),&ImageTexture::set_data);
-	ObjectTypeDB::bind_method(_MD("get_data","cube_side"),&ImageTexture::get_data);
-	ObjectTypeDB::bind_method(_MD("set_storage","mode"),&ImageTexture::set_storage);
-	ObjectTypeDB::bind_method(_MD("get_storage"),&ImageTexture::get_storage);
-	ObjectTypeDB::bind_method(_MD("set_lossy_storage_quality","quality"),&ImageTexture::set_lossy_storage_quality);
-	ObjectTypeDB::bind_method(_MD("get_lossy_storage_quality"),&ImageTexture::get_lossy_storage_quality);
-	ObjectTypeDB::bind_method(_MD("fix_alpha_edges"),&ImageTexture::fix_alpha_edges);
-	ObjectTypeDB::bind_method(_MD("premultiply_alpha"),&ImageTexture::premultiply_alpha);
-	ObjectTypeDB::bind_method(_MD("normal_to_xy"),&ImageTexture::normal_to_xy);
-	ObjectTypeDB::bind_method(_MD("shrink_x2_and_keep_size"),&ImageTexture::shrink_x2_and_keep_size);
+	ClassDB::bind_method(_MD("create","width","height","format","flags"),&ImageTexture::create,DEFVAL(FLAGS_DEFAULT));
+	ClassDB::bind_method(_MD("create_from_image","image","flags"),&ImageTexture::create_from_image,DEFVAL(FLAGS_DEFAULT));
+	ClassDB::bind_method(_MD("get_format"),&ImageTexture::get_format);
+	ClassDB::bind_method(_MD("load","path"),&ImageTexture::load);
+	ClassDB::bind_method(_MD("set_data","image"),&ImageTexture::set_data);
+	ClassDB::bind_method(_MD("get_data","cube_side"),&ImageTexture::get_data);
+	ClassDB::bind_method(_MD("set_storage","mode"),&ImageTexture::set_storage);
+	ClassDB::bind_method(_MD("get_storage"),&ImageTexture::get_storage);
+	ClassDB::bind_method(_MD("set_lossy_storage_quality","quality"),&ImageTexture::set_lossy_storage_quality);
+	ClassDB::bind_method(_MD("get_lossy_storage_quality"),&ImageTexture::get_lossy_storage_quality);
+	ClassDB::bind_method(_MD("fix_alpha_edges"),&ImageTexture::fix_alpha_edges);
+	ClassDB::bind_method(_MD("premultiply_alpha"),&ImageTexture::premultiply_alpha);
+	ClassDB::bind_method(_MD("normal_to_xy"),&ImageTexture::normal_to_xy);
+	ClassDB::bind_method(_MD("shrink_x2_and_keep_size"),&ImageTexture::shrink_x2_and_keep_size);
 
-	ObjectTypeDB::bind_method(_MD("set_size_override","size"),&ImageTexture::set_size_override);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("fix_alpha_edges"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("premultiply_alpha"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("normal_to_xy"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("shrink_x2_and_keep_size"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ObjectTypeDB::bind_method(_MD("_reload_hook","rid"),&ImageTexture::_reload_hook);
+	ClassDB::bind_method(_MD("set_size_override","size"),&ImageTexture::set_size_override);
+	ClassDB::set_method_flags(get_class_static(),_SCS("fix_alpha_edges"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_SCS("premultiply_alpha"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_SCS("normal_to_xy"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_SCS("shrink_x2_and_keep_size"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(_MD("_reload_hook","rid"),&ImageTexture::_reload_hook);
 
 
 	BIND_CONSTANT( STORAGE_RAW );
@@ -549,14 +549,14 @@ Rect2 AtlasTexture::get_margin() const {
 
 void AtlasTexture::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_atlas","atlas:Texture"),&AtlasTexture::set_atlas);
-	ObjectTypeDB::bind_method(_MD("get_atlas:Texture"),&AtlasTexture::get_atlas);
+	ClassDB::bind_method(_MD("set_atlas","atlas:Texture"),&AtlasTexture::set_atlas);
+	ClassDB::bind_method(_MD("get_atlas:Texture"),&AtlasTexture::get_atlas);
 
-	ObjectTypeDB::bind_method(_MD("set_region","region"),&AtlasTexture::set_region);
-	ObjectTypeDB::bind_method(_MD("get_region"),&AtlasTexture::get_region);
+	ClassDB::bind_method(_MD("set_region","region"),&AtlasTexture::set_region);
+	ClassDB::bind_method(_MD("get_region"),&AtlasTexture::get_region);
 
-	ObjectTypeDB::bind_method(_MD("set_margin","margin"),&AtlasTexture::set_margin);
-	ObjectTypeDB::bind_method(_MD("get_margin"),&AtlasTexture::get_margin);
+	ClassDB::bind_method(_MD("set_margin","margin"),&AtlasTexture::set_margin);
+	ClassDB::bind_method(_MD("get_margin"),&AtlasTexture::get_margin);
 
 	ADD_SIGNAL(MethodInfo("atlas_changed"));
 
@@ -804,18 +804,18 @@ Ref<Texture> LargeTexture::get_piece_texture(int p_idx) const{
 
 void LargeTexture::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("add_piece","ofs","texture:Texture"),&LargeTexture::add_piece);
-	ObjectTypeDB::bind_method(_MD("set_piece_offset", "idx", "ofs"),&LargeTexture::set_piece_offset);
-	ObjectTypeDB::bind_method(_MD("set_piece_texture","idx", "texture:Texture"),&LargeTexture::set_piece_texture);
-	ObjectTypeDB::bind_method(_MD("set_size","size"),&LargeTexture::set_size);
-	ObjectTypeDB::bind_method(_MD("clear"),&LargeTexture::clear);
+	ClassDB::bind_method(_MD("add_piece","ofs","texture:Texture"),&LargeTexture::add_piece);
+	ClassDB::bind_method(_MD("set_piece_offset", "idx", "ofs"),&LargeTexture::set_piece_offset);
+	ClassDB::bind_method(_MD("set_piece_texture","idx", "texture:Texture"),&LargeTexture::set_piece_texture);
+	ClassDB::bind_method(_MD("set_size","size"),&LargeTexture::set_size);
+	ClassDB::bind_method(_MD("clear"),&LargeTexture::clear);
 
-	ObjectTypeDB::bind_method(_MD("get_piece_count"),&LargeTexture::get_piece_count);
-	ObjectTypeDB::bind_method(_MD("get_piece_offset","idx"),&LargeTexture::get_piece_offset);
-	ObjectTypeDB::bind_method(_MD("get_piece_texture:Texture","idx"),&LargeTexture::get_piece_texture);
+	ClassDB::bind_method(_MD("get_piece_count"),&LargeTexture::get_piece_count);
+	ClassDB::bind_method(_MD("get_piece_offset","idx"),&LargeTexture::get_piece_offset);
+	ClassDB::bind_method(_MD("get_piece_texture:Texture","idx"),&LargeTexture::get_piece_texture);
 
-	ObjectTypeDB::bind_method(_MD("_set_data","data"),&LargeTexture::_set_data);
-	ObjectTypeDB::bind_method(_MD("_get_data"),&LargeTexture::_get_data);
+	ClassDB::bind_method(_MD("_set_data","data"),&LargeTexture::_set_data);
+	ClassDB::bind_method(_MD("_get_data"),&LargeTexture::_get_data);
 
 	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_data"),_SCS("_get_data") );
 
@@ -1048,18 +1048,18 @@ void CubeMap::_get_property_list( List<PropertyInfo> *p_list) const {
 
 void CubeMap::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_width"),&CubeMap::get_width);
-	ObjectTypeDB::bind_method(_MD("get_height"),&CubeMap::get_height);
-	ObjectTypeDB::bind_method(_MD("get_rid"),&CubeMap::get_rid);
-	ObjectTypeDB::bind_method(_MD("set_flags","flags"),&CubeMap::set_flags);
-	ObjectTypeDB::bind_method(_MD("get_flags"),&CubeMap::get_flags);
+	ClassDB::bind_method(_MD("get_width"),&CubeMap::get_width);
+	ClassDB::bind_method(_MD("get_height"),&CubeMap::get_height);
+	ClassDB::bind_method(_MD("get_rid"),&CubeMap::get_rid);
+	ClassDB::bind_method(_MD("set_flags","flags"),&CubeMap::set_flags);
+	ClassDB::bind_method(_MD("get_flags"),&CubeMap::get_flags);
 
-	ObjectTypeDB::bind_method(_MD("set_side","side","image"),&CubeMap::set_side);
-	ObjectTypeDB::bind_method(_MD("get_side","side"),&CubeMap::get_side);
-	ObjectTypeDB::bind_method(_MD("set_storage","mode"),&CubeMap::set_storage);
-	ObjectTypeDB::bind_method(_MD("get_storage"),&CubeMap::get_storage);
-	ObjectTypeDB::bind_method(_MD("set_lossy_storage_quality","quality"),&CubeMap::set_lossy_storage_quality);
-	ObjectTypeDB::bind_method(_MD("get_lossy_storage_quality"),&CubeMap::get_lossy_storage_quality);
+	ClassDB::bind_method(_MD("set_side","side","image"),&CubeMap::set_side);
+	ClassDB::bind_method(_MD("get_side","side"),&CubeMap::get_side);
+	ClassDB::bind_method(_MD("set_storage","mode"),&CubeMap::set_storage);
+	ClassDB::bind_method(_MD("get_storage"),&CubeMap::get_storage);
+	ClassDB::bind_method(_MD("set_lossy_storage_quality","quality"),&CubeMap::set_lossy_storage_quality);
+	ClassDB::bind_method(_MD("get_lossy_storage_quality"),&CubeMap::get_lossy_storage_quality);
 
 
 	BIND_CONSTANT( STORAGE_RAW );

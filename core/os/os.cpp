@@ -198,7 +198,7 @@ static void _OS_printres(Object *p_obj) {
 	if (!res)
 		return;
 
-	String str = itos(res->get_instance_ID())+String(res->get_type())+":"+String(res->get_name())+" - "+res->get_path();
+	String str = itos(res->get_instance_ID())+String(res->get_class())+":"+String(res->get_name())+" - "+res->get_path();
 	if (_OSPRF)
 		_OSPRF->store_line(str);
 	else

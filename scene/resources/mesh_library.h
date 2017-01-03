@@ -37,7 +37,7 @@
 
 class MeshLibrary : public Resource {
 
-	OBJ_TYPE(MeshLibrary,Resource);
+	GDCLASS(MeshLibrary,Resource);
 	RES_BASE_EXTENSION("gt");
 
 	struct Item {

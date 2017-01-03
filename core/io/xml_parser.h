@@ -40,7 +40,7 @@
 
 class XMLParser : public Reference {
 
-	OBJ_TYPE( XMLParser, Reference );
+	GDCLASS( XMLParser, Reference );
 public:
 	//! Enumeration of all supported source text file formats
 	enum SourceFormat {

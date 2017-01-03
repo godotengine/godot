@@ -69,9 +69,9 @@ Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String& p_
 
 void EditorResourcePreviewGenerator::_bind_methods() {
 
-	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"handles",PropertyInfo(Variant::STRING,"type")));
-	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::OBJECT,"generate:Texture",PropertyInfo(Variant::OBJECT,"from",PROPERTY_HINT_RESOURCE_TYPE,"Resource")));
-	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::OBJECT,"generate_from_path:Texture",PropertyInfo(Variant::STRING,"path",PROPERTY_HINT_FILE)));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::BOOL,"handles",PropertyInfo(Variant::STRING,"type")));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::OBJECT,"generate:Texture",PropertyInfo(Variant::OBJECT,"from",PROPERTY_HINT_RESOURCE_TYPE,"Resource")));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::OBJECT,"generate_from_path:Texture",PropertyInfo(Variant::STRING,"path",PROPERTY_HINT_FILE)));
 
 }
 
@@ -127,7 +127,7 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,co
 	String type;
 
 	if (p_item.resource.is_valid())
-		type=p_item.resource->get_type();
+		type=p_item.resource->get_class();
 	else
 		type=ResourceLoader::get_resource_type(p_item.path);
 	//print_line("resource type is: "+type);
@@ -376,13 +376,13 @@ EditorResourcePreview* EditorResourcePreview::get_singleton() {
 
 void EditorResourcePreview::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_preview_ready",&EditorResourcePreview::_preview_ready);
+	ClassDB::bind_method("_preview_ready",&EditorResourcePreview::_preview_ready);
 
-	ObjectTypeDB::bind_method(_MD("queue_resource_preview","path","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_resource_preview);
-	ObjectTypeDB::bind_method(_MD("queue_edited_resource_preview","resource:Resource","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_edited_resource_preview);
-	ObjectTypeDB::bind_method(_MD("add_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::add_preview_generator);
-	ObjectTypeDB::bind_method(_MD("remove_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::remove_preview_generator);
-	ObjectTypeDB::bind_method(_MD("check_for_invalidation","path"),&EditorResourcePreview::check_for_invalidation);
+	ClassDB::bind_method(_MD("queue_resource_preview","path","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_resource_preview);
+	ClassDB::bind_method(_MD("queue_edited_resource_preview","resource:Resource","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_edited_resource_preview);
+	ClassDB::bind_method(_MD("add_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::add_preview_generator);
+	ClassDB::bind_method(_MD("remove_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::remove_preview_generator);
+	ClassDB::bind_method(_MD("check_for_invalidation","path"),&EditorResourcePreview::check_for_invalidation);
 
 
 	ADD_SIGNAL(MethodInfo("preview_invalidated",PropertyInfo(Variant::STRING,"path")));

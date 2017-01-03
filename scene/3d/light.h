@@ -43,7 +43,7 @@ class BakedLight;
 
 class Light : public VisualInstance {
 
-	OBJ_TYPE( Light, VisualInstance );
+	GDCLASS( Light, VisualInstance );
 	OBJ_CATEGORY("3D Light Nodes");
 
 public:
@@ -130,7 +130,7 @@ VARIANT_ENUM_CAST(Light::Param);
 
 class DirectionalLight : public Light {
 
-	OBJ_TYPE( DirectionalLight, Light );
+	GDCLASS( DirectionalLight, Light );
 
 public:
 
@@ -162,7 +162,7 @@ VARIANT_ENUM_CAST(DirectionalLight::ShadowMode)
 
 class OmniLight : public Light {
 
-	OBJ_TYPE( OmniLight, Light );
+	GDCLASS( OmniLight, Light );
 public:
 	// omni light
 	enum ShadowMode {
@@ -199,7 +199,7 @@ VARIANT_ENUM_CAST(OmniLight::ShadowDetail)
 
 class SpotLight : public Light {
 
-	OBJ_TYPE( SpotLight, Light );
+	GDCLASS( SpotLight, Light );
 protected:
 	static void _bind_methods();
 public:

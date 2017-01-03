@@ -35,7 +35,7 @@
 
 class CallDialogParams : public Object {
 
-	OBJ_TYPE( CallDialogParams, Object );
+	GDCLASS( CallDialogParams, Object );
 public:
 
 	bool _set(const StringName& p_name, const Variant& p_value) {
@@ -170,11 +170,11 @@ void CallDialog::_update_method_list() {
 
 	List<String> inheritance_list;
 
-	String type = object->get_type();
+	String type = object->get_class();
 
 	while(type!="") {
 		inheritance_list.push_back( type );
-		type=ObjectTypeDB::type_inherits_from(type);
+		type=ClassDB::get_parent_class(type);
 	}
 
 	TreeItem *selected_item=NULL;
@@ -182,7 +182,7 @@ void CallDialog::_update_method_list() {
 	for(int i=0;i<inheritance_list.size();i++) {
 
 		String type=inheritance_list[i];
-		String parent_type=ObjectTypeDB::type_inherits_from(type);
+		String parent_type=ClassDB::get_parent_class(type);
 
 		TreeItem *type_item=NULL;
 
@@ -192,7 +192,7 @@ void CallDialog::_update_method_list() {
 
 			N=E->next();
 
-			if (parent_type!="" && ObjectTypeDB::get_method(parent_type,E->get().name)!=NULL) {
+			if (parent_type!="" && ClassDB::get_method(parent_type,E->get().name)!=NULL) {
 				E=N;
 				continue;
 			}
@@ -224,9 +224,9 @@ void CallDialog::_update_method_list() {
 
 void CallDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_call",&CallDialog::_call);
-	ObjectTypeDB::bind_method("_cancel",&CallDialog::_cancel);
-	ObjectTypeDB::bind_method("_item_selected", &CallDialog::_item_selected);
+	ClassDB::bind_method("_call",&CallDialog::_call);
+	ClassDB::bind_method("_cancel",&CallDialog::_cancel);
+	ClassDB::bind_method("_item_selected", &CallDialog::_item_selected);
 
 }
 
@@ -239,7 +239,7 @@ void CallDialog::set_object(Object *p_object,StringName p_selected) {
 	return_value->clear();
 
 	_update_method_list();
-	method_label->set_text(vformat(TTR("Method List For '%s':"),p_object->get_type()));
+	method_label->set_text(vformat(TTR("Method List For '%s':"),p_object->get_class()));
 }
 
 CallDialog::CallDialog() {

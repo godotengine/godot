@@ -1181,15 +1181,15 @@ void GridMapEditor::_floor_changed(float p_value) {
 
 void GridMapEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_option",&GridMapEditor::_menu_option);
-	ObjectTypeDB::bind_method("_configure",&GridMapEditor::_configure);
-	ObjectTypeDB::bind_method("_item_selected_cbk",&GridMapEditor::_item_selected_cbk);
-	ObjectTypeDB::bind_method("_edit_mode_changed",&GridMapEditor::_edit_mode_changed);
-	ObjectTypeDB::bind_method("_area_renamed",&GridMapEditor::_area_renamed);
-	ObjectTypeDB::bind_method("_area_selected",&GridMapEditor::_area_selected);
-	ObjectTypeDB::bind_method("_floor_changed",&GridMapEditor::_floor_changed);
+	ClassDB::bind_method("_menu_option",&GridMapEditor::_menu_option);
+	ClassDB::bind_method("_configure",&GridMapEditor::_configure);
+	ClassDB::bind_method("_item_selected_cbk",&GridMapEditor::_item_selected_cbk);
+	ClassDB::bind_method("_edit_mode_changed",&GridMapEditor::_edit_mode_changed);
+	ClassDB::bind_method("_area_renamed",&GridMapEditor::_area_renamed);
+	ClassDB::bind_method("_area_selected",&GridMapEditor::_area_selected);
+	ClassDB::bind_method("_floor_changed",&GridMapEditor::_floor_changed);
 
-	ObjectTypeDB::bind_method(_MD("_set_display_mode","mode"), &GridMapEditor::_set_display_mode);
+	ClassDB::bind_method(_MD("_set_display_mode","mode"), &GridMapEditor::_set_display_mode);
 }
 
 
@@ -1480,7 +1480,7 @@ void GridMapEditorPlugin::edit(Object *p_object) {
 
 bool GridMapEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("GridMap");
+	return p_object->is_class("GridMap");
 }
 
 void GridMapEditorPlugin::make_visible(bool p_visible) {

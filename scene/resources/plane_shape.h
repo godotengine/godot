@@ -33,7 +33,7 @@
 
 class PlaneShape : public Shape {
 
-	OBJ_TYPE(PlaneShape,Shape);
+	GDCLASS(PlaneShape,Shape);
 	Plane plane;
 
 protected:

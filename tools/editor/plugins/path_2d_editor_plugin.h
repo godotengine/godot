@@ -42,7 +42,7 @@ class CanvasItemEditor;
 
 class Path2DEditor : public HBoxContainer {
 
-	OBJ_TYPE(Path2DEditor, HBoxContainer);
+	GDCLASS(Path2DEditor, HBoxContainer);
 
 	UndoRedo *undo_redo;
 
@@ -101,7 +101,7 @@ public:
 
 class Path2DEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( Path2DEditorPlugin, EditorPlugin );
+	GDCLASS( Path2DEditorPlugin, EditorPlugin );
 
 	Path2DEditor *path2d_editor;
 	EditorNode *editor;

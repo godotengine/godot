@@ -40,7 +40,7 @@
 
 class RichTextEditor : public Control {
 
-	OBJ_TYPE(RichTextEditor, Control );
+	GDCLASS(RichTextEditor, Control );
 
         friend class RichTextEditorPlugin;
 
@@ -70,7 +70,7 @@ public:
 
 class RichTextEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( RichTextEditorPlugin, EditorPlugin );
+	GDCLASS( RichTextEditorPlugin, EditorPlugin );
 
 	RichTextEditor *rich_text_editor;
 	EditorNode *editor;

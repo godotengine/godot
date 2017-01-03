@@ -44,7 +44,7 @@
 
 class TileMapEditor : public VBoxContainer {
 
-	OBJ_TYPE(TileMapEditor, VBoxContainer );
+	GDCLASS(TileMapEditor, VBoxContainer );
 
 	enum Tool {
 
@@ -184,7 +184,7 @@ public:
 
 class TileMapEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( TileMapEditorPlugin, EditorPlugin );
+	GDCLASS( TileMapEditorPlugin, EditorPlugin );
 
 	TileMapEditor *tile_map_editor;
 

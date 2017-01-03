@@ -190,7 +190,7 @@ NULL};
 
 class EditorExportPlatformAndroid : public EditorExportPlatform {
 
-	OBJ_TYPE( EditorExportPlatformAndroid,EditorExportPlatform );
+	GDCLASS( EditorExportPlatformAndroid,EditorExportPlatform );
 
 
 	enum {

@@ -91,8 +91,8 @@ void ViewportContainer::_notification(int p_what) {
 
 void ViewportContainer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_stretch","enable"),&ViewportContainer::set_stretch);
-	ObjectTypeDB::bind_method(_MD("is_stretch_enabled"),&ViewportContainer::is_stretch_enabled);
+	ClassDB::bind_method(_MD("set_stretch","enable"),&ViewportContainer::set_stretch);
+	ClassDB::bind_method(_MD("is_stretch_enabled"),&ViewportContainer::is_stretch_enabled);
 
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"stretch"),_SCS("set_stretch"),_SCS("is_stretch_enabled"));
 }

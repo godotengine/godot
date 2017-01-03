@@ -35,7 +35,7 @@
 
 class EditorPath : public Control {
 
-	OBJ_TYPE(EditorPath,Control);
+	GDCLASS(EditorPath,Control);
 
 	EditorHistory *history;
 

@@ -34,7 +34,7 @@
 
 class CollisionShape2D : public Node2D {
 
-	OBJ_TYPE(CollisionShape2D,Node2D);
+	GDCLASS(CollisionShape2D,Node2D);
 	Ref<Shape2D> shape;
 	Rect2 rect;
 	bool trigger;

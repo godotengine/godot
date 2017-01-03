@@ -37,7 +37,7 @@
 
 class RoomBounds : public Resource {
 
-	OBJ_TYPE( RoomBounds, Resource );
+	GDCLASS( RoomBounds, Resource );
 	RES_BASE_EXTENSION("room");
 
 	RID area;

@@ -34,7 +34,7 @@
 class Camera;
 class VisibilityNotifier : public Spatial {
 
-	OBJ_TYPE(VisibilityNotifier,Spatial);
+	GDCLASS(VisibilityNotifier,Spatial);
 
 	Set<Camera*> cameras;
 
@@ -64,7 +64,7 @@ public:
 
 class VisibilityEnabler : public VisibilityNotifier {
 
-	OBJ_TYPE(VisibilityEnabler,VisibilityNotifier);
+	GDCLASS(VisibilityEnabler,VisibilityNotifier);
 public:
 
 	enum Enabler {

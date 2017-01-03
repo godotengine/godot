@@ -166,7 +166,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector< Pair< S
 		String file = efsd->get_file_path(i);
 		file=file.substr(6,file.length());
 
-		if (ObjectTypeDB::is_type(efsd->get_file_type(i),base_type) && (search_text.is_subsequence_ofi(file))) {
+		if (ClassDB::is_parent_class(efsd->get_file_type(i),base_type) && (search_text.is_subsequence_ofi(file))) {
 			Pair< String, Ref<Texture> > pair;
 			pair.first = file;
 			pair.second = get_icon((has_icon(efsd->get_file_type(i), ei) ? efsd->get_file_type(i) : ot), ei);
@@ -252,9 +252,9 @@ StringName EditorQuickOpen::get_base_type() const {
 
 void EditorQuickOpen::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_text_changed"),&EditorQuickOpen::_text_changed);
-	ObjectTypeDB::bind_method(_MD("_confirmed"),&EditorQuickOpen::_confirmed);
-	ObjectTypeDB::bind_method(_MD("_sbox_input"),&EditorQuickOpen::_sbox_input);
+	ClassDB::bind_method(_MD("_text_changed"),&EditorQuickOpen::_text_changed);
+	ClassDB::bind_method(_MD("_confirmed"),&EditorQuickOpen::_confirmed);
+	ClassDB::bind_method(_MD("_sbox_input"),&EditorQuickOpen::_sbox_input);
 
 	ADD_SIGNAL(MethodInfo("quick_open"));
 

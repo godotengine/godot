@@ -368,8 +368,8 @@ void AnimationCache::set_animation(const Ref<Animation>& p_animation) {
 
 void AnimationCache::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_node_exit_tree"),&AnimationCache::_node_exit_tree);
-	ObjectTypeDB::bind_method(_MD("_animation_changed"),&AnimationCache::_animation_changed);
+	ClassDB::bind_method(_MD("_node_exit_tree"),&AnimationCache::_node_exit_tree);
+	ClassDB::bind_method(_MD("_animation_changed"),&AnimationCache::_animation_changed);
 }
 
 void AnimationCache::set_root(Node* p_root) {

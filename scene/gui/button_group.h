@@ -36,7 +36,7 @@ class BaseButton;
 
 class ButtonGroup : public BoxContainer {
 
-	OBJ_TYPE(ButtonGroup,BoxContainer);
+	GDCLASS(ButtonGroup,BoxContainer);
 
 
 	Set<BaseButton*> buttons;

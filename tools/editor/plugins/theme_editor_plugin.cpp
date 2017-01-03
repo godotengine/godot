@@ -631,12 +631,12 @@ void ThemeEditor::_notification(int p_what) {
 
 void ThemeEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_type_menu_cbk",&ThemeEditor::_type_menu_cbk);
-	ObjectTypeDB::bind_method("_name_menu_about_to_show",&ThemeEditor::_name_menu_about_to_show);
-	ObjectTypeDB::bind_method("_name_menu_cbk",&ThemeEditor::_name_menu_cbk);
-	ObjectTypeDB::bind_method("_theme_menu_cbk",&ThemeEditor::_theme_menu_cbk);
-	ObjectTypeDB::bind_method("_dialog_cbk",&ThemeEditor::_dialog_cbk);
-	ObjectTypeDB::bind_method("_save_template_cbk",&ThemeEditor::_save_template_cbk);
+	ClassDB::bind_method("_type_menu_cbk",&ThemeEditor::_type_menu_cbk);
+	ClassDB::bind_method("_name_menu_about_to_show",&ThemeEditor::_name_menu_about_to_show);
+	ClassDB::bind_method("_name_menu_cbk",&ThemeEditor::_name_menu_cbk);
+	ClassDB::bind_method("_theme_menu_cbk",&ThemeEditor::_theme_menu_cbk);
+	ClassDB::bind_method("_dialog_cbk",&ThemeEditor::_dialog_cbk);
+	ClassDB::bind_method("_save_template_cbk",&ThemeEditor::_save_template_cbk);
 }
 
 ThemeEditor::ThemeEditor() {
@@ -963,7 +963,7 @@ void ThemeEditorPlugin::edit(Object *p_node) {
 
 bool ThemeEditorPlugin::handles(Object *p_node) const{
 
-	return p_node->is_type("Theme");
+	return p_node->is_class("Theme");
 }
 
 void ThemeEditorPlugin::make_visible(bool p_visible){

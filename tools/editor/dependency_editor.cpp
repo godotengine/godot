@@ -250,9 +250,9 @@ void DependencyEditor::edit(const String& p_path) {
 
 void DependencyEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_searched"),&DependencyEditor::_searched);
-	ObjectTypeDB::bind_method(_MD("_load_pressed"),&DependencyEditor::_load_pressed);
-	ObjectTypeDB::bind_method(_MD("_fix_all"),&DependencyEditor::_fix_all);
+	ClassDB::bind_method(_MD("_searched"),&DependencyEditor::_searched);
+	ClassDB::bind_method(_MD("_load_pressed"),&DependencyEditor::_load_pressed);
+	ClassDB::bind_method(_MD("_fix_all"),&DependencyEditor::_fix_all);
 
 }
 
@@ -690,8 +690,8 @@ void OrphanResourcesDialog::_button_pressed(Object *p_item,int p_column, int p_i
 
 void OrphanResourcesDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_delete_confirm"),&OrphanResourcesDialog::_delete_confirm);
-	ObjectTypeDB::bind_method(_MD("_button_pressed"),&OrphanResourcesDialog::_button_pressed);
+	ClassDB::bind_method(_MD("_delete_confirm"),&OrphanResourcesDialog::_delete_confirm);
+	ClassDB::bind_method(_MD("_button_pressed"),&OrphanResourcesDialog::_button_pressed);
 
 }
 

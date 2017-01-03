@@ -714,24 +714,24 @@ Popup* TabContainer::get_popup() const {
 
 void TabContainer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&TabContainer::_input_event);
-	ObjectTypeDB::bind_method(_MD("get_tab_count"),&TabContainer::get_tab_count);
-	ObjectTypeDB::bind_method(_MD("set_current_tab","tab_idx"),&TabContainer::set_current_tab);
-	ObjectTypeDB::bind_method(_MD("get_current_tab"),&TabContainer::get_current_tab);
-	ObjectTypeDB::bind_method(_MD("get_current_tab_control:Control"),&TabContainer::get_current_tab_control);
-	ObjectTypeDB::bind_method(_MD("get_tab_control:Control","idx"),&TabContainer::get_tab_control);
-	ObjectTypeDB::bind_method(_MD("set_tab_align","align"),&TabContainer::set_tab_align);
-	ObjectTypeDB::bind_method(_MD("get_tab_align"),&TabContainer::get_tab_align);
-	ObjectTypeDB::bind_method(_MD("set_tabs_visible","visible"),&TabContainer::set_tabs_visible);
-	ObjectTypeDB::bind_method(_MD("are_tabs_visible"),&TabContainer::are_tabs_visible);
-	ObjectTypeDB::bind_method(_MD("set_tab_title","tab_idx","title"),&TabContainer::set_tab_title);
-	ObjectTypeDB::bind_method(_MD("get_tab_title","tab_idx"),&TabContainer::get_tab_title);
-	ObjectTypeDB::bind_method(_MD("set_tab_icon","tab_idx","icon:Texture"),&TabContainer::set_tab_icon);
-	ObjectTypeDB::bind_method(_MD("get_tab_icon:Texture","tab_idx"),&TabContainer::get_tab_icon);
-	ObjectTypeDB::bind_method(_MD("set_popup","popup:Popup"),&TabContainer::set_popup);
-	ObjectTypeDB::bind_method(_MD("get_popup:Popup"),&TabContainer::get_popup);
+	ClassDB::bind_method(_MD("_input_event"),&TabContainer::_input_event);
+	ClassDB::bind_method(_MD("get_tab_count"),&TabContainer::get_tab_count);
+	ClassDB::bind_method(_MD("set_current_tab","tab_idx"),&TabContainer::set_current_tab);
+	ClassDB::bind_method(_MD("get_current_tab"),&TabContainer::get_current_tab);
+	ClassDB::bind_method(_MD("get_current_tab_control:Control"),&TabContainer::get_current_tab_control);
+	ClassDB::bind_method(_MD("get_tab_control:Control","idx"),&TabContainer::get_tab_control);
+	ClassDB::bind_method(_MD("set_tab_align","align"),&TabContainer::set_tab_align);
+	ClassDB::bind_method(_MD("get_tab_align"),&TabContainer::get_tab_align);
+	ClassDB::bind_method(_MD("set_tabs_visible","visible"),&TabContainer::set_tabs_visible);
+	ClassDB::bind_method(_MD("are_tabs_visible"),&TabContainer::are_tabs_visible);
+	ClassDB::bind_method(_MD("set_tab_title","tab_idx","title"),&TabContainer::set_tab_title);
+	ClassDB::bind_method(_MD("get_tab_title","tab_idx"),&TabContainer::get_tab_title);
+	ClassDB::bind_method(_MD("set_tab_icon","tab_idx","icon:Texture"),&TabContainer::set_tab_icon);
+	ClassDB::bind_method(_MD("get_tab_icon:Texture","tab_idx"),&TabContainer::get_tab_icon);
+	ClassDB::bind_method(_MD("set_popup","popup:Popup"),&TabContainer::set_popup);
+	ClassDB::bind_method(_MD("get_popup:Popup"),&TabContainer::get_popup);
 
-	ObjectTypeDB::bind_method(_MD("_child_renamed_callback"),&TabContainer::_child_renamed_callback);
+	ClassDB::bind_method(_MD("_child_renamed_callback"),&TabContainer::_child_renamed_callback);
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));

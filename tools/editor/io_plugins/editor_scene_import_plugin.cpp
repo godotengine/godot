@@ -82,7 +82,7 @@ EditorScenePostImport::EditorScenePostImport() {
 
 class EditorImportAnimationOptions : public VBoxContainer {
 
-	OBJ_TYPE( EditorImportAnimationOptions, VBoxContainer );
+	GDCLASS( EditorImportAnimationOptions, VBoxContainer );
 
 
 
@@ -147,7 +147,7 @@ public:
 
 class EditorSceneImportDialog : public ConfirmationDialog  {
 
-	OBJ_TYPE(EditorSceneImportDialog,ConfirmationDialog);
+	GDCLASS(EditorSceneImportDialog,ConfirmationDialog);
 
 
 	struct FlagInfo {
@@ -374,10 +374,10 @@ void EditorImportAnimationOptions::_item_edited() {
 
 void EditorImportAnimationOptions::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_changed",&EditorImportAnimationOptions::_changed);
-	ObjectTypeDB::bind_method("_item_edited",&EditorImportAnimationOptions::_item_edited);
-	ObjectTypeDB::bind_method("_button_action",&EditorImportAnimationOptions::_button_action);
-//	ObjectTypeDB::bind_method("_changedp",&EditorImportAnimationOptions::_changedp);
+	ClassDB::bind_method("_changed",&EditorImportAnimationOptions::_changed);
+	ClassDB::bind_method("_item_edited",&EditorImportAnimationOptions::_item_edited);
+	ClassDB::bind_method("_button_action",&EditorImportAnimationOptions::_button_action);
+//	ClassDB::bind_method("_changedp",&EditorImportAnimationOptions::_changedp);
 
 	ADD_SIGNAL(MethodInfo("changed"));
 }
@@ -1058,19 +1058,19 @@ void EditorSceneImportDialog::_set_root_type() {
 void EditorSceneImportDialog::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method("_choose_file",&EditorSceneImportDialog::_choose_file);
-	ObjectTypeDB::bind_method("_choose_save_file",&EditorSceneImportDialog::_choose_save_file);
-	ObjectTypeDB::bind_method("_choose_script",&EditorSceneImportDialog::_choose_script);
-	ObjectTypeDB::bind_method("_import",&EditorSceneImportDialog::_import,DEFVAL(false));
-	ObjectTypeDB::bind_method("_browse",&EditorSceneImportDialog::_browse);
-	ObjectTypeDB::bind_method("_browse_target",&EditorSceneImportDialog::_browse_target);
-	ObjectTypeDB::bind_method("_browse_script",&EditorSceneImportDialog::_browse_script);
-	ObjectTypeDB::bind_method("_dialog_hid",&EditorSceneImportDialog::_dialog_hid);
-	ObjectTypeDB::bind_method("_import_confirm",&EditorSceneImportDialog::_import_confirm);
-	ObjectTypeDB::bind_method("_open_and_import",&EditorSceneImportDialog::_open_and_import);
-	ObjectTypeDB::bind_method("_root_default_pressed",&EditorSceneImportDialog::_root_default_pressed);
-	ObjectTypeDB::bind_method("_root_type_pressed",&EditorSceneImportDialog::_root_type_pressed);
-	ObjectTypeDB::bind_method("_set_root_type",&EditorSceneImportDialog::_set_root_type);
+	ClassDB::bind_method("_choose_file",&EditorSceneImportDialog::_choose_file);
+	ClassDB::bind_method("_choose_save_file",&EditorSceneImportDialog::_choose_save_file);
+	ClassDB::bind_method("_choose_script",&EditorSceneImportDialog::_choose_script);
+	ClassDB::bind_method("_import",&EditorSceneImportDialog::_import,DEFVAL(false));
+	ClassDB::bind_method("_browse",&EditorSceneImportDialog::_browse);
+	ClassDB::bind_method("_browse_target",&EditorSceneImportDialog::_browse_target);
+	ClassDB::bind_method("_browse_script",&EditorSceneImportDialog::_browse_script);
+	ClassDB::bind_method("_dialog_hid",&EditorSceneImportDialog::_dialog_hid);
+	ClassDB::bind_method("_import_confirm",&EditorSceneImportDialog::_import_confirm);
+	ClassDB::bind_method("_open_and_import",&EditorSceneImportDialog::_open_and_import);
+	ClassDB::bind_method("_root_default_pressed",&EditorSceneImportDialog::_root_default_pressed);
+	ClassDB::bind_method("_root_type_pressed",&EditorSceneImportDialog::_root_type_pressed);
+	ClassDB::bind_method("_set_root_type",&EditorSceneImportDialog::_set_root_type);
 
 
 	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
@@ -1394,7 +1394,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 			Ref<Resource> res = p_var;
 			if (res.is_valid()) {
 
-				if (res->is_type("Texture") && !image_map.has(res)) {
+				if (res->is_class("Texture") && !image_map.has(res)) {
 
 					image_map.insert(res,TEXTURE_ROLE_DEFAULT);
 
@@ -2189,7 +2189,7 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 
 	if (from->has_option("root_type")) {
 		String type = from->get_option("root_type");
-		Object *base = ObjectTypeDB::instance(type);
+		Object *base = ClassDB::instance(type);
 		Node *base_node = NULL;
 		if (base)
 			base_node=base->cast_to<Node>();

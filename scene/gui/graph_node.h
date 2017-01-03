@@ -33,7 +33,7 @@
 
 class GraphNode : public Container {
 
-	OBJ_TYPE(GraphNode,Container);
+	GDCLASS(GraphNode,Container);
 public:
 
 	enum Overlay {

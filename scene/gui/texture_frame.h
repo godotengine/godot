@@ -35,7 +35,7 @@
 */
 class TextureFrame : public Control {
 
-	OBJ_TYPE(TextureFrame,Control);
+	GDCLASS(TextureFrame,Control);
 public:
 	enum StretchMode {
 		STRETCH_SCALE_ON_EXPAND, //default, for backwards compatibility

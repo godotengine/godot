@@ -34,7 +34,7 @@
 
 class InputDefault : public Input {
 
-	OBJ_TYPE( InputDefault, Input );
+	GDCLASS( InputDefault, Input );
 	_THREAD_SAFE_CLASS_
 
 	int mouse_button_mask;

@@ -15,7 +15,7 @@ class VisualScriptEditorVariableEdit;
 
 
 class VisualScriptEditor : public ScriptEditorBase {
-	OBJ_TYPE(VisualScriptEditor,ScriptEditorBase)
+	GDCLASS(VisualScriptEditor,ScriptEditorBase)
 
 	enum {
 		TYPE_SEQUENCE=1000,

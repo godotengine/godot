@@ -87,8 +87,8 @@ float SoundPlayer2D::get_param( Param p_param) const {
 void SoundPlayer2D::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"),&SoundPlayer2D::set_param);
-	ObjectTypeDB::bind_method(_MD("get_param","param"),&SoundPlayer2D::get_param);
+	ClassDB::bind_method(_MD("set_param","param","value"),&SoundPlayer2D::set_param);
+	ClassDB::bind_method(_MD("get_param","param"),&SoundPlayer2D::get_param);
 
 	BIND_CONSTANT( PARAM_VOLUME_DB );
 	BIND_CONSTANT( PARAM_PITCH_SCALE );

@@ -33,7 +33,7 @@
 
 class ValueEvaluator : public Object {
 
-	OBJ_TYPE(ValueEvaluator, Object);
+	GDCLASS(ValueEvaluator, Object);
 public:
 	virtual double eval(const String& p_text) {
 		return p_text.to_double();

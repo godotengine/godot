@@ -107,10 +107,10 @@ float CapsuleShape::get_height() const {
 
 void CapsuleShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_radius","radius"),&CapsuleShape::set_radius);
-	ObjectTypeDB::bind_method(_MD("get_radius"),&CapsuleShape::get_radius);
-	ObjectTypeDB::bind_method(_MD("set_height","height"),&CapsuleShape::set_height);
-	ObjectTypeDB::bind_method(_MD("get_height"),&CapsuleShape::get_height);
+	ClassDB::bind_method(_MD("set_radius","radius"),&CapsuleShape::set_radius);
+	ClassDB::bind_method(_MD("get_radius"),&CapsuleShape::get_radius);
+	ClassDB::bind_method(_MD("set_height","height"),&CapsuleShape::set_height);
+	ClassDB::bind_method(_MD("get_height"),&CapsuleShape::get_height);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius",PROPERTY_HINT_RANGE,"0.01,4096,0.01"), _SCS("set_radius"),_SCS("get_radius") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"height",PROPERTY_HINT_RANGE,"0.01,4096,0.01"), _SCS("set_height"),_SCS("get_height") );

@@ -35,7 +35,7 @@
 
 class ColorRampEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ColorRampEditorPlugin, EditorPlugin );
+	GDCLASS( ColorRampEditorPlugin, EditorPlugin );
 
 	bool _2d;
 	Ref<ColorRamp> color_ramp_ref;

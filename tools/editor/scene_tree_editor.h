@@ -40,7 +40,7 @@
 */
 class SceneTreeEditor : public Control {
 
-	OBJ_TYPE( SceneTreeEditor, Control );
+	GDCLASS( SceneTreeEditor, Control );
 
 	EditorSelection *editor_selection;
 
@@ -172,7 +172,7 @@ public:
 
 class SceneTreeDialog : public ConfirmationDialog {
 
-	OBJ_TYPE( SceneTreeDialog, ConfirmationDialog );
+	GDCLASS( SceneTreeDialog, ConfirmationDialog );
 
 	SceneTreeEditor *tree;
 //	Button *select;

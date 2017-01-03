@@ -122,12 +122,12 @@ uint32_t VisualInstance::get_layer_mask() const {
 
 void VisualInstance::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_get_visual_instance_rid"),&VisualInstance::_get_visual_instance_rid);
-	ObjectTypeDB::bind_method(_MD("set_base","base"), &VisualInstance::set_base);
-	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"), &VisualInstance::set_layer_mask);
-	ObjectTypeDB::bind_method(_MD("get_layer_mask"), &VisualInstance::get_layer_mask);
+	ClassDB::bind_method(_MD("_get_visual_instance_rid"),&VisualInstance::_get_visual_instance_rid);
+	ClassDB::bind_method(_MD("set_base","base"), &VisualInstance::set_base);
+	ClassDB::bind_method(_MD("set_layer_mask","mask"), &VisualInstance::set_layer_mask);
+	ClassDB::bind_method(_MD("get_layer_mask"), &VisualInstance::get_layer_mask);
 
-	ObjectTypeDB::bind_method(_MD("get_transformed_aabb"), &VisualInstance::get_transformed_aabb);
+	ClassDB::bind_method(_MD("get_transformed_aabb"), &VisualInstance::get_transformed_aabb);
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "layers",PROPERTY_HINT_ALL_FLAGS), _SCS("set_layer_mask"), _SCS("get_layer_mask"));
 
@@ -325,32 +325,32 @@ float GeometryInstance::get_extra_cull_margin() const{
 
 void GeometryInstance::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_material_override","material"), &GeometryInstance::set_material_override);
-	ObjectTypeDB::bind_method(_MD("get_material_override"), &GeometryInstance::get_material_override);
+	ClassDB::bind_method(_MD("set_material_override","material"), &GeometryInstance::set_material_override);
+	ClassDB::bind_method(_MD("get_material_override"), &GeometryInstance::get_material_override);
 
-	ObjectTypeDB::bind_method(_MD("set_flag","flag","value"), &GeometryInstance::set_flag);
-	ObjectTypeDB::bind_method(_MD("get_flag","flag"), &GeometryInstance::get_flag);
+	ClassDB::bind_method(_MD("set_flag","flag","value"), &GeometryInstance::set_flag);
+	ClassDB::bind_method(_MD("get_flag","flag"), &GeometryInstance::get_flag);
 
-	ObjectTypeDB::bind_method(_MD("set_cast_shadows_setting", "shadow_casting_setting"), &GeometryInstance::set_cast_shadows_setting);
-	ObjectTypeDB::bind_method(_MD("get_cast_shadows_setting"), &GeometryInstance::get_cast_shadows_setting);
+	ClassDB::bind_method(_MD("set_cast_shadows_setting", "shadow_casting_setting"), &GeometryInstance::set_cast_shadows_setting);
+	ClassDB::bind_method(_MD("get_cast_shadows_setting"), &GeometryInstance::get_cast_shadows_setting);
 
-	ObjectTypeDB::bind_method(_MD("set_lod_max_hysteresis","mode"), &GeometryInstance::set_lod_max_hysteresis);
-	ObjectTypeDB::bind_method(_MD("get_lod_max_hysteresis"), &GeometryInstance::get_lod_max_hysteresis);
+	ClassDB::bind_method(_MD("set_lod_max_hysteresis","mode"), &GeometryInstance::set_lod_max_hysteresis);
+	ClassDB::bind_method(_MD("get_lod_max_hysteresis"), &GeometryInstance::get_lod_max_hysteresis);
 
-	ObjectTypeDB::bind_method(_MD("set_lod_max_distance","mode"), &GeometryInstance::set_lod_max_distance);
-	ObjectTypeDB::bind_method(_MD("get_lod_max_distance"), &GeometryInstance::get_lod_max_distance);
+	ClassDB::bind_method(_MD("set_lod_max_distance","mode"), &GeometryInstance::set_lod_max_distance);
+	ClassDB::bind_method(_MD("get_lod_max_distance"), &GeometryInstance::get_lod_max_distance);
 
-	ObjectTypeDB::bind_method(_MD("set_lod_min_hysteresis","mode"), &GeometryInstance::set_lod_min_hysteresis);
-	ObjectTypeDB::bind_method(_MD("get_lod_min_hysteresis"), &GeometryInstance::get_lod_min_hysteresis);
+	ClassDB::bind_method(_MD("set_lod_min_hysteresis","mode"), &GeometryInstance::set_lod_min_hysteresis);
+	ClassDB::bind_method(_MD("get_lod_min_hysteresis"), &GeometryInstance::get_lod_min_hysteresis);
 
-	ObjectTypeDB::bind_method(_MD("set_lod_min_distance","mode"), &GeometryInstance::set_lod_min_distance);
-	ObjectTypeDB::bind_method(_MD("get_lod_min_distance"), &GeometryInstance::get_lod_min_distance);
+	ClassDB::bind_method(_MD("set_lod_min_distance","mode"), &GeometryInstance::set_lod_min_distance);
+	ClassDB::bind_method(_MD("get_lod_min_distance"), &GeometryInstance::get_lod_min_distance);
 
 
-	ObjectTypeDB::bind_method(_MD("set_extra_cull_margin","margin"), &GeometryInstance::set_extra_cull_margin);
-	ObjectTypeDB::bind_method(_MD("get_extra_cull_margin"), &GeometryInstance::get_extra_cull_margin);
+	ClassDB::bind_method(_MD("set_extra_cull_margin","margin"), &GeometryInstance::set_extra_cull_margin);
+	ClassDB::bind_method(_MD("get_extra_cull_margin"), &GeometryInstance::get_extra_cull_margin);
 
-	ObjectTypeDB::bind_method(_MD("get_aabb"),&GeometryInstance::get_aabb);
+	ClassDB::bind_method(_MD("get_aabb"),&GeometryInstance::get_aabb);
 
 
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/visible"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE);

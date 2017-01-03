@@ -60,8 +60,8 @@ float RayShape::get_length() const {
 
 void RayShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_length","length"),&RayShape::set_length);
-	ObjectTypeDB::bind_method(_MD("get_length"),&RayShape::get_length);
+	ClassDB::bind_method(_MD("set_length","length"),&RayShape::set_length);
+	ClassDB::bind_method(_MD("get_length"),&RayShape::get_length);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"length",PROPERTY_HINT_RANGE,"0,4096,0.01"), _SCS("set_length"), _SCS("get_length") );
 

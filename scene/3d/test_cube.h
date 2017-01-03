@@ -39,7 +39,7 @@
 */
 class TestCube : public GeometryInstance {
 
-	OBJ_TYPE( TestCube, GeometryInstance );
+	GDCLASS( TestCube, GeometryInstance );
 
 	RID instance;
 

@@ -33,7 +33,7 @@
 
 class ProgressBar : public Range {
 
-	OBJ_TYPE( ProgressBar, Range );
+	GDCLASS( ProgressBar, Range );
 
 	bool percent_visible;
 protected:

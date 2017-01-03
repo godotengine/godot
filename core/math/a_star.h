@@ -37,7 +37,7 @@
 
 class AStar: public Reference {
 
-	OBJ_TYPE(AStar,Reference)
+	GDCLASS(AStar,Reference)
 
 
 	uint64_t pass;

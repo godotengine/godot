@@ -37,7 +37,7 @@
 
 class SoundPlayer2D : public Node2D {
 
-	OBJ_TYPE(SoundPlayer2D,Node2D);
+	GDCLASS(SoundPlayer2D,Node2D);
 public:
 
 

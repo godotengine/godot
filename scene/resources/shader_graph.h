@@ -36,7 +36,7 @@
 
 class ShaderGraph : public Shader {
 
-	OBJ_TYPE( ShaderGraph, Shader );
+	GDCLASS( ShaderGraph, Shader );
 	RES_BASE_EXTENSION("sgp");
 
 public:
@@ -418,7 +418,7 @@ VARIANT_ENUM_CAST( ShaderGraph::GraphError );
 
 class MaterialShaderGraph : public ShaderGraph {
 
-	OBJ_TYPE( MaterialShaderGraph, ShaderGraph );
+	GDCLASS( MaterialShaderGraph, ShaderGraph );
 
 public:
 
@@ -430,7 +430,7 @@ public:
 
 class CanvasItemShaderGraph : public ShaderGraph {
 
-	OBJ_TYPE( CanvasItemShaderGraph, ShaderGraph );
+	GDCLASS( CanvasItemShaderGraph, ShaderGraph );
 
 public:
 

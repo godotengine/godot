@@ -36,7 +36,7 @@ class OpusVorbisDecoder;
 
 class VideoStreamPlaybackWebm : public VideoStreamPlayback {
 
-	OBJ_TYPE(VideoStreamPlaybackWebm, VideoStreamPlayback)
+	GDCLASS(VideoStreamPlaybackWebm, VideoStreamPlayback)
 
 	String file_name;
 	int audio_track;
@@ -102,7 +102,7 @@ private:
 
 class VideoStreamWebm : public VideoStream {
 
-	OBJ_TYPE(VideoStreamWebm, VideoStream)
+	GDCLASS(VideoStreamWebm, VideoStream)
 
 	String file;
 	int audio_track;

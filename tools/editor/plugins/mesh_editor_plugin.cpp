@@ -136,8 +136,8 @@ void MeshEditor::_button_pressed(Node* p_button) {
 
 void MeshEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&MeshEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_button_pressed"),&MeshEditor::_button_pressed);
+	ClassDB::bind_method(_MD("_input_event"),&MeshEditor::_input_event);
+	ClassDB::bind_method(_MD("_button_pressed"),&MeshEditor::_button_pressed);
 
 }
 

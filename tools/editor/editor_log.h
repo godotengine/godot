@@ -42,7 +42,7 @@
 #include "os/thread.h"
 class EditorLog : public VBoxContainer {
 
-	OBJ_TYPE( EditorLog, VBoxContainer );
+	GDCLASS( EditorLog, VBoxContainer );
 
 	Button *clearbutton;
 	Label *title;

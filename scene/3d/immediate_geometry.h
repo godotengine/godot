@@ -34,7 +34,7 @@
 
 class ImmediateGeometry : public GeometryInstance {
 
-	OBJ_TYPE(ImmediateGeometry,GeometryInstance);
+	GDCLASS(ImmediateGeometry,GeometryInstance);
 
 
 	RID im;

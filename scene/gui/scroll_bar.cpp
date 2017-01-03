@@ -804,11 +804,11 @@ bool ScrollBar::key(unsigned long p_unicode, unsigned long p_scan_code,bool b.pr
 
 void ScrollBar::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&ScrollBar::_input_event);
-	ObjectTypeDB::bind_method(_MD("set_custom_step","step"),&ScrollBar::set_custom_step);
-	ObjectTypeDB::bind_method(_MD("get_custom_step"),&ScrollBar::get_custom_step);
-	ObjectTypeDB::bind_method(_MD("_drag_slave_input"),&ScrollBar::_drag_slave_input);
-	ObjectTypeDB::bind_method(_MD("_drag_slave_exit"),&ScrollBar::_drag_slave_exit);
+	ClassDB::bind_method(_MD("_input_event"),&ScrollBar::_input_event);
+	ClassDB::bind_method(_MD("set_custom_step","step"),&ScrollBar::set_custom_step);
+	ClassDB::bind_method(_MD("get_custom_step"),&ScrollBar::get_custom_step);
+	ClassDB::bind_method(_MD("_drag_slave_input"),&ScrollBar::_drag_slave_input);
+	ClassDB::bind_method(_MD("_drag_slave_exit"),&ScrollBar::_drag_slave_exit);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"custom_step",PROPERTY_HINT_RANGE,"-1,4096"), _SCS("set_custom_step"),_SCS("get_custom_step"));
 

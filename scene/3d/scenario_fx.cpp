@@ -99,8 +99,8 @@ String WorldEnvironment::get_configuration_warning() const {
 
 void WorldEnvironment::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_environment","env:Environment"),&WorldEnvironment::set_environment);
-	ObjectTypeDB::bind_method(_MD("get_environment:Environment"),&WorldEnvironment::get_environment);
+	ClassDB::bind_method(_MD("set_environment","env:Environment"),&WorldEnvironment::set_environment);
+	ClassDB::bind_method(_MD("get_environment:Environment"),&WorldEnvironment::get_environment);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),_SCS("set_environment"),_SCS("get_environment"));
 
 }

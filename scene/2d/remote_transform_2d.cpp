@@ -118,8 +118,8 @@ String RemoteTransform2D::get_configuration_warning() const {
 
 void RemoteTransform2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_remote_node","path"),&RemoteTransform2D::set_remote_node);
-	ObjectTypeDB::bind_method(_MD("get_remote_node"),&RemoteTransform2D::get_remote_node);
+	ClassDB::bind_method(_MD("set_remote_node","path"),&RemoteTransform2D::set_remote_node);
+	ClassDB::bind_method(_MD("get_remote_node"),&RemoteTransform2D::get_remote_node);
 
 	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH,"remote_path"),_SCS("set_remote_node"),_SCS("get_remote_node"));
 }

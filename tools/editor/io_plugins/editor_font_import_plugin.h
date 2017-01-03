@@ -37,7 +37,7 @@ class EditorFontImportDialog;
 
 class EditorFontImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorFontImportPlugin,EditorImportPlugin);
+	GDCLASS(EditorFontImportPlugin,EditorImportPlugin);
 
 	EditorFontImportDialog *dialog;
 public:

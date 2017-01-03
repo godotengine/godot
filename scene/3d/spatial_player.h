@@ -38,7 +38,7 @@
 
 class SpatialPlayer : public Spatial {
 
-	OBJ_TYPE(SpatialPlayer,Spatial);
+	GDCLASS(SpatialPlayer,Spatial);
 public:
 
 

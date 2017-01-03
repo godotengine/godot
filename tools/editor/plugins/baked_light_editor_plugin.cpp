@@ -283,10 +283,10 @@ void BakedLightEditor::_bake_lightmaps() {
 
 void BakedLightEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_option",&BakedLightEditor::_menu_option);
-	ObjectTypeDB::bind_method("_bake_pressed",&BakedLightEditor::_bake_pressed);
-	ObjectTypeDB::bind_method("_clear_pressed",&BakedLightEditor::_clear_pressed);
-	ObjectTypeDB::bind_method("_bake_lightmaps",&BakedLightEditor::_bake_lightmaps);
+	ClassDB::bind_method("_menu_option",&BakedLightEditor::_menu_option);
+	ClassDB::bind_method("_bake_pressed",&BakedLightEditor::_bake_pressed);
+	ClassDB::bind_method("_clear_pressed",&BakedLightEditor::_clear_pressed);
+	ClassDB::bind_method("_bake_lightmaps",&BakedLightEditor::_bake_lightmaps);
 }
 
 BakedLightEditor::BakedLightEditor() {

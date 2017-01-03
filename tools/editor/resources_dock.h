@@ -45,7 +45,7 @@ class EditorNode;
 
 class ResourcesDock : public VBoxContainer {
 
-	OBJ_TYPE( ResourcesDock, VBoxContainer );
+	GDCLASS( ResourcesDock, VBoxContainer );
 
 	enum {
 		TOOL_NEW,

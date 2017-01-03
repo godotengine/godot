@@ -109,9 +109,9 @@ bool VisibilityNotifier::is_on_screen() const {
 
 void VisibilityNotifier::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_aabb","rect"),&VisibilityNotifier::set_aabb);
-	ObjectTypeDB::bind_method(_MD("get_aabb"),&VisibilityNotifier::get_aabb);
-	ObjectTypeDB::bind_method(_MD("is_on_screen"),&VisibilityNotifier::is_on_screen);
+	ClassDB::bind_method(_MD("set_aabb","rect"),&VisibilityNotifier::set_aabb);
+	ClassDB::bind_method(_MD("get_aabb"),&VisibilityNotifier::get_aabb);
+	ClassDB::bind_method(_MD("is_on_screen"),&VisibilityNotifier::is_on_screen);
 
 	ADD_PROPERTY( PropertyInfo(Variant::_AABB,"aabb"),_SCS("set_aabb"),_SCS("get_aabb"));
 
@@ -267,9 +267,9 @@ void VisibilityEnabler::_node_removed(Node* p_node) {
 
 void VisibilityEnabler::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_enabler","enabler","enabled"),&VisibilityEnabler::set_enabler);
-	ObjectTypeDB::bind_method(_MD("is_enabler_enabled","enabler"),&VisibilityEnabler::is_enabler_enabled);
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&VisibilityEnabler::_node_removed);
+	ClassDB::bind_method(_MD("set_enabler","enabler","enabled"),&VisibilityEnabler::set_enabler);
+	ClassDB::bind_method(_MD("is_enabler_enabled","enabler"),&VisibilityEnabler::is_enabler_enabled);
+	ClassDB::bind_method(_MD("_node_removed"),&VisibilityEnabler::_node_removed);
 
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_animations"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATIONS );
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/freeze_bodies"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_FREEZE_BODIES);

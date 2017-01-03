@@ -48,8 +48,8 @@
 
 void SceneTreeTimer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_time_left","time"),&SceneTreeTimer::set_time_left);
-	ObjectTypeDB::bind_method(_MD("get_time_left"),&SceneTreeTimer::get_time_left);
+	ClassDB::bind_method(_MD("set_time_left","time"),&SceneTreeTimer::set_time_left);
+	ClassDB::bind_method(_MD("get_time_left"),&SceneTreeTimer::get_time_left);
 
 	ADD_SIGNAL(MethodInfo("timeout"));
 }
@@ -1052,7 +1052,7 @@ static void _fill_array(Node *p_node, Array& array, int p_level) {
 
 	array.push_back(p_level);
 	array.push_back(p_node->get_name());
-	array.push_back(p_node->get_type());
+	array.push_back(p_node->get_class());
 	array.push_back(p_node->get_instance_ID());
 	for(int i=0;i<p_node->get_child_count();i++) {
 
@@ -1427,7 +1427,7 @@ void SceneTree::_live_edit_create_node_func(const NodePath& p_parent,const Strin
 			continue;
 		Node *n2 = n->get_node(p_parent);
 
-		Object *o = ObjectTypeDB::instance(p_type);
+		Object *o = ClassDB::instance(p_type);
 		if (!o)
 			continue;
 		Node *no=o->cast_to<Node>();
@@ -2062,7 +2062,7 @@ void SceneTree::_network_process_packet(int p_from, const uint8_t* p_packet, int
 
 				node->set(name,value,&valid);
 				if (!valid) {
-					String error = "Error setting remote property '"+String(name)+"', not found in object of type "+node->get_type();
+					String error = "Error setting remote property '"+String(name)+"', not found in object of type "+node->get_class();
 					ERR_PRINTS(error);
 				}
 			}
@@ -2160,43 +2160,43 @@ void SceneTree::_network_poll() {
 void SceneTree::_bind_methods() {
 
 
-	//ObjectTypeDB::bind_method(_MD("call_group","call_flags","group","method","arg1","arg2"),&SceneMainLoop::_call_group,DEFVAL(Variant()),DEFVAL(Variant()));
-	ObjectTypeDB::bind_method(_MD("notify_group","call_flags","group","notification"),&SceneTree::notify_group);
-	ObjectTypeDB::bind_method(_MD("set_group","call_flags","group","property","value"),&SceneTree::set_group);
+	//ClassDB::bind_method(_MD("call_group","call_flags","group","method","arg1","arg2"),&SceneMainLoop::_call_group,DEFVAL(Variant()),DEFVAL(Variant()));
+	ClassDB::bind_method(_MD("notify_group","call_flags","group","notification"),&SceneTree::notify_group);
+	ClassDB::bind_method(_MD("set_group","call_flags","group","property","value"),&SceneTree::set_group);
 
-	ObjectTypeDB::bind_method(_MD("get_nodes_in_group","group"),&SceneTree::_get_nodes_in_group);
+	ClassDB::bind_method(_MD("get_nodes_in_group","group"),&SceneTree::_get_nodes_in_group);
 
-	ObjectTypeDB::bind_method(_MD("get_root:Viewport"),&SceneTree::get_root);
-	ObjectTypeDB::bind_method(_MD("has_group","name"),&SceneTree::has_group);
+	ClassDB::bind_method(_MD("get_root:Viewport"),&SceneTree::get_root);
+	ClassDB::bind_method(_MD("has_group","name"),&SceneTree::has_group);
 
-	ObjectTypeDB::bind_method(_MD("set_auto_accept_quit","enabled"),&SceneTree::set_auto_accept_quit);
+	ClassDB::bind_method(_MD("set_auto_accept_quit","enabled"),&SceneTree::set_auto_accept_quit);
 
-	ObjectTypeDB::bind_method(_MD("set_editor_hint","enable"),&SceneTree::set_editor_hint);
-	ObjectTypeDB::bind_method(_MD("is_editor_hint"),&SceneTree::is_editor_hint);
-	ObjectTypeDB::bind_method(_MD("set_debug_collisions_hint","enable"),&SceneTree::set_debug_collisions_hint);
-	ObjectTypeDB::bind_method(_MD("is_debugging_collisions_hint"),&SceneTree::is_debugging_collisions_hint);
-	ObjectTypeDB::bind_method(_MD("set_debug_navigation_hint","enable"),&SceneTree::set_debug_navigation_hint);
-	ObjectTypeDB::bind_method(_MD("is_debugging_navigation_hint"),&SceneTree::is_debugging_navigation_hint);
+	ClassDB::bind_method(_MD("set_editor_hint","enable"),&SceneTree::set_editor_hint);
+	ClassDB::bind_method(_MD("is_editor_hint"),&SceneTree::is_editor_hint);
+	ClassDB::bind_method(_MD("set_debug_collisions_hint","enable"),&SceneTree::set_debug_collisions_hint);
+	ClassDB::bind_method(_MD("is_debugging_collisions_hint"),&SceneTree::is_debugging_collisions_hint);
+	ClassDB::bind_method(_MD("set_debug_navigation_hint","enable"),&SceneTree::set_debug_navigation_hint);
+	ClassDB::bind_method(_MD("is_debugging_navigation_hint"),&SceneTree::is_debugging_navigation_hint);
 
 #ifdef TOOLS_ENABLED
-	ObjectTypeDB::bind_method(_MD("set_edited_scene_root","scene"),&SceneTree::set_edited_scene_root);
-	ObjectTypeDB::bind_method(_MD("get_edited_scene_root"),&SceneTree::get_edited_scene_root);
+	ClassDB::bind_method(_MD("set_edited_scene_root","scene"),&SceneTree::set_edited_scene_root);
+	ClassDB::bind_method(_MD("get_edited_scene_root"),&SceneTree::get_edited_scene_root);
 #endif
 
-	ObjectTypeDB::bind_method(_MD("set_pause","enable"),&SceneTree::set_pause);
-	ObjectTypeDB::bind_method(_MD("is_paused"),&SceneTree::is_paused);
-	ObjectTypeDB::bind_method(_MD("set_input_as_handled"),&SceneTree::set_input_as_handled);
+	ClassDB::bind_method(_MD("set_pause","enable"),&SceneTree::set_pause);
+	ClassDB::bind_method(_MD("is_paused"),&SceneTree::is_paused);
+	ClassDB::bind_method(_MD("set_input_as_handled"),&SceneTree::set_input_as_handled);
 
-	ObjectTypeDB::bind_method(_MD("create_timer:SceneTreeTimer","time_sec"),&SceneTree::create_timer);
+	ClassDB::bind_method(_MD("create_timer:SceneTreeTimer","time_sec"),&SceneTree::create_timer);
 
 
-	ObjectTypeDB::bind_method(_MD("get_node_count"),&SceneTree::get_node_count);
-	ObjectTypeDB::bind_method(_MD("get_frame"),&SceneTree::get_frame);
-	ObjectTypeDB::bind_method(_MD("quit"),&SceneTree::quit);
+	ClassDB::bind_method(_MD("get_node_count"),&SceneTree::get_node_count);
+	ClassDB::bind_method(_MD("get_frame"),&SceneTree::get_frame);
+	ClassDB::bind_method(_MD("quit"),&SceneTree::quit);
 
-	ObjectTypeDB::bind_method(_MD("set_screen_stretch","mode","aspect","minsize"),&SceneTree::set_screen_stretch);
+	ClassDB::bind_method(_MD("set_screen_stretch","mode","aspect","minsize"),&SceneTree::set_screen_stretch);
 
-	ObjectTypeDB::bind_method(_MD("queue_delete","obj"),&SceneTree::queue_delete);
+	ClassDB::bind_method(_MD("queue_delete","obj"),&SceneTree::queue_delete);
 
 
 
@@ -2208,29 +2208,29 @@ void SceneTree::_bind_methods() {
 	mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
 
 
-	ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi);
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi);
 
-	ObjectTypeDB::bind_method(_MD("set_current_scene","child_node:Node"),&SceneTree::set_current_scene);
-	ObjectTypeDB::bind_method(_MD("get_current_scene:Node"),&SceneTree::get_current_scene);
+	ClassDB::bind_method(_MD("set_current_scene","child_node:Node"),&SceneTree::set_current_scene);
+	ClassDB::bind_method(_MD("get_current_scene:Node"),&SceneTree::get_current_scene);
 
-	ObjectTypeDB::bind_method(_MD("change_scene","path"),&SceneTree::change_scene);
-	ObjectTypeDB::bind_method(_MD("change_scene_to","packed_scene:PackedScene"),&SceneTree::change_scene_to);
+	ClassDB::bind_method(_MD("change_scene","path"),&SceneTree::change_scene);
+	ClassDB::bind_method(_MD("change_scene_to","packed_scene:PackedScene"),&SceneTree::change_scene_to);
 
-	ObjectTypeDB::bind_method(_MD("reload_current_scene"),&SceneTree::reload_current_scene);
+	ClassDB::bind_method(_MD("reload_current_scene"),&SceneTree::reload_current_scene);
 
-	ObjectTypeDB::bind_method(_MD("_change_scene"),&SceneTree::_change_scene);
+	ClassDB::bind_method(_MD("_change_scene"),&SceneTree::_change_scene);
 
 
-	ObjectTypeDB::bind_method(_MD("set_network_peer","peer:NetworkedMultiplayerPeer"),&SceneTree::set_network_peer);
-	ObjectTypeDB::bind_method(_MD("is_network_server"),&SceneTree::is_network_server);
-	ObjectTypeDB::bind_method(_MD("get_network_unique_id"),&SceneTree::get_network_unique_id);
-	ObjectTypeDB::bind_method(_MD("set_refuse_new_network_connections","refuse"),&SceneTree::set_refuse_new_network_connections);
-	ObjectTypeDB::bind_method(_MD("is_refusing_new_network_connections"),&SceneTree::is_refusing_new_network_connections);
-	ObjectTypeDB::bind_method(_MD("_network_peer_connected"),&SceneTree::_network_peer_connected);
-	ObjectTypeDB::bind_method(_MD("_network_peer_disconnected"),&SceneTree::_network_peer_disconnected);
-	ObjectTypeDB::bind_method(_MD("_connected_to_server"),&SceneTree::_connected_to_server);
-	ObjectTypeDB::bind_method(_MD("_connection_failed"),&SceneTree::_connection_failed);
-	ObjectTypeDB::bind_method(_MD("_server_disconnected"),&SceneTree::_server_disconnected);
+	ClassDB::bind_method(_MD("set_network_peer","peer:NetworkedMultiplayerPeer"),&SceneTree::set_network_peer);
+	ClassDB::bind_method(_MD("is_network_server"),&SceneTree::is_network_server);
+	ClassDB::bind_method(_MD("get_network_unique_id"),&SceneTree::get_network_unique_id);
+	ClassDB::bind_method(_MD("set_refuse_new_network_connections","refuse"),&SceneTree::set_refuse_new_network_connections);
+	ClassDB::bind_method(_MD("is_refusing_new_network_connections"),&SceneTree::is_refusing_new_network_connections);
+	ClassDB::bind_method(_MD("_network_peer_connected"),&SceneTree::_network_peer_connected);
+	ClassDB::bind_method(_MD("_network_peer_disconnected"),&SceneTree::_network_peer_disconnected);
+	ClassDB::bind_method(_MD("_connected_to_server"),&SceneTree::_connected_to_server);
+	ClassDB::bind_method(_MD("_connection_failed"),&SceneTree::_connection_failed);
+	ClassDB::bind_method(_MD("_server_disconnected"),&SceneTree::_server_disconnected);
 
 	ADD_SIGNAL( MethodInfo("tree_changed") );
 	ADD_SIGNAL( MethodInfo("node_removed",PropertyInfo( Variant::OBJECT, "node") ) );

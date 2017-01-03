@@ -51,7 +51,7 @@ class EditorSceneImportDialog;
 
 class EditorSceneImporter : public Reference {
 
-	OBJ_TYPE(EditorSceneImporter,Reference );
+	GDCLASS(EditorSceneImporter,Reference );
 public:
 
 	enum ImportFlags {
@@ -83,7 +83,7 @@ public:
 
 class EditorScenePostImport : public Reference {
 
-	OBJ_TYPE(EditorScenePostImport,Reference );
+	GDCLASS(EditorScenePostImport,Reference );
 protected:
 
 	static void _bind_methods();
@@ -96,7 +96,7 @@ public:
 
 class EditorSceneImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorSceneImportPlugin,EditorImportPlugin);
+	GDCLASS(EditorSceneImportPlugin,EditorImportPlugin);
 
 	EditorSceneImportDialog *dialog;
 
@@ -174,7 +174,7 @@ public:
 
 class EditorSceneAnimationImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorSceneAnimationImportPlugin,EditorImportPlugin);
+	GDCLASS(EditorSceneAnimationImportPlugin,EditorImportPlugin);
 public:
 
 

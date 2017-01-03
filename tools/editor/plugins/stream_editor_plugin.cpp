@@ -59,8 +59,8 @@ void StreamEditor::_stop() {
 
 void StreamEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_play"),&StreamEditor::_play);
-	ObjectTypeDB::bind_method(_MD("_stop"),&StreamEditor::_stop);
+	ClassDB::bind_method(_MD("_play"),&StreamEditor::_play);
+	ClassDB::bind_method(_MD("_stop"),&StreamEditor::_stop);
 
 }
 
@@ -104,7 +104,7 @@ void StreamEditorPlugin::edit(Object *p_object) {
 
 bool StreamEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("StreamPlayer") || p_object->is_type("SpatialStreamPlayer");
+	return p_object->is_class("StreamPlayer") || p_object->is_class("SpatialStreamPlayer");
 }
 
 void StreamEditorPlugin::make_visible(bool p_visible) {

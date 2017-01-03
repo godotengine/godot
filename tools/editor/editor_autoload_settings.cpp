@@ -62,7 +62,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String& p_name, Strin
 		return false;
 	}
 
-	if (ObjectTypeDB::type_exists(p_name)) {
+	if (ClassDB::class_exists(p_name)) {
 		if (r_error)
 			*r_error = TTR("Invalid name. Must not collide with an existing engine class name.");
 
@@ -528,17 +528,17 @@ void EditorAutoloadSettings::drop_data_fw(const Point2& p_point, const Variant& 
 
 void EditorAutoloadSettings::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_autoload_add", &EditorAutoloadSettings::_autoload_add);
-	ObjectTypeDB::bind_method("_autoload_selected", &EditorAutoloadSettings::_autoload_selected);
-	ObjectTypeDB::bind_method("_autoload_edited", &EditorAutoloadSettings::_autoload_edited);
-	ObjectTypeDB::bind_method("_autoload_button_pressed", &EditorAutoloadSettings::_autoload_button_pressed);
-	ObjectTypeDB::bind_method("_autoload_file_callback", &EditorAutoloadSettings::_autoload_file_callback);
+	ClassDB::bind_method("_autoload_add", &EditorAutoloadSettings::_autoload_add);
+	ClassDB::bind_method("_autoload_selected", &EditorAutoloadSettings::_autoload_selected);
+	ClassDB::bind_method("_autoload_edited", &EditorAutoloadSettings::_autoload_edited);
+	ClassDB::bind_method("_autoload_button_pressed", &EditorAutoloadSettings::_autoload_button_pressed);
+	ClassDB::bind_method("_autoload_file_callback", &EditorAutoloadSettings::_autoload_file_callback);
 
-	ObjectTypeDB::bind_method("get_drag_data_fw", &EditorAutoloadSettings::get_drag_data_fw);
-	ObjectTypeDB::bind_method("can_drop_data_fw", &EditorAutoloadSettings::can_drop_data_fw);
-	ObjectTypeDB::bind_method("drop_data_fw", &EditorAutoloadSettings::drop_data_fw);
+	ClassDB::bind_method("get_drag_data_fw", &EditorAutoloadSettings::get_drag_data_fw);
+	ClassDB::bind_method("can_drop_data_fw", &EditorAutoloadSettings::can_drop_data_fw);
+	ClassDB::bind_method("drop_data_fw", &EditorAutoloadSettings::drop_data_fw);
 
-	ObjectTypeDB::bind_method("update_autoload", &EditorAutoloadSettings::update_autoload);
+	ClassDB::bind_method("update_autoload", &EditorAutoloadSettings::update_autoload);
 
 	ADD_SIGNAL(MethodInfo("autoload_changed"));
 }

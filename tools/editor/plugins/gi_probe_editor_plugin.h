@@ -10,7 +10,7 @@
 
 class GIProbeEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( GIProbeEditorPlugin, EditorPlugin );
+	GDCLASS( GIProbeEditorPlugin, EditorPlugin );
 
 	GIProbe *gi_probe;
 

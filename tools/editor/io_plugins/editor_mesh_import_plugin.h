@@ -38,7 +38,7 @@ class EditorMeshImportDialog;
 
 class EditorMeshImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorMeshImportPlugin,EditorImportPlugin);
+	GDCLASS(EditorMeshImportPlugin,EditorImportPlugin);
 
 	EditorMeshImportDialog *dialog;
 

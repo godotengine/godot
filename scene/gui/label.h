@@ -35,7 +35,7 @@
 */
 class Label : public Control {
 
-	OBJ_TYPE( Label, Control );
+	GDCLASS( Label, Control );
 public:
 
 	enum Align {

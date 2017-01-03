@@ -1902,58 +1902,58 @@ String RichTextLabel::get_text() {
 void RichTextLabel::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&RichTextLabel::_input_event);
-	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&RichTextLabel::_scroll_changed);
-	ObjectTypeDB::bind_method(_MD("get_text"),&RichTextLabel::get_text);
-	ObjectTypeDB::bind_method(_MD("add_text","text"),&RichTextLabel::add_text);
-	ObjectTypeDB::bind_method(_MD("add_image","image:Texture"),&RichTextLabel::add_image);
-	ObjectTypeDB::bind_method(_MD("newline"),&RichTextLabel::add_newline);
-	ObjectTypeDB::bind_method(_MD("push_font","font"),&RichTextLabel::push_font);
-	ObjectTypeDB::bind_method(_MD("push_color","color"),&RichTextLabel::push_color);
-	ObjectTypeDB::bind_method(_MD("push_align","align"),&RichTextLabel::push_align);
-	ObjectTypeDB::bind_method(_MD("push_indent","level"),&RichTextLabel::push_indent);
-	ObjectTypeDB::bind_method(_MD("push_list","type"),&RichTextLabel::push_list);
-	ObjectTypeDB::bind_method(_MD("push_meta","data"),&RichTextLabel::push_meta);
-	ObjectTypeDB::bind_method(_MD("push_underline"),&RichTextLabel::push_underline);
-	ObjectTypeDB::bind_method(_MD("push_table","columns"),&RichTextLabel::push_table);
-	ObjectTypeDB::bind_method(_MD("set_table_column_expand","column","expand","ratio"),&RichTextLabel::set_table_column_expand);
-	ObjectTypeDB::bind_method(_MD("push_cell"),&RichTextLabel::push_cell);
-	ObjectTypeDB::bind_method(_MD("pop"),&RichTextLabel::pop);
+	ClassDB::bind_method(_MD("_input_event"),&RichTextLabel::_input_event);
+	ClassDB::bind_method(_MD("_scroll_changed"),&RichTextLabel::_scroll_changed);
+	ClassDB::bind_method(_MD("get_text"),&RichTextLabel::get_text);
+	ClassDB::bind_method(_MD("add_text","text"),&RichTextLabel::add_text);
+	ClassDB::bind_method(_MD("add_image","image:Texture"),&RichTextLabel::add_image);
+	ClassDB::bind_method(_MD("newline"),&RichTextLabel::add_newline);
+	ClassDB::bind_method(_MD("push_font","font"),&RichTextLabel::push_font);
+	ClassDB::bind_method(_MD("push_color","color"),&RichTextLabel::push_color);
+	ClassDB::bind_method(_MD("push_align","align"),&RichTextLabel::push_align);
+	ClassDB::bind_method(_MD("push_indent","level"),&RichTextLabel::push_indent);
+	ClassDB::bind_method(_MD("push_list","type"),&RichTextLabel::push_list);
+	ClassDB::bind_method(_MD("push_meta","data"),&RichTextLabel::push_meta);
+	ClassDB::bind_method(_MD("push_underline"),&RichTextLabel::push_underline);
+	ClassDB::bind_method(_MD("push_table","columns"),&RichTextLabel::push_table);
+	ClassDB::bind_method(_MD("set_table_column_expand","column","expand","ratio"),&RichTextLabel::set_table_column_expand);
+	ClassDB::bind_method(_MD("push_cell"),&RichTextLabel::push_cell);
+	ClassDB::bind_method(_MD("pop"),&RichTextLabel::pop);
 
-	ObjectTypeDB::bind_method(_MD("clear"),&RichTextLabel::clear);
+	ClassDB::bind_method(_MD("clear"),&RichTextLabel::clear);
 
-	ObjectTypeDB::bind_method(_MD("set_meta_underline","enable"),&RichTextLabel::set_meta_underline);
-	ObjectTypeDB::bind_method(_MD("is_meta_underlined"),&RichTextLabel::is_meta_underlined);
+	ClassDB::bind_method(_MD("set_meta_underline","enable"),&RichTextLabel::set_meta_underline);
+	ClassDB::bind_method(_MD("is_meta_underlined"),&RichTextLabel::is_meta_underlined);
 
-	ObjectTypeDB::bind_method(_MD("set_scroll_active","active"),&RichTextLabel::set_scroll_active);
-	ObjectTypeDB::bind_method(_MD("is_scroll_active"),&RichTextLabel::is_scroll_active);
+	ClassDB::bind_method(_MD("set_scroll_active","active"),&RichTextLabel::set_scroll_active);
+	ClassDB::bind_method(_MD("is_scroll_active"),&RichTextLabel::is_scroll_active);
 
-	ObjectTypeDB::bind_method(_MD("set_scroll_follow","follow"),&RichTextLabel::set_scroll_follow);
-	ObjectTypeDB::bind_method(_MD("is_scroll_following"),&RichTextLabel::is_scroll_following);
+	ClassDB::bind_method(_MD("set_scroll_follow","follow"),&RichTextLabel::set_scroll_follow);
+	ClassDB::bind_method(_MD("is_scroll_following"),&RichTextLabel::is_scroll_following);
 
-	ObjectTypeDB::bind_method(_MD("get_v_scroll"),&RichTextLabel::get_v_scroll);
+	ClassDB::bind_method(_MD("get_v_scroll"),&RichTextLabel::get_v_scroll);
 
-	ObjectTypeDB::bind_method(_MD("scroll_to_line","line"),&RichTextLabel::scroll_to_line);
+	ClassDB::bind_method(_MD("scroll_to_line","line"),&RichTextLabel::scroll_to_line);
 
-	ObjectTypeDB::bind_method(_MD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
-	ObjectTypeDB::bind_method(_MD("get_tab_size"),&RichTextLabel::get_tab_size);
+	ClassDB::bind_method(_MD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
+	ClassDB::bind_method(_MD("get_tab_size"),&RichTextLabel::get_tab_size);
 
-	ObjectTypeDB::bind_method(_MD("set_selection_enabled","enabled"),&RichTextLabel::set_selection_enabled);
-	ObjectTypeDB::bind_method(_MD("is_selection_enabled"),&RichTextLabel::is_selection_enabled);
+	ClassDB::bind_method(_MD("set_selection_enabled","enabled"),&RichTextLabel::set_selection_enabled);
+	ClassDB::bind_method(_MD("is_selection_enabled"),&RichTextLabel::is_selection_enabled);
 
-	ObjectTypeDB::bind_method(_MD("parse_bbcode", "bbcode"),&RichTextLabel::parse_bbcode);
-	ObjectTypeDB::bind_method(_MD("append_bbcode", "bbcode"),&RichTextLabel::append_bbcode);
+	ClassDB::bind_method(_MD("parse_bbcode", "bbcode"),&RichTextLabel::parse_bbcode);
+	ClassDB::bind_method(_MD("append_bbcode", "bbcode"),&RichTextLabel::append_bbcode);
 
-	ObjectTypeDB::bind_method(_MD("set_bbcode","text"),&RichTextLabel::set_bbcode);
-	ObjectTypeDB::bind_method(_MD("get_bbcode"),&RichTextLabel::get_bbcode);
+	ClassDB::bind_method(_MD("set_bbcode","text"),&RichTextLabel::set_bbcode);
+	ClassDB::bind_method(_MD("get_bbcode"),&RichTextLabel::get_bbcode);
 
-	ObjectTypeDB::bind_method(_MD("set_visible_characters","amount"),&RichTextLabel::set_visible_characters);
-	ObjectTypeDB::bind_method(_MD("get_visible_characters"),&RichTextLabel::get_visible_characters);
+	ClassDB::bind_method(_MD("set_visible_characters","amount"),&RichTextLabel::set_visible_characters);
+	ClassDB::bind_method(_MD("get_visible_characters"),&RichTextLabel::get_visible_characters);
 
-	ObjectTypeDB::bind_method(_MD("get_total_character_count"),&RichTextLabel::get_total_character_count);
+	ClassDB::bind_method(_MD("get_total_character_count"),&RichTextLabel::get_total_character_count);
 
-	ObjectTypeDB::bind_method(_MD("set_use_bbcode","enable"),&RichTextLabel::set_use_bbcode);
-	ObjectTypeDB::bind_method(_MD("is_using_bbcode"),&RichTextLabel::is_using_bbcode);
+	ClassDB::bind_method(_MD("set_use_bbcode","enable"),&RichTextLabel::set_use_bbcode);
+	ClassDB::bind_method(_MD("is_using_bbcode"),&RichTextLabel::is_using_bbcode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode/enabled"),_SCS("set_use_bbcode"),_SCS("is_using_bbcode"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"bbcode/bbcode",PROPERTY_HINT_MULTILINE_TEXT),_SCS("set_bbcode"),_SCS("get_bbcode"));

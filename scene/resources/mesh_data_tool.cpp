@@ -565,62 +565,62 @@ void MeshDataTool::set_material(const Ref<Material> &p_material) {
 
 void MeshDataTool::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("clear"),&MeshDataTool::clear);
-	ObjectTypeDB::bind_method(_MD("create_from_surface","mesh","surface"),&MeshDataTool::create_from_surface);
-	ObjectTypeDB::bind_method(_MD("commit_to_surface","mesh"),&MeshDataTool::commit_to_surface);
+	ClassDB::bind_method(_MD("clear"),&MeshDataTool::clear);
+	ClassDB::bind_method(_MD("create_from_surface","mesh","surface"),&MeshDataTool::create_from_surface);
+	ClassDB::bind_method(_MD("commit_to_surface","mesh"),&MeshDataTool::commit_to_surface);
 
-	ObjectTypeDB::bind_method(_MD("get_format"),&MeshDataTool::get_format);
+	ClassDB::bind_method(_MD("get_format"),&MeshDataTool::get_format);
 
-	ObjectTypeDB::bind_method(_MD("get_vertex_count"),&MeshDataTool::get_vertex_count);
-	ObjectTypeDB::bind_method(_MD("get_edge_count"),&MeshDataTool::get_edge_count);
-	ObjectTypeDB::bind_method(_MD("get_face_count"),&MeshDataTool::get_face_count);
+	ClassDB::bind_method(_MD("get_vertex_count"),&MeshDataTool::get_vertex_count);
+	ClassDB::bind_method(_MD("get_edge_count"),&MeshDataTool::get_edge_count);
+	ClassDB::bind_method(_MD("get_face_count"),&MeshDataTool::get_face_count);
 
-	ObjectTypeDB::bind_method(_MD("set_vertex","idx","vertex"),&MeshDataTool::set_vertex);
-	ObjectTypeDB::bind_method(_MD("get_vertex","idx"),&MeshDataTool::get_vertex);
+	ClassDB::bind_method(_MD("set_vertex","idx","vertex"),&MeshDataTool::set_vertex);
+	ClassDB::bind_method(_MD("get_vertex","idx"),&MeshDataTool::get_vertex);
 
-	ObjectTypeDB::bind_method(_MD("set_vertex_normal","idx","normal"),&MeshDataTool::set_vertex_normal);
-	ObjectTypeDB::bind_method(_MD("get_vertex_normal","idx"),&MeshDataTool::get_vertex_normal);
+	ClassDB::bind_method(_MD("set_vertex_normal","idx","normal"),&MeshDataTool::set_vertex_normal);
+	ClassDB::bind_method(_MD("get_vertex_normal","idx"),&MeshDataTool::get_vertex_normal);
 
-	ObjectTypeDB::bind_method(_MD("set_vertex_tangent","idx","tangent"),&MeshDataTool::set_vertex_tangent);
-	ObjectTypeDB::bind_method(_MD("get_vertex_tangent","idx"),&MeshDataTool::get_vertex_tangent);
+	ClassDB::bind_method(_MD("set_vertex_tangent","idx","tangent"),&MeshDataTool::set_vertex_tangent);
+	ClassDB::bind_method(_MD("get_vertex_tangent","idx"),&MeshDataTool::get_vertex_tangent);
 
-	ObjectTypeDB::bind_method(_MD("set_vertex_uv","idx","uv"),&MeshDataTool::set_vertex_uv);
-	ObjectTypeDB::bind_method(_MD("get_vertex_uv","idx"),&MeshDataTool::get_vertex_uv);
+	ClassDB::bind_method(_MD("set_vertex_uv","idx","uv"),&MeshDataTool::set_vertex_uv);
+	ClassDB::bind_method(_MD("get_vertex_uv","idx"),&MeshDataTool::get_vertex_uv);
 
-	ObjectTypeDB::bind_method(_MD("set_vertex_uv2","idx","uv2"),&MeshDataTool::set_vertex_uv2);
-	ObjectTypeDB::bind_method(_MD("get_vertex_uv2","idx"),&MeshDataTool::get_vertex_uv2);
+	ClassDB::bind_method(_MD("set_vertex_uv2","idx","uv2"),&MeshDataTool::set_vertex_uv2);
+	ClassDB::bind_method(_MD("get_vertex_uv2","idx"),&MeshDataTool::get_vertex_uv2);
 
-	ObjectTypeDB::bind_method(_MD("set_vertex_color","idx","color"),&MeshDataTool::set_vertex_color);
-	ObjectTypeDB::bind_method(_MD("get_vertex_color","idx"),&MeshDataTool::get_vertex_color);
+	ClassDB::bind_method(_MD("set_vertex_color","idx","color"),&MeshDataTool::set_vertex_color);
+	ClassDB::bind_method(_MD("get_vertex_color","idx"),&MeshDataTool::get_vertex_color);
 
-	ObjectTypeDB::bind_method(_MD("set_vertex_bones","idx","bones"),&MeshDataTool::set_vertex_bones);
-	ObjectTypeDB::bind_method(_MD("get_vertex_bones","idx"),&MeshDataTool::get_vertex_bones);
+	ClassDB::bind_method(_MD("set_vertex_bones","idx","bones"),&MeshDataTool::set_vertex_bones);
+	ClassDB::bind_method(_MD("get_vertex_bones","idx"),&MeshDataTool::get_vertex_bones);
 
-	ObjectTypeDB::bind_method(_MD("set_vertex_weights","idx","weights"),&MeshDataTool::set_vertex_weights);
-	ObjectTypeDB::bind_method(_MD("get_vertex_weights","idx"),&MeshDataTool::get_vertex_weights);
+	ClassDB::bind_method(_MD("set_vertex_weights","idx","weights"),&MeshDataTool::set_vertex_weights);
+	ClassDB::bind_method(_MD("get_vertex_weights","idx"),&MeshDataTool::get_vertex_weights);
 
-	ObjectTypeDB::bind_method(_MD("set_vertex_meta","idx","meta"),&MeshDataTool::set_vertex_meta);
-	ObjectTypeDB::bind_method(_MD("get_vertex_meta","idx"),&MeshDataTool::get_vertex_meta);
+	ClassDB::bind_method(_MD("set_vertex_meta","idx","meta"),&MeshDataTool::set_vertex_meta);
+	ClassDB::bind_method(_MD("get_vertex_meta","idx"),&MeshDataTool::get_vertex_meta);
 
-	ObjectTypeDB::bind_method(_MD("get_vertex_edges","idx"),&MeshDataTool::get_vertex_edges);
-	ObjectTypeDB::bind_method(_MD("get_vertex_faces","idx"),&MeshDataTool::get_vertex_faces);
+	ClassDB::bind_method(_MD("get_vertex_edges","idx"),&MeshDataTool::get_vertex_edges);
+	ClassDB::bind_method(_MD("get_vertex_faces","idx"),&MeshDataTool::get_vertex_faces);
 
-	ObjectTypeDB::bind_method(_MD("get_edge_vertex","idx","vertex"),&MeshDataTool::get_edge_vertex);
-	ObjectTypeDB::bind_method(_MD("get_edge_faces","idx","faces"),&MeshDataTool::get_edge_faces);
+	ClassDB::bind_method(_MD("get_edge_vertex","idx","vertex"),&MeshDataTool::get_edge_vertex);
+	ClassDB::bind_method(_MD("get_edge_faces","idx","faces"),&MeshDataTool::get_edge_faces);
 
-	ObjectTypeDB::bind_method(_MD("set_edge_meta","idx","meta"),&MeshDataTool::set_edge_meta);
-	ObjectTypeDB::bind_method(_MD("get_edge_meta","idx"),&MeshDataTool::get_edge_meta);
+	ClassDB::bind_method(_MD("set_edge_meta","idx","meta"),&MeshDataTool::set_edge_meta);
+	ClassDB::bind_method(_MD("get_edge_meta","idx"),&MeshDataTool::get_edge_meta);
 
-	ObjectTypeDB::bind_method(_MD("get_face_vertex","idx","vertex"),&MeshDataTool::get_face_vertex);
-	ObjectTypeDB::bind_method(_MD("get_face_edge","idx","edge"),&MeshDataTool::get_face_edge);
+	ClassDB::bind_method(_MD("get_face_vertex","idx","vertex"),&MeshDataTool::get_face_vertex);
+	ClassDB::bind_method(_MD("get_face_edge","idx","edge"),&MeshDataTool::get_face_edge);
 
-	ObjectTypeDB::bind_method(_MD("set_face_meta","idx","meta"),&MeshDataTool::set_face_meta);
-	ObjectTypeDB::bind_method(_MD("get_face_meta","idx"),&MeshDataTool::get_face_meta);
+	ClassDB::bind_method(_MD("set_face_meta","idx","meta"),&MeshDataTool::set_face_meta);
+	ClassDB::bind_method(_MD("get_face_meta","idx"),&MeshDataTool::get_face_meta);
 
-	ObjectTypeDB::bind_method(_MD("get_face_normal","idx"),&MeshDataTool::get_face_normal);
+	ClassDB::bind_method(_MD("get_face_normal","idx"),&MeshDataTool::get_face_normal);
 
-	ObjectTypeDB::bind_method(_MD("set_material","material:Material"),&MeshDataTool::set_material);
-	ObjectTypeDB::bind_method(_MD("get_material","material"),&MeshDataTool::get_material);
+	ClassDB::bind_method(_MD("set_material","material:Material"),&MeshDataTool::set_material);
+	ClassDB::bind_method(_MD("get_material","material"),&MeshDataTool::get_material);
 }
 
 MeshDataTool::MeshDataTool(){

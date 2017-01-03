@@ -34,7 +34,7 @@
 
 class Position2D : public Node2D {
 
-	OBJ_TYPE(Position2D,Node2D)
+	GDCLASS(Position2D,Node2D)
 
 	void _draw_cross();
 protected:

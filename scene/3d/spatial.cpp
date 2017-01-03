@@ -744,50 +744,50 @@ bool Spatial::is_local_transform_notification_enabled() const {
 
 void Spatial::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_transform","local"), &Spatial::set_transform);
-	ObjectTypeDB::bind_method(_MD("get_transform"), &Spatial::get_transform);
-	ObjectTypeDB::bind_method(_MD("set_translation","translation"), &Spatial::set_translation);
-	ObjectTypeDB::bind_method(_MD("get_translation"), &Spatial::get_translation);
-	ObjectTypeDB::bind_method(_MD("set_rotation","rotation_rad"), &Spatial::set_rotation);
-	ObjectTypeDB::bind_method(_MD("get_rotation"), &Spatial::get_rotation);
-	ObjectTypeDB::bind_method(_MD("set_rotation_deg","rotation_deg"), &Spatial::set_rotation_deg);
-	ObjectTypeDB::bind_method(_MD("get_rotation_deg"), &Spatial::get_rotation_deg);
-	ObjectTypeDB::bind_method(_MD("set_scale","scale"), &Spatial::set_scale);
-	ObjectTypeDB::bind_method(_MD("get_scale"), &Spatial::get_scale);
-	ObjectTypeDB::bind_method(_MD("set_global_transform","global"), &Spatial::set_global_transform);
-	ObjectTypeDB::bind_method(_MD("get_global_transform"), &Spatial::get_global_transform);
-	ObjectTypeDB::bind_method(_MD("get_parent_spatial"), &Spatial::get_parent_spatial);
-	ObjectTypeDB::bind_method(_MD("set_ignore_transform_notification","enabled"), &Spatial::set_ignore_transform_notification);
-	ObjectTypeDB::bind_method(_MD("set_as_toplevel","enable"), &Spatial::set_as_toplevel);
-	ObjectTypeDB::bind_method(_MD("is_set_as_toplevel"), &Spatial::is_set_as_toplevel);
-	ObjectTypeDB::bind_method(_MD("get_world:World"), &Spatial::get_world);
+	ClassDB::bind_method(_MD("set_transform","local"), &Spatial::set_transform);
+	ClassDB::bind_method(_MD("get_transform"), &Spatial::get_transform);
+	ClassDB::bind_method(_MD("set_translation","translation"), &Spatial::set_translation);
+	ClassDB::bind_method(_MD("get_translation"), &Spatial::get_translation);
+	ClassDB::bind_method(_MD("set_rotation","rotation_rad"), &Spatial::set_rotation);
+	ClassDB::bind_method(_MD("get_rotation"), &Spatial::get_rotation);
+	ClassDB::bind_method(_MD("set_rotation_deg","rotation_deg"), &Spatial::set_rotation_deg);
+	ClassDB::bind_method(_MD("get_rotation_deg"), &Spatial::get_rotation_deg);
+	ClassDB::bind_method(_MD("set_scale","scale"), &Spatial::set_scale);
+	ClassDB::bind_method(_MD("get_scale"), &Spatial::get_scale);
+	ClassDB::bind_method(_MD("set_global_transform","global"), &Spatial::set_global_transform);
+	ClassDB::bind_method(_MD("get_global_transform"), &Spatial::get_global_transform);
+	ClassDB::bind_method(_MD("get_parent_spatial"), &Spatial::get_parent_spatial);
+	ClassDB::bind_method(_MD("set_ignore_transform_notification","enabled"), &Spatial::set_ignore_transform_notification);
+	ClassDB::bind_method(_MD("set_as_toplevel","enable"), &Spatial::set_as_toplevel);
+	ClassDB::bind_method(_MD("is_set_as_toplevel"), &Spatial::is_set_as_toplevel);
+	ClassDB::bind_method(_MD("get_world:World"), &Spatial::get_world);
 
 	// TODO: Obsolete those two methods (old name) properly (GH-4397)
-	ObjectTypeDB::bind_method(_MD("_set_rotation_deg","rotation_deg"), &Spatial::_set_rotation_deg);
-	ObjectTypeDB::bind_method(_MD("_get_rotation_deg"), &Spatial::_get_rotation_deg);
+	ClassDB::bind_method(_MD("_set_rotation_deg","rotation_deg"), &Spatial::_set_rotation_deg);
+	ClassDB::bind_method(_MD("_get_rotation_deg"), &Spatial::_get_rotation_deg);
 
 #ifdef TOOLS_ENABLED
-	ObjectTypeDB::bind_method(_MD("_update_gizmo"), &Spatial::_update_gizmo);
-	ObjectTypeDB::bind_method(_MD("_set_import_transform"), &Spatial::set_import_transform);
-	ObjectTypeDB::bind_method(_MD("_get_import_transform"), &Spatial::get_import_transform);
+	ClassDB::bind_method(_MD("_update_gizmo"), &Spatial::_update_gizmo);
+	ClassDB::bind_method(_MD("_set_import_transform"), &Spatial::set_import_transform);
+	ClassDB::bind_method(_MD("_get_import_transform"), &Spatial::get_import_transform);
 	ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"_import_transform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_transform"),_SCS("_get_import_transform"));
 #endif
 
-	ObjectTypeDB::bind_method(_MD("update_gizmo"), &Spatial::update_gizmo);
-	ObjectTypeDB::bind_method(_MD("set_gizmo","gizmo:SpatialGizmo"), &Spatial::set_gizmo);
-	ObjectTypeDB::bind_method(_MD("get_gizmo:SpatialGizmo"), &Spatial::get_gizmo);
+	ClassDB::bind_method(_MD("update_gizmo"), &Spatial::update_gizmo);
+	ClassDB::bind_method(_MD("set_gizmo","gizmo:SpatialGizmo"), &Spatial::set_gizmo);
+	ClassDB::bind_method(_MD("get_gizmo:SpatialGizmo"), &Spatial::get_gizmo);
 
-	ObjectTypeDB::bind_method(_MD("show"), &Spatial::show);
-	ObjectTypeDB::bind_method(_MD("hide"), &Spatial::hide);
-	ObjectTypeDB::bind_method(_MD("is_visible"), &Spatial::is_visible);
-	ObjectTypeDB::bind_method(_MD("is_hidden"), &Spatial::is_hidden);
-	ObjectTypeDB::bind_method(_MD("set_hidden","hidden"), &Spatial::set_hidden);
+	ClassDB::bind_method(_MD("show"), &Spatial::show);
+	ClassDB::bind_method(_MD("hide"), &Spatial::hide);
+	ClassDB::bind_method(_MD("is_visible"), &Spatial::is_visible);
+	ClassDB::bind_method(_MD("is_hidden"), &Spatial::is_hidden);
+	ClassDB::bind_method(_MD("set_hidden","hidden"), &Spatial::set_hidden);
 
-	ObjectTypeDB::bind_method(_MD("_set_visible_"), &Spatial::_set_visible_);
-	ObjectTypeDB::bind_method(_MD("_is_visible_"), &Spatial::_is_visible_);
+	ClassDB::bind_method(_MD("_set_visible_"), &Spatial::_set_visible_);
+	ClassDB::bind_method(_MD("_is_visible_"), &Spatial::_is_visible_);
 
-	ObjectTypeDB::bind_method(_MD("set_notify_local_transform","enable"), &Spatial::set_notify_local_transform);
-	ObjectTypeDB::bind_method(_MD("is_local_transform_notification_enabled"), &Spatial::is_local_transform_notification_enabled);
+	ClassDB::bind_method(_MD("set_notify_local_transform","enable"), &Spatial::set_notify_local_transform);
+	ClassDB::bind_method(_MD("is_local_transform_notification_enabled"), &Spatial::is_local_transform_notification_enabled);
 
 	void rotate(const Vector3& p_normal,float p_radians);
 	void rotate_x(float p_radians);
@@ -798,18 +798,18 @@ void Spatial::_bind_methods() {
 	void global_rotate(const Vector3& p_normal,float p_radians);
 	void global_translate(const Vector3& p_offset);
 
-	ObjectTypeDB::bind_method( _MD("rotate","normal","radians"),&Spatial::rotate );
-	ObjectTypeDB::bind_method( _MD("global_rotate","normal","radians"),&Spatial::global_rotate );
-	ObjectTypeDB::bind_method( _MD("rotate_x","radians"),&Spatial::rotate_x );
-	ObjectTypeDB::bind_method( _MD("rotate_y","radians"),&Spatial::rotate_y );
-	ObjectTypeDB::bind_method( _MD("rotate_z","radians"),&Spatial::rotate_z );
-	ObjectTypeDB::bind_method( _MD("translate","offset"),&Spatial::translate );
-	ObjectTypeDB::bind_method( _MD("global_translate","offset"),&Spatial::global_translate );
-	ObjectTypeDB::bind_method( _MD("orthonormalize"),&Spatial::orthonormalize );
-	ObjectTypeDB::bind_method( _MD("set_identity"),&Spatial::set_identity );
+	ClassDB::bind_method( _MD("rotate","normal","radians"),&Spatial::rotate );
+	ClassDB::bind_method( _MD("global_rotate","normal","radians"),&Spatial::global_rotate );
+	ClassDB::bind_method( _MD("rotate_x","radians"),&Spatial::rotate_x );
+	ClassDB::bind_method( _MD("rotate_y","radians"),&Spatial::rotate_y );
+	ClassDB::bind_method( _MD("rotate_z","radians"),&Spatial::rotate_z );
+	ClassDB::bind_method( _MD("translate","offset"),&Spatial::translate );
+	ClassDB::bind_method( _MD("global_translate","offset"),&Spatial::global_translate );
+	ClassDB::bind_method( _MD("orthonormalize"),&Spatial::orthonormalize );
+	ClassDB::bind_method( _MD("set_identity"),&Spatial::set_identity );
 
-	ObjectTypeDB::bind_method( _MD("look_at","target","up"),&Spatial::look_at );
-	ObjectTypeDB::bind_method( _MD("look_at_from_pos","pos","target","up"),&Spatial::look_at_from_pos );
+	ClassDB::bind_method( _MD("look_at","target","up"),&Spatial::look_at );
+	ClassDB::bind_method( _MD("look_at_from_pos","pos","target","up"),&Spatial::look_at_from_pos );
 
 	BIND_CONSTANT( NOTIFICATION_TRANSFORM_CHANGED );
 	BIND_CONSTANT( NOTIFICATION_ENTER_WORLD );

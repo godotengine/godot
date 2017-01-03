@@ -1291,61 +1291,61 @@ void AnimationPlayer::get_argument_options(const StringName& p_function,int p_id
 
 void AnimationPlayer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&AnimationPlayer::_node_removed);
-	ObjectTypeDB::bind_method(_MD("_animation_changed"),&AnimationPlayer::_animation_changed);
+	ClassDB::bind_method(_MD("_node_removed"),&AnimationPlayer::_node_removed);
+	ClassDB::bind_method(_MD("_animation_changed"),&AnimationPlayer::_animation_changed);
 
-	ObjectTypeDB::bind_method(_MD("add_animation","name","animation:Animation"),&AnimationPlayer::add_animation);
-	ObjectTypeDB::bind_method(_MD("remove_animation","name"),&AnimationPlayer::remove_animation);
-	ObjectTypeDB::bind_method(_MD("rename_animation","name","newname"),&AnimationPlayer::rename_animation);
-	ObjectTypeDB::bind_method(_MD("has_animation","name"),&AnimationPlayer::has_animation);
-	ObjectTypeDB::bind_method(_MD("get_animation:Animation","name"),&AnimationPlayer::get_animation);
-	ObjectTypeDB::bind_method(_MD("get_animation_list"),&AnimationPlayer::_get_animation_list);
+	ClassDB::bind_method(_MD("add_animation","name","animation:Animation"),&AnimationPlayer::add_animation);
+	ClassDB::bind_method(_MD("remove_animation","name"),&AnimationPlayer::remove_animation);
+	ClassDB::bind_method(_MD("rename_animation","name","newname"),&AnimationPlayer::rename_animation);
+	ClassDB::bind_method(_MD("has_animation","name"),&AnimationPlayer::has_animation);
+	ClassDB::bind_method(_MD("get_animation:Animation","name"),&AnimationPlayer::get_animation);
+	ClassDB::bind_method(_MD("get_animation_list"),&AnimationPlayer::_get_animation_list);
 
-	ObjectTypeDB::bind_method(_MD("animation_set_next", "anim_from", "anim_to"), &AnimationPlayer::animation_set_next);
-	ObjectTypeDB::bind_method(_MD("animation_get_next", "anim_from"), &AnimationPlayer::animation_get_next);
+	ClassDB::bind_method(_MD("animation_set_next", "anim_from", "anim_to"), &AnimationPlayer::animation_set_next);
+	ClassDB::bind_method(_MD("animation_get_next", "anim_from"), &AnimationPlayer::animation_get_next);
 
-	ObjectTypeDB::bind_method(_MD("set_blend_time","anim_from","anim_to","sec"),&AnimationPlayer::set_blend_time);
-	ObjectTypeDB::bind_method(_MD("get_blend_time","anim_from","anim_to"),&AnimationPlayer::get_blend_time);
+	ClassDB::bind_method(_MD("set_blend_time","anim_from","anim_to","sec"),&AnimationPlayer::set_blend_time);
+	ClassDB::bind_method(_MD("get_blend_time","anim_from","anim_to"),&AnimationPlayer::get_blend_time);
 
-	ObjectTypeDB::bind_method(_MD("set_default_blend_time","sec"),&AnimationPlayer::set_default_blend_time);
-	ObjectTypeDB::bind_method(_MD("get_default_blend_time"),&AnimationPlayer::get_default_blend_time);
+	ClassDB::bind_method(_MD("set_default_blend_time","sec"),&AnimationPlayer::set_default_blend_time);
+	ClassDB::bind_method(_MD("get_default_blend_time"),&AnimationPlayer::get_default_blend_time);
 
-	ObjectTypeDB::bind_method(_MD("play","name","custom_blend","custom_speed","from_end"),&AnimationPlayer::play,DEFVAL(""),DEFVAL(-1),DEFVAL(1.0),DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("play_backwards","name","custom_blend"),&AnimationPlayer::play_backwards,DEFVAL(""),DEFVAL(-1));
-	ObjectTypeDB::bind_method(_MD("stop","reset"),&AnimationPlayer::stop,DEFVAL(true));
-	ObjectTypeDB::bind_method(_MD("stop_all"),&AnimationPlayer::stop_all);
-	ObjectTypeDB::bind_method(_MD("is_playing"),&AnimationPlayer::is_playing);
-	ObjectTypeDB::bind_method(_MD("set_current_animation","anim"),&AnimationPlayer::set_current_animation);
-	ObjectTypeDB::bind_method(_MD("get_current_animation"),&AnimationPlayer::get_current_animation);
-	ObjectTypeDB::bind_method(_MD("queue","name"),&AnimationPlayer::queue);
-	ObjectTypeDB::bind_method(_MD("clear_queue"),&AnimationPlayer::clear_queue);
+	ClassDB::bind_method(_MD("play","name","custom_blend","custom_speed","from_end"),&AnimationPlayer::play,DEFVAL(""),DEFVAL(-1),DEFVAL(1.0),DEFVAL(false));
+	ClassDB::bind_method(_MD("play_backwards","name","custom_blend"),&AnimationPlayer::play_backwards,DEFVAL(""),DEFVAL(-1));
+	ClassDB::bind_method(_MD("stop","reset"),&AnimationPlayer::stop,DEFVAL(true));
+	ClassDB::bind_method(_MD("stop_all"),&AnimationPlayer::stop_all);
+	ClassDB::bind_method(_MD("is_playing"),&AnimationPlayer::is_playing);
+	ClassDB::bind_method(_MD("set_current_animation","anim"),&AnimationPlayer::set_current_animation);
+	ClassDB::bind_method(_MD("get_current_animation"),&AnimationPlayer::get_current_animation);
+	ClassDB::bind_method(_MD("queue","name"),&AnimationPlayer::queue);
+	ClassDB::bind_method(_MD("clear_queue"),&AnimationPlayer::clear_queue);
 
-	ObjectTypeDB::bind_method(_MD("set_active","active"),&AnimationPlayer::set_active);
-	ObjectTypeDB::bind_method(_MD("is_active"),&AnimationPlayer::is_active);
+	ClassDB::bind_method(_MD("set_active","active"),&AnimationPlayer::set_active);
+	ClassDB::bind_method(_MD("is_active"),&AnimationPlayer::is_active);
 
-	ObjectTypeDB::bind_method(_MD("set_speed","speed"),&AnimationPlayer::set_speed);
-	ObjectTypeDB::bind_method(_MD("get_speed"),&AnimationPlayer::get_speed);
+	ClassDB::bind_method(_MD("set_speed","speed"),&AnimationPlayer::set_speed);
+	ClassDB::bind_method(_MD("get_speed"),&AnimationPlayer::get_speed);
 
-	ObjectTypeDB::bind_method(_MD("set_autoplay","name"),&AnimationPlayer::set_autoplay);
-	ObjectTypeDB::bind_method(_MD("get_autoplay"),&AnimationPlayer::get_autoplay);
+	ClassDB::bind_method(_MD("set_autoplay","name"),&AnimationPlayer::set_autoplay);
+	ClassDB::bind_method(_MD("get_autoplay"),&AnimationPlayer::get_autoplay);
 
-	ObjectTypeDB::bind_method(_MD("set_root","path"),&AnimationPlayer::set_root);
-	ObjectTypeDB::bind_method(_MD("get_root"),&AnimationPlayer::get_root);
+	ClassDB::bind_method(_MD("set_root","path"),&AnimationPlayer::set_root);
+	ClassDB::bind_method(_MD("get_root"),&AnimationPlayer::get_root);
 
-	ObjectTypeDB::bind_method(_MD("seek","pos_sec","update"),&AnimationPlayer::seek,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("get_pos"),&AnimationPlayer::get_current_animation_pos);
+	ClassDB::bind_method(_MD("seek","pos_sec","update"),&AnimationPlayer::seek,DEFVAL(false));
+	ClassDB::bind_method(_MD("get_pos"),&AnimationPlayer::get_current_animation_pos);
 
-	ObjectTypeDB::bind_method(_MD("find_animation","animation:Animation"),&AnimationPlayer::find_animation);
+	ClassDB::bind_method(_MD("find_animation","animation:Animation"),&AnimationPlayer::find_animation);
 
-	ObjectTypeDB::bind_method(_MD("clear_caches"),&AnimationPlayer::clear_caches);
+	ClassDB::bind_method(_MD("clear_caches"),&AnimationPlayer::clear_caches);
 
-	ObjectTypeDB::bind_method(_MD("set_animation_process_mode","mode"),&AnimationPlayer::set_animation_process_mode);
-	ObjectTypeDB::bind_method(_MD("get_animation_process_mode"),&AnimationPlayer::get_animation_process_mode);
+	ClassDB::bind_method(_MD("set_animation_process_mode","mode"),&AnimationPlayer::set_animation_process_mode);
+	ClassDB::bind_method(_MD("get_animation_process_mode"),&AnimationPlayer::get_animation_process_mode);
 
-	ObjectTypeDB::bind_method(_MD("get_current_animation_pos"),&AnimationPlayer::get_current_animation_pos);
-	ObjectTypeDB::bind_method(_MD("get_current_animation_length"),&AnimationPlayer::get_current_animation_length);
+	ClassDB::bind_method(_MD("get_current_animation_pos"),&AnimationPlayer::get_current_animation_pos);
+	ClassDB::bind_method(_MD("get_current_animation_length"),&AnimationPlayer::get_current_animation_length);
 
-	ObjectTypeDB::bind_method(_MD("advance","delta"),&AnimationPlayer::advance);
+	ClassDB::bind_method(_MD("advance","delta"),&AnimationPlayer::advance);
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_animation_process_mode"), _SCS("get_animation_process_mode"));

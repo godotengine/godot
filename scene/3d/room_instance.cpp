@@ -194,13 +194,13 @@ RID Room::get_sound_room() const {
 
 void Room::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_room","room:Room"),&Room::set_room );
-	ObjectTypeDB::bind_method(_MD("get_room:Room"),&Room::get_room );
+	ClassDB::bind_method(_MD("set_room","room:Room"),&Room::set_room );
+	ClassDB::bind_method(_MD("get_room:Room"),&Room::get_room );
 
 
 
-	ObjectTypeDB::bind_method(_MD("set_simulate_acoustics","enable"),&Room::set_simulate_acoustics );
-	ObjectTypeDB::bind_method(_MD("is_simulating_acoustics"),&Room::is_simulating_acoustics );
+	ClassDB::bind_method(_MD("set_simulate_acoustics","enable"),&Room::set_simulate_acoustics );
+	ClassDB::bind_method(_MD("is_simulating_acoustics"),&Room::is_simulating_acoustics );
 
 
 

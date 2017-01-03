@@ -199,17 +199,17 @@ AABB Quad::get_aabb() const {
 
 void Quad::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_axis","axis"),&Quad::set_axis);
-	ObjectTypeDB::bind_method(_MD("get_axis"),&Quad::get_axis);
+	ClassDB::bind_method(_MD("set_axis","axis"),&Quad::set_axis);
+	ClassDB::bind_method(_MD("get_axis"),&Quad::get_axis);
 
-	ObjectTypeDB::bind_method(_MD("set_size","size"),&Quad::set_size);
-	ObjectTypeDB::bind_method(_MD("get_size"),&Quad::get_size);
+	ClassDB::bind_method(_MD("set_size","size"),&Quad::set_size);
+	ClassDB::bind_method(_MD("get_size"),&Quad::get_size);
 
-	ObjectTypeDB::bind_method(_MD("set_centered","centered"),&Quad::set_centered);
-	ObjectTypeDB::bind_method(_MD("is_centered"),&Quad::is_centered);
+	ClassDB::bind_method(_MD("set_centered","centered"),&Quad::set_centered);
+	ClassDB::bind_method(_MD("is_centered"),&Quad::is_centered);
 
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&Quad::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&Quad::get_offset);
+	ClassDB::bind_method(_MD("set_offset","offset"),&Quad::set_offset);
+	ClassDB::bind_method(_MD("get_offset"),&Quad::get_offset);
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "quad/axis", PROPERTY_HINT_ENUM,"X,Y,Z" ), _SCS("set_axis"), _SCS("get_axis"));
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "quad/size" ), _SCS("set_size"), _SCS("get_size"));

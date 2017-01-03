@@ -77,7 +77,7 @@ class PlaceHolderScriptInstance;
 
 class Script : public Resource {
 
-	OBJ_TYPE( Script, Resource );
+	GDCLASS( Script, Resource );
 	OBJ_SAVE_TYPE( Script );
 
 protected:

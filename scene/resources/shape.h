@@ -34,7 +34,7 @@ class Mesh;
 
 class Shape : public Resource {
 
-	OBJ_TYPE( Shape, Resource );
+	GDCLASS( Shape, Resource );
 	OBJ_SAVE_TYPE( Shape );
 	RES_BASE_EXTENSION("shp");
 	RID shape;

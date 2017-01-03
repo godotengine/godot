@@ -539,29 +539,29 @@ int HTTPRequest::get_body_size() const{
 
 void HTTPRequest::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_ip_type","ip_type"),&HTTPRequest::set_ip_type);
-	ObjectTypeDB::bind_method(_MD("request","url","custom_headers","ssl_validate_domain","method","request_data"),&HTTPRequest::request,DEFVAL(StringArray()),DEFVAL(true),DEFVAL(HTTPClient::METHOD_GET),DEFVAL(String()));
-	ObjectTypeDB::bind_method(_MD("cancel_request"),&HTTPRequest::cancel_request);
+	ClassDB::bind_method(_MD("set_ip_type","ip_type"),&HTTPRequest::set_ip_type);
+	ClassDB::bind_method(_MD("request","url","custom_headers","ssl_validate_domain","method","request_data"),&HTTPRequest::request,DEFVAL(StringArray()),DEFVAL(true),DEFVAL(HTTPClient::METHOD_GET),DEFVAL(String()));
+	ClassDB::bind_method(_MD("cancel_request"),&HTTPRequest::cancel_request);
 
-	ObjectTypeDB::bind_method(_MD("get_http_client_status"),&HTTPRequest::get_http_client_status);
+	ClassDB::bind_method(_MD("get_http_client_status"),&HTTPRequest::get_http_client_status);
 
-	ObjectTypeDB::bind_method(_MD("set_use_threads","enable"),&HTTPRequest::set_use_threads);
-	ObjectTypeDB::bind_method(_MD("is_using_threads"),&HTTPRequest::is_using_threads);
+	ClassDB::bind_method(_MD("set_use_threads","enable"),&HTTPRequest::set_use_threads);
+	ClassDB::bind_method(_MD("is_using_threads"),&HTTPRequest::is_using_threads);
 
-	ObjectTypeDB::bind_method(_MD("set_body_size_limit","bytes"),&HTTPRequest::set_body_size_limit);
-	ObjectTypeDB::bind_method(_MD("get_body_size_limit"),&HTTPRequest::get_body_size_limit);
+	ClassDB::bind_method(_MD("set_body_size_limit","bytes"),&HTTPRequest::set_body_size_limit);
+	ClassDB::bind_method(_MD("get_body_size_limit"),&HTTPRequest::get_body_size_limit);
 
-	ObjectTypeDB::bind_method(_MD("set_max_redirects","amount"),&HTTPRequest::set_max_redirects);
-	ObjectTypeDB::bind_method(_MD("get_max_redirects"),&HTTPRequest::get_max_redirects);
+	ClassDB::bind_method(_MD("set_max_redirects","amount"),&HTTPRequest::set_max_redirects);
+	ClassDB::bind_method(_MD("get_max_redirects"),&HTTPRequest::get_max_redirects);
 
-	ObjectTypeDB::bind_method(_MD("set_download_file","path"),&HTTPRequest::set_download_file);
-	ObjectTypeDB::bind_method(_MD("get_download_file"),&HTTPRequest::get_download_file);
+	ClassDB::bind_method(_MD("set_download_file","path"),&HTTPRequest::set_download_file);
+	ClassDB::bind_method(_MD("get_download_file"),&HTTPRequest::get_download_file);
 
-	ObjectTypeDB::bind_method(_MD("get_downloaded_bytes"),&HTTPRequest::get_downloaded_bytes);
-	ObjectTypeDB::bind_method(_MD("get_body_size"),&HTTPRequest::get_body_size);
+	ClassDB::bind_method(_MD("get_downloaded_bytes"),&HTTPRequest::get_downloaded_bytes);
+	ClassDB::bind_method(_MD("get_body_size"),&HTTPRequest::get_body_size);
 
-	ObjectTypeDB::bind_method(_MD("_redirect_request"),&HTTPRequest::_redirect_request);
-	ObjectTypeDB::bind_method(_MD("_request_done"),&HTTPRequest::_request_done);
+	ClassDB::bind_method(_MD("_redirect_request"),&HTTPRequest::_redirect_request);
+	ClassDB::bind_method(_MD("_request_done"),&HTTPRequest::_request_done);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"use_threads"),_SCS("set_use_threads"),_SCS("is_using_threads"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"body_size_limit",PROPERTY_HINT_RANGE,"-1,2000000000"),_SCS("set_body_size_limit"),_SCS("get_body_size_limit"));

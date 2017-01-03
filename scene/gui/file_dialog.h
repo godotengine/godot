@@ -42,7 +42,7 @@
 */
 class FileDialog : public ConfirmationDialog {
 
-	OBJ_TYPE( FileDialog, ConfirmationDialog );
+	GDCLASS( FileDialog, ConfirmationDialog );
 
 public:
 
@@ -167,7 +167,7 @@ public:
 
 class LineEditFileChooser : public HBoxContainer {
 
-	OBJ_TYPE( LineEditFileChooser, HBoxContainer );
+	GDCLASS( LineEditFileChooser, HBoxContainer );
 	Button *button;
 	LineEdit *line_edit;
 	FileDialog *dialog;

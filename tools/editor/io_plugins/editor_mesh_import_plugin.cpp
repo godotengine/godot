@@ -40,7 +40,7 @@
 
 class _EditorMeshImportOptions : public Object {
 
-	OBJ_TYPE(_EditorMeshImportOptions,Object);
+	GDCLASS(_EditorMeshImportOptions,Object);
 public:
 
 
@@ -148,7 +148,7 @@ public:
 
 class EditorMeshImportDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorMeshImportDialog,ConfirmationDialog);
+	GDCLASS(EditorMeshImportDialog,ConfirmationDialog);
 
 	EditorMeshImportPlugin *plugin;
 
@@ -278,11 +278,11 @@ public:
 
 	static void _bind_methods() {
 
-		ObjectTypeDB::bind_method("_choose_files",&EditorMeshImportDialog::_choose_files);
-		ObjectTypeDB::bind_method("_choose_save_dir",&EditorMeshImportDialog::_choose_save_dir);
-		ObjectTypeDB::bind_method("_import",&EditorMeshImportDialog::_import);
-		ObjectTypeDB::bind_method("_browse",&EditorMeshImportDialog::_browse);
-		ObjectTypeDB::bind_method("_browse_target",&EditorMeshImportDialog::_browse_target);
+		ClassDB::bind_method("_choose_files",&EditorMeshImportDialog::_choose_files);
+		ClassDB::bind_method("_choose_save_dir",&EditorMeshImportDialog::_choose_save_dir);
+		ClassDB::bind_method("_import",&EditorMeshImportDialog::_import);
+		ClassDB::bind_method("_browse",&EditorMeshImportDialog::_browse);
+		ClassDB::bind_method("_browse_target",&EditorMeshImportDialog::_browse_target);
 	}
 
 	EditorMeshImportDialog(EditorMeshImportPlugin *p_plugin) {

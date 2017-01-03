@@ -45,7 +45,7 @@ class Tree;
 
 class TreeItem : public Object {
 
-	OBJ_TYPE(TreeItem,Object);
+	GDCLASS(TreeItem,Object);
 public:
 
 	enum TreeCellMode {
@@ -257,7 +257,7 @@ VARIANT_ENUM_CAST( TreeItem::TreeCellMode );
 
 class Tree : public Control {
 
-	OBJ_TYPE( Tree, Control );
+	GDCLASS( Tree, Control );
 public:
 	enum SelectMode {
             SELECT_SINGLE,

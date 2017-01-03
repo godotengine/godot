@@ -294,16 +294,16 @@ void MeshInstance::_mesh_changed() {
 
 void MeshInstance::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MeshInstance::set_mesh);
-	ObjectTypeDB::bind_method(_MD("get_mesh:Mesh"),&MeshInstance::get_mesh);
-	ObjectTypeDB::bind_method(_MD("set_skeleton_path","skeleton_path:NodePath"),&MeshInstance::set_skeleton_path);
-	ObjectTypeDB::bind_method(_MD("get_skeleton_path:NodePath"),&MeshInstance::get_skeleton_path);
-	ObjectTypeDB::bind_method(_MD("get_aabb"),&MeshInstance::get_aabb);
-	ObjectTypeDB::bind_method(_MD("create_trimesh_collision"),&MeshInstance::create_trimesh_collision);
-	ObjectTypeDB::set_method_flags("MeshInstance","create_trimesh_collision",METHOD_FLAGS_DEFAULT);
-	ObjectTypeDB::bind_method(_MD("create_convex_collision"),&MeshInstance::create_convex_collision);
-	ObjectTypeDB::set_method_flags("MeshInstance","create_convex_collision",METHOD_FLAGS_DEFAULT);
-	ObjectTypeDB::bind_method(_MD("_mesh_changed"),&MeshInstance::_mesh_changed);
+	ClassDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MeshInstance::set_mesh);
+	ClassDB::bind_method(_MD("get_mesh:Mesh"),&MeshInstance::get_mesh);
+	ClassDB::bind_method(_MD("set_skeleton_path","skeleton_path:NodePath"),&MeshInstance::set_skeleton_path);
+	ClassDB::bind_method(_MD("get_skeleton_path:NodePath"),&MeshInstance::get_skeleton_path);
+	ClassDB::bind_method(_MD("get_aabb"),&MeshInstance::get_aabb);
+	ClassDB::bind_method(_MD("create_trimesh_collision"),&MeshInstance::create_trimesh_collision);
+	ClassDB::set_method_flags("MeshInstance","create_trimesh_collision",METHOD_FLAGS_DEFAULT);
+	ClassDB::bind_method(_MD("create_convex_collision"),&MeshInstance::create_convex_collision);
+	ClassDB::set_method_flags("MeshInstance","create_convex_collision",METHOD_FLAGS_DEFAULT);
+	ClassDB::bind_method(_MD("_mesh_changed"),&MeshInstance::_mesh_changed);
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "mesh/mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh" ), _SCS("set_mesh"), _SCS("get_mesh"));
 	ADD_PROPERTY( PropertyInfo (Variant::NODE_PATH, "mesh/skeleton"), _SCS("set_skeleton_path"), _SCS("get_skeleton_path"));
 }

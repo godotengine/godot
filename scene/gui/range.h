@@ -35,7 +35,7 @@
 */
 class Range : public Control {
 
-	OBJ_TYPE( Range, Control );
+	GDCLASS( Range, Control );
 
 
 	struct Shared {

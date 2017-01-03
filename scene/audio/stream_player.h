@@ -35,7 +35,7 @@
 
 class StreamPlayer : public Node {
 
-	OBJ_TYPE(StreamPlayer,Node);
+	GDCLASS(StreamPlayer,Node);
 
 	//_THREAD_SAFE_CLASS_
 

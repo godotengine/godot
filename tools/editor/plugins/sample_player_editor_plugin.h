@@ -41,7 +41,7 @@
 
 class SamplePlayerEditor : public Control {
 
-	OBJ_TYPE(SamplePlayerEditor, Control );
+	GDCLASS(SamplePlayerEditor, Control );
 
 	Panel *panel;
 	Button * play;
@@ -66,7 +66,7 @@ public:
 
 class SamplePlayerEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SamplePlayerEditorPlugin, EditorPlugin );
+	GDCLASS( SamplePlayerEditorPlugin, EditorPlugin );
 
 	SamplePlayerEditor *sample_player_editor;
 	EditorNode *editor;

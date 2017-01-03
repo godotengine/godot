@@ -423,50 +423,50 @@ void Node2D::_bind_methods() {
 
 
 	// TODO: Obsolete those two methods (old name) properly (GH-4397)
-	ObjectTypeDB::bind_method(_MD("_get_rotd"),&Node2D::_get_rotd);
-	ObjectTypeDB::bind_method(_MD("_set_rotd","degrees"),&Node2D::_set_rotd);
+	ClassDB::bind_method(_MD("_get_rotd"),&Node2D::_get_rotd);
+	ClassDB::bind_method(_MD("_set_rotd","degrees"),&Node2D::_set_rotd);
 
-	ObjectTypeDB::bind_method(_MD("set_pos","pos"),&Node2D::set_pos);
-	ObjectTypeDB::bind_method(_MD("set_rot","radians"),&Node2D::set_rot);
-	ObjectTypeDB::bind_method(_MD("set_rotd","degrees"),&Node2D::set_rotd);
-	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&Node2D::set_scale);
+	ClassDB::bind_method(_MD("set_pos","pos"),&Node2D::set_pos);
+	ClassDB::bind_method(_MD("set_rot","radians"),&Node2D::set_rot);
+	ClassDB::bind_method(_MD("set_rotd","degrees"),&Node2D::set_rotd);
+	ClassDB::bind_method(_MD("set_scale","scale"),&Node2D::set_scale);
 
-	ObjectTypeDB::bind_method(_MD("get_pos"),&Node2D::get_pos);
-	ObjectTypeDB::bind_method(_MD("get_rot"),&Node2D::get_rot);
-	ObjectTypeDB::bind_method(_MD("get_rotd"),&Node2D::get_rotd);
-	ObjectTypeDB::bind_method(_MD("get_scale"),&Node2D::get_scale);
+	ClassDB::bind_method(_MD("get_pos"),&Node2D::get_pos);
+	ClassDB::bind_method(_MD("get_rot"),&Node2D::get_rot);
+	ClassDB::bind_method(_MD("get_rotd"),&Node2D::get_rotd);
+	ClassDB::bind_method(_MD("get_scale"),&Node2D::get_scale);
 
-	ObjectTypeDB::bind_method(_MD("rotate","radians"),&Node2D::rotate);
-	ObjectTypeDB::bind_method(_MD("move_local_x","delta","scaled"),&Node2D::move_x,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("move_local_y","delta","scaled"),&Node2D::move_y,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("translate","offset"),&Node2D::translate);
-	ObjectTypeDB::bind_method(_MD("global_translate","offset"),&Node2D::global_translate);
-	ObjectTypeDB::bind_method(_MD("scale","ratio"),&Node2D::scale);
+	ClassDB::bind_method(_MD("rotate","radians"),&Node2D::rotate);
+	ClassDB::bind_method(_MD("move_local_x","delta","scaled"),&Node2D::move_x,DEFVAL(false));
+	ClassDB::bind_method(_MD("move_local_y","delta","scaled"),&Node2D::move_y,DEFVAL(false));
+	ClassDB::bind_method(_MD("translate","offset"),&Node2D::translate);
+	ClassDB::bind_method(_MD("global_translate","offset"),&Node2D::global_translate);
+	ClassDB::bind_method(_MD("scale","ratio"),&Node2D::scale);
 
-	ObjectTypeDB::bind_method(_MD("set_global_pos","pos"),&Node2D::set_global_pos);
-	ObjectTypeDB::bind_method(_MD("get_global_pos"),&Node2D::get_global_pos);
-	ObjectTypeDB::bind_method(_MD("set_global_rot","radians"),&Node2D::set_global_rot);
-	ObjectTypeDB::bind_method(_MD("get_global_rot"),&Node2D::get_global_rot);
-	ObjectTypeDB::bind_method(_MD("set_global_rotd","degrees"),&Node2D::set_global_rotd);
-	ObjectTypeDB::bind_method(_MD("get_global_rotd"),&Node2D::get_global_rotd);
-	ObjectTypeDB::bind_method(_MD("set_global_scale","scale"),&Node2D::set_global_scale);
-	ObjectTypeDB::bind_method(_MD("get_global_scale"),&Node2D::get_global_scale);
+	ClassDB::bind_method(_MD("set_global_pos","pos"),&Node2D::set_global_pos);
+	ClassDB::bind_method(_MD("get_global_pos"),&Node2D::get_global_pos);
+	ClassDB::bind_method(_MD("set_global_rot","radians"),&Node2D::set_global_rot);
+	ClassDB::bind_method(_MD("get_global_rot"),&Node2D::get_global_rot);
+	ClassDB::bind_method(_MD("set_global_rotd","degrees"),&Node2D::set_global_rotd);
+	ClassDB::bind_method(_MD("get_global_rotd"),&Node2D::get_global_rotd);
+	ClassDB::bind_method(_MD("set_global_scale","scale"),&Node2D::set_global_scale);
+	ClassDB::bind_method(_MD("get_global_scale"),&Node2D::get_global_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_transform","xform"),&Node2D::set_transform);
-	ObjectTypeDB::bind_method(_MD("set_global_transform","xform"),&Node2D::set_global_transform);
+	ClassDB::bind_method(_MD("set_transform","xform"),&Node2D::set_transform);
+	ClassDB::bind_method(_MD("set_global_transform","xform"),&Node2D::set_global_transform);
 
-	ObjectTypeDB::bind_method(_MD("look_at","point"),&Node2D::look_at);
-	ObjectTypeDB::bind_method(_MD("get_angle_to","point"),&Node2D::get_angle_to);
+	ClassDB::bind_method(_MD("look_at","point"),&Node2D::look_at);
+	ClassDB::bind_method(_MD("get_angle_to","point"),&Node2D::get_angle_to);
 
-	ObjectTypeDB::bind_method(_MD("set_z","z"),&Node2D::set_z);
-	ObjectTypeDB::bind_method(_MD("get_z"),&Node2D::get_z);
+	ClassDB::bind_method(_MD("set_z","z"),&Node2D::set_z);
+	ClassDB::bind_method(_MD("get_z"),&Node2D::get_z);
 
-	ObjectTypeDB::bind_method(_MD("set_z_as_relative","enable"),&Node2D::set_z_as_relative);
-	ObjectTypeDB::bind_method(_MD("is_z_relative"),&Node2D::is_z_relative);
+	ClassDB::bind_method(_MD("set_z_as_relative","enable"),&Node2D::set_z_as_relative);
+	ClassDB::bind_method(_MD("is_z_relative"),&Node2D::is_z_relative);
 
-	ObjectTypeDB::bind_method(_MD("edit_set_pivot","pivot"),&Node2D::edit_set_pivot);
+	ClassDB::bind_method(_MD("edit_set_pivot","pivot"),&Node2D::edit_set_pivot);
 
-	ObjectTypeDB::bind_method(_MD("get_relative_transform_to_parent","parent"),&Node2D::get_relative_transform_to_parent);
+	ClassDB::bind_method(_MD("get_relative_transform_to_parent","parent"),&Node2D::get_relative_transform_to_parent);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"transform/pos"),_SCS("set_pos"),_SCS("get_pos"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("set_rotd"),_SCS("get_rotd"));

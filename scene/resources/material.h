@@ -41,7 +41,7 @@
 
 class Material : public Resource {
 
-	OBJ_TYPE(Material,Resource);
+	GDCLASS(Material,Resource);
 	RES_BASE_EXTENSION("mtl");
 	OBJ_SAVE_TYPE( Material );
 
@@ -59,7 +59,7 @@ public:
 
 class FixedSpatialMaterial : public Material {
 
-	OBJ_TYPE(FixedSpatialMaterial,Material)
+	GDCLASS(FixedSpatialMaterial,Material)
 
 
 public:

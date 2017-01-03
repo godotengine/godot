@@ -52,7 +52,7 @@
 
 class EditorAssetLibraryItem : public PanelContainer {
 
-	OBJ_TYPE( EditorAssetLibraryItem, PanelContainer );
+	GDCLASS( EditorAssetLibraryItem, PanelContainer );
 
 	TextureButton *icon;
 	LinkButton* title;
@@ -88,7 +88,7 @@ public:
 
 class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorAssetLibraryItemDescription, ConfirmationDialog);
+	GDCLASS(EditorAssetLibraryItemDescription, ConfirmationDialog);
 
 	EditorAssetLibraryItem *item;
 	RichTextLabel *description;
@@ -135,7 +135,7 @@ public:
 
 class EditorAssetLibraryItemDownload : public PanelContainer {
 
-	OBJ_TYPE(EditorAssetLibraryItemDownload, PanelContainer);
+	GDCLASS(EditorAssetLibraryItemDownload, PanelContainer);
 
 
 	TextureFrame *icon;
@@ -178,7 +178,7 @@ public:
 };
 
 class EditorAssetLibrary : public PanelContainer {
-	OBJ_TYPE(EditorAssetLibrary,PanelContainer);
+	GDCLASS(EditorAssetLibrary,PanelContainer);
 
 	String host;
 
@@ -318,7 +318,7 @@ public:
 
 class AssetLibraryEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( AssetLibraryEditorPlugin, EditorPlugin );
+	GDCLASS( AssetLibraryEditorPlugin, EditorPlugin );
 
 	EditorAssetLibrary *addon_library;
 	EditorNode *editor;

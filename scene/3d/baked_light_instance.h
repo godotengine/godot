@@ -38,7 +38,7 @@ class BakedLightBaker;
 class Light;
 
 class BakedLight : public VisualInstance {
-	OBJ_TYPE(BakedLight,VisualInstance);
+	GDCLASS(BakedLight,VisualInstance);
 
 public:
 	enum DebugMode {
@@ -168,7 +168,7 @@ public:
 
 #if 0
 class BakedLightSampler : public VisualInstance {
-	OBJ_TYPE(BakedLightSampler,VisualInstance);
+	GDCLASS(BakedLightSampler,VisualInstance);
 
 
 public:

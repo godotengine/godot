@@ -40,7 +40,7 @@
 //#include "project_export_settings.h"
 
 class ProjectSettings : public AcceptDialog {
-	OBJ_TYPE( ProjectSettings, AcceptDialog );
+	GDCLASS( ProjectSettings, AcceptDialog );
 
 
 	TabContainer *tab_container;

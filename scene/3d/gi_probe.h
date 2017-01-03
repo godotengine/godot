@@ -6,7 +6,7 @@
 
 class GIProbeData : public Resource {
 
-	OBJ_TYPE(GIProbeData,Resource);
+	GDCLASS(GIProbeData,Resource);
 
 	RID probe;
 
@@ -50,7 +50,7 @@ public:
 
 
 class GIProbe : public VisualInstance  {
-	OBJ_TYPE(GIProbe,VisualInstance);
+	GDCLASS(GIProbe,VisualInstance);
 public:
 	enum Subdiv{
 		SUBDIV_64,

@@ -33,7 +33,7 @@
 
 class CanvasModulate : public Node2D {
 
-	OBJ_TYPE(CanvasModulate,Node2D);
+	GDCLASS(CanvasModulate,Node2D);
 
 	Color color;
 protected:

@@ -38,7 +38,7 @@
 
 class SpatialGizmo : public Reference {
 
-	OBJ_TYPE(SpatialGizmo,Reference);
+	GDCLASS(SpatialGizmo,Reference);
 
 
 public:
@@ -55,7 +55,7 @@ public:
 
 class Spatial : public Node {
 
-	OBJ_TYPE( Spatial, Node );
+	GDCLASS( Spatial, Node );
 	OBJ_CATEGORY("3D");
 
 	enum TransformDirty {

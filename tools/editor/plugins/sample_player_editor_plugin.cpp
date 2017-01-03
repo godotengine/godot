@@ -50,8 +50,8 @@ void SamplePlayerEditor::_node_removed(Node *p_node) {
 
 void SamplePlayerEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_play"),&SamplePlayerEditor::_play);
-	ObjectTypeDB::bind_method(_MD("_stop"),&SamplePlayerEditor::_stop);
+	ClassDB::bind_method(_MD("_play"),&SamplePlayerEditor::_play);
+	ClassDB::bind_method(_MD("_stop"),&SamplePlayerEditor::_stop);
 
 }
 
@@ -153,7 +153,7 @@ void SamplePlayerEditorPlugin::edit(Object *p_object) {
 
 bool SamplePlayerEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("SamplePlayer2D") || p_object->is_type("SamplePlayer") || p_object->is_type("SpatialSamplePlayer");
+	return p_object->is_class("SamplePlayer2D") || p_object->is_class("SamplePlayer") || p_object->is_class("SpatialSamplePlayer");
 }
 
 void SamplePlayerEditorPlugin::make_visible(bool p_visible) {

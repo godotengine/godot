@@ -34,7 +34,7 @@
 
 class Tween : public Node {
 
-	OBJ_TYPE( Tween, Node );
+	GDCLASS( Tween, Node );
 
 public:
 	enum TweenProcessMode {

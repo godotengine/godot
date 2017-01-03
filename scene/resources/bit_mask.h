@@ -35,7 +35,7 @@
 
 class BitMap : public Resource {
 
-	OBJ_TYPE(BitMap,Resource);
+	GDCLASS(BitMap,Resource);
 	OBJ_SAVE_TYPE(BitMap);
 	RES_BASE_EXTENSION("pbm");
 

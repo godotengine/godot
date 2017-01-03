@@ -89,10 +89,10 @@ void EditorAssetLibraryItem::_author_clicked(){
 
 void EditorAssetLibraryItem::_bind_methods() {
 
-	ObjectTypeDB::bind_method("set_image",&EditorAssetLibraryItem::set_image);
-	ObjectTypeDB::bind_method("_asset_clicked",&EditorAssetLibraryItem::_asset_clicked);
-	ObjectTypeDB::bind_method("_category_clicked",&EditorAssetLibraryItem::_category_clicked);
-	ObjectTypeDB::bind_method("_author_clicked",&EditorAssetLibraryItem::_author_clicked);
+	ClassDB::bind_method("set_image",&EditorAssetLibraryItem::set_image);
+	ClassDB::bind_method("_asset_clicked",&EditorAssetLibraryItem::_asset_clicked);
+	ClassDB::bind_method("_category_clicked",&EditorAssetLibraryItem::_category_clicked);
+	ClassDB::bind_method("_author_clicked",&EditorAssetLibraryItem::_author_clicked);
 	ADD_SIGNAL( MethodInfo("asset_selected"));
 	ADD_SIGNAL( MethodInfo("category_selected"));
 	ADD_SIGNAL( MethodInfo("author_selected"));
@@ -199,9 +199,9 @@ void EditorAssetLibraryItemDescription::set_image(int p_type,int p_index,const R
 }
 
 void EditorAssetLibraryItemDescription::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("set_image"),&EditorAssetLibraryItemDescription::set_image);
-	ObjectTypeDB::bind_method(_MD("_link_click"),&EditorAssetLibraryItemDescription::_link_click);
-	ObjectTypeDB::bind_method(_MD("_preview_click"),&EditorAssetLibraryItemDescription::_preview_click);
+	ClassDB::bind_method(_MD("set_image"),&EditorAssetLibraryItemDescription::set_image);
+	ClassDB::bind_method(_MD("_link_click"),&EditorAssetLibraryItemDescription::_link_click);
+	ClassDB::bind_method(_MD("_preview_click"),&EditorAssetLibraryItemDescription::_preview_click);
 
 }
 
@@ -472,10 +472,10 @@ void EditorAssetLibraryItemDownload::_make_request() {
 
 void EditorAssetLibraryItemDownload::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_http_download_completed",&EditorAssetLibraryItemDownload::_http_download_completed);
-	ObjectTypeDB::bind_method("_install",&EditorAssetLibraryItemDownload::_install);
-	ObjectTypeDB::bind_method("_close",&EditorAssetLibraryItemDownload::_close);
-	ObjectTypeDB::bind_method("_make_request",&EditorAssetLibraryItemDownload::_make_request);
+	ClassDB::bind_method("_http_download_completed",&EditorAssetLibraryItemDownload::_http_download_completed);
+	ClassDB::bind_method("_install",&EditorAssetLibraryItemDownload::_install);
+	ClassDB::bind_method("_close",&EditorAssetLibraryItemDownload::_close);
+	ClassDB::bind_method("_make_request",&EditorAssetLibraryItemDownload::_make_request);
 
 	ADD_SIGNAL(MethodInfo("install_asset",PropertyInfo(Variant::STRING,"zip_path"),PropertyInfo(Variant::STRING,"name")));
 
@@ -1288,20 +1288,20 @@ void EditorAssetLibrary::_install_external_asset(String p_zip_path,String p_titl
 
 void EditorAssetLibrary::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_http_request_completed",&EditorAssetLibrary::_http_request_completed);
-	ObjectTypeDB::bind_method("_select_asset",&EditorAssetLibrary::_select_asset);
-	ObjectTypeDB::bind_method("_select_author",&EditorAssetLibrary::_select_author);
-	ObjectTypeDB::bind_method("_select_category",&EditorAssetLibrary::_select_category);
-	ObjectTypeDB::bind_method("_image_request_completed",&EditorAssetLibrary::_image_request_completed);
-	ObjectTypeDB::bind_method("_search",&EditorAssetLibrary::_search,DEFVAL(0));
-	ObjectTypeDB::bind_method("_install_asset",&EditorAssetLibrary::_install_asset);
-	ObjectTypeDB::bind_method("_manage_plugins",&EditorAssetLibrary::_manage_plugins);
-	ObjectTypeDB::bind_method("_asset_open",&EditorAssetLibrary::_asset_open);
-	ObjectTypeDB::bind_method("_asset_file_selected",&EditorAssetLibrary::_asset_file_selected);
-	ObjectTypeDB::bind_method("_repository_changed",&EditorAssetLibrary::_repository_changed);
-	ObjectTypeDB::bind_method("_support_toggled",&EditorAssetLibrary::_support_toggled);
-	ObjectTypeDB::bind_method("_rerun_search",&EditorAssetLibrary::_rerun_search);
-	ObjectTypeDB::bind_method("_install_external_asset",&EditorAssetLibrary::_install_external_asset);
+	ClassDB::bind_method("_http_request_completed",&EditorAssetLibrary::_http_request_completed);
+	ClassDB::bind_method("_select_asset",&EditorAssetLibrary::_select_asset);
+	ClassDB::bind_method("_select_author",&EditorAssetLibrary::_select_author);
+	ClassDB::bind_method("_select_category",&EditorAssetLibrary::_select_category);
+	ClassDB::bind_method("_image_request_completed",&EditorAssetLibrary::_image_request_completed);
+	ClassDB::bind_method("_search",&EditorAssetLibrary::_search,DEFVAL(0));
+	ClassDB::bind_method("_install_asset",&EditorAssetLibrary::_install_asset);
+	ClassDB::bind_method("_manage_plugins",&EditorAssetLibrary::_manage_plugins);
+	ClassDB::bind_method("_asset_open",&EditorAssetLibrary::_asset_open);
+	ClassDB::bind_method("_asset_file_selected",&EditorAssetLibrary::_asset_file_selected);
+	ClassDB::bind_method("_repository_changed",&EditorAssetLibrary::_repository_changed);
+	ClassDB::bind_method("_support_toggled",&EditorAssetLibrary::_support_toggled);
+	ClassDB::bind_method("_rerun_search",&EditorAssetLibrary::_rerun_search);
+	ClassDB::bind_method("_install_external_asset",&EditorAssetLibrary::_install_external_asset);
 
 
 

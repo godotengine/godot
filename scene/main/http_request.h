@@ -36,7 +36,7 @@
 
 class HTTPRequest : public Node {
 
-	OBJ_TYPE(HTTPRequest,Node);
+	GDCLASS(HTTPRequest,Node);
 public:
 
 	enum Result {

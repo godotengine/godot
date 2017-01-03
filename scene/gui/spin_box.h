@@ -35,7 +35,7 @@
 
 class SpinBox : public Range {
 
-	OBJ_TYPE( SpinBox, Range );
+	GDCLASS( SpinBox, Range );
 
 	LineEdit *line_edit;
 	int last_w;

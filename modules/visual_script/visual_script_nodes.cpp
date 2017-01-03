@@ -539,11 +539,11 @@ Variant::Type VisualScriptOperator::get_typed() const {
 
 void VisualScriptOperator::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_operator","op"),&VisualScriptOperator::set_operator);
-	ObjectTypeDB::bind_method(_MD("get_operator"),&VisualScriptOperator::get_operator);
+	ClassDB::bind_method(_MD("set_operator","op"),&VisualScriptOperator::set_operator);
+	ClassDB::bind_method(_MD("get_operator"),&VisualScriptOperator::get_operator);
 
-	ObjectTypeDB::bind_method(_MD("set_typed","type"),&VisualScriptOperator::set_typed);
-	ObjectTypeDB::bind_method(_MD("get_typed"),&VisualScriptOperator::get_typed);
+	ClassDB::bind_method(_MD("set_typed","type"),&VisualScriptOperator::set_typed);
+	ClassDB::bind_method(_MD("get_typed"),&VisualScriptOperator::get_typed);
 
 	String types;
 	for(int i=0;i<Variant::OP_MAX;i++) {
@@ -717,8 +717,8 @@ void VisualScriptVariableGet::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptVariableGet::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_variable","name"),&VisualScriptVariableGet::set_variable);
-	ObjectTypeDB::bind_method(_MD("get_variable"),&VisualScriptVariableGet::get_variable);
+	ClassDB::bind_method(_MD("set_variable","name"),&VisualScriptVariableGet::set_variable);
+	ClassDB::bind_method(_MD("get_variable"),&VisualScriptVariableGet::get_variable);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"variable/name"),_SCS("set_variable"),_SCS("get_variable"));
@@ -853,8 +853,8 @@ void VisualScriptVariableSet::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptVariableSet::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_variable","name"),&VisualScriptVariableSet::set_variable);
-	ObjectTypeDB::bind_method(_MD("get_variable"),&VisualScriptVariableSet::get_variable);
+	ClassDB::bind_method(_MD("set_variable","name"),&VisualScriptVariableSet::set_variable);
+	ClassDB::bind_method(_MD("get_variable"),&VisualScriptVariableSet::get_variable);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"variable/name"),_SCS("set_variable"),_SCS("get_variable"));
@@ -995,11 +995,11 @@ void VisualScriptConstant::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptConstant::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_constant_type","type"),&VisualScriptConstant::set_constant_type);
-	ObjectTypeDB::bind_method(_MD("get_constant_type"),&VisualScriptConstant::get_constant_type);
+	ClassDB::bind_method(_MD("set_constant_type","type"),&VisualScriptConstant::set_constant_type);
+	ClassDB::bind_method(_MD("get_constant_type"),&VisualScriptConstant::get_constant_type);
 
-	ObjectTypeDB::bind_method(_MD("set_constant_value","value"),&VisualScriptConstant::set_constant_value);
-	ObjectTypeDB::bind_method(_MD("get_constant_value"),&VisualScriptConstant::get_constant_value);
+	ClassDB::bind_method(_MD("set_constant_value","value"),&VisualScriptConstant::set_constant_value);
+	ClassDB::bind_method(_MD("get_constant_value"),&VisualScriptConstant::get_constant_value);
 
 	String argt="Null";
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {
@@ -1078,7 +1078,7 @@ PropertyInfo VisualScriptPreload::get_output_value_port_info(int p_idx) const{
 	PropertyInfo pinfo=PropertyInfo(Variant::OBJECT,"res");
 	if (preload.is_valid()) {
 		pinfo.hint=PROPERTY_HINT_RESOURCE_TYPE;
-		pinfo.hint_string=preload->get_type();
+		pinfo.hint_string=preload->get_class();
 	}
 
 	return pinfo;
@@ -1098,7 +1098,7 @@ String VisualScriptPreload::get_text() const {
 		} else if (preload->get_name()!=String()) {
 			return preload->get_name();
 		} else {
-			return preload->get_type();
+			return preload->get_class();
 		}
 	} else {
 		return "<empty>";
@@ -1123,8 +1123,8 @@ Ref<Resource> VisualScriptPreload::get_preload() const{
 void VisualScriptPreload::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_preload","resource"),&VisualScriptPreload::set_preload);
-	ObjectTypeDB::bind_method(_MD("get_preload"),&VisualScriptPreload::get_preload);
+	ClassDB::bind_method(_MD("set_preload","resource"),&VisualScriptPreload::set_preload);
+	ClassDB::bind_method(_MD("get_preload"),&VisualScriptPreload::get_preload);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"resource",PROPERTY_HINT_RESOURCE_TYPE,"Resource"),_SCS("set_preload"),_SCS("get_preload"));
@@ -1425,8 +1425,8 @@ VisualScriptNodeInstance* VisualScriptGlobalConstant::instance(VisualScriptInsta
 
 void VisualScriptGlobalConstant::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_global_constant","index"),&VisualScriptGlobalConstant::set_global_constant);
-	ObjectTypeDB::bind_method(_MD("get_global_constant"),&VisualScriptGlobalConstant::get_global_constant);
+	ClassDB::bind_method(_MD("set_global_constant","index"),&VisualScriptGlobalConstant::set_global_constant);
+	ClassDB::bind_method(_MD("get_global_constant"),&VisualScriptGlobalConstant::get_global_constant);
 
 	String cc;
 
@@ -1540,7 +1540,7 @@ public:
 VisualScriptNodeInstance* VisualScriptClassConstant::instance(VisualScriptInstance* p_instance) {
 
 	VisualScriptNodeInstanceClassConstant * instance = memnew(VisualScriptNodeInstanceClassConstant );
-	instance->value=ObjectTypeDB::get_integer_constant(base_type,name,&instance->valid);
+	instance->value=ClassDB::get_integer_constant(base_type,name,&instance->valid);
 	return instance;
 }
 
@@ -1549,7 +1549,7 @@ void VisualScriptClassConstant::_validate_property(PropertyInfo& property) const
 	if (property.name=="constant") {
 
 		List<String> constants;
-		ObjectTypeDB::get_integer_constant_list(base_type,&constants,true);
+		ClassDB::get_integer_constant_list(base_type,&constants,true);
 
 		property.hint_string="";
 		for(List<String>::Element *E=constants.front();E;E=E->next()) {
@@ -1563,11 +1563,11 @@ void VisualScriptClassConstant::_validate_property(PropertyInfo& property) const
 
 void VisualScriptClassConstant::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_class_constant","name"),&VisualScriptClassConstant::set_class_constant);
-	ObjectTypeDB::bind_method(_MD("get_class_constant"),&VisualScriptClassConstant::get_class_constant);
+	ClassDB::bind_method(_MD("set_class_constant","name"),&VisualScriptClassConstant::set_class_constant);
+	ClassDB::bind_method(_MD("get_class_constant"),&VisualScriptClassConstant::get_class_constant);
 
-	ObjectTypeDB::bind_method(_MD("set_base_type","name"),&VisualScriptClassConstant::set_base_type);
-	ObjectTypeDB::bind_method(_MD("get_base_type"),&VisualScriptClassConstant::get_base_type);
+	ClassDB::bind_method(_MD("set_base_type","name"),&VisualScriptClassConstant::set_base_type);
+	ClassDB::bind_method(_MD("get_base_type"),&VisualScriptClassConstant::get_base_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"constant",PROPERTY_HINT_ENUM,""),_SCS("set_class_constant"),_SCS("get_class_constant"));
@@ -1703,11 +1703,11 @@ void VisualScriptBasicTypeConstant::_validate_property(PropertyInfo& property) c
 
 void VisualScriptBasicTypeConstant::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_basic_type","name"),&VisualScriptBasicTypeConstant::set_basic_type);
-	ObjectTypeDB::bind_method(_MD("get_basic_type"),&VisualScriptBasicTypeConstant::get_basic_type);
+	ClassDB::bind_method(_MD("set_basic_type","name"),&VisualScriptBasicTypeConstant::set_basic_type);
+	ClassDB::bind_method(_MD("get_basic_type"),&VisualScriptBasicTypeConstant::get_basic_type);
 
-	ObjectTypeDB::bind_method(_MD("set_basic_type_constant","name"),&VisualScriptBasicTypeConstant::set_basic_type_constant);
-	ObjectTypeDB::bind_method(_MD("get_basic_type_constant"),&VisualScriptBasicTypeConstant::get_basic_type_constant);
+	ClassDB::bind_method(_MD("set_basic_type_constant","name"),&VisualScriptBasicTypeConstant::set_basic_type_constant);
+	ClassDB::bind_method(_MD("get_basic_type_constant"),&VisualScriptBasicTypeConstant::get_basic_type_constant);
 
 
 	String argt="Null";
@@ -1831,8 +1831,8 @@ VisualScriptNodeInstance* VisualScriptMathConstant::instance(VisualScriptInstanc
 
 void VisualScriptMathConstant::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_math_constant","which"),&VisualScriptMathConstant::set_math_constant);
-	ObjectTypeDB::bind_method(_MD("get_math_constant"),&VisualScriptMathConstant::get_math_constant);
+	ClassDB::bind_method(_MD("set_math_constant","which"),&VisualScriptMathConstant::set_math_constant);
+	ClassDB::bind_method(_MD("get_math_constant"),&VisualScriptMathConstant::get_math_constant);
 
 	String cc;
 
@@ -1943,7 +1943,7 @@ VisualScriptEngineSingleton::TypeGuess VisualScriptEngineSingleton::guess_output
 	TypeGuess tg;
 	tg.type=Variant::OBJECT;
 	if (obj) {
-		tg.obj_type=obj->get_type();
+		tg.GDCLASS=obj->get_class();
 		tg.script=obj->get_script();
 	}
 
@@ -1953,8 +1953,8 @@ VisualScriptEngineSingleton::TypeGuess VisualScriptEngineSingleton::guess_output
 
 void VisualScriptEngineSingleton::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_singleton","name"),&VisualScriptEngineSingleton::set_singleton);
-	ObjectTypeDB::bind_method(_MD("get_singleton"),&VisualScriptEngineSingleton::get_singleton);
+	ClassDB::bind_method(_MD("set_singleton","name"),&VisualScriptEngineSingleton::set_singleton);
+	ClassDB::bind_method(_MD("get_singleton"),&VisualScriptEngineSingleton::get_singleton);
 
 	String cc;
 
@@ -2117,7 +2117,7 @@ VisualScriptSceneNode::TypeGuess VisualScriptSceneNode::guess_output_type(TypeGu
 
 	VisualScriptSceneNode::TypeGuess tg;
 	tg.type=Variant::OBJECT;
-	tg.obj_type="Node";
+	tg.GDCLASS="Node";
 
 #ifdef TOOLS_ENABLED
 	Ref<Script> script = get_visual_script();
@@ -2146,7 +2146,7 @@ VisualScriptSceneNode::TypeGuess VisualScriptSceneNode::guess_output_type(TypeGu
 	Node* another = script_node->get_node(path);
 
 	if (another) {
-		tg.obj_type=another->get_type();
+		tg.GDCLASS=another->get_class();
 		tg.script=another->get_script();
 	}
 #endif
@@ -2190,8 +2190,8 @@ void VisualScriptSceneNode::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptSceneNode::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_node_path","path"),&VisualScriptSceneNode::set_node_path);
-	ObjectTypeDB::bind_method(_MD("get_node_path"),&VisualScriptSceneNode::get_node_path);
+	ClassDB::bind_method(_MD("set_node_path","path"),&VisualScriptSceneNode::set_node_path);
+	ClassDB::bind_method(_MD("get_node_path"),&VisualScriptSceneNode::get_node_path);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),_SCS("set_node_path"),_SCS("get_node_path"));
 }
@@ -2296,7 +2296,7 @@ VisualScriptSceneTree::TypeGuess VisualScriptSceneTree::guess_output_type(TypeGu
 
 	TypeGuess tg;
 	tg.type=Variant::OBJECT;
-	tg.obj_type="SceneTree";
+	tg.GDCLASS="SceneTree";
 	return tg;
 }
 
@@ -2401,8 +2401,8 @@ VisualScriptNodeInstance* VisualScriptResourcePath::instance(VisualScriptInstanc
 
 void VisualScriptResourcePath::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_resource_path","path"),&VisualScriptResourcePath::set_resource_path);
-	ObjectTypeDB::bind_method(_MD("get_resource_path"),&VisualScriptResourcePath::get_resource_path);
+	ClassDB::bind_method(_MD("set_resource_path","path"),&VisualScriptResourcePath::set_resource_path);
+	ClassDB::bind_method(_MD("get_resource_path"),&VisualScriptResourcePath::get_resource_path);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"path",PROPERTY_HINT_FILE),_SCS("set_resource_path"),_SCS("get_resource_path"));
 }
@@ -2494,13 +2494,13 @@ VisualScriptSelf::TypeGuess VisualScriptSelf::guess_output_type(TypeGuess* p_inp
 
 	VisualScriptSceneNode::TypeGuess tg;
 	tg.type=Variant::OBJECT;
-	tg.obj_type="Object";
+	tg.GDCLASS="Object";
 
 	Ref<Script> script = get_visual_script();
 	if (!script.is_valid())
 		return tg;
 
-	tg.obj_type=script->get_instance_base_type();
+	tg.GDCLASS=script->get_instance_base_type();
 	tg.script=script;
 
 	return tg;
@@ -2817,7 +2817,7 @@ String VisualScriptSubCall::get_text() const {
 			return script->get_name();
 		if (script->get_path().is_resource_file())
 			return script->get_path().get_file();
-		return script->get_type();
+		return script->get_class();
 	}
 	return "";
 }
@@ -3001,14 +3001,14 @@ VisualScriptNodeInstance* VisualScriptComment::instance(VisualScriptInstance* p_
 void VisualScriptComment::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_title","title"),&VisualScriptComment::set_title);
-	ObjectTypeDB::bind_method(_MD("get_title"),&VisualScriptComment::get_title);
+	ClassDB::bind_method(_MD("set_title","title"),&VisualScriptComment::set_title);
+	ClassDB::bind_method(_MD("get_title"),&VisualScriptComment::get_title);
 
-	ObjectTypeDB::bind_method(_MD("set_description","description"),&VisualScriptComment::set_description);
-	ObjectTypeDB::bind_method(_MD("get_description"),&VisualScriptComment::get_description);
+	ClassDB::bind_method(_MD("set_description","description"),&VisualScriptComment::set_description);
+	ClassDB::bind_method(_MD("get_description"),&VisualScriptComment::get_description);
 
-	ObjectTypeDB::bind_method(_MD("set_size","size"),&VisualScriptComment::set_size);
-	ObjectTypeDB::bind_method(_MD("get_size"),&VisualScriptComment::get_size);
+	ClassDB::bind_method(_MD("set_size","size"),&VisualScriptComment::set_size);
+	ClassDB::bind_method(_MD("get_size"),&VisualScriptComment::get_size);
 
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"title"),_SCS("set_title"),_SCS("get_title"));
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"description",PROPERTY_HINT_MULTILINE_TEXT),_SCS("set_description"),_SCS("get_description"));
@@ -3140,11 +3140,11 @@ VisualScriptNodeInstance* VisualScriptConstructor::instance(VisualScriptInstance
 
 void VisualScriptConstructor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_constructor_type","type"),&VisualScriptConstructor::set_constructor_type);
-	ObjectTypeDB::bind_method(_MD("get_constructor_type"),&VisualScriptConstructor::get_constructor_type);
+	ClassDB::bind_method(_MD("set_constructor_type","type"),&VisualScriptConstructor::set_constructor_type);
+	ClassDB::bind_method(_MD("get_constructor_type"),&VisualScriptConstructor::get_constructor_type);
 
-	ObjectTypeDB::bind_method(_MD("set_constructor","constructor"),&VisualScriptConstructor::set_constructor);
-	ObjectTypeDB::bind_method(_MD("get_constructor"),&VisualScriptConstructor::get_constructor);
+	ClassDB::bind_method(_MD("set_constructor","constructor"),&VisualScriptConstructor::set_constructor);
+	ClassDB::bind_method(_MD("get_constructor"),&VisualScriptConstructor::get_constructor);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"type",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_constructor_type"),_SCS("get_constructor_type"));
 	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"constructor",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_constructor"),_SCS("get_constructor"));
@@ -3283,11 +3283,11 @@ VisualScriptNodeInstance* VisualScriptLocalVar::instance(VisualScriptInstance* p
 
 void VisualScriptLocalVar::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_var_name","name"),&VisualScriptLocalVar::set_var_name);
-	ObjectTypeDB::bind_method(_MD("get_var_name"),&VisualScriptLocalVar::get_var_name);
+	ClassDB::bind_method(_MD("set_var_name","name"),&VisualScriptLocalVar::set_var_name);
+	ClassDB::bind_method(_MD("get_var_name"),&VisualScriptLocalVar::get_var_name);
 
-	ObjectTypeDB::bind_method(_MD("set_var_type","type"),&VisualScriptLocalVar::set_var_type);
-	ObjectTypeDB::bind_method(_MD("get_var_type"),&VisualScriptLocalVar::get_var_type);
+	ClassDB::bind_method(_MD("set_var_type","type"),&VisualScriptLocalVar::set_var_type);
+	ClassDB::bind_method(_MD("get_var_type"),&VisualScriptLocalVar::get_var_type);
 
 	String argt="Any";
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {
@@ -3420,11 +3420,11 @@ VisualScriptNodeInstance* VisualScriptLocalVarSet::instance(VisualScriptInstance
 
 void VisualScriptLocalVarSet::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_var_name","name"),&VisualScriptLocalVarSet::set_var_name);
-	ObjectTypeDB::bind_method(_MD("get_var_name"),&VisualScriptLocalVarSet::get_var_name);
+	ClassDB::bind_method(_MD("set_var_name","name"),&VisualScriptLocalVarSet::set_var_name);
+	ClassDB::bind_method(_MD("get_var_name"),&VisualScriptLocalVarSet::get_var_name);
 
-	ObjectTypeDB::bind_method(_MD("set_var_type","type"),&VisualScriptLocalVarSet::set_var_type);
-	ObjectTypeDB::bind_method(_MD("get_var_type"),&VisualScriptLocalVarSet::get_var_type);
+	ClassDB::bind_method(_MD("set_var_type","type"),&VisualScriptLocalVarSet::set_var_type);
+	ClassDB::bind_method(_MD("get_var_type"),&VisualScriptLocalVarSet::get_var_type);
 
 	String argt="Any";
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {
@@ -3630,11 +3630,11 @@ void VisualScriptInputAction::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptInputAction::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_action_name","name"),&VisualScriptInputAction::set_action_name);
-	ObjectTypeDB::bind_method(_MD("get_action_name"),&VisualScriptInputAction::get_action_name);
+	ClassDB::bind_method(_MD("set_action_name","name"),&VisualScriptInputAction::set_action_name);
+	ClassDB::bind_method(_MD("get_action_name"),&VisualScriptInputAction::get_action_name);
 
-	ObjectTypeDB::bind_method(_MD("set_action_mode","mode"),&VisualScriptInputAction::set_action_mode);
-	ObjectTypeDB::bind_method(_MD("get_action_mode"),&VisualScriptInputAction::get_action_mode);
+	ClassDB::bind_method(_MD("set_action_mode","mode"),&VisualScriptInputAction::set_action_mode);
+	ClassDB::bind_method(_MD("get_action_mode"),&VisualScriptInputAction::get_action_mode);
 
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"action"),_SCS("set_action_name"),_SCS("get_action_name"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Pressed,Released,JustPressed,JustReleased"),_SCS("set_action_mode"),_SCS("get_action_mode"));
@@ -3834,14 +3834,14 @@ void VisualScriptDeconstruct::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptDeconstruct::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_deconstruct_type","type"),&VisualScriptDeconstruct::set_deconstruct_type);
-	ObjectTypeDB::bind_method(_MD("get_deconstruct_type"),&VisualScriptDeconstruct::get_deconstruct_type);
+	ClassDB::bind_method(_MD("set_deconstruct_type","type"),&VisualScriptDeconstruct::set_deconstruct_type);
+	ClassDB::bind_method(_MD("get_deconstruct_type"),&VisualScriptDeconstruct::get_deconstruct_type);
 
-	ObjectTypeDB::bind_method(_MD("set_deconstruct_input_type","input_type"),&VisualScriptDeconstruct::set_deconstruct_input_type);
-	ObjectTypeDB::bind_method(_MD("get_deconstruct_input_type"),&VisualScriptDeconstruct::get_deconstruct_input_type);
+	ClassDB::bind_method(_MD("set_deconstruct_input_type","input_type"),&VisualScriptDeconstruct::set_deconstruct_input_type);
+	ClassDB::bind_method(_MD("get_deconstruct_input_type"),&VisualScriptDeconstruct::get_deconstruct_input_type);
 
-	ObjectTypeDB::bind_method(_MD("_set_elem_cache","_cache"),&VisualScriptDeconstruct::_set_elem_cache);
-	ObjectTypeDB::bind_method(_MD("_get_elem_cache"),&VisualScriptDeconstruct::_get_elem_cache);
+	ClassDB::bind_method(_MD("_set_elem_cache","_cache"),&VisualScriptDeconstruct::_set_elem_cache);
+	ClassDB::bind_method(_MD("_get_elem_cache"),&VisualScriptDeconstruct::_get_elem_cache);
 
 	String argt="Any";
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {

@@ -185,42 +185,42 @@ void ReflectionProbe::_validate_property(PropertyInfo& property) const {
 
 void ReflectionProbe::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_intensity","intensity"),&ReflectionProbe::set_intensity);
-	ObjectTypeDB::bind_method(_MD("get_intensity"),&ReflectionProbe::get_intensity);
+	ClassDB::bind_method(_MD("set_intensity","intensity"),&ReflectionProbe::set_intensity);
+	ClassDB::bind_method(_MD("get_intensity"),&ReflectionProbe::get_intensity);
 
-	ObjectTypeDB::bind_method(_MD("set_interior_ambient","ambient"),&ReflectionProbe::set_interior_ambient);
-	ObjectTypeDB::bind_method(_MD("get_interior_ambient"),&ReflectionProbe::get_interior_ambient);
+	ClassDB::bind_method(_MD("set_interior_ambient","ambient"),&ReflectionProbe::set_interior_ambient);
+	ClassDB::bind_method(_MD("get_interior_ambient"),&ReflectionProbe::get_interior_ambient);
 
-	ObjectTypeDB::bind_method(_MD("set_interior_ambient_energy","ambient_energy"),&ReflectionProbe::set_interior_ambient_energy);
-	ObjectTypeDB::bind_method(_MD("get_interior_ambient_energy"),&ReflectionProbe::get_interior_ambient_energy);
+	ClassDB::bind_method(_MD("set_interior_ambient_energy","ambient_energy"),&ReflectionProbe::set_interior_ambient_energy);
+	ClassDB::bind_method(_MD("get_interior_ambient_energy"),&ReflectionProbe::get_interior_ambient_energy);
 
-	ObjectTypeDB::bind_method(_MD("set_interior_ambient_probe_contribution","ambient_probe_contribution"),&ReflectionProbe::set_interior_ambient_probe_contribution);
-	ObjectTypeDB::bind_method(_MD("get_interior_ambient_probe_contribution"),&ReflectionProbe::get_interior_ambient_probe_contribution);
+	ClassDB::bind_method(_MD("set_interior_ambient_probe_contribution","ambient_probe_contribution"),&ReflectionProbe::set_interior_ambient_probe_contribution);
+	ClassDB::bind_method(_MD("get_interior_ambient_probe_contribution"),&ReflectionProbe::get_interior_ambient_probe_contribution);
 
-	ObjectTypeDB::bind_method(_MD("set_max_distance","max_distance"),&ReflectionProbe::set_max_distance);
-	ObjectTypeDB::bind_method(_MD("get_max_distance"),&ReflectionProbe::get_max_distance);
+	ClassDB::bind_method(_MD("set_max_distance","max_distance"),&ReflectionProbe::set_max_distance);
+	ClassDB::bind_method(_MD("get_max_distance"),&ReflectionProbe::get_max_distance);
 
-	ObjectTypeDB::bind_method(_MD("set_extents","extents"),&ReflectionProbe::set_extents);
-	ObjectTypeDB::bind_method(_MD("get_extents"),&ReflectionProbe::get_extents);
+	ClassDB::bind_method(_MD("set_extents","extents"),&ReflectionProbe::set_extents);
+	ClassDB::bind_method(_MD("get_extents"),&ReflectionProbe::get_extents);
 
-	ObjectTypeDB::bind_method(_MD("set_origin_offset","origin_offset"),&ReflectionProbe::set_origin_offset);
-	ObjectTypeDB::bind_method(_MD("get_origin_offset"),&ReflectionProbe::get_origin_offset);
+	ClassDB::bind_method(_MD("set_origin_offset","origin_offset"),&ReflectionProbe::set_origin_offset);
+	ClassDB::bind_method(_MD("get_origin_offset"),&ReflectionProbe::get_origin_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_as_interior","enable"),&ReflectionProbe::set_as_interior);
-	ObjectTypeDB::bind_method(_MD("is_set_as_interior"),&ReflectionProbe::is_set_as_interior);
+	ClassDB::bind_method(_MD("set_as_interior","enable"),&ReflectionProbe::set_as_interior);
+	ClassDB::bind_method(_MD("is_set_as_interior"),&ReflectionProbe::is_set_as_interior);
 
-	ObjectTypeDB::bind_method(_MD("set_enable_box_projection","enable"),&ReflectionProbe::set_enable_box_projection);
-	ObjectTypeDB::bind_method(_MD("is_box_projection_enabled"),&ReflectionProbe::is_box_projection_enabled);
+	ClassDB::bind_method(_MD("set_enable_box_projection","enable"),&ReflectionProbe::set_enable_box_projection);
+	ClassDB::bind_method(_MD("is_box_projection_enabled"),&ReflectionProbe::is_box_projection_enabled);
 
 
-	ObjectTypeDB::bind_method(_MD("set_enable_shadows","enable"),&ReflectionProbe::set_enable_shadows);
-	ObjectTypeDB::bind_method(_MD("are_shadows_enabled"),&ReflectionProbe::are_shadows_enabled);
+	ClassDB::bind_method(_MD("set_enable_shadows","enable"),&ReflectionProbe::set_enable_shadows);
+	ClassDB::bind_method(_MD("are_shadows_enabled"),&ReflectionProbe::are_shadows_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_cull_mask","layers"),&ReflectionProbe::set_cull_mask);
-	ObjectTypeDB::bind_method(_MD("get_cull_mask"),&ReflectionProbe::get_cull_mask);
+	ClassDB::bind_method(_MD("set_cull_mask","layers"),&ReflectionProbe::set_cull_mask);
+	ClassDB::bind_method(_MD("get_cull_mask"),&ReflectionProbe::get_cull_mask);
 
-	ObjectTypeDB::bind_method(_MD("set_update_mode","mode"),&ReflectionProbe::set_update_mode);
-	ObjectTypeDB::bind_method(_MD("get_update_mode"),&ReflectionProbe::get_update_mode);
+	ClassDB::bind_method(_MD("set_update_mode","mode"),&ReflectionProbe::set_update_mode);
+	ClassDB::bind_method(_MD("get_update_mode"),&ReflectionProbe::get_update_mode);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"update_mode",PROPERTY_HINT_ENUM,"Once,Always"),_SCS("set_update_mode"),_SCS("get_update_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"intensity",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_intensity"),_SCS("get_intensity"));

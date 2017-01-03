@@ -40,7 +40,7 @@ void register_enet_types() {
 		enet_ok=true;
 	}
 
-	ObjectTypeDB::register_type<NetworkedMultiplayerENet>();
+	ClassDB::register_class<NetworkedMultiplayerENet>();
 }
 
 void unregister_enet_types() {

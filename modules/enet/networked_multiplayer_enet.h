@@ -35,7 +35,7 @@
 
 class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
 
-	OBJ_TYPE(NetworkedMultiplayerENet,NetworkedMultiplayerPeer)
+	GDCLASS(NetworkedMultiplayerENet,NetworkedMultiplayerPeer)
 public:
 	enum CompressionMode {
 		COMPRESS_NONE,

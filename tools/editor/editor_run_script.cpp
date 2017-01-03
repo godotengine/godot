@@ -86,8 +86,8 @@ void EditorScript::set_editor(EditorNode *p_editor) {
 
 void EditorScript::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("add_root_node","node"),&EditorScript::add_root_node);
-	ObjectTypeDB::bind_method(_MD("get_scene"),&EditorScript::get_scene);
+	ClassDB::bind_method(_MD("add_root_node","node"),&EditorScript::add_root_node);
+	ClassDB::bind_method(_MD("get_scene"),&EditorScript::get_scene);
 	BIND_VMETHOD( MethodInfo("_run") );
 
 

@@ -41,7 +41,7 @@
 
 class SpriteFramesEditor : public PanelContainer {
 
-	OBJ_TYPE(SpriteFramesEditor, PanelContainer );
+	GDCLASS(SpriteFramesEditor, PanelContainer );
 
 	Button *load;
 	Button *_delete;
@@ -116,7 +116,7 @@ public:
 
 class SpriteFramesEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SpriteFramesEditorPlugin, EditorPlugin );
+	GDCLASS( SpriteFramesEditorPlugin, EditorPlugin );
 
 	SpriteFramesEditor *frames_editor;
 	EditorNode *editor;

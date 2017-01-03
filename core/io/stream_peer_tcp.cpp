@@ -52,13 +52,13 @@ void StreamPeerTCP::set_ip_type(IP::Type p_type) {
 
 void StreamPeerTCP::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_ip_type","ip_type"),&StreamPeerTCP::set_ip_type);
-	ObjectTypeDB::bind_method(_MD("connect","host","port"),&StreamPeerTCP::_connect);
-	ObjectTypeDB::bind_method(_MD("is_connected"),&StreamPeerTCP::is_connected);
-	ObjectTypeDB::bind_method(_MD("get_status"),&StreamPeerTCP::get_status);
-	ObjectTypeDB::bind_method(_MD("get_connected_host"),&StreamPeerTCP::get_connected_host);
-	ObjectTypeDB::bind_method(_MD("get_connected_port"),&StreamPeerTCP::get_connected_port);
-	ObjectTypeDB::bind_method(_MD("disconnect"),&StreamPeerTCP::disconnect);
+	ClassDB::bind_method(_MD("set_ip_type","ip_type"),&StreamPeerTCP::set_ip_type);
+	ClassDB::bind_method(_MD("connect","host","port"),&StreamPeerTCP::_connect);
+	ClassDB::bind_method(_MD("is_connected"),&StreamPeerTCP::is_connected);
+	ClassDB::bind_method(_MD("get_status"),&StreamPeerTCP::get_status);
+	ClassDB::bind_method(_MD("get_connected_host"),&StreamPeerTCP::get_connected_host);
+	ClassDB::bind_method(_MD("get_connected_port"),&StreamPeerTCP::get_connected_port);
+	ClassDB::bind_method(_MD("disconnect"),&StreamPeerTCP::disconnect);
 
 	BIND_CONSTANT( STATUS_NONE );
 	BIND_CONSTANT( STATUS_CONNECTING );

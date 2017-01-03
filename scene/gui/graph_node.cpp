@@ -722,50 +722,50 @@ bool GraphNode::is_resizeable() const{
 
 void GraphNode::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_title","title"),&GraphNode::set_title);
-	ObjectTypeDB::bind_method(_MD("get_title"),&GraphNode::get_title);
-	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphNode::_input_event);
+	ClassDB::bind_method(_MD("set_title","title"),&GraphNode::set_title);
+	ClassDB::bind_method(_MD("get_title"),&GraphNode::get_title);
+	ClassDB::bind_method(_MD("_input_event"),&GraphNode::_input_event);
 
-	ObjectTypeDB::bind_method(_MD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right","custom_left","custom_right"),&GraphNode::set_slot,DEFVAL(Ref<Texture>()),DEFVAL(Ref<Texture>()));
-	ObjectTypeDB::bind_method(_MD("clear_slot","idx"),&GraphNode::clear_slot);
-	ObjectTypeDB::bind_method(_MD("clear_all_slots","idx"),&GraphNode::clear_all_slots);
-	ObjectTypeDB::bind_method(_MD("is_slot_enabled_left","idx"),&GraphNode::is_slot_enabled_left);
-	ObjectTypeDB::bind_method(_MD("get_slot_type_left","idx"),&GraphNode::get_slot_type_left);
-	ObjectTypeDB::bind_method(_MD("get_slot_color_left","idx"),&GraphNode::get_slot_color_left);
-	ObjectTypeDB::bind_method(_MD("is_slot_enabled_right","idx"),&GraphNode::is_slot_enabled_right);
-	ObjectTypeDB::bind_method(_MD("get_slot_type_right","idx"),&GraphNode::get_slot_type_right);
-	ObjectTypeDB::bind_method(_MD("get_slot_color_right","idx"),&GraphNode::get_slot_color_right);
+	ClassDB::bind_method(_MD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right","custom_left","custom_right"),&GraphNode::set_slot,DEFVAL(Ref<Texture>()),DEFVAL(Ref<Texture>()));
+	ClassDB::bind_method(_MD("clear_slot","idx"),&GraphNode::clear_slot);
+	ClassDB::bind_method(_MD("clear_all_slots","idx"),&GraphNode::clear_all_slots);
+	ClassDB::bind_method(_MD("is_slot_enabled_left","idx"),&GraphNode::is_slot_enabled_left);
+	ClassDB::bind_method(_MD("get_slot_type_left","idx"),&GraphNode::get_slot_type_left);
+	ClassDB::bind_method(_MD("get_slot_color_left","idx"),&GraphNode::get_slot_color_left);
+	ClassDB::bind_method(_MD("is_slot_enabled_right","idx"),&GraphNode::is_slot_enabled_right);
+	ClassDB::bind_method(_MD("get_slot_type_right","idx"),&GraphNode::get_slot_type_right);
+	ClassDB::bind_method(_MD("get_slot_color_right","idx"),&GraphNode::get_slot_color_right);
 
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&GraphNode::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&GraphNode::get_offset);
+	ClassDB::bind_method(_MD("set_offset","offset"),&GraphNode::set_offset);
+	ClassDB::bind_method(_MD("get_offset"),&GraphNode::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_comment","comment"),&GraphNode::set_comment);
-	ObjectTypeDB::bind_method(_MD("is_comment"),&GraphNode::is_comment);
+	ClassDB::bind_method(_MD("set_comment","comment"),&GraphNode::set_comment);
+	ClassDB::bind_method(_MD("is_comment"),&GraphNode::is_comment);
 
-	ObjectTypeDB::bind_method(_MD("set_resizeable","resizeable"),&GraphNode::set_resizeable);
-	ObjectTypeDB::bind_method(_MD("is_resizeable"),&GraphNode::is_resizeable);
+	ClassDB::bind_method(_MD("set_resizeable","resizeable"),&GraphNode::set_resizeable);
+	ClassDB::bind_method(_MD("is_resizeable"),&GraphNode::is_resizeable);
 
-	ObjectTypeDB::bind_method(_MD("set_selected","selected"),&GraphNode::set_selected);
-	ObjectTypeDB::bind_method(_MD("is_selected"),&GraphNode::is_selected);
+	ClassDB::bind_method(_MD("set_selected","selected"),&GraphNode::set_selected);
+	ClassDB::bind_method(_MD("is_selected"),&GraphNode::is_selected);
 
-	ObjectTypeDB::bind_method(_MD("get_connection_output_count"),&GraphNode::get_connection_output_count);
-	ObjectTypeDB::bind_method(_MD("get_connection_input_count"),&GraphNode::get_connection_input_count);
+	ClassDB::bind_method(_MD("get_connection_output_count"),&GraphNode::get_connection_output_count);
+	ClassDB::bind_method(_MD("get_connection_input_count"),&GraphNode::get_connection_input_count);
 
-	ObjectTypeDB::bind_method(_MD("get_connection_output_pos","idx"),&GraphNode::get_connection_output_pos);
-	ObjectTypeDB::bind_method(_MD("get_connection_output_type","idx"),&GraphNode::get_connection_output_type);
-	ObjectTypeDB::bind_method(_MD("get_connection_output_color","idx"),&GraphNode::get_connection_output_color);
-	ObjectTypeDB::bind_method(_MD("get_connection_input_pos","idx"),&GraphNode::get_connection_input_pos);
-	ObjectTypeDB::bind_method(_MD("get_connection_input_type","idx"),&GraphNode::get_connection_input_type);
-	ObjectTypeDB::bind_method(_MD("get_connection_input_color","idx"),&GraphNode::get_connection_input_color);
+	ClassDB::bind_method(_MD("get_connection_output_pos","idx"),&GraphNode::get_connection_output_pos);
+	ClassDB::bind_method(_MD("get_connection_output_type","idx"),&GraphNode::get_connection_output_type);
+	ClassDB::bind_method(_MD("get_connection_output_color","idx"),&GraphNode::get_connection_output_color);
+	ClassDB::bind_method(_MD("get_connection_input_pos","idx"),&GraphNode::get_connection_input_pos);
+	ClassDB::bind_method(_MD("get_connection_input_type","idx"),&GraphNode::get_connection_input_type);
+	ClassDB::bind_method(_MD("get_connection_input_color","idx"),&GraphNode::get_connection_input_color);
 
-	ObjectTypeDB::bind_method(_MD("set_modulate","color"),&GraphNode::set_modulate);
-	ObjectTypeDB::bind_method(_MD("get_modulate"),&GraphNode::get_modulate);
+	ClassDB::bind_method(_MD("set_modulate","color"),&GraphNode::set_modulate);
+	ClassDB::bind_method(_MD("get_modulate"),&GraphNode::get_modulate);
 
-	ObjectTypeDB::bind_method(_MD("set_show_close_button","show"),&GraphNode::set_show_close_button);
-	ObjectTypeDB::bind_method(_MD("is_close_button_visible"),&GraphNode::is_close_button_visible);
+	ClassDB::bind_method(_MD("set_show_close_button","show"),&GraphNode::set_show_close_button);
+	ClassDB::bind_method(_MD("is_close_button_visible"),&GraphNode::is_close_button_visible);
 
-	ObjectTypeDB::bind_method(_MD("set_overlay","overlay"),&GraphNode::set_overlay);
-	ObjectTypeDB::bind_method(_MD("get_overlay"),&GraphNode::get_overlay);
+	ClassDB::bind_method(_MD("set_overlay","overlay"),&GraphNode::set_overlay);
+	ClassDB::bind_method(_MD("get_overlay"),&GraphNode::get_overlay);
 
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"title"),_SCS("set_title"),_SCS("get_title"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"show_close"),_SCS("set_show_close_button"),_SCS("is_close_button_visible"));

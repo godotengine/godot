@@ -597,7 +597,7 @@ void EditorNode::save_resource_as(const Ref<Resource>& p_resource,const String& 
 	List<String> preferred;
 	for(int i=0;i<extensions.size();i++) {
 
-		if (p_resource->is_type("Script") && (extensions[i]=="tres" || extensions[i]=="res" || extensions[i]=="xml")) {
+		if (p_resource->is_class("Script") && (extensions[i]=="tres" || extensions[i]=="res" || extensions[i]=="xml")) {
 			//this serves no purpose and confused people
 			continue;
 		}
@@ -614,7 +614,7 @@ void EditorNode::save_resource_as(const Ref<Resource>& p_resource,const String& 
 			file->set_current_file(p_resource->get_path().get_file());
 		} else {
 			if (extensions.size())	{
-				file->set_current_file("new_"+p_resource->get_type().to_lower()+"."+preferred.front()->get().to_lower());
+				file->set_current_file("new_"+p_resource->get_class().to_lower()+"."+preferred.front()->get().to_lower());
 			} else {
 				file->set_current_file(String());
 			}
@@ -632,7 +632,7 @@ void EditorNode::save_resource_as(const Ref<Resource>& p_resource,const String& 
 
 		String existing;
 		if (extensions.size()) {
-			existing="new_"+p_resource->get_type().to_lower()+"."+preferred.front()->get().to_lower();
+			existing="new_"+p_resource->get_class().to_lower()+"."+preferred.front()->get().to_lower();
 		}
 		file->set_current_path(existing);
 
@@ -864,12 +864,12 @@ void EditorNode::_save_edited_subresources(Node* scene,Map<RES,bool>& processed,
 
 void EditorNode::_find_node_types(Node* p_node, int&count_2d, int&count_3d) {
 
-	if (p_node->is_type("Viewport") || (p_node!=editor_data.get_edited_scene_root() && p_node->get_owner()!=editor_data.get_edited_scene_root()))
+	if (p_node->is_class("Viewport") || (p_node!=editor_data.get_edited_scene_root() && p_node->get_owner()!=editor_data.get_edited_scene_root()))
 		return;
 
-	if (p_node->is_type("CanvasItem"))
+	if (p_node->is_class("CanvasItem"))
 		count_2d++;
-	else if (p_node->is_type("Spatial"))
+	else if (p_node->is_class("Spatial"))
 		count_3d++;
 
 	for(int i=0;i<p_node->get_child_count();i++)
@@ -1511,8 +1511,8 @@ void EditorNode::_prepare_history() {
 		already.insert(id);
 
 		Ref<Texture> icon = gui_base->get_icon("Object","EditorIcons");
-		if (gui_base->has_icon(obj->get_type(),"EditorIcons"))
-			icon=gui_base->get_icon(obj->get_type(),"EditorIcons");
+		if (gui_base->has_icon(obj->get_class(),"EditorIcons"))
+			icon=gui_base->get_icon(obj->get_class(),"EditorIcons");
 		else
 			icon=base_icon;
 
@@ -1524,12 +1524,12 @@ void EditorNode::_prepare_history() {
 			else if (r->get_name()!=String()) {
 				text=r->get_name();
 			} else {
-				text=r->get_type();
+				text=r->get_class();
 			}
 		} else if (obj->cast_to<Node>()) {
 			text=obj->cast_to<Node>()->get_name();
 		} else {
-			text=obj->get_type();
+			text=obj->get_class();
 		}
 
 		if (i==editor_history.get_history_pos()) {
@@ -1617,8 +1617,8 @@ void EditorNode::_edit_current() {
 
 	object_menu->set_disabled(true);
 
-	bool is_resource = current_obj->is_type("Resource");
-	bool is_node = current_obj->is_type("Node");
+	bool is_resource = current_obj->is_class("Resource");
+	bool is_node = current_obj->is_class("Node");
 	resource_save_button->set_disabled(!is_resource);
 
 	if (is_resource) {
@@ -2581,7 +2581,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			if (current) {
 				_editor_select(EDITOR_SCRIPT);
-				emit_signal("request_help",current->get_type());
+				emit_signal("request_help",current->get_class());
 			}
 
 
@@ -4150,25 +4150,25 @@ bool EditorNode::is_scene_in_use(const String& p_path) {
 
 void EditorNode::register_editor_types() {
 
-	ObjectTypeDB::register_type<EditorPlugin>();
-	ObjectTypeDB::register_type<EditorImportPlugin>();
-	ObjectTypeDB::register_type<EditorExportPlugin>();
-	ObjectTypeDB::register_type<EditorScenePostImport>();
-	ObjectTypeDB::register_type<EditorScript>();
-	ObjectTypeDB::register_type<EditorSelection>();
-	ObjectTypeDB::register_type<EditorFileDialog>();
-	//ObjectTypeDB::register_type<EditorImportExport>();
-	ObjectTypeDB::register_type<EditorSettings>();
-	ObjectTypeDB::register_type<EditorSpatialGizmo>();
-	ObjectTypeDB::register_type<EditorResourcePreview>();
-	ObjectTypeDB::register_type<EditorResourcePreviewGenerator>();
-	ObjectTypeDB::register_type<EditorFileSystem>();
-	ObjectTypeDB::register_type<EditorFileSystemDirectory>();
+	ClassDB::register_class<EditorPlugin>();
+	ClassDB::register_class<EditorImportPlugin>();
+	ClassDB::register_class<EditorExportPlugin>();
+	ClassDB::register_class<EditorScenePostImport>();
+	ClassDB::register_class<EditorScript>();
+	ClassDB::register_class<EditorSelection>();
+	ClassDB::register_class<EditorFileDialog>();
+	//ClassDB::register_type<EditorImportExport>();
+	ClassDB::register_class<EditorSettings>();
+	ClassDB::register_class<EditorSpatialGizmo>();
+	ClassDB::register_class<EditorResourcePreview>();
+	ClassDB::register_class<EditorResourcePreviewGenerator>();
+	ClassDB::register_class<EditorFileSystem>();
+	ClassDB::register_class<EditorFileSystemDirectory>();
 
 
 
-	//ObjectTypeDB::register_type<EditorImporter>();
-//	ObjectTypeDB::register_type<EditorPostImport>();
+	//ClassDB::register_type<EditorImporter>();
+//	ClassDB::register_type<EditorPostImport>();
 }
 
 void EditorNode::unregister_editor_types() {
@@ -5089,7 +5089,7 @@ Variant EditorNode::drag_resource(const Ref<Resource>& p_res,Control* p_from) {
 	} else if (p_res->get_name()!="") {
 		label->set_text(p_res->get_name());
 	} else {
-		label->set_text(p_res->get_type());
+		label->set_text(p_res->get_class());
 
 	}
 
@@ -5288,79 +5288,79 @@ void EditorNode::_call_build() {
 void EditorNode::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method("_menu_option",&EditorNode::_menu_option);
-	ObjectTypeDB::bind_method("_menu_confirm_current",&EditorNode::_menu_confirm_current);
-	ObjectTypeDB::bind_method("_dialog_action",&EditorNode::_dialog_action);
-	ObjectTypeDB::bind_method("_resource_selected",&EditorNode::_resource_selected,DEFVAL(""));
-	ObjectTypeDB::bind_method("_property_editor_forward",&EditorNode::_property_editor_forward);
-	ObjectTypeDB::bind_method("_property_editor_back",&EditorNode::_property_editor_back);
-	ObjectTypeDB::bind_method("_editor_select",&EditorNode::_editor_select);
-	ObjectTypeDB::bind_method("_node_renamed",&EditorNode::_node_renamed);
-	ObjectTypeDB::bind_method("edit_node",&EditorNode::edit_node);
-	ObjectTypeDB::bind_method("_imported",&EditorNode::_imported);
-	ObjectTypeDB::bind_method("_unhandled_input",&EditorNode::_unhandled_input);
+	ClassDB::bind_method("_menu_option",&EditorNode::_menu_option);
+	ClassDB::bind_method("_menu_confirm_current",&EditorNode::_menu_confirm_current);
+	ClassDB::bind_method("_dialog_action",&EditorNode::_dialog_action);
+	ClassDB::bind_method("_resource_selected",&EditorNode::_resource_selected,DEFVAL(""));
+	ClassDB::bind_method("_property_editor_forward",&EditorNode::_property_editor_forward);
+	ClassDB::bind_method("_property_editor_back",&EditorNode::_property_editor_back);
+	ClassDB::bind_method("_editor_select",&EditorNode::_editor_select);
+	ClassDB::bind_method("_node_renamed",&EditorNode::_node_renamed);
+	ClassDB::bind_method("edit_node",&EditorNode::edit_node);
+	ClassDB::bind_method("_imported",&EditorNode::_imported);
+	ClassDB::bind_method("_unhandled_input",&EditorNode::_unhandled_input);
 
-	ObjectTypeDB::bind_method("_get_scene_metadata",&EditorNode::_get_scene_metadata);
-	ObjectTypeDB::bind_method("set_edited_scene",&EditorNode::set_edited_scene);
-	ObjectTypeDB::bind_method("open_request",&EditorNode::open_request);
-	ObjectTypeDB::bind_method("_instance_request",&EditorNode::_instance_request);
-	ObjectTypeDB::bind_method("update_keying",&EditorNode::update_keying);
-	ObjectTypeDB::bind_method("_property_keyed",&EditorNode::_property_keyed);
-	ObjectTypeDB::bind_method("_transform_keyed",&EditorNode::_transform_keyed);
-	ObjectTypeDB::bind_method("_close_messages",&EditorNode::_close_messages);
-	ObjectTypeDB::bind_method("_show_messages",&EditorNode::_show_messages);
-	ObjectTypeDB::bind_method("_vp_resized",&EditorNode::_vp_resized);
-	ObjectTypeDB::bind_method("_quick_opened",&EditorNode::_quick_opened);
-	ObjectTypeDB::bind_method("_quick_run",&EditorNode::_quick_run);
+	ClassDB::bind_method("_get_scene_metadata",&EditorNode::_get_scene_metadata);
+	ClassDB::bind_method("set_edited_scene",&EditorNode::set_edited_scene);
+	ClassDB::bind_method("open_request",&EditorNode::open_request);
+	ClassDB::bind_method("_instance_request",&EditorNode::_instance_request);
+	ClassDB::bind_method("update_keying",&EditorNode::update_keying);
+	ClassDB::bind_method("_property_keyed",&EditorNode::_property_keyed);
+	ClassDB::bind_method("_transform_keyed",&EditorNode::_transform_keyed);
+	ClassDB::bind_method("_close_messages",&EditorNode::_close_messages);
+	ClassDB::bind_method("_show_messages",&EditorNode::_show_messages);
+	ClassDB::bind_method("_vp_resized",&EditorNode::_vp_resized);
+	ClassDB::bind_method("_quick_opened",&EditorNode::_quick_opened);
+	ClassDB::bind_method("_quick_run",&EditorNode::_quick_run);
 
-	ObjectTypeDB::bind_method("_resource_created",&EditorNode::_resource_created);
+	ClassDB::bind_method("_resource_created",&EditorNode::_resource_created);
 
-	ObjectTypeDB::bind_method("_import_action",&EditorNode::_import_action);
-	//ObjectTypeDB::bind_method("_import",&EditorNode::_import);
-//	ObjectTypeDB::bind_method("_import_conflicts_solved",&EditorNode::_import_conflicts_solved);
-	ObjectTypeDB::bind_method("_open_recent_scene",&EditorNode::_open_recent_scene);
-//	ObjectTypeDB::bind_method("_open_recent_scene_confirm",&EditorNode::_open_recent_scene_confirm);
+	ClassDB::bind_method("_import_action",&EditorNode::_import_action);
+	//ClassDB::bind_method("_import",&EditorNode::_import);
+//	ClassDB::bind_method("_import_conflicts_solved",&EditorNode::_import_conflicts_solved);
+	ClassDB::bind_method("_open_recent_scene",&EditorNode::_open_recent_scene);
+//	ClassDB::bind_method("_open_recent_scene_confirm",&EditorNode::_open_recent_scene_confirm);
 
-	ObjectTypeDB::bind_method("_save_optimized",&EditorNode::_save_optimized);
+	ClassDB::bind_method("_save_optimized",&EditorNode::_save_optimized);
 
-	ObjectTypeDB::bind_method("stop_child_process",&EditorNode::stop_child_process);
+	ClassDB::bind_method("stop_child_process",&EditorNode::stop_child_process);
 
-	ObjectTypeDB::bind_method("_sources_changed",&EditorNode::_sources_changed);
-	ObjectTypeDB::bind_method("_fs_changed",&EditorNode::_fs_changed);
-	ObjectTypeDB::bind_method("_dock_select_draw",&EditorNode::_dock_select_draw);
-	ObjectTypeDB::bind_method("_dock_select_input",&EditorNode::_dock_select_input);
-	ObjectTypeDB::bind_method("_dock_pre_popup",&EditorNode::_dock_pre_popup);
-	ObjectTypeDB::bind_method("_dock_split_dragged",&EditorNode::_dock_split_dragged);
-	ObjectTypeDB::bind_method("_save_docks",&EditorNode::_save_docks);
-	ObjectTypeDB::bind_method("_dock_popup_exit",&EditorNode::_dock_popup_exit);
-	ObjectTypeDB::bind_method("_dock_move_left",&EditorNode::_dock_move_left);
-	ObjectTypeDB::bind_method("_dock_move_right",&EditorNode::_dock_move_right);
+	ClassDB::bind_method("_sources_changed",&EditorNode::_sources_changed);
+	ClassDB::bind_method("_fs_changed",&EditorNode::_fs_changed);
+	ClassDB::bind_method("_dock_select_draw",&EditorNode::_dock_select_draw);
+	ClassDB::bind_method("_dock_select_input",&EditorNode::_dock_select_input);
+	ClassDB::bind_method("_dock_pre_popup",&EditorNode::_dock_pre_popup);
+	ClassDB::bind_method("_dock_split_dragged",&EditorNode::_dock_split_dragged);
+	ClassDB::bind_method("_save_docks",&EditorNode::_save_docks);
+	ClassDB::bind_method("_dock_popup_exit",&EditorNode::_dock_popup_exit);
+	ClassDB::bind_method("_dock_move_left",&EditorNode::_dock_move_left);
+	ClassDB::bind_method("_dock_move_right",&EditorNode::_dock_move_right);
 
-	ObjectTypeDB::bind_method("_layout_menu_option",&EditorNode::_layout_menu_option);
+	ClassDB::bind_method("_layout_menu_option",&EditorNode::_layout_menu_option);
 
-	ObjectTypeDB::bind_method("set_current_scene",&EditorNode::set_current_scene);
-	ObjectTypeDB::bind_method("set_current_version",&EditorNode::set_current_version);
-	ObjectTypeDB::bind_method("_scene_tab_changed",&EditorNode::_scene_tab_changed);
-	ObjectTypeDB::bind_method("_scene_tab_closed",&EditorNode::_scene_tab_closed);
-	ObjectTypeDB::bind_method("_scene_tab_script_edited",&EditorNode::_scene_tab_script_edited);
-	ObjectTypeDB::bind_method("_set_main_scene_state",&EditorNode::_set_main_scene_state);
-	ObjectTypeDB::bind_method("_update_scene_tabs",&EditorNode::_update_scene_tabs);
+	ClassDB::bind_method("set_current_scene",&EditorNode::set_current_scene);
+	ClassDB::bind_method("set_current_version",&EditorNode::set_current_version);
+	ClassDB::bind_method("_scene_tab_changed",&EditorNode::_scene_tab_changed);
+	ClassDB::bind_method("_scene_tab_closed",&EditorNode::_scene_tab_closed);
+	ClassDB::bind_method("_scene_tab_script_edited",&EditorNode::_scene_tab_script_edited);
+	ClassDB::bind_method("_set_main_scene_state",&EditorNode::_set_main_scene_state);
+	ClassDB::bind_method("_update_scene_tabs",&EditorNode::_update_scene_tabs);
 
-	ObjectTypeDB::bind_method("_prepare_history",&EditorNode::_prepare_history);
-	ObjectTypeDB::bind_method("_select_history",&EditorNode::_select_history);
+	ClassDB::bind_method("_prepare_history",&EditorNode::_prepare_history);
+	ClassDB::bind_method("_select_history",&EditorNode::_select_history);
 
-	ObjectTypeDB::bind_method("_toggle_search_bar",&EditorNode::_toggle_search_bar);
-	ObjectTypeDB::bind_method("_clear_search_box",&EditorNode::_clear_search_box);
-	ObjectTypeDB::bind_method("_clear_undo_history",&EditorNode::_clear_undo_history);
-	ObjectTypeDB::bind_method("_dropped_files",&EditorNode::_dropped_files);
-	ObjectTypeDB::bind_method("_toggle_distraction_free_mode",&EditorNode::_toggle_distraction_free_mode);
+	ClassDB::bind_method("_toggle_search_bar",&EditorNode::_toggle_search_bar);
+	ClassDB::bind_method("_clear_search_box",&EditorNode::_clear_search_box);
+	ClassDB::bind_method("_clear_undo_history",&EditorNode::_clear_undo_history);
+	ClassDB::bind_method("_dropped_files",&EditorNode::_dropped_files);
+	ClassDB::bind_method("_toggle_distraction_free_mode",&EditorNode::_toggle_distraction_free_mode);
 
 
 
-	ObjectTypeDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
-	ObjectTypeDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
-	ObjectTypeDB::bind_method(_MD("get_gui_base"), &EditorNode::get_gui_base);
-	ObjectTypeDB::bind_method(_MD("_bottom_panel_switch"), &EditorNode::_bottom_panel_switch);
+	ClassDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
+	ClassDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
+	ClassDB::bind_method(_MD("get_gui_base"), &EditorNode::get_gui_base);
+	ClassDB::bind_method(_MD("_bottom_panel_switch"), &EditorNode::_bottom_panel_switch);
 
 
 	ADD_SIGNAL( MethodInfo("play_pressed") );
@@ -5466,9 +5466,9 @@ EditorNode::EditorNode() {
 
 	GLOBAL_DEF("editor/main_run_args","$scene");
 
-	ObjectTypeDB::set_type_enabled("CollisionShape",true);
-	ObjectTypeDB::set_type_enabled("CollisionShape2D",true);
-	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",true);
+	ClassDB::set_class_enabled("CollisionShape",true);
+	ClassDB::set_class_enabled("CollisionShape2D",true);
+	ClassDB::set_class_enabled("CollisionPolygon2D",true);
 
 	Control *theme_base = memnew( Control );
 	add_child(theme_base);
@@ -6710,7 +6710,7 @@ EditorNode::EditorNode() {
 		theme_base->get_theme()->get_icon_list(ei,&tl);
 		for(List<StringName>::Element *E=tl.front();E;E=E->next()) {
 
-			if (!ObjectTypeDB::type_exists(E->get()))
+			if (!ClassDB::class_exists(E->get()))
 				continue;
 			icon_type_cache[E->get()]=theme_base->get_theme()->get_icon(E->get(),ei);
 		}

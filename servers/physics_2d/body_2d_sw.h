@@ -352,7 +352,7 @@ void Body2DSW::add_contact(const Vector2& p_local_pos,const Vector2& p_local_nor
 
 class Physics2DDirectBodyStateSW : public Physics2DDirectBodyState {
 
-	OBJ_TYPE( Physics2DDirectBodyStateSW, Physics2DDirectBodyState );
+	GDCLASS( Physics2DDirectBodyStateSW, Physics2DDirectBodyState );
 
 public:
 

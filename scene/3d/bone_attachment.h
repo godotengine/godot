@@ -33,7 +33,7 @@
 
 class BoneAttachment : public Spatial {
 
-	OBJ_TYPE(BoneAttachment,Spatial);
+	GDCLASS(BoneAttachment,Spatial);
 
 	bool bound;
 	String bone_name;

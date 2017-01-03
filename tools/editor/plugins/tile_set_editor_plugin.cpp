@@ -221,9 +221,9 @@ Error TileSetEditor::update_library_file(Node *p_base_scene, Ref<TileSet> ml,boo
 
 void TileSetEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_cbk",&TileSetEditor::_menu_cbk);
-	ObjectTypeDB::bind_method("_menu_confirm",&TileSetEditor::_menu_confirm);
-	ObjectTypeDB::bind_method("_name_dialog_confirm",&TileSetEditor::_name_dialog_confirm);
+	ClassDB::bind_method("_menu_cbk",&TileSetEditor::_menu_cbk);
+	ClassDB::bind_method("_menu_confirm",&TileSetEditor::_menu_confirm);
+	ClassDB::bind_method("_name_dialog_confirm",&TileSetEditor::_name_dialog_confirm);
 }
 
 TileSetEditor::TileSetEditor(EditorNode *p_editor) {
@@ -268,7 +268,7 @@ void TileSetEditorPlugin::edit(Object *p_node) {
 
 bool TileSetEditorPlugin::handles(Object *p_node) const{
 
-	return p_node->is_type("TileSet");
+	return p_node->is_class("TileSet");
 }
 
 void TileSetEditorPlugin::make_visible(bool p_visible){

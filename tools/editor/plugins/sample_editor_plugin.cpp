@@ -348,9 +348,9 @@ void SampleEditor::edit(Ref<Sample> p_sample) {
 
 void SampleEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&SampleEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_play_pressed"),&SampleEditor::_play_pressed);
-	ObjectTypeDB::bind_method(_MD("_stop_pressed"),&SampleEditor::_stop_pressed);
+	ClassDB::bind_method(_MD("_input_event"),&SampleEditor::_input_event);
+	ClassDB::bind_method(_MD("_play_pressed"),&SampleEditor::_play_pressed);
+	ClassDB::bind_method(_MD("_stop_pressed"),&SampleEditor::_stop_pressed);
 
 }
 
@@ -415,7 +415,7 @@ void SampleEditorPlugin::edit(Object *p_object) {
 
 bool SampleEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Sample");
+	return p_object->is_class("Sample");
 }
 
 void SampleEditorPlugin::make_visible(bool p_visible) {

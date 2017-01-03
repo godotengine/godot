@@ -58,15 +58,15 @@ void PacketPeerUDP::set_ip_type(IP::Type p_type) {
 
 void PacketPeerUDP::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_ip_type","ip_type"),&PacketPeerUDP::set_ip_type);
-	ObjectTypeDB::bind_method(_MD("listen:Error","port", "recv_buf_size"),&PacketPeerUDP::listen,DEFVAL(65536));
-	ObjectTypeDB::bind_method(_MD("close"),&PacketPeerUDP::close);
-	ObjectTypeDB::bind_method(_MD("wait:Error"),&PacketPeerUDP::wait);
-	ObjectTypeDB::bind_method(_MD("is_listening"),&PacketPeerUDP::is_listening);
-	ObjectTypeDB::bind_method(_MD("get_packet_ip"),&PacketPeerUDP::_get_packet_ip);
-	//ObjectTypeDB::bind_method(_MD("get_packet_address"),&PacketPeerUDP::_get_packet_address);
-	ObjectTypeDB::bind_method(_MD("get_packet_port"),&PacketPeerUDP::get_packet_port);
-	ObjectTypeDB::bind_method(_MD("set_send_address","host","port"),&PacketPeerUDP::_set_send_address);
+	ClassDB::bind_method(_MD("set_ip_type","ip_type"),&PacketPeerUDP::set_ip_type);
+	ClassDB::bind_method(_MD("listen:Error","port", "recv_buf_size"),&PacketPeerUDP::listen,DEFVAL(65536));
+	ClassDB::bind_method(_MD("close"),&PacketPeerUDP::close);
+	ClassDB::bind_method(_MD("wait:Error"),&PacketPeerUDP::wait);
+	ClassDB::bind_method(_MD("is_listening"),&PacketPeerUDP::is_listening);
+	ClassDB::bind_method(_MD("get_packet_ip"),&PacketPeerUDP::_get_packet_ip);
+	//ClassDB::bind_method(_MD("get_packet_address"),&PacketPeerUDP::_get_packet_address);
+	ClassDB::bind_method(_MD("get_packet_port"),&PacketPeerUDP::get_packet_port);
+	ClassDB::bind_method(_MD("set_send_address","host","port"),&PacketPeerUDP::_set_send_address);
 
 
 }

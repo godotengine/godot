@@ -35,7 +35,7 @@
 
 class TCP_Server : public Reference {
 
-	OBJ_TYPE( TCP_Server, Reference );
+	GDCLASS( TCP_Server, Reference );
 protected:
 
 	IP::Type ip_type;

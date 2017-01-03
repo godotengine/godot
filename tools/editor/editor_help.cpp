@@ -88,7 +88,7 @@ void EditorHelpSearch::_update_search() {
 */
 
 	List<StringName> type_list;
-	ObjectTypeDB::get_type_list(&type_list);
+	ClassDB::get_class_list(&type_list);
 
 	DocData *doc=EditorHelp::get_doc_data();
 	String term = search_box->get_text();
@@ -299,10 +299,10 @@ void EditorHelpSearch::_notification(int p_what) {
 
 void EditorHelpSearch::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_text_changed"),&EditorHelpSearch::_text_changed);
-	ObjectTypeDB::bind_method(_MD("_confirmed"),&EditorHelpSearch::_confirmed);
-	ObjectTypeDB::bind_method(_MD("_sbox_input"),&EditorHelpSearch::_sbox_input);
-	ObjectTypeDB::bind_method(_MD("_update_search"),&EditorHelpSearch::_update_search);
+	ClassDB::bind_method(_MD("_text_changed"),&EditorHelpSearch::_text_changed);
+	ClassDB::bind_method(_MD("_confirmed"),&EditorHelpSearch::_confirmed);
+	ClassDB::bind_method(_MD("_sbox_input"),&EditorHelpSearch::_sbox_input);
+	ClassDB::bind_method(_MD("_update_search"),&EditorHelpSearch::_update_search);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 
@@ -349,7 +349,7 @@ void EditorHelpIndex::add_type(const String& p_type,HashMap<String,TreeItem*>& p
 
 	if (p_types.has(p_type))
 		return;
-//	if (!ObjectTypeDB::is_type(p_type,base) || p_type==base)
+//	if (!ClassDB::is_type(p_type,base) || p_type==base)
 //		return;
 
 	String inherits=EditorHelp::get_doc_data()->class_list[p_type].inherits;
@@ -495,10 +495,10 @@ void EditorHelpIndex::_sbox_input(const InputEvent& p_ie) {
 
 void EditorHelpIndex::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_tree_item_selected",&EditorHelpIndex::_tree_item_selected);
-	ObjectTypeDB::bind_method("_text_changed",&EditorHelpIndex::_text_changed);
-	ObjectTypeDB::bind_method("_sbox_input",&EditorHelpIndex::_sbox_input);
-	ObjectTypeDB::bind_method("select_class",&EditorHelpIndex::select_class);
+	ClassDB::bind_method("_tree_item_selected",&EditorHelpIndex::_tree_item_selected);
+	ClassDB::bind_method("_text_changed",&EditorHelpIndex::_text_changed);
+	ClassDB::bind_method("_sbox_input",&EditorHelpIndex::_sbox_input);
+	ClassDB::bind_method("select_class",&EditorHelpIndex::select_class);
 	ADD_SIGNAL( MethodInfo("open_class"));
 }
 
@@ -754,7 +754,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->add_newline();
 	}
 
-	if (ObjectTypeDB::type_exists(cd.name)) {
+	if (ClassDB::class_exists(cd.name)) {
 
 		bool found = false;
 		bool prev = false;
@@ -1629,7 +1629,7 @@ void EditorHelp::_search_cbk() {
 	_search(search->get_text());
 }
 
-String EditorHelp::get_class_name() {
+String EditorHelp::get_class() {
 
 	return edited_class;
 }
@@ -1651,16 +1651,16 @@ void EditorHelp::set_scroll(int p_scroll) {
 
 void EditorHelp::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_class_list_select",&EditorHelp::_class_list_select);
-	ObjectTypeDB::bind_method("_class_desc_select",&EditorHelp::_class_desc_select);
-	ObjectTypeDB::bind_method("_class_desc_input",&EditorHelp::_class_desc_input);
-//	ObjectTypeDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
-	ObjectTypeDB::bind_method("_scroll_changed",&EditorHelp::_scroll_changed);
-	ObjectTypeDB::bind_method("_request_help",&EditorHelp::_request_help);
-	ObjectTypeDB::bind_method("_unhandled_key_input",&EditorHelp::_unhandled_key_input);
-	ObjectTypeDB::bind_method("_search",&EditorHelp::_search);
-	ObjectTypeDB::bind_method("_search_cbk",&EditorHelp::_search_cbk);
-	ObjectTypeDB::bind_method("_help_callback",&EditorHelp::_help_callback);
+	ClassDB::bind_method("_class_list_select",&EditorHelp::_class_list_select);
+	ClassDB::bind_method("_class_desc_select",&EditorHelp::_class_desc_select);
+	ClassDB::bind_method("_class_desc_input",&EditorHelp::_class_desc_input);
+//	ClassDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
+	ClassDB::bind_method("_scroll_changed",&EditorHelp::_scroll_changed);
+	ClassDB::bind_method("_request_help",&EditorHelp::_request_help);
+	ClassDB::bind_method("_unhandled_key_input",&EditorHelp::_unhandled_key_input);
+	ClassDB::bind_method("_search",&EditorHelp::_search);
+	ClassDB::bind_method("_search_cbk",&EditorHelp::_search_cbk);
+	ClassDB::bind_method("_help_callback",&EditorHelp::_help_callback);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 
@@ -1765,7 +1765,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 
 void EditorHelpBit::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_meta_clicked",&EditorHelpBit::_meta_clicked);
+	ClassDB::bind_method("_meta_clicked",&EditorHelpBit::_meta_clicked);
 	ADD_SIGNAL(MethodInfo("request_hide"));
 }
 

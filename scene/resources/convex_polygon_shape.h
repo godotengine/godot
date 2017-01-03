@@ -33,7 +33,7 @@
 
 class ConvexPolygonShape : public Shape {
 
-	OBJ_TYPE(ConvexPolygonShape,Shape);
+	GDCLASS(ConvexPolygonShape,Shape);
 	DVector<Vector3> points;
 
 protected:

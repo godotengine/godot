@@ -34,7 +34,7 @@
 
 class SamplePlayer2D : public SoundPlayer2D {
 
-	OBJ_TYPE(SamplePlayer2D,SoundPlayer2D);
+	GDCLASS(SamplePlayer2D,SoundPlayer2D);
 public:
 
 	enum {

@@ -555,8 +555,8 @@ void CollisionShape2DEditor::edit(Node* p_node) {
 
 void CollisionShape2DEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_canvas_draw",&CollisionShape2DEditor::_canvas_draw);
-	ObjectTypeDB::bind_method("_get_current_shape_type",&CollisionShape2DEditor::_get_current_shape_type);
+	ClassDB::bind_method("_canvas_draw",&CollisionShape2DEditor::_canvas_draw);
+	ClassDB::bind_method("_get_current_shape_type",&CollisionShape2DEditor::_get_current_shape_type);
 }
 
 CollisionShape2DEditor::CollisionShape2DEditor(EditorNode* p_editor) {
@@ -578,7 +578,7 @@ void CollisionShape2DEditorPlugin::edit(Object* p_obj) {
 
 bool CollisionShape2DEditorPlugin::handles(Object* p_obj) const {
 
-	return p_obj->is_type("CollisionShape2D");
+	return p_obj->is_class("CollisionShape2D");
 }
 
 void CollisionShape2DEditorPlugin::make_visible(bool visible) {

@@ -34,7 +34,7 @@
 
 class ItemList : public Control {
 
-	OBJ_TYPE( ItemList, Control );
+	GDCLASS( ItemList, Control );
 public:
 
 	enum IconMode {

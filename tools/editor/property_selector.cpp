@@ -87,8 +87,8 @@ void PropertySelector::_update_search() {
 			StringName base=base_type;
 			while(base) {
 				props.push_back(PropertyInfo(Variant::NIL,base,PROPERTY_HINT_NONE,"",PROPERTY_USAGE_CATEGORY));
-				ObjectTypeDB::get_property_list(base,&props,true);
-				base=ObjectTypeDB::type_inherits_from(base);
+				ClassDB::get_property_list(base,&props,true);
+				base=ClassDB::get_parent_class(base);
 			}
 
 		}
@@ -194,8 +194,8 @@ void PropertySelector::_update_search() {
 			StringName base=base_type;
 			while(base) {
 				methods.push_back(MethodInfo("*"+String(base)));
-				ObjectTypeDB::get_method_list(base,&methods,true);
-				base=ObjectTypeDB::type_inherits_from(base);
+				ClassDB::get_method_list(base,&methods,true);
+				base=ClassDB::get_parent_class(base);
 			}
 
 		}
@@ -358,14 +358,14 @@ void PropertySelector::_item_selected() {
 				}
 			}
 
-			at_class=ObjectTypeDB::type_inherits_from(at_class);
+			at_class=ClassDB::get_parent_class(at_class);
 		}
 
 		if (text==String()) {
 
 			StringName setter;
 			StringName type;
-			if (ObjectTypeDB::get_setter_and_type_for_property(class_type,name,type,setter)) {
+			if (ClassDB::get_setter_and_type_for_property(class_type,name,type,setter)) {
 				Map<String,DocData::ClassDoc>::Element *E=dd->class_list.find(type);
 				if (E) {
 					for(int i=0;i<E->get().methods.size();i++) {
@@ -395,7 +395,7 @@ void PropertySelector::_item_selected() {
 				}
 			}
 
-			at_class=ObjectTypeDB::type_inherits_from(at_class);
+			at_class=ClassDB::get_parent_class(at_class);
 		}
 	}
 
@@ -470,7 +470,7 @@ void PropertySelector::select_method_from_basic_type(Variant::Type p_type, const
 void PropertySelector::select_method_from_instance(Object* p_instance, const String &p_current){
 
 
-	base_type=p_instance->get_type();
+	base_type=p_instance->get_class();
 	selected=p_current;
 	type=Variant::NIL;
 	script=0;
@@ -559,10 +559,10 @@ void PropertySelector::select_property_from_instance(Object* p_instance, const S
 
 void PropertySelector::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_text_changed"),&PropertySelector::_text_changed);
-	ObjectTypeDB::bind_method(_MD("_confirmed"),&PropertySelector::_confirmed);
-	ObjectTypeDB::bind_method(_MD("_sbox_input"),&PropertySelector::_sbox_input);
-	ObjectTypeDB::bind_method(_MD("_item_selected"),&PropertySelector::_item_selected);
+	ClassDB::bind_method(_MD("_text_changed"),&PropertySelector::_text_changed);
+	ClassDB::bind_method(_MD("_confirmed"),&PropertySelector::_confirmed);
+	ClassDB::bind_method(_MD("_sbox_input"),&PropertySelector::_sbox_input);
+	ClassDB::bind_method(_MD("_item_selected"),&PropertySelector::_item_selected);
 
 	ADD_SIGNAL(MethodInfo("selected",PropertyInfo(Variant::STRING,"name")));
 

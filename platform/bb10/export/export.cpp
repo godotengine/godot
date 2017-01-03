@@ -43,7 +43,7 @@
 
 class EditorExportPlatformBB10 : public EditorExportPlatform {
 
-	OBJ_TYPE( EditorExportPlatformBB10,EditorExportPlatform );
+	GDCLASS( EditorExportPlatformBB10,EditorExportPlatform );
 
 	String custom_package;
 

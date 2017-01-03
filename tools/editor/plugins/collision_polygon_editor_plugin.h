@@ -46,7 +46,7 @@ class CanvasItemEditor;
 
 class CollisionPolygonEditor : public HBoxContainer {
 
-	OBJ_TYPE(CollisionPolygonEditor, HBoxContainer );
+	GDCLASS(CollisionPolygonEditor, HBoxContainer );
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -100,7 +100,7 @@ public:
 
 class CollisionPolygonEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( CollisionPolygonEditorPlugin, EditorPlugin );
+	GDCLASS( CollisionPolygonEditorPlugin, EditorPlugin );
 
 	CollisionPolygonEditor *collision_polygon_editor;
 	EditorNode *editor;

@@ -217,17 +217,17 @@ String CollisionShape2D::get_configuration_warning() const {
 
 void CollisionShape2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_shape","shape"),&CollisionShape2D::set_shape);
-	ObjectTypeDB::bind_method(_MD("get_shape"),&CollisionShape2D::get_shape);
-	ObjectTypeDB::bind_method(_MD("_shape_changed"),&CollisionShape2D::_shape_changed);
-	ObjectTypeDB::bind_method(_MD("_add_to_collision_object"),&CollisionShape2D::_add_to_collision_object);
-	ObjectTypeDB::bind_method(_MD("set_trigger","enable"),&CollisionShape2D::set_trigger);
-	ObjectTypeDB::bind_method(_MD("is_trigger"),&CollisionShape2D::is_trigger);
+	ClassDB::bind_method(_MD("set_shape","shape"),&CollisionShape2D::set_shape);
+	ClassDB::bind_method(_MD("get_shape"),&CollisionShape2D::get_shape);
+	ClassDB::bind_method(_MD("_shape_changed"),&CollisionShape2D::_shape_changed);
+	ClassDB::bind_method(_MD("_add_to_collision_object"),&CollisionShape2D::_add_to_collision_object);
+	ClassDB::bind_method(_MD("set_trigger","enable"),&CollisionShape2D::set_trigger);
+	ClassDB::bind_method(_MD("is_trigger"),&CollisionShape2D::is_trigger);
 
-	ObjectTypeDB::bind_method(_MD("_set_update_shape_index","index"),&CollisionShape2D::_set_update_shape_index);
-	ObjectTypeDB::bind_method(_MD("_get_update_shape_index"),&CollisionShape2D::_get_update_shape_index);
+	ClassDB::bind_method(_MD("_set_update_shape_index","index"),&CollisionShape2D::_set_update_shape_index);
+	ClassDB::bind_method(_MD("_get_update_shape_index"),&CollisionShape2D::_get_update_shape_index);
 
-	ObjectTypeDB::bind_method(_MD("get_collision_object_shape_index"),&CollisionShape2D::get_collision_object_shape_index);
+	ClassDB::bind_method(_MD("get_collision_object_shape_index"),&CollisionShape2D::get_collision_object_shape_index);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape2D"),_SCS("set_shape"),_SCS("get_shape"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));

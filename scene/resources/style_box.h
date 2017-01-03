@@ -37,7 +37,7 @@
 */
 class StyleBox : public Resource {
 
-	OBJ_TYPE( StyleBox, Resource );
+	GDCLASS( StyleBox, Resource );
 	RES_BASE_EXTENSION("sbx");
 	OBJ_SAVE_TYPE( StyleBox );
 	float margin[4];
@@ -65,7 +65,7 @@ public:
 
 class StyleBoxEmpty : public StyleBox {
 
-	OBJ_TYPE( StyleBoxEmpty, StyleBox );
+	GDCLASS( StyleBoxEmpty, StyleBox );
 	virtual float get_style_margin(Margin p_margin) const { return 0; }
 public:
 
@@ -76,7 +76,7 @@ public:
 
 class StyleBoxTexture : public StyleBox {
 
-	OBJ_TYPE( StyleBoxTexture, StyleBox );
+	GDCLASS( StyleBoxTexture, StyleBox );
 
 
 	float expand_margin[4];
@@ -123,7 +123,7 @@ public:
 
 class StyleBoxFlat : public StyleBox {
 
-	OBJ_TYPE( StyleBoxFlat, StyleBox );
+	GDCLASS( StyleBoxFlat, StyleBox );
 
 	Color bg_color;
 	Color light_color;

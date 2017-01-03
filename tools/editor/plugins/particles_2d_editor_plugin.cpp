@@ -43,7 +43,7 @@ void Particles2DEditorPlugin::edit(Object *p_object) {
 
 bool Particles2DEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Particles2D");
+	return p_object->is_class("Particles2D");
 }
 
 void Particles2DEditorPlugin::make_visible(bool p_visible) {
@@ -152,8 +152,8 @@ void Particles2DEditorPlugin::_notification(int p_what) {
 
 void Particles2DEditorPlugin::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_menu_callback"),&Particles2DEditorPlugin::_menu_callback);
-	ObjectTypeDB::bind_method(_MD("_file_selected"),&Particles2DEditorPlugin::_file_selected);
+	ClassDB::bind_method(_MD("_menu_callback"),&Particles2DEditorPlugin::_menu_callback);
+	ClassDB::bind_method(_MD("_file_selected"),&Particles2DEditorPlugin::_file_selected);
 }
 
 

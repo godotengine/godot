@@ -39,7 +39,7 @@
 
 class _EditorSampleImportOptions : public Object {
 
-	OBJ_TYPE(_EditorSampleImportOptions,Object);
+	GDCLASS(_EditorSampleImportOptions,Object);
 public:
 
 	enum CompressMode {
@@ -166,7 +166,7 @@ public:
 
 class EditorSampleImportDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorSampleImportDialog,ConfirmationDialog);
+	GDCLASS(EditorSampleImportDialog,ConfirmationDialog);
 
 	EditorSampleImportPlugin *plugin;
 
@@ -318,11 +318,11 @@ public:
 	static void _bind_methods() {
 
 
-		ObjectTypeDB::bind_method("_choose_files",&EditorSampleImportDialog::_choose_files);
-		ObjectTypeDB::bind_method("_choose_save_dir",&EditorSampleImportDialog::_choose_save_dir);
-		ObjectTypeDB::bind_method("_import",&EditorSampleImportDialog::_import);
-		ObjectTypeDB::bind_method("_browse",&EditorSampleImportDialog::_browse);
-		ObjectTypeDB::bind_method("_browse_target",&EditorSampleImportDialog::_browse_target);
+		ClassDB::bind_method("_choose_files",&EditorSampleImportDialog::_choose_files);
+		ClassDB::bind_method("_choose_save_dir",&EditorSampleImportDialog::_choose_save_dir);
+		ClassDB::bind_method("_import",&EditorSampleImportDialog::_import);
+		ClassDB::bind_method("_browse",&EditorSampleImportDialog::_browse);
+		ClassDB::bind_method("_browse_target",&EditorSampleImportDialog::_browse_target);
 	//	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 	}
 

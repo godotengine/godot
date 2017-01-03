@@ -89,8 +89,8 @@ void RichTextEditor::_menu_option(int p_option) {
 
 void RichTextEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_menu_option"),&RichTextEditor::_menu_option);
-	ObjectTypeDB::bind_method(_MD("_file_selected"),&RichTextEditor::_file_selected);
+	ClassDB::bind_method(_MD("_menu_option"),&RichTextEditor::_menu_option);
+	ClassDB::bind_method(_MD("_file_selected"),&RichTextEditor::_file_selected);
 
 }
 
@@ -126,7 +126,7 @@ void RichTextEditorPlugin::edit(Object *p_object) {
 
 bool RichTextEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("RichTextLabel");
+	return p_object->is_class("RichTextLabel");
 }
 
 void RichTextEditorPlugin::make_visible(bool p_visible) {

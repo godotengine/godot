@@ -32,7 +32,7 @@
 #include "scene/resources/shape_2d.h"
 
 class LineShape2D : public Shape2D {
-	OBJ_TYPE( LineShape2D, Shape2D );
+	GDCLASS( LineShape2D, Shape2D );
 
 	Vector2 normal;
 	real_t d;

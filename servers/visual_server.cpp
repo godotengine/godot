@@ -1563,17 +1563,17 @@ Array VisualServer::mesh_surface_get_arrays(RID p_mesh,int p_surface) const {
 void VisualServer::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("texture_create"),&VisualServer::texture_create);
-	ObjectTypeDB::bind_method(_MD("texture_create_from_image"),&VisualServer::texture_create_from_image,DEFVAL( TEXTURE_FLAGS_DEFAULT ) );
-	//ObjectTypeDB::bind_method(_MD("texture_allocate"),&VisualServer::texture_allocate,DEFVAL( TEXTURE_FLAGS_DEFAULT ) );
-	//ObjectTypeDB::bind_method(_MD("texture_set_data"),&VisualServer::texture_blit_rect,DEFVAL( CUBEMAP_LEFT ) );
-	//ObjectTypeDB::bind_method(_MD("texture_get_rect"),&VisualServer::texture_get_rect );
-	ObjectTypeDB::bind_method(_MD("texture_set_flags"),&VisualServer::texture_set_flags );
-	ObjectTypeDB::bind_method(_MD("texture_get_flags"),&VisualServer::texture_get_flags );
-	ObjectTypeDB::bind_method(_MD("texture_get_width"),&VisualServer::texture_get_width );
-	ObjectTypeDB::bind_method(_MD("texture_get_height"),&VisualServer::texture_get_height );
+	ClassDB::bind_method(_MD("texture_create"),&VisualServer::texture_create);
+	ClassDB::bind_method(_MD("texture_create_from_image"),&VisualServer::texture_create_from_image,DEFVAL( TEXTURE_FLAGS_DEFAULT ) );
+	//ClassDB::bind_method(_MD("texture_allocate"),&VisualServer::texture_allocate,DEFVAL( TEXTURE_FLAGS_DEFAULT ) );
+	//ClassDB::bind_method(_MD("texture_set_data"),&VisualServer::texture_blit_rect,DEFVAL( CUBEMAP_LEFT ) );
+	//ClassDB::bind_method(_MD("texture_get_rect"),&VisualServer::texture_get_rect );
+	ClassDB::bind_method(_MD("texture_set_flags"),&VisualServer::texture_set_flags );
+	ClassDB::bind_method(_MD("texture_get_flags"),&VisualServer::texture_get_flags );
+	ClassDB::bind_method(_MD("texture_get_width"),&VisualServer::texture_get_width );
+	ClassDB::bind_method(_MD("texture_get_height"),&VisualServer::texture_get_height );
 
-	ObjectTypeDB::bind_method(_MD("texture_set_shrink_all_x2_on_set_data","shrink"),&VisualServer::texture_set_shrink_all_x2_on_set_data );
+	ClassDB::bind_method(_MD("texture_set_shrink_all_x2_on_set_data","shrink"),&VisualServer::texture_set_shrink_all_x2_on_set_data );
 
 
 

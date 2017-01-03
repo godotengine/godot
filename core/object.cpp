@@ -341,15 +341,15 @@ bool Object::_predelete() {
 	_predelete_ok=1;
 	notification(NOTIFICATION_PREDELETE,true);
 	if (_predelete_ok) {
-		_type_ptr=NULL; //must restore so destructors can access type ptr correctly
+		_class_ptr=NULL; //must restore so destructors can access class ptr correctly
 	}
 	return _predelete_ok;
 
 }
 
 void Object::_postinitialize() {
-	_type_ptr=_get_type_namev();
-	_initialize_typev();
+	_class_ptr=_get_class_namev();
+	_initialize_classv();
 	notification(NOTIFICATION_POSTINITIALIZE);
 
 }
@@ -373,7 +373,7 @@ void Object::set(const String& p_name, const Variant& p_value) {
 //		return;
 
 	bool success;
-	ObjectTypeDB::set_property(this,p_name,p_value,success);
+	ClassDB::set_property(this,p_name,p_value,success);
 	if (success) {
 		return;
 	}
@@ -409,7 +409,7 @@ void Object::set(const StringName& p_name, const Variant& p_value, bool *r_valid
 
 	//try built-in setgetter
 	{
-		if (ObjectTypeDB::set_property(this,p_name,p_value,r_valid)) {
+		if (ClassDB::set_property(this,p_name,p_value,r_valid)) {
 			//if (r_valid)
 			//	*r_valid=true;
 			return;
@@ -460,7 +460,7 @@ Variant Object::get(const StringName& p_name, bool *r_valid) const{
 
 	//try built-in setgetter
 	{
-		if (ObjectTypeDB::get_property(const_cast<Object*>(this),p_name,ret)) {
+		if (ClassDB::get_property(const_cast<Object*>(this),p_name,ret)) {
 			if (r_valid)
 				*r_valid=true;
 			return ret;
@@ -504,7 +504,7 @@ Variant Object::get(const String& p_name) const {
 		return ret;
 
 	bool success;
-	ObjectTypeDB::get_property(const_cast<Object*>(this),p_name,ret,success);
+	ClassDB::get_property(const_cast<Object*>(this),p_name,ret,success);
 	if (success) {
 		return ret;
 	}
@@ -535,7 +535,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list,bool p_reversed) const
 	if (!_use_builtin_script())
 		return;
 
-	if (!is_type("Script")) // can still be set, but this is for userfriendlyness
+	if (!is_class("Script")) // can still be set, but this is for userfriendlyness
 		p_list->push_back( PropertyInfo( Variant::OBJECT, "script/script", PROPERTY_HINT_RESOURCE_TYPE, "Script",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_STORE_IF_NONZERO));
 	if (!metadata.empty())
 		p_list->push_back( PropertyInfo( Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_STORE_IF_NONZERO));
@@ -552,7 +552,7 @@ void Object::_validate_property(PropertyInfo& property) const {
 
 void Object::get_method_list(List<MethodInfo> *p_list) const {
 
-	ObjectTypeDB::get_method_list(get_type_name(),p_list);
+	ClassDB::get_method_list(get_class_name(),p_list);
 	if (script_instance) {
 		script_instance->get_method_list(p_list);
 	}
@@ -697,7 +697,7 @@ void Object::call_multilevel(const StringName& p_method,const Variant** p_args,i
 
 	}
 
-	MethodBind *method=ObjectTypeDB::get_method(get_type_name(),p_method);
+	MethodBind *method=ClassDB::get_method(get_class_name(),p_method);
 
 	if (method) {
 
@@ -710,7 +710,7 @@ void Object::call_multilevel(const StringName& p_method,const Variant** p_args,i
 void Object::call_multilevel_reversed(const StringName& p_method,const Variant** p_args,int p_argcount) {
 
 
-	MethodBind *method=ObjectTypeDB::get_method(get_type_name(),p_method);
+	MethodBind *method=ClassDB::get_method(get_class_name(),p_method);
 
 	Variant::CallError error;
 	OBJ_DEBUG_LOCK
@@ -744,7 +744,7 @@ bool Object::has_method(const StringName& p_method) const {
 		return true;
 	}
 
-	MethodBind *method=ObjectTypeDB::get_method(get_type_name(),p_method);
+	MethodBind *method=ClassDB::get_method(get_class_name(),p_method);
 
 	if (method) {
 		return true;
@@ -821,7 +821,7 @@ Variant Object::call(const StringName& p_name, VARIANT_ARG_DECLARE) {
 			return ret;
 	}
 
-	MethodBind *method=ObjectTypeDB::get_method(get_type_name(),p_name);
+	MethodBind *method=ClassDB::get_method(get_type_name(),p_name);
 
 	if (method) {
 
@@ -888,7 +888,7 @@ void Object::call_multilevel(const StringName& p_name, VARIANT_ARG_DECLARE) {
 
 	}
 
-	MethodBind *method=ObjectTypeDB::get_method(get_type_name(),p_name);
+	MethodBind *method=ClassDB::get_method(get_type_name(),p_name);
 
 	if (method) {
 
@@ -971,7 +971,7 @@ Variant Object::call(const StringName& p_method,const Variant** p_args,int p_arg
 		}
 	}
 
-	MethodBind *method=ObjectTypeDB::get_method(get_type_name(),p_method);
+	MethodBind *method=ClassDB::get_method(get_class_name(),p_method);
 
 	if (method) {
 
@@ -1138,7 +1138,7 @@ void Object::get_meta_list(List<String> *p_list) const {
 void Object::add_user_signal(const MethodInfo& p_signal) {
 
 	ERR_FAIL_COND(p_signal.name=="");
-	ERR_FAIL_COND( ObjectTypeDB::has_signal(get_type_name(),p_signal.name ) );
+	ERR_FAIL_COND( ClassDB::has_signal(get_class_name(),p_signal.name ) );
 	ERR_FAIL_COND(signal_map.has(p_signal.name));
 	Signal s;
 	s.user=p_signal;
@@ -1216,7 +1216,7 @@ void Object::emit_signal(const StringName& p_name,const Variant** p_args,int p_a
 	Signal *s = signal_map.getptr(p_name);
 	if (!s) {
 #ifdef DEBUG_ENABLED
-		bool signal_is_valid = ObjectTypeDB::has_signal(get_type_name(),p_name);
+		bool signal_is_valid = ClassDB::has_signal(get_class_name(),p_name);
 		//check in script
 		if (!signal_is_valid && !script.is_null() && !Ref<Script>(script)->has_script_signal(p_name)) {
 			ERR_EXPLAIN("Can't emit non-existing signal " + String("\"")+p_name+"\".");
@@ -1281,7 +1281,7 @@ void Object::emit_signal(const StringName& p_name,const Variant** p_args,int p_a
 			target->call( c.method, args, argc,ce );
 			if (ce.error!=Variant::CallError::CALL_OK) {
 
-				if (ce.error==Variant::CallError::CALL_ERROR_INVALID_METHOD && !ObjectTypeDB::type_exists( target->get_type_name() ) ) {
+				if (ce.error==Variant::CallError::CALL_ERROR_INVALID_METHOD && !ClassDB::class_exists( target->get_class_name() ) ) {
 					//most likely object is not initialized yet, do not throw error.
 				} else {
 					ERR_PRINTS("Error calling method from signal '"+String(p_name)+"': "+Variant::get_call_error_text(target,c.method,args,argc,ce));
@@ -1415,7 +1415,7 @@ void Object::get_signal_list(List<MethodInfo> *p_signals ) const {
 		Ref<Script>(script)->get_script_signal_list(p_signals);
 	}
 
-	ObjectTypeDB::get_signal_list(get_type_name(),p_signals);
+	ClassDB::get_signal_list(get_class_name(),p_signals);
 	//find maybe usersignals?
 	const StringName *S=NULL;
 
@@ -1489,13 +1489,13 @@ Error Object::connect(const StringName& p_signal, Object *p_to_object, const Str
 
 	Signal *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ObjectTypeDB::has_signal(get_type_name(),p_signal);
+		bool signal_is_valid = ClassDB::has_signal(get_class_name(),p_signal);
 		//check in script
 		if (!signal_is_valid && !script.is_null() && Ref<Script>(script)->has_script_signal(p_signal))
 			signal_is_valid=true;
 
 		if (!signal_is_valid) {
-			ERR_EXPLAIN("In Object of type '"+String(get_type())+"': Attempt to connect nonexistent signal '"+p_signal+"' to method '"+p_to_object->get_type()+"."+p_to_method+"'");
+			ERR_EXPLAIN("In Object of type '"+String(get_class())+"': Attempt to connect nonexistent signal '"+p_signal+"' to method '"+p_to_object->get_class()+"."+p_to_method+"'");
 			ERR_FAIL_COND_V(!signal_is_valid,ERR_INVALID_PARAMETER);
 		}
 		signal_map[p_signal]=Signal();
@@ -1529,7 +1529,7 @@ bool Object::is_connected(const StringName& p_signal, Object *p_to_object, const
 	ERR_FAIL_NULL_V(p_to_object,false);
 	const Signal *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ObjectTypeDB::has_signal(get_type_name(),p_signal);
+		bool signal_is_valid = ClassDB::has_signal(get_class_name(),p_signal);
 		if (signal_is_valid)
 			return false;
 
@@ -1571,7 +1571,7 @@ void Object::disconnect(const StringName& p_signal, Object *p_to_object, const S
 	p_to_object->connections.erase(s->slot_map[target].cE);
 	s->slot_map.erase(target);
 
-	if (s->slot_map.empty() && ObjectTypeDB::has_signal(get_type_name(),p_signal )) {
+	if (s->slot_map.empty() && ClassDB::has_signal(get_class_name(),p_signal )) {
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}
@@ -1588,12 +1588,12 @@ Variant Object::_get_bind(const String& p_name) const {
 	return get(p_name);
 }
 
-void Object::initialize_type() {
+void Object::initialize_class() {
 
 	static bool initialized=false;
 	if (initialized)
 		return;
-	ObjectTypeDB::_add_type<Object>();
+	ClassDB::_add_class<Object>();
 	_bind_methods();
 	initialized=true;
 }
@@ -1672,31 +1672,31 @@ void Object::clear_internal_resource_paths() {
 
 void Object::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_type"),&Object::get_type);
-	ObjectTypeDB::bind_method(_MD("is_type","type"),&Object::is_type);
-	ObjectTypeDB::bind_method(_MD("set","property","value"),&Object::_set_bind);
-	ObjectTypeDB::bind_method(_MD("get","property"),&Object::_get_bind);
-	ObjectTypeDB::bind_method(_MD("get_property_list"),&Object::_get_property_list_bind);
-	ObjectTypeDB::bind_method(_MD("get_method_list"),&Object::_get_method_list_bind);
-	ObjectTypeDB::bind_method(_MD("notification","what","reversed"),&Object::notification,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("get_instance_ID"),&Object::get_instance_ID);
+	ClassDB::bind_method(_MD("get_class"),&Object::get_class);
+	ClassDB::bind_method(_MD("is_class","type"),&Object::is_class);
+	ClassDB::bind_method(_MD("set","property","value"),&Object::_set_bind);
+	ClassDB::bind_method(_MD("get","property"),&Object::_get_bind);
+	ClassDB::bind_method(_MD("get_property_list"),&Object::_get_property_list_bind);
+	ClassDB::bind_method(_MD("get_method_list"),&Object::_get_method_list_bind);
+	ClassDB::bind_method(_MD("notification","what","reversed"),&Object::notification,DEFVAL(false));
+	ClassDB::bind_method(_MD("get_instance_ID"),&Object::get_instance_ID);
 
-	ObjectTypeDB::bind_method(_MD("set_script","script:Script"),&Object::set_script);
-	ObjectTypeDB::bind_method(_MD("get_script:Script"),&Object::get_script);
+	ClassDB::bind_method(_MD("set_script","script:Script"),&Object::set_script);
+	ClassDB::bind_method(_MD("get_script:Script"),&Object::get_script);
 
-	ObjectTypeDB::bind_method(_MD("set_meta","name","value"),&Object::set_meta);
-	ObjectTypeDB::bind_method(_MD("get_meta","name","value"),&Object::get_meta);
-	ObjectTypeDB::bind_method(_MD("has_meta","name"),&Object::has_meta);
-	ObjectTypeDB::bind_method(_MD("get_meta_list"),&Object::_get_meta_list_bind);
+	ClassDB::bind_method(_MD("set_meta","name","value"),&Object::set_meta);
+	ClassDB::bind_method(_MD("get_meta","name","value"),&Object::get_meta);
+	ClassDB::bind_method(_MD("has_meta","name"),&Object::has_meta);
+	ClassDB::bind_method(_MD("get_meta_list"),&Object::_get_meta_list_bind);
 
 	//todo reimplement this per language so all 5 arguments can be called
 
-//	ObjectTypeDB::bind_method(_MD("call","method","arg1","arg2","arg3","arg4"),&Object::_call_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
-//	ObjectTypeDB::bind_method(_MD("call_deferred","method","arg1","arg2","arg3","arg4"),&Object::_call_deferred_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
+//	ClassDB::bind_method(_MD("call","method","arg1","arg2","arg3","arg4"),&Object::_call_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
+//	ClassDB::bind_method(_MD("call_deferred","method","arg1","arg2","arg3","arg4"),&Object::_call_deferred_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
 
-	ObjectTypeDB::bind_method(_MD("add_user_signal","signal","arguments"),&Object::_add_user_signal,DEFVAL(Array()));
-	ObjectTypeDB::bind_method(_MD("has_user_signal","signal"),&Object::_has_user_signal);
-//	ObjectTypeDB::bind_method(_MD("emit_signal","signal","arguments"),&Object::_emit_signal,DEFVAL(Array()));
+	ClassDB::bind_method(_MD("add_user_signal","signal","arguments"),&Object::_add_user_signal,DEFVAL(Array()));
+	ClassDB::bind_method(_MD("has_user_signal","signal"),&Object::_has_user_signal);
+//	ClassDB::bind_method(_MD("emit_signal","signal","arguments"),&Object::_emit_signal,DEFVAL(Array()));
 
 
 	{
@@ -1704,7 +1704,7 @@ void Object::_bind_methods() {
 		mi.name="emit_signal";
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "signal"));
 
-		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"emit_signal",&Object::_emit_signal,mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"emit_signal",&Object::_emit_signal,mi);
 	}
 
 	{
@@ -1714,7 +1714,7 @@ void Object::_bind_methods() {
 
 
 
-		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call:Variant",&Object::_call_bind,mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call:Variant",&Object::_call_bind,mi);
 	}
 
 	{
@@ -1722,32 +1722,32 @@ void Object::_bind_methods() {
 		mi.name="call_deferred";
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
 
-		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_deferred",&Object::_call_deferred_bind,mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_deferred",&Object::_call_deferred_bind,mi);
 	}
 
-	ObjectTypeDB::bind_method(_MD("callv:Variant","method","arg_array"),&Object::callv);
+	ClassDB::bind_method(_MD("callv:Variant","method","arg_array"),&Object::callv);
 
-	ObjectTypeDB::bind_method(_MD("has_method","method"),&Object::has_method);
+	ClassDB::bind_method(_MD("has_method","method"),&Object::has_method);
 
-	ObjectTypeDB::bind_method(_MD("get_signal_list"),&Object::_get_signal_list);
-	ObjectTypeDB::bind_method(_MD("get_signal_connection_list","signal"),&Object::_get_signal_connection_list);
+	ClassDB::bind_method(_MD("get_signal_list"),&Object::_get_signal_list);
+	ClassDB::bind_method(_MD("get_signal_connection_list","signal"),&Object::_get_signal_connection_list);
 
-	ObjectTypeDB::bind_method(_MD("connect","signal","target:Object","method","binds","flags"),&Object::connect,DEFVAL(Array()),DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("disconnect","signal","target:Object","method"),&Object::disconnect);
-	ObjectTypeDB::bind_method(_MD("is_connected","signal","target:Object","method"),&Object::is_connected);
+	ClassDB::bind_method(_MD("connect","signal","target:Object","method","binds","flags"),&Object::connect,DEFVAL(Array()),DEFVAL(0));
+	ClassDB::bind_method(_MD("disconnect","signal","target:Object","method"),&Object::disconnect);
+	ClassDB::bind_method(_MD("is_connected","signal","target:Object","method"),&Object::is_connected);
 
-	ObjectTypeDB::bind_method(_MD("set_block_signals","enable"),&Object::set_block_signals);
-	ObjectTypeDB::bind_method(_MD("is_blocking_signals"),&Object::is_blocking_signals);
-	ObjectTypeDB::bind_method(_MD("set_message_translation","enable"),&Object::set_message_translation);
-	ObjectTypeDB::bind_method(_MD("can_translate_messages"),&Object::can_translate_messages);
-	ObjectTypeDB::bind_method(_MD("property_list_changed_notify"),&Object::property_list_changed_notify);
+	ClassDB::bind_method(_MD("set_block_signals","enable"),&Object::set_block_signals);
+	ClassDB::bind_method(_MD("is_blocking_signals"),&Object::is_blocking_signals);
+	ClassDB::bind_method(_MD("set_message_translation","enable"),&Object::set_message_translation);
+	ClassDB::bind_method(_MD("can_translate_messages"),&Object::can_translate_messages);
+	ClassDB::bind_method(_MD("property_list_changed_notify"),&Object::property_list_changed_notify);
 
-	ObjectTypeDB::bind_method(_MD("XL_MESSAGE","message"),&Object::XL_MESSAGE);
-	ObjectTypeDB::bind_method(_MD("tr","message"),&Object::tr);
+	ClassDB::bind_method(_MD("XL_MESSAGE","message"),&Object::XL_MESSAGE);
+	ClassDB::bind_method(_MD("tr","message"),&Object::tr);
 
-	ObjectTypeDB::bind_method(_MD("is_queued_for_deletion"),&Object::is_queued_for_deletion);
+	ClassDB::bind_method(_MD("is_queued_for_deletion"),&Object::is_queued_for_deletion);
 
-	ObjectTypeDB::add_virtual_method("Object",MethodInfo("free"),false);
+	ClassDB::add_virtual_method("Object",MethodInfo("free"),false);
 
 	ADD_SIGNAL( MethodInfo("script_changed"));
 
@@ -1815,7 +1815,7 @@ void Object::get_translatable_strings(List<String> *p_strings) const {
 Variant::Type Object::get_static_property_type(const StringName& p_property, bool *r_valid) const {
 
 	bool valid;
-	Variant::Type t = ObjectTypeDB::get_property_type(get_type_name(),p_property,&valid);
+	Variant::Type t = ClassDB::get_property_type(get_class_name(),p_property,&valid);
 	if (valid) {
 		if (r_valid)
 			*r_valid=true;
@@ -1857,7 +1857,7 @@ uint32_t Object::get_edited_version() const {
 
 Object::Object() {
 
-	_type_ptr=NULL;
+	_class_ptr=NULL;
 	_block_signals=false;
 	_predelete_ok=0;
 	_instance_ID=0;
@@ -2004,11 +2004,11 @@ void ObjectDB::cleanup() {
 			while((K=instances.next(K))) {
 
 				String node_name;
-				if (instances[*K]->is_type("Node"))
+				if (instances[*K]->is_class("Node"))
 					node_name=" - Node Name: "+String(instances[*K]->call("get_name"));
-				if (instances[*K]->is_type("Resoucre"))
+				if (instances[*K]->is_class("Resoucre"))
 					node_name=" - Resource Name: "+String(instances[*K]->call("get_name"))+" Path: "+String(instances[*K]->call("get_path"));
-				print_line("Leaked Instance: "+String(instances[*K]->get_type())+":"+itos(*K)+node_name);
+				print_line("Leaked Instance: "+String(instances[*K]->get_class())+":"+itos(*K)+node_name);
 			}
 		}
 	}

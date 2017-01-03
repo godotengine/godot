@@ -33,7 +33,7 @@
 #include "face3.h"
 class TriangleMesh : public Reference {
 
-	OBJ_TYPE( TriangleMesh, Reference);
+	GDCLASS( TriangleMesh, Reference);
 
 	struct Triangle {
 

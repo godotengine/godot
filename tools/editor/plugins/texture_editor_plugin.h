@@ -10,7 +10,7 @@
 
 class TextureEditor : public Control {
 
-	OBJ_TYPE(TextureEditor, Control);
+	GDCLASS(TextureEditor, Control);
 
 
 	Ref<Texture> texture;
@@ -28,7 +28,7 @@ public:
 
 class TextureEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( TextureEditorPlugin, EditorPlugin );
+	GDCLASS( TextureEditorPlugin, EditorPlugin );
 
 	TextureEditor *texture_editor;
 	EditorNode *editor;

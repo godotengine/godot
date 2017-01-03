@@ -35,7 +35,7 @@
 */
 class Animation : public Resource {
 
-	OBJ_TYPE( Animation, Resource );
+	GDCLASS( Animation, Resource );
 	RES_BASE_EXTENSION("anm");
 public:
 

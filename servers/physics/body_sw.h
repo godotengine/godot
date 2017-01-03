@@ -351,7 +351,7 @@ void BodySW::add_contact(const Vector3& p_local_pos,const Vector3& p_local_norma
 
 class PhysicsDirectBodyStateSW : public PhysicsDirectBodyState {
 
-	OBJ_TYPE( PhysicsDirectBodyStateSW, PhysicsDirectBodyState );
+	GDCLASS( PhysicsDirectBodyStateSW, PhysicsDirectBodyState );
 
 public:
 

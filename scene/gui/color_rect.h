@@ -4,7 +4,7 @@
 #include "scene/gui/control.h"
 
 class ColorFrame : public Control  {
-	OBJ_TYPE(ColorFrame,Control)
+	GDCLASS(ColorFrame,Control)
 
 	Color color;
 protected:

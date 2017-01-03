@@ -37,7 +37,7 @@
 
 class StyleBoxEditor : public Control {
 
-	OBJ_TYPE( StyleBoxEditor, Control );
+	GDCLASS( StyleBoxEditor, Control );
 
 	Panel *panel;
 	Panel *preview;
@@ -61,7 +61,7 @@ public:
 
 class StyleBoxEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( StyleBoxEditorPlugin, EditorPlugin );
+	GDCLASS( StyleBoxEditorPlugin, EditorPlugin );
 
 	StyleBoxEditor *stylebox_editor;
 	EditorNode *editor;

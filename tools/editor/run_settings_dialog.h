@@ -36,7 +36,7 @@
 
 class RunSettingsDialog : public AcceptDialog {
 
-	OBJ_TYPE( RunSettingsDialog, AcceptDialog);
+	GDCLASS( RunSettingsDialog, AcceptDialog);
 public:
 	enum RunMode {
 		RUN_LOCAL_SCENE,

@@ -9,7 +9,7 @@ class EditorBitMaskImportDialog;
 
 class EditorBitMaskImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorBitMaskImportPlugin, EditorImportPlugin);
+	GDCLASS(EditorBitMaskImportPlugin, EditorImportPlugin);
 
 	EditorBitMaskImportDialog *dialog;
 public:
@@ -30,7 +30,7 @@ public:
 
 class EditorBitMaskExportPlugin : public EditorExportPlugin {
 
-	OBJ_TYPE(EditorBitMaskExportPlugin, EditorExportPlugin);
+	GDCLASS(EditorBitMaskExportPlugin, EditorExportPlugin);
 
 
 public:

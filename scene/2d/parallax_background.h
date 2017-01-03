@@ -35,7 +35,7 @@
 
 class ParallaxBackground : public CanvasLayer {
 
-	OBJ_TYPE( ParallaxBackground, CanvasLayer  );
+	GDCLASS( ParallaxBackground, CanvasLayer  );
 
 	Point2 offset;
 	float scale;

@@ -127,17 +127,17 @@ StringArray ResourceImportMetadata::_get_options() const {
 
 void ResourceImportMetadata::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_editor","name"),&ResourceImportMetadata::set_editor);
-	ObjectTypeDB::bind_method(_MD("get_editor"),&ResourceImportMetadata::get_editor);
-	ObjectTypeDB::bind_method(_MD("add_source","path","md5"),&ResourceImportMetadata::add_source, "");
-	ObjectTypeDB::bind_method(_MD("get_source_path","idx"),&ResourceImportMetadata::get_source_path);
-	ObjectTypeDB::bind_method(_MD("get_source_md5","idx"),&ResourceImportMetadata::get_source_md5);
-	ObjectTypeDB::bind_method(_MD("set_source_md5","idx", "md5"),&ResourceImportMetadata::set_source_md5);
-	ObjectTypeDB::bind_method(_MD("remove_source","idx"),&ResourceImportMetadata::remove_source);
-	ObjectTypeDB::bind_method(_MD("get_source_count"),&ResourceImportMetadata::get_source_count);
-	ObjectTypeDB::bind_method(_MD("set_option","key","value"),&ResourceImportMetadata::set_option);
-	ObjectTypeDB::bind_method(_MD("get_option","key"),&ResourceImportMetadata::get_option);
-	ObjectTypeDB::bind_method(_MD("get_options"),&ResourceImportMetadata::_get_options);
+	ClassDB::bind_method(_MD("set_editor","name"),&ResourceImportMetadata::set_editor);
+	ClassDB::bind_method(_MD("get_editor"),&ResourceImportMetadata::get_editor);
+	ClassDB::bind_method(_MD("add_source","path","md5"),&ResourceImportMetadata::add_source, "");
+	ClassDB::bind_method(_MD("get_source_path","idx"),&ResourceImportMetadata::get_source_path);
+	ClassDB::bind_method(_MD("get_source_md5","idx"),&ResourceImportMetadata::get_source_md5);
+	ClassDB::bind_method(_MD("set_source_md5","idx", "md5"),&ResourceImportMetadata::set_source_md5);
+	ClassDB::bind_method(_MD("remove_source","idx"),&ResourceImportMetadata::remove_source);
+	ClassDB::bind_method(_MD("get_source_count"),&ResourceImportMetadata::get_source_count);
+	ClassDB::bind_method(_MD("set_option","key","value"),&ResourceImportMetadata::set_option);
+	ClassDB::bind_method(_MD("get_option","key"),&ResourceImportMetadata::get_option);
+	ClassDB::bind_method(_MD("get_options"),&ResourceImportMetadata::_get_options);
 }
 
 ResourceImportMetadata::ResourceImportMetadata() {
@@ -229,7 +229,7 @@ void Resource::reload_from_file() {
 	if (!path.is_resource_file())
 		return;
 
-	Ref<Resource> s = ResourceLoader::load(path,get_type(),true);
+	Ref<Resource> s = ResourceLoader::load(path,get_class(),true);
 
 	if (!s.is_valid())
 		return;
@@ -256,7 +256,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) {
 	get_property_list(&plist);
 
 
-	Resource *r = (Resource*)ObjectTypeDB::instance(get_type());
+	Resource *r = (Resource*)ClassDB::instance(get_class());
 	ERR_FAIL_COND_V(!r,Ref<Resource>());
 
 	for(List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
@@ -291,16 +291,16 @@ void Resource::_take_over_path(const String& p_path) {
 
 void Resource::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_path","path"),&Resource::_set_path);
-	ObjectTypeDB::bind_method(_MD("take_over_path","path"),&Resource::_take_over_path);
-	ObjectTypeDB::bind_method(_MD("get_path"),&Resource::get_path);
-	ObjectTypeDB::bind_method(_MD("set_name","name"),&Resource::set_name);
-	ObjectTypeDB::bind_method(_MD("get_name"),&Resource::get_name);
-	ObjectTypeDB::bind_method(_MD("get_rid"),&Resource::get_rid);
-	ObjectTypeDB::bind_method(_MD("set_import_metadata","metadata"),&Resource::set_import_metadata);
-	ObjectTypeDB::bind_method(_MD("get_import_metadata"),&Resource::get_import_metadata);
+	ClassDB::bind_method(_MD("set_path","path"),&Resource::_set_path);
+	ClassDB::bind_method(_MD("take_over_path","path"),&Resource::_take_over_path);
+	ClassDB::bind_method(_MD("get_path"),&Resource::get_path);
+	ClassDB::bind_method(_MD("set_name","name"),&Resource::set_name);
+	ClassDB::bind_method(_MD("get_name"),&Resource::get_name);
+	ClassDB::bind_method(_MD("get_rid"),&Resource::get_rid);
+	ClassDB::bind_method(_MD("set_import_metadata","metadata"),&Resource::set_import_metadata);
+	ClassDB::bind_method(_MD("get_import_metadata"),&Resource::get_import_metadata);
 
-	ObjectTypeDB::bind_method(_MD("duplicate","subresources"),&Resource::duplicate,DEFVAL(false));
+	ClassDB::bind_method(_MD("duplicate","subresources"),&Resource::duplicate,DEFVAL(false));
 	ADD_SIGNAL( MethodInfo("changed") );
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"resource/path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR ), _SCS("set_path"),_SCS("get_path"));
 	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"resource/name"), _SCS("set_name"),_SCS("get_name"));
@@ -476,16 +476,16 @@ void ResourceCache::dump(const char* p_file,bool p_short) {
 
 		Resource *r = resources[*K];
 
-		if (!type_count.has(r->get_type())) {
-			type_count[r->get_type()]=0;
+		if (!type_count.has(r->get_class())) {
+			type_count[r->get_class()]=0;
 		}
 
 
-		type_count[r->get_type()]++;
+		type_count[r->get_class()]++;
 
 		if (!p_short) {
 			if (f)
-				f->store_line(r->get_type()+": "+r->get_path());
+				f->store_line(r->get_class()+": "+r->get_path());
 		}
 	}
 

@@ -35,7 +35,7 @@ class PackedScene;
 
 class InstancePlaceholder : public Node {
 
-	OBJ_TYPE(InstancePlaceholder,Node);
+	GDCLASS(InstancePlaceholder,Node);
 
 	String path;
 	struct PropSet {

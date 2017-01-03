@@ -32,7 +32,7 @@
 
 void register_openssl_types() {
 
-	ObjectTypeDB::register_type<StreamPeerOpenSSL>();
+	ClassDB::register_class<StreamPeerOpenSSL>();
 	StreamPeerOpenSSL::initialize_ssl();
 }
 

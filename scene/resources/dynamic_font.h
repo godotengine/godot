@@ -43,7 +43,7 @@ class DynamicFont;
 
 class DynamicFontData : public Resource {
 
-	OBJ_TYPE(DynamicFontData,Resource);
+	GDCLASS(DynamicFontData,Resource);
 
 public:
 
@@ -88,7 +88,7 @@ public:
 
 class DynamicFontAtSize : public Reference {
 
-	OBJ_TYPE(DynamicFontAtSize,Reference)
+	GDCLASS(DynamicFontAtSize,Reference)
 
 	_THREAD_SAFE_CLASS_
 
@@ -168,7 +168,7 @@ public:
 
 class DynamicFont : public Font {
 
-	OBJ_TYPE( DynamicFont, Font );
+	GDCLASS( DynamicFont, Font );
 
 public:
 

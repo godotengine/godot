@@ -34,7 +34,7 @@
 #include "scene/gui/popup.h"
 class TabContainer : public Control {
 
-	OBJ_TYPE( TabContainer, Control );
+	GDCLASS( TabContainer, Control );
 public:
 
 	enum TabAlign {

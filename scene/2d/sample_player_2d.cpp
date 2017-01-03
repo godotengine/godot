@@ -220,23 +220,23 @@ String SamplePlayer2D::get_configuration_warning() const {
 void SamplePlayer2D::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_sample_library","library:SampleLibrary"),&SamplePlayer2D::set_sample_library);
-	ObjectTypeDB::bind_method(_MD("get_sample_library:SampleLibrary"),&SamplePlayer2D::get_sample_library);
+	ClassDB::bind_method(_MD("set_sample_library","library:SampleLibrary"),&SamplePlayer2D::set_sample_library);
+	ClassDB::bind_method(_MD("get_sample_library:SampleLibrary"),&SamplePlayer2D::get_sample_library);
 
-	ObjectTypeDB::bind_method(_MD("set_polyphony","max_voices"),&SamplePlayer2D::set_polyphony);
-	ObjectTypeDB::bind_method(_MD("get_polyphony"),&SamplePlayer2D::get_polyphony);
+	ClassDB::bind_method(_MD("set_polyphony","max_voices"),&SamplePlayer2D::set_polyphony);
+	ClassDB::bind_method(_MD("get_polyphony"),&SamplePlayer2D::get_polyphony);
 
-	ObjectTypeDB::bind_method(_MD("play","sample","voice"),&SamplePlayer2D::play,DEFVAL(NEXT_VOICE));
+	ClassDB::bind_method(_MD("play","sample","voice"),&SamplePlayer2D::play,DEFVAL(NEXT_VOICE));
 	//voices,DEV
-	ObjectTypeDB::bind_method(_MD("voice_set_pitch_scale","voice","ratio"),&SamplePlayer2D::voice_set_pitch_scale);
-	ObjectTypeDB::bind_method(_MD("voice_set_volume_scale_db","voice","db"),&SamplePlayer2D::voice_set_volume_scale_db);
+	ClassDB::bind_method(_MD("voice_set_pitch_scale","voice","ratio"),&SamplePlayer2D::voice_set_pitch_scale);
+	ClassDB::bind_method(_MD("voice_set_volume_scale_db","voice","db"),&SamplePlayer2D::voice_set_volume_scale_db);
 
-	ObjectTypeDB::bind_method(_MD("is_voice_active","voice"),&SamplePlayer2D::is_voice_active);
-	ObjectTypeDB::bind_method(_MD("stop_voice","voice"),&SamplePlayer2D::stop_voice);
-	ObjectTypeDB::bind_method(_MD("stop_all"),&SamplePlayer2D::stop_all);
+	ClassDB::bind_method(_MD("is_voice_active","voice"),&SamplePlayer2D::is_voice_active);
+	ClassDB::bind_method(_MD("stop_voice","voice"),&SamplePlayer2D::stop_voice);
+	ClassDB::bind_method(_MD("stop_all"),&SamplePlayer2D::stop_all);
 
-	ObjectTypeDB::bind_method(_MD("set_random_pitch_scale","val"),&SamplePlayer2D::set_random_pitch_scale);
-	ObjectTypeDB::bind_method(_MD("get_random_pitch_scale"),&SamplePlayer2D::get_random_pitch_scale);
+	ClassDB::bind_method(_MD("set_random_pitch_scale","val"),&SamplePlayer2D::set_random_pitch_scale);
+	ClassDB::bind_method(_MD("get_random_pitch_scale"),&SamplePlayer2D::get_random_pitch_scale);
 
 	BIND_CONSTANT( INVALID_VOICE );
 	BIND_CONSTANT( NEXT_VOICE );

@@ -34,7 +34,7 @@
 #if 0
 class CharacterCamera : public Camera {
 
-	OBJ_TYPE( CharacterCamera, Camera );
+	GDCLASS( CharacterCamera, Camera );
 public:
 
 	enum CameraType {

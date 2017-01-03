@@ -35,7 +35,7 @@
 class EditorNode;
 class EditorScript : public Reference {
 
-	OBJ_TYPE( EditorScript, Reference );
+	GDCLASS( EditorScript, Reference );
 
 	EditorNode *editor;
 protected:

@@ -37,7 +37,7 @@
 */
 class ScrollBar : public Range {
 
-	OBJ_TYPE( ScrollBar, Range );
+	GDCLASS( ScrollBar, Range );
 
 	enum HiliteStatus {
 		HILITE_NONE,
@@ -109,7 +109,7 @@ public:
 
 class HScrollBar : public ScrollBar {
 
-	OBJ_TYPE( HScrollBar, ScrollBar );
+	GDCLASS( HScrollBar, ScrollBar );
 public:
 
 	HScrollBar() : ScrollBar(HORIZONTAL) { 	set_v_size_flags(0); }
@@ -117,7 +117,7 @@ public:
 
 class VScrollBar : public ScrollBar {
 
-	OBJ_TYPE( VScrollBar, ScrollBar );
+	GDCLASS( VScrollBar, ScrollBar );
 public:
 
 	VScrollBar() : ScrollBar(VERTICAL) { set_h_size_flags(0); }

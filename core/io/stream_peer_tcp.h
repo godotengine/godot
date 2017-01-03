@@ -36,7 +36,7 @@
 
 class StreamPeerTCP : public StreamPeer {
 
-	OBJ_TYPE( StreamPeerTCP, StreamPeer );
+	GDCLASS( StreamPeerTCP, StreamPeer );
 	OBJ_CATEGORY("Networking");
 
 public:

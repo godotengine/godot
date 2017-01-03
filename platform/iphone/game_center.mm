@@ -48,18 +48,18 @@ extern "C" {
 GameCenter* GameCenter::instance = NULL;
 
 void GameCenter::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("connect"),&GameCenter::connect);
-	ObjectTypeDB::bind_method(_MD("is_connected"),&GameCenter::is_connected);
+	ClassDB::bind_method(_MD("connect"),&GameCenter::connect);
+	ClassDB::bind_method(_MD("is_connected"),&GameCenter::is_connected);
 
-	ObjectTypeDB::bind_method(_MD("post_score"),&GameCenter::post_score);
-	ObjectTypeDB::bind_method(_MD("award_achievement"),&GameCenter::award_achievement);
-	ObjectTypeDB::bind_method(_MD("reset_achievements"),&GameCenter::reset_achievements);
-	ObjectTypeDB::bind_method(_MD("request_achievements"),&GameCenter::request_achievements);
-	ObjectTypeDB::bind_method(_MD("request_achievement_descriptions"),&GameCenter::request_achievement_descriptions);
-	ObjectTypeDB::bind_method(_MD("show_game_center"),&GameCenter::show_game_center);
+	ClassDB::bind_method(_MD("post_score"),&GameCenter::post_score);
+	ClassDB::bind_method(_MD("award_achievement"),&GameCenter::award_achievement);
+	ClassDB::bind_method(_MD("reset_achievements"),&GameCenter::reset_achievements);
+	ClassDB::bind_method(_MD("request_achievements"),&GameCenter::request_achievements);
+	ClassDB::bind_method(_MD("request_achievement_descriptions"),&GameCenter::request_achievement_descriptions);
+	ClassDB::bind_method(_MD("show_game_center"),&GameCenter::show_game_center);
 
-	ObjectTypeDB::bind_method(_MD("get_pending_event_count"),&GameCenter::get_pending_event_count);
-	ObjectTypeDB::bind_method(_MD("pop_pending_event"),&GameCenter::pop_pending_event);
+	ClassDB::bind_method(_MD("get_pending_event_count"),&GameCenter::get_pending_event_count);
+	ClassDB::bind_method(_MD("pop_pending_event"),&GameCenter::pop_pending_event);
 };
 
 

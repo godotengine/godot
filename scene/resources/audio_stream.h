@@ -34,7 +34,7 @@
 
 class AudioStreamPlayback : public Reference {
 
-	OBJ_TYPE( AudioStreamPlayback, Reference );
+	GDCLASS( AudioStreamPlayback, Reference );
 protected:
 	static void _bind_methods();
 public:
@@ -67,7 +67,7 @@ public:
 
 class AudioStream : public Resource {
 
-	OBJ_TYPE( AudioStream, Resource );
+	GDCLASS( AudioStream, Resource );
 	OBJ_SAVE_TYPE( AudioStream ); //children are all saved as AudioStream, so they can be exchanged
 
 protected:

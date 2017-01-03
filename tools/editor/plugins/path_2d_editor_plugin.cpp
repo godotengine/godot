@@ -550,10 +550,10 @@ void Path2DEditor::edit(Node *p_path2d) {
 
 void Path2DEditor::_bind_methods() {
 
-	//ObjectTypeDB::bind_method(_MD("_menu_option"),&Path2DEditor::_menu_option);
-	ObjectTypeDB::bind_method(_MD("_canvas_draw"),&Path2DEditor::_canvas_draw);
-	ObjectTypeDB::bind_method(_MD("_node_visibility_changed"),&Path2DEditor::_node_visibility_changed);
-	ObjectTypeDB::bind_method(_MD("_mode_selected"),&Path2DEditor::_mode_selected);
+	//ClassDB::bind_method(_MD("_menu_option"),&Path2DEditor::_menu_option);
+	ClassDB::bind_method(_MD("_canvas_draw"),&Path2DEditor::_canvas_draw);
+	ClassDB::bind_method(_MD("_node_visibility_changed"),&Path2DEditor::_node_visibility_changed);
+	ClassDB::bind_method(_MD("_mode_selected"),&Path2DEditor::_mode_selected);
 }
 
 void Path2DEditor::_mode_selected(int p_mode) {
@@ -683,7 +683,7 @@ void Path2DEditorPlugin::edit(Object *p_object) {
 
 bool Path2DEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Path2D");
+	return p_object->is_class("Path2D");
 }
 
 void Path2DEditorPlugin::make_visible(bool p_visible) {

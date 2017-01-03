@@ -33,7 +33,7 @@
 
 class ArrayPropertyEdit : public Reference {
 
-	OBJ_TYPE(ArrayPropertyEdit,Reference);
+	GDCLASS(ArrayPropertyEdit,Reference);
 
 	int page;
 	ObjectID obj;

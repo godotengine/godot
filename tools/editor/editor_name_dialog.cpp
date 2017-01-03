@@ -72,7 +72,7 @@ void EditorNameDialog::ok_pressed() {
 
 void EditorNameDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_line_input_event",&EditorNameDialog::_line_input_event);
+	ClassDB::bind_method("_line_input_event",&EditorNameDialog::_line_input_event);
 
 	ADD_SIGNAL(MethodInfo("name_confirmed",PropertyInfo( Variant::STRING,"name")));
 }

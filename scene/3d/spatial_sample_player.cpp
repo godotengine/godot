@@ -204,20 +204,20 @@ String SpatialSamplePlayer::get_configuration_warning() const {
 void SpatialSamplePlayer::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_sample_library","library:SampleLibrary"),&SpatialSamplePlayer::set_sample_library);
-	ObjectTypeDB::bind_method(_MD("get_sample_library:SampleLibrary"),&SpatialSamplePlayer::get_sample_library);
+	ClassDB::bind_method(_MD("set_sample_library","library:SampleLibrary"),&SpatialSamplePlayer::set_sample_library);
+	ClassDB::bind_method(_MD("get_sample_library:SampleLibrary"),&SpatialSamplePlayer::get_sample_library);
 
-	ObjectTypeDB::bind_method(_MD("set_polyphony","voices"),&SpatialSamplePlayer::set_polyphony);
-	ObjectTypeDB::bind_method(_MD("get_polyphony"),&SpatialSamplePlayer::get_polyphony);
+	ClassDB::bind_method(_MD("set_polyphony","voices"),&SpatialSamplePlayer::set_polyphony);
+	ClassDB::bind_method(_MD("get_polyphony"),&SpatialSamplePlayer::get_polyphony);
 
-	ObjectTypeDB::bind_method(_MD("play","sample","voice"),&SpatialSamplePlayer::play,DEFVAL(NEXT_VOICE));
+	ClassDB::bind_method(_MD("play","sample","voice"),&SpatialSamplePlayer::play,DEFVAL(NEXT_VOICE));
 	//voices,DEV
-	ObjectTypeDB::bind_method(_MD("voice_set_pitch_scale","voice","ratio"),&SpatialSamplePlayer::voice_set_pitch_scale);
-	ObjectTypeDB::bind_method(_MD("voice_set_volume_scale_db","voice","db"),&SpatialSamplePlayer::voice_set_volume_scale_db);
+	ClassDB::bind_method(_MD("voice_set_pitch_scale","voice","ratio"),&SpatialSamplePlayer::voice_set_pitch_scale);
+	ClassDB::bind_method(_MD("voice_set_volume_scale_db","voice","db"),&SpatialSamplePlayer::voice_set_volume_scale_db);
 
-	ObjectTypeDB::bind_method(_MD("is_voice_active","voice"),&SpatialSamplePlayer::is_voice_active);
-	ObjectTypeDB::bind_method(_MD("stop_voice","voice"),&SpatialSamplePlayer::stop_voice);
-	ObjectTypeDB::bind_method(_MD("stop_all"),&SpatialSamplePlayer::stop_all);
+	ClassDB::bind_method(_MD("is_voice_active","voice"),&SpatialSamplePlayer::is_voice_active);
+	ClassDB::bind_method(_MD("stop_voice","voice"),&SpatialSamplePlayer::stop_voice);
+	ClassDB::bind_method(_MD("stop_all"),&SpatialSamplePlayer::stop_all);
 
 	BIND_CONSTANT( INVALID_VOICE );
 	BIND_CONSTANT( NEXT_VOICE );

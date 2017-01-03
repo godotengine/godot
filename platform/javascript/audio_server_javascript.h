@@ -34,7 +34,7 @@
 
 class AudioServerJavascript  : public AudioServer  {
 
-	OBJ_TYPE(AudioServerJavascript,AudioServer);
+	GDCLASS(AudioServerJavascript,AudioServer);
 
 	enum {
 		INTERNAL_BUFFER_SIZE=4096,

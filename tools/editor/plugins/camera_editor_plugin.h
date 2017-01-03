@@ -39,7 +39,7 @@
 
 class CameraEditor : public Control {
 
-	OBJ_TYPE(CameraEditor, Control );
+	GDCLASS(CameraEditor, Control );
 
 	Panel *panel;
 	Button * preview;
@@ -58,7 +58,7 @@ public:
 
 class CameraEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( CameraEditorPlugin, EditorPlugin );
+	GDCLASS( CameraEditorPlugin, EditorPlugin );
 
 //	CameraEditor *camera_editor;
 	EditorNode *editor;

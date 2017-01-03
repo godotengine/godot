@@ -43,7 +43,7 @@ class StyleBox;
 
 class CanvasItemMaterial : public Material {
 
-	OBJ_TYPE(CanvasItemMaterial,Material);
+	GDCLASS(CanvasItemMaterial,Material);
 	Ref<Shader> shader;
 public:
 	/*enum ShadingMode {
@@ -78,7 +78,7 @@ public:
 
 class CanvasItem : public Node {
 
-	OBJ_TYPE( CanvasItem, Node );
+	GDCLASS( CanvasItem, Node );
 public:
 
 	enum BlendMode {

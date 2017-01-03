@@ -446,7 +446,7 @@ Vector<ColorRamp::Point>& ColorRampEdit::get_points() {
 }
 
 void ColorRampEdit::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("_input_event"),&ColorRampEdit::_input_event);
-	ObjectTypeDB::bind_method(_MD("_color_changed"),&ColorRampEdit::_color_changed);
+	ClassDB::bind_method(_MD("_input_event"),&ColorRampEdit::_input_event);
+	ClassDB::bind_method(_MD("_color_changed"),&ColorRampEdit::_color_changed);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }

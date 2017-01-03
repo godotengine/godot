@@ -240,7 +240,7 @@ Error ResourceInteractiveLoaderText::poll() {
 
 		if ( !ResourceCache::has(path)) { //only if it doesn't exist
 
-			Object *obj = ObjectTypeDB::instance(type);
+			Object *obj = ClassDB::instance(type);
 			if (!obj) {
 
 				error_text+="Can't create sub resource of type: "+type;
@@ -310,7 +310,7 @@ Error ResourceInteractiveLoaderText::poll() {
 			return error;
 		}
 
-		Object *obj = ObjectTypeDB::instance(res_type);
+		Object *obj = ClassDB::instance(res_type);
 		if (!obj) {
 
 			error_text+="Can't create sub resource of type: "+res_type;
@@ -1206,7 +1206,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 	{
 		String title=packed_scene.is_valid()?"[gd_scene ":"[gd_resource ";
 		if (packed_scene.is_null())
-			title+="type=\""+p_resource->get_type()+"\" ";
+			title+="type=\""+p_resource->get_class()+"\" ";
 		int load_steps=saved_resources.size()+external_resources.size();
 		//if (packed_scene.is_valid()) {
 		//	load_steps+=packed_scene->get_node_count();
@@ -1235,7 +1235,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 	for(int i=0;i<sorted_er.size();i++) {
 		String p = sorted_er[i]->get_path();
 
-		f->store_string("[ext_resource path=\""+p+"\" type=\""+sorted_er[i]->get_save_type()+"\" id="+itos(i+1)+"]\n"); //bundled
+		f->store_string("[ext_resource path=\""+p+"\" type=\""+sorted_er[i]->get_save_class()+"\" id="+itos(i+1)+"]\n"); //bundled
 	}
 
 	if (external_resources.size())
@@ -1282,7 +1282,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			}
 
 			int idx = res->get_subindex();
-			line+="type=\""+res->get_type()+"\" id="+itos(idx);
+			line+="type=\""+res->get_class()+"\" id="+itos(idx);
 			f->store_line(line+"]\n");
 			if (takeover_paths) {
 				res->set_path(p_path+"::"+itos(idx),true);
@@ -1451,7 +1451,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 
 Error ResourceFormatSaverText::save(const String &p_path,const RES& p_resource,uint32_t p_flags) {
 
-	if (p_path.ends_with(".sct") && p_resource->get_type()!="PackedScene") {
+	if (p_path.ends_with(".sct") && p_resource->get_class()!="PackedScene") {
 		return ERR_FILE_UNRECOGNIZED;
 	}
 
@@ -1467,7 +1467,7 @@ bool ResourceFormatSaverText::recognize(const RES& p_resource) const {
 }
 void ResourceFormatSaverText::get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const {
 
-	if (p_resource->get_type()=="PackedScene")
+	if (p_resource->get_class()=="PackedScene")
 		p_extensions->push_back("tscn"); //text scene
 	else
 		p_extensions->push_back("tres"); //text resource

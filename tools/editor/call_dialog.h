@@ -44,7 +44,7 @@ class CallDialogParams;
 
 class CallDialog : public Popup {
 
-	OBJ_TYPE( CallDialog, Popup );
+	GDCLASS( CallDialog, Popup );
 
 
 	Label* method_label;

@@ -68,16 +68,16 @@ Size2 Patch9Frame::get_minimum_size() const {
 void Patch9Frame::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_texture","texture"), & Patch9Frame::set_texture );
-	ObjectTypeDB::bind_method(_MD("get_texture"), & Patch9Frame::get_texture );
-	ObjectTypeDB::bind_method(_MD("set_modulate","modulate"), & Patch9Frame::set_modulate );
-	ObjectTypeDB::bind_method(_MD("get_modulate"), & Patch9Frame::get_modulate );
-	ObjectTypeDB::bind_method(_MD("set_patch_margin","margin","value"), & Patch9Frame::set_patch_margin );
-	ObjectTypeDB::bind_method(_MD("get_patch_margin","margin"), & Patch9Frame::get_patch_margin );
-	ObjectTypeDB::bind_method(_MD("set_region_rect","rect"),&Patch9Frame::set_region_rect);
-	ObjectTypeDB::bind_method(_MD("get_region_rect"),&Patch9Frame::get_region_rect);
-	ObjectTypeDB::bind_method(_MD("set_draw_center","draw_center"), & Patch9Frame::set_draw_center );
-	ObjectTypeDB::bind_method(_MD("get_draw_center"), & Patch9Frame::get_draw_center );
+	ClassDB::bind_method(_MD("set_texture","texture"), & Patch9Frame::set_texture );
+	ClassDB::bind_method(_MD("get_texture"), & Patch9Frame::get_texture );
+	ClassDB::bind_method(_MD("set_modulate","modulate"), & Patch9Frame::set_modulate );
+	ClassDB::bind_method(_MD("get_modulate"), & Patch9Frame::get_modulate );
+	ClassDB::bind_method(_MD("set_patch_margin","margin","value"), & Patch9Frame::set_patch_margin );
+	ClassDB::bind_method(_MD("get_patch_margin","margin"), & Patch9Frame::get_patch_margin );
+	ClassDB::bind_method(_MD("set_region_rect","rect"),&Patch9Frame::set_region_rect);
+	ClassDB::bind_method(_MD("get_region_rect"),&Patch9Frame::get_region_rect);
+	ClassDB::bind_method(_MD("set_draw_center","draw_center"), & Patch9Frame::set_draw_center );
+	ClassDB::bind_method(_MD("get_draw_center"), & Patch9Frame::get_draw_center );
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 

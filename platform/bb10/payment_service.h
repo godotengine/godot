@@ -39,7 +39,7 @@
 
 class PaymentService : public Object {
 
-	OBJ_TYPE(PaymentService, Object);
+	GDCLASS(PaymentService, Object);
 
 	static void _bind_methods();
 

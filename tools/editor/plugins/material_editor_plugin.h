@@ -11,7 +11,7 @@
 #if 0
 class MaterialEditor : public Control {
 
-	OBJ_TYPE(MaterialEditor, Control);
+	GDCLASS(MaterialEditor, Control);
 
 
 	Viewport *viewport;
@@ -50,7 +50,7 @@ public:
 
 class MaterialEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( MaterialEditorPlugin, EditorPlugin );
+	GDCLASS( MaterialEditorPlugin, EditorPlugin );
 
 	MaterialEditor *material_editor;
 	EditorNode *editor;

@@ -148,8 +148,8 @@ void EditorImportTextureOptions::_changed() {
 
 void EditorImportTextureOptions::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_changed",&EditorImportTextureOptions::_changed);
-	ObjectTypeDB::bind_method("_changedp",&EditorImportTextureOptions::_changedp);
+	ClassDB::bind_method("_changed",&EditorImportTextureOptions::_changed);
+	ClassDB::bind_method("_changedp",&EditorImportTextureOptions::_changedp);
 
 	ADD_SIGNAL(MethodInfo("changed"));
 }
@@ -236,7 +236,7 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 
 class EditorTextureImportDialog : public ConfirmationDialog  {
 
-	OBJ_TYPE(EditorTextureImportDialog,ConfirmationDialog);
+	GDCLASS(EditorTextureImportDialog,ConfirmationDialog);
 
 
 
@@ -636,13 +636,13 @@ void EditorTextureImportDialog::_mode_changed(int p_mode) {
 void EditorTextureImportDialog::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method("_choose_files",&EditorTextureImportDialog::_choose_files);
-	ObjectTypeDB::bind_method("_choose_file",&EditorTextureImportDialog::_choose_file);
-	ObjectTypeDB::bind_method("_choose_save_dir",&EditorTextureImportDialog::_choose_save_dir);
-	ObjectTypeDB::bind_method("_import",&EditorTextureImportDialog::_import);
-	ObjectTypeDB::bind_method("_browse",&EditorTextureImportDialog::_browse);
-	ObjectTypeDB::bind_method("_browse_target",&EditorTextureImportDialog::_browse_target);
-	ObjectTypeDB::bind_method("_mode_changed",&EditorTextureImportDialog::_mode_changed);
+	ClassDB::bind_method("_choose_files",&EditorTextureImportDialog::_choose_files);
+	ClassDB::bind_method("_choose_file",&EditorTextureImportDialog::_choose_file);
+	ClassDB::bind_method("_choose_save_dir",&EditorTextureImportDialog::_choose_save_dir);
+	ClassDB::bind_method("_import",&EditorTextureImportDialog::_import);
+	ClassDB::bind_method("_browse",&EditorTextureImportDialog::_browse);
+	ClassDB::bind_method("_browse_target",&EditorTextureImportDialog::_browse_target);
+	ClassDB::bind_method("_mode_changed",&EditorTextureImportDialog::_mode_changed);
 //	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 }
 

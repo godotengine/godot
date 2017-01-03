@@ -39,7 +39,7 @@ class ButtonGroup;
 
 class BaseButton : public Control {
 
-	OBJ_TYPE( BaseButton, Control );
+	GDCLASS( BaseButton, Control );
 
 	bool toggle_mode;
 	FocusMode enabled_focus_mode;

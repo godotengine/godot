@@ -34,7 +34,7 @@
 
 class Sample : public Resource {
 
-	OBJ_TYPE(Sample, Resource );
+	GDCLASS(Sample, Resource );
 	RES_BASE_EXTENSION("smp");
 public:
 

@@ -2931,7 +2931,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 					} else if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
 
 						String identifier = tokenizer->get_token_identifier();
-						if (!ObjectTypeDB::is_type(identifier,"Resource")) {
+						if (!ClassDB::is_parent_class(identifier,"Resource")) {
 
 							current_export=PropertyInfo();
 							_set_error("Export hint not a type or resource.");
@@ -3149,7 +3149,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 									return;
 								}
 								member._export.hint=PROPERTY_HINT_RESOURCE_TYPE;
-								member._export.hint_string=res->get_type();
+								member._export.hint_string=res->get_class();
 							}
 						}
 					}

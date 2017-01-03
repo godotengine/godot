@@ -33,7 +33,7 @@
 
 class Node2D : public CanvasItem {
 
-	OBJ_TYPE(Node2D, CanvasItem );
+	GDCLASS(Node2D, CanvasItem );
 
 	Point2 pos;
 	float angle;

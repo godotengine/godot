@@ -61,7 +61,7 @@ void CameraEditor::_pressed() {
 
 void CameraEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_pressed"),&CameraEditor::_pressed);
+	ClassDB::bind_method(_MD("_pressed"),&CameraEditor::_pressed);
 
 }
 
@@ -108,7 +108,7 @@ void CameraEditorPlugin::edit(Object *p_object) {
 
 bool CameraEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Camera");
+	return p_object->is_class("Camera");
 }
 
 void CameraEditorPlugin::make_visible(bool p_visible) {

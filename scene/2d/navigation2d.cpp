@@ -804,13 +804,13 @@ Object* Navigation2D::get_closest_point_owner(const Vector2& p_point) {
 
 void Navigation2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("navpoly_create","mesh:NavigationPolygon","xform","owner"),&Navigation2D::navpoly_create,DEFVAL(Variant()));
-	ObjectTypeDB::bind_method(_MD("navpoly_set_transform","id","xform"),&Navigation2D::navpoly_set_transform);
-	ObjectTypeDB::bind_method(_MD("navpoly_remove","id"),&Navigation2D::navpoly_remove);
+	ClassDB::bind_method(_MD("navpoly_create","mesh:NavigationPolygon","xform","owner"),&Navigation2D::navpoly_create,DEFVAL(Variant()));
+	ClassDB::bind_method(_MD("navpoly_set_transform","id","xform"),&Navigation2D::navpoly_set_transform);
+	ClassDB::bind_method(_MD("navpoly_remove","id"),&Navigation2D::navpoly_remove);
 
-	ObjectTypeDB::bind_method(_MD("get_simple_path","start","end","optimize"),&Navigation2D::get_simple_path,DEFVAL(true));
-	ObjectTypeDB::bind_method(_MD("get_closest_point","to_point"),&Navigation2D::get_closest_point);
-	ObjectTypeDB::bind_method(_MD("get_closest_point_owner","to_point"),&Navigation2D::get_closest_point_owner);
+	ClassDB::bind_method(_MD("get_simple_path","start","end","optimize"),&Navigation2D::get_simple_path,DEFVAL(true));
+	ClassDB::bind_method(_MD("get_closest_point","to_point"),&Navigation2D::get_closest_point);
+	ClassDB::bind_method(_MD("get_closest_point_owner","to_point"),&Navigation2D::get_closest_point_owner);
 
 }
 

@@ -50,7 +50,7 @@ GDNativeClass::GDNativeClass(const StringName& p_name) {
 bool GDNativeClass::_get(const StringName& p_name,Variant &r_ret) const {
 
 	bool ok;
-	int v = ObjectTypeDB::get_integer_constant(name, p_name, &ok);
+	int v = ClassDB::get_integer_constant(name, p_name, &ok);
 
 	if (ok) {
 		r_ret=v;
@@ -63,7 +63,7 @@ bool GDNativeClass::_get(const StringName& p_name,Variant &r_ret) const {
 
 void GDNativeClass::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("new"),&GDNativeClass::_new);
+	ClassDB::bind_method(_MD("new"),&GDNativeClass::_new);
 
 }
 
@@ -86,7 +86,7 @@ Variant GDNativeClass::_new() {
 
 Object *GDNativeClass::instance() {
 
-	return ObjectTypeDB::instance(name);
+	return ClassDB::instance(name);
 }
 
 
@@ -388,12 +388,12 @@ ScriptInstance* GDScript::instance_create(Object *p_this) {
 		top=top->_base;
 
 	if (top->native.is_valid()) {
-		if (!ObjectTypeDB::is_type(p_this->get_type_name(),top->native->get_name())) {
+		if (!ClassDB::is_parent_class(p_this->get_class_name(),top->native->get_name())) {
 
 			if (ScriptDebugger::get_singleton()) {
-				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),0,"Script inherits from native type '"+String(top->native->get_name())+"', so it can't be instanced in object of type: '"+p_this->get_type()+"'");
+				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),0,"Script inherits from native type '"+String(top->native->get_name())+"', so it can't be instanced in object of type: '"+p_this->get_class()+"'");
 			}
-			ERR_EXPLAIN("Script inherits from native type '"+String(top->native->get_name())+"', so it can't be instanced in object of type: '"+p_this->get_type()+"'");
+			ERR_EXPLAIN("Script inherits from native type '"+String(top->native->get_name())+"', so it can't be instanced in object of type: '"+p_this->get_class()+"'");
 			ERR_FAIL_V(NULL);
 
 		}
@@ -751,9 +751,9 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 
-	ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo(Variant::OBJECT,"new"));
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo(Variant::OBJECT,"new"));
 
-	ObjectTypeDB::bind_method(_MD("get_as_byte_code"),&GDScript::get_as_byte_code);
+	ClassDB::bind_method(_MD("get_as_byte_code"),&GDScript::get_as_byte_code);
 
 }
 
@@ -1477,7 +1477,7 @@ void GDScriptLanguage::init() {
 	//populate native classes
 
 	List<StringName> class_list;
-	ObjectTypeDB::get_type_list(&class_list);
+	ClassDB::get_class_list(&class_list);
 	for(List<StringName>::Element *E=class_list.front();E;E=E->next()) {
 
 		StringName n = E->get();

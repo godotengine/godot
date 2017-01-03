@@ -38,7 +38,7 @@
 */
 class VisualInstance : public Spatial {
 
-	OBJ_TYPE( VisualInstance, Spatial );
+	GDCLASS( VisualInstance, Spatial );
 	OBJ_CATEGORY("3D Visual Nodes");
 
 	RID instance;
@@ -83,7 +83,7 @@ class BakedLight;
 
 class GeometryInstance : public VisualInstance {
 
-	OBJ_TYPE( GeometryInstance, VisualInstance );
+	GDCLASS( GeometryInstance, VisualInstance );
 public:
 
 	enum Flags {

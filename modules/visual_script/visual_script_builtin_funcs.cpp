@@ -981,7 +981,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func,const Variant** p_inp
 		case VisualScriptBuiltinFunc::TYPE_EXISTS: {
 
 
-			*r_return = ObjectTypeDB::type_exists(*p_inputs[0]);
+			*r_return = ClassDB::class_exists(*p_inputs[0]);
 
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_CHAR: {
@@ -1145,8 +1145,8 @@ VisualScriptNodeInstance* VisualScriptBuiltinFunc::instance(VisualScriptInstance
 
 void VisualScriptBuiltinFunc::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_func","which"),&VisualScriptBuiltinFunc::set_func);
-	ObjectTypeDB::bind_method(_MD("get_func"),&VisualScriptBuiltinFunc::get_func);
+	ClassDB::bind_method(_MD("set_func","which"),&VisualScriptBuiltinFunc::set_func);
+	ClassDB::bind_method(_MD("get_func"),&VisualScriptBuiltinFunc::get_func);
 
 	String cc;
 

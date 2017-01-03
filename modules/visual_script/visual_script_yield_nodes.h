@@ -5,7 +5,7 @@
 
 class VisualScriptYield : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptYield,VisualScriptNode)
+	GDCLASS(VisualScriptYield,VisualScriptNode)
 public:
 
 	enum YieldMode {
@@ -60,7 +60,7 @@ VARIANT_ENUM_CAST( VisualScriptYield::YieldMode )
 
 class VisualScriptYieldSignal : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptYieldSignal,VisualScriptNode)
+	GDCLASS(VisualScriptYieldSignal,VisualScriptNode)
 public:
 	enum CallMode {
 		CALL_MODE_SELF,

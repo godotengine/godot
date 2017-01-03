@@ -222,27 +222,27 @@ void Range::_unref_shared() {
 
 void Range::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_val"),&Range::get_val);
-	ObjectTypeDB::bind_method(_MD("get_value"),&Range::get_val);
-	ObjectTypeDB::bind_method(_MD("get_min"),&Range::get_min);
-	ObjectTypeDB::bind_method(_MD("get_max"),&Range::get_max);
-	ObjectTypeDB::bind_method(_MD("get_step"),&Range::get_step);
-	ObjectTypeDB::bind_method(_MD("get_page"),&Range::get_page);
-	ObjectTypeDB::bind_method(_MD("get_unit_value"),&Range::get_unit_value);
-	ObjectTypeDB::bind_method(_MD("set_val","value"),&Range::set_val);
-	ObjectTypeDB::bind_method(_MD("set_value","value"),&Range::set_val);
-	ObjectTypeDB::bind_method(_MD("set_min","minimum"),&Range::set_min);
-	ObjectTypeDB::bind_method(_MD("set_max","maximum"),&Range::set_max);
-	ObjectTypeDB::bind_method(_MD("set_step","step"),&Range::set_step);
-	ObjectTypeDB::bind_method(_MD("set_page","pagesize"),&Range::set_page);
-	ObjectTypeDB::bind_method(_MD("set_unit_value","value"),&Range::set_unit_value);
-	ObjectTypeDB::bind_method(_MD("set_rounded_values","enabled"),&Range::set_rounded_values);
-	ObjectTypeDB::bind_method(_MD("is_rounded_values"),&Range::is_rounded_values);
-	ObjectTypeDB::bind_method(_MD("set_exp_unit_value","enabled"),&Range::set_exp_unit_value);
-	ObjectTypeDB::bind_method(_MD("is_unit_value_exp"),&Range::is_unit_value_exp);
+	ClassDB::bind_method(_MD("get_val"),&Range::get_val);
+	ClassDB::bind_method(_MD("get_value"),&Range::get_val);
+	ClassDB::bind_method(_MD("get_min"),&Range::get_min);
+	ClassDB::bind_method(_MD("get_max"),&Range::get_max);
+	ClassDB::bind_method(_MD("get_step"),&Range::get_step);
+	ClassDB::bind_method(_MD("get_page"),&Range::get_page);
+	ClassDB::bind_method(_MD("get_unit_value"),&Range::get_unit_value);
+	ClassDB::bind_method(_MD("set_val","value"),&Range::set_val);
+	ClassDB::bind_method(_MD("set_value","value"),&Range::set_val);
+	ClassDB::bind_method(_MD("set_min","minimum"),&Range::set_min);
+	ClassDB::bind_method(_MD("set_max","maximum"),&Range::set_max);
+	ClassDB::bind_method(_MD("set_step","step"),&Range::set_step);
+	ClassDB::bind_method(_MD("set_page","pagesize"),&Range::set_page);
+	ClassDB::bind_method(_MD("set_unit_value","value"),&Range::set_unit_value);
+	ClassDB::bind_method(_MD("set_rounded_values","enabled"),&Range::set_rounded_values);
+	ClassDB::bind_method(_MD("is_rounded_values"),&Range::is_rounded_values);
+	ClassDB::bind_method(_MD("set_exp_unit_value","enabled"),&Range::set_exp_unit_value);
+	ClassDB::bind_method(_MD("is_unit_value_exp"),&Range::is_unit_value_exp);
 
-	ObjectTypeDB::bind_method(_MD("share","with"),&Range::_share);
-	ObjectTypeDB::bind_method(_MD("unshare"),&Range::unshare);
+	ClassDB::bind_method(_MD("share","with"),&Range::_share);
+	ClassDB::bind_method(_MD("unshare"),&Range::unshare);
 
 	ADD_SIGNAL( MethodInfo("value_changed", PropertyInfo(Variant::REAL,"value")));
 	ADD_SIGNAL( MethodInfo("changed"));

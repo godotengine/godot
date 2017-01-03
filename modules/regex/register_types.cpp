@@ -33,8 +33,8 @@
 
 void register_regex_types() {
 
-	ObjectTypeDB::register_type<RegExMatch>();
-	ObjectTypeDB::register_type<RegEx>();
+	ClassDB::register_class<RegExMatch>();
+	ClassDB::register_class<RegEx>();
 }
 
 void unregister_regex_types() {

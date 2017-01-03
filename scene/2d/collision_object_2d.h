@@ -34,7 +34,7 @@
 
 class CollisionObject2D : public Node2D {
 
-	OBJ_TYPE( CollisionObject2D, Node2D );
+	GDCLASS( CollisionObject2D, Node2D );
 
 	bool area;
 	RID rid;

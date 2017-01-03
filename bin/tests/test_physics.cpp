@@ -40,7 +40,7 @@
 
 class TestPhysicsMainLoop : public MainLoop {
 
-	OBJ_TYPE( TestPhysicsMainLoop, MainLoop );
+	GDCLASS( TestPhysicsMainLoop, MainLoop );
 
 	enum {
 		LINK_COUNT = 20,
@@ -81,7 +81,7 @@ protected:
 
 	static void _bind_methods() {
 
-		ObjectTypeDB::bind_method("body_changed_transform",&TestPhysicsMainLoop::body_changed_transform);
+		ClassDB::bind_method("body_changed_transform",&TestPhysicsMainLoop::body_changed_transform);
 	}
 
 	RID create_body(PhysicsServer::ShapeType p_shape, PhysicsServer::BodyMode p_body,const Transform p_location,bool p_active_default=true,const Transform&p_shape_xform=Transform()) {

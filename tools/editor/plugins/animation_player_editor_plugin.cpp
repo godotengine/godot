@@ -431,7 +431,7 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource>& p_resource) 
 
 		String existing;
 		if (extensions.size()) {
-			existing = "new_" + p_resource->get_type().to_lower() + "." + extensions.front()->get().to_lower();
+			existing = "new_" + p_resource->get_class().to_lower() + "." + extensions.front()->get().to_lower();
 		}
 		file->set_current_path(existing);
 
@@ -723,7 +723,7 @@ void AnimationPlayerEditor::_dialog_action(String p_file) {
 
 			Ref<Resource> res = ResourceLoader::load(p_file, "Animation");
 			ERR_FAIL_COND(res.is_null());
-			ERR_FAIL_COND(!res->is_type("Animation"));
+			ERR_FAIL_COND(!res->is_class("Animation"));
 			if (p_file.find_last("/") != -1) {
 
 				p_file = p_file.substr(p_file.find_last("/") + 1, p_file.length());
@@ -1245,42 +1245,42 @@ void AnimationPlayerEditor::_unhandled_key_input(const InputEvent& p_ev) {
 
 void AnimationPlayerEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&AnimationPlayerEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&AnimationPlayerEditor::_node_removed);
-	ObjectTypeDB::bind_method(_MD("_play_pressed"),&AnimationPlayerEditor::_play_pressed);
-	ObjectTypeDB::bind_method(_MD("_play_from_pressed"),&AnimationPlayerEditor::_play_from_pressed);
-	ObjectTypeDB::bind_method(_MD("_play_bw_pressed"),&AnimationPlayerEditor::_play_bw_pressed);
-	ObjectTypeDB::bind_method(_MD("_play_bw_from_pressed"),&AnimationPlayerEditor::_play_bw_from_pressed);
-	ObjectTypeDB::bind_method(_MD("_stop_pressed"),&AnimationPlayerEditor::_stop_pressed);
-	ObjectTypeDB::bind_method(_MD("_autoplay_pressed"),&AnimationPlayerEditor::_autoplay_pressed);
-	ObjectTypeDB::bind_method(_MD("_pause_pressed"),&AnimationPlayerEditor::_pause_pressed);
-	ObjectTypeDB::bind_method(_MD("_animation_selected"),&AnimationPlayerEditor::_animation_selected);
-	ObjectTypeDB::bind_method(_MD("_animation_name_edited"),&AnimationPlayerEditor::_animation_name_edited);
-	ObjectTypeDB::bind_method(_MD("_animation_new"),&AnimationPlayerEditor::_animation_new);
-	ObjectTypeDB::bind_method(_MD("_animation_rename"),&AnimationPlayerEditor::_animation_rename);
-	ObjectTypeDB::bind_method(_MD("_animation_load"),&AnimationPlayerEditor::_animation_load);
-	ObjectTypeDB::bind_method(_MD("_animation_remove"),&AnimationPlayerEditor::_animation_remove);
-	ObjectTypeDB::bind_method(_MD("_animation_blend"),&AnimationPlayerEditor::_animation_blend);
-	ObjectTypeDB::bind_method(_MD("_animation_edit"),&AnimationPlayerEditor::_animation_edit);
-	ObjectTypeDB::bind_method(_MD("_animation_resource_edit"),&AnimationPlayerEditor::_animation_resource_edit);
-	ObjectTypeDB::bind_method(_MD("_dialog_action"),&AnimationPlayerEditor::_dialog_action);
-	ObjectTypeDB::bind_method(_MD("_seek_value_changed"),&AnimationPlayerEditor::_seek_value_changed,DEFVAL(true));
-	ObjectTypeDB::bind_method(_MD("_animation_player_changed"),&AnimationPlayerEditor::_animation_player_changed);
-	ObjectTypeDB::bind_method(_MD("_blend_edited"),&AnimationPlayerEditor::_blend_edited);
-//	ObjectTypeDB::bind_method(_MD("_seek_frame_changed"),&AnimationPlayerEditor::_seek_frame_changed);
-	ObjectTypeDB::bind_method(_MD("_scale_changed"),&AnimationPlayerEditor::_scale_changed);
-	//ObjectTypeDB::bind_method(_MD("_editor_store_all"),&AnimationPlayerEditor::_editor_store_all);
+	ClassDB::bind_method(_MD("_input_event"),&AnimationPlayerEditor::_input_event);
+	ClassDB::bind_method(_MD("_node_removed"),&AnimationPlayerEditor::_node_removed);
+	ClassDB::bind_method(_MD("_play_pressed"),&AnimationPlayerEditor::_play_pressed);
+	ClassDB::bind_method(_MD("_play_from_pressed"),&AnimationPlayerEditor::_play_from_pressed);
+	ClassDB::bind_method(_MD("_play_bw_pressed"),&AnimationPlayerEditor::_play_bw_pressed);
+	ClassDB::bind_method(_MD("_play_bw_from_pressed"),&AnimationPlayerEditor::_play_bw_from_pressed);
+	ClassDB::bind_method(_MD("_stop_pressed"),&AnimationPlayerEditor::_stop_pressed);
+	ClassDB::bind_method(_MD("_autoplay_pressed"),&AnimationPlayerEditor::_autoplay_pressed);
+	ClassDB::bind_method(_MD("_pause_pressed"),&AnimationPlayerEditor::_pause_pressed);
+	ClassDB::bind_method(_MD("_animation_selected"),&AnimationPlayerEditor::_animation_selected);
+	ClassDB::bind_method(_MD("_animation_name_edited"),&AnimationPlayerEditor::_animation_name_edited);
+	ClassDB::bind_method(_MD("_animation_new"),&AnimationPlayerEditor::_animation_new);
+	ClassDB::bind_method(_MD("_animation_rename"),&AnimationPlayerEditor::_animation_rename);
+	ClassDB::bind_method(_MD("_animation_load"),&AnimationPlayerEditor::_animation_load);
+	ClassDB::bind_method(_MD("_animation_remove"),&AnimationPlayerEditor::_animation_remove);
+	ClassDB::bind_method(_MD("_animation_blend"),&AnimationPlayerEditor::_animation_blend);
+	ClassDB::bind_method(_MD("_animation_edit"),&AnimationPlayerEditor::_animation_edit);
+	ClassDB::bind_method(_MD("_animation_resource_edit"),&AnimationPlayerEditor::_animation_resource_edit);
+	ClassDB::bind_method(_MD("_dialog_action"),&AnimationPlayerEditor::_dialog_action);
+	ClassDB::bind_method(_MD("_seek_value_changed"),&AnimationPlayerEditor::_seek_value_changed,DEFVAL(true));
+	ClassDB::bind_method(_MD("_animation_player_changed"),&AnimationPlayerEditor::_animation_player_changed);
+	ClassDB::bind_method(_MD("_blend_edited"),&AnimationPlayerEditor::_blend_edited);
+//	ClassDB::bind_method(_MD("_seek_frame_changed"),&AnimationPlayerEditor::_seek_frame_changed);
+	ClassDB::bind_method(_MD("_scale_changed"),&AnimationPlayerEditor::_scale_changed);
+	//ClassDB::bind_method(_MD("_editor_store_all"),&AnimationPlayerEditor::_editor_store_all);
 	///jectTypeDB::bind_method(_MD("_editor_load_all"),&AnimationPlayerEditor::_editor_load_all);
-	ObjectTypeDB::bind_method(_MD("_list_changed"),&AnimationPlayerEditor::_list_changed);
-	ObjectTypeDB::bind_method(_MD("_animation_key_editor_seek"),&AnimationPlayerEditor::_animation_key_editor_seek);
-	ObjectTypeDB::bind_method(_MD("_animation_key_editor_anim_len_changed"),&AnimationPlayerEditor::_animation_key_editor_anim_len_changed);
-	ObjectTypeDB::bind_method(_MD("_animation_key_editor_anim_step_changed"),&AnimationPlayerEditor::_animation_key_editor_anim_step_changed);
-	ObjectTypeDB::bind_method(_MD("_hide_anim_editors"),&AnimationPlayerEditor::_hide_anim_editors);
-	ObjectTypeDB::bind_method(_MD("_animation_duplicate"),&AnimationPlayerEditor::_animation_duplicate);
-	ObjectTypeDB::bind_method(_MD("_blend_editor_next_changed"),&AnimationPlayerEditor::_blend_editor_next_changed);
-	ObjectTypeDB::bind_method(_MD("_unhandled_key_input"),&AnimationPlayerEditor::_unhandled_key_input);
-	ObjectTypeDB::bind_method(_MD("_animation_tool_menu"),&AnimationPlayerEditor::_animation_tool_menu);
-	ObjectTypeDB::bind_method(_MD("_animation_save_menu"), &AnimationPlayerEditor::_animation_save_menu);
+	ClassDB::bind_method(_MD("_list_changed"),&AnimationPlayerEditor::_list_changed);
+	ClassDB::bind_method(_MD("_animation_key_editor_seek"),&AnimationPlayerEditor::_animation_key_editor_seek);
+	ClassDB::bind_method(_MD("_animation_key_editor_anim_len_changed"),&AnimationPlayerEditor::_animation_key_editor_anim_len_changed);
+	ClassDB::bind_method(_MD("_animation_key_editor_anim_step_changed"),&AnimationPlayerEditor::_animation_key_editor_anim_step_changed);
+	ClassDB::bind_method(_MD("_hide_anim_editors"),&AnimationPlayerEditor::_hide_anim_editors);
+	ClassDB::bind_method(_MD("_animation_duplicate"),&AnimationPlayerEditor::_animation_duplicate);
+	ClassDB::bind_method(_MD("_blend_editor_next_changed"),&AnimationPlayerEditor::_blend_editor_next_changed);
+	ClassDB::bind_method(_MD("_unhandled_key_input"),&AnimationPlayerEditor::_unhandled_key_input);
+	ClassDB::bind_method(_MD("_animation_tool_menu"),&AnimationPlayerEditor::_animation_tool_menu);
+	ClassDB::bind_method(_MD("_animation_save_menu"), &AnimationPlayerEditor::_animation_save_menu);
 
 
 
@@ -1542,7 +1542,7 @@ void AnimationPlayerEditorPlugin::edit(Object *p_object) {
 
 bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("AnimationPlayer");
+	return p_object->is_class("AnimationPlayer");
 }
 
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {

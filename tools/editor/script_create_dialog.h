@@ -37,7 +37,7 @@
 #include "scene/gui/check_button.h"
 
 class ScriptCreateDialog : public ConfirmationDialog {
-	OBJ_TYPE(ScriptCreateDialog,ConfirmationDialog);
+	GDCLASS(ScriptCreateDialog,ConfirmationDialog);
 
 	LineEdit *class_name;
 	Label *error_label;

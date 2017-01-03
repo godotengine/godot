@@ -81,10 +81,10 @@ bool VisualScriptReturn::is_return_value_enabled() const {
 
 void VisualScriptReturn::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_return_type","type"),&VisualScriptReturn::set_return_type);
-	ObjectTypeDB::bind_method(_MD("get_return_type"),&VisualScriptReturn::get_return_type);
-	ObjectTypeDB::bind_method(_MD("set_enable_return_value","enable"),&VisualScriptReturn::set_enable_return_value);
-	ObjectTypeDB::bind_method(_MD("is_return_value_enabled"),&VisualScriptReturn::is_return_value_enabled);
+	ClassDB::bind_method(_MD("set_return_type","type"),&VisualScriptReturn::set_return_type);
+	ClassDB::bind_method(_MD("get_return_type"),&VisualScriptReturn::get_return_type);
+	ClassDB::bind_method(_MD("set_enable_return_value","enable"),&VisualScriptReturn::set_enable_return_value);
+	ClassDB::bind_method(_MD("is_return_value_enabled"),&VisualScriptReturn::is_return_value_enabled);
 
 	String argt="Any";
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {
@@ -544,8 +544,8 @@ int VisualScriptSequence::get_steps() const {
 
 void VisualScriptSequence::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_steps","steps"),&VisualScriptSequence::set_steps);
-	ObjectTypeDB::bind_method(_MD("get_steps"),&VisualScriptSequence::get_steps);
+	ClassDB::bind_method(_MD("set_steps","steps"),&VisualScriptSequence::set_steps);
+	ClassDB::bind_method(_MD("get_steps"),&VisualScriptSequence::get_steps);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"steps",PROPERTY_HINT_RANGE,"1,64,1"),_SCS("set_steps"),_SCS("get_steps"));
 
@@ -1869,7 +1869,7 @@ public:
 			return 1; //not found sorry
 		}
 
-		if (ObjectTypeDB::is_type(obj->get_type_name(),base_type)) {
+		if (ClassDB::is_parent_class(obj->get_class_name(),base_type)) {
 			*p_outputs[0]=*p_inputs[0]; //copy
 			return 0;
 		} else
@@ -1893,11 +1893,11 @@ VisualScriptNodeInstance* VisualScriptTypeCast::instance(VisualScriptInstance* p
 
 void VisualScriptTypeCast::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_base_type","type"),&VisualScriptTypeCast::set_base_type);
-	ObjectTypeDB::bind_method(_MD("get_base_type"),&VisualScriptTypeCast::get_base_type);
+	ClassDB::bind_method(_MD("set_base_type","type"),&VisualScriptTypeCast::set_base_type);
+	ClassDB::bind_method(_MD("get_base_type"),&VisualScriptTypeCast::get_base_type);
 
-	ObjectTypeDB::bind_method(_MD("set_base_script","path"),&VisualScriptTypeCast::set_base_script);
-	ObjectTypeDB::bind_method(_MD("get_base_script"),&VisualScriptTypeCast::get_base_script);
+	ClassDB::bind_method(_MD("set_base_script","path"),&VisualScriptTypeCast::set_base_script);
+	ClassDB::bind_method(_MD("get_base_script"),&VisualScriptTypeCast::get_base_script);
 
 
 	List<String> script_extensions;

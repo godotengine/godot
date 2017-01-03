@@ -10,7 +10,7 @@
 
 class MeshInstanceEditor : public Node {
 
-	OBJ_TYPE(MeshInstanceEditor, Node );
+	GDCLASS(MeshInstanceEditor, Node );
 
 
 	enum Menu {
@@ -48,7 +48,7 @@ public:
 
 class MeshInstanceEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( MeshInstanceEditorPlugin, EditorPlugin );
+	GDCLASS( MeshInstanceEditorPlugin, EditorPlugin );
 
 	MeshInstanceEditor *mesh_editor;
 	EditorNode *editor;

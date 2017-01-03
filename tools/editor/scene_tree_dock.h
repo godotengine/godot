@@ -49,7 +49,7 @@ class EditorNode;
 
 class SceneTreeDock : public VBoxContainer {
 
-	OBJ_TYPE( SceneTreeDock, VBoxContainer );
+	GDCLASS( SceneTreeDock, VBoxContainer );
 
 	enum Tool {
 

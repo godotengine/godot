@@ -190,11 +190,11 @@ void PathRemap::load_remaps() {
 
 void PathRemap::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("add_remap","from","to","locale"),&PathRemap::add_remap,DEFVAL(String()));
-	ObjectTypeDB::bind_method(_MD("has_remap","path"),&PathRemap::has_remap);
-	ObjectTypeDB::bind_method(_MD("get_remap","path"),&PathRemap::get_remap);
-	ObjectTypeDB::bind_method(_MD("erase_remap","path"),&PathRemap::erase_remap);
-	ObjectTypeDB::bind_method(_MD("clear_remaps"),&PathRemap::clear_remaps);
+	ClassDB::bind_method(_MD("add_remap","from","to","locale"),&PathRemap::add_remap,DEFVAL(String()));
+	ClassDB::bind_method(_MD("has_remap","path"),&PathRemap::has_remap);
+	ClassDB::bind_method(_MD("get_remap","path"),&PathRemap::get_remap);
+	ClassDB::bind_method(_MD("erase_remap","path"),&PathRemap::erase_remap);
+	ClassDB::bind_method(_MD("clear_remaps"),&PathRemap::clear_remaps);
 }
 
 PathRemap::PathRemap() {

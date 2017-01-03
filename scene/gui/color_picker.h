@@ -43,7 +43,7 @@
 
 class ColorPicker : public BoxContainer {
 
-	OBJ_TYPE(ColorPicker,BoxContainer);
+	GDCLASS(ColorPicker,BoxContainer);
 
 private:
 
@@ -113,7 +113,7 @@ public:
 
 class ColorPickerButton : public Button {
 
-	OBJ_TYPE(ColorPickerButton,Button);
+	GDCLASS(ColorPickerButton,Button);
 
 	PopupPanel *popup;
 	ColorPicker *picker;

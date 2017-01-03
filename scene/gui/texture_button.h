@@ -33,7 +33,7 @@
 #include "scene/resources/bit_mask.h"
 class TextureButton : public BaseButton {
 
-	OBJ_TYPE( TextureButton, BaseButton );
+	GDCLASS( TextureButton, BaseButton );
 
 	Ref<Texture> normal;
 	Ref<Texture> pressed;

@@ -51,7 +51,7 @@ class AnimationCurveEdit;
 
 class AnimationKeyEditor : public VBoxContainer  {
 
-	OBJ_TYPE( AnimationKeyEditor, VBoxContainer );
+	GDCLASS( AnimationKeyEditor, VBoxContainer );
 
 /*
 	enum {

@@ -36,7 +36,7 @@
 */
 class MenuButton : public Button {
 
-	OBJ_TYPE( MenuButton, Button );
+	GDCLASS( MenuButton, Button );
 
 	bool clicked;
 	PopupMenu *popup;

@@ -34,7 +34,7 @@
 
 class EventStreamPlayback : public Reference {
 
-	OBJ_TYPE(EventStreamPlayback,Reference);
+	GDCLASS(EventStreamPlayback,Reference);
 
 	class InternalEventStream : public AudioServer::EventStream {
 	public:
@@ -99,7 +99,7 @@ public:
 
 class EventStream : public Resource {
 
-	OBJ_TYPE(EventStream,Resource);
+	GDCLASS(EventStream,Resource);
 	OBJ_SAVE_TYPE( EventStream ); //children are all saved as EventStream, so they can be exchanged
 
 public:

@@ -518,7 +518,7 @@ MainLoop* test() {
 
 		Vector<int> hashes;
 		List<StringName> tl;
-		ObjectTypeDB::get_type_list(&tl);
+		ClassDB::get_class_list(&tl);
 
 
 		for (List<StringName>::Element *E=tl.front();E;E=E->next()) {

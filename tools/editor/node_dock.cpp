@@ -20,8 +20,8 @@ void NodeDock::show_connections(){
 
 void NodeDock::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("show_groups"),&NodeDock::show_groups);
-	ObjectTypeDB::bind_method(_MD("show_connections"),&NodeDock::show_connections);
+	ClassDB::bind_method(_MD("show_groups"),&NodeDock::show_groups);
+	ClassDB::bind_method(_MD("show_connections"),&NodeDock::show_connections);
 }
 
 void NodeDock::_notification(int p_what) {

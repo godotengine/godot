@@ -1314,7 +1314,7 @@ String Node::_generate_serial_child_name(Node *p_child) {
 
 	if (name=="") {
 
-		name = p_child->get_type();
+		name = p_child->get_class();
 	}
 
 	// Extract trailing number
@@ -2233,7 +2233,7 @@ Node *Node::_duplicate(bool p_use_instancing) const {
 
 	} else {
 
-		Object *obj = ObjectTypeDB::instance(get_type());
+		Object *obj = ClassDB::instance(get_class());
 		ERR_FAIL_COND_V(!obj,NULL);
 		node = obj->cast_to<Node>();
 		if (!node)
@@ -2318,9 +2318,9 @@ void Node::_duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_re
 		ERR_FAIL_COND(!node);
 	} else {
 
-		Object *obj = ObjectTypeDB::instance(get_type());
+		Object *obj = ClassDB::instance(get_class());
 		if (!obj) {
-			print_line("could not duplicate: "+String(get_type()));
+			print_line("could not duplicate: "+String(get_class()));
 		}
 		ERR_FAIL_COND(!obj);
 		node = obj->cast_to<Node>();
@@ -2414,9 +2414,9 @@ Node *Node::duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const {
 
 	Node *node=NULL;
 
-	Object *obj = ObjectTypeDB::instance(get_type());
+	Object *obj = ClassDB::instance(get_class());
 	if (!obj) {
-		print_line("could not duplicate: "+String(get_type()));
+		print_line("could not duplicate: "+String(get_class()));
 	}
 	ERR_FAIL_COND_V(!obj,NULL);
 	node = obj->cast_to<Node>();
@@ -2704,7 +2704,7 @@ static void _Node_debug_sn(Object *p_obj) {
 		path=n->get_name();
 	else
 		path=String(p->get_name())+"/"+p->get_path_to(n);
-	print_line(itos(p_obj->get_instance_ID())+"- Stray Node: "+path+" (Type: "+n->get_type()+")");
+	print_line(itos(p_obj->get_instance_ID())+"- Stray Node: "+path+" (Type: "+n->get_class()+")");
 
 }
 
@@ -2819,87 +2819,87 @@ void Node::_bind_methods() {
 	Globals::get_singleton()->set_custom_property_info("node/name_num_separator",PropertyInfo(Variant::INT,"node/name_num_separator",PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
 
 
-	ObjectTypeDB::bind_method(_MD("_add_child_below_node","node:Node","child_node:Node","legible_unique_name"),&Node::add_child_below_node,DEFVAL(false));
+	ClassDB::bind_method(_MD("_add_child_below_node","node:Node","child_node:Node","legible_unique_name"),&Node::add_child_below_node,DEFVAL(false));
 
-	ObjectTypeDB::bind_method(_MD("set_name","name"),&Node::set_name);
-	ObjectTypeDB::bind_method(_MD("get_name"),&Node::get_name);
-	ObjectTypeDB::bind_method(_MD("add_child","node:Node","legible_unique_name"),&Node::add_child,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("remove_child","node:Node"),&Node::remove_child);
-	//ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
-	ObjectTypeDB::bind_method(_MD("get_child_count"),&Node::get_child_count);
-	ObjectTypeDB::bind_method(_MD("get_children"),&Node::_get_children);
-	ObjectTypeDB::bind_method(_MD("get_child:Node","idx"),&Node::get_child);
-	ObjectTypeDB::bind_method(_MD("has_node","path"),&Node::has_node);
-	ObjectTypeDB::bind_method(_MD("get_node:Node","path"),&Node::get_node);
-	ObjectTypeDB::bind_method(_MD("get_parent:Node"),&Node::get_parent);
-	ObjectTypeDB::bind_method(_MD("find_node:Node","mask","recursive","owned"),&Node::find_node,DEFVAL(true),DEFVAL(true));
-	ObjectTypeDB::bind_method(_MD("has_node_and_resource","path"),&Node::has_node_and_resource);
-	ObjectTypeDB::bind_method(_MD("get_node_and_resource","path"),&Node::_get_node_and_resource);
+	ClassDB::bind_method(_MD("set_name","name"),&Node::set_name);
+	ClassDB::bind_method(_MD("get_name"),&Node::get_name);
+	ClassDB::bind_method(_MD("add_child","node:Node","legible_unique_name"),&Node::add_child,DEFVAL(false));
+	ClassDB::bind_method(_MD("remove_child","node:Node"),&Node::remove_child);
+	//ClassDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
+	ClassDB::bind_method(_MD("get_child_count"),&Node::get_child_count);
+	ClassDB::bind_method(_MD("get_children"),&Node::_get_children);
+	ClassDB::bind_method(_MD("get_child:Node","idx"),&Node::get_child);
+	ClassDB::bind_method(_MD("has_node","path"),&Node::has_node);
+	ClassDB::bind_method(_MD("get_node:Node","path"),&Node::get_node);
+	ClassDB::bind_method(_MD("get_parent:Node"),&Node::get_parent);
+	ClassDB::bind_method(_MD("find_node:Node","mask","recursive","owned"),&Node::find_node,DEFVAL(true),DEFVAL(true));
+	ClassDB::bind_method(_MD("has_node_and_resource","path"),&Node::has_node_and_resource);
+	ClassDB::bind_method(_MD("get_node_and_resource","path"),&Node::_get_node_and_resource);
 
-	ObjectTypeDB::bind_method(_MD("is_inside_tree"),&Node::is_inside_tree);
-	ObjectTypeDB::bind_method(_MD("is_a_parent_of","node:Node"),&Node::is_a_parent_of);
-	ObjectTypeDB::bind_method(_MD("is_greater_than","node:Node"),&Node::is_greater_than);
-	ObjectTypeDB::bind_method(_MD("get_path"),&Node::get_path);
-	ObjectTypeDB::bind_method(_MD("get_path_to","node:Node"),&Node::get_path_to);
-	ObjectTypeDB::bind_method(_MD("add_to_group","group","persistent"),&Node::add_to_group,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("remove_from_group","group"),&Node::remove_from_group);
-	ObjectTypeDB::bind_method(_MD("is_in_group","group"),&Node::is_in_group);
-	ObjectTypeDB::bind_method(_MD("move_child","child_node:Node","to_pos"),&Node::move_child);
-	ObjectTypeDB::bind_method(_MD("get_groups"),&Node::_get_groups);
-	ObjectTypeDB::bind_method(_MD("raise"),&Node::raise);
-	ObjectTypeDB::bind_method(_MD("set_owner","owner:Node"),&Node::set_owner);
-	ObjectTypeDB::bind_method(_MD("get_owner:Node"),&Node::get_owner);
-	ObjectTypeDB::bind_method(_MD("remove_and_skip"),&Node::remove_and_skip);
-	ObjectTypeDB::bind_method(_MD("get_index"),&Node::get_index);
-	ObjectTypeDB::bind_method(_MD("print_tree"),&Node::print_tree);
-	ObjectTypeDB::bind_method(_MD("set_filename","filename"),&Node::set_filename);
-	ObjectTypeDB::bind_method(_MD("get_filename"),&Node::get_filename);
-	ObjectTypeDB::bind_method(_MD("propagate_notification","what"),&Node::propagate_notification);
-	ObjectTypeDB::bind_method(_MD("set_fixed_process","enable"),&Node::set_fixed_process);
-	ObjectTypeDB::bind_method(_MD("get_fixed_process_delta_time"),&Node::get_fixed_process_delta_time);
-	ObjectTypeDB::bind_method(_MD("is_fixed_processing"),&Node::is_fixed_processing);
-	ObjectTypeDB::bind_method(_MD("set_process","enable"),&Node::set_process);
-	ObjectTypeDB::bind_method(_MD("get_process_delta_time"),&Node::get_process_delta_time);
-	ObjectTypeDB::bind_method(_MD("is_processing"),&Node::is_processing);
-	ObjectTypeDB::bind_method(_MD("set_process_input","enable"),&Node::set_process_input);
-	ObjectTypeDB::bind_method(_MD("is_processing_input"),&Node::is_processing_input);
-	ObjectTypeDB::bind_method(_MD("set_process_unhandled_input","enable"),&Node::set_process_unhandled_input);
-	ObjectTypeDB::bind_method(_MD("is_processing_unhandled_input"),&Node::is_processing_unhandled_input);
-	ObjectTypeDB::bind_method(_MD("set_process_unhandled_key_input","enable"),&Node::set_process_unhandled_key_input);
-	ObjectTypeDB::bind_method(_MD("is_processing_unhandled_key_input"),&Node::is_processing_unhandled_key_input);
-	ObjectTypeDB::bind_method(_MD("set_pause_mode","mode"),&Node::set_pause_mode);
-	ObjectTypeDB::bind_method(_MD("get_pause_mode"),&Node::get_pause_mode);
-	ObjectTypeDB::bind_method(_MD("can_process"),&Node::can_process);
-	ObjectTypeDB::bind_method(_MD("print_stray_nodes"),&Node::_print_stray_nodes);
-	ObjectTypeDB::bind_method(_MD("get_position_in_parent"),&Node::get_position_in_parent);
-	ObjectTypeDB::bind_method(_MD("set_display_folded","fold"),&Node::set_display_folded);
-	ObjectTypeDB::bind_method(_MD("is_displayed_folded"),&Node::is_displayed_folded);
+	ClassDB::bind_method(_MD("is_inside_tree"),&Node::is_inside_tree);
+	ClassDB::bind_method(_MD("is_a_parent_of","node:Node"),&Node::is_a_parent_of);
+	ClassDB::bind_method(_MD("is_greater_than","node:Node"),&Node::is_greater_than);
+	ClassDB::bind_method(_MD("get_path"),&Node::get_path);
+	ClassDB::bind_method(_MD("get_path_to","node:Node"),&Node::get_path_to);
+	ClassDB::bind_method(_MD("add_to_group","group","persistent"),&Node::add_to_group,DEFVAL(false));
+	ClassDB::bind_method(_MD("remove_from_group","group"),&Node::remove_from_group);
+	ClassDB::bind_method(_MD("is_in_group","group"),&Node::is_in_group);
+	ClassDB::bind_method(_MD("move_child","child_node:Node","to_pos"),&Node::move_child);
+	ClassDB::bind_method(_MD("get_groups"),&Node::_get_groups);
+	ClassDB::bind_method(_MD("raise"),&Node::raise);
+	ClassDB::bind_method(_MD("set_owner","owner:Node"),&Node::set_owner);
+	ClassDB::bind_method(_MD("get_owner:Node"),&Node::get_owner);
+	ClassDB::bind_method(_MD("remove_and_skip"),&Node::remove_and_skip);
+	ClassDB::bind_method(_MD("get_index"),&Node::get_index);
+	ClassDB::bind_method(_MD("print_tree"),&Node::print_tree);
+	ClassDB::bind_method(_MD("set_filename","filename"),&Node::set_filename);
+	ClassDB::bind_method(_MD("get_filename"),&Node::get_filename);
+	ClassDB::bind_method(_MD("propagate_notification","what"),&Node::propagate_notification);
+	ClassDB::bind_method(_MD("set_fixed_process","enable"),&Node::set_fixed_process);
+	ClassDB::bind_method(_MD("get_fixed_process_delta_time"),&Node::get_fixed_process_delta_time);
+	ClassDB::bind_method(_MD("is_fixed_processing"),&Node::is_fixed_processing);
+	ClassDB::bind_method(_MD("set_process","enable"),&Node::set_process);
+	ClassDB::bind_method(_MD("get_process_delta_time"),&Node::get_process_delta_time);
+	ClassDB::bind_method(_MD("is_processing"),&Node::is_processing);
+	ClassDB::bind_method(_MD("set_process_input","enable"),&Node::set_process_input);
+	ClassDB::bind_method(_MD("is_processing_input"),&Node::is_processing_input);
+	ClassDB::bind_method(_MD("set_process_unhandled_input","enable"),&Node::set_process_unhandled_input);
+	ClassDB::bind_method(_MD("is_processing_unhandled_input"),&Node::is_processing_unhandled_input);
+	ClassDB::bind_method(_MD("set_process_unhandled_key_input","enable"),&Node::set_process_unhandled_key_input);
+	ClassDB::bind_method(_MD("is_processing_unhandled_key_input"),&Node::is_processing_unhandled_key_input);
+	ClassDB::bind_method(_MD("set_pause_mode","mode"),&Node::set_pause_mode);
+	ClassDB::bind_method(_MD("get_pause_mode"),&Node::get_pause_mode);
+	ClassDB::bind_method(_MD("can_process"),&Node::can_process);
+	ClassDB::bind_method(_MD("print_stray_nodes"),&Node::_print_stray_nodes);
+	ClassDB::bind_method(_MD("get_position_in_parent"),&Node::get_position_in_parent);
+	ClassDB::bind_method(_MD("set_display_folded","fold"),&Node::set_display_folded);
+	ClassDB::bind_method(_MD("is_displayed_folded"),&Node::is_displayed_folded);
 
-	ObjectTypeDB::bind_method(_MD("get_tree:SceneTree"),&Node::get_tree);
+	ClassDB::bind_method(_MD("get_tree:SceneTree"),&Node::get_tree);
 
-	ObjectTypeDB::bind_method(_MD("duplicate:Node","use_instancing"),&Node::duplicate,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("replace_by","node:Node","keep_data"),&Node::replace_by,DEFVAL(false));
+	ClassDB::bind_method(_MD("duplicate:Node","use_instancing"),&Node::duplicate,DEFVAL(false));
+	ClassDB::bind_method(_MD("replace_by","node:Node","keep_data"),&Node::replace_by,DEFVAL(false));
 
-	ObjectTypeDB::bind_method(_MD("set_scene_instance_load_placeholder","load_placeholder"),&Node::set_scene_instance_load_placeholder);
-	ObjectTypeDB::bind_method(_MD("get_scene_instance_load_placeholder"),&Node::get_scene_instance_load_placeholder);
+	ClassDB::bind_method(_MD("set_scene_instance_load_placeholder","load_placeholder"),&Node::set_scene_instance_load_placeholder);
+	ClassDB::bind_method(_MD("get_scene_instance_load_placeholder"),&Node::get_scene_instance_load_placeholder);
 
 
-	ObjectTypeDB::bind_method(_MD("get_viewport"),&Node::get_viewport);
+	ClassDB::bind_method(_MD("get_viewport"),&Node::get_viewport);
 
-	ObjectTypeDB::bind_method(_MD("queue_free"),&Node::queue_delete);
+	ClassDB::bind_method(_MD("queue_free"),&Node::queue_delete);
 
-	ObjectTypeDB::bind_method(_MD("set_network_mode","mode"),&Node::set_network_mode);
-	ObjectTypeDB::bind_method(_MD("get_network_mode"),&Node::get_network_mode);
+	ClassDB::bind_method(_MD("set_network_mode","mode"),&Node::set_network_mode);
+	ClassDB::bind_method(_MD("get_network_mode"),&Node::get_network_mode);
 
-	ObjectTypeDB::bind_method(_MD("is_network_master"),&Node::is_network_master);
+	ClassDB::bind_method(_MD("is_network_master"),&Node::is_network_master);
 
-	ObjectTypeDB::bind_method(_MD("rpc_config","method","mode"),&Node::rpc_config);
-	ObjectTypeDB::bind_method(_MD("rset_config","property","mode"),&Node::rset_config);
+	ClassDB::bind_method(_MD("rpc_config","method","mode"),&Node::rpc_config);
+	ClassDB::bind_method(_MD("rset_config","property","mode"),&Node::rset_config);
 
 
 #ifdef TOOLS_ENABLED
-	ObjectTypeDB::bind_method(_MD("_set_import_path","import_path"),&Node::set_import_path);
-	ObjectTypeDB::bind_method(_MD("_get_import_path"),&Node::get_import_path);
+	ClassDB::bind_method(_MD("_set_import_path","import_path"),&Node::set_import_path);
+	ClassDB::bind_method(_MD("_get_import_path"),&Node::get_import_path);
 	ADD_PROPERTYNZ( PropertyInfo(Variant::NODE_PATH,"_import_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_path"),_SCS("_get_import_path"));
 
 #endif
@@ -2911,24 +2911,24 @@ void Node::_bind_methods() {
 
 
 		mi.name="rpc";
-		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc",&Node::_rpc_bind,mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc",&Node::_rpc_bind,mi);
 		mi.name="rpc_unreliable";
-		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc_unreliable",&Node::_rpc_unreliable_bind,mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc_unreliable",&Node::_rpc_unreliable_bind,mi);
 
 		mi.arguments.push_front( PropertyInfo( Variant::INT, "peer_id") );
 
 		mi.name="rpc_id";
-		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc_id",&Node::_rpc_id_bind,mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc_id",&Node::_rpc_id_bind,mi);
 		mi.name="rpc_unreliable_id";
-		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc_unreliable_id",&Node::_rpc_unreliable_id_bind,mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"rpc_unreliable_id",&Node::_rpc_unreliable_id_bind,mi);
 
 
 	}
 
-	ObjectTypeDB::bind_method(_MD("rset","property","value:Variant"),&Node::rset);
-	ObjectTypeDB::bind_method(_MD("rset_id","peer_id","property","value:Variant"),&Node::rset_id);
-	ObjectTypeDB::bind_method(_MD("rset_unreliable","property","value:Variant"),&Node::rset_unreliable);
-	ObjectTypeDB::bind_method(_MD("rset_unreliable_id","peer_id","property","value:Variant"),&Node::rset_unreliable_id);
+	ClassDB::bind_method(_MD("rset","property","value:Variant"),&Node::rset);
+	ClassDB::bind_method(_MD("rset_id","peer_id","property","value:Variant"),&Node::rset_id);
+	ClassDB::bind_method(_MD("rset_unreliable","property","value:Variant"),&Node::rset_unreliable);
+	ClassDB::bind_method(_MD("rset_unreliable_id","peer_id","property","value:Variant"),&Node::rset_unreliable_id);
 
 
 	BIND_CONSTANT( NOTIFICATION_ENTER_TREE );
@@ -2982,8 +2982,8 @@ void Node::_bind_methods() {
 	BIND_VMETHOD( MethodInfo("_unhandled_input",PropertyInfo(Variant::INPUT_EVENT,"event")) );
 	BIND_VMETHOD( MethodInfo("_unhandled_key_input",PropertyInfo(Variant::INPUT_EVENT,"key_event")) );
 
-	//ObjectTypeDB::bind_method(_MD("get_child",&Node::get_child,PH("index")));
-	//ObjectTypeDB::bind_method(_MD("get_node",&Node::get_node,PH("path")));
+	//ClassDB::bind_method(_MD("get_child",&Node::get_child,PH("index")));
+	//ClassDB::bind_method(_MD("get_node",&Node::get_node,PH("path")));
 }
 
 

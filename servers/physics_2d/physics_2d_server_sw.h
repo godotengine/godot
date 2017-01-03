@@ -39,7 +39,7 @@
 
 class Physics2DServerSW : public Physics2DServer {
 
-	OBJ_TYPE( Physics2DServerSW, Physics2DServer );
+	GDCLASS( Physics2DServerSW, Physics2DServer );
 
 friend class Physics2DDirectSpaceStateSW;
 friend class Physics2DDirectBodyStateSW;

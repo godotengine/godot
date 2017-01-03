@@ -32,7 +32,7 @@
 #include "resource.h"
 
 class Shape2D : public Resource {
-	OBJ_TYPE( Shape2D, Resource );
+	GDCLASS( Shape2D, Resource );
 	OBJ_SAVE_TYPE( Shape2D );
 
 	RID shape;

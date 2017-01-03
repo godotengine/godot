@@ -108,7 +108,7 @@ static _FORCE_INLINE_ const char* _MD(const char* m_name, ...) { return m_name; 
 
 #endif
 
-class ObjectTypeDB {
+class ClassDB {
 public:
 	enum APIType {
 		API_CORE,
@@ -126,10 +126,10 @@ public:
 		Variant::Type type;
 	};
 
-	struct TypeInfo {
+	struct ClassInfo {
 
 		APIType api;
-		TypeInfo *inherits_ptr;
+		ClassInfo *inherits_ptr;
 		HashMap<StringName,MethodBind*,StringNameHasher> method_map;
 		HashMap<StringName,int,StringNameHasher> constant_map;
 		HashMap<StringName,MethodInfo,StringNameHasher> signal_map;
@@ -147,8 +147,8 @@ public:
 		StringName name;
 		bool disabled;
 		Object* (*creation_func)();
-		TypeInfo();
-		~TypeInfo();
+		ClassInfo();
+		~ClassInfo();
 	};
 
 	template<class T>
@@ -157,9 +157,9 @@ public:
 	}
 
 	static Mutex *lock;
-	static HashMap<StringName,TypeInfo,StringNameHasher> types;
+	static HashMap<StringName,ClassInfo,StringNameHasher> classes;
 	static HashMap<StringName,StringName,StringNameHasher> resource_base_extensions;
-	static HashMap<StringName,StringName,StringNameHasher> compat_types;
+	static HashMap<StringName,StringName,StringNameHasher> compat_classes;
 
 #ifdef DEBUG_METHODS_ENABLED
 	static MethodBind* bind_methodfi(uint32_t p_flags, MethodBind *p_bind , const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
@@ -170,25 +170,25 @@ public:
 
 	static APIType current_api;
 
-	static void _add_type2(const StringName& p_type, const StringName& p_inherits);
+	static void _add_class2(const StringName& p_class, const StringName& p_inherits);
 public:
 
 	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
 	template<class T>
-	static void _add_type() {
+	static void _add_class() {
 
-		_add_type2(T::get_type_static(),T::get_parent_type_static());
+		_add_class2(T::get_class_static(),T::get_parent_class_static());
 #if 0
 		GLOBAL_LOCK_FUNCTION;
 
-		StringName name = T::get_type_static();
+		StringName name = T::get_class_static();
 
 		ERR_FAIL_COND(types.has(name));
 
 		types[name]=TypeInfo();
 		TypeInfo &ti=types[name];
 		ti.name=name;
-		ti.inherits=T::get_parent_type_static();
+		ti.inherits=T::get_parent_class_static();
 
 		if (ti.inherits) {
 
@@ -202,21 +202,21 @@ public:
 	}
 
 	template<class T>
-	static void register_type() {
+	static void register_class() {
 
 		GLOBAL_LOCK_FUNCTION;
-		T::initialize_type();
-		TypeInfo *t=types.getptr(T::get_type_static());
+		T::initialize_class();
+		ClassInfo *t=classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
 		t->creation_func=&creator<T>;
 		T::register_custom_data_to_otdb();
 	}
 
 	template<class T>
-	static void register_virtual_type() {
+	static void register_virtual_class() {
 
 		GLOBAL_LOCK_FUNCTION;
-		T::initialize_type();
+		T::initialize_class();
 		//nothing
 	}
 
@@ -227,24 +227,24 @@ public:
 	}
 
 	template<class T>
-	static void register_create_type() {
+	static void register_custom_instance_class() {
 
 		GLOBAL_LOCK_FUNCTION;
-		T::initialize_type();
-		TypeInfo *t=types.getptr(T::get_type_static());
+		T::initialize_class();
+		ClassInfo *t=classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
 		t->creation_func=&_create_ptr_func<T>;
 		T::register_custom_data_to_otdb();
 	}
 
-	static void get_type_list( List<StringName> *p_types);
-	static void get_inheriters_from( const StringName& p_type,List<StringName> *p_types);
-	static StringName type_inherits_from(const StringName& p_type);
-	static bool type_exists(const StringName &p_type);
-	static bool is_type(const StringName &p_type,const StringName& p_inherits);
-	static bool can_instance(const StringName &p_type);
-	static Object *instance(const StringName &p_type);
-	static APIType get_api_type(const StringName &p_type);
+	static void get_class_list( List<StringName> *p_classes);
+	static void get_inheriters_from_class( const StringName& p_class,List<StringName> *p_classes);
+	static StringName get_parent_class(const StringName& p_class);
+	static bool class_exists(const StringName &p_class);
+	static bool is_parent_class(const StringName &p_class,const StringName& p_inherits);
+	static bool can_instance(const StringName &p_class);
+	static Object *instance(const StringName &p_class);
+	static APIType get_api_type(const StringName &p_class);
 
 	static uint64_t get_api_hash(APIType p_api);
 
@@ -444,9 +444,9 @@ public:
 		bind->set_name(p_name);
 		bind->set_default_arguments(p_default_args);
 
-		String instance_type=bind->get_instance_type();
+		String instance_type=bind->get_instance_class();
 
-		TypeInfo *type=types.getptr(instance_type);
+		ClassInfo *type=classes.getptr(instance_type);
 		if (!type) {
 			memdelete(bind);
 			ERR_FAIL_COND_V(!type,NULL);
@@ -471,44 +471,44 @@ public:
 	}
 
 
-	static void add_signal(StringName p_type,const MethodInfo& p_signal);
-	static bool has_signal(StringName p_type,StringName p_signal);
-	static bool get_signal(StringName p_type,StringName p_signal,MethodInfo *r_signal);
-	static void get_signal_list(StringName p_type,List<MethodInfo> *p_signals,bool p_no_inheritance=false);
+	static void add_signal(StringName p_class,const MethodInfo& p_signal);
+	static bool has_signal(StringName p_class,StringName p_signal);
+	static bool get_signal(StringName p_class,StringName p_signal,MethodInfo *r_signal);
+	static void get_signal_list(StringName p_class,List<MethodInfo> *p_signals,bool p_no_inheritance=false);
 
-	static void add_property(StringName p_type,const PropertyInfo& p_pinfo, const StringName& p_setter, const StringName& p_getter, int p_index=-1);
-	static void get_property_list(StringName p_type, List<PropertyInfo> *p_list, bool p_no_inheritance=false, const Object *p_validator=NULL);
+	static void add_property(StringName p_class,const PropertyInfo& p_pinfo, const StringName& p_setter, const StringName& p_getter, int p_index=-1);
+	static void get_property_list(StringName p_class, List<PropertyInfo> *p_list, bool p_no_inheritance=false, const Object *p_validator=NULL);
 	static bool set_property(Object* p_object, const StringName& p_property, const Variant& p_value, bool *r_valid=NULL);
 	static bool get_property(Object* p_object,const StringName& p_property, Variant& r_value);
-	static Variant::Type get_property_type(const StringName& p_type, const StringName& p_property,bool *r_is_valid=NULL);
+	static Variant::Type get_property_type(const StringName& p_class, const StringName& p_property,bool *r_is_valid=NULL);
 
 
 
-	static bool has_method(StringName p_type,StringName p_method,bool p_no_inheritance=false);
-	static void set_method_flags(StringName p_type,StringName p_method,int p_flags);
+	static bool has_method(StringName p_class,StringName p_method,bool p_no_inheritance=false);
+	static void set_method_flags(StringName p_class,StringName p_method,int p_flags);
 
 
-	static void get_method_list(StringName p_type,List<MethodInfo> *p_methods,bool p_no_inheritance=false);
-	static MethodBind *get_method(StringName p_type, StringName p_name);
+	static void get_method_list(StringName p_class,List<MethodInfo> *p_methods,bool p_no_inheritance=false);
+	static MethodBind *get_method(StringName p_class, StringName p_name);
 
-	static void add_virtual_method(const StringName& p_type,const MethodInfo& p_method,bool p_virtual=true );
-	static void get_virtual_methods(const StringName& p_type,List<MethodInfo> * p_methods,bool p_no_inheritance=false );
+	static void add_virtual_method(const StringName& p_class,const MethodInfo& p_method,bool p_virtual=true );
+	static void get_virtual_methods(const StringName& p_class,List<MethodInfo> * p_methods,bool p_no_inheritance=false );
 
-	static void bind_integer_constant(const StringName& p_type, const StringName &p_name, int p_constant);
-	static void get_integer_constant_list(const StringName& p_type, List<String> *p_constants, bool p_no_inheritance=false);
-	static int get_integer_constant(const StringName& p_type, const StringName &p_name, bool *p_success=NULL);
+	static void bind_integer_constant(const StringName& p_class, const StringName &p_name, int p_constant);
+	static void get_integer_constant_list(const StringName& p_class, List<String> *p_constants, bool p_no_inheritance=false);
+	static int get_integer_constant(const StringName& p_class, const StringName &p_name, bool *p_success=NULL);
 	static StringName get_category(const StringName& p_node);
 
 	static bool get_setter_and_type_for_property(const StringName& p_class, const StringName& p_prop, StringName& r_class, StringName& r_setter);
 
-	static void set_type_enabled(StringName p_type,bool p_enable);
-	static bool is_type_enabled(StringName p_type);
+	static void set_class_enabled(StringName p_class,bool p_enable);
+	static bool is_class_enabled(StringName p_class);
 
-	static void add_resource_base_extension(const StringName& p_extension,const StringName& p_type);
+	static void add_resource_base_extension(const StringName& p_extension,const StringName& p_class);
 	static void get_resource_base_extensions(List<String> *p_extensions);
-	static void get_extensions_for_type(const StringName& p_type,List<String> *p_extensions);
+	static void get_extensions_for_type(const StringName& p_class,List<String> *p_extensions);
 
-	static void add_compatibility_type(const StringName& p_type,const StringName& p_fallback);
+	static void add_compatibility_class(const StringName& p_class,const StringName& p_fallback);
 	static void init();
 
 	static void set_current_api(APIType p_api);
@@ -517,12 +517,12 @@ public:
 
 
 #define BIND_CONSTANT(m_constant)\
-	ObjectTypeDB::bind_integer_constant( get_type_static() , #m_constant, m_constant);
+	ClassDB::bind_integer_constant( get_class_static() , #m_constant, m_constant);
 
 #ifdef TOOLS_ENABLED
 
 #define BIND_VMETHOD(m_method)\
-	ObjectTypeDB::add_virtual_method( get_type_static() , m_method );
+	ClassDB::add_virtual_method( get_class_static() , m_method );
 
 #else
 

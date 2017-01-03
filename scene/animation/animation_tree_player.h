@@ -38,7 +38,7 @@
 
 class AnimationTreePlayer : public Node {
 
-	OBJ_TYPE( AnimationTreePlayer, Node );
+	GDCLASS( AnimationTreePlayer, Node );
 	OBJ_CATEGORY("Animation Nodes");
 
 public:

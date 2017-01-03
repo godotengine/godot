@@ -33,7 +33,7 @@
 
 class FuncRef : public Reference{
 
-	OBJ_TYPE(FuncRef,Reference);
+	GDCLASS(FuncRef,Reference);
 	ObjectID id;
 	StringName function;
 

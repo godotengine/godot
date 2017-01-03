@@ -37,7 +37,7 @@
 */
 
 class MultiMeshInstance : public GeometryInstance {
-	OBJ_TYPE( MultiMeshInstance, GeometryInstance );
+	GDCLASS( MultiMeshInstance, GeometryInstance );
 
 
 	Ref<MultiMesh> multimesh;

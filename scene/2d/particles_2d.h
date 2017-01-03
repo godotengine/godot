@@ -36,7 +36,7 @@
 class Particles2D;
 class ParticleAttractor2D : public Node2D {
 
-	OBJ_TYPE(ParticleAttractor2D,Node2D);
+	GDCLASS(ParticleAttractor2D,Node2D);
 
 
 friend class Particles2D;
@@ -84,7 +84,7 @@ public:
 
 class Particles2D : public Node2D {
 
-	OBJ_TYPE(Particles2D, Node2D);
+	GDCLASS(Particles2D, Node2D);
 public:
 
 	enum Parameter {

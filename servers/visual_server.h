@@ -42,7 +42,7 @@
 */
 class VisualServer : public Object {
 
-	OBJ_TYPE( VisualServer, Object );
+	GDCLASS( VisualServer, Object );
 
 	static VisualServer *singleton;
 

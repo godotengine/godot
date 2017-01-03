@@ -40,7 +40,7 @@
 #if 0
 class ParticlesEditor : public Control {
 
-	OBJ_TYPE(ParticlesEditor, Control );
+	GDCLASS(ParticlesEditor, Control );
 
 	Panel *panel;
 	MenuButton *options;
@@ -94,7 +94,7 @@ public:
 
 class ParticlesEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ParticlesEditorPlugin, EditorPlugin );
+	GDCLASS( ParticlesEditorPlugin, EditorPlugin );
 
 	ParticlesEditor *particles_editor;
 	EditorNode *editor;

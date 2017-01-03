@@ -34,7 +34,7 @@
 
 class EditorReImportDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorReImportDialog,ConfirmationDialog);
+	GDCLASS(EditorReImportDialog,ConfirmationDialog);
 
 	Tree *tree;
 	Vector<TreeItem*> items;

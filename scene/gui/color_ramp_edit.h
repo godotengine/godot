@@ -38,7 +38,7 @@
 
 class ColorRampEdit : public Control {
 
-	OBJ_TYPE(ColorRampEdit,Control);
+	GDCLASS(ColorRampEdit,Control);
 
 	PopupPanel *popup;
 	ColorPicker *picker;
@@ -73,7 +73,7 @@ public:
 
 /*class  ColorRampEditPanel : public Panel
 {
-	OBJ_TYPE(ColorRampEditPanel, Panel );
+	GDCLASS(ColorRampEditPanel, Panel );
 };*/
 
 

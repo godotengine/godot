@@ -31,12 +31,12 @@
 
 void MainLoop::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("input_event","ev"),&MainLoop::input_event);
-	ObjectTypeDB::bind_method(_MD("input_text","text"),&MainLoop::input_text);
-	ObjectTypeDB::bind_method(_MD("init"),&MainLoop::init);
-	ObjectTypeDB::bind_method(_MD("iteration","delta"),&MainLoop::iteration);
-	ObjectTypeDB::bind_method(_MD("idle","delta"),&MainLoop::idle);
-	ObjectTypeDB::bind_method(_MD("finish"),&MainLoop::finish);
+	ClassDB::bind_method(_MD("input_event","ev"),&MainLoop::input_event);
+	ClassDB::bind_method(_MD("input_text","text"),&MainLoop::input_text);
+	ClassDB::bind_method(_MD("init"),&MainLoop::init);
+	ClassDB::bind_method(_MD("iteration","delta"),&MainLoop::iteration);
+	ClassDB::bind_method(_MD("idle","delta"),&MainLoop::idle);
+	ClassDB::bind_method(_MD("finish"),&MainLoop::finish);
 
 	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::INPUT_EVENT,"ev")) );
 	BIND_VMETHOD( MethodInfo("_input_text",PropertyInfo(Variant::STRING,"text")) );

@@ -33,7 +33,7 @@
 
 class PanelContainer : public Container {
 
-	OBJ_TYPE( PanelContainer, Container );
+	GDCLASS( PanelContainer, Container );
 
 protected:
 

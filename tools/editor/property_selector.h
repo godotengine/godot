@@ -6,7 +6,7 @@
 #include "editor_help.h"
 
 class PropertySelector : public ConfirmationDialog {
-	OBJ_TYPE(PropertySelector,ConfirmationDialog )
+	GDCLASS(PropertySelector,ConfirmationDialog )
 
 
 	LineEdit *search_box;

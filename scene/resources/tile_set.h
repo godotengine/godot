@@ -37,7 +37,7 @@
 
 class TileSet : public Resource {
 
-	OBJ_TYPE( TileSet, Resource );
+	GDCLASS( TileSet, Resource );
 
 	struct Data {
 

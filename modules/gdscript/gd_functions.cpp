@@ -536,7 +536,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		case TYPE_EXISTS: {
 
 			VALIDATE_ARG_COUNT(1);
-			r_ret = ObjectTypeDB::type_exists(*p_args[0]);
+			r_ret = ClassDB::class_exists(*p_args[0]);
 
 		} break;
 		case TEXT_CHAR: {

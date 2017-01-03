@@ -33,7 +33,7 @@
 
 class Light2D : public Node2D {
 
-	OBJ_TYPE(Light2D,Node2D);
+	GDCLASS(Light2D,Node2D);
 public:
 	enum Mode {
 		MODE_ADD,

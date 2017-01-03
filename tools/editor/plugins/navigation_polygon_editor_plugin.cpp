@@ -477,10 +477,10 @@ void NavigationPolygonEditor::edit(Node *p_collision_polygon) {
 
 void NavigationPolygonEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_menu_option"),&NavigationPolygonEditor::_menu_option);
-	ObjectTypeDB::bind_method(_MD("_canvas_draw"),&NavigationPolygonEditor::_canvas_draw);
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&NavigationPolygonEditor::_node_removed);
-	ObjectTypeDB::bind_method(_MD("_create_nav"),&NavigationPolygonEditor::_create_nav);
+	ClassDB::bind_method(_MD("_menu_option"),&NavigationPolygonEditor::_menu_option);
+	ClassDB::bind_method(_MD("_canvas_draw"),&NavigationPolygonEditor::_canvas_draw);
+	ClassDB::bind_method(_MD("_node_removed"),&NavigationPolygonEditor::_node_removed);
+	ClassDB::bind_method(_MD("_create_nav"),&NavigationPolygonEditor::_create_nav);
 
 }
 
@@ -532,7 +532,7 @@ void NavigationPolygonEditorPlugin::edit(Object *p_object) {
 
 bool NavigationPolygonEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("NavigationPolygonInstance");
+	return p_object->is_class("NavigationPolygonInstance");
 }
 
 void NavigationPolygonEditorPlugin::make_visible(bool p_visible) {

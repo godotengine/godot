@@ -36,7 +36,7 @@
 struct _IP_ResolverPrivate;
 
 class IP : public Object {
-	OBJ_TYPE( IP, Object );
+	GDCLASS( IP, Object );
 	OBJ_CATEGORY("Networking");
 public:
 

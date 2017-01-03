@@ -33,7 +33,7 @@
 #if 0
 class Curve2D : public Resource {
 
-	OBJ_TYPE(Curve2D,Resource);
+	GDCLASS(Curve2D,Resource);
 
 	struct Point {
 
@@ -84,7 +84,7 @@ public:
 
 class Curve2D : public Resource {
 
-	OBJ_TYPE(Curve2D,Resource);
+	GDCLASS(Curve2D,Resource);
 
 	struct Point {
 
@@ -157,7 +157,7 @@ public:
 
 class Curve3D : public Resource {
 
-	OBJ_TYPE(Curve3D,Resource);
+	GDCLASS(Curve3D,Resource);
 
 	struct Point {
 

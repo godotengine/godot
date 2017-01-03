@@ -37,7 +37,7 @@
 
 class UndoRedo : public Object {
 
-	OBJ_TYPE(UndoRedo,Object);
+	GDCLASS(UndoRedo,Object);
 	OBJ_SAVE_TYPE( UndoRedo );
 public:
 

@@ -40,7 +40,7 @@
 class SpatialEditorPlugin;
 
 class GridMapEditor : public VBoxContainer {
-	OBJ_TYPE(GridMapEditor, VBoxContainer );
+	GDCLASS(GridMapEditor, VBoxContainer );
 
 	enum {
 
@@ -238,7 +238,7 @@ public:
 
 class GridMapEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( GridMapEditorPlugin, EditorPlugin );
+	GDCLASS( GridMapEditorPlugin, EditorPlugin );
 
 	GridMapEditor *gridmap_editor;
 	EditorNode *editor;

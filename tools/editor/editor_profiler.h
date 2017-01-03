@@ -14,7 +14,7 @@
 
 class EditorProfiler : public VBoxContainer {
 
-	OBJ_TYPE(EditorProfiler,VBoxContainer)
+	GDCLASS(EditorProfiler,VBoxContainer)
 
 public:
 

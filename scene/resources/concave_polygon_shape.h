@@ -33,7 +33,7 @@
 
 class ConcavePolygonShape : public Shape {
 
-	OBJ_TYPE(ConcavePolygonShape,Shape);
+	GDCLASS(ConcavePolygonShape,Shape);
 
 	struct DrawEdge {
 

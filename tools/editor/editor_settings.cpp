@@ -257,7 +257,7 @@ void EditorSettings::create() {
 		}
 	};
 
-	ObjectTypeDB::register_type<EditorSettings>(); //otherwise it can't be unserialized
+	ClassDB::register_class<EditorSettings>(); //otherwise it can't be unserialized
 	String config_file_path;
 
 	if (config_path!=""){
@@ -1051,17 +1051,17 @@ void EditorSettings::set_last_selected_language(String p_language)
 
 void EditorSettings::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("erase","property"),&EditorSettings::erase);
-	ObjectTypeDB::bind_method(_MD("get_settings_path"),&EditorSettings::get_settings_path);
-	ObjectTypeDB::bind_method(_MD("get_project_settings_path"),&EditorSettings::get_project_settings_path);
+	ClassDB::bind_method(_MD("erase","property"),&EditorSettings::erase);
+	ClassDB::bind_method(_MD("get_settings_path"),&EditorSettings::get_settings_path);
+	ClassDB::bind_method(_MD("get_project_settings_path"),&EditorSettings::get_project_settings_path);
 
-	ObjectTypeDB::bind_method(_MD("add_property_info", "info"),&EditorSettings::_add_property_info_bind);
+	ClassDB::bind_method(_MD("add_property_info", "info"),&EditorSettings::_add_property_info_bind);
 
-	ObjectTypeDB::bind_method(_MD("set_favorite_dirs","dirs"),&EditorSettings::set_favorite_dirs);
-	ObjectTypeDB::bind_method(_MD("get_favorite_dirs"),&EditorSettings::get_favorite_dirs);
+	ClassDB::bind_method(_MD("set_favorite_dirs","dirs"),&EditorSettings::set_favorite_dirs);
+	ClassDB::bind_method(_MD("get_favorite_dirs"),&EditorSettings::get_favorite_dirs);
 
-	ObjectTypeDB::bind_method(_MD("set_recent_dirs","dirs"),&EditorSettings::set_recent_dirs);
-	ObjectTypeDB::bind_method(_MD("get_recent_dirs"),&EditorSettings::get_recent_dirs);
+	ClassDB::bind_method(_MD("set_recent_dirs","dirs"),&EditorSettings::set_recent_dirs);
+	ClassDB::bind_method(_MD("get_recent_dirs"),&EditorSettings::get_recent_dirs);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 

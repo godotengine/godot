@@ -186,40 +186,40 @@ void Tween::_notification(int p_what) {
 
 void Tween::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("is_active"),&Tween::is_active );
-	ObjectTypeDB::bind_method(_MD("set_active","active"),&Tween::set_active );
+	ClassDB::bind_method(_MD("is_active"),&Tween::is_active );
+	ClassDB::bind_method(_MD("set_active","active"),&Tween::set_active );
 
-	ObjectTypeDB::bind_method(_MD("is_repeat"),&Tween::is_repeat );
-	ObjectTypeDB::bind_method(_MD("set_repeat","repeat"),&Tween::set_repeat );
+	ClassDB::bind_method(_MD("is_repeat"),&Tween::is_repeat );
+	ClassDB::bind_method(_MD("set_repeat","repeat"),&Tween::set_repeat );
 
-	ObjectTypeDB::bind_method(_MD("set_speed","speed"),&Tween::set_speed);
-	ObjectTypeDB::bind_method(_MD("get_speed"),&Tween::get_speed);
+	ClassDB::bind_method(_MD("set_speed","speed"),&Tween::set_speed);
+	ClassDB::bind_method(_MD("get_speed"),&Tween::get_speed);
 
-	ObjectTypeDB::bind_method(_MD("set_tween_process_mode","mode"),&Tween::set_tween_process_mode);
-	ObjectTypeDB::bind_method(_MD("get_tween_process_mode"),&Tween::get_tween_process_mode);
+	ClassDB::bind_method(_MD("set_tween_process_mode","mode"),&Tween::set_tween_process_mode);
+	ClassDB::bind_method(_MD("get_tween_process_mode"),&Tween::get_tween_process_mode);
 
-	ObjectTypeDB::bind_method(_MD("start"),&Tween::start );
-	ObjectTypeDB::bind_method(_MD("reset","object","key"),&Tween::reset, DEFVAL("") );
-	ObjectTypeDB::bind_method(_MD("reset_all"),&Tween::reset_all );
-	ObjectTypeDB::bind_method(_MD("stop","object","key"),&Tween::stop, DEFVAL("") );
-	ObjectTypeDB::bind_method(_MD("stop_all"),&Tween::stop_all );
-	ObjectTypeDB::bind_method(_MD("resume","object","key"),&Tween::resume, DEFVAL("") );
-	ObjectTypeDB::bind_method(_MD("resume_all"),&Tween::resume_all );
-	ObjectTypeDB::bind_method(_MD("remove","object","key"),&Tween::remove, DEFVAL("") );
-	ObjectTypeDB::bind_method(_MD("_remove","object","key","first_only"),&Tween::_remove );
-	ObjectTypeDB::bind_method(_MD("remove_all"),&Tween::remove_all );
-	ObjectTypeDB::bind_method(_MD("seek","time"),&Tween::seek );
-	ObjectTypeDB::bind_method(_MD("tell"),&Tween::tell );
-	ObjectTypeDB::bind_method(_MD("get_runtime"),&Tween::get_runtime );
+	ClassDB::bind_method(_MD("start"),&Tween::start );
+	ClassDB::bind_method(_MD("reset","object","key"),&Tween::reset, DEFVAL("") );
+	ClassDB::bind_method(_MD("reset_all"),&Tween::reset_all );
+	ClassDB::bind_method(_MD("stop","object","key"),&Tween::stop, DEFVAL("") );
+	ClassDB::bind_method(_MD("stop_all"),&Tween::stop_all );
+	ClassDB::bind_method(_MD("resume","object","key"),&Tween::resume, DEFVAL("") );
+	ClassDB::bind_method(_MD("resume_all"),&Tween::resume_all );
+	ClassDB::bind_method(_MD("remove","object","key"),&Tween::remove, DEFVAL("") );
+	ClassDB::bind_method(_MD("_remove","object","key","first_only"),&Tween::_remove );
+	ClassDB::bind_method(_MD("remove_all"),&Tween::remove_all );
+	ClassDB::bind_method(_MD("seek","time"),&Tween::seek );
+	ClassDB::bind_method(_MD("tell"),&Tween::tell );
+	ClassDB::bind_method(_MD("get_runtime"),&Tween::get_runtime );
 
-	ObjectTypeDB::bind_method(_MD("interpolate_property","object","property","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::interpolate_property, DEFVAL(0) );
-	ObjectTypeDB::bind_method(_MD("interpolate_method","object","method","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::interpolate_method, DEFVAL(0) );
-	ObjectTypeDB::bind_method(_MD("interpolate_callback","object","times_in_sec","callback","arg1", "arg2","arg3","arg4","arg5"),&Tween::interpolate_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()) );
-	ObjectTypeDB::bind_method(_MD("interpolate_deferred_callback","object","times_in_sec","callback","arg1","arg2","arg3","arg4","arg5"),&Tween::interpolate_deferred_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()) );
-	ObjectTypeDB::bind_method(_MD("follow_property","object","property","initial_val","target","target_property","times_in_sec","trans_type","ease_type","delay"),&Tween::follow_property, DEFVAL(0) );
-	ObjectTypeDB::bind_method(_MD("follow_method","object","method","initial_val","target","target_method","times_in_sec","trans_type","ease_type","delay"),&Tween::follow_method, DEFVAL(0) );
-	ObjectTypeDB::bind_method(_MD("targeting_property","object","property","initial","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::targeting_property, DEFVAL(0) );
-	ObjectTypeDB::bind_method(_MD("targeting_method","object","method","initial","initial_method","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::targeting_method, DEFVAL(0) );
+	ClassDB::bind_method(_MD("interpolate_property","object","property","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::interpolate_property, DEFVAL(0) );
+	ClassDB::bind_method(_MD("interpolate_method","object","method","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::interpolate_method, DEFVAL(0) );
+	ClassDB::bind_method(_MD("interpolate_callback","object","times_in_sec","callback","arg1", "arg2","arg3","arg4","arg5"),&Tween::interpolate_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()) );
+	ClassDB::bind_method(_MD("interpolate_deferred_callback","object","times_in_sec","callback","arg1","arg2","arg3","arg4","arg5"),&Tween::interpolate_deferred_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()) );
+	ClassDB::bind_method(_MD("follow_property","object","property","initial_val","target","target_property","times_in_sec","trans_type","ease_type","delay"),&Tween::follow_property, DEFVAL(0) );
+	ClassDB::bind_method(_MD("follow_method","object","method","initial_val","target","target_method","times_in_sec","trans_type","ease_type","delay"),&Tween::follow_method, DEFVAL(0) );
+	ClassDB::bind_method(_MD("targeting_property","object","property","initial","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::targeting_property, DEFVAL(0) );
+	ClassDB::bind_method(_MD("targeting_method","object","method","initial","initial_method","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::targeting_method, DEFVAL(0) );
 
 	ADD_SIGNAL( MethodInfo("tween_start", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key")) );
 	ADD_SIGNAL( MethodInfo("tween_step", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key"), PropertyInfo( Variant::REAL,"elapsed"), PropertyInfo( Variant::OBJECT,"value")) );

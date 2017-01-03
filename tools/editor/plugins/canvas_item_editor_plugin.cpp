@@ -55,7 +55,7 @@
 
 class SnapDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(SnapDialog,ConfirmationDialog);
+	GDCLASS(SnapDialog,ConfirmationDialog);
 
 friend class CanvasItemEditor;
 
@@ -1040,7 +1040,7 @@ void CanvasItemEditor::_list_select(const InputEventMouseButton& b) {
 			if (item->has_meta("_editor_icon"))
 				icon=item->get_meta("_editor_icon");
 			else
-				icon=get_icon( has_icon(item->get_type(),"EditorIcons")?item->get_type():String("Object"),"EditorIcons");
+				icon=get_icon( has_icon(item->get_class(),"EditorIcons")?item->get_class():String("Object"),"EditorIcons");
 
 			String node_path="/"+root_name+"/"+root_path.rel_path_to(item->get_path());
 
@@ -1048,7 +1048,7 @@ void CanvasItemEditor::_list_select(const InputEventMouseButton& b) {
 			selection_menu->set_item_icon(i, icon );
 			selection_menu->set_item_metadata(i, node_path);
 			selection_menu->set_item_tooltip(i,String(item->get_name())+
-					"\nType: "+item->get_type()+"\nPath: "+node_path);
+					"\nType: "+item->get_class()+"\nPath: "+node_path);
 		}
 
 		additive_selection=b.mod.shift;
@@ -1519,7 +1519,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 		Node* n = c;
 
-		while ((n && n != scene && n->get_owner() != scene) || (n && !n->is_type("CanvasItem"))) {
+		while ((n && n != scene && n->get_owner() != scene) || (n && !n->is_class("CanvasItem"))) {
 			n = n->get_parent();
 		};
 		c = n->cast_to<CanvasItem>();
@@ -3199,20 +3199,20 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 
 void CanvasItemEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_node_removed",&CanvasItemEditor::_node_removed);
-	ObjectTypeDB::bind_method("_update_scroll",&CanvasItemEditor::_update_scroll);
-	ObjectTypeDB::bind_method("_popup_callback",&CanvasItemEditor::_popup_callback);
-	ObjectTypeDB::bind_method("_visibility_changed",&CanvasItemEditor::_visibility_changed);
-	ObjectTypeDB::bind_method("_dialog_value_changed",&CanvasItemEditor::_dialog_value_changed);
-	ObjectTypeDB::bind_method("_get_editor_data",&CanvasItemEditor::_get_editor_data);
-	ObjectTypeDB::bind_method("_tool_select",&CanvasItemEditor::_tool_select);
-	ObjectTypeDB::bind_method("_keying_changed",&CanvasItemEditor::_keying_changed);
-	ObjectTypeDB::bind_method("_unhandled_key_input",&CanvasItemEditor::_unhandled_key_input);
-	ObjectTypeDB::bind_method("_viewport_draw",&CanvasItemEditor::_viewport_draw);
-	ObjectTypeDB::bind_method("_viewport_input_event",&CanvasItemEditor::_viewport_input_event);
-	ObjectTypeDB::bind_method("_snap_changed",&CanvasItemEditor::_snap_changed);
-	ObjectTypeDB::bind_method(_MD("_selection_result_pressed"),&CanvasItemEditor::_selection_result_pressed);
-	ObjectTypeDB::bind_method(_MD("_selection_menu_hide"),&CanvasItemEditor::_selection_menu_hide);
+	ClassDB::bind_method("_node_removed",&CanvasItemEditor::_node_removed);
+	ClassDB::bind_method("_update_scroll",&CanvasItemEditor::_update_scroll);
+	ClassDB::bind_method("_popup_callback",&CanvasItemEditor::_popup_callback);
+	ClassDB::bind_method("_visibility_changed",&CanvasItemEditor::_visibility_changed);
+	ClassDB::bind_method("_dialog_value_changed",&CanvasItemEditor::_dialog_value_changed);
+	ClassDB::bind_method("_get_editor_data",&CanvasItemEditor::_get_editor_data);
+	ClassDB::bind_method("_tool_select",&CanvasItemEditor::_tool_select);
+	ClassDB::bind_method("_keying_changed",&CanvasItemEditor::_keying_changed);
+	ClassDB::bind_method("_unhandled_key_input",&CanvasItemEditor::_unhandled_key_input);
+	ClassDB::bind_method("_viewport_draw",&CanvasItemEditor::_viewport_draw);
+	ClassDB::bind_method("_viewport_input_event",&CanvasItemEditor::_viewport_input_event);
+	ClassDB::bind_method("_snap_changed",&CanvasItemEditor::_snap_changed);
+	ClassDB::bind_method(_MD("_selection_result_pressed"),&CanvasItemEditor::_selection_result_pressed);
+	ClassDB::bind_method(_MD("_selection_menu_hide"),&CanvasItemEditor::_selection_menu_hide);
 
 	ADD_SIGNAL( MethodInfo("item_lock_status_changed") );
 	ADD_SIGNAL( MethodInfo("item_group_status_changed") );
@@ -3611,7 +3611,7 @@ void CanvasItemEditorPlugin::edit(Object *p_object) {
 
 bool CanvasItemEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("CanvasItem");
+	return p_object->is_class("CanvasItem");
 }
 
 void CanvasItemEditorPlugin::make_visible(bool p_visible) {
@@ -3683,7 +3683,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String>& files) cons
 	for (int i=0;i<files.size();i++) {
 		String path=files[i];
 		RES res=ResourceLoader::load(path);
-		String type=res->get_type();
+		String type=res->get_class();
 		if (type=="ImageTexture" || type=="PackedScene") {
 			if (type=="ImageTexture") {
 				Ref<ImageTexture> texture=Ref<ImageTexture> ( ResourceCache::get(path)->cast_to<ImageTexture>() );
@@ -3746,7 +3746,7 @@ void CanvasItemEditorViewport::_create_nodes(Node* parent, Node* child, String& 
 
 	String new_name=parent->validate_child_name(child);
 	ScriptEditorDebugger *sed=ScriptEditor::get_singleton()->get_debugger();
-	editor_data->get_undo_redo().add_do_method(sed,"live_debug_create_node",editor->get_edited_scene()->get_path_to(parent),child->get_type(),new_name);
+	editor_data->get_undo_redo().add_do_method(sed,"live_debug_create_node",editor->get_edited_scene()->get_path_to(parent),child->get_class(),new_name);
 	editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(editor->get_edited_scene()->get_path_to(parent))+"/"+new_name));
 
 	// handle with different property for texture
@@ -3851,7 +3851,7 @@ void CanvasItemEditorViewport::_perform_drop_data(){
 		if (res.is_null()) {
 			continue;
 		}
-		String type=res->get_type();
+		String type=res->get_class();
 		if (type=="ImageTexture") {
 			Node* child;
 			if      (default_type=="Light2D")           child=memnew(Light2D);
@@ -3896,7 +3896,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2& p_point,const Variant
 				if (res.is_null()) {
 					continue;
 				}
-				String type=res->get_type();
+				String type=res->get_class();
 				if (type=="PackedScene") {
 					Ref<PackedScene> sdata=ResourceLoader::load(files[i]);
 					Node* instanced_scene=sdata->instance(true);
@@ -3978,9 +3978,9 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 }
 
 void CanvasItemEditorViewport::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("_on_select_type"),&CanvasItemEditorViewport::_on_select_type);
-	ObjectTypeDB::bind_method(_MD("_on_change_type"),&CanvasItemEditorViewport::_on_change_type);
-	ObjectTypeDB::bind_method(_MD("_on_mouse_exit"),&CanvasItemEditorViewport::_on_mouse_exit);
+	ClassDB::bind_method(_MD("_on_select_type"),&CanvasItemEditorViewport::_on_select_type);
+	ClassDB::bind_method(_MD("_on_change_type"),&CanvasItemEditorViewport::_on_change_type);
+	ClassDB::bind_method(_MD("_on_mouse_exit"),&CanvasItemEditorViewport::_on_mouse_exit);
 }
 
 CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor* p_canvas) {

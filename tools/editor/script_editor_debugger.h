@@ -55,7 +55,7 @@ class ScriptEditorDebuggerInspectedObject;
 
 class ScriptEditorDebugger : public Control {
 
-	OBJ_TYPE( ScriptEditorDebugger, Control );
+	GDCLASS( ScriptEditorDebugger, Control );
 
 	AcceptDialog *msgdialog;
 

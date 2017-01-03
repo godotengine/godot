@@ -129,9 +129,9 @@ bool VisibilityNotifier2D::is_on_screen() const {
 
 void VisibilityNotifier2D::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_rect","rect"),&VisibilityNotifier2D::set_rect);
-	ObjectTypeDB::bind_method(_MD("get_rect"),&VisibilityNotifier2D::get_rect);
-	ObjectTypeDB::bind_method(_MD("is_on_screen"),&VisibilityNotifier2D::is_on_screen);
+	ClassDB::bind_method(_MD("set_rect","rect"),&VisibilityNotifier2D::set_rect);
+	ClassDB::bind_method(_MD("get_rect"),&VisibilityNotifier2D::get_rect);
+	ClassDB::bind_method(_MD("is_on_screen"),&VisibilityNotifier2D::is_on_screen);
 
 	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"),_SCS("set_rect"),_SCS("get_rect"));
 
@@ -354,9 +354,9 @@ String VisibilityEnabler2D::get_configuration_warning() const {
 
 void VisibilityEnabler2D::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_enabler","enabler","enabled"),&VisibilityEnabler2D::set_enabler);
-	ObjectTypeDB::bind_method(_MD("is_enabler_enabled","enabler"),&VisibilityEnabler2D::is_enabler_enabled);
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&VisibilityEnabler2D::_node_removed);
+	ClassDB::bind_method(_MD("set_enabler","enabler","enabled"),&VisibilityEnabler2D::set_enabler);
+	ClassDB::bind_method(_MD("is_enabler_enabled","enabler"),&VisibilityEnabler2D::is_enabler_enabled);
+	ClassDB::bind_method(_MD("_node_removed"),&VisibilityEnabler2D::_node_removed);
 
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_animations"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATIONS );
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/freeze_bodies"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_FREEZE_BODIES);

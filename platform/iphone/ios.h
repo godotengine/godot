@@ -33,7 +33,7 @@
 
 class iOS : public Object {
 
-	OBJ_TYPE(iOS, Object);
+	GDCLASS(iOS, Object);
 
 	static void _bind_methods();
 

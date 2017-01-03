@@ -164,9 +164,9 @@ void EditorLog::_undo_redo_cbk(void *p_self,const String& p_name) {
 
 void EditorLog::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_clear_request"),&EditorLog::_clear_request );
-	ObjectTypeDB::bind_method("_override_logger_styles",&EditorLog::_override_logger_styles );
-	//ObjectTypeDB::bind_method(_MD("_dragged"),&EditorLog::_dragged );
+	ClassDB::bind_method(_MD("_clear_request"),&EditorLog::_clear_request );
+	ClassDB::bind_method("_override_logger_styles",&EditorLog::_override_logger_styles );
+	//ClassDB::bind_method(_MD("_dragged"),&EditorLog::_dragged );
 	ADD_SIGNAL( MethodInfo("clear_request"));
 }
 

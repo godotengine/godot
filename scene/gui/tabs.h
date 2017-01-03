@@ -33,7 +33,7 @@
 
 class Tabs : public Control {
 
-	OBJ_TYPE( Tabs, Control );
+	GDCLASS( Tabs, Control );
 public:
 
 	enum TabAlign {

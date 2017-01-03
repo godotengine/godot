@@ -101,10 +101,10 @@ void BackgroundProgress::_end_task(const String& p_task){
 
 void BackgroundProgress::_bind_methods(){
 
-	ObjectTypeDB::bind_method("_add_task",&BackgroundProgress::_add_task);
-	ObjectTypeDB::bind_method("_task_step",&BackgroundProgress::_task_step);
-	ObjectTypeDB::bind_method("_end_task",&BackgroundProgress::_end_task);
-	ObjectTypeDB::bind_method("_update",&BackgroundProgress::_update);
+	ClassDB::bind_method("_add_task",&BackgroundProgress::_add_task);
+	ClassDB::bind_method("_task_step",&BackgroundProgress::_task_step);
+	ClassDB::bind_method("_end_task",&BackgroundProgress::_end_task);
+	ClassDB::bind_method("_update",&BackgroundProgress::_update);
 
 }
 
