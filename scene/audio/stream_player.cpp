@@ -77,7 +77,7 @@ void StreamPlayer::sp_update() {
 			if (to_mix==0) {
 				if (!stop_request) {
 					stop_request=true;
-					call_deferred("_do_stop");
+					call_deferred("stop");
 				}
 				return;
 			}
@@ -91,10 +91,6 @@ void StreamPlayer::sp_update() {
 	}
 }
 
-void StreamPlayer::_do_stop() {
-	stop();
-	emit_signal("finished");
-}
 
 void StreamPlayer::_notification(int p_what) {
 
@@ -167,6 +163,7 @@ void StreamPlayer::play(float p_from_offset) {
 	sp_update();
 	AudioServer::get_singleton()->stream_set_active(stream_rid,true);
 	AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,volume);
+	emit_signal("started");
 //	if (stream->get_update_mode()!=AudioStream::UPDATE_NONE)
 //		set_idle_process(true);
 
@@ -179,12 +176,17 @@ void StreamPlayer::stop() {
 	if (playback.is_null())
 		return;
 
+	bool was_playing = is_playing();
+	bool is_finishing = stop_request;
 	//_THREAD_SAFE_METHOD_
 	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
 	stop_request=false;
 	playback->stop();
 	resampler.flush();
-	
+	if (was_playing)
+		emit_signal("stopped");
+	else if (is_finishing)
+		emit_signal("finished");
 
 	//set_idle_process(false);
 }
@@ -384,7 +386,6 @@ void StreamPlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_set_play","play"),&StreamPlayer::_set_play);
 	ObjectTypeDB::bind_method(_MD("_get_play"),&StreamPlayer::_get_play);
-	ObjectTypeDB::bind_method(_MD("_do_stop"),&StreamPlayer::_do_stop);
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "stream/stream", PROPERTY_HINT_RESOURCE_TYPE,"AudioStream"), _SCS("set_stream"), _SCS("get_stream") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/play"), _SCS("_set_play"), _SCS("_get_play") );
@@ -395,6 +396,8 @@ void StreamPlayer::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL, "stream/loop_restart_time"), _SCS("set_loop_restart_time"), _SCS("get_loop_restart_time") );
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "stream/buffering_ms"), _SCS("set_buffering_msec"), _SCS("get_buffering_msec") );
 
+	ADD_SIGNAL(MethodInfo("started"));
+	ADD_SIGNAL(MethodInfo("stopped"));
 	ADD_SIGNAL(MethodInfo("finished"));
 }
 
