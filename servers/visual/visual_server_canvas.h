@@ -44,7 +44,10 @@ public:
 
 		_FORCE_INLINE_ bool operator()(const Item* p_left,const Item* p_right) const {
 
-			return p_left->xform.elements[2].y < p_right->xform.elements[2].y;
+			if(Math::abs(p_left->xform.elements[2].y - p_right->xform.elements[2].y) < CMP_EPSILON )
+				return p_left->xform.elements[2].x < p_right->xform.elements[2].x;
+			else
+				return p_left->xform.elements[2].y < p_right->xform.elements[2].y;
 		}
 	};
 
