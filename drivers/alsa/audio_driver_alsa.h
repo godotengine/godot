@@ -51,6 +51,7 @@ class AudioDriverALSA : public AudioDriverSW {
 	OutputFormat output_format;
 
 	snd_pcm_uframes_t buffer_size;
+	snd_pcm_uframes_t period_size;
 	int channels;
 
 	bool active;
