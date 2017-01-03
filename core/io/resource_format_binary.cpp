@@ -1825,7 +1825,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant& p_variant
 
 			for(List<PropertyInfo>::Element *E=property_list.front();E;E=E->next()) {
 
-				if (E->get().usage&PROPERTY_USAGE_STORAGE || (bundle_resources && E->get().usage&PROPERTY_USAGE_BUNDLE)) {
+				if (E->get().usage&PROPERTY_USAGE_STORAGE) {
 
 					_find_resources(res->get(E->get().name));
 				}
@@ -2028,7 +2028,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 
 				if (skip_editor && F->get().name.begins_with("__editor"))
 					continue;
-				if (F->get().usage&PROPERTY_USAGE_STORAGE || (bundle_resources && F->get().usage&PROPERTY_USAGE_BUNDLE)) {
+				if (F->get().usage&PROPERTY_USAGE_STORAGE ) {
 					Property p;
 					p.name_idx=get_string_index(F->get().name);
 					p.value=E->get()->get(F->get().name);

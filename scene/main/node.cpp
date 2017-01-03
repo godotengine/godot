@@ -2970,7 +2970,8 @@ void Node::_bind_methods() {
 //	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/fixed_process" ), _SCS("set_fixed_process"),_SCS("is_fixed_processing") );
 	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/input" ), _SCS("set_process_input"),_SCS("is_processing_input" ) );
 	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/unhandled_input" ), _SCS("set_process_unhandled_input"),_SCS("is_processing_unhandled_input" ) );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "process/pause_mode",PROPERTY_HINT_ENUM,"Inherit,Stop,Process" ), _SCS("set_pause_mode"),_SCS("get_pause_mode" ) );
+	ADD_GROUP("Pause","pause_");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "pause_mode",PROPERTY_HINT_ENUM,"Inherit,Stop,Process" ), _SCS("set_pause_mode"),_SCS("get_pause_mode" ) );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "editor/display_folded",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR ), _SCS("set_display_folded"),_SCS("is_displayed_folded" ) );
 
 	BIND_VMETHOD( MethodInfo("_process",PropertyInfo(Variant::REAL,"delta")) );

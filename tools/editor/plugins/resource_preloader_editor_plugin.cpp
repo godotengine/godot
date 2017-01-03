@@ -30,7 +30,7 @@
 #include "io/resource_loader.h"
 #include "globals.h"
 #include "tools/editor/editor_settings.h"
-#include "scene/resources/scene_preloader.h"
+
 
 
 

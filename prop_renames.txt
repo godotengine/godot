@@ -1,0 +1,35 @@
+[Object]
+script/script =  script
+
+[Node]
+pause/pause_mode = pause_mode
+
+[Control]
+
+anchor/left = anchor_left
+anchor/right = anchor_right
+anchor/bottom = anchor_bottom
+anchor/top = anchor_top
+
+focus_neighbour/left=focus_neighbour_left
+focus_neighbour/right=focus_neighbour_right
+focus_neighbour/bottom=focus_neighbour_bottom
+focus_neighbour/top=focus_neighbour_top
+focus/ignore_mouse = focus_ignore_mouse
+focus/stop_mouse = focus_stop_mouse
+
+size_flags/horizontal = size_flags_horizontal
+size_flags/vertical = size_flags_vertical
+size_flags/stretch_ratio = size_flags_stretch_ratio
+theme/theme = theme
+
+[CanvasItem]
+
+visibility/visible = visible
+visibility/behind_parent = show_behind_parent
+visibility/on_top = show_on_top
+visibility/light_mask = light_mask
+material/material = material
+material/use_parent = use_parent_material
+
+

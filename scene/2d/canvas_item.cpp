@@ -1003,15 +1003,17 @@ void CanvasItem::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_draw"));
 
-	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"visibility/modulate",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_modulate"),_SCS("get_modulate") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"visibility/self_modulate",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_modulate"),_SCS("get_self_modulate") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"visibility/behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
+	ADD_GROUP("Visibility","");
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"modulate",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_modulate"),_SCS("get_modulate") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"self_modulate",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_modulate"),_SCS("get_self_modulate") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"show_behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"show_on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"light_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_light_mask"),_SCS("get_light_mask") );
 
-	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"visibility/light_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_light_mask"),_SCS("get_light_mask") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"material/material",PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial"), _SCS("set_material"),_SCS("get_material") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"material/use_parent"), _SCS("set_use_parent_material"),_SCS("get_use_parent_material") );
+	ADD_GROUP("Material","");
+	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"material",PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial"), _SCS("set_material"),_SCS("get_material") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"use_parent_material"), _SCS("set_use_parent_material"),_SCS("get_use_parent_material") );
 	//exporting these two things doesn't really make much sense i think
 	//ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transform/toplevel"), _SCS("set_as_toplevel"),_SCS("is_set_as_toplevel") );
 	//ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),_SCS("set_transform_notify"),_SCS("is_transform_notify_enabled"));

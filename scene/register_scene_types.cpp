@@ -133,7 +133,7 @@
 
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/mesh_data_tool.h"
-#include "scene/resources/scene_preloader.h"
+
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/dynamic_font_stb.h"
 

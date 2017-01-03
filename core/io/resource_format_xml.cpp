@@ -2667,7 +2667,7 @@ void ResourceFormatSaverXMLInstance::_find_resources(const Variant& p_variant,bo
 
 				PropertyInfo pi=I->get();
 
-				if (pi.usage&PROPERTY_USAGE_STORAGE || (bundle_resources && pi.usage&PROPERTY_USAGE_BUNDLE)) {
+				if (pi.usage&PROPERTY_USAGE_STORAGE) {
 
 					Variant v=res->get(I->get().name);
 					_find_resources(v);
@@ -2811,7 +2811,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 			if (skip_editor && PE->get().name.begins_with("__editor"))
 				continue;
 
-			if (PE->get().usage&PROPERTY_USAGE_STORAGE || (bundle_resources && PE->get().usage&PROPERTY_USAGE_BUNDLE)) {
+			if (PE->get().usage&PROPERTY_USAGE_STORAGE ) {
 
 				String name = PE->get().name;
 				Variant value = res->get(name);

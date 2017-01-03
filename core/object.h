@@ -90,7 +90,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_CHECKABLE=16, //used for editing global variables
 	PROPERTY_USAGE_CHECKED=32, //used for editing global variables
 	PROPERTY_USAGE_INTERNATIONALIZED=64, //hint for internationalized strings
-	PROPERTY_USAGE_BUNDLE=128, //used for optimized bundles
+	PROPERTY_USAGE_GROUP=128, //used for grouping props in the editor
 	PROPERTY_USAGE_CATEGORY=256,
 	PROPERTY_USAGE_STORE_IF_NONZERO=512, //only store if nonzero
 	PROPERTY_USAGE_STORE_IF_NONONE=1024, //only store if false
@@ -115,6 +115,7 @@ enum PropertyUsageFlags {
 #define ADD_PROPERTYINZ( m_property, m_setter, m_getter, m_index ) ClassDB::add_property( get_class_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONZERO), m_setter, m_getter, m_index )
 #define ADD_PROPERTYNO( m_property, m_setter, m_getter ) ClassDB::add_property( get_class_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONONE), m_setter, m_getter )
 #define ADD_PROPERTYINO( m_property, m_setter, m_getter, m_index ) ClassDB::add_property( get_class_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONONE), m_setter, m_getter, m_index )
+#define ADD_GROUP( m_name, m_prefix ) ClassDB::add_property_group( get_class_static(), m_name, m_prefix )
 
 struct PropertyInfo {
 

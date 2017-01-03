@@ -476,6 +476,7 @@ public:
 	static bool get_signal(StringName p_class,StringName p_signal,MethodInfo *r_signal);
 	static void get_signal_list(StringName p_class,List<MethodInfo> *p_signals,bool p_no_inheritance=false);
 
+	static void add_property_group(StringName p_class,const String& p_name,const String& p_prefix="");
 	static void add_property(StringName p_class,const PropertyInfo& p_pinfo, const StringName& p_setter, const StringName& p_getter, int p_index=-1);
 	static void get_property_list(StringName p_class, List<PropertyInfo> *p_list, bool p_no_inheritance=false, const Object *p_validator=NULL);
 	static bool set_property(Object* p_object, const StringName& p_property, const Variant& p_value, bool *r_valid=NULL);

@@ -2564,28 +2564,37 @@ void Control::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::BOOL,"can_drop_data",PropertyInfo(Variant::VECTOR2,"pos"),PropertyInfo(Variant::NIL,"data")));
 	BIND_VMETHOD(MethodInfo("drop_data",PropertyInfo(Variant::VECTOR2,"pos"),PropertyInfo(Variant::NIL,"data")));
 
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/left", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_LEFT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/top", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_TOP );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/right", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_RIGHT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/bottom", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_BOTTOM );
+	ADD_GROUP("Anchor","anchor_");
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_left", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_LEFT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_top", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_TOP );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_right", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_RIGHT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_bottom", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_BOTTOM );
 
-	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/pos", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_pos"),_SCS("get_pos") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/size", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_size"),_SCS("get_size") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/min_size"), _SCS("set_custom_minimum_size"),_SCS("get_custom_minimum_size") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"rect/rotation",PROPERTY_HINT_RANGE,"-1080,1080,0.01"), _SCS("set_rotation_deg"),_SCS("get_rotation_deg") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::VECTOR2,"rect/scale"), _SCS("set_scale"),_SCS("get_scale") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"hint/tooltip", PROPERTY_HINT_MULTILINE_TEXT), _SCS("set_tooltip"),_SCS("_get_tooltip") );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/left" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_LEFT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/top" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_TOP );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/right" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_RIGHT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/bottom" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_BOTTOM );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"focus/ignore_mouse"), _SCS("set_ignore_mouse"),_SCS("is_ignoring_mouse") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"focus/stop_mouse"), _SCS("set_stop_mouse"),_SCS("is_stopping_mouse") );
+	ADD_GROUP("Rect","rect_");
+	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_pos", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_pos"),_SCS("get_pos") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_size", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_size"),_SCS("get_size") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_min_size"), _SCS("set_custom_minimum_size"),_SCS("get_custom_minimum_size") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"rect_rotation",PROPERTY_HINT_RANGE,"-1080,1080,0.01"), _SCS("set_rotation_deg"),_SCS("get_rotation_deg") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::VECTOR2,"rect_scale"), _SCS("set_scale"),_SCS("get_scale") );
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"size_flags/horizontal", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_h_size_flags"),_SCS("get_h_size_flags") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"size_flags/vertical", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_v_size_flags"),_SCS("get_v_size_flags") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags/stretch_ratio", PROPERTY_HINT_RANGE, "1,128,0.01"), _SCS("set_stretch_ratio"),_SCS("get_stretch_ratio") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"theme/theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), _SCS("set_theme"),_SCS("get_theme") );
+	ADD_GROUP("Hint","hint_");
+	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), _SCS("set_tooltip"),_SCS("_get_tooltip") );
+
+	ADD_GROUP("Focus","focus_");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"focus_ignore_mouse"), _SCS("set_ignore_mouse"),_SCS("is_ignoring_mouse") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"focus_stop_mouse"), _SCS("set_stop_mouse"),_SCS("is_stopping_mouse") );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_left" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_LEFT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_top" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_TOP );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_right" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_RIGHT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_bottom" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_BOTTOM );
+
+	ADD_GROUP("Size Flags","size_flags_");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"size_flags_horizontal", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_h_size_flags"),_SCS("get_h_size_flags") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"size_flags_vertical", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_v_size_flags"),_SCS("get_v_size_flags") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "1,128,0.01"), _SCS("set_stretch_ratio"),_SCS("get_stretch_ratio") );
+	ADD_GROUP("Theme","");
+	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), _SCS("set_theme"),_SCS("get_theme") );
+	ADD_GROUP("","");
 
 	BIND_CONSTANT( ANCHOR_BEGIN );
 	BIND_CONSTANT( ANCHOR_END );

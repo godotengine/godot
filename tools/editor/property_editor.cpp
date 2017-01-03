@@ -2998,6 +2998,8 @@ void PropertyEditor::update_tree() {
 	TreeItem * current_category=NULL;
 
 	String filter = search_box ? search_box->get_text() : "";
+	String group;
+	String group_base;
 
 	for (List<PropertyInfo>::Element *I=plist.front() ; I ; I=I->next()) {
 
@@ -3005,7 +3007,17 @@ void PropertyEditor::update_tree() {
 
 		//make sure the property can be edited
 
-		if (p.usage&PROPERTY_USAGE_CATEGORY) {
+		if (p.usage&PROPERTY_USAGE_GROUP) {
+
+			group=p.name;
+			group_base=p.hint_string;
+
+			continue;
+
+		} else if (p.usage&PROPERTY_USAGE_CATEGORY) {
+
+			group="";
+			group_base="";
 
 			if (!show_categories)
 				continue;
@@ -3062,12 +3074,27 @@ void PropertyEditor::update_tree() {
 		} else  if ( ! (p.usage&PROPERTY_USAGE_EDITOR ) )
 			continue;
 
-		String name = (p.name.find("/")!=-1)?p.name.right( p.name.find_last("/")+1 ):p.name;
+		String basename=p.name;
+		if (group!="") {
+			if (group_base!="") {
+				if (basename.begins_with(group_base)) {
+					basename=basename.replace_first(group_base,"");
+				} else {
+					group=""; //no longer using group base, clear
+				}
+			}
+		}
+
+		if (group!="") {
+			basename=group+"/"+basename;
+		}
+
+		String name = (basename.find("/")!=-1)?basename.right( basename.find_last("/")+1 ):basename;
 
 		if (capitalize_paths)
 			name = name.camelcase_to_underscore().capitalize();
 
-		String path=p.name.left( p.name.find_last("/") ) ;
+		String path=basename.left( basename.find_last("/") ) ;
 
 		if (use_filter && filter!="") {
 
@@ -3080,7 +3107,7 @@ void PropertyEditor::update_tree() {
 				continue;
 		}
 
-		//printf("property %s\n",p.name.ascii().get_data());
+		//printf("property %s\n",basename.ascii().get_data());
 		TreeItem * parent = get_parent_node(path,item_path,current_category?current_category:root );
 		//if (parent->get_parent()==root)
 		//	parent=root;
