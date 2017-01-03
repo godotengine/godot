@@ -45,7 +45,7 @@ Error AudioDriverALSA::init() {
 	samples_in = NULL;
 	samples_out = NULL;
 
-	mix_rate = 44100;
+	mix_rate = GLOBAL_DEF("audio/mix_rate",44100);
 	output_format = OUTPUT_STEREO;
 	channels = 2;
 
@@ -70,67 +70,62 @@ Error AudioDriverALSA::init() {
 	ERR_FAIL_COND_V( status<0, ERR_CANT_OPEN );
 
 	snd_pcm_hw_params_alloca(&hwparams);
-	status = snd_pcm_hw_params_any(pcm_handle, hwparams);
 
+	status = snd_pcm_hw_params_any(pcm_handle, hwparams);
 	CHECK_FAIL( status<0 );
 
 	status = snd_pcm_hw_params_set_access(pcm_handle, hwparams, SND_PCM_ACCESS_RW_INTERLEAVED);
-
 	CHECK_FAIL( status<0 );
 
 	//not interested in anything else
 	status = snd_pcm_hw_params_set_format(pcm_handle, hwparams, SND_PCM_FORMAT_S16_LE);
-
 	CHECK_FAIL( status<0 );
 
 	//todo: support 4 and 6
 	status = snd_pcm_hw_params_set_channels(pcm_handle, hwparams, 2);
-
 	CHECK_FAIL( status<0 );
 
 	status = snd_pcm_hw_params_set_rate_near(pcm_handle, hwparams, &mix_rate, NULL);
-
-
 	CHECK_FAIL( status<0 );
 
 	int latency = GLOBAL_DEF("audio/output_latency",25);
 	buffer_size = nearest_power_of_2( latency * mix_rate / 1000 );
 
-	status = snd_pcm_hw_params_set_period_size_near(pcm_handle, hwparams, &buffer_size, NULL);
+	// set buffer size from project settings
+	status = snd_pcm_hw_params_set_buffer_size_near(pcm_handle, hwparams, &buffer_size);
+	CHECK_FAIL( status<0 );
 
-
+	// make period size 1/8 
+	period_size = buffer_size >> 3;
+	status = snd_pcm_hw_params_set_period_size_near(pcm_handle, hwparams, &period_size, NULL);
 	CHECK_FAIL( status<0 );
 
 	unsigned int periods=2;
 	status = snd_pcm_hw_params_set_periods_near(pcm_handle, hwparams, &periods, NULL);
-
 	CHECK_FAIL( status<0 );
 
 	status = snd_pcm_hw_params(pcm_handle,hwparams);
-
 	CHECK_FAIL( status<0 );
 
 	//snd_pcm_hw_params_free(&hwparams);
 
 
 	snd_pcm_sw_params_alloca(&swparams);
+
 	status = snd_pcm_sw_params_current(pcm_handle, swparams);
 	CHECK_FAIL( status<0 );
 
-	status = snd_pcm_sw_params_set_avail_min(pcm_handle, swparams, buffer_size);
-
+	status = snd_pcm_sw_params_set_avail_min(pcm_handle, swparams, period_size);
 	CHECK_FAIL( status<0 );
 
 	status = snd_pcm_sw_params_set_start_threshold(pcm_handle, swparams, 1);
-
 	CHECK_FAIL( status<0 );
 
 	status = snd_pcm_sw_params(pcm_handle, swparams);
-
 	CHECK_FAIL( status<0 );
 
-	samples_in = memnew_arr(int32_t, buffer_size*channels);
-	samples_out = memnew_arr(int16_t, buffer_size*channels);
+	samples_in = memnew_arr(int32_t, period_size*channels);
+	samples_out = memnew_arr(int16_t, period_size*channels);
 
 	snd_pcm_nonblock(pcm_handle, 0);
 
@@ -144,36 +139,28 @@ void AudioDriverALSA::thread_func(void* p_udata) {
 
 	AudioDriverALSA* ad = (AudioDriverALSA*)p_udata;
 
-
 	while (!ad->exit_thread) {
-
-
 		if (!ad->active) {
-
-			for (unsigned int i=0; i < ad->buffer_size*ad->channels; i++) {
-
+			for (unsigned int i=0; i < ad->period_size*ad->channels; i++) {
 				ad->samples_out[i] = 0;
 			};
 		} else {
-
 			ad->lock();
 
-			ad->audio_server_process(ad->buffer_size, ad->samples_in);
+			ad->audio_server_process(ad->period_size, ad->samples_in);
 
 			ad->unlock();
 
-			for(unsigned int i=0;i<ad->buffer_size*ad->channels;i++) {
-
+			for(unsigned int i=0;i<ad->period_size*ad->channels;i++) {
 				ad->samples_out[i]=ad->samples_in[i]>>16;
 			}
 		};
 
 
-		int todo = ad->buffer_size; // * ad->channels * 2;
+		int todo = ad->period_size;
 		int total = 0;
 
 		while (todo) {
-
 			if (ad->exit_thread)
 				break;
 			uint8_t* src = (uint8_t*)ad->samples_out;
@@ -184,7 +171,8 @@ void AudioDriverALSA::thread_func(void* p_udata) {
 					break;
 
 				if ( wrote == -EAGAIN ) {
-					usleep(1000); //can't write yet (though this is blocking..)
+					//can't write yet (though this is blocking..)
+					usleep(1000); 
 					continue;
 				}
 				wrote = snd_pcm_recover(ad->pcm_handle, wrote, 0);
@@ -197,9 +185,9 @@ void AudioDriverALSA::thread_func(void* p_udata) {
 				}
 				continue;
 			};
+
 			total += wrote;
 			todo -= wrote;
-
 		};
 	};
 
