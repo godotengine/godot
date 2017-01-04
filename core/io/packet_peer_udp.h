@@ -30,6 +30,7 @@
 #define PACKET_PEER_UDP_H
 
 
+#include "io/ip.h"
 #include "io/packet_peer.h"
 
 class PacketPeerUDP : public PacketPeer {
@@ -37,17 +38,19 @@ class PacketPeerUDP : public PacketPeer {
 
 protected:
 
+	IP::Type ip_type;
+
 	static PacketPeerUDP* (*_create)();
 	static void _bind_methods();
 
-	int _get_packet_address() const;
 	String _get_packet_ip() const;
 
 	virtual Error _set_send_address(const String& p_address,int p_port);
 
 public:
 
-	virtual Error listen(int p_port,int p_recv_buffer_size=65536)=0;
+	virtual void set_ip_type(IP::Type p_type);
+	virtual Error listen(int p_port, int p_recv_buffer_size=65536)=0;
 	virtual void close()=0;
 	virtual Error wait()=0;
 	virtual bool is_listening() const=0;

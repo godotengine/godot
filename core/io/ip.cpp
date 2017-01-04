@@ -43,10 +43,12 @@ struct _IP_ResolverPrivate {
 		volatile IP::ResolverStatus status;
 		IP_Address response;
 		String hostname;
+		IP::Type type;
 
 		void clear() {
 			status = IP::RESOLVER_STATUS_NONE;
 			response = IP_Address();
+			type = IP::TYPE_NONE;
 			hostname="";
 		};
 
@@ -78,9 +80,9 @@ struct _IP_ResolverPrivate {
 
 			if (queue[i].status!=IP::RESOLVER_STATUS_WAITING)
 				continue;
-			queue[i].response=IP::get_singleton()->resolve_hostname(queue[i].hostname);
+			queue[i].response=IP::get_singleton()->resolve_hostname(queue[i].hostname, queue[i].type);
 
-			if (queue[i].response.host==0)
+			if (queue[i].response==IP_Address())
 				queue[i].status=IP::RESOLVER_STATUS_ERROR;
 			else
 				queue[i].status=IP::RESOLVER_STATUS_DONE;
@@ -105,25 +107,30 @@ struct _IP_ResolverPrivate {
 
 	HashMap<String, IP_Address> cache;
 
+	static String get_cache_key(String p_hostname, IP::Type p_type) {
+		return itos(p_type) + p_hostname;
+	}
+
 };
 
 
 
-IP_Address IP::resolve_hostname(const String& p_hostname) {
+IP_Address IP::resolve_hostname(const String& p_hostname, IP::Type p_type) {
 
-	GLOBAL_LOCK_FUNCTION
+	GLOBAL_LOCK_FUNCTION;
 
-	if (resolver->cache.has(p_hostname))
-		return resolver->cache[p_hostname];
+	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
+	if (resolver->cache.has(key))
+		return resolver->cache[key];
 
-	IP_Address res = _resolve_hostname(p_hostname);
-	resolver->cache[p_hostname]=res;
+	IP_Address res = _resolve_hostname(p_hostname, p_type);
+	resolver->cache[key]=res;
 	return res;
 
 }
-IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname) {
+IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname, IP::Type p_type) {
 
-	GLOBAL_LOCK_FUNCTION
+	GLOBAL_LOCK_FUNCTION;
 
 	ResolverID id = resolver->find_empty_id();
 
@@ -132,9 +139,11 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname) {
 		return id;
 	}
 
+	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
 	resolver->queue[id].hostname=p_hostname;
-	if (resolver->cache.has(p_hostname)) {
-		resolver->queue[id].response=resolver->cache[p_hostname];
+	resolver->queue[id].type = p_type;
+	if (resolver->cache.has(key)) {
+		resolver->queue[id].response=resolver->cache[key];
 		resolver->queue[id].status=IP::RESOLVER_STATUS_DONE;
 	} else {
 		resolver->queue[id].response=IP_Address();
@@ -144,10 +153,6 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String& p_hostname) {
 		else
 			resolver->resolve_queues();
 	}
-
-
-
-
 
 	return id;
 }
@@ -187,6 +192,17 @@ void IP::erase_resolve_item(ResolverID p_id) {
 
 }
 
+void IP::clear_cache(const String &p_hostname) {
+
+	if (p_hostname.empty()) {
+		resolver->cache.clear();
+	} else {
+		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_NONE));
+		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_IPV4));
+		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_IPV6));
+		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_ANY));
+	}
+};
 
 Array IP::_get_local_addresses() const {
 
@@ -202,12 +218,13 @@ Array IP::_get_local_addresses() const {
 
 void IP::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("resolve_hostname","host"),&IP::resolve_hostname);
-	ObjectTypeDB::bind_method(_MD("resolve_hostname_queue_item","host"),&IP::resolve_hostname_queue_item);
+	ObjectTypeDB::bind_method(_MD("resolve_hostname","host","ip_type"),&IP::resolve_hostname,DEFVAL(IP::TYPE_ANY));
+	ObjectTypeDB::bind_method(_MD("resolve_hostname_queue_item","host","ip_type"),&IP::resolve_hostname_queue_item,DEFVAL(IP::TYPE_ANY));
 	ObjectTypeDB::bind_method(_MD("get_resolve_item_status","id"),&IP::get_resolve_item_status);
 	ObjectTypeDB::bind_method(_MD("get_resolve_item_address","id"),&IP::get_resolve_item_address);
 	ObjectTypeDB::bind_method(_MD("erase_resolve_item","id"),&IP::erase_resolve_item);
 	ObjectTypeDB::bind_method(_MD("get_local_addresses"),&IP::_get_local_addresses);
+	ObjectTypeDB::bind_method(_MD("clear_cache"),&IP::clear_cache, DEFVAL(""));
 
 	BIND_CONSTANT( RESOLVER_STATUS_NONE );
 	BIND_CONSTANT( RESOLVER_STATUS_WAITING );
@@ -217,6 +234,10 @@ void IP::_bind_methods() {
 	BIND_CONSTANT( RESOLVER_MAX_QUERIES );
 	BIND_CONSTANT( RESOLVER_INVALID_ID );
 
+	BIND_CONSTANT( TYPE_NONE );
+	BIND_CONSTANT( TYPE_IPV4 );
+	BIND_CONSTANT( TYPE_IPV6 );
+	BIND_CONSTANT( TYPE_ANY );
 }
 
 

@@ -15596,8 +15596,10 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
+			<argument index="1" name="ip_type" type="int" default="IP.TYPE_ANY">
+			</argument>
 			<description>
-				Resolve a given hostname, blocking. Resolved hostname is returned as an IP.
+				Resolve a given hostname, blocking. Resolved hostname is returned as an IPv4 or IPv6 depending on "ip_type".
 			</description>
 		</method>
 		<method name="resolve_hostname_queue_item">
@@ -15605,8 +15607,10 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
+			<argument index="1" name="ip_type" type="int" default="IP.TYPE_ANY">
+			</argument>
 			<description>
-				Create a queue item for resolving a given hostname. The queue ID is returned, or RESOLVER_INVALID_ID on error.
+				Create a queue item for resolving a given hostname to an IPv4 or IPv6 depending on "ip_type". The queue ID is returned, or RESOLVER_INVALID_ID on error.
 			</description>
 		</method>
 	</methods>
@@ -24543,7 +24547,7 @@
 			<argument index="1" name="recv_buf_size" type="int" default="65536">
 			</argument>
 			<description>
-				Make this [PacketPeerUDP] listen on the "port" using a buffer size "recv_buf_size". Listens on all available adresses.
+				Make this [PacketPeerUDP] listen on the "port" with a buffer size "recv_buf_size". Listens on all available addresses.
 			</description>
 		</method>
 		<method name="set_send_address">
@@ -24554,7 +24558,7 @@
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
-				Set the destination address and port for sending packets and variables, a hostname will be resolved if valid.
+				Set the destination address and port for sending packets and variables, a hostname will be resolved using if valid.
 			</description>
 		</method>
 		<method name="wait">
@@ -38120,7 +38124,7 @@
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
-				Connect to the specified IP:port pair. Returns [OK] on success or [FAILED] on failure.
+				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [OK] on success or [FAILED] on failure.
 			</description>
 		</method>
 		<method name="disconnect">
@@ -39634,7 +39638,7 @@
 			<argument index="1" name="accepted_hosts" type="StringArray" default="StringArray([])">
 			</argument>
 			<description>
-				Listen on a port, alternatively give a white-list of accepted hosts.
+				Listen on a port using protocol, alternatively give a white-list of accepted hosts.
 			</description>
 		</method>
 		<method name="stop">

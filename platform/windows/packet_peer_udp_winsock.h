@@ -42,8 +42,8 @@ class PacketPeerUDPWinsock : public PacketPeerUDP {
 	mutable RingBuffer<uint8_t> rb;
 	uint8_t recv_buffer[PACKET_BUFFER_SIZE];
 	mutable uint8_t packet_buffer[PACKET_BUFFER_SIZE];
-	IP_Address packet_ip;
-	int packet_port;
+	mutable IP_Address packet_ip;
+	mutable int packet_port;
 	mutable int queue_count;
 	int sockfd;
 
@@ -67,7 +67,7 @@ public:
 
 	virtual int get_max_packet_size() const;
 
-	virtual Error listen(int p_port,int p_recv_buffer_size=65536);
+	virtual Error listen(int p_port, int p_recv_buffer_size=65536);
 	virtual void close();
 	virtual Error wait();
 	virtual bool is_listening() const;
