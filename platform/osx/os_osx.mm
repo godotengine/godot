@@ -987,13 +987,11 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	window_size.width = p_desired.width;
 	window_size.height = p_desired.height;
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6 && display_scale>1) {
 	    [window_view setWantsBestResolutionOpenGLSurface:YES];
 	    //if (current_videomode.resizable)
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	}
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 
 //	[window_object setTitle:[NSString stringWithUTF8String:"GodotEnginies"]];
 	[window_object setContentView:window_view];
@@ -1001,10 +999,8 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	[window_object setAcceptsMouseMovedEvents:YES];
 	[window_object center];
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6)
 		[window_object setRestorable:NO];
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 
 	unsigned int attributeCount = 0;
 
@@ -1023,10 +1019,8 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	ADD_ATTR(NSOpenGLPFADoubleBuffer);
 	ADD_ATTR(NSOpenGLPFAClosestPolicy);
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-	if (false/* use gl3*/)
-		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
+//	we now need OpenGL 3 or better, maybe even change this to 3_3Core ?
+	ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
 
 	ADD_ATTR2(NSOpenGLPFAColorSize, colorBits);
 
