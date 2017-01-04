@@ -103,13 +103,13 @@ void  GridMapEditor::_menu_option(int p_option) {
 			if (input_action==INPUT_DUPLICATE) {
 
 				r.set_orthogonal_index(selection.duplicate_rot);
-				r.rotate(Vector3(0,1,0),Math_PI/2.0);
+				r.rotate(Vector3(0,1,0),-Math_PI/2.0);
 				selection.duplicate_rot=r.get_orthogonal_index();
 				_update_duplicate_indicator();
 				break;
 			}
 			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0,1,0),Math_PI/2.0);
+			r.rotate(Vector3(0,1,0),-Math_PI/2.0);
 			cursor_rot=r.get_orthogonal_index();
 			_update_cursor_transform();
 		} break;
@@ -118,14 +118,14 @@ void  GridMapEditor::_menu_option(int p_option) {
 			if (input_action==INPUT_DUPLICATE) {
 
 				r.set_orthogonal_index(selection.duplicate_rot);
-				r.rotate(Vector3(1,0,0),Math_PI/2.0);
+				r.rotate(Vector3(1,0,0),-Math_PI/2.0);
 				selection.duplicate_rot=r.get_orthogonal_index();
 				_update_duplicate_indicator();
 				break;
 			}
 
 			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(1,0,0),Math_PI/2.0);
+			r.rotate(Vector3(1,0,0),-Math_PI/2.0);
 			cursor_rot=r.get_orthogonal_index();
 			_update_cursor_transform();
 		} break;
@@ -134,35 +134,35 @@ void  GridMapEditor::_menu_option(int p_option) {
 			if (input_action==INPUT_DUPLICATE) {
 
 				r.set_orthogonal_index(selection.duplicate_rot);
-				r.rotate(Vector3(0,0,1),Math_PI/2.0);
+				r.rotate(Vector3(0,0,1),-Math_PI/2.0);
 				selection.duplicate_rot=r.get_orthogonal_index();
 				_update_duplicate_indicator();
 				break;
 			}
 
 			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0,0,1),Math_PI/2.0);
+			r.rotate(Vector3(0,0,1),-Math_PI/2.0);
 			cursor_rot=r.get_orthogonal_index();
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Y: {
 			Matrix3 r;
 			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0,1,0),-Math_PI/2.0);
+			r.rotate(Vector3(0,1,0),Math_PI/2.0);
 			cursor_rot=r.get_orthogonal_index();
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_X: {
 			Matrix3 r;
 			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(1,0,0),-Math_PI/2.0);
+			r.rotate(Vector3(1,0,0),Math_PI/2.0);
 			cursor_rot=r.get_orthogonal_index();
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Z: {
 			Matrix3 r;
 			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0,0,1),-Math_PI/2.0);
+			r.rotate(Vector3(0,0,1),Math_PI/2.0);
 			cursor_rot=r.get_orthogonal_index();
 			_update_cursor_transform();
 		} break;

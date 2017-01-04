@@ -293,7 +293,6 @@ bool Vector3::operator==(const Vector3& p_v) const {
 }
 
 bool Vector3::operator!=(const Vector3& p_v) const {
-
 	return (x!=p_v.x || y!=p_v.y || z!=p_v.z);
 }
 
