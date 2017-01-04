@@ -179,8 +179,8 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 			Vector3 ofs = aabb.pos + aabb.size*0.5;
 			aabb.pos-=ofs;
 			Transform xform;
-			xform.basis=Matrix3().rotated(Vector3(0,1,0),Math_PI*0.25);
-			xform.basis = Matrix3().rotated(Vector3(1,0,0),-Math_PI*0.25)*xform.basis;
+			xform.basis=Matrix3().rotated(Vector3(0,1,0),-Math_PI*0.25);
+			xform.basis = Matrix3().rotated(Vector3(1,0,0),Math_PI*0.25)*xform.basis;
 			AABB rot_aabb = xform.xform(aabb);
 			print_line("rot_aabb: "+rot_aabb);
 			float m = MAX(rot_aabb.size.x,rot_aabb.size.y)*0.5;

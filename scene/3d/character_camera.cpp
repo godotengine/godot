@@ -255,8 +255,8 @@ void CharacterCamera::_compute_camera() {
 			orbit.x=max_orbit_x;
 
 		Matrix3 m;
-		m.rotate(Vector3(0,1,0),Math::deg2rad(orbit.y));
-		m.rotate(Vector3(1,0,0),Math::deg2rad(orbit.x));
+		m.rotate(Vector3(0,1,0),-Math::deg2rad(orbit.y));
+		m.rotate(Vector3(1,0,0),-Math::deg2rad(orbit.x));
 
 		new_pos = (m.get_axis(2) * distance) + character_pos;
 
@@ -432,8 +432,8 @@ void CharacterCamera::set_orbit(const Vector2& p_orbit) {
 		float d = char_pos.distance_to(follow_pos);
 
 		Matrix3 m;
-		m.rotate(Vector3(0,1,0),orbit.y);
-		m.rotate(Vector3(1,0,0),orbit.x);
+		m.rotate(Vector3(0,1,0),-orbit.y);
+		m.rotate(Vector3(1,0,0),-orbit.x);
 
 		follow_pos=char_pos + m.get_axis(2) * d;
 
@@ -475,8 +475,8 @@ void CharacterCamera::rotate_orbit(const Vector2& p_relative) {
 	if (type == CAMERA_FOLLOW && is_inside_scene()) {
 
 		Matrix3 m;
-		m.rotate(Vector3(0,1,0),Math::deg2rad(p_relative.y));
-		m.rotate(Vector3(1,0,0),Math::deg2rad(p_relative.x));
+		m.rotate(Vector3(0,1,0),-Math::deg2rad(p_relative.y));
+		m.rotate(Vector3(1,0,0),-Math::deg2rad(p_relative.x));
 
 		Vector3 char_pos = get_global_transform().origin;
 		char_pos.y+=height;

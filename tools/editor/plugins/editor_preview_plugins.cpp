@@ -807,8 +807,8 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES& p_from) {
 	Vector3 ofs = aabb.pos + aabb.size*0.5;
 	aabb.pos-=ofs;
 	Transform xform;
-	xform.basis=Matrix3().rotated(Vector3(0,1,0),Math_PI*0.125);
-	xform.basis = Matrix3().rotated(Vector3(1,0,0),-Math_PI*0.125)*xform.basis;
+	xform.basis=Matrix3().rotated(Vector3(0,1,0),-Math_PI*0.125);
+	xform.basis = Matrix3().rotated(Vector3(1,0,0),Math_PI*0.125)*xform.basis;
 	AABB rot_aabb = xform.xform(aabb);
 	float m = MAX(rot_aabb.size.x,rot_aabb.size.y)*0.5;
 	if (m==0)

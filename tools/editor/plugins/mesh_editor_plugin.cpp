@@ -82,8 +82,8 @@ void MeshEditor::_notification(int p_what) {
 void MeshEditor::_update_rotation() {
 
 	Transform t;
-	t.basis.rotate(Vector3(0, 1, 0), rot_y);
-	t.basis.rotate(Vector3(1, 0, 0), rot_x);
+	t.basis.rotate(Vector3(0, 1, 0), -rot_y);
+	t.basis.rotate(Vector3(1, 0, 0), -rot_x);
 	mesh_instance->set_transform(t);
 
 }
