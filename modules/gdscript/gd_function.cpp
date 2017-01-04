@@ -487,7 +487,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 			case OPCODE_GET_NAMED: {
 
 
-				CHECK_SPACE(3);
+				CHECK_SPACE(4);
 
 				GET_VARIANT_PTR(src,1);
 				GET_VARIANT_PTR(dst,3);
@@ -518,6 +518,46 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst=ret;
 #endif
 				ip+=4;
+			} continue;
+			case OPCODE_SET_MEMBER: {
+
+				CHECK_SPACE(3);
+				int indexname = _code_ptr[ip+1];
+				ERR_BREAK(indexname<0 || indexname>=_global_names_count);
+				const StringName *index = &_global_names_ptr[indexname];
+				GET_VARIANT_PTR(src,2);
+
+				bool valid;
+				bool ok = ClassDB::set_property(p_instance->owner,*index,*src,&valid);
+#ifdef DEBUG_ENABLED
+				if (!ok) {
+					err_text="Internal error setting property: "+String(*index);
+					break;
+				} else if (!valid) {
+					err_text="Error setting property '"+String(*index)+"' with value of type "+Variant::get_type_name(src->get_type())+".";
+					break;
+
+				}
+#endif
+				ip+=3;
+			} continue;
+			case OPCODE_GET_MEMBER: {
+
+				CHECK_SPACE(3);
+				int indexname = _code_ptr[ip+1];
+				ERR_BREAK(indexname<0 || indexname>=_global_names_count);
+				const StringName *index = &_global_names_ptr[indexname];
+				GET_VARIANT_PTR(dst,2);
+				bool ok = ClassDB::get_property(p_instance->owner,*index,*dst);
+
+#ifdef DEBUG_ENABLED
+				if (!ok) {
+					err_text="Internal error getting property: "+String(*index);
+					break;
+				}
+#endif
+				ip+=3;
+
 			} continue;
 			case OPCODE_ASSIGN: {
 

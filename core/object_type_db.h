@@ -481,6 +481,7 @@ public:
 	static void get_property_list(StringName p_class, List<PropertyInfo> *p_list, bool p_no_inheritance=false, const Object *p_validator=NULL);
 	static bool set_property(Object* p_object, const StringName& p_property, const Variant& p_value, bool *r_valid=NULL);
 	static bool get_property(Object* p_object,const StringName& p_property, Variant& r_value);
+	static bool has_property(const StringName& p_class,const StringName& p_property,bool p_no_inheritance=false);
 	static Variant::Type get_property_type(const StringName& p_class, const StringName& p_property,bool *r_is_valid=NULL);
 	static StringName get_property_setter(StringName p_class,const StringName p_property);
 	static StringName get_property_getter(StringName p_class,const StringName p_property);

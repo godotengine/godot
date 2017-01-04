@@ -1363,8 +1363,12 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/select_all", TTR("Select All"), KEY_MASK_CMD|KEY_A);
 	ED_SHORTCUT("script_text_editor/move_up", TTR("Move Up"), KEY_MASK_ALT|KEY_UP);
 	ED_SHORTCUT("script_text_editor/move_down", TTR("Move Down"), KEY_MASK_ALT|KEY_DOWN);
-	ED_SHORTCUT("script_text_editor/indent_left", TTR("Indent Left"), KEY_MASK_ALT|KEY_LEFT);
-	ED_SHORTCUT("script_text_editor/indent_right", TTR("Indent Right"), KEY_MASK_ALT|KEY_RIGHT);
+
+	//leave these at zero, same can be accomplished with tab/shift-tab, including selection
+	//the next/previous in history shortcut in this case makes a lot more sene.
+
+	ED_SHORTCUT("script_text_editor/indent_left", TTR("Indent Left"), 0);
+	ED_SHORTCUT("script_text_editor/indent_right", TTR("Indent Right"), 0);
 	ED_SHORTCUT("script_text_editor/toggle_comment", TTR("Toggle Comment"), KEY_MASK_CMD|KEY_K);
 	ED_SHORTCUT("script_text_editor/clone_down", TTR("Clone Down"), KEY_MASK_CMD|KEY_B);
 #ifdef OSX_ENABLED

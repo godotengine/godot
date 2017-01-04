@@ -581,6 +581,28 @@ static void _disassemble_class(const Ref<GDScript>& p_class,const Vector<String>
 					incr+=4;
 
 				} break;
+				case GDFunction::OPCODE_SET_MEMBER: {
+
+					txt+=" set_member ";
+					txt+="[\"";
+					txt+=func.get_global_name(code[ip+1]);
+					txt+="\"]=";
+					txt+=DADDR(2);
+					incr+=3;
+
+
+				} break;
+				case GDFunction::OPCODE_GET_MEMBER: {
+
+					txt+=" get_member ";
+					txt+=DADDR(2);
+					txt+="=";
+					txt+="[\"";
+					txt+=func.get_global_name(code[ip+1]);
+					txt+="\"]";
+					incr+=3;
+
+				} break;
 				case GDFunction::OPCODE_ASSIGN: {
 
 					txt+=" assign ";

@@ -29,6 +29,31 @@
 #include "gd_compiler.h"
 #include "gd_script.h"
 
+bool GDCompiler::_is_class_member_property(CodeGen & codegen, const StringName & p_name) {
+
+	if (!codegen.function_node || codegen.function_node->_static)
+		return false;
+
+	return _is_class_member_property(codegen.script,p_name);
+}
+
+bool GDCompiler::_is_class_member_property(GDScript *owner, const StringName & p_name) {
+
+
+	GDScript *scr = owner;
+	GDNativeClass *nc=NULL;
+	while(scr) {
+
+		if (scr->native.is_valid())
+			nc=scr->native.ptr();
+		scr=scr->_base;
+	}
+
+	ERR_FAIL_COND_V(!nc,false);
+
+	return ClassDB::has_property(nc->get_name(),p_name);
+}
+
 
 void GDCompiler::_set_error(const String& p_error,const GDParser::Node *p_node) {
 
@@ -163,6 +188,17 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 			const GDParser::IdentifierNode *in = static_cast<const GDParser::IdentifierNode*>(p_expression);
 
 			StringName identifier = in->name;
+
+
+			if (_is_class_member_property(codegen,identifier)) {
+				//get property
+				codegen.opcodes.push_back(GDFunction::OPCODE_GET_MEMBER); // perform operator
+				codegen.opcodes.push_back(codegen.get_name_map_pos(identifier)); // argument 2 (unary only takes one parameter)
+				int dst_addr=(p_stack_level)|(GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS);
+				codegen.opcodes.push_back(dst_addr); // append the stack level as destination address of the opcode
+				codegen.alloc_stack(p_stack_level);
+				return dst_addr;
+			}
 
 			// TRY STACK!
 			if (!p_initializer && codegen.stack_identifiers.has(identifier)) {
@@ -776,6 +812,8 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 						/* Find chain of sets */
 
+						StringName assign_property;
+
 						List<GDParser::OperatorNode*> chain;
 
 						{
@@ -784,8 +822,20 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 							while(true) {
 
 								chain.push_back(n);
-								if (n->arguments[0]->type!=GDParser::Node::TYPE_OPERATOR)
+								if (n->arguments[0]->type!=GDParser::Node::TYPE_OPERATOR) {
+
+									//check for a built-in property
+									if (n->arguments[0]->type==GDParser::Node::TYPE_IDENTIFIER) {
+
+										GDParser::IdentifierNode *identifier = static_cast<GDParser::IdentifierNode*>(n->arguments[0]);
+										if (_is_class_member_property(codegen,identifier->name)) {
+											assign_property = identifier->name;
+
+										}
+
+									}
 									break;
+								}
 								n = static_cast<GDParser::OperatorNode*>(n->arguments[0]);
 								if (n->op!=GDParser::OperatorNode::OP_INDEX && n->op!=GDParser::OperatorNode::OP_INDEX_NAMED)
 									break;
@@ -809,6 +859,17 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 
 						Vector<int> setchain;
+
+
+						if (assign_property!=StringName()) {
+
+							// recover and assign at the end, this allows stuff like
+							// position.x+=2.0
+							// in Node2D
+							setchain.push_back(prev_pos);
+							setchain.push_back(codegen.get_name_map_pos(assign_property));
+							setchain.push_back(GDFunction::OPCODE_SET_MEMBER);
+						}
 
 						for(List<GDParser::OperatorNode*>::Element *E=chain.back();E;E=E->prev()) {
 
@@ -840,7 +901,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 							}
 
-							if (key_idx<0)
+							if (key_idx<0) //error
 								return key_idx;
 
 							codegen.opcodes.push_back(named ? GDFunction::OPCODE_GET_NAMED : GDFunction::OPCODE_GET);
@@ -852,7 +913,10 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 							codegen.opcodes.push_back(dst_pos);
 
+
 							//add in reverse order, since it will be reverted
+
+
 							setchain.push_back(dst_pos);
 							setchain.push_back(key_idx);
 							setchain.push_back(prev_pos);
@@ -881,7 +945,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 						}
 
 
-						if (set_index<0)
+						if (set_index<0) //error
 							return set_index;
 
 						if (set_index&GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS) {
@@ -891,7 +955,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 
 						int set_value = _parse_assign_right_expression(codegen,on,slevel+1);
-						if (set_value<0)
+						if (set_value<0) //error
 							return set_value;
 
 						codegen.opcodes.push_back(named?GDFunction::OPCODE_SET_NAMED:GDFunction::OPCODE_SET);
@@ -899,20 +963,36 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 						codegen.opcodes.push_back(set_index);
 						codegen.opcodes.push_back(set_value);
 
-						for(int i=0;i<setchain.size();i+=4) {
+						for(int i=0;i<setchain.size();i++) {
 
 
-							codegen.opcodes.push_back(setchain[i+0]);
-							codegen.opcodes.push_back(setchain[i+1]);
-							codegen.opcodes.push_back(setchain[i+2]);
-							codegen.opcodes.push_back(setchain[i+3]);
+							codegen.opcodes.push_back(setchain[i]);
 						}
 
 						return retval;
 
 
+					} else if (on->arguments[0]->type==GDParser::Node::TYPE_IDENTIFIER && _is_class_member_property(codegen,static_cast<GDParser::IdentifierNode*>(on->arguments[0])->name)) {
+						//assignment to member property
+
+						int slevel = p_stack_level;
+
+						int src_address = _parse_assign_right_expression(codegen,on,slevel);
+						if (src_address<0)
+							return -1;
+
+						StringName name = static_cast<GDParser::IdentifierNode*>(on->arguments[0])->name;
+
+						codegen.opcodes.push_back(GDFunction::OPCODE_SET_MEMBER);
+						codegen.opcodes.push_back(codegen.get_name_map_pos(name));
+						codegen.opcodes.push_back(src_address);
+
+						return GDFunction::ADDR_TYPE_NIL<<GDFunction::ADDR_BITS;
 					} else {
-						//ASSIGNMENT MODE!!
+
+
+
+						//REGULAR ASSIGNMENT MODE!!
 
 						int slevel = p_stack_level;
 
@@ -1211,6 +1291,11 @@ Error GDCompiler::_parse_block(CodeGen& codegen,const GDParser::BlockNode *p_blo
 
 				const GDParser::LocalVarNode *lv = static_cast<const GDParser::LocalVarNode*>(s);
 
+				if (_is_class_member_property(codegen,lv->name)) {
+					_set_error("Name for local variable '"+String(lv->name)+"' can't shadow class property of the same name.",lv);
+					return ERR_ALREADY_EXISTS;
+				}
+
 				codegen.add_stack_identifier(lv->name,p_stack_level++);
 				codegen.alloc_stack(p_stack_level);
 				new_identifiers++;
@@ -1249,6 +1334,10 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 
 	if (p_func) {
 		for(int i=0;i<p_func->arguments.size();i++) {
+			if (_is_class_member_property(p_script,p_func->arguments[i])) {
+				_set_error("Name for argument '"+String(p_func->arguments[i])+"' can't shadow class property of the same name.",p_func);
+				return ERR_ALREADY_EXISTS;
+			}
 			codegen.add_stack_identifier(p_func->arguments[i],i);
 #ifdef TOOLS_ENABLED
 			argnames.push_back(p_func->arguments[i]);
@@ -1653,6 +1742,10 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 			_set_error("Member '"+name+"' already exists (in current or parent class)",p_class);
 			return ERR_ALREADY_EXISTS;
 		}
+		if (_is_class_member_property(p_script,name)) {
+			_set_error("Member '"+name+"' already exists as a class property.",p_class);
+			return ERR_ALREADY_EXISTS;
+		}
 
 		if (p_class->variables[i]._export.type!=Variant::NIL) {
 
@@ -1690,6 +1783,11 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 
 		StringName name = p_class->constant_expressions[i].identifier;
 		ERR_CONTINUE( p_class->constant_expressions[i].expression->type!=GDParser::Node::TYPE_CONSTANT );
+
+		if (_is_class_member_property(p_script,name)) {
+			_set_error("Member '"+name+"' already exists as a class property.",p_class);
+			return ERR_ALREADY_EXISTS;
+		}
 
 		GDParser::ConstantNode *constant = static_cast<GDParser::ConstantNode*>(p_class->constant_expressions[i].expression);
 

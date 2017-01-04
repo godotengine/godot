@@ -991,6 +991,22 @@ StringName ClassDB::get_property_getter(StringName p_class,const StringName p_pr
 	return StringName();
 }
 
+bool ClassDB::has_property(const StringName& p_class, const StringName& p_property, bool p_no_inheritance) {
+
+
+	ClassInfo *type=classes.getptr(p_class);
+	ClassInfo *check=type;
+	while(check) {
+		if (check->property_setget.has(p_property))
+			return true;
+
+		if (p_no_inheritance)
+			break;
+		check=check->inherits_ptr;
+	}
+
+	return false;
+}
 
 void ClassDB::set_method_flags(StringName p_class,StringName p_method,int p_flags) {
 

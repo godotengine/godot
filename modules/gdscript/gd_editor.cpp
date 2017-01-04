@@ -347,7 +347,7 @@ String GDScriptLanguage::make_function(const String& p_class,const String& p_nam
 
 struct GDCompletionIdentifier {
 
-	StringName GDCLASS;
+	StringName obj_type;
 	Ref<GDScript> script;
 	Variant::Type type;
 	Variant value; //im case there is a value, also return it
@@ -365,10 +365,10 @@ static GDCompletionIdentifier _get_type_from_variant(const Variant& p_variant) {
 		Object *obj = p_variant;
 		if (obj) {
 			//if (obj->cast_to<GDNativeClass>()) {
-			//	t.GDCLASS=obj->cast_to<GDNativeClass>()->get_name();
+			//	t.obj_type=obj->cast_to<GDNativeClass>()->get_name();
 			//	t.value=Variant();
 			//} else {
-				t.GDCLASS=obj->get_class();
+				t.obj_type=obj->get_class();
 			//}
 		}
 	}
@@ -380,7 +380,7 @@ static GDCompletionIdentifier _get_type_from_pinfo(const PropertyInfo& p_info) {
 	GDCompletionIdentifier t;
 	t.type=p_info.type;
 	if (p_info.hint==PROPERTY_HINT_RESOURCE_TYPE) {
-		t.GDCLASS=p_info.hint_string;
+		t.obj_type=p_info.hint_string;
 	}
 	return t;
 }
@@ -508,7 +508,7 @@ static GDCompletionIdentifier _get_native_class(GDCompletionContext& context) {
 	id.type=Variant::OBJECT;
 	if (context.base)
 		id.value=context.base;
-	id.GDCLASS=nc->get_name();
+	id.obj_type=nc->get_name();
 	return id;
 }
 
@@ -609,15 +609,15 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 							GDNativeClass *gdnc = obj->cast_to<GDNativeClass>();
 							r_type.type=Variant::OBJECT;
 							r_type.value=Variant();
-							r_type.GDCLASS=gdnc->get_name();
+							r_type.obj_type=gdnc->get_name();
 							return true;
 						}
 					}
 
-					if (ClassDB::has_method(base.GDCLASS,id)) {
+					if (ClassDB::has_method(base.obj_type,id)) {
 
 #ifdef TOOLS_ENABLED
-						MethodBind *mb = ClassDB::get_method(base.GDCLASS,id);
+						MethodBind *mb = ClassDB::get_method(base.obj_type,id);
 						PropertyInfo pi = mb->get_argument_info(-1);
 
 						//try calling the function if constant and all args are constant, should not crash..
@@ -643,7 +643,7 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 								}
 							}
 
-							if (all_valid && String(id)=="get_node" && ClassDB::is_parent_class(base.GDCLASS,"Node") && args.size()) {
+							if (all_valid && String(id)=="get_node" && ClassDB::is_parent_class(base.obj_type,"Node") && args.size()) {
 
 								String arg1=args[0];
 								if (arg1.begins_with("/root/")) {
@@ -686,7 +686,7 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 														scr = ResourceLoader::load(script);
 
 
-													r_type.GDCLASS="Node";
+													r_type.obj_type="Node";
 													r_type.type=Variant::OBJECT;
 													r_type.script=scr;
 													r_type.value=Variant();
@@ -729,7 +729,7 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 
 						r_type.type=pi.type;
 						if (pi.hint==PROPERTY_HINT_RESOURCE_TYPE) {
-							r_type.GDCLASS=pi.hint_string;
+							r_type.obj_type=pi.hint_string;
 						}
 
 
@@ -755,7 +755,7 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 							MethodInfo mi = E->get();
 							r_type.type=mi.return_val.type;
 							if (mi.return_val.hint==PROPERTY_HINT_RESOURCE_TYPE) {
-								r_type.GDCLASS=mi.return_val.hint_string;
+								r_type.obj_type=mi.return_val.hint_string;
 							}
 							return true;
 						}
@@ -940,6 +940,15 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 static bool _guess_identifier_type_in_block(GDCompletionContext& context,int p_line,const StringName& p_identifier,GDCompletionIdentifier &r_type) {
 
 
+	GDCompletionIdentifier gdi = _get_native_class(context);
+	if (gdi.obj_type!=StringName()) {
+		bool valid;
+		Variant::Type t = ClassDB::get_property_type(gdi.obj_type,p_identifier,&valid);
+		if (t!=Variant::NIL && valid) {
+			r_type.type=t;
+			return true;
+		}
+	}
 
 	const GDParser::Node *last_assign=NULL;
 	int last_assign_line=-1;
@@ -1064,11 +1073,11 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 
 		if (argindex!=-1) {
 			GDCompletionIdentifier id =_get_native_class(context);
-			if (id.type==Variant::OBJECT && id.GDCLASS!=StringName()) {
+			if (id.type==Variant::OBJECT && id.obj_type!=StringName()) {
 				//this kinda sucks but meh
 
 				List<MethodInfo> vmethods;
-				ClassDB::get_virtual_methods(id.GDCLASS,&vmethods);
+				ClassDB::get_virtual_methods(id.obj_type,&vmethods);
 				for (List<MethodInfo>::Element *E=vmethods.front();E;E=E->next()) {
 
 
@@ -1081,14 +1090,14 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 
 
 							r_type.type=Variant::OBJECT;
-							r_type.GDCLASS=arg.name.substr(scp+1,arg.name.length());
+							r_type.obj_type=arg.name.substr(scp+1,arg.name.length());
 							return true;
 
 						} else {
 
 							r_type.type=arg.type;
 							if (arg.hint==PROPERTY_HINT_RESOURCE_TYPE)
-								r_type.GDCLASS=arg.hint_string;
+								r_type.obj_type=arg.hint_string;
 							return true;
 						}
 					}
@@ -1174,7 +1183,7 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 						scr = ResourceLoader::load(script);
 
 
-					r_type.GDCLASS="Node";
+					r_type.obj_type="Node";
 					r_type.type=Variant::OBJECT;
 					r_type.script=scr;
 					r_type.value=Variant();
@@ -1298,26 +1307,43 @@ static void _find_identifiers_in_class(GDCompletionContext& context,bool p_stati
 				base=script->get_native();
 		} else if (nc.is_valid()) {
 
+			StringName type = nc->get_name();
+
 			if (!p_only_functions) {
 
-				StringName type = nc->get_name();
+
 				List<String> constants;
 				ClassDB::get_integer_constant_list(type,&constants);
 				for(List<String>::Element *E=constants.front();E;E=E->next()) {
 					result.insert(E->get());
 				}
 
-				List<MethodInfo> methods;
-				ClassDB::get_method_list(type,&methods);
-				for(List<MethodInfo>::Element *E=methods.front();E;E=E->next()) {
-					if (E->get().name.begins_with("_"))
+				List<PropertyInfo> pinfo;
+
+				ClassDB::get_property_list(type,&pinfo);
+
+				for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+					if (E->get().usage&(PROPERTY_USAGE_GROUP|PROPERTY_USAGE_CATEGORY))
 						continue;
-					if (E->get().arguments.size())
-						result.insert(E->get().name+"(");
-					else
-						result.insert(E->get().name+"()");
+					if (E->get().name.find("/")!=-1)
+						continue;
+					result.insert(E->get().name);
 				}
+
 			}
+			List<MethodInfo> methods;
+			ClassDB::get_method_list(type,&methods);
+			for(List<MethodInfo>::Element *E=methods.front();E;E=E->next()) {
+				if (E->get().name.begins_with("_"))
+					continue;
+				if (E->get().arguments.size())
+					result.insert(E->get().name+"(");
+				else
+					result.insert(E->get().name+"()");
+			}
+
+
+
 			break;
 		} else
 			break;
@@ -1483,10 +1509,10 @@ static void _find_type_arguments(GDCompletionContext& context,const GDParser::No
 		}
 
 
-	} else if (id.type==Variant::OBJECT && id.GDCLASS!=StringName()) {
+	} else if (id.type==Variant::OBJECT && id.obj_type!=StringName()) {
 
 
-		MethodBind *m = ClassDB::get_method(id.GDCLASS,p_method);
+		MethodBind *m = ClassDB::get_method(id.obj_type,p_method);
 		if (!m) {
 			//not in static method, see script
 
@@ -1699,7 +1725,7 @@ static void _find_type_arguments(GDCompletionContext& context,const GDParser::No
 
 				if (p_argidx==0) {
 					List<MethodInfo> sigs;
-					ClassDB::get_signal_list(id.GDCLASS,&sigs);
+					ClassDB::get_signal_list(id.obj_type,&sigs);
 
 					if (id.script.is_valid()) {
 						id.script->get_script_signal_list(&sigs);
@@ -1735,7 +1761,7 @@ static void _find_type_arguments(GDCompletionContext& context,const GDParser::No
 				}*/
 			} else {
 
-				if (p_argidx==0 && (String(p_method)=="get_node" || String(p_method)=="has_node") && ClassDB::is_parent_class(id.GDCLASS,"Node")) {
+				if (p_argidx==0 && (String(p_method)=="get_node" || String(p_method)=="has_node") && ClassDB::is_parent_class(id.obj_type,"Node")) {
 
 					List<PropertyInfo> props;
 					Globals::get_singleton()->get_property_list(&props);
@@ -1962,7 +1988,7 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 
 						GDCompletionIdentifier ci;
 						ci.type=Variant::OBJECT;
-						ci.GDCLASS=nc->get_name();
+						ci.obj_type=nc->get_name();
 						if (!context._class->owner)
 							ci.value=context.base;
 
@@ -2143,7 +2169,7 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 			GDCompletionIdentifier t;
 			if (_guess_expression_type(context,static_cast<const GDParser::OperatorNode *>(node)->arguments[0],p.get_completion_line(),t)) {
 
-				if (t.type==Variant::OBJECT && t.GDCLASS=="GDNativeClass") {
+				if (t.type==Variant::OBJECT && t.obj_type=="GDNativeClass") {
 					//native enum
 					Ref<GDNativeClass> gdn = t.value;
 					if (gdn.is_valid()) {
@@ -2153,8 +2179,19 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 						for (List<String>::Element *E=cnames.front();E;E=E->next()) {
 							options.insert(E->get());
 						}
+
+						List<PropertyInfo> pinfo;
+						ClassDB::get_property_list(cn,&pinfo);
+
+						for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+							if (E->get().usage&(PROPERTY_USAGE_GROUP|PROPERTY_USAGE_CATEGORY))
+								continue;
+							if (E->get().name.find("/")!=-1)
+								continue;
+							options.insert(E->get().name);
+						}
 					}
-				} else if (t.type==Variant::OBJECT && t.GDCLASS!=StringName()) {
+				} else if (t.type==Variant::OBJECT && t.obj_type!=StringName()) {
 
 					Ref<GDScript> on_script;
 
@@ -2288,10 +2325,23 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 
 
 					if (!isfunction) {
-						ClassDB::get_integer_constant_list(t.GDCLASS,r_options);
+						ClassDB::get_integer_constant_list(t.obj_type,r_options);
+
+						List<PropertyInfo> pinfo;
+						ClassDB::get_property_list(t.obj_type,&pinfo);
+
+						for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+							if (E->get().usage&(PROPERTY_USAGE_GROUP|PROPERTY_USAGE_CATEGORY))
+								continue;
+							if (E->get().name.find("/")!=-1)
+								continue;
+							r_options->push_back(E->get().name);
+						}
 					}
+
+
 					List<MethodInfo> mi;
-					ClassDB::get_method_list(t.GDCLASS,&mi);
+					ClassDB::get_method_list(t.obj_type,&mi);
 					for (List<MethodInfo>::Element *E=mi.front();E;E=E->next()) {
 
 						if (E->get().name.begins_with("_"))
@@ -2395,9 +2445,9 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 
 			GDCompletionIdentifier cid = _get_native_class(context);
 
-			if (cid.GDCLASS!=StringName()) {
+			if (cid.obj_type!=StringName()) {
 				List<MethodInfo> vm;
-				ClassDB::get_virtual_methods(cid.GDCLASS,&vm);
+				ClassDB::get_virtual_methods(cid.obj_type,&vm);
 				for(List<MethodInfo>::Element *E=vm.front();E;E=E->next()) {
 
 					MethodInfo &mi=E->get();
@@ -2430,10 +2480,10 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 			if (!_guess_expression_type(context,node,p.get_completion_line(),t))
 				break;
 
-			if (t.type==Variant::OBJECT && t.GDCLASS!=StringName()) {
+			if (t.type==Variant::OBJECT && t.obj_type!=StringName()) {
 
 				List<MethodInfo> sigs;
-				ClassDB::get_signal_list(t.GDCLASS,&sigs);
+				ClassDB::get_signal_list(t.obj_type,&sigs);
 				for (List<MethodInfo>::Element *E=sigs.front();E;E=E->next()) {
 					options.insert("\""+E->get().name+"\"");
 				}
@@ -2610,12 +2660,12 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 			}
 
 			GDCompletionIdentifier identifier = _get_native_class(context);
-			print_line("identifier: "+String(identifier.GDCLASS));
+			print_line("identifier: "+String(identifier.obj_type));
 
-			if (ClassDB::has_method(identifier.GDCLASS,p_symbol)) {
+			if (ClassDB::has_method(identifier.obj_type,p_symbol)) {
 
 				r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
-				r_result.class_name=identifier.GDCLASS;
+				r_result.class_name=identifier.obj_type;
 				r_result.class_member=p_symbol;
 				return OK;
 			}
@@ -2653,15 +2703,28 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 				GDCompletionIdentifier identifier = _get_native_class(context);
 
 
-				if (ClassDB::has_method(identifier.GDCLASS,p_symbol)) {
+				if (ClassDB::has_method(identifier.obj_type,p_symbol)) {
 
 					r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
-					r_result.class_name=identifier.GDCLASS;
+					r_result.class_name=identifier.obj_type;
 					r_result.class_member=p_symbol;
 					return OK;
 				}
 			} else {
 
+
+				GDCompletionIdentifier gdi = _get_native_class(context);
+				if (gdi.obj_type!=StringName()) {
+					bool valid;
+					Variant::Type t = ClassDB::get_property_type(gdi.obj_type,p_symbol,&valid);
+					if (t!=Variant::NIL && valid) {
+						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY;
+						r_result.class_name=gdi.obj_type;
+						r_result.class_member=p_symbol;
+						return OK;
+
+					}
+				}
 
 				const GDParser::BlockNode *block=context.block;
 				//search in blocks going up (local var?)
@@ -2799,7 +2862,7 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 					if (identifier.script.is_valid()) {
 						print_line("var script: "+identifier.script->get_path());
 					}
-					print_line("obj type: "+String(identifier.GDCLASS));
+					print_line("obj type: "+String(identifier.obj_type));
 					print_line("value: "+String(identifier.value));
 				}
 #endif
@@ -2823,7 +2886,7 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 			GDCompletionIdentifier t;
 			if (_guess_expression_type(context,static_cast<const GDParser::OperatorNode *>(node)->arguments[0],p.get_completion_line(),t)) {
 
-				if (t.type==Variant::OBJECT && t.GDCLASS=="GDNativeClass") {
+				if (t.type==Variant::OBJECT && t.obj_type=="GDNativeClass") {
 					//native enum
 					Ref<GDNativeClass> gdn = t.value;
 					if (gdn.is_valid()) {
@@ -2833,7 +2896,7 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 						return OK;
 
 					}
-				} else if (t.type==Variant::OBJECT && t.GDCLASS!=StringName()) {
+				} else if (t.type==Variant::OBJECT && t.obj_type!=StringName()) {
 
 					Ref<GDScript> on_script;
 
@@ -2858,29 +2921,30 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 						}
 					}
 
-					if (ClassDB::has_method(t.GDCLASS,p_symbol)) {
+					if (ClassDB::has_method(t.obj_type,p_symbol)) {
 
 						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
-						r_result.class_name=t.GDCLASS;
+						r_result.class_name=t.obj_type;
 						r_result.class_member=p_symbol;
 						return OK;
 
 					}
 
 					bool success;
-					ClassDB::get_integer_constant(t.GDCLASS,p_symbol,&success);
+					ClassDB::get_integer_constant(t.obj_type,p_symbol,&success);
 					if (success) {
 						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
-						r_result.class_name=t.GDCLASS;
+						r_result.class_name=t.obj_type;
 						r_result.class_member=p_symbol;
 						return OK;
 					}
 
-					ClassDB::get_property_type(t.GDCLASS,p_symbol,&success);
+
+					ClassDB::get_property_type(t.obj_type,p_symbol,&success);
 
 					if (success) {
 						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY;
-						r_result.class_name=t.GDCLASS;
+						r_result.class_name=t.obj_type;
 						r_result.class_member=p_symbol;
 						return OK;
 					}
@@ -2934,15 +2998,15 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 
 			GDCompletionIdentifier cid = _get_native_class(context);
 
-			if (cid.GDCLASS!=StringName()) {
+			if (cid.obj_type!=StringName()) {
 				List<MethodInfo> vm;
-				ClassDB::get_virtual_methods(cid.GDCLASS,&vm);
+				ClassDB::get_virtual_methods(cid.obj_type,&vm);
 				for(List<MethodInfo>::Element *E=vm.front();E;E=E->next()) {
 
 					if (p_symbol==E->get().name) {
 
 						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
-						r_result.class_name=cid.GDCLASS;
+						r_result.class_name=cid.obj_type;
 						r_result.class_member=p_symbol;
 						return OK;
 
