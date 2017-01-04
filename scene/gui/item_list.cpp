@@ -471,7 +471,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 		Vector2 pos(mb.x,mb.y);
 		Ref<StyleBox> bg = get_stylebox("bg");
 		pos-=bg->get_offset();
-		pos.y+=scroll_bar->get_val();
+		pos.y+=scroll_bar->get_value();
 
 		int closest = -1;
 
@@ -561,12 +561,12 @@ void ItemList::_input_event(const InputEvent& p_event) {
 	}
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_WHEEL_UP && p_event.mouse_button.pressed) {
 
-		scroll_bar->set_val( scroll_bar->get_val()-scroll_bar->get_page()/8 );
+		scroll_bar->set_value( scroll_bar->get_value()-scroll_bar->get_page()/8 );
 
 	}
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_WHEEL_DOWN && p_event.mouse_button.pressed) {
 
-		scroll_bar->set_val( scroll_bar->get_val()+scroll_bar->get_page()/8 );
+		scroll_bar->set_value( scroll_bar->get_value()+scroll_bar->get_page()/8 );
 
 	}
 
@@ -949,7 +949,7 @@ void ItemList::_notification(int p_what) {
 					scroll_bar->set_max(max);
 					//print_line("max: "+rtos(max)+" page "+rtos(page));
 					if (max<=page) {
-						scroll_bar->set_val(0);
+						scroll_bar->set_value(0);
 						scroll_bar->hide();
 					} else {
 						scroll_bar->show();
@@ -966,13 +966,13 @@ void ItemList::_notification(int p_what) {
 		if (ensure_selected_visible && current>=0 && current <=items.size()) {
 
 			Rect2 r = items[current].rect_cache;
-			int from = scroll_bar->get_val();
+			int from = scroll_bar->get_value();
 			int to = from + scroll_bar->get_page();
 
 			if (r.pos.y < from) {
-				scroll_bar->set_val(r.pos.y);
+				scroll_bar->set_value(r.pos.y);
 			} else if (r.pos.y+r.size.y > to) {
-				scroll_bar->set_val(r.pos.y+r.size.y - (to-from));
+				scroll_bar->set_value(r.pos.y+r.size.y - (to-from));
 			}
 
 
@@ -981,9 +981,9 @@ void ItemList::_notification(int p_what) {
 		ensure_selected_visible=false;		
 
 		Vector2 base_ofs = bg->get_offset();
-		base_ofs.y-=int(scroll_bar->get_val());
+		base_ofs.y-=int(scroll_bar->get_value());
 
-		Rect2 clip(Point2(),size-bg->get_minimum_size()+Vector2(0,scroll_bar->get_val()));
+		Rect2 clip(Point2(),size-bg->get_minimum_size()+Vector2(0,scroll_bar->get_value()));
 
 		for(int i=0;i<items.size();i++) {
 
@@ -1178,7 +1178,7 @@ int ItemList::get_item_at_pos(const Point2& p_pos, bool p_exact) const {
 	Vector2 pos=p_pos;
 	Ref<StyleBox> bg = get_stylebox("bg");
 	pos-=bg->get_offset();
-	pos.y+=scroll_bar->get_val();
+	pos.y+=scroll_bar->get_value();
 
 	int closest = -1;
 	int closest_dist=0x7FFFFFFF;

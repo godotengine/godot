@@ -341,14 +341,14 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 					slider->set_min(min);
 					slider->set_max(max);
 					slider->set_step(step);
-					slider->set_val(v);
+					slider->set_value(v);
 					slider->show();
 					set_size(Size2(110,30)*EDSCALE);
 				} else {
 					spinbox->set_min(min);
 					spinbox->set_max(max);
 					spinbox->set_step(step);
-					spinbox->set_val(v);
+					spinbox->set_value(v);
 					spinbox->show();
 					set_size(Size2(70,35)*EDSCALE);
 				}

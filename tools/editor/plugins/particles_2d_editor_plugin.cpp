@@ -62,7 +62,7 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 
 	print_line("file: "+p_file);
 
-	int epc=epoints->get_val();
+	int epc=epoints->get_value();
 
 	Image img;
 	Error err = ImageLoader::load_image(p_file,&img);
@@ -189,7 +189,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	epoints->set_min(1);
 	epoints->set_max(8192);
 	epoints->set_step(1);
-	epoints->set_val(512);
+	epoints->set_value(512);
 	file->get_vbox()->add_margin_child(TTR("Generated Point Count:"),epoints);
 }
 

@@ -66,14 +66,14 @@ protected:
 	bool _rounded_values;
 public:
 
-	void set_val(double p_val);
+	void set_value(double p_val);
 	void set_min(double p_min);
 	void set_max(double p_max);
 	void set_step(double p_step);
 	void set_page(double p_page);
 	void set_unit_value(double p_value);
 
-	double get_val() const;
+	double get_value() const;
 	double get_min() const;
 	double get_max() const;
 	double get_step() const;

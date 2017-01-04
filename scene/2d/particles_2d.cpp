@@ -299,7 +299,7 @@ void Particles2D::_process_particles(float p_delta) {
 		}
 		for (Set<ParticleAttractor2D*>::Element *E=attractors.front();E;E=E->next()) {
 
-			attractor_cache[idx].pos=m.xform( E->get()->get_global_pos() );
+			attractor_cache[idx].pos=m.xform( E->get()->get_global_position() );
 			attractor_cache[idx].attractor=E->get();
 			idx++;
 		}

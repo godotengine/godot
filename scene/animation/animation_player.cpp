@@ -465,7 +465,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData* p_anim,float p
 									ERR_PRINTS("Position key at time "+rtos(p_time)+" in Animation Track '"+String(pa->owner->path)+"' not of type Vector2()");
 								}
 #endif
-								static_cast<Node2D*>(pa->object)->set_pos(value);
+								static_cast<Node2D*>(pa->object)->set_position(value);
 							} break;
 							case SP_NODE2D_ROT: {
 #ifdef DEBUG_ENABLED
@@ -474,7 +474,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData* p_anim,float p
 								}
 #endif
 
-								static_cast<Node2D*>(pa->object)->set_rot(Math::deg2rad(value));
+								static_cast<Node2D*>(pa->object)->set_rotation(Math::deg2rad(value));
 							} break;
 							case SP_NODE2D_SCALE: {
 #ifdef DEBUG_ENABLED
@@ -679,7 +679,7 @@ void AnimationPlayer::_animation_update_transforms() {
 					ERR_PRINTS("Position key at time "+rtos(playback.current.pos)+" in Animation '"+get_current_animation()+"', Track '"+String(pa->owner->path)+"' not of type Vector2()");
 				}
 #endif
-				static_cast<Node2D*>(pa->object)->set_pos(pa->value_accum);
+				static_cast<Node2D*>(pa->object)->set_position(pa->value_accum);
 			} break;
 			case SP_NODE2D_ROT: {
 #ifdef DEBUG_ENABLED
@@ -688,7 +688,7 @@ void AnimationPlayer::_animation_update_transforms() {
 				}
 #endif
 
-				static_cast<Node2D*>(pa->object)->set_rot(Math::deg2rad(pa->value_accum));
+				static_cast<Node2D*>(pa->object)->set_rotation(Math::deg2rad(pa->value_accum));
 			} break;
 			case SP_NODE2D_SCALE: {
 #ifdef DEBUG_ENABLED
@@ -1348,9 +1348,10 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(_MD("advance","delta"),&AnimationPlayer::advance);
 
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_animation_process_mode"), _SCS("get_animation_process_mode"));
-        ADD_PROPERTY( PropertyInfo( Variant::REAL, "playback/default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), _SCS("set_default_blend_time"), _SCS("get_default_blend_time"));
-	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "root/root"), _SCS("set_root"), _SCS("get_root"));
+	ADD_GROUP("Playback","playback_");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_animation_process_mode"), _SCS("get_animation_process_mode"));
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), _SCS("set_default_blend_time"), _SCS("get_default_blend_time"));
+	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "root_node"), _SCS("set_root"), _SCS("get_root"));
 
 	ADD_SIGNAL( MethodInfo("finished") );
 	ADD_SIGNAL( MethodInfo("animation_changed", PropertyInfo(Variant::STRING,"old_name"), PropertyInfo(Variant::STRING,"new_name")) );

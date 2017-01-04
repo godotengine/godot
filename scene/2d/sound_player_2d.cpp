@@ -97,11 +97,13 @@ void SoundPlayer2D::_bind_methods() {
 	BIND_CONSTANT( PARAM_ATTENUATION_DISTANCE_EXP );
 	BIND_CONSTANT( PARAM_MAX );
 
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/volume_db",PROPERTY_HINT_RANGE, "-80,24,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_VOLUME_DB);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/pitch_scale",PROPERTY_HINT_RANGE, "0.001,32,0.001"),_SCS("set_param"),_SCS("get_param"),PARAM_PITCH_SCALE);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/attenuation/min_distance",PROPERTY_HINT_EXP_RANGE, "16,16384,1"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_MIN_DISTANCE);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/attenuation/max_distance",PROPERTY_HINT_EXP_RANGE, "16,16384,1"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_MAX_DISTANCE);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/attenuation/distance_exp",PROPERTY_HINT_EXP_EASING, "attenuation"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_DISTANCE_EXP);
+	ADD_GROUP("Parameters","");
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "volume_db",PROPERTY_HINT_RANGE, "-80,24,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_VOLUME_DB);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "pitch_scale",PROPERTY_HINT_RANGE, "0.001,32,0.001"),_SCS("set_param"),_SCS("get_param"),PARAM_PITCH_SCALE);
+	ADD_GROUP("Attenuation","attenuation_");
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "attenuation_min_distance",PROPERTY_HINT_EXP_RANGE, "16,16384,1"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_MIN_DISTANCE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "attenuation_max_distance",PROPERTY_HINT_EXP_RANGE, "16,16384,1"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_MAX_DISTANCE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "attenuation_distance_exp",PROPERTY_HINT_EXP_EASING, "attenuation"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_DISTANCE_EXP);
 
 }
 

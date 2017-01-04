@@ -362,7 +362,7 @@ void Spatial::set_rotation(const Vector3& p_euler_rad){
 
 }
 
-void Spatial::set_rotation_deg(const Vector3& p_euler_deg) {
+void Spatial::set_rotation_in_degrees(const Vector3& p_euler_deg) {
 
 	set_rotation(p_euler_deg * Math_PI / 180.0);
 }
@@ -370,7 +370,7 @@ void Spatial::set_rotation_deg(const Vector3& p_euler_deg) {
 void Spatial::_set_rotation_deg(const Vector3& p_euler_deg) {
 
 	WARN_PRINT("Deprecated method Spatial._set_rotation_deg(): This method was renamed to set_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
-	set_rotation_deg(p_euler_deg);
+	set_rotation_in_degrees(p_euler_deg);
 }
 
 void Spatial::set_scale(const Vector3& p_scale){
@@ -405,7 +405,7 @@ Vector3 Spatial::get_rotation() const{
 	return data.rotation;
 }
 
-Vector3 Spatial::get_rotation_deg() const {
+Vector3 Spatial::get_rotation_in_degrees() const {
 
 	return get_rotation() * 180.0 / Math_PI;
 }
@@ -415,7 +415,7 @@ Vector3 Spatial::get_rotation_deg() const {
 Vector3 Spatial::_get_rotation_deg() const {
 
 	WARN_PRINT("Deprecated method Spatial._get_rotation_deg(): This method was renamed to get_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
-	return get_rotation_deg();
+	return get_rotation_in_degrees();
 }
 
 Vector3 Spatial::get_scale() const{
@@ -750,8 +750,8 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(_MD("get_translation"), &Spatial::get_translation);
 	ClassDB::bind_method(_MD("set_rotation","rotation_rad"), &Spatial::set_rotation);
 	ClassDB::bind_method(_MD("get_rotation"), &Spatial::get_rotation);
-	ClassDB::bind_method(_MD("set_rotation_deg","rotation_deg"), &Spatial::set_rotation_deg);
-	ClassDB::bind_method(_MD("get_rotation_deg"), &Spatial::get_rotation_deg);
+	ClassDB::bind_method(_MD("set_rotation_deg","rotation_deg"), &Spatial::set_rotation_in_degrees);
+	ClassDB::bind_method(_MD("get_rotation_deg"), &Spatial::get_rotation_in_degrees);
 	ClassDB::bind_method(_MD("set_scale","scale"), &Spatial::set_scale);
 	ClassDB::bind_method(_MD("get_scale"), &Spatial::get_scale);
 	ClassDB::bind_method(_MD("set_global_transform","global"), &Spatial::set_global_transform);
@@ -817,12 +817,15 @@ void Spatial::_bind_methods() {
 	BIND_CONSTANT( NOTIFICATION_VISIBILITY_CHANGED );
 
 	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), _SCS("set_global_transform"), _SCS("get_global_transform") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"transform/local",PROPERTY_HINT_NONE,""), _SCS("set_transform"), _SCS("get_transform") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/translation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_translation"), _SCS("get_translation") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_rotation_deg"), _SCS("get_rotation_deg") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation_rad",PROPERTY_HINT_NONE,"",0), _SCS("set_rotation"), _SCS("get_rotation") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/scale",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_scale"), _SCS("get_scale") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"), _SCS("_is_visible_") );
+	ADD_GROUP("Transform","");
+	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"transform",PROPERTY_HINT_NONE,""), _SCS("set_transform"), _SCS("get_transform") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"global_transform",PROPERTY_HINT_NONE,"",0), _SCS("set_global_transform"), _SCS("get_global_transform") );
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"translation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_translation"), _SCS("get_translation") );
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"rotation_deg",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_rotation_deg"), _SCS("get_rotation_deg") );
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"rotation",PROPERTY_HINT_NONE,"",0), _SCS("set_rotation"), _SCS("get_rotation") );
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"scale",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_scale"), _SCS("get_scale") );
+	ADD_GROUP("Visibility","");
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visible"), _SCS("_set_visible_"), _SCS("_is_visible_") );
 	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/local"), _SCS("set_transform"), _SCS("get_transform") );
 
 	ADD_SIGNAL( MethodInfo("visibility_changed" ) );

@@ -106,12 +106,12 @@ void EditorImportTextureOptions::set_flags(uint32_t p_flags){
 
 void EditorImportTextureOptions::set_quality(float p_quality) {
 
-	quality->set_val(p_quality);
+	quality->set_value(p_quality);
 }
 
 float EditorImportTextureOptions::get_quality() const {
 
-    return quality->get_val();
+    return quality->get_value();
 }
 
 
@@ -200,7 +200,7 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 	hs->set_min(0);
 	hs->set_max(1.0);
 	hs->set_step(0.01);
-	hs->set_val(0.7);
+	hs->set_value(0.7);
 	quality=hs;
 	quality_vb->add_margin_child(TTR("Texture Compression Quality (WebP):"),quality_hb);
 
@@ -396,7 +396,7 @@ void EditorTextureImportDialog::_import() {
 		imd->set_option("flags",texture_options->get_flags());
 		imd->set_option("quality",texture_options->get_quality());
 		imd->set_option("atlas",true);
-		imd->set_option("atlas_size",int(size->get_val()));
+		imd->set_option("atlas_size",int(size->get_value()));
 		imd->set_option("large",false);
 		imd->set_option("crop",crop_source->is_pressed());
 		imd->set_option("mode",mode);
@@ -430,7 +430,7 @@ void EditorTextureImportDialog::_import() {
 		imd->set_option("quality",texture_options->get_quality());
 		imd->set_option("atlas",false);
 		imd->set_option("large",true);
-		imd->set_option("large_cell_size",int(size->get_val()));
+		imd->set_option("large_cell_size",int(size->get_value()));
 		imd->set_option("crop",crop_source->is_pressed());
 		imd->set_option("mode",mode);
 
@@ -569,7 +569,7 @@ void EditorTextureImportDialog::_mode_changed(int p_mode) {
 	if (p_mode==EditorTextureImportPlugin::MODE_ATLAS) {
 
 		size_label->set_text(TTR("Max Texture Size:"));
-		size->set_val(2048);
+		size->set_value(2048);
 		crop_source->show();
 		size_label->show();
 		size->show();
@@ -587,7 +587,7 @@ void EditorTextureImportDialog::_mode_changed(int p_mode) {
 	if (p_mode==EditorTextureImportPlugin::MODE_LARGE) {
 
 		size_label->set_text(TTR("Cell Size:"));
-		size->set_val(256);
+		size->set_value(256);
 		size_label->show();
 		size->show();
 
@@ -727,7 +727,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	size->set_max(16384);
 
 
-	size->set_val(256);
+	size->set_value(256);
 	size_mc=vbc->add_margin_child(TTR("Cell Size:"),size);
 	size_label=vbc->get_child(size_mc->get_index()-1)->cast_to<Label>();
 

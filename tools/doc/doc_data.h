@@ -66,7 +66,9 @@ public:
 
 		String name;
 		String type;
+		String brief_description;
 		String description;
+		String setter,getter;
 		bool operator<(const PropertyDoc& p_prop) const {
 			return name<p_prop.name;
 		}

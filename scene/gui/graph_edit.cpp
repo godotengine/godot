@@ -107,15 +107,15 @@ void GraphEdit::get_connection_list(List<Connection> *r_connections) const {
 void GraphEdit::set_scroll_ofs(const Vector2& p_ofs) {
 
 	setting_scroll_ofs=true;
-	h_scroll->set_val(p_ofs.x);
-	v_scroll->set_val(p_ofs.y);
+	h_scroll->set_value(p_ofs.x);
+	v_scroll->set_value(p_ofs.y);
 	_update_scroll();
 	setting_scroll_ofs=false;
 }
 
 Vector2 GraphEdit::get_scroll_ofs() const{
 
-	return Vector2(h_scroll->get_val(),v_scroll->get_val());
+	return Vector2(h_scroll->get_value(),v_scroll->get_value());
 }
 
 void GraphEdit::_scroll_moved(double) {
@@ -144,14 +144,14 @@ void GraphEdit::_update_scroll_offset() {
 			continue;
 
 		Point2 pos=gn->get_offset()*zoom;
-		pos-=Point2(h_scroll->get_val(),v_scroll->get_val());
+		pos-=Point2(h_scroll->get_value(),v_scroll->get_value());
 		gn->set_pos(pos);
 		if (gn->get_scale()!=Vector2(zoom,zoom)) {
 			gn->set_scale(Vector2(zoom,zoom));
 		}
 	}
 
-	connections_layer->set_pos(-Point2(h_scroll->get_val(),v_scroll->get_val()));
+	connections_layer->set_pos(-Point2(h_scroll->get_value(),v_scroll->get_value()));
 	set_block_minimum_size_adjust(false);
 	awaiting_scroll_offset_update=false;
 
@@ -796,8 +796,8 @@ void GraphEdit::set_selected(Node* p_child) {
 void GraphEdit::_input_event(const InputEvent& p_ev) {
 
 	if (p_ev.type==InputEvent::MOUSE_MOTION && (p_ev.mouse_motion.button_mask&BUTTON_MASK_MIDDLE || (p_ev.mouse_motion.button_mask&BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE)))) {
-		h_scroll->set_val( h_scroll->get_val() - p_ev.mouse_motion.relative_x );
-		v_scroll->set_val( v_scroll->get_val() - p_ev.mouse_motion.relative_y );
+		h_scroll->set_value( h_scroll->get_value() - p_ev.mouse_motion.relative_x );
+		v_scroll->set_value( v_scroll->get_value() - p_ev.mouse_motion.relative_y );
 	}
 
 	if (p_ev.type==InputEvent::MOUSE_MOTION && dragging) {
@@ -1047,7 +1047,7 @@ void GraphEdit::set_zoom(float p_zoom) {
 	zoom_minus->set_disabled(zoom==MIN_ZOOM);
 	zoom_plus->set_disabled(zoom==MAX_ZOOM);
 
-	Vector2 sbofs = (Vector2( h_scroll->get_val(), v_scroll->get_val() ) + get_size()/2)/zoom;
+	Vector2 sbofs = (Vector2( h_scroll->get_value(), v_scroll->get_value() ) + get_size()/2)/zoom;
 
 	zoom = p_zoom;
 	top_layer->update();
@@ -1058,8 +1058,8 @@ void GraphEdit::set_zoom(float p_zoom) {
 	if (is_visible()) {
 
 		Vector2 ofs  = sbofs*zoom - get_size()/2;
-		h_scroll->set_val( ofs.x );
-		v_scroll->set_val( ofs.y );
+		h_scroll->set_value( ofs.x );
+		v_scroll->set_value( ofs.y );
 	}
 
 
@@ -1181,13 +1181,13 @@ bool GraphEdit::is_using_snap() const{
 
 int GraphEdit::get_snap() const{
 
-	return snap_amount->get_val();
+	return snap_amount->get_value();
 }
 
 void GraphEdit::set_snap(int p_snap) {
 
 	ERR_FAIL_COND(p_snap<5);
-	snap_amount->set_val(p_snap);
+	snap_amount->set_value(p_snap);
 	update();
 }
 void GraphEdit::_snap_toggled() {
@@ -1331,7 +1331,7 @@ GraphEdit::GraphEdit() {
 	snap_amount->set_min(5);
 	snap_amount->set_max(100);
 	snap_amount->set_step(1);
-	snap_amount->set_val(20);
+	snap_amount->set_value(20);
 	snap_amount->connect("value_changed",this,"_snap_value_changed");
 	zoom_hb->add_child(snap_amount);
 

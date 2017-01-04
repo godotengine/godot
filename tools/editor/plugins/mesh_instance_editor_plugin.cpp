@@ -189,7 +189,7 @@ void MeshInstanceEditor::_create_outline_mesh() {
 		return;
 	}
 
-	Ref<Mesh> mesho = mesh->create_outline(outline_size->get_val());
+	Ref<Mesh> mesho = mesh->create_outline(outline_size->get_value());
 
 	if (mesho.is_null()) {
 		err_dialog->set_text(TTR("Could not create outline!"));
@@ -255,7 +255,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	outline_size->set_min(0.001);
 	outline_size->set_max(1024);
 	outline_size->set_step(0.001);
-	outline_size->set_val(0.05);
+	outline_size->set_value(0.05);
 	outline_dialog_vbc->add_margin_child(TTR("Outline Size:"),outline_size);
 
 	add_child(outline_dialog);

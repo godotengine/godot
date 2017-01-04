@@ -491,9 +491,9 @@ public:
 	static SpatialEditor *get_singleton() { return singleton; }
 	void snap_cursor_to_plane(const Plane& p_plane);
 
-	float get_znear() const { return settings_znear->get_val(); }
-	float get_zfar() const { return settings_zfar->get_val(); }
-	float get_fov() const { return settings_fov->get_val(); }
+	float get_znear() const { return settings_znear->get_value(); }
+	float get_zfar() const { return settings_zfar->get_value(); }
+	float get_fov() const { return settings_fov->get_value(); }
 
 	Transform get_gizmo_transform() const { return gizmo.transform; }
 	bool is_gizmo_visible() const { return gizmo.visible; }

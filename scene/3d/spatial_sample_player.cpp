@@ -222,8 +222,8 @@ void SpatialSamplePlayer::_bind_methods() {
 	BIND_CONSTANT( INVALID_VOICE );
 	BIND_CONSTANT( NEXT_VOICE );
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "config/polyphony", PROPERTY_HINT_RANGE, "1,64,1"),_SCS("set_polyphony"),_SCS("get_polyphony"));
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "config/samples", PROPERTY_HINT_RESOURCE_TYPE,"SampleLibrary"),_SCS("set_sample_library"),_SCS("get_sample_library"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "polyphony", PROPERTY_HINT_RANGE, "1,64,1"),_SCS("set_polyphony"),_SCS("get_polyphony"));
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "samples", PROPERTY_HINT_RESOURCE_TYPE,"SampleLibrary"),_SCS("set_sample_library"),_SCS("get_sample_library"));
 
 
 }

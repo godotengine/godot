@@ -132,6 +132,9 @@ void DocData::merge_from(const DocData& p_data) {
 				const PropertyDoc &pf = cf.properties[j];
 
 				p.description=pf.description;
+				p.setter=pf.setter;
+				p.getter=pf.getter;
+
 				break;
 			}
 		}
@@ -174,6 +177,30 @@ void DocData::generate(bool p_basic_types) {
 		c.name=cname;
 		c.inherits=ClassDB::get_parent_class(name);
 		c.category=ClassDB::get_category(name);
+
+
+		List<PropertyInfo> properties;
+		ClassDB::get_property_list(name,&properties,true);
+
+		for(List<PropertyInfo>::Element *E=properties.front();E;E=E->next()) {
+			if (E->get().usage& PROPERTY_USAGE_GROUP || E->get().usage& PROPERTY_USAGE_CATEGORY)
+				continue;
+
+			PropertyDoc prop;
+			StringName setter = ClassDB::get_property_setter(name,E->get().name);
+			StringName getter = ClassDB::get_property_getter(name,E->get().name);
+
+			prop.name=E->get().name;
+			prop.setter=setter;
+			prop.getter=getter;
+			if (E->get().type==Variant::OBJECT && E->get().hint==PROPERTY_HINT_RESOURCE_TYPE)
+				prop.type=E->get().hint_string;
+			else
+				prop.type=Variant::get_type_name(E->get().type);
+
+			c.properties.push_back(prop);
+		}
+
 
 		List<MethodInfo> method_list;
 		ClassDB::get_method_list(name,&method_list,true);
@@ -825,6 +852,13 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								prop.name=parser->get_attribute_value("name");
 								ERR_FAIL_COND_V(!parser->has_attribute("type"),ERR_FILE_CORRUPT);
 								prop.type=parser->get_attribute_value("type");
+								if (parser->has_attribute("setter"))
+									prop.setter=parser->get_attribute_value("setter");
+								if (parser->has_attribute("getter"))
+									prop.getter=parser->get_attribute_value("getter");
+								if (parser->has_attribute("brief"))
+									prop.brief_description=parser->get_attribute_value("brief").xml_unescape();
+
 								parser->read();
 								if (parser->get_node_type()==XMLParser::NODE_TEXT)
 									prop.description=parser->get_node_data().strip_edges();
@@ -1009,7 +1043,7 @@ Error DocData::save(const String& p_path) {
 
 
 				PropertyDoc &p=c.properties[i];
-				_write_string(f,2,"<member name=\""+p.name+"\" type=\""+p.type+"\">");
+				_write_string(f,2,"<member name=\""+p.name+"\" type=\""+p.type+"\" setter=\""+p.setter+"\" getter=\""+p.getter+"\" brief=\""+p.brief_description.xml_escape(true)+"\">");
 				if (p.description!="")
 					_write_string(f,3,p.description.xml_escape());
 				_write_string(f,2,"</member>");

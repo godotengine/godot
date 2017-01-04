@@ -899,14 +899,17 @@ void DynamicFont::_bind_methods() {
 	ClassDB::bind_method(_MD("get_fallback_count"),&DynamicFont::get_fallback_count);
 
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"font/size"),_SCS("set_size"),_SCS("get_size"));
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing/top"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_TOP);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing/bottom"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_BOTTOM);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing/char"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_CHAR);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing/space"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_SPACE);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"font/use_mipmaps"),_SCS("set_use_mipmaps"),_SCS("get_use_mipmaps"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"font/use_filter"),_SCS("set_use_filter"),_SCS("get_use_filter"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"font/font",PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"),_SCS("set_font_data"),_SCS("get_font_data"));
+	ADD_GROUP("Settings","");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"size"),_SCS("set_size"),_SCS("get_size"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"use_mipmaps"),_SCS("set_use_mipmaps"),_SCS("get_use_mipmaps"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"use_filter"),_SCS("set_use_filter"),_SCS("get_use_filter"));
+	ADD_GROUP("Extra Spacing","extra_spacing");
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_top"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_TOP);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_bottom"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_BOTTOM);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_char"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_CHAR);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_space"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_SPACE);
+	ADD_GROUP("Font","");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"font_data",PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"),_SCS("set_font_data"),_SCS("get_font_data"));
 
 	BIND_CONSTANT( SPACING_TOP );
 	BIND_CONSTANT( SPACING_BOTTOM );

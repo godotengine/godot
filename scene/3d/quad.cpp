@@ -211,10 +211,10 @@ void Quad::_bind_methods(){
 	ClassDB::bind_method(_MD("set_offset","offset"),&Quad::set_offset);
 	ClassDB::bind_method(_MD("get_offset"),&Quad::get_offset);
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "quad/axis", PROPERTY_HINT_ENUM,"X,Y,Z" ), _SCS("set_axis"), _SCS("get_axis"));
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "quad/size" ), _SCS("set_size"), _SCS("get_size"));
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "quad/offset" ), _SCS("set_offset"), _SCS("get_offset"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "quad/centered" ), _SCS("set_centered"), _SCS("is_centered"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "axis", PROPERTY_HINT_ENUM,"X,Y,Z" ), _SCS("set_axis"), _SCS("get_axis"));
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "size" ), _SCS("set_size"), _SCS("get_size"));
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "offset" ), _SCS("set_offset"), _SCS("get_offset"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "centered" ), _SCS("set_centered"), _SCS("is_centered"));
 
 }
 

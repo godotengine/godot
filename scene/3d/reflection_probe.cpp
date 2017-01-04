@@ -230,10 +230,12 @@ void ReflectionProbe::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"box_projection"),_SCS("set_enable_box_projection"),_SCS("is_box_projection_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enable_shadows"),_SCS("set_enable_shadows"),_SCS("are_shadows_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cull_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_cull_mask"),_SCS("get_cull_mask"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"interior/enable"),_SCS("set_as_interior"),_SCS("is_set_as_interior"));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"interior/ambient_color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_interior_ambient"),_SCS("get_interior_ambient"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior/ambient_energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_interior_ambient_energy"),_SCS("get_interior_ambient_energy"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior/ambient_contrib",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_interior_ambient_probe_contribution"),_SCS("get_interior_ambient_probe_contribution"));
+
+	ADD_GROUP("Interior","interior_");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"interior_enable"),_SCS("set_as_interior"),_SCS("is_set_as_interior"));
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"interior_ambient_color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_interior_ambient"),_SCS("get_interior_ambient"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior_ambient_energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_interior_ambient_energy"),_SCS("get_interior_ambient_energy"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior_ambient_contrib",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_interior_ambient_probe_contribution"),_SCS("get_interior_ambient_probe_contribution"));
 
 
 	BIND_CONSTANT( UPDATE_ONCE );

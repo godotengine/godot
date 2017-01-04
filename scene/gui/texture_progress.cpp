@@ -276,13 +276,15 @@ void TextureProgress::_bind_methods() {
 	ClassDB::bind_method(_MD("set_fill_degrees","mode"),&TextureProgress::set_fill_degrees);
 	ClassDB::bind_method(_MD("get_fill_degrees"), &TextureProgress::get_fill_degrees);
 
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/under",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_under_texture"),_SCS("get_under_texture"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/over",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_over_texture"),_SCS("get_over_texture"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/progress",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_progress_texture"),_SCS("get_progress_texture"));
-	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise"),_SCS("set_fill_mode"),_SCS("get_fill_mode"));
-	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"radial_fill/initial_angle",PROPERTY_HINT_RANGE,"0.0,360.0,0.1,slider"),_SCS("set_radial_initial_angle"),_SCS("get_radial_initial_angle"));
-	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"radial_fill/fill_degrees",PROPERTY_HINT_RANGE,"0.0,360.0,0.1,slider"),_SCS("set_fill_degrees"),_SCS("get_fill_degrees"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"radial_fill/center_offset"),_SCS("set_radial_center_offset"),_SCS("get_radial_center_offset"));
+	ADD_GROUP("Textures","texture_");
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture_under",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_under_texture"),_SCS("get_under_texture"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture_over",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_over_texture"),_SCS("get_over_texture"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture_progress",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_progress_texture"),_SCS("get_progress_texture"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"fill_mode",PROPERTY_HINT_ENUM,"Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise"),_SCS("set_fill_mode"),_SCS("get_fill_mode"));
+	ADD_GROUP("Radial Fill","radial_");
+	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"radial_initial_angle",PROPERTY_HINT_RANGE,"0.0,360.0,0.1,slider"),_SCS("set_radial_initial_angle"),_SCS("get_radial_initial_angle"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"radial_fill_degrees",PROPERTY_HINT_RANGE,"0.0,360.0,0.1,slider"),_SCS("set_fill_degrees"),_SCS("get_fill_degrees"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"radial_center_offset"),_SCS("set_radial_center_offset"),_SCS("get_radial_center_offset"));
 
 	BIND_CONSTANT( FILL_LEFT_TO_RIGHT );
 	BIND_CONSTANT( FILL_RIGHT_TO_LEFT );

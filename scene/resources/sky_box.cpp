@@ -126,12 +126,13 @@ void ImageSkyBox::_bind_methods() {
 		hints+="*."+E->get();
 	}
 
-	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path/negative_x",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_NEGATIVE_X);
-	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path/positive_x",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_POSITIVE_X);
-	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path/negative_y",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_NEGATIVE_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path/positive_y",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_POSITIVE_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path/negative_z",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_NEGATIVE_Z);
-	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path/positive_z",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_POSITIVE_Z);
+	ADD_GROUP("Image Path","image_path_");
+	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path_negative_x",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_NEGATIVE_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path_positive_x",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_POSITIVE_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path_negative_y",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_NEGATIVE_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path_positive_y",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_POSITIVE_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path_negative_z",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_NEGATIVE_Z);
+	ADD_PROPERTYI(PropertyInfo(Variant::STRING,"image_path_positive_z",PROPERTY_HINT_FILE,hints),_SCS("set_image_path"),_SCS("get_image_path"),IMAGE_PATH_POSITIVE_Z);
 
 	BIND_CONSTANT( IMAGE_PATH_NEGATIVE_X );
 	BIND_CONSTANT( IMAGE_PATH_POSITIVE_X );

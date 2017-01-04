@@ -418,7 +418,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		//print_line("pre src path "+source->get_line_edit()->get_text());
 		//print_line("src path "+src_path);
 		imd->add_source(src_path);
-		imd->set_option("font/size",font_size->get_val());
+		imd->set_option("font/size",font_size->get_value());
 
 		return imd;
 
@@ -619,7 +619,7 @@ public:
 			}
 			source->get_line_edit()->set_text(src);
 
-			font_size->set_val(rimd->get_option("font/size"));
+			font_size->set_value(rimd->get_option("font/size"));
 		}
 	}
 
@@ -658,7 +658,7 @@ public:
 		vbl->add_margin_child(TTR("Source Font Size:"),font_size);
 		font_size->set_min(3);
 		font_size->set_max(256);
-		font_size->set_val(16);
+		font_size->set_value(16);
 		font_size->connect("value_changed",this,"_font_size_changed");
 		dest = memnew( EditorLineEditFileChooser );
 		//

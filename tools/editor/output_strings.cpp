@@ -68,7 +68,7 @@ void OutputStrings::_notification(int p_what) {
 			if (following) {
 
 				updating=true;
-				v_scroll->set_val( v_scroll->get_max() - v_scroll->get_page() );
+				v_scroll->set_value( v_scroll->get_max() - v_scroll->get_page() );
 				updating=false;
 			}
 
@@ -85,8 +85,8 @@ void OutputStrings::_notification(int p_what) {
 		//	int lines = (size_height-(int)margin.y) / font_height;
 			Point2 ofs=tree_st->get_offset();
 
-			LineMap::Element *E = line_map.find(v_scroll->get_val());
-			float h_ofs = (int)h_scroll->get_val();
+			LineMap::Element *E = line_map.find(v_scroll->get_value());
+			float h_ofs = (int)h_scroll->get_value();
 			Point2 icon_ofs=Point2(0,(font_height-(int)icon_error->get_height())/2);
 
 			while( E && ofs.y < (size_height-(int)margin.y) ) {

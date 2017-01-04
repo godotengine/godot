@@ -28,7 +28,7 @@ void EditorProfiler::add_frame_metric(const Metric& p_metric,bool p_final) {
 
 
 	if (!seeking) {
-		cursor_metric_edit->set_val(frame_metrics[last_metric].frame_number);
+		cursor_metric_edit->set_value(frame_metrics[last_metric].frame_number);
 		if (hover_metric!=-1) {
 			hover_metric++;
 			if (hover_metric>=frame_metrics.size()) {
@@ -70,7 +70,7 @@ void EditorProfiler::clear() {
 	updating_frame=true;
 	cursor_metric_edit->set_min(0);
 	cursor_metric_edit->set_max(0);
-	cursor_metric_edit->set_val(0);
+	cursor_metric_edit->set_value(0);
 	updating_frame=false;
 	hover_metric=-1;
 	seeking=false;
@@ -453,7 +453,7 @@ void EditorProfiler::_graph_tex_draw() {
 	if (seeking) {
 
 		int max_frames = frame_metrics.size();
-		int frame = cursor_metric_edit->get_val() - (frame_metrics[last_metric].frame_number-max_frames+1);
+		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number-max_frames+1);
 		if (frame<0)
 			frame=0;
 
@@ -559,7 +559,7 @@ void EditorProfiler::_graph_tex_input(const InputEvent& p_ev){
 			}
 
 			if (valid)
-				cursor_metric_edit->set_val(frame_metrics[metric].frame_number);
+				cursor_metric_edit->set_value(frame_metrics[metric].frame_number);
 
 			updating_frame=false;
 
@@ -590,7 +590,7 @@ int EditorProfiler::_get_cursor_index() const {
 	if (!frame_metrics[last_metric].valid)
 		return 0;
 
-	int diff = (frame_metrics[last_metric].frame_number-cursor_metric_edit->get_val());
+	int diff = (frame_metrics[last_metric].frame_number-cursor_metric_edit->get_value());
 
 	int idx = last_metric - diff;
 	while (idx<0) {

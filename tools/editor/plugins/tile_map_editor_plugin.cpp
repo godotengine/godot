@@ -221,7 +221,7 @@ void TileMapEditor::_update_palette() {
 	palette->add_constant_override("vseparation", 8*EDSCALE);
 
 	palette->set_fixed_icon_size(Size2(min_size, min_size));
-	palette->set_fixed_column_width(min_size * MAX(size_slider->get_val(), 1));
+	palette->set_fixed_column_width(min_size * MAX(size_slider->get_value(), 1));
 
 	String filter = search_box->get_text().strip_edges();
 
@@ -1449,7 +1449,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	size_slider->set_min(0.1f);
 	size_slider->set_max(4.0f);
 	size_slider->set_step(0.1f);
-	size_slider->set_val(1.0f);
+	size_slider->set_value(1.0f);
 	size_slider->connect("value_changed", this, "_icon_size_changed");
 	add_child(size_slider);
 

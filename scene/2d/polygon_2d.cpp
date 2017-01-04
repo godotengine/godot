@@ -377,12 +377,16 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR_ARRAY,"vertex_colors"),_SCS("set_vertex_colors"),_SCS("get_vertex_colors"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture/offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture/scale"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"texture/rotation",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_texture_rotationd"),_SCS("_get_texture_rotationd"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"invert/enable"),_SCS("set_invert"),_SCS("get_invert"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"invert/border",PROPERTY_HINT_RANGE,"0.1,16384,0.1"),_SCS("set_invert_border"),_SCS("get_invert_border"));
+	ADD_GROUP("Texture","");
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
+	ADD_GROUP("Texture","texture_");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_scale"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"texture_rotation",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_texture_rotationd"),_SCS("_get_texture_rotationd"));
+
+	ADD_GROUP("Invert","invert_");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"invert_enable"),_SCS("set_invert"),_SCS("get_invert"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"invert_border",PROPERTY_HINT_RANGE,"0.1,16384,0.1"),_SCS("set_invert_border"),_SCS("get_invert_border"));
 
 }
 

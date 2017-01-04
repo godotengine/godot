@@ -978,6 +978,8 @@ public:
 	BIND2(instance_attach_object_instance_ID,RID,ObjectID )
 	BIND3(instance_set_morph_target_weight,RID,int , float )
 	BIND3(instance_set_surface_material,RID,int , RID )
+	BIND2(instance_set_visible,RID ,bool)
+
 
 	BIND2(instance_attach_skeleton,RID,RID )
 	BIND2(instance_set_exterior, RID, bool  )

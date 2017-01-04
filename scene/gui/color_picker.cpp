@@ -122,7 +122,7 @@ void ColorPicker::_value_changed(double) {
 		return;
 
 	for(int i=0;i<4;i++) {
-		color.components[i] = scroll[i]->get_val()/(raw_mode_enabled?1.0:255.0);
+		color.components[i] = scroll[i]->get_value()/(raw_mode_enabled?1.0:255.0);
 	}
 
 	set_color(color);
@@ -157,9 +157,9 @@ void ColorPicker::_update_color() {
 		if (raw_mode_enabled) {
 			if (i == 3)
 				scroll[i]->set_max(1);
-			scroll[i]->set_val(color.components[i]);
+			scroll[i]->set_value(color.components[i]);
 		} else {
-			scroll[i]->set_val(color.components[i] * 255);
+			scroll[i]->set_value(color.components[i] * 255);
 		}
 	}
 

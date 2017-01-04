@@ -46,7 +46,8 @@ void YSort::_bind_methods() {
 	ClassDB::bind_method(_MD("set_sort_enabled","enabled"),&YSort::set_sort_enabled);
 	ClassDB::bind_method(_MD("is_sort_enabled"),&YSort::is_sort_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"sort/enabled"),_SCS("set_sort_enabled"),_SCS("is_sort_enabled"));
+	ADD_GROUP("Sort","sort_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"sort_enabled"),_SCS("set_sort_enabled"),_SCS("is_sort_enabled"));
 }
 
 

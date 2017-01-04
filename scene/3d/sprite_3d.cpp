@@ -291,9 +291,10 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "opacity",PROPERTY_HINT_RANGE,"0,1,0.01"), _SCS("set_opacity"),_SCS("get_opacity"));
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "pixel_size",PROPERTY_HINT_RANGE,"0.0001,128,0.0001"), _SCS("set_pixel_size"),_SCS("get_pixel_size"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "axis",PROPERTY_HINT_ENUM,"X-Axis,Y-Axis,Z-Axis"), _SCS("set_axis"),_SCS("get_axis"));
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "flags/transparent"), _SCS("set_draw_flag"),_SCS("get_draw_flag"),FLAG_TRANSPARENT);
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "flags/shaded"), _SCS("set_draw_flag"),_SCS("get_draw_flag"),FLAG_SHADED);
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "flags/alpha_cut",PROPERTY_HINT_ENUM,"Disabled,Discard,Opaque Pre-Pass"), _SCS("set_alpha_cut_mode"),_SCS("get_alpha_cut_mode"));
+	ADD_GROUP("Flags","");
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "transparent"), _SCS("set_draw_flag"),_SCS("get_draw_flag"),FLAG_TRANSPARENT);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "shaded"), _SCS("set_draw_flag"),_SCS("get_draw_flag"),FLAG_SHADED);
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "alpha_cut",PROPERTY_HINT_ENUM,"Disabled,Discard,Opaque Pre-Pass"), _SCS("set_alpha_cut_mode"),_SCS("get_alpha_cut_mode"));
 
 
 	BIND_CONSTANT( FLAG_TRANSPARENT );

@@ -285,16 +285,16 @@ void EditorNode::_notification(int p_what) {
 
 			if (peak<-80)
 				peak=-80;
-			float vu = audio_vu->get_val();
+			float vu = audio_vu->get_value();
 
 			if (peak > vu) {
-				audio_vu->set_val(peak);
+				audio_vu->set_value(peak);
 			} else {
 				float new_vu = vu - get_process_delta_time()*70.0;
 				if (new_vu<-80)
 					new_vu=-80;
 				if (new_vu !=-80 && vu !=-80)
-					audio_vu->set_val(new_vu);
+					audio_vu->set_value(new_vu);
 			}
 
 		}
@@ -3468,8 +3468,8 @@ Dictionary EditorNode::_get_main_scene_state() {
 
 	Dictionary state;
 	state["main_tab"]=_get_current_main_editor();
-	state["scene_tree_offset"]=scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->get_val();
-	state["property_edit_offset"]=get_property_editor()->get_scene_tree()->get_vscroll_bar()->get_val();
+	state["scene_tree_offset"]=scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->get_value();
+	state["property_edit_offset"]=get_property_editor()->get_scene_tree()->get_vscroll_bar()->get_value();
 	state["saved_version"]=saved_version;
 	state["node_filter"]=scene_tree_dock->get_filter();
 	//print_line(" getting main tab: "+itos(state["main_tab"]));
@@ -3535,9 +3535,9 @@ void EditorNode::_set_main_scene_state(Dictionary p_state,Node* p_for_scene) {
 
 
 	if (p_state.has("scene_tree_offset"))
-		scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->set_val(p_state["scene_tree_offset"]);
+		scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->set_value(p_state["scene_tree_offset"]);
 	if (p_state.has("property_edit_offset"))
-		get_property_editor()->get_scene_tree()->get_vscroll_bar()->set_val(p_state["property_edit_offset"]);
+		get_property_editor()->get_scene_tree()->get_vscroll_bar()->set_value(p_state["property_edit_offset"]);
 
 	if (p_state.has("node_filter"))
 		scene_tree_dock->set_filter(p_state["node_filter"]);
@@ -6026,7 +6026,7 @@ EditorNode::EditorNode() {
 	audio_vu->set_max(24);
 	audio_vu->set_min(-80);
 	audio_vu->set_step(0.01);
-	audio_vu->set_val(0);
+	audio_vu->set_value(0);
 
 	{
 		Control *sp = memnew( Control );

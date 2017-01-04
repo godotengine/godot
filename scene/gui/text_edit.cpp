@@ -347,7 +347,7 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->show();
 		v_scroll->set_max(total_rows);
 		v_scroll->set_page(visible_rows);
-		v_scroll->set_val(cursor.line_ofs);
+		v_scroll->set_value(cursor.line_ofs);
 
 	}  else {
 		cursor.line_ofs = 0;
@@ -359,7 +359,7 @@ void TextEdit::_update_scrollbars() {
 		h_scroll->show();
 		h_scroll->set_max(total_width);
 		h_scroll->set_page(visible_width);
-		h_scroll->set_val(cursor.x_ofs);
+		h_scroll->set_value(cursor.x_ofs);
 
 	} else {
 
@@ -1515,16 +1515,16 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 			if (mb.pressed) {
 				if (mb.button_index==BUTTON_WHEEL_UP && !mb.mod.command) {
-					v_scroll->set_val( v_scroll->get_val() -3 );
+					v_scroll->set_value( v_scroll->get_value() -3 );
 				}
 				if (mb.button_index==BUTTON_WHEEL_DOWN && !mb.mod.command) {
-					v_scroll->set_val( v_scroll->get_val() +3 );
+					v_scroll->set_value( v_scroll->get_value() +3 );
 				}
 				if (mb.button_index==BUTTON_WHEEL_LEFT) {
-					h_scroll->set_val( h_scroll->get_val() -3 );
+					h_scroll->set_value( h_scroll->get_value() -3 );
 				}
 				if (mb.button_index==BUTTON_WHEEL_RIGHT) {
-					h_scroll->set_val( h_scroll->get_val() +3 );
+					h_scroll->set_value( h_scroll->get_value() +3 );
 				}
 				if (mb.button_index==BUTTON_LEFT) {
 
@@ -3206,9 +3206,9 @@ void TextEdit::_scroll_moved(double p_to_val) {
 		return;
 
 	if (h_scroll->is_visible())
-		cursor.x_ofs=h_scroll->get_val();
+		cursor.x_ofs=h_scroll->get_value();
 	if (v_scroll->is_visible())
-		cursor.line_ofs=v_scroll->get_val();
+		cursor.line_ofs=v_scroll->get_value();
 	update();
 }
 
@@ -4155,21 +4155,21 @@ void TextEdit::tag_saved_version() {
 
 int TextEdit::get_v_scroll() const {
 
-	return v_scroll->get_val();
+	return v_scroll->get_value();
 }
 void TextEdit::set_v_scroll(int p_scroll) {
 
-	v_scroll->set_val(p_scroll);
+	v_scroll->set_value(p_scroll);
 	cursor.line_ofs=p_scroll;
 }
 
 int TextEdit::get_h_scroll() const {
 
-	return h_scroll->get_val();
+	return h_scroll->get_value();
 }
 void TextEdit::set_h_scroll(int p_scroll) {
 
-	h_scroll->set_val(p_scroll);
+	h_scroll->set_value(p_scroll);
 }
 
 void TextEdit::set_completion(bool p_enabled,const Vector<String>& p_prefixes) {
@@ -4686,9 +4686,11 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), _SCS("set_show_line_numbers"), _SCS("is_show_line_numbers_enabled"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), _SCS("set_highlight_all_occurrences"), _SCS("is_highlight_all_occurrences_enabled"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret/block_caret"), _SCS("cursor_set_block_mode"), _SCS("cursor_is_block_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret/caret_blink"), _SCS("cursor_set_blink_enabled"), _SCS("cursor_get_blink_enabled"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret/caret_blink_speed",PROPERTY_HINT_RANGE,"0.1,10,0.1"), _SCS("cursor_set_blink_speed"),_SCS("cursor_get_blink_speed") );
+
+	ADD_GROUP("Caret","caret_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_block_mode"), _SCS("cursor_set_block_mode"), _SCS("cursor_is_block_mode"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), _SCS("cursor_set_blink_enabled"), _SCS("cursor_get_blink_enabled"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret_blink_speed",PROPERTY_HINT_RANGE,"0.1,10,0.1"), _SCS("cursor_set_blink_speed"),_SCS("cursor_get_blink_speed") );
 
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
 	ADD_SIGNAL(MethodInfo("text_changed"));

@@ -77,14 +77,14 @@ void AnimationPlayerEditor::_notification(int p_what) {
 					}
 				}
 			}
-			frame->set_val(player->get_current_animation_pos());
+			frame->set_value(player->get_current_animation_pos());
 			key_editor->set_anim_pos(player->get_current_animation_pos());
 			EditorNode::get_singleton()->get_property_editor()->refresh();
 
 		} else if (last_active) {
 			//need the last frame after it stopped
 
-			frame->set_val(player->get_current_animation_pos());
+			frame->set_value(player->get_current_animation_pos());
 		}
 
 		last_active=player->is_playing();
@@ -1108,7 +1108,7 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos,bool p_drag) 
 		return;
 
 	updating=true;
-	frame->set_val(p_pos);	
+	frame->set_value(p_pos);	
 	updating=false;
 	_seek_value_changed(p_pos,!p_drag);
 

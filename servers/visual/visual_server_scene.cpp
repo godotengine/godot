@@ -866,6 +866,41 @@ void VisualServerScene::instance_set_surface_material(RID p_instance,int p_surfa
 
 }
 
+void VisualServerScene::instance_set_visible(RID p_instance,bool p_visible) {
+
+	Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND( !instance );
+
+	if (instance->visible==p_visible)
+		return;
+
+	instance->visible=p_visible;
+
+
+	switch(instance->base_type) {
+		case VS::INSTANCE_LIGHT: {
+			if (VSG::storage->light_get_type(instance->base)!=VS::LIGHT_DIRECTIONAL && instance->octree_id && instance->scenario) {
+				instance->scenario->octree.set_pairable(instance->octree_id,p_visible,1<<VS::INSTANCE_LIGHT,p_visible?VS::INSTANCE_GEOMETRY_MASK:0);
+			}
+
+		} break;
+		case VS::INSTANCE_REFLECTION_PROBE: {
+			if (instance->octree_id && instance->scenario) {
+				instance->scenario->octree.set_pairable(instance->octree_id,p_visible,1<<VS::INSTANCE_REFLECTION_PROBE,p_visible?VS::INSTANCE_GEOMETRY_MASK:0);
+			}
+
+		} break;
+		case VS::INSTANCE_GI_PROBE: {
+			if (instance->octree_id && instance->scenario) {
+				instance->scenario->octree.set_pairable(instance->octree_id,p_visible,1<<VS::INSTANCE_GI_PROBE,p_visible?(VS::INSTANCE_GEOMETRY_MASK|(1<<VS::INSTANCE_LIGHT)):0);
+			}
+
+		} break;
+
+	}
+
+}
+
 void VisualServerScene::instance_attach_skeleton(RID p_instance,RID p_skeleton){
 
 	Instance *instance = instance_owner.get( p_instance );
@@ -981,11 +1016,6 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance,VS::InstanceFl
 
 	switch(p_flags) {
 
-		case VS::INSTANCE_FLAG_VISIBLE: {
-
-			instance->visible=p_enabled;
-
-		} break;
 		case VS::INSTANCE_FLAG_BILLBOARD: {
 
 			instance->billboard=p_enabled;

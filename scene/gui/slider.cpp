@@ -63,9 +63,9 @@ void Slider::_input_event(InputEvent p_event) {
 			}
 		} else if (mb.pressed && mb.button_index==BUTTON_WHEEL_UP) {
 
-			set_val( get_val() + get_step());
+			set_value( get_value() + get_step());
 		} else if (mb.pressed && mb.button_index==BUTTON_WHEEL_DOWN) {
-			set_val( get_val() - get_step());
+			set_value( get_value() - get_step());
 		}
 
 	} else if (p_event.type==InputEvent::MOUSE_MOTION) {
@@ -89,26 +89,26 @@ void Slider::_input_event(InputEvent p_event) {
 
 			if (orientation!=HORIZONTAL)
 				return;
-			set_val( get_val() - (custom_step>=0?custom_step:get_step()) );
+			set_value( get_value() - (custom_step>=0?custom_step:get_step()) );
 			accept_event();
 		} else if (p_event.is_action("ui_right") && p_event.is_pressed()) {
 
 			if (orientation!=HORIZONTAL)
 				return;
-			set_val( get_val() + (custom_step>=0?custom_step:get_step()) );
+			set_value( get_value() + (custom_step>=0?custom_step:get_step()) );
 			accept_event();
 		} else if (p_event.is_action("ui_up") && p_event.is_pressed()) {
 
 			if (orientation!=VERTICAL)
 				return;
 
-			set_val( get_val() + (custom_step>=0?custom_step:get_step()) );
+			set_value( get_value() + (custom_step>=0?custom_step:get_step()) );
 			accept_event();
 		} else if (p_event.is_action("ui_down") && p_event.is_pressed()) {
 
 			if (orientation!=VERTICAL)
 				return;
-			set_val( get_val() - (custom_step>=0?custom_step:get_step()) );
+			set_value( get_value() - (custom_step>=0?custom_step:get_step()) );
 			accept_event();
 
 		} else if (p_event.type==InputEvent::KEY) {
@@ -122,12 +122,12 @@ void Slider::_input_event(InputEvent p_event) {
 
 				case KEY_HOME: {
 
-					set_val( get_min() );
+					set_value( get_min() );
 					accept_event();
 				} break;
 				case KEY_END: {
 
-					set_val( get_max() );
+					set_value( get_max() );
 					accept_event();
 
 				} break;

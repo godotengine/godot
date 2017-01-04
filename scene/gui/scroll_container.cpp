@@ -91,18 +91,18 @@ void ScrollContainer::_input_event(const InputEvent& p_input_event) {
 			if (mb.button_index==BUTTON_WHEEL_UP && mb.pressed) {
 				if (h_scroll->is_visible() && !v_scroll->is_visible()){
 					// only horizontal is enabled, scroll horizontally
-					h_scroll->set_val( h_scroll->get_val()-h_scroll->get_page()/8 );
+					h_scroll->set_value( h_scroll->get_value()-h_scroll->get_page()/8 );
 				} else if (v_scroll->is_visible()) {
-					v_scroll->set_val( v_scroll->get_val()-v_scroll->get_page()/8 );
+					v_scroll->set_value( v_scroll->get_value()-v_scroll->get_page()/8 );
 				}
 			}
 
 			if (mb.button_index==BUTTON_WHEEL_DOWN && mb.pressed) {
 				if (h_scroll->is_visible() && !v_scroll->is_visible()){
 					// only horizontal is enabled, scroll horizontally
-					h_scroll->set_val( h_scroll->get_val()+h_scroll->get_page()/8 );
+					h_scroll->set_value( h_scroll->get_value()+h_scroll->get_page()/8 );
 				} else if (v_scroll->is_visible()) {
-					v_scroll->set_val( v_scroll->get_val()+v_scroll->get_page()/8 );
+					v_scroll->set_value( v_scroll->get_value()+v_scroll->get_page()/8 );
 				}
 			}
 
@@ -128,7 +128,7 @@ void ScrollContainer::_input_event(const InputEvent& p_input_event) {
 					drag_speed=Vector2();
 					drag_accum=Vector2();
 					last_drag_accum=Vector2();
-					drag_from=Vector2(h_scroll->get_val(),v_scroll->get_val());
+					drag_from=Vector2(h_scroll->get_value(),v_scroll->get_value());
 					drag_touching=OS::get_singleton()->has_touchscreen_ui_hint();
 					drag_touching_deaccel=false;
 					time_since_motion=0;
@@ -167,11 +167,11 @@ void ScrollContainer::_input_event(const InputEvent& p_input_event) {
 				Vector2 diff = drag_from+drag_accum;
 
 				if (scroll_h)
-					h_scroll->set_val(diff.x);
+					h_scroll->set_value(diff.x);
 				else
 					drag_accum.x=0;
 				if (scroll_v)
-					v_scroll->set_val(diff.y);
+					v_scroll->set_value(diff.y);
 				else
 					drag_accum.y=0;
 				time_since_motion=0;
@@ -270,7 +270,7 @@ void ScrollContainer::_notification(int p_what) {
 
 			if (drag_touching_deaccel) {
 
-				Vector2 pos = Vector2(h_scroll->get_val(),v_scroll->get_val());
+				Vector2 pos = Vector2(h_scroll->get_value(),v_scroll->get_value());
 				pos+=drag_speed*get_fixed_process_delta_time();
 
 				bool turnoff_h=false;
@@ -295,9 +295,9 @@ void ScrollContainer::_notification(int p_what) {
 				}
 
 				if (scroll_h)
-					h_scroll->set_val(pos.x);
+					h_scroll->set_value(pos.x);
 				if (scroll_v)
-					v_scroll->set_val(pos.y);
+					v_scroll->set_value(pos.y);
 
 				float sgn_x = drag_speed.x<0? -1 : 1;
 				float val_x = Math::abs(drag_speed.x);
@@ -359,7 +359,7 @@ void ScrollContainer::update_scrollbars() {
 	} else {
 
 		v_scroll->show();
-		scroll.y=v_scroll->get_val();
+		scroll.y=v_scroll->get_value();
 
 	}
 
@@ -376,14 +376,14 @@ void ScrollContainer::update_scrollbars() {
 		h_scroll->show();
 		h_scroll->set_max(min.width);
 		h_scroll->set_page(size.width - vmin.width);
-		scroll.x=h_scroll->get_val();
+		scroll.x=h_scroll->get_value();
 	}
 }
 
 void ScrollContainer::_scroll_moved(float) {
 
-	scroll.x=h_scroll->get_val();
-	scroll.y=v_scroll->get_val();
+	scroll.x=h_scroll->get_value();
+	scroll.y=v_scroll->get_value();
 	queue_sort();
 
 	update();
@@ -415,21 +415,21 @@ bool ScrollContainer::is_v_scroll_enabled() const{
 int ScrollContainer::get_v_scroll() const {
 
 
-	return v_scroll->get_val();
+	return v_scroll->get_value();
 }
 void ScrollContainer::set_v_scroll(int p_pos) {
 
-	v_scroll->set_val(p_pos);
+	v_scroll->set_value(p_pos);
 	_cancel_drag();
 }
 
 int ScrollContainer::get_h_scroll() const {
 
-	return h_scroll->get_val();
+	return h_scroll->get_value();
 }
 void ScrollContainer::set_h_scroll(int p_pos) {
 
-	h_scroll->set_val(p_pos);
+	h_scroll->set_value(p_pos);
 	_cancel_drag();
 
 }
@@ -449,8 +449,9 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(_MD("set_v_scroll","val"),&ScrollContainer::set_v_scroll);
 	ClassDB::bind_method(_MD("get_v_scroll"),&ScrollContainer::get_v_scroll);
 
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll/horizontal"), _SCS("set_enable_h_scroll"),_SCS("is_h_scroll_enabled"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll/vertical"), _SCS("set_enable_v_scroll"),_SCS("is_v_scroll_enabled"));
+	ADD_GROUP("Scroll","scroll_");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_horizontal"), _SCS("set_enable_h_scroll"),_SCS("is_h_scroll_enabled"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_vertical"), _SCS("set_enable_v_scroll"),_SCS("is_v_scroll_enabled"));
 
 };
 

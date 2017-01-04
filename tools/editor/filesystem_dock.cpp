@@ -174,7 +174,7 @@ void FileSystemDock::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_PROCESS: {
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
-				scanning_progress->set_val(EditorFileSystem::get_singleton()->get_scanning_progress()*100);
+				scanning_progress->set_value(EditorFileSystem::get_singleton()->get_scanning_progress()*100);
 			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -668,9 +668,9 @@ void FileSystemDock::_set_scannig_mode() {
 	scanning_vb->show();
 	set_process(true);
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
-		scanning_progress->set_val(EditorFileSystem::get_singleton()->get_scanning_progress()*100);
+		scanning_progress->set_value(EditorFileSystem::get_singleton()->get_scanning_progress()*100);
 	} else {
-		scanning_progress->set_val(0);
+		scanning_progress->set_value(0);
 	}
 
 }

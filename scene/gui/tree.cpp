@@ -2278,9 +2278,9 @@ void Tree::_input_event(InputEvent p_event) {
 				if (mpos.y>=0) {
 
 					if (h_scroll->is_visible())
-						mpos.x+=h_scroll->get_val();
+						mpos.x+=h_scroll->get_value();
 					if (v_scroll->is_visible())
-						mpos.y+=v_scroll->get_val();
+						mpos.y+=v_scroll->get_value();
 
 					int col,h,section;
 					TreeItem *it = _find_item_at_pos(root,mpos,col,h,section);
@@ -2329,7 +2329,7 @@ void Tree::_input_event(InputEvent p_event) {
 
 
 				drag_accum-=b.relative_y;
-				v_scroll->set_val(drag_from+drag_accum);
+				v_scroll->set_value(drag_from+drag_accum);
 				drag_speed=-b.speed_y;
 
 			}
@@ -2471,7 +2471,7 @@ void Tree::_input_event(InputEvent p_event) {
 						drag_speed=0;
 						drag_accum=0;
 //						last_drag_accum=0;
-						drag_from=v_scroll->get_val();
+						drag_from=v_scroll->get_value();
 						drag_touching=OS::get_singleton()->has_touchscreen_ui_hint();
 						drag_touching_deaccel=false;
 						if (drag_touching) {
@@ -2483,11 +2483,11 @@ void Tree::_input_event(InputEvent p_event) {
 				} break;
 				case BUTTON_WHEEL_UP: {
 
-					v_scroll->set_val( v_scroll->get_val()-v_scroll->get_page()/8 );
+					v_scroll->set_value( v_scroll->get_value()-v_scroll->get_page()/8 );
 				} break;
 				case BUTTON_WHEEL_DOWN: {
 
-					v_scroll->set_val( v_scroll->get_val()+v_scroll->get_page()/8 );
+					v_scroll->set_value( v_scroll->get_value()+v_scroll->get_page()/8 );
 				} break;
 			}
 
@@ -2566,7 +2566,7 @@ bool Tree::edit_selected() {
 			value_editor->set_min( c.min );
 			value_editor->set_max( c.max );
 			value_editor->set_step( c.step );
-			value_editor->set_val( c.val );
+			value_editor->set_value( c.val );
 			value_editor->set_exp_unit_value( c.expr );
 			updating_value_editor=false;
 		}
@@ -2626,7 +2626,7 @@ void Tree::update_scrollbars() {
 		v_scroll->show();
 		v_scroll->set_max(min.height);
 		v_scroll->set_page(size.height - hmin.height - tbh);
-		cache.offset.y=v_scroll->get_val();
+		cache.offset.y=v_scroll->get_value();
 	}
 
 	if (min.width < size.width - vmin.width) {
@@ -2638,7 +2638,7 @@ void Tree::update_scrollbars() {
 		h_scroll->show();
 		h_scroll->set_max(min.width);
 		h_scroll->set_page(size.width - vmin.width);
-		cache.offset.x=h_scroll->get_val();
+		cache.offset.x=h_scroll->get_value();
 	}
 }
 
@@ -2692,7 +2692,7 @@ void Tree::_notification(int p_what) {
 
 			if (drag_touching_deaccel) {
 
-				float pos = v_scroll->get_val();
+				float pos = v_scroll->get_value();
 				pos+=drag_speed*get_fixed_process_delta_time();
 
 				bool turnoff=false;
@@ -2709,7 +2709,7 @@ void Tree::_notification(int p_what) {
 
 				}
 
-				v_scroll->set_val(pos);
+				v_scroll->set_value(pos);
 				float sgn = drag_speed<0? -1 : 1;
 				float val = Math::abs(drag_speed);
 				val-=1000*get_fixed_process_delta_time();
@@ -2749,8 +2749,8 @@ void Tree::_notification(int p_what) {
 			}
 			point *= cache.scroll_speed * get_fixed_process_delta_time();
 			point += get_scroll();
-			h_scroll->set_val(point.x);
-			v_scroll->set_val(point.y);
+			h_scroll->set_value(point.x);
+			v_scroll->set_value(point.y);
 		}
 	}
 
@@ -3187,10 +3187,10 @@ void Tree::ensure_cursor_is_visible() {
 	int h = compute_item_height(selected)+cache.vseparation;
 	int screenh=get_size().height-h_scroll->get_combined_minimum_size().height;
 
-	if (ofs+h>v_scroll->get_val()+screenh)
+	if (ofs+h>v_scroll->get_value()+screenh)
 		v_scroll->call_deferred("set_val", ofs-screenh+h);
-	else if (ofs < v_scroll->get_val())
-		v_scroll->set_val(ofs);
+	else if (ofs < v_scroll->get_value())
+		v_scroll->set_value(ofs);
 }
 
 int Tree::get_pressed_button() const {
@@ -3257,9 +3257,9 @@ Point2 Tree::get_scroll() const {
 
 	Point2 ofs;
 	if (h_scroll->is_visible())
-		ofs.x=h_scroll->get_val();
+		ofs.x=h_scroll->get_value();
 	if (v_scroll->is_visible())
-		ofs.y=v_scroll->get_val();
+		ofs.y=v_scroll->get_value();
 	return ofs;
 
 }
@@ -3398,9 +3398,9 @@ int Tree::get_column_at_pos(const Point2& p_pos) const {
 			return -1;
 
 		if (h_scroll->is_visible())
-			pos.x+=h_scroll->get_val();
+			pos.x+=h_scroll->get_value();
 		if (v_scroll->is_visible())
-			pos.y+=v_scroll->get_val();
+			pos.y+=v_scroll->get_value();
 
 		int col,h,section;
 		TreeItem *it = _find_item_at_pos(root,pos,col,h,section);
@@ -3425,9 +3425,9 @@ int Tree::get_drop_section_at_pos(const Point2& p_pos) const {
 			return -100;
 
 		if (h_scroll->is_visible())
-			pos.x+=h_scroll->get_val();
+			pos.x+=h_scroll->get_value();
 		if (v_scroll->is_visible())
-			pos.y+=v_scroll->get_val();
+			pos.y+=v_scroll->get_value();
 
 		int col,h,section;
 		TreeItem *it = _find_item_at_pos(root,pos,col,h,section);
@@ -3452,9 +3452,9 @@ TreeItem* Tree::get_item_at_pos(const Point2& p_pos) const {
 			return NULL;
 
 		if (h_scroll->is_visible())
-			pos.x+=h_scroll->get_val();
+			pos.x+=h_scroll->get_value();
 		if (v_scroll->is_visible())
-			pos.y+=v_scroll->get_val();
+			pos.y+=v_scroll->get_value();
 
 		int col,h,section;
 		TreeItem *it = _find_item_at_pos(root,pos,col,h,section);
@@ -3480,9 +3480,9 @@ String Tree::get_tooltip(const Point2& p_pos) const {
 			return Control::get_tooltip(p_pos);
 
 		if (h_scroll->is_visible())
-			pos.x+=h_scroll->get_val();
+			pos.x+=h_scroll->get_value();
 		if (v_scroll->is_visible())
-			pos.y+=v_scroll->get_val();
+			pos.y+=v_scroll->get_value();
 
 		int col,h,section;
 		TreeItem *it = _find_item_at_pos(root,pos,col,h,section);

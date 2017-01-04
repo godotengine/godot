@@ -610,7 +610,7 @@ void RichTextLabel::_scroll_changed(double) {
 	if (updating_scroll)
 		return;
 
-	if (scroll_follow && vscroll->get_val()>=(vscroll->get_max()-vscroll->get_page()))
+	if (scroll_follow && vscroll->get_value()>=(vscroll->get_max()-vscroll->get_page()))
 		scroll_following=true;
 	else
 		scroll_following=false;
@@ -695,7 +695,7 @@ void RichTextLabel::_notification(int p_what) {
 				VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci,false);
 			}
 
-			int ofs = vscroll->get_val();
+			int ofs = vscroll->get_value();
 
 			//todo, change to binary search
 
@@ -734,7 +734,7 @@ void RichTextLabel::_find_click(ItemFrame* p_frame,const Point2i& p_click,Item *
 
 	Size2 size = get_size();
 
-	int ofs = vscroll->get_val();
+	int ofs = vscroll->get_value();
 
 	//todo, change to binary search
 	int from_line = 0;
@@ -838,12 +838,12 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 			if (b.button_index==BUTTON_WHEEL_UP) {
 
 				if (scroll_active)
-					vscroll->set_val( vscroll->get_val()-vscroll->get_page()/8 );
+					vscroll->set_value( vscroll->get_value()-vscroll->get_page()/8 );
 			}
 			if (b.button_index==BUTTON_WHEEL_DOWN) {
 
 				if (scroll_active)
-					vscroll->set_val( vscroll->get_val()+vscroll->get_page()/8 );
+					vscroll->set_value( vscroll->get_value()+vscroll->get_page()/8 );
 			}
 		} break;
 		case InputEvent::KEY: {
@@ -855,32 +855,32 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 					case KEY_PAGEUP: {
 
 						if (vscroll->is_visible())
-							vscroll->set_val( vscroll->get_val() - vscroll->get_page() );
+							vscroll->set_value( vscroll->get_value() - vscroll->get_page() );
 					} break;
 					case KEY_PAGEDOWN: {
 
 						if (vscroll->is_visible())
-							vscroll->set_val( vscroll->get_val() + vscroll->get_page() );
+							vscroll->set_value( vscroll->get_value() + vscroll->get_page() );
 					} break;
 					case KEY_UP: {
 
 						if (vscroll->is_visible())
-							vscroll->set_val( vscroll->get_val() - get_font("normal_font")->get_height() );
+							vscroll->set_value( vscroll->get_value() - get_font("normal_font")->get_height() );
 					} break;
 					case KEY_DOWN: {
 
 						if (vscroll->is_visible())
-							vscroll->set_val( vscroll->get_val() + get_font("normal_font")->get_height() );
+							vscroll->set_value( vscroll->get_value() + get_font("normal_font")->get_height() );
 					} break;
 					case KEY_HOME: {
 
 						if (vscroll->is_visible())
-							vscroll->set_val( 0 );
+							vscroll->set_value( 0 );
 					} break;
 					case KEY_END: {
 
 						if (vscroll->is_visible())
-							vscroll->set_val( vscroll->get_max() );
+							vscroll->set_value( vscroll->get_max() );
 					} break;
 					case KEY_INSERT:
 					case KEY_C: {
@@ -1113,7 +1113,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame* p_frame) {
 	vscroll->set_max(total_height);
 	vscroll->set_page(size.height);
 	if (scroll_follow && scroll_following)
-		vscroll->set_val(total_height-size.height);
+		vscroll->set_value(total_height-size.height);
 
 	updating_scroll=false;
 
@@ -1411,7 +1411,7 @@ bool RichTextLabel::is_meta_underlined() const {
 
 void RichTextLabel::set_offset(int p_pixel) {
 
-	vscroll->set_val(p_pixel);
+	vscroll->set_value(p_pixel);
 }
 
 void RichTextLabel::set_scroll_active(bool p_active) {
@@ -1431,7 +1431,7 @@ bool RichTextLabel::is_scroll_active() const {
 void RichTextLabel::set_scroll_follow(bool p_follow) {
 
 	scroll_follow=p_follow;
-	if (!vscroll->is_visible() || vscroll->get_val()>=(vscroll->get_max()-vscroll->get_page()))
+	if (!vscroll->is_visible() || vscroll->get_value()>=(vscroll->get_max()-vscroll->get_page()))
 		scroll_following=true;
 }
 
@@ -1728,7 +1728,7 @@ void RichTextLabel::scroll_to_line(int p_line) {
 
 	ERR_FAIL_INDEX(p_line,main->lines.size());
 	_validate_line_caches(main);
-	vscroll->set_val(main->lines[p_line].height_accum_cache-main->lines[p_line].height_cache);
+	vscroll->set_value(main->lines[p_line].height_accum_cache-main->lines[p_line].height_cache);
 
 }
 
@@ -1795,7 +1795,7 @@ bool RichTextLabel::search(const String& p_string,bool p_from_selection) {
 					}
 					item=item->parent;
 				}
-				vscroll->set_val(offset-fh);
+				vscroll->set_value(offset-fh);
 
 				return true;
 			}
@@ -1955,8 +1955,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(_MD("set_use_bbcode","enable"),&RichTextLabel::set_use_bbcode);
 	ClassDB::bind_method(_MD("is_using_bbcode"),&RichTextLabel::is_using_bbcode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode/enabled"),_SCS("set_use_bbcode"),_SCS("is_using_bbcode"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"bbcode/bbcode",PROPERTY_HINT_MULTILINE_TEXT),_SCS("set_bbcode"),_SCS("get_bbcode"));
+	ADD_GROUP("BBCode","bbcode_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode_enabled"),_SCS("set_use_bbcode"),_SCS("is_using_bbcode"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"bbcode_text",PROPERTY_HINT_MULTILINE_TEXT),_SCS("set_bbcode"),_SCS("get_bbcode"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"visible_characters",PROPERTY_HINT_RANGE,"-1,128000,1"),_SCS("set_visible_characters"),_SCS("get_visible_characters"));
 
 	ADD_SIGNAL( MethodInfo("meta_clicked",PropertyInfo(Variant::NIL,"meta")));

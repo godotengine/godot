@@ -1312,16 +1312,18 @@ void LineEdit::_bind_methods() {
 	BIND_CONSTANT( MENU_MAX );
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text" ), _SCS("set_text"),_SCS("get_text") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "placeholder/text" ), _SCS("set_placeholder"),_SCS("get_placeholder") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::REAL, "placeholder/alpha",PROPERTY_HINT_RANGE,"0,1,0.001" ), _SCS("set_placeholder_alpha"),_SCS("get_placeholder_alpha") );
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), _SCS("set_align"), _SCS("get_align"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "max_length" ), _SCS("set_max_length"),_SCS("get_max_length") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "editable" ), _SCS("set_editable"),_SCS("is_editable") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "secret" ), _SCS("set_secret"),_SCS("is_secret") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "expand_to_len" ), _SCS("set_expand_to_text_length"),_SCS("get_expand_to_text_length") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT,"focus_mode", PROPERTY_HINT_ENUM, "None,Click,All" ), _SCS("set_focus_mode"), _SCS("get_focus_mode") );
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret/caret_blink"), _SCS("cursor_set_blink_enabled"), _SCS("cursor_get_blink_enabled"));;
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret/caret_blink_speed",PROPERTY_HINT_RANGE,"0.1,10,0.1"), _SCS("cursor_set_blink_speed"),_SCS("cursor_get_blink_speed") );
+	ADD_GROUP("Placeholder","placeholder_");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "placeholder_text" ), _SCS("set_placeholder"),_SCS("get_placeholder") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::REAL, "placeholder_alpha",PROPERTY_HINT_RANGE,"0,1,0.001" ), _SCS("set_placeholder_alpha"),_SCS("get_placeholder_alpha") );
+	ADD_GROUP("Caret","caret_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), _SCS("cursor_set_blink_enabled"), _SCS("cursor_get_blink_enabled"));;
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret_blink_speed",PROPERTY_HINT_RANGE,"0.1,10,0.1"), _SCS("cursor_set_blink_speed"),_SCS("cursor_get_blink_speed") );
 }
 
 LineEdit::LineEdit() {

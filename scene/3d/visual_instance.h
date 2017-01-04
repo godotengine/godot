@@ -48,8 +48,10 @@ class VisualInstance : public Spatial {
 	RID _get_visual_instance_rid() const;
 
 
+
 protected:
 
+	void _update_visibility();
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -87,7 +89,6 @@ class GeometryInstance : public VisualInstance {
 public:
 
 	enum Flags {
-		FLAG_VISIBLE=VS::INSTANCE_FLAG_VISIBLE,
 		FLAG_CAST_SHADOW=VS::INSTANCE_FLAG_CAST_SHADOW,
 		FLAG_BILLBOARD=VS::INSTANCE_FLAG_BILLBOARD,
 		FLAG_BILLBOARD_FIX_Y=VS::INSTANCE_FLAG_BILLBOARD_FIX_Y,
@@ -117,7 +118,6 @@ private:
 
 	float extra_cull_margin;
 
-	void _update_visibility();
 protected:
 
 	void _notification(int p_what);

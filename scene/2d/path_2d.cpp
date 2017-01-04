@@ -124,7 +124,7 @@ void PathFollow2D::_update_transform() {
 		pos+=n*h_offset;
 		pos+=t*v_offset;
 
-		set_rot(t.angle());
+		set_rotation(t.angle());
 
 	} else {
 
@@ -132,7 +132,7 @@ void PathFollow2D::_update_transform() {
 		pos.y+=v_offset;
 	}
 
-	set_pos(pos);
+	set_position(pos);
 
 }
 

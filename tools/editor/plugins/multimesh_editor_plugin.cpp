@@ -193,16 +193,16 @@ void MultiMeshEditor::_populate() {
 	Ref<MultiMesh> multimesh = memnew( MultiMesh );
 	multimesh->set_mesh(mesh);
 
-	int instance_count=populate_amount->get_val();
+	int instance_count=populate_amount->get_value();
 
 	multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
 	multimesh->set_color_format(MultiMesh::COLOR_NONE);
 	multimesh->set_instance_count(instance_count);
 
-	float _tilt_random = populate_tilt_random->get_val();
-	float _rotate_random = populate_rotate_random->get_val();
-	float _scale_random = populate_scale_random->get_val();
-	float _scale = populate_scale->get_val();
+	float _tilt_random = populate_tilt_random->get_value();
+	float _rotate_random = populate_rotate_random->get_value();
+	float _scale_random = populate_scale_random->get_value();
+	float _scale = populate_scale->get_value();
 	int axis = populate_axis->get_selected();
 
 	Transform axis_xform;
@@ -283,11 +283,11 @@ void MultiMeshEditor::_menu_option(int p_option) {
 				surface_source->set_text("..");
 				mesh_source->set_text("..");
 				populate_axis->select(1);
-				populate_rotate_random->set_val(0);
-				populate_tilt_random->set_val(0);
-				populate_scale_random->set_val(0);
-				populate_scale->set_val(1);
-				populate_amount->set_val(128);
+				populate_rotate_random->set_value(0);
+				populate_tilt_random->set_value(0);
+				populate_scale_random->set_value(0);
+				populate_scale->set_value(1);
+				populate_amount->set_value(128);
 
 				_last_pp_node=node;
 			}
@@ -387,7 +387,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_scale_random = memnew( SpinBox );
 	populate_scale_random->set_min(0);
 	populate_scale_random->set_max(1);
-	populate_scale_random->set_val(0);
+	populate_scale_random->set_value(0);
 	populate_scale_random->set_step(0.01);
 
 	vbc->add_margin_child(TTR("Random Scale:"),populate_scale_random);
@@ -395,7 +395,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_scale = memnew( SpinBox );
 	populate_scale->set_min(0.001);
 	populate_scale->set_max(4096);
-	populate_scale->set_val(1);
+	populate_scale->set_value(1);
 	populate_scale->set_step(0.01);
 
 	vbc->add_margin_child(TTR("Scale:"),populate_scale);
@@ -407,7 +407,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_amount->set_end( Point2(5,237));
 	populate_amount->set_min(1);
 	populate_amount->set_max(65536);
-	populate_amount->set_val(128);
+	populate_amount->set_value(128);
 	vbc->add_margin_child(TTR("Amount:"),populate_amount);
 
 	populate_dialog->get_ok()->set_text(TTR("Populate"));

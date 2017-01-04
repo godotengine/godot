@@ -214,7 +214,6 @@ public:
 		AABB transformed_aabb;
 		float extra_margin;
 		uint32_t object_ID;
-		bool visible;
 
 		float lod_begin;
 		float lod_end;
@@ -494,6 +493,8 @@ public:
 	virtual void instance_attach_object_instance_ID(RID p_instance,ObjectID p_ID);
 	virtual void instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance,int p_surface, RID p_material);
+	virtual void instance_set_visible(RID p_instance,bool p_visible);
+
 
 	virtual void instance_attach_skeleton(RID p_instance,RID p_skeleton);
 	virtual void instance_set_exterior( RID p_instance, bool p_enabled );

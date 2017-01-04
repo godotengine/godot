@@ -39,7 +39,7 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_value_changed(double) {
 
-	String value = String::num(get_val(),Math::step_decimals(get_step()));
+	String value = String::num(get_value(),Math::step_decimals(get_step()));
 	if (prefix!="")
 		value=prefix+" "+value;
 	if (suffix!="")
@@ -54,7 +54,7 @@ void SpinBox::_text_entered(const String& p_string) {
 	String value = p_string;
 	if (prefix!="" && p_string.begins_with(prefix))
 		value = p_string.substr(prefix.length(), p_string.length()-prefix.length());
-	set_val( value.to_double() );
+	set_value( value.to_double() );
 	_value_changed(0);
 }
 
@@ -76,7 +76,7 @@ void SpinBox::_range_click_timeout() {
 	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 
 		bool up = get_local_mouse_pos().y < (get_size().height/2);
-		set_val( get_val() + (up?get_step():-get_step()));
+		set_value( get_value() + (up?get_step():-get_step()));
 
 		if (range_click_timer->is_one_shot()) {
 			range_click_timer->set_wait_time(0.075);
@@ -107,7 +107,7 @@ void SpinBox::_input_event(const InputEvent& p_event) {
 
 			case BUTTON_LEFT: {
 
-				set_val( get_val() + (up?get_step():-get_step()));
+				set_value( get_value() + (up?get_step():-get_step()));
 
 				range_click_timer->set_wait_time(0.6);
 				range_click_timer->set_one_shot(true);
@@ -117,18 +117,18 @@ void SpinBox::_input_event(const InputEvent& p_event) {
 			} break;
 			case BUTTON_RIGHT: {
 
-				set_val(  (up?get_max():get_min()) );
+				set_value(  (up?get_max():get_min()) );
 				line_edit->grab_focus();
 			} break;
 			case BUTTON_WHEEL_UP: {
 				if (line_edit->has_focus()) {
-					set_val( get_val() + get_step() );
+					set_value( get_value() + get_step() );
 					accept_event();
 				}
 			} break;
 			case BUTTON_WHEEL_DOWN: {
 				if (line_edit->has_focus()) {
-					set_val( get_val() - get_step() );
+					set_value( get_value() - get_step() );
 					accept_event();
 				}
 			} break;
@@ -166,13 +166,13 @@ void SpinBox::_input_event(const InputEvent& p_event) {
 			drag.mouse_pos=cpos;
 			drag.base_val=CLAMP(drag.base_val + get_step() * diff_y, get_min(), get_max());
 
-			set_val( drag.base_val);
+			set_value( drag.base_val);
 
 		} else if (drag.mouse_pos.distance_to(cpos)>2) {
 
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 			drag.enabled=true;
-			drag.base_val=get_val();
+			drag.base_val=get_value();
 			drag.mouse_pos=cpos;
 			drag.capture_pos=cpos;
 

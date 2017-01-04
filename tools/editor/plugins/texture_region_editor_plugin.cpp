@@ -166,13 +166,13 @@ void TextureRegionEditor::_region_draw()
 	hscroll->set_min(scroll_rect.pos.x);
 	hscroll->set_max(scroll_rect.pos.x+scroll_rect.size.x);
 	hscroll->set_page(edit_draw->get_size().x);
-	hscroll->set_val(draw_ofs.x);
+	hscroll->set_value(draw_ofs.x);
 	hscroll->set_step(0.001);
 
 	vscroll->set_min(scroll_rect.pos.y);
 	vscroll->set_max(scroll_rect.pos.y+scroll_rect.size.y);
 	vscroll->set_page(edit_draw->get_size().y);
-	vscroll->set_val(draw_ofs.y);
+	vscroll->set_value(draw_ofs.y);
 	vscroll->set_step(0.001);
 	updating_scroll=false;
 
@@ -400,8 +400,8 @@ void TextureRegionEditor::_region_input(const InputEvent& p_input)
 		if (mm.button_mask&BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 
 			Vector2 draged(mm.relative_x,mm.relative_y);
-			hscroll->set_val( hscroll->get_val()-draged.x );
-			vscroll->set_val( vscroll->get_val()-draged.y );
+			hscroll->set_value( hscroll->get_value()-draged.x );
+			vscroll->set_value( vscroll->get_value()-draged.y );
 
 		} else if (drag) {
 
@@ -500,8 +500,8 @@ void TextureRegionEditor::_scroll_changed(float)
 	if (updating_scroll)
 		return;
 
-	draw_ofs.x=hscroll->get_val();
-	draw_ofs.y=vscroll->get_val();
+	draw_ofs.x=hscroll->get_value();
+	draw_ofs.y=vscroll->get_value();
 	edit_draw->update();
 }
 
@@ -829,7 +829,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 	sb_off_x->set_min(-256);
 	sb_off_x->set_max(256);
 	sb_off_x->set_step(1);
-	sb_off_x->set_val(snap_offset.x);
+	sb_off_x->set_value(snap_offset.x);
 	sb_off_x->set_suffix("px");
 	sb_off_x->connect("value_changed", this, "_set_snap_off_x");
 	hb_grid->add_child(sb_off_x);
@@ -838,7 +838,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 	sb_off_y->set_min(-256);
 	sb_off_y->set_max(256);
 	sb_off_y->set_step(1);
-	sb_off_y->set_val(snap_offset.y);
+	sb_off_y->set_value(snap_offset.y);
 	sb_off_y->set_suffix("px");
 	sb_off_y->connect("value_changed", this, "_set_snap_off_y");
 	hb_grid->add_child(sb_off_y);
@@ -850,7 +850,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 	sb_step_x->set_min(-256);
 	sb_step_x->set_max(256);
 	sb_step_x->set_step(1);
-	sb_step_x->set_val(snap_step.x);
+	sb_step_x->set_value(snap_step.x);
 	sb_step_x->set_suffix("px");
 	sb_step_x->connect("value_changed", this, "_set_snap_step_x");
 	hb_grid->add_child(sb_step_x);
@@ -859,7 +859,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 	sb_step_y->set_min(-256);
 	sb_step_y->set_max(256);
 	sb_step_y->set_step(1);
-	sb_step_y->set_val(snap_step.y);
+	sb_step_y->set_value(snap_step.y);
 	sb_step_y->set_suffix("px");
 	sb_step_y->connect("value_changed", this, "_set_snap_step_y");
 	hb_grid->add_child(sb_step_y);
@@ -871,7 +871,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 	sb_sep_x->set_min(0);
 	sb_sep_x->set_max(256);
 	sb_sep_x->set_step(1);
-	sb_sep_x->set_val(snap_separation.x);
+	sb_sep_x->set_value(snap_separation.x);
 	sb_sep_x->set_suffix("px");
 	sb_sep_x->connect("value_changed", this, "_set_snap_sep_x");
 	hb_grid->add_child(sb_sep_x);
@@ -880,7 +880,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 	sb_sep_y->set_min(0);
 	sb_sep_y->set_max(256);
 	sb_sep_y->set_step(1);
-	sb_sep_y->set_val(snap_separation.y);
+	sb_sep_y->set_value(snap_separation.y);
 	sb_sep_y->set_suffix("px");
 	sb_sep_y->connect("value_changed", this, "_set_snap_sep_y");
 	hb_grid->add_child(sb_sep_y);
@@ -971,22 +971,22 @@ void TextureRegionEditorPlugin::set_state(const Dictionary& p_state){
 
 	if (state.has("snap_step")) {
 		Vector2 s = state["snap_step"];
-		region_editor->sb_step_x->set_val(s.x);
-		region_editor->sb_step_y->set_val(s.y);
+		region_editor->sb_step_x->set_value(s.x);
+		region_editor->sb_step_y->set_value(s.y);
 		region_editor->snap_step = s;
 	}
 
 	if (state.has("snap_offset")) {
 		Vector2 ofs = state["snap_offset"];
-		region_editor->sb_off_x->set_val(ofs.x);
-		region_editor->sb_off_y->set_val(ofs.y);
+		region_editor->sb_off_x->set_value(ofs.x);
+		region_editor->sb_off_y->set_value(ofs.y);
 		region_editor->snap_offset = ofs;
 	}
 
 	if (state.has("snap_separation")) {
 		Vector2 sep = state["snap_separation"];
-		region_editor->sb_sep_x->set_val(sep.x);
-		region_editor->sb_sep_y->set_val(sep.y);
+		region_editor->sb_sep_x->set_value(sep.x);
+		region_editor->sb_sep_y->set_value(sep.y);
 		region_editor->snap_separation = sep;
 	}
 

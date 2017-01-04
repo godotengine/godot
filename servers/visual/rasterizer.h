@@ -105,6 +105,7 @@ public:
 		bool billboard :8;
 		bool billboard_y :8;
 		bool receive_shadows : 8;
+		bool visible : 8;
 
 		float depth; //used for sorting
 
@@ -124,9 +125,11 @@ public:
 			depth_scale=false;
 			billboard=false;
 			billboard_y=false;
+			visible=true;
 			depth_layer=0;
 			layer_mask=1;
 			baked_light=NULL;
+
 
 		}
 	};

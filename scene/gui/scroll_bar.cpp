@@ -54,7 +54,7 @@ void ScrollBar::_input_event(InputEvent p_event) {
 				//if (orientation==VERTICAL)
 				//	set_val( get_val() + get_page() / 4.0 );
 				//else
-				set_val( get_val() + get_page() / 4.0 );
+				set_value( get_value() + get_page() / 4.0 );
 				accept_event();
 
 			}
@@ -64,7 +64,7 @@ void ScrollBar::_input_event(InputEvent p_event) {
 				//if (orientation==HORIZONTAL)
 				//	set_val( get_val() - get_page() / 4.0 );
 				//else
-				set_val( get_val() - get_page() / 4.0  );
+				set_value( get_value() - get_page() / 4.0  );
 				accept_event();
 			}
 
@@ -87,13 +87,13 @@ void ScrollBar::_input_event(InputEvent p_event) {
 
 				if (ofs < decr_size ) {
 
-					set_val( get_val() - (custom_step>=0?custom_step:get_step()) );
+					set_value( get_value() - (custom_step>=0?custom_step:get_step()) );
 					break;
 				}
 
 				if (ofs > total-incr_size ) {
 
-					set_val( get_val() + (custom_step>=0?custom_step:get_step()) );
+					set_value( get_value() + (custom_step>=0?custom_step:get_step()) );
 					break;
 				}
 
@@ -101,7 +101,7 @@ void ScrollBar::_input_event(InputEvent p_event) {
 
 				if ( ofs < grabber_ofs ) {
 
-					set_val( get_val() - get_page() );
+					set_value( get_value() - get_page() );
 					break;
 
 				}
@@ -117,7 +117,7 @@ void ScrollBar::_input_event(InputEvent p_event) {
 				} else {
 
 
-					set_val( get_val() + get_page() );
+					set_value( get_value() + get_page() );
 				}
 
 
@@ -194,14 +194,14 @@ void ScrollBar::_input_event(InputEvent p_event) {
 
 					if (orientation!=HORIZONTAL)
 						return;
-					set_val( get_val() - (custom_step>=0?custom_step:get_step()) );
+					set_value( get_value() - (custom_step>=0?custom_step:get_step()) );
 
 				} break;
 				case KEY_RIGHT: {
 
 					if (orientation!=HORIZONTAL)
 						return;
-					set_val( get_val() + (custom_step>=0?custom_step:get_step()) );
+					set_value( get_value() + (custom_step>=0?custom_step:get_step()) );
 
 				} break;
 				case KEY_UP: {
@@ -209,7 +209,7 @@ void ScrollBar::_input_event(InputEvent p_event) {
 					if (orientation!=VERTICAL)
 						return;
 
-					set_val( get_val() - (custom_step>=0?custom_step:get_step()) );
+					set_value( get_value() - (custom_step>=0?custom_step:get_step()) );
 
 
 				} break;
@@ -217,17 +217,17 @@ void ScrollBar::_input_event(InputEvent p_event) {
 
 					if (orientation!=VERTICAL)
 						return;
-					set_val( get_val() + (custom_step>=0?custom_step:get_step()) );
+					set_value( get_value() + (custom_step>=0?custom_step:get_step()) );
 
 				} break;
 				case KEY_HOME: {
 
-					set_val( get_min() );
+					set_value( get_min() );
 
 				} break;
 				case KEY_END: {
 
-					set_val( get_max() );
+					set_value( get_max() );
 
 				} break;
 
@@ -325,7 +325,7 @@ void ScrollBar::_notification(int p_what) {
 
 			if (drag_slave_touching_deaccel) {
 
-				Vector2 pos = Vector2(orientation==HORIZONTAL?get_val():0,orientation==VERTICAL?get_val():0);
+				Vector2 pos = Vector2(orientation==HORIZONTAL?get_value():0,orientation==VERTICAL?get_value():0);
 				pos+=drag_slave_speed*get_fixed_process_delta_time();
 
 				bool turnoff=false;
@@ -342,7 +342,7 @@ void ScrollBar::_notification(int p_what) {
 						turnoff=true;
 					}
 
-					set_val(pos.x);
+					set_value(pos.x);
 
 					float sgn_x = drag_slave_speed.x<0? -1 : 1;
 					float val_x = Math::abs(drag_slave_speed.x);
@@ -367,7 +367,7 @@ void ScrollBar::_notification(int p_what) {
 						turnoff=true;
 					}
 
-					set_val(pos.y);
+					set_value(pos.y);
 
 					float sgn_y = drag_slave_speed.y<0? -1 : 1;
 					float val_y = Math::abs(drag_slave_speed.y);
@@ -580,7 +580,7 @@ void ScrollBar::_drag_slave_input(const InputEvent& p_input) {
 					drag_slave_accum=Vector2();
 					last_drag_slave_accum=Vector2();
 					//drag_slave_from=Vector2(h_scroll->get_val(),v_scroll->get_val());
-					drag_slave_from= Vector2(orientation==HORIZONTAL?get_val():0,orientation==VERTICAL?get_val():0);
+					drag_slave_from= Vector2(orientation==HORIZONTAL?get_value():0,orientation==VERTICAL?get_value():0);
 
 					drag_slave_touching=OS::get_singleton()->has_touchscreen_ui_hint();
 					drag_slave_touching_deaccel=false;
@@ -619,11 +619,11 @@ void ScrollBar::_drag_slave_input(const InputEvent& p_input) {
 				Vector2 diff = drag_slave_from+drag_slave_accum;
 
 				if (orientation==HORIZONTAL)
-					set_val(diff.x);
+					set_value(diff.x);
 				//else
 				//	drag_slave_accum.x=0;
 				if (orientation==VERTICAL)
-					set_val(diff.y);
+					set_value(diff.y);
 				//else
 				//	drag_slave_accum.y=0;
 				time_since_motion=0;

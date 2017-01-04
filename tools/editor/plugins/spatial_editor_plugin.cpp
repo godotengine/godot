@@ -2116,7 +2116,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 		move_gizmo_instance[i]=VS::get_singleton()->instance_create();
 		VS::get_singleton()->instance_set_base(move_gizmo_instance[i],spatial_editor->get_move_gizmo(i)->get_rid());
 		VS::get_singleton()->instance_set_scenario(move_gizmo_instance[i],get_tree()->get_root()->get_world()->get_scenario());
-		VS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
+		VS::get_singleton()->instance_set_visible(move_gizmo_instance[i],false);
 		//VS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i],VS::INSTANCE_FLAG_DEPH_SCALE,true);
 		VS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_gizmo_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
 		VS::get_singleton()->instance_set_layer_mask(move_gizmo_instance[i],layer);
@@ -2124,7 +2124,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 		rotate_gizmo_instance[i]=VS::get_singleton()->instance_create();
 		VS::get_singleton()->instance_set_base(rotate_gizmo_instance[i],spatial_editor->get_rotate_gizmo(i)->get_rid());
 		VS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i],get_tree()->get_root()->get_world()->get_scenario());
-		VS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
+		VS::get_singleton()->instance_set_visible(rotate_gizmo_instance[i],false);
 		//VS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i],VS::INSTANCE_FLAG_DEPH_SCALE,true);
 		VS::get_singleton()->instance_geometry_set_cast_shadows_setting(rotate_gizmo_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
 		VS::get_singleton()->instance_set_layer_mask(rotate_gizmo_instance[i],layer);
@@ -2233,9 +2233,9 @@ void SpatialEditorViewport::update_transform_gizmo_view() {
 
 	for(int i=0;i<3;i++) {
 		VisualServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], xform );
-		VisualServer::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i],VS::INSTANCE_FLAG_VISIBLE,spatial_editor->is_gizmo_visible()&& (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_MOVE) );
+		VisualServer::get_singleton()->instance_set_visible(move_gizmo_instance[i],spatial_editor->is_gizmo_visible()&& (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_MOVE) );
 		VisualServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], xform );
-		VisualServer::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i],VS::INSTANCE_FLAG_VISIBLE,spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_ROTATE) );
+		VisualServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i],spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_ROTATE) );
 	}
 
 }
@@ -2691,11 +2691,11 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 	}
 
 	if (d.has("zfar"))
-		settings_zfar->set_val(float(d["zfar"]));
+		settings_zfar->set_value(float(d["zfar"]));
 	if (d.has("znear"))
-		settings_znear->set_val(float(d["znear"]));
+		settings_znear->set_value(float(d["znear"]));
 	if (d.has("fov"))
-		settings_fov->set_val(float(d["fov"]));
+		settings_fov->set_value(float(d["fov"]));
 
 	if (d.has("default_light")) {
 		bool use = d["default_light"];
@@ -2738,7 +2738,7 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 
 		if (use!=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN))) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), use );
-			VisualServer::get_singleton()->instance_geometry_set_flag(origin_instance,VS::INSTANCE_FLAG_VISIBLE,use);
+			VisualServer::get_singleton()->instance_set_visible(origin_instance,use);
 		}
 	}
 
@@ -3121,7 +3121,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			bool is_checked = view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(p_option) );
 
 			is_checked=!is_checked;
-			VisualServer::get_singleton()->instance_geometry_set_flag(origin_instance,VS::INSTANCE_FLAG_VISIBLE,is_checked);
+			VisualServer::get_singleton()->instance_set_visible(origin_instance,is_checked);
 
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(p_option), is_checked);
 		} break;
@@ -3133,7 +3133,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 
 			for(int i=0;i<3;++i) {
 				if (grid_enable[i]) {
-					VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,grid_enabled);
+					VisualServer::get_singleton()->instance_set_visible(grid_instance[i],grid_enabled);
 					grid_visible[i]=grid_enabled;
 				}
 			}
@@ -3225,7 +3225,7 @@ void SpatialEditor::_init_indicators() {
 
 			grid_visible[i]=false;
 			grid_enable[i]=false;
-			VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
+			VisualServer::get_singleton()->instance_set_visible(grid_instance[i],false);
 			VisualServer::get_singleton()->instance_geometry_set_cast_shadows_setting(grid_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
 			VS::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << SpatialEditorViewport::GIZMO_GRID_LAYER);
 
@@ -3252,7 +3252,7 @@ void SpatialEditor::_init_indicators() {
 
 
 
-		VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[1],VS::INSTANCE_FLAG_VISIBLE,true);
+		VisualServer::get_singleton()->instance_set_visible(grid_instance[1],true);
 		grid_enable[1]=true;
 		grid_visible[1]=true;
 		grid_enabled=true;
@@ -3721,9 +3721,9 @@ void SpatialEditor::_bind_methods() {
 
 void SpatialEditor::clear() {
 
-	settings_fov->set_val(EDITOR_DEF("3d_editor/default_fov",60.0));
-	settings_znear->set_val(EDITOR_DEF("3d_editor/default_z_near",0.1));
-	settings_zfar->set_val(EDITOR_DEF("3d_editor/default_z_far",1500.0));
+	settings_fov->set_value(EDITOR_DEF("3d_editor/default_fov",60.0));
+	settings_znear->set_value(EDITOR_DEF("3d_editor/default_z_near",0.1));
+	settings_zfar->set_value(EDITOR_DEF("3d_editor/default_z_far",1500.0));
 
 	for(int i=0;i<4;i++) {
 		viewports[i]->reset();
@@ -3733,11 +3733,11 @@ void SpatialEditor::clear() {
 	_menu_item_pressed(MENU_VIEW_DISPLAY_NORMAL);
 
 
-	VisualServer::get_singleton()->instance_geometry_set_flag(origin_instance,VS::INSTANCE_FLAG_VISIBLE,true);
+	VisualServer::get_singleton()->instance_set_visible(origin_instance,true);
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), true);
 	for(int i=0;i<3;++i) {
 		if (grid_enable[i]) {
-			VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,true);
+			VisualServer::get_singleton()->instance_set_visible(grid_instance[i],true);
 			grid_visible[i]=true;
 		}
 	}
@@ -4045,21 +4045,21 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_fov->set_max(179);
 	settings_fov->set_min(1);
 	settings_fov->set_step(0.01);
-	settings_fov->set_val(EDITOR_DEF("3d_editor/default_fov",60.0));
+	settings_fov->set_value(EDITOR_DEF("3d_editor/default_fov",60.0));
 	settings_vbc->add_margin_child(TTR("Perspective FOV (deg.):"),settings_fov);
 
 	settings_znear = memnew( SpinBox );
 	settings_znear->set_max(10000);
 	settings_znear->set_min(0.1);
 	settings_znear->set_step(0.01);
-	settings_znear->set_val(EDITOR_DEF("3d_editor/default_z_near",0.1));
+	settings_znear->set_value(EDITOR_DEF("3d_editor/default_z_near",0.1));
 	settings_vbc->add_margin_child(TTR("View Z-Near:"),settings_znear);
 
 	settings_zfar = memnew( SpinBox );
 	settings_zfar->set_max(10000);
 	settings_zfar->set_min(0.1);
 	settings_zfar->set_step(0.01);
-	settings_zfar->set_val(EDITOR_DEF("3d_editor/default_z_far",1500));
+	settings_zfar->set_value(EDITOR_DEF("3d_editor/default_z_far",1500));
 	settings_vbc->add_margin_child(TTR("View Z-Far:"),settings_zfar);
 
 	//settings_dialog->get_cancel()->hide();

@@ -716,6 +716,7 @@ public:
 	virtual void instance_attach_object_instance_ID(RID p_instance,ObjectID p_ID)=0;
 	virtual void instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight)=0;
 	virtual void instance_set_surface_material(RID p_instance,int p_surface, RID p_material)=0;
+	virtual void instance_set_visible(RID p_instance,bool p_visible)=0;
 
 	virtual void instance_attach_skeleton(RID p_instance,RID p_skeleton)=0;
 	virtual void instance_set_exterior( RID p_instance, bool p_enabled )=0;
@@ -729,7 +730,6 @@ public:
 	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane>& p_convex, RID p_scenario=RID()) const=0;
 
 	enum InstanceFlags {
-		INSTANCE_FLAG_VISIBLE,
 		INSTANCE_FLAG_BILLBOARD,
 		INSTANCE_FLAG_BILLBOARD_FIX_Y,
 		INSTANCE_FLAG_CAST_SHADOW,

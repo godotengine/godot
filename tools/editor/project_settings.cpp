@@ -181,7 +181,7 @@ void ProjectSettings::_device_input_add() {
 	String name=add_at;
 	Variant old_val = Globals::get_singleton()->get(name);
 	Array arr=old_val;
-	ie.device=device_id->get_val();
+	ie.device=device_id->get_value();
 
 	ie.type=add_type;
 
@@ -352,7 +352,7 @@ void ProjectSettings::_add_item(int p_item){
 		} break;
 		case InputEvent::MOUSE_BUTTON: {
 
-			device_id->set_val(0);
+			device_id->set_value(0);
 			device_index_label->set_text(TTR("Mouse Button Index:"));
 			device_index->clear();
 			device_index->add_item(TTR("Left Button"));
@@ -368,7 +368,7 @@ void ProjectSettings::_add_item(int p_item){
 		} break;
 		case InputEvent::JOYSTICK_MOTION: {
 
-			device_id->set_val(0);
+			device_id->set_value(0);
 			device_index_label->set_text(TTR("Joystick Axis Index:"));
 			device_index->clear();
 			for(int i=0;i<JOY_AXIS_MAX*2;i++) {
@@ -381,7 +381,7 @@ void ProjectSettings::_add_item(int p_item){
 		} break;
 		case InputEvent::JOYSTICK_BUTTON: {
 
-			device_id->set_val(3);
+			device_id->set_value(3);
 			device_index_label->set_text(TTR("Joystick Button Index:"));
 			device_index->clear();
 
@@ -1472,7 +1472,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	vbc_left->add_child(l);
 
 	device_id = memnew( SpinBox );
-	device_id->set_val(0);
+	device_id->set_value(0);
 	vbc_left->add_child(device_id);
 
 	VBoxContainer *vbc_right = memnew( VBoxContainer );

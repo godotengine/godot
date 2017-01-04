@@ -1040,7 +1040,7 @@ void AnimationKeyEditor::_animation_optimize()  {
 
 
 
-	animation->optimize(optimize_linear_error->get_val(),optimize_angular_error->get_val(),optimize_max_angle->get_val());
+	animation->optimize(optimize_linear_error->get_value(),optimize_angular_error->get_value(),optimize_max_angle->get_value());
 	track_editor->update();
 	undo_redo->clear_history();
 
@@ -1049,7 +1049,7 @@ void AnimationKeyEditor::_animation_optimize()  {
 
 float AnimationKeyEditor::_get_zoom_scale() const {
 
-	float zv = zoom->get_val();
+	float zv = zoom->get_value();
 	if (zv<1) {
 		zv = 1.0-zv;
 		return Math::pow(1.0+zv,8.0)*100;
@@ -1072,7 +1072,7 @@ void AnimationKeyEditor::_track_pos_draw() {
 	int settings_limit = size.width - right_data_size_cache;
 	int name_limit = settings_limit * name_column_ratio;
 
-	float keys_from= h_scroll->get_val();
+	float keys_from= h_scroll->get_value();
 	float zoom_scale = _get_zoom_scale();
 	float keys_to=keys_from+(settings_limit-name_limit) / zoom_scale;
 
@@ -1081,7 +1081,7 @@ void AnimationKeyEditor::_track_pos_draw() {
 	//will move to separate control! (for speedup)
 	if (timeline_pos >= keys_from && timeline_pos<keys_to) {
 		//draw position
-		int pixel = (timeline_pos - h_scroll->get_val()) * zoom_scale;
+		int pixel = (timeline_pos - h_scroll->get_value()) * zoom_scale;
 		pixel+=name_limit;
 		track_pos->draw_line(ofs+Point2(pixel,0),ofs+Point2(pixel,size.height),Color(1,0.3,0.3,0.8));
 
@@ -1227,8 +1227,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 		if (l<=0)
 			l=0.001; //avoid crashor
 
-		int end_px = (l - h_scroll->get_val()) * scale;
-		int begin_px = -h_scroll->get_val() * scale;
+		int end_px = (l - h_scroll->get_value()) * scale;
+		int begin_px = -h_scroll->get_value() * scale;
 		Color notimecol;
 		notimecol.r=timecolor.gray();
 		notimecol.g=notimecol.r;
@@ -1254,7 +1254,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 
 
-		keys_from= h_scroll->get_val();
+		keys_from= h_scroll->get_value();
 		keys_to=keys_from+zoomw / scale;
 
 		{
@@ -1331,8 +1331,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 		for(int i=0;i<zoomw;i++) {
 
-			float pos = h_scroll->get_val() + double(i)/scale;
-			float prev = h_scroll->get_val() + (double(i)-1.0)/scale;
+			float pos = h_scroll->get_value() + double(i)/scale;
+			float prev = h_scroll->get_value() + (double(i)-1.0)/scale;
 
 
 			int sc = int(Math::floor(pos*SC_ADJ));
@@ -1356,7 +1356,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 		//this code sucks, i always forget how it works
 
-		int idx = v_scroll->get_val() + i;
+		int idx = v_scroll->get_value() + i;
 		if (idx>=animation->get_track_count())
 			break;
 		int y = h+i*h+sep;
@@ -1552,14 +1552,14 @@ void AnimationKeyEditor::_track_editor_draw() {
 			}
 
 			float motion = from_t+(click.to.x - click.at.x)/zoom_scale;
-			if (step->get_val())
-				motion = Math::stepify(motion,step->get_val());
+			if (step->get_value())
+				motion = Math::stepify(motion,step->get_value());
 
 			for(Map<SelectedKey,KeyInfo>::Element *E=selection.front();E;E=E->next()) {
 
 
 				int idx = E->key().track;
-				int i = idx-v_scroll->get_val();
+				int i = idx-v_scroll->get_value();
 				if (i<0 || i>=fit)
 					continue;
 				int y = h+i*h+sep;
@@ -1896,8 +1896,8 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 
 
 					if (v_scroll->is_visible()) {
-						if (v_scroll->get_val() > selected_track)
-							v_scroll->set_val(selected_track);
+						if (v_scroll->get_value() > selected_track)
+							v_scroll->set_value(selected_track);
 
 					}
 
@@ -1916,8 +1916,8 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 					if (selected_track >= animation->get_track_count())
 						selected_track=animation->get_track_count()-1;
 
-					if (v_scroll->is_visible() && v_scroll->get_page()+v_scroll->get_val() < selected_track+1) {
-						v_scroll->set_val(selected_track-v_scroll->get_page()+1);
+					if (v_scroll->is_visible() && v_scroll->get_page()+v_scroll->get_value() < selected_track+1) {
+						v_scroll->set_value(selected_track-v_scroll->get_page()+1);
 					}
 
 					track_editor->update();
@@ -1934,18 +1934,18 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 			if (mb.button_index==BUTTON_WHEEL_UP && mb.pressed) {
 
 				if (mb.mod.command) {
-					zoom->set_val(zoom->get_val() + zoom->get_step());
+					zoom->set_value(zoom->get_value() + zoom->get_step());
 				} else {
-					v_scroll->set_val( v_scroll->get_val() - v_scroll->get_page() / 8 );
+					v_scroll->set_value( v_scroll->get_value() - v_scroll->get_page() / 8 );
 				}
 			}
 
 			if (mb.button_index==BUTTON_WHEEL_DOWN && mb.pressed) {
 
 				if (mb.mod.command) {
-					zoom->set_val(zoom->get_val() - zoom->get_step());
+					zoom->set_value(zoom->get_value() - zoom->get_step());
 				} else {
-					v_scroll->set_val( v_scroll->get_val() + v_scroll->get_page() / 8 );
+					v_scroll->set_value( v_scroll->get_value() + v_scroll->get_page() / 8 );
 				}
 			}
 
@@ -1966,7 +1966,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 					mpos.y -= h;
 
 					int idx = mpos.y / h;
-					idx+=v_scroll->get_val();
+					idx+=v_scroll->get_value();
 					if (idx <0 || idx>=animation->get_track_count())
 						break;
 
@@ -1974,7 +1974,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 					} else if (mpos.x < settings_limit) {
 						float pos = mpos.x - name_limit;
 						pos/=_get_zoom_scale();
-						pos+=h_scroll->get_val();
+						pos+=h_scroll->get_value();
 						float w_time = (type_icon[0]->get_width() / _get_zoom_scale())/2.0;
 
 						int kidx = animation->track_find_key(idx,pos);
@@ -2083,7 +2083,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 							//seek
 							//int zoomw = settings_limit-name_limit;
 							float scale = _get_zoom_scale();
-							float pos = h_scroll->get_val() + (mpos.x-name_limit) / scale;
+							float pos = h_scroll->get_value() + (mpos.x-name_limit) / scale;
 							if (animation->get_step())
 								pos=Math::stepify(pos,animation->get_step());
 
@@ -2105,7 +2105,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 					mpos.y -= h;
 
 					int idx = mpos.y / h;
-					idx+=v_scroll->get_val();
+					idx+=v_scroll->get_value();
 					if (idx <0)
 						break;
 
@@ -2146,7 +2146,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 
 						float pos = mpos.x - name_limit;
 						pos/=_get_zoom_scale();
-						pos+=h_scroll->get_val();
+						pos+=h_scroll->get_value();
 						float w_time = (type_icon[0]->get_width() / _get_zoom_scale())/2.0;
 
 						int kidx = animation->track_find_key(idx,pos);
@@ -2403,7 +2403,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 
 
 							float zoom_scale=_get_zoom_scale();
-							float keys_from = h_scroll->get_val();
+							float keys_from = h_scroll->get_value();
 							float keys_to = keys_from + (settings_limit-name_limit) / zoom_scale;
 
 							float from_time = keys_from + ( click.at.x - (name_limit+ofs.x)) / zoom_scale;
@@ -2423,8 +2423,8 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 								to_time = keys_to;
 
 
-							int from_track = int(click.at.y-ofs.y-h-sep) / h + v_scroll->get_val();
-							int to_track  = int(click.to.y-ofs.y-h-sep) / h + v_scroll->get_val();
+							int from_track = int(click.at.y-ofs.y-h-sep) / h + v_scroll->get_value();
+							int to_track  = int(click.to.y-ofs.y-h-sep) / h + v_scroll->get_value();
 							int from_mod = int(click.at.y-ofs.y-sep) % h;
 							int to_mod = int(click.to.y-ofs.y-sep) % h;
 
@@ -2452,8 +2452,8 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 								break;
 							}
 
-							int tracks_from = v_scroll->get_val();
-							int tracks_to = v_scroll->get_val()+fit-1;
+							int tracks_from = v_scroll->get_value();
+							int tracks_to = v_scroll->get_value()+fit-1;
 							if (tracks_to>=animation->get_track_count())
 								tracks_to=animation->get_track_count()-1;
 
@@ -2536,8 +2536,8 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 							}
 
 							float motion = from_t+(click.to.x - click.at.x)/_get_zoom_scale();
-							if (step->get_val())
-								motion = Math::stepify(motion,step->get_val());
+							if (step->get_value())
+								motion = Math::stepify(motion,step->get_value());
 
 
 
@@ -2700,7 +2700,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 
 						//int zoomw = settings_limit-name_limit;
 						float scale = _get_zoom_scale();
-						float pos = h_scroll->get_val() + (mpos.x-name_limit) / scale;
+						float pos = h_scroll->get_value() + (mpos.x-name_limit) / scale;
 						if (animation->get_step()) {
 							pos=Math::stepify(pos,animation->get_step());
 
@@ -2710,10 +2710,10 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 						if (pos>=animation->get_length())
 							pos=animation->get_length();
 
-						if (pos < h_scroll->get_val()) {
-							h_scroll->set_val(pos);
-						} else if (pos > h_scroll->get_val() + (settings_limit - name_limit) / scale) {
-							h_scroll->set_val( pos - (settings_limit - name_limit) / scale );
+						if (pos < h_scroll->get_value()) {
+							h_scroll->set_value(pos);
+						} else if (pos > h_scroll->get_value() + (settings_limit - name_limit) / scale) {
+							h_scroll->set_value( pos - (settings_limit - name_limit) / scale );
 						}
 
 						timeline_pos=pos;
@@ -2727,18 +2727,18 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 						click.to=Point2(mb.x,mb.y);
 						if (click.to.y<h && click.at.y>h && mb.relative_y<0) {
 
-							float prev = v_scroll->get_val();
-							v_scroll->set_val( v_scroll->get_val() -1 );
-							if (prev!=v_scroll->get_val())
+							float prev = v_scroll->get_value();
+							v_scroll->set_value( v_scroll->get_value() -1 );
+							if (prev!=v_scroll->get_value())
 								click.at.y+=h;
 
 
 						}
 						if (click.to.y>size.height && click.at.y<size.height && mb.relative_y>0) {
 
-							float prev = v_scroll->get_val();
-							v_scroll->set_val( v_scroll->get_val() +1 );
-							if (prev!=v_scroll->get_val())
+							float prev = v_scroll->get_value();
+							v_scroll->set_value( v_scroll->get_value() +1 );
+							if (prev!=v_scroll->get_value())
 								click.at.y-=h;
 						}
 
@@ -2755,7 +2755,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 
 				int rel = mb.relative_x;
 				float relf = rel / _get_zoom_scale();
-				h_scroll->set_val( h_scroll->get_val() - relf );
+				h_scroll->set_value( h_scroll->get_value() - relf );
 			}
 
 			if (mb.button_mask==0) {
@@ -2781,7 +2781,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 				mpos.y -= h;
 
 				int idx = mpos.y / h;
-				idx+=v_scroll->get_val();
+				idx+=v_scroll->get_value();
 				if (idx <0 || idx>=animation->get_track_count())
 					break;
 
@@ -2797,7 +2797,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 
 					float pos = mpos.x - name_limit;
 					pos/=_get_zoom_scale();
-					pos+=h_scroll->get_val();
+					pos+=h_scroll->get_value();
 					float w_time = (type_icon[0]->get_width() / _get_zoom_scale())/2.0;
 
 					int kidx = animation->track_find_key(idx,pos);
@@ -3112,8 +3112,8 @@ void AnimationKeyEditor::_update_paths() {
 		//timeline->set_max(animation->get_length());
 		//timeline->set_step(0.01);
 		track_editor->update();
-		length->set_val(animation->get_length());
-		step->set_val(animation->get_step());
+		length->set_value(animation->get_length());
+		step->set_value(animation->get_step());
 	}
 }
 
@@ -3130,9 +3130,9 @@ void AnimationKeyEditor::_update_menu() {
 
 	if (animation.is_valid()) {
 
-		length->set_val(animation->get_length());
+		length->set_value(animation->get_length());
 		loop->set_pressed(animation->has_loop());
-		step->set_val(animation->get_step());
+		step->set_value(animation->get_step());
 	}
 
 	track_editor->update();
@@ -3710,7 +3710,7 @@ void AnimationKeyEditor::_scale() {
 
 	}
 
-	float s = scale->get_val();
+	float s = scale->get_value();
 	if (s==0) {
 		ERR_PRINT("Can't scale to 0");
 	}
@@ -3914,7 +3914,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	h_scroll = memnew( HScrollBar );
 	h_scroll->connect("value_changed",this,"_scroll_changed");
 	add_child(h_scroll);
-	h_scroll->set_val(0);
+	h_scroll->set_value(0);
 
 
 	HBoxContainer *hb = memnew( HBoxContainer );
@@ -3936,7 +3936,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	zoom->set_step(0.01);
 	zoom->set_min(0.0);
 	zoom->set_max(2.0);
-	zoom->set_val(1.0);
+	zoom->set_value(1.0);
 	zoom->set_h_size_flags(SIZE_EXPAND_FILL);
 	zoom->set_stretch_ratio(2);
 	hb->add_child(zoom);
@@ -3968,7 +3968,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	step->set_min(0.00);
 	step->set_max(128);
 	step->set_step(0.01);
-	step->set_val(0.0);
+	step->set_value(0.0);
 	step->set_h_size_flags(SIZE_EXPAND_FILL);
 	step->set_stretch_ratio(1);
 	step->set_tooltip(TTR("Cursor step snap (in seconds)."));
@@ -4035,13 +4035,13 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	optimize_linear_error->set_max(1.0);
 	optimize_linear_error->set_min(0.001);
 	optimize_linear_error->set_step(0.001);
-	optimize_linear_error->set_val(0.05);
+	optimize_linear_error->set_value(0.05);
 	optimize_vb->add_margin_child(TTR("Max. Linear Error:"),optimize_linear_error);
 	optimize_angular_error = memnew( SpinBox );
 	optimize_angular_error->set_max(1.0);
 	optimize_angular_error->set_min(0.001);
 	optimize_angular_error->set_step(0.001);
-	optimize_angular_error->set_val(0.01);
+	optimize_angular_error->set_value(0.01);
 
 	optimize_vb->add_margin_child(TTR("Max. Angular Error:"),optimize_angular_error);
 	optimize_max_angle = memnew( SpinBox );
@@ -4049,7 +4049,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	optimize_max_angle->set_max(360.0);
 	optimize_max_angle->set_min(0.0);
 	optimize_max_angle->set_step(0.1);
-	optimize_max_angle->set_val(22);
+	optimize_max_angle->set_value(22);
 
 	optimize_dialog->get_ok()->set_text(TTR("Optimize"));
 
@@ -4107,7 +4107,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	v_scroll = memnew( VScrollBar );
 	hb->add_child(v_scroll);
 	v_scroll->connect("value_changed",this,"_scroll_changed");
-	v_scroll->set_val(0);
+	v_scroll->set_value(0);
 
 	key_editor_tab = memnew(TabContainer);
 	hb->add_child(key_editor_tab);

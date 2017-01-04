@@ -482,6 +482,8 @@ public:
 	static bool set_property(Object* p_object, const StringName& p_property, const Variant& p_value, bool *r_valid=NULL);
 	static bool get_property(Object* p_object,const StringName& p_property, Variant& r_value);
 	static Variant::Type get_property_type(const StringName& p_class, const StringName& p_property,bool *r_is_valid=NULL);
+	static StringName get_property_setter(StringName p_class,const StringName p_property);
+	static StringName get_property_getter(StringName p_class,const StringName p_property);
 
 
 

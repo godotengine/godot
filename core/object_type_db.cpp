@@ -957,6 +957,40 @@ Variant::Type ClassDB::get_property_type(const StringName& p_class, const String
 
 }
 
+StringName ClassDB::get_property_setter(StringName p_class,const StringName p_property) {
+
+	ClassInfo *type=classes.getptr(p_class);
+	ClassInfo *check=type;
+	while(check) {
+		const PropertySetGet *psg = check->property_setget.getptr(p_property);
+		if (psg) {
+
+			return psg->setter;
+		}
+
+		check=check->inherits_ptr;
+	}
+
+	return StringName();
+}
+
+StringName ClassDB::get_property_getter(StringName p_class,const StringName p_property) {
+
+	ClassInfo *type=classes.getptr(p_class);
+	ClassInfo *check=type;
+	while(check) {
+		const PropertySetGet *psg = check->property_setget.getptr(p_property);
+		if (psg) {
+
+			return psg->getter;
+		}
+
+		check=check->inherits_ptr;
+	}
+
+	return StringName();
+}
+
 
 void ClassDB::set_method_flags(StringName p_class,StringName p_method,int p_flags) {
 

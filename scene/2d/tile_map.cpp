@@ -1261,20 +1261,25 @@ void TileMap::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Square,Isometric,Custom"),_SCS("set_mode"),_SCS("get_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_set",PROPERTY_HINT_RESOURCE_TYPE,"TileSet"),_SCS("set_tileset"),_SCS("get_tileset"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_size",PROPERTY_HINT_RANGE,"1,8192,1",0),_SCS("_set_old_cell_size"),_SCS("_get_old_cell_size"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"cell/size",PROPERTY_HINT_RANGE,"1,8192,1"),_SCS("set_cell_size"),_SCS("get_cell_size"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),_SCS("set_quadrant_size"),_SCS("get_quadrant_size"));
-	ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"cell/custom_transform"),_SCS("set_custom_transform"),_SCS("get_custom_transform"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/half_offset",PROPERTY_HINT_ENUM,"Offset X,Offset Y,Disabled"),_SCS("set_half_offset"),_SCS("get_half_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/tile_origin",PROPERTY_HINT_ENUM,"Top Left,Center,Bottom Left"),_SCS("set_tile_origin"),_SCS("get_tile_origin"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"cell/y_sort"),_SCS("set_y_sort_mode"),_SCS("is_y_sort_mode_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collision/use_kinematic",PROPERTY_HINT_NONE,""),_SCS("set_collision_use_kinematic"),_SCS("get_collision_use_kinematic"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_friction"),_SCS("get_collision_friction"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_bounce"),_SCS("get_collision_bounce"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_layer"),_SCS("get_collision_layer"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"occluder/light_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_occluder_light_mask"),_SCS("get_occluder_light_mask"));
 
+	ADD_GROUP("Cell","cell_");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"cell_size",PROPERTY_HINT_RANGE,"1,8192,1"),_SCS("set_cell_size"),_SCS("get_cell_size"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),_SCS("set_quadrant_size"),_SCS("get_quadrant_size"));
+	ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"cell_custom_transform"),_SCS("set_custom_transform"),_SCS("get_custom_transform"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_half_offset",PROPERTY_HINT_ENUM,"Offset X,Offset Y,Disabled"),_SCS("set_half_offset"),_SCS("get_half_offset"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_tile_origin",PROPERTY_HINT_ENUM,"Top Left,Center,Bottom Left"),_SCS("set_tile_origin"),_SCS("get_tile_origin"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"cell_y_sort"),_SCS("set_y_sort_mode"),_SCS("is_y_sort_mode_enabled"));
+
+	ADD_GROUP("Collision","collision_");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collision_use_kinematic",PROPERTY_HINT_NONE,""),_SCS("set_collision_use_kinematic"),_SCS("get_collision_use_kinematic"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision_friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_friction"),_SCS("get_collision_friction"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision_bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_bounce"),_SCS("get_collision_bounce"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_layer"),_SCS("get_collision_layer"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
+
+	ADD_GROUP("Occluder","occluder_");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"occluder_light_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_occluder_light_mask"),_SCS("get_occluder_light_mask"));
+	ADD_GROUP("","");
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_tile_data"),_SCS("_get_tile_data"));
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));

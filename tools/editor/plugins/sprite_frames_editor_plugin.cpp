@@ -605,7 +605,7 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 			tree->select(tree->get_item_count()-1);
 	}
 
-	anim_speed->set_val(frames->get_animation_speed(edited_anim));
+	anim_speed->set_value(frames->get_animation_speed(edited_anim));
 	anim_loop->set_pressed(frames->get_animation_loop(edited_anim));
 
 	updating=false;

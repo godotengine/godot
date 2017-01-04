@@ -39,6 +39,15 @@ AABB VisualInstance::get_transformed_aabb() const {
 }
 
 
+void VisualInstance::_update_visibility() {
+
+	if (!is_inside_tree())
+		return;
+
+	_change_notify("visible");
+	VS::get_singleton()->instance_set_visible(get_instance(),is_visible());
+}
+
 
 void VisualInstance::_notification(int p_what) {
 
@@ -79,6 +88,8 @@ void VisualInstance::_notification(int p_what) {
 			*/
 
 			VisualServer::get_singleton()->instance_set_scenario( instance, get_world()->get_scenario() );
+			_update_visibility();
+
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -93,8 +104,12 @@ void VisualInstance::_notification(int p_what) {
 			VisualServer::get_singleton()->instance_attach_skeleton( instance, RID() );
 		//	VS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
 
-
 		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+
+			_update_visibility();
+		} break;
+
 	}
 }
 
@@ -228,7 +243,6 @@ void GeometryInstance::_notification(int p_what) {
 
 		}
 
-		_update_visibility();
 
 	} else if (p_what==NOTIFICATION_EXIT_WORLD) {
 
@@ -237,21 +251,8 @@ void GeometryInstance::_notification(int p_what) {
 
 		}
 
-	} if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
-
-		_update_visibility();
 	}
 
-
-}
-
-void GeometryInstance::_update_visibility() {
-
-	if (!is_inside_tree())
-		return;
-
-	_change_notify("geometry/visible");
-	VS::get_singleton()->instance_geometry_set_flag(get_instance(),VS::INSTANCE_FLAG_VISIBLE,is_visible() && flags[FLAG_VISIBLE]);
 }
 
 void GeometryInstance::set_flag(Flags p_flag,bool p_value) {
@@ -271,9 +272,6 @@ void GeometryInstance::set_flag(Flags p_flag,bool p_value) {
 
 	flags[p_flag]=p_value;
 	VS::get_singleton()->instance_geometry_set_flag(get_instance(),(VS::InstanceFlags)p_flag,p_value);
-	if (p_flag==FLAG_VISIBLE) {
-		_update_visibility();
-	}
 	if (p_flag==FLAG_USE_BAKED_LIGHT) {
 
 	}
@@ -353,23 +351,24 @@ void GeometryInstance::_bind_methods() {
 	ClassDB::bind_method(_MD("get_aabb"),&GeometryInstance::get_aabb);
 
 
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/visible"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE);
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "geometry/material_override",PROPERTY_HINT_RESOURCE_TYPE,"Material"), _SCS("set_material_override"), _SCS("get_material_override"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry/cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), _SCS("set_cast_shadows_setting"), _SCS("get_cast_shadows_setting"));
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "geometry/extra_cull_margin",PROPERTY_HINT_RANGE,"0,16384,0"), _SCS("set_extra_cull_margin"), _SCS("get_extra_cull_margin"));
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/billboard"), _SCS("set_flag"), _SCS("get_flag"),FLAG_BILLBOARD);
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/billboard_y"), _SCS("set_flag"), _SCS("get_flag"),FLAG_BILLBOARD_FIX_Y);
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/depth_scale"), _SCS("set_flag"), _SCS("get_flag"),FLAG_DEPH_SCALE);
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/visible_in_all_rooms"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE_IN_ALL_ROOMS);
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/use_baked_light"), _SCS("set_flag"), _SCS("get_flag"),FLAG_USE_BAKED_LIGHT);
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod/min_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_min_distance"), _SCS("get_lod_min_distance"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod/min_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_min_hysteresis"), _SCS("get_lod_min_hysteresis"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod/max_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_max_distance"), _SCS("get_lod_max_distance"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod/max_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_max_hysteresis"), _SCS("get_lod_max_hysteresis"));
+	ADD_GROUP("Geometry","");
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "material_override",PROPERTY_HINT_RESOURCE_TYPE,"Material"), _SCS("set_material_override"), _SCS("get_material_override"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), _SCS("set_cast_shadows_setting"), _SCS("get_cast_shadows_setting"));
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "extra_cull_margin",PROPERTY_HINT_RANGE,"0,16384,0"), _SCS("set_extra_cull_margin"), _SCS("get_extra_cull_margin"));
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_as_billboard"), _SCS("set_flag"), _SCS("get_flag"),FLAG_BILLBOARD);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_as_y_billboard"), _SCS("set_flag"), _SCS("get_flag"),FLAG_BILLBOARD_FIX_Y);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_depth_scale"), _SCS("set_flag"), _SCS("get_flag"),FLAG_DEPH_SCALE);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "visible_in_all_rooms"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE_IN_ALL_ROOMS);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_in_baked_light"), _SCS("set_flag"), _SCS("get_flag"),FLAG_USE_BAKED_LIGHT);
+
+	ADD_GROUP("LOD","lod_");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_min_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_min_distance"), _SCS("get_lod_min_distance"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_min_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_min_hysteresis"), _SCS("get_lod_min_hysteresis"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_max_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_max_distance"), _SCS("get_lod_max_distance"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_max_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_max_hysteresis"), _SCS("get_lod_max_hysteresis"));
 
 //	ADD_SIGNAL( MethodInfo("visibility_changed"));
 
-	BIND_CONSTANT(FLAG_VISIBLE );
 	BIND_CONSTANT(FLAG_CAST_SHADOW );
 	BIND_CONSTANT(FLAG_BILLBOARD );
 	BIND_CONSTANT(FLAG_BILLBOARD_FIX_Y );
@@ -394,7 +393,7 @@ GeometryInstance::GeometryInstance() {
 		flags[i]=false;
 	}
 
-	flags[FLAG_VISIBLE]=true;
+
 	flags[FLAG_CAST_SHADOW]=true;
 
 	shadow_casting_setting=SHADOW_CASTING_SETTING_ON;

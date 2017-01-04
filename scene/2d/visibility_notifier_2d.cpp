@@ -358,12 +358,12 @@ void VisibilityEnabler2D::_bind_methods(){
 	ClassDB::bind_method(_MD("is_enabler_enabled","enabler"),&VisibilityEnabler2D::is_enabler_enabled);
 	ClassDB::bind_method(_MD("_node_removed"),&VisibilityEnabler2D::_node_removed);
 
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_animations"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATIONS );
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/freeze_bodies"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_FREEZE_BODIES);
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_particles"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_PARTICLES);
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_animated_sprites"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATED_SPRITES);
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/process_parent"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PARENT_PROCESS);
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/fixed_process_parent"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PARENT_FIXED_PROCESS);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"pause_animations"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATIONS );
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"freeze_bodies"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_FREEZE_BODIES);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"pause_particles"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_PARTICLES);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"pause_animated_sprites"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATED_SPRITES);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"process_parent"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PARENT_PROCESS);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"fixed_process_parent"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PARENT_FIXED_PROCESS);
 
 	BIND_CONSTANT( ENABLER_FREEZE_BODIES );
 	BIND_CONSTANT( ENABLER_PAUSE_ANIMATIONS );

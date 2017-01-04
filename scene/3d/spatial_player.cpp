@@ -103,13 +103,15 @@ void SpatialPlayer::_bind_methods() {
 	BIND_CONSTANT( PARAM_EMISSION_CONE_ATTENUATION_DB );
 	BIND_CONSTANT( PARAM_MAX );
 
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/volume_db",PROPERTY_HINT_RANGE, "-80,24,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_VOLUME_DB);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/pitch_scale",PROPERTY_HINT_RANGE, "0.001,32,0.001"),_SCS("set_param"),_SCS("get_param"),PARAM_PITCH_SCALE);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/attenuation/min_distance",PROPERTY_HINT_RANGE, "0.01,4096,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_MIN_DISTANCE);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/attenuation/max_distance",PROPERTY_HINT_RANGE, "0.01,4096,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_MAX_DISTANCE);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/attenuation/distance_exp",PROPERTY_HINT_EXP_EASING, "attenuation"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_DISTANCE_EXP);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/emission_cone/degrees",PROPERTY_HINT_RANGE, "0,180,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_EMISSION_CONE_DEGREES);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/emission_cone/attenuation_db",PROPERTY_HINT_RANGE, "-80,24,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_EMISSION_CONE_ATTENUATION_DB);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "volume_db",PROPERTY_HINT_RANGE, "-80,24,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_VOLUME_DB);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "pitch_scale",PROPERTY_HINT_RANGE, "0.001,32,0.001"),_SCS("set_param"),_SCS("get_param"),PARAM_PITCH_SCALE);
+	ADD_GROUP("Attenuation","attenuation_");
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "attenuation_min_distance",PROPERTY_HINT_RANGE, "0.01,4096,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_MIN_DISTANCE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "attenuation_max_distance",PROPERTY_HINT_RANGE, "0.01,4096,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_MAX_DISTANCE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "attenuation_distance_exp",PROPERTY_HINT_EXP_EASING, "attenuation"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_DISTANCE_EXP);
+	ADD_GROUP("Emission Cone","emission_cone_");
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "emission_cone_degrees",PROPERTY_HINT_RANGE, "0,180,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_EMISSION_CONE_DEGREES);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "emission_cone_attenuation_db",PROPERTY_HINT_RANGE, "-80,24,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_EMISSION_CONE_ATTENUATION_DB);
 
 }
 

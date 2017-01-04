@@ -142,8 +142,8 @@ void Joint2D::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_a"), _SCS("set_node_a"),_SCS("get_node_a") );
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_b"), _SCS("set_node_b"),_SCS("get_node_b") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bias/bias",PROPERTY_HINT_RANGE,"0,0.9,0.001"), _SCS("set_bias"),_SCS("get_bias") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "collision/exclude_nodes"), _SCS("set_exclude_nodes_from_collision"),_SCS("get_exclude_nodes_from_collision") );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bias",PROPERTY_HINT_RANGE,"0,0.9,0.001"), _SCS("set_bias"),_SCS("get_bias") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "disable_collision"), _SCS("set_exclude_nodes_from_collision"),_SCS("get_exclude_nodes_from_collision") );
 
 
 }

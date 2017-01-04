@@ -51,8 +51,8 @@ bool Node2D::edit_has_pivot() const {
 Variant Node2D::edit_get_state() const {
 
 	Array state;
-	state.push_back(get_pos());
-	state.push_back(get_rot());
+	state.push_back(get_position());
+	state.push_back(get_rotation());
 	state.push_back(get_scale());
 
 	return state;
@@ -137,7 +137,7 @@ void Node2D::_update_transform() {
 	_notify_transform();
 }
 
-void Node2D::set_pos(const Point2& p_pos) {
+void Node2D::set_position(const Point2& p_pos) {
 
 	if (_xform_dirty)
 		((Node2D*)this)->_update_xform_values();
@@ -148,7 +148,7 @@ void Node2D::set_pos(const Point2& p_pos) {
 
 }
 
-void Node2D::set_rot(float p_radians) {
+void Node2D::set_rotation(float p_radians) {
 
 	if (_xform_dirty)
 		((Node2D*)this)->_update_xform_values();
@@ -157,9 +157,9 @@ void Node2D::set_rot(float p_radians) {
 	_change_notify("transform/rot");
 }
 
-void Node2D::set_rotd(float p_degrees) {
+void Node2D::set_rotation_in_degrees(float p_degrees) {
 
-	set_rot(Math::deg2rad(p_degrees));
+	set_rotation(Math::deg2rad(p_degrees));
 }
 
 // Kept for compatibility after rename to set_rotd.
@@ -167,7 +167,7 @@ void Node2D::set_rotd(float p_degrees) {
 void Node2D::_set_rotd(float p_degrees) {
 
 	WARN_PRINT("Deprecated method Node2D._set_rotd(): This method was renamed to set_rotd. Please adapt your code accordingly, as the old method will be obsoleted.");
-	set_rotd(p_degrees);
+	set_rotation_in_degrees(p_degrees);
 }
 
 void Node2D::set_scale(const Size2& p_scale) {
@@ -184,28 +184,28 @@ void Node2D::set_scale(const Size2& p_scale) {
 
 }
 
-Point2 Node2D::get_pos() const {
+Point2 Node2D::get_position() const {
 
 	if (_xform_dirty)
 		((Node2D*)this)->_update_xform_values();
 	return pos;
 }
-float Node2D::get_rot() const {
+float Node2D::get_rotation() const {
 	if (_xform_dirty)
 		((Node2D*)this)->_update_xform_values();
 
 	return angle;
 }
-float Node2D::get_rotd() const {
+float Node2D::get_rotation_in_degrees() const {
 
-	return Math::rad2deg(get_rot());
+	return Math::rad2deg(get_rotation());
 }
 // Kept for compatibility after rename to get_rotd.
 // Could be removed after a couple releases.
 float Node2D::_get_rotd() const {
 
 	WARN_PRINT("Deprecated method Node2D._get_rotd(): This method was renamed to get_rotd. Please adapt your code accordingly, as the old method will be obsoleted.");
-	return get_rotd();
+	return get_rotation_in_degrees();
 }
 Size2 Node2D::get_scale() const {
 	if (_xform_dirty)
@@ -240,17 +240,17 @@ Rect2 Node2D::get_item_rect() const {
 
 void Node2D::rotate(float p_radians) {
 
-	set_rot( get_rot() + p_radians);
+	set_rotation( get_rotation() + p_radians);
 }
 
 void Node2D::translate(const Vector2& p_amount) {
 
-	set_pos( get_pos() + p_amount );
+	set_position( get_position() + p_amount );
 }
 
 void Node2D::global_translate(const Vector2& p_amount) {
 
-	set_global_pos( get_global_pos() + p_amount );
+	set_global_position( get_global_position() + p_amount );
 }
 
 void Node2D::scale(const Size2& p_amount) {
@@ -265,7 +265,7 @@ void Node2D::move_x(float p_delta,bool p_scaled){
 	Vector2 m = t[0];
 	if (!p_scaled)
 		m.normalize();
-	set_pos(t[2]+m*p_delta);
+	set_position(t[2]+m*p_delta);
 }
 
 void Node2D::move_y(float p_delta,bool p_scaled){
@@ -274,53 +274,53 @@ void Node2D::move_y(float p_delta,bool p_scaled){
 	Vector2 m = t[1];
 	if (!p_scaled)
 		m.normalize();
-	set_pos(t[2]+m*p_delta);
+	set_position(t[2]+m*p_delta);
 }
 
 
-Point2 Node2D::get_global_pos() const {
+Point2 Node2D::get_global_position() const {
 
 	return get_global_transform().get_origin();
 }
 
-void Node2D::set_global_pos(const Point2& p_pos) {
+void Node2D::set_global_position(const Point2& p_pos) {
 
 	Matrix32 inv;
 	CanvasItem *pi = get_parent_item();
 	if (pi) {
 		inv = pi->get_global_transform().affine_inverse();
-		set_pos(inv.xform(p_pos));
+		set_position(inv.xform(p_pos));
 	} else {
-		set_pos(p_pos);
+		set_position(p_pos);
 	}
 }
 
 
-float Node2D::get_global_rot() const {
+float Node2D::get_global_rotation() const {
 
 	return get_global_transform().get_rotation();
 }
 
-void Node2D::set_global_rot(float p_radians) {
+void Node2D::set_global_rotation(float p_radians) {
 
 	CanvasItem *pi = get_parent_item();
 	if (pi) {
 		const float parent_global_rot = pi->get_global_transform().get_rotation();
-		set_rot(p_radians - parent_global_rot);
+		set_rotation(p_radians - parent_global_rot);
 	} else {
-		set_rot(p_radians);
+		set_rotation(p_radians);
 	}
 }
 
 
-float Node2D::get_global_rotd() const {
+float Node2D::get_global_rotation_in_degrees() const {
 
-	return Math::rad2deg(get_global_rot());
+	return Math::rad2deg(get_global_rotation());
 }
 
-void Node2D::set_global_rotd(float p_degrees) {
+void Node2D::set_global_rotation_in_degrees(float p_degrees) {
 
-	set_global_rot(Math::deg2rad(p_degrees));
+	set_global_rotation(Math::deg2rad(p_degrees));
 }
 
 
@@ -426,14 +426,14 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(_MD("_get_rotd"),&Node2D::_get_rotd);
 	ClassDB::bind_method(_MD("_set_rotd","degrees"),&Node2D::_set_rotd);
 
-	ClassDB::bind_method(_MD("set_pos","pos"),&Node2D::set_pos);
-	ClassDB::bind_method(_MD("set_rot","radians"),&Node2D::set_rot);
-	ClassDB::bind_method(_MD("set_rotd","degrees"),&Node2D::set_rotd);
+	ClassDB::bind_method(_MD("set_position","pos"),&Node2D::set_position);
+	ClassDB::bind_method(_MD("set_rotation","radians"),&Node2D::set_rotation);
+	ClassDB::bind_method(_MD("set_rotation_in_degrees","degrees"),&Node2D::set_rotation_in_degrees);
 	ClassDB::bind_method(_MD("set_scale","scale"),&Node2D::set_scale);
 
-	ClassDB::bind_method(_MD("get_pos"),&Node2D::get_pos);
-	ClassDB::bind_method(_MD("get_rot"),&Node2D::get_rot);
-	ClassDB::bind_method(_MD("get_rotd"),&Node2D::get_rotd);
+	ClassDB::bind_method(_MD("get_position"),&Node2D::get_position);
+	ClassDB::bind_method(_MD("get_rotation"),&Node2D::get_rotation);
+	ClassDB::bind_method(_MD("get_rotation_in_degrees"),&Node2D::get_rotation_in_degrees);
 	ClassDB::bind_method(_MD("get_scale"),&Node2D::get_scale);
 
 	ClassDB::bind_method(_MD("rotate","radians"),&Node2D::rotate);
@@ -443,12 +443,12 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(_MD("global_translate","offset"),&Node2D::global_translate);
 	ClassDB::bind_method(_MD("scale","ratio"),&Node2D::scale);
 
-	ClassDB::bind_method(_MD("set_global_pos","pos"),&Node2D::set_global_pos);
-	ClassDB::bind_method(_MD("get_global_pos"),&Node2D::get_global_pos);
-	ClassDB::bind_method(_MD("set_global_rot","radians"),&Node2D::set_global_rot);
-	ClassDB::bind_method(_MD("get_global_rot"),&Node2D::get_global_rot);
-	ClassDB::bind_method(_MD("set_global_rotd","degrees"),&Node2D::set_global_rotd);
-	ClassDB::bind_method(_MD("get_global_rotd"),&Node2D::get_global_rotd);
+	ClassDB::bind_method(_MD("set_global_position","pos"),&Node2D::set_global_position);
+	ClassDB::bind_method(_MD("get_global_position"),&Node2D::get_global_position);
+	ClassDB::bind_method(_MD("set_global_rotation","radians"),&Node2D::set_global_rotation);
+	ClassDB::bind_method(_MD("get_global_rotation"),&Node2D::get_global_rotation);
+	ClassDB::bind_method(_MD("set_global_rotation_in_degrees","degrees"),&Node2D::set_global_rotation_in_degrees);
+	ClassDB::bind_method(_MD("get_global_rotation_in_degrees"),&Node2D::get_global_rotation_in_degrees);
 	ClassDB::bind_method(_MD("set_global_scale","scale"),&Node2D::set_global_scale);
 	ClassDB::bind_method(_MD("get_global_scale"),&Node2D::get_global_scale);
 
@@ -468,11 +468,22 @@ void Node2D::_bind_methods() {
 
 	ClassDB::bind_method(_MD("get_relative_transform_to_parent","parent"),&Node2D::get_relative_transform_to_parent);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"transform/pos"),_SCS("set_pos"),_SCS("get_pos"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("set_rotd"),_SCS("get_rotd"));
-	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2,"transform/scale"),_SCS("set_scale"),_SCS("get_scale"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT,"z/z",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z"),_SCS("get_z"));
-	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"z/relative"),_SCS("set_z_as_relative"),_SCS("is_z_relative"));
+	ADD_GROUP("Transform","");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"position"),_SCS("set_position"),_SCS("get_position"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"rotation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_rotation"),_SCS("get_rotation"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"rotation_deg",PROPERTY_HINT_RANGE,"-1440,1440,0.1",PROPERTY_USAGE_EDITOR),_SCS("set_rotation_in_degrees"),_SCS("get_rotation_in_degrees"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2,"scale"),_SCS("set_scale"),_SCS("get_scale"));
+	ADD_PROPERTY(PropertyInfo(Variant::MATRIX32,"transform",PROPERTY_HINT_NONE,"",0),_SCS("set_transform"),_SCS("get_transform"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_position",PROPERTY_HINT_NONE,"",0),_SCS("set_global_position"),_SCS("get_global_position"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_rotation",PROPERTY_HINT_NONE,"",0),_SCS("set_global_rotation"),_SCS("get_global_rotation"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_rotation_deg",PROPERTY_HINT_NONE,"",0),_SCS("set_global_rotation_in_degrees"),_SCS("get_global_rotation_in_degrees"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_scale",PROPERTY_HINT_NONE,"",0),_SCS("set_global_scale"),_SCS("get_global_scale"));
+	ADD_PROPERTY(PropertyInfo(Variant::MATRIX32,"global_transform",PROPERTY_HINT_NONE,"",0),_SCS("set_global_transform"),_SCS("get_global_transform"));
+
+	ADD_GROUP("Z","");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT,"z",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z"),_SCS("get_z"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"z_as_relative"),_SCS("set_z_as_relative"),_SCS("is_z_relative"));
 
 
 }

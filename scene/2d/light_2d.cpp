@@ -436,18 +436,21 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_RANGE,"0.01,100,0.01"),_SCS("set_energy"),_SCS("get_energy"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Add,Sub,Mix,Mask"),_SCS("set_mode"),_SCS("get_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"range/height",PROPERTY_HINT_RANGE,"-100,100,0.1"),_SCS("set_height"),_SCS("get_height"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/z_min",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_min"),_SCS("get_z_range_min"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/z_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_max"),_SCS("get_z_range_max"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/layer_min",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_min"),_SCS("get_layer_range_min"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/layer_max",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_max"),_SCS("get_layer_range_max"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/item_cull_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_cull_mask"),_SCS("get_item_cull_mask"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow/enabled"),_SCS("set_shadow_enabled"),_SCS("is_shadow_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"shadow/color"),_SCS("set_shadow_color"),_SCS("get_shadow_color"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/buffer_size",PROPERTY_HINT_RANGE,"32,16384,1"),_SCS("set_shadow_buffer_size"),_SCS("get_shadow_buffer_size"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow/gradient_length",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_gradient_length"),_SCS("get_shadow_gradient_length"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow/filter",PROPERTY_HINT_ENUM,"None,PCF3,PCF5,PCF9,PCF13"),_SCS("set_shadow_filter"),_SCS("get_shadow_filter"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/item_cull_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_shadow_cull_mask"),_SCS("get_item_shadow_cull_mask"));
+	ADD_GROUP("Range","range_");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"range_height",PROPERTY_HINT_RANGE,"-100,100,0.1"),_SCS("set_height"),_SCS("get_height"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_z_min",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_min"),_SCS("get_z_range_min"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_z_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_max"),_SCS("get_z_range_max"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_layer_min",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_min"),_SCS("get_layer_range_min"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_layer_max",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_max"),_SCS("get_layer_range_max"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_item_cull_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_cull_mask"),_SCS("get_item_cull_mask"));
+
+	ADD_GROUP("Shadow","shadow_");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow_enabled"),_SCS("set_shadow_enabled"),_SCS("is_shadow_enabled"));
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"shadow_color"),_SCS("set_shadow_color"),_SCS("get_shadow_color"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_buffer_size",PROPERTY_HINT_RANGE,"32,16384,1"),_SCS("set_shadow_buffer_size"),_SCS("get_shadow_buffer_size"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow_gradient_length",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_gradient_length"),_SCS("get_shadow_gradient_length"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow_filter",PROPERTY_HINT_ENUM,"None,PCF3,PCF5,PCF9,PCF13"),_SCS("set_shadow_filter"),_SCS("get_shadow_filter"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_item_cull_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_shadow_cull_mask"),_SCS("get_item_shadow_cull_mask"));
 
 	BIND_CONSTANT( MODE_ADD );
 	BIND_CONSTANT( MODE_SUB );

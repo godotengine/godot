@@ -149,21 +149,21 @@ public:
 	}
 
 	void set_fields(const Point2 p_grid_offset, const Size2 p_grid_step, const float p_rotation_offset, const float p_rotation_step) {
-		grid_offset_x->set_val(p_grid_offset.x);
-		grid_offset_y->set_val(p_grid_offset.y);
-		grid_step_x->set_val(p_grid_step.x);
-		grid_step_y->set_val(p_grid_step.y);
-		rotation_offset->set_val(p_rotation_offset * (180 / Math_PI));
-		rotation_step->set_val(p_rotation_step * (180 / Math_PI));
+		grid_offset_x->set_value(p_grid_offset.x);
+		grid_offset_y->set_value(p_grid_offset.y);
+		grid_step_x->set_value(p_grid_step.x);
+		grid_step_y->set_value(p_grid_step.y);
+		rotation_offset->set_value(p_rotation_offset * (180 / Math_PI));
+		rotation_step->set_value(p_rotation_step * (180 / Math_PI));
 	}
 
 	void get_fields(Point2 &p_grid_offset, Size2 &p_grid_step, float &p_rotation_offset, float &p_rotation_step) {
-		p_grid_offset.x = grid_offset_x->get_val();
-		p_grid_offset.y = grid_offset_y->get_val();
-		p_grid_step.x = grid_step_x->get_val();
-		p_grid_step.y = grid_step_y->get_val();
-		p_rotation_offset = rotation_offset->get_val() / (180 / Math_PI);
-		p_rotation_step = rotation_step->get_val() / (180 / Math_PI);
+		p_grid_offset.x = grid_offset_x->get_value();
+		p_grid_offset.y = grid_offset_y->get_value();
+		p_grid_step.x = grid_step_x->get_value();
+		p_grid_step.y = grid_step_y->get_value();
+		p_rotation_offset = rotation_offset->get_value() / (180 / Math_PI);
+		p_rotation_step = rotation_step->get_value() / (180 / Math_PI);
 	}
 };
 
@@ -179,7 +179,7 @@ void CanvasItemEditor::_edit_set_pivot(const Vector2& mouse_pos) {
 		if (n2d && n2d->edit_has_pivot()) {
 
 			Vector2 offset = n2d->edit_get_pivot();
-			Vector2 gpos = n2d->get_global_pos();
+			Vector2 gpos = n2d->get_global_position();
 
 			Vector2 local_mouse_pos = n2d->get_canvas_transform().affine_inverse().xform(mouse_pos);
 
@@ -194,8 +194,8 @@ void CanvasItemEditor::_edit_set_pivot(const Vector2& mouse_pos) {
 				if (!n2dc)
 					continue;
 
-				undo_redo->add_do_method(n2dc,"set_global_pos",n2dc->get_global_pos());
-				undo_redo->add_undo_method(n2dc,"set_global_pos",n2dc->get_global_pos());
+				undo_redo->add_do_method(n2dc,"set_global_pos",n2dc->get_global_position());
+				undo_redo->add_undo_method(n2dc,"set_global_pos",n2dc->get_global_position());
 
 			}
 
@@ -286,7 +286,7 @@ Dictionary CanvasItemEditor::get_state() const {
 
 	Dictionary state;
 	state["zoom"]=zoom;
-	state["ofs"]=Point2(h_scroll->get_val(),v_scroll->get_val());
+	state["ofs"]=Point2(h_scroll->get_value(),v_scroll->get_value());
 //	state["ofs"]=-transform.get_origin();
 	state["snap_offset"]=snap_offset;
 	state["snap_step"]=snap_step;
@@ -310,8 +310,8 @@ void CanvasItemEditor::set_state(const Dictionary& p_state){
 	if (state.has("ofs")) {
 		_update_scrollbars(); // i wonder how safe is calling this here..
 		Point2 ofs=p_state["ofs"];
-		h_scroll->set_val(ofs.x);
-		v_scroll->set_val(ofs.y);
+		h_scroll->set_value(ofs.x);
+		v_scroll->set_value(ofs.y);
 	}
 
 	if (state.has("snap_step")) {
@@ -709,10 +709,10 @@ void CanvasItemEditor::_key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE 
 
 				if (p_move_mode == MOVE_LOCAL_WITH_ROT) {
 					Matrix32 m;
-					m.rotate( node_2d->get_rot() );
+					m.rotate( node_2d->get_rotation() );
 					drag = m.xform(drag);
 				}
-				node_2d->set_pos(node_2d->get_pos() + drag);
+				node_2d->set_position(node_2d->get_position() + drag);
 
 			} else if (Control *control = canvas_item->cast_to<Control>()) {
 
@@ -961,7 +961,7 @@ void CanvasItemEditor::_dialog_value_changed(double) {
 
 		case ZOOM_SET: {
 
-			zoom=dialog_val->get_val()/100.0;
+			zoom=dialog_val->get_value()/100.0;
 			_update_scroll(0);
 			viewport->update();
 
@@ -1096,8 +1096,8 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			{
 				Point2 ofs(b.x,b.y);
 				ofs = ofs/prev_zoom - ofs/zoom;
-				h_scroll->set_val( h_scroll->get_val() + ofs.x );
-				v_scroll->set_val( v_scroll->get_val() + ofs.y );
+				h_scroll->set_value( h_scroll->get_value() + ofs.x );
+				v_scroll->set_value( v_scroll->get_value() + ofs.y );
 			}
 			_update_scroll(0);
 			viewport->update();
@@ -1114,8 +1114,8 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			{
 				Point2 ofs(b.x,b.y);
 				ofs = ofs/prev_zoom - ofs/zoom;
-				h_scroll->set_val( h_scroll->get_val() + ofs.x );
-				v_scroll->set_val( v_scroll->get_val() + ofs.y );
+				h_scroll->set_value( h_scroll->get_value() + ofs.x );
+				v_scroll->set_value( v_scroll->get_value() + ofs.y );
 			}
 
 			_update_scroll(0);
@@ -1355,7 +1355,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 						if (!pi)
 							break;
 
-						float len=pi->get_global_transform().get_origin().distance_to(b->get_global_pos());
+						float len=pi->get_global_transform().get_origin().distance_to(b->get_global_position());
 						b=pi->cast_to<Node2D>();
 						if (!b)
 							break;
@@ -1554,8 +1554,8 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 			if ( (m.button_mask&BUTTON_MASK_LEFT && tool == TOOL_PAN) || m.button_mask&BUTTON_MASK_MIDDLE || (m.button_mask&BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
 
-				h_scroll->set_val( h_scroll->get_val() - m.relative_x/zoom);
-				v_scroll->set_val( v_scroll->get_val() - m.relative_y/zoom);
+				h_scroll->set_value( h_scroll->get_value() - m.relative_x/zoom);
+				v_scroll->set_value( v_scroll->get_value() - m.relative_y/zoom);
 			}
 
 			return;
@@ -1604,7 +1604,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 						Matrix32 rot;
 						rot.elements[1] = (dfrom - center).normalized();
 						rot.elements[0] = rot.elements[1].tangent();
-						node->set_rot(snap_angle(rot.xform_inv(dto-center).angle() + node->get_rot(), node->get_rot()));
+						node->set_rotation(snap_angle(rot.xform_inv(dto-center).angle() + node->get_rotation(), node->get_rotation()));
 						display_rotate_to = dto;
 						display_rotate_from = center;
 						viewport->update();
@@ -1854,11 +1854,11 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 					if (!E->prev()) {
 						//last goes to what it was
-						final_xform.set_origin(n->get_global_pos());
+						final_xform.set_origin(n->get_global_position());
 						n->set_global_transform(final_xform);
 
 					} else {
-						Vector2 rel = (E->prev()->get().node->get_global_pos() - n->get_global_pos()).normalized();
+						Vector2 rel = (E->prev()->get().node->get_global_position() - n->get_global_position()).normalized();
 						Vector2 rel2 = (E->prev()->get().pos - E->get().pos).normalized();
 						float rot = rel.angle_to(rel2);
 						if (n->get_global_transform().basis_determinant()<0) {
@@ -2147,8 +2147,8 @@ void CanvasItemEditor::_viewport_draw() {
 			if (!pn2d)
 				continue;
 
-			Vector2 from = transform.xform(pn2d->get_global_pos());
-			Vector2 to = transform.xform(n2d->get_global_pos());
+			Vector2 from = transform.xform(pn2d->get_global_position());
+			Vector2 to = transform.xform(n2d->get_global_position());
 
 			E->get().from=from;
 			E->get().to=to;
@@ -2456,13 +2456,13 @@ void CanvasItemEditor::_update_scrollbars() {
 		v_scroll->set_page(local_rect.size.y/zoom);
 		if (first_update) {
 			//so 0,0 is visible
-			v_scroll->set_val(-10);
-			h_scroll->set_val(-10);
+			v_scroll->set_value(-10);
+			h_scroll->set_value(-10);
 			first_update=false;
 
 		}
 
-		ofs.y=v_scroll->get_val();
+		ofs.y=v_scroll->get_value();
 	}
 
 	if (canvas_item_rect.size.width <= (local_rect.size.x/zoom)) {
@@ -2475,7 +2475,7 @@ void CanvasItemEditor::_update_scrollbars() {
 		h_scroll->set_min(canvas_item_rect.pos.x);
 		h_scroll->set_max(canvas_item_rect.pos.x+canvas_item_rect.size.x);
 		h_scroll->set_page(local_rect.size.x/zoom);
-		ofs.x=h_scroll->get_val();
+		ofs.x=h_scroll->get_value();
 	}
 
 //	transform=Matrix32();
@@ -2497,8 +2497,8 @@ void CanvasItemEditor::_update_scroll(float) {
 		return;
 
 	Point2 ofs;
-	ofs.x=h_scroll->get_val();
-	ofs.y=v_scroll->get_val();
+	ofs.x=h_scroll->get_value();
+	ofs.y=v_scroll->get_value();
 
 //	current_window->set_scroll(-ofs);
 
@@ -2611,7 +2611,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			dialog_val->set_min(0.1);
 			dialog_val->set_step(0.1);
 			dialog_val->set_max(800);
-			dialog_val->set_val(zoom*100);
+			dialog_val->set_value(zoom*100);
 			value_dialog->popup_centered(Size2(200,85));
 			updating_value_dialog=false;
 
@@ -2833,9 +2833,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					Node2D *n2d = canvas_item->cast_to<Node2D>();
 
 					if (key_pos)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d,"transform/pos",n2d->get_pos(),existing);
+						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d,"transform/pos",n2d->get_position(),existing);
 					if (key_rot)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d,"transform/rot",Math::rad2deg(n2d->get_rot()),existing);
+						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d,"transform/rot",Math::rad2deg(n2d->get_rotation()),existing);
 					if (key_scale)
 						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(n2d,"transform/scale",n2d->get_scale(),existing);
 
@@ -2865,9 +2865,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 							for(List<Node2D*>::Element *F=ik_chain.front();F;F=F->next()) {
 
 								if (key_pos)
-									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(),"transform/pos",F->get()->get_pos(),existing);
+									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(),"transform/pos",F->get()->get_position(),existing);
 								if (key_rot)
-									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(),"transform/rot",Math::rad2deg(F->get()->get_rot()),existing);
+									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(),"transform/rot",Math::rad2deg(F->get()->get_rotation()),existing);
 								if (key_scale)
 									AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(F->get(),"transform/scale",F->get()->get_scale(),existing);
 
@@ -2947,8 +2947,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 					Node2D *n2d = canvas_item->cast_to<Node2D>();
 					PoseClipboard pc;
-					pc.pos=n2d->get_pos();
-					pc.rot=n2d->get_rot();
+					pc.pos=n2d->get_position();
+					pc.rot=n2d->get_rotation();
 					pc.scale=n2d->get_scale();
 					pc.id=n2d->get_instance_ID();
 					pose_clipboard.push_back(pc);
@@ -2974,8 +2974,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_do_method(n2d,"set_pos",E->get().pos);
 				undo_redo->add_do_method(n2d,"set_rot",E->get().rot);
 				undo_redo->add_do_method(n2d,"set_scale",E->get().scale);
-				undo_redo->add_undo_method(n2d,"set_pos",n2d->get_pos());
-				undo_redo->add_undo_method(n2d,"set_rot",n2d->get_rot());
+				undo_redo->add_undo_method(n2d,"set_pos",n2d->get_position());
+				undo_redo->add_undo_method(n2d,"set_rot",n2d->get_rotation());
 				undo_redo->add_undo_method(n2d,"set_scale",n2d->get_scale());
 			}
 			undo_redo->commit_action();
@@ -2998,9 +2998,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					Node2D *n2d = canvas_item->cast_to<Node2D>();
 
 					if (key_pos)
-						n2d->set_pos(Vector2());
+						n2d->set_position(Vector2());
 					if (key_rot)
-						n2d->set_rot(0);
+						n2d->set_rotation(0);
 					if (key_scale)
 						n2d->set_scale(Vector2(1,1));
 				} else if (canvas_item->cast_to<Control>()) {
@@ -3180,8 +3180,8 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 
 		center = rect.pos + rect.size/2;
 		Vector2 offset = viewport->get_size()/2 - editor->get_scene_root()->get_global_canvas_transform().xform(center);
-		h_scroll->set_val(h_scroll->get_val() - offset.x/zoom);
-		v_scroll->set_val(v_scroll->get_val() - offset.y/zoom);
+		h_scroll->set_value(h_scroll->get_value() - offset.x/zoom);
+		v_scroll->set_value(v_scroll->get_value() - offset.y/zoom);
 
 	} else { // VIEW_FRAME_TO_SELECTION
 
@@ -3825,7 +3825,7 @@ bool CanvasItemEditorViewport::_create_instance(Node* parent, String& path, cons
 	Point2 pos;
 	Node2D* parent_node2d=parent->cast_to<Node2D>();
 	if (parent_node2d) {
-		pos=parent_node2d->get_global_pos();
+		pos=parent_node2d->get_global_position();
 	} else {
 		Control* parent_control=parent->cast_to<Control>();
 		if (parent_control) {
@@ -3913,7 +3913,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2& p_point,const Variant
 					_create_preview(files);
 				}
 				Matrix32 trans=canvas->get_canvas_transform();
-				preview->set_pos((p_point-trans.get_origin())/trans.get_scale().x);
+				preview->set_position((p_point-trans.get_origin())/trans.get_scale().x);
 				label->set_text(vformat(TTR("Adding %s..."),default_type));
 			}
 			return can_instance;

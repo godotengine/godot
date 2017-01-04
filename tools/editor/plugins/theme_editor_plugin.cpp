@@ -750,7 +750,7 @@ ThemeEditor::ThemeEditor() {
 	first_vb->add_child( memnew( HScrollBar ));
 	first_vb->add_child( memnew( SpinBox ));
 	ProgressBar *pb=memnew( ProgressBar );
-	pb->set_val(50);
+	pb->set_value(50);
 	first_vb->add_child( pb);
 	Panel *pn=memnew( Panel );
 	pn->set_custom_minimum_size(Size2(40,40)*EDSCALE);

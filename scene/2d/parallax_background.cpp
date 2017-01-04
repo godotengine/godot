@@ -204,12 +204,13 @@ void ParallaxBackground::_bind_methods() {
     ClassDB::bind_method(_MD("is_ignore_camera_zoom"), &ParallaxBackground::is_ignore_camera_zoom);
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll/offset"),_SCS("set_scroll_offset"),_SCS("get_scroll_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll/base_offset"),_SCS("set_scroll_base_offset"),_SCS("get_scroll_base_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll/base_scale"),_SCS("set_scroll_base_scale"),_SCS("get_scroll_base_scale"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll/limit_begin"),_SCS("set_limit_begin"),_SCS("get_limit_begin"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll/limit_end"),_SCS("set_limit_end"),_SCS("get_limit_end"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "scroll/ignore_camera_zoom"), _SCS("set_ignore_camera_zoom"), _SCS("is_ignore_camera_zoom"));
+	ADD_GROUP("Scroll","scroll_");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_offset"),_SCS("set_scroll_offset"),_SCS("get_scroll_offset"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_base_offset"),_SCS("set_scroll_base_offset"),_SCS("get_scroll_base_offset"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_base_scale"),_SCS("set_scroll_base_scale"),_SCS("get_scroll_base_scale"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_limit_begin"),_SCS("set_limit_begin"),_SCS("get_limit_begin"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_limit_end"),_SCS("set_limit_end"),_SCS("get_limit_end"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "scroll_ignore_camera_zoom"), _SCS("set_ignore_camera_zoom"), _SCS("is_ignore_camera_zoom"));
 
 }
 
