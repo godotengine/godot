@@ -1487,12 +1487,12 @@ Variant::operator StringName() const {
 	return StringName(operator String());
 }
 
-struct _VariantStrPair {
+struct VariantStrPair {
 
 	String key;
 	String value;
 
-	bool operator<(const _VariantStrPair& p) const {
+    bool operator<(const VariantStrPair& p) const {
 
 		return key < p.key;
 	}
@@ -1556,11 +1556,11 @@ Variant::operator String() const {
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
-			Vector<_VariantStrPair> pairs;
+            Vector<VariantStrPair> pairs;
 
 			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
-				_VariantStrPair sp;
+                VariantStrPair sp;
 				sp.key=String(E->get());
 				sp.value=d[E->get()];
 				pairs.push_back(sp);

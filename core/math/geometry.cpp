@@ -82,26 +82,26 @@ void Geometry::MeshData::optimize_vertices() {
 
 Vector< Vector<Vector2> > (*Geometry::_decompose_func)(const Vector<Vector2>& p_polygon)=NULL;
 
-struct _FaceClassify {
+struct FaceClassify {
 
-	struct _Link {
+    struct Link {
 
 		int face;
 		int edge;
 		void clear() { face=-1; edge=-1; }
-		_Link() { face=-1; edge=-1; }
+        Link() { face=-1; edge=-1; }
 	};
 	bool valid;
 	int group;
-	_Link links[3];
+    Link links[3];
 	Face3 face;
-	_FaceClassify() {
+    FaceClassify() {
 		group=-1;
 		valid=false;
 	};
 };
 
-static bool _connect_faces(_FaceClassify *p_faces, int len, int p_group) {
+static bool _connect_faces(FaceClassify *p_faces, int len, int p_group) {
 	/* connect faces, error will occur if an edge is shared between more than 2 faces */
 	/* clear connections */
 
@@ -187,7 +187,7 @@ static bool _connect_faces(_FaceClassify *p_faces, int len, int p_group) {
 	return error;
 }
 
-static bool _group_face(_FaceClassify *p_faces, int len, int p_index,int p_group) {
+static bool _group_face(FaceClassify *p_faces, int len, int p_index,int p_group) {
 
 	if (p_faces[p_index].group>=0)
 		return false;
@@ -214,13 +214,13 @@ DVector< DVector< Face3 > > Geometry::separate_objects( DVector< Face3 > p_array
 
 	const Face3* arrayptr = r.ptr();
 
-	DVector< _FaceClassify> fc;
+    DVector<FaceClassify> fc;
 
 	fc.resize( len );
 
-	DVector< _FaceClassify >::Write fcw=fc.write();
+    DVector<FaceClassify >::Write fcw=fc.write();
 
-	_FaceClassify * _fcptr = fcw.ptr();
+    FaceClassify * _fcptr = fcw.ptr();
 
 	for (int i=0;i<len;i++) {
 
@@ -1005,17 +1005,17 @@ DVector<Plane> Geometry::build_capsule_planes(float p_radius, float p_height, in
 }
 
 
-struct _AtlasWorkRect {
+struct AtlasWorkRect {
 
 	Size2i s;
 	Point2i p;
 	int idx;
-	_FORCE_INLINE_ bool operator<(const _AtlasWorkRect& p_r) const { return s.width > p_r.s.width; };
+    _FORCE_INLINE_ bool operator<(const AtlasWorkRect& p_r) const { return s.width > p_r.s.width; };
 };
 
-struct _AtlasWorkRectResult {
+struct AtlasWorkRectResult {
 
-	Vector<_AtlasWorkRect> result;
+    Vector<AtlasWorkRect> result;
 	int max_w;
 	int max_h;
 };
@@ -1032,7 +1032,7 @@ void Geometry::make_atlas(const Vector<Size2i>& p_rects,Vector<Point2i>& r_resul
 
 	ERR_FAIL_COND(p_rects.size()==0);
 
-	Vector<_AtlasWorkRect> wrects;
+    Vector<AtlasWorkRect> wrects;
 	wrects.resize(p_rects.size());
 	for(int i=0;i<p_rects.size();i++) {
 		wrects[i].s=p_rects[i];
@@ -1041,7 +1041,7 @@ void Geometry::make_atlas(const Vector<Size2i>& p_rects,Vector<Point2i>& r_resul
 	wrects.sort();
 	int widest = wrects[0].s.width;
 
-	Vector<_AtlasWorkRectResult> results;
+    Vector<AtlasWorkRectResult> results;
 
 	for(int i=0;i<=12;i++) {
 
@@ -1097,7 +1097,7 @@ void Geometry::make_atlas(const Vector<Size2i>& p_rects,Vector<Point2i>& r_resul
 
 		}
 
-		_AtlasWorkRectResult result;
+        AtlasWorkRectResult result;
 		result.result=wrects;
 		result.max_h=max_h;
 		result.max_w=max_w;

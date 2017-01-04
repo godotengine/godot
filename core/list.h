@@ -42,7 +42,7 @@
 
 template <class T,class A=DefaultAllocator>
 class List {
-	struct _Data;
+    struct Data;
 public:
 
 
@@ -54,7 +54,7 @@ public:
 		T value;
 		Element* next_ptr;
 		Element* prev_ptr;
-		_Data *data;
+        Data *data;
 	public:
 
 		/**
@@ -146,7 +146,7 @@ public:
 
 private:
 
-	struct _Data {
+    struct Data {
 
 		Element* first;
 		Element* last;
@@ -178,7 +178,7 @@ private:
 		}
 	};
 
-	_Data *_data;
+    Data *_data;
 
 
 public:
@@ -221,7 +221,7 @@ public:
 
 		if (!_data) {
 
-			_data=memnew_allocator(_Data,A);
+            _data=memnew_allocator(Data,A);
 			_data->first=NULL;
 			_data->last=NULL;
 			_data->size_cache=0;
@@ -262,7 +262,7 @@ public:
 
 		if (!_data) {
 
-			_data=memnew_allocator(_Data,A);
+            _data=memnew_allocator(Data,A);
 			_data->first=NULL;
 			_data->last=NULL;
 			_data->size_cache=0;
@@ -319,7 +319,7 @@ public:
 			bool ret =  _data->erase(p_I);
 
 			if (_data->size_cache==0) {
-				memdelete_allocator<_Data,A>(_data);
+                memdelete_allocator<Data,A>(_data);
 				_data=NULL;
 			}
 
@@ -684,7 +684,7 @@ public:
 		if (_data) {
 
 			ERR_FAIL_COND(_data->size_cache);
-			memdelete_allocator<_Data,A>(_data);
+            memdelete_allocator<Data,A>(_data);
 		}
 	};
 };

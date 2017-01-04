@@ -31,7 +31,7 @@
 #include "variant.h"
 #include "io/json.h"
 
-struct _DictionaryVariantHash {
+struct DictionaryVariantHash {
 
 	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant)  { return p_variant.hash(); }
 };
@@ -40,7 +40,7 @@ struct _DictionaryVariantHash {
 struct DictionaryPrivate {
 
 	SafeRefCount refcount;
-	HashMap<Variant,Variant,_DictionaryVariantHash> variant_map;
+    HashMap<Variant,Variant,DictionaryVariantHash> variant_map;
 	bool shared;
 
 };

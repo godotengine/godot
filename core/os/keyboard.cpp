@@ -29,12 +29,12 @@
 #include "keyboard.h"
 #include "os/os.h"
 
-struct _KeyCodeText {
+struct KeyCodeText {
 	int code;
 	const char *text;
 };
 
-static const _KeyCodeText _keycodes[]={
+static const KeyCodeText _keycodes[]={
 
 		{KEY_ESCAPE                        ,"Escape"},
 		{KEY_TAB                           ,"Tab"},
@@ -319,7 +319,7 @@ String keycode_get_string(uint32_t p_code) {
 
 	p_code&=KEY_CODE_MASK;
 
-	const _KeyCodeText *kct =&_keycodes[0];
+    const KeyCodeText *kct =&_keycodes[0];
 
 	while(kct->text) {
 
@@ -339,7 +339,7 @@ String keycode_get_string(uint32_t p_code) {
 
 int find_keycode(const String& p_code) {
 
-	const _KeyCodeText *kct =&_keycodes[0];
+    const KeyCodeText *kct =&_keycodes[0];
 
 	while(kct->text) {
 
@@ -357,18 +357,18 @@ int find_keycode(const String& p_code) {
 
 
 
-struct _KeyCodeReplace {
+struct KeyCodeReplace {
 	int from;
 	int to;
 };
 
-static const _KeyCodeReplace _keycode_replace_qwertz[]={
+static const KeyCodeReplace _keycode_replace_qwertz[]={
 {KEY_Y,KEY_Z},
 {KEY_Z,KEY_Y},
 {0,0}
 };
 
-static const _KeyCodeReplace _keycode_replace_azerty[]={
+static const KeyCodeReplace _keycode_replace_azerty[]={
 {KEY_W,KEY_Z},
 {KEY_Z,KEY_W},
 {KEY_A,KEY_Q},
@@ -378,7 +378,7 @@ static const _KeyCodeReplace _keycode_replace_azerty[]={
 {0,0}
 };
 
-static const _KeyCodeReplace _keycode_replace_qzerty[]={
+static const KeyCodeReplace _keycode_replace_qzerty[]={
 {KEY_W,KEY_Z},
 {KEY_Z,KEY_W},
 {KEY_SEMICOLON,KEY_M},
@@ -386,7 +386,7 @@ static const _KeyCodeReplace _keycode_replace_qzerty[]={
 {0,0}
 };
 
-static const _KeyCodeReplace _keycode_replace_dvorak[]={
+static const KeyCodeReplace _keycode_replace_dvorak[]={
 {KEY_UNDERSCORE,KEY_BRACELEFT},
 {KEY_EQUAL,KEY_BRACERIGHT},
 {KEY_Q,KEY_APOSTROPHE},
@@ -425,7 +425,7 @@ static const _KeyCodeReplace _keycode_replace_dvorak[]={
 {0,0}
 };
 
-static const _KeyCodeReplace _keycode_replace_neo[]={
+static const KeyCodeReplace _keycode_replace_neo[]={
 {0,0}
 };
 
@@ -453,7 +453,7 @@ const char* keycode_get_name_by_index(int p_index) {
 
 int latin_keyboard_keycode_convert(int p_keycode) {
 
-	const _KeyCodeReplace *kcr=NULL;
+    const KeyCodeReplace *kcr=NULL;
 	switch(OS::get_singleton()->get_latin_keyboard_variant()) {
 
 		case OS::LATIN_KEYBOARD_QWERTY: return p_keycode; break;

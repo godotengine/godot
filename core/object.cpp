@@ -38,20 +38,20 @@
 
 #ifdef DEBUG_ENABLED
 
-struct _ObjectDebugLock {
+struct ObjectDebugLock {
 
 	Object *obj;
 
-	_ObjectDebugLock(Object *p_obj) {
+    ObjectDebugLock(Object *p_obj) {
 		obj=p_obj;
 		obj->_lock_index.ref();
 	}
-	~_ObjectDebugLock() {
+    ~ObjectDebugLock() {
 		obj->_lock_index.unref();
 	}
 };
 
-#define OBJ_DEBUG_LOCK _ObjectDebugLock _debug_lock(this);
+#define OBJ_DEBUG_LOCK ObjectDebugLock _debug_lock(this);
 
 #else
 
@@ -1152,7 +1152,7 @@ bool Object::_has_user_signal(const StringName& p_name) const {
 	return signal_map[p_name].user.name.length()>0;
 }
 
-struct _ObjectSignalDisconnectData {
+struct ObjectSignalDisconnectData {
 
 	StringName signal;
 	Object *target;
@@ -1228,7 +1228,7 @@ void Object::emit_signal(const StringName& p_name,const Variant** p_args,int p_a
 	}
 
 
-	List<_ObjectSignalDisconnectData> disconnect_data;
+    List<ObjectSignalDisconnectData> disconnect_data;
 
 
 	//copy on write will ensure that disconnecting the signal or even deleting the object will not affect the signal calling.
@@ -1290,7 +1290,7 @@ void Object::emit_signal(const StringName& p_name,const Variant** p_args,int p_a
 		}
 
 		if (c.flags&CONNECT_ONESHOT) {
-			_ObjectSignalDisconnectData dd;
+            ObjectSignalDisconnectData dd;
 			dd.signal=p_name;
 			dd.target=target;
 			dd.method=c.method;
@@ -1302,7 +1302,7 @@ void Object::emit_signal(const StringName& p_name,const Variant** p_args,int p_a
 
 	while (!disconnect_data.empty()) {
 
-		const _ObjectSignalDisconnectData &dd = disconnect_data.front()->get();
+        const ObjectSignalDisconnectData &dd = disconnect_data.front()->get();
 		disconnect(dd.signal,dd.target,dd.method);
 		disconnect_data.pop_front();
 	}

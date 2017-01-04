@@ -55,7 +55,7 @@ class StringName {
 		STRING_TABLE_MASK=STRING_TABLE_LEN-1
 	};
 
-	struct _Data {
+    struct Data {
 		SafeRefCount refcount;
 		const char* cname;
 		String name;
@@ -63,19 +63,19 @@ class StringName {
 		String get_name() const {  return cname?String(cname):name; }
 		int idx;
 		uint32_t hash;
-		_Data *prev;
-		_Data *next;
-		_Data() { cname=NULL; next=prev=NULL; hash=0; }
+        Data *prev;
+        Data *next;
+        Data() { cname=NULL; next=prev=NULL; hash=0; }
 	};
 
 
-	static _Data *_table[STRING_TABLE_LEN];
+    static Data *_table[STRING_TABLE_LEN];
 
-	_Data *_data;
+    Data *_data;
 
 	union _HashUnion {
 
-		_Data *ptr;
+        Data *ptr;
 		uint32_t hash;
 	};
 
@@ -87,7 +87,7 @@ friend void unregister_core_types();
 	static void cleanup();
 	static bool configured;
 
-	StringName(_Data *p_data) { _data=p_data; }
+    StringName(Data *p_data) { _data=p_data; }
 public:
 
 

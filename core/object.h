@@ -364,7 +364,7 @@ public:
 	};
 private:
 #ifdef DEBUG_ENABLED
-friend class _ObjectDebugLock;
+friend class ObjectDebugLock;
 #endif
 friend bool predelete_handler(Object*);
 friend void postinitialize_handler(Object*);
@@ -497,7 +497,9 @@ public: //should be protected, but bug in clang++
 public:
 
 #ifdef TOOLS_ENABLED
-	_FORCE_INLINE_ void _change_notify(const char *p_property="") { _edited=true; for(Set<Object*>::Element *E=change_receptors.front();E;E=E->next()) ((Object*)(E->get()))->_changed_callback(this,p_property); }
+	_FORCE_INLINE_ void _change_notify(const char *p_property="") { 
+        _edited=true; 
+        for(Set<Object*>::Element *E=change_receptors.front();E;E=E->next()) ((Object*)(E->get()))->_changed_callback(this,p_property); }
 #else
 	_FORCE_INLINE_ void _change_notify(const char *p_what="") {  }
 #endif

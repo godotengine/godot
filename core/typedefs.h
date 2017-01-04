@@ -273,13 +273,13 @@ struct Comparator {
 void _global_lock();
 void _global_unlock();
 
-struct _GlobalLock {
+struct GlobalLock {
 
-	_GlobalLock() { _global_lock(); }
-	~_GlobalLock() { _global_unlock(); }
+    GlobalLock() { _global_lock(); }
+    ~GlobalLock() { _global_unlock(); }
 };
 
-#define GLOBAL_LOCK_FUNCTION _GlobalLock _global_lock_;
+#define GLOBAL_LOCK_FUNCTION GlobalLock _global_lock_;
 #ifdef NO_SAFE_CAST
 
 #define SAFE_CAST static_cast

@@ -115,7 +115,7 @@ size_t Memory::get_dynamic_mem_usage() {
 
 
 
-_GlobalNil::_GlobalNil() {
+GlobalNil::GlobalNil() {
 
 	color=1;
 	left=this;
@@ -123,5 +123,5 @@ _GlobalNil::_GlobalNil() {
 	parent=this;
 }
 
-_GlobalNil _GlobalNilClass::_nil;
+GlobalNil GlobalNilClass::_nil;
 

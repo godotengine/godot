@@ -230,7 +230,7 @@ const Variant& Array::get(int p_idx) const {
 	return operator[](p_idx);
 }
 
-struct _ArrayVariantSort {
+struct ArrayVariantSort {
 
 	_FORCE_INLINE_ bool operator()(const Variant& p_l, const Variant& p_r) const {
 		bool valid=false;
@@ -244,11 +244,11 @@ struct _ArrayVariantSort {
 
 void Array::sort() {
 
-	_p->array.sort_custom<_ArrayVariantSort>();
+    _p->array.sort_custom<ArrayVariantSort>();
 
 }
 
-struct _ArrayVariantSortCustom {
+struct ArrayVariantSortCustom {
 
 	Object *obj;
 	StringName func;
@@ -268,7 +268,7 @@ void Array::sort_custom(Object *p_obj,const StringName& p_function){
 
 	ERR_FAIL_NULL(p_obj);
 
-	SortArray<Variant,_ArrayVariantSortCustom> avs;
+    SortArray<Variant,ArrayVariantSortCustom> avs;
 	avs.compare.obj=p_obj;
 	avs.compare.func=p_function;
 	avs.sort(_p->array.ptr(),_p->array.size());

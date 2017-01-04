@@ -815,20 +815,20 @@ void _OS::dump_memory_to_file(const String& p_file) {
 	OS::get_singleton()->dump_memory_to_file(p_file.utf8().get_data());
 }
 
-struct _OSCoreBindImg {
+struct OSCoreBindImg {
 
 	String path;
 	Size2 size;
 	int fmt;
 	ObjectID id;
 	int vram;
-	bool operator<(const _OSCoreBindImg& p_img) const { return vram==p_img.vram ? id<p_img.id : vram > p_img.vram; }
+    bool operator<(const OSCoreBindImg& p_img) const { return vram==p_img.vram ? id<p_img.id : vram > p_img.vram; }
 };
 
 void _OS::print_all_textures_by_size() {
 
 
-	List<_OSCoreBindImg> imgs;
+    List<OSCoreBindImg> imgs;
 	int total=0;
 	{
 		List<Ref<Resource> > rsrc;
@@ -842,7 +842,7 @@ void _OS::print_all_textures_by_size() {
 			Size2 size = E->get()->call("get_size");
 			int fmt = E->get()->call("get_format");
 
-			_OSCoreBindImg img;
+            OSCoreBindImg img;
 			img.size=size;
 			img.fmt=fmt;
 			img.path=E->get()->get_path();
@@ -855,7 +855,7 @@ void _OS::print_all_textures_by_size() {
 
 	imgs.sort();
 
-	for(List<_OSCoreBindImg>::Element *E=imgs.front();E;E=E->next()) {
+    for(List<OSCoreBindImg>::Element *E=imgs.front();E;E=E->next()) {
 
 		total-=E->get().vram;
 	}

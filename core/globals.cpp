@@ -180,21 +180,21 @@ bool Globals::_get(const StringName& p_name,Variant &r_ret) const {
 
 }
 
-struct _VCSort {
+struct VCSort {
 
 	String name;
 	Variant::Type type;
 	int order;
 	int flags;
 
-	bool operator<(const _VCSort& p_vcs) const{ return order==p_vcs.order?name<p_vcs.name:order< p_vcs.order; }
+    bool operator<(const VCSort& p_vcs) const{ return order==p_vcs.order?name<p_vcs.name:order< p_vcs.order; }
 };
 
 void Globals::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	_THREAD_SAFE_METHOD_
 
-	Set<_VCSort> vclist;
+    Set<VCSort> vclist;
 
 	for(Map<StringName,VariantContainer>::Element *E=props.front();E;E=E->next()) {
 
@@ -203,7 +203,7 @@ void Globals::_get_property_list(List<PropertyInfo> *p_list) const {
 		if (v->hide_from_editor)
 			continue;
 
-		_VCSort vc;
+        VCSort vc;
 		vc.name=E->key();
 		vc.order=v->order;
 		vc.type=v->variant.get_type();
@@ -219,7 +219,7 @@ void Globals::_get_property_list(List<PropertyInfo> *p_list) const {
 		vclist.insert(vc);
 	}
 
-	for(Set<_VCSort>::Element *E=vclist.front();E;E=E->next()) {
+    for(Set<VCSort>::Element *E=vclist.front();E;E=E->next()) {
 
 		if (custom_prop_info.has(E->get().name)) {
 			PropertyInfo pi=custom_prop_info[E->get().name];
@@ -1203,7 +1203,7 @@ Error Globals::save_custom(const String& p_path,const CustomMap& p_custom,const 
 
 	ERR_FAIL_COND_V(p_path=="",ERR_INVALID_PARAMETER);
 
-	Set<_VCSort> vclist;
+    Set<VCSort> vclist;
 
 	for(Map<StringName,VariantContainer>::Element *G=props.front();G;G=G->next()) {
 
@@ -1228,7 +1228,7 @@ Error Globals::save_custom(const String& p_path,const CustomMap& p_custom,const 
 		if (discard)
 			continue;
 
-		_VCSort vc;
+        VCSort vc;
 		vc.name=G->key();//*k;
 		vc.order=v->order;
 		vc.type=v->variant.get_type();
@@ -1243,7 +1243,7 @@ Error Globals::save_custom(const String& p_path,const CustomMap& p_custom,const 
 	for(const Map<String,Variant>::Element *E=p_custom.front();E;E=E->next()) {
 
 
-		_VCSort vc;
+        VCSort vc;
 		vc.name=E->key();
 		vc.order=0xFFFFFFF;
 		vc.type=E->get().get_type();
@@ -1253,7 +1253,7 @@ Error Globals::save_custom(const String& p_path,const CustomMap& p_custom,const 
 
 	Map<String,List<String> > props;
 
-	for(Set<_VCSort>::Element *E=vclist.front();E;E=E->next()) {
+    for(Set<VCSort>::Element *E=vclist.front();E;E=E->next()) {
 
 		String category = E->get().name;
 		String name = E->get().name;
