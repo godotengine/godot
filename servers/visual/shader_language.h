@@ -151,6 +151,11 @@ public:
 
 	/* COMPILER */
 
+	// lame work around to Apple defining this as a macro in 10.12 SDK
+	#ifdef TYPE_BOOL
+	#undef TYPE_BOOL
+	#endif
+
 	enum DataType {
 		TYPE_VOID,
 		TYPE_BOOL,

@@ -1087,13 +1087,15 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 	RasterizerGLES3::make_current();
 #else
- #ifdef DX9_ENABLED
+	// FIXME: Does DX support still work now that rasterizer is no longer used?
+#ifdef DX9_ENABLED
 	rasterizer = memnew( RasterizerDX9(hWnd) );
- #endif
+#endif
 #endif
 
 	visual_server = memnew( VisualServerRaster );
-	//if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
+ 	// FIXME: Reimplement threaded rendering? Or remove?
+//	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
 //
 //		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 //	}
