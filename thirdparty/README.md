@@ -201,9 +201,9 @@ Files extracted from upstream source:
 ## zlib
 
 - Upstream: http://www.zlib.net/
-- Version: 1.2.8
+- Version: 1.2.10
 - License: zlib
 
 Files extracted from upstream source:
 
-- all .c and .h files apart from `gz*`
+- all .c and .h files
