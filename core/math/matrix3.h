@@ -55,7 +55,7 @@ public:
 	Matrix3 inverse() const;
 	Matrix3 transposed() const;
 
-	_FORCE_INLINE_ float determinant() const;
+	_FORCE_INLINE_ real_t determinant() const;
 
 	void from_z(const Vector3& p_z);
 
@@ -72,6 +72,10 @@ public:
 
 	void rotate(const Vector3& p_axis, real_t p_phi);
 	Matrix3 rotated(const Vector3& p_axis, real_t p_phi) const;
+
+	void rotate(const Vector3& p_euler);
+	Matrix3 rotated(const Vector3& p_euler) const;
+	Vector3 get_rotation() const;
 
 	void scale( const Vector3& p_scale );
 	Matrix3 scaled( const Vector3& p_scale ) const;
@@ -226,7 +230,7 @@ Vector3 Matrix3::xform_inv(const Vector3& p_vector) const {
 	);
 }
 
-float Matrix3::determinant() const {
+real_t Matrix3::determinant() const {
 
 	return elements[0][0]*(elements[1][1]*elements[2][2] - elements[2][1]*elements[1][2]) -
 	       elements[1][0]*(elements[0][1]*elements[2][2] - elements[2][1]*elements[0][2]) +

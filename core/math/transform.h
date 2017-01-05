@@ -86,7 +86,7 @@ public:
 	void operator*=(const Transform& p_transform);
 	Transform operator*(const Transform& p_transform) const;
 
-	Transform interpolate_with(const Transform& p_transform, float p_c) const;
+	Transform interpolate_with(const Transform& p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Transform inverse_xform(const Transform& t) const {
 

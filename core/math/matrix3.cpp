@@ -133,16 +133,18 @@ Matrix3 Matrix3::transposed() const {
 	return tr;
 }
 
+// Multiplies the matrix from left by the scaling matrix: M -> S.M
+// See the comment for Matrix3::rotated for further explanation.
 void Matrix3::scale(const Vector3& p_scale) {
 
 	elements[0][0]*=p_scale.x;
-	elements[1][0]*=p_scale.x;
-	elements[2][0]*=p_scale.x;
-	elements[0][1]*=p_scale.y;
+	elements[0][1]*=p_scale.x;
+	elements[0][2]*=p_scale.x;
+	elements[1][0]*=p_scale.y;
 	elements[1][1]*=p_scale.y;
-	elements[2][1]*=p_scale.y;
-	elements[0][2]*=p_scale.z;
-	elements[1][2]*=p_scale.z;
+	elements[1][2]*=p_scale.y;
+	elements[2][0]*=p_scale.z;
+	elements[2][1]*=p_scale.z;
 	elements[2][2]*=p_scale.z;
 }
 
@@ -154,8 +156,13 @@ Matrix3 Matrix3::scaled( const Vector3& p_scale ) const {
 }
 
 Vector3 Matrix3::get_scale() const {
-
-	return Vector3(
+	// We are assuming M = R.S, and performing a polar decomposition to extract R and S.
+	// FIXME: We eventually need a proper polar decomposition.
+	// As a cheap workaround until then, to ensure that R is a proper rotation matrix with determinant +1
+	// (such that it can be represented by a Quat or Euler angles), we absorb the sign flip into the scaling matrix.
+	// As such, it works in conjuction with get_rotation().
+	real_t det_sign = determinant() > 0 ? 1 : -1;
+	return det_sign*Vector3(
 		Vector3(elements[0][0],elements[1][0],elements[2][0]).length(),
 		Vector3(elements[0][1],elements[1][1],elements[2][1]).length(),
 		Vector3(elements[0][2],elements[1][2],elements[2][2]).length()
@@ -163,18 +170,40 @@ Vector3 Matrix3::get_scale() const {
 
 }
 
-// Matrix3::rotate and Matrix3::rotated return M * R(axis,phi), and is a convenience function. They do *not* perform proper matrix rotation.
-void Matrix3::rotate(const Vector3& p_axis, real_t p_phi) {
-	// TODO: This function should also be renamed as the current name is misleading: rotate does *not* perform matrix rotation.
-	// Same problem affects Matrix3::rotated.
-	// A similar problem exists in 2D math, which will be handled separately.
-	// After Matrix3 is renamed to Basis, this comments needs to be revised.
-	*this = *this * Matrix3(p_axis, p_phi);
+// Multiplies the matrix from left by the rotation matrix: M -> R.M
+// Note that this does *not* rotate the matrix itself.
+//
+// The main use of Matrix3 is as Transform.basis, which is used a the transformation matrix
+// of 3D object. Rotate here refers to rotation of the object (which is R * (*this)),
+// not the matrix itself (which is R * (*this) * R.transposed()).
+Matrix3 Matrix3::rotated(const Vector3& p_axis, real_t p_phi) const {
+	return Matrix3(p_axis, p_phi) * (*this);
 }
 
-Matrix3 Matrix3::rotated(const Vector3& p_axis, real_t p_phi) const {
-	return *this * Matrix3(p_axis, p_phi);
+void Matrix3::rotate(const Vector3& p_axis, real_t p_phi) {
+	*this = rotated(p_axis, p_phi);
+}
 
+Matrix3 Matrix3::rotated(const Vector3& p_euler) const {
+	return Matrix3(p_euler) * (*this);
+}
+
+void Matrix3::rotate(const Vector3& p_euler) {
+	*this = rotated(p_euler);
+}
+
+Vector3 Matrix3::get_rotation() const {
+	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
+	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
+	// See the comment in get_scale() for further information.
+	Matrix3 m = orthonormalized();
+	real_t det = m.determinant();
+	if (det < 0) {
+		// Ensure that the determinant is 1, such that result is a proper rotation matrix which can be represented by Euler angles.
+		m.scale(Vector3(-1,-1,-1));
+	}
+
+	return m.get_euler();
 }
 
 // get_euler returns a vector containing the Euler angles in the format
@@ -363,7 +392,7 @@ int Matrix3::get_orthogonal_index() const {
 	for(int i=0;i<3;i++) {
 		for(int j=0;j<3;j++) {
 
-			float v = orth[i][j];
+			real_t v = orth[i][j];
 			if (v>0.5)
 				v=1.0;
 			else if (v<-0.5)
@@ -398,9 +427,6 @@ void Matrix3::set_orthogonal_index(int p_index){
 
 
 void Matrix3::get_axis_and_angle(Vector3 &r_axis,real_t& r_angle) const {
-	// TODO: We can handle improper matrices here too, in which case axis will also correspond to the axis of reflection.
-	// See Eq. (52) in http://scipp.ucsc.edu/~haber/ph251/rotreflect_13.pdf for example
-	// After that change, we should fail on is_orthogonal() == false.
 	ERR_FAIL_COND(is_rotation() == false);
 
 

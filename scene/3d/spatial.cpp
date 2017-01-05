@@ -83,9 +83,9 @@ void Spatial::_notify_dirty() {
 
 
 void Spatial::_update_local_transform() const {
-
-	data.local_transform.basis.set_euler(data.rotation);
+	data.local_transform.basis = Matrix3();
 	data.local_transform.basis.scale(data.scale);
+	data.local_transform.basis.rotate(data.rotation);
 
 	data.dirty&=~DIRTY_LOCAL;
 }
@@ -376,7 +376,7 @@ void Spatial::_set_rotation_deg(const Vector3& p_euler_deg) {
 void Spatial::set_scale(const Vector3& p_scale){
 
 	if (data.dirty&DIRTY_VECTORS) {
-		data.rotation=data.local_transform.basis.get_euler();
+		data.rotation=data.local_transform.basis.get_rotation();
 		data.dirty&=~DIRTY_VECTORS;
 	}
 
@@ -398,7 +398,8 @@ Vector3 Spatial::get_rotation() const{
 
 	if (data.dirty&DIRTY_VECTORS) {
 		data.scale=data.local_transform.basis.get_scale();
-		data.rotation=data.local_transform.basis.get_euler();
+		data.rotation=data.local_transform.basis.get_rotation();
+
 		data.dirty&=~DIRTY_VECTORS;
 	}
 
@@ -422,7 +423,8 @@ Vector3 Spatial::get_scale() const{
 
 	if (data.dirty&DIRTY_VECTORS) {
 		data.scale=data.local_transform.basis.get_scale();
-		data.rotation=data.local_transform.basis.get_euler();
+		data.rotation=data.local_transform.basis.get_rotation();
+
 		data.dirty&=~DIRTY_VECTORS;
 	}
 
