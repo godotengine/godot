@@ -477,6 +477,20 @@ uint32_t ihash3( uint32_t a)
 
 MainLoop* test() {
 
+	Matrix3 m;
+	m.rotate(Vector3(0,1,0),Math_PI*0.5);
+
+	print_line(m.scaled(Vector3(0.5,1,1)));
+	Matrix3 s;
+	s.scale(Vector3(0.5,1.0,1.0));
+
+	print_line(m * s);
+
+
+
+
+
+	return NULL;
 
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 

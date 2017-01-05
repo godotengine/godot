@@ -375,9 +375,9 @@ void AnimationPlayerEditor::_animation_load() {
 void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource>& p_resource, const String& p_path) {
 
 	int flg = 0;
-	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
+	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
 		flg |= ResourceSaver::FLAG_COMPRESS;
-	//if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+	//if (EditorSettings::get_singleton()->get("filesystem/on_save/save_paths_as_relative"))
 	//	flg |= ResourceSaver::FLAG_RELATIVE_PATHS;
 
 	String path = GlobalConfig::get_singleton()->localize_path(p_path);

@@ -2405,7 +2405,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 			} else {
 				RES res = obj->get( p_name ).operator RefPtr();
 				if (res->is_class("Texture")) {
-					int tw = EditorSettings::get_singleton()->get("property_editor/texture_preview_width");
+					int tw = EditorSettings::get_singleton()->get("docks/property_editor/texture_preview_width");
 					p_item->set_icon_max_width(1,tw);
 					p_item->set_icon(1,res);
 					p_item->set_text(1,"");
@@ -2929,7 +2929,7 @@ void PropertyEditor::refresh() {
 
 	if (refresh_countdown>0)
 		return;
-	refresh_countdown=EditorSettings::get_singleton()->get("property_editor/auto_refresh_interval");
+	refresh_countdown=EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval");
 
 }
 
@@ -3669,7 +3669,7 @@ void PropertyEditor::update_tree() {
 					RES res = obj->get( p.name ).operator RefPtr();
 
 					if (res->is_class("Texture")) {
-						int tw = EditorSettings::get_singleton()->get("property_editor/texture_preview_width");
+						int tw = EditorSettings::get_singleton()->get("docks/property_editor/texture_preview_width");
 						item->set_icon_max_width(1,tw);
 						item->set_icon(1,res);
 						item->set_text(1,"");
@@ -4249,7 +4249,7 @@ void PropertyEditor::_resource_preview_done(const String& p_path,const Ref<Textu
 
 	ERR_FAIL_COND(!ti);
 
-	int tw = EditorSettings::get_singleton()->get("property_editor/texture_preview_width");
+	int tw = EditorSettings::get_singleton()->get("docks/property_editor/texture_preview_width");
 
 	ti->set_icon(1,p_preview); //should be scaled I think?
 	ti->set_icon_max_width(1,tw);
@@ -4422,7 +4422,7 @@ PropertyEditor::PropertyEditor() {
 	use_doc_hints=false;
 	use_filter=false;
 	subsection_selectable=false;
-	show_type_icons=EDITOR_DEF("inspector/show_type_icons",false);
+	show_type_icons=EDITOR_DEF("interface/show_type_icons",false);
 
 }
 
@@ -4491,6 +4491,9 @@ class SectionedPropertyEditorFilter : public Object {
 
 			PropertyInfo pi=E->get();
 			int sp = pi.name.find("/");
+
+			if (pi.name=="resource_path" || pi.name=="resource_name") //skip resource stuff
+				continue;
 
 			if (sp==-1) {
 				pi.name="Global/"+pi.name;
@@ -4644,7 +4647,7 @@ void SectionedPropertyEditor::update_category_list() {
 		else if ( !(pi.usage&PROPERTY_USAGE_EDITOR) )
 			continue;
 
-		if (pi.name.find(":")!=-1 || pi.name=="script/script" || pi.name.begins_with("resource/"))
+		if (pi.name.find(":")!=-1 || pi.name=="script/script" || pi.name=="resource_name" || pi.name=="resource_path")
 			continue;
 		int sp = pi.name.find("/");
 		if (sp==-1)

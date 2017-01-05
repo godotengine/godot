@@ -87,10 +87,10 @@ void EditorFileDialog::_notification(int p_what) {
 
 	} else if (p_what==EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
-		bool show_hidden=EditorSettings::get_singleton()->get("file_dialog/show_hidden_files");
+		bool show_hidden=EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
 		if (show_hidden_files!=show_hidden)
 			set_show_hidden_files(show_hidden);
-		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("file_dialog/display_mode").operator int());
+		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
 	}
 }
 
@@ -121,7 +121,7 @@ void EditorFileDialog::_unhandled_input(const InputEvent& p_event) {
 			if (ED_IS_SHORTCUT("file_dialog/toggle_hidden_files", p_event)) {
 				bool show=!show_hidden_files;
 				set_show_hidden_files(show);
-				EditorSettings::get_singleton()->set("file_dialog/show_hidden_files",show);
+				EditorSettings::get_singleton()->set("filesystem/file_dialog/show_hidden_files",show);
 				handled=true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/toggle_favorite", p_event)) {
@@ -490,7 +490,7 @@ void EditorFileDialog::_item_dc_selected(int p_item) {
 void EditorFileDialog::update_file_list() {
 
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size*=EDSCALE;
 	Ref<Texture> folder_thumbnail;
 	Ref<Texture> file_thumbnail;

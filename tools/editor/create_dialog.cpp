@@ -183,7 +183,7 @@ void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_ty
 
 	}
 
-	if (bool(EditorSettings::get_singleton()->get("scenetree_editor/start_create_dialog_fully_expanded"))) {
+	if (bool(EditorSettings::get_singleton()->get("docks/scene_tree/start_create_dialog_fully_expanded"))) {
 		item->set_collapsed(false);
 	} else {
 		// don't collapse search results

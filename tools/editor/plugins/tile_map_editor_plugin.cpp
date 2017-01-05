@@ -212,10 +212,10 @@ void TileMapEditor::_update_palette() {
 	if (tiles.empty())
 		return;
 
-	float min_size = EDITOR_DEF("tile_map/preview_size", 64);
+	float min_size = EDITOR_DEF("editors/tile_map/preview_size", 64);
 	min_size *= EDSCALE;
-	int hseparation = EDITOR_DEF("tile_map/palette_item_hseparation",8);
-	bool show_tile_names = bool(EDITOR_DEF("tile_map/show_tile_names", true));
+	int hseparation = EDITOR_DEF("editors/tile_map/palette_item_hseparation",8);
+	bool show_tile_names = bool(EDITOR_DEF("editors/tile_map/show_tile_names", true));
 
 	palette->add_constant_override("hseparation", hseparation*EDSCALE);
 	palette->add_constant_override("vseparation", 8*EDSCALE);
@@ -1204,7 +1204,7 @@ void TileMapEditor::_canvas_draw() {
 			canvas_item_editor->draw_line(endpoints[i],endpoints[(i+1)%4],col,2);
 
 
-		bool bucket_preview = EditorSettings::get_singleton()->get("tile_map/bucket_fill_preview");
+		bool bucket_preview = EditorSettings::get_singleton()->get("editors/tile_map/bucket_fill_preview");
 		if (tool==TOOL_SELECTING || tool==TOOL_PICKING || !bucket_preview) {
 			return;
 		}
@@ -1453,7 +1453,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	size_slider->connect("value_changed", this, "_icon_size_changed");
 	add_child(size_slider);
 
-	int mw = EDITOR_DEF("tile_map/palette_min_width", 80);
+	int mw = EDITOR_DEF("editors/tile_map/palette_min_width", 80);
 
 	// Add tile palette
 	palette = memnew( ItemList );
@@ -1579,10 +1579,10 @@ void TileMapEditorPlugin::make_visible(bool p_visible) {
 
 TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 
-	EDITOR_DEF("tile_map/preview_size",64);
-	EDITOR_DEF("tile_map/palette_item_hseparation",8);
-	EDITOR_DEF("tile_map/show_tile_names", true);
-	EDITOR_DEF("tile_map/bucket_fill_preview", true);
+	EDITOR_DEF("editors/tile_map/preview_size",64);
+	EDITOR_DEF("editors/tile_map/palette_item_hseparation",8);
+	EDITOR_DEF("editors/tile_map/show_tile_names", true);
+	EDITOR_DEF("editors/tile_map/bucket_fill_preview", true);
 
 	tile_map_editor = memnew( TileMapEditor(p_node) );
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE, tile_map_editor);

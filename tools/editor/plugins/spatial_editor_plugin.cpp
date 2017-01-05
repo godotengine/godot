@@ -854,7 +854,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 				case BUTTON_RIGHT: {
 
-					NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
+					NavigationScheme nav_scheme = _get_navigation_schema("editors/3d/navigation_scheme");
 
 					if (b.pressed && _edit.gizmo.is_valid()) {
 						//restore
@@ -1014,7 +1014,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 					if (b.pressed) {
 
-						NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
+						NavigationScheme nav_scheme = _get_navigation_schema("editors/3d/navigation_scheme");
 						if ( (nav_scheme==NAVIGATION_MAYA || nav_scheme==NAVIGATION_MODO) && b.mod.alt) {
 							break;
 						}
@@ -1251,7 +1251,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 			}
 
-			NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
+			NavigationScheme nav_scheme = _get_navigation_schema("editors/3d/navigation_scheme");
 			NavigationMode nav_mode = NAVIGATION_NONE;
 
 			if (_edit.gizmo.is_valid()) {
@@ -1558,7 +1558,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						nav_mode = NAVIGATION_PAN;
 				}
 
-			} else if (EditorSettings::get_singleton()->get("3d_editor/emulate_3_button_mouse")) {
+			} else if (EditorSettings::get_singleton()->get("editors/3d/emulate_3_button_mouse")) {
 				// Handle trackpad (no external mouse) use case
 				int mod = 0;
 				if (m.mod.shift)
@@ -2222,7 +2222,7 @@ void SpatialEditorViewport::update_transform_gizmo_view() {
 	if (dd==0)
 		dd=0.0001;
 
-	float gsize = EditorSettings::get_singleton()->get("3d_editor/manipulator_gizmo_size");
+	float gsize = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_size");
 	gizmo_scale=(gsize/Math::abs(dd));
 	Vector3 scale = Vector3(1,1,1) * gizmo_scale;
 
@@ -3184,7 +3184,7 @@ void SpatialEditor::_init_indicators() {
 		Vector<Color> origin_colors;
 		Vector<Vector3> origin_points;
 
-		Color grid_color = EditorSettings::get_singleton()->get("3d_editor/grid_color");
+		Color grid_color = EditorSettings::get_singleton()->get("editors/3d/grid_color");
 
 		for(int i=0;i<3;i++) {
 			Vector3 axis;
@@ -3294,7 +3294,7 @@ void SpatialEditor::_init_indicators() {
 		//move gizmo
 
 
-		float gizmo_alph = EditorSettings::get_singleton()->get("3d_editor/manipulator_gizmo_opacity");
+		float gizmo_alph = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_opacity");
 
 		gizmo_hl = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ) );
 		gizmo_hl->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
@@ -3721,9 +3721,9 @@ void SpatialEditor::_bind_methods() {
 
 void SpatialEditor::clear() {
 
-	settings_fov->set_value(EDITOR_DEF("3d_editor/default_fov",60.0));
-	settings_znear->set_value(EDITOR_DEF("3d_editor/default_z_near",0.1));
-	settings_zfar->set_value(EDITOR_DEF("3d_editor/default_z_far",1500.0));
+	settings_fov->set_value(EDITOR_DEF("editors/3d/default_fov",60.0));
+	settings_znear->set_value(EDITOR_DEF("editors/3d/default_z_near",0.1));
+	settings_zfar->set_value(EDITOR_DEF("editors/3d/default_z_far",1500.0));
 
 	for(int i=0;i<4;i++) {
 		viewports[i]->reset();
@@ -4045,21 +4045,21 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_fov->set_max(179);
 	settings_fov->set_min(1);
 	settings_fov->set_step(0.01);
-	settings_fov->set_value(EDITOR_DEF("3d_editor/default_fov",60.0));
+	settings_fov->set_value(EDITOR_DEF("editors/3d/default_fov",60.0));
 	settings_vbc->add_margin_child(TTR("Perspective FOV (deg.):"),settings_fov);
 
 	settings_znear = memnew( SpinBox );
 	settings_znear->set_max(10000);
 	settings_znear->set_min(0.1);
 	settings_znear->set_step(0.01);
-	settings_znear->set_value(EDITOR_DEF("3d_editor/default_z_near",0.1));
+	settings_znear->set_value(EDITOR_DEF("editors/3d/default_z_near",0.1));
 	settings_vbc->add_margin_child(TTR("View Z-Near:"),settings_znear);
 
 	settings_zfar = memnew( SpinBox );
 	settings_zfar->set_max(10000);
 	settings_zfar->set_min(0.1);
 	settings_zfar->set_step(0.01);
-	settings_zfar->set_value(EDITOR_DEF("3d_editor/default_z_far",1500));
+	settings_zfar->set_value(EDITOR_DEF("editors/3d/default_z_far",1500));
 	settings_vbc->add_margin_child(TTR("View Z-Far:"),settings_zfar);
 
 	//settings_dialog->get_cancel()->hide();
@@ -4127,9 +4127,9 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	set_process_unhandled_key_input(true);
 	add_to_group("_spatial_editor_group");
 
-	EDITOR_DEF("3d_editor/manipulator_gizmo_size",80);
+	EDITOR_DEF("editors/3d/manipulator_gizmo_size",80);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,"3d_editor/manipulator_gizmo_size",PROPERTY_HINT_RANGE,"16,1024,1"));
-	EDITOR_DEF("3d_editor/manipulator_gizmo_opacity",0.2);
+	EDITOR_DEF("editors/3d/manipulator_gizmo_opacity",0.2);
 
 	over_gizmo_handle=-1;
 }

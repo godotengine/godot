@@ -846,7 +846,7 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path,Vector<Strin
 
 void SceneTreeDock::fill_path_renames(Node* p_node, Node *p_new_parent, List<Pair<NodePath,NodePath> > *p_renames) {
 
-	if (!bool(EDITOR_DEF("animation/autorename_animation_tracks",true)))
+	if (!bool(EDITOR_DEF("editors/animation/autorename_animation_tracks",true)))
 		return;
 
 
@@ -879,7 +879,7 @@ void SceneTreeDock::perform_node_renames(Node* p_base,List<Pair<NodePath,NodePat
 	if (!r_rem_anims)
 		r_rem_anims=&rem_anims;
 
-	if (!bool(EDITOR_DEF("animation/autorename_animation_tracks",true)))
+	if (!bool(EDITOR_DEF("editors/animation/autorename_animation_tracks",true)))
 		return;
 
 	if (!p_base) {
@@ -1554,9 +1554,9 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 		}
 
 		int flg=0;
-		if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
+		if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
 			flg|=ResourceSaver::FLAG_COMPRESS;
-		//if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+		//if (EditorSettings::get_singleton()->get("filesystem/on_save/save_paths_as_relative"))
 		//	flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
 
 

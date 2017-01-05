@@ -46,7 +46,7 @@ void EditorDirDialog::_update_dir(TreeItem* p_item) {
 
 	List<String> dirs;
 	bool ishidden;
-	bool show_hidden = EditorSettings::get_singleton()->get("file_dialog/show_hidden_files");
+	bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
 
 	while(p!="") {
 

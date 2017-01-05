@@ -733,7 +733,7 @@ void ProjectExportDialog::_create_android_keystore() {
 		info=info.replace("$"+names[i], edit->get_text());
 	}
 
-	String jarsigner=EditorSettings::get_singleton()->get("android/jarsigner");
+	String jarsigner=EditorSettings::get_singleton()->get("export/android/jarsigner");
 	String keytool=jarsigner.get_base_dir().plus_file("keytool");
 	String os_name=OS::get_singleton()->get_name();
 	if (os_name.to_lower()=="windows") {
@@ -1661,7 +1661,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	file_export = memnew( EditorFileDialog );
 	add_child(file_export);
 	file_export->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	file_export->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_export_path") );
+	file_export->set_current_dir( EditorSettings::get_singleton()->get("filesystem/directories/default_project_export_path") );
 
 	file_export->set_title(TTR("Export Project"));
 	file_export->connect("file_selected", this,"_export_action");
@@ -1673,7 +1673,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 	pck_export = memnew( EditorFileDialog );
 	pck_export->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	pck_export->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_export_path") );
+	pck_export->set_current_dir( EditorSettings::get_singleton()->get("filesystem/directories/default_project_export_path") );
 	pck_export->set_title(TTR("Export Project PCK"));
 	pck_export->connect("file_selected", this,"_export_action_pck");
 	pck_export->add_filter("*.pck ; Data Pack");

@@ -65,7 +65,7 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES& p_from) {
 
 	img.clear_mipmaps();
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size*=EDSCALE;
 	if (img.is_compressed()) {
 		if (img.decompress()!=OK)
@@ -141,7 +141,7 @@ Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES& p_from) {
 
 	Image img(bm->get_size().width,bm->get_size().height,0,Image::FORMAT_L8,data);
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size*=EDSCALE;
 	if (img.is_compressed()) {
 		if (img.decompress()!=OK)
@@ -264,7 +264,7 @@ Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES& p_from) {
 	//print_line("captured!");
 	VS::get_singleton()->mesh_surface_set_material(sphere,0,RID());
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size*=EDSCALE;
 	img.resize(thumbnail_size,thumbnail_size);
 
@@ -433,17 +433,17 @@ Ref<Texture> EditorScriptPreviewPlugin::generate(const RES& p_from) {
 
 	int line = 0;
 	int col=0;
-	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size*=EDSCALE;
 	Image img(thumbnail_size,thumbnail_size,0,Image::FORMAT_RGBA8);
 
 
 
-	Color bg_color = EditorSettings::get_singleton()->get("text_editor/background_color");
+	Color bg_color = EditorSettings::get_singleton()->get("text_editor/highlighting/background_color");
 	bg_color.a=1.0;
-	Color keyword_color = EditorSettings::get_singleton()->get("text_editor/keyword_color");
-	Color text_color = EditorSettings::get_singleton()->get("text_editor/text_color");
-	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/symbol_color");
+	Color keyword_color = EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color");
+	Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
+	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color");
 
 
 	for(int i=0;i<thumbnail_size;i++) {
@@ -533,7 +533,7 @@ Ref<Texture> EditorSamplePreviewPlugin::generate(const RES& p_from) {
 	ERR_FAIL_COND_V(smp.is_null(),Ref<Texture>());
 
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size*=EDSCALE;
 	DVector<uint8_t> img;
 	int w = thumbnail_size;
@@ -841,7 +841,7 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES& p_from) {
 	//print_line("captured!");
 	VS::get_singleton()->instance_set_base(mesh_instance,RID());
 
-	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size*=EDSCALE;
 	img.resize(thumbnail_size,thumbnail_size);
 

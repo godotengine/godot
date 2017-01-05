@@ -38,7 +38,7 @@ static void (*_base_image_compress_pvrtc4_func)(Image *)=NULL;
 
 static void _compress_image(Image::CompressMode p_mode,Image *p_image) {
 
-	String ttpath = EditorSettings::get_singleton()->get("PVRTC/texture_tool");
+	String ttpath = EditorSettings::get_singleton()->get("filesystem/import/pvrtc_texture_tool");
 
 	if (ttpath.strip_edges()=="" || !FileAccess::exists(ttpath)) {
 		switch(p_mode) {
@@ -82,7 +82,7 @@ static void _compress_image(Image::CompressMode p_mode,Image *p_image) {
 
 	}
 
-	if (EditorSettings::get_singleton()->get("PVRTC/fast_conversion").operator bool()) {
+	if (EditorSettings::get_singleton()->get("filesystem/import/pvrtc_fast_conversion").operator bool()) {
 		args.push_back("-pvrtcfast");
 	}
 	if (p_image->has_mipmaps())

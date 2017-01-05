@@ -1043,7 +1043,7 @@ void CodeTextEditor::_reset_zoom() {
 	Ref<DynamicFont> font = text_editor->get_font("font"); // reset source font size to default
 
 	if (font.is_valid()) {
-		EditorSettings::get_singleton()->set("global/source_font_size",14);
+		EditorSettings::get_singleton()->set("interface/source_font_size",14);
 		font->set_size(14);
 	}
 }
@@ -1097,7 +1097,7 @@ void CodeTextEditor::_font_resize_timeout() {
 		int size=font->get_size()+font_resize_val;
 
 		if (size>=8 && size<=96) {
-			EditorSettings::get_singleton()->set("global/source_font_size",size);
+			EditorSettings::get_singleton()->set("interface/source_font_size",size);
 			font->set_size(size);
 		}
 
@@ -1107,20 +1107,20 @@ void CodeTextEditor::_font_resize_timeout() {
 
 void CodeTextEditor::update_editor_settings() {
 
-	text_editor->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/auto_brace_complete"));
-	text_editor->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/scroll_past_end_of_file"));
-	text_editor->set_tab_size(EditorSettings::get_singleton()->get("text_editor/tab_size"));
-	text_editor->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/draw_tabs"));
-	text_editor->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/show_line_numbers"));
-	text_editor->set_line_numbers_zero_padded(EditorSettings::get_singleton()->get("text_editor/line_numbers_zero_padded"));
-	text_editor->set_show_line_length_guideline(EditorSettings::get_singleton()->get("text_editor/show_line_length_guideline"));
-	text_editor->set_line_length_guideline_column(EditorSettings::get_singleton()->get("text_editor/line_length_guideline_column"));
-	text_editor->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/syntax_highlighting"));
-	text_editor->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlight_all_occurrences"));
-	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/caret_blink"));
-	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/caret_blink_speed"));
-	text_editor->set_draw_breakpoint_gutter(EditorSettings::get_singleton()->get("text_editor/show_breakpoint_gutter"));
-	text_editor->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/block_caret"));
+	text_editor->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
+	text_editor->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/cursor/scroll_past_end_of_file"));
+	text_editor->set_tab_size(EditorSettings::get_singleton()->get("text_editor/indent/tab_size"));
+	text_editor->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/indent/draw_tabs"));
+	text_editor->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_line_numbers"));
+	text_editor->set_line_numbers_zero_padded(EditorSettings::get_singleton()->get("text_editor/line_numbers/line_numbers_zero_padded"));
+	text_editor->set_show_line_length_guideline(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_line_length_guideline"));
+	text_editor->set_line_length_guideline_column(EditorSettings::get_singleton()->get("text_editor/line_numbers/line_length_guideline_column"));
+	text_editor->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/highlighting/syntax_highlighting"));
+	text_editor->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_all_occurrences"));
+	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
+	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
+	text_editor->set_draw_breakpoint_gutter(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_breakpoint_gutter"));
+	text_editor->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
 }
 
 void CodeTextEditor::set_error(const String& p_error) {
@@ -1137,7 +1137,7 @@ void CodeTextEditor::set_error(const String& p_error) {
 void CodeTextEditor::_update_font() {
 
 	// FONTS
-	String editor_font = EDITOR_DEF("text_editor/font", "");
+	String editor_font = EDITOR_DEF("text_editor/theme/font", "");
 	bool font_overridden = false;
 	if (editor_font!="") {
 		Ref<Font> fnt = ResourceLoader::load(editor_font);
@@ -1158,19 +1158,19 @@ void CodeTextEditor::_on_settings_change() {
 
 	// AUTO BRACE COMPLETION
 	text_editor->set_auto_brace_completion(
-		EDITOR_DEF("text_editor/auto_brace_complete", true)
+		EDITOR_DEF("text_editor/completion/auto_brace_complete", true)
 	);
 
 	code_complete_timer->set_wait_time(
-		EDITOR_DEF("text_editor/code_complete_delay",.3f)
+		EDITOR_DEF("text_editor/completion/code_complete_delay",.3f)
 	);
 
-	enable_complete_timer = EDITOR_DEF("text_editor/enable_code_completion_delay",true);
+	enable_complete_timer = EDITOR_DEF("text_editor/completion/enable_code_completion_delay",true);
 
 	// call hint settings
 	text_editor->set_callhint_settings(
-		EDITOR_DEF("text_editor/put_callhint_tooltip_below_current_line", true),
-		EDITOR_DEF("text_editor/callhint_tooltip_offset", Vector2())
+		EDITOR_DEF("text_editor/completion/put_callhint_tooltip_below_current_line", true),
+		EDITOR_DEF("text_editor/completion/callhint_tooltip_offset", Vector2())
 	);
 }
 
@@ -1252,14 +1252,14 @@ CodeTextEditor::CodeTextEditor() {
 	idle = memnew( Timer );
 	add_child(idle);
 	idle->set_one_shot(true);
-	idle->set_wait_time(EDITOR_DEF("text_editor/idle_parse_delay",2));
+	idle->set_wait_time(EDITOR_DEF("text_editor/completion/idle_parse_delay",2));
 
 	code_complete_timer = memnew(Timer);
 	add_child(code_complete_timer);
 	code_complete_timer->set_one_shot(true);
-	enable_complete_timer = EDITOR_DEF("text_editor/enable_code_completion_delay",true);
+	enable_complete_timer = EDITOR_DEF("text_editor/completion/enable_code_completion_delay",true);
 
-	code_complete_timer->set_wait_time(EDITOR_DEF("text_editor/code_complete_delay",.3f));
+	code_complete_timer->set_wait_time(EDITOR_DEF("text_editor/completion/code_complete_delay",.3f));
 
 	error = memnew( Label );
 	status_bar->add_child(error);

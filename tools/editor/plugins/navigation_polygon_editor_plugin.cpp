@@ -148,7 +148,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
 
 			//first check if a point is to be added (segment split)
-			real_t grab_treshold=EDITOR_DEF("poly_editor/point_grab_radius",8);
+			real_t grab_treshold=EDITOR_DEF("editors/poly_editor/point_grab_radius",8);
 
 			switch(mode) {
 

@@ -1115,8 +1115,8 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 		host="localhost";
 
 	if (p_flags&EXPORT_DUMB_CLIENT) {
-		int port = EditorSettings::get_singleton()->get("file_server/port");
-		String passwd = EditorSettings::get_singleton()->get("file_server/password");
+		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
+		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
 		r_flags.push_back("-rfs");
 		r_flags.push_back(host+":"+itos(port));
 		if (passwd!="") {

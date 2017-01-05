@@ -62,12 +62,12 @@ Ref<Theme> create_custom_theme()
 {
 	Ref<Theme> theme;
 
-	String custom_theme = EditorSettings::get_singleton()->get("global/custom_theme");
+	String custom_theme = EditorSettings::get_singleton()->get("interface/custom_theme");
 	if (custom_theme!="") {
 		theme = ResourceLoader::load(custom_theme);
 	}
 
-	String global_font = EditorSettings::get_singleton()->get("global/custom_font");
+	String global_font = EditorSettings::get_singleton()->get("interface/custom_font");
 	if (global_font!="") {
 		Ref<Font> fnt = ResourceLoader::load(global_font);
 		if (fnt.is_valid()) {

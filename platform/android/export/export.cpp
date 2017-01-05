@@ -1212,9 +1212,9 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 	if (p_flags&EXPORT_DUMB_CLIENT) {
 
-		/*String host = EditorSettings::get_singleton()->get("file_server/host");
-		int port = EditorSettings::get_singleton()->get("file_server/post");
-		String passwd = EditorSettings::get_singleton()->get("file_server/password");
+		/*String host = EditorSettings::get_singleton()->get("filesystem/file_server/host");
+		int port = EditorSettings::get_singleton()->get("filesystem/file_server/post");
+		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
 		cl.push_back("-rfs");
 		cl.push_back(host+":"+itos(port));
 		if (passwd!="") {
@@ -1305,7 +1305,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 	if (_signed) {
 
 
-		String jarsigner=EditorSettings::get_singleton()->get("android/jarsigner");
+		String jarsigner=EditorSettings::get_singleton()->get("export/android/jarsigner");
 		if (!FileAccess::exists(jarsigner)) {
 			EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the editor settings.\nResulting apk is unsigned.");
 			return OK;
@@ -1315,9 +1315,9 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		String password;
 		String user;
 		if (p_debug) {
-			keystore=EditorSettings::get_singleton()->get("android/debug_keystore");
-			password=EditorSettings::get_singleton()->get("android/debug_keystore_pass");
-			user=EditorSettings::get_singleton()->get("android/debug_keystore_user");
+			keystore=EditorSettings::get_singleton()->get("export/android/debug_keystore");
+			password=EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
+			user=EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
 
 			ep.step("Signing Debug APK..",103);
 
@@ -1340,7 +1340,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		args.push_back("SHA1");
 		args.push_back("-sigalg");
 		args.push_back("MD5withRSA");
-		String tsa_url=EditorSettings::get_singleton()->get("android/timestamping_authority_url");
+		String tsa_url=EditorSettings::get_singleton()->get("export/android/timestamping_authority_url");
 		if (tsa_url != "") {
 			args.push_back("-tsa");
 			args.push_back(tsa_url);
@@ -1506,7 +1506,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 
 	while(!ea->quit_request) {
 
-		String adb=EditorSettings::get_singleton()->get("android/adb");
+		String adb=EditorSettings::get_singleton()->get("export/android/adb");
 		if (FileAccess::exists(adb)) {
 
 			String devices;
@@ -1628,8 +1628,8 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 
 	}
 
-	if (EditorSettings::get_singleton()->get("android/shutdown_adb_on_exit")) {
-		String adb=EditorSettings::get_singleton()->get("android/adb");
+	if (EditorSettings::get_singleton()->get("export/android/shutdown_adb_on_exit")) {
+		String adb=EditorSettings::get_singleton()->get("export/android/adb");
 		if (!FileAccess::exists(adb)) {
 			return; //adb not configured
 		}
@@ -1647,7 +1647,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 
 	EditorProgress ep("run","Running on "+devices[p_device].name,3);
 
-	String adb=EditorSettings::get_singleton()->get("android/adb");
+	String adb=EditorSettings::get_singleton()->get("export/android/adb");
 	if (adb=="") {
 
 		EditorNode::add_io_error("ADB executable not configured in settings, can't run.");
@@ -1659,7 +1659,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 	ep.step("Exporting APK",0);
 
 
-	bool use_adb_over_usb = bool(EDITOR_DEF("android/use_remote_debug_over_adb",true));
+	bool use_adb_over_usb = bool(EDITOR_DEF("export/android/use_remote_debug_over_adb",true));
 
 	if (use_adb_over_usb) {
 		p_flags|=EXPORT_REMOTE_DEBUG_LOCALHOST;
@@ -1728,7 +1728,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 		err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
 		print_line("Reverse result: "+itos(rv));
 
-		int fs_port = EditorSettings::get_singleton()->get("file_server/port");
+		int fs_port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
 
 		args.clear();
 		args.push_back("reverse");
@@ -1822,7 +1822,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 bool EditorExportPlatformAndroid::can_export(String *r_error) const {
 
 	bool valid=true;
-	String adb=EditorSettings::get_singleton()->get("android/adb");
+	String adb=EditorSettings::get_singleton()->get("export/android/adb");
 	String err;
 
 	if (!FileAccess::exists(adb)) {
@@ -1831,7 +1831,7 @@ bool EditorExportPlatformAndroid::can_export(String *r_error) const {
 		err+="ADB executable not configured in editor settings.\n";
 	}
 
-	String js = EditorSettings::get_singleton()->get("android/jarsigner");
+	String js = EditorSettings::get_singleton()->get("export/android/jarsigner");
 
 	if (!FileAccess::exists(js)) {
 
@@ -1839,7 +1839,7 @@ bool EditorExportPlatformAndroid::can_export(String *r_error) const {
 		err+="OpenJDK 6 jarsigner not configured in editor settings.\n";
 	}
 
-	String dk = EditorSettings::get_singleton()->get("android/debug_keystore");
+	String dk = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 
 	if (!FileAccess::exists(dk)) {
 
@@ -1893,20 +1893,20 @@ EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 void register_android_exporter() {
 
 	String exe_ext=OS::get_singleton()->get_name()=="Windows"?"exe":"";
-	EDITOR_DEF("android/adb","");
+	EDITOR_DEF("export/android/adb","");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"android/adb",PROPERTY_HINT_GLOBAL_FILE,exe_ext));
-	EDITOR_DEF("android/jarsigner","");
+	EDITOR_DEF("export/android/jarsigner","");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"android/jarsigner",PROPERTY_HINT_GLOBAL_FILE,exe_ext));
-	EDITOR_DEF("android/debug_keystore","");
+	EDITOR_DEF("export/android/debug_keystore","");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"android/debug_keystore",PROPERTY_HINT_GLOBAL_FILE,"keystore"));
-	EDITOR_DEF("android/debug_keystore_user","androiddebugkey");
-	EDITOR_DEF("android/debug_keystore_pass","android");
+	EDITOR_DEF("export/android/debug_keystore_user","androiddebugkey");
+	EDITOR_DEF("export/android/debug_keystore_pass","android");
 	//EDITOR_DEF("android/release_keystore","");
 	//EDITOR_DEF("android/release_username","");
 	//EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"android/release_keystore",PROPERTY_HINT_GLOBAL_FILE,"*.keystore"));
-	EDITOR_DEF("android/timestamping_authority_url","");
-	EDITOR_DEF("android/use_remote_debug_over_adb",false);
-	EDITOR_DEF("android/shutdown_adb_on_exit",true);
+	EDITOR_DEF("export/android/timestamping_authority_url","");
+	EDITOR_DEF("export/android/use_remote_debug_over_adb",false);
+	EDITOR_DEF("export/android/shutdown_adb_on_exit",true);
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>( memnew(EditorExportPlatformAndroid) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);

@@ -55,7 +55,7 @@ void EditorSettingsDialog::_settings_property_edited(const String& p_name) {
 
 	// Small usability workaround to update the text color settings when the
 	// color theme is changed
-	if (full_name == "text_editor/color_theme") {
+	if (full_name == "text_editor/theme/color_theme") {
 		property_editor->get_property_editor()->update_tree();
 	}
 }

@@ -120,7 +120,7 @@ EditorNode *EditorNode::singleton=NULL;
 
 void EditorNode::_update_scene_tabs() {
 
-	bool show_rb = EditorSettings::get_singleton()->get("global/show_script_in_scene_tabs");
+	bool show_rb = EditorSettings::get_singleton()->get("interface/show_script_in_scene_tabs");
 
 	scene_tabs->clear_tabs();
 	Ref<Texture> script_icon = gui_base->get_icon("Script","EditorIcons");
@@ -391,7 +391,7 @@ void EditorNode::_notification(int p_what) {
 		}
 */
 
-		if (bool(EDITOR_DEF("resources/auto_reload_modified_images",true))) {
+		if (bool(EDITOR_DEF("filesystem/resources/auto_reload_modified_images",true))) {
 
 			_menu_option_confirm(DEPENDENCY_LOAD_CHANGED_IMAGES,true);
 		}
@@ -407,7 +407,7 @@ void EditorNode::_notification(int p_what) {
 	};
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		scene_tabs->set_tab_close_display_policy( (bool(EDITOR_DEF("global/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY) );
+		scene_tabs->set_tab_close_display_policy( (bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY) );
 	}
 
 }
@@ -434,7 +434,7 @@ void EditorNode::_fs_changed() {
 
 void EditorNode::_sources_changed(bool p_exist) {
 
-	if (p_exist && bool(EditorSettings::get_singleton()->get("import/automatic_reimport_on_sources_changed"))) {
+	if (p_exist && bool(EditorSettings::get_singleton()->get("filesystem/import/automatic_reimport_on_sources_changed"))) {
 		p_exist=false;
 
 		List<String> changed_sources;
@@ -555,9 +555,9 @@ void EditorNode::save_resource_in_path(const Ref<Resource>& p_resource,const Str
 
 	editor_data.apply_changes_in_editors();
 	int flg=0;
-	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
+	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
 		flg|=ResourceSaver::FLAG_COMPRESS;
-	//if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+	//if (EditorSettings::get_singleton()->get("filesystem/on_save/save_paths_as_relative"))
 	//	flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
 
 	String path = GlobalConfig::get_singleton()->localize_path(p_path);
@@ -914,7 +914,7 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 	save.step(TTR("Creating Thumbnail"),3);
 #if 0
 	Image img = VS::get_singleton()->viewport_texture(scree_capture(viewport);
-	int preview_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");;
+	int preview_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");;
 	preview_size*=EDSCALE;
 	int width,height;
 	if (img.get_width() > preview_size && img.get_width() >= img.get_height()) {
@@ -1003,9 +1003,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	sdata->set_import_metadata(editor_data.get_edited_scene_import_metadata(idx));
 	int flg=0;
-	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
+	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
 		flg|=ResourceSaver::FLAG_COMPRESS;
-	//if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+	//if (EditorSettings::get_singleton()->get("filesystem/on_save/save_paths_as_relative"))
 	//	flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
 	flg|=ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
@@ -1667,7 +1667,7 @@ void EditorNode::_edit_current() {
 	if (main_plugin) {
 
 		// special case if use of external editor is true
-		if (main_plugin->get_name() == "Script" && bool(EditorSettings::get_singleton()->get("external_editor/use_external_editor"))){
+		if (main_plugin->get_name() == "Script" && bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))){
 			main_plugin->edit(current_obj);
 		}
 
@@ -1891,7 +1891,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 	}
 
 
-	if (bool(EDITOR_DEF("run/auto_save_before_running",true))) {
+	if (bool(EDITOR_DEF("run/auto_save/save_before_running",true))) {
 
 		if (unsaved_cache) {
 
@@ -2688,7 +2688,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case RUN_PLAY_NATIVE: {
 
-			bool autosave = EDITOR_DEF("run/auto_save_before_running",true);
+			bool autosave = EDITOR_DEF("run/auto_save/save_before_running",true);
 			if (autosave) {
 				_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
 			}
@@ -5409,7 +5409,7 @@ EditorNode::EditorNode() {
 
 	bool use_single_dock_column = false;
 	{
-		int dpi_mode = EditorSettings::get_singleton()->get("global/hidpi_mode");
+		int dpi_mode = EditorSettings::get_singleton()->get("interface/hidpi_mode");
 		if (dpi_mode==0) {
 			editor_set_scale( OS::get_singleton()->get_screen_dpi(0) > 150 && OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x>2000 ? 2.0 : 1.0 );
 
@@ -5428,9 +5428,9 @@ EditorNode::EditorNode() {
 
 
 	ResourceLoader::set_abort_on_missing_resources(false);
-	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
-	EditorFileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
-	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EditorSettings::get_singleton()->get("file_dialog/display_mode").operator int());
+	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
+	EditorFileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
+	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
 	ResourceLoader::set_error_notify_func(this,_load_error_notify);
 	ResourceLoader::set_dependency_error_notify_func(this,_dependency_error_report);
 
@@ -5664,7 +5664,7 @@ EditorNode::EditorNode() {
 	scene_tabs=memnew( Tabs );
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
-	scene_tabs->set_tab_close_display_policy( (bool(EDITOR_DEF("global/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY) );
+	scene_tabs->set_tab_close_display_policy( (bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY) );
 	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
 	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
@@ -6260,7 +6260,7 @@ EditorNode::EditorNode() {
 
 	scenes_dock = memnew( FileSystemDock(this) );
 	scenes_dock->set_name(TTR("FileSystem"));
-	scenes_dock->set_display_mode(int(EditorSettings::get_singleton()->get("filesystem_dock/display_mode")));
+	scenes_dock->set_display_mode(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
 
 	if (use_single_dock_column) {
 		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(scenes_dock);

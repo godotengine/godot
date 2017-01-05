@@ -1087,8 +1087,8 @@ void SceneTreeEditor::_warning_changed(Node* p_for_node) {
 
 
 void SceneTreeEditor::_editor_settings_changed() {
-	bool enable_rl = EditorSettings::get_singleton()->get("scenetree_editor/draw_relationship_lines");
-	Color rl_color = EditorSettings::get_singleton()->get("scenetree_editor/relationship_line_color");
+	bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
+	Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
 
 	if (enable_rl) {
 		tree->add_constant_override("draw_relationship_lines",1);

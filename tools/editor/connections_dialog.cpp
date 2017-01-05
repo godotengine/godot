@@ -395,7 +395,7 @@ ConnectDialog::ConnectDialog() {
 
 	make_callback = memnew( CheckButton );
 	make_callback->set_toggle_mode(true);
-	make_callback->set_pressed( EDITOR_DEF("text_editor/create_signal_callbacks",true));
+	make_callback->set_pressed( EDITOR_DEF("text_editor/tools/create_signal_callbacks",true));
 	make_callback->set_text(TTR("Make Function"));
 	dstm_hb->add_child(make_callback);
 

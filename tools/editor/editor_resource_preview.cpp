@@ -154,7 +154,7 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,co
 		// cache the preview in case it's a resource on disk
 		if (generated.is_valid()) {
 			//print_line("was generated");
-			int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 			thumbnail_size*=EDSCALE;
 			//wow it generated a preview... save cache
 			ResourceSaver::save(cache_base+".png",generated);
@@ -207,7 +207,7 @@ void EditorResourcePreview::_thread() {
 
 				//print_line("pop from queue "+item.path);
 
-				int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+				int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 				thumbnail_size*=EDSCALE;
 
 

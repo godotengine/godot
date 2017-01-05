@@ -122,7 +122,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 			Vector<Vector2> poly = node->get_polygon();
 
 			//first check if a point is to be added (segment split)
-			real_t grab_treshold=EDITOR_DEF("poly_editor/point_grab_radius",8);
+			real_t grab_treshold=EDITOR_DEF("editors/poly_editor/point_grab_radius",8);
 
 			switch(mode) {
 

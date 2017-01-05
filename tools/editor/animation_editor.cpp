@@ -3233,7 +3233,7 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 	insert_data.push_back(p_id);
 
 	if (p_id.track_idx==-1) {
-		if (bool(EDITOR_DEF("animation/confirm_insert_track",true))) {
+		if (bool(EDITOR_DEF("editors/animation/confirm_insert_track",true))) {
 			//potential new key, does not exist
 			if (insert_data.size()==1)
 				insert_confirm->set_text(vformat(TTR("Create NEW track for %s and insert key?"),p_id.query));

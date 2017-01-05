@@ -63,7 +63,7 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 		args.push_back("-debugnav");
 	}
 
-	int screen = EditorSettings::get_singleton()->get("game_window_placement/screen");
+	int screen = EditorSettings::get_singleton()->get("run/window_placement/screen");
 
 	if (screen==0) {
 		screen=OS::get_singleton()->get_current_screen();
@@ -90,7 +90,7 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 	}
 
 
-	int window_placement=EditorSettings::get_singleton()->get("game_window_placement/rect");
+	int window_placement=EditorSettings::get_singleton()->get("run/window_placement/rect");
 
 	switch(window_placement) {
 		case 0: { // default
@@ -104,7 +104,7 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 			args.push_back(itos(pos.x)+"x"+itos(pos.y));
 		} break;
 		case 2: { // custom pos
-			Vector2 pos = EditorSettings::get_singleton()->get("game_window_placement/rect_custom_position");
+			Vector2 pos = EditorSettings::get_singleton()->get("run/window_placement/rect_custom_position");
 			pos+=screen_rect.pos;
 			args.push_back("-p");
 			args.push_back(itos(pos.x)+"x"+itos(pos.y));

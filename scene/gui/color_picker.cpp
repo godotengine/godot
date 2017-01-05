@@ -88,7 +88,7 @@ void ColorPicker::set_color(const Color& p_color) {
 	if (!is_inside_tree())
 		return;
 
-
+	return; //it crashes, so returning
 	uv_edit->get_child(0)->cast_to<Control>()->update();
 	w_edit->get_child(0)->cast_to<Control>()->update();
 	_update_color();
