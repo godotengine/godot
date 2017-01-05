@@ -35,7 +35,7 @@
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
 #include "servers/visual_server.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+// #include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/physics_server.h"
 #include "servers/audio/audio_server_sw.h"
@@ -58,7 +58,8 @@
 class OS_OSX : public OS_Unix {
 public:
 	bool force_quit;
-	Rasterizer *rasterizer;
+//  rasterizer seems to no longer be given to visual server, its using GLES3 directly?
+//	Rasterizer *rasterizer;
 	VisualServer *visual_server;
 
 	List<String> args;

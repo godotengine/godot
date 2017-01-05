@@ -38,13 +38,14 @@
 #include "servers/visual/visual_server_raster.h"
 //#include "drivers/opengl/rasterizer_gl.h"
 //#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "os_osx.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "print_string.h"
 #include "servers/physics/physics_server_sw.h"
-#include "drivers/gles2/rasterizer_instance_gles2.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+// #include "drivers/gles2/rasterizer_instance_gles2.h"
+// #include "servers/visual/visual_server_wrap_mt.h"
 #include "main/main.h"
 #include "os/keyboard.h"
 #include "dir_access_osx.h"
@@ -986,13 +987,11 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	window_size.width = p_desired.width;
 	window_size.height = p_desired.height;
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6 && display_scale>1) {
 	    [window_view setWantsBestResolutionOpenGLSurface:YES];
 	    //if (current_videomode.resizable)
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	}
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 
 //	[window_object setTitle:[NSString stringWithUTF8String:"GodotEnginies"]];
 	[window_object setContentView:window_view];
@@ -1000,10 +999,8 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	[window_object setAcceptsMouseMovedEvents:YES];
 	[window_object center];
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6)
 		[window_object setRestorable:NO];
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 
 	unsigned int attributeCount = 0;
 
@@ -1022,10 +1019,8 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	ADD_ATTR(NSOpenGLPFADoubleBuffer);
 	ADD_ATTR(NSOpenGLPFAClosestPolicy);
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-	if (false/* use gl3*/)
-		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
+//	we now need OpenGL 3 or better, maybe even change this to 3_3Core ?
+	ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
 
 	ADD_ATTR2(NSOpenGLPFAColorSize, colorBits);
 
@@ -1084,15 +1079,19 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	AudioDriverManagerSW::add_driver(&audio_driver_osx);
 
+	// only opengl support here... 
+	RasterizerGLES3::register_config();
+	RasterizerGLES3::make_current();
 
-	rasterizer = instance_RasterizerGLES2();
+//	rasterizer = instance_RasterizerGLES2();
+//	visual_server = memnew( VisualServerRaster(rasterizer) );
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
-
-	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
-
-		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
-	}
+	visual_server = memnew( VisualServerRaster );
+	// FIXME: Reimplement threaded rendering? Or remove?
+//	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
+//
+//		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
+//	}
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
@@ -1176,7 +1175,7 @@ void OS_OSX::finalize() {
 
 	visual_server->finish();
 	memdelete(visual_server);
-	memdelete(rasterizer);
+//	memdelete(rasterizer);
 
 	physics_server->finish();
 	memdelete(physics_server);

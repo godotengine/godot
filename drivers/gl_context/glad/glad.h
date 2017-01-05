@@ -150,12 +150,26 @@ typedef unsigned int GLhandleARB;
 typedef unsigned short GLhalfARB;
 typedef unsigned short GLhalf;
 typedef GLint GLfixed;
+// Temporary work around for upstream issue: https://github.com/Dav1dde/glad/issues/70
+// Originally fixed by Algorithmus, reapplied in master
+#if defined(__APPLE__)
+typedef long GLintptr;
+typedef long GLsizeiptr;
+#else
 typedef ptrdiff_t GLintptr;
 typedef ptrdiff_t GLsizeiptr;
+#endif
 typedef int64_t GLint64;
 typedef uint64_t GLuint64;
+// Temporary work around for upstream issue: https://github.com/Dav1dde/glad/issues/70
+// Originally fixed by Algorithmus, reapplied in master
+#if defined(__APPLE__)
+typedef long GLintptrARB;
+typedef long GLsizeiptrARB;
+#else
 typedef ptrdiff_t GLintptrARB;
 typedef ptrdiff_t GLsizeiptrARB;
+#endif
 typedef int64_t GLint64EXT;
 typedef uint64_t GLuint64EXT;
 typedef struct __GLsync *GLsync;

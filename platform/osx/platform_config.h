@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include <alloca.h>
 
-#define GLES2_INCLUDE_H "GL/glew.h"
-#define GLES3_INCLUDE_H "GL/glew.h"
+//#define GLES2_INCLUDE_H "GL/glew.h"
+//#define GLES3_INCLUDE_H "GL/glew.h"
+#define GLES3_INCLUDE_H "gl_context/glad/glad.h"
 #define PTHREAD_RENAME_SELF
