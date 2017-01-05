@@ -40,9 +40,7 @@ void ColorPicker::_notification(int p_what) {
 
 	switch(p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			uv_edit->set_texture(get_icon("color_main"));
-			w_edit->set_texture(get_icon("color_hue"));
-			sample->set_texture(get_icon("color_sample"));
+			//sample->set_texture(get_icon("color_sample"));
 
 			_update_controls();
 		} break;
@@ -50,8 +48,6 @@ void ColorPicker::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
 
-			uv_edit->get_child(0)->cast_to<Control>()->update();
-			w_edit->get_child(0)->cast_to<Control>()->update();
 			_update_color();
 		}
 
@@ -273,14 +269,39 @@ void ColorPicker::_hsv_draw(int p_wich,Control* c)
 	if (!c)
 		return;
 	if (p_wich==0) {
+		Vector<Point2> points;
+		points.push_back(Vector2());
+		points.push_back(Vector2(c->get_size().x,0));
+		points.push_back(c->get_size());
+		points.push_back(Vector2(0,c->get_size().y));
+		Vector<Color> colors;
+		colors.push_back(Color(1,1,1));
+		colors.push_back(Color(1,1,1));
+		colors.push_back(Color());
+		colors.push_back(Color());
+		c->draw_polygon(points,colors);
+		Vector<Color> colors2;
+		Color col = color;
+		col.set_hsv(color.get_h(),1,1);
+		col.a = 0;
+		colors2.push_back(col);
+		col.a = 1;
+		colors2.push_back(col);
+		col.set_hsv(color.get_h(),1,0);
+		colors2.push_back(col);
+		col.a = 0;
+		colors2.push_back(col);
+		c->draw_polygon(points,colors);
 		int x = CLAMP(c->get_size().x * s, 0, c->get_size().x);
 		int y = CLAMP(c->get_size().y-c->get_size().y * v, 0, c->get_size().y);
-		Color col = color;
+		col = color;
 		col.a=1;
 		c->draw_line(Point2(x,0),Point2(x,c->get_size().y),col.inverted());
 		c->draw_line(Point2(0, y),Point2(c->get_size().x, y),col.inverted());
 		c->draw_line(Point2(x,y),Point2(x,y),Color(1,1,1),2);
 	} else if (p_wich==1) {
+		Ref<Texture> hue = get_icon("color_hue","ColorPicker");
+		c->draw_texture_rect(hue,Rect2(Point2(),c->get_size()));
 		int y=c->get_size().y-c->get_size().y*h;
 		Color col=Color();
 		col.set_hsv(h,1,1);
@@ -476,35 +497,30 @@ ColorPicker::ColorPicker() :
 
 	HBoxContainer *hb_edit = memnew( HBoxContainer );
 
-	uv_edit= memnew ( TextureFrame );
+	uv_edit= memnew ( Control );
 
 
 
 	uv_edit->set_ignore_mouse(false);
 	uv_edit->connect("input_event", this, "_uv_input");
-	Control *c= memnew( Control );
-	uv_edit->add_child(c);
-	c->set_area_as_parent_rect();
-	c->set_stop_mouse(false);
+	uv_edit->set_stop_mouse(false);
+	uv_edit->set_custom_minimum_size(Size2 (256,256));
 	Vector<Variant> args=Vector<Variant>();
 	args.push_back(0);
-	args.push_back(c);
-	c->connect("draw",this,"_hsv_draw",args);
+	args.push_back(uv_edit);
+	uv_edit->connect("draw",this,"_hsv_draw",args);
 
 	add_child(hb_edit);
-	w_edit= memnew( TextureFrame );
 
-
-	w_edit->set_ignore_mouse(false);	
+	w_edit= memnew( Control );
+	w_edit->set_ignore_mouse(false);
+	w_edit->set_custom_minimum_size(Size2(30,256));
 	w_edit->connect("input_event", this, "_w_input");
-	c= memnew( Control );
-	w_edit->add_child(c);
-	c->set_area_as_parent_rect();
-	c->set_stop_mouse(false);
 	args.clear();
 	args.push_back(1);
-	args.push_back(c);
-	c->connect("draw",this,"_hsv_draw",args);
+	args.push_back(w_edit);
+	w_edit->connect("draw",this,"_hsv_draw",args);
+
 
 	hb_edit->add_child(uv_edit);
 	hb_edit->add_child(memnew( VSeparator ));

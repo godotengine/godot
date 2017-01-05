@@ -835,14 +835,8 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 	t->set_icon("screen_picker","ColorPicker", make_icon( icon_color_pick_png ) );
 	t->set_icon("add_preset","ColorPicker", make_icon( icon_add_png ) );
-	t->set_icon("color_area", "ColorPicker", make_icon( color_picker_main_png));
 	t->set_icon("color_hue", "ColorPicker", make_icon( color_picker_hue_png));
 	t->set_icon("color_sample", "ColorPicker", make_icon( color_picker_sample_png));
-
-	t->set_shader("uv_editor", "ColorPicker", make_shader("", uv_editor_shader_code, ""));
-	t->set_shader("w_editor", "ColorPicker", make_shader("", w_editor_shader_code, ""));
-
-
 
 	// TooltipPanel
 
