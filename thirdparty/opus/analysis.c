@@ -540,17 +540,14 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
        /* Instantaneous probability of speech and music, with beta pre-applied. */
        float speech0;
        float music0;
+       float p, q;
 
        /* One transition every 3 minutes of active audio */
        tau = .00005f*frame_probs[1];
-       beta = .05f;
-       if (1) {
-          /* Adapt beta based on how "unexpected" the new prob is */
-          float p, q;
-          p = MAX16(.05f,MIN16(.95f,frame_probs[0]));
-          q = MAX16(.05f,MIN16(.95f,tonal->music_prob));
-          beta = .01f+.05f*ABS16(p-q)/(p*(1-q)+q*(1-p));
-       }
+       /* Adapt beta based on how "unexpected" the new prob is */
+       p = MAX16(.05f,MIN16(.95f,frame_probs[0]));
+       q = MAX16(.05f,MIN16(.95f,tonal->music_prob));
+       beta = .01f+.05f*ABS16(p-q)/(p*(1-q)+q*(1-p));
        /* p0 and p1 are the probabilities of speech and music at this frame
           using only information from previous frame and applying the
           state transition model */

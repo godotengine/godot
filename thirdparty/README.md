@@ -141,7 +141,7 @@ changes are marked with `// -- GODOT --` comments.
 ## openssl
 
 - Upstream: https://www.openssl.org
-- Version: 1.2.0h
+- Version: 1.0.2h
 - License: OpenSSL license / BSD-like
 
 Files extracted from the upstream source:
@@ -152,7 +152,7 @@ TODO.
 ## opus
 
 - Upstream: https://opus-codec.org
-- Version: 1.1.2 (opus) and 0.7 (opusfile)
+- Version: 1.1.3 (opus) and 0.7 (opusfile)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
