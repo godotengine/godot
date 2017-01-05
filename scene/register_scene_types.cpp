@@ -273,12 +273,12 @@ void register_scene_types() {
 	ResourceLoader::add_resource_format_loader( resource_loader_theme );
 
 
-	bool default_theme_hidpi=GLOBAL_DEF("display/use_hidpi_theme",false);
-	Globals::get_singleton()->set_custom_property_info("display/use_hidpi_theme",PropertyInfo(Variant::BOOL,"display/use_hidpi_theme",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
-	String theme_path = GLOBAL_DEF("display/custom_theme","");
-	Globals::get_singleton()->set_custom_property_info("display/custom_theme",PropertyInfo(Variant::STRING,"display/custom_theme",PROPERTY_HINT_FILE,"*.tres,*.res",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
-	String font_path = GLOBAL_DEF("display/custom_theme_font","");
-	Globals::get_singleton()->set_custom_property_info("display/custom_theme_font",PropertyInfo(Variant::STRING,"display/custom_theme_font",PROPERTY_HINT_FILE,"*.tres,*.res,*.fnt",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
+	bool default_theme_hidpi=GLOBAL_DEF("gui/theme/use_hidpi",false);
+	GlobalConfig::get_singleton()->set_custom_property_info("gui/theme/use_hidpi",PropertyInfo(Variant::BOOL,"gui/theme/use_hidpi",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
+	String theme_path = GLOBAL_DEF("gui/theme/custom","");
+	GlobalConfig::get_singleton()->set_custom_property_info("gui/theme/custom",PropertyInfo(Variant::STRING,"gui/theme/custom",PROPERTY_HINT_FILE,"*.tres,*.res",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
+	String font_path = GLOBAL_DEF("gui/theme/custom_font","");
+	GlobalConfig::get_singleton()->set_custom_property_info("gui/theme/custom_font",PropertyInfo(Variant::STRING,"gui/theme/custom_font",PROPERTY_HINT_FILE,"*.tres,*.res,*.fnt",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 
 	if (theme_path!=String()) {
@@ -481,7 +481,7 @@ void register_scene_types() {
 
 #endif
 	ClassDB::register_class<MeshLibrary>();
-	AcceptDialog::set_swap_ok_cancel( GLOBAL_DEF("display/swap_ok_cancel",bool(OS::get_singleton()->get_swap_ok_cancel())) );
+	AcceptDialog::set_swap_ok_cancel( GLOBAL_DEF("gui/common/swap_ok_cancel",bool(OS::get_singleton()->get_swap_ok_cancel())) );
 
 	ClassDB::register_class<SamplePlayer>();
 	ClassDB::register_class<StreamPlayer>();
@@ -515,12 +515,6 @@ void register_scene_types() {
 	ClassDB::register_class<OccluderPolygon2D>();
 	ClassDB::register_class<YSort>();
 	ClassDB::register_class<BackBufferCopy>();
-	if (bool(GLOBAL_DEF("physics/remove_collision_helpers_at_runtime",false))) {
-		ClassDB::set_class_enabled("CollisionShape2D",false);
-		ClassDB::set_class_enabled("CollisionPolygon2D",false);
-		ClassDB::set_class_enabled("CollisionShape",false);
-		ClassDB::set_class_enabled("CollisionPolygon",false);
-	}
 
 	OS::get_singleton()->yield(); //may take time to init
 

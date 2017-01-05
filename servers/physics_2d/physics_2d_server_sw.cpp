@@ -1386,7 +1386,7 @@ Physics2DServerSW::Physics2DServerSW() {
 	island_count=0;
 	active_objects=0;
 	collision_pairs=0;
-	using_threads=int(Globals::get_singleton()->get("physics_2d/thread_model"))==2;
+	using_threads=int(GlobalConfig::get_singleton()->get("physics/2d/thread_model"))==2;
 
 };
 

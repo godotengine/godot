@@ -59,18 +59,20 @@ ShaderTypes *shader_types=NULL;
 
 void register_server_types() {
 
-	Globals::get_singleton()->add_singleton( Globals::Singleton("VisualServer",VisualServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("VS",VisualServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("AudioServer",AudioServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("AS",AudioServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("PhysicsServer",PhysicsServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("PS",PhysicsServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("Physics2DServer",Physics2DServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("PS2D",Physics2DServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("SpatialSoundServer",SpatialSoundServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("SS",SpatialSoundServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("SpatialSound2DServer",SpatialSound2DServer::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("SS2D",SpatialSound2DServer::get_singleton()) );
+	GLOBAL_DEF("memory/multithread/thread_rid_pool_prealloc",20);
+
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("VisualServer",VisualServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("VS",VisualServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("AudioServer",AudioServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("AS",AudioServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PhysicsServer",PhysicsServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PS",PhysicsServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Physics2DServer",Physics2DServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PS2D",Physics2DServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("SpatialSoundServer",SpatialSoundServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("SS",SpatialSoundServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("SpatialSound2DServer",SpatialSound2DServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("SS2D",SpatialSound2DServer::get_singleton()) );
 
 	shader_types = memnew( ShaderTypes );
 

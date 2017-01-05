@@ -1493,9 +1493,9 @@ void GDScriptLanguage::init() {
 
 	//populate singletons
 
-	List<Globals::Singleton> singletons;
-	Globals::get_singleton()->get_singletons(&singletons);
-	for(List<Globals::Singleton>::Element *E=singletons.front();E;E=E->next()) {
+	List<GlobalConfig::Singleton> singletons;
+	GlobalConfig::get_singleton()->get_singletons(&singletons);
+	for(List<GlobalConfig::Singleton>::Element *E=singletons.front();E;E=E->next()) {
 
 		_add_global(E->get().name,E->get().ptr);
 	}
@@ -1940,7 +1940,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	script_frame_time=0;
 
 	_debug_call_stack_pos=0;
-	int dmcs=GLOBAL_DEF("debug/script_max_call_stack",1024);
+	int dmcs=GLOBAL_DEF("debug/script/max_call_stack",1024);
 	if (ScriptDebugger::get_singleton()) {
 		//debugging enabled!
 

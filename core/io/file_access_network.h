@@ -162,6 +162,8 @@ public:
 
 	virtual uint64_t _get_modified_time(const String& p_file);
 
+	static void configure();
+
 	FileAccessNetwork();
 	~FileAccessNetwork();
 };

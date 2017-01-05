@@ -221,7 +221,7 @@ void EditorResourcePreview::_thread() {
 
 
 					String temp_path=EditorSettings::get_singleton()->get_settings_path().plus_file("tmp");
-					String cache_base = Globals::get_singleton()->globalize_path(item.path).md5_text();
+					String cache_base = GlobalConfig::get_singleton()->globalize_path(item.path).md5_text();
 					cache_base = temp_path.plus_file("resthumb-"+cache_base);
 
 					//does not have it, try to load a cached thumbnail

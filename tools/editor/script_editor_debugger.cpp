@@ -1091,7 +1091,7 @@ void ScriptEditorDebugger::start() {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 	}
 
-	uint16_t port = GLOBAL_DEF("debug/remote_port",6007);
+	uint16_t port = GLOBAL_GET("network/debug/remote_port");
 	perf_history.clear();
 	for(int i=0;i<Performance::MONITOR_MAX;i++) {
 

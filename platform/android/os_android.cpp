@@ -748,7 +748,7 @@ String OS_Android::get_data_dir() const {
 
 
 	return ".";
-	//return Globals::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
+	//return GlobalConfig::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 }
 
 

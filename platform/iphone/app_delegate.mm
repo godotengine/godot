@@ -162,14 +162,14 @@ static int frame_count = 0;
 				NSString* str = (NSString*)value;
 				String uval = String::utf8([str UTF8String]);
 
-				Globals::get_singleton()->set("Info.plist/"+ukey, uval);
+				GlobalConfig::get_singleton()->set("Info.plist/"+ukey, uval);
 
 			} else if ([value isKindOfClass:[NSNumber class]]) {
 
 				NSNumber* n = (NSNumber*)value;
 				double dval = [n doubleValue];
 
-				Globals::get_singleton()->set("Info.plist/"+ukey, dval);
+				GlobalConfig::get_singleton()->set("Info.plist/"+ukey, dval);
 			};
 			// do stuff
 		}
@@ -186,7 +186,7 @@ static int frame_count = 0;
 		++frame_count;
 
 		#ifdef APPIRATER_ENABLED
-		int aid = Globals::get_singleton()->get("ios/app_id");
+		int aid = GlobalConfig::get_singleton()->get("ios/app_id");
 		[Appirater appLaunched:YES app_id:aid];
 		#endif
 
@@ -266,11 +266,11 @@ static int frame_count = 0;
 
 #ifdef MODULE_GAME_ANALYTICS_ENABLED
     printf("********************* didFinishLaunchingWithOptions\n");
-    if(!Globals::get_singleton()->has("mobileapptracker/advertiser_id"))
+    if(!GlobalConfig::get_singleton()->has("mobileapptracker/advertiser_id"))
     {
         return;
     }
-    if(!Globals::get_singleton()->has("mobileapptracker/conversion_key"))
+    if(!GlobalConfig::get_singleton()->has("mobileapptracker/conversion_key"))
     {
         return;
     }

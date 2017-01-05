@@ -15,7 +15,7 @@ for x in env.global_defaults:
 
 gd_cpp = '#include "globals.h"\n'
 gd_cpp += gd_inc
-gd_cpp += "void Globals::register_global_defaults() {\n" + gd_call + "\n}\n"
+gd_cpp += "void GlobalConfig::register_global_defaults() {\n" + gd_call + "\n}\n"
 
 f = open("global_defaults.cpp", "wb")
 f.write(gd_cpp)

@@ -1012,7 +1012,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 
 			if (hint==PROPERTY_HINT_FILE || hint==PROPERTY_HINT_DIR) {
 
-				v=Globals::get_singleton()->localize_path(p_file);
+				v=GlobalConfig::get_singleton()->localize_path(p_file);
 				emit_signal("variant_changed");
 				hide();
 			}
@@ -2509,6 +2509,12 @@ void PropertyEditor::_check_reload_status(const String&p_name, TreeItem* item) {
 
 	}
 
+	if (obj->call("property_can_revert",p_name).operator bool()) {
+
+		has_reload=true;
+	}
+
+
 	if (!has_reload && !obj->get_script().is_null()) {
 		Ref<Script> scr = obj->get_script();
 		Variant orig_value;
@@ -3742,6 +3748,12 @@ void PropertyEditor::update_tree() {
 
 		}
 
+		if (obj->call("property_can_revert",p.name).operator bool()) {
+
+			item->add_button(1,get_icon("ReloadSmall","EditorIcons"),3);
+			has_reload=true;
+		}
+
 		if (!has_reload && !obj->get_script().is_null()) {
 			Ref<Script> scr = obj->get_script();
 			Variant orig_value;
@@ -3792,13 +3804,12 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 
 	} else {
 
-
 		undo_redo->create_action(TTR("Set")+" "+p_name,UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(obj,p_name,p_value);
 		undo_redo->add_undo_property(obj,p_name,obj->get(p_name));
 		undo_redo->add_do_method(this,"_changed_callback",obj,p_name);
 		undo_redo->add_undo_method(this,"_changed_callback",obj,p_name);
-		undo_redo->add_undo_method(this,"_changed_callback",obj,p_name);
+
 		Resource *r = obj->cast_to<Resource>();
 		if (r) {
 			if (!r->is_edited() && String(p_name)!="resource/edited") {
@@ -3806,8 +3817,8 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 				undo_redo->add_undo_method(r,"set_edited",false);
 			}
 		}
-		_prop_edited_name[0]=p_name;
-		undo_redo->add_do_method(this,"emit_signal",_prop_edited,_prop_edited_name);
+		undo_redo->add_do_method(this,"emit_signal",_prop_edited,p_name);
+		undo_redo->add_undo_method(this,"emit_signal",_prop_edited,p_name);
 		undo_redo->commit_action();
 	}
 }
@@ -4068,6 +4079,11 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 			_edit_set(prop,vorig);
 			return;
+		}
+
+		if (obj->call("property_can_revert",prop).operator bool()) {
+			Variant rev = obj->call("property_get_revert",prop);
+			_edit_set(prop,rev);
 		}
 
 		if  (!obj->get_script().is_null()) {
@@ -4344,7 +4360,7 @@ void PropertyEditor::set_subsection_selectable(bool p_selectable) {
 PropertyEditor::PropertyEditor() {
 
 	_prop_edited="property_edited";
-	_prop_edited_name.push_back(String());
+
 	undo_redo=NULL;
 	obj=NULL;
 	search_box=NULL;
@@ -4429,6 +4445,7 @@ class SectionedPropertyEditorFilter : public Object {
 
 	Object *edited;
 	String section;
+	bool allow_sub;
 
 	bool _set(const StringName& p_name, const Variant& p_value) {
 
@@ -4442,6 +4459,7 @@ class SectionedPropertyEditorFilter : public Object {
 
 		bool valid;
 		edited->set(name,p_value,&valid);
+		//_change_notify(p_name.operator String().utf8().get_data());
 		return valid;
 	}
 
@@ -4473,25 +4491,45 @@ class SectionedPropertyEditorFilter : public Object {
 
 			PropertyInfo pi=E->get();
 			int sp = pi.name.find("/");
-			if (sp!=-1) {
-				String ss = pi.name.substr(0,sp);
 
-				if (ss==section) {
-					pi.name=pi.name.substr(sp+1,pi.name.length());
-					p_list->push_back(pi);
-				}
-			} else {
-				if (section=="")
-					p_list->push_back(pi);
+			if (sp==-1) {
+				pi.name="Global/"+pi.name;
+
+			}
+
+			if (pi.name.begins_with(section+"/")) {
+				pi.name=pi.name.replace_first(section+"/","");
+				if (!allow_sub && pi.name.find("/")!=-1)
+					continue;
+				p_list->push_back(pi);
 			}
 		}
 
 	}
+
+	bool property_can_revert(const String& p_name) {
+
+		return edited->call("property_can_revert",section+"/"+p_name);
+	}
+
+	Variant property_get_revert(const String& p_name) {
+
+		return edited->call("property_get_revert",section+"/"+p_name);
+	}
+
+protected:
+	static void _bind_methods() {
+
+		ClassDB::bind_method("property_can_revert",&SectionedPropertyEditorFilter::property_can_revert);
+		ClassDB::bind_method("property_get_revert",&SectionedPropertyEditorFilter::property_get_revert);
+	}
+
 public:
 
-	void set_section(const String& p_section) {
+	void set_section(const String& p_section,bool p_allow_sub) {
 
 		section=p_section;
+		allow_sub=p_allow_sub;
 		_change_notify();
 	}
 
@@ -4514,31 +4552,25 @@ void SectionedPropertyEditor::_bind_methods() {
 	ClassDB::bind_method("update_category_list", &SectionedPropertyEditor::update_category_list);
 }
 
-void SectionedPropertyEditor::_section_selected(int p_which) {
+void SectionedPropertyEditor::_section_selected() {
 
-	filter->set_section( sections->get_item_metadata(p_which) );
+	if (!sections->get_selected())
+		return;
+
+	filter->set_section( sections->get_selected()->get_metadata(0), sections->get_selected()->get_children()==NULL);
 }
 
 void SectionedPropertyEditor::set_current_section(const String& p_section) {
 
-	int section_idx = sections->find_metadata(p_section);
-
-	if (section_idx==sections->get_current())
-		return;
-
-	if (section_idx!=-1) {
-		sections->select(section_idx);
-		_section_selected(section_idx);
-	} else if (sections->get_item_count()) {
-		sections->select(0);
-		_section_selected(0);
+	if (section_map.has(p_section)) {
+		section_map[p_section]->select(0);;
 	}
 }
 
 String SectionedPropertyEditor::get_current_section() const {
 
-	if (sections->get_current()!=-1)
-		return sections->get_item_metadata( sections->get_current() );
+	if (sections->get_selected())
+		return sections->get_selected()->get_metadata(0);
 	else
 		return "";
 }
@@ -4575,8 +4607,9 @@ void SectionedPropertyEditor::edit(Object* p_object) {
 		filter->set_edited(p_object);
 		editor->edit(filter);
 
-		sections->select(0);
-		_section_selected(0);
+		if (sections->get_root()->get_children()) {
+			sections->get_root()->get_children()->select(0);
+		}
 	} else {
 
 		update_category_list();
@@ -4596,7 +4629,12 @@ void SectionedPropertyEditor::update_category_list() {
 	List<PropertyInfo> pinfo;
 	o->get_property_list(&pinfo);
 
-	Set<String> existing_sections;
+	section_map.clear();
+
+	TreeItem *root = sections->create_item();
+	section_map[""]=root;
+
+
 	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
 
 		PropertyInfo pi=E->get();
@@ -4609,24 +4647,38 @@ void SectionedPropertyEditor::update_category_list() {
 		if (pi.name.find(":")!=-1 || pi.name=="script/script" || pi.name.begins_with("resource/"))
 			continue;
 		int sp = pi.name.find("/");
-		if (sp!=-1) {
-			String sname=pi.name.substr(0,sp);
-			if (!existing_sections.has(sname)) {
-				existing_sections.insert(sname);
-				sections->add_item(sname.capitalize());
-				sections->set_item_metadata(sections->get_item_count()-1,sname);
+		if (sp==-1)
+			pi.name="Global/"+pi.name;
+
+		Vector<String> sectionarr = pi.name.split("/");
+		String metasection;
+
+
+		for(int i=0;i<MIN(2,sectionarr.size()-1);i++) {
+
+			TreeItem *parent = section_map[metasection];
+
+			if (i>0) {
+				metasection+="/"+sectionarr[i];
+			} else {
+				metasection=sectionarr[i];
 			}
 
-		} else {
-			if (!existing_sections.has("")) {
-				existing_sections.insert("");
-				sections->add_item(TTR("Global"));
-				sections->set_item_metadata(sections->get_item_count()-1,"");
+
+			if (!section_map.has(metasection)) {
+				TreeItem *ms = sections->create_item(parent);
+				section_map[metasection]=ms;
+				ms->set_text(0,sectionarr[i].capitalize());
+				ms->set_metadata(0,metasection);
+
 			}
 		}
+
 	}
 
-	set_current_section(selected_category);
+	if (section_map.has(selected_category)) {
+		section_map[selected_category]->select(0);
+	}
 }
 
 PropertyEditor *SectionedPropertyEditor::get_property_editor() {
@@ -4642,8 +4694,9 @@ SectionedPropertyEditor::SectionedPropertyEditor() {
 	left_vb->set_custom_minimum_size(Size2(160,0)*EDSCALE);
 	add_child(left_vb);
 
-	sections = memnew( ItemList );
+	sections = memnew( Tree );
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
+	sections->set_hide_root(true);
 
 	left_vb->add_margin_child(TTR("Sections:"),sections,true);
 
@@ -4661,7 +4714,7 @@ SectionedPropertyEditor::SectionedPropertyEditor() {
 
 	editor->hide_top_label();
 
-	sections->connect("item_selected",this,"_section_selected");
+	sections->connect("cell_selected",this,"_section_selected");
 
 }
 

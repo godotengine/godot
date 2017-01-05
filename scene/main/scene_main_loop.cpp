@@ -2289,11 +2289,11 @@ SceneTree::SceneTree() {
 	editor_hint=false;
 	debug_collisions_hint=false;
 	debug_navigation_hint=false;
-	debug_collisions_color=GLOBAL_DEF("debug/collision_shape_color",Color(0.0,0.6,0.7,0.5));
-	debug_collision_contact_color=GLOBAL_DEF("debug/collision_contact_color",Color(1.0,0.2,0.1,0.8));
-	debug_navigation_color=GLOBAL_DEF("debug/navigation_geometry_color",Color(0.1,1.0,0.7,0.4));
-	debug_navigation_disabled_color=GLOBAL_DEF("debug/navigation_disabled_geometry_color",Color(1.0,0.7,0.1,0.4));
-	collision_debug_contacts=GLOBAL_DEF("debug/collision_max_contacts_displayed",10000);
+	debug_collisions_color=GLOBAL_DEF("debug/collision/shape_color",Color(0.0,0.6,0.7,0.5));
+	debug_collision_contact_color=GLOBAL_DEF("debug/collision/contact_color",Color(1.0,0.2,0.1,0.8));
+	debug_navigation_color=GLOBAL_DEF("debug/navigation/geometry_color",Color(0.1,1.0,0.7,0.4));
+	debug_navigation_disabled_color=GLOBAL_DEF("debug/navigation/disabled_geometry_color",Color(1.0,0.7,0.1,0.4));
+	collision_debug_contacts=GLOBAL_DEF("debug/collision/max_contacts_displayed",10000);
 
 
 
@@ -2322,10 +2322,10 @@ SceneTree::SceneTree() {
 
 	int ref_atlas_size = GLOBAL_DEF("rendering/reflections/atlas_size",2048);
 	int ref_atlas_subdiv = GLOBAL_DEF("rendering/reflections/atlas_subdiv",8);
-	int msaa_mode = GLOBAL_DEF("rendering/antialias/msaa",0);
-	Globals::get_singleton()->set_custom_property_info("rendering/antialias/msaa",PropertyInfo(Variant::INT,"rendering/antialias/msaa",PROPERTY_HINT_ENUM,"Disabled,2x,4x,8x,16x"));
+	int msaa_mode = GLOBAL_DEF("rendering/quality/msaa",0);
+	GlobalConfig::get_singleton()->set_custom_property_info("rendering/quality/msaa",PropertyInfo(Variant::INT,"rendering/quality/msaa",PROPERTY_HINT_ENUM,"Disabled,2x,4x,8x,16x"));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
-	bool hdr = GLOBAL_DEF("rendering/dynamic_range/hdr",true);
+	bool hdr = GLOBAL_DEF("rendering/quality/hdr",true);
 	root->set_hdr(hdr);
 
 	VS::get_singleton()->scenario_set_reflection_atlas_size(root->get_world()->get_scenario(),ref_atlas_size,ref_atlas_subdiv);
@@ -2341,7 +2341,7 @@ SceneTree::SceneTree() {
 		ScriptDebugger::get_singleton()->set_request_scene_tree_message_func(_debugger_request_tree,this);
 	}
 
-	root->set_physics_object_picking(GLOBAL_DEF("physics/enable_object_picking",true));
+	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking",true));
 
 #ifdef TOOLS_ENABLED
 	edited_scene_root=NULL;

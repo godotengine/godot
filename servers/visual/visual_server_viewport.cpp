@@ -243,7 +243,7 @@ void VisualServerViewport::draw_viewports() {
 
 	//draw viewports
 
-	clear_color=GLOBAL_DEF("rendering/viewport/default_clear_color",Color(0.5,0.5,0.5));
+	clear_color=GLOBAL_GET("rendering/viewport/default_clear_color");
 
 
 	active_viewports.sort_custom<ViewportSort>();

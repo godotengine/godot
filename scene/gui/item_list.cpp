@@ -578,7 +578,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now-search_time_msec;
 
-				if (diff<int(Globals::get_singleton()->get("gui/incr_search_max_interval_msec"))*2) {
+				if (diff<int(GlobalConfig::get_singleton()->get("gui/timers/incremental_search_max_interval_msec"))*2) {
 
 					for(int i=current-1;i>=0;i--) {
 
@@ -614,7 +614,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now-search_time_msec;
 
-				if (diff<int(Globals::get_singleton()->get("gui/incr_search_max_interval_msec"))*2) {
+				if (diff<int(GlobalConfig::get_singleton()->get("gui/timers/incremental_search_max_interval_msec"))*2) {
 
 					for(int i=current+1;i<items.size();i++) {
 
@@ -725,7 +725,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now-search_time_msec;
-				uint64_t max_interval = uint64_t(GLOBAL_DEF("gui/incr_search_max_interval_msec",2000));
+				uint64_t max_interval = uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec",2000));
 				search_time_msec = now;
 
 				if (diff>max_interval) {
@@ -1372,6 +1372,8 @@ void ItemList::_bind_methods(){
 	ADD_SIGNAL( MethodInfo("item_rmb_selected",PropertyInfo(Variant::INT,"index"),PropertyInfo(Variant::VECTOR2,"atpos")));
 	ADD_SIGNAL( MethodInfo("multi_selected",PropertyInfo(Variant::INT,"index"),PropertyInfo(Variant::BOOL,"selected")));
 	ADD_SIGNAL( MethodInfo("item_activated",PropertyInfo(Variant::INT,"index")));
+
+	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec",2000);
 }
 
 ItemList::ItemList() {

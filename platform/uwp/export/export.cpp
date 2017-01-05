@@ -1571,7 +1571,7 @@ Vector<uint8_t> EditorExportPlatformUWP::_fix_manifest(const Vector<uint8_t> &p_
 	String architecture = arch == ARM ? "ARM" : arch == X86 ? "x86" : "x64";
 	result = result.replace("$architecture$", architecture);
 
-	result = result.replace("$display_name$", display_name.empty() ? (String)Globals::get_singleton()->get("application/name") : display_name);
+	result = result.replace("$display_name$", display_name.empty() ? (String)GlobalConfig::get_singleton()->get("application/name") : display_name);
 	result = result.replace("$publisher_display_name$", publisher_display_name);
 	result = result.replace("$app_description$", description);
 	result = result.replace("$bg_color$", background_color);

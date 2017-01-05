@@ -309,7 +309,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 
 #ifdef JAVASCRIPT_EVAL_ENABLED
 	javascript_eval = memnew(JavaScript);
-	Globals::get_singleton()->add_singleton(Globals::Singleton("JavaScript", javascript_eval));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("JavaScript", javascript_eval));
 #endif
 }
 
@@ -807,7 +807,7 @@ String OS_JavaScript::get_data_dir() const {
 	//if (get_data_dir_func)
 	//	return get_data_dir_func();
 	return "/userfs";
-	//return Globals::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
+	//return GlobalConfig::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };
 
 String OS_JavaScript::get_executable_path() const {

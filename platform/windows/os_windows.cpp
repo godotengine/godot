@@ -2382,7 +2382,7 @@ String OS_Windows::get_data_dir() const {
 
 		if (has_environment("APPDATA")) {
 
-			bool use_godot = Globals::get_singleton()->get("application/use_shared_user_dir");
+			bool use_godot = GlobalConfig::get_singleton()->get("application/use_shared_user_dir");
 			if (!use_godot)
 				return (OS::get_singleton()->get_environment("APPDATA")+"/"+an).replace("\\","/");
 			else
@@ -2390,7 +2390,7 @@ String OS_Windows::get_data_dir() const {
 		}
 	}
 
-	return Globals::get_singleton()->get_resource_path();
+	return GlobalConfig::get_singleton()->get_resource_path();
 
 
 }

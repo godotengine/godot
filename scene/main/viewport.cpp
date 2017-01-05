@@ -2835,7 +2835,7 @@ Viewport::Viewport() {
 	gui.tooltip_timer = -1;
 
 	//gui.tooltip_timer->force_parent_owned();
-	gui.tooltip_delay=GLOBAL_DEF("display/tooltip_delay",0.7);
+	gui.tooltip_delay=GLOBAL_DEF("gui/timers/tooltip_delay_sec",0.7);
 
 	gui.tooltip=NULL;
 	gui.tooltip_label=NULL;

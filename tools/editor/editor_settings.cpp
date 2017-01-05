@@ -307,7 +307,7 @@ void EditorSettings::create() {
 
 		dir->change_dir("config");
 
-		String pcp=Globals::get_singleton()->get_resource_path();
+		String pcp=GlobalConfig::get_singleton()->get_resource_path();
 		if (pcp.ends_with("/"))
 			pcp=config_path.substr(0,pcp.size()-1);
 		pcp=pcp.get_file()+"-"+pcp.md5_text();

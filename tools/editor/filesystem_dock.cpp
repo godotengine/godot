@@ -927,7 +927,7 @@ void FileSystemDock::_file_option(int p_option) {
 
 			String path = files->get_item_metadata(idx);
 			if (p_option == FILE_SHOW_IN_EXPLORER) {
-				String dir = Globals::get_singleton()->globalize_path(path);
+				String dir = GlobalConfig::get_singleton()->globalize_path(path);
 				dir = dir.substr(0, dir.find_last("/"));
 				OS::get_singleton()->shell_open(String("file://")+dir);
 				return;

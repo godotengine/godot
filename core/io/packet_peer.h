@@ -92,6 +92,8 @@ public:
 
 	virtual int get_max_packet_size() const;
 
+
+
 	void set_stream_peer(const Ref<StreamPeer>&  p_peer);
 	void set_input_buffer_max_size(int p_max_size);
 	PacketPeerStream();

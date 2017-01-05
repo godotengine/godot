@@ -404,18 +404,16 @@ World2D::World2D() {
 
 	//set space2D to be more friendly with pixels than meters, by adjusting some constants
 	Physics2DServer::get_singleton()->space_set_active(space,true);
-	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_GRAVITY,GLOBAL_DEF("physics_2d/default_gravity",98));
-	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_GRAVITY_VECTOR,GLOBAL_DEF("physics_2d/default_gravity_vector",Vector2(0,1)));
+	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_GRAVITY,GLOBAL_DEF("physics/2d/default_gravity",98));
+	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_GRAVITY_VECTOR,GLOBAL_DEF("physics/2d/default_gravity_vector",Vector2(0,1)));
 	// TODO: Remove this deprecation warning and compatibility code for 2.2 or 3.0
-	if (Globals::get_singleton()->get("physics_2d/default_density") && !Globals::get_singleton()->get("physics_2d/default_linear_damp")) {
-		WARN_PRINT("Deprecated parameter 'physics_2d/default_density'. It was renamed to 'physics_2d/default_linear_damp', adjusting your project settings accordingly (make sure to adjust scripts that potentially rely on 'physics_2d/default_density'.");
-		Globals::get_singleton()->set("physics_2d/default_linear_damp", Globals::get_singleton()->get("physics_2d/default_density"));
-		Globals::get_singleton()->set_persisting("physics_2d/default_linear_damp", true);
-		Globals::get_singleton()->set_persisting("physics_2d/default_density", false);
-		Globals::get_singleton()->save();
+	if (GlobalConfig::get_singleton()->get("physics/2d/default_density") && !GlobalConfig::get_singleton()->get("physics/2d/default_linear_damp")) {
+		WARN_PRINT("Deprecated parameter 'physics/2d/default_density'. It was renamed to 'physics/2d/default_linear_damp', adjusting your project settings accordingly (make sure to adjust scripts that potentially rely on 'physics/2d/default_density'.");
+		GlobalConfig::get_singleton()->set("physics/2d/default_linear_damp", GlobalConfig::get_singleton()->get("physics/2d/default_density"));
+		GlobalConfig::get_singleton()->save();
 	}
-	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_LINEAR_DAMP,GLOBAL_DEF("physics_2d/default_linear_damp",0.1));
-	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_ANGULAR_DAMP,GLOBAL_DEF("physics_2d/default_angular_damp",1));
+	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_LINEAR_DAMP,GLOBAL_DEF("physics/2d/default_linear_damp",0.1));
+	Physics2DServer::get_singleton()->area_set_param(space,Physics2DServer::AREA_PARAM_ANGULAR_DAMP,GLOBAL_DEF("physics/2d/default_angular_damp",1));
 	indexer = memnew( SpatialIndexer2D );
 
 }

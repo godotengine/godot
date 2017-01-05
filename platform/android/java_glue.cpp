@@ -921,7 +921,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv * e
 	__android_log_print(ANDROID_LOG_INFO,"godot","*****SETUP OK");
 
 	//video driver is determined here, because once initialized, it cant be changed
-	String vd = Globals::get_singleton()->get("display/driver");
+	String vd = GlobalConfig::get_singleton()->get("display/driver");
 
 
 	env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean)true);
@@ -976,7 +976,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_quit(JNIEnv * env, jo
 
 static void _initialize_java_modules() {
 
-	String modules = Globals::get_singleton()->get("android/modules");
+	String modules = GlobalConfig::get_singleton()->get("android/modules");
 	Vector<String> mods = modules.split(",",false);
     print_line("ANDROID MODULES : " + modules);
 	__android_log_print(ANDROID_LOG_INFO,"godot","mod count: %i",mods.size());
@@ -1051,7 +1051,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv * env, jo
 		// because of the way android forces you to do everything with threads
 
 		java_class_wrapper = memnew( JavaClassWrapper(_godot_instance ));
-		Globals::get_singleton()->add_singleton(Globals::Singleton("JavaClassWrapper",java_class_wrapper));
+		GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("JavaClassWrapper",java_class_wrapper));
 		_initialize_java_modules();
 
 		Main::setup2();
@@ -1570,8 +1570,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_singleton(JNIEnv * en
 	s->set_instance(env->NewGlobalRef(p_object));
 	jni_singletons[singname]=s;
 
-	Globals::get_singleton()->add_singleton(Globals::Singleton(singname,s));
-	Globals::get_singleton()->set(singname,s);
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton(singname,s));
+	GlobalConfig::get_singleton()->set(singname,s);
 
 }
 
@@ -1649,7 +1649,7 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *
 
 	String js = env->GetStringUTFChars( path, NULL );
 
-	return env->NewStringUTF(Globals::get_singleton()->get(js).operator String().utf8().get_data());
+	return env->NewStringUTF(GlobalConfig::get_singleton()->get(js).operator String().utf8().get_data());
 
 
 }

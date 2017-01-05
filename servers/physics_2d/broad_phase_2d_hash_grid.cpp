@@ -683,12 +683,12 @@ BroadPhase2DSW *BroadPhase2DHashGrid::_create() {
 
 BroadPhase2DHashGrid::BroadPhase2DHashGrid() {
 
-	hash_table_size = GLOBAL_DEF("physics_2d/bp_hash_table_size",4096);
+	hash_table_size = GLOBAL_DEF("physics/2d/bp_hash_table_size",4096);
 	hash_table_size = Math::larger_prime(hash_table_size);
 	hash_table = memnew_arr( PosBin*, hash_table_size);
 
-	cell_size = GLOBAL_DEF("physics_2d/cell_size",128);
-	large_object_min_surface = GLOBAL_DEF("physics_2d/large_object_surface_treshold_in_cells",512);
+	cell_size = GLOBAL_DEF("physics/2d/cell_size",128);
+	large_object_min_surface = GLOBAL_DEF("physics/2d/large_object_surface_treshold_in_cells",512);
 
 	for(int i=0;i<hash_table_size;i++)
 		hash_table[i]=NULL;

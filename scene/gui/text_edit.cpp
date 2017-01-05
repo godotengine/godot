@@ -4707,6 +4707,7 @@ void TextEdit::_bind_methods() {
 	BIND_CONSTANT( MENU_MAX );
 
 
+	GLOBAL_DEF("gui/timers/text_edit_idle_detect_sec",3);
 }
 
 TextEdit::TextEdit()  {
@@ -4767,7 +4768,7 @@ TextEdit::TextEdit()  {
 	idle_detect = memnew( Timer );
 	add_child(idle_detect);
 	idle_detect->set_one_shot(true);
-	idle_detect->set_wait_time(GLOBAL_DEF("display/text_edit_idle_detect_sec",3));
+	idle_detect->set_wait_time(GLOBAL_GET("gui/timers/text_edit_idle_detect_sec"));
 	idle_detect->connect("timeout", this,"_push_current_op");
 
 	click_select_held = memnew( Timer );

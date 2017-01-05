@@ -608,14 +608,14 @@ void DocData::generate(bool p_basic_types) {
 			c.constants.push_back(cd);
 		}
 
-		List<Globals::Singleton> singletons;
-		Globals::get_singleton()->get_singletons(&singletons);
+		List<GlobalConfig::Singleton> singletons;
+		GlobalConfig::get_singleton()->get_singletons(&singletons);
 
 		//servers (this is kind of hackish)
-		for(List<Globals::Singleton>::Element *E=singletons.front();E;E=E->next()) {
+		for(List<GlobalConfig::Singleton>::Element *E=singletons.front();E;E=E->next()) {
 
 			PropertyDoc pd;
-			Globals::Singleton &s=E->get();
+			GlobalConfig::Singleton &s=E->get();
 			pd.name=s.name;
 			pd.type=s.ptr->get_class();
 			while (String(ClassDB::get_parent_class(pd.type))!="Object")

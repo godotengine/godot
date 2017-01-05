@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "undo_redo.h"
-
+#include "os/os.h"
 
 void UndoRedo::_discard_redo() {
 
@@ -54,12 +54,14 @@ void UndoRedo::_discard_redo() {
 
 void UndoRedo::create_action(const String& p_name,MergeMode p_mode) {
 
+	uint32_t ticks = OS::get_singleton()->get_ticks_msec();
+
 	if (action_level==0) {
 
 		_discard_redo();
 
 		// Check if the merge operation is valid
-		if (p_mode!=MERGE_DISABLE && actions.size() && actions[actions.size()-1].name==p_name) {
+		if (p_mode!=MERGE_DISABLE && actions.size() && actions[actions.size()-1].name==p_name && actions[actions.size()-1].last_tick+800 > ticks) {
 
 			current_action=actions.size()-2;
 
@@ -83,12 +85,15 @@ void UndoRedo::create_action(const String& p_name,MergeMode p_mode) {
 				}
 			}
 
+			actions[actions.size()-1].last_tick=ticks;
+
 			merge_mode=p_mode;
 
 		} else {
 
 			Action new_action;
 			new_action.name=p_name;
+			new_action.last_tick=ticks;
 			actions.push_back(new_action);
 
 			merge_mode=MERGE_DISABLE;

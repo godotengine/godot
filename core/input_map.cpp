@@ -241,7 +241,7 @@ void InputMap::load_from_globals() {
 	input_map.clear();;
 
 	List<PropertyInfo> pinfo;
-	Globals::get_singleton()->get_property_list(&pinfo);
+	GlobalConfig::get_singleton()->get_property_list(&pinfo);
 
 	for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
 		const PropertyInfo &pi=E->get();
@@ -253,7 +253,7 @@ void InputMap::load_from_globals() {
 
 		add_action(name);
 
-		Array va = Globals::get_singleton()->get(pi.name);;
+		Array va = GlobalConfig::get_singleton()->get(pi.name);;
 
 		for(int i=0;i<va.size();i++) {
 
@@ -324,7 +324,7 @@ void InputMap::load_default() {
 	key.key.scancode=KEY_PAGEDOWN;
 	action_add_event("ui_page_down",key);
 
-//	set("display/orientation", "landscape");
+//	set("display/handheld/orientation", "landscape");
 
 
 }

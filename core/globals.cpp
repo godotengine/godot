@@ -37,19 +37,19 @@
 #include "io/file_access_pack.h"
 #include "io/file_access_network.h"
 
-Globals *Globals::singleton=NULL;
+GlobalConfig *GlobalConfig::singleton=NULL;
 
-Globals *Globals::get_singleton() {
+GlobalConfig *GlobalConfig::get_singleton() {
 
 	return singleton;
 }
 
-String Globals::get_resource_path() const {
+String GlobalConfig::get_resource_path() const {
 
 	return resource_path;
 };
 
-String Globals::localize_path(const String& p_path) const {
+String GlobalConfig::localize_path(const String& p_path) const {
 
 	if (resource_path=="")
 		return p_path; //not initialied yet
@@ -96,21 +96,14 @@ String Globals::localize_path(const String& p_path) const {
 
 }
 
-void Globals::set_persisting(const String& p_name, bool p_persist) {
+void GlobalConfig::set_initial_value(const String& p_name, const Variant & p_value) {
 
 	ERR_FAIL_COND(!props.has(p_name));
-	props[p_name].persist=p_persist;
-}
-
-bool Globals::is_persisting(const String& p_name) const {
-
-	ERR_FAIL_COND_V(!props.has(p_name),false);
-	return props[p_name].persist;
-
+	props[p_name].initial=p_value;
 }
 
 
-String Globals::globalize_path(const String& p_path) const {
+String GlobalConfig::globalize_path(const String& p_path) const {
 
 	if (p_path.begins_with("res://")) {
 
@@ -125,7 +118,7 @@ String Globals::globalize_path(const String& p_path) const {
 }
 
 
-bool Globals::_set(const StringName& p_name, const Variant& p_value) {
+bool GlobalConfig::_set(const StringName& p_name, const Variant& p_value) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -169,7 +162,7 @@ bool Globals::_set(const StringName& p_name, const Variant& p_value) {
 
 	return true;
 }
-bool Globals::_get(const StringName& p_name,Variant &r_ret) const {
+bool GlobalConfig::_get(const StringName& p_name,Variant &r_ret) const {
 
 	_THREAD_SAFE_METHOD_
 
@@ -190,7 +183,7 @@ struct _VCSort {
 	bool operator<(const _VCSort& p_vcs) const{ return order==p_vcs.order?name<p_vcs.name:order< p_vcs.order; }
 };
 
-void Globals::_get_property_list(List<PropertyInfo> *p_list) const {
+void GlobalConfig::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	_THREAD_SAFE_METHOD_
 
@@ -208,13 +201,9 @@ void Globals::_get_property_list(List<PropertyInfo> *p_list) const {
 		vc.order=v->order;
 		vc.type=v->variant.get_type();
 		if (vc.name.begins_with("input/") || vc.name.begins_with("import/") || vc.name.begins_with("export/") || vc.name.begins_with("/remap") || vc.name.begins_with("/locale") || vc.name.begins_with("/autoload"))
-			vc.flags=PROPERTY_USAGE_CHECKABLE|PROPERTY_USAGE_STORAGE;
+			vc.flags=PROPERTY_USAGE_STORAGE;
 		else
-			vc.flags=PROPERTY_USAGE_CHECKABLE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_STORAGE;
-
-		if (v->persist) {
-			vc.flags|=PROPERTY_USAGE_CHECKED;
-		}
+			vc.flags=PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_STORAGE;
 
 		vclist.insert(vc);
 	}
@@ -233,7 +222,7 @@ void Globals::_get_property_list(List<PropertyInfo> *p_list) const {
 
 
 
-bool Globals::_load_resource_pack(const String& p_pack) {
+bool GlobalConfig::_load_resource_pack(const String& p_pack) {
 
 	if (PackedData::get_singleton()->is_disabled())
 		return false;
@@ -250,7 +239,7 @@ bool Globals::_load_resource_pack(const String& p_pack) {
 	return true;
 }
 
-Error Globals::setup(const String& p_path,const String & p_main_pack) {
+Error GlobalConfig::setup(const String& p_path,const String & p_main_pack) {
 
 	//an absolute mess of a function, must be cleaned up and reorganized somehow at some point
 
@@ -397,7 +386,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 	return OK;
 }
 
-bool Globals::has(String p_var) const {
+bool GlobalConfig::has(String p_var) const {
 
 	_THREAD_SAFE_METHOD_
 
@@ -751,12 +740,12 @@ static Variant _decode_variant(const String& p_string) {
 	return Variant();
 }
 
-void Globals::set_registering_order(bool p_enable) {
+void GlobalConfig::set_registering_order(bool p_enable) {
 
 	registering_order=p_enable;
 }
 
-Error Globals::_load_settings_binary(const String p_path) {
+Error GlobalConfig::_load_settings_binary(const String p_path) {
 
 	Error err;
 	FileAccess *f= FileAccess::open(p_path,FileAccess::READ,&err);
@@ -797,7 +786,7 @@ Error Globals::_load_settings_binary(const String p_path) {
 		ERR_EXPLAIN("Error decoding property: "+key);
 		ERR_CONTINUE(err!=OK);
 		set(key,value);
-		set_persisting(key,true);
+
 	}
 
 	set_registering_order(true);
@@ -805,7 +794,7 @@ Error Globals::_load_settings_binary(const String p_path) {
 
 	return OK;
 }
-Error Globals::_load_settings(const String p_path) {
+Error GlobalConfig::_load_settings(const String p_path) {
 
 
 	Error err;
@@ -884,8 +873,10 @@ Error Globals::_load_settings(const String p_path) {
 
 			Variant val = _decode_variant(value);
 
-			set(subpath+var,val);
-			set_persisting(subpath+var,true);
+			StringName path = subpath+var;
+
+			set(path,val);
+
 			//props[subpath+var]=VariantContainer(val,last_order++,true);
 
 		} else {
@@ -1062,31 +1053,31 @@ static String _encode_variant(const Variant& p_variant) {
 }
 
 
-int Globals::get_order(const String& p_name) const {
+int GlobalConfig::get_order(const String& p_name) const {
 
 	ERR_FAIL_COND_V(!props.has(p_name),-1);
 	return props[p_name].order;
 }
 
 
-void Globals::set_order(const String& p_name, int p_order){
+void GlobalConfig::set_order(const String& p_name, int p_order){
 
 	ERR_FAIL_COND(!props.has(p_name));
 	props[p_name].order=p_order;
 }
 
-void Globals::clear(const String& p_name) {
+void GlobalConfig::clear(const String& p_name) {
 
 	ERR_FAIL_COND(!props.has(p_name));
 	props.erase(p_name);
 }
 
-Error Globals::save() {
+Error GlobalConfig::save() {
 
 	return save_custom(get_resource_path()+"/engine.cfg");
 }
 
-Error Globals::_save_settings_binary(const String& p_file,const Map<String,List<String> > &props,const CustomMap& p_custom) {
+Error GlobalConfig::_save_settings_binary(const String& p_file,const Map<String,List<String> > &props,const CustomMap& p_custom) {
 
 
 	Error err;
@@ -1155,7 +1146,7 @@ Error Globals::_save_settings_binary(const String& p_file,const Map<String,List<
 }
 
 
-Error Globals::_save_settings_text(const String& p_file,const Map<String,List<String> > &props,const CustomMap& p_custom) {
+Error GlobalConfig::_save_settings_text(const String& p_file,const Map<String,List<String> > &props,const CustomMap& p_custom) {
 
 	Error err;
 	FileAccess *file = FileAccess::open(p_file,FileAccess::WRITE,&err);
@@ -1194,12 +1185,12 @@ Error Globals::_save_settings_text(const String& p_file,const Map<String,List<St
 	return OK;
 }
 
-Error Globals::_save_custom_bnd(const String &p_file) { // add other params as dictionary and array?
+Error GlobalConfig::_save_custom_bnd(const String &p_file) { // add other params as dictionary and array?
 
 	return save_custom(p_file);
 };
 
-Error Globals::save_custom(const String& p_path,const CustomMap& p_custom,const Set<String>& p_ignore_masks) {
+Error GlobalConfig::save_custom(const String& p_path,const CustomMap& p_custom,const Set<String>& p_ignore_masks) {
 
 	ERR_FAIL_COND_V(p_path=="",ERR_INVALID_PARAMETER);
 
@@ -1232,8 +1223,8 @@ Error Globals::save_custom(const String& p_path,const CustomMap& p_custom,const 
 		vc.name=G->key();//*k;
 		vc.order=v->order;
 		vc.type=v->variant.get_type();
-		vc.flags=PROPERTY_USAGE_CHECKABLE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_STORAGE;
-		if (!v->persist)
+		vc.flags=PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_STORAGE;
+		if (v->variant==v->initial)
 			continue;
 
 
@@ -1327,20 +1318,23 @@ Error Globals::save_custom(const String& p_path,const CustomMap& p_custom,const 
 
 Variant _GLOBAL_DEF( const String& p_var, const Variant& p_default) {
 
-	if (Globals::get_singleton()->has(p_var))
-		return Globals::get_singleton()->get(p_var);
-	Globals::get_singleton()->set(p_var,p_default);
+	if (GlobalConfig::get_singleton()->has(p_var)) {
+		GlobalConfig::get_singleton()->set_initial_value(p_var,p_default);
+		return GlobalConfig::get_singleton()->get(p_var);
+	}
+	GlobalConfig::get_singleton()->set(p_var,p_default);
+	GlobalConfig::get_singleton()->set_initial_value(p_var,p_default);
 	return p_default;
 
 }
 
-void Globals::add_singleton(const Singleton &p_singleton) {
+void GlobalConfig::add_singleton(const Singleton &p_singleton) {
 
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name]=p_singleton.ptr;
 }
 
-Object* Globals::get_singleton_object(const String& p_name) const {
+Object* GlobalConfig::get_singleton_object(const String& p_name) const {
 
 
 	const Map<StringName,Object*>::Element *E=singleton_ptrs.find(p_name);
@@ -1351,21 +1345,21 @@ Object* Globals::get_singleton_object(const String& p_name) const {
 
 };
 
-bool Globals::has_singleton(const String& p_name) const {
+bool GlobalConfig::has_singleton(const String& p_name) const {
 
 	return get_singleton_object(p_name) != NULL;
 };
 
-void Globals::get_singletons(List<Singleton> *p_singletons) {
+void GlobalConfig::get_singletons(List<Singleton> *p_singletons) {
 
 	for(List<Singleton>::Element *E=singletons.front();E;E=E->next())
 		p_singletons->push_back(E->get());
 }
 
-Vector<String> Globals::get_optimizer_presets() const {
+Vector<String> GlobalConfig::get_optimizer_presets() const {
 
 	List<PropertyInfo> pi;
-	Globals::get_singleton()->get_property_list(&pi);
+	GlobalConfig::get_singleton()->get_property_list(&pi);
 	Vector<String> names;
 
 	for (List<PropertyInfo>::Element *E=pi.front();E;E=E->next()) {
@@ -1381,7 +1375,7 @@ Vector<String> Globals::get_optimizer_presets() const {
 
 }
 
-void Globals::_add_property_info_bind(const Dictionary& p_info) {
+void GlobalConfig::_add_property_info_bind(const Dictionary& p_info) {
 
 	ERR_FAIL_COND(!p_info.has("name"));
 	ERR_FAIL_COND(!p_info.has("type"));
@@ -1400,7 +1394,7 @@ void Globals::_add_property_info_bind(const Dictionary& p_info) {
 	set_custom_property_info(pinfo.name, pinfo);
 }
 
-void Globals::set_custom_property_info(const String& p_prop,const PropertyInfo& p_info) {
+void GlobalConfig::set_custom_property_info(const String& p_prop,const PropertyInfo& p_info) {
 
 	ERR_FAIL_COND(!props.has(p_prop));
 	custom_prop_info[p_prop]=p_info;
@@ -1408,37 +1402,55 @@ void Globals::set_custom_property_info(const String& p_prop,const PropertyInfo& 
 
 }
 
-void Globals::set_disable_platform_override(bool p_disable) {
+void GlobalConfig::set_disable_platform_override(bool p_disable) {
 
 	disable_platform_override=p_disable;
 }
 
-bool Globals::is_using_datapack() const {
+bool GlobalConfig::is_using_datapack() const {
 
 	return using_datapack;
 }
 
-void Globals::_bind_methods() {
+bool GlobalConfig::property_can_revert(const String& p_name) {
 
-	ClassDB::bind_method(_MD("has","name"),&Globals::has);
-	ClassDB::bind_method(_MD("set_order","name","pos"),&Globals::set_order);
-	ClassDB::bind_method(_MD("get_order","name"),&Globals::get_order);
-	ClassDB::bind_method(_MD("set_persisting","name","enable"),&Globals::set_persisting);
-	ClassDB::bind_method(_MD("is_persisting","name"),&Globals::is_persisting);
-	ClassDB::bind_method(_MD("add_property_info", "hint"),&Globals::_add_property_info_bind);
-	ClassDB::bind_method(_MD("clear","name"),&Globals::clear);
-	ClassDB::bind_method(_MD("localize_path","path"),&Globals::localize_path);
-	ClassDB::bind_method(_MD("globalize_path","path"),&Globals::globalize_path);
-	ClassDB::bind_method(_MD("save"),&Globals::save);
-	ClassDB::bind_method(_MD("has_singleton","name"),&Globals::has_singleton);
-	ClassDB::bind_method(_MD("get_singleton","name"),&Globals::get_singleton_object);
-	ClassDB::bind_method(_MD("load_resource_pack","pack"),&Globals::_load_resource_pack);
+	if (!props.has(p_name))
+		return false;
 
-	ClassDB::bind_method(_MD("save_custom","file"),&Globals::_save_custom_bnd);
+	return props[p_name].initial!=props[p_name].variant;
 
 }
 
-Globals::Globals() {
+Variant GlobalConfig::property_get_revert(const String& p_name) {
+
+	if (!props.has(p_name))
+		return Variant();
+
+	return props[p_name].initial;
+}
+
+void GlobalConfig::_bind_methods() {
+
+	ClassDB::bind_method(_MD("has","name"),&GlobalConfig::has);
+	ClassDB::bind_method(_MD("set_order","name","pos"),&GlobalConfig::set_order);
+	ClassDB::bind_method(_MD("get_order","name"),&GlobalConfig::get_order);
+	ClassDB::bind_method(_MD("set_initial_value","name","value"),&GlobalConfig::set_initial_value);
+	ClassDB::bind_method(_MD("add_property_info", "hint"),&GlobalConfig::_add_property_info_bind);
+	ClassDB::bind_method(_MD("clear","name"),&GlobalConfig::clear);
+	ClassDB::bind_method(_MD("localize_path","path"),&GlobalConfig::localize_path);
+	ClassDB::bind_method(_MD("globalize_path","path"),&GlobalConfig::globalize_path);
+	ClassDB::bind_method(_MD("save"),&GlobalConfig::save);
+	ClassDB::bind_method(_MD("has_singleton","name"),&GlobalConfig::has_singleton);
+	ClassDB::bind_method(_MD("get_singleton","name"),&GlobalConfig::get_singleton_object);
+	ClassDB::bind_method(_MD("load_resource_pack","pack"),&GlobalConfig::_load_resource_pack);
+	ClassDB::bind_method(_MD("property_can_revert","name"),&GlobalConfig::property_can_revert);
+	ClassDB::bind_method(_MD("property_get_revert","name"),&GlobalConfig::property_get_revert);
+
+	ClassDB::bind_method(_MD("save_custom","file"),&GlobalConfig::_save_custom_bnd);
+
+}
+
+GlobalConfig::GlobalConfig() {
 
 
 	singleton=this;
@@ -1454,11 +1466,11 @@ Globals::Globals() {
 	joyb.type=InputEvent::JOYSTICK_BUTTON;
 
 
-	set("application/name","" );
-	set("application/main_scene","");
+	GLOBAL_DEF("application/name","" );
+	GLOBAL_DEF("application/main_scene","");
 	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"tscn,scn,xscn,xml,res");
-	set("application/disable_stdout",false);
-	set("application/use_shared_user_dir",true);
+	GLOBAL_DEF("application/disable_stdout",false);
+	GLOBAL_DEF("application/use_shared_user_dir",true);
 
 
 	key.key.scancode=KEY_RETURN;
@@ -1469,7 +1481,7 @@ Globals::Globals() {
 	va.push_back(key);
 	joyb.joy_button.button_index=JOY_BUTTON_0;
 	va.push_back(joyb);
-	set("input/ui_accept",va);
+	GLOBAL_DEF("input/ui_accept",va);
 	input_presets.push_back("input/ui_accept");
 
 	va=Array();
@@ -1477,7 +1489,7 @@ Globals::Globals() {
 	va.push_back(key);
 	joyb.joy_button.button_index=JOY_BUTTON_3;
 	va.push_back(joyb);
-	set("input/ui_select",va);
+	GLOBAL_DEF("input/ui_select",va);
 	input_presets.push_back("input/ui_select");
 
 	va=Array();
@@ -1485,20 +1497,20 @@ Globals::Globals() {
 	va.push_back(key);
 	joyb.joy_button.button_index=JOY_BUTTON_1;
 	va.push_back(joyb);
-	set("input/ui_cancel",va);
+	GLOBAL_DEF("input/ui_cancel",va);
 	input_presets.push_back("input/ui_cancel");
 
 	va=Array();
 	key.key.scancode=KEY_TAB;
 	va.push_back(key);
-	set("input/ui_focus_next",va);
+	GLOBAL_DEF("input/ui_focus_next",va);
 	input_presets.push_back("input/ui_focus_next");
 
 	va=Array();
 	key.key.scancode=KEY_TAB;
 	key.key.mod.shift=true;
 	va.push_back(key);
-	set("input/ui_focus_prev",va);
+	GLOBAL_DEF("input/ui_focus_prev",va);
 	input_presets.push_back("input/ui_focus_prev");
 	key.key.mod.shift=false;
 
@@ -1507,7 +1519,7 @@ Globals::Globals() {
 	va.push_back(key);
 	joyb.joy_button.button_index=JOY_DPAD_LEFT;
 	va.push_back(joyb);
-	set("input/ui_left",va);
+	GLOBAL_DEF("input/ui_left",va);
 	input_presets.push_back("input/ui_left");
 
 	va=Array();
@@ -1515,7 +1527,7 @@ Globals::Globals() {
 	va.push_back(key);
 	joyb.joy_button.button_index=JOY_DPAD_RIGHT;
 	va.push_back(joyb);
-	set("input/ui_right",va);
+	GLOBAL_DEF("input/ui_right",va);
 	input_presets.push_back("input/ui_right");
 
 	va=Array();
@@ -1523,7 +1535,7 @@ Globals::Globals() {
 	va.push_back(key);
 	joyb.joy_button.button_index=JOY_DPAD_UP;
 	va.push_back(joyb);
-	set("input/ui_up",va);
+	GLOBAL_DEF("input/ui_up",va);
 	input_presets.push_back("input/ui_up");
 
 	va=Array();
@@ -1531,36 +1543,35 @@ Globals::Globals() {
 	va.push_back(key);
 	joyb.joy_button.button_index=JOY_DPAD_DOWN;
 	va.push_back(joyb);
-	set("input/ui_down",va);
+	GLOBAL_DEF("input/ui_down",va);
 	input_presets.push_back("input/ui_down");
 
 
 	va=Array();
 	key.key.scancode=KEY_PAGEUP;
 	va.push_back(key);
-	set("input/ui_page_up",va);
+	GLOBAL_DEF("input/ui_page_up",va);
 	input_presets.push_back("input/ui_page_up");
 
 	va=Array();
 	key.key.scancode=KEY_PAGEDOWN;
 	va.push_back(key);
-	set("input/ui_page_down",va);
+	GLOBAL_DEF("input/ui_page_down",va);
 	input_presets.push_back("input/ui_page_down");
 
-//	set("display/orientation", "landscape");
+//	GLOBAL_DEF("display/handheld/orientation", "landscape");
 
 
-	custom_prop_info["display/orientation"]=PropertyInfo(Variant::STRING,"display/orientation",PROPERTY_HINT_ENUM,"landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");
-	custom_prop_info["render/mipmap_policy"]=PropertyInfo(Variant::INT,"render/mipmap_policy",PROPERTY_HINT_ENUM,"Allow,Allow For Po2,Disallow");
-	custom_prop_info["render/thread_model"]=PropertyInfo(Variant::INT,"render/thread_model",PROPERTY_HINT_ENUM,"Single-Unsafe,Single-Safe,Multi-Threaded");
-	custom_prop_info["physics_2d/thread_model"]=PropertyInfo(Variant::INT,"physics_2d/thread_model",PROPERTY_HINT_ENUM,"Single-Unsafe,Single-Safe,Multi-Threaded");
+	custom_prop_info["display/handheld/orientation"]=PropertyInfo(Variant::STRING,"display/handheld/orientation",PROPERTY_HINT_ENUM,"landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");
+	custom_prop_info["rendering/threads/thread_model"]=PropertyInfo(Variant::INT,"rendering/threads/thread_model",PROPERTY_HINT_ENUM,"Single-Unsafe,Single-Safe,Multi-Threaded");
+	custom_prop_info["physics/2d/thread_model"]=PropertyInfo(Variant::INT,"physics/2d/thread_model",PROPERTY_HINT_ENUM,"Single-Unsafe,Single-Safe,Multi-Threaded");
 
-	set("debug/profiler_max_functions",16384);
+	GLOBAL_DEF("debug/profiler/max_functions",16384);
 	using_datapack=false;
 }
 
 
-Globals::~Globals() {
+GlobalConfig::~GlobalConfig() {
 
 	singleton=NULL;
 }

@@ -3302,7 +3302,7 @@ void Tree::_do_incr_search(const String& p_add) {
 
 	uint64_t time = OS::get_singleton()->get_ticks_usec() / 1000; // convert to msec
 	uint64_t diff = time - last_keypress;
-	if (diff > uint64_t(GLOBAL_DEF("gui/incr_search_max_interval_msec",2000)))
+	if (diff > uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec",2000)))
 		incr_search=p_add;
 	else
 		incr_search+=p_add;

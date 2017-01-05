@@ -129,7 +129,7 @@ void ResourcesDock::save_resource(const String& p_path,const Ref<Resource>& p_re
 	//if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
 	//	flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
 
-	String path = Globals::get_singleton()->localize_path(p_path);
+	String path = GlobalConfig::get_singleton()->localize_path(p_path);
 	Error err = ResourceSaver::save(path,p_resource,flg|ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err!=OK) {

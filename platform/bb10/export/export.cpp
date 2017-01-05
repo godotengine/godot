@@ -248,7 +248,7 @@ void EditorExportPlatformBB10::_fix_descriptor(Vector<uint8_t>& p_descriptor) {
 					if (this->name!="") {
 						aname=this->name;
 					} else {
-						aname = Globals::get_singleton()->get("application/name");
+						aname = GlobalConfig::get_singleton()->get("application/name");
 
 					}
 
@@ -432,7 +432,7 @@ Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debu
 
 			if (!found) {
 
-				String appicon = Globals::get_singleton()->get("application/icon");
+				String appicon = GlobalConfig::get_singleton()->get("application/icon");
 				if (appicon!="" && appicon.ends_with(".png")) {
 					FileAccess*f = FileAccess::open(appicon,FileAccess::READ);
 					if (f) {

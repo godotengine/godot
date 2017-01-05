@@ -528,6 +528,14 @@ uint64_t FileAccessNetwork::_get_modified_time(const String& p_file){
 
 }
 
+void FileAccessNetwork::configure() {
+
+	GLOBAL_DEF("network/remote_fs/page_size",65536);
+	GLOBAL_DEF("network/remote_fs/page_read_ahead",4);
+	GLOBAL_DEF("network/remote_fs/max_pages",20);
+
+}
+
 FileAccessNetwork::FileAccessNetwork() {
 
 	eof_flag=false;
@@ -541,9 +549,9 @@ FileAccessNetwork::FileAccessNetwork() {
 	id=nc->last_id++;
 	nc->accesses[id]=this;
 	nc->unlock_mutex();
-	page_size = GLOBAL_DEF("remote_fs/page_size",65536);
-	read_ahead = GLOBAL_DEF("remote_fs/page_read_ahead",4);
-	max_pages = GLOBAL_DEF("remote_fs/max_pages",20);
+	page_size = GLOBAL_GET("network/remote_fs/page_size");
+	read_ahead = GLOBAL_GET("network/remote_fs/page_read_ahead");
+	max_pages = GLOBAL_GET("network/remote_fs/max_pages");
 	last_activity_val=0;
 	waiting_on_page=-1;
 	last_page=-1;

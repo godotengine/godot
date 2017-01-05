@@ -1639,7 +1639,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 	uint8_t f4[4];
 	encode_uint32(flags,&f4[0]);
 	MD5Init(&ctx);
-	String gp = Globals::get_singleton()->globalize_path(p_path);
+	String gp = GlobalConfig::get_singleton()->globalize_path(p_path);
 	CharString cs = gp.utf8();
 	MD5Update(&ctx,(unsigned char*)cs.get_data(),cs.length());
 	MD5Update(&ctx,f4,4);

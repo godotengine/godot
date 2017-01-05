@@ -46,8 +46,8 @@
 
 String EditorImportPlugin::validate_source_path(const String& p_path) {
 
-	String gp = Globals::get_singleton()->globalize_path(p_path);
-	String rp = Globals::get_singleton()->get_resource_path();
+	String gp = GlobalConfig::get_singleton()->globalize_path(p_path);
+	String rp = GlobalConfig::get_singleton()->get_resource_path();
 	if (!rp.ends_with("/"))
 		rp+="/";
 
@@ -57,7 +57,7 @@ String EditorImportPlugin::validate_source_path(const String& p_path) {
 String EditorImportPlugin::expand_source_path(const String& p_path) {
 
 	if (p_path.is_rel_path()) {
-		return Globals::get_singleton()->get_resource_path().plus_file(p_path).simplify_path();
+		return GlobalConfig::get_singleton()->get_resource_path().plus_file(p_path).simplify_path();
 	} else {
 		return p_path;
 	}
@@ -765,7 +765,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		{
 			MD5_CTX ctx;
 			MD5Init(&ctx);
-			String path = Globals::get_singleton()->get_resource_path()+"::"+String(E->get())+"::"+get_name();
+			String path = GlobalConfig::get_singleton()->get_resource_path()+"::"+String(E->get())+"::"+get_name();
 			MD5Update(&ctx,(unsigned char*)path.utf8().get_data(),path.utf8().length());
 			MD5Final(&ctx);
 			md5 = String::md5(ctx.digest);
@@ -874,11 +874,11 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 			int flags=0;
 
-			if (Globals::get_singleton()->get("image_loader/filter"))
+			if (GlobalConfig::get_singleton()->get("image_loader/filter"))
 				flags|=EditorTextureImportPlugin::IMAGE_FLAG_FILTER;
-			if (!Globals::get_singleton()->get("image_loader/gen_mipmaps"))
+			if (!GlobalConfig::get_singleton()->get("image_loader/gen_mipmaps"))
 				flags|=EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS;
-			if (!Globals::get_singleton()->get("image_loader/repeat"))
+			if (!GlobalConfig::get_singleton()->get("image_loader/repeat"))
 				flags|=EditorTextureImportPlugin::IMAGE_FLAG_REPEAT;
 
 			flags|=EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA;
@@ -987,7 +987,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 	StringName engine_cfg="res://engine.cfg";
 	StringName boot_splash;
 	{
-		String splash=Globals::get_singleton()->get("application/boot_splash"); //avoid splash from being converted
+		String splash=GlobalConfig::get_singleton()->get("application/boot_splash"); //avoid splash from being converted
 		splash=splash.strip_edges();
 		if (splash!=String()) {
 			if (!splash.begins_with("res://"))
@@ -998,7 +998,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 	}
 	StringName custom_cursor;
 	{
-		String splash=Globals::get_singleton()->get("display/custom_mouse_cursor"); //avoid splash from being converted
+		String splash=GlobalConfig::get_singleton()->get("display/custom_mouse_cursor"); //avoid splash from being converted
 		splash=splash.strip_edges();
 		if (splash!=String()) {
 			if (!splash.begins_with("res://"))
@@ -1084,7 +1084,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 		String remap_file="engine.cfb";
 		String engine_cfb =EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmp"+remap_file;
-		Globals::get_singleton()->save_custom(engine_cfb,custom);
+		GlobalConfig::get_singleton()->save_custom(engine_cfb,custom);
 		Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
 
 		Error err = p_func(p_udata,"res://"+remap_file,data,counter,files.size());
@@ -1129,7 +1129,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 
 		r_flags.push_back("-rdebug");
 
-		r_flags.push_back(host+":"+String::num(GLOBAL_DEF("debug/debug_port", 6007)));
+		r_flags.push_back(host+":"+String::num(GLOBAL_DEF("network/debug/remote_port", 6007)));
 
 		List<String> breakpoints;
 		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);

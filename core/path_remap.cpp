@@ -124,7 +124,7 @@ void PathRemap::clear_remaps() {
 void PathRemap::load_remaps() {
 
 	// default remaps first
-	DVector<String> remaps = Globals::get_singleton()->get("remap/all");
+	DVector<String> remaps = GlobalConfig::get_singleton()->get("remap/all");
 
 	{
 		int rlen = remaps.size();
@@ -141,7 +141,7 @@ void PathRemap::load_remaps() {
 
 
 	// platform remaps second, so override
-	remaps = Globals::get_singleton()->get("remap/"+OS::get_singleton()->get_name());
+	remaps = GlobalConfig::get_singleton()->get("remap/"+OS::get_singleton()->get_name());
 //	remaps = Globals::get_singleton()->get("remap/PSP");
 	{
 		int rlen = remaps.size();
@@ -160,9 +160,9 @@ void PathRemap::load_remaps() {
 
 	//locale based remaps
 
-	if (Globals::get_singleton()->has("locale/translation_remaps")) {
+	if (GlobalConfig::get_singleton()->has("locale/translation_remaps")) {
 
-		Dictionary remaps = Globals::get_singleton()->get("locale/translation_remaps");
+		Dictionary remaps = GlobalConfig::get_singleton()->get("locale/translation_remaps");
 		List<Variant> rk;
 		remaps.get_key_list(&rk);
 		for(List<Variant>::Element *E=rk.front();E;E=E->next()) {

@@ -133,7 +133,7 @@ void ScriptCreateDialog::_create_new() {
 		scr->set_name(cname);
 
 	if (!internal->is_pressed()) {
-		String lpath = Globals::get_singleton()->localize_path(file_path->get_text());
+		String lpath = GlobalConfig::get_singleton()->localize_path(file_path->get_text());
 		scr->set_path(lpath);
 		if (!path_valid) {
 			alert->set_text(TTR("Invalid path!"));
@@ -243,7 +243,7 @@ void ScriptCreateDialog::_browse_path() {
 
 void ScriptCreateDialog::_file_selected(const String& p_file) {
 
-	String p = Globals::get_singleton()->localize_path(p_file);
+	String p = GlobalConfig::get_singleton()->localize_path(p_file);
 	file_path->set_text(p);
 	_path_changed(p);
 
@@ -262,7 +262,7 @@ void ScriptCreateDialog::_path_changed(const String& p_path) {
 
 	}
 
-	p = Globals::get_singleton()->localize_path(p);
+	p = GlobalConfig::get_singleton()->localize_path(p);
 	if (!p.begins_with("res://")) {
 
 		path_error_label->set_text(TTR("Path is not local"));

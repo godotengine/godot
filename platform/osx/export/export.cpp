@@ -324,8 +324,8 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 	String pkg_name;
 	if (app_name!="")
 		pkg_name=app_name;
-	else if (String(Globals::get_singleton()->get("application/name"))!="")
-		pkg_name=String(Globals::get_singleton()->get("application/name"));
+	else if (String(GlobalConfig::get_singleton()->get("application/name"))!="")
+		pkg_name=String(GlobalConfig::get_singleton()->get("application/name"));
 	else
 		pkg_name="Unnamed";
 
@@ -371,7 +371,7 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 
 		if (file=="Contents/Resources/icon.icns") {
 			//see if there is an icon
-			String iconpath = Globals::get_singleton()->get("application/icon");
+			String iconpath = GlobalConfig::get_singleton()->get("application/icon");
 			print_line("icon? "+iconpath);
 			if (iconpath!="") {
 				Image icon;

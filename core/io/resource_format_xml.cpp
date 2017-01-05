@@ -467,7 +467,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 				path=path.replace("local://",local_path+"::");
 			else if (path.find("://")==-1 && path.is_rel_path()) {
 				// path is relative to file being loaded, so convert to a resource path
-				path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+				path=GlobalConfig::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 
 			}
 
@@ -1425,7 +1425,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+			path=GlobalConfig::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 		if (remaps.has(path)) {
@@ -1622,7 +1622,7 @@ void ResourceInteractiveLoaderXML::get_dependencies(FileAccess *f,List<String> *
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+			path=GlobalConfig::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 		if (path.ends_with("*")) {
@@ -1760,7 +1760,7 @@ Error ResourceInteractiveLoaderXML::rename_dependencies(FileAccess *p_f, const S
 		}
 
 		Ref<ResourceInteractiveLoaderXML> ria = memnew( ResourceInteractiveLoaderXML );
-		ria->local_path=Globals::get_singleton()->localize_path(p_path);
+		ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 		ria->res_path=ria->local_path;
 		ria->remaps=p_map;
 	//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
@@ -1924,7 +1924,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderXML::load_interactive(const S
 	}
 
 	Ref<ResourceInteractiveLoaderXML> ria = memnew( ResourceInteractiveLoaderXML );
-	ria->local_path=Globals::get_singleton()->localize_path(p_path);
+	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
 //	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	ria->open(f);
@@ -1989,7 +1989,7 @@ String ResourceFormatLoaderXML::get_resource_type(const String &p_path) const{
 	}
 
 	Ref<ResourceInteractiveLoaderXML> ria = memnew( ResourceInteractiveLoaderXML );
-	ria->local_path=Globals::get_singleton()->localize_path(p_path);
+	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
 //	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	String r = ria->recognize(f);
@@ -2006,7 +2006,7 @@ void ResourceFormatLoaderXML::get_dependencies(const String& p_path,List<String>
 	}
 
 	Ref<ResourceInteractiveLoaderXML> ria = memnew( ResourceInteractiveLoaderXML );
-	ria->local_path=Globals::get_singleton()->localize_path(p_path);
+	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
 //	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	ria->get_dependencies(f,p_dependencies,p_add_types);
@@ -2023,7 +2023,7 @@ Error ResourceFormatLoaderXML::rename_dependencies(const String &p_path,const Ma
 	}
 
 	Ref<ResourceInteractiveLoaderXML> ria = memnew( ResourceInteractiveLoaderXML );
-	ria->local_path=Globals::get_singleton()->localize_path(p_path);
+	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
 //	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	return ria->rename_dependencies(f,p_path,p_map);
@@ -2716,7 +2716,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 	ERR_FAIL_COND_V( err, ERR_CANT_OPEN );
 	FileAccessRef _fref(f);
 
-	local_path = Globals::get_singleton()->localize_path(p_path);
+	local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
 	relative_paths=p_flags&ResourceSaver::FLAG_RELATIVE_PATHS;
 	skip_editor=p_flags&ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;

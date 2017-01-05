@@ -322,7 +322,7 @@ void Collada::_parse_image(XMLParser& parser) {
 		String path = parser.get_attribute_value("source").strip_edges();
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			image.path=Globals::get_singleton()->localize_path(state.local_path.get_base_dir()+"/"+path.percent_decode());
+			image.path=GlobalConfig::get_singleton()->localize_path(state.local_path.get_base_dir()+"/"+path.percent_decode());
 
 		}
 	} else {
@@ -342,11 +342,11 @@ void Collada::_parse_image(XMLParser& parser) {
 
 					if (path.find("://")==-1 && path.is_rel_path()) {
 						// path is relative to file being loaded, so convert to a resource path
-						path=Globals::get_singleton()->localize_path(state.local_path.get_base_dir()+"/"+path);
+						path=GlobalConfig::get_singleton()->localize_path(state.local_path.get_base_dir()+"/"+path);
 
 					} else if (path.find("file:///")==0) {
 						path=path.replace_first("file:///","");
-						path=Globals::get_singleton()->localize_path(path);
+						path=GlobalConfig::get_singleton()->localize_path(path);
 					}
 
 					image.path=path;
@@ -2720,7 +2720,7 @@ Error Collada::load(const String& p_path, int p_flags) {
 	Error err = parser.open(p_path);
 	ERR_FAIL_COND_V(err,err);
 
-	state.local_path = Globals::get_singleton()->localize_path(p_path);
+	state.local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 	state.import_flags=p_flags;
 	/* Skip headers */
 	err=OK;

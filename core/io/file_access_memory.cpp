@@ -42,8 +42,8 @@ void FileAccessMemory::register_file(String p_name, Vector<uint8_t> p_data) {
 	}
 
 	String name;
-	if (Globals::get_singleton())
-		name = Globals::get_singleton()->globalize_path(p_name);
+	if (GlobalConfig::get_singleton())
+		name = GlobalConfig::get_singleton()->globalize_path(p_name);
 	else
 		name = p_name;
 	//name = DirAccess::normalize_path(name);

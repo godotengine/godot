@@ -1495,7 +1495,7 @@ void ScriptEditor::edit(const Ref<Script>& p_script, bool p_grab_focus) {
 				args.push_back(flagss[i]);
 		}
 
-		args.push_back(Globals::get_singleton()->globalize_path(p_script->get_path()));
+		args.push_back(GlobalConfig::get_singleton()->globalize_path(p_script->get_path()));
 		Error err = OS::get_singleton()->execute(path,args,false);
 		if (err==OK)
 			return;

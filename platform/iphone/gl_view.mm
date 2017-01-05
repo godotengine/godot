@@ -76,7 +76,7 @@ void _hide_keyboard() {
 };
 
 bool _play_video(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
-	p_path = Globals::get_singleton()->globalize_path(p_path);
+	p_path = GlobalConfig::get_singleton()->globalize_path(p_path);
 
 	NSString* file_path = [[[NSString alloc] initWithUTF8String:p_path.utf8().get_data()] autorelease];
 

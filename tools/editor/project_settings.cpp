@@ -74,7 +74,7 @@ void ProjectSettings::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		globals_editor->edit(Globals::get_singleton());
+		globals_editor->edit(GlobalConfig::get_singleton());
 
 		search_button->set_icon(get_icon("Zoom","EditorIcons"));
 		clear_button->set_icon(get_icon("Close","EditorIcons"));
@@ -136,7 +136,7 @@ void ProjectSettings::_action_edited() {
 
 	String action_prop="input/"+new_name;
 
-	if (Globals::get_singleton()->has(action_prop)) {
+	if (GlobalConfig::get_singleton()->has(action_prop)) {
 
 		ti->set_text(0,old_name);
 		add_at="input/"+old_name;
@@ -146,20 +146,17 @@ void ProjectSettings::_action_edited() {
 		return;
 	}
 
-	int order = Globals::get_singleton()->get_order(add_at);
-	Array va = Globals::get_singleton()->get(add_at);
-	bool persisting = Globals::get_singleton()->is_persisting(add_at);
+	int order = GlobalConfig::get_singleton()->get_order(add_at);
+	Array va = GlobalConfig::get_singleton()->get(add_at);
 
 	setting=true;
 	undo_redo->create_action(TTR("Rename Input Action Event"));
-	undo_redo->add_do_method(Globals::get_singleton(),"clear",add_at);
-	undo_redo->add_do_method(Globals::get_singleton(),"set",action_prop,va);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",action_prop,persisting);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_order",action_prop,order);
-	undo_redo->add_undo_method(Globals::get_singleton(),"clear",action_prop);
-	undo_redo->add_undo_method(Globals::get_singleton(),"set",add_at,va);
-	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",add_at,persisting);
-	undo_redo->add_undo_method(Globals::get_singleton(),"set_order",add_at,order);
+	undo_redo->add_do_method(GlobalConfig::get_singleton(),"clear",add_at);
+	undo_redo->add_do_method(GlobalConfig::get_singleton(),"set",action_prop,va);
+	undo_redo->add_do_method(GlobalConfig::get_singleton(),"set_order",action_prop,order);
+	undo_redo->add_undo_method(GlobalConfig::get_singleton(),"clear",action_prop);
+	undo_redo->add_undo_method(GlobalConfig::get_singleton(),"set",add_at,va);
+	undo_redo->add_undo_method(GlobalConfig::get_singleton(),"set_order",add_at,order);
 	undo_redo->add_do_method(this,"_update_actions");
 	undo_redo->add_undo_method(this,"_update_actions");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -179,7 +176,7 @@ void ProjectSettings::_device_input_add() {
 
 	InputEvent ie;
 	String name=add_at;
-	Variant old_val = Globals::get_singleton()->get(name);
+	Variant old_val = GlobalConfig::get_singleton()->get(name);
 	Array arr=old_val;
 	ie.device=device_id->get_value();
 
@@ -236,9 +233,8 @@ void ProjectSettings::_device_input_add() {
 	arr.push_back(ie);
 
 	undo_redo->create_action(TTR("Add Input Action Event"));
-	undo_redo->add_do_method(Globals::get_singleton(),"set",name,arr);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",name,true);
-	undo_redo->add_undo_method(Globals::get_singleton(),"set",name,old_val);
+	undo_redo->add_do_method(GlobalConfig::get_singleton(),"set",name,arr);
+	undo_redo->add_undo_method(GlobalConfig::get_singleton(),"set",name,old_val);
 	undo_redo->add_do_method(this,"_update_actions");
 	undo_redo->add_undo_method(this,"_update_actions");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -260,7 +256,7 @@ void ProjectSettings::_press_a_key_confirm() {
 	ie.key.mod=last_wait_for_key.key.mod;
 	String name=add_at;
 
-	Variant old_val = Globals::get_singleton()->get(name);
+	Variant old_val = GlobalConfig::get_singleton()->get(name);
 	Array arr=old_val;
 
 	for(int i=0;i<arr.size();i++) {
@@ -274,9 +270,8 @@ void ProjectSettings::_press_a_key_confirm() {
 	arr.push_back(ie);
 
 	undo_redo->create_action(TTR("Add Input Action Event"));
-	undo_redo->add_do_method(Globals::get_singleton(),"set",name,arr);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",name,true);
-	undo_redo->add_undo_method(Globals::get_singleton(),"set",name,old_val);
+	undo_redo->add_do_method(GlobalConfig::get_singleton(),"set",name,arr);
+	undo_redo->add_undo_method(GlobalConfig::get_singleton(),"set",name,old_val);
 	undo_redo->add_do_method(this,"_update_actions");
 	undo_redo->add_undo_method(this,"_update_actions");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -423,14 +418,13 @@ void ProjectSettings::_action_button_pressed(Object* p_obj, int p_column,int p_i
 			//remove main thing
 
 			String name="input/"+ti->get_text(0);
-			Variant old_val = Globals::get_singleton()->get(name);
-			int order=Globals::get_singleton()->get_order(name);
+			Variant old_val = GlobalConfig::get_singleton()->get(name);
+			int order=GlobalConfig::get_singleton()->get_order(name);
 
 			undo_redo->create_action(TTR("Add Input Action"));
-			undo_redo->add_do_method(Globals::get_singleton(),"clear",name);
-			undo_redo->add_undo_method(Globals::get_singleton(),"set",name,old_val);
-			undo_redo->add_undo_method(Globals::get_singleton(),"set_order",name,order);
-			undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",name,Globals::get_singleton()->is_persisting(name));
+			undo_redo->add_do_method(GlobalConfig::get_singleton(),"clear",name);
+			undo_redo->add_undo_method(GlobalConfig::get_singleton(),"set",name,old_val);
+			undo_redo->add_undo_method(GlobalConfig::get_singleton(),"set_order",name,order);
 			undo_redo->add_do_method(this,"_update_actions");
 			undo_redo->add_undo_method(this,"_update_actions");
 			undo_redo->add_do_method(this,"_settings_changed");
@@ -440,7 +434,7 @@ void ProjectSettings::_action_button_pressed(Object* p_obj, int p_column,int p_i
 		} else {
 			//remove action
 			String name="input/"+ti->get_parent()->get_text(0);
-			Variant old_val = Globals::get_singleton()->get(name);
+			Variant old_val = GlobalConfig::get_singleton()->get(name);
 			int idx = ti->get_metadata(0);
 
 			Array va = old_val;
@@ -456,8 +450,8 @@ void ProjectSettings::_action_button_pressed(Object* p_obj, int p_column,int p_i
 
 
 			undo_redo->create_action(TTR("Erase Input Action Event"));
-			undo_redo->add_do_method(Globals::get_singleton(),"set",name,va);
-			undo_redo->add_undo_method(Globals::get_singleton(),"set",name,old_val);
+			undo_redo->add_do_method(GlobalConfig::get_singleton(),"set",name,va);
+			undo_redo->add_undo_method(GlobalConfig::get_singleton(),"set",name,old_val);
 			undo_redo->add_do_method(this,"_update_actions");
 			undo_redo->add_undo_method(this,"_update_actions");
 			undo_redo->add_do_method(this,"_settings_changed");
@@ -480,7 +474,7 @@ void ProjectSettings::_update_actions() {
 	input_editor->set_hide_root(true);
 
 	List<PropertyInfo> props;
-	Globals::get_singleton()->get_property_list(&props);
+	GlobalConfig::get_singleton()->get_property_list(&props);
 
 	for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
 
@@ -496,7 +490,7 @@ void ProjectSettings::_update_actions() {
 		//item->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
 		item->set_text(0,name);
 		item->add_button(0,get_icon("Add","EditorIcons"),1);
-		if (!Globals::get_singleton()->get_input_presets().find(pi.name)) {
+		if (!GlobalConfig::get_singleton()->get_input_presets().find(pi.name)) {
 			item->add_button(0,get_icon("Remove","EditorIcons"),2);
 			item->set_editable(0,true);
 		}
@@ -504,7 +498,7 @@ void ProjectSettings::_update_actions() {
 		//item->set_checked(0,pi.usage&PROPERTY_USAGE_CHECKED);
 
 
-		Array actions=Globals::get_singleton()->get(pi.name);
+		Array actions=GlobalConfig::get_singleton()->get(pi.name);
 
 		for(int i=0;i<actions.size();i++) {
 
@@ -636,13 +630,12 @@ void ProjectSettings::_item_add() {
 
 	undo_redo->create_action("Add Global Property");
 
-	undo_redo->add_do_property(Globals::get_singleton(), name, value);
-	undo_redo->add_do_method(Globals::get_singleton(), "set_persisting", name, true);
+	undo_redo->add_do_property(GlobalConfig::get_singleton(), name, value);
 
-	if (Globals::get_singleton()->has(name)) {
-		undo_redo->add_undo_property(Globals::get_singleton(), name, Globals::get_singleton()->get(name));
+	if (GlobalConfig::get_singleton()->has(name)) {
+		undo_redo->add_undo_property(GlobalConfig::get_singleton(), name, GlobalConfig::get_singleton()->get(name));
 	} else {
-		undo_redo->add_undo_property(Globals::get_singleton(), name, Variant());
+		undo_redo->add_undo_property(GlobalConfig::get_singleton(), name, Variant());
 	}
 
 	undo_redo->add_do_method(globals_editor, "update_category_list");
@@ -669,10 +662,9 @@ void ProjectSettings::_item_del() {
 
 	undo_redo->create_action("Delete Global Property");
 
-	undo_redo->add_do_property(Globals::get_singleton(), name, Variant());
+	undo_redo->add_do_property(GlobalConfig::get_singleton(), name, Variant());
 
-	undo_redo->add_undo_property(Globals::get_singleton(), name, Globals::get_singleton()->get(name));
-	undo_redo->add_undo_method(Globals::get_singleton(), "set_persisting", name, Globals::get_singleton()->is_persisting(name));
+	undo_redo->add_undo_property(GlobalConfig::get_singleton(), name, GlobalConfig::get_singleton()->get(name));
 
 	undo_redo->add_do_method(globals_editor, "update_category_list");
 	undo_redo->add_undo_method(globals_editor, "update_category_list");
@@ -699,7 +691,7 @@ void ProjectSettings::_action_add() {
 		return;
 	}
 
-	if (Globals::get_singleton()->has("input/"+action)) {
+	if (GlobalConfig::get_singleton()->has("input/"+action)) {
 		message->set_text(vformat(TTR("Action '%s' already exists!"),action));
 		message->popup_centered(Size2(300,100));
 		return;
@@ -708,9 +700,8 @@ void ProjectSettings::_action_add() {
 	Array va;
 	String name = "input/"+action;
 	undo_redo->create_action(TTR("Add Input Action Event"));
-	undo_redo->add_do_method(Globals::get_singleton(),"set",name,va);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",name,true);
-	undo_redo->add_undo_method(Globals::get_singleton(),"clear",name);
+	undo_redo->add_do_method(GlobalConfig::get_singleton(),"set",name,va);
+	undo_redo->add_undo_method(GlobalConfig::get_singleton(),"clear",name);
 	undo_redo->add_do_method(this,"_update_actions");
 	undo_redo->add_undo_method(this,"_update_actions");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -737,23 +728,14 @@ void ProjectSettings::_action_add() {
 
 void ProjectSettings::_item_checked(const String& p_item, bool p_check) {
 
-	undo_redo->create_action(TTR("Toggle Persisting"));
-	String full_item = globals_editor->get_full_item_path(p_item);
 
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",full_item,p_check);
-	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",full_item,!p_check);
-	undo_redo->add_do_method(this,"_settings_changed");
-	undo_redo->add_undo_method(this,"_settings_changed");
-	undo_redo->add_do_method(globals_editor->get_property_editor(),"update_tree");
-	undo_redo->add_undo_method(globals_editor->get_property_editor(),"update_tree");
-	undo_redo->commit_action();
 
 }
 
 
 void ProjectSettings::_save() {
 
-	Error err = Globals::get_singleton()->save();
+	Error err = GlobalConfig::get_singleton()->save();
 	message->set_text(err!=OK?TTR("Error saving settings."):TTR("Settings saved OK."));
 	message->popup_centered(Size2(300,100));
 }
@@ -764,21 +746,6 @@ void ProjectSettings::_settings_prop_edited(const String& p_name) {
 
 	String full_item = globals_editor->get_full_item_path(p_name);
 
-	if (!Globals::get_singleton()->is_persisting(full_item)) {
-		Globals::get_singleton()->set_persisting(full_item,true);
-
-		{
-			//small usability workaround, if anything related to resolution scaling or size is modified, change all of them together
-			if (full_item=="display/width" || full_item=="display/height" || full_item=="display/stretch_mode") {
-				Globals::get_singleton()->set_persisting("display/height",true);
-				Globals::get_singleton()->set_persisting("display/width",true);
-			}
-		}
-
-
-//		globals_editor->update_property(p_name);
-		globals_editor->get_property_editor()->update_tree();
-	}
 	_settings_changed();
 }
 
@@ -810,12 +777,12 @@ void ProjectSettings::_copy_to_platform(int p_which) {
 	}
 
 	String name = catname+"/"+propname;
-	Variant value=Globals::get_singleton()->get(name);
+	Variant value=GlobalConfig::get_singleton()->get(name);
 
 	catname+="."+popup_platform->get_popup()->get_item_text(p_which);;
 	name = catname+"/"+propname;
 
-	Globals::get_singleton()->set(name,value);
+	GlobalConfig::get_singleton()->set(name,value);
 	globals_editor->get_property_editor()->update_tree();
 
 }
@@ -828,7 +795,7 @@ void ProjectSettings::add_translation(const String& p_translation) {
 
 void ProjectSettings::_translation_add(const String& p_path) {
 
-	StringArray translations = Globals::get_singleton()->get("locale/translations");
+	StringArray translations = GlobalConfig::get_singleton()->get("locale/translations");
 
 
 	for(int i=0;i<translations.size();i++) {
@@ -839,9 +806,8 @@ void ProjectSettings::_translation_add(const String& p_path) {
 
 	translations.push_back(p_path);
 	undo_redo->create_action(TTR("Add Translation"));
-	undo_redo->add_do_property(Globals::get_singleton(),"locale/translations",translations);
-	undo_redo->add_undo_property(Globals::get_singleton(),"locale/translations",Globals::get_singleton()->get("locale/translations"));
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting","locale/translations",true);
+	undo_redo->add_do_property(GlobalConfig::get_singleton(),"locale/translations",translations);
+	undo_redo->add_undo_property(GlobalConfig::get_singleton(),"locale/translations",GlobalConfig::get_singleton()->get("locale/translations"));
 	undo_redo->add_do_method(this,"_update_translations");
 	undo_redo->add_undo_method(this,"_update_translations");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -862,15 +828,15 @@ void ProjectSettings::_translation_delete(Object *p_item,int p_column, int p_but
 
 	int idx=ti->get_metadata(0);
 
-	StringArray translations = Globals::get_singleton()->get("locale/translations");
+	StringArray translations = GlobalConfig::get_singleton()->get("locale/translations");
 
 	ERR_FAIL_INDEX(idx,translations.size());
 
 	translations.remove(idx);
 
 	undo_redo->create_action(TTR("Remove Translation"));
-	undo_redo->add_do_property(Globals::get_singleton(),"locale/translations",translations);
-	undo_redo->add_undo_property(Globals::get_singleton(),"locale/translations",Globals::get_singleton()->get("locale/translations"));
+	undo_redo->add_do_property(GlobalConfig::get_singleton(),"locale/translations",translations);
+	undo_redo->add_undo_property(GlobalConfig::get_singleton(),"locale/translations",GlobalConfig::get_singleton()->get("locale/translations"));
 	undo_redo->add_do_method(this,"_update_translations");
 	undo_redo->add_undo_method(this,"_update_translations");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -891,8 +857,8 @@ void ProjectSettings::_translation_res_add(const String& p_path){
 	Variant prev;
 	Dictionary remaps;
 
-	if (Globals::get_singleton()->has("locale/translation_remaps")) {
-		remaps = Globals::get_singleton()->get("locale/translation_remaps");
+	if (GlobalConfig::get_singleton()->has("locale/translation_remaps")) {
+		remaps = GlobalConfig::get_singleton()->get("locale/translation_remaps");
 		prev=remaps;
 	}
 
@@ -902,9 +868,8 @@ void ProjectSettings::_translation_res_add(const String& p_path){
 	remaps[p_path]=StringArray();
 
 	undo_redo->create_action(TTR("Add Remapped Path"));
-	undo_redo->add_do_property(Globals::get_singleton(),"locale/translation_remaps",remaps);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting","locale/translation_remaps",true);
-	undo_redo->add_undo_property(Globals::get_singleton(),"locale/translation_remaps",prev);
+	undo_redo->add_do_property(GlobalConfig::get_singleton(),"locale/translation_remaps",remaps);
+	undo_redo->add_undo_property(GlobalConfig::get_singleton(),"locale/translation_remaps",prev);
 	undo_redo->add_do_method(this,"_update_translations");
 	undo_redo->add_undo_method(this,"_update_translations");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -920,9 +885,9 @@ void ProjectSettings::_translation_res_option_file_open(){
 }
 void ProjectSettings::_translation_res_option_add(const String& p_path) {
 
-	ERR_FAIL_COND(!Globals::get_singleton()->has("locale/translation_remaps"));
+	ERR_FAIL_COND(!GlobalConfig::get_singleton()->has("locale/translation_remaps"));
 
-	Dictionary remaps = Globals::get_singleton()->get("locale/translation_remaps");
+	Dictionary remaps = GlobalConfig::get_singleton()->get("locale/translation_remaps");
 
 	TreeItem *k = translation_remap->get_selected();
 	ERR_FAIL_COND(!k);
@@ -936,9 +901,8 @@ void ProjectSettings::_translation_res_option_add(const String& p_path) {
 
 
 	undo_redo->create_action(TTR("Resource Remap Add Remap"));
-	undo_redo->add_do_property(Globals::get_singleton(),"locale/translation_remaps",remaps);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting","locale/translation_remaps",true);
-	undo_redo->add_undo_property(Globals::get_singleton(),"locale/translation_remaps",Globals::get_singleton()->get("locale/translation_remaps"));
+	undo_redo->add_do_property(GlobalConfig::get_singleton(),"locale/translation_remaps",remaps);
+	undo_redo->add_undo_property(GlobalConfig::get_singleton(),"locale/translation_remaps",GlobalConfig::get_singleton()->get("locale/translation_remaps"));
 	undo_redo->add_do_method(this,"_update_translations");
 	undo_redo->add_undo_method(this,"_update_translations");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -963,10 +927,10 @@ void ProjectSettings::_translation_res_option_changed() {
 	if (updating_translations)
 		return;
 
-	if (!Globals::get_singleton()->has("locale/translation_remaps"))
+	if (!GlobalConfig::get_singleton()->has("locale/translation_remaps"))
 		return;
 
-	Dictionary remaps = Globals::get_singleton()->get("locale/translation_remaps");
+	Dictionary remaps = GlobalConfig::get_singleton()->get("locale/translation_remaps");
 
 	TreeItem *k = translation_remap->get_selected();
 	ERR_FAIL_COND(!k);
@@ -991,9 +955,8 @@ void ProjectSettings::_translation_res_option_changed() {
 
 	updating_translations=true;
 	undo_redo->create_action(TTR("Change Resource Remap Language"));
-	undo_redo->add_do_property(Globals::get_singleton(),"locale/translation_remaps",remaps);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting","locale/translation_remaps",true);
-	undo_redo->add_undo_property(Globals::get_singleton(),"locale/translation_remaps",Globals::get_singleton()->get("locale/translation_remaps"));
+	undo_redo->add_do_property(GlobalConfig::get_singleton(),"locale/translation_remaps",remaps);
+	undo_redo->add_undo_property(GlobalConfig::get_singleton(),"locale/translation_remaps",GlobalConfig::get_singleton()->get("locale/translation_remaps"));
 	undo_redo->add_do_method(this,"_update_translations");
 	undo_redo->add_undo_method(this,"_update_translations");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -1010,10 +973,10 @@ void ProjectSettings::_translation_res_delete(Object *p_item,int p_column, int p
 	if (updating_translations)
 		return;
 
-	if (!Globals::get_singleton()->has("locale/translation_remaps"))
+	if (!GlobalConfig::get_singleton()->has("locale/translation_remaps"))
 		return;
 
-	Dictionary remaps = Globals::get_singleton()->get("locale/translation_remaps");
+	Dictionary remaps = GlobalConfig::get_singleton()->get("locale/translation_remaps");
 
 	TreeItem *k = p_item->cast_to<TreeItem>();
 
@@ -1023,9 +986,8 @@ void ProjectSettings::_translation_res_delete(Object *p_item,int p_column, int p
 	remaps.erase(key);
 
 	undo_redo->create_action(TTR("Remove Resource Remap"));
-	undo_redo->add_do_property(Globals::get_singleton(),"locale/translation_remaps",remaps);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting","locale/translation_remaps",true);
-	undo_redo->add_undo_property(Globals::get_singleton(),"locale/translation_remaps",Globals::get_singleton()->get("locale/translation_remaps"));
+	undo_redo->add_do_property(GlobalConfig::get_singleton(),"locale/translation_remaps",remaps);
+	undo_redo->add_undo_property(GlobalConfig::get_singleton(),"locale/translation_remaps",GlobalConfig::get_singleton()->get("locale/translation_remaps"));
 	undo_redo->add_do_method(this,"_update_translations");
 	undo_redo->add_undo_method(this,"_update_translations");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -1038,10 +1000,10 @@ void ProjectSettings::_translation_res_option_delete(Object *p_item,int p_column
 	if (updating_translations)
 		return;
 
-	if (!Globals::get_singleton()->has("locale/translation_remaps"))
+	if (!GlobalConfig::get_singleton()->has("locale/translation_remaps"))
 		return;
 
-	Dictionary remaps = Globals::get_singleton()->get("locale/translation_remaps");
+	Dictionary remaps = GlobalConfig::get_singleton()->get("locale/translation_remaps");
 
 	TreeItem *k = translation_remap->get_selected();
 	ERR_FAIL_COND(!k);
@@ -1059,9 +1021,8 @@ void ProjectSettings::_translation_res_option_delete(Object *p_item,int p_column
 
 
 	undo_redo->create_action(TTR("Remove Resource Remap Option"));
-	undo_redo->add_do_property(Globals::get_singleton(),"locale/translation_remaps",remaps);
-	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting","locale/translation_remaps",true);
-	undo_redo->add_undo_property(Globals::get_singleton(),"locale/translation_remaps",Globals::get_singleton()->get("locale/translation_remaps"));
+	undo_redo->add_do_property(GlobalConfig::get_singleton(),"locale/translation_remaps",remaps);
+	undo_redo->add_undo_property(GlobalConfig::get_singleton(),"locale/translation_remaps",GlobalConfig::get_singleton()->get("locale/translation_remaps"));
 	undo_redo->add_do_method(this,"_update_translations");
 	undo_redo->add_undo_method(this,"_update_translations");
 	undo_redo->add_do_method(this,"_settings_changed");
@@ -1082,9 +1043,9 @@ void ProjectSettings::_update_translations() {
 	translation_list->clear();
 	TreeItem *root = translation_list->create_item(NULL);
 	translation_list->set_hide_root(true);
-	if (Globals::get_singleton()->has("locale/translations")) {
+	if (GlobalConfig::get_singleton()->has("locale/translations")) {
 
-		StringArray translations = Globals::get_singleton()->get("locale/translations");
+		StringArray translations = GlobalConfig::get_singleton()->get("locale/translations");
 		for(int i=0;i<translations.size();i++) {
 
 			TreeItem *t = translation_list->create_item(root);
@@ -1121,9 +1082,9 @@ void ProjectSettings::_update_translations() {
 		langnames+=names[i];
 	}
 
-	if (Globals::get_singleton()->has("locale/translation_remaps")) {
+	if (GlobalConfig::get_singleton()->has("locale/translation_remaps")) {
 
-		Dictionary remaps = Globals::get_singleton()->get("locale/translation_remaps");
+		Dictionary remaps = GlobalConfig::get_singleton()->get("locale/translation_remaps");
 		List<Variant> rk;
 		remaps.get_key_list(&rk);
 		Vector<String> keys;
@@ -1347,6 +1308,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	globals_editor = memnew( SectionedPropertyEditor );
 	props_base->add_child(globals_editor);
+	globals_editor->get_property_editor()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
 	//globals_editor->hide_top_label();
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	globals_editor->get_property_editor()->register_text_enter(search_box);
@@ -1606,7 +1568,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	timer = memnew( Timer );
 	timer->set_wait_time(1.5);
-	timer->connect("timeout",Globals::get_singleton(),"save");
+	timer->connect("timeout",GlobalConfig::get_singleton(),"save");
 	timer->set_one_shot(true);
 	add_child(timer);
 

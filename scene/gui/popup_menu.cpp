@@ -585,7 +585,7 @@ void PopupMenu::add_check_item(const String& p_label,int p_ID,uint32_t p_accel) 
 }
 
 
-void PopupMenu::add_icon_shortcut(const Ref<Texture>& p_icon,const Ref<ShortCut>& p_shortcut,int p_ID) {
+void PopupMenu::add_icon_shortcut(const Ref<Texture>& p_icon, const Ref<ShortCut>& p_shortcut, int p_ID, bool p_global) {
 
 	ERR_FAIL_COND(p_shortcut.is_null());
 
@@ -595,12 +595,13 @@ void PopupMenu::add_icon_shortcut(const Ref<Texture>& p_icon,const Ref<ShortCut>
 	item.ID=p_ID;
 	item.icon=p_icon;
 	item.shortcut=p_shortcut;
+	item.shortcut_is_global=p_global;
 	items.push_back(item);
 	update();
 
 }
 
-void PopupMenu::add_shortcut(const Ref<ShortCut>& p_shortcut,int p_ID){
+void PopupMenu::add_shortcut(const Ref<ShortCut>& p_shortcut, int p_ID, bool p_global){
 
 	ERR_FAIL_COND(p_shortcut.is_null());
 
@@ -609,11 +610,12 @@ void PopupMenu::add_shortcut(const Ref<ShortCut>& p_shortcut,int p_ID){
 	Item item;
 	item.ID=p_ID;
 	item.shortcut=p_shortcut;
+	item.shortcut_is_global=p_global;
 	items.push_back(item);
 	update();
 
 }
-void PopupMenu::add_icon_check_shortcut(const Ref<Texture>& p_icon,const Ref<ShortCut>& p_shortcut,int p_ID){
+void PopupMenu::add_icon_check_shortcut(const Ref<Texture>& p_icon, const Ref<ShortCut>& p_shortcut, int p_ID, bool p_global){
 
 	ERR_FAIL_COND(p_shortcut.is_null());
 
@@ -624,11 +626,12 @@ void PopupMenu::add_icon_check_shortcut(const Ref<Texture>& p_icon,const Ref<Sho
 	item.shortcut=p_shortcut;
 	item.checkable=true;
 	item.icon=p_icon;
+	item.shortcut_is_global=p_global;
 	items.push_back(item);
 	update();
 }
 
-void PopupMenu::add_check_shortcut(const Ref<ShortCut>& p_shortcut,int p_ID){
+void PopupMenu::add_check_shortcut(const Ref<ShortCut>& p_shortcut, int p_ID, bool p_global){
 
 	ERR_FAIL_COND(p_shortcut.is_null());
 
@@ -637,6 +640,7 @@ void PopupMenu::add_check_shortcut(const Ref<ShortCut>& p_shortcut,int p_ID){
 	Item item;
 	item.ID=p_ID;
 	item.shortcut=p_shortcut;
+	item.shortcut_is_global=p_global;
 	item.checkable=true;
 	items.push_back(item);
 	update();
@@ -815,12 +819,14 @@ void PopupMenu::set_item_tooltip(int p_idx,const String& p_tooltip) {
 	update();
 }
 
-void PopupMenu::set_item_shortcut(int p_idx, const Ref<ShortCut>& p_shortcut) {
+void PopupMenu::set_item_shortcut(int p_idx, const Ref<ShortCut>& p_shortcut, bool p_global) {
 	ERR_FAIL_INDEX(p_idx,items.size());
 	if (items[p_idx].shortcut.is_valid()) {
 		_unref_shortcut(items[p_idx].shortcut);
 	}
 	items[p_idx].shortcut=p_shortcut;
+	items[p_idx].shortcut_is_global=p_global;
+
 
 	if (items[p_idx].shortcut.is_valid()) {
 		_ref_shortcut(items[p_idx].shortcut);
@@ -849,7 +855,7 @@ int PopupMenu::get_item_count() const {
 	return items.size();
 }
 
-bool PopupMenu::activate_item_by_event(const InputEvent& p_event) {
+bool PopupMenu::activate_item_by_event(const InputEvent& p_event, bool p_for_global_only) {
 
 	uint32_t code=0;
 	if (p_event.type==InputEvent::KEY) {
@@ -873,7 +879,7 @@ bool PopupMenu::activate_item_by_event(const InputEvent& p_event) {
 			continue;
 
 
-		if (items[i].shortcut.is_valid() && items[i].shortcut->is_shortcut(p_event)) {
+		if (items[i].shortcut.is_valid() && items[i].shortcut->is_shortcut(p_event) && (items[i].shortcut_is_global || !p_for_global_only)) {
 			activate_item(i);
 			return true;
 		}
@@ -892,7 +898,7 @@ bool PopupMenu::activate_item_by_event(const InputEvent& p_event) {
 			if(!pm)
 				continue;
 
-			if(pm->activate_item_by_event(p_event)) {
+			if(pm->activate_item_by_event(p_event,p_for_global_only)) {
 				return true;
 			}
 		}
@@ -1099,10 +1105,10 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(_MD("add_check_item","label","id","accel"),&PopupMenu::add_check_item,DEFVAL(-1),DEFVAL(0));
 	ClassDB::bind_method(_MD("add_submenu_item","label","submenu","id"),&PopupMenu::add_submenu_item,DEFVAL(-1));
 
-	ClassDB::bind_method(_MD("add_icon_shortcut","texture","shortcut:ShortCut","id"),&PopupMenu::add_icon_shortcut,DEFVAL(-1));
-	ClassDB::bind_method(_MD("add_shortcut","shortcut:ShortCut","id"),&PopupMenu::add_shortcut,DEFVAL(-1));
-	ClassDB::bind_method(_MD("add_icon_check_shortcut","texture","shortcut:ShortCut","id"),&PopupMenu::add_icon_check_shortcut,DEFVAL(-1));
-	ClassDB::bind_method(_MD("add_check_shortcut","shortcut:ShortCut","id"),&PopupMenu::add_check_shortcut,DEFVAL(-1));
+	ClassDB::bind_method(_MD("add_icon_shortcut","texture","shortcut:ShortCut","id","global"),&PopupMenu::add_icon_shortcut,DEFVAL(-1),DEFVAL(false));
+	ClassDB::bind_method(_MD("add_shortcut","shortcut:ShortCut","id","global"),&PopupMenu::add_shortcut,DEFVAL(-1),DEFVAL(false));
+	ClassDB::bind_method(_MD("add_icon_check_shortcut","texture","shortcut:ShortCut","id","global"),&PopupMenu::add_icon_check_shortcut,DEFVAL(-1),DEFVAL(false));
+	ClassDB::bind_method(_MD("add_check_shortcut","shortcut:ShortCut","id","global"),&PopupMenu::add_check_shortcut,DEFVAL(-1),DEFVAL(false));
 
 	ClassDB::bind_method(_MD("set_item_text","idx","text"),&PopupMenu::set_item_text);
 	ClassDB::bind_method(_MD("set_item_icon","idx","icon"),&PopupMenu::set_item_icon);
@@ -1115,7 +1121,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(_MD("set_item_as_separator","idx","enable"),&PopupMenu::set_item_as_separator);
 	ClassDB::bind_method(_MD("set_item_as_checkable","idx","enable"),&PopupMenu::set_item_as_checkable);
 	ClassDB::bind_method(_MD("set_item_tooltip","idx","tooltip"),&PopupMenu::set_item_tooltip);
-	ClassDB::bind_method(_MD("set_item_shortcut","idx","shortcut:ShortCut"),&PopupMenu::set_item_shortcut);
+	ClassDB::bind_method(_MD("set_item_shortcut","idx","shortcut:ShortCut","global"),&PopupMenu::set_item_shortcut,DEFVAL(false));
 
 	ClassDB::bind_method(_MD("toggle_item_checked","idx"), &PopupMenu::toggle_item_checked);
 

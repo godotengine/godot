@@ -102,7 +102,7 @@ StringArray _ResourceLoader::get_dependencies(const String& p_path) {
 
 bool _ResourceLoader::has(const String &p_path) {
 
-	String local_path = Globals::get_singleton()->localize_path(p_path);
+	String local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 	return ResourceCache::has(local_path);
 };
 

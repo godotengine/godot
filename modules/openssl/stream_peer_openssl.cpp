@@ -590,8 +590,8 @@ void StreamPeerOpenSSL::initialize_ssl() {
 	SSL_load_error_strings(); // Load SSL error strings
 	ERR_load_BIO_strings(); // Load BIO error strings
 	OpenSSL_add_all_algorithms(); // Load all available encryption algorithms
-	String certs_path =GLOBAL_DEF("ssl/certificates","");
-	Globals::get_singleton()->set_custom_property_info("ssl/certificates",PropertyInfo(Variant::STRING,"ssl/certificates",PROPERTY_HINT_FILE,"*.crt"));
+	String certs_path =GLOBAL_DEF("network/ssl/certificates","");
+	GlobalConfig::get_singleton()->set_custom_property_info("network/ssl/certificates",PropertyInfo(Variant::STRING,"network/ssl/certificates",PROPERTY_HINT_FILE,"*.crt"));
 	if (certs_path!="") {
 
 
@@ -613,8 +613,8 @@ void StreamPeerOpenSSL::initialize_ssl() {
 			print_line("Loaded certs from '"+certs_path+"':  "+itos(certs.size()));
 		}
 	}
-	String config_path =GLOBAL_DEF("ssl/config","");
-	Globals::get_singleton()->set_custom_property_info("ssl/config",PropertyInfo(Variant::STRING,"ssl/config",PROPERTY_HINT_FILE,"*.cnf"));
+	String config_path =GLOBAL_DEF("network/ssl/config","");
+	GlobalConfig::get_singleton()->set_custom_property_info("network/ssl/config",PropertyInfo(Variant::STRING,"network/ssl/config",PROPERTY_HINT_FILE,"*.cnf"));
 	if (config_path!="") {
 
 		Vector<uint8_t> data = FileAccess::get_file_as_array(config_path);

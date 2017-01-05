@@ -448,7 +448,7 @@ void ProjectExportDialog::_export_mode_changed(int p_idx) {
 
 void ProjectExportDialog::_export_action(const String& p_file) {
 
-	String location = Globals::get_singleton()->globalize_path(p_file).get_base_dir().replace("\\","/");
+	String location = GlobalConfig::get_singleton()->globalize_path(p_file).get_base_dir().replace("\\","/");
 
 	while(true) {
 
@@ -1243,11 +1243,11 @@ void ProjectExportDialog::_group_atlas_preview() {
 
 	int flags=0;
 
-	if (Globals::get_singleton()->get("image_loader/filter"))
+	if (GlobalConfig::get_singleton()->get("image_loader/filter"))
 		flags|=EditorTextureImportPlugin::IMAGE_FLAG_FILTER;
-	if (!Globals::get_singleton()->get("image_loader/gen_mipmaps"))
+	if (!GlobalConfig::get_singleton()->get("image_loader/gen_mipmaps"))
 		flags|=EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS;
-	if (!Globals::get_singleton()->get("image_loader/repeat"))
+	if (!GlobalConfig::get_singleton()->get("image_loader/repeat"))
 		flags|=EditorTextureImportPlugin::IMAGE_FLAG_REPEAT;
 
 	flags|=EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA;
@@ -1702,7 +1702,7 @@ void ProjectExport::popup_export() {
 	presets.insert("default");
 
 	List<PropertyInfo> pi;
-	Globals::get_singleton()->get_property_list(&pi);
+	GlobalConfig::get_singleton()->get_property_list(&pi);
 	export_preset->clear();
 
 	for (List<PropertyInfo>::Element *E=pi.front();E;E=E->next()) {
@@ -1732,8 +1732,8 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 	String selected=p_preset;
 
-	DVector<String> preset_settings = Globals::get_singleton()->get("export_presets/"+selected);
-	String preset_path=Globals::get_singleton()->get("export_presets_path/"+selected);
+	DVector<String> preset_settings = GlobalConfig::get_singleton()->get("export_presets/"+selected);
+	String preset_path=GlobalConfig::get_singleton()->get("export_presets_path/"+selected);
 	if (preset_path=="") {
 
 		error->set_text("Export path empty, see export options");
@@ -1787,7 +1787,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 		}
 	}
 
-	Vector<String> names = Globals::get_singleton()->get_optimizer_presets();
+	Vector<String> names = GlobalConfig::get_singleton()->get_optimizer_presets();
 
 	//prepare base paths
 
@@ -1897,7 +1897,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 		print_line("Exporting "+itos(idx)+"/"+itos(export_action.size())+": "+path);
 
-		String base_dir = Globals::get_singleton()->localize_path(path.get_base_dir()).replace("\\","/").replace("res://","");
+		String base_dir = GlobalConfig::get_singleton()->localize_path(path.get_base_dir()).replace("\\","/").replace("res://","");
 		DirAccess *da=DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		String cwd = d->get_current_dir();
 		da->change_dir(cwd);
@@ -1947,14 +1947,14 @@ Error ProjectExport::export_project(const String& p_preset) {
 			delete_source=true;
 			//create an optimized source file
 
-			if (!Globals::get_singleton()->has("optimizer_presets/"+preset)) {
+			if (!GlobalConfig::get_singleton()->has("optimizer_presets/"+preset)) {
 				memdelete(d);
 				ERR_EXPLAIN("Unknown optimizer preset: "+preset);
 				ERR_FAIL_V(ERR_INVALID_DATA);
 			}
 
 
-			Dictionary dc = Globals::get_singleton()->get("optimizer_presets/"+preset);
+			Dictionary dc = GlobalConfig::get_singleton()->get("optimizer_presets/"+preset);
 
 			ERR_FAIL_COND_V(!dc.has("__type__"),ERR_INVALID_DATA);
 			String type=dc["__type__"];
@@ -2099,7 +2099,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 	String engine_cfg_path=d->get_current_dir()+"/engine.cfg";
 	print_line("enginecfg: "+engine_cfg_path);
-	Globals::get_singleton()->save_custom(engine_cfg_path,added_settings);
+	GlobalConfig::get_singleton()->save_custom(engine_cfg_path,added_settings);
 
 	memdelete(d);
 	return OK;

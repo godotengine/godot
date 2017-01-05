@@ -172,21 +172,28 @@ void register_core_types() {
 
 }
 
+void register_core_settings() {
+	//since in register core types, globals may not e present
+	GLOBAL_DEF( "network/packets/packet_stream_peer_max_buffer_po2",(16));
+
+}
+
 void register_core_singletons() {
 
-	Globals::get_singleton()->add_singleton( Globals::Singleton("Globals",Globals::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("IP",IP::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("Geometry",_Geometry::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("ResourceLoader",_ResourceLoader::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("ResourceSaver",_ResourceSaver::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("PathRemap",PathRemap::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("OS",_OS::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("ClassDB",_classdb ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("Marshalls",_Marshalls::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("TranslationServer",TranslationServer::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("TS",TranslationServer::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("Input",Input::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("InputMap",InputMap::get_singleton() )  );
+
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("GlobalConfig",GlobalConfig::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("IP",IP::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Geometry",_Geometry::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ResourceLoader",_ResourceLoader::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ResourceSaver",_ResourceSaver::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PathRemap",PathRemap::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("OS",_OS::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ClassDB",_classdb ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Marshalls",_Marshalls::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("TranslationServer",TranslationServer::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("TS",TranslationServer::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Input",Input::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("InputMap",InputMap::get_singleton() )  );
 
 
 }

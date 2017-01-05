@@ -97,7 +97,7 @@ void Input::get_argument_options(const StringName& p_function,int p_idx,List<Str
 	if (p_idx==0 && (pf=="is_action_pressed" || pf=="action_press" || pf=="action_release" || pf=="is_action_just_pressed" || pf=="is_action_just_released")) {
 
 		List<PropertyInfo> pinfo;
-		Globals::get_singleton()->get_property_list(&pinfo);
+		GlobalConfig::get_singleton()->get_property_list(&pinfo);
 
 		for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
 			const PropertyInfo &pi=E->get();

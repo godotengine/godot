@@ -56,9 +56,9 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 
 	if (err == OK) {
 
-		bool global_filter = Globals::get_singleton()->get("image_loader/filter");
-		bool global_mipmaps = Globals::get_singleton()->get("image_loader/gen_mipmaps");
-		bool global_repeat = Globals::get_singleton()->get("image_loader/repeat");
+		bool global_filter = GlobalConfig::get_singleton()->get("image_loader/filter");
+		bool global_mipmaps = GlobalConfig::get_singleton()->get("image_loader/gen_mipmaps");
+		bool global_repeat = GlobalConfig::get_singleton()->get("image_loader/repeat");
 
 		String text;
 

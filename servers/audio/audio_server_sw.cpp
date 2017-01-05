@@ -943,7 +943,7 @@ AudioServerSW::AudioServerSW(SampleManagerSW *p_sample_manager) {
 
 	sample_manager=p_sample_manager;
 	String interp = GLOBAL_DEF("audio/mixer_interp","linear");
-	Globals::get_singleton()->set_custom_property_info("audio/mixer_interp",PropertyInfo(Variant::STRING,"audio/mixer_interp",PROPERTY_HINT_ENUM,"raw,linear,cubic"));
+	GlobalConfig::get_singleton()->set_custom_property_info("audio/mixer_interp",PropertyInfo(Variant::STRING,"audio/mixer_interp",PROPERTY_HINT_ENUM,"raw,linear,cubic"));
 	if (interp=="raw")
 		mixer_interp=AudioMixerSW::INTERPOLATION_RAW;
 	else if (interp=="cubic")

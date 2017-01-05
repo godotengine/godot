@@ -101,10 +101,10 @@ MainLoop* test() {
 	ResourceSaver::save("test_data/rock.xml",texture);
 
 	print_line("localize paths");
-	print_line(Globals::get_singleton()->localize_path("algo.xml"));
-	print_line(Globals::get_singleton()->localize_path("c:\\windows\\algo.xml"));
-	print_line(Globals::get_singleton()->localize_path(Globals::get_singleton()->get_resource_path()+"/something/something.xml"));
-	print_line(Globals::get_singleton()->localize_path("somedir/algo.xml"));
+	print_line(GlobalConfig::get_singleton()->localize_path("algo.xml"));
+	print_line(GlobalConfig::get_singleton()->localize_path("c:\\windows\\algo.xml"));
+	print_line(GlobalConfig::get_singleton()->localize_path(GlobalConfig::get_singleton()->get_resource_path()+"/something/something.xml"));
+	print_line(GlobalConfig::get_singleton()->localize_path("somedir/algo.xml"));
 
 	{
 

@@ -1047,8 +1047,8 @@ TranslationServer *TranslationServer::singleton=NULL;
 
 bool TranslationServer::_load_translations(const String& p_from) {
 
-	if (Globals::get_singleton()->has(p_from)) {
-		DVector<String> translations=Globals::get_singleton()->get(p_from);
+	if (GlobalConfig::get_singleton()->has(p_from)) {
+		DVector<String> translations=GlobalConfig::get_singleton()->get(p_from);
 
 		int tcount=translations.size();
 
@@ -1089,7 +1089,7 @@ void TranslationServer::setup() {
 			options+=locale_list[idx];
 			idx++;
 		}
-		Globals::get_singleton()->set_custom_property_info("locale/fallback",PropertyInfo(Variant::STRING,"locale/fallback",PROPERTY_HINT_ENUM,options));
+		GlobalConfig::get_singleton()->set_custom_property_info("locale/fallback",PropertyInfo(Variant::STRING,"locale/fallback",PROPERTY_HINT_ENUM,options));
 	}
 #endif
 	//load translations

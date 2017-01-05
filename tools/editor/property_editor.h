@@ -174,7 +174,7 @@ class PropertyEditor : public Control {
 
 	Object* obj;
 
-	Array _prop_edited_name;
+
 	StringName _prop_edited;
 
 	bool capitalize_paths;
@@ -293,13 +293,15 @@ class SectionedPropertyEditor : public HBoxContainer {
 
 	ObjectID obj;
 
-	ItemList *sections;
+	Tree *sections;
 	SectionedPropertyEditorFilter *filter;
+
+	Map<String,TreeItem*> section_map;
 	PropertyEditor *editor;
 
 
 	static void _bind_methods();
-	void _section_selected(int p_which);
+	void _section_selected();
 
 public:
 

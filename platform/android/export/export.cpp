@@ -553,8 +553,8 @@ void EditorExportPlatformAndroid::_fix_resources(Vector<uint8_t>& p_manifest) {
 
 				String lang = str.substr(str.find_last("-")+1,str.length()).replace("-","_");
 				String prop = "application/name_"+lang;
-				if (Globals::get_singleton()->has(prop)) {
-					str = Globals::get_singleton()->get(prop);
+				if (GlobalConfig::get_singleton()->has(prop)) {
+					str = GlobalConfig::get_singleton()->get(prop);
 				} else {
 					str = get_project_name();
 				}
@@ -626,7 +626,7 @@ String EditorExportPlatformAndroid::get_project_name() const {
 	if (this->name!="") {
 		aname=this->name;
 	} else {
-		aname = Globals::get_singleton()->get("application/name");
+		aname = GlobalConfig::get_singleton()->get("application/name");
 
 	}
 
@@ -1148,7 +1148,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 			if (!found) {
 
-				String appicon = Globals::get_singleton()->get("application/icon");
+				String appicon = GlobalConfig::get_singleton()->get("application/icon");
 				if (appicon!="" && appicon.ends_with(".png")) {
 					FileAccess*f = FileAccess::open(appicon,FileAccess::READ);
 					if (f) {
@@ -1719,7 +1719,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 		args.push_back("--remove-all");
 		err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
 
-		int port = Globals::get_singleton()->get("debug/debug_port");
+		int port = GlobalConfig::get_singleton()->get("network/debug/remote_port");
 		args.clear();
 		args.push_back("reverse");
 		args.push_back("tcp:"+itos(port));
@@ -1766,7 +1766,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 String EditorExportPlatformAndroid::get_package_name() {
 
 	String pname = package;
-	String basename = Globals::get_singleton()->get("application/name");
+	String basename = GlobalConfig::get_singleton()->get("application/name");
 	basename=basename.to_lower();
 
 	String name;

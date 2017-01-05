@@ -908,7 +908,7 @@ String VisualScriptInputFilter::get_output_sequence_port_text(int p_port) const 
 
 
 			List<PropertyInfo> pinfo;
-			Globals::get_singleton()->get_property_list(&pinfo);
+			GlobalConfig::get_singleton()->get_property_list(&pinfo);
 			int index=1;
 
 			text="No Action";
@@ -1164,7 +1164,7 @@ bool VisualScriptInputFilter::_set(const StringName& p_name, const Variant& p_va
 				if (what=="action_name") {
 
 					List<PropertyInfo> pinfo;
-					Globals::get_singleton()->get_property_list(&pinfo);
+					GlobalConfig::get_singleton()->get_property_list(&pinfo);
 					int index=1;
 
 					for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
@@ -1378,7 +1378,7 @@ bool VisualScriptInputFilter::_get(const StringName& p_name,Variant &r_ret) cons
 				if (what=="action_name") {
 
 					List<PropertyInfo> pinfo;
-					Globals::get_singleton()->get_property_list(&pinfo);
+					GlobalConfig::get_singleton()->get_property_list(&pinfo);
 					int index=1;
 
 					for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
@@ -1517,7 +1517,7 @@ void VisualScriptInputFilter::_get_property_list( List<PropertyInfo> *p_list) co
 					actions="None";
 
 					List<PropertyInfo> pinfo;
-					Globals::get_singleton()->get_property_list(&pinfo);
+					GlobalConfig::get_singleton()->get_property_list(&pinfo);
 					Vector<String> al;
 
 					for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {

@@ -286,7 +286,7 @@ void EditorFileSystem::_scan_filesystem() {
 	sources_changed.clear();
 	file_cache.clear();
 
-	String project=Globals::get_singleton()->get_resource_path();
+	String project=GlobalConfig::get_singleton()->get_resource_path();
 
 	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_cache");
 	FileAccess *f =FileAccess::open(fscache,FileAccess::READ);
@@ -488,7 +488,7 @@ bool EditorFileSystem::_update_scan_actions() {
 
 void EditorFileSystem::scan() {
 
-    if (bool(Globals::get_singleton()->get("debug/disable_scan")))
+    if (false /*&& bool(Globals::get_singleton()->get("debug/disable_scan"))*/)
            return;
 
 	if (scanning || scanning_sources|| thread)
@@ -1088,7 +1088,7 @@ bool EditorFileSystem::_find_file(const String& p_file,EditorFileSystemDirectory
 		return false;
 
 
-	String f = Globals::get_singleton()->localize_path(p_file);
+	String f = GlobalConfig::get_singleton()->localize_path(p_file);
 
 	if (!f.begins_with("res://"))
 		return false;
@@ -1204,7 +1204,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
     	return NULL;
 
 
-    String f = Globals::get_singleton()->localize_path(p_path);
+    String f = GlobalConfig::get_singleton()->localize_path(p_path);
 
     if (!f.begins_with("res://"))
     	return NULL;

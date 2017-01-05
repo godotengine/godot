@@ -670,9 +670,9 @@ void EditorSceneImportDialog::_choose_save_file(const String& p_path) {
 
 void EditorSceneImportDialog::_choose_script(const String& p_path) {
 
-	String p = Globals::get_singleton()->localize_path(p_path);
+	String p = GlobalConfig::get_singleton()->localize_path(p_path);
 	if (!p.is_resource_file())
-		p=Globals::get_singleton()->get_resource_path().path_to(p_path.get_base_dir())+p_path.get_file();
+		p=GlobalConfig::get_singleton()->get_resource_path().path_to(p_path.get_base_dir())+p_path.get_file();
 	script_path->set_text(p);
 
 }
@@ -725,7 +725,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	if (texture_action->get_selected()==0)
 		dst_path=save_path->get_text();//.get_base_dir();
 	else
-		dst_path=Globals::get_singleton()->get("import/shared_textures");
+		dst_path=GlobalConfig::get_singleton()->get("import/shared_textures");
 
 	uint32_t flags=0;
 
@@ -1275,7 +1275,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	set_hide_on_ok(false);
 
 	GLOBAL_DEF("import/shared_textures","res://");
-	Globals::get_singleton()->set_custom_property_info("import/shared_textures",PropertyInfo(Variant::STRING,"import/shared_textures",PROPERTY_HINT_DIR));
+	GlobalConfig::get_singleton()->set_custom_property_info("import/shared_textures",PropertyInfo(Variant::STRING,"import/shared_textures",PROPERTY_HINT_DIR));
 
 	import_hb->add_constant_override("separation",30);
 
@@ -2801,7 +2801,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 		String path = texture->get_path();
 		String fname= path.get_file();
-		String target_path = Globals::get_singleton()->localize_path(target_res_path.plus_file(fname));
+		String target_path = GlobalConfig::get_singleton()->localize_path(target_res_path.plus_file(fname));
 		progress.step(TTR("Import Image:")+" "+fname,3+(idx)*100/imagemap.size());
 
 		idx++;

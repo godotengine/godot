@@ -265,7 +265,8 @@ void PacketPeerStream::set_input_buffer_max_size(int p_max_size) {
 PacketPeerStream::PacketPeerStream() {
 
 
-	int rbsize=GLOBAL_DEF( "core/packet_stream_peer_max_buffer_po2",(16));
+	int rbsize=GLOBAL_GET( "network/packets/packet_stream_peer_max_buffer_po2");
+
 
 	ring_buffer.resize(rbsize);
 	temp_buffer.resize(1<<rbsize);

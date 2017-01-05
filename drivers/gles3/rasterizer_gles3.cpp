@@ -334,9 +334,9 @@ void RasterizerGLES3::make_current() {
 void RasterizerGLES3::register_config() {
 
 	GLOBAL_DEF("rendering/gles3/render_architecture",0);
-	Globals::get_singleton()->set_custom_property_info("rendering/gles3/render_architecture",PropertyInfo(Variant::INT,"",PROPERTY_HINT_ENUM,"Desktop,Mobile"));
-	GLOBAL_DEF("rendering/gles3/use_nearest_mipmap_filter",false);
-	GLOBAL_DEF("rendering/gles3/anisotropic_filter_level",4.0);
+	GlobalConfig::get_singleton()->set_custom_property_info("rendering/gles3/render_architecture",PropertyInfo(Variant::INT,"",PROPERTY_HINT_ENUM,"Desktop,Mobile"));
+	GLOBAL_DEF("rendering/quality/use_nearest_mipmap_filter",false);
+	GLOBAL_DEF("rendering/quality/anisotropic_filter_level",4.0);
 
 }
 

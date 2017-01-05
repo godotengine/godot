@@ -139,10 +139,10 @@ String FileAccess::fix_path(const String& p_path) const {
 
 		case ACCESS_RESOURCES: {
 
-			if (Globals::get_singleton()) {
+			if (GlobalConfig::get_singleton()) {
 				if (r_path.begins_with("res://")) {
 
-					String resource_path = Globals::get_singleton()->get_resource_path();
+					String resource_path = GlobalConfig::get_singleton()->get_resource_path();
 					if (resource_path != "") {
 
 						return r_path.replace("res:/",resource_path);

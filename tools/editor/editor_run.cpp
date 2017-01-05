@@ -39,7 +39,7 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 	List<String> args;
 
 
-	String resource_path = Globals::get_singleton()->get_resource_path();
+	String resource_path = GlobalConfig::get_singleton()->get_resource_path();
 
 	if (resource_path!="") {
 		args.push_back("-path");
@@ -49,7 +49,7 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 
 	if (true) {
 		args.push_back("-rdebug");
-		args.push_back("localhost:"+String::num(GLOBAL_DEF("debug/debug_port", 6007)));
+		args.push_back("localhost:"+String::num(GLOBAL_GET("network/debug/remote_port")));
 	}
 
 	args.push_back("-epid");
@@ -78,12 +78,12 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 
 	Size2 desired_size;
 
-	desired_size.x=Globals::get_singleton()->get("display/width");
-	desired_size.y=Globals::get_singleton()->get("display/height");
+	desired_size.x=GlobalConfig::get_singleton()->get("display/width");
+	desired_size.y=GlobalConfig::get_singleton()->get("display/height");
 
 	Size2 test_size;
-	test_size.x=Globals::get_singleton()->get("display/test_width");
-	test_size.y=Globals::get_singleton()->get("display/test_height");
+	test_size.x=GlobalConfig::get_singleton()->get("display/test_width");
+	test_size.y=GlobalConfig::get_singleton()->get("display/test_height");
 	if (test_size.x>0 && test_size.y>0) {
 
 		desired_size=test_size;

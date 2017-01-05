@@ -198,7 +198,7 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String>& p_files,Node*
 			}
 		}
 
-		instanced_scene->set_filename( Globals::get_singleton()->localize_path(p_files[i]) );
+		instanced_scene->set_filename( GlobalConfig::get_singleton()->localize_path(p_files[i]) );
 
 		instances.push_back(instanced_scene);
 	}

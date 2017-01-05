@@ -955,7 +955,6 @@ void Environment::_bind_methods() {
 
 
 	GLOBAL_DEF("rendering/skybox/irradiance_cube_resolution",256);
-	GLOBAL_DEF("rendering/skybox/radiance_cube_resolution",64);
 
 	BIND_CONSTANT(BG_KEEP);
 	BIND_CONSTANT(BG_CLEAR_COLOR);
