@@ -249,7 +249,9 @@ int opus_packet_pad(unsigned char *data, opus_int32 len, opus_int32 new_len)
    opus_repacketizer_init(&rp);
    /* Moving payload to the end of the packet so we can do in-place padding */
    OPUS_MOVE(data+new_len-len, data, len);
-   opus_repacketizer_cat(&rp, data+new_len-len, len);
+   ret = opus_repacketizer_cat(&rp, data+new_len-len, len);
+   if (ret != OPUS_OK)
+      return ret;
    ret = opus_repacketizer_out_range_impl(&rp, 0, rp.nb_frames, data, new_len, 0, 1);
    if (ret > 0)
       return OPUS_OK;

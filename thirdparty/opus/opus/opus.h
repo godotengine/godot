@@ -142,7 +142,7 @@ extern "C" {
   *
   * opus_encode() and opus_encode_float() return the number of bytes actually written to the packet.
   * The return value <b>can be negative</b>, which indicates that an error has occurred. If the return value
-  * is 1 byte, then the packet does not need to be transmitted (DTX).
+  * is 2 bytes or less, then the packet does not need to be transmitted (DTX).
   *
   * Once the encoder state if no longer needed, it can be destroyed with
   *
