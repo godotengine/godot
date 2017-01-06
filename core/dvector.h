@@ -55,8 +55,9 @@ class DVector {
 
 		MID_Lock lock( mem );
 
+		void *src_data = lock.data();
 
-		if ( *(int*)lock.data()  == 1 ) {
+		if ( (*(int*)src_data) == 1 ) {
 			// one reference, means no refcount changes
 			if (dvector_lock)
 				dvector_lock->unlock();
@@ -74,22 +75,21 @@ class DVector {
 
 		MID_Lock dst_lock( new_mem );
 
-		int *rc = (int*)dst_lock.data();
+		void *dst_data = dst_lock.data();
 
-		*rc=1;
+		(*(int*)dst_data) = 1;
 
-		T * dst = (T*)(rc + 1 );
+		T * dst = (T*)((char*)dst_data + DEFAULT_ALIGNED_INTEGER);
+		T * src = (T*)((char*)src_data + DEFAULT_ALIGNED_INTEGER);
 
-		T * src =(T*) ((int*)lock.data() + 1 );
-
-		int count = (mem.get_size() - sizeof(int)) / sizeof(T);
+		int count = (mem.get_size() - DEFAULT_ALIGNED_INTEGER) / sizeof(T);
 
 		for (int i=0;i<count;i++) {
 
 			memnew_placement( &dst[i], T(src[i]) );
 		}
 
-		(*(int*)lock.data())--;
+		(*(int*)src_data)--;
 
 		// unlock all
 		dst_lock=MID_Lock();
@@ -118,8 +118,7 @@ class DVector {
 
 		MID_Lock lock(p_dvector.mem);
 
-		int * rc = (int*)lock.data();
-		(*rc)++;
+		(*(int*)lock.data())++;
 
 		lock = MID_Lock();
 		mem=p_dvector.mem;
@@ -144,14 +143,13 @@ class DVector {
 
 		MID_Lock lock(mem);
 
-		int * rc = (int*)lock.data();
-		(*rc)--;
+		void *data = lock.data();
 
-		if (*rc==0) {
+		if (--(*(int*)data)==0) {
 			// no one else using it, destruct
 
-			T * t= (T*)(rc+1);
-			int count = (mem.get_size() - sizeof(int)) / sizeof(T);
+			T * t= (T*)((char*)data + DEFAULT_ALIGNED_INTEGER);
+			int count = (mem.get_size() - DEFAULT_ALIGNED_INTEGER) / sizeof(T);
 
 			for (int i=0;i<count;i++) {
 
@@ -202,7 +200,7 @@ public:
 		Read r;
 		if (mem.is_valid()) {
 			r.lock = MID_Lock( mem );
-			r.mem = (const T*)((int*)r.lock.data()+1);
+			r.mem = (const T*)((char*)r.lock.data() + DEFAULT_ALIGNED_INTEGER);
 		}
 		return r;
 	}
@@ -212,7 +210,7 @@ public:
 		if (mem.is_valid()) {
 			copy_on_write();
 			w.lock = MID_Lock( mem );
-			w.mem = (T*)((int*)w.lock.data()+1);
+			w.mem = (T*)((char*)w.lock.data() + DEFAULT_ALIGNED_INTEGER);
 		}
 		return w;
 	}
@@ -325,7 +323,7 @@ public:
 template<class T>
 int DVector<T>::size() const {
 
-	return mem.is_valid() ? ((mem.get_size() - sizeof(int)) / sizeof(T) ) : 0;
+	return mem.is_valid() ? ((mem.get_size() - DEFAULT_ALIGNED_INTEGER) / sizeof(T) ) : 0;
 }
 
 template<class T>
@@ -400,14 +398,13 @@ Error DVector<T>::resize(int p_size) {
 
 		if (oldsize==0) {
 
-			mem = dynalloc( p_size * sizeof(T) + sizeof(int) );
+			mem = dynalloc( p_size * sizeof(T) + DEFAULT_ALIGNED_INTEGER );
 			lock=MID_Lock(mem);
-			int *rc = ((int*)lock.data());
-			*rc=1;
+			(*(int*)lock.data()) = 1;
 
 		} else {
 
-			if (dynrealloc( mem, p_size * sizeof(T) + sizeof(int) )!=OK ) {
+			if (dynrealloc( mem, p_size * sizeof(T) + DEFAULT_ALIGNED_INTEGER )!=OK ) {
 
 				ERR_FAIL_V(ERR_OUT_OF_MEMORY); // out of memory
 			}
@@ -415,10 +412,8 @@ Error DVector<T>::resize(int p_size) {
 			lock=MID_Lock(mem);
 		}
 
-
-
-
-		T *t = (T*)((int*)lock.data() + 1);
+		// construct the newly created elements
+		T *t = (T*)((char*)lock.data() + DEFAULT_ALIGNED_INTEGER);
 
 		for (int i=oldsize;i<p_size;i++) {
 
@@ -432,8 +427,8 @@ Error DVector<T>::resize(int p_size) {
 
 		MID_Lock lock(mem);
 
-
-		T *t = (T*)((int*)lock.data() + 1);
+		// deinitialize no longer needed elements
+		T *t = (T*)((char*)lock.data() + DEFAULT_ALIGNED_INTEGER);
 
 		for (int i=p_size;i<oldsize;i++) {
 
@@ -442,7 +437,7 @@ Error DVector<T>::resize(int p_size) {
 
 		lock = MID_Lock(); // clear
 
-		if (dynrealloc( mem, p_size * sizeof(T) + sizeof(int) )!=OK ) {
+		if (dynrealloc( mem, p_size * sizeof(T) + DEFAULT_ALIGNED_INTEGER )!=OK ) {
 
 			ERR_FAIL_V(ERR_OUT_OF_MEMORY); // wtf error
 		}
