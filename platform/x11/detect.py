@@ -175,9 +175,6 @@ def configure(env):
 
     env.Append(CPPFLAGS=['-DOPENGL_ENABLED'])
 
-    if (env['builtin_glew'] == 'no'):
-        env.ParseConfig('pkg-config glew --cflags --libs')
-
     if os.system("pkg-config --exists alsa") == 0:
         print("Enabling ALSA")
         env.Append(CPPFLAGS=["-DALSA_ENABLED"])
