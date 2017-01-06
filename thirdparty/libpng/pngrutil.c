@@ -1,7 +1,7 @@
 
 /* pngrutil.c - utilities to read a PNG file
  *
- * Last changed in libpng 1.6.26 [October 20, 2016]
+ * Last changed in libpng 1.6.27 [January 5, 2017]
  * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
@@ -418,9 +418,10 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner)
             png_ptr->flags |= PNG_FLAG_ZSTREAM_INITIALIZED;
       }
 
-#if ZLIB_VERNUM >= 0x1281
-      /* Turn off validation of the ADLER32 checksum */
-      if ((png_ptr->flags & PNG_FLAG_CRC_CRITICAL_IGNORE) != 0)
+#if ZLIB_VERNUM >= 0x1281 && \
+   defined(PNG_SET_OPTION_SUPPORTED) && defined(PNG_IGNORE_ADLER32)
+      if (((png_ptr->options >> PNG_IGNORE_ADLER32) & 3) == PNG_OPTION_ON)
+         /* Turn off validation of the ADLER32 checksum in IDAT chunks */
          ret = inflateValidate(&png_ptr->zstream, 0);
 #endif
 
@@ -716,7 +717,7 @@ png_decompress_chunk(png_structrp png_ptr,
                    * the extra space may otherwise be used as a Trojan Horse.
                    */
                   if (ret == Z_STREAM_END &&
-                     chunklength - prefix_size != lzsize)
+                      chunklength - prefix_size != lzsize)
                      png_chunk_benign_error(png_ptr, "extra compressed data");
                }
 
@@ -826,7 +827,7 @@ png_inflate_read(png_structrp png_ptr, png_bytep read_buffer, uInt read_size,
       return Z_STREAM_ERROR;
    }
 }
-#endif
+#endif /* READ_iCCP */
 
 /* Read and check the IDHR chunk */
 
@@ -4107,15 +4108,7 @@ png_read_IDAT_data(png_structrp png_ptr, png_bytep output,
          png_zstream_error(png_ptr, ret);
 
          if (output != NULL)
-         {
-            if(!strncmp(png_ptr->zstream.msg,"incorrect data check",20))
-            {
-               png_chunk_benign_error(png_ptr, "ADLER32 checksum mismatch");
-               continue;
-            }
-            else
-               png_chunk_error(png_ptr, png_ptr->zstream.msg);
-         }
+            png_chunk_error(png_ptr, png_ptr->zstream.msg);
 
          else /* checking */
          {
