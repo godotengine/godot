@@ -6,6 +6,7 @@
 #include "os/os.h"
 #include "variant_parser.h"
 #include "io/marshalls.h"
+#include "math_2d.h"
 
 const char* VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX]={
 	"sin",
@@ -46,6 +47,8 @@ const char* VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"rad2deg",
 	"linear2db",
 	"db2linear",
+	"rad2vec",
+	"deg2vec",
 	"max",
 	"min",
 	"clamp",
@@ -139,6 +142,8 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_RAD2DEG:
 		case MATH_LINEAR2DB:
 		case MATH_DB2LINEAR:
+		case MATH_RAD2VEC:
+		case MATH_DEG2VEC:
 		case LOGIC_NEAREST_PO2:
 		case OBJ_WEAKREF:
 		case TYPE_OF:
@@ -216,6 +221,8 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case MATH_ACOS:
 		case MATH_ATAN:
 		case MATH_ATAN2:
+		case MATH_RAD2VEC:
+		case MATH_DEG2VEC:
 		case MATH_SQRT: {
 			return PropertyInfo(Variant::REAL,"num");
 		} break;
@@ -431,6 +438,8 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
 		case MATH_FLOOR:
+		case MATH_DEG2VEC:
+		case MATH_RAD2VEC:
 		case MATH_CEIL: {
 			t=Variant::REAL;
 		} break;
@@ -826,6 +835,16 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func,const Variant** p_inp
 			VALIDATE_ARG_NUM(0);
 			*r_return=Math::db2linear(*p_inputs[0]);
 		} break;
+		case VisualScriptBuiltinFunc::MATH_RAD2VEC: {
+
+			VALIDATE_ARG_NUM(0);
+			*r_return = Vector2(Math::cos(*p_args[0]), Math::sin(*p_args[0]));
+		} break;
+		case VisualScriptBuiltinFunc::MATH_DEG2VEC: {
+
+			VALIDATE_ARG_NUM(0);
+			*r_return = Vector2(Math::cos(Math::deg2rad(*p_args[0])), Math::sin(Math::deg2rad(*p_args[0])));
+		}
 		case VisualScriptBuiltinFunc::LOGIC_MAX: {
 
 			if (p_inputs[0]->get_type()==Variant::INT && p_inputs[1]->get_type()==Variant::INT) {
@@ -1218,6 +1237,8 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/rad2deg",create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RAD2DEG>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/linear2db",create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LINEAR2DB>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/db2linear",create_builtin_func_node<VisualScriptBuiltinFunc::MATH_DB2LINEAR>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/rad2vec", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RAD2VEC>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/deg2vec", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_DEG2VEC>);
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/max",create_builtin_func_node<VisualScriptBuiltinFunc::LOGIC_MAX>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/min",create_builtin_func_node<VisualScriptBuiltinFunc::LOGIC_MIN>);

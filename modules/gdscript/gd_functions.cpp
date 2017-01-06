@@ -35,6 +35,7 @@
 #include "os/os.h"
 #include "variant_parser.h"
 #include "io/marshalls.h"
+#include "math_2d.h"
 
 const char *GDFunctions::get_func_name(Function p_func) {
 
@@ -79,6 +80,8 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"rad2deg",
 		"linear2db",
 		"db2linear",
+		"rad2vec",
+		"deg2vec",
 		"max",
 		"min",
 		"clamp",
@@ -380,6 +383,16 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
 			r_ret=Math::db2linear(*p_args[0]);
+		} break;
+		case MATH_RAD2VEC: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			r_ret = Vector2(Math::cos(*p_args[0]),Math::sin(*p_args[0]));
+		} break;
+		case MATH_DEG2VEC: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			r_ret = Vector2(Math::cos(Math::deg2rad(*p_args[0])),Math::sin(Math::deg2rad(*p_args[0])))
 		} break;
 		case LOGIC_MAX: {
 			VALIDATE_ARG_COUNT(2);
@@ -1086,6 +1099,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			r_ret=ObjectDB::get_instance(id);
 
 		} break;
+
 		case FUNC_MAX: {
 
 			ERR_FAIL();
@@ -1134,6 +1148,8 @@ bool GDFunctions::is_deterministic(Function p_func) {
 		case MATH_RAD2DEG:
 		case MATH_LINEAR2DB:
 		case MATH_DB2LINEAR:
+		case MATH_RAD2VEC:
+		case MATH_DEG2VEC:
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case LOGIC_CLAMP:
@@ -1352,6 +1368,16 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case MATH_DB2LINEAR: {
 			MethodInfo mi("db2linear",PropertyInfo(Variant::REAL,"db"));
 			mi.return_val.type=Variant::REAL;
+			return mi;
+		} break;
+		case MATH_RAD2VEC: {
+			MethodInfo mi("rad2vec",PropertyInfo(Variant::REAL, "rad"));
+			mi.return_val.type = Variant::VECTOR2;
+			return mi;
+		} break;
+		case MATH_DEG2VEC: {
+			MethodInfo mi("deg2vec", PropertyInfo(Variant::REAL, "deg"));
+			mi.return_val.type = Variant::VECTOR2;
 			return mi;
 		} break;
 		case LOGIC_MAX: {
