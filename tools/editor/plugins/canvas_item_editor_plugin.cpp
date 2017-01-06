@@ -1601,10 +1601,8 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 
 					if (node) {
-						Matrix32 rot;
-						rot.elements[1] = (dfrom - center).normalized();
-						rot.elements[0] = rot.elements[1].tangent();
-						node->set_rotation(snap_angle(rot.xform_inv(dto-center).angle() + node->get_rotation(), node->get_rotation()));
+						real_t angle = node->get_rotation();
+						node->set_rotation(snap_angle( angle + (dfrom - center).angle_to(dto-center), angle ));
 						display_rotate_to = dto;
 						display_rotate_from = center;
 						viewport->update();
@@ -1616,10 +1614,8 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 
 					if (node) {
-						Matrix32 rot;
-						rot.elements[1] = (dfrom - center).normalized();
-						rot.elements[0] = rot.elements[1].tangent();
-						node->set_rotation(snap_angle(rot.xform_inv(dto-center).angle() + node->get_rotation(), node->get_rotation()));
+						real_t angle = node->get_rotation();
+						node->set_rotation(snap_angle( angle + (dfrom - center).angle_to(dto-center), angle ));
 						display_rotate_to = dto;
 						display_rotate_from = center;
 						viewport->update();

@@ -150,7 +150,7 @@ _FORCE_INLINE_ void project_range_cast(const Vector2& p_cast, const Vector2& p_n
 	real_t mina,maxa;\
 	real_t minb,maxb;\
 	Matrix32 ofsb=p_transform;\
-	ofsb.elements[2]+=p_cast;\
+	ofsb.translate(p_cast);\
 	project_range(p_normal,p_transform,mina,maxa);\
 	project_range(p_normal,ofsb,minb,maxb);	\
 	r_min=MIN(mina,minb);\

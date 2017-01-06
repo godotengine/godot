@@ -249,7 +249,7 @@ bool BodyPair2DSW::setup(float p_step) {
 	Matrix32 xform_A = xform_Au * A->get_shape_transform(shape_A);
 
 	Matrix32 xform_Bu = B->get_transform();
-	xform_Bu.elements[2]-=A->get_transform().get_origin();
+	xform_Bu.translate(-A->get_transform().get_origin());
 	Matrix32 xform_B = xform_Bu * B->get_shape_transform(shape_B);
 
 	Shape2DSW *shape_A_ptr=A->get_shape(shape_A);
