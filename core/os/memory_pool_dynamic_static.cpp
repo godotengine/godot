@@ -221,7 +221,7 @@ Error MemoryPoolDynamicStatic::unlock(ID p_id) {
 
 size_t MemoryPoolDynamicStatic::get_available_mem() const {
 
-	return Memory::get_static_mem_available();
+	return Memory::get_mem_available();
 }
 
 size_t MemoryPoolDynamicStatic::get_total_usage() const {

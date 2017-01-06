@@ -121,9 +121,9 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		case TIME_FPS: return OS::get_singleton()->get_frames_per_second();
 		case TIME_PROCESS: return _process_time;
 		case TIME_FIXED_PROCESS: return _fixed_process_time;
-		case MEMORY_STATIC: return Memory::get_static_mem_usage();
+		case MEMORY_STATIC: return Memory::get_mem_usage();
 		case MEMORY_DYNAMIC: return Memory::get_dynamic_mem_usage();
-		case MEMORY_STATIC_MAX: return Memory::get_static_mem_max_usage();
+		case MEMORY_STATIC_MAX: return Memory::get_mem_max_usage();
 		case MEMORY_DYNAMIC_MAX: return Memory::get_dynamic_mem_available();
 		case MEMORY_MESSAGE_BUFFER_MAX: return MessageQueue::get_singleton()->get_max_buffer_usage();
 		case OBJECT_COUNT: return ObjectDB::get_object_count();

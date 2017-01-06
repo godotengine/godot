@@ -32,12 +32,17 @@
 #include <stddef.h>
 #include "safe_refcount.h"
 #include "os/memory_pool_dynamic.h"
-#include "os/memory_pool_static.h"
+
 
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
+#ifndef PAD_ALIGN
+#define PAD_ALIGN 16 //must always be greater than this at much
+#endif
+
 
 class MID {
 
@@ -49,19 +54,7 @@ class MID {
 
 	mutable Data *data;
 
-	void unref() {
 
-		if (!data)
-			return;
-		if (data->refcount.unref()) {
-
-			if (data->id!=MemoryPoolDynamic::INVALID_ID)
-				MemoryPoolDynamic::get_singleton()->free(data->id);
-			MemoryPoolStatic::get_singleton()->free(data);
-		}
-
-		data=NULL;
-	}
 
 	void ref(Data *p_data) {
 
@@ -95,49 +88,13 @@ friend class MID_Lock;
 		return NULL;
 	}
 
-	Error _resize(size_t p_size) {
 
-		if (p_size==0 && (!data || data->id==MemoryPoolDynamic::INVALID_ID))
-				return OK;
-		if (p_size && !data) {
-			// create data because we'll need it
-			data = (Data*)MemoryPoolStatic::get_singleton()->alloc(sizeof(Data),"MID::Data");
-			ERR_FAIL_COND_V( !data,ERR_OUT_OF_MEMORY );
-			data->refcount.init();
-			data->id=MemoryPoolDynamic::INVALID_ID;
-		}
+	void unref();
+	Error _resize(size_t p_size);
 
-		if (p_size==0 && data && data->id==MemoryPoolDynamic::INVALID_ID) {
-
-			MemoryPoolDynamic::get_singleton()->free(data->id);
-			data->id=MemoryPoolDynamic::INVALID_ID;
-		}
-
-		if (p_size>0) {
-
-		 	if (data->id==MemoryPoolDynamic::INVALID_ID) {
-
-				data->id=MemoryPoolDynamic::get_singleton()->alloc(p_size,"Unnamed MID");
-				ERR_FAIL_COND_V( data->id==MemoryPoolDynamic::INVALID_ID, ERR_OUT_OF_MEMORY );
-
-			} else {
-
-				MemoryPoolDynamic::get_singleton()->realloc(data->id,p_size);
-				ERR_FAIL_COND_V( data->id==MemoryPoolDynamic::INVALID_ID, ERR_OUT_OF_MEMORY );
-
-			}
-		}
-
-		return OK;
-	}
 friend class Memory;
 
-	MID(MemoryPoolDynamic::ID p_id) {
-
-		data = (Data*)MemoryPoolStatic::get_singleton()->alloc(sizeof(Data),"MID::Data");
-		data->refcount.init();
-		data->id=p_id;
-	}
+	MID(MemoryPoolDynamic::ID p_id);
 public:
 
 	bool is_valid() const { return data; }
@@ -173,15 +130,23 @@ public:
 class Memory{
 
 	Memory();
+#ifdef DEBUG_ENABLED
+	static size_t mem_usage;
+	static size_t max_usage;
+#endif
+
+	static size_t alloc_count;
+
 public:
 
-	static void * alloc_static(size_t p_bytes,const char *p_descr="");
-	static void * realloc_static(void *p_memory,size_t p_bytes);
-	static void free_static(void *p_ptr);
-	static size_t get_static_mem_available();
-	static size_t get_static_mem_usage();
-	static size_t get_static_mem_max_usage();
-	static void dump_static_mem_to_file(const char* p_file);
+	static void * alloc_static(size_t p_bytes,bool p_pad_align=false);
+	static void * realloc_static(void *p_memory,size_t p_bytes,bool p_pad_align=false);
+	static void free_static(void *p_ptr,bool p_pad_align=false);
+
+	static size_t get_mem_available();
+	static size_t get_mem_usage();
+	static size_t get_mem_max_usage();
+
 
 	static MID alloc_dynamic(size_t p_bytes, const char *p_descr="");
 	static Error realloc_dynamic(MID p_mid,size_t p_bytes);
@@ -191,15 +156,10 @@ public:
 
 };
 
-template<class T>
-struct MemAalign {
-	static _FORCE_INLINE_ int get_align() { return DEFAULT_ALIGNMENT; }
-};
-
 class DefaultAllocator {
 public:
-	_FORCE_INLINE_ static void *alloc(size_t p_memory) { return Memory::alloc_static(p_memory, ""); }
-	_FORCE_INLINE_ static void free(void *p_ptr) { return Memory::free_static(p_ptr); }
+	_FORCE_INLINE_ static void *alloc(size_t p_memory) { return Memory::alloc_static(p_memory, false); }
+	_FORCE_INLINE_ static void free(void *p_ptr) { return Memory::free_static(p_ptr,false); }
 
 };
 
@@ -209,19 +169,10 @@ void * operator new(size_t p_size,void* (*p_allocfunc)(size_t p_size)); ///< ope
 
 void * operator new(size_t p_size,void *p_pointer,size_t check, const char *p_description); ///< operator new that takes a description and uses a pointer to the preallocated memory
 
-#ifdef DEBUG_MEMORY_ENABLED
-
-#define memalloc(m_size) Memory::alloc_static(m_size, __FILE__ ":" __STR(__LINE__) ", memalloc.")
-#define memrealloc(m_mem,m_size) Memory::realloc_static(m_mem,m_size)
-#define memfree(m_size) Memory::free_static(m_size)
-
-#else
-
 #define memalloc(m_size) Memory::alloc_static(m_size)
 #define memrealloc(m_mem,m_size) Memory::realloc_static(m_mem,m_size)
 #define memfree(m_size) Memory::free_static(m_size)
 
-#endif
 
 #ifdef DEBUG_MEMORY_ENABLED
 #define dynalloc(m_size) Memory::alloc_dynamic(m_size, __FILE__ ":" __STR(__LINE__) ", type: DYNAMIC")
@@ -245,15 +196,7 @@ _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 	return p_obj;
 }
 
-#ifdef DEBUG_MEMORY_ENABLED
-
-#define memnew(m_class) _post_initialize(new(__FILE__ ":" __STR(__LINE__) ", memnew type: " __STR(m_class)) m_class)
-
-#else
-
 #define memnew(m_class) _post_initialize(new("") m_class)
-
-#endif
 
 _ALWAYS_INLINE_ void * operator new(size_t p_size,void *p_pointer,size_t check, const char *p_description) {
 //	void *failptr=0;
@@ -275,7 +218,7 @@ void memdelete(T *p_class) {
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
 	p_class->~T();
-	Memory::free_static(p_class);
+	Memory::free_static(p_class,false);
 }
 
 template<class T,class A>
@@ -288,15 +231,9 @@ void memdelete_allocator(T *p_class) {
 }
 
 #define memdelete_notnull(m_v) { if (m_v) memdelete(m_v); }
-#ifdef DEBUG_MEMORY_ENABLED
-
-#define memnew_arr( m_class, m_count ) memnew_arr_template<m_class>(m_count,__FILE__ ":" __STR(__LINE__) ", memnew_arr type: " _STR(m_class))
-
-#else
 
 #define memnew_arr( m_class, m_count ) memnew_arr_template<m_class>(m_count)
 
-#endif
 
 template<typename T>
 T* memnew_arr_template(size_t p_elements,const char *p_descr="") {
@@ -307,11 +244,11 @@ T* memnew_arr_template(size_t p_elements,const char *p_descr="") {
 	same strategy used by std::vector, and the DVector class, so it should be safe.*/
 
 	size_t len = sizeof(T) * p_elements;
-	unsigned int *mem = (unsigned int*)Memory::alloc_static( len + MAX(sizeof(size_t), DEFAULT_ALIGNMENT), p_descr );
+	uint64_t *mem = (uint64_t*)Memory::alloc_static( len , true );
 	T *failptr=0; //get rid of a warning
 	ERR_FAIL_COND_V( !mem, failptr );
-	*mem=p_elements;
-	mem = (unsigned int *)( ((uint8_t*)mem) + MAX(sizeof(size_t), DEFAULT_ALIGNMENT));
+	*(mem-1)=p_elements;
+
 	T* elems = (T*)mem;
 
 	/* call operator new */
@@ -330,20 +267,22 @@ T* memnew_arr_template(size_t p_elements,const char *p_descr="") {
 template<typename T>
 size_t memarr_len(const T *p_class) {
 
-	uint8_t* ptr = ((uint8_t*)p_class) - MAX(sizeof(size_t), DEFAULT_ALIGNMENT);
-	return *(size_t*)ptr;
+	uint64_t* ptr = (uint64_t*)p_class;
+	return *(ptr-1);
 }
 
 template<typename T>
 void memdelete_arr(T *p_class) {
 
-	unsigned int * elems = (unsigned int*)(((uint8_t*)p_class) - MAX(sizeof(size_t), DEFAULT_ALIGNMENT));
+	uint64_t* ptr = (uint64_t*)p_class;
 
-	for (unsigned int i=0;i<*elems;i++) {
+	uint64_t elem_count = *(ptr-1);
+
+	for (uint64_t i=0;i<elem_count;i++) {
 
 		p_class[i].~T();
 	};
-	Memory::free_static(elems);
+	Memory::free_static(ptr,true);
 }
 
 

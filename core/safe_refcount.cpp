@@ -29,27 +29,76 @@
 #include "safe_refcount.h"
 
 
+// Atomic functions, these are used for multithread safe reference counters!
+
+#ifdef NO_THREADS
+
+
+uint32_t atomic_conditional_increment( register uint32_t * pw ) {
+
+	if (*pw==0)
+		return 0;
+
+	(*pw)++;
+
+	return *pw;
+}
+
+uint32_t atomic_decrement( register uint32_t * pw ) {
+
+	(*pw)--;
+
+	return *pw;
+
+}
+
+#else
+
 #ifdef _MSC_VER
 
 // don't pollute my namespace!
 #include <windows.h>
-long atomic_conditional_increment( register long * pw ) {
+uint32_t atomic_conditional_increment( register uint32_t * pw ) {
 
 	/* try to increment until it actually works */
 	// taken from boost
 
 	while (true) {
-		long tmp = static_cast< long const volatile& >( *pw );
+		uint32_t tmp = static_cast< uint32_t const volatile& >( *pw );
 		if( tmp == 0 )
-      return 0; // if zero, can't add to it anymore
-		if( InterlockedCompareExchange( pw, tmp + 1, tmp ) == tmp )
+			 return 0; // if zero, can't add to it anymore
+		if( InterlockedCompareExchange( (LONG volatile*)pw, tmp + 1, tmp ) == tmp )
 			return tmp+1;
 	}
+}
+
+uint32_t atomic_decrement( register uint32_t * pw ) {
+	return InterlockedDecrement( (LONG volatile*)pw );
+}
+
+#elif defined(__GNUC__)
+
+uint32_t atomic_conditional_increment( register uint32_t * pw ) {
+
+	while (true) {
+		uint32_t tmp = static_cast< uint32_t const volatile& >( *pw );
+		if( tmp == 0 )
+			 return 0; // if zero, can't add to it anymore
+		if( __sync_val_compare_and_swap( pw, tmp, tmp + 1 ) == tmp )
+			return tmp+1;
+	}
+}
+
+uint32_t atomic_decrement( register uint32_t * pw ) {
+
+	return __sync_sub_and_fetch(pw,1);
 
 }
 
-long atomic_decrement( register long * pw ) {
-	return InterlockedDecrement( pw );
-}
+#else
+	//no threads supported?
+#error Must provide atomic functions for this platform or compiler!
+
+#endif
 
 #endif

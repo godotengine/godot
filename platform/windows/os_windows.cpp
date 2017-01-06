@@ -30,7 +30,6 @@
 #include "os_windows.h"
 
 #include "drivers/gles3/rasterizer_gles3.h"
-#include "drivers/unix/memory_pool_static_malloc.h"
 #include "os/memory_pool_dynamic_static.h"
 #include "drivers/windows/thread_windows.h"
 #include "drivers/windows/semaphore_windows.h"
@@ -167,7 +166,6 @@ const char * OS_Windows::get_audio_driver_name(int p_driver) const {
 	return AudioDriverManagerSW::get_driver(p_driver)->get_name();
 }
 
-static MemoryPoolStatic *mempool_static=NULL;
 static MemoryPoolDynamic *mempool_dynamic=NULL;
 
 void OS_Windows::initialize_core() {
@@ -196,7 +194,6 @@ void OS_Windows::initialize_core() {
 	StreamPeerWinsock::make_default();
 	PacketPeerUDPWinsock::make_default();
 
-	mempool_static = new MemoryPoolStaticMalloc;
 #if 1
 	mempool_dynamic = memnew( MemoryPoolDynamicStatic );
 #else
@@ -1308,7 +1305,6 @@ void OS_Windows::finalize_core() {
 
 	if (mempool_dynamic)
 		memdelete( mempool_dynamic );
-	delete mempool_static;
 
 
 	TCPServerWinsock::cleanup();
