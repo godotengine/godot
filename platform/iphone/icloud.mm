@@ -78,12 +78,12 @@ Variant nsobject_to_variant(NSObject* object) {
 		return String::utf8(str != NULL ? str : "");
 	}
 	else if ([object isKindOfClass:[NSData class]]) {
-		ByteArray ret;
+		PoolByteArray ret;
 		NSData* data = (NSData*)object;
 		if ([data length] > 0) {
 			ret.resize([data length]);
 			{
-				ByteArray::Write w = ret.write();
+				PoolByteArray::Write w = ret.write();
 				copymem(w.ptr(), [data bytes], [data length]);
 			}
 		}
@@ -199,9 +199,9 @@ NSObject* variant_to_nsobject(Variant v) {
 		}
 		return result;
 	}
-	else if (v.get_type() == Variant::RAW_ARRAY) {
-		ByteArray arr = v;
-		ByteArray::Read r = arr.read();
+	else if (v.get_type() == Variant::POOL_BYTE_ARRAY) {
+		PoolByteArray arr = v;
+		PoolByteArray::Read r = arr.read();
 		NSData* result = [NSData dataWithBytes:r.ptr() length:arr.size()];
 		return result;
 	}
@@ -333,7 +333,7 @@ ICloud::ICloud() {
 			Dictionary ret;
 			ret["type"] = "key_value_changed";
 
-			//StringArray result_keys;
+			//PoolStringArray result_keys;
 			//Array result_values;
 			Dictionary keyValues;
 			String reason = "";

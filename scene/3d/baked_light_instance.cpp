@@ -1705,7 +1705,6 @@ void BakedLight::create_debug_mesh(DebugMode p_mode) {
 #else
 	mmi->set_owner(get_owner());
 #endif
-
 }
 
 void BakedLight::_debug_mesh_albedo() {

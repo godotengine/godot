@@ -78,6 +78,8 @@
 #define _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
 #define _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT 0x8E8F
 
+GLuint RasterizerStorageGLES3::system_fbo = 0;
+
 Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_internal_format,GLenum &r_gl_type,bool &r_compressed,bool &srgb) {
 
 
@@ -133,8 +135,12 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 
 		} break;
 		case Image::FORMAT_RGB565: {
+#ifdef IPHONE_ENABLED
+			r_gl_internal_format=GL_RGB565;
+#else
 //#warning TODO: Convert tod 555 if 565 is not supported (GLES3.3-)
 			r_gl_internal_format=GL_RGB5;
+#endif
 			//r_gl_internal_format=GL_RGB565;
 			r_gl_format=GL_RGB;
 			r_gl_type=GL_UNSIGNED_SHORT_5_6_5;
@@ -1186,7 +1192,7 @@ RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source,int p_r
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, config.system_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 	glDeleteFramebuffers(1, &tmp_fb);
 
 	Texture * ctex = memnew( Texture );
@@ -1351,7 +1357,7 @@ void RasterizerStorageGLES3::skybox_set_texture(RID p_skybox, RID p_cube_map, in
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, config.system_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 	glDeleteFramebuffers(1, &tmp_fb);
 
 }
@@ -5523,7 +5529,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		glBindFramebuffer(GL_FRAMEBUFFER, config.system_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 
 		ERR_FAIL_COND( status != GL_FRAMEBUFFER_COMPLETE );
 
@@ -5610,7 +5616,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		glBindFramebuffer(GL_FRAMEBUFFER, config.system_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			printf("err status: %x\n",status);
@@ -5643,7 +5649,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 			ERR_FAIL_COND( status != GL_FRAMEBUFFER_COMPLETE );
 		}
 
-		glBindFramebuffer(GL_FRAMEBUFFER, config.system_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			_render_target_clear(rt);
@@ -5712,7 +5718,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 
 			}
 
-			glBindFramebuffer(GL_FRAMEBUFFER, config.system_fbo);
+			glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 			rt->effects.mip_maps[i].levels=level;
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -5941,7 +5947,7 @@ RID RasterizerStorageGLES3::canvas_light_shadow_buffer_create(int p_width) {
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	//printf("errnum: %x\n",status);
-	glBindFramebuffer(GL_FRAMEBUFFER, config.system_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 
 	ERR_FAIL_COND_V( status != GL_FRAMEBUFFER_COMPLETE, RID() );
 
@@ -6296,7 +6302,7 @@ void RasterizerStorageGLES3::initialize() {
 	config.render_arch=RENDER_ARCH_DESKTOP;
 	//config.fbo_deferred=int(Globals::get_singleton()->get("rendering/gles3/lighting_technique"));
 
-	config.system_fbo=0;
+	RasterizerStorageGLES3::system_fbo=0;
 
 
 	//// extensions config

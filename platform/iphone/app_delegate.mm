@@ -284,12 +284,12 @@ static int frame_count = 0;
 	//glView.autoresizesSubviews = YES;
 	//[glView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleWidth];
 
-    int backingWidth;
-    int backingHeight;
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+	int backingWidth;
+	int backingHeight;
+	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
 
-    iphone_main(backingWidth, backingHeight, gargc, gargv);
+	iphone_main(backingWidth, backingHeight, gargc, gargv);
 
 	view_controller = [[ViewController alloc] init];
 	view_controller.view = glView;
@@ -305,16 +305,6 @@ static int frame_count = 0;
 	[window makeKeyAndVisible];
 
 	//Configure and start accelerometer
-/*
-  Old accelerometer approach deprecated since IOS 7.0
-
-	last_accel[0] = 0;
-	last_accel[1] = 0;
-	last_accel[2] = 0;
-	[[UIAccelerometer sharedAccelerometer] setUpdateInterval:(1.0 / kAccelerometerFrequency)];
-	[[UIAccelerometer sharedAccelerometer] setDelegate:self];
-*/
-
 	if (!motionInitialised) {
 		motionManager = [[CMMotionManager alloc] init];
 		if (motionManager.deviceMotionAvailable) {
@@ -365,10 +355,10 @@ static int frame_count = 0;
 
 	if (motionInitialised) {
 		///@TODO is this the right place to clean this up?
-    [motionManager stopDeviceMotionUpdates];
-    [motionManager release];
-    motionManager = nil;
-    motionInitialised = NO;	
+		[motionManager stopDeviceMotionUpdates];
+		[motionManager release];
+		motionManager = nil;
+		motionInitialised = NO;	
 	};
 
 	iphone_finish();
@@ -415,16 +405,6 @@ static int frame_count = 0;
 		OSIPhone::get_singleton()->native_video_unpause();
 	};
 }
-
-/*
-  Depricated since IOS 7.0
-- (void)accelerometer:(UIAccelerometer*)accelerometer didAccelerate:(UIAcceleration*)acceleration {
-	//Use a basic low-pass filter to only keep the gravity in the accelerometer values
-	accel[0] = acceleration.x; // * kFilteringFactor + accel[0] * (1.0 - kFilteringFactor);
-	accel[1] = acceleration.y; // * kFilteringFactor + accel[1] * (1.0 - kFilteringFactor);
-	accel[2] = acceleration.z; // * kFilteringFactor + accel[2] * (1.0 - kFilteringFactor);
-}
-*/
 
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
 #ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED

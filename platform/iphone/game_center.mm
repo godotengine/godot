@@ -182,11 +182,11 @@ void GameCenter::request_achievement_descriptions() {
 		ret["type"] = "achievement_descriptions";
 		if (error == nil) {
 			ret["result"] = "ok";
-			StringArray names;
-			StringArray titles;
-			StringArray unachieved_descriptions;
-			StringArray achieved_descriptions;
-			IntArray maximum_points;
+			PoolStringArray names;
+			PoolStringArray titles;
+			PoolStringArray unachieved_descriptions;
+			PoolStringArray achieved_descriptions;
+			PoolIntArray maximum_points;
 			Array hidden;
 			Array replayable;
 
@@ -239,8 +239,8 @@ void GameCenter::request_achievements() {
 		ret["type"] = "achievements";
 		if (error == nil) {
 			ret["result"] = "ok";
-			StringArray names;
-			RealArray percentages;
+			PoolStringArray names;
+			PoolRealArray percentages;
 
 			for (int i=0; i<[achievements count]; i++) {
 

@@ -123,6 +123,7 @@ void VisualServerRaster::finish(){
 	VSG::rasterizer->finalize();
 }
 
+
 /* STATUS INFORMATION */
 
 
