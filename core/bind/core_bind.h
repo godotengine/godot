@@ -246,6 +246,9 @@ public:
 	void set_use_file_access_save_and_swap(bool p_enable);
 
 	void set_icon(const Image& p_icon);
+
+	int get_exit_code() const;
+	void set_exit_code(int p_code);
 	Dictionary get_date(bool utc) const;
 	Dictionary get_time(bool utc) const;
 	Dictionary get_datetime(bool utc) const;
